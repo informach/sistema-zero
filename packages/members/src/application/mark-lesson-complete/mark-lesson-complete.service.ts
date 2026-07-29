@@ -48,6 +48,7 @@ export class MarkLessonCompleteService {
       accountId ?? userId,
       lesson.courseId,
       privileged,
+      userId,
     )
 
     const completedIds = await this.progress.listCompletedLessonIds(userId, course.id)

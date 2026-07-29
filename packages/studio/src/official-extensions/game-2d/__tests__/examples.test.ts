@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { SZIRSchema } from '#ir'
+import { behaviorStatements, SZIRV2Schema } from '#ir'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -57,14 +57,31 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
     registerExtensionBlocks(gameTwoDBlocks)
   })
 
-  it('a vitrine tem os 14 exemplos (anti-vácuo)', () => {
-    expect(gameTwoDManifest.examples.length).toBe(14)
+  it('a vitrine tem os 31 exemplos (anti-vácuo)', () => {
+    expect(gameTwoDManifest.examples.length).toBe(31)
+  })
+
+  it('todos ensinam início e preparo explícitos, sem canvas escondido no HTML', () => {
+    for (const example of gameTwoDManifest.examples) {
+      expect(example.ir.html.some((node) => node.type === 'canvas')).toBe(false)
+      expect(example.ir.behavior.start[0]?.type).toBe('g2d:setupStage')
+      expect(
+        (example.ir.behavior.start[0] as { description?: string } | undefined)?.description,
+      ).toBeUndefined()
+      expect(collectTypes(example.ir).has('g2d:onStart')).toBe(false)
+    }
+  })
+
+  it('mantém a classificação prometida: 26 jogos, 4 demonstrações e 1 exploração', () => {
+    const counts = { game: 0, demo: 0, exploration: 0 }
+    for (const example of gameTwoDManifest.examples) counts[example.experience] += 1
+    expect(counts).toEqual({ game: 26, demo: 4, exploration: 1 })
   })
 
   for (const ex of gameTwoDManifest.examples) {
     describe(ex.name, () => {
       it('IR válido no SZIRSchema, sem rawJS', () => {
-        expect(SZIRSchema.safeParse(ex.ir).success).toBe(true)
+        expect(SZIRV2Schema.safeParse(ex.ir).success).toBe(true)
         expect(collectTypes(ex.ir).has('rawJS')).toBe(false)
       })
 
@@ -75,17 +92,17 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
         const ws = new Blockly.Workspace()
         try {
           Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-          const back = buildIRFromWorkspace(ws).js
+          const back = behaviorStatements(buildIRFromWorkspace(ws))
           expect(collectTypes(back).has('rawJS')).toBe(false)
           // Nenhum statement se perde na volta (bloco obsoleto sumiria aqui).
-          expect(back.length).toBe(ex.ir.js.length)
+          expect(back.length).toBe(behaviorStatements(ex.ir).length)
         } finally {
           ws.dispose()
         }
       })
 
       it('a Ponte (JS→IR) não engole nada em rawJS', () => {
-        const code = compileStatements(ex.ir.js, 0)
+        const code = compileStatements(behaviorStatements(ex.ir), 0)
         expect(code.trim().length).toBeGreaterThan(0)
         expect(collectTypes(parseJS(code)).has('rawJS')).toBe(false)
       })
@@ -119,13 +136,13 @@ describe('game-2d — cenas com nomes livres', () => {
         )
 
         const saved = Blockly.serialization.workspaces.save(workspace)
-        const roundTripped = buildIRFromWorkspace(workspace).js
+        const roundTripped = behaviorStatements(buildIRFromWorkspace(workspace))
         const serialized = JSON.stringify(saved)
 
         for (const scene of expectedScenes) {
           expect(serialized).toContain(`"SCENE":"${scene}"`)
         }
-        expect(roundTripped.length).toBe(example.ir.js.length)
+        expect(roundTripped.length).toBe(behaviorStatements(example.ir).length)
         expect(collectTypes(roundTripped).has('rawJS')).toBe(false)
       } finally {
         workspace.dispose()
@@ -155,11 +172,76 @@ describe('game-2d — exemplos com imagem são autossuficientes', () => {
       expect(asset.dataUrl.startsWith('data:image/')).toBe(true)
     }
   })
+
+  it('Aventura com câmera mostra casas e árvores reconhecíveis, não retângulos genéricos', () => {
+    expect(cameraAdventureExample.assets?.map((asset) => asset.name)).toEqual([
+      'casa-aventura',
+      'arvore-aventura',
+    ])
+    const code = compileStatements(behaviorStatements(cameraAdventureExample.ir), 0)
+    expect(code).toContain('image: "casa-aventura"')
+    expect(code).toContain('image: "arvore-aventura"')
+  })
+})
+
+describe('game-2d — demonstrações explicam os controles no próprio palco', () => {
+  for (const example of [
+    animatedHeroExample,
+    gameTwoDManifest.examples.find((candidate) => candidate.name === 'Mini plataforma'),
+    tilemapExample,
+    codeDrawnExample,
+  ]) {
+    it(example?.name ?? 'exemplo ausente', () => {
+      expect(example).toBeDefined()
+      const labels = JSON.stringify(example?.ir).match(/"type":"g2d:drawLabel"/g) ?? []
+      expect(labels.length).toBeGreaterThan(0)
+      const serialized = JSON.stringify(example?.ir).toLocaleLowerCase('pt-BR')
+      expect(serialized).toContain('setas')
+      expect(serialized).toContain('"type":"g2d:setstagedescription"')
+      const description = example?.ir.behavior.start.find(
+        (statement) => statement.type === 'g2d:setStageDescription',
+      )
+      expect(description?.type).toBe('g2d:setStageDescription')
+      expect(
+        description?.type === 'g2d:setStageDescription' ? description.description : '',
+      ).toContain('setas')
+    })
+  }
+})
+
+describe('game-2d — exemplos com vidas usam o fluxo automático por sprite', () => {
+  for (const example of [asteroidsExample, dinoRunExample, enemyPlatformerExample]) {
+    it(example.name, () => {
+      const serialized = JSON.stringify(example.ir)
+      expect(serialized).toContain('"type":"g2d:drawSpriteHealth"')
+      expect(serialized).toContain('"type":"g2d:healthDepleted"')
+      expect(serialized).not.toContain('"type":"g2d:drawHearts"')
+    })
+  }
+})
+
+describe('game-2d — Nave contra Asteroides respeita a cena ativa', () => {
+  it('mantém o gerador periódico na raiz e protege o spawn pela cena jogando', () => {
+    const periodicSpawner = asteroidsExample.ir.behavior.loops.find(
+      (statement) => statement.type === 'g2d:everyFrames',
+    )
+
+    expect(periodicSpawner).toMatchObject({
+      type: 'g2d:everyFrames',
+      body: [
+        {
+          type: 'if',
+          cond: { type: 'g2d:sceneIs', name: 'jogando' },
+          then: [{ type: 'g2d:spawnAsteroid', groupVar: 'asteroides' }],
+        },
+      ],
+    })
+  })
 })
 
 describe('pongExample (game-2d)', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(pongExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(pongExample.ir).success).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
@@ -168,33 +250,36 @@ describe('pongExample (game-2d)', () => {
   })
 })
 
-describe('asteroidsExample (game-2d) — perf do SZIRSchema', () => {
+describe('pongExample (game-2d) — partida completa', () => {
   // Guarda de regressão do freeze de ~11s: com `z.union` (não-discriminada) o
   // safeParse desta IR ~107 nós fazia BACKTRACKING exponencial e congelava o
   // editor na carga/import. Com `z.discriminatedUnion('type', …)` é O(nós).
   // Teto FOLGADO (2s) p/ não flakar em CI lento, mas pega a regressão (era ~15s).
   it('valida e parseia em tempo linear (< 2s, não exponencial)', () => {
     const t0 = performance.now()
-    const result = SZIRSchema.safeParse(asteroidsExample.ir)
+    const result = SZIRV2Schema.safeParse(asteroidsExample.ir)
     const elapsed = performance.now() - t0
     expect(result.success).toBe(true)
     expect(elapsed).toBeLessThan(2000)
   })
 
-  it('a física usa os blocos do motor + if/memberSet (gera o código esperado)', () => {
-    const code = compileStatements(pongExample.ir.js, 0)
+  it('tem adversário, placar, estados de conclusão e novo jogo', () => {
+    const code = compileStatements(behaviorStatements(pongExample.ir), 0)
     expect(code).toContain('SZGame2D.applyVelocity(bola)')
-    expect(code).toContain('SZGame2D.bounceOnEdges(bola, ctx)')
-    expect(code).toContain('SZGame2D.isColliding(jogador, bola)')
+    expect(code).toContain('SZGame2D.touches(jogador, bola)')
+    expect(code).toContain('SZGame2D.touches(computador, bola)')
     expect(code).toContain('bola.vx = Math.abs(bola.vx)')
-    // A física crua antiga (integração manual da velocidade) sumiu.
-    expect(code).not.toContain('bola.x += bola.vx')
+    expect(code).toContain('pontosComputador = pontosComputador + 1')
+    expect(code).toContain('SZGame2D.setScene("vitoria")')
+    expect(code).toContain('SZGame2D.setScene("derrota")')
+    expect(code).toContain('SZGame2D.restart()')
+    expect(code).toContain('O primeiro a 5 pontos vence!')
   })
 })
 
 describe('enemyPlatformerExample (game-2d) — tipos de inimigo', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(enemyPlatformerExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(enemyPlatformerExample.ir).success).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
@@ -202,7 +287,7 @@ describe('enemyPlatformerExample (game-2d) — tipos de inimigo', () => {
   })
 
   it('gera os três comportamentos, o auto-animar e a compat tipo=grupo', () => {
-    const code = compileStatements(enemyPlatformerExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(enemyPlatformerExample.ir), 0)
     expect(code).toContain('SZGame2D.createEnemyType({ behavior: "patrulha"')
     expect(code).toContain('SZGame2D.createEnemyType({ behavior: "saltador"')
     expect(code).toContain('SZGame2D.createEnemyType({ behavior: "atirador"')
@@ -210,17 +295,25 @@ describe('enemyPlatformerExample (game-2d) — tipos de inimigo', () => {
     expect(code).toContain('SZGame2D.updateEnemyType(goomba, ctx, heroi)')
     expect(code).toContain('SZGame2D.drawEnemyType(ctx, canhao)')
     expect(code).toContain('SZGame2D.autoAnimate(heroi)')
-    expect(code).toContain('SZGame2D.onEnemyDefeated(goomba, function (inimigo)')
-    expect(code).toContain('SZGame2D.overlapEnemyShots(() => heroi, canhao, function (tiro)')
+    expect(code).toContain('SZGame2D.onEnemyDefeated(goomba, (inimigo) =>')
+    expect(code).toContain('SZGame2D.onEnemyDefeated(sapinho, (inimigo) =>')
+    expect(code).toContain('SZGame2D.onEnemyDefeated(canhao, (inimigo) =>')
+    expect(code).toContain('SZGame2D.overlapEnemyShots(() => heroi, canhao, (tiro) =>')
     expect(code).toContain('SZGame2D.hurtByEnemy(heroi, inimigo)')
     // tipo funciona nos blocos de GRUPO: colisão grupo×tipo direto no nome
     expect(code).toContain('SZGame2D.overlapGroups(tiros, goomba,')
+    expect(code).toContain('SZGame2D.overlapGroups(tiros, sapinho,')
+    expect(code).toContain('SZGame2D.overlapGroups(tiros, canhao,')
+    expect(code).toContain('SZGame2D.setScene("vitoria")')
+    expect(code).toContain('SZGame2D.setScene("derrota")')
+    expect(code).toContain('SZGame2D.restart()')
   })
 })
 
 describe('codeDrawnExample (game-2d) — sprite desenhado por código', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(codeDrawnExample.ir).success).toBe(true)
+    const parsed = SZIRV2Schema.safeParse(codeDrawnExample.ir)
+    expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
@@ -228,8 +321,8 @@ describe('codeDrawnExample (game-2d) — sprite desenhado por código', () => {
   })
 
   it('NÃO usa nenhuma imagem — o jogo é 100% desenhado por código', () => {
-    const code = compileStatements(codeDrawnExample.ir.js, 0)
-    expect(code).toContain('SZGame2D.defineShape("heroi", function (ctx)')
+    const code = compileStatements(behaviorStatements(codeDrawnExample.ir), 0)
+    expect(code).toContain('SZGame2D.defineShape("heroi", (ctx) =>')
     expect(code).toContain('SZGame2D.paintRect(ctx,')
     expect(code).toContain('SZGame2D.paintCircle(ctx,')
     expect(code).toContain('SZGame2D.createShapeSprite("heroi",')
@@ -241,7 +334,7 @@ describe('codeDrawnExample (game-2d) — sprite desenhado por código', () => {
 
 describe('dinoRunExample (game-2d) — Kit dino', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(dinoRunExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(dinoRunExample.ir).success).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
@@ -249,7 +342,7 @@ describe('dinoRunExample (game-2d) — Kit dino', () => {
   })
 
   it('gera as chamadas do Kit dino + recorde persistente (localStorage)', () => {
-    const code = compileStatements(dinoRunExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(dinoRunExample.ir), 0)
     expect(code).toContain('SZGame2D.createDino(')
     expect(code).toContain('SZGame2D.controlDino(dino, ctx, 15)')
     expect(code).toContain('SZGame2D.spawnObstacle(obstaculos, ctx,')
@@ -265,7 +358,7 @@ describe('dinoRunExample (game-2d) — Kit dino', () => {
 
 describe('gorilasExample (game-2d) — Kit gorilas', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(gorilasExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(gorilasExample.ir).success).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
@@ -273,7 +366,7 @@ describe('gorilasExample (game-2d) — Kit gorilas', () => {
   })
 
   it('gera as chamadas do Kit gorilas', () => {
-    const code = compileStatements(gorilasExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(gorilasExample.ir), 0)
     expect(code).toContain('SZGame2D.createCity()')
     expect(code).toContain('SZGame2D.placeThrower(cidade, { side: "left"')
     expect(code).toContain('SZGame2D.placeThrower(cidade, { side: "right"')
@@ -288,13 +381,13 @@ describe('gorilasExample (game-2d) — Kit gorilas', () => {
     expect(code).toContain('SZGame2D.bananaHitThrower(cidade, gorila2)')
     expect(code).toContain('SZGame2D.bananaHitCity(cidade)')
     expect(code).toContain('SZGame2D.playWhistle()')
-    expect(code).toContain('SZGame2D.playBoom()')
+    expect(code).toContain('SZGame2D.playExplosion()')
   })
 })
 
 describe('gorilasVsRobotExample (game-2d) — Kit gorilas vs Robô', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(gorilasVsRobotExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(gorilasVsRobotExample.ir).success).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
@@ -302,7 +395,7 @@ describe('gorilasVsRobotExample (game-2d) — Kit gorilas vs Robô', () => {
   })
 
   it('gera as chamadas do robô (IA) + leitura de mira', () => {
-    const code = compileStatements(gorilasVsRobotExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(gorilasVsRobotExample.ir), 0)
     expect(code).toContain('SZGame2D.computerTurn(gorila2, cidade, gorila1)')
     expect(code).toContain('SZGame2D.drawAimReadout(ctx)')
   })
@@ -310,19 +403,21 @@ describe('gorilasVsRobotExample (game-2d) — Kit gorilas vs Robô', () => {
 
 describe('cameraAdventureExample (game-2d) — câmera + som (v0.16.0)', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(cameraAdventureExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(cameraAdventureExample.ir).success).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
     expect(collectTypes(cameraAdventureExample.ir).has('rawJS')).toBe(false)
   })
 
-  it('gera as chamadas dos blocos novos (câmera, música, efeito, FPS, placar)', () => {
-    const code = compileStatements(cameraAdventureExample.ir.js, 0)
+  it('gera câmera, paisagem, música, coleta, instruções e conclusão', () => {
+    const code = compileStatements(behaviorStatements(cameraAdventureExample.ir), 0)
     expect(code).toContain('SZGame2D.playMusic("adventure")')
     expect(code).toContain('SZGame2D.cameraFollow(heroi, 1600, 320)')
     expect(code).toContain('SZGame2D.playFx("coin")')
-    expect(code).toContain('SZGame2D.showFps(12, 56)')
+    expect(code).toContain('const paisagem = SZGame2D.createGroup()')
+    expect(code).toContain('SZGame2D.drawGroup(ctx, paisagem)')
     expect(code).toContain('SZGame2D.drawScore(ctx, "Moedas:", pontos,')
+    expect(code).toContain('Exploração completa! Você encontrou as 4 moedas.')
   })
 })

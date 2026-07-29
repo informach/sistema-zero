@@ -33,6 +33,7 @@ const toThread = (r: ThreadRow): Thread => ({
   playId: r.playId,
   playsCount: r.playsCount,
   challengeKey: r.challengeKey,
+  studioMeta: r.studioMeta ?? null,
   lastActivityAt: r.lastActivityAt,
   createdAt: r.createdAt,
   editedAt: r.editedAt,
@@ -145,6 +146,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
         coverImageUrl: input.coverImageUrl,
         playId: input.playId,
         challengeKey: input.challengeKey ?? null,
+        studioMeta: input.studioMeta ?? null,
         showcaseIdempotencyKey: input.idempotencyKey,
         lastActivityAt: input.now,
         createdAt: input.now,
@@ -253,6 +255,34 @@ export class DrizzleThreadRepository implements ThreadRepository {
         ),
       )
       .orderBy(desc(threads.createdAt))
+    return rows
+  }
+
+  async listShowcaseByAuthor(
+    authorId: string,
+    limit: number,
+  ): Promise<
+    Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
+  > {
+    // Usa o threads_author_status_idx (autor+status). SEM janela — o perfil público
+    // mostra a vitrine INTEIRA do autor, com a CAPA (a variante do report dos pais a omite).
+    const rows = await this.db
+      .select({
+        title: threads.title,
+        playId: threads.playId,
+        coverImageUrl: threads.coverImageUrl,
+        createdAt: threads.createdAt,
+      })
+      .from(threads)
+      .where(
+        and(
+          eq(threads.authorId, authorId),
+          eq(threads.isShowcase, true),
+          eq(threads.status, 'visible'),
+        ),
+      )
+      .orderBy(desc(threads.createdAt))
+      .limit(limit)
     return rows
   }
 

@@ -19,8 +19,13 @@ const C = CATEGORY_COLORS.functions
 export const FUNCTION_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_function',
-    message0: 'função %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'fazerAlgo' }],
+    bodyExecution: 'function',
+    placement: 'start-declaration',
+    message0: 'função %1 assíncrona %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'fazerAlgo' },
+      { type: 'field_checkbox', name: 'ASYNC', checked: false },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
     inputsInline: true,
@@ -29,10 +34,11 @@ export const FUNCTION_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_params_mutator',
     tooltip:
-      'Cria uma função nomeada. Use + para adicionar parâmetros; dentro, faça o que quiser e use "retornar" para devolver um valor.',
+      'Cria uma função nomeada. Marque assíncrona para poder esperar Promises; use + para adicionar parâmetros e "retornar" para devolver um valor.',
   },
   {
     type: 'sz_js_call_function',
+    placement: 'command',
     message0: 'chamar função %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'fazerAlgo', kind: 'function' }],
     inputsInline: true,

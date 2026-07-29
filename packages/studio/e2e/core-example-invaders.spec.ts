@@ -39,6 +39,13 @@ async function expectBlocksVisibleInPanel(page: Page): Promise<void> {
 
 test.describe('Exemplo do núcleo — Invasores do Espaço (na mão)', () => {
   test('abre pela vitrine com blocos visíveis e fundo por CSS no preview', async ({ page }) => {
+    const restoreFailures: string[] = []
+    page.on('console', (message) => {
+      const text = message.text()
+      if (/blocksState|could not connect|Connection checks failed/i.test(text)) {
+        restoreFailures.push(text)
+      }
+    })
     await page.goto('/')
     // Lista vazia (perfil e2e fresco): a vitrine É o onboarding.
     await page
@@ -48,6 +55,20 @@ test.describe('Exemplo do núcleo — Invasores do Espaço (na mão)', () => {
     await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
 
     await expectBlocksVisibleInPanel(page)
+
+    // Regressão: a restauração abortava no primeiro `sz_val_arg` e deixava só
+    // cerca de 15 blocos na tela. O exemplo completo tem centenas de nós.
+    await expect
+      .poll(() => page.locator('.blocklyBlockCanvas .blocklyDraggable').count(), {
+        timeout: 15_000,
+      })
+      .toBeGreaterThan(100)
+    await expect(
+      page
+        .locator('.blocklyBlockCanvas .blocklyDraggable')
+        .filter({ hasText: 'parâmetro' })
+        .first(),
+    ).toBeAttached()
 
     // O CSS do iframe do preview resolve url('background.png') → data:URL.
     await expect
@@ -72,5 +93,6 @@ test.describe('Exemplo do núcleo — Invasores do Espaço (na mão)', () => {
       ),
     )
     expect(hasRaw).toBe(false)
+    expect(restoreFailures).toEqual([])
   })
 })

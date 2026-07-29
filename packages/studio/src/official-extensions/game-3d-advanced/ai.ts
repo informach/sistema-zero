@@ -8,12 +8,14 @@ Extensão "Jogo 3D Avançado" (game-3d-advanced): a base de um jogo 3D
 profissional via window.SZGameKit3D (Three.js por dentro, encapsulado).
 Unidades em metros do mundo 3D. Receita canônica: setup -> defineMold (peças
 dentro) -> ganchos (onEnterState('jogando') monta a partida; cérebros por
-estado) -> start() no FIM.
+estado). O envelope gerado chama start() AUTOMATICAMENTE uma única vez no fim;
+NUNCA gere start() no código do aluno.
 
 API global (cada método corresponde a exatamente 1 bloco):
-- Ciclo: setup({width, height, world, sky, ground}); start(); worldSize();
+- Ciclo: setup({width, height, world, sky, ground}); worldSize();
   scatterDecor(n); setEffects({shadows, bloom, strength, vignette}) — efeitos
-  de cinema (pós-processamento), tudo ligado por padrão.
+  de cinema (pós-processamento), tudo ligado por padrão. A resolução preserva
+  a proporção, mas o motor limita lado pela GPU e pixels totais a 1920*1080.
 - Moldes: defineMold('nome', {health, speed}, function () { ...part()... });
   part({shape: 'box'|'sphere'|'cylinder'|'cone'|'plane'|'torus'|'pyramid'|
   'rampa'|'modelo', material: 'normal'|'metal'|'vidro'|'brilho', color, texture,
@@ -22,7 +24,8 @@ API global (cada método corresponde a exatamente 1 bloco):
   nome de um .glb do projeto (o colisor segue sendo a caixa w/h/d).
 - Céu de foto: setSkyPhoto('nome') — um .hdr do projeto vira o céu 360 e ilumina
   a cena. GLB/HDR carregam por parse() de um ArrayBuffer (a rede é bloqueada no
-  preview); KTX2/Draco NÃO existem (precisariam de WASM).
+  preview); KTX2/Draco NÃO existem (precisariam de WASM). O orçamento das
+  cópias vivas de GLB é global entre todos os moldes; recycle devolve o custo.
 - Valores da entidade: posOf(ent, 'x'|'y'|'z'); velocityOf(ent, eixo);
   distanceBetween(a, b); healthOf(ent); maxHealthOf(ent); stateOf(ent).
 - Enxames: spawn('molde', x, y, z) devolve a entidade (use const nome = ...
@@ -32,7 +35,9 @@ API global (cada método corresponde a exatamente 1 bloco):
   countAlive('molde'); recycle(ent); recycleAll('molde'); cullFar('molde', d).
 - Laço/teclas: onUpdate(function (dt) {}) — roda só no estado 'jogando';
   moveWithKeys(ent, velocidade) — WASD/setas no chão, dt embutido;
-  keyDown('w'); keyPressed('j'); setPauseKey('Escape').
+  keyDown('w'); keyPressed('j'); setPauseKey('Escape'). keyPressed vale só na
+  transição para apertada; repetição automática do teclado não rearma o evento
+  nem alterna a pausa.
 - Câmera: cameraFollow(ent, dist, altura); cameraOrbit(dist); cameraTop(alt);
   cameraFps(ent) — 1a pessoa, olhar com o mouse (clique captura o ponteiro);
   cameraAngle(azGraus, elGraus) — gira/inclina a órbita por código;
@@ -55,7 +60,8 @@ API global (cada método corresponde a exatamente 1 bloco):
   espaco; moveFps(ent, velocidade); setCollider('molde', 'box'|'sphere'|
   'capsule') — capsula nao engancha em quina e sobe rampa liso;
   makeTrigger('molde') — zona que nao empurra; onOverlap('molde', function
-  (zona, quem) {}) — dispara ao ENTRAR, 1x por entrada; setBounce('molde',
+  (zona, quem) {}) — dispara ao ENTRAR, 1x por visitante/entrada, inclusive
+  para dois visitantes juntos e entidades paradas dentro; setBounce('molde',
   0..1); setFriction('molde', 0..1).
   setPhysics('molde', 'bola'|'caixa'|'personagem'|'gelo'|'flutuante') — preset
   coerente (colisor + quique + atrito + gravidade-padrao do molde, aplicada no
@@ -65,11 +71,13 @@ API global (cada método corresponde a exatamente 1 bloco):
   mas o trampolim ainda o arremessa); atrito = o mais ESCORREGADIO dos dois.
   Rampa = FORMA de peca (part shape 'rampa'), nao bloco. Plataforma que anda =
   makeSolid + setVelocity: ela CARREGA quem esta em cima, sem bloco novo.
-  Tiro rapido nao tunela (o motor parte o passo do quadro em substeps).
+  Tiro rapido nao tunela: o motor varre o caminho e acha o primeiro impacto;
+  substeps refinam rampas e penetracoes.
 - Anima o modelo (.glb): setStateAnim('molde', 'estado', 'Clipe') — ⭐ AMARRA a
   animação ao estado da FSM (o setEntityState troca o clipe sozinho, com
-  crossfade); playAnim(ent, 'Clipe', loop) — na hora (loop=false fica no último
-  quadro); stopAnim(ent). O nome do clipe vem de DENTRO do .glb (Idle/Run/Walk —
+  crossfade); playAnim(ent, 'Clipe', loop) — na hora (loop=false fica no ultimo
+  quadro e pode ser chamado de novo depois que terminar); stopAnim(ent). O nome
+  do clipe vem de DENTRO do .glb (Idle/Run/Walk —
   cada site nomeia do seu jeito); clipe inexistente = aviso, nunca exceção. O
   mixer é POR ENTIDADE (nasce no spawn, não no part) e o clone usa SkeletonUtils
   (o clone comum não reamarra o esqueleto). Molde só de peças não tem animação.
@@ -84,19 +92,24 @@ API global (cada método corresponde a exatamente 1 bloco):
   tela e some sozinho (1 por entidade); hideSay(ent).
 - Musica: playMusic('nome') — em loop, UMA por vez; stopMusic(). O playSound e
   tiro-e-esquece (efeito), o playMusic e a trilha.
-- Luz & ceu: addLight(cor, x, y, z, forca) — luz pontual; setAmbient(forca) —
+- Luz & ceu: addLight(cor, x, y, z, forca) — luz pontual (max 8 extras);
+  setAmbient(forca) —
   luz do ambiente (0 escuro, 1 claro); setFog(cor, perto, longe) — nevoa;
-  setSky(topo, horizonte) — troca o ceu em runtime.
+  setSky(topo, horizonte) — troca o ceu em runtime. addLight, setAmbient e
+  setFog podem vir antes do boot e devem ser registrados uma vez, nunca no frame.
 - Mira/clique (raycast): const alvo = pick('molde') — a entidade do molde sob o
   mouse (point-and-click/RTS); pointerOver(ent) — o mouse esta sobre ela?;
   groundPoint('x'|'y'|'z') — o ponto do chao sob o mouse; mousePressed() — o
-  clique ACONTECEU neste quadro (o gatilho do point-and-click: if
+  clique ACONTECEU neste quadro SOBRE O CANVAS 3D (botao de menu nao conta; o
+  gatilho do point-and-click: if
   (mousePressed()) { const alvo = pick('molde'); ... }); mouseDown() — segurando.
 - Entidades: place(ent, x, y, z); setYaw(ent, graus); setVelocity(ent, x, y,
   z); setDrag(ent, n) — freia so no plano x/z; lookAt(a, b); moveForward(ent,
   vel); posOf(ent, 'x'|'y'|'z'); exists(ent) — sempre pergunte antes de usar um
   alvo guardado; isMold(ent, 'molde') — a identidade (o filtro do 'quem' das
   zonas: em onOverlap, confira isMold(quem, 'heroi') antes de contar o ponto).
+  Uma referência recolhida fica inerte: não muda a FSM e seus getters devolvem
+  valores seguros; ainda assim, sempre proteja alvos guardados com exists.
 - FSM por entidade (o coração): toda entidade nasce no estado 'parado'.
   onEnterEntityState('molde', 'estado', function (ela) {});
   onEntityStateUpdate('molde', 'estado', function (ela, dt) {});
@@ -115,6 +128,11 @@ API global (cada método corresponde a exatamente 1 bloco):
   viva do molde (verde -> vermelha; chefao/RPG). Morte dramatica (cair antes de
   sumir): NAO use hurt no golpe final — vida numa gaveta + estado 'morrendo'
   (fall + stateTimer) + recycle no estado seguinte.
+- Chefao (bullet-hell na unha): heal(ent, vida) — devolve vida ate o maximo de
+  nascenca (pocao, descanso, chefao que se recupera); onHurt('molde', function
+  (ela) {}) — roda a cada dano levado, leia healthOf(ela) ali dentro para trocar
+  de fase; spawnRing('tiro', N, ent, velocidade) — anel de N tiros ao redor da
+  entidade voando para fora (combine com cullFar no tiro).
 - Faíscas 3D (partículas data-driven): defineEffect('nome', {count, colorFrom,
   colorTo, spread, sizeFrom, sizeTo, life, gravity}) — EXPLOSAO; burstAt('nome',
   x, y, z); burstOn('nome', ent) — combine com onEntityDeath.
@@ -124,7 +142,7 @@ API global (cada método corresponde a exatamente 1 bloco):
   startEmitter('nome', x, y, z) — jorra num ponto; emitterOn('nome', ent) —
   jorra seguindo a entidade; stopEmitter('nome') — apaga TODOS os jorros da
   receita; addAttractor('nome', x, y, z, forca, alcance) — ima que puxa as
-  particulas (vortice). Varios jorros da MESMA receita convivem (2 tochas,
+  particulas (vortice; registre uma vez, max 16 por efeito). Varios jorros da MESMA receita convivem (2 tochas,
   rastro em N naves; ate 8 por efeito; religar no mesmo alvo nao duplica). O
   defineEmitter aceita curve: 'linear'|'suave'|'pulso'|'fogo' (curva de vida
   assada numa textura; 'fogo' + glow nasce luz pura e morre fumaca — o
@@ -137,10 +155,13 @@ API global (cada método corresponde a exatamente 1 bloco):
 - Estados do jogo: setState('jogando'); onEnterState('estado', function ()
   {}); stateIs('estado'); state(); returnToMenu(); endGame(). Entrar em
   'jogando' fora da pausa RECOMEÇA a arena (recolhe todas as entidades).
+  Retomar de 'pausa' para 'jogando' preserva a arena e NÃO repete o gancho de
+  entrada. setState com o estado atual também não repete esse gancho.
 - Avisos: on('nome', function () {}); emit('nome').
 - Som: loadSound('nome', 'asset'); playSound('nome'); playEffect('coin'|
   'hit'|'explosion'|'jump'|'laser'|'hurt'|'powerup'|'win'|'gameover'|
-  'click'); playTone(hz, ms).
+  'click'); playTone(hz, ms) (de 20 a 20000 Hz, no máximo 10 s; o motor limita a 32
+  vozes simultâneas).
 
 Quando ajudar o aluno com o Jogo 3D Avançado:
 - A partida se monta dentro de onEnterState('jogando') — nascer o herói com
@@ -149,7 +170,10 @@ Quando ajudar o aluno com o Jogo 3D Avançado:
   para 'mirar'; 'mirar' usa aimAt e isAimingAt e vai para 'atirar'; ao entrar
   em 'atirar' usa spawnFrom + moveForward no tiro e vai para 'recarregar';
   stateTimer volta para 'parado'.
-- Nunca crie moldes ou ganchos dentro do onUpdate; registre tudo uma vez, no
-  topo, e chame start() por último.
+- Nunca crie moldes, ganchos ou atratores dentro do onUpdate. Registre recursos
+  persistentes uma vez em **⚙️ Ao iniciar**, chapéus em **⚡ Quando acontecer**
+  e onUpdate/cérebros em **🔁 Enquanto estiver rodando**. Luzes
+  podem ser acesas em eventos de entrada de estado. Não gere start(): o projeto
+  começa automaticamente.
 - Não misture com as outras extensões de jogo no mesmo projeto.
 `

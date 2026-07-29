@@ -1,8 +1,8 @@
-# Blocos para criança: estudo MakeCode Arcade + Scratch e diretrizes do Estúdio
+# Pesquisa aplicada: MakeCode Arcade + Scratch
 
-> Documento de referência do redesenho dos blocos de jogo do `@sistemazero/studio`.
-> Consolida a pesquisa em MakeCode Arcade e Scratch, a review dos blocos atuais e as
-> diretrizes adotadas. Fonte da verdade das decisões de usabilidade infantil.
+> Este estudo foi atualizado para o lifecycle vigente. A especificação detalhada
+> também está em `CLAUDE.md` e em
+> [`docs/plans/2026-07-19-project-behavior-lifecycle-design.md`](../../../docs/plans/2026-07-19-project-behavior-lifecycle-design.md).
 
 ## 1. Por que isto importa
 
@@ -79,8 +79,9 @@ Problemas de usabilidade infantil identificados:
 ## 4. Diretrizes adotadas no redesenho
 
 1. **Esconder o `ctx`**: o runtime é dono de um canvas/contexto único; nenhum bloco de jogo mostra "pincel".
-2. **Eventos em chapéu**: "Quando o jogo começar", "A cada quadro", "Quando apertar a tecla [▾]",
-   "Quando [sprite] encostar em [sprite]" — substituem o plumbing de variável de colisão.
+2. **Ciclo de vida visível**: preparações ficam em **⚙️ Ao iniciar**, chapéus de
+   reação em **⚡ Quando acontecer** e raízes “A cada…” em **🔁 Enquanto estiver
+   rodando**. O antigo “Quando o jogo começar” existe só para migração.
 3. **Escolher, não digitar — para TUDO que já foi nomeado** (generaliza o §2.5 de sprite p/ todo o editor):
    o campo que REFERENCIA algo já criado noutro bloco vira um pop-up com a lista do que existe + um
    texto de fallback. `field_sprite_picker` (sprite, com miniatura), `field_asset_picker` (imagem/textura)
@@ -97,13 +98,19 @@ Problemas de usabilidade infantil identificados:
    maiores pra toque.
 7. **PT didático**: "Quicar nas bordas", "encosta em", "folha de quadros", "Mudar/Botar"; som por nota
    (Dó/Ré/Mi…) + duração (curta/média/longa) em vez de Hz/ms.
-8. **Áreas-container "só o que está dentro roda"** (estilo MakeCode `on start`): 3 blocos-CONTAINER —
-   🧱 Estrutura (HTML→index.html), 🎨 Aparência (CSS→style.css), ⚙️ Comportamento (passo a passo JS→
-   script.js). A criança põe cada coisa na sua área; o que fica SOLTO fora delas é RASCUNHO (não roda).
-   Tira a dependência de ordem/posição no canvas e deixa visualmente claro "o que é o quê". Projeto novo já
-   nasce com as 3 áreas; "Organizar blocos" as põe lado a lado (HTML | CSS | Comportamento). Funções/
-   classes/eventos seguem por ora DENTRO do Comportamento — viram chapéus injetados FORA dele numa fase
-   seguinte. Impl.: `blockly/blocks/frames.ts`; coleta por contêiner em `buildIRFromWorkspace` (ver CLAUDE.md).
+8. **Áreas-container “só o que está dentro roda”** (estilo MakeCode `on start`): 5 blocos-CONTAINER —
+   🧱 Estrutura (HTML→index.html), 🎨 Aparência (CSS→style.css), ⚙️ Ao iniciar, ⚡ Quando acontecer e
+   🔁 Enquanto estiver rodando (as três últimas→script.js). Início contém definições e preparações que
+   rodam ao abrir e a cada nova partida; Eventos contém chapéus como clique/tecla/colisão; Loops contém
+   atualização por quadro e tarefas periódicas. Os encaixes especializados impedem misturar esses papéis.
+   Comandos contínuos cabem em loops e em funções/métodos chamados por eles, mas
+   nunca diretamente no início nem no corpo direto de eventos ou construtores;
+   um loop aninhado nesses fluxos continua válido. Configurações
+   persistentes seguem a regra inversa: ligue uma vez fora dos loops.
+   O que fica SOLTO é RASCUNHO: permanece salvo com aviso visual, mas não roda. Projetos novos nascem
+   completamente vazios; a criança adiciona somente as áreas que usar. “Organizar blocos” dispõe as áreas
+   existentes em duas linhas. Impl.: `blockly/blocks/frames.ts`, `blockContracts.ts`, `behaviorAreas.ts` e
+   coleta por contêiner em `buildIRFromWorkspace`.
 
 ## 5. Inegociável: a Ponte continua perfeita
 
@@ -117,16 +124,19 @@ testes de round-trip + `cssBridgeHighlight` espelhado pro jogo.
 
 ## 6. Migração sem perder projeto
 
-Projetos clássicos persistem **arquivos** (html/css/js) + IR + `blocksState`. Bump de versão do schema de
-blocos: ao detectar versão velha/bloco obsoleto, descartar `blocksState` e re-derivar de
+Projetos clássicos persistem **arquivos** (html/css/js) + IR + `blocksState`. Versões antigas conhecidas
+do schema de blocos passam primeiro pelo sanitizador e depois pela migração, preservando layout e IDs;
+a versão 2 das áreas, por exemplo, vira versão 3 no normalizador. Versão futura/desconhecida ou bloco
+obsoleto sem migração segura descarta o `blocksState` e re-deriva por
 `buildWorkspaceStateFromIR(parse(arquivos))`. O JS é a fonte da verdade; o parser aceita as assinaturas
 antigas (`SZGame2D.x(ctx, …)`).
 
-**Áreas-container (migração transparente):** ao adotar os 3 blocos-container, um projeto LEGADO (blocos
-soltos, sem áreas) é auto-embrulhado nas 3 áreas SEM perder o programa — `normalizeBlocksStateToFrames`
-(`blockly/normalizeFrames.ts`) carrega o estado num workspace headless, deriva a IR PLANA
-(`collectFlatFromWorkspace`, o modelo antigo) e re-emite via `buildWorkspaceStateFromIR` (que agora frama).
-Preserva a saída byte-a-byte; idempotente.
+**Áreas-container (migração transparente):** projetos legados com blocos soltos ou com a antiga área única
+de Comportamento são normalizados para as 5 áreas por `normalizeBlocksStateToFrames`
+(`blockly/normalizeFrames.ts`). A migração usa contratos explícitos de posicionamento para separar início,
+eventos e loops; quando mover um aninhamento mudaria a semântica, conserva-o em um invólucro legado oculto.
+Rascunhos continuam rascunhos, a saída é preservada e a operação é idempotente. A mesma compatibilidade é
+usada ao abrir no Estúdio e ao renderizar projetos antigos na página pública.
 
 ## 7. Fontes
 

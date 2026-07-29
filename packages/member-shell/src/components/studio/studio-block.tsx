@@ -4,9 +4,11 @@ import '@sistemazero/studio/styles.css'
 import type {
   Project,
   StudioHandle,
+  StudioProRuntimeAdapter,
   StudioShareAdapter,
   StudioShareResult,
 } from '@sistemazero/studio'
+import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
@@ -133,6 +135,44 @@ export function StudioBlockView({
 
   const activity = content.activity
   const passingScore = activity?.passingScore
+  const isProLesson = content.initialProject.kind === 'pro'
+
+  const proRuntime = useMemo<StudioProRuntimeAdapter | undefined>(() => {
+    if (!isProLesson || !player?.courseSlug || !lessonId) return undefined
+    return {
+      limits: STUDIO_PRO_BUILD_LIMITS,
+      async build({ project, signal }) {
+        const res = await fetch('/api/studio/pro-runtime/build', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courseSlug: player.courseSlug,
+            lessonId,
+            blockId,
+            // O BFF só precisa da árvore para compilar. Não envie assets, estado
+            // clássico nem metadados fora do runtime; isso mantém o envelope sob
+            // a cota que o editor e o Worker validam.
+            project: { kind: 'pro', tree: project.tree },
+          }),
+          signal,
+        })
+        const body = (await res.json().catch(() => null)) as {
+          html?: string
+          output?: string
+          durationMs?: number
+          error?: { message?: string; output?: string }
+        } | null
+        if (!res.ok || !body?.html) {
+          const error = new Error(body?.error?.message ?? 'Não foi possível compilar o projeto.') as
+            | (Error & { output?: string })
+            | Error
+          if (body?.error?.output) (error as Error & { output?: string }).output = body.error.output
+          throw error
+        }
+        return { html: body.html, output: body.output, durationMs: body.durationMs }
+      },
+    }
+  }, [isProLesson, player?.courseSlug, lessonId, blockId])
 
   const handleRef = useRef<StudioHandle | null>(null)
 
@@ -421,7 +461,8 @@ export function StudioBlockView({
             allowedModes={content.allowedModes}
             allowLevelReveal={content.allowLevelReveal}
             activity={content.activity}
-            features={{ extensions: false }}
+            features={{ extensions: false, professional: isProLesson, terminal: false }}
+            proRuntime={proRuntime}
             share={share}
             // O "Compartilhar" da aula: (1) só habilita DEPOIS de enviar ao professor
             // (publicar exige a entrega; o members também barra com SHOWCASE_NOT_ELIGIBLE);

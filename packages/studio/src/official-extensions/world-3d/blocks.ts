@@ -1,4 +1,5 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Mundo 3D = UMA cor da categoria: ESMERALDA (natureza/mundo). As sub-categorias
@@ -7,10 +8,11 @@ import { categoryShades } from '../../blockly/colorShades'
 // amarelo (Jogo 3D) e do verde-folha do SVG (este é mais escuro e azulado).
 const C = '#059669'
 
-export const world3DBlocks = [
+export const world3DBlocks: BlockDefinition[] = [
   // ---- 🌍 Mundo ----
   {
     type: 'sz_w3d_setup',
+    placement: 'start-only-command',
     message0: 'Criar o mundo 3D: %1 de %2 metros de lado',
     args0: [
       {
@@ -33,10 +35,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O primeiro bloco do mundo: escolhe o ESTILO (as cores do chão, do céu e da natureza combinam sozinhas) e o tamanho (o lado do mundo, em metros — 160 é um bom passeio). O motor monta o céu em degradê, o sol com sombras e a câmera. Use uma vez, no comecinho. ⚠️ Na neve o carrinho escorrega de propósito!',
+      'O primeiro bloco do mundo: escolhe o ESTILO (as cores do chão, do céu e da natureza combinam sozinhas) e o tamanho (o lado do mundo, em metros. 160 é um bom passeio). O motor monta o céu em degradê, o sol com sombras e a câmera. Use uma vez, no comecinho. ⚠️ Na neve o carrinho escorrega de propósito!',
   },
   {
     type: 'sz_w3d_terrain',
+    placement: 'start-only-command',
     message0: 'Deixar o chão com morros: altura %1, suavidade %2',
     args0: [
       { type: 'input_value', name: 'H', check: 'JSValue' },
@@ -51,6 +54,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_flatten',
+    placement: 'start-only-command',
     message0: 'Aplainar o chão perto de x %1 z %2 num raio de %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -62,10 +66,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Deixa um pedaço do chão bem plano — a praça da sua cidade, o quintal da casa, o pátio da corrida. Use antes de pôr as coisas em cima (elas pousam no chão já aplainado).',
+      'Deixa um pedaço do chão bem plano. A praça da sua cidade, o quintal da casa, o pátio da corrida. Use antes de pôr as coisas em cima (elas pousam no chão já aplainado).',
   },
   {
     type: 'sz_w3d_path',
+    placement: 'start-only-command',
     message0: 'Desenhar uma trilha de x %1 z %2 até x %3 z %4 (largura %5 )',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -83,6 +88,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_water',
+    placement: 'start-only-command',
     message0: 'Pôr água na altura %1 da cor %2',
     args0: [
       { type: 'input_value', name: 'Y', check: 'JSValue' },
@@ -96,14 +102,36 @@ export const world3DBlocks = [
       'Enche o mundo de água até uma altura (as partes do chão mais baixas viram lago/mar). A água ondula; o carrinho fica lento na beirada e, se cair fundo, volta para o último lugar seco. Altura 0 alaga só os buracos; altura 3 faz um mundo de ilhas.',
   },
   {
+    type: 'sz_w3d_sky_photo',
+    placement: 'start-only-command',
+    message0: 'Usar o céu 360° HDR %1 🌅',
+    args0: [
+      {
+        type: 'field_asset_picker',
+        name: 'ASSET',
+        text: '',
+        kind: '3d',
+        filter: 'environment3d',
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Usa um arquivo .hdr do projeto como céu panorâmico e iluminação ambiente. Sem arquivo, o céu procedural do estilo continua funcionando.',
+  },
+  {
     type: 'sz_w3d_start',
+    placement: 'start-only-command',
+    migration: 'remove-engine-boot',
     message0: 'Começar o passeio',
     args0: [],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    hidden: true,
     tooltip:
-      'Liga o mundo: monta o chão, o céu e o carrinho, abre a telinha de "clique para começar" e começa o laço de quadros. Use uma vez, NO FIM, depois de preparar tudo.',
+      'Bloco legado: projetos atuais começam o passeio automaticamente depois de preparar o mundo.',
   },
   {
     type: 'sz_w3d_world_size',
@@ -130,6 +158,7 @@ export const world3DBlocks = [
   // ---- 🚗 Carrinho ----
   {
     type: 'sz_w3d_car',
+    placement: 'start-only-command',
     message0: 'Criar o carrinho dirigível: %1 da cor %2',
     args0: [
       {
@@ -148,10 +177,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O bloco mágico: cria o carrinho COMPLETO de uma vez — carroceria, rodas que giram e esterçam, molejo de suspensão, pulo (espaço), a câmera que segue por trás e as teclas (WASD ou setas). Cada estilo tem o seu jeitão: o jipe sobe morro melhor, o de corrida é baixinho e voa.',
+      'O bloco mágico: cria o carrinho COMPLETO de uma vez. Carroceria, rodas que giram e esterçam, molejo de suspensão, pulo (espaço), a câmera que segue por trás e as teclas (WASD ou setas). Cada estilo tem o seu jeitão: o jipe sobe morro melhor, o de corrida é baixinho e voa.',
   },
   {
     type: 'sz_w3d_car_stats',
+    placement: 'start-only-command',
     message0: 'Ajustar o carrinho: velocidade %1, curva %2, pulo %3',
     args0: [
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -163,10 +193,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Afina o carrinho do SEU jeito: velocidade máxima (metros por segundo), curva (quantos graus ele vira por segundo — mais = mais esperto) e a força do pulo. Use depois do "Criar o carrinho".',
+      'Ajusta o carrinho do seu jeito: velocidade máxima, rapidez da curva e força do pulo. Use depois de “Criar o carrinho”.',
   },
   {
     type: 'sz_w3d_car_boost',
+    placement: 'start-only-command',
     message0: 'Ligar o turbo (Shift) com força %1',
     args0: [{ type: 'input_value', name: 'FORCE', check: 'JSValue' }],
     inputsInline: true,
@@ -178,6 +209,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_engine_sound',
+    placement: 'start-only-command',
     message0: 'Som do motor %1',
     args0: [
       {
@@ -197,6 +229,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_car_place',
+    placement: 'command',
     message0: 'Levar o carrinho para x %1 z %2, virado para %3 graus',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -227,7 +260,7 @@ export const world3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'A posição do carrinho no mundo, um eixo por vez: x e z andam pelo mapa, y é a altura. Use para saber onde ele está — perto de um lugar, dentro de uma área…',
+      'A posição do carrinho no mundo, um eixo por vez: x e z andam pelo mapa, y é a altura. Use para saber onde ele está. Perto de um lugar, dentro de uma área…',
   },
   {
     type: 'sz_w3d_car_speed',
@@ -242,6 +275,7 @@ export const world3DBlocks = [
   // ---- 🌿 Natureza ----
   {
     type: 'sz_w3d_grass',
+    placement: 'start-only-command',
     message0: 'Grama ao vento: %1',
     args0: [
       {
@@ -258,10 +292,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cobre o chão de graminha que BALANÇA com o vento e acompanha os morros — o toque de vida do mundo. Ela viaja junto com o carrinho (parece infinita) e custa UM desenho para a placa de vídeo, mesmo com milhares de folhinhas. Em computador fraco, o modo turbo diminui sozinho.',
+      'Cobre o chão de graminha que BALANÇA com o vento e acompanha os morros. O toque de vida do mundo. Ela viaja junto com o carrinho (parece infinita) e custa UM desenho para a placa de vídeo, mesmo com milhares de folhinhas. Em computador fraco, o modo turbo diminui sozinho.',
   },
   {
     type: 'sz_w3d_scatter',
+    placement: 'start-only-command',
     message0: 'Espalhar %1 %2 pelo mundo',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -284,14 +319,21 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Espalha CENTENAS de cópias pelo mundo de uma vez, cada uma pousada no seu morro, com giro e tamanho um pouco diferentes — e sempre nos MESMOS lugares (o seu mundo não muda entre jogadas). Árvores, pedras e cactos são sólidos: o carrinho bate! Flores e cogumelos passam por baixo. Por dentro é instancing profissional: milhares de cópias custam quase nada.',
+      'Espalha CENTENAS de cópias pelo mundo de uma vez, cada uma pousada no seu morro, com giro e tamanho um pouco diferentes. E sempre nos MESMOS lugares (o seu mundo não muda entre jogadas). Árvores, pedras e cactos são sólidos: o carrinho bate! Flores e cogumelos passam por baixo. Por dentro é instancing profissional: milhares de cópias custam quase nada.',
   },
   {
     type: 'sz_w3d_scatter_model',
+    placement: 'start-only-command',
     message0: 'Espalhar %1 cópias do modelo %2 (tamanho %3)',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
-      { type: 'field_input', name: 'MODEL', text: '' },
+      {
+        type: 'field_asset_picker',
+        name: 'MODEL',
+        text: '',
+        kind: '3d',
+        filter: 'model3d',
+      },
       { type: 'input_value', name: 'S', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -299,10 +341,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Espalha cópias de um modelo .glb SEU (envie no painel de imagens → modelos 3D e escreva o nome dele aqui). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
+      'Espalha cópias de um modelo .glb SEU (envie no painel de imagens → modelos 3D e escolha no seletor). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
   },
   {
     type: 'sz_w3d_place_thing',
+    placement: 'start-only-command',
     message0: 'Pôr 1 %1 em x %2 z %3 (tamanho %4 )',
     args0: [
       {
@@ -327,13 +370,20 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe UMA coisa num lugar exato do mundo (pousada no morro daquele ponto). Para decorar um cantinho especial — a árvore gigante do topo, a pedra marca-lugar. Tamanho 1 = normal; 3 = gigante.',
+      'Põe UMA coisa num lugar exato do mundo (pousada no morro daquele ponto). Para decorar um cantinho especial. A árvore gigante do topo, a pedra marca-lugar. Tamanho 1 = normal; 3 = gigante.',
   },
   {
     type: 'sz_w3d_place_model',
+    placement: 'start-only-command',
     message0: 'Pôr o modelo %1 em x %2 z %3 (tamanho %4, girado %5 graus)',
     args0: [
-      { type: 'field_input', name: 'MODEL', text: '' },
+      {
+        type: 'field_asset_picker',
+        name: 'MODEL',
+        text: '',
+        kind: '3d',
+        filter: 'model3d',
+      },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
       { type: 'input_value', name: 'S', check: 'JSValue' },
@@ -344,10 +394,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe UM modelo .glb seu num lugar exato, pousado no terreno, do tamanho e com o giro que você quiser. A casinha, a estátua, o foguete — o mundo é seu.',
+      'Põe UM modelo .glb seu num lugar exato, pousado no terreno, do tamanho e com o giro que você quiser. A casinha, a estátua, o foguete. O mundo é seu.',
   },
   {
     type: 'sz_w3d_clear_area',
+    placement: 'start-only-command',
     message0: 'Deixar limpo perto de x %1 z %2 num raio de %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -359,11 +410,12 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Reserva um círculo SEM natureza espalhada — a sua praça, a sua pista, o seu quintal. Use ANTES dos blocos de espalhar (o espalhar respeita as áreas limpas que já existem). O centro do mundo já nasce limpo.',
+      'Reserva um círculo SEM natureza espalhada. A sua praça, a sua pista, o seu quintal. Use ANTES dos blocos de espalhar (o espalhar respeita as áreas limpas que já existem). O centro do mundo já nasce limpo.',
   },
   {
     // R11: arma a buzina na tecla H (beep em quinta + pulinho da carroceria + evento).
     type: 'sz_w3d_horn',
+    placement: 'start-only-command',
     message0: 'Ligar a buzina (tecla H) 📢',
     args0: [],
     inputsInline: true,
@@ -375,6 +427,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_on_horn',
+    placement: 'event',
     message0: 'Quando buzinar 📢',
     args0: [],
     message1: 'fazer %1',
@@ -388,6 +441,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_car_lights',
+    placement: 'start-only-command',
     message0: 'Ligar as luzes do carrinho 🚨',
     args0: [],
     inputsInline: true,
@@ -399,6 +453,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_tire_marks',
+    placement: 'start-only-command',
     message0: 'Marcas de pneu %1',
     args0: [
       {
@@ -415,10 +470,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O carrinho deixa marcas no chão quando derrapa nas curvas, no turbo e na neve — e elas somem sozinhas depois de alguns segundos (como no jogo do Bruno Simon).',
+      'O carrinho deixa marcas no chão quando derrapa nas curvas, no turbo e na neve. E elas somem sozinhas depois de alguns segundos (como no jogo do Bruno Simon).',
   },
   {
     type: 'sz_w3d_car_paint',
+    placement: 'command',
     message0: 'Pintar o carrinho de %1',
     args0: [
       {
@@ -442,6 +498,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_on_crash',
+    placement: 'event',
     message0: 'Quando o carrinho bater forte',
     args0: [],
     message1: 'fazer %1',
@@ -456,6 +513,7 @@ export const world3DBlocks = [
   // ---- 🌦️ Céu & clima ----
   {
     type: 'sz_w3d_daynight',
+    placement: 'command',
     message0: 'Ligar o ciclo dia e noite: um dia dura %1 minutos',
     args0: [{ type: 'input_value', name: 'MIN', check: 'JSValue' }],
     inputsInline: true,
@@ -467,6 +525,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_set_time',
+    placement: 'command',
     message0: 'Deixar o céu de %1',
     args0: [
       {
@@ -488,6 +547,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_weather',
+    placement: 'command',
     message0: 'Fazer %1',
     args0: [
       {
@@ -511,6 +571,7 @@ export const world3DBlocks = [
   {
     // R12: estações recolorem as copas e a grama; outono chove folhas, inverno neva.
     type: 'sz_w3d_season',
+    placement: 'command',
     message0: 'Estação do ano: %1',
     args0: [
       {
@@ -533,6 +594,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_tornado',
+    placement: 'command',
     message0: 'Soltar um tornado 🌪️ passeando por %1 segundos',
     args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
     inputsInline: true,
@@ -544,6 +606,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_clouds',
+    placement: 'command',
     message0: 'Nuvens no céu: %1',
     args0: [
       {
@@ -561,13 +624,14 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
+      'Nuvens fofas lá no alto, derivando com o vento. Deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
   },
   {
     // R19: sistemas LOCAIS (o "online" do folio sem rede): conquistas no
     // armazenamento do projeto, minimapa/teleporte, pódio com iniciais e
     // recados-chama que persistem.
     type: 'sz_w3d_achievement',
+    placement: 'command',
     message0: 'Dar a conquista %1 🏆',
     args0: [{ type: 'field_input', name: 'NAME', text: 'Explorador' }],
     inputsInline: true,
@@ -579,6 +643,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_on_achievement',
+    placement: 'event',
     message0: 'Quando ganhar a conquista %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Explorador', kind: 'w3dachieve' }],
     message1: 'fazer %1',
@@ -587,7 +652,7 @@ export const world3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Roda na PRIMEIRA vez que a conquista é ganha — a recompensa especial.',
+    tooltip: 'Roda na PRIMEIRA vez que a conquista é ganha. A recompensa especial.',
   },
   {
     type: 'sz_w3d_has_achievement',
@@ -596,10 +661,11 @@ export const world3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro se a conquista já foi ganha (vale entre jogadas — fica salva no projeto). Use num "se" para desbloquear coisas.',
+      'Responde verdadeiro se a conquista já foi ganha. Ela fica salva entre as jogadas. Use num bloco “se” para desbloquear coisas.',
   },
   {
     type: 'sz_w3d_minimap',
+    placement: 'start-only-command',
     message0: 'Mostrar o minimapa 🗺️: %1 (M abre o mapa grande)',
     args0: [
       {
@@ -616,10 +682,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um minimapa no canto (você = seta, pontos, amigos, farol, checkpoints, água). Aperte M para o mapa GRANDE — e no modo teleporte, clique nele para viajar!',
+      'Um minimapa no canto (você = seta, pontos, amigos, farol, checkpoints, água). Aperte M para o mapa GRANDE. E no modo teleporte, clique nele para viajar!',
   },
   {
     type: 'sz_w3d_race_podium',
+    placement: 'start-only-command',
     message0: 'Ligar o pódio da corrida 🏆 (iniciais + 5 melhores)',
     args0: [],
     inputsInline: true,
@@ -627,10 +694,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ao cruzar a chegada, digite suas 3 INICIAIS (setas mudam, E confirma) — os 5 melhores tempos ficam salvos NO PROJETO. Aperte P para rever o pódio. O placar de fliperama, sem internet.',
+      'Ao cruzar a chegada, digite suas 3 INICIAIS (setas mudam, E confirma). Os 5 melhores tempos ficam salvos NO PROJETO. Aperte P para rever o pódio. O placar de fliperama, sem internet.',
   },
   {
     type: 'sz_w3d_whisper_corner',
+    placement: 'start-only-command',
     message0: 'Criar o cantinho dos recados 🔥 em x %1 z %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -641,10 +709,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um totem onde QUEM JOGA deixa recados: E abre a caixinha, o recado vira uma chaminha 🔥 no chão (E lê) e fica salvo no projeto (até 20 — como os sussurros do folio, sem internet).',
+      'Um totem onde quem joga deixa recados. A tecla E abre a caixa e lê cada chama no chão. O projeto guarda até 20 recados, sem internet.',
   },
   {
     type: 'sz_w3d_flame_note',
+    placement: 'start-only-command',
     message0: 'Pôr um recado-chama 🔥 em x %1 z %2 com o texto %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -661,6 +730,7 @@ export const world3DBlocks = [
   {
     // R18: moedas & missões — o loop de coleta/objetivo dos mundos Coastal.
     type: 'sz_w3d_coins_scatter',
+    placement: 'start-only-command',
     message0: 'Espalhar %1 moedas 🪙 pelo mundo',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -672,6 +742,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_coins_ring',
+    placement: 'start-only-command',
     message0: 'Pôr %1 moedas em anel em x %2 z %3 (raio %4)',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -687,6 +758,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_coins_line',
+    placement: 'start-only-command',
     message0: 'Pôr %1 moedas em fila de x %2 z %3 até x %4 z %5',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -699,10 +771,11 @@ export const world3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Uma trilha de moedas guiando o caminho — o "siga por aqui" clássico dos jogos.',
+    tooltip: 'Uma trilha de moedas guiando o caminho. O "siga por aqui" clássico dos jogos.',
   },
   {
     type: 'sz_w3d_on_collect',
+    placement: 'event',
     message0: 'Quando pegar uma moeda 🪙',
     args0: [],
     message1: 'fazer %1',
@@ -712,7 +785,7 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda a cada moeda pega. A meta é SUA: "se quantas moedas pegou ≥ 15, completar a missão" — você monta a regra.',
+      'Roda a cada moeda pega. A meta é SUA: "se quantas moedas pegou ≥ 15, completar a missão". Você monta a regra.',
   },
   {
     type: 'sz_w3d_coin_count',
@@ -724,6 +797,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_quest',
+    placement: 'start-only-command',
     message0: 'Criar a missão %1 : %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'moedas' },
@@ -738,6 +812,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_quest_done',
+    placement: 'command',
     message0: 'Completar a missão %1 ✅',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moedas', kind: 'w3dquest' }],
     inputsInline: true,
@@ -749,6 +824,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_on_quest_done',
+    placement: 'event',
     message0: 'Quando completar a missão %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moedas', kind: 'w3dquest' }],
     message1: 'fazer %1',
@@ -761,6 +837,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_marker',
+    placement: 'start-only-command',
     message0: 'Mostrar o ícone %1 flutuando sobre x %2 z %3',
     args0: [
       {
@@ -781,10 +858,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um ícone quicando sobre um lugar importante — o "olhe aqui!" que guia o jogador (como nos mundos profissionais).',
+      'Um ícone quicando sobre um lugar importante. O "olhe aqui!" que guia o jogador (como nos mundos profissionais).',
   },
   {
     type: 'sz_w3d_guide_arrow',
+    placement: 'command',
     message0: 'Apontar a seta-guia 🧭 para x %1 z %2 ( %3 )',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -803,12 +881,13 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma seta na tela que gira apontando para o alvo — e some sozinha quando você chega. Perfeita para a primeira missão.',
+      'Uma seta na tela que gira apontando para o alvo. E some sozinha quando você chega. Perfeita para a primeira missão.',
   },
   {
     // R17: amigos (NPCs) — perambulam, conversam em FILA (E avança) com
     // "fonemas" à la Animal Crossing, e fazem gracinhas.
     type: 'sz_w3d_npc',
+    placement: 'start-only-command',
     message0: 'Criar o amigo %1 em x %2 z %3 (roupa %4, chapéu %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Lia' },
@@ -836,6 +915,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_npc_wander',
+    placement: 'start-only-command',
     message0: 'Deixar o amigo %1 passear num raio de %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
@@ -850,6 +930,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_npc_talk',
+    placement: 'event',
     message0: 'Quando conversar com o amigo %1 (aperte E)',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' }],
     message1: 'fazer %1',
@@ -859,10 +940,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda os blocos quando você aperta E perto do amigo. Ponha vários "O amigo fala" dentro: as falas entram numa FILA e cada E mostra a próxima — uma conversa de verdade.',
+      'Roda os blocos quando você aperta E perto do amigo. Ponha vários "O amigo fala" dentro: as falas entram numa FILA e cada E mostra a próxima. Uma conversa de verdade.',
   },
   {
     type: 'sz_w3d_npc_say',
+    placement: 'command',
     message0: 'O amigo %1 fala: %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
@@ -873,10 +955,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma fala no balão do amigo, escrita letra por letra com biplinhos de voz (cada letra tem seu som — como nos jogos do Animal Crossing). Dentro do "Quando conversar", as falas fazem FILA.',
+      'Mostra a fala do amigo letra por letra, com sons de voz. Dentro de “Quando conversar”, as falas entram numa fila.',
   },
   {
     type: 'sz_w3d_npc_emote',
+    placement: 'command',
     message0: 'O amigo %1 faz %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
@@ -895,11 +978,12 @@ export const world3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Uma gracinha do amigo — acene de volta, comemorem juntos.',
+    tooltip: 'Uma gracinha do amigo. Acene de volta, comemorem juntos.',
   },
   {
     // R16: ilha & barco — o arquétipo "férias" (arquipélago, barco, ponte, farol).
     type: 'sz_w3d_islands',
+    placement: 'start-only-command',
     message0: 'Transformar o mundo em %1 ilhas 🏝️ num mar na altura %2',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -910,10 +994,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Vira um ARQUIPÉLAGO: ilhas com praia separadas por mar (a água entra sozinha na altura escolhida). Você nasce na ilha do meio — explore as outras de barco ou construa pontes!',
+      'Vira um ARQUIPÉLAGO: ilhas com praia separadas por mar (a água entra sozinha na altura escolhida). Você nasce na ilha do meio. Explore as outras de barco ou construa pontes!',
   },
   {
     type: 'sz_w3d_boat',
+    placement: 'start-only-command',
     message0: 'Criar o barco dirigível ⛵ da cor %1',
     args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#f8fafc' }],
     inputsInline: true,
@@ -925,6 +1010,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_bridge',
+    placement: 'start-only-command',
     message0: 'Construir uma ponte 🌉 de x %1 z %2 até x %3 z %4 (largura %5)',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -938,10 +1024,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma ponte de tábuas com arco suave ligando dois pontos (duas ilhas!). O carrinho e o personagem passam POR CIMA — e o barco passa POR BAIXO.',
+      'Uma ponte de tábuas com arco suave ligando dois pontos (duas ilhas!). O carrinho e o personagem passam POR CIMA. E o barco passa POR BAIXO.',
   },
   {
     type: 'sz_w3d_lighthouse',
+    placement: 'start-only-command',
     message0: 'Pôr um farol 🗼 em x %1 z %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -952,10 +1039,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A torre listrada de vermelho e branco com a luz GIRANDO à noite — o coração de todo mundo de praia. Ponha na ponta da ilha.',
+      'A torre listrada de vermelho e branco com a luz GIRANDO à noite. O coração de todo mundo de praia. Ponha na ponta da ilha.',
   },
   {
     type: 'sz_w3d_ambience',
+    placement: 'resource-creator',
     message0: 'Sons do lugar: %1',
     args0: [
       {
@@ -974,12 +1062,13 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O som de fundo do seu mundo, feito na hora (sem arquivo): ondas do mar respirando, passarinhos de dia ou grilos à noite.',
+      'O som de fundo do seu mundo, feito na hora. Use em “Ao iniciar”, “Quando acontecer” ou numa função, nunca em “Enquanto estiver rodando”. Repetir a mesma opção mantém o som atual.',
   },
   {
     // R15: personagem a pé — o jogador Coastal-style (anda, corre, pula,
     // entra e sai do carrinho com E).
     type: 'sz_w3d_person',
+    placement: 'start-only-command',
     message0: 'Criar o personagem a pé 🧍: roupa %1, chapéu %2',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#3b82f6' },
@@ -1004,6 +1093,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_person_stats',
+    placement: 'start-only-command',
     message0: 'Ajustar o personagem: andar %1, correr %2, pulo %3',
     args0: [
       { type: 'input_value', name: 'WALK', check: 'JSValue' },
@@ -1019,6 +1109,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_person_place',
+    placement: 'command',
     message0: 'Levar o personagem para x %1 z %2, virado para %3 graus',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1033,6 +1124,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_person_accessory',
+    placement: 'start-only-command',
     message0: 'Dar o acessório %1 ao personagem',
     args0: [
       {
@@ -1054,6 +1146,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_person_emote',
+    placement: 'command',
     message0: 'O personagem faz %1',
     args0: [
       {
@@ -1071,10 +1164,11 @@ export const world3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Uma gracinha do personagem — acene ao chegar num ponto, dance na vitória.',
+    tooltip: 'Uma gracinha do personagem. Acene ao chegar num ponto, dance na vitória.',
   },
   {
     type: 'sz_w3d_on_vehicle',
+    placement: 'event',
     message0: 'Quando %1 do veículo',
     args0: [
       {
@@ -1112,7 +1206,7 @@ export const world3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'A posição do personagem, um eixo por vez (dirigindo, é a posição do carrinho — o personagem está dentro!).',
+      'A posição do personagem, um eixo por vez (dirigindo, é a posição do carrinho. O personagem está dentro!).',
   },
   {
     type: 'sz_w3d_is_driving',
@@ -1126,6 +1220,7 @@ export const world3DBlocks = [
   {
     // R14: natureza acesa.
     type: 'sz_w3d_waterfall',
+    placement: 'start-only-command',
     message0: 'Pôr uma cachoeira 🏞️ em x %1 z %2 (altura %3, virada %4 graus)',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1138,10 +1233,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma cortina de água caindo com espuma na base — ponha na encosta de um morro (como a cachoeira das conquistas do folio). Esconda um segredo ATRÁS dela!',
+      'Uma cortina de água caindo com espuma na base. Ponha na encosta de um morro (como a cachoeira das conquistas do folio). Esconda um segredo ATRÁS dela!',
   },
   {
     type: 'sz_w3d_lamp',
+    placement: 'start-only-command',
     message0: 'Pôr um poste de luz 🏮 em x %1 z %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1156,6 +1252,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_fireflies',
+    placement: 'start-only-command',
     message0: 'Vaga-lumes à noite: %1',
     args0: [
       {
@@ -1173,10 +1270,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Luzinhas dançando pelo mundo quando escurece — aparecem junto das estrelas e somem de manhã. A magia da noite do folio.',
+      'Luzinhas dançando pelo mundo quando escurece. Aparecem junto das estrelas e somem de manhã. A magia da noite do folio.',
   },
   {
     type: 'sz_w3d_campfire',
+    placement: 'start-only-command',
     message0: 'Pôr uma fogueira 🔥 em x %1 z %2 (vira ponto de retorno)',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1193,6 +1291,7 @@ export const world3DBlocks = [
     // R13: bagunça física — objetos que o carrinho EMPURRA (deslizam, giram,
     // quicam e renascem em casa se caírem na água).
     type: 'sz_w3d_push_place',
+    placement: 'start-only-command',
     message0: 'Pôr 1 %1 empurrável em x %2 z %3',
     args0: [
       {
@@ -1218,6 +1317,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_push_scatter',
+    placement: 'start-only-command',
     message0: 'Espalhar %1 objetos empurráveis perto de x %2 z %3 (raio %4)',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -1230,10 +1330,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Espalha uma bagunça de tijolos, bancos, cercas, lanternas e cones num círculo — tudo empurrável. Atravesse com o turbo ligado e veja a física acontecer.',
+      'Espalha uma bagunça de tijolos, bancos, cercas, lanternas e cones num círculo. Tudo empurrável. Atravesse com o turbo ligado e veja a física acontecer.',
   },
   {
     type: 'sz_w3d_letters',
+    placement: 'start-only-command',
     message0: 'Escrever %1 com letras empurráveis em x %2 z %3 (tamanho %4)',
     args0: [
       { type: 'field_input', name: 'WORD', text: 'OI' },
@@ -1246,10 +1347,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Escreve uma palavra com CUBOS DE LETRA que o carrinho empurra (como as letras "BRUNO" do folio). Até 24 letras no mundo — escreva seu nome na praça!',
+      'Escreve uma palavra com CUBOS DE LETRA que o carrinho empurra (como as letras "BRUNO" do folio). Até 24 letras no mundo. Escreva seu nome na praça!',
   },
   {
     type: 'sz_w3d_explosive',
+    placement: 'start-only-command',
     message0: 'Pôr uma caixa explosiva 🧨 em x %1 z %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1260,10 +1362,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma caixa TNT: bata nela em velocidade e BUM — bola de fogo, faíscas, tudo por perto voa (inclusive você, com direito a câmera lenta). Caixas vizinhas explodem em CADEIA.',
+      'Uma caixa TNT: bata nela em velocidade e BUM. Bola de fogo, faíscas, tudo por perto voa (inclusive você, com direito a câmera lenta). Caixas vizinhas explodem em CADEIA.',
   },
   {
     type: 'sz_w3d_on_explosion',
+    placement: 'event',
     message0: 'Quando algo explodir 💥',
     args0: [],
     message1: 'fazer %1',
@@ -1273,10 +1376,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda os blocos de dentro a cada explosão — some pontos, solte fogos, faça o mundo reagir.',
+      'Roda os blocos de dentro a cada explosão. Some pontos, solte fogos, faça o mundo reagir.',
   },
   {
     type: 'sz_w3d_confetti',
+    placement: 'command',
     message0: 'Soltar confete 🎉',
     args0: [],
     inputsInline: true,
@@ -1284,10 +1388,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma chuva de confete colorido sobre o jogador — a celebração clássica. Use dentro de "Quando cruzar a chegada", "Quando derrubar todos os pinos", "Quando buzinar"…',
+      'Uma chuva de confete colorido sobre o jogador. A celebração clássica. Use dentro de "Quando cruzar a chegada", "Quando derrubar todos os pinos", "Quando buzinar"…',
   },
   {
     type: 'sz_w3d_fireworks',
+    placement: 'command',
     message0: 'Soltar fogos de artifício 🎆',
     args0: [],
     inputsInline: true,
@@ -1295,10 +1400,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um foguete sobe assobiando e EXPLODE em cores no céu (com "bum" e chacoalhão da câmera). Cada uso solta um foguete — use 3 seguidos para um show.',
+      'Um foguete sobe assobiando e EXPLODE em cores no céu (com "bum" e chacoalhão da câmera). Cada uso solta um foguete. Use 3 seguidos para um show.',
   },
   {
     type: 'sz_w3d_wind',
+    placement: 'command',
     message0: 'Vento com força %1',
     args0: [{ type: 'input_value', name: 'F', check: 'JSValue' }],
     inputsInline: true,
@@ -1310,6 +1416,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_on_daynight',
+    placement: 'event',
     message0: 'Quando virar %1',
     args0: [
       {
@@ -1342,6 +1449,7 @@ export const world3DBlocks = [
   // ---- 📍 Pontos & placas ----
   {
     type: 'sz_w3d_point',
+    placement: 'start-only-command',
     message0: 'Criar o ponto interativo %1 em x %2 z %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'placa' },
@@ -1353,10 +1461,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Marca um lugar do mundo com um pilar brilhante e um apelido. Quando o carrinho chega perto, aparece um "E" na tela — aperte E para acontecer algo (veja "Quando apertar E").',
+      'Marca um lugar do mundo com um pilar brilhante e um apelido. Quando o carrinho chega perto, aparece um "E" na tela. Aperte E para acontecer algo (veja "Quando apertar E").',
   },
   {
     type: 'sz_w3d_on_point',
+    placement: 'event',
     message0: 'Quando apertar E no ponto %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'placa', kind: 'w3dpoint' }],
     message1: 'fazer %1',
@@ -1369,6 +1478,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_zone',
+    placement: 'start-only-command',
     message0: 'Criar a área mágica %1 em x %2 z %3 com raio %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'area' },
@@ -1385,6 +1495,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_on_zone',
+    placement: 'event',
     message0: 'Quando o carrinho entrar na área %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'area', kind: 'w3dpoint' }],
     message1: 'fazer %1',
@@ -1397,6 +1508,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_totem_text',
+    placement: 'start-only-command',
     message0: 'Pôr um totem em x %1 z %2 com o título %3 e o texto %4',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1409,10 +1521,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Levanta uma placa de madeira com um título e um textinho — a apresentação do seu mundo, uma dica, o seu nome. O texto vira uma imagem na placa.',
+      'Levanta uma placa de madeira com um título e um textinho. A apresentação do seu mundo, uma dica, o seu nome. O texto vira uma imagem na placa.',
   },
   {
     type: 'sz_w3d_totem_image',
+    placement: 'start-only-command',
     message0: 'Pôr um quadro em x %1 z %2 com a imagem %3 (largura %4 )',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1431,6 +1544,7 @@ export const world3DBlocks = [
   // ---- 🖼️ Galeria ----
   {
     type: 'sz_w3d_gallery_create',
+    placement: 'start-only-command',
     message0: 'Criar a galeria de projetos em x %1 z %2 com o título %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1442,10 +1556,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma praça de exposição (aplaina o chão e põe um totem com o título). Depois pendure as imagens com "Pendurar a imagem" — elas ficam num arco em volta, e chegando perto a criança aperta E para ver grande.',
+      'Cria uma praça de exposição (aplaina o chão e põe um totem com o título). Depois pendure as imagens com "Pendurar a imagem". Elas ficam num arco em volta, e chegando perto a criança aperta E para ver grande.',
   },
   {
     type: 'sz_w3d_gallery_add',
+    placement: 'start-only-command',
     message0: 'Pendurar a imagem %1 com a legenda %2',
     args0: [
       { type: 'field_asset_picker', name: 'IMAGE', text: '', kind: 'image' },
@@ -1462,6 +1577,7 @@ export const world3DBlocks = [
   // ---- 🏁 Kit Corrida ----
   {
     type: 'sz_w3d_race_create',
+    placement: 'start-only-command',
     message0: 'Criar a corrida: largada em x %1 z %2 (virada %3 graus, %4 voltas)',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1474,10 +1590,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta uma corrida: um portal de largada onde você marcar e quantas voltas dá. O cronômetro e o contador de checkpoints aparecem sozinhos no canto. Ponha os checkpoints depois — a ORDEM dos blocos é a ordem da pista.',
+      'Monta uma corrida: um portal de largada onde você marcar e quantas voltas dá. O cronômetro e o contador de checkpoints aparecem sozinhos no canto. Ponha os checkpoints depois. A ORDEM dos blocos é a ordem da pista.',
   },
   {
     type: 'sz_w3d_race_checkpoint',
+    placement: 'start-only-command',
     message0: 'Pôr um checkpoint em x %1 z %2 (girado %3 graus)',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1493,6 +1610,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_race_on_start',
+    placement: 'event',
     message0: 'Quando a corrida começar',
     args0: [],
     message1: 'fazer %1',
@@ -1505,6 +1623,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_race_on_checkpoint',
+    placement: 'event',
     message0: 'Quando passar por um checkpoint',
     args0: [],
     message1: 'fazer %1',
@@ -1517,6 +1636,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_race_on_finish',
+    placement: 'event',
     message0: 'Quando completar a corrida',
     args0: [],
     message1: 'fazer %1',
@@ -1548,6 +1668,7 @@ export const world3DBlocks = [
   // ---- 🎳 Kit Boliche ----
   {
     type: 'sz_w3d_bowling_create',
+    placement: 'start-only-command',
     message0: 'Criar a pista de boliche em x %1 z %2 (girada %3 graus)',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1559,10 +1680,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta 10 pinos de boliche em triângulo. Dirija o carrinho contra eles para derrubar — eles tombam e batem uns nos outros! Derrube todos para o "Quando derrubar todos os pinos".',
+      'Monta 10 pinos de boliche em triângulo. Dirija o carrinho contra eles para derrubar. Eles tombam e batem uns nos outros! Derrube todos para o "Quando derrubar todos os pinos".',
   },
   {
     type: 'sz_w3d_bowling_reset',
+    placement: 'command',
     message0: 'Arrumar os pinos de novo',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1572,6 +1694,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_bowling_on_strike',
+    placement: 'event',
     message0: 'Quando derrubar todos os pinos',
     args0: [],
     message1: 'fazer %1',
@@ -1580,7 +1703,7 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda os blocos de dentro quando o carrinho derruba TODOS os 10 pinos — STRIKE! Solte fogos, mostre "Strike!", comemore.',
+      'Roda os blocos de dentro quando o carrinho derruba TODOS os 10 pinos. STRIKE! Solte fogos, mostre "Strike!", comemore.',
   },
   {
     type: 'sz_w3d_pins_down',
@@ -1592,6 +1715,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_stack',
+    placement: 'start-only-command',
     message0: 'Empilhar %1 %2 em x %3 z %4',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -1626,6 +1750,7 @@ export const world3DBlocks = [
   // ---- 🎥 Câmera & efeitos ----
   {
     type: 'sz_w3d_camera_mode',
+    placement: 'command',
     message0: 'Câmera %1',
     args0: [
       {
@@ -1646,6 +1771,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_camera_shake',
+    placement: 'command',
     message0: 'Tremer a câmera com força %1 por %2 s',
     args0: [
       { type: 'input_value', name: 'FORCE', check: 'JSValue' },
@@ -1656,10 +1782,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Balança a câmera por alguns instantes — o drama de uma batida, uma explosão, um trovão. Force 0.5 é um tremor leve; 2 é um terremoto.',
+      'Balança a câmera por alguns instantes. O drama de uma batida, uma explosão, um trovão. Force 0.5 é um tremor leve; 2 é um terremoto.',
   },
   {
     type: 'sz_w3d_effects',
+    placement: 'start-only-command',
     message0: 'Efeitos de cinema %1 (brilho %2 )',
     args0: [
       {
@@ -1677,12 +1804,13 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga/desliga o look de cinema: brilho (as coisas claras "vazam" luz — bloom) e cantos escurecidos (vinheta). Já vem LIGADO; o brilho 1 é o normal (até 3 = show de luz). Desligue para ganhar velocidade num computador fraco — e o modo turbo desliga sozinho se precisar.',
+      'Liga ou desliga o visual de cinema, com brilho nas coisas claras e cantos mais escuros. Já vem ligado. Desligue para ganhar velocidade num computador mais fraco. O modo turbo também desliga sozinho quando precisar.',
   },
 
   // ---- 🔊 Sons ----
   {
     type: 'sz_w3d_load_sound',
+    placement: 'start-only-command',
     message0: 'Carregar o som %1 do arquivo %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'buzina' },
@@ -1697,8 +1825,9 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_play_sound',
+    placement: 'command',
     message0: 'Tocar o som %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'buzina' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'buzina', kind: 'sound' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1707,16 +1836,18 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_play_music',
+    placement: 'resource-creator',
     message0: 'Tocar a música %1 sem parar',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'musica' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Toca uma música do projeto em loop (repete sem parar) — a trilha sonora do seu mundo. Use o apelido de um som carregado.',
+      'Toca uma música do projeto em loop. Use em “Ao iniciar”, “Quando acontecer” ou numa função, nunca em “Enquanto estiver rodando”. Repetir a mesma música não recomeça a faixa.',
   },
   {
     type: 'sz_w3d_stop_music',
+    placement: 'command',
     message0: 'Parar a música',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1728,6 +1859,7 @@ export const world3DBlocks = [
   // ---- ⏱️ Jogo & tela ----
   {
     type: 'sz_w3d_hud',
+    placement: 'command',
     message0: 'Escrever %1 no canto %2 da tela',
     args0: [
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
@@ -1751,6 +1883,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_say',
+    placement: 'command',
     message0: 'Mostrar o balão %1 por %2 s',
     args0: [
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
@@ -1765,6 +1898,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_on_update',
+    placement: 'loop-update',
     message0: 'A cada quadro, com o tempo %1 (em segundos)',
     args0: [{ type: 'field_input', name: 'DT', text: 'dt' }],
     message1: 'fazer %1',
@@ -1774,7 +1908,7 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A escotilha para a SUA mecânica: roda o "fazer" a cada quadro do passeio. O tempo (dt) é quanto durou o último quadro, em segundos — multiplique velocidades por ele para o mundo andar igual em qualquer computador.',
+      'A escotilha para a SUA mecânica: roda o "fazer" a cada quadro do passeio. O tempo (dt) é quanto durou o último quadro, em segundos. Multiplique velocidades por ele para o mundo andar igual em qualquer computador.',
   },
   {
     type: 'sz_w3d_key_down',
@@ -1796,6 +1930,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_city',
+    placement: 'start-only-command',
     message0: 'Construir a cidadezinha 🏙️ no centro x %1 z %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1830,6 +1965,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_crops',
+    placement: 'start-only-command',
     message0: 'Plantar %1 fileiras de %2 🌾 perto de x %3 z %4',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -1854,6 +1990,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_barn',
+    placement: 'start-only-command',
     message0: 'Construir o celeiro em x %1 z %2 virado para %3 graus',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1868,6 +2005,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_windmill',
+    placement: 'start-only-command',
     message0: 'Pôr o moinho de vento em x %1 z %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1878,10 +2016,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um moinho com 4 pás que GIRAM de verdade — e giram mais rápido quando você aumenta o vento (bloco do vento)!',
+      'Um moinho com 4 pás que GIRAM de verdade. E giram mais rápido quando você aumenta o vento (bloco do vento)!',
   },
   {
     type: 'sz_w3d_fence',
+    placement: 'start-only-command',
     message0: 'Fazer uma cerquinha 🪵 de x %1 z %2 até x %3 z %4',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -1894,10 +2033,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Postes de madeira com duas ripas, seguindo o chão. Os postes são SÓLIDOS (o carrinho esbarra) — cerque o pasto, a plantação, a sua casa…',
+      'Postes de madeira com duas ripas, seguindo o chão. Os postes são SÓLIDOS (o carrinho esbarra). Cerque o pasto, a plantação, a sua casa…',
   },
   {
     type: 'sz_w3d_animals',
+    placement: 'start-only-command',
     message0: 'Soltar %1 %2 perto de x %3 z %4 ( raio %5 )',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -1922,6 +2062,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_crater',
+    placement: 'start-only-command',
     message0: 'Abrir uma cratera 🕳️ em x %1 z %2 com raio %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1933,10 +2074,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Afunda uma tigela no chão com a borda erguida ao redor — a cratera clássica da lua (mas funciona em QUALQUER mundo: faça um lago seco, uma arena, uma toca).',
+      'Afunda uma tigela no chão com a borda erguida ao redor. A cratera clássica da lua (mas funciona em QUALQUER mundo: faça um lago seco, uma arena, uma toca).',
   },
   {
     type: 'sz_w3d_flag',
+    placement: 'start-only-command',
     message0: 'Fincar a bandeira 🚩 em x %1 z %2 da cor %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1952,6 +2094,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_rocket',
+    placement: 'start-only-command',
     message0: 'Pousar o foguete 🚀 em x %1 z %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1966,6 +2109,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_door',
+    placement: 'start-only-command',
     message0: 'Pôr uma porta interativa 🚪 em x %1 z %2 virada para %3 graus',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1983,11 +2127,13 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma porta de verdade: chegue perto e aperte E para abrir um cartaz com título, texto e (se quiser) uma imagem do projeto. É o "entrar no prédio" da cidadezinha — conte o que tem lá dentro! Funciona em qualquer lugar do mundo (até no meio do nada, que é engraçado).',
+      'Uma porta de verdade: chegue perto e aperte E para abrir um cartaz com título, texto e (se quiser) uma imagem do projeto. É o "entrar no prédio" da cidadezinha. Conte o que tem lá dentro! Funciona em qualquer lugar do mundo (até no meio do nada, que é engraçado).',
   },
   {
     type: 'sz_w3d_npc_ask',
-    message0: 'Quando o amigo %1 perguntar: %2',
+    placement: 'event-body',
+    bodyExecution: 'deferred-callback',
+    message0: 'O amigo %1 pergunta: %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
       { type: 'field_input', name: 'QUESTION', text: 'O que você quer ser?' },
@@ -2007,10 +2153,11 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O amigo faz uma PERGUNTA com dois botões de resposta (clique ou tecla 1/2). Cada resposta roda os próprios blocos — dá para ramificar a conversa, dar missões diferentes, contar segredos… Entra na fila de falas normal (combine com "falar").',
+      'Use dentro de “Quando conversar”. O amigo faz uma PERGUNTA com dois botões de resposta (clique ou tecla 1/2). Cada resposta roda os próprios blocos. Dá para ramificar a conversa, dar missões diferentes, contar segredos… Entra na fila de falas normal (combine com "falar").',
   },
   {
     type: 'sz_w3d_traffic',
+    placement: 'start-only-command',
     message0: 'Ligar o trânsito 🚦 : %1 carrinhos , %2',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
@@ -2032,6 +2179,7 @@ export const world3DBlocks = [
   },
   {
     type: 'sz_w3d_string_lights',
+    placement: 'start-only-command',
     message0: 'Pendurar um varal de luzinhas ✨ de x %1 z %2 até x %3 z %4',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -2045,6 +2193,164 @@ export const world3DBlocks = [
     colour: C,
     tooltip:
       'Dois postes e um fio de luzinhas penduradas entre eles (elas acendem quando escurece). Faça um caminho de festa ou decore a sua praça!',
+  },
+  {
+    type: 'sz_w3d_district',
+    placement: 'start-only-command',
+    message0: 'Construir um distrito %1 🏘️ no centro x %2 z %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['residencial', 'residencial'],
+          ['comercial', 'comercial'],
+          ['educação', 'educacao'],
+          ['saúde', 'saude'],
+          ['industrial', 'industrial'],
+          ['turístico', 'turistico'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'com %1 metros de largura',
+    args1: [{ type: 'input_value', name: 'SIZE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um bairro inteiro só com primitivas do Three.js. Prédios, detalhes e árvores são agrupados com instancing para manter poucos desenhos na placa de vídeo.',
+  },
+  {
+    type: 'sz_w3d_road_grid',
+    placement: 'start-only-command',
+    message0: 'Criar ruas %1 🛣️ no centro x %2 z %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'LAYOUT',
+        options: [
+          ['em grade', 'grade'],
+          ['radiais', 'radial'],
+          ['orgânicas', 'organica'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'ocupando %1 metros · largura %2',
+    args1: [
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma rede de ruas procedurais e aplaina os corredores do terreno. Grade serve para cidade, radial para praça e orgânica para vila ou parque.',
+  },
+  {
+    type: 'sz_w3d_house_row',
+    placement: 'start-only-command',
+    message0: 'Fazer %1 casas 🏠 de x %2 z %3 até x %4 z %5',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+    ],
+    message1: 'estilo %1',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'STYLE',
+        options: [
+          ['coloridas', 'coloridas'],
+          ['praia', 'praia'],
+          ['modernas', 'modernas'],
+          ['campo', 'campo'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta uma rua de casas procedurais alinhadas entre dois pontos. Paredes, telhados, portas e janelas são instanciados.',
+  },
+  {
+    type: 'sz_w3d_quality',
+    placement: 'start-only-command',
+    message0: 'Usar qualidade %1 ⚡',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['automática', 'automatica'],
+          ['visual alta', 'alta'],
+          ['desempenho', 'desempenho'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Automática mede o aparelho e reduz detalhes se necessário. Visual alta fixa os efeitos; desempenho reduz sombras, grama e resolução interna.',
+  },
+  {
+    type: 'sz_w3d_inventory_give',
+    placement: 'command',
+    message0: 'Dar %1 unidades do item %2 🎒',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'field_input', name: 'ITEM', text: 'madeira' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Adiciona um item ao inventário do passeio e salva a quantidade neste projeto.',
+  },
+  {
+    type: 'sz_w3d_inventory_remove',
+    placement: 'command',
+    message0: 'Tirar %1 unidades do item %2 🎒',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'ITEM', text: 'madeira', kind: 'item' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Remove até a quantidade disponível, sem deixar o inventário negativo.',
+  },
+  {
+    type: 'sz_w3d_inventory_count',
+    message0: 'quantos %1 há no inventário',
+    args0: [{ type: 'field_name_picker', name: 'ITEM', text: 'madeira', kind: 'item' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Informa a quantidade salva desse item.',
+  },
+  {
+    type: 'sz_w3d_inventory_has',
+    message0: 'tem pelo menos %1 do item %2 ?',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'ITEM', text: 'madeira', kind: 'item' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando o inventário tem a quantidade pedida.',
   },
 ]
 
@@ -2060,6 +2366,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_flatten',
       'sz_w3d_path',
       'sz_w3d_water',
+      'sz_w3d_sky_photo',
       'sz_w3d_start',
       'sz_w3d_world_size',
       'sz_w3d_ground_height',
@@ -2091,7 +2398,15 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🏙️ Cidade',
     colour: C,
-    types: ['sz_w3d_city', 'sz_w3d_traffic', 'sz_w3d_door', 'sz_w3d_string_lights'],
+    types: [
+      'sz_w3d_city',
+      'sz_w3d_district',
+      'sz_w3d_road_grid',
+      'sz_w3d_house_row',
+      'sz_w3d_traffic',
+      'sz_w3d_door',
+      'sz_w3d_string_lights',
+    ],
   },
   {
     name: '🌙 Lua & espaço',
@@ -2258,7 +2573,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_achievement',
       'sz_w3d_on_achievement',
       'sz_w3d_has_achievement',
+      'sz_w3d_inventory_give',
+      'sz_w3d_inventory_remove',
+      'sz_w3d_inventory_count',
+      'sz_w3d_inventory_has',
       'sz_w3d_minimap',
+      'sz_w3d_quality',
       'sz_w3d_on_update',
       'sz_w3d_key_down',
       'sz_w3d_key_pressed',
@@ -2282,7 +2602,13 @@ for (const b of world3DBlocks) {
 
 // Rede de segurança: bloco fora de qualquer sub-categoria cai num grupo "Mais".
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
-const leftover = world3DBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
+const VISIBLE_BLOCK_TYPES = new Set(
+  world3DBlocks.filter((block) => !block.hidden).map((b) => b.type),
+)
+const leftover = world3DBlocks
+  .filter((block) => !block.hidden)
+  .map((block) => block.type)
+  .filter((type) => !CATEGORIZED.has(type))
 
 // Sombras pré-preenchidas dos soquetes de VALOR que aparecem na paleta.
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
@@ -2341,6 +2667,23 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_w3d_lighthouse: { X: numShadow(50), Z: numShadow(-40) },
   sz_w3d_city: { X: numShadow(0), Z: numShadow(0) },
+  sz_w3d_district: { X: numShadow(0), Z: numShadow(0), SIZE: numShadow(48) },
+  sz_w3d_road_grid: {
+    X: numShadow(0),
+    Z: numShadow(0),
+    SIZE: numShadow(80),
+    WIDTH: numShadow(6),
+  },
+  sz_w3d_house_row: {
+    N: numShadow(8),
+    X1: numShadow(-30),
+    Z1: numShadow(15),
+    X2: numShadow(30),
+    Z2: numShadow(15),
+  },
+  sz_w3d_inventory_give: { N: numShadow(1) },
+  sz_w3d_inventory_remove: { N: numShadow(1) },
+  sz_w3d_inventory_has: { N: numShadow(1) },
   sz_w3d_traffic: { N: numShadow(6) },
   sz_w3d_door: { X: numShadow(0), Z: numShadow(8), DEG: numShadow(0) },
   sz_w3d_crops: { N: numShadow(4), X: numShadow(0), Z: numShadow(20) },
@@ -2402,7 +2745,7 @@ export const world3DToolboxCategory: ExtensionToolboxCategory = {
       kind: 'category' as const,
       name: sc.name,
       colour: sc.colour,
-      contents: sc.types.map(toolboxBlock),
+      contents: sc.types.filter((type) => VISIBLE_BLOCK_TYPES.has(type)).map(toolboxBlock),
     })),
     ...(leftover.length > 0
       ? [

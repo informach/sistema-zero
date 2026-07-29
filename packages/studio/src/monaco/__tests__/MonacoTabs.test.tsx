@@ -93,6 +93,10 @@ interface FakeEditor {
   createDecorationsCollection: () => { set: () => void; clear: () => void }
   revealRangeInCenterIfOutsideViewport: () => void
   setSelection: (range: { startLineNumber: number; endLineNumber: number }) => void
+  setHiddenAreas: (
+    ranges: Array<{ startLineNumber: number; endLineNumber: number }>,
+    source?: string,
+  ) => void
   getAction: (id: string) => FakeAction | null
   saveViewState: () => FakeViewState
   restoreViewState: (state: FakeViewState) => void
@@ -101,6 +105,10 @@ interface FakeEditor {
 let currentEditor: FakeEditor | null = null
 // Faixas passadas a editor.setSelection — para asserir a SELEÇÃO do realce.
 const selectionCalls: Array<{ startLineNumber: number; endLineNumber: number }> = []
+const hiddenAreaCalls: Array<{
+  ranges: Array<{ startLineNumber: number; endLineNumber: number }>
+  source?: string
+}> = []
 
 function makeEditor(initialPath: string): FakeEditor {
   let modelPath = initialPath
@@ -132,6 +140,9 @@ function makeEditor(initialPath: string): FakeEditor {
         startLineNumber: range.startLineNumber,
         endLineNumber: range.endLineNumber,
       })
+    },
+    setHiddenAreas: (ranges, source) => {
+      hiddenAreaCalls.push({ ranges, source })
     },
     getAction: (id: string) => {
       formatCallLog.push(`getAction:${id}`)
@@ -206,11 +217,43 @@ function resetWorld(): void {
   fakeModels.clear()
   currentEditor = null
   selectionCalls.length = 0
+  hiddenAreaCalls.length = 0
   currentFormatAction = null
   formatCallLog.length = 0
   restoreViewStateCalls.length = 0
   loadLanguageServicesImpl = async () => {}
 }
+
+describe('MonacoTabs — áreas internas recolhidas', () => {
+  beforeEach(resetWorld)
+
+  afterEach(() => {
+    cleanup()
+    resetWorld()
+  })
+
+  it('aplica as faixas do arquivo ativo e as revela ao desligar o recurso', async () => {
+    const files = [{ name: 'script.js', value: 'a\nb\nc' }]
+    const { rerender } = render(
+      <MonacoTabs
+        files={files}
+        activeFile="script.js"
+        onChange={() => {}}
+        hiddenAreas={() => [{ startLine: 2, endLine: 3 }]}
+      />,
+    )
+
+    await waitFor(() => expect(hiddenAreaCalls).toHaveLength(1))
+    expect(hiddenAreaCalls[0]).toMatchObject({
+      ranges: [{ startLineNumber: 2, endLineNumber: 3 }],
+      source: 'canvas3d-generated',
+    })
+
+    rerender(<MonacoTabs files={files} activeFile="script.js" onChange={() => {}} />)
+    await waitFor(() => expect(hiddenAreaCalls).toHaveLength(2))
+    expect(hiddenAreaCalls[1]?.ranges).toEqual([])
+  })
+})
 
 describe('MonacoTabs — ciclo de vida dos models', () => {
   beforeEach(resetWorld)

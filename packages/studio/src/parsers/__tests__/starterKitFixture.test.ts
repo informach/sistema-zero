@@ -3,7 +3,7 @@ import 'blockly/blocks'
 import * as Blockly from 'blockly/core'
 import { buildIRFromWorkspace, buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
-import { SZIRSchema } from '#ir'
+import { cssDeclarationsRecord, SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '#parsers'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 
@@ -290,7 +290,10 @@ function cssDeclMap(css: string): Record<string, Record<string, string>> {
   const map: Record<string, Record<string, string>> = {}
   for (const entry of ir.css) {
     if (!('selector' in entry) || !('declarations' in entry)) continue
-    map[entry.selector] = { ...(map[entry.selector] ?? {}), ...entry.declarations }
+    map[entry.selector] = {
+      ...(map[entry.selector] ?? {}),
+      ...cssDeclarationsRecord(entry.declarations),
+    }
   }
   return map
 }
@@ -305,7 +308,7 @@ describe('JS Game Starter Kit P6 (achatado) — 100% blocos do núcleo', () => {
     expect(types.has('rawHTML')).toBe(false)
     expect(ir.extensions).toEqual([])
     expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
-    expect(SZIRSchema.safeParse(ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
     for (const expected of ['imageOnError', 'requestFrameDo', 'concat']) {
       expect(types.has(expected)).toBe(true)
     }
@@ -324,7 +327,7 @@ describe('JS Game Starter Kit P6 (achatado) — 100% blocos do núcleo', () => {
 
     const jsOut = files1['script.js']
     expect(jsOut).toContain('class RenderSystem')
-    expect(jsOut).toContain('.onerror = () => {')
+    expect(jsOut).toContain('.onerror = (event) => {')
     expect(jsOut).toContain('requestAnimationFrame((t) => {')
     expect(jsOut).toContain('?.loaded')
     expect(jsOut).toContain('event.key')

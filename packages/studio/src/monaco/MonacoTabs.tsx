@@ -36,6 +36,17 @@ export interface MonacoTabsFile {
   value: string
 }
 
+export interface MonacoHiddenArea {
+  startLine: number
+  endLine: number
+}
+
+// O widget standalone implementa esta API (é a mesma usada pelo folding e pelo
+// diff editor), mas o pacote não a expõe em IStandaloneCodeEditor.
+interface MonacoHiddenAreaEditor extends monacoNs.editor.IStandaloneCodeEditor {
+  setHiddenAreas(ranges: monacoNs.IRange[], source?: string): void
+}
+
 export interface MonacoCursorPosition {
   file: string
   line: number
@@ -122,6 +133,8 @@ export interface MonacoTabsProps {
   className?: string
   /** Conteúdo extra renderizado à direita da fila de abas. */
   tabsRightSlot?: JSX.Element
+  /** Linhas de infraestrutura que podem ficar recolhidas no arquivo exibido. */
+  hiddenAreas?: (file: MonacoTabsFile) => readonly MonacoHiddenArea[]
   /**
    * Rótulo do botão "Formatar" (i18n fica no app; o pacote é genérico). Quando
    * omitido, o botão não é exibido. O atalho Shift+Alt+F continua funcionando
@@ -255,6 +268,7 @@ export function MonacoTabs({
   fontSize = 13,
   className,
   tabsRightSlot,
+  hiddenAreas,
   formatLabel,
   onFormatIssue,
   canCloseFile,
@@ -308,6 +322,7 @@ export function MonacoTabs({
   // Último `nonce` cuja SELEÇÃO já foi aplicada — evita re-selecionar (e roubar o
   // cursor) quando o highlight é só recomputado pelo reparse durante a digitação.
   const lastSelectionNonceRef = useRef<number | undefined>(undefined)
+  const hiddenAreasAppliedRef = useRef(false)
   const onCursorChangeRef = useRef(onCursorChange)
   const [mountedEditor, setMountedEditor] = useState<monacoNs.editor.IStandaloneCodeEditor | null>(
     null,
@@ -617,6 +632,38 @@ export function MonacoTabs({
     })
     return () => disposable.dispose()
   }, [mountedEditor, saltedPrefix])
+
+  useEffect(() => {
+    if (!mountedEditor) return
+    const applyHiddenAreas = () => {
+      if (!hiddenAreas && !hiddenAreasAppliedRef.current) return
+      const model = mountedEditor.getModel()
+      if (!model) return
+      const modelPath = getMonacoModelPath(model)
+      const expectedStart = `${saltedPrefix}/`
+      if (!modelPath.startsWith(expectedStart)) return
+      const active = files.find(
+        (candidate) => candidate.name === modelPath.slice(expectedStart.length),
+      )
+      if (!active) return
+      const ranges = (hiddenAreas?.(active) ?? []).map(({ startLine, endLine }) => {
+        const startLineNumber = clampLine(startLine, model)
+        const endLineNumber = Math.max(startLineNumber, clampLine(endLine, model))
+        return {
+          startLineNumber,
+          startColumn: 1,
+          endLineNumber,
+          endColumn: model.getLineMaxColumn(endLineNumber),
+        }
+      })
+      const hiddenAreaEditor = mountedEditor as MonacoHiddenAreaEditor
+      hiddenAreaEditor.setHiddenAreas(ranges, 'canvas3d-generated')
+      hiddenAreasAppliedRef.current = Boolean(hiddenAreas)
+    }
+    const disposable = mountedEditor.onDidChangeModel(applyHiddenAreas)
+    applyHiddenAreas()
+    return () => disposable.dispose()
+  }, [files, hiddenAreas, mountedEditor, saltedPrefix])
 
   useEffect(() => {
     if (!mountedEditor) return

@@ -25,6 +25,10 @@ export interface ProjectListProps {
   onOpenProject: (projectId: string) => void
   /** Habilita a criação de projetos profissionais (host com COOP/COEP). */
   professional?: boolean
+  /** Extensões instaladas automaticamente num projeto básico novo. */
+  initialExtensions?: readonly string[]
+  /** Extensões que a carreira permite; usadas também pelo aviso de importação. */
+  allowedExtensions?: readonly string[]
   /**
    * Tema FIXADO pelo host (ex.: a comunidade controla claro/escuro). Quando
    * definido, a lista segue ESTE tema e ESCONDE o botão de alternar — assim o
@@ -46,6 +50,8 @@ export interface ProjectListProps {
 export function ProjectList({
   onOpenProject,
   professional = false,
+  initialExtensions,
+  allowedExtensions,
   theme: themeProp,
   showExamples = false,
 }: ProjectListProps): JSX.Element {
@@ -117,7 +123,7 @@ export function ProjectList({
     const created =
       opts?.kind === 'pro'
         ? await createProProject(name, opts.templateId)
-        : await createProject(name)
+        : await createProject(name, initialExtensions)
     setModalOpen(false)
     onOpenProject(created.id)
   }
@@ -140,7 +146,7 @@ export function ProjectList({
           </div>
           <div className="ml-auto flex items-center gap-2">
             {themeProp === undefined && <ThemeToggle />}
-            <ImportButton onImported={handleImported} />
+            <ImportButton onImported={handleImported} allowedExtensions={allowedExtensions} />
             <Button variant="primary" size="sm" onClick={() => setModalOpen(true)}>
               + {t('projects.new')}
             </Button>

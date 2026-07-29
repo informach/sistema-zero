@@ -22,11 +22,15 @@ interface AssetAccessor {
 export function filterAssetsForPicker(
   assets: readonly ProjectAsset[],
   kind: 'image' | '3d' | 'audio',
-  filter?: 'tilemap',
+  filter?: 'tilemap' | 'model3d' | 'environment3d',
 ): ProjectAsset[] {
   return assets.filter((a) => {
     if (!a) return false
-    if (kind === '3d') return a.kind === 'model3d' || a.kind === 'environment3d'
+    if (kind === '3d') {
+      if (filter === 'model3d') return a.kind === 'model3d'
+      if (filter === 'environment3d') return a.kind === 'environment3d'
+      return a.kind === 'model3d' || a.kind === 'environment3d'
+    }
     if (kind === 'audio') return a.kind === 'audio'
     return a.kind === 'image' && (filter !== 'tilemap' || Boolean(a.tilemap))
   })
@@ -100,7 +104,7 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
    * (o bloco "Criar mapa do meu desenho" não deve oferecer imagens comuns).
    * Vem da DEFINIÇÃO do bloco (`filter` no JSON) — estrutural, não serializa.
    */
-  private assetFilter?: 'tilemap'
+  private assetFilter?: 'tilemap' | 'model3d' | 'environment3d'
   /**
    * Que FAMÍLIA de asset a grade lista: `'image'` (padrão), `'3d'` (modelo .glb /
    * céu .hdr) ou `'audio'` (som). Vem da DEFINIÇÃO do bloco (`kind` no JSON) —
@@ -108,7 +112,11 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
    */
   private assetKind: 'image' | '3d' | 'audio'
 
-  constructor(text: string, filter?: 'tilemap', kind: 'image' | '3d' | 'audio' = 'image') {
+  constructor(
+    text: string,
+    filter?: 'tilemap' | 'model3d' | 'environment3d',
+    kind: 'image' | '3d' | 'audio' = 'image',
+  ) {
     super(text)
     this.assetFilter = filter
     this.assetKind = kind
@@ -122,7 +130,11 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     const kind = options.kind === '3d' || options.kind === 'audio' ? options.kind : 'image'
     return new FieldAssetPicker(
       `${options.text ?? ''}`,
-      options.filter === 'tilemap' ? 'tilemap' : undefined,
+      options.filter === 'tilemap' ||
+        options.filter === 'model3d' ||
+        options.filter === 'environment3d'
+        ? options.filter
+        : undefined,
       kind,
     )
   }
@@ -137,6 +149,13 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     applyThemeScope(this, content)
 
     const wrap = document.createElement('div')
+    wrap.className = 'sz-asset-picker'
+    wrap.tabIndex = -1
+    wrap.setAttribute('role', 'group')
+    wrap.setAttribute(
+      'aria-label',
+      kind === '3d' ? 'Escolher modelo 3D' : kind === 'audio' ? 'Escolher som' : 'Escolher imagem',
+    )
     wrap.style.cssText =
       'padding:8px;width:260px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
 
@@ -160,7 +179,9 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
       for (const a of assets) {
         const btn = document.createElement('button')
         btn.type = 'button'
+        btn.className = 'sz-asset-picker__option'
         btn.title = a.name
+        btn.setAttribute('aria-label', a.name)
         btn.style.cssText =
           'display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;border:1px solid var(--color-sz-border);border-radius:6px;background:var(--color-sz-bg);cursor:pointer;'
         // Miniatura: imagem real p/ `image`; um emoji p/ 3D/áudio (um .glb/.mp3
@@ -169,11 +190,14 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
         if (a.kind === 'image') {
           const im = document.createElement('img')
           im.src = a.dataUrl
-          im.alt = a.name
+          im.alt = ''
+          im.width = 40
+          im.height = 40
           im.style.cssText = 'width:40px;height:40px;object-fit:contain;image-rendering:pixelated;'
           thumb = im
         } else {
           const icon = document.createElement('span')
+          icon.setAttribute('aria-hidden', 'true')
           icon.textContent = a.kind === 'environment3d' ? '🌅' : a.kind === 'audio' ? '🔊' : '📦'
           icon.style.cssText =
             'width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:26px;'
@@ -206,15 +230,22 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
       'display:flex;gap:6px;margin-top:8px;border-top:1px solid var(--color-sz-border);padding-top:8px;align-items:center;'
     const input = document.createElement('input')
     input.type = 'text'
+    input.className = 'sz-asset-picker__input sz-field-picker__input'
     input.value = `${this.getValue() ?? ''}`
     input.placeholder =
       kind === '3d' ? 'nome do modelo' : kind === 'audio' ? 'nome do som' : 'nome da imagem'
     input.spellcheck = false
+    input.autocomplete = 'off'
+    input.setAttribute(
+      'aria-label',
+      kind === '3d' ? 'Nome do modelo' : kind === 'audio' ? 'Nome do som' : 'Nome da imagem',
+    )
     input.style.cssText =
-      'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
+      'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;'
     const ok = document.createElement('button')
     ok.type = 'button'
     ok.textContent = 'OK'
+    ok.className = 'sz-field-picker__button'
     ok.style.cssText =
       'padding:3px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
     const apply = () => {
@@ -234,8 +265,6 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
 
     content.appendChild(wrap)
     Blockly.DropDownDiv.showPositionedByField(this, () => {})
-    // `preventScroll`: não rolar a página até o input (ver FieldNamePicker).
-    setTimeout(() => input.focus({ preventScroll: true }), 0)
   }
 }
 

@@ -12,9 +12,13 @@ export const INVOICE_STATUS_LABELS: Record<string, string> = {
   SKIPPED: 'Dispensada',
   FAILED: 'Falhou',
   CANCEL_PENDING: 'Cancelamento pendente',
+  CANCEL_FAILED: 'Cancelamento recusado',
   CANCELLED: 'Cancelada',
   SUBSTITUTED: 'Substituída',
 }
+
+/** Estados que exigem intervenção fiscal no painel. */
+export const INVOICE_FAILURE_STATUSES = ['FAILED', 'CANCEL_FAILED'] as const
 
 export type InvoiceBadgeVariant = 'success' | 'muted' | 'destructive' | 'default' | 'outline'
 
@@ -26,6 +30,7 @@ const INVOICE_STATUS_VARIANTS: Record<string, InvoiceBadgeVariant> = {
   SKIPPED: 'muted',
   FAILED: 'destructive',
   CANCEL_PENDING: 'default',
+  CANCEL_FAILED: 'destructive',
   CANCELLED: 'muted',
   SUBSTITUTED: 'muted',
 }
@@ -87,15 +92,18 @@ export function formatDateOnly(iso: string | null | undefined): string {
 }
 
 /** Soma contagens do `/stats` p/ um grupo de status (cards de resumo). */
-export function sumStatusCounts(byStatus: Record<string, number>, statuses: string[]): number {
+export function sumStatusCounts(
+  byStatus: Record<string, number>,
+  statuses: readonly string[],
+): number {
   return statuses.reduce((acc, s) => acc + (byStatus[s] ?? 0), 0)
 }
 
 // ── Gates de ação por estado (a UI espelha as regras do fiscal) ──
 
-/** PDF disponível só em nota EMITIDA com o PDF já armazenado. */
+/** PDF disponível em NFS-e válida com o PDF já armazenado. */
 export function canDownloadPdf(inv: Pick<InvoiceView, 'status' | 'pdfStoredAt'>): boolean {
-  return inv.status === 'EMITTED' && inv.pdfStoredAt !== null
+  return (inv.status === 'EMITTED' || inv.status === 'CANCEL_FAILED') && inv.pdfStoredAt !== null
 }
 
 /** Reprocessar: só nota FALHADA. */
@@ -103,9 +111,9 @@ export function canRetryInvoice(inv: Pick<InvoiceView, 'status'>): boolean {
   return inv.status === 'FAILED'
 }
 
-/** Cancelar: só nota EMITIDA. */
+/** Cancelar/repetir cancelamento: nota EMITIDA ou com rejeição determinística. */
 export function canCancelInvoice(inv: Pick<InvoiceView, 'status'>): boolean {
-  return inv.status === 'EMITTED'
+  return inv.status === 'EMITTED' || inv.status === 'CANCEL_FAILED'
 }
 
 /** Substituir: só nota EMITIDA (a original é cancelada por substituição). */

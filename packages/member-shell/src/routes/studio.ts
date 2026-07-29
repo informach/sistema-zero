@@ -327,12 +327,19 @@ export function createStudioRoutes(deps: {
         return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
       }
       let projectBytes: Buffer
+      // Metadado do projeto p/ o selo de nível do remix no card do Mural (derivado
+      // do projeto JÁ saneado — cosmético; o gate real do remix é no clique).
+      let studioMeta: { pro: boolean; extensions: string[] } | null = null
       try {
         const rawProject = JSON.parse(
           Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'),
         )
         const project = sanitizePlayableProject(rawProject)
         if (!project) return invalid()
+        studioMeta = {
+          pro: project.kind === 'pro',
+          extensions: project.installedExtensions.map((ext) => ext.id),
+        }
         projectBytes = Buffer.from(JSON.stringify(project), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
           return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
@@ -407,6 +414,7 @@ export function createStudioRoutes(deps: {
         description,
         playId,
         clientIdempotencyKey,
+        studioMeta,
       })
       if (r.status !== 200 || !r.body) {
         return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
@@ -464,12 +472,18 @@ export function createStudioRoutes(deps: {
         return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
       }
       let projectBytes: Buffer
+      // Metadado do projeto p/ o selo de nível do remix (cosmético; gate real no clique).
+      let studioMeta: { pro: boolean; extensions: string[] } | null = null
       try {
         const rawProject = JSON.parse(
           Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'),
         )
         const project = sanitizePlayableProject(rawProject)
         if (!project) return invalid()
+        studioMeta = {
+          pro: project.kind === 'pro',
+          extensions: project.installedExtensions.map((ext) => ext.id),
+        }
         projectBytes = Buffer.from(JSON.stringify(project), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
           return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
@@ -521,6 +535,7 @@ export function createStudioRoutes(deps: {
         playId,
         clientIdempotencyKey,
         challengeKey,
+        studioMeta,
       })
       if (r.status !== 200 || !r.body) {
         return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {

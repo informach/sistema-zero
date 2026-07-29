@@ -6,12 +6,13 @@ const C = CATEGORY_COLORS.js
 /**
  * Blocos da LINGUAGEM JavaScript: variáveis, console/alert, controle de fluxo,
  * listas, timers e Web APIs (storage/fetch). A MANIPULAÇÃO DO DOM (eventos,
- * busca de elementos, propriedades, classes, criação) vive em `dom.ts`
- * (categoria "DOM", entre CSS e JavaScript na toolbox).
+ * busca de elementos, propriedades, classes, criação) vive em `dom.ts` e aparece
+ * nas subcategorias Página e Eventos do guarda-chuva Programação.
  */
 export const JS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_array_push',
+    placement: 'command',
     message0: 'na lista %1 adicionar %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
@@ -25,6 +26,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_array_remove',
+    placement: 'command',
     message0: 'na lista %1 remover o %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
@@ -45,6 +47,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_array_splice',
+    placement: 'command',
     message0: 'na lista %1 remover %2 item(ns) a partir da posição %3',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
@@ -59,33 +62,39 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_console_log_text',
+    placement: 'command',
     message0: 'Mostrar texto no console %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip:
+      'Mostra uma mensagem na área de console para acompanhar o que o programa está fazendo.',
   },
   {
     type: 'sz_js_console_log_var',
+    placement: 'command',
     message0: 'Mostrar valor da variável %1 no console',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Mostra no console o valor guardado em uma variável.',
   },
   {
     type: 'sz_js_console_log_value',
+    placement: 'command',
     message0: 'Mostrar no console %1',
     args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Mostra qualquer valor no console (junta texto com "juntar", um objeto, uma conta…). Vira console.log(valor).',
+    tooltip: 'Mostra qualquer valor no console, como um texto montado, um objeto ou uma conta.',
   },
   {
     type: 'sz_js_alert_text',
+    placement: 'command',
     message0: 'Mostrar aviso com texto %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá!' }],
     previousStatement: 'JSStmt',
@@ -95,6 +104,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_alert_var',
+    placement: 'command',
     message0: 'Mostrar aviso com valor da variável %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -104,6 +114,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_declare',
+    placement: 'command',
     message0: 'declarar variável %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'x' }],
     previousStatement: 'JSStmt',
@@ -113,6 +124,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_create',
+    placement: 'command',
     message0: 'Criar variável %1 com valor %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'contador' },
@@ -126,6 +138,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_const_create',
+    placement: 'command',
     message0: 'Criar constante %1 com valor %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'PI' },
@@ -139,9 +152,10 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_assign',
+    placement: 'command',
     message0: 'Alterar variável %1 para %2',
     args0: [
-      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' },
+      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'mutable-variable' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -156,6 +170,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     // um no-op comum em código copiado). Sem ele, essa linha viraria "código
     // avançado". A criança não precisa deste bloco para programar.
     type: 'sz_js_expr_statement',
+    placement: 'command',
     message0: 'avaliar %1',
     args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
     inputsInline: true,
@@ -167,19 +182,22 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_increment',
+    placement: 'command',
     message0: 'Somar %1 em variável %2',
     args0: [
       { type: 'field_number', name: 'DELTA', value: 1 },
-      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' },
+      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'mutable-variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Soma ou tira uma quantidade do valor atual de uma variável.',
   },
   {
     // Os ramos "senão se"/"senão" são criados pelo mutator (+/− estilo MakeCode);
     // o bloco nasce só com "Se … então [C]". Ver `blocks/ifElseMutator.ts`.
     type: 'sz_js_if_else',
+    placement: 'command',
     message0: 'Se %1',
     args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     message1: 'então %1',
@@ -194,6 +212,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_repeat',
+    placement: 'command',
     message0: 'Repetir %1 vezes',
     args0: [{ type: 'input_value', name: 'TIMES', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -202,9 +221,11 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Repete os blocos de dentro a quantidade de vezes escolhida.',
   },
   {
     type: 'sz_js_while',
+    placement: 'command',
     message0: 'enquanto %1',
     args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -218,6 +239,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_do_while',
+    placement: 'command',
     message0: 'fazer %1',
     args0: [{ type: 'input_statement', name: 'DO' }],
     message1: 'enquanto %1',
@@ -234,6 +256,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['syntactic-loop-body'], role: 'command' },
     tooltip: 'Interrompe o laço (loop) atual imediatamente.',
   },
   {
@@ -242,10 +265,12 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['syntactic-loop-body'], role: 'command' },
     tooltip: 'Pula o resto desta volta e vai direto para a próxima repetição do laço.',
   },
   {
     type: 'sz_js_throw',
+    placement: 'command',
     message0: 'disparar erro com mensagem %1',
     args0: [{ type: 'input_value', name: 'MESSAGE', check: 'JSValue' }],
     inputsInline: true,
@@ -257,10 +282,11 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_object_assign',
+    placement: 'command',
     message0: 'copiar propriedades de %1 para %2',
     args0: [
-      { type: 'field_input', name: 'SOURCE', text: 'origem' },
-      { type: 'field_input', name: 'TARGET', text: 'destino' },
+      { type: 'field_name_picker', name: 'SOURCE', text: 'origem', kind: 'variable' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'destino', kind: 'variable' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -271,6 +297,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_switch',
+    placement: 'command',
     message0: 'escolha %1',
     args0: [{ type: 'input_value', name: 'SUBJECT', check: 'JSValue' }],
     message1: 'casos %1',
@@ -285,6 +312,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_case',
+    placement: 'switch-case',
     message0: 'caso o valor for %1',
     args0: [{ type: 'input_value', name: 'MATCH', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -296,6 +324,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_of',
+    placement: 'command',
     message0: 'para cada %1 de %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -312,6 +341,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_range',
+    placement: 'command',
     message0: 'contar %1 de %2 até %3 (passo %4)',
     args0: [
       { type: 'field_input', name: 'VAR', text: 'i' },
@@ -329,6 +359,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_try_catch',
+    placement: 'command',
     message0: 'tentar %1',
     args0: [{ type: 'input_statement', name: 'BODY' }],
     message1: 'se der erro %1 fazer %2',
@@ -346,6 +377,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_each',
+    bodyExecution: 'sync-callback',
+    placement: 'command',
     message0: 'para cada item %1 (posição %2) na lista %3',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -363,6 +396,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_timeout',
+    bodyExecution: 'deferred-callback',
+    placement: 'command',
     message0: 'depois de %1 ms',
     args0: [{ type: 'input_value', name: 'MS', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -375,6 +410,9 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_interval',
+    bodyExecution: 'deferred-callback',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
     message0: 'repetir a cada %1 ms',
     args0: [{ type: 'input_value', name: 'MS', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -387,6 +425,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_timeout_seconds',
+    bodyExecution: 'deferred-callback',
+    placement: 'command',
     message0: 'depois de %1 segundos',
     args0: [{ type: 'input_value', name: 'S', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -395,10 +435,13 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Espera N segundos e então executa o "fazer". (No código vira N × 1000 ms.)',
+    tooltip: 'Espera a quantidade de segundos escolhida e então executa os blocos de dentro.',
   },
   {
     type: 'sz_js_set_interval_seconds',
+    bodyExecution: 'deferred-callback',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
     message0: 'repetir a cada %1 segundos',
     args0: [{ type: 'input_value', name: 'S', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -407,7 +450,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Repete o "fazer" a cada N segundos. (No código vira N × 1000 ms.)',
+    tooltip: 'Repete os blocos de dentro no intervalo de segundos escolhido.',
   },
   // ---- ⏳ Assíncrono (avançado) ----
   {
@@ -418,24 +461,26 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Espera uma promessa terminar antes de seguir. Só funciona dentro de um método "async". Vira await <valor>.',
+    placement: { root: [], nested: ['async-function-body'], role: 'command' },
+    tooltip: 'Espera uma promessa terminar antes de seguir. Use dentro de uma função assíncrona.',
   },
   {
     type: 'sz_js_set_timeout_call',
+    placement: 'command',
     message0: 'depois de %1 ms, chamar a função %2',
     args0: [
       { type: 'input_value', name: 'MS', check: 'JSValue' },
-      { type: 'field_input', name: 'FN', text: 'resolve' },
+      { type: 'field_name_picker', name: 'FN', text: 'resolve', kind: 'function' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Espera um tempo e então chama uma função pelo nome. Vira setTimeout(nome, ms).',
+    tooltip: 'Espera um tempo e então chama a função escolhida.',
   },
   {
     type: 'sz_val_new_promise',
+    bodyExecution: 'sync-callback',
     message0: 'uma promessa que avisa quando terminar com %1 %2 fazendo %3',
     args0: [
       { type: 'field_input', name: 'PARAM', text: 'resolve' },
@@ -445,7 +490,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Uma promessa: roda o "fazendo" e, quando pronto, chama a função de aviso (ex.: resolve()). Vira new Promise((resolve) => { ... }).',
+      'Cria uma tarefa que avisa quando terminou. Dentro dela, chame a função de aviso quando tudo estiver pronto.',
   },
   {
     type: 'sz_val_promise_all',
@@ -454,10 +499,11 @@ export const JS_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Espera TODAS as promessas de uma lista terminarem. Vira Promise.all([...]).',
+    tooltip: 'Espera todas as tarefas de uma lista terminarem.',
   },
   {
     type: 'sz_js_storage_set',
+    placement: 'command',
     message0: 'guardar em %1 a chave %2 com o valor %3',
     args0: [
       {
@@ -480,6 +526,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_fetch_json',
+    bodyExecution: 'deferred-callback',
+    placement: 'command',
     message0: 'buscar JSON da URL %1',
     args0: [{ type: 'field_input', name: 'URL', text: 'https://api.exemplo.com/dados' }],
     message1: 'quando chegar, guardar em %1 e fazer %2',
@@ -544,7 +592,7 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '📋 Listas',
     colour: '#dd9a0a',
-    types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice', 'sz_js_object_assign'],
+    types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice'],
   },
   {
     name: '🖥️ Console & Avisos',

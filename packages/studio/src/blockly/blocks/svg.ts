@@ -3,262 +3,321 @@ import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.svg
 
-/**
- * Blocos de SVG (gráficos vetoriais). Vivem em categoria PRÓPRIA (🖋️ SVG), fora
- * do HTML. O gerador HTML é genérico (`renderElement` emite qualquer tag+atributos),
- * então cada bloco vira `{type:'element', tag, attrs, children}`; o round-trip
- * código↔blocos é coberto por `collectAllAttrs` (parse), `FIELD_ATTRS`/`data`
- * (workspaceState) e os `case`s em `buildIR`.
- *
- * ⚠️ Os `type` (`sz_html_svg`/`sz_svg_*`) NÃO podem ser renomeados: parser,
- * gerador, IR, reverse-sync e a allowlist de projetos salvos referenciam o type.
- */
-
-/** Slot de filhos (formas dentro de <svg>/<g>). */
+/** Slot de filhos: formas e metadados que ficam dentro de SVG, grupos e símbolos. */
 const svgChildren: Pick<BlockDefinition, 'message1' | 'args1'> = {
-  message1: 'formas dentro %1',
+  message1: 'colocar dentro %1',
   args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
 }
 
-const classFieldArg = { type: 'field_input', name: 'CLASS', text: '' }
-/** Campo `classe` opcional — `classMsg1` p/ blocos folha, `classMsg2` p/ os com filhos. */
-const classMsg1: Pick<BlockDefinition, 'message1' | 'args1'> = {
-  message1: 'classe (opcional) %1',
-  args1: [classFieldArg],
+function classMsg1(text = ''): Pick<BlockDefinition, 'message1' | 'args1'> {
+  return {
+    message1: 'classe (opcional) %1',
+    args1: [{ type: 'field_input', name: 'CLASS', text }],
+  }
 }
-const classMsg2: Pick<BlockDefinition, 'message2' | 'args2'> = {
-  message2: 'classe (opcional) %1',
-  args2: [classFieldArg],
+
+function classMsg2(text = ''): Pick<BlockDefinition, 'message2' | 'args2'> {
+  return {
+    message2: 'classe (opcional) %1',
+    args2: [{ type: 'field_input', name: 'CLASS', text }],
+  }
 }
+
+const idField = { type: 'field_input', name: 'ID', text: '' }
 
 export const SVG_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_html_svg',
-    message0: 'Criar SVG id %1 largura %2 altura %3 viewBox %4',
+    message0: 'Criar área de desenho vetorial\nid (opcional) %1 tamanho %2 × %3\nmapa interno %4',
     args0: [
-      { type: 'field_input', name: 'ID', text: '' },
+      idField,
       { type: 'field_input', name: 'WIDTH', text: '200' },
       { type: 'field_input', name: 'HEIGHT', text: '200' },
-      { type: 'field_input', name: 'VIEWBOX', text: '' },
+      { type: 'field_input', name: 'VIEWBOX', text: '0 0 200 200' },
     ],
     ...svgChildren,
-    ...classMsg2,
+    ...classMsg2('desenho'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Caixa de desenho vetorial. Coloque caminhos/círculos/grupos dentro. viewBox (opcional) define o sistema de coordenadas, ex.: "0 0 100 100".',
+      'É como uma folha transparente que continua nítida ao aumentar. O mapa interno (viewBox) diz quais coordenadas cabem na folha.',
+  },
+  {
+    type: 'sz_svg_title',
+    message0: 'Dar um nome ao desenho %1',
+    args0: [{ type: 'field_input', name: 'TEXT', text: 'Meu desenho' }],
+    ...classMsg1(),
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Dá um nome CURTO ao desenho, que o leitor de tela fala. Este bloco só encaixa DENTRO de "Criar área de desenho vetorial", no começo dela.',
+  },
+  {
+    type: 'sz_svg_desc',
+    // "em detalhes" separa do irmão "Dar um nome" (title = nome CURTO; desc =
+    // explicação LONGA) — os dois pareciam a mesma coisa (feedback 24/07).
+    message0: 'Descrever o desenho em detalhes %1',
+    args0: [{ type: 'field_input', name: 'TEXT', text: 'Uma forma colorida.' }],
+    ...classMsg1(),
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Explica em uma frase o que aparece no desenho, para quem usa leitor de tela. O nome (bloco irmão) é curto; esta descrição pode ser mais longa. No SVG, ela se chama desc.',
+  },
+  {
+    type: 'sz_svg_defs',
+    message0: 'Guardar formas para reutilizar\nid (opcional) %1',
+    args0: [idField],
+    ...svgChildren,
+    ...classMsg2(),
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'É uma caixa de peças guardadas: elas não aparecem sozinhas, mas podem ser usadas várias vezes depois.',
+  },
+  {
+    type: 'sz_svg_symbol',
+    message0: 'Criar peça reutilizável\nnome (id) %1',
+    args0: [idField],
+    ...svgChildren,
+    ...classMsg2(),
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Junta formas numa peça com nome. Coloque dentro de “Guardar formas” e escolha esse nome em “Reutilizar forma”.',
   },
   {
     type: 'sz_svg_group',
-    message0: 'Criar grupo SVG id %1 transformar %2',
-    args0: [
-      { type: 'field_input', name: 'ID', text: '' },
-      { type: 'field_input', name: 'TRANSFORM', text: 'translate(100, 100)' },
-    ],
+    message0: 'Agrupar formas\nid (opcional) %1\nmover, girar ou escalar %2',
+    args0: [idField, { type: 'field_input', name: 'TRANSFORM', text: 'translate(0, 0)' }],
     ...svgChildren,
-    ...classMsg2,
+    ...classMsg2('grupo'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Agrupa formas SVG e as transforma juntas (mover/girar/escalar). Dê uma classe e gire por CSS (@keyframes) para fazer um moinho rodar.',
+      'É como juntar peças com uma fita para mover, girar ou aumentar todas de uma vez. O nome técnico da mudança é transform.',
   },
   {
     type: 'sz_svg_use',
-    message0: 'Reusar forma SVG (href %1) transformar %2',
+    message0:
+      'Reutilizar uma forma\nid (opcional) %1\nforma guardada %2\nmover, girar ou escalar %3',
     args0: [
-      { type: 'field_input', name: 'HREF', text: '#minhaForma' },
+      idField,
+      { type: 'field_name_picker', name: 'HREF', text: '', kind: 'svg-reference' },
       { type: 'field_input', name: 'TRANSFORM', text: '' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Reusa uma forma que tem um id (ex.: um caminho dentro de <defs>), opcionalmente transformada, bom para repetir as pás de um moinho.',
+      'Faz outra cópia de uma peça com nome. Primeiro crie uma peça reutilizável; depois escolha seu #nome aqui.',
   },
   {
     type: 'sz_svg_circle',
-    message0: 'Criar círculo SVG cx %1 cy %2 raio %3 preenchimento %4',
+    message0:
+      'Desenhar círculo\nid (opcional) %1\ncentro horizontal %2 vertical %3\nraio %4 cor de dentro %5',
     args0: [
-      { type: 'field_input', name: 'CX', text: '0' },
-      { type: 'field_input', name: 'CY', text: '0' },
-      { type: 'field_input', name: 'R', text: '8' },
-      { type: 'field_input', name: 'FILL', text: '' },
+      idField,
+      { type: 'field_input', name: 'CX', text: '100' },
+      { type: 'field_input', name: 'CY', text: '100' },
+      { type: 'field_input', name: 'R', text: '50' },
+      { type: 'field_svg_paint', name: 'FILL', text: '#a78bfa' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Um círculo no centro (cx, cy) com raio r.',
+    tooltip:
+      'Marca o centro e abre um compasso até o raio escolhido. No SVG, o centro também aparece como cx e cy.',
   },
   {
     type: 'sz_svg_ellipse',
-    message0: 'Criar elipse SVG cx %1 cy %2 raio-x %3 raio-y %4 preenchimento %5',
+    message0:
+      'Desenhar elipse\nid (opcional) %1\ncentro horizontal %2 vertical %3\nraio de lado %4 de cima %5\ncor de dentro %6',
     args0: [
-      { type: 'field_input', name: 'CX', text: '0' },
-      { type: 'field_input', name: 'CY', text: '0' },
-      { type: 'field_input', name: 'RX', text: '20' },
-      { type: 'field_input', name: 'RY', text: '10' },
-      { type: 'field_input', name: 'FILL', text: '' },
+      idField,
+      { type: 'field_input', name: 'CX', text: '100' },
+      { type: 'field_input', name: 'CY', text: '100' },
+      { type: 'field_input', name: 'RX', text: '70' },
+      { type: 'field_input', name: 'RY', text: '40' },
+      { type: 'field_svg_paint', name: 'FILL', text: '#22d3ee' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Uma elipse (círculo achatado) com raios diferentes em x e y.',
+    tooltip:
+      'Desenha um círculo achatado. Os dois raios dizem quanto ele abre para os lados e para cima.',
   },
   {
     type: 'sz_svg_rect',
-    message0: 'Criar retângulo SVG x %1 y %2 largura %3 altura %4 preenchimento %5',
+    message0:
+      'Desenhar retângulo\nid (opcional) %1\ncomeçar em x %2 y %3\nlargura %4 altura %5\ncor de dentro %6',
     args0: [
-      { type: 'field_input', name: 'X', text: '0' },
-      { type: 'field_input', name: 'Y', text: '0' },
-      { type: 'field_input', name: 'WIDTH', text: '20' },
-      { type: 'field_input', name: 'HEIGHT', text: '20' },
-      { type: 'field_input', name: 'FILL', text: '' },
+      idField,
+      { type: 'field_input', name: 'X', text: '35' },
+      { type: 'field_input', name: 'Y', text: '55' },
+      { type: 'field_input', name: 'WIDTH', text: '130' },
+      { type: 'field_input', name: 'HEIGHT', text: '90' },
+      { type: 'field_svg_paint', name: 'FILL', text: '#f472b6' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Um retângulo vetorial.',
+    tooltip: 'Desenha uma caixa a partir do canto x, y, usando a largura e a altura escolhidas.',
   },
   {
     type: 'sz_svg_line',
-    message0: 'Criar linha SVG de x %1 y %2 até x %3 y %4 contorno %5',
+    message0:
+      'Desenhar linha\nid (opcional) %1\ncomeçar em x %2 y %3\nterminar em x %4 y %5\ncor da linha %6',
     args0: [
-      { type: 'field_input', name: 'X1', text: '0' },
-      { type: 'field_input', name: 'Y1', text: '0' },
-      { type: 'field_input', name: 'X2', text: '10' },
-      { type: 'field_input', name: 'Y2', text: '10' },
-      { type: 'field_input', name: 'STROKE', text: 'black' },
+      idField,
+      { type: 'field_input', name: 'X1', text: '30' },
+      { type: 'field_input', name: 'Y1', text: '30' },
+      { type: 'field_input', name: 'X2', text: '170' },
+      { type: 'field_input', name: 'Y2', text: '170' },
+      { type: 'field_svg_paint', name: 'STROKE', text: '#fbbf24' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Uma linha reta entre dois pontos (precisa de um contorno para aparecer).',
+    tooltip: 'Liga dois pontos com um traço. A cor da linha é chamada stroke no código SVG.',
   },
   {
     type: 'sz_svg_polyline',
-    message0: 'Criar polilinha SVG pontos %1 preenchimento %2 contorno %3',
+    message0:
+      'Desenhar linha com vários pontos\nid (opcional) %1\npontos %2\ncor de dentro %3 da linha %4',
     args0: [
-      { type: 'field_input', name: 'POINTS', text: '0,0 10,20 20,0' },
-      { type: 'field_input', name: 'FILL', text: 'none' },
-      { type: 'field_input', name: 'STROKE', text: 'black' },
+      idField,
+      { type: 'field_input', name: 'POINTS', text: '30,150 100,40 170,150' },
+      { type: 'field_svg_paint', name: 'FILL', text: 'none' },
+      { type: 'field_svg_paint', name: 'STROKE', text: '#60a5fa' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Uma sequência de linhas conectadas pelos pontos "x,y x,y …". Use preenchimento "none" para mostrar só o traço.',
+      'Liga uma sequência de pontos sem fechar a forma. Escreva cada ponto como x,y e separe os pares com espaços.',
   },
   {
     type: 'sz_svg_polygon',
-    message0: 'Criar polígono SVG pontos %1 preenchimento %2 contorno %3',
+    message0:
+      'Desenhar forma com vários pontos\nid (opcional) %1\npontos %2\ncor de dentro %3 da linha %4',
     args0: [
-      { type: 'field_input', name: 'POINTS', text: '0,0 20,0 10,20' },
-      { type: 'field_input', name: 'FILL', text: '' },
-      { type: 'field_input', name: 'STROKE', text: '' },
+      idField,
+      { type: 'field_input', name: 'POINTS', text: '30,150 100,40 170,150' },
+      { type: 'field_svg_paint', name: 'FILL', text: '#34d399' },
+      { type: 'field_svg_paint', name: 'STROKE', text: '#1a2240' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Uma forma fechada ligando os pontos "x,y x,y …" (o último liga no primeiro).',
+    tooltip:
+      'Liga vários pontos e fecha a última ponta na primeira. Assim você pode criar triângulos, estrelas e muito mais.',
   },
   {
     type: 'sz_svg_path',
-    message0: 'Criar caminho SVG id %1 forma (d) %2 preenchimento %3 contorno %4 transformar %5',
+    message0:
+      'Desenhar caminho livre\nid (opcional) %1\ntraçado %2\ncor de dentro %3 da linha %4\nmover, girar ou escalar %5',
     args0: [
-      { type: 'field_input', name: 'ID', text: '' },
-      { type: 'field_input', name: 'D', text: 'M 0 0 L 10 0 L 5 10 Z' },
-      { type: 'field_input', name: 'FILL', text: '' },
-      { type: 'field_input', name: 'STROKE', text: '' },
+      idField,
+      { type: 'field_input', name: 'D', text: 'M30 150L100 35L170 150Z' },
+      { type: 'field_svg_paint', name: 'FILL', text: '#fb923c' },
+      { type: 'field_svg_paint', name: 'STROKE', text: '#1a2240' },
       { type: 'field_input', name: 'TRANSFORM', text: '' },
     ],
-    ...classMsg1,
+    ...classMsg1('forma'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Uma forma livre desenhada pelo atributo "d" (M = mover, L = linha, C = curva, Z = fechar). Deixe preenchimento/contorno em branco para usar a cor do CSS.',
+      'Desenha livremente seguindo instruções: M move o lápis, L faz uma linha, C faz uma curva e Z fecha a forma. O traçado se chama d no SVG.',
   },
   {
     type: 'sz_svg_text',
-    message0: 'Criar texto SVG id %1 x %2 y %3 conteúdo %4 preenchimento %5',
+    message0: 'Escrever no desenho\nid (opcional) %1\nposição x %2 y %3\ntexto %4 cor %5',
     args0: [
-      { type: 'field_input', name: 'ID', text: '' },
-      { type: 'field_input', name: 'X', text: '0' },
-      { type: 'field_input', name: 'Y', text: '0' },
-      { type: 'field_input', name: 'TEXT', text: '' },
-      { type: 'field_input', name: 'FILL', text: '' },
+      idField,
+      { type: 'field_input', name: 'X', text: '100' },
+      { type: 'field_input', name: 'Y', text: '110' },
+      { type: 'field_input', name: 'TEXT', text: 'Olá!' },
+      { type: 'field_svg_paint', name: 'FILL', text: '#1a2240' },
     ],
-    ...classMsg1,
+    ...classMsg1('texto'),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Escreve um texto dentro do SVG na posição (x, y). Deixe o conteúdo vazio para preencher por código (ex.: relógio que mostra a hora).',
+      'Escreve uma mensagem na posição escolhida. Use a classe “texto” com o bloco de alinhamento para centralizá-la.',
   },
 
-  // ---- Aparência: CSS específico de SVG (conectam na coluna de CSS) ----
+  // Aparência: CSS específico de SVG; todos conectam na área de Aparência.
   {
     type: 'sz_css_fill',
-    message0: 'Preenchimento (fill) do seletor %1 como %2',
+    message0: 'Pintar dentro da forma\nescolher %1 nova cor %2',
     args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '.forma' },
-      { type: 'field_input', name: 'VALUE', text: '#000000' },
+      { type: 'field_name_picker', name: 'SELECTOR', text: '.forma', kind: 'selector' },
+      { type: 'field_svg_paint', name: 'VALUE', text: '#fb923c' },
     ],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Cor de DENTRO de uma forma SVG. Aceita cor (#hex/nome), "none" ou "transparent".',
+    tooltip:
+      'Troca a cor de dentro da forma. No CSS e no SVG, essa pintura é chamada fill; “Sem cor” deixa só o contorno.',
   },
   {
     type: 'sz_css_stroke',
-    message0: 'Contorno (stroke) do seletor %1 como %2',
+    message0: 'Pintar a linha da forma\nescolher %1 nova cor %2',
     args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '.forma' },
-      { type: 'field_input', name: 'VALUE', text: '#000000' },
+      { type: 'field_name_picker', name: 'SELECTOR', text: '.forma', kind: 'selector' },
+      { type: 'field_svg_paint', name: 'VALUE', text: '#1a2240' },
     ],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Cor da LINHA (borda) de uma forma SVG.',
+    tooltip: 'Troca a cor da linha ao redor da forma. O nome técnico dessa linha é stroke.',
   },
   {
     type: 'sz_css_stroke_width',
-    message0: 'Espessura do contorno do seletor %1 como %2',
+    message0: 'Mudar a grossura da linha\nescolher %1 grossura %2',
     args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '.forma' },
-      { type: 'field_number', name: 'VALUE', value: 2, min: 0 },
+      { type: 'field_name_picker', name: 'SELECTOR', text: '.forma', kind: 'selector' },
+      { type: 'field_number', name: 'VALUE', value: 3, min: 0 },
     ],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Grossura da linha (stroke-width). Em SVG normalmente é sem unidade.',
+    tooltip: 'Aumenta ou diminui a grossura do contorno. No código, ela se chama stroke-width.',
   },
   {
     type: 'sz_css_stroke_dasharray',
-    message0: 'Traço pontilhado do seletor %1 com padrão %2',
+    message0: 'Fazer linha tracejada\nescolher %1 ritmo %2',
     args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '.forma' },
-      { type: 'field_input', name: 'VALUE', text: '4, 4' },
+      { type: 'field_name_picker', name: 'SELECTOR', text: '.forma', kind: 'selector' },
+      { type: 'field_input', name: 'VALUE', text: '8, 5' },
     ],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Desenha a linha tracejada: "traço, espaço" (ex.: "0.2, 4.8"). É o stroke-dasharray.',
+    tooltip:
+      'Alterna pedaços desenhados e espaços. “8, 5” significa 8 de traço e 5 de espaço; no código é stroke-dasharray.',
   },
   {
     type: 'sz_css_stroke_linecap',
-    message0: 'Ponta do contorno do seletor %1 como %2',
+    message0: 'Escolher a ponta da linha\nforma %1 ponta %2',
     args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '.forma' },
+      { type: 'field_name_picker', name: 'SELECTOR', text: '.forma', kind: 'selector' },
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -272,18 +331,18 @@ export const SVG_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Formato das pontas da linha (stroke-linecap).',
+    tooltip: 'Escolhe como cada ponta do traço termina. No código, isso se chama stroke-linecap.',
   },
   {
     type: 'sz_css_text_anchor',
-    message0: 'Alinhamento do texto SVG do seletor %1 como %2',
+    message0: 'Alinhar texto do desenho\nescolher %1 alinhamento %2',
     args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '.texto' },
+      { type: 'field_name_picker', name: 'SELECTOR', text: '.texto', kind: 'selector' },
       {
         type: 'field_dropdown',
         name: 'VALUE',
         options: [
-          ['início', 'start'],
+          ['começo', 'start'],
           ['meio', 'middle'],
           ['fim', 'end'],
         ],
@@ -292,23 +351,29 @@ export const SVG_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Onde o texto SVG se ancora na horizontal (text-anchor): início, meio ou fim.',
+    tooltip:
+      'Escolhe se a posição x marca o começo, o meio ou o fim do texto. No código, isso se chama text-anchor.',
   },
 ]
 
-/**
- * Sub-categorias da paleta de SVG (estilo Scratch/MakeCode): cada grupo tem ícone
- * e uma cor da família do SVG (tons de azul-céu). Cada bloco herda a cor do grupo.
- */
+/** Subcategorias da paleta; cada uma recebe um tom verde da identidade SVG. */
 export const SVG_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🖼️ Estrutura',
-    colour: '#2f6df0',
-    types: ['sz_html_svg', 'sz_svg_group', 'sz_svg_use'],
+    colour: C,
+    types: [
+      'sz_html_svg',
+      'sz_svg_title',
+      'sz_svg_desc',
+      'sz_svg_defs',
+      'sz_svg_symbol',
+      'sz_svg_group',
+      'sz_svg_use',
+    ],
   },
   {
     name: '⬛ Formas',
-    colour: '#1f5be0',
+    colour: C,
     types: [
       'sz_svg_circle',
       'sz_svg_ellipse',
@@ -319,10 +384,10 @@ export const SVG_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_svg_path',
     ],
   },
-  { name: '🔤 Texto', colour: '#5188f5', types: ['sz_svg_text'] },
+  { name: '🔤 Texto', colour: C, types: ['sz_svg_text'] },
   {
     name: '🎨 Aparência',
-    colour: '#7aa3f7',
+    colour: C,
     types: [
       'sz_css_fill',
       'sz_css_stroke',
@@ -334,16 +399,14 @@ export const SVG_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
 ]
 
-// IDENTIDADE: cada sub-grupo recebe um TOM da cor base da categoria (SVG),
-// derivado claro→escuro (categoryShades) — os literais em SVG_GROUPS são placeholders.
 const SVG_SHADES = categoryShades(CATEGORY_COLORS.svg, SVG_GROUPS.length)
-SVG_GROUPS.forEach((g, i) => {
-  g.colour = SVG_SHADES[i] ?? CATEGORY_COLORS.svg
+SVG_GROUPS.forEach((group, index) => {
+  group.colour = SVG_SHADES[index] ?? CATEGORY_COLORS.svg
 })
 const SVG_COLOUR_BY_TYPE = new Map<string, string>(
-  SVG_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
+  SVG_GROUPS.flatMap((group) => group.types.map((type) => [type, group.colour] as const)),
 )
-for (const b of SVG_BLOCKS) {
-  const colour = SVG_COLOUR_BY_TYPE.get(b.type)
-  if (colour) b.colour = colour
+for (const block of SVG_BLOCKS) {
+  const colour = SVG_COLOUR_BY_TYPE.get(block.type)
+  if (colour) block.colour = colour
 }

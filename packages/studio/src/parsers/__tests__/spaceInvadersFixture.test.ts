@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { buildIRFromWorkspace, buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
-import { SZIRSchema } from '#ir'
+import { SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '#parsers'
 import { invadersNaMaoExample } from '../../examples/core'
 
@@ -302,7 +302,7 @@ describe('Space Invaders (Franks Laboratory) — 100% blocos do núcleo', () => 
     expect(ir.extensions).toEqual([])
     expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
     // O IR inteiro valida contra o schema (importável/persistível).
-    expect(SZIRSchema.safeParse(ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
   })
 
   it('o exemplo do núcleo "Invasores do Espaço" NÃO deriva do parser atual', () => {
@@ -353,10 +353,9 @@ describe('Space Invaders (Franks Laboratory) — 100% blocos do núcleo', () => 
     expect(js).toContain(
       'this.enemies = this.enemies.filter((object) => !object.markedForDeletion);',
     )
-    // O loop de animação fica DENTRO do load (não é elevado).
-    const loadIndex = js.indexOf('addEventListener("load"')
-    expect(loadIndex).toBeGreaterThan(-1)
-    expect(js.indexOf('requestAnimationFrame')).toBeGreaterThan(loadIndex)
+    // O antigo wrapper de load é migrado transparentemente para Ao iniciar.
+    expect(js).not.toContain('addEventListener("load"')
+    expect(js).toContain('requestAnimationFrame')
     // CSS: translate moderno e o asset por nome seguem lá.
     expect(files1['style.css']).toContain('translate: -50% -50%')
     expect(files1['style.css']).toContain("url('background.png')")

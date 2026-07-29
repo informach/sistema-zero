@@ -19,8 +19,9 @@
  * em `docs/canvas3d-preview-limits.md` (DRACO, pointer lock, gamepad, fetch…).
  */
 
-/** MESMA URL das extensões game-3d/game-3d-advanced (importmaps colapsam). */
-export const THREE_CDN = 'https://esm.sh/three@0.180.0'
+import { THREE_ADDONS_CDN, THREE_CDN } from '../three/threeRuntimeContract'
+
+export { THREE_ADDONS_CDN, THREE_CDN }
 
 /**
  * Prefixo dos "addons" oficiais do three (`three/addons/loaders/GLTFLoader.js`
@@ -28,12 +29,15 @@ export const THREE_CDN = 'https://esm.sh/three@0.180.0'
  * (chave com barra final) no importmap, então `three/addons/x/Y.js` resolve para
  * `…/examples/jsm/x/Y.js`. Mesma origem do `three` base → nada novo na CSP.
  */
-export const THREE_ADDONS_CDN = 'https://esm.sh/three@0.180.0/examples/jsm/'
-
-/** Especificador exato `three` (não `three/addons/…`, tratado à parte). */
-const IMPORTS_THREE = /from\s+['"]three['"]/
-/** Qualquer import de addon (`from 'three/addons/…'`). */
-const IMPORTS_THREE_ADDONS = /from\s+['"]three\/addons\//
+/**
+ * Especificador exato `three` (não `three/addons/…`, tratado à parte). `\s*` (não `\s+`)
+ * tolera `from'three'` sem espaço — JS válido que o gerador não emite, mas código escrito
+ * à mão na Ponte/modo PRO pode. ⚠️ Varre a fonte CRUA: o literal `from 'three'` num
+ * comentário/string de um projeto 2D liga o importmap à toa (inócuo — entrada não usada).
+ */
+const IMPORTS_THREE = /from\s*['"]three['"]/
+/** Qualquer import de addon (`from 'three/addons/…'`); mesma tolerância de espaço. */
+const IMPORTS_THREE_ADDONS = /from\s*['"]three\/addons\//
 
 /** Os imports de núcleo que o código gerado exige (three.js + addons). */
 export function coreImportsForCode(js: unknown): Record<string, string> {

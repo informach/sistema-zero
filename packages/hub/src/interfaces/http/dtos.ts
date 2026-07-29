@@ -170,6 +170,17 @@ export const ShowcaseThreadBody = t.Object({
  * rota é alcançável na borda — o corpo não é confiável). `clientIdempotencyKey`
  * dedup-a duplo-clique; republicar depois = post novo (imutável).
  */
+/**
+ * Metadado do PROJETO publicado ({pro, extensions[]}) — COSMÉTICO (selo "remix a
+ * partir do nível X" no card do Mural; o gate real do remix é a checagem no clique
+ * sobre o snapshot jogável). Vem do BFF, que o deriva do projeto SANEADO — mas a
+ * rota é alcançável na borda, então NUNCA tratar como fronteira de segurança.
+ */
+export const StudioMetaBody = t.Object({
+  pro: t.Boolean(),
+  extensions: t.Array(t.String({ minLength: 1, maxLength: 64 }), { maxItems: 8 }),
+})
+
 export const ShowcaseThreadStudioBody = t.Object({
   spaceSlug: SLUG,
   lessonId: UUID,
@@ -180,6 +191,7 @@ export const ShowcaseThreadStudioBody = t.Object({
   ),
   playId: UUID,
   clientIdempotencyKey: UUID,
+  studioMeta: t.Optional(t.Union([StudioMetaBody, t.Null()])),
 })
 
 /**
@@ -203,6 +215,7 @@ export const ShowcaseThreadStudioStandaloneBody = t.Object({
   // mês corrente + posse Clube+Estúdio) é do service, com drop SILENCIOSO da tag
   // (um 400 aqui falharia a publicação da criança por causa do desafio).
   challengeKey: t.Optional(t.Union([t.String({ maxLength: 16 }), t.Null()])),
+  studioMeta: t.Optional(t.Union([StudioMetaBody, t.Null()])),
 })
 
 /** Paginação por cursor opaco (listagem de tópicos). */
@@ -226,6 +239,12 @@ export const ShowcaseByAuthorsBody = t.Object({
   authorIds: t.Array(UUID, { minItems: 1, maxItems: 50 }),
   from: t.String({ maxLength: 40 }),
   to: t.String({ maxLength: 40 }),
+})
+
+// Perfil público kids: vitrine INTEIRA de UM autor (sem janela), com capa.
+export const ShowcaseByAuthorBody = t.Object({
+  authorId: UUID,
+  limit: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
 })
 
 /**

@@ -14,6 +14,8 @@ export type ExampleQAInteraction =
   | 'horn-h'
   | 'digit-1'
   | 'choice-2'
+  | 'place-c'
+  | 'remove-x'
   | 'auto'
 
 export interface ExampleQAContract {
@@ -35,12 +37,101 @@ export interface ExampleQAContract {
  */
 export const EXAMPLE_QA_CONTRACTS = [
   {
-    key: 'game-2d:Pong simples',
-    name: 'Pong simples',
+    key: 'game-2d:Pegue a moeda',
+    name: 'Pegue a moeda',
     experience: 'game',
-    promise: 'Rebater a bola com a raquete controlada pelas setas.',
-    scenario: 'Mover a raquete, manter a bola em jogo e reiniciar uma rodada.',
+    promise: 'Andar com as setas, encostar na moeda e fazer cinco pontos para vencer.',
+    scenario: 'Começar, mover o herói, coletar cinco moedas, vencer e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d:Pong',
+    name: 'Pong',
+    experience: 'game',
+    promise: 'Disputar uma partida de Pong contra o computador até cinco pontos.',
+    scenario:
+      'Começar, mover a raquete com as setas, rebater a bola nas paredes e raquetes, marcar/sofrer cinco pontos e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Pong Profissional',
+    name: 'Pong Profissional',
+    experience: 'game',
+    promise:
+      'Ganhar o Pong no motor avançado com ângulo por contato e bola que acelera a cada troca.',
+    scenario:
+      'Começar, mover a raquete com as setas, rebater dando ângulo, ver a bola acelerar no rally, fazer sete pontos e ver vitória ou derrota.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'core:Pong (na mão)',
+    name: 'Pong (na mão)',
+    experience: 'game',
+    promise:
+      'O Pong feito só com o núcleo Canvas 2D: classes Paddle e Ball, deltaTime e rebote por ângulo.',
+    scenario:
+      'Mover a raquete com as setas, rebater a bola com ângulo pelo ponto de contato, marcar até cinco contra a IA do computador e apertar Enter para recomeçar.',
     interactions: ['arrows'],
+  },
+  {
+    key: 'game-2d:Mundo Pirata',
+    name: 'Mundo Pirata',
+    experience: 'game',
+    promise:
+      'Atravessar uma fase de plataforma lateral pegando moedas e pisando nos inimigos até a bandeira.',
+    scenario:
+      'Começar, correr e pular pelas plataformas com as setas, pegar moedas, pisar nos caranguejos, desviar dos buracos, chegar na bandeira e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Mundo Pirata Profissional',
+    name: 'Mundo Pirata Profissional',
+    experience: 'game',
+    promise:
+      'Vencer uma fase de plataforma com controlador do motor, tábuas atravessáveis, 3 inimigos e vidas.',
+    scenario:
+      'Começar, correr e pular, descer pelas tábuas, pisar em 3 tipos de inimigo, desviar das pérolas, pegar moedas, usar as vidas e o checkpoint e chegar na bandeira.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'core:Mundo Pirata (na mão)',
+    name: 'Mundo Pirata (na mão)',
+    experience: 'game',
+    promise:
+      'A plataforma pirata feita só com o núcleo Canvas 2D: classes, deltaTime, gravidade e câmera que rola.',
+    scenario:
+      'Correr e pular com as setas, pegar moedas, pisar nos inimigos, desviar dos buracos com 3 vidas e chegar na bandeira do fim.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'game-2d:Safári de Monstros',
+    name: 'Safári de Monstros',
+    experience: 'game',
+    promise:
+      'Explorar um mundo, capturar monstros selvagens no próprio mapa e ver o parceiro evoluir.',
+    scenario:
+      'Começar, andar pelo mundo com as setas, entrar no mato para um monstro aparecer, apertar Espaço colado nele para capturar, juntar 5 no caderno e ver o parceiro evoluir.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Safári de Monstros Profissional',
+    name: 'Safári de Monstros Profissional',
+    experience: 'game',
+    promise:
+      'Explorar dois biomas em grade, capturar os monstros no overworld sem batalha e evoluir o parceiro.',
+    scenario:
+      'Começar, andar pela grade com as setas, conversar com o Sábio, apertar Espaço de frente para cada monstro selvagem e capturá-lo, cruzar a borda leste para a Caverna, juntar os 5 e ver o parceiro evoluir na vitória.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Safári de Monstros (na mão)',
+    name: 'Safári de Monstros (na mão)',
+    experience: 'game',
+    promise:
+      'O overworld de captura só com o núcleo Canvas 2D: classes, tilemap por texto, câmera e AABB.',
+    scenario:
+      'Começar, andar com WASD por um mundo maior que a tela com câmera que segue, apertar espaço colado num monstro na grama para capturar, juntar 5 e ver o parceiro evoluir no HUD.',
+    interactions: ['start', 'wasd', 'space'],
   },
   {
     key: 'game-2d:Herói que anda',
@@ -107,6 +198,72 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows', 'space'],
   },
   {
+    key: 'game-2d:Dino Corredor',
+    name: 'Dino Corredor',
+    experience: 'game',
+    promise: 'Pular cactos com colisão perdoadora enquanto o placar sobe e o jogo acelera.',
+    scenario: 'Enter ou espaço começa; pular cactos, pontuar por segundo, bater e reiniciar.',
+    interactions: ['start', 'space'],
+  },
+  {
+    key: 'game-2d:Chuva de Meteoros',
+    name: 'Chuva de Meteoros',
+    experience: 'game',
+    promise:
+      'Voar nas quatro direções sob uma chuva vertical de meteoros e atirar para sobreviver.',
+    scenario:
+      'Enter ou espaço começa; voar com as setas, atirar, destruir meteoros, pontuar por tempo e reiniciar.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Herói que Evolui',
+    name: 'Herói que Evolui',
+    experience: 'game',
+    promise:
+      'Cortar monstros com a espada para ganhar experiência, subir de nível (mais forte e curando) e chegar ao nível 5.',
+    scenario:
+      'Enter ou espaço começa; andar com as setas, golpear com espaço, derrotar monstros para ganhar EXP, subir de nível e vencer no nível 5.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Fazenda Feliz',
+    name: 'Fazenda Feliz',
+    experience: 'game',
+    promise:
+      'Cuidar de uma fazendinha: plantar nos canteiros, esperar crescer, colher o que estiver maduro e juntar 30 moedas.',
+    scenario:
+      'Enter ou espaço começa; andar com as setas, plantar com espaço, esperar os brotos crescerem, colher os maduros e vencer com 30 moedas.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Sobrevivente',
+    name: 'Sobrevivente',
+    experience: 'game',
+    promise:
+      'Fugir da horda numa arena enquanto a arma atira sozinha no monstrinho mais perto, aguentando o máximo de tempo.',
+    scenario:
+      'Enter ou espaço começa; andar com as setas, deixar a arma automática derrotar os monstrinhos, perder os corações ao encostar e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d:Batalha de Monstrinhos',
+    name: 'Batalha de Monstrinhos',
+    experience: 'game',
+    promise: 'Batalha por turnos com vantagem de tipo: fogo tira o dobro da planta e a poção cura.',
+    scenario:
+      'Enter começa; após a abertura os golpes liberam nas teclas 1/2/3, o rival devolve e a vida zerada troca a cena.',
+    interactions: ['start', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Aventura do Herói',
+    name: 'Aventura do Herói',
+    experience: 'game',
+    promise: 'Mundo top-down maior que a tela com mato cortável, espada temporária e guardiões.',
+    scenario:
+      'Enter começa; setas andam com a câmera seguindo; espaço corta o mato e fere guardiões; derrotar os quatro vence.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
     key: 'game-2d:Guerra de Gorilas',
     name: 'Guerra de Gorilas',
     experience: 'game',
@@ -126,24 +283,28 @@ export const EXAMPLE_QA_CONTRACTS = [
     key: 'game-2d:Equilibrista',
     name: 'Equilibrista',
     experience: 'game',
-    promise: 'Esticar um bastão e atravessar plataformas.',
-    scenario: 'Segurar, soltar, atravessar, falhar e recomeçar limpo.',
-    interactions: ['drag'],
+    promise:
+      'Montar a regra do mouse (segurado cresce o bastão, solto derruba) e atravessar somando pontos numa variável.',
+    scenario:
+      'Enter começa; segurar, soltar, atravessar, pontuar nos eventos, cair e recomeçar limpo.',
+    interactions: ['start', 'drag'],
   },
   {
     key: 'game-2d:Balão',
     name: 'Balão',
     experience: 'game',
-    promise: 'Subir com combustível limitado e desviar de árvores.',
-    scenario: 'Sustentar o balão, gastar combustível, colidir e reiniciar.',
-    interactions: ['click'],
+    promise:
+      'Acender o fogo com o mouse segurado, voar com combustível limitado e desviar das árvores do caminho.',
+    scenario:
+      'Enter começa; sustentar o balão, gastar combustível, bater ou pousar seco e reiniciar.',
+    interactions: ['start', 'click'],
   },
   {
     key: 'game-2d:Aventura com câmera',
     name: 'Aventura com câmera',
     experience: 'exploration',
-    promise: 'Explorar um mundo grande com câmera, moedas, som e música.',
-    scenario: 'Percorrer as bordas da tela, acompanhar a câmera e coletar moeda.',
+    promise: 'Explorar um caminho grande e visível com câmera, paisagem, moedas, som e música.',
+    scenario: 'Percorrer o caminho, acompanhar a câmera e coletar as quatro moedas.',
     interactions: ['arrows'],
   },
   {
@@ -193,6 +354,71 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Usar pulo tolerante, plataformas especiais e pisão.',
     scenario: 'Atravessar a fase, derrotar bichos, pegar cinco frutas e reiniciar.',
     interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Dino Corredor Profissional',
+    name: 'Dino Corredor Profissional',
+    experience: 'game',
+    promise: 'Pular cactos com molde, pool, parallax e recorde salvo de verdade.',
+    scenario: 'Correr, saltar obstáculos cada vez mais rápidos, bater e ver o recorde guardado.',
+    interactions: ['space', 'arrows', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Chuva de Meteoros Profissional',
+    name: 'Chuva de Meteoros Profissional',
+    experience: 'game',
+    promise: 'Sobreviver a uma chuva que acelera, com moldes, efeitos de explosão e recorde salvo.',
+    scenario:
+      'Decolar pelo botão, voar, atirar com recarga, destruir meteoros, bater e ver o recorde guardado.',
+    interactions: ['click', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Herói que Evolui Profissional',
+    name: 'Herói que Evolui Profissional',
+    experience: 'game',
+    promise:
+      'Combate top-down com câmera e FSM de inimigo, mais o menu de melhoria: cada nível deixa escolher espada, alcance ou velocidade.',
+    scenario:
+      'Começar pelo botão, andar com WASD, golpear com espaço, derrotar monstros para ganhar EXP, escolher a melhoria no menu e chegar ao nível 6.',
+    interactions: ['click', 'wasd', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Fazenda Feliz Profissional',
+    name: 'Fazenda Feliz Profissional',
+    experience: 'game',
+    promise:
+      'Cuidar da fazenda com câmera e ferramentas: arar, plantar, regar, dormir para crescer e vender a colheita por moedas.',
+    scenario:
+      'Começar pelo botão, andar com WASD, trocar de ferramenta e usar com espaço, dormir para o dia passar, colher, vender na loja e juntar 50 moedas.',
+    interactions: ['click', 'wasd', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Sobrevivente Profissional',
+    name: 'Sobrevivente Profissional',
+    experience: 'game',
+    promise:
+      'Sobreviver num mundo com câmera, mira contínua no mouse, horda com pool e EXP que sobe de nível e acelera a arma.',
+    scenario:
+      'Começar pelo botão, fugir com WASD, a arma mira o mouse e atira sozinha, derrotar monstrinhos para subir de nível e cumprir a missão.',
+    interactions: ['click', 'wasd'],
+  },
+  {
+    key: 'game-2d-advanced:Batalha de Monstrinhos Profissional',
+    name: 'Batalha de Monstrinhos Profissional',
+    experience: 'game',
+    promise: 'Montar o time, escrever a tabela de vantagem e capturar o lendário.',
+    scenario:
+      'Andar até a rival, batalhar pelos menus do kit, curar na fonte e capturar no mato fundo.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Aventura do Herói Profissional',
+    name: 'Aventura do Herói Profissional',
+    experience: 'game',
+    promise: 'Explorar um mundo maior que a tela e derrotar os sete monstros com a espada.',
+    scenario:
+      'Cortar o mato, passar atrás das árvores e vencer javalis e lobos até a tela de vitória.',
+    interactions: ['arrows', 'space'],
   },
   {
     key: 'game-2d-advanced:Bichinhos do Quintal',
@@ -331,28 +557,123 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['click'],
   },
   {
-    key: 'game-3d:Corrida maluca',
-    name: 'Corrida maluca',
+    key: 'game-3d:Corrida Maluca',
+    name: 'Corrida Maluca',
     experience: 'game',
     promise: 'Completar voltas desviando de rivais.',
     scenario: 'Acelerar, frear, virar, completar volta e reiniciar.',
     interactions: ['arrows'],
   },
   {
-    key: 'game-3d:Atravesse a rua',
-    name: 'Atravesse a rua',
+    key: 'game-3d:Atravesse a Rua',
+    name: 'Atravesse a Rua',
     experience: 'game',
     promise: 'Cruzar uma grade isométrica desviando do trânsito.',
     scenario: 'Pular casas, pontuar, colidir, ver fim e reiniciar.',
     interactions: ['arrows'],
   },
   {
+    key: 'game-3d:Defesa da Torre',
+    name: 'Defesa da Torre',
+    experience: 'game',
+    promise: 'Uma torre no centro defende o cristal sozinha zapeando os invasores do enxame.',
+    scenario:
+      'Ver os invasores nascerem na beirada, a torre zapear um a um, pontuar até 20 e recomeçar.',
+    interactions: ['click'],
+  },
+  {
+    key: 'game-3d:Reunir o Rebanho',
+    name: 'Reunir o Rebanho',
+    experience: 'game',
+    promise:
+      'Guiar os bichinhos que vagam pelo campo até o curral, gerenciando o rebanho que segue você.',
+    scenario:
+      'Andar com as setas para os bichinhos seguirem, levá-los ao curral, reunir 8 antes do tempo acabar e recomeçar.',
+    interactions: ['wasd', 'arrows'],
+  },
+  {
+    key: 'game-3d:A Lenda do Herói',
+    name: 'A Lenda do Herói',
+    experience: 'game',
+    promise:
+      'Um herói que ataca de perto com a espada os monstros que vagam e perseguem pela clareira.',
+    scenario:
+      'Andar com as setas ou WASD, atacar com a barra de espaço os monstros por perto, derrotar 10 antes que os 3 corações acabem e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'game-3d:Caça Estelar',
+    name: 'Caça Estelar',
+    experience: 'game',
+    promise:
+      'Uma nave que voa livre pela arena e dispara no inimigo mais perto para abater as naves inimigas.',
+    scenario:
+      'Voar com as setas ou WASD, disparar com a barra de espaço nas naves por perto, abater 10 antes que os 3 escudos acabem e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'game-3d:Cerco na Base',
+    name: 'Cerco na Base',
+    experience: 'game',
+    promise:
+      'Um FPS de arena em 1ª pessoa: mirar com o mouse e segurar o espaço para carregar o tiro, com munição que recarrega.',
+    scenario:
+      'Mirar com o mouse, segurar o espaço para carregar e soltar para atirar nos aliens em ondas, abater 12 antes que as 3 vidas acabem e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-3d:Mina de Cristais',
+    name: 'Mina de Cristais',
+    experience: 'game',
+    promise:
+      'Uma mina isométrica: clicar nos blocos para cavar, coletando os cristais brilhantes e ignorando a pedra, contra o relógio.',
+    scenario:
+      'Clicar nos blocos para cavar, coletar 10 cristais entre a pedra enquanto veias novas surgem, e ganhar ou perder quando o tempo acaba.',
+    interactions: ['click'],
+  },
+  {
     key: 'game-3d:Desvie dos blocos',
     name: 'Desvie dos blocos',
     experience: 'game',
     promise: 'Correr e pular de blocos que aceleram.',
-    scenario: 'Mover, pular, sobreviver, colidir e reiniciar.',
+    scenario: 'Mover, pular, sobreviver e colidir para encerrar a partida.',
     interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'game-3d:Corrida Infinita 3D',
+    name: 'Corrida Infinita 3D',
+    experience: 'game',
+    promise: 'Trocar de pista, pular e sobreviver a caixas que aceleram.',
+    scenario: 'Trocar de pista, pular caixa, marcar tempo, bater e recomeçar.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-3d:Patrulha Espacial',
+    name: 'Patrulha Espacial',
+    experience: 'game',
+    promise:
+      'Pilotar a nave vista de trás, inclinar nas curvas e atirar lasers em meteoros que aceleram.',
+    scenario:
+      'Andar com setas ou A/D, atirar com espaço, destruir meteoro, marcar tempo, bater e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'game-3d:Labirinto dos Robôs',
+    name: 'Labirinto dos Robôs',
+    experience: 'game',
+    promise: 'Andar em primeira pessoa pelo labirinto e derrotar robôs com a mira central.',
+    scenario:
+      'Andar com WASD, pular, clicar para travar a mira e atirar, tomar dano e vencer ou reiniciar.',
+    interactions: ['wasd', 'space', 'click'],
+  },
+  {
+    key: 'game-3d:Mundo de Blocos',
+    name: 'Mundo de Blocos',
+    experience: 'game',
+    promise: 'Construir com blocos na grade isométrica e empilhar uma torre de cinco.',
+    scenario:
+      'Mover o cursor com as setas, colocar com espaço, trocar o tipo com 1 e quebrar com o clique.',
+    interactions: ['arrows', 'space', 'digit-1', 'click'],
   },
   {
     key: 'game-3d:Cubo girando',
@@ -363,12 +684,62 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['auto'],
   },
   {
-    key: 'game-3d-advanced:Defesa da Torre',
-    name: 'Defesa da Torre',
+    key: 'game-3d-advanced:Defesa da Torre Profissional',
+    name: 'Defesa da Torre Profissional',
     experience: 'game',
     promise: 'Torres autônomas defendem um cristal com máquina de estados.',
     scenario: 'Observar mira, tiro, recarga, vitória/derrota e reinício.',
     interactions: ['auto'],
+  },
+  {
+    key: 'game-3d-advanced:Reunir o Rebanho Profissional',
+    name: 'Reunir o Rebanho Profissional',
+    experience: 'game',
+    promise:
+      'Bichinhos com cérebro próprio vagam e seguem o pastor, gerenciados pela vizinhança do motor.',
+    scenario:
+      'Andar com WASD, chegar perto para os bichinhos seguirem, levar o rebanho ao curral, reunir 8 antes do tempo e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows'],
+  },
+  {
+    key: 'game-3d-advanced:A Lenda do Herói Profissional',
+    name: 'A Lenda do Herói Profissional',
+    experience: 'game',
+    promise:
+      'Monstros com cérebro próprio vagam e perseguem o herói; a espada os derrota de perto.',
+    scenario:
+      'Andar com WASD, atacar com espaço ou clique os monstros por perto, derrotar 10 antes dos corações acabarem e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-3d-advanced:Caça Estelar Profissional',
+    name: 'Caça Estelar Profissional',
+    experience: 'game',
+    promise:
+      'Naves inimigas com cérebro próprio vagam, perseguem e fogem; o tiro pra frente as derruba.',
+    scenario:
+      'Voar com WASD, atirar com espaço ou clique nas naves inimigas, abater 10 antes dos escudos acabarem e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-3d-advanced:Cerco na Base Profissional',
+    name: 'Cerco na Base Profissional',
+    experience: 'game',
+    promise:
+      'FPS de defesa em 1ª pessoa (cameraFps) com tiro carregado e munição limitada; aliens avançam em ondas.',
+    scenario:
+      'Olhar com o mouse, andar com WASD, carregar e soltar o espaço para disparar nos aliens, abater 12 antes da vida acabar e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-3d-advanced:Mina de Cristais Profissional',
+    name: 'Mina de Cristais Profissional',
+    experience: 'game',
+    promise:
+      'Minerador em 3ª pessoa (moveWithKeys + cameraFollow) que anda pela mina e clica nos blocos para cavar cristais, contra o relógio.',
+    scenario:
+      'Andar com WASD, clicar nos blocos para cavar (pick + recycle) coletando 10 cristais entre a pedra enquanto veias novas surgem, e ver vitória ou derrota quando o tempo acaba.',
+    interactions: ['wasd', 'click'],
   },
   {
     key: 'game-3d-advanced:Salto nas Nuvens',
@@ -403,12 +774,66 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'space'],
   },
   {
+    key: 'game-3d-advanced:O Chefão das Sombras',
+    name: 'O Chefão das Sombras',
+    experience: 'game',
+    promise: 'Enfrentar um chefão em três fases, atacando com clique e desviando do anel de tiros.',
+    scenario: 'Clicar no chefão, sobreviver às três fases, vencer/perder e reiniciar.',
+    interactions: ['click', 'wasd'],
+  },
+  {
     key: 'game-3d-advanced:Tiro ao Alvo',
     name: 'Tiro ao Alvo',
     experience: 'game',
     promise: 'Clicar em alvos móveis e fazer doze pontos em 25 segundos.',
     scenario: 'Fechar dica, acertar alvos comuns/dourado, vencer/perder e reiniciar.',
     interactions: ['click'],
+  },
+  {
+    key: 'game-3d-advanced:Corrida Infinita Profissional',
+    name: 'Corrida Infinita Profissional',
+    experience: 'game',
+    promise:
+      'Correr sem fim em três faixas, pulando barreiras e pegando moedas num jogo que acelera.',
+    scenario:
+      'Começar, trocar de faixa com A/D ou setas, pular com espaço, pegar moeda, bater e reiniciar.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'game-3d-advanced:Patrulha Espacial Profissional',
+    name: 'Patrulha Espacial Profissional',
+    experience: 'game',
+    promise: 'Destruir vinte meteoros que brilham antes de explodir, numa chuva que acelera.',
+    scenario:
+      'Patrulhar pelo botão, andar com A/D ou setas, atirar com espaço, ver a morte dramática, encostar três vezes e vencer.',
+    interactions: ['click', 'wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'game-3d-advanced:Labirinto dos Robôs Profissional',
+    name: 'Labirinto dos Robôs Profissional',
+    experience: 'game',
+    promise: 'Atirar em primeira pessoa em robôs com cérebro de patrulha, perseguição e ataque.',
+    scenario:
+      'Travar a mira, andar, derrotar um robô por tiro, morrer encostado, limpar os cinco e vencer.',
+    interactions: ['click', 'wasd'],
+  },
+  {
+    key: 'game-3d-advanced:Mundo de Blocos Profissional',
+    name: 'Mundo de Blocos Profissional',
+    experience: 'game',
+    promise: 'Plantar blocos sólidos na grade com o clique e subir até o topo da muralha.',
+    scenario:
+      'Andar, plantar bloco, subir nele, trocar o tipo com 1/2/3, reciclar com X e vencer no topo.',
+    interactions: ['click', 'wasd', 'space', 'digit-1'],
+  },
+  {
+    key: 'game-3d-advanced:Atravesse a Rua Profissional',
+    name: 'Atravesse a Rua Profissional',
+    experience: 'game',
+    promise: 'Pular em grade e atravessar 20 faixas desviando dos carros que cruzam a pista.',
+    scenario:
+      'Pular com as setas, esperar a brecha entre os carros, avançar as faixas e vencer na faixa 20.',
+    interactions: ['wasd'],
   },
   {
     key: 'world-3d:Meu Mundo',
@@ -424,6 +849,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     experience: 'game',
     promise: 'Completar checkpoints ordenados com cronômetro e recorde.',
     scenario: 'Passar pelos cinco checkpoints, fechar volta e registrar recorde.',
+    interactions: ['wasd'],
+  },
+  {
+    key: 'world-3d:Corrida Maluca Profissional',
+    name: 'Corrida Maluca Profissional',
+    experience: 'game',
+    promise: 'Dirigir pela cidadezinha desviando do transito e fechar as voltas nos aneis.',
+    scenario:
+      'Acelerar pela cidade, evitar os carros do transito, passar pelos aneis na ordem e registrar o recorde.',
     interactions: ['wasd'],
   },
   {
@@ -483,6 +917,30 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'interact-e', 'choice-2'],
   },
   {
+    key: 'world-3d:Folio Procedural',
+    name: 'Folio Procedural',
+    experience: 'exploration',
+    promise: 'Recriar uma experiência de portfólio 3D com formas, física e distrito procedural.',
+    scenario: 'Explorar a pé e de jipe, empurrar objetos e atravessar o distrito criativo.',
+    interactions: ['wasd', 'space', 'interact-e'],
+  },
+  {
+    key: 'world-3d:Coastal World Procedural',
+    name: 'Coastal World Procedural',
+    experience: 'exploration',
+    promise: 'Explorar um arquipélago costeiro completo criado apenas com primitivas.',
+    scenario: 'Alternar personagem, barco e jetpack, cruzar pontes e chegar ao farol.',
+    interactions: ['wasd', 'space', 'interact-e'],
+  },
+  {
+    key: 'world-3d:Vocation Vista Procedural',
+    name: 'Vocation Vista Procedural',
+    experience: 'exploration',
+    promise: 'Explorar uma cidade educativa procedural com bairros, casas e inventário.',
+    scenario: 'Visitar os três distritos, conversar, abrir locais e concluir a missão.',
+    interactions: ['wasd', 'interact-e', 'choice-2'],
+  },
+  {
     key: 'core:Cidade & Moinho (na mão)',
     name: 'Cidade & Moinho (na mão)',
     experience: 'game',
@@ -499,43 +957,386 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['arrows', 'digit-1'],
   },
   {
-    key: 'core:Plataforma Vertical (na mão)',
-    name: 'Plataforma Vertical (na mão)',
-    experience: 'game',
-    promise: 'Subir uma plataforma vertical feita somente com o núcleo.',
-    scenario: 'Andar, pular, usar tábuas, acompanhar câmera e reiniciar.',
-    interactions: ['wasd'],
-  },
-  {
-    key: 'core:Portas do Castelo (na mão)',
-    name: 'Portas do Castelo (na mão)',
-    experience: 'game',
-    promise: 'Atravessar fases por portas com fade manual.',
-    scenario: 'Mover, pular, alcançar porta, trocar fase e reiniciar.',
-    interactions: ['wasd'],
-  },
-  {
-    key: 'core:Defesa da Torre (na mão)',
-    name: 'Defesa da Torre (na mão)',
-    experience: 'game',
-    promise: 'Defender ondas com torres feitas só com blocos do núcleo.',
-    scenario: 'Comprar torres, obter moedas, perder vida, concluir e reiniciar.',
-    interactions: ['click', 'auto'],
-  },
-  {
-    key: 'core:Duelo (na mão)',
-    name: 'Duelo (na mão)',
-    experience: 'game',
-    promise: 'Disputar luta local de dois jogadores feita no núcleo.',
-    scenario: 'Mover, pular e golpear com os dois controles até o tempo acabar.',
-    interactions: ['action-fight', 'arrows'],
-  },
-  {
     key: 'core:Passeio 3D (na mão)',
     name: 'Passeio 3D (na mão)',
     experience: 'exploration',
     promise: 'Dirigir num mundo Three.js com câmera, clima e áudio posicional.',
     scenario: 'Dirigir pela floresta, buzinar e observar câmera, névoa e ciclo diário.',
     interactions: ['wasd', 'horn-h'],
+  },
+  {
+    key: 'core:Atravesse a Rua (na mão)',
+    name: 'Atravesse a Rua (na mão)',
+    experience: 'game',
+    promise: 'O Crossy Road feito só com o núcleo Canvas 3D: pular em grade e desviar dos carros.',
+    scenario:
+      'Pular pelas faixas com as setas, desviar dos carros que cruzam, o céu fica verde ao chegar do outro lado e vermelho ao ser atropelado.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'core:Corrida Maluca (na mão)',
+    name: 'Corrida Maluca (na mão)',
+    experience: 'game',
+    promise:
+      'A Corrida Maluca feita só com o núcleo Canvas 3D: dar voltas na pista desviando dos rivais.',
+    scenario:
+      'Acelerar e frear com as setas, trocar de faixa para os lados, desviar dos carros rivais e completar 3 voltas.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'core:Defesa da Torre (na mão)',
+    name: 'Defesa da Torre (na mão)',
+    experience: 'game',
+    promise:
+      'O Tower Defense feito só com o núcleo Canvas 3D: a torre zapeia sozinha os invasores do enxame.',
+    scenario:
+      'Ver os invasores nascerem na beirada e caminharem ao centro, a torre girar e zapear um a um, o céu ficar verde ao parar 20 (ou vermelho se um chegar no cristal) e apertar uma tecla para recomeçar.',
+    interactions: ['auto'],
+  },
+  {
+    key: 'core:Reunir o Rebanho (na mão)',
+    name: 'Reunir o Rebanho (na mão)',
+    experience: 'game',
+    promise:
+      'O Entity Management feito só com o núcleo Canvas 3D: guiar com as setas os bichinhos que vagam até o curral.',
+    scenario:
+      'Andar com as setas ou WASD, encostar nos bichinhos para eles seguirem, levar o rebanho ao curral dourado, reunir 10 e ver o céu ficar verde.',
+    interactions: ['wasd', 'arrows'],
+  },
+  {
+    key: 'core:A Lenda do Herói (na mão)',
+    name: 'A Lenda do Herói (na mão)',
+    experience: 'game',
+    promise:
+      'O RPG de ação feito só com o núcleo Canvas 3D: um herói que ataca com a espada os monstros que perseguem.',
+    scenario:
+      'Andar com as setas ou WASD, atacar com a barra de espaço os monstros por perto, derrotar 10 e ver o céu ficar dourado.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Caça Estelar (na mão)',
+    name: 'Caça Estelar (na mão)',
+    experience: 'game',
+    promise:
+      'A batalha espacial feita só com o núcleo Canvas 3D: uma nave que voa livre e dispara para abater as naves inimigas.',
+    scenario:
+      'Voar com as setas ou WASD, disparar com a barra de espaço nas naves inimigas, abater 10 e ver o céu ficar dourado.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Cerco na Base (na mão)',
+    name: 'Cerco na Base (na mão)',
+    experience: 'game',
+    promise:
+      'O FPS feito só com o núcleo Canvas 3D: câmera em 1ª pessoa (Raycaster de mira) e aliens em ondas num pool instanciado.',
+    scenario:
+      'Olhar arrastando o mouse, segurar e soltar o espaço para atirar na mira nos aliens, abater 12 e ver o céu ficar dourado.',
+    interactions: ['space', 'click'],
+  },
+  {
+    key: 'core:Mina de Cristais (na mão)',
+    name: 'Mina de Cristais (na mão)',
+    experience: 'game',
+    promise:
+      'A mina feita só com o núcleo Canvas 3D: câmera isométrica (OrthographicCamera) e mira por clique (Raycaster) sobre dois pools instanciados de pedra e cristal.',
+    scenario:
+      'Clicar nos blocos para cavar, coletar 10 cristais entre a pedra enquanto veias novas surgem, e ver o céu ficar dourado na vitória ou vermelho no fim do tempo.',
+    interactions: ['click'],
+  },
+  {
+    key: 'core:Folio 3D procedural (na mão)',
+    name: 'Folio 3D procedural (na mão)',
+    experience: 'exploration',
+    promise: 'Construir terreno, estrada, prédios e física usando somente blocos nativos.',
+    scenario: 'Mover o personagem, pular e colidir no cenário Three.js sem extensão ou asset.',
+    interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'core:Dino Corredor (na mão)',
+    name: 'Dino Corredor (na mão)',
+    experience: 'game',
+    promise: 'Ver o motor do Dino runner por dentro: classes, deltaTime e timer de spawn.',
+    scenario: 'Correr, pular cactos, ver o placar subir, colidir e recomeçar com Enter.',
+    interactions: ['space', 'arrows', 'start'],
+  },
+  {
+    key: 'core:Corrida Infinita (na mão)',
+    name: 'Corrida Infinita (na mão)',
+    experience: 'game',
+    promise: 'Correr sem fim em three.js puro com esteira, pool e colisão na mão.',
+    scenario: 'Trocar de pista, pular obstáculos, ver a velocidade crescer, bater e reiniciar.',
+    interactions: ['arrows', 'space', 'click'],
+  },
+  {
+    key: 'core:Batalha de Monstrinhos (na mão)',
+    name: 'Batalha de Monstrinhos (na mão)',
+    experience: 'game',
+    promise: 'Vencer a batalha por turnos com golpes, vantagem de elemento, cura e troca.',
+    scenario:
+      'Começar, escolher golpe no menu com cursor, trocar de monstrinho, aguardar o turno do inimigo e vencer ou reiniciar.',
+    interactions: ['start', 'arrows', 'escape'],
+  },
+  {
+    key: 'core:Aventura do Herói (na mão)',
+    name: 'Aventura do Herói (na mão)',
+    experience: 'game',
+    promise: 'Explorar o mundo com câmera, cortar mato e derrotar quatro inimigos com a espada.',
+    scenario:
+      'Começar, andar com deslize na parede, golpear mato e inimigos com knockback e vencer ou perder e reiniciar.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Labirinto dos Robôs (na mão)',
+    name: 'Labirinto dos Robôs (na mão)',
+    experience: 'game',
+    promise: 'Andar pelo labirinto em primeira pessoa, mirar pelo centro e derrotar os robôs.',
+    scenario:
+      'Arrastar para olhar, andar com WASD, atirar com espaço num robô, tomar dano, vencer ou perder e reiniciar.',
+    interactions: ['drag', 'wasd', 'space', 'click'],
+  },
+  {
+    key: 'core:Mundo de Blocos (na mão)',
+    name: 'Mundo de Blocos (na mão)',
+    experience: 'game',
+    promise: 'Colocar e remover blocos na face mirada e construir uma torre até a nuvem.',
+    scenario:
+      'Arrastar para olhar, andar e pular, trocar o tipo com 1/2/3, colocar com C na face mirada e remover com X.',
+    interactions: ['drag', 'wasd', 'space', 'digit-1', 'place-c', 'remove-x'],
+  },
+  {
+    key: 'core:Chuva de Meteoros (na mão)',
+    name: 'Chuva de Meteoros (na mão)',
+    experience: 'game',
+    promise:
+      'Ver o Space Shooter por dentro: herança de sprites, diagonal normalizada e giro com rotate.',
+    scenario:
+      'Enter começa; voar na diagonal, atirar num meteoro, ver a explosão animada, colidir e recomeçar.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Patrulha Espacial (na mão)',
+    name: 'Patrulha Espacial (na mão)',
+    experience: 'game',
+    promise:
+      'Patrulhar em three.js puro com nave que inclina e flutua, flash sem shader e sombras fake.',
+    scenario:
+      'Começar com Enter ou clique, mover com as setas, atirar e ver o flash, colidir e reiniciar.',
+    interactions: ['start', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-2d:Muralha do Reino',
+    name: 'Muralha do Reino',
+    experience: 'game',
+    promise: 'Segurar as ondas de invasores comprando torres que atiram sozinhas.',
+    scenario: 'Começar, comprar torres no clique, derrotar as ondas, perder ou vencer e reiniciar.',
+    interactions: ['start', 'click'],
+  },
+  {
+    key: 'game-2d:Escalada do Guerreiro',
+    name: 'Escalada do Guerreiro',
+    experience: 'game',
+    promise: 'Subir pulando de plataforma em plataforma até a bandeira do topo.',
+    scenario: 'Começar, andar e pular com as setas, subir com a câmera e alcançar a bandeira.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Muralha do Reino Profissional',
+    name: 'Muralha do Reino Profissional',
+    experience: 'game',
+    promise: 'Defender o reino com o kit de torres: caminho, ondas crescentes e moedas.',
+    scenario:
+      'Comprar torres no clique, mirar os invasores, ganhar moedas, perder corações e recomeçar.',
+    interactions: ['click'],
+  },
+  {
+    key: 'game-2d-advanced:Escalada do Guerreiro Profissional',
+    name: 'Escalada do Guerreiro Profissional',
+    experience: 'game',
+    promise: 'Subir com o kit de plataforma: pulo gostoso, tábuas e câmera que acompanha.',
+    scenario:
+      'Andar e pular com as setas, subir pelas tábuas, renascer ao cair e alcançar a bandeira.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'core:Muralha do Reino (na mão)',
+    name: 'Muralha do Reino (na mão)',
+    experience: 'game',
+    promise: 'Defender o reino com a lógica de torre feita só com o núcleo.',
+    scenario:
+      'Comprar torres no clique, encarar as 5 ondas, perder ou vencer e reiniciar com Enter.',
+    interactions: ['start', 'click'],
+  },
+  {
+    key: 'core:Escalada do Guerreiro (na mão)',
+    name: 'Escalada do Guerreiro (na mão)',
+    experience: 'game',
+    promise: 'Subir a plataforma vertical feita só com o núcleo, com câmera que acompanha.',
+    scenario: 'Andar com A e D, pular com W, atravessar tábuas por baixo e alcançar a bandeira.',
+    interactions: ['wasd'],
+  },
+  {
+    key: 'game-2d:Duelo de Heróis',
+    name: 'Duelo de Heróis',
+    experience: 'game',
+    promise: 'Dois jogadores no mesmo teclado lutam até zerar a vida do rival ou o tempo acabar.',
+    scenario:
+      'Começar, andar e pular, golpear com a caixa de golpe, vencer por nocaute ou tempo e reiniciar.',
+    interactions: ['start', 'action-fight', 'arrows'],
+  },
+  {
+    key: 'game-2d:Portas do Castelo',
+    name: 'Portas do Castelo',
+    experience: 'game',
+    promise: 'Guiar o rei pelas plataformas e achar a porta de cada fase até vencer o castelo.',
+    scenario: 'Começar, andar e pular com as setas, encostar na porta, trocar de fase e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Duelo de Heróis Profissional',
+    name: 'Duelo de Heróis Profissional',
+    experience: 'game',
+    promise: 'Luta com o kit de combate: soco, chute e especial em melhor de três rounds.',
+    scenario: 'Andar e pular, golpear e defender, encher o especial, vencer o round e a revanche.',
+    interactions: ['action-fight', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Portas do Castelo Profissional',
+    name: 'Portas do Castelo Profissional',
+    experience: 'game',
+    promise: 'Atravessar salas do castelo com o kit de plataforma e câmera que acompanha.',
+    scenario: 'Andar e pular pelas salas, encostar na porta para trocar de fase e chegar à saída.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'core:Duelo de Heróis (na mão)',
+    name: 'Duelo de Heróis (na mão)',
+    experience: 'game',
+    promise: 'Luta de dois no mesmo teclado feita só com o núcleo, com barra de vida e cronômetro.',
+    scenario:
+      'Andar e pular, golpear com a caixa que tira vida ao encostar, vencer por nocaute ou tempo e reiniciar.',
+    interactions: ['start', 'action-fight', 'arrows'],
+  },
+  {
+    key: 'core:Portas do Castelo (na mão)',
+    name: 'Portas do Castelo (na mão)',
+    experience: 'game',
+    promise: 'Plataforma de fases feita só com o núcleo, com fade preto na mão entre as fases.',
+    scenario:
+      'Andar com A e D, pular com W, encostar na porta e apertar para cima para trocar de fase.',
+    interactions: ['wasd'],
+  },
+  {
+    key: 'game-2d:Vale Ensolarado',
+    name: 'Vale Ensolarado',
+    experience: 'game',
+    promise: 'Pular pelas plataformas, juntar gemas e desviar do gambá e da águia no vale.',
+    scenario:
+      'Começar, andar e pular com as setas, coletar gemas, encostar em inimigo, vencer e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d:Vila Ninja',
+    name: 'Vila Ninja',
+    experience: 'game',
+    promise: 'Explorar a vila de cima nas quatro direções e golpear os inimigos com a espada.',
+    scenario:
+      'Começar, andar nas quatro direções com a câmera seguindo, golpear com espaço, vencer e reiniciar.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Vale Ensolarado Profissional',
+    name: 'Vale Ensolarado Profissional',
+    experience: 'game',
+    promise: 'Plataforma de coleta com o kit: pulo gostoso, pisar nos bichos e juntar as gemas.',
+    scenario:
+      'Andar e pular com as setas, coletar gemas, pisar nos inimigos, renascer ao cair e vencer.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Vila Ninja Profissional',
+    name: 'Vila Ninja Profissional',
+    experience: 'game',
+    promise: 'Aventura top-down com o kit de RPG: lançar a espada e derrotar os monstros da vila.',
+    scenario:
+      'Andar nas quatro direções com a câmera seguindo, golpear com espaço, derrotar os monstros e vencer.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'core:Vale Ensolarado (na mão)',
+    name: 'Vale Ensolarado (na mão)',
+    experience: 'game',
+    promise: 'Plataforma de coleta feita só com o núcleo: gemas, inimigos e câmera que segue.',
+    scenario:
+      'Andar com A e D, pular com W, coletar gemas, pisar nos inimigos, vencer e reiniciar com Enter.',
+    interactions: ['start', 'wasd'],
+  },
+  {
+    key: 'core:Vila Ninja (na mão)',
+    name: 'Vila Ninja (na mão)',
+    experience: 'game',
+    promise: 'Aventura top-down feita só com o núcleo, num mini-mundo com câmera que segue.',
+    scenario:
+      'Andar com A/W/S/D, golpear com espaço, derrotar os inimigos, vencer e reiniciar com Enter.',
+    interactions: ['start', 'wasd', 'space'],
+  },
+  {
+    key: 'core:Herói que Evolui (na mão)',
+    name: 'Herói que Evolui (na mão)',
+    experience: 'game',
+    promise:
+      'Zelda com evolução feito só com o núcleo: câmera que segue, ataque de caixa na direção e tela de melhoria a cada nível.',
+    scenario:
+      'Enter começa; andar com A/W/S/D, golpear com espaço, derrotar monstros, escolher a melhoria com 1/2/3 ao subir de nível e vencer no nível 5.',
+    interactions: ['start', 'wasd', 'space', 'digit-1'],
+  },
+  {
+    key: 'core:Fazenda Feliz (na mão)',
+    name: 'Fazenda Feliz (na mão)',
+    experience: 'game',
+    promise:
+      'Fazendinha feita só com o núcleo: grade de canteiros numa lista, câmera que segue, ferramentas e o ciclo do dia.',
+    scenario:
+      'Enter começa; andar com as setas, trocar ferramenta com Q, usar com espaço, dormir com C, colher, vender com V e juntar 40 moedas.',
+    interactions: ['start', 'wasd', 'space'],
+  },
+  {
+    key: 'core:Sobrevivente (na mão)',
+    name: 'Sobrevivente (na mão)',
+    experience: 'game',
+    promise:
+      'Atirador de sobrevivência feito só com o núcleo: classes com pool, câmera que segue e arma que mira sozinha no mais perto.',
+    scenario:
+      'Enter começa; andar com as setas, a arma automática derrota os monstrinhos que perseguem, perder a vida ao encostar e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d:Treinador de Criaturas',
+    name: 'Treinador de Criaturas',
+    experience: 'game',
+    promise:
+      'Andar no mapa, entrar no mato alto e vencer uma batalha por turnos contra a criatura.',
+    scenario:
+      'Começar, andar com as setas, encostar no mato, batalhar com as teclas 1/2/3, vencer e reiniciar.',
+    interactions: ['start', 'arrows', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d-advanced:Treinador de Criaturas Profissional',
+    name: 'Treinador de Criaturas Profissional',
+    experience: 'game',
+    promise:
+      'Explorar a cidade com o kit, achar criaturas na grama e capturar por batalha de turnos.',
+    scenario:
+      'Andar pela cidade com as setas, falar com os aldeões, entrar na grama, batalhar e capturar.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'core:Treinador de Criaturas (na mão)',
+    name: 'Treinador de Criaturas (na mão)',
+    experience: 'game',
+    promise:
+      'O jogo estilo caça-monstrinhos feito só com o núcleo: explorar o mapa e batalhar por turnos.',
+    scenario:
+      'Andar com A/W/S/D, falar com o morador no espaço, entrar no mato, batalhar com as setas e Enter, vencer ou perder.',
+    interactions: ['start', 'wasd', 'space', 'arrows'],
   },
 ] as const satisfies readonly ExampleQAContract[]

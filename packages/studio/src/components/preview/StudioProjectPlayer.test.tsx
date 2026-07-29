@@ -13,6 +13,7 @@ describe('StudioProjectPlayer', () => {
     expect(iframe).not.toBeNull()
     const sandbox = iframe?.getAttribute('sandbox') ?? ''
     expect(sandbox).toContain('allow-scripts')
+    expect(sandbox).toContain('allow-pointer-lock')
     expect(sandbox).not.toContain('allow-same-origin')
     // srcDoc é o doc auto-suficiente — não vazio.
     const srcdoc = iframe?.getAttribute('srcdoc') ?? ''

@@ -22,9 +22,9 @@ describe('resolveStudioConfig — modo profissional', () => {
     expect(cfg.allowedModes.length).toBeGreaterThan(1)
   })
 
-  it('professional ignora terminal:false do host (precisa do dev-server)', () => {
+  it('professional respeita terminal:false quando a aula usa runtime remoto', () => {
     const cfg = resolveStudioConfig({ professional: true, terminal: false }, undefined)
-    expect(cfg.terminal).toBe(true)
+    expect(cfg.terminal).toBe(false)
   })
 
   it('sem professional, terminal segue a flag do host', () => {

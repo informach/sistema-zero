@@ -76,7 +76,7 @@ describe('emissão', () => {
     payments.set(paidSnapshot())
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')
@@ -95,10 +95,24 @@ describe('emissão', () => {
     payments.set(paidSnapshot({ status: 'REFUNDED', refundedAt: new Date() }))
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     expect((await invoices.findById(invoice.id))?.status).toBe('SKIPPED')
     expect(sefin.emitted).toHaveLength(0)
+  })
+
+  test('claim que perdeu a corrida não registra SKIPPED falso', async () => {
+    const { invoices, payments, sefin, service } = build()
+    payments.set(paidSnapshot({ status: 'REFUNDED', refundedAt: new Date() }))
+    const invoice = await scheduledInvoice(invoices)
+    // O webhook de estorno venceu entre o claim e a re-verificação do payments.
+    const current = invoices.invoices.get(invoice.id)
+    if (current) current.status = 'SKIPPED'
+
+    await service.execute(invoice, invoice.claimToken!)
+
+    expect(sefin.emitted).toHaveLength(0)
+    expect(invoices.events.some((event) => event.type === 'SKIPPED')).toBe(false)
   })
 
   test('re-verificação fail-closed: payments fora do ar → backoff, NÃO emite', async () => {
@@ -106,7 +120,7 @@ describe('emissão', () => {
     payments.failWith = new Error('ECONNREFUSED')
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('SCHEDULED')
@@ -120,7 +134,7 @@ describe('emissão', () => {
     sefin.emitError = new Error('rede caiu')
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
     const after1 = await invoices.findById(invoice.id)
     expect(after1?.status).toBe('SCHEDULED')
     expect(after1?.dpsNumber).toBe(1n)
@@ -133,7 +147,7 @@ describe('emissão', () => {
       staleMs: 0,
       maxAttempts: 10,
     })
-    await service.execute(claimed!)
+    await service.execute(claimed!, claimed!.claimToken!)
 
     const after2 = await invoices.findById(invoice.id)
     expect(after2?.status).toBe('EMITTED')
@@ -150,7 +164,7 @@ describe('emissão', () => {
     })
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('FAILED')
@@ -167,7 +181,7 @@ describe('emissão', () => {
       await invoices.skip(invoice.id, SkipReason.REFUNDED_BEFORE_EMISSION)
     }
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('CANCEL_PENDING') // será cancelada, não perdida
@@ -182,7 +196,7 @@ describe('emissão', () => {
     sefin.nextResults.push({ kind: 'duplicate', accessKey: '9'.repeat(50), dpsXml: '<DPS/>' })
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')
@@ -196,7 +210,7 @@ describe('emissão', () => {
     const invoice = await scheduledInvoice(invoices)
     invoice.attempts = 2 // acima do teto
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     expect((await invoices.findById(invoice.id))?.status).toBe('FAILED')
   })
@@ -207,7 +221,7 @@ describe('emissão', () => {
     danfse.failWith = new Error('DANFSe mudou em jul/2026')
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     expect((await invoices.findById(invoice.id))?.status).toBe('EMITTED')
     expect(invoices.pdfs.has(invoice.id)).toBe(false)
@@ -247,7 +261,7 @@ describe('emissão', () => {
       staleMs: 0,
       maxAttempts: 10,
     })
-    await service.execute(claimed ?? substitute)
+    await service.execute(claimed ?? substitute, (claimed ?? substitute).claimToken!)
 
     expect((await invoices.findById(original.id))?.status).toBe('SUBSTITUTED')
     expect((await invoices.findById(original.id))?.substitutedById).toBe(substitute.id)
@@ -263,7 +277,7 @@ describe('emissão', () => {
       if (inv) Object.assign(inv, { status: 'EMITTED', accessKey: `2${'0'.repeat(49)}` })
     }
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')
@@ -279,14 +293,14 @@ describe('emissão', () => {
       if (inv) inv.status = 'FAILED'
     }
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     // markEmitted não casa (não é SCHEDULED) e o estado não é EMITTED/SKIPPED:
     // não sobrescreve — fica como está e loga fiscal.emit_recording_lost_race.
     expect((await invoices.findById(invoice.id))?.status).toBe('FAILED')
   })
 
-  test('substituta emite mas a original já está CANCEL_PENDING (estorno) → cancelamento NÃO é perdido', async () => {
+  test('substituta emitida após estorno entra também em CANCEL_PENDING', async () => {
     const { invoices, payments, service } = build()
     payments.set(paidSnapshot({ id: 'pay-0' })) // a substituta re-verifica este pagamento
     const original = await invoices.schedule({
@@ -325,12 +339,112 @@ describe('emissão', () => {
       staleMs: 0,
       maxAttempts: 10,
     })
-    await service.execute(claimed ?? substitute)
+    await service.execute(claimed ?? substitute, (claimed ?? substitute).claimToken!)
 
-    // A original NÃO foi sobrescrita p/ SUBSTITUTED — segue rumo ao cancelamento.
+    // A original NÃO é sobrescrita p/ SUBSTITUTED e a substituta real também entra
+    // na fila de cancelamento — não pode permanecer uma NFS-e válida de venda estornada.
     expect((await invoices.findById(original.id))?.status).toBe('CANCEL_PENDING')
-    expect((await invoices.findById(substitute.id))?.status).toBe('EMITTED')
-    expect(invoices.events.some((e) => e.type === 'SUBSTITUTE_ORIGINAL_NOT_EMITTED')).toBe(true)
+    expect((await invoices.findById(substitute.id))?.status).toBe('CANCEL_PENDING')
+    expect(invoices.events.some((e) => e.type === 'EMITTED_THEN_CANCEL_PENDING')).toBe(true)
+  })
+
+  test('substituta não fica ativa se o cancelamento automático da original já terminou', async () => {
+    for (const terminalStatus of ['CANCELLED', 'CANCEL_FAILED'] as const) {
+      const { invoices, payments, service } = build()
+      const paymentId = `pay-refund-${terminalStatus}`
+      payments.set(paidSnapshot({ id: paymentId })) // leitura eventualmente defasada do payments
+      const original = await invoices.schedule({
+        paymentId,
+        customer: { name: 'Maria', email: 'm@m.com', document: '52998224725' },
+        amountInCents: 3700n,
+        serviceDescription: 'Curso',
+        offerId: null,
+        guaranteeDays: null,
+        paidAt: new Date(),
+        scheduledFor: new Date(),
+        ambiente: 'producao-restrita',
+      })
+      Object.assign(original, {
+        status: 'EMITTED',
+        emittedAt: new Date(),
+        accessKey: '5'.repeat(50),
+      })
+      await invoices.requestCancel(original.id, 'system:refund', 'Pagamento reembolsado')
+      const cancelToken = crypto.randomUUID()
+      Object.assign(original, { claimToken: cancelToken })
+      if (terminalStatus === 'CANCELLED') {
+        await invoices.markCancelled(original.id, '<evento/>', cancelToken)
+      } else {
+        await invoices.markCancelFailed(original.id, 'prazo expirado', cancelToken)
+      }
+
+      const substitute = await invoices.schedule({
+        paymentId,
+        customer: { name: 'Maria', email: 'm@m.com', document: '52998224725' },
+        amountInCents: 3700n,
+        serviceDescription: 'Curso corrigido',
+        offerId: null,
+        guaranteeDays: null,
+        paidAt: new Date(),
+        scheduledFor: new Date(Date.now() - 1000),
+        ambiente: 'producao-restrita',
+        substitutesId: original.id,
+      })
+      const [claimed] = await invoices.claimDueForEmission({
+        batchSize: 10,
+        staleMs: 0,
+        maxAttempts: 10,
+      })
+      await service.execute(claimed ?? substitute, (claimed ?? substitute).claimToken!)
+
+      expect((await invoices.findById(substitute.id))?.status).toBe('CANCEL_PENDING')
+    }
+  })
+
+  test('estorno entre o claim da substituta e a emissão também encaminha a substituta ao cancelamento', async () => {
+    const { invoices, payments, sefin, service } = build()
+    payments.set(paidSnapshot({ id: 'pay-refund-race' }))
+    const original = await invoices.schedule({
+      paymentId: 'pay-refund-race',
+      customer: { name: 'Maria', email: 'm@m.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(),
+      ambiente: 'producao-restrita',
+    })
+    Object.assign(original, { status: 'EMITTED', emittedAt: new Date(), accessKey: '6'.repeat(50) })
+    const substitute = await invoices.schedule({
+      paymentId: 'pay-refund-race',
+      customer: { name: 'Maria', email: 'm@m.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso corrigido',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(Date.now() - 1000),
+      ambiente: 'producao-restrita',
+      substitutesId: original.id,
+    })
+    sefin.onEmit = async () => {
+      await invoices.requestCancel(
+        original.id,
+        'system:refund',
+        'Pagamento reembolsado ao consumidor',
+      )
+    }
+
+    const [claimed] = await invoices.claimDueForEmission({
+      batchSize: 10,
+      staleMs: 0,
+      maxAttempts: 10,
+    })
+    await service.execute(claimed ?? substitute, (claimed ?? substitute).claimToken!)
+
+    expect((await invoices.findById(original.id))?.status).toBe('CANCEL_PENDING')
+    expect((await invoices.findById(substitute.id))?.status).toBe('CANCEL_PENDING')
   })
 
   test('cliente de e-mail no-op (sem gateway) NÃO marca emailSentAt fantasma', async () => {
@@ -354,7 +468,7 @@ describe('emissão', () => {
     payments.set(paidSnapshot())
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')

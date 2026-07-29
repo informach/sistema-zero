@@ -33,6 +33,12 @@ import {
   type PreviewBudgetInput,
   shouldPausePreviewRender,
 } from './previewBudget'
+import {
+  projectUsesKeyboardControls,
+  useTouchInput,
+  VirtualGamepad,
+  type VirtualGamepadInput,
+} from './VirtualGamepad'
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
@@ -47,13 +53,14 @@ const EMPTY_ASSETS: ProjectAsset[] = []
 const PREVIEW_TOOLBAR_COMPACT_MAX_PX = 400
 
 export function PreviewIframe(): JSX.Element {
-  const { projectId, html, css, js, projectName, installedExtensions, extraFiles, assets } =
+  const { projectId, html, css, js, ir, projectName, installedExtensions, extraFiles, assets } =
     useProjectStore(
       useShallow((s) => ({
         projectId: s.project?.id ?? null,
         html: s.project?.files['index.html'] ?? '',
         css: s.project?.files['style.css'] ?? '',
         js: s.project?.files['script.js'] ?? '',
+        ir: s.project?.ir ?? null,
         projectName: s.project?.name ?? '',
         installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
         extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
@@ -70,6 +77,11 @@ export function PreviewIframe(): JSX.Element {
   const toolbarWidth = useMeasuredWidth(rootRef)
   const compactToolbar = toolbarWidth > 0 && toolbarWidth < PREVIEW_TOOLBAR_COMPACT_MAX_PX
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const touchInput = useTouchInput()
+  const usesKeyboardControls = useMemo(() => projectUsesKeyboardControls(ir), [ir])
+  const sendVirtualGamepadInput = useCallback((input: VirtualGamepadInput) => {
+    iframeRef.current?.contentWindow?.postMessage({ type: 'sz:gamepad', ...input }, '*')
+  }, [])
   // Quando o aluno clica EXPLICITAMENTE em Reproduzir/Atualizar, focamos o iframe
   // assim que ele recarrega — senão o foco fica no botão (no parent) e as setas do
   // teclado nunca chegam ao jogo (o iframe sandbox só recebe teclado com FOCO no
@@ -528,13 +540,18 @@ export function PreviewIframe(): JSX.Element {
             iframeRef.current?.focus()
           }
         }}
-        sandbox="allow-scripts allow-modals"
+        // `allow-pointer-lock` permite que a câmera FPS capture o mouse após um clique.
+        // Mantemos o iframe sem `allow-same-origin` para preservar o isolamento do preview.
+        sandbox="allow-scripts allow-modals allow-pointer-lock"
         // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
         // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
         // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
         allow="fullscreen"
         className="h-full w-full flex-1 bg-white"
       />
+      {touchInput && usesKeyboardControls && previewRunning && !previewPaused && (
+        <VirtualGamepad onInput={sendVirtualGamepadInput} />
+      )}
       {previewPaused && (
         <div className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center">
           <div className="max-w-sm rounded-md border border-sz-border bg-sz-bg p-4 shadow-lg">

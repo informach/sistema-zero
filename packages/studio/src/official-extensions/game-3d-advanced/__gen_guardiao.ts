@@ -1,4 +1,5 @@
 import { parseJS } from '../../parsers/js'
+import { collectTypes, stripIds } from './exampleSourceUtils'
 
 /**
  * Gerador one-off da IR do exemplo "Guardião do Portal" (v0.5.0). Rode com
@@ -12,7 +13,7 @@ import { parseJS } from '../../parsers/js'
 export const GUARDIAO_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#082f49", ground: "#134e4a" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Guardião do Portal", "Segure os invasores por 30 segundos! Fale com eles, tremam as pedras — e o acaso é sempre o mesmo, por causa da semente.", "Guardar");
+SZGameKit3D.setScreenText("menu", "Guardião do Portal", "Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o acaso é sempre o mesmo, por causa da semente.", "Guardar");
 SZGameKit3D.setScreenText("vitoria", "O portal resistiu!", "Você segurou até o fim.", "Guardar de novo");
 SZGameKit3D.setScreenText("fim", "O portal caiu...", "Os invasores passaram.", "Tentar de novo");
 SZGameKit3D.defineMold("portal", { health: 100, speed: 0 }, function () {
@@ -91,29 +92,6 @@ SZGameKit3D.onEntityDeath("portal", function (ela) {
 });
 SZGameKit3D.start();
 `.trim()
-
-function stripIds(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(stripIds)
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (typeof obj.type === 'string') out.add(obj.type)
-    for (const v of Object.values(obj)) collectTypes(v, out)
-  }
-  return out
-}
 
 // Só gera quando RODADO direto — o drift test importa o SOURCE daqui (uma cópia
 // só do fonte; duas divergiriam em silêncio).

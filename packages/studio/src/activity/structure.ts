@@ -1,4 +1,4 @@
-import type { SZIR } from '#ir'
+import { behaviorStatements, type SZIRInput } from '#ir'
 import type { CheckResult, StructureCheck, StructureRule } from '../studio/activity'
 
 /**
@@ -70,10 +70,10 @@ function someBlockType(blocksState: unknown, blockType: string): boolean {
 /** Avalia UMA regra de estrutura contra o IR/blocksState. */
 export function evaluateStructureRule(
   rule: StructureRule,
-  ir: SZIR | null,
+  ir: SZIRInput | null,
   blocksState: unknown,
 ): boolean {
-  const js = ir?.js ?? []
+  const js = ir ? behaviorStatements(ir) : []
   switch (rule.type) {
     case 'usesLoop':
       return someJsNode(js, (n) => LOOP_TYPES.has(n.type as string))
@@ -106,7 +106,7 @@ export function evaluateStructureRule(
  * cliente); a autoridade é o espelho server-side.
  */
 export function evaluateStructureChecks(
-  ir: SZIR | null,
+  ir: SZIRInput | null,
   blocksState: unknown,
   checks: readonly StructureCheck[],
 ): CheckResult[] {

@@ -1,7 +1,7 @@
 import type { JSX, ReactNode } from 'react'
 import { useContext, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { MODE_LABELS, modesForKind, t } from '#core'
+import { MODE_LABELS, modesForKind, type Project, t } from '#core'
 import {
   Badge,
   BrandLogo,
@@ -35,7 +35,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { StudioStoresContext } from '../../state/storesContext'
 import { useStudioPersistence } from '../../state/studioStores'
-import { useUIStore } from '../../state/uiStore'
+import { resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioCloudSync } from '../../studio/cloud-sync'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioLayout } from '../../studio/layoutContext'
@@ -47,6 +47,8 @@ import { ShareDialog } from './ShareDialog'
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
   onExit?: () => void
+  /** Executado após a promoção já ter sido salva no adapter. */
+  onPromoteToPro?: (project: Project) => void | Promise<void>
   /** Mostra o controle claro/escuro (false quando o host fixa o tema via prop). */
   canToggleTheme?: boolean
 }
@@ -84,7 +86,7 @@ function IconButton({
   )
 }
 
-export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
+export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const { hasProject, projectName, projectMode, projectKind } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -105,13 +107,14 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const setShowAssets = useUIStore((s) => s.setShowAssets)
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
-  const showConsole = useUIStore((s) => s.showConsole)
-  const setShowConsole = useUIStore((s) => s.setShowConsole)
+  const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
+  const setConsoleVisibilityOverride = useUIStore((s) => s.setConsoleVisibilityOverride)
   const showTerminal = useUIStore((s) => s.showTerminal)
   const setShowTerminal = useUIStore((s) => s.setShowTerminal)
   const showAI = useUIStore((s) => s.showAI)
   const setShowAI = useUIStore((s) => s.setShowAI)
   const config = useStudioConfig()
+  const showConsole = resolveConsoleVisibility(projectMode, consoleVisibilityOverride)
   const { isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
@@ -206,6 +209,13 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     setConverting(true)
     try {
       await convertToPro()
+      // O callback do host costuma fazer uma navegação completa para a rota
+      // COOP/COEP. Salva antes para essa navegação nunca interromper a promoção.
+      await persistence.save()
+      const promoted = stores
+        ? stores.project.getState().project
+        : useProjectStore.getState().project
+      if (promoted?.kind === 'pro') await onPromoteToPro?.(promoted)
       setShowConvert(false)
     } finally {
       setConverting(false)
@@ -273,11 +283,10 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     })
   }
 
-  // Mostrar/esconder cada painel, no mesmo espírito do toggle do Preview — cada
-  // um no contexto em que aparece (Console em todo modo; Terminal/IA só no
-  // Código). As flags valem nos dois layouts (no wide a barra inferior some
-  // quando tudo é escondido; no narrow a aba some). O Preview tem ainda o ícone
-  // dedicado na própria Topbar.
+  // Mostrar/esconder cada painel. O Console deriva do modo até a primeira ação
+  // manual; depois, a preferência desta instância prevalece. As escolhas valem
+  // nos dois layouts (no wide a barra inferior some quando tudo é escondido; no
+  // narrow a aba some). O Preview tem ainda o ícone dedicado na própria Topbar.
   const viewItems: MenuItem[] = []
   if (config.console) {
     viewItems.push({
@@ -285,7 +294,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       label: t('panel.console'),
       icon: <IconMessageSquare />,
       active: showConsole,
-      onSelect: () => setShowConsole(!showConsole),
+      onSelect: () => setConsoleVisibilityOverride(!showConsole),
     })
   }
   if (projectMode === 'code' && config.terminal) {

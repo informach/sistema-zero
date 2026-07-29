@@ -9,14 +9,35 @@
  *    valor `num` vire um shadow editável e que slots vazios tenham padrão.
  */
 export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
+  // Canvas 2D — todo encaixe numérico chega preenchido para a criança poder
+  // testar o bloco assim que o arrasta. Os valores formam exemplos pequenos e
+  // visíveis, mas continuam sendo sombras substituíveis por qualquer expressão.
   sz_canvas_fill_rect: { X: 10, Y: 10, W: 50, H: 50 },
   sz_canvas_arc: { X: 100, Y: 100, R: 20 },
   sz_canvas_fill_text: { X: 10, Y: 30 },
-  sz_canvas_translate: { X: 0, Y: 0 },
-  sz_canvas_draw_image: { X: 0, Y: 0, W: 100, H: 100 },
   sz_canvas_set_size: { W: 400, H: 300 },
+  sz_canvas_move_to: { X: 20, Y: 20 },
+  sz_canvas_line_to: { X: 100, Y: 80 },
+  sz_canvas_rect: { X: 10, Y: 10, W: 100, H: 60 },
+  sz_canvas_line_width: { WIDTH: 2 },
+  sz_canvas_global_alpha: { ALPHA: 1 },
+  sz_canvas_arc_to: { X1: 40, Y1: 40, X2: 80, Y2: 0, R: 12 },
+  sz_canvas_stroke_rect: { X: 10, Y: 10, W: 80, H: 50 },
+  sz_canvas_clear_rect: { X: 0, Y: 0, W: 100, H: 100 },
+  sz_canvas_round_rect: { X: 10, Y: 10, W: 100, H: 60, R: 12 },
+  sz_canvas_ellipse: { X: 100, Y: 80, RX: 60, RY: 35 },
+  sz_canvas_arc_slice: { X: 100, Y: 100, R: 50, START: 0, END: 1.57 },
+  sz_canvas_quadratic_curve: { CPX: 50, CPY: 0, X: 100, Y: 50 },
+  sz_canvas_bezier_curve: { CP1X: 25, CP1Y: 0, CP2X: 75, CP2Y: 100, X: 100, Y: 50 },
+  sz_canvas_shadow: { BLUR: 12 },
+  sz_canvas_stroke_text: { X: 10, Y: 30 },
+  sz_canvas_line_dash: { SEGMENT: 8 },
+  sz_canvas_point_in_path: { X: 0, Y: 0 },
+  sz_canvas_point_in_stroke: { X: 0, Y: 0 },
+  sz_canvas_translate: { X: 0, Y: 0 },
   sz_canvas_rotate: { ANGLE: 0 },
   sz_canvas_scale: { SX: 1, SY: 1 },
+  sz_canvas_draw_image: { X: 0, Y: 0, W: 100, H: 100 },
   sz_canvas_gradient: { X0: 0, Y0: 0, X1: 200, Y1: 0 },
   sz_val_random: { MIN: 0, MAX: 100 },
   // Cor HSL: matiz (0–360) + saturação/luminosidade em % (0–100).
@@ -53,11 +74,19 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   // Tempo.
   sz_js_set_timeout: { MS: 1000 },
   sz_js_set_interval: { MS: 1000 },
+  sz_js_set_timeout_seconds: { S: 1 },
+  sz_js_set_interval_seconds: { S: 1 },
+  sz_js_set_timeout_call: { MS: 1000 },
+  // Escolha (switch): o caso compara com um valor — nasce com o número 1 editável.
+  sz_js_case: { MATCH: 1 },
   // DOM dinâmico.
   sz_js_set_dataset: { VALUE: 0 },
   sz_js_set_property: { VALUE: 0 },
   // Item da lista por índice.
   sz_val_array_index: { INDEX: 0 },
+  // Objetos/listas: índice numérico e valor escrito (o alvo vai em CUSTOM_SOCKETS).
+  sz_val_index_get: { INDEX: 0 },
+  sz_js_index_set: { INDEX: 0, VALUE: 0 },
   // For clássico (contar de/até/passo).
   sz_js_for_range: { FROM: 0, TO: 10, STEP: 1 },
   sz_js_repeat: { TIMES: 5 },
@@ -71,11 +100,15 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_rotate_axis: { DELTA: 0.01 },
   sz_t3d_set_scale: { X: 1, Y: 1, Z: 1 },
   sz_t3d_look_at: { X: 0, Y: 0, Z: 0 },
-  sz_t3d_lerp_position: { ALPHA: 0.1 },
+  sz_t3d_lerp_position: { ALPHA: 0.1, DT: 1 / 60 },
   sz_t3d_set_intensity: { N: 1 },
   sz_t3d_set_fog: { NEAR: 10, FAR: 100 },
+  sz_t3d_debug_grid: { SIZE: 10, DIV: 10 },
+  sz_t3d_debug_axes: { SIZE: 5 },
   sz_t3d_set_matrix_at: { I: 0 },
   sz_t3d_renderer_size: { W: 800, H: 600 },
+  sz_t3d_camera_create: { FOV: 60, NEAR: 0.1, FAR: 1000 },
+  sz_t3d_light_create: { INTENSITY: 1 },
   // Macro Brilho (bloom): força/espalhar/limiar do UnrealBloomPass (defaults do three).
   sz_t3d_bloom_setup: { STRENGTH: 1.5, RADIUS: 0.4, THRESHOLD: 0.85 },
   // Macro Partículas: quantidade de pontos, tamanho de cada e o quão longe espalham.
@@ -86,6 +119,35 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_grass: { COUNT: 5000, SIZE: 1, SPREAD: 50 },
   // Macro Letreiro: a largura do plano do letreiro (a altura é metade).
   sz_t3d_sign: { SIZE: 4 },
+  // Mundo procedural com primitivas — defaults leves o bastante para celular.
+  sz_t3d_primitive: { W: 1, H: 1, D: 1 },
+  sz_t3d_terrain: { SIZE: 160, SEGMENTS: 48, HILLS: 4, SMOOTH: 18 },
+  sz_t3d_water_wave: { DT: 1 / 60 },
+  sz_t3d_grass_wave: { DT: 1 / 60 },
+  sz_t3d_road: { X1: -20, Z1: 0, X2: 20, Z2: 0, WIDTH: 6, SEGMENTS: 24 },
+  sz_t3d_building: { X: 0, Z: 0, W: 8, H: 10, D: 8 },
+  sz_t3d_city: {
+    BLOCKS_X: 8,
+    BLOCKS_Z: 8,
+    SPACING: 14,
+    ROAD_WIDTH: 5,
+    MIN_HEIGHT: 5,
+    MAX_HEIGHT: 24,
+    SEED: 42,
+  },
+  // Física própria: 3 subpassos protegem contra frames lentos sem espiral de CPU.
+  sz_t3d_physics_setup: { GRAVITY: -22, SUBSTEPS: 3 },
+  sz_t3d_physics_static_box: { X: 0, Y: 1, Z: 0, W: 2, H: 2, D: 2 },
+  sz_t3d_physics_static_sphere: { X: 0, Y: 1, Z: 0, RADIUS: 1 },
+  sz_t3d_physics_body: { W: 1, H: 2, D: 1, FRICTION: 0.82, BOUNCE: 0 },
+  sz_t3d_physics_move: { X: 0, Z: 0, SPEED: 6 },
+  sz_t3d_physics_jump: { SPEED: 7 },
+  sz_t3d_physics_trigger: { X: 0, Y: 1, Z: 0, W: 6, H: 2, D: 6 },
+  sz_t3d_physics_step: { DT: 0.0166667 },
+  sz_t3d_physics_velocity: { X: 0, Y: 0, Z: 0 },
+  sz_t3d_physics_impulse: { X: 0, Y: 4, Z: 0 },
+  sz_t3d_physics_teleport: { X: 0, Y: 2, Z: 0 },
+  sz_t3d_physics_raycast: { OX: 0, OY: 2, OZ: 0, DX: 0, DY: -1, DZ: 0, MAX: 100 },
 }
 
 /**
@@ -104,6 +166,7 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_t3d_set_color: { COLOR: '#ff8844' },
   sz_t3d_set_background: { COLOR: '#101830' },
   sz_t3d_set_fog: { COLOR: '#aabbcc' },
+  sz_t3d_light_create: { COLOR: '#ffffff' },
   // Macro Partículas: cor dos pontinhos (branco = estrelas/poeira).
   sz_t3d_particles: { COLOR: '#ffffff' },
   // Macro Água: a cor da água (azul-esverdeado profundo).
@@ -112,6 +175,11 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_t3d_grass: { COLOR: '#4a7c2a' },
   // Macro Letreiro: a cor das letras (branco = destaca em qualquer céu).
   sz_t3d_sign: { COLOR: '#ffffff' },
+  sz_t3d_primitive: { COLOR: '#38bdf8' },
+  sz_t3d_terrain: { COLOR: '#65a30d' },
+  sz_t3d_road: { COLOR: '#334155' },
+  sz_t3d_building: { COLOR: '#f59e0b', ROOF: '#b91c1c' },
+  sz_t3d_city: { COLOR: '#94a3b8', ROOF: '#334155' },
 }
 
 /**
@@ -121,6 +189,15 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
  */
 export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_text: { TEXT: 'Olá' },
+  sz_canvas_stroke_text: { TEXT: 'Olá' },
+  sz_canvas_measure_text: { TEXT: 'Olá' },
+  // Programação: mostrar/erro nascem com um texto editável.
+  sz_js_console_log_value: { VALUE: 'Olá' },
+  sz_js_throw: { MESSAGE: 'Algo deu errado' },
+  // DOM: valor de estilo/atributo é texto CSS/HTML de verdade.
+  sz_js_set_style: { VALUE: 'red' },
+  sz_js_set_style_text: { VALUE: 'color: red' },
+  sz_js_set_attribute: { VALUE: 'valor' },
 }
 
 interface CompareSeed {
@@ -134,6 +211,7 @@ export type SocketShadow =
   | { shadow: { type: 'sz_val_number'; fields: { NUM: number } } }
   | { shadow: { type: 'sz_val_text'; fields: { TEXT: string } } }
   | { shadow: { type: 'sz_val_color'; fields: { COLOR: string } } }
+  | { shadow: { type: 'sz_val_image'; fields: { ASSET: string } } }
   | { shadow: CompareSeed }
   // Comparação como bloco REAL (não sombra): usada nas CONDIÇÕES (Se/enquanto/…).
   // Um bloco de valor real NÃO pode ser encaixado dentro de um input de SOMBRA
@@ -141,6 +219,8 @@ export type SocketShadow =
   // Como bloco real, os operandos (sombras) voltam a ser substituíveis um a um.
   | { block: CompareSeed }
   | { shadow: { type: 'sz_val_variable'; fields: { NAME: string } } }
+  // "ao clicar no elemento …": o alvo nasce como "o elemento com id …" editável.
+  | { shadow: { type: 'sz_val_get_element'; fields: { ID: string } } }
 
 /**
  * Sombras dos slots que NÃO são número/cor (condições, etc.): tipo do bloco →
@@ -152,7 +232,47 @@ const OBJ_VAR_SHADOW: SocketShadow = {
   shadow: { type: 'sz_val_variable', fields: { NAME: 'objeto' } },
 }
 
+/** Sombra padrão de um soquete de LISTA: variável editável chamada "lista". */
+const LIST_VAR_SHADOW: SocketShadow = {
+  shadow: { type: 'sz_val_variable', fields: { NAME: 'lista' } },
+}
+
+/** Condição-semente `x > 0` (a mesma do Se/enquanto): operandos substituíveis um a um. */
+const COND_COMPARE_SEED: SocketShadow = {
+  block: {
+    type: 'sz_val_compare',
+    fields: { OP: '>' },
+    inputs: {
+      LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
+      RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
+    },
+  },
+}
+
+/** Condição-semente dos blocos de lista (`item > 0`): fala do ITEM do laço. */
+const ITEM_COMPARE_SEED: SocketShadow = {
+  block: {
+    type: 'sz_val_compare',
+    fields: { OP: '>' },
+    inputs: {
+      LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'item' } } },
+      RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
+    },
+  },
+}
+
 const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
+  // Imagens — a fonte começa com o seletor do acervo e os eventos apontam para
+  // a variável criada pelo bloco "criar imagem". Nenhuma tomada fica vazia.
+  sz_js_new_image: {
+    SRC: { shadow: { type: 'sz_val_image', fields: { ASSET: 'foto' } } },
+  },
+  sz_js_image_onload: {
+    TARGET: { shadow: { type: 'sz_val_variable', fields: { NAME: 'img' } } },
+  },
+  sz_js_image_onerror: {
+    TARGET: { shadow: { type: 'sz_val_variable', fields: { NAME: 'img' } } },
+  },
   // "parar animação": o id vem de uma variável "animId" por padrão (a mesma que
   // o bloco "A cada frame fazer" sugere ao guardar o id).
   sz_canvas_cancel_anim: {
@@ -167,6 +287,8 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   // Canvas 3D "adicionar %1 em cena": o objeto a adicionar vem como uma variável
   // por padrão (substituível por "novo THREE.Mesh(…)" ou qualquer valor).
   sz_t3d_add_to: { OBJ: OBJ_VAR_SHADOW },
+  // "para cada parte": começa apontando para um objeto nomeado, sem tomada vazia.
+  sz_t3d_traverse: { OBJ: OBJ_VAR_SHADOW },
   // Canvas 3D "mover devagar até %1": o alvo é um Vector3 numa variável "alvo"
   // por padrão (substituível por "novo THREE.Vector3(…)" ou membro de outro obj).
   sz_t3d_lerp_position: {
@@ -177,56 +299,40 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
     OBJ1: { shadow: { type: 'sz_val_variable', fields: { NAME: 'player' } } },
     OBJ2: { shadow: { type: 'sz_val_variable', fields: { NAME: 'enemy' } } },
   },
-  sz_js_if_else: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
-  },
+  sz_js_if_else: { COND: COND_COMPARE_SEED },
   // while / do-while: a condição já vem como uma comparação `x > 0` (igual ao "Se").
-  sz_js_while: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
-  },
-  sz_js_do_while: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
-  },
+  sz_js_while: { COND: COND_COMPARE_SEED },
+  sz_js_do_while: { COND: COND_COMPARE_SEED },
   // Ternário: a condição já vem como uma comparação `x > 0` (igual ao "Se").
-  sz_val_ternary: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
+  sz_val_ternary: { COND: COND_COMPARE_SEED },
+  // "não …": nasce negando uma comparação (igual ao "Se") — nada de tomada vazia.
+  sz_val_not: { VALUE: COND_COMPARE_SEED },
+  // Escolha (switch): o valor observado começa numa variável "x".
+  sz_js_switch: {
+    SUBJECT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
   },
+  // Laços/operações de lista: a lista-alvo nasce como a variável "lista".
+  sz_js_for_each: { ARRAY: LIST_VAR_SHADOW },
+  sz_val_array_filter: { ARRAY: LIST_VAR_SHADOW, COND: ITEM_COMPARE_SEED },
+  sz_val_array_find: { COND: ITEM_COMPARE_SEED },
+  // Transformar lista: cada item começa virando ele mesmo (identidade editável).
+  sz_val_array_map: {
+    TRANSFORM: { shadow: { type: 'sz_val_variable', fields: { NAME: 'item' } } },
+  },
+  // Async: esperar/juntar promessas aponta p/ variáveis com nomes que ensinam.
+  sz_js_await: {
+    VALUE: { shadow: { type: 'sz_val_variable', fields: { NAME: 'promessa' } } },
+  },
+  sz_val_promise_all: { LIST: LIST_VAR_SHADOW },
+  // "ao clicar no elemento …": o alvo nasce como "o elemento com id botao1".
+  sz_js_element_onclick: {
+    TARGET: { shadow: { type: 'sz_val_get_element', fields: { ID: 'botao1' } } },
+  },
+  // Objetos: alvo genérico = variável "objeto"; item por índice fala de "lista".
+  sz_val_object_op: { OBJ: OBJ_VAR_SHADOW },
+  sz_val_member_get_optional: { OBJ: OBJ_VAR_SHADOW },
+  sz_val_index_get: { OBJ: LIST_VAR_SHADOW },
+  sz_js_index_set: { OBJ: LIST_VAR_SHADOW },
 }
 
 /**

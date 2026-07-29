@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, inArray, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
@@ -212,6 +212,13 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       filter.audience ? eq(courses.audience, filter.audience) : undefined,
       filter.status === 'pending' ? sql`not ${answered}` : undefined,
       filter.status === 'answered' ? answered : undefined,
+      // Filtro por aluno (24/07): accountId pega a família; profileId estreita.
+      filter.userIds?.length
+        ? or(
+            inArray(studioSubmissions.userId, filter.userIds),
+            inArray(studioSubmissions.accountId, filter.userIds),
+          )
+        : undefined,
     )
 
     const [rows, [totalRow]] = await Promise.all([

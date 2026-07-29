@@ -58,6 +58,9 @@ const RoomStateSchema = z.object({
         // União de literais (não z.number) → o tipo inferido é 0|1|2|3, casando RoomPlacedItem.
         rot: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
         wall: z.union([z.literal('left'), z.literal('right')]).optional(),
+        // Superfícies (24/07): item EM CIMA de outro (o members valida pai/nicho/posse).
+        on: AVATAR_SLUG.optional(),
+        slot: z.number().int().min(0).max(32).optional(),
       }),
     )
     .max(60),
@@ -254,7 +257,7 @@ function extractStudioProject(raw: unknown): Record<string, unknown> | null {
 const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
 /** Valida ids de path (perfil etc.) ANTES de tocar gateway/R2 — fail-fast e não
- * deixa um id forjado virar prefixo de chave no R2 (ver profileAvatar). */
+ * deixa um id forjado virar prefixo de chave no R2 (ex.: avatarSnapshot). */
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
 /**
@@ -483,7 +486,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       // qualquer escrita no R2. Sem isto a criança (sessão de perfil) gastava um
       // encode WebP e deixava objeto R2 órfão a cada POST — o auth recusava só o
       // PATCH de metadado DEPOIS, então `removeStaleAvatars` nunca limpava. Espelha o
-      // authorize-before-write do `profileAvatar`. (A foto do PERFIL vai por outra rota.)
+      // authorize-before-write (padrão da casa p/ uploads keyados por id).
       if (user.activeProfile) {
         return NextResponse.json(
           {
@@ -1200,9 +1203,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   // ── Recados (conversas com o professor — canal de retorno) ────────────────
   /** Caixa de entrada do aluno (suas conversas com o professor). */
   const teacherThreadsList = {
-    GET: async () => {
-      const { status, body } = await members.listTeacherThreads()
-      return NextResponse.json(body ?? { threads: [] }, { status })
+    GET: async (req: Request) => {
+      const { searchParams } = new URL(req.url)
+      const offset = Number(searchParams.get('offset'))
+      const { status, body } = await members.listTeacherThreads({
+        ...(Number.isInteger(offset) && offset >= 0 ? { offset } : {}),
+      })
+      return NextResponse.json(body ?? { threads: [], nextOffset: null }, { status })
     },
   }
   /** Contador de conversas não-lidas — alimenta o sino. */
@@ -1214,10 +1221,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
   /** Uma conversa (cabeçalho + turnos). Impersonação PODE ler (só escrita é bloqueada). */
   const teacherThreadGet = {
-    GET: async (_req: Request, ctx: { params: Promise<{ threadId: string }> }) => {
+    GET: async (req: Request, ctx: { params: Promise<{ threadId: string }> }) => {
       const { threadId } = await ctx.params
       if (!UUID_RE.test(threadId)) return invalidInput()
-      const { status, body } = await members.getTeacherThread(threadId)
+      const before = new URL(req.url).searchParams.get('before') ?? undefined
+      const { status, body } = await members.getTeacherThread(threadId, before)
       return NextResponse.json(body ?? { error: { code: 'NOT_FOUND' } }, { status })
     },
   }
@@ -1384,57 +1392,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
-  /**
-   * Foto do perfil: multipart (`file`) → sharp→WebP → R2 (por profileId) → PATCH
-   * /auth/profiles/:id com a URL. Mesma pipeline/guard do avatar do /me; o auth
-   * recusa (403) se a sessão for de perfil (a gestão é só da conta).
-   */
-  const profileAvatar = {
-    POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
-      const user = await media.requireUploadSession(req)
-      if (user instanceof NextResponse) return user
-      const { id } = await ctx.params
-      if (!UUID_RE.test(id)) return invalidInput()
-      // AUTORIZA ANTES de escrever no R2: a criança (sessão de perfil) só troca a
-      // PRÓPRIA foto. Sem isso, um `id` forjado viraria prefixo de chave no bucket
-      // compartilhado (objeto órfão sob outro perfil) — o auth bloqueava só o PATCH
-      // de metadado DEPOIS do upload. A conta (sem activeProfile) segue gerindo
-      // qualquer filho próprio (o auth re-checa belongsTo no profiles.update).
-      if (user.activeProfile && user.id !== id) {
-        return NextResponse.json(
-          { error: { code: 'FORBIDDEN', message: 'Você só pode trocar a sua própria foto.' } },
-          { status: 403 },
-        )
-      }
-      const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
-      if (oversized) return oversized
-      try {
-        const form = await req.formData()
-        const file = form.get('file')
-        if (!(file instanceof File) || file.size === 0 || !IMAGE_MIME_TYPES.has(file.type)) {
-          return NextResponse.json(
-            { error: { code: 'VALIDATION_ERROR', message: 'Use uma imagem PNG, JPG ou WebP.' } },
-            { status: 400 },
-          )
-        }
-        if (file.size > MAX_IMAGE_BYTES) {
-          return NextResponse.json(
-            { error: { code: 'VALIDATION_ERROR', message: 'A foto deve ter no máximo 5MB.' } },
-            { status: 400 },
-          )
-        }
-        const stored = await optimizeAndStoreAvatar(file, id)
-        const { status, body } = await profiles.update(id, { avatarUrl: stored.url })
-        if (status !== 200) {
-          return NextResponse.json(body ?? { error: { code: 'UPDATE_FAILED' } }, { status })
-        }
-        await removeStaleAvatars(id, stored.key)
-        return NextResponse.json({ url: stored.url, profile: body?.profile })
-      } catch (error) {
-        return mediaErrorResponse(error)
-      }
-    },
-  }
+  // (O antigo `profileAvatar` — upload de FOTO de perfil pelos pais — foi REMOVIDO
+  // em 24/07: a cara da criança vem EXCLUSIVAMENTE do snapshot do avatar 3D
+  // (`avatarSnapshot` + allowlist no members). O auth ainda guarda `avatarUrl`
+  // legado, mas nenhum app grava nele p/ perfis kids.)
 
   // ── Impersonação ─────────────────────────────────────────────────────────
 
@@ -1526,7 +1487,6 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     profileArchive,
     profileSelect,
     profileExit,
-    profileAvatar,
     impersonate,
     healthz,
   }

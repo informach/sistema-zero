@@ -30,6 +30,13 @@ async function unzipBlob(blob: Blob): Promise<Record<string, Uint8Array>> {
 }
 
 describe('buildSourceFiles (fonte para o VSCode)', () => {
+  it('classico: inclui o runtime de entrada e o carrega antes do script do aluno', async () => {
+    const { files } = await buildSourceFiles(classicProject())
+    expect(String(files['sz-input.js'])).toContain('window.__szInput = input')
+    const index = String(files['index.html'])
+    expect(index.indexOf('src="sz-input.js"')).toBeLessThan(index.indexOf('src="script.js"'))
+  })
+
   it('classico: arquivos na RAIZ (sem public/), com LEIA-ME e sem deploy', async () => {
     const { files } = await buildSourceFiles(classicProject())
     expect(files['index.html']).toBeDefined()

@@ -54,6 +54,7 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
           description: body.description,
           playId: body.playId,
           clientIdempotencyKey: body.clientIdempotencyKey,
+          studioMeta: body.studioMeta ?? null,
         })
         return { thread, deduped }
       },
@@ -74,6 +75,7 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
             playId: body.playId,
             clientIdempotencyKey: body.clientIdempotencyKey,
             challengeKey: body.challengeKey ?? null,
+            studioMeta: body.studioMeta ?? null,
           },
         )
         return { thread, deduped }

@@ -42,6 +42,9 @@ export const courseLevelEnum = members.enum('course_level', [
   'iniciante',
   'intermediario',
   'avancado',
+  // `lenda` = categoria de curso FORA da carreira (bônus da formatura; não é degrau,
+  // não conta p/ nível, não trava). Renderizado só na trilha da Lenda no kids.
+  'lenda',
 ])
 // Eixo 2D/3D do curso (ortogonal à dificuldade). Par (level, track) = o DEGRAU
 // pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a carreira de 8 níveis.
@@ -101,6 +104,10 @@ export const courses = members.table(
     // Eixo 2D/3D (par com `level` = degrau pedagógico). Mesma régua de autoria do
     // `audience`/`level`: UPDATE sem o campo PRESERVA o atual.
     track: courseTrackEnum('track').notNull().default('2d'),
+    // Posição do curso na etapa da Carreira do Criador. NULL = curso bônus;
+    // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a carreira
+    // e aplicam o teto da etapa: 6 no Iniciante 2D e 5 nas demais.
+    careerSlot: smallint('career_slot'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
     // (decisão da usuária: padrão ligado, com toggle por curso no admin).
@@ -109,7 +116,17 @@ export const courses = members.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('courses_slug_uq').on(t.slug)],
+  (t) => [
+    uniqueIndex('courses_slug_uq').on(t.slug),
+    uniqueIndex('courses_career_slot_uq')
+      .on(t.audience, t.level, t.track, t.careerSlot)
+      .where(sql`${t.careerSlot} is not null`),
+    check(
+      // 8 posições por degrau (reforma 07/2026; migration `0053` alarga o CHECK de 6/5→8).
+      'courses_career_slot_check',
+      sql`${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.careerSlot} between 1 and 8)`,
+    ),
+  ],
 )
 
 export const modules = members.table(
@@ -516,6 +533,9 @@ export const xpEvents = members.table(
     // `coalesce(source_track, courses.track, '2d')` — re-taggear um curso 3D no
     // admin corrige os marcos legados sozinho; congelar '2d' aqui impediria isso.
     sourceTrack: courseTrackEnum('source_track'),
+    // Snapshot do slot da carreira nos marcos de curso. Linhas anteriores ficam
+    // NULL e usam `courses.career_slot` como fallback até o primeiro snapshot.
+    sourceCareerSlot: smallint('source_career_slot'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [
@@ -966,8 +986,28 @@ export const teacherMessages = members.table(
     body: varchar('body', { length: 8000 }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
-  // Cobre o EXISTS de não-lido (thread + papel + data) e a listagem dos turnos.
-  (t) => [index('teacher_messages_thread_idx').on(t.threadId, t.authorRole, t.createdAt)],
+  // Cobre o EXISTS de não-lido (thread + papel + data), a paginação do histórico
+  // (`thread, created_at, id`) e a última mensagem por conversa da caixa.
+  (t) => [
+    index('teacher_messages_thread_idx').on(t.threadId, t.authorRole, t.createdAt),
+    index('teacher_messages_thread_created_idx').on(t.threadId, t.createdAt, t.id),
+  ],
+)
+
+/** Watermark de leitura por membro da equipe (não compartilhado entre professores). */
+export const teacherThreadStaffReads = members.table(
+  'teacher_thread_staff_reads',
+  {
+    threadId: uuid('thread_id')
+      .notNull()
+      .references(() => teacherThreads.id, { onDelete: 'cascade' }),
+    staffUserId: uuid('staff_user_id').notNull(),
+    readAt: timestamp('read_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.threadId, t.staffUserId] }),
+    index('teacher_thread_staff_reads_staff_idx').on(t.staffUserId, t.readAt),
+  ],
 )
 
 // ── Uso de IA por CONTA (quota diária/mensal — 07/2026) ─────────────────────

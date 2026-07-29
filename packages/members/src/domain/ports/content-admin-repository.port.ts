@@ -14,6 +14,8 @@ import type { LessonBlockContent, LessonBlockKind } from '../course/lesson-block
 // ── Inputs de autoria ───────────────────────────────────────────────────────
 
 export interface CourseFields {
+  /** Versão devolvida pelo GET/POST anterior; obrigatória no PATCH para evitar lost updates. */
+  version?: number
   slug: string
   title: string
   subtitle: string | null
@@ -43,6 +45,8 @@ export interface CourseFields {
    * no CREATE vira `2d`; no UPDATE **preserva o atual** (régua do `audience`).
    */
   track: CourseTrack | null
+  /** Ausente no PATCH preserva; `null` remove da carreira; número define o slot. */
+  careerSlot?: number | null
 }
 
 export interface ModuleFields {
@@ -94,6 +98,13 @@ export interface ContentAdminRepository {
     courseId: string,
     opts?: { excludeLessonId?: string; excludeModuleId?: string },
   ): Promise<number>
+  /**
+   * Dos cursos pedidos, quais têm ≥1 aula PUBLICADA com bloco de Estúdio de
+   * vitrine (`showcase.enabled`)? Sem ela o aluno nunca publica no Mural — um
+   * curso-base assim nunca qualifica o slot 1 e a etapa não destrava (o painel
+   * usa isso p/ avisar o operador).
+   */
+  listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]>
 
   // ── Módulos ──
   findModuleById(id: string): Promise<Module | null>

@@ -1,5 +1,7 @@
 import type { ExtensionDefinition } from '#extensions'
-import { validateManifest } from '#extensions'
+import { GAME_3D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import { THREE_CDN } from '../../three/threeRuntimeContract'
+import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKit3DPromptContext } from './ai'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from './blocks'
 import { gameKit3DManifest } from './manifest'
@@ -10,7 +12,6 @@ validateManifest(gameKit3DManifest)
 
 /** Versão fixada do Three.js (CDN ESM) — a MESMA do game-3d, para o importmap
  * colapsar numa entrada só se as duas extensões coexistirem. */
-const THREE_CDN = 'https://esm.sh/three@0.180.0'
 /**
  * Loaders de modelo (GLB) e de céu (HDR). São ADDONS do three, e o kit foi
  * escrito com a regra "sem addons" por medo de o esm.sh embutir uma 2ª cópia do
@@ -28,7 +29,7 @@ const THREE_CDN = 'https://esm.sh/three@0.180.0'
  * ⚠️ KTX2/Draco ficam de fora: transcoder WASM + Workers, ambos barrados.
  */
 const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?external=three`
-const RGBE_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/RGBELoader.js?external=three`
+const HDR_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/HDRLoader.js?external=three`
 // SkeletonUtils.clone REAMARRA o esqueleto do clone aos ossos dele — o clone comum
 // do Object3D deixa o boneco preso ao esqueleto do original. É a mesma troca que o
 // curso fez ao passar a animar personagens.
@@ -36,20 +37,23 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
-  // Decisão de produto (14/07/2026): TODOS os blocos são nível AVANÇADO — é a
-  // base de engine profissional (FSM por entidade, pooling, grade espacial).
-  // O piso por prefixo sz_g3k_ vive em blockLevels.ts.
-  minLevel: 'avancado-3d',
+  conflictsWith: fullscreenConflictsFor('game-3d-advanced'),
+  // Reclassificado p/ INTERMEDIÁRIO 3D (26/07/2026): o kit passa a abrir no Arquiteto
+  // de Mundos (junto do Mundo 3D), não só na Lenda. Continua sendo base de engine
+  // (FSM/pooling/grade), mas gated pela carreira (só chega ao Arquiteto quem subiu 6
+  // níveis). O piso por prefixo sz_g3k_ (em blockLevels.ts) acompanha este minLevel.
+  minLevel: 'intermediario-3d',
   blockly: {
     blocks: gameKit3DBlocks,
     toolboxCategory: gameKit3DToolboxCategory,
   },
   runtime: {
     bootstrapScript: gameKit3DRuntime,
+    lifecycle: GAME_3D_ADVANCED_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,
       'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,
-      'three/addons/loaders/RGBELoader.js': RGBE_LOADER_CDN,
+      'three/addons/loaders/HDRLoader.js': HDR_LOADER_CDN,
       'three/addons/utils/SkeletonUtils.js': SKELETON_UTILS_CDN,
     },
   },

@@ -131,7 +131,7 @@ export async function watermarkImage(buffer: Buffer, mime: string, email: string
   const fontSize = Math.round(badge.height / 2)
   const margin = Math.round(fontSize / 2)
 
-  let composited: sharp.Sharp
+  let composited: ReturnType<typeof sharp>
   if (animated && (meta.pages ?? 1) > 1) {
     // Frame inteiro com o selo posicionado no canto; tile repete frame a frame.
     const frame = `<svg xmlns="http://www.w3.org/2000/svg" width="${frameWidth}" height="${frameHeight}">

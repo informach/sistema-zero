@@ -32,7 +32,6 @@ SZWorld3D.npcTalk("Rosa", function () {
 SZWorld3D.setWind(3);
 SZWorld3D.weather("folhas");
 SZWorld3D.totemText(0, 6, "Fazendinha", "Visite o celeiro, veja o moinho girar e cuide dos bichinhos!");
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

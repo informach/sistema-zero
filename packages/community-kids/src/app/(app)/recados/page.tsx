@@ -14,5 +14,5 @@ export default async function RecadosPage() {
   if (!session) redirect('/login')
   const res = await listTeacherThreadsReadonly()
   const threads = res.status === 200 ? (res.body?.threads ?? []) : []
-  return <RecadosClient initialThreads={threads} />
+  return <RecadosClient initialThreads={threads} initialNextOffset={res.body?.nextOffset ?? null} />
 }

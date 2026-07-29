@@ -39,6 +39,7 @@
   --color-sz-warn: #fbbf24;
   --color-sz-error: oklch(0.64 0.215 27); /* destructive */
   --color-sz-success: #34d399;
+  --color-sz-focus: #60a5fa;
   --font-family-sans:
     "Baloo 2", "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
@@ -64,6 +65,7 @@
   --color-sz-warn: #b45309;
   --color-sz-error: oklch(0.55 0.22 27); /* destructive */
   --color-sz-success: #047857;
+  --color-sz-focus: #1d4ed8;
 }
 
 /* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
@@ -95,12 +97,6 @@
   display: none !important;
 }
 
-.blocklyToolboxCategoryContainer:focus,
-.blocklyToolboxCategoryContainer.blocklyActiveFocus,
-.blocklyToolboxCategory:focus {
-  outline: none;
-}
-
 /*
  * Toolbox colorida estilo MakeCode: cada categoria vira um "chip" arredondado.
  * A FAIXA colorida (border-left: 8px solid <cor da categoria>) já vem INLINE do
@@ -112,6 +108,30 @@
  */
 [data-sz-theme] .blocklyToolboxCategoryGroup {
   padding: 4px 6px;
+}
+/*
+ * No layout horizontal, uma categoria aninhada não pode aumentar a altura da
+ * toolbox: o Blockly posiciona o flyout DEPOIS dela. Programação tem 14 filhos;
+ * em celular, o fluxo vertical empurrava o flyout inteiro para fora da tela.
+ * A faixa segue a hierarquia ARIA do Blockly, mas dispõe pais e filhos na mesma
+ * linha rolável. O seletor expandido precisa vencer `display:block` inline.
+ */
+[data-sz-toolbox-layout="horizontal"] .blocklyToolbox > .blocklyToolboxCategoryGroup {
+  flex-wrap: nowrap;
+}
+[data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer {
+  flex: 0 0 auto;
+}
+[data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer[aria-expanded="true"] {
+  display: flex;
+  align-items: flex-start;
+}
+[data-sz-toolbox-layout="horizontal"]
+  .blocklyToolboxCategoryContainer[aria-expanded="true"]
+  > .blocklyToolboxCategoryGroup {
+  /* biome-ignore lint/complexity/noImportantStyles: o Blockly escreve display:block inline ao expandir; flex mantém o flyout dentro do workspace compacto. */
+  display: flex !important;
+  flex-flow: row nowrap;
 }
 [data-sz-theme] .blocklyToolboxCategory {
   box-sizing: border-box;
@@ -140,7 +160,7 @@
  * Selecionado: o Blockly pinta a linha INLINE com a cor da categoria
  * (ToolboxCategory.setSelected → rowDiv.style.backgroundColor), igual ao
  * MakeCode — o inline vence o CSS, então aqui só tiramos a sombra padrão e
- * deixamos o rótulo BRANCO para contrastar com qualquer cor de categoria.
+ * deixamos o rótulo branco. Os tons de Programação são normalizados para AA.
  */
 [data-sz-theme] .blocklyToolboxSelected {
   box-shadow: none;
@@ -150,6 +170,23 @@
   font-weight: 700;
   /* legível em QUALQUER cor de categoria (clara como o âmbar ou escura). */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+[data-sz-theme] .blocklyToolboxSelected .sz-toolbox-programming-label {
+  color: #ffffff;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+[data-sz-theme] .blocklyToolboxCategoryContainer:focus-visible > .blocklyToolboxCategory,
+[data-sz-theme] .blocklyToolboxCategoryContainer.blocklyActiveFocus > .blocklyToolboxCategory,
+[data-sz-theme] .blocklyToolboxCategory:focus-visible {
+  outline: 3px solid var(--color-sz-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--color-sz-bg);
+}
+[data-sz-theme] .sz-blockly-search-field:focus-visible {
+  outline: 3px solid var(--color-sz-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--color-sz-bg);
 }
 
 /*
@@ -279,6 +316,13 @@
   background: color-mix(in srgb, var(--color-sz-accent) 15%, transparent);
 }
 
+/* Pilhas salvas fora de uma Área do projeto: permanecem editáveis, mas não rodam. */
+.sz-draft-block > .blocklyPath {
+  stroke: #f59e0b;
+  stroke-width: 3px;
+  stroke-dasharray: 8 5;
+}
+
 /*
  * Micro-celebração da ATIVIDADE (ActivityPanel): pop finito quando todas as
  * checagens passam. `prefers-reduced-motion` desliga a animação (o banner
@@ -301,7 +345,44 @@
   animation: sz-activity-pop 350ms ease-out both;
 }
 @media (prefers-reduced-motion: reduce) {
+  [data-sz-theme] .blocklyToolboxCategory {
+    transition: none;
+  }
+  [data-sz-theme] .blocklyToolboxCategory:not(.blocklyToolboxSelected):hover {
+    transform: none;
+  }
   .sz-activity-pop {
     animation: none;
   }
+}
+/* Seletor de nomes do Blockly: foco visível também no conteúdo portalado. */
+.sz-name-picker:focus-visible,
+.sz-name-picker__option:focus-visible,
+.sz-name-picker__input:focus-visible,
+.sz-name-picker__confirm:focus-visible {
+  outline: 2px solid var(--color-sz-accent);
+  outline-offset: 2px;
+}
+
+/* Seletores infantis portalados: nome semântico + foco de teclado inequívoco. */
+.sz-field-picker__input:focus-visible,
+.sz-field-picker__button:focus-visible,
+.sz-asset-picker:focus-visible,
+.sz-asset-picker__option:focus-visible,
+.sz-svg-paint-picker:focus-visible,
+.sz-svg-paint-picker__option:focus-visible,
+.sz-svg-paint-picker__confirm:focus-visible {
+  outline: 3px solid var(--color-sz-focus);
+  outline-offset: 2px;
+}
+
+.sz-field-picker__error {
+  display: block;
+  min-height: 1.25em;
+  padding: 2px 10px 6px;
+  color: var(--color-sz-error);
+  font:
+    600 11px / 1.25 Inter,
+    system-ui,
+    sans-serif;
 }

@@ -1,0 +1,39 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sistemazero-studio-runtime",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      "class_name": "ProBuildSandbox",
+      "image": "./Dockerfile",
+      "instance_type": "lite",
+      "max_instances": 50
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "ProBuildSandbox",
+        "name": "ProBuildSandbox"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "new_sqlite_classes": ["ProBuildSandbox"],
+      "tag": "v1"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "BUILD_RATE_LIMITER",
+      "namespace_id": "27001",
+      "simple": {
+        "limit": 10,
+        "period": 60
+      }
+    }
+  ]
+}

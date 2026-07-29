@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, desc, eq, inArray, type SQL, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, lt, or, type SQL, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type {
   AdminThreadsFilter,
   AppendMessageInput,
   EnsureThreadInput,
+  MarkAllReadFilter,
+  TeacherMessageCursor,
+  TeacherMessagePage,
   TeacherMessageRecord,
   TeacherMessageRole,
   TeacherThreadContext,
@@ -13,10 +16,11 @@ import type {
   TeacherThreadSummary,
 } from '../../../domain/ports/teacher-thread-repository.port'
 import type { Database } from './db'
-import { teacherMessages, teacherThreads } from './schema'
+import { teacherMessages, teacherThreadStaffReads, teacherThreads } from './schema'
 
 /** Prévia da última mensagem na caixa de entrada (corta no servidor). */
 const PREVIEW_MAX = 140
+const MESSAGE_PAGE_SIZE = 50
 
 export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
   constructor(private readonly db: Database) {}
@@ -79,18 +83,40 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
         body: input.body,
         createdAt: input.now,
       }
-      // `onConflictDoNothing`: id determinístico (webhook do Mural) → retry não duplica.
-      await tx.insert(teacherMessages).values(record).onConflictDoNothing()
+      // `onConflictDoNothing`: retry idempotente não pode tocar watermarks/ordem.
+      const [inserted] = await tx
+        .insert(teacherMessages)
+        .values(record)
+        .onConflictDoNothing()
+        .returning({ id: teacherMessages.id })
+      if (!inserted) {
+        const [existing] = await tx
+          .select()
+          .from(teacherMessages)
+          .where(eq(teacherMessages.id, record.id))
+          .limit(1)
+        return existing ? this.toMessageRecord(existing) : record
+      }
       // Toca `last_message_at` + marca o lado do AUTOR como lido (não fica "não-lido"
-      // p/ quem acabou de escrever) — na MESMA transação (ordenação da caixa não desliza).
+      // p/ quem acabou de escrever) — na MESMA transação. `greatest` preserva a ordem
+      // quando transações capturam o relógio em instantes diferentes e aguardam lock.
       const set: {
-        lastMessageAt: Date
-        teacherLastReadAt?: Date
+        lastMessageAt: SQL
         studentLastReadAt?: Date
-      } = { lastMessageAt: input.now }
-      if (input.authorRole === 'teacher') set.teacherLastReadAt = input.now
-      else set.studentLastReadAt = input.now
+      } = {
+        lastMessageAt: sql`greatest(${teacherThreads.lastMessageAt}, ${input.now.toISOString()}::timestamptz)`,
+      }
+      if (input.authorRole === 'student') set.studentLastReadAt = input.now
       await tx.update(teacherThreads).set(set).where(eq(teacherThreads.id, input.threadId))
+      if (input.authorRole === 'teacher' && input.authorId) {
+        await tx
+          .insert(teacherThreadStaffReads)
+          .values({ threadId: input.threadId, staffUserId: input.authorId, readAt: input.now })
+          .onConflictDoUpdate({
+            target: [teacherThreadStaffReads.threadId, teacherThreadStaffReads.staffUserId],
+            set: { readAt: input.now },
+          })
+      }
       return record
     })
   }
@@ -125,21 +151,33 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     return row ? this.toRecord(row) : null
   }
 
-  async listMessages(threadId: string): Promise<TeacherMessageRecord[]> {
+  async listMessages(threadId: string, before?: TeacherMessageCursor): Promise<TeacherMessagePage> {
     const rows = await this.db
       .select()
       .from(teacherMessages)
-      .where(eq(teacherMessages.threadId, threadId))
-      .orderBy(asc(teacherMessages.createdAt))
-    return rows.map((r) => ({
-      id: r.id,
-      threadId: r.threadId,
-      authorRole: r.authorRole as TeacherMessageRole,
-      authorId: r.authorId ?? null,
-      authorName: r.authorName ?? null,
-      body: r.body,
-      createdAt: r.createdAt,
-    }))
+      .where(
+        and(
+          eq(teacherMessages.threadId, threadId),
+          before
+            ? or(
+                lt(teacherMessages.createdAt, before.createdAt),
+                and(
+                  eq(teacherMessages.createdAt, before.createdAt),
+                  lt(teacherMessages.id, before.id),
+                ),
+              )
+            : undefined,
+        ),
+      )
+      .orderBy(desc(teacherMessages.createdAt), desc(teacherMessages.id))
+      .limit(MESSAGE_PAGE_SIZE + 1)
+    const hasMore = rows.length > MESSAGE_PAGE_SIZE
+    const page = rows.slice(0, MESSAGE_PAGE_SIZE)
+    const oldest = page[page.length - 1]
+    return {
+      messages: page.reverse().map((row) => this.toMessageRecord(row)),
+      nextCursor: hasMore && oldest ? { createdAt: oldest.createdAt, id: oldest.id } : null,
+    }
   }
 
   async listForStudent(
@@ -153,16 +191,22 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
   }
 
   async listForAdmin(filter: AdminThreadsFilter): Promise<TeacherThreadSummary[]> {
+    const unreadForStaff = this.unreadForStaffSql(filter.staffUserId)
     const where = and(
       filter.audience ? eq(teacherThreads.audience, filter.audience) : undefined,
       filter.contextType ? eq(teacherThreads.contextType, filter.contextType) : undefined,
       filter.courseId ? eq(teacherThreads.courseId, filter.courseId) : undefined,
       // Não-lido do PROFESSOR = há mensagem do ALUNO depois do watermark do professor.
-      filter.unreadOnly
-        ? sql`exists(select 1 from ${teacherMessages} m where m.thread_id = ${teacherThreads.id} and m.author_role = 'student' and m.created_at > coalesce(${teacherThreads.teacherLastReadAt}, 'epoch'::timestamptz))`
+      filter.unreadOnly ? unreadForStaff : undefined,
+      // Filtro por aluno (24/07): accountId pega a família; profileId estreita.
+      filter.userIds?.length
+        ? or(
+            inArray(teacherThreads.userId, filter.userIds),
+            inArray(teacherThreads.accountId, filter.userIds),
+          )
         : undefined,
     )
-    return this.selectSummaries(where, 'teacher', filter.limit, filter.offset)
+    return this.selectSummaries(where, 'teacher', filter.limit, filter.offset, filter.staffUserId)
   }
 
   async countUnreadForStudent(userId: string, audience: CourseAudience): Promise<number> {
@@ -181,71 +225,163 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     return row?.value ?? 0
   }
 
-  async markReadByStudent(threadId: string, userId: string, now: Date): Promise<void> {
+  async markReadByStudent(
+    threadId: string,
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<void> {
     await this.db
       .update(teacherThreads)
-      .set({ studentLastReadAt: now })
-      .where(and(eq(teacherThreads.id, threadId), eq(teacherThreads.userId, userId)))
+      // O UPDATE bloqueia a linha: mensagens que entrarem DEPOIS ficam não-lidas;
+      // as que já entraram ficam lidas. Nunca usar o relógio da aplicação aqui.
+      .set({ studentLastReadAt: teacherThreads.lastMessageAt })
+      .where(
+        and(
+          eq(teacherThreads.id, threadId),
+          eq(teacherThreads.userId, userId),
+          eq(teacherThreads.audience, audience),
+        ),
+      )
   }
 
-  async markReadByTeacher(threadId: string, now: Date): Promise<void> {
-    await this.db
-      .update(teacherThreads)
-      .set({ teacherLastReadAt: now })
-      .where(eq(teacherThreads.id, threadId))
+  async markReadByTeacher(threadId: string, staffUserId: string): Promise<void> {
+    await this.db.execute(sql`
+      insert into ${teacherThreadStaffReads} (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId}, ${teacherThreadStaffReads.readAt})
+      select ${teacherThreads.id}, ${staffUserId}::uuid, ${teacherThreads.lastMessageAt}
+      from ${teacherThreads}
+      where ${teacherThreads.id} = ${threadId}::uuid
+      on conflict (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId})
+      do update set ${teacherThreadStaffReads.readAt} = excluded.read_at
+    `)
+  }
+
+  async countUnreadForTeacher(staffUserId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(teacherThreads)
+      .where(this.unreadForStaffSql(staffUserId))
+    return row?.value ?? 0
+  }
+
+  async markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number> {
+    const where = and(
+      this.unreadForStaffSql(staffUserId),
+      filter?.audience ? eq(teacherThreads.audience, filter.audience) : undefined,
+      filter?.contextType ? eq(teacherThreads.contextType, filter.contextType) : undefined,
+      filter?.courseId ? eq(teacherThreads.courseId, filter.courseId) : undefined,
+    )
+    // Contagem antes do upsert (o resultado do INSERT…SELECT não separa insert de update).
+    const [row] = await this.db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(teacherThreads)
+      .where(where)
+    const updated = row?.value ?? 0
+    if (updated === 0) return 0
+    // Watermark = last_message_at da PRÓPRIA thread (nunca o relógio da aplicação —
+    // mensagens que entrarem depois seguem não-lidas; régua do markReadByTeacher).
+    await this.db.execute(sql`
+      insert into ${teacherThreadStaffReads} (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId}, ${teacherThreadStaffReads.readAt})
+      select ${teacherThreads.id}, ${staffUserId}::uuid, ${teacherThreads.lastMessageAt}
+      from ${teacherThreads}
+      where ${where}
+      on conflict (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId})
+      do update set ${teacherThreadStaffReads.readAt} = excluded.read_at
+    `)
+    return updated
+  }
+
+  /** "Há mensagem do ALUNO depois do watermark DESTE professor" (não-lido da Sala). */
+  private unreadForStaffSql(staffUserId: string): SQL<unknown> {
+    const staffReadAt = sql`(select ${teacherThreadStaffReads.readAt} from ${teacherThreadStaffReads} where ${teacherThreadStaffReads.threadId} = ${teacherThreads.id} and ${teacherThreadStaffReads.staffUserId} = ${staffUserId}::uuid)`
+    return sql`exists(select 1 from ${teacherMessages} m where m.thread_id = ${teacherThreads.id} and m.author_role = 'student' and m.created_at > coalesce(${staffReadAt}, 'epoch'::timestamptz))`
   }
 
   // ── Interno ──────────────────────────────────────────────────────────────────
-  // Duas queries + merge em JS (o `side` decide o não-lido pelo watermark): mais
-  // robusto que subquery-correlata-no-SELECT (que não correlaciona confiavelmente).
+  // Quatro queries LIMITADAS por página: cabeçalhos + contagem + última mensagem +
+  // última recebida. Nunca carregamos todos os corpos para montar a caixa.
   private async selectSummaries(
     where: SQL<unknown> | undefined,
     side: 'student' | 'teacher',
     limit: number,
     offset: number,
+    staffUserId?: string,
   ): Promise<TeacherThreadSummary[]> {
+    const fromRole: TeacherMessageRole = side === 'student' ? 'teacher' : 'student'
+    const watermark =
+      side === 'student'
+        ? teacherThreads.studentLastReadAt
+        : sql`(select ${teacherThreadStaffReads.readAt} from ${teacherThreadStaffReads} where ${teacherThreadStaffReads.threadId} = ${teacherThreads.id} and ${teacherThreadStaffReads.staffUserId} = ${staffUserId}::uuid)`
+    const unreadOrder = sql`exists(select 1 from ${teacherMessages} m where m.thread_id = ${teacherThreads.id} and m.author_role = ${fromRole} and m.created_at > coalesce(${watermark}, 'epoch'::timestamptz))`
     const threads = await this.db
       .select()
       .from(teacherThreads)
       .where(where)
-      .orderBy(desc(teacherThreads.lastMessageAt))
+      .orderBy(
+        ...(side === 'teacher' ? [desc(unreadOrder)] : []),
+        desc(teacherThreads.lastMessageAt),
+      )
       .limit(limit)
       .offset(offset)
     if (threads.length === 0) return []
 
     const ids = threads.map((t) => t.id)
-    const msgs = await this.db
-      .select({
-        threadId: teacherMessages.threadId,
-        authorRole: teacherMessages.authorRole,
-        body: teacherMessages.body,
-        createdAt: teacherMessages.createdAt,
-      })
-      .from(teacherMessages)
-      .where(inArray(teacherMessages.threadId, ids))
-      .orderBy(asc(teacherMessages.createdAt))
-    const byThread = new Map<
-      string,
-      { authorRole: TeacherMessageRole; body: string; createdAt: Date }[]
-    >()
-    for (const m of msgs) {
-      const arr = byThread.get(m.threadId) ?? []
-      arr.push({
-        authorRole: m.authorRole as TeacherMessageRole,
-        body: m.body,
-        createdAt: m.createdAt,
-      })
-      byThread.set(m.threadId, arr)
-    }
-
-    const fromRole: TeacherMessageRole = side === 'student' ? 'teacher' : 'student'
+    const [counts, latest, latestIncoming, staffReads] = await Promise.all([
+      this.db
+        .select({ threadId: teacherMessages.threadId, count: sql<number>`count(*)::int` })
+        .from(teacherMessages)
+        .where(inArray(teacherMessages.threadId, ids))
+        .groupBy(teacherMessages.threadId),
+      this.db
+        .selectDistinctOn([teacherMessages.threadId], {
+          threadId: teacherMessages.threadId,
+          authorRole: teacherMessages.authorRole,
+          body: teacherMessages.body,
+          createdAt: teacherMessages.createdAt,
+        })
+        .from(teacherMessages)
+        .where(inArray(teacherMessages.threadId, ids))
+        .orderBy(
+          teacherMessages.threadId,
+          desc(teacherMessages.createdAt),
+          desc(teacherMessages.id),
+        ),
+      this.db
+        .selectDistinctOn([teacherMessages.threadId], {
+          threadId: teacherMessages.threadId,
+          createdAt: teacherMessages.createdAt,
+        })
+        .from(teacherMessages)
+        .where(
+          and(inArray(teacherMessages.threadId, ids), eq(teacherMessages.authorRole, fromRole)),
+        )
+        .orderBy(
+          teacherMessages.threadId,
+          desc(teacherMessages.createdAt),
+          desc(teacherMessages.id),
+        ),
+      side === 'teacher' && staffUserId
+        ? this.db
+            .select({
+              threadId: teacherThreadStaffReads.threadId,
+              readAt: teacherThreadStaffReads.readAt,
+            })
+            .from(teacherThreadStaffReads)
+            .where(
+              and(
+                inArray(teacherThreadStaffReads.threadId, ids),
+                eq(teacherThreadStaffReads.staffUserId, staffUserId),
+              ),
+            )
+        : Promise.resolve([]),
+    ])
+    const countByThread = new Map(counts.map((row) => [row.threadId, row.count]))
+    const latestByThread = new Map(latest.map((row) => [row.threadId, row]))
+    const incomingByThread = new Map(latestIncoming.map((row) => [row.threadId, row.createdAt]))
+    const staffReadByThread = new Map(staffReads.map((row) => [row.threadId, row.readAt]))
     return threads.map((t) => {
-      const list = byThread.get(t.id) ?? []
-      const last = list[list.length - 1]
-      const watermark = side === 'student' ? t.studentLastReadAt : t.teacherLastReadAt
-      const unread = list.some(
-        (m) => m.authorRole === fromRole && (!watermark || m.createdAt > watermark),
-      )
+      const last = latestByThread.get(t.id)
+      const readAt = side === 'student' ? t.studentLastReadAt : staffReadByThread.get(t.id)
+      const lastIncomingAt = incomingByThread.get(t.id)
       return {
         id: t.id,
         userId: t.userId,
@@ -259,11 +395,23 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
         lastMessageAt: t.lastMessageAt,
         createdAt: t.createdAt,
         lastMessagePreview: last ? last.body.slice(0, PREVIEW_MAX) : null,
-        lastMessageRole: last ? last.authorRole : null,
-        messageCount: list.length,
-        unread,
+        lastMessageRole: last ? (last.authorRole as TeacherMessageRole) : null,
+        messageCount: countByThread.get(t.id) ?? 0,
+        unread: !!lastIncomingAt && (!readAt || lastIncomingAt > readAt),
       }
     })
+  }
+
+  private toMessageRecord(row: typeof teacherMessages.$inferSelect): TeacherMessageRecord {
+    return {
+      id: row.id,
+      threadId: row.threadId,
+      authorRole: row.authorRole as TeacherMessageRole,
+      authorId: row.authorId ?? null,
+      authorName: row.authorName ?? null,
+      body: row.body,
+      createdAt: row.createdAt,
+    }
   }
 
   private toRecord(row: typeof teacherThreads.$inferSelect): TeacherThreadRecord {

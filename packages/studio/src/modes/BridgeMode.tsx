@@ -6,7 +6,7 @@ import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { type InstalledExtension, t } from '#core'
 import type { GeneratedFiles, SourceMap, SourceMappedFile } from '#generators'
 import { buildCssSourceMapFromText } from '#generators'
-import { deepEqualIR, irBlockStructureEqual } from '#ir'
+import { deepEqualIR, irBlockStructureEqual, normalizeSZIR } from '#ir'
 import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { extractInlineAssets } from '#parsers'
@@ -31,6 +31,7 @@ import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
 import { useStudioLayout } from '../studio/layoutContext'
 import { useStudioTheme } from '../studio/theme'
+import { canvas3DInternalCodeRanges } from '../three/canvas3dMacroCodec'
 import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
@@ -64,18 +65,27 @@ export function isReverseParseResultStale(args: {
  * padrão (BlocklyPanel já atualiza files+IR).
  */
 export function BridgeMode(): JSX.Element {
-  const { hasProject, projectId, projectName, files, ir, blocksState, installedExtensions } =
-    useProjectStore(
-      useShallow((s) => ({
-        hasProject: Boolean(s.project),
-        projectId: s.project?.id,
-        projectName: s.project?.name ?? 'Projeto',
-        files: s.project?.files,
-        ir: s.project?.ir ?? null,
-        blocksState: s.project?.blocksState ?? null,
-        installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-      })),
-    )
+  const {
+    hasProject,
+    projectId,
+    projectName,
+    files,
+    ir,
+    blocksState,
+    installedExtensions,
+    bridgeCodeEditEpoch,
+  } = useProjectStore(
+    useShallow((s) => ({
+      hasProject: Boolean(s.project),
+      projectId: s.project?.id,
+      projectName: s.project?.name ?? 'Projeto',
+      files: s.project?.files,
+      ir: s.project?.ir ?? null,
+      blocksState: s.project?.blocksState ?? null,
+      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+      bridgeCodeEditEpoch: s.bridgeCodeEditEpoch,
+    })),
+  )
   const blocksHydration = useProjectStore((s) => s.blocksHydration)
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
@@ -89,6 +99,7 @@ export function BridgeMode(): JSX.Element {
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
   const [parseDiagnostics, setParseDiagnostics] = useState<ParseProjectDiagnostic[]>([])
+  const [showCanvas3DInternals, setShowCanvas3DInternals] = useState(false)
 
   // Source mapping cruzado bloco ↔ linha.
   const cross = useCrossHighlight()
@@ -149,9 +160,35 @@ export function BridgeMode(): JSX.Element {
         : [],
     [files],
   )
-  const debouncedHtml = useDebounced(files?.['index.html'] ?? '', 900)
-  const debouncedCss = useDebounced(files?.['style.css'] ?? '', 900)
-  const debouncedJs = useDebounced(files?.['script.js'] ?? '', 900)
+  const canvas3DInternalRanges = useMemo(
+    () => canvas3DInternalCodeRanges(files?.['script.js'] ?? ''),
+    [files],
+  )
+  const hasCanvas3DInternals = canvas3DInternalRanges.length > 0
+  const hiddenCanvas3DAreas = useMemo(
+    () =>
+      showCanvas3DInternals
+        ? undefined
+        : (file: { name: string; value: string }) =>
+            file.name === 'script.js' ? canvas3DInternalCodeRanges(file.value) : [],
+    [showCanvas3DInternals],
+  )
+  // Texto e época formam UM snapshot atômico. Debounces separados por arquivo
+  // permitiam que HTML novo + CSS antigo fossem postados com a época global do
+  // CSS novo; o worker então marcava blocos incompletos como sincronizados.
+  const reverseParseInput = useMemo(
+    () => ({
+      html: files?.['index.html'] ?? '',
+      css: files?.['style.css'] ?? '',
+      js: files?.['script.js'] ?? '',
+      codeEpoch: bridgeCodeEditEpoch,
+    }),
+    [files, bridgeCodeEditEpoch],
+  )
+  const debouncedReverseParseInput = useDebounced(reverseParseInput, 900)
+  const debouncedHtml = debouncedReverseParseInput.html
+  const debouncedCss = debouncedReverseParseInput.css
+  const debouncedJs = debouncedReverseParseInput.js
 
   // Cabeçalho do JS exibido: o source map precisa CASAR com o `script.js` REAL.
   // Código gerado dos blocos traz o cabeçalho; código DIGITADO/COLADO ("código é
@@ -351,8 +388,8 @@ export function BridgeMode(): JSX.Element {
         markSynced()
         return
       }
-      // Modelo CONTAINER: o reverse-parse reconstrói os frames (🧱 Estrutura /
-      // 🎨 Aparência / ⚙️ Comportamento) a partir da IR. Blocos soltos (rascunho)
+      // Modelo de áreas: o reverse-parse reconstrói Estrutura, Aparência,
+      // Ao iniciar, Quando acontecer e Enquanto estiver rodando a partir da IR. Rascunhos
       // não estão na IR, então não voltam — esperado ao sincronizar pelo código.
       // `omitEmptyAuxFrames`: HTML/CSS vazios NÃO ressuscitam num projeto só-JS
       // (ex.: Canvas 3D) a cada ida-e-volta pela Ponte.
@@ -399,7 +436,15 @@ export function BridgeMode(): JSX.Element {
     if (!hasProject || !ir) return
     if (blocksHydration === 'pending') return
     if (!isBlocksStateEmpty(blocksState)) return
-    if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
+    const behavior = normalizeSZIR(ir).behavior
+    if (
+      ir.html.length === 0 &&
+      ir.css.length === 0 &&
+      behavior.start.length === 0 &&
+      behavior.events.length === 0 &&
+      behavior.loops.length === 0
+    )
+      return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
 
@@ -516,7 +561,7 @@ export function BridgeMode(): JSX.Element {
     // Memoriza o epoch vigente: o handler dropa o resultado se uma edição de
     // bloco avançar o epoch enquanto este reparse está no worker.
     epochAtPost.current = stateEpoch.current
-    bridgeCodeEpochAtPost.current = projectStoreApi.getState().bridgeCodeEditEpoch
+    bridgeCodeEpochAtPost.current = debouncedReverseParseInput.codeEpoch
     // O handler (onmessage/onerror) é PERSISTENTE — instalado uma vez na criação
     // do worker — e despacha por `requestId`. Aqui só postamos o pedido.
     worker.postMessage({
@@ -536,6 +581,7 @@ export function BridgeMode(): JSX.Element {
     debouncedHtml,
     debouncedCss,
     debouncedJs,
+    debouncedReverseParseInput.codeEpoch,
     hasProject,
     installedExtensions,
     projectName,
@@ -557,7 +603,29 @@ export function BridgeMode(): JSX.Element {
         fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
         formatLabel={t('editor.format')}
         onFormatIssue={onFormatIssue}
-        tabsRightSlot={<FontSizeControls />}
+        hiddenAreas={hiddenCanvas3DAreas}
+        tabsRightSlot={
+          <div className="flex items-center gap-1">
+            {hasCanvas3DInternals && (
+              <button
+                type="button"
+                onClick={() => setShowCanvas3DInternals((visible) => !visible)}
+                aria-pressed={showCanvas3DInternals}
+                title={
+                  showCanvas3DInternals
+                    ? t('bridge.hideGeneratedInternals')
+                    : t('bridge.showGeneratedInternals')
+                }
+                className="rounded px-2 py-1 text-xs font-medium text-sz-fg hover:bg-sz-bg"
+              >
+                {showCanvas3DInternals
+                  ? t('bridge.hideGeneratedInternals')
+                  : t('bridge.showGeneratedInternals')}
+              </button>
+            )}
+            <FontSizeControls />
+          </div>
+        }
         onChange={(name, value) => {
           if (files && (name === 'index.html' || name === 'style.css' || name === 'script.js')) {
             setFiles({ ...files, [name]: value })
@@ -594,17 +662,17 @@ export function BridgeMode(): JSX.Element {
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
       <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
-        <Panel defaultSize={35} minSize={20}>
+        <Panel id="bridge-blocks" order={1} defaultSize={35} minSize={20}>
           <BlocklyPanel />
         </Panel>
         <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-        <Panel defaultSize={showPreview ? 35 : 65} minSize={20}>
+        <Panel id="bridge-code" order={2} defaultSize={showPreview ? 35 : 65} minSize={20}>
           {codeEditor}
         </Panel>
         {showPreview && (
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-            <Panel defaultSize={30} minSize={15}>
+            <Panel id="bridge-preview" order={3} defaultSize={30} minSize={15}>
               <PreviewIframe />
             </Panel>
           </>

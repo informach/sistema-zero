@@ -2,7 +2,11 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { ListCatalogService } from '../../src/application/list-catalog/list-catalog.service'
 import type { Course, CourseStatus } from '../../src/domain/course/course'
-import { InMemoryCourseRepository, InMemoryEntitlementRepository } from '../fakes/in-memory'
+import {
+  InMemoryCourseRepository,
+  InMemoryEntitlementRepository,
+  InMemoryGamificationRepository,
+} from '../fakes/in-memory'
 import { grantLifetime } from '../helpers'
 
 const NOW = new Date('2026-06-02T12:00:00.000Z')
@@ -12,6 +16,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
   const created = new Date('2026-06-01T00:00:00.000Z')
   return {
     id: randomUUID(),
+    version: 0,
     subtitle: null,
     description: null,
     coverImageUrl: null,
@@ -20,6 +25,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
     sequentialLock: true,
     level: 'iniciante',
     track: '2d',
+    careerSlot: null,
     metadata: null,
     createdAt: created,
     updatedAt: created,
@@ -30,8 +36,9 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
 function build() {
   const courses = new InMemoryCourseRepository()
   const entitlements = new InMemoryEntitlementRepository()
-  const service = new ListCatalogService(courses, entitlements, clock)
-  return { courses, entitlements, service }
+  const gamification = new InMemoryGamificationRepository({ entitlements, courses })
+  const service = new ListCatalogService(courses, entitlements, gamification, clock)
+  return { courses, entitlements, gamification, service }
 }
 
 describe('ListCatalogService (catálogo "Todos os cursos")', () => {
@@ -113,6 +120,8 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
       audience: 'adult',
       level: 'iniciante',
       track: '2d',
+      careerSlot: null,
+      careerLock: { locked: false },
       hasAccess: true,
       salesPageUrl: null,
       createdAt: '2026-06-01T00:00:00.000Z',

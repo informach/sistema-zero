@@ -2,6 +2,8 @@ import type { A1Certificate } from '../../certificate/a1-certificate'
 
 export interface SefinUrls {
   sefin: string
+  /** Distribuição do ADN: consulta dos eventos já vinculados à NFS-e. */
+  adnContribuintes: string
   adnDanfse: string
 }
 
@@ -13,11 +15,13 @@ export function sefinUrls(ambiente: 'producao' | 'producao-restrita'): SefinUrls
   if (ambiente === 'producao') {
     return {
       sefin: 'https://sefin.nfse.gov.br/SefinNacional',
+      adnContribuintes: 'https://adn.nfse.gov.br/contribuintes',
       adnDanfse: 'https://adn.nfse.gov.br/danfse',
     }
   }
   return {
     sefin: 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional',
+    adnContribuintes: 'https://adn.producaorestrita.nfse.gov.br/contribuintes',
     adnDanfse: 'https://adn.producaorestrita.nfse.gov.br/danfse',
   }
 }

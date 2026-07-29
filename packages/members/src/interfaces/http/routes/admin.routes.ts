@@ -29,8 +29,10 @@ import {
   AdminActivityQuery,
   AdminGamificationQuery,
   AdminTeacherThreadByContextQuery,
+  AdminTeacherThreadPageQuery,
   AdminTeacherThreadPostBody,
   AdminTeacherThreadsQuery,
+  AdminTeacherThreadsReadAllBody,
   AiUsageStatsQuery,
   ChallengeMonthParams,
   ChallengeOverrideBody,
@@ -43,6 +45,7 @@ import {
   ManageEntitlementBody,
   MemberDetailQuery,
   parseProfileIds,
+  parseUserIds,
   TeacherThreadReplyBody,
   UserIdParams,
 } from '../dtos'
@@ -199,16 +202,36 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           requireAdmin(headers, deps.requireAdminEnabled)
           return {
             threads: await deps.teacherThreads.listForAdmin({
+              staffUserId: resolveUserId(headers),
               audience: query.audience,
               contextType: query.context,
               courseId: query.courseId,
               unreadOnly: query.unread === 'true',
+              userIds: parseUserIds(query.userIds),
               limit: clampLimit(query.limit),
               offset: query.offset ?? 0,
             }),
           }
         },
         { query: AdminTeacherThreadsQuery },
+      )
+      // Badge da Sala do Professor — rota ESTÁTICA antes de `:id` (mesma régua do by-context).
+      .get('/teacher-threads/unread-count', async ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.teacherThreads.unreadCountForAdmin(resolveUserId(headers))
+      })
+      // "Marcar todas como lidas" (escopo opcional = filtros da caixa) — estática antes de `:id`.
+      .post(
+        '/teacher-threads/read-all',
+        async ({ body, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.markAllReadByTeacher(resolveUserId(headers), {
+            audience: body?.audience,
+            contextType: body?.context,
+            courseId: body?.courseId,
+          })
+        },
+        { body: AdminTeacherThreadsReadAllBody },
       )
       .post(
         '/teacher-threads',
@@ -240,17 +263,18 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             query.userId,
             query.contextType,
             query.contextRef,
+            query.before,
           )
         },
         { query: AdminTeacherThreadByContextQuery },
       )
       .get(
         '/teacher-threads/:id',
-        async ({ params, headers }) => {
+        async ({ params, query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.teacherThreads.getForAdmin(params.id)
+          return deps.teacherThreads.getForAdmin(params.id, query.before)
         },
-        { params: IdParams },
+        { params: IdParams, query: AdminTeacherThreadPageQuery },
       )
       .post(
         '/teacher-threads/:id/messages',
@@ -269,7 +293,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/teacher-threads/:id/read',
         async ({ params, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.teacherThreads.markReadByTeacher(params.id)
+          return deps.teacherThreads.markReadByTeacher(params.id, resolveUserId(headers))
         },
         { params: IdParams },
       )

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { and, desc, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm'
 import type { InvoiceStatus, SkipReason } from '../../../domain/invoice/invoice.status'
 import type {
@@ -9,7 +10,7 @@ import type { Database } from './db'
 import { escapeLike, isUniqueViolation } from './pg-errors'
 import { dpsCounters, invoiceEvents, invoicePdfs, invoices } from './schema'
 
-const ACTIVE_STATUSES: InvoiceStatus[] = ['SCHEDULED', 'EMITTED', 'CANCEL_PENDING']
+const ACTIVE_STATUSES: InvoiceStatus[] = ['SCHEDULED', 'EMITTED', 'CANCEL_PENDING', 'CANCEL_FAILED']
 
 export class DrizzleInvoiceRepository implements InvoiceRepository {
   constructor(private readonly db: Database) {}
@@ -128,6 +129,17 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
   }
 
   async schedule(input: ScheduleInvoiceInput): Promise<Invoice> {
+    const created = await this.scheduleIfAbsent(input)
+    if (created) return created
+
+    const existing = input.substitutesId
+      ? await this.findActiveSubstituteFor(input.substitutesId)
+      : await this.findActiveByPaymentId(input.paymentId)
+    if (existing) return existing
+    throw new Error('colisão de agendamento sem nota ativa para recuperar')
+  }
+
+  async scheduleIfAbsent(input: ScheduleInvoiceInput): Promise<Invoice | null> {
     try {
       const [row] = await this.db
         .insert(invoices)
@@ -155,18 +167,29 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
         const existing = input.substitutesId
           ? await this.findActiveSubstituteFor(input.substitutesId)
           : await this.findActiveByPaymentId(input.paymentId)
-        if (existing) return existing
+        if (existing) return null
       }
       throw error
     }
   }
 
-  async skip(id: string, reason: SkipReason, detail?: string): Promise<void> {
-    await this.transition(id, ['SCHEDULED'], {
-      status: 'SKIPPED',
-      skipReason: detail ? `${reason}: ${detail}` : reason,
-      claimedAt: null,
-    })
+  async skip(
+    id: string,
+    reason: SkipReason,
+    detail?: string,
+    claimToken?: string,
+  ): Promise<boolean> {
+    const affected = await this.transition(
+      id,
+      ['SCHEDULED'],
+      {
+        status: 'SKIPPED',
+        skipReason: detail ? `${reason}: ${detail}` : reason,
+        claimedAt: null,
+      },
+      claimToken,
+    )
+    return affected > 0
   }
 
   async claimDueForEmission(opts: {
@@ -176,6 +199,7 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
   }): Promise<Invoice[]> {
     const now = new Date()
     const staleBefore = new Date(now.getTime() - opts.staleMs)
+    const claimToken = randomUUID()
     // Claim com lease: attempts++ NO claim (crash conta como tentativa — sem
     // re-entrega infinita). SKIP LOCKED → seguro com N réplicas.
     const rows = await this.db.transaction(async (tx) => {
@@ -201,6 +225,7 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
         .update(invoices)
         .set({
           claimedAt: now,
+          claimToken,
           attempts: sql`${invoices.attempts} + 1`,
           updatedAt: now,
         })
@@ -227,6 +252,7 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
         status: 'FAILED',
         lastError: 'tentativas esgotadas: presa em SCHEDULED após crash (attempts > maxAttempts)',
         claimedAt: null,
+        claimToken: null,
         version: sql`${invoices.version} + 1`,
         updatedAt: now,
       })
@@ -246,13 +272,21 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
     id: string,
     series: string,
     buildDpsId: (n: bigint) => string,
-  ): Promise<{ dpsNumber: bigint; dpsId: string }> {
+    claimToken: string,
+  ): Promise<{ dpsNumber: bigint; dpsId: string } | null> {
     return this.db.transaction(async (tx) => {
       const [current] = await tx
         .select({ dpsNumber: invoices.dpsNumber, dpsId: invoices.dpsId })
         .from(invoices)
-        .where(eq(invoices.id, id))
+        .where(
+          and(
+            eq(invoices.id, id),
+            eq(invoices.status, 'SCHEDULED'),
+            eq(invoices.claimToken, claimToken),
+          ),
+        )
         .for('update')
+      if (!current) return null
       // Retry REUSA o número já alocado — nunca aloca de novo (re-POST do mesmo
       // número vira "duplicate" recuperável; número novo viraria nota dobrada).
       if (current?.dpsNumber != null && current.dpsId) {
@@ -272,11 +306,18 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
 
       const dpsNumber = counter.lastNumber
       const dpsId = buildDpsId(dpsNumber)
-      await tx
+      const allocated = await tx
         .update(invoices)
         .set({ dpsSeries: series, dpsNumber, dpsId, updatedAt: new Date() })
-        .where(eq(invoices.id, id))
-      return { dpsNumber, dpsId }
+        .where(
+          and(
+            eq(invoices.id, id),
+            eq(invoices.status, 'SCHEDULED'),
+            eq(invoices.claimToken, claimToken),
+          ),
+        )
+        .returning({ id: invoices.id })
+      return allocated.length > 0 ? { dpsNumber, dpsId } : null
     })
   }
 
@@ -289,20 +330,32 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       competenceDate: string
       pdfToken: string
     },
+    claimToken: string,
   ): Promise<boolean> {
-    const affected = await this.transition(id, ['SCHEDULED'], {
-      status: 'EMITTED',
-      dpsXml: data.dpsXml,
-      nfseXml: data.nfseXml,
-      accessKey: data.accessKey,
-      competenceDate: data.competenceDate,
-      pdfToken: data.pdfToken,
-      emittedAt: new Date(),
-      claimedAt: null,
-      lastError: null,
-      nextAttemptAt: null,
-    })
-    return affected > 0
+    const rows = await this.db
+      .update(invoices)
+      .set({
+        status: 'EMITTED',
+        dpsXml: data.dpsXml,
+        nfseXml: data.nfseXml,
+        accessKey: data.accessKey,
+        competenceDate: data.competenceDate,
+        pdfToken: data.pdfToken,
+        emittedAt: new Date(),
+        lastError: null,
+        nextAttemptAt: null,
+        version: sql`${invoices.version} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(invoices.id, id),
+          eq(invoices.status, 'SCHEDULED'),
+          eq(invoices.claimToken, claimToken),
+        ),
+      )
+      .returning({ id: invoices.id })
+    return rows.length > 0
   }
 
   async forceCancelAfterRacedEmission(
@@ -333,6 +386,7 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
         cancelReason,
         skipReason: null,
         claimedAt: null,
+        claimToken: null,
         lastError: null,
         nextAttemptAt: null,
         version: sql`${invoices.version} + 1`,
@@ -341,44 +395,70 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       .where(and(eq(invoices.id, id), eq(invoices.status, 'SKIPPED')))
   }
 
-  async touchClaim(id: string): Promise<void> {
+  async touchClaim(id: string, claimToken: string): Promise<boolean> {
     // Só renova o lease de uma nota AINDA no ciclo de processamento — nunca
     // ressuscita o claimed_at de uma que já saiu (ex.: estorno marcou SKIPPED no
     // meio do tick). Só claimed_at: não toca updated_at (fila de cancelamento ordena por ele).
-    await this.db
+    const rows = await this.db
       .update(invoices)
       .set({ claimedAt: new Date() })
       .where(
         and(
           eq(invoices.id, id),
+          eq(invoices.claimToken, claimToken),
           inArray(invoices.status, ['SCHEDULED', 'CANCEL_PENDING', 'EMITTED']),
         ),
       )
+      .returning({ id: invoices.id })
+    return rows.length > 0
   }
 
-  async releaseForRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
-    await this.db
+  async releaseForRetry(
+    id: string,
+    nextAttemptAt: Date,
+    lastError: string,
+    claimToken: string,
+  ): Promise<boolean> {
+    const rows = await this.db
       .update(invoices)
-      .set({ claimedAt: null, nextAttemptAt, lastError, updatedAt: new Date() })
-      .where(and(eq(invoices.id, id), eq(invoices.status, 'SCHEDULED')))
+      .set({ claimedAt: null, claimToken: null, nextAttemptAt, lastError, updatedAt: new Date() })
+      .where(
+        and(
+          eq(invoices.id, id),
+          eq(invoices.status, 'SCHEDULED'),
+          eq(invoices.claimToken, claimToken),
+        ),
+      )
+      .returning({ id: invoices.id })
+    return rows.length > 0
   }
 
-  async markFailed(id: string, lastError: string): Promise<void> {
-    await this.transition(id, ['SCHEDULED'], { status: 'FAILED', lastError, claimedAt: null })
+  async markFailed(id: string, lastError: string, claimToken?: string): Promise<boolean> {
+    const affected = await this.transition(
+      id,
+      ['SCHEDULED'],
+      { status: 'FAILED', lastError, claimedAt: null },
+      claimToken,
+    )
+    return affected > 0
   }
 
-  async requestCancel(id: string, by: string, reason: string): Promise<void> {
-    await this.transition(id, ['EMITTED'], {
+  async requestCancel(id: string, by: string, reason: string): Promise<boolean> {
+    const affected = await this.transition(id, ['EMITTED', 'CANCEL_FAILED'], {
       status: 'CANCEL_PENDING',
       cancelRequestedBy: by,
       cancelReason: reason,
       claimedAt: null,
+      lastError: null,
+      nextAttemptAt: null,
     })
+    return affected > 0
   }
 
   async claimCancelPending(opts: { batchSize: number; staleMs: number }): Promise<Invoice[]> {
     const now = new Date()
     const staleBefore = new Date(now.getTime() - opts.staleMs)
+    const claimToken = randomUUID()
     const rows = await this.db.transaction(async (tx) => {
       const due = await tx
         .select({ id: invoices.id })
@@ -395,7 +475,7 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       if (due.length === 0) return []
       return tx
         .update(invoices)
-        .set({ claimedAt: now, updatedAt: now })
+        .set({ claimedAt: now, claimToken, updatedAt: now })
         .where(
           inArray(
             invoices.id,
@@ -407,17 +487,38 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
     return rows.map(toInvoice)
   }
 
-  async markCancelled(id: string, cancelEventXml: string): Promise<void> {
-    await this.transition(id, ['CANCEL_PENDING'], {
-      status: 'CANCELLED',
-      cancelEventXml,
-      cancelledAt: new Date(),
-      claimedAt: null,
-    })
+  async markCancelled(id: string, cancelEventXml: string, claimToken: string): Promise<boolean> {
+    const affected = await this.transition(
+      id,
+      ['CANCEL_PENDING'],
+      {
+        status: 'CANCELLED',
+        cancelEventXml,
+        cancelledAt: new Date(),
+        claimedAt: null,
+      },
+      claimToken,
+    )
+    return affected > 0
   }
 
-  async retry(id: string, scheduledFor: Date): Promise<void> {
-    await this.transition(id, ['FAILED'], {
+  async markCancelFailed(id: string, lastError: string, claimToken: string): Promise<boolean> {
+    const affected = await this.transition(
+      id,
+      ['CANCEL_PENDING'],
+      {
+        status: 'CANCEL_FAILED',
+        lastError,
+        claimedAt: null,
+        nextAttemptAt: null,
+      },
+      claimToken,
+    )
+    return affected > 0
+  }
+
+  async retry(id: string, scheduledFor: Date): Promise<boolean> {
+    const affected = await this.transition(id, ['FAILED'], {
       status: 'SCHEDULED',
       scheduledFor,
       attempts: 0,
@@ -425,13 +526,16 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       lastError: null,
       claimedAt: null,
     })
+    return affected > 0
   }
 
-  async expedite(id: string): Promise<void> {
-    await this.db
+  async expedite(id: string): Promise<boolean> {
+    const rows = await this.db
       .update(invoices)
       .set({ scheduledFor: new Date(), nextAttemptAt: null, updatedAt: new Date() })
       .where(and(eq(invoices.id, id), eq(invoices.status, 'SCHEDULED')))
+      .returning({ id: invoices.id })
+    return rows.length > 0
   }
 
   /**
@@ -452,7 +556,12 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       pdfToken: string
     },
     originalId: string,
-  ): Promise<{ recorded: boolean; originalSubstituted: boolean }> {
+    claimToken: string,
+  ): Promise<{
+    recorded: boolean
+    originalSubstituted: boolean
+    substituteCancelPending: boolean
+  }> {
     return this.db.transaction(async (tx) => {
       const now = new Date()
       const sub = await tx
@@ -465,15 +574,22 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
           competenceDate: data.competenceDate,
           pdfToken: data.pdfToken,
           emittedAt: now,
-          claimedAt: null,
           lastError: null,
           nextAttemptAt: null,
           version: sql`${invoices.version} + 1`,
           updatedAt: now,
         })
-        .where(and(eq(invoices.id, substituteId), eq(invoices.status, 'SCHEDULED')))
+        .where(
+          and(
+            eq(invoices.id, substituteId),
+            eq(invoices.status, 'SCHEDULED'),
+            eq(invoices.claimToken, claimToken),
+          ),
+        )
         .returning({ id: invoices.id })
-      if (sub.length === 0) return { recorded: false, originalSubstituted: false }
+      if (sub.length === 0) {
+        return { recorded: false, originalSubstituted: false, substituteCancelPending: false }
+      }
 
       const orig = await tx
         .update(invoices)
@@ -485,7 +601,43 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
         })
         .where(and(eq(invoices.id, originalId), eq(invoices.status, 'EMITTED')))
         .returning({ id: invoices.id })
-      return { recorded: true, originalSubstituted: orig.length > 0 }
+      if (orig.length > 0) {
+        return { recorded: true, originalSubstituted: true, substituteCancelPending: false }
+      }
+
+      // Se o estorno venceu a corrida, a original já iniciou (ou até concluiu) o
+      // cancelamento. A substituta acabou de virar uma NFS-e REAL e precisa entrar
+      // no mesmo fluxo dentro desta transação; depender de outro webhook deixaria
+      // uma janela de crash — ou de leitura eventualmente defasada do payments —
+      // com a nota ativa para sempre.
+      const [original] = await tx
+        .select({ status: invoices.status, cancelRequestedBy: invoices.cancelRequestedBy })
+        .from(invoices)
+        .where(eq(invoices.id, originalId))
+        .limit(1)
+      if (
+        original?.cancelRequestedBy === 'system:refund' &&
+        (original.status === 'CANCEL_PENDING' ||
+          original.status === 'CANCEL_FAILED' ||
+          original.status === 'CANCELLED')
+      ) {
+        await tx
+          .update(invoices)
+          .set({
+            status: 'CANCEL_PENDING',
+            cancelRequestedBy: 'system:refund',
+            cancelReason: 'Pagamento reembolsado durante a substituição',
+            claimedAt: null,
+            claimToken: null,
+            lastError: null,
+            nextAttemptAt: null,
+            version: sql`${invoices.version} + 1`,
+            updatedAt: now,
+          })
+          .where(and(eq(invoices.id, substituteId), eq(invoices.status, 'EMITTED')))
+        return { recorded: true, originalSubstituted: false, substituteCancelPending: true }
+      }
+      return { recorded: true, originalSubstituted: false, substituteCancelPending: false }
     })
   }
 
@@ -501,19 +653,31 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
   async storePdf(
     invoiceId: string,
     content: Uint8Array,
+    claimToken: string,
     contentType = 'application/pdf',
-  ): Promise<void> {
-    await this.db
-      .insert(invoicePdfs)
-      .values({ invoiceId, content, contentType, sizeBytes: content.length })
-      .onConflictDoUpdate({
-        target: invoicePdfs.invoiceId,
-        set: { content, contentType, sizeBytes: content.length },
-      })
-    await this.db
-      .update(invoices)
-      .set({ pdfStoredAt: new Date(), updatedAt: new Date() })
-      .where(eq(invoices.id, invoiceId))
+  ): Promise<boolean> {
+    return this.db.transaction(async (tx) => {
+      const rows = await tx
+        .update(invoices)
+        .set({ pdfStoredAt: new Date(), updatedAt: new Date() })
+        .where(
+          and(
+            eq(invoices.id, invoiceId),
+            eq(invoices.status, 'EMITTED'),
+            eq(invoices.claimToken, claimToken),
+          ),
+        )
+        .returning({ id: invoices.id })
+      if (rows.length === 0) return false
+      await tx
+        .insert(invoicePdfs)
+        .values({ invoiceId, content, contentType, sizeBytes: content.length })
+        .onConflictDoUpdate({
+          target: invoicePdfs.invoiceId,
+          set: { content, contentType, sizeBytes: content.length },
+        })
+      return true
+    })
   }
 
   async findPdfByToken(
@@ -532,23 +696,38 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
     return row ?? null
   }
 
-  async markEmailSent(id: string): Promise<void> {
-    await this.db
+  async markEmailSent(id: string, claimToken: string): Promise<boolean> {
+    const rows = await this.db
       .update(invoices)
       .set({ emailSentAt: new Date(), updatedAt: new Date() })
-      .where(eq(invoices.id, id))
+      .where(
+        and(
+          eq(invoices.id, id),
+          eq(invoices.status, 'EMITTED'),
+          eq(invoices.claimToken, claimToken),
+        ),
+      )
+      .returning({ id: invoices.id })
+    return rows.length > 0
   }
 
   async claimEmittedNeedingDelivery(opts: {
     batchSize: number
     staleMs: number
+    includeEmail: boolean
   }): Promise<Invoice[]> {
     const now = new Date()
     const staleBefore = new Date(now.getTime() - opts.staleMs)
-    const needsDelivery = or(
-      isNull(invoices.pdfStoredAt),
-      and(isNull(invoices.emailSentAt), sql`coalesce(${invoices.customer}->>'email', '') <> ''`),
-    )
+    const claimToken = randomUUID()
+    const needsDelivery = opts.includeEmail
+      ? or(
+          isNull(invoices.pdfStoredAt),
+          and(
+            isNull(invoices.emailSentAt),
+            sql`coalesce(${invoices.customer}->>'email', '') <> ''`,
+          ),
+        )
+      : isNull(invoices.pdfStoredAt)
 
     const rows = await this.db.transaction(async (tx) => {
       const due = await tx
@@ -570,7 +749,7 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       if (due.length === 0) return []
       return tx
         .update(invoices)
-        .set({ claimedAt: now, updatedAt: now })
+        .set({ claimedAt: now, claimToken, updatedAt: now })
         .where(
           inArray(
             invoices.id,
@@ -582,18 +761,45 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
     return rows.map(toInvoice)
   }
 
-  async releaseDeliveryRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
-    await this.db
+  async releaseDeliveryRetry(
+    id: string,
+    nextAttemptAt: Date,
+    lastError: string,
+    claimToken: string,
+  ): Promise<boolean> {
+    const rows = await this.db
       .update(invoices)
-      .set({ claimedAt: null, nextAttemptAt, lastError, updatedAt: new Date() })
-      .where(and(eq(invoices.id, id), eq(invoices.status, 'EMITTED')))
+      .set({ claimedAt: null, claimToken: null, nextAttemptAt, lastError, updatedAt: new Date() })
+      .where(
+        and(
+          eq(invoices.id, id),
+          eq(invoices.status, 'EMITTED'),
+          eq(invoices.claimToken, claimToken),
+        ),
+      )
+      .returning({ id: invoices.id })
+    return rows.length > 0
   }
 
-  async markDeliveryComplete(id: string): Promise<void> {
-    await this.db
+  async markDeliveryComplete(id: string, claimToken: string): Promise<boolean> {
+    const rows = await this.db
       .update(invoices)
-      .set({ claimedAt: null, nextAttemptAt: null, lastError: null, updatedAt: new Date() })
-      .where(and(eq(invoices.id, id), eq(invoices.status, 'EMITTED')))
+      .set({
+        claimedAt: null,
+        claimToken: null,
+        nextAttemptAt: null,
+        lastError: null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(invoices.id, id),
+          eq(invoices.status, 'EMITTED'),
+          eq(invoices.claimToken, claimToken),
+        ),
+      )
+      .returning({ id: invoices.id })
+    return rows.length > 0
   }
 
   /**
@@ -606,11 +812,25 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
     id: string,
     from: InvoiceStatus[],
     set: Partial<typeof invoices.$inferInsert>,
+    claimToken?: string,
   ): Promise<number> {
     const rows = await this.db
       .update(invoices)
-      .set({ ...set, version: sql`${invoices.version} + 1`, updatedAt: new Date() })
-      .where(and(eq(invoices.id, id), inArray(invoices.status, from)))
+      .set({
+        ...set,
+        claimToken: null,
+        version: sql`${invoices.version} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(
+        claimToken
+          ? and(
+              eq(invoices.id, id),
+              inArray(invoices.status, from),
+              eq(invoices.claimToken, claimToken),
+            )
+          : and(eq(invoices.id, id), inArray(invoices.status, from)),
+      )
       .returning({ id: invoices.id })
     return rows.length
   }
@@ -631,6 +851,7 @@ function toInvoice(row: typeof invoices.$inferSelect): Invoice {
     scheduledFor: row.scheduledFor,
     attempts: row.attempts,
     claimedAt: row.claimedAt,
+    claimToken: row.claimToken,
     nextAttemptAt: row.nextAttemptAt,
     lastError: row.lastError,
     skipReason: row.skipReason,

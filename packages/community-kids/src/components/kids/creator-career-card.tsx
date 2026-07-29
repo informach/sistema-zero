@@ -1,5 +1,6 @@
 import { Flame, Gamepad2, Sparkles, Trophy } from 'lucide-react'
 import Link from 'next/link'
+import { careerRewardInfo } from '@/lib/career-rewards'
 import { cn } from '@/lib/cn'
 import { levelInfo, nextLevelHint } from '@/lib/level-info'
 import type { GamificationMeView } from '@/lib/types'
@@ -43,6 +44,7 @@ export function CreatorCareerCard({
 
   const { streak, xp, level, ranking } = gamification
   const info = levelInfo(level?.slug)
+  const reward = careerRewardInfo(level?.slug)
   const hint = level ? nextLevelHint(level) : null
   const days = streak.current === 1 ? 'dia' : 'dias'
   const streakMessage = streak.activeToday
@@ -77,6 +79,10 @@ export function CreatorCareerCard({
             ) : null}
           </div>
           <p className="mt-1.5 text-muted-foreground text-sm">{hint ?? info.blurb}</p>
+          <p className="mt-1 text-xs">
+            <span className="font-bold text-primary">Você liberou:</span>{' '}
+            <span className="text-muted-foreground">{reward.title}</span>
+          </p>
         </div>
         <div className="hidden shrink-0 flex-col items-end gap-1.5 text-sm sm:flex">
           <span

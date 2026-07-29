@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import type { JSStatement } from '#ir'
+import { parseJS } from '../../../parsers/js'
 import { gameTwoDRuntime } from '../runtime'
 
 /**
@@ -63,7 +64,10 @@ function spyCtx(rec: Rec) {
 }
 
 /** Compila a IR do statement e RODA o JS resultante no runtime real com o ctx espião. */
-function drawViaGenerator(stmt: JSStatement): Rec {
+function drawViaGenerator(
+  stmt: JSStatement,
+  variables: { jogador?: { hp?: number; hpMax?: number } } = {},
+): Rec {
   const win = {
     addEventListener() {},
     performance: { now: () => 0 },
@@ -74,13 +78,63 @@ function drawViaGenerator(stmt: JSStatement): Rec {
   const api = win.SZGame2D as Record<string, unknown>
   const rec: Rec = { fillText: [], fillRect: [], fill: 0, moveTo: [], fillStyle: [], textAlign: [] }
   const code = compileStatements([stmt], 0)
-  new Function('SZGame2D', 'ctx', code)(api, spyCtx(rec))
+  new Function('SZGame2D', 'ctx', 'jogador', code)(api, spyCtx(rec), variables.jogador)
   return rec
 }
 
 const N = (value: number) => ({ type: 'num', value }) as unknown
 
 describe('g2d — fiação bloco→gerador→runtime (executa de verdade)', () => {
+  it('tipo de inimigo com FIGURA: gerador emite `shape` e a Ponte devolve; sem figura, saída de sempre', () => {
+    const base = {
+      type: 'g2d:defineEnemyType',
+      varName: 'zumbi',
+      behavior: 'patrulha',
+      color: '#e4573d',
+      image: '',
+      hp: N(3),
+      speed: N(2),
+      dmg: N(1),
+      w: N(32),
+      h: N(32),
+    } as unknown as JSStatement
+    // SEM figura: byte-idêntico ao formato antigo (projetos salvos não mudam).
+    const legacy = compileStatements([base], 0)
+    expect(legacy).toBe(
+      'const zumbi = SZGame2D.createEnemyType({ behavior: "patrulha", color: "#e4573d", image: "", hp: 3, speed: 2, dmg: 1, w: 32, h: 32 });',
+    )
+    expect(legacy).not.toContain('shape')
+
+    // COM figura: a chave entra e o round-trip da Ponte preserva.
+    const withShape = { ...(base as object), shape: 'pedra' } as unknown as JSStatement
+    const code = compileStatements([withShape], 0)
+    expect(code).toContain('shape: "pedra"')
+    const reparsed = parseJS(code).find((stmt) => stmt.type === 'g2d:defineEnemyType') as
+      | { shape?: string }
+      | undefined
+    expect(reparsed?.shape).toBe('pedra')
+    // E o caminho SEM figura re-parseia sem inventar a chave.
+    const reparsedLegacy = parseJS(legacy).find((stmt) => stmt.type === 'g2d:defineEnemyType') as
+      | { shape?: string }
+      | undefined
+    expect(reparsedLegacy && 'shape' in reparsedLegacy).toBe(false)
+  })
+
+  it('gameOver usa o helper acessível do runtime e preserva o bloco na Ponte', () => {
+    const code = compileStatements(
+      [
+        {
+          type: 'g2d:gameOver',
+          ctxVar: 'ctx',
+          text: { type: 'str', value: 'Fim de jogo' },
+        },
+      ],
+      0,
+    )
+
+    expect(code).toBe('SZGame2D.showGameOver(ctx, "Fim de jogo");')
+  })
+
   it('drawScore: "Placar:" 7 em (11,22) → fillText("Placar: 7", 11, 22)', () => {
     const stmt = {
       type: 'g2d:drawScore',
@@ -135,6 +189,43 @@ describe('g2d — fiação bloco→gerador→runtime (executa de verdade)', () =
     // O 1º coração começa perto de (20,30): moveTo em (x + s/2, y + s*0.3) = (31, 36.6).
     expect(rec.moveTo[0]?.[0]).toBeCloseTo(31, 5)
     expect(rec.moveTo[0]?.[1]).toBeCloseTo(36.6, 5)
+  })
+
+  it('drawSpriteHealth lê as vidas do sprite e desenha corações automaticamente', () => {
+    const stmt = {
+      type: 'g2d:drawSpriteHealth',
+      ctxVar: 'ctx',
+      spriteVar: 'jogador',
+      style: 'hearts',
+      x: N(20),
+      y: N(30),
+      size: N(22),
+      color: '#ff0000',
+    } as unknown as JSStatement
+    expect(compileStatements([stmt], 0).trim()).toBe(
+      'SZGame2D.drawSpriteHealth(ctx, jogador, "hearts", 20, 30, 22, "#ff0000");',
+    )
+
+    const rec = drawViaGenerator(stmt, { jogador: { hp: 3, hpMax: 5 } })
+    expect(rec.fill).toBe(3)
+    expect(rec.moveTo[0]?.[0]).toBeCloseTo(31, 5)
+  })
+
+  it('drawSpriteHealth usa tamanho como largura e altura proporcional no formato barra', () => {
+    const stmt = {
+      type: 'g2d:drawSpriteHealth',
+      ctxVar: 'ctx',
+      spriteVar: 'jogador',
+      style: 'bar',
+      x: N(11),
+      y: N(22),
+      size: N(160),
+      color: '#00ff00',
+    } as unknown as JSStatement
+
+    const rec = drawViaGenerator(stmt, { jogador: { hp: 3, hpMax: 4 } })
+    expect(rec.fillRect).toContainEqual([11, 22, 160, 16])
+    expect(rec.fillRect).toContainEqual([11, 22, 120, 16])
   })
 
   it('drawBar: valor 3/10 em (11,22) tam 44×8 → fundo cheio + preenchimento 30%', () => {

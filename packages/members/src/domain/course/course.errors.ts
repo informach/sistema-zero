@@ -26,6 +26,23 @@ export class LessonLockedError extends DomainError {
   }
 }
 
+const CAREER_LOCK_MESSAGES = {
+  'foundation-first': 'Conclua e publique o curso-base desta etapa para liberar este curso',
+  'tier-reward': 'Este curso é uma recompensa: complete os cursos da etapa para liberar',
+  'future-tier': 'Continue sua carreira para liberar este curso',
+} as const
+
+/** Curso futuro na carreira, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
+export class CourseCareerLockedError extends DomainError {
+  readonly code = 'COURSE_CAREER_LOCKED'
+  constructor(
+    readonly reason: keyof typeof CAREER_LOCK_MESSAGES,
+    readonly requiredLevel?: string,
+  ) {
+    super(CAREER_LOCK_MESSAGES[reason])
+  }
+}
+
 /** Anexo inexistente na aula (rota de download do aluno). → 404. */
 export class AttachmentNotFoundError extends DomainError {
   readonly code = 'ATTACHMENT_NOT_FOUND'
@@ -58,6 +75,14 @@ export class DuplicateSlugError extends DomainError {
   }
 }
 
+/** Já existe outro curso no mesmo slot da etapa da carreira. → 409. */
+export class CareerSlotConflictError extends DomainError {
+  readonly code = 'CAREER_SLOT_CONFLICT'
+  constructor(message = 'Já existe um curso nesta posição da carreira') {
+    super(message)
+  }
+}
+
 /** Comando de autoria inválido (ex.: reordenar com ids que não batem). → 400. */
 export class InvalidContentCommandError extends DomainError {
   readonly code = 'VALIDATION_ERROR'
@@ -75,6 +100,20 @@ export class NoPublishedLessonError extends DomainError {
 export class CourseConflictError extends DomainError {
   readonly code = 'CONCURRENCY_CONFLICT'
   constructor(message = 'Curso alterado por outra operação') {
+    super(message)
+  }
+}
+
+/**
+ * Curso-base kids (careerSlot=1) publicado SEM aula publicada com bloco de Estúdio de
+ * vitrine (`showcase.enabled`) — o aluno nunca qualificaria o slot e a etapa da carreira
+ * travaria (armadilha do fail-open, full review 24/07). → 409. Guard SÓ na transição.
+ */
+export class NoShowcaseBlockError extends DomainError {
+  readonly code = 'NO_SHOWCASE_BLOCK'
+  constructor(
+    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar o curso-base',
+  ) {
     super(message)
   }
 }

@@ -11,6 +11,13 @@ const authHeaders = { 'x-auth-user-id': USER, 'content-type': 'application/json'
 type App = ReturnType<typeof buildApp>['app']
 const readJson = (res: Response): Promise<any> => res.json()
 
+function seedCareerCourse(courses: InMemoryCourseRepository) {
+  const sample = seedSampleCourse(courses)
+  const row = courses.courses.find((course) => course.id === sample.courseId)
+  if (row) row.careerSlot = 1
+  return sample
+}
+
 const complete = (app: App, lessonId: string, headers: Record<string, string> = authHeaders) =>
   app.handle(
     new Request(`http://localhost/members/lessons/${lessonId}/complete`, {
@@ -343,8 +350,8 @@ describe('Gamificação — GET /members/gamification/me', () => {
         slug: 'noob',
         next: 'coder',
         remaining: {
-          any: 1,
-          'iniciante-2d': 0,
+          any: 0,
+          'iniciante-2d': 1,
           'iniciante-3d': 0,
           'intermediario-2d': 0,
           'intermediario-3d': 0,
@@ -542,7 +549,11 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
     grantLifetime(entitlements, { userId: STAFF, courseRef: kidsCourse.slug })
 
     // Staff (mesmo COM matrícula) pontua mais que o cliente…
-    const staffHeaders = { 'x-auth-user-id': STAFF, 'x-auth-user-role': 'staff' }
+    const staffHeaders = {
+      'x-auth-user-id': STAFF,
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
     await complete(app, kidsCourse.lessonIds[0], staffHeaders)
     await complete(app, kidsCourse.lessonIds[1], staffHeaders)
     await complete(app, kidsCourse.lessonIds[0])
@@ -616,6 +627,7 @@ describe('Gamificação — resiliência e impersonação', () => {
     const res = await complete(app, course.lessonIds[0], {
       'x-auth-user-id': STAFF,
       'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
     })
     expect(res.status).toBe(200)
     const body = await readJson(res)
@@ -1053,7 +1065,11 @@ describe('Gamificação — correções do full review (freeze/streak display/ra
     const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     const STAFF = '66666666-6666-6666-6666-666666666666'
     grantLifetime(entitlements, { userId: STAFF, courseRef: kids.slug })
-    const staffHeaders = { 'x-auth-user-id': STAFF, 'x-auth-user-role': 'staff' }
+    const staffHeaders = {
+      'x-auth-user-id': STAFF,
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
     await complete(app, kids.lessonIds[0], staffHeaders) // pontua como equipe (privileged)
 
     const me = await readJson(
@@ -1086,7 +1102,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('concluir + publicar no Mural → curso qualificado → sobe p/ Coder', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses) // iniciante, adult (default)
+    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1107,7 +1123,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('rank NÃO regride quando o curso é re-nivelado depois de qualificado', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses) // iniciante
+    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1117,25 +1133,28 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
       audience: 'adult',
     })
 
-    // Qualificado como INICIANTE 2D → Coder; faltam 5 iniciante-2d p/ Hacker (piso 6).
+    // Qualificado como INICIANTE 2D → Coder; faltam 7 iniciante-2d p/ Hacker (piso 8).
     const before = await readJson(await getMe(app))
     expect(before.level.slug).toBe('coder')
-    expect(before.level.remaining['iniciante-2d']).toBe(5)
+    expect(before.level.remaining['iniciante-2d']).toBe(7)
 
     // O admin re-nivela o curso p/ avançado DEPOIS da qualificação.
     const row = courses.courses.find((c) => c.id === course.courseId)
-    if (row) row.level = 'avancado'
+    if (row) {
+      row.level = 'avancado'
+      row.careerSlot = 2
+    }
 
-    // O rank usa o SNAPSHOT congelado no marco: continua contando como iniciante.
-    // Se seguisse o `courses.level` AO VIVO, remaining['iniciante-2d'] viraria 6 (0 qualificados).
+    // O rank usa os SNAPSHOTS congelados no marco: continua no nível e slot originais.
+    // Se seguisse o `courses.level` AO VIVO, remaining['iniciante-2d'] viraria 8 (0 qualificados).
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining['iniciante-2d']).toBe(5)
+    expect(after.level.remaining['iniciante-2d']).toBe(7)
   })
 
   test('re-taggear o TRACK depois de qualificado também não move o balde (snapshot)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses) // iniciante, track 2d
+    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1147,17 +1166,17 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
     // O admin re-tagueia o curso p/ 3D DEPOIS da qualificação: o marco tem
     // snapshot de track ('2d'), então o balde NÃO muda — o curso segue contando
-    // como iniciante-2d (faltam 5 p/ o piso 6 do Hacker).
+    // como iniciante-2d (faltam 7 p/ o piso 8 do Hacker).
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.track = '3d'
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining['iniciante-2d']).toBe(5)
+    expect(after.level.remaining['iniciante-2d']).toBe(7)
   })
 
   test('marco LEGADO sem snapshot de track segue o courses.track VIVO (re-tag corrige)', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
-    const course = seedSampleCourse(courses) // iniciante, track 2d
+    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1173,18 +1192,19 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     }
     // Sem snapshot, o coalesce cai no curso ao vivo: re-taggear p/ 3D MOVE o balde
     // (é exatamente o mecanismo de correção retroativa da reforma). O curso sai do
-    // balde 2d (remaining volta ao piso cheio 6) mas SEGUE qualificado (any=1 →
-    // continua Coder; se tivesse sumido, o slug regrediria a noob).
+    // balde 2d (remaining volta ao piso cheio 8). Como a carreira agora exige o
+    // curso-base exatamente no Iniciante 2D, o marco legado acompanha o 3D e o
+    // perfil volta a Faísca neste cenário histórico sem snapshot.
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.track = '3d'
     const after = await readJson(await getMe(app))
-    expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining['iniciante-2d']).toBe(6)
+    expect(after.level.slug).toBe('noob')
+    expect(after.level.remaining['iniciante-2d']).toBe(1)
   })
 
   test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedCareerCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1197,7 +1217,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('falha ao registrar marco não deduplica a entrega', async () => {
     const { app, courses, entitlements, gamification, processed } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedCareerCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1221,7 +1241,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('publicar SEM concluir não qualifica (continua Noob)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedCareerCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     await postShowcase(app, {

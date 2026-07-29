@@ -22,42 +22,78 @@ const DIR = join(import.meta.dir, '..')
  * Linhas (1-indexado) com crase OU `${` NÃO escapados no MIOLO do literal — entre
  * a linha que o abre e a que o fecha. Fora do intervalo é TS normal.
  */
-/**
- * O FECHO é uma linha que TERMINA numa crase não-escapada (com ou sem vírgula):
- * cobre tanto o estilo `,`/`` ` `` sozinho na linha (ai.ts, manifest.docs) quanto
- * o `})();` do IIFE do runtime, que fecha o literal na MESMA linha. Como todo o
- * miolo do template tem as crases escapadas (é o que este teste garante), a 1ª
- * linha que termina em crase crua é, necessariamente, o fecho pretendido.
- */
-function isCloserLine(line: string): boolean {
-  const t = line.replace(/,\s*$/, '').replace(/\s+$/, '')
-  if (!t.endsWith('`')) return false
-  let backslashes = 0
-  for (let k = t.length - 2; k >= 0 && t[k] === '\\'; k--) backslashes++
-  return backslashes % 2 === 0
-}
-
 function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
-  const lines = src.split('\n')
-  const opener = lines.findIndex((l) => l.includes(openerNeedle))
+  const declaration = src.indexOf(openerNeedle)
+  if (declaration < 0) throw new Error(`não achei a declaração: ${openerNeedle}`)
+  const opener = src.indexOf('`', declaration)
   if (opener < 0) throw new Error(`não achei a abertura do literal: ${openerNeedle}`)
   const out: number[] = []
-  for (let i = opener + 1; i < lines.length; i++) {
-    const line = lines[i] as string
-    if (isCloserLine(line)) return out
-    for (let c = 0; c < line.length; c++) {
-      const escaped = c > 0 && line[c - 1] === '\\'
-      if (line[c] === '`' && !escaped) out.push(i + 1) // crase CRUA antes do fecho
-      if (line[c] === '$' && line[c + 1] === '{' && !escaped) out.push(i + 1) // interpolação CRUA
+  let line = src.slice(0, opener).split('\n').length
+  for (let index = opener + 1; index < src.length; index += 1) {
+    const char = src[index]
+    if (char === '\n') line += 1
+    let backslashes = 0
+    for (let cursor = index - 1; cursor >= 0 && src[cursor] === '\\'; cursor -= 1) {
+      backslashes += 1
+    }
+    const escaped = backslashes % 2 === 1
+    if (char === '`' && !escaped) return out
+    if (char === '$' && src[index + 1] === '{' && !escaped) out.push(line)
+  }
+  throw new Error(`não achei o fechamento do literal: ${openerNeedle}`)
+}
+
+function composedTemplateHazards(
+  src: string,
+  openerNeedle: string,
+  expectedBoundaries: number,
+): { interpolations: number[]; boundaryCount: number } {
+  const start = src.indexOf(openerNeedle)
+  if (start < 0) throw new Error(`não achei a composição: ${openerNeedle}`)
+  const content = src.slice(start)
+  const interpolations: number[] = []
+  let inTemplate = false
+  let boundaryCount = 0
+  let line = src.slice(0, start).split('\n').length
+  for (let index = 0; index < content.length; index += 1) {
+    const char = content[index]
+    if (char === '\n') line += 1
+    let slashes = 0
+    for (let cursor = index - 1; cursor >= 0 && content[cursor] === '\\'; cursor -= 1) {
+      slashes += 1
+    }
+    const escaped = slashes % 2 === 1
+    if (char === '`' && !escaped) {
+      inTemplate = !inTemplate
+      boundaryCount += 1
+    } else if (inTemplate && char === '$' && content[index + 1] === '{' && !escaped) {
+      interpolations.push(line)
     }
   }
-  return out
+  expect(boundaryCount).toBe(expectedBoundaries)
+  return { interpolations, boundaryCount }
 }
 
 describe('Guarda dos template literals do Jogo 2D', () => {
-  it('runtime.ts: nenhuma crase/interpolação crua no miolo do literal', () => {
+  it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameTwoDRuntime =')).toEqual([])
+    expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 6).interpolations).toEqual([])
+    for (const [file, declaration] of [
+      ['../runtimeDomains.ts', 'gameRuntimeDomains ='],
+      ['runtime/arcadeKits.ts', 'gameTwoDArcadeKitsRuntime ='],
+      ['runtime/audio.ts', 'gameTwoDAudioRuntime ='],
+      ['runtime/casualKits.ts', 'gameTwoDCasualKitsRuntime ='],
+      ['runtime/inputAndMotion.ts', 'gameTwoDInputAndMotionRuntime ='],
+      ['runtime/lifecycle.ts', 'gameTwoDLifecycleRuntime ='],
+      ['runtime/physics.ts', 'gameTwoDPhysicsRuntime ='],
+      ['runtime/sprites.ts', 'gameTwoDSpritesRuntime ='],
+      ['runtime/stage.ts', 'gameTwoDStageRuntime ='],
+      ['runtime/utilities.ts', 'gameTwoDUtilitiesRuntime ='],
+      ['runtime/world.ts', 'gameTwoDWorldRuntime ='],
+    ] as const) {
+      const fragment = readFileSync(join(DIR, file), 'utf8')
+      expect(composedTemplateHazards(fragment, declaration, 2).interpolations).toEqual([])
+    }
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {

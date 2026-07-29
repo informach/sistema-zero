@@ -1,10 +1,11 @@
 import type { JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { t } from '#core'
-import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
+import { normalizeSZIR } from '#ir'
+import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/PreviewIframe'
@@ -65,13 +66,10 @@ export function BlocksMode(): JSX.Element {
   // Parse falhou (código quebrado no meio da digitação)? Mantém blocos antigos
   // e a trava: os arquivos ficam intactos; uma edição REAL de blocos retoma a
   // autoridade deles (mesma precedência de sempre).
-  const recoveringRef = useRef(false)
   useEffect(() => {
     if (!hasProject || !filesAheadOfBlocks) return
-    if (recoveringRef.current) return
     const project = projectStoreApi.getState().project
     if (!project) return
-    recoveringRef.current = true
     let cancelled = false
     void import('#parsers')
       .then(({ parseProjectFiles }) => {
@@ -94,9 +92,6 @@ export function BlocksMode(): JSX.Element {
       .catch((err) => {
         console.warn('[sz] não foi possível derivar os blocos do código digitado:', err)
       })
-      .finally(() => {
-        recoveringRef.current = false
-      })
     return () => {
       cancelled = true
     }
@@ -114,7 +109,15 @@ export function BlocksMode(): JSX.Element {
     if (blocksHydration === 'pending') return
     if (filesAheadOfBlocks) return
     if (!isBlocksStateEmpty(blocksState)) return
-    if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
+    const behavior = normalizeSZIR(ir).behavior
+    if (
+      ir.html.length === 0 &&
+      ir.css.length === 0 &&
+      behavior.start.length === 0 &&
+      behavior.events.length === 0 &&
+      behavior.loops.length === 0
+    )
+      return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, filesAheadOfBlocks, applyProjectState])
 
@@ -126,7 +129,6 @@ export function BlocksMode(): JSX.Element {
   // RESOLVER ('empty'/'failed'; 'idle' = não há partição a esperar): uma
   // restauração tardia ainda vence — hydrateAfterLoad sobrepõe estado derivado
   // não-sujo. Import dinâmico: o Babel do parser não entra no chunk dos blocos.
-  const derivedFromCodeRef = useRef<string | null>(null)
   useEffect(() => {
     if (!hasProject || ir) return
     // Blocos defasados = o recovery acima já deriva do código (e MARCA a época);
@@ -138,12 +140,10 @@ export function BlocksMode(): JSX.Element {
     }
     const project = projectStoreApi.getState().project
     if (!project) return
-    if (derivedFromCodeRef.current === project.id) return
     const files = project.files
     if (!files['index.html'].trim() && !files['style.css'].trim() && !files['script.js'].trim()) {
       return
     }
-    derivedFromCodeRef.current = project.id
     let cancelled = false
     void import('#parsers')
       .then(({ parseProjectFiles }) => {
@@ -156,7 +156,15 @@ export function BlocksMode(): JSX.Element {
         if (current.ir || !isBlocksStateEmpty(current.blocksState)) return
         if (state.blocksHydration === 'pending' || state.blocksHydration === 'restored') return
         const derived = parseProjectFiles(current.files)
-        if (derived.html.length === 0 && derived.css.length === 0 && derived.js.length === 0) return
+        const behavior = derived.behavior
+        if (
+          derived.html.length === 0 &&
+          derived.css.length === 0 &&
+          behavior.start.length === 0 &&
+          behavior.events.length === 0 &&
+          behavior.loops.length === 0
+        )
+          return
         state.hydrateProjectState({
           ir: derived,
           blocksState: buildWorkspaceStateFromIR(derived, { omitEmptyAuxFrames: true }),
@@ -176,7 +184,9 @@ export function BlocksMode(): JSX.Element {
         <ModeLimitationsNotice />
         <div className="min-h-0 flex-1">
           <NarrowPanels
-            editorPanes={[{ id: 'blocks', label: t('tab.blocks'), content: <BlocklyPanel /> }]}
+            editorPanes={[
+              { id: 'blocks', label: t('tab.blocks'), content: <BlocksWorkspaceEditor /> },
+            ]}
             preview={showPreview ? <PreviewIframe /> : undefined}
           />
         </div>
@@ -188,13 +198,13 @@ export function BlocksMode(): JSX.Element {
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
       <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
-        <Panel defaultSize={showPreview ? 65 : 100} minSize={30}>
-          <BlocklyPanel />
+        <Panel id="blocks-workspace" order={1} defaultSize={showPreview ? 65 : 100} minSize={30}>
+          <BlocksWorkspaceEditor />
         </Panel>
         {showPreview && (
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-            <Panel defaultSize={35} minSize={20}>
+            <Panel id="blocks-preview" order={2} defaultSize={35} minSize={20}>
               <PreviewIframe />
             </Panel>
           </>

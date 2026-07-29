@@ -5,6 +5,7 @@ import type { Project, StudioTheme } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { useEffect, useState } from 'react'
+import { loadStudioProModule, type StudioProModule } from './studio-pro-loader'
 
 interface Props {
   /** Perfil (kids) ou conta (adulto) — namespeia o IndexedDB local do Studio. */
@@ -19,11 +20,10 @@ interface Props {
 
 type Loaded =
   | { kind: 'loading' }
+  | { kind: 'load-error' }
   | { kind: 'unsupported' }
   | { kind: 'ready'; project: Project }
   | { kind: 'invalid' }
-
-type StudioModule = typeof import('@sistemazero/studio')
 
 /**
  * Editor do modo CÓDIGO (projeto PRO / WebContainer) do Estúdio Completo. Vive no
@@ -37,14 +37,23 @@ type StudioModule = typeof import('@sistemazero/studio')
  * inexistente ou clássico (`kind !== 'pro'`) → `onExit` (não é lugar dele).
  */
 export function StudioProEditor({ viewerId, projectId, theme, onExit }: Props) {
-  const [mod, setMod] = useState<StudioModule | null>(null)
+  const [mod, setMod] = useState<StudioProModule | null>(null)
   const [state, setState] = useState<Loaded>({ kind: 'loading' })
+  const [loadAttempt, setLoadAttempt] = useState(0)
 
   useEffect(() => {
     let active = true
+    if (loadAttempt > 0) setMod(null)
     void (async () => {
-      const m = await import('@sistemazero/studio')
+      setState({ kind: 'loading' })
+      const result = await loadStudioProModule()
       if (!active) return
+      if (!result.module) {
+        console.error('Não foi possível carregar o editor Pro.', result.error)
+        setState({ kind: 'load-error' })
+        return
+      }
+      const m = result.module
       setMod(m)
       if (!m.canRunProMode()) {
         setState({ kind: 'unsupported' })
@@ -69,7 +78,7 @@ export function StudioProEditor({ viewerId, projectId, theme, onExit }: Props) {
     return () => {
       active = false
     }
-  }, [viewerId, projectId])
+  }, [viewerId, projectId, loadAttempt])
 
   // Projeto errado/ausente: devolve para a lista (efeito p/ não navegar no render).
   useEffect(() => {
@@ -91,6 +100,29 @@ export function StudioProEditor({ viewerId, projectId, theme, onExit }: Props) {
         <Button variant="outline" size="sm" onClick={onExit}>
           Voltar ao Estúdio
         </Button>
+      </div>
+    )
+  }
+
+  if (state.kind === 'load-error') {
+    return (
+      <div
+        data-sz-theme={theme}
+        className="flex h-full w-full flex-col items-center justify-center gap-4 bg-background p-6 text-center"
+      >
+        <h2 className="sz-display text-lg">Não consegui carregar o modo Código</h2>
+        <p className="max-w-md text-muted-foreground text-sm">
+          Verifique sua conexão e tente novamente. Se continuar, volte ao Estúdio e abra o projeto
+          de novo.
+        </p>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setLoadAttempt((value) => value + 1)}>
+            Tentar novamente
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onExit}>
+            Voltar ao Estúdio
+          </Button>
+        </div>
       </div>
     )
   }

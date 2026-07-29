@@ -38,7 +38,6 @@ SZWorld3D.onQuestDone("conhecer", function () {
 SZWorld3D.coinsRing(10, 0, 0, 12);
 SZWorld3D.minimap("teleporte");
 SZWorld3D.hud("Aperte E nas portas e converse com a Guia!", "baixo-esquerda");
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

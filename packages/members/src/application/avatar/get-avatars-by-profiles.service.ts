@@ -35,7 +35,7 @@ export class GetAvatarsByProfilesService {
     if (unique.length === 0) return result
     const [photos, qualifying] = await Promise.all([
       this.avatar.listPhotoUrlsByProfileIds(unique, audience),
-      this.gamification.countQualifyingByTierForProfiles(unique, audience),
+      this.gamification.listQualifyingCareerSlotsForProfiles(unique, audience),
     ])
     for (const id of unique) {
       result[id] = {

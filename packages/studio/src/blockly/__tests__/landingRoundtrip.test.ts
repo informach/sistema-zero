@@ -20,6 +20,17 @@ function bridgeCycle(files: { 'index.html': string; 'style.css': string; 'script
 describe('round-trip da Ponte com landing page real', () => {
   beforeAll(() => ensureBlocklyInitialized())
 
+  it('mantém texto HTML escapado como texto inerte no ciclo completo', () => {
+    const out = bridgeCycle({
+      'index.html': '&lt;img src=x onerror="alert(1)"&gt;',
+      'style.css': '',
+      'script.js': '',
+    })
+    const doc = new DOMParser().parseFromString(out['index.html'], 'text/html')
+    expect(doc.querySelector('img')).toBeNull()
+    expect(out['index.html']).toContain('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;')
+  })
+
   it('preserva código avançado (CSS com *, :hover, @media) no ciclo blocos<->código', () => {
     const css = `* { margin: 0; box-sizing: border-box; }
 .nav a:hover { color: #2563eb; }
@@ -75,6 +86,26 @@ describe('round-trip da Ponte com landing page real', () => {
     expect(out['index.html']).toContain('©')
     expect(out['index.html']).toContain('<span id="currentYear"></span>')
     expect(out['index.html']).toContain('Sistema Zero.')
+  })
+
+  it('preserva tipos de campo comuns e o conteúdo inicial da área de texto', () => {
+    const html =
+      '<form><input type="checkbox"><input type="date"><textarea id="bio">valor inicial</textarea></form>'
+    const out = bridgeCycle({ 'index.html': html, 'style.css': '', 'script.js': '' })
+    expect(out['index.html']).toContain('<input type="checkbox" />')
+    expect(out['index.html']).toContain('<input type="date" />')
+    expect(out['index.html']).toContain('<textarea id="bio">valor inicial</textarea>')
+    expect(out['index.html']).not.toContain('placeholder=""')
+  })
+
+  it('não inventa id ao importar um botão sem id', () => {
+    const out = bridgeCycle({
+      'index.html': '<button>Salvar</button>',
+      'style.css': '',
+      'script.js': '',
+    })
+    expect(out['index.html']).toContain('<button>Salvar</button>')
+    expect(out['index.html']).not.toContain('id="meuBotao"')
   })
 
   it('converte CSS com pseudo-classe e propriedade arbitrária em blocos (não avançado)', () => {

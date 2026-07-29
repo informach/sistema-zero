@@ -24,11 +24,9 @@ export class PaymentsHttpClient implements PaymentsClient {
     const body = (await res.json()) as Record<string, unknown>
     const id = expectString(body, 'id')
     const status = expectString(body, 'status')
-    // amountInCents viaja como STRING na AdminPaymentView (bigint não é JSON).
-    const amountRaw = body.amountInCents
-    const amountInCents =
-      typeof amountRaw === 'string' || typeof amountRaw === 'number' ? BigInt(amountRaw) : null
-    if (amountInCents === null) throw new Error('payments: amountInCents ausente na view')
+    // bigint não é JSON: aceitar number aqui arredondaria valores acima de
+    // Number.MAX_SAFE_INTEGER antes de chegarem ao fiscal.
+    const amountInCents = parseCents(body.amountInCents)
 
     const customer = (body.customer ?? null) as PaymentSnapshot['customer']
     const metadata = (body.metadata ?? {}) as Record<string, unknown>
@@ -45,4 +43,11 @@ function expectString(body: Record<string, unknown>, field: string): string {
   if (typeof value !== 'string')
     throw new Error(`payments: campo ${field} ausente/inválido na view`)
   return value
+}
+
+function parseCents(value: unknown): bigint {
+  if (typeof value !== 'string' || !/^\d+$/.test(value)) {
+    throw new Error('payments: amountInCents deve ser uma string inteira na view')
+  }
+  return BigInt(value)
 }

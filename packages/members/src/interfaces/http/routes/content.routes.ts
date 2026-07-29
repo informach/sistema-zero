@@ -22,12 +22,14 @@ import {
   BlockBody,
   CourseBody,
   CourseIdParams,
+  CourseUpdateBody,
   IdParams,
   LessonBody,
   LessonIdParams,
   ListCoursesQuery,
   ModuleBody,
   ModuleIdParams,
+  parseUserIds,
   ReorderBody,
 } from '../dtos'
 
@@ -47,11 +49,13 @@ export interface ContentRoutesDeps {
 }
 
 type CourseInput = typeof CourseBody.static
+type CourseUpdateInput = typeof CourseUpdateBody.static
 type ModuleInput = typeof ModuleBody.static
 type LessonInput = typeof LessonBody.static
 type AttachmentInput = typeof AttachmentBody.static
 
-const courseFields = (b: CourseInput): CourseFields => ({
+const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
+  version: 'version' in b ? b.version : undefined,
   slug: b.slug,
   title: b.title,
   subtitle: b.subtitle ?? null,
@@ -67,6 +71,9 @@ const courseFields = (b: CourseInput): CourseFields => ({
   level: b.level ?? null,
   // `null` = não informado (create → 2d; update → preserva).
   track: b.track ?? null,
+  // Aqui `undefined` e `null` são diferentes: ausente preserva no PATCH;
+  // null explícito remove o curso da carreira.
+  careerSlot: Object.hasOwn(b, 'careerSlot') ? b.careerSlot : undefined,
 })
 const moduleFields = (b: ModuleInput): ModuleFields => ({
   title: b.title,
@@ -98,6 +105,8 @@ const GlobalStudioSubmissionsQuery = t.Object({
   courseId: t.Optional(t.String({ pattern: UUID_PATTERN })),
   audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   status: t.Optional(t.Union([t.Literal('pending'), t.Literal('answered')])),
+  // CSV de userIds/accountIds (filtro por aluno, 24/07) — uuids válidos, teto 20.
+  userIds: t.Optional(t.String({ maxLength: 800 })),
   limit: t.Optional(t.Numeric({ minimum: 1 })),
   offset: t.Optional(t.Numeric({ minimum: 0 })),
 })
@@ -155,7 +164,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.courses.update(params.id, courseFields(body))
         },
-        { body: CourseBody, params: IdParams },
+        { body: CourseUpdateBody, params: IdParams },
       )
       .delete(
         '/courses/:id',
@@ -353,6 +362,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
             courseId: query.courseId,
             audience: query.audience,
             status: query.status,
+            userIds: parseUserIds(query.userIds),
             limit: clampLimit(query.limit),
             offset: query.offset ?? 0,
           })

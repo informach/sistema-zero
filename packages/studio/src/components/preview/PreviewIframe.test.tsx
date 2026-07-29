@@ -86,6 +86,61 @@ describe('PreviewIframe', () => {
       expect(doc).toMatch(/<!-- r:\d+ -->/)
     })
   })
+
+  it('permite Pointer Lock para a câmera FPS sem abrir o isolamento de origem', () => {
+    render(<PreviewIframe />)
+
+    const sandbox = screen.getByTitle('Pré-visualização').getAttribute('sandbox') ?? ''
+    expect(sandbox).toContain('allow-pointer-lock')
+    expect(sandbox).not.toContain('allow-same-origin')
+  })
+
+  it('mostra gamepad automaticamente somente em touch quando a IR usa teclado', async () => {
+    const originalTouchPoints = Object.getOwnPropertyDescriptor(navigator, 'maxTouchPoints')
+    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: 1 })
+    const project = createPreviewProject()
+    if (!project.ir || !('behavior' in project.ir)) throw new Error('IR v2 esperada no teste')
+    project.ir.behavior.loops.push({
+      type: 'g2d:updateEachFrame',
+      body: [{ type: 'g2d:topDown', spriteVar: 'jogador', speed: 4 }],
+    })
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+
+    try {
+      render(<PreviewIframe />)
+      await waitFor(() => {
+        expect(screen.getByRole('group', { name: 'Controles do jogo' })).not.toBeNull()
+      })
+    } finally {
+      if (originalTouchPoints)
+        Object.defineProperty(navigator, 'maxTouchPoints', originalTouchPoints)
+      else Reflect.deleteProperty(navigator, 'maxTouchPoints')
+    }
+  })
+
+  it('não mostra gamepad em dispositivo sem touch mesmo quando a IR usa teclado', async () => {
+    const originalTouchPoints = Object.getOwnPropertyDescriptor(navigator, 'maxTouchPoints')
+    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: 0 })
+    const project = createPreviewProject()
+    if (!project.ir || !('behavior' in project.ir)) throw new Error('IR v2 esperada no teste')
+    project.ir.behavior.loops.push({
+      type: 'g2d:updateEachFrame',
+      body: [{ type: 'g2d:topDown', spriteVar: 'jogador', speed: 4 }],
+    })
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+
+    try {
+      render(<PreviewIframe />)
+      await waitFor(() => {
+        expect(getPreviewSrcDoc()).toContain('Preview automático')
+        expect(screen.queryByRole('group', { name: 'Controles do jogo' })).toBeNull()
+      })
+    } finally {
+      if (originalTouchPoints)
+        Object.defineProperty(navigator, 'maxTouchPoints', originalTouchPoints)
+      else Reflect.deleteProperty(navigator, 'maxTouchPoints')
+    }
+  })
 })
 
 // Comportamento ANTERIOR (referência): montar o documento todo e ler o <title>.

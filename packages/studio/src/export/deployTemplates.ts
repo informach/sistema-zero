@@ -101,7 +101,7 @@ npx serve -s public
 
 ## Observacoes
 
-- Se o projeto usa um jogo 2D ou 3D, as bibliotecas sao carregadas pela internet (esm.sh) quando a pagina abre. Quem acessa precisa estar online.
+- O site e instalavel como aplicativo (PWA). A primeira abertura de um projeto que usa bibliotecas pela internet precisa estar online; depois, os recursos usados ficam preparados para as proximas aberturas offline.
 - Para usar o Caddy no lugar do "serve": \`caddy file-server --root public --listen :$PORT\`.
 - Para uma protecao extra, configure cabecalhos de seguranca no seu servidor (por exemplo um Content-Security-Policy mais forte, X-Content-Type-Options e Referrer-Policy).
 `

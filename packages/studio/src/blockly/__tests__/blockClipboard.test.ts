@@ -11,6 +11,7 @@ import {
   runPasteBlocks,
   unregisterPasteTarget,
 } from '../blockClipboard'
+import { HTMLConnectionChecker } from '../htmlConnectionChecker'
 import { ensureBlocklyInitialized } from '../setup'
 
 const CLIPBOARD_KEY = 'sz:block-clipboard'
@@ -62,6 +63,10 @@ describe('requiredExtensionsForBlockState', () => {
   test('Jogo 2D + Jogo 3D → ambos', () => {
     const state = { type: 'sz_g2d_create_sprite', next: { block: { type: 'sz_g3d_create_box' } } }
     expect(requiredExtensionsForBlockState(state).sort()).toEqual(['game-2d', 'game-3d'])
+  })
+
+  test('bloco de Mundo 3D → world-3d', () => {
+    expect(requiredExtensionsForBlockState({ type: 'sz_w3d_setup' })).toEqual(['world-3d'])
   })
 })
 
@@ -185,6 +190,61 @@ describe('copiar → colar (round-trip real do Blockly)', () => {
     runPasteBlocks(ws as unknown as Blockly.WorkspaceSvg)
     runPasteBlocks(ws as unknown as Blockly.WorkspaceSvg)
     expect(ws.getAllBlocks(false).filter((b) => b.type === 'sz_val_text').length).toBe(2)
+    unregisterPasteTarget(ws)
+    ws.dispose()
+  })
+
+  test('preserva como rascunho somente o ramo cuja conexão ficou incompatível', () => {
+    localStorage.setItem(
+      CLIPBOARD_KEY,
+      JSON.stringify({
+        version: 1,
+        block: {
+          type: 'sz_frame_start',
+          inputs: {
+            CHILDREN: {
+              block: {
+                type: 'sz_js_on_click_anywhere',
+                inputs: {
+                  DO: {
+                    block: {
+                      type: 'sz_js_console_log_text',
+                      fields: { VALUE: 'preservado' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        requiredExtensions: [],
+        copiedAt: 1,
+      }),
+    )
+    const ws = new Blockly.Workspace(
+      new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+    )
+    const { handlers, notices } = makeHandlers()
+    registerPasteTarget(ws, handlers)
+
+    // O Blockly mantém uma fila de eventos global entre workspaces. Este teste
+    // valida a recuperação estrutural, então isola seus eventos para não apagar
+    // o histórico de undo de outro arquivo que o Bun execute em paralelo.
+    Blockly.Events.disable()
+    try {
+      runPasteBlocks(ws as unknown as Blockly.WorkspaceSvg)
+    } finally {
+      Blockly.Events.enable()
+    }
+
+    expect(ws.getBlocksByType('sz_frame_start', false)).toHaveLength(1)
+    const [event] = ws.getBlocksByType('sz_js_on_click_anywhere', false)
+    expect(event?.getParent()).toBeNull()
+    expect(event?.getInputTargetBlock('DO')?.type).toBe('sz_js_console_log_text')
+    expect(notices.some((notice) => /preservada como rascunho/i.test(notice))).toBe(true)
+    expect(Blockly.Events.isEnabled()).toBe(true)
+    expect(Blockly.Events.getGroup()).toBe('')
+    expect(Blockly.Events.getRecordUndo()).toBe(true)
     unregisterPasteTarget(ws)
     ws.dispose()
   })

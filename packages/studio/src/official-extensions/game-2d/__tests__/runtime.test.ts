@@ -1,6 +1,53 @@
 import { beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
 
+async function runtimeWorkerCompletes(operation: string): Promise<boolean> {
+  const source = `
+    var gameTwoDRuntime = ${JSON.stringify(gameTwoDRuntime)};
+    var noop = function () {};
+    globalThis.document = {
+      addEventListener: noop,
+      hidden: false,
+      querySelector: function () { return null; }
+    };
+    var win = {
+      addEventListener: noop,
+      SZGame2D: undefined,
+      performance: { now: function () { return 0; } },
+      devicePixelRatio: 1
+    };
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, function () { return 0; });
+    var api = win.SZGame2D;
+    var gradient = { addColorStop: noop };
+    var ctx = new Proxy({
+      canvas: { width: 320, height: 240 },
+      createLinearGradient: function () { return gradient; }
+    }, {
+      get: function (target, key) { return key in target ? target[key] : noop; }
+    });
+    ${operation}
+    postMessage('completed');
+  `
+  const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }))
+  const worker = new Worker(url)
+
+  return await new Promise<boolean>((resolve, reject) => {
+    let settled = false
+    const finish = (result: boolean, error?: Error) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeout)
+      worker.terminate()
+      URL.revokeObjectURL(url)
+      if (error) reject(error)
+      else resolve(result)
+    }
+    const timeout = setTimeout(() => finish(false), 1_000)
+    worker.onmessage = () => finish(true)
+    worker.onerror = (event) => finish(false, new Error(event.message))
+  })
+}
+
 interface SZGame2DSurface {
   SZGame2D: {
     createSprite: (
@@ -13,10 +60,13 @@ interface SZGame2DSurface {
       color: string
       vx: number
       vy: number
+      angle?: number
+      opacity?: number
     }
     isColliding: (a: unknown, b: unknown) => boolean
     drawSprite: (ctx: unknown, sprite: unknown) => void
     keys: { left: boolean; right: boolean; up: boolean; down: boolean }
+    randomBetween: (min: number, max: number) => number
   }
 }
 
@@ -52,6 +102,191 @@ describe('gameTwoDRuntime', () => {
     expect(s.w).toBe(32)
     expect(s.color).toBe('#22d3ee')
     expect(s.vx).toBe(0)
+  })
+
+  it('fronteiras públicas não deixam NaN ou Infinity contaminar o mundo', () => {
+    const sz = api as unknown as {
+      setGravity: (value: number) => void
+      applyVelocity: (sprite: { x: number; y: number; vx: number; vy: number }) => void
+      setCamera: (x: number, y: number) => void
+      cameraX: () => number
+      cameraY: () => number
+      setSize: (sprite: { w: number; h: number }, w: number, h: number) => void
+      setOpacity: (sprite: { opacity?: number }, percent: number) => void
+      scaleSprite: (sprite: { x: number; y: number; w: number; h: number }, factor: number) => void
+      arrowsX: (sprite: { x: number; vx: number }, speed: number) => void
+      rotateSprite: (sprite: { angle?: number }, degrees: number) => void
+      thrust: (sprite: { angle?: number; vx: number; vy: number }, force: number) => void
+      createEnemyType: (options: Record<string, unknown>) => {
+        config: { jumpRate: number }
+      }
+      setEnemyTypeParam: (
+        type: { config: { jumpRate: number } },
+        param: string,
+        value: number,
+      ) => void
+    }
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const sprite = api.createSprite({
+        x: Number.POSITIVE_INFINITY,
+        y: Number.NaN,
+        w: Number.NaN,
+        h: Number.POSITIVE_INFINITY,
+      })
+      expect(sprite).toMatchObject({ x: 0, y: 0, w: 32, h: 32 })
+
+      sz.setGravity(0.25)
+      sz.setGravity(Number.POSITIVE_INFINITY)
+      sz.applyVelocity(sprite)
+      expect(sprite.vy).toBe(0.25)
+
+      sz.setCamera(Number.NaN, Number.POSITIVE_INFINITY)
+      expect(sz.cameraX()).toBe(0)
+      expect(sz.cameraY()).toBe(0)
+
+      sz.setSize(sprite, Number.NaN, Number.POSITIVE_INFINITY)
+      expect(sprite.w).toBe(32)
+      expect(sprite.h).toBe(32)
+      sz.setSize(sprite, -20, -30)
+      expect(sprite.w).toBe(32)
+      expect(sprite.h).toBe(32)
+      sz.setOpacity(sprite, Number.NaN)
+      expect(sprite.opacity).toBe(1)
+      sz.scaleSprite(sprite, Number.POSITIVE_INFINITY)
+      expect(sprite.w).toBe(32)
+      expect(sprite.h).toBe(32)
+
+      api.keys.right = true
+      sz.arrowsX(sprite, Number.POSITIVE_INFINITY)
+      api.keys.right = false
+      expect(Number.isFinite(sprite.x)).toBe(true)
+      expect(Number.isFinite(sprite.vx)).toBe(true)
+
+      sz.rotateSprite(sprite, Number.POSITIVE_INFINITY)
+      sz.thrust(sprite, 1)
+      expect(Number.isFinite(sprite.angle)).toBe(true)
+      expect(Number.isFinite(sprite.vx)).toBe(true)
+      expect(Number.isFinite(sprite.vy)).toBe(true)
+
+      const enemyType = sz.createEnemyType({})
+      sz.setEnemyTypeParam(enemyType, 'ritmo', Number.POSITIVE_INFINITY)
+      expect(enemyType.config.jumpRate).toBe(90)
+    } finally {
+      warning.mockRestore()
+    }
+  })
+
+  it('todas as famílias públicas normalizam números não finitos na entrada', () => {
+    interface NumericSprite {
+      x: number
+      y: number
+      w: number
+      h: number
+      vy: number
+      anim: { from: number; to: number; fps: number } | null
+      skin?: { fullH?: number }
+    }
+    interface NumericSheet {
+      frameW: number
+      frameH: number
+    }
+    interface NumericMap {
+      draw: number
+      ox: number
+      oy: number
+    }
+    const sz = api as unknown as {
+      loadSpriteSheet: (name: string, frameW: number, frameH: number) => NumericSheet
+      setAnimation: (
+        sprite: NumericSprite,
+        sheet: NumericSheet,
+        from: number,
+        to: number,
+        fps: number,
+      ) => void
+      createTileMap: (options: Record<string, unknown>) => NumericMap
+      drawTileMap: (ctx: unknown, map: NumericMap, x: number, y: number, size: number) => void
+      createDino: (options: Record<string, unknown>) => NumericSprite
+      controlDino: (sprite: NumericSprite, ctx: unknown, jump: number) => void
+      drawStarfield: (ctx: unknown, speed: number) => void
+      emitParticles: (x: number, y: number, count: number, color: string) => void
+      drawParticles: (ctx: unknown) => void
+    }
+    const numericCalls: number[][] = []
+    const noop = () => undefined
+    const ctx = new Proxy(
+      {
+        canvas: { width: 320, height: 240 },
+        createLinearGradient: () => ({ addColorStop: noop }),
+        arc: (...values: number[]) => numericCalls.push(values),
+        fillRect: (...values: number[]) => numericCalls.push(values),
+      },
+      {
+        get(target, key, receiver) {
+          return Reflect.has(target, key) ? Reflect.get(target, key, receiver) : noop
+        },
+        set(target, key, value, receiver) {
+          return Reflect.set(target, key, value, receiver)
+        },
+      },
+    )
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+
+    try {
+      const sheet = sz.loadSpriteSheet('folha', Number.POSITIVE_INFINITY, Number.NaN)
+      expect(sheet).toMatchObject({ frameW: 32, frameH: 32 })
+
+      const animated = api.createSprite({}) as unknown as NumericSprite
+      sz.setAnimation(
+        animated,
+        sheet,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+        Number.NaN,
+      )
+      expect(animated.anim).toMatchObject({ from: 0, to: 0, fps: 8 })
+
+      const map = sz.createTileMap({ grid: '1', tile: 32, solid: '1', image: '' })
+      sz.drawTileMap(
+        ctx,
+        map,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+      )
+      expect([map.draw, map.ox, map.oy].every(Number.isFinite)).toBe(true)
+
+      const dino = sz.createDino({ size: Number.POSITIVE_INFINITY })
+      dino.y = 500
+      api.keys.down = true
+      sz.controlDino(dino, ctx, Number.POSITIVE_INFINITY)
+      api.keys.down = false
+      expect([dino.x, dino.y, dino.w, dino.h, dino.skin?.fullH].every(Number.isFinite)).toBe(true)
+
+      sz.drawStarfield(ctx, Number.NEGATIVE_INFINITY)
+      sz.drawStarfield(ctx, 1)
+      sz.emitParticles(Number.POSITIVE_INFINITY, Number.NaN, 1, '#fff')
+      sz.drawParticles(ctx)
+      expect(numericCalls.flat().every(Number.isFinite)).toBe(true)
+    } finally {
+      api.keys.down = false
+      warning.mockRestore()
+    }
+  })
+
+  it('randomBetween sempre devolve um inteiro, inclusive com limites fracionários', () => {
+    const random = spyOn(Math, 'random')
+    try {
+      for (const value of [0, 0.25, 0.5, 0.75, 0.999]) {
+        random.mockReturnValue(value)
+        expect(Number.isInteger(api.randomBetween(0.5, 3.8))).toBe(true)
+      }
+      random.mockReturnValue(0.5)
+      expect(api.randomBetween(0.2, 0.8)).toBe(1)
+    } finally {
+      random.mockRestore()
+    }
   })
 
   it('velocidade: spriteVx/Vy/Speed + isMoving(H/V) leem a velocidade do sprite', () => {
@@ -111,13 +346,42 @@ describe('gameTwoDRuntime', () => {
     expect(sz.spriteVx(s)).toBe(0)
     expect(sz.isMoving(s)).toBe(false)
 
-    // "Mover com as setas ← →" p/ a esquerda → vx negativo, vy zerado.
+    // "Mover com as setas ← →" p/ a esquerda → vx negativo e preserva a queda/pulo.
+    s.vy = 7
     api.keys.left = true
     sz.arrowsX(s, 5)
     expect(sz.spriteVx(s)).toBe(-5)
-    expect(sz.spriteVy(s)).toBe(0)
+    expect(sz.spriteVy(s)).toBe(7)
     expect(sz.isMoving(s)).toBe(true)
     api.keys.left = false
+  })
+
+  it('moveToward para exatamente no alvo e registra o deslocamento real', () => {
+    const sz = api as unknown as {
+      moveToward: (
+        sprite: { x: number; y: number; w: number; h: number; vx: number; vy: number },
+        target: { x: number; y: number; w: number; h: number },
+        speed: number,
+      ) => void
+    }
+    const sprite = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
+    const target = api.createSprite({ x: 3, y: 4, w: 10, h: 10 })
+
+    sz.moveToward(sprite, target, 10)
+    expect({ x: sprite.x, y: sprite.y, vx: sprite.vx, vy: sprite.vy }).toEqual({
+      x: 3,
+      y: 4,
+      vx: 3,
+      vy: 4,
+    })
+
+    sz.moveToward(sprite, target, 10)
+    expect({ x: sprite.x, y: sprite.y, vx: sprite.vx, vy: sprite.vy }).toEqual({
+      x: 3,
+      y: 4,
+      vx: 0,
+      vy: 0,
+    })
   })
 
   it('mapa de tiles ENCAIXA no canvas (tamanho na tela ≠ tamanho da arte)', () => {
@@ -157,6 +421,35 @@ describe('gameTwoDRuntime', () => {
     // tileAt usa o tamanho NA TELA + offset: pixel (210,250) → col 1, linha 1.
     expect(sz.tileAt(map, 210, 250)).toBe(0)
     expect(sz.tileAt(map, -5, -5)).toBe(-1) // fora do mapa
+  })
+
+  it('tilemap grande desenha somente as células que cruzam a viewport', () => {
+    const sz = api as unknown as {
+      createTileMap: (o: unknown) => unknown
+      drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size: number) => void
+    }
+    const grid = Array.from({ length: 128 }, () => Array(128).fill('0').join(' ')).join(';')
+    const map = sz.createTileMap({ image: 'tiles', tile: 16, grid, solid: '' })
+    const draws: Array<[number, number, number, number]> = []
+    const canvas = { width: 320, height: 192 }
+    const ctx = new Proxy({ canvas } as Record<string, unknown>, {
+      get(target, property) {
+        if (property === 'fillRect') {
+          return (x: number, y: number, w: number, h: number) => draws.push([x, y, w, h])
+        }
+        if (property in target) return target[property as string]
+        return () => {}
+      },
+      set(target, property, value) {
+        target[property as string] = value
+        return true
+      },
+    })
+
+    sz.drawTileMap(ctx, map, 0, 0, 16)
+
+    expect(draws).toHaveLength(20 * 12)
+    expect(draws.every(([x, y, w, h]) => x < 320 && x + w > 0 && y < 192 && y + h > 0)).toBe(true)
   })
 
   it('isColliding detecta sobreposição AABB', () => {
@@ -214,6 +507,8 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     drawSprite(ctx: unknown, s: unknown): void
     createGroup(): DinoGroup
     createSprite(o: Partial<DinoSprite>): DinoSprite
+    setGravity(value: number): void
+    keys: { up: boolean }
   }
 
   function dinoApi(): DinoSZ {
@@ -299,6 +594,10 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     expect(() => sz.drawForest(ctx, 5)).not.toThrow()
   })
 
+  it('drawForest termina mesmo quando a velocidade calculada não é finita', async () => {
+    expect(await runtimeWorkerCompletes('api.drawForest(ctx, Infinity);')).toBe(true)
+  })
+
   it('controlDino aplica gravidade e pousa na linha do chão (não atravessa o piso)', () => {
     const sz = dinoApi()
     const ctx = fakeDinoCtx(480, 270)
@@ -307,6 +606,24 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     // chão do dino = 270 - round(270*0.16) = 227; os pés (y+h) param em 227.
     expect(dino.y + dino.h).toBe(227)
     expect(dino.skin.onGround).toBe(true)
+  })
+
+  it('controlDino usa o teto como chão e pula para baixo com gravidade negativa', () => {
+    const sz = dinoApi()
+    const ctx = fakeDinoCtx(480, 270)
+    const dino = sz.createDino({ x: 100, y: 30, size: 64, color: '#5fb45f' })
+    sz.setGravity(-1)
+    for (let i = 0; i < 20; i++) sz.controlDino(dino, ctx, 15)
+    expect(dino.y).toBe(0)
+    expect(dino.skin.onGround).toBe(true)
+
+    sz.keys.up = true
+    sz.controlDino(dino, ctx, 15)
+    sz.keys.up = false
+    expect(dino.vy).toBe(15)
+    expect(dino.skin.onGround).toBe(false)
+    sz.controlDino(dino, ctx, 15)
+    expect(dino.y).toBeGreaterThan(0)
   })
 })
 
@@ -332,21 +649,35 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     naturalWidth: number
     width: number
     addEventListener: (type: string, fn: () => void) => void
+    removeEventListener: (type: string, fn: () => void) => void
     /** Helper de teste: dispara o `load` (onload + listeners addEventListener). */
     fireLoad: () => void
+    fireError: () => void
+    listenerCount: (type: 'load' | 'error') => number
   }
   interface ImageApi {
+    onStart: (fn: () => void, id?: string) => void
+    restart: () => void
     createSprite: (o: Record<string, unknown>) => {
       image: { img: FakeImg; loaded: boolean } | null
       anim: unknown
     }
+    loadImage: (
+      name: string,
+    ) => { img: FakeImg | null; loaded: boolean; failed: boolean; url: string } | null
     setImage: (s: unknown, name: string | null) => void
+    setShape: (s: unknown, name: string) => void
     loadSpriteSheet: (
       name: string,
       fw: number,
       fh: number,
     ) => { image: { img: FakeImg; loaded: boolean }; frameW: number; frameH: number }
     setAnimation: (s: unknown, sheet: unknown, from: number, to: number, fps: number) => void
+    createGroup: () => { items: unknown[] }
+    bringToFront: (group: { items: unknown[] }, sprite: unknown) => void
+    sendToBack: (group: { items: unknown[] }, sprite: unknown) => void
+    clearGroup: (group: { items: unknown[] }) => void
+    removeFromGroup: (group: { items: unknown[] }, sprite: unknown) => void
     drawSprite: (ctx: unknown, s: unknown) => void
     drawFrame: (
       ctx: unknown,
@@ -357,6 +688,9 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
       w: number,
       h: number,
     ) => void
+    pauseGame: () => void
+    resumeGame: () => void
+    setCamera: (x: number, y: number) => void
   }
 
   // Loader que injeta __SZGAME_ASSETS, um Image controlável e um relógio (performance.now)
@@ -375,14 +709,27 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
         this.naturalWidth = 0
         this.width = 0
         const loadListeners: Array<() => void> = []
+        const errorListeners: Array<() => void> = []
         this.addEventListener = (type, fn) => {
           if (type === 'load') loadListeners.push(fn)
+          if (type === 'error') errorListeners.push(fn)
+        }
+        this.removeEventListener = (type, fn) => {
+          const listeners = type === 'load' ? loadListeners : errorListeners
+          const index = listeners.indexOf(fn)
+          if (index !== -1) listeners.splice(index, 1)
         }
         this.fireLoad = () => {
           if (!this.naturalWidth) this.naturalWidth = 32
           this.onload?.()
-          for (const fn of loadListeners) fn()
+          for (const fn of [...loadListeners]) fn()
         }
+        this.fireError = () => {
+          this.onerror?.()
+          for (const fn of [...errorListeners]) fn()
+        }
+        this.listenerCount = (type) =>
+          type === 'load' ? loadListeners.length : errorListeners.length
         Object.defineProperty(this, 'src', {
           set() {
             // Não dispara onload sozinho: o teste controla via fireLoad().
@@ -412,7 +759,14 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     const calls: Array<{ fn: string; args: unknown[] }> = []
     return {
       ctx: {
+        canvas: { width: 320, height: 240 },
         fillStyle: '',
+        globalAlpha: 1,
+        save: () => calls.push({ fn: 'save', args: [] }),
+        restore: () => calls.push({ fn: 'restore', args: [] }),
+        translate: (...a: unknown[]) => calls.push({ fn: 'translate', args: a }),
+        rotate: (...a: unknown[]) => calls.push({ fn: 'rotate', args: a }),
+        scale: (...a: unknown[]) => calls.push({ fn: 'scale', args: a }),
         fillRect: (...a: unknown[]) => calls.push({ fn: 'fillRect', args: a }),
         drawImage: (...a: unknown[]) => calls.push({ fn: 'drawImage', args: a }),
         clearRect: (...a: unknown[]) => calls.push({ fn: 'clearRect', args: a }),
@@ -428,12 +782,22 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     expect(s.anim).toBeNull()
   })
 
-  it('drawSprite cai no fillRect (placeholder) enquanto a imagem não carregou', () => {
+  it('loadImage expõe o estado real do handle e devolve null para fonte vazia', () => {
+    const { api } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    expect(api.loadImage('')).toBeNull()
+    expect(api.loadImage('heroi')).toMatchObject({
+      loaded: false,
+      failed: false,
+      url: 'data:image/png;base64,AAAA',
+    })
+  })
+
+  it('drawSprite preserva o cenário enquanto a imagem ainda está carregando', () => {
     const { api } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
     const s = api.createSprite({ x: 1, y: 2, w: 10, h: 10, image: 'heroi', color: '#abc' })
     const { ctx, calls } = fakeCtx()
     api.drawSprite(ctx, s)
-    expect(calls.map((c) => c.fn)).toEqual(['fillRect'])
+    expect(calls.map((c) => c.fn)).toEqual([])
   })
 
   it('um desenho ÚNICO redesenha a imagem quando ela termina de carregar (sem loop)', () => {
@@ -443,11 +807,226 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
     const s = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
     const { ctx, calls } = fakeCtx()
-    api.drawSprite(ctx, s) // 1ª (e única) chamada: imagem ainda não carregou → placeholder
-    expect(calls.map((c) => c.fn)).toEqual(['fillRect'])
-    // A imagem termina de carregar → o hook redesenha (clear + drawImage).
+    api.drawSprite(ctx, s) // 1ª (e única) chamada: aguarda sem cobrir o cenário.
+    expect(calls.map((c) => c.fn)).toEqual([])
+    // A imagem termina de carregar → o hook desenha sem apagar o que estava atrás.
     created[0]?.fireLoad()
     expect(calls.map((c) => c.fn)).toContain('drawImage')
+    expect(calls.map((c) => c.fn)).not.toContain('clearRect')
+  })
+
+  it('o reinício descarta o redraw de imagem pertencente à partida anterior', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const { ctx, calls } = fakeCtx()
+    let starts = 0
+
+    api.onStart(() => {
+      starts += 1
+      const sprite = api.createSprite({
+        x: starts * 10,
+        y: 0,
+        w: 20,
+        h: 20,
+        image: 'heroi',
+      })
+      api.drawSprite(ctx, sprite)
+    }, 'inicio')
+
+    api.restart()
+    created[0]?.fireLoad()
+
+    const redrawXs = calls.filter((call) => call.fn === 'drawImage').map((call) => call.args[1])
+    expect(starts).toBe(2)
+    expect(redrawXs).toEqual([20])
+  })
+
+  it('falha de carga desenha o retângulo de fallback sem apagar o cenário', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const sprite = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    created[0]?.fireError()
+    expect(calls.map((call) => call.fn)).toContain('fillRect')
+    expect(calls.map((call) => call.fn)).not.toContain('clearRect')
+  })
+
+  it('ignora o load atrasado de uma imagem que já foi trocada no sprite', () => {
+    const { api, created } = loadImaging({
+      antiga: 'data:image/png;base64,AAAA',
+      nova: 'data:image/png;base64,BBBB',
+    })
+    const sprite = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'antiga' })
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    api.setImage(sprite, 'nova')
+
+    created[0]?.fireLoad()
+
+    expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('trocar a imagem por figura ou animação libera o redraw pendente imediatamente', () => {
+    const shapeCase = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const shapeSprite = shapeCase.api.createSprite({
+      x: 5,
+      y: 6,
+      w: 20,
+      h: 20,
+      image: 'heroi',
+    })
+    const shapeDraw = fakeCtx()
+    shapeCase.api.drawSprite(shapeDraw.ctx, shapeSprite)
+    expect(shapeCase.created[0]?.listenerCount('load')).toBe(1)
+
+    shapeCase.api.setShape(shapeSprite, 'heroi-em-codigo')
+
+    expect(shapeCase.created[0]?.listenerCount('load')).toBe(0)
+    expect(shapeCase.created[0]?.listenerCount('error')).toBe(0)
+    shapeCase.created[0]?.fireLoad()
+    expect(shapeDraw.calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+
+    const animationCase = loadImaging({
+      heroi: 'data:image/png;base64,BBBB',
+      folha: 'data:image/png;base64,CCCC',
+    })
+    const animationSprite = animationCase.api.createSprite({
+      x: 5,
+      y: 6,
+      w: 20,
+      h: 20,
+      image: 'heroi',
+    })
+    animationCase.api.drawSprite(fakeCtx().ctx, animationSprite)
+    const sheet = animationCase.api.loadSpriteSheet('folha', 16, 16)
+
+    animationCase.api.setAnimation(animationSprite, sheet, 0, 1, 8)
+
+    expect(animationCase.created[0]?.listenerCount('load')).toBe(0)
+    expect(animationCase.created[0]?.listenerCount('error')).toBe(0)
+  })
+
+  it('remover sprites do grupo cancela o redraw e impede desenho fantasma', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, first)
+    api.drawSprite(ctx, second)
+    const group = { items: [first, second] }
+    expect(created[0]?.listenerCount('load')).toBe(2)
+
+    api.removeFromGroup(group, first)
+    api.clearGroup(group)
+
+    expect(group.items).toEqual([])
+    expect(created[0]?.listenerCount('load')).toBe(0)
+    expect(created[0]?.listenerCount('error')).toBe(0)
+    created[0]?.fireLoad()
+    expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('mutações públicas de group.items também cancelam redraws removidos', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const { ctx, calls } = fakeCtx()
+    const group = api.createGroup()
+    group.items.push(first, second)
+    api.drawSprite(ctx, first)
+    api.drawSprite(ctx, second)
+    expect(created[0]?.listenerCount('load')).toBe(2)
+
+    group.items.splice(0, 1)
+    expect(created[0]?.listenerCount('load')).toBe(1)
+    group.items = []
+    expect(created[0]?.listenerCount('load')).toBe(0)
+    expect(created[0]?.listenerCount('error')).toBe(0)
+
+    created[0]?.fireLoad()
+    expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('remover de um grupo preserva o redraw enquanto outro grupo ainda possui o sprite', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const sprite = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const firstGroup = api.createGroup()
+    const secondGroup = api.createGroup()
+    firstGroup.items.push(sprite)
+    secondGroup.items.push(sprite)
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    expect(created[0]?.listenerCount('load')).toBe(1)
+
+    firstGroup.items.splice(0, 1)
+
+    expect(firstGroup.items).toEqual([])
+    expect(secondGroup.items).toEqual([sprite])
+    expect(created[0]?.listenerCount('load')).toBe(1)
+    created[0]?.fireLoad()
+    expect(calls.filter((call) => call.fn === 'drawImage')).toHaveLength(1)
+  })
+
+  it('atribuição, length e delete descartam só quem deixou o grupo', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const third = api.createSprite({ x: 55, y: 6, w: 20, h: 20, image: 'heroi' })
+    const draw = fakeCtx()
+    const group = api.createGroup()
+    group.items.push(first, second, third)
+    api.drawSprite(draw.ctx, first)
+    api.drawSprite(draw.ctx, second)
+    api.drawSprite(draw.ctx, third)
+
+    group.items[0] = second
+    expect(created[0]?.listenerCount('load')).toBe(2)
+    group.items.length = 1
+    expect(created[0]?.listenerCount('load')).toBe(1)
+    delete group.items[0]
+    expect(created[0]?.listenerCount('load')).toBe(0)
+
+    created[0]?.fireLoad()
+    expect(draw.calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('reordenar o grupo preserva o redraw pendente dos sprites', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const draw = fakeCtx()
+    const group = api.createGroup()
+    group.items.push(first, second)
+    api.drawSprite(draw.ctx, first)
+    api.drawSprite(draw.ctx, second)
+
+    api.bringToFront(group, first)
+    api.sendToBack(group, first)
+    expect(group.items).toEqual([first, second])
+    expect(created[0]?.listenerCount('load')).toBe(2)
+
+    created[0]?.fireLoad()
+    expect(draw.calls.filter((call) => call.fn === 'drawImage')).toHaveLength(2)
+  })
+
+  it('redraw assíncrono da imagem atual passa pela câmera e transformação do sprite', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const sprite = api.createSprite({ x: 50, y: 60, w: 20, h: 20, image: 'heroi' }) as Record<
+      string,
+      unknown
+    >
+    sprite.angle = 0.5
+    sprite.opacity = 0.5
+    api.setCamera(40, 30)
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    calls.splice(0)
+
+    created[0]?.fireLoad()
+
+    expect(calls.map((call) => call.fn)).toContain('translate')
+    expect(calls.map((call) => call.fn)).toContain('rotate')
+    expect(calls.map((call) => call.fn)).toContain('drawImage')
+    expect(ctx.globalAlpha).toBe(1)
   })
 
   it('drawSprite usa drawImage quando a imagem está carregada', () => {
@@ -485,6 +1064,26 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     expect(draws[0]?.args[1]).toBe(0)
     expect(draws[1]?.args[1]).toBe(32)
   })
+
+  it('animação não avança enquanto o jogo está pausado', () => {
+    const { api, setClock } = loadImaging({ folha: 'data:image/png;base64,AAAA' })
+    const sheet = api.loadSpriteSheet('folha', 32, 32)
+    sheet.image.loaded = true
+    sheet.image.img.naturalWidth = 128
+    const sprite = api.createSprite({ x: 0, y: 0, w: 32, h: 32 })
+    setClock(1000)
+    api.setAnimation(sprite, sheet, 0, 3, 8)
+    setClock(1125)
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    api.pauseGame()
+    setClock(10_000)
+    api.resumeGame()
+    api.drawSprite(ctx, sprite)
+
+    const draws = calls.filter((call) => call.fn === 'drawImage')
+    expect(draws.map((call) => call.args[1])).toEqual([32, 32])
+  })
 })
 
 describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
@@ -508,13 +1107,18 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
     platformer: (s: Sprite, ctx: CanvasCtx, speed: number, jump: number) => void
     topDown: (s: Sprite, speed: number) => void
     followPointer: (s: Sprite, speed: number) => void
+    dragX: (s: Sprite) => void
+    jumpOnGround: (s: Sprite, ctx: CanvasCtx, jump: number) => void
     clampToScreen: (s: Sprite, ctx: CanvasCtx) => void
+    setCamera: (x: number, y: number) => void
     flash: (ctx: CanvasCtx, color: string) => void
     shake: (ctx: CanvasCtx, intensity: number) => void
     emitParticles: (x: number, y: number, count: number, color: string) => void
     drawParticles: (ctx: CanvasCtx) => void
     keys: { left: boolean; right: boolean; up: boolean; down: boolean }
     pointer: { x: number; y: number; down: boolean }
+    pauseGame: () => void
+    resumeGame: () => void
   }
 
   function load() {
@@ -597,6 +1201,35 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
     expect(s.y).toBe(90)
   })
 
+  it('movimento, chão, ponteiro e limites acompanham o viewport da câmera', () => {
+    const { api } = load()
+    const { ctx } = fakeCtx(200, 100)
+    api.setCamera(1000, 500)
+
+    const platformHero = api.createSprite({ x: 1050, y: 900, w: 20, h: 20 })
+    api.platformer(platformHero, ctx, 4, 11)
+    expect(platformHero.y).toBe(580)
+
+    const jumper = api.createSprite({ x: 1050, y: 900, w: 20, h: 20 })
+    api.jumpOnGround(jumper, ctx, 14)
+    expect(jumper.y).toBe(580)
+
+    const clamped = api.createSprite({ x: 0, y: 900, w: 10, h: 10 })
+    api.clampToScreen(clamped, ctx)
+    expect([clamped.x, clamped.y]).toEqual([1000, 590])
+
+    api.pointer.x = 100
+    api.pointer.y = 50
+    const follower = api.createSprite({ x: 1000, y: 500, w: 10, h: 10 })
+    api.followPointer(follower, 5)
+    expect(follower.x).toBeGreaterThan(1000)
+    expect(follower.y).toBeGreaterThan(500)
+
+    const dragged = api.createSprite({ x: 0, y: 0, w: 20, h: 20 })
+    api.dragX(dragged)
+    expect(dragged.x).toBe(1090)
+  })
+
   it('flash: pinta a tela inteira', () => {
     const { api } = load()
     const { ctx, fills } = fakeCtx(80, 60)
@@ -619,6 +1252,215 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
     expect(rafs.length).toBe(1)
     rafs[0]?.() // roda um frame do tremor
     expect(ctx.canvas.style.transform ?? '').toContain('translate')
+  })
+
+  it('shake congela durante a pausa e continua ao retomar', () => {
+    const { api, rafs } = load()
+    const { ctx } = fakeCtx()
+    api.shake(ctx, 8)
+    const pending = rafs.shift()
+    api.pauseGame()
+    pending?.()
+    expect(ctx.canvas.style.transform ?? '').toBe('')
+    expect(rafs).toHaveLength(0)
+    api.resumeGame()
+    expect(rafs).toHaveLength(1)
+  })
+})
+
+describe('gameTwoDRuntime — música e pausa', () => {
+  function loadMusicRuntime() {
+    type Listener = (event: { key: string; code: string; repeat: boolean }) => void
+    let nextTimerId = 1
+    const timers = new Map<number, () => void>()
+    const listeners: Record<string, Listener[]> = {}
+    const frequencies: number[] = []
+    const frequencyRamps: number[] = []
+    const sourceStops: number[][] = []
+    const setTimeoutControlled = (callback: () => void) => {
+      const id = nextTimerId
+      nextTimerId += 1
+      timers.set(id, callback)
+      return id
+    }
+    const clearTimeoutControlled = (id: number) => timers.delete(id)
+
+    class FakeAudioContext {
+      state: string = 'suspended'
+      currentTime = 0
+      destination = {}
+
+      resume() {
+        this.state = 'running'
+      }
+
+      createOscillator() {
+        const stops: number[] = []
+        sourceStops.push(stops)
+        return {
+          type: 'square',
+          frequency: {
+            setValueAtTime(value: number) {
+              frequencies.push(value)
+            },
+            exponentialRampToValueAtTime(value: number) {
+              frequencyRamps.push(value)
+            },
+            linearRampToValueAtTime() {},
+          },
+          connect() {},
+          start() {},
+          stop(time = 0) {
+            stops.push(time)
+          },
+        }
+      }
+
+      createGain() {
+        return {
+          gain: {
+            setValueAtTime() {},
+            exponentialRampToValueAtTime() {},
+          },
+          connect() {},
+        }
+      }
+    }
+
+    const win = {
+      addEventListener(name: string, listener: Listener) {
+        listeners[name] ??= []
+        listeners[name].push(listener)
+      },
+      AudioContext: FakeAudioContext,
+      SZGame2D: undefined,
+      performance: { now: () => 0 },
+    } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', gameTwoDRuntime)(
+      win,
+      () => 0,
+      setTimeoutControlled,
+      clearTimeoutControlled,
+    )
+
+    const api = (
+      win as unknown as {
+        SZGame2D: {
+          playMusic: (name: string) => void
+          playSound: (frequency: number, durationMs: number) => void
+          playJump: () => void
+          pauseGame: () => void
+          resumeGame: () => void
+          restart: () => void
+          onStart: (callback: () => void, id: string) => void
+          stopMusic: () => void
+        }
+      }
+    ).SZGame2D
+
+    return {
+      api,
+      frequencies,
+      frequencyRamps,
+      sourceStops,
+      timers,
+      fireKeydown() {
+        for (const listener of listeners.keydown ?? []) {
+          listener({ key: 'ArrowRight', code: 'ArrowRight', repeat: false })
+        }
+      },
+      runNextTimer() {
+        const next = timers.entries().next().value as [number, () => void] | undefined
+        if (!next) return false
+        timers.delete(next[0])
+        next[1]()
+        return true
+      },
+    }
+  }
+
+  it('não reinicia a mesma música quando o comando é repetido', () => {
+    const { api, fireKeydown, timers } = loadMusicRuntime()
+
+    api.playMusic('adventure')
+    fireKeydown()
+    const firstTimer = timers.keys().next().value
+    api.playMusic('adventure')
+    expect(timers.keys().next().value).toBe(firstTimer)
+
+    api.playMusic('happy')
+    expect(timers.keys().next().value).not.toBe(firstTimer)
+    api.stopMusic()
+  })
+
+  it('suspende o agendamento da música na pausa e continua ao retomar', () => {
+    const { api, fireKeydown, runNextTimer, timers } = loadMusicRuntime()
+
+    api.playMusic('adventure')
+    fireKeydown()
+    expect(timers.size).toBe(1)
+    api.pauseGame()
+    expect(timers.size).toBe(0)
+    api.resumeGame()
+    expect(timers.size).toBe(1)
+    expect(runNextTimer()).toBe(true)
+    expect(timers.size).toBe(1)
+    api.stopMusic()
+    expect(timers.size).toBe(0)
+  })
+
+  it('começa pela primeira nota quando a música é declarada antes do primeiro gesto', () => {
+    const { api, fireKeydown, frequencies, runNextTimer } = loadMusicRuntime()
+
+    api.playMusic('adventure')
+    expect(frequencies).toEqual([])
+
+    // Reproduz a passagem do tempo antes da criança interagir com o jogo.
+    expect(runNextTimer()).toBe(false)
+    fireKeydown()
+
+    expect(frequencies[0]).toBe(262)
+    api.stopMusic()
+  })
+
+  it('interrompe fontes de áudio ainda ativas quando a partida reinicia', () => {
+    const { api, fireKeydown, sourceStops } = loadMusicRuntime()
+    fireKeydown()
+    api.onStart(() => undefined, 'audio-reset')
+
+    api.playSound(440, 10_000)
+    expect(sourceStops).toEqual([[10]])
+    api.restart()
+
+    expect(sourceStops).toEqual([[10, 0]])
+  })
+
+  it('playJump executa o oscilador real após o gesto de áudio', () => {
+    const { api, fireKeydown, frequencies, frequencyRamps, sourceStops } = loadMusicRuntime()
+    fireKeydown()
+
+    api.playJump()
+
+    expect(frequencies.at(-1)).toBe(330)
+    expect(frequencyRamps.at(-1)).toBe(760)
+    expect(sourceStops.at(-1)).toEqual([0.14])
+  })
+
+  it('trata nomes herdados do protótipo como músicas desconhecidas', () => {
+    const { api, fireKeydown, frequencies } = loadMusicRuntime()
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+    fireKeydown()
+
+    try {
+      for (const name of ['constructor', 'toString', '__proto__']) {
+        const notesBefore = frequencies.length
+        expect(() => api.playMusic(name)).not.toThrow()
+        expect(frequencies[notesBefore]).toBe(262)
+        api.stopMusic()
+      }
+    } finally {
+      warning.mockRestore()
+    }
   })
 })
 
@@ -643,11 +1485,13 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size?: number) => void
     collideTileMap: (sprite: TileSprite, map: unknown) => void
     tileAt: (map: unknown, px: number, py: number) => number
+    tileAtSprite: (map: unknown, s: { x: number; y: number; w: number; h: number }) => number
+    setupStage: (width: number, height: number, background: string) => void
   }
 
   // Loader com um Image fake (nunca carrega) — os tiles caem no placeholder, que é
   // o que queremos contar; o desenho real do tileset se verifica em browser.
-  function load(): TileApi {
+  function load(devicePixelRatio = 1): TileApi {
     const win = {
       addEventListener() {},
       SZGame2D: undefined,
@@ -660,6 +1504,7 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
         this.addEventListener = () => {}
         Object.defineProperty(this, 'src', { set() {}, get: () => '' })
       },
+      devicePixelRatio,
     } as unknown as Record<string, unknown>
     new Function('window', 'requestAnimationFrame', 'Image', gameTwoDRuntime)(
       win,
@@ -702,6 +1547,15 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(api.tileAt(map, -5, 0)).toBe(-1) // fora do mapa
   })
 
+  it('tileAtSprite devolve o índice do tile onde está o CENTRO do sprite', () => {
+    const api = load()
+    const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '1', grid: '0 1;2 .' })
+    // Sprite 16×16: o centro cai no meio da célula 32×32 escolhida (col×32+16).
+    expect(api.tileAtSprite(map, { x: 8, y: 8, w: 16, h: 16 })).toBe(0) // centro (16,16): col 0, linha 0
+    expect(api.tileAtSprite(map, { x: 40, y: 8, w: 16, h: 16 })).toBe(1) // centro (48,16): col 1, linha 0
+    expect(api.tileAtSprite(map, { x: 40, y: 40, w: 16, h: 16 })).toBe(-1) // centro (48,48): célula vazia
+  })
+
   it('drawTileMap desenha uma vez por célula NÃO vazia (placeholder até o tileset carregar)', () => {
     const api = load()
     const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '1', grid: '. . 1;1 . 1' })
@@ -737,6 +1591,25 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(map.draw).toBe(50)
   })
 
+  it('drawTileMap usa o palco lógico, não o backing store ampliado pelo DPR', () => {
+    document.body.innerHTML = '<canvas id="tela"></canvas>'
+    const canvas = document.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do teste não foi criado')
+    canvas.getBoundingClientRect = () =>
+      ({ width: 800, height: 480, x: 0, y: 0, top: 0, left: 0, right: 800, bottom: 480 }) as DOMRect
+    const api = load(2)
+    api.setupStage(800, 480, '#000000')
+    expect(canvas.width).toBe(1600)
+    expect(canvas.height).toBe(960)
+
+    const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '', grid: '0 0;0 0' })
+    const ctx = { canvas, fillRect() {}, drawImage() {}, clearRect() {} }
+    api.drawTileMap(ctx, map, 0, 0)
+    expect(map.draw).toBe(240)
+    expect(map.ox).toBe(160)
+    expect(map.oy).toBe(0)
+  })
+
   it('collideTileMap pousa o sprite sobre o chão sólido e zera a velocidade vertical', () => {
     const api = load()
     // 3 linhas; só a última (índice 1) é sólida → chão a partir de y = 64.
@@ -766,6 +1639,21 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(sprite.x).toBe(10)
     expect(sprite.y).toBe(10)
     expect(sprite.vy).toBe(5)
+  })
+
+  it('collideTileMap termina com geometria não finita e limita a busca ao mapa real', async () => {
+    expect(
+      await runtimeWorkerCompletes(`
+        api.collideTileMap(
+          { x: 0, y: 0, w: Infinity, h: 16, vx: 0, vy: 0 },
+          { rows: [[1]], solid: [1], platform: [], tile: 32, draw: 32, ox: 0, oy: 0, _drawn: true }
+        );
+        api.collideTileMap(
+          { x: -1e12, y: -1e12, w: 2e12, h: 2e12, vx: 0, vy: 0 },
+          { rows: [[1, 1], [1, 1]], solid: [1], platform: [], tile: 32, draw: 32, ox: 0, oy: 0, _drawn: true }
+        );
+      `),
+    ).toBe(true)
   })
 
   it('createTileMap chamado 61+ vezes (sinal de laço no "a cada quadro") avisa uma única vez', () => {
@@ -828,7 +1716,7 @@ describe('gameTwoDRuntime.gameLoop', () => {
     expect(count).toBe(2)
   })
 
-  it('isola erros da fn sem interromper o loop', () => {
+  it('isola erros e desativa somente o loop defeituoso', () => {
     const { api, flushFrame } = loadWithFrameControl()
     let count = 0
     api.gameLoop(() => {
@@ -839,10 +1727,10 @@ describe('gameTwoDRuntime.gameLoop', () => {
       flushFrame()
       flushFrame()
     }).not.toThrow()
-    expect(count).toBe(2)
+    expect(count).toBe(1)
   })
 
-  it('mantém apenas UM loop ativo: chamar gameLoop de novo para o anterior', () => {
+  it('compõe múltiplos loops num único scheduler', () => {
     // requestAnimationFrame com fila controlada que carrega o ID de cada frame,
     // para sabermos qual `tick` está agendado e respeitar cancelAnimationFrame.
     const frames: Array<{ id: number; cb: () => void }> = []
@@ -877,16 +1765,48 @@ describe('gameTwoDRuntime.gameLoop', () => {
     api.gameLoop(() => {
       countA += 1
     })
-    // Segundo loop: deve PARAR o primeiro automaticamente (sem empilhar RAFs).
     api.gameLoop(() => {
       countB += 1
     })
 
     flushRound()
     flushRound()
-    // Só o segundo loop continua vivo; o primeiro foi cancelado na 2ª chamada.
-    expect(countA).toBe(0)
+    expect(countA).toBe(2)
     expect(countB).toBe(2)
+  })
+
+  it('cancela o driver durante a pausa e agenda um novo frame ao continuar', () => {
+    const pending = new Map<number, () => void>()
+    let nextId = 1
+    const requestAnimationFrame = (cb: () => void) => {
+      const id = nextId++
+      pending.set(id, cb)
+      return id
+    }
+    const cancelAnimationFrame = (id: number) => pending.delete(id)
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', 'cancelAnimationFrame', gameTwoDRuntime)(
+      win,
+      requestAnimationFrame,
+      cancelAnimationFrame,
+    )
+    const api = (
+      win as unknown as {
+        SZGame2D: {
+          gameLoop: (fn: () => void) => () => void
+          pauseGame: () => void
+          resumeGame: () => void
+        }
+      }
+    ).SZGame2D
+    api.gameLoop(() => {})
+    expect(pending.size).toBe(1)
+
+    api.pauseGame()
+    expect(pending.size).toBe(0)
+
+    api.resumeGame()
+    expect(pending.size).toBe(1)
   })
 })
 
@@ -952,42 +1872,38 @@ describe('gameTwoDRuntime.onPointer', () => {
     }).not.toThrow()
   })
 
-  it('registrar arrows NOVOS a cada frame não cresce a lista sem limite', () => {
-    // Cenário real do bug: o gerador emite um arrow LITERAL a cada execução do
-    // bloco "quando clicar/tocar". Se o aluno colocar esse bloco dentro do "a
-    // cada frame", onPointer recebe uma referência inédita por frame e a lista
-    // cresceria sem limite. Simulamos 1000 "frames" registrando funções
-    // distintas e verificamos que UM clique não dispara 1000 vezes.
+  it('o id estável do bloco substitui arrows novos sem multiplicar o clique', () => {
     const { api, firePointerDown } = loadWithPointer()
     let totalCalls = 0
     for (let frame = 0; frame < 1000; frame++) {
-      // arrow novo a cada iteração — referência sempre diferente
-      api.onPointer(() => {
+      ;(api.onPointer as unknown as (fn: () => void, id: string) => void)(() => {
         totalCalls += 1
-      })
+      }, 'bloco-clique')
     }
     firePointerDown(5, 5)
-    // Com o teto de 32 handlers, um clique dispara no máximo 32 vezes — não 1000.
-    expect(totalCalls).toBeLessThanOrEqual(32)
-    expect(totalCalls).toBeGreaterThan(0)
+    expect(totalCalls).toBe(1)
   })
 
-  it('avisa no console (uma vez) ao atingir o teto', () => {
-    const { api } = loadWithPointer()
+  it('não impõe teto artificial a eventos legítimos de blocos diferentes', () => {
+    const { api, firePointerDown } = loadWithPointer()
     const original = console.warn
     let warnCount = 0
+    let calls = 0
     console.warn = () => {
       warnCount += 1
     }
     try {
-      // Bem acima do teto de 32 → deve avisar, mas só UMA vez.
       for (let i = 0; i < 100; i++) {
-        api.onPointer(() => {})
+        ;(api.onPointer as unknown as (fn: () => void, id: string) => void)(() => {
+          calls += 1
+        }, `bloco-${i}`)
       }
+      firePointerDown(0, 0)
     } finally {
       console.warn = original
     }
-    expect(warnCount).toBe(1)
+    expect(warnCount).toBe(0)
+    expect(calls).toBe(100)
   })
 
   it('poucos handlers distintos continuam todos disparando', () => {
@@ -1037,6 +1953,9 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     everyFrames: (key: string, n: number) => boolean
     everySeconds: (key: string, secs: number) => boolean
     drawSprite: (ctx: unknown, s: unknown) => void
+    setCamera: (x: number, y: number) => void
+    pauseGame: () => void
+    resumeGame: () => void
   }
 
   let clock = 0
@@ -1085,6 +2004,49 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.countGroup(g)).toBe(0)
   })
 
+  it('forEachInGroup não repete o item atual quando o corpo remove outro sprite', () => {
+    const api = load()
+    const g = api.createGroup()
+    for (let i = 0; i < 3; i++) api.spawn(g, { x: i, y: 0, color: '#fff' })
+    const first = g.items[0]
+    const visited: number[] = []
+
+    api.forEachInGroup(g, (sprite) => {
+      visited.push(sprite.x)
+      if (sprite.x === 2 && first) api.removeFromGroup(g, first)
+    })
+
+    expect(visited).toEqual([2, 1])
+  })
+
+  it('forEachInGroup não visita item removido por mutação pública de group.items', () => {
+    const api = load()
+    const g = api.createGroup()
+    for (let i = 0; i < 3; i++) api.spawn(g, { x: i, y: 0, color: '#fff' })
+    const visited: number[] = []
+
+    api.forEachInGroup(g, (sprite) => {
+      visited.push(sprite.x)
+      if (sprite.x === 2) g.items.splice(0, 1)
+    })
+
+    expect(visited).toEqual([2, 1])
+  })
+
+  it('forEachInGroup encerra com segurança quando o corpo esvazia o grupo', () => {
+    const api = load()
+    const g = api.createGroup()
+    for (let i = 0; i < 3; i++) api.spawn(g, { x: i, y: 0, color: '#fff' })
+    const visited: number[] = []
+
+    api.forEachInGroup(g, (sprite) => {
+      visited.push(sprite.x)
+      api.clearGroup(g)
+    })
+
+    expect(visited).toEqual([2])
+  })
+
   it('pruneOffscreen tira quem saiu da tela e chama onLeave para cada um', () => {
     const api = load()
     const g = api.createGroup()
@@ -1099,6 +2061,20 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.countGroup(g)).toBe(1)
   })
 
+  it('pruneOffscreen usa o viewport deslocado da câmera nos quatro lados', () => {
+    const api = load()
+    const g = api.createGroup()
+    const ctx = { canvas: { width: 200, height: 100 } }
+    api.setCamera(1000, 500)
+    api.spawn(g, { x: 1050, y: 540, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 900, y: 540, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 1250, y: 540, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 1050, y: 400, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 1050, y: 650, w: 10, h: 10, color: '#fff' })
+    api.pruneOffscreen(ctx, g, 0)
+    expect(g.items.map((sprite) => [sprite.x, sprite.y])).toEqual([[1050, 540]])
+  })
+
   it('overlapGroups chama fn para cada par que se encosta', () => {
     const api = load()
     const a = api.createGroup()
@@ -1111,6 +2087,117 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
       pares += 1
     })
     expect(pares).toBe(1)
+  })
+
+  it('overlapGroups não faz buscas lineares de pertencimento dentro da varredura N×M', () => {
+    const api = load()
+    const a = api.createGroup()
+    const b = api.createGroup()
+    api.spawn(a, { x: 0, y: 0, w: 10, h: 10, color: '#fff' })
+    api.spawn(b, { x: 100, y: 100, w: 10, h: 10, color: '#fff' })
+    a.items.indexOf = () => {
+      throw new Error('busca linear no grupo A')
+    }
+    b.items.indexOf = () => {
+      throw new Error('busca linear no grupo B')
+    }
+
+    expect(() => api.overlapGroups(a, b, () => {})).not.toThrow()
+  })
+
+  it('overlapGroups usa fase ampla para grupos grandes e esparsos', () => {
+    const api = load()
+    const a = api.createGroup()
+    const b = api.createGroup()
+    let geometryReads = 0
+    const sparseSprite = (x: number) => {
+      const sprite = { y: 0, w: 8, h: 8, vx: 0, vy: 0 } as Sprite
+      Object.defineProperty(sprite, 'x', {
+        configurable: true,
+        enumerable: true,
+        get() {
+          geometryReads += 1
+          return x
+        },
+      })
+      return sprite
+    }
+    for (let i = 0; i < 200; i++) {
+      a.items.push(sparseSprite(i * 1_000))
+      b.items.push(sparseSprite(i * 1_000 + 400))
+    }
+
+    api.overlapGroups(a, b, () => {})
+
+    // A varredura cartesiana faria dezenas de milhares de leituras de x.
+    expect(geometryReads).toBeLessThan(10_000)
+  })
+
+  it('a fase ampla preserva a ordem reversa e a remoção durante o callback', () => {
+    const api = load()
+    const a = api.createGroup()
+    const b = api.createGroup()
+    for (let i = 0; i < 50; i++) {
+      const ax = i === 0 || i === 49 ? 0 : 10_000 + i * 100
+      const bx = i === 0 || i === 49 ? 0 : -10_000 - i * 100
+      const first = api.spawn(a, { x: ax, y: 0, w: 20, h: 20, color: '#fff' }) as Sprite & {
+        tag: string
+      }
+      const second = api.spawn(b, { x: bx, y: 0, w: 20, h: 20, color: '#fff' }) as Sprite & {
+        tag: string
+      }
+      first.tag = `a${i}`
+      second.tag = `b${i}`
+    }
+    const pairs: string[] = []
+    api.overlapGroups(a, b, (first, second) => {
+      pairs.push(
+        `${(first as Sprite & { tag: string }).tag}:${(second as Sprite & { tag: string }).tag}`,
+      )
+      if ((first as Sprite & { tag: string }).tag === 'a49') api.removeFromGroup(a, first)
+    })
+
+    expect(pairs).toEqual(['a49:b49', 'a0:b49', 'a0:b0'])
+  })
+
+  it('overlapGroups ignora item substituído diretamente no array durante o callback', () => {
+    const api = load()
+    const a = api.createGroup()
+    const b = api.createGroup()
+    api.spawn(a, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    const first = api.spawn(b, { x: 0, y: 0, w: 20, h: 20, color: '#fff' }) as Sprite
+    const second = api.spawn(b, { x: 0, y: 0, w: 20, h: 20, color: '#fff' }) as Sprite
+    const replacement: Sprite = { x: 100, y: 100, w: 20, h: 20, vx: 0, vy: 0 }
+    const visited: Sprite[] = []
+
+    api.overlapGroups(a, b, (_sprite, item) => {
+      visited.push(item)
+      if (item === second) b.items[0] = replacement
+    })
+
+    expect(visited).toEqual([second])
+    expect(b.items).toEqual([replacement, second])
+    expect(first).toBeTruthy()
+  })
+
+  it('overlapGroups no mesmo grupo ignora o próprio sprite e visita cada par uma vez', () => {
+    const api = load()
+    const group = api.createGroup()
+    api.spawn(group, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    expect(() => api.overlapGroups(group, group, () => {})).not.toThrow()
+    let oneSpritePairs = 0
+    api.overlapGroups(group, group, () => {
+      oneSpritePairs += 1
+    })
+    expect(oneSpritePairs).toBe(0)
+
+    api.spawn(group, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    api.spawn(group, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    const pairs = new Set<string>()
+    api.overlapGroups(group, group, (a, b) => {
+      pairs.add([a.x, group.items.indexOf(a), group.items.indexOf(b)].join(':'))
+    })
+    expect(pairs.size).toBe(3)
   })
 
   it('overlapGroups: se o corpo REMOVE o tiro, ele não perfura os inimigos encostados (R1/A3)', () => {
@@ -1161,6 +2248,13 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(hits).toEqual([3, 6])
   })
 
+  it('everyFrames normaliza intervalos fracionários e não finitos para ao menos um quadro', () => {
+    const api = load()
+    expect(api.everyFrames('fracionario', 0.5)).toBe(true)
+    expect(api.everyFrames('nan', Number.NaN)).toBe(true)
+    expect(api.everyFrames('infinito', Number.POSITIVE_INFINITY)).toBe(true)
+  })
+
   it('everySeconds respeita o relógio (1ª chamada arma; dispara após o período)', () => {
     const api = load()
     clock = 1000
@@ -1169,6 +2263,19 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.everySeconds('k', 2)).toBe(false) // só 1s passou
     clock = 3000
     expect(api.everySeconds('k', 2)).toBe(true) // 2s passaram → dispara
+  })
+
+  it('everySeconds desconta todo o tempo em que o jogo ficou pausado', () => {
+    const api = load()
+    clock = 1000
+    expect(api.everySeconds('pausa', 2)).toBe(false)
+    clock = 1500
+    api.pauseGame()
+    clock = 10_000
+    api.resumeGame()
+    expect(api.everySeconds('pausa', 2)).toBe(false)
+    clock = 11_500
+    expect(api.everySeconds('pausa', 2)).toBe(true)
   })
 })
 
@@ -1311,6 +2418,7 @@ describe('gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, 
       g: { items: unknown[] },
       fn: (it: unknown) => void,
     ) => void
+    removeFromGroup: (g: { items: unknown[] }, sprite: unknown) => void
   }
 
   function load(): KitApi {
@@ -1405,6 +2513,83 @@ describe('gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, 
     )
     expect(hits).toBe(1)
   })
+
+  it('overlapSpriteGroup não repete uma colisão quando o corpo remove outro sprite', () => {
+    const api = load()
+    const nave = api.createShip({ x: 0, y: 0, w: 40, h: 40, body: '#0ff', wings: '#00f' })
+    const g = api.createGroup()
+    const first = api.spawnAsteroid(g, {
+      x: 1,
+      y: 1,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const second = api.spawnAsteroid(g, {
+      x: 2,
+      y: 2,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const third = api.spawnAsteroid(g, {
+      x: 3,
+      y: 3,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const visited: unknown[] = []
+
+    api.overlapSpriteGroup(
+      () => nave,
+      g,
+      (sprite) => {
+        visited.push(sprite)
+        if (sprite === third) api.removeFromGroup(g, first)
+      },
+    )
+
+    expect(visited).toEqual([third, second])
+  })
+
+  it('overlapSpriteGroup ignora item removido diretamente do array durante o callback', () => {
+    const api = load()
+    const nave = api.createShip({ x: 0, y: 0, w: 40, h: 40, body: '#0ff', wings: '#00f' })
+    const g = api.createGroup()
+    const first = api.spawnAsteroid(g, {
+      x: 1,
+      y: 1,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const second = api.spawnAsteroid(g, {
+      x: 2,
+      y: 2,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const visited: unknown[] = []
+
+    api.overlapSpriteGroup(
+      () => nave,
+      g,
+      (sprite) => {
+        visited.push(sprite)
+        if (sprite === second) g.items.splice(0, 1)
+      },
+    )
+
+    expect(visited).toEqual([second])
+    expect(first).toBeTruthy()
+  })
 })
 
 describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', () => {
@@ -1435,6 +2620,7 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
       g: { items: ShipSprite[] },
       o: { size?: number; color?: string; speed?: number },
     ) => ShipSprite | null
+    setCamera: (x: number, y: number) => void
     keys: { left: boolean; right: boolean; up: boolean; down: boolean }
   }
 
@@ -1472,7 +2658,7 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
     expect(s2.vy).toBeCloseTo(0, 6)
   })
 
-  it('applyFriction multiplica a velocidade pelo fator', () => {
+  it('applyFriction multiplica a velocidade pelo fator e limita o atrito a 0..1', () => {
     const api = load()
     const s = api.createSprite({ x: 0, y: 0 })
     s.vx = 10
@@ -1480,6 +2666,18 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
     api.applyFriction(s, 0.5)
     expect(s.vx).toBeCloseTo(5, 6)
     expect(s.vy).toBeCloseTo(-2, 6)
+
+    s.vx = 10
+    s.vy = -4
+    api.applyFriction(s, -1)
+    expect(s.vx).toBe(0)
+    expect(s.vy).toBe(0)
+
+    s.vx = 10
+    s.vy = -4
+    api.applyFriction(s, 2)
+    expect(s.vx).toBe(10)
+    expect(s.vy).toBe(-4)
   })
 
   it('steerThrust: ↑ acelera na frente e integra a posição; ← → giram', () => {
@@ -1511,12 +2709,47 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
   })
 
   it('spawnAsteroidFromEdge nasce numa borda e vai rumo ao centro', () => {
-    const api = load()
-    const g = api.createGroup()
-    const a = api.spawnAsteroidFromEdge(g, { size: 30, color: '#8d8f9b', speed: 2 })
-    expect(g.items.length).toBe(1)
-    // a velocidade tem magnitude = speed num único eixo (entra na tela reto)
-    expect(Math.abs(a?.vx ?? 0) + Math.abs(a?.vy ?? 0)).toBeCloseTo(2, 6)
+    const random = spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0.25)
+    for (const canvas of Array.from(document.querySelectorAll('canvas'))) canvas.remove()
+    const stage = document.createElement('canvas')
+    stage.width = 360
+    stage.height = 360
+    document.body.appendChild(stage)
+    try {
+      const api = load()
+      const g = api.createGroup()
+      const a = api.spawnAsteroidFromEdge(g, { size: 30, color: '#8d8f9b', speed: 2 })
+      expect(g.items.length).toBe(1)
+      if (!a) throw new Error('asteroide não foi criado')
+      const centerX = a.x + a.w / 2
+      const centerY = a.y + a.h / 2
+      const targetX = 360 / 2
+      const targetY = 360 / 2
+      const crossProduct = (targetX - centerX) * a.vy - (targetY - centerY) * a.vx
+      expect(Math.hypot(a.vx, a.vy)).toBeCloseTo(2, 6)
+      expect(crossProduct).toBeCloseTo(0, 6)
+      expect((targetX - centerX) * a.vx + (targetY - centerY) * a.vy).toBeGreaterThan(0)
+    } finally {
+      random.mockRestore()
+      stage.remove()
+    }
+  })
+
+  it('spawnAsteroidFromEdge usa as bordas e o centro visíveis quando há câmera', () => {
+    const random = spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0.25)
+    try {
+      const api = load()
+      api.setCamera(1000, 500)
+      const g = api.createGroup()
+      const asteroid = api.spawnAsteroidFromEdge(g, { size: 30, speed: 2 })
+      if (!asteroid) throw new Error('asteroide não foi criado')
+      expect(asteroid.x).toBeLessThan(1000)
+      expect(asteroid.x + asteroid.w).toBeGreaterThanOrEqual(1000 - asteroid.w)
+      expect(asteroid.y).toBeGreaterThanOrEqual(500)
+      expect(asteroid.vx).toBeGreaterThan(0)
+    } finally {
+      random.mockRestore()
+    }
   })
 })
 
@@ -1566,7 +2799,6 @@ describe('gameTwoDRuntime — Kit gorilas (v0.11.0)', () => {
       'bananaHitThrower',
       'bananaHitCity',
       'playWhistle',
-      'playBoom',
       'computerTurn',
       'drawAimReadout',
     ]) {

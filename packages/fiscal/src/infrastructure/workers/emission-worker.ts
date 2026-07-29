@@ -59,8 +59,14 @@ export class EmissionWorker {
         try {
           // Renova o lease por-nota: num lote longo, as notas no fim não estouram
           // o claim (que outra réplica re-reivindicaria e reprocessaria).
-          await this.invoices.touchClaim(invoice.id)
-          await this.emit.execute(invoice)
+          if (
+            !invoice.claimToken ||
+            !(await this.invoices.touchClaim(invoice.id, invoice.claimToken))
+          ) {
+            this.logger.info('fiscal.emit_claim_lost', { invoiceId: invoice.id })
+            continue
+          }
+          await this.emit.execute(invoice, invoice.claimToken)
         } catch (error) {
           // O serviço já trata os caminhos esperados; isto é o inesperado.
           this.logger.error('fiscal.emit_unhandled', {

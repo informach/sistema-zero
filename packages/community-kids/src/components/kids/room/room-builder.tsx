@@ -1,10 +1,11 @@
 'use client'
 
 import {
+  ArrowDownToLine,
+  ArrowUpToLine,
   Frame,
   LayoutGrid,
   Lightbulb,
-  Lock,
   Paintbrush,
   Palette,
   PawPrint,
@@ -27,12 +28,13 @@ import {
   ROOM_THEME_INFO,
   ROOM_WALL_PALETTE,
   resolveRoomAppearance,
-  TROPHY_HINT,
 } from '@/lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
 import { ZappyCoin } from '../zappy-coin'
 import { effectiveFootprint, type Rot, rectsOverlap, WALL_H_CELLS, wallLength } from './coords'
+import { freeFloorSpot, freeWallSpot, isFreeAt } from './placement'
+import { ChoiceGrid, PetTray, ShopGrid, TrophyTray, WallTray } from './room-builder-trays'
 import { RoomCanvas } from './room-canvas'
 
 const PLACEABLE: ReadonlySet<string> = new Set(['furniture', 'decor', 'plant', 'light'])
@@ -71,109 +73,6 @@ const CAT_BY_TAB: Partial<Record<TabId, string>> = {
   luzes: 'light',
 }
 
-type Placed = RoomStateView['placedItems']
-
-/** Células do CHÃO ocupadas (itens de parede não contam). */
-function floorOccupied(items: Placed): Set<string> {
-  const set = new Set<string>()
-  for (const it of items) {
-    const inf = ROOM_ITEM_INFO[it.itemId]
-    if (!inf || inf.mount === 'wall') continue
-    const fp = effectiveFootprint(inf.w, inf.h, (it.rot ?? 0) as Rot)
-    for (let dx = 0; dx < fp.w; dx++) {
-      for (let dy = 0; dy < fp.h; dy++) set.add(`${it.x + dx},${it.y + dy}`)
-    }
-  }
-  return set
-}
-/** Primeira célula LIVRE para um footprint w×h no chão (varre linha a linha); `null` = sem vão. */
-function freeFloorSpot(items: Placed, w: number, h: number): { x: number; y: number } | null {
-  const occ = floorOccupied(items)
-  for (let y = 0; y <= ROOM_GRID.rows - h; y++) {
-    for (let x = 0; x <= ROOM_GRID.cols - w; x++) {
-      let free = true
-      for (let dx = 0; dx < w && free; dx++) {
-        for (let dy = 0; dy < h; dy++) {
-          if (occ.has(`${x + dx},${y + dy}`)) {
-            free = false
-            break
-          }
-        }
-      }
-      if (free) return { x, y }
-    }
-  }
-  return null // sala cheia — não inventa um spot sobreposto (o toast avisa em vez de mentir)
-}
-
-/** O footprint cabe SEM sobrepor outra peça? (chão↔chão, parede↔mesma parede). Usado no teclado. */
-function isFreeAt(
-  items: Placed,
-  index: number,
-  isWall: boolean,
-  wall: 'left' | 'right' | undefined,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): boolean {
-  for (let i = 0; i < items.length; i++) {
-    if (i === index) continue
-    const it = items[i]
-    const inf = it && ROOM_ITEM_INFO[it.itemId]
-    if (!it || !inf) continue
-    const otherWall = inf.mount === 'wall'
-    if (isWall) {
-      if (!otherWall || (it.wall ?? 'right') !== wall) continue
-      if (rectsOverlap(x, y, w, h, it.x, it.y, inf.w, inf.h)) return false
-    } else {
-      if (otherWall) continue
-      const ofp = effectiveFootprint(inf.w, inf.h, (it.rot ?? 0) as Rot)
-      if (rectsOverlap(x, y, w, h, it.x, it.y, ofp.w, ofp.h)) return false
-    }
-  }
-  return true
-}
-/** Células ocupadas numa parede específica. */
-function wallOccupied(items: Placed, wall: 'left' | 'right'): Set<string> {
-  const set = new Set<string>()
-  for (const it of items) {
-    const inf = ROOM_ITEM_INFO[it.itemId]
-    if (!inf) continue
-    if (inf.mount !== 'wall' || (it.wall ?? 'right') !== wall) continue
-    for (let du = 0; du < inf.w; du++) {
-      for (let dv = 0; dv < inf.h; dv++) set.add(`${it.x + du},${it.y + dv}`)
-    }
-  }
-  return set
-}
-/** Primeiro vão LIVRE numa parede (prefere a direita + mais ALTO — janela/quadro sobem). */
-function freeWallSpot(
-  items: Placed,
-  w: number,
-  h: number,
-): { wall: 'left' | 'right'; u: number; v: number } | null {
-  for (const wall of ['right', 'left'] as const) {
-    const occ = wallOccupied(items, wall)
-    const len = wallLength(wall)
-    for (let v = WALL_H_CELLS - h; v >= 0; v--) {
-      for (let u = 0; u <= len - w; u++) {
-        let free = true
-        for (let du = 0; du < w && free; du++) {
-          for (let dv = 0; dv < h; dv++) {
-            if (occ.has(`${u + du},${v + dv}`)) {
-              free = false
-              break
-            }
-          }
-        }
-        if (free) return { wall, u, v }
-      }
-    }
-  }
-  return null // paredes cheias
-}
-
 /** Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…). */
 export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null }) {
   const [data, setData] = useState<RoomEditorView | null>(null)
@@ -194,6 +93,8 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
   const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState<TabId>('moveis')
   const [brush, setBrush] = useState<string>(ROOM_WALL_PALETTE[0]?.hex ?? '#f3ede1')
+  // Lista "Colocar em cima de…" aberta p/ a peça stackable selecionada (superfícies, 24/07).
+  const [stackPicker, setStackPicker] = useState(false)
   const draftRef = useRef(draft)
 
   function updateDraft(updater: (current: RoomStateView) => RoomStateView) {
@@ -278,6 +179,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         break
       case 'Escape':
         setSelected(null)
+        setStackPicker(false)
         break
     }
   }
@@ -289,13 +191,18 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
   const ownedById = useMemo(() => new Map((data?.items ?? []).map((i) => [i.id, i.owned])), [data])
   const isOwned = (id: string) => ownedById.get(id) ?? false
+  /** Seleciona/desseleciona uma peça — fecha o picker de superfície (contexto muda). */
+  const selectPiece = useCallback((index: number | null) => {
+    setSelected(index)
+    setStackPicker(false)
+  }, [])
   const appearance = resolveRoomAppearance(draft)
   const paintColor = tab === 'parede' ? brush : null
 
   function moveItem(index: number, x: number, y: number, wall?: 'left' | 'right') {
     updateDraft((d) => {
       const it = d.placedItems[index]
-      if (!it) return d
+      if (!it || it.on) return d // filho em nicho não anda pela grade — "Descer" primeiro
       const info = ROOM_ITEM_INFO[it.itemId]
       if (!info) return d
       if (info.mount === 'wall') {
@@ -339,6 +246,18 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     } else {
       const s = freeFloorSpot(current.placedItems, info.w, info.h)
       if (!s) {
+        // Chão cheio mas o item cabe num NICHO (troféu com a estante vazia, ex.) →
+        // entra direto na 1ª superfície com vaga em vez de recusar.
+        if (info.stackable) {
+          const opt = surfaceOptions()[0]
+          if (opt) {
+            const placed = placeOnSurfaceAsNew(item.id, opt.itemId)
+            if (placed) {
+              toast.success(`${info.labelPt} em cima! ✨`)
+              return
+            }
+          }
+        }
         toast('Não cabe mais nada no chão! 🧹')
         return
       }
@@ -352,8 +271,101 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
   function removeSelected() {
     if (selected === null) return
-    updateDraft((d) => ({ ...d, placedItems: d.placedItems.filter((_, i) => i !== selected) }))
+    updateDraft((d) => {
+      const removed = d.placedItems[selected]
+      let placedItems = d.placedItems.filter((_, i) => i !== selected)
+      // Tirar uma SUPERFÍCIE derruba os filhos junto (voltam pro tray) quando não sobra
+      // outra instância do mesmo móvel — senão o save descartaria os órfãos em silêncio.
+      if (removed && !removed.on) {
+        const stillPlaced = placedItems.some((p) => !p.on && p.itemId === removed.itemId)
+        if (!stillPlaced && placedItems.some((p) => p.on === removed.itemId)) {
+          placedItems = placedItems.filter((p) => p.on !== removed.itemId)
+          toast('O que estava em cima voltou para a bandeja! 🧺')
+        }
+      }
+      return { ...d, placedItems }
+    })
     setSelected(null)
+    setStackPicker(false)
+  }
+
+  // ── Superfícies (24/07): colocar a peça stackable selecionada num nicho / descer ────
+  /** Superfícies POSICIONADAS com nicho livre (1ª instância de cada itemId). */
+  function surfaceOptions(): { itemId: string; free: number }[] {
+    const current = draftRef.current
+    const seen = new Set<string>()
+    const out: { itemId: string; free: number }[] = []
+    for (const p of current.placedItems) {
+      if (p.on) continue
+      const info = ROOM_ITEM_INFO[p.itemId]
+      if (!info?.surface || seen.has(p.itemId)) continue
+      seen.add(p.itemId)
+      const used = current.placedItems.filter((c) => c.on === p.itemId).length
+      if (used < info.surface) out.push({ itemId: p.itemId, free: info.surface - used })
+    }
+    return out
+  }
+
+  /** 1º nicho livre do pai (por itemId — os nichos são da superfície, não da instância). */
+  function firstFreeSlot(current: RoomStateView, parentId: string): number | null {
+    const parentInfo = ROOM_ITEM_INFO[parentId]
+    const taken = new Set(current.placedItems.filter((c) => c.on === parentId).map((c) => c.slot))
+    for (let s = 0; s < (parentInfo?.surface ?? 0); s++) {
+      if (!taken.has(s)) return s
+    }
+    return null
+  }
+
+  /** Coloca um item NOVO (vindo do tray) direto num nicho livre do pai. */
+  function placeOnSurfaceAsNew(itemId: string, parentId: string): boolean {
+    const slot = firstFreeSlot(draftRef.current, parentId)
+    if (slot === null) return false
+    updateDraft((d) => ({
+      ...d,
+      placedItems: [...d.placedItems, { itemId, x: 0, y: 0, on: parentId, slot }],
+    }))
+    return true
+  }
+
+  function placeOnSurface(parentId: string) {
+    if (selected === null) return
+    const current = draftRef.current
+    const it = current.placedItems[selected]
+    const info = it && ROOM_ITEM_INFO[it.itemId]
+    if (!it || !info?.stackable) return
+    const slot = firstFreeSlot(current, parentId)
+    if (slot === null) {
+      toast('Essa superfície está cheia! 🧺')
+      return
+    }
+    updateDraft((d) => ({
+      ...d,
+      placedItems: d.placedItems.map((p, i) =>
+        i === selected ? { itemId: p.itemId, x: 0, y: 0, on: parentId, slot: slot as number } : p,
+      ),
+    }))
+    setStackPicker(false)
+    toast.success(`${info.labelPt} em cima! ✨`)
+  }
+
+  /** Tira o filho do nicho e devolve ao 1º vão livre do chão. */
+  function bringDown() {
+    if (selected === null) return
+    const current = draftRef.current
+    const it = current.placedItems[selected]
+    const info = it && ROOM_ITEM_INFO[it.itemId]
+    if (!it?.on || !info) return
+    const s = freeFloorSpot(current.placedItems, info.w, info.h)
+    if (!s) {
+      toast('Não cabe mais nada no chão! 🧹')
+      return
+    }
+    updateDraft((d) => ({
+      ...d,
+      placedItems: d.placedItems.map((p, i) =>
+        i === selected ? { itemId: p.itemId, x: s.x, y: s.y } : p,
+      ),
+    }))
   }
 
   // Movimento por TECLADO da peça selecionada (a11y: arrastar no plano 3D não é alcançável por
@@ -362,7 +374,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (selected === null) return
     const current = draftRef.current
     const it = current.placedItems[selected]
-    if (!it) return
+    if (!it || it.on) return // filho em nicho não anda — "Descer" primeiro
     const info = ROOM_ITEM_INFO[it.itemId]
     if (!info) return
     if (info.mount === 'wall') {
@@ -390,7 +402,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (selected === null) return
     const current = draftRef.current
     const it = current.placedItems[selected]
-    if (!it) return
+    if (!it || it.on) return // filho em nicho não gira
     const info = ROOM_ITEM_INFO[it.itemId]
     if (!info || info.mount === 'wall') return // item de parede não gira
     const rot = (((it.rot ?? 0) + 1) % 4) as Rot
@@ -402,7 +414,9 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     const collides = current.placedItems.some((p, i) => {
       if (i === selected) return false
       const inf = ROOM_ITEM_INFO[p.itemId]
-      if (!inf || inf.mount === 'wall') return false
+      // Filho em nicho (x/y=0 fantasmas) não ocupa chão — sem este guard, girar
+      // perto do canto (0,0) travava com falso "sem espaço".
+      if (!inf || inf.mount === 'wall' || p.on) return false
       const ofp = effectiveFootprint(inf.w, inf.h, (p.rot ?? 0) as Rot)
       return rectsOverlap(x, y, fp.w, fp.h, p.x, p.y, ofp.w, ofp.h)
     })
@@ -506,7 +520,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
             mode="edit"
             avatarPhotoUrl={avatarPhotoUrl}
             selectedIndex={selected}
-            onSelect={setSelected}
+            onSelect={selectPiece}
             onMove={moveItem}
             onPaintWall={paintWall}
             paintColor={paintColor}
@@ -532,25 +546,91 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         )}
         {selected !== null ? (
           <div className="absolute top-2 right-2 flex gap-2">
-            {ROOM_ITEM_INFO[draft.placedItems[selected]?.itemId ?? '']?.mount !== 'wall' ? (
-              <button
-                type="button"
-                onClick={rotateSelected}
-                className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
-              >
-                <RotateCw className="size-3.5" /> Girar
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={removeSelected}
-              className="inline-flex min-h-11 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-2.5 font-bold text-(--sz-hot-fg) text-xs shadow"
-            >
-              <Trash2 className="size-3.5" /> Tirar
-            </button>
+            {(() => {
+              const sel = draft.placedItems[selected]
+              const selInfo = ROOM_ITEM_INFO[sel?.itemId ?? '']
+              const isChild = Boolean(sel?.on)
+              return (
+                <>
+                  {isChild ? (
+                    <button
+                      type="button"
+                      onClick={bringDown}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+                    >
+                      <ArrowDownToLine className="size-3.5" /> Descer
+                    </button>
+                  ) : (
+                    <>
+                      {selInfo?.stackable && surfaceOptions().length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setStackPicker((v) => !v)}
+                          aria-expanded={stackPicker}
+                          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+                        >
+                          <ArrowUpToLine className="size-3.5" /> Em cima…
+                        </button>
+                      ) : null}
+                      {selInfo?.mount !== 'wall' ? (
+                        <button
+                          type="button"
+                          onClick={rotateSelected}
+                          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+                        >
+                          <RotateCw className="size-3.5" /> Girar
+                        </button>
+                      ) : null}
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={removeSelected}
+                    className="inline-flex min-h-11 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-2.5 font-bold text-(--sz-hot-fg) text-xs shadow"
+                  >
+                    <Trash2 className="size-3.5" /> Tirar
+                  </button>
+                </>
+              )
+            })()}
           </div>
         ) : null}
       </div>
+
+      {/* Lista "Colocar em cima de…" — superfícies posicionadas com nicho livre (24/07). */}
+      {selected !== null && stackPicker ? (
+        <div
+          role="group"
+          aria-label="Colocar em cima de qual superfície?"
+          className="flex flex-wrap items-center gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+        >
+          <p className="font-semibold text-sm">Colocar em cima de:</p>
+          {surfaceOptions().map((opt) => {
+            const info = ROOM_ITEM_INFO[opt.itemId]
+            return (
+              <button
+                key={opt.itemId}
+                type="button"
+                onClick={() => placeOnSurface(opt.itemId)}
+                className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-border bg-card px-3 font-semibold text-xs"
+              >
+                <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
+                {info?.labelPt ?? opt.itemId}
+                <span className="text-muted-foreground">
+                  ({opt.free} {opt.free === 1 ? 'vaga' : 'vagas'})
+                </span>
+              </button>
+            )
+          })}
+          <button
+            type="button"
+            onClick={() => setStackPicker(false)}
+            className="inline-flex min-h-11 items-center rounded-full px-3 font-semibold text-muted-foreground text-xs"
+          >
+            Cancelar
+          </button>
+        </div>
+      ) : null}
 
       {/* Lista das peças no quarto — caminho de TECLADO p/ posicionar (arrastar no 3D não é
           alcançável por teclado): escolha uma e mova com as setas (R gira, Delete tira). */}
@@ -562,12 +642,13 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         >
           {draft.placedItems.map((p, i) => {
             const inf = ROOM_ITEM_INFO[p.itemId]
+            const parentInf = p.on ? ROOM_ITEM_INFO[p.on] : null
             return (
               <button
                 // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade.
                 key={i}
                 type="button"
-                onClick={() => setSelected(selected === i ? null : i)}
+                onClick={() => selectPiece(selected === i ? null : i)}
                 aria-pressed={selected === i}
                 className={cn(
                   'inline-flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1.5 font-semibold text-xs',
@@ -576,6 +657,9 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
               >
                 <span aria-hidden="true">{inf?.emoji ?? '📦'}</span>
                 {inf?.labelPt ?? p.itemId}
+                {parentInf ? (
+                  <span className="text-muted-foreground">· na {parentInf.labelPt}</span>
+                ) : null}
               </button>
             )
           })}
@@ -792,247 +876,4 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       />
     )
   }
-}
-
-function ShopGrid({
-  items,
-  owned,
-  busy,
-  confirmingId,
-  onPick,
-  onBuy,
-}: {
-  items: RoomItemView[]
-  owned: (id: string) => boolean
-  busy: string | null
-  confirmingId: string | null
-  onPick: (item: RoomItemView) => void
-  onBuy: (id: string) => void
-}) {
-  if (items.length === 0) return <Empty />
-  return (
-    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-      {items.map((it) => {
-        const info = ROOM_ITEM_INFO[it.id]
-        if (!info) return null
-        const locked = !owned(it.id)
-        return (
-          <button
-            key={it.id}
-            type="button"
-            disabled={!!busy && locked}
-            onClick={() => (locked ? onBuy(it.id) : onPick(it))}
-            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border p-2 text-xs transition-colors hover:border-primary disabled:opacity-60"
-          >
-            <span className="text-2xl" aria-hidden="true">
-              {info.emoji}
-            </span>
-            <span className="truncate font-semibold">{info.labelPt}</span>
-            {locked ? <PriceChip price={it.price} confirming={confirmingId === it.id} /> : null}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-/**
- * Bandeja 🏆 dos troféus (07/2026): ganhos por CONQUISTA, nunca comprados. Ganho =
- * posicionável como qualquer enfeite; travado = cadeado + a DICA de como ganhar
- * (TROPHY_HINT) no lugar do preço.
- */
-function TrophyTray({
-  trophies,
-  owned,
-  onPick,
-}: {
-  trophies: RoomItemView[]
-  owned: (id: string) => boolean
-  onPick: (item: RoomItemView) => void
-}) {
-  if (trophies.length === 0) return <Empty />
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="font-semibold text-muted-foreground text-sm">
-        Suas conquistas viram troféus de verdade no quarto! 🏆
-      </p>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {trophies.map((t) => {
-          const info = ROOM_ITEM_INFO[t.id]
-          if (!info) return null
-          const has = owned(t.id)
-          return has ? (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onPick(t)}
-              className="flex flex-col items-center gap-1 rounded-2xl border-2 border-(--kids-lime) bg-(--kids-lime-tint) p-2 text-xs transition-colors hover:border-primary"
-            >
-              <span className="text-2xl" aria-hidden="true">
-                {info.emoji}
-              </span>
-              <span className="truncate font-semibold">{info.labelPt}</span>
-              <span className="text-muted-foreground">Conquistado!</span>
-            </button>
-          ) : (
-            <div
-              key={t.id}
-              className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border border-dashed p-2 text-center text-xs opacity-80"
-            >
-              <span className="grid size-8 place-items-center" aria-hidden="true">
-                <Lock className="size-5 text-muted-foreground" />
-              </span>
-              <span className="truncate font-semibold">{info.labelPt}</span>
-              <span className="text-muted-foreground">
-                {TROPHY_HINT[t.id] ?? 'Continue criando!'}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-/** Preço do item travado; quando a confirmação está armada vira "Comprar?" em destaque. */
-function PriceChip({ price, confirming }: { price: number; confirming: boolean }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-0.5',
-        confirming
-          ? 'rounded-full bg-primary px-1.5 py-0.5 font-bold text-primary-foreground'
-          : 'text-muted-foreground',
-      )}
-    >
-      <Lock className="size-3" /> {confirming ? `Comprar? ${price}` : price}
-    </span>
-  )
-}
-
-function ChoiceGrid({
-  choices,
-  activeId,
-  busy,
-  confirmingId,
-  onApply,
-  onBuy,
-  label,
-  preview,
-}: {
-  choices: RoomThemeView[]
-  activeId: string
-  busy: string | null
-  confirmingId: string | null
-  onApply: (id: string) => void
-  onBuy: (id: string) => void
-  label: (id: string) => string
-  preview: (id: string) => React.ReactNode
-}) {
-  return (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-      {choices.map((c) => (
-        <button
-          key={c.id}
-          type="button"
-          disabled={!!busy && c.locked}
-          onClick={() => (c.locked ? onBuy(c.id) : onApply(c.id))}
-          className={cn(
-            'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs transition-colors',
-            activeId === c.id ? 'border-primary' : 'border-border',
-          )}
-        >
-          {preview(c.id)}
-          <span className="truncate font-semibold">{label(c.id)}</span>
-          {c.locked ? <PriceChip price={c.price} confirming={confirmingId === c.id} /> : null}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function WallTray({ brush, onPick }: { brush: string; onPick: (hex: string) => void }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="font-semibold text-muted-foreground text-sm">
-        Escolha uma cor e toque numa parede 🖌️
-      </p>
-      <div className="grid grid-cols-6 gap-2 sm:grid-cols-9">
-        {ROOM_WALL_PALETTE.map((c) => (
-          <button
-            key={c.hex}
-            type="button"
-            aria-label={`Pintar de ${c.labelPt}`}
-            aria-pressed={brush === c.hex}
-            onClick={() => onPick(c.hex)}
-            className={cn(
-              'aspect-square rounded-full border-2 transition-transform hover:scale-110',
-              brush === c.hex ? 'border-foreground ring-2 ring-primary' : 'border-border',
-            )}
-            style={{ background: c.hex }}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function PetTray({
-  pets,
-  current,
-  busy,
-  confirmingId,
-  onPick,
-  onBuy,
-}: {
-  pets: RoomItemView[]
-  current: string | null
-  busy: string | null
-  confirmingId: string | null
-  onPick: (id: string | null) => void
-  onBuy: (id: string) => void
-}) {
-  return (
-    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-      <button
-        type="button"
-        onClick={() => onPick(null)}
-        className={cn(
-          'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs',
-          current === null ? 'border-primary' : 'border-border',
-        )}
-      >
-        <span className="text-2xl" aria-hidden="true">
-          🚫
-        </span>
-        <span className="font-semibold">Nenhum</span>
-      </button>
-      {pets.map((p) => {
-        const info = ROOM_ITEM_INFO[p.id]
-        if (!info) return null
-        return (
-          <button
-            key={p.id}
-            type="button"
-            disabled={!!busy && p.locked}
-            onClick={() => (p.locked ? onBuy(p.id) : onPick(p.id))}
-            className={cn(
-              'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs',
-              current === p.id ? 'border-primary' : 'border-border',
-            )}
-          >
-            <span className="text-2xl" aria-hidden="true">
-              {info.emoji}
-            </span>
-            <span className="font-semibold">{info.labelPt}</span>
-            {p.locked ? <PriceChip price={p.price} confirming={confirmingId === p.id} /> : null}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-function Empty() {
-  return <p className="py-4 text-center text-muted-foreground text-sm">Nada por aqui ainda.</p>
 }

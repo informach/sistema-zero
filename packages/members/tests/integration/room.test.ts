@@ -99,4 +99,32 @@ describe('Quarto — compra e montagem', () => {
     )
     expect(saved.theme).toBe('aconchego')
   })
+
+  test('superfícies (24/07): `on`/`slot` SOBREVIVEM à borda HTTP (round-trip completo)', async () => {
+    // Regressão do normalize do Elysia: campo fora do DTO é REMOVIDO — sem `on`/`slot`
+    // no RoomStateBody o filho virava item de chão em (0,0) e a colocação se perdia.
+    const { app } = buildApp()
+    const saved = await readJson(
+      await saveRoom(app, {
+        theme: 'aconchego',
+        placedItems: [
+          { itemId: 'mesa', x: 4, y: 4 },
+          { itemId: 'bola', x: 0, y: 0, on: 'mesa', slot: 1 },
+        ],
+        pet: null,
+      }),
+    )
+    expect(saved.placedItems).toEqual([
+      { itemId: 'mesa', x: 4, y: 4 },
+      { itemId: 'bola', x: 0, y: 0, on: 'mesa', slot: 1 },
+    ])
+    const after = await readJson(await getRoom(app))
+    expect(after.state.placedItems).toContainEqual({
+      itemId: 'bola',
+      x: 0,
+      y: 0,
+      on: 'mesa',
+      slot: 1,
+    })
+  })
 })

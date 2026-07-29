@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { JSStatement, SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -46,7 +47,7 @@ function fromIR(js: JSStatement[]): { code: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      code: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      code: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -69,15 +70,20 @@ describe('Canvas 3D — macro Partículas ✨ (bloco sz_t3d_particles)', () => {
     const code = generateJS({
       statements: [{ type: 'importStar', name: 'THREE', module: 'three' }, particles],
     })
-    expect(code).toContain('const estrelasPos = [];')
-    expect(code).toContain('for (let i = 0; i < 500; i++) {')
-    expect(code).toContain('estrelasPos.push((Math.random() - 0.5) * 20);')
-    expect(code).toContain('const estrelasGeo = new THREE.BufferGeometry();')
     expect(code).toContain(
-      'estrelasGeo.setAttribute("position", new THREE.Float32BufferAttribute(estrelasPos, 3));',
+      'const estrelasQuantidade = Math.max(0, Math.min(20000, Math.round(Number(500) || 0)));',
+    )
+    expect(code).toContain('const estrelasPosicoes = [];')
+    expect(code).toContain(
+      'for (let estrelasIndice = 0; estrelasIndice < estrelasQuantidade; estrelasIndice++) {',
+    )
+    expect(code).toContain('estrelasPosicoes.push((Math.random() - 0.5) * estrelasArea);')
+    expect(code).toContain('const estrelasGeometria = new THREE.BufferGeometry();')
+    expect(code).toContain(
+      'estrelasGeometria.setAttribute("position", new THREE.Float32BufferAttribute(estrelasPosicoes, 3));',
     )
     expect(code).toContain(
-      'const estrelas = new THREE.Points(estrelasGeo, new THREE.PointsMaterial({ color: "#ffffff", size: 0.1, sizeAttenuation: true }));',
+      'const estrelas = new THREE.Points(estrelasGeometria, new THREE.PointsMaterial({ color: "#ffffff", size: estrelasTamanho, sizeAttenuation: true }));',
     )
     expect(code).toContain('scene.add(estrelas);')
   })

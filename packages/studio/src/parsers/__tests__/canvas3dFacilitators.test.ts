@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -37,10 +38,14 @@ const SCENE = [
   'cube.castShadow = true;',
   'cube.receiveShadow = false;',
   'cube.visible = true;',
+  'mat.wireframe = false;',
   'scene.add(cube);',
   'const light = new THREE.DirectionalLight();',
   'light.intensity = 2;',
   'scene.add(light);',
+  'scene.add(new THREE.GridHelper(10, 10));',
+  'scene.add(new THREE.AxesHelper(5));',
+  'const total = scene.children.length;',
   'function animate() {',
   '  cube.rotation.y += 0.01;',
   '  renderer.render(scene, camera);',
@@ -65,10 +70,14 @@ const ALL_FACILITATORS = [
   'sz_t3d_set_intensity',
   'sz_t3d_rotate_axis',
   'sz_t3d_render',
+  'sz_t3d_set_wireframe',
+  'sz_t3d_debug_grid',
+  'sz_t3d_debug_axes',
+  'sz_t3d_object_count',
 ]
 
 describe('Canvas 3D — facilitadores (round-trip completo)', () => {
-  it('a cena inteira: 0 raw, usa os 14 blocos amigáveis e regenera o MESMO código', () => {
+  it('a cena inteira: 0 raw, usa todos os blocos amigáveis e regenera o MESMO código', () => {
     ensureBlocklyInitialized()
     const code = generateJS({ statements: parseJS(SCENE) }) // forma canônica
     // fixpoint textual do parser/gerador (independe do SCENE já ser canônico)
@@ -89,7 +98,7 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = buildIRFromWorkspace(ws).js
+      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
       // fidelidade = o CÓDIGO gerado dos blocos amigáveis é idêntico ao real
       expect(generateJS({ statements: rebuilt })).toBe(code)
     } finally {
@@ -109,7 +118,7 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const out = generateJS({ statements: buildIRFromWorkspace(ws).js })
+      const out = generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) })
       // Formas CANÔNICAS do gerador (o += vira a forma completa; cor com aspas duplas).
       expect(out).toContain('camera.position.set(0, 1, 5);')
       expect(out).toContain('cube.rotation.y = cube.rotation.y + 0.01;')
@@ -136,15 +145,16 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      expect(generateJS({ statements: buildIRFromWorkspace(ws).js })).toBe(code)
+      expect(generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) })).toBe(code)
     } finally {
       ws.dispose()
     }
   })
 
-  it('folio: névoa + câmera que segue + floresta instanciada (round-trip amigável)', () => {
+  it('folio: névoa + câmera que segue + floresta instanciada preservam a semântica', () => {
     ensureBlocklyInitialized()
-    // As 4 técnicas do folio que ganharam facilitador na etapa E.
+    // O lerp legado sem delta continua genérico para não ganhar uma semântica
+    // dependente de tempo apenas por ter atravessado a Ponte.
     const src = [
       "import * as THREE from 'three';",
       'const scene = new THREE.Scene();',
@@ -169,25 +179,22 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
 
     const state = buildWorkspaceStateFromIR({ html: [], css: [], js: ir, extensions: [] })
     const json = JSON.stringify(state)
-    for (const type of [
-      'sz_t3d_set_fog',
-      'sz_t3d_lerp_position',
-      'sz_t3d_set_matrix_at',
-      'sz_t3d_instances_dirty',
-    ]) {
+    for (const type of ['sz_t3d_set_fog', 'sz_t3d_set_matrix_at', 'sz_t3d_instances_dirty']) {
       expect(json).toContain(`"${type}"`)
     }
+    expect(json).toContain('"sz_js_method_on"')
+    expect(json).not.toContain('"sz_t3d_lerp_position"')
 
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      expect(generateJS({ statements: buildIRFromWorkspace(ws).js })).toBe(code)
+      expect(generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) })).toBe(code)
     } finally {
       ws.dispose()
     }
   })
 
-  it('GATE: projeto SEM three NÃO vira bloco 3D (Set.add, .visible ficam genéricos)', () => {
+  it('GATE: projeto SEM three NÃO vira bloco 3D (.add, .visible, .load e .traverse)', () => {
     ensureBlocklyInitialized()
     // Mesmas FORMAS que os facilitadores reconhecem, mas sem importar three.
     const src = [
@@ -195,6 +202,13 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
       'time.add(jogador);',
       'const caixa = document.getElementById("c");',
       'caixa.visible = false;',
+      'const dados = new DadosLoader();',
+      'dados.load("dados.json", (resultado) => {',
+      '  console.log(resultado);',
+      '});',
+      'arvore.traverse((item) => {',
+      '  console.log(item);',
+      '});',
     ].join('\n')
     const state = buildWorkspaceStateFromIR({
       html: [],
@@ -207,5 +221,78 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     // continuam nos blocos genéricos
     expect(json).toContain('"sz_js_method_on"') // time.add(jogador)
     expect(json).toContain('"sz_js_member_set"') // caixa.visible = false
+    expect(json).not.toContain('"sz_t3d_load_model"')
+    expect(json).not.toContain('"sz_t3d_traverse"')
+  })
+
+  it('não toma métodos de objetos comuns só porque o mesmo projeto usa Three.js', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      'const cena = new THREE.Scene();',
+      'const itens = new Set();',
+      "itens.add('moeda');",
+      'const estado = { visible: false };',
+      'estado.visible = true;',
+    ].join('\n')
+
+    const json = JSON.stringify(
+      buildWorkspaceStateFromIR({ html: [], css: [], js: parseJS(src), extensions: [] }),
+    )
+
+    expect(json).toContain('"sz_js_method_on"')
+    expect(json).toContain('"sz_js_member_set"')
+    expect(json).not.toContain('"sz_t3d_add_to"')
+    expect(json).not.toContain('"sz_t3d_set_visible"')
+  })
+
+  it('reconhece facilitadores aninhados e respeita shadowing léxico', () => {
+    const ir: SZIR = {
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        {
+          type: 'event',
+          target: 'document',
+          event: 'click',
+          body: [
+            { type: 'threeSceneSetup', scene: 'cena' },
+            {
+              type: 'newInstance',
+              varName: 'grupo',
+              namespace: 'THREE',
+              className: 'Group',
+              args: [],
+            },
+            {
+              type: 'memberCall',
+              object: { type: 'var', name: 'cena' },
+              method: 'add',
+              args: [{ type: 'var', name: 'grupo' }],
+            },
+          ],
+        },
+        { type: 'threeSceneSetup', scene: 'alvo' },
+        {
+          type: 'event',
+          target: 'document',
+          event: 'click',
+          body: [
+            { type: 'var', name: 'alvo', value: { type: 'num', value: 1 } },
+            {
+              type: 'memberSet',
+              object: { type: 'var', name: 'alvo' },
+              name: 'visible',
+              value: { type: 'bool', value: true },
+            },
+          ],
+        },
+      ],
+    }
+
+    const json = JSON.stringify(buildWorkspaceStateFromIR(ir))
+    expect(json).toContain('"sz_t3d_add_to"')
+    expect(json).toContain('"sz_js_member_set"')
+    expect(json).not.toContain('"sz_t3d_set_visible"')
   })
 })

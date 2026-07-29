@@ -81,10 +81,11 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Lê uma propriedade só se o objeto existir (não estoura se ele for nada). Vira objeto?.propriedade.',
+      'Lê uma propriedade somente se o objeto existir, sem parar o programa quando ele for vazio.',
   },
   {
     type: 'sz_js_member_set',
+    placement: 'command',
     message0: 'em %1 definir propriedade %2 = %3',
     args0: [
       { type: 'input_value', name: 'OBJ', check: 'JSValue' },
@@ -99,6 +100,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_index_set',
+    placement: 'command',
     message0: 'definir item %1 de %2 como %3',
     args0: [
       { type: 'input_value', name: 'INDEX', check: 'JSValue' },
@@ -126,6 +128,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_method_on',
+    placement: 'command',
     message0: 'de %1 chamar método %2',
     args0: [
       { type: 'input_value', name: 'OBJ', check: 'JSValue' },

@@ -131,9 +131,12 @@ const nextConfig: NextConfig = {
     return [
       // Comuns a tudo (sem CSP; COOP/CORP/etc.).
       { source: '/:path*', headers: securityHeaders },
-      // CSP ESTRITA em tudo, EXCETO a rota isolada do modo Código.
+      // CSP ESTRITA em tudo, EXCETO a rota isolada do modo Código. O lookahead é
+      // ancorado em `estudio/pro/` (com barra): uma rota IRMÃ futura de prefixo
+      // parecido (ex.: `/estudio/professor`) recebe a CSP estrita normalmente, em
+      // vez de ficar SEM CSP (não casaria nem esta regra nem a `/estudio/pro/:path*`).
       {
-        source: '/((?!estudio/pro).*)',
+        source: '/((?!estudio/pro/).*)',
         headers: [{ key: 'Content-Security-Policy', value: strictCsp }],
       },
       // Rota isolada do modo Código (PRO/WebContainer): CSP relaxada (WASM) + COEP

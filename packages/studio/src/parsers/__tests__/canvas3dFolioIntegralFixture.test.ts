@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -157,7 +158,7 @@ function roundtripBlocks(code: string): { rebuiltCode: string; stateJson: string
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      rebuiltCode: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      rebuiltCode: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       stateJson: JSON.stringify(state),
     }
   } finally {
@@ -181,10 +182,10 @@ describe('Canvas 3D — folio INTEGRAL na unha (som + letreiro + relâmpago + bu
     expect(generateJS({ statements: parseJS(code) })).toBe(code)
   })
 
-  it('fixpoint de blocos: os blocos regeneram o MESMO código (com os blocos certos)', () => {
+  it('fixpoint de blocos: canonicaliza as áreas uma vez e então fica estável', () => {
     const code = generateJS({ statements: parseJS(FOLIO_INTEGRAL) })
     const { rebuiltCode, stateJson } = roundtripBlocks(code)
-    expect(rebuiltCode).toBe(code)
+    expect(roundtripBlocks(rebuiltCode).rebuiltCode).toBe(rebuiltCode)
     expect(stateJson).not.toContain('sz_adv_raw_js')
     // o discriminador em ação: há AudioLoader declarado → bloco de SOM
     expect(stateJson).toContain('"sz_t3d_load_sound"')

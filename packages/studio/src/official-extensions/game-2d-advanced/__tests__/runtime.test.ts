@@ -19,14 +19,24 @@ const fakeCtx = {
     ctxCalls.push(['fillRect', a])
   },
   strokeRect() {},
-  drawImage() {},
+  drawImage(...a: unknown[]) {
+    ctxCalls.push([
+      'drawImage',
+      a.slice(1).map((value) => (typeof value === 'number' ? value : Number.NaN)),
+    ])
+  },
   beginPath() {},
+  closePath() {},
   moveTo() {},
   lineTo() {},
   stroke() {},
-  arc() {},
+  arc(...a: number[]) {
+    ctxCalls.push(['arc', a])
+  },
   fill() {},
-  fillText() {},
+  fillText(...a: number[]) {
+    ctxCalls.push(['fillText', a])
+  },
   save() {
     ctxCalls.push(['save', []])
   },
@@ -63,6 +73,7 @@ type Fn = (...args: unknown[]) => unknown
 /** A superfície pública do runtime (1 método por bloco) — tipagem nomeada p/ o
  * noUncheckedIndexedAccess não reclamar de cada chamada. */
 interface GameKitApi {
+  runProject: Fn
   setup: Fn
   setupFull: Fn
   start: Fn
@@ -76,6 +87,8 @@ interface GameKitApi {
   showScreen: Fn
   hideScreens: Fn
   setState: Fn
+  restartGame: Fn
+  onGameStart: Fn
   onEnterState: Fn
   stateIs: Fn
   state: Fn
@@ -139,6 +152,11 @@ interface GameKitApi {
   // R2
   setSheet: Fn
   playAnim: Fn
+  playAnimOnce: Fn
+  animEnded: Fn
+  setEntityState: Fn
+  stateAnim: Fn
+  autoAnimate: Fn
   cameraFollow: Fn
   cameraFollowMap: Fn
   cameraStop: Fn
@@ -150,6 +168,8 @@ interface GameKitApi {
   setAngle: Fn
   mouseX: Fn
   mouseY: Fn
+  mouseScreenX: Fn
+  mouseScreenY: Fn
   mouseDown: Fn
   onGameClick: Fn
   drawBar: Fn
@@ -169,9 +189,9 @@ interface GameKitApi {
   rpgDrawInventory: Fn
   rpgGoMap: Fn
   rpgSetStartMap: Fn
-  rpgOnMap: Fn
+  rpgCreateMap: Fn
+  rpgOnEnterMap: Fn
   rpgCreateDoor: Fn
-  rpgMapSize: Fn
   rpgConnectEdge: Fn
   rpgCurrentMap: Fn
   rpgBattleStats: Fn
@@ -277,6 +297,7 @@ interface GameKitApi {
   boardCount: Fn
   boardIn: Fn
   everySeconds: Fn
+  waitThen: Fn
   cooldownReady: Fn
   tileAt: Fn
   setTileAt: Fn
@@ -309,6 +330,9 @@ interface GameKitApi {
   pkmBattleTrainer: Fn
   pkmTrainerCreature: Fn
   pkmCaught: Fn
+  // 🥊 Kit Luta
+  lutaMatch: Fn
+  lutaDrawHud: Fn
   // R15 — primitivos gerais
   defineRegion: Fn
   isInside: Fn
@@ -382,6 +406,7 @@ interface GameKitApi {
 
 interface Harness {
   api: GameKitApi
+  inspectors: Record<string, () => unknown>
   listeners: Record<string, Listener[]>
   fire: (name: string, ev?: unknown) => void
   clock: { value: number }
@@ -414,13 +439,15 @@ function fakeTilemapAsset(
   }
 }
 
-function loadRuntime(assetMeta?: unknown): Harness {
+function loadRuntime(assetMeta?: unknown, windowOverrides: Record<string, unknown> = {}): Harness {
   const listeners: Record<string, Listener[]> = {}
   const clock = { value: 0 }
   const rafQueue: Array<(ts: number) => void> = []
   const store = new Map<string, string>()
+  const inspectors: Record<string, () => unknown> = {}
   const win = {
     __SZGAME_ASSET_META: assetMeta,
+    __SZSTUDIO_RUNTIME_INSPECTORS: inspectors,
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
       listeners[name].push(fn)
@@ -440,6 +467,7 @@ function loadRuntime(assetMeta?: unknown): Harness {
       },
     },
     SZGameKit: undefined,
+    ...windowOverrides,
   } as unknown as Record<string, unknown>
   const raf = (cb: (ts: number) => void) => {
     rafQueue.push(cb)
@@ -450,6 +478,7 @@ function loadRuntime(assetMeta?: unknown): Harness {
   if (!api) throw new Error('runtime não montou window.SZGameKit')
   return {
     api,
+    inspectors,
     listeners,
     fire: (name, ev = {}) => {
       for (const fn of listeners[name] ?? []) fn(ev)
@@ -500,9 +529,9 @@ interface BattleSnap {
   allies: BattlerSnap[]
   foes: BattlerSnap[]
 }
-/** Espelho só-leitura da batalha (hook não-enumerável `_battle`), ou null fora dela. */
+/** Espelho só-leitura registrado no canal de diagnóstico do host. */
 function battleSnap(h: Harness): BattleSnap | null {
-  return (h.api as unknown as { _battle: () => BattleSnap | null })._battle()
+  return (h.inspectors['game-2d-advanced:battle']?.() as BattleSnap | null | undefined) ?? null
 }
 
 /**
@@ -570,8 +599,8 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 334 métodos (spawn_named reusa spawnFromMold)', () => {
-    const { api } = loadRuntime()
+  it('expõe os 336 métodos (spawn_named reusa spawnFromMold)', () => {
+    const { api, inspectors } = loadRuntime()
     const expected = [
       // v1 (33)
       'setup',
@@ -587,6 +616,8 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'showScreen',
       'hideScreens',
       'setState',
+      'restartGame',
+      'onGameStart',
       'onEnterState',
       'stateIs',
       'state',
@@ -647,7 +678,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'stopSpawner',
       'isInvincible',
       'keyPressed',
-      // R2 (15): animação de folha, câmera+HUD, velocidade/tiro, mouse, giro, barra
+      // R2 (17): animação de folha, câmera+HUD, velocidade/tiro, mouse, giro, barra
       'setSheet',
       'playAnim',
       'cameraFollow',
@@ -661,6 +692,8 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'setAngle',
       'mouseX',
       'mouseY',
+      'mouseScreenX',
+      'mouseScreenY',
       'mouseDown',
       'onGameClick',
       'drawBar',
@@ -680,10 +713,10 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgDrawInventory',
       'rpgGoMap',
       'rpgSetStartMap',
-      'rpgOnMap',
+      'rpgCreateMap',
+      'rpgOnEnterMap',
       'rpgCreateDoor',
-      // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas + nome do mapa
-      'rpgMapSize',
+      // 🌍 Mundo aberto: bordas ligadas + nome do mapa
       'rpgConnectEdge',
       'rpgCurrentMap',
       'rpgBattleStats',
@@ -953,6 +986,9 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')
     expect(Object.keys(api).length).toBe(expected.length)
+    expect((api as unknown as Record<string, unknown>)._battle).toBeUndefined()
+    expect(typeof inspectors['game-2d-advanced:battle']).toBe('function')
+    expect(typeof inspectors['game-2d-advanced:rpg']).toBe('function')
   })
 
   it('setup muda a resolução interna e o personagem nasce centrado nela', () => {
@@ -968,6 +1004,28 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
     expect(c.x).toBe((960 - 60) / 2)
     expect(c.y).toBe((540 - 40) / 2)
     expect(c.speedMultiplier).toBe(1)
+  })
+
+  it('repete uma animação única depois de passar por um estado sem visual declarado', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const personagem = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+    h.api.stateAnim(personagem, 'golpe', 2, 4, 10, true)
+
+    h.api.setEntityState(personagem, 'golpe', 0.3)
+    h.api.autoAnimate(personagem)
+    const primeiroInicio = Number(personagem._animStart)
+
+    for (let quadro = 1; quadro <= 5; quadro++) h.nextFrame(quadro * 100)
+    h.api.autoAnimate(personagem)
+    expect(personagem._animState).toBeUndefined()
+
+    h.api.setEntityState(personagem, 'golpe', 0.3)
+    h.api.autoAnimate(personagem)
+
+    expect(Number(personagem._animStart)).toBeGreaterThan(primeiroInicio)
   })
 
   it('createCharacter preenche defaults do kit (64×64, 300 px/s, vida 100)', () => {
@@ -1074,6 +1132,138 @@ describe('SZGameKit — máquina de estados', () => {
     expect(api.stateIs('jogando')).toBe(false)
   })
 
+  it('estado personalizado preserva a partida; só restartGame começa outra', () => {
+    const { api } = loadRuntime()
+    const entradas: string[] = []
+    api.defineMold('moeda', {})
+    api.onEnterState('jogando', () => entradas.push('jogando'))
+
+    api.setState('jogando')
+    api.spawnFromMold('moeda', 10, 10)
+    api.setState('loja')
+    api.setState('jogando')
+
+    expect(api.countActive('moeda')).toBe(1)
+    expect(entradas).toEqual(['jogando', 'jogando'])
+
+    api.restartGame()
+    expect(api.countActive('moeda')).toBe(0)
+    expect(api.state()).toBe('jogando')
+    expect(entradas).toEqual(['jogando', 'jogando', 'jogando'])
+  })
+
+  it('onGameStart roda somente ao começar/recomeçar, nunca ao voltar de loja', () => {
+    const { api } = loadRuntime()
+    let partidas = 0
+    api.onGameStart(() => {
+      partidas += 1
+    })
+
+    api.restartGame()
+    api.setState('loja')
+    api.setState('jogando')
+    expect(partidas).toBe(1)
+
+    api.restartGame()
+    expect(partidas).toBe(2)
+  })
+
+  it('runProject cria escopo novo e não duplica eventos a cada nova partida', () => {
+    const { api } = loadRuntime()
+    const seen: number[] = []
+    const warnings: string[] = []
+    const realWarn = console.warn
+    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
+
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      runProject(() => {
+        let entradas = 0
+        api.rpgCreateMap('vila', 10, 8, () => {})
+        api.rpgSetStartMap('vila')
+        api.onEnterState('jogando', () => seen.push(++entradas))
+      })
+
+      api.restartGame()
+      api.restartGame()
+    } finally {
+      console.warn = realWarn
+    }
+    expect(seen).toEqual([1, 1])
+    expect(api.rpgCurrentMap()).toBe('vila')
+    expect(warnings).toEqual([])
+  })
+
+  it('runProject descarta callbacks de mapa da factory anterior antes de entrar no mapa inicial', () => {
+    const { api } = loadRuntime()
+    const generations: number[] = []
+    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
+    let generation = 0
+
+    runProject(() => {
+      const ownGeneration = ++generation
+      api.rpgCreateMap('vila', 10, 8, () => {})
+      api.rpgSetStartMap('vila')
+      api.rpgOnEnterMap('vila', () => generations.push(ownGeneration))
+    })
+
+    api.restartGame()
+    api.restartGame()
+
+    expect(generation).toBe(3)
+    expect(generations).toEqual([2, 3])
+  })
+
+  it('restart limpa a câmera ligada por um evento da partida anterior', () => {
+    const { api } = loadRuntime()
+    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
+    const heroes: Array<Record<string, number>> = []
+
+    runProject(() => {
+      const hero = api.createCharacter({ w: 40, h: 40 }) as Record<string, number>
+      heroes.push(hero)
+      api.on('ligar-camera', () => api.cameraFollow(hero, 2000, 1500))
+    })
+
+    api.placeCharacter(heroes[0], 1200, 800)
+    api.emit('ligar-camera')
+    expect([api.cameraX(), api.cameraY()]).toEqual([580, 460])
+
+    api.restartGame()
+
+    expect(heroes).toHaveLength(2)
+    expect([api.cameraX(), api.cameraY()]).toEqual([0, 0])
+  })
+
+  it('preserva o estado escolhido antes do boot para permitir jogo sem menu', async () => {
+    const h = loadRuntime()
+
+    h.api.setState('jogando')
+    await startGame(h)
+
+    expect(h.api.state()).toBe('jogando')
+  })
+
+  it('monta o mapa inicial ao iniciar direto no estado jogando', async () => {
+    const h = loadRuntime()
+    let entradas = 0
+
+    h.api.runProject(() => {
+      h.api.rpgCreateMap('vila', 10, 8, () => {})
+      h.api.rpgSetStartMap('vila')
+      h.api.rpgOnEnterMap('vila', () => {
+        entradas += 1
+      })
+      h.api.setState('jogando')
+    })
+
+    await startGame(h)
+
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgCurrentMap()).toBe('vila')
+    expect(entradas).toBe(1)
+  })
+
   it('pause só pausa jogando; resume só continua pausado; endGame vai ao fim', () => {
     const { api } = loadRuntime()
     api.pause() // no menu: não faz nada
@@ -1114,7 +1304,19 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     expect(h.api.state()).toBe('menu')
     const stage = document.querySelector('#szgk-stage')
     expect(stage).not.toBeNull()
-    expect(stage?.querySelector('#szgk-canvas')).not.toBeNull()
+    const canvas = stage?.querySelector('#szgk-canvas')
+    expect(canvas).not.toBeNull()
+    expect(canvas?.getAttribute('tabindex')).toBe('0')
+    expect(canvas?.getAttribute('aria-label')).toMatch(/jogo 2d/i)
+    const descriptionId = canvas?.getAttribute('aria-describedby')
+    expect(descriptionId).toBeTruthy()
+    expect(document.getElementById(descriptionId ?? '')?.textContent).toMatch(
+      /teclado|setas|espaço|mouse|toque/i,
+    )
+    const runtimeCss = document.querySelector('#szgk-style')?.textContent ?? ''
+    expect(runtimeCss).toContain('prefers-reduced-motion: reduce')
+    expect(runtimeCss).not.toContain('transition: all')
+    expect(runtimeCss).toContain('overflow: auto')
     const names = Array.from(stage?.querySelectorAll('[data-szgk-screen]') ?? []).map((el) =>
       el.getAttribute('data-szgk-screen'),
     )
@@ -1156,6 +1358,28 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     expect(clicked).toBe(1)
     expect(h.api.state()).toBe('menu')
     expect(vitoria?.classList.contains('szgk-active')).toBe(false)
+  })
+
+  it('restart substitui os botões autorais em vez de acumular closures antigas', () => {
+    const h = loadRuntime()
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    let generation = 0
+
+    runProject(() => {
+      const ownGeneration = ++generation
+      h.api.addButton('menu', `Extra ${ownGeneration}`, () => {})
+    })
+
+    const labels = () =>
+      Array.from(document.querySelectorAll('[data-szgk-screen="menu"] button')).map(
+        (button) => button.textContent,
+      )
+
+    expect(labels()).toEqual(['Jogar', 'Extra 1'])
+    h.api.restartGame()
+    expect(labels()).toEqual(['Jogar', 'Extra 2'])
+    h.api.restartGame()
+    expect(labels()).toEqual(['Jogar', 'Extra 3'])
   })
 
   it('🖼️ "pôr fundo na tela" pinta o painel de cor e é seguro sem imagem/tela', async () => {
@@ -1316,7 +1540,7 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     expect(h.api.state()).toBe('vitoria')
   })
 
-  it('faíscas: burst cria partículas; entrar em jogando reinicia a arena', async () => {
+  it('faíscas: burst cria partículas; começar nova partida reinicia a arena', async () => {
     const h = loadRuntime()
     h.api.defineMold('g', {})
     h.api.defineEffect('poeira', { count: 8 })
@@ -1326,9 +1550,9 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     expect(h.api.countActive('g')).toBe(1)
     h.api.burst('poeira', 50, 50)
     h.api.drawEffects() // move/desenha (com o ctx stub)
-    // Reentrar em jogando (Jogar de novo) zera pools e contadores.
+    // Começar nova partida (Jogar de novo) zera pools e contadores.
     h.api.setState('menu')
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.countActive('g')).toBe(0)
     expect(h.api.kills()).toBe(0)
   })
@@ -1357,7 +1581,7 @@ describe('SZGameKit — R1: correções do full review', () => {
     expect(h.api.isInvincible(heroi)).toBe(true)
     expect(heroi.health).toBe(90)
     h.api.setState('fim')
-    h.api.setState('jogando') // Jogar de novo
+    h.api.restartGame()
     expect(h.api.isInvincible(heroi)).toBe(false)
     h.api.hurt(heroi, 10, 1) // volta a levar dano
     expect(heroi.health).toBe(80)
@@ -1407,7 +1631,7 @@ describe('SZGameKit — R1: correções do full review', () => {
     const h = loadRuntime()
     h.api.defineEffect('p', { count: 4, life: 9, speed: 100, gravity: 0 })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     h.nextFrame(16)
     h.api.burst('p', 50, 50)
     h.api.drawEffects()
@@ -1444,6 +1668,34 @@ describe('SZGameKit — R1: correções do full review', () => {
     const translate = ctxCalls.find(([n]) => n === 'translate')
     expect(translate?.[1]).toEqual([10, 20])
     expect(ctxCalls.some(([n]) => n === 'fillRect')).toBe(true) // a fn rodou
+  })
+
+  it('aparência autoral que falha avisa uma vez e mantém o fallback da entidade', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.defineLook('quebrada', () => {
+      throw new Error('traço inválido')
+    })
+    const personagem = h.api.createCharacter({ look: 'quebrada', w: 24, h: 24 })
+    h.api.placeCharacter(personagem, 10, 20)
+    const warns: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    ctxCalls.length = 0
+    try {
+      h.api.drawCharacter(personagem)
+      h.api.drawLook('quebrada', 10, 20, 24, 24)
+      h.api.drawLook('quebrada', 10, 20, 24, 24)
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect(ctxCalls.some(([name]) => name === 'fillRect')).toBe(true)
+    expect(
+      warns.filter(
+        (warning) => warning.includes('aparência "quebrada"') && warning.includes('traço inválido'),
+      ),
+    ).toHaveLength(1)
   })
 
   it('emit repassa o payload aos ouvintes (futuro dos blocos, já no motor)', () => {
@@ -1519,6 +1771,27 @@ describe('SZGameKit — R2: câmera, velocidade, animação, mouse, barra', () =
     expect(c._animFrom).toBe(6)
   })
 
+  it('playAnimOnce trava no último quadro e só ele pode terminar', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 800, height: 600 })
+    const c = h.api.createCharacter({ w: 32, h: 32 })
+    h.api.setSheet(c, 'data:image/png;base64,AA==', 16, 16)
+    await startGame(h)
+    h.api.setState('jogando')
+
+    h.api.playAnimOnce(c, 2, 4, 40)
+    h.nextFrame(100)
+    expect(h.api.animEnded(c)).toBe(true)
+    ctxCalls.length = 0
+    h.api.drawCharacter(c)
+    const sourceY = ctxCalls.find(([method]) => method === 'drawImage')?.[1][1]
+    expect(sourceY).toBe(4 * 16)
+
+    h.api.playAnim(c, 2, 4, 40)
+    h.nextFrame(200)
+    expect(h.api.animEnded(c)).toBe(false)
+  })
+
   it('setAngle guarda o giro; drawBar desenha fundo + preenchimento + contorno', async () => {
     const h = loadRuntime()
     await startGame(h)
@@ -1541,45 +1814,115 @@ describe('SZGameKit — R2: câmera, velocidade, animação, mouse, barra', () =
     // o happy-dom não produz getBoundingClientRect com tamanho real).
     expect(() => api.onGameClick(() => {})).not.toThrow()
   })
+
+  it('expõe coordenadas de mundo e de tela quando a câmera está ligada', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 40, h: 40 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 790, 590)
+    h.api.cameraFollow(heroi, 1600, 1200)
+    h.nextFrame(16)
+
+    const clicks: unknown[][] = []
+    h.api.onGameClick((...args: unknown[]) => clicks.push(args))
+    const canvas = document.querySelector('#szgk-canvas')
+    if (!canvas) throw new Error('canvas do jogo ausente')
+    canvas.dispatchEvent(new MouseEvent('pointerdown', { clientX: 30, clientY: 40, bubbles: true }))
+
+    expect(h.api.mouseX()).toBe(30 + Number(h.api.cameraX()))
+    expect(h.api.mouseY()).toBe(40 + Number(h.api.cameraY()))
+    expect(h.api.mouseScreenX()).toBe(30)
+    expect(h.api.mouseScreenY()).toBe(40)
+    expect(clicks).toEqual([[30 + Number(h.api.cameraX()), 40 + Number(h.api.cameraY()), 30, 40]])
+  })
 })
 
 describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () => {
-  it('mapa inicial explícito vence a ordem, sobrevive ao reinício e o legado usa o primeiro', async () => {
+  it('criação desenha o mapa ativo; evento de entrada não declara mapa implicitamente', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    let draws = 0
+    let enters = 0
+    h.api.rpgCreateMap('vila', 15, 10, () => {
+      draws += 1
+    })
+    h.api.rpgOnEnterMap('vila', () => {
+      enters += 1
+    })
+    h.api.restartGame()
+    h.nextFrame(16)
+    expect(enters).toBe(1)
+    expect(draws).toBeGreaterThan(0)
+
+    const removed = h.api as unknown as Record<string, unknown>
+    expect(removed.rpgOnMap).toBeUndefined()
+    expect(removed.rpgMapSize).toBeUndefined()
+  })
+
+  it('mapa sem desenho e evento para mapa não criado produzem diagnóstico', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    const warns: string[] = []
+    const realWarn = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    try {
+      h.api.rpgCreateMap('vazio', 8, 6, () => {}, false)
+      h.api.rpgOnEnterMap('fantasma', () => {})
+      h.api.restartGame()
+      h.nextFrame(16)
+    } finally {
+      console.warn = realWarn
+    }
+    expect(
+      warns.some((warning) => warning.includes('vazio') && warning.includes('sem desenho')),
+    ).toBe(true)
+    expect(
+      warns.some((warning) => warning.includes('fantasma') && warning.includes('não foi criado')),
+    ).toBe(true)
+    expect(ctxCalls.some(([name]) => name === 'fillText')).toBe(true)
+  })
+
+  it('mapa inicial explícito vence a ordem, sobrevive ao reinício e o fallback usa o primeiro', async () => {
     const explicit = loadRuntime()
     await startGame(explicit)
     let firstMounts = 0
     let startMounts = 0
-    explicit.api.rpgOnMap('primeiro', () => {
+    explicit.api.rpgCreateMap('primeiro', 10, 10, () => {})
+    explicit.api.rpgOnEnterMap('primeiro', () => {
       firstMounts += 1
     })
-    explicit.api.rpgOnMap('inicio', () => {
+    explicit.api.rpgCreateMap('inicio', 10, 10, () => {})
+    explicit.api.rpgOnEnterMap('inicio', () => {
       startMounts += 1
     })
     explicit.api.rpgSetStartMap('inicio')
 
-    explicit.api.setState('jogando')
+    explicit.api.restartGame()
     expect(explicit.api.rpgCurrentMap()).toBe('inicio')
     expect(firstMounts).toBe(0)
     expect(startMounts).toBe(1)
 
     explicit.api.endGame()
-    explicit.api.setState('jogando')
+    explicit.api.restartGame()
     expect(explicit.api.rpgCurrentMap()).toBe('inicio')
     expect(startMounts).toBe(2)
 
-    const legacy = loadRuntime()
-    await startGame(legacy)
-    legacy.api.rpgOnMap('legado', () => {})
-    legacy.api.rpgOnMap('segundo', () => {})
-    legacy.api.setState('jogando')
-    expect(legacy.api.rpgCurrentMap()).toBe('legado')
+    const fallback = loadRuntime()
+    await startGame(fallback)
+    fallback.api.rpgCreateMap('primeiro', 10, 10, () => {})
+    fallback.api.rpgCreateMap('segundo', 10, 10, () => {})
+    fallback.api.restartGame()
+    expect(fallback.api.rpgCurrentMap()).toBe('primeiro')
   })
 
   it('mapa inexistente avisa e cai no primeiro mapa válido, sem mundo vazio', async () => {
     const h = loadRuntime()
     await startGame(h)
     let mounts = 0
-    h.api.rpgOnMap('seguro', () => {
+    h.api.rpgCreateMap('seguro', 10, 10, () => {})
+    h.api.rpgOnEnterMap('seguro', () => {
       mounts += 1
     })
     h.api.rpgSetStartMap('fantasma')
@@ -1587,7 +1930,7 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     const realWarn = console.warn
     console.warn = (...args: unknown[]) => warns.push(args.join(' '))
     try {
-      h.api.setState('jogando')
+      h.api.restartGame()
       expect(h.api.rpgCurrentMap()).toBe('seguro')
       h.api.rpgGoMap('outro-fantasma')
       expect(h.api.rpgCurrentMap()).toBe('seguro')
@@ -1599,6 +1942,66 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     expect(warns.some((warning) => warning.includes('primeiro mapa válido'))).toBe(true)
   })
 
+  it('mapa pequeno sempre recebe o herói numa célula livre e dentro dos limites', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    await startGame(h)
+    const heroi = h.api.createCharacter({ w: 64, h: 64 }) as Record<string, number>
+    h.api.rpgMoveGrid(heroi, 64, 0)
+    h.api.rpgCreateMap('sala', 2, 2, () => {
+      h.api.drawBackground('#123456', false)
+    })
+    h.api.rpgOnEnterMap('sala', () => {
+      h.api.rpgBlockCell(0, 0)
+    })
+
+    h.api.restartGame()
+
+    expect(heroi.x).toBeGreaterThanOrEqual(0)
+    expect(heroi.y).toBeGreaterThanOrEqual(0)
+    expect(heroi.x).toBeLessThan(128)
+    expect(heroi.y).toBeLessThan(128)
+    expect([heroi.x, heroi.y]).not.toEqual([0, 0])
+  })
+
+  it('runProject protege o herói da factory atual sem mover o herói da partida anterior', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    const heroes: Array<Record<string, number>> = []
+
+    runProject(() => {
+      const hero = h.api.createCharacter({ w: 64, h: 64, speed: 200 }) as Record<string, number>
+      heroes.push(hero)
+      h.api.rpgCreateMap('sala', 2, 2, () => {})
+      h.api.rpgSetStartMap('sala')
+      h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(hero, 64, dt))
+    })
+
+    await startGame(h)
+    h.api.restartGame()
+    h.nextFrame(16)
+
+    const firstHero = heroes[1]
+    if (!firstHero) throw new Error('a segunda execução da factory não criou o herói')
+    expect(firstHero.x).toBeGreaterThanOrEqual(0)
+    expect(firstHero.y).toBeGreaterThanOrEqual(0)
+    expect(firstHero.x).toBeLessThan(128)
+    expect(firstHero.y).toBeLessThan(128)
+
+    h.api.placeCharacter(firstHero, 448, 238)
+    h.api.restartGame()
+    h.nextFrame(32)
+
+    const currentHero = heroes[2]
+    if (!currentHero) throw new Error('a terceira execução da factory não criou o herói')
+    expect([firstHero.x, firstHero.y]).toEqual([448, 238])
+    expect(currentHero.x).toBeGreaterThanOrEqual(0)
+    expect(currentHero.y).toBeGreaterThanOrEqual(0)
+    expect(currentHero.x).toBeLessThan(128)
+    expect(currentHero.y).toBeLessThan(128)
+  })
+
   it('grade: anda célula a célula, parede bloqueia, porta troca de mapa', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 640, height: 640 })
@@ -1606,11 +2009,13 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     h.api.setState('jogando')
     const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
     let montouCaverna = 0
-    h.api.rpgOnMap('vila', () => {
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
+    h.api.rpgCreateMap('caverna', 10, 10, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
       h.api.rpgBlockCell(1, 0) // parede à direita da origem
       h.api.rpgCreateDoor(0, 1, 'caverna')
     })
-    h.api.rpgOnMap('caverna', () => {
+    h.api.rpgOnEnterMap('caverna', () => {
       montouCaverna += 1
     })
     h.api.rpgGoMap('vila')
@@ -1722,7 +2127,7 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     expect(h.api.countActive('g')).toBe(1) // antes: o unpause APAGAVA o enxame
     // "Jogar de novo" de verdade (vindo do fim) segue resetando.
     h.api.endGame()
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.countActive('g')).toBe(0)
   })
 })
@@ -1768,7 +2173,8 @@ describe('SZGameKit — V6: cenas & NPCs vivos', () => {
     h.api.setup({ width: 640, height: 640 })
     await startGame(h)
     h.api.setState('jogando')
-    h.api.rpgOnMap('vila', () => {
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
       h.api.rpgCreateNpc('bob', 2, 5, '', '')
     })
     h.api.rpgGoMap('vila')
@@ -1796,7 +2202,8 @@ describe('SZGameKit — V6: cenas & NPCs vivos', () => {
     await startGame(h)
     h.api.setState('jogando')
     const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 64 }) as Record<string, number>
-    h.api.rpgOnMap('sala', () => {
+    h.api.rpgCreateMap('sala', 10, 10, () => {})
+    h.api.rpgOnEnterMap('sala', () => {
       h.api.rpgCreateNpc('guarda', 3, 0, '', '')
     })
     h.api.rpgGoMap('sala')
@@ -1816,7 +2223,8 @@ describe('SZGameKit — V6: cenas & NPCs vivos', () => {
     h.api.setState('jogando')
     const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
     let pisou = 0
-    h.api.rpgOnMap('mapa', () => {
+    h.api.rpgCreateMap('mapa', 10, 10, () => {})
+    h.api.rpgOnEnterMap('mapa', () => {
       h.api.rpgOnStep(1, 0, () => {
         pisou += 1
       })
@@ -1882,7 +2290,7 @@ describe('SZGameKit — V7: escolhas & salvar', () => {
     const h = loadRuntime()
     await startGame(h)
     h.api.setState('jogando')
-    h.api.rpgOnMap('vila', () => {})
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
     h.api.rpgGoMap('vila')
     // Estado de história.
     h.api.rpgAddFlag('achou-a-espada')
@@ -1893,7 +2301,7 @@ describe('SZGameKit — V7: escolhas & salvar', () => {
     expect(h.api.rpgHasSave()).toBe(true)
     // "Recomeçar" apaga a história em memória.
     h.api.setState('menu')
-    h.api.setState('jogando') // rpgNewGame zera flags/itens
+    h.api.restartGame()
     expect(h.api.rpgHasFlag('achou-a-espada')).toBe(false)
     expect(h.api.rpgHasItem('espada')).toBe(false)
     // Continuar do save: tudo volta.
@@ -2142,24 +2550,80 @@ describe('SZGameKit — R6: correções de bugs', () => {
     expect(warns.filter((w) => w.includes('nao-existe')).length).toBe(1)
   })
 
-  it('H3: cutscene com NPC bloqueado completa por timeout (não trava a cena)', async () => {
+  it('H3: NPC contorna uma parede alcançável e a cena só continua quando ele chega', async () => {
     const h = loadRuntime()
     await startGame(h)
     h.api.setState('jogando')
-    h.api.rpgBlockCell(2, 0) // parede em (2,0) — bloqueia o caminho reto
-    h.api.rpgCreateNpc('bob', 0, 0, '', '')
+    h.api.rpgCreateMap('vila', 6, 3, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
+      h.api.rpgBlockCell(2, 1) // bloqueia o caminho reto; linhas 0 e 2 continuam livres
+      h.api.rpgCreateNpc('bob', 0, 1, '', '')
+    })
+    h.api.rpgGoMap('vila')
     h.api.rpgCutscene(() => {
-      h.api.rpgNpcWalkTo('bob', 5, 0) // caminho passa por (2,0) → nunca chega
+      h.api.rpgNpcWalkTo('bob', 5, 1)
       h.api.rpgAddFlag('cena_terminou')
     })
     expect(h.api.rpgHasFlag('cena_terminou')).toBe(false) // ainda tocando a cena
     h.clock.value = 0
     h.nextFrame(0)
-    for (let t = 100; t <= 6400; t += 100) {
+    for (let t = 50; t <= 4000; t += 50) {
       h.clock.value = t
       h.nextFrame(t)
     }
-    expect(h.api.rpgHasFlag('cena_terminou')).toBe(true) // timeout liberou a cena
+    expect(h.api.rpgHasFlag('cena_terminou')).toBe(true)
+  })
+
+  it('H3: caminhada longa continua enquanto o NPC progride e a cena espera a chegada', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgCreateMap('estrada', 30, 3, () => {})
+    h.api.rpgOnEnterMap('estrada', () => {
+      h.api.rpgCreateNpc('bob', 0, 1, '', '')
+    })
+    h.api.rpgGoMap('estrada')
+    h.api.rpgCutscene(() => {
+      h.api.rpgNpcWalkTo('bob', 20, 1)
+      h.api.rpgAddFlag('caminhada_terminou')
+    })
+
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.join(' '))
+    try {
+      for (let t = 0; t <= 6_100; t += 50) {
+        h.clock.value = t
+        h.nextFrame(t)
+      }
+      expect(h.api.rpgHasFlag('caminhada_terminou')).toBe(false)
+
+      for (let t = 6_150; t <= 9_500; t += 50) {
+        h.clock.value = t
+        h.nextFrame(t)
+      }
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect(h.api.rpgHasFlag('caminhada_terminou')).toBe(true)
+    expect(warnings.some((warning) => warning.includes('caminho mudou'))).toBe(false)
+  })
+
+  it('H4: recriar um NPC não invade a célula reservada por outro personagem', () => {
+    const h = loadRuntime()
+    const warns: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    try {
+      h.api.rpgCreateNpc('ana', 0, 0, '', '')
+      h.api.rpgCreateNpc('bia', 1, 0, '', '')
+      h.api.rpgCreateNpc('ana', 1, 0, '', '')
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect(warns.some((warning) => warning.includes('célula 1,0'))).toBe(true)
   })
 
   it('L14: rpgLoad ignora item malformado (save editado) sem quebrar', async () => {
@@ -2335,6 +2799,26 @@ describe('SZGameKit — R11: física geral (gravidade, chão, colisão sólida)'
     expect((c as { _facingLeft?: boolean })._facingLeft).toBe(true)
   })
 
+  it('A cada N segundos preserva a cadência em 30 e 60 FPS', async () => {
+    async function disparosEmUmSegundo(fps: number): Promise<number> {
+      const h = loadRuntime()
+      let disparos = 0
+      h.api.onUpdate(() => {
+        if (h.api.everySeconds('cadencia', 0.05)) disparos++
+      })
+      await startGame(h)
+      h.api.setState('jogando')
+      h.nextFrame(0)
+      for (let quadro = 1; quadro <= fps; quadro++) {
+        h.nextFrame((quadro * 1_000) / fps)
+      }
+      return disparos
+    }
+
+    expect(await disparosEmUmSegundo(30)).toBe(20)
+    expect(await disparosEmUmSegundo(60)).toBe(20)
+  })
+
   it('cooldown é em SEGUNDOS e por personagem', async () => {
     const h = loadRuntime()
     await startGame(h)
@@ -2347,6 +2831,30 @@ describe('SZGameKit — R11: física geral (gravidade, chão, colisão sólida)'
     // Cada personagem tem a SUA recarga.
     const outro = h.api.createCharacter({ w: 32, h: 32 })
     expect(h.api.cooldownReady(outro, 0.2)).toBe(true)
+  })
+
+  it('recarga é prazo ABSOLUTO: esperar entre tiros destrava mesmo SEM chamar no meio', async () => {
+    // Regressão do fix do Lote D. A receita canônica é edge-trigger ("se
+    // keyPressed(' ') e cooldownReady(nave, 0.2)"): a criança APERTA, SOLTA,
+    // espera e aperta de novo — ou seja, cooldownReady NÃO é chamado enquanto o
+    // botão está solto. A versão antiga descontava currentDt só nas chamadas, então
+    // a espera com o botão solto não contava e o 2º tiro ficava travado.
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const c = h.api.createCharacter({ w: 32, h: 32 })
+    h.clock.value = 0
+    h.nextFrame(0)
+    expect(h.api.cooldownReady(c, 0.2)).toBe(true) // aperta: arma a recarga de 0,2 s
+    expect(h.api.cooldownReady(c, 0.2)).toBe(false) // no mesmo instante: recarregando
+    // Passa ~0,4 s de JOGO em quadros SEM chamar cooldownReady no meio (botão solto).
+    for (let i = 1; i <= 5; i++) {
+      h.clock.value = i * 80
+      h.nextFrame(i * 80)
+    }
+    // A espera REAL contou (playTime avançou): o próximo aperto dispara. Com a
+    // versão por-chamada, o _cd nunca teria decrementado e isto seria false.
+    expect(h.api.cooldownReady(c, 0.2)).toBe(true)
   })
 
   it('quicar nas bordas inverte a velocidade (breakout/pong)', async () => {
@@ -2627,6 +3135,26 @@ describe('SZGameKit — R12: Kit Plataforma', () => {
     expect(c.y).toBeCloseTo(300 - 32, 5)
   })
 
+  it('⭐ uma-via usa o começo do movimento mesmo depois da colisão sólida', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 800, height: 600 })
+    h.api.defineMold('tabua', { w: 200, h: 8, color: '#a60' })
+    h.api.defineMold('paredes', { w: 32, h: 32, color: '#333' })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.spawnFromMold('tabua', 0, 300)
+    const c = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, number>
+    h.api.placeCharacter(c, 50, 200)
+    h.api.setVelocity(c, 0, 900)
+
+    h.api.moveByVelocity(c, 0.1)
+    h.api.collideGroup(c, 'paredes')
+    h.api.oneWayPlatform(c, 'tabua', 0.1)
+
+    expect(h.api.isOnGround(c)).toBe(true)
+    expect(c.y).toBe(300 - 32)
+  })
+
   it('descer da uma-via com ↓ + pulo', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 800, height: 600 })
@@ -2812,6 +3340,58 @@ describe('SZGameKit — R12: Kit Plataforma', () => {
     expect(h.api.velocityOf(c, 'y')).toBe(-600)
   })
 
+  it('⭐ tile plataforma não deixa atravessar na ordem mover → colidir sob frame hitch', async () => {
+    const h = loadRuntime(fakeTilemapAsset('. . .\n2 2 2', [], 64, [2]))
+    h.api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.loadTilemap('mundo', 'mapa')
+    h.nextFrame(100)
+    const c = h.api.createCharacter({ w: 32, h: 32 }) as { y: number }
+    h.api.placeCharacter(c, 80, -2)
+    h.api.setVelocity(c, 0, 900)
+
+    h.api.moveByVelocity(c, 0.1)
+    h.api.collideTilemap(c, 'mundo')
+
+    expect(c.y).toBe(32)
+    expect(h.api.velocityOf(c, 'y')).toBe(0)
+    expect((c as { onGround?: boolean }).onGround).toBe(true)
+  })
+
+  it('🛡️ limita a varredura da plataforma one-way aos limites reais do mapa', async () => {
+    const h = loadRuntime(fakeTilemapAsset('. . .\n2 2 2', [], 64, [2]))
+    h.api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.loadTilemap('mundo', 'mapa')
+    h.nextFrame(16)
+    h.nextFrame(32)
+    const c = h.api.createCharacter({ w: 32, h: 32 })
+    h.api.placeCharacter(c, 10_000, 30)
+    h.api.setVelocity(c, 0, 500_000)
+
+    let acessouLinhaInexistente = false
+    const runtimeFunction = (
+      h.api.collideTilemap as unknown as { constructor: (body: string) => () => object }
+    ).constructor
+    const runtimeArrayPrototype = runtimeFunction('return Array.prototype')()
+    Object.defineProperty(runtimeArrayPrototype, '50', {
+      configurable: true,
+      get() {
+        acessouLinhaInexistente = true
+        return undefined
+      },
+    })
+    try {
+      h.api.collideTilemap(c, 'mundo')
+    } finally {
+      Reflect.deleteProperty(runtimeArrayPrototype, '50')
+    }
+
+    expect(acessouLinhaInexistente).toBe(false)
+  })
+
   it('⭐ contrato do pool: reciclado NÃO herda o estado de plataforma', async () => {
     const h = loadRuntime()
     await comChao(h)
@@ -2890,7 +3470,7 @@ describe('SZGameKit — R13: bugs do review #3', () => {
     // A criança marca o ponto numa bandeira no MEIO da fase (uso natural).
     h.api.setCheckpoint(600, 200)
     h.api.endGame() // morreu
-    h.api.setState('jogando') // "Jogar de novo"
+    h.api.restartGame()
     h.api.placeCharacter(c, 10, 999)
     h.api.respawn(c)
     // ⭐ Sem o reset, renascia em (600,200) — no meio da fase da partida passada.
@@ -2903,11 +3483,11 @@ describe('SZGameKit — R13: bugs do review #3', () => {
     h.api.setup({ width: 800, height: 600 })
     h.api.defineMold('bicho', { w: 32, h: 32 })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     const a = h.api.spawnFromMold('bicho', 0, 0) as Record<string, number>
     h.api.tweenTo(a, 500, 500, 1) // em voo quando o jogo acaba
     h.api.endGame()
-    h.api.setState('jogando')
+    h.api.restartGame()
     const b = h.api.spawnFromMold('bicho', 10, 10) as Record<string, number>
     expect(b).toBe(a as unknown as typeof b) // o pool reusa o MESMO objeto
     h.nextFrame(16)
@@ -2915,6 +3495,23 @@ describe('SZGameKit — R13: bugs do review #3', () => {
     // ⭐ Sem o reset, o tween do bicho MORTO seguia arrastando o bicho NOVO.
     expect(b.x).toBe(10)
     expect(b.y).toBe(10)
+  })
+
+  it('⭐ "Jogar de novo" desliga rastros de personagens da factory anterior', () => {
+    const h = loadRuntime()
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    const characters: Array<Record<string, unknown>> = []
+
+    runProject(() => {
+      const character = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+      characters.push(character)
+      h.api.trailOn(character, '#00ffff', 3, 30, 0.4)
+    })
+
+    expect(characters[0]?._trailOn).toBe(true)
+    h.api.restartGame()
+    expect(characters[0]?._trailOn).toBe(false)
+    expect(characters[1]?._trailOn).toBe(true)
   })
 
   it('⭐ emendar a borda não gruda no mapa (teleporte zera a varredura)', async () => {
@@ -3065,6 +3662,108 @@ describe('SZGameKit — R15: primitivos gerais', () => {
     expect(warns.some((w) => w.includes('trilha'))).toBe(true)
   })
 
+  it('⭐ carregar/tocar música na factory é idempotente entre partidas', () => {
+    const audios: FakeAudio[] = []
+    class FakeAudio {
+      paused = true
+      loop = false
+      currentTime = 0
+      volume = 1
+      preload = ''
+      oncanplaythrough: (() => void) | null = null
+      onerror: (() => void) | null = null
+
+      constructor() {
+        audios.push(this)
+      }
+
+      set src(_value: string) {
+        this.oncanplaythrough?.()
+      }
+
+      play(): Promise<void> {
+        this.paused = false
+        return Promise.resolve()
+      }
+
+      pause(): void {
+        this.paused = true
+      }
+    }
+    const originalAudio = Object.getOwnPropertyDescriptor(globalThis, 'Audio')
+    Object.defineProperty(globalThis, 'Audio', { configurable: true, value: FakeAudio })
+
+    try {
+      const h = loadRuntime(undefined, {
+        __SZGAME_SOUNDS: { faixa: 'data:audio/ogg;base64,AA==' },
+      })
+      const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+      runProject(() => {
+        h.api.loadSound('trilha', 'faixa')
+        h.api.playMusic('trilha')
+      })
+
+      const playing = () => audios.filter((audio) => !audio.paused).length
+      expect({ created: audios.length, playing: playing() }).toEqual({ created: 1, playing: 1 })
+      h.api.restartGame()
+      expect({ created: audios.length, playing: playing() }).toEqual({ created: 1, playing: 1 })
+      h.api.restartGame()
+      expect({ created: audios.length, playing: playing() }).toEqual({ created: 1, playing: 1 })
+    } finally {
+      if (originalAudio) Object.defineProperty(globalThis, 'Audio', originalAudio)
+      else Reflect.deleteProperty(globalThis, 'Audio')
+    }
+  })
+
+  it('⭐ Jogar de novo encerra tons sintetizados pertencentes à partida anterior', () => {
+    class FakeOscillator {
+      type = ''
+      frequency = { value: 0 }
+      onended: (() => void) | null = null
+      stops: number[] = []
+      disconnected = false
+
+      connect(): void {}
+      start(): void {}
+      stop(at: number): void {
+        this.stops.push(at)
+      }
+      disconnect(): void {
+        this.disconnected = true
+      }
+    }
+
+    const oscillators: FakeOscillator[] = []
+    class FakeAudioContext {
+      currentTime = 0
+      state = 'running'
+      destination = {}
+
+      createOscillator(): FakeOscillator {
+        const oscillator = new FakeOscillator()
+        oscillators.push(oscillator)
+        return oscillator
+      }
+      createGain() {
+        return {
+          gain: { value: 0, setTargetAtTime(): void {} },
+          connect(): void {},
+          disconnect(): void {},
+        }
+      }
+      resume(): void {}
+    }
+
+    const h = loadRuntime(undefined, { AudioContext: FakeAudioContext })
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    runProject(() => h.api.playTone(440, 60_000))
+    h.api.restartGame()
+    h.api.restartGame()
+
+    expect(oscillators.map((oscillator) => oscillator.stops)).toEqual([[60, 0], [60, 0], [60]])
+    expect(oscillators.map((oscillator) => oscillator.disconnected)).toEqual([true, true, false])
+  })
+
   it('⭐ mirar num PONTO (o mouse dá números, não um personagem)', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 800, height: 600 })
@@ -3210,6 +3909,15 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
     for (let i = 1; i <= quadros; i++) h.nextFrame(i * 50)
   }
 
+  it('🛡️ limita o nível recebido pela API antes de criar o monstrinho', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+
+    h.api.pkmGive('Fogoso', Number.MAX_VALUE)
+
+    expect(h.api.pkmLevelOf('Fogoso')).toBe(999)
+  })
+
   it('⭐ o estado da batalha é "batalha" — senão voltar APAGA o jogo da criança', async () => {
     const h = loadRuntime()
     await mundo(h)
@@ -3222,6 +3930,43 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
     h.api.setState('jogando')
     expect(h.api.rpgHasFlag('peguei-o-inicial')).toBe(true)
     expect(h.api.pkmTeamSize()).toBe(1)
+  })
+
+  it('⭐ batalha de monstrinhos zera o resultado deixado pela batalha anterior', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    h.api.rpgBattleStats(30, 999)
+    h.api.rpgBattleStart('Slime', 1, 0, 0)
+    driveBattle(h, 1)
+    expect(h.api.rpgBattleWon()).toBe(true)
+
+    h.api.pkmGive('Fogoso', 5)
+    h.api.pkmBattleWild('Folhinha', 5)
+
+    expect(h.api.rpgBattleWon()).toBe(false)
+  })
+
+  it('criatura do treinador só vale dentro do time e o time respeita o teto de 6', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    h.api.pkmGive('Fogoso', 5)
+    const warns: string[] = []
+    const real = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    try {
+      h.api.pkmTrainerCreature('Folhinha', 5)
+      h.api.pkmBattleTrainer('Rival', () => {
+        for (let i = 0; i < 7; i++) h.api.pkmTrainerCreature('Folhinha', i + 1)
+      })
+    } finally {
+      console.warn = real
+    }
+
+    expect(h.api.state()).toBe('batalha')
+    expect(
+      warns.some((warning) => warning.includes('dentro') && warning.includes('treinador')),
+    ).toBe(true)
+    expect(warns.some((warning) => warning.includes('6'))).toBe(true)
   })
 
   it('⭐ a fala ANDA dentro da batalha (o stepSystems não roda em "batalha")', async () => {
@@ -3285,7 +4030,7 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
     expect(h.api.pkmTeamSize()).toBe(1)
     expect(h.api.pkmBallCount()).toBe(5)
     h.api.endGame()
-    h.api.setState('jogando') // "Jogar de novo" (vindo de 'fim' = recomeço REAL)
+    h.api.restartGame()
     expect(h.api.pkmTeamSize()).toBe(0)
     expect(h.api.pkmBallCount()).toBe(0)
   })
@@ -3293,13 +4038,13 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
   it('⭐ salvar leva o time junto (senão a criança perde 6 monstrinhos)', async () => {
     const h = loadRuntime()
     await mundo(h)
-    h.api.rpgOnMap('vila', () => {})
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
     h.api.pkmGive('Fogoso', 12)
     h.api.pkmGiveBall(3, 60)
     h.api.rpgSave()
     // Some tudo (como fechar o jogo)…
     h.api.endGame()
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.pkmTeamSize()).toBe(0)
     // …e o "Continuar" traz o time DE VOLTA. Sem bloco novo: é o mesmo Salvar.
     h.api.rpgLoad()
@@ -3318,6 +4063,50 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
     expect(() => h.api.rpgLoad()).not.toThrow()
     expect(h.api.pkmTeamSize()).toBe(0) // os tortos são filtrados
     expect(h.api.pkmBallCount()).toBe(0)
+  })
+
+  it('save restaura os limites e valores válidos dos objetos internos dos kits', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    h.store.set(
+      'szgk-rpg-save',
+      JSON.stringify({
+        max: 30,
+        hp: 10,
+        items: [{ name: 'chave', image: 42, qty: 'quebrado' }],
+        potions: Array.from({ length: 120 }, (_, index) => ({
+          name: `Poção ${index}`,
+          heal: 'quebrado',
+        })),
+        special: { name: 'Raio', dmg: 'quebrado', cost: 'quebrado' },
+        pkmTeam: Array.from({ length: 8 }, () => ({
+          species: 'Fogoso',
+          level: -3,
+          hp: 999,
+          hpMax: 0,
+          xp: Number.MAX_VALUE,
+        })),
+        pkmBalls: Array.from({ length: 1_001 }, () => ({ power: 'quebrada' })),
+      }),
+    )
+
+    h.api.rpgLoad()
+    expect(h.api.pkmTeamSize()).toBe(6)
+    expect(h.api.pkmBallCount()).toBe(999)
+    expect(h.api.pkmLevelOf('Fogoso')).toBe(1)
+    h.api.rpgSave()
+    expect(JSON.parse(h.store.get('szgk-rpg-save') ?? '{}').potions).toHaveLength(99)
+
+    h.api.rpgGiveItem('chave', '')
+    h.api.rpgRemoveItem('chave')
+    h.api.rpgRemoveItem('chave')
+    expect(h.api.rpgHasItem('chave')).toBe(false)
+
+    h.api.rpgBattleStart('Tanque', 100, 1, 0)
+    const t = pickAction(h, 1, 'Item')
+    expect(Number.isFinite(battleSnap(h)?.allies[0]?.hp)).toBe(true)
+    pickAction(h, t, 'Raio')
+    expect(Number.isFinite(battleSnap(h)?.allies[0]?.energy)).toBe(true)
   })
 
   it('⭐ a bola é MAIS fácil com a vida baixa (e nunca 0% com a vida cheia)', async () => {
@@ -3398,6 +4187,50 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
       console.warn = real
     }
     expect(warns.some((w) => w.includes('kit'))).toBe(true)
+  })
+
+  it('uma batalha ativa bloqueia qualquer segunda batalha antes de criar o oponente', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    h.api.pkmGive('Fogoso', 5)
+    let encontros = 0
+    let treinadorExecutou = false
+    h.api.on('monstrinho:apareceu', () => {
+      encontros += 1
+    })
+
+    h.api.pkmBattleWild('Folhinha', 5)
+    h.api.pkmBattleWild('Folhinha', 8)
+    h.api.pkmBattleTrainer('Rival', () => {
+      treinadorExecutou = true
+      h.api.pkmTrainerCreature('Folhinha', 5)
+    })
+    h.api.rpgBattleStart('Dragão', 30, 7, 0)
+
+    expect(encontros).toBe(1)
+    expect(treinadorExecutou).toBe(false)
+    expect(battleSnap(h)).toBeNull()
+    expect(h.api.state()).toBe('batalha')
+  })
+})
+
+describe('SZGameKit — 🥊 Kit Luta', () => {
+  it('o placar mostra a maioria necessária e limita a partida a 9 rounds', async () => {
+    const h = loadRuntime()
+    const { api } = h
+    api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    const p1 = api.createCharacter({ w: 32, h: 64 })
+    const p2 = api.createCharacter({ w: 32, h: 64 })
+    const hudDots = (rounds: number): number => {
+      api.lutaMatch(p1, p2, rounds, 60)
+      ctxCalls.length = 0
+      api.lutaDrawHud()
+      return ctxCalls.filter(([method]) => method === 'arc').length
+    }
+
+    expect(hudDots(5)).toBe(6)
+    expect(hudDots(999)).toBe(10)
   })
 })
 
@@ -3706,10 +4539,93 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     globalWithImage.Image = RealImage
   })
 
+  it('restart recomeça o fundo rolante na origem', async () => {
+    const h = loadRuntime(undefined, {
+      __SZGAME_ASSETS: { fundo: 'data:image/png;base64,AA==' },
+    })
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+
+    runProject(() => {
+      h.api.loadImage('fundo', 'fundo')
+      h.api.onDraw(() => h.api.scrollImage('fundo', 100, 0))
+    })
+    await startGame(h)
+    h.api.restartGame()
+
+    ctxCalls.length = 0
+    h.nextFrame(100)
+    const movedX = ctxCalls.find(([method]) => method === 'drawImage')?.[1][0]
+    expect(movedX).toBe(-246)
+
+    ctxCalls.length = 0
+    h.api.restartGame()
+    h.nextFrame(0)
+    const restartedX = ctxCalls.find(([method]) => method === 'drawImage')?.[1][0]
+    expect(restartedX).toBe(0)
+  })
+
   function gridCheio(cols: number, rows: number): string {
     const linha = new Array(cols).fill('1').join(' ')
     return new Array(rows).fill(linha).join('\n')
   }
+
+  it('avisa quando mapa-cenário e mapa de peças têm dimensões diferentes', async () => {
+    const h = loadRuntime(fakeTilemapAsset(gridCheio(3, 2), [], 64))
+    h.api.loadTilemap('chao-vila', 'mapa')
+    h.api.rpgCreateMap('vila', 10, 8, () => {
+      h.api.drawTilemap('chao-vila', 'chão')
+    })
+    h.api.rpgSetStartMap('vila')
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      await startGame(h)
+      h.api.restartGame()
+      h.nextFrame(16)
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect(
+      warnings.some(
+        (warning) =>
+          warning.includes('mapa-cenário "vila"') &&
+          warning.includes('10 × 8') &&
+          warning.includes('mapa de peças "chao-vila"') &&
+          warning.includes('3 × 2'),
+      ),
+    ).toBe(true)
+  })
+
+  it('todo seletor de imagem resolve o asset sem exigir Carregar imagem', async () => {
+    const h = loadRuntime()
+    const image = 'data:image/png;base64,AA=='
+    const heroi = h.api.createCharacter({ w: 32, h: 32 })
+    h.api.setSheet(heroi, image, 16, 16)
+    h.api.setWalkSheet(heroi, image, 16, 16)
+    h.api.rpgCreateNpc('guia', 1, 1, image, '')
+    h.api.rpgGiveItem('chave', image)
+    h.api.scrollImage(image, 0, 0)
+    h.api.parallaxLayer(image, 0.3, 1)
+    await startGame(h)
+
+    let draws = 0
+    const originalDraw = fakeCtx.drawImage
+    ;(fakeCtx as { drawImage: () => void }).drawImage = () => {
+      draws += 1
+    }
+    try {
+      h.api.drawCharacter(heroi)
+      h.api.rpgDrawNpcs()
+      h.api.rpgDrawInventory(10, 10)
+      h.api.scrollImage(image, 0, 0)
+      h.api.parallaxLayer(image, 0.3, 1)
+    } finally {
+      ;(fakeCtx as { drawImage: unknown }).drawImage = originalDraw
+    }
+    expect(draws).toBeGreaterThanOrEqual(5)
+  })
 
   it('⭐ culling: mapa 100×100 desenha SÓ a fatia visível (não os 10.000 tiles)', async () => {
     const h = loadRuntime(fakeTilemapAsset(gridCheio(100, 100), [1], 64))
@@ -3845,17 +4761,17 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     expect(todas.length).toBe(50)
   })
 
-  it('rpgMapSize alimenta a trava da câmera (mundo = células × célula)', async () => {
+  it('o tamanho declarado na criação do mapa alimenta a trava da câmera', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 800, height: 600 })
     const heroi = h.api.createCharacter({ w: 32, h: 32, speed: 0 })
-    h.api.rpgOnMap('campo', () => {
-      h.api.rpgMapSize(30, 20)
+    h.api.rpgCreateMap('campo', 30, 20, () => {})
+    h.api.rpgOnEnterMap('campo', () => {
       h.api.placeCharacter(heroi, 29 * 64, 19 * 64)
     })
     h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando') // vai ao 1º mapa → o hook declara o tamanho
+    h.api.restartGame()
     // O mundo passado na mão (800×600) é SOBRESCRITO pelo tamanho do mapa.
     h.api.cameraFollow(heroi, 800, 600)
     h.nextFrame(16)
@@ -3964,6 +4880,140 @@ describe('SZGameKit — R29: robustez (nomes perigosos, softlock, cura)', () => 
     expect(api.boardIn('naoexiste', 0, 0)).toBe(false)
   })
 
+  it('🛡️ limita grades, mapas, inventário e HUD antes de entrarem em laços do motor', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    const api = h.api as unknown as GameKitApi & {
+      boardCreate: (name: string, cols: number, rows: number, empty: unknown) => void
+      boardIn: (name: string, col: number, row: number) => boolean
+      drawHearts: (current: number, max: number, x: number, y: number) => void
+    }
+
+    api.boardCreate('grande', 513, 513, 0)
+    expect(api.boardIn('grande', 511, 511)).toBe(true)
+    expect(api.boardIn('grande', 512, 0)).toBe(false)
+
+    api.pkmGiveBall(1_000, 50)
+    expect(api.pkmBallCount()).toBe(999)
+
+    ctxCalls.length = 0
+    api.drawHearts(101, 101, 0, 0)
+    expect(ctxCalls.filter(([method]) => method === 'arc')).toHaveLength(200)
+
+    api.rpgCreateMap('enorme', 513, 513, () => {})
+    api.rpgGoMap('enorme')
+    const hero = api.createCharacter({ w: 64, h: 64 }) as Record<string, number>
+    api.placeCharacter(hero, 512 * 64, 0)
+    api.rpgMoveGrid(hero, 64, 0)
+    expect(hero.x).toBe(511 * 64)
+  })
+
+  it('🛡️ limita times, fila de inimigos e poções antes da batalha', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+
+    for (let i = 0; i < 20; i++) {
+      h.api.rpgAddAlly(`Aliado ${i}`, 20, 4, 0, '#4ade80')
+      h.api.rpgAddFoe(`Inimigo ${i}`, 20, 4, 0, '#e05a5a')
+      h.api.rpgGivePotion(`Poção ${i}`, 10)
+    }
+    for (let i = 20; i < 120; i++) h.api.rpgGivePotion(`Poção ${i}`, 10)
+
+    h.api.rpgSave()
+    const salvo = JSON.parse(h.store.get('szgk-rpg-save') ?? '{}')
+    expect(salvo.potions).toHaveLength(99)
+
+    h.api.rpgBattleStart('Principal', 20, 4, 0)
+    expect(battleSnap(h)?.allies).toHaveLength(6)
+    expect(battleSnap(h)?.foes).toHaveLength(6)
+  })
+
+  it('🛡️ valida a posição restaurada depois de carregar o mapa do save', () => {
+    const h = loadRuntime()
+    h.api.rpgCreateMap('pequeno', 2, 2, () => {})
+    h.api.rpgGoMap('pequeno')
+    const hero = h.api.createCharacter({ w: 64, h: 64 }) as Record<string, number>
+    h.api.rpgMoveGrid(hero, 64, 0)
+    h.store.set('szgk-rpg-save', JSON.stringify({ map: 'pequeno', hx: 999, hy: -999 }))
+
+    h.api.rpgLoad()
+
+    expect(hero.x).toBe(64)
+    expect(hero.y).toBe(0)
+    expect(hero._prevX).toBe(hero.x)
+    expect(hero._prevY).toBe(hero.y)
+  })
+
+  it('🛡️ limita esperas pendentes mesmo quando a API é chamada diretamente', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    let chamadas = 0
+    for (let i = 0; i < 2_000; i++) h.api.waitThen(0, () => chamadas++)
+
+    h.nextFrame(16)
+
+    expect(chamadas).toBe(1_000)
+  })
+
+  it('🛡️ registra uma região enorme de grama sem materializar cada célula', () => {
+    const h = loadRuntime()
+    const startedAt = performance.now()
+    h.api.pkmGrassCells(0, 0, 999, 999)
+    const elapsed = performance.now() - startedAt
+
+    expect(elapsed).toBeLessThan(150)
+  })
+
+  it('🛡️ encontra caminho no maior mapa permitido sem bloquear o quadro', () => {
+    const h = loadRuntime()
+    h.api.rpgCreateMap('maximo', 512, 512, () => {})
+    h.api.rpgOnEnterMap('maximo', () => {
+      h.api.rpgCreateNpc('bob', 0, 0, '', '')
+    })
+    h.api.rpgGoMap('maximo')
+
+    const startedAt = performance.now()
+    h.api.rpgNpcWalkTo('bob', 511, 511)
+    const elapsed = performance.now() - startedAt
+
+    expect(elapsed).toBeLessThan(200)
+  })
+
+  it('🛡️ normaliza progresso inválido na fronteira do save antes de recompensar XP', () => {
+    const h = loadRuntime()
+    h.store.set(
+      'szgk-rpg-save',
+      JSON.stringify({
+        max: -10,
+        hp: 999,
+        str: -3,
+        def: -4,
+        lvl: Number.MAX_VALUE,
+        xp: -8,
+        maxXp: 1,
+      }),
+    )
+
+    h.api.rpgLoad()
+    h.api.rpgSave()
+    const normalized = JSON.parse(h.store.get('szgk-rpg-save') ?? '{}')
+
+    expect(normalized.max).toBeGreaterThanOrEqual(1)
+    expect(normalized.hp).toBeGreaterThanOrEqual(0)
+    expect(normalized.hp).toBeLessThanOrEqual(normalized.max ?? 0)
+    expect(normalized.str).toBeGreaterThanOrEqual(0)
+    expect(normalized.def).toBeGreaterThanOrEqual(0)
+    expect(normalized.lvl).toBe(999)
+    expect(normalized.xp).toBeGreaterThanOrEqual(0)
+    expect(normalized.maxXp).toBeGreaterThanOrEqual(20)
+
+    expect(() => h.api.rpgBattleReward(20)).not.toThrow()
+    expect(Number(h.api.rpgLevel())).toBe(999)
+  })
+
   it('🧱 D2: rebater na raquete — inverte o vy e o ângulo vem do ponto de impacto', async () => {
     const h = loadRuntime()
     await startGame(h)
@@ -4004,7 +5054,7 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     await startGame(h)
     h.api.setState('jogando')
     h.api.rpgBattleStats(100, 3, 0) // herói vida 100, força fraca
-    h.api.rpgTeachMove('Bruxo', 'Chama', 40, 0) // golpe FORTE ensinado ao INIMIGO
+    h.api.rpgTeachMove('Bruxo', 'Chama', 40, 8) // golpe FORTE ensinado ao INIMIGO
     h.api.rpgBattleStart('Bruxo', 120, 1, 0) // foe força 1: sem o golpe mal me arranha
     expect(h.api.state()).toBe('batalha')
     const before = h.api.battlerLife('Você')
@@ -4012,6 +5062,44 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     // Com o golpe (40), o herói perde MUITO mais do que a força 1 causaria (bite-check
     // do fix: com o bug de volta, before-after ≈ 1 e isto falha).
     expect(before - h.api.battlerLife('Você')).toBeGreaterThan(20)
+    // Começou com 10, gastou 8 e recuperou 2 no fim da rodada.
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Bruxo')?.energy).toBe(4)
+    pickAction(h, 2_000, 'Atacar')
+    // Com 4, não pode repetir Chama: usa a força básica e recupera mais 2.
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Bruxo')?.energy).toBe(6)
+  })
+
+  it('"o inimigo usa o golpe" consome energia e recusa repetir sem energia', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 30, 8)
+    h.api.rpgBattleStart('Ogro', 100, 1, 0)
+
+    h.api.rpgFoeUse('Ogro', 'Marreta')
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.energy).toBe(2)
+    const vidaDepoisDoPrimeiro = h.api.battlerLife('Você')
+    h.api.rpgFoeUse('Ogro', 'Marreta')
+
+    expect(h.api.battlerLife('Você')).toBe(vidaDepoisDoPrimeiro)
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.energy).toBe(2)
+  })
+
+  it('os comandos exclusivos do inimigo recusam herói e nomes fora da batalha', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Você', 'Traição', 30, 0)
+    h.api.rpgBattleStart('Slime', 100, 1, 0)
+    const vidaAntes = h.api.battlerLife('Você')
+
+    h.api.rpgFoeUse('Você', 'Traição')
+    h.api.rpgFoeHitAll('Você', 20)
+    h.api.rpgFoeHitAll('Fantasma', 20)
+
+    expect(h.api.battlerLife('Você')).toBe(vidaAntes)
   })
 
   it('"a vida de … na batalha" lê qualquer combatente + o CHEFÃO entra marcado', async () => {
@@ -4120,7 +5208,7 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0) // ensinado UMA vez
     // "Jogar de novo": menu → jogando dispara o rpgNewGame de novo.
     h.api.setState('menu')
-    h.api.setState('jogando')
+    h.api.restartGame()
     h.api.rpgBattleStart('Ogro', 100, 1, 0) // o Ogro entra com o golpe (antes o wipe apagava)
     expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.moves).toBe(1)
   })
@@ -4252,9 +5340,19 @@ describe('SZGameKit — R30: 🎲 jogos de tabuleiro (dado, turnos, trilha de ca
     expect(h.api.spaceOf(peao)).toBe(0) // começa na casa 0
     h.api.moveAlongTrack(peao, 3, 'tabuleiro')
     expect(h.api.spaceOf(peao)).toBe(3) // andou 3 casas
-    expect(landed).toBe(1)
+    expect(landed).toBe(0) // ainda está deslizando
+    h.nextFrame(100)
+    h.nextFrame(200)
+    expect(landed).toBe(0)
+    h.nextFrame(300)
+    expect(landed).toBe(1) // só avisa quando chega visualmente
     h.api.moveAlongTrack(peao, 5, 'tabuleiro') // passa do fim → PARA na última (casa 4)
     expect(h.api.spaceOf(peao)).toBe(4)
+    expect(landed).toBe(1)
+    h.nextFrame(400)
+    h.nextFrame(500)
+    expect(landed).toBe(1)
+    h.nextFrame(600)
     expect(landed).toBe(2)
   })
 })
@@ -4298,6 +5396,28 @@ describe('SZGameKit — R30: 🃏 cartas (pilha = lista, carta de 2 faces, mão 
 })
 
 describe('SZGameKit — R30: 🃏 Kit Cartas (deck-battler)', () => {
+  it('registra os eventos e a configuração antes de disparar o primeiro turno do projeto', async () => {
+    const h = loadRuntime()
+    let turnos = 0
+    let energiaNoPrimeiroTurno = -1
+
+    h.api.runProject(() => {
+      h.api.cardsStart(30, 40)
+      h.api.cardsEnergyPerTurn(5)
+      h.api.cardsOnTurn(() => {
+        turnos += 1
+        energiaNoPrimeiroTurno = h.api.cardsEnergy()
+      })
+    })
+
+    expect(turnos).toBe(1)
+    expect(energiaNoPrimeiroTurno).toBe(5)
+
+    await startGame(h)
+    h.api.restartGame()
+    expect(turnos).toBe(2)
+  })
+
   it('abre a batalha, gasta/reseta energia, dano no inimigo e escudo que absorve', async () => {
     const h = loadRuntime()
     await startGame(h)
@@ -4355,7 +5475,7 @@ describe('SZGameKit — R30: 🃏 Kit Cartas (deck-battler)', () => {
     expect(h.api.cardsEnemyLife()).toBe(0)
     // "Jogar de novo" = voltar ao menu e entrar em jogando de novo → dispara o reset.
     h.api.setState('menu')
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.cardsHeroLife()).toBe(0) // a batalha da partida anterior foi ZERADA (cardsNewGame)
     // recomeçar: vida cheia (não estragada) e a receita roda 1×/turno (não 2×/3× por dobra).
     h.api.cardsStart(30, 40)

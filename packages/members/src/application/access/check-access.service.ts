@@ -1,9 +1,12 @@
+import { resolveCareerCourseLock } from '@sistemazero/core/career'
 import { type Course, isCourseAccessible } from '../../domain/course/course'
-import { CourseNotFoundError } from '../../domain/course/course.errors'
+import { CourseCareerLockedError, CourseNotFoundError } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
+import { courseTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
+import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 
 export interface CourseAccess {
   course: Course
@@ -26,6 +29,7 @@ export class CheckAccessService {
   constructor(
     private readonly courses: CourseRepository,
     private readonly entitlements: EntitlementRepository,
+    private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
   ) {}
 
@@ -33,20 +37,27 @@ export class CheckAccessService {
     userId: string,
     courseSlug: string,
     privileged = false,
+    learnerId?: string,
   ): Promise<CourseAccess> {
     const course = await this.courses.findCourseBySlug(courseSlug)
-    return this.assert(userId, course, privileged)
+    return this.assert(userId, course, privileged, learnerId)
   }
 
-  async requireById(userId: string, courseId: string, privileged = false): Promise<CourseAccess> {
+  async requireById(
+    userId: string,
+    courseId: string,
+    privileged = false,
+    learnerId?: string,
+  ): Promise<CourseAccess> {
     const course = await this.courses.findCourseById(courseId)
-    return this.assert(userId, course, privileged)
+    return this.assert(userId, course, privileged, learnerId)
   }
 
   private async assert(
     userId: string,
     course: Course | null,
     privileged: boolean,
+    learnerId?: string,
   ): Promise<CourseAccess> {
     // `published` ou `archived` concedem acesso a quem já tem matrícula; `draft`
     // (ou inexistente) → 404 (não vaza a existência de curso não publicado).
@@ -63,6 +74,36 @@ export class CheckAccessService {
       { masterType: course.audience === 'adult' ? 'all_courses' : 'all_kids_courses' },
     )
     if (!entitlement) throw new AccessDeniedError()
+    // Trava pedagógica de TODO curso kids: posições seguem a trilha
+    // (future-tier/foundation-first) e o bônus é recompensa da etapa
+    // (tier-reward — abre quando ela completa).
+    // Curso `lenda` é FORA da carreira → sem gate pedagógico (acesso = matrícula; o
+    // portão de "ver" é o nó da Lenda no mapa).
+    if (course.audience === 'kids' && course.level !== 'lenda') {
+      const qualified = await this.gamification.listQualifyingCareerSlots(
+        learnerId ?? userId,
+        course.audience,
+      )
+      // A base (slot 1) nunca depende de si mesma; nos demais (posições 2+ E
+      // bônus), sem um curso-base PUBLICADO a trava falha aberta (senão a etapa
+      // inteira ficaria presa) — mesma regra do projetor da listagem.
+      const foundationAvailable =
+        course.careerSlot === 1 ||
+        (await this.courses.hasPublishedFoundationCourse(
+          course.audience,
+          course.level,
+          course.track,
+        ))
+      const lock = resolveCareerCourseLock(
+        qualified,
+        courseTier(course.level, course.track),
+        course.careerSlot,
+        foundationAvailable,
+      )
+      if (lock.locked && lock.reason) {
+        throw new CourseCareerLockedError(lock.reason, lock.requiredLevel)
+      }
+    }
     return { course, entitlement }
   }
 }

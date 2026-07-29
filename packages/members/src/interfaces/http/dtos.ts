@@ -116,6 +116,11 @@ export const RoomStateBody = t.Object({
       rot: t.Optional(t.Integer({ minimum: 0, maximum: 3 })),
       // Item de PAREDE: em qual parede (x=horizontal, y=altura). Ausente = item de chão.
       wall: t.Optional(t.Union([t.Literal('left'), t.Literal('right')])),
+      // EM CIMA de uma superfície (24/07): itemId do pai + nicho. ⚠️ o normalize do
+      // Elysia REMOVE campo não declarado — sem estes dois aqui o filho chegava ao
+      // domínio como item de chão em (0,0) e a colocação se perdia em silêncio.
+      on: t.Optional(AVATAR_SLUG),
+      slot: t.Optional(t.Integer({ minimum: 0, maximum: 32 })),
     }),
     { maxItems: 60 },
   ),
@@ -681,10 +686,12 @@ export const ManageEntitlementBody = t.Object({
 
 const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')])
 // Nível (dificuldade) do curso — espelha o enum `course_level` do schema.
+// `lenda` = categoria fora da carreira (bônus da formatura, sempre careerSlot null).
 const COURSE_LEVEL = t.Union([
   t.Literal('iniciante'),
   t.Literal('intermediario'),
   t.Literal('avancado'),
+  t.Literal('lenda'),
 ])
 // Eixo 2D/3D do curso — espelha o enum `course_track` do schema.
 const COURSE_TRACK = t.Union([t.Literal('2d'), t.Literal('3d')])
@@ -701,7 +708,7 @@ const NULLABLE_URL = t.Optional(
 )
 
 /** Corpo de `POST/PATCH /members/admin/courses[/:id]`. */
-export const CourseBody = t.Object({
+const CourseBodyProperties = {
   slug: SLUG,
   title: TITLE,
   subtitle: NULLABLE_TEXT,
@@ -722,6 +729,15 @@ export const CourseBody = t.Object({
   level: t.Optional(t.Union([COURSE_LEVEL, t.Null()])),
   // Eixo 2D/3D. AUSENTE: create → `2d`; update → PRESERVA o atual (mesma régua).
   track: t.Optional(t.Union([COURSE_TRACK, t.Null()])),
+  // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
+  // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
+  careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
+}
+export const CourseBody = t.Object(CourseBodyProperties)
+/** PATCH exige a versão lida para impedir que uma aba antiga sobrescreva outra edição. */
+export const CourseUpdateBody = t.Object({
+  ...CourseBodyProperties,
+  version: t.Integer({ minimum: 0 }),
 })
 
 /** Query de `GET /members/admin/courses`. */
@@ -857,10 +873,10 @@ const StudioLevelSchema = t.Union([
 const StudioModeSchema = t.Union([t.Literal('blocks'), t.Literal('bridge'), t.Literal('code')])
 /**
  * Snapshot `Project` do Estúdio (autoria do admin = `initialProject`; entrega do
- * aluno = corpo do submit). Validado de forma DEFENSIVA — só exigimos `name`+`files`,
- * o resto passa (`additionalProperties`): o @sistemazero/studio sanitiza o shape inteiro
- * na autoria (export) e DE NOVO no aluno (`sanitizeProjectForHost`). O TETO DE TAMANHO
- * (anti-DoS no jsonb) é aplicado no service — TypeBox não limita bytes do agregado.
+ * aluno = corpo do submit). O TypeBox exige `name`+`files` e tolera propriedades adicionais.
+ * O service também valida `kind:pro`, árvore e template contra o catálogo fechado. O
+ * @sistemazero/studio sanitiza o shape inteiro na autoria e de novo no aluno. O teto de
+ * tamanho do agregado é aplicado no service.
  */
 const StudioProjectSchema = t.Object(
   {
@@ -1036,11 +1052,20 @@ export const TeacherThreadsQuery = t.Object({
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
+/** Cursor opaco da página anterior do histórico de uma conversa. */
+export const TeacherThreadPageQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  before: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+})
 /** Query de `GET /members/admin/teacher-threads/by-context` — abrir a conversa da Entrega. */
 export const AdminTeacherThreadByContextQuery = t.Object({
   userId: UUID,
   contextType: t.Union([t.Literal('studio_submission'), t.Literal('mural_publication')]),
   contextRef: t.String({ minLength: 1, maxLength: 200 }),
+  before: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+})
+export const AdminTeacherThreadPageQuery = t.Object({
+  before: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
 })
 /** Query da caixa de entrada do PROFESSOR (`GET /members/admin/teacher-threads`). */
 export const AdminTeacherThreadsQuery = t.Object({
@@ -1048,9 +1073,27 @@ export const AdminTeacherThreadsQuery = t.Object({
   context: t.Optional(TEACHER_CONTEXT),
   courseId: t.Optional(UUID),
   unread: t.Optional(t.Literal('true')),
+  // CSV de userIds/accountIds (filtro por aluno, 24/07) — uuids válidos, teto 20.
+  userIds: t.Optional(t.String({ maxLength: 800 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
+/** Corpo de `POST /members/admin/teacher-threads/read-all` (escopo opcional da caixa). */
+export const AdminTeacherThreadsReadAllBody = t.Object({
+  audience: t.Optional(AUDIENCE),
+  context: t.Optional(TEACHER_CONTEXT),
+  courseId: t.Optional(UUID),
+})
+/** CSV de userIds (filtro por aluno) → uuids válidos; descarta lixo, teto 20. */
+export function parseUserIds(csv: string | undefined): string[] | undefined {
+  if (!csv) return undefined
+  const ids = csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => UUID_RE.test(s))
+    .slice(0, 20)
+  return ids.length > 0 ? ids : undefined
+}
 /**
  * Corpo de `POST /members/admin/teacher-threads` — o professor ABRE/CONTINUA uma
  * conversa por CONTEXTO (Entrega do Estúdio ou recado geral; o Mural entra por

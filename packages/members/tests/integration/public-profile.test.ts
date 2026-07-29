@@ -44,6 +44,35 @@ describe('Perfil público (GET /members/profiles/:id/public)', () => {
     expect(body.room).toBeNull()
   })
 
+  test('jogos publicados no Mural vêm do hub (com capa e link de jogar)', async () => {
+    const { app, hubGamesByAuthor } = buildApp()
+    hubGamesByAuthor.set(TARGET, [
+      {
+        title: 'Nave',
+        playId: 'play-1',
+        coverUrl: 'https://cdn/x.webp',
+        publishedAt: '2026-07-20T00:00:00.000Z',
+      },
+      { title: 'Dino', playId: null, coverUrl: null, publishedAt: '2026-07-19T00:00:00.000Z' },
+    ])
+    const body = await readJson(await getPublic(app, TARGET))
+    expect(body.games).toEqual([
+      {
+        title: 'Nave',
+        playId: 'play-1',
+        coverUrl: 'https://cdn/x.webp',
+        publishedAt: '2026-07-20T00:00:00.000Z',
+      },
+      { title: 'Dino', playId: null, coverUrl: null, publishedAt: '2026-07-19T00:00:00.000Z' },
+    ])
+  })
+
+  test('hub indisponível → games vazio (best-effort, não derruba o perfil)', async () => {
+    const { app } = buildApp()
+    const body = await readJson(await getPublic(app, TARGET))
+    expect(body.games).toEqual([])
+  })
+
   test('id inválido (não uuid) → 400 na borda', async () => {
     const { app } = buildApp()
     const res = await app.handle(new Request('http://localhost/members/profiles/nao-uuid/public'))

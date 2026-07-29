@@ -8,7 +8,7 @@ import { KidsConfetti } from './kids-confetti'
 import { KidsMascot } from './mascot'
 
 /**
- * Comemoração de SUBIU DE NÍVEL (rank Noob→God) — overlay com o Zappy, confete e a
+ * Comemoração de SUBIU DE NÍVEL (Faísca até Lenda) — overlay com o Zappy, confete e a
  * insígnia GRANDE do novo nível na sua cor (aura). Disparada pelo `LevelUpWatcher`
  * quando o nível avança (concluir + publicar no Mural). Reusa o `useModalA11y`
  * (foco-preso/Esc/restore) e o `KidsConfetti` (som de comemoração + reduced-motion).

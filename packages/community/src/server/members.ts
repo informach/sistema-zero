@@ -13,4 +13,6 @@ export const {
   saveVideoPosition,
   saveCourseRating,
   submitQuizAttempt,
+  listTeacherThreadsReadonly,
+  getTeacherThreadsUnreadReadonly,
 } = shell.members

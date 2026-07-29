@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import {
   crossingExample,
   dodgeExample,
@@ -116,13 +117,71 @@ describe('parseJS — helpers SZGame3D.* (game-3d)', () => {
   })
 })
 
+describe('parseJS — preservação do código manual de Jogo 3D', () => {
+  const unknownDropdownCases = [
+    'const apertou = SZGame3D.keyDown("KeyQ");',
+    'SZGame3D.gridMove(obj, "diagonal");',
+    'SZGame3D.crosserMove(obj, "diagonal");',
+    'SZGame3D.addRow(cena, 1, "lava", "right", 0.1);',
+    'SZGame3D.addRow(cena, 1, "grass", "up", 0.1);',
+    'SZGame3D.raceControl(carro, "turbo");',
+    'SZGame3D.slideBetween(obj, "w", -1, 1, 0.1);',
+    'SZGame3D.spin(obj, "w", 0.1);',
+    'const x = SZGame3D.getPos(obj, "w");',
+    'const x = SZGame3D.getRot(obj, "w");',
+    'const x = SZGame3D.getVel(obj, "w");',
+    'SZGame3D.rotateBy(obj, "w", 0.1);',
+    'SZGame3D.setVisible(obj, "toggle");',
+    'SZGame3D.setMaterial(obj, "lava");',
+    'SZGame3D.setShadows(cena, "auto");',
+    'SZGame3D.pruneSwarm(enxame, "w", -10, 10);',
+    'SZGame3D.playEffect("laser");',
+  ]
+
+  for (const code of unknownDropdownCases) {
+    it(`preserva dropdown desconhecido como código: ${code}`, () => {
+      const parsed = parseJS(code)
+      expect([...collectTypes(parsed)].filter((type) => type.startsWith('g3d:'))).toEqual([])
+      expect(compileStatements(parsed, 0).trim()).toBe(code)
+    })
+  }
+
+  for (const code of [
+    'SZGame3D.setBackground(cena, "#000", 123);',
+    'const grupo = SZGame3D.createGroup(123);',
+    'SZGame3D.isometricCamera(cena, alvo, 123);',
+  ]) {
+    it(`preserva chamada com argumentos extras: ${code}`, () => {
+      const parsed = parseJS(code)
+      expect([...collectTypes(parsed)].filter((type) => type.startsWith('g3d:'))).toEqual([])
+      expect(compileStatements(parsed, 0).trim()).toBe(code)
+    })
+  }
+
+  for (const code of [
+    'SZGame3D.isometricCamera(cena, escolherAlvo());',
+    'SZGame3D.topCamera(cena, escolherAlvo());',
+  ]) {
+    it(`preserva alvo de câmera que não cabe no bloco: ${code}`, () => {
+      const parsed = parseJS(code)
+      expect([...collectTypes(parsed)].filter((type) => type.startsWith('g3d:'))).toEqual([])
+      expect(compileStatements(parsed, 0).trim()).toBe(code)
+    })
+  }
+})
+
 describe('roundtrip do rotatingCubeExample (gerar → parsear)', () => {
   it('o código gerado volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(rotatingCubeExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(rotatingCubeExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
-    for (const expected of ['g3d:createScene', 'g3d:createBox', 'g3d:animate', 'g3d:setRotation']) {
+    for (const expected of [
+      'g3d:createFullscreenScene',
+      'g3d:createBox',
+      'g3d:animate',
+      'g3d:rotateBy',
+    ]) {
       expect(types.has(expected)).toBe(true)
     }
   })
@@ -175,14 +234,27 @@ describe('parseJS — física, Kit Desvie e câmera (game-3d)', () => {
     expect(parseJS('SZGame3D.cameraFollow(cena, jogador);')).toEqual([
       { type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'jogador' },
     ])
-    expect(parseJS('SZGame3D.runEnemies(cena, inimigos, chao, 200, 0.02);')).toEqual([
+    expect(parseJS('SZGame3D.spawnEnemy(cena, inimigos, 0.1);')).toEqual([
       {
-        type: 'g3d:runEnemies',
+        type: 'g3d:spawnEnemy',
         worldVar: 'cena',
         groupVar: 'inimigos',
-        groundVar: 'chao',
-        every: { type: 'num', value: 200 },
-        speed: { type: 'num', value: 0.02 },
+        speed: { type: 'num', value: 0.1 },
+      },
+    ])
+    expect(parseJS('SZGame3D.updateGroup(inimigos, chao);')).toEqual([
+      { type: 'g3d:updateGroup', groupVar: 'inimigos', groundVar: 'chao' },
+    ])
+    expect(parseJS('SZGame3D.clearGroup(inimigos);')).toEqual([
+      { type: 'g3d:clearGroup', groupVar: 'inimigos' },
+    ])
+    expect(
+      parseJS('SZGame3D.everyFramesLoop(45, () => { SZGame3D.spawnEnemy(cena, inimigos, 0.1); });'),
+    ).toMatchObject([
+      {
+        type: 'g3d:everyFrames',
+        n: { type: 'num', value: 45 },
+        body: [{ type: 'g3d:spawnEnemy' }],
       },
     ])
     expect(parseJS('SZGame3D.stop(cena);')).toEqual([{ type: 'g3d:stop', worldVar: 'cena' }])
@@ -205,7 +277,7 @@ describe('parseJS — física, Kit Desvie e câmera (game-3d)', () => {
 
 describe('roundtrip do dodgeExample (gerar → parsear)', () => {
   it('o jogo "Desvie dos blocos" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(dodgeExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(dodgeExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -222,7 +294,10 @@ describe('roundtrip do dodgeExample (gerar → parsear)', () => {
       'g3d:jump',
       'g3d:applyGravity',
       'g3d:cameraFollow',
-      'g3d:runEnemies',
+      'g3d:everyFrames',
+      'g3d:spawnEnemy',
+      'g3d:updateGroup',
+      'g3d:pruneOffscreen',
       'g3d:keyDown',
       'g3d:hitAny',
       'g3d:stop',
@@ -234,7 +309,7 @@ describe('roundtrip do dodgeExample (gerar → parsear)', () => {
 
 describe('roundtrip do shapesExample (gerar → parsear)', () => {
   it('o "Boneco de formas" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(shapesExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(shapesExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -254,7 +329,7 @@ describe('roundtrip do shapesExample (gerar → parsear)', () => {
 
 describe('roundtrip do nightExample (gerar → parsear)', () => {
   it('a "Noite enevoada" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(nightExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(nightExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -272,7 +347,7 @@ describe('roundtrip do nightExample (gerar → parsear)', () => {
 
 describe('roundtrip do swarmExample (gerar → parsear)', () => {
   it('o "Enxame que gira" volta a virar blocos g3d (incl. o "para cada" com corpo)', () => {
-    const code = compileStatements(swarmExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(swarmExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -373,8 +448,8 @@ describe('parseJS — Travessia + grade genérica (game-3d)', () => {
 })
 
 describe('roundtrip do crossingExample (gerar → parsear)', () => {
-  it('o jogo "Atravesse a rua" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(crossingExample.ir.js, 0)
+  it('o jogo "Atravesse a Rua" volta a virar blocos g3d (sem degradar para rawJS)', () => {
+    const code = compileStatements(behaviorStatements(crossingExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -461,8 +536,8 @@ describe('parseJS — Corrida + genéricos top-down (game-3d)', () => {
 })
 
 describe('roundtrip do raceExample (gerar → parsear)', () => {
-  it('o jogo "Corrida maluca" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(raceExample.ir.js, 0)
+  it('o jogo "Corrida Maluca" volta a virar blocos g3d (sem degradar para rawJS)', () => {
+    const code = compileStatements(behaviorStatements(raceExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -531,7 +606,7 @@ describe('parseJS — Empilhar + genéricos de movimento (game-3d)', () => {
 
 describe('roundtrip do stackExample (gerar → parsear)', () => {
   it('o jogo "Torre maluca" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(stackExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(stackExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)

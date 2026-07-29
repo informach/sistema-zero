@@ -3,7 +3,7 @@ import { Suspense, useMemo } from 'react'
 import { t } from '#core'
 import { ErrorBoundary } from '#ui'
 import { useProjectStore } from '../../state/projectStore'
-import { type BottomTab, useUIStore } from '../../state/uiStore'
+import { type BottomTab, resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { ConsolePanel } from '../console/ConsolePanel'
 import { SectionErrorFallback } from './ErrorViews'
@@ -67,10 +67,10 @@ export function renderBottomPanel(id: BottomTab): ReactNode {
 /**
  * Tabs do painel inferior VISÍVEIS no contexto atual. Cruza três filtros:
  * - features do host (`config.console/terminal/ai`);
- * - contexto de modo: Terminal e IA são ferramentas do fluxo de Código, então só
- *   aparecem em `mode === 'code'` (no Blocos/Ponte só faz sentido o Console);
- * - preferência do aluno (`showConsole/showTerminal/showAI`, espelho do
- *   `showPreview`).
+ * - contexto de modo: sem escolha manual, Console fica oculto em Blocos/Ponte e
+ *   visível em Código; Terminal e IA só aparecem em `mode === 'code'`;
+ * - preferência do aluno: a escolha manual do Console prevalece entre modos e
+ *   projetos na mesma instância; Terminal/IA usam seus booleanos próprios.
  *
  * Ponto único de verdade consumido pelo `BottomPanel` (wide), pelo `NarrowPanels`
  * (abas) e pelo `Shell` (decide se a barra inferior existe). Mantê-lo aqui evita
@@ -79,16 +79,25 @@ export function renderBottomPanel(id: BottomTab): ReactNode {
 export function useVisibleBottomTabs(): TabItem[] {
   const config = useStudioConfig()
   const mode = useProjectStore((s) => s.project?.mode)
-  const showConsole = useUIStore((s) => s.showConsole)
+  const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
   const showTerminal = useUIStore((s) => s.showTerminal)
   const showAI = useUIStore((s) => s.showAI)
 
   return useMemo(() => {
     const isCode = mode === 'code'
+    const showConsole = resolveConsoleVisibility(mode, consoleVisibilityOverride)
     return BOTTOM_TAB_ORDER.filter((id) => {
       if (id === 'console') return config.console && showConsole
       if (id === 'terminal') return config.terminal && showTerminal && isCode
       return config.ai && showAI && isCode
     }).map((id) => ({ id, label: t(BOTTOM_TAB_LABELS[id]) }))
-  }, [config.console, config.terminal, config.ai, mode, showConsole, showTerminal, showAI])
+  }, [
+    config.console,
+    config.terminal,
+    config.ai,
+    mode,
+    consoleVisibilityOverride,
+    showTerminal,
+    showAI,
+  ])
 }

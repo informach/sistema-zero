@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { LoopOnce } from 'three'
+import { makeAnimatedGlb, makeHdrDataUrl } from './assetFixtures'
 import { type KitApi, loadStartedKit, makeFakeThree, runtimeBody } from './kitHarness'
 
 /**
@@ -20,7 +22,7 @@ import { type KitApi, loadStartedKit, makeFakeThree, runtimeBody } from './kitHa
 /**
  * ⭐ Um .glb 2.0 COM SKIN: 1 SkinnedMesh, 2 ossos (raiz + filho), skin com
  * inverseBindMatrices e 1 clip que gira o osso filho. É o único jeito de ver o
- * bug do clone: o `.glb` sem esqueleto (o `makeGlb` comum, translação num nó
+ * bug do clone: o `.glb` sem esqueleto (o `makeAnimatedGlb` comum, translação num nó
  * solto) aceita o clone comum sem reclamar — foi por isso que a v0.5.0 passou
  * verde com a animação MORTA no caso real. A montagem binária foi validada
  * contra o GLTFLoader de verdade (spike) antes de virar teste.
@@ -137,55 +139,41 @@ function makeSkinnedGlb(clipName: string): string {
   return `data:model/gltf-binary;base64,${btoa(out)}`
 }
 
-/**
- * Um .glb 2.0 válido e mínimo: 1 nó, opcionalmente com animações de verdade.
- * Cada clipe é um sampler translation com 2 quadros — o suficiente para o
- * GLTFLoader montar um AnimationClip real e o mixer ter o que tocar.
- */
-function makeGlb(nodeName: string, clipNames: string[] = []): string {
-  const gltf: Record<string, unknown> = {
+/** GLB válido com geometria zero-inicializada; permite testar orçamento sem fixture gigante. */
+function makeTriangleGlb(triangleCount: number, meshNodes = 1): string {
+  const gltf = {
     asset: { version: '2.0' },
-    scenes: [{ nodes: [0] }],
     scene: 0,
-    nodes: [{ name: nodeName }],
-  }
-  if (clipNames.length) {
-    // tempos [0,1] (2 floats) + translations 2×vec3 (6 floats) = 32 bytes.
-    const bin = new Float32Array([0, 1, 0, 0, 0, 0, 1, 0])
-    const b64 = btoa(String.fromCharCode(...new Uint8Array(bin.buffer)))
-    gltf.buffers = [{ byteLength: 32, uri: `data:application/octet-stream;base64,${b64}` }]
-    gltf.bufferViews = [
-      { buffer: 0, byteOffset: 0, byteLength: 8 },
-      { buffer: 0, byteOffset: 8, byteLength: 24 },
-    ]
-    gltf.accessors = [
-      { bufferView: 0, componentType: 5126, count: 2, type: 'SCALAR', min: [0], max: [1] },
-      { bufferView: 1, componentType: 5126, count: 2, type: 'VEC3' },
-    ]
-    gltf.animations = clipNames.map((name) => ({
-      name,
-      samplers: [{ input: 0, interpolation: 'LINEAR', output: 1 }],
-      channels: [{ sampler: 0, target: { node: 0, path: 'translation' } }],
-    }))
+    scenes: [{ nodes: Array.from({ length: meshNodes }, (_, index) => index) }],
+    nodes: Array.from({ length: meshNodes }, (_, index) => ({ name: `Mesh-${index}`, mesh: 0 })),
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+    accessors: [
+      {
+        componentType: 5126,
+        count: triangleCount * 3,
+        type: 'VEC3',
+        min: [0, 0, 0],
+        max: [0, 0, 0],
+      },
+    ],
   }
   const json = new TextEncoder().encode(JSON.stringify(gltf))
-  // Os chunks do GLB são alinhados em 4 bytes (com espaço, não com zero).
-  const pad = (4 - (json.length % 4)) % 4
-  const jsonLen = json.length + pad
-  const total = 12 + 8 + jsonLen
-  const buf = new ArrayBuffer(total)
-  const dv = new DataView(buf)
-  const u8 = new Uint8Array(buf)
-  dv.setUint32(0, 0x46546c67, true) // "glTF"
-  dv.setUint32(4, 2, true) // versão
-  dv.setUint32(8, total, true)
-  dv.setUint32(12, jsonLen, true)
-  dv.setUint32(16, 0x4e4f534a, true) // "JSON"
-  u8.set(json, 20)
-  for (let i = 0; i < pad; i++) u8[20 + json.length + i] = 0x20
-  let bin = ''
-  for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i] as number)
-  return `data:model/gltf-binary;base64,${btoa(bin)}`
+  const padding = (4 - (json.length % 4)) % 4
+  const jsonLength = json.length + padding
+  const total = 12 + 8 + jsonLength
+  const buffer = new ArrayBuffer(total)
+  const view = new DataView(buffer)
+  const bytes = new Uint8Array(buffer)
+  view.setUint32(0, 0x46546c67, true)
+  view.setUint32(4, 2, true)
+  view.setUint32(8, total, true)
+  view.setUint32(12, jsonLength, true)
+  view.setUint32(16, 0x4e4f534a, true)
+  bytes.set(json, 20)
+  for (let index = 0; index < padding; index++) bytes[20 + json.length + index] = 0x20
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return `data:model/gltf-binary;base64,${btoa(binary)}`
 }
 
 function seedModels(models: Record<string, string>) {
@@ -194,6 +182,22 @@ function seedModels(models: Record<string, string>) {
     entries[name] = { kind: 'model3d', dataUrl, fileName: `${name}.glb` }
   }
   ;(globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D = entries
+}
+
+function seedEnvironments(environments: Record<string, string>) {
+  const entries: Record<string, unknown> = {}
+  for (const [name, dataUrl] of Object.entries(environments)) {
+    entries[name] = { kind: 'environment3d', dataUrl, fileName: `${name}.hdr` }
+  }
+  ;(globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D = entries
+}
+
+async function waitUntil(predicate: () => boolean): Promise<void> {
+  for (let i = 0; i < 60; i++) {
+    if (predicate()) return
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+  throw new Error('a condição assíncrona não aconteceu a tempo')
 }
 
 /**
@@ -213,8 +217,90 @@ function hasNode(entity: unknown, name: string): boolean {
 }
 
 describe('SZGameKit3D — modelos .glb', () => {
+  it('rejeita modelo acima do teto de malhas antes de colocá-lo no cache', async () => {
+    seedModels({ cidade: makeTriangleGlb(1, 49) })
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      const { api } = await loadStartedKit((runtime) => {
+        runtime.defineMold('cidade', { health: 1, speed: 0 }, () => {
+          runtime.part({
+            shape: 'modelo',
+            model: 'cidade',
+            w: 1,
+            h: 1,
+            d: 1,
+            x: 0,
+            y: 0,
+            z: 0,
+          })
+        })
+      })
+      api.setState('jogando')
+      const entity = api.spawn('cidade', 0, 0, 0)
+      expect(hasNode(entity, 'Mesh-0')).toBe(false)
+      expect(warnings.some((warning) => warning.includes('49 malhas'))).toBe(true)
+    } finally {
+      console.warn = originalWarn
+    }
+  })
+
+  it('limita cópias vivas de modelo pelo orçamento agregado de triângulos', async () => {
+    seedModels({ denso: makeTriangleGlb(100_000) })
+    const { api } = await loadStartedKit((runtime) => {
+      runtime.defineMold('denso', { health: 1, speed: 0 }, () => {
+        runtime.part({
+          shape: 'modelo',
+          model: 'denso',
+          w: 1,
+          h: 1,
+          d: 1,
+          x: 0,
+          y: 0,
+          z: 0,
+        })
+      })
+    })
+    api.setState('jogando')
+    for (let index = 0; index < 20; index++) {
+      expect(api.spawn('denso', 0, 0, 0)).not.toBeNull()
+    }
+    expect(api.spawn('denso', 0, 0, 0)).toBeNull()
+  })
+
+  it('aplica o orçamento ativo globalmente entre moldes e devolve o custo ao reciclar', async () => {
+    seedModels({ denso: makeTriangleGlb(100_000) })
+    const { api } = await loadStartedKit((runtime) => {
+      for (const mold of ['a', 'b']) {
+        runtime.defineMold(mold, { health: 1, speed: 0 }, () => {
+          runtime.part({
+            shape: 'modelo',
+            model: 'denso',
+            w: 1,
+            h: 1,
+            d: 1,
+            x: 0,
+            y: 0,
+            z: 0,
+          })
+        })
+      }
+    })
+    api.setState('jogando')
+    const spawned: unknown[] = []
+    for (let index = 0; index < 10; index++) {
+      spawned.push(api.spawn('a', 0, 0, 0), api.spawn('b', 0, 0, 0))
+    }
+    expect(spawned.every(Boolean)).toBe(true)
+    expect(api.spawn('a', 0, 0, 0)).toBeNull()
+
+    api.recycle(spawned[spawned.length - 1])
+    expect(api.spawn('a', 0, 0, 0)).not.toBeNull()
+  })
+
   it('⭐ dois moldes com o MESMO .glb: os DOIS ganham o modelo (não só o primeiro)', async () => {
-    seedModels({ robo: makeGlb('Boneco') })
+    seedModels({ robo: makeAnimatedGlb('Boneco') })
     const { api } = await loadStartedKit()
     // Os dois pedem o mesmo arquivo: o 2º chega com a carga EM VOO e entra na fila.
     api.defineMold('heroi', { health: 1, speed: 0 }, () => {
@@ -232,7 +318,7 @@ describe('SZGameKit3D — modelos .glb', () => {
   })
 
   it('⭐ entidade nascida logo depois do start NÃO fica com o cubo', async () => {
-    seedModels({ nave: makeGlb('Casco') })
+    seedModels({ nave: makeAnimatedGlb('Casco') })
     // loadStartedKit define o molde DEPOIS do setup e ANTES do start — que agora
     // espera o modelo junto com os sons (a tela de "carregando" já existia).
     const { api } = await loadStartedKit((a) => {
@@ -245,8 +331,189 @@ describe('SZGameKit3D — modelos .glb', () => {
     expect(hasNode(e, 'Casco')).toBe(true)
   })
 
+  it('carrega modelo cujo nome coincide com uma propriedade herdada', async () => {
+    seedModels({ constructor: makeAnimatedGlb('Construtor') })
+    const { api } = await loadStartedKit((a) => {
+      a.defineMold('nave', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'constructor', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+
+    expect(hasNode(api.spawn('nave', 0, 0, 0), 'Construtor')).toBe(true)
+  })
+
+  it('inicia o jogo quando o carregamento de modelo excede o timeout', async () => {
+    seedModels({ tardio: makeAnimatedGlb('Tardio') })
+    const { THREE, renderers } = makeFakeThree()
+    const win = globalThis.window as unknown as Record<string, unknown>
+    const timers: Array<() => void> = []
+    new Function('THREE', 'window', 'setTimeout', 'clearTimeout', runtimeBody)(
+      THREE,
+      win,
+      (callback: () => void) => {
+        timers.push(callback)
+        return timers.length
+      },
+      () => undefined,
+    )
+    const api = win.SZGameKit3D as KitApi
+    api.setup({ width: 640, height: 360, world: 100 })
+    api.defineMold('tardio', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'modelo', model: 'tardio', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+    })
+    api.start()
+
+    expect(timers).toHaveLength(1)
+    timers[0]?.()
+    await waitUntil(() => Boolean(renderers[0]?.loop))
+
+    window.dispatchEvent(new Event('pagehide'))
+  })
+
+  it('dispose cancela imediatamente o timeout de um GLB pendente', () => {
+    seedModels({ tardio: makeAnimatedGlb('Tardio') })
+    const { THREE } = makeFakeThree()
+    const win = globalThis.window as unknown as Record<string, unknown>
+    const timers: Array<() => void> = []
+    const cleared: number[] = []
+    new Function('THREE', 'window', 'setTimeout', 'clearTimeout', runtimeBody)(
+      THREE,
+      win,
+      (callback: () => void) => {
+        timers.push(callback)
+        return timers.length
+      },
+      (id: number) => cleared.push(id),
+    )
+    const api = win.SZGameKit3D as KitApi
+    api.setup({ width: 640, height: 360, world: 100 })
+    api.defineMold('tardio', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'modelo', model: 'tardio', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+    })
+    api.start()
+
+    expect(timers).toHaveLength(1)
+    window.dispatchEvent(new Event('pagehide'))
+    expect(cleared).toEqual([1])
+  })
+
+  it('dispose durante o parse de GLB invalida a conclusão tardia do start', async () => {
+    seedModels({ tardio: makeAnimatedGlb('Tardio') })
+    const { THREE, renderers } = makeFakeThree()
+    const win = globalThis.window as unknown as Record<string, unknown>
+    new Function('THREE', 'window', runtimeBody)(THREE, win)
+    const api = win.SZGameKit3D as KitApi
+    api.setup({ width: 640, height: 360, world: 100 })
+    api.defineMold('tardio', { health: 1, speed: 0 }, () => {
+      api.part({
+        shape: 'modelo',
+        model: 'tardio',
+        w: 1,
+        h: 1,
+        d: 1,
+        x: 0,
+        y: 0,
+        z: 0,
+      })
+    })
+    api.start()
+    window.dispatchEvent(new Event('pagehide'))
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    expect(renderers[0]?.loop).toBeNull()
+    expect(renderers[0]?.disposeCalls).toBe(1)
+  })
+
+  it('dispose libera o GLB cacheado mesmo depois de a entidade voltar ao pool', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Heroi') })
+    const { api } = await loadStartedKit((runtime) => {
+      runtime.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        runtime.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const entity = api.spawn('heroi', 0, 0, 0) as {
+      mesh: {
+        traverse(
+          fn: (node: {
+            geometry?: { addEventListener(type: string, fn: () => void): void }
+          }) => void,
+        ): void
+      }
+    }
+    let geometryDisposals = 0
+    entity.mesh.traverse((node) => {
+      node.geometry?.addEventListener('dispose', () => geometryDisposals++)
+    })
+
+    api.recycle(entity)
+    window.dispatchEvent(new Event('pagehide'))
+
+    expect(geometryDisposals).toBeGreaterThan(0)
+  })
+
+  it('dispose emite uma vez para a geometria compartilhada entre cena e cache', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Heroi') })
+    const { api } = await loadStartedKit((runtime) => {
+      runtime.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        runtime.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const entity = api.spawn('heroi', 0, 0, 0) as {
+      mesh: {
+        traverse(
+          fn: (node: {
+            geometry?: { addEventListener(type: string, fn: () => void): void }
+          }) => void,
+        ): void
+      }
+    }
+    let geometryDisposals = 0
+    entity.mesh.traverse((node) => {
+      node.geometry?.addEventListener('dispose', () => geometryDisposals++)
+    })
+
+    window.dispatchEvent(new Event('pagehide'))
+
+    expect(geometryDisposals).toBe(1)
+  })
+
+  it('Jogar de novo preserva o material que pertence ao cache de GLB', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Heroi') })
+    const { api } = await loadStartedKit()
+    api.runProject(() => {
+      api.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        api.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    const entity = api.spawn('heroi', 0, 0, 0) as {
+      mesh: {
+        traverse(
+          fn: (node: {
+            material?: { addEventListener(type: string, fn: () => void): void }
+          }) => void,
+        ): void
+      }
+    }
+    let materialDisposals = 0
+    entity.mesh.traverse((node) => {
+      node.material?.addEventListener('dispose', () => materialDisposals++)
+    })
+
+    api.setState('fim')
+    api.setState('jogando')
+
+    expect(materialDisposals).toBe(0)
+    window.dispatchEvent(new Event('pagehide'))
+  })
+
   it('⭐ o boneco ganha um mixer e os clipes do .glb (era estátua congelada)', async () => {
-    seedModels({ heroi: makeGlb('Armature', ['parado', 'correr']) })
+    seedModels({ heroi: makeAnimatedGlb('Armature', ['parado', 'correr']) })
     const { api } = await loadStartedKit((a) => {
       a.defineMold('heroi', { health: 1, speed: 0 }, () => {
         a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
@@ -352,8 +619,54 @@ describe('SZGameKit3D — modelos .glb', () => {
     expect(Math.abs(y1 - y0)).toBeGreaterThan(0.1)
   })
 
+  it('animação de uma vez pode tocar novamente depois de terminar', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Armature', ['atacar']) })
+    const { api, step } = await loadStartedKit((a) => {
+      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const e = api.spawn('heroi', 0, 0, 0) as {
+      _action?: { time: number; isRunning(): boolean }
+    }
+    api.playAnim(e, 'atacar', false)
+    step(40)
+    expect(e._action?.isRunning()).toBe(false)
+    expect(e._action?.time).toBeCloseTo(1)
+
+    api.playAnim(e, 'atacar', false)
+
+    expect(e._action?.isRunning()).toBe(true)
+    expect(e._action?.time).toBe(0)
+  })
+
+  it('trocar o mesmo clipe de repetição para uma vez reconfigura a ação', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Armature', ['atacar']) })
+    const { api, step } = await loadStartedKit((a) => {
+      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const e = api.spawn('heroi', 0, 0, 0) as {
+      _action?: { loop: number; time: number; isRunning(): boolean }
+    }
+    api.playAnim(e, 'atacar', true)
+    step(5)
+    const action = e._action
+    expect(action?.time).toBeGreaterThan(0)
+
+    api.playAnim(e, 'atacar', false)
+
+    expect(e._action).toBe(action)
+    expect(action?.loop).toBe(LoopOnce)
+    expect(action?.time).toBe(0)
+    expect(action?.isRunning()).toBe(true)
+  })
+
   it('⭐ a animação segue o ESTADO da entidade, sozinha', async () => {
-    seedModels({ heroi: makeGlb('Armature', ['parado', 'correr']) })
+    seedModels({ heroi: makeAnimatedGlb('Armature', ['parado', 'correr']) })
     const { api } = await loadStartedKit((a) => {
       a.defineMold('heroi', { health: 1, speed: 0 }, () => {
         a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
@@ -371,7 +684,7 @@ describe('SZGameKit3D — modelos .glb', () => {
   })
 
   it('animação com nome que não existe: avisa UMA vez e não derruba o jogo', async () => {
-    seedModels({ heroi: makeGlb('Armature', ['parado']) })
+    seedModels({ heroi: makeAnimatedGlb('Armature', ['parado']) })
     const { api, step } = await loadStartedKit((a) => {
       a.defineMold('heroi', { health: 1, speed: 0 }, () => {
         a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
@@ -399,7 +712,7 @@ describe('SZGameKit3D — modelos .glb', () => {
   })
 
   it('recycle para a animação (o mesh volta ao pool e é REUSADO)', async () => {
-    seedModels({ heroi: makeGlb('Armature', ['parado']) })
+    seedModels({ heroi: makeAnimatedGlb('Armature', ['parado']) })
     const { api } = await loadStartedKit((a) => {
       a.defineMold('heroi', { health: 1, speed: 0 }, () => {
         a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
@@ -411,9 +724,10 @@ describe('SZGameKit3D — modelos .glb', () => {
     expect(e._action).toBeTruthy()
     api.recycle(e)
     expect(e._action).toBeNull()
-    // O slot volta com o MESMO mixer (não remonta) e sem ação pendurada.
+    // O recurso volta com o MESMO mixer (não remonta), mas em um handle novo.
     const e2 = api.spawn('heroi', 0, 0, 0) as { _mixer?: unknown; _action?: unknown }
-    expect(e2).toBe(e as unknown as typeof e2)
+    expect(e2).not.toBe(e as unknown as typeof e2)
+    expect(e2._mixer).toBe(e._mixer)
     expect(e2._mixer).toBeTruthy()
     expect(e2._action).toBeNull()
   })
@@ -438,5 +752,36 @@ describe('SZGameKit3D — modelos .glb', () => {
       console.warn = orig
     }
     expect(avisos.some((m) => m.includes('sumido') && m.includes('reserva'))).toBe(true)
+  })
+})
+
+describe('SZGameKit3D — ambientes .hdr', () => {
+  it('troca e remove o HDR sem vazar textura nem deixar iluminação antiga', async () => {
+    seedEnvironments({
+      dia: makeHdrDataUrl(160, 190, 255),
+      noite: makeHdrDataUrl(20, 30, 80),
+    })
+    const { api, renderers } = await loadStartedKit()
+    const scene = renderers[0]?.scene
+    expect(scene).toBeTruthy()
+
+    api.setSkyPhoto('dia')
+    await waitUntil(() => Boolean(scene?.environment))
+    const day = scene?.environment
+    let dayDisposals = 0
+    day?.addEventListener('dispose', () => dayDisposals++)
+
+    api.setSkyPhoto('noite')
+    await waitUntil(() => Boolean(scene?.environment && scene.environment !== day))
+    const night = scene?.environment
+    expect(dayDisposals).toBe(1)
+    expect(scene?.background).toBe(night)
+
+    let nightDisposals = 0
+    night?.addEventListener('dispose', () => nightDisposals++)
+    api.setSky('#111827', '#93c5fd')
+    expect(scene?.environment).toBeNull()
+    expect(scene?.background).not.toBe(night)
+    expect(nightDisposals).toBe(1)
   })
 })

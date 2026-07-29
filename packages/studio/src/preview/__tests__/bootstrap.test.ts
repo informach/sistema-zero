@@ -1,8 +1,45 @@
 import { describe, expect, it } from 'bun:test'
-import { buildPreviewDoc } from '../bootstrap'
+import { createHash } from 'node:crypto'
+import { buildPreviewDoc, extensionImportUrls } from '../bootstrap'
 import { PREVIEW_INTERCEPTOR_SCRIPT } from '../interceptors'
 
 describe('buildPreviewDoc', () => {
+  it('autoriza somente o conteúdo exato de cada script por hash/integridade', () => {
+    const doc = buildPreviewDoc({
+      html: '<body></body>',
+      css: '',
+      js: 'console.log("ok");',
+      extensionScripts: ['window.__EXT__ = true;'],
+      extensionImports: { pacote: 'https://esm.sh/pacote@1.0.0' },
+    })
+    const scriptPolicy = doc.match(/script-src[^;]*/)?.[0] ?? ''
+    expect(scriptPolicy).not.toContain("'unsafe-inline'")
+    expect(scriptPolicy).not.toContain("'nonce-")
+    expect(scriptPolicy).not.toMatch(/\bdata:|\bblob:/)
+
+    const inlineScripts = [...doc.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)].filter(
+      (match) => !/\bsrc=/i.test(match[1] ?? ''),
+    )
+    expect(inlineScripts.length).toBeGreaterThan(0)
+    for (const [, , content = ''] of inlineScripts) {
+      const hash = `sha256-${createHash('sha256').update(content).digest('base64')}`
+      expect(scriptPolicy, hash).toContain(`'${hash}'`)
+    }
+
+    const externalDataScripts = [
+      ...doc.matchAll(
+        /<script([^>]*\bsrc="data:text\/javascript;base64,([^"]+)"[^>]*)><\/script>/gi,
+      ),
+    ]
+    expect(externalDataScripts.length).toBeGreaterThan(0)
+    for (const [, attributes = '', encoded = ''] of externalDataScripts) {
+      const code = Buffer.from(encoded, 'base64')
+      const hash = `sha256-${createHash('sha256').update(code).digest('base64')}`
+      expect(attributes).toContain(`integrity="${hash}"`)
+      expect(scriptPolicy, hash).toContain(`'${hash}'`)
+    }
+  })
+
   it('instrumenta <script> inline do HTML do aluno (loopGuard cobre o index.html) — 5º review #9', () => {
     const doc = buildPreviewDoc({
       html: '<body><h1>oi</h1><script>while(true){}</script></body>',
@@ -165,11 +202,38 @@ describe('buildPreviewDoc', () => {
     // Clássico (sem type="module") e SEM defer (não há módulos de extensão) →
     // escopo global preservado + ordem do documento. Externo via data: URL.
     expect(doc).not.toContain('<script type="module"')
-    expect(doc).toMatch(/<script src="data:text\/javascript;base64,[A-Za-z0-9+/=]+"><\/script>/)
+    expect(doc).toMatch(
+      /<script src="data:text\/javascript;base64,[A-Za-z0-9+/=]+" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     expect(doc).not.toMatch(/\bdefer\b/)
-    const m = doc.match(/<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)"><\/script>/)
+    const m = doc.match(
+      /<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     const decoded = Buffer.from(m?.[1] ?? '', 'base64').toString('utf-8')
     expect(decoded).toContain('function oi()')
+  })
+
+  it('instrumenta e autoriza somente os handlers HTML exatos sob a CSP', () => {
+    const doc = buildPreviewDoc({
+      html: `<button onclick="this.dataset.ok='sim'; while (true) {} return false">agir</button>`,
+      css: '',
+      js: '',
+    })
+    const attribute = doc.match(/onclick="([^"]+)"/)?.[1] ?? ''
+    const decoded = attribute.replaceAll('&quot;', '"').replaceAll('&amp;', '&')
+    const hash = `sha256-${createHash('sha256').update(decoded).digest('base64')}`
+    const scriptPolicy = doc.match(/script-src[^;]*/)?.[0] ?? ''
+
+    expect(decoded).toContain('while (true) {__szLoopTick();}')
+    expect(decoded).toContain('return false')
+    expect(scriptPolicy).toContain("'unsafe-hashes'")
+    expect(scriptPolicy).toContain(`'${hash}'`)
+    expect(scriptPolicy).not.toContain("'unsafe-inline'")
+  })
+
+  it('não relaxa script-src quando o HTML não possui handler inline', () => {
+    const doc = buildPreviewDoc({ html: '<button>agir</button>', css: '', js: '' })
+    expect(doc.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-hashes'")
   })
 
   it('inclui importmap quando há arquivos extras JS', () => {
@@ -208,7 +272,7 @@ describe('buildPreviewDoc', () => {
     expect(decoded).toContain('soma')
   })
 
-  it('injeta módulos ESM de extensão no importmap e libera a origem na CSP', () => {
+  it('injeta ESM e libera somente o entrypoint e o pacote pinado no esm.sh', () => {
     const doc = buildPreviewDoc({
       html: '<html><body></body></html>',
       css: '',
@@ -217,14 +281,22 @@ describe('buildPreviewDoc', () => {
     })
     expect(doc).toContain('type="importmap"')
     expect(doc).toContain('"three":"https://esm.sh/three@0.180.0"')
-    // A CSP libera SÓ a origem do CDN em script-src (não a URL inteira).
-    expect(doc).toMatch(/script-src[^;]*https:\/\/esm\.sh/)
-    expect(doc).not.toMatch(/script-src[^;]*three@0\.180/)
+    const scriptSrc = doc.match(/script-src[^;]*/)?.[0] ?? ''
+    const sources = scriptSrc.split(/\s+/).slice(1)
+    expect(sources).toContain('https://esm.sh/three@0.180.0')
+    expect(sources).toContain('https://esm.sh/three@0.180.0/')
+    expect(sources).not.toContain('https://esm.sh')
+    expect(scriptSrc).not.toContain(' data:')
+    expect(scriptSrc).not.toContain(' blob:')
   })
 
   it('sem módulos de extensão, a CSP não libera origens externas em script-src', () => {
     const doc = buildPreviewDoc({ html: '<body></body>', css: '', js: '' })
-    expect(doc).toMatch(/script-src 'unsafe-inline' data: blob:;/)
+    const scriptSrc = doc.match(/script-src[^;]*/)?.[0] ?? ''
+    expect(scriptSrc).toMatch(/^script-src(?: 'sha256-[A-Za-z0-9+/=]+')+$/)
+    expect(scriptSrc).not.toContain("'unsafe-inline'")
+    expect(scriptSrc).not.toContain('data:')
+    expect(scriptSrc).not.toContain('blob:')
   })
 
   it('com módulos de extensão, o bootstrap da extensão é module e o aluno é deferido (ordem deferida)', () => {
@@ -236,7 +308,7 @@ describe('buildPreviewDoc', () => {
       extensionImports: { three: 'https://esm.sh/three@0.180.0' },
     })
     // O bootstrap da extensão (importa three) é module.
-    expect(doc).toContain('<script type="module">')
+    expect(doc).toMatch(/<script type="module">/)
     // ⚠️ #35: o JS do aluno SEM import/export NÃO vira module (decls do topo não
     // viram globais em module → onclick="..." quebraria). Sai como script
     // CLÁSSICO porém DEFERIDO via data: URL externo (escopo global + ordem após
@@ -252,7 +324,7 @@ describe('buildPreviewDoc', () => {
     // ⚠️ REGRESSÃO: o importmap PRECISA vir antes de QUALQUER script type=module,
     // senão `import ... from 'three'` falha ("Failed to resolve module specifier").
     const importmapIdx = doc.indexOf('type="importmap"')
-    const firstModuleIdx = doc.indexOf('<script type="module">')
+    const firstModuleIdx = doc.search(/<script type="module">/)
     expect(importmapIdx).toBeGreaterThanOrEqual(0)
     expect(importmapIdx).toBeLessThan(firstModuleIdx)
   })
@@ -333,7 +405,9 @@ describe('buildPreviewDoc', () => {
     // O <script src="script.js"></script> original deve sumir
     expect(doc).not.toMatch(/<script[^>]+src=["'][^"']*script\.js["']/)
     // Mas o JS do aluno (console.log(1)) precisa estar — agora via data: URL externo.
-    const m = doc.match(/<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)"><\/script>/)
+    const m = doc.match(
+      /<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     expect(m).not.toBeNull()
     const decoded = Buffer.from(m?.[1] ?? '', 'base64').toString('utf-8')
     expect(decoded).toContain('console.log(1);')
@@ -382,7 +456,7 @@ describe('buildPreviewDoc', () => {
     expect(doc).not.toContain('</script><script>alert(1)')
     // E o JSON do importmap continua parseável: extraímos o conteúdo do importmap
     // e fazemos JSON.parse depois de desfazer a substituição segura `\/` → `/`.
-    const m = doc.match(/<script type="importmap">([\s\S]*?)<\/script>/)
+    const m = doc.match(/<script type="importmap"[^>]*>([\s\S]*?)<\/script>/)
     expect(m).not.toBeNull()
     const raw = (m?.[1] ?? '').replace(/<\\\/script/gi, '</script')
     const parsed = JSON.parse(raw) as { imports: Record<string, string> }
@@ -441,7 +515,9 @@ describe('buildPreviewDoc', () => {
     const js = 'const re = /<!--/u;\nconsole.log("</script>", re.test("<!--"));'
     const doc = buildPreviewDoc({ html: '<body></body>', css: '', js })
     // Externo via data: URL (clássico, sem defer) — não passou por escape.
-    const m = doc.match(/<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)"><\/script>/)
+    const m = doc.match(
+      /<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     expect(m).not.toBeNull()
     const decoded = Buffer.from(m?.[1] ?? '', 'base64').toString('utf-8')
     // O regex e a string ficam INTACTOS (sem `\` injetado por escapeScriptContent).
@@ -470,7 +546,7 @@ describe('buildPreviewDoc', () => {
           { name: 'dados.js', language: 'javascript', content: 'export const v = 2' },
         ],
       })
-      const m = doc.match(/<script type="importmap">([\s\S]*?)<\/script>/)
+      const m = doc.match(/<script type="importmap"[^>]*>([\s\S]*?)<\/script>/)
       const parsed = JSON.parse((m?.[1] ?? '').replace(/<\\\/script/gi, '</script')) as {
         imports: Record<string, string>
       }
@@ -504,5 +580,25 @@ describe('buildPreviewDoc', () => {
     expect(decoded).toContain('JSX/TSX não é suportado')
     // NÃO emite import de react/jsx-runtime (que falharia em resolver no preview).
     expect(decoded).not.toContain('react/jsx-runtime')
+  })
+})
+
+describe('extensionImportUrls', () => {
+  it('autoriza dependências transitivas somente dentro do pacote esm.sh pinado', () => {
+    expect(
+      extensionImportUrls({
+        three: 'https://esm.sh/three@0.180.0',
+        loader: 'https://esm.sh/three@0.180.0/examples/jsm/loaders/GLTFLoader.js?external=three',
+      }),
+    ).toEqual(['https://esm.sh/three@0.180.0', 'https://esm.sh/three@0.180.0/'])
+  })
+
+  it('não amplia pacote sem versão nem outra CDN para uma origem inteira', () => {
+    expect(
+      extensionImportUrls({
+        latest: 'https://esm.sh/pacote',
+        other: 'https://cdn.example.com/pacote@1.0.0/index.js',
+      }),
+    ).toEqual(['https://esm.sh/pacote', 'https://cdn.example.com/pacote@1.0.0/index.js'])
   })
 })

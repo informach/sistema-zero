@@ -145,3 +145,15 @@ export function classMethodNames(scan: BlockScanner, classBlock: Blockly.Block |
   }
   return ordered
 }
+
+/**
+ * Métodos que podem ser chamados com `super`: começa na classe-mãe direta e segue a
+ * cadeia de ancestrais, sem oferecer métodos declarados somente na classe atual.
+ */
+export function superClassMethodNames(
+  scan: BlockScanner,
+  classBlock: Blockly.Block | null,
+): string[] {
+  const parent = classBlock ? findClass(scan, superClassName(classBlock)) : null
+  return classMethodNames(scan, parent)
+}

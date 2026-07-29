@@ -1,3 +1,16 @@
+import { buildProjectRunContextRuntime } from '#extensions'
+import { withGameUIFontRuntime } from '../gameUiFont'
+import { gameRuntimeDomains } from '../runtimeDomains'
+import { gameKitAnimationRuntime } from './runtime/animation'
+import { gameKitAudioRuntime } from './runtime/audio'
+import { gameKitCardsRuntime } from './runtime/cards'
+import { gameKitMonsterBattleRuntime } from './runtime/monsterBattle'
+import { gameKitPlatformerRuntime } from './runtime/platformer'
+import { gameKitRpgBattleRuntime } from './runtime/rpgBattle'
+import { gameKitRpgNavigationRuntime } from './runtime/rpgNavigation'
+import { towerDefenseRuntime } from './runtime/towerDefense'
+import { gameKitVisualEffectsRuntime } from './runtime/visualEffects'
+
 /**
  * Runtime do "Jogo 2D Avançado" — injetado no <head> do iframe quando a
  * extensão "game-2d-advanced" está instalada. Expõe `window.SZGameKit`.
@@ -18,7 +31,12 @@
  * - Nunca quebrar o jogo do aluno: API pública embrulhada em try/catch com
  *   console.warn (padrão do SZGame2D).
  */
-export const gameKitRuntime = `(function () {
+export const gameKitRuntime = withGameUIFontRuntime(
+  buildProjectRunContextRuntime() +
+    '\n' +
+    `(function () {
+  var _szGameUIFont = window.SZGameUIFont.family;
+${gameRuntimeDomains}
   // ---- Config (do bloco "Preparar o jogo profissional") ----
   var config = {
     w: 1280,
@@ -33,6 +51,9 @@ export const gameKitRuntime = `(function () {
 
   // ---- Estado interno ----
   var state = 'menu';
+  // Um setState feito pela área "Ao iniciar" roda antes de start(). Guardamos
+  // essa escolha para restaurá-la depois da tela obrigatória de carregamento.
+  var bootState = '';
   var started = false;
   var shellReady = false;
   var keys = {};
@@ -40,8 +61,13 @@ export const gameKitRuntime = `(function () {
   var pending = [];                      // promessas de carregamento
   var updateHooks = [];
   var drawHooks = [];
+  var gameStartHooks = [];
   var enterStateHooks = Object.create(null); // estado -> [fn]
+  var projectFactory = null;
+  var runningProjectFactory = false;
   var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
+  var projectButtons = [];               // botões criados pela factory atual
+  var projectScreens = [];               // telas autorais criadas pela factory atual
   var stageEl = null;
   var canvasEl = null;
   var ctx2d = null;
@@ -50,6 +76,26 @@ export const gameKitRuntime = `(function () {
   var currentDt = 0;
   var frameCount = 0;                    // carimbo do quadro (mede "anda?" 1× por quadro)
   var MAX_ACTIVE_PER_MOLD = 300;         // teto por molde (irmão do MAX_PARTICLES)
+  // Limites de autoria: todo valor abaixo alimenta laços síncronos no mesmo
+  // thread do Studio. Mantê-los centralizados impede que um número digitado por
+  // engano congele tanto o jogo quanto o editor da criança.
+  var MAX_GRID_SIDE = 512;
+  var MAX_CAPTURE_BALLS = 999;
+  var MAX_PKM_TEAM = 6;
+  var MAX_LUTA_ROUNDS = 9;
+  var MAX_GAME_LEVEL = 999; var RPG_BASE_MAX_XP = 20;
+  var MAX_HUD_HEARTS = 100;
+  var MAX_PKM_GRASS_AREAS = 256;
+  var MAX_PKM_GRASS_TILES = 256;
+  var MAX_PKM_WILD_ENTRIES = 256;
+  var MAX_PENDING_WAITS = 1000;
+  // A batalha por turnos desenha cada combatente e percorre cada consumível no
+  // mesmo thread. Cinco companheiros + o herói e cinco extras + o principal
+  // mantêm o painel legível; poções continuam abundantes sem virar lista infinita.
+  var MAX_RPG_ALLIES = 5;
+  var MAX_RPG_FOE_QUEUE = 5;
+  var MAX_RPG_POTIONS = 99;
+  var MAX_SAFE_GAME_INTEGER = 9007199254740991;
   // Tamanho da PEÇA/célula na tela, em px. É NEUTRO (não vive mais dentro do rpg):
   // o mapa de tiles é GERAL — desenhar e colidir precisam do mesmo número, e antes
   // ele só existia no Kit RPG (fora dele o mapa ficava travado em 64 p/ sempre).
@@ -127,8 +173,10 @@ export const gameKitRuntime = `(function () {
   var worldPass = false;
   var tilemaps = Object.create(null);    // nome -> {rows, artTile, imgKey, solid Set}
   var hudHooks = [];                     // desenham DEPOIS do restore (sem câmera)
-  var mouse = { x: 0, y: 0, down: false };
-  var gameClickHooks = [];               // fn(x, y) em coords do JOGO (letterbox convertido)
+  var mouse = { x: 0, y: 0, screenX: 0, screenY: 0, down: false };
+  // Compatível com fn(x, y): os dois argumentos extras dão a posição fixa na
+  // tela para HUDs sem alterar projetos que já usam coordenadas do mundo.
+  var gameClickHooks = [];               // fn(worldX, worldY, screenX, screenY)
 
   // Manifesto de imagens do projeto, semeado pelo assetsBridge.
   var ASSETS = (window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
@@ -167,6 +215,7 @@ export const gameKitRuntime = `(function () {
     return (typeof n === 'number' && isFinite(n)) ? n : fallback;
   }
 
+  function boundedInteger(v, fallback, min, max) { return Math.max(min, Math.min(max, Math.round(num(v, fallback)))); }
   function text(v, fallback) {
     if (v == null) return fallback;
     var s = String(v);
@@ -219,13 +268,17 @@ export const gameKitRuntime = `(function () {
     return '' +
       '#szgk-stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; ' +
         'background: ' + config.bg + '; overflow: hidden; ' +
-        "font-family: 'Courier New', monospace; color: #eee; }" +
+        'font-family: var(--sz-game-ui-font); color: #eee; }' +
       '#szgk-canvas { border: 4px solid #2e2e3e; image-rendering: pixelated; image-rendering: crisp-edges; ' +
         'background: ' + config.bg + '; }' +
+      '#szgk-canvas:focus-visible { outline: 3px solid #ffffff; outline-offset: -7px; }' +
+      '.szgk-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; ' +
+        'overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }' +
       '.szgk-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); ' +
         'background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(10px); ' +
         'border: 3px solid ' + config.accent + '; padding: 30px; border-radius: 15px; text-align: center; ' +
-        'box-shadow: 0 0 30px ' + glowSoft + '; z-index: 1000; display: none; max-width: 82%; }' +
+        'box-shadow: 0 0 30px ' + glowSoft + '; z-index: 1000; display: none; box-sizing: border-box; ' +
+        'max-width: 82%; max-height: calc(100% - 30px); overflow: auto; overflow-wrap: anywhere; }' +
       '.szgk-panel.szgk-active { display: block; }' +
       '.szgk-panel h1, .szgk-panel h2 { color: ' + config.accent + '; margin: 0 0 20px 0; ' +
         'text-shadow: 0 0 20px ' + glowStrong + '; }' +
@@ -234,10 +287,16 @@ export const gameKitRuntime = `(function () {
       '.szgk-panel p { margin: 0 0 12px 0; font-size: 14px; min-height: 1em; }' +
       '.szgk-panel button { background: rgba(0, 0, 0, 0.4); color: white; ' +
         'border: 2px solid ' + config.accent + '; padding: 12px 24px; margin: 8px; font-size: 16px; ' +
-        'cursor: pointer; font-family: inherit; border-radius: 8px; transition: all 0.3s; ' +
+        'cursor: pointer; font-family: inherit; border-radius: 8px; ' +
+        'transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s; ' +
         'box-shadow: 0 0 15px ' + hexToRgba(config.accent, 0.2) + '; }' +
       '.szgk-panel button:hover { background: ' + config.accent + '; ' +
-        'box-shadow: 0 0 25px ' + glowStrong + '; transform: translateY(-2px); }';
+        'box-shadow: 0 0 25px ' + glowStrong + '; transform: translateY(-2px); }' +
+      '.szgk-panel button:focus-visible { outline: 3px solid #ffffff; outline-offset: 2px; }' +
+      '@media (prefers-reduced-motion: reduce) { ' +
+        '.szgk-panel button { transition: none; } ' +
+        '.szgk-panel button:hover { transform: none; } ' +
+      '}';
   }
 
   /** Cria um painel de tela (título + texto + botões) já escondido. */
@@ -291,7 +350,15 @@ export const gameKitRuntime = `(function () {
       canvasEl.id = 'szgk-canvas';
       canvasEl.width = config.w;
       canvasEl.height = config.h;
+      canvasEl.tabIndex = 0;
+      canvasEl.setAttribute('aria-label', 'Jogo 2D Avançado interativo');
+      canvasEl.setAttribute('aria-describedby', 'szgk-stage-description');
       stageEl.appendChild(canvasEl);
+      var stageDescription = document.createElement('p');
+      stageDescription.id = 'szgk-stage-description';
+      stageDescription.className = 'szgk-sr-only';
+      stageDescription.textContent = 'Use as setas, WASD, espaço, enter ou o mouse conforme as instruções do jogo.';
+      stageEl.appendChild(stageDescription);
       document.body.appendChild(stageEl);
       ctx2d = canvasEl.getContext('2d');
       // Pixel art nítida por padrão (P24 seta no ctor do RenderSystem). Atribuir
@@ -302,16 +369,16 @@ export const gameKitRuntime = `(function () {
       // As 5 telas PRONTAS, com textos default em português (P24 tem gameOver E
       // missionComplete SEPARADAS — aqui: 'fim' = derrota, 'vitoria' = missão).
       var menu = makeScreen('menu', 'h1', 'Meu Jogo', 'WASD ou setas para andar');
-      makeButton(menu, 'Jogar', function () { api.setState('jogando'); });
+      makeButton(menu, 'Jogar', function () { api.restartGame(); });
       var pausa = makeScreen('pausa', 'h2', 'Pausa', '');
       makeButton(pausa, 'Continuar', function () { api.resume(); });
       makeButton(pausa, 'Sair para o menu', function () { api.returnToMenu(); });
       makeScreen('carregando', 'h2', 'Carregando...', 'Preparando os pixels...');
       var fim = makeScreen('fim', 'h2', 'Fim de jogo', '');
-      makeButton(fim, 'Jogar de novo', function () { api.setState('jogando'); });
+      makeButton(fim, 'Jogar de novo', function () { api.restartGame(); });
       makeButton(fim, 'Sair para o menu', function () { api.returnToMenu(); });
       var vitoria = makeScreen('vitoria', 'h2', 'Missão cumprida!', 'Você venceu!');
-      makeButton(vitoria, 'Jogar de novo', function () { api.setState('jogando'); });
+      makeButton(vitoria, 'Jogar de novo', function () { api.restartGame(); });
       makeButton(vitoria, 'Sair para o menu', function () { api.returnToMenu(); });
 
       shellReady = true;
@@ -355,20 +422,7 @@ export const gameKitRuntime = `(function () {
 
   // ---- Máquina de estados (Game.state do kit, generalizada p/ nomes livres) ----
 
-  function setState(name) {
-    var n = text(name, '');
-    if (!n) return;
-    var prev = state;
-    state = n;
-    applyStateScreens(n);
-    // Entrou em "jogando": zera o relógio p/ o dt não dar um salto (startGame do kit)
-    // e RECOMEÇA a arena (recolhe todos os enxames, zera missão/contadores e faíscas)
-    // ANTES dos ganchos "quando entrar" da criança — assim "Jogar de novo" funciona.
-    // ⚠️ EXCETO vindo de 'pausado'/'batalha' (estados do MEIO do jogo, geridos
-    // pelo motor): despausar ou fechar uma batalha NÃO pode apagar os enxames.
-    if (n === 'jogando' && prev !== 'jogando') {
-      lastTime = now();
-      if (prev !== 'pausado' && prev !== 'batalha') {
+  function resetCoreGameData() {
         missionDone = false;
         playTime = 0;
         killCount = 0;
@@ -376,8 +430,6 @@ export const gameKitRuntime = `(function () {
         for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
         particles.active.length = 0;
         // R21: sobras visuais da partida anterior ("+100" no ar, onda no meio).
-        // Os RASTROS ficam: o do herói (persistente) deve sobreviver ao "Jogar de
-        // novo", e o de entidade reciclada o stepTrails varre sozinho.
         while (floaties.active.length) floaties.free.push(floaties.active.pop());
         while (shockwaves.active.length) shockwaves.free.push(shockwaves.active.pop());
         while (sheetBursts.active.length) sheetBursts.free.push(sheetBursts.active.pop());
@@ -387,6 +439,12 @@ export const gameKitRuntime = `(function () {
           combatants[ci]._iFrames = 0;
           combatants[ci]._pushX = 0;
           combatants[ci]._pushY = 0;
+          // Recarga do tiro/golpe é prazo ABSOLUTO em playTime, que acaba de
+          // zerar acima. Um personagem que SOBREVIVE ao recomeço (fluxo sem
+          // factory) guardaria um _cd no futuro e travaria o 1º tiro; zerar
+          // aqui reabre a partida nova. No fluxo canônico (managedProjectRun) o
+          // personagem nasce de novo com _cd:0, mas zerar não custa nada.
+          combatants[ci]._cd = 0;
         }
         combatants.length = 0;
         // Zera os golpes de ação em voo (senão um golpe do jogo anterior "toca").
@@ -395,14 +453,6 @@ export const gameKitRuntime = `(function () {
         // ⚠️ R18: um "Esperar 30 s → nasce o chefe" da partida ANTERIOR dispararia
         // no meio da partida nova. É o mesmo erro do checkpoint/tweens abaixo.
         waits.length = 0;
-        // ⚠️ idem: sem isto, "Jogar de novo" recomeçava no round 3 com 2 a 0.
-        lutaNewGame();
-        // 🚀 idem: onda/bomba/poder da partida anterior não invadem a nova.
-        naveNewGame();
-        // 🏰 idem: ondas somem, slots liberam, moedas voltam ao inicial.
-        tdNewGame();
-        // 🃏 idem: a batalha de cartas da partida anterior não sobrevive ao recomeço.
-        cardsNewGame();
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -413,23 +463,55 @@ export const gameKitRuntime = `(function () {
         // · everySeconds — mantinha a fase do relógio da partida passada.
         plat.hasCp = false; plat.cpX = 0; plat.cpY = 0;
         screenFx.alpha = 0; screenFx.target = 0; screenFx.flashes = 0;
+        resetCameraState();
+        scrolls = Object.create(null);
         tweens.length = 0;
         secondTimers = Object.create(null); // sem protótipo: a chave vem da criança
-        rpgNewGame();
-      }
-    }
+  }
+  function resetGameData() {
+    _runRuntimeDomainHook('resetGame');
+  }
+  function runEnterStateHooks(n, prev, force) {
     // Os hooks de "quando entrar no estado" só rodam numa ENTRADA de verdade:
     // - despausar / fechar batalha é "voltar ao meio do jogo" (isMidResume);
     // - trocar para o estado em que JÁ se está não é entrar (senão um setState
     //   dentro do "A cada quadro" re-criaria inimigos/música 60×/s).
-    var isMidResume = (n === 'jogando' && (prev === 'pausado' || prev === 'batalha'));
+    var isMidResume = !force && (n === 'jogando' && (prev === 'pausado' || prev === 'batalha'));
     var isSameState = (n === prev);
     var hooks = enterStateHooks[n];
-    if (hooks && !isMidResume && !isSameState) {
+    if (hooks && !isMidResume && (!isSameState || force)) {
       for (var i = 0; i < hooks.length; i++) {
         try { hooks[i](); } catch (e) { warn('erro no "quando entrar no estado ' + n + '": ' + e); }
       }
     }
+  }
+  function setState(name) {
+    var n = text(name, '');
+    if (!n) return;
+    if (!started) bootState = n;
+    var prev = state;
+    state = n;
+    applyStateScreens(n);
+    if (n === 'jogando' && prev !== 'jogando') lastTime = now();
+    runEnterStateHooks(n, prev, false);
+  }
+  function restartGame() {
+    var prev = state;
+    resetGameData();
+    state = 'jogando';
+    applyStateScreens(state);
+    lastTime = now();
+    if (projectFactory) {
+      resetProjectRegistrations();
+      executeProjectFactory();
+      rpgEnterInitialMap();
+    } else {
+      rpgEnterInitialMap();
+      for (var i = 0; i < gameStartHooks.length; i++) {
+        try { gameStartHooks[i](); } catch (e) { warn('erro no "quando começar uma partida": ' + e); }
+      }
+    }
+    runEnterStateHooks(state, prev, true);
   }
 
   // ---- Entrada (Game.setupInput do kit) ----
@@ -463,9 +545,9 @@ export const gameKitRuntime = `(function () {
   }
 
   /**
-   * Mouse/toque em coords do JOGO: desfaz o letterbox (CSS estica o canvas) e,
-   * com câmera ligada, soma o deslocamento — o clique cai no MUNDO, onde estão
-   * os personagens. Pointer events cobrem mouse E toque (tablet dos kids).
+   * Mouse/toque: desfaz o letterbox (CSS estica o canvas), preserva a posição
+   * fixa na TELA e soma a câmera para obter a posição no MUNDO. Pointer events
+   * cobrem mouse E toque (tablet dos kids).
    */
   function toGameCoords(ev) {
     if (!canvasEl) return null;
@@ -474,16 +556,23 @@ export const gameKitRuntime = `(function () {
     // opacity:0, que preserva o rect). Escala 1: clientX vira coord do jogo.
     var rw = rect.width > 0 ? rect.width : config.w;
     var rh = rect.height > 0 ? rect.height : config.h;
-    var x = (ev.clientX - rect.left) * (config.w / rw);
-    var y = (ev.clientY - rect.top) * (config.h / rh);
+    var screenX = (ev.clientX - rect.left) * (config.w / rw);
+    var screenY = (ev.clientY - rect.top) * (config.h / rh);
+    var x = screenX;
+    var y = screenY;
     if (camera.on) { x += camera.x; y += camera.y; }
-    return { x: x, y: y };
+    return { x: x, y: y, screenX: screenX, screenY: screenY };
   }
   function bindMouse() {
     if (!canvasEl) return;
     canvasEl.addEventListener('pointermove', function (ev) {
       var p = toGameCoords(ev);
-      if (p) { mouse.x = p.x; mouse.y = p.y; }
+      if (p) {
+        mouse.x = p.x;
+        mouse.y = p.y;
+        mouse.screenX = p.screenX;
+        mouse.screenY = p.screenY;
+      }
     });
     canvasEl.addEventListener('pointerdown', function (ev) {
       resumeAudio();
@@ -491,19 +580,21 @@ export const gameKitRuntime = `(function () {
       if (!p) return;
       mouse.x = p.x;
       mouse.y = p.y;
+      mouse.screenX = p.screenX;
+      mouse.screenY = p.screenY;
       mouse.down = true;
       // ⚔️ Batalha em equipe: o clique é da BATALHA (painel de ação + escolher/
       // inspecionar combatente). Coords SEM câmera (a cena é desenhada em tela).
       if (rpg.battle && state === 'batalha') {
-        rpgBattleClick(p.x - (camera.on ? camera.x : 0), p.y - (camera.on ? camera.y : 0));
+        rpgBattleClick(p.screenX, p.screenY);
         return;
       }
       // Menu de escolha aberto: clicar numa opção escolhe (coords SEM câmera — o
       // menu é UI do motor, desenhado em coords de tela; toGameCoords soma a
       // câmera, então desfazemos aqui).
       if (rpg.menu) {
-        var mx = p.x - (camera.on ? camera.x : 0);
-        var my = p.y - (camera.on ? camera.y : 0);
+        var mx = p.screenX;
+        var my = p.screenY;
         for (var mi = 0; mi < rpg.menuRects.length; mi++) {
           var r = rpg.menuRects[mi];
           if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) {
@@ -519,7 +610,7 @@ export const gameKitRuntime = `(function () {
       if (tdHandleClick(p.x, p.y)) return;
       for (var i = 0; i < gameClickHooks.length; i++) {
         var fn = gameClickHooks[i];
-        try { fn(p.x, p.y); } catch (e) {
+        try { fn(p.x, p.y, p.screenX, p.screenY); } catch (e) {
           if (!fn.__szgkWarned) {
             fn.__szgkWarned = true;
             warn('erro no "Quando clicar no jogo": ' + e);
@@ -706,6 +797,19 @@ export const gameKitRuntime = `(function () {
     camera.followRows = m.rows.length;
     updateCamera();
   }
+  function resetCameraState() {
+    camera.on = false;
+    camera.target = null;
+    camera.x = 0;
+    camera.y = 0;
+    camera.worldW = 0;
+    camera.worldH = 0;
+    camera.shakeT = 0;
+    camera.shakeMag = 0;
+    camera.followMap = '';
+    camera.followCols = 0;
+    camera.followRows = 0;
+  }
   function cameraStop() {
     camera.on = false;
     camera.target = null;
@@ -789,6 +893,19 @@ export const gameKitRuntime = `(function () {
     var dk = text(name, '');
     var m = tilemaps[dk];
     if (!m) { warnOnce('drawmap:' + dk, 'o mapa "' + dk + '" não existe — carregue com "Carregar o mapa"'); return; }
+    if (rpg.currentMap && rpg.maps[rpg.currentMap]) {
+      var declared = rpg.maps[rpg.currentMap];
+      var mapRows = m.rows.length;
+      var mapCols = 0;
+      for (var ri = 0; ri < m.rows.length; ri++) mapCols = Math.max(mapCols, m.rows[ri].length);
+      if (declared.cols !== mapCols || declared.rows !== mapRows) {
+        warnOnce(
+          'mapsize:' + rpg.currentMap + ':' + dk,
+          'o mapa-cenário "' + rpg.currentMap + '" tem ' + declared.cols + ' × ' + declared.rows +
+          ' células, mas o mapa de peças "' + dk + '" tem ' + mapCols + ' × ' + mapRows + ' — use o mesmo tamanho nos dois',
+        );
+      }
+    }
     var sheet = images[m.imgKey];
     if (!sheet || !sheet.loaded || !sheet.img) return;
     var at = m.artTile;
@@ -898,6 +1015,12 @@ export const gameKitRuntime = `(function () {
       ctx2d.translate(-Math.round(camera.x) + Math.round(shx), -Math.round(camera.y) + Math.round(shy));
     }
     worldPass = true; // 🌍 culling SO aqui (mundo transladado; HUD fica de fora)
+    var activeMap = rpg.maps[rpg.currentMap];
+    if (activeMap && typeof activeMap.draw === 'function') {
+      try { activeMap.draw(ctx2d); }
+      catch (e) { warnOnce('mapdraw:' + rpg.currentMap, 'erro ao desenhar o mapa "' + rpg.currentMap + '": ' + e); }
+      if (activeMap.empty) drawEmptyMapNotice(rpg.currentMap);
+    }
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
     if (debugOverlay) drawDebugOverlay();
     // R21: onda de choque + textos flutuantes são do MUNDO (dentro do translate,
@@ -1092,6 +1215,7 @@ export const gameKitRuntime = `(function () {
       _lastX: 0, _lastY: 0, _moving: false, _moveFrame: -1,
       // ⚙️ Física geral: no chão? / teto de queda / recarga / de onde veio (varredura)
       onGround: false, _maxFall: 0, _cd: 0, _prevX: 0, _prevY: 0,
+      _sweepFromY: 0, _sweepFrame: -1,
       // 🏃 Kit Plataforma: onde nasceu (renascer sem checkpoint), as 3 janelinhas do
       // pulo bom (coyote/buffer/segurar), o pulo duplo, a parede e a carona.
       _bornX: 0, _bornY: 0, _coyoteT: 0, _bufferT: 0, _holdT: 0, _airJumps: 0,
@@ -1157,6 +1281,22 @@ export const gameKitRuntime = `(function () {
     var bh = camera.on ? camera.worldH : config.h;
     c.x = Math.max(0, Math.min(bw - num(c.w, 0), num(c.x, 0)));
     c.y = Math.max(0, Math.min(bh - num(c.h, 0), num(c.y, 0)));
+  }
+
+  function paintLook(look, name, w, h) {
+    try {
+      ctx2d.scale(num(w, look.baseW) / look.baseW, num(h, look.baseH) / look.baseH);
+      look.fn(ctx2d);
+      return true;
+    } catch (e) {
+      // Aparências rodam em todo quadro: diagnostica a receita autoral sem
+      // afogar o console e devolve false para drawEntity usar o fallback.
+      if (!look.warned) {
+        look.warned = true;
+        warn('erro na aparência "' + name + '": ' + e);
+      }
+      return false;
+    }
   }
 
   // Desenha 1 personagem: folha de quadros > aparência (look) > imagem >
@@ -1257,7 +1397,8 @@ export const gameKitRuntime = `(function () {
         var span = num(c._animTo, 0) - idx + 1;
         if (num(c._animFps, 0) > 0 && span > 0) {
           var el = Math.max(0, playTime - num(c._animStart, 0));
-          idx += Math.floor(el * c._animFps) % span;
+          var frame = Math.floor(el * c._animFps);
+          idx += c._animOnce ? Math.min(span - 1, frame) : frame % span;
         }
         var sx = (idx % cols) * fw;
         var sy = Math.floor(idx / cols) * fh;
@@ -1273,11 +1414,7 @@ export const gameKitRuntime = `(function () {
       ctx2d.translate(lx, ly);
       // A aparência é autoral num quadro-base (baseW×baseH) e ESCALA ao tamanho
       // da entidade — mesmo look serve p/ moldes grandes e pequenos.
-      try {
-        ctx2d.scale(num(c.w, look.baseW) / look.baseW, num(c.h, look.baseH) / look.baseH);
-        look.fn(ctx2d);
-        drew = true;
-      } catch (e) {}
+      drew = paintLook(look, text(c.look, ''), c.w, c.h);
       ctx2d.restore();
     }
     if (!drew) {
@@ -1324,183 +1461,7 @@ export const gameKitRuntime = `(function () {
     drawEntity(c);
   }
 
-  // ---- 🎞️ Folha de quadros (Sprite + Animations do RPG kit, simplificado) ----
-
-  function setSheet(c, imageName, fw, fh) {
-    if (!c || typeof c !== 'object') return;
-    c._sheetImg = text(imageName, '');
-    c._sheetFw = Math.max(1, num(fw, num(c.w, 32)));
-    c._sheetFh = Math.max(1, num(fh, num(c.h, 32)));
-    c._animFrom = 0; c._animTo = 0; c._animFps = 0; c._animStart = 0;
-  }
-  function playAnim(c, from, to, fps) {
-    if (!c || typeof c !== 'object') return;
-    var f = Math.max(0, Math.floor(num(from, 0)));
-    var t = Math.max(f, Math.floor(num(to, f)));
-    var r = Math.max(1, num(fps, 8));
-    // Guarda de transição (padrão g2d): re-tocar a MESMA animação todo quadro
-    // NÃO reinicia — senão o 1º quadro congela para sempre.
-    if (c._animFrom === f && c._animTo === t && c._animFps === r) return;
-    c._animFrom = f;
-    c._animTo = t;
-    c._animFps = r;
-    // O relógio é o playTime (só anda em 'jogando') — a animação PAUSA junto.
-    c._animStart = playTime;
-  }
-
-  // Folha de ANDAR direcional (personagem de topo estilo RPGMaker): a folha tem 4
-  // LINHAS na ordem baixo/cima/esquerda/direita, cada uma com N quadros. O
-  // drawEntity escolhe a linha pela direção que o personagem olha e anima a coluna
-  // quando ele anda (parado = 1º quadro). Espelha o walk/idle por direção do
-  // Sprite.animations do Pizza Legends, mas por FOLHA em vez de col,row autoral.
-  /**
-   * Tocar uma animacao UMA VEZ e travar no ultimo quadro (em vez de repetir).
-   * Complementa o "Tocar a animacao" comum, que repete para sempre.
-   */
-  function playAnimOnce(c, from, to, fps) {
-    if (!c || typeof c !== 'object') return;
-    var f = Math.max(0, Math.floor(num(from, 0)));
-    var t = Math.max(f, Math.floor(num(to, f)));
-    var r = Math.max(1, num(fps, 8));
-    if (c._animFrom === f && c._animTo === t && c._animFps === r && c._animOnce) return;
-    c._animFrom = f; c._animTo = t; c._animFps = r; c._animOnce = true;
-    c._animStart = playTime;
-  }
-  /** "Ja tocou tudo?" - puro, sai da conta do playTime: sem lista, sem passo, sem
-   * reset. Vale para animacao de uma vez so (a que repete nunca "acaba"). */
-  function animEnded(c) {
-    if (!c || typeof c !== 'object') return true;
-    var span = num(c._animTo, 0) - num(c._animFrom, 0) + 1;
-    var fps = num(c._animFps, 0);
-    if (!(fps > 0) || !(span > 0)) return true;
-    return (playTime - num(c._animStart, 0)) * fps >= span;
-  }
-
-  // ---- ANIMACAO POR ESTADO (a trava) ----
-  // A TRAVA pertence ao ESTADO, nao a animacao - e por isso que ela serve aos TRES
-  // sistemas de animacao (folha manual, folha de andar, quadros por fisica) e
-  // tambem ao vetorial, que nao tem quadro nenhum para "terminar".
-  //
-  // Sem ela, a crianca manda golpear e a animacao de ANDAR apaga o golpe no quadro
-  // seguinte. A base de luta resolve com uma cadeia de prioridade fixa dentro do
-  // switchSprite; aqui a prioridade e constante do motor (ninguem quer "andar
-  // atropela morrer") e o que a crianca responde e o que muda o jogo: se aquela
-  // animacao pode ou nao ser interrompida.
-  var STATE_FALLBACK = {
-    morte: [],
-    golpe: ['parado'],
-    dano: ['parado'],
-    caindo: ['pulando', 'andando', 'parado'],
-    pulando: ['andando', 'parado'],
-    andando: ['parado'],
-    parado: []
-  };
-  var STATE_NAMES = { parado: 1, andando: 1, pulando: 1, caindo: 1, dano: 1, golpe: 1, morte: 1 };
-  var STATE_LIST = 'use parado, andando, pulando, caindo, dano, golpe ou morte';
-  // Cadeias completas pre-computadas (estado + fallbacks): o autoAnimate roda
-  // por-entidade-por-quadro e um concat ali alocaria ate ~18k arrays/s num enxame.
-  var STATE_CHAIN = (function () {
-    var m = {};
-    for (var k in STATE_FALLBACK) m[k] = [k].concat(STATE_FALLBACK[k]);
-    return m;
-  })();
-
-  /** Poe a entidade num estado por N segundos - e e a TRAVA: enquanto durar, o
-   * autoAnimate nao deixa a fisica roubar a animacao. secs <= 0 = ate a animacao
-   * declarada do estado acabar. */
-  function setEntityState(who, name, secs) {
-    if (!who || typeof who !== 'object') return;
-    var st = text(name, '');
-    if (!STATE_NAMES[st]) { warnOnce('estado:' + st, 'o estado "' + st + '" nao existe (' + STATE_LIST + ')'); return; }
-    who._state = st;
-    who._stateUntil = playTime + Math.max(0, num(secs, 0));
-  }
-  function entityState(who) {
-    if (!who || typeof who !== 'object') return 'parado';
-    if (who._state && playTime < num(who._stateUntil, 0)) return who._state;
-    return derivedState(who);
-  }
-  /** Declara a animacao de UM estado (1x no comeco). O autoAnimate troca sozinho. */
-  function stateAnim(who, name, from, to, fps, once) {
-    if (!who || typeof who !== 'object') return;
-    var st = text(name, '');
-    if (!STATE_NAMES[st]) { warnOnce('stateanim:' + st, 'o estado "' + st + '" nao existe (' + STATE_LIST + ')'); return; }
-    if (!who._stateAnims) who._stateAnims = {};
-    var f = Math.max(0, Math.floor(num(from, 0)));
-    var t = Math.max(f, Math.floor(num(to, f)));
-    who._stateAnims[st] = { from: f, to: t, fps: Math.max(1, num(fps, 8)), once: !!once };
-  }
-  /** O caminho VETORIAL do mesmo contrato: a aparencia de um estado (sem folha). */
-  function stateLook(who, name, lookName) {
-    if (!who || typeof who !== 'object') return;
-    var st = text(name, '');
-    if (!STATE_NAMES[st]) { warnOnce('statelook:' + st, 'o estado "' + st + '" nao existe (' + STATE_LIST + ')'); return; }
-    if (!who._stateLooks) who._stateLooks = {};
-    who._stateLooks[st] = text(lookName, '');
-  }
-  /** Deriva o estado pela FISICA, na ordem fixa da base de luta (que esta certa):
-   * morte > golpe > dano > no ar > andando > parado. */
-  function derivedState(c) {
-    if (num(c.maxHealth, 0) > 0 && num(c.health, 0) <= 0) return 'morte';
-    if (num(c._swingT, 0) > 0) return 'golpe';
-    if (num(c._iFrames, 0) > 0) return 'dano';
-    if (c.onGround === false) return num(c.vy, 0) < 0 ? 'pulando' : 'caindo';
-    if (Math.abs(num(c.vx, 0)) > 0.01) return 'andando';
-    return 'parado';
-  }
-  /**
-   * Anima sozinho pelo que a entidade esta FAZENDO. Use todo quadro.
-   * Nada declarado = no-op: quem nao usa nao paga nada.
-   */
-  function autoAnimate(who) {
-    if (!who || typeof who !== 'object') return;
-    // 1) estado TRAVADO vence a fisica (e a trava)
-    var st = (who._state && playTime < num(who._stateUntil, 0)) ? who._state : derivedState(who);
-    // 2) flip pelo sinal de vx - so se NAO houver folha de andar (essa tem uma
-    //    linha por direcao e se vira sozinha).
-    if (!text(who._walkImg, '')) {
-      var vx = num(who.vx, 0);
-      if (vx > 0.01) { who._facingDir = 'right'; who._facingLeft = false; }
-      else if (vx < -0.01) { who._facingDir = 'left'; who._facingLeft = true; }
-    }
-    // 3) o estado sem visual declarado cai no parente mais proximo, numa ordem FIXA
-    //    e previsivel (caindo parece pular; pular parece andar; golpe parece parado).
-    var anims = who._stateAnims;
-    var looks = who._stateLooks;
-    var key = null;
-    // st e sempre um dos 7 nomes (derivedState/setEntityState validam); o ramo
-    // lazy e so rede - o mapa nao cresce alem deles.
-    var chain = STATE_CHAIN[st] || (STATE_CHAIN[st] = [st].concat(STATE_FALLBACK[st] || []));
-    for (var i = 0; i < chain.length; i++) {
-      if ((anims && anims[chain[i]]) || (looks && looks[chain[i]])) { key = chain[i]; break; }
-    }
-    if (!key) return; // nada declarado p/ este estado nem p/ os parentes: no-op
-    if (looks && looks[key]) who.look = looks[key];
-    if (anims && anims[key]) {
-      var a = anims[key];
-      if (a.once) {
-        // fps ESTICADO p/ a animacao durar exatamente a trava: e isto que faz
-        // "pular quadro" nao quebrar nada - a mecanica manda, a animacao obedece.
-        var dur = num(who._stateUntil, 0) - playTime;
-        var span = a.to - a.from + 1;
-        var fps = (who._state === key && dur > 0.01) ? span / dur : a.fps;
-        if (who._animState !== key) playAnimOnce(who, a.from, a.to, fps);
-      } else if (who._animState !== key) {
-        who._animOnce = false;
-        playAnim(who, a.from, a.to, a.fps);
-      }
-    }
-    who._animState = key;
-  }
-
-  function setWalkSheet(c, imageName, fw, fh) {
-    if (!c || typeof c !== 'object') return;
-    c._walkImg = text(imageName, '');
-    c._walkFw = Math.max(1, num(fw, num(c.w, 16)));
-    c._walkFh = Math.max(1, num(fh, num(c.h, 16)));
-    c._walkFrames = 0; // 0 = usar todas as colunas da folha
-  }
-
+${gameKitAnimationRuntime}
   function drawBackground(color, grid) {
     if (!ctx2d) return;
     // Cobre o retângulo VISÍVEL (com câmera, o ctx está transladado — pintar em
@@ -1552,6 +1513,17 @@ export const gameKitRuntime = `(function () {
   function hbH(e) { var v = num(e._hbH, 0); return v > 0 ? v : num(e.h, 0); }
   function hbRight(e) { return hbLeft(e) + hbW(e); }
   function hbBottom(e) { return hbTop(e) + hbH(e); }
+  /** Intervalo vertical coberto por uma queda. moveByVelocity registra o começo
+   * separado de _prevY porque colisões sólidas atualizam _prevY antes da one-way. */
+  function oneWayFeetFrom(e) {
+    var y = num(e.y, 0);
+    var fromY = e._sweepFrame === frameCount ? num(e._sweepFromY, y) : y;
+    return Math.min(fromY, y) + num(e._hbY, 0) + hbH(e);
+  }
+  function oneWayFeetTo(e, d) {
+    var feet = hbBottom(e);
+    return Math.max(feet, feet + num(e.vy, 0) * d);
+  }
   /** ⚠️ CAMINHO MAIS QUENTE do runtime: o overlapGroups chama isto até 90 mil vezes
    * por quadro (300 × 300 é o teto de dois enxames cheios). Por isso as bordas são
    * lidas INLINE, uma vez cada: a versão com os 8 hb* aninhados custava ~22 num()
@@ -1610,6 +1582,7 @@ export const gameKitRuntime = `(function () {
       _swingT: 0, _swingRange: 0, _swingId: 0, _hitBySwing: 0,
       // ⚙️ Física geral (o pool exige a lista COMPLETA: ver o reset no spawnFromMold)
       onGround: false, _maxFall: 0, _cd: 0, _prevX: 0, _prevY: 0,
+      _sweepFromY: 0, _sweepFrame: -1,
       // 🏃 Kit Plataforma (idem — reciclar sem zerar ressuscitaria o inimigo com o
       // coyote/pulo do anterior)
       _bornX: 0, _bornY: 0, _coyoteT: 0, _bufferT: 0, _holdT: 0, _airJumps: 0,
@@ -1698,6 +1671,7 @@ export const gameKitRuntime = `(function () {
     e._state = ''; e._stateUntil = 0; e._stateAnims = null; e._stateLooks = null;
     // ⚙️ Física: reciclado NÃO pode nascer "no chão" nem com recarga/varredura velhas.
     e.onGround = false; e._maxFall = 0; e._cd = 0; e._prevX = e.x; e._prevY = e.y;
+    e._sweepFromY = e.y; e._sweepFrame = -1;
     e._bornX = e.x; e._bornY = e.y;
     e._coyoteT = 0; e._bufferT = 0; e._holdT = 0; e._airJumps = 0;
     e._wallDir = 0; e._wallSide = 0; e._wallT = 0; e._wallLockT = 0; e._dropT = 0;
@@ -1949,6 +1923,10 @@ export const gameKitRuntime = `(function () {
     // quadro lento (dt no teto = 0.1 s) pularia por cima de uma peça inteira.
     who._prevX = num(who.x, 0);
     who._prevY = num(who.y, 0);
+    // A colisão sólida substitui _prevY pela posição resolvida. Esta origem fica
+    // intacta até o fim do quadro para a plataforma one-way testar o cruzamento.
+    who._sweepFromY = who._prevY;
+    who._sweepFrame = frameCount;
     who.x = num(who.x, 0) + num(who.vx, 0) * d;
     who.y = num(who.y, 0) + num(who.vy, 0) * d;
   }
@@ -2105,26 +2083,33 @@ export const gameKitRuntime = `(function () {
    * Colisão ONE-WAY das peças PLATAFORMA do tilemap (pisa por cima, atravessa
    * por baixo). MESMA técnica de cruzamento de plano do oneWayPlatform (molde):
    * só segura CAINDO e quando o pé cruza o topo da peça neste quadro. Não é
-   * varrido — o feetNext já projeta o movimento inteiro do quadro (anti-túnel).
+   * varrido — o intervalo preserva o começo do movimento e projeta o próximo
+   * passo, cobrindo tanto a ordem mover→colidir quanto a chamada antes de mover.
    */
   function collideTilemapPlatform(who, m, d) {
     if (!m.platform) return;
     if (num(who.vy, 0) < 0) return; // subindo: atravessa
     if (num(who._dropT, 0) > 0) return; // pediu descer (↓): ignora
     var t = tilePx;
-    var feet = hbBottom(who);
-    var feetNext = feet + num(who.vy, 0) * d;
+    var feetFrom = oneWayFeetFrom(who);
+    var feetTo = oneWayFeetTo(who, d);
     var c0 = Math.floor(hbLeft(who) / t);
     var c1 = Math.floor((hbRight(who) - 1) / t);
-    var r0 = Math.floor(feet / t);
-    var r1 = Math.floor(feetNext / t) + 1;
+    var rowCount = m.rows.length; if (!rowCount) return;
+    // A API pública aceita posição/velocidade: limite ao mapa real para não
+    // percorrer milhões de índices inexistentes nem ultrapassar o inteiro seguro.
+    var r0 = Math.max(0, Math.floor(feetFrom / t));
+    var r1 = Math.min(rowCount - 1, Math.floor(feetTo / t) + 1);
+    if (r0 > r1) return;
     for (var r = r0; r <= r1; r++) {
       var rowArr = m.rows[r];
       if (!rowArr) continue;
       var top = r * t;
-      if (feet > top + 1) continue; // já estava abaixo do topo: não é pouso
-      if (feetNext < top) continue; // não alcança o plano neste quadro
-      for (var c = c0; c <= c1; c++) {
+      if (feetFrom > top + 1) continue; // começou abaixo do topo: não é pouso
+      if (feetTo < top) continue; // não alcança o plano neste quadro
+      var firstCol = Math.max(0, c0);
+      var lastCol = Math.min(rowArr.length - 1, c1);
+      for (var c = firstCol; c <= lastCol; c++) {
         var idx = rowArr[c];
         if (idx == null || idx < 0 || !m.platform[idx]) continue;
         if (hbRight(who) <= c * t) continue;
@@ -2133,6 +2118,7 @@ export const gameKitRuntime = `(function () {
         who.vy = 0;
         who.onGround = true;
         who._prevY = num(who.y, 0); // a varredura não desfaz este pouso
+        who._sweepFrame = -1;
         return;
       }
     }
@@ -2249,8 +2235,11 @@ export const gameKitRuntime = `(function () {
   var boards = Object.create(null); // nome -> {cols, rows, empty, cells:[]} (flat row*cols+col)
   function boardAt(name) { return boards[text(name, 'tabuleiro')] || null; }
   function boardCreate(name, cols, rows, empty) {
-    var c = Math.max(1, Math.round(num(cols, 8)));
-    var r = Math.max(1, Math.round(num(rows, 8)));
+    var c = Math.max(1, Math.min(MAX_GRID_SIDE, Math.round(num(cols, 8))));
+    var r = Math.max(1, Math.min(MAX_GRID_SIDE, Math.round(num(rows, 8))));
+    if (num(cols, 8) > MAX_GRID_SIDE || num(rows, 8) > MAX_GRID_SIDE) {
+      warnOnce('board:limit', 'o tabuleiro foi limitado a ' + MAX_GRID_SIDE + ' × ' + MAX_GRID_SIDE + ' células para o jogo continuar responsivo');
+    }
     var cells = [];
     for (var i = 0; i < c * r; i++) cells.push(empty);
     boards[text(name, 'tabuleiro')] = { cols: c, rows: r, empty: empty, cells: cells };
@@ -2283,139 +2272,11 @@ export const gameKitRuntime = `(function () {
     return cc >= 0 && cc < b.cols && rr >= 0 && rr < b.rows;
   }
 
-  // ---- 🃏 R30 — CARTAS: uma pilha É uma LISTA do núcleo (array); os verbos operam
-  // por REFERÊNCIA. A criança MONTA memória, Uno, deck-battler com listas + estes. ----
-  function pileMoveTop(from, to) {
-    if (!Array.isArray(from) || !Array.isArray(to) || from.length === 0) return;
-    to.push(from.pop());
-  }
-  function pileShuffleFrom(deck, discard) {
-    if (!Array.isArray(deck) || !Array.isArray(discard)) return;
-    while (discard.length) deck.push(discard.pop()); // junta o descarte no monte
-    for (var i = deck.length - 1; i > 0; i--) { // e embaralha (Fisher-Yates)
-      var j = Math.floor(Math.random() * (i + 1)), t = deck[i]; deck[i] = deck[j]; deck[j] = t;
-    }
-  }
-  function pileTop(pile) { return (Array.isArray(pile) && pile.length) ? pile[pile.length - 1] : null; }
-  function pileSize(pile) { return Array.isArray(pile) ? pile.length : 0; }
-  // Carta = objeto leve de 2 faces (frente/verso + virada?). Açúcar de apresentação.
-  function makeCard(front, back) {
-    return { front: front, back: (back === undefined || back === null) ? '?' : back, faceUp: false };
-  }
-  function cardFlip(c) { if (c && typeof c === 'object') c.faceUp = !c.faceUp; }
-  function cardIsUp(c) { return !!(c && typeof c === 'object' && c.faceUp); }
-  function cardFace(c) {
-    if (!c || typeof c !== 'object') return c; // valor cru (não é carta de 2 faces)
-    return c.faceUp ? c.front : c.back;
-  }
-  // Mão clicável: desenha a lista como fileira/leque e guarda os retângulos por
-  // REFERÊNCIA (WeakMap pela própria lista) — o cardAt lê de volta o clique.
-  var handRects = (typeof WeakMap === 'function') ? new WeakMap() : null;
-  function handDraw(pile, x, y, fan) {
-    if (!Array.isArray(pile) || !ctx2d) return;
-    var cw = 60, ch = 84, gap = 12, n = pile.length;
-    // A "desenhar a mão" roda no laço de desenho (todo quadro). Reusa o array de
-    // retângulos POR pilha e os próprios objetos (cresce no lugar) — zero lixo por
-    // quadro em regime, como o depthList; só aloca quando a mão CRESCE.
-    var rects = handRects ? handRects.get(pile) : null;
-    if (!rects) { rects = []; if (handRects) handRects.set(pile, rects); }
-    var bx = num(x, 0), by = num(y, 0);
-    for (var i = 0; i < n; i++) {
-      var rx = bx + i * (cw + gap);
-      var ry = by + (fan ? Math.abs(i - (n - 1) / 2) * 6 : 0); // leque = leve arco
-      ctx2d.save();
-      ctx2d.fillStyle = '#fdfdfd'; ctx2d.strokeStyle = '#2b2b2b'; ctx2d.lineWidth = 2;
-      ctx2d.fillRect(rx, ry, cw, ch); ctx2d.strokeRect(rx, ry, cw, ch);
-      var card = pile[i];
-      var face = (card && typeof card === 'object' && 'faceUp' in card) ? (card.faceUp ? card.front : card.back) : card;
-      ctx2d.fillStyle = '#1b1b1b'; ctx2d.font = '22px sans-serif';
-      ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
-      ctx2d.fillText(String(face === undefined || face === null ? '' : face), rx + cw / 2, ry + ch / 2);
-      ctx2d.restore();
-      var r = rects[i];
-      if (r) { r.x = rx; r.y = ry; r.w = cw; r.h = ch; }
-      else rects[i] = { x: rx, y: ry, w: cw, h: ch };
-    }
-    rects.length = n; // descarta sobras de uma mão MAIOR de um quadro anterior
-  }
-  function cardAt(x, y, pile) {
-    if (!Array.isArray(pile) || !handRects) return -1;
-    var rects = handRects.get(pile);
-    if (!rects) return -1;
-    var px = num(x, 0), py = num(y, 0);
-    for (var i = rects.length - 1; i >= 0; i--) { // de trás pra frente: o de cima vence
-      var r = rects[i];
-      if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return i;
-    }
-    return -1;
-  }
-
-  // ---- 🃏 R30 — Kit Cartas: o RPG DE CARTAS (deck-battler). RECEITA, não mágica:
-  // o kit dá o andaime (vida/energia/escudo/intenção/turnos + HUD); a criança MONTA
-  // o deck (listas + cartas), a mão e O QUE CADA CARTA FAZ com os verbos abaixo. ----
-  var cards = { battle: null, onTurn: [], onEnemyTurn: [] };
-  function cardsStart(heroHp, enemyHp) {
-    var hh = Math.max(1, num(heroHp, 30)), eh = Math.max(1, num(enemyHp, 40));
-    cards.battle = {
-      heroHp: hh, heroMax: hh, enemyHp: eh, enemyMax: eh,
-      energy: 3, energyPerTurn: 3, block: 0,
-      intentAction: 'atacar', intentValue: 6
-    };
-    // ⚠️ NÃO muda o estado: o jogo de cartas roda no 'jogando' da criança (senão o
-    // onUpdate/teclas congelariam). O 1º "meu turno" começa já.
-    cardsStartTurn();
-  }
-  function cardsEnergyPerTurn(n) { if (cards.battle) { cards.battle.energyPerTurn = Math.max(0, num(n, 3)); cards.battle.energy = cards.battle.energyPerTurn; } }
-  function cardsEnergy() { return cards.battle ? cards.battle.energy : 0; }
-  function cardsSpend(n) { if (cards.battle) cards.battle.energy = Math.max(0, cards.battle.energy - Math.max(0, num(n, 1))); }
-  function cardsHeroLife() { return cards.battle ? Math.max(0, cards.battle.heroHp) : 0; }
-  function cardsEnemyLife() { return cards.battle ? Math.max(0, cards.battle.enemyHp) : 0; }
-  function cardsHurtEnemy(n) { if (cards.battle) cards.battle.enemyHp -= Math.max(0, num(n, 0)); }
-  function cardsHurtMe(n) {
-    if (!cards.battle) return;
-    var d = Math.max(0, num(n, 0));
-    var absorbed = Math.min(cards.battle.block, d); // o escudo absorve primeiro
-    cards.battle.block -= absorbed; d -= absorbed;
-    cards.battle.heroHp -= d;
-  }
-  function cardsGainBlock(n) { if (cards.battle) cards.battle.block += Math.max(0, num(n, 0)); }
-  function cardsEnemyIntent(action, value) {
-    if (cards.battle) { cards.battle.intentAction = text(action, 'atacar'); cards.battle.intentValue = Math.max(0, num(value, 6)); }
-  }
-  function cardsIntentAction() { return cards.battle ? cards.battle.intentAction : ''; }
-  function cardsIntentValue() { return cards.battle ? cards.battle.intentValue : 0; }
-  function cardsOnTurn(fn) { if (typeof fn === 'function') cards.onTurn.push(fn); }
-  function cardsOnEnemyTurn(fn) { if (typeof fn === 'function') cards.onEnemyTurn.push(fn); }
-  function cardsStartTurn() {
-    if (!cards.battle) return;
-    cards.battle.energy = cards.battle.energyPerTurn; // RESET (não regenera como o RPG)
-    cards.battle.block = 0; // o escudo some no começo do meu turno (como no gênero)
-    for (var i = 0; i < cards.onTurn.length; i++) { try { cards.onTurn[i](); } catch (e) { warn('erro no "Quando começar o meu turno": ' + e); } }
-  }
-  function cardsEndTurn() {
-    if (!cards.battle) return;
-    for (var i = 0; i < cards.onEnemyTurn.length; i++) { try { cards.onEnemyTurn[i](); } catch (e) { warn('erro no "Quando for a vez do inimigo": ' + e); } }
-    cardsStartTurn(); // volta pra mim (reseta energia/escudo e roda o meu turno)
-  }
-  // "Jogar de novo": zera a batalha de cartas (ESTADO), como lutaNewGame/tdNewGame. As
-  // receitas de turno (cardsOnTurn/cardsOnEnemyTurn) são registros — como os spawners,
-  // ficam de PÉ (o exemplo as põe no topo; quem entra em jogando re-chama cardsStart e
-  // a batalha nasce do zero). Sem isto, o Kit Cartas era a ÚNICA batalha não resetada.
-  function cardsNewGame() { cards.battle = null; }
-  function cardsDrawHud() {
-    if (!cards.battle || !ctx2d) return;
-    var b = cards.battle;
-    drawBar(Math.max(0, b.enemyHp), b.enemyMax, config.w / 2 - 130, 46, 260, 18, '#ef4444');
-    drawBar(Math.max(0, b.heroHp), b.heroMax, config.w / 2 - 130, config.h - 66, 260, 18, '#4ade80');
-    ctx2d.save();
-    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px sans-serif'; ctx2d.textAlign = 'center';
-    ctx2d.fillText('👿 vai: ' + b.intentAction + ' ' + b.intentValue, config.w / 2, 34);
-    ctx2d.fillText('⚡ Energia: ' + b.energy + '     🛡️ Escudo: ' + b.block, config.w / 2, config.h - 34);
-    ctx2d.restore();
-  }
+${gameKitCardsRuntime}
 
   // ---- ⏱️ Tempo (acumulador de dt — NÃO relógio de parede: pausa tem que pausar) ----
   var secondTimers = Object.create(null);
+  var TIMER_EPSILON = 1e-9;
   // Esperas de UMA VEZ em curso. Objeto sem prototipo nao serve aqui (e lista).
   var waits = [];
   /**
@@ -2427,6 +2288,10 @@ export const gameKitRuntime = `(function () {
    */
   function waitThen(secs, fn) {
     if (typeof fn !== 'function') return;
+    if (waits.length >= MAX_PENDING_WAITS) {
+      warnOnce('waits:limit', 'há esperas demais pendentes — o limite é ' + MAX_PENDING_WAITS);
+      return;
+    }
     waits.push({ at: playTime + Math.max(0, num(secs, 1)), fn: fn });
   }
   function stepWaits() {
@@ -2441,16 +2306,31 @@ export const gameKitRuntime = `(function () {
     var k = text(key, 't');
     var period = Math.max(0.01, num(secs, 1));
     var acc = num(secondTimers[k], 0) + currentDt;
-    if (acc >= period) { secondTimers[k] = 0; return true; }
+    if (acc + TIMER_EPSILON >= period) {
+      // Mantém a fase do relógio entre quadros. Zerar aqui faria 50 ms virarem
+      // 66,7 ms a 30 FPS; o módulo remove períodos inteiros porque o corpo só
+      // pode rodar uma vez por quadro. A tolerância evita perder o disparo exato
+      // por arredondamento binário (ex.: 3 × 1/60 quase igual a 0,05).
+      var remainder = acc % period;
+      secondTimers[k] = (remainder < TIMER_EPSILON || period - remainder < TIMER_EPSILON) ? 0 : remainder;
+      return true;
+    }
     secondTimers[k] = acc;
     return false;
   }
   /** Cooldown POR personagem, em segundos (recarga do tiro, do golpe…). */
   function cooldownReady(who, secs) {
     if (!who || typeof who !== 'object') return false;
-    var cd = num(who._cd, 0) - currentDt;
-    if (cd > 0) { who._cd = cd; return false; }
-    who._cd = Math.max(0.01, num(secs, 0.5));
+    // Prazo ABSOLUTO no relógio do jogo. A versão antiga descontava currentDt
+    // POR CHAMADA: com o tiro edge-trigger da receita canônica ("se
+    // keyPressed(' ') e cooldownReady(nave, 0.25)"), a recarga só era
+    // descontada nos quadros em que a criança APERTAVA — apertar, esperar e
+    // apertar de novo continuava travado (só metralhar o botão destravava).
+    // Com o prazo em playTime a espera REAL conta; a pausa congela junto
+    // (playTime para) e o reinício zera os dois lados (playTime = 0 e os
+    // resets zeram _cd; _cd = 0 significa "pronto").
+    if (num(who._cd, 0) > playTime) return false;
+    who._cd = playTime + Math.max(0.01, num(secs, 0.5));
     return true;
   }
 
@@ -2534,19 +2414,20 @@ export const gameKitRuntime = `(function () {
   var tweens = [];
   /** Uma entrada de tween por PROPRIEDADE (era só x/y juntos). Regravar a mesma
    * propriedade do mesmo personagem substitui a anterior. */
-  function pushTween(who, prop, to, secs, notify) {
+  function pushTween(who, prop, to, secs, notify, onDone) {
     for (var i = tweens.length - 1; i >= 0; i--) {
       if (tweens[i].e === who && tweens[i].p === prop) tweens.splice(i, 1);
     }
     tweens.push({
       e: who, p: prop, f: num(who[prop], 0), to: num(to, 0),
-      t: 0, d: Math.max(0.01, num(secs, 0.5)), ev: !!notify
+      t: 0, d: Math.max(0.01, num(secs, 0.5)), ev: !!notify,
+      done: typeof onDone === 'function' ? onDone : null
     });
   }
-  function tweenTo(who, x, y, secs) {
+  function tweenTo(who, x, y, secs, onDone) {
     if (!who || typeof who !== 'object') return;
     pushTween(who, 'x', x, secs, false);
-    pushTween(who, 'y', y, secs, true); // só o Y avisa: um "cheguei" por deslize
+    pushTween(who, 'y', y, secs, true, onDone); // só o Y avisa/conclui: uma vez por deslize
   }
   /** ⭐ Versões MUDAS, para uso INTERNO do motor (investida da batalha, desmaio,
    * volta ao posto). O aviso "deslizou:chegou" é da CRIANÇA: quem encadeia
@@ -2586,6 +2467,9 @@ export const gameKitRuntime = `(function () {
         // ⚠️ Sem este aviso era IMPOSSÍVEL encadear (o tween sumia calado) — é o
         // que destrava caminho por pontos, torre atirando em rota, cutscene.
         if (tw.ev) emit('deslizou:chegou', tw.e);
+        if (tw.done) {
+          try { tw.done(); } catch (e2) { warn('erro ao concluir um movimento suave: ' + e2); }
+        }
       }
     }
   }
@@ -2903,8 +2787,13 @@ export const gameKitRuntime = `(function () {
   function createEmptyTilemap(name, cols, rows, fill, assetName) {
     var nm = text(name, '');
     if (!nm) { warn('"Criar o mapa vazio" precisa de um nome'); return; }
-    var c = Math.max(1, Math.min(512, Math.round(num(cols, 20))));
-    var r = Math.max(1, Math.min(512, Math.round(num(rows, 15))));
+    var requestedCols = Math.round(num(cols, 20));
+    var requestedRows = Math.round(num(rows, 15));
+    var c = Math.max(1, Math.min(MAX_GRID_SIDE, requestedCols));
+    var r = Math.max(1, Math.min(MAX_GRID_SIDE, requestedRows));
+    if (c !== requestedCols || r !== requestedRows) {
+      warnOnce('tilemap:limit:' + nm, 'o mapa "' + nm + '" foi limitado a ' + MAX_GRID_SIDE + ' × ' + MAX_GRID_SIDE + ' peças para manter o jogo rápido');
+    }
     var f = Math.round(num(fill, -1));
     var grid = [];
     for (var i = 0; i < r; i++) {
@@ -2956,929 +2845,10 @@ export const gameKitRuntime = `(function () {
     who.y = num(who.y, 0) + dy * num(who.speed, 0) * num(who.speedMultiplier, 1) * d;
     setFacing(who, dx, dy);
   }
-  // ============================================================================
-  // 🏃 KIT PLATAFORMA — o atalho do gênero (Mario, Celeste, Sunnyland)
-  // ============================================================================
-  // A extensão GERAL já faz plataforma "na unha" com os primitivos de ⚙️ Física
-  // (gravidade + mover + colidir + pulo). Este kit é o ATALHO: junta tudo num
-  // bloco só e acrescenta o que só existe em jogo de plataforma — o "feel" (o que
-  // separa um pulo gostoso de um pulo duro), plataformas de atravessar por baixo,
-  // pisar no inimigo, escada, wall jump.
-  //
-  // ⭐ As três peças do pulo bom (as duas primeiras os tutoriais esquecem):
-  //  · COYOTE TIME — você ainda pode pular por um instantinho DEPOIS de sair da
-  //    beirada. Ninguém percebe; todo mundo sente. Sem ele o jogo parece "duro".
-  //  · BUFFER — apertar um tiquinho ANTES de pousar não perde o pulo: o aperto
-  //    fica guardado e dispara no pouso.
-  //  · PULO VARIÁVEL — segurou, pula alto; deu um toquinho, pula baixinho. O
-  //    empurrão é RE-AFIRMADO enquanto segura (até 0,3 s) e soltar CANCELA.
-  var jumpFeel = { coyote: 0.1, buffer: 0.1, hold: 0.3 };
-  var plat = { cpX: 0, cpY: 0, hasCp: false, gravity: 2160 };
-  var PLAT_SPEED_BOOST = 0.3; // correndo pula mais alto (Mario) — vy += |vx| * 0.3
-  function setJumpFeel(coyote, buffer, hold, gravity) {
-    jumpFeel.coyote = Math.max(0, num(coyote, 0.1));
-    jumpFeel.buffer = Math.max(0, num(buffer, 0.1));
-    jumpFeel.hold = Math.max(0, num(hold, 0.3));
-    plat.gravity = Math.max(1, num(gravity, 2160));
-  }
-  function platJumpPressed() {
-    return justPressed[' '] === true || justPressed.w === true || justPressed.arrowup === true;
-  }
-  function platJumpHeld() {
-    return keys[' '] === true || keys.w === true || keys.arrowup === true;
-  }
-  /** O empurrão do pulo (com o bônus de correr do Mario). */
-  function platImpulse(who, force) {
-    who.vy = -(Math.abs(num(force, 660)) + Math.abs(num(who.vx, 0)) * PLAT_SPEED_BOOST);
-    who.onGround = false;
-  }
-  /** Herói de plataforma TUDO-EM-UM: gravidade + setas + pulo com feel + mover.
-   * A colisão fica FORA de propósito (o bloco "colidir com o mapa/enxame" vem
-   * DEPOIS) — é a ordem de verdade, e é ela que a criança aprende. */
-  function platformerHero(who, speed, force, dt) {
-    if (!who || typeof who !== 'object') return;
-    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
-    // 1) COYOTE e BUFFER medidos ANTES da gravidade — ela zera o onGround.
-    if (who.onGround) {
-      who._coyoteT = jumpFeel.coyote;
-      who._airJumps = 0; // pousou: devolve o pulo duplo
-    } else {
-      who._coyoteT = Math.max(0, num(who._coyoteT, 0) - d);
-    }
-    if (platJumpPressed()) who._bufferT = jumpFeel.buffer;
-    else who._bufferT = Math.max(0, num(who._bufferT, 0) - d);
-    who._dropT = Math.max(0, num(who._dropT, 0) - d); // janela do "descer da plataforma"
-    // Parede: a colisão marcou no FIM do quadro passado e a gravidade logo abaixo
-    // vai zerar — guarde aqui (o coyote da parede, que o Celeste também tem),
-    // senão "deslizar"/"wall jump" nunca veriam parede nenhuma.
-    if (num(who._wallDir, 0)) {
-      who._wallSide = who._wallDir;
-      who._wallT = jumpFeel.coyote;
-    } else {
-      who._wallT = Math.max(0, num(who._wallT, 0) - d);
-    }
-    // 2) gravidade
-    applyGravity(who, plat.gravity, d);
-    // 3) setas (só na horizontal — em plataforma, cima é PULAR). ⚠️ O empurrão do
-    // wall jump manda por um tiquinho: sem essa trava, a seta reescreveria o vx no
-    // quadro seguinte e o herói grudaria na parede em vez de sair dela.
-    who._wallLockT = Math.max(0, num(who._wallLockT, 0) - d);
-    var dir = 0;
-    if (keys.a || keys.arrowleft) dir -= 1;
-    if (keys.d || keys.arrowright) dir += 1;
-    if (num(who._wallLockT, 0) <= 0) {
-      who.vx = dir * Math.abs(num(speed, 240));
-      if (dir) setFacing(who, dir, 0);
-    }
-    // 4) pulo: o aperto guardado (buffer) encontra o chão recente (coyote)
-    if (num(who._bufferT, 0) > 0 && num(who._coyoteT, 0) > 0) {
-      who._bufferT = 0;
-      who._coyoteT = 0;
-      who._holdT = jumpFeel.hold;
-      platImpulse(who, force); // o empurrão sai SEMPRE, mesmo num toque de 1 quadro
-    }
-    // 5) segurando = continua subindo (pulo alto); soltou = cancela (pulo curto)
-    if (num(who._holdT, 0) > 0) {
-      if (platJumpHeld()) {
-        platImpulse(who, force);
-        who._holdT = num(who._holdT, 0) - d;
-      } else {
-        who._holdT = 0;
-      }
-    }
-    // 6) mover
-    moveByVelocity(who, d);
-  }
-  /** Pulo duplo (INVENTADO — nenhum dos jogos-fonte tem): N pulos no AR, e o
-   * pouso devolve todos. Chame DEPOIS do herói, no mesmo quadro. */
-  function doubleJump(who, force, times) {
-    if (!who || typeof who !== 'object') return;
-    var max = Math.max(1, Math.round(num(times, 1)));
-    // Só no ar, e só se o pulo do chão já não tiver acabado de sair (o
-    // platformerHero zera o buffer quando gasta o aperto).
-    if (who.onGround || num(who._bufferT, 0) <= 0) return;
-    if (num(who._airJumps, 0) >= max) return;
-    who._airJumps = num(who._airJumps, 0) + 1;
-    who._bufferT = 0;
-    who._holdT = jumpFeel.hold;
-    platImpulse(who, force);
-  }
-  /** Deslizar na parede: caindo e encostado, a queda fica LENTA. */
-  function wallSlide(who, speed) {
-    if (!who || typeof who !== 'object') return;
-    if (who.onGround || num(who._wallT, 0) <= 0) return;
-    var s = Math.abs(num(speed, 90));
-    if (num(who.vy, 0) > s) who.vy = s;
-  }
-  /** Wall jump: pula para LONGE da parede (o clássico do Celeste). O empurrão
-   * horizontal fica travado um tiquinho, senão a seta apagaria ele no quadro
-   * seguinte (o herói escreve vx todo quadro). */
-  function wallJump(who, forceX, forceY) {
-    if (!who || typeof who !== 'object') return;
-    if (who.onGround || num(who._wallT, 0) <= 0) return;
-    if (num(who._bufferT, 0) <= 0) return;
-    var away = -num(who._wallSide, 0); // longe da parede
-    if (!away) return;
-    who._bufferT = 0;
-    who._holdT = 0; // o empurrão do wall jump é fixo: segurar não estica
-    who._wallLockT = 0.15;
-    who._wallT = 0;
-    who._airJumps = 0; // a parede devolve o pulo duplo (é o combo do Celeste)
-    who.vy = -Math.abs(num(forceY, 660));
-    who.vx = away * Math.abs(num(forceX, 300));
-    who.onGround = false;
-    setFacing(who, away, 0);
-  }
-  /** Escada (INVENTADO): em cima da peça de escada, cima/baixo sobem e descem e a
-   * gravidade não vale. Chame DEPOIS do herói e ANTES de colidir. */
-  function climbLadder(who, mapName, tileIndex, speed) {
-    if (!who || typeof who !== 'object') return;
-    var want = Math.round(num(tileIndex, 0));
-    if (tileAt(mapName, centerX(who), centerY(who)) !== want) return;
-    var s = Math.abs(num(speed, 160));
-    var dy = 0;
-    if (keys.w || keys.arrowup) dy -= 1;
-    if (keys.s || keys.arrowdown) dy += 1;
-    if (dy) {
-      // ⚠️ Na escada, ↑ é SUBIR — não pular. O herói roda antes daqui e já tratou
-      // o ↑/W como pulo (são a mesma tecla): desfaça, senão sair do topo ainda
-      // segurando ↑ dispara o empurrão guardado e a criança "voa" sem entender.
-      who._holdT = 0;
-      who._bufferT = 0;
-      who.vy = dy * s; // subir/descer manda: a gravidade deste quadro é anulada
-    } else if (num(who._holdT, 0) > 0) {
-      return; // pulou da escada (espaço): deixa o pulo acontecer
-    } else {
-      who.vy = 0; // parado na escada = fica pendurado
-    }
-    who.onGround = true; // dá para pular DA escada
-  }
-  /** Plataforma de atravessar por baixo (one-way). ⭐ Técnica do Sunnyland
-   * (Platform.js): NÃO testa sobreposição — testa se os pés CRUZAM o plano do
-   * topo neste quadro (posição de agora × posição de agora + vy·dt). Por isso não
-   * fura numa queda rápida, e subir por baixo passa direto. */
-  function oneWayPlatform(who, moldName, dt) {
-    if (!who || typeof who !== 'object') return;
-    var ok = text(moldName, '');
-    var pool = pools[ok];
-    if (!pool) { warnOnce('oneway:' + ok, 'o molde "' + ok + '" não existe — crie com "Criar o molde"'); return; }
-    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
-    if (num(who.vy, 0) < 0) return; // subindo: atravessa
-    if (who._dropT > 0) return; // pediu para descer (↓): ignora as plataformas
-    // Os pés são os da CAIXA (quem declarou uma caixa nos pés quer pousar por ela).
-    var feet = hbBottom(who);
-    var feetNext = feet + num(who.vy, 0) * d;
-    var act = pool.active;
-    for (var i = 0; i < act.length; i++) {
-      var p = act[i];
-      if (p === who || p._active === false) continue;
-      var top = hbTop(p);
-      if (feet > top) continue; // já estava abaixo do topo: não é pouso
-      if (feetNext < top) continue; // não alcança o plano neste quadro
-      if (hbRight(who) <= hbLeft(p)) continue;
-      if (hbLeft(who) >= hbRight(p)) continue;
-      who.y = top - hbH(who) - num(who._hbY, 0);
-      who.vy = 0;
-      who.onGround = true;
-      who._prevY = who.y; // a varredura não deve desfazer este pouso
-      return;
-    }
-  }
-  /** Descer de uma plataforma one-way (↓ + pulo) — abre uma janelinha em que ela
-   * é ignorada. */
-  function dropThrough(who) {
-    if (!who || typeof who !== 'object') return;
-    if (!(keys.s || keys.arrowdown)) return;
-    if (!platJumpPressed()) return;
-    who._dropT = 0.25;
-    who.onGround = false;
-  }
-  /** Plataforma que anda (INVENTADO) e CARREGA quem está em cima: guarda o quanto
-   * ela andou e soma em quem pegou carona. Sem isso o herói "escorrega" dela. */
-  function movingPlatform(who, x1, y1, x2, y2, seconds, dt) {
-    if (!who || typeof who !== 'object') return;
-    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
-    var dur = Math.max(0.1, num(seconds, 2));
-    who._platT = num(who._platT, 0) + d / dur;
-    // Vai-e-volta suave (0→1→0) sem precisar de estado de direção.
-    var t = who._platT % 2;
-    var k = t > 1 ? 2 - t : t;
-    var ease = k * k * (3 - 2 * k); // suaviza as pontas (smoothstep)
-    var nx = num(x1, 0) + (num(x2, 0) - num(x1, 0)) * ease;
-    var ny = num(y1, 0) + (num(y2, 0) - num(y1, 0)) * ease;
-    who._carryX = nx - num(who.x, 0);
-    who._carryY = ny - num(who.y, 0);
-    who.x = nx;
-    who.y = ny;
-    who._prevX = nx;
-    who._prevY = ny;
-  }
-  /** Pega carona: quem está em cima anda junto com a plataforma. */
-  function rideOn(who, moldName) {
-    if (!who || typeof who !== 'object') return;
-    var rk = text(moldName, '');
-    var pool = pools[rk];
-    if (!pool) { warnOnce('ride:' + rk, 'o molde "' + rk + '" não existe — crie com "Criar o molde"'); return; }
-    var act = pool.active;
-    var feet = hbBottom(who);
-    for (var i = 0; i < act.length; i++) {
-      var p = act[i];
-      if (p._active === false) continue;
-      if (Math.abs(feet - hbTop(p)) > 4) continue; // não está em cima
-      if (hbRight(who) <= hbLeft(p)) continue;
-      if (hbLeft(who) >= hbRight(p)) continue;
-      who.x = num(who.x, 0) + num(p._carryX, 0);
-      who.y = num(who.y, 0) + num(p._carryY, 0);
-      who._prevX = num(who.x, 0);
-      who._prevY = num(who.y, 0);
-      who.onGround = true;
-      return;
-    }
-  }
-  /** Pisar no inimigo. ⭐ Técnica do Super Mario (Stomper.js): compara as
-   * VELOCIDADES (us.vel.y > them.vel.y) em vez de olhar o lado — assim funciona
-   * mesmo se os dois estiverem caindo, e um inimigo subindo te machuca. Quem
-   * pisou QUICA; quem levou é recolhido e sai o aviso "plataforma:pisou". */
-  function stompKill(who, moldName, bounce) {
-    if (!who || typeof who !== 'object') return;
-    var sk = text(moldName, '');
-    var pool = pools[sk];
-    if (!pool) { warnOnce('stomp:' + sk, 'o molde "' + sk + '" não existe — crie com "Criar o molde"'); return; }
-    var act = pool.active;
-    for (var i = act.length - 1; i >= 0; i--) {
-      var e = act[i];
-      if (e._active === false) continue;
-      if (!touching(who, e)) continue;
-      if (num(who.vy, 0) <= num(e.vy, 0)) continue; // não estava caindo NELE
-      who.y = hbTop(e) - hbH(who) - num(who._hbY, 0); // encaixa em cima (bounds.bottom = top)
-      who.vy = -Math.abs(num(bounce, 400));
-      who.onGround = false;
-      who._holdT = 0;
-      who._prevY = who.y;
-      // ⚠️ Avisar ANTES de recolher: aqui a varredura está DESLIGADA, então o
-      // recolher devolve "e" ao pool na hora — e um ouvinte que faça nascer do
-      // mesmo molde receberia ESTE objeto de volta, já reescrito.
-      emit('plataforma:pisou', e);
-      recycle(e);
-    }
-  }
-  /** Patrulha que vira na PAREDE. ⭐ Técnica do Super Mario (PendulumMove.js): a
-   * colisão é que manda virar (vx zerado = bateu), em vez de contar passos —
-   * então o inimigo nunca cai da beirada errada nem trava na quina. */
-  function patrolTurnAtWall(who, speed) {
-    if (!who || typeof who !== 'object') return;
-    var s = Math.abs(num(speed, 60));
-    if (num(who._patrolDir, 0) === 0) who._patrolDir = -1;
-    // vx == 0 depois de ter andado = a colisão zerou = bateu numa parede.
-    if (num(who._patrolWas, 0) !== 0 && num(who.vx, 0) === 0) {
-      who._patrolDir = -num(who._patrolDir, -1);
-    }
-    who.vx = num(who._patrolDir, -1) * s;
-    who._patrolWas = who.vx;
-    setFacing(who, who.vx, 0);
-  }
-  /** Ponto de renascer. */
-  function setCheckpoint(x, y) {
-    plat.cpX = num(x, 0);
-    plat.cpY = num(y, 0);
-    plat.hasCp = true;
-  }
-  function respawn(who) {
-    if (!who || typeof who !== 'object') return;
-    who.x = plat.hasCp ? plat.cpX : num(who._bornX, num(who.x, 0));
-    who.y = plat.hasCp ? plat.cpY : num(who._bornY, num(who.y, 0));
-    // Renascer é TELEPORTE, não movimento: zerar a varredura, senão a colisão
-    // tentaria varrer do lugar da morte até aqui e travaria no caminho.
-    who._prevX = who.x;
-    who._prevY = who.y;
-    who.vx = 0;
-    who.vy = 0;
-    who._holdT = 0;
-    who._coyoteT = 0;
-    who._bufferT = 0;
-    who._wallT = 0;
-    who._wallSide = 0;
-    who._wallDir = 0;
-    who._wallLockT = 0;
-    who._dropT = 0;
-    who._airJumps = 0;
-  }
-  /** Quadros de um ESTADO do herói (parado/andando/pulando/caindo) — o mapa
-   * estado→animação do Sunnyland (Player.js). Declare uma vez por estado. */
-  var PLAT_STATES = { parado: 1, andando: 1, pulando: 1, caindo: 1 };
-  function platStateFrames(who, state, from, to, fps) {
-    if (!who || typeof who !== 'object') return;
-    var st = text(state, 'parado');
-    if (!PLAT_STATES[st]) {
-      warnOnce('platstate:' + st, 'o estado "' + st + '" não existe (use parado, andando, pulando ou caindo)');
-      return;
-    }
-    if (!who._platFrames) who._platFrames = {};
-    who._platFrames[st] = { from: Math.max(0, Math.floor(num(from, 0))), to: Math.max(0, Math.floor(num(to, 0))), fps: Math.max(1, num(fps, 8)) };
-  }
-  /** Animação por ESTADO, lida da FÍSICA (jeito do Sunnyland/Mario): a folha de
-   * quadros troca sozinha conforme (no chão, vx, vy) — parado / andando / pulando
-   * / caindo. Chame no "A cada quadro", depois de mover. */
-  function platformerAnim(who) {
-    if (!who || typeof who !== 'object') return;
-    var st;
-    if (!who.onGround) st = num(who.vy, 0) < 0 ? 'pulando' : 'caindo';
-    else st = Math.abs(num(who.vx, 0)) > 1 ? 'andando' : 'parado';
-    // Espelha o desenho pelo lado que anda (o setFacing do herói já decidiu).
-    var f = who._platFrames && who._platFrames[st];
-    // Sem quadros para o estado do ar? Cai no de andar/parado (folha simples de 2
-    // estados é o caso comum) — em vez de congelar sem animação nenhuma.
-    if (!f && who._platFrames) f = who._platFrames[st === 'caindo' ? 'pulando' : 'parado'];
-    if (!f) return;
-    playAnim(who, f.from, f.to, f.fps); // a guarda de transição vive no playAnim
-  }
 
-  // ============================================================================
-  // 👾 KIT MONSTRINHOS — o atalho do gênero "pegue e treine bichinhos"
-  // ============================================================================
-  // ⭐ A TESE: um jogo destes É um jogo do Kit RPG com OUTRA batalha. O mundo já
-  // existe (grade, NPC, fala, mapa, flags, salvar); o kit é só CRIATURAS +
-  // ENCONTROS + a batalha criatura-vs-criatura.
-  //
-  // Três armadilhas do motor que definem esta arquitetura:
-  //  1. A batalha do Kit RPG é DOM (makeScreen + 5 makeButton) — por isso o menu
-  //     dela é fixo e nunca saiu dos dados. Aqui a UI é CANVAS: o motor escreve
-  //     direto no rpg.menu e herda o desenho, as setas, o espaço e o clique.
-  //  2. O stepSystems só roda em 'jogando' — e é ELE que faz playTime += dt,
-  //     stepUiInput, stepTweens e stepParticles. Uma batalha em canvas precisa dos
-  //     quatro, senão a fala fica com 0 letras PARA SEMPRE. Por isso existe o
-  //     stepPkmBattle, chamado do gameLoop FORA do gate de estado.
-  //  3. O estado TEM que se chamar 'batalha': o setState só poupa o recomeço
-  //     quando prev é 'pausado' ou 'batalha' — um nome novo chamaria rpgNewGame()
-  //     ao voltar e APAGARIA o jogo da criança ("ganhei e o jogo recomeçou").
-  // O efeito do acerto nasce pronto: é do MOTOR da batalha, não uma escolha da
-  // criança (ela nunca declarou "faíscas de batalha").
-  var pkmFxReady = false;
-  function pkmEnsureFx() {
-    if (pkmFxReady) return;
-    pkmFxReady = true;
-    defineEffect('__pkm_hit', { count: 10, color: '#ffffff', size: 4, life: 0.3, speed: 160, gravity: 0 });
-  }
-  var pkm = {
-    species: Object.create(null),   // nome -> DADOS da espécie (nível 1)
-    moves: Object.create(null),     // nome -> {creature, type, dmg, acc, fx, color}
-    types: Object.create(null),     // 'fogo|planta' -> multiplicador
-    evolve: Object.create(null),    // espécie -> {to, level}
-    catchDiff: Object.create(null), // espécie -> multiplicador de captura
-    team: [],                       // MEUS indivíduos {species, level, hp, hpMax, xp}
-    balls: [],                      // [{power}]
-    wild: [],                       // [{species, min, max}] — a tabela do mapa
-    grass: Object.create(null),     // 'cx,cy' -> true
-    grassTiles: Object.create(null),// índice de peça -> true
-    grassMap: '',
-    rate: 20,                       // % por PASSO
-    battle: null,
-    caught: false
-  };
-  var PKM_XP_PER_LEVEL = 30;
+${gameKitPlatformerRuntime}
 
-  function pkmKeyType(t) { return text(t, 'normal').trim().toLowerCase(); }
-
-  function pkmCreature(name, type, hp, str, def, spd, image, look) {
-    var k = text(name, '');
-    if (!k) { warn('"Criatura" precisa de um nome'); return; }
-    ensureImageLoaded(image); // a imagem da criatura (Pinta) carrega sozinha
-    pkm.species[k] = {
-      name: k, type: pkmKeyType(type),
-      hp: Math.max(1, num(hp, 30)), str: Math.max(1, num(str, 8)),
-      def: Math.max(0, num(def, 4)), spd: Math.max(1, num(spd, 5)),
-      image: text(image, ''), look: text(look, ''), moves: []
-    };
-  }
-  function pkmMove(move, creature, type, dmg, acc, fx, color) {
-    var mk = text(move, '');
-    var ck = text(creature, '');
-    if (!mk) { warn('"Ensinar o golpe" precisa de um nome'); return; }
-    var sp = pkm.species[ck];
-    if (!sp) { warnOnce('pkmsp:' + ck, 'a criatura "' + ck + '" não existe — crie com "Criatura"'); return; }
-    pkm.moves[mk] = {
-      name: mk, type: pkmKeyType(type), dmg: Math.max(0, num(dmg, 20)),
-      acc: Math.max(1, Math.min(100, num(acc, 100))), fx: text(fx, 'investida'),
-      color: text(color, '#ffffff')
-    };
-    if (sp.moves.indexOf(mk) === -1 && sp.moves.length < 4) sp.moves.push(mk);
-  }
-  /** ⭐ A tabela é de TEXTO LIVRE e vazia: quem escreve "fogo vence planta" é a
-   * criança. Uma tabela pronta seria a caixa-preta que a regra rejeita (o jogo
-   * teria uma opinião que não é dela), e um dropdown fogo/água/planta proibiria
-   * gelo, doce, dinossauro — o oposto de "faça o SEU bichinho". */
-  function pkmTypeChart(atk, def, mult) {
-    pkm.types[pkmKeyType(atk) + '|' + pkmKeyType(def)] = Math.max(0, num(mult, 2));
-  }
-  function pkmAdvantage(atkType, defType) {
-    var v = pkm.types[pkmKeyType(atkType) + '|' + pkmKeyType(defType)];
-    return typeof v === 'number' ? v : 1;
-  }
-  function pkmEvolve(from, to, level) {
-    var f = text(from, '');
-    if (!pkm.species[f]) { warnOnce('pkmev:' + f, 'a criatura "' + f + '" não existe'); return; }
-    pkm.evolve[f] = { to: text(to, ''), level: Math.max(2, Math.round(num(level, 8))) };
-  }
-  function pkmCatchDifficulty(name, level) {
-    var k = text(name, '');
-    // Os irmãos (pkmWild/pkmMove/pkmEvolve) avisam; este falhava calado.
-    if (!pkm.species[k]) { warnOnce('pkmcatch:' + k, 'a criatura "' + k + '" não existe'); return; }
-    var mult = { 'fácil': 1.6, facil: 1.6, normal: 1, 'difícil': 0.5, dificil: 0.5, 'raríssimo': 0.15, rarissimo: 0.15 };
-    var lv = text(level, 'normal');
-    var m = mult[lv];
-    if (typeof m !== 'number') warnOnce('pkmcatchlv:' + lv, 'dificuldade "' + lv + '" não existe (use fácil, normal, difícil ou raríssimo)');
-    pkm.catchDiff[k] = typeof m === 'number' ? m : 1;
-  }
-
-  // ---- os 3 níveis: espécie (dados) → indivíduo (o time) → lutador (efêmero) ----
-  /** ⚠️ CÓPIA, nunca referência: é exatamente o bug da base (o gsap mutava o
-   * objeto de dados e os monstros desciam 20px a CADA batalha). */
-  function pkmSpawn(speciesName, level) {
-    var sp = pkm.species[text(speciesName, '')];
-    if (!sp) return null;
-    var lv = Math.max(1, Math.round(num(level, 5)));
-    var hpMax = Math.round(sp.hp + (lv - 1) * 8);
-    return { species: sp.name, level: lv, hp: hpMax, hpMax: hpMax, xp: 0 };
-  }
-  function pkmStat(ind, which) {
-    var sp = pkm.species[ind.species];
-    if (!sp) return 1;
-    var lv = ind.level - 1;
-    if (which === 'str') return Math.round(sp.str + lv * 2);
-    if (which === 'def') return Math.round(sp.def + lv * 1);
-    return sp.spd;
-  }
-  /** Um objeto no formato do createCharacter: aí o drawEntity o desenha de graça
-   * (look/imagem/folha/piscar/giro) e o tweenTo o anima. */
-  function pkmFighter(ind, x, y, w, h) {
-    var sp = pkm.species[ind.species] || {};
-    var f = createCharacter({ image: sp.image || '', w: w, h: h, speed: 0, color: '#e94f4f' });
-    f.look = sp.look || '';
-    placeCharacterAt(f, x, y);
-    return f;
-  }
-  function placeCharacterAt(c, x, y) {
-    c.x = num(x, 0); c.y = num(y, 0); c._prevX = c.x; c._prevY = c.y;
-  }
-
-  // ---- 🎒 Meu time ----
-  function pkmGive(speciesName, level) {
-    var ind = pkmSpawn(speciesName, level);
-    if (!ind) { warnOnce('pkmgive:' + text(speciesName, ''), 'a criatura "' + text(speciesName, '') + '" não existe'); return; }
-    if (pkm.team.length >= 6) { rpgSay('Seu time está cheio!', ''); return; }
-    pkm.team.push(ind);
-    emit('monstrinho:ganhou', ind);
-  }
-  function pkmGiveBall(count, power) {
-    var n = Math.max(1, Math.round(num(count, 5)));
-    var p = Math.max(1, Math.min(100, num(power, 60)));
-    for (var i = 0; i < n; i++) pkm.balls.push({ power: p });
-  }
-  function pkmHealTeam() {
-    for (var i = 0; i < pkm.team.length; i++) pkm.team[i].hp = pkm.team[i].hpMax;
-  }
-  function pkmHas(name) {
-    var k = text(name, '');
-    for (var i = 0; i < pkm.team.length; i++) if (pkm.team[i].species === k) return true;
-    return false;
-  }
-  function pkmTeamSize() { return pkm.team.length; }
-  function pkmBallCount() { return pkm.balls.length; }
-  function pkmLevelOf(name) {
-    var k = text(name, '');
-    for (var i = 0; i < pkm.team.length; i++) if (pkm.team[i].species === k) return pkm.team[i].level;
-    return 0;
-  }
-  function pkmFirstAlive() {
-    for (var i = 0; i < pkm.team.length; i++) if (pkm.team[i].hp > 0) return pkm.team[i];
-    return null;
-  }
-  function pkmDrawTeam(x, y) {
-    if (!ctx2d) return;
-    ctxSave();
-    var bx = num(x, 10), by = num(y, 10);
-    for (var i = 0; i < pkm.team.length; i++) {
-      var t = pkm.team[i];
-      var yy = by + i * 26;
-      ctx2d.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx2d.fillRect(bx, yy, 168, 22);
-      ctx2d.fillStyle = t.hp > 0 ? '#ffffff' : '#ff8080';
-      ctx2d.font = '13px sans-serif';
-      ctx2d.fillText(t.species + ' Nv' + t.level, bx + 6, yy + 15);
-      var pct = Math.max(0, Math.min(1, t.hp / Math.max(1, t.hpMax)));
-      ctx2d.fillStyle = '#333';
-      ctx2d.fillRect(bx + 112, yy + 8, 50, 6);
-      ctx2d.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.2 ? '#fbbf24' : '#ef4444';
-      ctx2d.fillRect(bx + 112, yy + 8, Math.round(50 * pct), 6);
-    }
-    ctxRestore();
-  }
-
-  // ---- 🌿 Encontros (a grama alta) ----
-  function pkmGrassCells(x1, y1, x2, y2) {
-    var ax = Math.round(num(x1, 0)), ay = Math.round(num(y1, 0));
-    var bx = Math.round(num(x2, 0)), by = Math.round(num(y2, 0));
-    for (var cy = Math.min(ay, by); cy <= Math.max(ay, by); cy++) {
-      for (var cx = Math.min(ax, bx); cx <= Math.max(ax, bx); cx++) pkm.grass[cx + ',' + cy] = true;
-    }
-  }
-  function pkmGrassTiles(index, mapName) {
-    pkm.grassTiles[Math.round(num(index, 0))] = true;
-    pkm.grassMap = text(mapName, '');
-  }
-  function pkmWild(speciesName, min, max) {
-    var k = text(speciesName, '');
-    if (!pkm.species[k]) { warnOnce('pkmwild:' + k, 'a criatura "' + k + '" não existe'); return; }
-    pkm.wild.push({ species: k, min: Math.max(1, Math.round(num(min, 3))), max: Math.max(1, Math.round(num(max, 6))) });
-  }
-  function pkmEncounterRate(pct) { pkm.rate = Math.max(0, Math.min(100, num(pct, 20))); }
-  /** ⭐ O sorteio é por PASSO, não por quadro. O herói do kit anda com o
-   * rpgMoveGrid (ENCAIXA na célula), então "metade do corpo dentro" não existe —
-   * e "20% por passo" é legível para criança de um jeito que "1% por quadro"
-   * (= 45% por segundo a 60fps) nunca seria. É como o gênero funciona de verdade. */
-  function pkmOnStepCell(cx, cy) {
-    if (!pkm.wild.length || pkm.battle) return;
-    var inGrass = !!pkm.grass[cx + ',' + cy];
-    if (!inGrass && pkm.grassMap) {
-      var t = tileAt(pkm.grassMap, cx * tilePx + tilePx / 2, cy * tilePx + tilePx / 2);
-      if (pkm.grassTiles[t]) inGrass = true;
-    }
-    if (!inGrass) return;
-    if (!chance(pkm.rate)) return;
-    var pick = pkm.wild[Math.floor(Math.random() * pkm.wild.length)];
-    var lv = pick.min + Math.floor(Math.random() * (Math.max(pick.min, pick.max) - pick.min + 1));
-    pkmBattleWild(pick.species, lv);
-  }
-
-  // ---- ⚔️ A batalha (criatura × criatura) ----
-  function pkmBattleWild(speciesName, level) {
-    var foe = pkmSpawn(speciesName, level);
-    if (!foe) { warnOnce('pkmbw:' + text(speciesName, ''), 'a criatura "' + text(speciesName, '') + '" não existe'); return; }
-    if (rpg.battle) { warn('já tem uma batalha do Kit RPG aberta — use um kit OU o outro'); return; }
-    var mine = pkmFirstAlive();
-    if (!mine) { rpgSay('Você não tem nenhum monstrinho em pé!', ''); return; }
-    pkm.caught = false;
-    pkmEnsureFx();
-    pkm.battle = { mine: mine, foe: foe, kind: 'selvagem', phase: 'abrindo', t: 0, mineF: null, foeF: null };
-    flashScreen('#ffffff', 2);
-    setState('batalha');
-    emit('monstrinho:apareceu', foe);
-  }
-  function pkmBattleTrainer(name, fn) {
-    if (typeof fn !== 'function') return;
-    pkmTrainerList = [];
-    try { fn(); } catch (e) { warn('erro no time do treinador: ' + e); }
-    if (!pkmTrainerList.length) { warn('o treinador "' + text(name, '') + '" não tem nenhuma criatura'); return; }
-    if (rpg.battle) { warn('já tem uma batalha do Kit RPG aberta — use um kit OU o outro'); return; }
-    var mine = pkmFirstAlive();
-    if (!mine) { rpgSay('Você não tem nenhum monstrinho em pé!', ''); return; }
-    pkm.caught = false;
-    pkmEnsureFx();
-    pkm.battle = {
-      mine: mine, foe: pkmTrainerList[0], kind: 'treinador', trainer: text(name, ''),
-      foes: pkmTrainerList.slice(), foeIndex: 0, phase: 'abrindo', t: 0, mineF: null, foeF: null
-    };
-    flashScreen('#ffffff', 2);
-    setState('batalha');
-  }
-  var pkmTrainerList = [];
-  function pkmTrainerCreature(speciesName, level) {
-    var ind = pkmSpawn(speciesName, level);
-    if (ind) pkmTrainerList.push(ind);
-  }
-
-  function pkmSetupFighters() {
-    var b = pkm.battle;
-    b.mineF = pkmFighter(b.mine, 140, config.h - 240, 140, 140);
-    b.foeF = pkmFighter(b.foe, config.w - 300, 90, 120, 120);
-  }
-  function pkmMainMenu() {
-    var b = pkm.battle;
-    if (!b) return;
-    var opts = [{ label: 'Lutar', fn: pkmMoveMenu }];
-    if (b.kind === 'selvagem' && pkm.balls.length > 0) {
-      opts.push({ label: 'Bola (' + pkm.balls.length + ')', fn: pkmThrowBall });
-    }
-    var alive = 0;
-    for (var i = 0; i < pkm.team.length; i++) if (pkm.team[i].hp > 0) alive += 1;
-    if (alive > 1) opts.push({ label: 'Trocar', fn: pkmSwitchMenu });
-    if (b.kind === 'selvagem') opts.push({ label: 'Fugir', fn: pkmFlee });
-    rpg.menu = { title: b.mine.species + '  ' + b.mine.hp + '/' + b.mine.hpMax, options: opts, index: 0 };
-  }
-  /** ⭐ O menu sai dos GOLPES da criatura ativa — a melhor ideia da base. */
-  function pkmMoveMenu() {
-    var b = pkm.battle;
-    if (!b) return;
-    var sp = pkm.species[b.mine.species];
-    var opts = [];
-    for (var i = 0; i < sp.moves.length; i++) {
-      (function (mv) {
-        var m = pkm.moves[mv];
-        if (!m) return;
-        opts.push({ label: m.name + '  (' + m.type + ')', fn: function () { pkmUseMove(m, true); } });
-      })(sp.moves[i]);
-    }
-    opts.push({ label: '← Voltar', fn: pkmMainMenu });
-    rpg.menu = { title: 'Qual golpe?', options: opts, index: 0 };
-  }
-  /** forced = a criatura desmaiou: NÃO pode voltar (lutar com HP 0 não existe). */
-  function pkmSwitchMenu(forced) {
-    var opts = [];
-    for (var i = 0; i < pkm.team.length; i++) {
-      (function (t) {
-        if (t.hp <= 0 || t === pkm.battle.mine) return;
-        opts.push({
-          label: t.species + ' Nv' + t.level + ' (' + t.hp + '/' + t.hpMax + ')',
-          fn: function () { pkmDoSwitch(t); }
-        });
-      })(pkm.team[i]);
-    }
-    if (!forced) opts.push({ label: '← Voltar', fn: pkmMainMenu });
-    rpg.menu = {
-      title: forced ? 'Quem vai lutar agora?' : 'Trocar por quem?',
-      options: opts,
-      index: 0
-    };
-  }
-  function pkmDoSwitch(t) {
-    var b = pkm.battle;
-    b.mine = t;
-    b.mineF = pkmFighter(t, 140, config.h - 240, 140, 140);
-    rpgSay('Vai, ' + t.species + '!', '');
-    b.phase = 'inimigo';
-    b.t = 0;
-  }
-  function pkmFlee() {
-    if (chance(50)) { rpgSay('Escapou!', ''); pkm.battle.phase = 'fim'; pkm.battle.t = 0; }
-    else { rpgSay('Não deu para fugir!', ''); pkm.battle.phase = 'inimigo'; pkm.battle.t = 0; }
-  }
-  /** dano = (dano do golpe + força/2) × vantagem × (0.85..1.15) − defesa/2, mín 1.
-   * ⭐ Na base o tipo do golpe NUNCA entrava na conta (era só a cor do texto). Fazer o
-   * tipo IMPORTAR é a lição do gênero e a maior oportunidade do porte. */
-  function pkmUseMove(m, isMine) {
-    var b = pkm.battle;
-    var atk = isMine ? b.mine : b.foe;
-    var dfd = isMine ? b.foe : b.mine;
-    var atkF = isMine ? b.mineF : b.foeF;
-    var dfdF = isMine ? b.foeF : b.mineF;
-    b.phase = 'anim';
-    b.t = 0;
-    b.pending = null;
-    if (!chance(m.acc)) {
-      rpgSay(atk.species + ' usou ' + m.name + '... mas errou!', '');
-      b.next = isMine ? 'inimigo' : 'menu';
-      return;
-    }
-    var mult = pkmAdvantage(m.type, pkm.species[dfd.species].type);
-    var base = m.dmg + pkmStat(atk, 'str') / 2;
-    var vary = 0.85 + Math.random() * 0.3;
-    // ⭐ "Não teve efeito!" tem que tirar ZERO. O piso de 1 vale para o golpe fraco
-    // (senão a defesa alta trava a batalha para sempre), mas quando a vantagem é 0 a
-    // fala promete imunidade — e tirar 1 mesmo assim é mentir para a criança.
-    var dmg = mult === 0 ? 0 : Math.max(1, Math.round(base * mult * vary - pkmStat(dfd, 'def') / 2));
-    var txt = atk.species + ' usou ' + m.name + '!';
-    if (mult > 1) txt += ' É SUPER EFETIVO!';
-    else if (mult === 0) txt += ' Não teve efeito!';
-    else if (mult < 1) txt += ' Não foi muito eficaz...';
-    rpgSay(txt, '');
-    b.pending = { dmg: dmg, target: dfd, targetF: dfdF, isMine: isMine };
-    // A coreografia: investida = o lutador corre e volta; os outros = piscar.
-    if (m.fx === 'investida' && atkF && dfdF) {
-      var ox = atkF.x;
-      tweenToQuiet(atkF, dfdF.x + (isMine ? -60 : 60), atkF.y, 0.18);
-      b.returnTo = { f: atkF, x: ox, y: atkF.y };
-    }
-    burst('__pkm_hit', dfdF ? centerX(dfdF) : 0, dfdF ? centerY(dfdF) : 0);
-    b.next = isMine ? 'inimigo' : 'menu';
-  }
-  function pkmApplyPending() {
-    var b = pkm.battle;
-    if (!b.pending) return;
-    var p = b.pending;
-    p.target.hp = Math.max(0, p.target.hp - p.dmg); // ⚠️ nunca negativo (bug da base)
-    if (p.targetF) {
-      cameraShake(4, 0.15);
-      // ⭐ O piscar do acerto reusa os i-frames, que o drawEntity JÁ desenha.
-      // Antes eram dois fadeTo em sequência (40% e volta a 100%) — mas o pushTween
-      // DEDUPA por (entidade, propriedade): o 2º apagava o 1º ANTES de ele rodar e
-      // lia "de: opacity = 1", então o tween ia de 1 para 1 e nada piscava. Sobrava
-      // só o tremor. (O pushTween é substitutivo por design; quem quer sequência
-      // não pode empilhar na mesma propriedade.)
-      p.targetF._iFrames = 0.3;
-    }
-    b.pending = null;
-    if (b.returnTo) { tweenToQuiet(b.returnTo.f, b.returnTo.x, b.returnTo.y, 0.15); b.returnTo = null; }
-  }
-  function pkmThrowBall() {
-    var b = pkm.battle;
-    if (!pkm.balls.length) return;
-    var ball = pkm.balls.pop();
-    /** ⚠️ O óbvio (1 − vida/máx) daria 0% com a vida cheia: pegar seria
-     * IMPOSSÍVEL, não difícil — a criança joga a bola, nunca funciona e conclui
-     * que o bloco está quebrado. Este fator vale 1/3 com a vida cheia e ~1 com 1
-     * de vida: "sempre possível, 3× mais difícil". A lição é ENFRAQUECER antes. */
-    var diff = pkm.catchDiff[b.foe.species];
-    if (typeof diff !== 'number') diff = 1;
-    var pct = ball.power * ((3 * b.foe.hpMax - 2 * b.foe.hp) / (3 * b.foe.hpMax)) * diff;
-    b.phase = 'anim';
-    b.t = 0;
-    if (chance(pct)) {
-      if (pkm.team.length >= 6) { rpgSay('Seu time está cheio!', ''); pkm.balls.push(ball); b.next = 'menu'; return; }
-      pkm.team.push(b.foe);
-      pkm.caught = true;
-      rpgSay(b.foe.species + ' foi capturado!', '');
-      emit('monstrinho:pegou', b.foe);
-      b.next = 'fim';
-    } else {
-      var shakes = Math.floor(Math.max(0, Math.min(1, pct / 100)) * 3);
-      rpgSay(shakes >= 2 ? 'Ah! Quase!' : shakes === 1 ? 'Ele escapou!' : 'Nem chegou perto...', '');
-      b.next = 'inimigo';
-    }
-  }
-  function pkmEnemyTurn() {
-    var b = pkm.battle;
-    var sp = pkm.species[b.foe.species];
-    var mv = sp.moves.length ? pkm.moves[sp.moves[Math.floor(Math.random() * sp.moves.length)]] : null;
-    // Espécie sem golpe ensinado (o esquecimento nº 1 previsível). 'menu' é fase de
-    // REPOUSO: pôr a fase sem ABRIR o menu congelava a batalha para sempre.
-    if (!mv) {
-      warnOnce('pkm-sem-golpe-' + b.foe.species, 'o ' + b.foe.species + ' não tem nenhum golpe: use "Ensinar o golpe"');
-      pkmEnterPhase('menu');
-      return;
-    }
-    pkmUseMove(mv, false);
-  }
-  function pkmCheckFaint() {
-    var b = pkm.battle;
-    if (b.foe.hp <= 0) {
-      rpgSay(b.foe.species + ' desmaiou!', '');
-      if (b.foeF) { tweenToQuiet(b.foeF, b.foeF.x, b.foeF.y + 20, 0.4); fadeToQuiet(b.foeF, 0, 0.4); }
-      pkmReward();
-      if (b.kind === 'treinador' && b.foeIndex + 1 < b.foes.length) {
-        b.foeIndex += 1;
-        b.foe = b.foes[b.foeIndex];
-        b.foeF = pkmFighter(b.foe, config.w - 300, 90, 120, 120);
-        b.phase = 'anim';
-        b.next = 'menu';
-        rpgSay(b.trainer + ' mandou ' + b.foe.species + '!', '');
-        return true;
-      }
-      b.phase = 'anim';
-      b.next = 'fim';
-      rpg.battleWon = true;
-      return true;
-    }
-    if (b.mine.hp <= 0) {
-      rpgSay(b.mine.species + ' desmaiou!', '');
-      if (b.mineF) { tweenToQuiet(b.mineF, b.mineF.x, b.mineF.y + 20, 0.4); fadeToQuiet(b.mineF, 0, 0.4); }
-      var next = pkmFirstAlive();
-      if (next) { b.phase = 'anim'; b.next = 'trocar-forcado'; return true; }
-      b.phase = 'anim';
-      b.next = 'fim';
-      rpg.battleWon = false;
-      return true;
-    }
-    return false;
-  }
-  function pkmReward() {
-    var b = pkm.battle;
-    var xp = PKM_XP_PER_LEVEL * b.foe.level / 2;
-    b.mine.xp += Math.round(xp);
-    rpgSay(b.mine.species + ' ganhou ' + Math.round(xp) + ' de experiência!', '');
-    while (b.mine.xp >= PKM_XP_PER_LEVEL * b.mine.level) {
-      b.mine.xp -= PKM_XP_PER_LEVEL * b.mine.level;
-      b.mine.level += 1;
-      b.mine.hpMax += 8;
-      b.mine.hp = b.mine.hpMax;
-      rpgSay(b.mine.species + ' subiu para o nível ' + b.mine.level + '!', '');
-      emit('monstrinho:subiu', b.mine);
-      var ev = pkm.evolve[b.mine.species];
-      if (ev && b.mine.level >= ev.level && pkm.species[ev.to]) {
-        rpgSay(b.mine.species + ' está evoluindo!', '');
-        b.mine.species = ev.to; // mantém nível/XP: o indivíduo é o MESMO
-        b.mine.hpMax += 6;
-        b.mine.hp = b.mine.hpMax;
-        b.mineF = pkmFighter(b.mine, 140, config.h - 240, 140, 140);
-        rpgSay('Virou ' + ev.to + '!', '');
-        emit('monstrinho:evoluiu', b.mine);
-      }
-    }
-  }
-  function pkmEndBattle() {
-    pkm.battle = null;
-    rpg.menu = null;
-    fadeScreen('#000000', 0.25, false);
-    setState('jogando'); // ⚠️ 'batalha' → 'jogando' NÃO recomeça (o setState poupa)
-    var hooks = rpg.onBattleEnd;
-    for (var i = 0; i < hooks.length; i++) {
-      try { hooks[i](); } catch (e) { warn('erro no "quando a batalha terminar": ' + e); }
-    }
-  }
-  /** ⭐ Roda FORA do gate de estado (o stepSystems só anda em 'jogando'), e bombeia
-   * o relógio + a UI + os tweens + as faíscas — senão a fala fica com 0 letras. */
-  function stepPkmBattle(dt) {
-    var b = pkm.battle;
-    if (!b || state !== 'batalha') return;
-    playTime += dt;
-    stepUiInput();
-    stepTweens(dt);
-    stepParticles(dt);
-    b.t += dt;
-    // Os lutadores da batalha não passam pelo stepSystems (que é quem decai os
-    // i-frames de todo mundo), então o piscar do acerto decai aqui — senão ficaria
-    // piscando para sempre.
-    if (b.mineF && b.mineF._iFrames > 0) b.mineF._iFrames = Math.max(0, b.mineF._iFrames - dt);
-    if (b.foeF && b.foeF._iFrames > 0) b.foeF._iFrames = Math.max(0, b.foeF._iFrames - dt);
-    if (b.phase === 'abrindo') {
-      if (b.t < 0.5) return;
-      pkmSetupFighters();
-      rpgSay(b.kind === 'treinador' ? b.trainer + ' quer batalhar!' : 'Um ' + b.foe.species + ' selvagem apareceu!', '');
-      b.phase = 'espera-fala';
-      b.next = 'menu';
-      b.t = 0;
-      return;
-    }
-    if (b.phase === 'espera-fala') {
-      if (rpg.dialog) return; // a criança lê no ritmo dela
-      pkmEnterPhase(b.next);
-      return;
-    }
-    if (b.phase === 'anim') {
-      if (b.t > 0.25 && b.pending) pkmApplyPending();
-      if (rpg.dialog || b.t < 0.5) return;
-      if (pkmCheckFaint()) { b.phase = 'espera-fala'; return; }
-      pkmEnterPhase(b.next);
-      return;
-    }
-    if (b.phase === 'inimigo') { pkmEnemyTurn(); return; }
-    if (b.phase === 'fim') { pkmEndBattle(); return; }
-    // Rede: 'menu' e 'trocar-forcado' são fases de REPOUSO dirigidas pelo menu — se
-    // ficarem sem menu aberto, ninguém as move e a batalha congela (só recarregando).
-    // Era exatamente o softlock do desmaio. Reabrir é sempre melhor que travar.
-    if (!rpg.menu && !rpg.dialog) {
-      if (b.phase === 'menu') pkmMainMenu();
-      else if (b.phase === 'trocar-forcado') pkmSwitchMenu(true);
-    }
-  }
-  /**
-   * Entrar numa fase = despachar o que ela precisa para andar.
-   * ⭐ Isto estava DUPLICADO em 'espera-fala' (que só sabia despachar 'menu') e em
-   * 'anim' (que sabia as quatro), e as duas cópias divergiram: o desmaio passa por
-   * 'espera-fala', então a fase virava 'trocar-forcado' e NINGUÉM abria o menu de
-   * troca — a criança perdia a criatura e o jogo morria. Um dispatcher só, um
-   * comportamento só.
-   */
-  function pkmEnterPhase(ph) {
-    var b = pkm.battle;
-    b.phase = ph || 'menu';
-    b.t = 0;
-    if (b.phase === 'menu') pkmMainMenu();
-    else if (b.phase === 'inimigo') pkmEnemyTurn();
-    else if (b.phase === 'fim') pkmEndBattle();
-    else if (b.phase === 'trocar-forcado') pkmSwitchMenu(true);
-  }
-  function drawPkmBattle() {
-    var b = pkm.battle;
-    if (!b || !ctx2d) return;
-    ctx2d.fillStyle = '#5b8c5a';
-    ctx2d.fillRect(0, 0, config.w, config.h);
-    ctx2d.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx2d.fillRect(0, config.h * 0.55, config.w, config.h * 0.45);
-    if (b.foeF) drawEntity(b.foeF);
-    if (b.mineF) drawEntity(b.mineF);
-    pkmBar(b.foe, 50, 40);
-    pkmBar(b.mine, config.w - 290, config.h - 190);
-    drawEffects();
-  }
-  function pkmBar(ind, x, y) {
-    ctxSave();
-    ctx2d.fillStyle = '#ffffff';
-    ctx2d.fillRect(x, y, 240, 54);
-    ctx2d.strokeStyle = '#111';
-    ctx2d.lineWidth = 3;
-    ctx2d.strokeRect(x, y, 240, 54);
-    ctx2d.fillStyle = '#111';
-    ctx2d.font = '15px sans-serif';
-    ctx2d.fillText(ind.species + '  Nv' + ind.level, x + 10, y + 22);
-    var pct = Math.max(0, Math.min(1, ind.hp / Math.max(1, ind.hpMax)));
-    ctx2d.fillStyle = '#ccc';
-    ctx2d.fillRect(x + 10, y + 32, 220, 8);
-    ctx2d.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.2 ? '#fbbf24' : '#ef4444';
-    ctx2d.fillRect(x + 10, y + 32, Math.round(220 * pct), 8);
-    ctxRestore();
-  }
-  function pkmCaught() { return pkm.caught; }
-  function pkmNewGame() {
-    pkm.team = [];
-    pkm.balls = [];
-    pkm.battle = null;
-    pkm.caught = false;
-    // ⚠️ TODO estado de jogo entra no reset (é a 3ª vez que esta linha é a causa):
-    // sem isto, "Jogar de novo" recomeçava com a tabela de selvagens acumulada.
-    pkm.wild = [];
-    pkm.grass = {};
-    pkm.grassTiles = {};
-  }
+${gameKitMonsterBattleRuntime}
 
   // ==========================================================================
   // KIT LUTA - o atalho do genero (Street Fighter / Mortal Kombat)
@@ -3962,7 +2932,7 @@ export const gameKitRuntime = `(function () {
     if (a === b) { warn('"Luta de" precisa de dois personagens DIFERENTES'); return; }
     luta = {
       p1: lutaBlank(a), p2: lutaBlank(b),
-      rounds: Math.max(1, Math.round(num(rounds, 3))),
+      rounds: boundedInteger(rounds, 3, 1, MAX_LUTA_ROUNDS),
       secs: Math.max(5, num(secs, 60)),
       round: 1, t: 0, phase: 'anuncio', phaseT: 0, winner: '', roundWinner: ''
     };
@@ -4252,12 +3222,13 @@ export const gameKitRuntime = `(function () {
     ctx2d.fillStyle = '#000000';
     ctx2d.fillRect(W / 2 - 34, 16, 68, 42);
     ctx2d.fillStyle = '#ffffff';
-    ctx2d.font = 'bold 28px sans-serif';
+    ctx2d.font = 'bold 28px ' + _szGameUIFont;
     ctx2d.textAlign = 'center';
     ctx2d.fillText(String(falta), W / 2, 47);
     // bolinhas de round ganho
-    lutaDots(W / 2 - 46, 68, luta.p1.wins);
-    lutaDots(W / 2 + 34, 68, luta.p2.wins);
+    var winsNeeded = Math.floor(luta.rounds / 2) + 1;
+    lutaDots(W / 2 - 46, 68, luta.p1.wins, winsNeeded, -1);
+    lutaDots(W / 2 + 34, 68, luta.p2.wins, winsNeeded, 1);
     // o letreiro da fase
     var msg = '';
     if (luta.phase === 'anuncio') msg = 'ROUND ' + luta.round;
@@ -4266,7 +3237,7 @@ export const gameKitRuntime = `(function () {
     }
     if (msg) {
       ctx2d.fillStyle = config.accent || '#ffffff';
-      ctx2d.font = 'bold 56px sans-serif';
+      ctx2d.font = 'bold 56px ' + _szGameUIFont;
       ctx2d.fillText(msg, W / 2, config.h / 2);
     }
     ctx2d.textAlign = 'left';
@@ -4289,17 +3260,17 @@ export const gameKitRuntime = `(function () {
     ctx2d.fillRect(direita ? x + w - sw : x, y + 25, sw, 8);
     if (side.combo > 1) {
       ctx2d.fillStyle = '#ffffff';
-      ctx2d.font = 'bold 16px sans-serif';
+      ctx2d.font = 'bold 16px ' + _szGameUIFont;
       ctx2d.textAlign = direita ? 'right' : 'left';
       ctx2d.fillText(side.combo + ' seguidos!', direita ? x + w : x, y + 50);
       ctx2d.textAlign = 'left';
     }
   }
-  function lutaDots(x, y, n) {
-    for (var i = 0; i < 2; i++) {
+  function lutaDots(x, y, n, total, direction) {
+    for (var i = 0; i < total; i++) {
       ctx2d.fillStyle = i < n ? '#e0b020' : 'rgba(255,255,255,0.25)';
       ctx2d.beginPath();
-      ctx2d.arc(x + i * 16, y, 5, 0, Math.PI * 2);
+      ctx2d.arc(x + i * 16 * direction, y, 5, 0, Math.PI * 2);
       ctx2d.fill();
     }
   }
@@ -4413,339 +3384,7 @@ export const gameKitRuntime = `(function () {
       setFacing(who, dx, dy);
     }
   }
-  // ❤️ HUD de corações (cheios/vazios) — o Heart.js do Ninja. Alternativa
-  // "de vidinha" à barra contínua: fica ótimo preso na tela (HUD).
-  function heartPath(cx, cy, s) {
-    ctx2d.beginPath();
-    ctx2d.moveTo(cx, cy + s * 0.3);
-    ctx2d.lineTo(cx - s * 0.5, cy - s * 0.15);
-    ctx2d.arc(cx - s * 0.25, cy - s * 0.15, s * 0.25, Math.PI, 0);
-    ctx2d.arc(cx + s * 0.25, cy - s * 0.15, s * 0.25, Math.PI, 0);
-    ctx2d.lineTo(cx, cy + s * 0.3);
-    ctx2d.closePath();
-  }
-  // ⚠️ A ordem é (atual, máximo, x, y) — a MESMA do bloco, do gerador e do drawBar.
-  // Já esteve (x, y, atual, máximo) e ninguém viu: "3 de 3 em x 20 y 20" desenhava
-  // 20 corações colados em (3,3). Os 3 testes se cobriam sem se cruzar (o unit
-  // chamava na ordem do runtime, o de exemplo comparava string, o blockAudit só
-  // conferia o NOME do helper) — hoje há um teste que EXECUTA o código gerado.
-  function drawHearts(current, max, x, y) {
-    if (!ctx2d) return;
-    var total = Math.max(0, Math.floor(num(max, 3)));
-    var cur = Math.max(0, Math.min(total, Math.floor(num(current, 0))));
-    var s = 22, gap = 6, bx = num(x, 20), by = num(y, 20);
-    for (var i = 0; i < total; i++) {
-      var cx = bx + i * (s + gap) + s / 2;
-      var cy = by + s / 2;
-      heartPath(cx, cy, s);
-      if (i < cur) { ctx2d.fillStyle = '#ff5f6d'; ctx2d.fill(); }
-      else { ctx2d.fillStyle = 'rgba(0,0,0,0.35)'; ctx2d.fill(); }
-      ctx2d.strokeStyle = 'white'; ctx2d.lineWidth = 2; ctx2d.stroke();
-    }
-  }
-
-  // ---- ✨ Faíscas (partículas data-driven pooled — o vídeo dos efeitos) ----
-  function defineEffect(name, opts) {
-    var k = text(name, '');
-    if (!k) { warn('"Criar o efeito" precisa de um nome'); return; }
-    var o = (opts && typeof opts === 'object') ? opts : {};
-    effects[k] = {
-      count: Math.max(0, Math.min(200, Math.floor(num(o.count, 16)))),
-      color: text(o.color, '#ffd166'),
-      size: num(o.size, 4),
-      life: num(o.life, 0.6),
-      speed: num(o.speed, 200),
-      gravity: num(o.gravity, 300)
-    };
-  }
-  var MAX_PARTICLES = 1000;
-  function burst(name, x, y) {
-    var e = effects[text(name, '')];
-    if (!e) { warnOnce('effect:' + text(name, ''), 'efeito "' + text(name, '') + '" não existe — crie com "Criar o efeito"'); return; }
-    for (var i = 0; i < e.count; i++) {
-      // Teto GLOBAL: burst por quadro sem gate não acumula milhares de fillRect.
-      if (particles.active.length >= MAX_PARTICLES) break;
-      var p = particles.free.pop() || {};
-      var ang = Math.random() * Math.PI * 2;
-      var sp = e.speed * (0.4 + Math.random() * 0.6);
-      p.x = num(x, 0); p.y = num(y, 0);
-      p.vx = Math.cos(ang) * sp; p.vy = Math.sin(ang) * sp;
-      p.life = e.life; p.max = e.life; p.size = e.size; p.color = e.color; p.gravity = e.gravity;
-      particles.active.push(p);
-    }
-  }
-  /** A FÍSICA das faíscas (roda no stepSystems, 1× por quadro, só em 'jogando').
-   * Ficava dentro do drawEffects — desenhar 2× dobrava a física e NÃO desenhar
-   * deixava as faíscas imortais até estourar o teto. Update e draw separados. */
-  function stepParticles(dt) {
-    for (var i = particles.active.length - 1; i >= 0; i--) {
-      var p = particles.active[i];
-      p.life -= dt;
-      if (p.life <= 0) {
-        // swap-com-o-último + pop: remoção O(1) (morte em massa não vira O(n²)).
-        var last = particles.active.length - 1;
-        particles.active[i] = particles.active[last];
-        particles.active.pop();
-        particles.free.push(p);
-        continue;
-      }
-      p.vy += p.gravity * dt;
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-    }
-  }
-  function drawEffects() {
-    if (!ctx2d) return;
-    for (var i = 0; i < particles.active.length; i++) {
-      var p = particles.active[i];
-      var prev = 1;
-      try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = Math.max(0, p.life / p.max); } catch (e) {}
-      ctx2d.fillStyle = p.color;
-      ctx2d.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
-      try { ctx2d.globalAlpha = prev; } catch (e) {}
-    }
-  }
-
-  // ---- 🖥️/✨/🔁 R21: primitivos gerais de "juice" (o MOTOR desenha) ----
-  /**
-   * Texto flutuante ("+100" que sobe e some) — o feedback de TODO arcade/RPG/luta.
-   * O motor move e desenha sozinho (precedente: a fala do RPG); em coords do
-   * MUNDO, entao acompanha a camera. Fisica fixa de proposito: sobe 40px e some
-   * em 0,75 s (o score label do Chris Courses) — nao e resposta da crianca.
-   */
-  function floatText(txt, x, y, color, size) {
-    if (floaties.active.length >= MAX_FLOATIES) {
-      warnOnce('floaties', 'muitos textos flutuantes de uma vez (teto ' + MAX_FLOATIES + ')');
-      return;
-    }
-    var f = floaties.free.pop() || {};
-    f.text = text(txt, '');
-    f.x = num(x, 0);
-    f.y = num(y, 0);
-    f.t = 0;
-    f.life = 0.75;
-    f.color = text(color, '#ffffff');
-    f.size = Math.max(6, num(size, 24));
-    floaties.active.push(f);
-  }
-  function stepFloaties(dt) {
-    for (var i = floaties.active.length - 1; i >= 0; i--) {
-      var f = floaties.active[i];
-      f.t += dt;
-      f.y -= (40 / 0.75) * dt;
-      if (f.t >= f.life) {
-        var last = floaties.active.length - 1;
-        floaties.active[i] = floaties.active[last];
-        floaties.active.pop();
-        floaties.free.push(f);
-      }
-    }
-  }
-  function drawFloaties() {
-    if (!ctx2d || !floaties.active.length) return;
-    var prev = 1;
-    try { prev = ctx2d.globalAlpha; } catch (e) {}
-    for (var i = 0; i < floaties.active.length; i++) {
-      var f = floaties.active[i];
-      try { ctx2d.globalAlpha = Math.max(0, 1 - f.t / f.life); } catch (e) {}
-      ctx2d.fillStyle = f.color;
-      var fs = Math.round(f.size);
-      ctx2d.font = floatieFonts[fs] || (floatieFonts[fs] = 'bold ' + fs + 'px sans-serif');
-      ctx2d.fillText(f.text, f.x, f.y);
-    }
-    try { ctx2d.globalAlpha = prev; } catch (e) {}
-  }
-  /**
-   * Onda de choque VISUAL (a explosao da Bomb do Chris: circulo cresce 0->R e
-   * some). So desenho — o dano em area e da crianca: "para cada vivo do molde +
-   * distancia entre + machucar" (receita nas docs). Assim a colisao continua
-   * sendo dela.
-   */
-  function shockwave(x, y, radius, seconds, color) {
-    if (shockwaves.active.length >= MAX_SHOCKWAVES) {
-      warnOnce('shockwaves', 'muitas ondas de choque de uma vez (teto ' + MAX_SHOCKWAVES + ')');
-      return;
-    }
-    var s = shockwaves.free.pop() || {};
-    s.x = num(x, 0);
-    s.y = num(y, 0);
-    s.r = Math.max(1, num(radius, 200));
-    s.t = 0;
-    s.secs = Math.max(0.05, num(seconds, 0.4));
-    s.color = text(color, '#ffffff');
-    shockwaves.active.push(s);
-  }
-  function stepShockwaves(dt) {
-    for (var i = shockwaves.active.length - 1; i >= 0; i--) {
-      var s = shockwaves.active[i];
-      s.t += dt;
-      if (s.t >= s.secs) {
-        var last = shockwaves.active.length - 1;
-        shockwaves.active[i] = shockwaves.active[last];
-        shockwaves.active.pop();
-        shockwaves.free.push(s);
-      }
-    }
-  }
-  function drawShockwaves() {
-    if (!ctx2d || !shockwaves.active.length) return;
-    var prev = 1;
-    try { prev = ctx2d.globalAlpha; } catch (e) {}
-    for (var i = 0; i < shockwaves.active.length; i++) {
-      var s = shockwaves.active[i];
-      var k = Math.min(1, s.t / s.secs);
-      try { ctx2d.globalAlpha = 0.9 * (1 - k); } catch (e) {}
-      ctx2d.fillStyle = s.color;
-      ctx2d.beginPath();
-      try {
-        ctx2d.arc(s.x, s.y, Math.max(1, s.r * k), 0, Math.PI * 2);
-        ctx2d.fill();
-      } catch (e) {}
-    }
-    try { ctx2d.globalAlpha = prev; } catch (e) {}
-  }
-  /**
-   * Rastro continuo (jato da nave, cauda de cometa, escapamento): solta faiscas
-   * do CENTRO da entidade numa taxa por segundo. Reusa o pool GLOBAL de faiscas
-   * (o teto MAX_PARTICLES degrada suave, como o burst). Estado por ENTIDADE
-   * (contrato do pool) + registro varrido reverso (padrao combatants).
-   */
-  function trailOn(who, color, size, rate, life) {
-    if (!who || typeof who !== 'object') return;
-    if (!who._trailOn) trailed.push(who);
-    who._trailOn = true;
-    who._trailColor = text(color, '#ffffff');
-    who._trailSize = Math.max(1, num(size, 3));
-    // clamp 60/s: um enxame inteiro com rastro forte engoliria o teto global e
-    // as EXPLOSOES da crianca parariam de aparecer.
-    who._trailRate = Math.max(1, Math.min(60, num(rate, 30)));
-    who._trailLife = Math.max(0.05, Math.min(3, num(life, 0.4)));
-  }
-  function trailOff(who) {
-    if (who && typeof who === 'object') who._trailOn = false;
-  }
-  function stepTrails(dt) {
-    for (var i = trailed.length - 1; i >= 0; i--) {
-      var e = trailed[i];
-      if (!e || e._trailOn !== true || e._active === false) {
-        // morreu/desligou/foi reciclado: sai do registro (e o flag morre junto,
-        // p/ o objeto reusado pelo pool nao arrastar o rastro do anterior).
-        if (e) e._trailOn = false;
-        trailed[i] = trailed[trailed.length - 1];
-        trailed.pop();
-        continue;
-      }
-      // Registrado 2x (ligar de novo apos reciclar)? O carimbo emite 1x so.
-      if (e._trailFrame === frameCount) continue;
-      e._trailFrame = frameCount;
-      e._trailAcc = num(e._trailAcc, 0) + e._trailRate * dt;
-      while (e._trailAcc >= 1) {
-        e._trailAcc -= 1;
-        if (particles.active.length >= MAX_PARTICLES) { e._trailAcc = 0; break; }
-        var p = particles.free.pop() || {};
-        p.x = centerX(e) + (Math.random() - 0.5) * e.w * 0.3;
-        p.y = centerY(e) + (Math.random() - 0.5) * e.h * 0.3;
-        p.vx = (Math.random() - 0.5) * 30;
-        p.vy = (Math.random() - 0.5) * 30;
-        p.life = e._trailLife;
-        p.max = e._trailLife;
-        p.size = e._trailSize;
-        p.color = e._trailColor;
-        p.gravity = 0;
-        particles.active.push(p);
-      }
-    }
-  }
-  /**
-   * 🎨 Inclinacao ao andar de lado (o "lean" da nave do Chris, ±0.15 rad): o
-   * desenho tomba ate N graus na direcao do movimento, suavizado. 0 = desliga.
-   * So visual — quem inclina e o wrapper de giro do drawEntity.
-   */
-  function leanOnMove(who, degrees) {
-    if (!who || typeof who !== 'object') return;
-    who._leanMax = num(degrees, 10);
-  }
-  /**
-   * 🔁 Fundo que ROLA (a versao geral do starfield/parallax): repete a imagem
-   * cobrindo o retangulo visivel (camera-aware, como o drawBackground) e desloca
-   * o padrao em px/s. Chame no "Desenhar o jogo" como 1a camada; varias imagens
-   * com velocidades diferentes = parallax. Anda 1x por quadro (carimbo — desenhar
-   * 2x nao dobra a velocidade) e congela fora de 'jogando' (pausa pausa).
-   */
-  function scrollImage(name, vx, vy) {
-    var k = text(name, '');
-    var rec = images[k];
-    // O aviso vem ANTES do gate de canvas: nome errado nunca e silencioso.
-    if (!rec || !rec.loaded || !rec.img) {
-      warnOnce('scroll:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
-      return;
-    }
-    if (!ctx2d) return;
-    var iw = Math.max(1, num(rec.img.width, 1));
-    var ih = Math.max(1, num(rec.img.height, 1));
-    // Imagem minuscula viraria milhares de drawImage por quadro.
-    if ((config.w / iw + 2) * (config.h / ih + 2) > 4096) {
-      warnOnce('scrollsmall:' + k, 'a imagem "' + k + '" é pequena demais para rolar de fundo');
-      return;
-    }
-    var st = scrolls[k] || (scrolls[k] = { ox: 0, oy: 0, frame: -1 });
-    if (st.frame !== frameCount && state === 'jogando') {
-      st.frame = frameCount;
-      st.ox += num(vx, 0) * currentDt;
-      st.oy += num(vy, 0) * currentDt;
-    }
-    var camX = camera.on ? camera.x : 0;
-    var camY = camera.on ? camera.y : 0;
-    var mx = (((camX - st.ox) % iw) + iw) % iw;
-    var my = (((camY - st.oy) % ih) + ih) % ih;
-    var x0 = camX - mx;
-    var y0 = camY - my;
-    for (var ty = y0; ty < camY + config.h; ty += ih) {
-      for (var tx = x0; tx < camX + config.w; tx += iw) {
-        try { ctx2d.drawImage(rec.img, tx, ty, iw, ih); } catch (e) {}
-      }
-    }
-  }
-  /**
-   * 🔁 R25 — fundo PRESO À CÂMERA (paralaxe do sunnyland: camera.x*0.32). O
-   * scrollImage rola por VELOCIDADE (tela fixa); este acompanha a POSIÇÃO da
-   * câmera a um fator (0 = céu ao infinito; 1 = colado no mundo). Duas camadas
-   * com fatores diferentes = profundidade de verdade num jogo com câmera.
-   */
-  function parallaxLayer(name, fx, fy) {
-    var k = text(name, '');
-    var rec = images[k];
-    if (!rec || !rec.loaded || !rec.img) {
-      warnOnce('parallax:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
-      return;
-    }
-    if (!ctx2d) return;
-    if (!camera.on) { warnOnce('parallaxcam:' + k, 'a paralaxe precisa da câmera ligada — use "A câmera segue"'); }
-    var iw = Math.max(1, num(rec.img.width, 1));
-    var ih = Math.max(1, num(rec.img.height, 1));
-    if ((config.w / iw + 2) * (config.h / ih + 2) > 4096) {
-      warnOnce('parallaxsmall:' + k, 'a imagem "' + k + '" é pequena demais para o fundo');
-      return;
-    }
-    var camX = camera.on ? camera.x : 0;
-    var camY = camera.on ? camera.y : 0;
-    var pfx = Math.max(0, Math.min(1, num(fx, 0.3)));
-    var pfy = Math.max(0, Math.min(1, num(fy, 1)));
-    // A camada "atrasa" a câmera pelo fator: desenhada em coords de mundo, seu
-    // canto acompanha camX*(1-fator) — fator 0 fica colado na tela (céu), 1
-    // acompanha o mundo. Tiling cobrindo o retângulo visível.
-    var ax = camX * (1 - pfx);
-    var ay = camY * (1 - pfy);
-    var mx = (((camX - ax) % iw) + iw) % iw;
-    var my = (((camY - ay) % ih) + ih) % ih;
-    var x0 = camX - mx;
-    var y0 = camY - my;
-    for (var ty = y0; ty < camY + config.h; ty += ih) {
-      for (var tx = x0; tx < camX + config.w; tx += iw) {
-        try { ctx2d.drawImage(rec.img, tx, ty, iw, ih); } catch (e) {}
-      }
-    }
-  }
+${gameKitVisualEffectsRuntime}
 
   // ---- 🛤️ R25 — Caminhos (waypoints): a polilinha nomeada que destrava TD,
   // corrida, patrulha e cutscene em trilho. definePath é container+filho (o
@@ -4872,209 +3511,20 @@ export const gameKitRuntime = `(function () {
     idx = Math.max(0, Math.min(rec.pts.length - 1, idx));
     who._spaceIdx = idx; who._trackName = k;
     var p = rec.pts[idx];
-    tweenTo(who, p.x - who.w / 2, p.y - who.h / 2, 0.3); // desliza suave até a casa
-    emit('casa:parou', who);
-    for (var i = 0; i < landHooks.length; i++) {
-      try { landHooks[i](); } catch (e) { warn('erro no "Quando um peão parar numa casa": ' + e); }
-    }
+    tweenTo(who, p.x - who.w / 2, p.y - who.h / 2, 0.3, function () {
+      emit('casa:parou', who);
+      for (var i = 0; i < landHooks.length; i++) {
+        try { landHooks[i](); } catch (e) { warn('erro no "Quando um peão parar numa casa": ' + e); }
+      }
+    });
   }
   function spaceOf(who) {
     return (who && typeof who === 'object') ? Math.max(0, Math.round(num(who._spaceIdx, 0))) : 0;
   }
   function onLandSpace(fn) { if (typeof fn === 'function') landHooks.push(fn); }
 
-  // ---- ✨ R25 — explosao por FOLHA one-shot (a explosion.png do Chris em 1
-  // bloco; hoje custa spawn + playAnimOnce + vigiar animEnded + recycle). ----
-  function sheetBurst(name, frames, fps, x, y, size) {
-    if (sheetBursts.active.length >= MAX_SHEET_BURSTS) {
-      warnOnce('sheetbursts', 'muitas explosões de folha ao mesmo tempo (teto ' + MAX_SHEET_BURSTS + ')');
-      return;
-    }
-    var k = text(name, '');
-    var rec = images[k];
-    if (!rec || !rec.loaded || !rec.img) {
-      warnOnce('sheetburst:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
-      return;
-    }
-    var s = sheetBursts.free.pop() || {};
-    s.img = rec.img;
-    s.frames = Math.max(1, Math.round(num(frames, 4)));
-    s.fps = Math.max(1, num(fps, 12));
-    s.x = num(x, 0);
-    s.y = num(y, 0);
-    s.size = Math.max(4, num(size, 64));
-    s.t = 0;
-    sheetBursts.active.push(s);
-  }
-  function stepSheetBursts(dt) {
-    for (var i = sheetBursts.active.length - 1; i >= 0; i--) {
-      var s = sheetBursts.active[i];
-      s.t += dt;
-      if (Math.floor(s.t * s.fps) >= s.frames) {
-        var last = sheetBursts.active.length - 1;
-        sheetBursts.active[i] = sheetBursts.active[last];
-        sheetBursts.active.pop();
-        sheetBursts.free.push(s);
-      }
-    }
-  }
-  function drawSheetBursts() {
-    if (!ctx2d || !sheetBursts.active.length) return;
-    for (var i = 0; i < sheetBursts.active.length; i++) {
-      var s = sheetBursts.active[i];
-      var idx = Math.min(s.frames - 1, Math.floor(s.t * s.fps));
-      var fw = Math.max(1, num(s.img.width, s.frames) / s.frames);
-      try {
-        ctx2d.drawImage(s.img, idx * fw, 0, fw, num(s.img.height, s.size),
-          s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
-      } catch (e) {}
-    }
-  }
-
   // ==========================================================================
-  // 🏰 KIT DEFESA DE TORRE - o atalho do genero (Tower Defense)
-  // ==========================================================================
-  // Pela REGRA: o caminho (🛤️ geral), o alvo (pickActive geral), o tiro da torre
-  // (cooldown + spawn + seek + overlap) sao GERAIS. O kit so tem o que SO existe
-  // em TD: a onda que INVADE pelo caminho, os lugares de torre com compra
-  // validada, e o anel de alcance. A economia (carteira) mora no kit como o XP
-  // do RPG e os rounds da Luta (precedente rpgLevel/lutaWinsOf).
-  /** A onda: nasce ESPACADA atras do inicio do caminho (o xOffset=i*150 do
-   * Chris, generalizado); o MOTOR move cada um pelo caminho (stepTd). */
-  function tdWave(pathName, count, moldName, gap, speed) {
-    var pk = text(pathName, '');
-    var rec = paths[pk];
-    if (!rec) { warnOnce('tdwave:' + pk, 'o caminho "' + pk + '" não existe — crie com "Criar o caminho"'); return; }
-    var mk = text(moldName, '');
-    if (!molds[mk]) { warnOnce('tdmold:' + mk, 'o molde "' + mk + '" não existe — crie com "Criar o molde"'); return; }
-    if (td.waves.length >= MAX_TD_WAVES) { warnOnce('tdwaves', 'muitas ondas ao mesmo tempo (teto ' + MAX_TD_WAVES + ')'); return; }
-    var n = Math.max(1, Math.min(200, Math.round(num(count, 3))));
-    var g = Math.max(0, num(gap, 150));
-    var v = num(speed, 90);
-    // Vetor unitario do 1o trecho: os inimigos entram em fila atras do 1o ponto.
-    var p0 = rec.pts[0], p1 = rec.pts[1];
-    var dx = p1.x - p0.x, dy = p1.y - p0.y;
-    var len = Math.sqrt(dx * dx + dy * dy) || 1;
-    var ux = dx / len, uy = dy / len;
-    td.seq += 1;
-    var w = { id: td.seq, path: pk, mold: mk, speed: v, members: [] };
-    for (var i = 0; i < n; i++) {
-      var e = spawnFromMold(mk, 0, 0);
-      if (!e) break;
-      e.x = p0.x - ux * g * i - e.w / 2;
-      e.y = p0.y - uy * g * i - e.h / 2;
-      e._prevX = e.x; e._prevY = e.y;
-      e._pathName = pk; e._pathIdx = 0; e._pathDone = false;
-      e._tdWave = w.id; // ⭐ carimbo anti-fantasma (a licao do _wave do Nave)
-      w.members.push(e);
-    }
-    if (w.members.length) td.waves.push(w);
-  }
-  /** Marcar um lugar de torre (um por bloco; funciona com qualquer fundo). */
-  function tdSlot(x, y, size) {
-    if (td.slots.length >= MAX_TD_SLOTS) { warnOnce('tdslots', 'muitos lugares de torre (teto ' + MAX_TD_SLOTS + ')'); return; }
-    td.slots.push({ x: num(x, 100), y: num(y, 100), size: Math.max(8, num(size, 64)), occupied: false });
-  }
-  function tdFreeSlot(x, y) {
-    for (var i = 0; i < td.slots.length; i++) {
-      var s = td.slots[i];
-      if (Math.abs(num(x, 0) - s.x) <= s.size / 2 && Math.abs(num(y, 0) - s.y) <= s.size / 2) {
-        s.occupied = false; return;
-      }
-    }
-  }
-  function tdSlotAt(px, py) {
-    for (var i = 0; i < td.slots.length; i++) {
-      var s = td.slots[i];
-      if (!s.occupied && Math.abs(px - s.x) <= s.size / 2 && Math.abs(py - s.y) <= s.size / 2) return s;
-    }
-    return null;
-  }
-  function tdDrawSlots() {
-    if (!ctx2d) return;
-    for (var i = 0; i < td.slots.length; i++) {
-      var s = td.slots[i];
-      if (s.occupied) continue;
-      var hover = Math.abs(mouse.x - s.x) <= s.size / 2 && Math.abs(mouse.y - s.y) <= s.size / 2;
-      var prev = 1;
-      try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = hover ? 0.4 : 0.15; } catch (e) {}
-      ctx2d.fillStyle = '#ffffff';
-      ctx2d.fillRect(s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
-      try { ctx2d.globalAlpha = prev; } catch (e) {}
-    }
-  }
-  function tdDrawRange(who, radius) {
-    if (!ctx2d || !who || typeof who !== 'object') return;
-    var r = Math.max(1, num(radius, 220));
-    var prev = 1;
-    try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = 0.12; } catch (e) {}
-    ctx2d.fillStyle = '#66aaff';
-    ctx2d.beginPath();
-    try { ctx2d.arc(centerX(who), centerY(who), r, 0, Math.PI * 2); ctx2d.fill(); } catch (e) {}
-    try { ctx2d.globalAlpha = prev; ctx2d.strokeStyle = '#66aaff'; ctx2d.lineWidth = 2; ctx2d.stroke(); } catch (e) {}
-  }
-  // Carteira do kit (precedente rpgLevel/lutaWinsOf — evita o padrao novo de
-  // closures no parser p/ ler a variavel da crianca).
-  function tdSetCoins(n) { td.coins = Math.round(num(n, 100)); td.coinsInit = td.coins; }
-  function tdAddCoins(n) { td.coins = Math.round(td.coins + num(n, 0)); }
-  function tdCoins() { return td.coins; }
-  // Os "Quando comprar" registrados: cada clique num slot livre com moedas roda o corpo.
-  var tdBuyers = [];
-  function tdOnBuy(cost, fn) {
-    if (typeof fn !== 'function') return;
-    tdBuyers.push({ cost: Math.max(0, num(cost, 50)), fn: fn });
-  }
-  /** Clique no jogo: 1o slot livre sob o ponto. Paga e roda o corpo, ou avisa. */
-  function tdHandleClick(px, py) {
-    if (!tdBuyers.length) return false;
-    var slot = tdSlotAt(px, py);
-    if (!slot) return false;
-    var did = false;
-    for (var i = 0; i < tdBuyers.length; i++) {
-      var b = tdBuyers[i];
-      if (td.coins >= b.cost) {
-        td.coins -= b.cost;
-        slot.occupied = true;
-        did = true;
-        try { b.fn(slot.x, slot.y); } catch (e) { warn('erro no "Quando comprar a torre": ' + e); }
-      } else {
-        emit('compra:negada', null);
-        did = true; // consome o clique (nao cai no "Quando clicar no jogo")
-      }
-    }
-    return did;
-  }
-  /** O passo do kit (stepSystems): move as ondas pelo caminho, avisa vazamento. */
-  function stepTd(dt) {
-    for (var wi = td.waves.length - 1; wi >= 0; wi--) {
-      var w = td.waves[wi];
-      var rec = paths[w.path];
-      var ms = w.members;
-      for (var i = ms.length - 1; i >= 0; i--) {
-        var e = ms[i];
-        if (!e || e._active === false || e._tdWave !== w.id) {
-          ms[i] = ms[ms.length - 1]; ms.pop(); continue;
-        }
-        if (rec) followPathStep(e, rec, w.speed, dt);
-        if (e._pathDone) {
-          ms[i] = ms[ms.length - 1]; ms.pop();
-          recycle(e);
-          emit('invasor:passou', null); // a crianca tira a vida no on()
-        }
-      }
-      if (!ms.length) {
-        td.waves[wi] = td.waves[td.waves.length - 1]; td.waves.pop();
-        emit('onda:limpa', null); // MESMO evento do Nave (vocabulario unico)
-      }
-    }
-  }
-  /** "Jogar de novo" limpa o kit; slots liberam, moedas voltam ao inicial. */
-  function tdNewGame() {
-    td.waves.length = 0;
-    for (var i = 0; i < td.slots.length; i++) td.slots[i].occupied = false;
-    td.coins = td.coinsInit;
-  }
-
+${towerDefenseRuntime}
   // ==========================================================================
   // 🚀 KIT NAVE - o atalho do genero (Space Invaders / shoot-'em-up)
   // ==========================================================================
@@ -5409,64 +3859,6 @@ export const gameKitRuntime = `(function () {
     for (var s = 0; s < nave.shooters.length; s++) nave.shooters[s].timer = 0;
   }
 
-  // ---- 🎨 Aparências (looks) ----
-  function defineLook(name, fn, baseW, baseH) {
-    var k = text(name, '');
-    if (!k || typeof fn !== 'function') return;
-    // Tamanho-base do quadro autoral: drawEntity/drawLook ESCALAM a partir dele.
-    looks[k] = {
-      fn: fn,
-      baseW: Math.max(1, num(baseW, 40)),
-      baseH: Math.max(1, num(baseH, 40))
-    };
-  }
-  function drawLook(name, x, y, w, h) {
-    if (!ctx2d) return;
-    var look = looks[text(name, '')];
-    if (!look || typeof look.fn !== 'function') return;
-    ctx2d.save();
-    ctx2d.translate(num(x, 0), num(y, 0));
-    try {
-      ctx2d.scale(num(w, look.baseW) / look.baseW, num(h, look.baseH) / look.baseH);
-      look.fn(ctx2d);
-    } catch (e) {}
-    ctx2d.restore();
-  }
-
-  // ---- 🖥️ HUD & Missão ----
-  /** Barra genérica (vida grande, mana, progresso): fundo + preenchimento + contorno. */
-  function drawBar(current, max, x, y, w, h, color) {
-    if (!ctx2d) return;
-    var m = num(max, 100);
-    if (!(m > 0)) m = 100;
-    var frac = Math.max(0, Math.min(1, num(current, 0) / m));
-    var bx = num(x, 20);
-    var by = num(y, 20);
-    var bw = Math.max(1, num(w, 200));
-    var bh = Math.max(1, num(h, 16));
-    ctx2d.save();
-    ctx2d.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx2d.fillRect(bx, by, bw, bh);
-    ctx2d.fillStyle = text(color, config.accent);
-    ctx2d.fillRect(bx, by, bw * frac, bh);
-    ctx2d.strokeStyle = 'white';
-    ctx2d.lineWidth = 2;
-    ctx2d.strokeRect(bx, by, bw, bh);
-    ctx2d.restore();
-  }
-  function drawTimer(x, y) {
-    if (!ctx2d) return;
-    var mins = Math.floor(playTime / 60);
-    var secs = Math.floor(playTime % 60);
-    var label = mins + ':' + (secs < 10 ? '0' + secs : '' + secs);
-    ctx2d.save();
-    ctx2d.fillStyle = config.accent;
-    ctx2d.font = '28px "Courier New", monospace';
-    try { ctx2d.textAlign = 'left'; } catch (e) {}
-    ctx2d.fillText(label, num(x, 20), num(y, 40));
-    ctx2d.restore();
-  }
-
   // ---- 🧙 Kit RPG (Canvas RPG Kit do Drew Conley, simplificado p/ blocos) ----
   // Grade + paredes (grid.js/moveTowards), NPC + fala typewriter
   // (SpriteTextString), flags de história (StoryFlags), inventário, mapas com
@@ -5482,13 +3874,13 @@ export const gameKitRuntime = `(function () {
     stepHandlers: {},     // 'cx,cy' -> [fns do "quando pisar" — footstep cutscenes]
     flags: nameMap(),     // StoryFlags: nome -> true
     items: [],            // inventário: {name, image}
-    maps: nameMap(),      // nome -> [fns de montagem]
-    mapOrder: [],         // ordem de registro (fallback legado: o 1º é o mapa inicial)
+    maps: nameMap(),      // nome -> { cols, rows, draw } — declaração visual explícita
+    mapEnter: nameMap(),  // nome -> [fns de comportamento ao entrar]
+    mapOrder: [],         // ordem de criação (fallback: o 1º mapa válido)
     startMap: '',         // mapa inicial explícito, escolhido por rpgSetStartMap
     currentMap: '',
-    // 🌍 Mundo aberto: tamanho do mapa ATUAL em células + bordas ligadas
-    // ('norte'|'sul'|'leste'|'oeste' -> nome do mapa). Declarados DENTRO do
-    // "Quando chegar no mapa" e remontados a cada entrada (como pkm.grass).
+    // 🌍 Mundo aberto: tamanho do mapa ATUAL em células vem da declaração;
+    // bordas são comportamento e são remontadas a cada entrada (como pkm.grass).
     mapCols: 0,
     mapRows: 0,
     edges: {},
@@ -5531,6 +3923,83 @@ export const gameKitRuntime = `(function () {
     // só ESCOLHE com quem batalhar. Registro PERSISTENTE (como os moldes/aparências).
     battlerDefs: nameMap()
   };
+
+  function resetCoreProjectRegistrations() {
+    updateHooks.length = 0;
+    drawHooks.length = 0;
+    hudHooks.length = 0;
+    gameClickHooks.length = 0;
+    gameStartHooks.length = 0;
+    enterStateHooks = Object.create(null);
+    listeners = Object.create(null);
+    turnHooks.length = 0;
+    landHooks.length = 0;
+  }
+
+  function resetProjectOwnedResources() {
+    for (var bi = 0; bi < projectButtons.length; bi++) {
+      var button = projectButtons[bi];
+      if (button && button.parentNode) button.parentNode.removeChild(button);
+    }
+    projectButtons.length = 0;
+    for (var screenName in screens) {
+      var screen = screens[screenName];
+      if (screen && screen.el) screen.mainBtn = screen.el.querySelector('button');
+    }
+    for (var si = 0; si < projectScreens.length; si++) {
+      var key = projectScreens[si];
+      var entry = screens[key];
+      if (entry && entry.el && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
+      delete screens[key];
+    }
+    projectScreens.length = 0;
+    for (var ti = 0; ti < trailed.length; ti++) {
+      if (trailed[ti]) trailed[ti]._trailOn = false;
+    }
+    trailed.length = 0;
+    for (var soundName in sounds) {
+      try { sounds[soundName].pause(); sounds[soundName].currentTime = 0; } catch (e) {}
+    }
+    stopProjectTones();
+  }
+
+  function resetProjectRegistrations() {
+    _runRuntimeDomainHook('resetProject');
+  }
+
+  function rpgResetProject() {
+    rpg.npcTalk = nameMap();
+    rpg.maps = nameMap();
+    rpg.mapEnter = nameMap();
+    rpg.mapOrder = [];
+    rpg.startMap = '';
+    rpg.currentMap = '';
+    rpg.mapCols = 0;
+    rpg.mapRows = 0;
+    rpg.stepHandlers = {};
+    rpg.foeTurnHooks = nameMap();
+    rpg.onBattleEnd.length = 0;
+  }
+
+  function executeProjectFactory() {
+    if (typeof projectFactory !== 'function' || runningProjectFactory) return;
+    var completed = false;
+    runningProjectFactory = true;
+    try { projectFactory(); completed = true; }
+    catch (e) { warn('erro em "Ao iniciar": ' + e); }
+    runningProjectFactory = false;
+    if (completed) _runRuntimeDomainHook('projectReady');
+  }
+
+  function runProject(fn) {
+    if (typeof fn !== 'function') {
+      warn('o projeto precisa de uma função de início');
+      return;
+    }
+    projectFactory = fn;
+    resetProjectRegistrations();
+    executeProjectFactory();
+  }
   var SAVE_KEY = 'szgk-rpg-save'; // localStorage do preview (persiste por projeto)
   var DIALOG_CPS = 30; // velocidade do typewriter (chars/segundo)
   var DIR_ROW = { down: 0, up: 1, left: 2, right: 3 }; // linha da folha por direção
@@ -5539,7 +4008,8 @@ export const gameKitRuntime = `(function () {
   function rpgBlockCell(cx, cy) { var k = cellKey(cx, cy); rpg.walls[k] = true; rpg.terrain[k] = true; }
   function rpgCellPx(n) { return num(n, 0) * tilePx; }
 
-  /** Recomeço de partida: a HISTÓRIA zera e volta ao mapa inicial explícito/legado. */
+  /** Recomeço de partida: zera somente o ESTADO da história, sem executar
+   * callbacks. A entrada no mapa acontece depois que a factory atual foi montada. */
   function rpgNewGame() {
     // O time do Kit Monstrinhos morre junto: é parte do "jogo", não do motor.
     pkmNewGame();
@@ -5561,44 +4031,56 @@ export const gameKitRuntime = `(function () {
     // ⚠️ Os GOLPES ensinados NÃO zeram mais: são DEFINIÇÕES (como as fichas/moldes/
     // aparências, que também persistem). Antes o wipe apagava "Ensinar o golpe" posto
     // no TOPO já no 1º "Jogar" (o jeito natural da criança; o exemplo O Chefão caía
-    // nisso). rpgTeachMove/Heal são IDEMPOTENTES (dedup por nome), então re-ensinar no
-    // "quando entrar em jogando" também não duplica — os dois jeitos funcionam.
+    // nisso). rpgTeachMove/Heal são IDEMPOTENTES (dedup por nome), então re-ensinar
+    // no gancho de nova partida também não duplica — os dois jeitos funcionam.
     rpg.scene = null;
     rpg.recording = false;
     rpg.sceneSteps = [];
     rpg.fade = 0;
     rpg.menu = null;
     rpg.menuBuilding = null;
+    // No ciclo gerenciado, a próxima factory é dona de um novo herói. No uso
+    // direto da API, o herói atual pertence ao chamador e deve sobreviver ao
+    // restart para ser reposicionado no mapa inicial, como ocorria antes.
+    if (projectFactory) rpg.hero = null;
+  }
+  function rpgEnterInitialMap() {
+    rpgValidateMapEvents();
     var initialMap = rpg.startMap || rpgFirstValidMap();
     if (initialMap) rpgGoMap(initialMap);
-    // Se "Recomeçar" rodou NO MEIO de uma batalha, a batalha foi zerada acima —
-    // sem isto o mundo ficaria preso no estado 'batalha' (nada a desenhar/avançar).
-    // No caminho normal (setState('jogando')) o estado já é 'jogando' → no-op.
-    if (state === 'batalha') setState('jogando');
   }
 
   function rpgCreateNpc(name, cx, cy, image, look) {
     var k = text(name, '');
     if (!k) { warn('"Criar o NPC" precisa de um nome'); return; }
     var s = tilePx;
+    var npcCx = Math.round(num(cx, 0));
+    var npcCy = Math.round(num(cy, 0));
+    var key = cellKey(npcCx, npcCy);
+    if (rpg.mapCols > 0 && rpg.mapRows > 0 &&
+        (npcCx < 0 || npcCx >= rpg.mapCols || npcCy < 0 || npcCy >= rpg.mapRows)) {
+      warnOnce('npccell:outside:' + key, 'a célula ' + key + ' fica fora do mapa — escolha uma célula dentro dele');
+      return;
+    }
     // Recriar um NPC com o MESMO nome deixava a reserva antiga órfã (parede
     // fantasma para sempre); dois NPCs na MESMA célula dividiam uma entrada só e o
-    // 1º a andar liberava a do outro. Libera a reserva anterior e recusa a célula
-    // já ocupada.
+    // 1º a andar liberava a do outro. Primeiro valida o novo destino; só depois
+    // libera a reserva antiga pertencente a este NPC.
     var old = rpg.npcs[k];
-    if (old && old._reservedCell && !rpg.terrain[old._reservedCell]) delete rpg.walls[old._reservedCell];
-    var key = cellKey(cx, cy);
-    if (!old && rpg.walls[key]) {
+    if (cellOccupied(npcCx, npcCy, old)) {
       warnOnce('npccell:' + key, 'já tem alguém (ou uma parede) na célula ' + key + ' — o NPC "' + k + '" precisa de uma célula livre');
       return;
     }
+    if (old && old._reservedCell && old._reservedCell !== key && !rpg.terrain[old._reservedCell]) delete rpg.walls[old._reservedCell];
+    ensureImageLoaded(image);
     rpg.npcs[k] = {
       name: k,
-      x: Math.round(num(cx, 0)) * s, y: Math.round(num(cy, 0)) * s,
+      x: npcCx * s, y: npcCy * s,
       w: s, h: s,
       image: text(image, ''), look: text(look, ''), color: '#a78bfa',
       // Anda como o herói: destino na grade, direção, velocidade e patrulha.
-      speed: s * 2.4, _gridDest: null, _walkTarget: null, _wander: false, _wanderT: 0,
+      speed: s * 2.4, _gridDest: null, _walkTarget: null,
+      _walkPath: [], _walkIndex: 0, _walkFailed: false, _wander: false, _wanderT: 0,
       _iFrames: 0, _facingLeft: false, _facingDir: 'down', _angle: 0,
       _swingStart: 0, _swingActive: 0, _swingDur: 0,
       _animOnce: false, _animState: '',
@@ -5607,9 +4089,9 @@ export const gameKitRuntime = `(function () {
       _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0,
       _walkImg: '', _walkFw: 0, _walkFh: 0, _walkFrames: 0, _walkFps: 6,
       _lastX: 0, _lastY: 0, _moving: false, _moveFrame: -1,
-      _reservedCell: cellKey(cx, cy) // a célula que ESTE NPC ocupa (p/ só ele liberar)
+      _reservedCell: key // a célula que ESTE NPC ocupa (p/ só ele liberar)
     };
-    rpg.walls[cellKey(cx, cy)] = true; // sólido: bloqueia a grade
+    rpg.walls[key] = true; // sólido: bloqueia a grade
   }
   function rpgDrawNpcs() { for (var k in rpg.npcs) drawEntity(rpg.npcs[k]); }
   function npcAtCell(cx, cy) {
@@ -5665,10 +4147,10 @@ export const gameKitRuntime = `(function () {
     var shown = Math.floor(Math.max(0, playTime - d.start) * DIALOG_CPS);
     var visible = d.text.slice(0, shown);
     var ty = by + 30;
-    ctx2d.font = 'bold 18px "Courier New", monospace';
+    ctx2d.font = 'bold 18px ' + _szGameUIFont;
     ctx2d.fillStyle = config.accent;
     if (d.name) { ctx2d.fillText(d.name, bx + 16, ty); ty += 26; }
-    ctx2d.font = '18px "Courier New", monospace';
+    ctx2d.font = '18px ' + _szGameUIFont;
     ctx2d.fillStyle = '#ffffff';
     // Quebra por PALAVRA (Courier ~11px/char a 18px): não parte a palavra no meio.
     var perLine = Math.max(10, Math.floor((bw - 32) / 11));
@@ -5718,7 +4200,9 @@ export const gameKitRuntime = `(function () {
     if (!c || typeof c !== 'object') return;
     var s = Math.max(8, num(cellPx, tilePx));
     tilePx = s;
+    var isCurrentHero = rpg.hero === c;
     rpg.hero = c;
+    if (!isCurrentHero && rpg.currentMap) rpgEnsureHeroSafe('heroi atual');
     var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
     if (rpg.menu) return; // menu aberto: herói TRAVADO (o stepUiInput navega)
     // Espaço CONVERSA com o NPC à frente (a fala aberta já foi consumida pelo
@@ -5758,7 +4242,7 @@ export const gameKitRuntime = `(function () {
       var ny = cy + dy;
       // 🌍 Mundo aberto: o passo cruzaria a BORDA do mapa? Com ligação, viaja
       // (estilo Zelda: entra espelhado do outro lado); sem ligação, a borda é o
-      // fim do mundo (só virou de lado). Sem "Este mapa tem", NADA muda. ⭐ POR EIXO:
+      // fim do mundo (só virou de lado). O tamanho vem do mapa criado. ⭐ POR EIXO:
       // só colunas já limita leste/oeste (norte/sul ficam livres) e vice-versa.
       if (rpg.mapCols > 0 || rpg.mapRows > 0) {
         var outX = rpg.mapCols > 0 && (nx < 0 || nx >= rpg.mapCols);
@@ -5812,6 +4296,7 @@ export const gameKitRuntime = `(function () {
   function rpgGiveItem(name, image) {
     var k = text(name, '');
     if (!k) return;
+    ensureImageLoaded(image);
     var it = rpgFindItem(k);
     if (it) { it.qty = num(it.qty, 1) + 1; return; } // ja tem: soma QUANTIDADE
     rpg.items.push({ name: k, image: text(image, ''), qty: 1 });
@@ -5848,6 +4333,7 @@ export const gameKitRuntime = `(function () {
     ctx2d.save();
     for (var i = 0; i < rpg.items.length; i++) {
       var it = rpg.items[i];
+      ensureImageLoaded(it.image);
       var ix = bx + i * (size + 8);
       ctx2d.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx2d.fillRect(ix, by, size, size);
@@ -5856,7 +4342,7 @@ export const gameKitRuntime = `(function () {
         try { ctx2d.drawImage(entry.img, ix + 4, by + 4, size - 8, size - 8); } catch (e) {}
       } else {
         ctx2d.fillStyle = config.accent;
-        ctx2d.font = 'bold 20px "Courier New", monospace';
+        ctx2d.font = 'bold 20px ' + _szGameUIFont;
         ctx2d.fillText(it.name.slice(0, 1).toUpperCase(), ix + 13, by + 28);
       }
       ctx2d.strokeStyle = config.accent;
@@ -5866,15 +4352,48 @@ export const gameKitRuntime = `(function () {
     ctx2d.restore();
   }
 
-  // Mapas: trocar LIMPA paredes/NPCs/portas e roda a montagem do destino.
-  function rpgOnMap(name, fn) {
+  // Mapas têm duas responsabilidades explícitas: criar o espaço visual e reagir
+  // à entrada. Um evento nunca cria um mapa implicitamente.
+  function drawEmptyMapNotice(name) {
+    if (!ctx2d) return;
+    drawBackground('#20283a', true);
+    ctx2d.save();
+    ctx2d.fillStyle = '#ffffff';
+    ctx2d.font = 'bold 22px ' + _szGameUIFont;
+    ctx2d.textAlign = 'center';
+    ctx2d.fillText('O mapa “' + name + '” ainda não tem desenho', config.w / 2, config.h / 2 - 8);
+    ctx2d.font = '16px ' + _szGameUIFont;
+    ctx2d.fillText('Use formas, um mapa do Pinta ou uma imagem importada.', config.w / 2, config.h / 2 + 22);
+    ctx2d.restore();
+  }
+  function rpgCreateMap(name, cols, rows, draw, hasDrawing) {
+    var k = text(name, '');
+    var requestedCols = Math.round(num(cols, 0));
+    var requestedRows = Math.round(num(rows, 0));
+    var c = Math.min(MAX_GRID_SIDE, requestedCols);
+    var r = Math.min(MAX_GRID_SIDE, requestedRows);
+    if (!k) { warn('"Criar o mapa" precisa de um nome'); return; }
+    if (requestedCols <= 0 || requestedRows <= 0) { warn('o mapa "' + k + '" precisa ter largura e altura maiores que zero'); return; }
+    if (requestedCols > MAX_GRID_SIDE || requestedRows > MAX_GRID_SIDE) {
+      warnOnce('rpgmap:limit', 'o mapa foi limitado a ' + MAX_GRID_SIDE + ' × ' + MAX_GRID_SIDE + ' células para o jogo continuar responsivo');
+    }
+    if (typeof draw !== 'function') { warn('o mapa "' + k + '" precisa de um corpo de desenho'); return; }
+    if (rpg.maps[k]) { warn('o mapa "' + k + '" foi criado mais de uma vez — usando a primeira criação'); return; }
+    var empty = hasDrawing === false;
+    if (empty) warn('o mapa "' + k + '" foi criado sem desenho — adicione formas, um mapa do Pinta ou uma imagem');
+    rpg.maps[k] = { cols: c, rows: r, draw: draw, empty: empty };
+    rpg.mapOrder.push(k);
+  }
+  function rpgOnEnterMap(name, fn) {
     var k = text(name, '');
     if (!k || typeof fn !== 'function') return;
-    if (!rpg.maps[k]) {
-      rpg.maps[k] = [];
-      rpg.mapOrder.push(k);
+    if (!rpg.mapEnter[k]) rpg.mapEnter[k] = [];
+    rpg.mapEnter[k].push(fn);
+  }
+  function rpgValidateMapEvents() {
+    for (var k in rpg.mapEnter) {
+      if (!rpg.maps[k]) warnOnce('mapenter:' + k, 'há um evento de entrada para o mapa "' + k + '", mas ele não foi criado');
     }
-    rpg.maps[k].push(fn);
   }
   function rpgSetStartMap(name) {
     var k = text(name, '');
@@ -5899,6 +4418,62 @@ export const gameKitRuntime = `(function () {
     warn('o mapa "' + requested + '" não existe e nenhum mapa válido foi criado');
     return '';
   }
+  function rpgEnsureHeroSafe(reason) {
+    var who = rpg.hero;
+    if (!who || rpg.mapCols <= 0 || rpg.mapRows <= 0) return;
+    var originalCx = Math.round(num(who.x, 0) / tilePx);
+    var originalCy = Math.round(num(who.y, 0) / tilePx);
+    var startCx = Math.max(0, Math.min(rpg.mapCols - 1, originalCx));
+    var startCy = Math.max(0, Math.min(rpg.mapRows - 1, originalCy));
+    var bestCx = startCx;
+    var bestCy = startCy;
+    if (rpg.walls[cellKey(startCx, startCy)]) {
+      bestCx = -1;
+      bestCy = -1;
+      var width = rpg.mapCols;
+      var total = width * rpg.mapRows;
+      var queue = new Int32Array(total);
+      var seen = new Uint8Array(total);
+      var startIndex = startCy * width + startCx;
+      var head = 0;
+      var tail = 1;
+      queue[0] = startIndex;
+      seen[startIndex] = 1;
+      var dirsX = [0, -1, 1, 0];
+      var dirsY = [-1, 0, 0, 1];
+      while (head < tail && bestCx < 0) {
+        var here = queue[head++];
+        var cx = here % width;
+        var cy = Math.floor(here / width);
+        for (var di = 0; di < 4; di++) {
+          var nx = cx + dirsX[di];
+          var ny = cy + dirsY[di];
+          if (nx < 0 || nx >= width || ny < 0 || ny >= rpg.mapRows) continue;
+          var next = ny * width + nx;
+          if (seen[next]) continue;
+          seen[next] = 1;
+          if (!rpg.walls[cellKey(nx, ny)]) { bestCx = nx; bestCy = ny; break; }
+          queue[tail++] = next;
+        }
+      }
+    }
+    if (bestCx < 0) {
+      warnOnce('mapsafe:none:' + rpg.currentMap, 'o mapa "' + rpg.currentMap + '" não tem nenhuma célula livre para o herói');
+      return;
+    }
+    var moved = bestCx !== originalCx || bestCy !== originalCy;
+    who.x = bestCx * tilePx;
+    who.y = bestCy * tilePx;
+    who._prevX = who.x;
+    who._prevY = who.y;
+    who._gridDest = null;
+    if (moved) {
+      warnOnce(
+        'mapsafe:' + rpg.currentMap + ':' + reason,
+        'o herói estava fora do mapa ou numa célula bloqueada — colocado com segurança na célula ' + bestCx + ', ' + bestCy,
+      );
+    }
+  }
   function rpgGoMap(name) {
     if (rpg.recording) { rpg.sceneSteps.push({ type: 'goMap', name: text(name, '') }); return; }
     var k = rpgResolveMap(name);
@@ -5910,42 +4485,41 @@ export const gameKitRuntime = `(function () {
     rpg.doors = {};
     rpg.stepHandlers = {};   // gatilhos de pisar são por-mapa (montados de novo)
     // ⭐ A grama e a tabela de selvagens TAMBÉM são por-mapa (o exemplo oficial
-    // chama "Na grama alta deste mapa..." de DENTRO do "Quando chegar no mapa").
+    // chama "Na grama alta deste mapa..." de DENTRO do "Quando entrar no mapa").
     // Sem limpar aqui, o pkmWild — que faz PUSH — duplicava a cada entrada: sair e
     // voltar 20× no quintal dava 40 entradas; e a tabela sendo global fazia os
     // bichos do quintal aparecerem na caverna, apesar do comentário prometer o
     // contrário. Quem chama no topo (sem mapas) nunca passa por aqui: segue global.
     pkm.wild = [];
-    pkm.grass = {};
+    pkm.grassAreas = [];
     pkm.grassTiles = {};
-    // 🌍 Tamanho e bordas TAMBÉM são por-mapa (declarados dentro do hook).
-    rpg.mapCols = 0;
-    rpg.mapRows = 0;
+    pkm.grassTileCount = 0;
+    pkm.grassMap = '';
+    // 🌍 O tamanho é parte da criação; bordas continuam sendo comportamento.
+    var map = rpg.maps[k];
+    rpg.mapCols = map.cols;
+    rpg.mapRows = map.rows;
     rpg.edges = {};
     if (rpg.hero) rpg.hero._gridDest = null;
     rpg.currentMap = k;
-    var hooks = rpg.maps[k];
+    var hooks = rpg.mapEnter[k] || [];
     for (var i = 0; i < hooks.length; i++) {
-      try { hooks[i](); } catch (e) { warn('erro ao montar o mapa "' + k + '": ' + e); }
+      try { hooks[i](); } catch (e) { warn('erro ao entrar no mapa "' + k + '": ' + e); }
     }
+    rpgEnsureHeroSafe('entrada');
     rpg.fade = 1; // transição: o mapa novo aparece surgindo do preto (SceneTransition)
     emit('mapa:' + k);
   }
   function rpgCreateDoor(cx, cy, map) {
     var k = text(map, '');
     if (!k) return;
-    rpg.doors[cellKey(cx, cy)] = k;
+    var destination = rpgResolveMap(k);
+    if (destination) rpg.doors[cellKey(cx, cy)] = destination;
   }
-  // ---- 🌍 Mundo aberto: tamanho do mapa + bordas ligadas (estilo Zelda) ----
-  /** Tamanho do mapa ATUAL em células (use dentro do "Quando chegar no mapa").
-   *  Liga a trava da câmera E o "fim do mundo" nas bordas sem ligação. */
-  function rpgMapSize(cols, rows) {
-    rpg.mapCols = Math.max(0, Math.round(num(cols, 0)));
-    rpg.mapRows = Math.max(0, Math.round(num(rows, 0)));
-  }
+  // ---- 🌍 Mundo aberto: bordas ligadas (estilo Zelda) ----
   var EDGE_SIDES = { norte: true, sul: true, leste: true, oeste: true };
-  /** Liga uma borda deste mapa a outro mapa: atravessou, viaja (declare o
-   *  "Este mapa tem" antes, e ligue a borda ESPELHADA no outro mapa também). */
+  /** Liga uma borda deste mapa a outro mapa: atravessou, viaja (o tamanho vem de
+   *  "Criar o mapa"; ligue a borda ESPELHADA no outro mapa também). */
   function rpgConnectEdge(side, map) {
     var s = text(side, '');
     var k = text(map, '');
@@ -5954,6 +4528,10 @@ export const gameKitRuntime = `(function () {
       return;
     }
     if (!k) return;
+    if (!rpg.maps[k]) {
+      warnOnce('edgemap:' + k, 'a borda aponta para o mapa "' + k + '", mas ele não foi criado');
+      return;
+    }
     rpg.edges[s] = k;
   }
   function rpgCurrentMap() {
@@ -5976,6 +4554,7 @@ export const gameKitRuntime = `(function () {
     who.x = ncx * tilePx;
     who.y = ncy * tilePx;
     who._gridDest = null;
+    rpgEnsureHeroSafe('borda-' + side);
   }
   // Gatilho ao PISAR numa célula (footstep cutscene do Pizza): roda quando o herói
   // ENCAIXA nessa célula. Encontros aleatórios, armadilhas, cenas automáticas.
@@ -6012,6 +4591,14 @@ export const gameKitRuntime = `(function () {
     var n = rpg.npcs[nm];
     if (!n) { warn('o NPC "' + nm + '" não existe neste mapa'); return; }
     n._walkTarget = { cx: tx, cy: ty };
+    n._walkPath = findNpcPath(n, Math.round(n.x / tilePx), Math.round(n.y / tilePx), tx, ty);
+    n._walkIndex = 0;
+    n._walkFailed = !n._walkPath;
+    if (n._walkFailed) {
+      n._walkTarget = null;
+      n._walkPath = [];
+      warnOnce('npcpath:' + nm + ':' + tx + ',' + ty, 'o NPC "' + nm + '" não encontrou um caminho livre até a célula ' + tx + ',' + ty);
+    }
   }
   /** NPC vagueia por células vizinhas livres (vida de vila). */
   function rpgNpcWander(npcName) {
@@ -6053,7 +4640,13 @@ export const gameKitRuntime = `(function () {
     st._instant = false;
     if (st.type === 'say') rpgSay(st.text, st.speaker);
     else if (st.type === 'wait') st._t = 0;
-    else if (st.type === 'npcWalk') { rpgNpcWalkTo(st.npc, st.cx, st.cy); st._t = 0; }
+    else if (st.type === 'npcWalk') {
+      rpgNpcWalkTo(st.npc, st.cx, st.cy);
+      var walkingNpc = rpg.npcs[st.npc];
+      st._lastX = walkingNpc ? walkingNpc.x : 0;
+      st._lastY = walkingNpc ? walkingNpc.y : 0;
+      st._stalledFor = 0;
+    }
     else if (st.type === 'face') { rpgFace(st.who, st.dir); st._instant = true; }
     else if (st.type === 'flag') { rpgAddFlag(st.name); st._instant = true; }
     else if (st.type === 'goMap') { rpgGoMap(st.name); st._instant = true; }
@@ -6072,76 +4665,36 @@ export const gameKitRuntime = `(function () {
     if (st.type === 'npcWalk') {
       var n = rpg.npcs[st.npc];
       if (!n) return true;
-      // Trava de segurança: caminho em L bloqueado por parede não pode pendurar a
-      // cena (e travar o herói) para sempre — desiste depois de 6 s. Limpa a
-      // INTENÇÃO junto: senão o NPC retomaria a caminhada de uma cena já encerrada
-      // quando a parede saísse (troca de mapa, block_cell mudado).
-      st._t = num(st._t, 0) + dt;
-      if (st._t > 6) { n._walkTarget = null; n._gridDest = null; return true; }
+      if (n._walkFailed) { n._walkFailed = false; return true; }
       var s = tilePx;
-      return n._gridDest == null && n._walkTarget == null &&
+      var arrived = n._gridDest == null && n._walkTarget == null &&
         Math.round(n.x / s) === st.cx && Math.round(n.y / s) === st.cy;
+      if (arrived) return true;
+      // Uma viagem longa é válida: o watchdog mede FALTA DE PROGRESSO, não o
+      // tempo total do caminho. Assim cenas só desistem quando o NPC realmente
+      // ficou preso, e não aos seis segundos enquanto ele ainda está andando.
+      var moved = Math.abs(num(n.x, 0) - num(st._lastX, n.x)) > 0.01 ||
+        Math.abs(num(n.y, 0) - num(st._lastY, n.y)) > 0.01;
+      if (moved) {
+        st._lastX = n.x; st._lastY = n.y; st._stalledFor = 0;
+      } else st._stalledFor = num(st._stalledFor, 0) + dt;
+      if (st._stalledFor > 3) {
+        // A reserva representa a célula de destino. Se a interpolação travou no
+        // meio, conclui esse pequeno passo antes de abandonar a rota para que a
+        // posição visual e rpg.walls continuem descrevendo a mesma célula.
+        if (n._gridDest) { n.x = n._gridDest.x; n.y = n._gridDest.y; }
+        n._walkTarget = null; n._walkPath = []; n._walkIndex = 0; n._gridDest = null;
+        warnOnce('npcpath:stalled:' + st.npc, 'o NPC "' + st.npc + '" não conseguiu continuar a caminhada durante a cena');
+        return true;
+      }
+      return false;
     }
     if (st.type === 'battle') return rpg.battle == null && pkm.battle == null;
     if (st.type === 'menu') return rpg.menu == null;
     return true;
   }
 
-  /** Uma célula está OCUPADA (parede/NPC/herói) — reserva de intenção do Pizza. */
-  function cellOccupied(cx, cy) {
-    if (rpg.walls[cx + ',' + cy]) return true;
-    var s = tilePx;
-    if (rpg.hero) {
-      if (Math.round(rpg.hero.x / s) === cx && Math.round(rpg.hero.y / s) === cy) return true;
-      if (rpg.hero._gridDest) {
-        if (Math.round(rpg.hero._gridDest.x / s) === cx && Math.round(rpg.hero._gridDest.y / s) === cy) return true;
-      }
-    }
-    return false;
-  }
-  /** Move 1 NPC por quadro: destino da grade (moveTowards) + patrulha/andar-para. */
-  function moveNpc(n, dt) {
-    var s = tilePx;
-    if (n._gridDest == null) {
-      var cx = Math.round(num(n.x, 0) / s);
-      var cy = Math.round(num(n.y, 0) / s);
-      var dx = 0;
-      var dy = 0;
-      if (n._walkTarget) {
-        var tx = n._walkTarget.cx;
-        var ty = n._walkTarget.cy;
-        if (cx === tx && cy === ty) { n._walkTarget = null; return; }
-        // Reduz primeiro o eixo maior (caminho simples em L — basta p/ cenas).
-        if (cx !== tx) dx = tx > cx ? 1 : -1;
-        else dy = ty > cy ? 1 : -1;
-      } else if (n._wander) {
-        n._wanderT = num(n._wanderT, 0) - dt;
-        if (n._wanderT > 0) return;
-        n._wanderT = 1 + Math.random() * 2;
-        var pick = Math.floor(Math.random() * 4);
-        dx = pick === 0 ? 1 : pick === 1 ? -1 : 0;
-        dy = pick === 2 ? 1 : pick === 3 ? -1 : 0;
-        if (!dx && !dy) return;
-      } else return;
-      var nx = cx + dx;
-      var ny = cy + dy;
-      if (cellOccupied(nx, ny)) return; // bloqueado (parede/NPC/herói): espera
-      // Reserva de intenção: libera SÓ a célula que ESTE NPC reservou (nunca uma
-      // parede de terreno) e reserva a de destino ENQUANTO anda (o herói e outros
-      // NPCs veem o NPC ocupando o destino).
-      if (n._reservedCell && !rpg.terrain[n._reservedCell]) delete rpg.walls[n._reservedCell];
-      rpg.walls[nx + ',' + ny] = true;
-      n._reservedCell = nx + ',' + ny;
-      setFacing(n, dx, dy);
-      n._gridDest = { x: nx * s, y: ny * s };
-    }
-    var step = Math.max(1, num(n.speed, s * 2.4)) * dt;
-    var gx = n._gridDest.x - num(n.x, 0);
-    var gy = n._gridDest.y - num(n.y, 0);
-    var dist = Math.sqrt(gx * gx + gy * gy);
-    if (dist <= step) { n.x = n._gridDest.x; n.y = n._gridDest.y; n._gridDest = null; }
-    else { n.x += (gx / dist) * step; n.y += (gy / dist) * step; }
-  }
+${gameKitRpgNavigationRuntime}
   /** Toca a fila da cena: começa o passo, e passos INSTANTÂNEOS encadeiam no mesmo
    * quadro (o "flag" entre duas falas não custa um quadro à toa). */
   function advanceScene(dt) {
@@ -6215,13 +4768,13 @@ export const gameKitRuntime = `(function () {
     ctx2d.strokeRect(bx, by, bw, bh);
     var ty = by + pad;
     if (m.title) {
-      ctx2d.font = 'bold 18px "Courier New", monospace';
+      ctx2d.font = 'bold 18px ' + _szGameUIFont;
       ctx2d.fillStyle = config.accent;
       ctx2d.fillText(m.title, bx + pad, ty + 14);
       ty += titleH;
     }
     rpg.menuRects = [];
-    ctx2d.font = '18px "Courier New", monospace';
+    ctx2d.font = '18px ' + _szGameUIFont;
     for (var i = 0; i < m.options.length; i++) {
       var oy = ty + i * lineH;
       var sel = (i === m.index);
@@ -6268,38 +4821,44 @@ export const gameKitRuntime = `(function () {
       rpg.flags = nameMap(data.flags); // save vem por JSON.parse (protótipo comum) -> normaliza
       // localStorage é editável pela criança/inspetor — um item sem name string
       // faria rpgDrawInventory/rpgHasItem estourar. Filtra os malformados.
-      rpg.items = Array.isArray(data.items)
-        ? data.items.filter(function (it) { return it && typeof it === 'object' && typeof it.name === 'string'; })
-        : [];
-      rpg.playerMax = num(data.max, rpg.playerMax);
-      rpg.playerHp = num(data.hp, rpg.playerMax);
-      rpg.playerStr = num(data.str, rpg.playerStr);
-      rpg.playerDef = num(data.def, rpg.playerDef);
-      rpg.playerLevel = num(data.lvl, rpg.playerLevel);
-      rpg.playerXp = num(data.xp, rpg.playerXp);
-      rpg.playerMaxXp = num(data.maxXp, rpg.playerMaxXp);
+      rpg.items = [];
+      var restoredItems = nameMap();
+      if (Array.isArray(data.items)) for (var ii = 0; ii < data.items.length; ii++) {
+        var item = data.items[ii];
+        if (!item || typeof item !== 'object' || typeof item.name !== 'string' || restoredItems[item.name]) continue;
+        restoredItems[item.name] = true;
+        rpg.items.push({ name: item.name, image: text(item.image, ''), qty: Math.max(1, Math.min(MAX_SAFE_GAME_INTEGER, Math.round(num(item.qty, 1)))) });
+      }
+      // O save é uma fronteira não confiável (localStorage pode ser editado).
+      // Restabelece aqui os invariantes usados pela batalha; em especial,
+      // maxXp positivo garante que o laço de subida de nível sempre progrida.
+      rpg.playerMax = Math.max(1, Math.min(MAX_SAFE_GAME_INTEGER, num(data.max, rpg.playerMax)));
+      rpg.playerHp = Math.max(0, Math.min(rpg.playerMax, num(data.hp, rpg.playerMax)));
+      rpg.playerStr = Math.max(0, Math.min(MAX_SAFE_GAME_INTEGER, num(data.str, rpg.playerStr)));
+      rpg.playerDef = Math.max(0, Math.min(MAX_SAFE_GAME_INTEGER, num(data.def, rpg.playerDef)));
+      rpg.playerLevel = boundedInteger(data.lvl, rpg.playerLevel, 1, MAX_GAME_LEVEL);
+      rpg.playerMaxXp = boundedInteger(data.maxXp, rpg.playerMaxXp, RPG_BASE_MAX_XP, MAX_SAFE_GAME_INTEGER);
+      rpg.playerXp = Math.max(0, Math.min(rpg.playerMaxXp - 1, num(data.xp, rpg.playerXp)));
       // Consumíveis/habilidade (save antigo não tem: mantém o que já está em jogo).
       if (Array.isArray(data.potions)) {
-        rpg.potions = data.potions.filter(function (p) {
-          return p && typeof p === 'object' && typeof p.name === 'string';
-        });
+        rpg.potions = [];
+        for (var pi = 0; pi < data.potions.length; pi++) {
+          var potion = data.potions[pi];
+          if (potion && typeof potion === 'object' && typeof potion.name === 'string') {
+            if (!pushRpgLimited(rpg.potions, { name: potion.name, heal: Math.max(1, num(potion.heal, 20)) }, MAX_RPG_POTIONS, 'potion', 'poções')) break;
+          }
+        }
       }
-      rpg.playerEnergy = num(data.energy, rpg.playerEnergy);
-      rpg.playerPoison = num(data.poison, 0);
+      rpg.playerEnergy = Math.max(0, Math.min(rpg.playerMaxEnergy, num(data.energy, rpg.playerEnergy)));
+      rpg.playerPoison = Math.max(0, num(data.poison, 0));
       if (data.special && typeof data.special === 'object' && typeof data.special.name === 'string') {
-        rpg.special = data.special;
+        rpg.special = { name: data.special.name, dmg: Math.max(1, num(data.special.dmg, 12)), cost: Math.max(0, num(data.special.cost, 4)) };
       }
       // 👾 O time do Kit Monstrinhos volta junto. O localStorage é EDITÁVEL (pela
       // criança ou pelo inspetor), então cada indivíduo é validado — um registro
       // torto faria a batalha estourar depois, longe daqui.
-      pkm.team = Array.isArray(data.pkmTeam)
-        ? data.pkmTeam.filter(function (t) {
-            return t && typeof t === 'object' && typeof t.species === 'string' && pkm.species[t.species];
-          })
-        : [];
-      pkm.balls = Array.isArray(data.pkmBalls)
-        ? data.pkmBalls.filter(function (b) { return b && typeof b === 'object'; })
-        : [];
+      pkm.team = pkmRestoreTeam(data.pkmTeam);
+      pkm.balls = pkmRestoreBalls(data.pkmBalls);
       pkm.battle = null;
       rpg.scene = null; rpg.recording = false; rpg.menu = null; rpg.battle = null; rpg.dialog = null;
       if (data.map) {
@@ -6307,7 +4866,9 @@ export const gameKitRuntime = `(function () {
         if (rpg.hero) {
           rpg.hero.x = num(data.hx, 0) * tilePx;
           rpg.hero.y = num(data.hy, 0) * tilePx;
-          rpg.hero._gridDest = null;
+          // O save entra após a validação de rpgGoMap; valide de novo para também
+          // sincronizar os campos usados pela varredura de colisão/movimento.
+          rpgEnsureHeroSafe('save');
         }
       }
       // "Continuar" no meio de uma batalha: a batalha foi zerada acima — devolve o
@@ -6316,634 +4877,8 @@ export const gameKitRuntime = `(function () {
     } catch (e) { warn('não consegui carregar o jogo: ' + e); }
   }
 
-  // ⚔️ Batalha por turnos RICA (Combatant/TurnCycle do Pizza, 1v1): Atacar/
-  // Especial (energia)/Item (poção)/Defender/Fugir; defesa reduz o dano; XP sobe
-  // de nível; veneno tira vida por turno. Dano = força ± 20% − defesa/2.
-  function rollDamage(strength, targetDef) {
-    var raw = Math.round(num(strength, 1) * (0.8 + Math.random() * 0.4));
-    return Math.max(1, raw - Math.floor(num(targetDef, 0) / 2));
-  }
-  // ---- ⚔️ Batalha em EQUIPE (canvas): combatentes clicáveis + painéis ----
-  // Um COMBATENTE carrega os próprios atributos (o createCharacter não tem stats de
-  // luta). O herói entra a partir dos rpg.player* (progressão persiste); aliados e
-  // inimigos vêm de "Adicionar aliado/inimigo"; os golpes nomeados de "Ensinar o golpe".
-  function makeBattler(name, side, hp, str, def, look, color, image) {
-    var mx = Math.max(1, num(hp, 20));
-    ensureImageLoaded(image); // a imagem do combatente (Pinta) carrega sozinha
-    return {
-      name: text(name, side === 'inimigo' ? 'Inimigo' : 'Aliado'), side: side,
-      hp: mx, max: mx, str: Math.max(0, num(str, 5)), def: Math.max(0, num(def, 0)),
-      energy: 10, maxEnergy: 10, moves: [],
-      defending: false, poison: 0, regen: 0, blind: 0, alive: true,
-      look: text(look, ''), color: text(color, side === 'inimigo' ? '#e05a5a' : '#4a9eff'),
-      // 🖼️ Imagem do combatente (a que você "Carregou pelo nome"): drawEntity a usa;
-      // sem imagem, cai no retângulo da cor. Só o herói herdava sprite — agora os
-      // inimigos/aliados/chefões também podem ter arte do Pinta.
-      image: text(image, ''), x: 0, y: 0, w: 72, h: 72
-    };
-  }
-  function heroBattler() {
-    var b = makeBattler('Você', 'aliado', rpg.playerMax, rpg.playerStr, rpg.playerDef, '', '#4a9eff');
-    b.energy = rpg.playerMaxEnergy; b.maxEnergy = rpg.playerMaxEnergy; b.isHero = true;
-    // A vida do herói PERSISTE entre batalhas: ele entra com a vida ATUAL, não cheia
-    // (o endBattle grava de volta ao vencer). Piso 1 p/ um herói ferido ainda lutar;
-    // b.max segue playerMax (subir de nível aumenta o máximo). "Curar o herói" recupera.
-    b.hp = Math.max(1, Math.min(rpg.playerMax, num(rpg.playerHp, rpg.playerMax)));
-    // O herói aparece com o SEU visual do mundo (sprite/vetor/cor), se existir.
-    if (rpg.hero) { b.image = text(rpg.hero.image, ''); b.look = text(rpg.hero.look, ''); b.color = text(rpg.hero.color, b.color); }
-    if (rpg.special) b.moves.push({ name: rpg.special.name, dmg: rpg.special.dmg, cost: rpg.special.cost, heal: false });
-    var extra = rpg.movesByName['Você'];
-    if (extra) for (var i = 0; i < extra.length; i++) b.moves.push(extra[i]);
-    return b;
-  }
-  function defToBattler(def, side) {
-    var b = makeBattler(def.name, side, def.hp, def.str, def.def, def.look, def.color, def.image);
-    var mv = rpg.movesByName[def.name];
-    if (mv) for (var i = 0; i < mv.length; i++) b.moves.push(mv[i]);
-    if (def.boss) b.boss = true; // 👑 CHEFÃO: maior + barra proeminente
-    return b;
-  }
-  function firstAlive(list) { for (var i = 0; i < list.length; i++) if (list[i].alive && list[i].hp > 0) return list[i]; return null; }
-  function aliveList(list) { var out = []; for (var i = 0; i < list.length; i++) if (list[i].alive && list[i].hp > 0) out.push(list[i]); return out; }
-  function nextAliveAfter(list, who) {
-    var seen = false;
-    for (var i = 0; i < list.length; i++) {
-      if (list[i] === who) { seen = true; continue; }
-      if (seen && list[i].alive && list[i].hp > 0) return list[i];
-    }
-    return null;
-  }
-  function foeNames(b) {
-    var out = '';
-    for (var i = 0; i < b.foes.length; i++) out += (i ? ', ' : '') + b.foes[i].name;
-    return out;
-  }
-  // 🧙 Kit RPG: montar o time. rpgAddAlly = party PERSISTENTE (o herói já entra
-  // sozinho); rpgAddFoe = inimigos da PRÓXIMA batalha; rpgTeachMove = golpes nomeados.
-  function rpgAddAlly(name, hp, str, def, color, image) {
-    rpg.allies.push({ name: text(name, 'Aliado'), hp: num(hp, 24), str: num(str, 6), def: num(def, 1), look: '', color: text(color, '#4ade80'), image: text(image, '') });
-  }
-  function rpgAddFoe(name, hp, str, def, color, image) {
-    rpg.foeQueue.push({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), look: '', color: text(color, '#e05a5a'), image: text(image, '') });
-  }
-  // 👑 O CHEFÃO: um inimigo da próxima batalha desenhado MAIOR, com barra proeminente.
-  function rpgAddBoss(name, hp, str, def, image) {
-    rpg.foeQueue.push({ name: text(name, 'Chefão'), hp: num(hp, 120), str: num(str, 9), def: num(def, 2), look: '', color: '#b23b6e', boss: true, image: text(image, '') });
-  }
-  // 👑 R30: ler a vida de um combatente (herói/aliado/inimigo) por NOME — a chave
-  // das FASES de chefe ("se a vida do Chefe < metade: fica furioso").
-  function findBattler(name) {
-    var b = rpg.battle; if (!b) return null;
-    var nm = text(name, '');
-    for (var i = 0; i < b.allies.length; i++) if (b.allies[i].name === nm) return b.allies[i];
-    for (var j = 0; j < b.foes.length; j++) if (b.foes[j].name === nm) return b.foes[j];
-    return null;
-  }
-  function battlerLife(name) { var c = findBattler(name); return c ? Math.max(0, c.hp) : 0; }
-  function battlerMaxLife(name) { var c = findBattler(name); return c ? c.max : 0; }
-  // 👑 IA de chefe: o corpo roda na vez daquele inimigo (no lugar do ataque padrão).
-  function rpgOnFoeTurn(name, fn) {
-    if (typeof fn !== 'function') return;
-    rpg.foeTurnHooks[text(name, 'Inimigo')] = fn;
-  }
-  // O inimigo NOMEADO usa um golpe ENSINADO (dano num aliado ao acaso, ou cura nele).
-  function rpgFoeUse(name, moveName) {
-    if (!rpg.battle) return;
-    var f = findBattler(name); if (!f || !f.alive) return;
-    var mn = text(moveName, ''), mv = null;
-    for (var i = 0; i < f.moves.length; i++) if (f.moves[i].name === mn) { mv = f.moves[i]; break; }
-    if (!mv) { warnOnce('foeuse:' + f.name + mn, 'o inimigo "' + f.name + '" não tem o golpe "' + mn + '" — ensine com "Ensinar o golpe"'); return; }
-    if (mv.heal) foeHeal(f, mv); else foeHit(f, mv);
-  }
-  // O golpe ASSINATURA de chefão: acerta TODO o time de uma vez.
-  function rpgFoeHitAll(name, dmg) {
-    var b = rpg.battle; if (!b) return;
-    var f = findBattler(name);
-    var base = Math.max(0, num(dmg, 10));
-    var allies = aliveList(b.allies);
-    for (var i = 0; i < allies.length; i++) {
-      var v = allies[i];
-      var d = rollDamage(base, v.def);
-      if (v.defending) d = Math.max(d > 0 ? 1 : 0, Math.round(d / 2));
-      v.hp -= d;
-      if (d > 0) floatText('-' + d, v.x + v.w / 2, v.y, '#ff6b6b', 22);
-      if (v.hp <= 0) { v.hp = 0; v.alive = false; }
-    }
-    b.message = (f ? f.name : text(name, 'O inimigo')) + ' atingiu TODO o time!';
-  }
-  // Ensinar é IDEMPOTENTE: um golpe com o MESMO nome REPÕE o anterior em vez de
-  // empilhar — assim re-ensinar no "quando entrar em jogando" (a cada "Jogar de novo")
-  // não duplica os golpes, agora que eles PERSISTEM (ver rpgNewGame).
-  function teachMoveTo(k, mv) {
-    if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
-    var list = rpg.movesByName[k];
-    for (var i = 0; i < list.length; i++) { if (list[i].name === mv.name) { list[i] = mv; return; } }
-    list.push(mv);
-  }
-  function rpgTeachMove(who, moveName, dmg, cost) {
-    teachMoveTo(text(who, 'Você'), { name: text(moveName, 'Golpe'), dmg: Math.max(1, num(dmg, 10)), cost: Math.max(0, num(cost, 3)), heal: false });
-  }
-  // Golpe de CURA (heal:true) — o painel de ação mostra "(cura N)" e o applyHeal
-  // devolve vida ao próprio lutador em vez de ferir o inimigo.
-  function rpgTeachHeal(who, moveName, amount, cost) {
-    teachMoveTo(text(who, 'Você'), { name: text(moveName, 'Cura'), dmg: Math.max(1, num(amount, 12)), cost: Math.max(0, num(cost, 3)), heal: true });
-  }
-  function layoutRow(list, cy) {
-    var n = list.length; if (n === 0) return;
-    var sz = 72, boss = 112, gap = 28;
-    var totalW = 0;
-    for (var k = 0; k < n; k++) totalW += (list[k].boss ? boss : sz) + (k ? gap : 0);
-    var x = (config.w - totalW) / 2;
-    for (var i = 0; i < n; i++) {
-      var c = list[i];
-      var s = c.boss ? boss : sz;
-      c.w = s; c.h = s; c.x = x; c.y = cy - s / 2; // topos alinhados; o chefão desce mais
-      x += s + gap;
-    }
-  }
-  function layoutBattlers() {
-    var b = rpg.battle; if (!b) return;
-    layoutRow(b.foes, config.h * 0.30);
-    layoutRow(b.allies, config.h * 0.66);
-  }
-  function rpgBattleStats(hp, str, def) {
-    rpg.baseMax = Math.max(1, num(hp, 30));
-    rpg.baseStr = Math.max(1, num(str, 7));
-    rpg.baseDef = Math.max(0, num(def, 0));
-    rpg.playerMax = rpg.baseMax;
-    rpg.playerStr = rpg.baseStr;
-    rpg.playerDef = rpg.baseDef;
-    rpg.playerHp = rpg.playerMax;
-    rpg.playerLevel = 1;
-    rpg.playerXp = 0;
-    rpg.playerMaxXp = 20;
-  }
-  function rpgSetSpecial(name, dmg, cost) {
-    rpg.special = { name: text(name, 'Especial'), dmg: Math.max(1, num(dmg, 12)), cost: Math.max(0, num(cost, 4)) };
-  }
-  function rpgGivePotion(name, heal) {
-    rpg.potions.push({ name: text(name, 'Poção'), heal: Math.max(1, num(heal, 20)) });
-  }
-  // 🩸 Cura o herói ao MÁXIMO fora da batalha (a estalagem/save/checkpoint). Como a
-  // vida agora PERSISTE entre lutas, é a forma de recuperar. Espelha o pkmHealTeam.
-  function rpgHealHero() { rpg.playerHp = rpg.playerMax; }
-  // Núcleo COMPARTILHADO: monta a batalha (herói + party × inimigo principal + fila) e
-  // entra no estado 'batalha'. O mainFoe é um battler JÁ pronto (via defToBattler) — assim
-  // o inimigo principal ganha imagem, chefão e golpes ensinados de graça, igual à fila.
-  function startTeamBattle(mainFoe) {
-    if (!ensureShell()) return;
-    if (rpg.battle) return;
-    var allies = [heroBattler()];
-    for (var i = 0; i < rpg.allies.length; i++) allies.push(defToBattler(rpg.allies[i], 'aliado'));
-    var foes = [mainFoe];
-    for (var j = 0; j < rpg.foeQueue.length; j++) foes.push(defToBattler(rpg.foeQueue[j], 'inimigo'));
-    rpg.foeQueue = []; // a fila é consumida pela batalha
-    rpg.battle = {
-      allies: allies, foes: foes, phase: 'abrindo', actor: null, target: null,
-      move: null, inspect: null, message: '', t: 0, foeIdx: 0
-    };
-    layoutBattlers();
-    setState('batalha'); // estado do MEIO do jogo: congela o mundo SEM resetar
-    // ⚡ Transição de ENTRADA (JRPG): a tela pisca branco e a cena de batalha EMERGE
-    // do flash (fade começa coberto e clareia). stepScreenFx roda fora do gate de
-    // estado, então anima já no 'batalha'; drawScreenFx é o último desenho (por cima).
-    fadeScreen('#ffffff', 0.3, false);
-  }
-  // Constrói o inimigo PRINCIPAL a partir de um def-ish e o coloca na batalha. Reusa
-  // defToBattler (imagem/chefão/golpes). Compartilhado por battle_start, battle_named e
-  // o replay de cutscene.
-  function startBattleFromDef(d) {
-    if (rpg.recording) {
-      rpg.sceneSteps.push({ type: 'battle', name: d.name, hp: d.hp, str: d.str, def: d.def, image: text(d.image, ''), color: text(d.color, ''), boss: !!d.boss });
-      return;
-    }
-    startTeamBattle(defToBattler(d, 'inimigo'));
-  }
-  function rpgBattleStart(name, hp, str, def, image) {
-    startBattleFromDef({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), image: text(image, ''), color: '#e05a5a' });
-  }
-  // ⚔️ Ficha REUTILIZÁVEL: define o inimigo/chefão UMA vez, com imagem e atributos.
-  function rpgDefineBattler(name, hp, str, def, image, color, boss) {
-    var nm = text(name, 'Inimigo');
-    ensureImageLoaded(image); // pré-carrega no setup (a tela de carregando espera)
-    rpg.battlerDefs[nm] = {
-      name: nm, hp: num(hp, 20), str: num(str, 5), def: num(def, 0),
-      image: text(image, ''), color: text(color, boss ? '#b23b6e' : '#e05a5a'), boss: !!boss
-    };
-  }
-  function rpgFindDef(name) {
-    var d = rpg.battlerDefs[text(name, '')];
-    if (!d) warnOnce('battlerdef:' + text(name, ''), 'a ficha do inimigo "' + text(name, '') + '" não existe — crie com "Criar a ficha do inimigo"');
-    return d || null;
-  }
-  // Enfileira um inimigo A PARTIR DA FICHA (a "escolha" de quem entra na próxima batalha).
-  function rpgAddFoeNamed(name) {
-    var d = rpgFindDef(name); if (!d) return;
-    rpg.foeQueue.push({ name: d.name, hp: d.hp, str: d.str, def: d.def, image: d.image, color: d.color, boss: d.boss });
-  }
-  // Começa a batalha ESCOLHENDO uma ficha como inimigo principal (o que a criança pediu).
-  function rpgBattleNamed(name) {
-    var d = rpgFindDef(name); if (!d) return;
-    startBattleFromDef(d);
-  }
-  // A vez de um aliado: abre o painel de ação (o menu do motor) para o jogador escolher.
-  function startAllyTurn(actor) {
-    var b = rpg.battle; if (!b) return;
-    if (!actor) { startFoesTurn(); return; }
-    b.actor = actor; b.inspect = actor; b.move = null; b.target = null;
-    b.phase = 'escolha'; b.t = 0;
-    openActionMenu(actor);
-  }
-  function openActionMenu(actor) {
-    var opts = [];
-    opts.push({ label: 'Atacar (força)', fn: function () { chooseMove(null); } });
-    for (var i = 0; i < actor.moves.length; i++) {
-      (function (mv) {
-        var lbl = mv.name + (mv.heal ? ' (cura ' + mv.dmg : ' (dano ' + mv.dmg) + ', energia ' + mv.cost + ')';
-        opts.push({ label: lbl, fn: function () { chooseMove(mv); } });
-      })(actor.moves[i]);
-    }
-    opts.push({ label: 'Defender (dano pela metade)', fn: function () { actor.defending = true; resolveNoTarget(actor.name + ' se defendeu.'); } });
-    if (rpg.potions.length > 0) opts.push({ label: 'Item (poção)', fn: function () { useItem(actor); } });
-    opts.push({ label: 'Fugir', fn: function () { tryFlee(); } });
-    rpg.menu = { title: 'Vez de ' + actor.name + '  —  vida ' + Math.max(0, actor.hp) + '/' + actor.max + '  energia ' + actor.energy, options: opts, index: 0 };
-  }
-  function chooseMove(mv) {
-    var b = rpg.battle; if (!b || !b.actor) return;
-    if (mv && b.actor.energy < mv.cost) { b.message = 'Sem energia para ' + mv.name + '!'; openActionMenu(b.actor); return; }
-    b.move = mv;
-    if (mv && mv.heal) { applyHeal(b.actor, mv); return; }
-    var foes = aliveList(b.foes);
-    if (foes.length === 1) { b.target = foes[0]; applyPlayerHit(); return; }
-    // Vários inimigos: entra na MIRA (clicar/tecla escolhe o alvo).
-    rpg.menu = null; b.phase = 'mira'; b.t = 0;
-    b.message = b.actor.name + ': escolha o alvo (clique num inimigo ou aperte espaço).';
-  }
-  function applyPlayerHit() {
-    var b = rpg.battle; if (!b) return;
-    var a = b.actor, tgt = b.target, mv = b.move;
-    if (!a || !tgt) return;
-    if (mv) a.energy = Math.max(0, a.energy - mv.cost);
-    var dmg = rollDamage(mv ? mv.dmg : a.str, tgt.def);
-    if (a.blind > 0) { a.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
-    tgt.hp -= dmg;
-    if (dmg > 0) { floatText('-' + dmg, tgt.x + tgt.w / 2, tgt.y, '#ffd166', 26); b.message = a.name + (mv ? ' usou ' + mv.name + ' e causou ' : ' causou ') + dmg + ' em ' + tgt.name + '!'; }
-    else b.message = a.name + ' se atrapalhou e errou!';
-    if (tgt.hp <= 0) { tgt.hp = 0; tgt.alive = false; b.message += ' ' + tgt.name + ' caiu!'; }
-    rpg.menu = null; b.phase = 'anima'; b.t = 0;
-  }
-  function applyHeal(a, mv) {
-    var b = rpg.battle; if (!b) return;
-    a.energy = Math.max(0, a.energy - mv.cost);
-    a.hp = Math.min(a.max, a.hp + mv.dmg);
-    floatText('+' + mv.dmg, a.x + a.w / 2, a.y, '#4ade80', 26);
-    b.message = a.name + ' usou ' + mv.name + ' (+' + mv.dmg + ' de vida).';
-    rpg.menu = null; b.phase = 'anima'; b.t = 0;
-  }
-  function resolveNoTarget(msg) {
-    var b = rpg.battle; if (!b) return;
-    b.message = msg; rpg.menu = null; b.phase = 'anima'; b.t = 0;
-  }
-  function useItem(a) {
-    if (rpg.potions.length === 0) { openActionMenu(a); return; }
-    var p = rpg.potions.shift();
-    a.hp = Math.min(a.max, a.hp + p.heal);
-    floatText('+' + p.heal, a.x + a.w / 2, a.y, '#4ade80', 26);
-    resolveNoTarget(a.name + ' usou ' + p.name + ' (+' + p.heal + ' de vida).');
-  }
-  function tryFlee() {
-    if (Math.random() < 0.5) { rpg.menu = null; endBattle(false); return; }
-    resolveNoTarget('Não deu para fugir!');
-  }
-  // Depois de um aliado agir (anima): próximo aliado, ou a vez dos inimigos.
-  function afterAction() {
-    var b = rpg.battle; if (!b) return;
-    if (aliveList(b.foes).length === 0) { winBattle(); return; }
-    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
-    var next = nextAliveAfter(b.allies, b.actor);
-    if (next) { startAllyTurn(next); return; }
-    startFoesTurn();
-  }
-  function startFoesTurn() {
-    var b = rpg.battle; if (!b) return;
-    b.phase = 'foes'; b.t = 0; b.actor = null; b.target = null; b.foeIdx = 0; rpg.menu = null;
-    b.message = 'Vez dos inimigos...';
-  }
-  // Um inimigo ATACA um aliado vivo ao acaso (com um golpe, ou pela força).
-  function foeHit(f, mv) {
-    var b = rpg.battle; if (!b) return;
-    var allies = aliveList(b.allies);
-    if (allies.length === 0) { loseBattle(); return; }
-    var victim = allies[Math.floor(Math.random() * allies.length)];
-    var dmg = rollDamage(mv ? mv.dmg : f.str, victim.def);
-    if (f.blind > 0) { f.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
-    if (victim.defending) dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2));
-    victim.hp -= dmg;
-    if (dmg > 0) floatText('-' + dmg, victim.x + victim.w / 2, victim.y, '#ff6b6b', 24);
-    b.message = mv ? (f.name + ' usou ' + mv.name + ' e causou ' + dmg + ' em ' + victim.name + '!')
-                   : (f.name + ' atacou ' + victim.name + ' (' + dmg + ').');
-    if (victim.hp <= 0) { victim.hp = 0; victim.alive = false; b.message += ' ' + victim.name + ' caiu!'; }
-  }
-  function foeHeal(f, mv) {
-    var b = rpg.battle; if (!b) return;
-    f.hp = Math.min(f.max, f.hp + mv.dmg);
-    floatText('+' + mv.dmg, f.x + f.w / 2, f.y, '#4ade80', 22);
-    b.message = f.name + ' usou ' + mv.name + ' (+' + mv.dmg + ' de vida).';
-  }
-  // A vez de um inimigo por tique. ⭐ R30 fix: o inimigo USA os golpes ensinados
-  // (antes ignorava f.moves e só batia pela força — golpe/cura/AoE de chefe eram
-  // impossíveis). Modelo do pkmEnemyTurn. E o hook de IA de chefe manda, se houver.
-  function foeStep() {
-    var b = rpg.battle; if (!b) return;
-    var foes = aliveList(b.foes);
-    if (b.foeIdx >= foes.length) { endRound(); return; }
-    var f = foes[b.foeIdx]; b.foeIdx += 1;
-    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
-    var hook = rpg.foeTurnHooks[f.name];
-    if (hook) {
-      try { hook(); } catch (e) { warn('erro na vez de ' + f.name + ': ' + e); }
-    } else {
-      var mv = (f.moves && f.moves.length) ? f.moves[Math.floor(Math.random() * f.moves.length)] : null;
-      if (mv && mv.heal) foeHeal(f, mv);
-      else foeHit(f, mv);
-    }
-    b.t = 0;
-    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
-  }
-  function endRound() {
-    var b = rpg.battle; if (!b) return;
-    tickSide(b.allies, true);
-    tickSide(b.foes, false);
-    for (var i = 0; i < b.allies.length; i++) b.allies[i].defending = false;
-    if (aliveList(b.foes).length === 0) { winBattle(); return; }
-    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
-    startAllyTurn(firstAlive(b.allies));
-  }
-  function tickSide(list, isAlly) {
-    for (var i = 0; i < list.length; i++) {
-      var c = list[i];
-      if (!c.alive) continue;
-      if (c.poison > 0) { c.hp -= 3; c.poison -= 1; floatText('-3', c.x + c.w / 2, c.y, '#a855f7', 18); }
-      if (c.regen > 0) { c.hp = Math.min(c.max, c.hp + 3); c.regen -= 1; }
-      if (isAlly) c.energy = Math.min(c.maxEnergy, c.energy + 2);
-      if (c.hp <= 0) { c.hp = 0; c.alive = false; }
-    }
-  }
-  function winBattle() { rpg.menu = null; endBattle(true); }
-  function loseBattle() { rpg.menu = null; endBattle(false); }
-  // O laço da batalha (roda FORA do gate de estado, como o do Kit Monstrinhos).
-  function stepRpgBattle(dt) {
-    var b = rpg.battle; if (!b || state !== 'batalha') return;
-    playTime += dt;
-    stepUiInput();      // teclado do painel de ação (setas + espaço)
-    stepTweens(dt); stepParticles(dt); stepFloaties(dt);
-    b.t += dt;
-    if (b.phase === 'abrindo') {
-      if (b.t < 0.4) return;
-      b.message = 'Batalha! Seu time contra ' + foeNames(b) + '.';
-      startAllyTurn(firstAlive(b.allies));
-      return;
-    }
-    if (b.phase === 'escolha') {
-      // Rede anti-softlock: sem menu aberto e ainda é a vez do aliado → reabre.
-      if (!rpg.menu && b.actor) openActionMenu(b.actor);
-      return;
-    }
-    if (b.phase === 'mira') {
-      // Esc/voltar: desiste da mira e reabre o painel de ação (escolher outra coisa).
-      if (justPressed.escape) { b.phase = 'escolha'; b.t = 0; openActionMenu(b.actor); return; }
-      // Clique escolhe o alvo (rpgBattleClick); espaço mira o 1º inimigo vivo.
-      if (justPressed[' ']) { var f = firstAlive(b.foes); if (f) { b.target = f; applyPlayerHit(); } }
-      return;
-    }
-    if (b.phase === 'anima') { if (b.t < 0.55) return; afterAction(); return; }
-    if (b.phase === 'foes') { if (b.t < 0.5) return; foeStep(); return; }
-  }
-  // Clique DENTRO da batalha: o painel de ação tem prioridade; senão, clicar num
-  // combatente o INSPECIONA (painel de info) e, na mira, escolhe o alvo inimigo.
-  function rpgBattleClick(x, y) {
-    var b = rpg.battle; if (!b) return;
-    if (rpg.menu) {
-      for (var i = 0; i < rpg.menuRects.length; i++) {
-        var r = rpg.menuRects[i];
-        if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) { rpg.menu.index = r.index; selectMenu(); return; }
-      }
-    }
-    var who = battlerAt(x, y);
-    if (who) {
-      b.inspect = who;
-      if (b.phase === 'mira' && who.side === 'inimigo' && who.alive) { b.target = who; applyPlayerHit(); }
-    }
-  }
-  function battlerAt(x, y) {
-    var b = rpg.battle; if (!b) return null;
-    var i;
-    for (i = 0; i < b.foes.length; i++) { var f = b.foes[i]; if (x >= f.x && x <= f.x + f.w && y >= f.y && y <= f.y + f.h) return f; }
-    for (i = 0; i < b.allies.length; i++) { var a = b.allies[i]; if (x >= a.x && x <= a.x + a.w && y >= a.y && y <= a.y + a.h) return a; }
-    return null;
-  }
-  // ---- Desenho da batalha em equipe (canvas) ----
-  function drawRpgBattle() {
-    var b = rpg.battle; if (!b || !ctx2d) return;
-    ctx2d.fillStyle = '#242a44'; ctx2d.fillRect(0, 0, config.w, config.h);
-    ctx2d.fillStyle = 'rgba(0,0,0,0.18)'; ctx2d.fillRect(0, config.h * 0.5, config.w, config.h * 0.5);
-    drawBattlerRow(b.foes, b);
-    drawBattlerRow(b.allies, b);
-    drawBattleMessage(b);
-    drawBattleInfo(b);
-    drawEffects(); // faíscas + números de dano por cima da cena
-  }
-  function drawBattlerRow(list, b) {
-    for (var i = 0; i < list.length; i++) {
-      var c = list[i];
-      var prev = 1;
-      if (!c.alive) { try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = 0.3; } catch (e) {} }
-      drawEntity(c);
-      if (!c.alive) { try { ctx2d.globalAlpha = prev; } catch (e) {} }
-      // Destaque: amarelo = quem age; branco = clicado (info); vermelho = alvos na mira.
-      var ring = null, lw = 2;
-      if (c === b.actor && (b.phase === 'escolha' || b.phase === 'mira')) { ring = '#ffd166'; lw = 4; }
-      else if (c === b.inspect) { ring = '#ffffff'; lw = 3; }
-      else if (b.phase === 'mira' && c.side === 'inimigo' && c.alive) { ring = '#ff6b6b'; lw = 2; }
-      if (c === b.target && b.phase === 'mira') { ring = '#ff3b3b'; lw = 4; }
-      if (ring) {
-        ctx2d.save();
-        ctx2d.strokeStyle = ring; ctx2d.lineWidth = lw;
-        ctx2d.strokeRect(c.x - 4, c.y - 4, c.w + 8, c.h + 8);
-        ctx2d.restore();
-      }
-      ctx2d.save();
-      ctx2d.fillStyle = c.alive ? '#ffffff' : '#ff8080';
-      // 👑 O chefão ganha nome maior (com coroa) e barra de vida mais grossa.
-      ctx2d.font = (c.boss ? 'bold 17px' : '13px') + ' sans-serif'; ctx2d.textAlign = 'center';
-      ctx2d.fillText((c.boss ? '👑 ' : '') + c.name, c.x + c.w / 2, c.y - 10);
-      ctx2d.restore();
-      var bh = c.boss ? 12 : 7;
-      drawBar(Math.max(0, c.hp), c.max, c.x, c.y + c.h + 4, c.w, bh, c.hp > c.max * 0.3 ? '#4ade80' : '#ef4444');
-    }
-  }
-  function drawBattleMessage(b) {
-    if (!b.message) return;
-    ctx2d.save();
-    ctx2d.fillStyle = 'rgba(0,0,0,0.7)'; ctx2d.fillRect(0, 0, config.w, 34);
-    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px sans-serif'; ctx2d.textAlign = 'left';
-    ctx2d.fillText(b.message, 14, 22);
-    ctx2d.restore();
-  }
-  // Painel de INFORMAÇÕES do selecionado: dano, vida/energia e os atributos.
-  function drawBattleInfo(b) {
-    var c = b.inspect || b.actor; if (!c) return;
-    var lines = [];
-    lines.push('Vida: ' + Math.max(0, c.hp) + ' / ' + c.max);
-    if (c.side === 'aliado') lines.push('Energia: ' + c.energy + ' / ' + c.maxEnergy);
-    lines.push('Força: ' + c.str + '     Defesa: ' + c.def);
-    if (c.moves && c.moves.length) {
-      var mv = 'Golpes: ';
-      for (var i = 0; i < c.moves.length; i++) mv += (i ? ', ' : '') + c.moves[i].name + ' (' + c.moves[i].dmg + ')';
-      lines.push(mv);
-    }
-    var st = '';
-    if (c.poison > 0) st += 'veneno ';
-    if (c.regen > 0) st += 'regenera ';
-    if (c.blind > 0) st += 'atrapalhado ';
-    if (c.defending) st += 'defendendo ';
-    if (st) lines.push('Estado: ' + st);
-    var pad = 12, w = 280, x = config.w - w - 16, y = 44;
-    var h = 30 + lines.length * 20 + pad;
-    ctx2d.save();
-    ctx2d.textAlign = 'left';
-    ctx2d.fillStyle = 'rgba(0,0,0,0.8)'; ctx2d.fillRect(x, y, w, h);
-    ctx2d.strokeStyle = c.side === 'inimigo' ? '#ff6b6b' : '#7dd3fc'; ctx2d.lineWidth = 2; ctx2d.strokeRect(x, y, w, h);
-    ctx2d.fillStyle = '#ffd166'; ctx2d.font = 'bold 15px sans-serif';
-    ctx2d.fillText(c.name + (c.side === 'inimigo' ? '  (inimigo)' : '  (do seu time)'), x + pad, y + 22);
-    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '13px sans-serif';
-    for (var j = 0; j < lines.length; j++) ctx2d.fillText(lines[j], x + pad, y + 44 + j * 20);
-    ctx2d.restore();
-  }
-  /** Ganhar XP (após a batalha): sobe de nível, aumenta atributos e cura. */
-  function rpgBattleReward(xp) {
-    rpg.playerXp += Math.max(0, num(xp, 0));
-    var subiu = false;
-    while (rpg.playerXp >= rpg.playerMaxXp) {
-      rpg.playerXp -= rpg.playerMaxXp;
-      rpg.playerLevel += 1;
-      rpg.playerMax += 8; rpg.playerStr += 2; rpg.playerDef += 1;
-      rpg.playerMaxXp = Math.round(rpg.playerMaxXp * 1.4);
-      subiu = true;
-    }
-    if (subiu) {
-      rpg.playerHp = rpg.playerMax; // curou ao subir de nível
-      emit('subiu:nivel');
-    }
-  }
-  /** Status de batalha (Pizza Legends): who = 'inimigo'/'heroi'; por N turnos.
-   * veneno = −3/turno · regenera = +3/turno · atrapalha = 33% de errar o golpe.
-   * No time: 'heroi' aplica no herói (1º aliado); 'inimigo' no 1º inimigo vivo. */
-  function rpgInflict(who, status, turns) {
-    var t = Math.max(1, Math.round(num(turns, 3)));
-    var heroi = (text(who, 'inimigo') === 'heroi' || text(who, 'inimigo') === 'herói');
-    var s = text(status, 'veneno');
-    if (!rpg.battle) {
-      warnOnce('inflict', '"Aplicar veneno/regenerar/atrapalhar" só funciona DENTRO de uma batalha (dá o status a quem está lutando)');
-      return;
-    }
-    var target = heroi ? rpg.battle.allies[0] : firstAlive(rpg.battle.foes);
-    if (!target) return;
-    if (s === 'regenera') target.regen = t;
-    else if (s === 'atrapalha') target.blind = t;
-    else target.poison = t; // veneno (padrão; o parser barra status desconhecido na Ponte)
-  }
-  function endBattle(won) {
-    rpg.battleWon = won === true;
-    // A vida do herói PERSISTE. Se ele SOBREVIVEU (venceu OU fugiu vivo), carrega a
-    // vida que sobrou p/ a próxima luta. Se MORREU (perdeu), volta cheio — derrota =
-    // recomeço, sem soft-lock (não há cura automática no mundo; use "Curar o herói").
-    if (rpg.battle) {
-      var hero = null, al = rpg.battle.allies;
-      for (var h = 0; h < al.length; h++) { if (al[h].isHero) { hero = al[h]; break; } }
-      if (!hero && al.length) hero = al[0];
-      if (hero) rpg.playerHp = hero.hp > 0 ? Math.max(0, Math.round(hero.hp)) : rpg.playerMax;
-    }
-    rpg.battle = null;
-    setState('jogando'); // vindo de 'batalha' o mundo NÃO reseta (ver setState)
-    fadeScreen('#000000', 0.25, false); // 🎬 SAÍDA: o mundo reaparece emergindo do escuro (como o pkm)
-    for (var i = 0; i < rpg.onBattleEnd.length; i++) {
-      try { rpg.onBattleEnd[i](); } catch (e) { warn('erro no "quando a batalha terminar": ' + e); }
-    }
-    emit('batalha:fim');
-  }
-
-  // ---- 🔊 Som (importado via new Audio + sintetizado) ----
-  function loadSound(name, asset) {
-    var key = text(name, '') || text(asset, '');
-    if (!key) { warn('"Carregar o som" precisa de um nome'); return; }
-    var a = text(asset, '');
-    var src = SOUNDS[a] || (a.indexOf('data:audio/') === 0 ? a : null);
-    if (!src) { warn('o som "' + a + '" não está no projeto (importe em "Imagens e sons")'); return; }
-    pending.push(new Promise(function (resolve) {
-      try {
-        // fallback: se nunca disparar canplaythrough, não travar o start
-        var timer = setTimeout(resolve, 3000);
-        var done = function () { clearTimeout(timer); resolve(); };
-        var audio = new Audio();
-        audio.preload = 'auto';
-        audio.oncanplaythrough = done;
-        audio.onerror = function () { warn('o som "' + key + '" falhou ao carregar'); done(); };
-        audio.src = src;
-        sounds[key] = audio;
-      } catch (e) { resolve(); }
-    }));
-  }
-  function playSound(name) {
-    var a = sounds[text(name, '')];
-    if (!a) return;
-    try { a.currentTime = 0; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
-  }
-  var _audioCtx = null;
-  function ensureAudioCtx() {
-    if (_audioCtx) return _audioCtx;
-    try {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) _audioCtx = new AC();
-    } catch (e) { _audioCtx = null; }
-    return _audioCtx;
-  }
-  /**
-   * Acorda o áudio no primeiro GESTO (tecla/clique). Sem isto, um AudioContext
-   * criado antes do gesto fica 'suspended' p/ sempre = todos os tons MUDOS
-   * (Safari/iPad exige resume DENTRO do gesto).
-   */
-  function resumeAudio() {
-    try {
-      if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
-    } catch (e) {}
-  }
-  function playTone(freq, ms) {
-    var ac = ensureAudioCtx();
-    if (!ac) return;
-    try { if (ac.state === 'suspended') ac.resume(); } catch (e) {}
-    try {
-      var osc = ac.createOscillator();
-      var gain = ac.createGain();
-      osc.type = 'square';
-      osc.frequency.value = num(freq, 440);
-      gain.gain.value = 0.06;
-      osc.connect(gain); gain.connect(ac.destination);
-      var dur = num(ms, 200) / 1000;
-      osc.start();
-      gain.gain.setTargetAtTime(0, ac.currentTime + dur * 0.6, 0.05);
-      osc.stop(ac.currentTime + dur);
-    } catch (e) {}
-  }
-  var FX_TONES = {
-    coin: [880, 90], hit: [180, 80], explosion: [90, 260], jump: [520, 120],
-    laser: [1200, 90], hurt: [140, 160], powerup: [700, 200], win: [990, 300],
-    gameover: [120, 400], click: [440, 50]
-  };
-  function playEffect(fx) {
-    var t = FX_TONES[text(fx, '')] || FX_TONES.hit;
-    playTone(t[0], t[1]);
-  }
+${gameKitRpgBattleRuntime}
+${gameKitAudioRuntime}
 
   // ---- Começar (Game.init do kit: carregar -> menu -> input -> resize -> loop) ----
 
@@ -6959,17 +4894,45 @@ export const gameKitRuntime = `(function () {
       } catch (e) {}
       return;
     }
+    var firstState = bootState || 'menu';
     started = true;
     bindInput();
     resizeCanvas();
     window.addEventListener('resize', function () { resizeCanvas(); });
     setState('carregando');
     Promise.all(pending.slice()).then(function () {
-      setState('menu');
+      if (firstState === 'jogando' && !rpg.currentMap) rpgEnterInitialMap();
+      setState(firstState);
       lastTime = now();
       requestAnimationFrame(gameLoop);
     });
   }
+
+  // Cada domínio declara o estado e os registros que possui. O orquestrador de
+  // restart apenas dispara a fase certa; novos kits não dependem de um checklist
+  // central que pode esquecer recursos ao crescer.
+  _registerRuntimeDomain('core', {
+    resetGame: resetCoreGameData,
+    resetProject: resetCoreProjectRegistrations
+  });
+  _registerRuntimeDomain('cards', {
+    resetGame: cardsNewGame,
+    resetProject: cardsResetProject,
+    projectReady: cardsProjectReady
+  });
+  _registerRuntimeDomain('luta', { resetGame: lutaNewGame });
+  _registerRuntimeDomain('nave', { resetGame: naveNewGame });
+  _registerRuntimeDomain('tower-defense', {
+    resetGame: tdNewGame,
+    resetProject: tdResetProject
+  });
+  _registerRuntimeDomain('rpg', {
+    resetGame: rpgNewGame,
+    resetProject: rpgResetProject
+  });
+  _registerRuntimeDomain('project-resources', {
+    resetProject: resetProjectOwnedResources
+  });
 
   // ---- API pública (1 método por bloco) ----
 
@@ -6988,7 +4951,7 @@ export const gameKitRuntime = `(function () {
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {
-        warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
+        if (!runningProjectFactory) warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
         return;
       }
       config.fill = false; // "Preparar o jogo" normal = resolução fixa (letterbox)
@@ -7002,7 +4965,7 @@ export const gameKitRuntime = `(function () {
     setupFull: guard('setupFull', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {
-        warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
+        if (!runningProjectFactory) warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
         return;
       }
       config.fill = true;
@@ -7047,6 +5010,7 @@ export const gameKitRuntime = `(function () {
         return;
       }
       makeScreen(key, 'h2', text(title, key), text(textBody, ''));
+      projectScreens.push(key);
     }),
     addButton: guard('addButton', function (screen, label, fn) {
       if (!ensureShell()) return;
@@ -7055,7 +5019,7 @@ export const gameKitRuntime = `(function () {
         warn('a tela "' + text(screen, '') + '" não existe — crie-a antes de pôr o botão');
         return;
       }
-      makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {});
+      projectButtons.push(makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {}));
     }),
     // 🖼️ Deixar a tela (pronta ou sua) com a SUA cara: uma cor de fundo (o "quadrado
     // colorido por baixo") e/ou uma imagem do Pinta cobrindo o painel. É DOM (o painel
@@ -7085,6 +5049,10 @@ export const gameKitRuntime = `(function () {
     showScreen: guard('showScreen', showScreen),
     hideScreens: guard('hideScreens', hideScreens),
     setState: guard('setState', setState),
+    restartGame: guard('restartGame', restartGame),
+    onGameStart: guard('onGameStart', function (fn) {
+      if (typeof fn === 'function') gameStartHooks.push(fn);
+    }),
     onEnterState: guard('onEnterState', function (name, fn) {
       var key = text(name, '');
       if (!key || typeof fn !== 'function') return;
@@ -7123,6 +5091,8 @@ export const gameKitRuntime = `(function () {
       // "varrer" do lugar antigo até aqui e travaria o personagem no caminho.
       c._prevX = c.x;
       c._prevY = c.y;
+      c._sweepFromY = c.y;
+      c._sweepFrame = -1;
     }),
     resetCharacter: guard('resetCharacter', function (c) {
       if (!c || typeof c !== 'object') return;
@@ -7168,6 +5138,8 @@ export const gameKitRuntime = `(function () {
     setAngle: guard('setAngle', setAngle),
     mouseX: guard('mouseX', function () { return mouse.x; }),
     mouseY: guard('mouseY', function () { return mouse.y; }),
+    mouseScreenX: guard('mouseScreenX', function () { return mouse.screenX; }),
+    mouseScreenY: guard('mouseScreenY', function () { return mouse.screenY; }),
     mouseDown: guard('mouseDown', function () { return mouse.down === true; }),
     onGameClick: guard('onGameClick', function (fn) {
       if (typeof fn === 'function') gameClickHooks.push(fn);
@@ -7198,10 +5170,10 @@ export const gameKitRuntime = `(function () {
     rpgDrawInventory: guard('rpgDrawInventory', rpgDrawInventory),
     rpgGoMap: guard('rpgGoMap', rpgGoMap),
     rpgSetStartMap: guard('rpgSetStartMap', rpgSetStartMap),
-    rpgOnMap: guard('rpgOnMap', rpgOnMap),
+    rpgCreateMap: guard('rpgCreateMap', rpgCreateMap),
+    rpgOnEnterMap: guard('rpgOnEnterMap', rpgOnEnterMap),
     rpgCreateDoor: guard('rpgCreateDoor', rpgCreateDoor),
-    // ----- 🌍 Mundo aberto (tamanho do mapa + bordas ligadas) -----
-    rpgMapSize: guard('rpgMapSize', rpgMapSize),
+    // ----- 🌍 Mundo aberto (bordas ligadas; tamanho vem da criação) -----
     rpgConnectEdge: guard('rpgConnectEdge', rpgConnectEdge),
     rpgCurrentMap: guard('rpgCurrentMap', rpgCurrentMap),
     rpgBattleStats: guard('rpgBattleStats', rpgBattleStats),
@@ -7256,7 +5228,7 @@ export const gameKitRuntime = `(function () {
       var k = text(mold, '');
       if (!k) return;
       // Dedupe por molde: re-ligar SUBSTITUI o intervalo (senão o bloco dentro de
-      // "quando entrar em jogando" DOBRAVA a taxa a cada "Jogar de novo").
+      // onGameStart DOBRAVA a taxa a cada "Jogar de novo").
       for (var i = 0; i < spawners.length; i++) {
         if (spawners[i].mold === k) {
           spawners[i].interval = Math.max(0.05, num(seconds, 1.5));
@@ -7508,13 +5480,28 @@ export const gameKitRuntime = `(function () {
     playTone: guard('playTone', playTone)
   };
 
-  // Espelho SÓ-LEITURA da batalha em equipe para os testes dirigirem o painel de
-  // ação sem enxergar o estado interno. NÃO-enumerável: fora do Object.keys(api),
-  // então não conta como "método" nem vira bloco (invisível para o jogo da criança).
-  try {
-    Object.defineProperty(api, '_battle', {
-      enumerable: false,
-      value: function () {
+  // Diagnóstico opt-in do HOST: o Estúdio e seus harnesses podem fornecer um
+  // registro separado para inspecionar o runtime. Nada é acrescentado à API da
+  // criança, e num projeto/export comum esse objeto nem existe.
+  var runtimeInspectors = window.__SZSTUDIO_RUNTIME_INSPECTORS;
+  if (runtimeInspectors && typeof runtimeInspectors === 'object') {
+    try {
+      runtimeInspectors['game-2d-advanced:rpg'] = function () {
+        var hero = rpg.hero;
+        var s = tilePx || 1;
+        return {
+          map: rpg.currentMap,
+          heroCellX: hero ? Math.round(num(hero.x, 0) / s) : null,
+          heroCellY: hero ? Math.round(num(hero.y, 0) / s) : null,
+          destinationCellX: hero && hero._gridDest ? Math.round(num(hero._gridDest.x, 0) / s) : null,
+          destinationCellY: hero && hero._gridDest ? Math.round(num(hero._gridDest.y, 0) / s) : null,
+          facingDirection: hero ? hero._facingDir || 'down' : null,
+          dialogOpen: !!rpg.dialog,
+          sceneOpen: !!rpg.scene,
+          doorCells: Object.keys(rpg.doors)
+        };
+      };
+      runtimeInspectors['game-2d-advanced:battle'] = function () {
         var b = rpg.battle;
         if (!b) return null;
         function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image, color: c.color }; }
@@ -7531,10 +5518,14 @@ export const gameKitRuntime = `(function () {
           target: b.target ? b.target.name : '',
           allies: allies, foes: foes
         };
-      }
-    });
-  } catch (e) {}
+      };
+    } catch (e) {}
+  }
 
+  Object.defineProperty(api, 'runProject', {
+    value: guard('runProject', runProject), enumerable: false
+  });
   window.SZGameKit = api;
 })();
-`
+`,
+)

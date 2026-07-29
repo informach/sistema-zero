@@ -52,7 +52,6 @@ SZWorld3D.marker("moeda", 60, -70);
 SZWorld3D.guideArrow(60, -70, "ligada");
 SZWorld3D.minimap("teleporte");
 SZWorld3D.totemText(0, 12, "Ilha dos Criadores", "Ande com WASD; E entra no carrinho e no barco!");
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

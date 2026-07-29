@@ -23,7 +23,7 @@ autostart, SEM editor — para a página PÚBLICA de jogar do community-kids; su
 
 **Arquitetura de estado**: stores Zustand POR INSTÂNCIA (factories + `StudioStoresContext`); os hooks `useXStore(selector)` caem na store DEFAULT de módulo fora de um `<Studio>` (lista/testes), e as estáticas `useXStore.getState/setState` operam SEMPRE na default (contrato dos testes). `settingsStore` é singleton de propósito (preferência do usuário). Persistência = `PersistenceService` por instância (`src/persistence/service.ts`): qualquer adapter ganha autosave debounced + flush (pagehide/unmount/Salvar); `onChange` SEMPRE no debounce, inclusive com 'none'.
 
-**Paleta**: tokens `--color-sz-*` em `src/styles/studio.css` espelham a paleta oficial do sistema-zero (referência comunidade-sistema-zero) em oklch, dark E light, com identidade dual (accent = brand-lime no dark, cyan no light). Blockly tem temas `sz-dark`/`sz-light` em HEX equivalentes (`src/blockly/theme.ts` — manter em SINCRONIA com o CSS); Monaco segue o tema da instância. Toggle sol/lua na Topbar (some quando o host fixa `theme`). **Revamp visual estilo MakeCode (público kids):** o tema PADRÃO virou CLARO/creme (`#fef9ef`; era dark) — flip em `settingsStore` (init + fallback `?? 'light'`), `studio/theme.tsx` (context default) e `theme.ts`; toggle e host que fixa `theme` seguem. **COR = IDENTIDADE DA CATEGORIA em arco-íris** (`CATEGORY_COLORS`): cada categoria de topo tem 1 cor BEM distinta (Pesquisa cinza · HTML azul-escuro · CSS vermelho · SVG verde · Programação laranja · Canvas roxo · Avançado azul-céu · Jogo 2D rosa · Jogo 3D amarelo) e as SUB-categorias são TONS dela via `categoryShades(base, n)` (`blockly/colorShades.ts`, PURO/sem Blockly, viés-ESCURO — o texto do bloco é BRANCO em TODOS via `.blocklyText`, por isso os tons não podem clarear demais). Mudar a cor base RE-DERIVA os tons; cada `blocks/*.ts` e as extensões game-2d/3d aplicam `categoryShades` + um loop `COLOUR_BY_TYPE`. Fonte redonda `Baloo 2`/`Nunito` (`--font-family-sans` + `FONT_STYLE`, sem `@font-face`). Toolbox = chips arredondados coloridos (só CSS no `studio.css`, faixa colorida por categoria). ⚠️ renderer custom foi TENTADO e REVERTIDO (dobrar o raio distorcia as "bocas" em C dos blocos com statement-input) — usa `zelos` puro; QA de bloco DEVE incluir blocos com statement-input. Logo oficial: `BrandLogo` (`src/ui-internal/BrandLogo.tsx`) = só o SÍMBOLO (160×160), para a Topbar compacta; `BrandWordmark` (`src/ui-internal/BrandWordmark.tsx`) = logo COMPLETO (símbolo + wordmark "Sistema Zero" do logoszs.svg, viewBox 1500×160), usado no header da ProjectList. O wordmark usa `fill="currentColor"` para recolorir conforme o tema (branco no escuro, escuro no claro); o símbolo mantém o gradiente lime→cyan e a moldura branca. Gradientes com id via `useId()` (multi-instância). Ambos extraídos do logoszs.svg oficial.
+**Paleta**: tokens `--color-sz-*` em `src/styles/studio.css` espelham a paleta oficial do sistema-zero (referência comunidade-sistema-zero) em oklch, dark E light, com identidade dual (accent = brand-lime no dark, cyan no light). Blockly tem temas `sz-dark`/`sz-light` em HEX equivalentes (`src/blockly/theme.ts` — manter em SINCRONIA com o CSS); Monaco segue o tema da instância. Toggle sol/lua na Topbar (some quando o host fixa `theme`). **Revamp visual estilo MakeCode (público kids):** o tema PADRÃO virou CLARO/creme (`#fef9ef`; era dark) — flip em `settingsStore` (init + fallback `?? 'light'`), `studio/theme.tsx` (context default) e `theme.ts`; toggle e host que fixa `theme` seguem. **COR = IDENTIDADE DA CATEGORIA em arco-íris** (`CATEGORY_COLORS`): cada categoria de topo tem 1 cor BEM distinta (Pesquisa cinza · HTML azul-escuro · CSS vermelho · SVG verde · Programação laranja · Canvas roxo · Avançado azul-céu · Jogo 2D rosa · Jogo 3D amarelo) e as SUB-categorias são TONS dela via `categoryShades(base, n)` (`blockly/colorShades.ts`, PURO/sem Blockly, viés-ESCURO — o texto do bloco é BRANCO em TODOS via `.blocklyText`, por isso os tons não podem clarear demais). Mudar a cor base RE-DERIVA os tons; cada `blocks/*.ts` e as extensões game-2d/3d aplicam `categoryShades` + um loop `COLOUR_BY_TYPE`. Fonte redonda `Baloo 2`/`Nunito` (`--font-family-sans` + `FONT_STYLE`, sem `@font-face`) na interface do Studio; os iframes e exports das extensões com HUD usam a Baloo 2 local incorporada por `official-extensions/gameUiFont.ts`, com licença em `official-extensions/fonts/`. Toolbox = chips arredondados coloridos (só CSS no `studio.css`, faixa colorida por categoria). ⚠️ renderer custom foi TENTADO e REVERTIDO (dobrar o raio distorcia as "bocas" em C dos blocos com statement-input) — usa `zelos` puro; QA de bloco DEVE incluir blocos com statement-input. Logo oficial: `BrandLogo` (`src/ui-internal/BrandLogo.tsx`) = só o SÍMBOLO (160×160), para a Topbar compacta; `BrandWordmark` (`src/ui-internal/BrandWordmark.tsx`) = logo COMPLETO (símbolo + wordmark "Sistema Zero" do logoszs.svg, viewBox 1500×160), usado no header da ProjectList. O wordmark usa `fill="currentColor"` para recolorir conforme o tema (branco no escuro, escuro no claro); o símbolo mantém o gradiente lime→cyan e a moldura branca. Gradientes com id via `useId()` (multi-instância). Ambos extraídos do logoszs.svg oficial.
 
 ## Modos: básico × profissional (regra D2)
 
@@ -31,14 +31,16 @@ autostart, SEM editor — para a página PÚBLICA de jogar do community-kids; su
 (`kind` ausente/`'classic'`) = **Blocos + Ponte** (editam só os 3 arquivos canônicos via UI);
 **profissional** (`kind: 'pro'`) = **Código** (Monaco sobre a ÁRVORE Vite inteira). `normalizeClassicMode`
 migra o legado `'code'` (quando o básico tinha Código standalone, pré-D2) para `'bridge'`. A Topbar
-interseca `modesForKind(kind)` com o `allowedModes` do host. O preview profissional
-(`src/modes/pro/ProPreview.tsx`) NÃO é srcdoc: aponta para o **dev-server do Vite rodando DENTRO do
-WebContainer** (mount → `npm install` → `npm run dev` → `server-ready` → iframe; exceções cross-origin
-chegam por `preview-message` ao Console). Na fase ready há a **barra** (nome do projeto — o `<title>`
+interseca `modesForKind(kind)` com o `allowedModes` do host. O preview profissional escolhe o runtime
+em `src/modes/pro/ProPreview.tsx`: sem `proRuntime`, aponta para o **dev-server do Vite dentro do
+WebContainer**; com o adapter, `RemoteProPreview` envia o snapshot ao BFF e renderiza o HTML compilado
+em iframe sandbox. Aulas e Admin usam o remoto para não exigir COOP/COEP; o Estúdio Completo usa o
+local. No caminho local, mount → `npm install` → `npm run dev` → `server-ready` → iframe e exceções
+cross-origin chegam por `preview-message` ao Console. Na fase ready há a **barra** (nome do projeto — o `<title>`
 vivo não é legível, iframe cross-origin — + "⟳ Atualizar" que REMONTA o iframe via key + "⏻ Reiniciar"
 = attempt++, mata o dev e re-roda install morno+dev). O **console.log do app chega ao Console da IDE**
 via `proConsoleBridge.ts`: script STRING PURA injetado em toda página pelo `setPreviewScript` do
-WebContainer (embrulha console.*, postMessage com targetOrigin do HOST — nunca `'*'`); o ProPreview
+WebContainer (embrulha console.*, postMessage com targetOrigin do HOST — nunca `'*'`); o preview local
 valida ORIGEM (a do dev-server corrente) + forma (`isProConsoleMessage`) antes do logsStore. O sync host→container é um `FsDiff` (`src/modes/pro/fsDiff.ts`
 + `useWebContainerSync.ts`): diff puro entre dois snapshots planos que calcula writes/removes/**mkdirs/
 rmdirs** e o **conflito arquivo↔diretório** (`removeFirstPaths`, removido RECURSIVAMENTE ANTES de
@@ -121,7 +123,9 @@ memória com `loaded:true` em vez de lançar.
 
 Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
 - **`csp.ts`** — CSP interna do srcdoc: libera subrecursos PASSIVOS de `https:` (img/font/media/css/
-  frame), mas `script-src` NÃO inclui `https:` (sem `<script src=remoto>` — anti supply-chain),
+  frame), mas `script-src` NÃO inclui `https:` genérico. Scripts gerados são autorizados pelo hash
+  SHA-256 exato; ESM oficial entra só pela URL declarada e, no `esm.sh`, pelo prefixo do pacote com
+  versão pinada (nunca pela origem inteira),
   `connect-src 'none'` por default (sem fetch/XHR/WS a menos que o professor libere origens) e
   `worker-src 'none'`. Trade-off aceito: img/media/font/frame de `https:` = GET passivo de mão única
   (sem resposta legível, sem cookies) — NÃO alterar.
@@ -228,7 +232,7 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   `renderProjectToPreviewDoc(project)` é a MESMA receita do `coverCapture`/`PreviewIframe` (extensões →
   permissões → assets → `buildPreviewDoc`), extraída, pura e defensiva para snapshots legados
   (sem `files` ou com `installedExtensions`/`extraFiles`/`assets` ausentes/não-array). O componente renderiza o srcdoc num iframe
-  `sandbox="allow-scripts allow-modals"` (NUNCA `allow-same-origin`), autostart. Exportado no index E no
+  `sandbox="allow-scripts allow-modals allow-pointer-lock"` (NUNCA `allow-same-origin`), autostart. Exportado no index E no
   subpath leve `@sistemazero/studio/player` (sem Monaco/Blockly — importante p/ a página pública não
   carregar o editor inteiro).
 - **Desafio do mês (Fase 5, 07/2026):** `StudioShareAdapter.challenge?: { key, title }` — presente
@@ -245,9 +249,17 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 1. **Workers cross-bundler**: todo worker nasce de `new Worker(new URL('./caminho-relativo.ts', import.meta.url), { type: 'module' })` com URL **literal inline** — nada de `?worker` (Vite-only), nada de bare specifier dentro de `new URL()` (Vite não resolve), nada de variável/helper no 1º argumento (quebra a análise estática de Vite/Turbopack/webpack). Os workers do Monaco usam os wrappers em `src/monaco/workers/`. Plano B se um bundler de host falhar: extrair a criação p/ factory injetável via prop.
 2. **`loader.config({ monaco })` em `src/monaco/workers.ts` é intocável**: sem ele o `@monaco-editor/react` injeta o loader AMD, que colide com o UMD do Blockly ("Can only have one anonymous define").
 3. **CSS**: `src/styles/studio.css` é o CSS exportado — SEM `@import "tailwindcss"`, SEM `@source`, SEM `@custom-variant dark` (sobrescreveria a variant dos apps) e SEM regras globais de app (html/body/scrollbar — vivem no `playground/styles.css`). Tema escopado por `[data-sz-theme]` no root do componente, NUNCA no `<html>` do host. Conteúdo PORTALADO p/ document.body precisa de `<StudioThemeScope>` (ver Modal/ProjectCard/Menu). ⚠️ O dropdown da Topbar (`Menu` de `#ui`) é PORTALADO de propósito: inline (`absolute`) ele ficava ATRÁS do `<iframe>` do preview (iframe = stacking context próprio, vence qualquer z-index local).
+3b. **A raiz do Studio é uma CERCA de stacking (`isolation: isolate` no style inline do
+   `StudioCore`, 24/07/2026)**: o Blockly injeta `.blocklyToolbox { z-index: 70 }` e, sem a
+   cerca, a paleta vazava por CIMA dos modais do host (o `Dialog` do `@sistemazero/ui` é overlay
+   `z-50` SEM portal — bug visto no ConfirmDialog de trocar o tipo do projeto no admin). Com a
+   cerca, os z-index internos só competem entre si e o editor inteiro pinta abaixo de qualquer
+   overlay da página. NÃO remover; o que precisa flutuar sobre o host (menus da Topbar,
+   `.blocklyWidgetDiv`/`.blocklyDropDownDiv`) é PORTALADO pro `document.body` — fora da cerca,
+   não é afetado.
 4. **Sem react-router**: navegação é do host. Páginas/cards recebem callbacks (`onOpenProject`, `onExit`).
 5. **Globais residuais de multi-instância**: WebContainer é singleton por aba; o atalho da busca de blocos (`startSearch`) fica com a última instância (PtSearchCategory desregistra antes de registrar — NÃO remover, era crash na 2ª instância). `deleteProject` cancela autosaves em voo em TODAS as instâncias via registro de serviços.
-6. **Testes = bun:test** (`bun test src`; e2e Playwright FORA do CI — `bun run e2e` contra o playground). Gotchas que esta suíte já paga:
+6. **Testes = bun:test** (`bun test src`). O CI também executa o subconjunto Playwright do Jogo 2D e Jogo 2D Avançado (`examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"`); a suíte E2E completa continua manual via `bun run e2e`. Gotchas que esta suíte já paga:
    - `mock.module` NÃO é isolado por arquivo — capture os exports reais antes e restaure no `afterAll` (ver `BlocksMode.test.tsx`); mocks de idb-keyval ficam sem restore de propósito (IndexedDB não existe no happy-dom).
    - Sem fake timers — debounce do autosave encurta via `setAutosaveDelayForTests` (`src/persistence/service.ts`); relógio via `setSystemTime` (que RESETA se receber epoch 0).
    - DOM via happy-dom no preload (`bunfig.toml` + `test-setup.ts`).
@@ -271,46 +283,84 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
     e quebra a injeção do Blockly. NÃO remover o gate. Modo novo no narrow? Desenhe via `NarrowPanels`
     (abas planas), não um split próprio — e respeite `useVisibleBottomTabs` para Console/Terminal/IA.
 
-## Blocos-container (Estrutura / Aparência / Comportamento) — só gera o que está DENTRO
+## Áreas do projeto — só gera o que está DENTRO
 
-Modelo estilo MakeCode Arcade (`on start`): a geração NÃO olha mais a posição/ordem dos blocos no canvas
-— ela coleta o que está DENTRO de 3 blocos-CONTAINER ("frames"). Bloco solto fora deles é **rascunho**
-(ignorado pela geração, mas segue salvo no `blocksState`). Defs em `blockly/blocks/frames.ts`:
+A geração não depende da posição dos blocos no canvas. Ela coleta somente o que a
+criança colocou dentro das cinco áreas opcionais definidas em
+`blockly/blocks/frames.ts`. Bloco solto é **rascunho**: continua salvo e aparece
+com aviso visual, mas não executa.
 
-| Frame | `CHILDREN` check | rota IR | arquivo | cor |
-|---|---|---|---|---|
-| `sz_frame_structure` (🧱 Estrutura) | `'HTMLNode'` | `ir.html` | index.html | html |
-| `sz_frame_appearance` (🎨 Aparência) | `'CSSEntry'` | `ir.css` | style.css | css |
-| `sz_frame_behavior` (⚙️ Comportamento) | `'JSStmt'` | `ir.js` (na ORDEM da pilha) | script.js | js |
+| Área | `CHILDREN` check | rota IR | arquivo |
+|---|---|---|---|
+| `sz_frame_structure` (🧱 Estrutura) | `HTMLNode` | `ir.html` | index.html |
+| `sz_frame_appearance` (🎨 Aparência) | `CSSEntry` | `ir.css` | style.css |
+| `sz_frame_start` (⚙️ Ao iniciar) | `JSStartRoot` | `behavior.start` | script.js |
+| `sz_frame_events` (⚡ Quando acontecer) | `JSEventRoot` | `behavior.events` | script.js |
+| `sz_frame_loops` (🔁 Enquanto estiver rodando) | `JSLoopRoot` | `behavior.loops` | script.js |
 
-São CHAPÉUS (sem `previousStatement`/`nextStatement`) → top-level, 1 de cada por projeto. O `check` de cada
-boca reusa a conexão que os blocos JÁ expõem, então todo bloco existente encaixa sem mudar definição.
-Toolbox: categoria **🗂️ Áreas do projeto** (1ª, logo após Pesquisar).
+As áreas são chapéus top-level e existe no máximo uma de cada. **Projeto novo
+nasce sem áreas**; a criança adiciona somente as que a atividade precisa pela
+categoria **🗂️ Áreas do projeto**. Excluir uma área desconecta seus filhos no
+mesmo grupo de undo, preservando-os como rascunho. Duplicatas recebem o mesmo
+tratamento. ⚠️ **O resgate de rascunho NÃO roda sob a cerca de carga**
+(`projectAreaSafeDelete` checa `isWorkspaceLoading()`, 25/07): o clear do
+serializer do Blockly itera um SNAPSHOT dos top blocks — o filho desplugado
+virava um top NOVO fora do snapshot, sobrevivia à limpeza e DUPLICAVA o conteúdo
+dos frames a cada reload de workspace povoado (colar código na Ponte). Regressões:
+`__tests__/projectAreaSafeDeleteLoad.test.ts` (unitária, roda no CI) +
+`e2e/bridge-paste-duplication.spec.ts` (gesto real de colar).
 
-- **Coleta** (`blockly/buildIR.ts buildIRFromWorkspace`): pega o 1º frame de cada tipo e lê seus filhos
-  (`getHtmlChildren`/`getCssEntryChildren`/`getStatementChildren`). Ordem só importa DENTRO do Comportamento
-  (cadeia `.next`). `collectFlatFromWorkspace` (modelo ANTIGO, anda TODOS os top-level em ordem de leitura) é
-  usado SÓ pela migração.
-- **Simetria = baixa complexidade**: `buildIRFromWorkspace` (blocos→IR) e `buildWorkspaceStateFromIR`
-  (IR→blocos, `workspaceState.ts`) embrulham/desembrulham nos mesmos 3 frames → blocos→IR→blocos é estável e
-  a maioria dos testes de round-trip passa sem mexer. (Por isso a antiga máquina de layout multi-pilha —
-  `splitIntoStacks`/`layoutFromBlocksState`/`StacksLayout` — foi REMOVIDA: com 1 frame por categoria não há
-  várias pilhas a reposicionar.)
-- **Projeto novo** (`core/project.ts createEmptyProject`): nasce com os 3 frames VAZIOS no `blocksState`
-  (seed inline; o `BlocksMode` faz short-circuit com IR vazia, por isso semear o blocksState e não a IR).
-- **Migração transparente** (`blockly/normalizeFrames.ts`, hook no load effect do `BlocklyPanel`): projeto
-  LEGADO (sem frames) é carregado num WS headless → `collectFlatFromWorkspace` → IR plana →
-  `buildWorkspaceStateFromIR` (frama) → **preserva a saída byte-a-byte**. Idempotente. ⚠️ As extensões já
-  precisam estar registradas (o `reregisterInstalledExtensions` roda antes), senão o load headless dropa o tipo.
-- **Rascunho × Ponte**: bloco solto NÃO está na IR; editar CÓDIGO na Ponte reconstrói só os framados →
-  **rascunhos somem** (esperado — some só no sync por código, não em edição de blocos nem refresh).
-- **Organizar blocos** (`blockly/organize.ts`): o `categoryOf` LOCAL mapeia os frames p/ html|css|js → os 3
-  ficam LADO A LADO (Estrutura | Aparência | Comportamento), o frame no topo da coluna e rascunho da mesma
-  categoria abaixo dele.
-- **Allowlist**: os 3 `sz_frame_*` estão em `CORE_BLOCKLY_BLOCK_TYPES` (senão `sanitizeImportedBlocksState`
-  zera todo o estado — ver gotcha do round-trip de import).
-- ⚠️ **FASE 2 pendente**: funções/classes/eventos viram blocos-CHAPÉU FORA do Comportamento (referenciados,
-  injetados ANTES do passo a passo). Hoje seguem funcionando DENTRO do Comportamento.
+- **Contrato de posicionamento** (`blockly/blockContracts.ts`): é a fonte comum
+  para checks físicos, área-raiz, contexto aninhado, exclusões ancestrais
+  (`forbiddenNested`), papel e fase. Criadores de recursos aceitam funções e
+  eventos, mas proíbem `loop-body` em qualquer profundidade. Eventos e
+  loops são raízes e não podem ser aninhados. Comandos contínuos usam o preset
+  `loop-command`: cabem em loops e em funções/métodos, nunca diretamente em
+  **Ao iniciar** nem no corpo direto de eventos ou construtores; um loop
+  aninhado nesses fluxos continua válido. Imports, funções e classes ficam
+  diretamente em **Ao iniciar**. Loops do motor executam callbacks e NÃO contam
+  como laço sintático para `break`/`continue`; somente `for`/`while`/`repeat`
+  concedem esse contexto. `break`, `continue`, `return`,
+  `await`, `super` e valores dependentes de evento só cabem em seu contexto
+  sintático. `ir/lifecycle.ts` repete a gramática recursivamente para proteger
+  estados importados e a Bridge.
+- **Coleta** (`blockly/buildIR.ts`): lê a primeira área de cada tipo e mantém a
+  ordem de cada cadeia. `collectFlatFromWorkspace` existe somente para a
+  migração do modelo anterior.
+- **Migração transparente** (`blockly/normalizeFrames.ts`): migra estados planos,
+  parcialmente organizados e a antiga `sz_frame_behavior` por área, preservando
+  IDs e a saída. Se a área antiga coexistir com uma área atual, seus filhos são
+  anexados ao frame atual em vez de criar uma duplicata. Wrappers/boots antigos são registrados apenas para carregar
+  projetos salvos, nunca aparecem na paleta. Conteúdo de áreas antigas
+  duplicadas vira rascunho. O marcador `szBehaviorAreasVersion` impede que um
+  rascunho criado intencionalmente seja migrado depois. O sanitizador aceita a
+  versão 2 conhecida para que ela chegue ao normalizador e vire versão 3;
+  versões futuras continuam rejeitadas até ganharem uma migração explícita.
+  ⚠️ **O marcador também protege a migração de ESTRUTURA HTML (25/07)**: em estado
+  ATUAL (marcado), bloco HTML solto no topo é rascunho deliberado (ex.: filho-de-svg
+  que o encaixe semântico recusou) e `migrateHTMLStructure` recebe
+  `preserveTopLevelDrafts: true` — NÃO embrulha num svg/ul novo nem promove filhos.
+  Sem a cerca, a reescrita fazia o restore do BlocklyPanel RECARREGAR o canvas no
+  meio da edição ("o bloco se auto-encaixou e duplicou o resto" — bug real 24/07).
+  Estado legado (sem marcador) segue migrando o topo; o conteúdo DENTRO do frame
+  Estrutura normaliza sempre. Regressão: `__tests__/svgTitleDupRepro.test.ts`.
+- **Execução**: o gerador emite `start` → `events` → `loops` e conversa com o
+  runtime pelo `RuntimeLifecycleContract` da extensão. O boot é automático;
+  blocos antigos de “começar” não devem aparecer em projetos novos. Jogo 2D e
+  Jogo 2D Avançado declaram `managedProjectRun`: seus runtimes incorporam o
+  `ProjectRunContext`; listeners DOM inline ou nomeados recebem o `AbortSignal`
+  da partida, e timeouts, intervalos e RAFs avulsos passam pelo contexto para
+  serem cancelados antes de uma nova factory. Os schedulers e recursos específicos
+  continuam sob responsabilidade do motor. O teste de integração
+  `projectRunResources.test.ts` cobre o restart no mesmo documento; o E2E
+  `behavior-lifecycle.spec.ts` cobre início, evento, loop cancelável e remontagem
+  pelo botão de atualizar o preview.
+- **Organizar blocos** (`blockly/organize.ts`): dispõe as cinco áreas em duas
+  linhas e mantém os rascunhos próximos da família correspondente.
+- **World Composer**: adiciona conteúdo apenas numa área compatível já criada.
+  Se faltar **Ao iniciar**, orienta a criança em vez de criar a área sozinho.
+- **Allowlist**: todos os `sz_frame_*` atuais e o legado de migração pertencem a
+  `CORE_BLOCKLY_BLOCK_TYPES`; remover um deles pode zerar estado importado.
 
 ## Copiar/colar blocos entre projetos
 
@@ -330,7 +380,7 @@ all-or-nothing do `sanitizeImportedBlocksState`). Aviso gentil = toast efêmero 
 ## Blocos: categorias + como adicionar um
 
 **Categorias** (montadas em `src/blockly/toolbox.ts buildCoreToolbox`; cores em `theme.ts CATEGORY_COLORS` — cada categoria tem 1 cor de arco-íris distinta e as sub-categorias são TONS dela via `categoryShades`):
-**🗂️ Áreas do projeto** (`blocks/frames.ts` — os 3 blocos-container, ver a seção anterior), **HTML** (`blocks/html.ts`), **🖋️ SVG** (`blocks/svg.ts` — categoria PRÓPRIA: subgrupos Estrutura/Formas/Texto + **🎨 Aparência** = o CSS específico de SVG `fill`/`stroke`/`stroke-width`/`stroke-dasharray`/`stroke-linecap`/`text-anchor`, que CONECTAM na coluna de CSS), **CSS** (`blocks/css.ts`), **Canvas** (`blocks/canvas.ts` — inclui o `sz_html_canvas` "criar tela de desenho", movido do HTML), **Avançado** (`blocks/advanced.ts` — rawHTML/CSS/JS) e o guarda-chuva **Programação** que junta JS (`blocks/js.ts` via `JS_GROUPS`), **🌐 Página** + **⚡ Eventos** (`blocks/dom.ts`; `EVENT_LISTENER_TYPES`/`EVENTOS_TYPE_ORDER` no toolbox movem os "Quando…" p/ Eventos), 🔢 Matemática (`math.ts`), 🔣 Valores (`values.ts`), Funções/Classes/Objetos. Cada arquivo exporta `X_BLOCKS` (+ às vezes `X_GROUPS`) e é somado em `blocks/index.ts CORE_BLOCKS`. Texto de bloco 100% PT didático ([[studio-blocos-portugues]]).
+**🗂️ Áreas do projeto** (`blocks/frames.ts` — os 5 blocos-container, ver a seção anterior), **HTML** (`blocks/html.ts`), **🖋️ SVG** (`blocks/svg.ts` — categoria PRÓPRIA: subgrupos Estrutura/Formas/Texto + **🎨 Aparência** = o CSS específico de SVG `fill`/`stroke`/`stroke-width`/`stroke-dasharray`/`stroke-linecap`/`text-anchor`, que CONECTAM na coluna de CSS), **CSS** (`blocks/css.ts`), **Canvas** (`blocks/canvas.ts` — inclui o `sz_html_canvas` "criar tela de desenho", movido do HTML), **Avançado** (`blocks/advanced.ts` — rawHTML/CSS/JS) e o guarda-chuva **Programação** que junta JS (`blocks/js.ts` via `JS_GROUPS`), **🌐 Página** + **⚡ Eventos** (`blocks/dom.ts`; `EVENTOS_TYPE_ORDER` no toolbox ordena os "Quando…" em Eventos), 🔢 Matemática (`math.ts`), 🔣 Valores (`values.ts`), Funções/Classes/Objetos. Comandos e valores de lista vivem juntos em **📋 Listas**; `Object.assign` vive em **Objetos**. Parâmetros contextuais aparecem somente no flyout de **Funções**, para a função/método/construtor atualmente selecionado — nunca em Classes e nunca por varredura global. Cada arquivo exporta `X_BLOCKS` (+ às vezes `X_GROUPS`) e é somado em `blocks/index.ts CORE_BLOCKS`. Texto de bloco 100% PT didático ([[studio-blocos-portugues]]).
 
 **Curadoria por aula** (`#core/levels.ts`): a paleta é filtrada na CONSTRUÇÃO pelo `LearningProfile`
 (`level` + `allowCategories` + `allowBlocks`). **Reforma 2D/3D (07/2026):** `BlockLevel` virou a
@@ -341,7 +391,7 @@ legados (`AnyBlockLevel`) e a fronteira ÚNICA `resolveLearning` normaliza via `
 (legado: iniciante→ini-2d, intermediario→int-3d, avancado→av-3d — preserva os conjuntos antigos;
 lixo→ini-2d fail-closed); consumidores internos leem `config.learning.level` JÁ normalizado.
 `minLevel` das extensões: game-2d=ini-2d, game-3d=ini-3d (porta do 3D), game-2d-advanced=int-2d,
-world-3d=int-3d, game-3d-advanced=av-3d; sem `minLevel` → `DEFAULT_EXTENSION_MIN_LEVEL` (int-3d)
+world-3d=int-3d, game-3d-advanced=int-3d (reclassificado 26/07 — abre no Arquiteto); sem `minLevel` → `DEFAULT_EXTENSION_MIN_LEVEL` (int-3d)
 via helper `extensionMinLevel` (fonte única — nunca `?? '…'` inline). `BLOCK_LEVEL_OPTIONS` é a
 fonte dos labels do select do admin. ⚠️ **`allowBlocks` é RESTRITIVO** (06/2026): lista
 NÃO-vazia = mostra SÓ esses blocos (+ as 🗂️ Áreas do projeto, que nunca passam pelo filtro), ignorando
@@ -350,7 +400,7 @@ nível/categoria; vazia = curadoria por nível. (`isBlockTypeAllowed`/`isCategor
 (export do índice — `blockly/blockCatalog.ts`: id+rótulo+categoria derivados dos `*_BLOCKS`, sem
 frames/`hidden`; rótulo = `message0` sem os `%N`, com **`LABEL_OVERRIDES`** p/ os blocos cujo texto vive
 nos SOQUETES (senão sobra "de"/"Alterar para" e os pares valor/comando colidem — math função/trig, set-property
-texto/cálculo, método em Objetos/Classes); **inclui Jogo 2D/3D** — a restrição também alcança as
+texto/cálculo, método em Objetos/Classes); **inclui todas as cinco extensões oficiais, inclusive Mundo 3D** — a restrição também alcança as
 EXTENSÕES: `filterToolboxCategory` poda a categoria da extensão p/ só os listados, e `pushSubCustom`
 (Funções/Classes — flyout dinâmico) só entra se a aula listou algum bloco dele; ⚠️ bloco de extensão só
 APARECE se a extensão estiver INSTALADA no projeto inicial). Catálogo + restrição travados por
@@ -366,13 +416,41 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 5. `parsers/{js,html,css}.ts` — código→IR (Ponte). Expr usável em `se`/valor precisa entrar em `isSimpleValue` (senão vira rawJS).
 6. `blockly/workspaceState.ts` — IR→bloco (`statementToBlock`/`exprToValueBlock`/`htmlNodeToBlock`; **5º arg do `block()` = inputs de VALOR**).
 7. `state/projectStore.ts` — type em `CORE_BLOCKLY_BLOCK_TYPES` (drift `blockAllowlist.test.ts`; faltar = `sanitizeImportedBlocksState` zera TODOS os blocos).
-8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da carreira do aluno): default é **iniciante-2d** (facilitador); core/g2d de programação real → `INTERMEDIARIO_2D`; core/g2d expert → `AVANCADO_2D`; engine 3D (`sz_g3d_*` avançado) → `AVANCADO_3D`; senão os pisos por prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k/t3d→av-3d). ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). O teste `__tests__/blockLevels.test.ts` cobra que o tipo é real (sem typo); revise o degrau antes de assumir iniciante por omissão.
+8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da carreira do aluno): a categoria **Programação** tem progressão própria e exaustiva em `programmingContract.ts` (orçamento iniciante explícito; bloco novo cai no intermediário, nunca no iniciante por omissão). **Filosofia "kit primeiro, na unha por último" (26/07):** iniciante = jogos (kits) + **HTML/CSS ESSENCIAL** (cor/texto/imagem/caixa — default iniciante-2d); **SVG inteiro = intermediario-2d** (primitivo visual gentil, via `level` do catálogo); **Canvas 2D inteiro = avancado-2d** (prefixo `sz_canvas_` + os não-prefixados `sz_html_canvas`/`sz_val_image`/`sz_js_new_image`/`sz_input_*` no set `AVANCADO_2D`); **HTML/CSS PROFUNDOS = avancado-2d** (tags semânticas/forms via `level` do catálogo; layout/tipografia/animação/mecânica genérica no set); **Canvas 3D inteiro = avancado-3d** (`INTERMEDIARIO_3D` esvaziado → prefixo `sz_t3d_`). **Todo `sz_g3d_*` é iniciante-3d** (a aula filtra quais mostrar); os pisos por prefixo decidem canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k→int-3d, t3d→av-3d. ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). Os testes cobram tipos reais, tiers exaustivos e ausência de duplicação entre o contrato de Programação e os sets genéricos.
+8b. **SOMBRA nos soquetes (`blocks/valueSockets.ts`)** — todo `input_value` novo precisa nascer
+   PREENCHIDO na paleta (feedback dela 24/07: "vários blocos sem sombra"): número em
+   `VALUE_SOCKETS`, texto em `TEXT_SOCKETS`, cor em `COLOR_SOCKETS`, composto (variável nomeada /
+   comparação-semente `x > 0` / `sz_val_get_element`) em `CUSTOM_SOCKETS` — reuse
+   `OBJ_VAR_SHADOW`/`LIST_VAR_SHADOW`/`COND_COMPARE_SEED`/`ITEM_COMPARE_SEED`. E soquete de
+   literal (number/text/color) TAMBÉM entra em `LEGACY_VALUE_FIELDS` (`migrateValueFields.ts`) p/
+   a sombra SOBREVIVER à Ponte e ser curada no load (entrada inerte na migração; soquete de tipo
+   misto só vira sombra quando o literal casa o kind). Sombra composta (variável/comparação) é
+   SÓ de paleta — não entra no LEGACY.
 9. teste de round-trip + `bun run typecheck/test/check`.
+
+**Contratos transversais das categorias web:** não replique invariantes nos
+switches centrais. Conteúdo HTML phrasing vem de `html/catalog.ts`, e nomes
+acessíveis/alternativas textuais de `html/accessibility.ts`; validação e
+codificação de famílias CSS ficam em `css/googleFonts.ts`, `css/keyframes.ts`,
+`css/mediaQueries.ts` e `css/motion.ts`; declarações e usos de pincel, inclusive
+em expressões aninhadas, são descobertos por `ir/canvasContexts.ts`. ⚠️ **O pincel
+tem DUAS fontes além do "Preparar a tela" (25/07)**: (1) corpo que LIGA um ctx como
+parâmetro (figura do g2d, onDraw/defineLook do gk — fonte única
+`boundCanvasContextsForChild` em `ir/programmingExecution.ts`, consumida pelo
+coletor com ESCOPO) e (2) runtime instalado que entrega global preguiçoso
+(`RUNTIME_PROVIDED_CANVAS_CONTEXTS` — game-2d expõe `ctx` no boot; o schema e o
+`semanticDiagnostics` contam como preparado via `runtimeProvidedCanvasContexts`).
+Sem as duas, canvas do núcleo num jogo 2D acusava "pincel não preparado" apesar
+de funcionar. Extensão nova que expuser pincel global → entra no mapa. Regressão:
+`ir/__tests__/defineShapeCtxRepro.test.ts`. Parser,
+schema, diagnóstico, Blockly e gerador consomem esses contratos puros. Ao
+acrescentar um caso nessas famílias, estenda primeiro o contrato da categoria e
+prove o caminho inválido e o round-trip nos testes.
 
 **Bloco de EXTENSÃO** (`game-2d`/`game-3d`, prefixo `g2d:`/`g3d:`) vive em `official-extensions/<id>/blocks.ts` (NÃO no CORE); schema/buildIR/generators/parsers/workspaceState valem igual, mas com 3 pontos PRÓPRIOS além dos acima: (a) `state/projectStore.ts` → `EXTENSION_BLOCKLY_BLOCK_TYPES['<id>']` (não o CORE); (b) `ir/schema.ts` → o `type` no Set `G2D_STATEMENT_TYPES`/`G3D_STATEMENT_TYPES` (testado em `official-extensions/*/__tests__`); (c) o `blocks.ts` da extensão → a entrada na subcategoria certa do array `SUBCATS` (que monta o `*ToolboxCategory`), senão o bloco cai no grupo genérico "Mais". O `manifest.ts` traz a `docs` (markdown do aluno; `description` ≤ ~500 chars) + bump de `version`. Checklist de revisão: `docs/EXTENSIONS.md`.
 
 **Padrões já usados** (clone-os):
-- **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode) + um input de texto de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem **~39 `kind`** (a união `NameKind`; cresceu muito): além dos de programação (`variable`/`group`(≡lista)/`class`/`function`/`property`/`method`) e 3D (`scene3d`/`object3d`/`group3d`/`entity3d`/`mold3d`/…), os de jogo 2D — `canvas`/`spritesheet`/`tilemap`/`character`/`screen`/`gamestate`/`mold`/`battler`(fichas de inimigo de batalha)/`npc`/`flag`/`item`/`map`/`region`/`path`/`look`/`sound`/`effect`/`event`/`enemytype`/`shape`/`pkmcreature`/`pkmtype`.
+- **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode); símbolos de Programação que exigem declaração (`mutable-variable`/`group`≡lista/`class`/`function`) não oferecem texto livre e respeitam escopo, ramo e ordem (funções têm hoisting; classes não). Canvas 3D também exige recursos declarados e separa os papéis `scene3d`/`renderer3d`/`camera3d`/`light3d`/`composer3d`/`object3d`/`loader3d`/`physics-world`; `object3d` aceita objetos Three.js genéricos, enquanto `g3d-object` aceita somente objetos ligados a um mundo do Jogo 3D. A validação da IR usa os contratos de `three/canvas3dContract.ts` e `three/game3dContract.ts`; o catálogo semântico de declarações do Jogo 3D também alimenta o registro geral de variáveis, e `GAME3D_OBJECT_EXPRESSION_TYPES` promove resultados de clique/mira guardados numa variável. Os demais domínios mantêm o input de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem **mais de 50 `kind`** (a união `NameKind`; cresceu muito): além dos de programação (`variable`/`group`/`class`/`function`/`property`/`method`) e 3D (`scene3d`/`object3d`/`g3d-object`/`group3d`/`entity3d`/`mold3d`/…), os de jogo 2D — `canvas`/`spritesheet`/`tilemap`/`character`/`screen`/`gamestate`/`mold`/`battler`(fichas de inimigo de batalha)/`npc`/`flag`/`item`/`map`/`region`/`path`/`look`/`sound`/`effect`/`event`/`enemytype`/`shape`/`pkmcreature`/`pkmtype`.
   - **Trocar um campo p/ picker**: `{type:'field_input', name:'X', text:'…'}` → `{type:'field_name_picker', name:'X', text:'…', kind:'…'}` (ou `field_asset_picker`/`field_sprite_picker`). Nada mais muda (nem setup.ts/IR/parser/allowlist).
   - **Miniatura do sprite NO BLOCO (07/2026):** o `FieldSpritePicker` também desenha a miniatura
     (cor OU imagem do asset) AO LADO do nome dentro do bloco — view custom (`initView`/`render_`/
@@ -394,12 +472,13 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
     `#rrggbb` COMPLETO ficar sempre visível).
   - **Bloco NOVO que declara um nome de um `kind` existente**: adicione-o ao `*_DECL_BLOCKS` correspondente em `FieldNamePicker.ts` (ex.: `VARIABLE_DECL_BLOCKS`, `SCENE3D_DECL_BLOCKS`, `OBJECT3D_DECL_BLOCKS`), senão o picker reporta "nenhum ainda". Sprite/asset têm o seu (`SPRITE_DECL_BLOCKS` no FieldSpritePicker).
   - **`kind` NOVO**: estenda a união `NameKind` + `NAME_KINDS` + `*_DECL_BLOCKS` + um `collect*` + entrada em `KIND_UI` (ícone/placeholder/empty) + um `case` no `collectGlobals`; então troque os campos consumidores.
-  - **Nomes LOCAIS de laço** (o "i" do contar, o "item" do enxame): `LOOP_BINDERS_BY_KIND` + `collectScopedNames(block, binders)` sobem por `getSurroundParent` e só aparecem DENTRO do laço (swatch 🔁 "no laço"). Hoje `variable` e `object3d`.
+  - **Nomes LOCAIS de laço** (o "i" do contar, o "item" do enxame): `LOOP_BINDERS_BY_KIND` + `collectScopedNames(block, binders)` sobem por `getSurroundParent` e só aparecem DENTRO do laço (swatch 🔁 "no laço"). Hoje `variable`, `object3d` e `g3d-object`.
+  - **Escopo e ordem de declaração**: variáveis globais só aparecem depois do bloco que as declara; parâmetros, iteradores, `catch`, `fetch`, Promise e callbacks de extensão valem somente no ramo/corpo que os recebe. `FieldNamePicker.ts` protege a autoria e `ir/schema.ts` repete o contrato para projetos importados e para a Ponte. Não adicione um nome ao conjunto implícito para esconder uma declaração ausente.
   - **OOP escopado por CLASSE** (`property`/`method`): `blockly/blocks/classIntrospection.ts` (PURO, extraído do `argsMutator.ts` que o reusa) resolve a classe em contexto pela FORMA do bloco (`resolveContextClass`: campo/tomada `OBJ`→`classOfInstance`; sem `OBJ`→`enclosingClass`) e lista SÓ os membros dela (com herança via campo `SUPER`, guarda de ciclo); sem resolver, cai na lista global. ⚠️ NÃO importe `extendsMutator` de dentro do `classIntrospection` (ciclo via FieldNamePicker) — leia `SUPER` inline.
 - **Forward-only** (atalho que não precisa voltar a si na Ponte): os blocos dedicados de CSS (fill/stroke/transform/perspective/grid/var…) e o `sz_js_set_style_text` (cssText) produzem IR GENÉRICA (`CSSRule`/`setStyle`); a Ponte reversa devolve a "Regra"/bloco genérico. Só precisam de block+buildIR+allowlist (IR reusada).
 - **Container + filho (sem mutator)** p/ N itens: `sz_css_keyframes_steps`+`sz_css_keyframe_step` (animação multi-passo) e `sz_js_switch`+`sz_js_case` espelham `sz_css_rule`+`sz_css_decl` — um helper junta os filhos no buildIR (`getKeyframeSteps`/`getSwitchCases`); round-trip pelo container.
-- **Elementos SVG** = `{type:'element', tag, attrs, children}` no MESMO IR do HTML: o gerador emite qualquer tag, o parser `collectAllAttrs` captura todo atributo; em `workspaceState`, `FIELD_ATTRS`/`ID_FIELD_TAGS` dizem quais atributos viram CAMPO de bloco (o resto round-trippa via `data`). Tags SVG vivem em `HTMLTagSchema` + `SUPPORTED_TAGS`/`CONTAINER_TAGS` (parser).
-- **SVG dinâmico**: `createElementNS` (o namespace svg é OBRIGATÓRIO p/ a forma renderizar — `createElement` comum não serve) + `getAttribute`; `setAttribute`/`appendChild`/loop de quadro (`sz_canvas_anim_loop` = requestAnimationFrame no núcleo) já existem.
+- **Elementos SVG** = `{type:'element', tag, attrs, children}` no MESMO IR do HTML: o gerador emite qualquer tag, o parser `collectAllAttrs` captura todo atributo; em `workspaceState`, `FIELD_ATTRS`/`ID_FIELD_TAGS` dizem quais atributos viram CAMPO de bloco (o resto round-trippa via `data`). Tags SVG vivem em `HTMLTagSchema` + `SUPPORTED_TAGS`/`CONTAINER_TAGS` (parser). O SVG INTEIRO é **intermediario-2d** (26/07 — primitivo visual gentil, um degrau antes do Canvas imperativo); os blocos cobrem acessibilidade (`title`/`desc`) e reutilização (`defs`/`symbol`/`use`). Formas declaram `ID` em texto; `use.HREF` consome esses ids pelo `field_name_picker` `svg-reference`. Paint usa `field_svg_paint` (paleta + texto livre), pois `none`/`currentColor`/`var(--cor)` precisam sobreviver exatamente. Ao importar código, defaults visuais NÃO podem inventar atributos: ausências ficam vazias e `href` × `xlink:href` é preservado. `svgPedagogy.test.ts` é o contrato exaustivo entre catálogo, níveis, grupos, campos e tooltips.
+- **SVG dinâmico**: `createElementNS` só vira SVG quando o namespace literal é exatamente `http://www.w3.org/2000/svg` (outros namespaces permanecem código bruto) + `getAttribute`; `setAttribute`/`appendChild`/loop de quadro (`sz_canvas_anim_loop` = requestAnimationFrame no núcleo) já existem. Em layout compacto, o Blockly usa toolbox horizontal para deixar a largura inteira disponível aos blocos; o E2E `svg.spec.ts` protege o fluxo e a largura em 375 px.
 - **`agora: …`** (`sz_val_date_part` → `new Date().getHours()…`, numérico, p/ relógios); `getFullYear` continua sendo o `now` string (NÃO vira `dateGet`).
 - **Tela cheia** (`sz_js_request/exit/toggle_fullscreen` + `sz_val_is_fullscreen` + evento `fullscreenchange`): ⚠️ exige `allow="fullscreen"` no iframe (`components/preview/PreviewIframe.tsx` + `StudioProjectPlayer.tsx`), senão `requestFullscreen()` rejeita em silêncio.
 - O CSS criativo (variáveis `--x`/`var()`, grid, 3D `rotateX`/`perspective`, pseudo `:hover`/`::before`) JÁ funciona pela "Regra CSS" + "propriedade: valor" genéricas (o parser preserva seletor/propriedade/valor livres); os blocos dedicados são só atalho de UX.
@@ -407,7 +486,7 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 - **Matcher de VALOR que precisa de `bodyOfFn`/`asRaw`** (lê `source`): o `toExpr(node, ctx?)` NÃO recebe `source`. O `ParseCtx` ganhou o campo **`source`** (semeado no construtor do ctx) — use `ctx.source` (ex.: `matchNewPromise` chama `bodyOfFn(arg, ctx.source, ctx)` de dentro do `case 'NewExpression'`).
 - **Comentário** (HTML `<!-- -->` / CSS `/* */`, lote P9): nós `{type:'comment', text}` em `HTMLNode`/`CSSEntry` + blocos `sz_html_comment`/`sz_css_comment`. O parser guarda só o MIOLO (regex `/^\/\*([\s\S]*)\*\/$/` no CSS; `node.textContent` no HTML) e o gerador reconstrói os delimitadores — byte-exato. Antes viravam `rawHTML`/`rawCSS` "avançado" (teste que fixa isso PRECISA ser atualizado p/ o nó `comment`).
 - **⚠️ Colisão de nome de bloco**: ANTES de nomear um bloco novo, `grep` o tipo — o lote P9 quase duplicou `sz_js_on_click` (que JÁ existia = `addEventListener('click')`, target por id-string); o `.onclick = () => {}` virou `sz_js_element_onclick`. Um `case` duplicado no `switch` do buildIR não dá erro de TS (o 1º vence, o 2º vira código morto) — a colisão passa silenciosa.
-- **Flag booleana num bloco existente** (ex.: método `async`, lote P9): `field_checkbox` no `message0` (valor `'TRUE'`/`'FALSE'`; buildIR `f(block,'X') === 'TRUE'`, workspaceState `X: v ? 'TRUE' : 'FALSE'`). ⚠️ Se o bloco tem MUTATOR, confira que o mutator só mexe no PRÓPRIO input (o `sz_params_mutator` gerencia só o `PARAMS_INPUT`, então o checkbox do `message0` sobrevive) — um mutator que reconstrói o bloco via `jsonInit` apagaria o campo.
+- **Flag booleana num bloco existente** (ex.: função ou método `async`, lote P9): `field_checkbox` no `message0` (valor `'TRUE'`/`'FALSE'`; buildIR `f(block,'X') === 'TRUE'`, workspaceState `X: v ? 'TRUE' : 'FALSE'`). ⚠️ Se o bloco tem MUTATOR, confira que o mutator só mexe no PRÓPRIO input (o `sz_params_mutator` gerencia só o `PARAMS_INPUT`, então o checkbox do `message0` sobrevive) — um mutator que reconstrói o bloco via `jsonInit` apagaria o campo.
 
 ## Biblioteca pessoal "Meus desenhos" (ponte Pinta → Estúdio, 07/2026)
 
@@ -446,7 +525,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest HOJE está em **`0.23.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.52.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Colisão PLATAFORMA one-way (lote MapperMate F2, 18/07):** o metadado de tileset/tilemap ganhou
 **`platform?: number[]`** (índices de peça one-way: pisa por cima CAINDO, atravessa por baixo/subindo).
@@ -494,7 +573,7 @@ monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente'
 parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
 a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
 `docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
-(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 333**, gk `0.34.1` — full review R31 adicionou imagem/ficha/telas + correções).
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 339**, gk `0.48.0` (0.47.0/0.48.0 = refação Chris Courses R1/R2: Muralha do Reino + Escalada do Guerreiro, depois Duelo de Heróis + Portas do Castelo, todos Profissionais) — full review R31 adicionou imagem/ficha/telas + correções; 0.45.0 = fixes dos exemplos Clear Code B (fonte repõe bolas + gate timeCaido na Batalha Profissional, dica do mato na Aventura); 0.46.0 = exemplo "Chuva de Meteoros Profissional" (raylib_intro nível 2) + fix da recarga: `cooldownReady` virou prazo ABSOLUTO em playTime (a versão por-chamada travava o tiro edge-trigger `keyPressed`+recarga da receita canônica); as revisões atuais incorporaram lifecycle por domínio, descarte dos recursos da factory, acessibilidade do canvas/telas, reset completo e exclusão mútua das batalhas; a batalha RPG vive em `runtime/rpgBattle.ts`).
 
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
@@ -552,8 +631,9 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
 
 Segundo jogo do Franks Laboratory (com HERANÇA e spritesheets) buildável 100% no núcleo. 6 lacunas
 fechadas, **todas em JS** (HTML e CSS já round-tripavam — `<img src id>` vira `sz_html_image`, que
-GANHOU campo `ID` visível + `img` em `ID_FIELD_TAGS`; `alt`/`id` vazios NÃO viram atributo, round-trip
-fiel). Prova: `lobstermorphFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ NÃO tem exemplo
+GANHOU campo `ID` visível + `img` em `ID_FIELD_TAGS`; `alt=""` é preservado pela opção explícita
+“só enfeite”, enquanto a ausência de `alt` continua ausente; `id` vazio não vira atributo). Prova:
+`lobstermorphFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ NÃO tem exemplo
 embutido: os PNGs do jogo somam ~7,6MB (boss8 = 4MB), muito acima da cota de assets.
 - **`super(...)`** → bloco `sz_js_super_ctor` ("chamar o construtor da classe-mãe", args-mutator);
   **`super.metodo(...)`** → `sz_js_super_method`. IR `superCall{args}`/`superMethodCall{method,args}`;
@@ -596,7 +676,8 @@ preview (o jogo tem fallback de retângulo, seria vitrine fraca) — o fixture �
   `sz_canvas_request_frame` do V9, que é p/ RAF com função NOMEADA solta; este é o corpo INLINE.)
   'intermediario'.
 - **Eventos `contextmenu`/`blur` na janela** → blocos `sz_js_on_context_menu`/`sz_js_on_blur` (espelho
-  de `on_resize`). Kinds no schema + `KNOWN_EVENT_KINDS` + `EVENT_LISTENER_TYPES`/ordem no toolbox.
+  de `on_resize`). Kinds no schema + `KNOWN_EVENT_KINDS`; o contrato de `placement`
+  decide se o bloco pertence a Eventos e `EVENTOS_TYPE_ORDER` define apenas a ordem.
   'iniciante'.
 - **Fix de round-trip `x = x - n`**: o bloco "Somar N" (`sz_js_var_increment`, DELTA negativo p/
   `x -= n` / `x = x - n`) relia SEMPRE como `x = x + -n`; agora, DELTA<0 relê `x = x - |n|` (buildIR) —
@@ -604,8 +685,10 @@ preview (o jogo tem fallback de retângulo, seria vitrine fraca) — o fixture �
 - **CSS forward-only reordena**: `justify-content: center`/`align-items: center` viram blocos dedicados
   (flex) que podem REORDENAR as declarações dentro da regra (dedicadas antes) — lossless (mesma
   renderização). O fixture prova a igualdade SEMÂNTICA do CSS (mapa seletor→declarações via `cssDeclMap`),
-  não byte-a-byte; JS e HTML seguem byte-exatos. `image-rendering` duplicado (pixelated+crisp-edges)
-  colapsa p/ pixelated (IR de CSS é `Record`).
+  não byte-a-byte; JS e HTML seguem byte-exatos. Declarações CSS repetidas, como
+  `image-rendering: pixelated` + `image-rendering: crisp-edges`, permanecem em
+  ordem por meio de `CSSDeclaration[]`; regras sem repetição usam o formato
+  compacto `Record` por compatibilidade.
 
 ## Subsistema assíncrono + UI — lote "Starter Kit P9" (10/07/2026)
 
@@ -613,8 +696,8 @@ Quarto jogo do Franks Laboratory (evolução do P6, mesma base multi-arquivo ach
 carregamento ASSÍNCRONO e um menu de UI clicável. A usuária pediu 100% núcleo (via AskUserQuestion,
 "tudo em blocos"). Prova: `starterKitP9Fixture.test.ts` (0 raw, fixpoint textual + de blocos; CSS
 comparado por `cssDeclMap`). **SEM exemplo embutido** (como V9/P6). Fechou:
-- **Async de verdade** (novo paradigma, nível **avancado**, oculto do kids por padrão): método `async`
-  (checkbox `ASYNC` no `sz_js_class_method` — o mutator de params só mexe no `PARAMS_INPUT`, o checkbox
+- **Async de verdade** (novo paradigma, nível **avancado**, oculto do kids por padrão): função nomeada ou método `async`
+  (checkbox `ASYNC` no `sz_js_function` e no `sz_js_class_method` — o mutator de params só mexe no `PARAMS_INPUT`, o checkbox
   do `message0` sobrevive); `await <valor>` → `sz_js_await` (IR `awaitStmt`); `new Promise((resolve) =>
   {…})` → `sz_val_new_promise` (IR `newPromise{param,body}` — um VALOR com CORPO de statements: o
   `expr.ts` é a camada de baixo e NÃO compila statements, então `js.ts` INJETA `compileStatements` via
@@ -635,9 +718,10 @@ comparado por `cssDeclMap`). **SEM exemplo embutido** (como V9/P6). Fechou:
 
 ## Jogo 2D — lote v0.22.0 → v0.23.0 (10/07/2026)
 
-Extensão `official-extensions/game-2d` (manifest `version` 0.23.0). Full review + 4 blocos de família nova.
-Doc do aluno em `manifest.docs` (⚠️ teto zod **20.000 chars**, hoje ~19.7k — enxugar seção antiga ao
-adicionar) + contexto da IA em `ai.ts`. A allowlist é `EXTENSION_BLOCKLY_BLOCK_TYPES['game-2d']` (tudo-ou-nada).
+Naquele lote, a extensão `official-extensions/game-2d` chegou ao manifest `version` 0.23.0.
+Foi um full review com 4 blocos de família nova. A documentação atual do aluno fica em
+`manifest.docs` e o contexto da IA em `ai.ts`. A allowlist é
+`EXTENSION_BLOCKLY_BLOCK_TYPES['game-2d']` (tudo-ou-nada).
 
 - **Auditoria genérica** (`__tests__/blockAudit.test.ts`): varre TODOS os `gameTwoDBlocks` e valida def→IR,
   IR→blocos→IR, IR→JS→runtime (todo `SZGame2D.helper(` emitido existe no export) e JS→IR (Ponte). Bloco g2d
@@ -679,7 +763,7 @@ adicionar) + contexto da IA em `ai.ts`. A allowlist é `EXTENSION_BLOCKLY_BLOCK_
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
 - `bun run typecheck` / `bun run test` / `bun run check`
-- `bun run e2e` — Playwright contra o playground (manual)
+- `bun run e2e` — suíte Playwright completa contra o playground (manual); o CI roda o subconjunto `examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"`
 
 ## Vitrine de kits + micro-celebração (07/2026)
 

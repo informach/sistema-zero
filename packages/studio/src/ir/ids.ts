@@ -1,6 +1,8 @@
-import type { CSSEntry, HTMLNode, SZIR } from './schema'
+import { normalizeSZIR } from './behavior'
+import type { CSSEntry, HTMLNode, SZIRInput, SZIRV2 } from './schema'
 
-export function assignStableIdsToIR(ir: SZIR, prefix = 'ir'): SZIR {
+export function assignStableIdsToIR(input: SZIRInput, prefix = 'ir'): SZIRV2 {
+  const ir = normalizeSZIR(input)
   // JS: clona e atribui `__id` a TODOS os nós (statements e expressões) em
   // QUALQUER profundidade — inclusive corpos de função/classe/forEach/timers e
   // expressões compostas (vetores, hsl, lógicos…). O assignment antigo só
@@ -8,14 +10,17 @@ export function assignStableIdsToIR(ir: SZIR, prefix = 'ir'): SZIR {
   // blocos ficavam sem `__id` e não realçavam no source map cruzado (bloco↔código).
   // O id é baseado no caminho (chave + índice): determinístico e estável para a
   // mesma estrutura, e idêntico ao esquema antigo nos casos que ele já cobria.
-  const js = structuredClone(ir.js)
-  js.forEach((statement, index) => {
-    assignNodeIds(statement, `${prefix}_js_${index}`)
-  })
+  const behavior = structuredClone(ir.behavior)
+  for (const area of ['start', 'events', 'loops'] as const) {
+    behavior[area].forEach((statement, index) => {
+      assignNodeIds(statement, `${prefix}_${area}_${index}`)
+    })
+  }
   return {
+    version: 2,
     html: ir.html.map((node, index) => assignHTMLId(node, `${prefix}_html_${index}`)),
     css: ir.css.map((entry, index) => assignCSSId(entry, `${prefix}_css_${index}`)),
-    js,
+    behavior,
     extensions: [...ir.extensions],
     ...(ir.htmlShell ? { htmlShell: ir.htmlShell } : {}),
   }
@@ -53,7 +58,8 @@ function assignHTMLId(node: HTMLNode, id: string): HTMLNode {
 
 /**
  * Percorre um nó de IR de JS (statement ou expressão) e atribui `__id` a ele e a
- * todos os descendentes que forem nós (objetos com `type`), em qualquer nível.
+ * todos os descendentes que forem nós (objetos com `type`) ou casos de uma
+ * escolha (objetos com `match` + `body`), em qualquer nível.
  * Genérico: cobre todas as variantes atuais e futuras sem enumerar cada uma.
  * Muta o nó recebido — por isso `assignStableIdsToIR` clona antes. Preserva
  * `__id` já existente.
@@ -61,7 +67,8 @@ function assignHTMLId(node: HTMLNode, id: string): HTMLNode {
 function assignNodeIds(node: unknown, id: string): void {
   if (node === null || typeof node !== 'object') return
   const obj = node as Record<string, unknown>
-  if (typeof obj.type === 'string' && obj.__id === undefined) obj.__id = id
+  const isSwitchCase = Object.hasOwn(obj, 'match') && Array.isArray(obj.body)
+  if ((typeof obj.type === 'string' || isSwitchCase) && obj.__id === undefined) obj.__id = id
   for (const key of Object.keys(obj)) {
     if (key === '__id' || key === 'type') continue
     const value = obj[key]

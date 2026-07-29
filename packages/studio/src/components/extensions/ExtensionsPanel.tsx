@@ -192,9 +192,18 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
           {OFFICIAL_CATALOG.filter(
             (ext) =>
               installedIds.has(ext.manifest.id) ||
-              isCategoryAllowed(ext.blockly.toolboxCategory.name, extensionMinLevel(ext), profile),
+              ((learning.allowExtensions === undefined ||
+                learning.allowExtensions.includes(ext.manifest.id)) &&
+                isCategoryAllowed(
+                  ext.blockly.toolboxCategory.name,
+                  extensionMinLevel(ext),
+                  profile,
+                )),
           ).map((ext) => {
             const installed = installedIds.has(ext.manifest.id)
+            const conflictId = ext.conflictsWith?.find((id) => installedIds.has(id))
+            const conflictName = OFFICIAL_CATALOG.find((item) => item.manifest.id === conflictId)
+              ?.manifest.name
             const docsOpen = docsOpenId === ext.manifest.id
             return (
               <li
@@ -220,12 +229,28 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                         {t('extensions.remove')}
                       </Button>
                     ) : (
-                      <Button variant="primary" size="sm" onClick={() => handleInstall(ext)}>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={Boolean(conflictId)}
+                        title={
+                          conflictName
+                            ? `Remova ${conflictName} antes de instalar ${ext.manifest.name}.`
+                            : undefined
+                        }
+                        onClick={() => handleInstall(ext)}
+                      >
                         {t('extensions.install')}
                       </Button>
                     )}
                   </div>
                 </div>
+                {!installed && conflictName && (
+                  <p className="mt-2 text-xs text-sz-warning">
+                    Para instalar {ext.manifest.name}, remova {conflictName}: as duas extensões
+                    controlam a mesma tela.
+                  </p>
+                )}
                 <p className="mt-1 line-clamp-2 text-xs text-sz-fg-soft">
                   {ext.manifest.description}
                 </p>

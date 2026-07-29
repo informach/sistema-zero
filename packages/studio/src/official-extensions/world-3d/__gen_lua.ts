@@ -29,7 +29,6 @@ SZWorld3D.onQuestDone("moedas", function () {
 SZWorld3D.marker("estrela", 30, 30);
 SZWorld3D.guideArrow(30, 30, "ligada");
 SZWorld3D.totemText(0, 6, "Base da Lua", "Pulos flutuantes! Segure espaco com o jetpack para voar.");
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

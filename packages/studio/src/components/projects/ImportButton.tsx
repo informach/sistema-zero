@@ -6,9 +6,11 @@ import { MAX_PROJECT_IMPORT_CHARS, useProjectStore } from '../../state/projectSt
 
 export interface ImportButtonProps {
   onImported: (id: string) => void
+  /** IDs conquistados na carreira; projeto não é destruído, mas incompatibilidades são avisadas. */
+  allowedExtensions?: readonly string[]
 }
 
-export function ImportButton({ onImported }: ImportButtonProps): JSX.Element {
+export function ImportButton({ onImported, allowedExtensions }: ImportButtonProps): JSX.Element {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const importFromJSON = useProjectStore((s) => s.importProjectFromJSON)
   const [error, setError] = useState<string | null>(null)
@@ -46,7 +48,18 @@ export function ImportButton({ onImported }: ImportButtonProps): JSX.Element {
         setError(t('projects.importNotJson'))
         return
       }
-      const { project, warnings: warns } = await importFromJSON(parsed)
+      const { project, warnings: importWarnings } = await importFromJSON(parsed)
+      const warns = [...importWarnings]
+      if (allowedExtensions) {
+        const unavailable = project.installedExtensions
+          .map((extension) => extension.id)
+          .filter((id) => !allowedExtensions.includes(id))
+        if (unavailable.length > 0) {
+          warns.push(
+            `Este projeto usa ferramentas que ainda serão liberadas na sua carreira: ${unavailable.join(', ')}. Ele ficou salvo e poderá ser aberto quando você conquistar essas ferramentas.`,
+          )
+        }
+      }
       if (warns.length > 0) {
         // Segura a navegação até o aluno ler os avisos (ver dismiss()).
         setWarnings(warns)

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import type { SessionUserWithAvatar } from '@/lib/types'
 import { NAV_ITEMS } from './nav'
+import { RecadosBell } from './recados-bell'
 import { UserMenu } from './user-menu'
 
 export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
@@ -69,6 +70,7 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
         </nav>
 
         <div className="flex shrink-0 items-center">
+          <RecadosBell />
           <UserMenu user={user} />
         </div>
       </div>

@@ -262,6 +262,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       playId: input.playId ?? null,
       playsCount: 0,
       challengeKey: null,
+      studioMeta: null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
@@ -312,6 +313,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       playId: input.playId,
       playsCount: 0,
       challengeKey: input.challengeKey ?? null,
+      studioMeta: input.studioMeta ?? null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
@@ -370,6 +372,24 @@ export class InMemoryThreadRepository implements ThreadRepository {
         authorId: t.authorId,
         title: t.title,
         playId: t.playId,
+        createdAt: t.createdAt,
+      }))
+  }
+
+  async listShowcaseByAuthor(
+    authorId: string,
+    limit: number,
+  ): Promise<
+    Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
+  > {
+    return this.threads
+      .filter((t) => t.authorId === authorId && t.isShowcase && t.status === 'visible')
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, limit)
+      .map((t) => ({
+        title: t.title,
+        playId: t.playId,
+        coverImageUrl: t.coverImageUrl,
         createdAt: t.createdAt,
       }))
   }

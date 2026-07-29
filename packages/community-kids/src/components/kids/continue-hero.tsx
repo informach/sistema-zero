@@ -4,9 +4,10 @@ import type { MyCourseView } from '@/lib/types'
 
 /** Curso do herói: 1º com "continuar" pendente; senão o 1º da lista. */
 export function pickContinueCourse(courses: MyCourseView[]): MyCourseView | null {
+  const unlocked = courses.filter((course) => course.careerLock?.locked !== true)
   return (
-    courses.find((c) => c.continueLessonId !== null && c.progress.percent < 100) ??
-    courses[0] ??
+    unlocked.find((c) => c.continueLessonId !== null && c.progress.percent < 100) ??
+    unlocked[0] ??
     null
   )
 }

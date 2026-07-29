@@ -29,6 +29,8 @@ export interface FakeRenderer {
   /** A CENA viva, capturada junto da câmera (mesmo filtro anti-quad do composer)
    *  — é como os testes observam luz/sombras e as partículas (Points/drawRange). */
   scene: RealTHREE.Scene | null
+  capabilities: { maxTextureSize: number }
+  sizes: Array<{ width: number; height: number; updateStyle: boolean }>
   shadowMap: { enabled: boolean; type: number }
   toneMapping: number
   setPixelRatio: (n: number) => void
@@ -61,10 +63,14 @@ export function makeFakeThree() {
       loop: null,
       camera: null,
       scene: null,
+      capabilities: { maxTextureSize: 2048 },
+      sizes: [],
       shadowMap: { enabled: false, type: 0 },
       toneMapping: 0,
       setPixelRatio: () => {},
-      setSize: () => {},
+      setSize: (width, height, updateStyle) => {
+        r.sizes.push({ width, height, updateStyle })
+      },
       setAnimationLoop: (fn) => {
         r.loop = fn
       },
@@ -102,9 +108,18 @@ export function makeFakeThree() {
 /** Só o que os testes chamam — o inventário completo é auditado no blockAudit. */
 export interface KitApi {
   setup(opts: Record<string, unknown>): void
+  setEffects(opts: {
+    shadows?: boolean
+    bloom?: boolean
+    strength?: number
+    vignette?: boolean
+  }): void
   start(): void
+  runProject(fn: () => void): void
   state(): string
   setState(name: string): void
+  endGame(message?: string): void
+  onEnterState(name: string, fn: () => void): void
   defineMold(name: string, opts: Record<string, unknown>, fn: () => void): void
   part(opts: Record<string, unknown>): void
   spawn(mold: string, x: number, y: number, z: number): unknown
@@ -122,6 +137,9 @@ export interface KitApi {
   healthOf(e: unknown): number
   onEntityDeath(mold: string, fn: (e: unknown) => void): void
   keyDown(key: string): boolean
+  keyPressed(key: string): boolean
+  mouseDown(): boolean
+  mousePressed(): boolean
   posOf(e: unknown, axis: string): number
   fall(e: unknown, g: number): void
   jump(e: unknown, force: number): void
@@ -147,16 +165,35 @@ export interface KitApi {
   timeLeft(): number
   stopTimer(): void
   onTimerEnd(fn: () => void): void
+  defineEffect(name: string, opts: Record<string, unknown>): void
+  addAttractor(
+    effect: string,
+    x: number,
+    y: number,
+    z: number,
+    intensity: number,
+    radius: number,
+  ): void
+  addLight(color: string, x: number, y: number, z: number, intensity: number): void
+  setAmbient(intensity: number): void
+  setFog(color: string, near: number, far: number): void
+  setSky(top: string, bottom: string): void
+  setSkyPhoto(name: string): void
+  addButton(screen: string, label: string, fn: () => void): void
+  setHud(slot: string, value: unknown): void
   playMusic(name: string): void
   playSound(name: string): void
   loadSound(name: string, asset: string): void
   stopMusic(): void
+  playTone(frequency: number, milliseconds: number): void
   say(e: unknown, text: string, seconds: number): void
   hideSay(e: unknown): void
   forEachAlive(mold: string, fn: (e: unknown) => void): void
   startSpawner(mold: string, seconds: number, where: string): void
   // 6º review: identidade, rumo a ponto, barra de vida e jorros múltiplos.
   isMold(e: unknown, mold: string): boolean
+  // Lote C (FPS/construtor): o playthrough lê o estado da FSM do robô.
+  stateOf(e: unknown): string
   seekPoint(e: unknown, x: number, z: number): void
   showHealthBar(mold: string, on: boolean): void
   defineEmitter(name: string, opts: Record<string, unknown>): void
@@ -196,6 +233,9 @@ export async function loadStartedKit(beforeStart?: (api: KitApi) => void): Promi
 }> {
   const { THREE, renderers } = makeFakeThree()
   const win = globalThis.window as unknown as Record<string, unknown>
+  // O runtime do g3k já injeta o contexto de ciclo de vida gerenciado
+  // (window.__SZProjectLifecycle) logo após o import, então rodar runtimeBody
+  // reproduz a mesma fronteira do preview — sem injeção separada.
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   api.setup({ width: 640, height: 360, world: 100 })
@@ -240,6 +280,7 @@ export async function loadExampleKit(exampleJs: string): Promise<{
 }> {
   const { THREE, renderers } = makeFakeThree()
   const win = globalThis.window as unknown as Record<string, unknown>
+  // runtimeBody já injeta window.__SZProjectLifecycle (ver loadStartedKit).
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   // O exemplo referencia o identificador SZGameKit3D "solto" — entra como

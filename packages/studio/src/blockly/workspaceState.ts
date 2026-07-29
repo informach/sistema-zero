@@ -1,34 +1,54 @@
-import { compileStatements } from '#generators'
-import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
-import { screenTextToExpr, valueToExpr } from '#ir'
-import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE, SHADOW_PRESETS } from './buildIR'
-import { ADDON_CLASSES } from './fields/FieldClassPicker'
+import { compileStatements, renderNodes } from '#generators'
+import type { EventKind, JSExpr, JSStatement, SZIR, SZIRInput } from '#ir'
+import { normalizeSZIR, resolveEventTargetKind, screenTextToExpr, valueToExpr } from '#ir'
+import { canvasExpressionIRToBlock, canvasStatementIRToBlock } from '../codecs/web/canvasIRToBlock'
+import { createCSSIRToBlocks } from '../codecs/web/cssIRToBlocks'
+import { htmlIRToBlock } from '../codecs/web/htmlIRToBlock'
+import { htmlElementForTag, isSupportedHTMLImageLoading } from '../html/catalog'
+import {
+  type Canvas3DStatementContext,
+  type Canvas3DStatementContextIndex,
+  canvas3DContextHasImportedClass,
+  canvas3DContextHasSymbol,
+  createCanvas3DStatementContextIndex,
+} from '../ir/programmingReferences'
+import type { Canvas3DSymbolKind } from '../three/canvas3dContract'
+import {
+  FRAME_APPEARANCE,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_START,
+  FRAME_STRUCTURE,
+  getBlockContract,
+} from './blockContracts'
+import { isGuidedDomAttributeName, isGuidedDomProperty } from './domSafety'
 import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
 
-/** Tags container (têm input CHILDREN) → tipo de bloco. */
-const CONTAINER_BLOCK: Partial<Record<string, string>> = {
-  div: 'sz_html_div',
-  section: 'sz_html_section',
-  header: 'sz_html_header',
-  nav: 'sz_html_nav',
-  footer: 'sz_html_footer',
-  main: 'sz_html_main',
-  ul: 'sz_html_ul',
-  form: 'sz_html_form',
+const ELEMENT_EVENT_BLOCK_TYPES: Partial<Record<EventKind, string>> = {
+  click: 'sz_js_on_click',
+  mouseover: 'sz_js_on_mouseover',
+  submit: 'sz_js_on_submit',
+  input: 'sz_js_on_input',
 }
 
-/** Tags de folha com apenas texto → tipo de bloco. */
-const TEXT_BLOCK: Partial<Record<string, string>> = {
-  h1: 'sz_html_h1',
-  h2: 'sz_html_h2',
-  h3: 'sz_html_h3',
-  p: 'sz_html_p',
-  span: 'sz_html_span',
-  strong: 'sz_html_strong',
-  em: 'sz_html_em',
-  li: 'sz_html_li',
-  label: 'sz_html_label',
+const WINDOW_EVENT_BLOCK_TYPES: Partial<Record<EventKind, string>> = {
+  resize: 'sz_js_on_resize',
+  contextmenu: 'sz_js_on_context_menu',
+  blur: 'sz_js_on_blur',
 }
+
+const NAMED_ELEMENT_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
+  'click',
+  'mouseover',
+  'mouseout',
+  'pointerdown',
+  'pointerup',
+  'submit',
+  'input',
+  'change',
+  'keydown',
+  'keyup',
+])
 
 export interface SerializedBlocklyBlock {
   type: string
@@ -66,28 +86,18 @@ const ID_FIELD_TAGS = new Set([
   'img',
   'svg',
   'g',
+  'defs',
+  'symbol',
   'path',
+  'circle',
+  'ellipse',
+  'line',
+  'rect',
+  'polyline',
+  'polygon',
+  'use',
   'text',
 ])
-
-/** Atributos representados por um campo do bloco (logo, não vão para `data`). */
-const FIELD_ATTRS: Record<string, readonly string[]> = {
-  a: ['href'],
-  img: ['src', 'alt'],
-  input: ['type', 'placeholder'],
-  textarea: ['placeholder'],
-  svg: ['width', 'height', 'viewBox'],
-  g: ['transform'],
-  path: ['d', 'fill', 'stroke', 'transform'],
-  circle: ['cx', 'cy', 'r', 'fill'],
-  ellipse: ['cx', 'cy', 'rx', 'ry', 'fill'],
-  rect: ['x', 'y', 'width', 'height', 'fill'],
-  line: ['x1', 'y1', 'x2', 'y2', 'stroke'],
-  polyline: ['points', 'fill', 'stroke'],
-  polygon: ['points', 'fill', 'stroke'],
-  text: ['x', 'y', 'fill'],
-  use: ['href', 'transform'],
-}
 
 /**
  * Serializa, como JSON, os atributos do elemento que nenhum campo do bloco
@@ -98,11 +108,14 @@ const FIELD_ATTRS: Record<string, readonly string[]> = {
 function extraData(node: Extract<SZIR['html'][number], { type: 'element' }>): string | undefined {
   const extra: Record<string, string> = {}
   if (node.id && !ID_FIELD_TAGS.has(node.tag)) extra.id = node.id
-  const fieldKeys = FIELD_ATTRS[node.tag] ?? []
+  const fieldKeys = htmlElementForTag(node.tag)?.modeledAttributes ?? []
   for (const [k, v] of Object.entries(node.attrs ?? {})) {
     // `class` é representado pelo campo CLASS do bloco — não vai para `data`.
     if (k === 'class') continue
-    if (!fieldKeys.includes(k)) extra[k] = v
+    const representedByField =
+      fieldKeys.includes(k) &&
+      !(node.tag === 'img' && k === 'loading' && !isSupportedHTMLImageLoading(v))
+    if (!representedByField) extra[k] = v
   }
   return Object.keys(extra).length > 0 ? JSON.stringify(extra) : undefined
 }
@@ -117,77 +130,79 @@ export interface SerializedBlocklyWorkspace {
 export interface BuildWorkspaceStateOptions {
   startX?: number
   startY?: number
-  /** Distância horizontal entre as colunas dos 3 frames. */
+  /** Distância horizontal entre as colunas das Áreas do projeto. */
   colGap?: number
   /**
-   * Omite os frames 🧱 Estrutura (HTML) / 🎨 Aparência (CSS) quando estão VAZIOS.
-   * O ⚙️ Comportamento (JS) é sempre mantido. Usado no reverse-parse da Ponte: um
-   * projeto que só usa JS (ex.: Canvas 3D) não deve ver as áreas de HTML/CSS
-   * "ressuscitarem" vazias a cada ida-e-volta código→blocos. O seed de projeto
-   * novo (emptyFramesBlocksState) NÃO passa a opção → nasce com os 3 frames.
+   * Compatibilidade de chamada. Áreas vazias são sempre omitidas: a Bridge não
+   * ressuscita áreas que a criança não criou e projetos novos nascem vazios.
    */
   omitEmptyAuxFrames?: boolean
 }
 
 export function buildWorkspaceStateFromIR(
-  ir: SZIR,
+  ir: SZIRInput,
   options: BuildWorkspaceStateOptions = {},
 ): SerializedBlocklyWorkspace {
+  const normalized = normalizeSZIR(ir)
   const startX = options.startX ?? 32
   const startY = options.startY ?? 32
-  // Modelo CONTAINER (estilo MakeCode): cada categoria vira UM frame — 🧱 Estrutura
-  // (HTML) | 🎨 Aparência (CSS) | ⚙️ Comportamento (JS) — com os blocos da categoria
-  // DENTRO. É o inverso EXATO de buildIRFromWorkspace (que lê os filhos de cada
-  // frame), então blocos→IR→blocos é estável. Uma coluna por frame.
+  // Cada categoria vira uma Área do projeto: Estrutura, Aparência, Ao iniciar,
+  // Quando acontecer ou Enquanto estiver rodando. É o inverso
+  // exato de buildIRFromWorkspace.
   const colGap = options.colGap ?? 420
 
-  const htmlChildren = ir.html.map(htmlNodeToBlock).filter(isBlock)
-  const cssChildren = ir.css.flatMap(cssEntryToBlocks)
-  // Gate dos facilitadores do Canvas 3D: só reconhece as formas canônicas do
-  // three.js (scene.add, obj.position.set, obj.visible=…) como bloco amigável
-  // quando o projeto REALMENTE usa three — senão `Set.add`/`Map.set`/`x.visible`
-  // de um projeto 2D viraria bloco 3D (teal, categoria errada). O sinal é o
-  // import da lib (o bloco-raiz) ou um `new THREE.…` de topo.
-  recognizeThree = ir.js.some(
-    (s) =>
-      (s.type === 'importStar' && s.module === 'three') ||
-      (s.type === 'newInstance' && s.namespace === 'THREE'),
-  )
-  audioLoaderVars = collectAudioLoaderVars(ir.js)
-  const jsChildren = statementsToBlocks(ir.js)
-  recognizeThree = false
-  audioLoaderVars = new Set()
+  const htmlChildren = normalized.html.map(htmlNodeToBlock).filter(isBlock)
+  const cssChildren = normalized.css.flatMap(cssEntryToBlocks)
+  const allStatements = [
+    ...normalized.behavior.start,
+    ...normalized.behavior.events,
+    ...normalized.behavior.loops,
+  ]
+  const previousContextIndex = canvas3dContextIndex
+  canvas3dContextIndex = createCanvas3DStatementContextIndex(allStatements)
+  let startChildren: SerializedBlocklyBlock[]
+  let eventChildren: SerializedBlocklyBlock[]
+  let loopChildren: SerializedBlocklyBlock[]
+  try {
+    startChildren = statementsToBlocks(normalized.behavior.start, true)
+    eventChildren = statementsToBlocks(normalized.behavior.events, true)
+    loopChildren = statementsToBlocks(normalized.behavior.loops, true)
+  } finally {
+    canvas3dContextIndex = previousContextIndex
+    activeCanvas3DContext = undefined
+  }
 
-  // Um frame por categoria. Com `omitEmptyAuxFrames`, Estrutura/Aparência VAZIAS
-  // são puladas (o Comportamento fica sempre), e as colunas presentes se compactam
-  // à esquerda — sem buraco onde um frame omitido estaria.
-  const omitEmptyAux = options.omitEmptyAuxFrames === true
-  const frameSpecs: Array<[string, SerializedBlocklyBlock[]]> = [
-    [FRAME_STRUCTURE, htmlChildren],
-    [FRAME_APPEARANCE, cssChildren],
-    [FRAME_BEHAVIOR, jsChildren],
+  // Uma área por categoria, somente quando tem conteúdo. A disposição canônica
+  // usa duas linhas: HTML/CSS acima e lifecycle abaixo.
+  const frameSpecs: Array<[string, SerializedBlocklyBlock[], number, number]> = [
+    [FRAME_STRUCTURE, htmlChildren, 0, 0],
+    [FRAME_APPEARANCE, cssChildren, 1, 0],
+    [FRAME_START, startChildren, 0, 1],
+    [FRAME_EVENTS, eventChildren, 1, 1],
+    [FRAME_LOOPS, loopChildren, 2, 1],
   ]
   const blocks: SerializedBlocklyBlock[] = []
-  let col = 0
-  for (const [frameType, children] of frameSpecs) {
-    if (omitEmptyAux && frameType !== FRAME_BEHAVIOR && children.length === 0) continue
+  const rowGap = 360
+  for (const [frameType, children, col, row] of frameSpecs) {
+    if (children.length === 0) continue
     blocks.push(
-      position(block(frameType, {}, { CHILDREN: children }), startX + colGap * col, startY),
+      position(
+        block(frameType, {}, { CHILDREN: children }),
+        startX + colGap * col,
+        startY + rowGap * row,
+      ),
     )
-    col += 1
   }
 
   return { blocks: { languageVersion: 0, blocks } }
 }
 
 /**
- * `blocksState` com os 3 frames VAZIOS — semeia o projeto novo (`createEmptyProject`)
- * já com 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento na tela, como o `on start` do
- * MakeCode. (O `BlocksMode` faz short-circuit quando o IR está todo vazio, por isso o
- * projeto novo precisa do `blocksState`, não só do IR.)
+ * Estado Blockly vazio para projeto novo. Nenhuma Área do projeto é criada
+ * automaticamente; a criança escolhe as áreas necessárias na paleta.
  */
 export function emptyFramesBlocksState(): SerializedBlocklyWorkspace {
-  return buildWorkspaceStateFromIR({ html: [], css: [], js: [], extensions: [] })
+  return { blocks: { languageVersion: 0, blocks: [] } }
 }
 
 // Implementação num módulo PURO (sem imports) para o PersistenceService poder
@@ -197,9 +212,13 @@ export { isBlocksStateEmpty } from './blocksStateShape'
 
 function htmlNodeToBlock(node: SZIR['html'][number]): SerializedBlocklyBlock {
   const built = htmlNodeToBlockInner(node)
-  if (node.type === 'element') {
-    // `class` agora é um campo visível em todos os blocos HTML.
-    if (node.attrs?.class) {
+  if (node.type === 'element' && built.type !== 'sz_adv_raw_html') {
+    // Blocos SVG novos têm classes úteis como default. Ao reconstruir código,
+    // o campo vazio precisa ser explícito para o default de criação não alterar
+    // o programa importado. Nos demais blocos, mantemos a escrita só quando há classe.
+    if (built.type === 'sz_html_svg' || built.type.startsWith('sz_svg_')) {
+      built.fields = { ...(built.fields ?? {}), CLASS: node.attrs?.class ?? '' }
+    } else if (node.attrs?.class) {
       built.fields = { ...(built.fields ?? {}), CLASS: node.attrs.class }
     }
     const data = extraData(node)
@@ -212,637 +231,40 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   if (node.type === 'rawHTML') {
     return block('sz_adv_raw_html', { CODE: node.html }, {}, node.__id)
   }
-  if (node.type === 'text') {
-    return block('sz_html_text', { TEXT: node.text }, {}, node.__id)
-  }
-  if (node.type === 'comment') {
-    return block('sz_html_comment', { TEXT: node.text }, {}, node.__id)
-  }
-  if (node.type === 'canvas') {
-    // Largura/altura não são mais campos do bloco — só o id. Quando a IR carrega
-    // width/height (ex.: `<canvas width=200 height=100>` vindo do HTML), os
-    // guardamos no `data` do bloco (mesma estratégia do `extraData`) para que o
-    // round-trip blocos→código não os perca. `buildIR` os recupera de `data`.
-    const canvasFields: Record<string, string> = { ID: node.id }
-    if (node.class) canvasFields.CLASS = node.class
-    const built = block('sz_html_canvas', canvasFields, {}, node.__id)
-    const extra: Record<string, number> = {}
-    if (node.width !== undefined) extra.width = node.width
-    if (node.height !== undefined) extra.height = node.height
-    if (Object.keys(extra).length > 0) built.data = JSON.stringify(extra)
-    return built
-  }
-
-  const containerType = CONTAINER_BLOCK[node.tag]
-  if (containerType) {
-    return block(
-      containerType,
-      { ID: node.id ?? '' },
-      { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
-      node.__id,
-    )
-  }
-
-  const textType = TEXT_BLOCK[node.tag]
-  if (textType) {
-    return block(
-      textType,
-      { TEXT: node.text ?? '' },
-      { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
-      node.__id,
-    )
-  }
-
-  if (node.tag === 'button') {
-    return block(
-      'sz_html_button',
-      { ID: node.id ?? 'meuBotao', TEXT: node.text ?? '' },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'a') {
-    return block(
-      'sz_html_link',
-      { HREF: node.attrs?.href ?? '#', TEXT: node.text ?? '' },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'img') {
-    return block(
-      'sz_html_image',
-      { SRC: node.attrs?.src ?? '', ALT: node.attrs?.alt ?? '', ID: node.id ?? '' },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'input') {
-    return block(
-      'sz_html_input',
-      {
-        ID: node.id ?? '',
-        TYPE: node.attrs?.type ?? 'text',
-        PLACEHOLDER: node.attrs?.placeholder ?? '',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'textarea') {
-    return block(
-      'sz_html_textarea',
-      { ID: node.id ?? '', PLACEHOLDER: node.attrs?.placeholder ?? '' },
-      {},
-      node.__id,
-    )
-  }
-  // ---- SVG ----
-  if (node.tag === 'svg') {
-    return block(
-      'sz_html_svg',
-      {
-        ID: node.id ?? '',
-        WIDTH: node.attrs?.width ?? '',
-        HEIGHT: node.attrs?.height ?? '',
-        VIEWBOX: node.attrs?.viewBox ?? '',
-      },
-      { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
-      node.__id,
-    )
-  }
-  if (node.tag === 'g') {
-    return block(
-      'sz_svg_group',
-      { ID: node.id ?? '', TRANSFORM: node.attrs?.transform ?? '' },
-      { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
-      node.__id,
-    )
-  }
-  if (node.tag === 'path') {
-    return block(
-      'sz_svg_path',
-      {
-        ID: node.id ?? '',
-        D: node.attrs?.d ?? '',
-        FILL: node.attrs?.fill ?? '',
-        STROKE: node.attrs?.stroke ?? '',
-        TRANSFORM: node.attrs?.transform ?? '',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'circle') {
-    return block(
-      'sz_svg_circle',
-      {
-        CX: node.attrs?.cx ?? '0',
-        CY: node.attrs?.cy ?? '0',
-        R: node.attrs?.r ?? '8',
-        FILL: node.attrs?.fill ?? '',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'rect') {
-    return block(
-      'sz_svg_rect',
-      {
-        X: node.attrs?.x ?? '0',
-        Y: node.attrs?.y ?? '0',
-        WIDTH: node.attrs?.width ?? '20',
-        HEIGHT: node.attrs?.height ?? '20',
-        FILL: node.attrs?.fill ?? '',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'line') {
-    return block(
-      'sz_svg_line',
-      {
-        X1: node.attrs?.x1 ?? '0',
-        Y1: node.attrs?.y1 ?? '0',
-        X2: node.attrs?.x2 ?? '10',
-        Y2: node.attrs?.y2 ?? '10',
-        STROKE: node.attrs?.stroke ?? 'black',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'use') {
-    return block(
-      'sz_svg_use',
-      { HREF: node.attrs?.href ?? '#minhaForma', TRANSFORM: node.attrs?.transform ?? '' },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'ellipse') {
-    return block(
-      'sz_svg_ellipse',
-      {
-        CX: node.attrs?.cx ?? '0',
-        CY: node.attrs?.cy ?? '0',
-        RX: node.attrs?.rx ?? '20',
-        RY: node.attrs?.ry ?? '10',
-        FILL: node.attrs?.fill ?? '',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'polyline') {
-    return block(
-      'sz_svg_polyline',
-      {
-        POINTS: node.attrs?.points ?? '',
-        FILL: node.attrs?.fill ?? 'none',
-        STROKE: node.attrs?.stroke ?? 'black',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'polygon') {
-    return block(
-      'sz_svg_polygon',
-      {
-        POINTS: node.attrs?.points ?? '',
-        FILL: node.attrs?.fill ?? '',
-        STROKE: node.attrs?.stroke ?? '',
-      },
-      {},
-      node.__id,
-    )
-  }
-  if (node.tag === 'text') {
-    return block(
-      'sz_svg_text',
-      {
-        ID: node.id ?? '',
-        X: node.attrs?.x ?? '0',
-        Y: node.attrs?.y ?? '0',
-        TEXT: node.text ?? '',
-        FILL: node.attrs?.fill ?? '',
-      },
-      {},
-      node.__id,
-    )
-  }
-  return block('sz_adv_raw_html', { CODE: renderElementFallback(node) }, {}, node.__id)
+  const webBlock = htmlIRToBlock(node, {
+    block,
+    nodeToBlock: htmlNodeToBlock,
+    renderNodes,
+    renderElementFallback,
+  })
+  if (webBlock) return webBlock
+  return block('sz_adv_raw_html', { CODE: renderNodes([node]) }, {}, node.__id)
 }
 
-/** Declarações → blocos `sz_css_decl` (encaixáveis num input CSSDecl). */
-function declarationsToBlocks(declarations?: Record<string, string>): SerializedBlocklyBlock[] {
-  if (!declarations) return []
-  return Object.entries(declarations).map(([prop, value]) =>
-    block('sz_css_decl', { PROP: prop, VALUE: value }),
-  )
-}
+const cssEntryToBlocks = createCSSIRToBlocks({ block })
 
-/** Texto `@keyframes …` para o fallback rawCSS (passos que o bloco from/to não cobre). */
-function keyframesToText(entry: KeyframesCSS): string {
-  const steps = entry.steps
-    .map((step) => {
-      const decls = Object.entries(step.declarations)
-        .map(([k, v]) => `    ${k}: ${v};`)
-        .join('\n')
-      return `  ${step.at} {\n${decls}\n  }`
+function statementsToBlocks(
+  statements: JSStatement[],
+  lifecycleRootsAllowed = false,
+): SerializedBlocklyBlock[] {
+  return statements
+    .map(statementToBlock)
+    .filter(isBlock)
+    .map((serialized) => {
+      if (lifecycleRootsAllowed) return serialized
+      const placement = getBlockContract(serialized.type)?.placement
+      if (!placement || placement.root.length === 0 || placement.nested.length > 0) {
+        return serialized
+      }
+      const area = placement.root[0]
+      const wrapperType =
+        area === 'events'
+          ? 'sz_legacy_nested_event'
+          : area === 'loops'
+            ? 'sz_legacy_nested_loop'
+            : 'sz_legacy_nested_start'
+      return block(wrapperType, {}, { CHILD: [serialized] })
     })
-    .join('\n')
-  return `@keyframes ${entry.name} {\n${steps}\n}`
-}
-
-/**
- * Reverte `@keyframes` para o bloco from/to quando os passos são só `from`/`0%`
- * e `to`/`100%`; multi-passo vira o bloco "animação (vários passos)" com blocos
- * "passo" filhos (editável); só sem passos cai num rawCSS preservando o texto.
- */
-function keyframesToBlock(entry: KeyframesCSS): SerializedBlocklyBlock {
-  const from = entry.steps.find((s) => s.at === 'from' || s.at === '0%')
-  const to = entry.steps.find((s) => s.at === 'to' || s.at === '100%')
-  const isFromTo =
-    /^[A-Za-z_-][\w-]*$/.test(entry.name) &&
-    entry.steps.length > 0 &&
-    entry.steps.every((s) => s === from || s === to)
-  if (isFromTo) {
-    return block(
-      'sz_css_keyframes',
-      { NAME: entry.name },
-      {
-        FROM: declarationsToBlocks(from?.declarations),
-        TO: declarationsToBlocks(to?.declarations),
-      },
-      entry.__id,
-    )
-  }
-  if (entry.steps.length > 0) {
-    return block(
-      'sz_css_keyframes_steps',
-      { NAME: entry.name },
-      {
-        STEPS: entry.steps.map((s) =>
-          block(
-            'sz_css_keyframe_step',
-            { AT: s.at },
-            { DECLS: declarationsToBlocks(s.declarations) },
-          ),
-        ),
-      },
-      entry.__id,
-    )
-  }
-  return block('sz_adv_raw_css', { CODE: keyframesToText(entry) }, {}, entry.__id)
-}
-
-function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
-  if ('type' in entry && entry.type === 'rawCSS') {
-    return [block('sz_adv_raw_css', { CODE: entry.code }, {}, entry.__id)]
-  }
-  if ('type' in entry && entry.type === 'comment') {
-    return [block('sz_css_comment', { TEXT: entry.text }, {}, entry.__id)]
-  }
-  if ('type' in entry && entry.type === 'mediaQuery') {
-    const inner = entry.rules.flatMap(cssEntryToBlocks)
-    return [
-      block(
-        'sz_css_media_query',
-        { DIR: entry.feature, PX: entry.px },
-        { RULES: inner },
-        entry.__id,
-      ),
-    ]
-  }
-  if ('type' in entry && entry.type === 'keyframes') {
-    return [keyframesToBlock(entry)]
-  }
-  if ('type' in entry && entry.type === 'googleFont') {
-    return [block('sz_css_google_font', { FONT: entry.family }, {}, entry.__id)]
-  }
-
-  const blocks: SerializedBlocklyBlock[] = []
-  // Após os early-returns de rawCSS e mediaQuery, só resta CSSRule (sem `type`).
-  const rule = entry as Exclude<CSSEntry, { type: string }>
-  const consumed = new Set<string>()
-  const selector = rule.selector
-
-  if (
-    selector === 'body' &&
-    rule.declarations.background &&
-    isLosslessColor(rule.declarations.background)
-  ) {
-    blocks.push(block('sz_css_body_background', { COLOR: rule.declarations.background }))
-    consumed.add('background')
-  }
-  if (selector === 'body' && rule.declarations.color && isLosslessColor(rule.declarations.color)) {
-    blocks.push(block('sz_css_body_text_color', { COLOR: rule.declarations.color }))
-    consumed.add('color')
-  }
-  if (selector === 'body' && isExactBodyCenter(rule.declarations)) {
-    blocks.push(block('sz_css_body_center'))
-    for (const property of [
-      'display',
-      'flex-direction',
-      'align-items',
-      'justify-content',
-      'min-height',
-      'margin',
-    ]) {
-      consumed.add(property)
-    }
-  }
-
-  if (rule.declarations.width) {
-    const w = rule.declarations.width.trim()
-    const pct = pctValue(w)
-    const px = pxValue(w)
-    if (pct !== null) {
-      blocks.push(block('sz_css_width_percent', { SELECTOR: selector, VALUE: pct }))
-      consumed.add('width')
-    } else if (px !== null) {
-      blocks.push(block('sz_css_width', { SELECTOR: selector, VALUE: px }))
-      consumed.add('width')
-    }
-  }
-  if (rule.declarations.height) {
-    const px = pxValue(rule.declarations.height)
-    if (px !== null) {
-      blocks.push(block('sz_css_height', { SELECTOR: selector, VALUE: px }))
-      consumed.add('height')
-    }
-  }
-  if (rule.declarations.border) {
-    const border = rule.declarations.border.trim()
-    const parsed = parseBorder(border)
-    // Só promove se a cor for hex canônico e a regeneração bater verbatim.
-    if (
-      parsed &&
-      isLosslessColor(parsed.color) &&
-      `${parsed.width}px solid ${parsed.color}` === border
-    ) {
-      blocks.push(
-        block('sz_css_border', { SELECTOR: selector, WIDTH: parsed.width, COLOR: parsed.color }),
-      )
-      consumed.add('border')
-    }
-  }
-  if (rule.declarations.padding) {
-    const px = pxValue(rule.declarations.padding)
-    if (px !== null) {
-      blocks.push(block('sz_css_padding', { SELECTOR: selector, VALUE: px }))
-      consumed.add('padding')
-    }
-  }
-  if (rule.declarations.margin && !consumed.has('margin')) {
-    const px = pxValue(rule.declarations.margin)
-    if (px !== null) {
-      blocks.push(block('sz_css_margin', { SELECTOR: selector, VALUE: px }))
-      consumed.add('margin')
-    }
-  }
-
-  // ---- Layout flex ----
-  const dir = rule.declarations['flex-direction']
-  if (
-    rule.declarations.display === 'flex' &&
-    !consumed.has('display') &&
-    dir &&
-    ['row', 'column'].includes(dir)
-  ) {
-    blocks.push(block('sz_css_display_flex', { SELECTOR: selector, DIR: dir }))
-    consumed.add('display')
-    consumed.add('flex-direction')
-  }
-  const justify = rule.declarations['justify-content']
-  if (
-    justify &&
-    !consumed.has('justify-content') &&
-    ['flex-start', 'center', 'flex-end', 'space-between', 'space-around'].includes(justify)
-  ) {
-    blocks.push(block('sz_css_justify', { SELECTOR: selector, VALUE: justify }))
-    consumed.add('justify-content')
-  }
-  const align = rule.declarations['align-items']
-  if (
-    align &&
-    !consumed.has('align-items') &&
-    ['stretch', 'flex-start', 'center', 'flex-end'].includes(align)
-  ) {
-    blocks.push(block('sz_css_align', { SELECTOR: selector, VALUE: align }))
-    consumed.add('align-items')
-  }
-  if (rule.declarations.gap) {
-    const px = pxValue(rule.declarations.gap)
-    if (px !== null) {
-      blocks.push(block('sz_css_gap', { SELECTOR: selector, VALUE: px }))
-      consumed.add('gap')
-    }
-  }
-
-  // ---- Tipografia ----
-  if (rule.declarations['font-size']) {
-    const px = pxValue(rule.declarations['font-size'])
-    if (px !== null) {
-      blocks.push(block('sz_css_font_size', { SELECTOR: selector, VALUE: px }))
-      consumed.add('font-size')
-    }
-  }
-  const weight = rule.declarations['font-weight']
-  if (weight && ['normal', 'bold'].includes(weight)) {
-    blocks.push(block('sz_css_font_weight', { SELECTOR: selector, VALUE: weight }))
-    consumed.add('font-weight')
-  }
-  const textAlign = rule.declarations['text-align']
-  if (textAlign && ['left', 'center', 'right'].includes(textAlign)) {
-    blocks.push(block('sz_css_text_align', { SELECTOR: selector, VALUE: textAlign }))
-    consumed.add('text-align')
-  }
-  if (
-    rule.declarations.color &&
-    !consumed.has('color') &&
-    isLosslessColor(rule.declarations.color)
-  ) {
-    blocks.push(block('sz_css_text_color', { SELECTOR: selector, COLOR: rule.declarations.color }))
-    consumed.add('color')
-  }
-  const transform = rule.declarations['text-transform']
-  if (transform && ['none', 'uppercase', 'lowercase', 'capitalize'].includes(transform)) {
-    blocks.push(block('sz_css_text_transform', { SELECTOR: selector, VALUE: transform }))
-    consumed.add('text-transform')
-  }
-  const decoration = rule.declarations['text-decoration']
-  if (decoration && ['none', 'underline'].includes(decoration)) {
-    blocks.push(block('sz_css_text_decoration', { SELECTOR: selector, VALUE: decoration }))
-    consumed.add('text-decoration')
-  }
-  const spacing = rule.declarations['letter-spacing']
-  if (spacing) {
-    const px = pxValue(spacing)
-    if (px !== null) {
-      blocks.push(block('sz_css_letter_spacing', { SELECTOR: selector, VALUE: px }))
-      consumed.add('letter-spacing')
-    }
-  }
-
-  // ---- Fundo e cor ----
-  if (
-    rule.declarations['background-color'] &&
-    isLosslessColor(rule.declarations['background-color'])
-  ) {
-    blocks.push(
-      block('sz_css_background_color', {
-        SELECTOR: selector,
-        COLOR: rule.declarations['background-color'],
-      }),
-    )
-    consumed.add('background-color')
-  }
-  if (rule.declarations.background && !consumed.has('background')) {
-    const bg = rule.declarations.background.trim()
-    const grad = parseGradient(bg)
-    // Só promove se as cores forem hex canônico e a regeneração bater verbatim.
-    if (
-      grad &&
-      isLosslessColor(grad.c1) &&
-      isLosslessColor(grad.c2) &&
-      `linear-gradient(135deg, ${grad.c1}, ${grad.c2})` === bg
-    ) {
-      blocks.push(block('sz_css_gradient', { SELECTOR: selector, C1: grad.c1, C2: grad.c2 }))
-      consumed.add('background')
-    }
-  }
-
-  // ---- Caixa e espaço ----
-  if (rule.declarations['border-radius']) {
-    const px = pxValue(rule.declarations['border-radius'])
-    if (px !== null) {
-      blocks.push(block('sz_css_border_radius', { SELECTOR: selector, VALUE: px }))
-      consumed.add('border-radius')
-    }
-  }
-  if (rule.declarations['box-shadow']) {
-    // shadowLevel só casa um preset exato → regeneração idêntica (sem perda).
-    const level = shadowLevel(rule.declarations['box-shadow'])
-    if (level) {
-      blocks.push(block('sz_css_shadow', { SELECTOR: selector, LEVEL: level }))
-      consumed.add('box-shadow')
-    }
-  }
-  if (rule.declarations['max-width']) {
-    const px = pxValue(rule.declarations['max-width'])
-    if (px !== null) {
-      blocks.push(block('sz_css_max_width', { SELECTOR: selector, VALUE: px }))
-      consumed.add('max-width')
-    }
-  }
-
-  // ---- 🎮 Posição & jogo: propriedade com bloco dedicado volta a ele (não à
-  // "Regra" genérica). Palavras-chave = guarda por enum; valores livres
-  // (offset/opacity/url) guardam a string crua e regeneram idênticas. ----
-  if (
-    rule.declarations.position &&
-    ['static', 'relative', 'absolute', 'fixed', 'sticky'].includes(rule.declarations.position)
-  ) {
-    blocks.push(block('sz_css_position', { SELECTOR: selector, VALUE: rule.declarations.position }))
-    consumed.add('position')
-  }
-  for (const side of ['top', 'left', 'right', 'bottom']) {
-    const value = rule.declarations[side]
-    if (value && !consumed.has(side)) {
-      blocks.push(block('sz_css_offset', { SIDE: side, SELECTOR: selector, VALUE: value }))
-      consumed.add(side)
-    }
-  }
-  if (
-    rule.declarations.display &&
-    !consumed.has('display') &&
-    ['block', 'inline', 'inline-block', 'none'].includes(rule.declarations.display)
-  ) {
-    blocks.push(block('sz_css_display', { SELECTOR: selector, VALUE: rule.declarations.display }))
-    consumed.add('display')
-  }
-  if (
-    rule.declarations.overflow &&
-    ['hidden', 'visible', 'scroll', 'auto'].includes(rule.declarations.overflow)
-  ) {
-    blocks.push(block('sz_css_overflow', { SELECTOR: selector, VALUE: rule.declarations.overflow }))
-    consumed.add('overflow')
-  }
-  if (
-    rule.declarations.cursor &&
-    ['pointer', 'default', 'crosshair', 'move', 'grab', 'not-allowed'].includes(
-      rule.declarations.cursor,
-    )
-  ) {
-    blocks.push(block('sz_css_cursor', { SELECTOR: selector, VALUE: rule.declarations.cursor }))
-    consumed.add('cursor')
-  }
-  if (
-    rule.declarations['image-rendering'] &&
-    ['pixelated', 'crisp-edges', 'auto'].includes(rule.declarations['image-rendering'])
-  ) {
-    blocks.push(
-      block('sz_css_image_rendering', {
-        SELECTOR: selector,
-        VALUE: rule.declarations['image-rendering'],
-      }),
-    )
-    consumed.add('image-rendering')
-  }
-  if (
-    rule.declarations['object-fit'] &&
-    ['cover', 'contain', 'fill', 'none'].includes(rule.declarations['object-fit'])
-  ) {
-    blocks.push(
-      block('sz_css_object_fit', { SELECTOR: selector, VALUE: rule.declarations['object-fit'] }),
-    )
-    consumed.add('object-fit')
-  }
-  if (rule.declarations.opacity) {
-    blocks.push(block('sz_css_opacity', { SELECTOR: selector, VALUE: rule.declarations.opacity }))
-    consumed.add('opacity')
-  }
-  if (rule.declarations['z-index']) {
-    const z = rule.declarations['z-index'].trim()
-    const n = Number(z)
-    if (Number.isInteger(n) && String(n) === z) {
-      blocks.push(block('sz_css_z_index', { SELECTOR: selector, VALUE: n }))
-      consumed.add('z-index')
-    }
-  }
-  if (rule.declarations['background-image']) {
-    const m = rule.declarations['background-image'].trim().match(/^url\('([^']*)'\)$/)
-    if (m) {
-      blocks.push(block('sz_css_background_image', { SELECTOR: selector, URL: m[1] ?? '' }))
-      consumed.add('background-image')
-    }
-  }
-
-  const remaining = Object.entries(rule.declarations).filter(([name]) => !consumed.has(name))
-  if (remaining.length > 0) {
-    // Declarações sem bloco amigável dedicado viram uma "Regra CSS" genérica
-    // (seletor livre) com um bloco "propriedade: valor" por declaração —
-    // em vez de cair em "código avançado". Preserva o `block.id` de cada
-    // declaração (vindo de `__declIds`) para manter o realce bloco↔código
-    // funcionando após round-trips IR→Blocks.
-    const decls = remaining.map(([prop, value]) =>
-      block('sz_css_decl', { PROP: prop, VALUE: value }, {}, rule.__declIds?.[prop]),
-    )
-    blocks.push(block('sz_css_rule', { SELECTOR: selector }, { CHILDREN: decls }))
-  }
-  if (entry.__id && blocks[0] && !blocks[0].id) {
-    blocks[0].id = entry.__id
-  }
-  return blocks
-}
-
-function statementsToBlocks(statements: JSStatement[]): SerializedBlocklyBlock[] {
-  return statements.map(statementToBlock).filter(isBlock)
 }
 
 // Propriedades de estilo com opção no dropdown do bloco `sz_js_set_style`; uma
@@ -866,51 +288,30 @@ const STYLE_PROP_VALUES: ReadonlySet<string> = new Set([
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Canvas 3D — RECONHECIMENTO das formas canônicas do three.js (IR genérica →
-// bloco FACILITADOR amigável). É o inverso EXATO do buildIR dos `sz_t3d_*`
-// facilitadores: o que aquele compila para memberCall/memberSet, estes
-// reconhecem de volta, para o bloco amigável sobreviver a um round-trip pela
-// Ponte. Gated por `recognizeThree` (setado em buildWorkspaceStateFromIR) — sem
-// isso, `Set.add`/`Map.set`/`x.visible` de um projeto 2D viraria bloco 3D à toa.
-// Devolvem null → o statement cai no bloco genérico (chamar método / definir
-// propriedade). Registro-espelho: allowlist, valueSockets, LEGACY_VALUE_FIELDS.
+// bloco FACILITADOR amigável). É o inverso EXATO do buildIR dos `sz_t3d_*`.
+// A decisão usa a foto léxica do statement: um método só vira facilitador se o
+// receptor foi realmente declarado com a capacidade 3D exigida naquele escopo.
+// Assim Set.add, objetos comuns com `visible` e classes locais homônimas continuam
+// sendo programação genérica mesmo em projetos que também usam Three.js.
 // ─────────────────────────────────────────────────────────────────────────────
-let recognizeThree = false
+let canvas3dContextIndex: Canvas3DStatementContextIndex = new WeakMap()
+let activeCanvas3DContext: Canvas3DStatementContext | undefined
 
-// Latch-irmão do `recognizeThree`, para DISCRIMINAR o bloco do nó `loaderLoad`:
-// variáveis declaradas como AudioLoader (`new THREE.AudioLoader()` ou
-// `const x = new AudioLoader()`) fazem `x.load('nome', …)` voltar como o bloco
-// "carregar o som" (sz_t3d_load_sound) em vez de "carregar o modelo". Sem
-// AudioLoader declarado, decai para o load_model (o valor sobrevive; só o rótulo
-// fica genérico). Setado/zerado junto do recognizeThree.
-let audioLoaderVars: ReadonlySet<string> = new Set()
+function hasCanvas3DSymbol(rawName: string, kind: Canvas3DSymbolKind): boolean {
+  return canvas3DContextHasSymbol(activeCanvas3DContext, rawName, kind)
+}
 
-/** Anda o IR (recursão por corpos/valores) coletando nomes de AudioLoader. */
-function collectAudioLoaderVars(stmts: readonly JSStatement[]): Set<string> {
-  const out = new Set<string>()
-  const visit = (node: unknown): void => {
-    if (!node || typeof node !== 'object') return
-    if (Array.isArray(node)) {
-      for (const item of node) visit(item)
-      return
-    }
-    const rec = node as Record<string, unknown>
-    if (
-      rec.type === 'newInstance' &&
-      rec.className === 'AudioLoader' &&
-      typeof rec.varName === 'string'
-    ) {
-      out.add(rec.varName)
-    }
-    if (rec.type === 'var' && typeof rec.name === 'string') {
-      const v = rec.value as Record<string, unknown> | null | undefined
-      if (v && typeof v === 'object' && v.type === 'newExpr' && v.className === 'AudioLoader') {
-        out.add(rec.name)
-      }
-    }
-    for (const val of Object.values(rec)) visit(val)
-  }
-  visit(stmts)
-  return out
+function isCanvas3DConstructor(namespace: string | undefined, className: string): boolean {
+  const normalizedNamespace = namespace?.trim() ?? ''
+  return (
+    normalizedNamespace === 'THREE' ||
+    (!normalizedNamespace && canvas3DContextHasImportedClass(activeCanvas3DContext, className))
+  )
+}
+
+function constructorReference(namespace: string | undefined, className: string): string {
+  const normalizedNamespace = namespace?.trim() ?? ''
+  return normalizedNamespace ? `${normalizedNamespace}.${className}` : className
 }
 
 type VarExpr = Extract<JSExpr, { type: 'var' }>
@@ -941,12 +342,17 @@ function valueSocketsOf(
 function recognizeT3dCall(
   stmt: Extract<JSStatement, { type: 'memberCall' }>,
 ): SerializedBlocklyBlock | null {
-  if (!recognizeThree) return null
   const { object, method, args } = stmt
   // obj.<prop>.set(x, y, z) — posição / rotação / escala
   const setProp = asMemberGet(object)
   const setBase = setProp && asVar(setProp.object)
-  if (method === 'set' && args.length === 3 && setProp && setBase) {
+  if (
+    method === 'set' &&
+    args.length === 3 &&
+    setProp &&
+    setBase &&
+    hasCanvas3DSymbol(setBase.name, 'object3d')
+  ) {
     const type =
       setProp.name === 'position'
         ? 'sz_t3d_set_position'
@@ -968,26 +374,23 @@ function recognizeT3dCall(
   if (method === 'set' && args.length === 1) {
     const colorProp = asMemberGet(object, 'color')
     const owner = colorProp && asVar(colorProp.object)
-    if (owner) {
+    if (owner && hasCanvas3DSymbol(owner.name, 'color-target3d')) {
       const vs = valueSocketsOf([['COLOR', args[0] as JSExpr]])
       if (vs) return block('sz_t3d_set_color', { OBJ: owner.name }, {}, stmt.__id, vs)
     }
   }
   const objVar = asVar(object)
-  // obj.position.lerp(alvo, velocidade)
-  if (method === 'lerp' && args.length === 2 && setProp && setProp.name === 'position' && setBase) {
-    const vs = valueSocketsOf([
-      ['TARGET', args[0] as JSExpr],
-      ['ALPHA', args[1] as JSExpr],
-    ])
-    if (vs) return block('sz_t3d_lerp_position', { OBJ: setBase.name }, {}, stmt.__id, vs)
-  }
   // copias.setMatrixAt(i, molde.matrix)
   if (method === 'setMatrixAt' && args.length === 2) {
     const mesh = asVar(object)
     const matProp = asMemberGet(args[1] as JSExpr, 'matrix')
     const dummy = matProp && asVar(matProp.object)
-    if (mesh && dummy) {
+    if (
+      mesh &&
+      dummy &&
+      hasCanvas3DSymbol(mesh.name, 'instanced-mesh3d') &&
+      hasCanvas3DSymbol(dummy.name, 'object3d')
+    ) {
       const vs = valueSocketsOf([['I', args[0] as JSExpr]])
       if (vs) {
         return block(
@@ -1001,7 +404,12 @@ function recognizeT3dCall(
     }
   }
   // camera.lookAt(x, y, z)
-  if (method === 'lookAt' && args.length === 3 && objVar) {
+  if (
+    method === 'lookAt' &&
+    args.length === 3 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d')
+  ) {
     const vs = valueSocketsOf([
       ['X', args[0] as JSExpr],
       ['Y', args[1] as JSExpr],
@@ -1009,13 +417,46 @@ function recognizeT3dCall(
     ])
     if (vs) return block('sz_t3d_look_at', { OBJ: objVar.name }, {}, stmt.__id, vs)
   }
+  // cena.add(new THREE.GridHelper(tam, div)) / cena.add(new THREE.AxesHelper(tam))
+  // ANTES do add genérico, senão o sz_t3d_add_to captura primeiro.
+  if (
+    method === 'add' &&
+    args.length === 1 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d')
+  ) {
+    const helper = args[0] as JSExpr
+    if (helper.type === 'newExpr' && helper.namespace === 'THREE') {
+      if (helper.className === 'GridHelper' && helper.args.length === 2) {
+        const vs = valueSocketsOf([
+          ['SIZE', helper.args[0] as JSExpr],
+          ['DIV', helper.args[1] as JSExpr],
+        ])
+        if (vs) return block('sz_t3d_debug_grid', { TARGET: objVar.name }, {}, stmt.__id, vs)
+      }
+      if (helper.className === 'AxesHelper' && helper.args.length === 1) {
+        const vs = valueSocketsOf([['SIZE', helper.args[0] as JSExpr]])
+        if (vs) return block('sz_t3d_debug_axes', { TARGET: objVar.name }, {}, stmt.__id, vs)
+      }
+    }
+  }
   // cena.add(objeto)
-  if (method === 'add' && args.length === 1 && objVar) {
+  if (
+    method === 'add' &&
+    args.length === 1 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d')
+  ) {
     const vs = valueSocketsOf([['OBJ', args[0] as JSExpr]])
     if (vs) return block('sz_t3d_add_to', { TARGET: objVar.name }, {}, stmt.__id, vs)
   }
   // renderizador.setSize(w, h)
-  if (method === 'setSize' && args.length === 2 && objVar) {
+  if (
+    method === 'setSize' &&
+    args.length === 2 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'renderer3d')
+  ) {
     const vs = valueSocketsOf([
       ['W', args[0] as JSExpr],
       ['H', args[1] as JSExpr],
@@ -1023,10 +464,20 @@ function recognizeT3dCall(
     if (vs) return block('sz_t3d_renderer_size', { R: objVar.name }, {}, stmt.__id, vs)
   }
   // renderizador.render(cena, camera)
-  if (method === 'render' && args.length === 2 && objVar) {
+  if (
+    method === 'render' &&
+    args.length === 2 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'renderer3d')
+  ) {
     const scene = asVar(args[0] as JSExpr)
     const cam = asVar(args[1] as JSExpr)
-    if (scene && cam) {
+    if (
+      scene &&
+      cam &&
+      hasCanvas3DSymbol(scene.name, 'scene3d') &&
+      hasCanvas3DSymbol(cam.name, 'camera3d')
+    ) {
       return block(
         'sz_t3d_render',
         { SCENE: scene.name, CAMERA: cam.name, R: objVar.name },
@@ -1036,7 +487,12 @@ function recognizeT3dCall(
     }
   }
   // composer.render() — desenhar passando pela esteira de efeitos (0 args).
-  if (method === 'render' && args.length === 0 && objVar) {
+  if (
+    method === 'render' &&
+    args.length === 0 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'composer3d')
+  ) {
     return block('sz_t3d_render_effects', { COMPOSER: objVar.name }, {}, stmt.__id)
   }
   return null
@@ -1045,13 +501,13 @@ function recognizeT3dCall(
 function recognizeT3dSet(
   stmt: Extract<JSStatement, { type: 'memberSet' }>,
 ): SerializedBlocklyBlock | null {
-  if (!recognizeThree) return null
   const { object, name, value } = stmt
   const objVar = asVar(object)
   // cena.background = new THREE.Color(cor)
   if (
     name === 'background' &&
     objVar &&
+    hasCanvas3DSymbol(objVar.name, 'scene3d') &&
     value.type === 'newExpr' &&
     value.namespace === 'THREE' &&
     value.className === 'Color' &&
@@ -1064,6 +520,7 @@ function recognizeT3dSet(
   if (
     name === 'fog' &&
     objVar &&
+    hasCanvas3DSymbol(objVar.name, 'scene3d') &&
     value.type === 'newExpr' &&
     value.namespace === 'THREE' &&
     value.className === 'Fog' &&
@@ -1079,7 +536,13 @@ function recognizeT3dSet(
   // copias.instanceMatrix.needsUpdate = true
   const instProp = asMemberGet(object, 'instanceMatrix')
   const instOwner = instProp && asVar(instProp.object)
-  if (name === 'needsUpdate' && instOwner && value.type === 'bool' && value.value === true) {
+  if (
+    name === 'needsUpdate' &&
+    instOwner &&
+    hasCanvas3DSymbol(instOwner.name, 'instanced-mesh3d') &&
+    value.type === 'bool' &&
+    value.value === true
+  ) {
     return block('sz_t3d_instances_dirty', { MESH: instOwner.name }, {}, stmt.__id)
   }
   // obj.rotation.<axis> += delta → obj.rotation.<axis> = obj.rotation.<axis> + delta
@@ -1087,6 +550,7 @@ function recognizeT3dSet(
   const rotOwner = rotProp && asVar(rotProp.object)
   if (
     rotOwner &&
+    hasCanvas3DSymbol(rotOwner.name, 'object3d') &&
     (name === 'x' || name === 'y' || name === 'z') &&
     value.type === 'binop' &&
     value.op === '+'
@@ -1101,8 +565,29 @@ function recognizeT3dSet(
       }
     }
   }
+  // material.wireframe = true/false — só para MATERIAL (não luz: wireframe em luz
+  // não existe no three, então `luz.wireframe = …` fica como memberSet genérico).
+  if (
+    name === 'wireframe' &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'color-target3d') &&
+    !hasCanvas3DSymbol(objVar.name, 'light3d') &&
+    value.type === 'bool'
+  ) {
+    return block(
+      'sz_t3d_set_wireframe',
+      { OBJ: objVar.name, VAL: value.value ? 'true' : 'false' },
+      {},
+      stmt.__id,
+    )
+  }
   // obj.visible = true/false
-  if (name === 'visible' && objVar && value.type === 'bool') {
+  if (
+    name === 'visible' &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d') &&
+    value.type === 'bool'
+  ) {
     return block(
       'sz_t3d_set_visible',
       { OBJ: objVar.name, VAL: value.value ? 'true' : 'false' },
@@ -1111,7 +596,13 @@ function recognizeT3dSet(
     )
   }
   // obj.castShadow / obj.receiveShadow = true/false
-  if ((name === 'castShadow' || name === 'receiveShadow') && objVar && value.type === 'bool') {
+  const shadowKind =
+    name === 'receiveShadow'
+      ? 'shadow-receiver3d'
+      : name === 'castShadow'
+        ? 'shadow-caster3d'
+        : null
+  if (shadowKind && objVar && hasCanvas3DSymbol(objVar.name, shadowKind) && value.type === 'bool') {
     return block(
       'sz_t3d_set_shadow',
       {
@@ -1126,11 +617,17 @@ function recognizeT3dSet(
   // renderizador.shadowMap.enabled = true
   const shadowMap = asMemberGet(object, 'shadowMap')
   const shadowOwner = shadowMap && asVar(shadowMap.object)
-  if (name === 'enabled' && shadowOwner && value.type === 'bool' && value.value === true) {
+  if (
+    name === 'enabled' &&
+    shadowOwner &&
+    hasCanvas3DSymbol(shadowOwner.name, 'renderer3d') &&
+    value.type === 'bool' &&
+    value.value === true
+  ) {
     return block('sz_t3d_enable_shadows', { R: shadowOwner.name }, {}, stmt.__id)
   }
   // luz.intensity = n
-  if (name === 'intensity' && objVar) {
+  if (name === 'intensity' && objVar && hasCanvas3DSymbol(objVar.name, 'light3d')) {
     const vs = valueSocketsOf([['N', value]])
     if (vs) return block('sz_t3d_set_intensity', { OBJ: objVar.name }, {}, stmt.__id, vs)
   }
@@ -1138,52 +635,90 @@ function recognizeT3dSet(
 }
 
 function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
+  const previousContext = activeCanvas3DContext
+  activeCanvas3DContext = canvas3dContextIndex.get(stmt)
+  try {
+    return statementToBlockInner(stmt)
+  } finally {
+    activeCanvas3DContext = previousContext
+  }
+}
+
+function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null {
+  const canvasBlock = canvasStatementIRToBlock(stmt, {
+    block,
+    expressionToBlock: exprToValueBlock,
+    rawStatement: rawJSBlock,
+    statementsToBlocks,
+    valueBlocks,
+  })
+  if (canvasBlock !== undefined) return canvasBlock
   switch (stmt.type) {
     case 'event': {
-      // Clique global no documento → bloco "clicar em qualquer lugar".
-      if (stmt.event === 'click' && stmt.targetKind === 'document') {
-        return block(
-          'sz_js_on_click_anywhere',
-          {},
-          { DO: statementsToBlocks(stmt.body) },
-          stmt.__id,
-        )
-      }
-      // Teclado global → "Quando apertar/soltar a tecla" (corpo embutido).
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      const targetFields = { TARGET: stmt.target, TARGET_KIND: targetKind }
       if (stmt.event === 'keydown' || stmt.event === 'keyup') {
         return block(
           'sz_js_on_key',
-          { WHEN: stmt.event },
+          { ...targetFields, WHEN: stmt.event },
           { DO: statementsToBlocks(stmt.body) },
           stmt.__id,
         )
       }
-      // Eventos globais sem alvo de elemento (mouse na tela / janela / tela cheia).
-      const globalMap: Partial<Record<string, string>> = {
-        mousemove: 'sz_js_on_mousemove',
-        mousedown: 'sz_js_on_pointer_down',
-        mouseup: 'sz_js_on_pointer_up',
-        load: 'sz_js_on_load',
-        resize: 'sz_js_on_resize',
-        fullscreenchange: 'sz_js_on_fullscreen_change',
-        contextmenu: 'sz_js_on_context_menu',
-        blur: 'sz_js_on_blur',
+      if (stmt.event === 'pointermove' || stmt.event === 'mousemove') {
+        return block(
+          'sz_js_on_mousemove',
+          targetFields,
+          { DO: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       }
-      const globalType = globalMap[stmt.event]
-      if (globalType) {
-        return block(globalType, {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id)
+      if (stmt.event === 'pointerdown' || stmt.event === 'mousedown') {
+        return block(
+          'sz_js_on_pointer_down',
+          targetFields,
+          { DO: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       }
-      const map: Partial<Record<string, string>> = {
-        click: 'sz_js_on_click',
-        mouseover: 'sz_js_on_mouseover',
-        submit: 'sz_js_on_submit',
-        input: 'sz_js_on_input',
+      if (stmt.event === 'pointerup' || stmt.event === 'mouseup') {
+        return block(
+          'sz_js_on_pointer_up',
+          targetFields,
+          { DO: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       }
-      const blockType = map[stmt.event]
+      if (targetKind === 'document') {
+        if (stmt.event === 'click') {
+          return block(
+            'sz_js_on_click_anywhere',
+            {},
+            { DO: statementsToBlocks(stmt.body) },
+            stmt.__id,
+          )
+        }
+        if (stmt.event === 'fullscreenchange') {
+          return block(
+            'sz_js_on_fullscreen_change',
+            {},
+            { DO: statementsToBlocks(stmt.body) },
+            stmt.__id,
+          )
+        }
+        return rawJSBlock(stmt)
+      }
+      if (targetKind === 'window') {
+        const blockType = WINDOW_EVENT_BLOCK_TYPES[stmt.event]
+        return blockType
+          ? block(blockType, {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id)
+          : rawJSBlock(stmt)
+      }
+      const blockType = ELEMENT_EVENT_BLOCK_TYPES[stmt.event]
       if (!blockType) return rawJSBlock(stmt)
       return block(
         blockType,
-        { TARGET: stmt.target, TARGET_KIND: stmt.targetKind ?? 'id' },
+        { TARGET: stmt.target, TARGET_KIND: targetKind },
         { DO: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
@@ -1212,6 +747,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return rawJSBlock(stmt)
     }
     case 'getProperty':
+      if (!isGuidedDomProperty(stmt.property)) return rawJSBlock(stmt)
       return block(
         'sz_js_get_property',
         {
@@ -1237,6 +773,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     case 'setProperty': {
       const kind = stmt.targetKind ?? 'id'
+      if (!isGuidedDomProperty(stmt.property)) return rawJSBlock(stmt)
       if (stmt.value.type === 'now')
         return block(
           'sz_js_set_property_calc',
@@ -1292,7 +829,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'setAttribute': {
-      if (stmt.targetKind === 'this') return rawJSBlock(stmt)
+      if (stmt.targetKind === 'this' || !isGuidedDomAttributeName(stmt.name)) {
+        return rawJSBlock(stmt)
+      }
       const valueBlock = exprToValueBlock(stmt.value)
       if (!valueBlock) return rawJSBlock(stmt)
       return block(
@@ -1304,10 +843,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'setText': {
-      const value = stringExpr(stmt.value)
-      return value === null
-        ? rawJSBlock(stmt)
-        : block('sz_js_set_text', { TARGET: stmt.targetId, VALUE: value }, {}, stmt.__id)
+      return statementToBlock({
+        ...stmt,
+        type: 'setProperty',
+        targetKind: 'id',
+        property: 'textContent',
+      })
     }
     case 'var': {
       const value = exprToValueBlock(stmt.value)
@@ -1460,135 +1001,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             vs,
           )
     }
-    case 'canvasSetup':
-      return block(
-        'sz_canvas_setup',
-        { CANVAS_ID: stmt.canvasId, CTX: stmt.varName },
-        {},
-        stmt.__id,
-      )
-    case 'canvasSetSize': {
-      const vs = valueBlocks({ W: stmt.w, H: stmt.h })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_set_size', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasClear':
-      return block('sz_canvas_clear', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasFillStyle': {
-      const vs = valueBlocks({ COLOR: stmt.color })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_fill_style', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasFillRect': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_fill_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasArc': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, R: stmt.r })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_arc', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasStrokeRect': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_stroke_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasClearRect': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_clear_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasRoundRect': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h, R: stmt.r })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_round_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasEllipse': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, RX: stmt.rx, RY: stmt.ry })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_ellipse', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasArcSlice': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, R: stmt.r, START: stmt.start, END: stmt.end })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_arc_slice', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasQuadraticCurve': {
-      const vs = valueBlocks({ CPX: stmt.cpx, CPY: stmt.cpy, X: stmt.x, Y: stmt.y })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_quadratic_curve', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasBezierCurve': {
-      const vs = valueBlocks({
-        CP1X: stmt.cp1x,
-        CP1Y: stmt.cp1y,
-        CP2X: stmt.cp2x,
-        CP2Y: stmt.cp2y,
-        X: stmt.x,
-        Y: stmt.y,
-      })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_bezier_curve', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasArcTo': {
-      const vs = valueBlocks({ X1: stmt.x1, Y1: stmt.y1, X2: stmt.x2, Y2: stmt.y2, R: stmt.r })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_arc_to', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasShadow': {
-      const vs = valueBlocks({ COLOR: stmt.color, BLUR: stmt.blur })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_shadow', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasStrokeText': {
-      const vs = valueBlocks({ TEXT: stmt.text, X: stmt.x, Y: stmt.y })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_stroke_text', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasLineDash': {
-      const vs = valueBlocks({ SEGMENT: stmt.segment })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_line_dash', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
 
-    case 'canvasFillText': {
-      const vs = valueBlocks({ TEXT: stmt.text, X: stmt.x, Y: stmt.y })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_fill_text', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'animationLoop': {
-      const b = block('sz_canvas_anim_loop', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-      // Reativa os slots do mutator (guardar id / tempo / delta) quando o IR os tem.
-      const extra: { handle?: string; timeVar?: string; deltaVar?: string } = {}
-      if (stmt.handle) extra.handle = stmt.handle
-      if (stmt.timeVar) extra.timeVar = stmt.timeVar
-      if (stmt.deltaVar) extra.deltaVar = stmt.deltaVar
-      if (Object.keys(extra).length > 0) b.extraState = extra
-      return b
-    }
-    case 'cancelAnimationFrame': {
-      const vs = valueBlocks({ HANDLE: stmt.handle })
-      return vs === null ? rawJSBlock(stmt) : block('sz_canvas_cancel_anim', {}, {}, stmt.__id, vs)
-    }
-    case 'keyboardSimple':
-      return block('sz_canvas_keyboard', { NAME: stmt.varName }, {}, stmt.__id)
     case 'querySelector':
       return block(
         'sz_js_query_selector',
@@ -1672,7 +1085,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         const match = exprToValueBlock(c.match)
         if (!match) return rawJSBlock(stmt)
         caseBlocks.push(
-          block('sz_js_case', {}, { DO: statementsToBlocks(c.body) }, undefined, { MATCH: match }),
+          block('sz_js_case', {}, { DO: statementsToBlocks(c.body) }, c.__id, { MATCH: match }),
         )
       }
       return block(
@@ -1694,130 +1107,6 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { VALUE: value },
       )
     }
-    case 'canvasDrawImage': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_draw_image', { CTX: stmt.ctxVar, SRC: stmt.src }, {}, stmt.__id, vs)
-    }
-    case 'canvasSave':
-      return block('sz_canvas_save', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasRestore':
-      return block('sz_canvas_restore', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasTranslate': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_translate', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasRotate': {
-      const angle = exprToValueBlock(stmt.angle)
-      return angle === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_rotate', { CTX: stmt.ctxVar }, {}, stmt.__id, { ANGLE: angle })
-    }
-    case 'canvasScale': {
-      const sx = exprToValueBlock(stmt.sx)
-      const sy = exprToValueBlock(stmt.sy)
-      return sx === null || sy === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_scale', { CTX: stmt.ctxVar }, {}, stmt.__id, { SX: sx, SY: sy })
-    }
-    case 'canvasGradient': {
-      // O bloco visual só representa FIELMENTE 2 stops nos offsets 0 e 1 com cor
-      // hex de 6 dígitos (o seletor de cor a re-emite igual). Qualquer outra forma
-      // — mais stops, offsets custom (0.3/0.8 viravam 0/1) ou cores nomeadas/rgba
-      // (forçadas à paleta) — seria promovida COM PERDA, mudando o desenho do aluno
-      // num round-trip blocos⇄código. Fica como rawJS, igual à disciplina de
-      // cssEntryToBlocks (só promove quando regenera verbatim).
-      const c0 = stmt.stops[0]?.color
-      const c1 = stmt.stops[1]?.color
-      if (
-        stmt.stops.length !== 2 ||
-        stmt.stops[0]?.offset !== 0 ||
-        stmt.stops[1]?.offset !== 1 ||
-        !c0 ||
-        !c1 ||
-        !isLosslessColor(c0) ||
-        !isLosslessColor(c1)
-      ) {
-        return rawJSBlock(stmt)
-      }
-      const x0 = exprToValueBlock(stmt.x0)
-      const y0 = exprToValueBlock(stmt.y0)
-      const x1 = exprToValueBlock(stmt.x1)
-      const y1 = exprToValueBlock(stmt.y1)
-      if (x0 === null || y0 === null || x1 === null || y1 === null) return rawJSBlock(stmt)
-      return block(
-        'sz_canvas_gradient',
-        { CTX: stmt.ctxVar, NAME: stmt.varName, C0: c0, C1: c1 },
-        {},
-        stmt.__id,
-        { X0: x0, Y0: y0, X1: x1, Y1: y1 },
-      )
-    }
-    case 'canvasBeginPath':
-      return block('sz_canvas_begin_path', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasClosePath':
-      return block('sz_canvas_close_path', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasStroke':
-      return block('sz_canvas_stroke', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasFill':
-      return block('sz_canvas_fill', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasRect': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasClip':
-      return block('sz_canvas_clip', { CTX: stmt.ctxVar }, {}, stmt.__id)
-    case 'canvasMoveTo': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_move_to', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasLineTo': {
-      const vs = valueBlocks({ X: stmt.x, Y: stmt.y })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_line_to', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasStrokeStyle': {
-      const vs = valueBlocks({ COLOR: stmt.color })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_stroke_style', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasLineWidth': {
-      const vs = valueBlocks({ WIDTH: stmt.width })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_line_width', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasGlobalAlpha': {
-      const vs = valueBlocks({ ALPHA: stmt.alpha })
-      return vs === null
-        ? rawJSBlock(stmt)
-        : block('sz_canvas_global_alpha', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
-    }
-    case 'canvasFont':
-      return block(
-        'sz_canvas_font',
-        { CTX: stmt.ctxVar, SIZE: stmt.size, FAMILY: stmt.family, WEIGHT: stmt.weight ?? '' },
-        {},
-        stmt.__id,
-      )
-    case 'canvasTextAlign':
-      return block('sz_canvas_text_align', { CTX: stmt.ctxVar, ALIGN: stmt.align }, {}, stmt.__id)
-    case 'canvasTextBaseline':
-      return block(
-        'sz_canvas_text_baseline',
-        { CTX: stmt.ctxVar, BASELINE: stmt.baseline },
-        {},
-        stmt.__id,
-      )
     case 'g2d:createSprite': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
@@ -1872,6 +1161,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g2d:clear':
       return block('sz_g2d_clear', {}, {}, stmt.__id)
+    case 'g2d:onStart':
+      return block('sz_g2d_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'g2d:updateEachFrame':
       return block(
         'sz_g2d_update_each_frame',
@@ -1945,6 +1236,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return delta === null
         ? rawJSBlock(stmt)
         : block('sz_g2d_change_health', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { DELTA: delta })
+    }
+    case 'g2d:damageSprite': {
+      const amount = exprToValueBlock(valueToExpr(stmt.amount))
+      const frames = exprToValueBlock(valueToExpr(stmt.invincibilityFrames))
+      return amount === null || frames === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_damage_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+            AMOUNT: amount,
+            FRAMES: frames,
+          })
     }
     case 'g2d:flipSprite':
       return block('sz_g2d_flip_sprite', { SPRITE: stmt.spriteVar, DIR: stmt.dir }, {}, stmt.__id)
@@ -2233,6 +1534,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
               BEHAVIOR: stmt.behavior,
               COLOR: stmt.color,
               IMAGE: stmt.image,
+              SHAPE: stmt.shape ?? '',
             },
             {},
             stmt.__id,
@@ -2465,6 +1767,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_g2d_update_group_no_gravity', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:drawGroup':
       return block('sz_g2d_draw_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g2d:drawGroupByY':
+      return block('sz_g2d_draw_group_by_y', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:forEachInGroup':
       return block(
         'sz_g2d_for_each_in_group',
@@ -2510,6 +1814,22 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             SECS: secs,
           })
     }
+    case 'g2d:afterSeconds': {
+      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+      return secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_after_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+            SECS: secs,
+          })
+    }
+    case 'g2d:setHitboxScale': {
+      const percent = exprToValueBlock(valueToExpr(stmt.percent))
+      return percent === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_set_hitbox_scale', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+            PERCENT: percent,
+          })
+    }
     case 'g2d:drawScore': {
       const value = exprToValueBlock(stmt.value)
       const x = exprToValueBlock(valueToExpr(stmt.x))
@@ -2549,6 +1869,19 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         SIZE: size,
       })
     }
+    case 'g2d:drawSpriteHealth': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const size = exprToValueBlock(valueToExpr(stmt.size))
+      if (!x || !y || !size) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_draw_sprite_health',
+        { SPRITE: stmt.spriteVar, STYLE: stmt.style, COLOR: stmt.color },
+        {},
+        stmt.__id,
+        { X: x, Y: y, SIZE: size },
+      )
+    }
     case 'g2d:drawBar': {
       const value = exprToValueBlock(stmt.value)
       const max = exprToValueBlock(stmt.max)
@@ -2566,6 +1899,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         H: h,
       })
     }
+    case 'g2d:setStageDescription':
+      return block('sz_g2d_set_stage_description', { DESCRIPTION: stmt.description }, {}, stmt.__id)
     case 'g2d:setScene':
       return block('sz_g2d_set_scene', { SCENE: stmt.name }, {}, stmt.__id)
     case 'g2d:showScreen': {
@@ -2753,20 +2088,117 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             SIZE: size,
           })
     }
-    case 'g2d:createStickHero':
-      // O ctx é o PADRÃO do palco (não é mais um campo do bloco — B7); a IR mantém
-      // ctxVar, mas o bloco só mostra o NOME do jogo.
-      return block('sz_g2d_create_stickhero', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g2d:updateStickHero':
-      return block('sz_g2d_update_stickhero', { GAME: stmt.gameVar }, {}, stmt.__id)
-    case 'g2d:restartStickHero':
-      return block('sz_g2d_restart_stickhero', { GAME: stmt.gameVar }, {}, stmt.__id)
-    case 'g2d:createBalloon':
-      return block('sz_g2d_create_balloon', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g2d:updateBalloon':
-      return block('sz_g2d_update_balloon', { GAME: stmt.gameVar }, {}, stmt.__id)
-    case 'g2d:restartBalloon':
-      return block('sz_g2d_restart_balloon', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:createStickHero': {
+      // O equilibrista é um SPRITE: tamanho em soquetes + cor em campo.
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return w === null || h === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_stickhero_sprite',
+            { NAME: stmt.varName, COLOR: stmt.color },
+            {},
+            stmt.__id,
+            { W: w, H: h },
+          )
+    }
+    case 'g2d:createStickPath':
+      // O ctx é o PADRÃO do palco (a IR mantém ctxVar; o bloco não o mostra).
+      return block(
+        'sz_g2d_stickpath_create',
+        {
+          NAME: stmt.varName,
+          PLATFORM_COLOR: stmt.platformColor,
+          STICK_COLOR: stmt.stickColor,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:stickPathScenery':
+      return block('sz_g2d_stickpath_scenery', { PATH: stmt.pathVar }, {}, stmt.__id)
+    case 'g2d:stickPathGrow': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_stickpath_grow', { PATH: stmt.pathVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g2d:stickPathDrop':
+      return block('sz_g2d_stickpath_drop', { PATH: stmt.pathVar }, {}, stmt.__id)
+    case 'g2d:stickPathWalk': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_stickpath_walk',
+            { SPRITE: stmt.spriteVar, PATH: stmt.pathVar },
+            {},
+            stmt.__id,
+            { SPEED: speed },
+          )
+    }
+    case 'g2d:stickPathDraw':
+      return block('sz_g2d_stickpath_draw', { PATH: stmt.pathVar }, {}, stmt.__id)
+    case 'g2d:onStickPathCross':
+      return block(
+        'sz_g2d_stickpath_on_cross',
+        { PATH: stmt.pathVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onStickPathPerfect':
+      return block(
+        'sz_g2d_stickpath_on_perfect',
+        { PATH: stmt.pathVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:createBalloon': {
+      // O balão é um SPRITE: posição/tamanho em soquetes + cores em campos.
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_balloon_sprite',
+            { NAME: stmt.varName, BODY: stmt.color, BASKET: stmt.basketColor },
+            {},
+            stmt.__id,
+            { X: x, Y: y, W: w, H: h },
+          )
+    }
+    case 'g2d:createBalloonPath':
+      return block('sz_g2d_balloonpath_create', { NAME: stmt.varName }, {}, stmt.__id)
+    case 'g2d:balloonPathScenery':
+      return block('sz_g2d_balloonpath_scenery', { PATH: stmt.pathVar }, {}, stmt.__id)
+    case 'g2d:balloonFire': {
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      return force === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_balloon_fire', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FORCE: force })
+    }
+    case 'g2d:balloonFly':
+      return block('sz_g2d_balloon_fly', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:balloonPathScroll': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_balloonpath_scroll',
+            { PATH: stmt.pathVar, SPRITE: stmt.spriteVar },
+            {},
+            stmt.__id,
+            { SPEED: speed },
+          )
+    }
+    case 'g2d:onBalloonPathTreeHit':
+      return block(
+        'sz_g2d_balloonpath_on_tree',
+        { PATH: stmt.pathVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'g2d:controlDino': {
       const jump = exprToValueBlock(valueToExpr(stmt.jump))
       return jump === null
@@ -2980,19 +2412,66 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     case 'g3d:createGroup':
       return block('sz_g3d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g3d:runEnemies': {
-      const every = exprToValueBlock(valueToExpr(stmt.every))
+    case 'g3d:everyFrames': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3d_every_frames', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+            N: n,
+          })
+    }
+    case 'g3d:everySeconds': {
+      const secs = exprToValueBlock(valueToExpr(stmt.secs))
+      return secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3d_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+            SECS: secs,
+          })
+    }
+    case 'g3d:spawnEnemy': {
       const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return every === null || speed === null
+      return speed === null
         ? rawJSBlock(stmt)
         : block(
-            'sz_g3d_run_enemies',
-            { WORLD: stmt.worldVar, GROUP: stmt.groupVar, GROUND: stmt.groundVar },
+            'sz_g3d_spawn_enemy',
+            { WORLD: stmt.worldVar, GROUP: stmt.groupVar },
             {},
             stmt.__id,
-            { EVERY: every, SPEED: speed },
+            { SPEED: speed },
           )
     }
+    case 'g3d:updateGroup':
+      return block(
+        'sz_g3d_update_group',
+        { GROUP: stmt.groupVar, GROUND: stmt.groundVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:updateGroupNoGravity':
+      return block('sz_g3d_update_group_no_gravity', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g3d:pruneOffscreen':
+      return block(
+        'sz_g3d_prune_offscreen',
+        { WORLD: stmt.worldVar, GROUP: stmt.groupVar, ITEM: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3d:forEachInGroup':
+      return block(
+        'sz_g3d_for_each_in_group',
+        { GROUP: stmt.groupVar, ITEM: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3d:removeFromGroup':
+      return block(
+        'sz_g3d_remove_from_group',
+        { GROUP: stmt.groupVar, OBJ: stmt.objVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:clearGroup':
+      return block('sz_g3d_clear_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g3d:stop':
       return block('sz_g3d_stop', { WORLD: stmt.worldVar }, {}, stmt.__id)
     case 'g3d:createCrossingScene':
@@ -3520,6 +2999,10 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_gk_hide_screens', {}, {}, stmt.__id)
     case 'gk:setState':
       return block('sz_gk_set_state', { STATE: stmt.name }, {}, stmt.__id)
+    case 'gk:restartGame':
+      return block('sz_gk_restart_game', {}, {}, stmt.__id)
+    case 'gk:onGameStart':
+      return block('sz_gk_on_game_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'gk:onEnterState':
       return block(
         'sz_gk_on_enter_state',
@@ -3700,9 +3183,22 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_gk_rpg_go_map', { MAP: stmt.map }, {}, stmt.__id)
     case 'gk:rpgSetStartMap':
       return block('sz_gk_rpg_set_start_map', { MAP: stmt.map }, {}, stmt.__id)
-    case 'gk:rpgOnMap':
+    case 'gk:rpgCreateMap': {
+      const cols = exprToValueBlock(valueToExpr(stmt.cols))
+      const rows = exprToValueBlock(valueToExpr(stmt.rows))
+      return cols === null || rows === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_rpg_create_map',
+            { MAP: stmt.map, PARAM: stmt.ctxName },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { COLS: cols, ROWS: rows },
+          )
+    }
+    case 'gk:rpgOnEnterMap':
       return block(
-        'sz_gk_rpg_on_map',
+        'sz_gk_rpg_on_enter_map',
         { MAP: stmt.map },
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
@@ -3714,14 +3210,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_rpg_create_door', { MAP: stmt.map }, {}, stmt.__id, { CX: cx, CY: cy })
     }
-    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
-    case 'gk:rpgMapSize': {
-      const cols = exprToValueBlock(valueToExpr(stmt.cols))
-      const rows = exprToValueBlock(valueToExpr(stmt.rows))
-      return cols === null || rows === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_map_size', {}, {}, stmt.__id, { COLS: cols, ROWS: rows })
-    }
+    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
     case 'gk:rpgConnectEdge':
       return block('sz_gk_rpg_connect_edge', { SIDE: stmt.side, MAP: stmt.map }, {}, stmt.__id)
     case 'gk:rpgBattleStats': {
@@ -5308,6 +4797,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g3k:spawnFrom':
       return block('sz_g3k_spawn_from', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id)
+    case 'g3k:spawnRing': {
+      const count = exprToValueBlock(valueToExpr(stmt.count))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return count === null || speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_spawn_ring', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id, {
+            COUNT: count,
+            SPEED: speed,
+          })
+    }
     case 'g3k:startSpawner': {
       const sec = exprToValueBlock(valueToExpr(stmt.seconds))
       return sec === null
@@ -5694,9 +5193,22 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_g3k_hurt', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
     }
+    case 'g3k:heal': {
+      const amount = exprToValueBlock(valueToExpr(stmt.amount))
+      return amount === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_heal', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
+    }
     case 'g3k:onEntityDeath':
       return block(
         'sz_g3k_on_entity_death',
+        { ITEM: stmt.itemName, MOLD: stmt.mold },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:onHurt':
+      return block(
+        'sz_g3k_on_hurt',
         { ITEM: stmt.itemName, MOLD: stmt.mold },
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
@@ -5910,6 +5422,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_w3d_water', { COLOR: stmt.color }, {}, stmt.__id, { Y: y })
     }
+    case 'w3d:skyPhoto':
+      return block('sz_w3d_sky_photo', { ASSET: stmt.asset }, {}, stmt.__id)
     case 'w3d:start':
       return block('sz_w3d_start', {}, {}, stmt.__id)
     case 'w3d:car':
@@ -6406,6 +5920,58 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_w3d_city', { SIZE: stmt.size, MODE: stmt.mode }, {}, stmt.__id, { X: x, Z: z })
     }
+    case 'w3d:district': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const size = exprToValueBlock(valueToExpr(stmt.size))
+      return x === null || z === null || size === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_district', { KIND: stmt.kind }, {}, stmt.__id, { X: x, Z: z, SIZE: size })
+    }
+    case 'w3d:roadGrid': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const size = exprToValueBlock(valueToExpr(stmt.size))
+      const width = exprToValueBlock(valueToExpr(stmt.width))
+      return x === null || z === null || size === null || width === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_road_grid', { LAYOUT: stmt.layout }, {}, stmt.__id, {
+            X: x,
+            Z: z,
+            SIZE: size,
+            WIDTH: width,
+          })
+    }
+    case 'w3d:houseRow': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+      return n === null || x1 === null || z1 === null || x2 === null || z2 === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_house_row', { STYLE: stmt.style }, {}, stmt.__id, {
+            N: n,
+            X1: x1,
+            Z1: z1,
+            X2: x2,
+            Z2: z2,
+          })
+    }
+    case 'w3d:quality':
+      return block('sz_w3d_quality', { MODE: stmt.mode }, {}, stmt.__id)
+    case 'w3d:inventoryGive': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_inventory_give', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
+    }
+    case 'w3d:inventoryRemove': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_inventory_remove', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
+    }
     case 'w3d:traffic': {
       const n = exprToValueBlock(valueToExpr(stmt.n))
       return n === null
@@ -6547,9 +6113,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       // Canvas 3D: com namespace (`new THREE.X`) OU classe de ADDON conhecida sob um
       // projeto three (`new GLTFLoader()`) → o bloco Canvas 3D, com CLASS = referência
       // completa (`THREE.Scene` / `GLTFLoader`). Senão → o bloco genérico do aluno.
-      const t3dNamed = !!stmt.namespace || (recognizeThree && ADDON_CLASSES.has(stmt.className))
+      const t3dNamed = isCanvas3DConstructor(stmt.namespace, stmt.className)
       if (t3dNamed) {
-        const ref = stmt.namespace ? `${stmt.namespace}.${stmt.className}` : stmt.className
+        const ref = constructorReference(stmt.namespace, stmt.className)
         return callWithArgs(
           'sz_t3d_new_var',
           { VARNAME: stmt.varName, CLASS: ref },
@@ -6559,20 +6125,24 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       }
       return callWithArgs(
         'sz_js_new_var',
-        { VARNAME: stmt.varName, CLASS: stmt.className },
+        { VARNAME: stmt.varName, CLASS: constructorReference(stmt.namespace, stmt.className) },
         stmt.args ?? [],
         stmt,
       )
     }
     case 'importStar':
-      return block('sz_t3d_import', { NAME: stmt.name }, {}, stmt.__id)
+      return stmt.module === 'three'
+        ? block('sz_t3d_import', { NAME: stmt.name }, {}, stmt.__id)
+        : rawJSBlock(stmt)
     case 'importNamed':
-      return block(
-        'sz_t3d_import_named',
-        { NAMES: stmt.names.join(', '), MODULE: stmt.module },
-        {},
-        stmt.__id,
-      )
+      return stmt.module === 'three' || stmt.module.startsWith('three/addons/')
+        ? block(
+            'sz_t3d_import_named',
+            { NAMES: stmt.names.join(', '), MODULE: stmt.module },
+            {},
+            stmt.__id,
+          )
+        : rawJSBlock(stmt)
     case 'callMethod':
       return callWithArgs(
         'sz_js_call_method',
@@ -6581,13 +6151,20 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt,
       )
     case 'eventHandler': {
-      // O bloco "listener por nome" cobre id/var; document cai em avançado (raro).
-      if (stmt.targetKind === 'document') return rawJSBlock(stmt)
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      if (targetKind === 'document' || targetKind === 'window') return rawJSBlock(stmt)
+      const canonicalEvent =
+        stmt.event === 'mousedown'
+          ? 'pointerdown'
+          : stmt.event === 'mouseup'
+            ? 'pointerup'
+            : stmt.event
+      if (!NAMED_ELEMENT_EVENT_KINDS.has(canonicalEvent)) return rawJSBlock(stmt)
       return block(
         'sz_js_on_event_named',
         {
-          EVENT: stmt.event,
-          TARGET_KIND: stmt.targetKind ?? 'id',
+          EVENT: canonicalEvent,
+          TARGET_KIND: targetKind,
           TARGET: stmt.target,
           HANDLER: stmt.handlerName,
         },
@@ -6620,25 +6197,6 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         VALUE: value,
       })
     }
-    case 'newImage': {
-      const src = exprToValueBlock(stmt.src)
-      if (!src) return rawJSBlock(stmt)
-      return block('sz_js_new_image', { VAR: stmt.varName }, {}, stmt.__id, { SRC: src })
-    }
-    case 'imageOnLoad': {
-      const target = exprToValueBlock(stmt.target)
-      if (!target) return rawJSBlock(stmt)
-      return block('sz_js_image_onload', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
-        TARGET: target,
-      })
-    }
-    case 'imageOnError': {
-      const target = exprToValueBlock(stmt.target)
-      if (!target) return rawJSBlock(stmt)
-      return block('sz_js_image_onerror', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
-        TARGET: target,
-      })
-    }
     case 'onClickAssign': {
       const target = exprToValueBlock(stmt.target)
       if (!target) return rawJSBlock(stmt)
@@ -6656,13 +6214,6 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!ms) return rawJSBlock(stmt)
       return block('sz_js_set_timeout_call', { FN: stmt.fn }, {}, stmt.__id, { MS: ms })
     }
-    case 'requestFrameDo':
-      return block(
-        'sz_canvas_request_frame_do',
-        { PARAM: stmt.param ?? '' },
-        { DO: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
     case 'indexSet': {
       const obj = exprToValueBlock(stmt.object)
       const index = exprToValueBlock(stmt.index)
@@ -6691,19 +6242,25 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return callWithArgs('sz_js_super_ctor', {}, stmt.args, stmt)
     case 'superMethodCall':
       return callWithArgs('sz_js_super_method', { METHOD: stmt.method }, stmt.args, stmt)
-    case 'requestFrame':
-      return block('sz_canvas_request_frame', { FN: stmt.fn }, {}, stmt.__id)
     case 'mountRenderer':
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
     case 'loaderLoad': {
       // URL é o NOME do asset (campo seletor) — sempre string (o parser só casa
-      // literal de string). Round-trip fiel com o `field_asset_picker`. O TIPO do
-      // bloco é discriminado pelo loader: declarado como AudioLoader → bloco de SOM.
+      // literal de string). O parser já classificou o recurso semanticamente;
+      // não precisamos procurar loaders homônimos fora do escopo do statement.
       const url = stmt.url.type === 'str' ? stmt.url.value : ''
       return block(
-        audioLoaderVars.has(stmt.loaderVar) ? 'sz_t3d_load_sound' : 'sz_t3d_load_model',
-        { LOADER: stmt.loaderVar, PARAM: stmt.param, URL: url },
-        { DO: statementsToBlocks(stmt.body) },
+        stmt.resourceKind === 'audio' ? 'sz_t3d_load_sound' : 'sz_t3d_load_model',
+        {
+          LOADER: stmt.loaderVar,
+          PARAM: stmt.param,
+          URL: url,
+          ERROR_PARAM: stmt.errorParam ?? 'erro',
+        },
+        {
+          DO: statementsToBlocks(stmt.body),
+          DO_ERROR: statementsToBlocks(stmt.errorBody ?? []),
+        },
         stmt.__id,
       )
     }
@@ -6719,9 +6276,51 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { OBJ: obj },
       )
     }
+    case 'threeSceneSetup':
+      return block('sz_t3d_scene_create', { SCENE: stmt.scene }, {}, stmt.__id)
+    case 'threeRendererSetup':
+      return block(
+        'sz_t3d_renderer_create',
+        { RENDERER: stmt.renderer, CANVAS: stmt.canvas },
+        {},
+        stmt.__id,
+      )
+    case 'threeCameraSetup': {
+      const vs = valueSocketsOf([
+        ['FOV', stmt.fov],
+        ['NEAR', stmt.near],
+        ['FAR', stmt.far],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_camera_create',
+            { CAMERA: stmt.camera, CANVAS: stmt.canvas },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'threeLightSetup': {
+      const vs = valueSocketsOf([
+        ['COLOR', stmt.color],
+        ['INTENSITY', stmt.intensity],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_light_create',
+            { LIGHT: stmt.light, SCENE: stmt.scene, KIND: stmt.kind },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
     case 'rendererConfig':
-      // Forward-only: só chega aqui via block→IR→block (o parser não reconstrói o nó);
-      // remonta os dropdowns. Do CÓDIGO, as linhas voltam como blocos genéricos.
+      // Nó semântico: o gerador o envolve num marcador versionado (canvas3dMacroCodec),
+      // então o parser o RECONSTITUI do código (marcador intacto) — este case remonta o
+      // bloco tanto no block→IR→block quanto no código→IR→block. Só decai para os blocos
+      // genéricos (memberSet/memberCall) se o aluno editar a receita e quebrar o checksum.
       return block(
         'sz_t3d_renderer_config',
         {
@@ -6734,9 +6333,46 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'rendererResponsive':
+      return block(
+        'sz_t3d_renderer_responsive',
+        {
+          R: stmt.renderer,
+          CAMERA: stmt.camera,
+          COMPOSER: stmt.composer ?? '',
+          CLEANUP: stmt.cleanup,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'environmentLoad':
+      return block(
+        'sz_t3d_load_environment',
+        {
+          SCENE: stmt.scene,
+          URL: stmt.url,
+          TEXTURE: stmt.texture,
+          BACKGROUND: stmt.background ? 'true' : 'false',
+        },
+        {},
+        stmt.__id,
+      )
+    case 'disposeObject':
+      return block('sz_t3d_dispose_object', { OBJECT: stmt.object }, {}, stmt.__id)
+    case 'lerpPosition': {
+      const vs = valueSocketsOf([
+        ['TARGET', stmt.target],
+        ['ALPHA', stmt.alpha],
+        ['DT', stmt.dt],
+      ])
+      return vs
+        ? block('sz_t3d_lerp_position', { OBJ: stmt.object }, {}, stmt.__id, vs)
+        : rawJSBlock(stmt)
+    }
     case 'bloomSetup': {
-      // Macro Brilho (forward-only): só chega aqui via block→IR→block. Do CÓDIGO, a
-      // esteira volta como blocos primitivos (new EffectComposer/addPass/…).
+      // Macro Brilho (nó semântico — ver rendererConfig): reconstituído do marcador
+      // versionado; decai para os primitivos (new EffectComposer/addPass/…) só se o
+      // aluno editar a receita expandida e quebrar o checksum.
       const vs = valueSocketsOf([
         ['STRENGTH', stmt.strength],
         ['RADIUS', stmt.radius],
@@ -6752,8 +6388,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'particlesSetup': {
-      // Macro Partículas (forward-only): só chega aqui via block→IR→block. Do CÓDIGO,
-      // vira os blocos primitivos (BufferGeometry/Points/laço).
+      // Macro Partículas (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos (BufferGeometry/Points/laço) só se a receita for editada.
       const vs = valueSocketsOf([
         ['COUNT', stmt.count],
         ['SIZE', stmt.size],
@@ -6770,7 +6406,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'waterSetup': {
-      // Macro Água (forward-only): só chega aqui via block→IR→block.
+      // Macro Água (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos só se a receita for editada.
       const vs = valueSocketsOf([
         ['SIZE', stmt.size],
         ['COLOR', stmt.color],
@@ -6778,10 +6415,15 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!vs) return rawJSBlock(stmt)
       return block('sz_t3d_water', { SCENE: stmt.scene, WATER: stmt.water }, {}, stmt.__id, vs)
     }
-    case 'waterTime':
-      return block('sz_t3d_water_wave', { WATER: stmt.water }, {}, stmt.__id)
+    case 'waterTime': {
+      const dt = exprToValueBlock(stmt.dt ?? { type: 'num', value: 1 / 60 })
+      return dt
+        ? block('sz_t3d_water_wave', { WATER: stmt.water }, {}, stmt.__id, { DT: dt })
+        : rawJSBlock(stmt)
+    }
     case 'grassSetup': {
-      // Macro Grama (forward-only): só chega aqui via block→IR→block.
+      // Macro Grama (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos só se a receita for editada.
       const vs = valueSocketsOf([
         ['COUNT', stmt.count],
         ['SIZE', stmt.size],
@@ -6791,10 +6433,15 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!vs) return rawJSBlock(stmt)
       return block('sz_t3d_grass', { SCENE: stmt.scene, GRASS: stmt.grass }, {}, stmt.__id, vs)
     }
-    case 'grassTime':
-      return block('sz_t3d_grass_wave', { GRASS: stmt.grass }, {}, stmt.__id)
+    case 'grassTime': {
+      const dt = exprToValueBlock(stmt.dt ?? { type: 'num', value: 1 / 60 })
+      return dt
+        ? block('sz_t3d_grass_wave', { GRASS: stmt.grass }, {}, stmt.__id, { DT: dt })
+        : rawJSBlock(stmt)
+    }
     case 'signSetup': {
-      // Macro Letreiro (forward-only): só chega aqui via block→IR→block.
+      // Macro Letreiro (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos só se a receita for editada.
       const vs = valueSocketsOf([
         ['SIZE', stmt.size],
         ['COLOR', stmt.color],
@@ -6808,6 +6455,292 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         vs,
       )
     }
+    case 'primitiveSetup': {
+      const vs = valueSocketsOf([
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_primitive',
+        { SHAPE: stmt.shape, SCENE: stmt.scene, MESH: stmt.mesh },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'terrainSetup': {
+      const vs = valueSocketsOf([
+        ['SIZE', stmt.size],
+        ['SEGMENTS', stmt.segments],
+        ['HILLS', stmt.hills],
+        ['SMOOTH', stmt.smooth],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_terrain',
+        { SCENE: stmt.scene, TERRAIN: stmt.terrain, HEIGHT_FN: stmt.heightFunction },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'roadSetup': {
+      const vs = valueSocketsOf([
+        ['X1', stmt.x1],
+        ['Z1', stmt.z1],
+        ['X2', stmt.x2],
+        ['Z2', stmt.z2],
+        ['WIDTH', stmt.width],
+        ['SEGMENTS', stmt.segments ?? { type: 'num', value: 24 }],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_road',
+        { SCENE: stmt.scene, ROAD: stmt.road, HEIGHT_FN: stmt.heightFunction ?? '' },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'buildingSetup': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Z', stmt.z],
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+        ['COLOR', stmt.color],
+        ['ROOF', stmt.roofColor],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_building',
+        {
+          SCENE: stmt.scene,
+          BUILDING: stmt.building,
+          HEIGHT_FN: stmt.heightFunction ?? '',
+        },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'citySetup': {
+      const vs = valueSocketsOf([
+        ['BLOCKS_X', stmt.blocksX],
+        ['BLOCKS_Z', stmt.blocksZ],
+        ['SPACING', stmt.spacing],
+        ['ROAD_WIDTH', stmt.roadWidth],
+        ['MIN_HEIGHT', stmt.minHeight],
+        ['MAX_HEIGHT', stmt.maxHeight],
+        ['SEED', stmt.seed],
+        ['COLOR', stmt.color],
+        ['ROOF', stmt.roofColor],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_city',
+            { SCENE: stmt.scene, HEIGHT_FN: stmt.heightFunction, CITY: stmt.city },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'physicsLiteSetup': {
+      const vs = valueSocketsOf([
+        ['GRAVITY', stmt.gravity],
+        ['SUBSTEPS', stmt.maxSubSteps],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_physics_setup',
+        { WORLD: stmt.world, HEIGHT_FN: stmt.heightFunction },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'physicsLiteStaticBox': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_physics_static_box',
+        { WORLD: stmt.world, ID: stmt.id },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'physicsLiteStaticSphere': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+        ['RADIUS', stmt.radius],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_physics_static_sphere',
+            { WORLD: stmt.world, ID: stmt.id },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'physicsLiteStaticObject':
+      return block(
+        'sz_t3d_physics_static_object',
+        { WORLD: stmt.world, OBJECT: stmt.object, ID: stmt.id },
+        {},
+        stmt.__id,
+      )
+    case 'physicsLiteStaticCity':
+      return block(
+        'sz_t3d_physics_static_city',
+        { WORLD: stmt.world, CITY: stmt.city, PREFIX: stmt.prefix },
+        {},
+        stmt.__id,
+      )
+    case 'physicsLiteBody': {
+      const vs = valueSocketsOf([
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+        ['FRICTION', stmt.friction],
+        ['BOUNCE', stmt.bounce],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_physics_body',
+        { WORLD: stmt.world, OBJECT: stmt.object, ID: stmt.id, KIND: stmt.kind },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'physicsLiteMove': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Z', stmt.z],
+        ['SPEED', stmt.speed],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_move', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteJump': {
+      const vs = valueSocketsOf([['SPEED', stmt.speed]])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_jump', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteTrigger': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_trigger', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteStep': {
+      const vs = valueSocketsOf([['DT', stmt.dt]])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_step', { WORLD: stmt.world }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteVelocity':
+    case 'physicsLiteImpulse':
+    case 'physicsLiteTeleport': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      const type =
+        stmt.type === 'physicsLiteVelocity'
+          ? 'sz_t3d_physics_velocity'
+          : stmt.type === 'physicsLiteImpulse'
+            ? 'sz_t3d_physics_impulse'
+            : 'sz_t3d_physics_teleport'
+      return block(type, { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteRemove':
+      return block('sz_t3d_physics_remove', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id)
+    case 'physicsLiteClear':
+      return block('sz_t3d_physics_clear', { WORLD: stmt.world }, {}, stmt.__id)
+    case 'physicsLiteCollisionEvent':
+      return block(
+        'sz_t3d_physics_on_collision',
+        {
+          WORLD: stmt.world,
+          BODY_PARAM: stmt.bodyParam,
+          COLLIDER_PARAM: stmt.colliderParam,
+        },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'physicsLiteTriggerEvent':
+      return block(
+        'sz_t3d_physics_on_trigger',
+        {
+          WORLD: stmt.world,
+          BODY_PARAM: stmt.bodyParam,
+          TRIGGER_PARAM: stmt.triggerParam,
+          ENTERING_PARAM: stmt.enteringParam,
+        },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'physicsLiteRaycast': {
+      const vs = valueSocketsOf([
+        ['OX', stmt.ox],
+        ['OY', stmt.oy],
+        ['OZ', stmt.oz],
+        ['DX', stmt.dx],
+        ['DY', stmt.dy],
+        ['DZ', stmt.dz],
+        ['MAX', stmt.maxDistance],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_physics_raycast',
+            { WORLD: stmt.world, RESULT: stmt.result },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'physicsLiteBodyState':
+      return block(
+        'sz_t3d_physics_body_state',
+        { WORLD: stmt.world, ID: stmt.id, RESULT: stmt.result },
+        {},
+        stmt.__id,
+      )
+    case 'physicsLiteStats':
+      return block(
+        'sz_t3d_physics_stats',
+        { WORLD: stmt.world, RESULT: stmt.result },
+        {},
+        stmt.__id,
+      )
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)
@@ -6824,7 +6757,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const params = new Set(stmt.params)
       const body = statementsToBlocks(stmt.body)
       for (const b of body) retypeParamsAsArgs(b, params)
-      const blk = block('sz_js_function', { NAME: stmt.name }, { BODY: body }, stmt.__id)
+      const blk = block(
+        'sz_js_function',
+        { NAME: stmt.name, ASYNC: stmt.async ? 'TRUE' : 'FALSE' },
+        { BODY: body },
+        stmt.__id,
+      )
       blk.extraState = paramsExtra(stmt.params)
       return blk
     }
@@ -6849,6 +6787,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'rawJS':
       return block('sz_adv_raw_js', { CODE: stmt.code }, {}, stmt.__id)
   }
+  return null
 }
 
 /** Estado serializado do `sz_params_mutator` a partir dos nomes de parâmetros. */
@@ -6988,6 +6927,12 @@ function exprToValueBlock(expr: JSExpr): SerializedBlocklyBlock | null {
 }
 
 function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
+  const canvasBlock = canvasExpressionIRToBlock(expr, {
+    block,
+    expressionToBlock: exprToValueBlock,
+    valueBlocks,
+  })
+  if (canvasBlock !== undefined) return canvasBlock
   switch (expr.type) {
     case 'num':
       return block('sz_val_number', { NUM: expr.value })
@@ -7017,6 +6962,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_angle_to', { A: expr.aVar, B: expr.bVar })
     case 'g2d:getHealth':
       return block('sz_g2d_get_health', { SPRITE: expr.spriteVar })
+    case 'g2d:getMaxHealth':
+      return block('sz_g2d_get_max_health', { SPRITE: expr.spriteVar })
     case 'g2d:enemyDamage':
       return block('sz_g2d_enemy_damage', { SPRITE: expr.spriteVar })
     case 'g2d:spriteX':
@@ -7057,6 +7004,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     }
     case 'g2d:hasHealth':
       return block('sz_g2d_has_health', { SPRITE: expr.spriteVar })
+    case 'g2d:healthDepleted':
+      return block('sz_g2d_health_depleted', { SPRITE: expr.spriteVar })
+    case 'g2d:isInvincible':
+      return block('sz_g2d_is_invincible', { SPRITE: expr.spriteVar })
     case 'g2d:cooldownReady': {
       const f = exprToValueBlock(valueToExpr(expr.frames))
       return f === null
@@ -7077,16 +7028,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_tile_at', { MAP: expr.mapVar, SPRITE: expr.spriteVar })
     case 'g2d:sceneIs':
       return block('sz_g2d_scene_is', { SCENE: expr.name })
-    case 'g2d:stickHeroScore':
-      return block('sz_g2d_stickhero_score', { GAME: expr.gameVar })
-    case 'g2d:stickHeroOver':
-      return block('sz_g2d_stickhero_over', { GAME: expr.gameVar })
-    case 'g2d:balloonScore':
-      return block('sz_g2d_balloon_score', { GAME: expr.gameVar })
+    case 'g2d:stickPathFell':
+      return block('sz_g2d_stickpath_fell', { PATH: expr.pathVar })
+    case 'g2d:balloonPathMeters':
+      return block('sz_g2d_balloonpath_meters', { PATH: expr.pathVar })
     case 'g2d:balloonFuel':
-      return block('sz_g2d_balloon_fuel', { GAME: expr.gameVar })
-    case 'g2d:balloonOver':
-      return block('sz_g2d_balloon_over', { GAME: expr.gameVar })
+      return block('sz_g2d_balloon_fuel_left', { SPRITE: expr.spriteVar })
+    case 'g2d:balloonLandedOut':
+      return block('sz_g2d_balloon_landed_out', { SPRITE: expr.spriteVar })
+    case 'g2d:pointerDown':
+      return block('sz_g2d_pointer_down', {})
     case 'g2d:aimReleased':
       return block('sz_g2d_aim_released', { THROWER: expr.throwerVar })
     case 'g2d:bananaHitThrower':
@@ -7107,6 +7058,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_touches_box', { OBJ: expr.objVar, GROUP: expr.groupVar })
     case 'g3d:distanceTo':
       return block('sz_g3d_distance_to', { A: expr.aVar, B: expr.bVar })
+    case 'g3d:countSwarm':
+      return block('sz_g3d_count_swarm', { SWARM: expr.swarmVar })
+    case 'g3d:countGroup':
+      return block('sz_g3d_count_group', { GROUP: expr.groupVar })
     case 'g3d:isNear': {
       const dist = exprToValueBlock(valueToExpr(expr.dist))
       return dist === null
@@ -7289,6 +7244,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_mouse_x', {})
     case 'gk:mouseY':
       return block('sz_gk_mouse_y', {})
+    case 'gk:mouseScreenX':
+      return block('sz_gk_mouse_screen_x', {})
+    case 'gk:mouseScreenY':
+      return block('sz_gk_mouse_screen_y', {})
     case 'gk:mouseDown':
       return block('sz_gk_mouse_down', {})
     case 'gk:rpgCell': {
@@ -7463,6 +7422,14 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_w3d_coin_count', {})
     case 'w3d:hasAchievement':
       return block('sz_w3d_has_achievement', { NAME: expr.name })
+    case 'w3d:inventoryCount':
+      return block('sz_w3d_inventory_count', { ITEM: expr.item })
+    case 'w3d:inventoryHas': {
+      const n = exprToValueBlock(valueToExpr(expr.n))
+      return n === null
+        ? null
+        : block('sz_w3d_inventory_has', { ITEM: expr.item }, {}, undefined, { N: n })
+    }
     case 'w3d:keyDown':
       return block('sz_w3d_key_down', { KEY: expr.key })
     case 'w3d:keyPressed':
@@ -7481,10 +7448,6 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3k_state_is', { STATE: expr.name })
     case 'g3k:gameState':
       return block('sz_g3k_game_state', {})
-    case 'inputKeyPressed':
-      return block('sz_input_key_pressed', { KEY: expr.key })
-    case 'inputPointer':
-      return block(expr.axis === 'y' ? 'sz_input_pointer_y' : 'sz_input_pointer_x')
     case 'isFullscreen':
       return block('sz_val_is_fullscreen')
     case 'systemDark':
@@ -7507,24 +7470,6 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block(expr.dim === 'width' ? 'sz_val_canvas_width' : 'sz_val_canvas_height', {
         CTX: expr.ctxVar,
       })
-    case 'canvasMeasureText': {
-      const t = exprToValueBlock(expr.text)
-      return t === null
-        ? null
-        : block('sz_canvas_measure_text', { CTX: expr.ctxVar }, {}, expr.__id, { TEXT: t })
-    }
-    case 'canvasIsPointInPath': {
-      const vs = valueBlocks({ X: expr.x, Y: expr.y })
-      return vs === null
-        ? null
-        : block('sz_canvas_point_in_path', { CTX: expr.ctxVar }, {}, expr.__id, vs)
-    }
-    case 'canvasIsPointInStroke': {
-      const vs = valueBlocks({ X: expr.x, Y: expr.y })
-      return vs === null
-        ? null
-        : block('sz_canvas_point_in_stroke', { CTX: expr.ctxVar }, {}, expr.__id, vs)
-    }
     case 'random': {
       const min = exprToValueBlock(expr.min)
       const max = exprToValueBlock(expr.max)
@@ -7758,6 +7703,15 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return b
     }
     case 'memberGet': {
+      // `cena.children.length` num projeto three → "quantos objetos tem em cena".
+      // ANTES do genérico, senão a leitura vira dois memberGet encadeados.
+      if (expr.name === 'length' && !expr.optional) {
+        const childrenProp = asMemberGet(expr.object, 'children')
+        const owner = childrenProp && asVar(childrenProp.object)
+        if (owner && hasCanvas3DSymbol(owner.name, 'object3d')) {
+          return block('sz_t3d_object_count', { TARGET: owner.name }, {}, expr.__id)
+        }
+      }
       const obj = exprToValueBlock(expr.object)
       if (!obj) return null
       const type = expr.optional ? 'sz_val_member_get_optional' : 'sz_val_member_get'
@@ -7786,16 +7740,22 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       // Com namespace (`new THREE.X()`) OU classe de ADDON sob three (`new
       // GLTFLoader()`) → o bloco Canvas 3D (CLASS = referência completa); senão → o
       // bloco genérico de classe do aluno.
-      const t3dNamed = !!expr.namespace || (recognizeThree && ADDON_CLASSES.has(expr.className))
+      const t3dNamed = isCanvas3DConstructor(expr.namespace, expr.className)
       const b = t3dNamed
         ? block(
             'sz_t3d_new',
-            { CLASS: expr.namespace ? `${expr.namespace}.${expr.className}` : expr.className },
+            { CLASS: constructorReference(expr.namespace, expr.className) },
             {},
             expr.__id,
             valueInputs,
           )
-        : block('sz_val_new', { CLASS: expr.className }, {}, expr.__id, valueInputs)
+        : block(
+            'sz_val_new',
+            { CLASS: constructorReference(expr.namespace, expr.className) },
+            {},
+            expr.__id,
+            valueInputs,
+          )
       if (expr.args.length > 0) b.extraState = { items: expr.args.length }
       return b
     }
@@ -7815,8 +7775,6 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       if (!obj) return null
       return block('sz_val_object_op', { OP: expr.op }, {}, expr.__id, { OBJ: obj })
     }
-    case 'assetImage':
-      return block('sz_val_image', { ASSET: expr.name }, {}, expr.__id)
     case 'indexGet': {
       const obj = exprToValueBlock(expr.object)
       const idx = exprToValueBlock(expr.index)
@@ -7908,65 +7866,6 @@ function rawJSCodeFor(stmt: JSStatement): string {
     // válido) cai para o nó comentado — JS inerte que preserva o dado p/ debug.
     return `/* ${JSON.stringify(stmt)} */`
   }
-}
-
-/**
- * Promove `body { … }` para o bloco amigável de centralização SÓ quando o
- * conjunto bate EXATAMENTE o que o bloco regenera — senão promover inventaria
- * propriedades (`flex-direction:column`, `min-height:100vh`, `margin:0`).
- */
-function isExactBodyCenter(d: Record<string, string>): boolean {
-  return (
-    d.display === 'flex' &&
-    d['flex-direction'] === 'column' &&
-    d['align-items'] === 'center' &&
-    d['justify-content'] === 'center' &&
-    d['min-height'] === '100vh' &&
-    d.margin === '0'
-  )
-}
-
-/** `Npx` exato → N (sem perda). Senão `null` (a declaração vai para verbatim). */
-function pxValue(value: string): number | null {
-  const v = value.trim()
-  const m = v.match(/^(\d+(?:\.\d+)?)px$/i)
-  if (!m) return null
-  const n = Number(m[1])
-  return `${n}px` === v ? n : null
-}
-
-/** `N%` exato → N (sem perda). */
-function pctValue(value: string): number | null {
-  const v = value.trim()
-  const m = v.match(/^(\d+(?:\.\d+)?)%$/)
-  if (!m) return null
-  const n = Number(m[1])
-  return `${n}%` === v ? n : null
-}
-
-/** Hex canônico minúsculo de 6 dígitos — o campo de cor do Blockly o re-emite igual. */
-function isLosslessColor(value: string): boolean {
-  return /^#[0-9a-f]{6}$/.test(value.trim())
-}
-
-function parseBorder(value: string): { width: number; color: string } | null {
-  const match = value.match(/^(\d+(?:\.\d+)?)px\s+solid\s+(.+)$/i)
-  if (!match) return null
-  return { width: Number(match[1]), color: match[2]?.trim() ?? '#000000' }
-}
-
-function parseGradient(value: string): { c1: string; c2: string } | null {
-  const m = value.trim().match(/^linear-gradient\(\s*135deg\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)$/i)
-  if (!m) return null
-  return { c1: m[1] ?? '#000000', c2: m[2] ?? '#ffffff' }
-}
-
-function shadowLevel(value: string): 'sm' | 'md' | 'lg' | null {
-  const v = value.trim()
-  for (const [level, preset] of Object.entries(SHADOW_PRESETS)) {
-    if (preset === v) return level as 'sm' | 'md' | 'lg'
-  }
-  return null
 }
 
 function renderElementFallback(node: Extract<SZIR['html'][number], { type: 'element' }>): string {

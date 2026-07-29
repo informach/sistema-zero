@@ -170,7 +170,7 @@ export function buildApp(
     clock,
   })
 
-  const checkAccess = new CheckAccessService(courses, entitlements, clock)
+  const checkAccess = new CheckAccessService(courses, entitlements, gamification, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
   const accessCheck = new AccessCheckService(entitlements, clock)
   const grant = new GrantEntitlementService({
@@ -191,6 +191,12 @@ export function buildApp(
   // Play-check do REMIX, semeável por teste: playId → {visible, authorId}. Ausente
   // do mapa → null (hub indisponível — o service NÃO grava o marco, fail-closed).
   const hubPlays = new Map<string, { visible: boolean; authorId: string | null }>()
+  // Jogos publicados por PERFIL (perfil público kids), semeável por teste. Ausente do
+  // mapa → null (hub indisponível → o service degrada p/ `games: []`).
+  const hubGamesByAuthor = new Map<
+    string,
+    { title: string; playId: string | null; coverUrl: string | null; publishedAt: string }[]
+  >()
   const hub: HubGateway = {
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
@@ -198,6 +204,10 @@ export function buildApp(
     async listShowcaseByAuthors(authorIds) {
       if (!hubShowcaseByAuthors.items) return null
       return hubShowcaseByAuthors.items.filter((i) => authorIds.includes(i.authorId))
+    },
+    async listShowcaseByAuthor(profileId, limit) {
+      const items = hubGamesByAuthor.get(profileId)
+      return items ? items.slice(0, limit) : null
     },
     async checkPlay(playId) {
       return hubPlays.get(playId) ?? null
@@ -240,8 +250,15 @@ export function buildApp(
     logger: silentLogger,
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     members: {
-      listMyCourses: new ListMyCoursesService(entitlements, courses, progress, positions, clock),
-      listCatalog: new ListCatalogService(courses, entitlements, clock),
+      listMyCourses: new ListMyCoursesService(
+        entitlements,
+        courses,
+        progress,
+        positions,
+        gamification,
+        clock,
+      ),
+      listCatalog: new ListCatalogService(courses, entitlements, gamification, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
       getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions, ratings),
       getLesson: new GetLessonService(
@@ -348,7 +365,7 @@ export function buildApp(
       equipAvatar: new EquipAvatarService(avatar, clock),
       setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
       getAvatarsByProfiles: new GetAvatarsByProfilesService(avatar, gamification),
-      getPublicProfile: new GetPublicProfileService(gamification, avatar, room, clock),
+      getPublicProfile: new GetPublicProfileService(gamification, avatar, room, hub, clock),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),
       buyRoomItem: new BuyRoomItemService(room, gamification, awardGamification, clock),
@@ -468,6 +485,7 @@ export function buildApp(
     clockRef,
     hubCalls,
     hubShowcaseByAuthors,
+    hubGamesByAuthor,
     hubPlays,
     authProfiles,
     aiUsage,
@@ -487,6 +505,7 @@ export function seedSampleCourse(
   sequentialLock = false,
   level: CourseLevel = 'iniciante',
   track: CourseTrack = '2d',
+  careerSlot: number | null = null,
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -496,6 +515,7 @@ export function seedSampleCourse(
   const ebookBlockId = randomUUID()
   courses.courses.push({
     id: courseId,
+    version: 0,
     slug,
     title: 'Curso Demo',
     subtitle: null,
@@ -506,6 +526,7 @@ export function seedSampleCourse(
     sequentialLock,
     level,
     track,
+    careerSlot,
     metadata: null,
     createdAt: now,
     updatedAt: now,
@@ -789,7 +810,7 @@ export function signedWebhookHeaders(
   const ts = Math.floor(Date.now() / 1000)
   const sig = signHmac(
     WEBHOOK_SECRET,
-    canonicalHmacMessage({ method: 'POST', path, body: rawBody }),
+    canonicalHmacMessage({ method: 'POST', path, deliveryId, body: rawBody }),
     ts,
   )
   const headers: Record<string, string> = {

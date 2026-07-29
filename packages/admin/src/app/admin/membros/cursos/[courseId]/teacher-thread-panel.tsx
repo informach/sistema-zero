@@ -6,7 +6,9 @@ import { Card } from '@sistemazero/ui/card'
 import { MessagesSquare, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadView } from '@/lib/types'
 
@@ -43,6 +45,7 @@ export function TeacherThreadPanel({
   const [loading, setLoading] = useState(true)
   const [reply, setReply] = useState('')
   const [sending, setSending] = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -85,10 +88,33 @@ export function TeacherThreadPanel({
       })
       setThread(updated)
       setReply('')
+      // Responder muda a pendência da entrega → badge da sidebar re-busca já.
+      refreshProfessorCounts()
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao enviar o recado.')
     } finally {
       setSending(false)
+    }
+  }
+
+  const loadOlder = async () => {
+    if (!thread?.nextCursor || loadingOlder) return
+    setLoadingOlder(true)
+    try {
+      const older = await apiGet<{ thread: TeacherThreadView | null }>(
+        `/api/members/teacher-threads/by-context?userId=${encodeURIComponent(userId)}&contextType=studio_submission&contextRef=${encodeURIComponent(blockId)}&before=${encodeURIComponent(thread.nextCursor)}`,
+      )
+      const olderThread = older.thread
+      if (!olderThread) return
+      setThread((current) =>
+        current
+          ? { ...olderThread, messages: [...olderThread.messages, ...current.messages] }
+          : olderThread,
+      )
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao carregar mensagens anteriores.')
+    } finally {
+      setLoadingOlder(false)
     }
   }
 
@@ -102,6 +128,13 @@ export function TeacherThreadPanel({
         <p className="text-muted-foreground text-xs">Carregando conversa…</p>
       ) : thread && thread.messages.length > 0 ? (
         <ul className="flex max-h-64 flex-col gap-2 overflow-y-auto">
+          {thread.nextCursor ? (
+            <li className="self-center">
+              <Button variant="outline" size="sm" disabled={loadingOlder} onClick={loadOlder}>
+                {loadingOlder ? 'Carregando…' : 'Carregar mensagens anteriores'}
+              </Button>
+            </li>
+          ) : null}
           {thread.messages.map((m) => {
             const teacher = m.authorRole === 'teacher'
             return (
@@ -138,7 +171,8 @@ export function TeacherThreadPanel({
         {/* Editor rico: negrito/listas/citação, código (inline e bloco) e PRINT (botão de
             imagem ou colar Ctrl+V) — para o professor explicar bem à criança. Saída markdown. */}
         <RichTextEditor content={reply} onChange={setReply} compact />
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-2">
+          <ReplyTemplatesMenu value={reply} onChange={setReply} />
           <Button size="sm" onClick={send} disabled={!reply.trim() || sending}>
             <Send className="size-4" /> Enviar
           </Button>

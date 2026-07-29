@@ -1,4 +1,5 @@
 import { type JSExpr, valueToExpr } from '#ir'
+import { canvasExpressionToCode, isCanvasExpression } from '../codecs/web/canvasExpressionToCode'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
 
@@ -96,6 +97,8 @@ export class IdentifierScope implements IdentifierResolver {
   private readonly canvasElements = new Map<string, string>()
   private readonly declaredClasses = new Map<string, string>()
   private readonly classRefs = new Map<string, string>()
+  private canvasImageIdentifiers?: { images: string; ready: string }
+  private projectRunContextIdentifier?: string
   // Próximo sufixo a tentar por base, para a sondagem de colisão NÃO recomeçar do
   // 2 a cada nome homônimo: k nomes que normalizam para a MESMA base custavam
   // O(k²) (a k-ésima alocação varria os sufixos 2..k). Como `used` só cresce
@@ -140,6 +143,35 @@ export class IdentifierScope implements IdentifierResolver {
     return this.allocate(`__internal_${this.internalCount}_${hint}`, normalizeIdentifier(hint))
   }
 
+  /** Reserva, uma única vez, os nomes do pré-carregador de imagens do Canvas. */
+  prepareCanvasImageIdentifiers(): { images: string; ready: string } {
+    if (!this.canvasImageIdentifiers) {
+      this.canvasImageIdentifiers = {
+        images: this.reserveInternal('imagensCanvas'),
+        ready: this.reserveInternal('imagensCanvasProntas'),
+      }
+    }
+    return this.canvasImageIdentifiers
+  }
+
+  /** Identificadores presentes somente quando o gerador instalou o pré-carregador. */
+  getCanvasImageIdentifiers(): { images: string; ready: string } | undefined {
+    return this.canvasImageIdentifiers
+  }
+
+  /** Reserva o contexto descartável usado pelo envelope das três áreas. */
+  prepareProjectRunContextIdentifier(): string {
+    if (!this.projectRunContextIdentifier) {
+      this.projectRunContextIdentifier = this.reserveInternal('__szProjectRunContext')
+    }
+    return this.projectRunContextIdentifier
+  }
+
+  /** Presente somente durante a geração das três áreas com lifecycle. */
+  getProjectRunContextIdentifier(): string | undefined {
+    return this.projectRunContextIdentifier
+  }
+
   getCanvasElement(ctxName: string): string {
     const existing = this.canvasElements.get(ctxName)
     if (existing) return existing
@@ -182,6 +214,13 @@ export function compileExpr(
   // Registra a (sub)expressão no source map (linha única). Filhos registram a si
   // mesmos no topo da própria chamada recursiva — por isso `rec` é repassado.
   if (rec && expr.__id) rec.map.record(expr.__id, 'script.js', rec.line, rec.line)
+  if (isCanvasExpression(expr)) {
+    const canvasCode = canvasExpressionToCode(expr, identifiers, rec, {
+      compileExpression: compileExpr,
+    })
+    if (canvasCode !== undefined) return canvasCode
+    throw new GeneratorError(`Expressão Canvas sem codec: ${expr.type}`)
+  }
   switch (expr.type) {
     case 'num':
       return formatNumber(expr.value)
@@ -251,6 +290,8 @@ export function compileExpr(
       return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g2d:getHealth':
       return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:getMaxHealth':
+      return `SZGame2D.getMaxHealth(${identifiers.get(expr.spriteVar)})`
     case 'g2d:enemyDamage':
       return `SZGame2D.enemyDamage(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteX':
@@ -287,8 +328,14 @@ export function compileExpr(
       return `SZGame2D.randomChance(${compileExpr(valueToExpr(expr.percent), 0, identifiers, rec)})`
     case 'g2d:hasHealth':
       return `SZGame2D.hasHealth(${identifiers.get(expr.spriteVar)})`
-    case 'g2d:cooldownReady':
-      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${compileExpr(valueToExpr(expr.frames), 0, identifiers, rec)})`
+    case 'g2d:healthDepleted':
+      return `SZGame2D.healthDepleted(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:isInvincible':
+      return `SZGame2D.isInvincible(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:cooldownReady': {
+      const stableKey = expr.__id ? `, ${JSON.stringify(expr.__id)}` : ''
+      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${compileExpr(valueToExpr(expr.frames), 0, identifiers, rec)}${stableKey})`
+    }
     case 'g2d:isPaused':
       return 'SZGame2D.isPaused()'
     case 'g2d:cameraX':
@@ -303,16 +350,16 @@ export function compileExpr(
       return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
       return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
-    case 'g2d:stickHeroScore':
-      return `SZGame2D.stickHeroScore(${identifiers.get(expr.gameVar)})`
-    case 'g2d:stickHeroOver':
-      return `SZGame2D.stickHeroOver(${identifiers.get(expr.gameVar)})`
-    case 'g2d:balloonScore':
-      return `SZGame2D.balloonScore(${identifiers.get(expr.gameVar)})`
+    case 'g2d:stickPathFell':
+      return `SZGame2D.stickPathFell(${identifiers.get(expr.pathVar)})`
+    case 'g2d:balloonPathMeters':
+      return `SZGame2D.balloonPathMeters(${identifiers.get(expr.pathVar)})`
     case 'g2d:balloonFuel':
-      return `SZGame2D.balloonFuel(${identifiers.get(expr.gameVar)})`
-    case 'g2d:balloonOver':
-      return `SZGame2D.balloonOver(${identifiers.get(expr.gameVar)})`
+      return `SZGame2D.balloonFuel(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:balloonLandedOut':
+      return `SZGame2D.balloonLandedOut(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:pointerDown':
+      return 'SZGame2D.pointerDown()'
     case 'g2d:aimReleased':
       return `SZGame2D.aimReleased(${identifiers.get(expr.throwerVar)})`
     case 'g2d:bananaHitThrower':
@@ -333,6 +380,10 @@ export function compileExpr(
       return `SZGame3D.touchesBox(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
     case 'g3d:distanceTo':
       return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:countSwarm':
+      return `SZGame3D.countSwarm(${identifiers.get(expr.swarmVar)})`
+    case 'g3d:countGroup':
+      return `SZGame3D.countGroup(${identifiers.get(expr.groupVar)})`
     case 'g3d:isNear':
       return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3d:raceHit':
@@ -481,6 +532,10 @@ export function compileExpr(
       return 'SZGameKit.mouseX()'
     case 'gk:mouseY':
       return 'SZGameKit.mouseY()'
+    case 'gk:mouseScreenX':
+      return 'SZGameKit.mouseScreenX()'
+    case 'gk:mouseScreenY':
+      return 'SZGameKit.mouseScreenY()'
     case 'gk:mouseDown':
       return 'SZGameKit.mouseDown()'
     case 'gk:rpgCell':
@@ -607,6 +662,10 @@ export function compileExpr(
       return 'SZWorld3D.coinCount()'
     case 'w3d:hasAchievement':
       return `SZWorld3D.hasAchievement(${JSON.stringify(expr.name)})`
+    case 'w3d:inventoryCount':
+      return `SZWorld3D.inventoryCount(${JSON.stringify(expr.item)})`
+    case 'w3d:inventoryHas':
+      return `SZWorld3D.inventoryHas(${JSON.stringify(expr.item)}, ${compileExpr(valueToExpr(expr.n), 0, identifiers, rec)})`
     case 'w3d:keyDown':
       return `SZWorld3D.keyDown(${JSON.stringify(expr.key)})`
     case 'w3d:keyPressed':
@@ -625,10 +684,6 @@ export function compileExpr(
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':
       return 'SZGameKit3D.state()'
-    case 'inputKeyPressed':
-      return `__szInput.key(${JSON.stringify(expr.key)})`
-    case 'inputPointer':
-      return `__szInput.${expr.axis}`
     case 'isFullscreen':
       return 'document.fullscreenElement != null'
     case 'now':
@@ -670,12 +725,6 @@ export function compileExpr(
       return 'performance.now()'
     case 'canvasDim':
       return `${identifiers.getCanvasElement(expr.ctxVar)}.${expr.dim}`
-    case 'canvasMeasureText':
-      return `${identifiers.get(expr.ctxVar)}.measureText(${compileExpr(expr.text, 0, identifiers, rec)}).width`
-    case 'canvasIsPointInPath':
-      return `${identifiers.get(expr.ctxVar)}.isPointInPath(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
-    case 'canvasIsPointInStroke':
-      return `${identifiers.get(expr.ctxVar)}.isPointInStroke(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
     case 'random': {
       const min = compileExpr(expr.min, 0, identifiers, rec)
       const max = compileExpr(expr.max, 0, identifiers, rec)
@@ -792,13 +841,21 @@ export function compileExpr(
     case 'concatArrays':
       return `[${expr.parts.map((p) => `...${compileExpr(p, 0, identifiers, rec)}`).join(', ')}]`
     case 'shuffle':
-      return `${identifiers.get(expr.arrayVar)}.sort(() => Math.random() - 0.5)`
+      // Fisher–Yates é uniforme e trabalha numa cópia. A lista entra como
+      // argumento da IIFE para que até um nome como "__szLista" seja lido no
+      // escopo externo antes de o parâmetro local passar a existir.
+      return `((__szLista) => { for (let __szI = __szLista.length - 1; __szI > 0; __szI--) { const __szJ = Math.floor(Math.random() * (__szI + 1)); [__szLista[__szI], __szLista[__szJ]] = [__szLista[__szJ], __szLista[__szI]]; } return __szLista; })([...${identifiers.get(expr.arrayVar)}])`
     case 'objectLiteral': {
-      if (expr.entries.length === 0) return '{}'
-      const parts = expr.entries
-        .map((e) => `${objectKey(e.key)}: ${compileExpr(e.value, 0, identifiers, rec)}`)
-        .join(', ')
-      return `{ ${parts} }`
+      const out =
+        expr.entries.length === 0
+          ? '{}'
+          : `{ ${expr.entries
+              .map((e) => `${objectKey(e.key)}: ${compileExpr(e.value, 0, identifiers, rec)}`)
+              .join(', ')} }`
+      // Um literal usado como receptor precisa de parênteses: `({}).x`.
+      // Sem isso, no início de um statement, `{}` é interpretado como bloco e
+      // o código deixa de ser JavaScript válido.
+      return parentPrecedence > 0 ? `(${out})` : out
     }
     case 'memberGet':
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}${expr.optional ? '?.' : '.'}${normalizeIdentifier(expr.name)}`
@@ -820,10 +877,6 @@ export function compileExpr(
     }
     case 'objectOp':
       return `Object.${expr.op}(${compileExpr(expr.object, 0, identifiers, rec)})`
-    case 'assetImage':
-      // Fonte RESOLVIDA do asset: o dataURL semeado em __SZGAME_ASSETS (ver
-      // preview/assetsBridge), com fallback pro nome cru. Usável direto em img.src.
-      return `(window.__SZGAME_ASSETS?.[${JSON.stringify(expr.name)}] ?? ${JSON.stringify(expr.name)})`
     case 'getElement':
       return `document.getElementById(${JSON.stringify(expr.id)})`
     case 'querySelectorValue':

@@ -2,13 +2,36 @@ import { describe, expect, it } from 'bun:test'
 import { buildPreviewCSP, buildPreviewCSPMetaTag, sanitizeFetchOrigins } from '../csp'
 
 describe('buildPreviewCSP', () => {
-  it('default trava rede e scripts remotos', () => {
+  it('default trava rede e qualquer origem genérica de script', () => {
     const csp = buildPreviewCSP()
     expect(csp).toContain("default-src 'none'")
     expect(csp).toContain("connect-src 'none'")
-    // script-src NÃO pode liberar https: (sem <script src=remoto>)
-    expect(csp).toContain("script-src 'unsafe-inline' data: blob:")
+    expect(csp).toContain("script-src 'none'")
+    expect(csp.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
+    expect(csp).not.toMatch(/script-src[^;]*\bdata:/)
+    expect(csp).not.toMatch(/script-src[^;]*\bblob:/)
     expect(csp).not.toMatch(/script-src[^;]*https:/)
+  })
+
+  it('libera somente os hashes explícitos dos scripts gerados', () => {
+    const hash = 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+    const csp = buildPreviewCSP({ scriptHashes: [hash, hash, 'sha256-invalido'] })
+    expect(csp.match(new RegExp(`'${hash}'`, 'g'))).toHaveLength(1)
+    expect(csp).not.toContain('sha256-invalido')
+    expect(csp.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
+  })
+
+  it('habilita hashes de atributos somente quando há handlers autorizados', () => {
+    const hash = 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+    const withHandler = buildPreviewCSP({ eventHandlerHashes: [hash] })
+    expect(withHandler.match(/script-src[^;]*/)?.[0]).toContain("'unsafe-hashes'")
+    expect(withHandler.match(/script-src[^;]*/)?.[0]).toContain(`'${hash}'`)
+
+    const withoutHandler = buildPreviewCSP()
+    expect(withoutHandler.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-hashes'")
+    expect(buildPreviewCSP({ eventHandlerHashes: ['sha256-invalido'] })).not.toContain(
+      "'unsafe-hashes'",
+    )
   })
 
   it('libera subrecursos passivos https (img/font/media)', () => {
@@ -27,11 +50,9 @@ describe('buildPreviewCSP', () => {
   })
 
   it("trava workers (worker-src 'none')", () => {
-    // Sem worker-src, Workers cairiam no script-src (data:/blob:) e o aluno
-    // poderia criar laços imortais fora do alcance do loopGuard.
+    // Worker segue desabilitado mesmo quando há módulos oficiais autorizados.
     expect(buildPreviewCSP()).toContain("worker-src 'none'")
-    // mesmo com origens de script de extensão liberadas, worker continua travado.
-    expect(buildPreviewCSP({ scriptAllowedOrigins: ['https://esm.sh'] })).toContain(
+    expect(buildPreviewCSP({ scriptAllowedUrls: ['https://esm.sh/three@0.180.0'] })).toContain(
       "worker-src 'none'",
     )
   })
@@ -42,9 +63,16 @@ describe('buildPreviewCSP', () => {
     expect(csp).not.toContain("connect-src 'none'")
   })
 
-  it('scriptAllowedOrigins libera origens em script-src (módulos de extensão)', () => {
-    const csp = buildPreviewCSP({ scriptAllowedOrigins: ['https://esm.sh'] })
-    expect(csp).toContain("script-src 'unsafe-inline' data: blob: https://esm.sh")
+  it('scriptAllowedUrls libera somente os caminhos oficiais, não a origem inteira', () => {
+    const csp = buildPreviewCSP({
+      scriptAllowedUrls: [
+        'https://esm.sh/three@0.180.0',
+        'https://esm.sh/three@0.180.0/examples/jsm/',
+      ],
+    })
+    expect(csp).toContain('https://esm.sh/three@0.180.0')
+    expect(csp).toContain('https://esm.sh/three@0.180.0/examples/jsm/')
+    expect(csp).not.toMatch(/script-src https:\/\/esm\.sh(?:\s|;|$)/)
     // não afeta connect-src (rede do aluno continua bloqueada)
     expect(csp).toContain("connect-src 'none'")
   })

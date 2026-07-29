@@ -3,21 +3,27 @@ import { canonicalHmacMessage, verifyHmacSignature } from '@sistemazero/core/sec
 
 /**
  * Verifica a assinatura HMAC de um webhook de entrada (o gateway re-assina como
- * consumer `gateway`). Mensagem canônica `"<MÉTODO>.<path>.<corpo>"` (método+path
- * impedem replay cross-endpoint). Header `x-signature: t=<ts>,v1=<hex>`. Lança 401
- * se inválida/expirada. Espelha o members.
+ * consumer `gateway`). A mensagem canônica inclui `x-delivery-id` quando presente,
+ * impedindo trocar a chave de dedupe sem invalidar o HMAC. Header
+ * `x-signature: t=<ts>,v1=<hex>`. Lança 401 se inválida/expirada. Espelha o members.
  */
 export function assertWebhookSignature(input: {
   secret: string
   method: string
   path: string
   rawBody: string
+  deliveryId: string | undefined
   signatureHeader: string | undefined
   toleranceSeconds: number
 }): void {
   const result = verifyHmacSignature({
     secret: input.secret,
-    body: canonicalHmacMessage({ method: input.method, path: input.path, body: input.rawBody }),
+    body: canonicalHmacMessage({
+      method: input.method,
+      path: input.path,
+      deliveryId: input.deliveryId,
+      body: input.rawBody,
+    }),
     signatureHeader: input.signatureHeader,
     nowSeconds: Math.floor(Date.now() / 1000),
     toleranceSeconds: input.toleranceSeconds,

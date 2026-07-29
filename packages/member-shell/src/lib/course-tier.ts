@@ -36,6 +36,8 @@ export function courseTierOf(
   level?: CourseLevelSlug,
   track?: CourseTrack,
 ): CourseTierSlug | undefined {
-  if (!level) return undefined
+  // `lenda` é FORA da carreira → não é degrau (sem chip/filtro de degrau; o kids
+  // renderiza o rótulo "Lenda" à parte).
+  if (!level || level === 'lenda') return undefined
   return `${level}-${track ?? '2d'}`
 }

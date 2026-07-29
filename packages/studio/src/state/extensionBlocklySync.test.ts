@@ -17,7 +17,9 @@ mock.module('idb-keyval', () => ({
   update: mock(async () => undefined),
 }))
 
-const { EXTENSION_BLOCKLY_BLOCK_TYPES } = await import('./projectStore')
+const { buildExtensionBlocklyBlockTypes, EXTENSION_BLOCKLY_BLOCK_TYPES } = await import(
+  './projectStore'
+)
 const { ExtensionManifestSchema, validateManifest } = await import('../extensions/manifest')
 
 /**
@@ -28,6 +30,19 @@ const { ExtensionManifestSchema, validateManifest } = await import('../extension
  * ou um tipo morto sobrevive na allowlist. Este teste falha em qualquer drift.
  */
 describe('EXTENSION_BLOCKLY_BLOCK_TYPES ↔ OFFICIAL_CATALOG (sem drift)', () => {
+  it('deriva a allowlist diretamente dos blocos declarados por cada extensão', () => {
+    const catalog = [
+      {
+        manifest: { id: 'extensao-teste' },
+        blockly: { blocks: [{ type: 'bloco-a' }, { type: 'bloco-b' }] },
+      },
+    ]
+
+    expect(buildExtensionBlocklyBlockTypes(catalog)).toEqual({
+      'extensao-teste': new Set(['bloco-a', 'bloco-b']),
+    })
+  })
+
   it('toda extensão do catálogo tem uma entrada na allowlist', () => {
     for (const ext of OFFICIAL_CATALOG) {
       expect(EXTENSION_BLOCKLY_BLOCK_TYPES[ext.manifest.id]).toBeDefined()
@@ -116,7 +131,13 @@ describe('validateManifest — pré-guarda de profundidade do IR de exemplo', ()
         {
           name: 'exemplo',
           experience: 'game' as const,
-          ir: { html: [], css: [], js: [], extensions: [] },
+          ir: {
+            version: 2 as const,
+            html: [],
+            css: [],
+            behavior: { start: [], events: [], loops: [] },
+            extensions: [],
+          },
         },
       ],
     }

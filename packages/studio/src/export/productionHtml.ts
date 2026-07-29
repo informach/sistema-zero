@@ -16,6 +16,8 @@
  * vivem como arquivos no ZIP), antes de `</head>`/`</body>` respectivamente.
  */
 
+import { PWA_HEAD_TAGS, PWA_REGISTRATION_SCRIPT } from './pwa'
+
 export interface BuildProductionHtmlInput {
   /** index.html do projeto (já a fonte da verdade; pode vir minificado). */
   html: string
@@ -40,6 +42,8 @@ export interface BuildProductionHtmlInput {
    * extensão (module ou clássico) e do código do aluno, que o consomem.
    */
   assetsScriptSrc?: string
+  /** Runtime core de teclado/ponteiro, carregado antes do código do aluno. */
+  inputScriptSrc?: string
 }
 
 /**
@@ -82,15 +86,23 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
     ? `<script src="${escapeAttr(input.assetsScriptSrc)}"></script>`
     : ''
 
-  const headBlock = [assetsScriptTag, importmapTag, extScriptsTag, extraCssTags]
+  const inputScriptTag = input.inputScriptSrc
+    ? `<script src="${escapeAttr(input.inputScriptSrc)}"></script>`
+    : ''
+
+  const earlyHeadBlock = [HARDENING_META, inputScriptTag].filter(Boolean).join('\n')
+  const headBlock = [PWA_HEAD_TAGS, assetsScriptTag, importmapTag, extScriptsTag, extraCssTags]
     .filter(Boolean)
     .join('\n')
-  const bodyBlock = input.extraHtmlFragments.filter(Boolean).join('\n')
+  const bodyBlock = [...input.extraHtmlFragments.filter(Boolean), PWA_REGISTRATION_SCRIPT].join(
+    '\n',
+  )
 
   let out = input.html
-  // Endurecimento mínimo PRIMEIRO, perto do topo do <head> (logo após a abertura),
-  // para valer cedo no parse. Não quebra nada que um site de criança use.
-  out = injectAfterHeadStart(out, HARDENING_META)
+  // Endurecimento e entrada vêm logo após `<head>`. Isso também cobre projetos
+  // de arquivo único cujo código do aluno está inline no próprio cabeçalho: o
+  // runtime precisa executar antes da primeira leitura de `__szInput`.
+  out = injectAfterHeadStart(out, earlyHeadBlock)
   if (headBlock) out = injectBeforeHeadEnd(out, headBlock)
   if (bodyBlock) out = injectBeforeBodyEnd(out, bodyBlock)
 

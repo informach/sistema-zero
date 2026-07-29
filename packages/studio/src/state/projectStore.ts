@@ -22,10 +22,12 @@ import {
   type ProjectFiles,
   type ProjectTree,
   type ProProjectMeta,
+  type StudioProBuildLimits,
   sanitizeProjectAssets,
   sanitizeSpriteMeta,
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
+  studioProBuildFileLimitError,
   t,
 } from '#core'
 import {
@@ -33,12 +35,26 @@ import {
   type HTMLNode,
   type JSExpr,
   type JSStatement,
-  type SZIR,
-  SZIRSchema,
+  normalizeSZIR,
+  type SZIRInput,
+  SZIRInputSchema,
 } from '#ir'
-import { findExtension } from '#official-extensions'
+import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
+import {
+  BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION,
+  BEHAVIOR_AREAS_STATE_KEY,
+  BEHAVIOR_AREAS_STATE_VERSION,
+  hasValidBehaviorAreasStateVersion,
+} from '../blockly/blocksStateVersion'
+import { WEB_BLOCK_TYPES_BY_CATEGORY } from '../codecs/web/registry'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
+import {
+  type ExtensionCompatibilityEntry,
+  findExtensionConflict,
+} from '../extensions/compatibility'
 import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
+import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
+import { CANVAS3D_BLOCK_TYPES } from '../three/canvas3dContract'
 import {
   deleteProject as deleteProjectFromDB,
   loadProjectBlocksById,
@@ -107,7 +123,7 @@ interface ProjectStore {
   /** Mescla estado derivado do load/rehydrate SEM marcar como edição do aluno. */
   hydrateProjectState: (patch: ProjectStatePatch) => void
   unloadProject: () => void
-  createProject: (name: string) => Promise<Project>
+  createProject: (name: string, initialExtensionIds?: readonly string[]) => Promise<Project>
   /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
   createProProject: (name: string, templateId: string) => Promise<Project>
   duplicateProject: (id: string) => Promise<Project | null>
@@ -120,7 +136,7 @@ interface ProjectStore {
   convertToPro: () => Promise<void>
   setFiles: (files: Partial<ProjectFiles>) => void
   setFile: (name: FileName, value: string) => void
-  setIR: (ir: SZIR | null) => void
+  setIR: (ir: SZIRInput | null) => void
   setBlocksState: (state: unknown | null) => void
   applyProjectState: (patch: ProjectStatePatch) => void
   installExtension: (id: string, version: string) => void
@@ -158,7 +174,7 @@ interface ProjectStore {
 
 interface ProjectStatePatch {
   files?: Partial<ProjectFiles>
-  ir?: SZIR | null
+  ir?: SZIRInput | null
   blocksState?: unknown | null
   installedExtensions?: InstalledExtension[]
 }
@@ -256,155 +272,24 @@ export const PROJECT_FILE_LIMITS = {
 // blocos ocultos da paleta. Um tipo ausente faz o blocksState salvo inteiro ser
 // descartado no load. O teste blockAllowlist.test garante que fica em sincronia.
 export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
+  ...CANVAS3D_BLOCK_TYPES,
   'sz_adv_raw_css',
   'sz_adv_raw_html',
   'sz_adv_raw_js',
-  'sz_canvas_anim_loop',
-  'sz_canvas_arc',
-  'sz_canvas_stroke_rect',
-  'sz_canvas_clear_rect',
-  'sz_canvas_round_rect',
-  'sz_canvas_ellipse',
-  'sz_canvas_arc_slice',
-  'sz_canvas_quadratic_curve',
-  'sz_canvas_bezier_curve',
-  'sz_canvas_arc_to',
-  'sz_canvas_shadow',
-  'sz_canvas_stroke_text',
-  'sz_canvas_line_dash',
-  'sz_canvas_measure_text',
-  'sz_canvas_cancel_anim',
-  'sz_canvas_request_frame',
-  'sz_canvas_request_frame_do',
-  'sz_canvas_clear',
-  'sz_canvas_draw_image',
-  'sz_canvas_fill_rect',
-  'sz_canvas_fill_style',
-  'sz_canvas_fill_text',
-  'sz_canvas_gradient',
-  'sz_canvas_keyboard',
-  'sz_canvas_restore',
-  'sz_canvas_rotate',
-  'sz_canvas_save',
-  'sz_canvas_scale',
-  'sz_canvas_set_size',
-  'sz_canvas_setup',
-  'sz_canvas_translate',
-  'sz_canvas_begin_path',
-  'sz_canvas_close_path',
-  'sz_canvas_stroke',
-  'sz_canvas_fill',
-  'sz_canvas_rect',
-  'sz_canvas_clip',
-  'sz_canvas_point_in_path',
-  'sz_canvas_point_in_stroke',
-  'sz_canvas_move_to',
-  'sz_canvas_line_to',
-  'sz_canvas_stroke_style',
-  'sz_canvas_line_width',
-  'sz_canvas_global_alpha',
-  'sz_canvas_font',
-  'sz_canvas_text_align',
-  'sz_canvas_text_baseline',
-  'sz_input_key_pressed',
-  'sz_input_pointer_x',
-  'sz_input_pointer_y',
-  'sz_css_align',
-  'sz_css_background_color',
-  'sz_css_body_background',
-  'sz_css_body_center',
-  'sz_css_body_text_color',
-  'sz_css_border',
-  'sz_css_border_radius',
-  'sz_css_decl',
-  'sz_css_display_flex',
-  'sz_css_font_size',
-  'sz_css_font_weight',
-  'sz_css_gap',
-  'sz_css_google_font',
-  'sz_css_grid',
-  'sz_css_keyframes',
-  'sz_css_keyframes_steps',
-  'sz_css_keyframe_step',
-  'sz_css_var',
-  'sz_css_transform',
-  'sz_css_perspective',
-  'sz_css_grid_template',
-  'sz_css_transition',
-  'sz_css_gradient',
-  'sz_css_height',
-  'sz_css_fill',
-  'sz_css_stroke',
-  'sz_css_stroke_width',
-  'sz_css_stroke_dasharray',
-  'sz_css_stroke_linecap',
-  'sz_css_text_anchor',
-  'sz_css_justify',
-  'sz_css_letter_spacing',
-  'sz_css_margin',
-  'sz_css_max_width',
-  'sz_css_comment',
-  'sz_css_media_query',
-  'sz_css_padding',
-  'sz_css_rule',
-  'sz_css_shadow',
-  'sz_css_text_align',
-  'sz_css_text_color',
-  'sz_css_text_decoration',
-  'sz_css_text_transform',
-  'sz_css_width',
-  'sz_css_width_percent',
-  // 🎮 Posição & jogo (propriedades que os jogos mais usam)
-  'sz_css_position',
-  'sz_css_offset',
-  'sz_css_display',
-  'sz_css_overflow',
-  'sz_css_cursor',
-  'sz_css_image_rendering',
-  'sz_css_object_fit',
-  'sz_css_opacity',
-  'sz_css_z_index',
-  'sz_css_background_image',
-  // Blocos-CONTAINER (frames): 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento.
+  ...WEB_BLOCK_TYPES_BY_CATEGORY.html,
+  ...WEB_BLOCK_TYPES_BY_CATEGORY.css,
+  ...WEB_BLOCK_TYPES_BY_CATEGORY.svg,
+  ...WEB_BLOCK_TYPES_BY_CATEGORY.canvas,
+  // Cinco áreas: Estrutura, Aparência, Ao iniciar, Quando acontecer e Enquanto estiver rodando.
   'sz_frame_appearance',
   'sz_frame_behavior',
+  'sz_frame_events',
+  'sz_frame_loops',
+  'sz_frame_start',
   'sz_frame_structure',
-  'sz_html_button',
-  'sz_html_canvas',
-  'sz_html_div',
-  'sz_html_em',
-  'sz_html_footer',
-  'sz_html_form',
-  'sz_html_h1',
-  'sz_html_h2',
-  'sz_html_h3',
-  'sz_html_header',
-  'sz_html_image',
-  'sz_html_input',
-  'sz_html_label',
-  'sz_html_li',
-  'sz_html_link',
-  'sz_html_main',
-  'sz_html_nav',
-  'sz_html_p',
-  'sz_html_section',
-  'sz_html_span',
-  'sz_html_strong',
-  'sz_html_text',
-  'sz_html_comment',
-  'sz_html_textarea',
-  'sz_html_ul',
-  'sz_html_svg',
-  'sz_svg_group',
-  'sz_svg_path',
-  'sz_svg_circle',
-  'sz_svg_rect',
-  'sz_svg_line',
-  'sz_svg_use',
-  'sz_svg_ellipse',
-  'sz_svg_polyline',
-  'sz_svg_polygon',
-  'sz_svg_text',
+  'sz_legacy_nested_event',
+  'sz_legacy_nested_loop',
+  'sz_legacy_nested_start',
   'sz_js_alert_text',
   'sz_js_alert_var',
   'sz_js_class_op',
@@ -544,42 +429,6 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_get_prop',
   'sz_val_call_method',
   'sz_val_new',
-  'sz_t3d_import',
-  'sz_t3d_import_named',
-  'sz_t3d_new_var',
-  'sz_t3d_new',
-  'sz_t3d_load_model',
-  'sz_t3d_load_sound',
-  'sz_t3d_traverse',
-  // Canvas 3D — facilitadores (rótulo amigável sobre memberCall/memberSet).
-  'sz_t3d_set_position',
-  'sz_t3d_set_rotation',
-  'sz_t3d_rotate_axis',
-  'sz_t3d_set_scale',
-  'sz_t3d_look_at',
-  'sz_t3d_lerp_position',
-  'sz_t3d_set_visible',
-  'sz_t3d_add_to',
-  'sz_t3d_set_color',
-  'sz_t3d_set_background',
-  'sz_t3d_set_fog',
-  'sz_t3d_set_shadow',
-  'sz_t3d_set_intensity',
-  'sz_t3d_set_matrix_at',
-  'sz_t3d_instances_dirty',
-  'sz_t3d_renderer_size',
-  'sz_t3d_renderer_config',
-  'sz_t3d_enable_shadows',
-  'sz_t3d_mount_renderer',
-  'sz_t3d_render',
-  'sz_t3d_bloom_setup',
-  'sz_t3d_render_effects',
-  'sz_t3d_particles',
-  'sz_t3d_water',
-  'sz_t3d_water_wave',
-  'sz_t3d_sign',
-  'sz_t3d_grass',
-  'sz_t3d_grass_wave',
   'sz_val_array_filter',
   'sz_val_object',
   'sz_val_object_op',
@@ -603,924 +452,28 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_date_part',
 ])
 
-// Exportado para o teste de drift (extensionBlocklySync.test.ts): a allowlist por
-// extensão DEVE casar 1-para-1 com os block defs de OFFICIAL_CATALOG[].blockly.
-export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> = {
-  'game-2d': new Set([
-    'sz_g2d_collides',
-    'sz_g2d_create_sprite',
-    'sz_g2d_draw_sprite',
-    'sz_g2d_game_over',
-    'sz_g2d_clear',
-    'sz_g2d_score',
-    'sz_g2d_set_position',
-    'sz_g2d_set_velocity',
-    'sz_g2d_update_each_frame',
-    'sz_g2d_set_gravity',
-    'sz_g2d_apply_velocity',
-    'sz_g2d_bounce_edges',
-    'sz_g2d_circle_collides',
-    'sz_g2d_play_sound',
-    'sz_g2d_play_fx',
-    'sz_g2d_play_note',
-    'sz_g2d_play_music',
-    'sz_g2d_stop_music',
-    'sz_g2d_aim_at',
-    'sz_g2d_move_toward',
-    'sz_g2d_distance',
-    'sz_g2d_angle_to',
-    'sz_g2d_random_between',
-    'sz_g2d_random_chance',
-    'sz_g2d_set_health',
-    'sz_g2d_change_health',
-    'sz_g2d_get_health',
-    'sz_g2d_sprite_x',
-    'sz_g2d_sprite_y',
-    'sz_g2d_sprite_w',
-    'sz_g2d_sprite_h',
-    'sz_g2d_center_x',
-    'sz_g2d_center_y',
-    'sz_g2d_sprite_vx',
-    'sz_g2d_sprite_vy',
-    'sz_g2d_sprite_speed',
-    'sz_g2d_is_moving',
-    'sz_g2d_is_moving_h',
-    'sz_g2d_is_moving_v',
-    'sz_g2d_has_health',
-    'sz_g2d_cooldown_ready',
-    'sz_g2d_prune_old',
-    'sz_g2d_flip_sprite',
-    'sz_g2d_set_opacity',
-    'sz_g2d_set_size',
-    'sz_g2d_scale_sprite',
-    'sz_g2d_wrap_edges',
-    'sz_g2d_pause',
-    'sz_g2d_resume',
-    'sz_g2d_is_paused',
-    'sz_g2d_camera_follow',
-    'sz_g2d_set_camera',
-    'sz_g2d_camera_x',
-    'sz_g2d_camera_y',
-    'sz_g2d_random_x',
-    'sz_g2d_random_y',
-    'sz_g2d_break_tile_at',
-    'sz_g2d_set_tile',
-    'sz_g2d_tile_at',
-    'sz_g2d_bring_to_front',
-    'sz_g2d_send_to_back',
-    'sz_g2d_draw_hitbox',
-    'sz_g2d_show_fps',
-    'sz_g2d_on_pointer',
-    'sz_g2d_on_key',
-    'sz_g2d_on_overlap',
-    'sz_g2d_key_down',
-    'sz_g2d_touches',
-    'sz_g2d_create_image_sprite',
-    'sz_g2d_set_image',
-    'sz_g2d_define_shape',
-    'sz_g2d_create_shape_sprite',
-    'sz_g2d_set_shape',
-    'sz_g2d_paint_rect',
-    'sz_g2d_paint_circle',
-    'sz_g2d_paint_ellipse',
-    'sz_g2d_paint_triangle',
-    'sz_g2d_paint_line',
-    'sz_g2d_shape_w',
-    'sz_g2d_shape_h',
-    'sz_g2d_load_spritesheet',
-    'sz_g2d_animate_sprite',
-    'sz_g2d_set_state_anim',
-    'sz_g2d_auto_animate',
-    'sz_g2d_define_enemy_type',
-    'sz_g2d_enemy_state_anim',
-    'sz_g2d_enemy_type_param',
-    'sz_g2d_spawn_enemy',
-    'sz_g2d_update_enemy_type',
-    'sz_g2d_draw_enemy_type',
-    'sz_g2d_on_enemy_defeated',
-    'sz_g2d_on_enemy_shot_hit',
-    'sz_g2d_hurt_by_enemy',
-    'sz_g2d_enemy_damage',
-    'sz_g2d_draw_frame',
-    'sz_g2d_platformer',
-    'sz_g2d_top_down',
-    'sz_g2d_follow_pointer',
-    'sz_g2d_clamp_to_screen',
-    'sz_g2d_flash',
-    'sz_g2d_shake',
-    'sz_g2d_emit_particles',
-    'sz_g2d_draw_particles',
-    'sz_g2d_create_tilemap_from_asset',
-    'sz_g2d_create_tilemap',
-    'sz_g2d_draw_tilemap',
-    'sz_g2d_tilemap_collide',
-    'sz_g2d_collide_group',
-    'sz_g2d_collide_sprite',
-    'sz_g2d_create_group',
-    'sz_g2d_spawn_in_group',
-    'sz_g2d_spawn_image_in_group',
-    'sz_g2d_update_group',
-    'sz_g2d_update_group_no_gravity',
-    'sz_g2d_draw_group',
-    'sz_g2d_for_each_in_group',
-    'sz_g2d_count_group',
-    'sz_g2d_clear_group',
-    'sz_g2d_prune_offscreen',
-    'sz_g2d_on_group_overlap',
-    'sz_g2d_remove_from_group',
-    'sz_g2d_every_frames',
-    'sz_g2d_every_seconds',
-    'sz_g2d_draw_score',
-    'sz_g2d_draw_label',
-    'sz_g2d_draw_hearts',
-    'sz_g2d_draw_bar',
-    'sz_g2d_set_scene',
-    'sz_g2d_scene_is',
-    'sz_g2d_show_screen',
-    'sz_g2d_restart',
-    'sz_g2d_starfield',
-    'sz_g2d_drag_x',
-    'sz_g2d_fit_screen',
-    'sz_g2d_setup_stage',
-    'sz_g2d_setup_full',
-    'sz_g2d_spawn_bullet',
-    'sz_g2d_arrows_x',
-    'sz_g2d_blink',
-    'sz_g2d_create_ship',
-    'sz_g2d_spawn_asteroid',
-    'sz_g2d_explode',
-    'sz_g2d_play_shoot',
-    'sz_g2d_play_explosion',
-    'sz_g2d_on_sprite_group_overlap',
-    'sz_g2d_jump_on_ground',
-    'sz_g2d_create_dino',
-    'sz_g2d_control_dino',
-    'sz_g2d_spawn_obstacle',
-    'sz_g2d_spawn_egg',
-    'sz_g2d_forest',
-    'sz_g2d_play_jump',
-    'sz_g2d_play_dino_hurt',
-    'sz_g2d_play_collect',
-    'sz_g2d_steer_thrust',
-    'sz_g2d_rotate_sprite',
-    'sz_g2d_point_sprite',
-    'sz_g2d_thrust',
-    'sz_g2d_apply_friction',
-    'sz_g2d_sprite_angle',
-    'sz_g2d_shoot_from',
-    'sz_g2d_spawn_asteroid_edge',
-    'sz_g2d_create_city',
-    'sz_g2d_draw_city',
-    'sz_g2d_place_thrower',
-    'sz_g2d_new_wind',
-    'sz_g2d_draw_wind',
-    'sz_g2d_aim_drag',
-    'sz_g2d_aim_released',
-    'sz_g2d_throw_banana',
-    'sz_g2d_update_banana',
-    'sz_g2d_draw_banana',
-    'sz_g2d_banana_hit_thrower',
-    'sz_g2d_banana_hit_city',
-    'sz_g2d_play_whistle',
-    'sz_g2d_play_boom',
-    'sz_g2d_computer_turn',
-    'sz_g2d_draw_aim_readout',
-    'sz_g2d_create_stickhero',
-    'sz_g2d_update_stickhero',
-    'sz_g2d_stickhero_score',
-    'sz_g2d_stickhero_over',
-    'sz_g2d_restart_stickhero',
-    'sz_g2d_create_balloon',
-    'sz_g2d_update_balloon',
-    'sz_g2d_balloon_score',
-    'sz_g2d_balloon_fuel',
-    'sz_g2d_balloon_over',
-    'sz_g2d_restart_balloon',
-  ]),
-  'game-3d': new Set([
-    'sz_g3d_create_scene',
-    'sz_g3d_create_fullscreen_scene',
-    'sz_g3d_set_background',
-    'sz_g3d_set_camera',
-    'sz_g3d_create_box',
-    'sz_g3d_create_sphere',
-    'sz_g3d_create_block',
-    'sz_g3d_set_position',
-    'sz_g3d_set_rotation',
-    'sz_g3d_set_scale',
-    'sz_g3d_animate',
-    'sz_g3d_control_keys',
-    'sz_g3d_set_velocity',
-    'sz_g3d_jump',
-    'sz_g3d_apply_gravity',
-    'sz_g3d_camera_follow',
-    'sz_g3d_key_down',
-    'sz_g3d_collides',
-    'sz_g3d_hit_any',
-    'sz_g3d_create_group',
-    'sz_g3d_run_enemies',
-    'sz_g3d_stop',
-    'sz_g3d_isometric_camera',
-    'sz_g3d_grid_position',
-    'sz_g3d_grid_step',
-    'sz_g3d_grid_move',
-    'sz_g3d_move_across',
-    'sz_g3d_touches_box',
-    'sz_g3d_create_crossing_scene',
-    'sz_g3d_create_crosser',
-    'sz_g3d_crosser_move',
-    'sz_g3d_crosser_step',
-    'sz_g3d_crosser_reset',
-    'sz_g3d_add_row',
-    'sz_g3d_generate_rows',
-    'sz_g3d_move_traffic',
-    'sz_g3d_crosser_hit',
-    'sz_g3d_crosser_row',
-    'sz_g3d_top_camera',
-    'sz_g3d_move_in_circle',
-    'sz_g3d_distance_to',
-    'sz_g3d_is_near',
-    'sz_g3d_create_race_scene',
-    'sz_g3d_create_race_track',
-    'sz_g3d_create_race_car',
-    'sz_g3d_race_step',
-    'sz_g3d_race_control',
-    'sz_g3d_run_rivals',
-    'sz_g3d_race_reset',
-    'sz_g3d_race_hit',
-    'sz_g3d_race_laps',
-    'sz_g3d_fall',
-    'sz_g3d_slide_between',
-    'sz_g3d_spin',
-    'sz_g3d_create_stack_scene',
-    'sz_g3d_create_stack_tower',
-    'sz_g3d_stack_drop',
-    'sz_g3d_stack_step',
-    'sz_g3d_stack_reset',
-    'sz_g3d_stack_score',
-    'sz_g3d_stack_game_over',
-    'sz_g3d_get_pos',
-    'sz_g3d_get_rot',
-    'sz_g3d_get_scale',
-    'sz_g3d_get_vel',
-    'sz_g3d_get_speed',
-    'sz_g3d_is_moving',
-    'sz_g3d_dt',
-    'sz_g3d_move_by',
-    'sz_g3d_rotate_by',
-    'sz_g3d_move_towards',
-    'sz_g3d_look_at_object',
-    'sz_g3d_look_at_point',
-    'sz_g3d_move_forward',
-    'sz_g3d_face_velocity',
-    'sz_g3d_angle_to',
-    'sz_g3d_pick_at_mouse',
-    'sz_g3d_pointer_over',
-    'sz_g3d_aim_ahead',
-    'sz_g3d_on_ground',
-    'sz_g3d_ground_height',
-    'sz_g3d_body',
-    'sz_g3d_step_body',
-    'sz_g3d_set_solid',
-    'sz_g3d_platformer_controls',
-    'sz_g3d_fps_controls',
-    'sz_g3d_resolve_collision',
-    'sz_g3d_fps_camera',
-    'sz_g3d_orbit_camera',
-    'sz_g3d_third_person_camera',
-    'sz_g3d_camera_look_at',
-    'sz_g3d_set_fov',
-    'sz_g3d_create_cylinder',
-    'sz_g3d_create_cone',
-    'sz_g3d_create_plane',
-    'sz_g3d_create_torus',
-    'sz_g3d_create_model',
-    'sz_g3d_add_to_model',
-    'sz_g3d_set_visible',
-    'sz_g3d_remove_object',
-    'sz_g3d_set_color',
-    'sz_g3d_set_opacity',
-    'sz_g3d_set_material',
-    'sz_g3d_set_texture',
-    'sz_g3d_add_ambient_light',
-    'sz_g3d_add_sun_light',
-    'sz_g3d_add_point_light',
-    'sz_g3d_set_fog',
-    'sz_g3d_set_sky',
-    'sz_g3d_set_shadows',
-    'sz_g3d_create_swarm',
-    'sz_g3d_spawn_in_swarm',
-    'sz_g3d_for_each_swarm',
-    'sz_g3d_remove_from_swarm',
-    'sz_g3d_prune_swarm',
-    'sz_g3d_play_note',
-    'sz_g3d_play_effect',
-  ]),
-  'game-2d-advanced': new Set([
-    'sz_gk_setup',
-    'sz_gk_setup_full',
-    'sz_gk_start',
-    'sz_gk_game_width',
-    'sz_gk_game_height',
-    'sz_gk_load_image',
-    'sz_gk_set_screen_text',
-    'sz_gk_create_screen',
-    'sz_gk_add_button',
-    'sz_gk_set_screen_bg',
-    'sz_gk_show_screen',
-    'sz_gk_hide_screens',
-    'sz_gk_set_state',
-    'sz_gk_on_enter_state',
-    'sz_gk_state_is',
-    'sz_gk_game_state',
-    'sz_gk_pause',
-    'sz_gk_resume',
-    'sz_gk_return_to_menu',
-    'sz_gk_end_game',
-    'sz_gk_on_update',
-    'sz_gk_on_draw',
-    'sz_gk_on_draw_hud',
-    'sz_gk_on_game_click',
-    'sz_gk_set_sheet',
-    'sz_gk_play_anim',
-    'sz_gk_camera_follow',
-    'sz_gk_camera_follow_map',
-    'sz_gk_camera_stop',
-    'sz_gk_camera_x',
-    'sz_gk_camera_y',
-    'sz_gk_mouse_x',
-    'sz_gk_mouse_y',
-    'sz_gk_mouse_down',
-    'sz_gk_launch_towards',
-    'sz_gk_move_by_velocity',
-    'sz_gk_set_angle',
-    'sz_gk_draw_bar',
-    'sz_gk_rpg_move_grid',
-    'sz_gk_rpg_block_cell',
-    'sz_gk_rpg_cell',
-    'sz_gk_rpg_create_npc',
-    'sz_gk_rpg_draw_npcs',
-    'sz_gk_rpg_on_talk',
-    'sz_gk_rpg_say',
-    'sz_gk_rpg_add_flag',
-    'sz_gk_rpg_has_flag',
-    'sz_gk_rpg_give_item',
-    'sz_gk_rpg_has_item',
-    'sz_gk_rpg_remove_item',
-    'sz_gk_rpg_draw_inventory',
-    'sz_gk_rpg_go_map',
-    'sz_gk_rpg_set_start_map',
-    'sz_gk_rpg_on_map',
-    'sz_gk_rpg_create_door',
-    // 🌍 Mundo aberto
-    'sz_gk_rpg_map_size',
-    'sz_gk_rpg_connect_edge',
-    'sz_gk_rpg_current_map',
-    'sz_gk_rpg_battle_stats',
-    'sz_gk_rpg_battle_start',
-    'sz_gk_rpg_add_ally',
-    'sz_gk_rpg_add_foe',
-    'sz_gk_rpg_define_battler',
-    'sz_gk_rpg_battle_named',
-    'sz_gk_rpg_add_foe_named',
-    'sz_gk_rpg_teach_move',
-    'sz_gk_rpg_teach_heal',
-    'sz_gk_rpg_on_battle_end',
-    'sz_gk_rpg_battle_won',
-    'sz_gk_set_walk_sheet',
-    'sz_gk_rpg_cutscene',
-    'sz_gk_rpg_wait',
-    'sz_gk_rpg_face',
-    'sz_gk_rpg_npc_walk_to',
-    'sz_gk_rpg_npc_wander',
-    'sz_gk_rpg_on_step',
-    'sz_gk_rpg_menu',
-    'sz_gk_rpg_option',
-    'sz_gk_rpg_save',
-    'sz_gk_rpg_load',
-    'sz_gk_rpg_has_save',
-    'sz_gk_rpg_set_special',
-    'sz_gk_rpg_give_potion',
-    'sz_gk_rpg_heal_hero',
-    'sz_gk_rpg_battle_reward',
-    'sz_gk_rpg_inflict',
-    'sz_gk_rpg_level',
-    'sz_gk_rpg_xp',
-    'sz_gk_rpg_add_boss',
-    'sz_gk_battler_life',
-    'sz_gk_battler_max_life',
-    'sz_gk_rpg_on_foe_turn',
-    'sz_gk_rpg_foe_use',
-    'sz_gk_rpg_foe_hit_all',
-    'sz_gk_load_tilemap',
-    'sz_gk_draw_tilemap',
-    'sz_gk_tilemap_solid',
-    'sz_gk_draw_shadow',
-    'sz_gk_draw_by_depth',
-    'sz_gk_camera_shake',
-    'sz_gk_apply_gravity',
-    'sz_gk_jump',
-    'sz_gk_is_on_ground',
-    'sz_gk_set_velocity',
-    'sz_gk_velocity_of',
-    'sz_gk_set_terminal_velocity',
-    'sz_gk_bounce_on_edges',
-    'sz_gk_paddle_bounce',
-    'sz_gk_board_create',
-    'sz_gk_board_set',
-    'sz_gk_board_get',
-    'sz_gk_board_count',
-    'sz_gk_board_in',
-    'sz_gk_pile_move_top',
-    'sz_gk_pile_shuffle_from',
-    'sz_gk_pile_top',
-    'sz_gk_pile_size',
-    'sz_gk_card',
-    'sz_gk_card_flip',
-    'sz_gk_card_is_up',
-    'sz_gk_card_face',
-    'sz_gk_hand_draw',
-    'sz_gk_card_at',
-    'sz_gk_cards_start',
-    'sz_gk_cards_energy_per_turn',
-    'sz_gk_cards_energy',
-    'sz_gk_cards_spend',
-    'sz_gk_cards_on_turn',
-    'sz_gk_cards_end_turn',
-    'sz_gk_cards_draw_hud',
-    'sz_gk_cards_hero_life',
-    'sz_gk_cards_enemy_life',
-    'sz_gk_cards_hurt_enemy',
-    'sz_gk_cards_hurt_me',
-    'sz_gk_cards_gain_block',
-    'sz_gk_cards_enemy_intent',
-    'sz_gk_cards_intent_action',
-    'sz_gk_cards_intent_value',
-    'sz_gk_cards_on_enemy_turn',
-    'sz_gk_wrap_edges',
-    'sz_gk_collide_tilemap',
-    'sz_gk_collide_group',
-    'sz_gk_overlap_groups',
-    'sz_gk_every_seconds',
-    'sz_gk_cooldown_ready',
-    'sz_gk_set_tile_size',
-    'sz_gk_tile_at',
-    'sz_gk_set_tile_at',
-    'sz_gk_break_tile_at',
-    'sz_gk_property_of',
-    'sz_gk_set_property',
-    'sz_gk_set_facing',
-    'sz_gk_facing_of',
-    'sz_gk_tween_to',
-    // 👾 R16 — Kit Monstrinhos
-    'sz_gk_pkm_creature',
-    'sz_gk_pkm_move',
-    'sz_gk_pkm_type_chart',
-    'sz_gk_pkm_evolve',
-    'sz_gk_pkm_catch_difficulty',
-    'sz_gk_pkm_level_of',
-    'sz_gk_pkm_give',
-    'sz_gk_pkm_give_ball',
-    'sz_gk_pkm_heal_team',
-    'sz_gk_pkm_has',
-    'sz_gk_pkm_team_size',
-    'sz_gk_pkm_ball_count',
-    'sz_gk_pkm_draw_team',
-    'sz_gk_pkm_grass_cells',
-    'sz_gk_pkm_grass_tiles',
-    'sz_gk_pkm_wild',
-    'sz_gk_pkm_encounter_rate',
-    'sz_gk_pkm_battle_wild',
-    'sz_gk_pkm_battle_trainer',
-    'sz_gk_pkm_trainer_creature',
-    'sz_gk_pkm_caught',
-    // 🧭 R15 — primitivos gerais
-    'sz_gk_define_region',
-    'sz_gk_is_inside',
-    'sz_gk_overlap_percent',
-    'sz_gk_chance',
-    'sz_gk_distance_between',
-    'sz_gk_point_in',
-    'sz_gk_launch_to_point',
-    'sz_gk_set_velocity_angle',
-    'sz_gk_set_opacity',
-    'sz_gk_opacity_of',
-    'sz_gk_fade_to',
-    'sz_gk_tween_property',
-    'sz_gk_set_hitbox',
-    'sz_gk_swing_window',
-    'sz_gk_luta_match',
-    'sz_gk_luta_draw_hud',
-    'sz_gk_luta_winner',
-    'sz_gk_luta_round',
-    'sz_gk_luta_wins_of',
-    'sz_gk_luta_fighter',
-    'sz_gk_luta_ai',
-    'sz_gk_luta_is_guarding',
-    'sz_gk_luta_move',
-    'sz_gk_luta_move_anim',
-    'sz_gk_luta_attack',
-    'sz_gk_luta_combo',
-    'sz_gk_luta_special',
-    'sz_gk_play_anim_once',
-    'sz_gk_anim_ended',
-    'sz_gk_set_entity_state',
-    'sz_gk_entity_state',
-    'sz_gk_state_anim',
-    'sz_gk_state_look',
-    'sz_gk_auto_animate',
-    'sz_gk_angle_of',
-    'sz_gk_angle_to',
-    'sz_gk_thrust',
-    'sz_gk_apply_friction',
-    'sz_gk_wait',
-    'sz_gk_nearest_active',
-    'sz_gk_random_active',
-    'sz_gk_float_text',
-    'sz_gk_trail_on',
-    'sz_gk_trail_off',
-    'sz_gk_shockwave',
-    'sz_gk_scroll_image',
-    'sz_gk_lean_on_move',
-    'sz_gk_fan_shot',
-    'sz_gk_nave_ship',
-    'sz_gk_nave_powerup',
-    'sz_gk_nave_power_of',
-    'sz_gk_nave_wave',
-    'sz_gk_nave_wave_shooter',
-    'sz_gk_nave_invasion_line',
-    'sz_gk_nave_starfield',
-    'sz_gk_nave_bomb',
-    'sz_gk_define_path',
-    'sz_gk_path_point',
-    'sz_gk_follow_path',
-    'sz_gk_path_progress',
-    'sz_gk_roll_dice',
-    'sz_gk_players_setup',
-    'sz_gk_current_player',
-    'sz_gk_next_player',
-    'sz_gk_on_turn_change',
-    'sz_gk_move_along_track',
-    'sz_gk_space_of',
-    'sz_gk_on_land_space',
-    'sz_gk_pick_active',
-    'sz_gk_parallax_layer',
-    'sz_gk_sheet_burst',
-    // 🏰 R26 — Kit Defesa de Torre
-    'sz_gk_td_slot',
-    'sz_gk_td_draw_slots',
-    'sz_gk_td_on_buy',
-    'sz_gk_td_free_slot',
-    'sz_gk_td_draw_range',
-    'sz_gk_td_wave',
-    'sz_gk_td_set_coins',
-    'sz_gk_td_add_coins',
-    'sz_gk_td_coins',
-    'sz_gk_count_item',
-    'sz_gk_fade_screen',
-    'sz_gk_flash_screen',
-    'sz_gk_save_value',
-    'sz_gk_saved_value',
-    'sz_gk_play_music',
-    'sz_gk_stop_sound',
-    'sz_gk_set_volume',
-    'sz_gk_create_empty_tilemap',
-    'sz_gk_move_with_custom_keys',
-    // 🏃 Kit Plataforma
-    'sz_gk_plat_hero',
-    'sz_gk_plat_jump_feel',
-    'sz_gk_plat_double_jump',
-    'sz_gk_plat_wall_slide',
-    'sz_gk_plat_wall_jump',
-    'sz_gk_plat_ladder',
-    'sz_gk_plat_one_way',
-    'sz_gk_plat_drop_through',
-    'sz_gk_plat_moving',
-    'sz_gk_plat_ride_on',
-    'sz_gk_plat_stomp',
-    'sz_gk_plat_patrol_wall',
-    'sz_gk_plat_checkpoint',
-    'sz_gk_plat_respawn',
-    'sz_gk_plat_state_frames',
-    'sz_gk_plat_anim',
-    'sz_gk_attack_facing',
-    'sz_gk_did_hit',
-    'sz_gk_patrol_around',
-    'sz_gk_draw_hearts',
-    'sz_gk_draw_background',
-    'sz_gk_create_character',
-    'sz_gk_move_with_keys',
-    'sz_gk_keep_on_screen',
-    'sz_gk_draw_character',
-    'sz_gk_place_character',
-    'sz_gk_reset_character',
-    'sz_gk_set_speed_multiplier',
-    'sz_gk_characters_touch',
-    'sz_gk_char_x',
-    'sz_gk_char_y',
-    'sz_gk_key_down',
-    'sz_gk_key_pressed',
-    'sz_gk_set_pause_key',
-    'sz_gk_on_event',
-    'sz_gk_emit',
-    'sz_gk_define_mold',
-    'sz_gk_spawn_from_mold',
-    'sz_gk_spawn_named',
-    'sz_gk_start_spawner',
-    'sz_gk_stop_spawner',
-    'sz_gk_for_each_active',
-    'sz_gk_cull_offscreen',
-    'sz_gk_recycle',
-    'sz_gk_draw_active',
-    'sz_gk_count_active',
-    'sz_gk_define_look',
-    'sz_gk_draw_look',
-    'sz_gk_seek',
-    'sz_gk_drift',
-    'sz_gk_face',
-    'sz_gk_hurt',
-    'sz_gk_knockback',
-    'sz_gk_draw_health_bar',
-    'sz_gk_touching_circle',
-    'sz_gk_is_dead',
-    'sz_gk_is_invincible',
-    'sz_gk_health_of',
-    'sz_gk_set_mission',
-    'sz_gk_mission_kill',
-    'sz_gk_draw_timer',
-    'sz_gk_time_survived',
-    'sz_gk_kills',
-    'sz_gk_define_effect',
-    'sz_gk_burst',
-    'sz_gk_draw_effects',
-    'sz_gk_load_sound',
-    'sz_gk_play_sound',
-    'sz_gk_play_effect',
-    'sz_gk_play_tone',
-  ]),
-  'game-3d-advanced': new Set([
-    'sz_g3k_setup',
-    'sz_g3k_set_effects',
-    'sz_g3k_set_seed',
-    'sz_g3k_scatter_decor',
-    'sz_g3k_start',
-    'sz_g3k_world_size',
-    'sz_g3k_define_mold',
-    'sz_g3k_part',
-    'sz_g3k_spawn',
-    'sz_g3k_spawn_named',
-    'sz_g3k_spawn_from',
-    'sz_g3k_start_spawner',
-    'sz_g3k_stop_spawner',
-    'sz_g3k_for_each_alive',
-    'sz_g3k_count_alive',
-    'sz_g3k_recycle',
-    'sz_g3k_recycle_all',
-    'sz_g3k_cull_far',
-    'sz_g3k_on_update',
-    'sz_g3k_move_with_keys',
-    'sz_g3k_key_down',
-    'sz_g3k_key_pressed',
-    'sz_g3k_set_pause_key',
-    'sz_g3k_camera_follow',
-    'sz_g3k_camera_orbit',
-    'sz_g3k_camera_top',
-    'sz_g3k_camera_angle',
-    'sz_g3k_camera_distance',
-    'sz_g3k_camera_shake',
-    'sz_g3k_camera_lens',
-    'sz_g3k_camera_look_at',
-    'sz_g3k_camera_look_at_point',
-    'sz_g3k_camera_smooth',
-    'sz_g3k_place',
-    'sz_g3k_set_yaw',
-    'sz_g3k_set_velocity',
-    'sz_g3k_set_drag',
-    'sz_g3k_look_at',
-    'sz_g3k_move_forward',
-    'sz_g3k_fall',
-    'sz_g3k_jump',
-    'sz_g3k_on_ground',
-    'sz_g3k_make_solid',
-    'sz_g3k_platformer_keys',
-    'sz_g3k_set_collider',
-    'sz_g3k_set_physics',
-    'sz_g3k_play_anim',
-    'sz_g3k_stop_anim',
-    'sz_g3k_state_anim',
-    'sz_g3k_play_music',
-    'sz_g3k_stop_music',
-    'sz_g3k_start_timer',
-    'sz_g3k_stop_timer',
-    'sz_g3k_on_timer_end',
-    'sz_g3k_time_left',
-    'sz_g3k_say',
-    'sz_g3k_hide_say',
-    'sz_g3k_random_between',
-    'sz_g3k_random_chance',
-    'sz_g3k_pass_through',
-    'sz_g3k_show_health_bar',
-    'sz_g3k_make_trigger',
-    'sz_g3k_on_overlap',
-    'sz_g3k_set_bounce',
-    'sz_g3k_set_friction',
-    'sz_g3k_add_light',
-    'sz_g3k_set_ambient',
-    'sz_g3k_set_fog',
-    'sz_g3k_set_sky',
-    'sz_g3k_set_sky_photo',
-    'sz_g3k_pick',
-    'sz_g3k_pointer_over',
-    'sz_g3k_ground_point',
-    'sz_g3k_mouse_pressed',
-    'sz_g3k_mouse_down',
-    'sz_g3k_camera_fps',
-    'sz_g3k_move_fps',
-    'sz_g3k_pos_of',
-    'sz_g3k_velocity_of',
-    'sz_g3k_distance_between',
-    'sz_g3k_max_health_of',
-    'sz_g3k_state_of',
-    'sz_g3k_exists',
-    'sz_g3k_is_mold',
-    'sz_g3k_set_entity_value',
-    'sz_g3k_entity_value',
-    'sz_g3k_state_time',
-    'sz_g3k_on_enter_entity_state',
-    'sz_g3k_on_entity_state_update',
-    'sz_g3k_on_exit_entity_state',
-    'sz_g3k_set_entity_state',
-    'sz_g3k_entity_state_is',
-    'sz_g3k_state_timer',
-    'sz_g3k_seek',
-    'sz_g3k_seek_point',
-    'sz_g3k_aim_at',
-    'sz_g3k_face_velocity',
-    'sz_g3k_is_aiming_at',
-    'sz_g3k_for_each_near',
-    'sz_g3k_store_nearest',
-    'sz_g3k_touches',
-    'sz_g3k_hurt',
-    'sz_g3k_health_of',
-    'sz_g3k_on_entity_death',
-    'sz_g3k_define_effect',
-    'sz_g3k_burst_at',
-    'sz_g3k_burst_on',
-    'sz_g3k_define_emitter',
-    'sz_g3k_start_emitter',
-    'sz_g3k_emitter_on',
-    'sz_g3k_stop_emitter',
-    'sz_g3k_add_attractor',
-    'sz_g3k_set_screen_text',
-    'sz_g3k_create_screen',
-    'sz_g3k_add_button',
-    'sz_g3k_show_screen',
-    'sz_g3k_hide_screens',
-    'sz_g3k_hud_text',
-    'sz_g3k_set_state',
-    'sz_g3k_on_enter_state',
-    'sz_g3k_state_is',
-    'sz_g3k_game_state',
-    'sz_g3k_return_to_menu',
-    'sz_g3k_end_game',
-    'sz_g3k_on_event',
-    'sz_g3k_emit',
-    'sz_g3k_load_sound',
-    'sz_g3k_play_sound',
-    'sz_g3k_play_effect',
-    'sz_g3k_play_tone',
-  ]),
-  'world-3d': new Set([
-    'sz_w3d_setup',
-    'sz_w3d_terrain',
-    'sz_w3d_flatten',
-    'sz_w3d_path',
-    'sz_w3d_water',
-    'sz_w3d_start',
-    'sz_w3d_world_size',
-    'sz_w3d_ground_height',
-    'sz_w3d_car',
-    'sz_w3d_car_stats',
-    'sz_w3d_car_boost',
-    'sz_w3d_engine_sound',
-    'sz_w3d_car_place',
-    'sz_w3d_load_sound',
-    'sz_w3d_play_sound',
-    'sz_w3d_play_music',
-    'sz_w3d_stop_music',
-    'sz_w3d_hud',
-    'sz_w3d_say',
-    'sz_w3d_point',
-    'sz_w3d_on_point',
-    'sz_w3d_zone',
-    'sz_w3d_on_zone',
-    'sz_w3d_totem_text',
-    'sz_w3d_totem_image',
-    'sz_w3d_gallery_create',
-    'sz_w3d_gallery_add',
-    'sz_w3d_race_create',
-    'sz_w3d_race_checkpoint',
-    'sz_w3d_race_on_start',
-    'sz_w3d_race_on_checkpoint',
-    'sz_w3d_race_on_finish',
-    'sz_w3d_race_time',
-    'sz_w3d_race_best',
-    'sz_w3d_bowling_create',
-    'sz_w3d_bowling_reset',
-    'sz_w3d_bowling_on_strike',
-    'sz_w3d_pins_down',
-    'sz_w3d_stack',
-    'sz_w3d_knocked_count',
-    'sz_w3d_camera_mode',
-    'sz_w3d_camera_shake',
-    'sz_w3d_car_pos',
-    'sz_w3d_car_speed',
-    'sz_w3d_grass',
-    'sz_w3d_scatter',
-    'sz_w3d_scatter_model',
-    'sz_w3d_place_thing',
-    'sz_w3d_place_model',
-    'sz_w3d_clear_area',
-    'sz_w3d_on_crash',
-    'sz_w3d_horn',
-    'sz_w3d_on_horn',
-    'sz_w3d_car_lights',
-    'sz_w3d_tire_marks',
-    'sz_w3d_car_paint',
-    'sz_w3d_confetti',
-    'sz_w3d_fireworks',
-    'sz_w3d_push_place',
-    'sz_w3d_push_scatter',
-    'sz_w3d_letters',
-    'sz_w3d_explosive',
-    'sz_w3d_on_explosion',
-    'sz_w3d_waterfall',
-    'sz_w3d_lamp',
-    'sz_w3d_city',
-    'sz_w3d_traffic',
-    'sz_w3d_door',
-    'sz_w3d_npc_ask',
-    'sz_w3d_string_lights',
-    'sz_w3d_crops',
-    'sz_w3d_barn',
-    'sz_w3d_windmill',
-    'sz_w3d_fence',
-    'sz_w3d_animals',
-    'sz_w3d_crater',
-    'sz_w3d_flag',
-    'sz_w3d_rocket',
-    'sz_w3d_fireflies',
-    'sz_w3d_campfire',
-    'sz_w3d_person',
-    'sz_w3d_person_stats',
-    'sz_w3d_person_place',
-    'sz_w3d_person_accessory',
-    'sz_w3d_person_emote',
-    'sz_w3d_on_vehicle',
-    'sz_w3d_person_pos',
-    'sz_w3d_is_driving',
-    'sz_w3d_islands',
-    'sz_w3d_boat',
-    'sz_w3d_bridge',
-    'sz_w3d_lighthouse',
-    'sz_w3d_ambience',
-    'sz_w3d_npc',
-    'sz_w3d_npc_wander',
-    'sz_w3d_npc_talk',
-    'sz_w3d_npc_say',
-    'sz_w3d_npc_emote',
-    'sz_w3d_coins_scatter',
-    'sz_w3d_coins_ring',
-    'sz_w3d_coins_line',
-    'sz_w3d_on_collect',
-    'sz_w3d_coin_count',
-    'sz_w3d_quest',
-    'sz_w3d_quest_done',
-    'sz_w3d_on_quest_done',
-    'sz_w3d_marker',
-    'sz_w3d_guide_arrow',
-    'sz_w3d_achievement',
-    'sz_w3d_on_achievement',
-    'sz_w3d_has_achievement',
-    'sz_w3d_minimap',
-    'sz_w3d_race_podium',
-    'sz_w3d_whisper_corner',
-    'sz_w3d_flame_note',
-    'sz_w3d_tornado',
-    'sz_w3d_season',
-    'sz_w3d_clouds',
-    'sz_w3d_effects',
-    'sz_w3d_daynight',
-    'sz_w3d_set_time',
-    'sz_w3d_weather',
-    'sz_w3d_wind',
-    'sz_w3d_on_daynight',
-    'sz_w3d_time_of_day',
-    'sz_w3d_on_update',
-    'sz_w3d_key_down',
-    'sz_w3d_key_pressed',
-  ]),
+interface ExtensionBlocklyCatalogEntry {
+  readonly manifest: { readonly id: string }
+  readonly blockly: { readonly blocks: readonly { readonly type: string }[] }
 }
+
+/**
+ * Deriva a allowlist usada pelo sanitizador do catálogo que registra os blocos.
+ * Assim, adicionar ou remover um bloco oficial atualiza o carregamento de projetos
+ * sem exigir uma segunda lista manual.
+ */
+export function buildExtensionBlocklyBlockTypes(
+  catalog: readonly ExtensionBlocklyCatalogEntry[],
+): Record<string, ReadonlySet<string>> {
+  return Object.fromEntries(
+    catalog.map((extension) => [
+      extension.manifest.id,
+      new Set(extension.blockly.blocks.map((block) => block.type)),
+    ]),
+  )
+}
+
+export const EXTENSION_BLOCKLY_BLOCK_TYPES = buildExtensionBlocklyBlockTypes(OFFICIAL_CATALOG)
 
 function isProjectFiles(value: unknown): value is ProjectFiles {
   if (!value || typeof value !== 'object') return false
@@ -1661,15 +614,14 @@ const BASELINE_PERMISSIONS = new Set<string>(STUDENT_BASELINE_PERMISSIONS)
 
 /**
  * Uma extensão (resolvida pelo id no catálogo oficial) declara SÓ permissões da
- * baseline? Uma extensão desconhecida (sem manifesto) não declara nada — o
- * preview a ignora —, então passa. Uma extensão cujo manifesto declare `network`
- * (ou qualquer permissão fora da baseline) NÃO passa: ao importar um projeto de
- * um estranho, o aluno não pode habilitar silenciosamente uma capacidade
- * sensível sem consentimento (hoje game-2d/3d só declaram baseline → no-op).
+ * baseline? Extensões desconhecidas e extensões cujo manifesto declare `network`
+ * (ou qualquer permissão fora da baseline) NÃO passam: ao importar um projeto de
+ * um estranho, o aluno não pode habilitar silenciosamente código sem catálogo ou
+ * uma capacidade sensível sem consentimento (hoje as oficiais só usam a baseline).
  */
 function declaresOnlyBaselinePermissions(id: string): boolean {
   const ext = findExtension(id)
-  if (!ext) return true
+  if (!ext) return false
   return ext.manifest.permissions.every((p) => BASELINE_PERMISSIONS.has(p))
 }
 
@@ -1677,15 +629,24 @@ function declaresOnlyBaselinePermissions(id: string): boolean {
 function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
   if (!Array.isArray(raw)) return []
   const out: InstalledExtension[] = []
+  const accepted: ExtensionCompatibilityEntry[] = []
+  const seen = new Set<string>()
   for (const item of raw) {
     if (out.length >= MAX_INSTALLED_EXTENSIONS) break
     if (!item || typeof item !== 'object') continue
     const e = item as Record<string, unknown>
     if (typeof e.id !== 'string' || typeof e.version !== 'string') continue
+    if (seen.has(e.id)) continue
+    const extension = findExtension(e.id)
+    if (!extension) continue
     // Fail-closed do consentimento: descarta extensões que declarem permissão
     // fora da baseline (ex.: uma futura extensão `network`). Abrir o .json de um
     // estranho não pode conceder capacidades sensíveis sem o aluno consentir.
     if (!declaresOnlyBaselinePermissions(e.id)) continue
+    const compatibility = { id: e.id, conflictsWith: extension.conflictsWith }
+    if (findExtensionConflict(compatibility, accepted)) continue
+    seen.add(e.id)
+    accepted.push(compatibility)
     out.push({
       id: e.id,
       version: e.version,
@@ -1696,6 +657,20 @@ function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
     })
   }
   return out
+}
+
+function importedIRMatchesInstalledExtensions(
+  ir: SZIRInput | null,
+  installedExtensions: readonly InstalledExtension[],
+): boolean {
+  if (!ir) return true
+  const installed = new Set(installedExtensions.map((extension) => extension.id))
+  const seen = new Set<string>()
+  for (const extension of normalizeSZIR(ir).extensions) {
+    if (seen.has(extension.extensionId) || !installed.has(extension.extensionId)) return false
+    seen.add(extension.extensionId)
+  }
+  return true
 }
 
 interface JsonShapeLimits {
@@ -1794,7 +769,7 @@ function describeJsonShapeLimitFailure(value: unknown, limits: JsonShapeLimits):
   return null
 }
 
-function sanitizeImportedIR(raw: unknown): SZIR | null {
+function sanitizeImportedIR(raw: unknown): SZIRInput | null {
   if (raw == null) return null
   const isSmallEnough = isJsonShapeWithinLimits(raw, {
     maxChars: MAX_IR_CHARS,
@@ -1807,7 +782,7 @@ function sanitizeImportedIR(raw: unknown): SZIR | null {
   if (!isSmallEnough) {
     throw new Error('Arquivo inválido: IR excede o tamanho ou a complexidade máxima permitida.')
   }
-  const parsed = SZIRSchema.safeParse(raw)
+  const parsed = SZIRInputSchema.safeParse(raw)
   if (!parsed.success) return null
   if (countIRNodes(parsed.data) > MAX_IR_NODES) {
     throw new Error('Arquivo inválido: IR excede a complexidade máxima permitida.')
@@ -1848,7 +823,7 @@ function sanitizeBlocksState(
   return isSupportedBlocklyWorkspaceState(raw, allowedTypes, limits) ? raw : null
 }
 
-function sanitizeStoredIR(raw: unknown): SZIR | null {
+function sanitizeStoredIR(raw: unknown): SZIRInput | null {
   try {
     return sanitizeImportedIR(raw)
   } catch {
@@ -1871,8 +846,13 @@ function describeBlocklyValidationFailure(
     return 'raiz não é objeto plano'
   }
   const rootKeys = Object.keys(raw)
-  const extraRoot = rootKeys.find((k) => k !== 'blocks' && k !== 'variables')
+  const extraRoot = rootKeys.find(
+    (k) => k !== 'blocks' && k !== 'variables' && k !== BEHAVIOR_AREAS_STATE_KEY,
+  )
   if (extraRoot) return `chave de raiz inesperada: "${extraRoot}"`
+  if (!hasValidBehaviorAreasStateVersion(raw)) {
+    return `versão das áreas de comportamento inesperada: ${JSON.stringify(raw[BEHAVIOR_AREAS_STATE_KEY])} (suportadas ${BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION}–${BEHAVIOR_AREAS_STATE_VERSION})`
+  }
 
   const blocksSection = (raw as { blocks?: unknown }).blocks
   if (
@@ -2102,7 +1082,11 @@ function boundProjectIdFromBody(raw: unknown): string {
   return ulid()
 }
 
-function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | null {
+function sanitizeStoredProject(
+  raw: unknown,
+  requestedId?: string,
+  proBuildLimits?: StudioProBuildLimits,
+): Project | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) {
     return null
   }
@@ -2119,6 +1103,8 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   const name = sanitizeProjectName(r.name)
   const base = createEmptyProject(id, name)
   const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
+  const storedIR = sanitizeStoredIR(r.ir)
+  const ir = importedIRMatchesInstalledExtensions(storedIR, installedExtensions) ? storedIR : null
   const createdAt = sanitizeTimestamp(r.createdAt, base.createdAt)
   const updatedAt = sanitizeTimestamp(r.updatedAt, createdAt)
 
@@ -2135,7 +1121,7 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   let tree: ProjectTree | undefined
   let proMeta: ProProjectMeta | undefined
   if (r.kind === 'pro') {
-    const sanitizedTree = sanitizeProTree(r.tree)
+    const sanitizedTree = sanitizeProTree(r.tree, proBuildLimits)
     const sanitizedMeta = sanitizeProMeta(r.proMeta)
     if (sanitizedTree && sanitizedMeta) {
       tree = sanitizedTree
@@ -2144,7 +1130,7 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   }
   const isPro = tree != null && proMeta != null
 
-  return {
+  return migrateLegacyBlockProjectSnapshot({
     ...base,
     id,
     name,
@@ -2153,14 +1139,14 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
     // Pro vive sempre no modo 'code'; básico vive em Blocos/Ponte ('code' legado
     // cai em 'bridge') — separação D2.
     mode: isPro ? 'code' : normalizeClassicMode(r.mode),
-    ir: sanitizeStoredIR(r.ir),
+    ir,
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
     assets: sanitizeProjectAssets(r.assets),
     createdAt,
     updatedAt,
     ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
-  }
+  })
 }
 
 export async function loadSanitizedProjectById(id: string): Promise<Project | null> {
@@ -2200,8 +1186,11 @@ export async function loadSanitizedProjectBlocksStateById(
  * mesmas regras aplicadas a projetos persistidos — protege contra JSON
  * malformado/hostil passado pelo app que embarca o editor.
  */
-export function sanitizeProjectForHost(raw: unknown): Project | null {
-  return sanitizeStoredProject(raw)
+export function sanitizeProjectForHost(
+  raw: unknown,
+  options: { proBuildLimits?: StudioProBuildLimits } = {},
+): Project | null {
+  return sanitizeStoredProject(raw, undefined, options.proBuildLimits)
 }
 
 function getAllowedBlocklyBlockTypes(
@@ -2232,7 +1221,14 @@ function isSupportedBlocklyWorkspaceState(
 ): raw is Record<string, unknown> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return false
   const rootKeys = Object.keys(raw)
-  if (rootKeys.some((key) => key !== 'blocks' && key !== 'variables')) return false
+  if (
+    rootKeys.some(
+      (key) => key !== 'blocks' && key !== 'variables' && key !== BEHAVIOR_AREAS_STATE_KEY,
+    )
+  ) {
+    return false
+  }
+  if (!hasValidBehaviorAreasStateVersion(raw)) return false
 
   const blocksSection = raw.blocks
   if (
@@ -2548,8 +1544,14 @@ function isSupportedExtendsExtraState(raw: unknown): boolean {
  */
 function isSupportedHandleExtraState(raw: unknown): boolean {
   if (!isPlainUnknownRecord(raw)) return false
-  if (!objectHasOnlyKeys(raw, ['handle'])) return false
-  return typeof raw.handle === 'string' && raw.handle.length <= MAX_MUTATOR_NAME_CHARS
+  if (!objectHasOnlyKeys(raw, ['handle', 'timeVar', 'deltaVar'])) return false
+  const values = [raw.handle, raw.timeVar, raw.deltaVar]
+  if (values.every((value) => value == null)) return false
+  return values.every(
+    (value) =>
+      value == null ||
+      (typeof value === 'string' && value.length > 0 && value.length <= MAX_MUTATOR_NAME_CHARS),
+  )
 }
 
 function isOptionalCoordinate(raw: unknown): boolean {
@@ -2595,12 +1597,16 @@ function isSupportedBlocklyIcons(raw: unknown): boolean {
   })
 }
 
-function countIRNodes(ir: SZIR): number {
+function countIRNodes(input: SZIRInput): number {
+  const ir = normalizeSZIR(input)
   return (
     1 +
     ir.html.reduce((total, node) => total + countHTMLNode(node), 0) +
     ir.css.reduce((total, entry) => total + countCSSEntry(entry), 0) +
-    ir.js.reduce((total, statement) => total + countJSStatement(statement), 0) +
+    [...ir.behavior.start, ...ir.behavior.events, ...ir.behavior.loops].reduce(
+      (total, statement) => total + countJSStatement(statement),
+      0,
+    ) +
     ir.extensions.length +
     (ir.htmlShell ? 1 : 0)
   )
@@ -2676,6 +1682,7 @@ function countJSStatement(statement: JSStatement): number {
       )
     case 'event':
     case 'animationLoop':
+    case 'g2d:onStart':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
     case 'g2d:onKey':
@@ -2689,6 +1696,7 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
+    case 'g2d:afterSeconds':
     case 'g3d:animate':
       return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
     case 'g2d:spawnInGroup':
@@ -2704,6 +1712,12 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:drawScore':
     case 'g2d:drawHearts':
       return 1 + countJSExpr(statement.type === 'g2d:drawScore' ? statement.value : statement.count)
+    case 'g2d:damageSprite':
+      return 1 + countJSValue(statement.amount) + countJSValue(statement.invincibilityFrames)
+    case 'g2d:drawSpriteHealth':
+      return (
+        1 + countJSValue(statement.x) + countJSValue(statement.y) + countJSValue(statement.size)
+      )
     case 'g2d:drawBar':
       return 1 + countJSExpr(statement.value) + countJSExpr(statement.max)
     case 'var':
@@ -2764,6 +1778,10 @@ function countJSStatement(statement: JSStatement): number {
   }
 }
 
+function countJSValue(value: number | JSExpr): number {
+  return typeof value === 'number' ? 1 : countJSExpr(value)
+}
+
 function countJSExpr(expr: JSExpr): number {
   if (expr.type === 'binop') return 1 + countJSExpr(expr.left) + countJSExpr(expr.right)
   if (expr.type === 'call') {
@@ -2775,12 +1793,36 @@ function countJSExpr(expr: JSExpr): number {
 export interface CreateProjectStoreOptions {
   /** Limites de política do host — anti-DoS profundos continuam internos. */
   limits?: StudioLimits
+  /** Cotas do compilador remoto Pro desta instância, quando houver. */
+  proBuildLimits?: StudioProBuildLimits
 }
 
 export function createProjectStore(
   options: CreateProjectStoreOptions = {},
 ): StoreApi<ProjectStore> {
   const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
+  const proBuildLimits = options.proBuildLimits
+  const proTreeLimitError = (tree: ProjectTree): string | null => {
+    if (!proBuildLimits) return null
+    const files = Object.fromEntries(
+      Object.entries(tree)
+        .filter(
+          (entry): entry is [string, { kind: 'file'; content: string }] =>
+            entry[1]?.kind === 'file' && typeof entry[1].content === 'string',
+        )
+        .map(([path, node]) => [path, node.content]),
+    )
+    const error = studioProBuildFileLimitError(files, proBuildLimits)
+    if (error === 'TOO_MANY_FILES') {
+      return `Esta atividade aceita no máximo ${proBuildLimits.maxFiles} arquivos.`
+    }
+    if (error === 'FILE_TOO_LARGE') return 'Um arquivo excede o tamanho permitido nesta atividade.'
+    if (error === 'TOTAL_TOO_LARGE') return 'O projeto excede o tamanho permitido nesta atividade.'
+    if (error === 'REQUEST_TOO_LARGE') {
+      return 'O projeto excede o tamanho permitido para enviar ao compilador.'
+    }
+    return null
+  }
   // Sequência monotônica de carga (single-flight, igual ao loadInFlight do
   // settingsStore): dois loads que se sobrepõem (aluno clica projeto A e logo B)
   // podem resolver FORA DE ORDEM — sem o guard, o mais LENTO (mais antigo)
@@ -2861,8 +1903,15 @@ export function createProjectStore(
         bridgeCodeEditEpoch: 0,
         bridgeBlocksSyncedEpoch: 0,
       }),
-    createProject: async (name) => {
-      const p = createEmptyProject(ulid(), sanitizeProjectName(name))
+    createProject: async (name, initialExtensionIds) => {
+      const base = createEmptyProject(ulid(), sanitizeProjectName(name))
+      const installedExtensions = [...new Set(initialExtensionIds ?? [])].flatMap((id) => {
+        const definition = findExtension(id)
+        return definition
+          ? [{ id, version: definition.manifest.version, installedAt: Date.now() }]
+          : []
+      })
+      const p: Project = { ...base, installedExtensions }
       await persistProject(p)
       return p
     },
@@ -2921,6 +1970,11 @@ export function createProjectStore(
       const ir = sanitizeImportedIR(r.ir)
 
       const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
+      if (!importedIRMatchesInstalledExtensions(ir, installedExtensions)) {
+        throw new Error(
+          'Arquivo inválido: a IR usa extensões ausentes, duplicadas ou incompatíveis.',
+        )
+      }
       const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
 
       // Modo profissional: reconstrói kind/tree/proMeta com os MESMOS sanitizers
@@ -2945,7 +1999,7 @@ export function createProjectStore(
       const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
       const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
       const assets = sanitizeProjectAssets(r.assets)
-      const imported: Project = {
+      const imported = migrateLegacyBlockProjectSnapshot({
         ...base,
         files,
         // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
@@ -2961,7 +2015,7 @@ export function createProjectStore(
         updatedAt: now,
         // Pro vive sempre no modo 'code' (mode já é 'code' acima).
         ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
-      }
+      })
       await persistProject(imported)
 
       // Avisos não-fatais: o projeto FOI importado, mas alguns sanitizers cortaram
@@ -3351,6 +2405,8 @@ export function createProjectStore(
       if (!p?.tree) return 'Nenhum projeto profissional carregado.'
       const result = addProFile(p.tree, path)
       if (!result.tree) return result.error ?? 'Falha ao criar arquivo.'
+      const limitError = proTreeLimitError(result.tree)
+      if (limitError) return limitError
       set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
       return null
     },
@@ -3367,6 +2423,11 @@ export function createProjectStore(
       if (!p?.tree) return
       const next = setProFileContent(p.tree, path, content)
       if (next === p.tree) return
+      const limitError = proTreeLimitError(next)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
       set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
     },
     renameProNode: (from, to) => {

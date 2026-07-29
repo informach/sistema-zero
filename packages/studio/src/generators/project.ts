@@ -1,11 +1,13 @@
-import type { SZIR } from '#ir'
+import { lifecycleContractForExtensions } from '#extensions'
+import type { AssetPlacement, SZIRInput } from '#ir'
+import { normalizeSZIR } from '#ir'
 import { generateCSS, generateCSSWithMap } from './css'
 import { generateHTML, generateHTMLWithMap } from './html'
 import { generateJS, generateJSWithMap } from './js'
 import type { SourceMap, SourceMappedFile } from './sourceMap'
 
 export interface ProjectGenerationInput {
-  ir: SZIR
+  ir: SZIRInput
   projectName: string
   /** JS header (comment / banner). */
   jsHeader?: string
@@ -22,23 +24,32 @@ export interface ProjectGenerationWithMap {
   sourceMap: SourceMap
 }
 
+function isExternalPlacement(placement: AssetPlacement): boolean {
+  return placement === 'external' || placement === 'external-head'
+}
+
 export function generateProjectFiles(input: ProjectGenerationInput): GeneratedFiles {
-  const cssPlacement = input.ir.htmlShell?.cssPlacement ?? 'external'
-  const jsPlacement = input.ir.htmlShell?.jsPlacement ?? 'external'
-  const cssCode = generateCSS(input.ir.css)
-  const jsCode = generateJS({ statements: input.ir.js, header: input.jsHeader })
+  const ir = normalizeSZIR(input.ir)
+  const cssPlacement = ir.htmlShell?.cssPlacement ?? 'external'
+  const jsPlacement = ir.htmlShell?.jsPlacement ?? 'external'
+  const cssCode = generateCSS(ir.css)
+  const jsCode = generateJS({
+    behavior: ir.behavior,
+    header: input.jsHeader,
+    lifecycle: lifecycleContractForExtensions(ir.extensions),
+  })
   return {
     'index.html': generateHTML({
       title: input.projectName,
-      body: input.ir.html,
-      shell: input.ir.htmlShell,
+      body: ir.html,
+      shell: ir.htmlShell,
       cssCode,
       jsCode,
     }),
     // Inline ⇒ o conteúdo foi para dentro do index.html; o arquivo externo
     // fica vazio (mas continua existindo como arquivo canônico).
-    'style.css': cssPlacement === 'external' ? cssCode : '',
-    'script.js': jsPlacement === 'external' ? jsCode : '',
+    'style.css': isExternalPlacement(cssPlacement) ? cssCode : '',
+    'script.js': isExternalPlacement(jsPlacement) ? jsCode : '',
   }
 }
 
@@ -56,14 +67,19 @@ export function generateProjectFiles(input: ProjectGenerationInput): GeneratedFi
 export function generateProjectFilesWithMap(
   input: ProjectGenerationInput,
 ): ProjectGenerationWithMap {
-  const cssPlacement = input.ir.htmlShell?.cssPlacement ?? 'external'
-  const jsPlacement = input.ir.htmlShell?.jsPlacement ?? 'external'
-  const css = generateCSSWithMap(input.ir.css)
-  const js = generateJSWithMap({ statements: input.ir.js, header: input.jsHeader })
+  const ir = normalizeSZIR(input.ir)
+  const cssPlacement = ir.htmlShell?.cssPlacement ?? 'external'
+  const jsPlacement = ir.htmlShell?.jsPlacement ?? 'external'
+  const css = generateCSSWithMap(ir.css)
+  const js = generateJSWithMap({
+    behavior: ir.behavior,
+    header: input.jsHeader,
+    lifecycle: lifecycleContractForExtensions(ir.extensions),
+  })
   const html = generateHTMLWithMap({
     title: input.projectName,
-    body: input.ir.html,
-    shell: input.ir.htmlShell,
+    body: ir.html,
+    shell: ir.htmlShell,
     cssCode: css.code,
     jsCode: js.code,
   })
@@ -71,13 +87,13 @@ export function generateProjectFilesWithMap(
   const sourceMap: SourceMap = { ...html.map.build() }
   Object.assign(
     sourceMap,
-    cssPlacement === 'external'
+    isExternalPlacement(cssPlacement)
       ? css.map.build()
       : remapToInlineHost(css.map.build(), html.cssInlineStartLine),
   )
   Object.assign(
     sourceMap,
-    jsPlacement === 'external'
+    isExternalPlacement(jsPlacement)
       ? js.map.build()
       : remapToInlineHost(js.map.build(), html.jsInlineStartLine),
   )
@@ -85,8 +101,8 @@ export function generateProjectFilesWithMap(
   return {
     files: {
       'index.html': html.code,
-      'style.css': cssPlacement === 'external' ? css.code : '',
-      'script.js': jsPlacement === 'external' ? js.code : '',
+      'style.css': isExternalPlacement(cssPlacement) ? css.code : '',
+      'script.js': isExternalPlacement(jsPlacement) ? js.code : '',
     },
     sourceMap,
   }

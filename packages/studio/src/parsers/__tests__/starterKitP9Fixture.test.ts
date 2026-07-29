@@ -3,7 +3,7 @@ import 'blockly/blocks'
 import * as Blockly from 'blockly/core'
 import { buildIRFromWorkspace, buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
-import { SZIRSchema } from '#ir'
+import { cssDeclarationsRecord, SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '#parsers'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 
@@ -432,7 +432,10 @@ function cssDeclMap(cssText: string): Record<string, Record<string, string>> {
   const map: Record<string, Record<string, string>> = {}
   for (const entry of ir.css) {
     if (!('selector' in entry) || !('declarations' in entry)) continue
-    map[entry.selector] = { ...(map[entry.selector] ?? {}), ...entry.declarations }
+    map[entry.selector] = {
+      ...(map[entry.selector] ?? {}),
+      ...cssDeclarationsRecord(entry.declarations),
+    }
   }
   return map
 }
@@ -459,7 +462,7 @@ describe('JS Game Starter Kit P9 (achatado) — 100% blocos do núcleo', () => {
     ]) {
       expect(types.has(t)).toBe(true)
     }
-    expect(SZIRSchema.safeParse(ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
   })
 
   it('fixpoint TEXTUAL: gen(parse(src)) é estável e mantém os construtos', () => {
@@ -478,7 +481,7 @@ describe('JS Game Starter Kit P9 (achatado) — 100% blocos do núcleo', () => {
     expect(jsOut).toContain('await Promise.all(')
     expect(jsOut).toContain('return new Promise((resolve) => {')
     expect(jsOut).toContain('setTimeout(resolve, 2000)')
-    expect(jsOut).toContain('.onclick = () => {')
+    expect(jsOut).toContain('.onclick = (event) => {')
     expect(jsOut).toContain('.forEach((p) => {')
     expect(files1['index.html']).toContain('<!-- Main Menu -->')
     expect(files1['style.css']).toContain('/* UI Panels */')

@@ -19,7 +19,9 @@ export interface RenewalReminderRepository {
   /**
    * Matrículas ATIVAS de compra por período (payment + expiresAt, sem
    * subscriptionId) vencendo em `[from, to]`, sem lembrete registrado p/ a
-   * data de vencimento corrente. Ordenadas pelo vencimento.
+   * data de vencimento corrente. `limit` conta grupos de compra
+   * (usuário+oferta+data), portanto nunca divide as matrículas de uma compra
+   * entre ciclos. Ordenadas pelo vencimento.
    */
   listExpiringTermEntitlements(
     from: Date,

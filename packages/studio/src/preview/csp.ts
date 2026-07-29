@@ -11,10 +11,9 @@
  *   professor libere origens (`fetchAllowedOrigins`); reforçado pelo
  *   permissionGuard em runtime (defesa dupla).
  *
- * `script-src 'unsafe-inline'` é inevitável: o srcdoc é montado por scripts
- * inline + importmap com data: URLs. Não há nonce real sem reescrever o
- * pipeline — por isso a CSP reduz REDE/SCRIPTS REMOTOS, e o sandbox segue como
- * barreira principal.
+ * Cada script gerado recebe uma fonte SHA-256 exata na policy. Scripts externos
+ * `data:` usam o mesmo hash como SRI; a policy não libera `data:`/`blob:` como
+ * esquemas genéricos. Assim, somente os bytes produzidos pelo Studio executam.
  *
  * ⚠️ CANAL RESIDUAL DE EXFILTRAÇÃO (GET de mão única, ACEITO por design): como
  * `img-src`/`media-src`/`font-src`/`frame-src` liberam `https:` (subrecursos
@@ -33,23 +32,25 @@
  * instrumenta o JS canônico) E não herdaria esta meta-CSP — reabrindo o furo de
  * `worker-src` num documento filho. O pipeline do preview nunca precisa de
  * subframe `data:`/`blob:` legítimo (o importmap é um `<script>` e o JS do aluno é
- * um script `data:text/javascript` governado por `script-src`, não por
- * `frame-src`), então liberamos só `https:` aqui.
+ * um script `data:text/javascript` autorizado por hash, não por `frame-src`),
+ * então liberamos só `https:` aqui.
  */
 
 export interface PreviewCSPOptions {
   /** Origens https/http que o aluno pode acessar via fetch/XHR (opt-in do host). */
   fetchAllowedOrigins?: readonly string[]
-  /**
-   * Origens liberadas em `script-src` para módulos ESM de extensão (ex.: o CDN
-   * pinado do Three.js). Carregamento de lib de mão única — NÃO é vetor de exfil.
-   */
-  scriptAllowedOrigins?: readonly string[]
+  /** URLs/caminhos exatos dos módulos ESM oficiais (nunca a origem inteira). */
+  scriptAllowedUrls?: readonly string[]
+  /** Integridades SHA-256 dos scripts exatos gerados por buildPreviewDoc. */
+  scriptHashes?: readonly string[]
+  /** Hashes dos handlers `on*` exatos, já instrumentados pelo preview. */
+  eventHandlerHashes?: readonly string[]
 }
 
 // Aceita só origens bem-formadas (esquema + host + porta opcional), sem path,
 // query ou caracteres que permitiriam injeção de diretiva na string da CSP.
 const ORIGIN_RE = /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i
+const SCRIPT_HASH_RE = /^sha256-[A-Za-z0-9+/]{43}=$/
 
 export function sanitizeFetchOrigins(origins: readonly string[] | undefined): string[] {
   if (!origins) return []
@@ -62,11 +63,52 @@ export function sanitizeFetchOrigins(origins: readonly string[] | undefined): st
   return out
 }
 
+/** Mantém URL HTTP(S) sem credenciais/query/hash e preserva o caminho da allowlist. */
+export function sanitizeScriptUrls(urls: readonly string[] | undefined): string[] {
+  if (!urls) return []
+  const out: string[] = []
+  for (const value of urls) {
+    if (typeof value !== 'string') continue
+    try {
+      const parsed = new URL(value.trim())
+      if (
+        (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') ||
+        parsed.username ||
+        parsed.password ||
+        parsed.search ||
+        parsed.hash
+      ) {
+        continue
+      }
+      const source = `${parsed.origin}${parsed.pathname === '/' ? '' : parsed.pathname}`
+      if (!out.includes(source)) out.push(source)
+    } catch {
+      // Entrada inválida não entra na policy.
+    }
+  }
+  return out
+}
+
+function sanitizeScriptHashes(hashes: readonly string[] | undefined): string[] {
+  if (!hashes) return []
+  return [...new Set(hashes.filter((hash) => SCRIPT_HASH_RE.test(hash)))]
+}
+
 export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
   const origins = sanitizeFetchOrigins(options.fetchAllowedOrigins)
   const connectSrc = origins.length > 0 ? origins.join(' ') : "'none'"
-  const scriptOrigins = sanitizeFetchOrigins(options.scriptAllowedOrigins)
-  const scriptSrc = ["'unsafe-inline'", 'data:', 'blob:', ...scriptOrigins].join(' ')
+  const scriptUrls = sanitizeScriptUrls(options.scriptAllowedUrls)
+  const scriptHashes = sanitizeScriptHashes(options.scriptHashes).map((hash) => `'${hash}'`)
+  const eventHandlerHashes = sanitizeScriptHashes(options.eventHandlerHashes).map(
+    (hash) => `'${hash}'`,
+  )
+  const scriptSrc =
+    [
+      ...(eventHandlerHashes.length > 0 ? ["'unsafe-hashes'"] : []),
+      ...scriptHashes,
+      ...eventHandlerHashes,
+      ...scriptUrls,
+    ].join(' ') || "'none'"
   return [
     "default-src 'none'",
     `script-src ${scriptSrc}`,
@@ -79,13 +121,10 @@ export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
     // uninstrumentado no mesmo thread (fora do loopGuard) e não herdaria esta
     // meta-CSP (reabrindo o furo de worker-src no filho). O preview nunca precisa
     // de subframe data:/blob: (importmap é script; JS do aluno é data:text/javascript
-    // governado por script-src, não frame-src). Ver o comentário do header.
+    // autorizado por hash em script-src, não frame-src). Ver o comentário do header.
     'frame-src https:',
-    // Sem worker-src, os Workers cairiam no `script-src` (que libera data:/blob:)
-    // e o aluno poderia criar Workers NÃO instrumentados (fora do alcance do
-    // loopGuard, que só roda no thread principal) com `while(true){}` — laços
-    // imortais e inmatáveis num thread paralelo. Workers não são recurso suportado
-    // no preview básico, então os zeramos por completo.
+    // Workers não são recurso suportado no preview básico e executariam fora da
+    // instrumentação do thread principal, então continuam zerados por completo.
     "worker-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",

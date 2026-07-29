@@ -115,7 +115,70 @@ describe('laços for — for-of, repeat e for clássico (forRange)', () => {
     })
   })
 
-  it('gera forRange com i++ (passo 1) e i += N (passo > 1)', () => {
+  it('avalia o limite de repeat uma única vez', () => {
+    const code = compileStatements(
+      [
+        {
+          type: 'repeat',
+          times: { type: 'call', name: 'calcularLimite', args: [] },
+          body: [{ type: 'callFunction', name: 'marcar', args: [] }],
+        },
+      ],
+      0,
+    )
+    let limitCalls = 0
+    let bodyCalls = 0
+    const run = new Function('calcularLimite', 'marcar', code)
+    run(
+      () => {
+        limitCalls += 1
+        return 3
+      },
+      () => {
+        bodyCalls += 1
+      },
+    )
+    expect(limitCalls).toBe(1)
+    expect(bodyCalls).toBe(3)
+  })
+
+  it('avalia início, fim e passo uma vez e percorre intervalos decrescentes', () => {
+    const code = compileStatements(
+      [
+        {
+          type: 'forRange',
+          varName: 'i',
+          from: { type: 'call', name: 'inicio', args: [] },
+          to: { type: 'call', name: 'fim', args: [] },
+          step: { type: 'call', name: 'passo', args: [] },
+          body: [{ type: 'callFunction', name: 'marcar', args: [{ type: 'var', name: 'i' }] }],
+        },
+      ],
+      0,
+    )
+    const calls = { inicio: 0, fim: 0, passo: 0 }
+    const visited: number[] = []
+    const run = new Function('inicio', 'fim', 'passo', 'marcar', code)
+    run(
+      () => {
+        calls.inicio += 1
+        return 3
+      },
+      () => {
+        calls.fim += 1
+        return 0
+      },
+      () => {
+        calls.passo += 1
+        return -1
+      },
+      (value: number) => visited.push(value),
+    )
+    expect(calls).toEqual({ inicio: 1, fim: 1, passo: 1 })
+    expect(visited).toEqual([3, 2, 1])
+  })
+
+  it('gera forRange com limites estáveis e direção definida pelo passo', () => {
     const one = compileStatements(
       [
         {
@@ -129,7 +192,9 @@ describe('laços for — for-of, repeat e for clássico (forRange)', () => {
       ],
       0,
     )
-    expect(one).toContain('for (let i = 2; i < 8; i++)')
+    expect(one).toContain('for (let i = 2,')
+    expect(one).toContain('? i <')
+    expect(one).toContain('? i >')
     const stepped = compileStatements(
       [
         {
@@ -143,7 +208,25 @@ describe('laços for — for-of, repeat e for clássico (forRange)', () => {
       ],
       0,
     )
-    expect(stepped).toContain('i += 2')
+    expect(stepped).toContain('passo = 2')
+    expect(stepped).toContain('i += passo')
+  })
+
+  it('não entra no laço quando o passo é zero', () => {
+    const code = compileStatements(
+      [
+        {
+          type: 'forRange',
+          varName: 'i',
+          from: { type: 'num', value: 0 },
+          to: { type: 'num', value: 5 },
+          step: { type: 'num', value: 0 },
+          body: [{ type: 'callFunction', name: 'marcar', args: [] }],
+        },
+      ],
+      0,
+    )
+    expect(code).toContain(': false')
   })
 
   it('roundtrip estável de for-of e forRange', () => {

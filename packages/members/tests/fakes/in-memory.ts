@@ -15,7 +15,7 @@ import {
   type Module,
   type ModuleWithLessons,
 } from '../../src/domain/course/course'
-import { DuplicateSlugError } from '../../src/domain/course/course.errors'
+import { CareerSlotConflictError, DuplicateSlugError } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
 import { isCompletionGatingBlock } from '../../src/domain/course/lesson-block'
 import type { QuizAttemptSummary } from '../../src/domain/course/quiz'
@@ -32,14 +32,18 @@ import {
 } from '../../src/domain/gamification/coins'
 import {
   advanceStreak,
+  avatarStyleBadgeSlugs,
   challengeBadgeSlugs,
   clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  muralCommenterBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
   playsBadgeSlugs,
   quizPerfectBadgeSlugs,
+  remixBadgeSlugs,
+  roomDecoratorBadgeSlugs,
   showcaseBadgeSlugs,
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
@@ -121,6 +125,7 @@ import type {
   AdminThreadsFilter,
   AppendMessageInput,
   EnsureThreadInput,
+  MarkAllReadFilter,
   TeacherMessageRecord,
   TeacherThreadRecord,
   TeacherThreadRepository,
@@ -128,7 +133,11 @@ import type {
 } from '../../src/domain/ports/teacher-thread-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
 import type { CourseRating } from '../../src/domain/rating/course-rating'
-import type { RoomState } from '../../src/domain/room/room-catalog'
+import {
+  type RoomState,
+  TROPHY_FOR_BADGE,
+  TROPHY_SHELF_ITEM_ID,
+} from '../../src/domain/room/room-catalog'
 
 export const silentLogger: Logger = {
   debug() {},
@@ -398,6 +407,21 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
+  async hasPublishedFoundationCourse(
+    audience: CourseAudience,
+    level: CourseLevel,
+    track: CourseTrack,
+  ): Promise<boolean> {
+    return this.courses.some(
+      (c) =>
+        c.status === 'published' &&
+        c.audience === audience &&
+        c.level === level &&
+        c.track === track &&
+        c.careerSlot === 1,
+    )
+  }
+
   async findOutline(
     courseId: string,
     opts?: { publishedOnly?: boolean },
@@ -525,19 +549,53 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
   }
 
+  async listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]> {
+    const wanted = new Set(courseIds)
+    const found = new Set<string>()
+    for (const block of this.blocks) {
+      if (block.content.kind !== 'studio' || block.content.showcase?.enabled !== true) continue
+      const lesson = this.lessons.find((l) => l.id === block.lessonId)
+      if (lesson?.isPublished && wanted.has(lesson.courseId)) found.add(lesson.courseId)
+    }
+    return [...found]
+  }
+
   async createCourse(fields: CourseFields): Promise<Course> {
     if (this.courses.some((c) => c.slug === fields.slug)) throw new DuplicateSlugError()
+    if (
+      fields.careerSlot != null &&
+      this.courses.some(
+        (course) =>
+          course.audience === fields.audience &&
+          course.level === fields.level &&
+          course.track === fields.track &&
+          course.careerSlot === fields.careerSlot,
+      )
+    ) {
+      throw new CareerSlotConflictError()
+    }
     const now = new Date()
     // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
     // `audience` ausente cai no default da coluna (`adult`).
-    const { salesPageUrl, audience, sequentialLock, level, track, ...rest } = fields
+    const {
+      version: _version,
+      salesPageUrl,
+      audience,
+      sequentialLock,
+      level,
+      track,
+      careerSlot,
+      ...rest
+    } = fields
     const course: Course = {
       id: randomUUID(),
+      version: 0,
       ...rest,
       audience: audience ?? 'adult',
       sequentialLock: sequentialLock ?? true,
       level: level ?? 'iniciante',
       track: track ?? '2d',
+      careerSlot: careerSlot ?? null,
       metadata: salesPageUrl ? { salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,
@@ -549,10 +607,24 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async updateCourse(course: Course): Promise<boolean> {
     const idx = this.courses.findIndex((c) => c.id === course.id)
     if (idx === -1) return false
+    if (this.courses[idx]?.version !== course.version) return false
     if (this.courses.some((c) => c.id !== course.id && c.slug === course.slug)) {
       throw new DuplicateSlugError()
     }
-    this.courses[idx] = { ...course, updatedAt: new Date() }
+    if (
+      course.careerSlot != null &&
+      this.courses.some(
+        (other) =>
+          other.id !== course.id &&
+          other.audience === course.audience &&
+          other.level === course.level &&
+          other.track === course.track &&
+          other.careerSlot === course.careerSlot,
+      )
+    ) {
+      throw new CareerSlotConflictError()
+    }
+    this.courses[idx] = { ...course, version: course.version + 1, updatedAt: new Date() }
     return true
   }
 
@@ -1331,6 +1403,13 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
             ? r.answered
             : true,
       )
+      // Filtro por aluno (mirror do Drizzle): user_id OU account_id.
+      .filter(
+        (r) =>
+          !filter.userIds?.length ||
+          filter.userIds.includes(r.userId) ||
+          (r.accountId !== null && filter.userIds.includes(r.accountId)),
+      )
       // Pendentes primeiro, depois as mais recentes (espelha o repo real).
       .sort(
         (a, b) =>
@@ -1414,6 +1493,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
 export class InMemoryTeacherThreadRepository implements TeacherThreadRepository {
   readonly threads: TeacherThreadRecord[] = []
   readonly messages: TeacherMessageRecord[] = []
+  readonly staffReads = new Map<string, Date>()
 
   async ensureThread(input: EnsureThreadInput): Promise<string> {
     if (input.contextType !== 'general' && input.contextRef != null) {
@@ -1462,9 +1542,12 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     this.messages.push(record)
     const thread = this.threads.find((t) => t.id === input.threadId)
     if (thread) {
-      thread.lastMessageAt = input.now
-      if (input.authorRole === 'teacher') thread.teacherLastReadAt = input.now
-      else thread.studentLastReadAt = input.now
+      if (input.now > thread.lastMessageAt) thread.lastMessageAt = input.now
+      if (input.authorRole === 'teacher' && input.authorId) {
+        this.staffReads.set(this.staffReadKey(input.threadId, input.authorId), input.now)
+      } else if (input.authorRole === 'student') {
+        thread.studentLastReadAt = input.now
+      }
     }
     return record
   }
@@ -1485,10 +1568,32 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     )
   }
 
-  async listMessages(threadId: string): Promise<TeacherMessageRecord[]> {
-    return this.messages
+  async listMessages(
+    threadId: string,
+    before?: { createdAt: Date; id: string },
+  ): Promise<{
+    messages: TeacherMessageRecord[]
+    nextCursor: { createdAt: Date; id: string } | null
+  }> {
+    const ordered = this.messages
       .filter((m) => m.threadId === threadId)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .filter(
+        (m) =>
+          !before ||
+          m.createdAt < before.createdAt ||
+          (m.createdAt.getTime() === before.createdAt.getTime() && m.id < before.id),
+      )
+      .sort((a, b) => {
+        const byDate = b.createdAt.getTime() - a.createdAt.getTime()
+        return byDate || b.id.localeCompare(a.id)
+      })
+    const page = ordered.slice(0, 50)
+    const oldest = page[page.length - 1]
+    return {
+      messages: page.reverse(),
+      nextCursor:
+        ordered.length > 50 && oldest ? { createdAt: oldest.createdAt, id: oldest.id } : null,
+    }
   }
 
   async listForStudent(
@@ -1510,12 +1615,24 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
         if (filter.audience && t.audience !== filter.audience) return false
         if (filter.contextType && t.contextType !== filter.contextType) return false
         if (filter.courseId && t.courseId !== filter.courseId) return false
-        if (filter.unreadOnly && !this.unreadFor(t, 'teacher')) return false
+        if (filter.unreadOnly && !this.unreadFor(t, 'teacher', filter.staffUserId)) return false
+        // Filtro por aluno (mirror do Drizzle): user_id OU account_id.
+        if (
+          filter.userIds?.length &&
+          !filter.userIds.includes(t.userId) &&
+          !(t.accountId && filter.userIds.includes(t.accountId))
+        )
+          return false
         return true
       })
-      .sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime())
+      .sort((a, b) => {
+        const byUnread =
+          Number(this.unreadFor(b, 'teacher', filter.staffUserId)) -
+          Number(this.unreadFor(a, 'teacher', filter.staffUserId))
+        return byUnread || b.lastMessageAt.getTime() - a.lastMessageAt.getTime()
+      })
       .slice(filter.offset, filter.offset + filter.limit)
-      .map((t) => this.toSummary(t, 'teacher'))
+      .map((t) => this.toSummary(t, 'teacher', filter.staffUserId))
   }
 
   async countUnreadForStudent(userId: string, audience: CourseAudience): Promise<number> {
@@ -1524,18 +1641,50 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     ).length
   }
 
-  async markReadByStudent(threadId: string, userId: string, now: Date): Promise<void> {
-    const t = this.threads.find((x) => x.id === threadId && x.userId === userId)
-    if (t) t.studentLastReadAt = now
+  async markReadByStudent(
+    threadId: string,
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<void> {
+    const t = this.threads.find(
+      (x) => x.id === threadId && x.userId === userId && x.audience === audience,
+    )
+    if (t) t.studentLastReadAt = t.lastMessageAt
   }
 
-  async markReadByTeacher(threadId: string, now: Date): Promise<void> {
+  async markReadByTeacher(threadId: string, staffUserId: string): Promise<void> {
     const t = this.threads.find((x) => x.id === threadId)
-    if (t) t.teacherLastReadAt = now
+    if (t) this.staffReads.set(this.staffReadKey(threadId, staffUserId), t.lastMessageAt)
   }
 
-  private unreadFor(thread: TeacherThreadRecord, side: 'student' | 'teacher'): boolean {
-    const watermark = side === 'student' ? thread.studentLastReadAt : thread.teacherLastReadAt
+  async countUnreadForTeacher(staffUserId: string): Promise<number> {
+    return this.threads.filter((t) => this.unreadFor(t, 'teacher', staffUserId)).length
+  }
+
+  async markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number> {
+    const targets = this.threads.filter((t) => {
+      if (filter?.audience && t.audience !== filter.audience) return false
+      if (filter?.contextType && t.contextType !== filter.contextType) return false
+      if (filter?.courseId && t.courseId !== filter.courseId) return false
+      return this.unreadFor(t, 'teacher', staffUserId)
+    })
+    for (const t of targets) {
+      this.staffReads.set(this.staffReadKey(t.id, staffUserId), t.lastMessageAt)
+    }
+    return targets.length
+  }
+
+  private unreadFor(
+    thread: TeacherThreadRecord,
+    side: 'student' | 'teacher',
+    staffUserId?: string,
+  ): boolean {
+    const watermark =
+      side === 'student'
+        ? thread.studentLastReadAt
+        : staffUserId
+          ? this.staffReads.get(this.staffReadKey(thread.id, staffUserId))
+          : undefined
     const fromRole = side === 'student' ? 'teacher' : 'student'
     return this.messages.some(
       (m) =>
@@ -1548,6 +1697,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
   private toSummary(
     thread: TeacherThreadRecord,
     side: 'student' | 'teacher',
+    staffUserId?: string,
   ): TeacherThreadSummary {
     const msgs = this.messages
       .filter((m) => m.threadId === thread.id)
@@ -1568,8 +1718,12 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
       lastMessagePreview: last ? last.body.slice(0, 140) : null,
       lastMessageRole: last ? last.authorRole : null,
       messageCount: msgs.length,
-      unread: this.unreadFor(thread, side),
+      unread: this.unreadFor(thread, side, staffUserId),
     }
+  }
+
+  private staffReadKey(threadId: string, staffUserId: string): string {
+    return `${threadId}:${staffUserId}`
   }
 }
 
@@ -1583,6 +1737,8 @@ interface XpEventRow extends XpEventInput {
   sourceLevel?: CourseLevel | null
   /** Snapshot do eixo 2D/3D (mirror de `xp_events.source_track` — par do sourceLevel). */
   sourceTrack?: CourseTrack | null
+  /** Snapshot do slot da carreira (mirror de `xp_events.source_career_slot`). */
+  sourceCareerSlot?: number | null
   createdAt: Date
 }
 
@@ -1703,6 +1859,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         audience: input.audience,
         sourceLevel: marcoCourse?.level ?? null,
         sourceTrack: marcoCourse?.track ?? null,
+        sourceCareerSlot: marcoCourse?.careerSlot ?? null,
         createdAt: input.now,
       })
       newEvents.push(e)
@@ -1770,6 +1927,27 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         countByType('play_milestone_10'),
         countByType('play_milestone_100'),
       )) {
+        badgeCandidates.add(slug)
+      }
+    }
+    // Full review 24/07 (mirror do Drizzle): remix + decorador + estilo + comentarista.
+    if (newEvents.some((e) => e.sourceType === 'studio_remix')) {
+      for (const slug of remixBadgeSlugs(countByType('studio_remix'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'room_item_buy')) {
+      for (const slug of roomDecoratorBadgeSlugs(countByType('room_item_buy'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'avatar_part_buy')) {
+      for (const slug of avatarStyleBadgeSlugs(countByType('avatar_part_buy'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'mural_comment')) {
+      for (const slug of muralCommenterBadgeSlugs(countByType('mural_comment'))) {
         badgeCandidates.add(slug)
       }
     }
@@ -1906,6 +2084,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       badgesUnlocked.push({ slug, unlockedAt: input.now })
     }
 
+    // 🏆 Troféus do quarto (mirror do Drizzle): badge nova com troféu mapeado concede o
+    // item + a ESTANTE DE TROFÉUS junto com o 1º (24/07). O repo do quarto deduplica.
+    const trophyIds = badgesUnlocked
+      .map((b) => TROPHY_FOR_BADGE[b.slug as BadgeSlug])
+      .filter((id): id is string => Boolean(id))
+    if (trophyIds.length > 0) {
+      for (const itemId of [...trophyIds, TROPHY_SHELF_ITEM_ID]) {
+        await this.sources?.room?.addToInventory(input.userId, input.audience, itemId, input.now)
+      }
+    }
+
     return {
       xpAwarded,
       totalXp,
@@ -2016,7 +2205,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por DEGRAU (nível×eixo). */
-  async countQualifyingCoursesByTier(
+  async listQualifyingCareerSlots(
     userId: string,
     audience: CourseAudience,
   ): Promise<QualifyingByTier> {
@@ -2035,19 +2224,24 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       // legado sem curso cai em '2d' (literal final do coalesce do SQL).
       const level = sc.sourceLevel ?? ce.sourceLevel ?? course?.level
       const track = sc.sourceTrack ?? ce.sourceTrack ?? course?.track ?? '2d'
-      if (level) result[courseTier(level, track)] += 1
+      const careerSlot = sc.sourceCareerSlot ?? ce.sourceCareerSlot ?? course?.careerSlot
+      // `lenda` é fora da carreira → nunca conta (também teria careerSlot null).
+      if (level && level !== 'lenda' && careerSlot != null) {
+        const slots = result[courseTier(level, track)]
+        if (!slots.includes(careerSlot)) slots.push(careerSlot)
+      }
     }
     return result
   }
 
-  async countQualifyingByTierForProfiles(
+  async listQualifyingCareerSlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>> {
     const map = new Map<string, QualifyingByTier>()
     for (const id of new Set(profileIds)) {
-      const q = await this.countQualifyingCoursesByTier(id, audience)
-      if (Object.values(q).some((n) => n > 0)) map.set(id, q)
+      const q = await this.listQualifyingCareerSlots(id, audience)
+      if (Object.values(q).some((slots) => slots.length > 0)) map.set(id, q)
     }
     return map
   }

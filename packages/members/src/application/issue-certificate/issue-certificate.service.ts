@@ -81,6 +81,7 @@ export class IssueCertificateService {
       input.accountId,
       lesson.courseId,
       input.privileged,
+      input.userId,
     )
 
     // Idempotente: já emitido → replay da conclusão/award (auto-cura falha pós-insert)

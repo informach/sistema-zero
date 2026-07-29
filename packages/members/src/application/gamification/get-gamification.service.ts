@@ -37,7 +37,7 @@ export class GetGamificationService {
       this.repo.getProfile(userId, opts.audience),
       this.repo.listBadges(userId, opts.audience),
       wantsRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
-      this.repo.countQualifyingCoursesByTier(userId, opts.audience),
+      this.repo.listQualifyingCareerSlots(userId, opts.audience),
     ])
     const today = localDateSaoPaulo(now)
     const unlockedBySlug = new Map(badges.map((b) => [b.badgeSlug, b.unlockedAt]))

@@ -54,4 +54,18 @@ describe('SVG dinâmico (createElementNS + getAttribute)', () => {
     expect(out).toContain('.getAttribute("r")')
     expect(out).not.toContain('rawJS')
   })
+
+  it('não transforma MathML nem namespace variável em SVG', () => {
+    const mathML =
+      'const simbolo = document.createElementNS("http://www.w3.org/1998/Math/MathML", "mi");'
+    const variableNamespace =
+      'const forma = document.createElementNS(namespaceEscolhido, "circle");'
+
+    const parsedMathML = JSON.stringify(parseJS(mathML))
+    const parsedVariable = JSON.stringify(parseJS(variableNamespace))
+    expect(parsedMathML).not.toContain('"createElementNS"')
+    expect(parsedVariable).not.toContain('"createElementNS"')
+    expect(compileStatements(parseJS(mathML), 0)).toContain('Math/MathML')
+    expect(compileStatements(parseJS(variableNamespace), 0)).toContain('namespaceEscolhido')
+  })
 })

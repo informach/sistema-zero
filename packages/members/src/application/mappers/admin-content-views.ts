@@ -13,6 +13,8 @@ import { resolveSalesPageUrl } from './views'
 
 export interface CourseView {
   id: string
+  /** Envie este valor no próximo PATCH para detectar edição concorrente. */
+  version: number
   slug: string
   title: string
   subtitle: string | null
@@ -27,15 +29,24 @@ export interface CourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
+  /** Posição na etapa da carreira; `null` = curso bônus. */
+  careerSlot: number | null
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
+  /**
+   * SÓ na listagem e SÓ p/ curso-base kids (careerSlot 1): tem ≥1 aula publicada
+   * com bloco de Estúdio de vitrine (`showcase.enabled`)? `false` = o slot 1
+   * nunca qualifica e a etapa não destrava — o painel avisa o operador.
+   */
+  hasShowcaseBlock?: boolean
   createdAt: string
   updatedAt: string
 }
 
-export function toCourseView(c: Course): CourseView {
+export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView {
   return {
     id: c.id,
+    version: c.version,
     slug: c.slug,
     title: c.title,
     subtitle: c.subtitle,
@@ -46,7 +57,9 @@ export function toCourseView(c: Course): CourseView {
     audience: c.audience,
     level: c.level,
     track: c.track,
+    careerSlot: c.careerSlot,
     sequentialLock: c.sequentialLock,
+    ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   }

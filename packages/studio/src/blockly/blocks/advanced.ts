@@ -24,6 +24,7 @@ export const ADVANCED_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_adv_raw_js',
+    placement: 'advanced-command',
     message0: 'Código avançado JavaScript\n%1',
     args0: [{ type: 'field_input', name: 'CODE', text: '// código avançado' }],
     previousStatement: 'JSStmt',

@@ -1,5 +1,5 @@
 import type { CursorPos } from '../../application/cursor'
-import type { Comment, ContentStatus, Thread } from '../thread/thread'
+import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../thread/thread'
 
 export interface CreateThreadInput {
   id: string
@@ -45,6 +45,8 @@ export interface CreateShowcaseThreadInput {
   playId: string | null
   /** Desafio mensal (`m:YYYY-MM`), já VALIDADO pelo service — `null`/ausente = post normal. */
   challengeKey?: string | null
+  /** Metadado do projeto ({pro, extensions[]}, já saneado pelo service) — selo de nível do remix. */
+  studioMeta?: ThreadStudioMeta | null
   /** Chave de idempotência (hash perfil:curso:cadeia[:clientKey]) — UNIQUE; conflito devolve o existente. */
   idempotencyKey: string
   now: Date
@@ -126,6 +128,23 @@ export interface ThreadRepository {
     from: Date,
     to: Date,
   ): Promise<Array<{ authorId: string; title: string; playId: string | null; createdAt: Date }>>
+  /**
+   * TODOS os posts de vitrine VISÍVEIS de UM autor (perfil), mais recentes primeiro,
+   * até `limit`. Alimenta a seção "Jogos publicados" do perfil público kids — inclui
+   * a CAPA (`coverImageUrl`, que a `listShowcaseByAuthors` do report dos pais omite) e
+   * NÃO tem janela (o perfil mostra a vitrine inteira, não só a semana).
+   */
+  listShowcaseByAuthor(
+    authorId: string,
+    limit: number,
+  ): Promise<
+    Array<{
+      title: string
+      playId: string | null
+      coverImageUrl: string | null
+      createdAt: Date
+    }>
+  >
   findThreadById(id: string): Promise<Thread | null>
   /**
    * Tópicos VISÍVEIS do autor (mais recentes por `lastActivityAt`) — alimenta o sino

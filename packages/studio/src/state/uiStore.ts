@@ -1,9 +1,23 @@
 import { useContext } from 'react'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import type { IDEMode } from '#core'
 import { StudioStoresContext } from './storesContext'
 
 export type BottomTab = 'console' | 'terminal' | 'ai'
+export type ConsoleVisibilityOverride = boolean | null
+
+/**
+ * Sem escolha manual, o Console segue o padrão pedagógico do modo. Depois da
+ * primeira ação no menu, a preferência da instância prevalece até o Studio ser
+ * desmontado (a store não é persistida nem pertence ao projeto).
+ */
+export function resolveConsoleVisibility(
+  mode: IDEMode | undefined,
+  override: ConsoleVisibilityOverride,
+): boolean {
+  return override ?? mode === 'code'
+}
 
 interface UIStore {
   bottomTab: BottomTab
@@ -15,14 +29,12 @@ interface UIStore {
   setShowAssets: (b: boolean) => void
   showPreview: boolean
   setShowPreview: (b: boolean) => void
-  // Visibilidade dos painéis inferiores, no mesmo espírito do `showPreview`: o
-  // aluno mostra/esconde Console, Terminal e IA. As flags valem nos DOIS layouts
-  // — no wide decidem se o painel é renderizado (e se a barra inferior some por
-  // completo quando tudo está oculto); no narrow decidem se a ABA aparece na
-  // tira. Terminal/IA só fazem sentido no modo Código (o gate de contexto fica
-  // em `useVisibleBottomTabs`). Default ligado.
-  showConsole: boolean
-  setShowConsole: (b: boolean) => void
+  // O Console deriva do modo enquanto `null` (Blocos/Ponte oculto, Código
+  // visível). A primeira ação manual grava um boolean que prevalece em qualquer
+  // modo/projeto nesta instância. Terminal/IA continuam booleanos porque só
+  // existem no contexto de Código.
+  consoleVisibilityOverride: ConsoleVisibilityOverride
+  setConsoleVisibilityOverride: (value: ConsoleVisibilityOverride) => void
   showTerminal: boolean
   setShowTerminal: (b: boolean) => void
   showAI: boolean
@@ -43,8 +55,8 @@ export function createUIStore(): StoreApi<UIStore> {
     setShowAssets: (showAssets) => set({ showAssets }),
     showPreview: true,
     setShowPreview: (showPreview) => set({ showPreview }),
-    showConsole: true,
-    setShowConsole: (showConsole) => set({ showConsole }),
+    consoleVisibilityOverride: null,
+    setConsoleVisibilityOverride: (consoleVisibilityOverride) => set({ consoleVisibilityOverride }),
     showTerminal: true,
     setShowTerminal: (showTerminal) => set({ showTerminal }),
     showAI: true,

@@ -298,13 +298,19 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
   kids: 'Kids',
 }
 
-/** Dificuldade do curso. Alimenta o nível do ALUNO (cursos qualificados por degrau). */
-export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
+/**
+ * Dificuldade do curso. As 3 primeiras alimentam o nível do ALUNO (degraus da
+ * carreira). `lenda` é uma categoria À PARTE, FORA da carreira: cursos bônus "de
+ * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
+ * entra em `COURSE_TIER_OPTIONS` (travado por conformance com o core).
+ */
+export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado', 'lenda'] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 export const LEVEL_LABELS: Record<CourseLevel, string> = {
   iniciante: 'Iniciante',
   intermediario: 'Intermediário',
   avancado: 'Avançado',
+  lenda: 'Lenda',
 }
 
 /** Eixo 2D/3D do curso (par com `level` = DEGRAU pedagógico; reforma 07/2026). */
@@ -330,8 +336,9 @@ export const COURSE_TIER_OPTIONS: readonly {
   { level: 'avancado', track: '3d', label: 'Avançado 3D' },
 ]
 
-/** Rótulo do degrau de um curso (listagens/badges). */
+/** Rótulo do degrau de um curso (listagens/badges). `lenda` não é degrau → "Lenda". */
 export function courseTierLabel(level: string, track?: string): string {
+  if (level === 'lenda') return 'Lenda'
   const found = COURSE_TIER_OPTIONS.find((o) => o.level === level && o.track === (track ?? '2d'))
   return found?.label ?? level
 }
@@ -352,8 +359,16 @@ export interface CourseView {
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null` = curso bônus. */
+  careerSlot: number | null
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
+  /**
+   * SÓ na listagem e SÓ no curso-base kids (posição 1): tem aula publicada com
+   * bloco de Estúdio de vitrine? `false` = o aluno nunca publica no Mural → o
+   * slot 1 nunca qualifica e a etapa não destrava (aviso "Sem vitrine").
+   */
+  hasShowcaseBlock?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -623,6 +638,7 @@ export interface TeacherThreadView {
   lastMessageAt: string
   createdAt: string
   messages: TeacherMessageView[]
+  nextCursor: string | null
 }
 
 /** Resumo de conversa na caixa de entrada do PROFESSOR (espelha o members). */
@@ -951,6 +967,7 @@ export const INVOICE_STATUSES = [
   'SKIPPED',
   'FAILED',
   'CANCEL_PENDING',
+  'CANCEL_FAILED',
   'CANCELLED',
   'SUBSTITUTED',
 ] as const

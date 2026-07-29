@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -24,7 +25,7 @@ function roundtripBlocks(code: string): { rebuiltCode: string; stateJson: string
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      rebuiltCode: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      rebuiltCode: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       stateJson: JSON.stringify(state),
     }
   } finally {
@@ -44,10 +45,16 @@ describe('Canvas 3D Fase 2 — importNamed', () => {
     expect(roundtripBlocks(code).stateJson).toContain('"sz_t3d_import_named"')
   })
 
-  it('vários nomes: import { GLTFLoader, DRACOLoader } from … (vírgula)', () => {
-    const src = "import { GLTFLoader, DRACOLoader } from 'three/addons/loaders/GLTFLoader.js';"
+  it('separa addons de arquivos diferentes quando chegam juntos pela Ponte', () => {
+    const src = "import { GLTFLoader, OrbitControls } from 'three/addons/loaders/GLTFLoader.js';"
     const { rebuiltCode } = roundtripBlocks(generateJS({ statements: parseJS(src) }))
-    expect(rebuiltCode).toContain('import { GLTFLoader, DRACOLoader } from')
+    expect(rebuiltCode).toBe(
+      [
+        "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
+        "import { OrbitControls } from 'three/addons/controls/OrbitControls.js';",
+        '',
+      ].join('\n'),
+    )
   })
 
   it('import com ALIAS (X as Y) segue rawJS (fora do escopo)', () => {
@@ -60,12 +67,17 @@ describe('Canvas 3D Fase 2 — loaderLoad (carregamento async)', () => {
   it('loader.load(url, (gltf) => {…}) → loaderLoad (0 raw, regen igual, bloco)', () => {
     const src = [
       'const scene = new THREE.Scene();',
+      'const loader = new GLTFLoader();',
       "loader.load('m.glb', (gltf) => {",
       '  scene.add(gltf.scene);',
       '});',
     ].join('\n')
     // com o import p/ ligar o gate (scene.add vira "adicionar" amigável)
-    const full = `import * as THREE from 'three';\n${src}`
+    const full = [
+      "import * as THREE from 'three';",
+      "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
+      src,
+    ].join('\n')
     const ir = parseJS(full)
     expect(JSON.stringify(ir)).not.toContain('"rawJS"')
     expect(ir.some((s) => s.type === 'loaderLoad')).toBe(true)
@@ -85,7 +97,13 @@ describe('Canvas 3D Fase 2 — loaderLoad (carregamento async)', () => {
 
 describe('Canvas 3D — traverse (percorrer cada parte)', () => {
   it('modelo.traverse((parte) => {…}) com var → traverseEach (0 raw, regen igual, bloco)', () => {
-    const src = ['modelo.traverse((parte) => {', '  parte.castShadow = true;', '});'].join('\n')
+    const src = [
+      "import * as THREE from 'three';",
+      'const modelo = new THREE.Group();',
+      'modelo.traverse((parte) => {',
+      '  parte.castShadow = true;',
+      '});',
+    ].join('\n')
     const ir = parseJS(src)
     expect(JSON.stringify(ir)).not.toContain('"rawJS"')
     expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
@@ -98,12 +116,19 @@ describe('Canvas 3D — traverse (percorrer cada parte)', () => {
   })
 
   it('gltf.scene.traverse((peca) => {…}) com PROPRIEDADE no objeto → traverseEach', () => {
-    const src = ['gltf.scene.traverse((peca) => {', '  peca.receiveShadow = true;', '});'].join(
-      '\n',
-    )
+    const src = [
+      "import * as THREE from 'three';",
+      "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
+      'const loader = new GLTFLoader();',
+      "loader.load('modelo.glb', (gltf) => {",
+      '  gltf.scene.traverse((peca) => {',
+      '    peca.receiveShadow = true;',
+      '  });',
+      '});',
+    ].join('\n')
     const ir = parseJS(src)
     expect(JSON.stringify(ir)).not.toContain('"rawJS"')
-    expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
+    expect(JSON.stringify(ir)).toContain('"type":"traverseEach"')
     const code = generateJS({ statements: ir })
     const { rebuiltCode } = roundtripBlocks(code)
     expect(rebuiltCode).toBe(code)
@@ -138,7 +163,9 @@ describe('Canvas 3D — som na unha (load_sound discriminado por AudioLoader)', 
   it('contraprova: SEM AudioLoader declarado, x.load decai p/ o bloco de MODELO', () => {
     const src = [
       "import * as THREE from 'three';",
+      "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
       'const scene = new THREE.Scene();',
+      'const loader = new GLTFLoader();',
       "loader.load('m.glb', (gltf) => {",
       '  scene.add(gltf.scene);',
       '});',
@@ -146,6 +173,28 @@ describe('Canvas 3D — som na unha (load_sound discriminado por AudioLoader)', 
     const { stateJson } = roundtripBlocks(generateJS({ statements: parseJS(src) }))
     expect(stateJson).toContain('"sz_t3d_load_model"')
     expect(stateJson).not.toContain('"sz_t3d_load_sound"')
+  })
+
+  it('métodos homônimos continuam genéricos mesmo dentro de um projeto Three.js', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      'const scene = new THREE.Scene();',
+      'class DadosLoader {',
+      '  load(url, pronto) { pronto(url); }',
+      '}',
+      'const dados = new DadosLoader();',
+      "dados.load('dados.json', (resultado) => {",
+      '  console.log(resultado);',
+      '});',
+      'const arvore = { traverse: (visitar) => visitar(1) };',
+      'arvore.traverse((item) => {',
+      '  console.log(item);',
+      '});',
+    ].join('\n')
+
+    const stateJson = roundtripBlocks(generateJS({ statements: parseJS(src) })).stateJson
+    expect(stateJson).not.toContain('"sz_t3d_load_model"')
+    expect(stateJson).not.toContain('"sz_t3d_traverse"')
   })
 
   it('AudioLoader declarado DENTRO de um corpo (recursão) também discrimina', () => {

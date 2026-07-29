@@ -1,10 +1,13 @@
 import type { CourseAudience, ModuleWithLessons } from '../../domain/course/course'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import { emptyQualifyingByTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
+import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress, resolveContinueLesson } from '../../domain/progress/progress'
+import { careerLocksForCourses } from '../career-course-locking/career-course-locking'
 import { lockedLessonSetForCourse } from '../lesson-locking/lesson-locking'
 import { type MyCourseView, toMyCourseView } from '../mappers/views'
 
@@ -23,6 +26,7 @@ export class ListMyCoursesService {
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
     private readonly positions: VideoPositionRepository,
+    private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
   ) {}
 
@@ -71,6 +75,16 @@ export class ListMyCoursesService {
         courses.push(...(await this.courses.findAccessibleCoursesBySlugs(missing)))
       }
     }
+
+    const qualified =
+      audience === 'kids' && !privileged
+        ? await this.gamification.listQualifyingCareerSlots(userId, audience)
+        : emptyQualifyingByTier()
+    const careerLocks = careerLocksForCourses(
+      courses,
+      qualified,
+      audience === 'kids' && !privileged,
+    )
 
     // Contagens em LOTE (3 queries) em vez de 3 por curso (evita N+1). Numerador
     // e denominador sobre o MESMO conjunto (aulas publicadas) — sem inflar.
@@ -132,7 +146,9 @@ export class ListMyCoursesService {
           )
         }
       }
-      views.push(toMyCourseView(course, entitlement, progress, continueLessonId))
+      views.push(
+        toMyCourseView(course, entitlement, progress, continueLessonId, careerLocks.get(course.id)),
+      )
     }
     return views
   }

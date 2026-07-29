@@ -181,6 +181,13 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
      pais. ⚠️ **NUNCA expor no gateway**: a rota devolve playIds de QUALQUER autor — na borda
      vazaria jogos entre famílias; o portão de família é do members (só manda os profileIds da
      conta autenticada).
+   - **Perfil público kids (07/2026):** rota IRMÃ **`POST /hub/internal/showcase-by-author`**
+     (mesmo hook HMAC, NUNCA no gateway): body `{authorId, limit?≤50 (default 24)}` → TODOS os
+     posts de vitrine VISÍVEIS de UM autor, mais recentes primeiro, **com a CAPA**
+     (`{title, playId, coverImageUrl, createdAt}`; `listShowcaseByAuthor` no repo — a variante do
+     report OMITE a capa e tem janela ≤45 dias, esta NÃO tem janela). Alimenta a seção "Jogos
+     publicados no Mural" do perfil público (`/crianca/[id]`). O members só monta a seção num
+     perfil PÚBLICO (opt-in dos pais); os jogos já são públicos no `/jogar`.
 13. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
    snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
    autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE
@@ -480,6 +487,14 @@ NULL` (conserta o seq scan pré-existente do resolve do /jogar) + índice parcia
 `ALTER TABLE hub.threads ADD COLUMN IF NOT EXISTS author_account_id text` + o mesmo em `hub.comments`
 (snapshot da CONTA do responsável no create — chave de coorte da recompensa do Clube na aprovação;
 nullable p/ legado/vitrine).
+**`0007_studio_meta` (gate de nível do remix, 24/07/2026 — escrita à MÃO, journaled, NÃO aplicada):**
+`ALTER TABLE hub.threads ADD COLUMN IF NOT EXISTS studio_meta jsonb` — metadado do PROJETO nos posts
+de vitrine do Estúdio (`{pro, extensions[]}`, snapshot no publish pelas rotas `showcase-thread-studio`
+e `-standalone`; DTO `StudioMetaBody`, saneado no `ShowcaseService`, exposto em `ThreadView.studioMeta`).
+⚠️ **COSMÉTICO por contrato** (alimenta o selo "remix a partir do nível X" no card do Mural do kids):
+o corpo da rota é alcançável na borda, então o metadado pode ser forjado — o gate REAL do remix é a
+checagem no CLIQUE sobre o snapshot jogável (kids) + a trava de abertura do próprio Estúdio. NUNCA
+usar `studio_meta` como fronteira de segurança.
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do

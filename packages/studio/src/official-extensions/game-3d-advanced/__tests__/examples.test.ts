@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import type { JSStatement } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -11,9 +11,11 @@ import { parseJS } from '../../../parsers/js'
 import { gameKit3DBlocks } from '../blocks'
 import { defesaDaTorreExample } from '../examples'
 import { gameKit3DManifest } from '../manifest'
+import { parseExampleLifecycleSource } from './exampleLifecycleSource'
+import { collectTypes, stripIds } from './testUtils'
 
 /**
- * Drift do exemplo "Defesa da Torre": a IR embutida em examples.ts foi gerada
+ * Drift do exemplo "Defesa da Torre Profissional": a IR embutida em examples.ts foi gerada
  * pelo parser real a partir do SOURCE achatado abaixo. Se o parser/gerador
  * mudarem a forma canônica, este teste avisa — re-rode o fonte por parseJS e
  * re-embuta a IR (comentário no examples.ts).
@@ -22,8 +24,9 @@ import { gameKit3DManifest } from '../manifest'
 const SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground: "#14532d" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Defesa da Torre", "Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!", "Defender");
+SZGameKit3D.setScreenText("menu", "Defesa da Torre Profissional", "Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!", "Defender");
 SZGameKit3D.setScreenText("vitoria", "O cristal sobreviveu!", "As torres agradecem.", "Defender de novo");
+SZGameKit3D.setScreenText("fim", "O cristal caiu!", "Os invasores passaram. Proteja o cristal na próxima!", "Tentar de novo");
 SZGameKit3D.defineMold("cristal", { health: 200, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#0e7490", w: 2.2, h: 0.4, d: 2.2, x: 0, y: 0.2, z: 0 });
   SZGameKit3D.part({ shape: "cone", color: "#22d3ee", w: 1.6, h: 3, d: 1.6, x: 0, y: 1.9, z: 0 });
@@ -116,50 +119,36 @@ SZGameKit3D.onUpdate(function (dt) {
 SZGameKit3D.start();
 `.trim()
 
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (typeof obj.type === 'string') out.add(obj.type)
-    for (const v of Object.values(obj)) collectTypes(v, out)
-  }
-  return out
-}
-
 beforeAll(() => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameKit3DBlocks)
 })
 
-describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
+describe('Exemplo Defesa da Torre Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e a extensão é nível avançado', () => {
     expect(gameKit3DManifest.examples).toContain(defesaDaTorreExample)
     expect(defesaDaTorreExample.ir.extensions).toEqual([{ extensionId: 'game-3d-advanced' }])
   })
 
   it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall)', () => {
-    const parsed = stripIds(parseJS(SOURCE)) as JSStatement[]
+    const parsed = stripIds(parseExampleLifecycleSource(SOURCE)) as JSStatement[]
     const types = collectTypes(parsed)
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('memberCall')).toBe(false)
-    expect(parsed).toEqual(stripIds(defesaDaTorreExample.ir.js) as JSStatement[])
+    expect(parsed).toEqual(stripIds(behaviorStatements(defesaDaTorreExample.ir)) as JSStatement[])
+  })
+
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(defesaDaTorreExample.ir)).not.toContain('—')
+    expect(defesaDaTorreExample.name).not.toContain('—')
+    expect(defesaDaTorreExample.description ?? '').not.toContain('—')
   })
 
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(stripIds(defesaDaTorreExample.ir.js) as JSStatement[], 0)
+    const code1 = compileStatements(
+      stripIds(behaviorStatements(defesaDaTorreExample.ir)) as JSStatement[],
+      0,
+    )
     const reparsed = stripIds(parseJS(code1)) as JSStatement[]
     const code2 = compileStatements(reparsed, 0)
     expect(code2).toBe(code1)
@@ -172,8 +161,8 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = stripIds(buildIRFromWorkspace(ws).js)
-      expect(rebuilt).toEqual(stripIds(defesaDaTorreExample.ir.js))
+      const rebuilt = stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
+      expect(rebuilt).toEqual(stripIds(behaviorStatements(defesaDaTorreExample.ir)))
     } finally {
       ws.dispose()
     }

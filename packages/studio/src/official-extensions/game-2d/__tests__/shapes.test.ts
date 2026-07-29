@@ -27,6 +27,7 @@ interface Ctx {
   fillStyle: string
   strokeStyle: string
   lineWidth: number
+  globalAlpha: number
 }
 
 interface Api {
@@ -35,6 +36,13 @@ interface Api {
   defineShape: (name: string, fn: (ctx: unknown) => void) => void
   setShape: (sprite: Record<string, unknown>, name: string) => void
   setImage: (sprite: Record<string, unknown>, name: string) => void
+  setAnimation: (
+    sprite: Record<string, unknown>,
+    sheet: Record<string, unknown>,
+    from: number,
+    to: number,
+    fps: number,
+  ) => void
   drawSprite: (ctx: unknown, sprite: unknown) => void
   paintRect: (ctx: unknown, x: number, y: number, w: number, h: number, c: string) => void
   paintCircle: (ctx: unknown, x: number, y: number, r: number, c: string) => void
@@ -63,6 +71,7 @@ function fakeCtx(): Ctx {
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 0,
+    globalAlpha: 1,
     save: () => calls.push('save'),
     restore: () => calls.push('restore'),
     translate: (x: number, y: number) => calls.push(`translate ${x} ${y}`),
@@ -92,6 +101,17 @@ describe('figura: sprite desenhado por código', () => {
     expect(s.skin).toEqual({ kind: 'custom', shape: 'zumbi' })
     expect(s.image ?? null).toBeNull()
     expect(s.anim ?? null).toBeNull()
+  })
+
+  it('setImage e setAnimation substituem a figura anterior como modo visual', () => {
+    const api = load()
+    const sprite = api.createShapeSprite('nave', { x: 0, y: 0, w: 20, h: 20 })
+    api.setImage(sprite, 'heroi')
+    expect(sprite.skin ?? null).toBeNull()
+
+    api.setShape(sprite, 'nave')
+    api.setAnimation(sprite, { image: null, frameW: 16, frameH: 16 }, 0, 1, 8)
+    expect(sprite.skin ?? null).toBeNull()
   })
 
   it('createShapeSprite cria o modelo físico e já aponta a figura', () => {
@@ -180,5 +200,32 @@ describe('figura: sprite desenhado por código', () => {
     api.drawSprite(ctx, s)
     // o wrapper faz save/translate/scale/translate ANTES da figura; conta 2 saves
     expect(ctx.calls.filter((c) => c === 'save').length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('restaura pilha e opacidade do canvas quando a figura da criança lança erro', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    let depth = 0
+    ctx.save = () => {
+      depth += 1
+    }
+    ctx.restore = () => {
+      depth -= 1
+    }
+    api.defineShape('quebrada', () => {
+      throw new Error('boom')
+    })
+    const sprite = api.createShapeSprite('quebrada', {
+      x: 10,
+      y: 20,
+      w: 30,
+      h: 40,
+    })
+    sprite.angle = 0.5
+    sprite.opacity = 0.5
+
+    expect(() => api.drawSprite(ctx, sprite)).toThrow('boom')
+    expect(depth).toBe(0)
+    expect(ctx.globalAlpha).toBe(1)
   })
 })

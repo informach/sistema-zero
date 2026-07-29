@@ -56,9 +56,80 @@ describe('fetch JSON', () => {
       0,
     )
     expect(code).toContain('fetch("https://x.com")')
-    expect(code).toContain('.then((resposta) => resposta.json())')
+    expect(code).toContain('if (!resposta.ok)')
+    expect(code).toContain('throw new Error("Falha HTTP " + resposta.status)')
+    expect(code).toContain('return resposta.json()')
     expect(code).toContain('.then((dados) => {')
     expect(code).toContain('.catch((erro) => {')
+  })
+
+  it.each([404, 500])('encaminha HTTP %d para o callback de erro', async (status) => {
+    const code = compileStatements(
+      [
+        {
+          type: 'fetchJson',
+          url: { type: 'str', value: 'https://x.com' },
+          okName: 'dados',
+          body: [{ type: 'consoleLog', value: { type: 'str', value: 'sucesso' } }],
+          catchName: 'erro',
+          catchBody: [{ type: 'consoleLog', value: { type: 'var', name: 'erro' } }],
+        },
+      ],
+      0,
+    )
+    const logged: unknown[] = []
+    const execute = new Function(
+      'fetch',
+      'console',
+      `return (async () => { ${code}\nawait new Promise((resolve) => setTimeout(resolve, 0)); })();`,
+    )
+
+    await execute(async () => new Response('{"mensagem":"erro"}', { status }), {
+      log: (value: unknown) => logged.push(value),
+    })
+
+    expect(logged).toHaveLength(1)
+    expect(logged[0]).toBeInstanceOf(Error)
+    expect((logged[0] as Error).message).toContain(String(status))
+  })
+
+  it('mantém sucesso, JSON inválido e falha de rede nos caminhos corretos', async () => {
+    const code = compileStatements(
+      [
+        {
+          type: 'fetchJson',
+          url: { type: 'str', value: 'https://x.com' },
+          okName: 'dados',
+          body: [{ type: 'consoleLog', value: { type: 'var', name: 'dados' } }],
+          catchName: 'erro',
+          catchBody: [{ type: 'consoleLog', value: { type: 'var', name: 'erro' } }],
+        },
+      ],
+      0,
+    )
+    const execute = new Function(
+      'fetch',
+      'console',
+      `return (async () => { ${code}\nawait new Promise((resolve) => setTimeout(resolve, 0)); })();`,
+    )
+
+    const success: unknown[] = []
+    await execute(async () => new Response('{"ok":true}', { status: 200 }), {
+      log: (value: unknown) => success.push(value),
+    })
+    expect(success).toEqual([{ ok: true }])
+
+    for (const fetchImpl of [
+      async () => new Response('{', { status: 200 }),
+      async () => {
+        throw new TypeError('rede indisponível')
+      },
+    ]) {
+      const errors: unknown[] = []
+      await execute(fetchImpl, { log: (value: unknown) => errors.push(value) })
+      expect(errors).toHaveLength(1)
+      expect(errors[0]).toBeInstanceOf(Error)
+    }
   })
 
   it('roundtrip estável (com e sem catch)', () => {

@@ -37,11 +37,13 @@ export function createHmacStrategy(opts: HmacStrategyOptions): AuthStrategy {
 
       const rawBody = await ensureRawBody(ctx)
       const idem = ctx.request.headers.get('idempotency-key')
+      const deliveryId = ctx.request.headers.get('x-delivery-id')
       // O consumidor assina o path que chama NO GATEWAY (pathname, sem query).
       const signed = canonicalHmacMessage({
         method: ctx.request.method,
         path: ctx.url.pathname,
         idempotencyKey: idem,
+        deliveryId,
         body: rawBody,
       })
       const result = verifyHmacSignature({

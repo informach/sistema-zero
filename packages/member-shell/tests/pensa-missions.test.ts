@@ -23,8 +23,8 @@ describe('missionsSystem (agente de missões — etapa R)', () => {
     expect(system).toContain('"A cada quadro do jogo, fazer"')
     expect(system).toContain('"Quando apertar a tecla"')
     expect(system).toContain('"Controlar o dinossauro"')
-    // Arquitetura real: setup fora do loop → eventos → UM loop.
-    expect(system).toContain('FORA do loop')
+    // Arquitetura real: setup na área "Ao iniciar" (fora do loop) → eventos → UM loop.
+    expect(system).toContain('SETUP dentro de')
     expect(system).toContain('UM ÚNICO loop')
   })
 

@@ -21,12 +21,12 @@ describe('assignStableIdsToIR', () => {
 
     expect(result.html[0]?.__id).toBe('bridge_html_0')
     expect(result.css[0]?.__id).toBe('css_manual')
-    expect(result.js[0]?.__id).toBe('bridge_js_0')
-    const repeat = result.js[0]
+    expect(result.behavior.start[0]?.__id).toBe('bridge_start_0')
+    const repeat = result.behavior.start[0]
     expect(repeat?.type).toBe('repeat')
     if (repeat?.type === 'repeat') {
-      expect(repeat.times.__id).toBe('bridge_js_0_times')
-      expect(repeat.body[0]?.__id).toBe('bridge_js_0_body_0')
+      expect(repeat.times.__id).toBe('bridge_start_0_times')
+      expect(repeat.body[0]?.__id).toBe('bridge_start_0_body_0')
     }
   })
 
@@ -85,20 +85,49 @@ describe('assignStableIdsToIR', () => {
     }
 
     const result = assignStableIdsToIR(ir, 'b')
-    const func = result.js[0]
-    const cls = result.js[1]
+    const func = result.behavior.start[0]
+    const cls = result.behavior.start[1]
     // Corpo da função (nível 2) e do forEach (nível 3) têm __id.
     if (func?.type === 'funcDecl') {
-      expect(func.body[0]?.__id).toBe('b_js_0_body_0')
+      expect(func.body[0]?.__id).toBe('b_start_0_body_0')
       const fe = func.body[1]
       if (fe?.type === 'forEach') {
-        expect(fe.body[0]?.__id).toBe('b_js_0_body_1_body_0')
+        expect(fe.body[0]?.__id).toBe('b_start_0_body_1_body_0')
       }
     }
     // Construtor e corpo de método da classe (nível 3) têm __id.
     if (cls?.type === 'classDecl') {
-      expect(cls.ctorBody[0]?.__id).toBe('b_js_1_ctorBody_0')
-      expect(cls.methods[0]?.body[0]?.__id).toBe('b_js_1_methods_0_body_0')
+      expect(cls.ctorBody[0]?.__id).toBe('b_start_1_ctorBody_0')
+      expect(cls.methods[0]?.body[0]?.__id).toBe('b_start_1_methods_0_body_0')
+    }
+  })
+
+  it('atribui id ao bloco de caso dentro de uma escolha', () => {
+    const result = assignStableIdsToIR(
+      {
+        html: [],
+        css: [],
+        js: [
+          {
+            type: 'switch',
+            subject: { type: 'var', name: 'direcao' },
+            cases: [
+              {
+                match: { type: 'str', value: 'cima' },
+                body: [{ type: 'consoleLog', value: { type: 'str', value: 'subiu' } }],
+              },
+            ],
+          },
+        ],
+        extensions: [],
+      },
+      'ponte',
+    )
+
+    const statement = result.behavior.start[0]
+    expect(statement?.type).toBe('switch')
+    if (statement?.type === 'switch') {
+      expect(statement.cases[0]?.__id).toBe('ponte_start_0_cases_0')
     }
   })
 

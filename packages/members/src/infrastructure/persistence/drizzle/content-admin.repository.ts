@@ -7,7 +7,7 @@ import type {
   LessonBlock,
   Module,
 } from '../../../domain/course/course'
-import { DuplicateSlugError } from '../../../domain/course/course.errors'
+import { CareerSlotConflictError, DuplicateSlugError } from '../../../domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
 import type {
   AttachmentFields,
@@ -37,6 +37,7 @@ type AttachmentRow = typeof lessonAttachments.$inferSelect
 
 const toCourse = (r: CourseRow): Course => ({
   id: r.id,
+  version: r.version,
   slug: r.slug,
   title: r.title,
   subtitle: r.subtitle,
@@ -47,6 +48,7 @@ const toCourse = (r: CourseRow): Course => ({
   sequentialLock: r.sequentialLock,
   level: r.level,
   track: r.track,
+  careerSlot: r.careerSlot,
   metadata: r.metadata ?? null,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
@@ -99,6 +101,7 @@ const SORT_ORDER_UNIQUE_CONSTRAINTS = new Set([
 ])
 
 const SLUG_UNIQUE_CONSTRAINTS = new Set(['courses_slug_uq', 'lessons_course_slug_uq'])
+const CAREER_SLOT_UNIQUE_CONSTRAINT = 'courses_career_slot_uq'
 
 // Deslocamento p/ "estacionar" linhas num intervalo negativo disjunto durante a
 // reordenação (ver os métodos `reorder*`). Maior que qualquer nº realista de
@@ -121,6 +124,10 @@ function uniqueViolationConstraint(error: unknown): string | null {
 function isSlugUniqueViolation(error: unknown): boolean {
   const constraint = uniqueViolationConstraint(error)
   return constraint === '' || (constraint !== null && SLUG_UNIQUE_CONSTRAINTS.has(constraint))
+}
+
+function isCareerSlotUniqueViolation(error: unknown): boolean {
+  return uniqueViolationConstraint(error) === CAREER_SLOT_UNIQUE_CONSTRAINT
 }
 
 function isSortOrderUniqueViolation(error: unknown): boolean {
@@ -194,6 +201,24 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     return { items: rows.map(toCourse), total: counted?.c ?? 0 }
   }
 
+  async listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]> {
+    if (courseIds.length === 0) return []
+    const rows = await this.db
+      .selectDistinct({ courseId: lessons.courseId })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .where(
+        and(
+          inArray(lessons.courseId, courseIds),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'studio'),
+          // `enabled` é boolean no jsonb → `->>` devolve o texto 'true'.
+          sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
+        ),
+      )
+    return rows.map((row) => row.courseId)
+  }
+
   async createCourse(fields: CourseFields): Promise<Course> {
     const now = new Date()
     const row = {
@@ -213,6 +238,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       level: fields.level ?? ('iniciante' as const),
       // Idem: `?? '2d'` cobre chamada direta.
       track: fields.track ?? ('2d' as const),
+      careerSlot: fields.careerSlot ?? null,
       // `salesPageUrl` mora no metadata (jsonb) — única chave gerida pelo form.
       metadata: fields.salesPageUrl ? { salesPageUrl: fields.salesPageUrl } : null,
       createdAt: now,
@@ -221,6 +247,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     try {
       await this.db.insert(courses).values(row)
     } catch (error) {
+      if (isCareerSlotUniqueViolation(error)) throw new CareerSlotConflictError()
       if (isSlugUniqueViolation(error))
         throw new DuplicateSlugError('Já existe um curso com esse slug')
       throw error
@@ -229,9 +256,9 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
   }
 
   async updateCourse(course: Course): Promise<boolean> {
-    // O caso de uso carrega (com a version atual) e nos passa o curso já mesclado.
-    const expectedVersion = await this.currentVersion(course.id)
-    if (expectedVersion === null) return false
+    // O caso de uso recebe a versão que o editor leu e a propaga até aqui. Não
+    // reler a versão: isso aceitaria um payload velho e perderia a edição alheia.
+    const expectedVersion = course.version
     try {
       const updated = await this.db
         .update(courses)
@@ -246,6 +273,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           sequentialLock: course.sequentialLock,
           level: course.level,
           track: course.track,
+          careerSlot: course.careerSlot,
           metadata: course.metadata,
           updatedAt: new Date(),
           version: expectedVersion + 1,
@@ -254,19 +282,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .returning({ id: courses.id })
       return updated.length > 0
     } catch (error) {
+      if (isCareerSlotUniqueViolation(error)) throw new CareerSlotConflictError()
       if (isSlugUniqueViolation(error))
         throw new DuplicateSlugError('Já existe um curso com esse slug')
       throw error
     }
-  }
-
-  private async currentVersion(id: string): Promise<number | null> {
-    const [row] = await this.db
-      .select({ version: courses.version })
-      .from(courses)
-      .where(eq(courses.id, id))
-      .limit(1)
-    return row ? row.version : null
   }
 
   async countPublishedLessons(

@@ -1,17 +1,26 @@
 /**
- * Bridge de ENTRADA injetado no `<head>` do preview (SEMPRE, em qualquer projeto
- * clássico — não depende de extensão). Dá ao programa do aluno uma forma simples
- * de LER teclado e mouse/dedo sem montar listeners na mão, usada pelos blocos do
- * caminho "na mão" (canvas + programação):
+ * Runtime de ENTRADA compartilhado pelo preview e pelo site exportado. Dá ao
+ * programa do aluno uma forma simples de LER teclado e mouse/dedo sem montar
+ * listeners na mão, usada pelos blocos do caminho "na mão" (Canvas + Programação):
  *
  *   - `window.__szInput.key("ArrowRight")` → true enquanto a tecla está apertada.
  *   - `window.__szInput.x` / `.y` → posição do mouse/dedo DENTRO do canvas.
  *
- * Auto-contido (entra como STRING num `<script>`): sem imports nem refs externas,
- * e sem regex com barra invertida (mesma regra do storageBridge). É independente
- * do runtime da extensão Jogo 2D (SZGame2D) — os dois podem coexistir sem conflito.
+ * Auto-contido (entra como STRING num `<script>`): sem imports nem refs externas.
+ * É independente do runtime da extensão Jogo 2D (SZGame2D) — os dois podem
+ * coexistir sem conflito.
  */
+export function buildInputRuntime(): string {
+  return buildInputRuntimeSource(false)
+}
+
+/** Runtime do preview: entrada compartilhada + controles do player/host. */
 export function buildInputBridgeRuntime(): string {
+  return buildInputRuntimeSource(true)
+}
+
+function buildInputRuntimeSource(includePreviewControls: boolean): string {
+  const previewControls = includePreviewControls ? buildPreviewControlsRuntime() : ''
   return `(function () {
   var pressed = Object.create(null);
   window.addEventListener('keydown', function (e) { pressed[e.key] = true; pressed[e.code] = true; });
@@ -38,7 +47,13 @@ export function buildInputBridgeRuntime(): string {
     return canvasEl;
   }
   function at(e) {
-    var c = getCanvas();
+    // O evento sabe em qual tela aconteceu. Isso é essencial quando a página
+    // tem mais de um canvas: usamos esse alvo e o tornamos a tela ativa; sem um
+    // alvo Canvas, o primeiro canvas do DOM continua sendo o fallback estável.
+    var target = e && e.target;
+    var eventCanvas = target && typeof target.getContext === 'function' ? target : null;
+    if (eventCanvas) canvasEl = eventCanvas;
+    var c = eventCanvas || getCanvas();
     var rect = c && c.getBoundingClientRect ? c.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
     // Escala display -> coordenadas internas do canvas (quando exibido em tamanho
     // diferente da resolução, ex.: canvas que preenche a janela).
@@ -52,6 +67,17 @@ export function buildInputBridgeRuntime(): string {
   window.addEventListener('pointermove', at, { passive: true });
   window.addEventListener('pointerdown', function (e) { at(e); input.down = true; }, { passive: true });
   window.addEventListener('pointerup', function () { input.down = false; }, { passive: true });
+${previewControls}
+  window.__szInput = input;
+})();`
+}
+
+/**
+ * Controles exclusivos do iframe/player. São inseridos DENTRO do mesmo IIFE do
+ * runtime para reutilizar `input` e `getCanvas`, mas ficam fora do site exportado.
+ */
+function buildPreviewControlsRuntime(): string {
+  return `
   // Gamepad virtual: o parent (página /jogar) envia postMessage com teclas simuladas.
   // O iframe sandboxed tem origem opaca (srcdoc) — e.origin será 'null'; verificamos
   // apenas o formato da mensagem para não confundir com outras mensagens.
@@ -60,6 +86,7 @@ export function buildInputBridgeRuntime(): string {
   // listeners keydown/keyup PRÓPRIOS — só um evento real alcança todos eles (inclusive
   // o listener deste bridge, que atualiza 'pressed' sozinho).
   window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
     var d = e.data;
     if (!d || d.type !== 'sz:gamepad') return;
     var name = d.action === 'keydown' || d.action === 'keyup' ? d.action : null;
@@ -95,6 +122,7 @@ export function buildInputBridgeRuntime(): string {
     window.Audio = _PatchedAudio;
   }
   window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
     var d = e.data;
     if (!d || d.type !== 'sz:audio') return;
     _muted = !!d.muted;
@@ -107,13 +135,13 @@ export function buildInputBridgeRuntime(): string {
   });
   // Screenshot: o parent pede, o iframe responde com o dataURL do canvas principal.
   window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
     var d = e.data;
     if (!d || d.type !== 'sz:screenshot') return;
     var c = getCanvas();
     var dataUrl = null;
     try { dataUrl = c ? c.toDataURL('image/png') : null; } catch (err) {}
-    if (e.source) { e.source.postMessage({ type: 'sz:screenshot:result', dataUrl: dataUrl }, '*'); }
+    window.parent.postMessage({ type: 'sz:screenshot:result', dataUrl: dataUrl }, e.origin);
   });
-  window.__szInput = input;
-})();`
+`
 }

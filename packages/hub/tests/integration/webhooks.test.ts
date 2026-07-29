@@ -27,7 +27,12 @@ function webhookRequest(
   const ts = opts.nowSeconds ?? Math.floor(Date.now() / 1000)
   const sig = signHmac(
     opts.secret ?? TEST_WEBHOOK_SECRET,
-    canonicalHmacMessage({ method: 'POST', path: WEBHOOK_PATH, body: bodyStr }),
+    canonicalHmacMessage({
+      method: 'POST',
+      path: WEBHOOK_PATH,
+      deliveryId: opts.deliveryId,
+      body: bodyStr,
+    }),
     ts,
   )
   const headers: Record<string, string> = {

@@ -2,6 +2,8 @@ import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm'
 import type {
   Course,
   CourseAudience,
+  CourseLevel,
+  CourseTrack,
   Lesson,
   LessonAttachment,
   LessonBlock,
@@ -17,6 +19,7 @@ import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './sc
 function toCourse(row: typeof courses.$inferSelect): Course {
   return {
     id: row.id,
+    version: row.version,
     slug: row.slug,
     title: row.title,
     subtitle: row.subtitle,
@@ -27,6 +30,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     sequentialLock: row.sequentialLock,
     level: row.level,
     track: row.track,
+    careerSlot: row.careerSlot,
     metadata: row.metadata ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -124,6 +128,29 @@ export class DrizzleCourseRepository implements CourseRepository {
       // decisão da usuária 13/07. A→Z virou opção do seletor no front.
       .orderBy(asc(courses.createdAt))
     return rows.map(toCourse)
+  }
+
+  async hasPublishedFoundationCourse(
+    audience: CourseAudience,
+    level: CourseLevel,
+    track: CourseTrack,
+  ): Promise<boolean> {
+    // Índice `courses_career_slot_uq (audience, level, track, career_slot)` cobre
+    // este lookup — `limit 1` só confere existência.
+    const [row] = await this.db
+      .select({ id: courses.id })
+      .from(courses)
+      .where(
+        and(
+          eq(courses.status, 'published'),
+          eq(courses.audience, audience),
+          eq(courses.level, level),
+          eq(courses.track, track),
+          eq(courses.careerSlot, 1),
+        ),
+      )
+      .limit(1)
+    return row !== undefined
   }
 
   async findOutline(

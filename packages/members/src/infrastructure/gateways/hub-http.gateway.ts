@@ -4,6 +4,7 @@ import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type {
   HubGateway,
   PlayCheckResult,
+  PublicGameItem,
   ShowcaseByAuthorItem,
 } from '../../domain/ports/hub-gateway.port'
 
@@ -23,21 +24,24 @@ export interface HubHttpGatewayOptions {
 
 /**
  * Path EXATO que o hub assina/verifica — a mensagem canônica é
- * `<MÉTODO>.<path>.<corpo>`, então o path tem de bater com o `URL.pathname` que o
- * hub vê (chamada DIRETA, sem reescrita do gateway).
+ * `<MÉTODO>.<path>.delivery=<id>.<corpo>` quando há `x-delivery-id`, então o
+ * path tem de bater com o `URL.pathname` que o hub vê (chamada DIRETA, sem
+ * reescrita do gateway).
  */
 const GRANT_PATH = '/hub/webhooks/grant'
 const SHOWCASE_BY_AUTHORS_PATH = '/hub/internal/showcase-by-authors'
+const SHOWCASE_BY_AUTHOR_PATH = '/hub/internal/showcase-by-author'
 const PLAY_CHECK_PATH = '/hub/internal/play-check'
 const DEFAULT_TIMEOUT_MS = 4_000
 
 /**
  * Adapter HTTP do hub (comunidade). Notifica `POST /hub/webhooks/grant` — chamada
  * S2S DIRETA na rede interna, assinada com HMAC (mesmo canônico
- * `<MÉTODO>.<path>.<corpo>` + `GATEWAY_HMAC_SECRET` que o hub VERIFICA) e com
- * `x-delivery-id` (uuid) p/ o dedupe de lá. **Best-effort**: qualquer erro/timeout é
- * só logado — a concessão/revogação NUNCA falha por causa do hub (o micro-cache de
- * acesso do hub expira sozinho no TTL como rede de segurança).
+ * `<MÉTODO>.<path>.delivery=<id>.<corpo>` + `GATEWAY_HMAC_SECRET` que o hub
+ * VERIFICA) e com `x-delivery-id` (uuid) p/ o dedupe de lá. **Best-effort**:
+ * qualquer erro/timeout é só logado — a concessão/revogação NUNCA falha por causa
+ * do hub (o micro-cache de acesso do hub expira sozinho no TTL como rede de
+ * segurança).
  */
 export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
   const doFetch = opts.fetchImpl ?? fetch
@@ -49,10 +53,18 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
     async notifyAccessChanged(userId: string, event: string): Promise<void> {
       try {
         const rawBody = JSON.stringify({ userId, event })
+        // O mesmo id é enviado E autenticado: o hub o usa para dedupe e rejeita
+        // uma assinatura que não o inclua na mensagem canônica.
+        const deliveryId = randomUUID()
         const ts = Math.floor(now().getTime() / 1000)
         const signature = signHmac(
           opts.hmacSecret,
-          canonicalHmacMessage({ method: 'POST', path: GRANT_PATH, body: rawBody }),
+          canonicalHmacMessage({
+            method: 'POST',
+            path: GRANT_PATH,
+            deliveryId,
+            body: rawBody,
+          }),
           ts,
         )
         const res = await doFetch(`${base}${GRANT_PATH}`, {
@@ -60,7 +72,7 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
           headers: {
             'content-type': 'application/json',
             'x-signature': `t=${ts},v1=${signature}`,
-            'x-delivery-id': randomUUID(),
+            'x-delivery-id': deliveryId,
           },
           body: rawBody,
           signal: AbortSignal.timeout(timeoutMs),
@@ -128,6 +140,47 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
       }
     },
 
+    async listShowcaseByAuthor(profileId: string, limit: number): Promise<PublicGameItem[] | null> {
+      try {
+        const rawBody = JSON.stringify({ authorId: profileId, limit })
+        const ts = Math.floor(now().getTime() / 1000)
+        const signature = signHmac(
+          opts.hmacSecret,
+          canonicalHmacMessage({ method: 'POST', path: SHOWCASE_BY_AUTHOR_PATH, body: rawBody }),
+          ts,
+        )
+        const res = await doFetch(`${base}${SHOWCASE_BY_AUTHOR_PATH}`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-signature': `t=${ts},v1=${signature}`,
+          },
+          body: rawBody,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!res.ok) {
+          opts.logger?.warn('hub.showcase_by_author_failed', { status: res.status })
+          return null
+        }
+        const body = (await res.json()) as { items?: unknown }
+        if (!Array.isArray(body.items)) return null
+        return body.items
+          .filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === 'object')
+          .map((i) => ({
+            title: typeof i.title === 'string' ? i.title : '',
+            playId: typeof i.playId === 'string' ? i.playId : null,
+            coverUrl: typeof i.coverImageUrl === 'string' ? i.coverImageUrl : null,
+            publishedAt: typeof i.createdAt === 'string' ? i.createdAt : '',
+          }))
+      } catch (error) {
+        // Best-effort: o perfil público degrada SEM a seção de jogos (games: []).
+        opts.logger?.warn('hub.showcase_by_author_error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return null
+      }
+    },
+
     async checkPlay(playId: string): Promise<PlayCheckResult | null> {
       try {
         const rawBody = JSON.stringify({ playId })
@@ -170,6 +223,9 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
 export const noopHubGateway: HubGateway = {
   async notifyAccessChanged() {},
   async listShowcaseByAuthors() {
+    return null
+  },
+  async listShowcaseByAuthor() {
     return null
   },
   async checkPlay() {

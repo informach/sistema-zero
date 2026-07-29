@@ -4,9 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import 'blockly/blocks'
 import { useShallow } from 'zustand/react/shallow'
 import {
+  applyDraftDiagnostics,
+  applySemanticDiagnostics,
+  attachProjectAreaGuard,
   buildCoreToolbox,
   buildIRFromWorkspace,
   ensureBlocklyInitialized,
+  HTMLConnectionChecker,
+  markLifecycleBlocksState,
   normalizeBlocksStateToFrames,
   type PasteTargetHandlers,
   registerClassesFlyout,
@@ -41,6 +46,7 @@ import { useSourcemapStore } from '../../state/sourcemapStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
+import { STUDIO_COMPACT_MAX_PX } from '../layout/layoutBreakpoints'
 
 ensureBlocklyInitialized()
 
@@ -50,7 +56,10 @@ const BLOCKLY_REGENERATION_DELAY_MS = 120
 // (modes/bridgeReverseParse) para o memo de source-map por `ir` reusar o mapa
 // entre o regenerate e o efeito canônico do BridgeMode (chave inclui o header).
 const REGEN_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
-function blocklyWorkspaceConfiguration(theme: 'dark' | 'light'): Blockly.BlocklyOptions {
+function blocklyWorkspaceConfiguration(
+  theme: 'dark' | 'light',
+  horizontalLayout: boolean,
+): Blockly.BlocklyOptions {
   return {
     theme: szThemeFor(theme),
     renderer: 'zelos',
@@ -58,8 +67,13 @@ function blocklyWorkspaceConfiguration(theme: 'dark' | 'light'): Blockly.Blockly
     zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
     move: { scrollbars: true, drag: true, wheel: true },
     trashcan: true,
+    // No celular, a toolbox vira uma faixa horizontal: o flyout passa a usar a
+    // largura inteira em vez de começar depois de uma árvore lateral de ~200 px.
+    horizontalLayout,
+    toolboxPosition: 'start',
     // Habilita "Recolher/Expandir blocos" no menu de contexto nativo.
     collapse: true,
+    plugins: { connectionChecker: HTMLConnectionChecker },
     // `sounds:false` DESLIGA o preload automático do Blockly, que — sem `media`
     // configurado — baixaria click/disconnect/delete .mp3 do servidor demo
     // (blockly-demo.appspot.com) → bloqueado pela CSP do host, sujando o console.
@@ -277,9 +291,10 @@ function schedulePostLoadRepaint(workspace: Blockly.WorkspaceSvg): void {
 
 export interface BlocklyPanelProps {
   className?: string
+  onWorkspaceReady?: (workspace: Blockly.WorkspaceSvg | null) => void
 }
 
-export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
+export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps): JSX.Element {
   const { blocksState, installedExtensions, projectMode, blocksHydration } = useProjectStore(
     useShallow((s) => ({
       blocksState: s.project?.blocksState ?? null,
@@ -310,6 +325,8 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(false)
 
   const blocklyRef = useRef<HTMLDivElement>(null)
+  const onWorkspaceReadyRef = useRef(onWorkspaceReady)
+  onWorkspaceReadyRef.current = onWorkspaceReady
   const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null)
   const lastSerializedRef = useRef<string>('')
   const isApplyingStateRef = useRef(false)
@@ -412,7 +429,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         const s = projectStoreApi.getState()
         if (options.force && s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch) return
       }
-      const state = Blockly.serialization.workspaces.save(workspace)
+      const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace))
       const serialized = JSON.stringify(state)
       if (!options.force && serialized === lastSerializedRef.current) return
       lastSerializedRef.current = serialized
@@ -422,6 +439,12 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       // casca do documento (head/doctype) que os blocos não representam.
       const current = projectStoreApi.getState().project
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
+      if (!applySemanticDiagnostics(workspace, ir)) {
+        // O desenho inválido continua salvo para a criança poder corrigi-lo, mas
+        // o preview fica no último estado válido em vez de virar uma tela vazia.
+        applyProjectState({ blocksState: state })
+        return
+      }
       const projectNameForGen = current?.name ?? 'Projeto'
       const { files, sourceMap } = generateProjectFilesWithMap({
         ir,
@@ -507,8 +530,47 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   // workspace existe.
   useEffect(() => {
     if (!workspace) return
-    registerFunctionsFlyout(workspace as Blockly.WorkspaceSvg)
-    registerClassesFlyout(workspace as Blockly.WorkspaceSvg)
+    const unregisterFunctionsFlyout = registerFunctionsFlyout(
+      workspace as Blockly.WorkspaceSvg,
+      profile,
+    )
+    registerClassesFlyout(workspace as Blockly.WorkspaceSvg, profile)
+    return unregisterFunctionsFlyout
+  }, [workspace, profile])
+
+  // Pilhas executáveis fora das Áreas do projeto são preservadas como rascunho,
+  // mas precisam ficar inequivocamente diferentes do código que entra no preview.
+  useEffect(() => {
+    if (!workspace) return
+    let disposed = false
+    let refreshQueued = false
+    const refresh = () => {
+      refreshQueued = false
+      if (disposed) return
+      applyDraftDiagnostics(workspace)
+    }
+    const scheduleRefresh = () => {
+      if (refreshQueued) return
+      refreshQueued = true
+      queueMicrotask(refresh)
+    }
+    const listener = (event: Blockly.Events.Abstract) => {
+      if (
+        event.type === Blockly.Events.FINISHED_LOADING ||
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE ||
+        event.type === Blockly.Events.BLOCK_MOVE ||
+        event.type === Blockly.Events.BLOCK_CHANGE
+      ) {
+        scheduleRefresh()
+      }
+    }
+    refresh()
+    workspace.addChangeListener(listener)
+    return () => {
+      disposed = true
+      workspace.removeChangeListener(listener)
+    }
   }, [workspace])
 
   // Regeneração código a partir dos blocos. Filtra eventos para reagir apenas a
@@ -536,7 +598,9 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
             Blockly.Events.enable()
           }
         }
-        lastSerializedRef.current = JSON.stringify(Blockly.serialization.workspaces.save(workspace))
+        lastSerializedRef.current = JSON.stringify(
+          markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
+        )
         // Regenera o IR/sourcemap a partir dos blocos recém-carregados também
         // em modo Ponte. Sem isso, um projeto salvo antes da introdução de
         // `ctorId`/`__declIds` no IR continuaria com o sourcemap incompleto
@@ -712,7 +776,9 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
       withWorkspaceLoad(() => workspace.clear())
-      lastSerializedRef.current = JSON.stringify(Blockly.serialization.workspaces.save(workspace))
+      lastSerializedRef.current = JSON.stringify(
+        markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
+      )
       scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
       queueMicrotask(() => {
         isApplyingStateRef.current = false
@@ -720,7 +786,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       return
     }
     // Migração transparente p/ o modelo CONTAINER: um projeto LEGADO (blocos
-    // soltos, sem frames) é re-embrulhado nos 3 frames preservando a saída.
+    // soltos, sem áreas) é distribuído pelas cinco áreas preservando a saída.
     // Idempotente (no-op se já tem frame). As extensões já foram re-registradas no
     // efeito acima, então o load headless da migração enxerga os blocos delas.
     const stateToLoad = normalizeBlocksStateToFrames(blocksState)
@@ -775,7 +841,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
             }
           }
           lastSerializedRef.current = JSON.stringify(
-            Blockly.serialization.workspaces.save(workspace),
+            markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
           )
           // Idem ao listener de FINISHED_LOADING: regenerar também em modo
           // Ponte garante que o IR no store contenha os ids do construtor,
@@ -811,8 +877,10 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     const initialToolbox = initialToolboxRef.current
     if (!initialToolbox) return
 
+    const horizontalToolbox = container.clientWidth < STUDIO_COMPACT_MAX_PX
+    container.dataset.szToolboxLayout = horizontalToolbox ? 'horizontal' : 'vertical'
     const injected = Blockly.inject(container, {
-      ...blocklyWorkspaceConfiguration(studioThemeRef.current),
+      ...blocklyWorkspaceConfiguration(studioThemeRef.current, horizontalToolbox),
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox
@@ -830,6 +898,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     // serializado — re-derivado de FROM/TO/FPS + metadado do asset a cada
     // carga/reconstrução (senão a seleção "some" ao reabrir ou voltar da Ponte).
     const detachAnimNames = attachAnimationNameWatcher(injected)
+    const detachProjectAreaGuard = attachProjectAreaGuard(injected)
     let prevAssets = projectStoreApi.getState().project?.assets
     const unsubscribeAssetsWatch = projectStoreApi.subscribe((state) => {
       const assets = state.project?.assets
@@ -863,6 +932,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         })
     }
     setWorkspace(injected)
+    onWorkspaceReadyRef.current?.(injected)
 
     // Handlers POR INSTÂNCIA do colar de blocos (os itens de menu são GLOBAIS):
     // mapeia o workspace de volta ao projectStore desta instância + ao aviso.
@@ -872,8 +942,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       installExtensionById: (id) => {
         const ext = findExtension(id)
         if (!ext) return false
-        installExtension(ext, projectStoreApi)
-        return true
+        return installExtension(ext, projectStoreApi).ok
       },
       isBlockTypeKnown: (type) =>
         isBlockTypeKnown(
@@ -903,9 +972,11 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         pendingRegenerationWorkspaceRef.current = null
       }
       unsubscribeAssetsWatch()
+      detachProjectAreaGuard()
       detachAnimNames()
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
+      onWorkspaceReadyRef.current?.(null)
       injected.dispose()
       appliedToolboxRef.current = null
     }

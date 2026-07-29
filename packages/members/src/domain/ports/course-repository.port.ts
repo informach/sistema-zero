@@ -1,6 +1,8 @@
 import type {
   Course,
   CourseAudience,
+  CourseLevel,
+  CourseTrack,
   Lesson,
   LessonWithContent,
   ModuleWithLessons,
@@ -21,6 +23,16 @@ export interface CourseRepository {
    * título. O param é obrigatório: cada vitrine (community/community-kids) decide.
    */
   listPublishedCourses(audience: CourseAudience): Promise<Course[]>
+  /**
+   * Existe um curso-base (`careerSlot=1`) PUBLICADO nesta etapa (audiência+nível+
+   * eixo)? A trava `foundation-first` só vale quando há base alcançável — senão a
+   * etapa inteira (e a carreira) ficaria presa. Usado pelo gate em profundidade.
+   */
+  hasPublishedFoundationCourse(
+    audience: CourseAudience,
+    level: CourseLevel,
+    track: CourseTrack,
+  ): Promise<boolean>
   /**
    * Módulos do curso, cada um com suas aulas resumidas (sem o conteúdo dos blocos).
    * `publishedOnly` filtra aulas rascunho (visão do ALUNO); o admin vê tudo.

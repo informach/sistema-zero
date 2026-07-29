@@ -1,4 +1,6 @@
-import type { AssetPlacement, HTMLNode, HTMLShell, HTMLTag } from '#ir'
+import type { AssetPlacement, HTMLNode, HTMLShell } from '#ir'
+import { htmlElementForTag, isPhrasingHTMLTag } from '../html/catalog'
+import { pointsToCanonicalHTMLAsset } from '../html/wiring'
 
 /**
  * Profundidade máxima de aninhamento que mapeamos recursivamente. Elementos mais
@@ -9,76 +11,6 @@ import type { AssetPlacement, HTMLNode, HTMLShell, HTMLTag } from '#ir'
  * Mesmo espírito (e mesmo valor) da guarda de profundidade do `parsers/css.ts`.
  */
 const MAX_HTML_NESTING = 64
-
-const SUPPORTED_TAGS: ReadonlySet<HTMLTag> = new Set([
-  'h1',
-  'h2',
-  'h3',
-  'p',
-  'span',
-  'strong',
-  'em',
-  'button',
-  'div',
-  'header',
-  'nav',
-  'section',
-  'footer',
-  'main',
-  'ul',
-  'li',
-  'a',
-  'img',
-  'form',
-  'input',
-  'textarea',
-  'label',
-  'svg',
-  'g',
-  'path',
-  'circle',
-  'ellipse',
-  'line',
-  'rect',
-  'polyline',
-  'polygon',
-  'text',
-  'use',
-])
-
-/** Tags que seguram filhos — mapeadas recursivamente. */
-const CONTAINER_TAGS: ReadonlySet<HTMLTag> = new Set([
-  'div',
-  'section',
-  'header',
-  'nav',
-  'footer',
-  'main',
-  'ul',
-  'form',
-  'svg',
-  'g',
-])
-
-/** Tags sem conteúdo (self-closing). */
-const VOID_TAGS: ReadonlySet<HTMLTag> = new Set(['img', 'input'])
-
-/**
- * Tags de texto que TAMBÉM aceitam filhos inline (ex.: `<p>texto <span>x</span></p>`,
- * `<h2>Título <strong>!</strong></h2>`). Quando têm filhos-elemento, são mapeadas
- * recursivamente (como containers); quando só têm texto, viram uma folha com `text`.
- */
-const INLINE_TEXT_TAGS: ReadonlySet<HTMLTag> = new Set([
-  'h1',
-  'h2',
-  'h3',
-  'p',
-  'span',
-  'strong',
-  'em',
-  'li',
-  'label',
-])
 
 /**
  * Captura TODOS os atributos do elemento (exceto `id`, tratado à parte).
@@ -119,12 +51,7 @@ export function parseHTML(source: string): HTMLNode[] {
 function parseBodyNodes(doc: Document): HTMLNode[] {
   const body = doc.body
   if (!body) return []
-  const out: HTMLNode[] = []
-  for (const child of Array.from(body.childNodes)) {
-    const node = mapNode(child, 0)
-    if (node) out.push(node)
-  }
-  return out
+  return mapChildren(body, -1)
 }
 
 /**
@@ -140,26 +67,15 @@ function isCanonicalWiring(el: Element): boolean {
   const tag = el.tagName.toLowerCase()
   if (tag === 'script') {
     const src = el.getAttribute('src')
-    return src !== null && pointsToCanonicalFile(src, 'script.js')
+    return src !== null && pointsToCanonicalHTMLAsset(src, 'script.js')
   }
   if (tag === 'link') {
     const rel = (el.getAttribute('rel') ?? '').toLowerCase()
     if (!rel.split(/\s+/).includes('stylesheet')) return false
     const href = el.getAttribute('href')
-    return href !== null && pointsToCanonicalFile(href, 'style.css')
+    return href !== null && pointsToCanonicalHTMLAsset(href, 'style.css')
   }
   return false
-}
-
-/**
- * Decide se um `href`/`src` aponta para o arquivo canônico (`style.css` ou
- * `script.js`). Aceita os prefixos relativos comuns (`./`, `/`) e ignora
- * query/hash; um arquivo de mesmo nome em subpasta (`css/style.css`) NÃO conta
- * como canônico — é referência do aluno e deve ser preservada.
- */
-function pointsToCanonicalFile(ref: string, file: 'style.css' | 'script.js'): boolean {
-  const cleaned = (ref.trim().split(/[?#]/)[0] ?? '').replace(/^\.?\//, '')
-  return cleaned === file
 }
 
 /**
@@ -238,6 +154,27 @@ function isInHead(el: Element): boolean {
 }
 
 /**
+ * O modelo de placement representa somente o cabeçalho e o fim do corpo. Um
+ * asset no meio do corpo fica como HTML avançado, pois extraí-lo mudaria a
+ * ordem de execução ou de cascata.
+ */
+function isAtBodyEnd(el: Element): boolean {
+  if (el.parentElement !== el.ownerDocument.body) return false
+  let sibling = el.nextSibling
+  while (sibling) {
+    if (sibling.nodeType !== Node.TEXT_NODE || (sibling.textContent ?? '').trim() !== '') {
+      return false
+    }
+    sibling = sibling.nextSibling
+  }
+  return true
+}
+
+function hasRepresentableAssetPlacement(el: Element): boolean {
+  return isInHead(el) || isAtBodyEnd(el)
+}
+
+/**
  * Faz TODO o trabalho de DOM do parse (precisa do `DOMParser` nativo — roda na
  * main thread, nunca em Web Worker). Resolve de onde vêm o CSS e o JS:
  *
@@ -282,7 +219,8 @@ export function extractInlineAssets(
       const styles = Array.from(doc.querySelectorAll('style')).filter(
         (el) => (el.textContent ?? '').trim() !== '',
       )
-      const el = styles.length === 1 ? styles[0] : undefined
+      const candidate = styles.length === 1 ? styles[0] : undefined
+      const el = candidate && hasRepresentableAssetPlacement(candidate) ? candidate : undefined
       if (el) {
         cssSource = el.textContent ?? ''
         cssPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
@@ -293,14 +231,21 @@ export function extractInlineAssets(
     let jsSource = scriptJs
     let jsPlacement: AssetPlacement = 'external'
     let jsModule = false
-    if (!scriptJs.trim()) {
+    const canonicalHeadScripts = Array.from(doc.head?.querySelectorAll('script[src]') ?? []).filter(
+      (el) => pointsToCanonicalHTMLAsset(el.getAttribute('src') ?? '', 'script.js'),
+    )
+    if (canonicalHeadScripts.length > 0) {
+      jsPlacement = 'external-head'
+    }
+    if (!scriptJs.trim() && canonicalHeadScripts.length === 0) {
       const scripts = Array.from(doc.querySelectorAll('script')).filter((el) => {
         if (el.hasAttribute('src')) return false
         const type = (el.getAttribute('type') ?? '').toLowerCase()
         if (!INLINE_SCRIPT_TYPES.has(type)) return false
         return (el.textContent ?? '').trim() !== ''
       })
-      const el = scripts.length === 1 ? scripts[0] : undefined
+      const candidate = scripts.length === 1 ? scripts[0] : undefined
+      const el = candidate && hasRepresentableAssetPlacement(candidate) ? candidate : undefined
       if (el) {
         jsSource = el.textContent ?? ''
         jsPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
@@ -334,15 +279,17 @@ export function extractInlineAssets(
 /**
  * Mapeia os filhos de um elemento preservando a intercalação texto↔elemento.
  * Nós de texto não-vazios viram `{ type:'text' }` (mantendo os espaços ao redor
- * para fidelidade); espaços-em-branco puros são descartados; elementos são
- * mapeados recursivamente.
+ * para fidelidade). Whitespace puro entre elementos de texto corrido também é
+ * significativo (`<strong>A</strong> <em>B</em>`) e precisa sobreviver; a
+ * indentação entre elementos estruturais continua descartada.
  */
 function mapChildren(el: Element, depth: number): HTMLNode[] {
   const children: HTMLNode[] = []
-  for (const child of Array.from(el.childNodes)) {
+  const domChildren = Array.from(el.childNodes)
+  for (const [index, child] of domChildren.entries()) {
     if (child.nodeType === Node.TEXT_NODE) {
       const raw = child.textContent ?? ''
-      if (raw.trim() === '') continue
+      if (raw.trim() === '' && !isPhrasingSeparator(domChildren, index)) continue
       children.push({ type: 'text', text: raw })
       continue
     }
@@ -352,11 +299,25 @@ function mapChildren(el: Element, depth: number): HTMLNode[] {
   return children
 }
 
+function isPhrasingSeparator(nodes: Node[], index: number): boolean {
+  const previous = nodes[index - 1]
+  const next = nodes[index + 1]
+  return isPhrasingDomNode(previous) && isPhrasingDomNode(next)
+}
+
+function isPhrasingDomNode(node: Node | undefined): boolean {
+  if (!node) return false
+  if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.COMMENT_NODE) return true
+  if (node.nodeType !== Node.ELEMENT_NODE) return false
+  const tag = (node as Element).tagName.toLowerCase()
+  return tag === 'canvas' || isPhrasingHTMLTag(tag)
+}
+
 function mapNode(node: Node, depth: number): HTMLNode | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent ?? ''
     if (!text.trim()) return null
-    return { type: 'rawHTML', html: text, advanced: true }
+    return { type: 'text', text }
   }
   // Comentários HTML `<!-- ... -->` viram um nó `comment` (bloco "comentário
   // HTML") — o DOM expõe só o miolo em `textContent`. Sem isso o comentário
@@ -380,29 +341,42 @@ function mapNode(node: Node, depth: number): HTMLNode | null {
   }
 
   if (tag === 'canvas') {
-    const w = Number.parseInt(el.getAttribute('width') ?? '0', 10)
-    const h = Number.parseInt(el.getAttribute('height') ?? '0', 10)
-    const id = el.getAttribute('id') ?? 'tela'
-    // Largura/altura são opcionais — o tamanho costuma ser definido no JS.
-    const canvas: Extract<HTMLNode, { type: 'canvas' }> = { type: 'canvas', id }
-    if (w > 0) canvas.width = w
-    if (h > 0) canvas.height = h
+    const id = el.getAttribute('id') ?? undefined
+    const attrs = collectAllAttrs(el) ?? {}
+    const widthText = attrs.width
+    const heightText = attrs.height
+    const width = widthText && /^\d+$/.test(widthText) ? Number(widthText) : null
+    const height = heightText && /^\d+$/.test(heightText) ? Number(heightText) : null
+    // Dimensões inteiras positivas ganham os campos históricos; qualquer valor
+    // diferente continua em attrs verbatim, sem normalização inventada.
+    if (width !== null && width > 0) delete attrs.width
+    if (height !== null && height > 0) delete attrs.height
+    const children = mapChildren(el, depth)
+    const canvas: Extract<HTMLNode, { type: 'canvas' }> = {
+      type: 'canvas',
+      ...(id ? { id } : {}),
+      ...(width !== null && width > 0 ? { width } : {}),
+      ...(height !== null && height > 0 ? { height } : {}),
+      ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
+      ...(children.length > 0 ? { children } : {}),
+    }
     return canvas
   }
 
-  if (SUPPORTED_TAGS.has(tag as HTMLTag)) {
-    const t = tag as HTMLTag
+  const descriptor = htmlElementForTag(tag)
+  if (descriptor) {
+    const t = descriptor.tag
     const id = el.getAttribute('id') ?? undefined
     const attrs = collectAllAttrs(el)
 
-    if (VOID_TAGS.has(t)) {
+    if (descriptor.parserShape === 'void') {
       const node: Extract<HTMLNode, { type: 'element' }> = { type: 'element', tag: t }
       if (id) node.id = id
       if (attrs) node.attrs = attrs
       return node
     }
 
-    if (CONTAINER_TAGS.has(t)) {
+    if (descriptor.parserShape === 'container') {
       // Recursão: filhos não-mapeáveis viram `rawHTML`/`text` na própria
       // recursão, então nada se perde e a estrutura aninhada é preservada.
       const node: Extract<HTMLNode, { type: 'element' }> = {
@@ -424,12 +398,20 @@ function mapNode(node: Node, depth: number): HTMLNode | null {
     // Tag de texto com filhos-elemento (ex.: <p>© <span></span> texto</p> ou
     // <h2>Título <strong>!</strong></h2>) → decompõe em blocos aninhados: cada
     // pedaço de texto vira um nó `text` e cada elemento é mapeado recursivamente.
-    // Espaços-em-branco puros são descartados.
-    if ((hasElementChild || hasCommentChild) && INLINE_TEXT_TAGS.has(t)) {
+    // Whitespace entre filhos phrasing é preservado por `mapChildren`.
+    if ((hasElementChild || hasCommentChild) && descriptor.parserShape === 'inline-text') {
+      const children = mapChildren(el, depth)
+      // Um fragmento avançado não informa se é phrasing nem se o whitespace ao
+      // redor participa do texto. Preservar o pai inteiro evita que a
+      // formatação do gerador transforme `<abbr>A</abbr><abbr>B</abbr>` em
+      // `A B` ao inserir indentação entre dois filhos desconhecidos.
+      if (children.some((child) => child.type === 'rawHTML')) {
+        return { type: 'rawHTML', html: el.outerHTML, advanced: true }
+      }
       const node: Extract<HTMLNode, { type: 'element' }> = {
         type: 'element',
         tag: t,
-        children: mapChildren(el, depth),
+        children,
       }
       if (id) node.id = id
       if (attrs) node.attrs = attrs
@@ -441,11 +423,9 @@ function mapNode(node: Node, depth: number): HTMLNode | null {
     if (hasElementChild || hasCommentChild) {
       return { type: 'rawHTML', html: el.outerHTML, advanced: true }
     }
-    const node: Extract<HTMLNode, { type: 'element' }> = {
-      type: 'element',
-      tag: t,
-      text: el.textContent ?? '',
-    }
+    const node: Extract<HTMLNode, { type: 'element' }> = { type: 'element', tag: t }
+    const text = el.textContent ?? ''
+    if (text) node.text = text
     if (id) node.id = id
     if (attrs) node.attrs = attrs
     return node

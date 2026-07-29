@@ -30,6 +30,15 @@ describe('glossErrorMessage', () => {
     expect(gloss).toMatch(/Dica:/)
   })
 
+  it.each([
+    "IndexSizeError: Failed to execute 'arc' on 'CanvasRenderingContext2D': The radius provided (-1) is negative.",
+    "RangeError: Failed to execute 'roundRect' on 'CanvasRenderingContext2D': Radius value -1 is negative.",
+  ])('explica raio Canvas negativo com um próximo passo (%j)', (message) => {
+    const gloss = glossErrorMessage(message)
+    expect(gloss).toContain('raio')
+    expect(gloss).toContain('0 ou um número maior')
+  })
+
   it('reconhece "is not defined" com aspas ao redor do nome', () => {
     const gloss = glossErrorMessage("'minhaVar' is not defined")
     expect(gloss).not.toBeNull()

@@ -1,4 +1,16 @@
-import type { CSSEntry, CSSRule, GoogleFontCSS, KeyframesCSS, MediaQueryCSS } from '#ir'
+import {
+  type CSSEntry,
+  type CSSRule,
+  cssCommentRejectionReason,
+  cssDeclarationEntries,
+  cssSelectorRejectionReason,
+  type GoogleFontCSS,
+  type KeyframesCSS,
+  type MediaQueryCSS,
+  prepareCSSDeclaration,
+} from '#ir'
+import { googleFontImportRule } from '../css/googleFonts'
+import { formatGuidedMediaQueryCondition } from '../css/mediaQueries'
 import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
@@ -58,12 +70,17 @@ type RenderGroup =
   | { kind: 'keyframes'; entry: KeyframesCSS }
 
 function entryDeclarations(entry: CSSRule): GroupedDeclaration[] {
-  const declIds = entry.__declIds
-  return Object.entries(entry.declarations).map(([key, value]) => ({
-    key,
-    value,
-    ...(declIds?.[key] ? { declId: declIds[key] } : {}),
-  }))
+  return cssDeclarationEntries(entry.declarations, entry.__declIds).flatMap((declaration) => {
+    const prepared = prepareCSSDeclaration(declaration.property, declaration.value)
+    if (!prepared.accepted) return []
+    return [
+      {
+        key: prepared.property,
+        value: prepared.value,
+        ...(declaration.__id ? { declId: declaration.__id } : {}),
+      },
+    ]
+  })
 }
 
 export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResult {
@@ -81,7 +98,8 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
   const fontImports: { id?: string; code: string }[] = []
   for (const entry of entries) {
     if (isGoogleFont(entry)) {
-      fontImports.push({ id: entry.__id, code: googleFontImport(entry.family) })
+      const code = googleFontImportRule(entry.family)
+      if (code) fontImports.push({ id: entry.__id, code })
       continue
     }
     if (isRawCSS(entry)) {
@@ -89,6 +107,7 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
       continue
     }
     if (isCommentCSS(entry)) {
+      if (cssCommentRejectionReason(entry.text)) continue
       groups.push({ kind: 'raw', ids: entry.__id ? [entry.__id] : [], code: `/*${entry.text}*/` })
       continue
     }
@@ -100,6 +119,7 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
       groups.push({ kind: 'keyframes', entry })
       continue
     }
+    if (cssSelectorRejectionReason(entry.selector)) continue
     const segment: RuleSegment = {
       ...(entry.__id ? { id: entry.__id } : {}),
       declarations: entryDeclarations(entry),
@@ -172,24 +192,26 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
     // Entries unidas por '\n\n' (1 linha em branco entre elas).
     line += lines + 1
   }
-  const code = `${pieces.join('\n\n')}\n`
+  const code = pieces.length > 0 ? `${pieces.join('\n\n')}\n` : ''
   return { code, map }
 }
 
 /**
- * Renderiza `@media (feature: Npx) { ...regras indentadas... }`. As regras
- * internas são geradas reaproveitando {@link generateCSSWithMap} e indentadas em
- * 2 espaços; o source map interno é deslocado para as linhas absolutas dentro do
- * documento. O próprio bloco @media é registrado na faixa completa.
+ * Renderiza a consulta guiada de tamanho ou movimento reduzido. As regras
+ * internas são geradas reaproveitando {@link generateCSSWithMap} e indentadas
+ * em 2 espaços; o source map interno é deslocado para as linhas absolutas dentro
+ * do documento. O próprio bloco @media é registrado na faixa completa.
  */
 function renderMediaQuery(entry: MediaQueryCSS, startLine: number, map: SourceMapBuilder): string {
+  const condition = formatGuidedMediaQueryCondition(entry.feature, entry.px)
+  if (!condition) throw new Error('Consulta responsiva sem uma medida válida em pixels.')
   const inner = generateCSSWithMap(entry.rules)
   const innerBody = inner.code.replace(/\n$/, '')
   const indented = innerBody
     .split('\n')
     .map((l) => (l.length > 0 ? `  ${l}` : l))
     .join('\n')
-  const rendered = `@media (${entry.feature}: ${entry.px}px) {\n${indented}\n}`
+  const rendered = `@media (${condition}) {\n${indented}\n}`
   // Conteúdo interno começa na linha seguinte ao `@media ... {` (offset = startLine).
   for (const [id, e] of Object.entries(inner.map.build())) {
     map.record(id, 'style.css', startLine + e.startLine, startLine + e.endLine)
@@ -209,83 +231,22 @@ function stripBraces(text: string): string {
   return text.replace(/[{}]/g, '')
 }
 
-/**
- * Uma DECLARAÇÃO cujo valor escapa da estrutura `selector { … }` é descartada.
- * `{`/`}` e `;` rompem a regra (ex.: `red } body { background:url(...) }` ou
- * `red; background:url(...)`) — mas só quando estão FORA de aspas, comentários e
- * parênteses. DENTRO de uma string (`content:"a{b}c"`, `content:"a;b"`), de um
- * comentário (`/* a;b *​/`) ou de `url(data:…;base64,…)` esses caracteres fazem
- * parte do valor e são legítimos. Reusa a mesma máquina de estados de
- * aspas/comentários do {@link findMatchingBrace}/{@link scanDeclarationSegments}
- * do parser, então o que o parser separou em profundidade 0 nunca é rejeitado
- * por engano — e valores de IR importada/IA com chave/`;` "soltos" caem aqui.
- */
-function isSafeDeclarationValue(value: string): boolean {
-  let paren = 0
-  let quote: '"' | "'" | null = null
-  let inComment = false
-  for (let i = 0; i < value.length; i += 1) {
-    const ch = value[i]
-    const next = value[i + 1]
-    if (inComment) {
-      if (ch === '*' && next === '/') {
-        inComment = false
-        i += 1
-      }
-      continue
-    }
-    if (quote) {
-      if (ch === '\\') {
-        i += 1
-        continue
-      }
-      if (ch === quote) quote = null
-      continue
-    }
-    if (ch === '/' && next === '*') {
-      inComment = true
-      i += 1
-      continue
-    }
-    if (ch === '"' || ch === "'") quote = ch
-    else if (ch === '(') paren += 1
-    else if (ch === ')') {
-      if (paren > 0) paren -= 1
-    } else if (ch === '{' || ch === '}') return false
-    else if (ch === ';' && paren === 0) return false
-  }
-  return true
-}
-
-/**
- * Uma CHAVE (propriedade) de declaração só pode conter o NOME da propriedade —
- * nunca os caracteres que estruturam o CSS. `stripBraces` removia só `{`/`}`,
- * mas `:` e `;` numa chave injetam uma declaração-fantasma: a chave
- * `color:red;x` saía como `color:red;x: <value>;`, "vazando" um `color:red`
- * extra (ou pior, exfil via `background:url(...)`). Recusamos a declaração
- * inteira quando a chave traz `{`, `}`, `:`, `;` ou quebra de linha — análogo
- * ao {@link isSafeDeclarationValue} no lado do valor. Vale para IR
- * importada/gerada por IA com chaves "soltas".
- */
-function isSafeDeclarationKey(key: string): boolean {
-  return !/[{};:\r\n]/.test(key)
-}
-
 function renderRule(selector: string, declarations: GroupedDeclaration[]): string {
-  const decls = declarations
-    .filter(({ key, value }) => isSafeDeclarationKey(key) && isSafeDeclarationValue(value))
-    .map(({ key, value }) => `  ${stripBraces(key)}: ${value};`)
-    .join('\n')
-  return `${stripBraces(selector)} {\n${decls}\n}`
+  const decls = declarations.map(({ key, value }) => `  ${stripBraces(key)}: ${value};`).join('\n')
+  return `${selector} {\n${decls}\n}`
 }
 
 /** Renderiza `@keyframes nome { at { decls } … }` (2 níveis de indentação). */
 function renderKeyframes(entry: KeyframesCSS): string {
   const steps = entry.steps
     .map((step) => {
-      const decls = Object.entries(step.declarations)
-        .filter(([k, v]) => isSafeDeclarationKey(k) && isSafeDeclarationValue(v))
-        .map(([k, v]) => `    ${stripBraces(k)}: ${v};`)
+      const decls = cssDeclarationEntries(step.declarations)
+        .flatMap(({ property, value }) => {
+          const prepared = prepareCSSDeclaration(property, value)
+          return prepared.accepted
+            ? [`    ${stripBraces(prepared.property)}: ${prepared.value};`]
+            : []
+        })
         .join('\n')
       return `  ${stripBraces(step.at)} {\n${decls}\n  }`
     })
@@ -295,12 +256,6 @@ function renderKeyframes(entry: KeyframesCSS): string {
 
 function isGoogleFont(entry: CSSEntry): entry is GoogleFontCSS {
   return 'type' in entry && entry.type === 'googleFont'
-}
-
-/** Monta o @import do Google Fonts (espaços viram +, ex.: "Press Start 2P"). */
-function googleFontImport(family: string): string {
-  const fam = family.trim().replace(/\s+/g, '+')
-  return `@import url("https://fonts.googleapis.com/css?family=${fam}");`
 }
 
 function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' }> {

@@ -1,5 +1,5 @@
 import type { IDEMode } from '#core'
-import type { SZIR } from '#ir'
+import type { SZIRV2 } from '#ir'
 import type {
   AIChallengeLevel,
   AIFreeFormRequest,
@@ -67,8 +67,14 @@ export class MockAIProvider implements AIProvider {
   ): Promise<string> {
     return `// Mock — refatoração real virá em fase futura.\n${code}`
   }
-  async convertIdeaToBlocks(_idea: string, _options?: AIRequestOptions): Promise<SZIR> {
-    return { html: [], css: [], js: [], extensions: [] }
+  async convertIdeaToBlocks(_idea: string, _options?: AIRequestOptions): Promise<SZIRV2> {
+    return {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [], events: [], loops: [] },
+      extensions: [],
+    }
   }
   async ask(req: AIFreeFormRequest): Promise<string> {
     const text = `(Mock) Recebi: "${req.question}". Configure uma chave OpenRouter em "Configurar IA" para conversar com um modelo real.`

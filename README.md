@@ -40,7 +40,8 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 - **community-kids** é a vitrine infantil (BFF, gamificada); **fiscal** emite NFS-e
   automática pós-garantia; **hub** é a comunidade em fórum (back-end pronto, front-ends
   em andamento). **member-shell**/**studio**/**ui**/**core** são libs compartilhadas
-  (a área do aluno e o studio embarcável).
+  (a área do aluno e o studio embarcável). **studio-runtime** compila atividades
+  Pro em um sandbox remoto e isolado.
 
 ## Pacotes
 
@@ -65,9 +66,9 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/member-shell`](packages/member-shell) | — | Shell compartilhado da área do aluno (route handlers, proxy anti-CSRF, componentes de domínio) — consumido por community/community-kids |
 | [`@sistemazero/studio`](packages/studio) | — | IDE educacional embarcável (Blocos/Código/Ponte + preview sandbox + jogos 2D/3D) — lib interna |
+| [`@sistemazero/studio-runtime`](packages/studio-runtime) | — | Executor Cloudflare isolado para compilar e visualizar atividades Pro |
 | [`@sistemazero/pensa`](packages/pensa) | — | Planejamento guiado (metodologia ZERO) p/ crianças planejarem jogos antes do Estúdio — lib (TS source) embarcada nos apps |
 | [`@sistemazero/pinta`](packages/pinta) | — | Editor de assets de jogos p/ crianças (pixel art, animações, tiles, vetor) — lib (TS source) embarcada nos apps |
-| [`@sistemazero/studio-aulas`](packages/studio-aulas) | — | Pipeline de produção de aulas (roteiro → voz → avatar → tela do Estúdio → vídeo) — ferramenta isolada (CLI) |
 | [`@sistemazero/ui`](packages/ui) | — | Componentes compartilhados (admin + community) |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 
@@ -95,6 +96,9 @@ Detalhes, URLs dos dois ambientes e regras: **[docs/ambientes-e-fluxo.md](docs/a
   gamificação infantil (XP, streak, Zappy Coins, avatar, quarto, missões, proteção de
   sequência, ligas e perfil público): a ética embutida no código e qual constante mudar,
   em qual arquivo.
+- **[Carreira do Criador e Estúdio](docs/carreira-do-criador.md)** — matriz dos oito
+  níveis, 31 cursos obrigatórios, travas pedagógicas, liberações do Estúdio, modo
+  Pro, autoria e operação do runtime remoto.
 - **[Marketing digital — manual de conceitos e operação](docs/marketing.md)** — a
   ferramenta interna da equipe (ideia → produção → aprovação → publicações por rede →
   agendamento → métricas), os 4 conceitos centrais e o roadmap de fases.

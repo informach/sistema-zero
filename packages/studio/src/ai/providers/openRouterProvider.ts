@@ -1,5 +1,5 @@
 import type { IDEMode } from '#core'
-import type { SZIR } from '#ir'
+import type { SZIRV2 } from '#ir'
 import type {
   AIChallengeLevel,
   AIFreeFormRequest,
@@ -417,8 +417,14 @@ comportamento. Mostre apenas o trecho refatorado em bloco de código.\n\n\`\`\`$
    * mais ambiciosa. Por ora respondemos texto explicando o que o aluno deveria
    * fazer; a app trata como mensagem normal.
    */
-  async convertIdeaToBlocks(_idea: string, _options?: AIRequestOptions): Promise<SZIR> {
-    return { html: [], css: [], js: [], extensions: [] }
+  async convertIdeaToBlocks(_idea: string, _options?: AIRequestOptions): Promise<SZIRV2> {
+    return {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [], events: [], loops: [] },
+      extensions: [],
+    }
   }
 
   async ask(req: AIFreeFormRequest): Promise<string> {

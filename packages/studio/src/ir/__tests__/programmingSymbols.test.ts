@@ -1,0 +1,873 @@
+import { describe, expect, it } from 'bun:test'
+import { SZIRSchema, SZIRV2Schema } from '../schema'
+
+const legacyProject = (js: unknown[], gameTwoD = false) => ({
+  html: [],
+  css: [],
+  js,
+  extensions: gameTwoD ? [{ extensionId: 'game-2d' }] : [],
+})
+
+const game3DProject = (js: unknown[]) => ({
+  html: [],
+  css: [],
+  js,
+  extensions: [{ extensionId: 'game-3d' }],
+})
+
+describe('símbolos léxicos da Programação', () => {
+  it('aceita os locais do núcleo mesmo quando Jogo 2D está instalado', () => {
+    const cases = [
+      {
+        type: 'funcDecl',
+        name: 'dobrar',
+        params: ['n'],
+        body: [{ type: 'return', value: { type: 'var', name: 'n' } }],
+      },
+      {
+        type: 'forRange',
+        varName: 'i',
+        from: { type: 'num', value: 0 },
+        to: { type: 'num', value: 2 },
+        step: { type: 'num', value: 1 },
+        body: [{ type: 'consoleLog', value: { type: 'var', name: 'i' } }],
+      },
+      {
+        type: 'tryCatch',
+        body: [],
+        errorName: 'erro',
+        handler: [{ type: 'consoleLog', value: { type: 'var', name: 'erro' } }],
+      },
+      {
+        type: 'fetchJson',
+        url: { type: 'str', value: '/dados' },
+        okName: 'dados',
+        body: [{ type: 'consoleLog', value: { type: 'var', name: 'dados' } }],
+        catchName: 'erro',
+        catchBody: [{ type: 'consoleLog', value: { type: 'var', name: 'erro' } }],
+      },
+    ]
+
+    for (const statement of cases) {
+      expect(SZIRSchema.safeParse(legacyProject([statement], true)).success, statement.type).toBe(
+        true,
+      )
+    }
+  })
+
+  it('recusa leitura e atribuição de variável que ainda não foi declarada', () => {
+    const project = {
+      version: 2 as const,
+      html: [],
+      css: [],
+      behavior: {
+        start: [
+          { type: 'consoleLog', value: { type: 'var', name: 'futuro' } },
+          { type: 'assign', name: 'futuro', value: { type: 'num', value: 1 } },
+          { type: 'var', name: 'futuro', value: { type: 'num', value: 0 } },
+        ],
+        events: [],
+        loops: [],
+      },
+      extensions: [],
+    }
+
+    const parsed = SZIRV2Schema.safeParse(project)
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('futuro'))).toBe(true)
+    }
+  })
+
+  it('mantém variáveis declaradas disponíveis depois da declaração e em ramos internos', () => {
+    const parsed = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [
+          { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+          {
+            type: 'if',
+            cond: { type: 'bool', value: true },
+            then: [{ type: 'assign', name: 'pontos', value: { type: 'num', value: 1 } }],
+          },
+        ],
+        events: [],
+        loops: [],
+      },
+      extensions: [],
+    })
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('não libera declaração posterior para callback síncrono de colisão', () => {
+    const parsed = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [
+          { type: 'var', name: 'heroi', value: { type: 'objectLiteral', entries: [] } },
+          { type: 'var', name: 'inimigos', value: { type: 'array', items: [] } },
+        ],
+        events: [],
+        loops: [
+          {
+            type: 'g2d:updateEachFrame',
+            body: [
+              {
+                type: 'g2d:onSpriteGroupOverlap',
+                spriteVar: 'heroi',
+                groupVar: 'inimigos',
+                itemName: 'inimigo',
+                body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+              },
+              { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+            ],
+          },
+        ],
+      },
+      extensions: [{ extensionId: 'game-2d' }],
+    })
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('pontos'))).toBe(true)
+    }
+  })
+
+  it('reconhece id, tempo e delta declarados pelo próprio loop de animação', () => {
+    const parsed = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [],
+        events: [],
+        loops: [
+          {
+            type: 'animationLoop',
+            handle: 'ciclo',
+            timeVar: 'tempo',
+            deltaVar: 'delta',
+            body: [
+              { type: 'consoleLog', value: { type: 'var', name: 'tempo' } },
+              { type: 'consoleLog', value: { type: 'var', name: 'delta' } },
+              { type: 'cancelAnimationFrame', handle: { type: 'var', name: 'ciclo' } },
+            ],
+          },
+        ],
+      },
+      extensions: [],
+    })
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('valida o nome de listas como uma referência léxica, inclusive em expressões', () => {
+    const missing = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'arrayPush', arrayVar: 'itens', value: { type: 'num', value: 1 } },
+        { type: 'consoleLog', value: { type: 'arrayLength', arrayVar: 'itens' } },
+      ]),
+    )
+    expect(missing.success).toBe(false)
+    if (!missing.success) {
+      expect(missing.error.issues.filter((issue) => issue.message.includes('itens'))).toHaveLength(
+        2,
+      )
+    }
+
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          { type: 'var', name: 'itens', value: { type: 'array', items: [] } },
+          { type: 'arrayPush', arrayVar: 'itens', value: { type: 'num', value: 1 } },
+          { type: 'consoleLog', value: { type: 'arrayLength', arrayVar: 'itens' } },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('exige que classes existam antes de extends/new e libera namespaces oficiais', () => {
+    const beforeDeclaration = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'newInstance', varName: 'heroi', className: 'Heroi', args: [] },
+        { type: 'classDecl', name: 'Heroi', ctorBody: [], methods: [] },
+      ]),
+    )
+    expect(beforeDeclaration.success).toBe(false)
+
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          { type: 'classDecl', name: 'Base', ctorBody: [], methods: [] },
+          { type: 'classDecl', name: 'Heroi', superClass: 'Base', ctorBody: [], methods: [] },
+          { type: 'newInstance', varName: 'heroi', className: 'Heroi', args: [] },
+          {
+            type: 'var',
+            name: 'cena',
+            value: { type: 'newExpr', namespace: 'THREE', className: 'Scene', args: [] },
+          },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('infere capacidade Canvas 3D de newExpr guardado por variável genérica', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'importStar', name: 'THREE', module: 'three' },
+        {
+          type: 'var',
+          name: 'cubo',
+          value: { type: 'newExpr', namespace: 'THREE', className: 'Mesh', args: [] },
+        },
+        { type: 'disposeObject', object: 'cubo' },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('faz hoisting de funções apenas no escopo onde foram declaradas', () => {
+    const valid = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'callFunction', name: 'iniciar', args: [] },
+        { type: 'funcDecl', name: 'iniciar', params: [], body: [] },
+        {
+          type: 'var',
+          name: 'promessa',
+          value: {
+            type: 'newPromise',
+            param: 'concluir',
+            body: [{ type: 'callFunction', name: 'concluir', args: [] }],
+          },
+        },
+      ]),
+    )
+    expect(valid.success).toBe(true)
+
+    const leaked = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'if',
+          cond: { type: 'bool', value: true },
+          then: [{ type: 'funcDecl', name: 'local', params: [], body: [] }],
+        },
+        { type: 'requestFrame', fn: 'local' },
+      ]),
+    )
+    expect(leaked.success).toBe(false)
+  })
+
+  it('recusa referências em campos-string que não possuem declaração', () => {
+    const cases = [
+      {
+        type: 'setProperty',
+        targetId: 'elemento',
+        targetKind: 'var',
+        property: 'textContent',
+        value: { type: 'str', value: 'oi' },
+      },
+      { type: 'appendChild', parentVar: 'pai', childVar: 'filho' },
+      { type: 'objectAssign', targetVar: 'destino', sourceVar: 'origem' },
+      {
+        type: 'consoleLog',
+        value: { type: 'canvasDim', ctxVar: 'pincel', dim: 'width' },
+      },
+      {
+        type: 'consoleLog',
+        value: { type: 'datasetGet', objectVar: 'elemento', key: 'fase' },
+      },
+    ]
+
+    for (const statement of cases) {
+      const parsed = SZIRSchema.safeParse(legacyProject([statement]))
+      expect(parsed.success, statement.type).toBe(false)
+    }
+  })
+
+  it('aceita os mesmos campos-string depois que as variáveis foram declaradas', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'var', name: 'pai', value: { type: 'objectLiteral', entries: [] } },
+        { type: 'var', name: 'filho', value: { type: 'objectLiteral', entries: [] } },
+        { type: 'var', name: 'destino', value: { type: 'objectLiteral', entries: [] } },
+        { type: 'var', name: 'origem', value: { type: 'objectLiteral', entries: [] } },
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'pincel' },
+        { type: 'appendChild', parentVar: 'pai', childVar: 'filho' },
+        { type: 'objectAssign', targetVar: 'destino', sourceVar: 'origem' },
+        {
+          type: 'consoleLog',
+          value: { type: 'canvasDim', ctxVar: 'pincel', dim: 'width' },
+        },
+        {
+          type: 'consoleLog',
+          value: { type: 'datasetGet', objectVar: 'filho', key: 'fase' },
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('exige que o pincel seja preparado antes de qualquer operação Canvas', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'canvasFillRect',
+          ctxVar: 'pincel',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0 },
+          w: { type: 'num', value: 10 },
+          h: { type: 'num', value: 10 },
+        },
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'pincel' },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('pincel “pincel”'))).toBe(
+        true,
+      )
+    }
+  })
+
+  it('não confunde uma variável comum com um pincel Canvas preparado', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'var', name: 'pincel', value: { type: 'null' } },
+        {
+          type: 'canvasFillRect',
+          ctxVar: 'pincel',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0 },
+          w: { type: 'num', value: 10 },
+          h: { type: 'num', value: 10 },
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+  })
+
+  it('recusa declarações JavaScript repetidas no mesmo escopo', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'var', name: 'pincel', value: { type: 'null' } },
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'pincel' },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('já foi declarado'))).toBe(
+        true,
+      )
+    }
+  })
+
+  it('permite reutilizar um nome em um escopo filho', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+        {
+          type: 'if',
+          cond: { type: 'bool', value: true },
+          then: [{ type: 'var', name: 'pontos', value: { type: 'num', value: 2 } }],
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('não entrega variáveis futuras ao corpo de uma função', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'funcDecl',
+          name: 'mostrar',
+          params: [],
+          body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+        },
+        { type: 'callFunction', name: 'mostrar', args: [] },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('pontos'))).toBe(true)
+    }
+  })
+
+  it('permite que uma função capture uma variável já declarada', () => {
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+          {
+            type: 'funcDecl',
+            name: 'mostrar',
+            params: [],
+            body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+          },
+          { type: 'callFunction', name: 'mostrar', args: [] },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('permite declarar a closure antes da variável quando a chamada acontece depois', () => {
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          {
+            type: 'funcDecl',
+            name: 'mostrar',
+            params: [],
+            body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+          },
+          { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+          { type: 'callFunction', name: 'mostrar', args: [] },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('resolve variáveis futuras em callbacks que só executam depois do trecho atual', () => {
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          {
+            type: 'setTimeout',
+            delay: { type: 'num', value: 1000 },
+            body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+          },
+          { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('recusa event e ctx fora dos corpos que realmente os declaram', () => {
+    for (const name of ['event', 'ctx']) {
+      const parsed = SZIRSchema.safeParse(
+        legacyProject([{ type: 'consoleLog', value: { type: 'var', name } }]),
+      )
+      expect(parsed.success, name).toBe(false)
+      if (!parsed.success) {
+        expect(parsed.error.issues.some((issue) => issue.message.includes(name))).toBe(true)
+      }
+    }
+  })
+
+  it('libera event no listener e ctx somente no corpo da figura', () => {
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          {
+            type: 'event',
+            target: '',
+            targetKind: 'document',
+            event: 'click',
+            body: [{ type: 'consoleLog', value: { type: 'var', name: 'event' } }],
+          },
+        ]),
+      ).success,
+    ).toBe(true)
+
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject(
+          [
+            {
+              type: 'g2d:defineShape',
+              shapeName: 'heroi',
+              body: [
+                { type: 'consoleLog', value: { type: 'var', name: 'ctx' } },
+                {
+                  type: 'canvasFillRect',
+                  ctxVar: 'ctx',
+                  x: { type: 'num', value: 0 },
+                  y: { type: 'num', value: 0 },
+                  w: { type: 'num', value: 10 },
+                  h: { type: 'num', value: 10 },
+                },
+              ],
+            },
+          ],
+          true,
+        ),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('promove símbolos futuros somente depois de await em função assíncrona', () => {
+    const afterAwait = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: [],
+          async: true,
+          body: [
+            { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+            { type: 'consoleLog', value: { type: 'var', name: 'pontos' } },
+          ],
+        },
+        { type: 'callFunction', name: 'carregar', args: [] },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+      ]),
+    )
+    expect(afterAwait.success).toBe(true)
+
+    const beforeAwait = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: [],
+          async: true,
+          body: [
+            { type: 'consoleLog', value: { type: 'var', name: 'pontos' } },
+            { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+          ],
+        },
+        { type: 'callFunction', name: 'carregar', args: [] },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+      ]),
+    )
+    expect(beforeAwait.success).toBe(false)
+
+    const localAfterAwait = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: [],
+          async: true,
+          body: [
+            { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+            { type: 'consoleLog', value: { type: 'var', name: 'resultado' } },
+            { type: 'var', name: 'resultado', value: { type: 'num', value: 1 } },
+          ],
+        },
+        { type: 'callFunction', name: 'carregar', args: [] },
+      ]),
+    )
+    expect(localAfterAwait.success).toBe(false)
+  })
+
+  it('promove símbolos futuros depois de await em método assíncrono', () => {
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          {
+            type: 'classDecl',
+            name: 'Painel',
+            ctorBody: [],
+            methods: [
+              {
+                name: 'carregar',
+                params: [],
+                async: true,
+                body: [
+                  { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+                  { type: 'consoleLog', value: { type: 'var', name: 'pontos' } },
+                ],
+              },
+            ],
+          },
+          { type: 'newInstance', varName: 'painel', className: 'Painel', args: [] },
+          { type: 'callMethod', objectVar: 'painel', method: 'carregar', args: [] },
+          { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('trata onclick, onload e onerror como callbacks adiados', () => {
+    for (const type of ['onClickAssign', 'imageOnLoad', 'imageOnError'] as const) {
+      expect(
+        SZIRSchema.safeParse(
+          legacyProject([
+            {
+              type,
+              target: { type: 'objectLiteral', entries: [] },
+              body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+            },
+            { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+          ]),
+        ).success,
+        type,
+      ).toBe(true)
+    }
+  })
+
+  it('valida o corpo de métodos e construtores no ponto em que a instância é usada', () => {
+    const classDecl = {
+      type: 'classDecl',
+      name: 'Painel',
+      ctorBody: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+      methods: [
+        {
+          name: 'mostrar',
+          params: [],
+          body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+        },
+      ],
+    }
+
+    const constructorTooEarly = SZIRSchema.safeParse(
+      legacyProject([
+        classDecl,
+        { type: 'newInstance', varName: 'painel', className: 'Painel', args: [] },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+      ]),
+    )
+    expect(constructorTooEarly.success).toBe(false)
+
+    const methodTooEarly = SZIRSchema.safeParse(
+      legacyProject([
+        { ...classDecl, ctorBody: [] },
+        { type: 'newInstance', varName: 'painel', className: 'Painel', args: [] },
+        { type: 'callMethod', objectVar: 'painel', method: 'mostrar', args: [] },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+      ]),
+    )
+    expect(methodTooEarly.success).toBe(false)
+
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          { ...classDecl, ctorBody: [] },
+          { type: 'newInstance', varName: 'painel', className: 'Painel', args: [] },
+          { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+          { type: 'callMethod', objectVar: 'painel', method: 'mostrar', args: [] },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('exige que o namespace de um construtor exista', () => {
+    const missing = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'var',
+          name: 'heroi',
+          value: { type: 'newExpr', namespace: 'Inexistente', className: 'Heroi', args: [] },
+        },
+      ]),
+    )
+    expect(missing.success).toBe(false)
+    if (!missing.success) {
+      expect(missing.error.issues.some((issue) => issue.message.includes('Inexistente'))).toBe(true)
+    }
+
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          { type: 'importStar', name: 'Biblioteca', module: './biblioteca.js' },
+          {
+            type: 'newInstance',
+            varName: 'heroi',
+            namespace: 'Biblioteca',
+            className: 'Heroi',
+            args: [],
+          },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('recusa objetos, grupos e enxames do Jogo 3D que não existem nesse ponto', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'heroi',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        {
+          type: 'g3d:rotateBy',
+          objVar: 'fantasma',
+          axis: 'y',
+          amount: { type: 'num', value: 0.1 },
+        },
+        {
+          type: 'g3d:spawnEnemy',
+          worldVar: 'mundo',
+          groupVar: 'inimigos',
+          speed: 2,
+        },
+        {
+          type: 'g3d:spawnInSwarm',
+          swarmVar: 'estrelas',
+          originalVar: 'heroi',
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('fantasma'))).toBe(true)
+      expect(parsed.error.issues.some((issue) => issue.message.includes('inimigos'))).toBe(true)
+      expect(parsed.error.issues.some((issue) => issue.message.includes('estrelas'))).toBe(true)
+    }
+  })
+
+  it('registra todo criador de objeto do Jogo 3D também como variável JavaScript', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'caixa',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        { type: 'consoleLog', value: { type: 'var', name: 'caixa' } },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('recusa nomes duplicados entre criadores de objetos do Jogo 3D', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'objeto',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        {
+          type: 'g3d:createSphere',
+          varName: 'objeto',
+          worldVar: 'mundo',
+          radius: 1,
+          color: '#ffffff',
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('objeto'))).toBe(true)
+    }
+  })
+
+  it('não aceita objeto Three.js cru em comando que exige vínculo com o mundo do jogo', () => {
+    const shared = [
+      {
+        type: 'newInstance',
+        varName: 'objetoCru',
+        namespace: 'THREE',
+        className: 'Mesh',
+        args: [],
+      },
+      { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+    ]
+    const genericTransform = SZIRSchema.safeParse(
+      game3DProject([
+        ...shared,
+        {
+          type: 'g3d:setPosition',
+          objVar: 'objetoCru',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 1 },
+          z: { type: 'num', value: 0 },
+        },
+      ]),
+    )
+    const worldCommand = SZIRSchema.safeParse(
+      game3DProject([...shared, { type: 'g3d:fpsCamera', worldVar: 'mundo', objVar: 'objetoCru' }]),
+    )
+
+    expect(genericTransform.success).toBe(true)
+    expect(worldCommand.success).toBe(false)
+    if (!worldCommand.success) {
+      expect(worldCommand.error.issues.some((issue) => issue.message.includes('objetoCru'))).toBe(
+        true,
+      )
+    }
+  })
+
+  it('promove resultados de seleção e mira guardados em variáveis para objeto do Jogo 3D', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'jogador',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        { type: 'var', name: 'selecionado', value: { type: 'g3d:pickAtMouse', worldVar: 'mundo' } },
+        {
+          type: 'var',
+          name: 'alvo',
+          value: { type: 'g3d:aimAhead', worldVar: 'mundo', objVar: 'jogador', dist: 50 },
+        },
+        { type: 'g3d:cameraLookAt', worldVar: 'mundo', objVar: 'selecionado' },
+        { type: 'g3d:cameraLookAt', worldVar: 'mundo', objVar: 'alvo' },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('distingue os tipos 3D e libera o item local de um para-cada no enxame', () => {
+    const wrongKind = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createGroup', varName: 'inimigos' },
+        {
+          type: 'g3d:rotateBy',
+          objVar: 'inimigos',
+          axis: 'y',
+          amount: { type: 'num', value: 0.1 },
+        },
+      ]),
+    )
+    expect(wrongKind.success).toBe(false)
+
+    const localItem = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        { type: 'g3d:createSwarm', varName: 'estrelas', worldVar: 'mundo' },
+        {
+          type: 'g3d:forEachInSwarm',
+          swarmVar: 'estrelas',
+          itemName: 'estrela',
+          body: [
+            {
+              type: 'g3d:moveBy',
+              objVar: 'estrela',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 1 },
+              z: { type: 'num', value: 0 },
+            },
+          ],
+        },
+      ]),
+    )
+    expect(localItem.success).toBe(true)
+  })
+})

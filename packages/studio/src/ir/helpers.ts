@@ -1,4 +1,5 @@
-import type { CSSEntry, HTMLNode, JSExpr, JSStatement, SZIR } from './schema'
+import { behaviorStatements, normalizeSZIR } from './behavior'
+import type { CSSEntry, HTMLNode, JSExpr, JSStatement, SZIR, SZIRInput } from './schema'
 
 export const EMPTY_IR: SZIR = { html: [], css: [], js: [], extensions: [] }
 
@@ -27,10 +28,10 @@ export function bool(value: boolean): JSExpr {
 // diferentes aqui. Mantenha a ordem de inserção dos campos consistente entre os
 // geradores ao evoluir o schema (sem isso, a Ponte cairia em rebuild a cada
 // reparse). Sem mudança de comportamento — apenas documentação do contrato.
-export function deepEqualIR(a: SZIR | null, b: SZIR | null): boolean {
+export function deepEqualIR(a: SZIRInput | null, b: SZIRInput | null): boolean {
   if (a === b) return true
   if (!a || !b) return false
-  return JSON.stringify(a) === JSON.stringify(b)
+  return JSON.stringify(normalizeSZIR(a)) === JSON.stringify(normalizeSZIR(b))
 }
 
 /**
@@ -43,13 +44,15 @@ export function deepEqualIR(a: SZIR | null, b: SZIR | null): boolean {
  * então mantê-los na comparação faria qualquer projeto com classe JS ou declaração
  * CSS cair em rebuild total a cada edição cosmética do código.
  */
-export function irBlockStructureEqual(a: SZIR, b: SZIR): boolean {
-  const norm = (ir: SZIR): string =>
-    JSON.stringify(
-      { html: ir.html, css: ir.css, js: ir.js, extensions: ir.extensions },
+export function irBlockStructureEqual(a: SZIRInput, b: SZIRInput): boolean {
+  const norm = (input: SZIRInput): string => {
+    const ir = normalizeSZIR(input)
+    return JSON.stringify(
+      { html: ir.html, css: ir.css, behavior: ir.behavior, extensions: ir.extensions },
       (key, value) =>
         key === '__id' || key === 'ctorId' || key === '__declIds' ? undefined : value,
     )
+  }
   return norm(a) === norm(b)
 }
 
@@ -59,8 +62,11 @@ export function irBlockStructureEqual(a: SZIR, b: SZIR): boolean {
 // parser/Babel para os modos Blocos/Ponte.
 
 /** Total de nós/trechos com `advanced: true` em toda a IR. */
-export function countAdvancedIR(ir: SZIR): number {
-  return countAdvancedHTML(ir.html) + countAdvancedCSS(ir.css) + countAdvancedJS(ir.js)
+export function countAdvancedIR(input: SZIRInput): number {
+  const ir = normalizeSZIR(input)
+  return (
+    countAdvancedHTML(ir.html) + countAdvancedCSS(ir.css) + countAdvancedJS(behaviorStatements(ir))
+  )
 }
 
 export function countAdvancedHTML(nodes: HTMLNode[]): number {
@@ -97,6 +103,7 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'forRange':
     case 'event':
     case 'animationLoop':
+    case 'g2d:onStart':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
     case 'g2d:onKey':
@@ -110,7 +117,12 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
+    case 'g2d:afterSeconds':
     case 'g3d:animate':
+    case 'g3d:everyFrames':
+    case 'g3d:everySeconds':
+    case 'g3d:forEachInGroup':
+    case 'g3d:pruneOffscreen':
     case 'gk:addButton':
     case 'gk:onEnterState':
     case 'gk:onUpdate':
@@ -119,7 +131,8 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:onDrawHud':
     case 'gk:onGameClick':
     case 'gk:rpgOnTalk':
-    case 'gk:rpgOnMap':
+    case 'gk:rpgCreateMap':
+    case 'gk:rpgOnEnterMap':
     case 'gk:rpgOnBattleEnd':
     case 'gk:rpgCutscene':
     case 'gk:rpgOnStep':

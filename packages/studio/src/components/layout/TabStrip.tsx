@@ -34,6 +34,8 @@ export interface TabsProps {
   size?: 'sm' | 'md'
   className?: string
   tablistClassName?: string
+  /** Mantém a estrutura dos painéis, mas omite a barra quando só existe uma aba. */
+  hideTablistWhenSingle?: boolean
   /**
    * Conteúdo fixo à direita da fila de abas (ex.: botão "Arquivos" do
    * NarrowLayout). Fica FORA do `role="tablist"` — não é uma aba — mas na mesma
@@ -56,6 +58,7 @@ export function Tabs({
   size = 'sm',
   className,
   tablistClassName,
+  hideTablistWhenSingle = false,
   rightSlot,
   keepLiveIds,
 }: TabsProps): JSX.Element {
@@ -63,6 +66,7 @@ export function Tabs({
   const tabId = (id: string) => `${baseId}-tab-${id}`
   const panelId = (id: string) => `${baseId}-panel-${id}`
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const hasTablist = !hideTablistWhenSingle || items.length > 1 || Boolean(rightSlot)
 
   // Roving tabIndex: uma parada de Tab no tablist; setas movem foco E seleção.
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -82,48 +86,53 @@ export function Tabs({
 
   return (
     <div className={cn('flex h-full min-h-0 flex-col', className)}>
-      <div className="flex shrink-0 border-b border-sz-border">
-        <div
-          role="tablist"
-          aria-label={ariaLabel}
-          className={cn('flex flex-1 overflow-x-auto', tablistClassName)}
-        >
-          {items.map((item, index) => {
-            const selected = active === item.id
-            return (
-              <button
-                key={item.id}
-                id={tabId(item.id)}
-                ref={(el) => {
-                  tabRefs.current[item.id] = el
-                }}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                aria-controls={panelId(item.id)}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => onSelect(item.id)}
-                onKeyDown={(e) => onKeyDown(e, index)}
-                style={{ touchAction: 'manipulation' }}
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 font-medium transition-colors',
-                  size === 'md' ? 'px-3.5 py-2.5 text-sm' : 'px-3 py-2 text-xs',
-                  selected
-                    ? 'border-sz-accent text-sz-fg'
-                    : 'border-transparent text-sz-fg-soft hover:text-sz-fg',
-                )}
-              >
-                {item.icon && (
-                  <span className="flex h-4 w-4 items-center justify-center">{item.icon}</span>
-                )}
-                {item.label}
-              </button>
-            )
-          })}
+      {hasTablist && (
+        <div key="tabs-header" className="flex shrink-0 border-b border-sz-border">
+          <div
+            role="tablist"
+            aria-label={ariaLabel}
+            className={cn('flex flex-1 overflow-x-auto', tablistClassName)}
+          >
+            {items.map((item, index) => {
+              const selected = active === item.id
+              return (
+                <button
+                  key={item.id}
+                  id={tabId(item.id)}
+                  ref={(el) => {
+                    tabRefs.current[item.id] = el
+                  }}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls={panelId(item.id)}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => onSelect(item.id)}
+                  onKeyDown={(e) => onKeyDown(e, index)}
+                  style={{ touchAction: 'manipulation' }}
+                  className={cn(
+                    'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 font-medium transition-colors',
+                    size === 'md' ? 'px-3.5 py-2.5 text-sm' : 'px-3 py-2 text-xs',
+                    selected
+                      ? 'border-sz-accent text-sz-fg'
+                      : 'border-transparent text-sz-fg-soft hover:text-sz-fg',
+                  )}
+                >
+                  {item.icon && (
+                    <span className="flex h-4 w-4 items-center justify-center">{item.icon}</span>
+                  )}
+                  {item.label}
+                </button>
+              )
+            })}
+          </div>
+          {rightSlot && <div className="flex shrink-0 items-center">{rightSlot}</div>}
         </div>
-        {rightSlot && <div className="flex shrink-0 items-center">{rightSlot}</div>}
-      </div>
-      <div className={cn('min-h-0 flex-1 overflow-hidden', keepLiveIds && 'relative')}>
+      )}
+      <div
+        key="tabs-panels"
+        className={cn('min-h-0 flex-1 overflow-hidden', keepLiveIds && 'relative')}
+      >
         {items.map((item) => {
           const selected = active === item.id
           // Inativo mas VIVO: fica renderizado (rAF do preview segue rodando), porém
@@ -136,7 +145,8 @@ export function Tabs({
               key={item.id}
               role="tabpanel"
               id={panelId(item.id)}
-              aria-labelledby={tabId(item.id)}
+              aria-labelledby={hasTablist ? tabId(item.id) : undefined}
+              aria-label={hasTablist ? undefined : ariaLabel}
               // `inert` (React 19) tira o painel vivo-oculto do foco e da árvore de
               // acessibilidade sem `display:none` (que pausaria o rAF).
               inert={keepLive}

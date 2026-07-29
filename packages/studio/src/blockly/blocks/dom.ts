@@ -1,24 +1,27 @@
 import { CATEGORY_COLORS } from '../theme'
+import { EVENT_TARGET_EXTENSION } from './eventTargetExtension'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.dom
 
 /**
  * Blocos de MANIPULAÇÃO DO DOM: eventos, busca de elementos, leitura/escrita de
- * propriedades, classes/dataset e criação/inserção. Separados da categoria
- * JavaScript (que fica com a LINGUAGEM: variáveis, controle de fluxo, listas,
- * console/alert, timers, storage, fetch) — ver toolbox.ts (categoria "DOM"
- * entre CSS e JavaScript).
+ * propriedades, classes/dataset e criação/inserção. Na toolbox, ficam nas
+ * subcategorias Página e Eventos do guarda-chuva Programação; os demais blocos
+ * da linguagem ocupam as outras subcategorias desse mesmo grupo.
  *
  * ⚠️ Os `type` continuam `sz_js_*` (NÃO renomear): parser, gerador, IR,
  * reverse-sync e a allowlist de projetos salvos referenciam o type — só a
- * organização da paleta e a cor mudaram. Recolorir = `colour: C` (sky), em vez
- * do âmbar de JavaScript.
+ * organização da paleta e a cor mudaram. Recolorir = `colour: C`, a tonalidade
+ * própria de DOM dentro da família visual de Programação.
  */
 export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Eventos ----
   {
     type: 'sz_js_on_click',
+    placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
     message0: 'Quando clicarem %1 %2',
     args0: [
       {
@@ -29,16 +32,20 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['na variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'meuBotao' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'meuBotao', kind: 'dom-target' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Executa os blocos de dentro quando clicarem no elemento escolhido.',
   },
   {
     type: 'sz_js_on_click_anywhere',
+    placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
     message0: 'Quando clicarem em qualquer lugar da tela',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -50,6 +57,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_mouseover',
+    placement: 'event',
+    eventObject: 'pointer',
     message0: 'Quando o mouse passar %1 %2',
     args0: [
       {
@@ -60,16 +69,19 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['sobre a variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'meuElemento' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'meuElemento', kind: 'dom-target' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Executa os blocos de dentro quando o ponteiro passar sobre o elemento escolhido.',
   },
   {
     type: 'sz_js_on_input',
+    placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando digitar %1 %2',
     args0: [
       {
@@ -80,16 +92,19 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['na variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'meuInput' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'meuInput', kind: 'dom-target' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Executa os blocos de dentro sempre que o conteúdo do campo mudar.',
   },
   {
     type: 'sz_js_on_submit',
+    placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando enviar %1 %2',
     args0: [
       {
@@ -100,16 +115,19 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['a variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'meuForm' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'meuForm', kind: 'dom-target' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip:
+      'Executa os blocos de dentro quando o formulário for enviado, sem recarregar a página.',
   },
   {
     type: 'sz_js_on_event_named',
+    placement: 'event',
     message0: 'quando %1 em %2 %3 chamar a função %4',
     args0: [
       {
@@ -119,8 +137,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['clicar', 'click'],
           ['passar o mouse', 'mouseover'],
           ['tirar o mouse', 'mouseout'],
-          ['apertar o mouse', 'mousedown'],
-          ['soltar o mouse', 'mouseup'],
+          ['apertar o mouse/dedo', 'pointerdown'],
+          ['soltar o mouse/dedo', 'pointerup'],
           ['enviar', 'submit'],
           ['digitar', 'input'],
           ['mudar', 'change'],
@@ -136,8 +154,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['a variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'meuBotao' },
-      { type: 'field_input', name: 'HANDLER', text: 'fazerAlgo' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'meuBotao', kind: 'dom-target' },
+      { type: 'field_name_picker', name: 'HANDLER', text: 'fazerAlgo', kind: 'function' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -148,6 +166,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_event_method',
+    placement: 'event-body',
     message0: 'no evento, %1',
     args0: [
       {
@@ -168,7 +187,11 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Eventos de teclado / mouse / janela (corpo embutido) ----
   {
     type: 'sz_js_on_key',
-    message0: 'Quando %1',
+    placement: 'event',
+    userGesture: { field: 'WHEN', equals: 'keydown' },
+    eventObject: 'keyboard',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando %1 %2 %3',
     args0: [
       {
         type: 'field_dropdown',
@@ -178,6 +201,17 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['soltar a tecla', 'keyup'],
         ],
       },
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na página', 'document'],
+          ['na janela', 'window'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'document', kind: 'dom-target' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -185,65 +219,122 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando qualquer tecla é apertada (ou solta). Dentro, use "o código da tecla do evento" para saber qual foi, ex.: se ( o código da tecla = "KeyW" ). Vira document.addEventListener("keydown", (event) => { ... }).',
+      'Roda os blocos de dentro quando uma tecla é apertada ou solta no alvo escolhido. Use o valor da tecla do evento para descobrir qual foi.',
   },
   {
     type: 'sz_js_on_mousemove',
-    message0: 'Quando mover o mouse/dedo',
+    placement: 'event',
+    eventObject: 'pointer',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando mover o mouse/dedo %1 %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na página', 'document'],
+          ['na janela', 'window'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'document', kind: 'dom-target' },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" toda vez que o mouse/dedo se move. Use "x do mouse/dedo" e "y do mouse/dedo" para a posição atual.',
+      'Roda o "fazer" quando o mouse/dedo se move no alvo escolhido. Use "x do mouse/dedo" e "y do mouse/dedo" para a posição atual.',
   },
   {
     type: 'sz_js_on_pointer_down',
-    message0: 'Quando apertar o mouse/dedo',
+    placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando apertar o mouse/dedo %1 %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na janela', 'window'],
+          ['na página', 'document'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'window', kind: 'dom-target' },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" no momento em que apertam o mouse (ou tocam a tela), em qualquer lugar. Ótimo para "segurar para carregar". Vira window.addEventListener("mousedown", (event) => { ... }).',
+      'Roda os blocos de dentro quando apertam o mouse ou tocam o alvo escolhido. É útil para ações de segurar.',
   },
   {
     type: 'sz_js_on_pointer_up',
-    message0: 'Quando soltar o mouse/dedo',
+    placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando soltar o mouse/dedo %1 %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na janela', 'window'],
+          ['na página', 'document'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'window', kind: 'dom-target' },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda o "fazer" no momento em que soltam o mouse (ou tiram o dedo da tela), em qualquer lugar. Vira window.addEventListener("mouseup", (event) => { ... }).',
+    tooltip: 'Roda os blocos de dentro quando soltam o mouse ou tiram o dedo do alvo escolhido.',
   },
   {
+    // Legado para abrir projetos antigos. O frame "Ao iniciar" já representa
+    // este momento e evita ensinar dois jeitos para o mesmo conceito.
     type: 'sz_js_on_load',
+    placement: 'legacy-start',
+    migration: 'unwrap-load',
+    eventObject: 'generic',
     message0: 'Quando a página terminar de carregar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda o "fazer" quando a página termina de carregar (tudo já pronto na tela). Vira window.addEventListener("load", (event) => { ... }).',
+    hidden: true,
+    tooltip: 'Abre projetos antigos que esperavam a página terminar de carregar.',
   },
   {
     type: 'sz_js_on_resize',
+    placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando a janela mudar de tamanho',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda o "fazer" quando a janela do navegador muda de tamanho. Vira window.addEventListener("resize", (event) => { ... }).',
+    tooltip: 'Roda os blocos de dentro quando a janela muda de tamanho.',
   },
   {
     type: 'sz_js_on_context_menu',
+    placement: 'event',
+    eventObject: 'pointer',
     message0: 'Quando abrir o menu do botão direito',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -251,10 +342,12 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando o menu do botão direito é aberto (útil para zerar o teclado no jogo). Vira window.addEventListener("contextmenu", (event) => { ... }).',
+      'Roda os blocos de dentro quando o menu do botão direito é aberto. É útil para pausar controles de um jogo.',
   },
   {
     type: 'sz_js_on_blur',
+    placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando a janela perder o foco',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -262,10 +355,13 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando a pessoa sai da janela do jogo (útil para zerar o teclado). Vira window.addEventListener("blur", (event) => { ... }).',
+      'Roda os blocos de dentro quando a pessoa sai da janela do jogo. É útil para soltar teclas que ficaram apertadas.',
   },
   {
     type: 'sz_js_element_onclick',
+    placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
     message0: 'ao clicar no elemento %1 %2 fazer %3',
     args0: [
       { type: 'input_value', name: 'TARGET', check: 'JSValue' },
@@ -275,11 +371,12 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda os blocos de dentro quando o elemento for clicado — ex.: um botão (o elemento com id "playBtn"). Vira elemento.onclick = () => { ... }.',
+    tooltip: 'Roda os blocos de dentro quando o elemento encaixado for clicado.',
   },
   {
     type: 'sz_js_on_fullscreen_change',
+    placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando a tela cheia mudar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -287,28 +384,30 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando a página entra OU sai da tela cheia (inclusive quando apertam ESC). Use junto de "está em tela cheia?" para trocar o ícone do botão. Vira document.addEventListener("fullscreenchange", (event) => { ... }).',
+      'Roda os blocos de dentro quando a página entra ou sai da tela cheia. Use com "está em tela cheia?" para atualizar um botão.',
   },
   // ---- Tela cheia (Fullscreen API) ----
   {
     type: 'sz_js_request_fullscreen',
+    placement: 'user-gesture-command',
     message0: 'entrar em tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Faz a página inteira ocupar a tela toda. Só funciona a partir de um clique ou tecla. Use dentro de um "Quando clicarem". Vira document.documentElement.requestFullscreen().',
+    tooltip: 'Faz a página inteira ocupar a tela. Use dentro de uma ação de clique ou tecla.',
   },
   {
     type: 'sz_js_exit_fullscreen',
+    placement: 'command',
     message0: 'sair da tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Volta do modo tela cheia para a janela normal. Vira document.exitFullscreen().',
+    tooltip: 'Volta do modo tela cheia para a janela normal.',
   },
   {
     type: 'sz_js_toggle_fullscreen',
+    placement: 'user-gesture-command',
     message0: 'alternar tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -327,6 +426,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Buscar elementos ----
   {
     type: 'sz_js_get_element_by_id',
+    placement: 'command',
     message0: 'Pegar elemento id %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'ID', text: 'meuBotao' },
@@ -344,8 +444,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'O elemento da página com esse id, como valor — ex.: pegar uma imagem (<img id="…">) para desenhar no canvas. Vira document.getElementById("id").',
+    tooltip: 'Pega o elemento que tem esse nome para encaixá-lo como valor em outro bloco.',
   },
   {
     type: 'sz_val_query_select',
@@ -365,10 +464,11 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Os elementos da página que casam com um seletor CSS, como valor — ex.: para percorrer com "para cada". Vira document.querySelectorAll("seletor") (ou querySelector para o primeiro).',
+      'Pega o primeiro elemento ou todos os elementos que combinam com a busca. A lista pode ser usada em "para cada".',
   },
   {
     type: 'sz_js_query_selector',
+    placement: 'command',
     message0: 'Pegar elemento via seletor %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
@@ -377,9 +477,11 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Procura o primeiro elemento que combina com a busca e guarda em uma variável.',
   },
   {
     type: 'sz_js_query_selector_all',
+    placement: 'command',
     message0: 'Pegar TODOS os elementos via seletor %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '.item' },
@@ -394,6 +496,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Ler/alterar conteúdo ----
   {
     type: 'sz_js_set_property_text',
+    placement: 'command',
     message0: 'Alterar %1 %2 %3 para %4',
     args0: [
       {
@@ -402,7 +505,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -413,7 +515,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
       { type: 'field_input', name: 'VALUE', text: 'Novo texto' },
     ],
     previousStatement: 'JSStmt',
@@ -424,6 +526,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_property',
+    placement: 'command',
     message0: 'alterar %1 %2 %3 para o valor %4',
     args0: [
       {
@@ -432,7 +535,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -443,18 +545,18 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Escreve uma propriedade do elemento com qualquer valor (texto montado, conta, etc.). Use "juntar texto" para montar HTML.',
+    tooltip: 'Mostra um texto ou preenche o valor de um campo usando o resultado de outro bloco.',
   },
   {
     type: 'sz_js_set_style',
+    placement: 'command',
     message0: 'Mudar o estilo %1 %2 %3 (ou %4) para %5',
     args0: [
       {
@@ -485,7 +587,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'caixa' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'caixa', kind: 'dom-target' },
       { type: 'field_input', name: 'CUSTOM', text: '' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
@@ -494,10 +596,11 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda UMA propriedade de estilo do elemento por código (ex.: position/left/top para posicionar, opacity/visibility para mostrar/esconder). Vira el.style.left = valor. Escreva no campo livre para um estilo fora da lista (ex.: animationDuration). Lembre da unidade ("120px").',
+      'Muda uma característica visual do elemento, como posição, tamanho ou transparência. Lembre da unidade em medidas, como 120px.',
   },
   {
     type: 'sz_js_set_style_text',
+    placement: 'command',
     message0: 'Definir o estilo completo %1 %2 como %3',
     args0: [
       {
@@ -508,18 +611,18 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'caixa' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'caixa', kind: 'dom-target' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Define VÁRIOS estilos de uma vez por uma string (ex.: "left: 10px; top: 20px; background: red;"). Vira el.style.cssText = valor.',
+    tooltip: 'Define várias características visuais de uma vez usando um texto de estilos.',
   },
   {
     type: 'sz_js_set_attribute',
+    placement: 'command',
     message0: 'Definir o atributo %1 %2 %3 como %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'stroke' },
@@ -531,18 +634,19 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'forma' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'forma', kind: 'dom-target' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Escreve um atributo do elemento por código (ex.: stroke/fill de um SVG, href, data-…). Vira el.setAttribute("nome", valor).',
+    tooltip: 'Muda uma característica segura do elemento, como stroke, fill, data- ou aria-.',
+    extensions: ['sz_safe_dom_attribute'],
   },
   {
     type: 'sz_js_set_property_var',
+    placement: 'command',
     message0: 'Alterar %1 %2 %3 para o valor da variável %4',
     args0: [
       {
@@ -551,7 +655,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -562,8 +665,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
-      { type: 'field_input', name: 'NAME', text: 'conteudo' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
+      { type: 'field_name_picker', name: 'NAME', text: 'conteudo', kind: 'variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -572,6 +675,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_property_calc',
+    placement: 'command',
     message0: 'Alterar %1 %2 %3 para %4',
     args0: [
       {
@@ -580,7 +684,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -591,7 +694,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
       {
         type: 'field_dropdown',
         name: 'CALC',
@@ -610,6 +713,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_get_property',
+    placement: 'command',
     message0: 'Pegar %1 %2 %3 e guardar em %4',
     args0: [
       {
@@ -618,7 +722,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -629,7 +732,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
       { type: 'field_input', name: 'NAME', text: 'conteudo' },
     ],
     previousStatement: 'JSStmt',
@@ -640,6 +743,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_get_attribute',
+    placement: 'command',
     message0: 'Pegar o atributo %1 %2 %3 e guardar em %4',
     args0: [
       { type: 'field_input', name: 'ATTR', text: 'cx' },
@@ -651,22 +755,22 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['da variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'forma' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'forma', kind: 'dom-target' },
       { type: 'field_input', name: 'NAME', text: 'valor' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Lê um atributo (ex.: cx, transform, fill) de um elemento por id ou variável e guarda numa variável. Vira el.getAttribute("nome").',
+    tooltip: 'Lê uma característica do elemento e guarda o resultado em uma variável.',
   },
   {
     // Legado: substituído por sz_js_set_property_text. Mantido (oculto da
     // paleta) para que projetos antigos salvos com este bloco ainda carreguem.
     type: 'sz_js_set_text',
+    placement: 'command',
     message0: 'Alterar texto do elemento id %1 para %2',
     args0: [
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
       { type: 'field_input', name: 'VALUE', text: 'Novo texto' },
     ],
     previousStatement: 'JSStmt',
@@ -677,6 +781,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Classes e dados ----
   {
     type: 'sz_js_class_op',
+    placement: 'command',
     message0: '%1 classe %2 %3 %4',
     args0: [
       {
@@ -698,14 +803,16 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['no elemento atual', 'this'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'meuElemento' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'meuElemento', kind: 'dom-target' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Adiciona, remove ou alterna uma classe visual do elemento escolhido.',
   },
   {
     type: 'sz_js_set_dataset',
+    placement: 'command',
     message0: 'no elemento %1 %2 guardar no dado %3 o valor %4',
     args0: [
       {
@@ -716,7 +823,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['variável', 'var'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'elemento' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'elemento', kind: 'dom-target' },
       { type: 'field_input', name: 'KEY', text: 'chave' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
@@ -729,6 +836,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Criar/inserir elementos ----
   {
     type: 'sz_js_create_element',
+    placement: 'command',
     message0: 'criar elemento %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'TAG', text: 'div' },
@@ -738,10 +846,12 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    extensions: ['sz_safe_dom_html_element'],
     tooltip: 'Cria um novo elemento HTML em memória e guarda numa variável.',
   },
   {
     type: 'sz_js_create_element_ns',
+    placement: 'command',
     message0: 'criar forma SVG %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'TAG', text: 'circle' },
@@ -751,15 +861,17 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    extensions: ['sz_safe_dom_svg_element'],
     tooltip:
-      'Cria uma forma SVG (circle, rect, line, path…) por código e guarda numa variável. Depois use "definir atributo" para configurar e "dentro de … adicionar" para colocar num <svg>. Vira document.createElementNS("http://www.w3.org/2000/svg", "tag").',
+      'Cria uma forma para um desenho SVG e guarda em uma variável. Depois configure seus atributos e adicione-a ao desenho.',
   },
   {
     type: 'sz_js_append_child',
+    placement: 'command',
     message0: 'dentro de %1 adicionar %2',
     args0: [
-      { type: 'field_input', name: 'PARENT', text: 'pai' },
-      { type: 'field_input', name: 'CHILD', text: 'filho' },
+      { type: 'field_name_picker', name: 'PARENT', text: 'pai', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CHILD', text: 'filho', kind: 'variable' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',

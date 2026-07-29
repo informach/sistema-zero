@@ -48,6 +48,8 @@ interface EnemyType {
 }
 
 interface Api {
+  onStart: (fn: () => void, id?: string) => void
+  restart: () => void
   createSprite: (opts: Record<string, unknown>) => Sprite
   createEnemyType: (opts: Record<string, unknown>) => EnemyType
   setEnemyStateAnimation: (
@@ -62,7 +64,7 @@ interface Api {
   spawnEnemy: (t: EnemyType, x: number, y: number) => Sprite | null
   updateEnemyType: (t: EnemyType, ctx: unknown, target: Sprite | null) => void
   drawEnemyType: (ctx: unknown, t: EnemyType) => void
-  onEnemyDefeated: (t: EnemyType, fn: (s: Sprite) => void) => void
+  onEnemyDefeated: (t: EnemyType, fn: (s: Sprite) => void, id?: string) => void
   overlapEnemyShots: (getSprite: () => Sprite, t: EnemyType, fn: (shot: Sprite) => void) => void
   enemyDamage: (s: unknown) => number
   hurtByEnemy: (s: Sprite, e: Sprite) => void
@@ -73,6 +75,9 @@ interface Api {
   forEachInGroup: (g: unknown, fn: (s: Sprite, i: number) => void) => void
   overlapSpriteGroup: (getSprite: () => Sprite, g: unknown, fn: (s: Sprite) => void) => void
   removeFromGroup: (g: unknown, s: Sprite) => void
+  setCamera: (x: number, y: number) => void
+  setGravity: (v: number) => void
+  platformer: (sprite: Sprite, ctx: unknown, speed?: number, jump?: number) => void
 }
 
 function load(): Api {
@@ -141,6 +146,23 @@ describe('createEnemyType / spawnEnemy', () => {
     expect(e?.x).toBe(100)
   })
 
+  it('tipo com FIGURA (defineShape): o inimigo nasce com a skin custom (figura vence imagem)', () => {
+    const api = load()
+    const withShape = api.createEnemyType({ behavior: 'patrulha', shape: 'pedra', image: 'foto' })
+    const enemy = api.spawnEnemy(withShape, 10, 10) as Sprite & {
+      skin?: { kind: string; shape: string }
+      image?: unknown
+    }
+    expect(enemy?.skin).toEqual({ kind: 'custom', shape: 'pedra' })
+    // setShape cancela a imagem ("uma coisa por vez") — a figura vence.
+    expect(enemy?.image ?? null).toBeNull()
+    // Sem figura: comportamento de sempre (cor/imagem), skin custom ausente.
+    const plain = api.spawnEnemy(api.createEnemyType({}), 0, 0) as Sprite & {
+      skin?: { kind: string }
+    }
+    expect(plain?.skin?.kind === 'custom').toBe(false)
+  })
+
   it('respeita o teto MAX_GROUP (400) sem lançar', () => {
     const api = load()
     const t = api.createEnemyType({})
@@ -167,9 +189,11 @@ describe('createEnemyType / spawnEnemy', () => {
 })
 
 describe('comportamentos', () => {
-  it('patrulha: anda, vira na borda da tela e vira quando o vx é zerado (parede)', () => {
+  it('patrulha (com gravidade): anda, vira na borda e cai no chão', () => {
     const api = load()
     const ctx = fakeCtx(200, 100)
+    // Mundo COM gravidade: a patrulha anda E cai no chão da tela.
+    api.setGravity(0.6)
     const t = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
     const e = api.spawnEnemy(t, 100, 84) as Sprite
     api.updateEnemyType(t, ctx, null)
@@ -185,6 +209,75 @@ describe('comportamentos', () => {
     // gravidade + chão do canvas
     expect(e.onGround).toBe(true)
     expect(e.y).toBe(100 - e.h)
+  })
+
+  it('patrulha (top-down, sem gravidade): patrulha na horizontal SEM afundar', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    // Mundo sem gravidade (top-down): o inimigo padrão NÃO cai até a borda.
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    const y0 = e.y
+    for (let i = 0; i < 30; i++) api.updateEnemyType(t, ctx, null)
+    expect(e.y).toBe(y0) // não afundou
+    expect(e.x).not.toBe(100) // andou na horizontal (patrulha)
+    expect(e.onGround).toBeUndefined() // sem chão num top-down
+  })
+
+  it('patrulha usa somente a gravidade declarada, sem herdar o modo do platformer', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    const hero = api.createSprite({ x: 20, y: 20, w: 16, h: 16 })
+    api.platformer(hero, ctx, 4, 11)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(e.y).toBe(40)
+    expect(e.onGround).toBeUndefined()
+
+    api.setGravity(0.6)
+    for (let i = 0; i < 30; i++) api.updateEnemyType(t, ctx, null)
+    expect(e.onGround).toBe(true)
+    expect(e.y).toBe(100 - e.h)
+  })
+
+  it('setGravity(0) desliga a queda da patrulha mesmo após usar platformer', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    api.platformer(api.createSprite({ x: 20, y: 20, w: 16, h: 16 }), ctx, 4, 11)
+    api.setGravity(0)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 0 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+
+    api.updateEnemyType(t, ctx, null)
+
+    expect(e.y).toBe(40)
+    expect(e.vy).toBe(0)
+    expect(e.onGround).toBeUndefined()
+  })
+
+  it('gravidade negativa ancora inimigos terrestres no teto e inverte o pulo', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    api.setGravity(-1)
+    const patrolType = api.createEnemyType({ behavior: 'patrulha', speed: 0 })
+    const patrol = api.spawnEnemy(patrolType, 20, 10) as Sprite
+    const jumperType = api.createEnemyType({ behavior: 'saltador', speed: 0 })
+    api.setEnemyTypeParam(jumperType, 'ritmo', 3)
+    api.setEnemyTypeParam(jumperType, 'pulo', 9)
+    const jumper = api.spawnEnemy(jumperType, 60, 0) as Sprite
+
+    for (let i = 0; i < 10; i++) api.updateEnemyType(patrolType, ctx, null)
+    api.updateEnemyType(jumperType, ctx, null)
+    api.updateEnemyType(jumperType, ctx, null)
+    api.updateEnemyType(jumperType, ctx, null)
+
+    expect(patrol.y).toBe(0)
+    expect(patrol.vy).toBe(0)
+    expect(patrol.onGround).toBe(true)
+    expect(jumper.y).toBe(0)
+    expect(jumper.vy).toBe(9)
+    expect(jumper.onGround).toBe(false)
   })
 
   it('perseguidor: reduz a distância até o alvo gravando vx/vy', () => {
@@ -298,6 +391,26 @@ describe('comportamentos', () => {
     api.updateEnemyType(t, ctx, target)
     expect(t.bullets.items.includes(shot)).toBe(false)
   })
+
+  it('usa os limites visíveis do mundo para chão, patrulha e tiros com câmera', () => {
+    const api = load()
+    const ctx = fakeCtx(320, 240)
+    api.setCamera(1000, 500)
+    api.setGravity(0.6) // mundo com gravidade: a patrulha cai no chão visível
+
+    const patrol = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
+    const walker = api.spawnEnemy(patrol, 1050, 708) as Sprite
+    api.updateEnemyType(patrol, ctx, null)
+    expect(walker.vx).toBe(4)
+    expect(walker.y).toBe(500 + 240 - walker.h)
+
+    const shooter = api.createEnemyType({ behavior: 'atirador' })
+    api.setEnemyTypeParam(shooter, 'cadencia', 1)
+    api.spawnEnemy(shooter, 1050, 708)
+    const target = api.createSprite({ x: 1100, y: 700, w: 20, h: 20 })
+    api.updateEnemyType(shooter, ctx, target)
+    expect(shooter.bullets.items).toHaveLength(1)
+  })
 })
 
 describe('morte e dano', () => {
@@ -314,17 +427,75 @@ describe('morte e dano', () => {
     expect(defeated).toEqual([e])
   })
 
-  it('callback que lança não derruba o update (console.error)', () => {
+  it('compõe callbacks de derrota e desativa somente o callback defeituoso', () => {
     const api = load()
     const ctx = fakeCtx()
     const t = api.createEnemyType({ hp: 1 })
-    const e = api.spawnEnemy(t, 0, 0) as Sprite
-    api.onEnemyDefeated(t, () => {
-      throw new Error('boom')
-    })
-    api.changeHealth(e, -1)
-    expect(() => api.updateEnemyType(t, ctx, null)).not.toThrow()
-    expect(t.items.length).toBe(0)
+    const original = console.error
+    const messages: unknown[][] = []
+    let broken = 0
+    const healthy: Sprite[] = []
+    console.error = (...args: unknown[]) => messages.push(args)
+    try {
+      api.onEnemyDefeated(
+        t,
+        () => {
+          broken += 1
+          throw new Error('boom')
+        },
+        'derrota-com-erro',
+      )
+      api.onEnemyDefeated(t, (enemy) => healthy.push(enemy), 'derrota-saudavel')
+
+      const first = api.spawnEnemy(t, 0, 0) as Sprite
+      api.changeHealth(first, -1)
+      expect(() => api.updateEnemyType(t, ctx, null)).not.toThrow()
+
+      const second = api.spawnEnemy(t, 0, 0) as Sprite
+      api.changeHealth(second, -1)
+      expect(() => api.updateEnemyType(t, ctx, null)).not.toThrow()
+    } finally {
+      console.error = original
+    }
+
+    expect(broken).toBe(1)
+    expect(healthy).toHaveLength(2)
+    expect(messages).toHaveLength(1)
+    expect(t.items).toHaveLength(0)
+  })
+
+  it('interrompe os callbacks de derrota quando um deles reinicia a partida', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    let starts = 0
+    let currentType = api.createEnemyType({ hp: 1 })
+    let shouldRestart = true
+    const secondDefeatRuns: number[] = []
+
+    api.onStart(() => {
+      const run = ++starts
+      const type = api.createEnemyType({ hp: 1 })
+      currentType = type
+      api.onEnemyDefeated(
+        type,
+        () => {
+          if (!shouldRestart) return
+          shouldRestart = false
+          api.restart()
+        },
+        'primeira-derrota',
+      )
+      api.onEnemyDefeated(type, () => secondDefeatRuns.push(run), 'segunda-derrota')
+      api.spawnEnemy(type, 0, 0)
+    }, 'inicio')
+
+    const defeatedEnemy = currentType.items[0]
+    if (!defeatedEnemy) throw new Error('O inimigo do cenário de regressão não foi criado.')
+    defeatedEnemy.hp = 0
+    api.updateEnemyType(currentType, ctx, null)
+
+    expect(starts).toBe(2)
+    expect(secondDefeatRuns).toEqual([])
   })
 
   it('hurtByEnemy: tira o dano do inimigo, pisca e dá i-frames', () => {
@@ -428,9 +599,13 @@ describe('avisos pedagógicos (tipo sem spawn / criar dentro do laço)', () => {
       const api = load()
       const ctx = fakeCtx()
       const t = api.createEnemyType({ behavior: 'perseguidor' })
-      api.updateEnemyType(t, ctx, null)
-      api.drawEnemyType(ctx, t)
-      api.updateEnemyType(t, ctx, null)
+      // O aviso tem GRAÇA (~6s) p/ jogos de ONDA soltarem o 1º inimigo antes de
+      // acusar esquecimento; roda update+draw além do limite (720 chamadas) p/
+      // exercitar o esquecimento REAL. Segue avisando UMA vez só.
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t, ctx, null)
+        api.drawEnemyType(ctx, t)
+      }
       expect(warn).toHaveBeenCalledTimes(1)
       expect(String(warn.mock.calls[0]?.[0])).toContain('Soltar um inimigo do tipo')
       // Outro tipo que JÁ nasce com spawn não deve gerar aviso novo.

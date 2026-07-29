@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { parseJS } from '../../parsers/js'
@@ -16,7 +17,7 @@ function jsBlockCycle(jsIR: unknown[]): any[] {
   const state = buildWorkspaceStateFromIR(ir as Parameters<typeof buildWorkspaceStateFromIR>[0])
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-  return buildIRFromWorkspace(ws).js as any[]
+  return behaviorStatements(buildIRFromWorkspace(ws)) as any[]
 }
 
 describe('Fase 4 — throw / Object.assign / cssText / sign / map / switch', () => {
@@ -86,6 +87,7 @@ describe('Fase 4 — throw / Object.assign / cssText / sign / map / switch', () 
         subject: { type: 'var', name: 'dir' },
         cases: [
           {
+            __id: 'case-cima',
             match: { type: 'str', value: 'cima' },
             body: [
               {
@@ -109,6 +111,7 @@ describe('Fase 4 — throw / Object.assign / cssText / sign / map / switch', () 
     const sw = out.find((e) => e.type === 'switch')
     expect(sw).toBeTruthy()
     expect(sw.cases.length).toBe(1)
+    expect(sw.cases[0].__id).toBe('case-cima')
     expect(sw.cases[0].match.value).toBe('cima')
     expect(sw.default.length).toBe(1)
   })

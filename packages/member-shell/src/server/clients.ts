@@ -317,8 +317,9 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
   )
   // Recados (conversas com o professor) — caixa de entrada + contador do sino.
   const teacherThreadsReadonlyCached = cache(
-    (): Promise<GatewayResponse<{ threads: TeacherThreadSummaryView[] }>> =>
-      gw.gatewayFetchReadonly('/members/teacher-threads', { query: { audience } }),
+    (): Promise<
+      GatewayResponse<{ threads: TeacherThreadSummaryView[]; nextOffset: number | null }>
+    > => gw.gatewayFetchReadonly('/members/teacher-threads', { query: { audience } }),
   )
   const teacherThreadsUnreadReadonlyCached = cache(
     (): Promise<GatewayResponse<{ count: number }>> =>
@@ -550,6 +551,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      */
     listAvatarsByProfileIds(ids: string[]): Promise<GatewayResponse<AvatarsBatchView>> {
       return gw.gatewayFetch('/members/avatars', { query: { ids: ids.join(','), audience } })
+    },
+    /**
+     * Variante SEM refresh/escrita de cookie — Server Components (a grade `/perfis`
+     * do kids pinta os rostinhos com o SNAPSHOT do avatar 3D, decisão 24/07: a cara
+     * da criança vem exclusivamente do avatar, nunca de foto enviada).
+     */
+    listAvatarsByProfileIdsReadonly(ids: string[]): Promise<GatewayResponse<AvatarsBatchView>> {
+      return gw.gatewayFetchReadonly('/members/avatars', {
+        query: { ids: ids.join(','), audience },
+      })
     },
 
     // ── Quarto virtual ──────────────────────────────────────────────────────
@@ -939,12 +950,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
 
     // ── Recados (conversas com o professor — canal de retorno) ────────────────
     /** Caixa de entrada do aluno (Route Handler). */
-    listTeacherThreads(): Promise<GatewayResponse<{ threads: TeacherThreadSummaryView[] }>> {
-      return gw.gatewayFetch('/members/teacher-threads', { query: { audience } })
+    listTeacherThreads(
+      params: { limit?: number; offset?: number } = {},
+    ): Promise<
+      GatewayResponse<{ threads: TeacherThreadSummaryView[]; nextOffset: number | null }>
+    > {
+      return gw.gatewayFetch('/members/teacher-threads', { query: { audience, ...params } })
     },
     /** Caixa de entrada do aluno (Server Component). */
     listTeacherThreadsReadonly(): Promise<
-      GatewayResponse<{ threads: TeacherThreadSummaryView[] }>
+      GatewayResponse<{ threads: TeacherThreadSummaryView[]; nextOffset: number | null }>
     > {
       return teacherThreadsReadonlyCached()
     },
@@ -957,8 +972,13 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return teacherThreadsUnreadReadonlyCached()
     },
     /** Uma conversa (cabeçalho + turnos). */
-    getTeacherThread(threadId: string): Promise<GatewayResponse<TeacherThreadView>> {
-      return gw.gatewayFetch(`/members/teacher-threads/${enc(threadId)}`, { query: { audience } })
+    getTeacherThread(
+      threadId: string,
+      before?: string,
+    ): Promise<GatewayResponse<TeacherThreadView>> {
+      return gw.gatewayFetch(`/members/teacher-threads/${enc(threadId)}`, {
+        query: { audience, before },
+      })
     },
     /** Aluno responde a uma conversa sua (devolve a conversa atualizada). */
     postTeacherMessage(
@@ -1174,6 +1194,8 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       description: string
       playId: string
       clientIdempotencyKey: string
+      /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
+      studioMeta?: { pro: boolean; extensions: string[] } | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio', { method: 'POST', body })
     },
@@ -1192,6 +1214,8 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       clientIdempotencyKey: string
       /** Tag do Desafio do mês — o hub valida (posse + mês) com drop silencioso. */
       challengeKey?: string | null
+      /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
+      studioMeta?: { pro: boolean; extensions: string[] } | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio-standalone', {
         method: 'POST',

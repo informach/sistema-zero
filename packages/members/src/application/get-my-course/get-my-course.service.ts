@@ -28,6 +28,7 @@ export class GetMyCourseService {
       accountId ?? userId,
       courseSlug,
       privileged,
+      userId,
     )
     // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
     const [outline, completedIds, last, lastAccessed, myRating] = await Promise.all([

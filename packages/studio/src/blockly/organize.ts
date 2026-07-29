@@ -1,27 +1,25 @@
 import * as Blockly from 'blockly/core'
+import { areaForBlockType, type ProjectAreaKind } from './blockContracts'
 
 /** Espaço inicial e folgas (em px de workspace) do layout em colunas. */
 const START_X = 32
 const START_Y = 32
 const GAP_X = 48
 const GAP_Y = 24
+const ROW_GAP = 64
 
-type Category = 'html' | 'css' | 'js'
-
-/** Ordem das colunas, da esquerda para a direita. */
-const COLUMN_ORDER: readonly Category[] = ['html', 'css', 'js']
+const ROWS: readonly (readonly ProjectAreaKind[])[] = [
+  ['structure', 'appearance'],
+  ['start', 'events', 'loops'],
+]
 
 /** Classifica um bloco top-level pela categoria a partir do seu tipo. */
-function categoryOf(type: string): Category {
-  // Os 3 blocos-CONTAINER vão para a coluna da sua categoria → Estrutura | Aparência
-  // | Comportamento ficam lado a lado (HTML | CSS | JS), nessa ordem.
-  if (type === 'sz_frame_structure') return 'html'
-  if (type === 'sz_frame_appearance') return 'css'
-  if (type === 'sz_frame_behavior') return 'js'
-  if (type.startsWith('sz_html_') || type === 'sz_adv_raw_html') return 'html'
-  if (type.startsWith('sz_css_') || type === 'sz_adv_raw_css') return 'css'
-  // JS, Canvas, extensões e o "código avançado JS" caem na coluna de JS.
-  return 'js'
+function categoryOf(type: string): ProjectAreaKind {
+  const registered = areaForBlockType(type)
+  if (registered) return registered
+  if (type.startsWith('sz_html_') || type === 'sz_adv_raw_html') return 'structure'
+  if (type.startsWith('sz_css_') || type === 'sz_adv_raw_css') return 'appearance'
+  return 'start'
 }
 
 /**
@@ -44,7 +42,13 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
   // Em workspace headless (testes) os blocos não têm geometria — nada a fazer.
   if (typeof tops[0]?.getBoundingRectangle !== 'function') return
 
-  const groups: Record<Category, Blockly.BlockSvg[]> = { html: [], css: [], js: [] }
+  const groups: Record<ProjectAreaKind, Blockly.BlockSvg[]> = {
+    structure: [],
+    appearance: [],
+    start: [],
+    events: [],
+    loops: [],
+  }
   for (const top of tops) {
     groups[categoryOf(top.type)].push(top)
   }
@@ -56,27 +60,31 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
   const canToggleResizes = ws.setResizesEnabled != null
   try {
     if (canToggleResizes) ws.setResizesEnabled(false)
-    let runningX = START_X
-    for (const category of COLUMN_ORDER) {
-      const group = groups[category]
-      if (group.length === 0) continue
-      // O bloco-CONTAINER (frame) fica no topo da coluna; rascunhos soltos da mesma
-      // categoria descem abaixo dele.
-      group.sort(
-        (a, b) => Number(b.type.startsWith('sz_frame_')) - Number(a.type.startsWith('sz_frame_')),
-      )
-      let y = START_Y
-      let colWidth = 0
-      for (const top of group) {
-        const rect = top.getBoundingRectangle()
-        const width = rect.right - rect.left
-        const height = rect.bottom - rect.top
-        const current = top.getRelativeToSurfaceXY()
-        top.moveBy(runningX - current.x, y - current.y)
-        colWidth = Math.max(colWidth, width)
-        y += height + GAP_Y
+    let rowY = START_Y
+    for (const row of ROWS) {
+      let runningX = START_X
+      let rowHeight = 0
+      for (const category of row) {
+        const group = groups[category]
+        if (group.length === 0) continue
+        group.sort(
+          (a, b) => Number(b.type.startsWith('sz_frame_')) - Number(a.type.startsWith('sz_frame_')),
+        )
+        let y = rowY
+        let colWidth = 0
+        for (const top of group) {
+          const rect = top.getBoundingRectangle()
+          const width = rect.right - rect.left
+          const height = rect.bottom - rect.top
+          const current = top.getRelativeToSurfaceXY()
+          top.moveBy(runningX - current.x, y - current.y)
+          colWidth = Math.max(colWidth, width)
+          y += height + GAP_Y
+        }
+        rowHeight = Math.max(rowHeight, y - rowY - GAP_Y)
+        runningX += colWidth + GAP_X
       }
-      runningX += colWidth + GAP_X
+      if (rowHeight > 0) rowY += rowHeight + ROW_GAP
     }
   } finally {
     if (canToggleResizes) ws.setResizesEnabled(true)

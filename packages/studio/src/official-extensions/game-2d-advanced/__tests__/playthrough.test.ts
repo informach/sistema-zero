@@ -1,6 +1,18 @@
 import { afterAll, afterEach, describe, expect, it } from 'bun:test'
-import { compileStatements } from '#generators'
-import { vilaDoDragaoExample } from '../examples'
+import { generateJS } from '#generators'
+import {
+  aventuraProfissionalExample,
+  batalhaProfissionalExample,
+  chuvaProfissionalExample,
+  dueloDeHeroisProfissionalExample,
+  escaladaProfissionalExample,
+  muralhaProfissionalExample,
+  portasDoCasteloProfissionalExample,
+  treinadorDeCriaturasExample,
+  valeEnsolaradoExample,
+  vilaDoDragaoExample,
+  vilaNinjaExample,
+} from '../examples'
 import { gameKitRuntime } from '../runtime'
 
 /**
@@ -83,8 +95,10 @@ type Fn = (...args: unknown[]) => unknown
 interface Api {
   setup: Fn
   start: Fn
+  runProject: (factory: () => void) => void
   state: () => string
   setState: Fn
+  restartGame: Fn
   onDraw: Fn
   pkmCreature: Fn
   pkmMove: Fn
@@ -92,6 +106,10 @@ interface Api {
   pkmGive: Fn
   pkmBattleWild: Fn
   pkmTeamSize: () => number
+  pkmBallCount: () => number
+  pkmCaught: () => boolean
+  missionKill: Fn
+  tileAt: (map: string, x: number, y: number) => number
   flashScreen: Fn
   createCharacter: Fn
   placeCharacter: Fn
@@ -123,9 +141,9 @@ interface Api {
   lutaWinsOf: (c: unknown) => number
   lutaSpecialOf: (c: unknown) => number
   onUpdate: Fn
-  rpgOnMap: Fn
+  rpgCreateMap: Fn
+  rpgOnEnterMap: Fn
   rpgGoMap: Fn
-  rpgMapSize: Fn
   rpgConnectEdge: Fn
   rpgCurrentMap: () => string
   rpgMoveGrid: Fn
@@ -189,19 +207,22 @@ interface Api {
   overlapGroups: Fn
   hurt: Fn
   isDead: (c: unknown) => boolean
+  // 🧗 Escalada do Guerreiro — câmera que segue no mundo alto + checkpoint
+  cameraFollow: Fn
+  cameraX: () => number
+  cameraY: () => number
+  setCheckpoint: Fn
+  respawn: Fn
   drawActive: Fn
-  _battle?: () => {
-    phase: string
-    menuOpen: boolean
-    menuIndex: number
-    menuLabels: string[]
-    allies: Array<{ energy: number }>
-    foes: Array<{ hp: number }>
-  } | null
+  // 🌄 Vale Ensolarado — coleta por toque + efeito
+  touching: (a: unknown, b: unknown) => boolean
+  defineEffect: Fn
 }
 
 interface Harness {
   api: Api
+  window: Record<string, unknown>
+  inspectors: Record<string, () => unknown>
   fire: (name: string, ev?: unknown) => void
   nextFrame: (ts: number) => void
   storage: Map<string, string>
@@ -212,7 +233,9 @@ function loadRuntime(): Harness {
   const rafQueue: Array<(ts: number) => void> = []
   const clock = { value: 0 }
   const storage = new Map<string, string>()
+  const inspectors: Record<string, () => unknown> = {}
   const win = {
+    __SZSTUDIO_RUNTIME_INSPECTORS: inspectors,
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
       listeners[name].push(fn)
@@ -236,6 +259,8 @@ function loadRuntime(): Harness {
   if (!api) throw new Error('runtime não montou window.SZGameKit')
   return {
     api,
+    window: win,
+    inspectors,
     fire: (name, ev = {}) => {
       for (const fn of listeners[name] ?? []) fn(ev)
     },
@@ -253,6 +278,10 @@ async function startGame(h: Harness): Promise<void> {
   h.api.start()
   await Promise.resolve()
   await Promise.resolve()
+}
+
+function inspectBattle<T>(h: Harness): T | null {
+  return (h.inspectors['game-2d-advanced:battle']?.() as T | null | undefined) ?? null
 }
 
 // Cada loadRuntime cria um runtime NOVO, mas todos compartilham o `document`
@@ -282,7 +311,7 @@ async function mundoDoDesmaio(h: Harness) {
   h.api.pkmTypeChart('fogo', 'planta', 2)
   h.api.pkmTypeChart('planta', 'fogo', 0.5)
   await startGame(h)
-  h.api.setState('jogando')
+  h.api.restartGame()
 }
 
 /**
@@ -324,7 +353,7 @@ describe('gk — JOGAR a batalha do Kit Monstrinhos até o fim (não só abrir)'
     h.api.pkmCreature('Meu', 'normal', 30, 8, 3, 9, '', '')
     h.api.pkmMove('Tapa', 'Meu', 'normal', 12, 100, 'investida', '#999')
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     h.api.pkmGive('Meu', 5)
     h.api.pkmBattleWild('Mudo', 3)
 
@@ -338,7 +367,7 @@ describe('gk — JOGAR a batalha do Kit Monstrinhos até o fim (não só abrir)'
     const h = loadRuntime()
     h.api.setup({ width: 960, height: 540, background: '#222' })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
 
     // É a chamada exata que o pkmBattleWild faz ao abrir toda batalha.
     h.api.flashScreen('#ffffff', 2)
@@ -364,17 +393,18 @@ describe('gk — JOGAR a batalha do Kit Monstrinhos até o fim (não só abrir)'
     h.api.pkmMove('Chicote', 'Folhinha', 'planta', 10, 100, 'onda', '#0a0')
     const heroi = h.api.createCharacter({ w: 40, h: 48, speed: 200, color: '#00f' }) as object
     // É a FORMA do exemplo oficial: grama e tabela declaradas DENTRO do mapa…
-    h.api.rpgOnMap('quintal', () => {
+    h.api.rpgCreateMap('quintal', 10, 10, () => {})
+    h.api.rpgCreateMap('caverna', 10, 10, () => {})
+    h.api.rpgOnEnterMap('quintal', () => {
       h.api.pkmGrassCells(0, 0, 8, 8)
       h.api.pkmWild('Folhinha', 3, 6)
     })
     // …e a caverna NÃO tem grama nem bicho nenhum.
-    h.api.rpgOnMap('caverna', () => {})
     h.api.pkmEncounterRate(100) // encontro garantido: o teste fica determinístico
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando')
-    // ⚠️ DEPOIS do setState (que zera o time) e obrigatório: sem monstrinho em pé o
+    h.api.restartGame()
+    // ⚠️ DEPOIS do restartGame (que zera o time) e obrigatório: sem monstrinho em pé o
     // pkmBattleWild aborta ANTES de olhar a grama — e o teste passaria à toa.
     h.api.pkmGive('Folhinha', 5)
 
@@ -554,7 +584,7 @@ describe('gk — JOGAR uma luta inteira do Kit Luta (a lição do R17)', () => {
     expect(h.api.state()).toBe('fim')
     // ⚠️ TODO global de jogo entra no reset do setState. Sem isso a luta anterior
     // sobrevive e "Jogar de novo" abre já decidida.
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.lutaRoundNow()).toBe(0) // 0 = nenhuma luta declarada
     expect(h.api.lutaWinner()).toBe('')
   })
@@ -926,7 +956,7 @@ describe('gk — JOGAR uma invasão inteira do 🚀 Kit Nave (a lição do R17)'
     h.api.navePowerup(nave, 'metralhadora', 99)
     expect(h.api.navePowerOf(nave)).toBe('metralhadora')
     h.api.setState('menu')
-    h.api.setState('jogando') // recomeço de verdade
+    h.api.restartGame()
     expect(h.api.countActive('ovni')).toBe(0) // o releaseAll recolheu o enxame
     expect(h.api.navePowerOf(nave)).toBe('normal') // o poder não sobrevive
     for (let i = 1; i <= 3; i++) h.nextFrame(i * 50)
@@ -1122,11 +1152,13 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     h.api.setup({ width: 960, height: 640 })
     h.api.rpgBattleStats(60, 50, 10)
     const heroi = h.api.createCharacter({ w: 48, h: 48, speed: 640, color: '#2b6cb0' }) as Heroi
-    h.api.rpgOnMap('vila', () => {
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
+    h.api.rpgCreateMap('salao', 10, 10, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
       h.api.placeCharacter(heroi, h.api.rpgCell(1), h.api.rpgCell(2))
       h.api.rpgCreateNpc('guarda', 3, 2, '', '')
     })
-    h.api.rpgOnMap('salao', () => {
+    h.api.rpgOnEnterMap('salao', () => {
       h.api.placeCharacter(heroi, h.api.rpgCell(1), h.api.rpgCell(2))
       h.api.rpgCreateNpc('chefe', 2, 2, '', '')
     })
@@ -1143,7 +1175,7 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     })
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando') // rpgNewGame vai ao 1º mapa (vila) e posiciona
+    h.api.restartGame() // a nova partida vai ao mapa inicial e posiciona
     return heroi
   }
   function segura(h: Harness, key: string, n: number, from: number): number {
@@ -1245,8 +1277,11 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
 
   it('⭐ Vila do Dragão EXATA: vila → ferreiro → chave → porta → caverna → vitória → novo jogo', async () => {
     const h = loadRuntime()
-    const code = compileStatements(vilaDoDragaoExample.ir.js, 0)
-    new Function('SZGameKit', code)(h.api)
+    const code = generateJS({
+      behavior: vilaDoDragaoExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
     await Promise.resolve()
     await Promise.resolve()
 
@@ -1272,19 +1307,29 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
       return JSON.parse(raw) as { map: string; hx: number; hy: number }
     }
 
-    h.api.setState('jogando')
+    h.api.restartGame()
     frame() // o primeiro onUpdate registra o personagem como herói do RPG
     expect(h.api.rpgCurrentMap()).toBe('vila')
     expect(savedPosition()).toMatchObject({ map: 'vila', hx: 2, hy: 2 })
 
-    // Termina a abertura, vira para o ferreiro e percorre a conversa da missão.
+    // A vila precisa se explicar visualmente antes de qualquer ação secreta.
+    rects = []
+    texts = []
+    frame()
+    expect(rects.some((item) => item.fill === '#5c7f45')).toBe(true)
+    expect(texts.some((item) => item.text === 'VILA DO DRAGÃO')).toBe(true)
+    expect(texts.some((item) => item.text === 'Objetivo: ouça o Ferreiro')).toBe(true)
+
+    // Termina a abertura. A conversa que a pessoa já viu ENTREGA a missão:
+    // não existe uma segunda interação invisível com o ferreiro.
     for (let i = 0; i < 32; i++) tap(' ')
-    moveCell('ArrowRight')
-    for (let i = 0; i < 16 && !h.api.rpgHasItem('chave'); i++) tap(' ')
     expect(h.api.rpgHasFlag('aceitou-missao')).toBe(true)
     expect(h.api.rpgHasItem('chave')).toBe(true)
-    // Duas falas: completar + avançar cada linha.
-    for (let i = 0; i < 4; i++) tap(' ')
+    rects = []
+    texts = []
+    frame()
+    expect(texts.some((item) => item.text === 'Objetivo: entre na caverna')).toBe(true)
+    expect(texts.some((item) => item.text === 'PORTA DA CAVERNA')).toBe(true)
 
     // Caminho real até a porta criada em (9,6), sem chamar rpgGoMap no teste.
     for (let i = 0; i < 4; i++) moveCell('ArrowDown')
@@ -1294,6 +1339,12 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     }
     expect(h.api.rpgCurrentMap()).toBe('caverna')
     expect(savedPosition()).toMatchObject({ map: 'caverna', hx: 1, hy: 5 })
+    rects = []
+    texts = []
+    frame()
+    expect(rects.some((item) => item.fill === '#17131f')).toBe(true)
+    expect(texts.some((item) => item.text === 'CAVERNA DO DRAGÃO')).toBe(true)
+    expect(texts.some((item) => item.text === 'ESPAÇO: enfrentar o Dragão')).toBe(true)
 
     // Encosta no dragão em (8,2), conversa e abre a batalha do fixture exato.
     for (let i = 0; i < 3; i++) moveCell('ArrowUp')
@@ -1303,7 +1354,12 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     advance(8)
     expect(h.api.state()).toBe('batalha')
 
-    const battle = () => h.api._battle?.() ?? null
+    const battle = () =>
+      inspectBattle<{
+        menuOpen: boolean
+        menuLabels: string[]
+        allies: Array<{ energy: number }>
+      }>(h)
     const waitForMenu = () => {
       for (let i = 0; i < 30 && h.api.state() === 'batalha'; i++) {
         if (battle()?.menuOpen) return
@@ -1335,13 +1391,13 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     expect(h.api.rpgLevel()).toBe(2)
 
     // O botão "Jogar de novo" realiza esta transição e deve zerar tudo.
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.rpgCurrentMap()).toBe('vila')
     expect(h.api.rpgHasItem('chave')).toBe(false)
     expect(h.api.rpgHasFlag('aceitou-missao')).toBe(false)
     expect(h.api.rpgLevel()).toBe(1)
     expect(h.api.rpgXp()).toBe(0)
-    expect(h.api._battle?.()).toBeNull()
+    expect(inspectBattle(h)).toBeNull()
   })
 })
 
@@ -1352,7 +1408,7 @@ describe('gk — ⚔️ JOGAR a batalha em EQUIPE (aliados + vários inimigos)',
     foes: Array<{ name: string; alive: boolean }>
   }
   function snap(h: Harness): BattleSnap | null {
-    return (h.api as unknown as { _battle: () => BattleSnap | null })._battle()
+    return inspectBattle<BattleSnap>(h)
   }
 
   it('⭐ o time (herói + aliado) derrota DOIS inimigos e a vitória dá XP', async () => {
@@ -1422,19 +1478,19 @@ describe('gk — 🌍 ATRAVESSAR as bordas do mundo aberto (mapas ligados)', () 
   async function mundoAberto(h: Harness): Promise<Heroi> {
     h.api.setup({ width: 960, height: 640 })
     const heroi = h.api.createCharacter({ w: 48, h: 48, speed: 640, color: '#2b6cb0' }) as Heroi
-    h.api.rpgOnMap('campo', () => {
-      h.api.rpgMapSize(6, 5)
+    h.api.rpgCreateMap('campo', 6, 5, () => {})
+    h.api.rpgCreateMap('praia', 6, 5, () => {})
+    h.api.rpgOnEnterMap('campo', () => {
       h.api.rpgConnectEdge('leste', 'praia')
       h.api.placeCharacter(heroi, h.api.rpgCell(4), h.api.rpgCell(2))
     })
-    h.api.rpgOnMap('praia', () => {
-      h.api.rpgMapSize(6, 5)
+    h.api.rpgOnEnterMap('praia', () => {
       h.api.rpgConnectEdge('oeste', 'campo')
       h.api.placeCharacter(heroi, h.api.rpgCell(4), h.api.rpgCell(4)) // LONGE da borda
     })
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando') // vai ao 1º mapa (campo)
+    h.api.restartGame() // vai ao mapa inicial (campo)
     return heroi
   }
   function segura(h: Harness, key: string, n: number, from: number): number {
@@ -1491,13 +1547,13 @@ describe('gk — 🌍 ATRAVESSAR as bordas do mundo aberto (mapas ligados)', () 
       x: number
       y: number
     }
-    h.api.rpgOnMap('ilha', () => {
-      h.api.rpgMapSize(6, 5)
+    h.api.rpgCreateMap('ilha', 6, 5, () => {})
+    h.api.rpgOnEnterMap('ilha', () => {
       h.api.placeCharacter(heroi, h.api.rpgCell(5), h.api.rpgCell(2))
     })
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     let eventos = 0
     h.api.on('mapa:ilha', () => {
       eventos += 1
@@ -1532,7 +1588,7 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
       h.api.pathPoint(1000, 200)
     })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
   }
 
   function vivos(h: Harness, mold: string): Inv[] {
@@ -1584,6 +1640,57 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
     expect(h.api.countActive('torre')).toBe(1)
     expect(h.api.tdCoins()).toBe(50) // pagou 50
     clickAt(300, 220) // lugar ocupado → nada
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50)
+  })
+
+  it('um clique executa uma única compra mesmo se o evento foi duplicado', async () => {
+    const h = loadRuntime()
+    await arenaTd(h)
+    h.api.tdSetCoins(100)
+    h.api.tdSlot(300, 220, 60)
+    let primeira = 0
+    let segunda = 0
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.join(' '))
+    try {
+      h.api.tdOnBuy(50, () => {
+        primeira += 1
+      })
+      h.api.tdOnBuy(25, () => {
+        segunda += 1
+      })
+      clickAt(300, 220)
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect({ primeira, segunda, moedas: h.api.tdCoins() }).toEqual({
+      primeira: 1,
+      segunda: 0,
+      moedas: 50,
+    })
+    expect(warnings.some((warning) => warning.includes('um bloco'))).toBe(true)
+  })
+
+  it('runProject recria os registros de torre sem duplicar slots nem compras', async () => {
+    const h = loadRuntime()
+
+    h.api.runProject(() => {
+      h.api.setup({ width: 960, height: 540 })
+      h.api.defineMold('torre', { w: 40, h: 40, health: 1, color: '#4a9eff' })
+      h.api.tdSetCoins(100)
+      h.api.tdSlot(300, 220, 60)
+      h.api.tdOnBuy(50, (lugarX: unknown, lugarY: unknown) => {
+        h.api.spawnFromMold('torre', (lugarX as number) - 20, (lugarY as number) - 20)
+      })
+    })
+
+    await startGame(h)
+    h.api.restartGame()
+    clickAt(300, 220)
+
     expect(h.api.countActive('torre')).toBe(1)
     expect(h.api.tdCoins()).toBe(50)
   })
@@ -1644,10 +1751,1327 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
     expect(h.api.countActive('torre')).toBe(1)
     // "Jogar de novo" passa por outro estado (o gate do reset é prev !== jogando)
     h.api.setState('fim')
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.tdCoins()).toBe(100) // moedas voltam ao inicial
     expect(h.api.countActive('torre')).toBe(0) // o reset recolheu a torre antiga
     clickAt(300, 220) // o lugar liberou: comprar de novo cobra de novo
     expect(h.api.tdCoins()).toBe(50)
+  })
+})
+
+describe('gk — playthrough mínimo: Batalha de Monstrinhos Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootBatalha(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: batalhaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  it('⭐ o pátio leva à rival e a batalha de treinador é JOGADA até o fim', async () => {
+    const h = loadRuntime()
+    await bootBatalha(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.pkmTeamSize()).toBe(3) // o time nasce montado (pkmGive x3)
+
+    let tick = 0
+    // Sobe primeiro (contorna o mato fundo) e depois vai para a direita até a
+    // rival Alice, apertando ESPAÇO — o desafio é touching + keyPressed.
+    h.fire('keydown', { key: 'ArrowUp' })
+    for (let i = 0; i < 14; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowUp' })
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 70 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+    }
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('batalha')
+
+    // Martela espaço: menus do kit (Lutar → 1º golpe) até a batalha ACABAR —
+    // vitória OU derrota devolvem 'jogando'; travar em qualquer fase é softlock.
+    for (let i = 1; i <= 900 && h.api.state() === 'batalha'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame((tick + i) * 50)
+    }
+    expect(h.api.state()).toBe('jogando')
+  })
+
+  it('⭐ capturar o Faiscolosso no mato fundo vira a tela de vitória', async () => {
+    const h = loadRuntime()
+    await bootBatalha(h)
+
+    let tick = 0
+    // Anda para a direita até o meio do mato fundo (overlapPercent > 50).
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 48; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('jogando')
+
+    // Sorte fixa BAIXA: o encontro dispara no próximo tique de 1 s e a bola
+    // SEMPRE captura (chance(x) = random*100 < x). Igual ao teste da lutaAI.
+    const realRandom = Math.random
+    Math.random = () => 0.001
+    try {
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) {
+        h.nextFrame(++tick * 50)
+      }
+      expect(h.api.state()).toBe('batalha')
+      // ↓ e ESPAÇO no MESMO quadro: o stepUiInput move o índice ANTES de
+      // selecionar, então com o menu aberto isto escolhe SEMPRE "Bola" (índice
+      // 1, nunca o "Lutar" do índice 0); com a fala aberta, o espaço só avança
+      // o texto. Capturou → fim da batalha → 'jogando' → 'vitoria'.
+      for (let i = 0; i < 400 && h.api.state() !== 'vitoria'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+    } finally {
+      Math.random = realRandom
+    }
+    expect(h.api.state()).toBe('vitoria')
+    expect(h.api.pkmCaught()).toBe(true)
+    expect(h.api.pkmTeamSize()).toBe(4) // o lendário ENTROU para o time
+  })
+
+  it('⭐ regressão: queimar as 5 bolas não tranca a vitória — a fonte repõe 3 e a captura sai', async () => {
+    // O review provou o softlock com um playthrough temporário: a captura é a
+    // ÚNICA vitória e, sem reposição, 5 bolas falhadas (lendário difícil =
+    // ~11-32% por arremesso) tornavam vencer IMPOSSÍVEL para sempre. Este é o
+    // mesmo roteiro INVERTIDO como regressão permanente.
+    const h = loadRuntime()
+    await bootBatalha(h)
+    let tick = 0
+    // Anda até o meio do mato fundo (overlapPercent > 50).
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 48; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.pkmBallCount()).toBe(5)
+
+    const realRandom = Math.random
+    try {
+      // Sorte BAIXA só para o encontro nascer no próximo tique do mato.
+      Math.random = () => 0.001
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+
+      // Sorte 0,9: a bola SEMPRE falha (~10,8%), o Trovão de Fogo (90) SEMPRE
+      // erra e a Brasa (95) SEMPRE acerta. ↓+ESPAÇO escolhe "Bola" (índice 1)
+      // até a mochila ZERAR.
+      Math.random = () => 0.9
+      for (let i = 0; i < 600 && h.api.pkmBallCount() > 0; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+      expect(h.api.pkmBallCount()).toBe(0)
+
+      // Sem bola no menu, ESPAÇO puro = Lutar → Brasa até a batalha ACABAR
+      // (vitória por nocaute; o pátio volta com a mochila ainda vazia).
+      for (let i = 0; i < 900 && h.api.state() === 'batalha'; i++) {
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+      // Solta as teclas marteladas na batalha, senão o pátio anda sozinho.
+      h.fire('keyup', { key: ' ' })
+      h.fire('keyup', { key: 'ArrowDown' })
+      expect(h.api.state()).toBe('jogando')
+      expect(h.api.pkmBallCount()).toBe(0)
+
+      // Pré-fix, este era o fim da linha. Agora a fonte cura E repõe 3 bolas.
+      // Do mato (x≈716, y≈420) até a fonte (região 50..180 × 40..150).
+      h.fire('keydown', { key: 'ArrowLeft' })
+      for (let i = 0; i < 53; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowLeft' })
+      h.fire('keydown', { key: 'ArrowUp' })
+      for (let i = 0; i < 32; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowUp' })
+      for (let i = 0; i < 40; i++) h.nextFrame(++tick * 50) // tique de 1,5s da cura
+      expect(h.api.pkmBallCount()).toBe(3)
+
+      // Volta ao mato fundo e captura com sorte baixa: a vitória VOLTOU.
+      Math.random = () => 0.001
+      h.fire('keydown', { key: 'ArrowRight' })
+      for (let i = 0; i < 55; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowRight' })
+      h.fire('keydown', { key: 'ArrowDown' })
+      for (let i = 0; i < 35; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowDown' })
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+      for (let i = 0; i < 400 && h.api.state() !== 'vitoria'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+    } finally {
+      Math.random = realRandom
+    }
+    expect(h.api.state()).toBe('vitoria')
+    expect(h.api.pkmCaught()).toBe(true)
+  })
+
+  it('⭐ regressão: time desmaiado não vira spam de fala no mato; a fonte reabre o encontro', async () => {
+    const h = loadRuntime()
+    await bootBatalha(h)
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 48; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+
+    const realRandom = Math.random
+    try {
+      Math.random = () => 0.001
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+
+      // Sorte 0,5: ↓+ESPAÇO nunca ataca (Bola falha → Trocar troca → Fugir
+      // falha em 50) enquanto o Trovão de Fogo SEMPRE acerta: o time inteiro
+      // desmaia e a batalha termina em derrota.
+      Math.random = () => 0.5
+      for (let i = 0; i < 1500 && h.api.state() === 'batalha'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+      // Solta as teclas marteladas na batalha, senão o pátio anda sozinho.
+      h.fire('keyup', { key: ' ' })
+      h.fire('keyup', { key: 'ArrowDown' })
+      expect(h.api.state()).toBe('jogando')
+
+      // Parado no MESMO mato com sorte que sortearia encontro todo tique:
+      // nada de batalha e nada do aviso repetido (o gate timeCaido segura).
+      Math.random = () => 0.001
+      texts = []
+      for (let i = 0; i < 100; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('jogando')
+      expect(texts.some((t) => t.text.includes('monstrinho em pé'))).toBe(false)
+
+      // A fonte cura o time (e zera o gate); o mato volta a sortear encontro.
+      h.fire('keydown', { key: 'ArrowLeft' })
+      for (let i = 0; i < 53; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowLeft' })
+      h.fire('keydown', { key: 'ArrowUp' })
+      for (let i = 0; i < 32; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowUp' })
+      for (let i = 0; i < 40; i++) h.nextFrame(++tick * 50)
+      h.fire('keydown', { key: 'ArrowRight' })
+      for (let i = 0; i < 55; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowRight' })
+      h.fire('keydown', { key: 'ArrowDown' })
+      for (let i = 0; i < 35; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowDown' })
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+    } finally {
+      Math.random = realRandom
+    }
+  })
+})
+
+describe('gk — playthrough mínimo: Aventura do Herói Profissional (rede pré-e2e)', () => {
+  interface Bicho {
+    x: number
+    y: number
+  }
+
+  async function bootAventura(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: aventuraProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Bicho[] {
+    const out: Bicho[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Bicho))
+    return out
+  }
+
+  it('o campo nasce vivo: enxames, árvores, HUD de contagem e mato no mapa', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.countActive('javali')).toBe(4)
+    expect(h.api.countActive('lobo')).toBe(3)
+    expect(h.api.countActive('arvore')).toBe(6)
+    expect(h.api.tileAt('campo', 928, 736)).toBe(1) // a fileira de mato existe
+    texts = []
+    h.nextFrame(50)
+    expect(texts.some((item) => item.text === 'Javalis: 4')).toBe(true)
+    expect(texts.some((item) => item.text === 'Lobos: 3')).toBe(true)
+
+    // Parado longe, ninguém atravessa o mapa: os javalis PATRULHAM o posto.
+    for (let i = 2; i <= 30; i++) h.nextFrame(i * 50)
+    for (const javali of vivos(h, 'javali')) expect(javali.x).toBeGreaterThan(1000)
+  })
+
+  it('⭐ cortar o mato REMOVE a peça do mapa (breakTileAt de verdade)', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    let tick = 0
+    // Diagonal até a altura da fileira e depois reto até o primeiro tufo.
+    h.fire('keydown', { key: 'ArrowRight' })
+    h.fire('keydown', { key: 'ArrowDown' })
+    for (let i = 0; i < 25; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowDown' })
+    for (let i = 0; i < 40; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.tileAt('campo', 943, 729)).toBe(1) // pisou no mato, peça viva
+    h.fire('keydown', { key: ' ' }) // golpe de espada em cima do tufo
+    h.nextFrame(++tick * 50)
+    expect(h.api.tileAt('campo', 943, 729)).toBe(-1) // cortou: sumiu do MAPA
+  })
+
+  it('⭐ FSM por distância: chegar perto acorda o bando e o golpe deles derruba o herói', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('jogando')
+    // Parado no meio do bando: perseguir → golpe → toque com i-frames tira 12
+    // por vez (o dano vem do MOLDE via propertyOf) até o fim de jogo.
+    for (let i = 0; i < 600 && h.api.state() === 'jogando'; i++) {
+      h.nextFrame(++tick * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+  })
+
+  it('⭐ a espada com janela derrota javali de verdade (didHit + recycle)', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    let caiu = 0
+    h.api.on('inimigo:caiu', () => {
+      caiu += 1
+    })
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    // Martela o golpe virado para o bando que chega pela direita.
+    for (let i = 0; i < 400 && caiu === 0 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: ' ' })
+    }
+    expect(caiu).toBeGreaterThan(0)
+    // Quem chega primeiro na espada depende da patrulha (javali OU lobo): o
+    // que importa é que o bando ENCOLHEU de verdade (didHit → hurt → recycle).
+    expect(h.api.countActive('javali') + h.api.countActive('lobo')).toBeLessThan(7)
+  })
+
+  it('a missão de derrotar todos liga a tela de vitória pronta', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    // setMission(0, 7): a contagem de derrotados é quem decide (rede do motor —
+    // os playthroughs acima provam que missionKill roda no didHit real).
+    for (let i = 0; i < 7; i++) h.api.missionKill()
+    h.nextFrame(50)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Chuva de Meteoros Profissional (rede pré-e2e)', () => {
+  interface Corpo {
+    x: number
+    y: number
+    vx?: number
+    vy?: number
+    _angle?: number
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootChuva(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: chuvaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Corpo[] {
+    const out: Corpo[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Corpo))
+    return out
+  }
+
+  /** O placar que a criança VÊ ("Pontos: N" do onDrawHud), ou -1. */
+  function pontosNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Pontos: '))
+    return linha ? Number(linha.text.slice('Pontos: '.length)) : -1
+  }
+
+  it('⭐ espaço atira 1 laser por recarga e a nave voa nas 4 direções', async () => {
+    const h = loadRuntime()
+    await bootChuva(h)
+    expect(h.api.state()).toBe('jogando')
+    // Sorte fixa BAIXA: a chuva de fundo nasce colada na borda ESQUERDA e
+    // deriva para fora — nunca alcança a nave (o roteiro fica determinístico).
+    const realRandom = Math.random
+    Math.random = () => 0.05
+    let tick = 0
+    try {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      expect(h.api.countActive('laser')).toBe(1)
+      const [primeiro] = vivos(h, 'laser')
+      expect(primeiro).toBeDefined()
+      if (!primeiro) return
+      const spawnX = primeiro.x
+      const spawnY = primeiro.y
+      // Martelar espaço no quadro seguinte NÃO cria outro (recarga de 0,25s)...
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      expect(h.api.countActive('laser')).toBe(1)
+      // ...e o laser SOBE (vy negativo, como o Laser original).
+      expect(primeiro.y).toBeLessThan(spawnY)
+
+      // 4 direções: voa para a ESQUERDA e para CIMA; o próximo laser nasce
+      // deslocado nos DOIS eixos (o tiro sai da nave, que se moveu na diagonal).
+      h.fire('keydown', { key: 'ArrowLeft' })
+      h.fire('keydown', { key: 'ArrowUp' })
+      for (let i = 0; i < 10; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowLeft' })
+      h.fire('keyup', { key: 'ArrowUp' })
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      // O forEachActive itera em ordem REVERSA: acha o laser NOVO pelo x (o
+      // laser voa reto, então só o tiro da nave deslocada tem outro x).
+      expect(h.api.countActive('laser')).toBe(2)
+      const segundo = vivos(h, 'laser').find((laser) => laser.x !== spawnX)
+      expect(segundo).toBeDefined()
+      if (!segundo) return
+      expect(segundo.x).toBeLessThan(spawnX - 60)
+      expect(segundo.y).toBeLessThan(spawnY - 60)
+    } finally {
+      Math.random = realRandom
+    }
+  })
+
+  it('⭐ a chuva nasce sozinha, cai GIRANDO e o laser destrói com bônus de pontos', async () => {
+    const h = loadRuntime()
+    await bootChuva(h)
+    const realRandom = Math.random
+    Math.random = () => 0.05
+    let tick = 0
+    try {
+      // Cadência inicial de 0,9s: em ~1,5s o primeiro meteoro nasce no topo.
+      for (let i = 0; i < 30 && h.api.countActive('meteoro') === 0; i++) {
+        h.nextFrame(++tick * 50)
+      }
+      expect(h.api.countActive('meteoro')).toBe(1)
+      const [pedra] = vivos(h, 'meteoro')
+      expect(pedra).toBeDefined()
+      if (!pedra) return
+      const y0 = pedra.y
+      const angulo0 = pedra._angle ?? 0
+      h.nextFrame(++tick * 50)
+      expect(pedra.y).toBeGreaterThan(y0) // cai do topo
+      expect(pedra._angle ?? 0).toBeGreaterThan(angulo0) // gira (setAngle+angleOf)
+
+      // Atira e TELEPORTA o meteoro para cima do laser parado: overlap →
+      // explosão por efeito + recycle dos DOIS + bônus de 2 pontos no HUD.
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      const tiro = vivos(h, 'laser').at(-1)
+      expect(tiro).toBeDefined()
+      if (!tiro) return
+      texts = []
+      h.nextFrame(++tick * 50)
+      const antes = pontosNoHud()
+      expect(antes).toBeGreaterThanOrEqual(0)
+      tiro.vx = 0
+      tiro.vy = 0
+      pedra.vx = 0
+      pedra.vy = 0
+      pedra.x = tiro.x
+      pedra.y = tiro.y
+      texts = []
+      h.nextFrame(++tick * 50)
+      expect(h.api.countActive('meteoro')).toBe(0)
+      expect(h.api.countActive('laser')).toBe(0)
+      expect(pontosNoHud()).toBeGreaterThanOrEqual(antes + 2)
+    } finally {
+      Math.random = realRandom
+    }
+  })
+
+  it('⭐ meteoro na nave encerra o jogo, guarda o RECORDE e o reinício zera a partida', async () => {
+    const h = loadRuntime()
+    await bootChuva(h)
+    const realRandom = Math.random
+    Math.random = () => 0.05
+    let tick = 0
+    try {
+      // ~3,5s de sobrevivência: o placar por tempo já vale pontos.
+      for (let i = 0; i < 70; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('jogando')
+      for (let i = 0; i < 30 && h.api.countActive('meteoro') === 0; i++) {
+        h.nextFrame(++tick * 50)
+      }
+      const [pedra] = vivos(h, 'meteoro')
+      expect(pedra).toBeDefined()
+      if (!pedra) return
+      // Teleporta o meteoro para cima da nave (452, 420): fim na hora.
+      pedra.x = 452
+      pedra.y = 410
+      pedra.vx = 0
+      pedra.vy = 0
+      h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('fim')
+      // O recorde foi GUARDADO de verdade (saveValue → localStorage).
+      const bruto = h.storage.get('szgk-val-recorde')
+      expect(bruto).toBeDefined()
+      expect(JSON.parse(bruto ?? '0')).toBeGreaterThanOrEqual(3)
+
+      // Reinício limpo: pools zerados, placar 0 e o recorde persiste no HUD.
+      h.api.restartGame()
+      expect(h.api.state()).toBe('jogando')
+      expect(h.api.countActive('meteoro')).toBe(0)
+      expect(h.api.countActive('laser')).toBe(0)
+      texts = []
+      h.nextFrame(++tick * 50)
+      expect(pontosNoHud()).toBe(0)
+      const recordeNoHud = texts.find((t) => t.text.startsWith('Recorde: '))
+      expect(recordeNoHud).toBeDefined()
+      expect(Number(recordeNoHud?.text.slice('Recorde: '.length))).toBeGreaterThanOrEqual(3)
+    } finally {
+      Math.random = realRandom
+    }
+  })
+})
+
+describe('gk — playthrough mínimo: Muralha do Reino Profissional (rede pré-e2e)', () => {
+  interface Corpo {
+    x: number
+    y: number
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootMuralha(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: muralhaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Corpo[] {
+    const out: Corpo[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Corpo))
+    return out
+  }
+
+  /** Dispara um clique REAL no canvas (o pointerdown vive no elemento). Rect 0×0
+   *  no headless → toGameCoords cai no fallback escala 1, então clientX/Y = coord
+   *  do jogo (o mesmo truque do playthrough do Defesa do Reino / R26). */
+  function clickAt(x: number, y: number) {
+    const canvas = document.querySelector('#szgk-canvas')
+    if (!canvas) throw new Error('sem canvas para clicar')
+    const ev = new MouseEvent('pointerdown', { clientX: x, clientY: y, bubbles: true })
+    canvas.dispatchEvent(ev)
+  }
+
+  it('⭐ a onda já entra pelo caminho e marcha ponto a ponto', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    expect(h.api.state()).toBe('jogando')
+    // O exemplo já dispara tdWave("trilha", 3, ...) no "Ao iniciar".
+    expect(h.api.countActive('invasor')).toBe(3)
+    const lider = vivos(h, 'invasor').reduce((a, b) => (a.x >= b.x ? a : b))
+    const x0 = lider.x
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50)
+    expect(lider.x).toBeGreaterThan(x0) // andou o caminho (entra pela esquerda p/ +x)
+  })
+
+  it('⭐ comprar torre num lugar paga 50 e ocupa; clicar de novo não faz nada', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    expect(h.api.tdCoins()).toBe(100)
+    clickAt(120, 230) // o 1º tdSlot
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50) // pagou 50 (o coins - 50 do original)
+    clickAt(120, 230) // lugar ocupado → nada
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50)
+  })
+
+  it('⭐ sem moedas: a compra é negada e nada nasce', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    let negada = 0
+    h.api.on('compra:negada', () => {
+      negada += 1
+    })
+    // Esvazia o cofre comprando 2 torres (100 → 50 → 0), a 3ª é negada.
+    clickAt(120, 230)
+    clickAt(320, 230)
+    expect(h.api.tdCoins()).toBe(0)
+    clickAt(340, 400)
+    expect(negada).toBe(1)
+    expect(h.api.countActive('torre')).toBe(2) // a 3ª não nasceu
+  })
+
+  it('⭐ a torre mira o invasor mais avançado, atira e derruba (com +25 moedas)', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    // Compra uma torre colada no início do caminho (o 1º slot) e deixa a onda vir.
+    clickAt(120, 230)
+    expect(h.api.countActive('torre')).toBe(1)
+    const antesCoins = h.api.tdCoins()
+    const inv0 = h.api.countActive('invasor')
+    // Roda tempo suficiente p/ a torre recarregar, mirar e os tiros baterem.
+    let algumMorreu = false
+    for (let i = 1; i <= 400 && !algumMorreu; i++) {
+      h.nextFrame(i * 50)
+      if (h.api.countActive('invasor') < inv0) algumMorreu = true
+    }
+    expect(algumMorreu).toBe(true) // pelo menos 1 orc caiu na mira da torre
+    expect(h.api.tdCoins()).toBeGreaterThan(antesCoins) // +25 por orc derrotado
+  })
+
+  it('⭐ orc que passa tira um coração; zerar acaba o jogo', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    let passou = 0
+    h.api.on('invasor:passou', () => {
+      passou += 1
+    })
+    // SEM torres: deixa a onda inteira vazar pela direita, quadro a quadro, até o
+    // fim (a onda cresce a cada onda limpa; 10 corações caem antes de esgotar).
+    for (let i = 1; i <= 4000 && h.api.state() === 'jogando'; i++) h.nextFrame(i * 50)
+    expect(passou).toBeGreaterThanOrEqual(10) // vazaram corações suficientes
+    expect(h.api.state()).toBe('fim') // a muralha caiu
+  })
+})
+
+describe('gk — playthrough mínimo: Escalada do Guerreiro Profissional (rede pré-e2e)', () => {
+  interface Heroi {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    onGround: boolean
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootEscalada(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: escaladaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  /** O placar que a criança VÊ ("Altura: N" do onDrawHud), ou -1. */
+  function alturaNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Altura: '))
+    return linha ? Number(linha.text.slice('Altura: '.length)) : -1
+  }
+
+  it('⭐ a fase nasce montada: chão de tijolos, tábuas para subir e HUD de altura', async () => {
+    const h = loadRuntime()
+    await bootEscalada(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" monta a torre inteira com moldes (4 tijolos de base + 8 tábuas).
+    expect(h.api.countActive('chao')).toBe(4)
+    expect(h.api.countActive('tabua')).toBe(8)
+    texts = []
+    h.nextFrame(50)
+    expect(alturaNoHud()).toBeGreaterThanOrEqual(0) // o HUD desenha a altura
+    const recordeNoHud = texts.find((t) => t.text.startsWith('Recorde: '))
+    expect(recordeNoHud).toBeDefined()
+  })
+
+  it('⭐ o herói cai, pousa no chão de moldes e a câmera acompanha subindo', async () => {
+    const h = loadRuntime()
+    await bootEscalada(h)
+    // O herói começa no checkpoint (80, 1360) e cai no chão de tijolos (y=1420).
+    // Sem handle direto do personagem, a prova é a ALTURA do HUD e a CÂMERA:
+    // cair e assentar deixa a altura estável, e a câmera para de descer.
+    for (let i = 1; i <= 30; i++) h.nextFrame(i * 50)
+    texts = []
+    h.nextFrame(31 * 50)
+    const alturaPousado = alturaNoHud()
+    expect(alturaPousado).toBeGreaterThanOrEqual(0)
+    const camY0 = h.api.cameraY()
+    for (let i = 32; i <= 42; i++) h.nextFrame(i * 50)
+    // Parado no chão: a câmera fixou (o herói não desce mais).
+    expect(Math.abs(h.api.cameraY() - camY0)).toBeLessThan(2)
+    texts = []
+    h.nextFrame(43 * 50)
+    expect(alturaNoHud()).toBeCloseTo(alturaPousado, -1) // altura estável no chão
+  })
+
+  // Mecânica do 🏃 Kit Plataforma numa arena mínima (os MESMOS blocos que o
+  // exemplo usa) — o boot do exemplo não devolve o handle do personagem, então
+  // as provas de física/vitória rodam aqui, como o playthrough do Kit Plataforma.
+  async function arena(h: Harness): Promise<void> {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('chao', { w: 200, h: 24, color: '#6b4f3a' })
+    h.api.defineMold('tabua', { w: 110, h: 12, color: '#a0763d' })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.setJumpFeel(0.1, 0.1, 0.3, 2000)
+  }
+
+  it('⭐ pular sobe pela tábua one-way e a câmera segue no mundo alto', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 32, h: 48, speed: 200, color: '#4a76b8' }) as Heroi
+    h.api.spawnFromMold('chao', 0, 460)
+    h.api.placeCharacter(g, 100, 412)
+    h.api.cameraFollow(g, 960, 1500)
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(g, 200, 620, dt)
+      h.api.collideGroup(g, 'chao')
+      h.api.oneWayPlatform(g, 'tabua', dt)
+    })
+    for (let i = 1; i <= 4; i++) h.nextFrame(i * 50) // assenta
+    expect(g.onGround).toBe(true)
+    const yChao = g.y
+    const camY0 = h.api.cameraY()
+    for (let i = 5; i <= 10; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(i * 50)
+    }
+    expect(g.y).toBeLessThan(yChao - 20) // subiu
+    expect(g.vy).toBeLessThan(0)
+    expect(h.api.cameraY()).toBeLessThan(camY0) // a câmera acompanha p/ cima
+  })
+
+  it('⭐ cair no buraco renasce no checkpoint; a bandeira no topo dá a vitória', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 32, h: 48, speed: 200, color: '#4a76b8' }) as Heroi
+    h.api.setCheckpoint(80, 360)
+    h.api.respawn(g)
+    h.api.defineRegion('topo', 300, 60, 200, 100)
+    let venceu = false
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(g, 200, 620, dt)
+      if (h.api.charY(g) > 1560) h.api.respawn(g)
+      if (h.api.isInside(g, 'topo')) {
+        venceu = true
+        h.api.setState('vitoria')
+      }
+    })
+    // Cai no abismo (o gate é charY > 1560): renasce perto do checkpoint (80, 360).
+    g.x = 700
+    g.y = 1700
+    g.vx = 0
+    g.vy = 0
+    h.nextFrame(50)
+    expect(g.x).toBeCloseTo(80, -1)
+    expect(g.y).toBeLessThan(1000)
+    expect(h.api.state()).toBe('jogando') // cair não é fim, é recomeçar
+    // Teleporta para dentro da bandeira do topo: vitória.
+    g.x = 380
+    g.y = 100
+    g.vx = 0
+    g.vy = 0
+    h.nextFrame(100)
+    expect(venceu).toBe(true)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Duelo de Heróis Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootDuelo(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: dueloDeHeroisProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  it('⭐ a partida nasce montada: 2 heróis no chão e o HUD das barras', async () => {
+    const h = loadRuntime()
+    await bootDuelo(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" nasce o chão por molde e coloca os dois lutadores.
+    expect(h.api.countActive('chao')).toBe(1)
+    // A luta foi declarada (round > 0 significa partida em andamento).
+    for (let i = 1; i <= 4; i++) h.nextFrame(i * 50)
+    expect(h.api.lutaRoundNow()).toBeGreaterThan(0)
+    // O HUD do kit desenha algo (as barras/relógio saem por retângulos).
+    rects = []
+    h.nextFrame(5 * 50)
+    expect(rects.length).toBeGreaterThan(0)
+  })
+
+  it('⭐ o jogador 1 avança socando e a luta ANDA até o fim (não congela)', async () => {
+    const h = loadRuntime()
+    await bootDuelo(h)
+    // O jogador 1 anda para a direita (d) até encostar no jogador 2 e socava
+    // (g) todo quadro. A partida inteira (melhor de 3, round de 40 s) tem que
+    // chegar a 'fim' sem travar em nenhuma fase (anúncio, luta ou K.O.).
+    for (let i = 1; i <= 3600 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: 'd' })
+      h.fire('keydown', { key: 'g' })
+      h.nextFrame(i * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+    // Alguém venceu a partida (o luta:acabou escreveu o vencedor).
+    expect(h.api.lutaWinner()).not.toBe('')
+  })
+
+  it('⭐ "Revanche" recomeça do zero (não no round 3 já decidido)', async () => {
+    const h = loadRuntime()
+    await bootDuelo(h)
+    for (let i = 1; i <= 3600 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: 'd' })
+      h.fire('keydown', { key: 'g' })
+      h.nextFrame(i * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+    // A "Revanche" re-roda o "Ao iniciar" (o lutaMatch nasce lá): partida fresca
+    // no round 1, placar zerado e sem vencedor decidido.
+    h.api.restartGame()
+    expect(h.api.lutaRoundNow()).toBe(1) // round 1 de uma partida nova
+    expect(h.api.lutaWinner()).toBe('') // ninguém venceu ainda
+  })
+})
+
+describe('gk — playthrough mínimo: Portas do Castelo Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootPortas(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: portasDoCasteloProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  /** O placar que a criança VÊ ("Sala N de 3" do onDrawHud), ou -1. */
+  function salaNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Sala '))
+    if (!linha) return -1
+    const m = linha.text.match(/^Sala (\d+) de 3$/)
+    return m ? Number(m[1]) : -1
+  }
+
+  it('⭐ o castelo nasce montado: chão de pedra, 3 portas e o HUD da sala', async () => {
+    const h = loadRuntime()
+    await bootPortas(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" monta o mundo largo com o chão contínuo (24 blocos) + 3
+    // plataformas altas.
+    expect(h.api.countActive('chao')).toBe(27)
+    texts = []
+    h.nextFrame(50)
+    expect(salaNoHud()).toBe(1) // começa na sala 1
+  })
+
+  it('⭐ o rei cai, pousa no chão de moldes e a câmera acompanha andando', async () => {
+    const h = loadRuntime()
+    await bootPortas(h)
+    // O rei começa no checkpoint (80, 360) e cai no chão de pedra (y=460).
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50)
+    const camX0 = h.api.cameraX()
+    // Anda para a direita bastante: sai do canto esquerdo e a câmera passa a
+    // acompanhar no mundo largo (2900 de largura contra 960 de tela).
+    for (let i = 21; i <= 140; i++) {
+      h.fire('keydown', { key: 'd' })
+      h.nextFrame(i * 50)
+    }
+    expect(h.api.cameraX()).toBeGreaterThan(camX0)
+  })
+
+  // A troca de fase por porta usa o handle do rei (o boot do exemplo não o
+  // devolve), então a prova roda numa arena mínima com os MESMOS blocos.
+  async function arena(h: Harness): Promise<void> {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('chao', { w: 120, h: 40, color: '#4a4258' })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.setJumpFeel(0.1, 0.1, 0.3, 2200)
+  }
+
+  it('⭐ encostar na porta troca de fase e a 3ª porta é a vitória', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    interface Rei {
+      x: number
+      y: number
+      vx: number
+      vy: number
+    }
+    const rei = h.api.createCharacter({ w: 32, h: 54, speed: 210, color: '#f2d16b' }) as Rei
+    let fase = 1
+    h.api.setCheckpoint(80, 440)
+    h.api.respawn(rei)
+    h.api.defineRegion('porta1', 860, 428, 48, 72)
+    h.api.defineRegion('porta2', 1820, 428, 48, 72)
+    h.api.defineRegion('saida', 2820, 428, 48, 72)
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(rei, 210, 700, dt)
+      if (fase === 1 && h.api.isInside(rei, 'porta1')) {
+        fase = 2
+        h.api.setCheckpoint(1040, 440)
+        h.api.respawn(rei)
+      }
+      if (fase === 2 && h.api.isInside(rei, 'porta2')) {
+        fase = 3
+        h.api.setCheckpoint(2000, 440)
+        h.api.respawn(rei)
+      }
+      if (fase === 3 && h.api.isInside(rei, 'saida')) {
+        h.api.setState('vitoria')
+      }
+    })
+    for (let i = 1; i <= 4; i++) h.nextFrame(i * 50) // assenta
+    // Encosta na porta 1: vira a fase 2 e renasce no começo da sala 2.
+    rei.x = 872
+    rei.y = 446
+    rei.vx = 0
+    rei.vy = 0
+    h.nextFrame(250)
+    expect(fase).toBe(2)
+    expect(rei.x).toBeCloseTo(1040, -1) // reposicionou na sala 2
+    // Encosta na porta 2: vira a fase 3.
+    rei.x = 1832
+    rei.y = 446
+    rei.vx = 0
+    rei.vy = 0
+    h.nextFrame(300)
+    expect(fase).toBe(3)
+    // Encosta na porta de saída: vitória.
+    rei.x = 2832
+    rei.y = 446
+    rei.vx = 0
+    rei.vy = 0
+    h.nextFrame(350)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Vale Ensolarado Profissional (rede pré-e2e)', () => {
+  interface Corpo {
+    x: number
+    y: number
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootVale(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: valeEnsolaradoExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Corpo[] {
+    const out: Corpo[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Corpo))
+    return out
+  }
+
+  /** O placar que a criança VÊ ("Gemas: N/6" do onDrawHud), ou -1. */
+  function gemasNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Gemas: '))
+    return linha ? Number(linha.text.slice('Gemas: '.length).split('/')[0]) : -1
+  }
+
+  it('⭐ o vale nasce montado: chão de gramado, tábuas, gemas, bichos e HUD', async () => {
+    const h = loadRuntime()
+    await bootVale(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" monta o vale inteiro com moldes.
+    expect(h.api.countActive('chao')).toBe(10)
+    expect(h.api.countActive('tabua')).toBe(4)
+    expect(h.api.countActive('gema')).toBe(6)
+    expect(h.api.countActive('gambá')).toBe(2)
+    expect(h.api.countActive('gavião')).toBe(2)
+    texts = []
+    h.nextFrame(50)
+    expect(gemasNoHud()).toBe(0) // começa sem gema
+  })
+
+  it('⭐ o herói assenta no chão de moldes ao cair do checkpoint', async () => {
+    const h = loadRuntime()
+    await bootVale(h)
+    // Cai do checkpoint (80, 380) e assenta no chão de gramado (y=460). Sem
+    // handle do personagem, a prova é a CÂMERA parar de descer ao assentar.
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50)
+    const camY0 = h.api.cameraY()
+    for (let i = 21; i <= 32; i++) h.nextFrame(i * 50)
+    // Parado no chão: a câmera vertical fixou (o herói não desce mais).
+    expect(Math.abs(h.api.cameraY() - camY0)).toBeLessThan(2)
+  })
+
+  it('⭐ a câmera acompanha o herói pelo vale mais largo que a tela', async () => {
+    // Na arena (mesmo bloco cameraFollow do exemplo, mundo 1632 > tela 960): com
+    // o handle do herói dá para provar que a câmera destrava do 0 e o segue.
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 36, h: 44, speed: 220, color: '#e8a33d' }) as Heroi
+    h.api.placeCharacter(g, 100, 400)
+    h.api.cameraFollow(g, 1632, 540)
+    h.api.onUpdate((_dt: number) => {})
+    h.nextFrame(50)
+    expect(h.api.cameraX()).toBe(0) // encostado na borda esquerda
+    // Anda para o meio do vale: a câmera acompanha (centra o herói).
+    g.x = 800
+    g.y = 400
+    h.nextFrame(100)
+    expect(h.api.cameraX()).toBeGreaterThan(0)
+  })
+
+  // A coleta e a vitória (que dependem do handle do personagem, que o boot do
+  // exemplo não devolve) rodam numa arena mínima com os MESMOS blocos do exemplo
+  // — o padrão do playthrough da Escalada.
+  interface Heroi {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    onGround: boolean
+  }
+
+  async function arena(h: Harness): Promise<void> {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('chao', { w: 200, h: 24, color: '#6b4f2a' })
+    h.api.defineMold('gema', { w: 24, h: 24, color: '#26c6da' })
+    h.api.defineMold('gambá', { w: 40, h: 30, color: '#7e6a99' })
+    h.api.defineEffect('brilho', { count: 8, color: '#b2ebf2', size: 4, life: 0.4, speed: 100 })
+    await startGame(h)
+    h.api.setState('jogando')
+  }
+
+  it('⭐ encostar numa gema conta no placar e a some do vale (touching + recycle)', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 36, h: 44, speed: 220, color: '#e8a33d' }) as Heroi
+    h.api.placeCharacter(g, 100, 400)
+    let gemas = 0
+    h.api.spawnFromMold('gema', 116, 400) // exatamente sob o herói
+    h.api.onUpdate((_dt: number) => {
+      h.api.forEachActive('gema', (item: unknown) => {
+        if (h.api.touching(g, item)) {
+          gemas += 1
+          h.api.recycle(item)
+        }
+      })
+    })
+    expect(h.api.countActive('gema')).toBe(1)
+    h.nextFrame(50)
+    expect(gemas).toBe(1) // encostou e contou
+    expect(h.api.countActive('gema')).toBe(0) // sumiu do vale (recycle)
+  })
+
+  it('⭐ pisar no bicho o derruba e juntar 6 gemas liga a vitória', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 36, h: 44, speed: 220, color: '#e8a33d' }) as Heroi
+    h.api.placeCharacter(g, 100, 380)
+    h.api.spawnFromMold('gambá', 120, 430)
+    let gemas = 0
+    let usarFisica = true
+    h.api.onUpdate((dt: number) => {
+      if (usarFisica) {
+        h.api.platformerHero(g, 220, 640, dt)
+        h.api.stompKill(g, 'gambá', 420)
+      }
+      h.api.forEachActive('gema', (item: unknown) => {
+        if (h.api.touching(g, item)) {
+          gemas += 1
+          h.api.recycle(item)
+        }
+      })
+      if (gemas >= 6) h.api.setState('vitoria')
+    })
+    // Cai em cima do gambá (stompKill por velocidade descendente): o bicho some.
+    for (let i = 1; i <= 8; i++) h.nextFrame(i * 50)
+    expect(h.api.countActive('gambá')).toBe(0)
+    // Junta 6 gemas: congela o herói e nasce uma gema em cima dele por vez.
+    usarFisica = false
+    g.x = 400
+    g.y = 300
+    g.vx = 0
+    g.vy = 0
+    for (let i = 0; i < 6; i++) {
+      h.api.spawnFromMold('gema', g.x, g.y)
+      h.nextFrame((9 + i) * 50)
+    }
+    expect(gemas).toBeGreaterThanOrEqual(6)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Vila Ninja Profissional (rede pré-e2e)', () => {
+  interface Bicho {
+    x: number
+    y: number
+  }
+
+  async function bootNinja(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: vilaNinjaExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Bicho[] {
+    const out: Bicho[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Bicho))
+    return out
+  }
+
+  it('a vila nasce viva: enxames de monstros, casas/árvores e HUD de contagem', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.countActive('bambu')).toBe(3)
+    expect(h.api.countActive('dragao')).toBe(3)
+    expect(h.api.countActive('casa')).toBe(2)
+    expect(h.api.countActive('arvore')).toBe(4)
+    texts = []
+    h.nextFrame(50)
+    expect(texts.some((item) => item.text === 'Bambus: 3')).toBe(true)
+    expect(texts.some((item) => item.text === 'Dragões: 3')).toBe(true)
+
+    // Parado longe, ninguém atravessa a vila: os monstros VAGUEIAM no posto.
+    for (let i = 2; i <= 30; i++) h.nextFrame(i * 50)
+    for (const bambu of vivos(h, 'bambu')) expect(bambu.x).toBeGreaterThan(600)
+  })
+
+  it('⭐ FSM por distância: chegar perto acorda o bando e o golpe deles derruba o ninja', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('jogando')
+    // Parado no meio do bando: perseguir → golpe → toque com i-frames tira vida
+    // (o dano vem do MOLDE via propertyOf) até o fim de jogo.
+    for (let i = 0; i < 800 && h.api.state() === 'jogando'; i++) {
+      h.nextFrame(++tick * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+  })
+
+  it('⭐ a lançada com janela derrota um monstro de verdade (didHit + recycle)', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    let caiu = 0
+    h.api.on('inimigo:caiu', () => {
+      caiu += 1
+    })
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    // Martela o golpe virado para o bando que chega pela direita.
+    for (let i = 0; i < 500 && caiu === 0 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: ' ' })
+    }
+    expect(caiu).toBeGreaterThan(0)
+    // O bando ENCOLHEU de verdade (didHit → hurt → recycle).
+    expect(h.api.countActive('bambu') + h.api.countActive('dragao')).toBeLessThan(6)
+  })
+
+  it('a missão de derrotar todos liga a tela de vitória pronta', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    // setMission(0, 6): a contagem de derrotados é quem decide (rede do motor —
+    // os playthroughs acima provam que missionKill roda no didHit real).
+    for (let i = 0; i < 6; i++) h.api.missionKill()
+    h.nextFrame(50)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Treinador de Criaturas Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real) — o
+   *  pokemon-style-game com o mundo do Kit RPG (grade + câmera) e a batalha do
+   *  Kit Monstrinhos. */
+  async function bootTreinador(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: treinadorDeCriaturasExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  interface RpgInspect {
+    heroCellX: number | null
+    heroCellY: number | null
+    facingDirection: string | null
+    dialogOpen: boolean
+  }
+  function rpg(h: Harness): RpgInspect {
+    return (
+      (h.inspectors['game-2d-advanced:rpg']?.() as RpgInspect | undefined) ?? {
+        heroCellX: null,
+        heroCellY: null,
+        facingDirection: null,
+        dialogOpen: false,
+      }
+    )
+  }
+
+  /** Anda pela GRADE até a célula alvo, uma célula por vez (~6 quadros/célula a
+   *  220px/s), decidindo a tecla pelo eixo com maior diferença. */
+  function walkTo(h: Harness, tx: number, ty: number, tick: { n: number }): void {
+    for (let guard = 0; guard < 300; guard++) {
+      if (h.api.state() !== 'jogando') return
+      const r = rpg(h)
+      if (r.heroCellX === tx && r.heroCellY === ty) return
+      let key = ''
+      if ((r.heroCellX ?? 0) > tx) key = 'ArrowLeft'
+      else if ((r.heroCellX ?? 0) < tx) key = 'ArrowRight'
+      else if ((r.heroCellY ?? 0) > ty) key = 'ArrowUp'
+      else key = 'ArrowDown'
+      h.fire('keydown', { key })
+      for (let k = 0; k < 6; k++) h.nextFrame(++tick.n * 50)
+      h.fire('keyup', { key })
+      h.nextFrame(++tick.n * 50)
+    }
+  }
+
+  /** Vira para uma direção (um toque encaixado numa célula gira sem andar se há
+   *  parede/NPC à frente). */
+  function encarar(h: Harness, key: string, tick: { n: number }): void {
+    h.fire('keydown', { key })
+    h.nextFrame(++tick.n * 50)
+    h.fire('keyup', { key })
+  }
+
+  /** Fecha a fala apertando ESPAÇO SÓ enquanto ela está aberta: o stepUiInput
+   *  CONSOME o espaço que fecha, então o rpgMoveGrid do mesmo quadro não
+   *  re-conversa. Parar de apertar ao fechar é o que evita reabrir. */
+  function fecharFala(h: Harness, tick: { n: number }): void {
+    for (let i = 0; i < 12 && rpg(h).dialogOpen; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick.n * 50)
+      h.fire('keyup', { key: ' ' })
+      h.nextFrame(++tick.n * 50)
+    }
+  }
+
+  /** O herói em (7,6) sobe até o Professor em (4,3): anda até (4,4), vira para
+   *  cima e conversa (recebe a inicial + 6 bolas), depois fecha a fala. */
+  function pegarInicial(h: Harness, tick: { n: number }): void {
+    walkTo(h, 4, 4, tick)
+    encarar(h, 'ArrowUp', tick)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(++tick.n * 50)
+    h.fire('keyup', { key: ' ' })
+    fecharFala(h, tick)
+  }
+
+  it('⭐ o mundo nasce vivo: câmera, mapa da cidade e time VAZIO até falar com o Professor', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgCurrentMap()).toBe('cidade')
+    // A criança começa SEM criatura: o Professor é quem dá a inicial.
+    expect(h.api.pkmTeamSize()).toBe(0)
+    expect(h.api.pkmBallCount()).toBe(0)
+  })
+
+  it('⭐ o Professor DÁ o inicial e as bolas ao conversar (villager do original)', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    const tick = { n: 0 }
+    h.nextFrame(++tick.n * 50)
+    pegarInicial(h, tick)
+    expect(rpg(h).dialogOpen).toBe(false) // a fala fechou (herói livre de novo)
+    expect(h.api.pkmTeamSize()).toBe(1) // o Chaminho entrou no time
+    expect(h.api.pkmBallCount()).toBe(6) // e as 6 bolas
+  })
+
+  it('⭐ a Enfermeira cura o time (o Centro de Cura do original num bloco)', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    const tick = { n: 0 }
+    h.nextFrame(++tick.n * 50)
+    pegarInicial(h, tick)
+    expect(h.api.pkmTeamSize()).toBe(1)
+    // A Enfermeira está em (3,12), com uma parede em (3,11). Desce PRIMEIRO pela
+    // coluna 4 (a parede não deixa descer pela 3) e entra por baixo, em (3,13),
+    // de frente para ela. O pkmHealTeam roda dentro do rpgOnTalk.
+    walkTo(h, 4, 13, tick)
+    walkTo(h, 3, 13, tick)
+    encarar(h, 'ArrowUp', tick)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(++tick.n * 50)
+    h.fire('keyup', { key: ' ' })
+    expect(rpg(h).dialogOpen).toBe(true) // a Enfermeira abriu a fala
+    fecharFala(h, tick)
+    expect(h.api.state()).toBe('jogando') // curar não quebra o mundo
+  })
+
+  it('⭐ pisar na grama alta dispara um encontro selvagem, e a batalha ACABA (não congela)', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    const tick = { n: 0 }
+    h.nextFrame(++tick.n * 50)
+    // Pega a inicial primeiro (senão o encontro aborta sem time em pé).
+    pegarInicial(h, tick)
+    expect(h.api.pkmTeamSize()).toBe(1)
+
+    // A grama alta cobre as células (6,8)..(18,14). O encontro é por PASSO na
+    // grama; sorte BAIXA garante que ele dispara ao pisar nela.
+    const realRandom = Math.random
+    Math.random = () => 0.001
+    try {
+      walkTo(h, 6, 8, tick) // desce/vai até a beira da grama; o encontro salta no caminho
+      expect(h.api.state()).toBe('batalha') // a grama disparou o encontro selvagem
+
+      // Martela ↓ + ESPAÇO: ↓ move o índice do menu para "Bola" (índice 1) e o
+      // ESPAÇO seleciona/avança a fala. Com sorte baixa a captura SEMPRE sai →
+      // fim da batalha → volta para 'jogando' (travar em qualquer fase = softlock).
+      for (let i = 0; i < 400 && h.api.state() === 'batalha'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick.n * 50)
+      }
+    } finally {
+      Math.random = realRandom
+    }
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.pkmCaught()).toBe(true)
+    expect(h.api.pkmTeamSize()).toBe(2) // a criatura selvagem entrou no time
   })
 })

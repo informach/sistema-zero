@@ -34,9 +34,9 @@ const MURAL_MESSAGE_NAMESPACE = 'b7d3e6a1-9c4f-42b8-8e05-1a6f27c930d4'
  * ids curtos). Acima do teto → 400 (truncar criaria colisão de dedupe).
  */
 const MAX_DELIVERY_ID_LENGTH = 200
-function resolveDeliveryId(headers: Record<string, string | undefined>): string | null {
+function resolveDeliveryId(headers: Record<string, string | undefined>): string {
   const id = headers['x-delivery-id']
-  if (!id) return null
+  if (!id) throw new ValidationError('x-delivery-id é obrigatório')
   if (id.length > MAX_DELIVERY_ID_LENGTH)
     throw new ValidationError(`x-delivery-id excede ${MAX_DELIVERY_ID_LENGTH} caracteres`)
   return id
@@ -88,6 +88,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       method: request.method,
       path: new URL(request.url).pathname,
       rawBody: getRawBody(request),
+      deliveryId: headers['x-delivery-id'],
       signatureHeader: headers['x-signature'],
       toleranceSeconds: deps.toleranceSeconds,
     })

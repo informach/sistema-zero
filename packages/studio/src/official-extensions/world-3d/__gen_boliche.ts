@@ -28,7 +28,6 @@ SZWorld3D.onUpdate(function (dt) {
   SZWorld3D.hud("Pinos: " + SZWorld3D.pinsDown() + "/10", "topo-esquerda");
   SZWorld3D.hud("Derrubados: " + SZWorld3D.knockedCount(), "topo-direita");
 });
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

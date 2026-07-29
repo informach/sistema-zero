@@ -17,6 +17,7 @@ const readJson = (r: Response): Promise<any> => r.json()
 const roleHeaders = (role: string) => ({
   'x-auth-user-id': STAFF_USER,
   'x-auth-user-role': role,
+  'x-auth-user-status': 'active',
   'content-type': 'application/json',
 })
 

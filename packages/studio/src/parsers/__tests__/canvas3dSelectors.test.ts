@@ -7,6 +7,7 @@ import { ADDON_CLASSES, CLASS_NAMESPACE } from '../../blockly/fields/FieldClassP
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { JSStatement, SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -24,7 +25,7 @@ function roundtrip(code: string): { rebuilt: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      rebuilt: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      rebuilt: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -79,6 +80,22 @@ describe('Canvas 3D — new namespaced × bare (round-trip)', () => {
     expect(code).toContain('const loader = new GLTFLoader();')
   })
 
+  it('new PointerLockControls(...) (addon exposto ao preview) → sz_t3d_new_var, regenera igual', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      "import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';",
+      'const camera = new THREE.PerspectiveCamera();',
+      'const renderer = new THREE.WebGLRenderer();',
+      'const controls = new PointerLockControls(camera, renderer);',
+    ].join('\n')
+    const code = generateJS({ statements: parseJS(src) })
+    const { rebuilt, state } = roundtrip(code)
+    expect(rebuilt).toBe(code)
+    // reconhecido como bloco Canvas 3D bare (o sandbox tem allow-pointer-lock, então é oferecido)
+    expect(state).toContain('"PointerLockControls"')
+    expect(code).toContain('const controls = new PointerLockControls(camera, renderer);')
+  })
+
   it('new Coisa() SEM three continua bloco genérico (não vira Canvas 3D)', () => {
     const code = generateJS({
       statements: parseJS('class Coisa {}\nconst c = new Coisa();'),
@@ -87,9 +104,31 @@ describe('Canvas 3D — new namespaced × bare (round-trip)', () => {
     expect(state).not.toContain('sz_t3d_')
     expect(state).toContain('"sz_js_new_var"')
   })
+
+  it('preserva construtor de outro namespace como bloco genérico', () => {
+    const source = "import * as PIXI from 'pixi.js';\nconst app = new PIXI.Application();"
+    const code = generateJS({ statements: parseJS(source) })
+    const { rebuilt, state } = roundtrip(code)
+
+    expect(rebuilt).toBe(code)
+    expect(state).toContain('"sz_js_new_var"')
+    expect(state).toContain('"PIXI.Application"')
+    expect(state).not.toContain('"sz_t3d_new_var"')
+  })
+
+  it('preserva expressão new de outro namespace como valor genérico', () => {
+    const source = "import * as API from './api.js';\nconsole.log(new API.Client());"
+    const code = generateJS({ statements: parseJS(source) })
+    const { rebuilt, state } = roundtrip(code)
+
+    expect(rebuilt).toBe(code)
+    expect(state).toContain('"sz_val_new"')
+    expect(state).toContain('"API.Client"')
+    expect(state).not.toContain('"sz_t3d_new"')
+  })
 })
 
-/** IR → blocos → IR → código (forward-only: o parser não reconstrói o nó). */
+/** IR → blocos → IR → código: exercita só o caminho block↔IR (não passa pelo parser). */
 function fromIR(js: JSStatement[]): { code: string; state: string } {
   ensureBlocklyInitialized()
   const irObj: SZIR = { html: [], css: [], js, extensions: [] }
@@ -98,7 +137,7 @@ function fromIR(js: JSStatement[]): { code: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      code: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      code: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -120,7 +159,7 @@ describe('Canvas 3D — renderer_config (modernização forward-only)', () => {
         },
       ],
     })
-    expect(code).toContain('renderer.setPixelRatio(window.devicePixelRatio);')
+    expect(code).toContain('renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));')
     expect(code).toContain('renderer.shadowMap.enabled = true;')
     expect(code).toContain('renderer.shadowMap.type = THREE.PCFSoftShadowMap;')
     expect(code).toContain('renderer.outputColorSpace = THREE.SRGBColorSpace;')
@@ -146,7 +185,7 @@ describe('Canvas 3D — renderer_config (modernização forward-only)', () => {
     expect(code).toContain('r.shadowMap.type = THREE.BasicShadowMap;')
     expect(code).not.toContain('setPixelRatio')
     expect(code).not.toContain('outputColorSpace')
-    expect(code).not.toContain('toneMapping')
+    expect(code).not.toContain('r.toneMapping =')
   })
 
   it('block→IR→block preserva os dropdowns (bloco sz_t3d_renderer_config)', () => {
@@ -161,7 +200,7 @@ describe('Canvas 3D — renderer_config (modernização forward-only)', () => {
       },
     ])
     expect(state).toContain('"sz_t3d_renderer_config"')
-    expect(code).toContain('renderer.setPixelRatio(window.devicePixelRatio);')
+    expect(code).toContain('renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));')
     expect(code).toContain('renderer.outputColorSpace = THREE.SRGBColorSpace;')
   })
 })

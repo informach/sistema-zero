@@ -2,7 +2,71 @@ import { describe, expect, it } from 'bun:test'
 import { generateProjectFilesWithMap } from '../project'
 import { findIdAtLine, reverseSourceMap } from '../sourceMap'
 
+function lineNumberOf(source: string, snippet: string): number {
+  const index = source.split('\n').findIndex((line) => line.includes(snippet))
+  expect(index).toBeGreaterThanOrEqual(0)
+  return index + 1
+}
+
 describe('source map (top-level)', () => {
+  it('mapeia cada bloco filho em conteúdo HTML misto', () => {
+    const { sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [
+          {
+            __id: 'paragraph',
+            type: 'element',
+            tag: 'p',
+            children: [
+              { __id: 'text', type: 'text', text: 'Olá ' },
+              { __id: 'strong', type: 'element', tag: 'strong', text: 'mundo' },
+            ],
+          },
+        ],
+        css: [],
+        js: [],
+        extensions: [],
+      },
+    })
+    expect(sourceMap.paragraph?.file).toBe('index.html')
+    expect(sourceMap.text?.file).toBe('index.html')
+    expect(sourceMap.strong?.file).toBe('index.html')
+    expect(sourceMap.text?.startLine).toBe(sourceMap.paragraph?.startLine)
+    expect(sourceMap.strong?.startColumn).toBeGreaterThan(sourceMap.text?.startColumn ?? 0)
+  })
+
+  it('avança linha e coluna depois de whitespace inline com quebra', () => {
+    const { files, sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [
+          { __id: 'span-a', type: 'element', tag: 'span', text: 'A' },
+          { __id: 'quebra', type: 'text', text: '\n' },
+          { __id: 'span-b', type: 'element', tag: 'span', text: 'B' },
+        ],
+        css: [],
+        js: [],
+        extensions: [],
+      },
+    })
+
+    const html = files['index.html']
+    const spanALine = lineNumberOf(html, '<span>A</span>')
+    const spanBLine = lineNumberOf(html, '<span>B</span>')
+    expect(sourceMap['span-a']).toMatchObject({
+      startLine: spanALine,
+      endLine: spanALine,
+      startColumn: 5,
+    })
+    expect(sourceMap.quebra).toMatchObject({ startLine: spanALine, endLine: spanBLine })
+    expect(sourceMap['span-b']).toMatchObject({
+      startLine: spanBLine,
+      endLine: spanBLine,
+      startColumn: 1,
+    })
+  })
+
   it('mapeia cada statement top-level para sua faixa de linhas no script.js', () => {
     const { files, sourceMap } = generateProjectFilesWithMap({
       projectName: 'Test',
@@ -17,13 +81,15 @@ describe('source map (top-level)', () => {
       },
     })
     expect(sourceMap.b1?.file).toBe('script.js')
-    expect(sourceMap.b1?.startLine).toBe(1)
-    expect(sourceMap.b1?.endLine).toBe(1)
+    expect(sourceMap.b1?.startLine).toBe(3)
+    expect(sourceMap.b1?.endLine).toBe(3)
     expect(sourceMap.b2?.file).toBe('script.js')
-    expect(sourceMap.b2?.startLine).toBe(2)
+    expect(sourceMap.b2?.startLine).toBe(4)
     const lines = files['script.js'].split('\n')
-    expect(lines[0]).toContain('let x = 0;')
-    expect(lines[1]).toContain('console.log("oi");')
+    expect(lines[0]).toBe('(function __szProjectRun() {')
+    expect(lines[1]).toContain('// Ao iniciar')
+    expect(lines[2]).toContain('let x = 0;')
+    expect(lines[3]).toContain('console.log("oi");')
   })
 
   it('considera o header de JS no offset', () => {
@@ -37,8 +103,8 @@ describe('source map (top-level)', () => {
         extensions: [],
       },
     })
-    // Header tem 2 linhas + 1 linha em branco = 3 linhas → statement na 4ª.
-    expect(sourceMap.b1?.startLine).toBe(4)
+    // Header ocupa 3 linhas; a fábrica é a 4ª, o marcador a 5ª e o statement a 6ª.
+    expect(sourceMap.b1?.startLine).toBe(6)
   })
 
   it('mapeia statements JS aninhados para o bloco específico', () => {
@@ -73,21 +139,55 @@ describe('source map (top-level)', () => {
       },
     })
 
-    expect(files['script.js'].split('\n')[1]).toContain('console.log("oi");')
-    expect(sourceMap.evt).toMatchObject({ file: 'script.js', startLine: 1, endLine: 6 })
+    expect(files['script.js'].split('\n')[4]).toContain('console.log("oi");')
+    expect(sourceMap.evt).toMatchObject({ file: 'script.js', startLine: 4, endLine: 9 })
     expect(sourceMap.log).toMatchObject({
       file: 'script.js',
-      startLine: 2,
-      endLine: 2,
-      startColumn: 3,
-    })
-    expect(sourceMap.if).toMatchObject({ file: 'script.js', startLine: 3, endLine: 5 })
-    expect(sourceMap.inside).toMatchObject({
-      file: 'script.js',
-      startLine: 4,
-      endLine: 4,
+      startLine: 5,
+      endLine: 5,
       startColumn: 5,
     })
+    expect(sourceMap.if).toMatchObject({ file: 'script.js', startLine: 6, endLine: 8 })
+    expect(sourceMap.inside).toMatchObject({
+      file: 'script.js',
+      startLine: 7,
+      endLine: 7,
+      startColumn: 7,
+    })
+  })
+
+  it('mapeia cada bloco de caso da escolha para suas linhas', () => {
+    const { files, sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [],
+        css: [],
+        js: [
+          {
+            __id: 'escolha',
+            type: 'switch',
+            subject: { type: 'var', name: 'direcao' },
+            cases: [
+              {
+                __id: 'caso-cima',
+                match: { type: 'str', value: 'cima' },
+                body: [
+                  { __id: 'acao', type: 'consoleLog', value: { type: 'str', value: 'subiu' } },
+                ],
+              },
+            ],
+          },
+        ],
+        extensions: [],
+      },
+    })
+
+    const entry = sourceMap['caso-cima']
+    expect(entry).toMatchObject({ file: 'script.js' })
+    const lines = files['script.js'].split('\n')
+    expect(lines[(entry?.startLine ?? 0) - 1]).toContain('case "cima"')
+    expect(lines[(entry?.endLine ?? 0) - 1]?.trim()).toBe('}')
+    expect(sourceMap.acao?.startLine).toBe((entry?.startLine ?? 0) + 1)
   })
 
   it('mapeia HTML top-level no index.html', () => {
@@ -105,15 +205,12 @@ describe('source map (top-level)', () => {
     })
     expect(sourceMap.h1?.file).toBe('index.html')
     expect(sourceMap.h2?.file).toBe('index.html')
-    expect(sourceMap.h1?.startLine).toBe(9)
-    expect(sourceMap.h2?.startLine).toBe(10)
-    const lines = files['index.html'].split('\n')
-    expect(lines[8]).toContain('<h1>Olá</h1>')
-    expect(lines[9]).toContain('<p>mundo</p>')
+    expect(sourceMap.h1?.startLine).toBe(lineNumberOf(files['index.html'], '<h1>Olá</h1>'))
+    expect(sourceMap.h2?.startLine).toBe(lineNumberOf(files['index.html'], '<p>mundo</p>'))
   })
 
   it('mapeia HTML aninhado para o bloco filho específico', () => {
-    const { sourceMap } = generateProjectFilesWithMap({
+    const { files, sourceMap } = generateProjectFilesWithMap({
       projectName: 'Test',
       ir: {
         html: [
@@ -130,11 +227,19 @@ describe('source map (top-level)', () => {
       },
     })
 
-    expect(sourceMap.section).toMatchObject({ file: 'index.html', startLine: 9, endLine: 11 })
+    const html = files['index.html']
+    const sectionLine = lineNumberOf(html, '<section>')
+    const titleLine = lineNumberOf(html, '<h1>Olá</h1>')
+    const sectionEndLine = lineNumberOf(html, '</section>')
+    expect(sourceMap.section).toMatchObject({
+      file: 'index.html',
+      startLine: sectionLine,
+      endLine: sectionEndLine,
+    })
     expect(sourceMap.title).toMatchObject({
       file: 'index.html',
-      startLine: 10,
-      endLine: 10,
+      startLine: titleLine,
+      endLine: titleLine,
       startColumn: 7,
     })
   })
@@ -172,8 +277,8 @@ describe('source map (top-level)', () => {
       },
     })
     const rev = reverseSourceMap(sourceMap)
-    expect(findIdAtLine(rev, 'script.js', 1)).toBe('a')
-    expect(findIdAtLine(rev, 'script.js', 2)).toBe('b')
+    expect(findIdAtLine(rev, 'script.js', 3)).toBe('a')
+    expect(findIdAtLine(rev, 'script.js', 4)).toBe('b')
     expect(findIdAtLine(rev, 'script.js', 999)).toBeNull()
   })
 
@@ -201,8 +306,8 @@ describe('source map (top-level)', () => {
     })
     const rev = reverseSourceMap(sourceMap)
 
-    expect(findIdAtLine(rev, 'script.js', 1, 1)).toBe('a')
-    expect(findIdAtLine(rev, 'script.js', 1, 999)).toBeNull()
+    expect(findIdAtLine(rev, 'script.js', 3, 3)).toBe('a')
+    expect(findIdAtLine(rev, 'script.js', 3, 999)).toBeNull()
   })
 })
 
@@ -230,10 +335,10 @@ describe('source map (expressões / blocos de valor)', () => {
         extensions: [],
       },
     })
-    // `if (...) {` está na linha 1 → condição e operandos compartilham a linha 1.
-    expect(sourceMap.cond).toMatchObject({ file: 'script.js', startLine: 1, endLine: 1 })
-    expect(sourceMap.cleft).toMatchObject({ file: 'script.js', startLine: 1, endLine: 1 })
-    expect(sourceMap.cright).toMatchObject({ file: 'script.js', startLine: 1, endLine: 1 })
+    // A fábrica e o marcador ocupam as linhas 1–2; o `if` fica na linha 3.
+    expect(sourceMap.cond).toMatchObject({ file: 'script.js', startLine: 3, endLine: 3 })
+    expect(sourceMap.cleft).toMatchObject({ file: 'script.js', startLine: 3, endLine: 3 })
+    expect(sourceMap.cright).toMatchObject({ file: 'script.js', startLine: 3, endLine: 3 })
   })
 
   it('mapeia o valor calculado de uma variável para a linha da declaração', () => {
@@ -259,7 +364,7 @@ describe('source map (expressões / blocos de valor)', () => {
         extensions: [],
       },
     })
-    expect(sourceMap.sum).toMatchObject({ file: 'script.js', startLine: 1, endLine: 1 })
+    expect(sourceMap.sum).toMatchObject({ file: 'script.js', startLine: 3, endLine: 3 })
   })
 
   it('mapeia o valor de el.textContent (setText) para a 3ª linha do bloco', () => {
@@ -280,7 +385,7 @@ describe('source map (expressões / blocos de valor)', () => {
       },
     })
     // bloco { (1) / const el (2) / if (el) el.textContent = <txt> (3) / } (4)
-    expect(sourceMap.txt).toMatchObject({ file: 'script.js', startLine: 3, endLine: 3 })
+    expect(sourceMap.txt).toMatchObject({ file: 'script.js', startLine: 5, endLine: 5 })
   })
 
   it('no empate de linha, editor→bloco seleciona o statement, não a expressão interna', () => {
@@ -302,10 +407,10 @@ describe('source map (expressões / blocos de valor)', () => {
     })
     const rev = reverseSourceMap(sourceMap)
     // bloco→editor: a expressão interna tem entrada própria (linha única).
-    expect(sourceMap.val).toMatchObject({ file: 'script.js', startLine: 1, endLine: 1 })
+    expect(sourceMap.val).toMatchObject({ file: 'script.js', startLine: 3, endLine: 3 })
     // editor→bloco: empate de span → vence o statement (tem colunas definidas).
-    expect(findIdAtLine(rev, 'script.js', 1)).toBe('stmt')
-    expect(findIdAtLine(rev, 'script.js', 1, 1)).toBe('stmt')
+    expect(findIdAtLine(rev, 'script.js', 3)).toBe('stmt')
+    expect(findIdAtLine(rev, 'script.js', 3, 3)).toBe('stmt')
   })
 })
 
@@ -348,21 +453,14 @@ describe('source map (membros de classe)', () => {
     })
     const lines = files['script.js'].split('\n')
     // Layout esperado (1-indexed):
-    //  1: class Pessoa {
-    //  2:   constructor(nome) {
-    //  3:     this.nome = nome;
-    //  4:   }
-    //  5:   falar() {
-    //  6:     console.log(this.nome);
-    //  7:   }
-    //  8: }
-    expect(lines[1]).toContain('constructor(nome)')
-    expect(lines[4]).toContain('falar()')
-    expect(sourceMap.cls).toMatchObject({ file: 'script.js', startLine: 1, endLine: 8 })
-    expect(sourceMap.ctor1).toMatchObject({ file: 'script.js', startLine: 2, endLine: 4 })
-    expect(sourceMap.sett).toMatchObject({ file: 'script.js', startLine: 3, endLine: 3 })
-    expect(sourceMap.met1).toMatchObject({ file: 'script.js', startLine: 5, endLine: 7 })
-    expect(sourceMap.log).toMatchObject({ file: 'script.js', startLine: 6, endLine: 6 })
+    // A fábrica ocupa a linha 1; marcador na 2; classe nas linhas 3–10.
+    expect(lines[3]).toContain('constructor(nome)')
+    expect(lines[6]).toContain('falar()')
+    expect(sourceMap.cls).toMatchObject({ file: 'script.js', startLine: 3, endLine: 10 })
+    expect(sourceMap.ctor1).toMatchObject({ file: 'script.js', startLine: 4, endLine: 6 })
+    expect(sourceMap.sett).toMatchObject({ file: 'script.js', startLine: 5, endLine: 5 })
+    expect(sourceMap.met1).toMatchObject({ file: 'script.js', startLine: 7, endLine: 9 })
+    expect(sourceMap.log).toMatchObject({ file: 'script.js', startLine: 8, endLine: 8 })
   })
 
   it('omite ctorId no sourcemap quando o construtor está vazio (sem header gerado)', () => {
@@ -610,5 +708,23 @@ describe('source map — placement inline (CSS/JS dentro do index.html)', () => 
     })
     expect(sourceMap.j1?.file).toBe('script.js')
     expect(sourceMap.c1?.file).toBe('style.css')
+  })
+
+  it('script externo no cabeçalho continua mapeando para script.js', () => {
+    const { files, sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [],
+        css: [],
+        js: [{ __id: 'j1', type: 'consoleLog', value: { type: 'str', value: 'oi' } }],
+        htmlShell: { jsPlacement: 'external-head' },
+        extensions: [],
+      },
+    })
+    expect(files['script.js']).toContain('console.log("oi");')
+    expect(files['index.html'].indexOf('<script src="script.js"></script>')).toBeLessThan(
+      files['index.html'].indexOf('<body>'),
+    )
+    expect(sourceMap.j1?.file).toBe('script.js')
   })
 })

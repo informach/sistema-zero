@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { generateProjectFiles } from '#generators'
+import { behaviorStatements } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '../project'
 
 const SINGLE_FILE_HTML = `<!doctype html>
@@ -37,7 +38,7 @@ describe('parseProjectFilesWithDiagnostics', () => {
     )
     expect(result.ir.html[0]?.type).toBe('rawHTML')
     expect(result.ir.css[0]).toMatchObject({ type: 'rawCSS', advanced: true })
-    expect(result.ir.js[0]).toMatchObject({ type: 'rawJS', advanced: true })
+    expect(result.ir.behavior.start[0]).toMatchObject({ type: 'rawJS', advanced: true })
   })
 
   it('preserva a casca do documento (head/doctype) e não cria bloco avançado no doc padrão', () => {
@@ -81,7 +82,7 @@ describe('parseProjectFilesWithDiagnostics', () => {
     })
 
     expect(result.diagnostics.some((diagnostic) => diagnostic.kind === 'syntaxError')).toBe(true)
-    expect(result.ir.js).toEqual([{ type: 'rawJS', code, advanced: true }])
+    expect(result.ir.behavior.start).toEqual([{ type: 'rawJS', code, advanced: true }])
   })
 
   it('extrai <style>/<script> inline para blocos quando os arquivos externos estão vazios', () => {
@@ -93,7 +94,7 @@ describe('parseProjectFilesWithDiagnostics', () => {
 
     // CSS e JS viraram conteúdo representável (não ficaram "presos" no HTML).
     expect(result.ir.css).toEqual([{ selector: 'h1', declarations: { color: 'red' } }])
-    expect(result.ir.js.length).toBeGreaterThan(0)
+    expect(behaviorStatements(result.ir).length).toBeGreaterThan(0)
     // O <script> inline NÃO virou bloco avançado: só o <h1> sobra no body.
     expect(result.ir.html).toEqual([{ type: 'element', tag: 'h1', text: 'Oi' }])
     // Placement gravado na casca; o <style> foi removido do head (sem duplicar).
@@ -124,7 +125,7 @@ describe('parseProjectFilesWithDiagnostics', () => {
     // Reparse estável: mesma IR (placement + css/js preservados).
     const ir2 = parseProjectFilesWithDiagnostics(files).ir
     expect(ir2.css).toEqual(ir.css)
-    expect(ir2.js).toEqual(ir.js)
+    expect(ir2.behavior).toEqual(ir.behavior)
     expect(ir2.htmlShell?.cssPlacement).toBe('inline-head')
     expect(ir2.htmlShell?.jsPlacement).toBe('inline-body-end')
   })
@@ -144,6 +145,38 @@ describe('parseProjectFilesWithDiagnostics', () => {
     expect(files['index.html']).toContain('<script type="module">')
   })
 
+  it('mantém script inline no meio do corpo em sua posição original', () => {
+    const html = '<body><h1>Antes</h1><script>console.log("meio")</script><p>Depois</p></body>'
+    const ir = parseProjectFilesWithDiagnostics({
+      'index.html': html,
+      'style.css': '',
+      'script.js': '',
+    }).ir
+    expect(ir.htmlShell?.jsPlacement).toBeUndefined()
+    expect(behaviorStatements(ir)).toEqual([])
+
+    const files = generateProjectFiles({ ir, projectName: 'App' })
+    const output = files['index.html']
+    expect(output.indexOf('<h1>Antes</h1>')).toBeLessThan(output.indexOf('<script>'))
+    expect(output.indexOf('<script>')).toBeLessThan(output.indexOf('<p>Depois</p>'))
+  })
+
+  it('preserva uma única referência ao script canônico quando ela fica no cabeçalho', () => {
+    const ir = parseProjectFilesWithDiagnostics({
+      'index.html':
+        '<html><head><script defer src="./script.js?v=1"></script></head><body><h1>Oi</h1></body></html>',
+      'style.css': '',
+      'script.js': 'console.log("oi")',
+    }).ir
+    const files = generateProjectFiles({ ir, projectName: 'App' })
+    expect(ir.htmlShell?.jsPlacement).toBe('external-head')
+    expect(files['index.html'].match(/<script\b[^>]*script\.js[^>]*><\/script>/g)).toHaveLength(1)
+    expect(files['index.html']).toContain('<script defer="" src="./script.js?v=1"></script>')
+    expect(
+      files['index.html'].indexOf('<script defer="" src="./script.js?v=1"></script>'),
+    ).toBeLessThan(files['index.html'].indexOf('<body>'))
+  })
+
   it('NÃO extrai inline quando style.css já tem conteúdo (mantém external, preserva avançado)', () => {
     const result = parseProjectFilesWithDiagnostics({
       'index.html': '<body><style>h1 { color: red; }</style><h1>Oi</h1></body>',
@@ -155,5 +188,26 @@ describe('parseProjectFilesWithDiagnostics', () => {
     // O CSS vem do arquivo externo; o <style> inline fica preservado como avançado.
     expect(result.ir.css).toEqual([{ selector: 'body', declarations: { margin: '0' } }])
     expect(result.ir.html.some((node) => node.type === 'rawHTML')).toBe(true)
+  })
+
+  it('reconstrói as três áreas pelos marcadores sem heurística', () => {
+    const result = parseProjectFilesWithDiagnostics({
+      'index.html': '<main></main>',
+      'style.css': '',
+      'script.js': `// Ao iniciar
+let pontos = 0;
+// Quando acontecer
+document.addEventListener("click", (event) => {
+  pontos++;
+});
+// Enquanto estiver rodando
+setInterval(() => {
+  console.log(pontos);
+}, 1000);`,
+    })
+
+    expect(result.ir.behavior.start.map((statement) => statement.type)).toEqual(['var'])
+    expect(result.ir.behavior.events.map((statement) => statement.type)).toEqual(['event'])
+    expect(result.ir.behavior.loops.map((statement) => statement.type)).toEqual(['setInterval'])
   })
 })

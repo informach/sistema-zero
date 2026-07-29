@@ -19,11 +19,21 @@ export type CourseAudience = (typeof COURSE_AUDIENCES)[number]
 
 /**
  * Nível pedagógico (dificuldade) do curso. Default `iniciante`. Definido pelo
- * professor no admin; alimenta o NÍVEL DO ALUNO (domain/gamification/levels.ts):
- * um curso concluído E publicado no Mural conta para o nível conforme esta dificuldade.
+ * professor no admin; as 3 dificuldades alimentam o NÍVEL DO ALUNO
+ * (domain/gamification/levels.ts): um curso concluído E publicado no Mural conta
+ * para o nível conforme esta dificuldade.
+ *
+ * `lenda` é uma categoria À PARTE, FORA da carreira: cursos bônus "de formatura"
+ * que aparecem só na trilha da Lenda (kids). NÃO vira degrau (level×track), NÃO
+ * conta para o nível, NÃO recebe trava de curso-base — cursos `lenda` têm sempre
+ * `careerSlot = null`. Por isso não entra em `CareerCourseLevel`/`courseTier`.
  */
-export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
+export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado', 'lenda'] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
+
+/** Níveis que MAPEIAM para um degrau da carreira (as 3 dificuldades; exclui `lenda`). */
+export type CareerCourseLevel = Exclude<CourseLevel, 'lenda'>
+export const CAREER_COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
 
 /**
  * Eixo 2D/3D do curso (ortogonal à dificuldade). O par (level, track) é o DEGRAU
@@ -46,6 +56,8 @@ export function isCourseAccessible(status: CourseStatus): boolean {
 
 export interface Course {
   id: string
+  /** Versão de concorrência otimista da autoria; incrementa a cada PATCH do curso. */
+  version: number
   slug: string
   title: string
   subtitle: string | null
@@ -57,6 +69,11 @@ export interface Course {
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau pedagógico). Default `2d`. */
   track: CourseTrack
+  /**
+   * Posição obrigatória na etapa da Carreira do Criador. `1` é o curso-base;
+   * `null` identifica curso bônus/fora da carreira.
+   */
+  careerSlot: number | null
   /**
    * Trava sequencial (estilo Duolingo): quando `true`, uma aula só fica acessível
    * depois que TODAS as aulas publicadas anteriores (ordem do curso) estão

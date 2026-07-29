@@ -1,19 +1,40 @@
-import { CourseCatalogClient } from '@/components/kids/course-catalog-client'
+import { CareerMap } from '@/components/kids/career-map'
+import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsMascot } from '@/components/kids/mascot'
-import { listCatalog } from '@/server/members'
+import { unitThemeAt } from '@/components/kids/unit-theme'
+import { getGamificationReadonly, listCatalog } from '@/server/members'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * "Todos os cursos": catálogo completo da plataforma. Com acesso → entra no
- * curso; sem acesso → cadeado e clique leva à página de vendas do curso
- * (`metadata.salesPageUrl`). Kids NÃO tem funil (v1): sem `salesPageUrl` o card
- * fica não-clicável — por isso nenhum fallback de `FUNNEL_URL` aqui.
+ * Mapa da Carreira (24/07): a página de cursos É o mapa — serpentina com os 8
+ * níveis (Faísca→Lenda); clicar num nível liberado abre `/cursos/trilha/[level]`
+ * com a listagem daquela trilha. Sem busca/filtros aqui (decisão da usuária).
+ * Gamificação fora (`level` nulo) → cai na grade clássica simples (o mapa
+ * precisa do nível p/ pintar os nós).
  */
 export default async function CatalogPage() {
-  const { status, body } = await listCatalog()
+  const [{ status, body }, gamification] = await Promise.all([
+    listCatalog(),
+    getGamificationReadonly(),
+  ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const courses = body?.courses ?? []
+  const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
+
+  if (level) {
+    return (
+      <div className="flex flex-col gap-8">
+        <div className="text-center">
+          <h1 className="sz-display text-2xl md:text-3xl">Mapa da Carreira</h1>
+          <p className="mt-1 text-muted-foreground text-sm">
+            Sua jornada de Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
+          </p>
+        </div>
+        <CareerMap level={level} />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -32,9 +53,34 @@ export default async function CatalogPage() {
           </p>
         </section>
       ) : (
-        // Busca/filtros client-side persistidos na URL (?q=&acesso=&ordem=).
-        <CourseCatalogClient courses={courses} />
+        <CatalogGrid courses={courses} />
       )}
+    </div>
+  )
+}
+
+/** Grade clássica (fallback sem gamificação) — mesma dos cards do catálogo. */
+function CatalogGrid({
+  courses,
+}: {
+  courses: NonNullable<Awaited<ReturnType<typeof listCatalog>>['body']>['courses']
+}) {
+  const titleBySlug = new Map(courses.map((c) => [c.courseSlug, c.title]))
+  return (
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {courses.map((course, i) => (
+        <CatalogCourseCard
+          key={course.courseSlug}
+          course={course}
+          salesUrl={course.salesPageUrl}
+          foundationTitle={
+            course.careerLock?.foundationCourseSlug
+              ? (titleBySlug.get(course.careerLock.foundationCourseSlug) ?? null)
+              : null
+          }
+          theme={unitThemeAt(i)}
+        />
+      ))}
     </div>
   )
 }

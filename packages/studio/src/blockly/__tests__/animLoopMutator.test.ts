@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { behaviorStatements } from '#ir'
 import { ensureBlocklyInitialized } from '../setup'
 import { irInFrame } from './frameTestUtils'
 
@@ -10,12 +11,12 @@ interface AnimLoopApi extends Blockly.Block {
 }
 
 function animLoopOf(ws: Blockly.Workspace) {
-  const stmt = irInFrame(ws).js.find((s) => s.type === 'animationLoop')
+  const stmt = behaviorStatements(irInFrame(ws, 'loops')).find((s) => s.type === 'animationLoop')
   if (stmt?.type !== 'animationLoop') throw new Error('sem animationLoop')
   return stmt
 }
 
-describe('mutator do "A cada frame fazer" — + revela "guardar id em [var]"', () => {
+describe('mutator do "A cada quadro fazer" — + revela "guardar id em [var]"', () => {
   beforeAll(() => ensureBlocklyInitialized())
 
   it('sem clicar no +, o loop não guarda id (sem handle)', () => {

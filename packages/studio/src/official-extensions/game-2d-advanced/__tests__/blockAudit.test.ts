@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { type JSStatement, SZIRSchema } from '#ir'
+import { behaviorStatements, type JSStatement, SZIRSchema } from '#ir'
 import 'blockly/blocks'
+import { attachBlockInContractContext } from '../../../blockly/__tests__/blockContractTestUtils'
+import { inferBlockContract } from '../../../blockly/blockContracts'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace, FRAME_BEHAVIOR } from '../../../blockly/buildIR'
+import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
@@ -15,7 +17,7 @@ import { gameKitRuntime } from '../runtime'
  * Auditoria GENÉRICA de todos os blocos do Jogo 2D Avançado (clone do
  * blockAudit do Jogo 2D) — um caso por def, com os valores DEFAULT dos campos:
  *
- *   1. def → IR: o bloco no frame de Comportamento vira um nó gk: (não é
+ *   1. def → IR: o bloco na área indicada pelo contrato vira um nó gk: (não é
  *      rascunho nem rawJS) e a IR valida no SZIRSchema (drift do zod).
  *   2. IR → blocos → IR: reconstruir e recoletar devolve a MESMA IR.
  *   3. IR → JS: todo helper `SZGameKit.x(...)` emitido EXISTE no runtime.
@@ -66,29 +68,19 @@ function loadRuntimeKeys(): Set<string> {
   return new Set(Object.keys(api))
 }
 
-/** Instancia o bloco com defaults dentro do frame de Comportamento e coleta a IR. */
+/** Instancia o bloco com defaults na área indicada pelo contrato e coleta a IR. */
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
-    const frame = ws.newBlock(FRAME_BEHAVIOR)
-    const slot = frame.getInput('CHILDREN')?.connection
-    if (!slot) throw new Error('frame de Comportamento sem input CHILDREN')
-    if (kind === 'statement') {
-      const block = ws.newBlock(type)
-      if (!block.previousConnection) throw new Error(`${type}: statement sem previousConnection`)
-      slot.connect(block.previousConnection)
-    } else {
-      const host = ws.newBlock(EXPR_HOST)
-      if (!host.previousConnection) throw new Error('host de expr sem previousConnection')
-      slot.connect(host.previousConnection)
-      const socket = host.getInput('X')?.connection
-      const block = ws.newBlock(type)
-      if (!socket || !block.outputConnection) {
-        throw new Error(`${type}: reporter sem outputConnection (ou host sem X)`)
-      }
-      socket.connect(block.outputConnection)
-    }
-    return stripIds(buildIRFromWorkspace(ws).js)
+    attachBlockInContractContext({
+      workspace: ws,
+      type,
+      kind,
+      expressionHost: EXPR_HOST,
+      expressionInput: 'X',
+      loopHost: 'sz_gk_on_update',
+    })
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -101,7 +93,7 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-    return stripIds(buildIRFromWorkspace(ws).js)
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -118,7 +110,7 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    expect(gameKitBlocks.length).toBe(335)
+    expect(gameKitBlocks.length).toBe(339)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })
@@ -127,7 +119,7 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
   // paralela aos defs — nada garantia que as duas casam. Um typo em SUBCATS
   // enviaria um item de toolbox apontando p/ um bloco inexistente, e um bloco
   // esquecido cairia no grupo genérico "Mais" sem ninguém perceber.
-  it('a toolbox cobre TODOS os blocos, exatamente 1× (sem fantasma, sem "Mais")', () => {
+  it('a toolbox cobre todos os blocos visíveis, exatamente 1× (sem fantasma, sem "Mais")', () => {
     const inToolbox: string[] = []
     const walk = (node: unknown): void => {
       if (Array.isArray(node)) {
@@ -142,13 +134,17 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
     walk(gameKitToolboxCategory.contents)
 
     const defTypes = gameKitBlocks.map((d) => d.type)
+    const visibleDefTypes = gameKitBlocks
+      .filter((definition) => !definition.hidden)
+      .map((d) => d.type)
     const counts = new Map<string, number>()
     for (const t of inToolbox) counts.set(t, (counts.get(t) ?? 0) + 1)
 
     // Nenhum bloco da toolbox que não exista como def (typo em SUBCATS).
     expect([...counts.keys()].filter((t) => !defTypes.includes(t))).toEqual([])
-    // Nenhum def fora da toolbox (cairia no "Mais").
-    expect(defTypes.filter((t) => !counts.has(t))).toEqual([])
+    // Nenhum def visível fora da toolbox (cairia no "Mais"). Blocos antigos
+    // de migração continuam registrados para abrir projetos existentes.
+    expect(visibleDefTypes.filter((t) => !counts.has(t))).toEqual([])
     // Nenhum bloco em DUAS categorias.
     expect([...counts.entries()].filter(([, n]) => n > 1).map(([t]) => t)).toEqual([])
 
@@ -171,13 +167,22 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
       if (c.contents) walkNamed(c.contents)
     }
     walkNamed(gameKitToolboxCategory.contents)
-    expect(defTypes.filter((t) => !named.has(t))).toEqual([])
+    expect(visibleDefTypes.filter((t) => !named.has(t))).toEqual([])
+  })
+
+  it('explica que a animação marcada toca uma vez, sem prometer uma trava que pertence ao estado', () => {
+    const def = gameKitBlocks.find((block) => block.type === 'sz_gk_state_anim')
+    expect(def?.message0).toContain('uma vez?')
+    expect(def?.tooltip).toContain('último quadro')
+    expect(def?.tooltip).not.toContain('NÃO poder ser interrompida')
   })
 })
 
 describe('Auditoria Jogo 2D Avançado — pipeline completo por bloco', () => {
   const cases: { type: string; kind: 'statement' | 'expr' }[] = [
-    ...statementDefs.map((d) => ({ type: d.type, kind: 'statement' as const })),
+    ...statementDefs
+      .filter((definition) => inferBlockContract(definition).migration === 'keep')
+      .map((d) => ({ type: d.type, kind: 'statement' as const })),
     ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
 

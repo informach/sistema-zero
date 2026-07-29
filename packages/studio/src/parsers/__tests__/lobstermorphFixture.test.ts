@@ -3,7 +3,7 @@ import 'blockly/blocks'
 import * as Blockly from 'blockly/core'
 import { buildIRFromWorkspace, buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
-import { SZIRSchema } from '#ir'
+import { SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '#parsers'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 
@@ -767,7 +767,7 @@ describe('Lobstermorph V9 (Franks Laboratory) — 100% blocos do núcleo', () =>
     expect(types.has('rawHTML')).toBe(false)
     expect(ir.extensions).toEqual([])
     expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
-    expect(SZIRSchema.safeParse(ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
     for (const expected of ['superCall', 'superMethodCall', 'getElement', 'requestFrame']) {
       expect(types.has(expected)).toBe(true)
     }

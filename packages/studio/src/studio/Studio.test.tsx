@@ -109,6 +109,21 @@ describe('Studio', () => {
     expect(getByText(/Projeto inválido/)).toBeTruthy()
   })
 
+  it('preserva, mas não abre projeto com extensão ainda não liberada pelo host', async () => {
+    const project = createEmptyProject('project-locked-extension', 'Projeto 3D futuro')
+    project.installedExtensions = [{ id: 'game-3d', version: '1.0.0', installedAt: 1 }]
+
+    const { getByText, queryByTestId } = render(
+      <Studio initialProject={project} allowExtensions={['game-2d']} />,
+    )
+
+    expect(getByText(/Este projeto usa ferramentas que você ainda vai conquistar/)).toBeTruthy()
+    await waitFor(() => expect(queryByTestId('editor-shell')).toBeNull())
+    expect(project.installedExtensions).toEqual([
+      { id: 'game-3d', version: '1.0.0', installedAt: 1 },
+    ])
+  })
+
   it('persistence none entrega onChange no debounce e o handle expõe o projeto', async () => {
     setAutosaveDelayForTests(10)
     const changes: string[] = []

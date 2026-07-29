@@ -1,10 +1,14 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { type JSStatement, SZIRSchema } from '#ir'
+import { behaviorStatements, type JSStatement, SZIRSchema } from '#ir'
 import 'blockly/blocks'
+import { attachBlockInContractContext } from '../../../blockly/__tests__/blockContractTestUtils'
+import { inferBlockContract } from '../../../blockly/blockContracts'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace, FRAME_BEHAVIOR } from '../../../blockly/buildIR'
+import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
@@ -15,7 +19,7 @@ import { world3DRuntime } from '../runtime'
  * Auditoria GENÉRICA de todos os blocos do Mundo 3D (clone do blockAudit do
  * Jogo 3D Avançado) — um caso por def, com os valores DEFAULT:
  *
- *   1. def → IR: o bloco no frame de Comportamento vira um nó w3d: (não é
+ *   1. def → IR: o bloco na área indicada pelo contrato vira um nó w3d: (não é
  *      rascunho nem rawJS) e a IR valida no SZIRSchema (drift do zod).
  *   2. IR → blocos → IR: reconstruir e recoletar devolve a MESMA IR.
  *   3. IR → JS: todo helper `SZWorld3D.x(...)` emitido EXISTE no runtime.
@@ -70,29 +74,21 @@ function loadRuntimeKeys(): Set<string> {
   return new Set(Object.keys(api))
 }
 
-/** Instancia o bloco com defaults dentro do frame de Comportamento e coleta a IR. */
+/** Instancia o bloco com defaults na área indicada pelo contrato e coleta a IR. */
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
-    const frame = ws.newBlock(FRAME_BEHAVIOR)
-    const slot = frame.getInput('CHILDREN')?.connection
-    if (!slot) throw new Error('frame de Comportamento sem input CHILDREN')
-    if (kind === 'statement') {
-      const block = ws.newBlock(type)
-      if (!block.previousConnection) throw new Error(`${type}: statement sem previousConnection`)
-      slot.connect(block.previousConnection)
-    } else {
-      const host = ws.newBlock(EXPR_HOST)
-      if (!host.previousConnection) throw new Error('host de expr sem previousConnection')
-      slot.connect(host.previousConnection)
-      const socket = host.getInput('X')?.connection
-      const block = ws.newBlock(type)
-      if (!socket || !block.outputConnection) {
-        throw new Error(`${type}: reporter sem outputConnection (ou host sem X)`)
-      }
-      socket.connect(block.outputConnection)
-    }
-    return stripIds(buildIRFromWorkspace(ws).js)
+    attachBlockInContractContext({
+      workspace: ws,
+      type,
+      kind,
+      expressionHost: EXPR_HOST,
+      expressionInput: 'X',
+      loopHost: 'sz_w3d_on_update',
+      eventHost: 'sz_w3d_npc_talk',
+      eventInput: 'BODY',
+    })
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -105,7 +101,7 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-    return stripIds(buildIRFromWorkspace(ws).js)
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -120,17 +116,98 @@ beforeAll(() => {
 })
 
 describe('Auditoria Mundo 3D — inventário', () => {
+  it('coleta identificadores para todos os comandos Mundo 3D que o compilador emite', () => {
+    const generator = readFileSync(join(import.meta.dir, '../../../generators/js.ts'), 'utf8')
+    const collectorAt = generator.indexOf('function collectStatementIdentifiers')
+    const compiled = generator.slice(generator.indexOf("case 'w3d:setup':"), collectorAt)
+    const collectionStart = generator.indexOf('// ---- Mundo 3D (world-3d) ----', collectorAt)
+    const collected = generator.slice(
+      collectionStart,
+      generator.indexOf("case 'classDecl':", collectionStart),
+    )
+    const commandTypes = (source: string) =>
+      new Set(
+        [...source.matchAll(/case '([^']+)'/g)]
+          .map((match) => match[1] ?? '')
+          .filter((type) => type.startsWith('w3d:')),
+      )
+
+    expect([...commandTypes(compiled)].sort()).toEqual([...commandTypes(collected)].sort())
+  })
+
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(world3DBlocks.length)
-    expect(world3DBlocks.length).toBe(128)
+    expect(world3DBlocks.length).toBe(137)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
+  })
+
+  it('mantém construções pesadas só no início e ações leves disponíveis em corpos', () => {
+    for (const type of [
+      'sz_w3d_setup',
+      'sz_w3d_terrain',
+      'sz_w3d_car',
+      'sz_w3d_scatter_model',
+      'sz_w3d_city',
+      'sz_w3d_road_grid',
+    ]) {
+      const definition = world3DBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} ausente`)
+      expect(inferBlockContract(definition).placement).toEqual({
+        root: ['start'],
+        nested: [],
+        role: 'command',
+      })
+    }
+
+    for (const type of ['sz_w3d_confetti', 'sz_w3d_say', 'sz_w3d_car_place']) {
+      const definition = world3DBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} ausente`)
+      const nested = inferBlockContract(definition).placement?.nested ?? []
+      expect(nested).toContain('event-body')
+      expect(nested).toContain('loop-body')
+    }
+  })
+
+  it('usa seletores filtrados para modelos e nomes declarados de som/item', () => {
+    const arg = (type: string, name: string) => {
+      const definition = world3DBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} ausente`)
+      const fields = [...(definition.args0 ?? []), ...(definition.args1 ?? [])] as Array<
+        Record<string, unknown>
+      >
+      return fields.find((field) => field.name === name)
+    }
+
+    for (const type of ['sz_w3d_scatter_model', 'sz_w3d_place_model']) {
+      expect(arg(type, 'MODEL')).toEqual({
+        type: 'field_asset_picker',
+        name: 'MODEL',
+        text: '',
+        kind: '3d',
+        filter: 'model3d',
+      })
+    }
+    expect(arg('sz_w3d_sky_photo', 'ASSET')).toEqual({
+      type: 'field_asset_picker',
+      name: 'ASSET',
+      text: '',
+      kind: '3d',
+      filter: 'environment3d',
+    })
+    expect(arg('sz_w3d_play_sound', 'NAME')?.kind).toBe('sound')
+    expect(arg('sz_w3d_play_music', 'NAME')?.kind).toBe('sound')
+    expect(arg('sz_w3d_inventory_remove', 'ITEM')?.kind).toBe('item')
+    expect(arg('sz_w3d_inventory_count', 'ITEM')?.kind).toBe('item')
+    expect(arg('sz_w3d_inventory_has', 'ITEM')?.kind).toBe('item')
   })
 })
 
 describe('Auditoria Mundo 3D — pipeline completo por bloco', () => {
   const cases: { type: string; kind: 'statement' | 'expr' }[] = [
-    ...statementDefs.map((d) => ({ type: d.type, kind: 'statement' as const })),
+    ...statementDefs
+      .filter((definition) => inferBlockContract(definition).migration === 'keep')
+      .map((d) => ({ type: d.type, kind: 'statement' as const })),
     ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
 

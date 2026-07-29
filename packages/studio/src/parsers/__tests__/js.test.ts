@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { parse } from '@babel/parser'
-import { generateJS } from '../../generators/js'
+import type { JSStatement } from '#ir'
+import { compileStatements, generateJS } from '../../generators/js'
 import { parseJS } from '../js'
 
 /** Confere que `code` é JS re-parseável (sem lançar nem erros de recuperação). */
@@ -257,6 +258,16 @@ describe('parseJS', () => {
     }
   })
 
+  it('não duplica a proteção automática do envio de formulário', () => {
+    const [event] = parseJS(
+      'document.getElementById("form")?.addEventListener("submit", (event) => { event.preventDefault(); console.log("ok"); });',
+    )
+    expect(event).toMatchObject({ type: 'event', event: 'submit' })
+    if (event?.type === 'event') {
+      expect(event.body).toEqual([{ type: 'consoleLog', value: { type: 'str', value: 'ok' } }])
+    }
+  })
+
   it('reconhece if (var op num) { ... } com binop', () => {
     const code = `if (contador > 5) { console.log("alto"); } else { console.log("baixo"); }`
     const ir = parseJS(code)
@@ -483,7 +494,7 @@ const ctx = canvas.getContext("2d");
 
   it('reconhece ctx.clearRect(0,0,canvas.width,canvas.height) → canvasClear', () => {
     const ir = parseJS(`${SETUP}ctx.clearRect(0, 0, canvas.width, canvas.height);`)
-    expect(ir[1]).toEqual({ type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'canvas' })
+    expect(ir[1]).toEqual({ type: 'canvasClear', ctxVar: 'ctx' })
   })
 
   it('reconhece ctx.fillStyle = "#cor" → canvasFillStyle (cor hexadecimal vira tipo color)', () => {
@@ -678,6 +689,35 @@ titulo.textContent = "#ff0000";`
       w: { type: 'num', value: 64 },
       h: { type: 'num', value: 64 },
     })
+  })
+
+  it('remove o pré-carregador gerado e recupera canvasDrawImage', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
+        {
+          type: 'canvasDrawImage',
+          ctxVar: 'ctx',
+          src: 'foto.png',
+          x: { type: 'num', value: 1 },
+          y: { type: 'num', value: 2 },
+          w: { type: 'num', value: 64 },
+          h: { type: 'num', value: 32 },
+        },
+      ],
+    })
+    expect(parseJS(code)).toEqual([
+      { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
+      {
+        type: 'canvasDrawImage',
+        ctxVar: 'ctx',
+        src: 'foto.png',
+        x: { type: 'num', value: 1 },
+        y: { type: 'num', value: 2 },
+        w: { type: 'num', value: 64 },
+        h: { type: 'num', value: 32 },
+      },
+    ])
   })
 
   it('reconhece função frame + requestAnimationFrame → animationLoop', () => {
@@ -1034,6 +1074,33 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
+  it('preserva função nomeada assíncrona com await sem cair em código avançado', () => {
+    const code = ['async function carregar(url) {', '  await fetch(url);', '}'].join('\n')
+    const ir = parseJS(code)
+
+    expect(ir).toEqual([
+      {
+        type: 'funcDecl',
+        name: 'carregar',
+        params: ['url'],
+        async: true,
+        body: [
+          {
+            type: 'awaitStmt',
+            value: {
+              type: 'call',
+              name: 'fetch',
+              args: [{ type: 'var', name: 'url' }],
+            },
+          },
+        ],
+      },
+    ])
+    const generated = compileStatements(ir, 0)
+    expect(generated).toContain('async function carregar(url)')
+    expect(parseJS(generated)).toEqual(ir)
+  })
+
   it('reconhece chamada de função como comando', () => {
     expect(parseJS('iniciar();')).toEqual([{ type: 'callFunction', name: 'iniciar', args: [] }])
     expect(parseJS('mover(10, x);')).toEqual([
@@ -1119,22 +1186,46 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
-  // ---- Fase 3: DOM dinâmico ----
-  it('reconhece innerHTML em setProperty', () => {
-    expect(parseJS('board.innerHTML = "";')).toEqual([
+  it('preserva Promise vazia como valor, não como instância genérica', () => {
+    expect(parseJS('const espera = new Promise((resolve) => {});')).toEqual([
       {
-        type: 'setProperty',
-        targetId: 'board',
-        targetKind: 'var',
-        property: 'innerHTML',
-        value: { type: 'str', value: '' },
+        type: 'var',
+        kind: 'const',
+        name: 'espera',
+        value: { type: 'newPromise', param: 'resolve', body: [] },
       },
+    ])
+  })
+
+  // ---- Fase 3: DOM dinâmico ----
+  it('mantém innerHTML como Código avançado', () => {
+    expect(parseJS('board.innerHTML = "";')).toEqual([
+      { type: 'rawJS', code: 'board.innerHTML = "";', advanced: true },
     ])
   })
 
   it('reconhece createElement', () => {
     expect(parseJS("const card = document.createElement('div');")).toEqual([
       { type: 'createElement', tag: 'div', varName: 'card' },
+    ])
+  })
+
+  it('mantém criação de elementos executáveis como Código avançado', () => {
+    expect(parseJS("const ataque = document.createElement('script');")).toEqual([
+      {
+        type: 'rawJS',
+        code: "const ataque = document.createElement('script');",
+        advanced: true,
+      },
+    ])
+    expect(
+      parseJS("const ataque = document.createElementNS('http://www.w3.org/2000/svg', 'script');"),
+    ).toEqual([
+      {
+        type: 'rawJS',
+        code: "const ataque = document.createElementNS('http://www.w3.org/2000/svg', 'script');",
+        advanced: true,
+      },
     ])
   })
 
@@ -1240,6 +1331,15 @@ document.addEventListener('keyup', (e) => {
     expect(parseJS('let r = baralho.sort(() => Math.random() - 0.5);')).toEqual([
       { type: 'var', name: 'r', value: { type: 'shuffle', arrayVar: 'baralho' } },
     ])
+  })
+
+  it('roundtrip do embaralhamento preserva o bloco sem mutar via sort', () => {
+    const input: JSStatement[] = [
+      { type: 'var', name: 'r', value: { type: 'shuffle', arrayVar: 'baralho' } },
+    ]
+    const generated = compileStatements(input, 0)
+    expect(generated).not.toContain('.sort(')
+    expect(parseJS(generated)).toEqual(input)
   })
 
   it('reconhece Math.random() cru como randomFloat', () => {

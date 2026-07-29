@@ -1,4 +1,5 @@
 import { parseJS } from '../../parsers/js'
+import { collectTypes, stripIds } from './exampleSourceUtils'
 
 /**
  * Gerador one-off da IR do exemplo "Quadra Maluca" (v0.4.0). Rode com
@@ -8,7 +9,7 @@ import { parseJS } from '../../parsers/js'
 export const QUICARAM_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 50, sky: "#1e1b4b", ground: "#4c1d95" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Quadra Maluca", "Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes — mas o gelo escorrega!", "Jogar");
+SZGameKit3D.setScreenText("menu", "Quadra Maluca", "Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes, mas cuidado: o gelo escorrega!", "Jogar");
 SZGameKit3D.setScreenText("vitoria", "Pegou todas!", "Você domou as bolas malucas.", "Jogar de novo");
 SZGameKit3D.defineMold("heroi", { health: 1, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#22d3ee", w: 0.9, h: 1.1, d: 0.9, x: 0, y: 0.55, z: 0 });
@@ -75,29 +76,6 @@ SZGameKit3D.onOverlap("bola", function (zona, quem) {
 });
 SZGameKit3D.start();
 `.trim()
-
-function stripIds(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(stripIds)
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (typeof obj.type === 'string') out.add(obj.type)
-    for (const v of Object.values(obj)) collectTypes(v, out)
-  }
-  return out
-}
 
 // Só gera quando RODADO direto. O drift test importa o SOURCE daqui (uma cópia
 // só do fonte — duas divergiriam em silêncio), então o módulo não pode imprimir

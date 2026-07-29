@@ -3,15 +3,19 @@
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Switch } from '@sistemazero/ui/switch'
-import { Mail } from 'lucide-react'
+import { Mail, MailCheck, X } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { type ApiError, apiGet } from '@/lib/api'
+import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { useConfirm } from '@/components/admin/use-confirm'
+import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { CourseView, Paginated, TeacherThreadContext, TeacherThreadRow } from '@/lib/types'
 import { ThreadDialog } from './thread-dialog'
@@ -36,6 +40,7 @@ export function studentNameOf(t: TeacherThreadRow): string {
  * como lida e permite responder.
  */
 export function RecadosClient() {
+  const searchParams = useSearchParams()
   const [threads, setThreads] = useState<TeacherThreadRow[]>([])
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(false)
@@ -46,6 +51,20 @@ export function RecadosClient() {
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [courses, setCourses] = useState<CourseView[]>([])
   const [open, setOpen] = useState<TeacherThreadRow | null>(null)
+  const [markingAll, setMarkingAll] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
+  /** Filtro por aluno vindo da FICHA (`?userId=`) — chip removível. */
+  const [studentFilter, setStudentFilter] = useState<string | null>(
+    () => searchParams.get('userId') || null,
+  )
+  // Busca livre por RESPONSÁVEL (nome/e-mail, resolvida no auth) com debounce.
+  const [q, setQ] = useState('')
+  const [qDebounced, setQDebounced] = useState('')
+  const [hint, setHint] = useState<string | null>(null)
+  useEffect(() => {
+    const t = setTimeout(() => setQDebounced(q.trim()), 250)
+    return () => clearTimeout(t)
+  }, [q])
 
   const load = useCallback(
     async (nextOffset: number, append: boolean) => {
@@ -56,19 +75,22 @@ export function RecadosClient() {
         if (audience) params.set('audience', audience)
         if (courseId) params.set('courseId', courseId)
         if (unreadOnly) params.set('unread', 'true')
-        const res = await apiGet<{ threads: TeacherThreadRow[] }>(
+        if (studentFilter) params.set('userId', studentFilter)
+        else if (qDebounced) params.set('q', qDebounced)
+        const res = await apiGet<{ threads: TeacherThreadRow[]; hint?: string }>(
           `/api/members/teacher-threads?${params}`,
         )
         setThreads((prev) => (append ? [...prev, ...res.threads] : res.threads))
         setHasMore(res.threads.length === PAGE)
         setOffset(nextOffset)
+        setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
       } catch (err) {
         toast.error((err as ApiError).message ?? 'Falha ao carregar os recados.')
       } finally {
         setLoading(false)
       }
     },
-    [context, audience, courseId, unreadOnly],
+    [context, audience, courseId, unreadOnly, studentFilter, qDebounced],
   )
 
   useEffect(() => {
@@ -82,8 +104,42 @@ export function RecadosClient() {
       .catch(() => {})
   }, [])
 
-  // Não-lidas primeiro DENTRO da página (o members ordena por última mensagem).
-  const sorted = [...threads].sort((a, b) => Number(b.unread) - Number(a.unread))
+  /** "Marcar todas como lidas" respeitando os filtros ativos (contexto/plataforma/curso). */
+  function markAllRead() {
+    const scoped = Boolean(context || audience || courseId)
+    confirm({
+      title: 'Marcar todas como lidas?',
+      message: scoped
+        ? 'Todas as conversas não-lidas DOS FILTROS ATUAIS serão marcadas como lidas para você.'
+        : 'Todas as conversas não-lidas serão marcadas como lidas para você (só a sua leitura — outros professores não são afetados).',
+      confirmText: 'Marcar como lidas',
+      onConfirm: async () => {
+        setMarkingAll(true)
+        try {
+          const res = await apiSend<{ updated: number }>(
+            '/api/members/teacher-threads/read-all',
+            'POST',
+            {
+              context: context || undefined,
+              audience: audience || undefined,
+              courseId: courseId || undefined,
+            },
+          )
+          toast.success(
+            res.updated === 0
+              ? 'Nada a marcar — tudo lido por aqui.'
+              : `${res.updated} conversa${res.updated === 1 ? '' : 's'} marcada${res.updated === 1 ? '' : 's'} como lida.`,
+          )
+          load(0, false)
+          refreshProfessorCounts()
+        } catch (err) {
+          toast.error((err as ApiError).message ?? 'Não consegui marcar as conversas.')
+        } finally {
+          setMarkingAll(false)
+        }
+      },
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -92,7 +148,33 @@ export function RecadosClient() {
         description="Conversas com os alunos — entregas, Mural e recados gerais. Não-lidas primeiro."
       />
 
+      {studentFilter ? (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium">
+            Filtrando por aluno{threads[0] ? `: ${studentNameOf(threads[0])}` : ''}
+            <button
+              type="button"
+              aria-label="Remover o filtro por aluno"
+              onClick={() => setStudentFilter(null)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          </span>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        {!studentFilter ? (
+          <Field label="Aluno" htmlFor="rec-q" hint="Busque pelo responsável (nome ou e-mail).">
+            <Input
+              id="rec-q"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Nome ou e-mail…"
+            />
+          </Field>
+        ) : null}
         <Field label="Contexto" htmlFor="rec-context">
           <Select id="rec-context" value={context} onChange={(e) => setContext(e.target.value)}>
             <option value="">Todos</option>
@@ -122,7 +204,18 @@ export function RecadosClient() {
           <Switch checked={unreadOnly} onCheckedChange={setUnreadOnly} />
           Só não-lidas
         </label>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mb-1.5 sm:ml-auto"
+          disabled={markingAll || loading}
+          onClick={markAllRead}
+        >
+          <MailCheck className="size-4" /> Marcar todas como lidas
+        </Button>
       </div>
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {confirmDialog}
 
       {loading && threads.length === 0 ? (
         <div className="space-y-2">
@@ -130,14 +223,14 @@ export function RecadosClient() {
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
         </div>
-      ) : sorted.length === 0 ? (
+      ) : threads.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted-foreground">
           <Mail className="mx-auto mb-2 size-6" />
           Nenhuma conversa por aqui{unreadOnly ? ' (sem não-lidas)' : ''}.
         </Card>
       ) : (
         <ul className="space-y-2">
-          {sorted.map((t) => (
+          {threads.map((t) => (
             <li key={t.id}>
               <button
                 onClick={() => setOpen(t)}

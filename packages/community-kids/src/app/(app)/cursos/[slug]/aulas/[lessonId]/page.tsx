@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
+import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { KidsLockedLesson } from '@/components/kids/kids-locked-lesson'
 import type { LessonOutlineView } from '@/lib/types'
 import { computeAgeFromBirthDate } from '@/lib/user-display'
-import { getMeReadonly } from '@/server/auth'
-import { getLesson, getMyCourse } from '@/server/members'
+import { getAvatarReadonly, getLesson, getMyCourse } from '@/server/members'
 import { listReadonly as listProfilesReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { LessonPlayer } from './lesson-player-client'
@@ -16,17 +16,20 @@ export default async function LessonPage({
   params: Promise<{ slug: string; lessonId: string }>
 }) {
   const { slug, lessonId } = await params
-  const [courseRes, lessonRes, session, me, profilesRes] = await Promise.all([
+  const [courseRes, lessonRes, session, avatar, profilesRes] = await Promise.all([
     getMyCourse(slug),
     getLesson(slug, lessonId),
     getSession(),
-    // Avatar p/ o passo de agradecimento da classificação (não vive nas claims).
-    getMeReadonly(),
-    // Perfis da conta → o ATIVO (a criança) dá nome + nascimento + foto p/ a
+    // Foto do agradecimento da classificação = snapshot do avatar 3D da CRIANÇA
+    // (desde 24/07 é a ÚNICA imagem dela — nunca a foto da conta do responsável).
+    getAvatarReadonly(),
+    // Perfis da conta → o ATIVO (a criança) dá nome + nascimento p/ a
     // classificação (nunca o e-mail/nome do responsável). Best-effort.
     listProfilesReadonly(),
   ])
   if (courseRes.status === 404 || courseRes.status === 403) notFound()
+  if (courseRes.status === 423)
+    return <KidsLockedCourse reason={careerLockReason(courseRes.body)} />
   if (courseRes.status !== 200 || !courseRes.body) throw new Error('Falha ao carregar o curso')
   const course = courseRes.body
 
@@ -66,9 +69,7 @@ export default async function LessonPage({
       ratingViewer={{
         name: activeProfile?.name ?? session?.activeProfile?.name ?? null,
         age: computeAgeFromBirthDate(activeProfile?.birthDate),
-        avatarUrl:
-          activeProfile?.avatarUrl ??
-          (me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null),
+        avatarUrl: avatar.status === 200 ? (avatar.body?.photoUrl ?? null) : null,
       }}
       // Compartilhar usa a página de vendas do curso; kids não tem FUNNEL_URL
       // (decisão da v1) — sem salesPageUrl o botão fica oculto.

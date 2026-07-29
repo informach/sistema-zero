@@ -19,6 +19,7 @@ import {
   ROOM_FLOOR_INFO,
   ROOM_ITEM_INFO,
   ROOM_THEME_INFO,
+  SURFACE_SLOTS,
 } from '../../../community-kids/src/lib/room-catalog'
 // Autoridade (members): existência/preço/categoria/paleta/oclusão.
 import {
@@ -37,6 +38,7 @@ import {
   ROOM_LIGHTINGS,
   ROOM_THEMES,
   TROPHY_FOR_BADGE,
+  TROPHY_SHELF_ITEM_ID,
 } from '../../src/domain/room/room-catalog'
 
 /**
@@ -56,6 +58,24 @@ describe('conformância de catálogo (kids apresentação × members autoridade)
       expect(kids?.w, `w divergente em "${m.id}"`).toBe(m.w)
       expect(kids?.h, `h divergente em "${m.id}"`).toBe(m.h)
       expect(kids?.mount, `mount (chão/parede) divergente em "${m.id}"`).toBe(m.mount)
+      // Superfícies (24/07): nichos + stackable divergentes = filho descartado no canonicalize.
+      expect(kids?.surface, `surface (nichos) divergente em "${m.id}"`).toBe(m.surface)
+      expect(kids?.stackable, `stackable divergente em "${m.id}"`).toBe(m.stackable)
+    }
+  })
+
+  test('superfícies: SURFACE_SLOTS (kids) casa 1:1 com `surface` (members)', () => {
+    for (const m of ROOM_ITEMS) {
+      if (m.surface) {
+        expect(
+          SURFACE_SLOTS[m.id]?.length,
+          `nichos 3D divergentes em "${m.id}" (members surface=${m.surface})`,
+        ).toBe(m.surface)
+      }
+    }
+    const surfaceIds = new Set(ROOM_ITEMS.filter((m) => m.surface).map((m) => m.id))
+    for (const id of Object.keys(SURFACE_SLOTS)) {
+      expect(surfaceIds.has(id), `SURFACE_SLOTS órfão no kids: "${id}"`).toBe(true)
     }
   })
 
@@ -78,9 +98,12 @@ describe('conformância de catálogo (kids apresentação × members autoridade)
         `badge "${badge}" ausente em TROPHY_BADGE_SLUGS (kids)`,
       ).toBe(true)
     }
-    // Recíprocos: todo item trophy tem badge; o set kids não tem badge órfã.
+    // Recíprocos: todo item trophy tem badge (EXCETO a estante de troféus, concedida
+    // junto com o 1º troféu — não tem badge própria); o set kids não tem badge órfã.
     const mappedItems = new Set(Object.values(TROPHY_FOR_BADGE))
-    for (const m of ROOM_ITEMS.filter((i) => i.tier === 'trophy')) {
+    for (const m of ROOM_ITEMS.filter(
+      (i) => i.tier === 'trophy' && i.id !== TROPHY_SHELF_ITEM_ID,
+    )) {
       expect(mappedItems.has(m.id), `troféu "${m.id}" sem badge mapeada`).toBe(true)
     }
     for (const badge of KIDS_TROPHY_BADGES) {

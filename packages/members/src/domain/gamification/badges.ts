@@ -35,12 +35,22 @@ export const BADGE_SLUGS = [
   'pensa-first-idea',
   'pensa-first-launch',
   'pensa-creator-3',
-  // 1ª participação no Desafio do mês (game jam — ledger `challenge_entry`). 07/2026.
+  // Participação no Desafio do mês (game jam — ledger `challenge_entry`): 1ª e 3ª. 07/2026.
   'challenge-first',
+  'challenge-3',
   // 1ª conversa aprovada no Clube dos Criadores (ledger `clube_thread`). 07/2026.
   'clube-primeiro-post',
   'coins-saver-300',
   'coins-saver-1000',
+  // Full review 24/07 — celebrar criação/personalização/apoio aos colegas:
+  // 1º remix de um jogo do Mural (ledger `studio_remix` — bônus do Estúdio).
+  'remix-first',
+  // 5 itens do quarto conquistados (ledger `room_item_buy` — universal, sink de Zappy).
+  'room-decorator-5',
+  // 5 peças do avatar conquistadas (ledger `avatar_part_buy` — universal).
+  'avatar-style-5',
+  // 10 comentários APROVADOS no Mural (ledger `mural_comment` — bônus do Mural).
+  'mural-commenter-10',
 ] as const
 
 export type BadgeSlug = (typeof BADGE_SLUGS)[number]

@@ -35,6 +35,25 @@ function classicProject(overrides: Partial<Project> = {}): Project {
 }
 
 describe('buildClassicFileMap', () => {
+  it('carrega o runtime de entrada antes do código do aluno no site publicado', async () => {
+    const { files } = await buildClassicFileMap(
+      classicProject({
+        files: {
+          ...classicProject().files,
+          'script.js': 'if (__szInput.key("ArrowRight")) console.log(__szInput.x);',
+        },
+      }),
+      identityMinifiers,
+    )
+
+    expect(String(files['public/sz-input.js'])).toContain('window.__szInput = input')
+    const index = String(files['public/index.html'])
+    const inputRuntime = index.indexOf('src="sz-input.js"')
+    const studentScript = index.indexOf('src="script.js"')
+    expect(inputRuntime).toBeGreaterThan(-1)
+    expect(studentScript).toBeGreaterThan(inputRuntime)
+  })
+
   it('placement external: emite os 3 arquivos sob public/ e mantem as referencias', async () => {
     const { files } = await buildClassicFileMap(classicProject(), identityMinifiers)
     expect(files['public/index.html']).toBeDefined()
@@ -42,6 +61,10 @@ describe('buildClassicFileMap', () => {
     expect(files['public/script.js']).toBe('console.log("oi");')
     expect(files['public/index.html']).toContain('href="style.css"')
     expect(files['public/index.html']).toContain('src="script.js"')
+    expect(files['public/manifest.webmanifest']).toBeDefined()
+    expect(files['public/icon.svg']).toContain('<svg')
+    expect(files['public/sw.js']).toContain('./index.html')
+    expect(files['public/index.html']).toContain('rel="manifest"')
   })
 
   it('assets viram arquivos binários public/<nome> (url() relativa do CSS resolve)', async () => {
@@ -163,6 +186,20 @@ describe('buildClassicFileMap', () => {
     expect(index).toContain('src="sz-ext/game-3d.js"')
     // LOW: avisa que a lib 3D vem da internet (esm.sh) — visitante precisa estar online.
     expect(warnings.some((w) => w.includes('esm.sh'))).toBe(true)
+  })
+
+  it('extensao game-2d: exporta a fonte das interfaces pronta para uso offline', async () => {
+    const { files } = await buildClassicFileMap(
+      classicProject({
+        installedExtensions: [{ id: 'game-2d', version: '0.35.2', installedAt: 0 }],
+      }),
+      identityMinifiers,
+    )
+
+    const runtime = String(files['public/sz-ext/game-2d.js'])
+    expect(runtime).toContain('data:font/woff2;base64,')
+    expect(runtime).not.toMatch(/https?:\/\/fonts\.(googleapis|gstatic)\.com/)
+    expect(String(files['public/index.html'])).toContain('src="sz-ext/game-2d.js"')
   })
 
   it('A1: reinjeta o link de style.css quando o aluno tirou a referencia do index', async () => {

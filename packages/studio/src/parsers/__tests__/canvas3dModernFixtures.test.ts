@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -131,7 +132,7 @@ function assertBuildable(source: string): { code: string; state: string } {
   const ws = new Blockly.Workspace()
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-    const rebuilt = generateJS({ statements: buildIRFromWorkspace(ws).js })
+    const rebuilt = generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) })
     expect(rebuilt).toBe(code) // fixpoint de blocos
   } finally {
     ws.dispose()

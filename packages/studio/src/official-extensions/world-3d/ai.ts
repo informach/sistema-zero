@@ -9,17 +9,23 @@ Mundo 3D aberto dirigível via \`window.SZWorld3D\` (facade global, já carregad
 no preview). Modelo mental: a criança monta um MUNDO (não um jogo de fases) e
 dirige um carrinho nele. Unidades em METROS; o carrinho tem ~3 m.
 
-### Receita canônica (a ordem importa só no começar)
+### Receita canônica por Área do projeto
 
 \`\`\`js
+// ⚙️ Ao iniciar
 SZWorld3D.setup({ style: 'floresta', world: 160 });
 SZWorld3D.terrain(4, 5);
 SZWorld3D.car({ style: 'passeio', color: '#ef4444' });
+// 🔁 Enquanto estiver rodando
 SZWorld3D.onUpdate(function (dt) {
   // mecânica extra da criança (opcional)
 });
-SZWorld3D.start(); // SEMPRE por último
 \`\`\`
+
+Use ⚡ Quando acontecer para os chapéus “Quando…” e
+🔁 Enquanto estiver rodando para onUpdate e outros loops-raiz. O Studio
+chama o ciclo de vida automaticamente. NÃO gere
+\`SZWorld3D.start()\`: esse método existe apenas para projetos legados.
 
 ### API (1 método por bloco)
 
@@ -27,15 +33,16 @@ SZWorld3D.start(); // SEMPRE por último
   'neve' | 'deserto' | 'primavera' | 'lua' | 'fazenda' (na neve o carro
   escorrega; na LUA a gravidade cai p/ 40%, o céu nasce estrelado e o chão
   ganha crateras automáticas). world = lado do mundo em metros (40–600,
-  padrão 160). Só ANTES do start.
+  padrão 160). Use em Ao iniciar, antes do boot automático.
 - \`SZWorld3D.terrain(alturaMorros, suavidade)\` — colinas por ruído
-  determinístico (mesmo mundo sempre); centro plano p/ o spawn. Pode DEPOIS
-  do start (reconstrói na hora). altura 0–30 m, suavidade 1–30.
+  determinístico (mesmo mundo sempre); centro plano p/ o spawn. Use depois de
+  setup, ainda em Ao iniciar. altura 0–30 m, suavidade 1–30.
 - \`SZWorld3D.flatten(x, z, raio)\` — aplaina um disco do chão (praça/pátio).
 - \`SZWorld3D.path(x1, z1, x2, z2, largura)\` — trilha plana entre 2 pontos.
 - \`SZWorld3D.water(altura, cor)\` — água até a altura dada; o carro afunda/
   respinga e respawna se cair fundo.
-- \`SZWorld3D.start()\` — monta tudo, telinha "Começar o passeio", liga o laço.
+- \`SZWorld3D.skyPhoto(nomeDoHdr)\` — usa um asset .hdr do projeto como céu
+  panorâmico e iluminação ambiente; nunca carrega URL externa.
 - \`SZWorld3D.worldSize()\` → número (lado do mundo).
 - \`SZWorld3D.groundHeight(x, z)\` → altura do terreno naquele ponto (use para
   pousar objetos SEUS em cima dos morros).
@@ -73,7 +80,7 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.islands(n, alturaDoMar)\` — vira ARQUIPÉLAGO (a água entra sozinha; você nasce na ilha 0, no centro).
 - \`SZWorld3D.boat(corHex)\` — barco dirigível: SÓ anda na água, encalha na praia; com personagem, E perto dele embarca; sem carro nem personagem, nasce pilotando.
 - \`SZWorld3D.bridge(x1, z1, x2, z2, largura)\` — ponte em arco: carro/personagem POR CIMA, barco POR BAIXO. \`SZWorld3D.lighthouse(x, z)\` — farol com luz girando à noite.
-- \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado. scatter/placeThing agora aceitam 'palmeiras' 🌴.
+- \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado persistente. Gere fora de 🔁 Enquanto estiver rodando; repetir a mesma opção mantém o relógio atual. scatter/placeThing agora aceitam 'palmeiras' 🌴.
 - 🏙️ \`SZWorld3D.city(x, z, 'pequena'|'media'|'grande', 'dia'|'neon')\` — a
   CIDADEZINHA completa (estilo Vocation Vista): praça com coreto + varais,
   anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas/lojas/
@@ -81,6 +88,12 @@ SZWorld3D.start(); // SEMPRE por último
   cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
   por mundo. Modo 'neon' = noite + chuva leve por default (se a criança não
   pediu outra hora/clima) + letreiros emissivos brilhando no bloom.
+- \`SZWorld3D.district('residencial'|'comercial'|'educacao'|'saude'|
+  'industrial'|'turistico', x, z, tamanho)\` — bairro procedural instanciado;
+  aplaina e limpa a área sozinho. \`SZWorld3D.roadGrid('grade'|'radial'|
+  'organica', x, z, tamanho, largura)\` — rede de ruas em 2 draw calls.
+  \`SZWorld3D.houseRow(n, x1, z1, x2, z2, 'coloridas'|'praia'|'modernas'|
+  'campo')\` — fileira de casas primitivas instanciadas.
 - 🌙 \`SZWorld3D.crater(x, z, raio)\` — tigela com borda erguida no heightAt
   (compõe com flatten/trilha; qualquer estilo). \`SZWorld3D.flag(x, z,
   corHex)\` — mastro + bandeira (cap 8). \`SZWorld3D.rocket(x, z)\` — foguete
@@ -96,7 +109,8 @@ SZWorld3D.start(); // SEMPRE por último
   interativa: E perto abre um overlay LOCAL (título + texto + imagem do
   projeto via ASSETS; imagem '' = sem). É o "conteúdo do prédio" do
   Vocation Vista sem rede. Cap 16 portas; prio 1 no árbitro do E; E fecha.
-- \`SZWorld3D.npcAsk('Nome', 'Pergunta?', 'OpA', fnA, 'OpB', fnB)\` —
+- \`SZWorld3D.npcAsk('Nome', 'Pergunta?', 'OpA', fnA, 'OpB', fnB)\` — comando
+  que só deve aparecer dentro do corpo de \`npcTalk\`;
   pergunta com 2 escolhas na fila de falas do amigo: balão typewriter + 2
   botões (clique ou teclas 1/2); a escolha roda fnA/fnB (que normalmente
   enfileiram npcSay — conversa RAMIFICADA). Enquanto aberta, E é engolido.
@@ -109,11 +123,14 @@ SZWorld3D.start(); // SEMPRE por último
   postes (catenária; as lâmpadas acendem com o escurecer). Vale em qualquer
   mundo, com ou sem cidade.
 - \`SZWorld3D.npc('Nome', x, z, corHex, chapeu)\` — amigo que olha p/ você de perto (cap 8). \`SZWorld3D.npcWander('Nome', raio)\` — passeia ao redor de casa.
-- \`SZWorld3D.npcTalk('Nome', () => { … })\` — roda no E perto do amigo; dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
+- \`SZWorld3D.npcTalk('Nome', () => { … })\` — chapéu de **⚡ Quando acontecer**; roda no E perto do amigo. Dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
 - \`SZWorld3D.coinsScatter(n)\` / \`coinsRing(n, x, z, raio)\` / \`coinsLine(n, x1, z1, x2, z2)\` — moedas girando (cap 512; nunca na água). Pegar = encostar: plim + HUD 🪙 automático + \`SZWorld3D.onCollect(() => { … })\`. \`SZWorld3D.coinCount()\` → total.
 - \`SZWorld3D.quest('nome', 'descrição')\` — a missão ATIVA aparece no painel sozinha. \`SZWorld3D.questDone('nome')\` — confete + fanfarra + \`SZWorld3D.onQuestDone('nome', () => { … })\`. Meta automática NÃO existe: componha com onCollect + se coinCount() >= N.
 - \`SZWorld3D.marker('alerta'|'estrela'|'alvo'|'moeda', x, z)\` — ícone quicando sobre o lugar. \`SZWorld3D.guideArrow(x, z, 'ligada'|'desligada')\` — seta na tela que aponta o alvo e some ao chegar.
 - \`SZWorld3D.achievement('nome')\` — conquista PARA SEMPRE (salva no projeto; 1ª vez = toast+confete; repetir não refesteja). \`SZWorld3D.onAchievement('nome', () => { … })\` · \`SZWorld3D.hasAchievement('nome')\` → booleano (vale entre jogadas).
+- Inventário persistente: \`SZWorld3D.inventoryGive('item', n)\`,
+  \`inventoryRemove('item', n)\`, \`inventoryCount('item')\` → número e
+  \`inventoryHas('item', n)\` → booleano. Nunca fica negativo.
 - \`SZWorld3D.minimap('ver'|'teleporte')\` — minimapa no canto; M abre o mapa grande (teleporte = clicar viaja).
 - \`SZWorld3D.racePodium()\` — fim da corrida pede 3 INICIAIS (setas+E); top-5 salvo no projeto; P reabre.
 - \`SZWorld3D.whisperCorner(x, z)\` — cantinho onde o JOGADOR escreve recados (viram chamas 🔥 persistentes, cap 20). \`SZWorld3D.flameNote(x, z, 'texto')\` — a SUA dica-chama (E lê).
@@ -123,7 +140,7 @@ SZWorld3D.start(); // SEMPRE por último
   SÓLIDOS (colidem com o carro); flores/cogumelos não. Teto global ~12.000
   instâncias. Respeita as áreas do clearArea; o centro (spawn) já nasce limpo.
 - \`SZWorld3D.scatterModel(n, nomeDoModelo, tamanho)\` — espalha um .glb do
-  projeto (o aluno envia no painel de assets e usa o NOME). Sólido se for
+  projeto (o aluno envia no painel de assets e escolhe no seletor). Sólido se for
   grandinho.
 - \`SZWorld3D.placeThing(especie, x, z, tamanho)\` — UMA cópia num ponto exato.
 - \`SZWorld3D.placeModel(nome, x, z, tamanho, graus)\` — UM .glb num ponto.
@@ -144,12 +161,14 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.setEffects('ligados'|'desligados', brilho)\` — bloom + vinheta
   (composer próprio, ACES). Default LIGADO com brilho 1; brilho 0–3. O modo
   turbo (FPS < 45 nos primeiros segundos) desliga sozinho e reduz a grama.
+- \`SZWorld3D.quality('automatica'|'alta'|'desempenho')\` — escolha explícita;
+  automática mede FPS, desempenho reduz resolução interna/sombras/grama.
 - \`SZWorld3D.cameraMode('seguir'|'topo'|'cinema')\` — modo da câmera (seguir
   por trás / vista de cima / órbita cinema). \`SZWorld3D.cameraShake(forca, segundos)\`
   — tremor. (Joystick mobile aparece sozinho em toque; não tem método.)
 - \`SZWorld3D.onCrash(function () { ... })\` — trombada forte do carro em coisa
   sólida (tem respiro de 0.4 s entre disparos).
-- \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto.
+- \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto. \`playMusic\` é persistente: use em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca em 🔁 Enquanto estiver rodando. Repetir o mesmo apelido não reinicia a faixa.
 - \`SZWorld3D.hud(texto, 'topo-esquerda'|'topo-direita'|'baixo-esquerda'|'baixo-direita')\` — texto fixo num canto (vazio apaga).
 - \`SZWorld3D.say(texto, segundos)\` — balão de fala sobre o carro.
 - \`SZWorld3D.point(nome, x, z)\` — ponto interativo (pilar + badge 'E').
@@ -181,6 +200,6 @@ SZWorld3D.start(); // SEMPRE por último
   runtime parseia o ArrayBuffer; nada de carregar por URL).
 - Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
 - Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
-- Joystick mobile e modos de câmera chegam na próxima versão.
+- No toque aparecem direção, pulo, interação, turbo/corrida, buzina, mapa e pódio.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `

@@ -1,0 +1,14 @@
+{
+  "name": "sistemazero-pro-build-dependencies",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@types/three": "0.180.0",
+    "@vitejs/plugin-react": "6.0.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "three": "0.180.0",
+    "typescript": "5.9.3",
+    "vite": "8.0.16"
+  }
+}

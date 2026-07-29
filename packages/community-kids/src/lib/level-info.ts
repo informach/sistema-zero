@@ -109,12 +109,12 @@ const TIER_HINTS: readonly {
   one: string
   many: string
 }[] = [
-  { key: 'iniciante-2d', one: 'projeto Iniciante 2D', many: 'projetos Iniciante 2D' },
-  { key: 'iniciante-3d', one: 'projeto Iniciante 3D', many: 'projetos Iniciante 3D' },
-  { key: 'intermediario-2d', one: 'projeto Intermediário 2D', many: 'projetos Intermediário 2D' },
-  { key: 'intermediario-3d', one: 'projeto Intermediário 3D', many: 'projetos Intermediário 3D' },
-  { key: 'avancado-2d', one: 'projeto Avançado 2D', many: 'projetos Avançado 2D' },
-  { key: 'avancado-3d', one: 'projeto Avançado 3D', many: 'projetos Avançado 3D' },
+  { key: 'iniciante-2d', one: 'curso Iniciante 2D', many: 'cursos Iniciante 2D' },
+  { key: 'iniciante-3d', one: 'curso Iniciante 3D', many: 'cursos Iniciante 3D' },
+  { key: 'intermediario-2d', one: 'curso Intermediário 2D', many: 'cursos Intermediário 2D' },
+  { key: 'intermediario-3d', one: 'curso Intermediário 3D', many: 'cursos Intermediário 3D' },
+  { key: 'avancado-2d', one: 'curso Avançado 2D', many: 'cursos Avançado 2D' },
+  { key: 'avancado-3d', one: 'curso Avançado 3D', many: 'cursos Avançado 3D' },
 ]
 
 /**
@@ -129,9 +129,10 @@ export function nextLevelHint(level: StudentLevelView | undefined): string | nul
   for (const tier of TIER_HINTS) {
     const n = r[tier.key]
     if (typeof n === 'number' && n > 0) {
+      // "da carreira" = só os cursos com posição contam (bônus não movem o número).
       return n === 1
-        ? `Falta 1 ${tier.one} (concluído + no Mural) para virar ${next}`
-        : `Faltam ${n} ${tier.many} (concluídos + no Mural) para virar ${next}`
+        ? `Falta 1 ${tier.one} da carreira concluído e o projeto publicado no Mural para virar ${next}`
+        : `Faltam ${n} ${tier.many} da carreira concluídos e com os projetos no Mural para virar ${next}`
     }
   }
   if (r.any > 0)

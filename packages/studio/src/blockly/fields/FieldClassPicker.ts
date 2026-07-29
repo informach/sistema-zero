@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { CANVAS3D_ADDON_CLASSES, CANVAS3D_STUDIO_ADDON_NAMES } from '../../three/canvas3dAddons'
 
 /**
  * Campo do bloco "criar … = novo …" (`sz_t3d_new_var`/`sz_t3d_new`): em vez de a
@@ -114,33 +115,18 @@ export const COMMON_CLASSES: ReadonlyArray<{ group: string; items: readonly Clas
   },
   {
     group: '🔌 Do addon (sem THREE.)',
-    items: [
-      { name: 'GLTFLoader', ns: '' },
-      { name: 'FBXLoader', ns: '' },
-      { name: 'OrbitControls', ns: '' },
-      { name: 'PointerLockControls', ns: '' },
-      { name: 'RGBELoader', ns: '' },
-      { name: 'EffectComposer', ns: '' },
-      { name: 'RenderPass', ns: '' },
-      { name: 'UnrealBloomPass', ns: '' },
-      { name: 'OutputPass', ns: '' },
-      { name: 'Water', ns: '' },
-      { name: 'Line2', ns: '' },
-      { name: 'LineGeometry', ns: '' },
-      { name: 'LineMaterial', ns: '' },
-    ],
+    items: CANVAS3D_STUDIO_ADDON_NAMES.map((name) => ({ name, ns: '' })),
   },
 ]
 
 /** Nome da classe → namespace ('THREE' ou ''). Fonte da verdade do NS por classe. */
-export const CLASS_NAMESPACE: Record<string, 'THREE' | ''> = Object.fromEntries(
-  COMMON_CLASSES.flatMap((g) => g.items.map((i) => [i.name, i.ns] as const)),
-)
+export const CLASS_NAMESPACE: Record<string, 'THREE' | ''> = {
+  ...Object.fromEntries(COMMON_CLASSES.flatMap((g) => g.items.map((i) => [i.name, i.ns] as const))),
+  ...Object.fromEntries([...CANVAS3D_ADDON_CLASSES].map((name) => [name, ''] as const)),
+}
 
 /** Classes de ADDON (namespace vazio) — usadas pelo reconhecedor de `new` bare. */
-export const ADDON_CLASSES: ReadonlySet<string> = new Set(
-  COMMON_CLASSES.flatMap((g) => g.items.filter((i) => i.ns === '').map((i) => i.name)),
-)
+export const ADDON_CLASSES = CANVAS3D_ADDON_CLASSES
 
 /** Reaplica o data-sz-theme do root no DropDownDiv portalado. */
 function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
@@ -169,10 +155,10 @@ export class FieldClassPicker extends Blockly.FieldTextInput {
 
     const wrap = document.createElement('div')
     wrap.style.cssText =
-      'padding:8px;width:250px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
+      'padding:8px;width:min(250px,calc(100vw - 24px));background:var(--color-sz-panel);font-family:Nunito,system-ui,sans-serif;'
 
     const listBox = document.createElement('div')
-    listBox.style.cssText = 'max-height:260px;overflow:auto;'
+    listBox.style.cssText = 'max-height:min(260px,calc(100vh - 150px));overflow:auto;'
     for (const grp of COMMON_CLASSES) {
       const head = document.createElement('div')
       head.textContent = grp.group
@@ -186,7 +172,7 @@ export class FieldClassPicker extends Blockly.FieldTextInput {
         btn.type = 'button'
         btn.textContent = item.name
         btn.style.cssText =
-          'padding:4px 8px;border:1px solid var(--color-sz-border);border-radius:6px;background:var(--color-sz-bg);color:var(--color-sz-fg);cursor:pointer;font-size:11px;'
+          'min-width:44px;min-height:45px;padding:8px;border:1px solid var(--color-sz-border);border-radius:8px;background:var(--color-sz-bg);color:var(--color-sz-fg);cursor:pointer;font-size:12px;'
         btn.addEventListener('click', () => this.pick(item.name, item.ns))
         grid.appendChild(btn)
       }
@@ -205,12 +191,12 @@ export class FieldClassPicker extends Blockly.FieldTextInput {
     input.placeholder = 'outra classe'
     input.spellcheck = false
     input.style.cssText =
-      'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
+      'flex:1;min-width:0;min-height:44px;padding:8px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:6px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
     const ok = document.createElement('button')
     ok.type = 'button'
     ok.textContent = 'OK'
     ok.style.cssText =
-      'padding:3px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
+      'min-width:44px;min-height:45px;padding:8px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;'
     const apply = () => {
       // Texto livre: a criança pode escrever só o nome de uma classe conhecida
       // (`Scene`) — completamos com o namespace certo; senão vale como digitado

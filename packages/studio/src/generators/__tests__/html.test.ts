@@ -16,6 +16,12 @@ describe('generateHTML', () => {
     expect(html).toContain('<script src="script.js"></script>')
   })
 
+  it('inclui a viewport móvel na casca padrão', () => {
+    const html = generateHTML({ title: 'Jogo', body: [] })
+
+    expect(html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1" />')
+  })
+
   it('descarta atributos com nome inválido e mantém os válidos', () => {
     const html = generateHTML({
       title: 'Test',
@@ -52,6 +58,16 @@ describe('generateHTML', () => {
     })
     expect(html).not.toContain('<img onerror=alert(1)>')
     expect(html).toContain('&lt;img onerror=alert(1)&gt;')
+  })
+
+  it('impede que o texto de um comentário encerre o comentário e injete HTML', () => {
+    const html = generateHTML({
+      title: 'Test',
+      body: [{ type: 'comment', text: 'fim--><h1>visível</h1><!--' }],
+    })
+    const parsed = new DOMParser().parseFromString(html, 'text/html')
+    expect(parsed.querySelector('h1')).toBeNull()
+    expect(parsed.body.textContent).not.toContain('visível')
   })
 
   it('renderiza canvas com largura/altura', () => {
@@ -94,6 +110,16 @@ describe('generateHTML', () => {
     expect(html).toContain('<script src="script.js"></script>')
     // Não duplica o link nem usa o título-padrão quando há shell.
     expect(html).not.toContain('Ignorado quando há shell')
+  })
+
+  it('não duplica o script canônico quando a casca já o mantém no cabeçalho', () => {
+    const html = generateHTML({
+      title: 'Test',
+      body: [{ type: 'element', tag: 'h1', text: 'Oi' }],
+      shell: { head: '\n    <script src="script.js"></script>\n  ' },
+    })
+    expect(html.match(/<script src="script\.js"><\/script>/g)).toHaveLength(1)
+    expect(html.indexOf('<script src="script.js"></script>')).toBeLessThan(html.indexOf('<body>'))
   })
 
   it('renderiza elementos aninhados (container com filhos)', () => {
@@ -232,6 +258,16 @@ describe('generateHTML', () => {
       node = { type: 'element', tag: 'div', children: [node] }
     }
     expect(() => generateHTML({ title: 'X', body: [node] })).toThrow(GeneratorDepthError)
+  })
+
+  it('aplica a mesma guarda aos filhos alternativos de Canvas', () => {
+    let child: HTMLNode = { type: 'element', tag: 'span', text: 'fundo' }
+    for (let i = 0; i < MAX_GENERATOR_DEPTH + 50; i += 1) {
+      child = { type: 'element', tag: 'span', children: [child] }
+    }
+    const canvas: HTMLNode = { type: 'canvas', id: 'jogo', children: [child] }
+
+    expect(() => generateHTML({ title: 'X', body: [canvas] })).toThrow(GeneratorDepthError)
   })
 
   describe('chokepoint de atributos (handlers inline + URLs)', () => {

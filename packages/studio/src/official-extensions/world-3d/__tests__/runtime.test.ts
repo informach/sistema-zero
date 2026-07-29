@@ -15,6 +15,7 @@ interface Api {
   flatten: (x?: unknown, z?: unknown, r?: unknown) => unknown
   path: (a?: unknown, b?: unknown, c?: unknown, d?: unknown, e?: unknown) => unknown
   water: (y?: unknown, color?: unknown) => unknown
+  skyPhoto: (name?: unknown) => unknown
   start: () => unknown
   worldSize: () => number
   groundHeight: (x?: unknown, z?: unknown) => number
@@ -24,7 +25,23 @@ interface Api {
   carPos: (a?: unknown) => number
   carSpeed: () => number
   carBoost: (force?: unknown) => unknown
+  district: (kind?: unknown, x?: unknown, z?: unknown, size?: unknown) => unknown
+  roadGrid: (layout?: unknown, x?: unknown, z?: unknown, size?: unknown, width?: unknown) => unknown
+  houseRow: (
+    n?: unknown,
+    x1?: unknown,
+    z1?: unknown,
+    x2?: unknown,
+    z2?: unknown,
+    style?: unknown,
+  ) => unknown
+  quality: (mode?: unknown) => unknown
+  inventoryGive: (item?: unknown, n?: unknown) => number | undefined
+  inventoryRemove: (item?: unknown, n?: unknown) => number | undefined
+  inventoryCount: (item?: unknown) => number
+  inventoryHas: (item?: unknown, n?: unknown) => boolean
   engineSound: (on?: unknown) => unknown
+  ambience: (kind?: unknown) => unknown
   loadSound: (name?: unknown, asset?: unknown) => unknown
   playSound: (name?: unknown) => unknown
   playMusic: (name?: unknown) => unknown
@@ -73,12 +90,20 @@ interface Api {
   keyPressed: (k: unknown) => boolean
 }
 
-function boot(): Api {
+function boot(options?: {
+  sounds?: Record<string, string>
+  Audio?: new (url: string) => unknown
+}): Api {
   const body = world3DRuntime.replace(/^import \* as THREE from 'three';\n/, '')
-  const win: { addEventListener: () => void; SZWorld3D?: unknown } = {
+  const win: {
+    addEventListener: () => void
+    SZWorld3D?: unknown
+    __SZGAME_SOUNDS?: Record<string, string>
+  } = {
     addEventListener: () => {},
+    __SZGAME_SOUNDS: options?.sounds,
   }
-  new Function('THREE', 'window', body)({}, win)
+  new Function('THREE', 'window', 'Audio', body)({}, win, options?.Audio)
   if (!win.SZWorld3D) throw new Error('o runtime não pendurou window.SZWorld3D')
   return win.SZWorld3D as Api
 }
@@ -92,12 +117,21 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'flatten',
       'path',
       'water',
+      'skyPhoto',
       'start',
       'worldSize',
       'groundHeight',
       'car',
       'carStats',
       'carBoost',
+      'district',
+      'roadGrid',
+      'houseRow',
+      'quality',
+      'inventoryGive',
+      'inventoryRemove',
+      'inventoryCount',
+      'inventoryHas',
       'engineSound',
       'carPlace',
       'carPos',
@@ -164,6 +198,21 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(api.worldSize()).toBe(40)
     api.setup({ style: 'praia', world: 9999 })
     expect(api.worldSize()).toBe(600)
+  })
+
+  it('macros v4 anotam cidade sem Three e o inventário nunca fica negativo', () => {
+    const api = boot()
+
+    expect(() => api.roadGrid('grade', 0, 0, 80, 6)).not.toThrow()
+    expect(() => api.district('educacao', 20, 10, 48)).not.toThrow()
+    expect(() => api.houseRow(8, -30, 15, 30, 15, 'coloridas')).not.toThrow()
+    expect(() => api.quality('desempenho')).not.toThrow()
+
+    expect(api.inventoryGive('madeira', 3)).toBe(3)
+    expect(api.inventoryRemove('madeira', 1)).toBe(2)
+    expect(api.inventoryHas('madeira', 2)).toBe(true)
+    expect(api.inventoryRemove('madeira', 99)).toBe(0)
+    expect(api.inventoryCount('madeira')).toBe(0)
   })
 
   it('groundHeight: determinístico, e o centro do mundo é PLANO (spawn em paz)', () => {
@@ -244,6 +293,42 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.stopMusic()).not.toThrow()
     expect(() => api.hud('Pontos: 5', 'topo-direita')).not.toThrow()
     expect(() => api.say('Oi!', 2)).not.toThrow()
+  })
+
+  it('mantém a mesma música tocando quando o comando é repetido', () => {
+    const instances: Array<{ url: string; pauseCalls: number; playCalls: number }> = []
+    class AudioStub {
+      loop = false
+      volume = 1
+      currentTime = 0
+      pauseCalls = 0
+      playCalls = 0
+      constructor(public readonly url: string) {
+        instances.push(this)
+      }
+      play() {
+        this.playCalls += 1
+      }
+      pause() {
+        this.pauseCalls += 1
+      }
+    }
+    const api = boot({
+      sounds: { tema: '/tema.mp3', batalha: '/batalha.mp3' },
+      Audio: AudioStub,
+    })
+
+    api.playMusic('tema')
+    api.playMusic('tema')
+    expect(instances).toHaveLength(1)
+    expect(instances[0]?.playCalls).toBe(1)
+    expect(instances[0]?.pauseCalls).toBe(0)
+
+    api.playMusic('batalha')
+    expect(instances).toHaveLength(2)
+    expect(instances[0]?.pauseCalls).toBe(1)
+    api.stopMusic()
+    expect(instances[1]?.pauseCalls).toBe(1)
   })
 
   it('pontos/áreas/totens/galeria: config pura antes do start, sem lançar', () => {

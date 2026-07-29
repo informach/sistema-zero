@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { JSStatement, SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -37,7 +38,7 @@ function fromIR(js: JSStatement[]): { code: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      code: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      code: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -54,7 +55,10 @@ const water: JSStatement[] = [
     size: { type: 'num', value: 2000 },
     color: { type: 'color', value: '#0a3d5c' },
   },
-  { type: 'waterTime', water: 'agua' },
+  {
+    type: 'animationLoop',
+    body: [{ type: 'waterTime', water: 'agua', dt: { type: 'num', value: 1 / 60 } }],
+  },
 ]
 
 describe('Canvas 3D — macro Água 🌊 (bloco sz_t3d_water)', () => {
@@ -63,16 +67,18 @@ describe('Canvas 3D — macro Água 🌊 (bloco sz_t3d_water)', () => {
     // o import do addon entra sozinho
     expect(code).toContain("import { Water } from 'three/addons/objects/Water.js';")
     // normal map procedural (sem arquivo externo)
-    expect(code).toContain('const aguaData = new Uint8Array(1024);')
-    expect(code).toContain('const aguaNormals = new THREE.DataTexture(aguaData, 16, 16);')
-    expect(code).toContain('aguaNormals.wrapS = THREE.RepeatWrapping;')
+    expect(code).toContain('const aguaDados = new Uint8Array(1024);')
+    expect(code).toContain('const aguaNormais = new THREE.DataTexture(aguaDados, 16, 16);')
+    expect(code).toContain('aguaNormais.wrapS = THREE.RepeatWrapping;')
     // o Water na grafia atual
-    expect(code).toContain('const agua = new Water(new THREE.PlaneGeometry(2000, 2000), {')
+    expect(code).toContain(
+      'const agua = new Water(new THREE.PlaneGeometry(aguaTamanho, aguaTamanho), {',
+    )
     expect(code).toContain('waterColor: "#0a3d5c"')
     expect(code).toContain('agua.rotation.x = -Math.PI / 2;')
     expect(code).toContain('scene.add(agua);')
     // a animação das ondas
-    expect(code).toContain('agua.material.uniforms.time.value += 1 / 60;')
+    expect(code).toContain('agua.material.uniforms.time.value += Math.max(0, Math.min(0.1')
   })
 
   it('o código gerado é 100% buildável (0 rawJS no reverse)', () => {

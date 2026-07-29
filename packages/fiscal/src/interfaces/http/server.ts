@@ -22,6 +22,8 @@ export interface HttpDeps {
   /** Secret HMAC do consumer `fiscal` no payments. Vazio em dev = verificação desligada. */
   webhookHmacSecret?: string
   webhookToleranceSeconds: number
+  /** Lease do processamento: inclui todas as chamadas S2S possíveis da entrega. */
+  webhookProcessingStaleMs: number
   /** Guard das rotas admin (X-Auth-User-* + x-internal-token). */
   requireAdminEnabled?: boolean
   internalToken?: string
@@ -34,7 +36,6 @@ export interface HttpDeps {
 }
 
 const MAX_DELIVERY_ID = 200
-
 /**
  * Borda HTTP do fiscal. O webhook do payments chega DIRETO (private networking,
  * sem gateway): auth = HMAC do corpo (`x-signature: t=,v1=` — contrato público
@@ -155,39 +156,45 @@ export function createServer(deps: HttpDeps) {
           const eventName = typeof parsed.event === 'string' ? parsed.event : ''
           const payload = (parsed.data ?? {}) as Record<string, unknown>
 
+          let claim: Awaited<ReturnType<ProcessedWebhookStore['claimDelivery']>> | null = null
           try {
-            const processed = await deps.processedWebhooks.withDeliveryLock(
+            claim = await deps.processedWebhooks.claimDelivery(
               deliveryId,
-              async () => {
-                if (await deps.processedWebhooks.isProcessed(deliveryId)) {
-                  return { deduped: true }
-                }
-
-                const result = await deps.handleWebhook.execute({ deliveryId, eventName, payload })
-                if (result.kind === 'retryable') {
-                  // NÃO marca processado — o payments re-entrega com backoff.
-                  deps.logger.warn('fiscal.webhook_retryable', {
-                    deliveryId,
-                    reason: result.reason,
-                  })
-                  return { retryable: true, reason: result.reason }
-                }
-
-                await deps.processedWebhooks.markProcessed(deliveryId, {
-                  paymentId: typeof payload.paymentId === 'string' ? payload.paymentId : undefined,
-                  eventName,
-                })
-                return { deduped: false }
-              },
+              deps.webhookProcessingStaleMs,
             )
-
-            if (processed.deduped) return { ok: true, deduped: true }
-            if ('retryable' in processed) {
+            if (claim.kind === 'processed') return { ok: true, deduped: true }
+            if (claim.kind === 'in_progress') {
               set.status = 502
-              return { error: processed.reason }
+              return { error: 'entrega já está em processamento' }
+            }
+
+            const result = await deps.handleWebhook.execute({ deliveryId, eventName, payload })
+            if (result.kind === 'retryable') {
+              // NÃO marca processado — o payments re-entrega com backoff.
+              await deps.processedWebhooks.releaseClaim(deliveryId, claim.token)
+              deps.logger.warn('fiscal.webhook_retryable', {
+                deliveryId,
+                reason: result.reason,
+              })
+              set.status = 502
+              return { error: result.reason }
+            }
+            const marked = await deps.processedWebhooks.markProcessed(deliveryId, claim.token, {
+              paymentId: typeof payload.paymentId === 'string' ? payload.paymentId : undefined,
+              eventName,
+            })
+            if (!marked) {
+              // O lease foi reassumido antes da confirmação. Não confirmar uma
+              // entrega sem dedupe durável: 502 força a reentrega at-least-once.
+              deps.logger.warn('fiscal.webhook_confirmation_lost', { deliveryId })
+              set.status = 502
+              return { error: 'confirmação da entrega perdida' }
             }
             return { ok: true }
           } catch (error) {
+            if (claim?.kind === 'claimed') {
+              await deps.processedWebhooks.releaseClaim(deliveryId, claim.token).catch(() => {})
+            }
             deps.logger.error('fiscal.webhook_failed', { deliveryId, error: serializeError(error) })
             set.status = 502
             return { error: 'falha ao processar' }

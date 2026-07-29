@@ -37,7 +37,6 @@ SZWorld3D.raceOnFinish(function () {
 SZWorld3D.onUpdate(function (dt) {
   SZWorld3D.hud("Recorde: " + Math.round(SZWorld3D.raceBest()) + "s", "baixo-direita");
 });
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

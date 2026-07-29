@@ -26,6 +26,13 @@ export interface RoomItemDef {
   h: number
   /** `'wall'` = item de PAREDE (sobe na parede via campo `wall` do estado); ausente = item de chão. */
   mount?: 'wall'
+  /**
+   * SUPERFÍCIE (24/07): nº de NICHOS em cima do móvel — itens `stackable` entram neles
+   * (1 por nicho, via `PlacedItem.on`/`slot`). Ausente = não é superfície.
+   */
+  surface?: number
+  /** Item PEQUENO que pode ser colocado EM CIMA de uma superfície (troféus de chão + decor 1×1). */
+  stackable?: boolean
 }
 
 export interface RoomThemeDef {
@@ -53,7 +60,7 @@ const item = (
   price: number,
   w: number,
   h: number,
-  mount?: 'wall',
+  opts?: Pick<RoomItemDef, 'mount' | 'surface' | 'stackable'>,
 ): RoomItemDef => ({
   id,
   category,
@@ -61,10 +68,13 @@ const item = (
   price,
   w,
   h,
-  ...(mount ? { mount } : {}),
+  ...opts,
 })
 
-/** Troféu: decoração NÃO-comprável, concedida por conquista (preço 0, tier próprio). */
+/**
+ * Troféu: decoração NÃO-comprável, concedida por conquista (preço 0, tier próprio).
+ * Troféu de CHÃO é `stackable` (vai na mesa/estante); o de parede não.
+ */
 const trophy = (id: string, w: number, h: number, mount?: 'wall'): RoomItemDef => ({
   id,
   category: 'decor',
@@ -72,42 +82,42 @@ const trophy = (id: string, w: number, h: number, mount?: 'wall'): RoomItemDef =
   price: 0,
   w,
   h,
-  ...(mount ? { mount } : {}),
+  ...(mount ? { mount } : { stackable: true }),
 })
 
 export const ROOM_ITEMS: readonly RoomItemDef[] = [
   // Móveis (chão)
   item('cama', 'furniture', 0, 2, 3), // cama de SOLTEIRO (estreita 2 × comprida 3)
   item('cadeira', 'furniture', 0, 1, 2),
-  item('mesa', 'furniture', 0, 2, 2),
+  item('mesa', 'furniture', 0, 2, 2, { surface: 2 }),
   item('sofa', 'furniture', 80, 3, 2),
-  item('estante', 'furniture', 70, 2, 3),
+  item('estante', 'furniture', 70, 2, 3, { surface: 3 }),
   item('bau', 'furniture', 90, 2, 2),
-  item('mesa-estudo', 'furniture', 70, 2, 1),
+  item('mesa-estudo', 'furniture', 70, 2, 1, { surface: 1 }),
   item('tv', 'furniture', 90, 2, 1),
   item('beliche', 'furniture', 120, 2, 3),
   item('pufe', 'furniture', 50, 1, 1),
-  // Decoração de CHÃO
-  item('ursinho', 'decor', 70, 1, 1),
+  // Decoração de CHÃO (as 1×1 pequenas são `stackable` — vão na mesa/estante também)
+  item('ursinho', 'decor', 70, 1, 1, { stackable: true }),
   item('balao', 'decor', 50, 1, 2),
   item('bandeira', 'decor', 50, 1, 2),
-  item('globo', 'decor', 50, 1, 1),
+  item('globo', 'decor', 50, 1, 1, { stackable: true }),
   item('guitarra', 'decor', 80, 1, 2),
-  item('bola', 'decor', 0, 1, 1),
+  item('bola', 'decor', 0, 1, 1, { stackable: true }),
   // Decoração de PAREDE (`mount: 'wall'` — w = horizontal, h = altura na parede)
-  item('quadro', 'decor', 0, 2, 2, 'wall'),
-  item('estrela', 'decor', 0, 1, 1, 'wall'),
-  item('janela', 'decor', 60, 2, 2, 'wall'),
-  item('relogio', 'decor', 60, 1, 1, 'wall'),
-  item('prateleira', 'decor', 60, 2, 1, 'wall'),
-  item('poster', 'decor', 50, 1, 2, 'wall'),
-  item('espelho', 'decor', 60, 1, 2, 'wall'),
+  item('quadro', 'decor', 0, 2, 2, { mount: 'wall' }),
+  item('estrela', 'decor', 0, 1, 1, { mount: 'wall' }),
+  item('janela', 'decor', 60, 2, 2, { mount: 'wall' }),
+  item('relogio', 'decor', 60, 1, 1, { mount: 'wall' }),
+  item('prateleira', 'decor', 60, 2, 1, { mount: 'wall' }),
+  item('poster', 'decor', 50, 1, 2, { mount: 'wall' }),
+  item('espelho', 'decor', 60, 1, 2, { mount: 'wall' }),
   // Plantas (animadas)
   item('planta', 'plant', 80, 1, 2),
   item('arvore', 'plant', 130, 2, 3),
   // Luzes (animadas)
   item('luminaria', 'light', 70, 1, 2),
-  item('vela', 'light', 60, 1, 1),
+  item('vela', 'light', 60, 1, 1, { stackable: true }),
   // Pets (animados) — um pet por quarto (campo `pet` do estado)
   item('pet-gato', 'pet', 300, 1, 1),
   item('pet-cachorro', 'pet', 300, 1, 1),
@@ -122,7 +132,21 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   trophy('trofeu-foguete', 1, 2), // 1º ciclo ZERO lançado (pensa-first-launch — bônus Pensa)
   trophy('trofeu-console', 1, 1), // 3 atividades do Estúdio aprovadas (studio-master-3 — bônus)
   trophy('trofeu-estrela-do-mural', 1, 1), // um jogo seu foi jogado 100× (plays-100 — universal)
+  // 🏆 ESTANTE DE TROFÉUS (24/07): móvel NÃO-comprável concedido junto com o 1º troféu
+  // (o award insere no `room_inventory` na mesma tx). 6 nichos p/ exibir a coleção.
+  {
+    id: 'estante-trofeus',
+    category: 'furniture',
+    tier: 'trophy',
+    price: 0,
+    w: 3,
+    h: 2,
+    surface: 6,
+  },
 ]
+
+/** Concedida automaticamente com o PRIMEIRO troféu (award, mesma tx, idempotente). */
+export const TROPHY_SHELF_ITEM_ID = 'estante-trofeus'
 
 export const ROOM_ITEMS_BY_ID: ReadonlyMap<string, RoomItemDef> = new Map(
   ROOM_ITEMS.map((i) => [i.id, i]),
@@ -228,6 +252,13 @@ export interface PlacedItem {
   rot?: 0 | 1 | 2 | 3
   /** Item de PAREDE (`def.mount==='wall'`): em qual parede está. Ausente = item de chão. */
   wall?: 'left' | 'right'
+  /**
+   * EM CIMA de uma superfície (24/07): itemId do PAI posicionado (`def.surface`). Com `on`,
+   * o item ocupa um NICHO do pai (não células do chão) e x/y são ignorados (canônico 0,0).
+   */
+  on?: string
+  /** Nicho da superfície do pai (0-based, < `surface` do pai). Presente sempre que `on` está. */
+  slot?: number
 }
 
 /** Cor de cada parede do recorte em "L" (hex da paleta). Lado ausente = default do tema. */
@@ -336,6 +367,7 @@ function occupies(
  * grade (considerando a rotação) e cor de parede fora da paleta, limita ao teto. `owned` =
  * inventário (peças pagas; grátis são implícitas). Campos novos são OMITIDOS quando
  * ausentes/inválidos → o render cai no default do tema (quartos legados seguem válidos).
+ * Filhos de SUPERFÍCIE (`on`/`slot`) validam numa 2ª passada contra os pais posicionados.
  */
 export function canonicalizeRoomState(
   raw: RoomState | null,
@@ -345,6 +377,11 @@ export function canonicalizeRoomState(
   const placedItems: PlacedItem[] = []
   const floorCells = new Set<string>() // "x,y" ocupadas no chão
   const wallCells = new Set<string>() // "left|right:u,v" ocupadas nas paredes
+  // FILHOS de superfície (com `on`) validam DEPOIS — o pai precisa estar posicionado.
+  // O teto da 1ª passada NÃO conta os filhos pendentes (podem cair na 2ª — um filho
+  // inválido não deve "reservar" a vaga de um item de chão válido); a 2ª passada
+  // re-aplica ROOM_MAX_PLACED, então o total nunca passa do teto.
+  const children: PlacedItem[] = []
   for (const p of raw?.placedItems ?? []) {
     if (placedItems.length >= ROOM_MAX_PLACED) break
     const def = ROOM_ITEMS_BY_ID.get(p?.itemId)
@@ -352,6 +389,10 @@ export function canonicalizeRoomState(
     if (!def || def.category === 'pet') continue
     if (!isOwnedItem(p.itemId, owned)) continue
 
+    if (typeof p.on === 'string') {
+      if (def.stackable) children.push(p)
+      continue
+    }
     if (def.mount === 'wall') {
       // Item de PAREDE: x = horizontal, y = ALTURA. Valida limites + sem sobreposição na parede.
       const wall: 'left' | 'right' = p.wall === 'left' ? 'left' : 'right'
@@ -372,6 +413,24 @@ export function canonicalizeRoomState(
           : { itemId: p.itemId, x: p.x, y: p.y, rot },
       )
     }
+  }
+  // 2ª passada — filhos em superfícies: pai POSICIONADO no chão + nicho válido e livre
+  // (1 filho por nicho). Filho NÃO ocupa célula (vive no nicho); pai inválido → colocação
+  // descartada (a POSSE fica — o item volta pro tray). `on` ambíguo (mesmo pai colocado 2×)
+  // resolve pro conjunto único de nichos do itemId (nichos são por PAI, não por instância).
+  const surfaceSlots = new Set<string>() // "parentItemId:slot" ocupados
+  for (const p of children) {
+    if (placedItems.length >= ROOM_MAX_PLACED) break
+    const parentDef = p.on ? ROOM_ITEMS_BY_ID.get(p.on) : undefined
+    if (!parentDef?.surface) continue
+    if (!placedItems.some((q) => q.itemId === p.on && q.on === undefined && !q.wall)) continue
+    const slot = p.slot
+    if (!Number.isInteger(slot) || (slot as number) < 0 || (slot as number) >= parentDef.surface)
+      continue
+    const key = `${p.on}:${slot}`
+    if (surfaceSlots.has(key)) continue
+    surfaceSlots.add(key)
+    placedItems.push({ itemId: p.itemId, x: 0, y: 0, on: p.on, slot })
   }
   const pet =
     raw?.pet && ROOM_ITEMS_BY_ID.get(raw.pet)?.category === 'pet' && isOwnedItem(raw.pet, owned)

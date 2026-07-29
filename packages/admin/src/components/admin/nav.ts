@@ -2,6 +2,7 @@ import {
   BookOpen,
   CreditCard,
   GraduationCap,
+  Home,
   Inbox,
   LayoutDashboard,
   type LucideIcon,
@@ -26,6 +27,11 @@ export interface NavItem {
   soon?: boolean
   /** Quando definido, limita a visibilidade/acesso a estes papéis. */
   roles?: readonly string[]
+  /**
+   * Chip de CONTAGEM na sidebar (pendências do professor) — dado puro; quem resolve
+   * o número é o `professor-counts-store` (a sidebar só liga chave → count).
+   */
+  badgeKey?: 'entregas' | 'recados' | 'moderacao'
 }
 
 export interface NavGroup {
@@ -54,10 +60,22 @@ export const NAV_GROUPS: NavGroup[] = [
     id: 'professor',
     label: 'Sala do Professor',
     items: [
-      { label: 'Entregas', href: '/admin/professor/entregas', icon: Inbox },
-      { label: 'Recados', href: '/admin/professor/recados', icon: Mail },
+      // 1º item do grupo = destino do `homeForRole` (a Home do professor É a home do painel).
+      { label: 'Início', href: '/admin/professor', icon: Home },
+      {
+        label: 'Entregas',
+        href: '/admin/professor/entregas',
+        icon: Inbox,
+        badgeKey: 'entregas',
+      },
+      { label: 'Recados', href: '/admin/professor/recados', icon: Mail, badgeKey: 'recados' },
       { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
-      { label: 'Moderação', href: '/admin/comunidade/moderacao', icon: ShieldCheck },
+      {
+        label: 'Moderação',
+        href: '/admin/comunidade/moderacao',
+        icon: ShieldCheck,
+        badgeKey: 'moderacao',
+      },
       { label: 'Alunos', href: '/admin/membros', icon: GraduationCap },
       { label: 'Análises', href: '/admin/membros/analises', icon: TrendingUp },
     ],

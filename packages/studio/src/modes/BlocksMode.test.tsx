@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render, waitFor } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import { type ReactNode, StrictMode } from 'react'
 import { createEmptyProject } from '#core'
 import type { SZIR } from '#ir'
 import { useProjectStore } from '../state/projectStore'
@@ -75,14 +75,14 @@ describe('BlocksMode', () => {
 
     await waitFor(() => {
       const state = useProjectStore.getState()
-      // Projeto só-JS: as áreas de HTML/CSS vazias são OMITIDAS (omitEmptyAuxFrames)
-      // — só o ⚙️ Comportamento, com o console.log dentro. Sem frames vazios.
+      // Projeto só-JS legado: as áreas vazias são omitidas e o código é migrado
+      // transparentemente para ⚙️ Ao iniciar.
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           languageVersion: 0,
           blocks: [
             {
-              type: 'sz_frame_behavior',
+              type: 'sz_frame_start',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
             },
           ],
@@ -162,7 +162,7 @@ describe('BlocksMode', () => {
     expect(state.isDirty).toBe(false)
   })
 
-  it('recovery da corrida da Ponte: blocos DEFASADOS são derivados do CÓDIGO, nunca o contrário', async () => {
+  it('recovery da corrida da Ponte funciona no StrictMode e deriva blocos DEFASADOS do CÓDIGO', async () => {
     // O aluno digitou na Ponte e trocou p/ Blocos dentro da janela do
     // reverse-parse (o worker morre com a Ponte): files têm o código NOVO,
     // ir/blocksState estão velhos e a época de código está à frente. O recovery
@@ -182,17 +182,21 @@ describe('BlocksMode', () => {
       bridgeBlocksSyncedEpoch: 0,
     })
 
-    render(<BlocksMode />)
+    render(
+      <StrictMode>
+        <BlocksMode />
+      </StrictMode>,
+    )
 
     await waitFor(() => {
       const state = useProjectStore.getState()
-      // Blocos derivados do código digitado (só-JS → só o ⚙️ Comportamento; as
-      // áreas de HTML/CSS vazias não ressuscitam).
+      // Blocos derivados do código digitado (só-JS legado → ⚙️ Ao iniciar; as
+      // demais áreas vazias não ressuscitam).
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           blocks: [
             {
-              type: 'sz_frame_behavior',
+              type: 'sz_frame_start',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
             },
           ],
@@ -205,7 +209,7 @@ describe('BlocksMode', () => {
     })
   })
 
-  it('rede de segurança: sem IR e sem partição (empty), deriva os blocos do CÓDIGO sem sujar', async () => {
+  it('rede de segurança no StrictMode: sem IR e sem partição, deriva blocos do CÓDIGO sem sujar', async () => {
     // Aula só-Blocos reabrindo um rascunho cujo blocksState não existe/foi
     // descartado: o canvas não pode ficar em branco se há código nos arquivos.
     const base = createEmptyProject('project-code-only', 'Só código')
@@ -221,7 +225,11 @@ describe('BlocksMode', () => {
       blocksHydration: 'empty',
     })
 
-    render(<BlocksMode />)
+    render(
+      <StrictMode>
+        <BlocksMode />
+      </StrictMode>,
+    )
 
     await waitFor(() => {
       const state = useProjectStore.getState()
@@ -229,7 +237,7 @@ describe('BlocksMode', () => {
         blocks: {
           blocks: [
             {
-              type: 'sz_frame_behavior',
+              type: 'sz_frame_start',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
             },
           ],

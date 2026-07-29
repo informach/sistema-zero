@@ -20,6 +20,8 @@ import {
   StudioConfigProvider,
 } from './config'
 import { StudioExamplesVisibleProvider } from './examples-visibility'
+import { StudioProRuntimeProvider } from './pro-runtime'
+import { disallowedProjectExtensions } from './project-access'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { StudioThemeProvider } from './theme'
 import type { StudioCoreProps, StudioHandle } from './types'
@@ -50,7 +52,11 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
   // 1x por instância; StrictMode-safe (re-render descarta a duplicata).
   // `persistence` e `limits` são estáticos por instância (lidos só aqui).
   const [stores] = useState(() =>
-    createStudioStores({ persistence: props.persistence, limits: props.limits }),
+    createStudioStores({
+      persistence: props.persistence,
+      limits: props.limits,
+      proBuildLimits: props.proRuntime?.limits,
+    }),
   )
   return (
     <StudioStoresContext.Provider value={stores}>
@@ -68,6 +74,7 @@ function StudioCoreBody({
   limits,
   level,
   allowBlocks,
+  allowExtensions,
   allowCategories,
   allowLevelReveal,
   activity,
@@ -83,6 +90,8 @@ function StudioCoreBody({
   theme,
   locale,
   onExit,
+  onPromoteToPro,
+  proRuntime,
   blockUnloadWhenDirty = true,
   className,
   style,
@@ -108,6 +117,10 @@ function StudioCoreBody({
   // share); o host fornece uma referência estável (useCallback). `null` → sem item.
   const [cloudSyncValue] = useState(() => onCloudSync ?? null)
 
+  // Runtime Pro da aula é um adapter estático, como os demais contratos de I/O
+  // do host. Ausente mantém o WebContainer local do Estúdio Completo.
+  const [proRuntimeValue] = useState(() => proRuntime ?? null)
+
   // Visibilidade dos exemplos prontos — latcha uma vez por instância. Default
   // `false`: só o playground/admin de teste liga (ver examples-visibility.ts).
   const [examplesVisible] = useState(() => showExamples ?? false)
@@ -131,7 +144,7 @@ function StudioCoreBody({
   const [previewSecurity] = useState(() => resolvePreviewSecurity(limits))
   // Perfil de aprendizado também é estático por instância (fixado pelo professor).
   const [learning] = useState(() =>
-    resolveLearning({ level, allowBlocks, allowCategories, allowLevelReveal }),
+    resolveLearning({ level, allowBlocks, allowExtensions, allowCategories, allowLevelReveal }),
   )
   // `previewSecurity`/`learning` saem de fora do BaseStudioConfig de propósito
   // (ver config.ts) e são anexados SÓ aqui — a anotação ResolvedStudioConfig
@@ -154,7 +167,9 @@ function StudioCoreBody({
   // (array que muda de referência a cada render do host com allowedModes inline).
   // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de resolvedModesKey, não do array config.allowedModes
   const sanitized = useMemo(() => {
-    const project = sanitizeProjectForHost(sourceProject)
+    const project = sanitizeProjectForHost(sourceProject, {
+      proBuildLimits: proRuntime?.limits,
+    })
     if (!project) return null
     // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
     // intersectados com a allowlist do host — pro = só Código; básico = Blocos/
@@ -167,6 +182,11 @@ function StudioCoreBody({
     if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
   }, [sourceProject, initialMode, resolvedModesKey])
+  const disallowedExtensions = useMemo(
+    () => (sanitized ? disallowedProjectExtensions(sanitized, learning.allowExtensions) : []),
+    [sanitized, learning.allowExtensions],
+  )
+  const projectAccessBlocked = disallowedExtensions.length > 0
 
   const projectStoreApi = useProjectStoreApi()
   const checksStoreApi = useChecksStoreApi()
@@ -199,7 +219,7 @@ function StudioCoreBody({
   )
 
   useEffect(() => {
-    if (!sanitized) return
+    if (!sanitized || projectAccessBlocked) return
     hydrateProject(sanitized)
     // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
     // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
@@ -216,7 +236,15 @@ function StudioCoreBody({
       unloadProject()
       checksStoreApi.getState().setResult(null)
     }
-  }, [sanitized, hydrateProject, unloadProject, setPreviewRunning, checksStoreApi, persistence])
+  }, [
+    sanitized,
+    projectAccessBlocked,
+    hydrateProject,
+    unloadProject,
+    setPreviewRunning,
+    checksStoreApi,
+    persistence,
+  ])
 
   useEffect(() => {
     const detach = persistence.attach()
@@ -264,40 +292,74 @@ function StudioCoreBody({
   }, [blockUnloadWhenDirty, isDirty])
 
   return (
-    <StudioShareProvider value={shareValue}>
-      <StudioCloudSyncProvider value={cloudSyncValue}>
-        <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
-          <StudioExamplesVisibleProvider value={examplesVisible}>
-            <StudioActivityProvider value={activityValue}>
-              <StudioConfigProvider value={config}>
-                <StudioThemeProvider value={effectiveTheme}>
-                  <div
-                    data-sz-theme={effectiveTheme}
-                    className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-                    style={{ fontFamily: 'var(--font-family-sans)', ...style }}
-                  >
-                    {sanitized === null ? (
-                      <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                        <p className="text-sm">
-                          Projeto inválido — confira o initialProject passado ao Studio.
-                        </p>
-                      </div>
-                    ) : hasProject ? (
-                      <ErrorBoundary
-                        fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
-                        resetKeys={[sanitizedId]}
-                        label="Studio"
-                      >
-                        <Shell onExit={onExit} canToggleTheme={theme === undefined} />
-                      </ErrorBoundary>
-                    ) : null}
-                  </div>
-                </StudioThemeProvider>
-              </StudioConfigProvider>
-            </StudioActivityProvider>
-          </StudioExamplesVisibleProvider>
-        </StudioShareDisabledProvider>
-      </StudioCloudSyncProvider>
-    </StudioShareProvider>
+    <StudioProRuntimeProvider value={proRuntimeValue}>
+      <StudioShareProvider value={shareValue}>
+        <StudioCloudSyncProvider value={cloudSyncValue}>
+          <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
+            <StudioExamplesVisibleProvider value={examplesVisible}>
+              <StudioActivityProvider value={activityValue}>
+                <StudioConfigProvider value={config}>
+                  <StudioThemeProvider value={effectiveTheme}>
+                    <div
+                      data-sz-theme={effectiveTheme}
+                      className={['h-full min-h-0', className].filter(Boolean).join(' ')}
+                      // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
+                      // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
+                      // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
+                      // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
+                      // é PORTALADO pro document.body — fora da cerca, segue intacto.
+                      style={{
+                        fontFamily: 'var(--font-family-sans)',
+                        isolation: 'isolate',
+                        ...style,
+                      }}
+                    >
+                      {sanitized === null ? (
+                        <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                          <p className="text-sm">
+                            Projeto inválido — confira o initialProject passado ao Studio.
+                          </p>
+                        </div>
+                      ) : projectAccessBlocked ? (
+                        <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
+                          <p className="text-base font-semibold text-sz-fg">
+                            Este projeto usa ferramentas que você ainda vai conquistar
+                          </p>
+                          <p className="max-w-md text-sm">
+                            Continue avançando na Carreira do Criador. O projeto ficou guardado e
+                            abrirá normalmente quando essas ferramentas forem liberadas.
+                          </p>
+                          {onExit ? (
+                            <button
+                              type="button"
+                              className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                              onClick={onExit}
+                            >
+                              Voltar
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : hasProject ? (
+                        <ErrorBoundary
+                          fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+                          resetKeys={[sanitizedId]}
+                          label="Studio"
+                        >
+                          <Shell
+                            onExit={onExit}
+                            onPromoteToPro={onPromoteToPro}
+                            canToggleTheme={theme === undefined}
+                          />
+                        </ErrorBoundary>
+                      ) : null}
+                    </div>
+                  </StudioThemeProvider>
+                </StudioConfigProvider>
+              </StudioActivityProvider>
+            </StudioExamplesVisibleProvider>
+          </StudioShareDisabledProvider>
+        </StudioCloudSyncProvider>
+      </StudioShareProvider>
+    </StudioProRuntimeProvider>
   )
 }

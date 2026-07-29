@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { OFFICIAL_CATALOG } from '#official-extensions'
 import { BLOCK_CATALOG } from '../blockCatalog'
 
 describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
@@ -8,6 +9,7 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
       expect(e.type).toBeTruthy()
       expect(e.label).toBeTruthy()
       expect(e.category).toBeTruthy()
+      expect(e.label, e.type).not.toBe(e.type)
       // Nenhum placeholder de argumento (%1, %2…) vazou pro rótulo (um `%` literal de
       // porcentagem é texto válido e pode ficar).
       expect(e.label).not.toMatch(/%\d/)
@@ -35,6 +37,25 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     expect(BLOCK_CATALOG.some((e) => e.category === 'Jogo 3D')).toBe(true)
   })
 
+  it('classifica leitores contextuais junto de Página e Eventos', () => {
+    for (const type of ['sz_val_event_key', 'sz_val_event_pos']) {
+      expect(BLOCK_CATALOG.find((entry) => entry.type === type)?.category, type).toBe(
+        'Página e Eventos',
+      )
+    }
+  })
+
+  it('inclui exatamente uma vez cada bloco visível de toda extensão oficial', () => {
+    for (const extension of OFFICIAL_CATALOG) {
+      for (const block of extension.blockly.blocks.filter((definition) => !definition.hidden)) {
+        expect(
+          BLOCK_CATALOG.filter((entry) => entry.type === block.type),
+          `${extension.manifest.id}: ${block.type}`,
+        ).toHaveLength(1)
+      }
+    }
+  })
+
   it('rótulos repetidos numa mesma categoria são poucos e com ids distintos (picker mostra o id)', () => {
     const byKey = new Map<string, string[]>()
     for (const e of BLOCK_CATALOG) {
@@ -57,6 +78,19 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     expect(labelOf('sz_js_set_property_text')).toBe('Alterar uma propriedade (escrever um texto)')
     // Os pares valor/comando ficam DISTINTOS (não colidem mais → sem id ao lado).
     expect(labelOf('sz_val_method_on')).not.toBe(labelOf('sz_js_method_on'))
-    expect(labelOf('sz_js_call_method')).not.toBe(labelOf('sz_val_call_method'))
+    // Consumidores legados continuam registrados para projetos salvos, mas não
+    // aparecem no catálogo da aula (foram substituídos pelos blocos de Objetos).
+    expect(labelOf('sz_js_call_method')).toBeUndefined()
+    expect(labelOf('sz_val_call_method')).toBeUndefined()
+    expect(labelOf('sz_js_try_catch')).toBe('Tentar, tratar erro e finalizar')
+    expect(labelOf('sz_canvas_anim_loop')).toBe('A cada quadro da animação')
+    expect(labelOf('sz_t3d_set_visible')).toBe('Mostrar ou esconder objeto 3D')
+  })
+
+  it('explica os blocos SVG sem expor uma lista de atributos', () => {
+    const labelOf = (type: string) => BLOCK_CATALOG.find((entry) => entry.type === type)?.label
+    expect(labelOf('sz_html_svg')).toBe('Criar uma área de desenho vetorial')
+    expect(labelOf('sz_svg_circle')).toBe('Desenhar um círculo')
+    expect(labelOf('sz_svg_use')).toBe('Reutilizar uma forma pelo nome')
   })
 })

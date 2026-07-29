@@ -2,7 +2,7 @@ import * as Blockly from 'blockly/core'
 import { withMutation } from './mutatorEvents'
 
 /**
- * Mutator OPCIONAL do bloco "A cada frame fazer" (`sz_canvas_anim_loop`). Estilo
+ * Mutator OPCIONAL do bloco "A cada quadro fazer" (`sz_canvas_anim_loop`). Estilo
  * MakeCode (+/−), com DOIS slots independentes:
  *
  *  - **Guardar id** (`+` logo após "fazer"): revela "guardar id em [variável]",
@@ -10,7 +10,7 @@ import { withMutation } from './mutatorEvents'
  *    para poder ser parado depois com o bloco "parar animação".
  *  - **Tempo do quadro** (`+` rotulado "tempo do quadro"): revela duas variáveis
  *    — o tempo do quadro (ms desde o carregamento, vindo do requestAnimationFrame)
- *    e o tempo desde o quadro anterior (delta, ms) — para movimento independente
+ *    e o tempo desde o quadro anterior (delta, segundos) — para movimento independente
  *    de FPS (mova por velocidade × delta).
  *
  * Os nomes (`handle_`, `timeVar_`, `deltaVar_`) são serializados por
@@ -84,13 +84,13 @@ const ANIM_LOOP_MUTATOR_MIXIN = {
   },
 
   /**
-   * (Re)constrói a linha de cabeçalho: "A cada frame fazer [+ id] tempo do quadro
+   * (Re)constrói a linha de cabeçalho: "A cada quadro fazer [+ id] tempo do quadro
    * [+ tempo/delta]".
    */
   updateShape_(this: AnimLoopBlock): void {
     if (this.getInput(HEADER_INPUT)) this.removeInput(HEADER_INPUT, true)
     const input = this.appendDummyInput(HEADER_INPUT)
-    input.appendField('A cada frame fazer')
+    input.appendField('A cada quadro fazer')
 
     // Slot 1: guardar o id do requestAnimationFrame.
     if (this.handle_) {
@@ -133,7 +133,7 @@ const ANIM_LOOP_MUTATOR_MIXIN = {
         }),
         'TIME_VAR',
       )
-      input.appendField('· desde o último em')
+      input.appendField('· delta em segundos em')
       input.appendField(
         new Blockly.FieldTextInput(this.deltaVar_ || DEFAULT_DELTA, (value: string) => {
           const clean = sanitizeName(value) || DEFAULT_DELTA

@@ -1,3 +1,5 @@
+import { CAREER_SLOT_MAX } from '@sistemazero/core/career'
+import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import {
   ContentNotFoundError,
   CourseConflictError,
@@ -5,6 +7,7 @@ import {
   InvalidContentCommandError,
   LessonNotFoundError,
   NoPublishedLessonError,
+  NoShowcaseBlockError,
 } from '../../domain/course/course.errors'
 import {
   isCompletionGatingBlock,
@@ -66,8 +69,25 @@ export class CourseAdminService {
     filter: ListCoursesAdminFilter,
   ): Promise<{ items: CourseView[]; total: number; limit: number; offset: number }> {
     const { items, total } = await this.content.listCoursesAdmin(filter)
+    // Curso-base (kids, slot 1) sem bloco de Estúdio com vitrine em aula publicada
+    // nunca qualifica → a etapa não destrava. Marca p/ o painel avisar o operador.
+    const foundationIds = items
+      .filter((course) => course.audience === 'kids' && course.careerSlot === 1)
+      .map((course) => course.id)
+    const withShowcase = new Set(
+      foundationIds.length > 0
+        ? await this.content.listCourseIdsWithShowcaseBlock(foundationIds)
+        : [],
+    )
     return {
-      items: items.map(toCourseView),
+      items: items.map((course) =>
+        toCourseView(
+          course,
+          course.audience === 'kids' && course.careerSlot === 1
+            ? withShowcase.has(course.id)
+            : undefined,
+        ),
+      ),
       total,
       limit: filter.limit,
       offset: filter.offset,
@@ -78,15 +98,16 @@ export class CourseAdminService {
     // Curso novo nasce sem aulas → nunca pode nascer `published`.
     if (fields.status === 'published') throw new NoPublishedLessonError()
     // Audiência ausente → `adult`; trava sequencial ausente → `true` (padrão LIGADO).
-    return toCourseView(
-      await this.content.createCourse({
-        ...fields,
-        audience: fields.audience ?? 'adult',
-        sequentialLock: fields.sequentialLock ?? true,
-        level: fields.level ?? 'iniciante',
-        track: fields.track ?? '2d',
-      }),
-    )
+    const normalized = {
+      ...fields,
+      audience: fields.audience ?? 'adult',
+      sequentialLock: fields.sequentialLock ?? true,
+      level: fields.level ?? 'iniciante',
+      track: fields.track ?? '2d',
+      careerSlot: fields.careerSlot ?? null,
+    }
+    assertCareerSlot(normalized)
+    return toCourseView(await this.content.createCourse(normalized))
   }
 
   async get(id: string): Promise<CourseTreeView> {
@@ -99,6 +120,9 @@ export class CourseAdminService {
   async update(id: string, fields: CourseFields): Promise<CourseView> {
     const existing = await this.courses.findCourseById(id)
     if (!existing) throw new CourseNotFoundError()
+    if (fields.version === undefined || fields.version !== existing.version) {
+      throw new CourseConflictError()
+    }
     // Guard: curso `published` exige ≥1 aula publicada (visível ao aluno).
     if (fields.status === 'published' && (await this.content.countPublishedLessons(id)) === 0) {
       throw new NoPublishedLessonError()
@@ -110,7 +134,16 @@ export class CourseAdminService {
     // `sequentialLock` AUSENTE também PRESERVA a atual (mesma régua do audience).
     // `level` AUSENTE idem (build antigo do admin sem o campo não rebaixa a dificuldade).
     // `track` AUSENTE idem (build antigo sem o eixo 2D/3D não re-tagueia o curso).
-    const { salesPageUrl, audience, sequentialLock, level, track, ...rest } = fields
+    const {
+      salesPageUrl,
+      audience,
+      sequentialLock,
+      level,
+      track,
+      careerSlot,
+      version: _version,
+      ...rest
+    } = fields
     const merged = {
       ...existing,
       ...rest,
@@ -118,7 +151,23 @@ export class CourseAdminService {
       sequentialLock: sequentialLock ?? existing.sequentialLock,
       level: level ?? existing.level,
       track: track ?? existing.track,
+      careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,
       metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
+    }
+    assertCareerSlot(merged)
+    // Curso-base kids (slot 1) publicado exige uma aula PUBLICADA com bloco de Estúdio
+    // de vitrine — sem ela o aluno nunca qualifica o slot e a etapa trava (armadilha do
+    // fail-open). Guard SÓ NA TRANSIÇÃO para o estado-armadilha: um curso que JÁ está
+    // preso (rollout pré-career_slot) segue editável (título etc.) — a correção acontece
+    // no editor de AULA, e o aviso ⚠️ da listagem cobre a detecção. Caminho inverso
+    // (remover a vitrine de curso-base publicado) fica de fora — follow-up documentado.
+    const becomesTrapped =
+      merged.status === 'published' && merged.audience === 'kids' && merged.careerSlot === 1
+    const wasTrapped =
+      existing.status === 'published' && existing.audience === 'kids' && existing.careerSlot === 1
+    if (becomesTrapped && !wasTrapped) {
+      const withShowcase = await this.content.listCourseIdsWithShowcaseBlock([id])
+      if (withShowcase.length === 0) throw new NoShowcaseBlockError()
     }
     const ok = await this.content.updateCourse(merged)
     if (!ok) throw new CourseConflictError()
@@ -129,6 +178,34 @@ export class CourseAdminService {
   async remove(id: string): Promise<{ ok: true }> {
     if (!(await this.content.deleteCourse(id))) throw new CourseNotFoundError()
     return { ok: true }
+  }
+}
+
+function assertCareerSlot(course: {
+  audience: string
+  level: string
+  track: string
+  careerSlot: number | null
+}): void {
+  if (course.careerSlot === null) return
+  if (course.level === 'lenda') {
+    throw new InvalidContentCommandError(
+      'Curso Lenda é bônus da formatura — não ocupa posição na carreira',
+    )
+  }
+  if (course.audience !== 'kids') {
+    throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
+  }
+  // 8 posições por degrau (reforma 07/2026; era 6 no iniciante-2d e 5 nas demais).
+  // O teto vem do catálogo CANÔNICO do core — o CHECK da migration 0053 e o
+  // admin (via conformance) espelham o mesmo valor.
+  const maximum = CAREER_SLOT_MAX
+  if (
+    !Number.isInteger(course.careerSlot) ||
+    course.careerSlot < 1 ||
+    course.careerSlot > maximum
+  ) {
+    throw new InvalidContentCommandError(`Esta etapa aceita posições de 1 a ${maximum} na carreira`)
   }
 }
 
@@ -266,11 +343,30 @@ function assertBlockCoherent(content: LessonBlockContent): void {
     if (problem) throw new InvalidContentCommandError(problem)
     return
   }
-  // Estúdio: o `initialProject` é JSON opaco do editor — limita o peso no jsonb
-  // (mesmo teto da entrega do aluno). O shape em si o front sanitiza (autoria + aluno).
+  // Estúdio: limita o peso no jsonb e valida o discriminante crítico do projeto
+  // Pro. O restante do snapshot continua defensivo e é sanitizado pelo Studio.
   if (content.kind === 'studio') {
     if (JSON.stringify(content.initialProject).length > MAX_STUDIO_PROJECT_CHARS) {
       throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
+    }
+    if (
+      content.initialProject &&
+      typeof content.initialProject === 'object' &&
+      !Array.isArray(content.initialProject) &&
+      (content.initialProject as { kind?: unknown }).kind === 'pro'
+    ) {
+      const project = content.initialProject as {
+        tree?: unknown
+        proMeta?: { templateId?: unknown }
+      }
+      if (
+        !project.tree ||
+        typeof project.tree !== 'object' ||
+        Array.isArray(project.tree) ||
+        !isStudioProTemplateId(project.proMeta?.templateId)
+      ) {
+        throw new InvalidContentCommandError('Escolha um modelo Pro válido')
+      }
     }
     // Atividade (auto-correção): coerência além do shape TypeBox (ids únicos,
     // code com source, testcase com função+casos, nota de corte com ≥1 checagem).

@@ -13,7 +13,12 @@ interface CourseCardProps {
   theme?: UnitTheme
 }
 
-/** Card de curso da home ("Meus cursos"): capa + progresso + CTA, vestindo o tema. */
+/**
+ * Card de curso da home ("Meus cursos"): capa + progresso + CTA, vestindo o
+ * tema. A home só lista cursos LIBERADOS pela carreira (24/07) — os travados
+ * (futuro/recompensa) vivem no Mapa da Carreira, então o card não tem mais
+ * estados de cadeado.
+ */
 export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
   const { progress } = course
   const started = progress.completedLessons > 0

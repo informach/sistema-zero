@@ -1,5 +1,22 @@
-import type { JSExpr, JSStatement } from '#ir'
-import { screenTextToExpr, valueToExpr } from '#ir'
+import {
+  lifecycleContractForTarget,
+  type ProjectLifecycleTarget,
+  type RuntimeLifecycleContract,
+} from '#extensions'
+import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
+import {
+  BEHAVIOR_SECTION_MARKERS,
+  resolveEventTargetKind,
+  screenTextToExpr,
+  valueToExpr,
+} from '#ir'
+import { CANVAS_IMAGE_PRELOAD_MARKERS } from '../canvasImagePreloadCodec'
+import { canvasStatementToCode, isCanvasStatement } from '../codecs/web/canvasStatementToCode'
+import { programmingChildBodyEntries } from '../ir/programmingExecution'
+import { canvas3DAddonImport } from '../three/canvas3dAddons'
+import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
+import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
+import { physicsLiteRuntimeSource } from '../three/physicsLiteRuntime'
 import {
   _setExprStatementCompiler,
   compileExpr,
@@ -55,101 +72,7 @@ export function assertGeneratorDepth(depth: number): void {
 
 /** Sub-listas de statements (corpos) de um statement — `[]` para folhas. */
 function jsChildBodies(stmt: JSStatement): JSStatement[][] {
-  switch (stmt.type) {
-    case 'if':
-      return [stmt.then, ...(stmt.elseif ?? []).map((c) => c.then), stmt.else ?? []]
-    case 'repeat':
-    case 'while':
-    case 'doWhile':
-    case 'forOf':
-    case 'forRange':
-    case 'event':
-    case 'animationLoop':
-    case 'g2d:updateEachFrame':
-    case 'g2d:onPointer':
-    case 'g2d:onKey':
-    case 'g2d:onOverlap':
-    case 'g2d:forEachInGroup':
-    case 'g2d:pruneOffscreen':
-    case 'g2d:onGroupOverlap':
-    case 'g2d:onSpriteGroupOverlap':
-    case 'g2d:onEnemyDefeated':
-    case 'g2d:onEnemyShotHit':
-    case 'g2d:defineShape':
-    case 'g2d:everyFrames':
-    case 'g2d:everySeconds':
-    case 'g3d:animate':
-    case 'g3d:forEachInSwarm':
-    case 'gk:addButton':
-    case 'gk:onEnterState':
-    case 'gk:onUpdate':
-    case 'gk:onDraw':
-    case 'gk:onDrawHud':
-    case 'gk:onGameClick':
-    case 'gk:onEvent':
-    case 'gk:rpgOnTalk':
-    case 'gk:rpgOnMap':
-    case 'gk:rpgOnBattleEnd':
-    case 'gk:rpgCutscene':
-    case 'gk:rpgOnStep':
-    case 'gk:rpgMenu':
-    case 'gk:rpgOption':
-    case 'gk:definePath':
-    case 'gk:tdOnBuy':
-    case 'gk:forEachActive':
-    case 'gk:defineLook':
-    case 'g3k:defineMold':
-    case 'g3k:forEachAlive':
-    case 'g3k:onUpdate':
-    case 'g3k:onEnterEntityState':
-    case 'g3k:onEntityStateUpdate':
-    case 'g3k:onExitEntityState':
-    case 'g3k:forEachNear':
-    case 'g3k:onEntityDeath':
-    case 'g3k:addButton':
-    case 'g3k:onEnterState':
-    case 'g3k:onTimerEnd':
-    case 'g3k:onEvent':
-    case 'w3d:onUpdate':
-    case 'w3d:onCrash':
-    case 'w3d:onHorn':
-    case 'w3d:onExplosion':
-    case 'w3d:onVehicle':
-    case 'w3d:npcTalk':
-    case 'w3d:onCollect':
-    case 'w3d:onQuestDone':
-    case 'w3d:onAchievement':
-    case 'w3d:onDayNight':
-    case 'w3d:onPoint':
-    case 'w3d:onZone':
-    case 'w3d:raceOnStart':
-    case 'w3d:raceOnCheckpoint':
-    case 'w3d:raceOnFinish':
-    case 'w3d:bowlingOnStrike':
-    case 'funcDecl':
-    case 'forEach':
-    case 'imageOnLoad':
-    case 'imageOnError':
-    case 'onClickAssign':
-    case 'requestFrameDo':
-    case 'loaderLoad':
-    case 'traverseEach':
-    case 'setTimeout':
-    case 'setInterval':
-    case 'setTimeoutSeconds':
-    case 'setIntervalSeconds':
-      return [stmt.body]
-    case 'tryCatch':
-      return [stmt.body, stmt.handler, stmt.finalizer ?? []]
-    case 'w3d:npcAsk':
-      return [stmt.bodyA, stmt.bodyB]
-    case 'fetchJson':
-      return [stmt.body, stmt.catchBody ?? []]
-    case 'classDecl':
-      return [stmt.ctorBody, ...stmt.methods.map((m) => m.body)]
-    default:
-      return []
-  }
+  return programmingChildBodyEntries(stmt).map((entry) => entry.body)
 }
 
 /**
@@ -162,13 +85,19 @@ const MACRO_ADDON_IMPORTS: Partial<
   Record<JSStatement['type'], ReadonlyArray<{ name: string; module: string }>>
 > = {
   bloomSetup: [
-    { name: 'EffectComposer', module: 'three/addons/postprocessing/EffectComposer.js' },
-    { name: 'RenderPass', module: 'three/addons/postprocessing/RenderPass.js' },
-    { name: 'UnrealBloomPass', module: 'three/addons/postprocessing/UnrealBloomPass.js' },
-    { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
+    canvas3DAddonImport('EffectComposer'),
+    canvas3DAddonImport('RenderPass'),
+    canvas3DAddonImport('UnrealBloomPass'),
+    canvas3DAddonImport('OutputPass'),
   ],
-  waterSetup: [{ name: 'Water', module: 'three/addons/objects/Water.js' }],
+  waterSetup: [canvas3DAddonImport('Water')],
+  environmentLoad: [canvas3DAddonImport('RGBELoader')],
 }
+
+/** Nós cuja expansão deve voltar ao mesmo bloco semântico após editar a Ponte. */
+const CANVAS3D_SEMANTIC_STATEMENTS: ReadonlySet<JSStatement['type']> = new Set(
+  CANVAS3D_SEMANTIC_STATEMENT_TYPES,
+)
 
 /**
  * Shaders GLSL do macro Grama (`grassSetup`) — o vento vive AQUI, escondido da
@@ -205,6 +134,54 @@ function treeHasStatementType(statements: JSStatement[], type: JSStatement['type
   return false
 }
 
+/** Fontes de imagem usadas por blocos Canvas, em ordem e sem duplicatas. */
+function collectCanvasImageSources(statements: JSStatement[]): string[] {
+  const sources = new Set<string>()
+  // Pilha em ordem inversa para visitar o programa da esquerda para a direita.
+  // A ordem não muda o Promise.all, mas mantém o código gerado previsível.
+  const pending = [...statements].reverse()
+  while (pending.length > 0) {
+    const statement = pending.pop()
+    if (!statement) continue
+    if (statement.type === 'canvasDrawImage') sources.add(statement.src)
+    const children = jsChildBodies(statement).flat()
+    for (let index = children.length - 1; index >= 0; index -= 1) {
+      const child = children[index]
+      if (child) pending.push(child)
+    }
+  }
+  return [...sources]
+}
+
+function canvasImagePreloadOpen(
+  sources: string[],
+  identifiers: ReturnType<IdentifierScope['prepareCanvasImageIdentifiers']>,
+): string {
+  const names = JSON.stringify(sources)
+  return [
+    CANVAS_IMAGE_PRELOAD_MARKERS.start,
+    `const ${identifiers.images} = new Map();`,
+    `const ${identifiers.ready} = Promise.all(${names}.map((nomeDaImagem) => new Promise((pronta) => {`,
+    '  const imagem = new Image();',
+    "  imagem.addEventListener('load', () => {",
+    `    ${identifiers.images}.set(nomeDaImagem, imagem);`,
+    '    pronta();',
+    '  }, { once: true });',
+    "  imagem.addEventListener('error', () => {",
+    "    console.warn('Não foi possível carregar a imagem:', nomeDaImagem);",
+    '    pronta();',
+    '  }, { once: true });',
+    '  imagem.src = window.__SZGAME_ASSETS?.[nomeDaImagem] ?? nomeDaImagem;',
+    '})));',
+    `${identifiers.ready}.then(() => {`,
+    CANVAS_IMAGE_PRELOAD_MARKERS.body,
+  ].join('\n')
+}
+
+function canvasImagePreloadClose(): string {
+  return `${CANVAS_IMAGE_PRELOAD_MARKERS.end}\n});`
+}
+
 /**
  * Guarda de profundidade ITERATIVA (pilha explícita, sem recursão). Roda ANTES
  * de `hoistAnimationLoops`/`createPreparedIdentifierScope`/compilação — todas
@@ -224,11 +201,12 @@ function assertJSDepth(statements: JSStatement[]): void {
   }
 }
 
-export interface GenerateJSOptions {
-  statements: JSStatement[]
+export type GenerateJSOptions = {
   /** Header injected at top (e.g., comment header). */
   header?: string
-}
+  /** Adaptador interno que cria o escopo de uma execução e liga o boot automático. */
+  lifecycle?: ProjectLifecycleTarget | RuntimeLifecycleContract
+} & ({ statements: JSStatement[]; behavior?: never } | { statements?: never; behavior: BehaviorIR })
 
 export interface GenerateJSWithMapResult {
   code: string
@@ -238,6 +216,53 @@ export interface GenerateJSWithMapResult {
 interface CompileMapContext {
   map: SourceMapBuilder
   startLine: number
+}
+
+function treeUsesThreeNamespace(value: unknown): boolean {
+  const pending: unknown[] = [value]
+  while (pending.length > 0) {
+    const current = pending.pop()
+    if (Array.isArray(current)) {
+      pending.push(...current)
+      continue
+    }
+    if (!current || typeof current !== 'object') continue
+    const record = current as Record<string, unknown>
+    if (record.namespace === 'THREE') return true
+    pending.push(...Object.values(record))
+  }
+  return false
+}
+
+/** Imports que os facilitadores Canvas 3D exigem, deduplicados contra os explícitos. */
+function injectedCanvas3DImports(statements: JSStatement[]): JSStatement[] {
+  const existingNamedModules = new Set(
+    statements.filter((statement) => statement.type === 'importNamed').map((s) => s.module),
+  )
+  const injected: JSStatement[] = []
+  const needsCore =
+    treeUsesThreeNamespace(statements) ||
+    CANVAS3D_SEMANTIC_STATEMENT_TYPES.some((type) =>
+      treeHasStatementType(statements, type as JSStatement['type']),
+    )
+  const hasCore = statements.some(
+    (statement) =>
+      statement.type === 'importStar' && statement.module === 'three' && statement.name === 'THREE',
+  )
+  if (needsCore && !hasCore) {
+    injected.push({ type: 'importStar', name: 'THREE', module: 'three' })
+  }
+
+  const seenModules = new Set<string>()
+  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
+    if (!needed || !treeHasStatementType(statements, macroType as JSStatement['type'])) continue
+    for (const entry of needed) {
+      if (existingNamedModules.has(entry.module) || seenModules.has(entry.module)) continue
+      seenModules.add(entry.module)
+      injected.push({ type: 'importNamed', names: [entry.name], module: entry.module })
+    }
+  }
+  return injected
 }
 
 export function generateJS(opts: GenerateJSOptions): string {
@@ -251,6 +276,7 @@ export function generateJS(opts: GenerateJSOptions): string {
  * "Quando clicar..." → linha do `addEventListener`).
  */
 export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapResult {
+  if (opts.behavior) return generateBehaviorJSWithMap(opts.behavior, opts.header, opts.lifecycle)
   const map = new SourceMapBuilder()
   // Aborta cedo (erro tipado e capturável) numa IR aninhada demais — antes que
   // as recursões abaixo (hoist/escopo/compilação) estourem a pilha do motor.
@@ -260,44 +286,232 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // mesmo escopo da função, então ambos sobem juntos.
   const hoistedLoops = hoistAnimationLoops(opts.statements)
   // `import * as X` / `import { X }` precisam estar no TOPO do módulo (regra do
-  // JS). Os blocos de import são top-level (no frame de Comportamento); movê-los à
+  // JS). Os blocos de import são top-level (na área Ao iniciar); movê-los à
   // frente garante o código válido mesmo se a criança os arrastar para baixo.
   const isImport = (s: JSStatement): boolean => s.type === 'importStar' || s.type === 'importNamed'
-  // Macros de efeito (Brilho/Água): trazem sozinhos os imports de `three/addons/…`,
-  // deduplicados por módulo contra o que a criança já importou.
-  const existingModules = new Set(
-    hoistedLoops.filter((s) => s.type === 'importNamed').map((s) => s.module),
-  )
-  const injectedImports: JSStatement[] = []
-  const seenInjected = new Set<string>()
-  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
-    if (!needed || !treeHasStatementType(hoistedLoops, macroType as JSStatement['type'])) continue
-    for (const imp of needed) {
-      if (existingModules.has(imp.module) || seenInjected.has(imp.module)) continue
-      seenInjected.add(imp.module)
-      injectedImports.push({ type: 'importNamed', names: [imp.name], module: imp.module })
-    }
-  }
+  const injectedImports = injectedCanvas3DImports(hoistedLoops)
   const imports = [...hoistedLoops.filter(isImport), ...injectedImports]
   const statements = imports.length
     ? [...imports, ...hoistedLoops.filter((s) => !isImport(s))]
     : hoistedLoops
   const identifiers = createPreparedIdentifierScope(statements)
+  const canvasImageSources = collectCanvasImageSources(statements)
+  const canvasImages =
+    canvasImageSources.length > 0 ? identifiers.prepareCanvasImageIdentifiers() : undefined
   const headerText = opts.header ? `${opts.header.trim()}\n\n` : ''
   // Statements começam após o header (1-indexed).
   let currentLine = headerText ? countLines(headerText) + 1 : 1
   const pieces: string[] = []
+  const needsPhysicsLite = treeHasStatementType(statements, 'physicsLiteSetup')
+  let physicsLiteInserted = false
+  let canvasImagesOpened = false
   for (const stmt of statements) {
-    const piece = compileStatement(stmt, 0, identifiers, { map, startLine: currentLine })
+    if (needsPhysicsLite && !physicsLiteInserted && !isImport(stmt)) {
+      const runtime = wrapCanvas3DRuntime(physicsLiteRuntimeSource)
+      pieces.push(runtime)
+      currentLine += countLines(runtime)
+      physicsLiteInserted = true
+    }
+    if (canvasImages && !canvasImagesOpened && !isImport(stmt)) {
+      const open = canvasImagePreloadOpen(canvasImageSources, canvasImages)
+      pieces.push(open)
+      currentLine += countLines(open)
+      canvasImagesOpened = true
+    }
+    const piece = compileStatement(stmt, canvasImagesOpened ? 1 : 0, identifiers, {
+      map,
+      startLine: currentLine,
+    })
     const lines = countLines(piece)
     pieces.push(piece)
     // Pieces são unidos por '\n' (separador, não linha adicional). Próximo
     // piece começa exatamente em currentLine + lines.
     currentLine += lines
   }
+  if (needsPhysicsLite && !physicsLiteInserted) {
+    pieces.push(wrapCanvas3DRuntime(physicsLiteRuntimeSource))
+  }
+  if (canvasImagesOpened) pieces.push(canvasImagePreloadClose())
   const body = pieces.join('\n')
   const code = headerText + (body ? `${body}\n` : '')
   return { code, map }
+}
+
+function generateBehaviorJSWithMap(
+  behavior: BehaviorIR,
+  header: string | undefined,
+  lifecycle: ProjectLifecycleTarget | RuntimeLifecycleContract | undefined,
+): GenerateJSWithMapResult {
+  const map = new SourceMapBuilder()
+  const ordered = [...behavior.start, ...behavior.events, ...behavior.loops]
+  assertJSDepth(ordered)
+
+  const isImport = (statement: JSStatement): boolean =>
+    statement.type === 'importStar' || statement.type === 'importNamed'
+  const injectedImports = injectedCanvas3DImports(ordered)
+
+  const imports = [...ordered.filter(isImport), ...injectedImports]
+  const sections: Array<{ marker: string; statements: JSStatement[] }> = [
+    {
+      marker: BEHAVIOR_SECTION_MARKERS.start,
+      statements: behavior.start.filter((statement) => !isImport(statement)),
+    },
+    { marker: BEHAVIOR_SECTION_MARKERS.events, statements: behavior.events },
+    { marker: BEHAVIOR_SECTION_MARKERS.loops, statements: behavior.loops },
+  ]
+  const identifiers = createPreparedIdentifierScope([
+    ...imports,
+    ...ordered.filter((s) => !isImport(s)),
+  ])
+  const canvasImageSources = collectCanvasImageSources(ordered)
+  const canvasImages =
+    canvasImageSources.length > 0 ? identifiers.prepareCanvasImageIdentifiers() : undefined
+  const headerText = header ? `${header.trim()}\n\n` : ''
+  let currentLine = headerText ? countLines(headerText) + 1 : 1
+  const pieces: string[] = []
+
+  for (const statement of imports) {
+    const piece = compileStatement(statement, 0, identifiers, { map, startLine: currentLine })
+    pieces.push(piece)
+    currentLine += countLines(piece)
+  }
+
+  const needsPhysicsLite = treeHasStatementType(ordered, 'physicsLiteSetup')
+  if (needsPhysicsLite) {
+    const runtime = wrapCanvas3DRuntime(physicsLiteRuntimeSource)
+    pieces.push(runtime)
+    currentLine += countLines(runtime)
+  }
+
+  if (canvasImages) {
+    const open = canvasImagePreloadOpen(canvasImageSources, canvasImages)
+    pieces.push(open)
+    currentLine += countLines(open)
+  }
+
+  const lifecycleContract = lifecycle
+    ? typeof lifecycle === 'string'
+      ? lifecycleContractForTarget(lifecycle)
+      : lifecycle
+    : undefined
+  const projectRunContext = lifecycleContract?.managedProjectRun
+    ? identifiers.prepareProjectRunContextIdentifier()
+    : undefined
+  const envelope = lifecycleContract
+    ? lifecycleEnvelope(lifecycleContract, projectRunContext)
+    : undefined
+  const canvasIndent = canvasImages ? 1 : 0
+  const indent = canvasIndent + (envelope ? 1 : 0)
+  const markerIndent = '  '.repeat(indent)
+  if (envelope) {
+    const canvasPad = '  '.repeat(canvasIndent)
+    const open = envelope.open
+      .split('\n')
+      .map((line) => `${canvasPad}${line}`)
+      .join('\n')
+    pieces.push(open)
+    currentLine += countLines(open)
+  }
+
+  for (const section of sections) {
+    pieces.push(`${markerIndent}${section.marker}`)
+    currentLine += 1
+    // Comentário didático do passo fixo: emitido DETERMINISTICAMENTE em função da
+    // IR (há raiz de loop do Jogo 2D?), como peça própria (não desloca o source
+    // map dos corpos). O parser descarta comentários, então gerar→parsear→gerar
+    // continua fixpoint: o comentário some no parse e volta aqui na regeração.
+    if (
+      section.marker === BEHAVIOR_SECTION_MARKERS.loops &&
+      section.statements.some((statement) => GAME2D_LOOP_ROOT_TYPES.has(statement.type))
+    ) {
+      pieces.push(
+        `${markerIndent}// O jogo roda 60 passos por segundo: cada volta desenha um "quadro" do filme.`,
+      )
+      currentLine += 1
+    }
+    for (const statement of section.statements) {
+      const context = { map, startLine: currentLine }
+      const piece =
+        section.marker === BEHAVIOR_SECTION_MARKERS.loops
+          ? compileBehaviorLoopRoot(statement, indent, identifiers, context)
+          : compileStatement(statement, indent, identifiers, context)
+      pieces.push(piece)
+      currentLine += countLines(piece)
+    }
+  }
+  if (envelope) {
+    pieces.push(`${'  '.repeat(canvasIndent)}${envelope.close}`)
+    if (envelope.boot) pieces.push(`${'  '.repeat(canvasIndent)}${envelope.boot}`)
+  }
+  if (canvasImages) pieces.push(canvasImagePreloadClose())
+
+  const body = pieces.join('\n')
+  return { code: headerText + (body ? `${body}\n` : ''), map }
+}
+
+/** Raízes de loop do Jogo 2D que ganham o comentário didático do passo fixo. */
+const GAME2D_LOOP_ROOT_TYPES = new Set([
+  'g2d:updateEachFrame',
+  'g2d:everyFrames',
+  'g2d:everySeconds',
+  'g2d:afterSeconds',
+])
+
+/**
+ * “A cada N” é uma raiz de loop independente no projeto. O nó interno continua
+ * representando somente a cadência; este adaptador o liga ao tick do motor sem
+ * obrigar a criança a encaixá-lo dentro de “A cada quadro”.
+ */
+function compileBehaviorLoopRoot(
+  statement: JSStatement,
+  indent: number,
+  identifiers: IdentifierScope,
+  mapContext: CompileMapContext,
+): string {
+  const pad = '  '.repeat(indent)
+  const childContext = childMapContext(mapContext, mapContext.startLine + 1)
+  if (
+    statement.type === 'g2d:everyFrames' ||
+    statement.type === 'g2d:everySeconds' ||
+    statement.type === 'g2d:afterSeconds'
+  ) {
+    const body = compileStatement(statement, indent + 1, identifiers, childContext)
+    return `${pad}SZGame2D.gameLoop(function __szPeriodicLoop() {\n${body}\n${pad}});`
+  }
+  if (statement.type === 'gk:everySeconds') {
+    const body = compileStatement(statement, indent + 1, identifiers, childContext)
+    return `${pad}SZGameKit.onUpdate(function __szPeriodicLoop(dt) {\n${body}\n${pad}});`
+  }
+  return compileStatement(statement, indent, identifiers, mapContext)
+}
+
+interface LifecycleEnvelope {
+  open: string
+  close: string
+  boot?: string
+}
+
+function lifecycleEnvelope(
+  contract: RuntimeLifecycleContract,
+  projectRunContext?: string,
+): LifecycleEnvelope {
+  if (!contract.globalName || !contract.runMethod) {
+    return { open: '(function __szProjectRun() {', close: '})();' }
+  }
+  const call = `${contract.globalName}.${contract.runMethod}`
+  const close = contract.runId ? `}, ${JSON.stringify(contract.runId)});` : '});'
+  const restart =
+    projectRunContext && contract.restartMethod
+      ? `() => ${contract.globalName}.${contract.restartMethod}()`
+      : undefined
+  const beginRun = projectRunContext
+    ? `\n  const ${projectRunContext} = window.__SZProjectLifecycle.begin(${restart ?? ''});`
+    : ''
+  return {
+    open: `${call}(function __szProjectRun() {${beginRun}`,
+    close,
+    ...(contract.bootMethod ? { boot: `${contract.globalName}.${contract.bootMethod}();` } : {}),
+  }
 }
 
 /**
@@ -377,6 +591,10 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
       if (stmt.event === 'load') return stmt
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'g3d:forEachInSwarm':
+    case 'g3d:forEachInGroup':
+    case 'g3d:pruneOffscreen':
+    case 'g3d:everyFrames':
+    case 'g3d:everySeconds':
     case 'forEach':
     case 'imageOnLoad':
     case 'setTimeout':
@@ -440,13 +658,49 @@ function elementExpr(
     : `document.getElementById(${JSON.stringify(target)})`
 }
 
+function lifecycleResourceFunction(
+  identifiers: IdentifierScope,
+  globalName: 'requestAnimationFrame' | 'setInterval' | 'setTimeout',
+): string {
+  const projectRunContext = identifiers.getProjectRunContextIdentifier()
+  if (!projectRunContext) return globalName
+  const method = globalName === 'requestAnimationFrame' ? 'requestFrame' : globalName
+  return `${projectRunContext}.${method}`
+}
+
+/**
+ * Mantém todo callback adiado dentro da fronteira terminal da partida. Se o
+ * próprio callback reiniciar o projeto, nenhuma instrução posterior do callback
+ * antigo continua executando.
+ */
+function lifecycleCallback(
+  identifiers: IdentifierScope,
+  parameters: string,
+  body: string,
+  closingIndent: string,
+): string {
+  const projectRunContext = identifiers.getProjectRunContextIdentifier()
+  if (!projectRunContext) return `(${parameters}) => {\n${body}\n${closingIndent}}`
+  return `(${parameters}) => ${projectRunContext}.run(() => {\n${body}\n${closingIndent}})`
+}
+
 function compileStatement(
   stmt: JSStatement,
   indent: number,
   identifiers: IdentifierScope,
   mapContext?: CompileMapContext,
 ): string {
-  const code = compileStatementCode(stmt, indent, identifiers, mapContext)
+  const expanded = compileStatementCode(stmt, indent, identifiers, mapContext)
+  const semantic = CANVAS3D_SEMANTIC_STATEMENTS.has(stmt.type)
+  if (semantic && mapContext && expanded) {
+    mapContext.map.shiftEntriesInRange(
+      'script.js',
+      mapContext.startLine,
+      mapContext.startLine + countLines(expanded) - 1,
+      1,
+    )
+  }
+  const code = semantic ? wrapCanvas3DMacro(stmt, expanded) : expanded
   if (mapContext && stmt.__id) {
     const endLine = mapContext.startLine + countLines(code) - 1
     mapContext.map.record(
@@ -477,6 +731,18 @@ function compileStatementCode(
   const base = mapContext?.startLine ?? 1
   const recAt = (line: number): ExprMapContext | undefined =>
     mapContext ? { map: mapContext.map, line, indent } : undefined
+  if (isCanvasStatement(stmt)) {
+    const canvasCode = canvasStatementToCode(stmt, indent, identifiers, {
+      mapContext,
+      recAt,
+      compileExpression: compileExpr,
+      compileStatements,
+      childMapContext,
+      lifecycleResourceFunction,
+    })
+    if (canvasCode !== undefined) return canvasCode
+    throw new GeneratorError(`Statement Canvas sem codec: ${stmt.type}`)
+  }
   switch (stmt.type) {
     case 'var': {
       const keyword = stmt.kind === 'const' ? 'const' : 'let'
@@ -527,7 +793,8 @@ function compileStatementCode(
       )
       const times = compileExpr(stmt.times, 0, identifiers, recAt(base))
       const loopVar = identifiers.reserveInternal('i')
-      return `${pad}for (let ${loopVar} = 0; ${loopVar} < ${times}; ${loopVar}++) {\n${body}\n${pad}}`
+      const limitVar = identifiers.reserveInternal('limite')
+      return `${pad}for (let ${loopVar} = 0, ${limitVar} = ${times}; ${loopVar} < ${limitVar}; ${loopVar}++) {\n${body}\n${pad}}`
     }
     case 'while': {
       const body = compileStatements(
@@ -580,11 +847,11 @@ function compileStatementCode(
       const v = identifiers.get(stmt.varName)
       const from = compileExpr(stmt.from, 0, identifiers, recAt(base))
       const to = compileExpr(stmt.to, 0, identifiers, recAt(base))
-      const stepIsOne = stmt.step.type === 'num' && stmt.step.value === 1
-      const update = stepIsOne
-        ? `${v}++`
-        : `${v} += ${compileExpr(stmt.step, 0, identifiers, recAt(base))}`
-      return `${pad}for (let ${v} = ${from}; ${v} < ${to}; ${update}) {\n${body}\n${pad}}`
+      const step = compileExpr(stmt.step, 0, identifiers, recAt(base))
+      const limitVar = identifiers.reserveInternal('fim')
+      const stepVar = identifiers.reserveInternal('passo')
+      const condition = `${stepVar} > 0 ? ${v} < ${limitVar} : ${stepVar} < 0 ? ${v} > ${limitVar} : false`
+      return `${pad}for (let ${v} = ${from}, ${limitVar} = ${to}, ${stepVar} = ${step}; ${condition}; ${v} += ${stepVar}) {\n${body}\n${pad}}`
     }
     case 'tryCatch': {
       const startLine = mapContext?.startLine ?? 1
@@ -596,16 +863,27 @@ function compileStatementCode(
       )
       // `} catch (erro) {` fica na linha base + 1 (try) + linhas do corpo.
       const catchHeaderLine = startLine + 1 + countLines(body)
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      const catchIdentifier = stmt.errorName
+        ? identifiers.get(stmt.errorName)
+        : projectRunContext
+          ? identifiers.reserveInternal('__szRestartSignal')
+          : undefined
+      const controlGuard =
+        projectRunContext && catchIdentifier
+          ? `${'  '.repeat(indent + 1)}if (${projectRunContext}.isControlSignal(${catchIdentifier})) throw ${catchIdentifier};`
+          : ''
       const handler = compileStatements(
         stmt.handler,
         indent + 1,
         identifiers,
-        childMapContext(mapContext, catchHeaderLine + 1),
+        childMapContext(mapContext, catchHeaderLine + 1 + (controlGuard ? 1 : 0)),
       )
-      const param = stmt.errorName ? `(${identifiers.get(stmt.errorName)}) ` : ''
-      let out = `${pad}try {\n${body}\n${pad}} catch ${param}{\n${handler}\n${pad}}`
+      const param = catchIdentifier ? `(${catchIdentifier}) ` : ''
+      const guardedHandler = [controlGuard, handler].filter(Boolean).join('\n')
+      let out = `${pad}try {\n${body}\n${pad}} catch ${param}{\n${guardedHandler}\n${pad}}`
       if (stmt.finalizer) {
-        const finallyHeaderLine = catchHeaderLine + 1 + countLines(handler)
+        const finallyHeaderLine = catchHeaderLine + 1 + countLines(guardedHandler)
         const finalizer = compileStatements(
           stmt.finalizer,
           indent + 1,
@@ -621,14 +899,17 @@ function compileStatementCode(
       const url = compileExpr(stmt.url, 0, identifiers, recAt(startLine))
       const resp = identifiers.reserveInternal('resposta')
       const ok = identifiers.get(stmt.okName)
-      // Linhas: fetch(url) | .then(json) | .then((dados) => { | corpo… | })
+      // A resposta HTTP é validada ANTES do JSON: fetch só rejeita em falha de
+      // rede, portanto 4xx/5xx precisam lançar explicitamente para chegar ao
+      // callback de erro do bloco.
       const body = compileStatements(
         stmt.body,
         indent + 2,
         identifiers,
-        childMapContext(mapContext, startLine + 3),
+        childMapContext(mapContext, startLine + 8),
       )
-      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => ${resp}.json())\n${pad}  .then((${ok}) => {\n${body}\n${pad}  })`
+      const successCallback = lifecycleCallback(identifiers, ok, body, `${pad}  `)
+      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => {\n${pad}    if (!${resp}.ok) {\n${pad}      throw new Error("Falha HTTP " + ${resp}.status);\n${pad}    }\n${pad}    return ${resp}.json();\n${pad}  })\n${pad}  .then(${successCallback})`
       if (stmt.catchBody) {
         const catchVar = stmt.catchName
           ? identifiers.get(stmt.catchName)
@@ -637,39 +918,38 @@ function compileStatementCode(
           stmt.catchBody,
           indent + 2,
           identifiers,
-          childMapContext(mapContext, startLine + 3 + countLines(body) + 2),
+          childMapContext(mapContext, startLine + 10 + countLines(body)),
         )
-        out += `\n${pad}  .catch((${catchVar}) => {\n${catchBody}\n${pad}  })`
+        const errorCallback = lifecycleCallback(identifiers, catchVar, catchBody, `${pad}  `)
+        out += `\n${pad}  .catch(${errorCallback})`
       }
       return `${out};`
     }
     case 'event': {
+      const hasExplicitFormProtection = stmt.body.some(
+        (child) => child.type === 'eventMethod' && child.method === 'preventDefault',
+      )
+      const injectsFormProtection = stmt.event === 'submit' && !hasExplicitFormProtection
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
       const body = compileStatements(
         stmt.body,
         indent + 1,
         identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + (injectsFormProtection ? 2 : 1)),
       )
-      // Escuta global na JANELA: eventos da página inteira (load/resize) — ou
-      // qualquer evento marcado explicitamente como targetKind 'window'.
-      if (stmt.targetKind === 'window' || stmt.event === 'load' || stmt.event === 'resize') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
+      const protectedBody = injectsFormProtection
+        ? `${'  '.repeat(indent + 1)}event.preventDefault();${body ? `\n${body}` : ''}`
+        : body
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      const callback = lifecycleCallback(identifiers, 'event', protectedBody, pad)
+      if (targetKind === 'window') {
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
-      // Eventos que pegam um alvo (target) — vão para o elemento:
-      const elementBound: ReadonlySet<string> = new Set([
-        'click',
-        'mouseover',
-        'mouseout',
-        'submit',
-        'input',
-        'change',
-      ])
-      // Escuta global no documento: clique em qualquer lugar (targetKind
-      // 'document'), eventos de teclado (keydown/keyup) ou mover o mouse.
-      if (stmt.targetKind === 'document' || !elementBound.has(stmt.event)) {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
+      if (targetKind === 'document') {
+        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
+      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
     }
     case 'consoleLog':
       return `${pad}console.log(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
@@ -714,16 +994,42 @@ function compileStatementCode(
       return `${pad}Object.assign(${identifiers.get(stmt.targetVar)}, ${identifiers.get(stmt.sourceVar)});`
     case 'switch': {
       const subj = compileExpr(stmt.subject, 0, identifiers, recAt(base))
-      const cases = stmt.cases
-        .map((c) => {
-          const body = compileStatements(c.body, indent + 2, identifiers)
-          return `${pad}  case ${compileExpr(c.match, 0, identifiers)}: {\n${body}\n${pad}    break;\n${pad}  }`
-        })
-        .join('\n')
-      const def = stmt.default
-        ? `\n${pad}  default: {\n${compileStatements(stmt.default, indent + 2, identifiers)}\n${pad}  }`
-        : ''
-      return `${pad}switch (${subj}) {\n${cases}${def}\n${pad}}`
+      let cursorLine = base + 1
+      const caseChunks: string[] = []
+      for (const c of stmt.cases) {
+        const body = compileStatements(
+          c.body,
+          indent + 2,
+          identifiers,
+          childMapContext(mapContext, cursorLine + 1),
+        )
+        const matchContext: ExprMapContext | undefined = mapContext
+          ? { map: mapContext.map, line: cursorLine, indent: indent + 1 }
+          : undefined
+        const chunk = `${pad}  case ${compileExpr(c.match, 0, identifiers, matchContext)}: {\n${body}\n${pad}    break;\n${pad}  }`
+        const endLine = cursorLine + countLines(chunk) - 1
+        mapContext?.map.record(
+          c.__id,
+          'script.js',
+          cursorLine,
+          endLine,
+          (indent + 1) * 2 + 1,
+          lastLineEndColumn(chunk),
+        )
+        caseChunks.push(chunk)
+        cursorLine = endLine + 1
+      }
+      let def = ''
+      if (stmt.default) {
+        const defaultBody = compileStatements(
+          stmt.default,
+          indent + 2,
+          identifiers,
+          childMapContext(mapContext, cursorLine + 1),
+        )
+        def = `${caseChunks.length > 0 ? '\n' : ''}${pad}  default: {\n${defaultBody}\n${pad}  }`
+      }
+      return `${pad}switch (${subj}) {\n${caseChunks.join('\n')}${def}\n${pad}}`
     }
     // Tela cheia na PÁGINA inteira (document.documentElement). Só funciona a partir
     // de um gesto do aluno (clique/tecla) — daí ir dentro de um "Quando ...".
@@ -738,255 +1044,6 @@ function compileStatementCode(
       return `${pad}${datasetAccess(target, stmt.key)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     }
     // Canvas
-    case 'canvasSetup': {
-      const v = identifiers.get(stmt.varName)
-      const canvas = identifiers.getCanvasElement(stmt.varName)
-      return [
-        `${pad}const ${canvas} = document.getElementById(${JSON.stringify(stmt.canvasId)});`,
-        `${pad}const ${v} = ${canvas}.getContext('2d');`,
-      ].join('\n')
-    }
-    case 'canvasSetSize': {
-      const canvas = identifiers.getCanvasElement(stmt.ctxVar)
-      return [
-        `${pad}${canvas}.width = ${compileExpr(stmt.w, 0, identifiers, recAt(base))};`,
-        `${pad}${canvas}.height = ${compileExpr(stmt.h, 0, identifiers, recAt(base + 1))};`,
-      ].join('\n')
-    }
-    case 'canvasClear': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      // ⚠️ Chavear pelo CTX (igual a canvasSetup/canvasSetSize/canvasDim), NUNCA
-      // por `stmt.canvasVar`: o mapa ctx→elemento já tem a entrada do setup e a
-      // chave divergente criava uma SEGUNDA alocação — o corpo do loop saía
-      // `canvas_2.width` (ReferenceError) e o nome derivava a cada round-trip.
-      const canvas = identifiers.getCanvasElement(stmt.ctxVar)
-      return `${pad}${ctx}.clearRect(0, 0, ${canvas}.width, ${canvas}.height);`
-    }
-    case 'canvasFillStyle':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fillStyle = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`
-    case 'canvasFillRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fillRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasArc': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      // beginPath na 1ª linha; o arc(x, y, r, …) fica na 2ª linha (base+1).
-      return [
-        `${pad}${ctx}.beginPath();`,
-        `${pad}${ctx}.arc(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 1))}, 0, Math.PI * 2);`,
-        `${pad}${ctx}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasStrokeRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasClearRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.clearRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasRoundRect': {
-      const ctxRR = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxRR}.beginPath();`,
-        `${pad}${ctxRR}.roundRect(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 1))});`,
-        `${pad}${ctxRR}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasEllipse': {
-      const ctxEl = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxEl}.beginPath();`,
-        `${pad}${ctxEl}.ellipse(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.rx, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.ry, 0, identifiers, recAt(base + 1))}, 0, 0, Math.PI * 2);`,
-        `${pad}${ctxEl}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasArcSlice': {
-      const ctxAs = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxAs}.beginPath();`,
-        `${pad}${ctxAs}.moveTo(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))});`,
-        `${pad}${ctxAs}.arc(${compileExpr(stmt.x, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.start, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.end, 0, identifiers, recAt(base + 2))});`,
-        `${pad}${ctxAs}.closePath();`,
-        `${pad}${ctxAs}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasQuadraticCurve':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.quadraticCurveTo(${compileExpr(stmt.cpx, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cpy, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasBezierCurve':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.bezierCurveTo(${compileExpr(stmt.cp1x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp1y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp2x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp2y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasArcTo':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.arcTo(${compileExpr(stmt.x1, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y1, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x2, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y2, 0, identifiers, recAt(base))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base))});`
-    case 'canvasShadow': {
-      const ctxSh = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxSh}.shadowColor = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`,
-        `${pad}${ctxSh}.shadowBlur = ${compileExpr(stmt.blur, 0, identifiers, recAt(base + 1))};`,
-      ].join('\n')
-    }
-    case 'canvasStrokeText':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeText(${compileExpr(stmt.text, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasLineDash': {
-      // Um único valor de traço (traço = espaço). Emite [seg], não [seg, seg]: o
-      // canvas DUPLICA arrays de tamanho ímpar (então [seg] já é traço=espaço=seg)
-      // e, se `seg` for impuro (ex.: número aleatório / medida de texto), não é
-      // avaliado DUAS vezes nem com valores divergentes. O parser lê elements[0],
-      // então o round-trip continua estável.
-      const seg = compileExpr(stmt.segment, 0, identifiers, recAt(base))
-      return `${pad}${identifiers.get(stmt.ctxVar)}.setLineDash([${seg}]);`
-    }
-    case 'canvasFillText':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${compileExpr(stmt.text, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'animationLoop': {
-      const frame = identifiers.reserveInternal('frame')
-      const startLine = mapContext?.startLine ?? 1
-      // Forma com TEMPO: expõe o tempo do quadro (ms, do requestAnimationFrame) e
-      // o tempo desde o quadro anterior (delta) em variáveis do aluno, para
-      // movimento independente de FPS. O loop é iniciado com requestAnimationFrame
-      // (não com frame()) para que o 1º quadro já receba um tempo real.
-      if (stmt.timeVar || stmt.deltaVar) {
-        const tVar = stmt.timeVar
-          ? identifiers.get(stmt.timeVar)
-          : identifiers.reserveInternal('frameTime')
-        const dVar = stmt.deltaVar ? identifiers.get(stmt.deltaVar) : null
-        const lastT = dVar ? identifiers.reserveInternal('lastFrameTime') : null
-        const pre: string[] = []
-        if (stmt.handle) pre.push(`${pad}let ${identifiers.get(stmt.handle)};`)
-        if (lastT) pre.push(`${pad}let ${lastT};`)
-        pre.push(`${pad}function ${frame}(${tVar}) {`)
-        if (stmt.handle) {
-          pre.push(`${pad}  ${identifiers.get(stmt.handle)} = requestAnimationFrame(${frame});`)
-        }
-        if (dVar && lastT) {
-          pre.push(`${pad}  const ${dVar} = ${lastT} === undefined ? 0 : ${tVar} - ${lastT};`)
-          pre.push(`${pad}  ${lastT} = ${tVar};`)
-        }
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, startLine + pre.length),
-        )
-        const post: string[] = []
-        if (!stmt.handle) post.push(`${pad}  requestAnimationFrame(${frame});`)
-        post.push(`${pad}}`)
-        post.push(`${pad}requestAnimationFrame(${frame});`)
-        return [...pre, body, ...post].join('\n')
-      }
-      // Forma cancelável: guarda o id do requestAnimationFrame numa variável do
-      // aluno para poder pará-lo depois com cancelAnimationFrame.
-      if (stmt.handle) {
-        const handle = identifiers.get(stmt.handle)
-        // Reagenda o próximo quadro NO TOPO da função (padrão MDN). Assim, se o
-        // corpo chamar cancelAnimationFrame(<handle>), ele cancela o quadro JÁ
-        // agendado e o loop realmente para — inclusive quando o cancelamento
-        // acontece de dentro do próprio corpo (ex.: colisão). Cabeçalho de 3
-        // linhas (let / function / requestAnimationFrame) antes do corpo.
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, startLine + 3),
-        )
-        return [
-          `${pad}let ${handle};`,
-          `${pad}function ${frame}() {`,
-          `${pad}  ${handle} = requestAnimationFrame(${frame});`,
-          body,
-          `${pad}}`,
-          `${pad}${frame}();`,
-        ].join('\n')
-      }
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, startLine + 1),
-      )
-      return [
-        `${pad}function ${frame}() {`,
-        body,
-        `${pad}  requestAnimationFrame(${frame});`,
-        `${pad}}`,
-        // Pontapé inicial: chama a própria função (sem parâmetros) para iniciar o
-        // loop. Dentro dela, requestAnimationFrame reagenda o próximo quadro.
-        `${pad}${frame}();`,
-      ].join('\n')
-    }
-    case 'cancelAnimationFrame':
-      return `${pad}cancelAnimationFrame(${compileExpr(stmt.handle, 0, identifiers, recAt(base))});`
-    case 'canvasDrawImage': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      const image = identifiers.reserveInternal(`${ctx}Img`)
-      return [
-        `${pad}{`,
-        `${pad}  const ${image} = new Image();`,
-        `${pad}  ${image}.src = window.__SZGAME_ASSETS?.[${JSON.stringify(stmt.src)}] ?? ${JSON.stringify(stmt.src)};`,
-        `${pad}  ${image}.onload = () => ${ctx}.drawImage(${image}, ${compileExpr(stmt.x, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 3))});`,
-        `${pad}}`,
-      ].join('\n')
-    }
-    case 'canvasSave':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.save();`
-    case 'canvasRestore':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.restore();`
-    case 'canvasTranslate':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.translate(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasRotate':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.rotate(${compileExpr(stmt.angle, 0, identifiers, recAt(base))});`
-    case 'canvasScale':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.scale(${compileExpr(stmt.sx, 0, identifiers, recAt(base))}, ${compileExpr(stmt.sy, 0, identifiers, recAt(base))});`
-    case 'canvasGradient': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      const v = identifiers.get(stmt.varName)
-      const stops = stmt.stops
-        .map((s) => `${pad}${v}.addColorStop(${s.offset}, ${JSON.stringify(s.color)});`)
-        .join('\n')
-      return [
-        `${pad}const ${v} = ${ctx}.createLinearGradient(${compileExpr(stmt.x0, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y0, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x1, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y1, 0, identifiers, recAt(base))});`,
-        stops,
-      ].join('\n')
-    }
-    case 'canvasBeginPath':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.beginPath();`
-    case 'canvasClosePath':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.closePath();`
-    case 'canvasStroke':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.stroke();`
-    case 'canvasFill':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fill();`
-    case 'canvasMoveTo':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.moveTo(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasLineTo':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.lineTo(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.rect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasClip':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.clip();`
-    case 'canvasStrokeStyle':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeStyle = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`
-    case 'canvasLineWidth':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.lineWidth = ${compileExpr(stmt.width, 0, identifiers, recAt(base))};`
-    case 'canvasGlobalAlpha':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.globalAlpha = ${compileExpr(stmt.alpha, 0, identifiers, recAt(base))};`
-    case 'canvasFont':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.font = ${JSON.stringify(`${stmt.weight ? `${stmt.weight} ` : ''}${stmt.size}px ${stmt.family}`)};`
-    case 'canvasTextAlign':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.textAlign = ${JSON.stringify(stmt.align)};`
-    case 'canvasTextBaseline':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.textBaseline = ${JSON.stringify(stmt.baseline)};`
-    case 'keyboardSimple': {
-      const v = identifiers.get(stmt.varName)
-      return [
-        `${pad}const ${v} = { left: false, right: false, up: false, down: false };`,
-        `${pad}document.addEventListener('keydown', (e) => {`,
-        `${pad}  if (e.key === 'ArrowLeft') ${v}.left = true;`,
-        `${pad}  if (e.key === 'ArrowRight') ${v}.right = true;`,
-        `${pad}  if (e.key === 'ArrowUp') ${v}.up = true;`,
-        `${pad}  if (e.key === 'ArrowDown') ${v}.down = true;`,
-        `${pad}});`,
-        `${pad}document.addEventListener('keyup', (e) => {`,
-        `${pad}  if (e.key === 'ArrowLeft') ${v}.left = false;`,
-        `${pad}  if (e.key === 'ArrowRight') ${v}.right = false;`,
-        `${pad}  if (e.key === 'ArrowUp') ${v}.up = false;`,
-        `${pad}  if (e.key === 'ArrowDown') ${v}.down = false;`,
-        `${pad}});`,
-      ].join('\n')
-    }
     case 'arrayPush':
       return `${pad}${identifiers.get(stmt.arrayVar)}.push(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
     case 'arrayRemove':
@@ -994,6 +1051,17 @@ function compileStatementCode(
     case 'arraySplice':
       return `${pad}${identifiers.get(stmt.arrayVar)}.splice(${compileExpr(stmt.start, 0, identifiers, recAt(base))}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))});`
     // ----- game-2d -----
+    case 'g2d:onStart': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const start = identifiers.reserveInternal('iniciarJogo')
+      const id = stmt.__id ?? identifiers.reserveInternal('inicioDoJogo')
+      return `${pad}SZGame2D.onStart(function ${start}() {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
     case 'g2d:createSprite': {
       const v = identifiers.get(stmt.varName)
       return `${pad}const ${v} = SZGame2D.createSprite({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
@@ -1009,11 +1077,7 @@ function compileStatementCode(
     case 'g2d:score':
       return `${pad}let ${identifiers.get(stmt.varName)} = ${compileExpr(valueToExpr(stmt.initial), 0, identifiers, recAt(base))};`
     case 'g2d:gameOver':
-      return [
-        `${pad}${identifiers.get(stmt.ctxVar)}.fillStyle = '#f87171';`,
-        `${pad}${identifiers.get(stmt.ctxVar)}.font = '32px sans-serif';`,
-        `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, 40, 80);`,
-      ].join('\n')
+      return `${pad}SZGame2D.showGameOver(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))});`
     case 'g2d:clear':
       return `${pad}SZGame2D.clear();`
     case 'g2d:setGravity':
@@ -1042,6 +1106,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.setHealth(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
     case 'g2d:changeHealth':
       return `${pad}SZGame2D.changeHealth(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.delta), 0, identifiers, recAt(base))});`
+    case 'g2d:damageSprite':
+      return `${pad}SZGame2D.damageSprite(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.invincibilityFrames), 0, identifiers, recAt(base))});`
     case 'g2d:flipSprite':
       return `${pad}SZGame2D.flipSprite(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.dir)});`
     case 'g2d:setOpacity':
@@ -1081,7 +1147,8 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.onPointer((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeClique')
+      return `${pad}SZGame2D.onPointer((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onKey': {
       const body = compileStatements(
@@ -1090,7 +1157,8 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, function () {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeTecla')
+      return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onOverlap': {
       const body = compileStatements(
@@ -1101,7 +1169,8 @@ function compileStatementCode(
       )
       // Sprites passados como thunks (() => sprite) para resolver no DISPARO, não no
       // registro — assim a ordem dos blocos no topo não causa TDZ (const léxico).
-      return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, function () {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeContato')
+      return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:createImageSprite': {
       const v = identifiers.get(stmt.varName)
@@ -1118,7 +1187,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.defineShape(${JSON.stringify(stmt.shapeName)}, function (${identifiers.get('ctx')}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.defineShape(${JSON.stringify(stmt.shapeName)}, (${identifiers.get('ctx')}) => {\n${body}\n${pad}});`
     }
     case 'g2d:createShapeSprite': {
       const v = identifiers.get(stmt.varName)
@@ -1147,7 +1216,8 @@ function compileStatementCode(
     case 'g2d:autoAnimate':
       return `${pad}SZGame2D.autoAnimate(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:defineEnemyType':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createEnemyType({ behavior: ${JSON.stringify(stmt.behavior)}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)}, hp: ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, dmg: ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))} });`
+      // `shape` só entra quando definido — saída byte-idêntica p/ projetos antigos.
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createEnemyType({ behavior: ${JSON.stringify(stmt.behavior)}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)},${stmt.shape ? ` shape: ${JSON.stringify(stmt.shape)},` : ''} hp: ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, dmg: ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))} });`
     case 'g2d:enemyStateAnim':
       return `${pad}SZGame2D.setEnemyStateAnimation(${identifiers.get(stmt.typeVar)}, ${JSON.stringify(stmt.state)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
     case 'g2d:setEnemyTypeParam':
@@ -1165,7 +1235,8 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.onEnemyDefeated(${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeInimigoDerrotado')
+      return `${pad}SZGame2D.onEnemyDefeated(${identifiers.get(stmt.typeVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onEnemyShotHit': {
       const body = compileStatements(
@@ -1174,7 +1245,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.overlapEnemyShots(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.overlapEnemyShots(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.typeVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:hurtByEnemy':
       return `${pad}SZGame2D.hurtByEnemy(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.enemyVar)});`
@@ -1232,6 +1303,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.updateGroupNoGravity(${identifiers.get(stmt.groupVar)});`
     case 'g2d:drawGroup':
       return `${pad}SZGame2D.drawGroup(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
+    case 'g2d:drawGroupByY':
+      return `${pad}SZGame2D.drawGroupByY(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:forEachInGroup': {
       const body = compileStatements(
         stmt.body,
@@ -1239,7 +1312,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.forEachInGroup(${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.forEachInGroup(${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:clearGroup':
       return `${pad}SZGame2D.clearGroup(${identifiers.get(stmt.groupVar)});`
@@ -1250,7 +1323,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.pruneOffscreen(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)}, 40, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.pruneOffscreen(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)}, 40, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:onGroupOverlap': {
       const body = compileStatements(
@@ -1259,7 +1332,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.overlapGroups(${identifiers.get(stmt.aGroup)}, ${identifiers.get(stmt.bGroup)}, function (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.overlapGroups(${identifiers.get(stmt.aGroup)}, ${identifiers.get(stmt.bGroup)}, (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:removeFromGroup':
       return `${pad}SZGame2D.removeFromGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.spriteVar)});`
@@ -1291,14 +1364,34 @@ function compileStatementCode(
         `${pad}}`,
       ].join('\n')
     }
+    case 'g2d:afterSeconds': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const key = identifiers.reserveInternal('depois')
+      return [
+        `${pad}if (SZGame2D.afterSeconds(${JSON.stringify(key)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))})) {`,
+        body,
+        `${pad}}`,
+      ].join('\n')
+    }
+    case 'g2d:setHitboxScale':
+      return `${pad}SZGame2D.setHitboxScale(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'g2d:drawScore':
       return `${pad}SZGame2D.drawScore(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.label)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
     case 'g2d:drawLabel':
       return `${pad}SZGame2D.drawLabel(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.text)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.align)});`
     case 'g2d:drawHearts':
       return `${pad}SZGame2D.drawHearts(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:drawSpriteHealth':
+      return `${pad}SZGame2D.drawSpriteHealth(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.style)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'g2d:drawBar':
       return `${pad}SZGame2D.drawBar(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(stmt.max, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:setStageDescription':
+      return `${pad}SZGame2D.setStageDescription(${JSON.stringify(stmt.description)});`
     case 'g2d:setScene':
       return `${pad}SZGame2D.setScene(${JSON.stringify(stmt.name)});`
     case 'g2d:showScreen':
@@ -1332,7 +1425,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:steerThrust':
       return `${pad}SZGame2D.steerThrust(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))});`
@@ -1353,17 +1446,61 @@ function compileStatementCode(
     case 'g2d:createDino':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createDino({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, size: ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
     case 'g2d:createStickHero':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createStickHero(${identifiers.get(stmt.ctxVar)});`
-    case 'g2d:updateStickHero':
-      return `${pad}SZGame2D.updateStickHero(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:restartStickHero':
-      return `${pad}SZGame2D.restartStickHero(${identifiers.get(stmt.gameVar)});`
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createStickHero({ w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
+    case 'g2d:createStickPath':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createStickPath(${identifiers.get(stmt.ctxVar)}, { platform: ${JSON.stringify(stmt.platformColor)}, stick: ${JSON.stringify(stmt.stickColor)} });`
+    case 'g2d:stickPathScenery':
+      return `${pad}SZGame2D.stickPathScenery(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:stickPathGrow':
+      return `${pad}SZGame2D.stickPathGrow(${identifiers.get(stmt.pathVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:stickPathDrop':
+      return `${pad}SZGame2D.stickPathDrop(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:stickPathWalk':
+      return `${pad}SZGame2D.stickPathWalk(${identifiers.get(stmt.pathVar)}, ${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:stickPathDraw':
+      return `${pad}SZGame2D.stickPathDraw(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:onStickPathCross': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeAtravessar')
+      return `${pad}SZGame2D.stickPathOnCross(${identifiers.get(stmt.pathVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
+    case 'g2d:onStickPathPerfect': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeAcertoPerfeito')
+      return `${pad}SZGame2D.stickPathOnPerfect(${identifiers.get(stmt.pathVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
     case 'g2d:createBalloon':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createBalloon(${identifiers.get(stmt.ctxVar)});`
-    case 'g2d:updateBalloon':
-      return `${pad}SZGame2D.updateBalloon(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:restartBalloon':
-      return `${pad}SZGame2D.restartBalloon(${identifiers.get(stmt.gameVar)});`
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createBalloon({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, body: ${JSON.stringify(stmt.color)}, basket: ${JSON.stringify(stmt.basketColor)} });`
+    case 'g2d:createBalloonPath':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createBalloonPath(${identifiers.get(stmt.ctxVar)});`
+    case 'g2d:balloonPathScenery':
+      return `${pad}SZGame2D.balloonPathScenery(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:balloonFire':
+      return `${pad}SZGame2D.balloonFire(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'g2d:balloonFly':
+      return `${pad}SZGame2D.balloonFly(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:balloonPathScroll':
+      return `${pad}SZGame2D.balloonPathScroll(${identifiers.get(stmt.pathVar)}, ${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:onBalloonPathTreeHit': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeBaterNaArvore')
+      return `${pad}SZGame2D.balloonPathOnTreeHit(${identifiers.get(stmt.pathVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
     case 'g2d:controlDino':
       return `${pad}SZGame2D.controlDino(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:spawnObstacle':
@@ -1399,7 +1536,7 @@ function compileStatementCode(
     case 'g2d:playWhistle':
       return `${pad}SZGame2D.playWhistle();`
     case 'g2d:playBoom':
-      return `${pad}SZGame2D.playBoom();`
+      return `${pad}SZGame2D.playExplosion();`
     case 'g2d:computerTurn':
       return `${pad}SZGame2D.computerTurn(${identifiers.get(stmt.throwerVar)}, ${identifiers.get(stmt.cityVar)}, ${identifiers.get(stmt.enemyVar)});`
     case 'g2d:drawAimReadout':
@@ -1412,7 +1549,12 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const update = identifiers.reserveInternal('update')
-      return [`${pad}SZGame2D.gameLoop(function ${update}() {`, body, `${pad}});`].join('\n')
+      const id = stmt.__id ?? identifiers.reserveInternal('quadroDoJogo')
+      return [
+        `${pad}SZGame2D.gameLoop(function ${update}() {`,
+        body,
+        `${pad}}, ${JSON.stringify(id)});`,
+      ].join('\n')
     }
     case 'g3d:createScene':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createScene(${JSON.stringify(stmt.canvasId)});`
@@ -1455,8 +1597,16 @@ function compileStatementCode(
       return `${pad}SZGame3D.cameraFollow(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
     case 'g3d:createGroup':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createGroup();`
-    case 'g3d:runEnemies':
-      return `${pad}SZGame3D.runEnemies(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.groundVar)}, ${compileExpr(valueToExpr(stmt.every), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g3d:spawnEnemy':
+      return `${pad}SZGame3D.spawnEnemy(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g3d:updateGroup':
+      return `${pad}SZGame3D.updateGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.groundVar)});`
+    case 'g3d:updateGroupNoGravity':
+      return `${pad}SZGame3D.updateGroupNoGravity(${identifiers.get(stmt.groupVar)});`
+    case 'g3d:removeFromGroup':
+      return `${pad}SZGame3D.removeFromGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.objVar)});`
+    case 'g3d:clearGroup':
+      return `${pad}SZGame3D.clearGroup(${identifiers.get(stmt.groupVar)});`
     case 'g3d:stop':
       return `${pad}SZGame3D.stop(${identifiers.get(stmt.worldVar)});`
     case 'g3d:createCrossingScene':
@@ -1604,6 +1754,42 @@ function compileStatementCode(
       )
       return `${pad}SZGame3D.forEachInSwarm(${identifiers.get(stmt.swarmVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
+    case 'g3d:forEachInGroup': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.forEachInGroup(${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g3d:pruneOffscreen': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.pruneOffscreen(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g3d:everyFrames': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.everyFramesLoop(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
+    }
+    case 'g3d:everySeconds': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.everySecondsLoop(${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
+    }
     case 'g3d:removeFromSwarm':
       return `${pad}SZGame3D.removeFromSwarm(${identifiers.get(stmt.swarmVar)}, ${identifiers.get(stmt.itemVar)});`
     case 'g3d:pruneSwarm':
@@ -1632,7 +1818,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:setScreenBg':
       return `${pad}SZGameKit.setScreenBg(${JSON.stringify(stmt.screen)}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.image)});`
@@ -1642,6 +1828,17 @@ function compileStatementCode(
       return `${pad}SZGameKit.hideScreens();`
     case 'gk:setState':
       return `${pad}SZGameKit.setState(${JSON.stringify(stmt.name)});`
+    case 'gk:restartGame':
+      return `${pad}SZGameKit.restartGame();`
+    case 'gk:onGameStart': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onGameStart(() => {\n${body}\n${pad}});`
+    }
     case 'gk:onEnterState': {
       const body = compileStatements(
         stmt.body,
@@ -1649,7 +1846,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onEnterState(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onEnterState(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:pause':
       return `${pad}SZGameKit.pause();`
@@ -1666,7 +1863,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onUpdate((${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:onDraw': {
       const body = compileStatements(
@@ -1675,7 +1872,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onDraw(function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onDraw((${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:onDrawHud': {
       const body = compileStatements(
@@ -1684,7 +1881,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onDrawHud(function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onDrawHud((${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:onGameClick': {
       const body = compileStatements(
@@ -1693,7 +1890,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onGameClick(function (${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onGameClick((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:setSheet':
       return `${pad}SZGameKit.setSheet(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.fw), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fh), 0, identifiers, recAt(base))});`
@@ -1728,7 +1925,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnTalk(${JSON.stringify(stmt.npc)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnTalk(${JSON.stringify(stmt.npc)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgSay':
       return `${pad}SZGameKit.rpgSay(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speaker), 0, identifiers, recAt(base))});`
@@ -1744,20 +1941,27 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgGoMap(${JSON.stringify(stmt.map)});`
     case 'gk:rpgSetStartMap':
       return `${pad}SZGameKit.rpgSetStartMap(${JSON.stringify(stmt.map)});`
-    case 'gk:rpgOnMap': {
+    case 'gk:rpgCreateMap': {
       const body = compileStatements(
         stmt.body,
         indent + 1,
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnMap(${JSON.stringify(stmt.map)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgCreateMap(${JSON.stringify(stmt.map)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, (${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}}, ${stmt.body.length > 0 ? 'true' : 'false'});`
+    }
+    case 'gk:rpgOnEnterMap': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.rpgOnEnterMap(${JSON.stringify(stmt.map)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgCreateDoor':
       return `${pad}SZGameKit.rpgCreateDoor(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.map)});`
-    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
-    case 'gk:rpgMapSize':
-      return `${pad}SZGameKit.rpgMapSize(${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))});`
+    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
     case 'gk:rpgConnectEdge':
       return `${pad}SZGameKit.rpgConnectEdge(${JSON.stringify(stmt.side)}, ${JSON.stringify(stmt.map)});`
     case 'gk:rpgBattleStats':
@@ -1801,7 +2005,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnFoeTurn(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnFoeTurn(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgOnBattleEnd': {
       const body = compileStatements(
@@ -1810,7 +2014,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnBattleEnd(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnBattleEnd(() => {\n${body}\n${pad}});`
     }
     case 'gk:setWalkSheet':
       return `${pad}SZGameKit.setWalkSheet(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.fw), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fh), 0, identifiers, recAt(base))});`
@@ -1821,7 +2025,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgCutscene(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgCutscene(() => {\n${body}\n${pad}});`
     }
     case 'gk:rpgWait':
       return `${pad}SZGameKit.rpgWait(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
@@ -1838,7 +2042,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnStep(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnStep(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgMenu': {
       const body = compileStatements(
@@ -1847,7 +2051,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgMenu(${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgMenu(${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgOption': {
       const body = compileStatements(
@@ -1856,7 +2060,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOption(${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOption(${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgSave':
       return `${pad}SZGameKit.rpgSave();`
@@ -1901,7 +2105,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onTurnChange(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onTurnChange(() => {\n${body}\n${pad}});`
     }
     case 'gk:moveAlongTrack':
       return `${pad}SZGameKit.moveAlongTrack(${identifiers.get(stmt.who)}, ${compileExpr(valueToExpr(stmt.spaces), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.path)});`
@@ -1912,7 +2116,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onLandSpace(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onLandSpace(() => {\n${body}\n${pad}});`
     }
     case 'gk:pileMoveTop':
       return `${pad}SZGameKit.pileMoveTop(${identifiers.get(stmt.fromVar)}, ${identifiers.get(stmt.toVar)});`
@@ -1935,7 +2139,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.cardsOnTurn(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.cardsOnTurn(() => {\n${body}\n${pad}});`
     }
     case 'gk:cardsEndTurn':
       return `${pad}SZGameKit.cardsEndTurn();`
@@ -1956,7 +2160,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.cardsOnEnemyTurn(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.cardsOnEnemyTurn(() => {\n${body}\n${pad}});`
     }
     case 'gk:wrapEdges':
       return `${pad}SZGameKit.wrapEdges(${identifiers.get(stmt.charVar)});`
@@ -1971,7 +2175,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.overlapGroups(${JSON.stringify(stmt.moldA)}, ${JSON.stringify(stmt.moldB)}, function (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.overlapGroups(${JSON.stringify(stmt.moldA)}, ${JSON.stringify(stmt.moldB)}, (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:everySeconds': {
       const body = compileStatements(
@@ -2071,7 +2275,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.pkmBattleTrainer(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.pkmBattleTrainer(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:pkmTrainerCreature':
       return `${pad}SZGameKit.pkmTrainerCreature(${JSON.stringify(stmt.creature)}, ${compileExpr(valueToExpr(stmt.level), 0, identifiers, recAt(base))});`
@@ -2120,7 +2324,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.definePath(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.definePath(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:pathPoint':
       return `${pad}SZGameKit.pathPoint(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
@@ -2144,7 +2348,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.tdOnBuy(${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))}, function (${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.tdOnBuy(${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))}, (${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:tdFreeSlot':
       return `${pad}SZGameKit.tdFreeSlot(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
@@ -2198,7 +2402,7 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       return [
-        `${pad}SZGameKit.waitThen(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, function () {`,
+        `${pad}SZGameKit.waitThen(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, () => {`,
         espera,
         `${pad}});`,
       ].join('\n')
@@ -2255,7 +2459,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.on(${JSON.stringify(stmt.event)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.on(${JSON.stringify(stmt.event)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:emit':
       return `${pad}SZGameKit.emit(${JSON.stringify(stmt.event)});`
@@ -2278,7 +2482,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.forEachActive(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.forEachActive(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:cullOffscreen':
       return `${pad}SZGameKit.cullOffscreen(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.margin), 0, identifiers, recAt(base))});`
@@ -2300,7 +2504,7 @@ function compileStatementCode(
         stmt.baseW !== undefined && stmt.baseH !== undefined
           ? `, ${compileExpr(valueToExpr(stmt.baseW), 0, identifiers, recAt(baseLine))}, ${compileExpr(valueToExpr(stmt.baseH), 0, identifiers, recAt(baseLine))}`
           : ''
-      return `${pad}SZGameKit.defineLook(${JSON.stringify(stmt.name)}, function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}}${size});`
+      return `${pad}SZGameKit.defineLook(${JSON.stringify(stmt.name)}, (${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}}${size});`
     }
     case 'gk:drawLook':
       return `${pad}SZGameKit.drawLook(${JSON.stringify(stmt.look)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
@@ -2344,7 +2548,9 @@ function compileStatementCode(
     case 'g3k:setEffects':
       return `${pad}SZGameKit3D.setEffects({ shadows: ${stmt.shadows}, bloom: ${stmt.bloom}, strength: ${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))}, vignette: ${stmt.vignette} });`
     case 'g3k:start':
-      return `${pad}SZGameKit3D.start();`
+      // Compatibilidade com projetos antigos: o envelope de ciclo de vida já
+      // inicia o motor uma única vez depois de registrar toda a fábrica.
+      return ''
     case 'g3k:defineMold': {
       const body = compileStatements(
         stmt.body,
@@ -2352,7 +2558,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.defineMold(${JSON.stringify(stmt.name)}, { health: ${compileExpr(valueToExpr(stmt.health), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))} }, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.defineMold(${JSON.stringify(stmt.name)}, { health: ${compileExpr(valueToExpr(stmt.health), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))} }, () => {\n${body}\n${pad}});`
     }
     case 'g3k:part':
       return `${pad}SZGameKit3D.part({ shape: ${JSON.stringify(stmt.shape)}, material: ${JSON.stringify(stmt.material)}, color: ${JSON.stringify(stmt.color)}, texture: ${JSON.stringify(stmt.texture)}, model: ${JSON.stringify(stmt.model)}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, d: ${compileExpr(valueToExpr(stmt.d), 0, identifiers, recAt(base))}, x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, z: ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))} });`
@@ -2364,6 +2570,8 @@ function compileStatementCode(
     }
     case 'g3k:spawnFrom':
       return `${pad}SZGameKit3D.spawnFrom(${JSON.stringify(stmt.mold)}, ${identifiers.get(stmt.fromVar)});`
+    case 'g3k:spawnRing':
+      return `${pad}SZGameKit3D.spawnRing(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, ${identifiers.get(stmt.fromVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g3k:startSpawner':
       return `${pad}SZGameKit3D.startSpawner(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.where)});`
     case 'g3k:stopSpawner':
@@ -2375,7 +2583,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.forEachAlive(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.forEachAlive(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:recycle':
       return `${pad}SZGameKit3D.recycle(${identifiers.get(stmt.charVar)});`
@@ -2390,7 +2598,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onUpdate((${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:moveWithKeys':
       return `${pad}SZGameKit3D.moveWithKeys(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
@@ -2463,7 +2671,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onTimerEnd(function () {
+      return `${pad}SZGameKit3D.onTimerEnd(() => {
 ${body}
 ${pad}});`
     }
@@ -2486,7 +2694,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onOverlap(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.zoneName)}, ${identifiers.get(stmt.whoName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onOverlap(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.zoneName)}, ${identifiers.get(stmt.whoName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:setBounce':
       return `${pad}SZGameKit3D.setBounce(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
@@ -2517,7 +2725,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEnterEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEnterEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:onEntityStateUpdate': {
       const body = compileStatements(
@@ -2526,7 +2734,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEntityStateUpdate(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, function (${identifiers.get(stmt.itemName)}, ${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEntityStateUpdate(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, (${identifiers.get(stmt.itemName)}, ${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:onExitEntityState': {
       const body = compileStatements(
@@ -2535,7 +2743,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onExitEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onExitEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:setEntityState':
       return `${pad}SZGameKit3D.setEntityState(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.state)});`
@@ -2556,7 +2764,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.forEachNear(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.forEachNear(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:storeNearest': {
       const v = identifiers.get(stmt.varName)
@@ -2564,6 +2772,8 @@ ${pad}});`
     }
     case 'g3k:hurt':
       return `${pad}SZGameKit3D.hurt(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
+    case 'g3k:heal':
+      return `${pad}SZGameKit3D.heal(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
     case 'g3k:onEntityDeath': {
       const body = compileStatements(
         stmt.body,
@@ -2571,7 +2781,16 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEntityDeath(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEntityDeath(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g3k:onHurt': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit3D.onHurt(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:defineEffect':
       return `${pad}SZGameKit3D.defineEffect(${JSON.stringify(stmt.name)}, { count: ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, colorFrom: ${JSON.stringify(stmt.colorFrom)}, colorTo: ${JSON.stringify(stmt.colorTo)}, spread: ${compileExpr(valueToExpr(stmt.spread), 0, identifiers, recAt(base))}, sizeFrom: ${compileExpr(valueToExpr(stmt.sizeFrom), 0, identifiers, recAt(base))}, sizeTo: ${compileExpr(valueToExpr(stmt.sizeTo), 0, identifiers, recAt(base))}, life: ${compileExpr(valueToExpr(stmt.life), 0, identifiers, recAt(base))}, gravity: ${compileExpr(valueToExpr(stmt.gravity), 0, identifiers, recAt(base))} });`
@@ -2600,7 +2819,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'g3k:showScreen':
       return `${pad}SZGameKit3D.showScreen(${JSON.stringify(stmt.name)});`
@@ -2617,7 +2836,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEnterState(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEnterState(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'g3k:returnToMenu':
       return `${pad}SZGameKit3D.returnToMenu();`
@@ -2630,7 +2849,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.on(${JSON.stringify(stmt.event)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.on(${JSON.stringify(stmt.event)}, () => {\n${body}\n${pad}});`
     }
     case 'g3k:emit':
       return `${pad}SZGameKit3D.emit(${JSON.stringify(stmt.event)});`
@@ -2653,6 +2872,8 @@ ${pad}});`
       return `${pad}SZWorld3D.path(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
     case 'w3d:water':
       return `${pad}SZWorld3D.water(${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'w3d:skyPhoto':
+      return `${pad}SZWorld3D.skyPhoto(${JSON.stringify(stmt.asset)});`
     case 'w3d:start':
       return `${pad}SZWorld3D.start();`
     case 'w3d:car':
@@ -2682,7 +2903,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onPoint(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onPoint(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:zone':
       return `${pad}SZWorld3D.zone(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
@@ -2693,7 +2914,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onZone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onZone(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:totemText':
       return `${pad}SZWorld3D.totemText(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)}, ${JSON.stringify(stmt.body)});`
@@ -2714,7 +2935,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.raceOnStart(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.raceOnStart(() => {\n${body}\n${pad}});`
     }
     case 'w3d:raceOnCheckpoint': {
       const body = compileStatements(
@@ -2723,7 +2944,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.raceOnCheckpoint(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.raceOnCheckpoint(() => {\n${body}\n${pad}});`
     }
     case 'w3d:raceOnFinish': {
       const body = compileStatements(
@@ -2732,7 +2953,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.raceOnFinish(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.raceOnFinish(() => {\n${body}\n${pad}});`
     }
     case 'w3d:bowlingCreate':
       return `${pad}SZWorld3D.bowlingCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
@@ -2745,7 +2966,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.bowlingOnStrike(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.bowlingOnStrike(() => {\n${body}\n${pad}});`
     }
     case 'w3d:stack':
       return `${pad}SZWorld3D.stack(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
@@ -2772,7 +2993,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onCrash(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onCrash(() => {\n${body}\n${pad}});`
     }
     case 'w3d:horn':
       return `${pad}SZWorld3D.horn();`
@@ -2783,7 +3004,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onHorn(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onHorn(() => {\n${body}\n${pad}});`
     }
     case 'w3d:carLights':
       return `${pad}SZWorld3D.carLights();`
@@ -2800,7 +3021,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onAchievement(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onAchievement(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:minimap':
       return `${pad}SZWorld3D.minimap(${JSON.stringify(stmt.mode)});`
@@ -2823,7 +3044,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onCollect(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onCollect(() => {\n${body}\n${pad}});`
     }
     case 'w3d:quest':
       return `${pad}SZWorld3D.quest(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.desc)});`
@@ -2836,7 +3057,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onQuestDone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onQuestDone(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:marker':
       return `${pad}SZWorld3D.marker(${JSON.stringify(stmt.icon)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
@@ -2853,7 +3074,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.npcTalk(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.npcTalk(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:npcSay':
       return `${pad}SZWorld3D.npcSay(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.text)});`
@@ -2886,7 +3107,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onVehicle(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onVehicle(${JSON.stringify(stmt.when)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:waterfall':
       return `${pad}SZWorld3D.waterfall(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
@@ -2894,6 +3115,18 @@ ${pad}});`
       return `${pad}SZWorld3D.lamp(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
     case 'w3d:city':
       return `${pad}SZWorld3D.city(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.size)}, ${JSON.stringify(stmt.mode)});`
+    case 'w3d:district':
+      return `${pad}SZWorld3D.district(${JSON.stringify(stmt.kind)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
+    case 'w3d:roadGrid':
+      return `${pad}SZWorld3D.roadGrid(${JSON.stringify(stmt.layout)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
+    case 'w3d:houseRow':
+      return `${pad}SZWorld3D.houseRow(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.style)});`
+    case 'w3d:quality':
+      return `${pad}SZWorld3D.quality(${JSON.stringify(stmt.mode)});`
+    case 'w3d:inventoryGive':
+      return `${pad}SZWorld3D.inventoryGive(${JSON.stringify(stmt.item)}, ${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'w3d:inventoryRemove':
+      return `${pad}SZWorld3D.inventoryRemove(${JSON.stringify(stmt.item)}, ${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
     case 'w3d:stringLights':
       return `${pad}SZWorld3D.stringLights(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))});`
     case 'w3d:traffic':
@@ -2929,7 +3162,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 2 + stmt.bodyA.length),
       )
-      return `${pad}SZWorld3D.npcAsk(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.question)}, ${JSON.stringify(stmt.optA)}, function () {\n${bodyA}\n${pad}}, ${JSON.stringify(stmt.optB)}, function () {\n${bodyB}\n${pad}});`
+      return `${pad}SZWorld3D.npcAsk(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.question)}, ${JSON.stringify(stmt.optA)}, () => {\n${bodyA}\n${pad}}, ${JSON.stringify(stmt.optB)}, () => {\n${bodyB}\n${pad}});`
     }
     case 'w3d:fireflies':
       return `${pad}SZWorld3D.fireflies(${JSON.stringify(stmt.amount)});`
@@ -2950,7 +3183,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onExplosion(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onExplosion(() => {\n${body}\n${pad}});`
     }
     case 'w3d:confetti':
       return `${pad}SZWorld3D.confetti();`
@@ -2983,7 +3216,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onDayNight(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onDayNight(${JSON.stringify(stmt.when)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:onUpdate': {
       const body = compileStatements(
@@ -2992,7 +3225,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onUpdate((${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
@@ -3066,13 +3299,19 @@ ${pad}});`
     }
     case 'eventHandler': {
       const handler = identifiers.get(stmt.handlerName)
-      if (stmt.targetKind === 'window') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
+      const callback = projectRunContext
+        ? `(event) => ${projectRunContext}.run(() => ${handler}(event))`
+        : handler
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      if (targetKind === 'window') {
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
-      if (stmt.targetKind === 'document') {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
+      if (targetKind === 'document') {
+        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
+      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
     }
     case 'setThisProp':
       return `${pad}this.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
@@ -3080,11 +3319,6 @@ ${pad}});`
       return `${pad}${identifiers.get(stmt.objectVar)}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     case 'memberSet':
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'newImage': {
-      const imgVar = identifiers.get(stmt.varName)
-      const src = compileExpr(stmt.src, 0, identifiers, recAt(base))
-      return `${pad}const ${imgVar} = new Image();\n${pad}${imgVar}.src = ${src};`
-    }
     case 'memberCall': {
       const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.method)}(${args});`
@@ -3101,32 +3335,10 @@ ${pad}});`
     case 'exprStatement':
       return `${pad}${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     // `requestAnimationFrame(nome)` — a função é uma REFERÊNCIA (nome), não uma chamada.
-    case 'requestFrame':
-      return `${pad}requestAnimationFrame(${identifiers.get(stmt.fn)});`
     case 'mountRenderer':
       return `${pad}document.body.appendChild(${identifiers.get(stmt.renderer)}.domElement);`
     case 'indexSet':
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}[${compileExpr(stmt.index, 0, identifiers, recAt(base))}] = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'imageOnLoad': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
-      return `${pad}${target}.onload = () => {\n${body}\n${pad}};`
-    }
-    case 'imageOnError': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
-      return `${pad}${target}.onerror = () => {\n${body}\n${pad}};`
-    }
     case 'onClickAssign': {
       const body = compileStatements(
         stmt.body,
@@ -3134,18 +3346,13 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
-      return `${pad}${target}.onclick = () => {\n${body}\n${pad}};`
-    }
-    case 'requestFrameDo': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const param = stmt.param ? identifiers.get(stmt.param) : ''
-      return `${pad}requestAnimationFrame((${param}) => {\n${body}\n${pad}});`
+      const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      if (projectRunContext) {
+        return `${pad}${projectRunContext}.setEventHandler(${target}, "onclick", (event) => {\n${body}\n${pad}});`
+      }
+      return `${pad}${target}.onclick = (event) => {\n${body}\n${pad}};`
     }
     case 'loaderLoad': {
       const body = compileStatements(
@@ -3154,8 +3361,18 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
+      const errorBody = compileStatements(
+        stmt.errorBody ?? [],
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + countLines(body) + 3),
+      )
       const url = compileExpr(stmt.url, 0, identifiers, recAt(base))
-      return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, (${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
+      const errorParam = identifiers.get(stmt.errorParam ?? 'erro')
+      const onError = errorBody || `${'  '.repeat(indent + 1)}console.log(${errorParam});`
+      const onLoadCallback = lifecycleCallback(identifiers, identifiers.get(stmt.param), body, pad)
+      const onErrorCallback = lifecycleCallback(identifiers, errorParam, onError, pad)
+      return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, ${onLoadCallback}, undefined, ${onErrorCallback});`
     }
     case 'traverseEach': {
       const body = compileStatements(
@@ -3167,12 +3384,60 @@ ${pad}});`
       const obj = compileExpr(stmt.object, 0, identifiers, recAt(base))
       return `${pad}${obj}.traverse((${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
     }
+    case 'threeSceneSetup':
+      return `${pad}const ${identifiers.get(stmt.scene)} = new THREE.Scene();`
+    case 'threeRendererSetup': {
+      const renderer = identifiers.get(stmt.renderer)
+      const canvas = identifiers.reserveInternal(`${stmt.renderer}Canvas`)
+      const canvasId = JSON.stringify(stmt.canvas)
+      const message = JSON.stringify(
+        `Canvas "${stmt.canvas}" não encontrado. Crie essa tela primeiro na categoria Canvas.`,
+      )
+      const lines = [
+        `const ${canvas} = document.getElementById(${canvasId});`,
+        `if (!(${canvas} instanceof HTMLCanvasElement)) throw new Error(${message});`,
+        `const ${renderer} = new THREE.WebGLRenderer({ canvas: ${canvas}, antialias: true });`,
+        `${renderer}.setSize(Math.max(1, ${canvas}.clientWidth || ${canvas}.width), Math.max(1, ${canvas}.clientHeight || ${canvas}.height), false);`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'threeCameraSetup': {
+      const camera = identifiers.get(stmt.camera)
+      const canvas = identifiers.reserveInternal(`${stmt.camera}Canvas`)
+      const width = identifiers.reserveInternal(`${stmt.camera}Largura`)
+      const height = identifiers.reserveInternal(`${stmt.camera}Altura`)
+      const canvasId = JSON.stringify(stmt.canvas)
+      const message = JSON.stringify(
+        `Canvas "${stmt.canvas}" não encontrado. Crie essa tela primeiro na categoria Canvas.`,
+      )
+      const fov = compileExpr(stmt.fov, 0, identifiers, recAt(base))
+      const near = compileExpr(stmt.near, 0, identifiers, recAt(base))
+      const far = compileExpr(stmt.far, 0, identifiers, recAt(base))
+      const lines = [
+        `const ${canvas} = document.getElementById(${canvasId});`,
+        `if (!(${canvas} instanceof HTMLCanvasElement)) throw new Error(${message});`,
+        `const ${width} = Math.max(1, ${canvas}.clientWidth || ${canvas}.width);`,
+        `const ${height} = Math.max(1, ${canvas}.clientHeight || ${canvas}.height);`,
+        `const ${camera} = new THREE.PerspectiveCamera(${fov}, ${width} / ${height}, ${near}, ${far});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'threeLightSetup': {
+      const light = identifiers.get(stmt.light)
+      const scene = identifiers.get(stmt.scene)
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const intensity = compileExpr(stmt.intensity, 0, identifiers, recAt(base))
+      const className = stmt.kind === 'directional' ? 'DirectionalLight' : 'AmbientLight'
+      return `${pad}const ${light} = new THREE.${className}(${color}, ${intensity});\n${pad}${scene}.add(${light});`
+    }
     case 'rendererConfig': {
       // Modernização (forward-only): cada escolha ≠ 'off' vira uma linha com a
       // grafia ATUAL do three.js. 'off' = a linha não é emitida.
       const r = identifiers.get(stmt.renderer)
       const lines: string[] = []
-      if (stmt.pixels === 'device') lines.push(`${r}.setPixelRatio(window.devicePixelRatio);`)
+      if (stmt.pixels === 'device') {
+        lines.push(`${r}.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));`)
+      }
       if (stmt.shadows !== 'off') {
         lines.push(`${r}.shadowMap.enabled = true;`)
         lines.push(
@@ -3183,6 +3448,82 @@ ${pad}});`
       if (stmt.toneMapping === 'aces') lines.push(`${r}.toneMapping = THREE.ACESFilmicToneMapping;`)
       // Nada selecionado → statement vazio (raro; a criança removeria o bloco).
       return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'rendererResponsive': {
+      const renderer = identifiers.get(stmt.renderer)
+      const camera = identifiers.get(stmt.camera)
+      const cleanup = identifiers.get(stmt.cleanup)
+      const resize = identifiers.reserveInternal(`${stmt.renderer}Redimensionar`)
+      const observer = identifiers.reserveInternal(`${stmt.renderer}Observador`)
+      const composer = stmt.composer ? identifiers.get(stmt.composer) : null
+      const lines = [
+        `const ${cleanup} = (() => {`,
+        `  const ${resize} = () => {`,
+        `    const host = ${renderer}.domElement.parentElement;`,
+        `    const width = Math.max(1, host?.clientWidth || window.innerWidth);`,
+        `    const height = Math.max(1, host?.clientHeight || window.innerHeight);`,
+        `    ${renderer}.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));`,
+        `    ${renderer}.setSize(width, height, false);`,
+        `    ${camera}.aspect = width / height;`,
+        `    ${camera}.updateProjectionMatrix();`,
+        ...(composer ? [`    ${composer}.setSize(width, height);`] : []),
+        `  };`,
+        `  ${resize}();`,
+        `  const host = ${renderer}.domElement.parentElement;`,
+        `  if (host && typeof ResizeObserver !== "undefined") {`,
+        `    const ${observer} = new ResizeObserver(${resize});`,
+        `    ${observer}.observe(host);`,
+        `    return () => ${observer}.disconnect();`,
+        `  }`,
+        `  window.addEventListener("resize", ${resize});`,
+        `  return () => window.removeEventListener("resize", ${resize});`,
+        `})();`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'environmentLoad': {
+      const scene = identifiers.get(stmt.scene)
+      const texture = identifiers.get(stmt.texture)
+      const loader = identifiers.reserveInternal(`${stmt.texture}Carregador`)
+      const loaded = identifiers.reserveInternal(`${stmt.texture}Pronto`)
+      const error = identifiers.reserveInternal(`${stmt.texture}Erro`)
+      const lines = [
+        `let ${texture};`,
+        `const ${loader} = new RGBELoader();`,
+        `${loader}.load(${JSON.stringify(stmt.url)}, (${loaded}) => {`,
+        `  ${loaded}.mapping = THREE.EquirectangularReflectionMapping;`,
+        `  ${texture} = ${loaded};`,
+        `  ${scene}.environment = ${loaded};`,
+        ...(stmt.background ? [`  ${scene}.background = ${loaded};`] : []),
+        `}, undefined, (${error}) => {`,
+        `  console.error("Falha ao carregar céu HDR", ${error});`,
+        `});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'disposeObject': {
+      const object = identifiers.get(stmt.object)
+      const lines = [
+        `${object}.parent?.remove(${object});`,
+        `${object}.traverse((parte) => {`,
+        `  parte.geometry?.dispose?.();`,
+        `  const materiais = Array.isArray(parte.material) ? parte.material : parte.material ? [parte.material] : [];`,
+        `  for (const material of materiais) {`,
+        `    for (const valor of Object.values(material)) {`,
+        `      if (valor?.isTexture) valor.dispose();`,
+        `    }`,
+        `    material.dispose?.();`,
+        `  }`,
+        `});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'lerpPosition': {
+      const target = compileExpr(stmt.target, 0, identifiers, recAt(base))
+      const alpha = compileExpr(stmt.alpha, 0, identifiers, recAt(base))
+      const dt = compileExpr(stmt.dt, 0, identifiers, recAt(base))
+      const smoothing = `1 - Math.pow(1 - Math.max(0, Math.min(1, Number(${alpha}) || 0)), Math.max(0, Math.min(0.1, Number(${dt}) || 0)) * 60)`
+      return `${pad}${identifiers.get(stmt.object)}.position.lerp(${target}, ${smoothing});`
     }
     case 'bloomSetup': {
       // Macro Brilho: expande a esteira de pós-processamento (grafia atual 0.180).
@@ -3208,15 +3549,22 @@ ${pad}});`
       // (grafia atual: BufferGeometry + Float32BufferAttribute + PointsMaterial).
       const p = identifiers.get(stmt.particles)
       const sc = identifiers.get(stmt.scene)
-      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
-      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const countExpr = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spreadExpr = compileExpr(stmt.spread, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const geo = `${p}Geo`
-      const pos = `${p}Pos`
+      const count = identifiers.reserveInternal(`${stmt.particles}Quantidade`)
+      const size = identifiers.reserveInternal(`${stmt.particles}Tamanho`)
+      const spread = identifiers.reserveInternal(`${stmt.particles}Area`)
+      const geo = identifiers.reserveInternal(`${stmt.particles}Geometria`)
+      const pos = identifiers.reserveInternal(`${stmt.particles}Posicoes`)
+      const index = identifiers.reserveInternal(`${stmt.particles}Indice`)
       const lines = [
+        `const ${count} = Math.max(0, Math.min(20000, Math.round(Number(${countExpr}) || 0)));`,
+        `const ${size} = Math.max(0.001, Math.min(100, Number(${sizeExpr}) || 0.1));`,
+        `const ${spread} = Math.max(0, Math.min(10000, Number(${spreadExpr}) || 0));`,
         `const ${pos} = [];`,
-        `for (let i = 0; i < ${count}; i++) {`,
+        `for (let ${index} = 0; ${index} < ${count}; ${index}++) {`,
         `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
         `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
         `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
@@ -3233,17 +3581,20 @@ ${pad}});`
       // o addon Water (grafia atual). O import de Water entra sozinho (hoist).
       const w = identifiers.get(stmt.water)
       const sc = identifiers.get(stmt.scene)
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const data = `${w}Data`
-      const nrm = `${w}Normals`
+      const size = identifiers.reserveInternal(`${stmt.water}Tamanho`)
+      const data = identifiers.reserveInternal(`${stmt.water}Dados`)
+      const nrm = identifiers.reserveInternal(`${stmt.water}Normais`)
+      const index = identifiers.reserveInternal(`${stmt.water}Indice`)
       const lines = [
+        `const ${size} = Math.max(0.01, Math.min(10000, Number(${sizeExpr}) || 1));`,
         `const ${data} = new Uint8Array(1024);`,
-        `for (let i = 0; i < 256; i++) {`,
-        `  ${data}[i * 4] = 128 + Math.sin(i * 0.7) * 40;`,
-        `  ${data}[i * 4 + 1] = 128 + Math.cos(i * 1.3) * 40;`,
-        `  ${data}[i * 4 + 2] = 255;`,
-        `  ${data}[i * 4 + 3] = 255;`,
+        `for (let ${index} = 0; ${index} < 256; ${index}++) {`,
+        `  ${data}[${index} * 4] = 128 + Math.sin(${index} * 0.7) * 40;`,
+        `  ${data}[${index} * 4 + 1] = 128 + Math.cos(${index} * 1.3) * 40;`,
+        `  ${data}[${index} * 4 + 2] = 255;`,
+        `  ${data}[${index} * 4 + 3] = 255;`,
         `}`,
         `const ${nrm} = new THREE.DataTexture(${data}, 16, 16);`,
         `${nrm}.wrapS = THREE.RepeatWrapping;`,
@@ -3255,23 +3606,31 @@ ${pad}});`
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
-    case 'waterTime':
-      // Animar as ondas: avança o relógio interno do shader da água a cada quadro.
-      return `${pad}${identifiers.get(stmt.water)}.material.uniforms.time.value += 1 / 60;`
+    case 'waterTime': {
+      const dt = compileExpr(stmt.dt ?? { type: 'num', value: 1 / 60 }, 0, identifiers, recAt(base))
+      return `${pad}${identifiers.get(stmt.water)}.material.uniforms.time.value += Math.max(0, Math.min(0.1, Number(${dt}) || 0));`
+    }
     case 'grassSetup': {
       // Macro Grama: folhas INSTANCIADAS (1 draw call) + ShaderMaterial com o vento
       // (GLSL nas constantes acima). Posições/giro/escala aleatórios por folha.
       const g = identifiers.get(stmt.grass)
       const sc = identifiers.get(stmt.scene)
-      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
-      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const countExpr = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spreadExpr = compileExpr(stmt.spread, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const blade = `${g}Blade`
-      const mat = `${g}Mat`
-      const dummy = `${g}Dummy`
+      const count = identifiers.reserveInternal(`${stmt.grass}Quantidade`)
+      const size = identifiers.reserveInternal(`${stmt.grass}Tamanho`)
+      const spread = identifiers.reserveInternal(`${stmt.grass}Area`)
+      const blade = identifiers.reserveInternal(`${stmt.grass}Folha`)
+      const mat = identifiers.reserveInternal(`${stmt.grass}Material`)
+      const dummy = identifiers.reserveInternal(`${stmt.grass}Matriz`)
+      const index = identifiers.reserveInternal(`${stmt.grass}Indice`)
       const bt = '`'
       const lines = [
+        `const ${count} = Math.max(0, Math.min(50000, Math.round(Number(${countExpr}) || 0)));`,
+        `const ${size} = Math.max(0.01, Math.min(100, Number(${sizeExpr}) || 1));`,
+        `const ${spread} = Math.max(0, Math.min(10000, Number(${spreadExpr}) || 0));`,
         `const ${blade} = new THREE.PlaneGeometry(0.08, ${size}, 1, 4);`,
         `${blade}.translate(0, ${size} / 2, 0);`,
         `const ${mat} = new THREE.ShaderMaterial({`,
@@ -3282,21 +3641,22 @@ ${pad}});`
         `});`,
         `const ${g} = new THREE.InstancedMesh(${blade}, ${mat}, ${count});`,
         `const ${dummy} = new THREE.Object3D();`,
-        `for (let i = 0; i < ${count}; i++) {`,
+        `for (let ${index} = 0; ${index} < ${count}; ${index}++) {`,
         `  ${dummy}.position.set((Math.random() - 0.5) * ${spread}, 0, (Math.random() - 0.5) * ${spread});`,
         `  ${dummy}.rotation.y = Math.random() * 3.141592653589793;`,
         `  ${dummy}.scale.setScalar(0.7 + Math.random() * 0.6);`,
         `  ${dummy}.updateMatrix();`,
-        `  ${g}.setMatrixAt(i, ${dummy}.matrix);`,
+        `  ${g}.setMatrixAt(${index}, ${dummy}.matrix);`,
         `}`,
         `${g}.instanceMatrix.needsUpdate = true;`,
         `${sc}.add(${g});`,
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
-    case 'grassTime':
-      // Animar o vento: avança o relógio do shader da grama a cada quadro.
-      return `${pad}${identifiers.get(stmt.grass)}.material.uniforms.time.value += 0.02;`
+    case 'grassTime': {
+      const dt = compileExpr(stmt.dt ?? { type: 'num', value: 1 / 60 }, 0, identifiers, recAt(base))
+      return `${pad}${identifiers.get(stmt.grass)}.material.uniforms.time.value += Math.max(0, Math.min(0.1, Number(${dt}) || 0));`
+    }
     case 'signSetup': {
       // Macro Letreiro 3D: o jeito FOLIO de texto no mundo — desenha num canvas
       // oculto, vira CanvasTexture num plano transparente (só as letras têm alfa,
@@ -3305,12 +3665,14 @@ ${pad}});`
       // ficam memberCall/memberSet genéricos).
       const s = identifiers.get(stmt.sign)
       const sc = identifiers.get(stmt.scene)
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const tela = `${s}Tela`
-      const tinta = `${s}Tinta`
-      const tex = `${s}Tex`
+      const size = identifiers.reserveInternal(`${stmt.sign}Tamanho`)
+      const tela = identifiers.reserveInternal(`${stmt.sign}Tela`)
+      const tinta = identifiers.reserveInternal(`${stmt.sign}Tinta`)
+      const tex = identifiers.reserveInternal(`${stmt.sign}Textura`)
       const lines = [
+        `const ${size} = Math.max(0.01, Math.min(1000, Number(${sizeExpr}) || 1));`,
         `const ${tela} = document.createElement("canvas");`,
         `${tela}.width = 512;`,
         `${tela}.height = 256;`,
@@ -3326,6 +3688,481 @@ ${pad}});`
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
+    case 'primitiveSetup': {
+      const mesh = identifiers.get(stmt.mesh)
+      const scene = identifiers.get(stmt.scene)
+      const widthExpr = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const heightExpr = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depthExpr = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const width = identifiers.reserveInternal(`${stmt.mesh}Largura`)
+      const height = identifiers.reserveInternal(`${stmt.mesh}Altura`)
+      const depth = identifiers.reserveInternal(`${stmt.mesh}Profundidade`)
+      const geometry = identifiers.reserveInternal(`${stmt.mesh}Geometria`)
+      const material = identifiers.reserveInternal(`${stmt.mesh}Material`)
+      const geometryCode =
+        stmt.shape === 'sphere'
+          ? 'new THREE.SphereGeometry(0.5, 20, 14)'
+          : stmt.shape === 'cylinder'
+            ? 'new THREE.CylinderGeometry(0.5, 0.5, 1, 16)'
+            : stmt.shape === 'cone'
+              ? 'new THREE.ConeGeometry(0.5, 1, 16)'
+              : 'new THREE.BoxGeometry(1, 1, 1)'
+      const lines: string[] = [
+        `const ${width} = Math.max(0.01, Math.min(10000, Number(${widthExpr}) || 1));`,
+        `const ${height} = Math.max(0.01, Math.min(10000, Number(${heightExpr}) || 1));`,
+        `const ${depth} = Math.max(0.01, Math.min(10000, Number(${depthExpr}) || 1));`,
+      ]
+      if (stmt.shape === 'capsule') {
+        const radius = identifiers.reserveInternal(`${stmt.mesh}Raio`)
+        const middle = identifiers.reserveInternal(`${stmt.mesh}Meio`)
+        const cylinder = identifiers.reserveInternal(`${stmt.mesh}Cilindro`)
+        const top = identifiers.reserveInternal(`${stmt.mesh}Topo`)
+        const bottom = identifiers.reserveInternal(`${stmt.mesh}Base`)
+        lines.push(
+          `const ${radius} = Math.min(${width}, ${depth}, ${height}) / 2;`,
+          `const ${middle} = Math.max(0, ${height} - ${radius} * 2);`,
+          `const ${material} = new THREE.MeshStandardMaterial({ color: ${color} });`,
+          `const ${mesh} = new THREE.Group();`,
+          `const ${cylinder} = new THREE.Mesh(new THREE.CylinderGeometry(${radius}, ${radius}, ${middle}, 16), ${material});`,
+          `const ${geometry} = new THREE.SphereGeometry(${radius}, 20, 14);`,
+          `const ${top} = new THREE.Mesh(${geometry}, ${material});`,
+          `const ${bottom} = new THREE.Mesh(${geometry}, ${material});`,
+          `${top}.position.y = ${middle} / 2;`,
+          `${bottom}.position.y = -${middle} / 2;`,
+          `${mesh}.add(${cylinder}, ${top}, ${bottom});`,
+        )
+      } else {
+        lines.push(
+          `const ${geometry} = ${geometryCode};`,
+          `const ${material} = new THREE.MeshStandardMaterial({ color: ${color} });`,
+          `const ${mesh} = new THREE.Mesh(${geometry}, ${material});`,
+          `${mesh}.scale.set(${width}, ${height}, ${depth});`,
+        )
+      }
+      lines.push(
+        `${mesh}.traverse((parte) => { parte.castShadow = true; parte.receiveShadow = true; });`,
+        `${mesh}.userData.szCollider = { shape: "box", width: ${width}, height: ${height}, depth: ${depth} };`,
+        `${scene}.add(${mesh});`,
+      )
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'terrainSetup': {
+      const terrain = identifiers.get(stmt.terrain)
+      const scene = identifiers.get(stmt.scene)
+      const heightFunction = identifiers.get(stmt.heightFunction)
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const segmentsExpr = compileExpr(stmt.segments, 0, identifiers, recAt(base))
+      const hillsExpr = compileExpr(stmt.hills, 0, identifiers, recAt(base))
+      const smoothExpr = compileExpr(stmt.smooth, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const size = identifiers.reserveInternal(`${stmt.terrain}Tamanho`)
+      const segments = identifiers.reserveInternal(`${stmt.terrain}Divisoes`)
+      const hills = identifiers.reserveInternal(`${stmt.terrain}Morros`)
+      const smooth = identifiers.reserveInternal(`${stmt.terrain}Suavidade`)
+      const geometry = identifiers.reserveInternal(`${stmt.terrain}Geometria`)
+      const positions = identifiers.reserveInternal(`${stmt.terrain}Posicoes`)
+      const index = identifiers.reserveInternal(`${stmt.terrain}Indice`)
+      const lines = [
+        `const ${size} = Math.max(1, Math.min(10000, Number(${sizeExpr}) || 1));`,
+        `const ${segments} = Math.max(1, Math.min(256, Math.round(Number(${segmentsExpr}) || 1)));`,
+        `const ${hills} = Math.max(-1000, Math.min(1000, Number(${hillsExpr}) || 0));`,
+        `const ${smooth} = Math.max(0.01, Math.min(10000, Number(${smoothExpr}) || 1));`,
+        `function ${heightFunction}(x, z) {`,
+        `  return (Math.sin(x / ${smooth}) * 0.58 + Math.cos(z / (${smooth} * 0.83)) * 0.42) * ${hills};`,
+        `}`,
+        `const ${geometry} = new THREE.PlaneGeometry(${size}, ${size}, ${segments}, ${segments});`,
+        `${geometry}.rotateX(-Math.PI / 2);`,
+        `const ${positions} = ${geometry}.attributes.position;`,
+        `for (let ${index} = 0; ${index} < ${positions}.count; ${index}++) {`,
+        `  ${positions}.setY(${index}, ${heightFunction}(${positions}.getX(${index}), ${positions}.getZ(${index})));`,
+        `}`,
+        `${positions}.needsUpdate = true;`,
+        `${geometry}.computeVertexNormals();`,
+        `const ${terrain} = new THREE.Mesh(${geometry}, new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.92 }));`,
+        `${terrain}.receiveShadow = true;`,
+        `${scene}.add(${terrain});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'roadSetup': {
+      const road = identifiers.get(stmt.road)
+      const scene = identifiers.get(stmt.scene)
+      const x1Expr = compileExpr(stmt.x1, 0, identifiers, recAt(base))
+      const z1Expr = compileExpr(stmt.z1, 0, identifiers, recAt(base))
+      const x2Expr = compileExpr(stmt.x2, 0, identifiers, recAt(base))
+      const z2Expr = compileExpr(stmt.z2, 0, identifiers, recAt(base))
+      const widthExpr = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const segmentsExpr = compileExpr(
+        stmt.segments ?? { type: 'num', value: 24 },
+        0,
+        identifiers,
+        recAt(base),
+      )
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const heightFunction = stmt.heightFunction
+        ? identifiers.get(stmt.heightFunction)
+        : identifiers.reserveInternal(`${stmt.road}AlturaPlana`)
+      const x1 = identifiers.reserveInternal(`${stmt.road}XInicial`)
+      const z1 = identifiers.reserveInternal(`${stmt.road}ZInicial`)
+      const x2 = identifiers.reserveInternal(`${stmt.road}XFinal`)
+      const z2 = identifiers.reserveInternal(`${stmt.road}ZFinal`)
+      const width = identifiers.reserveInternal(`${stmt.road}Largura`)
+      const segments = identifiers.reserveInternal(`${stmt.road}Divisoes`)
+      const dx = identifiers.reserveInternal(`${stmt.road}Dx`)
+      const dz = identifiers.reserveInternal(`${stmt.road}Dz`)
+      const length = identifiers.reserveInternal(`${stmt.road}Comprimento`)
+      const makeRibbon = identifiers.reserveInternal(`${stmt.road}CriarFaixa`)
+      const positions = identifiers.reserveInternal(`${stmt.road}Posicoes`)
+      const indices = identifiers.reserveInternal(`${stmt.road}Indices`)
+      const index = identifiers.reserveInternal(`${stmt.road}Indice`)
+      const side = identifiers.reserveInternal(`${stmt.road}Lado`)
+      const t = identifiers.reserveInternal(`${stmt.road}Progresso`)
+      const centerX = identifiers.reserveInternal(`${stmt.road}CentroX`)
+      const centerZ = identifiers.reserveInternal(`${stmt.road}CentroZ`)
+      const px = identifiers.reserveInternal(`${stmt.road}PontoX`)
+      const pz = identifiers.reserveInternal(`${stmt.road}PontoZ`)
+      const geometry = identifiers.reserveInternal(`${stmt.road}Geometria`)
+      const asphalt = identifiers.reserveInternal(`${stmt.road}Asfalto`)
+      const stripe = identifiers.reserveInternal(`${stmt.road}Faixa`)
+      const lines = [
+        `const ${x1} = Math.max(-10000, Math.min(10000, Number(${x1Expr}) || 0));`,
+        `const ${z1} = Math.max(-10000, Math.min(10000, Number(${z1Expr}) || 0));`,
+        `const ${x2} = Math.max(-10000, Math.min(10000, Number(${x2Expr}) || 0));`,
+        `const ${z2} = Math.max(-10000, Math.min(10000, Number(${z2Expr}) || 0));`,
+        `const ${width} = Math.max(0.05, Math.min(1000, Number(${widthExpr}) || 1));`,
+        `const ${segments} = Math.max(1, Math.min(256, Math.round(Number(${segmentsExpr}) || 1)));`,
+        ...(stmt.heightFunction ? [] : [`function ${heightFunction}() { return 0; }`]),
+        `const ${dx} = ${x2} - ${x1};`,
+        `const ${dz} = ${z2} - ${z1};`,
+        `const ${length} = Math.hypot(${dx}, ${dz});`,
+        `function ${makeRibbon}(largura, alturaExtra) {`,
+        `  const ${positions} = [];`,
+        `  const ${indices} = [];`,
+        `  for (let ${index} = 0; ${index} <= ${segments}; ${index}++) {`,
+        `    const ${t} = ${index} / ${segments};`,
+        `    const ${centerX} = ${x1} + ${dx} * ${t};`,
+        `    const ${centerZ} = ${z1} + ${dz} * ${t};`,
+        `    for (let ${side} = -1; ${side} <= 1; ${side} += 2) {`,
+        `      const ${px} = ${centerX} - (${dz} / Math.max(${length}, 0.0001)) * largura * 0.5 * ${side};`,
+        `      const ${pz} = ${centerZ} + (${dx} / Math.max(${length}, 0.0001)) * largura * 0.5 * ${side};`,
+        `      ${positions}.push(${px}, ${heightFunction}(${px}, ${pz}) + alturaExtra, ${pz});`,
+        `    }`,
+        `    if (${index} < ${segments}) {`,
+        `      const a = ${index} * 2;`,
+        `      ${indices}.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);`,
+        `    }`,
+        `  }`,
+        `  const ${geometry} = new THREE.BufferGeometry();`,
+        `  ${geometry}.setAttribute("position", new THREE.Float32BufferAttribute(${positions}, 3));`,
+        `  ${geometry}.setIndex(${indices});`,
+        `  ${geometry}.computeVertexNormals();`,
+        `  return ${geometry};`,
+        `}`,
+        `const ${road} = new THREE.Group();`,
+        `const ${asphalt} = new THREE.Mesh(${makeRibbon}(${width}, 0.05), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.95 }));`,
+        `const ${stripe} = new THREE.Mesh(${makeRibbon}(Math.min(0.12, ${width} * 0.08), 0.075), new THREE.MeshBasicMaterial({ color: 16771942 }));`,
+        `${road}.add(${asphalt});`,
+        `${road}.add(${stripe});`,
+        `${road}.traverse((part) => { part.receiveShadow = true; });`,
+        `${scene}.add(${road});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'buildingSetup': {
+      const building = identifiers.get(stmt.building)
+      const scene = identifiers.get(stmt.scene)
+      const xExpr = compileExpr(stmt.x, 0, identifiers, recAt(base))
+      const zExpr = compileExpr(stmt.z, 0, identifiers, recAt(base))
+      const widthExpr = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const heightExpr = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depthExpr = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const roofColor = compileExpr(stmt.roofColor, 0, identifiers, recAt(base))
+      const heightFunction = stmt.heightFunction
+        ? identifiers.get(stmt.heightFunction)
+        : identifiers.reserveInternal(`${stmt.building}AlturaPlana`)
+      const x = identifiers.reserveInternal(`${stmt.building}X`)
+      const z = identifiers.reserveInternal(`${stmt.building}Z`)
+      const width = identifiers.reserveInternal(`${stmt.building}Largura`)
+      const height = identifiers.reserveInternal(`${stmt.building}Altura`)
+      const depth = identifiers.reserveInternal(`${stmt.building}Profundidade`)
+      const body = identifiers.reserveInternal(`${stmt.building}Corpo`)
+      const roof = identifiers.reserveInternal(`${stmt.building}Telhado`)
+      const door = identifiers.reserveInternal(`${stmt.building}Porta`)
+      const windows = identifiers.reserveInternal(`${stmt.building}Janelas`)
+      const windowDummy = identifiers.reserveInternal(`${stmt.building}MatrizJanela`)
+      const index = identifiers.reserveInternal(`${stmt.building}IndiceJanela`)
+      const lines = [
+        `const ${x} = Math.max(-10000, Math.min(10000, Number(${xExpr}) || 0));`,
+        `const ${z} = Math.max(-10000, Math.min(10000, Number(${zExpr}) || 0));`,
+        `const ${width} = Math.max(0.1, Math.min(1000, Number(${widthExpr}) || 1));`,
+        `const ${height} = Math.max(0.1, Math.min(1000, Number(${heightExpr}) || 1));`,
+        `const ${depth} = Math.max(0.1, Math.min(1000, Number(${depthExpr}) || 1));`,
+        ...(stmt.heightFunction ? [] : [`function ${heightFunction}() { return 0; }`]),
+        `const ${building} = new THREE.Group();`,
+        `const ${body} = new THREE.Mesh(new THREE.BoxGeometry(${width}, ${height}, ${depth}), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.82 }));`,
+        `${body}.position.y = ${height} / 2;`,
+        `const ${roof} = new THREE.Mesh(new THREE.ConeGeometry(Math.max(${width}, ${depth}) * 0.72, Math.max(1, ${height} * 0.22), 4), new THREE.MeshStandardMaterial({ color: ${roofColor}, roughness: 0.9 }));`,
+        `${roof}.position.y = ${height} + Math.max(1, ${height} * 0.11);`,
+        `${roof}.rotation.y = Math.PI / 4;`,
+        `const ${door} = new THREE.Mesh(new THREE.BoxGeometry(Math.max(0.9, ${width} * 0.16), Math.max(1.8, ${height} * 0.24), 0.12), new THREE.MeshStandardMaterial({ color: 5918790 }));`,
+        `${door}.position.set(0, Math.max(0.9, ${height} * 0.12), ${depth} / 2 + 0.07);`,
+        `const ${windows} = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.9, 0.08), new THREE.MeshBasicMaterial({ color: 11259375 }), 4);`,
+        `const ${windowDummy} = new THREE.Object3D();`,
+        `for (let ${index} = 0; ${index} < 4; ${index}++) {`,
+        `  ${windowDummy}.position.set((${index} % 2 === 0 ? -1 : 1) * ${width} * 0.25, ${height} * (${index} < 2 ? 0.42 : 0.72), ${depth} / 2 + 0.08);`,
+        `  ${windowDummy}.updateMatrix();`,
+        `  ${windows}.setMatrixAt(${index}, ${windowDummy}.matrix);`,
+        `}`,
+        `${windows}.instanceMatrix.needsUpdate = true;`,
+        `${building}.add(${body});`,
+        `${building}.add(${roof});`,
+        `${building}.add(${door});`,
+        `${building}.add(${windows});`,
+        `${building}.position.set(${x}, ${heightFunction}(${x}, ${z}), ${z});`,
+        `${building}.userData.szCollider = { shape: "box", width: ${width}, height: ${height}, depth: ${depth}, offsetY: ${height} / 2 };`,
+        `${building}.traverse((part) => { part.castShadow = true; part.receiveShadow = true; });`,
+        `${scene}.add(${building});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'citySetup': {
+      const city = identifiers.get(stmt.city)
+      const scene = identifiers.get(stmt.scene)
+      const heightFunction = identifiers.get(stmt.heightFunction)
+      const blocksXExpr = compileExpr(stmt.blocksX, 0, identifiers, recAt(base))
+      const blocksZExpr = compileExpr(stmt.blocksZ, 0, identifiers, recAt(base))
+      const spacingExpr = compileExpr(stmt.spacing, 0, identifiers, recAt(base))
+      const roadWidthExpr = compileExpr(stmt.roadWidth, 0, identifiers, recAt(base))
+      const minHeightExpr = compileExpr(stmt.minHeight, 0, identifiers, recAt(base))
+      const maxHeightExpr = compileExpr(stmt.maxHeight, 0, identifiers, recAt(base))
+      const seedExpr = compileExpr(stmt.seed, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const roofColor = compileExpr(stmt.roofColor, 0, identifiers, recAt(base))
+      const blocksX = identifiers.reserveInternal(`${stmt.city}QuarteiroesX`)
+      const blocksZ = identifiers.reserveInternal(`${stmt.city}QuarteiroesZ`)
+      const spacing = identifiers.reserveInternal(`${stmt.city}Espacamento`)
+      const roadWidth = identifiers.reserveInternal(`${stmt.city}LarguraRua`)
+      const minHeight = identifiers.reserveInternal(`${stmt.city}AlturaMinima`)
+      const maxHeight = identifiers.reserveInternal(`${stmt.city}AlturaMaxima`)
+      const seed = identifiers.reserveInternal(`${stmt.city}Semente`)
+      const random = identifiers.reserveInternal(`${stmt.city}Aleatorio`)
+      const count = identifiers.reserveInternal(`${stmt.city}Quantidade`)
+      const buildings = identifiers.reserveInternal(`${stmt.city}Predios`)
+      const roofs = identifiers.reserveInternal(`${stmt.city}Telhados`)
+      const roads = identifiers.reserveInternal(`${stmt.city}Ruas`)
+      const dummy = identifiers.reserveInternal(`${stmt.city}Matriz`)
+      const colliders = identifiers.reserveInternal(`${stmt.city}Colisores`)
+      const ix = identifiers.reserveInternal(`${stmt.city}IndiceX`)
+      const iz = identifiers.reserveInternal(`${stmt.city}IndiceZ`)
+      const index = identifiers.reserveInternal(`${stmt.city}Indice`)
+      const x = identifiers.reserveInternal(`${stmt.city}X`)
+      const z = identifiers.reserveInternal(`${stmt.city}Z`)
+      const ground = identifiers.reserveInternal(`${stmt.city}Chao`)
+      const height = identifiers.reserveInternal(`${stmt.city}AlturaPredio`)
+      const footprint = identifiers.reserveInternal(`${stmt.city}BasePredio`)
+      const roadIndex = identifiers.reserveInternal(`${stmt.city}IndiceRua`)
+      const roadStart = identifiers.reserveInternal(`${stmt.city}InicioRua`)
+      const roadEnd = identifiers.reserveInternal(`${stmt.city}FimRua`)
+      const roadLength = identifiers.reserveInternal(`${stmt.city}ComprimentoRua`)
+      const lines = [
+        `const ${blocksX} = Math.max(1, Math.min(40, Math.round(Number(${blocksXExpr}) || 1)));`,
+        `const ${blocksZ} = Math.max(1, Math.min(40, Math.round(Number(${blocksZExpr}) || 1)));`,
+        `const ${spacing} = Math.max(2, Math.min(200, Number(${spacingExpr}) || 14));`,
+        `const ${roadWidth} = Math.max(0.5, Math.min(${spacing} * 0.8, Number(${roadWidthExpr}) || 5));`,
+        `const ${minHeight} = Math.max(1, Math.min(500, Number(${minHeightExpr}) || 5));`,
+        `const ${maxHeight} = Math.max(${minHeight}, Math.min(500, Number(${maxHeightExpr}) || ${minHeight}));`,
+        `let ${seed} = (Math.round(Number(${seedExpr}) || 1) >>> 0) || 1;`,
+        `function ${random}() { ${seed} = (Math.imul(${seed}, 1664525) + 1013904223) >>> 0; return ${seed} / 4294967296; }`,
+        `const ${count} = ${blocksX} * ${blocksZ};`,
+        `const ${city} = new THREE.Group();`,
+        `const ${buildings} = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.82 }), ${count});`,
+        `const ${roofs} = new THREE.InstancedMesh(new THREE.ConeGeometry(0.72, 1, 4), new THREE.MeshStandardMaterial({ color: ${roofColor}, roughness: 0.9 }), ${count});`,
+        `const ${roads} = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.06, 1), new THREE.MeshStandardMaterial({ color: 3359829, roughness: 0.96 }), (${blocksZ} + 1) * ${blocksX} + (${blocksX} + 1) * ${blocksZ});`,
+        `const ${dummy} = new THREE.Object3D();`,
+        `const ${colliders} = [];`,
+        `let ${index} = 0;`,
+        `for (let ${ix} = 0; ${ix} < ${blocksX}; ${ix}++) {`,
+        `  for (let ${iz} = 0; ${iz} < ${blocksZ}; ${iz}++) {`,
+        `    const ${x} = (${ix} - (${blocksX} - 1) / 2) * ${spacing};`,
+        `    const ${z} = (${iz} - (${blocksZ} - 1) / 2) * ${spacing};`,
+        `    const ${ground} = ${heightFunction}(${x}, ${z});`,
+        `    const ${height} = ${minHeight} + (${maxHeight} - ${minHeight}) * ${random}();`,
+        `    const ${footprint} = (${spacing} - ${roadWidth}) * (0.72 + ${random}() * 0.2);`,
+        `    ${dummy}.position.set(${x}, ${ground} + ${height} / 2, ${z});`,
+        `    ${dummy}.rotation.set(0, 0, 0);`,
+        `    ${dummy}.scale.set(${footprint}, ${height}, ${footprint});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${buildings}.setMatrixAt(${index}, ${dummy}.matrix);`,
+        `    const roofHeight = Math.max(1, ${height} * 0.08);`,
+        `    ${dummy}.position.y = ${ground} + ${height} + roofHeight / 2;`,
+        `    ${dummy}.rotation.y = Math.PI / 4;`,
+        `    ${dummy}.scale.set(${footprint}, roofHeight, ${footprint});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${roofs}.setMatrixAt(${index}, ${dummy}.matrix);`,
+        `    ${colliders}.push({ x: ${x}, y: ${ground} + ${height} / 2, z: ${z}, width: ${footprint}, height: ${height}, depth: ${footprint} });`,
+        `    ${index} += 1;`,
+        `  }`,
+        `}`,
+        `let ${roadIndex} = 0;`,
+        `for (let ${iz} = 0; ${iz} <= ${blocksZ}; ${iz}++) {`,
+        `  const ${z} = (${iz} - ${blocksZ} / 2) * ${spacing};`,
+        `  for (let ${ix} = 0; ${ix} < ${blocksX}; ${ix}++) {`,
+        `    const ${x} = (${ix} - (${blocksX} - 1) / 2) * ${spacing};`,
+        `    const ${roadStart} = ${heightFunction}(${x} - ${spacing} / 2, ${z});`,
+        `    const ${roadEnd} = ${heightFunction}(${x} + ${spacing} / 2, ${z});`,
+        `    const ${roadLength} = Math.hypot(${spacing}, ${roadEnd} - ${roadStart});`,
+        `    ${dummy}.position.set(${x}, (${roadStart} + ${roadEnd}) / 2 + 0.03, ${z});`,
+        `    ${dummy}.rotation.set(0, 0, Math.atan2(${roadEnd} - ${roadStart}, ${spacing}));`,
+        `    ${dummy}.scale.set(${roadLength} + ${roadWidth}, 1, ${roadWidth});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${roads}.setMatrixAt(${roadIndex}++, ${dummy}.matrix);`,
+        `  }`,
+        `}`,
+        `for (let ${ix} = 0; ${ix} <= ${blocksX}; ${ix}++) {`,
+        `  const ${x} = (${ix} - ${blocksX} / 2) * ${spacing};`,
+        `  for (let ${iz} = 0; ${iz} < ${blocksZ}; ${iz}++) {`,
+        `    const ${z} = (${iz} - (${blocksZ} - 1) / 2) * ${spacing};`,
+        `    const ${roadStart} = ${heightFunction}(${x}, ${z} - ${spacing} / 2);`,
+        `    const ${roadEnd} = ${heightFunction}(${x}, ${z} + ${spacing} / 2);`,
+        `    const ${roadLength} = Math.hypot(${spacing}, ${roadEnd} - ${roadStart});`,
+        `    ${dummy}.position.set(${x}, (${roadStart} + ${roadEnd}) / 2 + 0.03, ${z});`,
+        `    ${dummy}.rotation.set(-Math.atan2(${roadEnd} - ${roadStart}, ${spacing}), 0, 0);`,
+        `    ${dummy}.scale.set(${roadWidth}, 1, ${roadLength} + ${roadWidth});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${roads}.setMatrixAt(${roadIndex}++, ${dummy}.matrix);`,
+        `  }`,
+        `}`,
+        `${buildings}.instanceMatrix.needsUpdate = true;`,
+        `${roofs}.instanceMatrix.needsUpdate = true;`,
+        `${roads}.instanceMatrix.needsUpdate = true;`,
+        `${buildings}.castShadow = true; ${buildings}.receiveShadow = true;`,
+        `${roofs}.castShadow = true; ${roofs}.receiveShadow = true;`,
+        `${roads}.receiveShadow = true;`,
+        `${city}.add(${roads}, ${buildings}, ${roofs});`,
+        `${city}.userData.szCityColliders = ${colliders};`,
+        `${scene}.add(${city});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'physicsLiteSetup': {
+      const world = identifiers.get(stmt.world)
+      const heightFunction = identifiers.get(stmt.heightFunction)
+      const gravity = compileExpr(stmt.gravity, 0, identifiers, recAt(base))
+      const maxSubSteps = compileExpr(stmt.maxSubSteps, 0, identifiers, recAt(base))
+      return `${pad}const ${world} = createSZPhysicsLite({ groundHeight: ${heightFunction}, gravity: ${gravity}, maxSubSteps: ${maxSubSteps} });`
+    }
+    case 'physicsLiteStaticBox': {
+      const world = identifiers.get(stmt.world)
+      const args = [stmt.x, stmt.y, stmt.z, stmt.width, stmt.height, stmt.depth]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${world}.addStaticBox(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteStaticSphere': {
+      const world = identifiers.get(stmt.world)
+      const args = [stmt.x, stmt.y, stmt.z, stmt.radius]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${world}.addStaticSphere(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteStaticObject':
+      return `${pad}${identifiers.get(stmt.world)}.addStaticObject(${JSON.stringify(stmt.id)}, ${identifiers.get(stmt.object)});`
+    case 'physicsLiteStaticCity':
+      return `${pad}${identifiers.get(stmt.world)}.addStaticCity(${JSON.stringify(stmt.prefix)}, ${identifiers.get(stmt.city)});`
+    case 'physicsLiteBody': {
+      const world = identifiers.get(stmt.world)
+      const object = identifiers.get(stmt.object)
+      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const height = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depth = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const friction = compileExpr(stmt.friction, 0, identifiers, recAt(base))
+      const bounce = compileExpr(stmt.bounce, 0, identifiers, recAt(base))
+      return `${pad}${world}.addBody(${JSON.stringify(stmt.id)}, ${object}, { kind: ${JSON.stringify(stmt.kind)}, width: ${width}, height: ${height}, depth: ${depth}, friction: ${friction}, bounce: ${bounce} });`
+    }
+    case 'physicsLiteMove': {
+      const world = identifiers.get(stmt.world)
+      const x = compileExpr(stmt.x, 0, identifiers, recAt(base))
+      const z = compileExpr(stmt.z, 0, identifiers, recAt(base))
+      const speed = compileExpr(stmt.speed, 0, identifiers, recAt(base))
+      return `${pad}${world}.moveCharacter(${JSON.stringify(stmt.id)}, ${x}, ${z}, ${speed});`
+    }
+    case 'physicsLiteJump': {
+      const world = identifiers.get(stmt.world)
+      const speed = compileExpr(stmt.speed, 0, identifiers, recAt(base))
+      return `${pad}${world}.jump(${JSON.stringify(stmt.id)}, ${speed});`
+    }
+    case 'physicsLiteTrigger': {
+      const world = identifiers.get(stmt.world)
+      const args = [stmt.x, stmt.y, stmt.z, stmt.width, stmt.height, stmt.depth]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${world}.addTrigger(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteStep': {
+      const world = identifiers.get(stmt.world)
+      const dt = compileExpr(stmt.dt, 0, identifiers, recAt(base))
+      return `${pad}${world}.step(${dt});`
+    }
+    case 'physicsLiteVelocity':
+    case 'physicsLiteImpulse':
+    case 'physicsLiteTeleport': {
+      const method =
+        stmt.type === 'physicsLiteVelocity'
+          ? 'setVelocity'
+          : stmt.type === 'physicsLiteImpulse'
+            ? 'impulse'
+            : 'teleport'
+      const args = [stmt.x, stmt.y, stmt.z]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${identifiers.get(stmt.world)}.${method}(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteRemove':
+      return `${pad}${identifiers.get(stmt.world)}.remove(${JSON.stringify(stmt.id)});`
+    case 'physicsLiteClear':
+      return `${pad}${identifiers.get(stmt.world)}.clear();`
+    case 'physicsLiteCollisionEvent': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const callback = lifecycleCallback(
+        identifiers,
+        `${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.colliderParam)}`,
+        body,
+        pad,
+      )
+      return `${pad}${identifiers.get(stmt.world)}.onCollision(${callback});`
+    }
+    case 'physicsLiteTriggerEvent': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const callback = lifecycleCallback(
+        identifiers,
+        `${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.triggerParam)}, ${identifiers.get(stmt.enteringParam)}`,
+        body,
+        pad,
+      )
+      return `${pad}${identifiers.get(stmt.world)}.onTrigger(${callback});`
+    }
+    case 'physicsLiteRaycast': {
+      const args = [stmt.ox, stmt.oy, stmt.oz, stmt.dx, stmt.dy, stmt.dz, stmt.maxDistance]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.raycast(${args});`
+    }
+    case 'physicsLiteBodyState':
+      return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.body(${JSON.stringify(stmt.id)});`
+    case 'physicsLiteStats':
+      return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.stats();`
     case 'return':
       return stmt.value === undefined
         ? `${pad}return;`
@@ -3338,7 +4175,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      const head = `${pad}function ${identifiers.get(stmt.name)}(${params}) {`
+      const head = `${pad}${stmt.async ? 'async ' : ''}function ${identifiers.get(stmt.name)}(${params}) {`
       return body ? `${head}\n${body}\n${pad}}` : `${head}\n${pad}}`
     }
     case 'callFunction': {
@@ -3348,7 +4185,7 @@ ${pad}});`
     case 'awaitStmt':
       return `${pad}await ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     case 'setTimeoutCall':
-      return `${pad}setTimeout(${identifiers.get(stmt.fn)}, ${compileExpr(stmt.delay, 0, identifiers, recAt(base))});`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(${identifiers.get(stmt.fn)}, ${compileExpr(stmt.delay, 0, identifiers, recAt(base))});`
     case 'forEach': {
       const body = compileStatements(
         stmt.body,
@@ -3370,7 +4207,7 @@ ${pad}});`
       )
       // `}, <delay>);` é a última linha: base + 1 (abertura) + linhas do corpo.
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setTimeout(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
     }
     case 'setInterval': {
       const body = compileStatements(
@@ -3381,7 +4218,7 @@ ${pad}});`
       )
       // `}, <delay>);` é a última linha: base + 1 (abertura) + linhas do corpo.
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setInterval')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
     }
     case 'setTimeoutSeconds': {
       const body = compileStatements(
@@ -3393,7 +4230,7 @@ ${pad}});`
       // Segundos → milissegundos no código: `<delay> * 1000`. A precedência 6 (`*`)
       // garante que um delay composto (ex.: `a + b`) saia parentizado: `(a + b) * 1000`.
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setTimeout(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
     }
     case 'setIntervalSeconds': {
       const body = compileStatements(
@@ -3403,7 +4240,7 @@ ${pad}});`
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setInterval')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
     }
     case 'rawJS': {
       // Indenta APENAS a 1ª linha física (e só se ela não for vazia). As linhas
@@ -3506,6 +4343,9 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'setTimeoutSeconds':
       case 'setIntervalSeconds':
       case 'animationLoop':
+      case 'physicsLiteCollisionEvent':
+      case 'physicsLiteTriggerEvent':
+      case 'g2d:onStart':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
       case 'g2d:onKey':
@@ -3519,8 +4359,13 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
+      case 'g2d:afterSeconds':
       case 'g3d:animate':
       case 'g3d:forEachInSwarm':
+      case 'g3d:forEachInGroup':
+      case 'g3d:pruneOffscreen':
+      case 'g3d:everyFrames':
+      case 'g3d:everySeconds':
         reserveClassNames(stmt.body, scope)
         break
       case 'classDecl':
@@ -3561,6 +4406,9 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'setTimeoutSeconds':
       case 'setIntervalSeconds':
       case 'animationLoop':
+      case 'physicsLiteCollisionEvent':
+      case 'physicsLiteTriggerEvent':
+      case 'g2d:onStart':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
       case 'g2d:onKey':
@@ -3574,8 +4422,13 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
+      case 'g2d:afterSeconds':
       case 'g3d:animate':
       case 'g3d:forEachInSwarm':
+      case 'g3d:forEachInGroup':
+      case 'g3d:pruneOffscreen':
+      case 'g3d:everyFrames':
+      case 'g3d:everySeconds':
         reserveCanvasElements(stmt.body, scope)
         break
       case 'classDecl':
@@ -3670,6 +4523,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'event':
     case 'animationLoop':
+    case 'g2d:onStart':
     case 'g2d:updateEachFrame':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -3729,7 +4583,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'canvasClear':
       names.add(stmt.ctxVar)
-      names.add(stmt.canvasVar)
       return
     case 'canvasFillStyle':
       names.add(stmt.ctxVar)
@@ -4015,6 +4868,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.delta), names)
       return
+    case 'g2d:damageSprite':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.amount), names)
+      collectExprIdentifiers(valueToExpr(stmt.invincibilityFrames), names)
+      return
     case 'g2d:setSize':
       names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.w), names)
@@ -4063,6 +4921,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.groupVar)
       names.add(stmt.ctxVar)
       return
+    case 'g2d:drawGroupByY':
+      names.add(stmt.groupVar)
+      names.add(stmt.ctxVar)
+      return
     case 'g2d:forEachInGroup':
       names.add(stmt.groupVar)
       names.add(stmt.itemName)
@@ -4092,6 +4954,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:everySeconds':
       collectExprIdentifiers(valueToExpr(stmt.seconds), names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:afterSeconds':
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:setHitboxScale':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.percent), names)
       return
     case 'g2d:spawnBullet':
       names.add(stmt.groupVar)
@@ -4125,6 +4995,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:drawHearts':
       names.add(stmt.ctxVar)
       collectExprIdentifiers(stmt.count, names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
+    case 'g2d:drawSpriteHealth':
+      names.add(stmt.ctxVar)
+      names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.x), names)
       collectExprIdentifiers(valueToExpr(stmt.y), names)
       collectExprIdentifiers(valueToExpr(stmt.size), names)
@@ -4214,15 +5091,50 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.size), names)
       return
     case 'g2d:createStickHero':
-    case 'g2d:createBalloon':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:createStickPath':
+    case 'g2d:createBalloonPath':
       names.add(stmt.varName)
       names.add(stmt.ctxVar)
       return
-    case 'g2d:updateStickHero':
-    case 'g2d:restartStickHero':
-    case 'g2d:updateBalloon':
-    case 'g2d:restartBalloon':
-      names.add(stmt.gameVar)
+    case 'g2d:createBalloon':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:stickPathScenery':
+    case 'g2d:stickPathDrop':
+    case 'g2d:stickPathDraw':
+    case 'g2d:balloonPathScenery':
+      names.add(stmt.pathVar)
+      return
+    case 'g2d:stickPathGrow':
+      names.add(stmt.pathVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'g2d:stickPathWalk':
+    case 'g2d:balloonPathScroll':
+      names.add(stmt.pathVar)
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'g2d:balloonFire':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'g2d:balloonFly':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:onStickPathCross':
+    case 'g2d:onStickPathPerfect':
+    case 'g2d:onBalloonPathTreeHit':
+      names.add(stmt.pathVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g2d:spawnObstacle':
       names.add(stmt.groupVar)
@@ -4266,6 +5178,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.throwerVar)
       names.add(stmt.cityVar)
       return
+    case 'g2d:setStageDescription':
     case 'g2d:setScene':
     case 'g2d:restart':
     case 'g2d:playShoot':
@@ -4553,12 +5466,32 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g3d:createGroup':
       names.add(stmt.varName)
       return
-    case 'g3d:runEnemies':
+    case 'g3d:spawnEnemy':
       names.add(stmt.worldVar)
       names.add(stmt.groupVar)
-      names.add(stmt.groundVar)
-      collectExprIdentifiers(valueToExpr(stmt.every), names)
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'g3d:updateGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.groundVar)
+      return
+    case 'g3d:updateGroupNoGravity':
+      names.add(stmt.groupVar)
+      return
+    case 'g3d:removeFromGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.objVar)
+      return
+    case 'g3d:clearGroup':
+      names.add(stmt.groupVar)
+      return
+    case 'g3d:everyFrames':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3d:everySeconds':
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g3d:stop':
       names.add(stmt.worldVar)
@@ -4809,6 +5742,17 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.itemName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'g3d:forEachInGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3d:pruneOffscreen':
+      names.add(stmt.worldVar)
+      names.add(stmt.groupVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'g3d:removeFromSwarm':
       names.add(stmt.swarmVar)
       names.add(stmt.itemVar)
@@ -4835,6 +5779,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:showScreen':
     case 'gk:hideScreens':
     case 'gk:setState':
+    case 'gk:restartGame':
     case 'gk:pause':
     case 'gk:resume':
     case 'gk:returnToMenu':
@@ -4857,6 +5802,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'gk:onEnterState':
+    case 'gk:onGameStart':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'gk:onUpdate':
@@ -4938,8 +5884,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgNpcWander':
       // Nomes de flag/item/mapa/NPC são STRING (JSON.stringify), não identifier.
       return
+    case 'gk:rpgCreateMap':
+      collectExprIdentifiers(valueToExpr(stmt.cols), names)
+      collectExprIdentifiers(valueToExpr(stmt.rows), names)
+      names.add(stmt.ctxName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'gk:rpgOnTalk':
-    case 'gk:rpgOnMap':
+    case 'gk:rpgOnEnterMap':
     case 'gk:rpgOnBattleEnd':
     case 'gk:rpgOnFoeTurn':
     case 'gk:rpgCutscene':
@@ -5510,11 +6462,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.cx), names)
       collectExprIdentifiers(valueToExpr(stmt.cy), names)
       return
-    // 🌍 Mundo aberto (side/map são STRING; só os soquetes têm refs)
-    case 'gk:rpgMapSize':
-      collectExprIdentifiers(valueToExpr(stmt.cols), names)
-      collectExprIdentifiers(valueToExpr(stmt.rows), names)
-      return
+    // 🌍 Mundo aberto (side/map são STRING; não há refs de identificador)
     case 'gk:rpgConnectEdge':
       return
     case 'gk:rpgBattleStats':
@@ -5792,6 +6740,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g3k:spawnFrom':
       names.add(stmt.fromVar)
       return
+    case 'g3k:spawnRing':
+      names.add(stmt.fromVar)
+      collectExprIdentifiers(valueToExpr(stmt.count), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
     case 'g3k:startSpawner':
       collectExprIdentifiers(valueToExpr(stmt.seconds), names)
       return
@@ -5984,7 +6937,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.charVar)
       collectExprIdentifiers(valueToExpr(stmt.amount), names)
       return
+    case 'g3k:heal':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.amount), names)
+      return
     case 'g3k:onEntityDeath':
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3k:onHurt':
       names.add(stmt.itemName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -6042,6 +7003,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:start':
     case 'w3d:car':
     case 'w3d:grass':
+    case 'w3d:skyPhoto':
     case 'w3d:engineSound':
     case 'w3d:loadSound':
     case 'w3d:playSound':
@@ -6197,6 +7159,84 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:lamp':
     case 'w3d:campfire':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:city':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:district':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
+    case 'w3d:roadGrid':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      collectExprIdentifiers(valueToExpr(stmt.width), names)
+      return
+    case 'w3d:houseRow':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:quality':
+      return
+    case 'w3d:inventoryGive':
+    case 'w3d:inventoryRemove':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:stringLights':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:traffic':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:door':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:crops':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:barn':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:windmill':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:fence':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:animals':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:crater':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:flag':
+    case 'w3d:rocket':
       collectExprIdentifiers(valueToExpr(stmt.x), names)
       collectExprIdentifiers(valueToExpr(stmt.z), names)
       return
@@ -6408,16 +7448,55 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'loaderLoad':
       names.add(stmt.loaderVar)
       names.add(stmt.param)
+      names.add(stmt.errorParam ?? 'erro')
       collectExprIdentifiers(stmt.url, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      for (const child of stmt.errorBody ?? []) collectStatementIdentifiers(child, names)
       return
     case 'traverseEach':
       collectExprIdentifiers(stmt.object, names)
       names.add(stmt.param)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'threeSceneSetup':
+      names.add(stmt.scene)
+      return
+    case 'threeRendererSetup':
+      names.add(stmt.renderer)
+      return
+    case 'threeCameraSetup':
+      names.add(stmt.camera)
+      collectExprIdentifiers(stmt.fov, names)
+      collectExprIdentifiers(stmt.near, names)
+      collectExprIdentifiers(stmt.far, names)
+      return
+    case 'threeLightSetup':
+      names.add(stmt.light)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.color, names)
+      collectExprIdentifiers(stmt.intensity, names)
+      return
     case 'rendererConfig':
       names.add(stmt.renderer)
+      return
+    case 'rendererResponsive':
+      names.add(stmt.renderer)
+      names.add(stmt.camera)
+      names.add(stmt.cleanup)
+      if (stmt.composer) names.add(stmt.composer)
+      return
+    case 'environmentLoad':
+      names.add(stmt.scene)
+      names.add(stmt.texture)
+      return
+    case 'disposeObject':
+      names.add(stmt.object)
+      return
+    case 'lerpPosition':
+      names.add(stmt.object)
+      collectExprIdentifiers(stmt.target, names)
+      collectExprIdentifiers(stmt.alpha, names)
+      collectExprIdentifiers(stmt.dt, names)
       return
     case 'bloomSetup':
       names.add(stmt.composer)
@@ -6444,6 +7523,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'waterTime':
       names.add(stmt.water)
+      if (stmt.dt) collectExprIdentifiers(stmt.dt, names)
       return
     case 'grassSetup':
       names.add(stmt.grass)
@@ -6455,12 +7535,172 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'grassTime':
       names.add(stmt.grass)
+      if (stmt.dt) collectExprIdentifiers(stmt.dt, names)
       return
     case 'signSetup':
       names.add(stmt.sign)
       names.add(stmt.scene)
       collectExprIdentifiers(stmt.size, names)
       collectExprIdentifiers(stmt.color, names)
+      return
+    case 'primitiveSetup':
+      names.add(stmt.mesh)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'terrainSetup':
+      names.add(stmt.terrain)
+      names.add(stmt.scene)
+      names.add(stmt.heightFunction)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.segments, names)
+      collectExprIdentifiers(stmt.hills, names)
+      collectExprIdentifiers(stmt.smooth, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'roadSetup':
+      names.add(stmt.road)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.x1, names)
+      collectExprIdentifiers(stmt.z1, names)
+      collectExprIdentifiers(stmt.x2, names)
+      collectExprIdentifiers(stmt.z2, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.color, names)
+      if (stmt.heightFunction) names.add(stmt.heightFunction)
+      if (stmt.segments) collectExprIdentifiers(stmt.segments, names)
+      return
+    case 'buildingSetup':
+      names.add(stmt.building)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      collectExprIdentifiers(stmt.color, names)
+      collectExprIdentifiers(stmt.roofColor, names)
+      if (stmt.heightFunction) names.add(stmt.heightFunction)
+      return
+    case 'citySetup':
+      names.add(stmt.city)
+      names.add(stmt.scene)
+      names.add(stmt.heightFunction)
+      collectExprIdentifiers(stmt.blocksX, names)
+      collectExprIdentifiers(stmt.blocksZ, names)
+      collectExprIdentifiers(stmt.spacing, names)
+      collectExprIdentifiers(stmt.roadWidth, names)
+      collectExprIdentifiers(stmt.minHeight, names)
+      collectExprIdentifiers(stmt.maxHeight, names)
+      collectExprIdentifiers(stmt.seed, names)
+      collectExprIdentifiers(stmt.color, names)
+      collectExprIdentifiers(stmt.roofColor, names)
+      return
+    case 'physicsLiteSetup':
+      names.add(stmt.world)
+      names.add(stmt.heightFunction)
+      collectExprIdentifiers(stmt.gravity, names)
+      collectExprIdentifiers(stmt.maxSubSteps, names)
+      return
+    case 'physicsLiteStaticBox':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      return
+    case 'physicsLiteStaticSphere':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.radius, names)
+      return
+    case 'physicsLiteStaticObject':
+      names.add(stmt.world)
+      names.add(stmt.object)
+      return
+    case 'physicsLiteStaticCity':
+      names.add(stmt.world)
+      names.add(stmt.city)
+      return
+    case 'physicsLiteBody':
+      names.add(stmt.world)
+      names.add(stmt.object)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      collectExprIdentifiers(stmt.friction, names)
+      collectExprIdentifiers(stmt.bounce, names)
+      return
+    case 'physicsLiteMove':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.speed, names)
+      return
+    case 'physicsLiteJump':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.speed, names)
+      return
+    case 'physicsLiteTrigger':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      return
+    case 'physicsLiteStep':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.dt, names)
+      return
+    case 'physicsLiteVelocity':
+    case 'physicsLiteImpulse':
+    case 'physicsLiteTeleport':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      return
+    case 'physicsLiteRemove':
+    case 'physicsLiteClear':
+      names.add(stmt.world)
+      return
+    case 'physicsLiteCollisionEvent':
+      names.add(stmt.world)
+      names.add(stmt.bodyParam)
+      names.add(stmt.colliderParam)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'physicsLiteTriggerEvent':
+      names.add(stmt.world)
+      names.add(stmt.bodyParam)
+      names.add(stmt.triggerParam)
+      names.add(stmt.enteringParam)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'physicsLiteRaycast':
+      names.add(stmt.world)
+      names.add(stmt.result)
+      collectExprIdentifiers(stmt.ox, names)
+      collectExprIdentifiers(stmt.oy, names)
+      collectExprIdentifiers(stmt.oz, names)
+      collectExprIdentifiers(stmt.dx, names)
+      collectExprIdentifiers(stmt.dy, names)
+      collectExprIdentifiers(stmt.dz, names)
+      collectExprIdentifiers(stmt.maxDistance, names)
+      return
+    case 'physicsLiteBodyState':
+    case 'physicsLiteStats':
+      names.add(stmt.world)
+      names.add(stmt.result)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)
@@ -6644,6 +7884,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.bVar)
       return
     case 'g2d:getHealth':
+    case 'g2d:getMaxHealth':
     case 'g2d:enemyDamage':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
@@ -6658,6 +7899,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g2d:isMovingH':
     case 'g2d:isMovingV':
     case 'g2d:hasHealth':
+    case 'g2d:healthDepleted':
+    case 'g2d:isInvincible':
       names.add(expr.spriteVar)
       return
     case 'g2d:cooldownReady':
@@ -6668,12 +7911,13 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.mapVar)
       names.add(expr.spriteVar)
       return
-    case 'g2d:stickHeroScore':
-    case 'g2d:stickHeroOver':
-    case 'g2d:balloonScore':
+    case 'g2d:stickPathFell':
+    case 'g2d:balloonPathMeters':
+      names.add(expr.pathVar)
+      return
     case 'g2d:balloonFuel':
-    case 'g2d:balloonOver':
-      names.add(expr.gameVar)
+    case 'g2d:balloonLandedOut':
+      names.add(expr.spriteVar)
       return
     case 'g2d:aimReleased':
       names.add(expr.throwerVar)
@@ -6867,6 +8111,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:isDriving':
     case 'w3d:coinCount':
     case 'w3d:hasAchievement':
+    case 'w3d:inventoryCount':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':
@@ -6874,6 +8119,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:raceBest':
     case 'w3d:pinsDown':
     case 'w3d:knockedCount':
+      return
+    case 'w3d:inventoryHas':
+      collectExprIdentifiers(valueToExpr(expr.n), names)
       return
     case 'w3d:groundHeight':
       collectExprIdentifiers(valueToExpr(expr.x), names)

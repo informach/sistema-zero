@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { JSStatement, SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -64,7 +65,7 @@ function fromIR(js: JSStatement[]): { code: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      code: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      code: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -110,9 +111,9 @@ describe('Canvas 3D — macro Letreiro (bloco sz_t3d_sign)', () => {
     expect(code).toContain('placaTinta.textAlign = "center";')
     expect(code).toContain('placaTinta.textBaseline = "middle";')
     expect(code).toContain('placaTinta.fillText("BEM-VINDO", 256, 128);')
-    expect(code).toContain('const placaTex = new THREE.CanvasTexture(placaTela);')
+    expect(code).toContain('const placaTextura = new THREE.CanvasTexture(placaTela);')
     expect(code).toContain(
-      'const placa = new THREE.Mesh(new THREE.PlaneGeometry(6, 6 * 0.5), new THREE.MeshBasicMaterial({ map: placaTex, transparent: true }));',
+      'const placa = new THREE.Mesh(new THREE.PlaneGeometry(placaTamanho, placaTamanho * 0.5), new THREE.MeshBasicMaterial({ map: placaTextura, transparent: true }));',
     )
     expect(code).toContain('cena.add(placa);')
   })

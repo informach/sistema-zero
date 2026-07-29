@@ -4,6 +4,7 @@ import { buildApp, signedWebhookHeaders } from '../helpers'
 const STUDENT = '22222222-2222-2222-2222-222222222222'
 const STUDENT2 = '44444444-4444-4444-4444-444444444444'
 const ADMIN = '99999999-9999-9999-9999-999999999999'
+const ADMIN2 = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
 const BLOCK = '33333333-3333-3333-3333-333333333333'
 const COURSE = '55555555-5555-5555-5555-555555555555'
 const LESSON = '66666666-6666-6666-6666-666666666666'
@@ -18,6 +19,11 @@ const studentHeaders = (id = STUDENT) => ({
 const adminHeaders = {
   'x-auth-user-id': ADMIN,
   'x-auth-user-name': 'Helena',
+  'content-type': 'application/json',
+}
+const adminHeaders2 = {
+  'x-auth-user-id': ADMIN2,
+  'x-auth-user-name': 'Marcos',
   'content-type': 'application/json',
 }
 
@@ -57,11 +63,12 @@ const studentUnread = (app: App, id = STUDENT, audience = 'kids') =>
     }),
   )
 
-const studentGet = (app: App, threadId: string, id = STUDENT, audience = 'kids') =>
+const studentGet = (app: App, threadId: string, id = STUDENT, audience = 'kids', before?: string) =>
   app.handle(
-    new Request(`http://localhost/members/teacher-threads/${threadId}?audience=${audience}`, {
-      headers: studentHeaders(id),
-    }),
+    new Request(
+      `http://localhost/members/teacher-threads/${threadId}?audience=${audience}${before ? `&before=${encodeURIComponent(before)}` : ''}`,
+      { headers: studentHeaders(id) },
+    ),
   )
 
 const studentReply = (app: App, threadId: string, body: string, id = STUDENT, audience = 'kids') =>
@@ -72,9 +79,9 @@ const studentReply = (app: App, threadId: string, body: string, id = STUDENT, au
     ),
   )
 
-const studentMarkRead = (app: App, threadId: string, id = STUDENT) =>
+const studentMarkRead = (app: App, threadId: string, id = STUDENT, audience = 'kids') =>
   app.handle(
-    new Request(`http://localhost/members/teacher-threads/${threadId}/read`, {
+    new Request(`http://localhost/members/teacher-threads/${threadId}/read?audience=${audience}`, {
       method: 'POST',
       headers: studentHeaders(id),
     }),
@@ -128,6 +135,145 @@ describe('conversas com o professor (canal de retorno)', () => {
     expect(adminUnread.threads[0].lastMessageRole).toBe('student')
   })
 
+  test('leitura é individual por professor', async () => {
+    const { app, clockRef } = buildApp()
+    const created = await readJson(await adminPost(app, studioBody()))
+    clockRef.now = new Date('2026-06-02T12:05:00.000Z')
+    await studentReply(app, created.id, 'Posso tentar de novo?')
+
+    const markReadAs = (headers: Record<string, string>) =>
+      app.handle(
+        new Request(`http://localhost/members/admin/teacher-threads/${created.id}/read`, {
+          method: 'POST',
+          headers,
+        }),
+      )
+    const inboxAs = (headers: Record<string, string>) =>
+      app.handle(
+        new Request('http://localhost/members/admin/teacher-threads?unread=true', { headers }),
+      )
+
+    expect((await markReadAs(adminHeaders)).status).toBe(200)
+    const secondTeacherInbox = await readJson(await inboxAs(adminHeaders2))
+    expect(secondTeacherInbox.threads).toHaveLength(1)
+    expect(secondTeacherInbox.threads[0].unread).toBe(true)
+  })
+
+  test('unread-count do PROFESSOR: individual por staff; read-all zera e devolve o nº', async () => {
+    const { app, clockRef } = buildApp()
+    // Duas conversas com resposta do aluno (uma kids, uma via 2º contexto).
+    const a = await readJson(await adminPost(app, studioBody()))
+    const b = await readJson(
+      await adminPost(app, studioBody({ contextType: 'general', blockId: undefined })),
+    )
+    clockRef.now = new Date('2026-06-02T12:05:00.000Z')
+    await studentReply(app, a.id, 'Consertei!')
+    await studentReply(app, b.id, 'Recebi o recado!')
+
+    const unreadCountAs = async (headers: Record<string, string>) =>
+      readJson(
+        await app.handle(
+          new Request('http://localhost/members/admin/teacher-threads/unread-count', { headers }),
+        ),
+      )
+    expect((await unreadCountAs(adminHeaders)).count).toBe(2)
+    // Individual: o 2º professor também vê 2 (watermark é POR staff).
+    expect((await unreadCountAs(adminHeaders2)).count).toBe(2)
+
+    // read-all do 1º professor zera SÓ o dele.
+    const readAll = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/read-all', {
+          method: 'POST',
+          headers: adminHeaders,
+          body: JSON.stringify({}),
+        }),
+      ),
+    )
+    expect(readAll.updated).toBe(2)
+    expect((await unreadCountAs(adminHeaders)).count).toBe(0)
+    expect((await unreadCountAs(adminHeaders2)).count).toBe(2)
+
+    // Idempotente: repetir devolve 0.
+    const again = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/read-all', {
+          method: 'POST',
+          headers: adminHeaders,
+          body: JSON.stringify({}),
+        }),
+      ),
+    )
+    expect(again.updated).toBe(0)
+  })
+
+  test('read-all respeita o escopo (context) e mensagem nova volta a contar', async () => {
+    const { app, clockRef } = buildApp()
+    const entrega = await readJson(await adminPost(app, studioBody()))
+    const geral = await readJson(
+      await adminPost(app, studioBody({ contextType: 'general', blockId: undefined })),
+    )
+    clockRef.now = new Date('2026-06-02T12:05:00.000Z')
+    await studentReply(app, entrega.id, 'a')
+    await studentReply(app, geral.id, 'b')
+
+    const readAllEntregas = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/read-all', {
+          method: 'POST',
+          headers: adminHeaders,
+          body: JSON.stringify({ context: 'studio_submission' }),
+        }),
+      ),
+    )
+    expect(readAllEntregas.updated).toBe(1)
+    const count = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/unread-count', {
+          headers: adminHeaders,
+        }),
+      ),
+    )
+    expect(count.count).toBe(1) // só a geral segue não-lida
+
+    // Mensagem NOVA do aluno depois do read-all volta a contar (watermark, não flag).
+    clockRef.now = new Date('2026-06-02T12:10:00.000Z')
+    await studentReply(app, entrega.id, 'mais uma')
+    const after = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/unread-count', {
+          headers: adminHeaders,
+        }),
+      ),
+    )
+    expect(after.count).toBe(2)
+  })
+
+  test('filtro por aluno (?userIds=): casa userId E accountId; lixo é descartado', async () => {
+    const { app } = buildApp()
+    const PARENT = '77777777-7777-7777-7777-777777777777'
+    await adminPost(app, studioBody({ accountId: PARENT }))
+    await adminPost(app, studioBody({ userId: STUDENT2, blockId: COURSE }))
+
+    const byUser = await readJson(await adminInbox(app, `?userIds=${STUDENT}`))
+    expect(byUser.threads).toHaveLength(1)
+    expect(byUser.threads[0].userId).toBe(STUDENT)
+
+    // Pelo ACCOUNT do responsável acha a conversa da criança (família toda).
+    const byAccount = await readJson(await adminInbox(app, `?userIds=${PARENT}`))
+    expect(byAccount.threads).toHaveLength(1)
+    expect(byAccount.threads[0].userId).toBe(STUDENT)
+
+    // CSV com lixo → só o uuid válido filtra.
+    const mixed = await readJson(await adminInbox(app, `?userIds=nao-e-uuid,${STUDENT2}`))
+    expect(mixed.threads).toHaveLength(1)
+    expect(mixed.threads[0].userId).toBe(STUDENT2)
+
+    // Só lixo → filtro ignorado (caixa completa, não vazia).
+    const junk = await readJson(await adminInbox(app, '?userIds=xyz'))
+    expect(junk.threads).toHaveLength(2)
+  })
+
   test('posse: outro aluno não acessa a conversa (404 sem vazar)', async () => {
     const { app } = buildApp()
     const created = await readJson(await adminPost(app, studioBody()))
@@ -143,6 +289,20 @@ describe('conversas com o professor (canal de retorno)', () => {
     const adultInbox = await readJson(await studentInbox(app, STUDENT, 'adult'))
     expect(adultInbox.threads).toHaveLength(0)
     expect((await readJson(await studentUnread(app, STUDENT, 'adult'))).count).toBe(0)
+  })
+
+  test('marcar como lida respeita a audiência da conversa', async () => {
+    const { app } = buildApp()
+    const created = await readJson(await adminPost(app, studioBody()))
+
+    const wrongAudienceRead = await app.handle(
+      new Request(`http://localhost/members/teacher-threads/${created.id}/read?audience=adult`, {
+        method: 'POST',
+        headers: studentHeaders(),
+      }),
+    )
+    expect(wrongAudienceRead.status).toBe(200)
+    expect((await readJson(await studentUnread(app))).count).toBe(1)
   })
 
   test('Entrega deduplica por bloco; recado geral cria conversa nova a cada vez', async () => {
@@ -172,6 +332,23 @@ describe('conversas com o professor (canal de retorno)', () => {
     expect(
       inbox2.threads.filter((t: { contextType: string }) => t.contextType === 'general'),
     ).toHaveLength(2)
+  })
+
+  test('caixa do aluno informa quando há conversas além da primeira página', async () => {
+    const { app, clockRef } = buildApp()
+    for (let i = 0; i < 31; i++) {
+      clockRef.now = new Date(`2026-06-03T12:${String(i).padStart(2, '0')}:00.000Z`)
+      await adminPost(app, {
+        userId: STUDENT,
+        audience: 'kids',
+        contextType: 'general',
+        body: `Recado ${i}`,
+      })
+    }
+
+    const firstPage = await readJson(await studentInbox(app))
+    expect(firstPage.threads).toHaveLength(30)
+    expect(firstPage.nextOffset).toBe(30)
   })
 
   test('Entrega sem blockId é rejeitada (400)', async () => {
@@ -205,6 +382,72 @@ describe('conversas com o professor (canal de retorno)', () => {
     expect(found.thread).toBeTruthy()
     expect(found.thread.contextType).toBe('studio_submission')
     expect(found.thread.messages).toHaveLength(1)
+  })
+
+  test('histórico é paginado por cursor sem ocultar mensagens antigas', async () => {
+    const { app, clockRef } = buildApp()
+    const first = await readJson(await adminPost(app, studioBody({ body: 'Mensagem 0' })))
+
+    for (let i = 1; i <= 50; i++) {
+      clockRef.now = new Date(`2026-06-02T12:${String(i).padStart(2, '0')}:00.000Z`)
+      await adminPost(app, studioBody({ body: `Mensagem ${i}` }))
+    }
+
+    const latest = await readJson(await studentGet(app, first.id))
+    expect(latest.messages).toHaveLength(50)
+    expect(latest.messages[0].body).toBe('Mensagem 1')
+    expect(latest.nextCursor).toEqual(expect.any(String))
+
+    const older = await readJson(
+      await studentGet(app, first.id, STUDENT, 'kids', latest.nextCursor),
+    )
+    expect(older.messages).toHaveLength(1)
+    expect(older.messages[0].body).toBe('Mensagem 0')
+    expect(older.nextCursor).toBeNull()
+  })
+
+  test('cursor bem-formado, mas com id inválido, retorna 400', async () => {
+    const { app } = buildApp()
+    const created = await readJson(await adminPost(app, studioBody()))
+    const malformedIdCursor = Buffer.from('2026-06-02T12:00:00.000Z|not-a-uuid').toString(
+      'base64url',
+    )
+
+    expect((await studentGet(app, created.id, STUDENT, 'kids', malformedIdCursor)).status).toBe(400)
+  })
+
+  test('marcar como lida usa a última mensagem persistida, sem apagar recado concorrente', async () => {
+    const { app, clockRef } = buildApp()
+    clockRef.now = new Date('2026-06-02T12:00:00.000Z')
+    const created = await readJson(await adminPost(app, studioBody()))
+
+    // Simula o professor ter capturado o horário antes de ficar aguardando a
+    // transação, enquanto o aluno abre a conversa depois. O watermark precisa
+    // apontar para a última mensagem efetivamente persistida, não para "agora".
+    clockRef.now = new Date('2026-06-02T12:10:00.000Z')
+    await studentMarkRead(app, created.id)
+    clockRef.now = new Date('2026-06-02T12:05:00.000Z')
+    await adminPost(app, studioBody({ body: 'Recado que chegou durante a leitura' }))
+
+    expect((await readJson(await studentUnread(app))).count).toBe(1)
+  })
+
+  test('caixa do professor prioriza não-lidas antes de paginar', async () => {
+    const { app, clockRef } = buildApp()
+    clockRef.now = new Date('2026-06-02T12:00:00.000Z')
+    const pending = await readJson(await adminPost(app, studioBody({ blockId: BLOCK })))
+    clockRef.now = new Date('2026-06-02T12:01:00.000Z')
+    await studentReply(app, pending.id, 'Tenho uma dúvida')
+
+    clockRef.now = new Date('2026-06-02T12:02:00.000Z')
+    await adminPost(
+      app,
+      studioBody({ blockId: '77777777-7777-7777-7777-777777777777', body: 'Conversa recente' }),
+    )
+
+    const inbox = await readJson(await adminInbox(app))
+    expect(inbox.threads[0].id).toBe(pending.id)
+    expect(inbox.threads[0].unread).toBe(true)
   })
 })
 
@@ -253,6 +496,33 @@ describe('webhook do Mural (motivo da moderação → recado ao aluno)', () => {
     expect(detail.messages).toHaveLength(1)
     expect(detail.messages[0].authorRole).toBe('teacher')
     expect(detail.messages[0].authorName).toBe('Helena')
+  })
+
+  test('recusa webhook sem delivery id para não duplicar recados em retries', async () => {
+    const { app } = buildApp()
+
+    const response = await postWebhook(app)
+    expect(response.status).toBe(400)
+
+    const inbox = await readJson(await studentInbox(app))
+    expect(inbox.threads).toEqual([])
+  })
+
+  test('rejeita trocar o delivery id de uma entrega já assinada', async () => {
+    const { app } = buildApp()
+    const headers = signedWebhookHeaders('/members/webhooks/mural-message', raw, 'del-original')
+    headers['x-delivery-id'] = 'del-adulterado'
+
+    const response = await app.handle(
+      new Request('http://localhost/members/webhooks/mural-message', {
+        method: 'POST',
+        headers,
+        body: raw,
+      }),
+    )
+
+    expect(response.status).toBe(401)
+    expect((await readJson(await studentInbox(app))).threads).toEqual([])
   })
 
   test('assinatura HMAC inválida → 401 (nada criado)', async () => {

@@ -47,7 +47,7 @@ describe('Liga — board e resolução de tier', () => {
     seedKidsAccess(ctx)
     const res = await app.handle(
       new Request('http://localhost/members/gamification/league/me?audience=kids', {
-        headers: { ...headers, 'x-auth-user-role': 'staff' },
+        headers: { ...headers, 'x-auth-user-role': 'staff', 'x-auth-user-status': 'active' },
       }),
     )
     expect(res.status).toBe(403)

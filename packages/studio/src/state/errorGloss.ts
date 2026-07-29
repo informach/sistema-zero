@@ -18,6 +18,12 @@
 export function glossErrorMessage(message: string): string | null {
   if (!message) return null
 
+  // Canvas 2D usa mensagens diferentes entre Chrome/WebKit para a mesma
+  // condição (`arc()`/`ellipse()`/`arcTo()` e `roundRect()`): raio negativo.
+  if (/\bradius\b.*\bnegative\b|\bRadius value\b.*\bis negative\b/i.test(message)) {
+    return 'Dica: o raio não pode ser negativo. Use 0 ou um número maior.'
+  }
+
   // "x is not defined" → variável usada antes de existir (ou nome digitado errado).
   // Em navegadores reais a mensagem vem PREFIXADA ("Uncaught ReferenceError: x is
   // not defined" / "ReferenceError: x is not defined"), então usamos o identificador

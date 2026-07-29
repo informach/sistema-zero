@@ -198,7 +198,7 @@ export async function createApplication(env: Env): Promise<Application> {
     : noopHubGateway
 
   // Casos de uso do aluno
-  const checkAccess = new CheckAccessService(courses, entitlements, clock)
+  const checkAccess = new CheckAccessService(courses, entitlements, gamificationRepo, clock)
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
   // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
@@ -286,8 +286,15 @@ export async function createApplication(env: Env): Promise<Application> {
           },
         )
       : null
-  const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
-  const listCatalog = new ListCatalogService(courses, entitlements, clock)
+  const listMyCourses = new ListMyCoursesService(
+    entitlements,
+    courses,
+    progress,
+    positions,
+    gamificationRepo,
+    clock,
+  )
+  const listCatalog = new ListCatalogService(courses, entitlements, gamificationRepo, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
   const getLesson = new GetLessonService(
     checkAccess,
@@ -312,15 +319,16 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
-  const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock)
+  const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock, env.AVATAR_PHOTO_URL_PREFIXES)
   const roomRepo = new DrizzleRoomRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
-  const saveRoom = new SaveRoomService(roomRepo, clock)
+  const saveRoom = new SaveRoomService(roomRepo, clock, logger)
   const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, awardGamification, clock)
   const getPublicProfile = new GetPublicProfileService(
     gamificationRepo,
     avatarRepo,
     roomRepo,
+    hub,
     clock,
   )
   const getChallenge = new GetChallengeService(gamificationRepo, challengeConfigRepo, clock)

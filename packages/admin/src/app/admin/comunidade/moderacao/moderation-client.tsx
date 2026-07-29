@@ -9,6 +9,7 @@ import { Select } from '@sistemazero/ui/select'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type {
   HubMuteBanView,
@@ -85,6 +86,8 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       await fn()
       if (okMsg) toast.success(okMsg)
       await load()
+      // Aprovar/rejeitar/resolver muda as pendências → badge da sidebar re-busca já.
+      refreshProfessorCounts()
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Operação falhou.')
     } finally {

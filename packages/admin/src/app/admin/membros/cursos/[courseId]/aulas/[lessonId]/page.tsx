@@ -1,3 +1,4 @@
+import { getEnv } from '@/lib/env'
 import { getSession } from '@/server/session'
 import { LessonEditorClient } from './lesson-editor-client'
 
@@ -10,7 +11,14 @@ export default async function LessonEditorPage({
 }) {
   const { courseId, lessonId } = await params
   const session = await getSession()
+  // "Ver como aluno": URLs públicas dos apps (envs OPCIONAIS — ausentes → botão oculto).
+  const env = getEnv()
   return (
-    <LessonEditorClient courseId={courseId} lessonId={lessonId} currentRole={session?.role ?? ''} />
+    <LessonEditorClient
+      courseId={courseId}
+      lessonId={lessonId}
+      currentRole={session?.role ?? ''}
+      studentAppUrls={{ adult: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL }}
+    />
   )
 }

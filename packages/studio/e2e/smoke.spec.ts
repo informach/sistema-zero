@@ -36,7 +36,21 @@ async function openBridgeScript(page: Page): Promise<void> {
 }
 
 test.describe('Sistema Zero Studio — smoke', () => {
-  test('IDE carrega com Topbar D2 + categorias do Blockly + console', async ({ page }) => {
+  test('layout wide sem painel inferior ocupa 100% sem normalização', async ({ page }) => {
+    const layoutWarnings: string[] = []
+    page.on('console', (message) => {
+      if (message.text().includes('Invalid layout total size')) layoutWarnings.push(message.text())
+    })
+
+    await createProject(page)
+    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await expect(page.locator('main')).toBeVisible()
+    expect(layoutWarnings).toEqual([])
+  })
+
+  test('Console começa oculto em Blocos e respeita a escolha manual entre modos', async ({
+    page,
+  }) => {
     await createProject(page)
     // Básico = Blocos + Ponte; o modo Código NÃO existe no clássico (D2).
     await expect(page.getByRole('button', { name: 'Blocos' })).toBeVisible()
@@ -46,8 +60,28 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page.getByText('HTML', { exact: true })).toBeVisible()
     await expect(page.getByText('CSS', { exact: true })).toBeVisible()
     await expect(page.getByText('Canvas', { exact: true })).toBeVisible()
-    // Console panel disponível (as abas do painel inferior têm role tab)
+    // Em Blocos, o Console começa oculto, mas continua acessível pelo menu.
+    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    const consoleItem = page.getByRole('menuitem', { name: 'Console' })
+    await expect(consoleItem).not.toHaveAttribute('aria-current', 'true')
+    await consoleItem.click()
     await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+
+    // A primeira escolha manual prevalece ao trocar para Ponte.
+    await page.getByRole('button', { name: 'Ponte' }).click()
+    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+
+    // O mesmo item oculta novamente e a escolha continua valendo em Blocos.
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Console' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    )
+    await page.getByRole('menuitem', { name: 'Console' }).click()
+    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Blocos' }).click()
+    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
   })
 
   test('toolbox: folha abre flyout (e permanece); categoria-pai expande', async ({ page }) => {
@@ -146,15 +180,59 @@ test.describe('Sistema Zero Studio — smoke', () => {
 
   test('Projeto novo começa sem logs no console', async ({ page }) => {
     await createProject(page)
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await page.getByRole('menuitem', { name: 'Console' }).click()
     await expect(
       page.getByText('Sem mensagens. Use console.log para registrar algo.'),
     ).toBeVisible()
     await expect(page.getByText('Sistema Zero: pronto para programar!')).not.toBeVisible()
   })
 
+  test('Console preserva mensagens produzidas enquanto está oculto', async ({ page }) => {
+    await createProject(page)
+    await openBridgeScript(page)
+    await page.keyboard.type(
+      'document.body.innerHTML = "<h1>Executou oculto</h1>"; console.log("log oculto retido");',
+    )
+
+    // Ver o resultado no preview prova que o script e seu console.log rodaram
+    // antes de o painel ser aberto.
+    await expect(
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Executou oculto' }),
+    ).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await page.getByRole('menuitem', { name: 'Console' }).click()
+    await expect(
+      page.getByLabel('Console', { exact: true }).getByText('log oculto retido', { exact: true }),
+    ).toBeVisible()
+  })
+
+  test('Projeto novo começa sem áreas e oferece as cinco áreas separadas', async ({ page }) => {
+    await createProject(page)
+    await expect(page.locator('.blocklyWorkspace .blocklyDraggable')).toHaveCount(0)
+
+    await page
+      .locator('.blocklyToolboxCategory')
+      .filter({ hasText: 'Áreas do projeto' })
+      .first()
+      .click()
+
+    const flyout = page.locator('.blocklyToolboxFlyout')
+    await expect(flyout).toContainText('Estrutura: HTML')
+    await expect(flyout).toContainText('Aparência: CSS')
+    await expect(flyout).toContainText('Ao iniciar')
+    await expect(flyout).toContainText('Quando acontecer')
+    await expect(flyout).toContainText('Enquanto estiver rodando')
+  })
+
   test('AIPanel (projeto PRO) mostra badge MOCK por padrão', async ({ page }) => {
     // A aba IA só existe no modo Código (D2) → projeto profissional.
     await createProProject(page)
+    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
     await page.getByRole('tab', { name: 'IA' }).click()
     await expect(page.getByText('mock', { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Configurar IA' }).first()).toBeVisible()
@@ -163,6 +241,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Modo Ponte tem blocos + Monaco + preview', async ({ page }) => {
     await createProject(page)
     await page.getByRole('button', { name: 'Ponte' }).click()
+    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'index.html' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
   })
@@ -178,7 +257,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     // o BlocksMode deriva os blocos do código e os arquivos ficam intactos.
     await page.getByRole('button', { name: 'Blocos' }).click()
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
       timeout: 15_000,
     })
@@ -189,7 +270,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
       timeout: 10_000,
     })
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
       timeout: 10_000,
     })
@@ -201,7 +284,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await page.keyboard.type('document.body.innerHTML = "<h1>Preview apos reload</h1>";')
 
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Preview apos reload' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Preview apos reload' }),
     ).toBeVisible({
       timeout: 15_000,
     })
@@ -214,7 +299,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await page.reload()
 
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Preview apos reload' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Preview apos reload' }),
     ).toBeVisible({
       timeout: 15_000,
     })
@@ -224,7 +311,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await page.getByRole('button', { name: 'Abrir' }).first().click()
 
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Preview apos reload' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Preview apos reload' }),
     ).toBeVisible({
       timeout: 15_000,
     })

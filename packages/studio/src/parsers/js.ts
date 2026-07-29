@@ -1,4 +1,5 @@
 import { type ParserOptions, parse } from '@babel/parser'
+import type * as Babel from '@babel/types'
 import {
   type EventKind,
   G2D_ANIM_STATES,
@@ -7,6 +8,14 @@ import {
   type JSExpr,
   type JSStatement,
 } from '#ir'
+import { prepareCanvasImageSourceForParse } from '../canvasImagePreloadCodec'
+import { isGuidedDomAttributeName, isGuidedDomElementTag, isGuidedDomProperty } from '../domSafety'
+import { canvas3DSymbolKindsForClass } from '../three/canvas3dContract'
+import {
+  canvas3DMacroFromPlaceholder,
+  prepareCanvas3DSourceForParse,
+} from '../three/canvas3dMacroCodec'
+import { game3dCallArityIsValid, game3dDropdownArgumentIsValid } from '../three/game3dContract'
 
 const BABEL_OPTS: ParserOptions = {
   sourceType: 'module',
@@ -35,9 +44,11 @@ export function parseJS(source: string): JSStatement[] {
 
 export function parseJSWithDiagnostics(source: string): ParseJSResult {
   if (!source.trim()) return { statements: [], diagnostics: [] }
+  const prepared = prepareCanvas3DSourceForParse(prepareCanvasImageSourceForParse(source))
+  const parseSource = prepared.source
   let ast: ReturnType<typeof parse>
   try {
-    ast = parse(source, BABEL_OPTS)
+    ast = parse(parseSource, BABEL_OPTS)
   } catch (error) {
     return {
       statements: [{ type: 'rawJS', code: source, advanced: true }],
@@ -58,8 +69,16 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
     }
   }
 
+  const canvas3dImportedNames = collectCanvas3DImportedNames(ast.program.body)
   const ctx: ParseCtx = {
-    source,
+    source: parseSource,
+    canvas3dMacros: prepared.macros,
+    usesCanvas3D: programUsesCanvas3D(ast.program.body),
+    canvas3dImportedNames,
+    canvas3dLoaderVars: new Set(),
+    canvas3dObjectVars: new Set(),
+    canvas3dModelResultVars: new Set(),
+    audioLoaderVars: new Set(),
     elementVars: new Map(),
     createdElementVars: new Set(),
     canvasElementVars: new Set(),
@@ -76,7 +95,7 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
   // entrada não-parseável.
   let out: JSStatement[]
   try {
-    out = mapStatementList(ast.program.body, source, ctx)
+    out = mapStatementList(ast.program.body, parseSource, ctx)
   } catch (error) {
     return {
       statements: [{ type: 'rawJS', code: source, advanced: true }],
@@ -90,9 +109,6 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
   return { statements, diagnostics: [] }
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: Babel AST nodes são tipados de forma muito ampla
-type Node = any
-
 /**
  * Estado do parse: registra quais variáveis guardam um elemento via
  * `const x = document.getElementById("id")`. Hoje `extractTarget` trata
@@ -103,6 +119,21 @@ interface ParseCtx {
   /** Fonte JS completa — para `bodyOfFn`/`asRaw` a partir de matchers de VALOR
    * (ex.: o corpo de `new Promise((resolve) => { ... })` no `toExpr`). */
   source: string
+  /** Macros Canvas 3D íntegros extraídos de marcadores com checksum. */
+  canvas3dMacros: Map<string, JSStatement>
+  /** Sinal estrutural de que o programa usa Three.js; evita promover JS comum
+   * com métodos homônimos (`load`/`traverse`) para blocos Canvas 3D. */
+  usesCanvas3D: boolean
+  /** Classes importadas de `three`/`three/addons`, disponíveis sem namespace. */
+  canvas3dImportedNames: Set<string>
+  /** Variáveis comprovadamente criadas por um construtor Loader do Three.js. */
+  canvas3dLoaderVars: Set<string>
+  /** Variáveis comprovadamente compatíveis com Object3D. */
+  canvas3dObjectVars: Set<string>
+  /** Parâmetros locais que recebem o wrapper retornado por carregadores de modelo. */
+  canvas3dModelResultVars: Set<string>
+  /** Carregadores declarados como AudioLoader antes do uso. */
+  audioLoaderVars: Set<string>
   elementVars: Map<string, string>
   /**
    * Variáveis que vieram de `document.createElement[NS](...)` (não de
@@ -168,6 +199,9 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'mousemove',
   'mousedown',
   'mouseup',
+  'pointermove',
+  'pointerdown',
+  'pointerup',
   'submit',
   'input',
   'change',
@@ -177,6 +211,90 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'contextmenu',
   'blur',
 ])
+
+type Node = Babel.Node
+
+function collectCanvas3DImportedNames(nodes: readonly Node[]): Set<string> {
+  const names = new Set<string>()
+  for (const node of nodes) {
+    if (node.type !== 'ImportDeclaration' || typeof node.source.value !== 'string') continue
+    if (node.source.value !== 'three' && !node.source.value.startsWith('three/addons/')) continue
+    for (const specifier of node.specifiers) {
+      if (specifier.type === 'ImportSpecifier') names.add(specifier.local.name)
+    }
+  }
+  return names
+}
+
+function programUsesCanvas3D(nodes: readonly Node[]): boolean {
+  const pending: unknown[] = [...nodes]
+  while (pending.length > 0) {
+    const value = pending.pop()
+    if (!value || typeof value !== 'object') continue
+    if (Array.isArray(value)) {
+      pending.push(...value)
+      continue
+    }
+    const node = value as Record<string, unknown>
+    if (
+      node.type === 'ImportDeclaration' &&
+      typeof (node.source as { value?: unknown } | undefined)?.value === 'string'
+    ) {
+      const module = (node.source as { value: string }).value
+      if (module === 'three' || module.startsWith('three/addons/')) return true
+    }
+    if (node.type === 'NewExpression') {
+      const callee = node.callee as
+        | { type?: string; computed?: boolean; object?: { type?: string; name?: string } }
+        | undefined
+      if (
+        callee?.type === 'MemberExpression' &&
+        !callee.computed &&
+        callee.object?.type === 'Identifier' &&
+        callee.object.name === 'THREE'
+      ) {
+        return true
+      }
+    }
+    for (const [key, child] of Object.entries(node)) {
+      if (key !== 'loc' && key !== 'start' && key !== 'end') pending.push(child)
+    }
+  }
+  return false
+}
+
+/** Cria um statement sintético sem carregar os builders Node-only no bundle do navegador. */
+function syntheticExpressionStatement(expression: Babel.Expression): Babel.ExpressionStatement {
+  return {
+    type: 'ExpressionStatement',
+    expression,
+    start: expression.start,
+    end: expression.end,
+    loc: expression.loc,
+  }
+}
+
+function areIdentifierParams(
+  params: readonly (Babel.FunctionParameter | Babel.TSParameterProperty)[],
+): params is Babel.Identifier[] {
+  return params.every((param) => param.type === 'Identifier')
+}
+
+function isSupportedClassMethod(
+  member: Babel.ClassBody['body'][number],
+): member is Babel.ClassMethod & {
+  key: Babel.Identifier
+  params: Babel.Identifier[]
+} {
+  return (
+    member.type === 'ClassMethod' &&
+    !member.static &&
+    !member.computed &&
+    member.key.type === 'Identifier' &&
+    areIdentifierParams(member.params) &&
+    (member.kind === 'constructor' || member.kind === 'method')
+  )
+}
 
 function snippet(source: string, node: Node): string {
   if (!node || typeof node.start !== 'number') return ''
@@ -207,7 +325,7 @@ function asRaw(source: string, node: Node): JSStatement {
 }
 
 /** `throw new Error(<msg>)` / `throw Error(<msg>)` → throwError; senão código avançado. */
-function mapThrow(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapThrow(node: Babel.ThrowStatement, source: string, ctx: ParseCtx): JSStatement {
   const arg = node.argument
   if (
     arg &&
@@ -227,7 +345,7 @@ function mapThrow(node: Node, source: string, ctx: ParseCtx): JSStatement {
  * Desembrulha o `{ … }` de cada caso e remove o `break` final (que o gerador
  * recria). Casos com valor/assunto não representável caem em código avançado.
  */
-function mapSwitch(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapSwitch(node: Babel.SwitchStatement, source: string, ctx: ParseCtx): JSStatement {
   const subject = toExpr(node.discriminant, ctx)
   if (!isSimpleValue(subject)) return asRaw(source, node)
   const cases: Array<{ match: JSExpr; body: JSStatement[] }> = []
@@ -251,10 +369,11 @@ function mapSwitch(node: Node, source: string, ctx: ParseCtx): JSStatement {
 }
 
 function mapStatement(
-  node: Node,
+  node: Node | null | undefined,
   source: string,
   ctx: ParseCtx,
 ): JSStatement | JSStatement[] | null {
+  if (!node) return null
   switch (node.type) {
     case 'VariableDeclaration':
       return mapVariable(node, source, ctx)
@@ -301,17 +420,20 @@ function mapStatement(
       // `import { A, B } from 'modulo'` (SEM alias/default) → importNamed. É o
       // `import { GLTFLoader } from 'three/addons/…'` da Fase 2. Alias (`X as Y`)
       // ou default junto seguem como código avançado.
-      if (
-        specs.length > 0 &&
-        specs.every(
-          (s: Node) =>
-            s?.type === 'ImportSpecifier' &&
-            s.imported?.type === 'Identifier' &&
-            s.local?.type === 'Identifier' &&
-            s.imported.name === s.local.name,
-        )
-      ) {
-        const names = specs.map((s: Node) => s.imported.name as string)
+      const namedSpecifiers = specs.filter(
+        (
+          specifier,
+        ): specifier is Babel.ImportSpecifier & {
+          imported: Babel.Identifier
+          local: Babel.Identifier
+        } =>
+          specifier.type === 'ImportSpecifier' &&
+          specifier.imported.type === 'Identifier' &&
+          specifier.local.type === 'Identifier' &&
+          specifier.imported.name === specifier.local.name,
+      )
+      if (specs.length > 0 && namedSpecifiers.length === specs.length) {
+        const names = namedSpecifiers.map((specifier) => specifier.imported.name)
         return { type: 'importNamed', names, module: mod }
       }
       return asRaw(source, node)
@@ -337,7 +459,7 @@ function mapStatement(
  * classe e parâmetros não-triviais — sem perder o original. Herança simples
  * (`extends Identificador`) é suportada; expressões de herança complexas viram raw.
  */
-function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapClass(node: Babel.ClassDeclaration, source: string, ctx: ParseCtx): JSStatement {
   if (node.id?.type !== 'Identifier') return asRaw(source, node)
   let superClass: string | undefined
   if (node.superClass) {
@@ -351,19 +473,8 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
   // corpo. Sem isso, mapear os corpos cedo poluía o `ctx` (spriteVars/instanceVars/
   // ctxVars/elementVars/…) e, se um membro posterior falhasse o guard e a classe
   // caísse em `asRaw`, essas mutações vazariam e contaminavam statements irmãos.
-  for (const member of members) {
-    if (
-      member.type !== 'ClassMethod' ||
-      member.static ||
-      member.computed ||
-      member.key?.type !== 'Identifier' ||
-      !Array.isArray(member.params) ||
-      !member.params.every((p: Node) => p?.type === 'Identifier') ||
-      (member.kind !== 'constructor' && member.kind !== 'method')
-    ) {
-      return asRaw(source, node)
-    }
-  }
+  const supportedMembers = members.filter(isSupportedClassMethod)
+  if (supportedMembers.length !== members.length) return asRaw(source, node)
 
   // 2ª passada: a classe é representável; agora sim mapeamos os corpos no `ctx`.
   let ctorParams: string[] = []
@@ -374,8 +485,10 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
     body: JSStatement[]
     async?: boolean
   }> = []
-  for (const member of members) {
-    const params: string[] = member.params.map((p: Node) => p.name)
+  for (const member of supportedMembers) {
+    const params = member.params.flatMap((param) =>
+      param.type === 'Identifier' ? [param.name] : [],
+    )
     if (member.kind === 'constructor') {
       ctorParams = params
       ctorBody = mapStatementList(member.body?.body ?? [], source, ctx)
@@ -401,18 +514,22 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
 
 /**
  * `function nome(params) { ... }` de topo → `funcDecl`. Params precisam ser
- * identificadores simples; async/generator e params não-triviais viram raw.
+ * identificadores simples; generators e params não-triviais viram raw.
  * Roda DEPOIS dos matchers de fusão (anim loop), que têm prioridade.
  */
-function mapFunction(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapFunction(node: Babel.FunctionDeclaration, source: string, ctx: ParseCtx): JSStatement {
   if (node.id?.type !== 'Identifier') return asRaw(source, node)
-  if (node.async || node.generator) return asRaw(source, node)
-  if (!Array.isArray(node.params) || !node.params.every((p: Node) => p?.type === 'Identifier')) {
-    return asRaw(source, node)
-  }
-  const params: string[] = node.params.map((p: Node) => p.name)
+  if (node.generator) return asRaw(source, node)
+  if (!areIdentifierParams(node.params)) return asRaw(source, node)
+  const params = node.params.map((param) => param.name)
   const body = mapStatementList(node.body?.body ?? [], source, ctx)
-  return { type: 'funcDecl', name: node.id.name, params, body }
+  return {
+    type: 'funcDecl',
+    name: node.id.name,
+    params,
+    ...(node.async ? { async: true } : {}),
+    body,
+  }
 }
 
 /**
@@ -428,6 +545,25 @@ const GLOBAL_CALL_DENYLIST: ReadonlySet<string> = new Set([
   'parseInt',
   'parseFloat',
 ])
+
+const GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER = /^__szProjectRunContext(?:_\d+)?$/
+
+function isGlobalOrManagedProjectRunCall(
+  expr: Node,
+  globalName: string,
+  managedName = globalName,
+): expr is Babel.CallExpression {
+  if (expr?.type !== 'CallExpression') return false
+  const callee = expr.callee
+  if (callee?.type === 'Identifier') return callee.name === globalName
+  if (callee?.type !== 'MemberExpression' || callee.computed) return false
+  return (
+    callee.object?.type === 'Identifier' &&
+    GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name) &&
+    callee.property?.type === 'Identifier' &&
+    callee.property.name === managedName
+  )
+}
 
 /**
  * Objetos globais cujo `.prop` / `.metodo(...)` NÃO deve virar bloco genérico de
@@ -456,6 +592,85 @@ function isGlobalObject(node: Node): boolean {
   return node?.type === 'Identifier' && GLOBAL_OBJECTS.has(node.name)
 }
 
+type NamedMemberExpression = (Babel.MemberExpression | Babel.OptionalMemberExpression) & {
+  computed: false
+  property: Babel.Identifier
+}
+
+function isNamedMemberExpression(node: Node | null | undefined): node is NamedMemberExpression {
+  return (
+    (node?.type === 'MemberExpression' || node?.type === 'OptionalMemberExpression') &&
+    !node.computed &&
+    node.property.type === 'Identifier'
+  )
+}
+
+type InlineFunction = Babel.ArrowFunctionExpression | Babel.FunctionExpression
+
+function isInlineFunction(node: Node | null | undefined): node is InlineFunction {
+  return node?.type === 'ArrowFunctionExpression' || node?.type === 'FunctionExpression'
+}
+
+/** Callback legado sem parâmetro ou callback atual com o `event` canônico. */
+function hasCompatibleEventParameter(node: Node | null | undefined): node is InlineFunction {
+  if (!isInlineFunction(node)) return false
+  if (node.params.length === 0) return true
+  return (
+    node.params.length === 1 &&
+    node.params[0]?.type === 'Identifier' &&
+    node.params[0].name === 'event'
+  )
+}
+
+/**
+ * Desembrulha somente a forma interna emitida pelo lifecycle:
+ * `(args) => contexto.run(() => { ... })`. Código escrito pelo aluno com outro
+ * alvo ou outro método continua preservado como código avançado.
+ */
+function unwrapGeneratedProjectRunCallback(node: Node | null | undefined): InlineFunction | null {
+  if (!isInlineFunction(node)) return null
+  const invocation = node.body
+  if (invocation.type !== 'CallExpression' || invocation.arguments.length !== 1) return null
+  const callee = invocation.callee
+  if (
+    !isNamedMemberExpression(callee) ||
+    callee.property.name !== 'run' ||
+    callee.object.type !== 'Identifier' ||
+    !GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name)
+  ) {
+    return null
+  }
+  const callback = invocation.arguments[0]
+  return isInlineFunction(callback) && callback.params.length === 0 ? callback : null
+}
+
+function tryMatchGeneratedProjectRunPropertyHandler(
+  expr: Node,
+  source: string,
+  ctx: ParseCtx,
+): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.arguments.length !== 3) return null
+  const callee = expr.callee
+  if (
+    !isNamedMemberExpression(callee) ||
+    callee.property.name !== 'setEventHandler' ||
+    callee.object.type !== 'Identifier' ||
+    !GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name)
+  ) {
+    return null
+  }
+  const property = expr.arguments[1]
+  const callback = expr.arguments[2]
+  if (property?.type !== 'StringLiteral' || !hasCompatibleEventParameter(callback)) return null
+  const target = toExpr(expr.arguments[0], ctx)
+  if (!target || !isSimpleValue(target)) return null
+  const body = bodyOfFn(callback, source, ctx)
+  if (property.value === 'onclick') return { type: 'onClickAssign', target, body }
+  if (property.value === 'onload') return { type: 'imageOnLoad', target, body }
+  if (property.value === 'onerror') return { type: 'imageOnError', target, body }
+  return null
+}
+
 /** `cancelAnimationFrame(<id>)` → `cancelAnimationFrame`, se o id for um valor simples. */
 function tryMatchCancelAnimationFrame(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
@@ -466,7 +681,7 @@ function tryMatchCancelAnimationFrame(expr: Node, ctx: ParseCtx): JSStatement | 
 
 /** `localStorage.setItem(chave, valor)` / `sessionStorage.setItem(...)` → `storageSet`. */
 function tryMatchStorageSet(expr: Node, ctx: ParseCtx): JSStatement | null {
-  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'MemberExpression') return null
+  if (expr?.type !== 'CallExpression' || !isNamedMemberExpression(expr.callee)) return null
   const obj = expr.callee.object
   if (
     obj?.type !== 'Identifier' ||
@@ -474,7 +689,7 @@ function tryMatchStorageSet(expr: Node, ctx: ParseCtx): JSStatement | null {
   ) {
     return null
   }
-  if (expr.callee.property?.name !== 'setItem' || expr.arguments?.length !== 2) return null
+  if (expr.callee.property.name !== 'setItem' || expr.arguments.length !== 2) return null
   const key = toExpr(expr.arguments[0], ctx)
   const value = toExpr(expr.arguments[1], ctx)
   if (!isSimpleValue(key) || !isSimpleValue(value)) return null
@@ -488,11 +703,11 @@ function tryMatchStorageSet(expr: Node, ctx: ParseCtx): JSStatement | null {
 
 /** `event.preventDefault()` / `event.stopPropagation()` → `eventMethod`. */
 function tryMatchEventMethod(expr: Node, ctx?: ParseCtx): JSStatement | null {
-  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'MemberExpression') return null
+  if (expr?.type !== 'CallExpression' || !isNamedMemberExpression(expr.callee)) return null
   const obj = expr.callee.object
   if (obj?.type !== 'Identifier') return null
   if (obj.name !== 'event' && !ctx?.eventParamAliases.includes(obj.name)) return null
-  const method = expr.callee.property?.name
+  const method = expr.callee.property.name
   if (
     (method === 'preventDefault' || method === 'stopPropagation') &&
     (expr.arguments?.length ?? 0) === 0
@@ -503,18 +718,22 @@ function tryMatchEventMethod(expr: Node, ctx?: ParseCtx): JSStatement | null {
 }
 
 /** `obj.metodo(arg)` com 1 argumento (usado para destrinchar a cadeia do fetch). */
-function isChainCall(node: Node, method: string): boolean {
+type ChainedCall = Babel.CallExpression & {
+  callee: NamedMemberExpression
+  arguments: [Babel.Expression | Babel.SpreadElement | Babel.ArgumentPlaceholder]
+}
+
+function isChainCall(node: Node, method: string): node is ChainedCall {
   return (
     node?.type === 'CallExpression' &&
-    node.callee?.type === 'MemberExpression' &&
-    !node.callee.computed &&
-    node.callee.property?.name === method &&
-    node.arguments?.length === 1
+    isNamedMemberExpression(node.callee) &&
+    node.callee.property.name === method &&
+    node.arguments.length === 1
   )
 }
 
 /** Nome do (único) parâmetro de uma arrow/função: `{}` (sem param) ou `{param}`; null se inválido. */
-function callbackParam(cb: Node): { param?: string } | null {
+function callbackParam(cb: Node | null | undefined): { param?: string } | null {
   if (cb?.type !== 'ArrowFunctionExpression' && cb?.type !== 'FunctionExpression') return null
   const params = cb.params ?? []
   if (params.length === 0) return {}
@@ -522,30 +741,66 @@ function callbackParam(cb: Node): { param?: string } | null {
   return null
 }
 
-/** Confere se o callback é `(r) => r.json()` ou `(r) => { return r.json(); }`. */
-function isJsonCallback(cb: Node): boolean {
+function isHttpOkGuard(statement: Node | null | undefined, responseName: string): boolean {
+  if (statement?.type !== 'IfStatement' || statement.alternate) return false
+  const test = statement.test
+  if (
+    test?.type !== 'UnaryExpression' ||
+    test.operator !== '!' ||
+    test.argument?.type !== 'MemberExpression' ||
+    test.argument.computed ||
+    test.argument.object?.type !== 'Identifier' ||
+    test.argument.object.name !== responseName ||
+    test.argument.property?.type !== 'Identifier' ||
+    test.argument.property.name !== 'ok'
+  ) {
+    return false
+  }
+  const consequent = statement.consequent
+  const thrown = consequent?.type === 'BlockStatement' ? consequent.body?.[0] : consequent
+  return (
+    (consequent?.type !== 'BlockStatement' || consequent.body?.length === 1) &&
+    thrown?.type === 'ThrowStatement' &&
+    thrown.argument?.type === 'NewExpression' &&
+    thrown.argument.callee?.type === 'Identifier' &&
+    thrown.argument.callee.name === 'Error' &&
+    thrown.argument.arguments?.length === 1
+  )
+}
+
+/**
+ * Confere callbacks JSON legados e a forma canônica segura:
+ * `(r) => { if (!r.ok) throw new Error(...); return r.json(); }`.
+ */
+function isJsonCallback(cb: Node | null | undefined): boolean {
   if (cb?.type !== 'ArrowFunctionExpression' && cb?.type !== 'FunctionExpression') return false
   const params = cb.params ?? []
   if (params.length !== 1 || params[0]?.type !== 'Identifier') return false
   const p = params[0].name
-  let expr = cb.body
+  let expr: Node | null | undefined = cb.body
   if (expr?.type === 'BlockStatement') {
     const stmts = expr.body ?? []
-    if (stmts.length !== 1 || stmts[0]?.type !== 'ReturnStatement') return false
-    expr = stmts[0].argument
+    const returned = stmts.at(-1)
+    if (
+      returned?.type !== 'ReturnStatement' ||
+      (stmts.length !== 1 && !(stmts.length === 2 && isHttpOkGuard(stmts[0], p)))
+    ) {
+      return false
+    }
+    expr = returned.argument
   }
   return (
     expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'MemberExpression' &&
+    isNamedMemberExpression(expr.callee) &&
     expr.callee.object?.type === 'Identifier' &&
     expr.callee.object.name === p &&
-    expr.callee.property?.name === 'json' &&
+    expr.callee.property.name === 'json' &&
     (expr.arguments?.length ?? 0) === 0
   )
 }
 
 /**
- * `fetch(url).then(r => r.json()).then((dados) => {…})[.catch((erro) => {…})]`
+ * `fetch(url).then(r => { valida status; return r.json() }).then((dados) => {…})`
  * → `fetchJson`. Desembrulha de fora para dentro: catch (opcional) → then(dados)
  * → then(json) → fetch(url).
  */
@@ -597,7 +852,7 @@ function tryMatchFetchJson(expr: Node, source: string, ctx: ParseCtx): JSStateme
 function tryMatchFunctionCall(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
   if (GLOBAL_CALL_DENYLIST.has(expr.callee.name)) return null
-  const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+  const args = (expr.arguments ?? []).map((a) => toExpr(a, ctx))
   if (!args.every(isSimpleValue)) return null
   return { type: 'callFunction', name: expr.callee.name, args: args as JSExpr[] }
 }
@@ -630,8 +885,13 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
       continue
     }
     const stmt = mapStatement(nodes[i], source, ctx)
-    if (Array.isArray(stmt)) out.push(...stmt)
-    else if (stmt) out.push(stmt)
+    if (Array.isArray(stmt)) {
+      for (const child of stmt) rememberCanvas3DDeclaration(child, ctx)
+      out.push(...stmt)
+    } else if (stmt) {
+      rememberCanvas3DDeclaration(stmt, ctx)
+      out.push(stmt)
+    }
     i += 1
   }
   // Remove os `getElementById` soltos absorvidos por um `canvasSetup` NESTE
@@ -640,10 +900,63 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
   // também está aqui. Fazer a remoção por escopo (e não só no topo) impede o
   // `getElementById` morto de crescer a cada ciclo parse→gen→parse dentro de
   // funções/blocos aninhados (idempotente — ponto fixo do round-trip).
-  return out.filter((s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)))
+  const withoutAbsorbedElements = out.filter(
+    (s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)),
+  )
+  return withoutAbsorbedElements.filter((statement, index, statements) => {
+    const previous = statements[index - 1]
+    return !(
+      previous?.type === 'canvasSetup' &&
+      isGeneratedCanvasSetupGuard(statement, previous.varName, previous.canvasId)
+    )
+  })
 }
 
-function mapVariable(node: Node, source: string, ctx: ParseCtx): JSStatement | JSStatement[] {
+function rememberCanvas3DDeclaration(statement: JSStatement, ctx: ParseCtx): void {
+  if (!ctx.usesCanvas3D || statement.type !== 'newInstance') return
+  const classIsFromThree =
+    statement.namespace === 'THREE' ||
+    (!statement.namespace && ctx.canvas3dImportedNames.has(statement.className))
+  if (!classIsFromThree) return
+  const classReference = statement.namespace
+    ? `${statement.namespace}.${statement.className}`
+    : statement.className
+  const kinds = canvas3DSymbolKindsForClass(classReference)
+  if (kinds.includes('loader3d')) ctx.canvas3dLoaderVars.add(statement.varName)
+  if (kinds.includes('object3d')) ctx.canvas3dObjectVars.add(statement.varName)
+  if (kinds.includes('audio-loader3d')) ctx.audioLoaderVars.add(statement.varName)
+}
+
+function isGeneratedCanvasSetupGuard(
+  statement: JSStatement,
+  contextName: string,
+  canvasId: string,
+): boolean {
+  if (
+    statement.type !== 'if' ||
+    statement.elseif?.length ||
+    statement.else?.length ||
+    statement.cond.type !== 'logicalNot' ||
+    statement.cond.value.type !== 'var' ||
+    statement.cond.value.name !== contextName ||
+    statement.then.length !== 1
+  ) {
+    return false
+  }
+  const thrown = statement.then[0]
+  return (
+    thrown?.type === 'throwError' &&
+    thrown.message.type === 'str' &&
+    thrown.message.value ===
+      `Não foi possível preparar a tela Canvas “${canvasId}”. Confira se o id existe e pertence a uma tela Canvas.`
+  )
+}
+
+function mapVariable(
+  node: Babel.VariableDeclaration,
+  source: string,
+  ctx: ParseCtx,
+): JSStatement | JSStatement[] {
   const out: JSStatement[] = []
   // Quando QUALQUER declarador não é representável por um bloco, a declaração
   // INTEIRA cai em `rawJS` (um único `asRaw` do nó-pai). Slicear apenas o
@@ -667,17 +980,24 @@ function mapVariable(node: Node, source: string, ctx: ParseCtx): JSStatement | J
  * de elementos/contextos/instâncias/sprites) são aplicadas em ordem, para que
  * declaradores seguintes da MESMA statement enxerguem os anteriores.
  */
-function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | null {
+function mapDeclarator(
+  decl: Babel.VariableDeclarator,
+  node: Babel.VariableDeclaration,
+  ctx: ParseCtx,
+): JSStatement[] | null {
   // `const` vira um bloco de constante; `let`/`var` ficam sem `kind` (= let).
   const kindField: { kind?: 'const' } = node.kind === 'const' ? { kind: 'const' } : {}
   // Desestruturação de lista: const [a, b] = lista → várias atribuições por índice.
   if (decl.id?.type === 'ArrayPattern') {
     const fromVar = decl.init?.type === 'Identifier' ? (decl.init.name as string) : null
     const elements = decl.id.elements ?? []
-    if (fromVar && elements.length > 0 && elements.every((e: Node) => e?.type === 'Identifier')) {
-      return elements.map((el: Node, i: number) => ({
+    const identifiers = elements.filter(
+      (element): element is Babel.Identifier => element?.type === 'Identifier',
+    )
+    if (fromVar && identifiers.length > 0 && identifiers.length === elements.length) {
+      return identifiers.map((element, i) => ({
         type: 'var',
-        name: el.name,
+        name: element.name,
         value: { type: 'index', arrayVar: fromVar, index: { type: 'num', value: i } },
         ...kindField,
       }))
@@ -687,6 +1007,10 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   if (decl.id?.type !== 'Identifier') return null
   const name: string = decl.id.name
   const init = decl.init
+  if (init == null) {
+    // `let x;` — declaração sem valor inicial (sz_js_var_declare).
+    return [{ type: 'declareVar', name }]
+  }
   // getElementById: const x = document.getElementById('id')
   const byId = matchGetElementById(init)
   if (byId) {
@@ -694,18 +1018,21 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
     return [{ type: 'getElementById', id: byId, varName: name }]
   }
   // querySelector / querySelectorAll: const x = document.querySelector[All]('sel')
+  const selectorArg = init.type === 'CallExpression' ? init.arguments?.[0] : undefined
   if (
-    init?.type === 'CallExpression' &&
+    init.type === 'CallExpression' &&
     init.callee?.type === 'MemberExpression' &&
-    init.callee.object?.name === 'document' &&
-    (init.callee.property?.name === 'querySelector' ||
-      init.callee.property?.name === 'querySelectorAll') &&
+    init.callee.object?.type === 'Identifier' &&
+    init.callee.object.name === 'document' &&
+    init.callee.property?.type === 'Identifier' &&
+    (init.callee.property.name === 'querySelector' ||
+      init.callee.property.name === 'querySelectorAll') &&
     init.arguments?.length === 1 &&
-    init.arguments[0].type === 'StringLiteral'
+    selectorArg?.type === 'StringLiteral'
   ) {
     const type =
       init.callee.property.name === 'querySelectorAll' ? 'querySelectorAll' : 'querySelector'
-    return [{ type, selector: init.arguments[0].value, varName: name }]
+    return [{ type, selector: selectorArg.value, varName: name }]
   }
   // createElement: const x = document.createElement('div')
   const createdTag = matchCreateElement(init)
@@ -750,13 +1077,17 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   }
   // newInstance: const x = new Classe(args) OU const x = new THREE.Classe(args)
   // (construtor de biblioteca importada). Date/Image têm tratamento próprio.
-  if (init?.type === 'NewExpression') {
+  const isPromiseValue =
+    init?.type === 'NewExpression' &&
+    init.callee?.type === 'Identifier' &&
+    init.callee.name === 'Promise'
+  if (init?.type === 'NewExpression' && !isPromiseValue) {
     const ctor = namespacedCtor(init.callee)
     if (
       ctor &&
       !(ctor.namespace === undefined && (ctor.className === 'Date' || ctor.className === 'Image'))
     ) {
-      const args = (init.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+      const args = (init.arguments ?? []).map((a) => toExpr(a, ctx))
       if (args.every(isSimpleValue)) {
         ctx.instanceVars.add(name)
         return [
@@ -786,10 +1117,6 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   // game-3d-advanced: const heroi = SZGameKit3D.spawn(...) / nearest(...).
   const g3kVar = tryMatchGameKit3DVarInit(name, init, ctx)
   if (g3kVar) return [g3kVar]
-  if (init == null) {
-    // `let x;` — declaração sem valor inicial (sz_js_var_declare).
-    return [{ type: 'declareVar', name }]
-  }
   if (init.type === 'NumericLiteral' && Number.isFinite(init.value)) {
     // O guard `Number.isFinite` é essencial: `1e1000` é parseado como
     // `Infinity` e este atalho NÃO passa por `asRaw`. Sem ele, o valor não
@@ -822,9 +1149,18 @@ const UNSAFE_EVENT_PARAM = Symbol('unsafe-event-param')
  * escrita) OU uma referência simples (`checkRefs`)? Caminhada genérica sobre o
  * AST (árvore, sem ciclos); conservador por design.
  */
-function subtreeBlocksRename(node: Node, name: string, checkRefs: boolean): boolean {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isIdentifierNamed(value: unknown, name: string): boolean {
+  return isRecord(value) && value.type === 'Identifier' && value.name === name
+}
+
+function subtreeBlocksRename(node: unknown, name: string, checkRefs: boolean): boolean {
   if (!node || typeof node !== 'object') return false
   if (Array.isArray(node)) return node.some((item) => subtreeBlocksRename(item, name, checkRefs))
+  if (!isRecord(node)) return false
   if (typeof node.type === 'string') {
     if (checkRefs && node.type === 'Identifier' && node.name === name) return true
     if (node.type === 'VariableDeclarator' && subtreeBlocksRename(node.id, name, true)) return true
@@ -837,18 +1173,10 @@ function subtreeBlocksRename(node: Node, name: string, checkRefs: boolean): bool
       return true
     }
     if (node.type === 'CatchClause' && subtreeBlocksRename(node.param, name, true)) return true
-    if (
-      node.type === 'AssignmentExpression' &&
-      node.left?.type === 'Identifier' &&
-      node.left.name === name
-    ) {
+    if (node.type === 'AssignmentExpression' && isIdentifierNamed(node.left, name)) {
       return true
     }
-    if (
-      node.type === 'UpdateExpression' &&
-      node.argument?.type === 'Identifier' &&
-      node.argument.name === name
-    ) {
+    if (node.type === 'UpdateExpression' && isIdentifierNamed(node.argument, name)) {
       return true
     }
   }
@@ -873,7 +1201,10 @@ function subtreeBlocksRename(node: Node, name: string, checkRefs: boolean): bool
  *   referencia um apelido EXTERNO já empilhado (listener aninhado — o rename
  *   duplo trocaria o binding).
  */
-function eventParamAlias(fn: Node, ctx: ParseCtx): string | null | typeof UNSAFE_EVENT_PARAM {
+function eventParamAlias(
+  fn: Babel.ArrowFunctionExpression | Babel.FunctionExpression,
+  ctx: ParseCtx,
+): string | null | typeof UNSAFE_EVENT_PARAM {
   const params = fn?.params ?? []
   if (params.length === 0) return null
   if (params.length > 1 || params[0]?.type !== 'Identifier') return UNSAFE_EVENT_PARAM
@@ -978,22 +1309,53 @@ function expandCompoundTarget(
   return null
 }
 
-function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function isKnownCanvas3DTraversalTarget(value: Node, ctx: ParseCtx): boolean {
+  if (value.type === 'Identifier') return ctx.canvas3dObjectVars.has(value.name)
+  return (
+    isNamedMemberExpression(value) &&
+    value.object?.type === 'Identifier' &&
+    value.property.name === 'scene' &&
+    ctx.canvas3dModelResultVars.has(value.object.name)
+  )
+}
+
+function mapExpressionStatement(
+  node: Babel.ExpressionStatement,
+  source: string,
+  ctx: ParseCtx,
+): JSStatement {
   const expr = node.expression
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.arguments?.length === 1 &&
+    expr.arguments[0]?.type === 'StringLiteral'
+  ) {
+    const macro = canvas3DMacroFromPlaceholder(
+      expr.callee.name,
+      expr.arguments[0].value,
+      ctx.canvas3dMacros,
+    )
+    if (macro) return macro
+  }
   // `await <valor>;` (statement) — ex.: `await Promise.all([...])` / `await new Promise(...)`.
   if (expr?.type === 'AwaitExpression') {
     const value = toExpr(expr.argument, ctx)
     return value && isSimpleValue(value) ? { type: 'awaitStmt', value } : asRaw(source, node)
   }
+  const managedPropertyHandler = tryMatchGeneratedProjectRunPropertyHandler(expr, source, ctx)
+  if (managedPropertyHandler) return managedPropertyHandler
   // console.log(...)
   if (
     expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'MemberExpression' &&
-    expr.callee.object?.name === 'console' &&
-    expr.callee.property?.name === 'log' &&
+    isNamedMemberExpression(expr.callee) &&
+    expr.callee.object?.type === 'Identifier' &&
+    expr.callee.object.name === 'console' &&
+    expr.callee.property.name === 'log' &&
     expr.arguments?.length === 1
   ) {
     const arg = expr.arguments[0]
+    if (!arg) return asRaw(source, node)
     if (arg.type === 'StringLiteral') {
       return { type: 'consoleLog', value: { type: 'str', value: arg.value } }
     }
@@ -1020,6 +1382,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     expr.arguments?.length === 1
   ) {
     const arg = expr.arguments[0]
+    if (!arg) return asRaw(source, node)
     if (arg.type === 'StringLiteral') {
       return { type: 'alert', value: { type: 'str', value: arg.value } }
     }
@@ -1037,38 +1400,40 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // sem este matcher vira "código avançado". Só a forma exata `<var>.domElement`.)
   if (
     expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'MemberExpression' &&
-    !expr.callee.computed &&
-    expr.callee.property?.name === 'appendChild' &&
-    expr.callee.object?.type === 'MemberExpression' &&
-    !expr.callee.object.computed &&
+    isNamedMemberExpression(expr.callee) &&
+    expr.callee.property.name === 'appendChild' &&
+    isNamedMemberExpression(expr.callee.object) &&
     expr.callee.object.object?.type === 'Identifier' &&
     expr.callee.object.object.name === 'document' &&
-    expr.callee.object.property?.name === 'body' &&
+    expr.callee.object.property.name === 'body' &&
     expr.arguments?.length === 1
   ) {
     const arg = expr.arguments[0]
     if (
-      arg?.type === 'MemberExpression' &&
-      !arg.computed &&
+      isNamedMemberExpression(arg) &&
       arg.object?.type === 'Identifier' &&
-      arg.property?.name === 'domElement'
+      arg.property.name === 'domElement'
     ) {
       return { type: 'mountRenderer', renderer: arg.object.name as string }
     }
   }
 
   // Canvas 3D: `loader.load(url, (modelo) => { … });` → loaderLoad (carregar um
-  // recurso async: modelo GLTF, textura, HDR…). Forma exata: 2 args, o 2º um
-  // arrow/função com 1 parâmetro. (GLTFLoader.load com onProgress/onError — 4
-  // args — segue como código avançado.)
+  // recurso async: modelo GLTF, textura, HDR…). Aceita tanto a forma legada com
+  // 2 args quanto a forma segura com callback de erro no 4º argumento.
   if (
+    ctx.usesCanvas3D &&
     expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'MemberExpression' &&
-    !expr.callee.computed &&
+    isNamedMemberExpression(expr.callee) &&
     expr.callee.object?.type === 'Identifier' &&
-    expr.callee.property?.name === 'load' &&
-    expr.arguments?.length === 2 &&
+    ctx.canvas3dLoaderVars.has(expr.callee.object.name) &&
+    expr.callee.property.name === 'load' &&
+    (expr.arguments?.length === 2 ||
+      (expr.arguments?.length === 4 &&
+        expr.arguments[2]?.type === 'Identifier' &&
+        expr.arguments[2].name === 'undefined' &&
+        (expr.arguments[3]?.type === 'ArrowFunctionExpression' ||
+          expr.arguments[3]?.type === 'FunctionExpression'))) &&
     (expr.arguments[1]?.type === 'ArrowFunctionExpression' ||
       expr.arguments[1]?.type === 'FunctionExpression')
   ) {
@@ -1083,12 +1448,31 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       params.length === 1 &&
       params[0]?.type === 'Identifier'
     ) {
+      const loaderVar = expr.callee.object.name
+      const param = params[0].name
+      const resourceKind = ctx.audioLoaderVars.has(loaderVar) ? 'audio' : 'model'
+      const errorFn = expr.arguments.length === 4 ? expr.arguments[3] : undefined
+      const errorParams =
+        errorFn?.type === 'ArrowFunctionExpression' || errorFn?.type === 'FunctionExpression'
+          ? errorFn.params
+          : []
+      const alreadyKnownResult = ctx.canvas3dModelResultVars.has(param)
+      if (resourceKind === 'model') ctx.canvas3dModelResultVars.add(param)
+      const body = bodyOfFn(fn, source, ctx)
+      if (resourceKind === 'model' && !alreadyKnownResult) ctx.canvas3dModelResultVars.delete(param)
       return {
         type: 'loaderLoad',
-        loaderVar: expr.callee.object.name as string,
-        url: { type: 'str', value: urlArg.value as string },
-        param: params[0].name as string,
-        body: bodyOfFn(fn, source, ctx),
+        loaderVar,
+        resourceKind,
+        url: { type: 'str', value: urlArg.value },
+        param,
+        body,
+        ...(errorFn && errorParams[0]?.type === 'Identifier'
+          ? {
+              errorParam: errorParams[0].name,
+              errorBody: bodyOfFn(errorFn, source, ctx),
+            }
+          : {}),
       }
     }
   }
@@ -1098,10 +1482,11 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // O objeto pode ser variável (modelo) OU propriedade (modelo.scene) — qualquer
   // valor simples. Precede o matcher genérico de método (que rejeitaria o callback).
   if (
+    ctx.usesCanvas3D &&
     expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'MemberExpression' &&
-    !expr.callee.computed &&
-    expr.callee.property?.name === 'traverse' &&
+    isNamedMemberExpression(expr.callee) &&
+    expr.callee.property.name === 'traverse' &&
+    isKnownCanvas3DTraversalTarget(expr.callee.object, ctx) &&
     expr.arguments?.length === 1 &&
     (expr.arguments[0]?.type === 'ArrowFunctionExpression' ||
       expr.arguments[0]?.type === 'FunctionExpression')
@@ -1111,11 +1496,16 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     if (params.length === 1 && params[0]?.type === 'Identifier') {
       const object = toExpr(expr.callee.object, ctx)
       if (isSimpleValue(object)) {
+        const param = params[0].name
+        const alreadyKnownObject = ctx.canvas3dObjectVars.has(param)
+        ctx.canvas3dObjectVars.add(param)
+        const body = bodyOfFn(fn, source, ctx)
+        if (!alreadyKnownObject) ctx.canvas3dObjectVars.delete(param)
         return {
           type: 'traverseEach',
           object,
-          param: params[0].name as string,
-          body: bodyOfFn(fn, source, ctx),
+          param,
+          body,
         }
       }
     }
@@ -1136,6 +1526,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     // ctx.fillStyle = <cor> (cor é string; ctx precisa ser um contexto conhecido)
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      expr.left.property?.type === 'Identifier' &&
       expr.left.property?.name === 'fillStyle' &&
       expr.left.object?.type === 'Identifier' &&
       ctx.ctxVars.has(expr.left.object.name)
@@ -1151,7 +1542,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       !expr.left.computed &&
       expr.left.object?.type === 'Identifier' &&
       ctx.ctxVars.has(expr.left.object.name) &&
-      typeof expr.left.property?.name === 'string'
+      expr.left.property?.type === 'Identifier'
     ) {
       const ctxVar: string = expr.left.object.name
       const prop: string = expr.left.property.name
@@ -1199,15 +1590,24 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     // el.style.prop = <simples>  |  el.style['prop'] = <simples>
     const style = tryMatchSetStyle(expr, ctx)
     if (style) return style
-    // x.textContent = <simples> | x.value = <simples> | x.innerHTML = <simples>
+    // Inserir HTML como texto executável não faz parte da trilha infantil.
+    // Preserva a instrução inteira no modo avançado, sem convertê-la no bloco
+    // genérico de propriedade que aparece mais abaixo.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      expr.left.property?.type === 'Identifier' &&
+      expr.left.property?.name === 'innerHTML'
+    ) {
+      return asRaw(source, node)
+    }
+    // x.textContent = <simples> | x.value = <simples>
     // (ou document.getElementById('id').textContent = …)
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
-      (expr.left.property?.name === 'textContent' ||
-        expr.left.property?.name === 'value' ||
-        expr.left.property?.name === 'innerHTML')
+      expr.left.property?.type === 'Identifier' &&
+      isGuidedDomProperty(expr.left.property.name)
     ) {
-      const property = expr.left.property.name as 'textContent' | 'value' | 'innerHTML'
+      const property = expr.left.property.name
       const target = extractTarget(expr.left.object, ctx)
       const value = toExpr(expr.right, ctx)
       if (target && value) {
@@ -1221,17 +1621,15 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       }
       return asRaw(source, node)
     }
-    // <img>.onload = () => {…} → imageOnLoad ("quando a imagem carregar, fazer …").
-    // Só a arrow/função SEM parâmetros (o gerador re-emite `() =>`); com parâmetro
-    // (`(e) => …`) cai no avançado p/ não perder o argumento.
+    // <img>.onload = (event) => {…} → imageOnLoad ("quando a imagem carregar, fazer …").
+    // Aceita também a forma legada sem parâmetro; outro nome continua avançado
+    // para não perder referências que o bloco canônico não conseguiria manter.
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
       !expr.left.computed &&
       expr.left.property?.type === 'Identifier' &&
       expr.left.property.name === 'onload' &&
-      (expr.right?.type === 'ArrowFunctionExpression' ||
-        expr.right?.type === 'FunctionExpression') &&
-      (expr.right.params?.length ?? 0) === 0 &&
+      hasCompatibleEventParameter(expr.right) &&
       !isGlobalObject(expr.left.object)
     ) {
       const target = toExpr(expr.left.object, ctx)
@@ -1240,16 +1638,13 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       }
       return asRaw(source, node)
     }
-    // <img>.onerror = () => {…} → imageOnError ("se a imagem falhar, fazer …").
-    // Mesma regra do onload: só a arrow/função SEM parâmetros.
+    // <img>.onerror = (event) => {…} → imageOnError ("se a imagem falhar, fazer …").
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
       !expr.left.computed &&
       expr.left.property?.type === 'Identifier' &&
       expr.left.property.name === 'onerror' &&
-      (expr.right?.type === 'ArrowFunctionExpression' ||
-        expr.right?.type === 'FunctionExpression') &&
-      (expr.right.params?.length ?? 0) === 0 &&
+      hasCompatibleEventParameter(expr.right) &&
       !isGlobalObject(expr.left.object)
     ) {
       const target = toExpr(expr.left.object, ctx)
@@ -1258,17 +1653,14 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       }
       return asRaw(source, node)
     }
-    // <el>.onclick = () => {…} → onClickAssign ("quando clicar em <el>, fazer …").
-    // Mesma regra: só arrow/função SEM parâmetros (o gerador re-emite `() =>`);
-    // corpo conciso `() => f()` é normalizado p/ bloco (via bodyOfFn).
+    // <el>.onclick = (event) => {…} → onClickAssign ("quando clicar em <el>, fazer …").
+    // Corpo conciso também é normalizado para bloco (via bodyOfFn).
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
       !expr.left.computed &&
       expr.left.property?.type === 'Identifier' &&
       expr.left.property.name === 'onclick' &&
-      (expr.right?.type === 'ArrowFunctionExpression' ||
-        expr.right?.type === 'FunctionExpression') &&
-      (expr.right.params?.length ?? 0) === 0 &&
+      hasCompatibleEventParameter(expr.right) &&
       !isGlobalObject(expr.left.object)
     ) {
       const target = toExpr(expr.left.object, ctx)
@@ -1352,7 +1744,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const evt = tryMatchEventListener(expr, ctx)
   if (evt) {
     // Listener apontando para uma função nomeada → eventHandler.
-    if (evt.handlerName) {
+    if (evt.handlerName !== undefined) {
       return {
         type: 'eventHandler',
         target: evt.target,
@@ -1369,7 +1761,15 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     if (alias === UNSAFE_EVENT_PARAM) return asRaw(source, node)
     if (alias) ctx.eventParamAliases.push(alias)
     try {
-      const bodyStmts = bodyOfFn(evt.callback, source, ctx)
+      const parsedBody = bodyOfFn(evt.callback, source, ctx)
+      // O gerador protege formulários automaticamente. Na volta do código,
+      // remove apenas essa primeira proteção para não criar um bloco duplicado.
+      const bodyStmts =
+        evt.event === 'submit' &&
+        parsedBody[0]?.type === 'eventMethod' &&
+        parsedBody[0].method === 'preventDefault'
+          ? parsedBody.slice(1)
+          : parsedBody
       return {
         type: 'event',
         target: evt.target,
@@ -1406,9 +1806,11 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     }
   }
 
-  // el.setAttribute('nome', <simples>)
-  const setAttr = tryMatchSetAttribute(expr, ctx)
-  if (setAttr) return setAttr
+  // el.setAttribute('nome', <simples>). Chamadas inseguras ou não representáveis
+  // ficam inteiras no código avançado; não podem cair no matcher genérico abaixo.
+  if (isSetAttributeCall(expr)) {
+    return tryMatchSetAttribute(expr, ctx) ?? asRaw(source, node)
+  }
 
   // cancelAnimationFrame(id) — para o loop de animação.
   const cancelAnim = tryMatchCancelAnimationFrame(expr, ctx)
@@ -1433,13 +1835,13 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // Object.assign(destino, origem)
   if (
     expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'MemberExpression' &&
-    !expr.callee.computed &&
-    expr.callee.object?.name === 'Object' &&
-    expr.callee.property?.name === 'assign' &&
+    isNamedMemberExpression(expr.callee) &&
+    expr.callee.object?.type === 'Identifier' &&
+    expr.callee.object.name === 'Object' &&
+    expr.callee.property.name === 'assign' &&
     expr.arguments?.length === 2 &&
-    expr.arguments[0].type === 'Identifier' &&
-    expr.arguments[1].type === 'Identifier'
+    expr.arguments[0]?.type === 'Identifier' &&
+    expr.arguments[1]?.type === 'Identifier'
   ) {
     return {
       type: 'objectAssign',
@@ -1458,11 +1860,9 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
 
   // setTimeout(<fn>, ms) passando uma FUNÇÃO por nome (ex.: setTimeout(resolve, 2000)).
   if (
-    expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'Identifier' &&
-    expr.callee.name === 'setTimeout' &&
+    isGlobalOrManagedProjectRunCall(expr, 'setTimeout') &&
     expr.arguments?.length === 2 &&
-    expr.arguments[0].type === 'Identifier'
+    expr.arguments[0]?.type === 'Identifier'
   ) {
     const delay = toExpr(expr.arguments[1], ctx)
     if (delay && isSimpleValue(delay)) {
@@ -1501,7 +1901,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
 
   // super(args) — chama o construtor da classe-mãe (dentro do construtor filho).
   if (expr?.type === 'CallExpression' && expr.callee?.type === 'Super') {
-    const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    const args = (expr.arguments ?? []).map((a) => toExpr(a, ctx))
     if (args.every(isSimpleValue)) return { type: 'superCall', args: args as JSExpr[] }
     return asRaw(source, node)
   }
@@ -1513,7 +1913,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     expr.callee.object?.type === 'Super' &&
     expr.callee.property?.type === 'Identifier'
   ) {
-    const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    const args = (expr.arguments ?? []).map((a) => toExpr(a, ctx))
     if (args.every(isSimpleValue)) {
       return { type: 'superMethodCall', method: expr.callee.property.name, args: args as JSExpr[] }
     }
@@ -1523,9 +1923,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // dos matchers de chamada (o nome está no denylist global e viraria rawJS). A
   // função é uma REFERÊNCIA (Identifier), não uma chamada.
   if (
-    expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'Identifier' &&
-    expr.callee.name === 'requestAnimationFrame' &&
+    isGlobalOrManagedProjectRunCall(expr, 'requestAnimationFrame', 'requestFrame') &&
     expr.arguments?.length === 1 &&
     expr.arguments[0]?.type === 'Identifier'
   ) {
@@ -1534,19 +1932,18 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // requestAnimationFrame((t) => {…}) — corpo inline com o tempo do quadro. Aceita
   // 0 ou 1 parâmetro Identifier; corpo conciso ou em bloco (bodyOfFn cobre os dois).
   if (
-    expr?.type === 'CallExpression' &&
-    expr.callee?.type === 'Identifier' &&
-    expr.callee.name === 'requestAnimationFrame' &&
+    isGlobalOrManagedProjectRunCall(expr, 'requestAnimationFrame', 'requestFrame') &&
     expr.arguments?.length === 1 &&
     (expr.arguments[0]?.type === 'ArrowFunctionExpression' ||
       expr.arguments[0]?.type === 'FunctionExpression')
   ) {
     const fn = expr.arguments[0]
     const params = fn.params ?? []
+    const firstParam = params[0]
     const paramsOk =
-      params.length === 0 || (params.length === 1 && params[0]?.type === 'Identifier')
+      params.length === 0 || (params.length === 1 && firstParam?.type === 'Identifier')
     if (paramsOk) {
-      const param = params.length === 1 ? (params[0].name as string) : undefined
+      const param = firstParam?.type === 'Identifier' ? firstParam.name : undefined
       return {
         type: 'requestFrameDo',
         ...(param ? { param } : {}),
@@ -1560,12 +1957,10 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   if (expr?.type === 'ConditionalExpression') {
     const cond = toExpr(expr.test, ctx)
     if (isSimpleValue(cond)) {
-      const branch = (b: Node): JSStatement =>
-        mapExpressionStatement(
-          { type: 'ExpressionStatement', expression: b, ...spanOf(b) },
-          source,
-          ctx,
-        )
+      const branch = (expression: Babel.Expression): JSStatement => {
+        const statement = syntheticExpressionStatement(expression)
+        return mapExpressionStatement(statement, source, ctx)
+      }
       return {
         type: 'if',
         cond: cond as JSExpr,
@@ -1594,11 +1989,6 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   return asRaw(source, node)
 }
 
-/** Posições de origem de um nó Babel (start/end/loc/range) para o span sintético. */
-function spanOf(node: Node): Record<string, unknown> {
-  return { start: node?.start, end: node?.end, loc: node?.loc, range: node?.range }
-}
-
 /** É um nó de EXPRESSÃO (não um statement)? Guarda do `exprStatement` fallback. */
 function isExpressionNode(node: Node): boolean {
   const t = node?.type
@@ -1614,30 +2004,51 @@ function isExpressionNode(node: Node): boolean {
 function matchCreateElement(node: Node): string | null {
   if (node?.type !== 'CallExpression') return null
   const callee = node.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.object?.name !== 'document' || callee.property?.name !== 'createElement') return null
-  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
-  return node.arguments[0].value as string
+  if (!isNamedMemberExpression(callee)) return null
+  if (
+    callee.object?.type !== 'Identifier' ||
+    callee.object.name !== 'document' ||
+    callee.property.name !== 'createElement'
+  ) {
+    return null
+  }
+  if (node.arguments?.length !== 1 || node.arguments[0]?.type !== 'StringLiteral') return null
+  const tag = node.arguments[0].value as string
+  return isGuidedDomElementTag(tag, 'html') ? tag : null
 }
 
-/** `document.createElementNS(<ns>, 'tag')` → nome da tag (forma SVG); senão `null`. */
+/** `document.createElementNS(SVG_NS, 'tag')` → nome da tag; outros namespaces ficam raw. */
 function matchCreateElementNS(node: Node): string | null {
   if (node?.type !== 'CallExpression') return null
   const callee = node.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.object?.name !== 'document' || callee.property?.name !== 'createElementNS') return null
-  if (node.arguments?.length !== 2 || node.arguments[1].type !== 'StringLiteral') return null
-  return node.arguments[1].value as string
+  if (!isNamedMemberExpression(callee)) return null
+  if (
+    callee.object?.type !== 'Identifier' ||
+    callee.object.name !== 'document' ||
+    callee.property.name !== 'createElementNS'
+  ) {
+    return null
+  }
+  if (
+    node.arguments?.length !== 2 ||
+    node.arguments[0]?.type !== 'StringLiteral' ||
+    node.arguments[0].value !== 'http://www.w3.org/2000/svg' ||
+    node.arguments[1]?.type !== 'StringLiteral'
+  ) {
+    return null
+  }
+  const tag = node.arguments[1].value as string
+  return isGuidedDomElementTag(tag, 'svg') ? tag : null
 }
 
 /** `pai.appendChild(filho)` (ambos identificadores) → `appendChild`. */
 function tryMatchAppendChild(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression') return null
   const callee = expr.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'appendChild') return null
+  if (!isNamedMemberExpression(callee)) return null
+  if (callee.object?.type !== 'Identifier' || callee.property.name !== 'appendChild') return null
   if (ctx.instanceVars.has(callee.object.name)) return null
-  if (expr.arguments?.length !== 1 || expr.arguments[0].type !== 'Identifier') return null
+  if (expr.arguments?.length !== 1 || expr.arguments[0]?.type !== 'Identifier') return null
   return {
     type: 'appendChild',
     parentVar: callee.object.name,
@@ -1652,16 +2063,11 @@ function isExitFullscreenCall(expr: Node): boolean {
   if (expr?.type !== 'CallExpression' && expr?.type !== 'OptionalCallExpression') return false
   if (expr.arguments?.length) return false
   const callee = expr.callee
-  if (
-    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
-    callee.computed
-  ) {
-    return false
-  }
+  if (!isNamedMemberExpression(callee)) return false
   return (
     callee.object?.type === 'Identifier' &&
     callee.object.name === 'document' &&
-    callee.property?.name === 'exitFullscreen'
+    callee.property.name === 'exitFullscreen'
   )
 }
 
@@ -1670,20 +2076,13 @@ function isRequestFullscreenCall(expr: Node): boolean {
   if (expr?.type !== 'CallExpression' && expr?.type !== 'OptionalCallExpression') return false
   if (expr.arguments?.length) return false
   const callee = expr.callee
-  if (
-    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
-    callee.computed ||
-    callee.property?.name !== 'requestFullscreen'
-  ) {
-    return false
-  }
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'requestFullscreen') return false
   const obj = callee.object
   return (
-    (obj?.type === 'MemberExpression' || obj?.type === 'OptionalMemberExpression') &&
-    !obj.computed &&
+    isNamedMemberExpression(obj) &&
     obj.object?.type === 'Identifier' &&
     obj.object.name === 'document' &&
-    obj.property?.name === 'documentElement'
+    obj.property.name === 'documentElement'
   )
 }
 
@@ -1699,7 +2098,7 @@ function tryMatchFullscreen(expr: Node): JSStatement | null {
 
 /** Desembrulha um bloco de UM statement (ou um statement solto) e testa a chamada. */
 function isSingleCallStatement(node: Node, pred: (expr: Node) => boolean): boolean {
-  let stmt: Node | null = node
+  let stmt: Node | null | undefined = node
   if (node?.type === 'BlockStatement') {
     if (node.body?.length !== 1) return false
     stmt = node.body[0]
@@ -1721,7 +2120,8 @@ function tryMatchToggleFullscreen(node: Node): JSStatement | null {
     test.computed ||
     test.object?.type !== 'Identifier' ||
     test.object.name !== 'document' ||
-    test.property?.name !== 'fullscreenElement'
+    test.property?.type !== 'Identifier' ||
+    test.property.name !== 'fullscreenElement'
   ) {
     return null
   }
@@ -1741,7 +2141,8 @@ function tryMatchIsFullscreen(node: Node): JSExpr | null {
     left.computed ||
     left.object?.type !== 'Identifier' ||
     left.object.name !== 'document' ||
-    left.property?.name !== 'fullscreenElement'
+    left.property?.type !== 'Identifier' ||
+    left.property.name !== 'fullscreenElement'
   ) {
     return null
   }
@@ -1749,7 +2150,7 @@ function tryMatchIsFullscreen(node: Node): JSExpr | null {
 }
 
 /** `<alvo>.dataset.chave = <simples>` → `setDataset`; senão `null`. */
-function tryMatchSetDataset(expr: Node, ctx: ParseCtx): JSStatement | null {
+function tryMatchSetDataset(expr: Babel.AssignmentExpression, ctx: ParseCtx): JSStatement | null {
   const left = expr.left
   if (
     !left ||
@@ -1760,10 +2161,7 @@ function tryMatchSetDataset(expr: Node, ctx: ParseCtx): JSStatement | null {
     return null
   }
   const obj = left.object
-  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression')) {
-    return null
-  }
-  if (obj.property?.name !== 'dataset') return null
+  if (!isNamedMemberExpression(obj) || obj.property.name !== 'dataset') return null
   const target = extractTarget(obj.object, ctx)
   if (!target) return null
   const value = toExpr(expr.right, ctx)
@@ -1778,16 +2176,13 @@ function tryMatchSetDataset(expr: Node, ctx: ParseCtx): JSStatement | null {
 }
 
 /** `<alvo>.style.prop = <simples>` / `<alvo>.style['prop'] = <simples>` → `setStyle`. */
-function tryMatchSetStyle(expr: Node, ctx: ParseCtx): JSStatement | null {
+function tryMatchSetStyle(expr: Babel.AssignmentExpression, ctx: ParseCtx): JSStatement | null {
   const left = expr.left
   if (!left || (left.type !== 'MemberExpression' && left.type !== 'OptionalMemberExpression')) {
     return null
   }
   const obj = left.object
-  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression')) {
-    return null
-  }
-  if (obj.property?.name !== 'style') return null
+  if (!isNamedMemberExpression(obj) || obj.property.name !== 'style') return null
   let property: string | null = null
   if (!left.computed && left.property?.type === 'Identifier')
     property = left.property.name as string
@@ -1808,28 +2203,32 @@ function tryMatchSetStyle(expr: Node, ctx: ParseCtx): JSStatement | null {
 }
 
 /** `<alvo>.setAttribute('nome', <simples>)` → `setAttribute`. */
+function isSetAttributeCall(expr: Node): boolean {
+  if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
+    return false
+  }
+  const callee = expr.callee
+  return isNamedMemberExpression(callee) && callee.property.name === 'setAttribute'
+}
+
 function tryMatchSetAttribute(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
     return null
   }
   const callee = expr.callee
-  if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
-  ) {
-    return null
-  }
-  if (callee.property?.name !== 'setAttribute') return null
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'setAttribute') return null
   const target = extractTarget(callee.object, ctx)
   if (!target) return null
-  if (expr.arguments?.length !== 2 || expr.arguments[0].type !== 'StringLiteral') return null
+  if (expr.arguments?.length !== 2 || expr.arguments[0]?.type !== 'StringLiteral') return null
+  const name = expr.arguments[0].value as string
+  if (!isGuidedDomAttributeName(name)) return null
   const value = toExpr(expr.arguments[1], ctx)
   if (!isSimpleValue(value)) return null
   return {
     type: 'setAttribute',
     targetId: target.id,
     ...classTargetKindField(target),
-    name: expr.arguments[0].value as string,
+    name,
     value,
   }
 }
@@ -1839,19 +2238,20 @@ function tryMatchSetAttribute(expr: Node, ctx: ParseCtx): JSStatement | null {
 function tryMatchForEach(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression') return null
   const callee = expr.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.property?.name !== 'forEach') return null
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'forEach') return null
   // Instância de classe conhecida com um `forEach` PRÓPRIO não é iteração de lista.
   if (callee.object?.type === 'Identifier' && ctx.instanceVars.has(callee.object.name)) return null
   if (expr.arguments?.length !== 1) return null
   const cb = expr.arguments[0]
-  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
+  if (!isInlineFunction(cb)) return null
   const params = cb.params ?? []
   if (params.length < 1 || params.length > 2) return null
-  if (!params.every((p: Node) => p?.type === 'Identifier')) return null
+  if (!areIdentifierParams(params)) return null
+  const itemParam = params[0]
+  if (!itemParam) return null
   const arrayExpr = toExpr(callee.object, ctx)
   if (!arrayExpr || !isSimpleValue(arrayExpr)) return null
-  const itemName: string = params[0].name
+  const itemName: string = itemParam.name
   const indexName: string | undefined = params[1]?.name
   const body = bodyOfFn(cb, source, ctx)
   return {
@@ -1871,7 +2271,7 @@ function tryMatchForEach(expr: Node, source: string, ctx: ParseCtx): JSStatement
  * para que `3 * 1000` NÃO seja dobrado em `3000` antes de detectarmos os segundos.
  */
 function readTimerDelay(
-  arg: Node,
+  arg: Node | null | undefined,
   ctx: ParseCtx,
 ): { unit: 'ms' | 'seconds'; delay: JSExpr } | null {
   if (
@@ -1888,10 +2288,10 @@ function readTimerDelay(
 
 /** `setTimeout(() => { … }, ms|s*1000)` → `setTimeout`/`setTimeoutSeconds`. */
 function tryMatchSetTimeout(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
-  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
-  if (expr.callee.name !== 'setTimeout' || expr.arguments?.length !== 2) return null
+  if (!isGlobalOrManagedProjectRunCall(expr, 'setTimeout') || expr.arguments?.length !== 2)
+    return null
   const cb = expr.arguments[0]
-  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
+  if (!isInlineFunction(cb)) return null
   if ((cb.params?.length ?? 0) !== 0) return null
   const d = readTimerDelay(expr.arguments[1], ctx)
   if (!d) return null
@@ -1901,10 +2301,11 @@ function tryMatchSetTimeout(expr: Node, source: string, ctx: ParseCtx): JSStatem
 
 /** `setInterval(() => { … }, ms|s*1000)` → `setInterval`/`setIntervalSeconds`. */
 function tryMatchSetInterval(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
-  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
-  if (expr.callee.name !== 'setInterval' || expr.arguments?.length !== 2) return null
+  if (!isGlobalOrManagedProjectRunCall(expr, 'setInterval') || expr.arguments?.length !== 2) {
+    return null
+  }
   const cb = expr.arguments[0]
-  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
+  if (!isInlineFunction(cb)) return null
   if ((cb.params?.length ?? 0) !== 0) return null
   const d = readTimerDelay(expr.arguments[1], ctx)
   if (!d) return null
@@ -1959,7 +2360,7 @@ function tryMatchMethodCall(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (isGlobalObject(callee.object)) return null
   const object = toExpr(callee.object, ctx)
   if (!isSimpleValue(object)) return null
-  const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+  const args = (expr.arguments ?? []).map((a) => toExpr(a, ctx))
   if (!args.every(isSimpleValue)) return null
   return { type: 'memberCall', object, method: callee.property.name, args: args as JSExpr[] }
 }
@@ -1972,7 +2373,7 @@ function tryMatchMethodCall(expr: Node, ctx: ParseCtx): JSStatement | null {
 // ficam em tryMatchGame2DVarInit; `s.vx=;s.vy=;`/`s.x=;s.y=;` em tryFuseGame2DSpriteAssign.
 
 /** Nome de um `Identifier`; senão null. */
-function identifierName(node: Node): string | null {
+function identifierName(node: Node | null | undefined): string | null {
   return node?.type === 'Identifier' ? (node.name as string) : null
 }
 
@@ -1996,13 +2397,13 @@ function namespacedCtor(callee: Node): { namespace?: string; className: string }
 }
 
 /** `() => x` (arrow com corpo de identificador) → 'x'; senão null. */
-function arrowReturnIdentifier(node: Node): string | null {
+function arrowReturnIdentifier(node: Node | null | undefined): string | null {
   if (node?.type !== 'ArrowFunctionExpression') return null
   return node.body?.type === 'Identifier' ? (node.body.name as string) : null
 }
 
 /** Literal numérico (aceita `-N`); senão null. */
-function numericLiteralValue(node: Node): number | null {
+function numericLiteralValue(node: Node | null | undefined): number | null {
   if (node?.type === 'NumericLiteral') return node.value as number
   if (
     node?.type === 'UnaryExpression' &&
@@ -2058,6 +2459,10 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'getHealth') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:getHealth', spriteVar }
+  }
+  if (method === 'getMaxHealth') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:getMaxHealth', spriteVar }
   }
   if (method === 'enemyDamage') {
     const spriteVar = identifierName(args[0])
@@ -2126,10 +2531,26 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:hasHealth', spriteVar }
   }
+  if (method === 'healthDepleted') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:healthDepleted', spriteVar }
+  }
+  if (method === 'isInvincible') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:isInvincible', spriteVar }
+  }
   if (method === 'cooldownReady') {
     const spriteVar = identifierName(args[0])
     const frames = toExpr(args[1], ctx)
-    if (spriteVar && isSimpleValue(frames)) return { type: 'g2d:cooldownReady', spriteVar, frames }
+    const stableKey = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : undefined
+    if (spriteVar && isSimpleValue(frames)) {
+      return {
+        type: 'g2d:cooldownReady',
+        spriteVar,
+        frames,
+        ...(stableKey ? { __id: stableKey } : {}),
+      }
+    }
   }
   if (method === 'isPaused') return { type: 'g2d:isPaused' }
   if (method === 'cameraX') return { type: 'g2d:cameraX' }
@@ -2144,26 +2565,23 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:sceneIs', name: args[0].value as string }
   }
-  if (method === 'stickHeroScore') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:stickHeroScore', gameVar }
+  if (method === 'stickPathFell') {
+    const pathVar = identifierName(args[0])
+    if (pathVar) return { type: 'g2d:stickPathFell', pathVar }
   }
-  if (method === 'stickHeroOver') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:stickHeroOver', gameVar }
-  }
-  if (method === 'balloonScore') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:balloonScore', gameVar }
+  if (method === 'balloonPathMeters') {
+    const pathVar = identifierName(args[0])
+    if (pathVar) return { type: 'g2d:balloonPathMeters', pathVar }
   }
   if (method === 'balloonFuel') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:balloonFuel', gameVar }
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:balloonFuel', spriteVar }
   }
-  if (method === 'balloonOver') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:balloonOver', gameVar }
+  if (method === 'balloonLandedOut') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:balloonLandedOut', spriteVar }
   }
+  if (method === 'pointerDown') return { type: 'g2d:pointerDown' }
   if (method === 'aimReleased') {
     const throwerVar = identifierName(args[0])
     if (throwerVar) return { type: 'g2d:aimReleased', throwerVar }
@@ -2186,7 +2604,7 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
  * vez de `g2d:createSprite`. null se alguma chave for não-literal/desconhecida.
  */
 function readSpriteOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; color: string; image: string | null } | null {
   const result: {
@@ -2239,7 +2657,7 @@ function readSpriteOptions(
  * alguma chave faltar/for não-literal/desconhecida — o caminho cai no helper genérico.
  */
 function readTileMapOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { image: string; tile: JSExpr; solid: string; grid: string; platform?: string } | null {
   const result = {
@@ -2285,7 +2703,7 @@ function readTileMapOptions(
  * strings. `image` presente → spawn de imagem. null se alguma chave não-casar.
  */
 function readSpawnOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): {
   x: JSExpr
@@ -2338,7 +2756,7 @@ function readSpawnOptions(
  * body/wings cores (strings). null se alguma chave não casar.
  */
 function readShipOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; body: string; wings: string } | null {
   const out: { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; body: string; wings: string } = {
@@ -2373,12 +2791,13 @@ function readShipOptions(
 
 /** Opções do createEnemyType (tipo de inimigo): behavior/cor/imagem literais + números simples. */
 function readEnemyTypeOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): {
   behavior: string
   color: string
   image: string
+  shape: string
   hp: JSExpr
   speed: JSExpr
   dmg: JSExpr
@@ -2389,6 +2808,7 @@ function readEnemyTypeOptions(
     behavior: string
     color: string
     image: string
+    shape: string
     hp: JSExpr
     speed: JSExpr
     dmg: JSExpr
@@ -2398,6 +2818,7 @@ function readEnemyTypeOptions(
     behavior: 'patrulha',
     color: '#e4573d',
     image: '',
+    shape: '',
     hp: { type: 'num', value: 3 },
     speed: { type: 'num', value: 2 },
     dmg: { type: 'num', value: 1 },
@@ -2422,7 +2843,7 @@ function readEnemyTypeOptions(
       const b = prop.value.value as string
       if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(b)) return null
       out.behavior = b
-    } else if (key === 'color' || key === 'image') {
+    } else if (key === 'color' || key === 'image' || key === 'shape') {
       if (prop.value?.type !== 'StringLiteral') return null
       out[key] = prop.value.value as string
     } else {
@@ -2437,7 +2858,7 @@ function readEnemyTypeOptions(
  * são expressões; size número; color string. null se alguma chave não casar.
  */
 function readAsteroidOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { x: JSExpr; y: JSExpr; vx: JSExpr; vy: JSExpr; size: JSExpr; color: string } | null {
   const num0: JSExpr = { type: 'num', value: 0 }
@@ -2472,7 +2893,10 @@ function readAsteroidOptions(
 }
 
 /** Lê `{ speed, color }` de `SZGame2D.shootFrom(s, g, {...})` (speed número/expressão; color string). */
-function readShootFromOptions(obj: Node, ctx: ParseCtx): { speed: JSExpr; color: string } | null {
+function readShootFromOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { speed: JSExpr; color: string } | null {
   const out: { speed: JSExpr; color: string } = {
     speed: { type: 'num', value: 6 },
     color: '#9cff57',
@@ -2501,7 +2925,7 @@ function readShootFromOptions(obj: Node, ctx: ParseCtx): { speed: JSExpr; color:
 
 /** Lê `{ size, color, speed }` de `SZGame2D.spawnAsteroidFromEdge(g, {...})`. */
 function readAsteroidEdgeOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { size: JSExpr; color: string; speed: JSExpr } | null {
   const out = {
@@ -2532,7 +2956,9 @@ function readAsteroidEdgeOptions(
 }
 
 /** Lê `{ side, color }` de `SZGame2D.placeThrower(city, {...})`. side 'left'/'right'. */
-function readThrowerOptions(obj: Node): { side: 'left' | 'right'; color: string } | null {
+function readThrowerOptions(
+  obj: Babel.ObjectExpression,
+): { side: 'left' | 'right'; color: string } | null {
   let side: 'left' | 'right' = 'left'
   let color = '#6b4a2b'
   for (const prop of obj.properties ?? []) {
@@ -2561,7 +2987,7 @@ function readThrowerOptions(obj: Node): { side: 'left' | 'right'; color: string 
  * color string. null se alguma chave não casar.
  */
 function readDinoOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { x: JSExpr; y: JSExpr; size: JSExpr; color: string } | null {
   const out: { x: JSExpr; y: JSExpr; size: JSExpr; color: string } = {
@@ -2592,12 +3018,108 @@ function readDinoOptions(
   return out
 }
 
+/** Lê `{ w, h, color }` de `SZGame2D.createStickHero({...})`. */
+function readStickHeroOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { w: JSExpr; h: JSExpr; color: string } | null {
+  const out: { w: JSExpr; h: JSExpr; color: string } = {
+    w: { type: 'num', value: 18 },
+    h: { type: 'num', value: 36 },
+    color: '#d6455d',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'w' || key === 'h') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ platform, stick }` de `SZGame2D.createStickPath(ctx, {...})`. */
+function readStickPathOptions(
+  obj: Babel.ObjectExpression,
+): { platformColor: string; stickColor: string } | null {
+  const out = { platformColor: '#0ea5a0', stickColor: '#1b2330' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key !== 'platform' && key !== 'stick') return null
+    if (prop.value?.type !== 'StringLiteral') return null
+    if (key === 'platform') out.platformColor = prop.value.value as string
+    else out.stickColor = prop.value.value as string
+  }
+  return out
+}
+
+/** Lê `{ x, y, w, h, body, basket }` de `SZGame2D.createBalloon({...})`. */
+function readBalloonOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; color: string; basketColor: string } | null {
+  const out: {
+    x: JSExpr
+    y: JSExpr
+    w: JSExpr
+    h: JSExpr
+    color: string
+    basketColor: string
+  } = {
+    x: { type: 'num', value: 110 },
+    y: { type: 'num', value: 360 },
+    w: { type: 'num', value: 70 },
+    h: { type: 'num', value: 100 },
+    color: '#D62828',
+    basketColor: '#8a5a2b',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'w' || key === 'h') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'body' || key === 'basket') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      if (key === 'body') out.color = prop.value.value as string
+      else out.basketColor = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
 /**
  * Lê `{ type, x, size, vx }` de `SZGame2D.spawnObstacle(g, ctx, {...})`. x/vx são
  * expressões; size número; type string. null se alguma chave não casar.
  */
 function readObstacleOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { shape: string; x: JSExpr; vx: JSExpr; size: JSExpr } | null {
   const num0: JSExpr = { type: 'num', value: 0 }
@@ -2630,7 +3152,10 @@ function readObstacleOptions(
 }
 
 /** Lê `{ x, y, vx }` de `SZGame2D.spawnEgg(g, {...})`. Todas expressões simples. */
-function readEggOptions(obj: Node, ctx: ParseCtx): { x: JSExpr; y: JSExpr; vx: JSExpr } | null {
+function readEggOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; vx: JSExpr } | null {
   const num0: JSExpr = { type: 'num', value: 0 }
   const out = { x: num0 as JSExpr, y: num0 as JSExpr, vx: num0 as JSExpr }
   for (const prop of obj.properties ?? []) {
@@ -2654,7 +3179,7 @@ function readEggOptions(obj: Node, ctx: ParseCtx): { x: JSExpr; y: JSExpr; vx: J
 
 /** Lê { x, y, radius, color, vx, vy } do SZGame2D.spawnBullet(g, {...}). */
 function readBulletOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { x: JSExpr; y: JSExpr; vx: JSExpr; vy: JSExpr; radius: JSExpr; color: string } | null {
   const num0: JSExpr = { type: 'num', value: 0 }
@@ -2693,10 +3218,13 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
   const call = asSZGame2DCall(expr)
   if (!call) return null
   const { method, args } = call
-  const isFn = (n: Node) =>
-    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+  const isFn = isInlineFunction
 
   switch (method) {
+    case 'onStart': {
+      if (!isFn(args[0])) return null
+      return { type: 'g2d:onStart', body: bodyOfFn(args[0], source, ctx) }
+    }
     case 'gameLoop': {
       if (!isFn(args[0])) return null
       return { type: 'g2d:updateEachFrame', body: bodyOfFn(args[0], source, ctx) }
@@ -2799,6 +3327,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:changeHealth', spriteVar, delta }
         : null
     }
+    case 'damageSprite': {
+      const spriteVar = identifierName(args[0])
+      const amount = toExpr(args[1], ctx)
+      const invincibilityFrames = toExpr(args[2], ctx)
+      return spriteVar && isSimpleValue(amount) && isSimpleValue(invincibilityFrames)
+        ? { type: 'g2d:damageSprite', spriteVar, amount, invincibilityFrames }
+        : null
+    }
     case 'flipSprite': {
       const spriteVar = identifierName(args[0])
       if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
@@ -2878,6 +3414,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'drawHitbox': {
       const spriteVar = identifierName(args[0])
       return spriteVar ? { type: 'g2d:drawHitbox', spriteVar } : null
+    }
+    case 'setHitboxScale': {
+      // generator: SZGame2D.setHitboxScale(sprite, 80)
+      const spriteVar = identifierName(args[0])
+      const percent = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(percent)
+        ? { type: 'g2d:setHitboxScale', spriteVar, percent }
+        : null
     }
     case 'showFps': {
       const x = toExpr(args[0], ctx)
@@ -3297,6 +3841,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const groupVar = identifierName(args[1])
       return ctxVar && groupVar ? { type: 'g2d:drawGroup', groupVar, ctxVar } : null
     }
+    case 'drawGroupByY': {
+      // generator: SZGame2D.drawGroupByY(ctx, g)
+      const ctxVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return ctxVar && groupVar ? { type: 'g2d:drawGroupByY', groupVar, ctxVar } : null
+    }
     case 'forEachInGroup': {
       // generator: SZGame2D.forEachInGroup(g, function (item) {…})
       const groupVar = identifierName(args[0])
@@ -3431,6 +3981,35 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       }
       return { type: 'g2d:drawHearts', ctxVar, count, x, y, size, color: args[5].value as string }
     }
+    case 'drawSpriteHealth': {
+      const ctxVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      const x = toExpr(args[3], ctx)
+      const y = toExpr(args[4], ctx)
+      const size = toExpr(args[5], ctx)
+      const style = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : ''
+      if (
+        !ctxVar ||
+        !spriteVar ||
+        (style !== 'hearts' && style !== 'bar') ||
+        !isSimpleValue(x) ||
+        !isSimpleValue(y) ||
+        !isSimpleValue(size) ||
+        args[6]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return {
+        type: 'g2d:drawSpriteHealth',
+        ctxVar,
+        spriteVar,
+        style,
+        x,
+        y,
+        size,
+        color: args[6].value as string,
+      }
+    }
     case 'drawBar': {
       // generator: SZGame2D.drawBar(ctx, value, max, x, y, w, h, "color")
       const ctxVar = identifierName(args[0])
@@ -3453,6 +4032,10 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         return null
       }
       return { type: 'g2d:drawBar', ctxVar, value, max, x, y, w, h, color: args[7].value as string }
+    }
+    case 'setStageDescription': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setStageDescription', description: args[0].value as string }
     }
     case 'setScene': {
       if (args[0]?.type !== 'StringLiteral') return null
@@ -3477,6 +4060,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         hint,
         bg: args[4].value as string,
       }
+    }
+    case 'showGameOver': {
+      const ctxVar = identifierName(args[0])
+      if (!ctxVar || !args[1]) return null
+      const text = toExpr(args[1], ctx)
+      return text ? { type: 'g2d:gameOver', ctxVar, text } : null
     }
     case 'restart':
       return { type: 'g2d:restart' }
@@ -3676,21 +4265,75 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const ctxVar = identifierName(args[0])
       return ctxVar ? { type: 'g2d:drawAimReadout', ctxVar } : null
     }
-    case 'updateStickHero': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:updateStickHero', gameVar } : null
+    case 'stickPathScenery': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:stickPathScenery', pathVar } : null
     }
-    case 'restartStickHero': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:restartStickHero', gameVar } : null
+    case 'stickPathGrow': {
+      // generator: SZGame2D.stickPathGrow(caminho, rapidez)
+      const pathVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      return pathVar && isSimpleValue(speed) ? { type: 'g2d:stickPathGrow', pathVar, speed } : null
     }
-    case 'updateBalloon': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:updateBalloon', gameVar } : null
+    case 'stickPathDrop': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:stickPathDrop', pathVar } : null
     }
-    case 'restartBalloon': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:restartBalloon', gameVar } : null
+    case 'stickPathWalk': {
+      // generator: SZGame2D.stickPathWalk(caminho, equilibrista, rapidez)
+      const pathVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      const speed = toExpr(args[2], ctx)
+      return pathVar && spriteVar && isSimpleValue(speed)
+        ? { type: 'g2d:stickPathWalk', spriteVar, pathVar, speed }
+        : null
+    }
+    case 'stickPathDraw': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:stickPathDraw', pathVar } : null
+    }
+    case 'stickPathOnCross': {
+      // generator: SZGame2D.stickPathOnCross(caminho, () => {…}, "id")
+      const pathVar = identifierName(args[0])
+      if (!pathVar || !isFn(args[1])) return null
+      return { type: 'g2d:onStickPathCross', pathVar, body: bodyOfFn(args[1], source, ctx) }
+    }
+    case 'stickPathOnPerfect': {
+      // generator: SZGame2D.stickPathOnPerfect(caminho, () => {…}, "id")
+      const pathVar = identifierName(args[0])
+      if (!pathVar || !isFn(args[1])) return null
+      return { type: 'g2d:onStickPathPerfect', pathVar, body: bodyOfFn(args[1], source, ctx) }
+    }
+    case 'balloonPathScenery': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:balloonPathScenery', pathVar } : null
+    }
+    case 'balloonFire': {
+      // generator: SZGame2D.balloonFire(balao, força)
+      const spriteVar = identifierName(args[0])
+      const force = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(force)
+        ? { type: 'g2d:balloonFire', spriteVar, force }
+        : null
+    }
+    case 'balloonFly': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:balloonFly', spriteVar } : null
+    }
+    case 'balloonPathScroll': {
+      // generator: SZGame2D.balloonPathScroll(caminho, balao, velocidade)
+      const pathVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      const speed = toExpr(args[2], ctx)
+      return pathVar && spriteVar && isSimpleValue(speed)
+        ? { type: 'g2d:balloonPathScroll', pathVar, spriteVar, speed }
+        : null
+    }
+    case 'balloonPathOnTreeHit': {
+      // generator: SZGame2D.balloonPathOnTreeHit(caminho, () => {…}, "id")
+      const pathVar = identifierName(args[0])
+      if (!pathVar || !isFn(args[1])) return null
+      return { type: 'g2d:onBalloonPathTreeHit', pathVar, body: bodyOfFn(args[1], source, ctx) }
     }
     case 'overlapSpriteGroup': {
       // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
@@ -3772,6 +4415,8 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
       behavior: o.behavior,
       color: o.color,
       image: o.image,
+      // Chave omitida quando ausente no código — IR byte-estável c/ projetos antigos.
+      ...(o.shape ? { shape: o.shape } : {}),
       hp: o.hp,
       speed: o.speed,
       dmg: o.dmg,
@@ -3805,14 +4450,48 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     return { type: 'g2d:createDino', varName: name, x: o.x, y: o.y, size: o.size, color: o.color }
   }
   if (method === 'createStickHero') {
-    // generator: const jogo = SZGame2D.createStickHero(ctx)
+    // generator: const equilibrista = SZGame2D.createStickHero({ w, h, color })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readStickHeroOptions(args[0], ctx)
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:createStickHero', varName: name, w: o.w, h: o.h, color: o.color }
+  }
+  if (method === 'createStickPath') {
+    // generator: const caminho = SZGame2D.createStickPath(ctx, { platform, stick })
     const ctxVar = identifierName(args[0]) ?? 'ctx'
-    return { type: 'g2d:createStickHero', varName: name, ctxVar }
+    if (args[1]?.type !== 'ObjectExpression') return null
+    const o = readStickPathOptions(args[1])
+    if (!o) return null
+    return {
+      type: 'g2d:createStickPath',
+      varName: name,
+      ctxVar,
+      platformColor: o.platformColor,
+      stickColor: o.stickColor,
+    }
   }
   if (method === 'createBalloon') {
-    // generator: const jogo = SZGame2D.createBalloon(ctx)
+    // generator: const balao = SZGame2D.createBalloon({ x, y, w, h, body, basket })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readBalloonOptions(args[0], ctx)
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return {
+      type: 'g2d:createBalloon',
+      varName: name,
+      x: o.x,
+      y: o.y,
+      w: o.w,
+      h: o.h,
+      color: o.color,
+      basketColor: o.basketColor,
+    }
+  }
+  if (method === 'createBalloonPath') {
+    // generator: const caminho = SZGame2D.createBalloonPath(ctx)
     const ctxVar = identifierName(args[0]) ?? 'ctx'
-    return { type: 'g2d:createBalloon', varName: name, ctxVar }
+    return { type: 'g2d:createBalloonPath', varName: name, ctxVar }
   }
   if (method === 'createCity') {
     // generator: const cidade = SZGame2D.createCity()
@@ -3858,7 +4537,7 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
 
 /** `<sprite>.<prop> = <expr>;` onde `<sprite>` é um sprite conhecido. */
 function matchSpriteMemberAssign(
-  node: Node,
+  node: Node | null | undefined,
   ctx: ParseCtx,
   prop: 'vx' | 'vy' | 'x' | 'y',
 ): { spriteVar: string; value: JSExpr } | null {
@@ -3915,11 +4594,22 @@ function asSZGame3DCall(expr: Node): { method: string; args: Node[] } | null {
   if (callee?.type !== 'MemberExpression' || callee.computed) return null
   if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZGame3D') return null
   if (callee.property?.type !== 'Identifier') return null
-  return { method: callee.property.name as string, args: expr.arguments ?? [] }
+  const method = callee.property.name as string
+  const args = expr.arguments ?? []
+  if (!game3dCallArityIsValid(method, args.length)) return null
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]
+    const value = argument?.type === 'StringLiteral' ? String(argument.value) : undefined
+    if (!game3dDropdownArgumentIsValid(method, index, value)) return null
+  }
+  return { method, args }
 }
 
 /** Lê `{ size, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
-function readBoxOptions(obj: Node, ctx: ParseCtx): { size: JSExpr; color: string } | null {
+function readBoxOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { size: JSExpr; color: string } | null {
   const result = { size: { type: 'num', value: 1 } as JSExpr, color: '#22d3ee' }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
@@ -3945,7 +4635,7 @@ function readBoxOptions(obj: Node, ctx: ParseCtx): { size: JSExpr; color: string
 
 /** Lê `{ <numKeys>, color }` (genérico) de um literal de objeto, p/ as formas da Fase 6. */
 function readShapeOpts(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   numKeys: string[],
   ctx: ParseCtx,
 ): Record<string, JSExpr | string> | null {
@@ -3974,7 +4664,10 @@ function readShapeOpts(
 }
 
 /** Lê `{ radius, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
-function readSphereOptions(obj: Node, ctx: ParseCtx): { radius: JSExpr; color: string } | null {
+function readSphereOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { radius: JSExpr; color: string } | null {
   const result = { radius: { type: 'num', value: 0.5 } as JSExpr, color: '#f59e0b' }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
@@ -4000,7 +4693,7 @@ function readSphereOptions(obj: Node, ctx: ParseCtx): { radius: JSExpr; color: s
 
 /** Lê `{ width, height, depth, color }` de um literal de objeto. null se chave não-literal/desconhecida. */
 function readBlockOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { width: JSExpr; height: JSExpr; depth: JSExpr; color: string } | null {
   const result = {
@@ -4384,6 +5077,8 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'cameraY' && args.length === 0) return { type: 'gk:cameraY' }
   if (method === 'mouseX' && args.length === 0) return { type: 'gk:mouseX' }
   if (method === 'mouseY' && args.length === 0) return { type: 'gk:mouseY' }
+  if (method === 'mouseScreenX' && args.length === 0) return { type: 'gk:mouseScreenX' }
+  if (method === 'mouseScreenY' && args.length === 0) return { type: 'gk:mouseScreenY' }
   if (method === 'mouseDown' && args.length === 0) return { type: 'gk:mouseDown' }
   return null
 }
@@ -4419,7 +5114,7 @@ function matchGameKitRpgExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
 
 /** Opções do `SZGameKit.setup({ width, height, background, accent })`. */
 function readGameKitSetupOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { w: JSExpr; h: JSExpr; bg: string; accent: string } | null {
   const result: { w: JSExpr; h: JSExpr; bg: string; accent: string } = {
@@ -4452,7 +5147,9 @@ function readGameKitSetupOptions(
 }
 
 /** Opções do `SZGameKit.setupFull({ background, accent })` (tela toda, sem dimensões). */
-function readGameKitSetupFullOptions(obj: Node): { bg: string; accent: string } | null {
+function readGameKitSetupFullOptions(
+  obj: Babel.ObjectExpression,
+): { bg: string; accent: string } | null {
   const result = { bg: '#1a1a2e', accent: '#4a9eff' }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
@@ -4474,7 +5171,7 @@ function readGameKitSetupFullOptions(obj: Node): { bg: string; accent: string } 
 
 /** Opções do `SZGameKit.createCharacter({ image, w, h, speed, color })`. */
 function readGameKitCharacterOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { image: string; w: JSExpr; h: JSExpr; speed: JSExpr; color: string } | null {
   const result: { image: string; w: JSExpr; h: JSExpr; speed: JSExpr; color: string } = {
@@ -4508,7 +5205,7 @@ function readGameKitCharacterOptions(
 
 /** Opções do `SZGameKit.defineMold("x", { w, h, health, speed, damage, color, image, look })`. */
 function readGameKitMoldOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): {
   w: JSExpr
@@ -4554,7 +5251,7 @@ function readGameKitMoldOptions(
 
 /** Opções do `SZGameKit.defineEffect("x", { count, color, size, life, speed, gravity })`. */
 function readGameKitEffectOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): {
   count: JSExpr
@@ -4608,8 +5305,7 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
   const call = asSZGameKitCall(expr)
   if (!call) return null
   const { method, args } = call
-  const isFn = (n: Node) =>
-    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+  const isFn = isInlineFunction
 
   switch (method) {
     case 'setup': {
@@ -4693,6 +5389,12 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'setState': {
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'gk:setState', name: args[0].value as string }
+    }
+    case 'restartGame':
+      return args.length === 0 ? { type: 'gk:restartGame' } : null
+    case 'onGameStart': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:onGameStart', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'onEnterState': {
       // generator: SZGameKit.onEnterState("jogando", function () {…})
@@ -4903,10 +5605,26 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'gk:rpgSetStartMap', map: args[0].value as string }
     }
-    case 'rpgOnMap': {
+    case 'rpgCreateMap': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[3])) return null
+      const cols = toExpr(args[1], ctx)
+      const rows = toExpr(args[2], ctx)
+      if (!isSimpleValue(cols) || !isSimpleValue(rows)) return null
+      const ctxParam = identifierName(args[3].params?.[0])
+      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      return {
+        type: 'gk:rpgCreateMap',
+        map: args[0].value as string,
+        cols,
+        rows,
+        ctxName: ctxParam ?? 'ctx',
+        body: bodyOfFn(args[3], source, ctx),
+      }
+    }
+    case 'rpgOnEnterMap': {
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
       return {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgOnEnterMap',
         map: args[0].value as string,
         body: bodyOfFn(args[1], source, ctx),
       }
@@ -4919,14 +5637,7 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:rpgCreateDoor', cx, cy, map: args[2].value as string }
         : null
     }
-    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
-    case 'rpgMapSize': {
-      const cols = toExpr(args[0], ctx)
-      const rows = toExpr(args[1], ctx)
-      return isSimpleValue(cols) && isSimpleValue(rows)
-        ? { type: 'gk:rpgMapSize', cols, rows }
-        : null
-    }
+    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
     case 'rpgConnectEdge': {
       // Lado fora do enum → rawJS (o dropdown coagiria; código é sagrado).
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
@@ -6558,6 +7269,17 @@ const W3D_ACCESSORIES = new Set(['nenhum', 'jetpack', 'botas'])
 const W3D_EMOTES = new Set(['acenar', 'pular', 'girar', 'dancar'])
 const W3D_DAY_PHASES = new Set(['dia', 'noite'])
 const W3D_POS_AXES = new Set(['x', 'y', 'z'])
+const W3D_DISTRICTS = new Set([
+  'residencial',
+  'comercial',
+  'educacao',
+  'saude',
+  'industrial',
+  'turistico',
+])
+const W3D_ROAD_LAYOUTS = new Set(['grade', 'radial', 'organica'])
+const W3D_HOUSE_STYLES = new Set(['coloridas', 'praia', 'modernas', 'campo'])
+const W3D_QUALITY_MODES = new Set(['automatica', 'alta', 'desempenho'])
 
 /** Chave de ObjectProperty não-computada (Identifier ou string). */
 function w3dPropKey(prop: Node): string | null {
@@ -6565,6 +7287,11 @@ function w3dPropKey(prop: Node): string | null {
   if (prop.key?.type === 'Identifier') return prop.key.name as string
   if (prop.key?.type === 'StringLiteral') return prop.key.value as string
   return null
+}
+
+function w3dStringLiteral(node: Node | undefined): string | null {
+  if (node?.type !== 'StringLiteral' || typeof node.value !== 'string') return null
+  return node.value
 }
 
 /** SZWorld3D.keyDown("e") / groundHeight(x, z) / worldSize() … em posição de VALOR. */
@@ -6592,6 +7319,17 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'hasAchievement' && args[0]?.type === 'StringLiteral') {
     return { type: 'w3d:hasAchievement', name: args[0].value as string }
   }
+  if (method === 'inventoryCount') {
+    const item = w3dStringLiteral(args[0])
+    if (item !== null) return { type: 'w3d:inventoryCount', item }
+  }
+  if (method === 'inventoryHas') {
+    const item = w3dStringLiteral(args[0])
+    const n = toExpr(args[1], ctx)
+    if (item !== null && isSimpleValue(n)) {
+      return { type: 'w3d:inventoryHas', item, n }
+    }
+  }
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'w3d:keyDown', key: args[0].value as string }
   }
@@ -6614,8 +7352,7 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
   const call = asSZWorld3DCall(expr)
   if (!call) return null
   const { method, args } = call
-  const isFn = (n: Node) =>
-    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+  const isFn = isInlineFunction
 
   switch (method) {
     case 'setup': {
@@ -6624,6 +7361,7 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       let style = 'floresta'
       let world: JSExpr = { type: 'num', value: 160 }
       for (const prop of args[0].properties ?? []) {
+        if (prop.type !== 'ObjectProperty') return null
         const key = w3dPropKey(prop)
         if (key === 'style') {
           if (prop.value?.type !== 'StringLiteral') return null
@@ -6673,6 +7411,10 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const y = toExpr(args[0], ctx)
       return isSimpleValue(y) ? { type: 'w3d:water', y, color: args[1].value as string } : null
     }
+    case 'skyPhoto':
+      return args.length === 1 && args[0]?.type === 'StringLiteral'
+        ? { type: 'w3d:skyPhoto', asset: args[0].value as string }
+        : null
     case 'carBoost': {
       const force = toExpr(args[0], ctx)
       return isSimpleValue(force) ? { type: 'w3d:carBoost', force } : null
@@ -6843,6 +7585,7 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       let style = 'passeio'
       let color = '#ef4444'
       for (const prop of args[0].properties ?? []) {
+        if (prop.type !== 'ObjectProperty') return null
         const key = w3dPropKey(prop)
         if (key === 'style') {
           if (prop.value?.type !== 'StringLiteral') return null
@@ -7202,6 +7945,63 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (!W3D_CITY_SIZES.has(size) || !W3D_CITY_MODES.has(mode)) return null
       return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:city', x, z, size, mode } : null
     }
+    case 'district': {
+      const kind = w3dStringLiteral(args[0])
+      if (kind === null) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const size = toExpr(args[3], ctx)
+      return W3D_DISTRICTS.has(kind) && isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(size)
+        ? { type: 'w3d:district', kind, x, z, size }
+        : null
+    }
+    case 'roadGrid': {
+      const layout = w3dStringLiteral(args[0])
+      if (layout === null) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const size = toExpr(args[3], ctx)
+      const width = toExpr(args[4], ctx)
+      return W3D_ROAD_LAYOUTS.has(layout) &&
+        isSimpleValue(x) &&
+        isSimpleValue(z) &&
+        isSimpleValue(size) &&
+        isSimpleValue(width)
+        ? { type: 'w3d:roadGrid', layout, x, z, size, width }
+        : null
+    }
+    case 'houseRow': {
+      const n = toExpr(args[0], ctx)
+      const x1 = toExpr(args[1], ctx)
+      const z1 = toExpr(args[2], ctx)
+      const x2 = toExpr(args[3], ctx)
+      const z2 = toExpr(args[4], ctx)
+      const style = w3dStringLiteral(args[5])
+      if (style === null) return null
+      return W3D_HOUSE_STYLES.has(style) &&
+        isSimpleValue(n) &&
+        isSimpleValue(x1) &&
+        isSimpleValue(z1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(z2)
+        ? { type: 'w3d:houseRow', n, x1, z1, x2, z2, style }
+        : null
+    }
+    case 'quality': {
+      const mode = w3dStringLiteral(args[0])
+      if (mode === null) return null
+      return W3D_QUALITY_MODES.has(mode) ? { type: 'w3d:quality', mode } : null
+    }
+    case 'inventoryGive':
+    case 'inventoryRemove': {
+      const item = w3dStringLiteral(args[0])
+      if (item === null) return null
+      const n = toExpr(args[1], ctx)
+      if (!isSimpleValue(n)) return null
+      return method === 'inventoryGive'
+        ? { type: 'w3d:inventoryGive', item, n }
+        : { type: 'w3d:inventoryRemove', item, n }
+    }
     case 'stringLights': {
       const x1 = toExpr(args[0], ctx)
       const z1 = toExpr(args[1], ctx)
@@ -7470,6 +8270,7 @@ const G3K_PART_SHAPES = new Set([
   'torus',
   'pyramid',
   'rampa',
+  'modelo',
 ])
 const G3K_COLLIDER_SHAPES = new Set(['box', 'sphere', 'capsule'])
 /** Espelha o dropdown de "ter física de" — valor fora daqui cai em rawJS. */
@@ -7478,6 +8279,20 @@ const G3K_CURVES = new Set(['linear', 'suave', 'pulso', 'fogo'])
 const G3K_PART_MATERIALS = new Set(['normal', 'metal', 'vidro', 'brilho'])
 const G3K_SPAWNER_WHERE = new Set(['edge', 'anywhere'])
 const G3K_POS_AXES = new Set(['x', 'y', 'z'])
+// Espelha o dropdown FX do sz_g3k_play_effect (10 sons prontos) — valor fora
+// daqui cai em rawJS na Ponte, igual ao GK_FX_KINDS do gêmeo 2D (convenção R29).
+const G3K_FX_KINDS = new Set([
+  'coin',
+  'hit',
+  'explosion',
+  'jump',
+  'laser',
+  'hurt',
+  'powerup',
+  'win',
+  'gameover',
+  'click',
+])
 
 /** SZGameKit3D.keyDown("w") / touches(a, b, d) / worldSize() … em posição de VALOR. */
 function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
@@ -7602,7 +8417,7 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
 
 /** Opções do `SZGameKit3D.setup({ width, height, world, sky, ground })`. */
 function readGameKit3DSetupOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { w: JSExpr; h: JSExpr; world: JSExpr; sky: string; ground: string } | null {
   const result: { w: JSExpr; h: JSExpr; world: JSExpr; sky: string; ground: string } = {
@@ -7638,7 +8453,7 @@ function readGameKit3DSetupOptions(
 
 /** Opções do `SZGameKit3D.part({ shape, color, w, h, d, x, y, z })`. */
 function readGameKit3DPartOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): {
   shape: string
@@ -7703,7 +8518,7 @@ function readGameKit3DPartOptions(
 
 /** Opções do `SZGameKit3D.setEffects({ shadows, bloom, strength, vignette })`. */
 function readGameKit3DEffectsOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { shadows: boolean; bloom: boolean; strength: JSExpr; vignette: boolean } | null {
   const result = {
@@ -7736,7 +8551,7 @@ function readGameKit3DEffectsOptions(
 
 /** Opções do `SZGameKit3D.defineEffect("x", { count, colorFrom, ... })`. */
 function readGameKit3DFxOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): {
   count: JSExpr
@@ -7789,7 +8604,7 @@ function readGameKit3DFxOptions(
 
 /** Opções do `SZGameKit3D.defineEmitter("x", { colorFrom, ..., glow })`. */
 function readGameKit3DEmitterOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): {
   colorFrom: string
@@ -7855,7 +8670,7 @@ function readGameKit3DEmitterOptions(
 
 /** Opções do `SZGameKit3D.defineMold("x", { health, speed }, fn)`. */
 function readGameKit3DMoldOptions(
-  obj: Node,
+  obj: Babel.ObjectExpression,
   ctx: ParseCtx,
 ): { health: JSExpr; speed: JSExpr } | null {
   const result = {
@@ -7889,8 +8704,7 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
   const call = asSZGameKit3DCall(expr)
   if (!call) return null
   const { method, args } = call
-  const isFn = (n: Node) =>
-    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+  const isFn = isInlineFunction
 
   switch (method) {
     case 'setup': {
@@ -8054,6 +8868,15 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       if (args[0]?.type !== 'StringLiteral') return null
       const fromVar = identifierName(args[1])
       return fromVar ? { type: 'g3k:spawnFrom', mold: args[0].value as string, fromVar } : null
+    }
+    case 'spawnRing': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const count = toExpr(args[1], ctx)
+      const fromVar = identifierName(args[2])
+      const speed = toExpr(args[3], ctx)
+      return fromVar && isSimpleValue(count) && isSimpleValue(speed)
+        ? { type: 'g3k:spawnRing', mold: args[0].value as string, count, fromVar, speed }
+        : null
     }
     case 'startSpawner': {
       if (args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
@@ -8489,10 +9312,25 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const amount = toExpr(args[1], ctx)
       return isSimpleValue(amount) ? { type: 'g3k:hurt', charVar, amount } : null
     }
+    case 'heal': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const amount = toExpr(args[1], ctx)
+      return isSimpleValue(amount) ? { type: 'g3k:heal', charVar, amount } : null
+    }
     case 'onEntityDeath': {
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
       return {
         type: 'g3k:onEntityDeath',
+        mold: args[0].value as string,
+        itemName: identifierName(args[1].params?.[0]) ?? 'ela',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'onHurt': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g3k:onHurt',
         mold: args[0].value as string,
         itemName: identifierName(args[1].params?.[0]) ?? 'ela',
         body: bodyOfFn(args[1], source, ctx),
@@ -8584,6 +9422,9 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
     }
     case 'playEffect': {
       if (args[0]?.type !== 'StringLiteral') return null
+      // Efeito fora do dropdown → rawJS (senão a Ponte reversa coage o
+      // desconhecido p/ a 1ª opção "coin"). Mesma convenção R29 do gêmeo 2D.
+      if (!G3K_FX_KINDS.has(args[0].value as string)) return null
       return { type: 'g3k:playEffect', fx: args[0].value as string }
     }
     case 'playTone': {
@@ -8627,7 +9468,8 @@ function tryMatchGameKit3DVarInit(name: string, init: Node, ctx: ParseCtx): JSSt
 
 /**
  * SZGame3D.* como statement: setBackground/setCameraPosition/setPosition/setRotation/animate
- * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/runEnemies/stop).
+ * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/spawnEnemy/
+ * updateGroup/pruneOffscreen/forEachInGroup/removeFromGroup/clearGroup/everyFrames/everySeconds/stop).
  * ANTES do método genérico — senão viram memberCall. As coordenadas (x/y/z/força/escala)
  * precisam ser valores representáveis; senão a linha cai em código avançado.
  */
@@ -8635,8 +9477,7 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
   const call = asSZGame3DCall(expr)
   if (!call) return null
   const { method, args } = call
-  const isFn = (n: Node) =>
-    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+  const isFn = isInlineFunction
 
   switch (method) {
     case 'setBackground': {
@@ -8722,16 +9563,39 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!worldVar || !objVar) return null
       return { type: 'g3d:cameraFollow', worldVar, objVar }
     }
-    case 'runEnemies': {
-      // generator: SZGame3D.runEnemies(world, group, ground, every, speed)
+    case 'spawnEnemy': {
+      // generator: SZGame3D.spawnEnemy(world, group, speed)
       const worldVar = identifierName(args[0])
       const groupVar = identifierName(args[1])
-      const groundVar = identifierName(args[2])
-      const every = toExpr(args[3], ctx)
-      const speed = toExpr(args[4], ctx)
-      if (!worldVar || !groupVar || !groundVar || !isSimpleValue(every) || !isSimpleValue(speed))
-        return null
-      return { type: 'g3d:runEnemies', worldVar, groupVar, groundVar, every, speed }
+      const speed = toExpr(args[2], ctx)
+      if (!worldVar || !groupVar || !isSimpleValue(speed)) return null
+      return { type: 'g3d:spawnEnemy', worldVar, groupVar, speed }
+    }
+    case 'updateGroup': {
+      // generator: SZGame3D.updateGroup(group, ground)
+      const groupVar = identifierName(args[0])
+      const groundVar = identifierName(args[1])
+      if (!groupVar || !groundVar) return null
+      return { type: 'g3d:updateGroup', groupVar, groundVar }
+    }
+    case 'updateGroupNoGravity': {
+      // generator: SZGame3D.updateGroupNoGravity(group)
+      const groupVar = identifierName(args[0])
+      if (!groupVar) return null
+      return { type: 'g3d:updateGroupNoGravity', groupVar }
+    }
+    case 'removeFromGroup': {
+      // generator: SZGame3D.removeFromGroup(group, obj)
+      const groupVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!groupVar || !objVar) return null
+      return { type: 'g3d:removeFromGroup', groupVar, objVar }
+    }
+    case 'clearGroup': {
+      // generator: SZGame3D.clearGroup(group)
+      const groupVar = identifierName(args[0])
+      if (!groupVar) return null
+      return { type: 'g3d:clearGroup', groupVar }
     }
     case 'stop': {
       // generator: SZGame3D.stop(world)
@@ -8802,8 +9666,9 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'isometricCamera': {
       // generator: SZGame3D.isometricCamera(world, followObj | null)
       const worldVar = identifierName(args[0])
-      if (!worldVar) return null
-      return { type: 'g3d:isometricCamera', worldVar, followVar: identifierName(args[1]) || '' }
+      const followVar = identifierName(args[1])
+      if (!worldVar || (!followVar && args[1]?.type !== 'NullLiteral')) return null
+      return { type: 'g3d:isometricCamera', worldVar, followVar: followVar || '' }
     }
     case 'moveAcross': {
       // generator: SZGame3D.moveAcross(group, speed, min, max)
@@ -8826,8 +9691,9 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'topCamera': {
       // generator: SZGame3D.topCamera(world, followObj | null)
       const worldVar = identifierName(args[0])
-      if (!worldVar) return null
-      return { type: 'g3d:topCamera', worldVar, followVar: identifierName(args[1]) || '' }
+      const followVar = identifierName(args[1])
+      if (!worldVar || (!followVar && args[1]?.type !== 'NullLiteral')) return null
+      return { type: 'g3d:topCamera', worldVar, followVar: followVar || '' }
     }
     case 'moveInCircle': {
       const objVar = identifierName(args[0])
@@ -9167,6 +10033,50 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(cb, source, ctx),
       }
     }
+    case 'forEachInGroup': {
+      // generator: SZGame3D.forEachInGroup(group, (item) => {…})
+      const groupVar = identifierName(args[0])
+      const cb = args[1]
+      if (!groupVar || !isFn(cb)) return null
+      const params = cb.params ?? []
+      if (params.length !== 1 || params[0]?.type !== 'Identifier') return null
+      return {
+        type: 'g3d:forEachInGroup',
+        groupVar,
+        itemName: params[0].name as string,
+        body: bodyOfFn(cb, source, ctx),
+      }
+    }
+    case 'pruneOffscreen': {
+      // generator: SZGame3D.pruneOffscreen(world, group, (item) => {…})
+      const worldVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      const cb = args[2]
+      if (!worldVar || !groupVar || !isFn(cb)) return null
+      const params = cb.params ?? []
+      if (params.length !== 1 || params[0]?.type !== 'Identifier') return null
+      return {
+        type: 'g3d:pruneOffscreen',
+        worldVar,
+        groupVar,
+        itemName: params[0].name as string,
+        body: bodyOfFn(cb, source, ctx),
+      }
+    }
+    case 'everyFramesLoop': {
+      // generator: SZGame3D.everyFramesLoop(n, () => {…}) — irmão do "A cada quadro 3D"
+      const n = toExpr(args[0], ctx)
+      const cb = args[1]
+      if (!isSimpleValue(n) || !isFn(cb) || (cb.params ?? []).length !== 0) return null
+      return { type: 'g3d:everyFrames', n, body: bodyOfFn(cb, source, ctx) }
+    }
+    case 'everySecondsLoop': {
+      // generator: SZGame3D.everySecondsLoop(secs, () => {…})
+      const secs = toExpr(args[0], ctx)
+      const cb = args[1]
+      if (!isSimpleValue(secs) || !isFn(cb) || (cb.params ?? []).length !== 0) return null
+      return { type: 'g3d:everySeconds', secs, body: bodyOfFn(cb, source, ctx) }
+    }
     case 'removeFromSwarm': {
       const swarmVar = identifierName(args[0])
       const itemVar = identifierName(args[1])
@@ -9390,6 +10300,14 @@ function matchGame3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'g3d:distanceTo', aVar, bVar }
   }
+  if (method === 'countSwarm') {
+    const swarmVar = identifierName(args[0])
+    if (swarmVar) return { type: 'g3d:countSwarm', swarmVar }
+  }
+  if (method === 'countGroup') {
+    const groupVar = identifierName(args[0])
+    if (groupVar) return { type: 'g3d:countGroup', groupVar }
+  }
   if (method === 'isNear') {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
@@ -9495,36 +10413,31 @@ interface CtxCall {
  * central dos blocos de canvas: só casa quando o objeto é um contexto 2D
  * registrado em `ctx.ctxVars`.
  */
-function matchCtxCall(expr: Node, ctx: ParseCtx): CtxCall | null {
+function matchCtxCall(expr: Node | null | undefined, ctx: ParseCtx): CtxCall | null {
   if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
     return null
   }
   const callee = expr.callee
-  if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
-  ) {
-    return null
-  }
+  if (!isNamedMemberExpression(callee)) return null
   if (callee.object?.type !== 'Identifier' || !ctx.ctxVars.has(callee.object.name)) return null
-  const method = callee.property?.name
-  if (typeof method !== 'string') return null
+  const method = callee.property.name
   return { ctxVar: callee.object.name, method, args: expr.arguments ?? [] }
 }
 
 /** `node` (ExpressionStatement) é uma chamada `<ctx>.<method>(...)`? */
-function matchCtxCallNode(node: Node, ctx: ParseCtx, method: string): CtxCall | null {
+function matchCtxCallNode(
+  node: Node | null | undefined,
+  ctx: ParseCtx,
+  method: string,
+): CtxCall | null {
   if (node?.type !== 'ExpressionStatement') return null
   const call = matchCtxCall(node.expression, ctx)
   return call && call.method === method ? call : null
 }
 
 /** Nome do objeto em `<Identifier>.<prop>` (membro normal ou optional); senão `null`. */
-function memberObjName(node: Node, prop: string): string | null {
-  if (!node || (node.type !== 'MemberExpression' && node.type !== 'OptionalMemberExpression')) {
-    return null
-  }
-  if (node.property?.name !== prop) return null
+function memberObjName(node: Node | null | undefined, prop: string): string | null {
+  if (!isNamedMemberExpression(node) || node.property.name !== prop) return null
   if (node.object?.type !== 'Identifier') return null
   return node.object.name as string
 }
@@ -9546,7 +10459,7 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
     case 'clearRect': {
       // ctx.clearRect(0, 0, <canvas>.width, <canvas>.height) → limpar a tela inteira
       const canvasVar = matchClearRectArgs(args)
-      if (canvasVar) return { type: 'canvasClear', ctxVar, canvasVar }
+      if (canvasVar) return { type: 'canvasClear', ctxVar }
       // clearRect com coordenadas quaisquer → limpar uma área
       const [crx, cry, crw, crh] = mapArgs(args, 4, ctx)
       return crx && cry && crw && crh
@@ -9657,9 +10570,11 @@ function matchClearRectArgs(args: Node[]): string | null {
  * Reconhece o bloco gerado por `canvasDrawImage`:
  * `{ const img = new Image(); img.src = "..."; img.onload = () => ctx.drawImage(img, x, y, w, h); }`.
  */
-function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
-  const body = block?.body
-  if (!Array.isArray(body) || body.length !== 3) return null
+function tryMatchDrawImage(block: Babel.BlockStatement, ctx: ParseCtx): JSStatement | null {
+  const body = block.body
+  const cached = tryMatchCachedDrawImage(body, ctx)
+  if (cached) return cached
+  if (body.length !== 3) return null
 
   // 1) const img = new Image();
   const decl = body[0]
@@ -9667,7 +10582,13 @@ function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
   const id = decl.declarations[0]?.id
   const init = decl.declarations[0]?.init
   if (id?.type !== 'Identifier') return null
-  if (init?.type !== 'NewExpression' || init.callee?.name !== 'Image') return null
+  if (
+    init?.type !== 'NewExpression' ||
+    init.callee?.type !== 'Identifier' ||
+    init.callee.name !== 'Image'
+  ) {
+    return null
+  }
   const img = id.name
 
   // 2) img.src = "...";
@@ -9706,6 +10627,61 @@ function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
   return { type: 'canvasDrawImage', ctxVar: draw.ctxVar, src, x, y, w, h }
 }
 
+/** Bloco gerado depois do pré-carregamento: busca a imagem pronta e a desenha. */
+function tryMatchCachedDrawImage(body: Node[], ctx: ParseCtx): JSStatement | null {
+  if (body.length !== 2) return null
+  const declaration = body[0]
+  if (declaration?.type !== 'VariableDeclaration' || declaration.declarations?.length !== 1) {
+    return null
+  }
+  const id = declaration.declarations[0]?.id
+  const init = declaration.declarations[0]?.init
+  if (id?.type !== 'Identifier' || init?.type !== 'CallExpression') return null
+  const getter = init.callee
+  if (
+    !isNamedMemberExpression(getter) ||
+    getter.object?.type !== 'Identifier' ||
+    !/^imagensCanvas(?:_\d+)?$/.test(getter.object.name) ||
+    getter.property.name !== 'get' ||
+    init.arguments?.length !== 1 ||
+    init.arguments[0]?.type !== 'StringLiteral'
+  ) {
+    return null
+  }
+
+  const conditional = body[1]
+  if (
+    conditional?.type !== 'IfStatement' ||
+    conditional.test?.type !== 'Identifier' ||
+    conditional.test.name !== id.name
+  ) {
+    return null
+  }
+  const consequent = conditional.consequent
+  const expression =
+    consequent?.type === 'ExpressionStatement'
+      ? consequent.expression
+      : consequent?.type === 'BlockStatement' &&
+          consequent.body?.length === 1 &&
+          consequent.body[0]?.type === 'ExpressionStatement'
+        ? consequent.body[0].expression
+        : null
+  const draw = matchCtxCall(expression, ctx)
+  if (draw?.method !== 'drawImage' || draw.args.length !== 5) return null
+  if (draw.args[0]?.type !== 'Identifier' || draw.args[0].name !== id.name) return null
+  const [x, y, w, h] = mapArgs(draw.args.slice(1), 4, ctx)
+  if (!x || !y || !w || !h) return null
+  return {
+    type: 'canvasDrawImage',
+    ctxVar: draw.ctxVar,
+    src: String(init.arguments[0].value),
+    x,
+    y,
+    w,
+    h,
+  }
+}
+
 // ---------- canvas: matchers de fusão (vários statements → 1 IR) ----------
 
 /** Resultado de um matcher de fusão: a IR e quantos nós ela consumiu. */
@@ -9727,7 +10703,13 @@ function tryFuseNewImage(nodes: Node[], i: number, ctx: ParseCtx): FusedStatemen
   const d0 = decl.declarations[0]
   if (d0?.id?.type !== 'Identifier') return null
   const init = d0.init
-  if (init?.type !== 'NewExpression' || init.callee?.name !== 'Image') return null
+  if (
+    init?.type !== 'NewExpression' ||
+    init.callee?.type !== 'Identifier' ||
+    init.callee.name !== 'Image'
+  ) {
+    return null
+  }
   if ((init.arguments?.length ?? 0) !== 0) return null
   const varName = d0.id.name
 
@@ -9744,7 +10726,7 @@ function tryFuseNewImage(nodes: Node[], i: number, ctx: ParseCtx): FusedStatemen
 
 /** `<canvas>.width = W;` (ou `height`) onde `<canvas>` é um elemento conhecido. */
 function matchCanvasDimAssign(
-  node: Node,
+  node: Node | null | undefined,
   ctx: ParseCtx,
   dim: 'width' | 'height',
 ): { canvasVar: string; value: JSExpr } | null {
@@ -9769,7 +10751,7 @@ function tryFuseCanvasSetSize(nodes: Node[], i: number, ctx: ParseCtx): FusedSta
 }
 
 /** `Math.PI` (membro estático, não-computado). */
-function isMathPi(node: Node): boolean {
+function isMathPi(node: Node | null | undefined): boolean {
   return (
     node?.type === 'MemberExpression' &&
     !node.computed &&
@@ -9786,7 +10768,7 @@ function isMathPi(node: Node): boolean {
  * PARCIAL (pizza/semicírculo) ou uma elipse GIRADA não têm bloco e seriam recriados
  * como círculo/elipse cheios (perda silenciosa do desenho), então a fusão é recusada.
  */
-function isFullCircleAngle(node: Node): boolean {
+function isFullCircleAngle(node: Node | null | undefined): boolean {
   if (node?.type !== 'BinaryExpression' || node.operator !== '*') return false
   return (
     (isMathPi(node.left) && numericLiteralValue(node.right) === 2) ||
@@ -9889,7 +10871,7 @@ function tryFuseCanvasArcSlice(nodes: Node[], i: number, ctx: ParseCtx): FusedSt
 
 /** `<ctx>.<prop> = <value>` quando `<ctx>` é um contexto de canvas conhecido. */
 function matchCtxPropAssign(
-  node: Node,
+  node: Node | null | undefined,
   ctx: ParseCtx,
   prop: string,
 ): { ctxVar: string; value: Node } | null {
@@ -9916,14 +10898,17 @@ function tryFuseCanvasShadow(nodes: Node[], i: number, ctx: ParseCtx): FusedStat
 }
 
 /** `g.addColorStop(offset, "#cor");` referenciando a variável do gradiente. */
-function matchAddColorStop(node: Node, varName: string): { offset: number; color: string } | null {
+function matchAddColorStop(
+  node: Node | null | undefined,
+  varName: string,
+): { offset: number; color: string } | null {
   if (node?.type !== 'ExpressionStatement') return null
   const expr = node.expression
   if (expr?.type !== 'CallExpression') return null
   const callee = expr.callee
-  if (callee?.type !== 'MemberExpression') return null
+  if (!isNamedMemberExpression(callee)) return null
   if (callee.object?.type !== 'Identifier' || callee.object.name !== varName) return null
-  if (callee.property?.name !== 'addColorStop') return null
+  if (callee.property.name !== 'addColorStop') return null
   if (expr.arguments?.length !== 2) return null
   const offset = expr.arguments[0]
   const color = expr.arguments[1]
@@ -9962,22 +10947,19 @@ function tryFuseCanvasGradient(nodes: Node[], i: number, ctx: ParseCtx): FusedSt
   }
 }
 
-/** `requestAnimationFrame(<name>)` como expressão. */
+/** `requestAnimationFrame(<name>)` ou `contexto.requestFrame(<name>)`. */
 function isRafCall(expr: Node, name: string): boolean {
-  if (expr?.type !== 'CallExpression') return false
-  if (expr.callee?.type !== 'Identifier' || expr.callee.name !== 'requestAnimationFrame') {
-    return false
-  }
+  if (!isGlobalOrManagedProjectRunCall(expr, 'requestAnimationFrame', 'requestFrame')) return false
   const arg = expr.arguments?.[0]
   return expr.arguments?.length === 1 && arg?.type === 'Identifier' && arg.name === name
 }
 
-function isRafCallStatement(node: Node, name: string): boolean {
+function isRafCallStatement(node: Node | null | undefined, name: string): boolean {
   return node?.type === 'ExpressionStatement' && isRafCall(node.expression, name)
 }
 
 /** `<name>()` — chamada direta da função, sem argumentos. */
-function isPlainCallStatement(node: Node, name: string): boolean {
+function isPlainCallStatement(node: Node | null | undefined, name: string): boolean {
   if (node?.type !== 'ExpressionStatement') return false
   const expr = node.expression
   return (
@@ -9988,8 +10970,23 @@ function isPlainCallStatement(node: Node, name: string): boolean {
   )
 }
 
+/** `contexto.run(<name>)` — pontapé síncrono gerenciado do loop. */
+function isManagedProjectRunCallStatement(node: Node | null | undefined, name: string): boolean {
+  if (node?.type !== 'ExpressionStatement') return false
+  const expr = node.expression
+  if (expr?.type !== 'CallExpression' || expr.arguments.length !== 1) return false
+  const callee = expr.callee
+  return (
+    isNamedMemberExpression(callee) &&
+    callee.property.name === 'run' &&
+    callee.object.type === 'Identifier' &&
+    GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name) &&
+    isIdentifierNamed(expr.arguments[0], name)
+  )
+}
+
 /** `let X;` (uma única declaração, sem inicializador) → nome `X`; senão `null`. */
-function declaredVarName(node: Node): string | null {
+function declaredVarName(node: Node | null | undefined): string | null {
   if (node?.type !== 'VariableDeclaration') return null
   const decls = node.declarations
   if (!Array.isArray(decls) || decls.length !== 1) return null
@@ -9999,12 +10996,193 @@ function declaredVarName(node: Node): string | null {
 }
 
 /** `<handle> = requestAnimationFrame(<name>)` → nome de `<handle>`; senão `null`. */
-function rafAssignmentHandle(node: Node, name: string): string | null {
+function rafAssignmentHandle(node: Node | null | undefined, name: string): string | null {
   if (node?.type !== 'ExpressionStatement') return null
   const expr = node.expression
   if (expr?.type !== 'AssignmentExpression' || expr.operator !== '=') return null
   if (expr.left?.type !== 'Identifier') return null
   return isRafCall(expr.right, name) ? expr.left.name : null
+}
+
+/**
+ * Cleanup exato emitido pelo lifecycle:
+ * `contexto.registerResource(() => cancelAnimationFrame(id))`.
+ */
+function projectRunFrameCleanupHandle(node: Node | null | undefined): string | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const call = node.expression
+  if (call?.type !== 'CallExpression' || call.arguments?.length !== 1) return null
+  const callee = call.callee
+  if (!isNamedMemberExpression(callee)) return null
+  if (callee.property.name !== 'registerResource' || callee.object?.type !== 'Identifier') {
+    return null
+  }
+  if (!GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name)) return null
+  const callback = call.arguments[0]
+  if (callback?.type !== 'ArrowFunctionExpression' || callback.params?.length !== 0) return null
+  const cancelCall = callback.body
+  if (cancelCall?.type !== 'CallExpression' || cancelCall.arguments?.length !== 1) return null
+  if (
+    cancelCall.callee?.type !== 'Identifier' ||
+    cancelCall.callee.name !== 'cancelAnimationFrame'
+  ) {
+    return null
+  }
+  const handle = cancelCall.arguments[0]
+  return handle?.type === 'Identifier' ? handle.name : null
+}
+
+/** Declaração interna `let lastFrameTime[_N];` usada só para calcular delta. */
+function generatedLastFrameName(node: Node | null | undefined): string | null {
+  const name = declaredVarName(node)
+  return name && /^lastFrameTime(?:_\d+)?$/.test(name) ? name : null
+}
+
+/**
+ * Reconhece exatamente as duas linhas geradas para `delta`:
+ * `const dt = last === undefined ? 0 : (time - last) / 1000; last = time;`.
+ */
+function generatedAnimationDelta(
+  body: Node[],
+  index: number,
+  timeName: string,
+  lastTimeName: string,
+): string | null {
+  const declaration = body[index]
+  const assignmentStatement = body[index + 1]
+  if (
+    declaration?.type !== 'VariableDeclaration' ||
+    declaration.kind !== 'const' ||
+    declaration.declarations.length !== 1
+  ) {
+    return null
+  }
+  const declarator = declaration.declarations[0]
+  const deltaName = declarator?.id.type === 'Identifier' ? declarator.id.name : null
+  const conditional = declarator?.init
+  if (!deltaName || conditional?.type !== 'ConditionalExpression') return null
+  const test = conditional.test
+  const alternate = conditional.alternate
+  if (
+    test.type !== 'BinaryExpression' ||
+    test.operator !== '===' ||
+    !isIdentifierNamed(test.left, lastTimeName) ||
+    !isIdentifierNamed(test.right, 'undefined') ||
+    conditional.consequent.type !== 'NumericLiteral' ||
+    conditional.consequent.value !== 0 ||
+    alternate.type !== 'BinaryExpression' ||
+    alternate.operator !== '/' ||
+    alternate.right.type !== 'NumericLiteral' ||
+    alternate.right.value !== 1_000 ||
+    alternate.left.type !== 'BinaryExpression' ||
+    alternate.left.operator !== '-' ||
+    !isIdentifierNamed(alternate.left.left, timeName) ||
+    !isIdentifierNamed(alternate.left.right, lastTimeName)
+  ) {
+    return null
+  }
+  if (assignmentStatement?.type !== 'ExpressionStatement') return null
+  const assignment = assignmentStatement.expression
+  if (
+    assignment.type !== 'AssignmentExpression' ||
+    assignment.operator !== '=' ||
+    !isIdentifierNamed(assignment.left, lastTimeName) ||
+    !isIdentifierNamed(assignment.right, timeName)
+  ) {
+    return null
+  }
+  return deltaName
+}
+
+function animationTimeFields(
+  timeName: string,
+  deltaName?: string,
+): Pick<Extract<JSStatement, { type: 'animationLoop' }>, 'timeVar' | 'deltaVar'> {
+  const generatedTime = deltaName && /^frameTime(?:_\d+)?$/.test(timeName)
+  return {
+    ...(!generatedTime ? { timeVar: timeName } : {}),
+    ...(deltaName ? { deltaVar: deltaName } : {}),
+  }
+}
+
+/** Formas com relógio/delta, inclusive a variante cancelável com handle. */
+function tryFuseTimedAnimationLoop(
+  nodes: Node[],
+  i: number,
+  source: string,
+  ctx: ParseCtx,
+): FusedStatement | null {
+  const firstDeclaration = declaredVarName(nodes[i])
+  if (firstDeclaration) {
+    let functionIndex = i + 1
+    const lastTimeName = generatedLastFrameName(nodes[functionIndex])
+    if (lastTimeName) functionIndex += 1
+    const fn = nodes[functionIndex]
+    if (
+      fn?.type === 'FunctionDeclaration' &&
+      fn.id?.type === 'Identifier' &&
+      fn.params.length === 1 &&
+      fn.params[0]?.type === 'Identifier'
+    ) {
+      const frameName = fn.id.name
+      const externalIndex = functionIndex + 1
+      const bodyNodes = fn.body.body
+      if (
+        rafAssignmentHandle(nodes[externalIndex], frameName) === firstDeclaration &&
+        rafAssignmentHandle(bodyNodes[0], frameName) === firstDeclaration
+      ) {
+        const timeName = fn.params[0].name
+        let bodyStart = 1
+        let deltaName: string | undefined
+        if (lastTimeName) {
+          deltaName =
+            generatedAnimationDelta(bodyNodes, bodyStart, timeName, lastTimeName) ?? undefined
+          if (!deltaName) return null
+          bodyStart += 2
+        }
+        const body = mapStatementList(bodyNodes.slice(bodyStart), source, ctx)
+        const hasManagedCleanup =
+          projectRunFrameCleanupHandle(nodes[externalIndex + 1]) === firstDeclaration
+        const generatedHandle =
+          hasManagedCleanup && /^__szProjectRunFrame(?:_\d+)?$/.test(firstDeclaration)
+        return {
+          stmt: {
+            type: 'animationLoop',
+            ...(!generatedHandle ? { handle: firstDeclaration } : {}),
+            ...animationTimeFields(timeName, deltaName),
+            body,
+          },
+          consumed: externalIndex - i + 1 + (hasManagedCleanup ? 1 : 0),
+        }
+      }
+    }
+  }
+
+  const lastTimeName = generatedLastFrameName(nodes[i])
+  if (!lastTimeName) return null
+  const fn = nodes[i + 1]
+  if (
+    fn?.type !== 'FunctionDeclaration' ||
+    fn.id?.type !== 'Identifier' ||
+    fn.params.length !== 1 ||
+    fn.params[0]?.type !== 'Identifier' ||
+    !isRafCallStatement(nodes[i + 2], fn.id.name)
+  ) {
+    return null
+  }
+  const bodyNodes = fn.body.body
+  if (!isRafCallStatement(bodyNodes.at(-1), fn.id.name)) return null
+  const timeName = fn.params[0].name
+  const deltaName = generatedAnimationDelta(bodyNodes, 0, timeName, lastTimeName)
+  if (!deltaName) return null
+  return {
+    stmt: {
+      type: 'animationLoop',
+      ...animationTimeFields(timeName, deltaName),
+      body: mapStatementList(bodyNodes.slice(2, -1), source, ctx),
+    },
+    consumed: 3,
+  }
 }
 
 /**
@@ -10021,6 +11199,9 @@ function tryFuseAnimationLoop(
   source: string,
   ctx: ParseCtx,
 ): FusedStatement | null {
+  const timedLoop = tryFuseTimedAnimationLoop(nodes, i, source, ctx)
+  if (timedLoop) return timedLoop
+
   const declName = declaredVarName(nodes[i])
   if (declName) {
     const decl = nodes[i + 1]
@@ -10028,7 +11209,8 @@ function tryFuseAnimationLoop(
       const name = decl.id.name
       const bodyNodes = decl.body?.body
       if (
-        isPlainCallStatement(nodes[i + 2], name) &&
+        (isPlainCallStatement(nodes[i + 2], name) ||
+          isManagedProjectRunCallStatement(nodes[i + 2], name)) &&
         Array.isArray(bodyNodes) &&
         bodyNodes.length > 0
       ) {
@@ -10039,7 +11221,17 @@ function tryFuseAnimationLoop(
         if (firstIsRaf || lastIsRaf) {
           const inner = firstIsRaf ? bodyNodes.slice(1) : bodyNodes.slice(0, -1)
           const body = mapStatementList(inner, source, ctx)
-          return { stmt: { type: 'animationLoop', handle: declName, body }, consumed: 3 }
+          const hasManagedCleanup = projectRunFrameCleanupHandle(nodes[i + 3]) === declName
+          const generatedHandle =
+            hasManagedCleanup && /^__szProjectRunFrame(?:_\d+)?$/.test(declName)
+          return {
+            stmt: {
+              type: 'animationLoop',
+              ...(!generatedHandle ? { handle: declName } : {}),
+              body,
+            },
+            consumed: hasManagedCleanup ? 4 : 3,
+          }
         }
       }
     }
@@ -10050,24 +11242,34 @@ function tryFuseAnimationLoop(
   const name = fn.id.name
   // Pontapé externo: `frame()` (forma atual) ou `requestAnimationFrame(frame)`
   // (forma antiga, mantida para projetos já salvos).
-  if (!isPlainCallStatement(nodes[i + 1], name) && !isRafCallStatement(nodes[i + 1], name)) {
+  if (
+    !isPlainCallStatement(nodes[i + 1], name) &&
+    !isManagedProjectRunCallStatement(nodes[i + 1], name) &&
+    !isRafCallStatement(nodes[i + 1], name)
+  ) {
     return null
   }
   const bodyNodes = fn.body?.body
   if (!Array.isArray(bodyNodes) || bodyNodes.length === 0) return null
   if (!isRafCallStatement(bodyNodes[bodyNodes.length - 1], name)) return null
   const body = mapStatementList(bodyNodes.slice(0, -1), source, ctx)
-  return { stmt: { type: 'animationLoop', body }, consumed: 2 }
+  if (fn.params.length > 1 || (fn.params[0] && fn.params[0].type !== 'Identifier')) return null
+  const timeVar = fn.params[0]?.type === 'Identifier' ? fn.params[0].name : undefined
+  return {
+    stmt: { type: 'animationLoop', ...(timeVar ? { timeVar } : {}), body },
+    consumed: 2,
+  }
 }
 
 /** Objeto de estado de teclado: `{ left:false, right:false, up:false, down:false }`. */
-function isKeyStateObject(node: Node): boolean {
+function isKeyStateObject(node: Node | null | undefined): boolean {
   if (node?.type !== 'ObjectExpression') return false
   const want = new Set(['left', 'right', 'up', 'down'])
   const got = new Set<string>()
   for (const p of node.properties ?? []) {
     if (p.type !== 'ObjectProperty') return false
-    const key = p.key?.name ?? p.key?.value
+    const key =
+      p.key.type === 'Identifier' ? p.key.name : p.key.type === 'StringLiteral' ? p.key.value : null
     if (typeof key !== 'string' || !want.has(key)) return false
     if (p.value?.type !== 'BooleanLiteral') return false
     got.add(key)
@@ -10076,14 +11278,14 @@ function isKeyStateObject(node: Node): boolean {
 }
 
 /** `document.addEventListener('<event>', ...)`. */
-function isDocumentKeyListener(node: Node, event: 'keydown' | 'keyup'): boolean {
+function isDocumentKeyListener(node: Node | null | undefined, event: 'keydown' | 'keyup'): boolean {
   if (node?.type !== 'ExpressionStatement') return false
   const expr = node.expression
   if (expr?.type !== 'CallExpression') return false
   const callee = expr.callee
-  if (callee?.type !== 'MemberExpression') return false
+  if (!isNamedMemberExpression(callee)) return false
   if (callee.object?.type !== 'Identifier' || callee.object.name !== 'document') return false
-  if (callee.property?.name !== 'addEventListener') return false
+  if (callee.property.name !== 'addEventListener') return false
   const arg = expr.arguments?.[0]
   return arg?.type === 'StringLiteral' && arg.value === event
 }
@@ -10113,14 +11315,9 @@ function matchGetContext(node: Node): string | null {
     return null
   }
   const callee = node.callee
-  if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
-  ) {
-    return null
-  }
-  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'getContext') return null
-  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  if (!isNamedMemberExpression(callee)) return null
+  if (callee.object?.type !== 'Identifier' || callee.property.name !== 'getContext') return null
+  if (node.arguments?.length !== 1 || node.arguments[0]?.type !== 'StringLiteral') return null
   if (node.arguments[0].value !== '2d') return null
   return callee.object.name as string
 }
@@ -10134,14 +11331,15 @@ function matchGetElementById(node: Node): string | null {
     return null
   }
   const callee = node.callee
+  if (!isNamedMemberExpression(callee)) return null
   if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+    callee.object?.type !== 'Identifier' ||
+    callee.object.name !== 'document' ||
+    callee.property.name !== 'getElementById'
   ) {
     return null
   }
-  if (callee.object?.name !== 'document' || callee.property?.name !== 'getElementById') return null
-  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  if (node.arguments?.length !== 1 || node.arguments[0]?.type !== 'StringLiteral') return null
   return node.arguments[0].value as string
 }
 
@@ -10151,16 +11349,11 @@ function matchQuerySelectorValue(node: Node): { selector: string; all: boolean }
     return null
   }
   const callee = node.callee
-  if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
-  ) {
-    return null
-  }
-  if (callee.object?.name !== 'document') return null
-  const prop = callee.property?.name
+  if (!isNamedMemberExpression(callee)) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'document') return null
+  const prop = callee.property.name
   if (prop !== 'querySelector' && prop !== 'querySelectorAll') return null
-  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  if (node.arguments?.length !== 1 || node.arguments[0]?.type !== 'StringLiteral') return null
   return { selector: node.arguments[0].value as string, all: prop === 'querySelectorAll' }
 }
 
@@ -10175,13 +11368,11 @@ function matchGetProperty(
 ): {
   targetId: string
   targetKind?: 'var'
-  property: 'textContent' | 'value' | 'innerHTML'
+  property: 'textContent' | 'value'
 } | null {
-  if (!node || (node.type !== 'MemberExpression' && node.type !== 'OptionalMemberExpression')) {
-    return null
-  }
-  const propName = node.property?.name
-  if (propName !== 'textContent' && propName !== 'value' && propName !== 'innerHTML') return null
+  if (!isNamedMemberExpression(node)) return null
+  const propName = node.property.name
+  if (!isGuidedDomProperty(propName)) return null
   const target = extractTarget(node.object, ctx)
   if (!target) return null
   return { targetId: target.id, ...targetKindField(target), property: propName }
@@ -10196,14 +11387,8 @@ function matchGetAttribute(
     return null
   }
   const callee = node.callee
-  if (
-    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
-    callee.computed
-  ) {
-    return null
-  }
-  if (callee.property?.name !== 'getAttribute') return null
-  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'getAttribute') return null
+  if (node.arguments?.length !== 1 || node.arguments[0]?.type !== 'StringLiteral') return null
   const target = extractTarget(callee.object, ctx)
   if (!target) return null
   return {
@@ -10219,7 +11404,7 @@ function matchGetAttribute(
  * descartada no parse e recriada no gerar — round-trip continua estável. Só casa
  * SEM `else` (o bloco não tem ramo senão).
  */
-function tryMatchEvery(node: Node, source: string, ctx: ParseCtx): JSStatement | null {
+function tryMatchEvery(node: Babel.IfStatement, source: string, ctx: ParseCtx): JSStatement | null {
   if (node.alternate) return null
   // Espelho do Jogo 2D para o Jogo 2D Avançado: `if (SZGameKit.everySeconds(k, N))`.
   const gkCall = asSZGameKitCall(node.test)
@@ -10240,10 +11425,15 @@ function tryMatchEvery(node: Node, source: string, ctx: ParseCtx): JSStatement |
     if (!isSimpleValue(seconds)) return null
     return { type: 'g2d:everySeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
   }
+  if (call.method === 'afterSeconds') {
+    const seconds = toExpr(call.args[1], ctx)
+    if (!isSimpleValue(seconds)) return null
+    return { type: 'g2d:afterSeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
+  }
   return null
 }
 
-function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapIf(node: Babel.IfStatement, source: string, ctx: ParseCtx): JSStatement {
   // "alternar tela cheia" → if (document.fullscreenElement) sair; senão entrar.
   // ANTES do if genérico (a condição usa o objeto global `document`).
   const toggleFs = tryMatchToggleFullscreen(node)
@@ -10278,7 +11468,7 @@ function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
   }
 }
 
-function mapForOf(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapForOf(node: Babel.ForOfStatement, source: string, ctx: ParseCtx): JSStatement {
   // for (const item of lista) { ... } — left = const/let de UM Identifier simples,
   // right = Identifier (variável da lista). Demais formas viram código avançado.
   const left = node.left
@@ -10322,7 +11512,131 @@ function bodyReferencesVar(body: JSStatement[], name: string): boolean {
   return found
 }
 
-function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
+/** Forma canônica gerada para repeat: congela o limite no inicializador do for. */
+function tryMapStableRepeat(
+  node: Babel.ForStatement,
+  source: string,
+  ctx: ParseCtx,
+): JSStatement | null {
+  const declarations = node.init?.type === 'VariableDeclaration' ? node.init.declarations : null
+  if (declarations?.length !== 2) return null
+  const [counterDecl, limitDecl] = declarations
+  if (
+    counterDecl?.id?.type !== 'Identifier' ||
+    counterDecl.init?.type !== 'NumericLiteral' ||
+    counterDecl.init.value !== 0 ||
+    limitDecl?.id?.type !== 'Identifier' ||
+    !limitDecl.init
+  ) {
+    return null
+  }
+  const counter = counterDecl.id.name
+  const limit = limitDecl.id.name
+  const test = node.test
+  const update = node.update
+  if (
+    test?.type !== 'BinaryExpression' ||
+    test.operator !== '<' ||
+    test.left?.type !== 'Identifier' ||
+    test.left.name !== counter ||
+    test.right?.type !== 'Identifier' ||
+    test.right.name !== limit ||
+    update?.type !== 'UpdateExpression' ||
+    update.operator !== '++' ||
+    update.argument?.type !== 'Identifier' ||
+    update.argument.name !== counter
+  ) {
+    return null
+  }
+  const times = toExpr(limitDecl.init, ctx)
+  if (!isSimpleValue(times)) return null
+  const body = bodyOfBlock(node.body, source, ctx)
+  if (bodyReferencesVar(body, counter)) return null
+  return { type: 'repeat', times, body }
+}
+
+/**
+ * Forma canônica do intervalo: início, fim e passo são avaliados uma vez, e o
+ * sinal do passo escolhe a comparação crescente ou decrescente.
+ */
+function tryMapStableForRange(
+  node: Babel.ForStatement,
+  source: string,
+  ctx: ParseCtx,
+): JSStatement | null {
+  const declarations = node.init?.type === 'VariableDeclaration' ? node.init.declarations : null
+  if (declarations?.length !== 3) return null
+  const [valueDecl, limitDecl, stepDecl] = declarations
+  if (
+    valueDecl?.id?.type !== 'Identifier' ||
+    !valueDecl.init ||
+    limitDecl?.id?.type !== 'Identifier' ||
+    !limitDecl.init ||
+    stepDecl?.id?.type !== 'Identifier' ||
+    !stepDecl.init
+  ) {
+    return null
+  }
+  const valueName = valueDecl.id.name
+  const limitName = limitDecl.id.name
+  const stepName = stepDecl.id.name
+  const isIdentifier = (candidate: Node, name: string) =>
+    candidate?.type === 'Identifier' && candidate.name === name
+  const isComparison = (
+    candidate: Node,
+    operator: string,
+    left: string,
+    right: (candidate: Node) => boolean,
+  ) =>
+    candidate?.type === 'BinaryExpression' &&
+    candidate.operator === operator &&
+    isIdentifier(candidate.left, left) &&
+    right(candidate.right)
+  const isNumber = (value: number) => (candidate: Node) =>
+    candidate?.type === 'NumericLiteral' && candidate.value === value
+  const isNamed = (name: string) => (candidate: Node) => isIdentifier(candidate, name)
+
+  const test = node.test
+  if (test?.type !== 'ConditionalExpression') return null
+  const negativeBranch = test.alternate
+  if (
+    !isComparison(test.test, '>', stepName, isNumber(0)) ||
+    !isComparison(test.consequent, '<', valueName, isNamed(limitName)) ||
+    negativeBranch?.type !== 'ConditionalExpression' ||
+    !isComparison(negativeBranch.test, '<', stepName, isNumber(0)) ||
+    !isComparison(negativeBranch.consequent, '>', valueName, isNamed(limitName)) ||
+    negativeBranch.alternate?.type !== 'BooleanLiteral' ||
+    negativeBranch.alternate.value !== false
+  ) {
+    return null
+  }
+  const update = node.update
+  if (
+    update?.type !== 'AssignmentExpression' ||
+    update.operator !== '+=' ||
+    !isIdentifier(update.left, valueName) ||
+    !isIdentifier(update.right, stepName)
+  ) {
+    return null
+  }
+  const from = toExpr(valueDecl.init, ctx)
+  const to = toExpr(limitDecl.init, ctx)
+  const step = toExpr(stepDecl.init, ctx)
+  if (!isSimpleValue(from) || !isSimpleValue(to) || !isSimpleValue(step)) return null
+  return {
+    type: 'forRange',
+    varName: valueName,
+    from,
+    to,
+    step,
+    body: bodyOfBlock(node.body, source, ctx),
+  }
+}
+
+function mapFor(node: Babel.ForStatement, source: string, ctx: ParseCtx): JSStatement {
+  const stable = tryMapStableRepeat(node, source, ctx) ?? tryMapStableForRange(node, source, ctx)
+  if (stable) return stable
+
   // for (let v = <de>; v < <ate>; v++ | v += <passo> | v = v + <passo>) { ... }
   const init = node.init
   const test = node.test
@@ -10401,35 +11715,58 @@ function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
   return { type: 'forRange', varName: iName, from, to, step, body }
 }
 
-function mapWhile(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapWhile(node: Babel.WhileStatement, source: string, ctx: ParseCtx): JSStatement {
   // while (<condição>) { ... } — condição precisa ser um valor representável.
   const cond = toExpr(node.test, ctx)
   if (!isSimpleValue(cond)) return asRaw(source, node)
   return { type: 'while', cond, body: bodyOfBlock(node.body, source, ctx) }
 }
 
-function mapDoWhile(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapDoWhile(node: Babel.DoWhileStatement, source: string, ctx: ParseCtx): JSStatement {
   // do { ... } while (<condição>)
   const cond = toExpr(node.test, ctx)
   if (!isSimpleValue(cond)) return asRaw(source, node)
   return { type: 'doWhile', cond, body: bodyOfBlock(node.body, source, ctx) }
 }
 
-function mapTry(node: Node, source: string, ctx: ParseCtx): JSStatement {
+function mapTry(node: Babel.TryStatement, source: string, ctx: ParseCtx): JSStatement {
   // try { ... } catch (e) { ... } [finally { ... }]. Exige um catch (o bloco
   // sempre tem o ramo "se der erro"); try sem catch (só finally) vira avançado.
   if (!node.handler) return asRaw(source, node)
   const param = node.handler.param
   if (param && param.type !== 'Identifier') return asRaw(source, node)
-  const errorName: string | undefined = param ? param.name : undefined
+  const handlerNodes = node.handler.body.body
+  const hasControlGuard =
+    param?.type === 'Identifier' && isGeneratedProjectControlGuard(handlerNodes[0], param.name)
+  const generatedInternalParam = hasControlGuard && /^__szRestartSignal(?:_\d+)?$/.test(param.name)
+  const errorName: string | undefined = param && !generatedInternalParam ? param.name : undefined
   const finalizer = node.finalizer ? bodyOfBlock(node.finalizer, source, ctx) : undefined
   return {
     type: 'tryCatch',
     body: bodyOfBlock(node.block, source, ctx),
     ...(errorName ? { errorName } : {}),
-    handler: bodyOfBlock(node.handler.body, source, ctx),
+    handler: mapStatementList(hasControlGuard ? handlerNodes.slice(1) : handlerNodes, source, ctx),
     ...(finalizer ? { finalizer } : {}),
   }
+}
+
+function isGeneratedProjectControlGuard(node: Node | null | undefined, errorName: string): boolean {
+  if (node?.type !== 'IfStatement' || node.alternate) return false
+  const test = node.test
+  if (test.type !== 'CallExpression' || test.arguments.length !== 1) return false
+  const callee = test.callee
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'isControlSignal') return false
+  if (
+    callee.object.type !== 'Identifier' ||
+    !/^__szProjectRunContext(?:_\d+)?$/.test(callee.object.name) ||
+    !isIdentifierNamed(test.arguments[0], errorName)
+  ) {
+    return false
+  }
+  return (
+    node.consequent.type === 'ThrowStatement' &&
+    isIdentifierNamed(node.consequent.argument, errorName)
+  )
 }
 
 // ---------- helpers de matching ----------
@@ -10437,7 +11774,7 @@ function mapTry(node: Node, source: string, ctx: ParseCtx): JSStatement {
 function tryMatchBinop(expr: Node, ctx?: ParseCtx): JSExpr | null {
   if (expr?.type !== 'BinaryExpression') return null
   // Igualdade estrita (===/!==) é preservada como tal (não normaliza p/ ==/!=).
-  if (!BINOP_OPERATORS.has(expr.operator)) {
+  if (!isBinopOperator(expr.operator)) {
     return null
   }
   const left = toExpr(expr.left, ctx)
@@ -10446,7 +11783,7 @@ function tryMatchBinop(expr: Node, ctx?: ParseCtx): JSExpr | null {
   return { type: 'binop', op: expr.operator, left, right }
 }
 
-function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
+function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
   if (!node) return null
   // Despacho por TIPO de nó. Antes era uma escada de ~30 `if (node.type === …)`
   // intercalada com submatchers (matchNow/matchDistance/matchVector/…), cada um
@@ -10543,9 +11880,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         const arg = node.arguments?.[0]
         if (
           node.arguments?.length === 1 &&
-          (arg.type === 'ArrowFunctionExpression' || arg.type === 'FunctionExpression') &&
+          isInlineFunction(arg) &&
           (arg.params?.length ?? 0) <= 1 &&
-          (arg.params ?? []).every((p: Node) => p?.type === 'Identifier')
+          areIdentifierParams(arg.params)
         ) {
           return {
             type: 'newPromise',
@@ -10565,7 +11902,7 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       ) {
         return null
       }
-      const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+      const args = (node.arguments ?? []).map((a) => toExpr(a, ctx))
       if (!args.every(isSimpleValue)) return null
       return {
         type: 'newExpr',
@@ -10750,10 +12087,8 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       if (
         !node.computed &&
         node.property?.type === 'Identifier' &&
-        (node.object?.type === 'MemberExpression' ||
-          node.object?.type === 'OptionalMemberExpression') &&
-        !node.object.computed &&
-        node.object.property?.name === 'dataset' &&
+        isNamedMemberExpression(node.object) &&
+        node.object.property.name === 'dataset' &&
         node.object.object?.type === 'Identifier'
       ) {
         return { type: 'datasetGet', objectVar: node.object.object.name, key: node.property.name }
@@ -10840,13 +12175,13 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // `[...a, ...b]` → juntar listas (sz_val_concat_arrays).
       if (
         (node.elements?.length ?? 0) > 0 &&
-        node.elements.every((el: Node) => el?.type === 'SpreadElement')
+        node.elements.every((el) => el?.type === 'SpreadElement')
       ) {
-        const parts = node.elements.map((el: Node) => toExpr(el.argument, ctx))
+        const parts = node.elements.map((el) => toExpr(el.argument, ctx))
         if (parts.every(isSimpleValue)) return { type: 'concatArrays', parts: parts as JSExpr[] }
       }
       // [a, b, …] → lista/array literal (sz_val_array).
-      const items = (node.elements ?? []).map((el: Node) => toExpr(el, ctx))
+      const items = (node.elements ?? []).map((el) => toExpr(el, ctx))
       return items.every(isSimpleValue) ? { type: 'array', items: items as JSExpr[] } : null
     }
     case 'ObjectExpression': {
@@ -10867,21 +12202,22 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       if (qsv) return { type: 'querySelectorValue', selector: qsv.selector, all: qsv.all }
       // Promise.all([...]) → promiseAll (a lista é um valor, ex.: array literal).
       if (
-        node.callee?.type === 'MemberExpression' &&
-        node.callee.object?.name === 'Promise' &&
-        node.callee.property?.name === 'all' &&
+        isNamedMemberExpression(node.callee) &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.object.name === 'Promise' &&
+        node.callee.property.name === 'all' &&
         node.arguments?.length === 1
       ) {
         const list = toExpr(node.arguments[0], ctx)
         return list && isSimpleValue(list) ? { type: 'promiseAll', list } : null
       }
       // localStorage.getItem(chave) / sessionStorage.getItem(chave) → storageGet.
-      if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression') {
+      if (node.type === 'CallExpression' && isNamedMemberExpression(node.callee)) {
         const obj = node.callee.object
         if (
           obj?.type === 'Identifier' &&
           (obj.name === 'localStorage' || obj.name === 'sessionStorage') &&
-          node.callee.property?.name === 'getItem' &&
+          node.callee.property.name === 'getItem' &&
           node.arguments?.length === 1
         ) {
           const key = toExpr(node.arguments[0], ctx)
@@ -10962,11 +12298,10 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // __szInput.key("ArrowRight") → "a tecla … está apertada?" (caminho "na mão").
       if (
         node.type === 'CallExpression' &&
-        node.callee?.type === 'MemberExpression' &&
-        !node.callee.computed &&
+        isNamedMemberExpression(node.callee) &&
         node.callee.object?.type === 'Identifier' &&
         node.callee.object.name === '__szInput' &&
-        node.callee.property?.name === 'key' &&
+        node.callee.property.name === 'key' &&
         node.arguments?.[0]?.type === 'StringLiteral'
       ) {
         return { type: 'inputKeyPressed', key: node.arguments[0].value as string }
@@ -10997,7 +12332,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         node.arguments[0].body?.type !== 'BlockStatement'
       ) {
         const arrow = node.arguments[0]
-        const itemName = arrow.params[0].name as string
+        const parameter = arrow.params[0]
+        if (parameter?.type !== 'Identifier') return null
+        const itemName = parameter.name
         const cond = toExpr(arrow.body, ctx)
         if (isSimpleValue(cond)) {
           return { type: 'arrayFind', arrayVar: node.callee.object.name, itemName, cond }
@@ -11019,7 +12356,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         node.arguments[0].body?.type !== 'BlockStatement'
       ) {
         const arrow = node.arguments[0]
-        const itemName = arrow.params[0].name as string
+        const parameter = arrow.params[0]
+        if (parameter?.type !== 'Identifier') return null
+        const itemName = parameter.name
         const array = toExpr(node.callee.object, ctx)
         const cond = toExpr(arrow.body, ctx)
         if (isSimpleValue(array) && isSimpleValue(cond)) {
@@ -11040,7 +12379,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         node.arguments[0].body?.type !== 'BlockStatement'
       ) {
         const arrow = node.arguments[0]
-        const itemName = arrow.params[0].name as string
+        const parameter = arrow.params[0]
+        if (parameter?.type !== 'Identifier') return null
+        const itemName = parameter.name
         const transform = toExpr(arrow.body, ctx)
         if (isSimpleValue(transform)) {
           return { type: 'arrayMap', arrayVar: node.callee.object.name, itemName, transform }
@@ -11059,7 +12400,7 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // nome(args) como VALOR (callee identificador, fora da denylist) → `call`.
       if (node.type === 'CallExpression' && node.callee?.type === 'Identifier') {
         if (!GLOBAL_CALL_DENYLIST.has(node.callee.name)) {
-          const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+          const args = (node.arguments ?? []).map((a) => toExpr(a, ctx))
           if (args.every(isSimpleValue)) {
             return { type: 'call', name: node.callee.name, args: args as JSExpr[] }
           }
@@ -11084,7 +12425,7 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         !isGlobalObject(node.callee.object)
       ) {
         const object = toExpr(node.callee.object, ctx)
-        const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+        const args = (node.arguments ?? []).map((a) => toExpr(a, ctx))
         if (isSimpleValue(object) && args.every(isSimpleValue)) {
           return {
             type: 'memberCallExpr',
@@ -11108,7 +12449,7 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
  * interpolações com `@i@` no texto reconstruído e casa o padrão por regex; resolve
  * cada slot de volta para o número ou a expressão original. Falha → vira `concat`.
  */
-function tryMatchHslTemplate(node: Node, ctx?: ParseCtx): JSExpr | null {
+function tryMatchHslTemplate(node: Babel.TemplateLiteral, ctx?: ParseCtx): JSExpr | null {
   const quasis = node.quasis ?? []
   const exprs = node.expressions ?? []
   let pattern = ''
@@ -11181,6 +12522,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:distance':
     case 'g2d:angleTo':
     case 'g2d:getHealth':
+    case 'g2d:getMaxHealth':
     case 'g2d:enemyDamage':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
@@ -11199,6 +12541,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:randomBetween':
     case 'g2d:randomChance':
     case 'g2d:hasHealth':
+    case 'g2d:healthDepleted':
+    case 'g2d:isInvincible':
     case 'g2d:cooldownReady':
     case 'g2d:isPaused':
     case 'g2d:cameraX':
@@ -11207,11 +12551,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:randomY':
     case 'g2d:tileAtSprite':
     case 'g2d:sceneIs':
-    case 'g2d:stickHeroScore':
-    case 'g2d:stickHeroOver':
-    case 'g2d:balloonScore':
+    case 'g2d:stickPathFell':
+    case 'g2d:balloonPathMeters':
     case 'g2d:balloonFuel':
-    case 'g2d:balloonOver':
+    case 'g2d:balloonLandedOut':
+    case 'g2d:pointerDown':
     case 'g2d:aimReleased':
     case 'g2d:bananaHitThrower':
     case 'g2d:bananaHitCity':
@@ -11222,6 +12566,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:crosserHit':
     case 'g3d:crosserRow':
     case 'g3d:distanceTo':
+    case 'g3d:countSwarm':
+    case 'g3d:countGroup':
     case 'g3d:isNear':
     case 'g3d:raceHit':
     case 'g3d:raceLaps':
@@ -11302,6 +12648,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:cameraY':
     case 'gk:mouseX':
     case 'gk:mouseY':
+    case 'gk:mouseScreenX':
+    case 'gk:mouseScreenY':
     case 'gk:mouseDown':
     case 'gk:rpgHasFlag':
     case 'gk:rpgHasItem':
@@ -11359,6 +12707,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:isDriving':
     case 'w3d:coinCount':
     case 'w3d:hasAchievement':
+    case 'w3d:inventoryCount':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':
@@ -11387,6 +12736,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
         (typeof expr.x === 'number' || isSimpleValue(expr.x)) &&
         (typeof expr.z === 'number' || isSimpleValue(expr.z))
       )
+    case 'w3d:inventoryHas':
+      return typeof expr.n === 'number' || isSimpleValue(expr.n)
     case 'concat':
     case 'concatArrays':
       return expr.parts.every(isSimpleValue)
@@ -11461,11 +12812,17 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
 function matchNow(node: Node): JSExpr | null {
   if (node?.type !== 'CallExpression' || node.arguments?.length !== 0) return null
   const callee = node.callee
-  if (callee?.type !== 'MemberExpression') return null
+  if (!isNamedMemberExpression(callee)) return null
   const obj = callee.object
-  if (obj?.type !== 'NewExpression' || obj.callee?.name !== 'Date') return null
+  if (
+    obj?.type !== 'NewExpression' ||
+    obj.callee?.type !== 'Identifier' ||
+    obj.callee.name !== 'Date'
+  ) {
+    return null
+  }
   if (obj.arguments?.length) return null
-  switch (callee.property?.name) {
+  switch (callee.property.name) {
     case 'getFullYear':
       return { type: 'now', kind: 'year' }
     case 'toLocaleDateString':
@@ -11510,7 +12867,8 @@ const MATH_BINARY_FNS = new Set(['min', 'max', 'atan2', 'hypot'])
 // Operadores binários reconhecidos. `Set` em vez de um array-literal recriado e
 // varrido a cada `BinaryExpression` (toExpr é o caminho mais quente do parser —
 // uma alocação + scan O(14) por nó aritmético somava muito em código denso).
-const BINOP_OPERATORS = new Set([
+type BinopOperator = Extract<JSExpr, { type: 'binop' }>['op']
+const BINOP_OPERATORS: ReadonlySet<string> = new Set([
   '>',
   '<',
   '==',
@@ -11528,6 +12886,10 @@ const BINOP_OPERATORS = new Set([
 ])
 const CLASSLIST_OPS = new Set(['add', 'remove', 'toggle'])
 
+function isBinopOperator(operator: string): operator is BinopOperator {
+  return BINOP_OPERATORS.has(operator)
+}
+
 /**
  * Reconhece `Math.<fn>(...)`: `round/floor/ceil/abs/sqrt(x)` → `mathUnary` e
  * `min/max(a, b)` → `mathBinary`. Os argumentos precisam ser valores
@@ -11536,10 +12898,9 @@ const CLASSLIST_OPS = new Set(['add', 'remove', 'toggle'])
 function matchMathCall(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (node?.type !== 'CallExpression') return null
   const callee = node.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (!isNamedMemberExpression(callee)) return null
   if (callee.object?.type !== 'Identifier' || callee.object.name !== 'Math') return null
-  const fn = callee.property?.name
-  if (typeof fn !== 'string') return null
+  const fn = callee.property.name
   const args = node.arguments ?? []
   if (MATH_UNARY_FNS.has(fn) && args.length === 1) {
     const arg = toExpr(args[0], ctx)
@@ -11561,23 +12922,32 @@ type MathUnaryFn = (JSExpr & { type: 'mathUnary' })['fn']
 function isRandomCall(node: Node): boolean {
   if (node?.type !== 'CallExpression' || (node.arguments?.length ?? 0) !== 0) return false
   const callee = node.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return false
-  return callee.object?.name === 'Math' && callee.property?.name === 'random'
+  if (!isNamedMemberExpression(callee)) return false
+  return (
+    callee.object?.type === 'Identifier' &&
+    callee.object.name === 'Math' &&
+    callee.property.name === 'random'
+  )
 }
 
 /** Mesma referência de objeto: `player`, `this`, `this.alvo`, `a.b.c` (não-computado). */
 function sameRef(a: Node, b: Node): boolean {
   if (!a || !b || a.type !== b.type) return false
-  if (a.type === 'Identifier') return a.name === b.name
-  if (a.type === 'ThisExpression') return true
-  if (a.type === 'MemberExpression' && !a.computed && !b.computed) {
-    return a.property?.name === b.property?.name && sameRef(a.object, b.object)
+  if (a.type === 'Identifier' && b.type === 'Identifier') return a.name === b.name
+  if (a.type === 'ThisExpression' && b.type === 'ThisExpression') return true
+  if (isNamedMemberExpression(a) && isNamedMemberExpression(b)) {
+    return a.property.name === b.property.name && sameRef(a.object, b.object)
   }
   return false
 }
 
 /** `<obj>.<coord>` (membro não-computado cuja propriedade é `coord`). */
-function isCoordMember(node: Node, coord: 'x' | 'y'): boolean {
+type CoordinateMember = Babel.MemberExpression & {
+  computed: false
+  property: Babel.Identifier
+}
+
+function isCoordMember(node: Node, coord: 'x' | 'y'): node is CoordinateMember {
   return (
     !!node &&
     node.type === 'MemberExpression' &&
@@ -11588,7 +12958,15 @@ function isCoordMember(node: Node, coord: 'x' | 'y'): boolean {
 }
 
 /** `A.<coord> - B.<coord>` (subtração de coordenadas). */
-function isCoordDiff(node: Node, coord: 'x' | 'y'): boolean {
+type CoordinateDifference = Babel.BinaryExpression & {
+  left: CoordinateMember
+  right: CoordinateMember
+}
+
+function isCoordDiff(
+  node: Node | null | undefined,
+  coord: 'x' | 'y',
+): node is CoordinateDifference {
   return (
     !!node &&
     node.type === 'BinaryExpression' &&
@@ -11606,8 +12984,14 @@ function isCoordDiff(node: Node, coord: 'x' | 'y'): boolean {
 function matchDistance(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (node?.type !== 'CallExpression') return null
   const callee = node.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.object?.name !== 'Math' || callee.property?.name !== 'hypot') return null
+  if (!isNamedMemberExpression(callee)) return null
+  if (
+    callee.object?.type !== 'Identifier' ||
+    callee.object.name !== 'Math' ||
+    callee.property.name !== 'hypot'
+  ) {
+    return null
+  }
   const args = node.arguments ?? []
   if (args.length !== 2) return null
   const [dx, dy] = args
@@ -11622,27 +13006,175 @@ function matchDistance(node: Node, ctx?: ParseCtx): JSExpr | null {
   return { type: 'distance', a, b }
 }
 
-/** `Math.random() - 0.5` (corpo do comparador de embaralhamento). */
-function isRandomMinusHalf(node: Node): boolean {
+function isNamedMember(node: Node, objectName: string, propertyName: string): boolean {
+  return (
+    node?.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === objectName &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === propertyName
+  )
+}
+
+function isIndexedMember(
+  node: Node | null | undefined,
+  objectName: string,
+  indexName: string,
+): boolean {
+  return (
+    node?.type === 'MemberExpression' &&
+    node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === objectName &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === indexName
+  )
+}
+
+function isMathRandomCall(node: Node): boolean {
+  return (
+    node?.type === 'CallExpression' &&
+    (node.arguments?.length ?? 0) === 0 &&
+    isNamedMember(node.callee, 'Math', 'random')
+  )
+}
+
+/** IIFE Fisher–Yates gerada pelo bloco, aplicada a `[...lista]`. */
+function matchFisherYatesShuffle(node: Node): JSExpr | null {
+  if (node?.type !== 'CallExpression' || node.arguments?.length !== 1) return null
+  const fn = node.callee
+  const copyArg = node.arguments[0]
+  if (
+    fn?.type !== 'ArrowFunctionExpression' ||
+    fn.params?.length !== 1 ||
+    fn.params[0]?.type !== 'Identifier' ||
+    fn.body?.type !== 'BlockStatement' ||
+    fn.body.body?.length !== 2 ||
+    copyArg?.type !== 'ArrayExpression' ||
+    copyArg.elements?.length !== 1 ||
+    copyArg.elements[0]?.type !== 'SpreadElement' ||
+    copyArg.elements[0].argument?.type !== 'Identifier'
+  ) {
+    return null
+  }
+  const copyName = fn.params[0].name
+  const [loop, returnStmt] = fn.body.body
+  if (
+    loop?.type !== 'ForStatement' ||
+    returnStmt?.type !== 'ReturnStatement' ||
+    returnStmt.argument?.type !== 'Identifier' ||
+    returnStmt.argument.name !== copyName
+  ) {
+    return null
+  }
+
+  const declarations = loop.init?.type === 'VariableDeclaration' ? loop.init.declarations : null
+  const indexDecl = declarations?.length === 1 ? declarations[0] : null
+  const indexName = indexDecl?.id?.type === 'Identifier' ? indexDecl.id.name : null
+  const indexInit = indexDecl?.init
+  if (
+    !indexName ||
+    indexInit?.type !== 'BinaryExpression' ||
+    indexInit.operator !== '-' ||
+    !isNamedMember(indexInit.left, copyName, 'length') ||
+    indexInit.right?.type !== 'NumericLiteral' ||
+    indexInit.right.value !== 1 ||
+    loop.test?.type !== 'BinaryExpression' ||
+    loop.test.operator !== '>' ||
+    loop.test.left?.type !== 'Identifier' ||
+    loop.test.left.name !== indexName ||
+    loop.test.right?.type !== 'NumericLiteral' ||
+    loop.test.right.value !== 0 ||
+    loop.update?.type !== 'UpdateExpression' ||
+    loop.update.operator !== '--' ||
+    loop.update.argument?.type !== 'Identifier' ||
+    loop.update.argument.name !== indexName ||
+    loop.body?.type !== 'BlockStatement' ||
+    loop.body.body?.length !== 2
+  ) {
+    return null
+  }
+
+  const [randomDeclStmt, swapStmt] = loop.body.body
+  const randomDecls =
+    randomDeclStmt?.type === 'VariableDeclaration' ? randomDeclStmt.declarations : null
+  const randomDecl = randomDecls?.length === 1 ? randomDecls[0] : null
+  const randomName = randomDecl?.id?.type === 'Identifier' ? randomDecl.id.name : null
+  const floorCall = randomDecl?.init
+  if (
+    !randomName ||
+    floorCall?.type !== 'CallExpression' ||
+    !isNamedMember(floorCall.callee, 'Math', 'floor') ||
+    floorCall.arguments?.length !== 1
+  ) {
+    return null
+  }
+  const product = floorCall.arguments[0]
+  if (
+    product?.type !== 'BinaryExpression' ||
+    product.operator !== '*' ||
+    !isMathRandomCall(product.left) ||
+    product.right?.type !== 'BinaryExpression' ||
+    product.right.operator !== '+' ||
+    product.right.left?.type !== 'Identifier' ||
+    product.right.left.name !== indexName ||
+    product.right.right?.type !== 'NumericLiteral' ||
+    product.right.right.value !== 1
+  ) {
+    return null
+  }
+
+  const assignment = swapStmt?.type === 'ExpressionStatement' ? swapStmt.expression : null
+  if (assignment?.type !== 'AssignmentExpression' || assignment.operator !== '=') {
+    return null
+  }
+  const left = assignment.left
+  const right = assignment.right
+  if (
+    left?.type !== 'ArrayPattern' ||
+    left.elements?.length !== 2 ||
+    !isIndexedMember(left.elements[0], copyName, indexName) ||
+    !isIndexedMember(left.elements[1], copyName, randomName) ||
+    right?.type !== 'ArrayExpression' ||
+    right.elements?.length !== 2 ||
+    !isIndexedMember(right.elements[0], copyName, randomName) ||
+    !isIndexedMember(right.elements[1], copyName, indexName)
+  ) {
+    return null
+  }
+  return { type: 'shuffle', arrayVar: copyArg.elements[0].argument.name }
+}
+
+/** `Math.random() - 0.5` (forma legada do comparador de embaralhamento). */
+function isRandomMinusHalf(node: Node | null | undefined): boolean {
   if (node?.type !== 'BinaryExpression' || node.operator !== '-') return false
   const left = node.left
   if (left?.type !== 'CallExpression' || (left.arguments?.length ?? 0) !== 0) return false
   const lc = left.callee
-  if (lc?.type !== 'MemberExpression') return false
-  if (lc.object?.name !== 'Math' || lc.property?.name !== 'random') return false
+  if (!isNamedMemberExpression(lc)) return false
+  if (
+    lc.object?.type !== 'Identifier' ||
+    lc.object.name !== 'Math' ||
+    lc.property.name !== 'random'
+  ) {
+    return false
+  }
   return node.right?.type === 'NumericLiteral' && node.right.value === 0.5
 }
 
-/** `<lista>.sort(() => Math.random() - 0.5)` → `shuffle`. Corpo direto ou `return`. */
+/** Fisher–Yates atual ou `<lista>.sort(...)` legado → `shuffle`. */
 function matchShuffle(node: Node): JSExpr | null {
+  const fisherYates = matchFisherYatesShuffle(node)
+  if (fisherYates) return fisherYates
   if (node?.type !== 'CallExpression') return null
   const callee = node.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'sort') return null
+  if (!isNamedMemberExpression(callee)) return null
+  if (callee.object?.type !== 'Identifier' || callee.property.name !== 'sort') return null
   if (node.arguments?.length !== 1) return null
   const cb = node.arguments[0]
-  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
-  let body = cb.body
+  if (!isInlineFunction(cb)) return null
+  let body: Node | null | undefined = cb.body
   if (body?.type === 'BlockStatement') {
     if (body.body?.length !== 1 || body.body[0]?.type !== 'ReturnStatement') return null
     body = body.body[0].argument
@@ -11664,7 +13196,7 @@ function isMathPI(node: Node): boolean {
   )
 }
 
-function isNumericLiteral(node: Node, value: number): boolean {
+function isNumericLiteral(node: Node | null | undefined, value: number): boolean {
   return !!node && node.type === 'NumericLiteral' && node.value === value
 }
 
@@ -11749,14 +13281,39 @@ function matchObjectLiteral(node: Node, ctx?: ParseCtx): JSExpr | null {
   return { type: 'objectLiteral', entries }
 }
 
-interface MatchedListener {
+interface MatchedListenerBase {
   target: string
   targetKind?: 'var' | 'document' | 'window'
   event: EventKind
-  /** Callback inline (arrow/função anônima) — vira corpo de `event`. */
-  callback?: Node
-  /** Função nomeada passada por referência — vira `eventHandler`. */
-  handlerName?: string
+}
+
+type MatchedListenerHandler =
+  | {
+      /** Callback inline (arrow/função anônima) — vira corpo de `event`. */
+      callback: Babel.ArrowFunctionExpression | Babel.FunctionExpression
+      handlerName?: never
+    }
+  | {
+      /** Função nomeada passada por referência — vira `eventHandler`. */
+      handlerName: string
+      callback?: never
+    }
+
+type MatchedListener = MatchedListenerBase & MatchedListenerHandler
+
+function unwrapGeneratedProjectRunListener(
+  node: Node | null | undefined,
+): MatchedListenerHandler | null {
+  if (node?.type !== 'ArrowFunctionExpression' || node.params.length !== 1) return null
+  const eventParam = node.params[0]
+  if (eventParam?.type !== 'Identifier') return null
+  const callback = unwrapGeneratedProjectRunCallback(node)
+  if (!callback) return null
+  if (callback.body.type === 'BlockStatement') return { callback }
+  if (callback.body.type !== 'CallExpression' || callback.body.arguments.length !== 1) return null
+  if (callback.body.callee.type !== 'Identifier') return null
+  if (!isIdentifierNamed(callback.body.arguments[0], eventParam.name)) return null
+  return { handlerName: callback.body.callee.name }
 }
 
 function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | null {
@@ -11765,23 +13322,21 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
   }
   // método é .addEventListener (membro chamado direto ou optional)
   const callee = expr.callee
-  if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
-  ) {
-    return null
-  }
-  if (callee.property?.name !== 'addEventListener') return null
-  if (expr.arguments?.length !== 2) return null
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'addEventListener') return null
+  const argumentCount = expr.arguments?.length ?? 0
+  if (argumentCount !== 2 && argumentCount !== 3) return null
+  if (argumentCount === 3 && !isGeneratedProjectRunSignalOptions(expr.arguments[2])) return null
   const eventArg = expr.arguments[0]
   const cbArg = expr.arguments[1]
-  if (eventArg.type !== 'StringLiteral') return null
+  if (eventArg?.type !== 'StringLiteral') return null
   if (!KNOWN_EVENT_KINDS.has(eventArg.value as EventKind)) return null
   // Callback inline (arrow/função) ou referência a uma função nomeada.
-  const isFn = cbArg.type === 'ArrowFunctionExpression' || cbArg.type === 'FunctionExpression'
-  const isNamed = cbArg.type === 'Identifier'
-  if (!isFn && !isNamed) return null
-  const handler = isNamed ? { handlerName: cbArg.name as string } : { callback: cbArg }
+  const generatedHandler = unwrapGeneratedProjectRunListener(cbArg)
+  let handler: MatchedListenerHandler
+  if (generatedHandler) handler = generatedHandler
+  else if (cbArg?.type === 'Identifier') handler = { handlerName: cbArg.name }
+  else if (isInlineFunction(cbArg)) handler = { callback: cbArg }
+  else return null
 
   // Escuta global na janela: `window.addEventListener(...)`. Para teclado e mouse,
   // window e document são equivalentes (eventos borbulham); aceitamos os dois e
@@ -11818,6 +13373,24 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
     event: eventArg.value as EventKind,
     ...handler,
   }
+}
+
+/** Opção exata que o gerador acrescenta para o restart descartar o listener. */
+function isGeneratedProjectRunSignalOptions(node: Node | null | undefined): boolean {
+  if (node?.type !== 'ObjectExpression' || node.properties?.length !== 1) return false
+  const property = node.properties[0]
+  if (property?.type !== 'ObjectProperty' || property.computed) return false
+  const key =
+    property.key.type === 'Identifier'
+      ? property.key.name
+      : property.key.type === 'StringLiteral'
+        ? property.key.value
+        : undefined
+  if (key !== 'signal') return false
+  const value = property.value
+  if (!isNamedMemberExpression(value) || value.property.name !== 'signal') return false
+  if (value.object?.type !== 'Identifier') return false
+  return GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(value.object.name)
 }
 
 /**
@@ -11879,22 +13452,15 @@ function tryMatchClassList(expr: Node, ctx: ParseCtx): MatchedClassList | null {
     return null
   }
   const callee = expr.callee
-  if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
-  ) {
-    return null
-  }
-  const op = callee.property?.name as 'add' | 'remove' | 'toggle' | undefined
+  if (!isNamedMemberExpression(callee)) return null
+  const op = callee.property.name as 'add' | 'remove' | 'toggle'
   if (!op || !CLASSLIST_OPS.has(op)) return null
   // callee.object precisa ser .classList em algo
   const obj = callee.object
-  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression'))
-    return null
-  if (obj.property?.name !== 'classList') return null
+  if (!isNamedMemberExpression(obj) || obj.property.name !== 'classList') return null
   const target = extractTarget(obj.object, ctx)
   if (!target) return null
-  if (expr.arguments?.length !== 1 || expr.arguments[0].type !== 'StringLiteral') return null
+  if (expr.arguments?.length !== 1 || expr.arguments[0]?.type !== 'StringLiteral') return null
   return {
     target: target.id,
     ...classTargetKindField(target),
@@ -11909,21 +13475,12 @@ function matchClassContains(node: Node, ctx: ParseCtx): JSExpr | null {
     return null
   }
   const callee = node.callee
-  if (
-    !callee ||
-    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
-  ) {
-    return null
-  }
-  if (callee.property?.name !== 'contains') return null
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'contains') return null
   const obj = callee.object
-  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression')) {
-    return null
-  }
-  if (obj.property?.name !== 'classList') return null
+  if (!isNamedMemberExpression(obj) || obj.property.name !== 'classList') return null
   const target = extractTarget(obj.object, ctx)
   if (!target) return null
-  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  if (node.arguments?.length !== 1 || node.arguments[0]?.type !== 'StringLiteral') return null
   return {
     type: 'classContains',
     targetId: target.id,
@@ -11932,7 +13489,7 @@ function matchClassContains(node: Node, ctx: ParseCtx): JSExpr | null {
   }
 }
 
-function bodyOfBlock(node: Node, source: string, ctx: ParseCtx): JSStatement[] {
+function bodyOfBlock(node: Node | null | undefined, source: string, ctx: ParseCtx): JSStatement[] {
   if (!node) return []
   if (node.type === 'BlockStatement') {
     return mapStatementList(node.body, source, ctx)
@@ -11941,9 +13498,10 @@ function bodyOfBlock(node: Node, source: string, ctx: ParseCtx): JSStatement[] {
   return mapStatementList([node], source, ctx)
 }
 
-function bodyOfFn(fn: Node, source: string, ctx: ParseCtx): JSStatement[] {
-  if (!fn?.body) return []
-  if (fn.body.type === 'BlockStatement') return bodyOfBlock(fn.body, source, ctx)
+function bodyOfFn(fn: Node | null | undefined, source: string, ctx: ParseCtx): JSStatement[] {
+  if (fn?.type !== 'ArrowFunctionExpression' && fn?.type !== 'FunctionExpression') return []
+  const callback = unwrapGeneratedProjectRunCallback(fn) ?? fn
+  if (callback.body.type === 'BlockStatement') return bodyOfBlock(callback.body, source, ctx)
   // Arrow function com expressão direta (sem chaves): trata o corpo como UM
   // statement. O ExpressionStatement sintético PRECISA herdar as posições de
   // origem (start/end/loc/range) do corpo: sem elas, qualquer statement que caia
@@ -11952,15 +13510,8 @@ function bodyOfFn(fn: Node, source: string, ctx: ParseCtx): JSStatement[] {
   // com `start` indefinido → `snippet` devolve '' → o statement SUMIA do
   // round-trip (era o bug do "tiro que não anda": `bullets.forEach(b => b.y -=
   // b.speed)` virava um forEach de corpo vazio).
-  const exprStatement: Node = {
-    type: 'ExpressionStatement',
-    expression: fn.body,
-    start: fn.body.start,
-    end: fn.body.end,
-    loc: fn.body.loc,
-    range: fn.body.range,
-  }
-  return bodyOfBlock({ type: 'BlockStatement', body: [exprStatement] }, source, ctx)
+  const exprStatement = syntheticExpressionStatement(callback.body)
+  return mapStatementList([exprStatement], source, ctx)
 }
 
 function errorMessage(error: unknown): string {

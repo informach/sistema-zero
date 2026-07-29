@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { behaviorStatements } from '#ir'
 import { gameTwoDExtension } from '../../official-extensions/game-2d/index'
 import { parseJS } from '../../parsers/js'
 import { buildIRFromWorkspace } from '../buildIR'
@@ -123,7 +124,7 @@ describe('Round-trip dos blocos convertidos — aceitam variável/conta', () => 
         ws,
       )
       const ir = buildIRFromWorkspace(ws)
-      const stmt = ir.js.find((s) => s.type === 'g2d:setPosition') as
+      const stmt = behaviorStatements(ir).find((s) => s.type === 'g2d:setPosition') as
         | { type: 'g2d:setPosition'; x: unknown; y: unknown }
         | undefined
       expect(stmt).toBeDefined()

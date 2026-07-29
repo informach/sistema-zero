@@ -37,6 +37,7 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { slugify } from '@/lib/slug'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
+import { CourseFormDialog } from '../course-form-dialog'
 import { CourseSubmissionsPanel } from './course-submissions-client'
 
 type CourseTab = 'estrutura' | 'entregas'
@@ -64,6 +65,9 @@ export function CourseEditorClient({
   const { confirm, confirmDialog } = useConfirm()
   // Módulos COLAPSADOS (default = tudo expandido).
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+
+  // Dialog de edição do PRÓPRIO curso (mesmo form da listagem — reusa CourseFormDialog).
+  const [courseEditOpen, setCourseEditOpen] = useState(false)
 
   const [moduleOpen, setModuleOpen] = useState(false)
   const [editingModule, setEditingModule] = useState<ModuleView | null>(null)
@@ -228,6 +232,37 @@ export function CourseEditorClient({
       toast.error('Informe slug e título da aula.')
       return
     }
+    // Checklist leve na TRANSIÇÃO p/ publicada: aula sem bloco = aula VAZIA pro
+    // aluno (permitido — só informa). Edição checa o conteúdo real (1 GET
+    // on-demand); criação com publicar ligado nasce sem blocos por definição.
+    const publishing = lessonForm.isPublished && !editingLesson?.isPublished
+    if (publishing) {
+      let empty = !editingLesson
+      if (editingLesson) {
+        try {
+          const content = await apiGet<{ blocks: unknown[] }>(
+            `/api/members/lessons/${editingLesson.id}/content`,
+          )
+          empty = content.blocks.length === 0
+        } catch {
+          empty = false // conteúdo indisponível → não atrapalha o salvar
+        }
+      }
+      if (empty) {
+        confirm({
+          title: 'Publicar aula vazia?',
+          message:
+            'Esta aula ainda não tem nenhum bloco de conteúdo — o aluno verá uma aula vazia. Publicar mesmo assim?',
+          confirmText: 'Publicar mesmo assim',
+          onConfirm: () => submitLesson(),
+        })
+        return
+      }
+    }
+    await submitLesson()
+  }
+
+  async function submitLesson() {
     const mins = lessonForm.estimatedMinutes.trim()
     const payload = {
       slug: lessonForm.slug.trim(),
@@ -271,10 +306,17 @@ export function CourseEditorClient({
         title={tree?.title ?? 'Curso'}
         description={tree ? `${tree.slug} · ${tree.status}` : courseId}
         action={
-          canWrite && tab === 'estrutura' ? (
-            <Button onClick={openCreateModule}>
-              <Plus className="size-4" /> Novo módulo
-            </Button>
+          canWrite ? (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setCourseEditOpen(true)} disabled={!tree}>
+                <Pencil className="size-4" /> Editar curso
+              </Button>
+              {tab === 'estrutura' ? (
+                <Button onClick={openCreateModule}>
+                  <Plus className="size-4" /> Novo módulo
+                </Button>
+              ) : null}
+            </div>
           ) : undefined
         }
       />
@@ -346,6 +388,15 @@ export function CourseEditorClient({
           </SortableContext>
         </DndContext>
       )}
+
+      {tree ? (
+        <CourseFormDialog
+          open={courseEditOpen}
+          onClose={() => setCourseEditOpen(false)}
+          editing={tree}
+          onSaved={load}
+        />
+      ) : null}
 
       <Dialog
         open={moduleOpen}

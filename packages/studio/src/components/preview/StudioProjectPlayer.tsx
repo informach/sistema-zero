@@ -46,8 +46,9 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
         ref={ref}
         title={title ?? project.name ?? 'Projeto'}
         srcDoc={doc}
-        // Mesmo sandbox do preview vivo do editor. NUNCA `allow-same-origin`.
-        sandbox="allow-scripts allow-modals"
+        // Mesmo sandbox do preview vivo do editor. Pointer Lock habilita a câmera FPS;
+        // NUNCA adicionar `allow-same-origin`.
+        sandbox="allow-scripts allow-modals allow-pointer-lock"
         // Libera a Fullscreen API do jogo (blocos de "tela cheia") no player público.
         // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
         allow="fullscreen"

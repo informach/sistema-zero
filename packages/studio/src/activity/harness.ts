@@ -16,7 +16,7 @@ export interface BuildHarnessOptions {
  *
  * Roda no sandbox null-origin do aluno (loopGuard/CSP/permissionGuard valem). As
  * checagens entram como DADOS (JSON). O `code.source` do professor roda num
- * `<script>` INLINE injetado em runtime (a CSP libera `'unsafe-inline'`, mas NÃO
+ * `<script>` INLINE autenticado pelo nonce do harness (a CSP NÃO libera inline
  * `'unsafe-eval'` — `eval`/`new Function` estão BLOQUEADOS; ver `preview/csp.ts`).
  * O corpo vai por `script.textContent` (não re-tokenizado como HTML → `</script>`
  * é inócuo) e a leitura de globais usa o MESMO truque (`readGlobal`), porque
@@ -44,6 +44,8 @@ export function buildCheckHarness(
   var CHECKS = JSON.parse(${JSON.stringify(checksJson)});
   var TARGET_ORIGIN = ${originJson};
   var DELAY = ${delayMs};
+  var SCRIPT_NONCE = (document.currentScript && document.currentScript.nonce) ||
+    ((document.querySelector('script[nonce]') || {}).nonce || '');
   var consoleText = [];
   function capture(method) {
     var original = console[method];
@@ -98,6 +100,7 @@ export function buildCheckHarness(
     try {
       delete window.__szG;
       var s = document.createElement('script');
+      s.nonce = SCRIPT_NONCE;
       s.textContent = 'try{window.__szG={v:(' + name + ')}}catch(e){}';
       (document.head || document.documentElement).appendChild(s);
       s.remove();
@@ -152,6 +155,7 @@ export function buildCheckHarness(
     // script literal no corpo do professor é inócuo (sem necessidade de escape).
     delete window.__szCodeOut;
     var s = document.createElement('script');
+    s.nonce = SCRIPT_NONCE;
     s.textContent =
       '(function(){var ctx=window.__szCtx;try{var __o=(function(){' + c.source +
       '\\n})();window.__szCodeOut={ok:true,passed:__o===undefined?true:!!__o};}' +

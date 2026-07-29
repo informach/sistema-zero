@@ -89,7 +89,11 @@ describe('POST /members/ai-usage/consume — quota de IA por conta', () => {
       aiLimits: { daily: 1, monthly: 1 },
     })
     const staff = randomUUID()
-    const headers = { ...studentHeaders(staff), 'x-auth-user-role': 'staff' }
+    const headers = {
+      ...studentHeaders(staff),
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
 
     for (let i = 0; i < 3; i++) {
       const res = await app.handle(consume('pensa-chat', headers))

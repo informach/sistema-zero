@@ -8,6 +8,8 @@ export interface DeliveryWorkerOpts {
   batchSize: number
   staleMs: number
   retryDelayMs: number
+  /** Messaging configurado: além do PDF, a fila também entrega e-mail. */
+  deliverEmail: boolean
 }
 
 /**
@@ -43,16 +45,22 @@ export class DeliveryWorker {
       const claimed = await this.invoices.claimEmittedNeedingDelivery({
         batchSize: this.opts.batchSize,
         staleMs: this.opts.staleMs,
+        includeEmail: this.opts.deliverEmail,
       })
       for (const invoice of claimed) {
+        const claimToken = invoice.claimToken
         try {
-          await this.invoices.touchClaim(invoice.id)
-          const result = await this.emit.retryDelivery(invoice.id)
+          if (!claimToken || !(await this.invoices.touchClaim(invoice.id, claimToken))) {
+            this.logger.info('fiscal.delivery_claim_lost', { invoiceId: invoice.id })
+            continue
+          }
+          const result = await this.emit.retryDelivery(invoice.id, claimToken)
           if (!result.complete) {
             await this.invoices.releaseDeliveryRetry(
               invoice.id,
               new Date(Date.now() + this.opts.retryDelayMs),
               result.error ?? 'entrega pós-emissão incompleta',
+              claimToken,
             )
             this.logger.warn('fiscal.delivery_retry_scheduled', {
               invoiceId: invoice.id,
@@ -60,6 +68,7 @@ export class DeliveryWorker {
             })
           }
         } catch (error) {
+          if (!claimToken) continue
           this.logger.error('fiscal.delivery_unhandled', {
             invoiceId: invoice.id,
             error: serializeError(error),
@@ -68,6 +77,7 @@ export class DeliveryWorker {
             invoice.id,
             new Date(Date.now() + this.opts.retryDelayMs),
             error instanceof Error ? error.message : String(error),
+            claimToken,
           )
         }
       }

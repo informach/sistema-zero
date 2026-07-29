@@ -2,7 +2,7 @@ import { PayloadTooLargeError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { ShowcaseService } from '../../../application/showcase/showcase.service'
 import { ValidationError } from '../../../domain/shared/errors'
-import { PlayCheckBody, ShowcaseByAuthorsBody } from '../dtos'
+import { PlayCheckBody, ShowcaseByAuthorBody, ShowcaseByAuthorsBody } from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
 import { assertWebhookSignature } from '../webhook-auth'
 
@@ -42,6 +42,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       method: request.method,
       path: new URL(request.url).pathname,
       rawBody: getRawBody(request),
+      deliveryId: headers['x-delivery-id'],
       signatureHeader: headers['x-signature'],
       toleranceSeconds: deps.toleranceSeconds,
     })
@@ -68,6 +69,24 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         }
       },
       { body: ShowcaseByAuthorsBody },
+    )
+    .post(
+      // Perfil público kids — TODOS os jogos de vitrine de UM autor (perfil), com CAPA
+      // e sem janela. Como a de cima, NUNCA é exposta no gateway (o members é o portão:
+      // só monta a seção num perfil PÚBLICO). Os jogos já são públicos no /jogar.
+      '/showcase-by-author',
+      async ({ body }) => {
+        const items = await deps.showcase.listShowcaseByAuthor(body.authorId, body.limit ?? 24)
+        return {
+          items: items.map((i) => ({
+            title: i.title,
+            playId: i.playId,
+            coverImageUrl: i.coverImageUrl,
+            createdAt: i.createdAt.toISOString(),
+          })),
+        }
+      },
+      { body: ShowcaseByAuthorBody },
     )
     .post(
       // Validação do REMIX (members→hub S2S): o marco `studio_remix` do members só é

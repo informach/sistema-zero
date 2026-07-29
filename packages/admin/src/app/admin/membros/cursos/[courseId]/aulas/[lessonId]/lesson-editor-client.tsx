@@ -28,7 +28,7 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, GripVertical, Pencil, Plus } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ExternalLink, GripVertical, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -49,6 +49,7 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import {
   type AttachmentView,
   type BlockView,
+  type CourseTreeView,
   LESSON_BLOCK_KINDS,
   type LessonBlockContent,
   type LessonBlockKind,
@@ -160,7 +161,9 @@ const EMPTY_BLOCK: BlockForm = {
   title: '',
   studioLevel: 'iniciante-2d',
   studioCategories: [],
-  studioModes: ['blocks', 'bridge', 'code'],
+  // Default NOVO (24/07): o aluno vê SÓ Blocos; Ponte é opt-in do autor; Código é
+  // automático do Pro (não é mais checkbox — bloco legado com 'code' preserva).
+  studioModes: ['blocks'],
   studioAllowReveal: true,
   studioAllowBlocks: [],
   studioActivity: EMPTY_ACTIVITY,
@@ -195,13 +198,16 @@ function buildContent(
       // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
       const hasActivity =
         f.studioActivity.checks.length > 0 || f.studioActivity.instructions.trim() !== ''
+      // Projeto PRO: o modo Código é automático do kind — `allowedModes` é omitido
+      // (redesenho 24/07; a curadoria de modos só vale no projeto de blocos).
+      const isPro = (studioProject as Project & { kind?: string }).kind === 'pro'
       return {
         kind: 'studio',
         initialProject: studioProject as Project,
         level: f.studioLevel,
         ...(f.studioCategories.length > 0 ? { allowCategories: f.studioCategories } : {}),
         ...(f.studioAllowBlocks.length > 0 ? { allowBlocks: f.studioAllowBlocks } : {}),
-        ...(f.studioModes.length > 0 && f.studioModes.length < STUDIO_MODES.length
+        ...(!isPro && f.studioModes.length > 0 && f.studioModes.length < STUDIO_MODES.length
           ? { allowedModes: f.studioModes }
           : {}),
         allowLevelReveal: f.studioAllowReveal,
@@ -368,21 +374,37 @@ export function LessonEditorClient({
   courseId,
   lessonId,
   currentRole,
+  studentAppUrls,
 }: {
   courseId: string
   lessonId: string
   currentRole: string
+  /** URLs públicas dos apps de aluno ("Ver como aluno") — ausentes → botão oculto. */
+  studentAppUrls?: { adult?: string; kids?: string }
 }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
 
   const [lesson, setLesson] = useState<LessonContentView | null>(null)
   const [loading, setLoading] = useState(true)
+  /** Slug/audience/status do curso + publicação DESTA aula (p/ o "Ver como aluno"). */
+  const [courseInfo, setCourseInfo] = useState<{
+    slug: string
+    audience: 'adult' | 'kids'
+    status: string
+    lessonPublished: boolean
+  } | null>(null)
   const [busy, setBusy] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
 
   const [blockOpen, setBlockOpen] = useState(false)
   const [editingBlock, setEditingBlock] = useState<BlockView | null>(null)
   const [blockForm, setBlockForm] = useState<BlockForm>(EMPTY_BLOCK)
+  // Tipo de atividade do bloco Estúdio (redesenho 24/07): controla o segmented do
+  // TOPO do form e o que aparece (Pro esconde a curadoria de blocos). NÃO entra no
+  // payload — o kind REAL vive no projeto (o embed sincroniza via onKindResolved).
+  const [studioKind, setStudioKind] = useState<'blocks' | 'pro'>('blocks')
+  // "Configurações avançadas" colapsada (abre sozinha na edição fora do default).
+  const [advancedOpen, setAdvancedOpen] = useState(false)
   // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
   const studioHandleRef = useRef<StudioHandle | null>(null)
   // Bloco cujas ENTREGAS o professor está acompanhando (dialog separado).
@@ -403,7 +425,21 @@ export function LessonEditorClient({
     } finally {
       setLoading(false)
     }
-  }, [lessonId])
+    // "Ver como aluno": a árvore traz slug/audience/status + a publicação da aula
+    // (o LessonContentView não os carrega). Best-effort — sem ela o botão só some.
+    try {
+      const tree = await apiGet<CourseTreeView>(`/api/members/courses/${courseId}`)
+      const treeLesson = tree.modules.flatMap((m) => m.lessons).find((l) => l.id === lessonId)
+      setCourseInfo({
+        slug: tree.slug,
+        audience: (tree.audience ?? 'adult') as 'adult' | 'kids',
+        status: tree.status,
+        lessonPublished: treeLesson?.isPublished ?? false,
+      })
+    } catch {
+      setCourseInfo(null)
+    }
+  }, [lessonId, courseId])
 
   useEffect(() => {
     load()
@@ -426,6 +462,8 @@ export function LessonEditorClient({
   function openCreateBlock() {
     setEditingBlock(null)
     setBlockForm(EMPTY_BLOCK)
+    setStudioKind('blocks')
+    setAdvancedOpen(false)
     setBlockOpen(true)
   }
   function openEditBlock(b: BlockView) {
@@ -457,10 +495,10 @@ export function LessonEditorClient({
       studioLevel:
         c.kind === 'studio' ? (normalizeBlockLevel(c.level) ?? 'iniciante-2d') : 'iniciante-2d',
       studioCategories: c.kind === 'studio' ? (c.allowCategories ?? []) : [],
+      // Legado SEM allowedModes = os 3 modos liberados (preserva na edição — só o
+      // bloco NOVO nasce com o default enxuto ['blocks']).
       studioModes:
-        c.kind === 'studio'
-          ? (c.allowedModes ?? ['blocks', 'bridge', 'code'])
-          : ['blocks', 'bridge', 'code'],
+        c.kind === 'studio' ? (c.allowedModes ?? ['blocks', 'bridge', 'code']) : ['blocks'],
       studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
       studioActivity: c.kind === 'studio' ? (c.activity ?? EMPTY_ACTIVITY) : EMPTY_ACTIVITY,
@@ -478,6 +516,27 @@ export function LessonEditorClient({
       certSig2Url: c.kind === 'certificate' ? (c.signatures?.[1]?.imageUrl ?? '') : '',
       certSig2Name: c.kind === 'certificate' ? (c.signatures?.[1]?.name ?? '') : '',
     })
+    if (c.kind === 'studio') {
+      const projectKind = (c.initialProject as { kind?: string } | undefined)?.kind
+      setStudioKind(projectKind === 'pro' ? 'pro' : 'blocks')
+      // "Configurações avançadas" abre sozinha quando algum campo está fora do
+      // default — senão o autor editaria sem ver a curadoria custom que existe.
+      const modes = c.allowedModes ?? ['blocks', 'bridge', 'code']
+      const modesDefault = modes.length === 1 && modes[0] === 'blocks'
+      const activity = c.activity ?? EMPTY_ACTIVITY
+      setAdvancedOpen(
+        (normalizeBlockLevel(c.level) ?? 'iniciante-2d') !== 'iniciante-2d' ||
+          !modesDefault ||
+          (c.allowCategories ?? []).length > 0 ||
+          c.allowLevelReveal === false ||
+          activity.checks.length > 0 ||
+          activity.instructions.trim() !== '' ||
+          Boolean(c.showcase?.title || c.showcase?.summary || c.showcase?.defaultCoverUrl),
+      )
+    } else {
+      setStudioKind('blocks')
+      setAdvancedOpen(false)
+    }
     setBlockOpen(true)
   }
   async function saveBlock() {
@@ -612,16 +671,33 @@ export function LessonEditorClient({
     })
   }
 
-  /** E-book: além do bloco (livro 3D), o PDF entra nos materiais da aula p/ download. */
-  async function addEbookAttachment(file: UploadedFile) {
+  /**
+   * E-book: além do bloco (livro 3D), o PDF entra nos materiais da aula p/ download.
+   * Trocar o PDF ATUALIZA o anexo do PDF anterior in-place (`previousUrl` — preserva a
+   * posição na lista e não deixa material órfão). Edge-cases aceitos: casar por URL
+   * pode sobrescrever um rótulo editado à mão (é o anexo daquele PDF); o OBJETO antigo
+   * no R2 fica (lixo de storage é dívida documentada da fatia de mídia).
+   */
+  async function addEbookAttachment(file: UploadedFile, previousUrl?: string) {
     if (lesson?.attachments.some((a) => a.url === file.url)) return
+    const payload = {
+      label: file.filename.replace(/\.pdf$/i, ''),
+      url: file.url,
+      fileType: file.fileType || 'pdf',
+      sizeBytes: file.sizeBytes ?? null,
+    }
+    const previous =
+      previousUrl && previousUrl !== file.url
+        ? lesson?.attachments.find((a) => a.url === previousUrl)
+        : undefined
     try {
-      await apiSend(`/api/members/lessons/${lessonId}/attachments`, 'POST', {
-        label: file.filename.replace(/\.pdf$/i, ''),
-        url: file.url,
-        fileType: file.fileType || 'pdf',
-        sizeBytes: file.sizeBytes ?? null,
-      })
+      if (previous) {
+        await apiSend(`/api/members/attachments/${previous.id}`, 'PATCH', payload)
+        await load()
+        toast.success('Material da aula atualizado para o novo PDF.')
+        return
+      }
+      await apiSend(`/api/members/lessons/${lessonId}/attachments`, 'POST', payload)
       await load()
       toast.success('E-book adicionado aos materiais da aula.')
     } catch (err) {
@@ -643,11 +719,38 @@ export function LessonEditorClient({
         title={lesson?.title ?? 'Aula'}
         description={lesson ? lesson.slug : lessonId}
         action={
-          canWrite ? (
-            <Button onClick={openCreateBlock}>
-              <Plus className="size-4" /> Adicionar bloco
-            </Button>
-          ) : undefined
+          <div className="flex flex-wrap gap-2">
+            {(() => {
+              // "Ver como aluno": abre a aula no app do aluno (pela audience) com a
+              // PRÓPRIA conta de equipe (passe livre). Rascunho → 404 na visão do
+              // aluno (o filtro roda antes do bypass), por isso só habilita publicado.
+              if (!courseInfo) return null
+              const base =
+                courseInfo.audience === 'kids' ? studentAppUrls?.kids : studentAppUrls?.adult
+              if (!base) return null
+              const publishedBoth = courseInfo.status === 'published' && courseInfo.lessonPublished
+              const url = `${base.replace(/\/+$/, '')}/cursos/${encodeURIComponent(courseInfo.slug)}/aulas/${encodeURIComponent(lessonId)}`
+              return (
+                <Button
+                  variant="outline"
+                  disabled={!publishedBoth}
+                  title={
+                    publishedBoth
+                      ? 'Você verá com o passe da equipe — travas e gamificação de um aluno real não são simuladas.'
+                      : 'Publique a aula (e o curso) para vê-la como aluno — rascunho dá 404 na visão do aluno.'
+                  }
+                  onClick={() => window.open(url, '_blank', 'noopener')}
+                >
+                  <ExternalLink className="size-4" /> Ver como aluno
+                </Button>
+              )
+            })()}
+            {canWrite ? (
+              <Button onClick={openCreateBlock}>
+                <Plus className="size-4" /> Adicionar bloco
+              </Button>
+            ) : null}
+          </div>
         }
       />
 
@@ -892,12 +995,15 @@ export function LessonEditorClient({
                   accept="application/pdf,.pdf"
                   label="Clique para enviar o PDF do e-book (até 200 MB)"
                   onUploaded={(file) => {
+                    // Captura o PDF ANTERIOR antes de sobrescrever — o anexo dele é
+                    // atualizado in-place (sem material órfão na aula).
+                    const previousUrl = blockForm.pdfUrl.trim() || undefined
                     setBlockForm((f) => ({
                       ...f,
                       pdfUrl: file.url,
                       title: f.title.trim() ? f.title : file.filename.replace(/\.pdf$/i, ''),
                     }))
-                    void addEbookAttachment(file)
+                    void addEbookAttachment(file, previousUrl)
                   }}
                 />
               </Field>
@@ -925,118 +1031,66 @@ export function LessonEditorClient({
 
           {blockForm.kind === 'studio' ? (
             <div className="flex flex-col gap-4">
-              <StudioConfigClipboard
-                current={{
-                  level: blockForm.studioLevel,
-                  modes: blockForm.studioModes,
-                  categories: blockForm.studioCategories,
-                  allowReveal: blockForm.studioAllowReveal,
-                  allowBlocks: blockForm.studioAllowBlocks,
-                }}
-                onPaste={(snap) =>
-                  setBlockForm((f) => ({
-                    ...f,
-                    studioLevel: snap.level,
-                    studioModes: snap.modes,
-                    studioCategories: snap.categories,
-                    studioAllowReveal: snap.allowReveal,
-                    studioAllowBlocks: snap.allowBlocks,
-                  }))
-                }
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label="Nível"
-                  htmlFor="slevel"
-                  hint="Cura a paleta de blocos por dificuldade."
-                >
-                  <Select
-                    id="slevel"
-                    value={blockForm.studioLevel}
-                    onChange={(e) =>
-                      setBlockForm((f) => ({ ...f, studioLevel: e.target.value as BlockLevel }))
-                    }
-                  >
-                    {STUDIO_LEVELS.map((l) => (
-                      <option key={l.value} value={l.value}>
-                        {l.label}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field
-                  label="Modos liberados"
-                  hint="O aluno alterna entre eles (limitado ao tipo do projeto)."
-                >
-                  <div className="flex flex-wrap gap-3 pt-1.5">
-                    {STUDIO_MODES.map((m) => (
-                      <label key={m.value} className="flex items-center gap-1.5 text-sm">
-                        <input
-                          type="checkbox"
-                          className="size-4 accent-primary"
-                          checked={blockForm.studioModes.includes(m.value)}
-                          onChange={(e) =>
-                            setBlockForm((f) => ({
-                              ...f,
-                              studioModes: e.target.checked
-                                ? [...f.studioModes, m.value]
-                                : f.studioModes.filter((x) => x !== m.value),
-                            }))
-                          }
-                        />
-                        {m.label}
-                      </label>
-                    ))}
-                  </div>
-                </Field>
-              </div>
+              {/* ── ESSENCIAL (redesenho 24/07): tipo → projeto → blocos visíveis →
+                  projeto contínuo + última aula. O resto vive em "Configurações
+                  avançadas" (colapsada — abre sozinha na edição fora do default). ── */}
               <Field
-                label="Bloquinhos sempre visíveis"
-                hint="Categorias liberadas independente do nível (opcional)."
+                label="Tipo de atividade"
+                hint="Blocos e Ponte é o Estúdio clássico; Código Pro é o projeto profissional (o modo Código é automático)."
               >
-                <div className="flex flex-wrap gap-3 pt-1.5">
-                  {CORE_CATEGORY_OPTIONS.map((cat) => (
-                    <label key={cat.value} className="flex items-center gap-1.5 text-sm">
-                      <input
-                        type="checkbox"
-                        className="size-4 accent-primary"
-                        checked={blockForm.studioCategories.includes(cat.value)}
-                        onChange={(e) =>
-                          setBlockForm((f) => ({
-                            ...f,
-                            studioCategories: e.target.checked
-                              ? [...f.studioCategories, cat.value]
-                              : f.studioCategories.filter((x) => x !== cat.value),
-                          }))
-                        }
-                      />
-                      {cat.label}
-                    </label>
-                  ))}
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={studioKind === 'blocks' ? 'default' : 'outline'}
+                    aria-pressed={studioKind === 'blocks'}
+                    onClick={() => setStudioKind('blocks')}
+                  >
+                    Blocos e Ponte
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={studioKind === 'pro' ? 'default' : 'outline'}
+                    aria-pressed={studioKind === 'pro'}
+                    onClick={() => setStudioKind('pro')}
+                  >
+                    Código Pro
+                  </Button>
                 </div>
               </Field>
               <Field
-                label="Lista de blocos (opcional — só estes aparecem)"
-                hint="Vazio = a paleta segue o nível acima. Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto); o nível e as categorias acima passam a ser ignorados. Bom para aulas bem guiadas."
+                label="Projeto inicial"
+                hint="Monte o código de partida, instale as extensões e dê o nome do projeto — é o que o aluno abre na aula."
               >
-                <StudioBlocksPicker
-                  value={blockForm.studioAllowBlocks}
-                  onChange={(studioAllowBlocks) =>
-                    setBlockForm((f) => ({ ...f, studioAllowBlocks }))
+                <StudioEmbed
+                  key={editingBlock?.id ?? 'new-studio'}
+                  initialProject={
+                    editingBlock && editingBlock.content.kind === 'studio'
+                      ? (editingBlock.content.initialProject as Project)
+                      : null
                   }
+                  handleRef={studioHandleRef}
+                  professionalAuthoring
+                  hideKindChooser
+                  requestedKind={studioKind}
+                  onKindResolved={setStudioKind}
+                  features={{ terminal: false, ai: false, professional: true, export: false }}
                 />
               </Field>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="size-4 accent-primary"
-                  checked={blockForm.studioAllowReveal}
-                  onChange={(e) =>
-                    setBlockForm((f) => ({ ...f, studioAllowReveal: e.target.checked }))
-                  }
-                />
-                Aluno pode revelar blocos avançados
-              </label>
+              {studioKind === 'blocks' ? (
+                <Field
+                  label="Blocos visíveis para o aluno"
+                  hint="Vazio = a paleta curada pelo nível (em Configurações avançadas). Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto). Bom para aulas bem guiadas."
+                >
+                  <StudioBlocksPicker
+                    value={blockForm.studioAllowBlocks}
+                    onChange={(studioAllowBlocks) =>
+                      setBlockForm((f) => ({ ...f, studioAllowBlocks }))
+                    }
+                  />
+                </Field>
+              ) : null}
               <Field
                 label="Projeto contínuo (nome)"
                 hint="Opcional. Dê o MESMO nome às aulas que constroem um único projeto (ex.: 'jogo-da-cobrinha'): o aluno abre cada aula com o código que enviou na anterior da cadeia. Vazio = aula independente."
@@ -1048,10 +1102,7 @@ export function LessonEditorClient({
                   onChange={(e) => setBlockForm((f) => ({ ...f, studioChain: e.target.value }))}
                 />
               </Field>
-              <fieldset className="rounded-lg border border-border p-3">
-                <legend className="px-1 text-xs text-muted-foreground">
-                  Mural dos Criadores (vitrine)
-                </legend>
+              <div className="flex flex-col gap-1">
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -1061,81 +1112,233 @@ export function LessonEditorClient({
                       setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
                     }
                   />
-                  Última aula do projeto — liberar o "Compartilhar" no Mural
+                  Última aula do projeto — libera o "Compartilhar" no Mural
                 </label>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Ligue no bloco da ÚLTIMA aula do projeto: aí (e só aí) a criança ganha o botão
-                  "Compartilhar" na barra do editor pra publicar o jogo no Mural (+ um link público
-                  de jogar). O título e o resumo abaixo viram o texto INICIAL do post (a criança
-                  pode ajustar na hora) — deixe em branco e a IA escreve a descrição. A capa padrão
-                  é a reserva quando o print do jogo falha.
+                <p className="text-xs text-muted-foreground">
+                  Ligue SÓ no bloco da última aula: aí a criança ganha o botão "Compartilhar" pra
+                  publicar o jogo no Mural (+ link público de jogar). O texto do post (título/
+                  resumo/capa) fica em Configurações avançadas — em branco, a IA escreve.
                 </p>
-                {blockForm.studioShowcaseEnabled ? (
-                  <div className="mt-3 flex flex-col gap-3">
-                    <Field label="Título do post" htmlFor="bk-showcase-title">
-                      <Input
-                        id="bk-showcase-title"
-                        value={blockForm.studioShowcaseTitle}
-                        maxLength={300}
-                        placeholder="Ex.: Meu jogo da cobrinha"
-                        onChange={(e) =>
-                          setBlockForm((f) => ({ ...f, studioShowcaseTitle: e.target.value }))
-                        }
-                      />
-                    </Field>
+              </div>
+
+              {/* ── AVANÇADO (colapsada) ── */}
+              <div className="rounded-lg border border-border">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedOpen((v) => !v)}
+                  aria-expanded={advancedOpen}
+                  className="flex w-full items-center justify-between px-3 py-2.5 text-sm font-medium"
+                >
+                  Configurações avançadas
+                  <ChevronDown
+                    className={`size-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {advancedOpen ? (
+                  <div className="flex flex-col gap-4 border-t border-border p-3">
+                    {studioKind === 'blocks' ? (
+                      <>
+                        <StudioConfigClipboard
+                          current={{
+                            level: blockForm.studioLevel,
+                            modes: blockForm.studioModes,
+                            categories: blockForm.studioCategories,
+                            allowReveal: blockForm.studioAllowReveal,
+                            allowBlocks: blockForm.studioAllowBlocks,
+                          }}
+                          onPaste={(snap) =>
+                            setBlockForm((f) => ({
+                              ...f,
+                              studioLevel: snap.level,
+                              studioModes: snap.modes,
+                              studioCategories: snap.categories,
+                              studioAllowReveal: snap.allowReveal,
+                              studioAllowBlocks: snap.allowBlocks,
+                            }))
+                          }
+                        />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field
+                            label="Nível"
+                            htmlFor="slevel"
+                            hint="Cura a paleta de blocos por dificuldade (vale quando a lista de blocos visíveis está vazia)."
+                          >
+                            <Select
+                              id="slevel"
+                              value={blockForm.studioLevel}
+                              onChange={(e) =>
+                                setBlockForm((f) => ({
+                                  ...f,
+                                  studioLevel: e.target.value as BlockLevel,
+                                }))
+                              }
+                            >
+                              {STUDIO_LEVELS.map((l) => (
+                                <option key={l.value} value={l.value}>
+                                  {l.label}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
+                          <Field
+                            label="Modos do aluno"
+                            hint="Por padrão só Blocos; ligue a Ponte p/ o aluno alternar blocos ⇄ código."
+                          >
+                            <div className="flex flex-wrap gap-3 pt-1.5">
+                              {(
+                                [
+                                  { value: 'blocks', label: 'Blocos' },
+                                  { value: 'bridge', label: 'Ponte (blocos ⇄ código)' },
+                                ] as { value: IDEMode; label: string }[]
+                              ).map((m) => (
+                                <label key={m.value} className="flex items-center gap-1.5 text-sm">
+                                  <input
+                                    type="checkbox"
+                                    className="size-4 accent-primary"
+                                    checked={blockForm.studioModes.includes(m.value)}
+                                    onChange={(e) =>
+                                      setBlockForm((f) => ({
+                                        ...f,
+                                        studioModes: e.target.checked
+                                          ? [...f.studioModes, m.value]
+                                          : f.studioModes.filter((x) => x !== m.value),
+                                      }))
+                                    }
+                                  />
+                                  {m.label}
+                                </label>
+                              ))}
+                              {/* Bloco LEGADO que já libera o modo Código: dá pra remover,
+                                  mas bloco novo nunca vê este checkbox (Código é do Pro). */}
+                              {blockForm.studioModes.includes('code') ? (
+                                <label className="flex items-center gap-1.5 text-sm">
+                                  <input
+                                    type="checkbox"
+                                    className="size-4 accent-primary"
+                                    checked
+                                    onChange={() =>
+                                      setBlockForm((f) => ({
+                                        ...f,
+                                        studioModes: f.studioModes.filter((x) => x !== 'code'),
+                                      }))
+                                    }
+                                  />
+                                  Código (legado)
+                                </label>
+                              ) : null}
+                            </div>
+                          </Field>
+                        </div>
+                        <Field
+                          label="Bloquinhos sempre visíveis"
+                          hint="Categorias liberadas independente do nível (opcional)."
+                        >
+                          <div className="flex flex-wrap gap-3 pt-1.5">
+                            {CORE_CATEGORY_OPTIONS.map((cat) => (
+                              <label key={cat.value} className="flex items-center gap-1.5 text-sm">
+                                <input
+                                  type="checkbox"
+                                  className="size-4 accent-primary"
+                                  checked={blockForm.studioCategories.includes(cat.value)}
+                                  onChange={(e) =>
+                                    setBlockForm((f) => ({
+                                      ...f,
+                                      studioCategories: e.target.checked
+                                        ? [...f.studioCategories, cat.value]
+                                        : f.studioCategories.filter((x) => x !== cat.value),
+                                    }))
+                                  }
+                                />
+                                {cat.label}
+                              </label>
+                            ))}
+                          </div>
+                        </Field>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            className="size-4 accent-primary"
+                            checked={blockForm.studioAllowReveal}
+                            onChange={(e) =>
+                              setBlockForm((f) => ({ ...f, studioAllowReveal: e.target.checked }))
+                            }
+                          />
+                          Aluno pode revelar blocos avançados
+                        </label>
+                      </>
+                    ) : null}
                     <Field
-                      label="Resumo do projeto"
-                      hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco → a IA gera a descrição."
+                      label="Atividade (auto-correção)"
+                      hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
                     >
-                      <Textarea
-                        value={blockForm.studioShowcaseSummary}
-                        maxLength={2000}
-                        placeholder="Um breve resumo do que se trata o projeto."
-                        onChange={(e) =>
-                          setBlockForm((f) => ({ ...f, studioShowcaseSummary: e.target.value }))
+                      <ActivityBuilder
+                        value={blockForm.studioActivity}
+                        onChange={(studioActivity) =>
+                          setBlockForm((f) => ({ ...f, studioActivity }))
                         }
                       />
                     </Field>
-                    <Field
-                      label="Capa padrão"
-                      hint="Usada em projetos web (e como reserva quando o print do jogo falha)."
-                    >
-                      <ImageUploader
-                        scope="block"
-                        allowManualUrl={false}
-                        value={blockForm.studioShowcaseCover}
-                        onChange={(url) =>
-                          setBlockForm((f) => ({ ...f, studioShowcaseCover: url }))
-                        }
-                      />
-                    </Field>
+                    <fieldset className="rounded-lg border border-border p-3">
+                      <legend className="px-1 text-xs text-muted-foreground">
+                        Vitrine do Mural — texto do post
+                      </legend>
+                      {blockForm.studioShowcaseEnabled ? (
+                        <div className="flex flex-col gap-3">
+                          <p className="text-xs text-muted-foreground">
+                            Texto INICIAL do post (a criança ajusta ao publicar) — em branco, a IA
+                            escreve a descrição. A capa padrão é a reserva quando o print falha.
+                          </p>
+                          <Field label="Título do post" htmlFor="bk-showcase-title">
+                            <Input
+                              id="bk-showcase-title"
+                              value={blockForm.studioShowcaseTitle}
+                              maxLength={300}
+                              placeholder="Ex.: Meu jogo da cobrinha"
+                              onChange={(e) =>
+                                setBlockForm((f) => ({ ...f, studioShowcaseTitle: e.target.value }))
+                              }
+                            />
+                          </Field>
+                          <Field
+                            label="Resumo do projeto"
+                            hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco → a IA gera a descrição."
+                          >
+                            <Textarea
+                              value={blockForm.studioShowcaseSummary}
+                              maxLength={2000}
+                              placeholder="Um breve resumo do que se trata o projeto."
+                              onChange={(e) =>
+                                setBlockForm((f) => ({
+                                  ...f,
+                                  studioShowcaseSummary: e.target.value,
+                                }))
+                              }
+                            />
+                          </Field>
+                          <Field
+                            label="Capa padrão"
+                            hint="Usada em projetos web (e como reserva quando o print do jogo falha)."
+                          >
+                            <ImageUploader
+                              scope="block"
+                              allowManualUrl={false}
+                              value={blockForm.studioShowcaseCover}
+                              onChange={(url) =>
+                                setBlockForm((f) => ({ ...f, studioShowcaseCover: url }))
+                              }
+                            />
+                          </Field>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Ligue "Última aula do projeto" (acima, no essencial) para configurar o
+                          texto do post.
+                        </p>
+                      )}
+                    </fieldset>
                   </div>
                 ) : null}
-              </fieldset>
-              <Field
-                label="Projeto inicial"
-                hint="Monte o tipo de projeto, o código de partida e o nome — é o que o aluno abre na aula."
-              >
-                <StudioEmbed
-                  key={editingBlock?.id ?? 'new-studio'}
-                  initialProject={
-                    editingBlock && editingBlock.content.kind === 'studio'
-                      ? (editingBlock.content.initialProject as Project)
-                      : null
-                  }
-                  handleRef={studioHandleRef}
-                  features={{ terminal: false, ai: false, professional: false, export: false }}
-                />
-              </Field>
-              <Field
-                label="Atividade (auto-correção)"
-                hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
-              >
-                <ActivityBuilder
-                  value={blockForm.studioActivity}
-                  onChange={(studioActivity) => setBlockForm((f) => ({ ...f, studioActivity }))}
-                />
-              </Field>
+              </div>
             </div>
           ) : null}
 

@@ -49,8 +49,9 @@ export function createGatewayMessagingClient(opts: {
         signal: AbortSignal.timeout(opts.timeoutMs),
       })
       if (!res.ok) {
-        const body = await res.text().catch(() => '')
-        throw new Error(`messaging/send falhou: ${res.status} ${body.slice(0, 300)}`)
+        // A resposta pode ecoar destinatário/variáveis. O código HTTP é suficiente
+        // para o retry e não pode virar PII em logs/Sentry.
+        throw new Error(`messaging/send falhou: ${res.status}`)
       }
       return true
     },

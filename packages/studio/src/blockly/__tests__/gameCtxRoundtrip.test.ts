@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
@@ -20,7 +21,7 @@ function bridgeCycleJS(js: string): string {
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
   const ir2 = buildIRFromWorkspace(ws)
-  return compileStatements(ir2.js, 0)
+  return compileStatements(behaviorStatements(ir2), 0)
 }
 
 describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
@@ -112,8 +113,8 @@ describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
       '});',
     ].join('\n')
     const out = bridgeCycleJS(js)
-    expect(out).toContain('SZGame2D.onKey("ArrowUp", function')
-    expect(out).toContain('SZGame2D.onOverlap(() => jogador, () => inimigo, function')
+    expect(out).toContain('SZGame2D.onKey("ArrowUp", () =>')
+    expect(out).toContain('SZGame2D.onOverlap(() => jogador, () => inimigo, () =>')
     expect(out).not.toContain('rawJS')
   })
 
@@ -199,7 +200,7 @@ describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
     expect(out).toContain('SZGame2D.wrapEdges(inimigo);')
     expect(out).toContain('SZGame2D.pruneOld(tiros, 2);')
     expect(out).toContain('SZGame2D.hasHealth(jogador)')
-    expect(out).toContain('SZGame2D.cooldownReady(jogador, 20)')
+    expect(out).toMatch(/SZGame2D\.cooldownReady\(jogador, 20, "[^"]+"\)/)
     expect(out).toContain('SZGame2D.randomChance(30)')
     expect(out).not.toContain('rawJS')
   })

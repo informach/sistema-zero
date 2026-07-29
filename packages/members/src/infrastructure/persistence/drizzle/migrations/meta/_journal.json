@@ -330,6 +330,55 @@
       "when": 1784414477318,
       "tag": "0046_light_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1784740692948,
+      "tag": "0047_panoramic_jack_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1784746845685,
+      "tag": "0048_normalize_creator_career_slots",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1784746869660,
+      "tag": "0049_needy_iron_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1785000000000,
+      "tag": "0050_teacher_thread_history_paging",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1785000100000,
+      "tag": "0051_teacher_thread_staff_reads",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1785000200000,
+      "tag": "0052_course_level_lenda",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1785000300000,
+      "tag": "0053_career_slot_max_8",
+      "breakpoints": true
     }
   ]
 }

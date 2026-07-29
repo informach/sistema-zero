@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { useProjectStore } from '../../state/projectStore'
@@ -112,6 +112,26 @@ describe('ExtensionsPanel — extensões para instalar gated por nível', () => 
     expect(screen.getByText(ext2d.manifest.name)).not.toBeNull()
     expect(screen.getByText(ext3d.manifest.name)).not.toBeNull()
   })
+
+  it('allowExtensions da carreira restringe o catálogo mesmo quando allowBlocks está ativo', () => {
+    seedProject()
+    const config = {
+      ...STANDALONE_CONFIG,
+      learning: resolveLearning({
+        level: 'iniciante-2d',
+        allowBlocks: ['sz_g2d_create_ship'],
+        allowExtensions: ['game-2d'],
+        allowLevelReveal: false,
+      }),
+    }
+    render(
+      <StudioConfigProvider value={config}>
+        <ExtensionsPanel open onClose={() => {}} />
+      </StudioConfigProvider>,
+    )
+    expect(screen.getByText(ext2d.manifest.name)).not.toBeNull()
+    expect(screen.queryByText(ext3d.manifest.name)).toBeNull()
+  })
 })
 
 describe('ExtensionsPanel — "Saiba mais" expande a docs do manifest', () => {
@@ -144,5 +164,41 @@ describe('ExtensionsPanel — "Saiba mais" expande a docs do manifest', () => {
     // Fechar o aberto volta ao estado inicial.
     fireEvent.click(screen.getByText('Esconder detalhes'))
     expect(screen.queryByText('Esconder detalhes')).toBeNull()
+  })
+})
+
+describe('ExtensionsPanel — conflitos entre motores', () => {
+  afterEach(() => {
+    cleanup()
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  it('explica por que Jogo 2D Avançado fica bloqueado quando Jogo 2D está instalado', () => {
+    const simple = OFFICIAL_CATALOG.find((extension) => extension.manifest.id === 'game-2d')
+    const advanced = OFFICIAL_CATALOG.find(
+      (extension) => extension.manifest.id === 'game-2d-advanced',
+    )
+    if (!simple || !advanced) throw new Error('fixture: esperava os dois motores 2D')
+    const project = createEmptyProject('p1', 'Meu Jogo')
+    project.installedExtensions = [
+      { id: simple.manifest.id, version: simple.manifest.version, installedAt: 0 },
+    ]
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+
+    render(<ExtensionsPanel open onClose={() => {}} />)
+
+    const card = screen.getByText(advanced.manifest.name).closest('li')
+    expect(card?.querySelector('button[disabled]')).not.toBeNull()
+    if (!card) throw new Error('fixture: card da extensão avançada ausente')
+    expect(
+      within(card).getByText(
+        `Para instalar ${advanced.manifest.name}, remova ${simple.manifest.name}: as duas extensões controlam a mesma tela.`,
+      ),
+    ).not.toBeNull()
+
+    const warnings = screen
+      .getAllByText(/as duas extensões controlam a mesma tela\./)
+      .map((element) => element.textContent)
+    expect(new Set(warnings).size).toBe(warnings.length)
   })
 })

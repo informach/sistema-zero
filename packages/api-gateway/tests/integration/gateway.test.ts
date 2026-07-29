@@ -191,6 +191,49 @@ describe('gateway (integração via app.handle)', () => {
     expect(ok.status).toBe(200)
   })
 
+  test('HMAC autentica x-delivery-id quando ele participa da chamada', async () => {
+    const hmacConfig: GatewayConfigInput = {
+      consumers: [
+        { id: 'sys-a', hmacSecret: 'secret-a-at-least-16', allowedCidrs: ['203.0.113.0/24'] },
+      ],
+      services: {
+        echo: { name: 'echo', upstreamGroups: { default: [{ url: 'http://up', id: 'a' }] } },
+      },
+      routes: [
+        {
+          id: 'secure',
+          methods: ['POST'],
+          pathPattern: '/secure',
+          service: 'echo',
+          auth: { mode: 'any', strategies: ['hmac'] },
+          upstreamAuth: 'passthrough',
+        },
+      ],
+    }
+    const app = await buildApp(hmacConfig)
+    const body = '{}'
+    const ts = Math.floor(Date.now() / 1000)
+    const signature = signHmac(
+      'secret-a-at-least-16',
+      canonicalHmacMessage({ method: 'POST', path: '/secure', deliveryId: 'del-original', body }),
+      ts,
+    )
+
+    const response = await app.handle(
+      req('/secure', {
+        method: 'POST',
+        body,
+        headers: {
+          'content-type': 'application/json',
+          'x-consumer-id': 'sys-a',
+          'x-delivery-id': 'del-adulterado',
+          'x-signature': `t=${ts},v1=${signature}`,
+        },
+      }),
+    )
+    expect(response.status).toBe(401)
+  })
+
   test('load balancing round-robin + ejeção passiva de instância ruim', async () => {
     const lbConfig: GatewayConfigInput = {
       services: {

@@ -302,7 +302,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                   variant="subtle"
                   size="sm"
                   disabled={busy}
-                  title="Modelo 3D (.glb) ou céu 360° (.hdr) para o Jogo 3D Avançado"
+                  title="Modelo 3D (.glb) ou céu 360° (.hdr) para Canvas 3D, Jogo 3D Avançado e Mundo 3D"
                   onClick={() => modelRef.current?.click()}
                 >
                   📦 Enviar modelo 3D

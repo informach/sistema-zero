@@ -1,6 +1,9 @@
 import type { CourseAudience } from '../../domain/course/course'
+import { emptyQualifyingByTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
+import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import { careerLocksForCourses } from '../career-course-locking/career-course-locking'
 import { type CatalogCourseView, toCatalogCourseView } from '../mappers/views'
 
 /**
@@ -13,6 +16,7 @@ export class ListCatalogService {
   constructor(
     private readonly courses: CourseRepository,
     private readonly entitlements: EntitlementRepository,
+    private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
   ) {}
 
@@ -23,9 +27,12 @@ export class ListCatalogService {
     accountId?: string,
   ): Promise<CatalogCourseView[]> {
     // `hasAccess` resolve a matrícula pela CONTA (sessão de perfil → accountId).
-    const [published, active] = await Promise.all([
+    const [published, active, qualified] = await Promise.all([
       this.courses.listPublishedCourses(audience),
       this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
+      audience === 'kids' && !privileged
+        ? this.gamification.listQualifyingCareerSlots(userId, audience)
+        : Promise.resolve(emptyQualifyingByTier()),
     ])
 
     // Chave-mestra POR AUDIÊNCIA destrava a vitrine inteira (atuais e futuros):
@@ -38,8 +45,13 @@ export class ListCatalogService {
       if (e.accessType === 'course' && e.courseRef) owned.add(e.courseRef)
     }
 
+    const careerLocks = careerLocksForCourses(
+      published,
+      qualified,
+      audience === 'kids' && !privileged,
+    )
     return published.map((course) =>
-      toCatalogCourseView(course, hasMaster || owned.has(course.slug)),
+      toCatalogCourseView(course, hasMaster || owned.has(course.slug), careerLocks.get(course.id)),
     )
   }
 }

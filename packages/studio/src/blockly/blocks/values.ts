@@ -200,13 +200,12 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'Um número da data/hora ATUAL (ex.: as horas agora). Ótimo para relógios. Vira new Date().getHours() (e similares).',
+    tooltip: 'Pega uma parte da data ou hora atual. É útil para criar relógios e calendários.',
   },
   {
     type: 'sz_val_canvas_width',
     message0: 'largura do canvas %1',
-    args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'A largura da tela de desenho ligada ao pincel.',
@@ -214,7 +213,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_canvas_height',
     message0: 'altura do canvas %1',
-    args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'A altura da tela de desenho ligada ao pincel.',
@@ -243,7 +242,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Uma cor no formato HSL. Matiz (0–360), saturação e luminosidade (0–100%). Cada valor pode ser número, variável ou cálculo (ex.: matiz aleatório).',
+      'Uma cor no formato HSL. Matiz (0 a 360), saturação e luminosidade (0 a 100%). Cada valor pode ser número, variável ou cálculo (ex.: matiz aleatório).',
   },
   {
     type: 'sz_val_random_float',
@@ -269,6 +268,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_event_pos',
+    placement: { root: [], nested: ['event-body'], role: 'value' },
     message0: 'posição do clique %1',
     args0: [
       {
@@ -286,6 +286,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_event_key',
+    placement: { root: [], nested: ['event-body'], role: 'value' },
     message0: '%1 do evento',
     args0: [
       {
@@ -360,7 +361,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Cria uma NOVA lista transformando cada item. Use "valor da variável" com o nome do item na transformação. Vira lista.map((item) => …).',
+      'Cria uma nova lista transformando cada item. Use o valor da variável do item na transformação.',
   },
   {
     // Os espaços (ITEM0, ITEM1, …) e os botões +/− vêm do `sz_array_mutator`.
@@ -405,7 +406,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Percorre a lista e devolve o primeiro item que passa no teste (ou nada, se nenhum passar). Dentro de "em que", use "valor da variável item" ou "campo do item" para testar cada um. Vira lista.find((item) => ...).',
+      'Procura e devolve o primeiro item que passa no teste. Se nenhum passar, o resultado fica vazio.',
   },
   {
     type: 'sz_val_array_filter',
@@ -419,7 +420,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Cria uma NOVA lista só com os itens que passam no teste. A lista é um soquete: encaixe uma variável ou "minha propriedade …". Dentro do "em que", use "valor da variável item" ou "propriedade … de" para testar cada um. Vira lista.filter((item) => ...).',
+      'Cria uma nova lista somente com os itens que passam no teste. Use a variável do item para testar cada um.',
   },
   {
     // Espaços ITEM0.. via `sz_array_mutator`: cada um é uma lista a juntar.
@@ -437,14 +438,14 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Devolve a lista com os itens em ordem aleatória.',
+    tooltip: 'Cria uma nova lista embaralhada sem mudar a lista original.',
   },
   {
     type: 'sz_val_dataset',
     message0: 'dado %1 da variável %2',
     args0: [
       { type: 'field_input', name: 'KEY', text: 'chave' },
-      { type: 'field_input', name: 'OBJ', text: 'elemento' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'elemento', kind: 'variable' },
     ],
     output: 'JSValue',
     colour: C,
@@ -481,7 +482,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
           ['atual', 'this'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'elemento' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'elemento', kind: 'dom-target' },
       { type: 'field_input', name: 'CLASS', text: 'ativo' },
     ],
     output: 'JSValue',
@@ -490,9 +491,10 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_this',
-    message0: 'elemento atual',
+    message0: 'contexto atual (this)',
     output: 'JSValue',
     colour: C,
-    tooltip: 'O elemento que disparou o evento atual. Use dentro de uma função ligada a um evento.',
+    tooltip:
+      'O contexto atual da função. Numa função ligada a um evento, é o elemento que disparou; num método, é o próprio objeto.',
   },
 ]

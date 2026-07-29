@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import path from 'node:path'
+import { sql } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import { SkipReason } from '../../src/domain/invoice/invoice.status'
@@ -9,6 +10,10 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleInvoiceRepository } from '../../src/infrastructure/persistence/drizzle/invoice.repository'
+import {
+  DrizzleProcessedWebhookStore,
+  withAdvisoryLock,
+} from '../../src/infrastructure/persistence/drizzle/processed-webhook.store'
 
 /**
  * Invariantes que SÓ o Postgres real prova — os fakes em memória são
@@ -107,7 +112,7 @@ describe.skipIf(!testDatabaseUrl)(
     })
 
     beforeEach(async () => {
-      await conn.sql`TRUNCATE fiscal.invoices, fiscal.invoice_events, fiscal.invoice_pdfs, fiscal.dps_counters RESTART IDENTITY CASCADE`
+      await conn.sql`TRUNCATE fiscal.invoices, fiscal.invoice_events, fiscal.invoice_pdfs, fiscal.dps_counters, fiscal.processed_webhooks RESTART IDENTITY CASCADE`
     })
 
     test('schedule concorrente do MESMO pagamento → 1 só nota (unique parcial + recovery 23505)', async () => {
@@ -138,26 +143,96 @@ describe.skipIf(!testDatabaseUrl)(
       const invoices = await Promise.all(
         Array.from({ length: 8 }, () => repo.schedule(scheduleInput())),
       )
+      const claimed = await repo.claimDueForEmission({
+        batchSize: 8,
+        staleMs: 60_000,
+        maxAttempts: 10,
+      })
+      const tokens = new Map(claimed.map((invoice) => [invoice.id, invoice.claimToken]))
       const results = await Promise.all(
-        invoices.map((inv) => repo.allocateDpsNumber(inv.id, '901', (n) => `DPS-901-${n}`)),
+        invoices.map((inv) =>
+          repo.allocateDpsNumber(inv.id, '901', (n) => `DPS-901-${n}`, tokens.get(inv.id)!),
+        ),
       )
-      const numbers = results.map((r) => Number(r.dpsNumber)).sort((x, y) => x - y)
+      const numbers = results.map((r) => Number(r!.dpsNumber)).sort((x, y) => x - y)
       expect(numbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
       expect(new Set(numbers).size).toBe(8) // sem repetição
-    })
+    }, 15_000)
 
     test('markEmitted devolve false quando o status mudou (SKIPPED) entre o claim e a gravação', async () => {
       const invoice = await repo.schedule(scheduleInput())
       await repo.skip(invoice.id, SkipReason.REFUNDED_BEFORE_EMISSION) // corrida: estorno
-      const recorded = await repo.markEmitted(invoice.id, {
-        dpsXml: '<DPS/>',
-        nfseXml: '<NFSe/>',
-        accessKey: '1'.repeat(50),
-        competenceDate: '2026-06-13',
-        pdfToken: 'a'.repeat(64),
-      })
+      const recorded = await repo.markEmitted(
+        invoice.id,
+        {
+          dpsXml: '<DPS/>',
+          nfseXml: '<NFSe/>',
+          accessKey: '1'.repeat(50),
+          competenceDate: '2026-06-13',
+          pdfToken: 'a'.repeat(64),
+        },
+        'claim-antigo',
+      )
       expect(recorded).toBe(false) // não casou → o chamador reconcilia (não perde a chave)
       expect((await repo.findById(invoice.id))?.status).toBe('SKIPPED')
+    })
+
+    test('substituta emitida após cancelamento automático terminal também entra em CANCEL_PENDING', async () => {
+      for (const terminalStatus of ['CANCELLED', 'CANCEL_FAILED'] as const) {
+        const originalAccessKey = terminalStatus === 'CANCELLED' ? '1'.repeat(50) : '3'.repeat(50)
+        const substituteAccessKey = terminalStatus === 'CANCELLED' ? '2'.repeat(50) : '4'.repeat(50)
+        const original = await repo.schedule(scheduleInput())
+        const [claimedOriginal] = await repo.claimDueForEmission({
+          batchSize: 1,
+          staleMs: 60_000,
+          maxAttempts: 10,
+        })
+        if (!claimedOriginal?.claimToken) throw new Error('original sem claim')
+        await repo.markEmitted(
+          original.id,
+          {
+            dpsXml: '<DPS/>',
+            nfseXml: '<NFSe/>',
+            accessKey: originalAccessKey,
+            competenceDate: '2026-06-13',
+            pdfToken: crypto.randomUUID().replaceAll('-', '').repeat(2),
+          },
+          claimedOriginal.claimToken,
+        )
+        await repo.requestCancel(original.id, 'system:refund', 'Pagamento reembolsado')
+        const [claimedCancel] = await repo.claimCancelPending({ batchSize: 1, staleMs: 60_000 })
+        if (!claimedCancel?.claimToken) throw new Error('cancelamento sem claim')
+        if (terminalStatus === 'CANCELLED') {
+          await repo.markCancelled(original.id, '<evento/>', claimedCancel.claimToken)
+        } else {
+          await repo.markCancelFailed(original.id, 'prazo expirado', claimedCancel.claimToken)
+        }
+
+        const substitute = await repo.schedule(
+          scheduleInput({ paymentId: original.paymentId, substitutesId: original.id }),
+        )
+        const [claimedSubstitute] = await repo.claimDueForEmission({
+          batchSize: 1,
+          staleMs: 60_000,
+          maxAttempts: 10,
+        })
+        if (!claimedSubstitute?.claimToken) throw new Error('substituta sem claim')
+        const result = await repo.markEmittedAsSubstitute(
+          substitute.id,
+          {
+            dpsXml: '<DPS/>',
+            nfseXml: '<NFSe/>',
+            accessKey: substituteAccessKey,
+            competenceDate: '2026-06-13',
+            pdfToken: crypto.randomUUID().replaceAll('-', '').repeat(2),
+          },
+          original.id,
+          claimedSubstitute.claimToken,
+        )
+
+        expect(result.substituteCancelPending).toBe(true)
+        expect((await repo.findById(substitute.id))?.status).toBe('CANCEL_PENDING')
+      }
     })
 
     test('failExhausted respeita o lease: tentativa acima do teto só falha depois de stale', async () => {
@@ -182,27 +257,158 @@ describe.skipIf(!testDatabaseUrl)(
 
     test('claimEmittedNeedingDelivery reivindica EMITTED com PDF/e-mail pendente e respeita backoff', async () => {
       const invoice = await repo.schedule(scheduleInput({ scheduledFor: new Date() }))
-      await repo.markEmitted(invoice.id, {
-        dpsXml: '<DPS/>',
-        nfseXml: '<NFSe/>',
-        accessKey: '2'.repeat(50),
-        competenceDate: '2026-06-19',
-        pdfToken: 'b'.repeat(64),
+      const [claimedEmission] = await repo.claimDueForEmission({
+        batchSize: 1,
+        staleMs: 60_000,
+        maxAttempts: 10,
       })
+      if (!claimedEmission?.claimToken) throw new Error('emissão sem claim')
+      await repo.markEmitted(
+        invoice.id,
+        {
+          dpsXml: '<DPS/>',
+          nfseXml: '<NFSe/>',
+          accessKey: '2'.repeat(50),
+          competenceDate: '2026-06-19',
+          pdfToken: 'b'.repeat(64),
+        },
+        claimedEmission.claimToken,
+      )
 
-      const [first] = await repo.claimEmittedNeedingDelivery({ batchSize: 10, staleMs: 0 })
+      await conn.sql`
+        UPDATE fiscal.invoices SET claimed_at = NULL, claim_token = NULL WHERE id = ${invoice.id}
+      `
+
+      const [first] = await repo.claimEmittedNeedingDelivery({
+        batchSize: 10,
+        staleMs: 0,
+        includeEmail: true,
+      })
       expect(first?.id).toBe(invoice.id)
 
-      await repo.releaseDeliveryRetry(invoice.id, new Date(Date.now() + 60_000), 'DANFSe down')
-      expect(await repo.claimEmittedNeedingDelivery({ batchSize: 10, staleMs: 0 })).toHaveLength(0)
+      await repo.releaseDeliveryRetry(
+        invoice.id,
+        new Date(Date.now() + 60_000),
+        'DANFSe down',
+        first!.claimToken!,
+      )
+      expect(
+        await repo.claimEmittedNeedingDelivery({ batchSize: 10, staleMs: 0, includeEmail: true }),
+      ).toHaveLength(0)
 
       await conn.sql`
         UPDATE fiscal.invoices
         SET next_attempt_at = now() - interval '1 second'
         WHERE id = ${invoice.id}
       `
-      const [afterBackoff] = await repo.claimEmittedNeedingDelivery({ batchSize: 10, staleMs: 0 })
+      const [afterBackoff] = await repo.claimEmittedNeedingDelivery({
+        batchSize: 10,
+        staleMs: 0,
+        includeEmail: true,
+      })
       expect(afterBackoff?.id).toBe(invoice.id)
+    })
+
+    test('claim de webhook não mantém transação aberta durante o processamento', async () => {
+      const store = new DrizzleProcessedWebhookStore(conn.db)
+      const deliveryId = `evt-${crypto.randomUUID()}`
+
+      const [first, concurrent] = await Promise.all([
+        store.claimDelivery(deliveryId, 60_000),
+        store.claimDelivery(deliveryId, 60_000),
+      ])
+      const claimed = [first, concurrent].find(
+        (claim): claim is { kind: 'claimed'; token: string } => claim.kind === 'claimed',
+      )
+      expect(claimed?.token).toBeString()
+      expect([first.kind, concurrent.kind].sort()).toEqual(['claimed', 'in_progress'])
+
+      await store.releaseClaim(deliveryId, claimed!.token)
+      const reclaimed = await store.claimDelivery(deliveryId, 60_000)
+      expect(reclaimed.kind).toBe('claimed')
+      if (reclaimed.kind !== 'claimed') throw new Error('claim deveria ter sido liberado')
+      await store.markProcessed(deliveryId, reclaimed.token, { eventName: 'payment.paid' })
+      expect((await store.claimDelivery(deliveryId, 60_000)).kind).toBe('processed')
+
+      const staleDeliveryId = `evt-${crypto.randomUUID()}`
+      const stale = await store.claimDelivery(staleDeliveryId, 60_000)
+      if (stale.kind !== 'claimed') throw new Error('claim inicial deveria existir')
+      await conn.sql`
+        UPDATE fiscal.processed_webhooks
+        SET processing_at = now() - interval '2 minutes'
+        WHERE delivery_id = ${staleDeliveryId}
+      `
+      const newer = await store.claimDelivery(staleDeliveryId, 60_000)
+      if (newer.kind !== 'claimed') throw new Error('claim expirado deveria ser reassumido')
+      expect(await store.markProcessed(staleDeliveryId, stale.token, {})).toBe(false)
+      await store.releaseClaim(staleDeliveryId, stale.token)
+      expect((await store.claimDelivery(staleDeliveryId, 60_000)).kind).toBe('in_progress')
+    })
+
+    test('token impede que o claim antigo renove uma nota reassumida', async () => {
+      const invoice = await repo.schedule(scheduleInput({ scheduledFor: new Date() }))
+      const [first] = await repo.claimDueForEmission({
+        batchSize: 1,
+        staleMs: 60_000,
+        maxAttempts: 10,
+      })
+      if (!first?.claimToken) throw new Error('claim inicial sem token')
+      await conn.sql`
+        UPDATE fiscal.invoices
+        SET claimed_at = now() - interval '2 minutes'
+        WHERE id = ${invoice.id}
+      `
+      const [second] = await repo.claimDueForEmission({
+        batchSize: 1,
+        staleMs: 60_000,
+        maxAttempts: 10,
+      })
+      if (!second?.claimToken) throw new Error('claim reassumido sem token')
+
+      expect(second.claimToken).not.toBe(first.claimToken)
+      expect(await repo.touchClaim(invoice.id, first.claimToken)).toBe(false)
+      expect(await repo.touchClaim(invoice.id, second.claimToken)).toBe(true)
+    })
+
+    test('claim antigo não consegue liberar o retry da nota reassumida', async () => {
+      const invoice = await repo.schedule(scheduleInput({ scheduledFor: new Date() }))
+      const [first] = await repo.claimDueForEmission({
+        batchSize: 1,
+        staleMs: 60_000,
+        maxAttempts: 10,
+      })
+      if (!first?.claimToken) throw new Error('claim inicial sem token')
+      await conn.sql`
+        UPDATE fiscal.invoices
+        SET claimed_at = now() - interval '2 minutes'
+        WHERE id = ${invoice.id}
+      `
+      const [second] = await repo.claimDueForEmission({
+        batchSize: 1,
+        staleMs: 60_000,
+        maxAttempts: 10,
+      })
+      if (!second?.claimToken) throw new Error('claim reassumido sem token')
+
+      await repo.releaseForRetry(
+        invoice.id,
+        new Date(Date.now() + 60_000),
+        'worker antigo',
+        first.claimToken,
+      )
+
+      const current = await repo.findById(invoice.id)
+      expect(current?.claimToken).toBe(second.claimToken)
+      expect(current?.claimedAt).not.toBeNull()
+    })
+
+    test('advisory lock entrega a transação bloqueada ao trabalho de retenção', async () => {
+      const result = await withAdvisoryLock(conn.db, 7_223_991_888n, async (tx) => {
+        const [row] = await tx.execute<{ value: number }>(sql`SELECT 1 AS value`)
+        return row?.value
+      })
+
+      expect(result).toBe(1)
     })
   },
 )

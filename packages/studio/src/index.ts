@@ -18,6 +18,8 @@ export type {
   ProjectTree,
   ProNode,
   ProProjectMeta,
+  StudioProBuildFileLimitError,
+  StudioProBuildLimits,
 } from '#core'
 export {
   BLOCK_LEVEL_OPTIONS,
@@ -29,9 +31,13 @@ export {
   MODE_LABELS,
   normalizeBlockLevel,
   normalizeProPath,
+  STUDIO_PRO_BUILD_LIMITS,
+  studioProBuildFileLimitError,
+  studioProBuildRequestByteLength,
 } from '#core'
 export type { PersonalAsset, SavePersonalAssetResult } from './asset-library/personal'
 export { BLOCK_CATALOG, type BlockCatalogEntry } from './blockly/blockCatalog'
+export { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './career/blockProfiles'
 export {
   createProProject,
   listProTemplates,
@@ -81,6 +87,11 @@ export type {
 } from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
 export { prefetchStudioModes } from './studio/prefetch'
+export type {
+  StudioProRuntimeAdapter,
+  StudioProRuntimeBuildInput,
+  StudioProRuntimeBuildResult,
+} from './studio/pro-runtime'
 /** @deprecated Use {@link StudioEditor} ou {@link StudioLesson}. */
 export { Studio } from './studio/Studio'
 export { StudioEditor } from './studio/StudioEditor'

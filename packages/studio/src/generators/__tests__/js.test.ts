@@ -1,10 +1,83 @@
 import { describe, expect, it } from 'bun:test'
-import type { JSExpr, JSStatement } from '#ir'
+import type { EventKind, JSExpr, JSStatement } from '#ir'
 import { num, str, variable } from '#ir'
-import { GeneratorError } from '../expr'
+import { compileExpr, GeneratorError } from '../expr'
 import { GeneratorDepthError, generateJS, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateJS', () => {
+  it('preserva this e super em callbacks oficiais criados dentro de métodos', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'classDecl',
+          name: 'Base',
+          ctorBody: [],
+          methods: [
+            {
+              name: 'somarBonus',
+              params: [],
+              body: [{ type: 'setThisProp', name: 'bonus', value: { type: 'num', value: 2 } }],
+            },
+          ],
+        },
+        {
+          type: 'classDecl',
+          name: 'Jogo',
+          superClass: 'Base',
+          ctorBody: [],
+          methods: [
+            {
+              name: 'atualizar',
+              params: [],
+              body: [
+                {
+                  type: 'gk:forEachActive',
+                  mold: 'inimigo',
+                  itemName: 'item',
+                  body: [
+                    { type: 'setThisProp', name: 'pontos', value: { type: 'num', value: 1 } },
+                    { type: 'superMethodCall', method: 'somarBonus', args: [] },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        { type: 'newInstance', varName: 'jogo', className: 'Jogo', args: [] },
+        { type: 'callMethod', objectVar: 'jogo', method: 'atualizar', args: [] },
+      ],
+    })
+
+    const jogo = new Function('SZGameKit', `${code}\nreturn jogo;`)({
+      forEachActive: (_mold: string, callback: (item: object) => void) => callback({}),
+    }) as {
+      pontos?: number
+      bonus?: number
+    }
+
+    expect(jogo).toMatchObject({ pontos: 1, bonus: 2 })
+  })
+
+  it('embaralha com Fisher-Yates sem alterar a lista original', () => {
+    const expression = compileExpr({ type: 'shuffle', arrayVar: 'cartas' })
+    const original = [1, 2, 3, 4]
+    const random = Math.random
+    let randomCalls = 0
+    Math.random = () => {
+      randomCalls += 1
+      return 0
+    }
+    try {
+      const shuffled = new Function('cartas', `return ${expression};`)(original) as number[]
+      expect(original).toEqual([1, 2, 3, 4])
+      expect(shuffled).not.toBe(original)
+      expect([...shuffled].sort()).toEqual(original)
+      expect(randomCalls).toBe(original.length - 1)
+    } finally {
+      Math.random = random
+    }
+  })
+
   it('emite var/assign/consoleLog', () => {
     const code = generateJS({
       statements: [
@@ -190,6 +263,23 @@ describe('generateJS', () => {
     expect(code).toContain('let my = event.clientY;')
   })
 
+  it('declara Event nos callbacks DOM e de imagem que expõem o evento', () => {
+    const eventMethod: JSStatement = { type: 'eventMethod', method: 'preventDefault' }
+    const target: JSExpr = { type: 'var', name: 'elemento' }
+    const code = generateJS({
+      statements: [
+        { type: 'onClickAssign', target, body: [eventMethod] },
+        { type: 'imageOnLoad', target, body: [eventMethod] },
+        { type: 'imageOnError', target, body: [eventMethod] },
+      ],
+    })
+
+    expect(code).toContain('elemento.onclick = (event) => {')
+    expect(code).toContain('elemento.onload = (event) => {')
+    expect(code).toContain('elemento.onerror = (event) => {')
+    expect(code.match(/event\.preventDefault\(\);/g)).toHaveLength(3)
+  })
+
   it('emite lista (array), tamanho, adicionar e remover', () => {
     const code = generateJS({
       statements: [
@@ -270,7 +360,7 @@ describe('generateJS', () => {
     expect(code).toMatch(/if \(x > 0\) \{/)
     expect(code).toContain('console.log("positivo");')
     expect(code).toContain('} else {')
-    expect(code).toMatch(/for \(let i = 0; i < 3; i\+\+\) \{/)
+    expect(code).toMatch(/for \(let i = 0, limite = 3; i < limite; i\+\+\) \{/)
   })
 
   it('emite event click usando getElementById + addEventListener', () => {
@@ -396,7 +486,8 @@ describe('generateJS', () => {
       statements: [{ type: 'canvasSetup', canvasId: 'game', varName: 'ctx' }],
     })
     expect(code).toContain('const canvas = document.getElementById("game")')
-    expect(code).toContain("const ctx = canvas.getContext('2d');")
+    expect(code).toContain("const ctx = canvas?.getContext?.('2d');")
+    expect(code).toContain('if (!ctx)')
   })
 
   it('console.log de "canvas" referencia o elemento (não vira canvas_2)', () => {
@@ -652,6 +743,25 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('document.getElementById("meuForm")?.addEventListener("submit"')
+    expect(code).toContain('event.preventDefault();')
+  })
+
+  it('não duplica preventDefault quando o submit já tem a proteção explícita', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'meuForm',
+          event: 'submit',
+          body: [
+            { type: 'consoleLog', value: str('validando') },
+            { type: 'eventMethod', method: 'preventDefault' },
+          ],
+        },
+      ],
+    })
+
+    expect(code.match(/event\.preventDefault\(\);/g)).toHaveLength(1)
   })
 
   it('emite querySelector com const', () => {
@@ -668,7 +778,7 @@ describe('generateJS', () => {
     expect(code).toContain('document.getElementById("meuBotao")?.classList.add("ativo");')
   })
 
-  it('emite canvasDrawImage com onload', () => {
+  it('pré-carrega canvasDrawImage e resolve o asset antes de desenhar', () => {
     const code = generateJS({
       statements: [
         {
@@ -683,11 +793,120 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('new Image()')
-    // O src agora resolve o nome pelo manifesto de assets (biblioteca), com a URL/nome como fallback.
-    expect(code).toContain(
-      'ctxImg.src = window.__SZGAME_ASSETS?.["https://exemplo.com/img.png"] ?? "https://exemplo.com/img.png"',
+    expect(code).toContain('imagem.src = window.__SZGAME_ASSETS?.[nomeDaImagem] ?? nomeDaImagem')
+    expect(code).toContain('imagensCanvas.get("https://exemplo.com/img.png")')
+    expect(code).toContain('ctx.drawImage(ctxImagem, 0, 0, 100, 100)')
+  })
+
+  it('carrega uma imagem uma vez e a reutiliza em todos os quadros', async () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'animationLoop',
+          body: [
+            {
+              type: 'canvasDrawImage',
+              ctxVar: 'ctx',
+              src: 'nave.png',
+              x: { type: 'num', value: 10 },
+              y: { type: 'num', value: 20 },
+              w: { type: 'num', value: 64 },
+              h: { type: 'num', value: 64 },
+            },
+          ],
+        },
+      ],
+    })
+
+    let imageCreations = 0
+    class TestImage {
+      complete = false
+      naturalWidth = 64
+      private loadListeners: Array<() => void> = []
+
+      constructor() {
+        imageCreations += 1
+      }
+
+      addEventListener(type: string, listener: () => void): void {
+        if (type === 'load') this.loadListeners.push(listener)
+      }
+
+      set src(_value: string) {
+        this.complete = true
+        for (const listener of this.loadListeners) listener()
+      }
+    }
+
+    let nextFrame: (() => void) | undefined
+    const requestFrame = (callback: () => void): number => {
+      nextFrame = callback
+      return 1
+    }
+    let draws = 0
+    const ctx = { drawImage: () => draws++ }
+
+    new Function('window', 'Image', 'requestAnimationFrame', 'ctx', code)(
+      {},
+      TestImage,
+      requestFrame,
+      ctx,
     )
-    expect(code).toContain('ctx.drawImage(ctxImg, 0, 0, 100, 100)')
+    await Promise.resolve()
+    await Promise.resolve()
+    nextFrame?.()
+    nextFrame?.()
+
+    expect(imageCreations).toBe(1)
+    expect(draws).toBe(3)
+  })
+
+  it('continua o projeto quando uma imagem falha, sem tentar desenhá-la', async () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'canvasDrawImage',
+          ctxVar: 'ctx',
+          src: 'ausente.png',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0 },
+          w: { type: 'num', value: 32 },
+          h: { type: 'num', value: 32 },
+        },
+        { type: 'consoleLog', value: { type: 'str', value: 'projeto começou' } },
+      ],
+    })
+
+    class BrokenImage {
+      private errorListeners: Array<() => void> = []
+
+      addEventListener(type: string, listener: () => void): void {
+        if (type === 'error') this.errorListeners.push(listener)
+      }
+
+      set src(_value: string) {
+        for (const listener of this.errorListeners) listener()
+      }
+    }
+
+    let draws = 0
+    const logs: string[] = []
+    const warnings: string[] = []
+    new Function('window', 'Image', 'ctx', 'console', code)(
+      {},
+      BrokenImage,
+      { drawImage: () => draws++ },
+      {
+        log: (message: string) => logs.push(message),
+        warn: (_message: string, source: string) => warnings.push(source),
+      },
+    )
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(draws).toBe(0)
+    expect(logs).toEqual(['projeto começou'])
+    expect(warnings).toEqual(['ausente.png'])
   })
 
   it('emite canvasSave/restore/translate/rotate/scale', () => {
@@ -789,7 +1008,7 @@ describe('generateJS', () => {
     })
 
     expect(code).toContain('let i = 0;')
-    expect(code).toMatch(/for \(let i_2 = 0; i_2 < 2; i_2\+\+\)/)
+    expect(code).toMatch(/for \(let i_2 = 0, limite = 2; i_2 < limite; i_2\+\+\)/)
     expect(code).toContain('console.log(i);')
     expect(() => new Function(code)).not.toThrow()
   })
@@ -908,6 +1127,40 @@ describe('generateJS', () => {
 })
 
 describe('generateJS — eventos de teclado/mouse/janela + temporizadores em segundos', () => {
+  it('infere window/document apenas na IR legada sem targetKind explícito', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'event', target: 'window', event: 'click', body: [] },
+        { type: 'event', target: 'window', targetKind: 'id', event: 'click', body: [] },
+      ],
+    })
+
+    expect(code).toContain('window.addEventListener("click"')
+    expect(code).toContain('document.getElementById("window")?.addEventListener("click"')
+  })
+
+  it.each([
+    ['canvas', 'var', 'pointerdown', 'canvas?.addEventListener("pointerdown"'],
+    ['campo', 'id', 'keydown', 'document.getElementById("campo")?.addEventListener("keydown"'],
+    ['imagem', 'var', 'load', 'imagem?.addEventListener("load"'],
+  ] as const)('preserva o alvo de elemento %s em eventos %s', (target, targetKind, event, expected) => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target,
+          targetKind,
+          event: event as EventKind,
+          body: [],
+        },
+      ],
+    })
+
+    expect(code).toContain(expected)
+    expect(code).not.toContain(`document.addEventListener("${event}"`)
+    expect(code).not.toContain(`window.addEventListener("${event}"`)
+  })
+
   it('teclado: keydown vira document.addEventListener + event.code', () => {
     const code = generateJS({
       statements: [

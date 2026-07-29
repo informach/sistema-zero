@@ -2,10 +2,11 @@ import { afterAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { buildWorkspaceStateFromIR, unregisterBlocks } from '#blockly'
 import { createEmptyProject } from '#core'
-import type { SZIR } from '#ir'
+import { behaviorStatements, type SZIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import {
   countExtensionBlocksInProject,
+  installExtension,
   registerExtension,
   removeExtension,
   removeExtensionArtifacts,
@@ -25,6 +26,55 @@ function fakeStore(): { api: ProjectStoreApi; removed: string[] } {
 }
 
 describe('extensionsAdapter', () => {
+  it('impede instalar extensões que disputam o mesmo canvas', () => {
+    const advanced = findExtension('game-2d-advanced')
+    if (!advanced) throw new Error('extensão game-2d-advanced não encontrada')
+    let installs = 0
+    const api = {
+      getState: () => ({
+        project: {
+          ...createEmptyProject('p1', 'Projeto'),
+          installedExtensions: [{ id: 'game-2d', version: '0.1.0', installedAt: 1 }],
+        },
+        installExtension: () => {
+          installs += 1
+        },
+      }),
+    } as unknown as ProjectStoreApi
+
+    expect(installExtension(advanced, api)).toEqual({ ok: false, conflictId: 'game-2d' })
+    expect(installs).toBe(0)
+  })
+
+  it('mantém os conflitos de todos os runtimes de tela cheia simétricos', () => {
+    const ids = ['game-2d', 'game-2d-advanced', 'game-3d', 'game-3d-advanced', 'world-3d']
+    for (const id of ids) {
+      const extension = findExtension(id)
+      if (!extension) throw new Error(`extensão ${id} não encontrada`)
+      expect(new Set(extension.conflictsWith)).toEqual(new Set(ids.filter((other) => other !== id)))
+    }
+  })
+
+  it('respeita conflito declarado pela extensão já instalada, mesmo se a candidata omitir', () => {
+    const installed = findExtension('world-3d')
+    const candidate = findExtension('game-3d')
+    if (!installed || !candidate) throw new Error('extensões 3D não encontradas')
+    const api = {
+      getState: () => ({
+        project: {
+          ...createEmptyProject('p2', 'Projeto'),
+          installedExtensions: [{ id: installed.manifest.id, version: '1.0.0', installedAt: 1 }],
+        },
+        installExtension: () => {},
+      }),
+    } as unknown as ProjectStoreApi
+
+    expect(installExtension({ ...candidate, conflictsWith: [] }, api)).toEqual({
+      ok: false,
+      conflictId: 'world-3d',
+    })
+  })
+
   it('remove blocos e nós IR da extensão game-2d', () => {
     const ir: SZIR = {
       html: [{ type: 'canvas', id: 'tela', width: 400, height: 300 }],
@@ -54,7 +104,7 @@ describe('extensionsAdapter', () => {
 
     const cleaned = removeExtensionArtifacts(project, 'game-2d')
     expect(cleaned.ir?.extensions).toEqual([])
-    expect(cleaned.ir?.js).toEqual([
+    expect(cleaned.ir ? behaviorStatements(cleaned.ir) : []).toEqual([
       { type: 'consoleLog', value: { type: 'str', value: 'mantém' } },
     ])
     expect(
@@ -115,7 +165,7 @@ describe('extensionsAdapter', () => {
         for (const x of Object.values(o)) walk(x)
       }
     }
-    walk(cleaned.ir?.js)
+    walk(cleaned.ir ? behaviorStatements(cleaned.ir) : [])
     expect([...types].some((t) => t.startsWith('g2d:'))).toBe(false)
     // E os statements não-extensão (consoleLog) sobrevivem.
     expect(types.has('consoleLog')).toBe(true)

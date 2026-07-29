@@ -21,10 +21,20 @@ function fakeRepo(rows: ExpiringTermEntitlement[]) {
   const reminded = new Set<string>()
   const repo: RenewalReminderRepository = {
     async listExpiringTermEntitlements(from, to, limit) {
-      return rows
+      const eligible = rows
         .filter((r) => r.expiresAt >= from && r.expiresAt <= to)
         .filter((r) => !reminded.has(`${r.id}|${expiresOnKey(r.expiresAt)}`))
-        .slice(0, limit)
+      const selectedGroups = new Set<string>()
+      for (const entitlement of eligible) {
+        const group = `${entitlement.userId}|${entitlement.offerSlug ?? ''}|${expiresOnKey(entitlement.expiresAt)}`
+        if (selectedGroups.has(group) || selectedGroups.size === limit) continue
+        selectedGroups.add(group)
+      }
+      return eligible.filter((entitlement) =>
+        selectedGroups.has(
+          `${entitlement.userId}|${entitlement.offerSlug ?? ''}|${expiresOnKey(entitlement.expiresAt)}`,
+        ),
+      )
     },
     async markReminded(entitlementId, expiresOn) {
       reminded.add(`${entitlementId}|${expiresOn}`)
@@ -78,9 +88,11 @@ function service(
   repo: RenewalReminderRepository,
   auth: AuthGateway,
   messaging: { sendEmail(input: SendEmailInput): Promise<void> },
+  batchLimit?: number,
 ) {
   return new SendRenewalRemindersService(repo, auth, messaging, () => NOW, silentLogger, {
     daysBefore: 7,
+    batchLimit,
     funnelUrl: 'https://sistemazero.com.br',
   })
 }
@@ -173,5 +185,32 @@ describe('SendRenewalRemindersService', () => {
     const msg = fakeMessaging()
     const result = await service(repo, auth, msg.gateway).runCycle()
     expect(result.sent).toBe(2)
+  })
+
+  test('não divide uma compra com mais matrículas que o limite do ciclo', async () => {
+    const { repo, reminded } = fakeRepo([
+      row({ id: 'e1' }),
+      row({ id: 'e2' }),
+      row({ id: 'e3' }),
+      row({ id: 'e4', userId: 'user-2', offerSlug: 'outro-anual' }),
+    ])
+    const auth = fakeAuth({
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+      'user-2': { id: 'user-2', email: 'bia@example.com', firstName: 'Bia' },
+    })
+    const msg = fakeMessaging()
+    const reminderService = service(repo, auth, msg.gateway, 1)
+
+    expect(await reminderService.runCycle()).toEqual({ sent: 1, skipped: 0, failed: 0 })
+    expect(msg.sent).toHaveLength(1)
+    expect(msg.sent[0]?.idempotencyKey).toBe('renewal-reminder:e1:2027-05-30')
+    expect(reminded.has('e1|2027-05-30')).toBe(true)
+    expect(reminded.has('e2|2027-05-30')).toBe(true)
+    expect(reminded.has('e3|2027-05-30')).toBe(true)
+
+    // O ciclo seguinte avança para a próxima compra; não reenvia a anterior.
+    expect(await reminderService.runCycle()).toEqual({ sent: 1, skipped: 0, failed: 0 })
+    expect(msg.sent).toHaveLength(2)
+    expect(msg.sent[1]?.idempotencyKey).toBe('renewal-reminder:e4:2027-05-30')
   })
 })

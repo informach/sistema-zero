@@ -140,6 +140,11 @@ export function createPersistenceService(
   adapter: StudioPersistenceAdapter | null,
 ): PersistenceService {
   const pending = new Map<string, PendingAutosave>()
+  // Capturado no attach: duas instâncias já ligadas não mudam de debounce se
+  // outra instância (ou outro arquivo de teste concorrente) ajustar o default.
+  // Em produção o valor continua 1 s; nos testes elimina interferência global
+  // entre serviços que exercitam corridas temporais em paralelo.
+  let attachedAutosaveDelay = autosaveDelay
 
   // Dedupe de flush no unload: `flushPending` está registrado em pagehide E
   // beforeunload (ambos podem disparar num único fechamento) — sem isto cada
@@ -381,7 +386,7 @@ export function createPersistenceService(
       // pode gravar um blocksState quase-vazio/derivado por cima do real.
       emitChange(snapshotForSave(project), 'autosave')
       void persistAndMark(project)
-    }, autosaveDelay)
+    }, attachedAutosaveDelay)
     pending.set(project.id, { timer, project })
   }
 
@@ -410,6 +415,7 @@ export function createPersistenceService(
   }
 
   function attach(): () => void {
+    attachedAutosaveDelay = autosaveDelay
     const unsub = store.subscribe((state, prev) => {
       if (!state.project) return
       if (state.project === prev.project) return

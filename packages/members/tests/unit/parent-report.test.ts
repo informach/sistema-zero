@@ -45,6 +45,9 @@ function buildSender(now: Date) {
     async listShowcaseByAuthors() {
       return null
     },
+    async listShowcaseByAuthor() {
+      return null
+    },
     async checkPlay() {
       return null
     },

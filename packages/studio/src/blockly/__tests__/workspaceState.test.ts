@@ -2,7 +2,15 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { generateProjectFiles, generateProjectFilesWithMap } from '#generators'
-import { assignStableIdsToIR, type SZIR } from '#ir'
+import {
+  assignStableIdsToIR,
+  EVENT_KINDS,
+  type EventTargetKind,
+  type JSStatement,
+  type SZIR,
+  type SZIRV2,
+  SZIRV2Schema,
+} from '#ir'
 import { parseProjectFiles } from '#parsers'
 import { buildIRFromWorkspace } from '../buildIR'
 import { ensureBlocklyInitialized } from '../setup'
@@ -405,6 +413,120 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).not.toContain('sz_adv_raw_js')
   })
 
+  it.each([
+    {
+      label: 'ponteiro em variável de elemento',
+      source: 'canvas.addEventListener("pointerdown", (event) => { console.log("ok"); });',
+      expected: 'canvas?.addEventListener("pointerdown"',
+      expectedBlock: 'sz_js_on_pointer_down',
+    },
+    {
+      label: 'teclado em elemento por id',
+      source:
+        'document.getElementById("campo")?.addEventListener("keydown", (event) => { console.log(event.key); });',
+      expected: 'document.getElementById("campo")?.addEventListener("keydown"',
+      expectedBlock: 'sz_js_on_key',
+    },
+    {
+      label: 'change em variável de elemento',
+      source: 'campo.addEventListener("change", (event) => { console.log("mudou"); });',
+      expected: 'campo?.addEventListener("change"',
+      expectedBlock: 'sz_adv_raw_js',
+    },
+    {
+      label: 'clique inline na janela',
+      source: 'window.addEventListener("click", (event) => { console.log("ok"); });',
+      expected: 'window.addEventListener("click"',
+      expectedBlock: 'sz_adv_raw_js',
+    },
+    {
+      label: 'handler nomeado no documento',
+      source: 'document.addEventListener("click", tratar);',
+      expected: 'document.addEventListener("click", tratar',
+      expectedBlock: 'sz_adv_raw_js',
+    },
+  ])('preserva $label em um bloco válido na área de eventos', ({
+    source,
+    expected,
+    expectedBlock,
+  }) => {
+    const parsed = parseProjectFiles({
+      'index.html': '<!doctype html><script src="script.js"></script>',
+      'style.css': '',
+      'script.js': source,
+    })
+    const state = buildWorkspaceStateFromIR(parsed)
+    expect(collectTypes(state.blocks.blocks)).toContain(expectedBlock)
+
+    ensureBlocklyInitialized()
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state, workspace)
+      const rebuilt = buildIRFromWorkspace(workspace)
+      const validated = SZIRV2Schema.safeParse(rebuilt)
+      const lifecycleIssues = validated.success
+        ? []
+        : validated.error.issues.filter(
+            (issue) =>
+              issue.path.length === 3 &&
+              issue.path[0] === 'behavior' &&
+              issue.message.includes('não pode ficar na área'),
+          )
+      expect(lifecycleIssues).toEqual([])
+      const code = generateProjectFiles({ ir: rebuilt, projectName: 'Eventos' })['script.js']
+      expect(code).toContain(expected)
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('preserva o destino em toda combinação EventKind × targetKind, inline e nomeada', () => {
+    const targets: ReadonlyArray<{ kind: EventTargetKind; target: string; expected: string }> = [
+      {
+        kind: 'id',
+        target: 'alvo',
+        expected: 'document.getElementById("alvo")?.addEventListener(',
+      },
+      { kind: 'var', target: 'alvo', expected: 'alvo?.addEventListener(' },
+      { kind: 'document', target: 'document', expected: 'document.addEventListener(' },
+      { kind: 'window', target: 'window', expected: 'window.addEventListener(' },
+    ]
+
+    ensureBlocklyInitialized()
+    for (const event of EVENT_KINDS) {
+      for (const { kind, target, expected } of targets) {
+        for (const statementType of ['event', 'eventHandler'] as const) {
+          const statement: JSStatement =
+            statementType === 'event'
+              ? { type: 'event', target, targetKind: kind, event, body: [] }
+              : {
+                  type: 'eventHandler',
+                  target,
+                  targetKind: kind,
+                  event,
+                  handlerName: 'tratar',
+                }
+          const ir: SZIRV2 = {
+            version: 2,
+            html: [],
+            css: [],
+            behavior: { start: [], events: [statement], loops: [] },
+            extensions: [],
+          }
+          const workspace = new Blockly.Workspace()
+          try {
+            Blockly.serialization.workspaces.load(buildWorkspaceStateFromIR(ir), workspace)
+            const rebuilt = buildIRFromWorkspace(workspace)
+            const code = generateProjectFiles({ ir: rebuilt, projectName: 'Matriz' })['script.js']
+            expect(code, `${statementType}/${event}/${kind}`).toContain(expected)
+          } finally {
+            workspace.dispose()
+          }
+        }
+      }
+    }
+  })
+
   it('faz roundtrip texto→blocos de lista (array): criar, tamanho, adicionar e remover', () => {
     const source: SZIR = {
       html: [],
@@ -602,7 +724,7 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).toContain('sz_js_append_child')
     expect(types).toContain('sz_val_class_contains')
     expect(types).toContain('sz_val_dataset')
-    expect(types).not.toContain('sz_adv_raw_js')
+    expect(types).toContain('sz_adv_raw_js')
   })
 
   it('Fase 2: forEach e setTimeout fazem roundtrip sem cair em avançado', () => {
@@ -640,26 +762,41 @@ describe('buildWorkspaceStateFromIR', () => {
   })
 
   it('animationLoop cancelável + cancelAnimationFrame fazem roundtrip sem avançado', () => {
-    const source: SZIR = {
+    const source: SZIRV2 = {
+      version: 2,
       html: [],
       css: [],
-      js: [
-        {
-          type: 'animationLoop',
-          handle: 'animId',
-          body: [{ type: 'consoleLog', value: { type: 'str', value: 'tick' } }],
-        },
-        { type: 'cancelAnimationFrame', handle: { type: 'var', name: 'animId' } },
-      ],
+      behavior: {
+        start: [],
+        events: [
+          {
+            type: 'event',
+            target: 'parar',
+            event: 'click',
+            body: [{ type: 'cancelAnimationFrame', handle: { type: 'var', name: 'animId' } }],
+          },
+        ],
+        loops: [
+          {
+            type: 'animationLoop',
+            handle: 'animId',
+            body: [{ type: 'consoleLog', value: { type: 'str', value: 'tick' } }],
+          },
+        ],
+      },
       extensions: [],
     }
     const files = generateProjectFiles({ ir: source, projectName: 'Anim' })
     const parsed = parseProjectFiles(files)
     // O id sobrevive ao parse da Ponte (animationLoop.handle preservado).
-    expect(parsed.js).toEqual([
+    expect(parsed.behavior.loops).toEqual([
       expect.objectContaining({ type: 'animationLoop', handle: 'animId' }),
-      expect.objectContaining({ type: 'cancelAnimationFrame' }),
     ])
+    const parsedEvent = parsed.behavior.events[0]
+    expect(parsedEvent?.type).toBe('event')
+    expect(parsedEvent?.type === 'event' ? parsedEvent.body[0]?.type : undefined).toBe(
+      'cancelAnimationFrame',
+    )
     const types = collectTypes(buildWorkspaceStateFromIR(parsed).blocks.blocks)
     expect(types).toContain('sz_canvas_anim_loop')
     expect(types).toContain('sz_canvas_cancel_anim')
@@ -679,8 +816,8 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(files['script.js']).not.toContain('cancelAnimationFrame')
     expect(files['script.js']).not.toMatch(/let \w+;\n\s*function/)
     const parsed = parseProjectFiles(files)
-    expect(parsed.js[0]).toMatchObject({ type: 'animationLoop' })
-    expect(parsed.js[0]).not.toHaveProperty('handle')
+    expect(parsed.behavior.loops[0]).toMatchObject({ type: 'animationLoop' })
+    expect(parsed.behavior.loops[0]).not.toHaveProperty('handle')
   })
 
   it('Fase 1: função, chamada-comando e chamada-valor fazem roundtrip sem avançado', () => {
@@ -721,6 +858,46 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).toContain('sz_val_call_function')
     expect(types).toContain('sz_js_return')
     expect(types).not.toContain('sz_adv_raw_js')
+  })
+
+  it('preserva função nomeada assíncrona e await no round-trip por blocos', () => {
+    const source: SZIR = {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: ['url'],
+          async: true,
+          body: [
+            {
+              type: 'awaitStmt',
+              value: {
+                type: 'call',
+                name: 'fetch',
+                args: [{ type: 'var', name: 'url' }],
+              },
+            },
+          ],
+        },
+      ],
+      extensions: [],
+    }
+    const state = buildWorkspaceStateFromIR(source)
+    const functionBlock = collectBlocks(state.blocks.blocks).find(
+      (candidate) => candidate.type === 'sz_js_function',
+    )
+    expect(functionBlock?.fields).toMatchObject({ NAME: 'carregar', ASYNC: 'TRUE' })
+
+    const workspace = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, workspace)
+    expect(buildIRFromWorkspace(workspace).behavior.start[0]).toMatchObject({
+      type: 'funcDecl',
+      name: 'carregar',
+      async: true,
+    })
+    workspace.dispose()
   })
 
   it('Fase 0: booleano e incremento fazem roundtrip sem cair em avançado', () => {

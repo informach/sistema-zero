@@ -21,6 +21,17 @@ const EnvSchema = z
     // Sentry (opcional): ausente = no-op. Espelho de erros LOCAIS do painel.
     SENTRY_DSN: z.string().url().optional(),
 
+    // Executor remoto das atividades Pro. O par é opcional em desenvolvimento,
+    // mas precisa estar completo quando a autoria Pro for utilizada.
+    STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_TOKEN: z.string().min(24).optional(),
+
+    // "Ver como aluno" (editor de aula): URLs públicas dos apps de aluno — a
+    // equipe abre a aula PUBLICADA no app certo pela audience (passe livre da
+    // equipe). OPCIONAIS: ausentes → o botão fica oculto.
+    COMMUNITY_URL: z.string().url().optional(),
+    KIDS_COMMUNITY_URL: z.string().url().optional(),
+
     // ── Upload de mídia (opcionais: sem eles a feature responde "indisponível",
     //    não derruba o boot — os adapters validam presença com erro amigável) ──
     // Cloudflare R2 (imagens/anexos/legendas VTT).
@@ -54,6 +65,10 @@ const EnvSchema = z
     message:
       'Em produção, NÃO configure JWT_HS256_SECRET (um segredo HS256 forjaria sessão local de /api/media)',
     path: ['JWT_HS256_SECRET'],
+  })
+  .refine((e) => Boolean(e.STUDIO_PRO_RUNTIME_URL) === Boolean(e.STUDIO_PRO_RUNTIME_TOKEN), {
+    message: 'Configure STUDIO_PRO_RUNTIME_URL e STUDIO_PRO_RUNTIME_TOKEN juntos',
+    path: ['STUDIO_PRO_RUNTIME_URL'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

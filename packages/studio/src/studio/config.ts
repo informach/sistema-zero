@@ -30,7 +30,7 @@ export interface StudioAIConfig {
 export interface StudioFeatures {
   /** Painel de preview (iframe sandbox). Default: true. */
   preview?: boolean
-  /** Aba Console no painel inferior. Default: true. */
+  /** Capacidade do Console. Default: true; a visibilidade inicial depende do modo. */
   console?: boolean
   /** Painel de extensões + botão na Topbar. Default: true. */
   extensions?: boolean
@@ -43,9 +43,9 @@ export interface StudioFeatures {
   /** Aba/painel de IA. `true` = BYOK (mock até ter chave); objeto configura. Default: false. */
   ai?: boolean | StudioAIConfig
   /**
-   * MODO PROFISSIONAL (dev-server real no WebContainer: TS + npm + Vite + React).
-   * Quando `true`, FORÇA `terminal:true` e `allowedModes:['code']` (o seletor de
-   * modos some). Exige COOP/COEP no host. Default: false.
+   * Habilita criar e converter projetos Pro. O tipo do projeto define os modos:
+   * clássico usa Blocos/Ponte e Pro usa Código. O terminal local fica ligado por
+   * padrão, mas pode ser desligado quando o host fornece um `proRuntime` remoto.
    */
   professional?: boolean
 }
@@ -89,6 +89,8 @@ export interface LearningConfig {
   level: BlockLevel
   /** Tipos de bloco sempre visíveis (allowlist da aula). */
   allowBlocks?: readonly string[]
+  /** IDs de extensões que podem ser oferecidas para instalação. */
+  allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis. */
   allowCategories?: readonly string[]
   /** Se o aluno pode revelar o avançado (toggle nas configurações). */
@@ -99,6 +101,7 @@ export interface LearningConfigInput {
   /** Aceita a escala LEGADA de 3 níveis (jsonb de aulas antigas, embutidores antigos). */
   level?: AnyBlockLevel
   allowBlocks?: readonly string[]
+  allowExtensions?: readonly string[]
   allowCategories?: readonly string[]
   allowLevelReveal?: boolean
 }
@@ -113,6 +116,7 @@ export function resolveLearning(input?: LearningConfigInput): LearningConfig {
   return {
     level: normalizeBlockLevel(input?.level) ?? DEFAULT_LEARNING_LEVEL,
     allowBlocks: input?.allowBlocks,
+    allowExtensions: input?.allowExtensions,
     allowCategories: input?.allowCategories,
     allowLevelReveal: input?.allowLevelReveal ?? true,
   }
@@ -166,8 +170,9 @@ export function resolveStudioConfig(
     extensions: features?.extensions ?? true,
     export: features?.export ?? true,
     download: features?.download ?? true,
-    // Profissional EXIGE o terminal (é onde roda o dev-server).
-    terminal: professional ? true : (features?.terminal ?? false),
+    // O modo profissional usa terminal por padrão no runtime local. Aulas e
+    // autores com runtime remoto podem desligá-lo explicitamente.
+    terminal: professional ? (features?.terminal ?? true) : (features?.terminal ?? false),
     ai: ai !== false,
     professional,
     aiConfig: {

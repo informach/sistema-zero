@@ -25,7 +25,6 @@ SZWorld3D.cameraMode("seguir");
 SZWorld3D.onUpdate(function (dt) {
   SZWorld3D.hud("Noite de neve", "baixo-esquerda");
 });
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

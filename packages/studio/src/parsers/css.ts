@@ -1,4 +1,13 @@
-import type { CSSEntry } from '#ir'
+import {
+  type CSSDeclaration,
+  type CSSDeclarations,
+  type CSSEntry,
+  cssCommentRejectionReason,
+  findCSSLooseBrace,
+} from '#ir'
+import { parseGoogleFontImportRule } from '../css/googleFonts'
+import { isCSSKeyframeSelector, isCSSKeyframesName } from '../css/keyframes'
+import { parseGuidedMediaQueryCondition } from '../css/mediaQueries'
 
 /**
  * Parser CSS parcial baseado em regex (suficiente para regras planas). Qualquer
@@ -6,8 +15,9 @@ import type { CSSEntry } from '#ir'
  * `.card:last-child`) e qualquer propriedade viram uma `CSSRule` — que o editor
  * reconstrói como bloco genérico "Regra CSS" + "propriedade: valor".
  *
- * Apenas as @-rules (`@media`, `@keyframes`, …) têm estrutura aninhada que o
- * regex não modela; elas continuam como `rawCSS advanced`, preservadas verbatim.
+ * `@media` e `@keyframes` canônicos também são estruturados. Outras @-rules, e
+ * qualquer forma que o editor guiado não represente fielmente, continuam como
+ * `rawCSS advanced`, preservadas verbatim.
  */
 /**
  * Profundidade máxima de @media aninhados que estruturamos. `@media`s mais
@@ -45,37 +55,42 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
       const code = source.slice(beforeSkip, index).trim()
       if (code.includes('/*')) {
         const inner = code.match(/^\/\*([\s\S]*)\*\/$/)
-        if (inner) entries.push({ type: 'comment', text: inner[1] ?? '' })
-        else entries.push({ type: 'rawCSS', code, advanced: true })
+        if (inner && cssCommentRejectionReason(inner[1] ?? '') === null) {
+          entries.push({ type: 'comment', text: inner[1] ?? '' })
+        } else entries.push({ type: 'rawCSS', code, advanced: true })
       }
     }
     if (index >= source.length) break
 
     if (source[index] === '@') {
       const end = readAtRuleEnd(source, index)
-      // Tenta reconhecer `@media (max-width|min-width: Npx) { ... }` como bloco
+      // Tenta reconhecer `@media (max|min)-(width|height: Npx) { ... }` como bloco
       // estruturado; qualquer outra @-rule (ou condição fora desse formato)
       // continua como rawCSS avançado, preservada verbatim.
       const media = tryParseMediaQuery(source, index, end, depth)
       const keyframes = media ? null : tryParseKeyframes(source, index, end)
+      const code = source.slice(index, end).trim()
+      const googleFont = media || keyframes ? null : parseGoogleFontImportRule(code)
       if (media) {
         entries.push(media)
       } else if (keyframes) {
         entries.push(keyframes)
+      } else if (googleFont) {
+        entries.push({ type: 'googleFont', family: googleFont })
       } else {
-        const code = source.slice(index, end).trim()
         if (code) entries.push({ type: 'rawCSS', code, advanced: true })
       }
       index = end
       continue
     }
 
-    const open = source.indexOf('{', index)
-    if (open < 0) {
+    const delimiter = findCSSLooseBrace(source, index)
+    if (delimiter?.brace !== '{') {
       const code = source.slice(index).trim()
       if (code) entries.push({ type: 'rawCSS', code, advanced: true })
       break
     }
+    const open = delimiter.index
 
     const close = findMatchingBrace(source, open)
     if (close < 0) {
@@ -86,18 +101,21 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
 
     const selector = source.slice(index, open).trim()
     const declBlock = source.slice(open + 1, close)
-    const declarations = parseDeclarations(declBlock)
+    const parsedDeclarations = parseDeclarations(declBlock)
+    const declarationEntries = parsedDeclarations.entries
     if (selector) {
-      // Regra VAZIA (placeholder `.x {}` / só com declarações inválidas) ou com
-      // PROPRIEDADE DUPLICADA (fallback de progressive enhancement, ex.:
-      // `display: flex; display: grid`) não cabe no Record do IR (chave única,
-      // última vence) — preserva a regra INTEIRA verbatim como rawCSS avançado,
-      // honrando "código é sagrado" sem mudar o schema. Senão, regra estruturada.
-      if (Object.keys(declarations).length === 0 || hasDuplicateDeclKeys(declBlock)) {
+      // Regra vazia ou com comentário posicionado antes/entre declarações ainda
+      // não cabe nos blocos de declaração. Preservamos a regra inteira; já as
+      // propriedades repetidas cabem no array ordenado e continuam editáveis.
+      if (
+        declarationEntries.length === 0 ||
+        !parsedDeclarations.complete ||
+        hasUnrepresentedDeclarationComment(declBlock)
+      ) {
         const code = source.slice(index, close + 1).trim()
         if (code) entries.push({ type: 'rawCSS', code, advanced: true })
       } else {
-        entries.push({ selector, declarations })
+        entries.push({ selector, declarations: compactDeclarations(declarationEntries) })
       }
     }
     index = close + 1
@@ -107,10 +125,10 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
 }
 
 /**
- * Reconhece `@media (max-width: Npx) { ... }` / `(min-width: Npx)` como
+ * Reconhece consultas simples de largura OU altura em px como
  * {@link MediaQueryCSS}. As regras internas são parseadas reaproveitando
  * {@link parseCSS}. Devolve `null` se a condição não casar o formato simples
- * (uma única feature de largura em px inteiros) — aí o chamador mantém o
+ * (uma única feature em px inteiros) — aí o chamador mantém o
  * `@media` original como rawCSS avançado.
  */
 function tryParseMediaQuery(
@@ -123,8 +141,8 @@ function tryParseMediaQuery(
   const open = slice.indexOf('{')
   if (open < 0) return null
   const condition = slice.slice('@media'.length, open).trim()
-  const match = /^\(\s*(max-width|min-width)\s*:\s*(\d+)px\s*\)$/.exec(condition)
-  if (!match) return null
+  const parsedCondition = parseGuidedMediaQueryCondition(condition)
+  if (!parsedCondition) return null
   // Só estrutura se o bloco @media estiver bem-formado (chaves balanceadas);
   // caso contrário o chamador o mantém verbatim como rawCSS avançado.
   const close = findMatchingBrace(slice, open)
@@ -132,8 +150,7 @@ function tryParseMediaQuery(
   const rules = parseCSSAtDepth(slice.slice(open + 1, close), depth + 1)
   return {
     type: 'mediaQuery',
-    feature: match[1] as 'max-width' | 'min-width',
-    px: Number(match[2]),
+    ...parsedCondition,
     rules,
   }
 }
@@ -150,23 +167,37 @@ function tryParseKeyframes(source: string, start: number, end: number): CSSEntry
   const open = slice.indexOf('{')
   if (open < 0) return null
   const name = slice.slice('@keyframes'.length, open).trim()
-  if (!/^[A-Za-z_-][\w-]*$/.test(name)) return null
+  if (!isCSSKeyframesName(name)) return null
   const close = findMatchingBrace(slice, open)
   if (close < 0) return null
   const inner = slice.slice(open + 1, close)
 
-  const steps: Array<{ at: string; declarations: Record<string, string> }> = []
+  const steps: Array<{ at: string; declarations: CSSDeclarations }> = []
   let i = 0
   while (i < inner.length) {
-    i = skipWhitespaceAndComments(inner, i)
+    i = skipWhitespace(inner, i)
     if (i >= inner.length) break
+    // A IR estruturada não representa comentários entre passos. Consumir esse
+    // comentário aqui perderia código no round-trip; o chamador preserva então
+    // o @keyframes inteiro como rawCSS.
+    if (inner[i] === '/' && inner[i + 1] === '*') return null
     const stepOpen = inner.indexOf('{', i)
-    if (stepOpen < 0) break
+    if (stepOpen < 0) return null
     const stepClose = findMatchingBrace(inner, stepOpen)
-    if (stepClose < 0) break
+    if (stepClose < 0) return null
     const at = inner.slice(i, stepOpen).trim().toLowerCase()
-    const declarations = parseDeclarations(inner.slice(stepOpen + 1, stepClose))
-    if (at && Object.keys(declarations).length > 0) steps.push({ at, declarations })
+    const body = inner.slice(stepOpen + 1, stepClose)
+    const parsedDeclarations = parseDeclarations(body)
+    const declarationEntries = parsedDeclarations.entries
+    if (
+      !isCSSKeyframeSelector(at) ||
+      declarationEntries.length === 0 ||
+      !parsedDeclarations.complete ||
+      hasUnrepresentedDeclarationComment(body)
+    ) {
+      return null
+    }
+    steps.push({ at, declarations: compactDeclarations(declarationEntries) })
     i = stepClose + 1
   }
   if (steps.length === 0) return null
@@ -187,6 +218,12 @@ function skipWhitespaceAndComments(source: string, start: number): number {
     }
     break
   }
+  return index
+}
+
+function skipWhitespace(source: string, start: number): number {
+  let index = start
+  while (index < source.length && /\s/.test(source[index] ?? '')) index += 1
   return index
 }
 
@@ -391,20 +428,14 @@ function maskPropComments(propRaw: string): string {
 }
 
 /**
- * Há propriedade REPETIDA em profundidade 0 dentro deste bloco de declarações?
- * Usa a MESMA segmentação/normalização do {@link parseDeclarations}, então o que
- * o parser veria como uma chave colapsada é exatamente o que conta como duplicata
- * — o chamador então preserva a regra inteira verbatim em vez de perder o fallback.
+ * Comentários antes do nome de uma propriedade ou soltos entre declarações não
+ * têm um bloco-filho correspondente. Comentários dentro do VALOR continuam no
+ * próprio valor e não exigem fallback.
  */
-function hasDuplicateDeclKeys(block: string): boolean {
-  const seen = new Set<string>()
+function hasUnrepresentedDeclarationComment(block: string): boolean {
   for (const { segStart, segEnd, colon } of scanDeclarationSegments(block, 0, block.length)) {
-    if (colon < 0) continue
-    const key = normalizeDeclKey(maskPropComments(block.slice(segStart, colon)).trim())
-    const value = block.slice(colon + 1, segEnd).trim()
-    if (!key || !value) continue
-    if (seen.has(key)) return true
-    seen.add(key)
+    const beforeValue = block.slice(segStart, colon < 0 ? segEnd : colon)
+    if (/\/\*[\s\S]*?\*\//.test(beforeValue)) return true
   }
   return false
 }
@@ -413,20 +444,42 @@ function hasDuplicateDeclKeys(block: string): boolean {
  * Declarações para o IR (sem posições). Roteia pelo {@link scanDeclarationSegments}
  * para enxergar parênteses/strings/comentários do mesmo jeito que o parser de
  * posições — `;`/`:` dentro de `url(data:…;base64,…)`, `calc()` ou strings não
- * truncam mais o valor. Mantém a semântica de Record (última duplicata vence).
+ * truncam mais o valor. O array preserva ordem e propriedades repetidas.
  */
-function parseDeclarations(raw: string): Record<string, string> {
-  const out: Record<string, string> = {}
+interface ParsedDeclarations {
+  entries: CSSDeclaration[]
+  complete: boolean
+}
+
+function parseDeclarations(raw: string): ParsedDeclarations {
+  const out: CSSDeclaration[] = []
+  let complete = true
   for (const { segStart, segEnd, colon } of scanDeclarationSegments(raw, 0, raw.length)) {
-    if (colon < 0) continue
+    const segment = raw.slice(segStart, segEnd)
+    if (!segment.trim()) continue
+    if (colon < 0) {
+      complete = false
+      continue
+    }
     // Mascara comentários no NOME da prop (mesma fonte da verdade dos spans) — sem
     // isto a chave do IR virava `/* nota */ color` e divergia do span `color`,
     // quebrando o realce bloco↔código de toda declaração precedida de comentário.
     const key = normalizeDeclKey(maskPropComments(raw.slice(segStart, colon)).trim())
     const value = raw.slice(colon + 1, segEnd).trim()
-    if (key && value) out[key] = value
+    if (key && value) out.push({ property: key, value })
+    else complete = false
   }
-  return out
+  return { entries: out, complete }
+}
+
+/** Usa o formato compacto legado quando não há repetição; fallbacks ficam em array. */
+function compactDeclarations(entries: CSSDeclaration[]): CSSDeclarations {
+  const record: Record<string, string> = {}
+  for (const entry of entries) {
+    if (Object.hasOwn(record, entry.property)) return entries
+    record[entry.property] = entry.value
+  }
+  return record
 }
 
 // ---------------------------------------------------------------------------
@@ -564,8 +617,9 @@ export function parseCSSWithSpans(source: string): ParseCssSpansResult {
       continue
     }
 
-    const open = source.indexOf('{', index)
-    if (open < 0) break
+    const delimiter = findCSSLooseBrace(source, index)
+    if (delimiter?.brace !== '{') break
+    const open = delimiter.index
     const close = findMatchingBrace(source, open)
     if (close < 0) break
 

@@ -288,7 +288,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    opcional — ausente no CREATE → `adult`; ausente no UPDATE → **PRESERVA a atual**
    (≠ do `salesPageUrl`, que limpa: um PATCH de build antigo do admin não pode rebaixar
    curso kids em silêncio). Views (`MyCourseView`/`CatalogCourseView`/`CourseDetailView`/
-   `CourseView` admin) expõem `audience`. O front kids é o `@sistemazero/community-kids`.
+   `CourseView` admin) expõem `audience`. `PATCH /members/admin/courses/:id` exige a
+   `version` devolvida pelo GET/POST anterior; versão divergente → `409 COURSE_CONFLICT`
+   (nunca sobrescreve uma edição concorrente). O front kids é o
+   `@sistemazero/community-kids`.
 10. **Trava sequencial das aulas (estilo Duolingo)** (06/2026, migration `0027`): coluna
    `courses.sequential_lock` (boolean, default `true` — backfill LIGADO p/ os cursos
    existentes; toggle por curso no admin, decisão da usuária). Ligada → uma aula só fica
@@ -305,8 +308,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    opcional — ausente no CREATE → `true`; no UPDATE **PRESERVA a atual** (régua do `audience`).
    `false` é mantido. Os fronts (community + community-kids) leem `locked` por aula e renderizam
    o nó/linha travado (cadeado, não clicável) + página de "aula bloqueada" no 423.
-11. **DEGRAU do CURSO + carreira do ALUNO (rank; 06/2026 migration `0029`, reforma 2D/3D 07/2026
-   migration `0044`):** o curso tem `courses.level` (`iniciante`|`intermediario`|`avancado`, default
+11. **DEGRAU do CURSO + carreira do ALUNO (rank; posições na migration `0047`, normalização
+   `0048` e restrição final `0049`):** o curso tem `courses.level`
+   (`iniciante`|`intermediario`|`avancado`, default
    `iniciante`) **+ `courses.track`** (`2d`|`3d`, default `2d`) — o PAR é o DEGRAU pedagógico
    ("Iniciante 2D" … "Avançado 3D"). Colunas dedicadas, autoradas no admin (régua do
    `audience`/`sequentialLock`: ausentes no CREATE → defaults, no UPDATE **PRESERVAM** as atuais).
@@ -314,15 +318,19 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    **carreira de 8 níveis** (`noob`→`coder`→`hacker`→`explorer`→`elite`→`architect`→`champion`→`god`
    = Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de
    Mundos→Gênio da Criação→Lenda) **DERIVADA na leitura** (sem coluna/backfill, como o
-   ranking/missões): catálogo EM CÓDIGO em `domain/gamification/levels.ts` (`STUDENT_LEVELS` sobre 6
-   baldes `QualifyingByTier` + `computeStudentLevel` puro; régua cumulativa: 1 qualquer → 6 ini-2d →
-   +5 ini-3d → +5 int-2d → +5 int-3d → +5 av-2d → +5 av-3d). Um curso "qualificado" = tem AMBOS os
+   ranking/missões): catálogo central em `@sistemazero/core/career`, espelhado por
+   `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de Iniciante 2D →
+   slots 1..8 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
+   +1..8 av-3d (**8 por degrau, reforma 07/2026** — era 6 no ini-2d e 5 nas demais; 48 obrigatórios).
+   Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
+   Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
-   abaixo) — agrupado pelo DEGRAU (`countQualifyingCoursesByTier`, INTERSEÇÃO via self-join no
-   ledger, GROUP BY level+track). ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
+   abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingCareerSlots`, INTERSEÇÃO via
+   self-join no ledger, GROUP BY level+track+careerSlot). A versão em lote é
+   `listQualifyingCareerSlotsForProfiles`. ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
    `0030`/`0044`):** o degrau contado vem do **SNAPSHOT congelado** `xp_events.source_level` +
-   `source_track` (gravados nos marcos de curso no momento do award — o repo resolve
-   `courses.level`/`track` AGORA), NÃO do curso ao vivo. O `courses` entra só como **LEFT join** p/
+   `source_track` + `source_career_slot` (gravados nos marcos de curso no momento do award),
+   NÃO do curso ao vivo. O `courses` entra só como **LEFT join** p/
    FALLBACK de linhas legadas sem snapshot (`coalesce(showcased.source_*, complete.source_*,
    courses.*)`; track legado sem curso → `'2d'` literal). Assim re-nivelar OU apagar o curso depois
    não muda o rank de quem já qualificou. ⚠️ O `source_track` NÃO foi backfillado (deliberado): o
@@ -340,6 +348,31 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    Como é amount 0, **NÃO toca `gamification_profiles`** (o ramo que grava `privileged`/`accountId` só
    roda com `amount > 0`) → marco de showcase não rebaixa o `privileged` de equipe. Kids-only por ora
    (o Mural é kids); a estrutura é por audiência (extensível ao adulto).
+12. **TRAVA PEDAGÓGICA ENTRE CURSOS (curso-base):** separada da matrícula comercial. Cada curso Kids
+   tem `careerSlot` (`courses.career_slot`, migrations `0047`–`0049`): **posição 1 = curso-base** da
+   etapa (`level`+`track`), 2+ = demais; **`null` = bônus-RECOMPENSA da etapa (24/07)** — não abre
+   de cara: destrava quando a etapa do bônus COMPLETA (todos os slots dela qualificados = o momento
+   do level-up; reason `tier-reward`, com `requiredLevel` = o nível que completa a etapa). Bônus
+   segue FORA da contagem de nível. A política PURA é
+   `resolveCareerCourseLock(qualified, tier, slot, foundationAvailable)` (core `@sistemazero/core/career`):
+   curso de etapa FUTURA → `future-tier`; na etapa atual, se não é o slot 1 e o slot 1 ainda não
+   qualificou → `foundation-first`. ⚠️ **Fail-open (fix 23/07; estendido ao bônus 24/07):** sem um
+   curso-base PUBLICADO na etapa não há como destravar (concluir+publicar os obrigatórios é a única
+   chave), então tanto `foundation-first` quanto `tier-reward` são IGNORADOS — senão a etapa inteira
+   (e, no Iniciante 2D, a carreira toda) congelaria; no bônus isso também protege o ROLLOUT em prod
+   (catálogo nasce todo-bônus antes de as etapas serem montadas → nada tranca no deploy). `foundationAvailable` = `foundationByTier.has(tier)` na projeção da listagem
+   (`careerLocksForCourses`) e `CourseRepository.hasPublishedFoundationCourse(audience, level, track)`
+   no gate em profundidade (`CheckAccessService`, que lança `CourseCareerLockedError` → **423
+   `COURSE_CAREER_LOCKED`**). LISTA e gate usam a MESMA política (mesmo `qualified` do PERFIL). Flag
+   liga só p/ `audience==='kids' && !privileged` (equipe ignora). Autoria admin valida o slot em
+   `assertCareerSlot` (kids-only, máx 8 por degrau — migration `0053`; conflito → 409 `CAREER_SLOT_CONFLICT`).
+   ⚠️ **Armadilha:** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas
+   nunca publica → slot 1 nunca qualifica → demais da etapa presos. **Aviso automático (24/07):** a
+   listagem admin (`CourseAdminService.list`) anexa `hasShowcaseBlock` aos cursos-base kids
+   (`ContentAdminRepository.listCourseIdsWithShowcaseBlock` — EXISTS de aula PUBLICADA com bloco
+   `studio` `showcase.enabled`) e o painel do admin mostra ⚠️ "Sem vitrine". O 423 `foundation-first`
+   NÃO carrega `requiredLevel` (a chave é o curso-base, não um nível — só `future-tier` o traz).
+   Doc: `docs/carreira-do-criador.md`.
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 
@@ -401,7 +434,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `"<MÉTODO>.<path>.<corpo BRUTO>"` (06/2026 — método+path impedem replay
   cross-endpoint) com `GATEWAY_HMAC_SECRET` (= segredo de resign do gateway),
   header `x-signature: t=,v1=`. HMAC é checado no hook `transform` (**antes** da
-  validação do corpo → 401 antes de 422). Dedupe por `x-delivery-id` (tabela
+  validação do corpo → 401 antes de 422). `x-delivery-id` é **obrigatório**; dedupe por
+  ele (tabela
   `processed_webhooks`): checa ANTES, marca só DEPOIS do sucesso. Falha de concessão → o
   funil devolve 502 e o gateway re-entrega (members é idempotente pela `idempotencyKey`).
   ⚠️ **Marcar-após-sucesso é DELIBERADO** (não trocar por "claim-first"): duas entregas
@@ -500,9 +534,9 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   marcos → nível `noob`). Serve o BFF do **Clube/Mural kids** para pintar rosto+aura de cada
   autor de tópico/comentário numa ida (sem N+1). `GetAvatarsByProfilesService` (avatar +
   gamification) roda 2 queries em `Promise.all`: `AvatarRepository.listPhotoUrlsByProfileIds
-  (profileIds, audience)` + `GamificationRepository.countQualifyingByLevelForProfiles
-  (profileIds, audience)` (versão em LOTE do `countQualifyingCoursesByLevel` — mesmo self-join
-  de marcos, `GROUP BY user_id`) → `computeStudentLevel` por perfil. DTO `AvatarsBatchQuery`
+  (profileIds, audience)` + `GamificationRepository.listQualifyingCareerSlotsForProfiles
+  (profileIds, audience)` (versão em LOTE do `listQualifyingCareerSlots`, com o mesmo self-join
+  de marcos e posições) → `computeStudentLevel` por perfil. DTO `AvatarsBatchQuery`
   (`ids` csv, cap **50** via `parseProfileIds` — uuid validado na borda; `audience` ausente →
   **`kids`**, único consumidor é a vitrine kids). **SEM migração** (`avatar_configs.photo_url`
   já existe, migration `0023`). Gateway: rota `members-avatars-batch`.
@@ -639,16 +673,19 @@ user+audience+slug — a "1ª aula" do kids é independente da do adult). Domain
 `effectiveStreak` — timezone FIXA America/Sao_Paulo, cálculo SEMPRE no backend; o "dia"
 vira às 03:00Z). Decisões travadas com o usuário (06/2026): **SEM corações/vidas**;
 XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25;
-**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **23** com as expansões: first-lesson,
+**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **30** com as expansões: first-lesson,
 **first-showcase** (1º jogo publicado no Mural — universal, ledger `course_showcased`, Fase 5),
+**plays-10/plays-100** (jogadas recebidas, ledgers `play_milestone_*`),
 streak-7/30/60/180/365, course-complete/-2/-3, quiz-perfect/-10/-30, **studio-first/
 studio-master-3/studio-master-10** (maestria do Estúdio, ledger `studio_passed`),
 **pensa-first-idea/pensa-first-launch/pensa-creator-3** (Pensa 07/2026, ledgers
-`pensa_stage_complete`/`pensa_cycle_complete` — ver §Pensa), **challenge-first** (1ª
-participação no Desafio do mês, ledger `challenge_entry` — Fase 5), **clube-primeiro-post**
+`pensa_stage_complete`/`pensa_cycle_complete` — ver §Pensa), **challenge-first/challenge-3**
+(1ª/3ª participações no Desafio do mês, ledger `challenge_entry`), **clube-primeiro-post**
 (1ª conversa APROVADA no Clube, ledger `clube_thread` — full review 07/2026; SÓ thread
-destrava, comentário não) e **coins-saver-300/coins-saver-1000** (poupador, por
-`lifetime_coins_earned`) — sem
+destrava, comentário não), **coins-saver-300/coins-saver-1000** (poupador, por
+`lifetime_coins_earned`) e as do **full review 24/07**: **remix-first** (`studio_remix`),
+**room-decorator-5** (`room_item_buy` ≥5), **avatar-style-5** (`avatar_part_buy` ≥5),
+**mural-commenter-10** (`mural_comment` ≥10) — sem
 tabela/seed: preDeploy de prod roda só `db:migrate` e o catálogo muda junto com o código que
 o detecta). **Marcos são contados pelo LEDGER** (migrations `0010`/`0011`):
 curso 100% gera `course_complete` (sourceId = courseId) e quiz com nota 100 gera
@@ -762,7 +799,10 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   3D) é a imagem do avatar em todo o app: o BFF sobe o PNG p/ o R2 e grava a URL via
   **`PUT /members/avatar/photo`** (`SetAvatarPhotoService`, valida http(s)); `AvatarStateView`
   traz `equipped`/`parts`/`palettes`/`hideGroups`/`removable`/`photoUrl`/`balance` e
-  `PublicProfileView` traz `avatarPhotoUrl`. Members é a fonte da verdade de existência/preço/
+  `PublicProfileView` traz `avatarPhotoUrl` **+ `games` (07/2026: jogos publicados no Mural — o
+  `GetPublicProfileService` chama `hub.listShowcaseByAuthor(profileId, 24)` best-effort no
+  `Promise.all`; `null`/hub fora → `games: []`; cada item `{title, playId, coverUrl, publishedAt}`
+  → cards "Jogos publicados" no perfil público kids, link `/jogar/<playId>`)**. Members é a fonte da verdade de existência/preço/
   posse/paleta; a APRESENTAÇÃO (rótulo PT) vive no community-kids (`lib/avatar3d-catalog.ts`),
   travada por `tests/unit/catalog-conformance.test.ts`. Cosmético puro; kids-only (v1). O
   render 3D (GLB real — Quaternius CC0 via pack do WawaSensei — R3F) vive no community-kids; os
@@ -778,6 +818,14 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   não-possuído omitidos. Compra via `BuyRoomItemService` (`roomThing` resolve item/tema/piso/luz;
   charge-first idempotente, `reason:'spend_room'`). DTO `RoomStateBody` + rota alargados p/ os campos
   novos. Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
+  **Superfícies (24/07):** `RoomItemDef.surface` (nichos: mesa 2/mesa-estudo 1/estante 3/
+  `estante-trofeus` 6) + `stackable` (troféus de CHÃO + ursinho/globo/bola/vela);
+  `PlacedItem.on` (itemId do pai posicionado) + `slot` — filho valida numa 2ª PASSADA do
+  canonicalize (stackable+posse, pai no chão com surface, slot < nichos, 1 filho/nicho, NÃO
+  ocupa célula; pai inválido → colocação cai, posse fica; `on` ambíguo → 1ª instância). O item
+  `estante-trofeus` (furniture 3×2, tier trophy SEM badge) é concedido pelo award junto com o
+  1º troféu (`TROPHY_SHELF_ITEM_ID`, mesma tx, `onConflictDoNothing`). Offsets 3D dos nichos =
+  `SURFACE_SLOTS` no kids (conformância trava nº de slots).
 - **Missões diárias/semanais/mensais** (migration `0021`, `mission_claims`): estilo Duolingo,
   content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS`/`WEEKLY_MISSIONS`/`MONTHLY_MISSIONS` em
   `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
@@ -1210,9 +1258,11 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
 - Anexos: `POST /lessons/:lessonId/attachments`, `PATCH/DELETE /attachments/:id`, `…/attachments/reorder`.
 
 Slug duplicado (curso global, aula por curso) → 23505 → `DUPLICATE_SLUG`(409). Reordenar exige os
-ids EXATOS dos filhos atuais (senão 400). Cursos têm `version` (concorrência otimista, last-write-wins
-na prática — sem version do cliente); módulos/aulas/blocos/anexos não têm version. Erros novos:
-`CONTENT_NOT_FOUND`→404, `DUPLICATE_SLUG`→409, `CONCURRENCY_CONFLICT`→409.
+ids EXATOS dos filhos atuais (senão 400). Cursos têm `version` (concorrência otimista): o
+`PATCH /members/admin/courses/:id` DEVE enviar a versão recebida no curso; versão ausente ou
+desatualizada → `CONCURRENCY_CONFLICT` (409), sem sobrescrever a edição concorrente.
+Módulos/aulas/blocos/anexos não têm version. Erros novos: `CONTENT_NOT_FOUND`→404,
+`DUPLICATE_SLUG`→409, `CONCURRENCY_CONFLICT`→409.
 
 **Publicação por aula** (`lessons.is_published`, migration `0003`): `LessonBody` aceita
 `isPublished` opcional — **ausente → `false`** (aula nova nasce RASCUNHO; aulas pré-existentes
@@ -1220,6 +1270,14 @@ foram backfilled `true` pelo default do DDL). Guard: criar/publicar curso com `s
 exige **≥1 aula publicada** → `NO_PUBLISHED_LESSON`(409) — e o invariante vale **pelo avesso**
 (06/2026): despublicar/excluir a ÚLTIMA aula publicada, ou excluir o módulo com as últimas,
 num curso `published` → 409 (`countPublishedLessons` com `excludeLessonId/excludeModuleId`).
+**Vitrine do curso-base (24/07):** o PATCH que TRANSICIONA um curso kids para
+`published`+`careerSlot=1` sem aula publicada com bloco de Estúdio `showcase.enabled` →
+**409 `NO_SHOWCASE_BLOCK`** (`NoShowcaseBlockError`; reusa `listCourseIdsWithShowcaseBlock`) —
+fecha a armadilha "aluno nunca qualifica o slot e a etapa trava". SÓ na transição (curso JÁ
+preso segue editável — rollout pré-career_slot); ⚠️ o caminho INVERSO (remover a vitrine de
+curso-base publicado) é desguardado DE PROPÓSITO — o aviso ⚠️ "Sem vitrine" da listagem cobre
+a detecção (follow-up se doer). Testes em `tests/integration/content.test.ts` (describe
+"vitrine do curso-base", 6 casos).
 Visão do ALUNO filtra rascunhos em tudo: outline (`findOutline(..., {publishedOnly:true})`),
 GET da aula/complete/posição de vídeo/quiz-attempt → 404 em aula rascunho, e o progresso usa
 numerador E denominador sobre publicadas (`countCompletedPublished*` × `countPublishedLessons*`
@@ -1254,14 +1312,21 @@ repo para o aluno, o professor e o webhook do Mural.
   `GET …/:id`, `POST …/:id/messages` (responder), `POST …/:id/read`. O aluno só RESPONDE a
   conversas SUAS (posse + vitrine conferidas → **404 sem vazar**); INICIAR é do professor/sistema.
 - **Rotas do PROFESSOR** (`admin.routes`, `requireAdmin`): `GET /members/admin/teacher-threads`
-  (filtros audience/context/course/unread), `GET …/by-context` (`?userId&contextType&contextRef` —
+  (filtros audience/context/course/unread + **`userIds` csv, 24/07** — uuids válidos teto 20 via
+  `parseUserIds`, casa `user_id` OU `account_id`: accountId pega a família, profileId estreita),
+  `GET …/by-context` (`?userId&contextType&contextRef` —
   o viewer da Entrega abre a conversa direto; `{thread:null}` = ainda não há; vem ANTES de `:id`),
+  **`GET …/unread-count`** (badge da Sala do Professor — count POR STAFF sobre o MESMO EXISTS do
+  `unreadForStaff`; estática ANTES de `:id`), **`POST …/read-all`** (marca TODAS as não-lidas
+  lidas p/ ESTE staff; escopo opcional audience/context/courseId; devolve `{updated}`; watermark
+  = `last_message_at` da própria thread — mensagem nova volta a contar; 24/07),
   `POST /members/admin/teacher-threads` (ABRIR/continuar por CONTEXTO — `studio_submission` exige
   `blockId`; `general` sem ref; o Mural entra por webhook), `GET …/:id`, `POST …/:id/messages`,
   `POST …/:id/read`. O `author_name` = nome do professor (header do gateway; vazio → a UI kids
-  mostra "Professor(a)").
+  mostra "Professor(a)"). A fila GLOBAL de entregas (`GET /members/admin/studio-submissions`)
+  também aceita **`userIds` csv** (mesma semântica user_id OR account_id; 24/07).
 - **Webhook do Mural** `POST /members/webhooks/mural-message` (hub→members, HMAC + dedupe
-  `x-delivery-id`, canal `mural-message`): a equipe escondeu/recusou um jogo COM motivo → mensagem
+  obrigatório por `x-delivery-id`, canal `mural-message`): a equipe escondeu/recusou um jogo COM motivo → mensagem
   `teacher` numa conversa `mural_publication`. `context_ref` = id do tópico no HUB (**texto, NÃO
   uuid**). **Idempotente** por id determinístico do turno (`deterministicSourceId(namespace,
   deliveryId)` + `onConflictDoNothing`) — retry da mesma entrega não duplica o recado (o
@@ -1335,7 +1400,11 @@ grant em runtime) e `SENTRY_DSN` (projeto
 `sistema-zero-members` — ver §Sentry). **`HUB_BASE_URL`** (opcional; ex.:
 `http://hub.railway.internal:3010`) liga a notificação ao hub no grant (best-effort, assina
 com o `GATEWAY_HMAC_SECRET`; ausente = não notifica, o TTL do hub cobre; em prod, se setado,
-NÃO pode ser localhost — refine) + `HUB_REQUEST_TIMEOUT_MS` (default 4s). Opcional:
+NÃO pode ser localhost — refine) + `HUB_REQUEST_TIMEOUT_MS` (default 4s).
+**`AVATAR_PHOTO_URL_PREFIXES`** (csv de prefixos aceitos no `PUT /members/avatar/photo` —
+**OBRIGATÓRIA em produção**, refine 24/07: a foto é renderizada p/ outras crianças; setar a base
+pública do R2 de cada ambiente, ex. prod `https://cdn.sistemazero.com.br/` · staging = base
+pública do bucket `testes`; fora da allowlist → 400 `AVATAR_INVALID`). Opcional:
 `MAX_STUDIO_BODY_BYTES` (default 2 MB — teto
 de corpo das rotas de Estúdio; ver §Conceito 6) e `DATABASE_SSL` (default `false`; `true` →
 `ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS). No GATEWAY:

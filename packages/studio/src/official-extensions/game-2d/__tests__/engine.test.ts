@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { compileStatements } from '#generators'
 import { G2D_STATEMENT_TYPES, type JSStatement, SZIRSchema } from '#ir'
+import { parseJS } from '../../../parsers/js'
 import { gameTwoDRuntime } from '../runtime'
 
 interface Sprite {
@@ -12,6 +13,8 @@ interface Sprite {
   vy: number
   facing?: number
   hp?: number
+  hpMax?: number
+  blinkFrames?: number
   opacity?: number
 }
 interface Engine {
@@ -31,8 +34,13 @@ interface Engine {
   setHealth: (s: Sprite, n: number) => void
   changeHealth: (s: Sprite, d: number) => void
   getHealth: (s: Sprite) => number
+  getMaxHealth: (s: Sprite) => number
   hasHealth: (s: Sprite) => boolean
-  cooldownReady: (s: Sprite, frames: number) => boolean
+  healthDepleted: (s: Sprite) => boolean
+  isInvincible: (s: Sprite) => boolean
+  damageSprite: (s: Sprite, amount: number, invincibilityFrames: number) => void
+  blink: (s: Sprite, frames: number) => void
+  cooldownReady: (s: Sprite, frames: number, key?: string) => boolean
   randomBetween: (min: number, max: number) => number
   isPaused: () => boolean
   pauseGame: () => void
@@ -50,6 +58,10 @@ interface Engine {
   centerY: (s: Sprite) => number
   randomX: () => number
   randomY: () => number
+  wrapEdges: (s: Sprite) => void
+  touches: (a: Sprite, b: Sprite) => boolean
+  randomChance: (percent: number) => boolean
+  playJump: () => void
 }
 function loadRuntime(): Engine {
   const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
@@ -102,12 +114,14 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(typeof api.playNote).toBe('function')
     expect(typeof api.playMusic).toBe('function')
     expect(typeof api.stopMusic).toBe('function')
+    expect(typeof api.playJump).toBe('function')
     // Sem AudioContext no ambiente de teste, são no-op silencioso (não lançam).
     expect(() => {
       api.playFx('coin')
       api.playNote('C', 100)
       api.playMusic('happy')
       api.stopMusic()
+      api.playJump()
     }).not.toThrow()
   })
 
@@ -155,6 +169,38 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(gen({ type: 'g2d:changeHealth', spriteVar: 'jogador', delta: -1 })).toBe(
       'SZGame2D.changeHealth(jogador, -1);',
     )
+    expect(
+      gen({
+        type: 'g2d:damageSprite',
+        spriteVar: 'jogador',
+        amount: 1,
+        invincibilityFrames: 45,
+      } as unknown as JSStatement),
+    ).toBe('SZGame2D.damageSprite(jogador, 1, 45);')
+    expect(
+      gen({
+        type: 'g2d:setStageDescription',
+        description: 'Pegue as moedas. Use as setas.',
+      } as unknown as JSStatement),
+    ).toBe('SZGame2D.setStageDescription("Pegue as moedas. Use as setas.");')
+    expect(
+      gen({
+        type: 'g2d:setGravity',
+        value: { type: 'g2d:getMaxHealth', spriteVar: 'jogador' },
+      } as unknown as JSStatement),
+    ).toBe('SZGame2D.setGravity(SZGame2D.getMaxHealth(jogador));')
+    expect(
+      gen({
+        type: 'g2d:setGravity',
+        value: { type: 'g2d:healthDepleted', spriteVar: 'jogador' },
+      } as unknown as JSStatement),
+    ).toBe('SZGame2D.setGravity(SZGame2D.healthDepleted(jogador));')
+    expect(
+      gen({
+        type: 'g2d:setGravity',
+        value: { type: 'g2d:isInvincible', spriteVar: 'jogador' },
+      } as unknown as JSStatement),
+    ).toBe('SZGame2D.setGravity(SZGame2D.isInvincible(jogador));')
     expect(gen({ type: 'g2d:flipSprite', spriteVar: 'jogador', dir: 'left' })).toBe(
       'SZGame2D.flipSprite(jogador, "left");',
     )
@@ -197,10 +243,112 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(api.isPaused()).toBe(false)
     expect(api.cooldownReady(a, 3)).toBe(true) // 1ª vez: pronto
     expect(api.cooldownReady(a, 3)).toBe(false) // recarregando
+    expect(api.cooldownReady(a, 3)).toBe(false) // recarregando
+    expect(api.cooldownReady(a, 3)).toBe(true) // exatamente 3 chamadas depois
     api.flipSprite(a, 'left')
     expect(a.facing).toBe(-1)
     api.scaleSprite(b, 2)
     expect(b.w).toBe(20)
+  })
+
+  it('vida mantém valores inteiros no intervalo e não inventa vida antes da inicialização', () => {
+    const api = loadRuntime()
+    const sprite = api.createSprite({})
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(api.healthDepleted(sprite)).toBe(false)
+      expect(api.healthDepleted(sprite)).toBe(false)
+      api.changeHealth(sprite, -1)
+      expect(sprite.hp).toBeUndefined()
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(String(warn.mock.calls[0]?.[0])).toContain('Dar ao sprite')
+
+      api.setHealth(sprite, 3.9)
+      expect(api.getHealth(sprite)).toBe(3)
+      expect(api.getMaxHealth(sprite)).toBe(3)
+      api.changeHealth(sprite, Number.NaN)
+      expect(api.getHealth(sprite)).toBe(3)
+      api.changeHealth(sprite, -99)
+      expect(api.getHealth(sprite)).toBe(0)
+      expect(api.healthDepleted(sprite)).toBe(true)
+
+      api.setHealth(sprite, -4)
+      expect(api.getHealth(sprite)).toBe(0)
+      expect(api.getMaxHealth(sprite)).toBe(0)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('dano genérico aplica quadros de invencibilidade e evita drenar vida a cada quadro', () => {
+    const api = loadRuntime()
+    const sprite = api.createSprite({})
+    api.setHealth(sprite, 4)
+
+    api.damageSprite(sprite, 1, 30)
+    expect(api.getHealth(sprite)).toBe(3)
+    expect(sprite.blinkFrames).toBe(30)
+
+    api.damageSprite(sprite, 1, 30)
+    expect(api.getHealth(sprite)).toBe(3)
+
+    sprite.blinkFrames = 0
+    api.damageSprite(sprite, 2, 12)
+    expect(api.getHealth(sprite)).toBe(1)
+    expect(sprite.blinkFrames).toBe(12)
+  })
+
+  it('isInvincible espelha exatamente quando damageSprite ignora o próximo dano', () => {
+    const api = loadRuntime()
+    const sprite = api.createSprite({})
+    api.setHealth(sprite, 3)
+    expect(api.isInvincible(sprite)).toBe(false)
+
+    api.damageSprite(sprite, 1, 45)
+    expect(api.getHealth(sprite)).toBe(2)
+    expect(api.isInvincible(sprite)).toBe(true)
+
+    api.damageSprite(sprite, 1, 45)
+    expect(api.getHealth(sprite)).toBe(2)
+
+    sprite.blinkFrames = 0
+    expect(api.isInvincible(sprite)).toBe(false)
+
+    api.blink(sprite, 12)
+    expect(api.isInvincible(sprite)).toBe(true)
+  })
+
+  it('cada bloco de recarga mantém seu próprio contador no mesmo sprite', () => {
+    const api = loadRuntime()
+    const sprite = api.createSprite({})
+
+    expect(api.cooldownReady(sprite, 3, 'tiro')).toBe(true)
+    expect(api.cooldownReady(sprite, 5, 'pulo')).toBe(true)
+    expect(api.cooldownReady(sprite, 3, 'tiro')).toBe(false)
+    expect(api.cooldownReady(sprite, 5, 'pulo')).toBe(false)
+  })
+
+  it('o gerador passa uma chave estável do bloco para a recarga', () => {
+    const code = gen({
+      type: 'g2d:setGravity',
+      value: {
+        type: 'g2d:cooldownReady',
+        spriteVar: 'jogador',
+        frames: 20,
+        __id: 'recarga-tiro',
+      },
+    } as unknown as JSStatement)
+    expect(code).toBe('SZGame2D.setGravity(SZGame2D.cooldownReady(jogador, 20, "recarga-tiro"));')
+    expect(parseJS(code)).toMatchObject([
+      {
+        type: 'g2d:setGravity',
+        value: {
+          type: 'g2d:cooldownReady',
+          spriteVar: 'jogador',
+          __id: 'recarga-tiro',
+        },
+      },
+    ])
   })
 
   it('Tier 2: gerador de comandos (câmera, mapa, ordem, depuração)', () => {
@@ -306,6 +454,28 @@ describe('game-2d — runtime de física', () => {
     expect(s.vx).toBe(3)
   })
 
+  it('bounceOnEdges e wrapEdges usam as bordas visíveis da câmera', () => {
+    for (const canvas of Array.from(document.querySelectorAll('canvas'))) canvas.remove()
+    const stage = document.createElement('canvas')
+    stage.width = 100
+    stage.height = 80
+    document.body.appendChild(stage)
+    const api = loadRuntime()
+    const ctx = { canvas: { width: 100, height: 80 } }
+    api.setCamera(1000, 500)
+
+    const bouncing = api.createSprite({ x: 990, y: 510, w: 10, h: 10 })
+    bouncing.vx = -3
+    api.bounceOnEdges(bouncing, ctx)
+    expect(bouncing.x).toBe(1000)
+    expect(bouncing.vx).toBe(3)
+
+    const wrapping = api.createSprite({ x: 980, y: 510, w: 10, h: 10 })
+    api.wrapEdges(wrapping)
+    expect(wrapping.x).toBe(1100)
+    stage.remove()
+  })
+
   it('circleCollides detecta proximidade por círculo', () => {
     const api = loadRuntime()
     const a = api.createSprite({ x: 0, y: 0, w: 20, h: 20 })
@@ -313,6 +483,34 @@ describe('game-2d — runtime de física', () => {
     const c = api.createSprite({ x: 100, y: 100, w: 20, h: 20 })
     expect(api.circleCollides(a, b)).toBe(true)
     expect(api.circleCollides(a, c)).toBe(false)
+  })
+
+  it('touches: verdadeiro só quando os retângulos se sobrepõem (reporter de colisão)', () => {
+    const api = loadRuntime()
+    const a = api.createSprite({ x: 0, y: 0, w: 20, h: 20 })
+    const over = api.createSprite({ x: 10, y: 10, w: 20, h: 20 }) // sobrepõe a
+    const apart = api.createSprite({ x: 100, y: 0, w: 20, h: 20 }) // longe
+    expect(api.touches(a, over)).toBe(true)
+    expect(api.touches(a, apart)).toBe(false)
+    expect(api.touches(over, a)).toBe(true) // simétrico: a ordem não muda a resposta
+  })
+
+  it('randomChance: 0% nunca, 100% sempre e respeita o limiar', () => {
+    const random = spyOn(Math, 'random')
+    try {
+      const api = loadRuntime()
+      random.mockReturnValue(0.99)
+      expect(api.randomChance(0)).toBe(false) // 0%: nunca
+      random.mockReturnValue(0)
+      expect(api.randomChance(100)).toBe(true) // 100%: sempre
+      // 30%: verdadeiro quando o sorteio (× 100) fica ABAIXO de 30.
+      random.mockReturnValue(0.2)
+      expect(api.randomChance(30)).toBe(true) // 20 < 30
+      random.mockReturnValue(0.3)
+      expect(api.randomChance(30)).toBe(false) // 30 < 30 = falso
+    } finally {
+      random.mockRestore()
+    }
   })
 
   it('onPointer registra sem erro e expõe o estado pointer', () => {
@@ -371,6 +569,18 @@ describe('game-2d — runtime de física', () => {
       expect(maxY).toBeGreaterThan(350)
     } finally {
       big.remove()
+    }
+  })
+
+  it('randomX/randomY sorteiam dentro do viewport deslocado da câmera', () => {
+    const random = spyOn(Math, 'random').mockReturnValue(0.5)
+    try {
+      const api = loadRuntime()
+      api.setCamera(1000, 500)
+      expect(api.randomX()).toBeGreaterThanOrEqual(1000)
+      expect(api.randomY()).toBeGreaterThanOrEqual(500)
+    } finally {
+      random.mockRestore()
     }
   })
 

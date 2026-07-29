@@ -11,6 +11,7 @@ function isLoopbackUrl(u: string): boolean {
 }
 
 const BOOL_VALUES = new Set(['true', 'false', '1', '0'])
+const WEBHOOK_PROCESSING_LEASE_MARGIN_MS = 5_000
 const optionalBool = (def: boolean) =>
   z
     .string()
@@ -96,8 +97,8 @@ const EnvSchema = z
       .int()
       .positive()
       .default(15 * 60_000),
-    /** Lease do claim — réplica só re-reivindica após a outra ter parado. */
-    NFSE_CLAIM_STALE_MS: z.coerce.number().int().positive().default(120_000),
+    /** Lease do claim — cobre duas execuções completas dos efeitos externos da nota. */
+    NFSE_CLAIM_STALE_MS: z.coerce.number().int().positive().default(150_000),
     NFSE_CANCEL_WINDOW_DAYS: z.coerce.number().int().positive().default(180),
 
     // ── Integrações S2S ──────────────────────────────────────────────────────
@@ -109,6 +110,8 @@ const EnvSchema = z
     PAYMENTS_WEBHOOK_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(300),
     CATALOG_BASE_URL: z.string().url().default('http://localhost:3003'),
     S2S_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+    /** Lease do webhook: cobre payments + catalog sequenciais e uma margem de persistência. */
+    WEBHOOK_PROCESSING_STALE_MS: z.coerce.number().int().positive().default(60_000),
     /** Gateway p/ o envio do e-mail da nota (consumer HMAC de borda `fiscal`). */
     GATEWAY_URL: z.string().url().optional(),
     FISCAL_HMAC_SECRET: z.string().min(16).optional(),
@@ -162,10 +165,25 @@ const EnvSchema = z
         'Em produção são obrigatórios: INTERNAL_API_TOKEN, METRICS_TOKEN, PAYMENTS_INTERNAL_TOKEN e PAYMENTS_WEBHOOK_HMAC_SECRET',
     },
   )
-  .refine((env) => env.NFSE_CLAIM_STALE_MS >= 2 * env.NFSE_REQUEST_TIMEOUT_MS, {
-    message:
-      'NFSE_CLAIM_STALE_MS deve ser ≥ 2× NFSE_REQUEST_TIMEOUT_MS (réplica só re-reivindica depois que a outra parou)',
-  })
+  .refine(
+    (env) =>
+      env.NFSE_CLAIM_STALE_MS >=
+      2 *
+        (env.S2S_TIMEOUT_MS +
+          Math.max(env.NFSE_TOTAL_RETRY_BUDGET_MS, env.NFSE_REQUEST_TIMEOUT_MS)),
+    {
+      message: 'NFSE_CLAIM_STALE_MS deve cobrir 2× (S2S_TIMEOUT_MS + maior timeout Sefin/DANFSe)',
+    },
+  )
+  .refine(
+    (env) =>
+      env.WEBHOOK_PROCESSING_STALE_MS >=
+      2 * env.S2S_TIMEOUT_MS + WEBHOOK_PROCESSING_LEASE_MARGIN_MS,
+    {
+      message:
+        'WEBHOOK_PROCESSING_STALE_MS deve cobrir 2× S2S_TIMEOUT_MS + 5s (payments + catalog sequenciais)',
+    },
+  )
   // E-mail da nota (gateway → messaging): co-dependente. Em PRODUÇÃO real os dois
   // são obrigatórios (senão a nota é emitida e o comprador NUNCA recebe o DANFSe,
   // com o admin marcando "enviado" — ver também o sinal `sent` do MessagingClient).

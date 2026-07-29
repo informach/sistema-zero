@@ -88,8 +88,12 @@ export interface AccessView {
   expiresAt: string | null
 }
 
-/** Dificuldade do curso (espelha o enum `course_level` do members). */
-export type CourseLevelSlug = 'iniciante' | 'intermediario' | 'avancado'
+/**
+ * Dificuldade do curso (espelha o enum `course_level` do members). `lenda` é uma
+ * categoria FORA da carreira (bônus da formatura, só na trilha da Lenda no kids) —
+ * NÃO é degrau: `courseTierOf` devolve `undefined` p/ ela.
+ */
+export type CourseLevelSlug = 'iniciante' | 'intermediario' | 'avancado' | 'lenda'
 
 /** Eixo 2D/3D do curso (espelha o enum `course_track` do members). Par com `level` = degrau. */
 export type CourseTrack = '2d' | '3d'
@@ -118,6 +122,10 @@ export interface CatalogCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  careerSlot?: number | null
+  /** Trava pedagógica da carreira, separada da posse comercial. */
+  careerLock?: CareerCourseLockView
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
   /** Criação do curso (ISO) — ordena o seletor por data; opcional p/ members antigo. */
@@ -215,10 +223,21 @@ export interface MyCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  careerSlot?: number | null
+  /** Trava pedagógica da carreira, separada da posse comercial. */
+  careerLock?: CareerCourseLockView
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
   continueLessonId: string | null
+}
+
+export interface CareerCourseLockView {
+  locked: boolean
+  reason?: 'future-tier' | 'foundation-first' | 'tier-reward'
+  requiredLevel?: StudentLevelSlug
+  foundationCourseSlug?: string
 }
 
 export interface LessonOutlineView {
@@ -279,6 +298,8 @@ export interface CourseDetailView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  careerSlot?: number | null
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do "Continuar de onde parei" (última acessada > 1ª não concluída > 1ª). */
@@ -472,10 +493,16 @@ export type BadgeSlug =
   | 'pensa-first-idea'
   | 'pensa-first-launch'
   | 'pensa-creator-3'
-  // Desafio do mês (07/2026, Fase 5): 1ª participação (ledger `challenge_entry`).
+  // Desafio do mês (07/2026, Fase 5): 1ª e 3ª participações (ledger `challenge_entry`).
   | 'challenge-first'
+  | 'challenge-3'
   // Clube dos Criadores (07/2026): 1ª conversa aprovada (ledger `clube_thread`).
   | 'clube-primeiro-post'
+  // Full review 24/07: remix, decoração, estilo e apoio aos colegas.
+  | 'remix-first'
+  | 'room-decorator-5'
+  | 'avatar-style-5'
+  | 'mural-commenter-10'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
@@ -742,6 +769,10 @@ export interface RoomPlacedItem {
   rot?: 0 | 1 | 2 | 3
   /** Item de PAREDE: em qual parede (x=horizontal, y=altura). Ausente = item de chão. */
   wall?: 'left' | 'right'
+  /** EM CIMA de uma superfície (24/07): itemId do pai posicionado. O members valida. */
+  on?: string
+  /** Nicho da superfície do pai (0-based). Presente sempre que `on` está. */
+  slot?: number
 }
 /** Cor de cada parede do recorte em "L" (hex da paleta). Lado ausente = default do tema. */
 export interface RoomWallColors {
@@ -815,6 +846,22 @@ export interface PublicProfileGameView {
   avatarPhotoUrl?: string | null
   /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
   room: RoomStateView | null
+  /**
+   * Jogos publicados no Mural (mais recentes primeiro) — vitrine do perfil público.
+   * `[]`/ausente quando não há jogos OU o hub está indisponível (best-effort). Os
+   * jogos já são públicos na página `/jogar`. Opcional p/ tolerar members antigo.
+   */
+  games?: PublicProfileGameItem[]
+}
+
+/** Um jogo publicado no Mural, exibido no perfil público kids. */
+export interface PublicProfileGameItem {
+  title: string
+  /** Link público de jogar (`/jogar/<playId>`); `null` em snapshot legado sem play. */
+  playId: string | null
+  /** Capa pública do jogo; `null` se não houver. */
+  coverUrl: string | null
+  publishedAt: string
 }
 
 /** Perfil público COMPLETO (BFF junta nome do auth + dado de jogo do members). */
@@ -1156,6 +1203,13 @@ export interface HubThreadView {
   playsCount?: number
   /** Desafio mensal (`m:YYYY-MM`) — a UI mostra o selo/prateleira do mês. */
   challengeKey?: string | null
+  /**
+   * Metadado do projeto publicado ({pro, extensions[]}, snapshot no publish) — alimenta
+   * o selo "remix a partir do nível X" no card do Mural. ESTRUTURAL (sobrevive à redação
+   * de `authorId`); COSMÉTICO por contrato — o gate real do remix é a checagem no clique
+   * sobre o snapshot jogável. Ausente/`null` = post antigo ou sem projeto.
+   */
+  studioMeta?: { pro: boolean; extensions: string[] } | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string
@@ -1203,6 +1257,8 @@ export interface TeacherThreadView {
   lastMessageAt: string
   createdAt: string
   messages: TeacherMessageView[]
+  /** Cursor opaco para carregar mensagens mais antigas; null no início do histórico. */
+  nextCursor: string | null
 }
 
 /** Resumo p/ a caixa de entrada + badge (mirror do members). */

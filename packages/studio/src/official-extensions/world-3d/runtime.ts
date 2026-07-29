@@ -1,3 +1,8 @@
+import { dataUrlToBufferRuntimeSource } from '../assetRuntime'
+import { withGameUIFontRuntime } from '../gameUiFont'
+import { compactOfficialRuntimeSource } from '../runtimeSource'
+import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
+
 /**
  * Runtime do "Mundo 3D" — injetado no <head> do iframe quando a extensão
  * "world-3d" está instalada. É um SCRIPT MODULE (importa `three` via importmap
@@ -26,8 +31,9 @@
  * - Higiene de GPU: pixelRatio 1 (resolução interna fixa), terreno rebuild
  *   descarta o antigo, dispose + forceContextLoss no fechamento.
  */
-export const world3DRuntime = `import * as THREE from 'three';
+const world3DRuntimeSource = `import * as THREE from 'three';
 (function () {
+  var _szGameUIFont = window.SZGameUIFont.family;
   // ---- Config (dos blocos "Criar o mundo 3D" / "Deixar o chão com morros") ----
   var config = {
     w: 1280,
@@ -87,6 +93,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   var sunTarget = null;
   var ambientLight = null;
   var terrainMesh = null;
+  var terrainField = null;       // grade visual + física: uma única fonte após o build
   var gradientTex = null;
   var skyTex = null;
   var playTime = 0;
@@ -100,6 +107,11 @@ export const world3DRuntime = `import * as THREE from 'three';
   var boostCfg = null;          // { force }
   var boostActive = false;
   var engineOn = false;
+  // O Chromium bloqueia WebAudio criado/iniciado antes do primeiro gesto. Além
+  // do aviso no console, isso deixava o motor mudo mesmo depois de a criança
+  // começar a dirigir. A intenção sonora fica configurada e o grafo nasce no
+  // primeiro teclado/toque real.
+  var audioUnlocked = false;
   var _audioCtx = null;
   var engineOsc = null;
   var engineGain = null;
@@ -107,6 +119,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   // Sons do projeto (HTMLAudio, do __SZGAME_SOUNDS) + música.
   var sounds = Object.create(null);
   var music = null;
+  var musicName = null;
   // HUD por canto (DOM) + balão de fala que segue o carro.
   var hudEls = Object.create(null);
   var sayEl = null;
@@ -154,6 +167,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var natureGroup = null;       // raiz de tudo que foi espalhado/posto
   var scatterBudget = 12000;    // teto TOTAL de instâncias espalhadas (higiene de GPU)
   var scatterCount = 0;
+  var MAX_MODEL_SCATTER_MESHES = 48;
+  var MAX_MODEL_TRIANGLES = 500000;
+  var MODEL_SCATTER_TRIANGLE_BUDGET = 2000000;
   var placedCount = 0;
   var MAX_PLACED = 200;         // "Pôr 1" é para cantinhos especiais, não para florestas
   var crashHooks = [];
@@ -337,6 +353,13 @@ export const world3DRuntime = `import * as THREE from 'three';
   var _gltfMod = null;
   var _modelCache = null;       // nome -> { scene } já parseado
   var _modelPending = null;     // nome -> fila de callbacks (parse em voo)
+  var _hdrMod = null;
+  var _hdrWaiters = [];
+  var _hdrCache = null;         // nome -> DataTexture base
+  var _hdrPending = null;       // nome -> fila de callbacks
+  var _environmentTexture = null;
+  var _pendingEnvironmentTexture = null;
+  var _skyPhotoRequest = 0;
   // Céu & clima: ciclo dia/noite por keyframes + tempo fixo + partículas de clima.
   var dayCfg = { on: false, minutes: 4 };
   var atmoUsed = false;         // setTime/dayNight ligam a atmosfera por keyframes
@@ -360,6 +383,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var wind = 1;                 // força do vento (o bloco de vento chega na R4)
   // Qualidade: 'alta' | 'turbo' (auto: mede o FPS nos primeiros segundos).
   var quality = { tier: 'alta', auto: true, decided: false, probeT: 0, fpsAcc: 0, fpsN: 0 };
+  // Mundo v4: inventário pequeno, persistente e independente de assets.
+  var inventoryData = Object.create(null);
+  var inventoryLoaded = false;
 
   function warn(msg) {
     try { console.warn('SZWorld3D: ' + msg); } catch (e) {}
@@ -484,12 +510,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     return { dist: Math.sqrt(ex * ex + ez * ez), t: t };
   }
 
-  /**
-   * A altura do chão em (x, z) — ANALÍTICA e pura: carro, natureza, água e o
-   * bloco "a altura do chão" consultam a MESMA função (nunca dessincroniza).
-   * O centro do mundo é aplainado; aplainar/trilha puxam a altura ao seu alvo.
-   */
-  function heightAt(x, z) {
+  /** Altura contínua usada para AMOSTRAR a malha do terreno. */
+  function analyticHeightAt(x, z) {
     var h = baseHeightAt(x, z);
     for (var i = 0; i < terrainMods.length; i++) {
       var m = terrainMods[i];
@@ -521,6 +543,33 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
     }
     return h;
+  }
+
+  /**
+   * Interpola exatamente os mesmos dois triângulos que PlaneGeometry cria em
+   * cada célula. Depois do build, física, natureza e o bloco de altura leem a
+   * grade VISUAL — não uma função mais detalhada escondida sob a malha.
+   */
+  function sampledTerrainHeight(x, z) {
+    var f = terrainField;
+    if (!f) return analyticHeightAt(x, z);
+    var gx = clamp((x / f.world + 0.5) * f.seg, 0, f.seg);
+    var gz = clamp((z / f.world + 0.5) * f.seg, 0, f.seg);
+    var ix = Math.min(f.seg - 1, Math.floor(gx));
+    var iz = Math.min(f.seg - 1, Math.floor(gz));
+    var u = gx - ix;
+    var v = gz - iz;
+    var stride = f.seg + 1;
+    var a = f.values[iz * stride + ix];
+    var b = f.values[(iz + 1) * stride + ix];
+    var c = f.values[(iz + 1) * stride + ix + 1];
+    var d = f.values[iz * stride + ix + 1];
+    if (u + v <= 1) return a + (d - a) * u + (b - a) * v;
+    return c + (b - c) * (1 - u) + (d - c) * (1 - v);
+  }
+
+  function heightAt(x, z) {
+    return sampledTerrainHeight(num(x, 0), num(z, 0));
   }
 
   /**
@@ -772,15 +821,17 @@ export const world3DRuntime = `import * as THREE from 'three';
     return placements;
   }
 
-  function takeScatterRoom(want) {
+  function takeScatterRoom(want, costPerPlacement) {
+    var cost = Math.max(1, Math.floor(num(costPerPlacement, 1)));
     var room = scatterBudget - scatterCount;
     if (room <= 0) {
       warnOnce('scatter-budget', 'o mundo está cheio — teto de ' + scatterBudget + ' coisas espalhadas (para o passeio continuar liso)');
       return 0;
     }
-    if (want > room) {
-      warnOnce('scatter-budget', 'faltou espaço para tudo — espalhei só ' + room + ' (teto de ' + scatterBudget + ' coisas)');
-      return room;
+    var placements = Math.floor(room / cost);
+    if (want > placements) {
+      warnOnce('scatter-budget', 'faltou espaço para tudo — espalhei só ' + placements + ' cópias (teto de ' + scatterBudget + ' partes instanciadas)');
+      return placements;
     }
     return want;
   }
@@ -788,11 +839,11 @@ export const world3DRuntime = `import * as THREE from 'three';
   function buildSpeciesRecipe(rec) {
     var spec = SPECIES[rec.thing];
     if (!spec || !scene) return;
-    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 3000)));
+    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 3000)), spec.parts.length);
     if (want <= 0) return;
     var placements = samplePlacements(rec, want, spec.smin, spec.smax);
     if (!placements.length) return;
-    scatterCount += placements.length;
+    scatterCount += placements.length * spec.parts.length;
     ensureUnitGeos();
     ensureDummies();
     var locals = speciesLocals(spec);
@@ -845,19 +896,144 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   // ---- Modelos .glb do projeto (parse de ArrayBuffer — a rede é morta) ----
 
-  /** data: URL base64 -> ArrayBuffer, sem tocar na rede. */
-  function dataUrlToBuffer(url) {
-    var comma = url.indexOf(',');
-    if (comma < 0) return null;
-    try {
-      var bin = atob(url.slice(comma + 1));
-      var len = bin.length;
-      var u8 = new Uint8Array(len);
-      for (var i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
-      return u8.buffer;
-    } catch (e) {
-      return null;
+  /*__SZ_DATA_URL_RUNTIME__*/
+
+  function disposeTexture(texture, warningKey) {
+    if (!texture || !texture.dispose) return;
+    try { texture.dispose(); }
+    catch (e) { warnOnce(warningKey, 'não consegui liberar uma textura antiga: ' + e); }
+  }
+
+  function clearEnvironmentTexture() {
+    var old = _environmentTexture;
+    _environmentTexture = null;
+    if (scene) {
+      if (scene.background === old) scene.background = null;
+      if (scene.environment === old) scene.environment = null;
     }
+    disposeTexture(old, 'dispose-hdr');
+  }
+
+  function clearPendingEnvironmentTexture() {
+    var old = _pendingEnvironmentTexture;
+    _pendingEnvironmentTexture = null;
+    disposeTexture(old, 'dispose-pending-hdr');
+  }
+
+  function useEnvironmentTexture(texture) {
+    if (!texture) return;
+    clearEnvironmentTexture();
+    if (!scene) {
+      clearPendingEnvironmentTexture();
+      _pendingEnvironmentTexture = texture;
+      return;
+    }
+    if (skyTex) {
+      disposeTexture(skyTex, 'dispose-gradient-sky');
+      skyTex = null;
+    }
+    scene.background = texture;
+    scene.environment = texture;
+    _environmentTexture = texture;
+  }
+
+  function cloneHdrTexture(base) {
+    if (!base) return null;
+    var texture = base.clone ? base.clone() : null;
+    if (!texture && base.image) texture = new THREE.DataTexture(base.image.data, base.image.width, base.image.height);
+    if (!texture) return null;
+    if (THREE.EquirectangularReflectionMapping != null) texture.mapping = THREE.EquirectangularReflectionMapping;
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  function withHdrLoader(callback) {
+    if (_hdrMod) { callback(_hdrMod); return; }
+    _hdrWaiters.push(callback);
+    if (_hdrWaiters.length > 1) return;
+    var finish = function (mod) {
+      if (mod) _hdrMod = mod;
+      var waiters = _hdrWaiters.slice();
+      _hdrWaiters.length = 0;
+      for (var i = 0; i < waiters.length; i++) waiters[i](mod);
+    };
+    try {
+      import('three/addons/loaders/HDRLoader.js').then(finish, function (e) {
+        if (!disposed) warn('não consegui carregar o leitor de céu: ' + e);
+        finish(null);
+      });
+    } catch (e) {
+      if (!disposed) warn('não consegui carregar o leitor de céu: ' + e);
+      finish(null);
+    }
+  }
+
+  function loadHdrTexture(name, entry, callback) {
+    if (disposed) { callback(null); return; }
+    if (!_hdrCache) _hdrCache = Object.create(null);
+    if (_hdrCache[name]) { callback(cloneHdrTexture(_hdrCache[name])); return; }
+    if (!_hdrPending) _hdrPending = Object.create(null);
+    if (_hdrPending[name]) { _hdrPending[name].push(callback); return; }
+    _hdrPending[name] = [callback];
+    var release = null;
+    pending.push(new Promise(function (resolve) { release = resolve; }));
+    var settled = false;
+    var flush = function (base) {
+      if (settled) return;
+      settled = true;
+      var queue = _hdrPending && _hdrPending[name] ? _hdrPending[name] : [];
+      if (_hdrPending) delete _hdrPending[name];
+      for (var i = 0; i < queue.length; i++) queue[i](base && !disposed ? cloneHdrTexture(base) : null);
+      if (release) release();
+    };
+    var buf = dataUrlToBuffer(entry.dataUrl);
+    if (!buf) { warn('não consegui ler os dados do céu "' + name + '"'); flush(null); return; }
+    withHdrLoader(function (mod) {
+      if (!mod || disposed) { flush(null); return; }
+      try {
+        var parsed = new mod.HDRLoader().parse(buf);
+        if (!parsed || !parsed.data) { flush(null); return; }
+        var base = new THREE.DataTexture(parsed.data, parsed.width, parsed.height);
+        if (parsed.type != null) base.type = parsed.type;
+        if (THREE.LinearSRGBColorSpace != null) base.colorSpace = THREE.LinearSRGBColorSpace;
+        if (THREE.LinearFilter != null) {
+          base.minFilter = THREE.LinearFilter;
+          base.magFilter = THREE.LinearFilter;
+        }
+        base.generateMipmaps = false;
+        base.flipY = true;
+        if (THREE.EquirectangularReflectionMapping != null) base.mapping = THREE.EquirectangularReflectionMapping;
+        base.needsUpdate = true;
+        if (disposed || !_hdrCache) {
+          disposeTexture(base, 'dispose-late-hdr');
+          flush(null);
+          return;
+        }
+        _hdrCache[name] = base;
+        flush(base);
+      } catch (e) {
+        warn('não consegui abrir o céu "' + name + '": ' + e);
+        flush(null);
+      }
+    });
+  }
+
+  function setSkyPhoto(name) {
+    var key = text(name, '');
+    var entry = MODELS3D[key];
+    if (!entry || entry.kind !== 'environment3d') {
+      warn('o céu "' + key + '" não está no projeto — envie um arquivo .hdr');
+      return;
+    }
+    var request = ++_skyPhotoRequest;
+    loadHdrTexture(key, entry, function (texture) {
+      if (!texture) return;
+      if (disposed || request !== _skyPhotoRequest) {
+        disposeTexture(texture, 'dispose-stale-hdr');
+        return;
+      }
+      useEnvironmentTexture(texture);
+    });
   }
 
   /** Aquece o modelo (compileAsync best-effort — nunca derruba o carregamento). */
@@ -869,12 +1045,44 @@ export const world3DRuntime = `import * as THREE from 'three';
     } catch (e) {}
   }
 
+  /** Libera uma árvore procedural ou um asset que terminou de carregar tarde. */
+  function disposeObjectTree(root, disposeTextures) {
+    if (!root || !root.traverse) return;
+    var geometries = new Set();
+    var materials = new Set();
+    var textures = new Set();
+    try {
+      root.traverse(function (o) {
+        if (o.isInstancedMesh && o.dispose) o.dispose();
+        if (o.geometry) geometries.add(o.geometry);
+        if (!o.material) return;
+        var list = o.material.length ? o.material : [o.material];
+        for (var mi = 0; mi < list.length; mi++) {
+          var material = list[mi];
+          if (!material) continue;
+          materials.add(material);
+          if (!disposeTextures) continue;
+          for (var key in material) {
+            var value = material[key];
+            if (value && value.isTexture) textures.add(value);
+          }
+        }
+      });
+      textures.forEach(function (texture) { if (texture.dispose) texture.dispose(); });
+      geometries.forEach(function (geometry) { if (geometry.dispose) geometry.dispose(); });
+      materials.forEach(function (material) { if (material.dispose) material.dispose(); });
+    } catch (e) {
+      warnOnce('dispose-object-tree', 'não consegui liberar uma árvore 3D por completo: ' + e);
+    }
+  }
+
   /**
    * Carrega e parseia um .glb do projeto (cacheado; carga em voo enfileira o
    * callback). O start() ESPERA a promessa em pending — o passeio só começa com
    * os modelos remendados. NUNCA rejeita: modelo quebrado avisa e segue.
    */
   function loadModel(name, onReady) {
+    if (disposed) return null;
     var k = text(name, '');
     if (!k) {
       warn('escreva o NOME do modelo (o nome dele no painel de imagens → modelos 3D)');
@@ -897,21 +1105,30 @@ export const world3DRuntime = `import * as THREE from 'three';
     _modelPending[k] = typeof onReady === 'function' ? [onReady] : [];
     var release = null;
     pending.push(new Promise(function (resolve) { release = resolve; }));
+    var settled = false;
     var flush = function (hit) {
-      var queue = _modelPending[k] || [];
-      _modelPending[k] = null;
-      if (hit) {
+      if (settled) return;
+      settled = true;
+      var queue = _modelPending && _modelPending[k] ? _modelPending[k] : [];
+      if (_modelPending) delete _modelPending[k];
+      if (hit && !disposed) {
         for (var i = 0; i < queue.length; i++) {
-          try { queue[i](hit); } catch (e) {}
+          try { queue[i](hit); } catch (e) { warnOnce('model-ready-' + k, 'erro ao montar o modelo "' + k + '": ' + e); }
         }
       }
       if (release) release();
     };
     var finish = function (mod) {
+      if (disposed) { flush(null); return; }
       _gltfMod = mod;
       try {
         new mod.GLTFLoader().parse(buf, '', function (gltf) {
           if (gltf && gltf.scene) {
+            if (disposed || !_modelCache) {
+              disposeObjectTree(gltf.scene, true);
+              flush(null);
+              return;
+            }
             _modelCache[k] = { scene: gltf.scene };
             warmModel(gltf.scene);
             flush(_modelCache[k]);
@@ -955,6 +1172,17 @@ export const world3DRuntime = `import * as THREE from 'three';
     return list;
   }
 
+  function modelTriangleCount(meshes) {
+    var triangles = 0;
+    for (var i = 0; i < meshes.length; i++) {
+      var geometry = meshes[i].geometry;
+      if (!geometry) continue;
+      if (geometry.index && geometry.index.count != null) triangles += Math.floor(geometry.index.count / 3);
+      else if (geometry.attributes && geometry.attributes.position) triangles += Math.floor(geometry.attributes.position.count / 3);
+    }
+    return triangles;
+  }
+
   /** Raio de colisão do modelo no plano XZ (metade da diagonal da caixa). */
   function modelRadius(root) {
     try {
@@ -970,17 +1198,31 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function buildScatterModel(rec) {
     if (!rec.model || !rec.model.scene || !scene) return;
-    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 500)));
-    if (want <= 0) return;
-    var s = clamp(num(rec.s, 1), 0.05, 20);
-    var placements = samplePlacements(rec, want, s * 0.9, s * 1.15);
-    if (!placements.length) return;
-    scatterCount += placements.length;
     var meshes = modelMeshList(rec.model.scene);
     if (!meshes.length) {
       warn('o modelo "' + rec.name + '" não tem malhas — nada para espalhar');
       return;
     }
+    if (meshes.length > MAX_MODEL_SCATTER_MESHES) {
+      warn('o modelo "' + rec.name + '" tem ' + meshes.length + ' malhas — o máximo para espalhar é ' + MAX_MODEL_SCATTER_MESHES + '; una as peças no editor 3D');
+      return;
+    }
+    var triangles = modelTriangleCount(meshes);
+    if (triangles > MAX_MODEL_TRIANGLES) {
+      warn('o modelo "' + rec.name + '" tem triângulos demais para este mundo (' + triangles + ' > ' + MAX_MODEL_TRIANGLES + ')');
+      return;
+    }
+    var requested = Math.floor(clamp(num(rec.n, 0), 1, 500));
+    var triangleRoom = triangles > 0 ? Math.max(1, Math.floor(MODEL_SCATTER_TRIANGLE_BUDGET / triangles)) : requested;
+    var want = takeScatterRoom(Math.min(requested, triangleRoom), meshes.length);
+    if (requested > triangleRoom) {
+      warnOnce('model-triangle-budget-' + rec.name, 'o modelo "' + rec.name + '" é detalhado — espalhei só ' + triangleRoom + ' cópias para manter o desempenho');
+    }
+    if (want <= 0) return;
+    var s = clamp(num(rec.s, 1), 0.05, 20);
+    var placements = samplePlacements(rec, want, s * 0.9, s * 1.15);
+    if (!placements.length) return;
+    scatterCount += placements.length * meshes.length;
     ensureDummies();
     var group = ensureNatureGroup();
     for (var m = 0; m < meshes.length; m++) {
@@ -1011,6 +1253,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!rec.model || !rec.model.scene || !scene) return;
     if (placedCount >= MAX_PLACED) {
       warnOnce('placed-max', 'muitos "Pôr" — o teto é ' + MAX_PLACED);
+      return;
+    }
+    var meshes = modelMeshList(rec.model.scene);
+    var triangles = modelTriangleCount(meshes);
+    if (triangles > MAX_MODEL_TRIANGLES) {
+      warn('o modelo "' + rec.name + '" tem triângulos demais para este mundo (' + triangles + ' > ' + MAX_MODEL_TRIANGLES + ')');
       return;
     }
     placedCount++;
@@ -1062,312 +1310,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
-  // ---- 🎬 Mini-composer próprio (fork do Jogo 3D Avançado) ----
+  // ---- 🎬 Mini-composer compartilhado com o Jogo 3D Avançado ----
   // Bloom dual-filter (downsample Karis + upsample tent) + vinheta + ACES
   // (curva EXATA do three) + conversão sRGB no passe final. Com o composer
   // ligado a cena renderiza LINEAR (NoToneMapping) em HalfFloat; qualquer
   // falha cai no render direto para sempre (composerFailed).
-  var BLOOM_LEVELS = 4;
-
-  var QUAD_VSH = [
-    'varying vec2 vUvs;',
-    'void main() {',
-    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-    '  vUvs = uv;',
-    '}'
-  ].join(' ');
-
-  var COPY_FSH = [
-    'uniform sampler2D tDiffuse;',
-    'varying vec2 vUvs;',
-    'void main() { gl_FragColor = texture2D(tDiffuse, vUvs); }'
-  ].join(' ');
-
-  var DOWNSAMPLE_FSH = [
-    'uniform sampler2D frameTexture;',
-    'uniform bool useKaris;',
-    'uniform vec2 resolution;',
-    'varying vec2 vUvs;',
-    'float Luminance(vec4 c) { return max(1.0, dot(c.xyz, vec3(0.2627, 0.6780, 0.0593))); }',
-    'vec4 KarisAverage(vec4 s1, vec4 s2, vec4 s3, vec4 s4) {',
-    '  float w1 = 1.0 / Luminance(s1);',
-    '  float w2 = 1.0 / Luminance(s2);',
-    '  float w3 = 1.0 / Luminance(s3);',
-    '  float w4 = 1.0 / Luminance(s4);',
-    '  float totalWeight = 1.0 / (w1 + w2 + w3 + w4);',
-    '  return (s1 * w1 + s2 * w2 + s3 * w3 + s4 * w4) * totalWeight;',
-    '}',
-    'void main() {',
-    '  vec2 texelSize = 1.0 / resolution;',
-    '  vec4 A = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, -1.0));',
-    '  vec4 B = texture2D(frameTexture, vUvs + texelSize * vec2(0.0, -1.0));',
-    '  vec4 C = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, -1.0));',
-    '  vec4 D = texture2D(frameTexture, vUvs + texelSize * vec2(-0.5, -0.5));',
-    '  vec4 E = texture2D(frameTexture, vUvs + texelSize * vec2(0.5, -0.5));',
-    '  vec4 F = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, 0.0));',
-    '  vec4 G = texture2D(frameTexture, vUvs);',
-    '  vec4 H = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, 0.0));',
-    '  vec4 I = texture2D(frameTexture, vUvs + texelSize * vec2(-0.5, 0.5));',
-    '  vec4 J = texture2D(frameTexture, vUvs + texelSize * vec2(0.5, 0.5));',
-    '  vec4 K = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, 1.0));',
-    '  vec4 L = texture2D(frameTexture, vUvs + texelSize * vec2(0.0, 1.0));',
-    '  vec4 M = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, 1.0));',
-    '  vec2 div = vec2(0.5, 0.125);',
-    '  vec4 colour = vec4(0.0);',
-    '  if (useKaris) {',
-    '    colour = KarisAverage(D, E, I, J) * div.x;',
-    '    colour += KarisAverage(A, B, G, F) * div.y;',
-    '    colour += KarisAverage(B, C, H, G) * div.y;',
-    '    colour += KarisAverage(F, G, L, K) * div.y;',
-    '    colour += KarisAverage(G, H, M, L) * div.y;',
-    '  } else {',
-    '    div *= 0.25;',
-    '    colour = (D + E + I + J) * div.x;',
-    '    colour += (A + B + G + F) * div.y;',
-    '    colour += (B + C + H + G) * div.y;',
-    '    colour += (F + G + L + K) * div.y;',
-    '    colour += (G + H + M + L) * div.y;',
-    '  }',
-    '  gl_FragColor = colour;',
-    '}'
-  ].join(' ');
-
-  var UPSAMPLE_FSH = [
-    'uniform sampler2D frameTexture;',
-    'uniform sampler2D mipTexture;',
-    'uniform vec2 resolution;',
-    'varying vec2 vUvs;',
-    'void main() {',
-    '  float x = 1.0 / resolution.x;',
-    '  float y = 1.0 / resolution.y;',
-    '  vec4 a = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y + y));',
-    '  vec4 b = texture2D(frameTexture, vec2(vUvs.x, vUvs.y + y));',
-    '  vec4 c = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y + y));',
-    '  vec4 d = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y));',
-    '  vec4 e = texture2D(frameTexture, vec2(vUvs.x, vUvs.y));',
-    '  vec4 f = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y));',
-    '  vec4 g = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y - y));',
-    '  vec4 h = texture2D(frameTexture, vec2(vUvs.x, vUvs.y - y));',
-    '  vec4 i = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y - y));',
-    '  vec4 colour = e * 4.0;',
-    '  colour += (b + d + f + h) * 2.0;',
-    '  colour += (a + c + g + i);',
-    '  colour *= 1.0 / 16.0;',
-    '  colour += texture2D(mipTexture, vUvs);',
-    '  gl_FragColor = colour;',
-    '}'
-  ].join(' ');
-
-  var COMPOSITE_FSH = [
-    'uniform sampler2D frameTexture;',
-    'uniform sampler2D bloomTexture;',
-    'uniform float bloomStrength;',
-    'uniform float bloomMix;',
-    'varying vec2 vUvs;',
-    'void main() {',
-    '  vec4 textureSample = texture2D(frameTexture, vUvs);',
-    '  vec4 bloomSample = texture2D(bloomTexture, vUvs);',
-    '  gl_FragColor = mix(textureSample, bloomStrength * bloomSample, bloomMix);',
-    '}'
-  ].join(' ');
-
-  var FINAL_FSH = [
-    'uniform sampler2D tDiffuse;',
-    'uniform float intensity;',
-    'uniform float dropoff;',
-    'varying vec2 vUvs;',
-    'float inverseLerp(float v, float minValue, float maxValue) {',
-    '  return (v - minValue) / (maxValue - minValue);',
-    '}',
-    'float remap(float v, float inMin, float inMax, float outMin, float outMax) {',
-    '  float t = inverseLerp(v, inMin, inMax);',
-    '  return mix(outMin, outMax, t);',
-    '}',
-    'float vignette(vec2 uvs) {',
-    '  float v1 = smoothstep(0.5, 0.3, abs(uvs.x - 0.5));',
-    '  float v2 = smoothstep(0.5, 0.3, abs(uvs.y - 0.5));',
-    '  float v = v1 * v2;',
-    '  v = pow(v, dropoff);',
-    '  v = remap(v, 0.0, 1.0, intensity, 1.0);',
-    '  return v;',
-    '}',
-    'vec3 RRTAndODTFit(vec3 v) {',
-    '  vec3 a = v * (v + 0.0245786) - 0.000090537;',
-    '  vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;',
-    '  return a / b;',
-    '}',
-    'vec3 aces(vec3 color) {',
-    '  mat3 mIn = mat3(0.59719, 0.07600, 0.02840, 0.35458, 0.90834, 0.13383, 0.04823, 0.01566, 0.83777);',
-    '  mat3 mOut = mat3(1.60475, -0.10208, -0.00327, -0.53108, 1.10813, -0.07276, -0.07367, -0.00605, 1.07602);',
-    '  color *= 1.0 / 0.6;',
-    '  color = mIn * color;',
-    '  color = RRTAndODTFit(color);',
-    '  color = mOut * color;',
-    '  return clamp(color, 0.0, 1.0);',
-    '}',
-    'void main() {',
-    '  vec4 texel = texture2D(tDiffuse, vUvs);',
-    '  vec3 col = texel.xyz * vignette(vUvs);',
-    '  col = aces(col);',
-    '  col = pow(col, vec3(0.4545));',
-    '  gl_FragColor = vec4(col, 1.0);',
-    '}'
-  ].join(' ');
-
-  function makeTarget(w, h) {
-    return new THREE.WebGLRenderTarget(Math.max(1, Math.round(w)), Math.max(1, Math.round(h)), {
-      type: THREE.HalfFloatType,
-      magFilter: THREE.LinearFilter,
-      minFilter: THREE.LinearFilter,
-      wrapS: THREE.ClampToEdgeWrapping,
-      wrapT: THREE.ClampToEdgeWrapping,
-      generateMipmaps: false,
-      depthBuffer: false,
-      stencilBuffer: false
-    });
-  }
-
-  function quadMaterial(fsh, uniforms) {
-    return new THREE.ShaderMaterial({
-      uniforms: uniforms,
-      vertexShader: QUAD_VSH,
-      fragmentShader: fsh,
-      depthTest: false,
-      depthWrite: false
-    });
-  }
-
-  function initComposer() {
-    if (composer || composerFailed) return;
-    try {
-      var quadScene = new THREE.Scene();
-      var quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-      var quadGeo = new THREE.PlaneGeometry(2, 2);
-      var quadMesh = new THREE.Mesh(quadGeo, null);
-      quadScene.add(quadMesh);
-
-      // Alvo da cena com DEPTH (o mundo 3D precisa dele); os da cascata não.
-      var rtScene = new THREE.WebGLRenderTarget(config.w, config.h, {
-        type: THREE.HalfFloatType,
-        magFilter: THREE.LinearFilter,
-        minFilter: THREE.LinearFilter,
-        depthBuffer: true,
-        stencilBuffer: false
-      });
-      var rtGrade = makeTarget(config.w, config.h);
-      var down = [null];
-      var up = [null];
-      for (var i = 1; i <= BLOOM_LEVELS; i++) {
-        var scaleDiv = Math.pow(2, i);
-        down.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
-        up.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
-      }
-
-      var matCopy = quadMaterial(COPY_FSH, { tDiffuse: { value: null } });
-      var matDown = quadMaterial(DOWNSAMPLE_FSH, {
-        frameTexture: { value: null },
-        useKaris: { value: false },
-        resolution: { value: new THREE.Vector2(1, 1) }
-      });
-      var matUp = quadMaterial(UPSAMPLE_FSH, {
-        frameTexture: { value: null },
-        mipTexture: { value: null },
-        resolution: { value: new THREE.Vector2(1, 1) }
-      });
-      var matComposite = quadMaterial(COMPOSITE_FSH, {
-        frameTexture: { value: null },
-        bloomTexture: { value: null },
-        bloomStrength: { value: config.bloomStrength },
-        bloomMix: { value: 0.08 }
-      });
-      var matFinal = quadMaterial(FINAL_FSH, {
-        tDiffuse: { value: null },
-        intensity: { value: 0.35 },
-        dropoff: { value: 0.35 }
-      });
-
-      composer = {
-        quadScene: quadScene,
-        quadCam: quadCam,
-        quadGeo: quadGeo,
-        quadMesh: quadMesh,
-        rtScene: rtScene,
-        rtGrade: rtGrade,
-        down: down,
-        up: up,
-        matCopy: matCopy,
-        matDown: matDown,
-        matUp: matUp,
-        matComposite: matComposite,
-        matFinal: matFinal
-      };
-    } catch (e) {
-      composerFailed = true;
-      composer = null;
-      warn('efeitos de cinema indisponíveis neste computador — seguindo sem eles: ' + e);
-    }
-  }
-
-  function quadPass(material, target) {
-    composer.quadMesh.material = material;
-    renderer.setRenderTarget(target);
-    renderer.render(composer.quadScene, composer.quadCam);
-  }
-
-  function renderWithComposer() {
-    var c = composer;
-    // Cena em LINEAR (o ACES roda no passe final).
-    if (THREE.NoToneMapping != null) renderer.toneMapping = THREE.NoToneMapping;
-    renderer.setRenderTarget(c.rtScene);
-    renderer.render(scene, camera);
-
-    var graded = c.rtScene;
-    if (config.bloom) {
-      var src = c.rtScene;
-      for (var i = 1; i <= BLOOM_LEVELS; i++) {
-        c.matDown.uniforms.frameTexture.value = src.texture;
-        c.matDown.uniforms.useKaris.value = i === 1;
-        c.matDown.uniforms.resolution.value.set(src.width, src.height);
-        quadPass(c.matDown, c.down[i]);
-        src = c.down[i];
-      }
-      c.matCopy.uniforms.tDiffuse.value = c.down[BLOOM_LEVELS].texture;
-      quadPass(c.matCopy, c.up[BLOOM_LEVELS]);
-      for (var j = BLOOM_LEVELS - 1; j >= 1; j--) {
-        c.matUp.uniforms.frameTexture.value = c.up[j + 1].texture;
-        c.matUp.uniforms.mipTexture.value = c.down[j + 1].texture;
-        c.matUp.uniforms.resolution.value.set(c.up[j + 1].width, c.up[j + 1].height);
-        quadPass(c.matUp, c.up[j]);
-      }
-      c.matComposite.uniforms.frameTexture.value = c.rtScene.texture;
-      c.matComposite.uniforms.bloomTexture.value = c.up[1].texture;
-      c.matComposite.uniforms.bloomStrength.value = config.bloomStrength;
-      quadPass(c.matComposite, c.rtGrade);
-      graded = c.rtGrade;
-    }
-    // Passe final SEMPRE roda no caminho do composer: vinheta (intensity 1 =
-    // desligada) + ACES + sRGB, direto na tela.
-    c.matFinal.uniforms.tDiffuse.value = graded.texture;
-    c.matFinal.uniforms.intensity.value = config.vignette ? 0.35 : 1.0;
-    quadPass(c.matFinal, null);
-  }
-
-  function disposeComposer() {
-    var c = composer;
-    if (!c) return;
-    composer = null;
-    try {
-      var all = [c.rtScene, c.rtGrade].concat(c.down.slice(1)).concat(c.up.slice(1));
-      for (var i = 0; i < all.length; i++) {
-        if (all[i] && all[i].dispose) all[i].dispose();
-      }
-      var mats = [c.matCopy, c.matDown, c.matUp, c.matComposite, c.matFinal];
-      for (var m = 0; m < mats.length; m++) {
-        if (mats[m] && mats[m].dispose) mats[m].dispose();
-      }
-      if (c.quadGeo && c.quadGeo.dispose) c.quadGeo.dispose();
-    } catch (e) {}
-  }
+  /*__SZ_THREE_POST_PROCESSING_RUNTIME__*/
 
   function renderFrame() {
     var wantFx = (config.bloom || config.vignette) && quality.tier !== 'turbo';
@@ -1466,17 +1414,28 @@ export const world3DRuntime = `import * as THREE from 'three';
   function buildGrassHeightTex() {
     var HG = 128;
     var data = new Uint8Array(HG * HG);
-    var hMin = -terrainCfg.hills * 1.25 - 1;
-    var hRange = (terrainCfg.hills * 1.25 + 1) * 2;
+    var heights = new Float32Array(HG * HG);
+    var hMin = Infinity;
+    var hMax = -Infinity;
     for (var iz = 0; iz < HG; iz++) {
       for (var ix = 0; ix < HG; ix++) {
         var x = (ix / (HG - 1) - 0.5) * config.world;
         var z = (iz / (HG - 1) - 0.5) * config.world;
-        var v = (heightAt(x, z) - hMin) / hRange;
+        var h = heightAt(x, z);
+        heights[iz * HG + ix] = h;
+        if (h < hMin) hMin = h;
+        if (h > hMax) hMax = h;
+      }
+    }
+    // Margem pequena evita cortar a interpolação linear nas extremidades.
+    hMin -= 0.25;
+    hMax += 0.25;
+    var hRange = Math.max(0.5, hMax - hMin);
+    for (var hi = 0; hi < heights.length; hi++) {
+        var v = (heights[hi] - hMin) / hRange;
         if (v < 0) v = 0;
         if (v > 1) v = 1;
-        data[iz * HG + ix] = Math.round(v * 255);
-      }
+        data[hi] = Math.round(v * 255);
     }
     if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
     heightTex = new THREE.DataTexture(data, HG, HG, THREE.RedFormat);
@@ -1643,6 +1602,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   /** Redesenha o degradê do céu NA MESMA textura (barato: canvas 2×256). */
   function drawSky(top, bot) {
     if (!scene) return;
+    if (_environmentTexture || _pendingEnvironmentTexture) return;
     try {
       if (!_skyCanvas) {
         _skyCanvas = document.createElement('canvas');
@@ -1794,8 +1754,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     var rng = mulberry(555);
     var posArr = new Float32Array(n * 3);
     var vel = new Float32Array(n * 2); // fase de deriva + velocidade própria
-    var cx = carState ? carState.x : 0;
-    var cz = carState ? carState.z : 0;
+    var _wc = playerXZ();
+    var cx = _wc.x;
+    var cz = _wc.z;
     for (var i = 0; i < n; i++) {
       posArr[i * 3] = cx + (rng() * 2 - 1) * WEATHER_R;
       posArr[i * 3 + 1] = rng() * WEATHER_H;
@@ -1824,8 +1785,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   function stepWeather(dt) {
     if (!weatherPts) return;
     var p = weatherPts;
-    var cx = carState ? carState.x : 0;
-    var cz = carState ? carState.z : 0;
+    var _wc = playerXZ();
+    var cx = _wc.x;
+    var cz = _wc.z;
     var t = playTime;
     for (var i = 0; i < p.n; i++) {
       var ix = i * 3;
@@ -1849,22 +1811,28 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (p.geo.attributes.position) p.geo.attributes.position.needsUpdate = true;
   }
 
-  /** Modo turbo: menos grama, sombra menor, sem composer (o gate no renderFrame). */
-  function applyTurbo() {
-    if (quality.tier === 'turbo') return;
-    quality.tier = 'turbo';
-    warn('modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)');
+  function applyQualityTier(tier) {
+    quality.tier = tier === 'turbo' ? 'turbo' : 'alta';
+    if (renderer) renderer.setPixelRatio(quality.tier === 'turbo' ? 0.75 : 1);
     if (sunLight && sunLight.shadow) {
       try {
-        if (sunLight.shadow.mapSize && sunLight.shadow.mapSize.set) sunLight.shadow.mapSize.set(1024, 1024);
+        var shadowSize = quality.tier === 'turbo' ? 1024 : 2048;
+        if (sunLight.shadow.mapSize && sunLight.shadow.mapSize.set) sunLight.shadow.mapSize.set(shadowSize, shadowSize);
         if (sunLight.shadow.map) {
           sunLight.shadow.map.dispose();
           sunLight.shadow.map = null;
         }
-      } catch (e) {}
+      } catch (e) { warnOnce('quality-shadow', 'não consegui reajustar a sombra: ' + e); }
     }
     if (grassMesh) buildGrass();
     if (weatherPts) buildWeather();
+  }
+
+  /** Modo turbo: menos grama/clima, sombra e resolução menores, sem composer. */
+  function applyTurbo() {
+    if (quality.tier === 'turbo') return;
+    warn('modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)');
+    applyQualityTier('turbo');
   }
 
   // ---- 💧 Água (plano ondulado; o carro afunda/respinga/respawna) ----
@@ -1966,6 +1934,7 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function ensureAudioCtx() {
     if (_audioCtx) return _audioCtx;
+    if (!audioUnlocked) return null;
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (AC) _audioCtx = new AC();
@@ -1974,9 +1943,12 @@ export const world3DRuntime = `import * as THREE from 'three';
   }
 
   function resumeAudio() {
+    audioUnlocked = true;
     try {
       if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
     } catch (e) {}
+    if (engineOn && !engineOsc) startEngine();
+    if (ambienceKind === 'mar' && !_ambNoise) startSeaNoise();
   }
 
   /** Liga o oscilador do motor (grave, com lowpass) — o pitch segue a velocidade. */
@@ -2046,7 +2018,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!el) {
       el = document.createElement('div');
       el.className = 'szw3d-hud';
-      el.setAttribute('style', 'position:absolute;' + HUD_POS[key] + ';color:#fff;font:700 20px system-ui,sans-serif;text-shadow:0 2px 6px rgba(0,0,0,.6);pointer-events:none;z-index:6');
+      el.setAttribute('style', 'position:absolute;' + HUD_POS[key] + ';color:#fff;font:700 20px var(--sz-game-ui-font);text-shadow:0 2px 6px rgba(0,0,0,.6);pointer-events:none;z-index:6');
       frameEl.appendChild(el);
       hudEls[key] = el;
     }
@@ -2057,7 +2029,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!ensureShell()) return;
     if (!sayEl) {
       sayEl = document.createElement('div');
-      sayEl.setAttribute('style', 'position:absolute;padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.92);color:#123;font:600 15px system-ui,sans-serif;transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;z-index:7;box-shadow:0 4px 12px rgba(0,0,0,.3)');
+      sayEl.setAttribute('style', 'position:absolute;padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.92);color:#123;font:600 15px var(--sz-game-ui-font);transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;z-index:7;box-shadow:0 4px 12px rgba(0,0,0,.3)');
       frameEl.appendChild(sayEl);
     }
     sayEl.textContent = text(msgTxt, '');
@@ -2071,9 +2043,11 @@ export const world3DRuntime = `import * as THREE from 'three';
       sayEl.style.display = 'none';
       return;
     }
-    if (!carState || !camera || !renderer) return;
-    // Projeta a cabeça do carrinho para a tela (mundo → pixel do canvas).
-    _proj.set(carState.x, carState.y + 2.2, carState.z);
+    if (!camera || !renderer || !_proj) return;
+    // Projeta a cabeça do JOGADOR ATIVO (a pé/barco/carro) para a tela — sem
+    // carrinho o balão ficava preso no canto (media só o carState ausente).
+    var _sayP = playerXZ();
+    _proj.set(_sayP.x, _sayP.y + 2.2, _sayP.z);
     _proj.project(camera);
     var rect = canvasEl.getBoundingClientRect();
     var sx = (_proj.x * 0.5 + 0.5) * rect.width;
@@ -2108,10 +2082,10 @@ export const world3DRuntime = `import * as THREE from 'three';
       g.fillRect(0, 0, 256, 10);
       g.fillRect(0, 246, 256, 10);
       g.fillStyle = '#3a2f1b';
-      g.font = 'bold 26px system-ui, sans-serif';
+      g.font = 'bold 26px ' + _szGameUIFont;
       g.textAlign = 'center';
       g.fillText(text(title, ''), 128, 48, 240);
-      g.font = '18px system-ui, sans-serif';
+      g.font = '18px ' + _szGameUIFont;
       var words = text(body, '').split(' ');
       var line = '';
       var y = 92;
@@ -2327,7 +2301,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!ensureShell()) return;
     if (!promptEl) {
       promptEl = document.createElement('div');
-      promptEl.setAttribute('style', 'position:absolute;padding:4px 10px;border-radius:10px;background:#22d3ee;color:#04252b;font:800 15px system-ui,sans-serif;transform:translate(-50%,-100%);pointer-events:none;z-index:7;box-shadow:0 3px 10px rgba(0,0,0,.35)');
+      promptEl.setAttribute('style', 'position:absolute;padding:4px 10px;border-radius:10px;background:#22d3ee;color:#04252b;font:800 15px var(--sz-game-ui-font);transform:translate(-50%,-100%);pointer-events:none;z-index:7;box-shadow:0 3px 10px rgba(0,0,0,.35)');
       promptEl.textContent = 'E';
       frameEl.appendChild(promptEl);
     }
@@ -2399,11 +2373,11 @@ export const world3DRuntime = `import * as THREE from 'three';
       galleryEl.appendChild(im);
     }
     var cap = document.createElement('div');
-    cap.setAttribute('style', 'color:#fff;font:600 20px system-ui,sans-serif;text-align:center');
+    cap.setAttribute('style', 'color:#fff;font:600 20px var(--sz-game-ui-font);text-align:center');
     cap.textContent = text(caption, '');
     galleryEl.appendChild(cap);
     var hint = document.createElement('div');
-    hint.setAttribute('style', 'color:#9fb;opacity:.7;font:400 13px system-ui,sans-serif');
+    hint.setAttribute('style', 'color:#9fb;opacity:.7;font:400 13px var(--sz-game-ui-font)');
     hint.textContent = 'clique para fechar';
     galleryEl.appendChild(hint);
     galleryEl.style.display = 'flex';
@@ -2776,6 +2750,9 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'whisperCorner') buildWhisperCorner(r.x, r.z);
       else if (r.kind === 'flameNote') addFlame(r.x, r.z, r.text, false);
       else if (r.kind === 'city') buildCity();
+      else if (r.kind === 'district') buildDistrict(r);
+      else if (r.kind === 'roadGrid') buildRoadGrid(r);
+      else if (r.kind === 'houseRow') buildHouseRow(r);
       else if (r.kind === 'stringLights') buildStringSpan(r.x1, r.z1, r.x2, r.z2);
       else if (r.kind === 'door') buildDoor(r);
       else if (r.kind === 'crops') buildCrops(r);
@@ -2850,8 +2827,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   function bindInput() {
     window.addEventListener('keydown', function (e) {
       var k = String(e.key).toLowerCase();
+      var firstDown = !keys[k] && !e.repeat;
       keys[k] = true;
-      justPressed[k] = true;
+      if (firstDown) justPressed[k] = true;
       hideSplash();
       resumeAudio();
       // Konami (↑↑↓↓←→←→BA): o carrinho vira FOGUETE. Segredo de quem sabe.
@@ -2881,13 +2859,15 @@ export const world3DRuntime = `import * as THREE from 'three';
     ensureJoystick();
   }
 
-  /** Joystick virtual (só em toque): alavanca esquerda = dirigir; botões pular/E. */
+  /** Joystick virtual (só em toque): direção + paridade das ações do teclado. */
   function ensureJoystick() {
     try {
       var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       if (!coarse || !frameEl) return;
     } catch (e) { return; }
     var stick = document.createElement('div');
+    stick.setAttribute('role', 'application');
+    stick.setAttribute('aria-label', 'Controle de direção');
     stick.setAttribute('style', 'position:absolute;left:20px;bottom:20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.35);z-index:8;touch-action:none');
     var nub = document.createElement('div');
     nub.setAttribute('style', 'position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.55)');
@@ -2919,25 +2899,48 @@ export const world3DRuntime = `import * as THREE from 'three';
     });
     stick.addEventListener('pointerup', function () { active = false; clearDir(); });
     stick.addEventListener('pointercancel', function () { active = false; clearDir(); });
-    // Botões pular (espaço) e E.
-    var jump = document.createElement('button');
-    jump.textContent = '⤒';
-    jump.setAttribute('style', 'position:absolute;right:24px;bottom:80px;width:64px;height:64px;border-radius:50%;border:0;background:rgba(16,185,129,.7);color:#fff;font-size:26px;z-index:8;touch-action:none');
-    jump.addEventListener('pointerdown', function () { keys[' '] = true; justPressed[' '] = true; });
-    jump.addEventListener('pointerup', function () { keys[' '] = false; });
-    frameEl.appendChild(jump);
-    var eb = document.createElement('button');
-    eb.textContent = 'E';
-    eb.setAttribute('style', 'position:absolute;right:96px;bottom:28px;width:56px;height:56px;border-radius:50%;border:0;background:rgba(34,211,238,.75);color:#04252b;font-weight:800;font-size:20px;z-index:8;touch-action:none');
-    eb.addEventListener('pointerdown', function () { keys['e'] = true; justPressed['e'] = true; });
-    eb.addEventListener('pointerup', function () { keys['e'] = false; });
-    frameEl.appendChild(eb);
+    stick.addEventListener('lostpointercapture', function () { active = false; clearDir(); });
+
+    function touchKeyButton(parent, label, key, aria, background) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = label;
+      button.setAttribute('aria-label', aria);
+      button.title = aria;
+      button.setAttribute('style', 'width:54px;height:54px;border-radius:50%;border:0;background:' + background + ';color:#fff;font-weight:800;font-size:18px;z-index:8;touch-action:none;user-select:none');
+      var release = function () { keys[key] = false; };
+      button.addEventListener('pointerdown', function (e) {
+        try { e.preventDefault(); button.setPointerCapture(e.pointerId); } catch (err) {}
+        hideSplash();
+        resumeAudio();
+        if (!keys[key]) justPressed[key] = true;
+        keys[key] = true;
+      });
+      button.addEventListener('pointerup', release);
+      button.addEventListener('pointercancel', release);
+      button.addEventListener('lostpointercapture', release);
+      parent.appendChild(button);
+    }
+
+    var actions = document.createElement('div');
+    actions.setAttribute('style', 'position:absolute;right:16px;bottom:16px;display:grid;grid-template-columns:repeat(2,54px);gap:10px;z-index:8');
+    frameEl.appendChild(actions);
+    touchKeyButton(actions, '⤒', ' ', 'Pular', 'rgba(16,185,129,.78)');
+    touchKeyButton(actions, '⇧', 'shift', 'Turbo ou correr', 'rgba(249,115,22,.78)');
+    touchKeyButton(actions, 'E', 'e', 'Interagir', 'rgba(34,211,238,.78)');
+    touchKeyButton(actions, 'H', 'h', 'Buzinar', 'rgba(168,85,247,.78)');
+
+    var utilities = document.createElement('div');
+    utilities.setAttribute('style', 'position:absolute;right:16px;top:16px;display:flex;gap:8px;z-index:8');
+    frameEl.appendChild(utilities);
+    touchKeyButton(utilities, 'M', 'm', 'Abrir mapa', 'rgba(15,23,42,.72)');
+    touchKeyButton(utilities, 'P', 'p', 'Abrir pódio', 'rgba(15,23,42,.72)');
   }
 
   // ---- Tela (stage + letterbox + splash "clique para começar") ----
 
   function buildCss() {
-    return '#szw3d-stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b0f14;z-index:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif}' +
+    return '#szw3d-stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b0f14;z-index:0;font-family:var(--sz-game-ui-font)}' +
       '#szw3d-frame{position:relative}' +
       '#szw3d-canvas{display:block;background:#0b0f14}' +
       '.szw3d-splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(8,12,18,0.5);color:#fff;text-align:center;z-index:5;transition:opacity .3s}' +
@@ -3026,7 +3029,7 @@ export const world3DRuntime = `import * as THREE from 'three';
 
       renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
       // Resolução interna FIXA (as contas do aluno nunca mudam com a janela).
-      renderer.setPixelRatio(1);
+      renderer.setPixelRatio(quality.tier === 'turbo' ? 0.75 : 1);
       renderer.setSize(config.w, config.h, false);
       if (renderer.shadowMap) {
         renderer.shadowMap.enabled = true;
@@ -3036,6 +3039,11 @@ export const world3DRuntime = `import * as THREE from 'three';
 
       scene = new THREE.Scene();
       applySky();
+      if (_pendingEnvironmentTexture) {
+        var pendingSky = _pendingEnvironmentTexture;
+        _pendingEnvironmentTexture = null;
+        useEnvironmentTexture(pendingSky);
+      }
       if (THREE.Fog) {
         scene.fog = new THREE.Fog(st.fog, config.world * 0.45, config.world * 1.5);
       }
@@ -3059,7 +3067,10 @@ export const world3DRuntime = `import * as THREE from 'three';
         sun.shadow.camera.right = half;
         sun.shadow.camera.top = half;
         sun.shadow.camera.bottom = -half;
-        if (sun.shadow.mapSize && sun.shadow.mapSize.set) sun.shadow.mapSize.set(2048, 2048);
+        if (sun.shadow.mapSize && sun.shadow.mapSize.set) {
+          var initialShadowSize = quality.tier === 'turbo' ? 1024 : 2048;
+          sun.shadow.mapSize.set(initialShadowSize, initialShadowSize);
+        }
         // Anti-acne: sem o bias, superfícies rasantes ficam listradas.
         sun.shadow.normalBias = 0.05;
       }
@@ -3187,14 +3198,21 @@ export const world3DRuntime = `import * as THREE from 'three';
       terrainMesh = null;
     }
     var st = styleOf();
-    var SEG = 128;
+    var spacing = Math.max(0.75, Math.min(2, terrainCfg.smooth * 0.25));
+    var detail = 0.75 + Math.sqrt(Math.max(0, terrainCfg.hills) / 10);
+    var maxSeg = quality.tier === 'turbo' ? 160 : 320;
+    var SEG = Math.max(64, Math.min(maxSeg, Math.ceil((config.world / spacing) * detail)));
     var geo = new THREE.PlaneGeometry(config.world, config.world, SEG, SEG);
     geo.rotateX(-Math.PI / 2);
     var pos = geo.attributes.position;
+    var values = new Float32Array(pos.count);
     var i;
     for (i = 0; i < pos.count; i++) {
-      pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)));
+      var sampled = analyticHeightAt(pos.getX(i), pos.getZ(i));
+      values[i] = sampled;
+      pos.setY(i, sampled);
     }
+    terrainField = { seg: SEG, world: config.world, values: values };
     geo.computeVertexNormals();
     // Cores por vértice: mistura baixo→alto pela altura; encosta puxa p/ pedra.
     var low = new THREE.Color(st.low);
@@ -3655,7 +3673,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (frameEl) {
       if (!achToastEl) {
         achToastEl = document.createElement('div');
-        achToastEl.setAttribute('style', 'position:absolute;top:52px;right:12px;padding:8px 14px;border-radius:12px;background:#fbbf24;color:#3b2900;font:800 15px system-ui,sans-serif;z-index:9;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none;');
+        achToastEl.setAttribute('style', 'position:absolute;top:52px;right:12px;padding:8px 14px;border-radius:12px;background:#fbbf24;color:#3b2900;font:800 15px var(--sz-game-ui-font);z-index:9;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none;');
         frameEl.appendChild(achToastEl);
       }
       achToastEl.textContent = '🏆 Conquista: ' + nm;
@@ -3787,7 +3805,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     cv.setAttribute('style', 'width:min(78%,420px);height:auto;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.5);cursor:' + (minimapMode === 'teleporte' ? 'crosshair' : 'default') + ';');
     bigMapEl.appendChild(cv);
     var hint = document.createElement('div');
-    hint.setAttribute('style', 'position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#e2e8f0;font:700 14px system-ui,sans-serif;');
+    hint.setAttribute('style', 'position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#e2e8f0;font:700 14px var(--sz-game-ui-font);');
     hint.textContent = minimapMode === 'teleporte' ? 'Clique para TELEPORTAR · M fecha' : 'M fecha';
     bigMapEl.appendChild(hint);
     frameEl.appendChild(bigMapEl);
@@ -3829,14 +3847,14 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!frameEl || podiumEntry) return;
     _lastRaceMs = ms;
     var el = document.createElement('div');
-    el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:11;color:#f8fafc;font:800 20px system-ui,sans-serif;');
+    el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:11;color:#f8fafc;font:800 20px var(--sz-game-ui-font);');
     el.innerHTML = '';
     var title = document.createElement('div');
     title.textContent = '🏁 Suas iniciais (setas mudam, E confirma)';
-    title.style.font = '800 17px system-ui,sans-serif';
+    title.style.font = '800 17px var(--sz-game-ui-font)';
     el.appendChild(title);
     var row = document.createElement('div');
-    row.setAttribute('style', 'display:flex;gap:12px;font:900 44px system-ui,sans-serif;');
+    row.setAttribute('style', 'display:flex;gap:12px;font:900 44px var(--sz-game-ui-font);');
     el.appendChild(row);
     frameEl.appendChild(el);
     podiumEntry = { el: el, row: row, slots: [0, 0, 0], idx: 0 };
@@ -3891,7 +3909,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!frameEl) return;
     var list = podiumList();
     var el = document.createElement('div');
-    el.setAttribute('style', 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:230px;padding:14px 20px;border-radius:16px;background:rgba(2,6,23,.85);color:#f8fafc;font:700 16px system-ui,sans-serif;z-index:11;text-align:center;');
+    el.setAttribute('style', 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:230px;padding:14px 20px;border-radius:16px;background:rgba(2,6,23,.85);color:#f8fafc;font:700 16px var(--sz-game-ui-font);z-index:11;text-align:center;');
     var html = '<div style="font-size:19px;margin-bottom:8px;">🏆 Pódio</div>';
     if (!list.length) html += '<div>Ninguém correu ainda!</div>';
     for (var i = 0; i < list.length; i++) {
@@ -3912,7 +3930,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     cv.height = 64;
     var g = cv.getContext('2d');
     if (g) {
-      g.font = '46px system-ui, sans-serif';
+      g.font = '46px ' + _szGameUIFont;
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText('🔥', 32, 36);
@@ -3948,11 +3966,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:11;');
     var lbl = document.createElement('div');
     lbl.textContent = '🔥 Deixe seu recado (Enter salva, Esc cancela)';
-    lbl.setAttribute('style', 'color:#f8fafc;font:800 16px system-ui,sans-serif;');
+    lbl.setAttribute('style', 'color:#f8fafc;font:800 16px var(--sz-game-ui-font);');
     el.appendChild(lbl);
     var input = document.createElement('input');
     input.setAttribute('maxlength', '80');
-    input.setAttribute('style', 'width:min(70%,340px);padding:10px 14px;border-radius:12px;border:none;font:700 16px system-ui,sans-serif;');
+    input.setAttribute('style', 'width:min(70%,340px);padding:10px 14px;border-radius:12px;border:none;font:700 16px var(--sz-game-ui-font);');
     el.appendChild(input);
     frameEl.appendChild(el);
     whisperInput = { el: el, input: input };
@@ -4065,7 +4083,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   function ensureCoinHud() {
     if (coinHudEl || !frameEl) return;
     coinHudEl = document.createElement('div');
-    coinHudEl.setAttribute('style', 'position:absolute;top:10px;right:12px;padding:5px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#fde68a;font:800 16px system-ui,sans-serif;z-index:7;pointer-events:none;');
+    coinHudEl.setAttribute('style', 'position:absolute;top:10px;right:12px;padding:5px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#fde68a;font:800 16px var(--sz-game-ui-font);z-index:7;pointer-events:none;');
     frameEl.appendChild(coinHudEl);
     coinHudEl.textContent = '🪙 0';
   }
@@ -4111,7 +4129,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   function ensureQuestHud() {
     if (questHudEl || !frameEl) return;
     questHudEl = document.createElement('div');
-    questHudEl.setAttribute('style', 'position:absolute;top:10px;left:12px;max-width:300px;padding:6px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#e2e8f0;font:700 14px system-ui,sans-serif;z-index:7;pointer-events:none;display:none;');
+    questHudEl.setAttribute('style', 'position:absolute;top:10px;left:12px;max-width:300px;padding:6px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#e2e8f0;font:700 14px var(--sz-game-ui-font);z-index:7;pointer-events:none;display:none;');
     frameEl.appendChild(questHudEl);
   }
 
@@ -4169,7 +4187,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     cv.height = 64;
     var g = cv.getContext('2d');
     if (!g) return;
-    g.font = '48px system-ui, sans-serif';
+    g.font = '48px ' + _szGameUIFont;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText(emoji, 32, 36);
@@ -4192,7 +4210,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   function ensureGuide() {
     if (guideEl || !frameEl) return;
     guideEl = document.createElement('div');
-    guideEl.setAttribute('style', 'position:absolute;bottom:70px;left:50%;transform:translateX(-50%) rotate(0deg);font:900 30px system-ui,sans-serif;color:#fde68a;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:7;pointer-events:none;display:none;');
+    guideEl.setAttribute('style', 'position:absolute;bottom:70px;left:50%;transform:translateX(-50%) rotate(0deg);font:900 30px var(--sz-game-ui-font);color:#fde68a;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:7;pointer-events:none;display:none;');
     guideEl.textContent = '⬆';
     frameEl.appendChild(guideEl);
   }
@@ -4255,7 +4273,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   function ensureNpcBubble() {
     if (npcBubble || !frameEl) return;
     var el = document.createElement('div');
-    el.setAttribute('style', 'position:absolute;max-width:280px;padding:8px 12px;border-radius:14px;background:#ffffff;color:#0f172a;font:700 14px system-ui,sans-serif;transform:translate(-50%,-100%);pointer-events:none;z-index:8;box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;');
+    el.setAttribute('style', 'position:absolute;max-width:280px;padding:8px 12px;border-radius:14px;background:#ffffff;color:#0f172a;font:700 14px var(--sz-game-ui-font);transform:translate(-50%,-100%);pointer-events:none;z-index:8;box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;');
     frameEl.appendChild(el);
     npcBubble = { el: el, name: '', text: '', shown: 0, t: 0 };
   }
@@ -4300,7 +4318,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       (function (idx) {
         var b = document.createElement('button');
         b.textContent = labels[idx];
-        b.setAttribute('style', 'padding:6px 12px;border-radius:12px;border:0;background:#22d3ee;color:#04252b;font:800 13px system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)');
+        b.setAttribute('style', 'padding:6px 12px;border-radius:12px;border:0;background:#22d3ee;color:#04252b;font:800 13px var(--sz-game-ui-font);cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)');
         b.addEventListener('pointerdown', function (ev) {
           if (ev && ev.preventDefault) ev.preventDefault();
           npcChoosePick(idx);
@@ -4476,7 +4494,8 @@ export const world3DRuntime = `import * as THREE from 'three';
   function buildBoat() {
     if (!scene || !boatCfg) return;
     if (boatGroup) {
-      try { scene.remove(boatGroup); } catch (e) {}
+      try { scene.remove(boatGroup); } catch (e) { warnOnce('remove-boat', 'não consegui remover o barco antigo: ' + e); }
+      disposeObjectTree(boatGroup, true);
       boatGroup = null;
     }
     boatGroup = new THREE.Group();
@@ -4766,10 +4785,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!personGroup) return;
     try {
       scene.remove(personGroup);
-      personGroup.traverse(function (o) {
-        if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
-      });
-    } catch (e) {}
+    } catch (e) { warnOnce('remove-person', 'não consegui remover o personagem antigo: ' + e); }
+    disposeObjectTree(personGroup, true);
     personGroup = null;
     personParts = null;
   }
@@ -4840,6 +4857,16 @@ export const world3DRuntime = `import * as THREE from 'three';
           var dx0 = vsrc.x - points[i].x;
           var dz0 = vsrc.z - points[i].z;
           if (dx0 * dx0 + dz0 * dz0 < points[i].r * points[i].r) { near = true; break; }
+        }
+        // O árbitro do E (stepInteractions) também resolve NPCs/portas/etc.
+        // registrados em extraInteract — se algum está perto, ele trata o E e o
+        // "descer" NÃO deve roubar o mesmo aperto (senão desce E dispara junto).
+        for (var xe = 0; !near && xe < extraInteract.length; xe++) {
+          var ex0 = extraInteract[xe];
+          if (!ex0 || ex0.r <= 0) continue;
+          var edx0 = vsrc.x - ex0.x;
+          var edz0 = vsrc.z - ex0.z;
+          if (edx0 * edx0 + edz0 * edz0 < ex0.r * ex0.r) near = true;
         }
         if (!near) exitVehicle();
       }
@@ -5526,7 +5553,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     var card = document.createElement('div');
     card.setAttribute('style', 'max-width:420px;width:86%;background:#fffef8;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 44px rgba(0,0,0,.5)');
     var h = document.createElement('div');
-    h.setAttribute('style', 'font:800 22px system-ui,sans-serif;color:#0f172a');
+    h.setAttribute('style', 'font:800 22px var(--sz-game-ui-font);color:#0f172a');
     h.textContent = rec.title || 'Porta';
     card.appendChild(h);
     var url = ASSETS[text(rec.image, '')];
@@ -5537,11 +5564,11 @@ export const world3DRuntime = `import * as THREE from 'three';
       card.appendChild(im);
     }
     var p = document.createElement('div');
-    p.setAttribute('style', 'font:500 15px system-ui,sans-serif;color:#334155;white-space:pre-wrap');
+    p.setAttribute('style', 'font:500 15px var(--sz-game-ui-font);color:#334155;white-space:pre-wrap');
     p.textContent = rec.body || '';
     card.appendChild(p);
     var hint = document.createElement('div');
-    hint.setAttribute('style', 'font:400 12px system-ui,sans-serif;color:#94a3b8');
+    hint.setAttribute('style', 'font:400 12px var(--sz-game-ui-font);color:#94a3b8');
     hint.textContent = 'E ou clique para fechar';
     card.appendChild(hint);
     doorOverlayEl.appendChild(card);
@@ -6149,6 +6176,296 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (cityCfg.mode === 'neon') buildCityNeon(lots, cy);
   }
 
+  // ---- Mundo v4: composição urbana procedural de alto nível ----
+
+  var DISTRICT_PALETTES = {
+    residencial: ['#f7c9b5', '#f6d7a7', '#bfe3d0', '#bdd7ee'],
+    comercial: ['#f59e0b', '#22c55e', '#38bdf8', '#f472b6'],
+    educacao: ['#f4c95d', '#e07a5f', '#81b29a', '#3d5a80'],
+    saude: ['#f8fafc', '#dbeafe', '#bfdbfe', '#fecaca'],
+    industrial: ['#64748b', '#94a3b8', '#78716c', '#a8a29e'],
+    turistico: ['#fb7185', '#fbbf24', '#2dd4bf', '#60a5fa']
+  };
+  var HOUSE_PALETTES = {
+    coloridas: ['#fb7185', '#fbbf24', '#34d399', '#60a5fa', '#c084fc'],
+    praia: ['#fef3c7', '#bae6fd', '#fecdd3', '#ccfbf1'],
+    modernas: ['#f8fafc', '#cbd5e1', '#64748b', '#1e293b'],
+    campo: ['#f5deb3', '#d6b98c', '#b7c99d', '#e8c07d']
+  };
+
+  function roadSegments(rec) {
+    var cx = num(rec.x, 0);
+    var cz = num(rec.z, 0);
+    var size = clamp(num(rec.size, 80), 20, 240);
+    var halfSize = size * 0.5;
+    var layout = text(rec.layout, 'grade');
+    var segments = [];
+    if (layout === 'radial') {
+      for (var ray = 0; ray < 6; ray++) {
+        var angle = ray * Math.PI / 3;
+        segments.push({ x1: cx, z1: cz, x2: cx + Math.cos(angle) * halfSize, z2: cz + Math.sin(angle) * halfSize });
+      }
+      return segments;
+    }
+    if (layout === 'organica') {
+      segments.push({ x1: cx - halfSize, z1: cz - size * 0.18, x2: cx + halfSize, z2: cz + size * 0.12 });
+      segments.push({ x1: cx - halfSize, z1: cz + size * 0.28, x2: cx + halfSize, z2: cz + size * 0.18 });
+      segments.push({ x1: cx - size * 0.22, z1: cz - halfSize, x2: cx + size * 0.08, z2: cz + halfSize });
+      segments.push({ x1: cx + size * 0.3, z1: cz - halfSize, x2: cx + size * 0.18, z2: cz + halfSize });
+      return segments;
+    }
+    for (var line = -1; line <= 1; line++) {
+      var offset = line * size / 3;
+      segments.push({ x1: cx - halfSize, z1: cz + offset, x2: cx + halfSize, z2: cz + offset });
+      segments.push({ x1: cx + offset, z1: cz - halfSize, x2: cx + offset, z2: cz + halfSize });
+    }
+    return segments;
+  }
+
+  function reserveRoadGrid(rec) {
+    var segments = roadSegments(rec);
+    var width = clamp(num(rec.width, 6), 2, 18);
+    for (var i = 0; i < segments.length; i++) {
+      var seg = segments[i];
+      terrainMods.push({
+        kind: 'path', x1: seg.x1, z1: seg.z1, x2: seg.x2, z2: seg.z2,
+        w: width, y1: baseHeightAt(seg.x1, seg.z1), y2: baseHeightAt(seg.x2, seg.z2)
+      });
+    }
+  }
+
+  function buildRoadGrid(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var segments = roadSegments(rec);
+    var width = clamp(num(rec.width, 6), 2, 18);
+    var pieces = [];
+    for (var i = 0; i < segments.length; i++) {
+      var seg = segments[i];
+      var dx = seg.x2 - seg.x1;
+      var dz = seg.z2 - seg.z1;
+      var distance = Math.sqrt(dx * dx + dz * dz);
+      var steps = Math.max(1, Math.ceil(distance / 8));
+      for (var step = 0; step < steps; step++) {
+        var t0 = step / steps;
+        var t1 = (step + 1) / steps;
+        var px = seg.x1 + dx * (t0 + t1) * 0.5;
+        var pz = seg.z1 + dz * (t0 + t1) * 0.5;
+        pieces.push({ x: px, z: pz, len: distance / steps, yaw: Math.atan2(dx, dz) });
+      }
+    }
+    var road = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#3f4854'), pieces.length);
+    var stripe = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#f8fafc'), pieces.length);
+    road.receiveShadow = true;
+    for (var p = 0; p < pieces.length; p++) {
+      var item = pieces[p];
+      var gy = heightAt(item.x, item.z);
+      _dummy.position.set(item.x, gy + 0.045, item.z);
+      _dummy.rotation.set(0, item.yaw, 0);
+      _dummy.scale.set(width, 0.08, item.len + 0.15);
+      _dummy.updateMatrix();
+      road.setMatrixAt(p, _dummy.matrix);
+      _dummy.position.y = gy + 0.09;
+      _dummy.scale.set(0.13, 0.03, Math.min(2.4, item.len * 0.55));
+      _dummy.updateMatrix();
+      stripe.setMatrixAt(p, _dummy.matrix);
+    }
+    road.instanceMatrix.needsUpdate = true;
+    stripe.instanceMatrix.needsUpdate = true;
+    scene.add(road);
+    scene.add(stripe);
+  }
+
+  function buildDistrict(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var kind = text(rec.districtKind || rec.kind, 'residencial');
+    var palette = DISTRICT_PALETTES[kind] || DISTRICT_PALETTES.residencial;
+    var cx = num(rec.x, 0);
+    var cz = num(rec.z, 0);
+    var size = clamp(num(rec.size, 48), 20, 120);
+    var count = quality.tier === 'turbo' ? 9 : 16;
+    var side = Math.round(Math.sqrt(count));
+    var gap = size / side;
+    var buildings = [];
+    var rng = mulberry(1701 + Math.round(cx * 17 + cz * 29 + size));
+    for (var row = 0; row < side; row++) {
+      for (var col = 0; col < side; col++) {
+        var x = cx + (col - (side - 1) * 0.5) * gap;
+        var z = cz + (row - (side - 1) * 0.5) * gap;
+        var tall = kind === 'comercial' || kind === 'industrial';
+        var h = (tall ? 5 : 3) + rng() * (tall ? 9 : 4);
+        if (kind === 'educacao') h = 3.5 + rng() * 2;
+        if (kind === 'saude') h = 4 + rng() * 3;
+        var w = gap * (0.48 + rng() * 0.16);
+        var d = gap * (0.48 + rng() * 0.16);
+        buildings.push({ x: x, z: z, y: heightAt(x, z), w: w, d: d, h: h, color: palette[(row * side + col) % palette.length] });
+        colliderAdd(x, z, Math.max(w, d) * 0.48);
+      }
+    }
+    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toonMaterial({ color: '#ffffff' }), buildings.length);
+    var roofs = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat(kind === 'industrial' ? '#334155' : '#7c4a3b'), buildings.length);
+    var windows = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#bde3ff'), buildings.length);
+    walls.castShadow = true;
+    for (var i = 0; i < buildings.length; i++) {
+      var b = buildings[i];
+      _dummy.position.set(b.x, b.y + b.h * 0.5, b.z);
+      _dummy.rotation.set(0, 0, 0);
+      _dummy.scale.set(b.w, b.h, b.d);
+      _dummy.updateMatrix();
+      walls.setMatrixAt(i, _dummy.matrix);
+      walls.setColorAt(i, new THREE.Color(b.color));
+      _dummy.position.y = b.y + b.h + 0.15;
+      _dummy.scale.set(b.w + 0.35, 0.3, b.d + 0.35);
+      _dummy.updateMatrix();
+      roofs.setMatrixAt(i, _dummy.matrix);
+      _dummy.position.set(b.x, b.y + b.h * 0.58, b.z + b.d * 0.505);
+      _dummy.scale.set(b.w * 0.6, Math.max(0.7, b.h * 0.36), 0.08);
+      _dummy.updateMatrix();
+      windows.setMatrixAt(i, _dummy.matrix);
+    }
+    walls.instanceMatrix.needsUpdate = true;
+    if (walls.instanceColor) walls.instanceColor.needsUpdate = true;
+    roofs.instanceMatrix.needsUpdate = true;
+    windows.instanceMatrix.needsUpdate = true;
+    scene.add(walls);
+    scene.add(roofs);
+    scene.add(windows);
+  }
+
+  function buildHouseRow(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var count = Math.round(clamp(num(rec.n, 8), 1, 40));
+    var x1 = num(rec.x1, -30);
+    var z1 = num(rec.z1, 15);
+    var x2 = num(rec.x2, 30);
+    var z2 = num(rec.z2, 15);
+    var dx = x2 - x1;
+    var dz = z2 - z1;
+    var distance = Math.sqrt(dx * dx + dz * dz);
+    var houseW = clamp(distance / Math.max(1, count) * 0.72, 2.6, 6);
+    var style = text(rec.style, 'coloridas');
+    var palette = HOUSE_PALETTES[style] || HOUSE_PALETTES.coloridas;
+    var yaw = Math.atan2(dx, dz) + Math.PI * 0.5;
+    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toonMaterial({ color: '#ffffff' }), count);
+    var roofs = new THREE.InstancedMesh(UNIT_GEOS.pyr, speciesMat(style === 'modernas' ? '#334155' : '#8b4a3b'), count);
+    var doors = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#5b3a29'), count);
+    var windows = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#bde3ff'), count * 2);
+    walls.castShadow = true;
+    for (var i = 0; i < count; i++) {
+      var t = count === 1 ? 0.5 : i / (count - 1);
+      var x = x1 + dx * t;
+      var z = z1 + dz * t;
+      var gy = heightAt(x, z);
+      var h = style === 'modernas' ? 4.2 : 3.2;
+      _dummy.position.set(x, gy + h * 0.5, z);
+      _dummy.rotation.set(0, yaw, 0);
+      _dummy.scale.set(houseW, h, 4.2);
+      _dummy.updateMatrix();
+      walls.setMatrixAt(i, _dummy.matrix);
+      walls.setColorAt(i, new THREE.Color(palette[i % palette.length]));
+      _dummy.position.y = gy + h + 1.0;
+      _dummy.scale.set(houseW + 0.7, 2, 5);
+      _dummy.updateMatrix();
+      roofs.setMatrixAt(i, _dummy.matrix);
+      var forwardX = Math.sin(yaw);
+      var forwardZ = Math.cos(yaw);
+      var rightX = Math.cos(yaw);
+      var rightZ = -Math.sin(yaw);
+      _dummy.position.set(x + forwardX * 2.12, gy + 0.95, z + forwardZ * 2.12);
+      _dummy.scale.set(0.85, 1.9, 0.1);
+      _dummy.updateMatrix();
+      doors.setMatrixAt(i, _dummy.matrix);
+      for (var wi = 0; wi < 2; wi++) {
+        var sideOffset = wi === 0 ? -houseW * 0.27 : houseW * 0.27;
+        _dummy.position.set(
+          x + forwardX * 2.13 + rightX * sideOffset,
+          gy + 1.85,
+          z + forwardZ * 2.13 + rightZ * sideOffset
+        );
+        _dummy.scale.set(0.72, 0.82, 0.08);
+        _dummy.updateMatrix();
+        windows.setMatrixAt(i * 2 + wi, _dummy.matrix);
+      }
+      colliderAdd(x, z, Math.max(houseW, 4.2) * 0.48);
+    }
+    walls.instanceMatrix.needsUpdate = true;
+    if (walls.instanceColor) walls.instanceColor.needsUpdate = true;
+    roofs.instanceMatrix.needsUpdate = true;
+    doors.instanceMatrix.needsUpdate = true;
+    windows.instanceMatrix.needsUpdate = true;
+    scene.add(walls);
+    scene.add(roofs);
+    scene.add(doors);
+    scene.add(windows);
+  }
+
+  function applyQualitySelection(mode) {
+    var selected = text(mode, 'automatica');
+    if (selected !== 'automatica' && selected !== 'alta' && selected !== 'desempenho') selected = 'automatica';
+    quality.auto = selected === 'automatica';
+    quality.decided = selected !== 'automatica';
+    quality.probeT = 0;
+    quality.fpsAcc = 0;
+    quality.fpsN = 0;
+    if (selected === 'desempenho') {
+      applyTurbo();
+      return;
+    }
+    applyQualityTier('alta');
+  }
+
+  function inventoryStorageKey() {
+    var project = 'projeto';
+    if (typeof document !== 'undefined' && document.title) project = document.title;
+    return 'sz:w3d:inventario:' + project.slice(0, 80);
+  }
+
+  function inventoryLoad() {
+    if (inventoryLoaded) return;
+    inventoryLoaded = true;
+    var raw = shimGet(inventoryStorageKey());
+    if (!raw) return;
+    var parsed = null;
+    try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+    if (!parsed || typeof parsed !== 'object') return;
+    var keys = Object.keys(parsed);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var amount = num(parsed[key], 0);
+      if (amount > 0) inventoryData[key] = Math.floor(amount);
+    }
+  }
+
+  function inventoryItem(value) {
+    var key = text(value, 'item').trim().slice(0, 60);
+    if (!key) key = 'item';
+    return key;
+  }
+
+  function inventorySave() {
+    shimSet(inventoryStorageKey(), JSON.stringify(inventoryData));
+  }
+
+  function inventoryAmount(item) {
+    inventoryLoad();
+    var key = inventoryItem(item);
+    return Math.max(0, Math.floor(num(inventoryData[key], 0)));
+  }
+
+  function inventoryChange(item, delta) {
+    inventoryLoad();
+    var key = inventoryItem(item);
+    var next = Math.max(0, inventoryAmount(key) + Math.floor(num(delta, 0)));
+    inventoryData[key] = next;
+    inventorySave();
+    return next;
+  }
+
   var FIREFLY_AMOUNTS = { pouca: 30, media: 80, muita: 150 };
 
   function buildFireflies(amount) {
@@ -6340,7 +6657,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     g.fillStyle = '#f8fafc';
     g.fillRect(0, 0, 128, 128);
     g.fillStyle = '#0f172a';
-    g.font = '900 96px system-ui, sans-serif';
+    g.font = '900 96px ' + _szGameUIFont;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText(ch, 64, 70);
@@ -6468,7 +6785,8 @@ export const world3DRuntime = `import * as THREE from 'three';
   function detonate(ex) {
     if (ex.done) return;
     ex.done = true;
-    try { scene.remove(ex.mesh); } catch (e) {}
+    try { scene.remove(ex.mesh); } catch (e) { warnOnce('remove-explosive', 'não consegui remover a caixa explosiva: ' + e); }
+    disposeObjectTree(ex.mesh, true);
     // Bola de fogo que incha e some + faíscas do pool de festa.
     var bm = new THREE.MeshBasicMaterial({ color: '#fbbf24', transparent: true, opacity: 0.9 });
     var ball = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), bm);
@@ -7213,8 +7531,10 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   /** O sol acompanha o carro: frustum de sombra pequeno + mundo grande. */
   function updateSun() {
-    if (!sunLight || !carState) return;
-    var s = carState;
+    // Segue o JOGADOR ATIVO (a pé/barco/carro), não só o carrinho — senão a
+    // sombra some quando a criança sai do carro ou navega de barco.
+    var s = focusState();
+    if (!sunLight || !s) return;
     sunLight.position.set(s.x + config.world * 0.22, config.world * 0.35, s.z + config.world * 0.16);
     if (sunTarget) {
       sunTarget.position.set(s.x, 0, s.z);
@@ -7321,7 +7641,7 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function start() {
     if (started) {
-      warn('o passeio já começou — use "Começar o passeio" uma vez só');
+      warn('o passeio já começou automaticamente — o bloco antigo de início não é mais necessário');
       return;
     }
     if (!ensureShell()) {
@@ -7336,6 +7656,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     resizeCanvas();
     window.addEventListener('resize', function () { resizeCanvas(); });
     Promise.all(pending.slice()).then(function () {
+      if (disposed || !renderer) return;
       _lastT = 0;
       renderer.setAnimationLoop(gameLoop);
     });
@@ -7377,6 +7698,19 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
       if (spriteTex && spriteTex.dispose) { try { spriteTex.dispose(); } catch (e) {} }
       if (waterMat && waterMat.dispose) { try { waterMat.dispose(); } catch (e) {} }
+      clearEnvironmentTexture();
+      clearPendingEnvironmentTexture();
+      if (_hdrCache) {
+        for (var hdrName in _hdrCache) disposeTexture(_hdrCache[hdrName], 'dispose-hdr-cache');
+        _hdrCache = null;
+      }
+      _skyPhotoRequest++;
+      if (_modelCache) {
+        for (var modelName in _modelCache) {
+          var cachedModel = _modelCache[modelName];
+          if (cachedModel && cachedModel.scene) disposeObjectTree(cachedModel.scene, true);
+        }
+      }
       // O motor e a música vivem no WebAudio/Audio (fora da cena) — o teardown
       // do renderer não os alcança; parar aqui evita som na janela do bfcache.
       try { if (engineOsc) engineOsc.stop(); } catch (e) {}
@@ -7393,6 +7727,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     scene = null;
     camera = null;
     terrainMesh = null;
+    terrainField = null;
     carGroup = null;
     carBody = null;
     carWheels = [];
@@ -7403,6 +7738,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     speciesMats = null;
     collCells = Object.create(null);
     _modelCache = null;
+    _modelPending = null;
+    _hdrPending = null;
     grassMesh = null;
     grassMat = null;
     heightTex = null;
@@ -7417,6 +7754,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     engineFilter = null;
     _audioCtx = null;
     music = null;
+    musicName = null;
     points = [];
     zones = [];
     galleries = [];
@@ -7536,6 +7874,14 @@ export const world3DRuntime = `import * as THREE from 'three';
     };
   }
 
+  function runProject(fn) {
+    if (typeof fn !== 'function') {
+      warn('o projeto precisa de uma função de início');
+      return;
+    }
+    try { fn(); } catch (e) { warn('erro em "Ao iniciar": ' + e); }
+  }
+
   var api = {
     // 🌍 Mundo
     setup: guard('setup', function (opts) {
@@ -7627,6 +7973,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       waterCfg = { y: num(y, 0), color: text(color, '#2b6cb0') };
       if (worldReady) buildWater();
     }),
+    skyPhoto: guard('skyPhoto', setSkyPhoto),
 
     // 🚗 Carrinho
     car: guard('car', function (opts) {
@@ -8053,6 +8400,7 @@ export const world3DRuntime = `import * as THREE from 'three';
         warn('não conheço "' + k5 + '" — tem: mar, passaros, grilos, desligado');
         return;
       }
+      if (ambienceKind === k5) return;
       if (k5 !== 'mar') stopSeaNoise();
       ambienceKind = k5;
       _ambT = 0;
@@ -8191,6 +8539,74 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassMat) buildGrassHeightTex();
       if (waterMat) buildWaterFoamTex();
       buildCity();
+    }),
+    district: guard('district', function (kind, x, z, size) {
+      var districtKind = text(kind, 'residencial');
+      if (!DISTRICT_PALETTES[districtKind]) {
+        warn('não conheço o distrito "' + districtKind + '" — usando residencial');
+        districtKind = 'residencial';
+      }
+      var cx = num(x, 0);
+      var cz = num(z, 0);
+      var districtSize = clamp(num(size, 48), 20, 120);
+      terrainMods.push({ kind: 'flatten', x: cx, z: cz, r: districtSize * 0.72, y: baseHeightAt(cx, cz) });
+      exclusions.push({ x: cx, z: cz, r: districtSize * 0.72 });
+      var recipe = { kind: 'district', districtKind: districtKind, x: cx, z: cz, size: districtSize };
+      if (!worldReady) {
+        decorRecipes.push(recipe);
+        return;
+      }
+      buildTerrain();
+      if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
+      buildDistrict({ kind: 'district', districtKind: districtKind, x: cx, z: cz, size: districtSize });
+    }),
+    roadGrid: guard('roadGrid', function (layout, x, z, size, width) {
+      var roadLayout = text(layout, 'grade');
+      if (roadLayout !== 'grade' && roadLayout !== 'radial' && roadLayout !== 'organica') roadLayout = 'grade';
+      var rec = {
+        kind: 'roadGrid', layout: roadLayout,
+        x: num(x, 0), z: num(z, 0),
+        size: clamp(num(size, 80), 20, 240), width: clamp(num(width, 6), 2, 18)
+      };
+      reserveRoadGrid(rec);
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildTerrain();
+      if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
+      buildRoadGrid(rec);
+    }),
+    houseRow: guard('houseRow', function (n, x1, z1, x2, z2, style) {
+      var houseStyle = text(style, 'coloridas');
+      if (!HOUSE_PALETTES[houseStyle]) houseStyle = 'coloridas';
+      var rec = {
+        kind: 'houseRow', n: num(n, 8),
+        x1: num(x1, -30), z1: num(z1, 15), x2: num(x2, 30), z2: num(z2, 15),
+        style: houseStyle
+      };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildHouseRow(rec);
+    }),
+    quality: guard('quality', function (mode) {
+      applyQualitySelection(mode);
+    }),
+    inventoryGive: guard('inventoryGive', function (item, amount) {
+      return inventoryChange(item, Math.max(0, Math.floor(num(amount, 1))));
+    }),
+    inventoryRemove: guard('inventoryRemove', function (item, amount) {
+      return inventoryChange(item, -Math.max(0, Math.floor(num(amount, 1))));
+    }),
+    inventoryCount: guard('inventoryCount', function (item) {
+      return inventoryAmount(item);
+    }),
+    inventoryHas: guard('inventoryHas', function (item, amount) {
+      return inventoryAmount(item) >= Math.max(0, Math.floor(num(amount, 1)));
     }),
     // 🚜 Fazenda + 🌙 Lua
     crops: guard('crops', function (n, kindName, x, z) {
@@ -8441,14 +8857,23 @@ export const world3DRuntime = `import * as THREE from 'three';
       } catch (e) {}
     }),
     playMusic: guard('playMusic', function (name) {
-      var url = SOUNDS[text(name, '')];
+      var key = text(name, '');
+      var url = SOUNDS[key];
       if (!url) {
-        warn('a música "' + text(name, '') + '" não está no projeto');
+        warn('a música "' + key + '" não está no projeto');
         return;
       }
       try {
+        if (music && musicName === key) {
+          if (music.paused === true) {
+            var retry = music.play();
+            if (retry && retry.catch) retry.catch(function () {});
+          }
+          return;
+        }
         if (music) music.pause();
         music = new Audio(url);
+        musicName = key;
         music.loop = true;
         music.volume = 0.5;
         var p = music.play();
@@ -8457,6 +8882,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     }),
     stopMusic: guard('stopMusic', function () {
       try { if (music) { music.pause(); music.currentTime = 0; } } catch (e) {}
+      music = null;
+      musicName = null;
     }),
 
     // ⏱️ Jogo & tela
@@ -8597,6 +9024,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     })
   };
 
+  Object.defineProperty(api, 'runProject', {
+    value: guard('runProject', runProject), enumerable: false
+  });
+  Object.defineProperty(api, 'disposeAll', {
+    value: guard('disposeAll', disposeAll), enumerable: false
+  });
   if (typeof window !== 'undefined') {
     window.SZWorld3D = api;
   } else if (typeof globalThis !== 'undefined') {
@@ -8604,3 +9037,11 @@ export const world3DRuntime = `import * as THREE from 'three';
   }
 })();
 `
+
+export const world3DRuntime = withGameUIFontRuntime(
+  compactOfficialRuntimeSource(
+    withThreePostProcessingRuntime(
+      world3DRuntimeSource.replace('  /*__SZ_DATA_URL_RUNTIME__*/', dataUrlToBufferRuntimeSource),
+    ),
+  ),
+)

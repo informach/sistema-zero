@@ -1,5 +1,5 @@
 import { generateProjectFilesWithMap, type SourceMap } from '#generators'
-import type { SZIR } from '#ir'
+import type { SZIRInput } from '#ir'
 
 /**
  * Memo do source-map CANÔNICO (HTML/JS) por referência de `ir`. Na Ponte, uma
@@ -21,11 +21,11 @@ interface CanonicalEntry {
   map: SourceMap
 }
 
-const cache = new WeakMap<SZIR, CanonicalEntry>()
+const cache = new WeakMap<SZIRInput, CanonicalEntry>()
 
 /** Devolve o mapa canônico do `ir`, gerando-o (e cacheando) só no 1º acesso. */
 export function getCanonicalSourceMap(
-  ir: SZIR,
+  ir: SZIRInput,
   projectName: string,
   jsHeader: string | undefined,
 ): SourceMap {
@@ -38,7 +38,7 @@ export function getCanonicalSourceMap(
 
 /** Semeia o cache com um mapa já gerado (quando o chamador gerou por outro motivo). */
 export function primeCanonicalSourceMap(
-  ir: SZIR,
+  ir: SZIRInput,
   projectName: string,
   jsHeader: string | undefined,
   map: SourceMap,

@@ -13,7 +13,8 @@ import { ProfileClient } from './profile-client'
 export const dynamic = 'force-dynamic'
 
 /**
- * "Meu perfil" do kids: a CRIANÇA edita o PRÓPRIO perfil (nome/foto/telefone) —
+ * "Meu perfil" do kids: a CRIANÇA edita o PRÓPRIO perfil (nome/telefone; a imagem
+ * vem só do avatar 3D — clicar no rosto abre o configurador) —
  * nunca a conta do responsável (isso é da Área dos pais, em `/perfis`). A página é
  * sempre uma sessão de perfil (o proxy manda a sessão da CONTA para `/perfis`); o
  * perfil ativo é aquele cujo `id` == `sub` da sessão. Gamificação (ranking/badges)

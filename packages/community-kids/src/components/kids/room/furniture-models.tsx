@@ -81,6 +81,27 @@ function Estante({ w }: FProps) {
   )
 }
 
+// 🏆 Estante de Troféus (24/07): 2 fileiras × 3 nichos ABERTOS — os troféus entram pelos
+// SURFACE_SLOTS (o <FurniturePiece> renderiza os filhos); aqui é só a moldura de madeira+ouro.
+function EstanteTrofeus({ w }: FProps) {
+  const d = 0.7
+  const upright = (x: number, k: string) => (
+    <Box key={k} s={[0.1, 2.06, d * 0.86]} p={[x, 1.03, 0]} m="woodDark" />
+  )
+  return (
+    <group>
+      <Box s={[w * 0.96, 0.2, d]} p={[0, 0.1, 0]} m="woodDark" />
+      <Box s={[w * 0.96, 0.12, d]} p={[0, 2.12, 0]} m="gold" />
+      <Box s={[w * 0.92, 1.98, 0.08]} p={[0, 1.09, -d * 0.42]} m="wood" />
+      <Box s={[w * 0.9, 0.08, d * 0.86]} p={[0, 1.2, 0]} m="gold" />
+      {upright(-w * 0.46, 'l')}
+      {upright(w * 0.46, 'r')}
+      {upright(-w * 0.153, 'd1')}
+      {upright(w * 0.153, 'd2')}
+    </group>
+  )
+}
+
 function Bau({ w, h }: FProps) {
   return (
     <group>
@@ -507,6 +528,8 @@ export function FurnitureModel({ itemId, w, h }: { itemId: string; w: number; h:
       return <TrofeuConsole />
     case 'trofeu-estrela-do-mural':
       return <TrofeuEstrelaDoMural />
+    case 'estante-trofeus':
+      return <EstanteTrofeus w={w} h={h} />
     default:
       return <FallbackBox w={w} h={h} />
   }

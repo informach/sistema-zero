@@ -40,7 +40,6 @@ SZWorld3D.onCrash(function () {
 SZWorld3D.onUpdate(function (dt) {
   SZWorld3D.hud("Velocidade: " + Math.round(SZWorld3D.carSpeed()), "topo-direita");
 });
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

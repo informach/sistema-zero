@@ -1,4 +1,4 @@
-import type { IDEMode } from '#core'
+import { BEHAVIOR_AREA_LABELS, type IDEMode } from '#core'
 import type { ProjectContext } from './contracts'
 
 /**
@@ -57,6 +57,12 @@ Use exemplos quando ajudar. Nunca proponha bibliotecas externas — o núcleo
 do produto é web puro. Quando o aluno usa uma extensão oficial, prefira a
 API dessa extensão (ex.: SZGame2D) ao invés de bibliotecas de mercado.`
 
+const BEHAVIOR_AREAS_GUIDE = `Nos modos Blocos e Ponte, ensine também onde cada ação acontece:
+- ${BEHAVIOR_AREA_LABELS.start}: prepara o projeto uma vez quando ele abre ou reinicia.
+- ${BEHAVIOR_AREA_LABELS.events}: guarda os blocos “Quando…”, que esperam algo acontecer.
+- ${BEHAVIOR_AREA_LABELS.loops}: guarda repetições contínuas ou periódicas.
+Use exatamente esses nomes e diga a área ao sugerir um bloco de comportamento.`
+
 /**
  * Delimitador de bloco de dados não-confiáveis (IR do projeto, mensagem/stack
  * de erro). Rotular o conteúdo do aluno deixa explícito ao modelo que é DADO,
@@ -95,7 +101,13 @@ export function buildSystemPrompt(opts: BuildSystemOpts): string {
   // A cláusula de segurança vem PRIMEIRO, sempre. (O provider também a injeta
   // no caminho `systemHint`, então mesmo um host que troque o system prompt
   // inteiro não consegue removê-la — defesa em camadas.)
-  const parts = [CHILD_SAFETY_CLAUSE, ROLE_BASE, DATA_NOT_INSTRUCTIONS_NOTE, MODE_GUIDE[opts.mode]]
+  const parts = [
+    CHILD_SAFETY_CLAUSE,
+    ROLE_BASE,
+    BEHAVIOR_AREAS_GUIDE,
+    DATA_NOT_INSTRUCTIONS_NOTE,
+    MODE_GUIDE[opts.mode],
+  ]
   if (opts.extensionContext) {
     parts.push(`Extensões instaladas no projeto:\n${opts.extensionContext}`)
   }

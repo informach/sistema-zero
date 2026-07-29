@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { type CSSEntry, KeyframesCSSSchema } from '#ir'
 import { generateCSS } from '../../generators/css'
 import { parseCSS } from '../../parsers/css'
 import { buildIRFromWorkspace } from '../buildIR'
@@ -31,7 +32,7 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
   })
 
   it('keyframes multi-passo sobrevive ao ciclo IR->blocos->IR (sem rawCSS)', () => {
-    const css = [
+    const css: CSSEntry[] = [
       {
         type: 'keyframes',
         name: 'girar',
@@ -71,6 +72,71 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
     expect(kf.steps.length).toBe(3)
   })
 
+  it('recusa nomes e seletores de passos que não formam keyframes CSS válidos', () => {
+    expect(
+      KeyframesCSSSchema.safeParse({
+        type: 'keyframes',
+        name: 'minha animação',
+        steps: [{ at: 'banana', declarations: { opacity: '1' } }],
+      }).success,
+    ).toBe(false)
+    expect(
+      KeyframesCSSSchema.safeParse({
+        type: 'keyframes',
+        name: '-1pulsar',
+        steps: [{ at: '50%', declarations: { opacity: '1' } }],
+      }).success,
+    ).toBe(false)
+    expect(
+      KeyframesCSSSchema.safeParse({
+        type: 'keyframes',
+        name: 'pulsar',
+        steps: [{ at: '0%, .5%, 50%, 100%', declarations: { opacity: '1' } }],
+      }).success,
+    ).toBe(true)
+  })
+
+  it('faz a transição de uma propriedade explícita, nunca de all', () => {
+    const transition = cssFromBlock('sz_css_transition', {
+      SELECTOR: '#caixa',
+      PROPERTY: 'transform',
+      MS: 250,
+    })
+
+    expect(transition[0]?.declarations.transition).toBe('transform 250ms ease')
+    expect(JSON.stringify(transition)).not.toContain('transition":"all ')
+  })
+
+  it('preserva prefers-reduced-motion como media query estruturada', () => {
+    const css: CSSEntry[] = [
+      {
+        type: 'mediaQuery',
+        feature: 'prefers-reduced-motion',
+        rules: [{ selector: '#caixa', declarations: { animation: 'none', transition: 'none' } }],
+      },
+    ]
+
+    expect(parseCSS(generateCSS(css))).toEqual(css)
+  })
+
+  it('leva o atalho de movimento reduzido de bloco para IR e de volta ao bloco', () => {
+    const css = cssFromBlock('sz_css_reduce_motion', { SELECTOR: '#caixa' })
+
+    expect(css).toEqual([
+      expect.objectContaining({
+        type: 'mediaQuery',
+        feature: 'prefers-reduced-motion',
+        rules: [
+          {
+            selector: '#caixa',
+            declarations: { animation: 'none', transition: 'none' },
+          },
+        ],
+      }),
+    ])
+    expect(cssBlockCycle(css)[0]).toEqual(expect.objectContaining(css[0]))
+  })
+
   it('atalhos: var, transform, perspective, grade geram o CSS certo', () => {
     expect(
       JSON.stringify(
@@ -88,5 +154,59 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
     )
     expect(grid).toContain('grid-template-columns')
     expect(grid).toContain('repeat(3, 1fr)')
+  })
+
+  it('fluxos completos: aplica fonte, hover e animação sem propriedade manual', () => {
+    const font = cssFromBlock('sz_css_use_font', {
+      SELECTOR: 'body',
+      FONT: 'Press Start 2P',
+    })
+    expect(font).toEqual([
+      {
+        selector: 'body',
+        declarations: { 'font-family': '"Press Start 2P", sans-serif' },
+        __id: expect.any(String),
+      },
+    ])
+
+    const animation = cssFromBlock('sz_css_apply_animation', {
+      SELECTOR: '#caixa',
+      NAME: 'pulsar',
+      SECONDS: 1.5,
+      REPEAT: 'infinite',
+    })
+    expect(animation[0]?.declarations.animation).toBe('pulsar 1.5s ease-in-out infinite')
+
+    const ws = new Blockly.Workspace()
+    const hover = ws.newBlock('sz_css_hover')
+    hover.setFieldValue('#caixa', 'SELECTOR')
+    const declaration = ws.newBlock('sz_css_decl')
+    declaration.setFieldValue('background-color', 'PROP')
+    declaration.setFieldValue('#7c3aed', 'VALUE')
+    const declarationConnection = declaration.previousConnection
+    if (!declarationConnection) throw new Error('declaração hover sem conexão anterior')
+    hover.getInput('CHILDREN')?.connection?.connect(declarationConnection)
+    const css = irInFrame(ws, 'css').css
+    expect(css[0]).toMatchObject({
+      selector: '#caixa:hover',
+      declarations: { 'background-color': '#7c3aed' },
+    })
+
+    const focusWorkspace = new Blockly.Workspace()
+    const focus = focusWorkspace.newBlock('sz_css_focus_visible')
+    focus.setFieldValue('#caixa', 'SELECTOR')
+    const focusDeclaration = focusWorkspace.newBlock('sz_css_decl')
+    focusDeclaration.setFieldValue('outline', 'PROP')
+    focusDeclaration.setFieldValue('3px solid #fbbf24', 'VALUE')
+    const focusDeclarationConnection = focusDeclaration.previousConnection
+    if (!focusDeclarationConnection) throw new Error('declaração de foco sem conexão anterior')
+    focus.getInput('CHILDREN')?.connection?.connect(focusDeclarationConnection)
+    const focusCSS = irInFrame(focusWorkspace, 'css').css
+    expect(
+      focusCSS.find((entry) => 'selector' in entry && entry.selector === '#caixa:focus-visible'),
+    ).toMatchObject({
+      selector: '#caixa:focus-visible',
+      declarations: { outline: '3px solid #fbbf24' },
+    })
   })
 })

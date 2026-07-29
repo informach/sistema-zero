@@ -41,6 +41,7 @@ export class GetOwnStudioSubmissionService {
       accountId ?? userId,
       lesson.courseId,
       privileged,
+      userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 

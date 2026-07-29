@@ -219,14 +219,14 @@ export interface GamificationRepository {
    * snapshot; track legado sem curso → `'2d'`). Curso sem ambos os marcos não
    * conta; degrau ausente do resultado = 0.
    */
-  countQualifyingCoursesByTier(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
+  listQualifyingCareerSlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
   /**
-   * Versão em LOTE do `countQualifyingCoursesByTier` — cursos qualificados por
+   * Versão em LOTE do `listQualifyingCareerSlots` — slots qualificados por
    * degrau de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
    * cada autor do fórum kids sem N+1). Mapa id→qualificados; perfil sem marco algum
    * some do mapa (o serviço trata como zero → nível Faísca/noob).
    */
-  countQualifyingByTierForProfiles(
+  listQualifyingCareerSlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>>

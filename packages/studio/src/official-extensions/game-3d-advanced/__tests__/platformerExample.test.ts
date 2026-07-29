@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import type { JSStatement } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -11,6 +11,8 @@ import { parseJS } from '../../../parsers/js'
 import { gameKit3DBlocks } from '../blocks'
 import { saltoNasNuvensExample } from '../examples'
 import { gameKit3DManifest } from '../manifest'
+import { parseExampleLifecycleSource } from './exampleLifecycleSource'
+import { collectTypes, stripIds } from './testUtils'
 
 /**
  * Drift do exemplo "Salto nas Nuvens" (mini-plataforma 3D). Prova a LARGURA da
@@ -79,29 +81,6 @@ SZGameKit3D.onUpdate(function (dt) {
 SZGameKit3D.start();
 `.trim()
 
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (typeof obj.type === 'string') out.add(obj.type)
-    for (const v of Object.values(obj)) collectTypes(v, out)
-  }
-  return out
-}
-
 beforeAll(() => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameKit3DBlocks)
@@ -114,15 +93,15 @@ describe('Exemplo Salto nas Nuvens — drift contra o parser real', () => {
   })
 
   it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall)', () => {
-    const parsed = stripIds(parseJS(SOURCE)) as JSStatement[]
+    const parsed = stripIds(parseExampleLifecycleSource(SOURCE)) as JSStatement[]
     const types = collectTypes(parsed)
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('memberCall')).toBe(false)
-    expect(parsed).toEqual(stripIds(saltoNasNuvensExample.ir.js) as JSStatement[])
+    expect(parsed).toEqual(stripIds(behaviorStatements(saltoNasNuvensExample.ir)) as JSStatement[])
   })
 
   it('exercita a largura da v0.2.0 (física + emissor + luz)', () => {
-    const types = collectTypes(saltoNasNuvensExample.ir.js)
+    const types = collectTypes(behaviorStatements(saltoNasNuvensExample.ir))
     expect(types.has('g3k:makeSolid')).toBe(true)
     expect(types.has('g3k:platformerKeys')).toBe(true)
     expect(types.has('g3k:defineEmitter')).toBe(true)
@@ -131,8 +110,17 @@ describe('Exemplo Salto nas Nuvens — drift contra o parser real', () => {
     expect(types.has('g3k:setAmbient')).toBe(true)
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(saltoNasNuvensExample.ir)).not.toContain('—')
+    expect(saltoNasNuvensExample.name).not.toContain('—')
+    expect(saltoNasNuvensExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(stripIds(saltoNasNuvensExample.ir.js) as JSStatement[], 0)
+    const code1 = compileStatements(
+      stripIds(behaviorStatements(saltoNasNuvensExample.ir)) as JSStatement[],
+      0,
+    )
     const reparsed = stripIds(parseJS(code1)) as JSStatement[]
     const code2 = compileStatements(reparsed, 0)
     expect(code2).toBe(code1)
@@ -145,8 +133,8 @@ describe('Exemplo Salto nas Nuvens — drift contra o parser real', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = stripIds(buildIRFromWorkspace(ws).js)
-      expect(rebuilt).toEqual(stripIds(saltoNasNuvensExample.ir.js))
+      const rebuilt = stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
+      expect(rebuilt).toEqual(stripIds(behaviorStatements(saltoNasNuvensExample.ir)))
     } finally {
       ws.dispose()
     }

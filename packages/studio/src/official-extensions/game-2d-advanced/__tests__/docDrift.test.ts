@@ -144,4 +144,84 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
       emDoisLugares: [...conta.entries()].filter(([, n]) => n > 1).map(([t]) => t),
     }).toEqual({ foraDaToolbox: [], emDoisLugares: [] })
   })
+
+  it('tooltips visíveis não ensinam blocos legados ocultos', () => {
+    const ocultos = gameKitBlocks
+      .filter((block) => block.hidden)
+      .map((block) => block.message0)
+      .filter((label): label is string => typeof label === 'string')
+    const tooltipsVisíveis = gameKitBlocks
+      .filter((block) => !block.hidden)
+      .map((block) => block.tooltip)
+      .filter((tooltip): tooltip is string => typeof tooltip === 'string')
+
+    expect(
+      tooltipsVisíveis.flatMap((tooltip) => ocultos.filter((label) => tooltip.includes(label))),
+    ).toEqual([])
+  })
+
+  it('a seção de estados ensina o lifecycle automático atual', () => {
+    const docs = gameKitManifest.docs ?? ''
+
+    expect(docs).not.toContain('- **Quando começar ou recomeçar uma partida**')
+    expect(docs).toContain('Em **⚙️ Ao iniciar**')
+  })
+
+  it('documenta os limites que protegem projetos grandes', () => {
+    const contratos = [
+      ['sz_gk_create_empty_tilemap', '512'],
+      ['sz_gk_board_create', '512'],
+      ['sz_gk_rpg_create_map', '512'],
+      ['sz_gk_pkm_give_ball', '999'],
+      ['sz_gk_draw_hearts', '100'],
+    ] as const
+    const docs = gameKitManifest.docs ?? ''
+
+    for (const [type, limite] of contratos) {
+      const block = gameKitBlocks.find((candidate) => candidate.type === type)
+      expect(block?.tooltip).toContain(limite)
+    }
+    expect(docs).toContain('Mapas de peças e mapas-cenário vão até **512 × 512**')
+    expect(docs).toMatch(/tabuleiro vai até\s+\*\*512 × 512\*\*/)
+    expect(docs).toContain('mochila guarda até **999 bolas de captura**')
+    expect(docs).toContain('HUD desenha até **100 corações**')
+  })
+
+  it('mantém as coleções da batalha RPG fora de laços e documenta seus tetos', () => {
+    const contratos = [
+      ['sz_gk_rpg_add_ally', '5'],
+      ['sz_gk_rpg_add_foe', '5'],
+      ['sz_gk_rpg_add_boss', '5'],
+      ['sz_gk_rpg_add_foe_named', '5'],
+      ['sz_gk_rpg_give_potion', '99'],
+    ] as const
+    const docs = gameKitManifest.docs ?? ''
+
+    for (const [type, limite] of contratos) {
+      const block = gameKitBlocks.find((candidate) => candidate.type === type)
+      expect(block?.placement).toBe('resource-creator')
+      expect(block?.tooltip).toContain(limite)
+    }
+    expect(docs).toContain('até **5 aliados além do herói**')
+    expect(docs).toContain('até **5 inimigos extras**')
+    expect(docs).toContain('até **99 poções**')
+  })
+
+  it('ensina a persistência de vida e o custo de energia para todos os combatentes', () => {
+    const battleStats = gameKitBlocks.find((block) => block.type === 'sz_gk_rpg_battle_stats')
+    const teachMove = gameKitBlocks.find((block) => block.type === 'sz_gk_rpg_teach_move')
+    const docs = gameKitManifest.docs ?? ''
+
+    expect(battleStats?.tooltip).not.toContain('Cada batalha começa com a vida')
+    expect(battleStats?.tooltip).toContain('vida atravessa as batalhas')
+    expect(teachMove?.tooltip).toContain('inimigos pelo nome')
+    expect(teachMove?.tooltip).toContain('gasta energia')
+    expect(docs).toContain('A vida atravessa batalhas')
+    expect(gameKitPromptContext).toContain('nomeDoAliado|nomeDoInimigo')
+  })
+
+  it('não abre uma segunda citação no meio da mesma linha de destaque', () => {
+    const docs = gameKitManifest.docs ?? ''
+    expect(docs).not.toMatch(/^> .+ > /m)
+  })
 })

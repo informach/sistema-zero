@@ -14,6 +14,8 @@ export interface ListTeacherThreadsParams {
   context?: string
   courseId?: string
   unread?: boolean
+  /** Filtro por aluno (userId do perfil OU accountId do responsável — csv no members). */
+  userIds?: string[]
   limit?: number
   offset?: number
 }
@@ -28,15 +30,33 @@ export function listTeacherThreads(
       context: p.context,
       courseId: p.courseId,
       unread: p.unread ? 'true' : undefined,
+      userIds: p.userIds?.length ? p.userIds.join(',') : undefined,
       limit: p.limit,
       offset: p.offset,
     },
   })
 }
 
+/** Badge da Sala do Professor: conversas com mensagem do aluno não lida POR ESTE staff. */
+export function getTeacherThreadsUnreadCount(): Promise<GatewayResponse<{ count: number }>> {
+  return gatewayFetch('/members/admin/teacher-threads/unread-count')
+}
+
+/** "Marcar todas como lidas" (escopo opcional = filtros da caixa). */
+export function markAllTeacherThreadsRead(body: {
+  audience?: string
+  context?: string
+  courseId?: string
+}): Promise<GatewayResponse<{ updated: number }>> {
+  return gatewayFetch('/members/admin/teacher-threads/read-all', { method: 'POST', body })
+}
+
 /** Uma conversa (cabeçalho + turnos): `GET /members/admin/teacher-threads/:id`. */
-export function getTeacherThread(id: string): Promise<GatewayResponse<TeacherThreadView>> {
-  return gatewayFetch(`/members/admin/teacher-threads/${enc(id)}`)
+export function getTeacherThread(
+  id: string,
+  before?: string,
+): Promise<GatewayResponse<TeacherThreadView>> {
+  return gatewayFetch(`/members/admin/teacher-threads/${enc(id)}`, { query: { before } })
 }
 
 /** Professor responde: `POST /members/admin/teacher-threads/:id/messages`. */

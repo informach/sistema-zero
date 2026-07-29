@@ -29,13 +29,15 @@ describe('createHubHttpGateway', () => {
     expect(JSON.parse(capturedBody)).toEqual({ userId: 'user-1', event: 'grant' })
     expect(typeof capturedHeaders['x-delivery-id']).toBe('string')
 
-    // A assinatura PRECISA ser aceita pela MESMA verificação que o hub roda
-    // (canonical `<MÉTODO>.<path>.<corpo>` + verifyHmacSignature do core).
+    // A assinatura PRECISA ser aceita pela MESMA verificação que o hub roda.
+    // O delivery id também faz parte da mensagem canônica: ele é a chave de
+    // dedupe e não pode ser alterado sem invalidar o HMAC.
     const result = verifyHmacSignature({
       secret: SECRET,
       body: canonicalHmacMessage({
         method: 'POST',
         path: '/hub/webhooks/grant',
+        deliveryId: capturedHeaders['x-delivery-id'],
         body: capturedBody,
       }),
       signatureHeader: capturedHeaders['x-signature'],
@@ -66,5 +68,46 @@ describe('createHubHttpGateway', () => {
     })
     await hub.notifyAccessChanged('user-1', 'grant')
     expect(true).toBe(true)
+  })
+
+  test('listShowcaseByAuthor mapeia o nome de WIRE coverImageUrl para coverUrl', async () => {
+    // O hub chama o campo de `coverImageUrl`; o contrato do members (PublicGameItem)
+    // chama de `coverUrl`. Este teste PINA o nome do wire: se o hub renomear o campo,
+    // a falha aparece AQUI (e não como capa null silenciosa no perfil público).
+    const hub = createHubHttpGateway({
+      baseUrl: 'http://hub.internal:3010',
+      hmacSecret: SECRET,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            items: [
+              {
+                title: 'Meu jogo',
+                playId: 'play-1',
+                coverImageUrl: 'https://cdn.example/capa.png',
+                createdAt: '2026-07-01T00:00:00.000Z',
+              },
+              // Sem capa: o campo ausente degrada para null (nunca undefined).
+              { title: 'Sem capa', playId: 'play-2', createdAt: '2026-07-02T00:00:00.000Z' },
+            ],
+          }),
+          { status: 200 },
+        ),
+    })
+    const games = await hub.listShowcaseByAuthor('profile-1', 24)
+    expect(games).toEqual([
+      {
+        title: 'Meu jogo',
+        playId: 'play-1',
+        coverUrl: 'https://cdn.example/capa.png',
+        publishedAt: '2026-07-01T00:00:00.000Z',
+      },
+      {
+        title: 'Sem capa',
+        playId: 'play-2',
+        coverUrl: null,
+        publishedAt: '2026-07-02T00:00:00.000Z',
+      },
+    ])
   })
 })

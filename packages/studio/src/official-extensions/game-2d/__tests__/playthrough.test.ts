@@ -50,7 +50,9 @@ interface Harness {
 
 function loadRuntime(): Harness {
   const listeners: Record<string, Listener[]> = {}
-  const rafQueue: Array<(ts: number) => void> = []
+  const rafQueue: Array<{ id: number; cb: (ts: number) => void }> = []
+  const canceledFrames = new Set<number>()
+  let nextFrameId = 1
   const clock = { value: 0 }
   const win = {
     addEventListener(name: string, fn: Listener) {
@@ -62,10 +64,16 @@ function loadRuntime(): Harness {
     SZGame2D: undefined,
   } as unknown as Record<string, unknown>
   const raf = (cb: (ts: number) => void) => {
-    rafQueue.push(cb)
-    return rafQueue.length
+    const id = nextFrameId++
+    rafQueue.push({ id, cb })
+    return id
   }
-  new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, raf)
+  const cancelRaf = (id: number) => canceledFrames.add(id)
+  new Function('window', 'requestAnimationFrame', 'cancelAnimationFrame', gameTwoDRuntime)(
+    win,
+    raf,
+    cancelRaf,
+  )
   const api = win.SZGame2D as unknown as Api
   if (!api) throw new Error('runtime não montou window.SZGame2D')
   return {
@@ -79,8 +87,12 @@ function loadRuntime(): Harness {
     nextFrame: (ts) => {
       clock.value = ts
       const batch = rafQueue.splice(0)
-      if (!batch.length) throw new Error('nenhum quadro agendado')
-      for (const cb of batch) cb(ts)
+      const active = batch.filter((frame) => !canceledFrames.has(frame.id))
+      if (!active.length) {
+        if (api.isPaused()) return
+        throw new Error('nenhum quadro agendado')
+      }
+      for (const frame of active) frame.cb(ts)
     },
   }
 }
@@ -91,11 +103,11 @@ describe('g2d — JOGAR de verdade (teclado + quadros)', () => {
     const heroi = h.api.createSprite({ x: 0, y: 0, w: 20, h: 20 })
     h.api.gameLoop(() => h.api.topDown(heroi, 5))
     h.fire('keydown', { key: 'ArrowRight' })
-    for (let t = 1; t <= 3; t++) h.nextFrame(t * 16)
+    for (let t = 1; t <= 3; t++) h.nextFrame(t * 17)
     expect(heroi.x).toBe(15) // 3 quadros × 5
     h.fire('keyup', { key: 'ArrowRight' })
     const parou = heroi.x
-    for (let t = 4; t <= 6; t++) h.nextFrame(t * 16)
+    for (let t = 4; t <= 6; t++) h.nextFrame(t * 17)
     expect(heroi.x).toBe(parou) // sem tecla, não anda mais
   })
 
@@ -115,11 +127,11 @@ describe('g2d — JOGAR de verdade (teclado + quadros)', () => {
     expect(pulos).toBe(2)
   })
 
-  it('A1: "quando apertar" DENTRO do "a cada quadro" converge para UM registro', () => {
+  it('A1: "quando apertar" dentro de "a cada quadro" é recusado pelo runtime manual', () => {
     const h = loadRuntime()
     let disparos = 0
-    // O corpo cria um arrow NOVO a cada quadro (como o gerador faz), mas de TEXTO
-    // idêntico → dedup por assinatura → um só handler depois de N quadros.
+    // A IR/Blockly já barra esta montagem. O runtime também protege código manual
+    // e não registra silenciosamente um evento no contexto errado.
     h.api.gameLoop(() => {
       h.api.onKey('Space', () => {
         disparos += 1
@@ -127,7 +139,7 @@ describe('g2d — JOGAR de verdade (teclado + quadros)', () => {
     })
     for (let t = 1; t <= 60; t++) h.nextFrame(t * 16)
     h.fire('keydown', { key: 'Space', repeat: false })
-    expect(disparos).toBe(1) // um toque → um disparo (não 60)
+    expect(disparos).toBe(0)
   })
 
   it('A5: perder o foco (blur) solta as teclas seguradas', () => {

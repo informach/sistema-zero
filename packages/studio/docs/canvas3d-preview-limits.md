@@ -8,10 +8,14 @@ importmap pinado em `esm.sh/three@0.180.0`). Esta tabela é a fonte da verdade d
 que fica FORA, por quê, e o que muda quando a criança **exporta** o projeto
 (deploy real, fora do sandbox).
 
+⚠️ O próprio three é **buscado pelo carregador de módulos do navegador** via `script-src`
+(no `esm.sh`) — o design offline-safe não intercepta esse caminho, nem poderia. Então o
+preview do Canvas 3D **exige internet**: um projeto 2D (tudo embutido em `data:`) roda
+offline, o 3D não.
+
 | Recurso | Por que NÃO roda no preview | No export/deploy |
 |---|---|---|
 | **DRACOLoader / KTX2Loader** (malhas/texturas comprimidas) | O decoder é WASM rodando em **worker**: `worker-src 'none'` barra o worker e `setDecoderPath` faz **fetch** do `.wasm` (`connect-src 'none'`). Comentário canônico em `core/project.ts` (ASSET_3D_SPECS). | Também não, a menos que o deploy hospede o decoder. Use **GLB não-comprimido** — o upload de `.glb` do projeto é servido ao `GLTFLoader` pelo resolvedor de assets. |
-| **Pointer lock** (`requestPointerLock`, PointerLockControls em modo FPS) | O sandbox do iframe é `allow-scripts allow-modals` — **sem** `allow-pointer-lock` (PreviewIframe/StudioProjectPlayer). O construtor importa e monta; só o `.lock()` é negado. | **Funciona.** |
 | **Gamepad** (`navigator.getGamepads()`) | `navigator` é global denylistado no parser (vira rawJS) e o permissionGuard não expõe gamepad. | **Funciona** (como rawJS/código PRO). |
 | **GSAP e qualquer CDN externa** | O importmap só resolve `three` e `three/addons/…` (pinados); `script-src` não aceita origem nova. Tween "na unha" é ensinado com `lerp`/`lerpColors` + `dt` (Passeio 3D, Portas do Castelo). | Funciona se o projeto exportado incluir a lib (a criança já está fora do Studio). |
 | **fetch de URL de rede** (`loader.load('https://…')`, APIs) | `connect-src 'none'` + permissionGuard. Os loaders SÓ enxergam assets DO PROJETO por **nome** (`carregador.load('modelo')` / `('motor')`), servidos pelo resolvedor local do `assetsBridge` — GLB, HDR e **sons** (AudioLoader). | fetch real funciona; os assets por nome também (o export embute o mesmo resolvedor). |
@@ -20,6 +24,10 @@ que fica FORA, por quê, e o que muda quando a criança **exporta** o projeto
 
 ## Gotchas que RODAM, mas têm manha
 
+- **Pointer lock / modo FPS** (`requestPointerLock`, `PointerLockControls`): RODA no
+  preview — os iframes têm `allow-pointer-lock` no sandbox (`PreviewIframe`/
+  `StudioProjectPlayer`). Manha: como o áudio, o navegador exige um **gesto** (clique)
+  para conceder o lock; chame `controls.lock()` dentro de um `click`, nunca no boot.
 - **Áudio precisa de GESTO** (autoplay policy do Chrome): o `AudioContext` do
   `AudioListener` nasce suspenso. Chame `listener.context.resume()` dentro de um
   `keydown`/clique antes do primeiro `play()` (o Passeio 3D faz exatamente isso).

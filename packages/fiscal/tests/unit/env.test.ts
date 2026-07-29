@@ -134,7 +134,46 @@ describe('env — série × ambiente (Produção Restrita é numeração compart
 })
 
 describe('env — lease do claim', () => {
-  test('NFSE_CLAIM_STALE_MS < 2× NFSE_REQUEST_TIMEOUT_MS falha', () => {
-    fails(prodEnv({ NFSE_CLAIM_STALE_MS: '10000', NFSE_REQUEST_TIMEOUT_MS: '20000' }))
+  test('lease de webhook cobre as duas chamadas S2S sequenciais', () => {
+    fails(prodEnv({ S2S_TIMEOUT_MS: '30000' }))
+    ok(
+      prodEnv({
+        S2S_TIMEOUT_MS: '30000',
+        WEBHOOK_PROCESSING_STALE_MS: '65000',
+        NFSE_CLAIM_STALE_MS: '180000',
+      }),
+    )
+  })
+
+  test('NFSE_CLAIM_STALE_MS abaixo do tempo de todos os efeitos externos falha', () => {
+    fails(prodEnv({ NFSE_CLAIM_STALE_MS: '10000', NFSE_TOTAL_RETRY_BUDGET_MS: '60000' }))
+  })
+
+  test('lease cobre duas execuções do orçamento total de uma NFS-e', () => {
+    fails(
+      prodEnv({
+        NFSE_CLAIM_STALE_MS: '100000',
+        NFSE_REQUEST_TIMEOUT_MS: '20000',
+        NFSE_TOTAL_RETRY_BUDGET_MS: '60000',
+      }),
+    )
+    ok(
+      prodEnv({
+        NFSE_CLAIM_STALE_MS: '140000',
+        NFSE_REQUEST_TIMEOUT_MS: '20000',
+        NFSE_TOTAL_RETRY_BUDGET_MS: '60000',
+      }),
+    )
+  })
+
+  test('lease da nota também cobre os trechos S2S de emissão e entrega', () => {
+    fails(
+      prodEnv({
+        NFSE_CLAIM_STALE_MS: '120000',
+        NFSE_TOTAL_RETRY_BUDGET_MS: '60000',
+        S2S_TIMEOUT_MS: '30000',
+        WEBHOOK_PROCESSING_STALE_MS: '65000',
+      }),
+    )
   })
 })

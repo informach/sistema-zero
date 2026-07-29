@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { passeio3dNaMaoExample } from '../../examples/core'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements, normalizeSZIR } from '../../ir'
 import { parseJS } from '../js'
 import { parseProjectFiles } from '../project'
 
@@ -188,13 +189,16 @@ describe('Canvas 3D — Passeio 3D (na mão) fixture', () => {
 
   it('fixpoint textual do JS (o parser é estável)', () => {
     const ir = parseProjectFiles({ 'index.html': HTML, 'style.css': CSS, 'script.js': JS })
-    const gen1 = generateJS({ statements: ir.js })
+    const gen1 = generateJS({ statements: behaviorStatements(ir) })
     const gen2 = generateJS({ statements: parseJS(gen1) })
     expect(gen2).toBe(gen1)
   })
 
   it('a IR embutida em examples/core.ts NÃO desviou do parser (drift guard)', () => {
     const live = parseProjectFiles({ 'index.html': HTML, 'style.css': CSS, 'script.js': JS })
-    expect(passeio3dNaMaoExample.ir).toEqual(live)
+    const withoutUndefined = (value: unknown) => JSON.parse(JSON.stringify(value))
+    expect(withoutUndefined(normalizeSZIR(passeio3dNaMaoExample.ir))).toEqual(
+      withoutUndefined(live),
+    )
   })
 })

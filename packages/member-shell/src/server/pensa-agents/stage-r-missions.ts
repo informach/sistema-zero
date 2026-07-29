@@ -328,11 +328,11 @@ export function missionsSystem(input: {
     external
       ? ''
       : `ARQUITETURA REAL DE UM JOGO NO ESTÚDIO (siga esta ordem no plano E dentro dos passos):
-- O código do jogo vive no bloco ⚙️ Comportamento (categoria 🗂️ Áreas do projeto) — só o que está DENTRO dele roda.
-- SETUP no topo, FORA do loop: "Preparar o jogo em tela cheia" (ou "Fazer a tela preencher N% da janela"), criar os sprites e grupos, "Criar pontuação" e "Ir para a tela" com o nome "inicio".
-- EVENTOS soltos: "Quando apertar a tecla" para começar o jogo e para as ações do jogador.
-- UM ÚNICO loop "A cada quadro do jogo, fazer", nesta ordem interna: "Limpar a tela" → desenhar o cenário → decidir pela cena atual ("a tela atual é …?") → controlar e desenhar o herói → criar obstáculos/itens com "A cada … segundos fazer" → "Atualizar (mover) o grupo" e "Desenhar o grupo" → tratar as colisões ("Quando o sprite encostar num do grupo") → placar/HUD por último ("Mostrar placar").
-- Cada passo diz ONDE o bloco entra: no topo (fora do loop), dentro do "A cada quadro do jogo, fazer", ou como evento solto.`,
+- O comportamento do jogo vive em três blocos da categoria 🗂️ Áreas do projeto: ⚙️ Ao iniciar, ⚡ Quando acontecer e 🔁 Enquanto estiver rodando. Só o que está DENTRO dessas áreas roda.
+- SETUP dentro de ⚙️ Ao iniciar: "Preparar o jogo em tela cheia" (ou "Fazer a tela preencher N% da janela"), criar os sprites e grupos, "Criar pontuação" e "Ir para a tela" com o nome "inicio".
+- EVENTOS dentro de ⚡ Quando acontecer: "Quando apertar a tecla" para começar o jogo e para as ações do jogador.
+- UM ÚNICO loop "A cada quadro do jogo, fazer" dentro de 🔁 Enquanto estiver rodando, nesta ordem interna: "Limpar a tela" → desenhar o cenário → decidir pela cena atual ("a tela atual é …?") → controlar e desenhar o herói → criar obstáculos/itens com "A cada … segundos fazer" → "Atualizar (mover) o grupo" e "Desenhar o grupo" → tratar as colisões ("Quando o sprite encostar num do grupo") → placar/HUD por último ("Mostrar placar").
+- Cada passo diz ONDE o bloco entra: dentro de ⚙️ Ao iniciar, dentro de ⚡ Quando acontecer ou, para repetição contínua, dentro do loop que fica em 🔁 Enquanto estiver rodando.`,
     append
       ? `REGRAS DO PLANO (você está ADICIONANDO missões a um plano que já começou):
 - Gere ${count} missões NOVAS, na ordem de construção.

@@ -93,6 +93,20 @@ button {
     expect((out.match(/\.box\s*\{/g) ?? []).length).toBe(1)
   })
 
+  it('mantém fallbacks repetidos ao atravessar código, blocos e código', () => {
+    const css = '.caixa {\n  display: flex;\n  display: grid;\n}'
+    expect(bridgeCss(css).trim()).toBe(css)
+  })
+
+  it.each([
+    ['margin', '.x {\n  margin-top: 20px;\n  margin: 10px;\n}'],
+    ['padding', '.x {\n  padding-left: 20px;\n  padding: 10px;\n}'],
+    ['border', '.x {\n  border-top-color: red;\n  border: 1px solid #000000;\n}'],
+    ['gap', '.x {\n  row-gap: 20px;\n  gap: 10px;\n}'],
+  ])('preserva a cascata entre shorthand e longhand de %s', (_property, css) => {
+    expect(bridgeCss(css).trim()).toBe(css)
+  })
+
   // Cenário reportado pelo aluno: CSS com width em % (vira `sz_css_width_percent`)
   // + outras propriedades sem bloco amigável (caem num `sz_css_rule` genérico).
   // O gerador FUNDE as duas regras (mesmo seletor) no texto final; cada bloco

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import type { LearningProfile } from '#core'
+import { BLOCK_CATALOG } from '../blockCatalog'
+import { classCategoryBlockTypes, functionCategoryBlockTypes } from '../paramsFlyout'
 import { buildCoreToolbox, type ToolboxCategory } from '../toolbox'
 
 /** Coleta TODOS os tipos de bloco da toolbox, em qualquer profundidade. */
@@ -115,5 +117,84 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
     const names = categoryNames(buildCoreToolbox([ext], profile).contents)
     expect(names).toContain('🕹️ Sprites') // tem o bloco listado
     expect(names).not.toContain('🌍 Física') // sem bloco listado → some
+  })
+
+  it('filtra bloco a bloco os flyouts dinâmicos de Funções e Classes', () => {
+    const onlyFunction: LearningProfile = {
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_js_function'],
+    }
+    expect(functionCategoryBlockTypes(onlyFunction)).toEqual(['sz_js_function'])
+
+    const onlyConstructor: LearningProfile = {
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_js_constructor'],
+    }
+    expect(classCategoryBlockTypes(onlyConstructor)).toEqual(['sz_js_constructor'])
+  })
+
+  it('não cria Classes fantasma para blocos legados que já saíram da oferta', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_js_call_method'],
+    }
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).not.toContain('🏛️ Classes')
+    expect(BLOCK_CATALOG.some((entry) => entry.type === 'sz_js_call_method')).toBe(false)
+  })
+
+  it('oferece retorno e parâmetro somente em Funções, sem duplicar Classes', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_js_function', 'sz_js_return', 'sz_val_arg'],
+    }
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).toContain('🧩 Funções')
+    expect(names).not.toContain('🏛️ Classes')
+    expect(functionCategoryBlockTypes(profile)).toEqual(['sz_js_function', 'sz_js_return'])
+    expect(classCategoryBlockTypes(profile)).toEqual([])
+
+    expect(BLOCK_CATALOG.filter((entry) => entry.type === 'sz_js_return')).toEqual([
+      expect.objectContaining({ category: 'Funções' }),
+    ])
+    expect(BLOCK_CATALOG.filter((entry) => entry.type === 'sz_val_arg')).toEqual([
+      expect.objectContaining({ category: 'Funções' }),
+    ])
+  })
+
+  it('não mostra uma categoria Funções vazia quando só o parâmetro contextual foi liberado', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_val_arg'],
+    }
+
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).not.toContain('🧩 Funções')
+    expect(names).not.toContain('Programação')
+    expect(functionCategoryBlockTypes(profile)).toEqual([])
+  })
+
+  it('mantém Funções acessível para parâmetros de métodos em aulas restritas', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_js_class', 'sz_js_class_method', 'sz_val_arg'],
+    }
+
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).toContain('🧩 Funções')
+    expect(names).toContain('🏛️ Classes')
+  })
+
+  it('mantém o flyout contextual de Funções quando a aula libera somente Classes', () => {
+    const profile: LearningProfile = {
+      level: 'iniciante-2d',
+      allowCategories: ['Classes'],
+    }
+
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).toContain('Programação')
+    expect(names).toContain('🧩 Funções')
+    expect(names).toContain('🏛️ Classes')
+    expect(functionCategoryBlockTypes(profile)).toEqual([])
   })
 })

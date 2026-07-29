@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { JSStatement, SZIR } from '../../ir/schema'
 
 /**
@@ -28,7 +29,7 @@ function fromIR(js: JSStatement[]): { code: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      code: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      code: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -47,25 +48,31 @@ const grass: JSStatement[] = [
     spread: { type: 'num', value: 50 },
     color: { type: 'color', value: '#4a7c2a' },
   },
-  { type: 'grassTime', grass: 'grama' },
+  {
+    type: 'animationLoop',
+    body: [{ type: 'grassTime', grass: 'grama', dt: { type: 'num', value: 1 / 60 } }],
+  },
 ]
 
 describe('Canvas 3D — macro Grama 🌿 (bloco sz_t3d_grass)', () => {
   it('expande a grama INSTANCIADA + shader de vento (GLSL) na grafia atual', () => {
     const code = generateJS({ statements: grass })
     // instanciação (1 draw call para milhares de folhas)
-    expect(code).toContain('const grama = new THREE.InstancedMesh(gramaBlade, gramaMat, 5000);')
-    expect(code).toContain('const gramaDummy = new THREE.Object3D();')
-    expect(code).toContain('for (let i = 0; i < 5000; i++) {')
-    expect(code).toContain('grama.setMatrixAt(i, gramaDummy.matrix);')
+    expect(code).toContain('Math.min(50000')
+    expect(code).toContain(
+      'const grama = new THREE.InstancedMesh(gramaFolha, gramaMaterial, gramaQuantidade);',
+    )
+    expect(code).toContain('const gramaMatriz = new THREE.Object3D();')
+    expect(code).toContain('for (let gramaIndice = 0; gramaIndice < gramaQuantidade;')
+    expect(code).toContain('grama.setMatrixAt(gramaIndice, gramaMatriz.matrix);')
     expect(code).toContain('grama.instanceMatrix.needsUpdate = true;')
     // o shader de vento (GLSL escondido dentro do macro)
-    expect(code).toContain('const gramaMat = new THREE.ShaderMaterial({')
+    expect(code).toContain('const gramaMaterial = new THREE.ShaderMaterial({')
     expect(code).toContain('uniform float time;')
     expect(code).toContain('gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix')
     expect(code).toContain('scene.add(grama);')
     // a animação do vento
-    expect(code).toContain('grama.material.uniforms.time.value += 0.02;')
+    expect(code).toContain('grama.material.uniforms.time.value += Math.max(0, Math.min(0.1')
     // o JS gerado é sintaticamente válido (as crases dos shaders fecham certo)
     expect(() => new Function(code.replace(/^import .*/gm, ''))).not.toThrow()
   })

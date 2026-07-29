@@ -34,6 +34,8 @@ const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string; nameF
   sz_g2d_create_ship: { color: 'BODY' }, // criar nave (Kit espaço)
   sz_g2d_create_dino: { color: 'COLOR' }, // criar dinossauro (Kit dino)
   sz_g2d_place_thrower: { color: 'COLOR' }, // pôr o gorila (Kit gorilas)
+  sz_g2d_stickhero_sprite: { color: 'COLOR' }, // criar equilibrista (Kit equilibrista v2)
+  sz_g2d_balloon_sprite: { color: 'BODY' }, // criar balão (Kit balão v2)
 }
 
 interface SpriteOption {
@@ -72,6 +74,8 @@ const SPRITE_LOOP_BINDERS: Record<string, string[]> = {
   sz_g2d_prune_offscreen: ['ITEM'],
   sz_g2d_on_group_overlap: ['ANAME', 'BNAME'],
   sz_g2d_on_sprite_group_overlap: ['ANAME'],
+  sz_g2d_on_enemy_defeated: ['ANAME'],
+  sz_g2d_on_enemy_shot_hit: ['ANAME'],
 }
 
 /**

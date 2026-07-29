@@ -29,6 +29,8 @@ interface Obj3D {
   scale: Vec3
   rotation: Vec3
   userData: { sz: Meta }
+  geometry?: { disposed?: boolean }
+  material?: { color?: { value?: unknown }; opacity?: number; disposed?: boolean }
 }
 interface Renderer {
   setAnimationLoop(fn: unknown): void
@@ -39,6 +41,7 @@ interface World {
   camera: { position: Vec3; lookAt: () => void }
   scene: { children: unknown[] }
   _objects: unknown[]
+  _dt?: number
   _stack?: {
     layers: unknown[]
     overhangs: unknown[]
@@ -66,8 +69,16 @@ interface API {
   keyDown(code: string): boolean
   collides(a: Obj3D, b: Obj3D): boolean
   hitAny(o: Obj3D, g: Group): boolean
-  runEnemies(w: World, g: Group, ground: Obj3D, every: number, speed: number): void
+  spawnEnemy(w: World, g: Group, speed: number): Obj3D | null
+  updateGroup(g: Group, ground: Obj3D): void
+  updateGroupNoGravity(g: Group): void
+  countGroup(g: Group): number
+  removeFromGroup(g: Group, o: Obj3D): void
+  clearGroup(g: Group): void
+  everyFrames(key: string, n: number): boolean
+  everySeconds(key: string, secs: number): boolean
   stop(w: World): void
+  gridPosition(o: Obj3D, row: number, col: number): void
   gridMove(o: Obj3D, dir: string): void
   gridStep(o: Obj3D): void
   moveAcross(g: Group, speed: number, min: number, max: number): void
@@ -101,9 +112,23 @@ interface API {
   platformerControls(o: Obj3D, w: World, speed: number, jump: number): void
   fpsControls(o: Obj3D, w: World, speed: number): void
   resolveCollision(a: Obj3D, b: Obj3D): void
+  createModel(w: World): unknown
+  addToModel(model: unknown, part: Obj3D): void
+  setColor(obj: unknown, color: string): void
+  setOpacity(obj: unknown, opacity: number): void
+  remove(w: World, obj: unknown): void
+  dispose(w: World): void
+  setBackground(w: World, color: string): void
+  setFOV(w: World, deg: number): void
+  isometricCamera(w: World, follow?: unknown): void
+  crosserHit(o: Obj3D, w: World): boolean
 }
 
-function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } {
+function loadRuntime(): {
+  api: API
+  fire: (name: string, ev: unknown) => void
+  listenerCount: (name: string) => number
+} {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
 
@@ -145,11 +170,13 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       background: unknown = null
       children: unknown[] = []
       add(o: unknown) {
+        ;(o as { parent?: unknown }).parent = this
         this.children.push(o)
       }
       remove(o: unknown) {
         const i = this.children.indexOf(o)
         if (i !== -1) this.children.splice(i, 1)
+        ;(o as { parent?: unknown }).parent = null
       }
     },
     Color: class {
@@ -166,7 +193,22 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       shadow = { camera: {} as Record<string, number>, mapSize: { set() {} } }
     },
     MeshStandardMaterial: class {
-      dispose() {}
+      color: { value: unknown; set: (value: unknown) => void }
+      opacity = 1
+      transparent = false
+      needsUpdate = false
+      disposed = false
+      constructor(options?: { color?: unknown }) {
+        this.color = {
+          value: options?.color,
+          set: (value: unknown) => {
+            this.color.value = value
+          },
+        }
+      }
+      dispose() {
+        this.disposed = true
+      }
     },
     Mesh: class {
       position = new V3(0, 0, 0)
@@ -183,10 +225,16 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       }
     },
     BoxGeometry: class {
-      dispose() {}
+      disposed = false
+      dispose() {
+        this.disposed = true
+      }
     },
     SphereGeometry: class {
-      dispose() {}
+      disposed = false
+      dispose() {
+        this.disposed = true
+      }
     },
     // AABB simples a partir da posição do objeto (suficiente p/ touchesBox em
     // objetos de topo; os modelos compostos são validados no browser).
@@ -216,19 +264,26 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
     OrthographicCamera: class {
       position = new V3(4, 4, 4)
       up = new V3(0, 1, 0)
+      zoom = 1
       lookAt() {}
+      updateProjectionMatrix() {}
     },
     Group: class {
       position = new V3(0, 0, 0)
       rotation = new V3(0, 0, 0)
       scale = new V3(1, 1, 1)
+      userData: Record<string, unknown> = {}
       children: unknown[] = []
       add(o: unknown) {
+        const child = o as { parent?: { remove?: (value: unknown) => void } }
+        if (child.parent?.remove) child.parent.remove(o)
+        child.parent = this
         this.children.push(o)
       }
       remove(o: unknown) {
         const i = this.children.indexOf(o)
         if (i !== -1) this.children.splice(i, 1)
+        ;(o as { parent?: unknown }).parent = null
       }
       traverse(fn: (o: unknown) => void) {
         fn(this)
@@ -250,6 +305,10 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       listeners[name] ??= []
       listeners[name].push(fn)
     },
+    removeEventListener(name: string, fn: Listener) {
+      const index = listeners[name]?.indexOf(fn) ?? -1
+      if (index !== -1) listeners[name]?.splice(index, 1)
+    },
     SZGame3D: undefined,
   } as unknown as Record<string, unknown>
 
@@ -262,6 +321,7 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
     fire: (name: string, ev: unknown) => {
       for (const fn of listeners[name] ?? []) fn(ev)
     },
+    listenerCount: (name: string) => listeners[name]?.length ?? 0,
   }
 }
 
@@ -282,6 +342,14 @@ describe('gameThreeDRuntime — teclado', () => {
     expect(prevented).toBe(true)
     expect(api.keyDown('Space')).toBe(true)
   })
+
+  it('limpa teclas pressionadas quando a janela perde o foco', () => {
+    const { api, fire } = loadRuntime()
+    fire('keydown', { code: 'KeyW' })
+    expect(api.keyDown('KeyW')).toBe(true)
+    fire('blur', {})
+    expect(api.keyDown('KeyW')).toBe(false)
+  })
 })
 
 describe('gameThreeDRuntime — colisão (AABB)', () => {
@@ -295,6 +363,39 @@ describe('gameThreeDRuntime — colisão (AABB)', () => {
     expect(api.collides(a, b)).toBe(true)
     api.setPosition(b, 5, 0, 0)
     expect(api.collides(a, b)).toBe(false)
+  })
+})
+
+describe('gameThreeDRuntime — modelos compostos', () => {
+  it('aplica cor e opacidade a todas as primitivas filhas', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const model = api.createModel(world)
+    const head = api.createBox(world, { color: '#ffffff' })
+    const body = api.createBox(world, { color: '#ffffff' })
+    api.addToModel(model, head)
+    api.addToModel(model, body)
+
+    api.setColor(model, '#ff0000')
+    api.setOpacity(model, 0.4)
+
+    expect(head.material?.color?.value).toBe('#ff0000')
+    expect(body.material?.color?.value).toBe('#ff0000')
+    expect(head.material?.opacity).toBe(0.4)
+    expect(body.material?.opacity).toBe(0.4)
+  })
+
+  it('remover um modelo descarta geometrias e materiais descendentes', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const model = api.createModel(world)
+    const part = api.createBox(world)
+    api.addToModel(model, part)
+
+    api.remove(world, model)
+
+    expect(part.geometry?.disposed).toBe(true)
+    expect(part.material?.disposed).toBe(true)
   })
 })
 
@@ -353,25 +454,46 @@ describe('gameThreeDRuntime — controle por teclado', () => {
   })
 })
 
-describe('gameThreeDRuntime — Kit Desvie (spawner + colisão de grupo)', () => {
-  it('runEnemies solta inimigos no ritmo e DESCARTA os que passam (higiene de GPU)', () => {
+describe('gameThreeDRuntime — 📦 Grupos + ⏱️ Tempo + Kit Desvie', () => {
+  it('spawnEnemy solta 1 inimigo com velocidade CONSTANTE (sem auto-aceleração)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const inimigos = api.createGroup()
+    const enemy = api.spawnEnemy(world, inimigos, 0.1)
+    expect(api.countGroup(inimigos)).toBe(1)
+    if (!enemy) throw new Error('esperava um inimigo gerado')
+    expect(enemy.userData.sz.vz).toBe(0.1)
+    // sem zAccel: a velocidade NÃO cresce sozinha (nada de avalanche).
+    expect(enemy.userData.sz.zAccel).toBeUndefined()
+  })
+
+  it('everyFrames dispara a cada N chamadas (chaves independentes); everySeconds é boolean', () => {
+    const { api } = loadRuntime()
+    let count = 0
+    for (let i = 0; i < 15; i++) if (api.everyFrames('k', 5)) count++
+    expect(count).toBe(3) // 5ª, 10ª e 15ª chamadas
+    expect(api.everyFrames('outra', 1)).toBe(true) // contador próprio
+    expect(typeof api.everySeconds('t', 1)).toBe('boolean')
+  })
+
+  it('updateGroup move o grupo; removeFromGroup/clearGroup somem com os objetos', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const ground = api.createBlock(world, { width: 10, height: 1, depth: 10 })
     api.setPosition(ground, 0, -2, 0)
     const inimigos = api.createGroup()
-    // every=5: no 5º quadro nasce 1 inimigo.
-    for (let i = 0; i < 5; i++) api.runEnemies(world, inimigos, ground, 5, 0.02)
-    expect(inimigos.length).toBe(1)
-    const enemy = inimigos[0]
-    if (!enemy) throw new Error('esperava um inimigo gerado')
-    expect(enemy.userData.sz.zAccel).toBe(true)
-    // empurra o inimigo para a frente da câmera → próxima volta deve removê-lo.
-    enemy.position.z = 50
-    const before = world._objects.length
-    api.runEnemies(world, inimigos, ground, 5, 0.02)
-    expect(inimigos.length).toBe(0)
-    expect(world._objects.length).toBeLessThan(before)
+    const a = api.spawnEnemy(world, inimigos, 0.1)
+    api.spawnEnemy(world, inimigos, 0.1)
+    if (!a) throw new Error('esperava inimigos')
+    const zBefore = a.position.z
+    api.updateGroup(inimigos, ground)
+    expect(a.position.z).toBeGreaterThan(zBefore) // andou pela velocidade (+z)
+    const objsBefore = world._objects.length
+    api.removeFromGroup(inimigos, a)
+    expect(api.countGroup(inimigos)).toBe(1)
+    expect(world._objects.length).toBeLessThan(objsBefore)
+    api.clearGroup(inimigos)
+    expect(api.countGroup(inimigos)).toBe(0)
   })
 
   it('hitAny é verdadeiro quando o jogador encosta em algum do grupo', () => {
@@ -420,9 +542,11 @@ describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/to
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
     api.setPosition(p, 0, 0, 0)
+    api.gridPosition(p, 0, 0)
     api.gridMove(p, 'forward')
     for (let i = 0; i < 12; i++) api.gridStep(p)
-    expect(p.position.y).toBeGreaterThan(0.9)
+    expect(p.position.z).toBeGreaterThan(0.9)
+    expect(p.position.y).toBe(0)
   })
 
   it('moveAcross move os objetos e dá a volta nas bordas', () => {
@@ -457,32 +581,56 @@ describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/to
 })
 
 describe('gameThreeDRuntime — movimento circular e distância (genéricos do Kit Corrida)', () => {
-  it('moveInCircle move o objeto numa circunferência (raio ~constante)', () => {
+  it('moveInCircle usa o plano do chão X-Z e preserva a altura Y', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
-    api.setPosition(p, 0, 0, 0)
+    api.setPosition(p, 0, 3, 0)
     api.moveInCircle(p, 5, 0.3)
     const x1 = p.position.x
-    const y1 = p.position.y
-    const r1 = Math.hypot(x1, y1)
+    const z1 = p.position.z
+    const r1 = Math.hypot(x1, z1)
     api.moveInCircle(p, 5, 0.3)
-    const r2 = Math.hypot(p.position.x, p.position.y)
+    const r2 = Math.hypot(p.position.x, p.position.z)
     expect(r1).toBeGreaterThan(4.5) // ~5
     expect(Math.abs(r2 - r1)).toBeLessThan(0.01) // raio constante ao girar
-    expect(p.position.x !== x1 || p.position.y !== y1).toBe(true) // andou
+    expect(p.position.x !== x1 || p.position.z !== z1).toBe(true) // andou
+    expect(p.position.y).toBe(3)
   })
 
-  it('distanceTo e isNear medem a distância no plano', () => {
+  it('distanceTo e isNear medem a distância no chão X-Z', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const a = api.createBox(world, { size: 1 })
     const b = api.createBox(world, { size: 1 })
     api.setPosition(a, 0, 0, 0)
-    api.setPosition(b, 3, 4, 0)
+    api.setPosition(b, 3, 99, 4)
     expect(api.distanceTo(a, b)).toBeCloseTo(5)
     expect(api.isNear(a, b, 6)).toBe(true)
     expect(api.isNear(a, b, 4)).toBe(false)
+  })
+})
+
+describe('gameThreeDRuntime — tempo consistente entre dispositivos', () => {
+  function travelForOneSecond(frameMs: number): number {
+    const { api, fire } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world, { size: 1 })
+    fire('keydown', { code: 'KeyD' })
+    api.animate(world, () => {
+      api.controlWithKeys(player, 0.05)
+      api.applyGravity(player, null as unknown as Obj3D)
+    })
+    const loop = world.renderer._loop as (time: number) => void
+    loop(1)
+    for (let time = frameMs; time <= 1000; time += frameMs) loop(time)
+    return player.position.x
+  }
+
+  it('percorre praticamente a mesma distância a 60 Hz e 120 Hz', () => {
+    const at60 = travelForOneSecond(1000 / 60)
+    const at120 = travelForOneSecond(1000 / 120)
+    expect(Math.abs(at60 - at120)).toBeLessThan(0.08)
   })
 })
 
@@ -691,5 +839,100 @@ describe('gameThreeDRuntime — física avançada (corpo, sólidos, presets)', (
     expect(Math.abs(a.position.x)).toBeCloseTo(1, 1) // empurrado no eixo de menor penetração
   })
 })
+
+describe('gameThreeDRuntime — ciclo de vida de listeners por mundo', () => {
+  it('remove o listener de grade ao descartar o mundo', () => {
+    const { api, listenerCount } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world, { size: 1 })
+    const baseline = listenerCount('keydown')
+    api.gridStep(player)
+    expect(listenerCount('keydown')).toBe(baseline + 1)
+    api.dispose(world)
+    expect(listenerCount('keydown')).toBe(baseline)
+  })
+})
 // lookAtObject/lookAtPoint/moveForward/faceVelocity usam THREE.lookAt/getWorldDirection
 // (matemática de matriz) — verificados no browser real (o fake de THREE não os reproduz).
+
+// ── Full review (R1): correções de runtime, cada uma com red→green ──────────
+describe('gameThreeDRuntime — full review R1 (correções de runtime)', () => {
+  it('R1/A1: crosserHit pega o carro durante o pulo para a faixa de destino', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const crosser = api.createBox(world, { size: 1 }) // personagem, ligado ao mundo
+    const car = api.createBox(world, { size: 1 })
+    // Estado mínimo de travessia: um carro só na linha 1 (a de DESTINO do pulo).
+    ;(world as unknown as { _crossing: unknown })._crossing = {
+      gameOver: false,
+      rowByIndex: { 1: { type: 'car', vehicles: [{ ref: car }] } },
+    }
+    // Boneco pulando da linha 0 (segura) para a linha 1 (carros): g.row ainda é 0.
+    ;(crosser as unknown as { userData: { grid: unknown } }).userData.grid = {
+      row: 0,
+      col: 0,
+      moving: true,
+      queue: ['forward'],
+      tile: 2,
+      yUp: false,
+    }
+    api.setPosition(crosser, 0, 0, 0)
+    api.setPosition(car, 0, 0, 0) // sobreposto ao boneco no meio do pulo
+    expect(api.crosserHit(crosser, world)).toBe(true)
+  })
+
+  it('R1/A2: gravidade não concede "chão" ao encostar na lateral (sem pulo de parede)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const ground = api.createBlock(world, { width: 4, height: 4, depth: 4 })
+    api.setPosition(ground, 0, 0, 0) // topo em y = 2
+    const obj = api.createBox(world, { size: 1 })
+    api.setPosition(obj, 2.4, 0, 0) // encostado na LATERAL, na mesma altura do bloco
+    api.setVelocity(obj, 0, -0.05, 0)
+    api.applyGravity(obj, ground)
+    const meta = (obj as unknown as { userData: { sz: Meta } }).userData.sz
+    expect(meta.grounded).toBe(false) // não pode pular de parede
+  })
+
+  it('R1/A3: setBackground descarta a textura de céu anterior (não vaza GPU)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    let disposed = false
+    ;(world.scene as unknown as { background: unknown }).background = {
+      isTexture: true,
+      dispose: () => {
+        disposed = true
+      },
+    }
+    api.setBackground(world, '#123456')
+    expect(disposed).toBe(true)
+  })
+
+  it('R1/A5: câmera isométrica que segue NÃO fica presa à rotação do alvo', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const target = api.createModel(world) as Obj3D // Group ligado ao mundo (tem .add)
+    api.setPosition(target, 5, 0, 3)
+    api.isometricCamera(world, target)
+    const cam = world.camera as unknown as { parent: unknown; position: Vec3 }
+    // A câmera não pode ser FILHA do alvo (senão herda a rotação e gira a vista).
+    expect(cam.parent).not.toBe(target)
+    expect(cam.parent).toBe(world.scene)
+    // Mas segue a POSIÇÃO: offset do molde iso (12,12,12) + alvo (5,0,3).
+    expect(cam.position.x).toBeCloseTo(17, 5)
+    expect(cam.position.z).toBeCloseTo(15, 5)
+  })
+
+  it('R1/A6: "Lente" (setFOV) aproxima a câmera isométrica via zoom (não é mais no-op)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const target = api.createModel(world) as Obj3D
+    api.isometricCamera(world, target)
+    const cam = world.camera as unknown as { zoom: number }
+    expect(cam.zoom).toBe(1)
+    api.setFOV(world, 30) // luneta: aproxima 2x
+    expect(cam.zoom).toBeCloseTo(2, 5)
+    api.setFOV(world, 120) // afasta
+    expect(cam.zoom).toBeCloseTo(0.5, 5)
+  })
+})

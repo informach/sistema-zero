@@ -9,6 +9,7 @@ const readJson = (res: Response): Promise<any> => res.json()
 const roleHeaders = (role: string, userId = STAFF_USER) => ({
   'x-auth-user-id': userId,
   'x-auth-user-role': role,
+  'x-auth-user-status': 'active',
 })
 
 const get = (app: App, path: string, headers: Record<string, string>) =>
@@ -81,6 +82,18 @@ describe('Equipe interna (superadmin/admin/staff) — acesso irrestrito', () => 
     expect(
       (await get(app, '/members/courses/curso-a', { 'x-auth-user-id': STAFF_USER })).status,
     ).toBe(403)
+  })
+
+  test('equipe inativa não recebe o bypass de acesso', async () => {
+    const { app, courses } = buildApp()
+    seedSampleCourse(courses, 'curso-a')
+
+    const response = await get(app, '/members/courses/curso-a', {
+      ...roleHeaders('staff'),
+      'x-auth-user-status': 'inactive',
+    })
+
+    expect(response.status).toBe(403)
   })
 
   test('catálogo destrava tudo (hasAccess) e "meus cursos" lista todos os publicados', async () => {
