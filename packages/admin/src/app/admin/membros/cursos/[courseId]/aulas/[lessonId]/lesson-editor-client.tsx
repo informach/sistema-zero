@@ -1384,13 +1384,13 @@ export function LessonEditorClient({
               <Field
                 label="Frase do curso"
                 htmlFor="cert-phrase"
-                hint="Logo abaixo do nome — o que o aluno concluiu (ex.: 'concluiu o Desafio do Primeiro Jogo em 3 dias')."
+                hint="Logo abaixo do nome — o que o aluno concluiu (ex.: 'concluiu o Desafio do Primeiro Jogo em 5 dias')."
               >
                 <Input
                   id="cert-phrase"
                   value={blockForm.certCoursePhrase}
                   maxLength={300}
-                  placeholder="concluiu o Desafio do Primeiro Jogo em 3 dias"
+                  placeholder="concluiu o Desafio do Primeiro Jogo em 5 dias"
                   onChange={(e) =>
                     setBlockForm((f) => ({ ...f, certCoursePhrase: e.target.value }))
                   }

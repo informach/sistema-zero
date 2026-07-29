@@ -296,7 +296,7 @@ export const DESAFIO_TOTAL = DESAFIO_QUIZ_STEPS.length
 // {resposta_p3}/{resposta_p5}/{resposta_p8}/{resposta_p10}/{resultado} são resolvidos
 // por `desafioRenderCorpo`.
 export const DESAFIO_FECHO =
-  'O foco intenso do seu filho é uma força. Em 3 dias, esse interesse pode virar o primeiro jogo criado por ele, do começo ao fim.'
+  'O foco intenso do seu filho é uma força. Em 5 dias, esse interesse pode virar o primeiro jogo criado por ele, do começo ao fim.'
 
 // Bloco em realce acima do fecho: espelha o que o pai declarou na P8 (o que sonha ver)
 // e na P10 (o que sonha que ele se torne). Resolvido por `desafioRenderCorpo`.
@@ -392,8 +392,8 @@ export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
 // intro acima do H1, que retoma a segmentação do quiz). `titulo`/`botao` existem
 // por causa do tipo; o body bespoke não os lê. Sem perfil → `padrao` (sem intro).
 const HERO_H1 =
-  'Use o interesse intenso do seu filho a favor dele: em 3 dias, ele monta o primeiro jogo'
-const HERO_BOTAO = 'Quero o primeiro jogo do meu filho em 3 dias'
+  'Use o interesse intenso do seu filho a favor dele: em 5 dias, ele monta o primeiro jogo'
+const HERO_BOTAO = 'Quero o primeiro jogo do meu filho em 5 dias'
 
 export const DESAFIO_HERO_PADRAO: HeroVariacao = {
   titulo: HERO_H1,
@@ -405,25 +405,25 @@ export const DESAFIO_HERO_POR_PERFIL: Record<string, HeroVariacao> = {
   explorador: {
     titulo: HERO_H1,
     abertura:
-      'Para o foco de O Explorador, o caminho é uma frente única e curta para fechar, com uma vitória visível por dia; é o que estes 3 dias fazem.',
+      'Para o foco de O Explorador, o caminho é uma frente única e curta para fechar, com uma vitória visível por dia; é o que estes 5 dias fazem.',
     botao: HERO_BOTAO,
   },
   especialista: {
     titulo: HERO_H1,
     abertura:
-      'Para o foco de O Especialista, o caminho é transformar o tema que ele domina em algo feito pelas mãos dele; é o que estes 3 dias fazem.',
+      'Para o foco de O Especialista, o caminho é transformar o tema que ele domina em algo feito pelas mãos dele; é o que estes 5 dias fazem.',
     botao: HERO_BOTAO,
   },
   foguete: {
     titulo: HERO_H1,
     abertura:
-      'Para o foco de O Foguete, o caminho é encurtar a distância entre começar e ver algo funcionando; é o que estes 3 dias fazem.',
+      'Para o foco de O Foguete, o caminho é encurtar a distância entre começar e ver algo funcionando; é o que estes 5 dias fazem.',
     botao: HERO_BOTAO,
   },
   investigador: {
     titulo: HERO_H1,
     abertura:
-      'Para o foco de O Investigador, o caminho é uma base aberta para ele mexer por dentro e definir as próprias regras; é o que estes 3 dias fazem.',
+      'Para o foco de O Investigador, o caminho é uma base aberta para ele mexer por dentro e definir as próprias regras; é o que estes 5 dias fazem.',
     botao: HERO_BOTAO,
   },
 }
@@ -432,7 +432,7 @@ export const DESAFIO_HERO_POR_PERFIL: Record<string, HeroVariacao> = {
 export const DESAFIO_OBRIGADO: FunnelObrigado = {
   intro: 'Obrigado por investir no potencial do seu filho.',
   entrega: [
-    'Trilha guiada de 3 dias (uma vitória por dia)',
+    'Trilha guiada de 5 dias (uma vitória por dia)',
     'Estúdio e blocos feitos pra criança, sem instalar nada',
     'Link do jogo pra compartilhar com a família e os amigos',
     'Passo a passo em vídeo (aula guiada)',
