@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
+import { useFocusMode } from './focus-mode'
 import { KidsLogo } from './kids-logo'
 import { NAV_ITEMS } from './nav'
 import { StreakWidget } from './streak-widget'
@@ -35,9 +36,20 @@ export function AppSidebar({
   avatarPhotoUrl?: string | null
 }) {
   const pathname = usePathname()
+  // Modo foco da aula: o aluno pode esconder o menu p/ ganhar área útil (só em
+  // página de aula + desktop; ver focus-mode.tsx). Colapsa a barra no lugar.
+  const { navCollapsed } = useFocusMode()
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-border border-r bg-card px-3 py-5 md:flex">
+    <aside
+      className={cn(
+        'sticky top-0 hidden h-screen shrink-0 flex-col border-border bg-card py-5 md:flex',
+        'overflow-hidden transition-[width,padding,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+        navCollapsed
+          ? 'w-0 border-r-0 px-0 opacity-0 pointer-events-none'
+          : 'w-60 border-r px-3 opacity-100',
+      )}
+    >
       <Link href="/" aria-label="Início" className="px-2" prefetch={false}>
         <KidsLogo priority />
       </Link>

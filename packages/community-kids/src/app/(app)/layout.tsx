@@ -2,6 +2,7 @@ import { ImpersonationBanner } from '@sistemazero/member-shell/components/impers
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
+import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode'
 import { LevelUpWatcher } from '@/components/kids/level-up-watcher'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
@@ -91,26 +92,24 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           actorName={actorLabel(session.act)}
         />
       ) : null}
-      <div className="flex flex-1">
-        <Suspense
-          fallback={
-            <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-border border-r bg-card md:block" />
-          }
-        >
-          <SidebarChrome session={session} />
-        </Suspense>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Suspense
-            fallback={
-              <div className="sticky top-0 z-40 h-14 border-border border-b bg-background/80 backdrop-blur md:hidden" />
-            }
-          >
-            <TopbarChrome session={session} />
+      <FocusModeProvider viewerId={session.id}>
+        <div className="flex flex-1">
+          <Suspense fallback={<SidebarFallback />}>
+            <SidebarChrome session={session} />
           </Suspense>
-          <MainContainer>{children}</MainContainer>
-          <MobileTabbar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Suspense
+              fallback={
+                <div className="sticky top-0 z-40 h-14 border-border border-b bg-background/80 backdrop-blur md:hidden" />
+              }
+            >
+              <TopbarChrome session={session} />
+            </Suspense>
+            <MainContainer>{children}</MainContainer>
+            <MobileTabbar />
+          </div>
         </div>
-      </div>
+      </FocusModeProvider>
       {/* Comemoração de subida de nível (rank) — fora da chrome, sem fallback visível. */}
       <Suspense fallback={null}>
         <LevelUpChrome session={session} />

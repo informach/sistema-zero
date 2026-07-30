@@ -37,7 +37,14 @@ As camadas do Estúdio e o papel pedagógico de cada uma:
 | **Núcleo "na mão"** | sem extensão | JavaScript + canvas puro com OOP. O aluno vê que o motor não é mágica. |
 | **Jogo 3D** (básico) | `game-3d` | Porta do 3D: mesma lógica do 2D com câmera e eixo Z. |
 | **Jogo 3D Avançado** | `game-3d-advanced` (SZGameKit3D) | FSM, pool, física, moldes — o SZGameKit do 3D. |
+| **Mundo 3D** | `world-3d` | Mundo aberto: terreno, veículo, trânsito autônomo, NPC com diálogo, missão, interiores. Usada junto com a 3D Avançado no nível Intermediário 3D. |
 | **Canvas 3D "na mão"** | `canvas-3d` (núcleo) | three.js cru, fiel na Ponte. O topo da escada. |
+
+**Uma camada por nível de curso, exclusiva.** O aluno sobe de nível quando troca de camada,
+não quando o jogo fica maior: Iniciante 2D = Jogo 2D · Intermediário 2D = Jogo 2D Avançado ·
+Avançado 2D = sem extensão · Iniciante 3D = Jogo 3D · Intermediário 3D = Jogo 3D Avançado +
+Mundo 3D · Avançado 3D = sem extensão. **2D antes de 3D, sempre.** A grade dos 48 cursos que
+sai dessa regra está em `comunidade-dos-criadores/entregas/cursos/trilha-cursos-jogos.md`.
 
 ---
 
@@ -107,6 +114,17 @@ Regras da escada:
 - **O degrau 9 é a ponte para OOP**: "definir tipo de inimigo uma vez, nascer vários" é
   exatamente classe→instâncias. A aula deve DIZER isso quando o aluno chega no avançado.
 - **2D antes de 3D, sempre**: o 3D reaproveita ~80% do vocabulário (seção 5).
+
+**Onde cada degrau cai nos níveis de curso.** Pela regra de uma camada por nível (seção 1), os
+degraus **1 a 10 são todos da extensão Jogo 2D**, então cabem inteiros no **Iniciante 2D**, e os
+degraus 9 e 10 são justamente os que fecham esse nível. O **Intermediário 2D** é o degrau 11, e só
+ele. O **Avançado 2D** é o degrau 14 na versão canvas. O **Iniciante 3D** é o degrau 12, o
+**Intermediário 3D** o 13, e o **Avançado 3D** o 14 na versão three.js.
+
+> Correção registrada: versões anteriores deste documento tratavam os degraus 9 e 10 como
+> Intermediário 2D. Os blocos que os realizam (`define_enemy_type`, `create_tilemap`,
+> `camera_follow`, `draw_group_by_y`) são todos do `game-2d`, então pela regra de camada eles
+> pertencem ao fim do Iniciante 2D.
 
 ---
 
@@ -246,6 +264,30 @@ ao Estúdio:
 | Segurar espaço = metralhadora de tiros | `on_key` vs `key_down` + `cooldown_ready` |
 | Objeto 3D "invisível" | `debug_grid` + `debug_axes` para se localizar |
 
+**Conferir no runtime se a dor reproduz, ANTES de escrevê-la.** A tabela acima lista dores
+exemplares, mas **nem toda dor acontece em todo jogo**. No Dino Corredor, o rastro sem "Limpar a
+tela" quase não aparece, porque o desenho do fundo repinta a tela inteira a cada quadro e apaga o
+quadro anterior junto; e a lentidão por acúmulo de sprites não derruba o FPS, porque nascem poucos
+por minuto. Encenar um problema que a gravação não vai mostrar quebra a confiança da aula.
+
+Quando a dor não reproduz, há três saídas, nesta ordem de preferência:
+
+1. **Trocar por uma dor real do mesmo jogo.** Na Aula 2 do Corre, Dino! a dor virou **camadas**: o
+   herói desaparecendo atrás do fundo, que é dramático e reproduz sempre.
+2. **Provocar o sintoma de propósito**, e dizer na aula que está provocando. A Aula 6 baixa o
+   relógio para 0.1 s para o contador de sprites explodir na tela em segundos.
+3. **Ensinar honestamente**, explicando por que a peça fica mesmo sem sintoma visível ("neste jogo
+   você quase não vê diferença, e ela fica porque no dia que você fizer um jogo sem fundo cheio o
+   rastro aparece com força").
+
+Em todos os casos, **registrar o motivo** na referência do curso, para a próxima pessoa não
+reescrever a dor que não existe.
+
+O mesmo vale para conceito que **não tem dor possível naquela camada**: a gravidade do Corre, Dino!
+vive dentro do bloco `Controlar o dinossauro` e não existe em peças separadas, então não há como
+montá-la errado primeiro. A aula usa a dor real (o personagem não obedecer quando você aperta a
+tecla) e **nomeia** a gravidade dizendo que ela já vem pronta ali dentro, de propósito.
+
 ### 6.2 Jogo feio primeiro, bonito depois
 
 O curso profissional constrói o jogo INTEIRO numa versão mínima e desorganizada
@@ -280,8 +322,13 @@ Todo jogo-modelo dos cursos existe em três degraus, com o MESMO nome-base:
 3. **"… (na mão)"** (núcleo/canvas-3d) — OOP/three.js cru, fidelidade máxima, Ponte fiel.
 
 A criança pode jogar os três e VER que é o mesmo jogo — o que muda é o quanto do motor
-ela mesma constrói. (Vitrine atual: famílias Dino Corredor, Corrida Infinita, Batalha de
-Monstrinhos, Aventura do Herói, Labirinto dos Robôs, Mundo de Blocos.)
+ela mesma constrói. (Vitrine de 2026-07-28: **29 famílias com tríade completa**, 17 em 2D e
+12 em 3D. As 16 que formam a carreira estão na grade do `trilha-cursos-jogos.md`; as 13
+restantes são o banco do desafio mensal.)
+
+**Regra de manutenção:** revarrer a vitrine antes de mexer na grade. Em um único dia o acervo
+saltou de 107 para 145 exemplos e quase dobrou as tríades, o que mudou a grade inteira e
+cancelou um pedido de produção de exemplos novos.
 
 ### 6.6 Nomear os padrões
 
@@ -313,6 +360,25 @@ termos; divergência é bug de conformidade.
 | Limpeza fora da tela | **"limpar/descartar quem saiu"** | `prune_offscreen`, `cull_offscreen`, `cull_far` |
 | Forma de colisão visível | **"caixa de colisão"** | `draw_hitbox` (2D), wireframe/esfera de debug (3D) |
 | Dial de dificuldade | **"área de colisão de N%"** | `sz_g2d_set_hitbox_scale` |
+
+**Termos pedagógicos** — o nome que a AULA usa para o padrão, quando ele difere do rótulo do bloco.
+Estes são conteúdo tanto quanto os de cima, e divergir deles também é bug de conformidade:
+
+| Conceito | Termo canônico | Onde já vale |
+|---|---|---|
+| Repetição no tempo, como a aula chama o padrão | **"relógio"** | o timer da 4.1; "a peça que você leva pra todo jogo" |
+| Limpeza fora da tela, como a aula chama o padrão | **"faxina"** | o culling da 4.5 |
+| Medir antes de otimizar | **"medidor"** | o instrumento da 4.6 (`count_group`, `count_alive`, `object_count`); entra e sai da aula |
+| Feedback barato (juice) | **"retorno pro jogador"** | som + tremida + partícula juntos, a 4.8 |
+| Invencibilidade temporária | **"quadros de invencibilidade"** | `damage_sprite` + `is_invincible` + `blink` |
+| Painel por cima do jogo | **"HUD"** | placar, barra de vida, mapinha (subcategoria Placar e HUD) |
+| Ordem de desenho | **"camadas"** | quem é desenhado depois fica por cima |
+| Máquina de estados de tela | **"estados do jogo"** | menu, jogando, pausado, fim, a 4.7 |
+| Número sorteado na hora | **"sorteio"** | `um número de __ a __` |
+| Envolver blocos já montados num Se | **"embrulhar no Se"** | manobra de interface do Estúdio, 4 etapas fixas: pegar o Se, tirar a comparação de fábrica, encaixar a pergunta, envolver o que já existia. Demonstrar por inteiro **uma vez** e depois chamar pelo nome citando a aula |
+| Variável de laço do grupo | **"apelido"** | o `chamar o sprite de __` do `for_each_in_group` |
+| Mudar bloco de lugar | **"arrastar, nunca copiar"** | copiar duplica e deixa o original: dois jogos rodando ao mesmo tempo |
+| Testar o jogo (não existe botão de play) | **"olha o seu jogo"** (automático) · **"clica na área do jogo e aperta X"** (interativo) · **"recarrega a página"** (voltar ao começo) | o preview roda ao vivo; **"roda o jogo" é instrução proibida**, manda o aluno procurar botão que não existe |
 
 Notas de manutenção:
 
