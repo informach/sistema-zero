@@ -14,6 +14,8 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
+import { useFocusMode } from '@/components/kids/focus-mode'
+import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import {
   isGuidedCreationActive,
   setGuidedCreationActive,
@@ -74,6 +76,9 @@ export function LessonPlayer({
   shareUrl,
 }: Props) {
   const router = useRouter()
+  // Modo foco: dois botões INDEPENDENTES no header (menu ≥768px, lista de aulas
+  // ≥1024px). Ver focus-mode.tsx.
+  const { navAvailable, outlineAvailable, outlineCollapsed } = useFocusMode()
   const [completing, setCompleting] = useState(false)
   // O envio ao professor faz router.refresh() e pode remontar a árvore da aula.
   // A intenção guiada vive na memória do módulo até a saída explícita, igual ao
@@ -320,7 +325,13 @@ export function LessonPlayer({
 
   return (
     <LessonPlayerProvider value={playerContext}>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
+      <div
+        className={cn(
+          'flex flex-col gap-6 lg:flex-row lg:items-start',
+          // Sem a coluna direita, some o gap fantasma antes da largura-zero.
+          outlineCollapsed ? 'lg:gap-0' : 'lg:gap-10',
+        )}
+      >
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           {/* Header de "lição" (padrão Duolingo): voltar em círculo + progresso do CURSO. */}
@@ -334,6 +345,13 @@ export function LessonPlayer({
             </Link>
             <ProgressBar value={course.progress.percent} className="flex-1" />
             <span className="sz-display text-sm">{course.progress.percent}%</span>
+            {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
+            {navAvailable || outlineAvailable ? (
+              <div className="flex items-center gap-2">
+                <FocusModeToggle target="nav" />
+                <FocusModeToggle target="outline" />
+              </div>
+            ) : null}
           </div>
 
           {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
@@ -431,7 +449,16 @@ export function LessonPlayer({
         {/* Outline do curso (sidebar) como MINI-TRILHA: módulos = unidades
             temáticas, aulas = círculos numerados. lg:top-6: sem header fixo
             no desktop (a navegação é a sidebar do app). */}
-        <aside className="w-full shrink-0 lg:sticky lg:top-6 lg:w-72">
+        <aside
+          aria-hidden={outlineCollapsed || undefined}
+          className={cn(
+            'w-full shrink-0 overflow-hidden transition-[width,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+            'lg:sticky lg:top-6',
+            outlineCollapsed
+              ? 'lg:w-0 lg:pointer-events-none lg:opacity-0'
+              : 'lg:w-72 lg:opacity-100',
+          )}
+        >
           <Card className="overflow-hidden p-0">
             {/* Sem barra de progresso aqui: o header da lição (topo) já a mostra. */}
             <div className="border-border border-b px-4 py-3">

@@ -1983,6 +1983,12 @@ const img = (file: string) => `${imagesBase}/${file}`
     place-items: center;
     box-shadow: var(--sombra-sm);
   }
+  /* nos dias pares a imagem ocupa a coluna da esquerda, então o número vai pro canto direito
+     (senão ele cai em cima do print) */
+  .dpj .day:nth-child(even) .num {
+    left: auto;
+    right: 24px;
+  }
   .dpj .day:nth-child(2) .num {
     background: linear-gradient(150deg, #4bd886, #2f9e57);
   }
@@ -2019,6 +2025,10 @@ const img = (file: string) => `${imagesBase}/${file}`
     }
     .dpj .day:nth-child(even) .day-art {
       order: 0;
+    }
+    .dpj .day:nth-child(even) .num {
+      left: 24px;
+      right: auto;
     }
   }
 
