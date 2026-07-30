@@ -1,6 +1,5 @@
 'use client'
 
-import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import { usePathname } from 'next/navigation'
 import {
   createContext,
@@ -19,11 +18,21 @@ interface LessonChromeContextValue {
   navHidden: boolean
   /** Preferência bruta: esconder a LISTA DE AULAS (barra direita da aula). */
   outlineHidden: boolean
-  /** `true` quando faz sentido oferecer os botões: página de aula + desktop. */
-  available: boolean
-  /** A barra ESQUERDA deve colapsar agora (`navHidden && available`). */
+  /**
+   * Oferecer o botão do MENU: página de aula + tela ≥768px (a barra esquerda
+   * aparece a partir do `md` do Tailwind, então dá p/ ganhar espaço já aqui —
+   * cobre notebook com zoom/telas menores).
+   */
+  navAvailable: boolean
+  /**
+   * Oferecer o botão da LISTA DE AULAS: página de aula + tela ≥1024px. Abaixo de
+   * `lg` a lista fica EMPILHADA embaixo (largura total), então escondê-la não
+   * alargaria o estúdio — o botão não faz sentido ali.
+   */
+  outlineAvailable: boolean
+  /** A barra ESQUERDA deve colapsar agora (`navHidden && navAvailable`). */
   navCollapsed: boolean
-  /** A barra DIREITA deve colapsar agora (`outlineHidden && available`). */
+  /** A barra DIREITA deve colapsar agora (`outlineHidden && outlineAvailable`). */
   outlineCollapsed: boolean
   toggleNav: () => void
   toggleOutline: () => void
@@ -32,11 +41,33 @@ interface LessonChromeContextValue {
 const INERT: LessonChromeContextValue = {
   navHidden: false,
   outlineHidden: false,
-  available: false,
+  navAvailable: false,
+  outlineAvailable: false,
   navCollapsed: false,
   outlineCollapsed: false,
   toggleNav: () => {},
   toggleOutline: () => {},
+}
+
+/**
+ * `true` quando a viewport tem ao menos `minWidthPx`. SSR-safe (init lazy guarda
+ * `typeof window` → `false` no servidor; reage a `change`). Espelha o
+ * `useIsDesktop` do member-shell, mas parametrizado — precisamos de DOIS limiares
+ * (768 p/ o menu, 1024 p/ a lista de aulas).
+ */
+function useMinWidth(minWidthPx: number): boolean {
+  const query = `(min-width: ${minWidthPx}px)`
+  const [matches, setMatches] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(query).matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const onChange = () => setMatches(mq.matches)
+    setMatches(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [query])
+  return matches
 }
 
 const LessonChromeContext = createContext<LessonChromeContextValue>(INERT)
@@ -77,7 +108,8 @@ export function FocusModeProvider({
   children: ReactNode
 }) {
   const pathname = usePathname()
-  const isDesktop = useIsDesktop()
+  const isTablet = useMinWidth(768) // md — barra esquerda (menu)
+  const isDesktop = useMinWidth(1024) // lg — coluna direita (lista de aulas)
   // Inicia FALSE nos dois lados (SSR + 1º render cliente) p/ não dar mismatch de
   // hidratação; a preferência salva é aplicada num efeito pós-mount.
   const [navHidden, setNavHidden] = useState(false)
@@ -106,17 +138,20 @@ export function FocusModeProvider({
   }, [viewerId])
 
   const value = useMemo<LessonChromeContextValue>(() => {
-    const available = isLessonPath(pathname) && isDesktop
+    const onLesson = isLessonPath(pathname)
+    const navAvailable = onLesson && isTablet
+    const outlineAvailable = onLesson && isDesktop
     return {
       navHidden,
       outlineHidden,
-      available,
-      navCollapsed: navHidden && available,
-      outlineCollapsed: outlineHidden && available,
+      navAvailable,
+      outlineAvailable,
+      navCollapsed: navHidden && navAvailable,
+      outlineCollapsed: outlineHidden && outlineAvailable,
       toggleNav,
       toggleOutline,
     }
-  }, [pathname, isDesktop, navHidden, outlineHidden, toggleNav, toggleOutline])
+  }, [pathname, isTablet, isDesktop, navHidden, outlineHidden, toggleNav, toggleOutline])
 
   return <LessonChromeContext.Provider value={value}>{children}</LessonChromeContext.Provider>
 }

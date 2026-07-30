@@ -76,9 +76,9 @@ export function LessonPlayer({
   shareUrl,
 }: Props) {
   const router = useRouter()
-  // Modo foco: dois botões INDEPENDENTES (esconder menu / lista de aulas) no header,
-  // só em desktop + página de aula (`available`). Ver focus-mode.tsx.
-  const { available, outlineCollapsed } = useFocusMode()
+  // Modo foco: dois botões INDEPENDENTES no header (menu ≥768px, lista de aulas
+  // ≥1024px). Ver focus-mode.tsx.
+  const { navAvailable, outlineAvailable, outlineCollapsed } = useFocusMode()
   const [completing, setCompleting] = useState(false)
   // O envio ao professor faz router.refresh() e pode remontar a árvore da aula.
   // A intenção guiada vive na memória do módulo até a saída explícita, igual ao
@@ -345,8 +345,8 @@ export function LessonPlayer({
             </Link>
             <ProgressBar value={course.progress.percent} className="flex-1" />
             <span className="sz-display text-sm">{course.progress.percent}%</span>
-            {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil (desktop). */}
-            {available ? (
+            {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
+            {navAvailable || outlineAvailable ? (
               <div className="flex items-center gap-2">
                 <FocusModeToggle target="nav" />
                 <FocusModeToggle target="outline" />

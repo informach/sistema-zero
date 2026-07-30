@@ -11,7 +11,9 @@ import { useFocusMode } from './focus-mode'
  * página de aula/desktop (`available`). Estilo 3D coerente com o botão "voltar" do header.
  */
 export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
-  const { available, navHidden, outlineHidden, toggleNav, toggleOutline } = useFocusMode()
+  const { navAvailable, outlineAvailable, navHidden, outlineHidden, toggleNav, toggleOutline } =
+    useFocusMode()
+  const available = target === 'nav' ? navAvailable : outlineAvailable
   if (!available) return null
 
   const hidden = target === 'nav' ? navHidden : outlineHidden
