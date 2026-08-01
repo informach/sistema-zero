@@ -38,6 +38,24 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   },
 
   {
+    // Moldura no ELEMENTO do canvas (não desenhada por dentro): não gasta pixel
+    // do jogo e nada a apaga. Mesma frase do bloco da Jogo 2D básica.
+    type: 'sz_gk_stage_border',
+    placement: 'start-only-command',
+    message0: 'Mostrar a borda da tela, cor %1 espessura %2',
+    args0: [
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#e2e8f0' },
+      { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma moldura colorida em volta da tela do jogo, para ver onde começa e termina a área de desenho. Ótimo para explicar o palco. Para tirar, apague o bloco.',
+  },
+
+  {
     type: 'sz_gk_start',
     placement: 'start-only-command',
     migration: 'remove-engine-boot',
@@ -572,7 +590,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     type: 'sz_gk_define_mold',
     placement: 'start-only-command',
     message0:
-      'Criar o molde %1: tamanho %2 × %3, vida %4, velocidade %5, dano %6, cor %7, imagem %8, aparência %9',
+      'Criar o molde %1: tamanho %2 × %3, vida %4, velocidade %5, dano %6, cor %7, imagem %8, aparência %9, caixa %10',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -583,13 +601,22 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#e94f4f' },
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
       { type: 'field_name_picker', name: 'LOOK', text: '', kind: 'look' },
+      // Padrão quadrada: quem não mexer gera o MESMO código de antes.
+      {
+        type: 'field_dropdown',
+        name: 'SHAPE',
+        options: [
+          ['quadrada', 'retangulo'],
+          ['redonda', 'circulo'],
+        ],
+      },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um MOLDE são os DADOS de um tipo de personagem (inimigo, moeda, tiro…). Defina uma vez; depois faça quantos quiser dele. É como os jogos profissionais organizam muitos personagens iguais. A imagem (pixel) ou a aparência (vetor) são opcionais; sem elas, sai um retângulo da cor.',
+      'Um MOLDE são os DADOS de um tipo de personagem (inimigo, moeda, tiro…). Defina uma vez; depois faça quantos quiser dele. É como os jogos profissionais organizam muitos personagens iguais. A imagem (pixel) ou a aparência (vetor) são opcionais; sem elas, sai um retângulo da cor. A caixa redonda deixa bola, bolha e moeda encostarem mais justo.',
   },
 
   {

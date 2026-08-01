@@ -882,6 +882,47 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
   },
 
   {
+    // Irmão do "Caixa de colisão de …": lá se escolhe o TAMANHO, aqui a FORMA.
+    type: 'sz_gk_set_hitbox_shape',
+    placement: 'command',
+    message0: 'Caixa de colisão de %1: forma %2, raio %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'SHAPE',
+        options: [
+          ['redonda', 'circulo'],
+          ['quadrada', 'retangulo'],
+        ],
+      },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Bicho redondo (bola, bolha, moeda) fica mais justo com a caixa REDONDA: o canto vazio do quadrado deixa de encostar. Vale para encostar, para o par que se encosta, para o golpe, para pisar e para o clique; o empurrão em parede, chão e tiles continua quadrado. Raio 0 = o motor calcula pelo tamanho.',
+  },
+
+  {
+    // O par do "Caixa de colisão de …": definir a caixa e VER a caixa. Chave
+    // GERAL porque na gk quem desenha é o motor, e tiros/inimigos de molde não
+    // têm nome para apontar um a um.
+    type: 'sz_gk_show_hitboxes',
+    placement: 'start-only-command',
+    message0: 'Mostrar as caixas de colisão',
+    args0: [],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Contorna de verde a caixa que COLIDE de tudo que está vivo: herói, inimigos, tiros e o que nasce de molde. É como conferir se a caixa está no lugar certo (por exemplo, só nos pés). Para tirar, apague o bloco.',
+  },
+
+  {
     type: 'sz_gk_fade_screen',
     placement: 'command',
     message0: 'Tela: %1 na cor %2 em %3 s',

@@ -3693,6 +3693,24 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const speed = toExpr(args[1], ctx)
       return spriteVar && isSimpleValue(speed) ? { type: 'g2d:topDown', spriteVar, speed } : null
     }
+    case 'flyFree': {
+      const spriteVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(speed) ? { type: 'g2d:flyFree', spriteVar, speed } : null
+    }
+    case 'swim': {
+      const spriteVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(speed) ? { type: 'g2d:swim', spriteVar, speed } : null
+    }
+    case 'flap': {
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const force = toExpr(args[2], ctx)
+      return spriteVar && ctxVar && isSimpleValue(force)
+        ? { type: 'g2d:flap', spriteVar, ctxVar, force }
+        : null
+    }
     case 'followPointer': {
       const spriteVar = identifierName(args[0])
       const speed = toExpr(args[1], ctx)
@@ -5240,8 +5258,19 @@ function readGameKitMoldOptions(
   color: string
   image: string
   look: string
+  shape?: 'circulo'
 } | null {
-  const result = {
+  const result: {
+    w: JSExpr
+    h: JSExpr
+    health: JSExpr
+    speed: JSExpr
+    damage: JSExpr
+    color: string
+    image: string
+    look: string
+    shape?: 'circulo'
+  } = {
     w: { type: 'num', value: 40 } as JSExpr,
     h: { type: 'num', value: 40 } as JSExpr,
     health: { type: 'num', value: 20 } as JSExpr,
@@ -5266,6 +5295,11 @@ function readGameKitMoldOptions(
     } else if (key === 'color' || key === 'image' || key === 'look') {
       if (prop.value?.type !== 'StringLiteral') return null
       result[key] = prop.value.value as string
+    } else if (key === 'shape') {
+      // Opcional: só a caixa REDONDA é emitida pelo gerador. Qualquer outro
+      // valor é código à mão que os blocos não representam.
+      if (prop.value?.type !== 'StringLiteral' || prop.value.value !== 'circulo') return null
+      result.shape = 'circulo'
     } else {
       return null
     }
@@ -5344,6 +5378,16 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const o = readGameKitSetupFullOptions(args[0])
       return o ? { type: 'gk:setupFull', bg: o.bg, accent: o.accent } : null
     }
+    case 'showStageBorder': {
+      // generator: SZGameKit.showStageBorder("#e2e8f0", 4)
+      if (args[0]?.type !== 'StringLiteral') return null
+      const width = toExpr(args[1], ctx)
+      return isSimpleValue(width)
+        ? { type: 'gk:stageBorder', color: args[0].value as string, width }
+        : null
+    }
+    case 'showHitboxes':
+      return args.length === 0 ? { type: 'gk:showHitboxes' } : null
     case 'start':
       return args.length === 0 ? { type: 'gk:start' } : null
     case 'loadImage': {
@@ -6876,6 +6920,17 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(ox) && isSimpleValue(oy) && isSimpleValue(w) && isSimpleValue(h)
         ? { type: 'gk:setHitbox', charVar, ox, oy, w, h }
         : null
+    }
+    case 'setHitboxShape': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      // O dropdown só tem estes dois; forma escrita à mão vira código bruto.
+      const shapeArg = args[1]
+      if (shapeArg?.type !== 'StringLiteral') return null
+      const shape = shapeArg.value as string
+      if (shape !== 'circulo' && shape !== 'retangulo') return null
+      const radius = toExpr(args[2], ctx)
+      return isSimpleValue(radius) ? { type: 'gk:setHitboxShape', charVar, shape, radius } : null
     }
     case 'fadeScreen': {
       if (args[0]?.type !== 'StringLiteral') return null

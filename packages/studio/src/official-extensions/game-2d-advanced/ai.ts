@@ -16,6 +16,10 @@ RECEITA CANÔNICA POR ÁREA DO PROJETO:
    · OU SZGameKit.setupFull({ background, accent }) — "ocupar a tela toda": SEM
      dimensões, o canvas preenche a viewport e config.w/h (width()/height())
      ACOMPANHAM a janela (centralize por eles, não por número fixo). Use UM dos dois.
+   · A tela nasce SEM moldura. SZGameKit.showStageBorder(cor, espessura) põe uma
+     (CSS no canvas, capada em 40) e SZGameKit.showHitboxes() contorna de verde a
+     caixa que COLIDE de tudo que está vivo. Os dois são de ensino/depuração e vão
+     em Ao iniciar; blocos "Mostrar a borda da tela" e "Mostrar as caixas de colisão".
 2. SZGameKit.loadImage("nome", "asset") (opcional: apelido/pré-carga) / loadSound
 3. SZGameKit.defineLook / defineMold / defineEffect / setMission — os DADOS
 4. const heroi = SZGameKit.createCharacter({ image, w, h, speed, color })

@@ -1636,6 +1636,24 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_g2d_top_down', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
     }
+    case 'g2d:flyFree': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_fly_free', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g2d:swim': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_swim', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g2d:flap': {
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      return force === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_flap', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FORCE: force })
+    }
     case 'g2d:followPointer': {
       const speed = exprToValueBlock(valueToExpr(stmt.speed))
       return speed === null
@@ -2954,6 +2972,14 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     }
     case 'gk:setupFull':
       return block('sz_gk_setup_full', { BG: stmt.bg, ACCENT: stmt.accent }, {}, stmt.__id)
+    case 'gk:stageBorder': {
+      const width = exprToValueBlock(valueToExpr(stmt.width))
+      return width === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
+    }
+    case 'gk:showHitboxes':
+      return block('sz_gk_show_hitboxes', {}, {}, stmt.__id)
     case 'gk:start':
       return block('sz_gk_start', {}, {}, stmt.__id)
     case 'gk:loadImage':
@@ -4388,6 +4414,14 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
             H: h,
           })
     }
+    case 'gk:setHitboxShape': {
+      const radius = exprToValueBlock(valueToExpr(stmt.radius))
+      return radius === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_set_hitbox_shape', { WHO: stmt.charVar, SHAPE: stmt.shape }, {}, stmt.__id, {
+            RADIUS: radius,
+          })
+    }
     case 'gk:fadeScreen': {
       const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
       return s2 === null
@@ -4547,7 +4581,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block(
             'sz_gk_define_mold',
-            { NAME: stmt.name, COLOR: stmt.color, IMAGE: stmt.image, LOOK: stmt.look },
+            {
+              NAME: stmt.name,
+              COLOR: stmt.color,
+              IMAGE: stmt.image,
+              LOOK: stmt.look,
+              SHAPE: stmt.shape === 'circulo' ? 'circulo' : 'retangulo',
+            },
             {},
             stmt.__id,
             { W: w, H: h, HEALTH: health, SPEED: speed, DAMAGE: damage },

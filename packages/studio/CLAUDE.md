@@ -525,7 +525,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.54.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.55.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -559,6 +559,109 @@ então o nome aparece no seletor fora do trecho — usar lá é pego pela valida
 formas, escopo e runtime: o nomeado É o mesmo objeto do grupo e cada um anima no próprio ritmo).
 **Faltam ainda** (conversado com a usuária, fora deste lote): "pôr o sprite ⟨X⟩ no grupo ⟨G⟩"
 (runtime não tem `addToGroup`) e animação por ESTADO no grupo (espelho do `setEnemyStateAnimation`).
+
+**Nadar e voar (v0.55.0, 01/08):** três jeitos NOVOS de o sprite se mover em 🕹️ Movimento, todos
+`command` como o `platformer` e todos em `runtime/inputAndMotion.ts`. Antes deste lote a extensão tinha
+plataforma, 4 direções, ponteiro e nave; **nadar não existia** e voar só existia como COMPORTAMENTO de
+inimigo (`voador`/`voador-vertical` dentro do `updateEnemyType`), inacessível ao jogador.
+
+- **`sz_g2d_fly_free`** "voar livre, velocidade ⟨3⟩" → `flyFree(sprite, speed)`: 8 direções (diagonal
+  normalizada como o `topDown`), SEM gravidade, acelerando enquanto a tecla está apertada e PLANANDO ao
+  soltar (é o que separa do top-down, que para na hora). O número digitado é a velocidade MÁXIMA (teto
+  pelo módulo, `_clampSpeed`), mantendo o significado do campo igual ao dos vizinhos.
+- **`sz_g2d_flap`** "bater as asas, força ⟨8⟩" → `flap(sprite, ctx, force)`: clone honesto do
+  `jumpOnGround` (`arcadeKits.ts`) **sem a exigência de estar no chão**. Gravidade do mundo, chão na
+  borda visível (por isso leva `ctx`, como o `platformer`) e impulso na BORDA de ↑/W/Espaço **ou de um
+  toque** — o mobile vem de graça. ⚠️ A borda é por SPRITE (`sprite._flapHeld`), não a variável de módulo
+  do `jumpOnGround`: dois pássaros na mesma tela precisam bater as asas cada um no seu.
+- **`sz_g2d_swim`** "nadar, velocidade ⟨2⟩" → `swim(sprite, speed)`: empuxo = `_worldGravityOr(0.6) *
+  0.18` (afunda devagar parado, sobe segurando ↑) + arrasto 0.88 nos dois eixos + teto. ⭐ Com a
+  gravidade do mundo em **0** o bicho fica BOIANDO — o `gravityConfigured` já distingue "0 declarado" de
+  "nada declarado", então isso sai de graça e é coerente com o resto do motor.
+- **Animação sem estado novo:** voar livre e nadar chamam `_leaveGroundMode(s)` (as duas linhas de
+  `delete onGround/_groundedLastFrame` que o `topDown` já fazia, agora extraídas) — sem isso o
+  `_resolveAnimState` classificaria um peixe nadando como **"caindo"**. Assim eles usam
+  andando/vertical/parado, que já existem. O bater as asas mantém `onGround = false` de propósito:
+  "pulando/caindo" é o certo ali. Migalha de velocidade vira 0 (`< 0.01`), senão "está se movendo?"
+  ficaria verdadeiro para sempre e a animação nunca voltaria p/ "parado".
+- Contadores: blocos **210 → 213**, API **209 → 212**, manifest **0.54.0 → 0.55.0**, mais as 4 linhas de
+  inventário do `docs/game-2d-audit-2026-07-20.md`. Teste: `__tests__/swimAndFly.test.ts` (16).
+- **Fora de escopo** (combinado com a usuária): estados de animação "nadando"/"voando" (mexeria no enum
+  `G2D_ANIM_STATES`, nos 2 dropdowns de estado, na cadeia de fallback e no parser) e água como LUGAR do
+  mapa (entrar na água e passar a nadar sozinho) — ela escolheu "o jeito do sprite o tempo todo".
+
+## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
+
+Dois blocos `start-only`, ambos sobre ENXERGAR o que o motor faz:
+
+- **`sz_gk_stage_border`** ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", em 🧰 **O jogo** — na gk,
+  🎨 Aparência é o visual dos PERSONAGENS, não do palco). ⭐ **A moldura de fábrica SAIU**: o
+  `#szgk-canvas` do `buildCss()` trazia `border: 4px solid #2e2e3e`, então toda partida nascia com uma
+  borda cinza que ninguém escolheu e não dava p/ tirar — e era incoerente, porque o ramo "ocupar a tela
+  toda" do `resizeCanvas` a apagava (mesmo jogo, moldura num modo e não no outro). Agora o CSS não
+  declara borda, o `style.border = '0'` do ramo de tela cheia sumiu junto (se ficasse, **apagaria a
+  borda escolhida a cada redimensionamento**) e a escolha vive em `config.border` + `applyStageBorder()`,
+  chamado também no fim do `ensureShell` — na gk o canvas só nasce no "Começar o jogo", e o bloco pode
+  rodar antes. Espessura capada em 40; `box-sizing: border-box` mantém a moldura DENTRO da caixa (sem
+  rolagem, sem empurrar layout, resolução interna intocada). ⚠️ Efeito colateral desejado: os exemplos
+  "Profissional" perderam a moldura cinza.
+- **`sz_gk_show_hitboxes`** ("Mostrar as caixas de colisão", em 🔧 **Propriedades & direção**, ao lado do
+  "Caixa de colisão de …": definir e ver ficam juntos). Chave GERAL (escolha da usuária) — alcança tiros
+  e inimigos de molde, que não têm nome. Liga o `debugOverlay` que já existia escondido na crase, mas o
+  **`drawDebugOverlay` foi consertado**: desenhava CÍRCULOS a partir de `e.radius` enquanto tudo que o MOTOR
+  resolve sozinho (sólido, tiles, plataforma one-way, bordas, golpe, varredura de pares) é RETANGULAR pela
+  hitbox — o overlay MENTIA. Agora contorna `hbLeft/hbTop/hbW/hbH`, os mesmos helpers do `touching`.
+  ⚠️ **Existe um caminho circular MANUAL** (anterior a este lote): o bloco `sz_gk_touching_circle` ("⟨a⟩ e
+  ⟨b⟩ se encostam (círculo)?" → `touchCircle`) — um reporter que a criança põe num "se"; o motor nunca o
+  chama. A v0.55.0 (abaixo) fechou a lacuna que sobrava: o overlay desenhava retângulo mesmo em quem
+  perguntava pelo círculo.
+
+## Jogo 2D Avançado — a caixa pode ser REDONDA (v0.55.0, 01/08)
+
+"O hitbox sempre é retângulo? Não seria possível escolher para cada sprite?" Agora dá, com uma promessa
+ESTREITA de propósito: **o círculo vale para ENCOSTAR** (o bloco "se encostam?", o "para cada par que se
+encosta", o golpe `didHit`, o pisar `stompKill` e o clique `pointIn`). **Empurrão sólido, tiles,
+plataforma e bordas seguem quadrados** — `resolveSolid` empurra pelo menor eixo de sobreposição, conta que
+não existe em círculo, e trocá-la mexeria em todo jogo de plataforma que já existe. Região e "porcentagem
+de sobreposição" também ficam de fora (esta pediria a área de círculo ∩ retângulo). A escolha está
+registrada no comentário do `setHitbox`, junto do "bordas são sobre o DESENHO".
+
+⭐ **O alcance real é pequeno porque encostar passa por UMA função:** `touching(a,b)` e seus 3 chamadores.
+O caminho quente fica INTACTO — `if (a._hbShape || b._hbShape)` desvia para `touchingByShape` e o AABB
+inline de sempre continua sendo o que roda nos ~90 mil pares/quadro de dois enxames cheios.
+
+- Campo `_hbShape` (`''` = retângulo, `'circulo'`), nascendo nos 3 pontos dos irmãos `_hb*`
+  (`createCharacter`, `blankEntity`, reset do `spawnFromMold`) e NÃO tocado pelo `resetCharacter` (é
+  configuração, não estado de partida).
+- ⭐ **O raio virou derivado**: `hbRadius(e)` = `e.radius > 0 ? e.radius : min(hbW,hbH)/2`, com centro na
+  CAIXA (`hbCenterX/Y`). Para isso o `radius` nasce **0** em `createCharacter`/`defineMold` (era
+  `min(w,h)/2` congelado). Conserta de graça dois defeitos do `touchCircle` antigo: o raio ficava velho
+  depois de `setProperty(who,'w',…)` e o círculo ignorava o deslocamento do "só os pés colidem". Sem
+  caixa configurada os números batem com os de antes, então os 3 usos embutidos não mudaram.
+- Bloco **`sz_gk_set_hitbox_shape`** ("Caixa de colisão de ⟨heroi⟩: forma ⟨redonda⟩, raio ⟨0⟩") em 🔧
+  Propriedades & direção, irmão do `sz_gk_set_hitbox` e no mesmo degrau (`AVANCADO_2D`). Raio 0 = o motor
+  calcula, mesmo idioma do `_hbW/_hbH`.
+- **Campo `SHAPE` no `sz_gk_define_mold`** (10º): é o que faz TIRO e INIMIGO de molde ficarem redondos —
+  eles não têm nome para receber um bloco próprio. ⭐ Mesma régua do `NAME` do "sprite de grupo com nome":
+  no padrão (quadrada) a chave **não entra na IR** e o JS sai byte-idêntico ao dos projetos antigos; o
+  parser aceita as duas aridades. A forma viaja `molds[k].shape` → `e._hbShape` no `spawnFromMold` (ao
+  lado do `e.radius = m.radius`), então sobrevive à reciclagem do pool.
+- `boxOf` do overlay desenha `arc` em quem é círculo e `strokeRect` no resto.
+- Contadores: blocos **341 → 342**, API **338 → 339** (`setHitboxShape`), manifest **0.54.0 → 0.55.0**.
+- Testes: `__tests__/hitboxShape.test.ts` (13) + o harness compartilhado **`__tests__/kitHarness.ts`**
+  (extraído do teste da borda; ⚠️ a api dele é interface NOMEADA — com `Record<string, Fn>` o
+  `noUncheckedIndexedAccess` reprova CADA chamada, que foi o erro de typecheck do lote passado). E varre uma
+  lista `characters` nova (capada em 200, zerada no restart) além de `pools`/`combatants`: `combatants` só
+  recebe quem TOMA DANO, então num jogo sem combate a chave geral não mostraria o herói. `seen` evita
+  contornar 2× quem está em duas listas.
+
+Cadeia normal de bloco de extensão + os dois tipos em **`START_ONLY_STATEMENT_TYPES`** (`ir/lifecycle.ts`
+— a pegadinha do lote irmão na básica). Contadores travados: `blockAudit.test.ts` 339 → **341** e o
+`runtime.test.ts` que fixa o tamanho da API 336 → **338**. Testes:
+`__tests__/stageBorderHitbox.test.ts` (CSS sem moldura, borda antes/depois do start, cap, sobrevivência
+ao resize em tela cheia, retângulo com deslocamento em vez de círculo, personagem sem combate no
+overlay). Verificado também em navegador real (CSS computado `border-box` sem empurrar layout; canvas 2D
+real desenhando os mesmos retângulos e ZERO círculos).
 
 **Colisão PLATAFORMA one-way (lote MapperMate F2, 18/07):** o metadado de tileset/tilemap ganhou
 **`platform?: number[]`** (índices de peça one-way: pisa por cima CAINDO, atravessa por baixo/subindo).
@@ -606,7 +709,7 @@ monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente'
 parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
 a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
 `docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
-(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 339**, gk `0.48.0` (0.47.0/0.48.0 = refação Chris Courses R1/R2: Muralha do Reino + Escalada do Guerreiro, depois Duelo de Heróis + Portas do Castelo, todos Profissionais) — full review R31 adicionou imagem/ficha/telas + correções; 0.45.0 = fixes dos exemplos Clear Code B (fonte repõe bolas + gate timeCaido na Batalha Profissional, dica do mato na Aventura); 0.46.0 = exemplo "Chuva de Meteoros Profissional" (raylib_intro nível 2) + fix da recarga: `cooldownReady` virou prazo ABSOLUTO em playTime (a versão por-chamada travava o tiro edge-trigger `keyPressed`+recarga da receita canônica); as revisões atuais incorporaram lifecycle por domínio, descarte dos recursos da factory, acessibilidade do canvas/telas, reset completo e exclusão mútua das batalhas; a batalha RPG vive em `runtime/rpgBattle.ts`).
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 341**, gk `0.54.0` (0.47.0/0.48.0 = refação Chris Courses R1/R2: Muralha do Reino + Escalada do Guerreiro, depois Duelo de Heróis + Portas do Castelo, todos Profissionais) — full review R31 adicionou imagem/ficha/telas + correções; 0.45.0 = fixes dos exemplos Clear Code B (fonte repõe bolas + gate timeCaido na Batalha Profissional, dica do mato na Aventura); 0.46.0 = exemplo "Chuva de Meteoros Profissional" (raylib_intro nível 2) + fix da recarga: `cooldownReady` virou prazo ABSOLUTO em playTime (a versão por-chamada travava o tiro edge-trigger `keyPressed`+recarga da receita canônica); as revisões atuais incorporaram lifecycle por domínio, descarte dos recursos da factory, acessibilidade do canvas/telas, reset completo e exclusão mútua das batalhas; a batalha RPG vive em `runtime/rpgBattle.ts`).
 
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +

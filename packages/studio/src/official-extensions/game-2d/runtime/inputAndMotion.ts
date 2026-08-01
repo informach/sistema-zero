@@ -114,12 +114,105 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     sprite.vy = dy * s;
     sprite.x += dx * s;
     sprite.y += dy * s;
-    // Top-down não possui estado aéreo. Apaga a marca deixada por um helper de
-    // plataforma para que autoAnimate resolva parado/andando/vertical corretamente.
-    // A marca transitória também não pode sobreviver: collideTileMap a consulta
-    // para confirmar um apoio exato no quadro seguinte.
+    _leaveGroundMode(sprite);
+  }
+
+  // Movimento SEM chão (top-down, voar livre, nadar): apaga a marca deixada por
+  // um helper de plataforma para que autoAnimate resolva parado/andando/vertical
+  // corretamente — senão um peixe nadando aparece como "caindo". A marca
+  // transitória também não pode sobreviver: collideTileMap a consulta para
+  // confirmar um apoio exato no quadro seguinte.
+  function _leaveGroundMode(sprite) {
     delete sprite.onGround;
     delete sprite._groundedLastFrame;
+  }
+
+  // ---- Voar e nadar (v0.55.0) ----
+  // Três jeitos NOVOS de o sprite se mover, no mesmo formato do "estilo
+  // plataforma": a criança encaixa um deles no "a cada quadro" e pronto.
+  // O número que ela digita é a velocidade MÁXIMA (o teto), como nos vizinhos.
+  function _clampSpeed(vx, vy, max) {
+    var sp = Math.sqrt(vx * vx + vy * vy);
+    if (!(sp > max) || !(sp > 0)) return { x: vx, y: vy };
+    return { x: (vx / sp) * max, y: (vy / sp) * max };
+  }
+
+  /**
+   * Voar livre: 8 direções sem gravidade nenhuma, ganhando velocidade enquanto a
+   * tecla está apertada e PLANANDO ao soltar (é o que diferencia do top-down,
+   * que para na hora). Passarinho, nave, fadinha.
+   */
+  function flyFree(sprite, speed) {
+    if (!sprite) return;
+    var s = _positiveFiniteNumber(speed, 3);
+    var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+    var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+    var vx = _finiteNumber(sprite.vx, 0) + dx * s * 0.35;
+    var vy = _finiteNumber(sprite.vy, 0) + dy * s * 0.35;
+    // Sem tecla naquele eixo, vai parando aos poucos (planeio).
+    if (!dx) vx *= 0.9;
+    if (!dy) vy *= 0.9;
+    // Migalha de velocidade vira zero: senão "está se movendo?" fica verdadeiro
+    // para sempre e a animação nunca volta p/ "parado".
+    if (Math.abs(vx) < 0.01) vx = 0;
+    if (Math.abs(vy) < 0.01) vy = 0;
+    var v = _clampSpeed(vx, vy, s);
+    sprite.vx = v.x;
+    sprite.vy = v.y;
+    sprite.x = _finiteNumber(sprite.x, 0) + v.x;
+    sprite.y = _finiteNumber(sprite.y, 0) + v.y;
+    _leaveGroundMode(sprite);
+  }
+
+  /**
+   * Bater as asas: a gravidade puxa o tempo todo e cada TOQUE (↑/W/Espaço ou um
+   * toque na tela) dá um empurrão pra cima — no ar também, que é o que separa
+   * isto do "pular no chão". Passarinho do canos, foguete, balão.
+   * ⚠️ A borda do toque é por SPRITE, não por módulo: dois pássaros na mesma
+   * tela precisam bater as asas cada um no seu.
+   */
+  function flap(sprite, ctx, force) {
+    if (!sprite || !ctx || !ctx.canvas) return;
+    var f = _positiveFiniteNumber(force, 8);
+    var g = _worldGravityOr(0.6);
+    sprite.vy = _finiteNumber(sprite.vy, 0) + g;
+    sprite.y = _finiteNumber(sprite.y, 0) + sprite.vy;
+    var visible = _visibleWorldRect(ctx);
+    // Pousa no chão (senão o bicho some para sempre fora da tela); quem quiser
+    // "morreu ao encostar" pergunta a posição.
+    _resolveGravityGround(sprite, visible.top, visible.bottom, g);
+    var pressing = keys.up || keyDown('Space') || pointer.down;
+    if (pressing && !sprite._flapHeld) {
+      sprite.vy = _jumpVelocityForGravity(g, f);
+      sprite.onGround = false;
+    }
+    sprite._flapHeld = pressing;
+  }
+
+  /**
+   * Nadar: água pesada. O empuxo quase anula a gravidade (afunda devagarinho
+   * parado, sobe segurando ↑) e o arrasto deixa tudo mais lento e mais macio.
+   * ⭐ Com a gravidade do mundo em 0 o bicho fica BOIANDO parado.
+   */
+  function swim(sprite, speed) {
+    if (!sprite) return;
+    var s = _positiveFiniteNumber(speed, 2);
+    var sink = _worldGravityOr(0.6) * 0.18;
+    var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+    var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+    var vx = (_finiteNumber(sprite.vx, 0) + dx * s * 0.3) * 0.88;
+    var vy = (_finiteNumber(sprite.vy, 0) + dy * s * 0.3 + sink) * 0.88;
+    // Migalha vira zero (com gravidade 0 e sem tecla, o bicho BOIA de verdade).
+    if (Math.abs(vx) < 0.01) vx = 0;
+    if (Math.abs(vy) < 0.01) vy = 0;
+    var v = _clampSpeed(vx, vy, s);
+    sprite.vx = v.x;
+    sprite.vy = v.y;
+    sprite.x = _finiteNumber(sprite.x, 0) + v.x;
+    sprite.y = _finiteNumber(sprite.y, 0) + v.y;
+    _leaveGroundMode(sprite);
   }
 
   /** Faz o sprite andar em direção ao ponteiro (mouse/toque). */

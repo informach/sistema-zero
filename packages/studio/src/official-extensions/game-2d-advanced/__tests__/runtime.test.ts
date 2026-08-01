@@ -599,7 +599,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 336 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 339 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api, inspectors } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -982,6 +982,12 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'lutaAttack',
       'lutaComboOf',
       'lutaSpecialOf',
+      // v0.54.0 — ver o invisível: a moldura do palco (que saiu do CSS de fábrica)
+      // e as caixas que de fato colidem.
+      'showStageBorder',
+      'showHitboxes',
+      // v0.55.0 — e escolher a FORMA da caixa (redonda encosta mais justo).
+      'setHitboxShape',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')

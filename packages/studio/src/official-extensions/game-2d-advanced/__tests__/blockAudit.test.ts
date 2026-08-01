@@ -110,7 +110,7 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    expect(gameKitBlocks.length).toBe(339)
+    expect(gameKitBlocks.length).toBe(342)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })

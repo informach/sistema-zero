@@ -134,6 +134,9 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
 - platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + gravidade; a borda atraída é o chão (base com gravidade positiva, teto com gravidade negativa).
 - topDown(sprite, speed): 4 direções com diagonal normalizada.
+- flyFree(sprite, speed): voar livre nas 8 direções, SEM gravidade, com inércia (plana ao soltar); speed é o TETO.
+- flap(sprite, ctx, force): bater as asas. Gravidade + empurrão pra cima na BORDA de seta pra cima/W/Espaço/toque, inclusive no ar (segurar não sobe sempre); pousa na borda de baixo.
+- swim(sprite, speed): nadar. Empuxo (afunda devagar parado, sobe segurando pra cima) + arrasto forte; gravidade do mundo em 0 = boiando.
 - followPointer(sprite, speed): anda em direção ao ponteiro.
 - clampToScreen(sprite, ctx): prende o sprite dentro do canvas.
 - flash(ctx, 'cor'): pinta a tela com cor translúcida (efeito de flash num frame).

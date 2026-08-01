@@ -328,6 +328,9 @@ export interface GameTwoDInputAndMotionApi {
   touches(a: GameTwoDSprite, b: GameTwoDSprite): boolean
   platformer(sprite: GameTwoDSprite, ctx: GameTwoDContext, speed: number, jump: number): void
   topDown(sprite: GameTwoDSprite, speed: number): void
+  flyFree(sprite: GameTwoDSprite, speed: number): void
+  flap(sprite: GameTwoDSprite, ctx: GameTwoDContext, force: number): void
+  swim(sprite: GameTwoDSprite, speed: number): void
   followPointer(sprite: GameTwoDSprite, speed: number): void
   clampToScreen(sprite: GameTwoDSprite, ctx: GameTwoDContext): void
   rotateSprite(sprite: GameTwoDSprite, degrees: number): void
@@ -690,6 +693,9 @@ export const GAME_TWO_D_API_KEYS = [
   'paintLine',
   'platformer',
   'topDown',
+  'flyFree',
+  'flap',
+  'swim',
   'followPointer',
   'clampToScreen',
   'flash',
