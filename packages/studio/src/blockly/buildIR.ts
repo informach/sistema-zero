@@ -4209,6 +4209,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           percent: exprInput(block, 'PERCENT', { type: 'num', value: 100 }),
         },
       }
+    case 'sz_g2d_stage_border':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:stageBorder',
+          color: f(block, 'COLOR'),
+          width: exprInput(block, 'WIDTH', { type: 'num', value: 4 }),
+        },
+      }
     case 'sz_g2d_setup_stage':
       seen.add('game-2d')
       return {

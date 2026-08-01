@@ -189,6 +189,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_scale_sprite',
       'sz_g2d_draw_hitbox',
       'sz_g2d_show_fps',
+      'sz_g2d_stage_border',
     ],
   },
   {
@@ -443,6 +444,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_camera_follow: { WORLDW: numShadow(800), WORLDH: numShadow(600) },
   sz_g2d_set_camera: { X: numShadow(0), Y: numShadow(0) },
   sz_g2d_show_fps: { X: numShadow(8), Y: numShadow(20) },
+  sz_g2d_stage_border: { WIDTH: numShadow(4) },
   sz_g2d_shake: { INTENSITY: numShadow(8) },
   sz_g2d_emit_particles: { COUNT: numShadow(14), X: numShadow(150), Y: numShadow(100) },
   sz_g2d_draw_score: {

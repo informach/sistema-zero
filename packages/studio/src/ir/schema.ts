@@ -2526,6 +2526,8 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:restart' })
   // Tela: faz o canvas preencher ~percent% da janela (mantendo a proporção).
   | (JSStatementCommon & { type: 'g2d:fitScreen'; percent: number | JSExpr })
+  // Moldura no elemento do canvas (enxergar a área do palco ao ensinar).
+  | (JSStatementCommon & { type: 'g2d:stageBorder'; color: string; width: number | JSExpr })
   // Atalho de início: prepara o palco (tamanho do mundo) em tela cheia responsiva.
   | (JSStatementCommon & {
       type: 'g2d:setupStage'
@@ -6469,6 +6471,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:fitScreen'),
       percent: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:stageBorder'),
+      color: irText(),
+      width: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -11188,6 +11196,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:starfield',
   'g2d:dragX',
   'g2d:fitScreen',
+  'g2d:stageBorder',
   'g2d:setupStage',
   'g2d:setupFull',
   'g2d:spawnBullet',

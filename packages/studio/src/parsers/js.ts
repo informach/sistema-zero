@@ -4083,6 +4083,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const percent = toExpr(args[0], ctx)
       return isSimpleValue(percent) ? { type: 'g2d:fitScreen', percent } : null
     }
+    case 'showStageBorder': {
+      // generator: SZGame2D.showStageBorder("#e2e8f0", 4)
+      if (args[0]?.type !== 'StringLiteral') return null
+      const width = toExpr(args[1], ctx)
+      return isSimpleValue(width)
+        ? { type: 'g2d:stageBorder', color: args[0].value as string, width }
+        : null
+    }
     case 'setupStage': {
       const width = toExpr(args[0], ctx)
       const height = toExpr(args[1], ctx)

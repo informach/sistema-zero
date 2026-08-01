@@ -179,6 +179,8 @@ export interface GameTwoDStageApi {
   clear(): void
   fitScreen(percent: number): void
   setupStageFull(background: string): void
+  /** Moldura colorida em volta da tela do jogo (para enxergar a área do palco). */
+  showStageBorder(color: string, width: number): void
 }
 
 export interface GameTwoDSpriteApi {
@@ -595,6 +597,7 @@ export const GAME_TWO_D_API_KEYS = [
   'fitScreen',
   'setupStage',
   'setupStageFull',
+  'showStageBorder',
   'spawnBullet',
   'arrowsX',
   'blink',

@@ -37,7 +37,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.53.0',
+  version: '0.54.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -372,6 +372,10 @@ Para mundos maiores que a tela e jogos mais ricos:
   cima de quem dentro de um grupo.
 - **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS**. Para
   enxergar colisões e a performance enquanto cria.
+- **✨ Aparência**: **Mostrar a borda da tela**, com cor e espessura. Põe uma moldura em volta do
+  palco para todo mundo ver onde começa e onde termina a área do jogo. Ótimo para explicar o palco
+  a alguém. Ponha em **⚙️ Ao iniciar**; para tirar, apague o bloco. A moldura fica na beirada da
+  tela, então ela não atrapalha o desenho nem é apagada pelo jogo.
 
 ### Leia a posição e o tamanho do sprite
 

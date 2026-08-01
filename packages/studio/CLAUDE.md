@@ -525,8 +525,23 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.53.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.54.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
+**Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
+("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
+visível o invisível (caixa de colisão / FPS): moldura em volta do palco p/ ENSINAR onde começa e
+termina a área do jogo. ⭐ A borda vai no **ELEMENTO** (`c.style.border` no runtime
+`showStageBorder`), não desenhada por dentro: não gasta pixel do jogo, nada a apaga e custa zero por
+quadro; o `box-sizing: border-box` (que `fitScreen`/`setupStage` já usavam justamente p/ isso)
+mantém a moldura DENTRO da caixa — sem ele viria barra de rolagem e em tela cheia a borda cairia
+fora da janela. Espessura capada em 40 (um `9999` digitado não engole o jogo). ⚠️ **Bloco
+`start-only` tem um ponto a mais na cadeia que é fácil esquecer:** o tipo da IR precisa entrar em
+**`START_ONLY_STATEMENT_TYPES`** (`ir/lifecycle.ts`) — sem isso o schema ACEITA o bloco aninhado num
+evento/laço e o `blockContracts.test.ts` reprova ("preparações exclusivas de Ao iniciar"). Um bloco
+NOVO também obriga a mexer em 3 contadores travados: `docDrift.test.ts` (`gameTwoDBlocks.length`) e
+duas linhas do `docs/game-2d-audit-2026-07-20.md` (definições de bloco / visíveis / métodos públicos
+da API). Teste: `__tests__/stageBorder.test.ts`.
+
 **Sprite de grupo com NOME (v0.53.0, 01/08):** os dois blocos genéricos de criar no grupo
 (`sz_g2d_spawn_in_group`/`_image_in_group`) ganharam o campo **`NAME` OPCIONAL** ("criar um sprite
 **chamado** …"). Preenchido, a IR leva `varName?` e o gerador emite `const ⟨nome⟩ = SZGame2D.spawn(…)`
