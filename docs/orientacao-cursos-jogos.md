@@ -296,14 +296,31 @@ alívio de uma dor sentida, não como burocracia. Nossa versão: a aula monta o 
 completo mínimo com poucos blocos ("funciona! comemora!"), e a aula seguinte
 reorganiza (grupos, tipos de inimigo, telas). Marco motivador antes de arquitetura.
 
-### 6.3 Exercício-pausa com gabarito narrado
+### 6.3 Aula guiada do começo ao fim, sem exercício
 
-A cada conceito novo, um exercício de escopo FECHADO ("pause e tente"), seguido da
-resolução narrada passo a passo — o exercício nunca fica sem gabarito. Escopo cresce ao
-longo do curso: (1) mexer num número; (2) montar um bloco novo lendo a paleta; (3)
-recriar uma mecânica ensinada; (4) o jogo-base inteiro. Dica calibrada quando o
-exercício pede algo ainda não mostrado ("você vai precisar do bloco X, procure na
-categoria Y").
+**O curso não tem exercício.** Decisão da Helena em 2026-08-01, substituindo o
+"Pausa e tenta com gabarito" que esta seção descrevia antes. Nenhuma aula manda a criança
+descobrir sozinha, montar sozinha ou pausar para resolver. Do primeiro ao último bloco quem
+conduz é a narração: o que pegar, onde encaixar, o que escrever em cada campo, e a explicação
+logo depois.
+
+Quem exercita são os **desafios da Comunidade**, onde a criança cria o próprio jogo com o que
+aprendeu no curso. Separar as duas coisas evita o pior defeito do formato antigo: o exercício
+de fim de aula mandava voltar num bloco de três passos atrás, que a criança já não lembra,
+sendo que ela **já pausa naturalmente a cada passo** para acompanhar a montagem.
+
+Some, então: "descubra sozinho", "monte você mesmo", "é a sua vez", "pausa o vídeo e faz", o
+bloco de exercício no fim da aula e a linha `...` separando desafio de gabarito.
+
+Continua, porque é conteúdo e não cobrança:
+
+- **Demonstração por extremos.** Levar o número para os dois lados para sentir o que ele faz,
+  com a narração conduzindo e observando logo depois de cada troca: *"põe 2 e olha a tela...
+  agora põe 9"*. Um extremo por vez, nunca "faz os dois e volta".
+- **Dor antes da solução** (seção 6.1), com o erro rodando na tela.
+- **Campo de escolha.** Quando um valor é da criança, isso é dito na hora do campo: *"o meu vai
+  num azul bem claro, e o seu pode ser a cor que você quiser"*. Se uma aula posterior cita esse
+  número, a própria aula devolve o valor canônico com fala explícita.
 
 ### 6.4 Scaffolding: dar pronto SÓ o que já foi ensinado
 

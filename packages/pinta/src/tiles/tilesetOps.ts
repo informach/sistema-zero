@@ -29,6 +29,19 @@ function cloneTileOf<A extends AnyTilesetAsset>(asset: A, tile: TileOf<A>): Tile
   return clone as TileOf<A>
 }
 
+/**
+ * A peça está EM BRANCO (nada desenhado nela)? Pintar o mapa com uma peça em
+ * branco não mostra nada — a criança acha que o lápis quebrou. Quem chama usa
+ * isto para avisar, não para bloquear (o mapa se preenche sozinho quando ela
+ * desenhar a peça depois, porque a célula guarda o ÍNDICE).
+ */
+export function isTileBlank(asset: AnyTilesetAsset, index: number): boolean {
+  const tile = asset.tiles[index]
+  if (!tile) return true
+  if (asset.kind === 'tileset') return (tile as PintaBitmap).data.every((value) => value === 0)
+  return (tile as VectorFrame).length === 0
+}
+
 /** Novo tile VAZIO após `afterIndex`. No-op na quota. */
 export function addTile<A extends AnyTilesetAsset>(asset: A, afterIndex: number): A {
   if (asset.tiles.length >= PINTA_LIMITS.maxTiles) return asset

@@ -88,6 +88,96 @@ describe('UI de tiles (F4)', () => {
     expect(screen.getByText(COPY.tiles.statusSize(20, 15))).toBeTruthy()
   })
 
+  it('seleção no mapa: grade VAZIA não seleciona; célula pintada seleciona', async () => {
+    const seed = createGalleryStore()
+    const tileset = await seed.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (!tileset) throw new Error('tileset esperado')
+    await seed
+      .getState()
+      .create({ kind: 'tilemap', name: 'fase', tilesetId: tileset.id, cols: 8, rows: 6 })
+
+    render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir fase/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir fase/ }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.tiles.pickTile)).toBeTruthy()
+    })
+
+    // O mapa converte ponteiro→célula pela LARGURA REAL do canvas, que é 0 sem
+    // layout (happy-dom) — fixa a medida para os cliques caírem em células.
+    const grid = screen.getByRole('img', { name: COPY.tiles.mapGrid })
+    const cell = 16 * 2 // tileSize × zoom inicial do mapa
+    Object.defineProperty(grid, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        left: 0,
+        top: 0,
+        width: 8 * cell,
+        height: 6 * cell,
+        right: 8 * cell,
+        bottom: 6 * cell,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }),
+    })
+    const drag = (from: number, to: number): void => {
+      fireEvent.pointerDown(grid, { isPrimary: true, pointerId: 1, clientX: from, clientY: from })
+      fireEvent.pointerMove(grid, { pointerId: 1, clientX: to, clientY: to })
+      fireEvent.pointerUp(grid, { pointerId: 1, clientX: to, clientY: to })
+    }
+
+    // 1) Marcar onde NÃO há peça nenhuma: a grade de fundo é referência, não desenho.
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.select }))
+    drag(cell, cell * 3)
+    expect(screen.queryByRole('button', { name: COPY.tiles.copyPiece })).toBeNull()
+
+    // 2) Pintar uma célula com o lápis e marcar POR CIMA dela: aí sim seleciona.
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.pencil }))
+    fireEvent.pointerDown(grid, { isPrimary: true, pointerId: 2, clientX: cell, clientY: cell })
+    fireEvent.pointerUp(grid, { pointerId: 2, clientX: cell, clientY: cell })
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.select }))
+    drag(cell, cell)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.tiles.copyPiece })).toBeTruthy()
+    })
+
+    // 3) Clicar fora do mapa desseleciona (a barra não fica presa aberta).
+    fireEvent.pointerDown(document.body)
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: COPY.tiles.copyPiece })).toBeNull()
+    })
+  })
+
+  it('pintar o mapa com uma peça EM BRANCO avisa (senão parece que o lápis quebrou)', async () => {
+    const seed = createGalleryStore()
+    const tileset = await seed.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (!tileset) throw new Error('tileset esperado')
+    await seed
+      .getState()
+      .create({ kind: 'tilemap', name: 'fase', tilesetId: tileset.id, cols: 8, rows: 6 })
+
+    render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir fase/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir fase/ }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.tiles.pickTile)).toBeTruthy()
+    })
+
+    const grid = screen.getByRole('img', { name: COPY.tiles.mapGrid })
+    fireEvent.pointerDown(grid, { isPrimary: true, pointerId: 1, clientX: 0, clientY: 0 })
+    fireEvent.pointerUp(grid, { pointerId: 1, clientX: 0, clientY: 0 })
+
+    await waitFor(() => {
+      expect(screen.getByText(COPY.tiles.blankTile)).toBeTruthy()
+    })
+  })
+
   it('tilemap órfão (tileset apagado) mostra o recado gentil', async () => {
     const seed = createGalleryStore()
     await seed.getState().create({

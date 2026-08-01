@@ -200,6 +200,14 @@ export const COPY = {
     rotate: 'Girar',
     clear: 'Limpar tudo',
   },
+  /** Barra que aparece quando há um pedaço selecionado no desenho de pixel. */
+  selection: {
+    bar: 'O que fazer com o pedaço selecionado',
+    duplicate: 'Duplicar o pedaço',
+    flipH: 'Espelhar para o outro lado',
+    flipV: 'Espelhar de cabeça para baixo',
+    remove: 'Apagar o pedaço',
+  },
   palette: {
     title: 'Cores',
     transparent: 'Apagar (transparente)',
@@ -267,6 +275,8 @@ export const COPY = {
     collisionSolid: 'Peça sólida (o personagem não atravessa)',
     collisionPlatform: 'Peça plataforma (pisa por cima, passa por baixo)',
     tileLimit: 'Você chegou ao limite de peças.',
+    blankTile:
+      'Essa peça ainda está em branco! Desenhe nela em "Peças do cenário" que o mapa se pinta sozinho.',
     layers: 'Camadas',
     addLayer: 'Nova camada',
     removeLayer: 'Apagar camada',
@@ -392,6 +402,9 @@ export const COPY = {
       tips: [
         'O Lápis desenha e a Borracha apaga.',
         'O Balde de tinta pinta um espaço todo de uma vez.',
+        'Com "Selecionar", marque um pedaço e use Duplicar e Espelhar para fazer o outro lado.',
+        'Rode a bolinha do mouse para aproximar e afastar.',
+        'Teclas rápidas: P lápis, E borracha, G balde, M selecionar.',
         'O foguete leva o seu desenho para o Estúdio.',
       ],
     },
@@ -401,6 +414,8 @@ export const COPY = {
         'Escolha uma forma ou o Pincel e arraste no palco.',
         '"Selecionar" deixa mover, girar e trocar a cor.',
         '"Editar os pontos" muda o contorno; o Degradê mistura duas cores.',
+        'Rode a bolinha do mouse para aproximar e afastar.',
+        'Teclas rápidas: V selecionar, B pincel, H mão, T texto.',
       ],
     },
     map: {
@@ -409,6 +424,8 @@ export const COPY = {
         'Escolha uma peça no canto e pinte na grade.',
         'Arraste sobre as peças para pegar um bloco inteiro e carimbar.',
         'A Linha e o Retângulo pintam vários tiles de uma vez.',
+        'Rode a bolinha do mouse para aproximar e afastar.',
+        'Teclas rápidas: P lápis, E borracha, G balde, M selecionar.',
         'O foguete copia a grade para o bloco de mapa do Estúdio.',
       ],
     },

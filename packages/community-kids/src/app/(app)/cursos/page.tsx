@@ -26,7 +26,7 @@ export default async function CatalogPage() {
     return (
       <div className="flex flex-col gap-8">
         <div className="text-center">
-          <h1 className="sz-display text-2xl md:text-3xl">Mapa da Carreira</h1>
+          <h1 className="sz-display text-2xl md:text-3xl">Cursos da Carreira de Criador</h1>
           <p className="mt-1 text-muted-foreground text-sm">
             Sua jornada de Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
           </p>

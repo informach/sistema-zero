@@ -29,18 +29,30 @@ import {
   SquareDashed,
 } from '../ui/icons'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 
-const TOOLS: Array<{ id: PintaSessionTool; icon: LucideIcon; label: string }> = [
-  { id: 'pencil', icon: Pencil, label: COPY.tools.pencil },
-  { id: 'eraser', icon: Eraser, label: COPY.tools.eraser },
-  { id: 'fill', icon: PaintBucket, label: COPY.tools.fill },
-  { id: 'recolor', icon: Replace, label: COPY.tools.recolor },
-  { id: 'select', icon: SquareDashed, label: COPY.tools.select },
-  { id: 'line', icon: Slash, label: COPY.tools.line },
-  { id: 'rect', icon: Square, label: COPY.tools.rect },
-  { id: 'ellipse', icon: Circle, label: COPY.tools.ellipse },
-  { id: 'picker', icon: Pipette, label: COPY.tools.picker },
+/**
+ * As letras são as dos programas de desenho de gente grande (Photoshop/
+ * Aseprite): a criança leva o hábito junto quando trocar de ferramenta.
+ */
+const TOOLS: Array<{
+  id: PintaSessionTool
+  icon: LucideIcon
+  label: string
+  shortcut: string
+}> = [
+  { id: 'pencil', icon: Pencil, label: COPY.tools.pencil, shortcut: 'P' },
+  { id: 'eraser', icon: Eraser, label: COPY.tools.eraser, shortcut: 'E' },
+  { id: 'fill', icon: PaintBucket, label: COPY.tools.fill, shortcut: 'G' },
+  { id: 'recolor', icon: Replace, label: COPY.tools.recolor, shortcut: 'R' },
+  { id: 'select', icon: SquareDashed, label: COPY.tools.select, shortcut: 'M' },
+  { id: 'line', icon: Slash, label: COPY.tools.line, shortcut: 'L' },
+  { id: 'rect', icon: Square, label: COPY.tools.rect, shortcut: 'U' },
+  { id: 'ellipse', icon: Circle, label: COPY.tools.ellipse, shortcut: 'O' },
+  { id: 'picker', icon: Pipette, label: COPY.tools.picker, shortcut: 'I' },
 ]
+
+const TOOL_SHORTCUTS = toolShortcutMap(TOOLS)
 
 const BRUSH_SIZES = [1, 2, 3] as const
 
@@ -60,6 +72,8 @@ export function ToolBar({
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
   const asset = useEditor((state) => state.asset)
+
+  useToolShortcuts(TOOL_SHORTCUTS, (id) => session.getState().setTool(id))
 
   const showFilled = tool === 'rect' || tool === 'ellipse'
 
@@ -120,6 +134,7 @@ export function ToolBar({
           key={entry.id}
           icon={entry.icon}
           label={entry.label}
+          shortcut={entry.shortcut}
           active={tool === entry.id}
           onClick={() => session.getState().setTool(entry.id)}
         />

@@ -22,6 +22,22 @@ function cellsAt(layer: TilemapLayer, cols: number, rect: CellRect): Int16Array 
   return out
 }
 
+/**
+ * Há alguma célula PREENCHIDA na região? Marcar um pedaço só de grade vazia não
+ * é selecionar nada — a criança quer pegar o que ela pintou (espelho do
+ * `hasPaintedPixel` do pixel).
+ */
+export function hasFilledCell(tilemap: TilemapAsset, layerId: string, rect: CellRect): boolean {
+  const layer = layerOf(tilemap, layerId)
+  if (!layer) return false
+  for (let r = 0; r < rect.rows; r += 1) {
+    for (let c = 0; c < rect.cols; c += 1) {
+      if ((layer.cells[(rect.row + r) * tilemap.cols + (rect.col + c)] ?? -1) >= 0) return true
+    }
+  }
+  return false
+}
+
 /** Copia a região da camada num carimbo (os vazios viram buraco `-1`). */
 export function copyRegion(tilemap: TilemapAsset, layerId: string, rect: CellRect): TileStamp {
   const layer = layerOf(tilemap, layerId)

@@ -118,6 +118,8 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   FIFO por asset (clone do studio).
 - **Copy 100% PT** centralizada em `src/core/copy.ts` (sem travessão, sem jargão; nomes de cor
   amigáveis em `colorNames` p/ os swatches).
+- **Seleção do PIXEL com ações + atalhos + zoom pela rolagem (08/2026)** — ver a seção
+  dedicada mais abaixo.
 - **Responsivo (07/2026)**: `EditorScreen` usa `useMediaQuery('(min-width: 768px)')`
   (`editor/useMediaQuery.ts`, espelho do pensa) — em tela ESTREITA a coluna lateral do sprite
   (prévia + animações, `SpriteSidePanel`) vira FAIXA horizontal rolável abaixo do palco (a
@@ -132,6 +134,90 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   SEM regras globais. Prefixo `pin-` (NÃO `pt-`/`px-`).
 - **a11y**: alvos ≥44px, Dialog com foco/Esc/trap, Toast aria-live, wizard com bolinhas de
   progresso + `role=status` no erro de nome.
+
+## Seleção do pixel, atalhos e zoom pela rolagem (08/2026)
+
+**Ações do pedaço selecionado (`PixelCanvas`)** — copiar/recortar/colar/duplicar/espelhar/
+apagar. Motivação: fazer a asa do outro lado da nave sem redesenhar.
+- Área de transferência = **`sessionStore.clipboard: PintaBitmap | null`** (ao lado do
+  `stamp`). Vive na SESSÃO de propósito: sobrevive à troca de quadro → copiar no quadro 1 e
+  colar no 2 é o caso de uso da animação.
+- `pixel/selection.ts` ganhou dois puros: **`cropBitmap`** (recorte SEM furar a origem — o
+  `extractSelection` reusa) e **`hasPaintedPixel`**.
+- Colar cria um recorte FLUTUANTE em `origem + 2px` com `remaining` = o desenho atual
+  (colar ACRESCENTA, não fura), liga a ferramenta `select` e só vira bitmap no carimbo.
+  Duplicar = copiar + colar. Espelhar levanta o assentado (`extractSelection`) antes de
+  girar. Apagar: flutuante → commita `remaining`; assentado → commita o buraco.
+- **Regra da usuária: só o que foi PINTADO é selecionável.** Marquee cujo retângulo não
+  tem nenhum pixel opaco NÃO vira seleção (`hasPaintedPixel` no `selectPointerUp`) — antes
+  a barra abria em cima de fundo quadriculado vazio.
+- **Clicar FORA do desenho desseleciona** (listener de `pointerdown` no document; o canvas
+  e a própria barra não contam como "fora") — senão a barra ficava presa aberta.
+- Barra flutuante (`role=toolbar`, absoluta sobre o palco, some sem seleção): Duplicar ·
+  Espelhar ↔ · Espelhar ↕ · Apagar. É a via do TOUCH, onde não há teclado.
+- Teclado (listener de window, ignora INPUT/TEXTAREA/contentEditable): Ctrl/Cmd+C · +X ·
+  +V · +D · Delete/Backspace. Ctrl+C só consome a tecla quando há seleção.
+- O `PixelCanvas` **carimba a seleção pendente no DESMONTE** (a limpeza do filho roda antes
+  do `flush()` do EditorScreen) — antes um recorte levantado se perdia ao sair do editor.
+- O espelho React da seleção é só `'none' | 'rect' | 'floating'` (`selKind`): o arrasto do
+  recorte continua em refs, sem re-render por movimento.
+
+**Zoom pela rolagem (`useWheelZoom`, os 3 palcos)** — rolar aproxima/afasta nos degraus da
+sessão; Ctrl+rolagem também (pinça do trackpad, sem zoom do navegador); **Shift+rolagem
+continua rolando**. Gotchas travados:
+1. O listener é `addEventListener('wheel', …, { passive: false })` À MÃO — o `onWheel` do
+   React é PASSIVO na raiz e o `preventDefault()` seria ignorado (o palco rolaria).
+2. O ponto sob o cursor fica ancorado por correção RELATIVA da rolagem, aplicada no layout
+   E depois da pintura (o canvas do pixel/mapa só redimensiona no efeito que pinta).
+3. O wrapper do canvas do pixel tem **tamanho explícito (doc × zoom)**, como o `<svg>` do
+   vetor: sem isso a área rolável fica com a medida velha por um quadro e a âncora erra.
+4. **Palcos com `min-w-0` + `[align-items:safe_center]`/`[justify-content:safe_center]`**
+   (nos 3): sem `min-w-0` o mínimo automático do item flex é o do CONTEÚDO e o canvas
+   aproximado esticava o editor em vez de rolar; com `items-center`/`m-auto` puros o que
+   passa do topo/da esquerda fica INALCANÇÁVEL (rolagem não vai a negativo) — metade do
+   desenho aproximado sumia. Ambos eram bugs PRÉ-EXISTENTES.
+5. happy-dom DESCARTA `deltaMode`/`shiftKey` do init do `WheelEvent` — os testes montam o
+   evento à mão com `Object.defineProperties`.
+
+**Atalhos de ferramenta (`useToolShortcuts` + `toolShortcutMap`)** — letras dos programas de
+desenho de gente grande (a criança leva o hábito). Combinação com Ctrl/Cmd/Alt é ignorada
+(não atropela copiar/colar/desfazer) e campo de texto também. A letra entra SÓ no `title`
+do `ToolButton` (`shortcut`); o `aria-label` segue sendo o rótulo puro (leitor de tela +
+testes por `getByRole({name})`).
+
+| | Pixel | Vetor | Mapa |
+|---|---|---|---|
+| P/E/G/R | Lápis · Borracha · Balde · Trocar cor | — | Lápis · Borracha · Balde |
+| M/V/A/H | Selecionar | Selecionar · Editar pontos · Mão | Selecionar · Mão |
+| B/L/U/O | Linha · Retângulo · Círculo | Pincel · Linha · Retângulo · Círculo | Linha · Retângulo |
+| I/T/Y/S | Conta-gotas | Conta-gotas · Texto · Polígono · Estrela | Conta-gotas |
+
+⚠️ No vetor, `A` sozinho é "editar os pontos" e `Ctrl+A` continua "selecionar tudo".
+No MAPA, **Delete** aciona o "Apagar pedaço" que já existia (a ação vem por ref, montada
+depois das saídas antecipadas do componente).
+
+### Correções do full review (01/08) — o que a usuária viu no playground
+
+- **⭐ "os botões piscam e a grade sobe e desce"**: a barra Copiar/Apagar pedaço do MAPA era
+  filha EM FLUXO do palco — aparecer empurrava a grade para baixo, sumir puxava de volta, e
+  clicar em células seguidas fazia o mapa balançar. Agora ela **flutua** (absolute num wrapper
+  `relative`, fora do container rolável), igual à do pixel: `canvasTop` fica CONSTANTE ao
+  selecionar/desselecionar. Regra: **nada que apareça/suma com a seleção pode estar no fluxo do
+  palco.**
+- **"consigo selecionar a grade de fundo"** no mapa: `hasFilledCell` (espelho do
+  `hasPaintedPixel`) — marquee só de células vazias não vira seleção. Clicar fora do mapa
+  também desseleciona (mesmo listener de `pointerdown` no document do pixel).
+- **"clico com o lápis e não acontece nada"**: NÃO era o lápis — a peça selecionada estava EM
+  BRANCO (tileset novo nasce com 1 peça vazia), então pintar não mostra nada. `isTileBlank`
+  (`tiles/tilesetOps.ts`) + toast `COPY.tiles.blankTile` avisam no 1º traço; **não bloqueia**
+  (a célula guarda o ÍNDICE, então desenhar a peça depois preenche o mapa sozinho).
+
+⚠️ **Gotchas de QA em browser deste editor** (custaram tempo): (1) o mapa converte
+ponteiro→célula pela LARGURA REAL do canvas — em happy-dom (rect 0) todo clique vira
+`Infinity`, então o teste de UI FIXA o `getBoundingClientRect`; (2) disparar vários gestos no
+MESMO turno de JS faz cada um partir do bitmap velho (o React ainda não re-renderizou) — só o
+último sobrevive; use UM gesto com vários `pointermove`; (3) o toast/o repaint aparecem um
+microtask/efeito DEPOIS do evento — ler no mesmo turno dá falso negativo.
 
 ## Colisão por peça: sólido × plataforma (one-way) — lote MapperMate F2 (18/07)
 
@@ -305,6 +391,10 @@ por px reais.
   abre o "Criar novo" pré-configurado), `NewAssetDialog` com `initialRole`/`initialName`/selo do
   jogo, exports novos `PintaInitialIntent`/`PintaProjectRef` no index. O intent chega do kids por
   `sessionStorage sz:pinta:intent` (escrito pelo pensa-client, lido/limpo pelo pinta-client).
+- **Seleção + atalhos + zoom pela rolagem (08/2026, não commitado)**: ver a seção dedicada.
+  QA em browser real feito no playground (:5199) para o pixel — duplicar+espelhar+arrastar,
+  Ctrl+C/V, Delete, área vazia não seleciona, clicar fora desseleciona, âncora do zoom.
+  **Pende QA no vetor e no mapa** (atalhos + rolagem) e em toque/tablet.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
   missão de arte → Pinta pré-preenchido → asset agrupado).

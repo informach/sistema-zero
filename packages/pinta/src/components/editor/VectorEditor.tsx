@@ -91,6 +91,8 @@ import {
 import { useToast } from '../ui/Toast'
 import { ColorButton } from './ColorPicker'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
+import { useWheelZoom } from './useWheelZoom'
 
 type VectorTool =
   | 'select'
@@ -105,19 +107,26 @@ type VectorTool =
   | 'text'
   | 'picker'
 
-const TOOLS: Array<{ id: VectorTool; icon: LucideIcon; label: string }> = [
-  { id: 'select', icon: MousePointer2, label: COPY.vector.select },
-  { id: 'reshape', icon: PenTool, label: COPY.vector.reshape },
-  { id: 'pan', icon: Hand, label: COPY.vector.pan },
-  { id: 'brush', icon: Brush, label: COPY.vector.brush },
-  { id: 'rect', icon: Square, label: COPY.tools.rect },
-  { id: 'ellipse', icon: Circle, label: COPY.tools.ellipse },
-  { id: 'line', icon: Slash, label: COPY.tools.line },
-  { id: 'polygon', icon: Hexagon, label: COPY.vector.polygon },
-  { id: 'star', icon: Star, label: COPY.vector.star },
-  { id: 'text', icon: Type, label: COPY.vector.text },
-  { id: 'picker', icon: Pipette, label: COPY.tools.picker },
+/**
+ * Letras no padrão dos programas de desenho (V selecionar, A editar os pontos,
+ * H mão, B pincel, T texto…). `A` sozinho é ferramenta; `Ctrl+A` continua
+ * sendo "selecionar tudo".
+ */
+const TOOLS: Array<{ id: VectorTool; icon: LucideIcon; label: string; shortcut: string }> = [
+  { id: 'select', icon: MousePointer2, label: COPY.vector.select, shortcut: 'V' },
+  { id: 'reshape', icon: PenTool, label: COPY.vector.reshape, shortcut: 'A' },
+  { id: 'pan', icon: Hand, label: COPY.vector.pan, shortcut: 'H' },
+  { id: 'brush', icon: Brush, label: COPY.vector.brush, shortcut: 'B' },
+  { id: 'rect', icon: Square, label: COPY.tools.rect, shortcut: 'U' },
+  { id: 'ellipse', icon: Circle, label: COPY.tools.ellipse, shortcut: 'O' },
+  { id: 'line', icon: Slash, label: COPY.tools.line, shortcut: 'L' },
+  { id: 'polygon', icon: Hexagon, label: COPY.vector.polygon, shortcut: 'Y' },
+  { id: 'star', icon: Star, label: COPY.vector.star, shortcut: 'S' },
+  { id: 'text', icon: Type, label: COPY.vector.text, shortcut: 'T' },
+  { id: 'picker', icon: Pipette, label: COPY.tools.picker, shortcut: 'I' },
 ]
+
+const TOOL_SHORTCUTS = toolShortcutMap(TOOLS)
 
 /** No máximo de cores personalizadas guardadas na sessão (aparecem como swatches). */
 const MAX_CUSTOM_COLORS = 6
@@ -325,6 +334,10 @@ export function VectorEditor(): JSX.Element | null {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [selectedIds])
+
+  // Arrow (não o `setTool` cru): amarra o genérico do hook ao id da ferramenta.
+  useToolShortcuts(TOOL_SHORTCUTS, (id) => setTool(id))
+  useWheelZoom(stageRef, svgRef)
 
   const ref: ActiveFrameRef = { animationId, frameIndex }
   const doc = activeShapesOf(asset, ref)
@@ -783,6 +796,7 @@ export function VectorEditor(): JSX.Element | null {
               key={entry.id}
               icon={entry.icon}
               label={entry.label}
+              shortcut={entry.shortcut}
               active={tool === entry.id}
               onClick={() => setTool(entry.id)}
             />
@@ -793,8 +807,14 @@ export function VectorEditor(): JSX.Element | null {
 
         {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
             que a área e rola quando maior. */}
-        <div ref={stageRef} className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2">
-          <div className="pin-checkerboard m-auto rounded-lg border-2 border-pin-border shadow-inner">
+        {/* `safe center` no lugar do `m-auto`: margem automática ENGOLE o que
+            passa do topo/da esquerda (rolagem não vai a negativo) e o palco
+            aproximado ficava com metade inalcançável. */}
+        <div
+          ref={stageRef}
+          className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
+        >
+          <div className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner">
             <svg
               ref={svgRef}
               width={stageWidth}
