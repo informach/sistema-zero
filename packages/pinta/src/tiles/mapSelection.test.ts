@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import { createTilemapAsset } from '../core/project'
-import { clearRegion, copyRegion, extractRegion, stampRegionAt } from './mapSelection'
+import {
+  clearRegion,
+  copyRegion,
+  extractRegion,
+  hasFilledCell,
+  stampRegionAt,
+} from './mapSelection'
 import { setCells } from './tilemapOps'
 
 function makeMap(cols = 4, rows = 4) {
@@ -16,6 +22,13 @@ describe('copyRegion / clearRegion', () => {
     const painted = setCells(tilemap, layerId, [{ col: 1, row: 0 }], 5)
     const stamp = copyRegion(painted, layerId, { col: 0, row: 0, cols: 2, rows: 1 })
     expect([...stamp.tiles]).toEqual([-1, 5])
+  })
+
+  it('região só de grade vazia não conta como pedaço selecionável', () => {
+    const { tilemap, layerId } = makeMap(3, 2)
+    const painted = setCells(tilemap, layerId, [{ col: 2, row: 1 }], 5)
+    expect(hasFilledCell(painted, layerId, { col: 0, row: 0, cols: 2, rows: 1 })).toBe(false)
+    expect(hasFilledCell(painted, layerId, { col: 1, row: 0, cols: 2, rows: 2 })).toBe(true)
   })
 
   it('clearRegion apaga só a região; nada muda = mesma ref', () => {

@@ -5,6 +5,7 @@
  * (não suja o autosave nem entra no undo).
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import type { PintaBitmap } from '../core/project'
 import type { PixelToolId } from '../pixel/tools'
 import type { TileStamp } from '../tiles/stamp'
 
@@ -54,6 +55,12 @@ export interface PintaSessionState {
    * sessão porque pegar um carimbo não é edição.
    */
   stamp: TileStamp | null
+  /**
+   * Área de transferência do PIXEL (copiar/colar um pedaço do desenho). Vive na
+   * sessão — e não no canvas — para sobreviver à troca de quadro/animação:
+   * copiar no quadro 1 e colar no 2 é o caso de uso da animação.
+   */
+  clipboard: PintaBitmap | null
   /** Auto-expandir: pintar na borda do mapa faz ele crescer (off por padrão). */
   autoExpand: boolean
 
@@ -72,6 +79,7 @@ export interface PintaSessionState {
   selectAnimation(id: string): void
   selectFrame(index: number): void
   setStamp(stamp: TileStamp | null): void
+  setClipboard(bitmap: PintaBitmap | null): void
   toggleAutoExpand(): void
 }
 
@@ -100,6 +108,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     animationId: null,
     frameIndex: 0,
     stamp: null,
+    clipboard: null,
     autoExpand: false,
     ...initial,
 
@@ -118,6 +127,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     selectAnimation: (id) => set({ animationId: id, frameIndex: 0 }),
     selectFrame: (index) => set({ frameIndex: Math.max(index, 0) }),
     setStamp: (stamp) => set({ stamp }),
+    setClipboard: (clipboard) => set({ clipboard }),
     toggleAutoExpand: () => set((state) => ({ autoExpand: !state.autoExpand })),
   }))
 }

@@ -34,14 +34,21 @@ export function normalizeRect(bitmap: PintaBitmap, a: Vec2, b: Vec2): SelectionR
 }
 
 /**
- * Extrai o retângulo como seleção flutuante e devolve o bitmap de origem com o
- * buraco (transparente) no lugar.
+ * Há algum pixel PINTADO no retângulo? Selecionar um pedaço só de fundo
+ * quadriculado não é selecionar nada — a criança quer pegar o desenho dela.
  */
-export function extractSelection(
-  bitmap: PintaBitmap,
-  rect: SelectionRect,
-): { remaining: PintaBitmap; floating: FloatingSelection } {
-  const remaining = cloneBitmap(bitmap)
+export function hasPaintedPixel(bitmap: PintaBitmap, rect: SelectionRect): boolean {
+  for (let y = 0; y < rect.height; y += 1) {
+    for (let x = 0; x < rect.width; x += 1) {
+      const value = bitmap.data[(rect.y + y) * bitmap.width + (rect.x + x)] ?? TRANSPARENT_INDEX
+      if (value !== TRANSPARENT_INDEX) return true
+    }
+  }
+  return false
+}
+
+/** Copia o retângulo num bitmap próprio, SEM tocar na origem (o copiar). */
+export function cropBitmap(bitmap: PintaBitmap, rect: SelectionRect): PintaBitmap {
   const cut: PintaBitmap = {
     width: rect.width,
     height: rect.height,
@@ -51,10 +58,30 @@ export function extractSelection(
     for (let x = 0; x < rect.width; x += 1) {
       const src = (rect.y + y) * bitmap.width + (rect.x + x)
       cut.data[y * rect.width + x] = bitmap.data[src] ?? TRANSPARENT_INDEX
-      remaining.data[src] = TRANSPARENT_INDEX
     }
   }
-  return { remaining, floating: { bitmap: cut, x: rect.x, y: rect.y } }
+  return cut
+}
+
+/**
+ * Extrai o retângulo como seleção flutuante e devolve o bitmap de origem com o
+ * buraco (transparente) no lugar. O recorte é o mesmo do `cropBitmap` — aqui a
+ * origem TAMBÉM é limpa (o recortar/levantar).
+ */
+export function extractSelection(
+  bitmap: PintaBitmap,
+  rect: SelectionRect,
+): { remaining: PintaBitmap; floating: FloatingSelection } {
+  const remaining = cloneBitmap(bitmap)
+  for (let y = 0; y < rect.height; y += 1) {
+    for (let x = 0; x < rect.width; x += 1) {
+      remaining.data[(rect.y + y) * bitmap.width + (rect.x + x)] = TRANSPARENT_INDEX
+    }
+  }
+  return {
+    remaining,
+    floating: { bitmap: cropBitmap(bitmap, rect), x: rect.x, y: rect.y },
+  }
 }
 
 /**

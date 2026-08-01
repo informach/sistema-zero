@@ -1,0 +1,49 @@
+/**
+ * Atalhos de TECLA para trocar de ferramenta (P lápis, E borracha, G balde…),
+ * nas letras dos programas de desenho de gente grande — a criança leva o hábito
+ * junto. Serve os três editores: o pixel e o mapa trocam a ferramenta da sessão,
+ * o vetor troca o estado local dele.
+ *
+ * Combinação com Ctrl/Cmd/Alt é ignorada (Ctrl+C/V/Z continuam sendo copiar/
+ * colar/desfazer) e campos de texto também — digitar o nome do desenho não pode
+ * trocar de ferramenta. Mesmo guard dos outros listeners do editor.
+ */
+import { useEffect, useRef } from 'react'
+
+/** Monta o mapa tecla → ferramenta a partir da lista de botões do editor. */
+export function toolShortcutMap<T extends string>(
+  tools: ReadonlyArray<{ id: T; shortcut?: string }>,
+): Record<string, T> {
+  const map: Record<string, T> = {}
+  for (const tool of tools) {
+    if (tool.shortcut) map[tool.shortcut.toLowerCase()] = tool.id
+  }
+  return map
+}
+
+export function useToolShortcuts<T extends string>(
+  shortcuts: Readonly<Record<string, T>>,
+  setTool: (id: T) => void,
+): void {
+  // O callback muda de identidade a cada render (arrow no call site); o ref
+  // mantém o listener registrado UMA vez.
+  const setToolRef = useRef(setTool)
+  setToolRef.current = setTool
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      const tool = shortcuts[event.key.toLowerCase()]
+      if (tool) setToolRef.current(tool)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [shortcuts])
+}

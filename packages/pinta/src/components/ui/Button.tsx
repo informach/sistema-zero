@@ -66,23 +66,28 @@ export function IconButton({
  * Botão de FERRAMENTA (lucide): o componente único dos rails do pixel, do
  * vetor e do mapa. `active` liga o visual E o aria-pressed (toggle); ações
  * pontuais (espelhar bitmap, girar…) simplesmente não passam `active`.
+ *
+ * `shortcut` entra SÓ na dica de tela ("Lápis (P)") — o `aria-label` segue
+ * sendo o rótulo puro, que é como o leitor de tela e os testes o encontram.
  */
 export function ToolButton({
   icon: Icon,
   label,
   active,
+  shortcut,
   ...props
 }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'aria-label' | 'title'> & {
   icon: LucideIcon
   label: string
   active?: boolean
+  shortcut?: string
 }): JSX.Element {
   return (
     <IconButton
       active={active ?? false}
       aria-label={label}
       aria-pressed={active}
-      title={label}
+      title={shortcut ? `${label} (${shortcut})` : label}
       {...props}
     >
       <Icon aria-hidden="true" className="size-5" />

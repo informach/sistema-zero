@@ -10,17 +10,23 @@
  * enquanto flutua, o bitmap do store segue o original, então undo/redo/troca de
  * quadro apenas LARGAM a seleção (sem perda do que já estava salvo).
  *
+ * Sobre a seleção moram as AÇÕES do pedaço (copiar/recortar/colar/duplicar/
+ * espelhar/apagar), pelo teclado e por uma barra flutuante — é assim que a
+ * criança faz a asa do outro lado da nave sem desenhar de novo. A área de
+ * transferência vive na SESSÃO, então copiar num quadro e colar noutro funciona.
+ *
  * happy-dom não tem canvas 2D: `createScaledPainter` devolve null e o
  * componente simplesmente não pinta (a lógica de gesto continua testável).
  */
 import type { JSX, PointerEvent } from 'react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { activeBitmapOf, previousFrameOf, withActiveBitmap } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import { TRANSPARENT_INDEX } from '../../core/palette'
 import { safeSetPointerCapture } from '../../core/pointer'
 import { type PintaBitmap, resolveAssetPalette } from '../../core/project'
 import type { Vec2 } from '../../pixel/bitmap'
+import { flipHorizontal, flipVertical } from '../../pixel/ops'
 import {
   createScaledPainter,
   paintPixelGrid,
@@ -28,8 +34,10 @@ import {
   type ScaledPainter,
 } from '../../pixel/render'
 import {
+  cropBitmap,
   extractSelection,
   type FloatingSelection,
+  hasPaintedPixel,
   normalizeRect,
   type SelectionRect,
   stampSelection,
@@ -41,9 +49,15 @@ import {
   toolPointerMove,
   toolPointerUp,
 } from '../../pixel/tools'
+import { ToolButton } from '../ui/Button'
+import { Copy, FlipHorizontal2, FlipVertical2, Trash2 } from '../ui/icons'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { useWheelZoom } from './useWheelZoom'
 
 const ONION_ALPHA = 0.3
+
+/** Quantos pixels o pedaço colado nasce deslocado (nasce "do lado", visível). */
+const PASTE_OFFSET = 2
 
 /** Estado local da ferramenta seleção (marquee em curso → retângulo → flutuante). */
 type Selection =
@@ -73,6 +87,9 @@ export function PixelCanvas(): JSX.Element {
   const colors = useMemo(() => resolveAssetPalette(asset), [asset])
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+  // A barra de ações do pedaço: clicar NELA não pode desselecionar.
+  const selectionBarRef = useRef<HTMLDivElement>(null)
   const painterRef = useRef<ScaledPainter | null>(null)
   const gestureRef = useRef<ToolGesture | null>(null)
   // Dono do gesto: um segundo dedo/palma não injeta pontos no traço do primeiro.
@@ -80,12 +97,38 @@ export function PixelCanvas(): JSX.Element {
 
   // Estado da seleção + dono do arrasto do recorte flutuante.
   const selRef = useRef<Selection | null>(null)
+  // Espelho REACT só da EXISTÊNCIA da seleção (dirige a barra de ações). Muda
+  // nas transições; arrastar o recorte segue mexendo apenas em refs, sem
+  // re-render por movimento.
+  const [selKind, setSelKind] = useState<'none' | 'rect' | 'floating'>('none')
   const selPointerRef = useRef<number | null>(null)
   const movingRef = useRef<{ offset: Vec2 } | null>(null)
   // Distingue "o bitmap mudou porque EU commitei" de "mudou por fora"
   // (undo/redo) — no segundo caso a seleção pendente é largada.
   const selfCommitRef = useRef(false)
   const lastBitmapRef = useRef<PintaBitmap | null>(null)
+
+  // Ações do pedaço selecionado SEMPRE as do último render (elas leem o estado
+  // vivo, mas `renderCanvas` fecha sobre zoom/cores). O listener de teclado é
+  // registrado uma vez e chama por aqui. (As funções são declarações — içadas.)
+  const actionsRef = useRef({
+    copy: copySelection,
+    cut: cutSelection,
+    paste: pasteClipboard,
+    duplicate: duplicateSelection,
+    remove: deleteSelection,
+    stamp: stampPending,
+    hasSelection: () => selRef.current !== null,
+  })
+  actionsRef.current = {
+    copy: copySelection,
+    cut: cutSelection,
+    paste: pasteClipboard,
+    duplicate: duplicateSelection,
+    remove: deleteSelection,
+    stamp: stampPending,
+    hasSelection: () => selRef.current !== null,
+  }
 
   const frameRef = { animationId, frameIndex }
   const bitmap = activeBitmapOf(asset, frameRef)
@@ -99,7 +142,7 @@ export function PixelCanvas(): JSX.Element {
   useEffect(() => {
     gestureRef.current = null
     gesturePointerRef.current = null
-    selRef.current = null
+    applySelection(null)
     movingRef.current = null
   }, [animationId, frameIndex])
 
@@ -137,7 +180,7 @@ export function PixelCanvas(): JSX.Element {
       selfCommitRef.current = false
     } else if (lastBitmapRef.current && lastBitmapRef.current !== bitmap && selRef.current) {
       // Conteúdo mudou por fora (undo/redo): a seleção pendente perde o chão.
-      selRef.current = null
+      applySelection(null)
       movingRef.current = null
     }
     lastBitmapRef.current = bitmap
@@ -157,6 +200,74 @@ export function PixelCanvas(): JSX.Element {
     },
     [],
   )
+
+  // Atalhos do pedaço: Ctrl/Cmd+C copia, +X recorta, +V cola, +D duplica e
+  // Delete apaga. Registrado UMA vez (as ações vêm do ref). Não colide com o
+  // Ctrl+Z/Y do EditorScreen; campos de texto são ignorados (mesmo guard).
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent): void {
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      const actions = actionsRef.current
+      if (event.ctrlKey || event.metaKey) {
+        const key = event.key.toLowerCase()
+        // Copiar só "consome" a tecla quando havia um pedaço selecionado — sem
+        // seleção, o copiar do navegador segue funcionando normalmente.
+        if (key === 'c') {
+          if (actions.copy()) event.preventDefault()
+        } else if (key === 'x') {
+          if (actions.copy()) {
+            event.preventDefault()
+            actions.cut()
+          }
+        } else if (key === 'v') {
+          event.preventDefault()
+          actions.paste()
+        } else if (key === 'd') {
+          event.preventDefault()
+          actions.duplicate()
+        }
+        return
+      }
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        if (!actions.hasSelection()) return
+        event.preventDefault()
+        actions.remove()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  // Clicar FORA do desenho desseleciona (o que estava flutuando é carimbado).
+  // Sem isto a barra de ações ficava aberta para sempre depois de um clique
+  // qualquer na tela. A própria barra e o palco não contam como "fora".
+  useEffect(() => {
+    function onPointerDown(event: globalThis.PointerEvent): void {
+      if (!selRef.current) return
+      const target = event.target as Node | null
+      if (!target) return
+      if (canvasRef.current?.contains(target)) return
+      if (selectionBarRef.current?.contains(target)) return
+      actionsRef.current.stamp()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [])
+
+  // Recorte flutuante nunca carimbado se perderia ao sair do editor (o autosave
+  // grava o asset do store, sem o pedaço levantado). A limpeza do filho roda
+  // ANTES do flush do EditorScreen, então o carimbo entra no que é salvo.
+  useEffect(() => () => actionsRef.current.stamp(), [])
+
+  // Rolagem do mouse = aproximar/afastar (depois do efeito que pinta: o canvas
+  // só muda de tamanho ali, e a âncora do cursor precisa do tamanho novo).
+  useWheelZoom(stageRef, canvasRef)
 
   if (!bitmap) return <div className="flex-1" />
 
@@ -195,12 +306,134 @@ export function PixelCanvas(): JSX.Element {
     )
   }
 
+  /** Bitmap do quadro ATIVO segundo o estado vivo (não o do render). */
+  function liveBitmap(): PintaBitmap | null {
+    const s = session.getState()
+    return activeBitmapOf(editor.getState().asset, {
+      animationId: s.animationId,
+      frameIndex: s.frameIndex,
+    })
+  }
+
+  /** Troca a seleção mantendo a barra de ações em dia (ponto ÚNICO de escrita). */
+  function applySelection(next: Selection | null): void {
+    selRef.current = next
+    setSelKind(next?.kind === 'rect' ? 'rect' : next?.kind === 'floating' ? 'floating' : 'none')
+  }
+
   /** Carimba o recorte flutuante (se houver) e zera a seleção. */
   function stampPending(): void {
     const sel = selRef.current
-    selRef.current = null
+    applySelection(null)
     movingRef.current = null
     if (sel?.kind === 'floating') commitBitmap(stampSelection(sel.remaining, sel.floating))
+  }
+
+  // ---- Ações do pedaço selecionado --------------------------------------
+
+  /**
+   * O pedaço como bitmap próprio: assentado vira CÓPIA (o desenho fica
+   * intacto), levantado é ele mesmo. `null` = não há o que copiar.
+   */
+  function selectionBitmap(): PintaBitmap | null {
+    const sel = selRef.current
+    if (sel?.kind === 'floating') return sel.floating.bitmap
+    const current = liveBitmap()
+    if (!current || sel?.kind !== 'rect') return null
+    return cropBitmap(current, sel.rect)
+  }
+
+  /** Guarda o pedaço na área de transferência. `false` = não havia seleção. */
+  function copySelection(): boolean {
+    const cut = selectionBitmap()
+    if (!cut) return false
+    session.getState().setClipboard(cut)
+    return true
+  }
+
+  /** Cola o que está guardado como recorte flutuante, do lado e já arrastável. */
+  function pasteClipboard(): void {
+    const clip = session.getState().clipboard
+    if (!clip) return
+    const sel = selRef.current
+    const from =
+      sel?.kind === 'floating'
+        ? { x: sel.floating.x, y: sel.floating.y }
+        : sel?.kind === 'rect'
+          ? { x: sel.rect.x, y: sel.rect.y }
+          : { x: -PASTE_OFFSET, y: -PASTE_OFFSET }
+    // Carimba o que já estava flutuando antes de trocar de recorte.
+    stampPending()
+    const current = liveBitmap()
+    if (!current) return
+    // Colar ACRESCENTA (não fura o fundo): o "remaining" é o desenho de agora.
+    applySelection({
+      kind: 'floating',
+      floating: {
+        bitmap: clip,
+        x: Math.min(Math.max(from.x + PASTE_OFFSET, 0), Math.max(current.width - 1, 0)),
+        y: Math.min(Math.max(from.y + PASTE_OFFSET, 0), Math.max(current.height - 1, 0)),
+      },
+      remaining: current,
+    })
+    // Sem a ferramenta seleção o pedaço colado não seria arrastável.
+    session.getState().setTool('select')
+    renderCanvas()
+  }
+
+  /** Copiar + colar numa tacada (o original fica onde está). */
+  function duplicateSelection(): void {
+    if (!copySelection()) return
+    pasteClipboard()
+  }
+
+  /**
+   * Espelha o PEDAÇO (não o quadro). Assentado, levanta primeiro — assim o giro
+   * acontece no recorte e ele volta espelhado no mesmo lugar.
+   */
+  function flipSelection(axis: 'h' | 'v'): void {
+    const sel = selRef.current
+    const current = liveBitmap()
+    if (!current) return
+    const lifted =
+      sel?.kind === 'floating'
+        ? { floating: sel.floating, remaining: sel.remaining }
+        : sel?.kind === 'rect'
+          ? extractSelection(current, sel.rect)
+          : null
+    if (!lifted) return
+    const bmp = lifted.floating.bitmap
+    applySelection({
+      kind: 'floating',
+      floating: {
+        ...lifted.floating,
+        bitmap: axis === 'h' ? flipHorizontal(bmp) : flipVertical(bmp),
+      },
+      remaining: lifted.remaining,
+    })
+    renderCanvas()
+  }
+
+  /** Apaga o pedaço: levantado some, assentado limpa a área (Delete). */
+  function deleteSelection(): void {
+    const sel = selRef.current
+    if (sel?.kind === 'floating') {
+      applySelection(null)
+      movingRef.current = null
+      commitBitmap(sel.remaining)
+      return
+    }
+    const current = liveBitmap()
+    if (!current || sel?.kind !== 'rect') return
+    const { remaining } = extractSelection(current, sel.rect)
+    applySelection(null)
+    commitBitmap(remaining)
+  }
+
+  /** Recortar = copiar + apagar. */
+  function cutSelection(): void {
+    if (!copySelection()) return
+    deleteSelection()
   }
 
   function selectPointerDown(event: PointerEvent<HTMLCanvasElement>): void {
@@ -216,14 +449,14 @@ export function PixelCanvas(): JSX.Element {
     if (sel?.kind === 'rect' && inside(sel.rect, p)) {
       // Pegar o retângulo: extrai o recorte (buraco transparente) e passa a mover.
       const { remaining, floating } = extractSelection(bitmap, sel.rect)
-      selRef.current = { kind: 'floating', floating, remaining }
+      applySelection({ kind: 'floating', floating, remaining })
       movingRef.current = { offset: { x: p.x - floating.x, y: p.y - floating.y } }
       renderCanvas()
       return
     }
     // Novo marquee: carimba o recorte anterior antes de começar do zero.
     stampPending()
-    selRef.current = { kind: 'marquee', start: p, rect: normalizeRect(bitmap, p, p) }
+    applySelection({ kind: 'marquee', start: p, rect: normalizeRect(bitmap, p, p) })
     renderCanvas()
   }
 
@@ -253,7 +486,13 @@ export function PixelCanvas(): JSX.Element {
     }
     const sel = selRef.current
     if (sel?.kind === 'marquee') {
-      selRef.current = sel.rect ? { kind: 'rect', rect: sel.rect } : null
+      // Pedaço só de fundo quadriculado NÃO vira seleção: a criança seleciona o
+      // que ela pintou, não o vazio (senão a barra de ações abre por engano).
+      const settled =
+        sel.rect && bitmap && hasPaintedPixel(bitmap, sel.rect)
+          ? ({ kind: 'rect', rect: sel.rect } as const)
+          : null
+      applySelection(settled)
       renderCanvas()
     }
   }
@@ -319,19 +558,70 @@ export function PixelCanvas(): JSX.Element {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4">
-      <div className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner">
-        <canvas
-          ref={canvasRef}
-          className="pin-pixelated block"
-          style={{ touchAction: 'none', imageRendering: 'pixelated' }}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={endGesture}
-          onPointerCancel={endGesture}
-          aria-label={COPY.a11y.drawArea}
-          role="img"
-        />
+    <div className="relative flex min-h-0 min-w-0 flex-1">
+      {/* Barra do pedaço selecionado: flutua sobre o palco (não empurra o
+          desenho ao aparecer) e é a via do tablet, onde não há teclado. */}
+      {selKind === 'none' ? null : (
+        <div
+          ref={selectionBarRef}
+          role="toolbar"
+          aria-label={COPY.selection.bar}
+          className="pin-panel absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 p-1 shadow-lg"
+        >
+          <ToolButton
+            icon={Copy}
+            label={COPY.selection.duplicate}
+            shortcut="Ctrl+D"
+            onClick={duplicateSelection}
+          />
+          <ToolButton
+            icon={FlipHorizontal2}
+            label={COPY.selection.flipH}
+            onClick={() => flipSelection('h')}
+          />
+          <ToolButton
+            icon={FlipVertical2}
+            label={COPY.selection.flipV}
+            onClick={() => flipSelection('v')}
+          />
+          <ToolButton
+            icon={Trash2}
+            label={COPY.selection.remove}
+            shortcut="Delete"
+            onClick={deleteSelection}
+          />
+        </div>
+      )}
+      {/* Centralização SEGURA: com `items-center` puro, o que passa do topo/da
+          esquerda fica INALCANÇÁVEL (a rolagem não vai a negativo) — desenho
+          aproximado perdia metade. `safe center` centraliza quando cabe e
+          alinha no começo quando não cabe. E `min-w-0`/`min-h-0` para o palco
+          ROLAR em vez de esticar o editor (o tamanho mínimo automático de um
+          item flex é o do conteúdo). */}
+      <div
+        ref={stageRef}
+        className="flex min-h-0 min-w-0 flex-1 overflow-auto p-4 [align-items:safe_center] [justify-content:safe_center]"
+      >
+        {/* Tamanho EXPLÍCITO (doc × zoom, como o palco do vetor): o canvas só
+            muda de tamanho quando repinta (num efeito), e sem isto a área
+            rolável fica com a medida velha por um quadro — a âncora do zoom
+            pela rolagem media errado. */}
+        <div
+          className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner"
+          style={{ width: bitmap.width * zoom, height: bitmap.height * zoom }}
+        >
+          <canvas
+            ref={canvasRef}
+            className="pin-pixelated block"
+            style={{ touchAction: 'none', imageRendering: 'pixelated' }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={endGesture}
+            onPointerCancel={endGesture}
+            aria-label={COPY.a11y.drawArea}
+            role="img"
+          />
+        </div>
       </div>
     </div>
   )

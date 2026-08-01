@@ -27,7 +27,13 @@ import {
   normalizeCellRect,
   rectCells,
 } from '../../tiles/cellGeometry'
-import { clearRegion, copyRegion, extractRegion, stampRegionAt } from '../../tiles/mapSelection'
+import {
+  clearRegion,
+  copyRegion,
+  extractRegion,
+  hasFilledCell,
+  stampRegionAt,
+} from '../../tiles/mapSelection'
 import { packTileset } from '../../tiles/packTileset'
 import { packVectorTileset, vectorTilesetSvg } from '../../tiles/packVectorTileset'
 import { blockCells, stampCells, type TileStamp } from '../../tiles/stamp'
@@ -42,6 +48,7 @@ import {
   toggleLayerFront,
   toggleLayerVisible,
 } from '../../tiles/tilemapOps'
+import { isTileBlank } from '../../tiles/tilesetOps'
 import { usePintaGallery } from '../appContext'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import {
@@ -66,22 +73,27 @@ import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { MapStatusBar } from './MapStatusBar'
 import { TilePicker } from './TilePicker'
+import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
+import { useWheelZoom } from './useWheelZoom'
 import { ZoomControls } from './ZoomControls'
 
 type MapTool = 'pencil' | 'fill' | 'eraser' | 'line' | 'rect' | 'select' | 'picker' | 'pan'
 
-const MAP_TOOLS: Array<{ id: MapTool; icon: LucideIcon; label: string }> = [
-  { id: 'pencil', icon: Pencil, label: COPY.tools.pencil },
-  { id: 'line', icon: Slash, label: COPY.tools.line },
-  { id: 'rect', icon: Square, label: COPY.tools.rect },
-  { id: 'fill', icon: PaintBucket, label: COPY.tools.fill },
-  { id: 'eraser', icon: Eraser, label: COPY.tools.eraser },
-  { id: 'select', icon: SquareDashed, label: COPY.tools.select },
-  { id: 'picker', icon: Pipette, label: COPY.tools.picker },
+/** Mesmas letras do editor de pixel (o que existe nos dois não muda de tecla). */
+const MAP_TOOLS: Array<{ id: MapTool; icon: LucideIcon; label: string; shortcut: string }> = [
+  { id: 'pencil', icon: Pencil, label: COPY.tools.pencil, shortcut: 'P' },
+  { id: 'line', icon: Slash, label: COPY.tools.line, shortcut: 'L' },
+  { id: 'rect', icon: Square, label: COPY.tools.rect, shortcut: 'U' },
+  { id: 'fill', icon: PaintBucket, label: COPY.tools.fill, shortcut: 'G' },
+  { id: 'eraser', icon: Eraser, label: COPY.tools.eraser, shortcut: 'E' },
+  { id: 'select', icon: SquareDashed, label: COPY.tools.select, shortcut: 'M' },
+  { id: 'picker', icon: Pipette, label: COPY.tools.picker, shortcut: 'I' },
   // Em touch o palco tem touch-action:none (todo toque pinta) — a Mão é o
   // jeito de navegar um mapa maior que a tela.
-  { id: 'pan', icon: Hand, label: COPY.vector.pan },
+  { id: 'pan', icon: Hand, label: COPY.vector.pan, shortcut: 'H' },
 ]
+
+const TOOL_SHORTCUTS = toolShortcutMap(MAP_TOOLS)
 
 const GRID_STROKE = 'rgba(127,127,127,0.3)'
 
@@ -143,6 +155,13 @@ export function TilemapEditor(): JSX.Element | null {
   const selPointerRef = useRef<number | null>(null)
   const movingRef = useRef<{ offset: CellPos } | null>(null)
   const selfCommitRef = useRef(false)
+  // Apagar o pedaço só é montável depois da camada ativa (abaixo das saídas
+  // antecipadas); o listener de Delete chama por aqui.
+  const deleteSelectionRef = useRef<() => void>(() => {})
+  // Carimba o pedaço pendente ao clicar fora (idem: montado lá embaixo).
+  const stampPendingRef = useRef<() => void>(() => {})
+  // A barra do pedaço: clicar NELA não pode desselecionar.
+  const selectionBarRef = useRef<HTMLDivElement>(null)
   const lastAssetRef = useRef<PintaAsset | null>(null)
   // Callback do hover para a barra de status (sem re-render por pointermove).
   const hoverRef = useRef<(cell: CellPos | null) => void>(() => {})
@@ -399,6 +418,45 @@ export function TilemapEditor(): JSX.Element | null {
     if (tool !== 'select') stampPending()
   }, [tool])
 
+  // Delete apaga o pedaço selecionado (o mesmo que o botão "Apagar pedaço"). A
+  // ação só existe depois das saídas antecipadas abaixo, então vem pelo ref.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.key !== 'Delete' && event.key !== 'Backspace') return
+      if (event.ctrlKey || event.metaKey) return
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      if (!selRef.current) return
+      event.preventDefault()
+      deleteSelectionRef.current()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  // Clicar FORA do mapa desseleciona (o pedaço levantado é carimbado) — senão a
+  // barra fica aberta para sempre. O palco e a própria barra não contam.
+  useEffect(() => {
+    function onPointerDown(event: globalThis.PointerEvent): void {
+      if (!selRef.current) return
+      const target = event.target as Node | null
+      if (!target) return
+      if (canvasRef.current?.contains(target)) return
+      if (selectionBarRef.current?.contains(target)) return
+      stampPendingRef.current()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [])
+
+  useToolShortcuts(TOOL_SHORTCUTS, (id) => session.getState().setTool(id))
+  useWheelZoom(stageRef, canvasRef)
+
   if (!tilemap) return null
   if (!tileset) {
     return (
@@ -411,6 +469,9 @@ export function TilemapEditor(): JSX.Element | null {
   const activeLayer = layer
   if (!activeLayer) return null
   const layerId = activeLayer.id
+  // As ações precisam da camada ativa — religam a cada render.
+  deleteSelectionRef.current = deleteMapSelection
+  stampPendingRef.current = stampPending
 
   /** Célula do MAPA sob o ponteiro (pode ser -1..cols no anel de expansão). */
   function cellFromEvent(event: PointerEvent<HTMLCanvasElement>): CellPos {
@@ -564,6 +625,20 @@ export function TilemapEditor(): JSX.Element | null {
   }
 
   // ---- Seleção (espelho do PixelCanvas em células) ----------------------
+
+  /** Apaga o pedaço: levantado some, assentado limpa as células (Delete). */
+  function deleteMapSelection(): void {
+    const sel = selRef.current
+    const state = editor.getState()
+    if (!sel || state.asset.kind !== 'tilemap') return
+    selRef.current = null
+    movingRef.current = null
+    setSelRect(null)
+    selfCommitRef.current = true
+    if (sel.kind === 'floating') state.commit(sel.remaining)
+    else if (sel.kind === 'rect') state.commit(clearRegion(state.asset, layerId, sel.rect))
+  }
+
   function stampPending(): void {
     const sel = selRef.current
     selRef.current = null
@@ -644,7 +719,9 @@ export function TilemapEditor(): JSX.Element | null {
     }
     const sel = selRef.current
     if (sel?.kind === 'marquee') {
-      if (sel.rect) {
+      // Pedaço só de grade VAZIA não vira seleção (a grade de fundo é
+      // referência, não desenho) — mesma régua do editor de pixel.
+      if (sel.rect && tilemap && hasFilledCell(tilemap, layerId, sel.rect)) {
         selRef.current = { kind: 'rect', rect: sel.rect }
         setSelRect(sel.rect)
       } else {
@@ -682,6 +759,12 @@ export function TilemapEditor(): JSX.Element | null {
       if (inRing(raw)) return
       fillAt(raw)
       return
+    }
+    // Pintar com uma peça EM BRANCO não mostra nada — a criança acha que o
+    // lápis quebrou. Avisa (uma vez por gesto) mas deixa pintar: quando ela
+    // desenhar a peça, o mapa se preenche sozinho (a célula guarda o índice).
+    if (tool === 'pencil' && !stamp && tileset && isTileBlank(tileset, selectedTile)) {
+      showToast(COPY.tiles.blankTile)
     }
     const anchor = clampCell(raw)
     gestureRef.current = {
@@ -755,6 +838,7 @@ export function TilemapEditor(): JSX.Element | null {
               key={entry.id}
               icon={entry.icon}
               label={entry.label}
+              shortcut={entry.shortcut}
               active={tool === entry.id}
               onClick={() => session.getState().setTool(entry.id)}
             />
@@ -774,10 +858,17 @@ export function TilemapEditor(): JSX.Element | null {
           />
         </div>
 
-        {/* A grade do mapa (centraliza quando menor; rola quando maior) */}
-        <div ref={stageRef} className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto p-2">
+        {/* A grade do mapa (centraliza quando menor; rola quando maior — com
+            `safe center`, senão o que passa do topo fica inalcançável). */}
+        <div className="relative flex min-h-0 min-w-0 flex-1">
+          {/* Barra do pedaço FLUTUANDO sobre o palco: em fluxo ela empurrava a
+              grade para baixo ao aparecer e para cima ao sumir — clicar em
+              células seguidas fazia o mapa subir e descer. */}
           {selRect ? (
-            <div className="mb-2 flex shrink-0 items-center gap-2">
+            <div
+              ref={selectionBarRef}
+              className="pin-panel absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 p-1 shadow-lg"
+            >
               <Button
                 onClick={() => {
                   if (!tilemap) return
@@ -787,33 +878,29 @@ export function TilemapEditor(): JSX.Element | null {
               >
                 {COPY.tiles.copyPiece}
               </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  const state = editor.getState()
-                  if (state.asset.kind !== 'tilemap') return
-                  selRef.current = null
-                  setSelRect(null)
-                  state.commit(clearRegion(state.asset, layerId, selRect))
-                }}
-              >
+              <Button variant="ghost" onClick={() => deleteSelectionRef.current()}>
                 {COPY.tiles.clearPiece}
               </Button>
             </div>
           ) : null}
-          <div className="pin-checkerboard m-auto rounded-lg border-2 border-pin-border shadow-inner">
-            <canvas
-              ref={canvasRef}
-              className="pin-pixelated block"
-              style={{ touchAction: 'none', imageRendering: 'pixelated' }}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={endGesture}
-              onPointerCancel={endGesture}
-              onPointerLeave={handlePointerLeave}
-              aria-label={COPY.tiles.mapGrid}
-              role="img"
-            />
+          <div
+            ref={stageRef}
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
+          >
+            <div className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner">
+              <canvas
+                ref={canvasRef}
+                className="pin-pixelated block"
+                style={{ touchAction: 'none', imageRendering: 'pixelated' }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={endGesture}
+                onPointerCancel={endGesture}
+                onPointerLeave={handlePointerLeave}
+                aria-label={COPY.tiles.mapGrid}
+                role="img"
+              />
+            </div>
           </div>
         </div>
 
