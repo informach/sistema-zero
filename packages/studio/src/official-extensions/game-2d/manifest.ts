@@ -37,7 +37,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.52.0',
+  version: '0.53.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -159,6 +159,12 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 - **Grupos**. \`Criar grupo\`, \`Criar no grupo … um sprite\` (x/y/vx/vy aceitam número
   aleatório), \`Atualizar/Desenhar o grupo\`, \`Para cada sprite do grupo\`, \`quantos
   sprites tem no grupo\`, \`Esvaziar/Tirar do grupo\`, \`Tirar do grupo quem sair da tela\`.
+- **Dar NOME ao sprite que nasce no grupo** (campo "chamado", opcional). Deixe vazio se for
+  só mais um da turma; preencha quando quiser fazer algo com ele logo depois: animar, dar
+  vida, virar. Assim dá para ter um grupo de sprites ANIMADOS: no mesmo lugar em que você
+  cria (por exemplo, dentro de \`A cada 2 segundos\`), ponha o \`Animar sprite\` logo abaixo
+  usando esse nome. A animação começa no nascimento e cada um segue no próprio ritmo.
+  ⚠️ O nome vale só ali, no trecho onde o sprite nasce.
   Há também \`Mover o grupo sem gravidade\`. Para os TIROS do jogador num jogo COM
   gravidade (senão os tiros arqueiam para baixo em vez de ir reto). Para jogos vistos de
   cima (estilo aventura), \`Desenhar o grupo … ordenado pela base\` desenha quem está mais

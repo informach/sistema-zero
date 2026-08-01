@@ -31,6 +31,12 @@ const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string; nameF
   sz_g2d_create_sprite: { color: 'COLOR' },
   sz_g2d_create_image_sprite: { image: 'IMAGE' },
   sz_g2d_create_shape_sprite: { nameField: 'SPRITE' }, // criar sprite com figura (v0.23) — nome no campo SPRITE
+  // Criar NO GRUPO com nome (opcional): o sprite nasce durante o jogo e o nome
+  // é a alça p/ animar/mexer nele em seguida. Campo vazio = `collectSprites`
+  // ignora. ⚠️ a lista é global (sem escopo): usar o nome fora do trecho onde
+  // ele nasce é pego pela validação da IR, com recado claro.
+  sz_g2d_spawn_in_group: { color: 'COLOR' },
+  sz_g2d_spawn_image_in_group: { image: 'IMAGE' },
   sz_g2d_create_ship: { color: 'BODY' }, // criar nave (Kit espaço)
   sz_g2d_create_dino: { color: 'COLOR' }, // criar dinossauro (Kit dino)
   sz_g2d_place_thrower: { color: 'COLOR' }, // pôr o gorila (Kit gorilas)

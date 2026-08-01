@@ -1585,9 +1585,13 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_spawn_in_group',
     placement: 'command',
     message0:
-      'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 cor %6 com vx %7 vy %8',
+      'No grupo %1 criar um sprite chamado %2 em x %3 y %4 largura %5 altura %6 cor %7 com vx %8 vy %9',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
+      // Nome OPCIONAL do sprite recém-criado (vazio = sem nome, como antes): dá
+      // uma "alça" para os blocos seguintes (animar, dar vida, virar…). Campo
+      // que DECLARA um nome segue `field_input`, nunca seletor.
+      { type: 'field_input', name: 'NAME', text: '' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -1601,15 +1605,17 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um sprite colorido e coloca no grupo. Use x/y com "número aleatório" para nascer em lugares diferentes; vx/vy dão a velocidade.',
+      'Cria um sprite colorido e coloca no grupo. Use x/y com "número aleatório" para nascer em lugares diferentes; vx/vy dão a velocidade. O nome é opcional: preencha quando quiser fazer algo com esse sprite logo depois (animar, dar vida…).',
   },
   {
     type: 'sz_g2d_spawn_image_in_group',
     placement: 'command',
     message0:
-      'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 com imagem %6 vx %7 vy %8',
+      'No grupo %1 criar um sprite chamado %2 em x %3 y %4 largura %5 altura %6 com imagem %7 vx %8 vy %9',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group' },
+      // Nome OPCIONAL — ver o gêmeo colorido acima.
+      { type: 'field_input', name: 'NAME', text: '' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -1623,7 +1629,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "criar no grupo", mas o sprite mostra uma imagem da sua biblioteca (use o nome do asset).',
+      'Como "criar no grupo", mas o sprite mostra uma imagem da sua biblioteca (use o nome do asset). O nome é opcional: preencha quando quiser animar ou mexer nesse sprite logo depois.',
   },
   {
     type: 'sz_g2d_update_group',

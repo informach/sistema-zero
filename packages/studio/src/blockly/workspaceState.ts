@@ -1739,7 +1739,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       if (!x || !y || !vx || !vy || !w || !h) return rawJSBlock(stmt)
       return block(
         'sz_g2d_spawn_in_group',
-        { GROUP: stmt.groupVar, COLOR: stmt.color },
+        { GROUP: stmt.groupVar, NAME: stmt.varName ?? '', COLOR: stmt.color },
         {},
         stmt.__id,
         { X: x, Y: y, VX: vx, VY: vy, W: w, H: h },
@@ -1755,7 +1755,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       if (!x || !y || !vx || !vy || !w || !h) return rawJSBlock(stmt)
       return block(
         'sz_g2d_spawn_image_in_group',
-        { GROUP: stmt.groupVar, IMAGE: stmt.image },
+        { GROUP: stmt.groupVar, NAME: stmt.varName ?? '', IMAGE: stmt.image },
         {},
         stmt.__id,
         { X: x, Y: y, VX: vx, VY: vy, W: w, H: h },

@@ -525,8 +525,26 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.52.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.53.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
+**Sprite de grupo com NOME (v0.53.0, 01/08):** os dois blocos genéricos de criar no grupo
+(`sz_g2d_spawn_in_group`/`_image_in_group`) ganharam o campo **`NAME` OPCIONAL** ("criar um sprite
+**chamado** …"). Preenchido, a IR leva `varName?` e o gerador emite `const ⟨nome⟩ = SZGame2D.spawn(…)`
+— o helper do runtime JÁ devolvia o sprite, então **nada mudou no motor**. É o que destrava ANIMAR um
+sprite de grupo: encaixar "Animar sprite ⟨nome⟩" logo abaixo do criar, no mesmo trecho (⚠️ `setAnimation`
+reinicia o tempo a cada chamada — dentro do "a cada quadro" congelaria no 1º quadro; por isso o lugar
+certo é o nascimento). ⭐ Vazio ⇒ a chave NÃO entra na IR e a saída fica **byte-idêntica** à de antes
+(projeto antigo intocado) — mesma régua do `shape` no `defineEnemyType`. As duas entradas em
+`G2D_DECLARATION_FIELDS` (`ir/schema.ts`) dão de graça o símbolo, a recusa de nome repetido e o
+ESCOPO (nome criado dentro de um temporizador vale só ali). Parser: `case 'spawn'` no
+`tryMatchGame2DVarInit` (forma com `const`) convivendo com o caminho statement de sempre. Os blocos
+entraram em `SPRITE_DECL_BLOCKS` (miniatura no seletor); ⚠️ `collectSprites` é GLOBAL (sem escopo),
+então o nome aparece no seletor fora do trecho — usar lá é pego pela validação da IR. Testes:
+`__tests__/spawnNamed.test.ts` (saída byte-idêntica sem nome, `const` com nome, parser das duas
+formas, escopo e runtime: o nomeado É o mesmo objeto do grupo e cada um anima no próprio ritmo).
+**Faltam ainda** (conversado com a usuária, fora deste lote): "pôr o sprite ⟨X⟩ no grupo ⟨G⟩"
+(runtime não tem `addToGroup`) e animação por ESTADO no grupo (espelho do `setEnemyStateAnimation`).
+
 **Colisão PLATAFORMA one-way (lote MapperMate F2, 18/07):** o metadado de tileset/tilemap ganhou
 **`platform?: number[]`** (índices de peça one-way: pisa por cima CAINDO, atravessa por baixo/subindo).
 `ProjectTilesetMeta`/`ProjectTilemapMeta` + `sanitizeTilesetMeta`/`sanitizeTilemapMeta` (`core/project.ts`)

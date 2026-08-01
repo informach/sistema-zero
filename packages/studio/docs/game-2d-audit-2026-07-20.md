@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 209 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.52.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.53.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -56,6 +56,14 @@ aventura top-down num mini-mundo, ataque com espaço e câmera que segue), ambos
 O 0.49.0 (27/07) somou o exemplo "Treinador de Criaturas" (pokemon-style-game:
 andar no mapa top-down, entrar no mato alto e vencer uma batalha por turnos com
 as teclas 1/2/3), 100% procedural, com drift test e playthrough próprios.
+O 0.53.0 (01/08) fechou um buraco relatado pela usuária: não havia como ANIMAR um
+sprite que vive num grupo. Os dois blocos genéricos de criar no grupo ganharam um
+campo "chamado" OPCIONAL — preenchido, o bloco declara a variável (o helper
+`spawn` do runtime já devolvia o sprite) e a criança encaixa "Animar sprite" logo
+abaixo, no mesmo trecho em que ele nasce. Vazio, a saída é byte-idêntica à de
+antes. O nome entra no `G2D_DECLARATION_FIELDS`, então vale só no trecho em que o
+sprite nasce e aparece com miniatura nos seletores de sprite.
+
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
