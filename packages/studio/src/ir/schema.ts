@@ -2386,9 +2386,13 @@ export type JSStatement =
   // grupo é uma lista gerenciada de sprites. x/y/vx/vy são expressões (aceitam
   // aleatório/contas); w/h números; color/image strings (nomes de asset).
   | (JSStatementCommon & { type: 'g2d:createGroup'; varName: string })
+  // `varName` OPCIONAL: nomear o sprite criado dá uma alça para os statements
+  // seguintes (animar, dar vida…) — o helper `spawn` do runtime já DEVOLVE o
+  // sprite. Ausente = saída idêntica à de antes do campo existir.
   | (JSStatementCommon & {
       type: 'g2d:spawnInGroup'
       groupVar: string
+      varName?: string
       x: JSExpr
       y: JSExpr
       w: number | JSExpr
@@ -2400,6 +2404,7 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g2d:spawnImageInGroup'
       groupVar: string
+      varName?: string
       x: JSExpr
       y: JSExpr
       w: number | JSExpr
@@ -6291,6 +6296,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:spawnInGroup'),
       groupVar: irText(),
+      varName: irText().optional(),
       x: JSExprSchema,
       y: JSExprSchema,
       w: z.union([JSExprSchema, z.number()]),
@@ -6303,6 +6309,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:spawnImageInGroup'),
       groupVar: irText(),
+      varName: irText().optional(),
       x: JSExprSchema,
       y: JSExprSchema,
       w: z.union([JSExprSchema, z.number()]),
@@ -10515,6 +10522,11 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:collides': 'varName',
   'g2d:circleCollides': 'varName',
   'g2d:createGroup': 'varName',
+  // Opcionais: só declaram quando a criança preencheu o nome (o coletor de
+  // símbolos ignora ausente/vazio), e o escopo sai do próprio lugar do bloco —
+  // nome criado dentro de um temporizador vale ali dentro, não no jogo todo.
+  'g2d:spawnInGroup': 'varName',
+  'g2d:spawnImageInGroup': 'varName',
   'g2d:loadSpritesheet': 'varName',
   'g2d:defineEnemyType': 'varName',
   'g2d:createTileMap': 'varName',

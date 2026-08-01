@@ -159,6 +159,7 @@ Grupos de sprites (v0.6.0) — para MUITOS sprites (tiros, inimigos, estrelas), 
 criar um por um. Um grupo é uma lista gerenciada de sprites:
 - createGroup() -> { items: [] }: cria um grupo vazio (guarde numa variável).
 - spawn(grupo, { x, y, w, h, color | image, vx, vy }): cria um sprite e coloca no grupo (devolve o sprite). Use x/y com número aleatório para nascer em lugares diferentes. Teto de 400 por grupo.
+  O bloco "Criar no grupo … um sprite" tem um campo "chamado" OPCIONAL: preenchido, gera "const nome = SZGame2D.spawn(...)" e a criança usa esse nome nos blocos seguintes (é assim que se anima um sprite de grupo — setAnimation(nome, folha, …) logo depois de criar, UMA vez; chamar todo quadro reiniciaria a animação). O nome vale só no trecho onde o sprite nasce.
 - updateGroup(grupo): move cada sprite pela velocidade (vx/vy); drawGroup(ctx, grupo): desenha todos.
 - drawGroupByY(ctx, grupo): desenha o grupo ordenado pela BASE (y+h) — quem está mais para baixo
   na tela fica na FRENTE (profundidade de jogo top-down: o herói passa atrás da árvore). Ordena

@@ -3943,6 +3943,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:spawnInGroup',
           groupVar: f(block, 'GROUP'),
+          // Nome vazio NÃO entra na IR: saída byte-idêntica à de projetos que
+          // nasceram antes do campo existir.
+          ...(f(block, 'NAME').trim() ? { varName: f(block, 'NAME').trim() } : {}),
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
           w: exprInput(block, 'W', { type: 'num', value: 20 }),
@@ -3959,6 +3962,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:spawnImageInGroup',
           groupVar: f(block, 'GROUP'),
+          ...(f(block, 'NAME').trim() ? { varName: f(block, 'NAME').trim() } : {}),
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
           w: exprInput(block, 'W', { type: 'num', value: 20 }),

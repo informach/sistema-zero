@@ -4383,6 +4383,22 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     const { x, y, w, h, color } = sprite
     return { type: 'g2d:createSprite', varName: name, x, y, w, h, color }
   }
+  if (method === 'spawn') {
+    // generator: const pedra = SZGame2D.spawn(g, { x, y, w, h, color|image, vx, vy })
+    // Gêmeo NOMEADO do caminho statement (`case 'spawn'` do mapCall): mesmo IR
+    // + varName. Sem `const`, o outro caminho segue casando.
+    const groupVar = identifierName(args[0])
+    if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+    const opts = readSpawnOptions(args[1], ctx)
+    if (!opts) return null
+    ctx.spriteVars.add(name)
+    if (opts.image != null) {
+      const { x, y, w, h, image, vx, vy } = opts
+      return { type: 'g2d:spawnImageInGroup', groupVar, varName: name, x, y, w, h, image, vx, vy }
+    }
+    const { x, y, w, h, color, vx, vy } = opts
+    return { type: 'g2d:spawnInGroup', groupVar, varName: name, x, y, w, h, color, vx, vy }
+  }
   if (method === 'createShapeSprite') {
     // generator: const p = SZGame2D.createShapeSprite("figura", { x, y, w, h })
     if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
