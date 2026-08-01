@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 209 definições de bloco
-(207 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 210 definições de bloco
+(208 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.53.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.54.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -64,13 +64,21 @@ abaixo, no mesmo trecho em que ele nasce. Vazio, a saída é byte-idêntica à d
 antes. O nome entra no `G2D_DECLARATION_FIELDS`, então vale só no trecho em que o
 sprite nasce e aparece com miniatura nos seletores de sprite.
 
+O 0.54.0 (01/08) somou **Mostrar a borda da tela** em ✨ Aparência, na família de
+tornar visível o invisível ("Mostrar a caixa de colisão", "Mostrar os quadros por
+segundo"): uma moldura colorida em volta do palco, para ensinar onde começa e
+termina a área do jogo. A borda vai no ELEMENTO do canvas (não desenhada por
+dentro), então não gasta pixel do jogo, nada a apaga e não custa nada por quadro;
+o `box-sizing: border-box` que o palco já usava mantém a moldura dentro da caixa,
+sem barra de rolagem.
+
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
 - 43 arquivos próprios da extensão;
-- 209 definições de blocos e 24 subcategorias;
-- 208 métodos e valores públicos em `window.SZGame2D`;
+- 210 definições de blocos e 24 subcategorias;
+- 209 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;

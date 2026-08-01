@@ -909,6 +909,24 @@ export const gameTwoDBlocks = [
     colour: C,
     tooltip: 'Escreve quantos quadros por segundo o jogo está rodando (para ver a performance).',
   },
+  {
+    // Moldura no ELEMENTO do canvas (não desenhada por dentro): não gasta pixel
+    // do jogo, nada a apaga e não custa nada por quadro. Família do "mostrar a
+    // caixa de colisão": serve para enxergar o que normalmente é invisível.
+    type: 'sz_g2d_stage_border',
+    placement: 'start-only-command',
+    message0: 'Mostrar a borda da tela, cor %1 espessura %2',
+    args0: [
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#e2e8f0' },
+      { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma moldura colorida em volta da tela do jogo, para ver onde começa e termina a área de desenho. Ótimo para explicar o palco. Para tirar, apague o bloco.',
+  },
 
   // ---- Mouse / toque ----
   {

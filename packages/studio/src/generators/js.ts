@@ -1406,6 +1406,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.dragX(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:fitScreen':
       return `${pad}SZGame2D.fitScreen(${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
+    case 'g2d:stageBorder':
+      return `${pad}SZGame2D.showStageBorder(${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
     case 'g2d:setupStage':
       return `${pad}SZGame2D.setupStage(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)});`
     case 'g2d:setupFull':
@@ -5194,6 +5196,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'g2d:fitScreen':
       collectExprIdentifiers(valueToExpr(stmt.percent), names)
+      return
+    case 'g2d:stageBorder':
+      collectExprIdentifiers(valueToExpr(stmt.width), names)
       return
     case 'g2d:setupStage':
       collectExprIdentifiers(valueToExpr(stmt.width), names)

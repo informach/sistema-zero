@@ -83,6 +83,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_play_note: { MS: 'number' },
   sz_g2d_setup_stage: { W: 'number', H: 'number' },
   sz_g2d_fit_screen: { PERCENT: 'number' },
+  sz_g2d_stage_border: { WIDTH: 'number' },
   sz_g2d_load_spritesheet: { FW: 'number', FH: 'number' },
   sz_g2d_animate_sprite: { FROM: 'number', TO: 'number', FPS: 'number' },
   sz_g2d_set_state_anim: { FROM: 'number', TO: 'number', FPS: 'number' },

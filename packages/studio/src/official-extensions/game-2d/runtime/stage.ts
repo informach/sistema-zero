@@ -416,6 +416,25 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       try { window.addEventListener('resize', function () { try { requestAnimationFrame(_resizeBacking); } catch (e) { _resizeBacking(); } }); } catch (e) {}
     }
   }
+  /**
+   * Contorna a TELA do jogo com uma moldura colorida, para dar de ver onde
+   * começa e termina a área do palco (ensinar/depurar, como o "mostrar a caixa
+   * de colisão"). A borda vai no ELEMENTO, não no desenho: não gasta pixel do
+   * jogo, nada a apaga e não custa nada por quadro.
+   * O box-sizing border-box mantém a moldura DENTRO da caixa do canvas — sem
+   * ele apareceria barra de rolagem, e em tela cheia a borda ficaria fora da
+   * janela. Espessura capada para um número enorme não engolir o jogo.
+   */
+  function showStageBorder(color, width) {
+    ensureStage();
+    var c = _stageCanvas;
+    if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
+    if (!c) return;
+    var w = (_isFiniteNumber(width) && width > 0) ? Math.min(Math.round(width), 40) : 4;
+    var cor = (typeof color === 'string' && color) ? color : '#e2e8f0';
+    c.style.boxSizing = 'border-box';
+    c.style.border = w + 'px solid ' + cor;
+  }
   // Expõe 'ctx' e 'tela' como globais preguiçosos. O setter REDEFINE a propriedade
   // como um valor normal — assim um eventual 'const ctx = ...' antigo (canvasSetup)
   // ou uma atribuição direta continuam funcionando sem conflito.

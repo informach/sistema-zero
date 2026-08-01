@@ -1930,6 +1930,12 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_g2d_fit_screen', {}, {}, stmt.__id, { PERCENT: percent })
     }
+    case 'g2d:stageBorder': {
+      const width = exprToValueBlock(valueToExpr(stmt.width))
+      return width === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
+    }
     case 'g2d:setupStage': {
       const w = exprToValueBlock(valueToExpr(stmt.width))
       const h = exprToValueBlock(valueToExpr(stmt.height))

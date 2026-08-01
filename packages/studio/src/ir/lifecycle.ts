@@ -61,6 +61,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:setupStage',
   'g2d:setupFull',
   'g2d:fitScreen',
+  'g2d:stageBorder',
   'g2d:setStageDescription',
   'g2d:createSprite',
   'g2d:createImageSprite',
