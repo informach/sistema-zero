@@ -4,11 +4,14 @@
  * Topbar: voltar · nome · desfazer/refazer · badge de salvo · Baixar ·
  * Usar no Estúdio (só quando o host dá o callback).
  *
- * Layout (desktop, ≥768px): ferramentas à ESQUERDA, palco no centro (flex-1) e
- * painel DIREITO consolidado (prévia + cores + animações, w-56) — embaixo, UMA
- * faixa só (quadros/peças + zoom). A cadeia min-h-0 + overflow interno fecha a
- * altura sem rolagem de página. Em tela estreita o palco domina: rail
- * horizontal em cima, paleta em linha única e prévia/animações colapsáveis.
+ * Layout (desktop, ≥768px): coluna ESQUERDA de altura inteira (ferramentas em
+ * cima, cores embaixo), e à direita dela uma coluna com o palco + a prévia lado
+ * a lado em cima e a faixa (quadros/peças + zoom) encostada EMBAIXO,
+ * atravessando as duas. A faixa NÃO é um rodapé de tudo: ali ela roubava altura
+ * da coluna da esquerda e era o que forçava a criança a rolar as ferramentas.
+ * A cadeia min-h-0 + overflow interno fecha a altura sem rolagem de página. Em
+ * tela estreita o palco domina: rail horizontal em cima, paleta em linha única
+ * e prévia/animações colapsáveis.
  */
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
@@ -169,13 +172,20 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     const isSprite = asset.kind === 'pixel-sprite'
     if (wide) {
       return (
-        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-          <div className="flex min-h-0 flex-1 items-stretch gap-2">
-            <PixelLeftColumn />
-            <PixelCanvas />
-            {isSprite ? <SpriteRightPanel /> : null}
+        <div className="flex min-h-0 flex-1 items-stretch gap-2 p-2">
+          <PixelLeftColumn />
+          {/* A faixa de baixo (quadros/peças/zoom) NÃO é mais uma linha no
+              rodapé de tudo — ela vive na coluna do palco, encostada embaixo e
+              atravessando também a coluna da prévia. No rodapé ela roubava
+              altura de TODAS as colunas, e era isso que espremia
+              ferramentas+cores e criava a rolagem da coluna da esquerda. */}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+            <div className="flex min-h-0 flex-1 items-stretch gap-2">
+              <PixelCanvas />
+              {isSprite ? <SpriteRightPanel /> : null}
+            </div>
+            <EditorFooter asset={asset} />
           </div>
-          <EditorFooter asset={asset} />
         </div>
       )
     }

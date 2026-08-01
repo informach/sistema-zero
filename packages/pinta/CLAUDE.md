@@ -120,6 +120,15 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   amigáveis em `colorNames` p/ os swatches).
 - **Seleção do PIXEL com ações + atalhos + zoom pela rolagem (08/2026)** — ver a seção
   dedicada mais abaixo.
+- **Layout dos kinds de PIXEL no desktop (08/2026)**: coluna ESQUERDA de altura inteira
+  (ferramentas em cima, cores embaixo) · à direita dela uma coluna com **palco + prévia lado a
+  lado em cima** e a **faixa (quadros/peças/zoom) encostada EMBAIXO, atravessando as duas**.
+  ⚠️ A faixa NÃO pode voltar a ser um rodapé de tudo: como linha à parte ela roubava altura de
+  TODAS as colunas e deixava a esquerda com ~380px para ~850px de conteúdo — a criança tinha de
+  rolar as ferramentas/cores o tempo todo. Medido em 1366×768: a sobra da coluna esquerda caiu de
+  **309px → 149px** (some de vez a partir de ~917px de altura) e o rail de ferramentas passou a
+  caber INTEIRO na tela. A faixa cresce até o teto interno dela (`max-h-56` na lista do
+  `SpriteSheetPanel`) e depois rola por dentro — **o topo do palco nunca se move**.
 - **Responsivo (07/2026)**: `EditorScreen` usa `useMediaQuery('(min-width: 768px)')`
   (`editor/useMediaQuery.ts`, espelho do pensa) — em tela ESTREITA a coluna lateral do sprite
   (prévia + animações, `SpriteSidePanel`) vira FAIXA horizontal rolável abaixo do palco (a
