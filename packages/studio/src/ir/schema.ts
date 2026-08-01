@@ -2341,6 +2341,14 @@ export type JSStatement =
       jump: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:topDown'; spriteVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:flyFree'; spriteVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g2d:flap'
+      spriteVar: string
+      ctxVar: string
+      force: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:swim'; spriteVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:followPointer'; spriteVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:clampToScreen'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:flash'; color: string; ctxVar: string })
@@ -3054,6 +3062,9 @@ export type JSStatement =
     })
   // "Ocupar a tela toda": setup SEM dimensões — a resolução acompanha a viewport.
   | (JSStatementCommon & { type: 'gk:setupFull'; bg: string; accent: string })
+  // Moldura da tela (enxergar a área do palco) e contorno das caixas que colidem.
+  | (JSStatementCommon & { type: 'gk:stageBorder'; color: string; width: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:showHitboxes' })
   | (JSStatementCommon & { type: 'gk:start' })
   // `name` = como o jogo chama a imagem; `asset` = nome do desenho no projeto.
   | (JSStatementCommon & { type: 'gk:loadImage'; name: string; asset: string })
@@ -3788,6 +3799,12 @@ export type JSStatement =
       h: number | JSExpr
     })
   | (JSStatementCommon & {
+      type: 'gk:setHitboxShape'
+      charVar: string
+      shape: 'circulo' | 'retangulo'
+      radius: number | JSExpr
+    })
+  | (JSStatementCommon & {
       type: 'gk:fadeScreen'
       color: string
       seconds: number | JSExpr
@@ -3943,6 +3960,9 @@ export type JSStatement =
       color: string
       image: string
       look: string
+      /** Só existe quando a criança escolhe a caixa REDONDA: no padrão a chave
+       * nem entra na IR, e o código gerado fica igual ao dos projetos antigos. */
+      shape?: 'circulo'
     })
   | (JSStatementCommon & {
       type: 'gk:spawnFromMold'
@@ -6223,6 +6243,25 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:flyFree'),
+      spriteVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:flap'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:swim'),
+      spriteVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:followPointer'),
       spriteVar: irText(),
       speed: z.union([JSExprSchema, z.number()]),
@@ -7319,6 +7358,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('gk:setupFull'), bg: irText(), accent: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:stageBorder'),
+      color: irText(),
+      width: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:showHitboxes'), ...idField }),
     z.object({ type: z.literal('gk:start'), ...idField }),
     z.object({ type: z.literal('gk:loadImage'), name: irText(), asset: irText(), ...idField }),
     z.object({
@@ -8346,6 +8392,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:setHitboxShape'),
+      charVar: irText(),
+      shape: z.enum(['circulo', 'retangulo']),
+      radius: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:fadeScreen'),
       color: irText(),
       seconds: z.union([JSExprSchema, z.number()]),
@@ -8572,6 +8625,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       color: irText(),
       image: irText(),
       look: irText(),
+      shape: z.literal('circulo').optional(),
       ...idField,
     }),
     z.object({
@@ -11156,6 +11210,9 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawFrame',
   'g2d:platformer',
   'g2d:topDown',
+  'g2d:flyFree',
+  'g2d:flap',
+  'g2d:swim',
   'g2d:followPointer',
   'g2d:clampToScreen',
   'g2d:flash',
@@ -11361,6 +11418,8 @@ export const G3D_STATEMENT_TYPES = new Set([
 export const GK_STATEMENT_TYPES = new Set([
   'gk:setup',
   'gk:setupFull',
+  'gk:stageBorder',
+  'gk:showHitboxes',
   'gk:start',
   'gk:loadImage',
   'gk:setScreenText',
@@ -11531,6 +11590,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:fadeTo',
   'gk:tweenProperty',
   'gk:setHitbox',
+  'gk:setHitboxShape',
   'gk:setSwingWindow',
   'gk:lutaMatch',
   'gk:lutaDrawHud',

@@ -3808,6 +3808,37 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
         },
       }
+    case 'sz_g2d_fly_free':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:flyFree',
+          spriteVar: f(block, 'SPRITE'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_g2d_flap':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:flap',
+          spriteVar: f(block, 'SPRITE'),
+          ctxVar: 'ctx',
+          force: exprInput(block, 'FORCE', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_swim':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:swim',
+          spriteVar: f(block, 'SPRITE'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 2 }),
+        },
+      }
     case 'sz_g2d_follow_pointer':
       seen.add('game-2d')
       return {
@@ -5608,6 +5639,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           accent: f(block, 'ACCENT') || '#4a9eff',
         },
       }
+    case 'sz_gk_stage_border':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:stageBorder',
+          color: f(block, 'COLOR'),
+          width: exprInput(block, 'WIDTH', { type: 'num', value: 4 }),
+        },
+      }
+    case 'sz_gk_show_hitboxes':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:showHitboxes' } }
     case 'sz_gk_start':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:start' } }
@@ -7415,6 +7459,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           h: exprInput(block, 'H', { type: 'num', value: 0 }),
         },
       }
+    case 'sz_gk_set_hitbox_shape':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setHitboxShape',
+          charVar: f(block, 'WHO'),
+          shape: f(block, 'SHAPE') === 'retangulo' ? 'retangulo' : 'circulo',
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 0 }),
+        },
+      }
     case 'sz_gk_fade_screen':
       seen.add('game-2d-advanced')
       return {
@@ -7632,6 +7687,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           color: f(block, 'COLOR') || '#e94f4f',
           image: f(block, 'IMAGE'),
           look: f(block, 'LOOK'),
+          // Padrão (quadrada) NÃO entra na IR: projeto antigo gera o mesmo código.
+          ...(f(block, 'SHAPE') === 'circulo' ? { shape: 'circulo' as const } : {}),
         },
       }
     case 'sz_gk_spawn_from_mold':

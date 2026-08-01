@@ -2690,12 +2690,6 @@ describe('gk — playthrough mínimo: Vale Ensolarado Profissional (rede pré-e2
     h.api.restartGame()
   }
 
-  function vivos(h: Harness, mold: string): Corpo[] {
-    const out: Corpo[] = []
-    h.api.forEachActive(mold, (e: unknown) => out.push(e as Corpo))
-    return out
-  }
-
   /** O placar que a criança VÊ ("Gemas: N/6" do onDrawHud), ou -1. */
   function gemasNoHud(): number {
     const linha = texts.find((t) => t.text.startsWith('Gemas: '))

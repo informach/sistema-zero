@@ -37,7 +37,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.54.0',
+  version: '0.55.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -122,6 +122,12 @@ Use estes blocos dentro do **"A cada quadro do jogo"**:
   a gravidade puxa: base com gravidade positiva e teto com gravidade negativa. Usa
   a gravidade do mundo quando definida; sem o bloco, mantém o padrão 0,6.
 - **4 direções (top-down)**. Anda nas 4 direções; a diagonal não fica mais rápida.
+- **Voar livre**. Nas 8 direções, sem gravidade: ganha velocidade enquanto você segura
+  a seta e PLANA quando solta. Passarinho, nave, fadinha.
+- **Bater as asas**. A gravidade puxa e cada TOQUE (seta pra cima, W, espaço ou um toque
+  na tela) dá um empurrão pra cima, inclusive no ar. Segurar não sobe para sempre.
+- **Nadar**. Água pesada: solto, afunda devagarinho; segurando pra cima, sobe. Tudo mais
+  lento e mais macio. Com a gravidade do mundo em 0, o bicho fica boiando.
 - **Seguir o ponteiro**. O sprite persegue o mouse/dedo.
 - **Manter dentro da tela**. Gruda nas bordas em vez de sumir.
 - **Clarão**. Pinta a tela com uma cor translúcida (ex.: ao levar dano).

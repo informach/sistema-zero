@@ -1255,6 +1255,12 @@ function compileStatementCode(
       return `${pad}SZGame2D.platformer(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:topDown':
       return `${pad}SZGame2D.topDown(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:flyFree':
+      return `${pad}SZGame2D.flyFree(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:flap':
+      return `${pad}SZGame2D.flap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'g2d:swim':
+      return `${pad}SZGame2D.swim(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:followPointer':
       return `${pad}SZGame2D.followPointer(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:clampToScreen':
@@ -1807,6 +1813,10 @@ function compileStatementCode(
       return `${pad}SZGameKit.setup({ width: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, height: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
     case 'gk:setupFull':
       return `${pad}SZGameKit.setupFull({ background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
+    case 'gk:stageBorder':
+      return `${pad}SZGameKit.showStageBorder(${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
+    case 'gk:showHitboxes':
+      return `${pad}SZGameKit.showHitboxes();`
     case 'gk:start':
       return `${pad}SZGameKit.start();`
     case 'gk:loadImage':
@@ -2413,6 +2423,8 @@ function compileStatementCode(
     }
     case 'gk:setHitbox':
       return `${pad}SZGameKit.setHitbox(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.ox), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.oy), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
+    case 'gk:setHitboxShape':
+      return `${pad}SZGameKit.setHitboxShape(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.shape)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))});`
     case 'gk:fadeScreen':
       return `${pad}SZGameKit.fadeScreen(${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, ${stmt.toDark});`
     case 'gk:flashScreen':
@@ -2468,7 +2480,7 @@ function compileStatementCode(
     case 'gk:emit':
       return `${pad}SZGameKit.emit(${JSON.stringify(stmt.event)});`
     case 'gk:defineMold':
-      return `${pad}SZGameKit.defineMold(${JSON.stringify(stmt.name)}, { w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, health: ${compileExpr(valueToExpr(stmt.health), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, damage: ${compileExpr(valueToExpr(stmt.damage), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)}, look: ${JSON.stringify(stmt.look)} });`
+      return `${pad}SZGameKit.defineMold(${JSON.stringify(stmt.name)}, { w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, health: ${compileExpr(valueToExpr(stmt.health), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, damage: ${compileExpr(valueToExpr(stmt.damage), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)}, look: ${JSON.stringify(stmt.look)}${stmt.shape ? `, shape: ${JSON.stringify(stmt.shape)}` : ''} });`
     case 'gk:spawnFromMold':
       return `${pad}SZGameKit.spawnFromMold(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'gk:startSpawner':
@@ -5361,9 +5373,16 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.jump), names)
       return
     case 'g2d:topDown':
+    case 'g2d:flyFree':
+    case 'g2d:swim':
     case 'g2d:followPointer':
       names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'g2d:flap':
+      names.add(stmt.spriteVar)
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
       return
     case 'g2d:flash':
     case 'g2d:drawParticles':
@@ -5780,7 +5799,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.w), names)
       collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
+    case 'gk:stageBorder':
+      collectExprIdentifiers(valueToExpr(stmt.width), names)
+      return
     case 'gk:setupFull':
+    case 'gk:showHitboxes':
     case 'gk:start':
     case 'gk:loadImage':
     case 'gk:setScreenBg':
@@ -6299,6 +6322,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.oy), names)
       collectExprIdentifiers(valueToExpr(stmt.w), names)
       collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'gk:setHitboxShape':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.radius), names)
       return
     case 'gk:lutaMatch':
       names.add(stmt.p1Var)

@@ -46,7 +46,10 @@ ${gameRuntimeDomains}
     pauseKey: 'escape',
     // "Ocupar a tela toda": a resolução interna ACOMPANHA a viewport (sem
     // proporção fixa, sem barras) em vez do letterbox de resolução travada.
-    fill: false
+    fill: false,
+    // Moldura da tela pedida pelo bloco "Mostrar a borda da tela" ({color,width})
+    // ou null. Fica na config porque o canvas só existe depois do "Começar".
+    border: null
   };
 
   // ---- Estado interno ----
@@ -109,6 +112,11 @@ ${gameRuntimeDomains}
   var spawners = [];                     // { mold, interval, timer }
   var looks = Object.create(null);       // nome -> fn(ctx)  (aparência vetorial)
   var combatants = [];                   // personagens com vida/i-frames/empurrão
+  // Personagens criados, só para o overlay de caixas de colisão enxergar quem
+  // não entra em combate (combatants só recebe quem toma dano). Capado: um
+  // "criar personagem" dentro de um laço não pode crescer isto sem fim.
+  var characters = [];
+  var MAX_TRACKED_CHARACTERS = 200;
   var effects = Object.create(null);     // nome -> receita de faísca
   var particles = { active: [], free: [] };
   // 🖥️ R21: textos flutuantes ("+100" que sobe e some) — o MOTOR desenha (como a
@@ -269,7 +277,10 @@ ${gameRuntimeDomains}
       '#szgk-stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; ' +
         'background: ' + config.bg + '; overflow: hidden; ' +
         'font-family: var(--sz-game-ui-font); color: #eee; }' +
-      '#szgk-canvas { border: 4px solid #2e2e3e; image-rendering: pixelated; image-rendering: crisp-edges; ' +
+      // Sem moldura de fábrica: quem quiser uma põe o bloco "Mostrar a borda da
+      // tela" (antes vinha uma borda cinza fixa que ninguém escolheu nem tirava,
+      // e que o modo tela-cheia apagava — o mesmo jogo tinha dois visuais).
+      '#szgk-canvas { image-rendering: pixelated; image-rendering: crisp-edges; ' +
         'background: ' + config.bg + '; }' +
       '#szgk-canvas:focus-visible { outline: 3px solid #ffffff; outline-offset: -7px; }' +
       '.szgk-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; ' +
@@ -382,11 +393,30 @@ ${gameRuntimeDomains}
       makeButton(vitoria, 'Sair para o menu', function () { api.returnToMenu(); });
 
       shellReady = true;
+      applyStageBorder(); // a criança pode ter pedido a borda ANTES de começar
       return true;
     } catch (e) {
       warn('não consegui montar a tela do jogo: ' + e);
       return false;
     }
+  }
+
+  /**
+   * Moldura em volta da tela, para enxergar onde é a área do jogo (ensinar).
+   * Vai no ELEMENTO, não no desenho: não gasta pixel do jogo e nada a apaga.
+   * A escolha fica em config.border porque na gk o canvas só nasce no "Começar
+   * o jogo" — o bloco costuma rodar antes.
+   */
+  function applyStageBorder() {
+    if (!canvasEl || !config.border) return;
+    canvasEl.style.boxSizing = 'border-box';
+    canvasEl.style.border = config.border.width + 'px solid ' + config.border.color;
+  }
+  function showStageBorder(color, width) {
+    var w = num(width, 4);
+    if (!(w > 0)) w = 4;
+    config.border = { color: text(color, '#e2e8f0'), width: Math.min(Math.round(w), 40) };
+    applyStageBorder();
   }
 
   function hideScreens() {
@@ -447,6 +477,9 @@ ${gameRuntimeDomains}
           combatants[ci]._cd = 0;
         }
         combatants.length = 0;
+        // Idem para a lista do overlay: uma partida nova cria os personagens de
+        // novo; sem zerar, os antigos ficariam sendo contornados para sempre.
+        characters.length = 0;
         // Zera os golpes de ação em voo (senão um golpe do jogo anterior "toca").
         for (var wi = 0; wi < swinging.length; wi++) swinging[wi]._swingT = 0;
         swinging.length = 0;
@@ -639,7 +672,8 @@ ${gameRuntimeDomains}
       canvasEl.height = fh;
       canvasEl.style.width = '100%';
       canvasEl.style.height = '100%';
-      canvasEl.style.border = '0';
+      // (não zeramos mais a borda aqui: ela só existia para anular a moldura de
+      // fábrica do CSS. Zerar apagaria a borda escolhida no bloco a cada resize.)
       if (ctx2d) { try { ctx2d.imageSmoothingEnabled = false; } catch (e) {} }
       return;
     }
@@ -1055,24 +1089,44 @@ ${gameRuntimeDomains}
   }
 
   /** Tecla de crase: círculos de colisão de pools + combatentes (debug do P24). */
+  /**
+   * Contorna a caixa que COLIDE de cada coisa viva, com a FORMA de verdade:
+   * retângulo da hitbox no padrão, círculo em quem escolheu a caixa redonda —
+   * sempre pelos mesmos helpers que o "touching" usa, para o desenho nunca
+   * mentir sobre o que colide. (Antes isto desenhava um círculo pelo raio em
+   * TUDO, inclusive no que colidia quadrado.)
+   * Varre moldes, combatentes E personagens criados: a lista de combatentes só
+   * recebe quem toma dano, então num jogo sem combate o herói ficaria de fora.
+   */
   function drawDebugOverlay() {
     if (!ctx2d) return;
     ctx2d.save();
     ctx2d.lineWidth = 2;
     ctx2d.strokeStyle = '#22c55e';
-    function circleOf(e) {
+    var seen = [];
+    function boxOf(e) {
       if (!e || e._active === false) return;
-      var r = num(e.radius, Math.min(num(e.w, 0), num(e.h, 0)) / 2);
-      if (!(r > 0)) return;
-      ctx2d.beginPath();
-      ctx2d.arc(num(e.x, 0) + num(e.w, 0) / 2, num(e.y, 0) + num(e.h, 0) / 2, r, 0, Math.PI * 2);
-      ctx2d.stroke();
+      if (seen.indexOf(e) !== -1) return; // um personagem pode estar em 2 listas
+      seen.push(e);
+      var w = hbW(e);
+      var h = hbH(e);
+      if (!(w > 0) || !(h > 0)) return;
+      if (isCircle(e)) {
+        var r = hbRadius(e);
+        if (!(r > 0)) return;
+        ctx2d.beginPath();
+        ctx2d.arc(hbCenterX(e), hbCenterY(e), r, 0, Math.PI * 2);
+        ctx2d.stroke();
+        return;
+      }
+      ctx2d.strokeRect(hbLeft(e), hbTop(e), w, h);
     }
     for (var pk in pools) {
       var act = pools[pk].active;
-      for (var i = 0; i < act.length; i++) circleOf(act[i]);
+      for (var i = 0; i < act.length; i++) boxOf(act[i]);
     }
-    for (var c = 0; c < combatants.length; c++) circleOf(combatants[c]);
+    for (var c = 0; c < combatants.length; c++) boxOf(combatants[c]);
+    for (var k = 0; k < characters.length; k++) boxOf(characters[k]);
     ctx2d.restore();
   }
 
@@ -1197,7 +1251,9 @@ ${gameRuntimeDomains}
       // Vida p/ o combate funcionar no personagem (herói leva vários hits, não 1).
       health: hp,
       maxHealth: hp,
-      radius: Math.min(w, h) / 2,
+      // 0 = o motor calcula pelo tamanho da CAIXA na hora (hbRadius). Congelar
+      // min(w,h)/2 aqui deixava o círculo velho depois de mudar o tamanho.
+      radius: 0,
       // Velocidade própria (tiro/deriva): "Lançar na direção" seta, "Mover pela
       // velocidade" aplica × dt.
       vx: 0,
@@ -1225,6 +1281,8 @@ ${gameRuntimeDomains}
       _driftTimer: 0, _patrolTX: 0, _patrolTY: 0, _patrolTimer: 0,
       // 🌫️ R15: opacidade (1 = opaco) e a caixa que COLIDE (0 = usa o desenho).
       opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0,
+      // 🔵 v0.55: a FORMA da caixa ('' = retângulo, 'circulo' = redonda).
+      _hbShape: '',
       // ✨/🎨 R21: rastro contínuo e inclinação ao andar (mesmo shape do pool).
       _trailOn: false, _trailColor: '', _trailSize: 3, _trailRate: 30,
       _trailLife: 0.4, _trailAcc: 0, _trailFrame: -1, _leanMax: 0, _leanNow: 0,
@@ -1237,6 +1295,8 @@ ${gameRuntimeDomains}
     };
     c._bornX = c.x;
     c._bornY = c.y;
+    // Só para o overlay de caixas de colisão alcançar quem não entra em combate.
+    if (characters.length < MAX_TRACKED_CHARACTERS) characters.push(c);
     return c;
   }
 
@@ -1499,6 +1559,12 @@ ${gameKitAnimationRuntime}
    *   · NÃO vale → borda da tela (não sair / quicar / emendar). Essas são sobre o
    *             DESENHO: a criança quer que o sprite não suma da tela, não que a
    *             caixa não suma. Manter as bordas no desenho é a escolha certa.
+   *
+   * ⭐ E onde a FORMA vale (v0.55): o círculo é só de ENCOSTAR — encostar, o par
+   * que se encosta, o golpe, o pisar e o clique. O empurrão SÓLIDO (parede, chão,
+   * tile, plataforma) segue por retângulo: ele resolve pelo menor eixo de
+   * sobreposição, uma conta que não existe em círculo, e trocá-la mexeria em todo
+   * jogo de plataforma que já existe. Região e porcentagem também seguem quadradas.
    */
   function setHitbox(who, ox, oy, w, h) {
     if (!who || typeof who !== 'object') return;
@@ -1506,6 +1572,13 @@ ${gameKitAnimationRuntime}
     who._hbY = num(oy, 0);
     who._hbW = Math.max(0, num(w, 0));
     who._hbH = Math.max(0, num(h, 0));
+  }
+  /** A FORMA da caixa: 'circulo' arredonda, qualquer outra coisa volta ao retângulo.
+   * O raio segue o idioma do _hbW/_hbH: 0 = o motor calcula pelo tamanho. */
+  function setHitboxShape(who, shape, radius) {
+    if (!who || typeof who !== 'object') return;
+    who._hbShape = text(shape, '') === 'circulo' ? 'circulo' : '';
+    who.radius = Math.max(0, num(radius, 0));
   }
   function hbLeft(e) { return num(e.x, 0) + num(e._hbX, 0); }
   function hbTop(e) { return num(e.y, 0) + num(e._hbY, 0); }
@@ -1531,6 +1604,9 @@ ${gameKitAnimationRuntime}
    * mesma caixa — só sem o trabalho repetido. */
   function touching(a, b) {
     if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+    // Sem forma declarada dos dois lados (o caso de quase todo jogo) o caminho
+    // quente segue IDÊNTICO: duas leituras de propriedade a mais, nada de contas.
+    if (a._hbShape || b._hbShape) return touchingByShape(a, b);
     var aw = num(a._hbW, 0); if (!(aw > 0)) aw = num(a.w, 0);
     var ah = num(a._hbH, 0); if (!(ah > 0)) ah = num(a.h, 0);
     var bw = num(b._hbW, 0); if (!(bw > 0)) bw = num(b.w, 0);
@@ -1540,6 +1616,40 @@ ${gameKitAnimationRuntime}
     var bl = num(b.x, 0) + num(b._hbX, 0);
     var bt = num(b.y, 0) + num(b._hbY, 0);
     return al < bl + bw && al + aw > bl && at < bt + bh && at + ah > bt;
+  }
+  /** O ramo frio do touching: pelo menos um dos dois é redondo. */
+  function touchingByShape(a, b) {
+    var ca = isCircle(a);
+    var cb = isCircle(b);
+    if (ca && cb) {
+      var dx = hbCenterX(a) - hbCenterX(b);
+      var dy = hbCenterY(a) - hbCenterY(b);
+      var rr = hbRadius(a) + hbRadius(b);
+      return dx * dx + dy * dy < rr * rr;
+    }
+    var circle = ca ? a : b;
+    var rect = ca ? b : a;
+    return circleHitsRect(circle, hbLeft(rect), hbTop(rect), hbW(rect), hbH(rect));
+  }
+  function isCircle(e) { return !!e && e._hbShape === 'circulo'; }
+  /** O raio que COLIDE: o pedido pela criança, ou metade do menor lado da CAIXA.
+   * Derivar na hora (em vez de congelar no nascimento, como era) conserta de graça
+   * o raio velho depois de mudar o tamanho do sprite. */
+  function hbRadius(e) {
+    var r = num(e.radius, 0);
+    if (r > 0) return r;
+    return Math.min(hbW(e), hbH(e)) / 2;
+  }
+  /** Círculo × retângulo: distância do centro ao ponto mais perto do retângulo. */
+  function circleHitsRect(c, rl, rt, rw, rh) {
+    var cx = hbCenterX(c);
+    var cy = hbCenterY(c);
+    var r = hbRadius(c);
+    var nx = Math.max(rl, Math.min(cx, rl + rw));
+    var ny = Math.max(rt, Math.min(cy, rt + rh));
+    var dx = cx - nx;
+    var dy = cy - ny;
+    return dx * dx + dy * dy < r * r;
   }
 
   function hbCenterX(e) { return hbLeft(e) + hbW(e) / 2; }
@@ -1593,7 +1703,7 @@ ${gameKitAnimationRuntime}
       // propósito desta função: toda entidade que anda mudava de shape.
       _driftTimer: 0, _patrolTX: 0, _patrolTY: 0, _patrolTimer: 0,
       // 🌫️ R15: opacidade (1 = opaco) e a caixa que COLIDE (0 = usa o desenho).
-      opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0,
+      opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0, _hbShape: '',
       // ✨/🎨 R21: rastro contínuo e inclinação ao andar (reciclar sem zerar
       // deixaria o inimigo novo nascer soltando o jato do anterior, tombado).
       _trailOn: false, _trailColor: '', _trailSize: 3, _trailRate: 30,
@@ -1628,7 +1738,10 @@ ${gameKitAnimationRuntime}
       color: text(o.color, '#e94f4f'),
       image: text(o.image, ''),
       look: text(o.look, ''),
-      radius: Math.min(w, h) / 2
+      // A forma vale para TODO mundo que nascer deste molde (é assim que tiro e
+      // inimigo ficam redondos: eles não têm nome p/ receber um bloco próprio).
+      shape: text(o.shape, '') === 'circulo' ? 'circulo' : '',
+      radius: 0
     };
     if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: false };
     // Pré-aquece o pool (P24 pré-cria 10): as primeiras ondas não alocam no loop.
@@ -1654,7 +1767,7 @@ ${gameKitAnimationRuntime}
     e.x = num(x, 0); e.y = num(y, 0);
     e.w = m.w; e.h = m.h;
     e.speed = m.speed; e.speedMultiplier = 1; e.damage = m.damage; e.color = m.color;
-    e.image = m.image; e.look = m.look; e.radius = m.radius;
+    e.image = m.image; e.look = m.look; e.radius = m.radius; e._hbShape = m.shape || '';
     e.health = m.health; e.maxHealth = m.health;
     e._active = true; e._facingLeft = false; e._facingDir = 'down'; e._iFrames = 0;
     e._pushX = 0; e._pushY = 0; e._driftAngle = null; e._mold = k;
@@ -2510,13 +2623,14 @@ ${gameKitCardsRuntime}
     ctx2d.fillStyle = '#ff5f6d';
     ctx2d.fillRect(x, y, Math.ceil(w * pct), 4);
   }
+  /** Perguntar por círculo SEM mudar o sprite. Mede pelos mesmos raio e centro da
+   * caixa que a forma redonda usa, para os dois caminhos nunca discordarem. */
   function touchCircle(a, b) {
     if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
-    var ra = num(a.radius, num(a.w, 0) / 2);
-    var rb = num(b.radius, num(b.w, 0) / 2);
-    var dx = centerX(a) - centerX(b);
-    var dy = centerY(a) - centerY(b);
-    return dx * dx + dy * dy < (ra + rb) * (ra + rb);
+    var dx = hbCenterX(a) - hbCenterX(b);
+    var dy = hbCenterY(a) - hbCenterY(b);
+    var rr = hbRadius(a) + hbRadius(b);
+    return dx * dx + dy * dy < rr * rr;
   }
 
   // ============================================================================
@@ -2578,6 +2692,13 @@ ${gameKitCardsRuntime}
   function pointIn(x, y, who) {
     if (!who || typeof who !== 'object') return false;
     var px = num(x, 0), py = num(y, 0);
+    // Quem COLIDE redondo também é CLICADO redondo (o canto não conta).
+    if (isCircle(who)) {
+      var dx = px - hbCenterX(who);
+      var dy = py - hbCenterY(who);
+      var r = hbRadius(who);
+      return dx * dx + dy * dy <= r * r;
+    }
     return px >= hbLeft(who) && px <= hbRight(who) && py >= hbTop(who) && py <= hbBottom(who);
   }
 
@@ -4973,6 +5094,9 @@ ${gameKitAudioRuntime}
       if (o.accent != null) config.accent = text(o.accent, config.accent);
     }),
     start: guard('start', start),
+    showStageBorder: guard('showStageBorder', showStageBorder),
+    // Liga a MESMA chave que a tecla de crase alterna (agora exposta em bloco).
+    showHitboxes: guard('showHitboxes', function () { debugOverlay = true; }),
     width: guard('width', function () { return config.w; }),
     height: guard('height', function () { return config.h; }),
     loadImage: guard('loadImage', loadImage),
@@ -5391,6 +5515,7 @@ ${gameKitAudioRuntime}
     fadeTo: guard('fadeTo', fadeTo),
     tweenProperty: guard('tweenProperty', tweenProperty),
     setHitbox: guard('setHitbox', setHitbox),
+    setHitboxShape: guard('setHitboxShape', setHitboxShape),
     fadeScreen: guard('fadeScreen', fadeScreen),
     flashScreen: guard('flashScreen', flashScreen),
     saveValue: guard('saveValue', saveValue),

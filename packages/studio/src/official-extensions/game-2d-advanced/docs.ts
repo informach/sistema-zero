@@ -10,7 +10,9 @@ substituir fontes escolhidas.
 
 1. Use uma vez **Preparar o jogo profissional** (resolução fixa) ou **Preparar o
    jogo para ocupar a tela toda**. Na tela cheia, calcule posições pela
-   largura/altura do jogo.
+   largura/altura do jogo. A tela nasce SEM moldura; se quiser uma, some
+   **Mostrar a borda da tela** (com cor e espessura) para todo mundo ver onde
+   começa e termina a área do jogo.
 2. Escolha a imagem no próprio bloco: personagem, NPC, item e animação carregam
    a arte sozinhos. **Carregar a imagem** serve para pré-carregar ou criar apelido.
 3. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
@@ -536,6 +538,11 @@ faz ANDAR. Use os dois com o mesmo ângulo = o tanque, a nave, o Asteroids.
 **Caixa de colisão de …**. A caixa que COLIDE não precisa ser o desenho todo. Num
 personagem alto, deixe só os PÉS colidirem, senão ele encosta nas paredes com a
 cabeça (é o erro clássico). Largura/altura 0 = o desenho inteiro.
+
+**Mostrar as caixas de colisão** contorna de verde a caixa que colide de tudo que
+está vivo: herói, inimigos, tiros e o que nasce de molde. É assim que se confere
+se a caixa ficou no lugar certo. Ponha em ⚙️ Ao iniciar; para tirar, apague o
+bloco.
 
 ### 🗺️ Mapa por código (em 🗺️ Mundo & profundidade)
 

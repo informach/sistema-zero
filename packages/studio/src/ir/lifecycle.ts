@@ -87,6 +87,8 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
 
   'gk:setup',
   'gk:setupFull',
+  'gk:stageBorder',
+  'gk:showHitboxes',
   'gk:loadImage',
   'gk:createScreen',
   'gk:addButton',

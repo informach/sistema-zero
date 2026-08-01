@@ -1415,6 +1415,51 @@ export const gameTwoDBlocks = [
       'Movimento de cima pra baixo (visão de topo) nas 4 direções. A diagonal não fica mais rápida que andar reto.',
   },
   {
+    type: 'sz_g2d_fly_free',
+    placement: 'command',
+    message0: 'Fazer o sprite %1 voar livre, velocidade %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Voa nas 8 direções com as setas, sem gravidade nenhuma: ganha velocidade enquanto você segura e PLANA quando solta. Bom para passarinho, nave e fadinha. A velocidade que você põe é a máxima.',
+  },
+  {
+    type: 'sz_g2d_flap',
+    placement: 'command',
+    message0: 'Fazer o sprite %1 bater as asas, força %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A gravidade puxa o tempo todo e cada toque na seta pra cima, no W, no espaço ou na tela dá um empurrão pra cima, inclusive no ar. É o passarinho dos canos, o foguete, o balão. Segurar a tecla não sobe para sempre: cada batida precisa de um toque novo.',
+  },
+  {
+    type: 'sz_g2d_swim',
+    placement: 'command',
+    message0: 'Fazer o sprite %1 nadar, velocidade %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Água pesada: solto, o bicho afunda devagarinho; segurando a seta pra cima, ele sobe. Tudo mais lento e mais macio que no ar, com as 8 direções. Com a gravidade do mundo em 0 ele fica boiando parado.',
+  },
+  {
     type: 'sz_g2d_follow_pointer',
     placement: 'command',
     message0: 'Fazer sprite %1 seguir o ponteiro, velocidade %2',

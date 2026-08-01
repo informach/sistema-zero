@@ -135,6 +135,7 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_gk_property_of',
   'sz_gk_set_property',
   'sz_gk_set_hitbox',
+  'sz_gk_set_hitbox_shape',
   'sz_gk_angle_of',
   'sz_gk_angle_to',
   'sz_gk_on_event',

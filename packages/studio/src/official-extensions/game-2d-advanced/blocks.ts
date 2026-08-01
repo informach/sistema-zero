@@ -43,6 +43,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     types: [
       'sz_gk_setup',
       'sz_gk_setup_full',
+      'sz_gk_stage_border',
       'sz_gk_start',
       'sz_gk_load_image',
       'sz_gk_game_width',
@@ -83,6 +84,8 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_set_facing',
       'sz_gk_facing_of',
       'sz_gk_set_hitbox',
+      'sz_gk_set_hitbox_shape',
+      'sz_gk_show_hitboxes',
       'sz_gk_angle_of',
       'sz_gk_angle_to',
     ],
@@ -816,6 +819,7 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_setup: { W: numShadow(1280), H: numShadow(720) },
+  sz_gk_stage_border: { WIDTH: numShadow(4) },
   sz_gk_card: { FRONT: txtShadow('🍎'), BACK: txtShadow('?') },
   sz_gk_card_flip: { CARD: numShadow(0) },
   sz_gk_card_is_up: { CARD: numShadow(0) },
@@ -975,6 +979,7 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_fade_to: { PCT: numShadow(0), SECS: numShadow(0.5) },
   sz_gk_tween_property: { TO: numShadow(100), SECS: numShadow(0.5) },
   sz_gk_set_hitbox: { OX: numShadow(0), OY: numShadow(0), W: numShadow(0), H: numShadow(0) },
+  sz_gk_set_hitbox_shape: { RADIUS: numShadow(0) },
   sz_gk_swing_window: { START: numShadow(0.08), ACTIVE: numShadow(0.08) },
   sz_gk_luta_match: { ROUNDS: numShadow(3), SECS: numShadow(60) },
   sz_gk_luta_move: { DMG: numShadow(10), RANGE: numShadow(50) },
