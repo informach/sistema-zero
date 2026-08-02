@@ -17,18 +17,21 @@ import { useCallback, useMemo } from 'react'
 export function StudioProClient({
   viewerId,
   projectId,
+  zappyEnabled = false,
 }: {
   viewerId: string | null
   projectId: string
+  /** Capacidade de oferta derivada no servidor; o BFF mantém o gate autoritativo. */
+  zappyEnabled?: boolean
 }) {
   const { resolvedTheme } = useTheme()
   const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
   // Carga COMPLETA (não soft-nav): sair da rota PRO larga o cross-origin isolation
   // (COEP) limpo, evitando que o /estudio clássico herde o COEP do documento isolado.
   const onExit = useCallback(() => window.location.assign('/estudio'), [])
-  const tutor = useMemo<StudioTutorConfig>(
-    () => ({ adapter: createStudioZappyAdapter(), cooldownMs: 1_500 }),
-    [],
+  const tutor = useMemo<StudioTutorConfig | undefined>(
+    () => (zappyEnabled ? { adapter: createStudioZappyAdapter(), cooldownMs: 1_500 } : undefined),
+    [zappyEnabled],
   )
 
   return (

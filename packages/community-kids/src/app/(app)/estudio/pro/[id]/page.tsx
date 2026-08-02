@@ -1,3 +1,4 @@
+import { isStudioZappyPilotAllowed } from '@sistemazero/member-shell/server/zappy-access'
 import { redirect } from 'next/navigation'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
@@ -40,5 +41,11 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
   // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
   if (!access.allowed) redirect('/estudio')
 
-  return <StudioProClient viewerId={session?.id ?? null} projectId={id} />
+  return (
+    <StudioProClient
+      viewerId={session?.id ?? null}
+      projectId={id}
+      zappyEnabled={isStudioZappyPilotAllowed(session)}
+    />
+  )
 }
