@@ -171,6 +171,35 @@ function isBlockInView(workspace: Blockly.WorkspaceSvg, block: Blockly.BlockSvg)
   }
 }
 
+interface TutorToolboxItem {
+  getName?: () => string
+  getChildToolboxItems?: () => TutorToolboxItem[]
+}
+
+/** Abre a categoria autoritativa devolvida pelo catálogo do tutor (API pública do Blockly). */
+function openTutorCategory(workspace: Blockly.WorkspaceSvg, category: string): boolean {
+  const toolbox = workspace.getToolbox?.() as {
+    getToolboxItems?: () => TutorToolboxItem[]
+    setSelectedItem?: (item: TutorToolboxItem) => void
+  } | null
+  if (!toolbox?.getToolboxItems || !toolbox.setSelectedItem) return false
+  const wanted = category.trim().toLocaleLowerCase('pt-BR')
+  const visit = (items: TutorToolboxItem[]): TutorToolboxItem | null => {
+    for (const item of items) {
+      const name = item.getName?.().trim().toLocaleLowerCase('pt-BR') ?? ''
+      if (name === wanted || name.endsWith(wanted) || name.includes(wanted)) return item
+      const nested = item.getChildToolboxItems?.() ?? []
+      const found = visit(nested)
+      if (found) return found
+    }
+    return null
+  }
+  const item = visit(toolbox.getToolboxItems())
+  if (!item) return false
+  toolbox.setSelectedItem(item)
+  return true
+}
+
 function resizeBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   try {
     Blockly.svgResize(workspace)
@@ -311,6 +340,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   studioThemeRef.current = studioTheme
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const selectBlock = useHighlightStore((s) => s.selectBlock)
+  const tutorTarget = useHighlightStore((s) => s.tutorTarget)
   const editorCursorLine = useHighlightStore((s) => s.cursorLine)
   const editorCursorColumn = useHighlightStore((s) => s.cursorColumn)
   const editorCursorFile = useHighlightStore((s) => s.cursorFile)
@@ -765,6 +795,29 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       })
     }
   }, [workspace, editorCursorFile, editorCursorLine, editorCursorColumn, highlightSource, cross])
+
+  // Chip do Zappy: centraliza uma instância existente; sem instância, abre a
+  // categoria real preenchida pelo servidor a partir do catálogo (nunca nome livre da IA).
+  useEffect(() => {
+    if (!workspace || highlightSource !== 'tutor' || !tutorTarget) return
+    const block = tutorTarget.blockId ? workspace.getBlockById(tutorTarget.blockId) : null
+    if (block) {
+      isSelectingFromEditorRef.current = true
+      try {
+        block.select()
+        const svgWorkspace = workspace as Blockly.WorkspaceSvg
+        if (typeof svgWorkspace.centerOnBlock === 'function') {
+          svgWorkspace.centerOnBlock(block.id, false)
+        }
+      } finally {
+        queueMicrotask(() => {
+          isSelectingFromEditorRef.current = false
+        })
+      }
+      return
+    }
+    openTutorCategory(workspace as Blockly.WorkspaceSvg, tutorTarget.category)
+  }, [workspace, highlightSource, tutorTarget])
 
   // Restaura blocksState quando trocar de projeto ou quando a Ponte gerar
   // blocos a partir do código.

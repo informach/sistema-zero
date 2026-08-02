@@ -1427,7 +1427,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Voa nas 8 direções com as setas, sem gravidade nenhuma: ganha velocidade enquanto você segura e PLANA quando solta. Bom para passarinho, nave e fadinha. A velocidade que você põe é a máxima.',
+      'Voa com as setas, sem gravidade nenhuma. A diferença para o "4 direções" é o PESO: leva um tiquinho para engatar, continua planando um bom tanto depois que você solta e demora para virar de lado, então é preciso fazer a curva antes. Bom para passarinho e fadinha. A velocidade que você põe é a máxima.',
   },
   {
     type: 'sz_g2d_flap',

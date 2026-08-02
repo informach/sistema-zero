@@ -1,43 +1,21 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
-import * as Blockly from 'blockly/core'
-import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
-import 'blockly/blocks'
-import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace } from '../../../blockly/buildIR'
-import { ensureBlocklyInitialized } from '../../../blockly/setup'
-import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
-import { parseJS } from '../../../parsers/js'
+import { describe, expect, it } from 'bun:test'
+import { behaviorStatements, type JSStatement } from '#ir'
 import { CHUVA_DE_METEOROS_SOURCE as SOURCE } from '../__gen_chuvaDeMeteoros'
-import { collectTypes, stripIds } from '../__gen_dinoCorredor'
-import { gameTwoDBlocks } from '../blocks'
+import { collectTypes } from '../__gen_dinoCorredor'
 import { chuvaDeMeteorosExample } from '../examples'
 import { gameTwoDManifest } from '../manifest'
+import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
  * Drift do exemplo "Chuva de Meteoros" — o degrau BÁSICO da família Space
- * Shooter do curso raylib_intro. A IR embutida em examples/clearcode.ts foi
+ * Shooter do curso raylib_intro. A IR embutida em examples/clearcode/chuvaDeMeteoros.ts foi
  * GERADA pelo parser real a partir do SOURCE (que mora no
  * __gen_chuvaDeMeteoros.ts, importado aqui para que fonte e teste NUNCA possam
  * divergir). O preparo do palco (setupStage + setStageDescription) é injetado
  * pelo wrapper `beginnerGameExample` e conferido à parte.
  */
 
-/** O mesmo contrato de ciclo de vida dos exemplos, com a extensão game-2d. */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d' }],
-  })
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
-
-beforeAll(() => {
-  ensureBlocklyInitialized()
-  registerExtensionBlocks(gameTwoDBlocks)
-})
+setupGameTwoDExampleTests()
 
 describe('Exemplo Chuva de Meteoros — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
@@ -48,24 +26,10 @@ describe('Exemplo Chuva de Meteoros — drift contra o parser real', () => {
     expect((chuvaDeMeteorosExample.description ?? '').length).toBeLessThanOrEqual(200)
   })
 
-  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora a dupla do wrapper', () => {
-    const parsed = stripIds(parseExampleLifecycleSource(SOURCE))
-    const types = collectTypes(parsed)
-    expect(types.has('rawJS')).toBe(false)
-    expect(types.has('memberCall')).toBe(false)
-
-    const embedded = stripIds(behaviorStatements(chuvaDeMeteorosExample.ir)) as JSStatement[]
-    expect(embedded[0]).toEqual({
-      type: 'g2d:setupStage',
-      width: 480,
-      height: 300,
-      bg: '#0f0a19',
-    } as JSStatement)
-    expect(embedded[1]).toEqual({
-      type: 'g2d:setStageDescription',
-      description: chuvaDeMeteorosExample.description ?? '',
-    } as JSStatement)
-    expect(parsed).toEqual(embedded.slice(2))
+  registerExampleContractTests({
+    example: chuvaDeMeteorosExample,
+    source: SOURCE,
+    stage: { width: 480, height: 300, bg: '#0f0a19' },
   })
 
   it('exercita a mecânica prometida do Space Shooter', () => {
@@ -148,40 +112,5 @@ describe('Exemplo Chuva de Meteoros — drift contra o parser real', () => {
     )
     // Nenhuma cadência escondida dentro do "a cada quadro".
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
-  })
-
-  it('nenhum texto visível usa travessão', () => {
-    expect(JSON.stringify(chuvaDeMeteorosExample.ir)).not.toContain('—')
-    expect(chuvaDeMeteorosExample.name).not.toContain('—')
-    expect(chuvaDeMeteorosExample.description ?? '').not.toContain('—')
-  })
-
-  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(
-      stripIds(behaviorStatements(chuvaDeMeteorosExample.ir)) as JSStatement[],
-      0,
-    )
-    const reparsed = stripIds(parseJS(code1)) as JSStatement[]
-    const code2 = compileStatements(reparsed, 0)
-    expect(code2).toBe(code1)
-  })
-
-  it('round-trip por blocos: IR → workspace → IR preserva o jogo inteiro', () => {
-    const state = buildWorkspaceStateFromIR(
-      chuvaDeMeteorosExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
-    )
-    const ws = new Blockly.Workspace()
-    try {
-      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
-      const embedded = behaviorStatements(chuvaDeMeteorosExample.ir)
-      expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
-      expect(rebuilt.length).toBe(embedded.length)
-      expect(compileStatements(stripIds(rebuilt) as JSStatement[], 0)).toBe(
-        compileStatements(stripIds(embedded) as JSStatement[], 0),
-      )
-    } finally {
-      ws.dispose()
-    }
   })
 })

@@ -36,6 +36,7 @@ export const ticketStatusEnum = helpdesk.enum('ticket_status', [
 export const ticketCategoryEnum = helpdesk.enum('ticket_category', [
   'curso_acesso',
   'problema_tecnico',
+  'studio',
   'pagamento_reembolso',
   'parceria_comercial',
   'outro',

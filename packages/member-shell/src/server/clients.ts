@@ -68,6 +68,9 @@ import type {
   TeacherThreadView,
   UserView,
   VacationResult,
+  ZappyHistoryMessageView,
+  ZappyKnowledgeHitView,
+  ZappyStoredResponseView,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
 import type { AuthTokens } from './session'
@@ -342,6 +345,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      */
     checkStudioAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
       return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: STUDIO_ACCESS_REF, audience },
+      })
+    },
+    checkStudioAccess(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetch('/members/access', {
         query: { refs: STUDIO_ACCESS_REF, audience },
       })
     },
@@ -835,6 +843,58 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         method: 'POST',
         query: { audience },
         body: { feature },
+      })
+    },
+    zappyHistory(
+      projectId: string,
+    ): Promise<GatewayResponse<{ messages: ZappyHistoryMessageView[] }>> {
+      return gw.gatewayFetch('/members/zappy/history', { query: { projectId } })
+    },
+    zappyDeleteHistory(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch('/members/zappy/history', { method: 'DELETE', query: { projectId } })
+    },
+    zappyReserveQuestion(body: {
+      projectId: string
+      clientMessageId: string
+      question: string
+    }): Promise<
+      GatewayResponse<{
+        created: boolean
+        questionId?: string
+        response?: ZappyStoredResponseView
+        rateLimited?: boolean
+      }>
+    > {
+      return gw.gatewayFetch('/members/zappy/questions', { method: 'POST', body })
+    },
+    zappyCompleteQuestion(
+      questionId: string,
+      body: {
+        projectId: string
+        latencyMs: number
+        response: ZappyStoredResponseView
+        outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
+      },
+    ): Promise<GatewayResponse<ZappyStoredResponseView>> {
+      return gw.gatewayFetch(`/members/zappy/questions/${enc(questionId)}/response`, {
+        method: 'PUT',
+        body,
+      })
+    },
+    zappyFeedback(body: {
+      projectId: string
+      responseId: string
+      useful: boolean
+    }): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch('/members/zappy/feedback', { method: 'POST', body })
+    },
+    zappyKnowledgeSearch(
+      query: string,
+      limit = 5,
+    ): Promise<GatewayResponse<{ hits: ZappyKnowledgeHitView[] }>> {
+      return gw.gatewayFetch('/members/zappy/knowledge/search', {
+        method: 'POST',
+        body: { query, limit },
       })
     },
 

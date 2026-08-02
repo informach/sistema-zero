@@ -1,43 +1,21 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
-import * as Blockly from 'blockly/core'
-import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
-import 'blockly/blocks'
-import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace } from '../../../blockly/buildIR'
-import { ensureBlocklyInitialized } from '../../../blockly/setup'
-import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
-import { parseJS } from '../../../parsers/js'
+import { describe, expect, it } from 'bun:test'
+import { behaviorStatements, type JSStatement } from '#ir'
 import { BATALHA_MONSTRINHOS_SOURCE as SOURCE } from '../__gen_batalhaMonstrinhos'
-import { collectTypes, stripIds } from '../__gen_dinoCorredor'
-import { gameTwoDBlocks } from '../blocks'
+import { collectTypes } from '../__gen_dinoCorredor'
 import { batalhaMonstrinhosExample } from '../examples'
 import { gameTwoDManifest } from '../manifest'
+import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
  * Drift do exemplo "Batalha de Monstrinhos" — o degrau BÁSICO da família
- * Pokemon-style Battle (Clear Code). A IR embutida em examples/clearcode.ts
+ * Pokemon-style Battle (Clear Code). A IR embutida em examples/clearcode/batalhaMonstrinhos.ts
  * foi GERADA pelo parser real a partir do SOURCE (que mora no
  * __gen_batalhaMonstrinhos.ts, importado aqui para que fonte e teste NUNCA
  * possam divergir). O preparo do palco (setupStage + setStageDescription) é
  * injetado pelo wrapper `beginnerGameExample` e conferido à parte.
  */
 
-/** O mesmo contrato de ciclo de vida dos exemplos, com a extensão game-2d. */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d' }],
-  })
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
-
-beforeAll(() => {
-  ensureBlocklyInitialized()
-  registerExtensionBlocks(gameTwoDBlocks)
-})
+setupGameTwoDExampleTests()
 
 describe('Exemplo Batalha de Monstrinhos — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
@@ -47,24 +25,10 @@ describe('Exemplo Batalha de Monstrinhos — drift contra o parser real', () => 
     expect(batalhaMonstrinhosExample.experience).toBe('game')
   })
 
-  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora a dupla do wrapper', () => {
-    const parsed = stripIds(parseExampleLifecycleSource(SOURCE))
-    const types = collectTypes(parsed)
-    expect(types.has('rawJS')).toBe(false)
-    expect(types.has('memberCall')).toBe(false)
-
-    const embedded = stripIds(behaviorStatements(batalhaMonstrinhosExample.ir)) as JSStatement[]
-    expect(embedded[0]).toEqual({
-      type: 'g2d:setupStage',
-      width: 480,
-      height: 300,
-      bg: '#28325a',
-    } as JSStatement)
-    expect(embedded[1]).toEqual({
-      type: 'g2d:setStageDescription',
-      description: batalhaMonstrinhosExample.description ?? '',
-    } as JSStatement)
-    expect(parsed).toEqual(embedded.slice(2))
+  registerExampleContractTests({
+    example: batalhaMonstrinhosExample,
+    source: SOURCE,
+    stage: { width: 480, height: 300, bg: '#28325a' },
   })
 
   it('exercita a mecânica prometida do degrau básico', () => {
@@ -201,40 +165,5 @@ describe('Exemplo Batalha de Monstrinhos — drift contra o parser real', () => 
     expect(frameLoop).toBeDefined()
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
     expect(collectTypes(frameLoop).has('g2d:afterSeconds')).toBe(false)
-  })
-
-  it('nenhum texto visível usa travessão', () => {
-    expect(JSON.stringify(batalhaMonstrinhosExample.ir)).not.toContain('—')
-    expect(batalhaMonstrinhosExample.name).not.toContain('—')
-    expect(batalhaMonstrinhosExample.description ?? '').not.toContain('—')
-  })
-
-  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(
-      stripIds(behaviorStatements(batalhaMonstrinhosExample.ir)) as JSStatement[],
-      0,
-    )
-    const reparsed = stripIds(parseJS(code1)) as JSStatement[]
-    const code2 = compileStatements(reparsed, 0)
-    expect(code2).toBe(code1)
-  })
-
-  it('round-trip por blocos: IR → workspace → IR preserva o jogo inteiro', () => {
-    const state = buildWorkspaceStateFromIR(
-      batalhaMonstrinhosExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
-    )
-    const ws = new Blockly.Workspace()
-    try {
-      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
-      const embedded = behaviorStatements(batalhaMonstrinhosExample.ir)
-      expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
-      expect(rebuilt.length).toBe(embedded.length)
-      expect(compileStatements(stripIds(rebuilt) as JSStatement[], 0)).toBe(
-        compileStatements(stripIds(embedded) as JSStatement[], 0),
-      )
-    } finally {
-      ws.dispose()
-    }
   })
 })

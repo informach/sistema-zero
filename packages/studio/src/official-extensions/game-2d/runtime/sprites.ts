@@ -63,14 +63,14 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * Devolve um handle { img, loaded, url } cacheado por URL. Defensivo: nunca lança
    * e nunca bloqueia — "loaded" vira true no onload.
    */
-  function loadImage(src) {
-    if (!src || typeof src !== 'string') return null;
-    var known = Object.prototype.hasOwnProperty.call(ASSETS, src);
-    var url = known ? ASSETS[src] : src;
+  function loadImage(source) {
+    if (!source || typeof source !== 'string') return null;
+    var known = Object.prototype.hasOwnProperty.call(ASSETS, source);
+    var url = known ? ASSETS[source] : source;
     // Nome que não é asset do projeto NEM parece um endereço (sem "/" nem ":") =
     // provável erro de digitação. Avisa uma vez; segue tentando como URL.
-    if (!known && src.indexOf('/') === -1 && src.indexOf(':') === -1) {
-      warnOnce('img:' + src, 'a imagem "' + src + '" não está no projeto. Confira o nome no painel Imagens (maiúsculas e espaços contam).');
+    if (!known && source.indexOf('/') === -1 && source.indexOf(':') === -1) {
+      warnOnce('img:' + source, 'a imagem "' + source + '" não está no projeto. Confira o nome no painel Imagens (maiúsculas e espaços contam).');
     }
     if (imageCache[url]) return imageCache[url];
     var handle = { img: null, loaded: false, failed: false, url: url };
@@ -78,7 +78,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       var im = new Image();
       handle.img = im;
       im.onload = function () { handle.loaded = true; handle.failed = false; };
-      im.onerror = function () { handle.loaded = false; handle.failed = true; warnOnce('imgerr:' + url, 'não consegui carregar a imagem "' + src + '".'); };
+      im.onerror = function () { handle.loaded = false; handle.failed = true; warnOnce('imgerr:' + url, 'não consegui carregar a imagem "' + source + '".'); };
       im.src = url;
     } catch (e) {}
     imageCache[url] = handle;
@@ -89,11 +89,11 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * Prepara uma spritesheet: uma imagem com vários quadros em grade. fw/fh são o
    * tamanho de CADA quadro em pixels. drawFrame/animação indexam os quadros.
    */
-  function loadSpriteSheet(name, fw, fh) {
+  function loadSpriteSheet(name, frameWidth, frameHeight) {
     return {
       image: loadImage(name),
-      frameW: _positiveFiniteNumber(fw, 32),
-      frameH: _positiveFiniteNumber(fh, 32)
+      frameW: _positiveFiniteNumber(frameWidth, 32),
+      frameH: _positiveFiniteNumber(frameHeight, 32)
     };
   }
 
@@ -101,17 +101,17 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * Cria um sprite. Um sprite é só um objeto { x, y, w, h, color, vx, vy } — e,
    * opcionalmente, uma imagem (opts.image, nome do asset) e/ou uma animação.
    */
-  function createSprite(opts) {
-    opts = opts || {};
+  function createSprite(options) {
+    options = options || {};
     return {
-      x: _finiteNumber(opts.x, 0),
-      y: _finiteNumber(opts.y, 0),
-      w: (_isFiniteNumber(opts.w) && opts.w > 0) ? opts.w : 32,
-      h: (_isFiniteNumber(opts.h) && opts.h > 0) ? opts.h : 32,
-      color: opts.color || '#22d3ee',
-      vx: _finiteNumber(opts.vx, 0),
-      vy: _finiteNumber(opts.vy, 0),
-      image: opts.image ? loadImage(opts.image) : null,
+      x: _finiteNumber(options.x, 0),
+      y: _finiteNumber(options.y, 0),
+      w: (_isFiniteNumber(options.w) && options.w > 0) ? options.w : 32,
+      h: (_isFiniteNumber(options.h) && options.h > 0) ? options.h : 32,
+      color: options.color || '#22d3ee',
+      vx: _finiteNumber(options.vx, 0),
+      vy: _finiteNumber(options.vy, 0),
+      image: options.image ? loadImage(options.image) : null,
       anim: null
     };
   }
@@ -150,8 +150,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   var _shapeW = 0, _shapeH = 0;
 
   /** Guarda a figura (funcao de desenho) sob um nome. */
-  function defineShape(name, fn) {
-    if (name && typeof name === 'string' && typeof fn === 'function') _shapes[name] = fn;
+  function defineShape(name, draw) {
+    if (name && typeof name === 'string' && typeof draw === 'function') _shapes[name] = draw;
   }
 
   /** Faz o sprite usar uma figura (cancela imagem/animacao — uma coisa por vez). */
@@ -165,8 +165,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
 
   /** Cria um sprite ja com uma figura (mesmo modelo fisico do createSprite). */
-  function createShapeSprite(name, opts) {
-    var s = createSprite(opts);
+  function createShapeSprite(name, options) {
+    var s = createSprite(options);
     setShape(s, name);
     return s;
   }
@@ -188,29 +188,36 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       ctx.fillRect(sprite.x, sprite.y, sprite.w, sprite.h);
       return;
     }
-    _shapeW = sprite.w;
-    _shapeH = sprite.h;
+    var previousShapeW = _shapeW;
+    var previousShapeH = _shapeH;
     ctx.save();
-    ctx.translate(sprite.x, sprite.y);
-    try { _invokeProjectCallback(fn, undefined, [ctx]); }
-    finally { ctx.restore(); }
+    try {
+      _shapeW = sprite.w;
+      _shapeH = sprite.h;
+      ctx.translate(sprite.x, sprite.y);
+      _invokeProjectCallback(fn, undefined, [ctx]);
+    } finally {
+      _shapeW = previousShapeW;
+      _shapeH = previousShapeH;
+      ctx.restore();
+    }
   }
 
   // Blocos SIMPLES de desenho (coords locais dentro da figura; recebem o ctx da
   // figura). Cada um e autossuficiente (begin/fill) para nao depender de estado.
-  function paintRect(ctx, x, y, w, h, color) {
+  function paintRect(ctx, x, y, width, height, color) {
     ctx.fillStyle = color || '#000000';
-    ctx.fillRect(_finiteNumber(x, 0), _finiteNumber(y, 0), _finiteNumber(w, 0), _finiteNumber(h, 0));
+    ctx.fillRect(_finiteNumber(x, 0), _finiteNumber(y, 0), _finiteNumber(width, 0), _finiteNumber(height, 0));
   }
-  function paintCircle(ctx, x, y, r, color) {
+  function paintCircle(ctx, x, y, radius, color) {
     ctx.fillStyle = color || '#000000';
     ctx.beginPath();
-    ctx.arc(_finiteNumber(x, 0), _finiteNumber(y, 0), Math.max(0, _finiteNumber(r, 0)), 0, Math.PI * 2);
+    ctx.arc(_finiteNumber(x, 0), _finiteNumber(y, 0), Math.max(0, _finiteNumber(radius, 0)), 0, Math.PI * 2);
     ctx.fill();
   }
-  function paintEllipse(ctx, x, y, w, h, color) {
+  function paintEllipse(ctx, x, y, width, height, color) {
     var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
-    var rw = Math.max(0, _finiteNumber(w, 0) / 2), rh = Math.max(0, _finiteNumber(h, 0) / 2);
+    var rw = Math.max(0, _finiteNumber(width, 0) / 2), rh = Math.max(0, _finiteNumber(height, 0) / 2);
     ctx.fillStyle = color || '#000000';
     ctx.beginPath();
     ctx.ellipse(px + rw, py + rh, rw, rh, 0, 0, Math.PI * 2);
@@ -307,20 +314,20 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * Só re-dispara setAnimation quando o estado RESOLVIDO muda — chamar
    * setAnimation todo quadro reiniciaria o tempo e congelaria no 1º quadro.
    */
-  function autoAnimate(s) {
-    if (!s) return;
-    if ((s.hurtFrames || 0) > 0 && (_loopOrder.length === 0 || s._hurtStamp !== _frameStamp)) {
-      s.hurtFrames--;
-      s._hurtStamp = _frameStamp;
+  function autoAnimate(sprite) {
+    if (!sprite) return;
+    if ((sprite.hurtFrames || 0) > 0 && (_loopOrder.length === 0 || sprite._hurtStamp !== _frameStamp)) {
+      sprite.hurtFrames--;
+      sprite._hurtStamp = _frameStamp;
     }
     // Flip automático: andando p/ a esquerda vira o desenho; parado mantém o
     // último lado (o "Virar o sprite" manual vale enquanto está parado).
-    var vx = s.vx || 0;
-    if (vx > 0.01) s.facing = 1;
-    else if (vx < -0.01) s.facing = -1;
-    var states = s.animStates;
+    var vx = sprite.vx || 0;
+    if (vx > 0.01) sprite.facing = 1;
+    else if (vx < -0.01) sprite.facing = -1;
+    var states = sprite.animStates;
     if (!states) return;
-    var want = _resolveAnimState(s);
+    var want = _resolveAnimState(sprite);
     var key = states[want] ? want : null;
     if (!key) {
       var chain = ANIM_FALLBACK[want] || [];
@@ -328,23 +335,23 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
         if (states[chain[i]]) { key = chain[i]; break; }
       }
     }
-    if (!key || s._animState === key) return;
-    s._animState = key;
+    if (!key || sprite._animState === key) return;
+    sprite._animState = key;
     var cfg = states[key];
-    setAnimation(s, cfg.sheet, cfg.from, cfg.to, cfg.fps);
+    setAnimation(sprite, cfg.sheet, cfg.from, cfg.to, cfg.fps);
   }
 
   /**
    * Desenha UM quadro (índice) de uma spritesheet na posição/tamanho dados.
    * Placeholder cinza se a imagem ainda não carregou.
    */
-  function drawFrame(ctx, sheet, index, x, y, w, h) {
+  function drawFrame(ctx, sheet, index, x, y, width, height) {
     if (!ctx) return;
     var dx = _finiteNumber(x, 0), dy = _finiteNumber(y, 0);
     var img = sheet && sheet.image && sheet.image.loaded ? sheet.image.img : null;
     if (!img) {
       ctx.fillStyle = '#94a3b8';
-      ctx.fillRect(dx, dy, w || 32, h || 32);
+      ctx.fillRect(dx, dy, width || 32, height || 32);
       return;
     }
     var fw = _positiveFiniteNumber(sheet.frameW, 32), fh = _positiveFiniteNumber(sheet.frameH, 32);
@@ -353,8 +360,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var i = Math.max(0, Math.floor(_finiteNumber(index, 0)));
     var sx = (i % cols) * fw;
     var sy = Math.floor(i / cols) * fh;
-    var dw = _finiteNumber(w, fw);
-    var dh = _finiteNumber(h, fh);
+    var dw = _finiteNumber(width, fw);
+    var dh = _finiteNumber(height, fh);
     _crispDraw(ctx, fw, dw, function () { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); });
   }
 
@@ -484,10 +491,10 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * A física de empurrar (collideGroup/collideSprite/collideTileMap) ignora o
    * fator de propósito — hitbox menor afundaria o sprite em chão e paredes.
    */
-  function setHitboxScale(s, percent) {
-    if (!s) return;
+  function setHitboxScale(sprite, percent) {
+    if (!sprite) return;
     var p = _finiteNumber(percent, 100);
-    s._hitboxScale = Math.min(3, Math.max(0.1, p / 100));
+    sprite._hitboxScale = Math.min(3, Math.max(0.1, p / 100));
   }
   /** Caixa EFETIVA de colisão do sprite: o retângulo escalado pelo fator, centrado. */
   function _hitboxOf(s) {

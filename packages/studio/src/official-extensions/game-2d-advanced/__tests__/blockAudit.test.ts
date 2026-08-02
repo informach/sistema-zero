@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
 import { behaviorStatements, type JSStatement, SZIRSchema } from '#ir'
+import { collectTypes, stripIds } from './exampleContractHarness'
 import 'blockly/blocks'
 import { attachBlockInContractContext } from '../../../blockly/__tests__/blockContractTestUtils'
 import { inferBlockContract } from '../../../blockly/blockContracts'
@@ -31,29 +32,6 @@ const EXPR_HOST = 'sz_gk_place_character'
 
 const statementDefs = gameKitBlocks.filter((def) => !def.output)
 const exprDefs = gameKitBlocks.filter((def) => Boolean(def.output))
-
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (typeof obj.type === 'string') out.add(obj.type)
-    for (const v of Object.values(obj)) collectTypes(v, out)
-  }
-  return out
-}
 
 function loadRuntimeKeys(): Set<string> {
   const win = {
@@ -110,7 +88,7 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    expect(gameKitBlocks.length).toBe(342)
+    expect(gameKitBlocks.length).toBe(343)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })

@@ -6,8 +6,9 @@
 // menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
 import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
-import type { Project, StudioShareAdapter } from '@sistemazero/studio'
+import type { Project, StudioShareAdapter, StudioTutorConfig } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -162,6 +163,10 @@ export function StudioFullClient({
     }),
     [challenge],
   )
+  const tutor = useMemo<StudioTutorConfig>(
+    () => ({ adapter: createStudioZappyAdapter(), cooldownMs: 1_500 }),
+    [],
+  )
 
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
   const backToList = useCallback(() => setView({ name: 'list' }), [])
@@ -203,6 +208,7 @@ export function StudioFullClient({
           projectId={view.projectId}
           onExit={backToList}
           share={share}
+          tutor={tutor}
           theme={studioTheme}
           tier={tier}
           showExamples={showExamples}
@@ -219,6 +225,7 @@ function EditorScreen({
   projectId,
   onExit,
   share,
+  tutor,
   theme,
   tier,
   showExamples,
@@ -228,6 +235,7 @@ function EditorScreen({
   projectId: string
   onExit: () => void
   share: StudioShareAdapter
+  tutor: StudioTutorConfig
   theme: 'light' | 'dark'
   tier: StudioTier
   showExamples: boolean
@@ -326,6 +334,7 @@ function EditorScreen({
       onExit={onExit}
       onChange={handleActivity}
       share={share}
+      tutor={tutor}
       theme={theme}
       // Modos + degrau de blocos pelo RANK do aluno (carreira de 8, Faísca→Lenda;
       // admin=Lenda): cada nível libera o degrau que vai estudar em seguida; a

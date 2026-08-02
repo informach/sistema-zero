@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Vila Ninja" (recriação BÁSICA e MINI do
  * ninja-adventure do Chris Courses). Rode com
  * `bun src/official-extensions/game-2d/__gen_vilaNinja.ts` e cole a saída em
- * examples/gamesTwoD.ts. O drift test (`vilaNinjaExample.test.ts`) guarda o
+ * examples/gamesTwoD/vilaNinja.ts. O drift test (`vilaNinjaExample.test.ts`) guarda o
  * resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

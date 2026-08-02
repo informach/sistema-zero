@@ -16,10 +16,11 @@ describe('enums espelhados do backend', () => {
     expect(TICKET_STATUSES).toEqual(['new', 'open', 'waiting', 'resolved', 'closed'])
   })
 
-  test('as 5 categorias de ticket', () => {
+  test('as 6 categorias de ticket', () => {
     expect(TICKET_CATEGORIES).toEqual([
       'curso_acesso',
       'problema_tecnico',
+      'studio',
       'pagamento_reembolso',
       'parceria_comercial',
       'outro',
@@ -72,6 +73,7 @@ describe('rótulos canônicos', () => {
   test('categorias', () => {
     expect(CATEGORY_LABELS.curso_acesso).toBe('Curso e acesso')
     expect(CATEGORY_LABELS.problema_tecnico).toBe('Problema técnico')
+    expect(CATEGORY_LABELS.studio).toBe('Studio')
     expect(CATEGORY_LABELS.pagamento_reembolso).toBe('Pagamento e reembolso')
     expect(CATEGORY_LABELS.parceria_comercial).toBe('Parceria e comercial')
     expect(CATEGORY_LABELS.outro).toBe('Outro')

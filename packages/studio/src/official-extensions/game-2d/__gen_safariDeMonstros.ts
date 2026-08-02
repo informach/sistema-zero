@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Safári de Monstros" (recriação BÁSICA e
  * ENXUTA do Monster Hunter / Python-Monsters do Clear Code). Rode com
  * `bun src/official-extensions/game-2d/__gen_safariDeMonstros.ts` e cole a saída
- * em examples/clearcode.ts. O drift test (`safariDeMonstrosExample.test.ts`)
+ * em examples/clearcode/safariDeMonstros.ts. O drift test (`safariDeMonstrosExample.test.ts`)
  * guarda o resultado. O preparo do palco vem do wrapper `beginnerGameExample`.
  *
  * ⭐ DIFERENCIAL da trilogia (contra "Treinador de Criaturas" e "Batalha de

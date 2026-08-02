@@ -318,4 +318,23 @@ describe('gateway.config.ts (configuração real)', () => {
       expect(route?.auth).not.toBe('public')
     }
   })
+
+  test('rotas do Zappy exigem JWT e preservam métodos separados', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+    type RouteMethod = (typeof realConfig.routes)[number]['methods'][number]
+    const expected = new Map<string, RouteMethod[]>([
+      ['members-zappy-history', ['GET', 'DELETE']],
+      ['members-zappy-questions', ['POST']],
+      ['members-zappy-response', ['PUT']],
+      ['members-zappy-feedback', ['POST']],
+      ['members-zappy-knowledge-search', ['POST']],
+      ['members-admin-zappy-metrics', ['GET']],
+    ])
+
+    for (const [id, methods] of expected) {
+      const route = byId.get(id)
+      expect(route?.methods, id).toEqual(methods)
+      expect(route?.auth).not.toBe('public')
+    }
+  })
 })

@@ -16,6 +16,6 @@ import type { StudioEditorProps } from './types'
  * DESLIGADO — a carreira é o portão estrito do Estúdio Completo.
  * Renderizar SOMENTE no client (Monaco/Blockly/IndexedDB).
  */
-export function StudioEditor(props: StudioEditorProps): JSX.Element {
-  return <StudioCore {...props} />
+export function StudioEditor({ tutor, ...props }: StudioEditorProps): JSX.Element {
+  return <StudioCore {...props} tutor={tutor} />
 }

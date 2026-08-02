@@ -189,6 +189,10 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     var node = null;
     try { node = document.getElementById(HUD_STATUS_ID); } catch (e) {}
     if (node) node.textContent = '';
+    // O reinício abre uma partida nova: a mesma tela terminal precisa voltar a
+    // ser anunciada e a região viva não pode continuar descrevendo a partida
+    // anterior. Reaplica a descrição-base e rearma a deduplicação de telas.
+    _setStageDescription();
   }
 
   function _ensureStageFocusStyle() {
@@ -341,22 +345,22 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   // Facilitador: prepara o palco em tela cheia (responsivo) num passo só. Define o
   // tamanho do "mundo" do jogo (w x h) e chama fitScreen para o canvas ocupar a
   // janela mantendo a proporção. É o bloco "preparar o jogo em tela cheia".
-  function setupStage(w, h, bg) {
+  function setupStage(width, height, background) {
     ensureStage();
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
-    if (c && _isFiniteNumber(w) && w > 0 && _isFiniteNumber(h) && h > 0) {
+    if (c && _isFiniteNumber(width) && width > 0 && _isFiniteNumber(height) && height > 0) {
       _fillMode = false;
-      c.width = Math.round(w);
-      c.height = Math.round(h);
+      c.width = Math.round(width);
+      c.height = Math.round(height);
       // Congela o tamanho lógico JÁ AQUI (não espera o fitScreen): qualquer
       // leitura de stageW/stageH entre este ponto e o resize do backing veria o
       // valor FÍSICO do canvas (DPR vezes o lógico) e desenharia fora do palco.
-      _logicalW = Math.round(w); _logicalH = Math.round(h);
+      _logicalW = Math.round(width); _logicalH = Math.round(height);
     }
     // Cor de fundo escolhida no bloco: vai no canvas E no fundo da janela (a sobra
     // ao redor do canvas centralizado), para a tela inteira combinar com o jogo.
-    var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    var color = (typeof background === 'string' && background) ? background : '#0b1020';
     if (c) {
       c.style.position = '';
       c.style.left = '';
@@ -384,14 +388,14 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   // resolução do jogo ACOMPANHA a janela: o canvas preenche 100% da viewport e as
   // coordenadas do jogo passam a valer o tamanho real da tela (via _resizeBacking em
   // _fillMode). É o bloco "preparar o jogo para ocupar a tela toda".
-  function setupStageFull(bg) {
+  function setupStageFull(background) {
     ensureStage();
     _lockStageViewportOverflow();
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
     if (!c) return;
     _fillMode = true;
-    var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    var color = (typeof background === 'string' && background) ? background : '#0b1020';
     // Full-bleed: fixo, ocupando a viewport inteira; sem proporção/limite travados.
     c.style.position = 'fixed';
     c.style.left = '0';

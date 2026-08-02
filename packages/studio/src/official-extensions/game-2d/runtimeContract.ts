@@ -832,5 +832,5 @@ export function buildGameTwoDRuntimeApiSource(): string {
     return `    ${key}: ${expression}`
   }).join(',\n')
 
-  return `  window.SZGame2D = {\n${properties}\n  };`
+  return `  /** @satisfies {GameTwoDRuntimeApi} */\n  window.SZGame2D = {\n${properties}\n  };`
 }

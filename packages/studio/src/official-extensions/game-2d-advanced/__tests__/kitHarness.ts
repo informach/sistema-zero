@@ -1,4 +1,5 @@
 import { gameKitRuntime } from '../runtime'
+import type { GameKitRuntimeApi } from '../runtimeContract'
 
 /**
  * Harness enxuto do runtime da gk para os testes de CAIXA DE COLISÃO (borda do
@@ -6,34 +7,39 @@ import { gameKitRuntime } from '../runtime'
  * localStorage, inspetores); aqui só precisamos de: montar o runtime, bombear
  * quadros na mão e espiar o que foi desenhado.
  *
- * ⚠️ A api é uma interface NOMEADA de propósito: com `Record<string, Fn>` o
- * `noUncheckedIndexedAccess` reclama de cada chamada ("possibly undefined").
- * É a mesma razão do `GameKitApi` do runtime.test.ts.
+ * A superfície usada aqui vem do contrato canônico do runtime; assim o harness
+ * não mantém uma segunda versão das assinaturas públicas.
  */
-
-export type Fn = (...args: unknown[]) => unknown
 
 type Listener = (ev: unknown) => void
 
-export interface KitApi {
-  setup: Fn
-  setupFull: Fn
-  start: Fn
-  setState: Fn
-  createCharacter: Fn
-  placeCharacter: Fn
-  setHitbox: Fn
-  setHitboxShape: Fn
-  showStageBorder: Fn
-  showHitboxes: Fn
-  touching: Fn
-  touchCircle: Fn
-  pointIn: Fn
-  defineMold: Fn
-  spawnFromMold: Fn
-  recycle: Fn
-  forEachActive: Fn
-  setProperty: Fn
+type KitApiKey = keyof Pick<
+  GameKitRuntimeApi,
+  | 'setup'
+  | 'setupFull'
+  | 'start'
+  | 'setState'
+  | 'setStageDescription'
+  | 'onGameClick'
+  | 'mouseDown'
+  | 'createCharacter'
+  | 'placeCharacter'
+  | 'setHitbox'
+  | 'setHitboxShape'
+  | 'showStageBorder'
+  | 'showHitboxes'
+  | 'touching'
+  | 'touchCircle'
+  | 'pointIn'
+  | 'defineMold'
+  | 'spawnFromMold'
+  | 'recycle'
+  | 'forEachActive'
+  | 'setProperty'
+>
+
+export type KitApi = {
+  [Key in KitApiKey]: (...args: unknown[]) => unknown
 }
 
 export interface Harness {

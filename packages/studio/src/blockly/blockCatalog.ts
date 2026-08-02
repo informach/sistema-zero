@@ -1,14 +1,24 @@
-import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
-import { gameKitBlocks } from '../official-extensions/game-2d-advanced/blocks'
-import { gameThreeDBlocks } from '../official-extensions/game-3d/blocks'
-import { gameKit3DBlocks } from '../official-extensions/game-3d-advanced/blocks'
-import { world3DBlocks } from '../official-extensions/world-3d/blocks'
+import type { ExtensionToolboxCategory } from '../extensions/types'
+import { gameTwoDBlocks, gameTwoDToolboxCategory } from '../official-extensions/game-2d/blocks'
+import {
+  gameKitBlocks,
+  gameKitToolboxCategory,
+} from '../official-extensions/game-2d-advanced/blocks'
+import { gameThreeDBlocks, gameThreeDToolboxCategory } from '../official-extensions/game-3d/blocks'
+import {
+  gameKit3DBlocks,
+  gameKit3DToolboxCategory,
+} from '../official-extensions/game-3d-advanced/blocks'
+import { world3DBlocks, world3DToolboxCategory } from '../official-extensions/world-3d/blocks'
+import { inferBlockContract } from './blockContracts'
+import { resolveBlockLevel } from './blockLevels'
 import { ADVANCED_BLOCKS } from './blocks/advanced'
 import { CANVAS_BLOCKS } from './blocks/canvas'
 import { CANVAS3D_BLOCKS } from './blocks/canvas3d'
 import { CSS_BLOCKS } from './blocks/css'
 import { HTML_BLOCKS } from './blocks/html'
 import { SVG_BLOCKS } from './blocks/svg'
+import type { BlockDefinition, BlockPlacement } from './blocks/types'
 import { PROGRAMMING_CATALOG_GROUPS } from './programmingContract'
 
 /** Entrada do catálogo de blocos p/ o picker da "lista de blocos" da aula (admin). */
@@ -26,6 +36,18 @@ interface BlockLike {
   type: string
   message0?: string
   hidden?: boolean
+}
+
+export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
+  /** Subcategoria real; famílias sem segundo nível repetem a categoria. */
+  subcategory: string
+  extension: string | null
+  level: import('#core').BlockLevel
+  tooltip: string
+  inputs: string[]
+  placement: BlockPlacement | null
+  /** Área pedagógica preenchida por contrato, nunca inferida pela IA. */
+  area: 'structure' | 'appearance' | 'start' | 'events' | 'loops' | 'value'
 }
 
 /**
@@ -140,4 +162,83 @@ const GROUPS: readonly (readonly [string, readonly BlockLike[]])[] = [
  */
 export const BLOCK_CATALOG: readonly BlockCatalogEntry[] = GROUPS.flatMap(([category, blocks]) =>
   blocks.filter((b) => !b.hidden).map((b) => ({ type: b.type, label: labelOf(b), category })),
+)
+
+function extensionFor(type: string): string | null {
+  if (type.startsWith('sz_g2d_')) return 'game-2d'
+  if (type.startsWith('sz_gk_')) return 'game-2d-advanced'
+  if (type.startsWith('sz_g3d_')) return 'game-3d'
+  if (type.startsWith('sz_g3k_')) return 'game-3d-advanced'
+  if (type.startsWith('sz_w3d_')) return 'world-3d'
+  return null
+}
+
+function collectToolboxSubcategories(
+  category: ExtensionToolboxCategory,
+  output: Map<string, string>,
+): void {
+  for (const item of category.contents) {
+    if (item.kind === 'block') output.set(item.type, category.name)
+    else collectToolboxSubcategories(item, output)
+  }
+}
+
+const TOOLBOX_SUBCATEGORY_BY_TYPE = new Map<string, string>()
+for (const category of [
+  gameTwoDToolboxCategory,
+  gameKitToolboxCategory,
+  gameThreeDToolboxCategory,
+  gameKit3DToolboxCategory,
+  world3DToolboxCategory,
+]) {
+  collectToolboxSubcategories(category, TOOLBOX_SUBCATEGORY_BY_TYPE)
+}
+
+function areaFor(definition: BlockDefinition): ServerBlockCatalogEntry['area'] {
+  const contract = inferBlockContract(definition)
+  if (contract.domain === 'html' || contract.domain === 'frame') return 'structure'
+  if (contract.domain === 'css') return 'appearance'
+  if (contract.domain === 'value') return 'value'
+  if (contract.placement?.root.length === 1)
+    return contract.placement.root[0] as 'start' | 'events' | 'loops'
+  if (contract.placement?.role === 'event') return 'events'
+  if (contract.placement?.role === 'loop') return 'loops'
+  return 'start'
+}
+
+/**
+ * Catálogo server-safe usado pelo Zappy. Este módulo importa somente definições
+ * JSON/puras; não importa `blockly/core`, DOM, React, Monaco ou extensões em runtime.
+ */
+export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.flatMap(
+  ([category, blocks]) =>
+    blocks
+      .filter((block) => !block.hidden)
+      .map((raw) => {
+        const block = raw as BlockDefinition
+        const contract = inferBlockContract(block)
+        const args = [
+          ...(block.args0 ?? []),
+          ...(block.args1 ?? []),
+          ...(block.args2 ?? []),
+          ...(block.args3 ?? []),
+          ...(block.args4 ?? []),
+          ...(block.args5 ?? []),
+        ]
+        return {
+          type: block.type,
+          label: labelOf(block),
+          category,
+          subcategory: TOOLBOX_SUBCATEGORY_BY_TYPE.get(block.type) ?? category,
+          extension: extensionFor(block.type),
+          level: resolveBlockLevel(block.type),
+          tooltip: typeof block.tooltip === 'string' ? block.tooltip : '',
+          inputs: args.flatMap((arg) => {
+            if (!arg || typeof arg !== 'object' || !('name' in arg)) return []
+            return typeof arg.name === 'string' ? [arg.name] : []
+          }),
+          placement: contract.placement ?? null,
+          area: areaFor(block),
+        }
+      }),
 )

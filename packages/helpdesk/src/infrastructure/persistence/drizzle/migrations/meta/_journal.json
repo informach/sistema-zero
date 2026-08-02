@@ -15,6 +15,13 @@
       "when": 1783518353503,
       "tag": "0001_stale_lila_cheney",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785708000000,
+      "tag": "0002_zappy_studio_category",
+      "breakpoints": true
     }
   ]
 }

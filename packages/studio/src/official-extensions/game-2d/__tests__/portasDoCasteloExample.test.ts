@@ -1,43 +1,21 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
-import * as Blockly from 'blockly/core'
-import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
-import 'blockly/blocks'
-import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace } from '../../../blockly/buildIR'
-import { ensureBlocklyInitialized } from '../../../blockly/setup'
-import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
-import { parseJS } from '../../../parsers/js'
-import { collectTypes, stripIds } from '../__gen_dinoCorredor'
+import { describe, expect, it } from 'bun:test'
+import { behaviorStatements } from '#ir'
+import { collectTypes } from '../__gen_dinoCorredor'
 import { PORTAS_DO_CASTELO_SOURCE as SOURCE } from '../__gen_portasDoCastelo'
-import { gameTwoDBlocks } from '../blocks'
 import { portasDoCasteloExample } from '../examples'
 import { gameTwoDManifest } from '../manifest'
+import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
  * Drift do exemplo "Portas do Castelo" — a recriação BÁSICA do plataforma por
- * fases do kings-and-pigs do Chris Courses. A IR embutida em examples/gamesTwoD.ts
+ * fases do kings-and-pigs do Chris Courses. A IR embutida em examples/gamesTwoD/portasDoCastelo.ts
  * foi GERADA pelo parser real a partir do SOURCE (que mora no
  * __gen_portasDoCastelo.ts, importado aqui para que fonte e teste NUNCA possam
  * divergir). O preparo do palco (setupStage + setStageDescription) é injetado
  * pelo wrapper `beginnerGameExample` e conferido à parte.
  */
 
-/** O mesmo contrato de ciclo de vida dos exemplos, com a extensão game-2d. */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d' }],
-  })
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
-
-beforeAll(() => {
-  ensureBlocklyInitialized()
-  registerExtensionBlocks(gameTwoDBlocks)
-})
+setupGameTwoDExampleTests()
 
 describe('Exemplo Portas do Castelo — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
@@ -48,24 +26,10 @@ describe('Exemplo Portas do Castelo — drift contra o parser real', () => {
     expect((portasDoCasteloExample.description ?? '').length).toBeLessThanOrEqual(200)
   })
 
-  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora a dupla do wrapper', () => {
-    const parsed = stripIds(parseExampleLifecycleSource(SOURCE))
-    const types = collectTypes(parsed)
-    expect(types.has('rawJS')).toBe(false)
-    expect(types.has('memberCall')).toBe(false)
-
-    const embedded = stripIds(behaviorStatements(portasDoCasteloExample.ir)) as JSStatement[]
-    expect(embedded[0]).toEqual({
-      type: 'g2d:setupStage',
-      width: 480,
-      height: 300,
-      bg: '#243050',
-    } as JSStatement)
-    expect(embedded[1]).toEqual({
-      type: 'g2d:setStageDescription',
-      description: portasDoCasteloExample.description ?? '',
-    } as JSStatement)
-    expect(parsed).toEqual(embedded.slice(2))
+  registerExampleContractTests({
+    example: portasDoCasteloExample,
+    source: SOURCE,
+    stage: { width: 480, height: 300, bg: '#243050' },
   })
 
   it('exercita a mecânica prometida do plataforma por fases', () => {
@@ -117,40 +81,5 @@ describe('Exemplo Portas do Castelo — drift contra o parser real', () => {
     expect(frameTypes.has('g2d:flash')).toBe(true)
     expect(frameTypes.has('g2d:clearGroup')).toBe(true)
     expect(frameTypes.has('g2d:touches')).toBe(true)
-  })
-
-  it('nenhum texto visível usa travessão', () => {
-    expect(JSON.stringify(portasDoCasteloExample.ir)).not.toContain('—')
-    expect(portasDoCasteloExample.name).not.toContain('—')
-    expect(portasDoCasteloExample.description ?? '').not.toContain('—')
-  })
-
-  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(
-      stripIds(behaviorStatements(portasDoCasteloExample.ir)) as JSStatement[],
-      0,
-    )
-    const reparsed = stripIds(parseJS(code1)) as JSStatement[]
-    const code2 = compileStatements(reparsed, 0)
-    expect(code2).toBe(code1)
-  })
-
-  it('round-trip por blocos: IR → workspace → IR preserva o jogo inteiro', () => {
-    const state = buildWorkspaceStateFromIR(
-      portasDoCasteloExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
-    )
-    const ws = new Blockly.Workspace()
-    try {
-      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
-      const embedded = behaviorStatements(portasDoCasteloExample.ir)
-      expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
-      expect(rebuilt.length).toBe(embedded.length)
-      expect(compileStatements(stripIds(rebuilt) as JSStatement[], 0)).toBe(
-        compileStatements(stripIds(embedded) as JSStatement[], 0),
-      )
-    } finally {
-      ws.dispose()
-    }
   })
 })

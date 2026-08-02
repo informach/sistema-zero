@@ -1,17 +1,10 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
-import * as Blockly from 'blockly/core'
-import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
-import 'blockly/blocks'
-import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace } from '../../../blockly/buildIR'
-import { ensureBlocklyInitialized } from '../../../blockly/setup'
-import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
-import { collectTypes, stripIds } from '../__gen_dinoCorredor'
+import { describe, expect, it } from 'bun:test'
+import { behaviorStatements } from '#ir'
+import { collectTypes } from '../__gen_dinoCorredor'
 import { FAZENDA_FELIZ_SOURCE as SOURCE } from '../__gen_fazendaFeliz'
-import { gameTwoDBlocks } from '../blocks'
 import { fazendaFelizExample } from '../examples'
 import { gameTwoDManifest } from '../manifest'
+import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
  * Drift do exemplo "Fazenda Feliz" — o degrau BÁSICO da família farming/Stardew
@@ -19,22 +12,8 @@ import { gameTwoDManifest } from '../manifest'
  * (que mora no __gen_fazendaFeliz.ts, importado aqui para que fonte e teste
  * NUNCA possam divergir). O preparo do palco é injetado pelo `beginnerGameExample`.
  */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d' }],
-  })
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
 
-import { parseJS } from '../../../parsers/js'
-
-beforeAll(() => {
-  ensureBlocklyInitialized()
-  registerExtensionBlocks(gameTwoDBlocks)
-})
+setupGameTwoDExampleTests()
 
 describe('Exemplo Fazenda Feliz — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
@@ -45,24 +24,10 @@ describe('Exemplo Fazenda Feliz — drift contra o parser real', () => {
     expect((fazendaFelizExample.description ?? '').length).toBeLessThanOrEqual(200)
   })
 
-  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora a dupla do wrapper', () => {
-    const parsed = stripIds(parseExampleLifecycleSource(SOURCE))
-    const types = collectTypes(parsed)
-    expect(types.has('rawJS')).toBe(false)
-    expect(types.has('memberCall')).toBe(false)
-
-    const embedded = stripIds(behaviorStatements(fazendaFelizExample.ir)) as JSStatement[]
-    expect(embedded[0]).toEqual({
-      type: 'g2d:setupStage',
-      width: 480,
-      height: 320,
-      bg: '#4a6b3a',
-    } as JSStatement)
-    expect(embedded[1]).toEqual({
-      type: 'g2d:setStageDescription',
-      description: fazendaFelizExample.description ?? '',
-    } as JSStatement)
-    expect(parsed).toEqual(embedded.slice(2))
+  registerExampleContractTests({
+    example: fazendaFelizExample,
+    source: SOURCE,
+    stage: { width: 480, height: 320, bg: '#4a6b3a' },
   })
 
   it('modela os canteiros numa LISTA e desenha por estágio (sem tilemap)', () => {
@@ -104,40 +69,5 @@ describe('Exemplo Fazenda Feliz — drift contra o parser real', () => {
     const every = loops.filter((s) => s.type === 'g2d:everySeconds')
     expect(every).toHaveLength(1)
     expect(JSON.stringify(every)).toContain('"type":"g2d:sceneIs","name":"jogando"')
-  })
-
-  it('nenhum texto visível usa travessão', () => {
-    expect(JSON.stringify(fazendaFelizExample.ir)).not.toContain('—')
-    expect(fazendaFelizExample.name).not.toContain('—')
-    expect(fazendaFelizExample.description ?? '').not.toContain('—')
-  })
-
-  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(
-      stripIds(behaviorStatements(fazendaFelizExample.ir)) as JSStatement[],
-      0,
-    )
-    const reparsed = stripIds(parseJS(code1)) as JSStatement[]
-    const code2 = compileStatements(reparsed, 0)
-    expect(code2).toBe(code1)
-  })
-
-  it('round-trip por blocos: IR → workspace → IR preserva o jogo inteiro', () => {
-    const state = buildWorkspaceStateFromIR(
-      fazendaFelizExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
-    )
-    const ws = new Blockly.Workspace()
-    try {
-      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
-      const embedded = behaviorStatements(fazendaFelizExample.ir)
-      expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
-      expect(rebuilt.length).toBe(embedded.length)
-      expect(compileStatements(stripIds(rebuilt) as JSStatement[], 0)).toBe(
-        compileStatements(stripIds(embedded) as JSStatement[], 0),
-      )
-    } finally {
-      ws.dispose()
-    }
   })
 })

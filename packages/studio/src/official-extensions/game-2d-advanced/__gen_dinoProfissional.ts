@@ -1,5 +1,6 @@
 import { behaviorStatements, normalizeSZIR } from '#ir'
 import { parseJS } from '../../parsers/js'
+import { collectGeneratedTypes, printTypeScriptValue, stripGeneratedIds } from './generationUtils'
 
 /**
  * Gerador one-off da IR do exemplo "Dino Corredor Profissional" (nível 2 da
@@ -194,53 +195,12 @@ if (import.meta.main) {
     extensions: [{ extensionId: 'game-2d-advanced' }],
   })
   // IR persistida é JSON: derruba chaves `undefined` e os `__id` efêmeros.
-  const stripIds = (value: unknown): unknown => {
-    if (Array.isArray(value)) return value.map(stripIds)
-    if (value && typeof value === 'object') {
-      const out: Record<string, unknown> = {}
-      for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-        if (key !== '__id') out[key] = stripIds(child)
-      }
-      return out
-    }
-    return value
-  }
-  const clean = stripIds(JSON.parse(JSON.stringify(normalized))) as Record<string, unknown>
-  const collectTypes = (value: unknown, out: Set<string> = new Set()): Set<string> => {
-    if (Array.isArray(value)) {
-      for (const item of value) collectTypes(item, out)
-    } else if (value && typeof value === 'object') {
-      const record = value as Record<string, unknown>
-      if (typeof record.type === 'string') out.add(record.type)
-      for (const child of Object.values(record)) collectTypes(child, out)
-    }
-    return out
-  }
-  const types = collectTypes(behaviorStatements(normalized))
+  const clean = stripGeneratedIds(JSON.parse(JSON.stringify(normalized))) as Record<string, unknown>
+  const types = collectGeneratedTypes(behaviorStatements(normalized))
   const bad = [...types].filter((t) => t === 'rawJS' || t === 'memberCall')
   if (bad.length) console.error('DRIFT:', bad)
 
   // Impressão compacta no estilo dos exemplos: objetos-folha inline, aspas simples.
-  const printTS = (value: unknown, indent: string): string => {
-    if (Array.isArray(value)) {
-      if (value.length === 0) return '[]'
-      const inner = indent + '  '
-      const items = value.map((item) => inner + printTS(item, inner))
-      return '[\n' + items.join(',\n') + ',\n' + indent + ']'
-    }
-    if (value && typeof value === 'object') {
-      const entries = Object.entries(value as Record<string, unknown>)
-      if (entries.length === 0) return '{}'
-      const flat =
-        '{ ' + entries.map(([key, child]) => `${key}: ${printTS(child, indent)}`).join(', ') + ' }'
-      if (!flat.includes('\n') && indent.length + flat.length <= 96) return flat
-      const inner = indent + '  '
-      const lines = entries.map(([key, child]) => `${inner}${key}: ${printTS(child, inner)}`)
-      return '{\n' + lines.join(',\n') + ',\n' + indent + '}'
-    }
-    if (typeof value === 'string') return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
-    return String(value)
-  }
   const ordered = {
     html: clean.html,
     css: clean.css,
@@ -248,5 +208,5 @@ if (import.meta.main) {
     version: clean.version,
     behavior: clean.behavior,
   }
-  console.log(printTS(ordered, '  '))
+  console.log(printTypeScriptValue(ordered, '  '))
 }

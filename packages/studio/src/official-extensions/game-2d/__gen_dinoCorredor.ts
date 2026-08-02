@@ -5,7 +5,7 @@ import { parseJS } from '../../parsers/js'
  * Gerador one-off da IR do exemplo "Dino Corredor" (o degrau BÁSICO da família
  * Clear Code). Rode com
  * `bun src/official-extensions/game-2d/__gen_dinoCorredor.ts` e cole a saída em
- * examples/clearcode.ts. O drift test (`dinoCorredorExample.test.ts`) guarda o
+ * examples/clearcode/dinoCorredor.ts. O drift test (`dinoCorredorExample.test.ts`) guarda o
  * resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

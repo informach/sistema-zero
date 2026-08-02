@@ -38,6 +38,24 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   },
 
   {
+    type: 'sz_gk_set_stage_description',
+    placement: 'start-only-command',
+    message0: 'Descrever o jogo para leitor de tela %1',
+    args0: [
+      {
+        type: 'field_input',
+        name: 'DESCRIPTION',
+        text: 'Pegue as moedas. Use as setas para andar.',
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”.',
+  },
+
+  {
     // Moldura no ELEMENTO do canvas (não desenhada por dentro): não gasta pixel
     // do jogo e nada a apaga. Mesma frase do bloco da Jogo 2D básica.
     type: 'sz_gk_stage_border',

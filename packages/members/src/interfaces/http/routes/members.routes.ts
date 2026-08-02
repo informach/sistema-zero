@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import type { ConsumeAiUsageService } from '../../../application/ai-usage/consume-ai-usage.service'
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
@@ -41,7 +41,10 @@ import type { SaveVideoPositionService } from '../../../application/save-video-p
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
+import type { ZappyHistoryService } from '../../../application/zappy/zappy-history.service'
+import type { ZappyKnowledgeService } from '../../../application/zappy/zappy-knowledge.service'
 import { AVATAR_CHAR_STYLE } from '../../../domain/avatar/avatar3d-catalog'
+import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import type { RoomState } from '../../../domain/room/room-catalog'
 import {
   assertInternalCaller,
@@ -88,6 +91,11 @@ import {
   TeacherThreadsQuery,
   VacationBody,
   VideoPositionBody,
+  ZappyFeedbackBody,
+  ZappyHistoryQuery,
+  ZappyQuestionBody,
+  ZappyQuestionParams,
+  ZappyResponseBody,
 } from '../dtos'
 
 function idempotencyKey(headers: Record<string, string | undefined>): string | undefined {
@@ -113,6 +121,8 @@ export interface MembersRoutesDeps {
   getShowcasePayload: GetShowcasePayloadService
   profileAllowance: GetProfileAllowanceService
   consumeAiUsage: ConsumeAiUsageService
+  zappy?: ZappyHistoryService
+  zappyKnowledge?: ZappyKnowledgeService
   getCertificate: GetCertificateService
   issueCertificate: IssueCertificateService
   getCourseRating: GetCourseRatingService
@@ -154,6 +164,30 @@ export interface MembersRoutesDeps {
  * ANTES da validação do corpo/params — 401 antes de 422, espelhando o HMAC dos webhooks.
  */
 export function membersRoutes(deps: MembersRoutesDeps) {
+  const zappyAccess = async (headers: Record<string, string | undefined>) => {
+    if (isPrivilegedActor(headers)) return
+    const access = await deps.accessCheck.execute(resolveAccountId(headers), ['estudio-completo'])
+    if (
+      !access.grants.includes('estudio-completo') &&
+      !access.communities.includes('estudio-completo')
+    ) {
+      throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
+    }
+  }
+  const zappy = () => {
+    if (!deps.zappy) throw new Error('Zappy não configurado')
+    return deps.zappy
+  }
+  const zappyKnowledge = () => {
+    if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
+    return deps.zappyKnowledge
+  }
+  const zappyWriteAccess = async (headers: Record<string, string | undefined>) => {
+    await zappyAccess(headers)
+    if (headers['x-auth-impersonator-id']) {
+      throw new AccessDeniedError('Impersonação não pode conversar com o Zappy')
+    }
+  }
   return (
     new Elysia({ prefix: '/members' })
       .onTransform(({ headers }) =>
@@ -251,6 +285,90 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
           ),
         { body: AiUsageConsumeBody },
+      )
+      // Histórico do Zappy é isolado por perfil + projeto local. Snapshot/código
+      // não atravessam estas rotas e nunca são persistidos no members.
+      .get(
+        '/zappy/history',
+        async ({ headers, query }) => {
+          await zappyAccess(headers)
+          return { messages: await zappy().history(resolveUserId(headers), query.projectId) }
+        },
+        { query: ZappyHistoryQuery },
+      )
+      .delete(
+        '/zappy/history',
+        async ({ headers, query }) => {
+          await zappyWriteAccess(headers)
+          await zappy().delete(resolveUserId(headers), query.projectId)
+          return { ok: true }
+        },
+        { query: ZappyHistoryQuery },
+      )
+      .post(
+        '/zappy/questions',
+        async ({ headers, body }) => {
+          await zappyWriteAccess(headers)
+          return zappy().reserve({
+            userId: resolveUserId(headers),
+            accountId: resolveAccountId(headers),
+            projectId: body.projectId,
+            clientMessageId: body.clientMessageId,
+            question: body.question.trim(),
+          })
+        },
+        { body: ZappyQuestionBody },
+      )
+      .put(
+        '/zappy/questions/:id/response',
+        async ({ headers, params, body }) => {
+          await zappyWriteAccess(headers)
+          return zappy().complete({
+            userId: resolveUserId(headers),
+            projectId: body.projectId,
+            questionId: params.id,
+            response: body.response,
+            latencyMs: body.latencyMs,
+            outcome: body.outcome,
+          })
+        },
+        { params: ZappyQuestionParams, body: ZappyResponseBody },
+      )
+      .post(
+        '/zappy/feedback',
+        async ({ headers, body }) => {
+          await zappyWriteAccess(headers)
+          return {
+            ok: await zappy().feedback(
+              resolveUserId(headers),
+              body.projectId,
+              body.responseId,
+              body.useful,
+            ),
+          }
+        },
+        { body: ZappyFeedbackBody },
+      )
+      .post(
+        '/zappy/knowledge/search',
+        async ({ headers, body }) => {
+          await zappyWriteAccess(headers)
+          return {
+            hits: await zappyKnowledge().search({
+              userId: resolveUserId(headers),
+              accountId: resolveAccountId(headers),
+              privileged: isPrivilegedActor(headers),
+              query: body.query,
+              limit: body.limit,
+            }),
+          }
+        },
+        {
+          body: t.Object({
+            query: t.String({ minLength: 1, maxLength: 1_000 }),
+            limit: t.Optional(t.Integer({ minimum: 1, maximum: 10 })),
+          }),
+        },
       )
       // Perfil de gamificação do aluno NA VITRINE (`?audience=`, default adult —
       // XP/streak/badges são segregados por audiência) — recurso do PRÓPRIO

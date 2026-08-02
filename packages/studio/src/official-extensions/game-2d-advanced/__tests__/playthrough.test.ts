@@ -2673,11 +2673,6 @@ describe('gk — playthrough mínimo: Portas do Castelo Profissional (rede pré-
 })
 
 describe('gk — playthrough mínimo: Vale Ensolarado Profissional (rede pré-e2e)', () => {
-  interface Corpo {
-    x: number
-    y: number
-  }
-
   /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
   async function bootVale(h: Harness): Promise<void> {
     const code = generateJS({

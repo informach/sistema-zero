@@ -7,7 +7,7 @@ const lineCount = (file: string) => readFileSync(file, 'utf8').split('\n').lengt
 
 describe('gk — limites arquiteturais dos catálogos e do runtime', () => {
   it('mantém os três pontos de entrada como composição de módulos menores', () => {
-    expect(lineCount(join(ROOT, 'runtime.ts'))).toBeLessThan(6_000)
+    expect(lineCount(join(ROOT, 'runtime.ts'))).toBeLessThan(5_400)
     expect(lineCount(join(ROOT, 'blocks.ts'))).toBeLessThan(1_300)
     expect(lineCount(join(ROOT, 'examples.ts'))).toBeLessThan(100)
   })
@@ -25,6 +25,7 @@ describe('gk — limites arquiteturais dos catálogos e do runtime', () => {
     expect(runtimeModules).toContain('animation.ts')
     expect(runtimeModules).toContain('cards.ts')
     expect(runtimeModules).toContain('platformer.ts')
+    expect(runtimeModules).toContain('shell.ts')
     expect(runtimeModules).toContain('visualEffects.ts')
     // Catálogos de LÓGICA (blocos/runtime) ficam pequenos p/ revisão isolada.
     for (const file of blockModules) {
@@ -39,5 +40,10 @@ describe('gk — limites arquiteturais dos catálogos e do runtime', () => {
     for (const file of exampleModules) {
       expect(lineCount(join(ROOT, 'examples', file))).toBeLessThan(2_600)
     }
+  })
+
+  it('impede que as suítes de integração voltem a concentrar contratos auxiliares', () => {
+    expect(lineCount(join(ROOT, '__tests__', 'runtime.test.ts'))).toBeLessThan(5_000)
+    expect(lineCount(join(ROOT, '__tests__', 'playthrough.test.ts'))).toBeLessThan(3_100)
   })
 })

@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Portas do Castelo" (recriação BÁSICA do
  * plataforma por fases do kings-and-pigs do Chris Courses). Rode com
  * `bun src/official-extensions/game-2d/__gen_portasDoCastelo.ts` e cole a saída
- * em examples/gamesTwoD.ts. O drift test (`portasDoCasteloExample.test.ts`)
+ * em examples/gamesTwoD/portasDoCastelo.ts. O drift test (`portasDoCasteloExample.test.ts`)
  * guarda o resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

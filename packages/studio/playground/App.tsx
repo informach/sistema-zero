@@ -6,6 +6,8 @@ import {
   prefetchStudioModes,
   StudioEditor,
   type StudioShareAdapter,
+  type StudioTutorAdapter,
+  type StudioTutorHistoryMessage,
 } from '@sistemazero/studio'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
@@ -30,6 +32,57 @@ type EditorState =
   | { status: 'loading' }
   | { status: 'ready'; project: Project }
   | { status: 'not-found' }
+
+const tutorHistory = new Map<string, StudioTutorHistoryMessage[]>()
+
+/**
+ * Adapter local do playground. Ele exercita a API pública completa do tutor sem
+ * rede nem credenciais; autorização, quota e persistência real pertencem ao host.
+ */
+const tutorDemo: StudioTutorAdapter = {
+  async loadHistory(projectId) {
+    return tutorHistory.get(projectId) ?? []
+  },
+  async deleteHistory(projectId) {
+    tutorHistory.delete(projectId)
+  },
+  async ask(input) {
+    const createdAt = new Date().toISOString()
+    const response = {
+      id: `zappy-demo-${input.clientMessageId}`,
+      text: 'Abra a categoria HTML e procure o bloco de texto. Eu só mostro o caminho: seu projeto continua do jeitinho que está.',
+      scope: 'block' as const,
+      blockReferences: [
+        {
+          blockType: 'sz_html_text',
+          name: 'texto',
+          category: 'HTML',
+          area: 'structure',
+        },
+      ],
+      createdAt,
+    }
+    const current = tutorHistory.get(input.projectId) ?? []
+    tutorHistory.set(input.projectId, [
+      ...current,
+      {
+        id: input.clientMessageId,
+        role: 'user',
+        text: input.question,
+        createdAt,
+      },
+      {
+        id: response.id,
+        role: 'assistant',
+        text: response.text,
+        response,
+        createdAt,
+      },
+    ])
+    return response
+  },
+  async feedback() {},
+}
 
 function EditorScreen({
   projectId,
@@ -112,6 +165,8 @@ function EditorScreen({
       onExit={onExit}
       // Liga o botão "Compartilhar" (publicar no Mural) com um adapter de demo.
       share={shareDemo}
+      // O tutor é opt-in e só existe no editor completo; aulas não recebem esta prop.
+      tutor={{ adapter: tutorDemo, cooldownMs: 0 }}
       // Playground = superfície do admin: mostra os EXEMPLOS prontos (escondidos
       // para clientes, pois podem estar desatualizados). Ver examples-visibility.ts.
       showExamples

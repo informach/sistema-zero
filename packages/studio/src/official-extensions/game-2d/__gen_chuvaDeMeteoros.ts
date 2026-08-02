@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Chuva de Meteoros" (o degrau BÁSICO da
  * família Space Shooter do curso raylib_intro). Rode com
  * `bun src/official-extensions/game-2d/__gen_chuvaDeMeteoros.ts` e cole a
- * saída em examples/clearcode.ts. O drift test
+ * saída em examples/clearcode/chuvaDeMeteoros.ts. O drift test
  * (`chuvaDeMeteorosExample.test.ts`) guarda o resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

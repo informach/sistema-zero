@@ -167,6 +167,20 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
     expect(docs).toContain('Em **⚙️ Ao iniciar**')
   })
 
+  it('ensina o bloco visível de acessibilidade e o foco automático', () => {
+    const block = gameKitBlocks.find(
+      (candidate) => candidate.type === 'sz_gk_set_stage_description',
+    )
+    const docs = gameKitManifest.docs ?? ''
+
+    expect(block?.hidden).not.toBe(true)
+    expect(block?.message0).toContain('Descrever o jogo para leitor de tela')
+    expect(docs).toContain('Descrever o jogo para leitor de tela')
+    expect(docs).toContain('foco alterna sozinho')
+    expect(gameKitPromptContext).toContain('setStageDescription(descricao)')
+    expect(gameKitPromptContext).toContain('troca automática de foco')
+  })
+
   it('documenta os limites que protegem projetos grandes', () => {
     const contratos = [
       ['sz_gk_create_empty_tilemap', '512'],

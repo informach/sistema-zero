@@ -8,6 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./career": "./src/career/index.ts",
+    "./server-catalog": "./src/blockly/blockCatalog.ts",
+    "./server-knowledge": "./src/official-extensions/serverKnowledge.ts",
     "./player": "./src/components/preview/StudioProjectPlayer.tsx",
     "./personal-assets": "./src/asset-library/personal.ts",
     "./styles.css": "./src/styles/studio.css"

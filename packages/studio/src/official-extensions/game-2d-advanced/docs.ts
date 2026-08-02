@@ -13,6 +13,9 @@ substituir fontes escolhidas.
    largura/altura do jogo. A tela nasce SEM moldura; se quiser uma, some
    **Mostrar a borda da tela** (com cor e espessura) para todo mundo ver onde
    começa e termina a área do jogo.
+   Some também **Descrever o jogo para leitor de tela** com o objetivo, os
+   controles e os perigos que não aparecem em texto. O motor nomeia o canvas,
+   anuncia as telas como diálogos e move o foco automaticamente.
 2. Escolha a imagem no próprio bloco: personagem, NPC, item e animação carregam
    a arte sozinhos. **Carregar a imagem** serve para pré-carregar ou criar apelido.
 3. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
@@ -78,6 +81,9 @@ Cada gênero tem seu próprio tipo de oponente:
 
 ### Telas
 
+- **Descrever o jogo para leitor de tela**. Escreva uma frase curta com objetivo,
+  controles e informações visuais importantes. Use uma vez em **⚙️ Ao iniciar**;
+  o canvas recebe essa descrição e o foco alterna sozinho entre jogo e painéis.
 - **Personalizar a tela pronta…**. Título, texto e botão de
   menu/pausa/carregando/fim/vitória. Em branco = não mexe.
 - **Criar a tela… / Botão… na tela… / Mostrar a tela / Esconder todas**. Telas

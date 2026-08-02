@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
+import { collectTypes, parseExampleLifecycleSource, stripIds } from './exampleContractHarness'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -24,42 +25,6 @@ import { gameKitManifest } from '../manifest'
  * withIndependentPeriodicLoops (a fase é montada inteira no "Ao iniciar").
  */
 
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-      if (key !== '__id') out[key] = stripIds(child)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) {
-    for (const item of value) collectTypes(item, out)
-  } else if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>
-    if (typeof record.type === 'string') out.add(record.type)
-    for (const child of Object.values(record)) collectTypes(child, out)
-  }
-  return out
-}
-
-/** O mesmo contrato de ciclo de vida dos exemplos: boot fora, áreas ordenadas. */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d-advanced' }],
-  })
-  // O parser representa alguns campos opcionais ausentes como `undefined`.
-  // Uma IR persistida é JSON e, portanto, não guarda essas chaves.
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
-
 beforeAll(() => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameKitBlocks)
@@ -74,7 +39,7 @@ describe('Exemplo Vale Ensolarado Profissional — drift contra o parser real', 
   })
 
   it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall)', () => {
-    const parsed = stripIds(parseExampleLifecycleSource(SOURCE))
+    const parsed = stripIds(parseExampleLifecycleSource(SOURCE, true))
     const types = collectTypes(parsed)
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('memberCall')).toBe(false)

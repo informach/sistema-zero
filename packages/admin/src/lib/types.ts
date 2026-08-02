@@ -468,6 +468,7 @@ export interface EbookBlock {
   /** Referência `r2priv:<key>` (não navegável). */
   url: string
   title?: string
+  zappyStudentNotebook?: boolean
 }
 /**
  * Bloco Estúdio: editor @sistemazero/studio pré-configurado pelo admin. `initialProject`

@@ -1105,3 +1105,10 @@ Sentry `sistema-zero-community-kids` + DSN no host.
 - [ ] Mexeu no member-shell? Suítes/build do community TAMBÉM.
 - [ ] Nenhum `server/*`/`env` importado por Client Component.
 - [ ] Mudou contrato? Atualizou este CLAUDE.md (e o do member-shell se a mudança foi lá).
+
+## Zappy do Studio (08/2026)
+
+- O tutor é injetado somente em `StudioFullClient` e `StudioProClient`; players de aula e o
+  Pensa não recebem `tutor`, portanto não exibem o botão.
+- Configuração do piloto: `ZAPPY_ENABLED`, `ZAPPY_PILOT_ACCOUNT_IDS` e, opcionalmente,
+  `OPENROUTER_ZAPPY_MODEL`. As rotas Next são shims finos para os handlers do member-shell.

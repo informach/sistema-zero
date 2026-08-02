@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 213 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.55.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.55.1** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -72,11 +72,19 @@ dentro), então não gasta pixel do jogo, nada a apaga e não custa nada por qua
 o `box-sizing: border-box` que o palco já usava mantém a moldura dentro da caixa,
 sem barra de rolagem.
 
+O 0.55.0 (01/08) acrescentou os movimentos **Voar livre**, **Bater as asas** e
+**Nadar**, além da caixa de colisão redonda no Jogo 2D Avançado. O 0.55.1 (02/08)
+fechou o full review seguinte: a leitura do ponteiro desconta a moldura do canvas,
+formas customizadas aninhadas restauram suas dimensões, o reinício recompõe o HUD
+acessível e o contrato do runtime verifica tipos e assinaturas públicas. Os 17
+exemplos extensos de Clear Code e Games 2D foram separados em módulos individuais,
+sem alterar seu conteúdo, e passaram a compartilhar um único harness de contratos.
+
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
-- 43 arquivos próprios da extensão;
+- 102 arquivos próprios da extensão;
 - 213 definições de blocos e 24 subcategorias;
 - 212 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
@@ -395,7 +403,8 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
   e placar zerado; `playJump` percorre o `AudioContext` controlado e verifica
   frequência inicial, rampa e duração reais;
 - o título da galeria deriva a quantidade dos contratos de QA, eliminando o número
-  manual que havia ficado em 67, e o inventário documental registra os 43 arquivos.
+  manual que havia ficado em 67, e o inventário documental registrava os 43 arquivos
+  daquele marco.
 
 ### Verificação da correção — 0.38.1
 

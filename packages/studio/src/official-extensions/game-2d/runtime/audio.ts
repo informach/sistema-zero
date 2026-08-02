@@ -57,7 +57,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     window.addEventListener('keydown', unlockAudio);
   }
   /** Toca um tom curto (freq em Hz, duração em ms). Sintetizado — não precisa de arquivo. */
-  function playSound(freq, ms) {
+  function playSound(frequency, milliseconds) {
     var ctx = ensureAudio();
     if (!ctx) return;
     try {
@@ -65,10 +65,10 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
       osc.type = 'square';
-      osc.frequency.value = _positiveFiniteNumber(freq, 440);
+      osc.frequency.value = _positiveFiniteNumber(frequency, 440);
       osc.connect(gain);
       gain.connect(ctx.destination);
-      var dur = _positiveFiniteNumber(ms, 200) / 1000;
+      var dur = _positiveFiniteNumber(milliseconds, 200) / 1000;
       var t = ctx.currentTime;
       gain.gain.setValueAtTime(0.12, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -226,9 +226,9 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
 
   // ---- Notas musicais por nome (dó ré mi…) → frequência ----
   var NOTE_FREQS = { C: 262, D: 294, E: 330, F: 349, G: 392, A: 440, B: 494, C5: 523 };
-  function playNote(note, ms) {
+  function playNote(note, milliseconds) {
     var f = NOTE_FREQS[note];
-    playSound(_positiveFiniteNumber(f, 440), ms);
+    playSound(_positiveFiniteNumber(f, 440), milliseconds);
   }
 
   _registerRuntimeDomain('audio', {

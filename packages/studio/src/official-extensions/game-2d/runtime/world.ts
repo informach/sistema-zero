@@ -68,8 +68,8 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // desperdício, as edições de tile (quebrar/pôr) somem na hora. O teto detecta
   // o laço e avisa UMA vez (o jogo segue rodando).
   var _tileMapCreates = 0;
-  function createTileMap(opts) {
-    opts = opts || {};
+  function createTileMap(options) {
+    options = options || {};
     _tileMapCreates += 1;
     if (_tileMapCreates === 61) {
       console.warn(
@@ -79,19 +79,19 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     // tile = tamanho do tile NA ARTE (para fatiar o tileset). O tamanho NA TELA
     // (draw) é calculado no desenho: o mapa ENCAIXA no canvas (a arte é ampliada
     // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
-    var t = _positiveFiniteNumber(opts.tile, 32);
-    var solid = parseSolidList(opts.solid);
+    var t = _positiveFiniteNumber(options.tile, 32);
+    var solid = parseSolidList(options.solid);
     // Peças PLATAFORMA (one-way: pisa por cima, atravessa por baixo). Sólido
     // vence no conflito (uma peça não é sólida E plataforma ao mesmo tempo).
-    var platform = parseSolidList(opts.platform);
+    var platform = parseSolidList(options.platform);
     if (platform.length && solid.length) {
       platform = platform.filter(function (n) { return solid.indexOf(n) === -1; });
     }
     return {
-      tileset: loadSpriteSheet(opts.image, t, t),
+      tileset: loadSpriteSheet(options.image, t, t),
       tile: t,
       draw: 0,
-      rows: parseGrid(opts.grid),
+      rows: parseGrid(options.grid),
       solid: solid,
       platform: platform,
       ox: 0,
@@ -178,12 +178,12 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     return map.platform.indexOf(r[col]) !== -1;
   }
   /** Índice do tile no PIXEL (px,py) do canvas (alinhado a onde o mapa foi desenhado); -1 fora/vazio. */
-  function tileAt(map, px, py) {
+  function tileAt(map, x, y) {
     if (!map || !map.rows || !map.tile) return -1;
     var t = tileScreenSize(map);
-    if (!_isFiniteNumber(px) || !_isFiniteNumber(py) || t <= 0) return -1;
-    var col = Math.floor((px - _finiteNumber(map.ox, 0)) / t);
-    var row = Math.floor((py - _finiteNumber(map.oy, 0)) / t);
+    if (!_isFiniteNumber(x) || !_isFiniteNumber(y) || t <= 0) return -1;
+    var col = Math.floor((x - _finiteNumber(map.ox, 0)) / t);
+    var row = Math.floor((y - _finiteNumber(map.oy, 0)) / t);
     if (row < 0 || row >= map.rows.length) return -1;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return -1;
@@ -358,22 +358,22 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    */
   // Empurra o sprite para FORA de UM outro sprite (o núcleo do collideGroup, por
   // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
-  function collideSprite(sprite, o) {
-    if (!sprite || !o || o === sprite) return;
+  function collideSprite(sprite, obstacle) {
+    if (!sprite || !obstacle || obstacle === sprite) return;
     var collisionGravity = _worldGravityOr(0.6);
-    if (_touchesGravitySupport(sprite, o.x, o.y, o.w, o.h, collisionGravity)) {
-      _restOnGravitySupport(sprite, o.y, o.h, collisionGravity);
+    if (_touchesGravitySupport(sprite, obstacle.x, obstacle.y, obstacle.w, obstacle.h, collisionGravity)) {
+      _restOnGravitySupport(sprite, obstacle.y, obstacle.h, collisionGravity);
       return;
     }
-    var overlapX = Math.min(sprite.x + sprite.w, o.x + o.w) - Math.max(sprite.x, o.x);
-    var overlapY = Math.min(sprite.y + sprite.h, o.y + o.h) - Math.max(sprite.y, o.y);
+    var overlapX = Math.min(sprite.x + sprite.w, obstacle.x + obstacle.w) - Math.max(sprite.x, obstacle.x);
+    var overlapY = Math.min(sprite.y + sprite.h, obstacle.y + obstacle.h) - Math.max(sprite.y, obstacle.y);
     if (overlapX <= 0 || overlapY <= 0) return;
     if (overlapX < overlapY) {
-      var cx = sprite.x + sprite.w / 2, ocx = o.x + o.w / 2;
+      var cx = sprite.x + sprite.w / 2, ocx = obstacle.x + obstacle.w / 2;
       if (cx < ocx) sprite.x -= overlapX; else sprite.x += overlapX;
       sprite.vx = 0;
     } else {
-      var cy = sprite.y + sprite.h / 2, ocy = o.y + o.h / 2;
+      var cy = sprite.y + sprite.h / 2, ocy = obstacle.y + obstacle.h / 2;
       if (cy < ocy) {
         sprite.y -= overlapY;
         if (!_gravityPullsUp(collisionGravity) && (sprite.vy || 0) > 0) {
@@ -423,15 +423,15 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     }
   });
   /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
-  function onKey(key, fn, explicitId) {
+  function onKey(key, fn, id) {
     if (typeof fn !== 'function' || !key) return;
-    if (_runningLoopId && !explicitId) {
+    if (_runningLoopId && !id) {
       warnOnce('evento-tecla-no-quadro', '“Quando apertar a tecla” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
-    var id = _stableHandlerId('tecla', explicitId, fn);
-    if (!keyHandlers[id]) keyHandlerOrder.push(id);
-    keyHandlers[id] = { key: key, fn: fn };
+    var handlerId = _stableHandlerId('tecla', id, fn);
+    if (!keyHandlers[handlerId]) keyHandlerOrder.push(handlerId);
+    keyHandlers[handlerId] = { key: key, fn: fn };
   }
   // Sobreposição: registra pares (getA, getB, fn) e checa num rAF interno (começa
   // sob demanda). Edge-triggered: dispara UMA vez quando começam a encostar. Os
@@ -475,15 +475,15 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
       }
     }
   }
-  function onOverlap(getA, getB, fn, explicitId) {
+  function onOverlap(getA, getB, fn, id) {
     if (typeof getA !== 'function' || typeof getB !== 'function' || typeof fn !== 'function') return;
-    if (_runningLoopId && !explicitId) {
+    if (_runningLoopId && !id) {
       warnOnce('evento-contato-no-quadro', '“Quando encostar” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
-    var id = _stableHandlerId('contato', explicitId, fn);
-    if (!overlapHandlers[id]) _overlapOrder.push(id);
-    overlapHandlers[id] = { getA: getA, getB: getB, fn: fn, wasOverlapping: false };
+    var handlerId = _stableHandlerId('contato', id, fn);
+    if (!overlapHandlers[handlerId]) _overlapOrder.push(handlerId);
+    overlapHandlers[handlerId] = { getA: getA, getB: getB, fn: fn, wasOverlapping: false };
     _ensureDriver();
   }
 
@@ -697,30 +697,30 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    * Cria um sprite (colorido OU com imagem, conforme opts) e o coloca no grupo.
    * Devolve o sprite. Acima do teto, descarta silenciosamente (nunca lança).
    */
-  function spawn(group, opts) {
+  function spawn(group, options) {
     if (!group || !group.items) return null;
     if (group.items.length >= MAX_GROUP) return null;
-    var s = createSprite(opts);
+    var s = createSprite(options);
     group.items.push(s);
     _touchGroup(group);
     return s;
   }
   // Cria um TIRO (bolinha brilhante) no grupo. x/y = CENTRO; raio em px.
-  function spawnBullet(group, opts) {
+  function spawnBullet(group, options) {
     if (!group || !group.items) return null;
     if (group.items.length >= MAX_GROUP) return null;
-    opts = opts || {};
-    var r = _positiveFiniteNumber(opts.radius, 5);
+    options = options || {};
+    var r = _positiveFiniteNumber(options.radius, 5);
     var s = createSprite({
-      x: _finiteNumber(opts.x, 0) - r,
-      y: _finiteNumber(opts.y, 0) - r,
+      x: _finiteNumber(options.x, 0) - r,
+      y: _finiteNumber(options.y, 0) - r,
       w: r * 2,
       h: r * 2,
-      color: opts.color,
-      vx: opts.vx,
-      vy: opts.vy
+      color: options.color,
+      vx: options.vx,
+      vy: options.vy
     });
-    s.skin = { kind: 'bullet', color: opts.color || '#9cff57' };
+    s.skin = { kind: 'bullet', color: options.color || '#9cff57' };
     group.items.push(s);
     _touchGroup(group);
     return s;
@@ -940,17 +940,17 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // Sem RAF próprio: as raízes periódicas geradas usam contadores por CHAVE
   // estável. everyFrames conta quadros; everySeconds usa o relógio compartilhado.
   var frameCounters = Object.create(null);
-  function everyFrames(key, n) {
-    var step = (typeof n === 'number' && Number.isFinite(n) && n > 0)
-      ? Math.max(1, Math.floor(n))
+  function everyFrames(key, frames) {
+    var step = (typeof frames === 'number' && Number.isFinite(frames) && frames > 0)
+      ? Math.max(1, Math.floor(frames))
       : 1;
     var c = (frameCounters[key] || 0) + 1;
     frameCounters[key] = c;
     return c % step === 0;
   }
   var secondTimers = Object.create(null);
-  function everySeconds(key, secs) {
-    var period = _positiveFiniteNumber(secs, 1) * 1000;
+  function everySeconds(key, seconds) {
+    var period = _positiveFiniteNumber(seconds, 1) * 1000;
     var t = now();
     var last = secondTimers[key];
     if (last === undefined) { secondTimers[key] = t; return false; }
@@ -960,10 +960,10 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // One-shot: "depois de N segundos, fazer" — dispara UMA vez por partida.
   // O reset do domínio zera o mapa, então reiniciar o jogo re-arma o timer.
   var onceTimers = Object.create(null);
-  function afterSeconds(key, secs) {
+  function afterSeconds(key, seconds) {
     // Aceita 0 (dispara no 1º quadro após começar); só cai no default 1s para
     // valor inválido (NaN/negativo). "Depois de 0 segundos" = quase imediato.
-    var delay = (_isFiniteNumber(secs) && secs >= 0 ? secs : 1) * 1000;
+    var delay = (_isFiniteNumber(seconds) && seconds >= 0 ? seconds : 1) * 1000;
     var state = onceTimers[key];
     if (state === 'done') return false;
     var t = now();

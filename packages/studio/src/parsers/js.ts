@@ -5378,6 +5378,10 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const o = readGameKitSetupFullOptions(args[0])
       return o ? { type: 'gk:setupFull', bg: o.bg, accent: o.accent } : null
     }
+    case 'setStageDescription':
+      return args.length === 1 && args[0]?.type === 'StringLiteral'
+        ? { type: 'gk:setStageDescription', description: args[0].value as string }
+        : null
     case 'showStageBorder': {
       // generator: SZGameKit.showStageBorder("#e2e8f0", 4)
       if (args[0]?.type !== 'StringLiteral') return null

@@ -17,7 +17,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
-import { type ApiError, apiGet } from '@/lib/api'
+import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { AiUsageStatsView } from '@/lib/types'
 
 /** Rótulos amigáveis dos recursos que consomem IA (feature desconhecida = cru). */
@@ -25,6 +25,38 @@ const FEATURE_LABELS: Record<string, string> = {
   'pensa-chat': 'Pensa — conversa com o Zappy',
   'pensa-synthesis': 'Pensa — gerações (carta/desenho/missões)',
   'studio-describe': 'Mural — descrição do jogo',
+  'studio-zappy': 'Zappy do Studio',
+}
+
+interface ZappyMetrics {
+  questions: number
+  useful: number
+  notUseful: number
+  refusals: number
+  needsContext: number
+  quota: number
+  errors: number
+  averageLatencyMs: number
+}
+
+interface ZappyKnowledgeReport {
+  publishedKidsLessons: number
+  readySources: number
+  errorSources: number
+  pendingSources: number
+  lessonsWithVideoWithoutTranscript: Array<{
+    lessonId: string
+    lessonTitle: string
+    courseTitle: string
+  }>
+  coursesWithoutStudentNotebook: Array<{ courseId: string; courseTitle: string }>
+  failedSources: Array<{
+    sourceRef: string
+    sourceType: 'video-vtt' | 'rich-text' | 'student-notebook'
+    courseTitle: string
+    lessonTitle: string
+    error: string
+  }>
 }
 
 /** Mês civil corrente em São Paulo (`YYYY-MM`) — espelha a régua do members. */
@@ -41,12 +73,22 @@ function currentMonthSp(): string {
 export function AiUsageClient() {
   const [month, setMonth] = useState(currentMonthSp)
   const [stats, setStats] = useState<AiUsageStatsView | null>(null)
+  const [zappyMetrics, setZappyMetrics] = useState<ZappyMetrics | null>(null)
+  const [knowledge, setKnowledge] = useState<ZappyKnowledgeReport | null>(null)
   const [loading, setLoading] = useState(true)
+  const [backfilling, setBackfilling] = useState(false)
 
   const load = useCallback(async (target: string) => {
     setLoading(true)
     try {
-      setStats(await apiGet<AiUsageStatsView>(`/api/members/ai-usage?month=${target}`))
+      const [usage, metrics, report] = await Promise.all([
+        apiGet<AiUsageStatsView>(`/api/members/ai-usage?month=${target}`),
+        apiGet<ZappyMetrics>(`/api/members/zappy/metrics?month=${target}`),
+        apiGet<ZappyKnowledgeReport>('/api/members/zappy/knowledge'),
+      ])
+      setStats(usage)
+      setZappyMetrics(metrics)
+      setKnowledge(report)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao carregar o uso de IA.')
     } finally {
@@ -60,11 +102,24 @@ export function AiUsageClient() {
 
   const fmt = (n: number | undefined) => (n === undefined ? '—' : n.toLocaleString('pt-BR'))
 
+  const backfill = async () => {
+    setBackfilling(true)
+    try {
+      await apiSend('/api/members/zappy/knowledge', 'POST')
+      toast.success('Base do Zappy sincronizada.')
+      await load(month)
+    } catch (error) {
+      toast.error((error as ApiError).message ?? 'Falha ao sincronizar a base do Zappy.')
+    } finally {
+      setBackfilling(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <AdminHeader
         title="Uso de IA"
-        description="Consumo da quota de IA por conta (50/dia + 500/mês) — Pensa, descrição do Mural e recursos futuros."
+        description="Consumo da quota de IA por conta (50/dia + 500/mês) — Pensa, descrição do Mural e Zappy do Studio."
         action={
           <div className="flex items-center gap-2">
             <input
@@ -168,6 +223,87 @@ export function AiUsageClient() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between gap-4">
+          <div>
+            <CardTitle>Zappy do Studio</CardTitle>
+            <p className="mt-1 text-muted-foreground text-sm">
+              Somente métricas agregadas; as conversas infantis não aparecem neste painel.
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => void backfill()} disabled={backfilling}>
+            {backfilling ? <Spinner /> : <RefreshCw className="size-4" />} Sincronizar base
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <OverviewCard title="Perguntas" value={fmt(zappyMetrics?.questions)} />
+            <OverviewCard
+              title="Úteis"
+              value={fmt(zappyMetrics?.useful)}
+              description={`${fmt(zappyMetrics?.notUseful)} marcadas como não úteis`}
+            />
+            <OverviewCard
+              title="Recusas / contexto"
+              value={`${fmt(zappyMetrics?.refusals)} / ${fmt(zappyMetrics?.needsContext)}`}
+            />
+            <OverviewCard
+              title="Latência média"
+              value={
+                zappyMetrics ? `${zappyMetrics.averageLatencyMs.toLocaleString('pt-BR')} ms` : '—'
+              }
+              description={`${fmt(zappyMetrics?.quota)} quota · ${fmt(zappyMetrics?.errors)} erros`}
+            />
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-lg border border-border p-4">
+              <p className="font-medium">Fontes prontas</p>
+              <p className="mt-1 text-2xl font-bold">{fmt(knowledge?.readySources)}</p>
+              <p className="text-muted-foreground text-xs">
+                {fmt(knowledge?.pendingSources)} pendentes · {fmt(knowledge?.errorSources)} com erro
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-4">
+              <p className="font-medium">Vídeos sem transcrição</p>
+              <p className="mt-1 text-2xl font-bold">
+                {fmt(knowledge?.lessonsWithVideoWithoutTranscript.length)}
+              </p>
+              <p className="line-clamp-2 text-muted-foreground text-xs">
+                {knowledge?.lessonsWithVideoWithoutTranscript
+                  .map((item) => item.lessonTitle)
+                  .join(', ') || 'Tudo certo'}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-4">
+              <p className="font-medium">Cursos sem caderno</p>
+              <p className="mt-1 text-2xl font-bold">
+                {fmt(knowledge?.coursesWithoutStudentNotebook.length)}
+              </p>
+              <p className="line-clamp-2 text-muted-foreground text-xs">
+                {knowledge?.coursesWithoutStudentNotebook
+                  .map((item) => item.courseTitle)
+                  .join(', ') || 'Tudo certo'}
+              </p>
+            </div>
+          </div>
+          {knowledge?.failedSources.length ? (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+              <p className="font-medium text-destructive">Fontes que precisam de correção</p>
+              <ul className="mt-2 space-y-2 text-sm">
+                {knowledge.failedSources.slice(0, 8).map((source) => (
+                  <li key={`${source.sourceType}:${source.sourceRef}`}>
+                    <span className="font-medium">
+                      {source.courseTitle} · {source.lessonTitle}
+                    </span>
+                    <span className="block text-muted-foreground">{source.error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
     </div>
   )
 }

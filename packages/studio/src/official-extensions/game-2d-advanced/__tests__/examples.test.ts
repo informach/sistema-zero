@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
 import { behaviorStatements, SZIRV2Schema } from '#ir'
+import { collectTypes, stripIds } from './exampleContractHarness'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -570,29 +571,6 @@ const REQUIRED_TYPES = {
     'gk:setup',
   ],
 } as const satisfies Record<ExampleName, readonly string[]>
-
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-      if (key !== '__id') out[key] = stripIds(child)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) {
-    for (const item of value) collectTypes(item, out)
-  } else if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>
-    if (typeof record.type === 'string') out.add(record.type)
-    for (const child of Object.values(record)) collectTypes(child, out)
-  }
-  return out
-}
 
 beforeAll(() => {
   ensureBlocklyInitialized()

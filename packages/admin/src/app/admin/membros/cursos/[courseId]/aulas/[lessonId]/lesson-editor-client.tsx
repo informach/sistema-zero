@@ -112,6 +112,7 @@ interface BlockForm {
   /** E-book: referência `r2priv:<key>` do PDF + título opcional. */
   pdfUrl: string
   title: string
+  zappyStudentNotebook: boolean
   /** Estúdio: nível fixado (paleta por dificuldade). */
   studioLevel: BlockLevel
   /** Estúdio: categorias de blocos sempre visíveis. */
@@ -159,6 +160,7 @@ const EMPTY_BLOCK: BlockForm = {
   captions: [],
   pdfUrl: '',
   title: '',
+  zappyStudentNotebook: false,
   studioLevel: 'iniciante-2d',
   studioCategories: [],
   // Default NOVO (24/07): o aluno vê SÓ Blocos; Ponte é opt-in do autor; Código é
@@ -260,6 +262,7 @@ function buildContent(
         kind: 'ebook',
         url: f.pdfUrl.trim(),
         ...(opt(f.title) ? { title: f.title.trim() } : {}),
+        ...(f.zappyStudentNotebook ? { zappyStudentNotebook: true } : {}),
       }
     case 'certificate': {
       const previousCertificate =
@@ -491,6 +494,7 @@ export function LessonEditorClient({
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
       pdfUrl: c.kind === 'ebook' ? c.url : '',
       title: c.kind === 'ebook' ? (c.title ?? '') : '',
+      zappyStudentNotebook: c.kind === 'ebook' ? (c.zappyStudentNotebook ?? false) : false,
       // Aula salva antes da reforma 2D/3D guarda o valor LEGADO → normaliza.
       studioLevel:
         c.kind === 'studio' ? (normalizeBlockLevel(c.level) ?? 'iniciante-2d') : 'iniciante-2d',
@@ -1019,6 +1023,25 @@ export function LessonEditorClient({
                   onChange={(e) => setBlockForm((f) => ({ ...f, title: e.target.value }))}
                 />
               </Field>
+              <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={blockForm.zappyStudentNotebook}
+                  onChange={(event) =>
+                    setBlockForm((form) => ({
+                      ...form,
+                      zappyStudentNotebook: event.target.checked,
+                    }))
+                  }
+                  className="mt-0.5 size-4 accent-primary"
+                />
+                <span>
+                  <strong className="block">Caderno do aluno</strong>
+                  <span className="text-muted-foreground">
+                    Autoriza extrair o texto deste PDF para as respostas do Zappy.
+                  </span>
+                </span>
+              </label>
             </>
           ) : null}
 

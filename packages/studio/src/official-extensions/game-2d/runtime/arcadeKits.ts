@@ -4,10 +4,10 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   // Assim o mesmo modelo de sprite (x/y/w/h/vx/vy) ganha o visual do jogo.
 
   /** Cria uma nave (corpo + asas customizáveis; cabine e foguinho fixos, animados). */
-  function createShip(opts) {
-    opts = opts || {};
-    var s = createSprite({ x: opts.x, y: opts.y, w: opts.w, h: opts.h, color: opts.body });
-    s.skin = { kind: 'ship', body: opts.body || '#35e8ff', wings: opts.wings || '#2568ff' };
+  function createShip(options) {
+    options = options || {};
+    var s = createSprite({ x: options.x, y: options.y, w: options.w, h: options.h, color: options.body });
+    s.skin = { kind: 'ship', body: options.body || '#35e8ff', wings: options.wings || '#2568ff' };
     return s;
   }
   /**
@@ -79,17 +79,17 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   /** Coloca no grupo um asteroide (polígono irregular que gira), com forma única. */
-  function spawnAsteroid(group, opts) {
+  function spawnAsteroid(group, options) {
     if (!group || !group.items) return null;
     if (group.items.length >= MAX_GROUP) return null;
-    opts = opts || {};
-    var base = _positiveFiniteNumber(opts.size, 36);
+    options = options || {};
+    var base = _positiveFiniteNumber(options.size, 36);
     // Cada asteroide nasce com um tamanho um pouco diferente (variedade automática).
     var size = Math.round(base * (0.65 + Math.random() * 0.5));
-    var s = createSprite({ x: opts.x, y: opts.y, w: size, h: size, color: opts.color, vx: opts.vx, vy: opts.vy });
+    var s = createSprite({ x: options.x, y: options.y, w: size, h: size, color: options.color, vx: options.vx, vy: options.vy });
     s.skin = {
       kind: 'asteroid',
-      color: opts.color || '#8d8f9b',
+      color: options.color || '#8d8f9b',
       sides: 7 + Math.floor(Math.random() * 3),
       spin: Math.random() * Math.PI * 2,
       spinSpeed: (Math.random() - 0.5) * 0.002
@@ -216,8 +216,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   // lista) a cada quadro: os inimigos soltos somem da tela sem pista nenhuma.
   // O teto de chamadas detecta esse laço e avisa UMA vez (o jogo segue rodando).
   var _enemyTypeCreates = 0;
-  function createEnemyType(opts) {
-    opts = opts || {};
+  function createEnemyType(options) {
+    options = options || {};
     _enemyTypeCreates += 1;
     if (_enemyTypeCreates === 61) {
       console.warn(
@@ -227,16 +227,16 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     var type = createGroup();
     type.bullets = createGroup();
     type.config = {
-        behavior: opts.behavior || 'patrulha',
-        color: opts.color || '#e4573d',
-        image: (typeof opts.image === 'string') ? opts.image : '',
+        behavior: options.behavior || 'patrulha',
+        color: options.color || '#e4573d',
+        image: (typeof options.image === 'string') ? options.image : '',
         // Figura desenhada (defineShape) como visual do tipo; '' = imagem/cor.
-        shape: (typeof opts.shape === 'string') ? opts.shape : '',
-        hp: _positiveFiniteNumber(opts.hp, 3),
-        speed: _finiteNumber(opts.speed, 2),
-        dmg: _finiteNumber(opts.dmg, 1),
-        w: _positiveFiniteNumber(opts.w, 32),
-        h: _positiveFiniteNumber(opts.h, 32),
+        shape: (typeof options.shape === 'string') ? options.shape : '',
+        hp: _positiveFiniteNumber(options.hp, 3),
+        speed: _finiteNumber(options.speed, 2),
+        dmg: _finiteNumber(options.dmg, 1),
+        w: _positiveFiniteNumber(options.w, 32),
+        h: _positiveFiniteNumber(options.h, 32),
         // Ajustes finos por comportamento (bloco "Ajustar no tipo de inimigo…").
         jump: 10,
         jumpRate: 90,
@@ -485,13 +485,13 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   /** Registra eventos independentes de derrota, identificados pelo bloco. */
-  function onEnemyDefeated(type, fn, explicitId) {
+  function onEnemyDefeated(type, fn, id) {
     if (!type || typeof fn !== 'function') return;
     if (!type._defeatHandlers) type._defeatHandlers = Object.create(null);
     if (!type._defeatOrder) type._defeatOrder = [];
-    var id = _stableHandlerId('inimigo-derrotado', explicitId, fn);
-    if (!type._defeatHandlers[id]) type._defeatOrder.push(id);
-    type._defeatHandlers[id] = fn;
+    var handlerId = _stableHandlerId('inimigo-derrotado', id, fn);
+    if (!type._defeatHandlers[handlerId]) type._defeatOrder.push(handlerId);
+    type._defeatHandlers[handlerId] = fn;
   }
 
   /**
@@ -517,8 +517,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   /** O dano de contato guardado no inimigo (ou no tiro dele). */
-  function enemyDamage(s) {
-    return s ? _finiteNumber(s.dmg, 1) : 1;
+  function enemyDamage(sprite) {
+    return sprite ? _finiteNumber(sprite.dmg, 1) : 1;
   }
 
   /**
@@ -526,9 +526,9 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
    * e INVENCIVEL (nao leva dano de novo) — sem isso, o contato continuo
    * drenaria a vida a cada quadro.
    */
-  function hurtByEnemy(s, e) {
-    if (!s || !e) return;
-    damageSprite(s, enemyDamage(e), 45);
+  function hurtByEnemy(sprite, enemy) {
+    if (!sprite || !enemy) return;
+    damageSprite(sprite, enemyDamage(enemy), 45);
   }
 
   // ---- HUD no canvas: placar, texto, vidas (corações) e barra ----
@@ -605,8 +605,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.fillRect(px, py, bw * frac, bh);
     ctx.restore();
   }
-  function drawBar(ctx, value, max, x, y, w, h, color) {
-    _drawBarVisual(ctx, value, max, x, y, w, h, color);
+  function drawBar(ctx, value, max, x, y, width, height, color) {
+    _drawBarVisual(ctx, value, max, x, y, width, height, color);
     var v = _finiteNumber(value, 0);
     var m = _positiveFiniteNumber(max, 1);
     _updateAccessibleHud('bar:' + String(_finiteNumber(x, 0)) + ':' + String(_finiteNumber(y, 0)), 'Progresso: ' + v + ' de ' + m);
@@ -660,7 +660,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.fillText(line.replace(/ +$/, ''), x, yy);
     return yy;
   }
-  function showScreen(ctx, title, subtitle, hint, bg) {
+  function showScreen(ctx, title, subtitle, hint, background) {
     if (!ctx || !ctx.canvas) return;
     _announceScreen(title, subtitle, hint);
     var w = stageW(ctx), h = stageH(ctx);
@@ -668,7 +668,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.save();
     // Overlay SEMITRANSPARENTE: o jogo continua aparecendo por trás (à la referência).
     ctx.globalAlpha = 0.8;
-    ctx.fillStyle = bg || '#02111f';
+    ctx.fillStyle = background || '#02111f';
     ctx.fillRect(0, 0, w, h);
     ctx.globalAlpha = 1;
     ctx.textAlign = 'center';
@@ -824,12 +824,12 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   /** Cria um dinossauro desenhado (corre sozinho; pose muda no pulo/agachar). */
-  function createDino(opts) {
-    opts = opts || {};
-    var size = _positiveFiniteNumber(opts.size, 64);
+  function createDino(options) {
+    options = options || {};
+    var size = _positiveFiniteNumber(options.size, 64);
     var w = Math.round(size * 0.95), h = size;
-    var s = createSprite({ x: opts.x, y: opts.y, w: w, h: h, color: opts.color });
-    s.skin = { kind: 'dino', color: opts.color || '#5fb45f', fullH: h, ducking: false, onGround: true };
+    var s = createSprite({ x: options.x, y: options.y, w: w, h: h, color: options.color });
+    s.skin = { kind: 'dino', color: options.color || '#5fb45f', fullH: h, ducking: false, onGround: true };
     return s;
   }
 
@@ -979,22 +979,22 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   /** Coloca no grupo um obstáculo desenhado (cacto/pedra no chão; pássaro no alto). */
-  function spawnObstacle(group, ctx, opts) {
+  function spawnObstacle(group, ctx, options) {
     if (!group || !group.items) return null;
     if (group.items.length >= MAX_GROUP) return null;
-    opts = opts || {};
-    var type = opts.type || 'cactus';
+    options = options || {};
+    var type = options.type || 'cactus';
     if (type === 'random' || type === 'surpresa') {
       var r = Math.random();
       type = r < 0.45 ? 'cactus' : (r < 0.8 ? 'rock' : 'bird');
     }
-    var size = _positiveFiniteNumber(opts.size, 44);
+    var size = _positiveFiniteNumber(options.size, 44);
     var gy = dinoGround(ctx);
     var w, h, y;
     if (type === 'bird') { w = Math.round(size * 1.3); h = Math.round(size * 0.8); y = gy - h - 46; }
     else if (type === 'rock') { w = size; h = Math.round(size * 0.72); y = gy - h; }
     else { type = 'cactus'; w = Math.round(size * 0.7); h = Math.round(size * 1.3); y = gy - h; }
-    var s = createSprite({ x: opts.x, y: y, w: w, h: h, color: '#3f8f49', vx: opts.vx, vy: 0 });
+    var s = createSprite({ x: options.x, y: y, w: w, h: h, color: '#3f8f49', vx: options.vx, vy: 0 });
     s.skin = { kind: 'obstacle', shape: type, flap: Math.random() * Math.PI * 2 };
     group.items.push(s);
     _touchGroup(group);
@@ -1080,11 +1080,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   /** Coloca no grupo um OVO (item de bônus para coletar). */
-  function spawnEgg(group, opts) {
+  function spawnEgg(group, options) {
     if (!group || !group.items) return null;
     if (group.items.length >= MAX_GROUP) return null;
-    opts = opts || {};
-    var s = createSprite({ x: opts.x, y: opts.y, w: 30, h: 38, color: '#fff3c4', vx: opts.vx, vy: 0 });
+    options = options || {};
+    var s = createSprite({ x: options.x, y: options.y, w: 30, h: 38, color: '#fff3c4', vx: options.vx, vy: 0 });
     s.skin = { kind: 'egg', bob: Math.random() * Math.PI * 2 };
     group.items.push(s);
     _touchGroup(group);
@@ -1351,18 +1351,18 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   /** Põe um gorila no alto de um prédio perto da ponta (lado 'left'/'right'). */
-  function placeThrower(city, opts) {
-    opts = opts || {};
-    if (!city || !city.buildings.length) return createSprite(opts);
-    var side = opts.side === 'right' ? 'right' : 'left';
+  function placeThrower(city, options) {
+    options = options || {};
+    if (!city || !city.buildings.length) return createSprite(options);
+    var side = options.side === 'right' ? 'right' : 'left';
     var idx = side === 'left'
       ? Math.min(1, city.buildings.length - 1)
       : Math.max(0, city.buildings.length - 2);
     var b = city.buildings[idx];
     var w = 30, h = 36;
     var top = city.H - b.h;
-    var s = createSprite({ x: b.x + b.w / 2 - w / 2, y: top - h, w: w, h: h, color: opts.color });
-    s.skin = { kind: 'gorilla', color: opts.color || '#6b4a2b', side: side };
+    var s = createSprite({ x: b.x + b.w / 2 - w / 2, y: top - h, w: w, h: h, color: options.color });
+    s.skin = { kind: 'gorilla', color: options.color || '#6b4a2b', side: side };
     return s;
   }
 

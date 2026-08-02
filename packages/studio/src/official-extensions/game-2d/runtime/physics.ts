@@ -4,12 +4,12 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   // inimigos top-down não caem por inferência e valores 0/negativos mantêm o
   // mesmo significado em todos os helpers físicos.
   var world = { gravity: 0, gravityConfigured: false };
-  function setGravity(g) {
-    if (!_isFiniteNumber(g)) {
+  function setGravity(gravity) {
+    if (!_isFiniteNumber(gravity)) {
       warnOnce('gravidade-invalida', 'a gravidade precisa ser um número finito; mantive o valor anterior.');
       return;
     }
-    world.gravity = g;
+    world.gravity = gravity;
     world.gravityConfigured = true;
   }
   function _worldGravityOr(fallback) {
@@ -53,28 +53,28 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   }
 
   /** Integra a velocidade no sprite e soma a gravidade ao vy. */
-  function applyVelocity(s) {
-    if (!s) return;
+  function applyVelocity(sprite) {
+    if (!sprite) return;
     // A colisão do quadro anterior pode ter marcado o chão. A integração abre
     // um novo quadro: se ainda houver apoio, collideTileMap/collideGroup/
     // collideSprite o confirma de novo depois de mover.
-    s._groundedLastFrame = s.onGround === true;
-    if (s.onGround === true) s.onGround = false;
-    var vx = _finiteNumber(s.vx, 0), vy = _finiteNumber(s.vy, 0);
-    s.x = _finiteNumber(s.x, 0) + vx;
-    s.y = _finiteNumber(s.y, 0) + vy;
-    s.vx = vx;
-    s.vy = vy + world.gravity;
+    sprite._groundedLastFrame = sprite.onGround === true;
+    if (sprite.onGround === true) sprite.onGround = false;
+    var vx = _finiteNumber(sprite.vx, 0), vy = _finiteNumber(sprite.vy, 0);
+    sprite.x = _finiteNumber(sprite.x, 0) + vx;
+    sprite.y = _finiteNumber(sprite.y, 0) + vy;
+    sprite.vx = vx;
+    sprite.vy = vy + world.gravity;
   }
 
   /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */
-  function bounceOnEdges(s, ctx) {
-    if (!s || !ctx || !ctx.canvas) return;
+  function bounceOnEdges(sprite, ctx) {
+    if (!sprite || !ctx || !ctx.canvas) return;
     var visible = _visibleWorldRect(ctx);
-    if (s.x < visible.left) { s.x = visible.left; s.vx = Math.abs(s.vx || 0); }
-    else if (s.x + s.w > visible.right) { s.x = visible.right - s.w; s.vx = -Math.abs(s.vx || 0); }
-    if (s.y < visible.top) { s.y = visible.top; s.vy = Math.abs(s.vy || 0); }
-    else if (s.y + s.h > visible.bottom) { s.y = visible.bottom - s.h; s.vy = -Math.abs(s.vy || 0); }
+    if (sprite.x < visible.left) { sprite.x = visible.left; sprite.vx = Math.abs(sprite.vx || 0); }
+    else if (sprite.x + sprite.w > visible.right) { sprite.x = visible.right - sprite.w; sprite.vx = -Math.abs(sprite.vx || 0); }
+    if (sprite.y < visible.top) { sprite.y = visible.top; sprite.vy = Math.abs(sprite.vy || 0); }
+    else if (sprite.y + sprite.h > visible.bottom) { sprite.y = visible.bottom - sprite.h; sprite.vy = -Math.abs(sprite.vy || 0); }
   }
 
   /** Colisão por círculo: distância dos centros < soma dos raios (≈ metade do lado). */

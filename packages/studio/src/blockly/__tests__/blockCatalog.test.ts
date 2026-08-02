@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { OFFICIAL_CATALOG } from '#official-extensions'
-import { BLOCK_CATALOG } from '../blockCatalog'
+import { SERVER_MECHANIC_DOCUMENTS } from '../../official-extensions/serverKnowledge'
+import { BLOCK_CATALOG, SERVER_BLOCK_CATALOG } from '../blockCatalog'
 
 describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
   it('tem muitos blocos, todos com id/rótulo/categoria limpos', () => {
@@ -31,10 +32,31 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
+  it('catálogo server-safe cobre cada bloco visível com metadados autoritativos', () => {
+    expect(SERVER_BLOCK_CATALOG).toHaveLength(BLOCK_CATALOG.length)
+    const byType = new Map(SERVER_BLOCK_CATALOG.map((entry) => [entry.type, entry]))
+    expect(byType.size).toBe(SERVER_BLOCK_CATALOG.length)
+    for (const visible of BLOCK_CATALOG) {
+      const server = byType.get(visible.type)
+      expect(server, visible.type).toBeDefined()
+      expect(server?.label).toBe(visible.label)
+      expect(server?.category).toBe(visible.category)
+      expect(server?.subcategory).toBeTruthy()
+      expect(server?.level).toMatch(/^(iniciante|intermediario|avancado)-(2d|3d)$/)
+      expect(server?.area).toMatch(/^(structure|appearance|start|events|loops|value)$/)
+      expect(Array.isArray(server?.inputs)).toBe(true)
+    }
+  })
+
   it('inclui os blocos das extensões (Jogo 2D/3D)', () => {
     const sprite = BLOCK_CATALOG.find((e) => e.type === 'sz_g2d_create_sprite')
     expect(sprite?.category).toBe('Jogo 2D')
     expect(BLOCK_CATALOG.some((e) => e.category === 'Jogo 3D')).toBe(true)
+    expect(
+      SERVER_BLOCK_CATALOG.filter((entry) => entry.extension).some(
+        (entry) => entry.subcategory !== entry.category,
+      ),
+    ).toBe(true)
   })
 
   it('classifica leitores contextuais junto de Página e Eventos', () => {
@@ -92,5 +114,21 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     expect(labelOf('sz_html_svg')).toBe('Criar uma área de desenho vetorial')
     expect(labelOf('sz_svg_circle')).toBe('Desenhar um círculo')
     expect(labelOf('sz_svg_use')).toBe('Reutilizar uma forma pelo nome')
+  })
+
+  it('tem um manual server-safe para cada extensão oficial do catálogo', () => {
+    const extensions = new Set(
+      SERVER_BLOCK_CATALOG.flatMap((entry) => (entry.extension ? [entry.extension] : [])),
+    )
+    const documents = new Map(
+      SERVER_MECHANIC_DOCUMENTS.map((document) => [document.extension, document]),
+    )
+
+    expect([...documents.keys()].sort()).toEqual([...extensions].sort())
+    for (const extension of extensions) {
+      const document = documents.get(extension)
+      expect(document?.title.length).toBeGreaterThan(10)
+      expect(document?.content.length).toBeGreaterThan(200)
+    }
   })
 })

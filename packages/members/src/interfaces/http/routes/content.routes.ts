@@ -7,8 +7,11 @@ import type {
   ModuleAdminService,
 } from '../../../application/content-admin/content-admin.service'
 import type { StudioSubmissionsAdminService } from '../../../application/studio-submissions-admin/studio-submissions-admin.service'
+import type { ZappyHistoryService } from '../../../application/zappy/zappy-history.service'
+import type { ZappyKnowledgeService } from '../../../application/zappy/zappy-knowledge.service'
 import type { CourseStatus } from '../../../domain/course/course'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
+import { monthBoundsUtc } from '../../../domain/gamification/missions'
 import type {
   AttachmentFields,
   CourseFields,
@@ -46,6 +49,8 @@ export interface ContentRoutesDeps {
   blocks: BlockAdminService
   attachments: AttachmentAdminService
   studioSubmissions: StudioSubmissionsAdminService
+  zappyKnowledge?: ZappyKnowledgeService
+  zappyHistory?: ZappyHistoryService
 }
 
 type CourseInput = typeof CourseBody.static
@@ -125,6 +130,57 @@ export function contentRoutes(deps: ContentRoutesDeps) {
     new Elysia({ prefix: '/members/admin' })
       .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+      )
+      .get('/zappy/knowledge/report', ({ headers }) => {
+        guard(headers)
+        if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
+        return deps.zappyKnowledge.report()
+      })
+      .get(
+        '/zappy/metrics',
+        ({ headers, query }) => {
+          guard(headers)
+          if (!deps.zappyHistory) throw new Error('Zappy não configurado')
+          const bounds = monthBoundsUtc(query.month)
+          return deps.zappyHistory.metrics(bounds.from, bounds.to)
+        },
+        { query: t.Object({ month: t.String({ pattern: '^\\d{4}-(0[1-9]|1[0-2])$' }) }) },
+      )
+      .post('/zappy/knowledge/backfill', ({ headers }) => {
+        guard(headers)
+        if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
+        return deps.zappyKnowledge.backfill()
+      })
+      .post(
+        '/zappy/knowledge/sources',
+        ({ headers, body }) => {
+          guard(headers)
+          if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
+          return deps.zappyKnowledge.sync(body)
+        },
+        {
+          body: t.Object({
+            lessonId: t.String({ pattern: UUID_PATTERN }),
+            sourceType: t.Union([
+              t.Literal('video-vtt'),
+              t.Literal('rich-text'),
+              t.Literal('student-notebook'),
+            ]),
+            sourceRef: t.String({ minLength: 1, maxLength: 500 }),
+            content: t.Optional(t.String({ maxLength: 500_000 })),
+            error: t.Optional(t.String({ maxLength: 2_000 })),
+          }),
+        },
+      )
+      .delete(
+        '/zappy/knowledge/sources/:sourceRef',
+        async ({ headers, params }) => {
+          guard(headers)
+          if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
+          await deps.zappyKnowledge.deleteSource(params.sourceRef)
+          return { ok: true }
+        },
+        { params: t.Object({ sourceRef: t.String({ minLength: 1, maxLength: 500 }) }) },
       )
       // ── Cursos ──
       .get(

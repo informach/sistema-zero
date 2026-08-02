@@ -62,6 +62,74 @@ export const AiUsageStatsQuery = t.Object({
   month: t.Optional(t.String({ minLength: 7, maxLength: 7 })),
 })
 
+// ── Zappy do Studio ─────────────────────────────────────────────────────────
+const STUDIO_LOCAL_PROJECT_ID = t.String({
+  minLength: 1,
+  maxLength: 128,
+  pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$',
+})
+export const ZappyHistoryQuery = t.Object({ projectId: STUDIO_LOCAL_PROJECT_ID })
+export const ZappyQuestionBody = t.Object({
+  projectId: STUDIO_LOCAL_PROJECT_ID,
+  clientMessageId: UUID,
+  question: t.String({ minLength: 1, maxLength: 1000 }),
+})
+export const ZappyQuestionParams = t.Object({ id: UUID })
+export const ZappyResponseBody = t.Object({
+  projectId: STUDIO_LOCAL_PROJECT_ID,
+  latencyMs: t.Integer({ minimum: 0, maximum: 600000 }),
+  outcome: t.Optional(
+    t.Union([
+      t.Literal('normal'),
+      t.Literal('refusal'),
+      t.Literal('needs-context'),
+      t.Literal('quota'),
+      t.Literal('error'),
+    ]),
+  ),
+  response: t.Object({
+    id: UUID,
+    text: t.String({ minLength: 1, maxLength: 8000 }),
+    scope: t.Union([
+      t.Literal('block'),
+      t.Literal('mechanic'),
+      t.Literal('error'),
+      t.Literal('concept'),
+      t.Literal('lesson'),
+      t.Literal('needs-context'),
+      t.Literal('redirect-pensa'),
+      t.Literal('redirect-pinta'),
+      t.Literal('unsupported'),
+    ]),
+    blockReferences: t.Array(
+      t.Object({
+        blockId: t.Optional(t.String({ minLength: 1, maxLength: 128 })),
+        blockType: t.String({ minLength: 1, maxLength: 128 }),
+        name: t.String({ minLength: 1, maxLength: 240 }),
+        category: t.String({ minLength: 1, maxLength: 160 }),
+        area: t.String({ minLength: 1, maxLength: 80 }),
+      }),
+      { maxItems: 12 },
+    ),
+    lessonReferences: t.Optional(
+      t.Array(
+        t.Object({
+          courseId: UUID,
+          lessonId: UUID,
+          title: t.String({ minLength: 1, maxLength: 240 }),
+        }),
+        { maxItems: 6 },
+      ),
+    ),
+    createdAt: t.String({ minLength: 20, maxLength: 40 }),
+  }),
+})
+export const ZappyFeedbackBody = t.Object({
+  projectId: STUDIO_LOCAL_PROJECT_ID,
+  responseId: UUID,
+  useful: t.Boolean(),
+})
+
 // ── Avatar (guarda-roupa por camadas) ───────────────────────────────────────
 // `partId`/`parts` são SLUGS do catálogo em código (não uuid): `^[a-z0-9-]+$`.
 const AVATAR_SLUG = t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9-]+$' })
@@ -854,6 +922,7 @@ const EbookBlockSchema = t.Object({
   kind: t.Literal('ebook'),
   url: t.String({ minLength: 1, maxLength: 2000, pattern: MEDIA_REF_PATTERN }),
   title: t.Optional(t.String({ maxLength: 300 })),
+  zappyStudentNotebook: t.Optional(t.Boolean()),
 })
 
 // 6 degraus novos (eixo 2D/3D) + 3 legados tolerados: aulas antigas seguem

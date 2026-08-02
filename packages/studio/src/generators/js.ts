@@ -1813,6 +1813,8 @@ function compileStatementCode(
       return `${pad}SZGameKit.setup({ width: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, height: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
     case 'gk:setupFull':
       return `${pad}SZGameKit.setupFull({ background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
+    case 'gk:setStageDescription':
+      return `${pad}SZGameKit.setStageDescription(${JSON.stringify(stmt.description)});`
     case 'gk:stageBorder':
       return `${pad}SZGameKit.showStageBorder(${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
     case 'gk:showHitboxes':
@@ -5803,6 +5805,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.width), names)
       return
     case 'gk:setupFull':
+    case 'gk:setStageDescription':
     case 'gk:showHitboxes':
     case 'gk:start':
     case 'gk:loadImage':

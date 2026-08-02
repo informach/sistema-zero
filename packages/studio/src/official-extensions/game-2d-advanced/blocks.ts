@@ -112,6 +112,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     name: '🖼️ Telas',
     colour: C,
     types: [
+      'sz_gk_set_stage_description',
       'sz_gk_set_screen_text',
       'sz_gk_create_screen',
       'sz_gk_add_button',

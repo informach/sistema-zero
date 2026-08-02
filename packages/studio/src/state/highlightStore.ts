@@ -24,9 +24,11 @@ interface HighlightStore {
   cursorLine: number | null
   cursorColumn: number | null
   /** Última fonte de evento; evita loops bloco→linha→bloco. */
-  source: 'blocks' | 'editor' | null
+  source: 'blocks' | 'editor' | 'tutor' | null
+  tutorTarget: { blockId?: string; blockType: string; category: string } | null
   selectBlock: (id: string | null) => void
   setCursor: (file: SourceMappedFile, line: number, column?: number) => void
+  focusTutorReference: (target: { blockId?: string; blockType: string; category: string }) => void
   reset: () => void
 }
 
@@ -38,10 +40,18 @@ export function createHighlightStore(): StoreApi<HighlightStore> {
     cursorLine: null,
     cursorColumn: null,
     source: null,
+    tutorTarget: null,
     selectBlock: (id) =>
       set((s) => ({ selectedBlockId: id, source: 'blocks', selectionNonce: s.selectionNonce + 1 })),
     setCursor: (file, line, column) =>
       set({ cursorFile: file, cursorLine: line, cursorColumn: column ?? null, source: 'editor' }),
+    focusTutorReference: (tutorTarget) =>
+      set((s) => ({
+        tutorTarget,
+        selectedBlockId: tutorTarget.blockId ?? null,
+        source: 'tutor',
+        selectionNonce: s.selectionNonce + 1,
+      })),
     reset: () =>
       set({
         selectedBlockId: null,
@@ -49,6 +59,7 @@ export function createHighlightStore(): StoreApi<HighlightStore> {
         cursorLine: null,
         cursorColumn: null,
         source: null,
+        tutorTarget: null,
       }),
   }))
 }

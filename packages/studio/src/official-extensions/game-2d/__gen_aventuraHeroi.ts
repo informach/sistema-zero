@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Aventura do Herói" (o degrau BÁSICO da
  * família Zelda-style Adventure do Clear Code). Rode com
  * `bun src/official-extensions/game-2d/__gen_aventuraHeroi.ts` e cole a saída
- * em examples/clearcode.ts. O drift test (`aventuraHeroiExample.test.ts`)
+ * em examples/clearcode/aventuraHeroi.ts. O drift test (`aventuraHeroiExample.test.ts`)
  * guarda o resultado.
  *
  * Decisões do degrau básico:

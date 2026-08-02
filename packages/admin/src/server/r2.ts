@@ -1,5 +1,10 @@
 import 'server-only'
-import { PutObjectCommand, type PutObjectCommandInput, S3Client } from '@aws-sdk/client-s3'
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  type PutObjectCommandInput,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getEnv } from '@/lib/env'
 
@@ -153,6 +158,25 @@ export async function r2PutObjectPrivate(input: R2PutObjectPrivateInput): Promis
     throw new Error('Falha ao enviar o arquivo para o armazenamento.', { cause: error })
   }
   return { key }
+}
+
+const MAX_KNOWLEDGE_PDF_BYTES = 50 * 1024 * 1024
+
+/** Lê um PDF privado para a ingestão didática; nunca devolve URL pública. */
+export async function r2ReadPrivateObject(reference: string): Promise<Uint8Array> {
+  if (!reference.startsWith('r2priv:')) throw new Error('Referência privada inválida')
+  const cfg = requirePrivateR2Config()
+  const key = normalizeKey(reference.slice('r2priv:'.length))
+  const result = await getClient(cfg).send(new GetObjectCommand({ Bucket: cfg.bucket, Key: key }))
+  if ((result.ContentLength ?? 0) > MAX_KNOWLEDGE_PDF_BYTES) {
+    throw new Error('PDF excede 50 MB para extração de texto')
+  }
+  if (!result.Body) throw new Error('PDF privado sem conteúdo')
+  const bytes = await result.Body.transformToByteArray()
+  if (bytes.byteLength > MAX_KNOWLEDGE_PDF_BYTES) {
+    throw new Error('PDF excede 50 MB para extração de texto')
+  }
+  return bytes
 }
 
 export interface R2PresignPrivatePutInput {

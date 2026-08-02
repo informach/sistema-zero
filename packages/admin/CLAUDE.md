@@ -797,4 +797,11 @@ Dockerfile: valida e só então importa o `server.js` standalone).
 - [ ] Nenhum `server/*`/`env` importado por Client Component. Sem `any` novo.
 - [ ] Novo endpoint do gateway? Atualizou `src/server/*` + tipos + (se preciso) o `gateway.config.ts`.
 - [ ] Mexeu nas regras de env? `src/instrumentation.ts` e `scripts/boot-check.mjs` em SINCRONIA.
+
+## Zappy do Studio (08/2026)
+
+- A página de IA mostra consumo `studio-zappy`, métricas agregadas e saúde da base, sem expor
+  conversas infantis. O botão de backfill sincroniza todos os cursos kids publicados.
+- Salvar/excluir blocos sincroniza VTT re-hospedado, texto rico e PDFs explicitamente marcados
+  como **Caderno do aluno**. PDF sem texto selecionável fica em erro visível para correção.
 ```

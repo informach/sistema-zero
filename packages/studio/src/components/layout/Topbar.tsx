@@ -41,6 +41,7 @@ import { useStudioConfig } from '../../studio/config'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
+import { useStudioTutor } from '../../studio/tutor'
 import { ExportDialog } from './ExportDialog'
 import { ShareDialog } from './ShareDialog'
 
@@ -119,6 +120,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
   const share = useStudioShare()
+  const tutor = useStudioTutor()
   // Motivo p/ desabilitar o Compartilhar (ex.: "envie ao professor primeiro"); null = ok.
   const shareDisabledReason = useStudioShareDisabledReason()
   // "Sincronizar com o enviado" (Estúdio da aula) — null = host não passou o callback.
@@ -486,6 +488,24 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         <div
           className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}
         >
+          {tutor.config ? (
+            <button
+              type="button"
+              aria-label={tutor.open ? 'Fechar Zappy' : 'Abrir Zappy'}
+              aria-expanded={tutor.open}
+              aria-controls="sz-zappy-panel"
+              onClick={() => tutor.setOpen(!tutor.open)}
+              className={cn(
+                'inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 font-bold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                tutor.open
+                  ? 'bg-sz-accent text-sz-bg'
+                  : 'bg-sz-accent/10 text-sz-accent hover:bg-sz-accent/20',
+              )}
+            >
+              <IconSparkles />
+              {!isCompact ? <span>Zappy</span> : null}
+            </button>
+          ) : null}
           {share && (
             // Wrapper `group` recebe hover/foco MESMO com o botão inerte (botão
             // `disabled` engole os eventos → a dica nunca aparecia, e nunca no toque).

@@ -8,9 +8,10 @@ import type { MembersClient } from './clients'
  * faça. Recurso novo = string nova (o members valida o formato e o admin ganha
  * o breakdown de custo automaticamente).
  */
-export type AiFeature = 'pensa-chat' | 'pensa-synthesis' | 'studio-describe'
+export type AiFeature = 'pensa-chat' | 'pensa-synthesis' | 'studio-describe' | 'studio-zappy'
 
 export type AiQuotaResult = { allowed: true } | { allowed: false; scope: 'day' | 'month' }
+export type StrictAiQuotaResult = AiQuotaResult | { allowed: false; scope: 'unavailable' }
 
 /**
  * Consome 1 crédito da conta. **FAIL-OPEN**: se o members estiver fora / a
@@ -36,6 +37,31 @@ export async function consumeAiQuota(
   } catch (error) {
     console.error('[ai-quota] falha ao consumir — liberando', { feature, error })
     return { allowed: true }
+  }
+}
+
+/**
+ * Variante fail-closed para recursos que só podem chamar o provedor depois de
+ * um consumo confirmado. Falha do members vira indisponibilidade, nunca crédito grátis.
+ */
+export async function consumeAiQuotaStrict(
+  members: MembersClient,
+  feature: AiFeature,
+): Promise<StrictAiQuotaResult> {
+  try {
+    const res = await members.aiUsageConsume(feature)
+    if (res.status !== 200 || !res.body || typeof res.body.allowed !== 'boolean') {
+      console.error(`[ai-quota] consumo indisponível (status ${res.status}) — bloqueando`, {
+        feature,
+      })
+      return { allowed: false, scope: 'unavailable' }
+    }
+    const body = res.body as AiUsageConsumeView
+    if (body.allowed) return { allowed: true }
+    return { allowed: false, scope: body.scope === 'month' ? 'month' : 'day' }
+  } catch (error) {
+    console.error('[ai-quota] falha ao consumir — bloqueando', { feature, error })
+    return { allowed: false, scope: 'unavailable' }
   }
 }
 

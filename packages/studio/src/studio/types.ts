@@ -7,6 +7,7 @@ import type { StudioFeatures } from './config'
 import type { StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
 import type { StudioTheme } from './theme'
+import type { StudioTutorConfig } from './tutor'
 
 export type StudioLocale = Locale
 
@@ -189,6 +190,8 @@ export type StudioCoreProps = StudioCommonProps &
      * `studio/activity.ts`). Ausente → o painel de atividade não renderiza nada.
      */
     activity?: LessonActivity | null
+    /** Interno: somente StudioEditor encaminha este contrato. */
+    tutor?: StudioTutorConfig
   }
 
 /**
@@ -196,7 +199,11 @@ export type StudioCoreProps = StudioCommonProps &
  * AULA/atividade; a curadoria de aprendizado é opcional — default 'avancado-3d'
  * [topo da escada], paleta cheia, zero regressão p/ hosts existentes).
  */
-export type StudioEditorProps = StudioCommonProps & StudioLearningProps
+export type StudioEditorProps = StudioCommonProps &
+  StudioLearningProps & {
+    /** Tutor somente leitura do Estúdio Completo. Não existe no StudioLesson. */
+    tutor?: StudioTutorConfig
+  }
 
 /**
  * Props do <StudioLesson> — editor configurável de aula: editor + curadoria de

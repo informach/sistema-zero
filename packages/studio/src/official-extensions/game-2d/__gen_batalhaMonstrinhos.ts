@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Batalha de Monstrinhos" (o degrau BÁSICO da
  * família Pokemon-style Battle do Clear Code). Rode com
  * `bun src/official-extensions/game-2d/__gen_batalhaMonstrinhos.ts` e cole a
- * saída em examples/clearcode.ts. O drift test
+ * saída em examples/clearcode/batalhaMonstrinhos.ts. O drift test
  * (`batalhaMonstrinhosExample.test.ts`) guarda o resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

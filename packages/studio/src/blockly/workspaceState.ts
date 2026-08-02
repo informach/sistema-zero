@@ -2972,6 +2972,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     }
     case 'gk:setupFull':
       return block('sz_gk_setup_full', { BG: stmt.bg, ACCENT: stmt.accent }, {}, stmt.__id)
+    case 'gk:setStageDescription':
+      return block('sz_gk_set_stage_description', { DESCRIPTION: stmt.description }, {}, stmt.__id)
     case 'gk:stageBorder': {
       const width = exprToValueBlock(valueToExpr(stmt.width))
       return width === null
