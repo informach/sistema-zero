@@ -21,6 +21,7 @@ mock.module('idb-keyval', () => ({
 
 const { useStudioConfig } = await import('./config')
 const { useStudioActivity } = await import('./activity')
+const { useStudioTutor } = await import('./tutor')
 const { useProjectStore } = await import('../state/projectStore')
 
 // Shell vira um PROBE que lê a CONFIG resolvida da instância (renderiza DENTRO
@@ -28,6 +29,7 @@ const { useProjectStore } = await import('../state/projectStore')
 function ConfigProbe(): React.JSX.Element {
   const config = useStudioConfig()
   const activity = useStudioActivity()
+  const tutor = useStudioTutor()
   const projectId = useProjectStore((s) => s.project?.id ?? '')
   return (
     <div
@@ -41,6 +43,7 @@ function ConfigProbe(): React.JSX.Element {
       data-preview={String(config.preview)}
       data-level={config.learning.level}
       data-activity={activity ? 'present' : 'none'}
+      data-tutor={tutor.config ? 'present' : 'none'}
     />
   )
 }
@@ -125,5 +128,28 @@ describe('StudioEditor', () => {
       expect(getByTestId('config-probe').getAttribute('data-project')).toBe('editor-4')
     })
     expect(getByTestId('config-probe').getAttribute('data-activity')).toBe('none')
+  })
+
+  it('provê o tutor somente quando o host do editor injeta o adapter', async () => {
+    const adapter = {
+      loadHistory: async () => [],
+      deleteHistory: async () => undefined,
+      ask: async () => {
+        throw new Error('não chamado neste teste')
+      },
+      feedback: async () => undefined,
+    }
+    const { getByTestId } = render(
+      <StudioEditor
+        initialProject={createEmptyProject('editor-zappy', 'Editor Zappy')}
+        persistence="none"
+        tutor={{ adapter }}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('config-probe').getAttribute('data-project')).toBe('editor-zappy')
+    })
+    expect(getByTestId('config-probe').getAttribute('data-tutor')).toBe('present')
   })
 })

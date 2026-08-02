@@ -8,6 +8,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
+import { ZappyPanel } from '../tutor/ZappyPanel'
 import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
@@ -66,7 +67,7 @@ export function Shell({ onExit, onPromoteToPro, canToggleTheme }: ShellProps): J
 
   return (
     <StudioLayoutProvider value={layout}>
-      <div ref={rootRef} className="flex h-full flex-col bg-sz-bg text-sz-fg">
+      <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg text-sz-fg">
         {/* Só monta o layout DEPOIS de medir a largura. `width` começa em 0 (que
             cai no branch wide); pintar o wide e trocar para o narrow no frame
             seguinte REMONTARIA os editores pesados (Blockly/Monaco) e abria
@@ -151,6 +152,7 @@ export function Shell({ onExit, onPromoteToPro, canToggleTheme }: ShellProps): J
               </ErrorBoundary>
             )}
             <ConvertLegacyPrompt />
+            <ZappyPanel />
           </>
         )}
       </div>

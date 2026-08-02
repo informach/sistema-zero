@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Mundo Pirata" (o degrau BÁSICO da trilogia
  * de plataforma lateral estilo Mario do Clear Code — Super Pirate World). Rode
  * com `bun src/official-extensions/game-2d/__gen_mundoPirata.ts` e cole a saída
- * em examples/clearcode.ts. O drift test (`mundoPirataExample.test.ts`) guarda.
+ * em examples/clearcode/mundoPirata.ts. O drift test (`mundoPirataExample.test.ts`) guarda.
  *
  * Fidelidade em ESPÍRITO ao side-scroller: um mundo LARGO (1600) com a câmera
  * seguindo o herói (cameraFollow), gravidade + pulo (só no chão, como o Dino),

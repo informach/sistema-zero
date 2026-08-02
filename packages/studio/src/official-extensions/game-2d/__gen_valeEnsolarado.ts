@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Vale Ensolarado" (recriação BÁSICA do
  * sunnyland-platformer do Chris Courses). Rode com
  * `bun src/official-extensions/game-2d/__gen_valeEnsolarado.ts` e cole a saída em
- * examples/gamesTwoD.ts. O drift test (`valeEnsolaradoExample.test.ts`) guarda o
+ * examples/gamesTwoD/valeEnsolarado.ts. O drift test (`valeEnsolaradoExample.test.ts`) guarda o
  * resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

@@ -559,6 +559,44 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     document.title = originalTitle
   })
 
+  it('mapeia o ponteiro pela área desenhável quando o palco tem moldura', () => {
+    document.body.innerHTML = ''
+    const { api, fire } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    api.showStageBorder('#ffffff', 40)
+    const canvas = document.querySelector('canvas')
+    if (!canvas) throw new Error('palco não foi criado')
+
+    Object.defineProperties(canvas, {
+      clientLeft: { configurable: true, value: 40 },
+      clientTop: { configurable: true, value: 40 },
+      clientWidth: { configurable: true, value: 240 },
+      clientHeight: { configurable: true, value: 120 },
+    })
+    canvas.getBoundingClientRect = () =>
+      ({
+        left: 100,
+        top: 50,
+        right: 420,
+        bottom: 250,
+        width: 320,
+        height: 200,
+        x: 100,
+        y: 50,
+        toJSON() {},
+      }) as DOMRect
+
+    const points: Array<[number, number]> = []
+    api.onPointer((x, y) => points.push([x, y]), 'moldura-ponteiro')
+    fire('pointerdown', { clientX: 140, clientY: 90, target: canvas })
+    fire('pointerdown', { clientX: 380, clientY: 210, target: canvas })
+
+    expect(points).toEqual([
+      [0, 0],
+      [320, 200],
+    ])
+  })
+
   it('permite descrever objetivo e controles do jogo para leitores de tela', () => {
     document.body.innerHTML = ''
     const { api } = runtimeHarness()
@@ -790,6 +828,39 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     showGameOver(ctx, 'Fim de jogo')
 
     const description = document.getElementById('sz-game-2d-description')
+    expect(description?.textContent).toContain('Fim de jogo')
+  })
+
+  it('rearma o mesmo anúncio terminal depois de reiniciar a partida', () => {
+    document.body.innerHTML = ''
+    const canvas = document.createElement('canvas')
+    const stageCtx = {
+      canvas,
+      setTransform() {},
+      clearRect() {},
+      save() {},
+      restore() {},
+      fillText() {},
+    }
+    Object.defineProperty(canvas, 'getContext', {
+      configurable: true,
+      value: () => stageCtx,
+    })
+    document.body.appendChild(canvas)
+    const { api } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    api.setStageDescription('Desvie dos obstáculos.')
+    api.onStart(() => {}, 'reinicio-acessivel')
+    const ctx = stageCtx as unknown as CanvasRenderingContext2D
+
+    api.showGameOver(ctx, 'Fim de jogo')
+    const description = document.getElementById('sz-game-2d-description')
+    expect(description?.textContent).toContain('Fim de jogo')
+
+    api.restart()
+    expect(description?.textContent).toBe('Desvie dos obstáculos.')
+
+    api.showGameOver(ctx, 'Fim de jogo')
     expect(description?.textContent).toContain('Fim de jogo')
   })
 

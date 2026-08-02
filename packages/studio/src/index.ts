@@ -36,7 +36,12 @@ export {
   studioProBuildRequestByteLength,
 } from '#core'
 export type { PersonalAsset, SavePersonalAssetResult } from './asset-library/personal'
-export { BLOCK_CATALOG, type BlockCatalogEntry } from './blockly/blockCatalog'
+export {
+  BLOCK_CATALOG,
+  type BlockCatalogEntry,
+  SERVER_BLOCK_CATALOG,
+  type ServerBlockCatalogEntry,
+} from './blockly/blockCatalog'
 export { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './career/blockProfiles'
 export {
   createProProject,
@@ -103,6 +108,18 @@ export type {
   StudioShareResult,
 } from './studio/share'
 export type { StudioTheme } from './studio/theme'
+export type {
+  StudioTutorAdapter,
+  StudioTutorAskInput,
+  StudioTutorBlockReference,
+  StudioTutorConfig,
+  StudioTutorFeedbackInput,
+  StudioTutorHistoryMessage,
+  StudioTutorLessonReference,
+  StudioTutorProjectContext,
+  StudioTutorResponse,
+  StudioTutorScope,
+} from './studio/tutor'
 export type {
   StudioEditorProps,
   StudioHandle,

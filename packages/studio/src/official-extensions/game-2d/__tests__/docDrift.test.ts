@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { ExtensionToolboxCategory } from '#extensions'
 import { gameTwoDPromptContext } from '../ai'
@@ -60,6 +60,15 @@ function blocoNaToolbox(type: string): Record<string, unknown> | undefined {
     if (block?.kind === 'block') return block as unknown as Record<string, unknown>
   }
   return undefined
+}
+
+function contarArquivos(directory: string): number {
+  return readdirSync(directory, { withFileTypes: true }).reduce(
+    (total, entry) =>
+      total +
+      (entry.isDirectory() ? contarArquivos(join(directory, entry.name)) : entry.isFile() ? 1 : 0),
+    0,
+  )
 }
 
 const COM_EMOJI = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})/u
@@ -172,6 +181,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(audit).toContain(`${gameTwoDBlocks.length} definições de bloco`)
     expect(audit).toContain(`${visibleBlocks} visíveis e ${hiddenBlocks} legadas ocultas`)
     expect(audit).toContain(`${GAME_TWO_D_API_KEYS.length} métodos e valores públicos`)
+    expect(audit).toContain(`${contarArquivos(join(import.meta.dir, '..'))} arquivos próprios`)
   })
 
   it('mantém a versão atual do guia interno sincronizada com o manifesto', () => {

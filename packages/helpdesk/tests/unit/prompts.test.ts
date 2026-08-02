@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { buildDraftPrompt, buildThreadText } from '../../src/application/ai/prompts'
+import {
+  buildClassifyPrompt,
+  buildDraftPrompt,
+  buildThreadText,
+  ClassifySchema,
+} from '../../src/application/ai/prompts'
 import { makeMessage, makeTicket } from '../helpers'
 
 describe('buildThreadText', () => {
@@ -47,5 +52,27 @@ describe('buildDraftPrompt', () => {
     expect(system).toContain('Base de conhecimento')
     expect(system).toContain('# Acesso')
     expect(system).toContain('passo a passo')
+  })
+})
+
+describe('buildClassifyPrompt', () => {
+  it('mantém Studio como dimensão própria do baseline do piloto', () => {
+    const { system } = buildClassifyPrompt('Meu bloco de colisão não funciona no Estúdio')
+    expect(system).toContain('studio:')
+    expect(system).toContain('Zappy do Studio')
+    expect(system).not.toContain('problema no Estúdio/editor')
+  })
+
+  it('aceita a categoria studio no contrato estruturado', () => {
+    expect(
+      ClassifySchema.safeParse({
+        category: 'studio',
+        priority: 'normal',
+        confidence: 0.9,
+        sentiment: 'neutro',
+        flags: { reembolso: false, juridico: false },
+        summary: 'Dúvida sobre blocos do Studio.',
+      }).success,
+    ).toBe(true)
   })
 })

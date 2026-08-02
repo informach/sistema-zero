@@ -1,7 +1,7 @@
 'use client'
 
 import '@sistemazero/studio/styles.css'
-import type { Project, StudioTheme } from '@sistemazero/studio'
+import type { Project, StudioTheme, StudioTutorConfig } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { useEffect, useState } from 'react'
@@ -16,6 +16,8 @@ interface Props {
   theme: StudioTheme
   /** Volta para a lista do Estúdio (`/estudio`). */
   onExit: () => void
+  /** Tutor opcional do host. Ausente em aulas e hosts que não contrataram o recurso. */
+  tutor?: StudioTutorConfig
 }
 
 type Loaded =
@@ -36,7 +38,7 @@ type Loaded =
  * (host não isolado / navegador incompatível) mostra um recado gentil. Projeto
  * inexistente ou clássico (`kind !== 'pro'`) → `onExit` (não é lugar dele).
  */
-export function StudioProEditor({ viewerId, projectId, theme, onExit }: Props) {
+export function StudioProEditor({ viewerId, projectId, theme, onExit, tutor }: Props) {
   const [mod, setMod] = useState<StudioProModule | null>(null)
   const [state, setState] = useState<Loaded>({ kind: 'loading' })
   const [loadAttempt, setLoadAttempt] = useState(0)
@@ -142,6 +144,7 @@ export function StudioProEditor({ viewerId, projectId, theme, onExit }: Props) {
       persistence="local"
       theme={theme}
       features={{ professional: true }}
+      tutor={tutor}
       onExit={onExit}
     />
   )

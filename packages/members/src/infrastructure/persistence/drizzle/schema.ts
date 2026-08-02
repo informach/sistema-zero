@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
+  type AnyPgColumn,
   boolean,
   check,
   date,
@@ -1010,6 +1011,101 @@ export const teacherThreadStaffReads = members.table(
   ],
 )
 
+// ── Zappy do Studio: histórico por PERFIL + projeto local ───────────────────
+// O snapshot do projeto NUNCA é persistido. Só pergunta, resposta validada e
+// metadados agregáveis; `expires_at` é renovado no uso (retenção deslizante 30d).
+export const zappyConversations = members.table(
+  'zappy_conversations',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('zappy_conversations_profile_project_uq').on(t.userId, t.projectId),
+    index('zappy_conversations_account_idx').on(t.accountId),
+    index('zappy_conversations_expiry_idx').on(t.expiresAt),
+  ],
+)
+
+export const zappyMessages = members.table(
+  'zappy_messages',
+  {
+    id: uuid('id').primaryKey(),
+    conversationId: uuid('conversation_id')
+      .notNull()
+      .references(() => zappyConversations.id, { onDelete: 'cascade' }),
+    replyToId: uuid('reply_to_id').references((): AnyPgColumn => zappyMessages.id, {
+      onDelete: 'cascade',
+    }),
+    clientMessageId: uuid('client_message_id'),
+    role: varchar('role', { length: 16 }).notNull(),
+    content: text('content').notNull(),
+    response: jsonb('response').$type<Record<string, unknown> | null>(),
+    scope: varchar('scope', { length: 40 }),
+    latencyMs: integer('latency_ms'),
+    outcome: varchar('outcome', { length: 24 }),
+    useful: boolean('useful'),
+    feedbackAt: timestamp('feedback_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('zappy_messages_conversation_created_idx').on(t.conversationId, t.createdAt, t.id),
+    uniqueIndex('zappy_messages_client_id_uq')
+      .on(t.conversationId, t.clientMessageId)
+      .where(sql`${t.clientMessageId} is not null`),
+    uniqueIndex('zappy_messages_reply_uq').on(t.replyToId).where(sql`${t.replyToId} is not null`),
+    check('zappy_messages_role_ck', sql`${t.role} in ('user', 'assistant')`),
+  ],
+)
+
+// Fontes didáticas pesquisáveis. Conteúdo publicado (não conversa infantil).
+export const zappyKnowledgeSources = members.table(
+  'zappy_knowledge_sources',
+  {
+    id: uuid('id').primaryKey(),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    sourceType: varchar('source_type', { length: 32 }).notNull(),
+    sourceRef: text('source_ref').notNull(),
+    contentHash: varchar('content_hash', { length: 64 }).notNull(),
+    status: varchar('status', { length: 24 }).notNull(),
+    error: text('error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('zappy_knowledge_source_uq').on(t.lessonId, t.sourceType, t.sourceRef),
+    index('zappy_knowledge_course_lesson_idx').on(t.courseId, t.lessonId),
+    index('zappy_knowledge_status_idx').on(t.status),
+  ],
+)
+
+export const zappyKnowledgeChunks = members.table(
+  'zappy_knowledge_chunks',
+  {
+    id: uuid('id').primaryKey(),
+    sourceId: uuid('source_id')
+      .notNull()
+      .references(() => zappyKnowledgeSources.id, { onDelete: 'cascade' }),
+    position: integer('position').notNull(),
+    content: text('content').notNull(),
+    normalizedText: text('normalized_text').notNull(),
+  },
+  (t) => [
+    uniqueIndex('zappy_knowledge_chunk_position_uq').on(t.sourceId, t.position),
+    index('zappy_knowledge_chunk_source_idx').on(t.sourceId),
+  ],
+)
+
 // ── Uso de IA por CONTA (quota diária/mensal — 07/2026) ─────────────────────
 // Contador do uso de IA paga pelo SERVIDOR (Pensa chat/sínteses, descrição do
 // Mural, recursos futuros), keyado pela CONTA (kids: a conta responsável — irmãos
@@ -1138,6 +1234,10 @@ export const schema = {
   pensaChecklistItems,
   teacherThreads,
   teacherMessages,
+  zappyConversations,
+  zappyMessages,
+  zappyKnowledgeSources,
+  zappyKnowledgeChunks,
   aiUsageDaily,
   renewalRemindersSent,
   challengeCustomThemes,

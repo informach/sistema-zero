@@ -169,3 +169,9 @@ Retenção (fora do hot path, advisory xact-lock `71130324050607093` — só 1 r
 - [ ] `bun run typecheck` limpo · `bun test` verde · `bun run check` limpo.
 - [ ] Mudou schema? `db:generate` + commitou a migration (confira o journal `helpdesk_migrations`).
 - [ ] Mudou contrato de rota? Atualizou este guia, o `lib/types.ts` do app e o gateway (se a rota mudou).
+
+## Baseline Studio (08/2026)
+
+- A migration `0002_zappy_studio_category` acrescenta `studio` à classificação. Dúvidas sobre
+  Estúdio, blocos, projetos e Zappy usam essa dimensão, separada de `problema_tecnico`, para
+  comparar o atendimento humano antes e durante o piloto.

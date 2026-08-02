@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Muralha do Reino" (recriação BÁSICA do
  * tower-defense do Chris Courses). Rode com
  * `bun src/official-extensions/game-2d/__gen_muralhaDoReino.ts` e cole a saída em
- * examples/gamesTwoD.ts. O drift test (`muralhaDoReinoExample.test.ts`) guarda o
+ * examples/gamesTwoD/muralhaDoReino.ts. O drift test (`muralhaDoReinoExample.test.ts`) guarda o
  * resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

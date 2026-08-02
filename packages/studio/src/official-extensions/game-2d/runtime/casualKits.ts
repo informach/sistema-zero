@@ -363,11 +363,11 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     else if (path.phase === 'over') hudParts.push('Caiu!');
     _updateAccessibleHud(path._hudKey, hudParts.join('. '));
   }
-  function stickPathOnCross(path, fn, explicitId) {
-    _kitRegisterHandler(path, '_onCross', '_onCrossOrder', 'equilibrista-atravessou', fn, explicitId);
+  function stickPathOnCross(path, fn, id) {
+    _kitRegisterHandler(path, '_onCross', '_onCrossOrder', 'equilibrista-atravessou', fn, id);
   }
-  function stickPathOnPerfect(path, fn, explicitId) {
-    _kitRegisterHandler(path, '_onPerfect', '_onPerfectOrder', 'equilibrista-perfeito', fn, explicitId);
+  function stickPathOnPerfect(path, fn, id) {
+    _kitRegisterHandler(path, '_onPerfect', '_onPerfectOrder', 'equilibrista-perfeito', fn, id);
   }
   function stickPathFell(path) { return path ? path.phase === 'over' : false; }
 
@@ -604,8 +604,8 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       _updateAccessibleHud(path._hudKey, hudParts.join('. '));
     }
   }
-  function balloonPathOnTreeHit(path, fn, explicitId) {
-    _kitRegisterHandler(path, '_onTreeHit', '_onTreeHitOrder', 'balao-bateu', fn, explicitId);
+  function balloonPathOnTreeHit(path, fn, id) {
+    _kitRegisterHandler(path, '_onTreeHit', '_onTreeHitOrder', 'balao-bateu', fn, id);
   }
   function balloonPathMeters(path) { return path ? path.meters : 0; }
   function balloonFuel(balloon) {

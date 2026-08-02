@@ -3062,6 +3062,7 @@ export type JSStatement =
     })
   // "Ocupar a tela toda": setup SEM dimensões — a resolução acompanha a viewport.
   | (JSStatementCommon & { type: 'gk:setupFull'; bg: string; accent: string })
+  | (JSStatementCommon & { type: 'gk:setStageDescription'; description: string })
   // Moldura da tela (enxergar a área do palco) e contorno das caixas que colidem.
   | (JSStatementCommon & { type: 'gk:stageBorder'; color: string; width: number | JSExpr })
   | (JSStatementCommon & { type: 'gk:showHitboxes' })
@@ -7359,6 +7360,11 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('gk:setupFull'), bg: irText(), accent: irText(), ...idField }),
     z.object({
+      type: z.literal('gk:setStageDescription'),
+      description: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:stageBorder'),
       color: irText(),
       width: z.union([JSExprSchema, z.number()]),
@@ -11418,6 +11424,7 @@ export const G3D_STATEMENT_TYPES = new Set([
 export const GK_STATEMENT_TYPES = new Set([
   'gk:setup',
   'gk:setupFull',
+  'gk:setStageDescription',
   'gk:stageBorder',
   'gk:showHitboxes',
   'gk:start',

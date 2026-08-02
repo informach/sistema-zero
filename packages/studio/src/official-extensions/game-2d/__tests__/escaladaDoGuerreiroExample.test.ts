@@ -1,43 +1,21 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
-import * as Blockly from 'blockly/core'
-import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
-import 'blockly/blocks'
-import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace } from '../../../blockly/buildIR'
-import { ensureBlocklyInitialized } from '../../../blockly/setup'
-import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
-import { parseJS } from '../../../parsers/js'
-import { collectTypes, stripIds } from '../__gen_dinoCorredor'
+import { describe, expect, it } from 'bun:test'
+import { behaviorStatements } from '#ir'
+import { collectTypes } from '../__gen_dinoCorredor'
 import { ESCALADA_DO_GUERREIRO_SOURCE as SOURCE } from '../__gen_escaladaDoGuerreiro'
-import { gameTwoDBlocks } from '../blocks'
 import { escaladaDoGuerreiroExample } from '../examples'
 import { gameTwoDManifest } from '../manifest'
+import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
  * Drift do exemplo "Escalada do Guerreiro" — a recriação BÁSICA do
- * vertical-platformer do Chris Courses. A IR embutida em examples/gamesTwoD.ts foi
+ * vertical-platformer do Chris Courses. A IR embutida em examples/gamesTwoD/escaladaDoGuerreiro.ts foi
  * GERADA pelo parser real a partir do SOURCE (que mora no
  * __gen_escaladaDoGuerreiro.ts, importado aqui para que fonte e teste NUNCA possam
  * divergir). O preparo do palco (setupStage + setStageDescription) é injetado pelo
  * wrapper `beginnerGameExample` e conferido à parte.
  */
 
-/** O mesmo contrato de ciclo de vida dos exemplos, com a extensão game-2d. */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d' }],
-  })
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
-
-beforeAll(() => {
-  ensureBlocklyInitialized()
-  registerExtensionBlocks(gameTwoDBlocks)
-})
+setupGameTwoDExampleTests()
 
 describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
@@ -48,24 +26,10 @@ describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
     expect((escaladaDoGuerreiroExample.description ?? '').length).toBeLessThanOrEqual(200)
   })
 
-  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora a dupla do wrapper', () => {
-    const parsed = stripIds(parseExampleLifecycleSource(SOURCE))
-    const types = collectTypes(parsed)
-    expect(types.has('rawJS')).toBe(false)
-    expect(types.has('memberCall')).toBe(false)
-
-    const embedded = stripIds(behaviorStatements(escaladaDoGuerreiroExample.ir)) as JSStatement[]
-    expect(embedded[0]).toEqual({
-      type: 'g2d:setupStage',
-      width: 320,
-      height: 480,
-      bg: '#8fc0e8',
-    } as JSStatement)
-    expect(embedded[1]).toEqual({
-      type: 'g2d:setStageDescription',
-      description: escaladaDoGuerreiroExample.description ?? '',
-    } as JSStatement)
-    expect(parsed).toEqual(embedded.slice(2))
+  registerExampleContractTests({
+    example: escaladaDoGuerreiroExample,
+    source: SOURCE,
+    stage: { width: 320, height: 480, bg: '#8fc0e8' },
   })
 
   it('exercita a mecânica prometida do platformer vertical', () => {
@@ -122,40 +86,5 @@ describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
     // Nenhuma cadência periódica: o climb é só o quadro (sem "A cada").
     expect(loops.every((statement) => statement.type === 'g2d:updateEachFrame')).toBe(true)
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
-  })
-
-  it('nenhum texto visível usa travessão', () => {
-    expect(JSON.stringify(escaladaDoGuerreiroExample.ir)).not.toContain('—')
-    expect(escaladaDoGuerreiroExample.name).not.toContain('—')
-    expect(escaladaDoGuerreiroExample.description ?? '').not.toContain('—')
-  })
-
-  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(
-      stripIds(behaviorStatements(escaladaDoGuerreiroExample.ir)) as JSStatement[],
-      0,
-    )
-    const reparsed = stripIds(parseJS(code1)) as JSStatement[]
-    const code2 = compileStatements(reparsed, 0)
-    expect(code2).toBe(code1)
-  })
-
-  it('round-trip por blocos: IR → workspace → IR preserva o jogo inteiro', () => {
-    const state = buildWorkspaceStateFromIR(
-      escaladaDoGuerreiroExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
-    )
-    const ws = new Blockly.Workspace()
-    try {
-      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
-      const embedded = behaviorStatements(escaladaDoGuerreiroExample.ir)
-      expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
-      expect(rebuilt.length).toBe(embedded.length)
-      expect(compileStatements(stripIds(rebuilt) as JSStatement[], 0)).toBe(
-        compileStatements(stripIds(embedded) as JSStatement[], 0),
-      )
-    } finally {
-      ws.dispose()
-    }
   })
 })

@@ -36,6 +36,7 @@ export type TicketStatus = 'new' | 'open' | 'waiting' | 'resolved' | 'closed'
 export type TicketCategory =
   | 'curso_acesso'
   | 'problema_tecnico'
+  | 'studio'
   | 'pagamento_reembolso'
   | 'parceria_comercial'
   | 'outro'

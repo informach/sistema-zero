@@ -24,6 +24,7 @@ import { StudioProRuntimeProvider } from './pro-runtime'
 import { disallowedProjectExtensions } from './project-access'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { StudioThemeProvider } from './theme'
+import { StudioTutorProvider } from './tutor'
 import type { StudioCoreProps, StudioHandle } from './types'
 
 /**
@@ -78,6 +79,7 @@ function StudioCoreBody({
   allowCategories,
   allowLevelReveal,
   activity,
+  tutor,
   share,
   shareDisabledReason,
   onCloudSync,
@@ -107,6 +109,8 @@ function StudioCoreBody({
   // para o provider entregar valor estável — re-render do host com `activity`
   // inline não re-renderiza o painel. Default `null` (sem atividade).
   const [activityValue] = useState(() => activity ?? null)
+  // Somente o StudioEditor oferece tutor. Adapter estático por instância, como share.
+  const [tutorValue] = useState(() => tutor ?? null)
 
   // Adapter de compartilhar também latcha uma vez por instância (igual à
   // atividade): `share={{…}}` inline do host muda de referência a cada render,
@@ -292,74 +296,76 @@ function StudioCoreBody({
   }, [blockUnloadWhenDirty, isDirty])
 
   return (
-    <StudioProRuntimeProvider value={proRuntimeValue}>
-      <StudioShareProvider value={shareValue}>
-        <StudioCloudSyncProvider value={cloudSyncValue}>
-          <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
-            <StudioExamplesVisibleProvider value={examplesVisible}>
-              <StudioActivityProvider value={activityValue}>
-                <StudioConfigProvider value={config}>
-                  <StudioThemeProvider value={effectiveTheme}>
-                    <div
-                      data-sz-theme={effectiveTheme}
-                      className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-                      // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
-                      // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
-                      // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
-                      // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
-                      // é PORTALADO pro document.body — fora da cerca, segue intacto.
-                      style={{
-                        fontFamily: 'var(--font-family-sans)',
-                        isolation: 'isolate',
-                        ...style,
-                      }}
-                    >
-                      {sanitized === null ? (
-                        <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                          <p className="text-sm">
-                            Projeto inválido — confira o initialProject passado ao Studio.
-                          </p>
-                        </div>
-                      ) : projectAccessBlocked ? (
-                        <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
-                          <p className="text-base font-semibold text-sz-fg">
-                            Este projeto usa ferramentas que você ainda vai conquistar
-                          </p>
-                          <p className="max-w-md text-sm">
-                            Continue avançando na Carreira do Criador. O projeto ficou guardado e
-                            abrirá normalmente quando essas ferramentas forem liberadas.
-                          </p>
-                          {onExit ? (
-                            <button
-                              type="button"
-                              className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
-                              onClick={onExit}
-                            >
-                              Voltar
-                            </button>
-                          ) : null}
-                        </div>
-                      ) : hasProject ? (
-                        <ErrorBoundary
-                          fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
-                          resetKeys={[sanitizedId]}
-                          label="Studio"
-                        >
-                          <Shell
-                            onExit={onExit}
-                            onPromoteToPro={onPromoteToPro}
-                            canToggleTheme={theme === undefined}
-                          />
-                        </ErrorBoundary>
-                      ) : null}
-                    </div>
-                  </StudioThemeProvider>
-                </StudioConfigProvider>
-              </StudioActivityProvider>
-            </StudioExamplesVisibleProvider>
-          </StudioShareDisabledProvider>
-        </StudioCloudSyncProvider>
-      </StudioShareProvider>
-    </StudioProRuntimeProvider>
+    <StudioTutorProvider value={tutorValue}>
+      <StudioProRuntimeProvider value={proRuntimeValue}>
+        <StudioShareProvider value={shareValue}>
+          <StudioCloudSyncProvider value={cloudSyncValue}>
+            <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
+              <StudioExamplesVisibleProvider value={examplesVisible}>
+                <StudioActivityProvider value={activityValue}>
+                  <StudioConfigProvider value={config}>
+                    <StudioThemeProvider value={effectiveTheme}>
+                      <div
+                        data-sz-theme={effectiveTheme}
+                        className={['h-full min-h-0', className].filter(Boolean).join(' ')}
+                        // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
+                        // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
+                        // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
+                        // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
+                        // é PORTALADO pro document.body — fora da cerca, segue intacto.
+                        style={{
+                          fontFamily: 'var(--font-family-sans)',
+                          isolation: 'isolate',
+                          ...style,
+                        }}
+                      >
+                        {sanitized === null ? (
+                          <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                            <p className="text-sm">
+                              Projeto inválido — confira o initialProject passado ao Studio.
+                            </p>
+                          </div>
+                        ) : projectAccessBlocked ? (
+                          <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
+                            <p className="text-base font-semibold text-sz-fg">
+                              Este projeto usa ferramentas que você ainda vai conquistar
+                            </p>
+                            <p className="max-w-md text-sm">
+                              Continue avançando na Carreira do Criador. O projeto ficou guardado e
+                              abrirá normalmente quando essas ferramentas forem liberadas.
+                            </p>
+                            {onExit ? (
+                              <button
+                                type="button"
+                                className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                onClick={onExit}
+                              >
+                                Voltar
+                              </button>
+                            ) : null}
+                          </div>
+                        ) : hasProject ? (
+                          <ErrorBoundary
+                            fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+                            resetKeys={[sanitizedId]}
+                            label="Studio"
+                          >
+                            <Shell
+                              onExit={onExit}
+                              onPromoteToPro={onPromoteToPro}
+                              canToggleTheme={theme === undefined}
+                            />
+                          </ErrorBoundary>
+                        ) : null}
+                      </div>
+                    </StudioThemeProvider>
+                  </StudioConfigProvider>
+                </StudioActivityProvider>
+              </StudioExamplesVisibleProvider>
+            </StudioShareDisabledProvider>
+          </StudioCloudSyncProvider>
+        </StudioShareProvider>
+      </StudioProRuntimeProvider>
+    </StudioTutorProvider>
   )
 }

@@ -921,6 +921,47 @@ export interface AiUsageConsumeView {
   unlimited?: boolean
 }
 
+export interface ZappyStoredResponseView {
+  id: string
+  text: string
+  scope:
+    | 'block'
+    | 'mechanic'
+    | 'error'
+    | 'concept'
+    | 'lesson'
+    | 'needs-context'
+    | 'redirect-pensa'
+    | 'redirect-pinta'
+    | 'unsupported'
+  blockReferences: Array<{
+    blockId?: string
+    blockType: string
+    name: string
+    category: string
+    area: string
+  }>
+  lessonReferences?: Array<{ courseId: string; lessonId: string; title: string }>
+  createdAt: string
+}
+
+export interface ZappyHistoryMessageView {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+  createdAt: string
+  response?: ZappyStoredResponseView
+}
+
+export interface ZappyKnowledgeHitView {
+  courseId: string
+  courseTitle: string
+  lessonId: string
+  lessonTitle: string
+  sourceType: 'video-vtt' | 'rich-text' | 'student-notebook'
+  content: string
+}
+
 /** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */
 export interface ChildDashboardView extends ChildStatsView {
   name: string

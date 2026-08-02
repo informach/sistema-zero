@@ -63,84 +63,84 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
       'este sprite ainda não tem vidas. Use “Dar ao sprite … de vida” em “Ao iniciar” antes de mudar ou perguntar pelas vidas.'
     );
   }
-  function setHealth(s, n) {
-    if (!s) return;
-    var valid = _isFiniteNumber(n);
+  function setHealth(sprite, health) {
+    if (!sprite) return;
+    var valid = _isFiniteNumber(health);
     if (!valid) warnOnce('vida-inicial-invalida', 'a vida inicial precisa ser um número; usei 0.');
-    var v = valid ? Math.max(0, Math.floor(n)) : 0;
-    s.hp = v; s.hpMax = v;
+    var v = valid ? Math.max(0, Math.floor(health)) : 0;
+    sprite.hp = v; sprite.hpMax = v;
   }
-  function changeHealth(s, delta) {
-    if (!s) return;
-    if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return; }
+  function changeHealth(sprite, delta) {
+    if (!sprite) return;
+    if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return; }
     if (!_isFiniteNumber(delta)) {
       warnOnce('mudanca-de-vida-invalida', 'a mudança de vida precisa ser um número.');
       return;
     }
     var d = Math.trunc(delta);
-    s.hp = Math.max(0, Math.min(s.hp + d, s.hpMax));
+    sprite.hp = Math.max(0, Math.min(sprite.hp + d, sprite.hpMax));
     // Perdeu vida = "tomando dano" por alguns quadros (a animação por estado
     // lê isto; decrementa no autoAnimate — único leitor).
-    if (d < 0) s.hurtFrames = HURT_FRAMES;
+    if (d < 0) sprite.hurtFrames = HURT_FRAMES;
   }
-  function getHealth(s) { return _hasInitializedHealth(s) ? s.hp : 0; }
-  function getMaxHealth(s) { return _hasInitializedHealth(s) ? s.hpMax : 0; }
-  function hasHealth(s) {
-    if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return false; }
-    return s.hp > 0;
+  function getHealth(sprite) { return _hasInitializedHealth(sprite) ? sprite.hp : 0; }
+  function getMaxHealth(sprite) { return _hasInitializedHealth(sprite) ? sprite.hpMax : 0; }
+  function hasHealth(sprite) {
+    if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return false; }
+    return sprite.hp > 0;
   }
-  function healthDepleted(s) {
-    if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return false; }
-    return s.hp <= 0;
+  function healthDepleted(sprite) {
+    if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return false; }
+    return sprite.hp <= 0;
   }
-  function isInvincible(s) { return !!s && (s.blinkFrames || 0) > 0; }
-  function damageSprite(s, amount, invincibilityFrames) {
-    if (!s || isInvincible(s)) return;
-    if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return; }
+  function isInvincible(sprite) { return !!sprite && (sprite.blinkFrames || 0) > 0; }
+  function damageSprite(sprite, amount, invincibilityFrames) {
+    if (!sprite || isInvincible(sprite)) return;
+    if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return; }
     if (!_isFiniteNumber(amount)) {
       warnOnce('dano-invalido', 'o dano precisa ser um número.');
       return;
     }
     var damage = Math.max(0, Math.floor(Math.abs(amount)));
     if (damage <= 0) return;
-    var before = s.hp;
-    changeHealth(s, -damage);
-    if (s.hp < before) {
+    var before = sprite.hp;
+    changeHealth(sprite, -damage);
+    if (sprite.hp < before) {
       var frames = _isFiniteNumber(invincibilityFrames)
         ? Math.max(1, Math.floor(invincibilityFrames))
         : 45;
-      blink(s, frames);
+      blink(sprite, frames);
     }
   }
   // Geometria do sprite (valores prontos p/ a criança não precisar fazer x+w/2 na mão).
-  function spriteX(s) { return s ? _finiteNumber(s.x, 0) : 0; }
-  function spriteY(s) { return s ? _finiteNumber(s.y, 0) : 0; }
-  function spriteW(s) { return s ? _finiteNumber(s.w, 0) : 0; }
-  function spriteH(s) { return s ? _finiteNumber(s.h, 0) : 0; }
-  function centerX(s) { return s ? _finiteNumber(s.x, 0) + _finiteNumber(s.w, 0) / 2 : 0; }
-  function centerY(s) { return s ? _finiteNumber(s.y, 0) + _finiteNumber(s.h, 0) / 2 : 0; }
+  function spriteX(sprite) { return sprite ? _finiteNumber(sprite.x, 0) : 0; }
+  function spriteY(sprite) { return sprite ? _finiteNumber(sprite.y, 0) : 0; }
+  function spriteW(sprite) { return sprite ? _finiteNumber(sprite.w, 0) : 0; }
+  function spriteH(sprite) { return sprite ? _finiteNumber(sprite.h, 0) : 0; }
+  function centerX(sprite) { return sprite ? _finiteNumber(sprite.x, 0) + _finiteNumber(sprite.w, 0) / 2 : 0; }
+  function centerY(sprite) { return sprite ? _finiteNumber(sprite.y, 0) + _finiteNumber(sprite.h, 0) / 2 : 0; }
   // Velocidade do sprite (vx/vy) — valores prontos p/ ler/decidir. "Movendo" usa um
   // limiar pequeno (abaixo dele é resíduo sub-pixel do atrito, invisível na tela).
-  function spriteVx(s) { return s ? _finiteNumber(s.vx, 0) : 0; }
-  function spriteVy(s) { return s ? _finiteNumber(s.vy, 0) : 0; }
-  function spriteSpeed(s) { var vx = spriteVx(s), vy = spriteVy(s); return Math.sqrt(vx * vx + vy * vy); }
-  function isMovingH(s) { return !!s && Math.abs(_finiteNumber(s.vx, 0)) > 0.01; }
-  function isMovingV(s) { return !!s && Math.abs(_finiteNumber(s.vy, 0)) > 0.01; }
-  function isMoving(s) { return isMovingH(s) || isMovingV(s); }
+  function spriteVx(sprite) { return sprite ? _finiteNumber(sprite.vx, 0) : 0; }
+  function spriteVy(sprite) { return sprite ? _finiteNumber(sprite.vy, 0) : 0; }
+  function spriteSpeed(sprite) { var vx = spriteVx(sprite), vy = spriteVy(sprite); return Math.sqrt(vx * vx + vy * vy); }
+  function isMovingH(sprite) { return !!sprite && Math.abs(_finiteNumber(sprite.vx, 0)) > 0.01; }
+  function isMovingV(sprite) { return !!sprite && Math.abs(_finiteNumber(sprite.vy, 0)) > 0.01; }
+  function isMoving(sprite) { return isMovingH(sprite) || isMovingV(sprite); }
   // Posição aleatória NA TELA — DINÂMICO: lê o tamanho REAL do palco a cada chamada
   // (largura lógica do jogo, ou o canvas), nunca um valor fixo. Evita a continha
   // Math.random()*largura na mão. Use no x/y ao criar/spawnar um sprite.
   function randomX() { var visible = _visibleWorldRect(ensureStage()); return visible.left + Math.random() * visible.width; }
   function randomY() { var visible = _visibleWorldRect(ensureStage()); return visible.top + Math.random() * visible.height; }
   // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
-  function cooldownReady(s, frames, key) {
-    if (!s) return false;
+  function cooldownReady(sprite, frames, key) {
+    if (!sprite) return false;
     var n = (_isFiniteNumber(frames) && frames > 0) ? Math.round(frames) : 1;
     var id = (typeof key === 'string' && key) ? key : 'default';
-    if (!s._cooldowns || typeof s._cooldowns !== 'object') s._cooldowns = Object.create(null);
-    if (typeof s._cooldowns[id] !== 'number') s._cooldowns[id] = 0;
-    if (s._cooldowns[id] > 0) { s._cooldowns[id] -= 1; return false; }
-    s._cooldowns[id] = Math.max(0, n - 1);
+    if (!sprite._cooldowns || typeof sprite._cooldowns !== 'object') sprite._cooldowns = Object.create(null);
+    if (typeof sprite._cooldowns[id] !== 'number') sprite._cooldowns[id] = 0;
+    if (sprite._cooldowns[id] > 0) { sprite._cooldowns[id] -= 1; return false; }
+    sprite._cooldowns[id] = Math.max(0, n - 1);
     return true;
   }
   // Tira do grupo quem "nasceu" há mais de N segundos (tempo de vida).
@@ -156,35 +156,35 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     }
   }
   // ---- Aparência do sprite (espelhar, transparência, tamanho) ----
-  function flipSprite(s, dir) { if (s) s.facing = (dir === 'left') ? -1 : 1; }
-  function setOpacity(s, percent) {
-    if (!s) return;
+  function flipSprite(sprite, direction) { if (sprite) sprite.facing = (direction === 'left') ? -1 : 1; }
+  function setOpacity(sprite, percent) {
+    if (!sprite) return;
     var p = _finiteNumber(percent, 100);
-    s.opacity = Math.max(0, Math.min(1, p / 100));
+    sprite.opacity = Math.max(0, Math.min(1, p / 100));
   }
-  function setSize(s, w, h) {
-    if (!s) return;
-    if (_isFiniteNumber(w) && w > 0) s.w = w;
-    if (_isFiniteNumber(h) && h > 0) s.h = h;
+  function setSize(sprite, width, height) {
+    if (!sprite) return;
+    if (_isFiniteNumber(width) && width > 0) sprite.w = width;
+    if (_isFiniteNumber(height) && height > 0) sprite.h = height;
   }
-  function scaleSprite(s, factor) {
-    if (!s) return;
+  function scaleSprite(sprite, factor) {
+    if (!sprite) return;
     var f = (_isFiniteNumber(factor) && factor > 0) ? factor : 1;
-    var sx = _finiteNumber(s.x, 0), sy = _finiteNumber(s.y, 0);
-    var sw = _finiteNumber(s.w, 0), sh = _finiteNumber(s.h, 0);
+    var sx = _finiteNumber(sprite.x, 0), sy = _finiteNumber(sprite.y, 0);
+    var sw = _finiteNumber(sprite.w, 0), sh = _finiteNumber(sprite.h, 0);
     var cx = sx + sw / 2, cy = sy + sh / 2;
-    s.w = sw * f; s.h = sh * f;
-    s.x = cx - s.w / 2; s.y = cy - s.h / 2;
+    sprite.w = sw * f; sprite.h = sh * f;
+    sprite.x = cx - sprite.w / 2; sprite.y = cy - sprite.h / 2;
   }
   // ---- Mundo: dar a volta na tela (Pac-Man/Asteroids) ----
-  function wrapEdges(s) {
-    if (!s) return;
+  function wrapEdges(sprite) {
+    if (!sprite) return;
     var c = ensureStage();
     var visible = _visibleWorldRect(c);
-    if (s.x + (s.w || 0) < visible.left) s.x = visible.right;
-    else if (s.x > visible.right) s.x = visible.left - (s.w || 0);
-    if (s.y + (s.h || 0) < visible.top) s.y = visible.bottom;
-    else if (s.y > visible.bottom) s.y = visible.top - (s.h || 0);
+    if (sprite.x + (sprite.w || 0) < visible.left) sprite.x = visible.right;
+    else if (sprite.x > visible.right) sprite.x = visible.left - (sprite.w || 0);
+    if (sprite.y + (sprite.h || 0) < visible.top) sprite.y = visible.bottom;
+    else if (sprite.y > visible.bottom) sprite.y = visible.top - (sprite.h || 0);
   }
   // ---- Estado do jogo: pausa. "Pausar o jogo" CONGELA o gameLoop (o tick para de
   // rodar o quadro do aluno); "Continuar o jogo" descongela. "está pausado?" lê o
@@ -221,16 +221,16 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     };
   }
   // Centraliza a câmera no sprite, presa aos limites do mundo (0..worldW/H).
-  function cameraFollow(s, worldW, worldH) {
-    if (!s) return;
+  function cameraFollow(sprite, worldWidth, worldHeight) {
+    if (!sprite) return;
     var c = ensureStage();
     var vw = c ? stageW(c) : 0, vh = c ? stageH(c) : 0;
-    var x = (_finiteNumber(s.x, 0) + _finiteNumber(s.w, 0) / 2) - vw / 2;
-    var y = (_finiteNumber(s.y, 0) + _finiteNumber(s.h, 0) / 2) - vh / 2;
+    var x = (_finiteNumber(sprite.x, 0) + _finiteNumber(sprite.w, 0) / 2) - vw / 2;
+    var y = (_finiteNumber(sprite.y, 0) + _finiteNumber(sprite.h, 0) / 2) - vh / 2;
     // Presa às bordas do mundo. Se o mundo não for maior que a tela num eixo, a
     // câmera fica em 0 nesse eixo (ex.: plataforma horizontal mantém o chão embaixo).
-    if (_isFiniteNumber(worldW) && worldW > 0) x = Math.max(0, Math.min(x, Math.max(0, worldW - vw)));
-    if (_isFiniteNumber(worldH) && worldH > 0) y = Math.max(0, Math.min(y, Math.max(0, worldH - vh)));
+    if (_isFiniteNumber(worldWidth) && worldWidth > 0) x = Math.max(0, Math.min(x, Math.max(0, worldWidth - vw)));
+    if (_isFiniteNumber(worldHeight) && worldHeight > 0) y = Math.max(0, Math.min(y, Math.max(0, worldHeight - vh)));
     camera.x = x; camera.y = y;
   }
   function setCamera(x, y) {
@@ -267,43 +267,43 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     r[col] = _isFiniteNumber(index) ? Math.floor(index) : -1;
   }
   function _spriteCenter(s) { return { x: s.x + (s.w || 0) / 2, y: s.y + (s.h || 0) / 2 }; }
-  function breakTileAtSprite(map, s) {
-    if (s) { var p = _spriteCenter(s); setTileAt(map, p.x, p.y, -1); }
+  function breakTileAtSprite(map, sprite) {
+    if (sprite) { var p = _spriteCenter(sprite); setTileAt(map, p.x, p.y, -1); }
   }
-  function setTileAtSprite(map, index, s) {
-    if (s) { var p = _spriteCenter(s); setTileAt(map, p.x, p.y, index); }
+  function setTileAtSprite(map, index, sprite) {
+    if (sprite) { var p = _spriteCenter(sprite); setTileAt(map, p.x, p.y, index); }
   }
-  function tileAtSprite(map, s) {
-    if (!s) return -1;
-    var p = _spriteCenter(s);
+  function tileAtSprite(map, sprite) {
+    if (!sprite) return -1;
+    var p = _spriteCenter(sprite);
     return tileAt(map, p.x, p.y);
   }
   // ---- Ordem de desenho dentro de um grupo (frente = desenhado por último) ----
-  function bringToFront(group, s) {
+  function bringToFront(group, sprite) {
     if (!group || !group.items) return;
-    var i = group.items.indexOf(s);
+    var i = group.items.indexOf(sprite);
     if (i >= 0) {
       var ordered = group.items.slice();
       ordered.splice(i, 1);
-      ordered.push(s);
+      ordered.push(sprite);
       group.items = ordered;
       _touchGroup(group);
     }
   }
-  function sendToBack(group, s) {
+  function sendToBack(group, sprite) {
     if (!group || !group.items) return;
-    var i = group.items.indexOf(s);
+    var i = group.items.indexOf(sprite);
     if (i >= 0) {
       var ordered = group.items.slice();
       ordered.splice(i, 1);
-      ordered.unshift(s);
+      ordered.unshift(sprite);
       group.items = ordered;
       _touchGroup(group);
     }
   }
   // ---- Depuração: caixa de colisão e contador de FPS ----
-  function drawHitbox(s) {
-    if (!s) return;
+  function drawHitbox(sprite) {
+    if (!sprite) return;
     var c = ensureStage();
     if (!c) return;
     var camOn = camera.x !== 0 || camera.y !== 0;
@@ -312,7 +312,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     c.strokeStyle = '#ff2d95';
     c.lineWidth = 2;
     // Desenha a caixa EFETIVA (com o dial de N%) — o raio-X da colisão perdoadora.
-    var box = _hitboxOf(s);
+    var box = _hitboxOf(sprite);
     c.strokeRect(box.x, box.y, box.w || 0, box.h || 0);
     c.restore();
     if (camOn) c.restore();

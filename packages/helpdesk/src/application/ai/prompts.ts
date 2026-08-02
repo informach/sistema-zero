@@ -13,6 +13,7 @@ export const ClassifySchema = z.object({
   category: z.enum([
     'curso_acesso',
     'problema_tecnico',
+    'studio',
     'pagamento_reembolso',
     'parceria_comercial',
     'outro',
@@ -35,7 +36,8 @@ export type DraftResult = z.infer<typeof DraftSchema>
 const BUSINESS = `O Sistema Zero é uma escola online de programação para crianças (curso infantil de programação), com plataforma de aulas em vídeo, editor de jogos (Estúdio) e comunidade. Também vende alguns produtos para adultos. O atendimento é pelo e-mail contato@sistemazero.com.br.`
 
 const CATEGORIES = `- curso_acesso: acesso à plataforma, login, senha, primeiro acesso, como assistir as aulas, perfis das crianças.
-- problema_tecnico: erros, bugs, vídeo não carrega, problema no Estúdio/editor, app travando.
+- problema_tecnico: erros gerais da plataforma, vídeo não carrega, login travando ou app travando.
+- studio: dúvidas, erros ou pedidos de ajuda sobre Estúdio, blocos, Ponte, modo Código, projetos e Zappy do Studio.
 - pagamento_reembolso: cobrança, pagamento, pix/boleto/cartão, reembolso, cancelamento, nota fiscal.
 - parceria_comercial: propostas de parceria, imprensa, vendas para escolas/empresas, afiliados.
 - outro: qualquer coisa que não se encaixe acima.`

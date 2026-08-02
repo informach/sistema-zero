@@ -1,43 +1,21 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
-import * as Blockly from 'blockly/core'
-import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
-import 'blockly/blocks'
-import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace } from '../../../blockly/buildIR'
-import { ensureBlocklyInitialized } from '../../../blockly/setup'
-import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
-import { parseJS } from '../../../parsers/js'
+import { describe, expect, it } from 'bun:test'
+import { behaviorStatements, type JSStatement } from '#ir'
 import { AVENTURA_GRID, AVENTURA_HEROI_SOURCE as SOURCE } from '../__gen_aventuraHeroi'
-import { collectTypes, stripIds } from '../__gen_dinoCorredor'
-import { gameTwoDBlocks } from '../blocks'
+import { collectTypes } from '../__gen_dinoCorredor'
 import { aventuraHeroiExample } from '../examples'
 import { gameTwoDManifest } from '../manifest'
+import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
  * Drift do exemplo "Aventura do Herói" — o degrau BÁSICO da família
- * Zelda-style Adventure (Clear Code). A IR embutida em examples/clearcode.ts
+ * Zelda-style Adventure (Clear Code). A IR embutida em examples/clearcode/aventuraHeroi.ts
  * foi GERADA pelo parser real a partir do SOURCE (que mora no
  * __gen_aventuraHeroi.ts, importado aqui para que fonte e teste NUNCA possam
  * divergir). O preparo do palco é injetado pelo wrapper `beginnerGameExample`
  * e conferido à parte.
  */
 
-/** O mesmo contrato de ciclo de vida dos exemplos, com a extensão game-2d. */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d' }],
-  })
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
-
-beforeAll(() => {
-  ensureBlocklyInitialized()
-  registerExtensionBlocks(gameTwoDBlocks)
-})
+setupGameTwoDExampleTests()
 
 describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
   it('está registrado no manifest, é da extensão game-2d e embute os 2 assets', () => {
@@ -55,24 +33,10 @@ describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
     }
   })
 
-  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora a dupla do wrapper', () => {
-    const parsed = stripIds(parseExampleLifecycleSource(SOURCE))
-    const types = collectTypes(parsed)
-    expect(types.has('rawJS')).toBe(false)
-    expect(types.has('memberCall')).toBe(false)
-
-    const embedded = stripIds(behaviorStatements(aventuraHeroiExample.ir)) as JSStatement[]
-    expect(embedded[0]).toEqual({
-      type: 'g2d:setupStage',
-      width: 480,
-      height: 360,
-      bg: '#7ec850',
-    } as JSStatement)
-    expect(embedded[1]).toEqual({
-      type: 'g2d:setStageDescription',
-      description: aventuraHeroiExample.description ?? '',
-    } as JSStatement)
-    expect(parsed).toEqual(embedded.slice(2))
+  registerExampleContractTests({
+    example: aventuraHeroiExample,
+    source: SOURCE,
+    stage: { width: 480, height: 360, bg: '#7ec850' },
   })
 
   it('exercita a mecânica prometida do degrau básico', () => {
@@ -197,40 +161,5 @@ describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
     // Dano no herói com i-frames: hurtByEnemy + o gate "não está invencível".
     expect(raw).toContain('"type":"g2d:hurtByEnemy","spriteVar":"heroi","enemyVar":"inimigo"')
     expect(raw).toContain('"type":"g2d:isInvincible","spriteVar":"heroi"')
-  })
-
-  it('nenhum texto visível usa travessão', () => {
-    expect(JSON.stringify(aventuraHeroiExample.ir)).not.toContain('—')
-    expect(aventuraHeroiExample.name).not.toContain('—')
-    expect(aventuraHeroiExample.description ?? '').not.toContain('—')
-  })
-
-  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(
-      stripIds(behaviorStatements(aventuraHeroiExample.ir)) as JSStatement[],
-      0,
-    )
-    const reparsed = stripIds(parseJS(code1)) as JSStatement[]
-    const code2 = compileStatements(reparsed, 0)
-    expect(code2).toBe(code1)
-  })
-
-  it('round-trip por blocos: IR → workspace → IR preserva o jogo inteiro', () => {
-    const state = buildWorkspaceStateFromIR(
-      aventuraHeroiExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
-    )
-    const ws = new Blockly.Workspace()
-    try {
-      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
-      const embedded = behaviorStatements(aventuraHeroiExample.ir)
-      expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
-      expect(rebuilt.length).toBe(embedded.length)
-      expect(compileStatements(stripIds(rebuilt) as JSStatement[], 0)).toBe(
-        compileStatements(stripIds(embedded) as JSStatement[], 0),
-      )
-    } finally {
-      ws.dispose()
-    }
   })
 })

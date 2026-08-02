@@ -39,6 +39,7 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
 export const TICKET_CATEGORIES = [
   'curso_acesso',
   'problema_tecnico',
+  'studio',
   'pagamento_reembolso',
   'parceria_comercial',
   'outro',
@@ -48,6 +49,7 @@ export const TICKET_CATEGORIES = [
 export const CATEGORY_LABELS: Record<TicketCategory, string> = {
   curso_acesso: 'Curso e acesso',
   problema_tecnico: 'Problema técnico',
+  studio: 'Studio',
   pagamento_reembolso: 'Pagamento e reembolso',
   parceria_comercial: 'Parceria e comercial',
   outro: 'Outro',
@@ -57,6 +59,7 @@ export const CATEGORY_LABELS: Record<TicketCategory, string> = {
 export const CATEGORY_COLORS: Record<TicketCategory, string> = {
   curso_acesso: 'bg-chart-2/15 text-chart-2',
   problema_tecnico: 'bg-chart-4/15 text-chart-4',
+  studio: 'bg-primary/15 text-primary',
   pagamento_reembolso: 'bg-chart-3/15 text-chart-3',
   parceria_comercial: 'bg-chart-1/15 text-chart-1',
   outro: 'bg-muted text-muted-foreground',

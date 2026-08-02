@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Treinador de Criaturas" (recriação BÁSICA e
  * ENXUTA do pokemon-style-game do Chris Courses). Rode com
  * `bun src/official-extensions/game-2d/__gen_treinadorDeCriaturas.ts` e cole a
- * saída em examples/gamesTwoD.ts. O drift test
+ * saída em examples/gamesTwoD/treinadorDeCriaturas.ts. O drift test
  * (`treinadorDeCriaturasExample.test.ts`) guarda o resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

@@ -1,7 +1,13 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
+import {
+  collectStatements,
+  collectTypes,
+  parseExampleLifecycleSource,
+  stripIds,
+} from './exampleContractHarness'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -21,54 +27,6 @@ import { gameKitManifest } from '../manifest'
  * partir do SOURCE (que mora no __gen_treinadorDeCriaturas.ts, importado aqui
  * para que fonte e teste NUNCA possam divergir).
  */
-
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-      if (key !== '__id') out[key] = stripIds(child)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) {
-    for (const item of value) collectTypes(item, out)
-  } else if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>
-    if (typeof record.type === 'string') out.add(record.type)
-    for (const child of Object.values(record)) collectTypes(child, out)
-  }
-  return out
-}
-
-function collectStatements(value: unknown, type: string, out: unknown[] = []): unknown[] {
-  if (Array.isArray(value)) {
-    for (const item of value) collectStatements(item, type, out)
-  } else if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>
-    if (record.type === type) out.push(record)
-    for (const child of Object.values(record)) collectStatements(child, type, out)
-  }
-  return out
-}
-
-/** O mesmo contrato de ciclo de vida dos exemplos (sem cadências a elevar: o
- *  encontro selvagem é por PASSO do rpgMoveGrid, não um everySeconds no loop). */
-function parseExampleLifecycleSource(source: string): JSStatement[] {
-  const normalized = normalizeSZIR({
-    html: [],
-    css: [],
-    js: parseJS(source),
-    extensions: [{ extensionId: 'game-2d-advanced' }],
-  })
-  // O parser representa alguns campos opcionais ausentes como `undefined`.
-  // Uma IR persistida é JSON e, portanto, não guarda essas chaves.
-  return JSON.parse(JSON.stringify(behaviorStatements(normalized))) as JSStatement[]
-}
 
 beforeAll(() => {
   ensureBlocklyInitialized()

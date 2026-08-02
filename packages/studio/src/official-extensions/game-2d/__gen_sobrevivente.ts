@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Sobrevivente" (o degrau BÁSICO da família
  * Vampire Survivor do curso Clear Code "5 games"). Rode com
  * `bun src/official-extensions/game-2d/__gen_sobrevivente.ts` e cole a saída em
- * examples/clearcode.ts. O drift test (`sobreviventeExample.test.ts`) guarda o
+ * examples/clearcode/sobrevivente.ts. O drift test (`sobreviventeExample.test.ts`) guarda o
  * resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

@@ -1,5 +1,6 @@
 import { behaviorStatements, normalizeSZIR } from '#ir'
 import { parseJS } from '../../parsers/js'
+import { collectGeneratedTypes, stripGeneratedIds } from './generationUtils'
 
 /**
  * Gerador one-off da IR do exemplo "Mundo Pirata Profissional" (nível 2 da
@@ -247,29 +248,6 @@ SZGameKit.onDrawHud(function (ctx) {
 });
 `.trim()
 
-const stripIds = (value: unknown): unknown => {
-  if (Array.isArray(value)) return value.map(stripIds)
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out
-  }
-  return value
-}
-
-const collectTypes = (value: unknown, out: Set<string> = new Set()): Set<string> => {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const o = value as Record<string, unknown>
-    if (typeof o.type === 'string') out.add(o.type)
-    for (const v of Object.values(o)) collectTypes(v, out)
-  }
-  return out
-}
-
 if (import.meta.main) {
   const normalized = normalizeSZIR({
     html: [],
@@ -277,8 +255,10 @@ if (import.meta.main) {
     js: parseJS(MUNDO_PIRATA_PROFISSIONAL_SOURCE),
     extensions: [{ extensionId: 'game-2d-advanced' }],
   })
-  const behavior = stripIds(JSON.parse(JSON.stringify(normalized.behavior)))
-  const types = collectTypes(behaviorStatements({ ...normalized, behavior } as typeof normalized))
+  const behavior = stripGeneratedIds(JSON.parse(JSON.stringify(normalized.behavior)))
+  const types = collectGeneratedTypes(
+    behaviorStatements({ ...normalized, behavior } as typeof normalized),
+  )
   const bad = [...types].filter((t) => t === 'rawJS' || t === 'memberCall')
   if (bad.length) console.error('DRIFT:', bad)
   console.log(JSON.stringify(behavior, null, 2))

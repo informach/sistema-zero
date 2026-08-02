@@ -177,6 +177,27 @@ describe('figura: sprite desenhado por código', () => {
     expect(seen).toEqual([48, 64])
   })
 
+  it('preserva o tamanho da figura externa ao desenhar outra figura dentro dela', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const seen: Array<[number, number]> = []
+    api.defineShape('interna', () => {})
+    const inner = api.createShapeSprite('interna', { x: 0, y: 0, w: 10, h: 20 })
+    api.defineShape('externa', (shapeCtx) => {
+      seen.push([api.shapeW(), api.shapeH()])
+      api.drawSprite(shapeCtx, inner)
+      seen.push([api.shapeW(), api.shapeH()])
+    })
+    const outer = api.createShapeSprite('externa', { x: 0, y: 0, w: 100, h: 200 })
+
+    api.drawSprite(ctx, outer)
+
+    expect(seen).toEqual([
+      [100, 200],
+      [100, 200],
+    ])
+  })
+
   it('paint_* desenham no ctx recebido (formas básicas)', () => {
     const api = load()
     const ctx = fakeCtx()

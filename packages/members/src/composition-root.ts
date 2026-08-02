@@ -89,6 +89,8 @@ import {
   RevokeCertificateService,
   ValidateCertificateService,
 } from './application/validate-certificate/validate-certificate.service'
+import { ZappyHistoryService } from './application/zappy/zappy-history.service'
+import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
 import type { Env } from './infrastructure/config/env'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
@@ -117,6 +119,8 @@ import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/
 import { DrizzleTeacherThreadRepository } from './infrastructure/persistence/drizzle/teacher-thread.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
+import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zappy.repository'
+import { DrizzleZappyKnowledgeRepository } from './infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -214,6 +218,7 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   })
   const aiUsageStats = new GetAiUsageStatsService(aiUsageRepo, clock)
+  const zappy = new ZappyHistoryService(new DrizzleZappyRepository(db), clock)
   // S2S: resumo de progresso dos filhos (consumido pelo BFF da área dos pais, kids).
   // O hub entra p/ os JOGOS da semana no Mural (best-effort — sem HUB_BASE_URL degrada).
   const childrenStats = new GetChildrenStatsService(
@@ -296,6 +301,12 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const listCatalog = new ListCatalogService(courses, entitlements, gamificationRepo, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
+  const zappyKnowledge = new ZappyKnowledgeService(
+    new DrizzleZappyKnowledgeRepository(db),
+    listMyCourses,
+    getMyCourse,
+    clock,
+  )
   const getLesson = new GetLessonService(
     checkAccess,
     courses,
@@ -543,6 +554,8 @@ export async function createApplication(env: Env): Promise<Application> {
       buyRoomItem,
       profileAllowance,
       consumeAiUsage,
+      zappy,
+      zappyKnowledge,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     pensa: {
@@ -607,6 +620,8 @@ export async function createApplication(env: Env): Promise<Application> {
       blocks: blockAdmin,
       attachments: attachmentAdmin,
       studioSubmissions: studioSubmissionsAdmin,
+      zappyKnowledge,
+      zappyHistory: zappy,
     },
     internal: {
       accessCheck,
@@ -632,7 +647,10 @@ export async function createApplication(env: Env): Promise<Application> {
       if (!row?.locked) return // outra réplica está limpando neste ciclo
       const cutoff = new Date(Date.now() - env.PROCESSED_WEBHOOKS_RETENTION_DAYS * 86_400_000)
       const pruned = await processed.pruneProcessedBefore(cutoff)
-      if (pruned > 0) logger.info('retention.pruned', { processedWebhooks: pruned })
+      const zappyConversations = await zappy.pruneExpired()
+      if (pruned > 0 || zappyConversations > 0) {
+        logger.info('retention.pruned', { processedWebhooks: pruned, zappyConversations })
+      }
     })
   }
 

@@ -525,7 +525,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.55.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.55.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -565,10 +565,17 @@ formas, escopo e runtime: o nomeado É o mesmo objeto do grupo e cada um anima n
 plataforma, 4 direções, ponteiro e nave; **nadar não existia** e voar só existia como COMPORTAMENTO de
 inimigo (`voador`/`voador-vertical` dentro do `updateEnemyType`), inacessível ao jogador.
 
-- **`sz_g2d_fly_free`** "voar livre, velocidade ⟨3⟩" → `flyFree(sprite, speed)`: 8 direções (diagonal
-  normalizada como o `topDown`), SEM gravidade, acelerando enquanto a tecla está apertada e PLANANDO ao
-  soltar (é o que separa do top-down, que para na hora). O número digitado é a velocidade MÁXIMA (teto
-  pelo módulo, `_clampSpeed`), mantendo o significado do campo igual ao dos vizinhos.
+- **`sz_g2d_fly_free`** "voar livre, velocidade ⟨3⟩" → `flyFree(sprite, speed)`: SEM gravidade, acelerando
+  enquanto a tecla está apertada e PLANANDO ao soltar. O número digitado é a velocidade MÁXIMA (teto pelo
+  módulo, `_clampSpeed`), mantendo o significado do campo igual ao dos vizinhos.
+  ⚠️ **A INÉRCIA é a ÚNICA coisa que separa este bloco do `topDown`** — que também anda na diagonal (o
+  rótulo dele diz "4 direções", mas o código trata os dois eixos e normaliza) e também não tem gravidade.
+  A 1ª versão saiu com 0.35 de aceleração e 0.9 de planeio: arrancada em 3 quadros, virada em 6, deslize
+  de 27px. A usuária testou e disse "não vi muita diferença prática" — estava certa, ninguém enxerga 3
+  quadros. Retunado para **0.10 / 0.96** (medido com velocidade 3: topo em 0,17s, deslize de 72px por
+  2,3s; ao inverter, cruza o zero e muda de direção em ~0,18s, chegando ao teto oposto em ~0,33s).
+  Quem mexer nesses dois números precisa medir de novo; o teste
+  "a INÉRCIA é o que separa do 4 direções" existe exatamente para isso.
 - **`sz_g2d_flap`** "bater as asas, força ⟨8⟩" → `flap(sprite, ctx, force)`: clone honesto do
   `jumpOnGround` (`arcadeKits.ts`) **sem a exigência de estar no chão**. Gravidade do mundo, chão na
   borda visível (por isso leva `ctx`, como o `platformer`) e impulso na BORDA de ↑/W/Espaço **ou de um
@@ -589,6 +596,15 @@ inimigo (`voador`/`voador-vertical` dentro do `updateEnemyType`), inacessível a
 - **Fora de escopo** (combinado com a usuária): estados de animação "nadando"/"voando" (mexeria no enum
   `G2D_ANIM_STATES`, nos 2 dropdowns de estado, na cadeia de fallback e no parser) e água como LUGAR do
   mapa (entrar na água e passar a nadar sozinho) — ela escolheu "o jeito do sprite o tempo todo".
+
+**Full review do Jogo 2D (v0.55.1, 02/08):** o ponteiro passa a descontar a moldura do canvas ao
+converter coordenadas CSS para o palco lógico; formas customizadas aninhadas restauram `_shapeW` e
+`_shapeH` com pilha segura; e o reinício recompõe a descrição acessível base, permitindo anunciar a
+mesma tela terminal novamente. O contrato do runtime agora valida tipos, ordem e nomes de parâmetros
+contra `GameTwoDRuntimeApi`, além da lista de chaves. Os 17 exemplos grandes de Clear Code e Games 2D
+moram em módulos individuais sob `examples/clearcode/` e `examples/gamesTwoD/`, com barrels compatíveis
+e hashes de conteúdo preservados; seus quatro contratos repetidos de drift/fixpoint/round-trip ficam no
+harness único `__tests__/exampleContractHarness.ts`.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 
@@ -647,7 +663,7 @@ inline de sempre continua sendo o que roda nos ~90 mil pares/quadro de dois enxa
   parser aceita as duas aridades. A forma viaja `molds[k].shape` → `e._hbShape` no `spawnFromMold` (ao
   lado do `e.radius = m.radius`), então sobrevive à reciclagem do pool.
 - `boxOf` do overlay desenha `arc` em quem é círculo e `strokeRect` no resto.
-- Contadores: blocos **341 → 342**, API **338 → 339** (`setHitboxShape`), manifest **0.54.0 → 0.55.0**.
+- Contadores: blocos **342 → 343**, API enumerável **341 → 342** (`setStageDescription`), manifest **0.55.0 → 0.56.0**.
 - Testes: `__tests__/hitboxShape.test.ts` (13) + o harness compartilhado **`__tests__/kitHarness.ts`**
   (extraído do teste da borda; ⚠️ a api dele é interface NOMEADA — com `Record<string, Fn>` o
   `noUncheckedIndexedAccess` reprova CADA chamada, que foi o erro de typecheck do lote passado). E varre uma
@@ -709,7 +725,7 @@ monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente'
 parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
 a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
 `docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
-(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 341**, gk `0.54.0` (0.47.0/0.48.0 = refação Chris Courses R1/R2: Muralha do Reino + Escalada do Guerreiro, depois Duelo de Heróis + Portas do Castelo, todos Profissionais) — full review R31 adicionou imagem/ficha/telas + correções; 0.45.0 = fixes dos exemplos Clear Code B (fonte repõe bolas + gate timeCaido na Batalha Profissional, dica do mato na Aventura); 0.46.0 = exemplo "Chuva de Meteoros Profissional" (raylib_intro nível 2) + fix da recarga: `cooldownReady` virou prazo ABSOLUTO em playTime (a versão por-chamada travava o tiro edge-trigger `keyPressed`+recarga da receita canônica); as revisões atuais incorporaram lifecycle por domínio, descarte dos recursos da factory, acessibilidade do canvas/telas, reset completo e exclusão mútua das batalhas; a batalha RPG vive em `runtime/rpgBattle.ts`).
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 343**, gk `0.56.0` (0.47.0/0.48.0 = refação Chris Courses R1/R2: Muralha do Reino + Escalada do Guerreiro, depois Duelo de Heróis + Portas do Castelo, todos Profissionais) — full review R31 adicionou imagem/ficha/telas + correções; 0.45.0 = fixes dos exemplos Clear Code B (fonte repõe bolas + gate timeCaido na Batalha Profissional, dica do mato na Aventura); 0.46.0 = exemplo "Chuva de Meteoros Profissional" (raylib_intro nível 2) + fix da recarga: `cooldownReady` virou prazo ABSOLUTO em playTime (a versão por-chamada travava o tiro edge-trigger `keyPressed`+recarga da receita canônica); as revisões atuais incorporaram lifecycle por domínio, descarte dos recursos da factory, acessibilidade do canvas/telas, reset completo e exclusão mútua das batalhas; a batalha RPG vive em `runtime/rpgBattle.ts`).
 
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +

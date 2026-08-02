@@ -7,7 +7,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * família Zelda-style Adventure do Clear Code, focado no DIFERENCIAL que o
  * "Aventura do Herói"/"Vila Ninja" NÃO ensinam: a economia de EXP e o SUBIR DE
  * NÍVEL). Rode com `bun src/official-extensions/game-2d/__gen_heroiQueEvolui.ts`
- * e cole a saída em examples/clearcode.ts. O drift test
+ * e cole a saída em examples/clearcode/heroiQueEvolui.ts. O drift test
  * (`heroiQueEvoluiExample.test.ts`) guarda o resultado.
  *
  * Decisões do degrau BÁSICO:

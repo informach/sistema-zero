@@ -6,6 +6,7 @@ import { createHubRoutes } from './routes/hub'
 import { createPensaRoutes } from './routes/pensa'
 import { createPensaAiRoutes } from './routes/pensa-ai'
 import { createStudioRoutes } from './routes/studio'
+import { createStudioZappyRoutes } from './routes/studio-zappy'
 import {
   createAuthClient,
   createHubClient,
@@ -60,6 +61,7 @@ export function createShell(cfg: ShellConfig) {
     ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createStudioRoutes({ hub, members, media }),
+    ...createStudioZappyRoutes({ members, session }),
     ...createCertificateRoutes({ members, session }),
     ...createPensaRoutes({ members, session }),
     ...createPensaAiRoutes({ members, session }),

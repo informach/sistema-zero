@@ -20,6 +20,9 @@ RECEITA CANÔNICA POR ÁREA DO PROJETO:
      (CSS no canvas, capada em 40) e SZGameKit.showHitboxes() contorna de verde a
      caixa que COLIDE de tudo que está vivo. Os dois são de ensino/depuração e vão
      em Ao iniciar; blocos "Mostrar a borda da tela" e "Mostrar as caixas de colisão".
+   · SZGameKit.setStageDescription(descricao) descreve objetivo, controles e
+     perigos visuais para leitores de tela. Use 1x em Ao iniciar. O runtime cuida
+     do nome do canvas, da semântica dos diálogos e da troca automática de foco.
 2. SZGameKit.loadImage("nome", "asset") (opcional: apelido/pré-carga) / loadSound
 3. SZGameKit.defineLook / defineMold / defineEffect / setMission — os DADOS
 4. const heroi = SZGameKit.createCharacter({ image, w, h, speed, color })
@@ -41,6 +44,8 @@ API global injetada como window.SZGameKit:
   da UI. width/height clampados a 64..4096.
 - start(): adapter de boot chamado automaticamente pelo Estúdio depois que as
   áreas foram registradas. Não gere uma chamada manual.
+- setStageDescription(descricao): descrição curta e útil do objetivo, controles
+  e elementos visuais do jogo para leitores de tela. Configure antes do boot.
 - width() / height(): a resolução interna (use nas contas de limite/aleatório).
 - loadImage(nome, asset): OPCIONAL; registra p/ pré-carregamento ou dá apelido.
   Seletores de imagem já carregam o asset escolhido; falhou → fallback visível.

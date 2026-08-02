@@ -28,6 +28,7 @@ interface MotionApi {
   flyFree: Fn
   flap: Fn
   swim: Fn
+  topDown: Fn
   platformer: Fn
   autoAnimate: Fn
   setStateAnimation: Fn
@@ -91,8 +92,51 @@ describe('game-2d — voar livre', () => {
     api.flyFree(passaro, 3)
     expect(passaro.x).toBeGreaterThan(naSolta) // ainda desliza
 
-    for (let i = 0; i < 120; i++) api.flyFree(passaro, 3)
+    for (let i = 0; i < 300; i++) api.flyFree(passaro, 3)
     expect(passaro.vx).toBe(0) // e para de verdade (não fica "se movendo" p/ sempre)
+  })
+
+  // ⭐ O ponto do bloco. Ela testou a 1ª versão e disse: "não vi muita diferença
+  // prática entre o voar livre e o andar em todas as direções do top down" — e
+  // estava certa: a inércia de então sumia em 3 quadros. Se alguém abaixar o
+  // peso de novo, é aqui que aparece.
+  it('a INÉRCIA é o que separa do 4 direções, e ela precisa ser sentida', () => {
+    const voando = sprite()
+    const andando = sprite()
+    api.keys.right = true
+
+    // Arrancada: o top-down já sai na velocidade cheia; o voo tem que demorar.
+    api.flyFree(voando, 3)
+    api.topDown(andando, 3)
+    expect(andando.vx).toBe(3)
+    expect(voando.vx).toBeLessThan(1)
+
+    for (let i = 0; i < 60; i++) {
+      api.flyFree(voando, 3)
+      api.topDown(andando, 3)
+    }
+    api.keys.right = false
+
+    // Planeio: o top-down para no lugar; o voo desliza mais de meio segundo.
+    const xVoo = voando.x
+    const xAndar = andando.x
+    let quadros = 0
+    while (voando.vx !== 0 && quadros < 600) {
+      api.flyFree(voando, 3)
+      api.topDown(andando, 3)
+      quadros++
+    }
+    expect(andando.x - xAndar).toBe(0)
+    expect(voando.x - xVoo).toBeGreaterThan(50)
+    expect(quadros).toBeGreaterThan(60) // mais de 1 segundo planando
+
+    // Virar de lado custa: a velocidade não inverte no quadro seguinte.
+    api.keys.right = true
+    for (let i = 0; i < 60; i++) api.flyFree(voando, 3)
+    api.keys.right = false
+    api.keys.left = true
+    api.flyFree(voando, 3)
+    expect(voando.vx).toBeGreaterThan(0) // ainda indo pra direita, por inércia
   })
 
   it('não deixa marca de chão (senão a animação diria "caindo")', () => {

@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Fazenda Feliz" (o degrau BÁSICO da família
  * farming/Stardew do Clear Code). Rode com
  * `bun src/official-extensions/game-2d/__gen_fazendaFeliz.ts` e cole a saída em
- * examples/clearcode.ts. O drift test (`fazendaFelizExample.test.ts`) guarda o
+ * examples/clearcode/fazendaFeliz.ts. O drift test (`fazendaFelizExample.test.ts`) guarda o
  * resultado.
  *
  * Decisões do degrau BÁSICO (fidelidade ao original em pygame, simplificando):

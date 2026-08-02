@@ -1434,3 +1434,15 @@ irmãos com `railway variables --kv`.
 - [ ] Sem `any` novo fora de testes; entradas validadas (TypeBox/Zod).
 - [ ] Mudou schema? Gerou a migration (`db:generate`) e commitou.
 - [ ] Mudou contrato de rota/webhook/config? Atualizou este `CLAUDE.md`.
+
+## Zappy do Studio (08/2026)
+
+- Migration `0054_studio_zappy`: conversas privadas por `user_id + project_id`, mensagens
+  idempotentes e fontes/trechos da base didática. O ciclo de retenção apaga conversas com
+  `expires_at` vencido; o purge integral da conta também as remove.
+- Rotas do aluno: `/members/zappy/history`, `/questions`, `/feedback` e
+  `/knowledge/search`. Toda rota revalida `estudio-completo`; a busca deriva no servidor os
+  cursos kids adquiridos e as aulas publicadas/liberadas.
+- Rotas internas de autoria: `/members/admin/zappy/knowledge/*` e `/zappy/metrics`.
+  Fontes aceitas: VTT, texto rico e PDF marcado como caderno do aluno; o snapshot do projeto
+  nunca é persistido.

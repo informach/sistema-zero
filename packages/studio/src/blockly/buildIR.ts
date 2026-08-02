@@ -5639,6 +5639,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           accent: f(block, 'ACCENT') || '#4a9eff',
         },
       }
+    case 'sz_gk_set_stage_description':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setStageDescription',
+          description: f(block, 'DESCRIPTION'),
+        },
+      }
     case 'sz_gk_stage_border':
       seen.add('game-2d-advanced')
       return {

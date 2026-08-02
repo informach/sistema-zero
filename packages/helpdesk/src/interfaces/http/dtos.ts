@@ -21,6 +21,7 @@ const TICKET_STATUS = t.Union([
 const TICKET_CATEGORY = t.Union([
   t.Literal('curso_acesso'),
   t.Literal('problema_tecnico'),
+  t.Literal('studio'),
   t.Literal('pagamento_reembolso'),
   t.Literal('parceria_comercial'),
   t.Literal('outro'),
@@ -90,7 +91,7 @@ export const OAuthCallbackQuery = t.Object(
 // ── Configurações ────────────────────────────────────────────────────────────
 export const SettingsPatchBody = t.Object({
   autoReplyEnabled: t.Optional(t.Boolean()),
-  autoReplyCategories: t.Optional(t.Array(TICKET_CATEGORY, { maxItems: 5 })),
+  autoReplyCategories: t.Optional(t.Array(TICKET_CATEGORY, { maxItems: 6 })),
   autoReplyConfidenceMin: t.Optional(t.Number({ minimum: 0, maximum: 1 })),
   signature: t.Optional(t.String({ maxLength: 2000 })),
 })

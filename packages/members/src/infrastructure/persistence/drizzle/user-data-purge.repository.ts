@@ -25,6 +25,7 @@ import {
   teacherThreads,
   userBadges,
   xpEvents,
+  zappyConversations,
 } from './schema'
 
 /**
@@ -77,6 +78,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx
         .delete(teacherThreads)
         .where(or(inArray(teacherThreads.userId, userIds), eq(teacherThreads.accountId, accountId)))
+      await tx
+        .delete(zappyConversations)
+        .where(
+          or(
+            inArray(zappyConversations.userId, userIds),
+            eq(zappyConversations.accountId, accountId),
+          ),
+        )
       // Tabelas com `user_id` E `account_id` (dados kids ficam keyados na conta
       // responsável → `account_id = accountId` cobre todos os perfis de uma vez).
       await tx

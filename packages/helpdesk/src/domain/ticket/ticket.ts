@@ -4,6 +4,7 @@ export type TicketStatus = 'new' | 'open' | 'waiting' | 'resolved' | 'closed'
 export type TicketCategory =
   | 'curso_acesso'
   | 'problema_tecnico'
+  | 'studio'
   | 'pagamento_reembolso'
   | 'parceria_comercial'
   | 'outro'
@@ -83,6 +84,7 @@ export const TICKET_STATUSES: readonly TicketStatus[] = [
 export const TICKET_CATEGORIES: readonly TicketCategory[] = [
   'curso_acesso',
   'problema_tecnico',
+  'studio',
   'pagamento_reembolso',
   'parceria_comercial',
   'outro',

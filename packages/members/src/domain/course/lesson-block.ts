@@ -106,6 +106,8 @@ export interface EbookBlock {
   kind: 'ebook'
   url: string
   title?: string
+  /** Inclui o PDF na base didática do Zappy; opt-in explícito do professor. */
+  zappyStudentNotebook?: boolean
 }
 
 /**

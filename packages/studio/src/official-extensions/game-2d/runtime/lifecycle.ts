@@ -195,14 +195,14 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
   // desenho — desenhar o mesmo sprite 2× não devora a invencibilidade pela metade,
   // e a pausa não a consome. Sem loop ativo, o decaimento cai no modo antigo.
   var _frameStamp = 0;
-  function gameLoop(fn, explicitId) {
+  function gameLoop(fn, id) {
     if (typeof fn !== 'function') return function () {};
-    var id = _stableHandlerId('quadro', explicitId, fn);
-    if (!_loopHandlers[id]) _loopOrder.push(id);
-    _loopHandlers[id] = fn;
+    var handlerId = _stableHandlerId('quadro', id, fn);
+    if (!_loopHandlers[handlerId]) _loopOrder.push(handlerId);
+    _loopHandlers[handlerId] = fn;
     _ensureDriver();
     function stop() {
-      _removeOrdered(_loopHandlers, _loopOrder, id);
+      _removeOrdered(_loopHandlers, _loopOrder, handlerId);
       if (!_driverHasWork() && _driverFrame) {
         cancelAnimationFrame(_driverFrame);
         _driverFrame = 0;
@@ -212,15 +212,15 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
   }
 
   /** Registra e executa a preparação de uma partida; restart() repete este corpo. */
-  function onStart(fn, explicitId) {
+  function onStart(fn, id) {
     if (typeof fn !== 'function') return;
-    var id = _stableHandlerId('inicio', explicitId, fn);
-    if (!_startHandlers[id]) _startOrder.push(id);
-    _startHandlers[id] = fn;
+    var handlerId = _stableHandlerId('inicio', id, fn);
+    if (!_startHandlers[handlerId]) _startOrder.push(handlerId);
+    _startHandlers[handlerId] = fn;
     try { _invokeProjectCallback(fn, undefined, []); }
     catch (error) {
-      _reportHandlerError('“Ao iniciar”', id, error);
-      _removeOrderedIfCurrent(_startHandlers, _startOrder, id, fn);
+      _reportHandlerError('“Ao iniciar”', handlerId, error);
+      _removeOrderedIfCurrent(_startHandlers, _startOrder, handlerId, fn);
     }
   }
 

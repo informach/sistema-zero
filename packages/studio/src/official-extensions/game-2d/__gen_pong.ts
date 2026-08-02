@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Pong" (o degrau BÁSICO da trilogia Pong do
  * Clear Code — refaz o antigo card isolado "Pong simples", que usava member-set
  * cru demais). Rode com `bun src/official-extensions/game-2d/__gen_pong.ts` e
- * cole a saída em examples/clearcode.ts. O drift test (`pongExample.test.ts`)
+ * cole a saída em examples/clearcode/pong.ts. O drift test (`pongExample.test.ts`)
  * guarda o resultado.
  *
  * Campo 440×300 (o `beginnerGameExample` lê o tamanho do <canvas> declarado).

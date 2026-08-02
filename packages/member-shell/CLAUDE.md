@@ -575,3 +575,12 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - [ ] `typecheck` + `bun test` AQUI **e nos apps consumidores** (community; kids quando existir) + `check` limpos.
 - [ ] `bun run build:community` passa (e `build:kids` quando existir).
 - [ ] Mudou contrato (factory/handler/componente)? Atualizou este CLAUDE.md e o(s) do(s) app(s).
+
+## Zappy do Studio (08/2026)
+
+- `createShell` publica os handlers BFF `/api/studio/zappy` (histórico/exclusão),
+  `/messages` e `/feedback`; o adapter de UI vive em `lib/studio-zappy-adapter.ts`.
+- Cada pergunta revalida sessão, posse do Estúdio, carreira/modo/extensões e cursos liberados;
+  impersonação não conversa. Reserva idempotente precede o crédito `studio-zappy`.
+- Rollout exige `ZAPPY_ENABLED=true` e a conta em `ZAPPY_PILOT_ACCOUNT_IDS`; equipe ignora o
+  gate para QA. O nome real não vai ao OpenRouter e o contexto do projeto não é persistido.

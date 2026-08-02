@@ -6,7 +6,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Gerador one-off da IR do exemplo "Duelo de Heróis" (recriação BÁSICA da luta
  * 1v1 do fighting-game do Chris Courses). Rode com
  * `bun src/official-extensions/game-2d/__gen_dueloDeHerois.ts` e cole a saída em
- * examples/gamesTwoD.ts. O drift test (`dueloDeHeroisExample.test.ts`) guarda o
+ * examples/gamesTwoD/dueloDeHerois.ts. O drift test (`dueloDeHeroisExample.test.ts`) guarda o
  * resultado.
  *
  * O preparo do palco (setupStage + setStageDescription) NÃO aparece aqui de

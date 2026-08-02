@@ -3,15 +3,22 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   var pointerHandlers = Object.create(null);
   var pointerHandlerOrder = [];
   function pointerXY(e) {
-    var c = document.querySelector('canvas');
+    var c = _stageCanvas || document.querySelector('canvas');
     if (!c) return { x: e.clientX || 0, y: e.clientY || 0 };
     var rect = c.getBoundingClientRect();
     // Mapeia a posição na TELA para as coordenadas internas do canvas: quando ele
     // é exibido maior/menor que a resolução (ex.: "preencher a janela"), display ≠
     // interno, então escalamos — senão o ponteiro (dragX/onPointer) fica torto.
-    var sx = rect.width ? (_logicalW || c.width) / rect.width : 1;
-    var sy = rect.height ? (_logicalH || c.height) / rect.height : 1;
-    return { x: ((e.clientX || 0) - rect.left) * sx, y: ((e.clientY || 0) - rect.top) * sy };
+    // clientWidth/clientHeight excluem a moldura CSS. O ponto zero do desenho fica
+    // depois de clientLeft/clientTop; usar o rect inteiro deslocava cliques quando
+    // a criança ativava “Mostrar a borda da tela”.
+    var displayW = _positiveFiniteNumber(c.clientWidth, rect.width);
+    var displayH = _positiveFiniteNumber(c.clientHeight, rect.height);
+    var sx = displayW ? (_logicalW || c.width) / displayW : 1;
+    var sy = displayH ? (_logicalH || c.height) / displayH : 1;
+    var left = rect.left + _finiteNumber(c.clientLeft, 0);
+    var top = rect.top + _finiteNumber(c.clientTop, 0);
+    return { x: ((e.clientX || 0) - left) * sx, y: ((e.clientY || 0) - top) * sy };
   }
   window.addEventListener('pointermove', function (e) {
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y;
@@ -66,15 +73,15 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * reexecutar o mesmo bloco substitui o callback, sem teto artificial e sem
    * multiplicar disparos. Código manual sem id é deduplicado por referência.
    */
-  function onPointer(fn, explicitId) {
+  function onPointer(fn, id) {
     if (typeof fn !== 'function') return;
-    if (_runningLoopId && !explicitId) {
+    if (_runningLoopId && !id) {
       warnOnce('evento-clique-no-quadro', '“Quando clicar/tocar” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
-    var id = _stableHandlerId('clique', explicitId, fn);
-    if (!pointerHandlers[id]) pointerHandlerOrder.push(id);
-    pointerHandlers[id] = fn;
+    var handlerId = _stableHandlerId('clique', id, fn);
+    if (!pointerHandlers[handlerId]) pointerHandlerOrder.push(handlerId);
+    pointerHandlers[handlerId] = fn;
   }
 
   // ---- Movimento (v0.4.0) ----
@@ -138,9 +145,17 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
 
   /**
-   * Voar livre: 8 direções sem gravidade nenhuma, ganhando velocidade enquanto a
-   * tecla está apertada e PLANANDO ao soltar (é o que diferencia do top-down,
-   * que para na hora). Passarinho, nave, fadinha.
+   * Voar livre: sem gravidade nenhuma, com PESO. Acelera enquanto a tecla está
+   * apertada e PLANA um bom tanto ao soltar. Passarinho, fadinha, peixe-balão.
+   *
+   * ⚠️ A INÉRCIA é a única coisa que separa isto do top-down (que também anda na
+   * diagonal e também não tem gravidade), então ela precisa ser SENTIDA. Com os
+   * valores da 1ª versão (0.35 / 0.9) a arrancada durava 3 quadros e a virada 6:
+   * ninguém enxergava, e na prática era "top-down com um deslizinho". Nestes
+   * (0.10 / 0.96), com velocidade 3: sobe ao topo em 0,17s e desliza ~72px por
+   * 2,3s; ao inverter, cruza o zero em ~0,18s e chega ao teto oposto em ~0,33s.
+   * Dá para sentir o impulso e é preciso antecipar a curva, que é o que "estar
+   * no ar" quer dizer.
    */
   function flyFree(sprite, speed) {
     if (!sprite) return;
@@ -148,11 +163,11 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
-    var vx = _finiteNumber(sprite.vx, 0) + dx * s * 0.35;
-    var vy = _finiteNumber(sprite.vy, 0) + dy * s * 0.35;
+    var vx = _finiteNumber(sprite.vx, 0) + dx * s * 0.1;
+    var vy = _finiteNumber(sprite.vy, 0) + dy * s * 0.1;
     // Sem tecla naquele eixo, vai parando aos poucos (planeio).
-    if (!dx) vx *= 0.9;
-    if (!dy) vy *= 0.9;
+    if (!dx) vx *= 0.96;
+    if (!dy) vy *= 0.96;
     // Migalha de velocidade vira zero: senão "está se movendo?" fica verdadeiro
     // para sempre e a animação nunca volta p/ "parado".
     if (Math.abs(vx) < 0.01) vx = 0;
@@ -251,42 +266,42 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     return { x: Math.sin(a), y: -Math.cos(a) };
   }
   /** Gira o sprite em N GRAUS (positivo = horário; negativo = anti-horário). */
-  function rotateSprite(s, deg) {
-    if (!s) return;
-    _ensureAngle(s);
-    s.angle += _finiteNumber(deg, 0) * DEG;
+  function rotateSprite(sprite, degrees) {
+    if (!sprite) return;
+    _ensureAngle(sprite);
+    sprite.angle += _finiteNumber(degrees, 0) * DEG;
   }
   /** Aponta o sprite para um ângulo em GRAUS (0 = pra cima, horário). */
-  function pointSprite(s, deg) {
-    if (!s) return;
-    s.angle = _finiteNumber(deg, 0) * DEG;
+  function pointSprite(sprite, degrees) {
+    if (!sprite) return;
+    sprite.angle = _finiteNumber(degrees, 0) * DEG;
   }
   /** Soma força à velocidade na direção apontada (impulso pra frente). */
-  function thrust(s, force) {
-    if (!s) return;
+  function thrust(sprite, force) {
+    if (!sprite) return;
     var f = _finiteNumber(force, 0.1);
-    var d = _forward(s);
-    s.vx = _finiteNumber(s.vx, 0) + d.x * f;
-    s.vy = _finiteNumber(s.vy, 0) + d.y * f;
+    var d = _forward(sprite);
+    sprite.vx = _finiteNumber(sprite.vx, 0) + d.x * f;
+    sprite.vy = _finiteNumber(sprite.vy, 0) + d.y * f;
   }
   /** Freia o sprite aos poucos: multiplica a velocidade pelo fator (0..1). */
-  function applyFriction(s, factor) {
-    if (!s) return;
+  function applyFriction(sprite, factor) {
+    if (!sprite) return;
     var k = Math.max(0, Math.min(1, _finiteNumber(factor, 0.97)));
-    if (k === 0) { s.vx = 0; s.vy = 0; return; }
-    s.vx = _finiteNumber(s.vx, 0) * k;
-    s.vy = _finiteNumber(s.vy, 0) * k;
+    if (k === 0) { sprite.vx = 0; sprite.vy = 0; return; }
+    sprite.vx = _finiteNumber(sprite.vx, 0) * k;
+    sprite.vy = _finiteNumber(sprite.vy, 0) * k;
   }
   /**
    * Controle estilo NAVE (asteroids): vira com esquerda/A e direita/D, acelera
    * com cima/W na direção apontada e desliza com atrito ao soltar. Integra a
    * posição (move o sprite pela velocidade). Use a cada quadro.
    */
-  function steerThrust(sprite, speed, turnDeg) {
+  function steerThrust(sprite, speed, turnDegrees) {
     if (!sprite) return;
     _ensureAngle(sprite);
     var sp = _finiteNumber(speed, 3);
-    var turn = _finiteNumber(turnDeg, 3);
+    var turn = _finiteNumber(turnDegrees, 3);
     if (keys.left) sprite.angle -= turn * DEG;
     if (keys.right) sprite.angle += turn * DEG;
     var d = _forward(sprite);
@@ -296,24 +311,24 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     sprite.y = _finiteNumber(sprite.y, 0) + _finiteNumber(sprite.vy, 0);
   }
   /** Devolve a direção (em GRAUS) que o sprite está apontando. */
-  function spriteAngleDeg(s) {
-    if (!s || !_isFiniteNumber(s.angle)) return 0;
-    return s.angle / DEG;
+  function spriteAngleDeg(sprite) {
+    if (!sprite || !_isFiniteNumber(sprite.angle)) return 0;
+    return sprite.angle / DEG;
   }
   /**
    * Atira do sprite PARA A FRENTE: cria um tiro na ponta do sprite, com
    * velocidade na direção apontada. Reusa o tiro brilhante (spawnBullet).
    */
-  function shootFrom(sprite, group, opts) {
+  function shootFrom(sprite, group, options) {
     if (!sprite || !group) return null;
-    opts = opts || {};
-    var speed = _finiteNumber(opts.speed, 6);
+    options = options || {};
+    var speed = _finiteNumber(options.speed, 6);
     var d = _forward(sprite);
     var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
     var nose = Math.max(sprite.w || 0, sprite.h || 0) / 2 + 4;
     return spawnBullet(group, {
       x: cx + d.x * nose, y: cy + d.y * nose,
-      radius: opts.radius, color: opts.color,
+      radius: options.radius, color: options.color,
       vx: d.x * speed, vy: d.y * speed
     });
   }
@@ -322,17 +337,17 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * Sorteia um dos 4 lados, nasce logo fora dele e ganha velocidade pra dentro.
    * Reusa o asteroide desenhado (spawnAsteroid).
    */
-  function spawnAsteroidFromEdge(group, opts) {
+  function spawnAsteroidFromEdge(group, options) {
     if (!group) return null;
-    opts = opts || {};
+    options = options || {};
     var ctx = ensureStage();
     var visible = _visibleWorldRect(ctx);
     var W = visible.width || 360;
     var H = visible.height || 360;
     var left = visible.left, top = visible.top;
     var right = left + W, bottom = top + H;
-    var speed = _finiteNumber(opts.speed, 1.5);
-    var base = _positiveFiniteNumber(opts.size, 40);
+    var speed = _finiteNumber(options.speed, 1.5);
+    var base = _positiveFiniteNumber(options.size, 40);
     var m = base;
     var side = Math.floor(Math.random() * 4);
     var x, y;
@@ -340,7 +355,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     else if (side === 1) { x = left + Math.random() * W; y = bottom + m; }
     else if (side === 2) { x = right + m; y = top + Math.random() * H; }
     else { x = left + Math.random() * W; y = top - m; }
-    var asteroid = spawnAsteroid(group, { x: x, y: y, size: base, color: opts.color, vx: 0, vy: 0 });
+    var asteroid = spawnAsteroid(group, { x: x, y: y, size: base, color: options.color, vx: 0, vy: 0 });
     if (!asteroid) return null;
     var dx = left + W / 2 - (asteroid.x + asteroid.w / 2);
     var dy = top + H / 2 - (asteroid.y + asteroid.h / 2);
