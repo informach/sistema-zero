@@ -12,13 +12,19 @@ const cfg: CircuitBreakerConfig = {
 
 describe('StoreCircuitBreaker', () => {
   test('closed → open → half-open → closed', async () => {
-    const breaker = new StoreCircuitBreaker(createInMemoryStore(), () => cfg, 0)
+    // Relógio injetado: dirige as transições por um clock controlado em vez do tempo
+    // real (Bun.sleep), que era racy sob carga do CI — ver o `now` do StoreCircuitBreaker.
+    let clock = 1_000_000
+    const now = () => clock
+    const breaker = new StoreCircuitBreaker(createInMemoryStore(), () => cfg, 0, now)
 
     const initial = await breaker.beforeCall('svc', 'up')
     expect(initial.allow).toBe(true)
     expect(initial.state).toBe('closed')
 
-    // Dispara falhas suficientes para abrir (total>=4 e taxa>=0.5).
+    // Dispara falhas suficientes para abrir (total>=4 e taxa>=0.5). Com o relógio
+    // PARADO, as 4 falhas caem na MESMA janela de contagem (cooldownMs) — não depende
+    // de o loop rodar em menos de cooldownMs de tempo real.
     for (let i = 0; i < 4; i++) {
       const d = await breaker.beforeCall('svc', 'up')
       await breaker.onResult('svc', 'up', false, d.token)
@@ -28,7 +34,7 @@ describe('StoreCircuitBreaker', () => {
     expect(opened.allow).toBe(false)
     expect(opened.state).toBe('open')
 
-    await Bun.sleep(80) // > cooldown (Bun.sleep é ref'd; o sleep do app é unref'd de propósito)
+    clock += 80 // > cooldownMs: avança o relógio injetado (determinístico, sem sleep)
     const half = await breaker.beforeCall('svc', 'up')
     expect(half.state).toBe('half-open')
     expect(half.allow).toBe(true)
