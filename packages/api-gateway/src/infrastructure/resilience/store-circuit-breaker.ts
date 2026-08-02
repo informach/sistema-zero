@@ -31,6 +31,14 @@ export class StoreCircuitBreaker implements CircuitBreaker {
     private readonly store: GatewayStore,
     private readonly getConfig: (serviceId: string) => CircuitBreakerConfig | undefined,
     private readonly localCacheMs = 250,
+    /**
+     * Relógio injetável (default `Date.now`). Todas as leituras de tempo do breaker
+     * passam por aqui — incluindo o `now` propagado ao store (`increment`/`recordOutcome`) —
+     * para que os testes dirijam as transições (cooldown, janela de contagem) por um
+     * relógio controlado, sem depender do tempo real (flake sob carga do CI). Em produção
+     * é `Date.now`, idêntico ao comportamento anterior.
+     */
+    private readonly now: () => number = Date.now,
   ) {}
 
   async beforeCall(serviceId: string, upstreamId: string): Promise<BreakerDecision> {
@@ -44,7 +52,7 @@ export class StoreCircuitBreaker implements CircuitBreaker {
     } catch {
       return { allow: true, state: 'closed' } // fail-open
     }
-    const now = Date.now()
+    const now = this.now()
 
     if (!st || st.state === 'closed') return { allow: true, state: 'closed' }
 
@@ -55,7 +63,11 @@ export class StoreCircuitBreaker implements CircuitBreaker {
       // Só quem incrementar o gate para 1 roda o teste; os demais seguem barrados.
       let won: boolean
       try {
-        const hit = await this.store.increment(this.trialKey(serviceId, upstreamId), cfg.cooldownMs)
+        const hit = await this.store.increment(
+          this.trialKey(serviceId, upstreamId),
+          cfg.cooldownMs,
+          now,
+        )
         won = hit.count === 1
       } catch {
         return { allow: true, state: 'closed' } // fail-open
@@ -109,6 +121,7 @@ export class StoreCircuitBreaker implements CircuitBreaker {
         this.countsKey(serviceId, upstreamId),
         ok,
         cfg.cooldownMs,
+        this.now(),
       )
       if (total >= cfg.minThroughput && fail / total >= cfg.failureRate) {
         await this.open(key, cfg)
@@ -119,13 +132,13 @@ export class StoreCircuitBreaker implements CircuitBreaker {
   }
 
   private async open(key: string, cfg: CircuitBreakerConfig): Promise<void> {
-    const v: StoredState = { state: 'open', openedAt: Date.now() }
+    const v: StoredState = { state: 'open', openedAt: this.now() }
     await this.writeState(key, v, cfg.cooldownMs * 2)
   }
 
   private async readState(key: string): Promise<StoredState | null> {
     const cached = this.cache.get(key)
-    const now = Date.now()
+    const now = this.now()
     if (cached && now - cached.at < this.localCacheMs) return cached.st
     const st = await this.store.get<StoredState>(key)
     this.cache.set(key, { st, at: now })
@@ -134,7 +147,7 @@ export class StoreCircuitBreaker implements CircuitBreaker {
 
   private async writeState(key: string, st: StoredState, ttlMs: number): Promise<void> {
     await this.store.set(key, st, ttlMs)
-    this.cache.set(key, { st, at: Date.now() })
+    this.cache.set(key, { st, at: this.now() })
   }
 
   private stateKey(s: string, u: string): string {

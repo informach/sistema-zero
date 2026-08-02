@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { REUNIR_REBANHO_SOURCE as SOURCE } from '../__gen_reunirRebanho'
 import { gameThreeDBlocks } from '../blocks'
 import { reunirRebanhoBasicoExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -32,7 +31,7 @@ beforeAll(() => {
 
 describe('Exemplo Reunir o Rebanho — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(reunirRebanhoBasicoExample)
+    expect(gameThreeDExamples).toContain(reunirRebanhoBasicoExample)
     expect(reunirRebanhoBasicoExample.experience).toBe('game')
     expect(reunirRebanhoBasicoExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -123,3 +122,5 @@ describe('Exemplo Reunir o Rebanho — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

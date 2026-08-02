@@ -3,7 +3,6 @@ import { behaviorStatements, type JSStatement } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { TREINADOR_DE_CRIATURAS_SOURCE as SOURCE } from '../__gen_treinadorDeCriaturas'
 import { treinadorDeCriaturasExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -20,7 +19,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Treinador de Criaturas — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(treinadorDeCriaturasExample)
+    expect(gameTwoDExamples).toContain(treinadorDeCriaturasExample)
     expect(treinadorDeCriaturasExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(treinadorDeCriaturasExample.name).toBe('Treinador de Criaturas')
     expect(treinadorDeCriaturasExample.experience).toBe('game')
@@ -88,3 +87,5 @@ describe('Exemplo Treinador de Criaturas — drift contra o parser real', () => 
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

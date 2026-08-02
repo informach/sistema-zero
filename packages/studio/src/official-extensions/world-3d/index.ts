@@ -1,5 +1,5 @@
 import type { ExtensionDefinition } from '#extensions'
-import { validateManifest, WORLD_3D_LIFECYCLE } from '#extensions'
+import { defineExtensionExamples, validateManifest, WORLD_3D_LIFECYCLE } from '#extensions'
 import { THREE_CDN } from '../../three/threeRuntimeContract'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { world3DPromptContext } from './ai'
@@ -24,6 +24,7 @@ const HDR_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/HDRLoader.js?external=
 
 export const worldThreeDExtension: ExtensionDefinition = {
   manifest: world3DManifest,
+  examples: defineExtensionExamples(13, async () => (await import('./examples')).world3DExamples),
   conflictsWith: fullscreenConflictsFor('world-3d'),
   // O Mundo 3D e o Jogo 3D Avançado abrem no intermediário 3D (26/07), um degrau
   // acima da entrada do 3D: o Mundo oferece blocos "mágicos" de alto nível (1 bloco

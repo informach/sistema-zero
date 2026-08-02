@@ -1109,6 +1109,9 @@ Sentry `sistema-zero-community-kids` + DSN no host.
 ## Zappy do Studio (08/2026)
 
 - O tutor é injetado somente em `StudioFullClient` e `StudioProClient`; players de aula e o
-  Pensa não recebem `tutor`, portanto não exibem o botão.
+  Pensa não recebem `tutor`, portanto não exibem o botão. A capability `zappyEnabled` é derivada
+  no Server Component pelo mesmo gate do BFF, então contas fora do piloto não veem a UI.
 - Configuração do piloto: `ZAPPY_ENABLED`, `ZAPPY_PILOT_ACCOUNT_IDS` e, opcionalmente,
   `OPENROUTER_ZAPPY_MODEL`. As rotas Next são shims finos para os handlers do member-shell.
+- Chips de aula só existem em respostas com `courseSlug` autoritativo e abrem
+  `/cursos/:slug/aulas/:lessonId` em nova aba com `noopener,noreferrer`.

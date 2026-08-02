@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { TIRO_SOURCE } from '../__gen_tiro'
 import { gameKit3DBlocks } from '../blocks'
 import { tiroAoAlvoExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -31,7 +30,7 @@ beforeAll(() => {
 
 describe('Exemplo Tiro ao Alvo — drift contra o parser real', () => {
   it('está registrado no manifest', () => {
-    expect(gameKit3DManifest.examples).toContain(tiroAoAlvoExample)
+    expect(gameKit3DExamples).toContain(tiroAoAlvoExample)
     expect(tiroAoAlvoExample.ir.extensions).toEqual([{ extensionId: 'game-3d-advanced' }])
   })
 
@@ -95,3 +94,5 @@ describe('Exemplo Tiro ao Alvo — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

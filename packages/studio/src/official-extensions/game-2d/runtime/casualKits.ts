@@ -19,7 +19,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     target[mapKey][id] = fn;
   }
   function _kitFireHandlers(target, mapKey, orderKey, label) {
-    if (!target || !target[orderKey]) return;
+    if (!target || !target[orderKey]) return false;
     var generation = _driverGeneration;
     var order = target[orderKey].slice();
     for (var i = 0; i < order.length; i++) {
@@ -31,8 +31,9 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
         _reportHandlerError(label, id, error);
         _removeOrderedIfCurrent(target[mapKey], target[orderKey], id, handler);
       }
-      if (_runGenerationChanged(generation)) return;
+      if (_runGenerationChanged(generation)) return true;
     }
+    return false;
   }
   function _kitColor(value, fallback) {
     return (typeof value === 'string' && value) ? value : fallback;
@@ -144,6 +145,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     for (var i = 0; i < 12; i++) shGenerateTree(path);
     path.heroX = path.platforms[0].x + path.platforms[0].w - path.cfg.heroEdge;
     path.heroY = 0;
+    path._pendingCross = null;
   }
   function createStickPath(ctx, opts) {
     if (!ctx || !ctx.canvas) return null;
@@ -224,9 +226,9 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     _stickPathSync(path);
     if (path.phase === 'stretching') path.phase = 'turning';
   }
-  // ANDAR: o bastão derrubado gira até deitar, o acerto é resolvido (eventos de
-  // atravessar/perfeito, SEM somar pontos — o placar é da criança), e o herói
-  // anda, atravessa (o mundo desliza) ou cai. Posiciona o SPRITE em coords de
+  // ANDAR: o bastão derrubado gira até deitar, o acerto é guardado, e o herói
+  // anda. Os eventos de atravessar/perfeito disparam quando ele alcança a outra
+  // plataforma (SEM somar pontos — o placar é da criança). Posiciona o SPRITE em coords de
   // tela — o "Desenhar o sprite" genérico desenha o herói no lugar certo.
   function stickPathWalk(path, hero, speed) {
     if (!path) return;
@@ -243,10 +245,9 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
         var hit = shHitPlatform(path);
         if (hit.platform) {
           shGeneratePlatform(path); shGenerateTree(path); shGenerateTree(path);
-          _kitFireHandlers(path, '_onCross', '_onCrossOrder', '"Quando o equilibrista atravessar uma plataforma"');
-          if (hit.perfect) {
-            _kitFireHandlers(path, '_onPerfect', '_onPerfectOrder', '"Quando o equilibrista acertar bem no meio"');
-          }
+          path._pendingCross = { perfect: hit.perfect };
+        } else {
+          path._pendingCross = null;
         }
         path.phase = 'walking';
       }
@@ -255,7 +256,25 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       var hw = shHitPlatform(path);
       if (hw.platform) {
         var maxX = hw.platform.x + hw.platform.w - cfg.heroEdge;
-        if (path.heroX > maxX) { path.heroX = maxX; path.phase = 'transitioning'; }
+        if (path.heroX > maxX) {
+          path.heroX = maxX;
+          path.phase = 'transitioning';
+          if (hero) {
+            var reachedTop = path.h - cfg.platformH;
+            hero.x = path.heroX - path.sceneOffset - heroW / 2;
+            hero.y = reachedTop - heroH + path.heroY;
+          }
+          var pendingCross = path._pendingCross;
+          path._pendingCross = null;
+          if (pendingCross) {
+            var interrupted = _kitFireHandlers(path, '_onCross', '_onCrossOrder', '"Quando o equilibrista atravessar uma plataforma"');
+            if (interrupted) return;
+            if (pendingCross.perfect) {
+              interrupted = _kitFireHandlers(path, '_onPerfect', '_onPerfectOrder', '"Quando o equilibrista acertar bem no meio"');
+              if (interrupted) return;
+            }
+          }
+        }
       } else {
         var maxX2 = st.x + st.length + heroW;
         if (path.heroX > maxX2) { path.heroX = maxX2; path.phase = 'falling'; }

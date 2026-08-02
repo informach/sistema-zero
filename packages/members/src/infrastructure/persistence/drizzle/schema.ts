@@ -347,6 +347,14 @@ export const studioSubmissions = members.table(
      * futuro caminho de escrita não passe pela borda validada.
      */
     message: varchar('message', { length: 1000 }),
+    /**
+     * Quando o professor disse "já conferi". Comparado com `submitted_at` (>=), a
+     * MESMA régua da resposta do professor: um reenvio da criança reabre a
+     * pendência sozinho. `null` = nunca conferida.
+     */
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    /** Qual staff carimbou (auditoria). */
+    reviewedBy: uuid('reviewed_by'),
   },
   (t) => [
     uniqueIndex('studio_submissions_user_block_uq').on(t.userId, t.blockId),

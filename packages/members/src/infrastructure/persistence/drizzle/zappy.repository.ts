@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, eq, gt, gte, isNotNull, lte, sql } from 'drizzle-orm'
+import { and, asc, eq, gt, gte, isNotNull, lt, lte, sql } from 'drizzle-orm'
 import type {
   CompleteZappyQuestionInput,
   ReserveZappyQuestionInput,
@@ -36,6 +36,17 @@ function toResponse(row: {
     ...(Array.isArray(value.lessonReferences) ? { lessonReferences: value.lessonReferences } : {}),
     createdAt: row.createdAt.toISOString(),
   }
+}
+
+/** Janela mensal semiaberta com os dois Date codificados pelo tipo timestamp da coluna. */
+export function zappyMetricsPeriod(from: Date, to: Date) {
+  const period = and(
+    eq(zappyMessages.role, 'assistant'),
+    gte(zappyMessages.createdAt, from),
+    lt(zappyMessages.createdAt, to),
+  )
+  if (!period) throw new Error('Janela de métricas do Zappy inválida')
+  return period
 }
 
 export class DrizzleZappyRepository implements ZappyRepository {
@@ -291,13 +302,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         averageLatencyMs: sql<number>`coalesce(round(avg(${zappyMessages.latencyMs})), 0)::int`,
       })
       .from(zappyMessages)
-      .where(
-        and(
-          eq(zappyMessages.role, 'assistant'),
-          gte(zappyMessages.createdAt, from),
-          sql`${zappyMessages.createdAt} < ${to}`,
-        ),
-      )
+      .where(zappyMetricsPeriod(from, to))
     return {
       questions: row?.questions ?? 0,
       useful: row?.useful ?? 0,

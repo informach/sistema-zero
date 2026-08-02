@@ -9,6 +9,7 @@ import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { gameTwoDBlocks } from '../blocks'
+import { gameTwoDExamples } from '../exampleCatalog'
 import {
   animatedHeroExample,
   asteroidsExample,
@@ -22,7 +23,6 @@ import {
   tilemapExample,
 } from '../examples'
 import { gameTwoDExtension } from '../index'
-import { gameTwoDManifest } from '../manifest'
 
 describe('game-2d — definição da extensão', () => {
   it('nível iniciante-2d — Kit facilitador, já aparece na paleta do iniciante', () => {
@@ -44,25 +44,26 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
 }
 
 /**
- * T2 — VARREDURA de TODOS os exemplos do manifest (os cards da vitrine). Antes,
+ * T2 — VARREDURA de TODOS os exemplos do catálogo (os cards da vitrine). Antes,
  * "Equilibrista" e "Balão" (stickHero/balloon) tinham ZERO teste e nenhum teste
- * iterava manifest.examples — um exemplo com IR obsoleta ou rawJS vazando chegava
+ * iterava o catálogo — um exemplo com IR obsoleta ou rawJS vazando chegava
  * à vitrine sem alarme. Cada card agora prova: schema válido, 0 rawJS, round-trip
  * por BLOCOS (IR→blocos→IR sem rawJS, com todos os statements) e a Ponte
  * (JS→IR sem rawJS). Cobre por CONSTRUÇÃO qualquer exemplo NOVO adicionado.
  */
-describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
+describe('game-2d — todos os exemplos da vitrine', () => {
   beforeAll(() => {
     ensureBlocklyInitialized()
     registerExtensionBlocks(gameTwoDBlocks)
   })
 
   it('a vitrine tem os 31 exemplos (anti-vácuo)', () => {
-    expect(gameTwoDManifest.examples.length).toBe(31)
+    expect(gameTwoDExamples.length).toBe(31)
+    expect(gameTwoDExtension.examples.count).toBe(31)
   })
 
   it('todos ensinam início e preparo explícitos, sem canvas escondido no HTML', () => {
-    for (const example of gameTwoDManifest.examples) {
+    for (const example of gameTwoDExamples) {
       expect(example.ir.html.some((node) => node.type === 'canvas')).toBe(false)
       expect(example.ir.behavior.start[0]?.type).toBe('g2d:setupStage')
       expect(
@@ -74,11 +75,11 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
 
   it('mantém a classificação prometida: 26 jogos, 4 demonstrações e 1 exploração', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
-    for (const example of gameTwoDManifest.examples) counts[example.experience] += 1
+    for (const example of gameTwoDExamples) counts[example.experience] += 1
     expect(counts).toEqual({ game: 26, demo: 4, exploration: 1 })
   })
 
-  for (const ex of gameTwoDManifest.examples) {
+  for (const ex of gameTwoDExamples) {
     describe(ex.name, () => {
       it('IR válido no SZIRSchema, sem rawJS', () => {
         expect(SZIRV2Schema.safeParse(ex.ir).success).toBe(true)
@@ -187,7 +188,7 @@ describe('game-2d — exemplos com imagem são autossuficientes', () => {
 describe('game-2d — demonstrações explicam os controles no próprio palco', () => {
   for (const example of [
     animatedHeroExample,
-    gameTwoDManifest.examples.find((candidate) => candidate.name === 'Mini plataforma'),
+    gameTwoDExamples.find((candidate) => candidate.name === 'Mini plataforma'),
     tilemapExample,
     codeDrawnExample,
   ]) {

@@ -17,7 +17,6 @@ import { parseJS } from '../../../parsers/js'
 import { TREINADOR_DE_CRIATURAS_SOURCE as SOURCE } from '../__gen_treinadorDeCriaturas'
 import { gameKitBlocks } from '../blocks'
 import { treinadorDeCriaturasExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Treinador de Criaturas Profissional" — o pokemon-style-game
@@ -35,7 +34,7 @@ beforeAll(() => {
 
 describe('Exemplo Treinador de Criaturas Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(treinadorDeCriaturasExample)
+    expect(gameKitExamples).toContain(treinadorDeCriaturasExample)
     expect(treinadorDeCriaturasExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(treinadorDeCriaturasExample.name).toBe('Treinador de Criaturas Profissional')
     expect(treinadorDeCriaturasExample.experience).toBe('game')
@@ -175,3 +174,5 @@ describe('Exemplo Treinador de Criaturas Profissional — drift contra o parser 
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

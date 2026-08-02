@@ -17,7 +17,6 @@ import { parseJS } from '../../../parsers/js'
 import { BATALHA_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_batalhaProfissional'
 import { gameKitBlocks } from '../blocks'
 import { batalhaProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Batalha de Monstrinhos Profissional" — o nível 2 da
@@ -34,7 +33,7 @@ beforeAll(() => {
 
 describe('Exemplo Batalha de Monstrinhos Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(batalhaProfissionalExample)
+    expect(gameKitExamples).toContain(batalhaProfissionalExample)
     expect(batalhaProfissionalExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(batalhaProfissionalExample.name).toBe('Batalha de Monstrinhos Profissional')
     expect(batalhaProfissionalExample.experience).toBe('game')
@@ -203,3 +202,5 @@ describe('Exemplo Batalha de Monstrinhos Profissional — drift contra o parser 
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

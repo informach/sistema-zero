@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { PORTAS_DO_CASTELO_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_portasDoCasteloProfissional'
 import { gameKitBlocks } from '../blocks'
 import { portasDoCasteloProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Portas do Castelo Profissional" — o kings-and-pigs do Chris
@@ -34,7 +33,7 @@ beforeAll(() => {
 
 describe('Exemplo Portas do Castelo Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(portasDoCasteloProfissionalExample)
+    expect(gameKitExamples).toContain(portasDoCasteloProfissionalExample)
     expect(portasDoCasteloProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-2d-advanced' },
     ])
@@ -143,3 +142,5 @@ describe('Exemplo Portas do Castelo Profissional — drift contra o parser real'
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

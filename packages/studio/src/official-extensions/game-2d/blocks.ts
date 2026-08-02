@@ -579,6 +579,8 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_hitbox_scale: { PERCENT: numShadow(80) },
   sz_g2d_random_between: { MIN: numShadow(1), MAX: numShadow(6) },
   sz_g2d_random_chance: { PERCENT: numShadow(30) },
+  sz_g2d_random_x: { SIZE: numShadow(40) },
+  sz_g2d_random_y: { SIZE: numShadow(40) },
   sz_g2d_cooldown_ready: { FRAMES: numShadow(20) },
 }
 

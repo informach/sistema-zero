@@ -1,5 +1,5 @@
 import type { ExtensionDefinition } from '#extensions'
-import { GAME_3D_LIFECYCLE, validateManifest } from '#extensions'
+import { defineExtensionExamples, GAME_3D_LIFECYCLE, validateManifest } from '#extensions'
 import { THREE_CDN } from '../../preview/coreImports'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameThreeDPromptSummary } from './aiSummary'
@@ -12,6 +12,10 @@ validateManifest(gameThreeDManifest)
 
 export const gameThreeDExtension: ExtensionDefinition = {
   manifest: gameThreeDManifest,
+  examples: defineExtensionExamples(
+    18,
+    async () => (await import('./exampleCatalog')).gameThreeDExamples,
+  ),
   conflictsWith: fullscreenConflictsFor('game-3d'),
   // Kit facilitador de jogo 3D → é a PORTA DE ENTRADA do 3D (iniciante-3d, o
   // degrau logo após o Inventor na carreira); o "na unha"/manual fica avançado-3d.

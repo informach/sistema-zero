@@ -151,12 +151,12 @@ describe('g3k — a doc não pode citar categoria que não existe', () => {
     // inclusive os futuros: cada drift individual tem o seu it, e este varre o
     // manifest inteiro para que um exemplo NOVO sem drift próprio não escape.
     const ruins: string[] = []
-    for (const ex of gameKit3DManifest.examples ?? []) {
+    for (const ex of gameKit3DExamples) {
       if (ex.name.includes('—')) ruins.push(`${ex.name}: name`)
       if ((ex.description ?? '').includes('—')) ruins.push(`${ex.name}: description`)
       if (JSON.stringify(ex.ir).includes('—')) ruins.push(`${ex.name}: ir`)
     }
-    expect(gameKit3DManifest.examples?.length ?? 0).toBeGreaterThanOrEqual(10)
+    expect(gameKit3DExamples.length).toBeGreaterThanOrEqual(10)
     expect(ruins).toEqual([])
   })
 
@@ -186,3 +186,5 @@ describe('g3k — a doc não pode citar categoria que não existe', () => {
     }).toEqual({ foraDaToolbox: [], emDoisLugares: [], fantasmasNaToolbox: [], categoriaMais: [] })
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

@@ -9,6 +9,10 @@ limitado. Assets, data URLs e binários são removidos. O host é responsável p
 persistência, provedor e autorização.
 
 O botão da barra abre um diálogo lateral sem remontar Blockly ou Monaco. Referências validadas
-podem centralizar uma instância existente ou abrir sua categoria; o tutor nunca altera o projeto.
+podem centralizar uma instância existente ou abrir a categoria que contém o `blockType` exato;
+o rótulo da categoria é apenas fallback exato. O tutor nunca altera o projeto.
+Tentativas repetidas após falha reutilizam o mesmo `clientMessageId`, e o cooldown usa timeout
+finito. Referências de aula com `courseSlug` viram chips somente quando o host fornece
+`openLesson`; respostas históricas sem slug continuam legíveis, sem link quebrado.
 O catálogo autoritativo é exportado em `@sistemazero/studio/server-catalog`, e os manuais oficiais
 server-safe em `@sistemazero/studio/server-knowledge`.

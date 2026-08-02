@@ -443,6 +443,12 @@ export interface StudioStateView {
   lastScore?: number | null
   /** Atingiu a nota de corte (sticky). */
   passed?: boolean
+  /**
+   * O professor já conferiu ESTA entrega. Reenviar volta para `false` (a versão
+   * nova ainda não foi olhada). Não tem relação com a nota: é o professor
+   * dizendo que viu.
+   */
+  reviewed?: boolean
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
@@ -941,7 +947,12 @@ export interface ZappyStoredResponseView {
     category: string
     area: string
   }>
-  lessonReferences?: Array<{ courseId: string; lessonId: string; title: string }>
+  lessonReferences?: Array<{
+    courseId: string
+    courseSlug?: string
+    lessonId: string
+    title: string
+  }>
   createdAt: string
 }
 
@@ -955,6 +966,7 @@ export interface ZappyHistoryMessageView {
 
 export interface ZappyKnowledgeHitView {
   courseId: string
+  courseSlug: string
   courseTitle: string
   lessonId: string
   lessonTitle: string

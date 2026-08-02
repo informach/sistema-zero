@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { VALE_ENSOLARADO_SOURCE as SOURCE } from '../__gen_valeEnsolarado'
 import { gameKitBlocks } from '../blocks'
 import { valeEnsolaradoExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Vale Ensolarado Profissional" — o sunnyland-platformer sobre
@@ -32,7 +31,7 @@ beforeAll(() => {
 
 describe('Exemplo Vale Ensolarado Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(valeEnsolaradoExample)
+    expect(gameKitExamples).toContain(valeEnsolaradoExample)
     expect(valeEnsolaradoExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(valeEnsolaradoExample.name).toBe('Vale Ensolarado Profissional')
     expect(valeEnsolaradoExample.experience).toBe('game')
@@ -137,3 +136,5 @@ describe('Exemplo Vale Ensolarado Profissional — drift contra o parser real', 
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

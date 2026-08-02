@@ -14,7 +14,7 @@ import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
+import { CheckCheck, CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
@@ -117,6 +117,8 @@ export function StudioBlockView({
   const [alreadyShared, setAlreadyShared] = useState<boolean>(() => readSharedFlag(projectId))
   const [score, setScore] = useState<number | null>(studioState?.lastScore ?? null)
   const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
+  // "O professor já conferiu": some ao reenviar (a versão nova ainda não foi vista).
+  const [reviewed, setReviewed] = useState<boolean>(studioState?.reviewed ?? false)
   const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(() => expandedByProject.get(projectId) ?? false)
@@ -289,6 +291,7 @@ export function StudioBlockView({
       )
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)
+      setReviewed(false) // entrega nova: o carimbo do professor não vale mais
       if (res.score !== undefined) setScore(res.score)
       if (res.passed !== undefined) setPassed(res.passed)
       setXp(res.gamification?.xpAwarded ?? null)
@@ -508,11 +511,19 @@ export function StudioBlockView({
       ) : null}
 
       {submitted ? (
-        <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
-          <CheckCircle2 className="size-4" />
-          Projeto enviado ao professor
-          {submittedAt ? ` em ${new Date(submittedAt).toLocaleString('pt-BR')}` : ''}.
-        </p>
+        <div className="space-y-1">
+          <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
+            <CheckCircle2 className="size-4" />
+            Projeto enviado ao professor
+            {submittedAt ? ` em ${new Date(submittedAt).toLocaleString('pt-BR')}` : ''}.
+          </p>
+          {/* O professor carimbou "já conferi". Não é nota: é ele dizendo que viu. */}
+          {reviewed ? (
+            <p className="flex items-center gap-2 text-sm text-success">
+              <CheckCheck className="size-4" />O professor já conferiu sua entrega.
+            </p>
+          ) : null}
+        </div>
       ) : (
         <p className="text-xs text-muted-foreground">
           {passingScore !== undefined

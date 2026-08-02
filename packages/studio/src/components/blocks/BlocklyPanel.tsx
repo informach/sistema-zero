@@ -47,6 +47,7 @@ import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 import { STUDIO_COMPACT_MAX_PX } from '../layout/layoutBreakpoints'
+import { openTutorCategory } from './tutorCategory'
 
 ensureBlocklyInitialized()
 
@@ -169,35 +170,6 @@ function isBlockInView(workspace: Blockly.WorkspaceSvg, block: Blockly.BlockSvg)
   } catch {
     return false
   }
-}
-
-interface TutorToolboxItem {
-  getName?: () => string
-  getChildToolboxItems?: () => TutorToolboxItem[]
-}
-
-/** Abre a categoria autoritativa devolvida pelo catálogo do tutor (API pública do Blockly). */
-function openTutorCategory(workspace: Blockly.WorkspaceSvg, category: string): boolean {
-  const toolbox = workspace.getToolbox?.() as {
-    getToolboxItems?: () => TutorToolboxItem[]
-    setSelectedItem?: (item: TutorToolboxItem) => void
-  } | null
-  if (!toolbox?.getToolboxItems || !toolbox.setSelectedItem) return false
-  const wanted = category.trim().toLocaleLowerCase('pt-BR')
-  const visit = (items: TutorToolboxItem[]): TutorToolboxItem | null => {
-    for (const item of items) {
-      const name = item.getName?.().trim().toLocaleLowerCase('pt-BR') ?? ''
-      if (name === wanted || name.endsWith(wanted) || name.includes(wanted)) return item
-      const nested = item.getChildToolboxItems?.() ?? []
-      const found = visit(nested)
-      if (found) return found
-    }
-    return null
-  }
-  const item = visit(toolbox.getToolboxItems())
-  if (!item) return false
-  toolbox.setSelectedItem(item)
-  return true
 }
 
 function resizeBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
@@ -816,7 +788,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       }
       return
     }
-    openTutorCategory(workspace as Blockly.WorkspaceSvg, tutorTarget.category)
+    openTutorCategory(
+      workspace as Blockly.WorkspaceSvg,
+      tutorTarget.blockType,
+      tutorTarget.category,
+    )
   }, [workspace, highlightSource, tutorTarget])
 
   // Restaura blocksState quando trocar de projeto ou quando a Ponte gerar

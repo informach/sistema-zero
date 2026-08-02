@@ -1,28 +1,9 @@
 import type { ExtensionManifest } from '#extensions'
-import {
-  aLendaDoHeroiProfissionalExample,
-  atravesseProfissionalExample,
-  cacaEstelarProfissionalExample,
-  cercoNaBaseProfissionalExample,
-  chefaoDasSombrasExample,
-  corridaInfinitaProfissionalExample,
-  defesaDaTorreExample,
-  guardiaoDoPortalExample,
-  labirintoDosRobosProfissionalExample,
-  minaDeCristaisProfissionalExample,
-  mundoDeBlocosProfissionalExample,
-  parkourDoVulcaoExample,
-  patrulhaEspacialProfissionalExample,
-  quadraMalucaExample,
-  reunirRebanhoProfissionalExample,
-  saltoNasNuvensExample,
-  tiroAoAlvoExample,
-} from './examples'
 
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.21.0',
+  version: '0.21.1',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com zoom, tremor e WASD relativo a ela; partículas; enxames com pool; vizinhança por grade; combate com chefões, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
@@ -340,23 +321,4 @@ maior e se cura um pouco. Desvie do anel com WASD.
 > ⚠️ Use APENAS UMA extensão de jogo por projeto (Jogo 2D, Jogo 2D Avançado,
 > Jogo 3D ou esta). Cada uma cria a própria tela e elas brigam pelo canvas.
 `,
-  examples: [
-    defesaDaTorreExample,
-    saltoNasNuvensExample,
-    parkourDoVulcaoExample,
-    quadraMalucaExample,
-    guardiaoDoPortalExample,
-    tiroAoAlvoExample,
-    chefaoDasSombrasExample,
-    corridaInfinitaProfissionalExample,
-    labirintoDosRobosProfissionalExample,
-    mundoDeBlocosProfissionalExample,
-    patrulhaEspacialProfissionalExample,
-    atravesseProfissionalExample,
-    reunirRebanhoProfissionalExample,
-    aLendaDoHeroiProfissionalExample,
-    cacaEstelarProfissionalExample,
-    cercoNaBaseProfissionalExample,
-    minaDeCristaisProfissionalExample,
-  ],
 }

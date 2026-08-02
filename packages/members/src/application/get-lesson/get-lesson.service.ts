@@ -98,6 +98,9 @@ export class GetLessonService {
         submittedAt: null,
         lastScore: state?.score ?? null,
         passed: state?.passed ?? false,
+        // O carimbo do professor vale para a entrega ATUAL: um reenvio depois
+        // dele apaga o selo (a versão nova ainda não foi conferida).
+        reviewed: state?.reviewedAt != null && state.reviewedAt >= state.submittedAt,
       })
     }
 

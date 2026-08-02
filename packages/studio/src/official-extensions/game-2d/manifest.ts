@@ -1,43 +1,10 @@
 import type { ExtensionManifest } from '#extensions'
-import {
-  animatedHeroExample,
-  asteroidsClassicExample,
-  asteroidsExample,
-  aventuraHeroiExample,
-  balloonExample,
-  batalhaMonstrinhosExample,
-  cameraAdventureExample,
-  catchCoinExample,
-  chuvaDeMeteorosExample,
-  codeDrawnExample,
-  dinoCorredorExample,
-  dinoRunExample,
-  dueloDeHeroisExample,
-  enemyPlatformerExample,
-  escaladaDoGuerreiroExample,
-  fazendaFelizExample,
-  gorilasExample,
-  gorilasVsRobotExample,
-  heroiQueEvoluiExample,
-  mundoPirataExample,
-  muralhaDoReinoExample,
-  platformerExample,
-  pongExample,
-  portasDoCasteloExample,
-  safariDeMonstrosExample,
-  sobreviventeExample,
-  stickHeroExample,
-  tilemapExample,
-  treinadorDeCriaturasExample,
-  valeEnsolaradoExample,
-  vilaNinjaExample,
-} from './examples'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.55.1',
+  version: '0.55.2',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -351,7 +318,7 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
 
 - **🎯 Mira e contas**: **Apontar para** e **Mover na direção de** (perseguição/IA), **a distância entre** e
   **o ângulo até** dois sprites, **um número de … a …** (sorteia sempre um inteiro, incluindo as pontas) e
-  **tem chance de … %?** (evento aleatório).
+  **tem chance de … %?** (evento aleatório; valores abaixo de 0 nunca acontecem e acima de 100 sempre acontecem).
 - **❤️ Vida**: use **Dar ao sprite … de vida** uma vez em **⚙️ Ao iniciar**. Durante a partida, **Mudar a vida** cura ou tira pontos; **Machucar o sprite … e deixá-lo invencível** é a opção segura para contatos repetidos. Pergunte **a vida do sprite**, **a vida máxima**, **ainda tem vida?**, **as vidas acabaram?** ou **o sprite está invencível?**. Combine a última pergunta com **não** para disparar tremor, explosão ou som somente quando o dano puder acontecer. Para o HUD, **Desenhar as vidas do sprite** lê a vida automaticamente e oferece **corações** ou **barra**. Uma vida nunca fica negativa nem passa do máximo.
 - **⏱️ Tempo e repetição**: **pode agir? (recarga de N quadros)** (cadência de tiro por sprite) e
   **Tirar do grupo quem viveu mais de N segundos** (tiros somem sozinhos), junto dos blocos **A cada…**.
@@ -410,9 +377,10 @@ criança fazer as contas na mão:
 Na categoria **🎯 Mira e contas**, dois valores para um sprite nascer num lugar SORTEADO sem a criança
 montar a continha \`Math.random() * largura\` na mão:
 
-- **um x aleatório na tela** / **um y aleatório na tela**. Sorteia uma posição dentro da largura/altura
-  da tela. Encaixe no x (ou y) ao **criar** ou **spawnar** um sprite. Ex.: asteroides/estrelas nascendo
-  em pontos aleatórios. (Para um intervalo específico de números, continua valendo **um número de … a …**.)
+- **um x aleatório para largura …** / **um y aleatório para altura …**. Sorteia uma posição onde o
+  tamanho informado cabe inteiro na tela. Encaixe **a largura do sprite** no primeiro e **a altura do
+  sprite** no segundo para ele não nascer cortado. (Para um intervalo específico de números, continua
+  valendo **um número de … a …**.)
 
 ### Anime o personagem pelo estado
 
@@ -469,37 +437,4 @@ Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem n
 - **Criar sprite … com a figura**. Cria um sprite que usa esse desenho; ele anda, gira, vira, anima e colide como qualquer outro. **Trocar a figura** muda o desenho de um sprite.
 - **a largura / a altura da figura**. O tamanho do sprite que está sendo desenhado (para centralizar). Veja o exemplo **"Jogo desenhado por código"**.
 `),
-  examples: [
-    catchCoinExample,
-    pongExample,
-    animatedHeroExample,
-    platformerExample,
-    enemyPlatformerExample,
-    codeDrawnExample,
-    tilemapExample,
-    asteroidsExample,
-    asteroidsClassicExample,
-    dinoRunExample,
-    dinoCorredorExample,
-    batalhaMonstrinhosExample,
-    aventuraHeroiExample,
-    chuvaDeMeteorosExample,
-    mundoPirataExample,
-    safariDeMonstrosExample,
-    muralhaDoReinoExample,
-    escaladaDoGuerreiroExample,
-    dueloDeHeroisExample,
-    portasDoCasteloExample,
-    valeEnsolaradoExample,
-    vilaNinjaExample,
-    treinadorDeCriaturasExample,
-    sobreviventeExample,
-    fazendaFelizExample,
-    heroiQueEvoluiExample,
-    gorilasExample,
-    gorilasVsRobotExample,
-    stickHeroExample,
-    balloonExample,
-    cameraAdventureExample,
-  ],
 }

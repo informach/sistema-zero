@@ -2149,6 +2149,22 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // "Já conferi esta entrega" (`/studio-submissions/:blockId/:userId/review`).
+    // É a AÇÃO GÊMEA de responder o recado — a saída da fila para a entrega sem
+    // recado — então mesma régua: staff+, que é quem confere entrega todo dia.
+    // O wildcard não colide com a leitura acima (aquela é o literal de 3
+    // segmentos) e o corpo é um booleano só.
+    {
+      id: 'members-admin-studio-submissions-write',
+      methods: ['POST'],
+      pathPattern: '/members/admin/studio-submissions/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
     // Recados (conversas professor↔aluno) — lado do PROFESSOR (painel admin).
     // Responder aluno é tarefa diária de professor/staff → LEITURA e ESCRITA
     // staff+. Os wildcards `/*` casam o resto do path — inclusive a cauda vazia

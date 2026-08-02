@@ -3,7 +3,6 @@ import { behaviorStatements } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { FAZENDA_FELIZ_SOURCE as SOURCE } from '../__gen_fazendaFeliz'
 import { fazendaFelizExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -17,7 +16,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Fazenda Feliz — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(fazendaFelizExample)
+    expect(gameTwoDExamples).toContain(fazendaFelizExample)
     expect(fazendaFelizExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(fazendaFelizExample.name).toBe('Fazenda Feliz')
     expect(fazendaFelizExample.experience).toBe('game')
@@ -71,3 +70,5 @@ describe('Exemplo Fazenda Feliz — drift contra o parser real', () => {
     expect(JSON.stringify(every)).toContain('"type":"g2d:sceneIs","name":"jogando"')
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

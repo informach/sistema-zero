@@ -45,8 +45,10 @@ function collectRpgMaps(
   return { created, referenced }
 }
 
+const loadedCatalogEntries: KitEntry[] = (await buildKitGroups()).flatMap((group) => group.entries)
+
 function catalogEntries(): KitEntry[] {
-  return buildKitGroups().flatMap((group) => group.entries)
+  return loadedCatalogEntries
 }
 
 beforeAll(() => {

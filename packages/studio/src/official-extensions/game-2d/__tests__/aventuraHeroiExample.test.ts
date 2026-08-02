@@ -3,7 +3,6 @@ import { behaviorStatements, type JSStatement } from '#ir'
 import { AVENTURA_GRID, AVENTURA_HEROI_SOURCE as SOURCE } from '../__gen_aventuraHeroi'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { aventuraHeroiExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
   it('está registrado no manifest, é da extensão game-2d e embute os 2 assets', () => {
-    expect(gameTwoDManifest.examples).toContain(aventuraHeroiExample)
+    expect(gameTwoDExamples).toContain(aventuraHeroiExample)
     expect(aventuraHeroiExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(aventuraHeroiExample.name).toBe('Aventura do Herói')
     expect(aventuraHeroiExample.experience).toBe('game')
@@ -163,3 +162,5 @@ describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
     expect(raw).toContain('"type":"g2d:isInvincible","spriteVar":"heroi"')
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

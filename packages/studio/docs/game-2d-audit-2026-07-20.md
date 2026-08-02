@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 213 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.55.1** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.55.2** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -80,17 +80,27 @@ acessível e o contrato do runtime verifica tipos e assinaturas públicas. Os 17
 exemplos extensos de Clear Code e Games 2D foram separados em módulos individuais,
 sem alterar seu conteúdo, e passaram a compartilhar um único harness de contratos.
 
+O 0.55.2 (02/08) fechou o full review seguinte sem alterar a curadoria da paleta:
+pausa suspende todo o `AudioContext`; Equilibrista só dispara travessia/perfeito
+quando o herói chega à plataforma; sorteios limitam porcentagens e aceitam o
+tamanho reservado para não cortar sprites nas bordas; cada mutação de grupo
+avança uma única revisão. O contrato compartilhado retirou IRs/assets dos
+manifests e migrou as cinco extensões oficiais para providers lazy validados,
+com cache concorrente e retry. O entrypoint oficial minificado caiu 41,2%, e os
+catálogos mantiveram hashes idênticos. Catálogo de blocos e runtimes grandes
+foram divididos por domínio sem mudar o script composto.
+
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
-- 102 arquivos próprios da extensão;
+- 116 arquivos próprios da extensão;
 - 213 definições de blocos e 24 subcategorias;
 - 212 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
-- 19 exemplos, assets, classificação pedagógica e execução no Chromium;
+- 31 exemplos, assets, classificação pedagógica e execução no Chromium;
 - ciclo de vida, pausa, reinício, câmera, grupos, colisões, áudio, DPR,
   segurança, desempenho e tratamento de erros;
 - testes da extensão e integrações externas de Blockly/parser.

@@ -115,6 +115,7 @@ export const ZappyResponseBody = t.Object({
       t.Array(
         t.Object({
           courseId: UUID,
+          courseSlug: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
           lessonId: UUID,
           title: t.String({ minLength: 1, maxLength: 240 }),
         }),
@@ -1085,6 +1086,10 @@ export const StudioCarryoverParams = t.Object({ lessonId: UUID, blockId: UUID })
 export const ShowcasePayloadParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
 export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
+
+/** `POST /members/admin/studio-submissions/:blockId/:userId/review` (o "já conferi"). */
+export const ReviewSubmissionParams = t.Object({ blockId: UUID, userId: UUID })
+export const ReviewSubmissionBody = t.Object({ reviewed: t.Boolean() })
 
 /** Resultado reportado pelo cliente p/ uma checagem (correção híbrida). */
 const ClientCheckResultSchema = t.Object({

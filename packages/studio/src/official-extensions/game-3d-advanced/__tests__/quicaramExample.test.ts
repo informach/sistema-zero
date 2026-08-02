@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { QUICARAM_SOURCE as SOURCE } from '../__gen_quicaram'
 import { gameKit3DBlocks } from '../blocks'
 import { quadraMalucaExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -30,7 +29,7 @@ beforeAll(() => {
 
 describe('Exemplo Quadra Maluca — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(quadraMalucaExample)
+    expect(gameKit3DExamples).toContain(quadraMalucaExample)
     expect(quadraMalucaExample.ir.extensions).toEqual([{ extensionId: 'game-3d-advanced' }])
   })
 
@@ -102,3 +101,5 @@ describe('Exemplo Quadra Maluca — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

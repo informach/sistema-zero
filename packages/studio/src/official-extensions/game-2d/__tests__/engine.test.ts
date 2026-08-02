@@ -56,8 +56,8 @@ interface Engine {
   spriteH: (s: Sprite) => number
   centerX: (s: Sprite) => number
   centerY: (s: Sprite) => number
-  randomX: () => number
-  randomY: () => number
+  randomX: (width?: number) => number
+  randomY: (height?: number) => number
   wrapEdges: (s: Sprite) => void
   touches: (a: Sprite, b: Sprite) => boolean
   randomChance: (percent: number) => boolean
@@ -513,6 +513,20 @@ describe('game-2d — runtime de física', () => {
     }
   })
 
+  it('randomChance limita entradas fora de 0..100 sem sortear à toa', () => {
+    const random = spyOn(Math, 'random').mockImplementation(() => {
+      throw new Error('não deveria sortear nos limites determinísticos')
+    })
+    try {
+      const api = loadRuntime()
+      expect(api.randomChance(-20)).toBe(false)
+      expect(api.randomChance(150)).toBe(true)
+      expect(random).not.toHaveBeenCalled()
+    } finally {
+      random.mockRestore()
+    }
+  })
+
   it('onPointer registra sem erro e expõe o estado pointer', () => {
     const api = loadRuntime()
     expect(typeof api.onPointer).toBe('function')
@@ -580,6 +594,24 @@ describe('game-2d — runtime de física', () => {
       expect(api.randomX()).toBeGreaterThanOrEqual(1000)
       expect(api.randomY()).toBeGreaterThanOrEqual(500)
     } finally {
+      random.mockRestore()
+    }
+  })
+
+  it('randomX/randomY reservam o tamanho informado para manter o sprite inteiro na tela', () => {
+    const random = spyOn(Math, 'random').mockReturnValue(0.999)
+    const canvas = document.createElement('canvas')
+    canvas.width = 800
+    canvas.height = 600
+    document.body.appendChild(canvas)
+    try {
+      const api = loadRuntime()
+      expect(api.randomX(40)).toBeLessThan(760)
+      expect(api.randomY(60)).toBeLessThan(540)
+      expect(api.randomX(900)).toBe(0)
+      expect(api.randomY(700)).toBe(0)
+    } finally {
+      canvas.remove()
       random.mockRestore()
     }
   })

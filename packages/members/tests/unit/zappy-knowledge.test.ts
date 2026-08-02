@@ -9,6 +9,7 @@ import type {
   ZappyKnowledgeRepository,
   ZappyKnowledgeSourceInput,
 } from '../../src/domain/ports/zappy-knowledge-repository.port'
+import { lessonsMissingVideoTranscript } from '../../src/domain/zappy/zappy-knowledge-report'
 
 function repository(overrides: Partial<ZappyKnowledgeRepository> = {}): ZappyKnowledgeRepository {
   return {
@@ -60,6 +61,32 @@ Vamos usar blocos.`),
 
   test('termos são normalizados sem acentos para a busca', () => {
     expect(normalizeZappyText('  Colisão do HERÓI! ')).toBe('colisao do heroi')
+  })
+})
+
+describe('relatório de saúde do Zappy', () => {
+  test('marca aula quando apenas um de seus vídeos tem transcrição pronta', () => {
+    const lesson = {
+      courseId: 'course-1',
+      courseTitle: 'Curso',
+      lessonId: 'lesson-1',
+      lessonTitle: 'Aula com dois vídeos',
+    }
+    const blocks = [
+      { blockId: 'video-ready', lessonId: lesson.lessonId, content: { kind: 'video' } },
+      { blockId: 'video-missing', lessonId: lesson.lessonId, content: { kind: 'video' } },
+    ]
+
+    expect(lessonsMissingVideoTranscript([lesson], blocks, new Set(['block:video-ready']))).toEqual(
+      [lesson],
+    )
+    expect(
+      lessonsMissingVideoTranscript(
+        [lesson],
+        blocks,
+        new Set(['block:video-ready', 'block:video-missing']),
+      ),
+    ).toEqual([])
   })
 })
 

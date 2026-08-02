@@ -1,4 +1,5 @@
 import { isPrivilegedRole, resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { isStudioZappyPilotAllowed } from '@sistemazero/member-shell/server/zappy-access'
 import { KidsCareerLockedStudio } from '@/components/kids/kids-career-locked-studio'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
@@ -67,6 +68,7 @@ export default async function EstudioPage() {
       challenge={challenge}
       tier={tier}
       showExamples={showExamples}
+      zappyEnabled={isStudioZappyPilotAllowed(session)}
     />
   )
 }

@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { MUNDO_PIRATA_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_mundoPirataProfissional'
 import { gameKitBlocks } from '../blocks'
 import { mundoPirataProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Mundo Pirata Profissional" — o nível 2 da trilogia de
@@ -29,7 +28,7 @@ beforeAll(() => {
 
 describe('Exemplo Mundo Pirata Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(mundoPirataProfissionalExample)
+    expect(gameKitExamples).toContain(mundoPirataProfissionalExample)
     expect(mundoPirataProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-2d-advanced' },
     ])
@@ -129,3 +128,5 @@ describe('Exemplo Mundo Pirata Profissional — drift contra o parser real', () 
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { CHUVA_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_chuvaProfissional'
 import { gameKitBlocks } from '../blocks'
 import { chuvaProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Chuva de Meteoros Profissional" — o nível 2 da família
@@ -29,7 +28,7 @@ beforeAll(() => {
 
 describe('Exemplo Chuva de Meteoros Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(chuvaProfissionalExample)
+    expect(gameKitExamples).toContain(chuvaProfissionalExample)
     expect(chuvaProfissionalExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(chuvaProfissionalExample.name).toBe('Chuva de Meteoros Profissional')
     expect(chuvaProfissionalExample.experience).toBe('game')
@@ -158,3 +157,5 @@ describe('Exemplo Chuva de Meteoros Profissional — drift contra o parser real'
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

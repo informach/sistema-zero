@@ -61,6 +61,18 @@ A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cros
   teacher-threads/unread-count` (count POR STAFF — watermark individual) e `POST …/read-all`
   (escopo opcional = filtros da caixa; devolve `{updated}`); o gateway wildcard já cobria.
   Botão "Marcar todas como lidas" no recados-client (useConfirm, respeita filtros).
+- ⭐ **"Marcar como conferida"** no `StudioSubmissionViewer` (08/2026): até aqui a ÚNICA forma de
+  tirar uma entrega da fila era RESPONDER um recado — e a conversa só existe quando a criança
+  escreveu algo no envio, então **a entrega sem recado ficava pendente para sempre**. O botão
+  carimba (`POST /api/members/studio-submissions/[blockId]/[userId]/review` → adapter
+  `reviewStudioSubmission` → members) e vira **"Desmarcar"** quando já conferida. Fica ao lado do
+  "Próxima pendente" de propósito: conferir → próxima é o laço da correção em sequência.
+  ⚠️ Chama `refreshProfessorCounts()` no sucesso (senão o badge da sidebar mente por 60s). O selo da
+  fila virou 3 estados — `Pendente` · `Respondida` · `Conferida` — decididos pela função PURA
+  `lib/submission-status.ts` (`submissionStatus`/`isSubmissionPending`/`SUBMISSION_STATUS_LABEL`,
+  testada em `tests/submission-status.test.ts`; responder VENCE o carimbo no rótulo), que também
+  alimenta o "Próxima pendente" e ganhou a opção `Conferida` no filtro de Situação. A criança vê
+  "O professor já conferiu sua entrega" no bloco da aula — sem sino, sem recado novo.
 - **"Próxima pendente"** no `StudioSubmissionViewer` (props opcionais `onNext`/`nextLabel` —
   a fila global circula sem fechar o dialog; `StudioEmbed` re-keya por `userId:blockId`);
   contador "N pendentes no total" nas Entregas (fetch paralelo `status=pending&limit=1` com o
@@ -801,7 +813,9 @@ Dockerfile: valida e só então importa o `server.js` standalone).
 ## Zappy do Studio (08/2026)
 
 - A página de IA mostra consumo `studio-zappy`, métricas agregadas e saúde da base, sem expor
-  conversas infantis. O botão de backfill sincroniza todos os cursos kids publicados.
+  conversas infantis. Consumo, métricas e saúde carregam de forma independente: a falha de uma
+  fonte mantém os outros painéis e o último dado válido, com erro local na seção afetada. O botão
+  de backfill sincroniza todos os cursos kids publicados.
 - Salvar/excluir blocos sincroniza VTT re-hospedado, texto rico e PDFs explicitamente marcados
   como **Caderno do aluno**. PDF sem texto selecionável fica em erro visível para correção.
 ```

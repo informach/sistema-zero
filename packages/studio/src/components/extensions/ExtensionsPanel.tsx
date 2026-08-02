@@ -1,9 +1,14 @@
 import type { JSX } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile, t } from '#core'
-import { type ExtensionDefinition, extensionMinLevel } from '#extensions'
+import {
+  type ExtensionDefinition,
+  type ExtensionExample,
+  extensionMinLevel,
+  loadExtensionExamples,
+} from '#extensions'
 import { generateProjectFiles } from '#generators'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { Badge, Button, Modal } from '#ui'
@@ -43,6 +48,13 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   // "📖 Saiba mais": a docs rica do manifest (nunca era exibida) abre num
   // expander por card — UM aberto por vez mantém o modal curto.
   const [docsOpenId, setDocsOpenId] = useState<string | null>(null)
+  const [examplesByExtension, setExamplesByExtension] = useState<
+    Record<string, readonly ExtensionExample[]>
+  >({})
+  const [examplesStatus, setExamplesStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>(
+    'idle',
+  )
+  const [examplesAttempt, setExamplesAttempt] = useState(0)
 
   // Nível de aprendizado (mesma fonte da paleta no BlocklyPanel): não adianta
   // OFERECER p/ instalar uma extensão cujos blocos o nível atual nem mostra —
@@ -60,6 +72,34 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
     }),
     [learning, revealAdvanced],
   )
+
+  useEffect(() => {
+    // A tentativa é um nonce explícito: cada incremento refaz apenas este carregamento.
+    void examplesAttempt
+    if (!open || !showExamples) return
+    let active = true
+    setExamplesStatus('loading')
+
+    void Promise.all(
+      OFFICIAL_CATALOG.map(
+        async (extension) =>
+          [extension.manifest.id, await loadExtensionExamples(extension)] as const,
+      ),
+    ).then(
+      (entries) => {
+        if (!active) return
+        setExamplesByExtension(Object.fromEntries(entries))
+        setExamplesStatus('ready')
+      },
+      () => {
+        if (active) setExamplesStatus('error')
+      },
+    )
+
+    return () => {
+      active = false
+    }
+  }, [examplesAttempt, open, showExamples])
 
   if (!hasProject)
     return (
@@ -115,7 +155,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   const handleLoadExample = (ext: ExtensionDefinition, exampleIndex: number) => {
     const project = projectStoreApi.getState().project
     if (!project) return
-    const example = ext.manifest.examples[exampleIndex]
+    const example = examplesByExtension[ext.manifest.id]?.[exampleIndex]
     if (!example) return
     const isInstalled = project.installedExtensions.some(
       (extension) => extension.id === ext.manifest.id,
@@ -188,6 +228,26 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
         }
       >
         <p className="mb-3 text-xs italic text-sz-fg-mute">{t('extensions.officialOnly')}</p>
+        {showExamples && examplesStatus === 'loading' && (
+          <p role="status" aria-live="polite" className="mb-3 text-xs text-sz-fg-soft">
+            {t('extensions.examplesLoading')}
+          </p>
+        )}
+        {showExamples && examplesStatus === 'error' && (
+          <div
+            role="alert"
+            className="mb-3 flex items-center justify-between gap-3 text-xs text-sz-error"
+          >
+            <span>{t('extensions.examplesError')}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setExamplesAttempt((attempt) => attempt + 1)}
+            >
+              {t('extensions.examplesRetry')}
+            </Button>
+          </div>
+        )}
         <ul className="space-y-3">
           {OFFICIAL_CATALOG.filter(
             (ext) =>
@@ -281,12 +341,12 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                     dangerouslySetInnerHTML={{ __html: renderLessonMarkdown(ext.manifest.docs) }}
                   />
                 )}
-                {showExamples && ext.manifest.examples.length > 0 && (
+                {showExamples && (examplesByExtension[ext.manifest.id]?.length ?? 0) > 0 && (
                   <div className="mt-2 flex flex-wrap items-center gap-1 border-t border-sz-border pt-2">
                     <span className="text-[10px] uppercase tracking-wide text-sz-fg-mute">
                       {t('extensions.loadExample')}:
                     </span>
-                    {ext.manifest.examples.map((example, i) => (
+                    {examplesByExtension[ext.manifest.id]?.map((example, i) => (
                       <Button
                         key={example.name}
                         variant="ghost"

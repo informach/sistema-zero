@@ -1,6 +1,8 @@
 export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) ----
   var audioCtx = null;
   var _activeAudioSources = new Set();
+  var _audioSuspendedForPause = false;
+  var _audioResumeGeneration = 0;
   function _trackAudioSource(source) {
     if (!source) return source;
     _activeAudioSources.add(source);
@@ -212,6 +214,50 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     if (!ensureAudio()) return;
     _scheduleMusic(_musicState.remaining);
   }
+  function _pauseAudio() {
+    _pauseMusic();
+    _audioResumeGeneration += 1;
+    _audioSuspendedForPause = false;
+    var ctx = audioCtx;
+    if (!ctx || ctx.state !== 'running' || typeof ctx.suspend !== 'function') return;
+    _audioSuspendedForPause = true;
+    try {
+      var pending = ctx.suspend();
+      if (pending && typeof pending.catch === 'function') {
+        pending.catch(function () {
+          if (audioCtx === ctx && _paused) _audioSuspendedForPause = false;
+          warnOnce('audio-pause', 'o navegador não deixou pausar o áudio desta partida.');
+        });
+      }
+    } catch (error) {
+      _audioSuspendedForPause = false;
+      warnOnce('audio-pause', 'o navegador não deixou pausar o áudio desta partida.');
+    }
+  }
+  function _resumeAudio() {
+    var ctx = audioCtx;
+    var shouldResumeContext = _audioSuspendedForPause;
+    _audioSuspendedForPause = false;
+    var generation = ++_audioResumeGeneration;
+    if (!shouldResumeContext || !ctx || typeof ctx.resume !== 'function') {
+      _resumeMusic();
+      return;
+    }
+    try {
+      var pending = ctx.resume();
+      if (pending && typeof pending.then === 'function') {
+        pending.then(function () {
+          if (!_paused && generation === _audioResumeGeneration) _resumeMusic();
+        }, function () {
+          warnOnce('audio-resume', 'o navegador não deixou continuar o áudio desta partida. Interaja com o jogo para tentar de novo.');
+        });
+        return;
+      }
+      _resumeMusic();
+    } catch (error) {
+      warnOnce('audio-resume', 'o navegador não deixou continuar o áudio desta partida. Interaja com o jogo para tentar de novo.');
+    }
+  }
   function stopMusic() {
     _musicStop = true;
     if (_musicTimer !== null) clearTimeout(_musicTimer);
@@ -222,6 +268,8 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   function _resetAudio() {
     stopMusic();
     _stopActiveAudioSources();
+    _audioSuspendedForPause = false;
+    _audioResumeGeneration += 1;
   }
 
   // ---- Notas musicais por nome (dó ré mi…) → frequência ----
@@ -233,8 +281,8 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
 
   _registerRuntimeDomain('audio', {
     reset: _resetAudio,
-    pause: _pauseMusic,
-    resume: _resumeMusic
+    pause: _pauseAudio,
+    resume: _resumeAudio
   });
 
 `

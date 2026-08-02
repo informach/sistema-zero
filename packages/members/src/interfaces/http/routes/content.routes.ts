@@ -34,6 +34,8 @@ import {
   ModuleIdParams,
   parseUserIds,
   ReorderBody,
+  ReviewSubmissionBody,
+  ReviewSubmissionParams,
 } from '../dtos'
 
 const DEFAULT_LIMIT = 20
@@ -109,7 +111,7 @@ const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{
 const GlobalStudioSubmissionsQuery = t.Object({
   courseId: t.Optional(t.String({ pattern: UUID_PATTERN })),
   audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
-  status: t.Optional(t.Union([t.Literal('pending'), t.Literal('answered')])),
+  status: t.Optional(t.Union([t.Literal('pending'), t.Literal('answered'), t.Literal('reviewed')])),
   // CSV de userIds/accountIds (filtro por aluno, 24/07) — uuids válidos, teto 20.
   userIds: t.Optional(t.String({ maxLength: 800 })),
   limit: t.Optional(t.Numeric({ minimum: 1 })),
@@ -424,6 +426,23 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           })
         },
         { query: GlobalStudioSubmissionsQuery },
+      )
+      // "Já conferi esta entrega": o único jeito de fechar uma entrega SEM recado
+      // (a conversa só existe quando a criança escreve algo no envio, então não
+      // havia o que responder). Não manda recado, não toca XP, não destrava aula:
+      // só carimba. `reviewed: false` desfaz um clique errado.
+      .post(
+        '/studio-submissions/:blockId/:userId/review',
+        async ({ params, body, headers }) => {
+          guard(headers)
+          return deps.studioSubmissions.markReviewed({
+            userId: params.userId,
+            blockId: params.blockId,
+            reviewed: body.reviewed,
+            staffId: headers['x-user-id'] ?? null,
+          })
+        },
+        { params: ReviewSubmissionParams, body: ReviewSubmissionBody },
       )
   )
 }

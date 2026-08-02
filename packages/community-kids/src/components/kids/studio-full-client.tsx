@@ -13,6 +13,7 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -37,6 +38,7 @@ export function StudioFullClient({
   challenge = null,
   tier,
   showExamples = false,
+  zappyEnabled = false,
 }: {
   viewerId: string | null
   /**
@@ -54,6 +56,8 @@ export function StudioFullClient({
    * o cliente segue sem exemplos. Default `false`.
    */
   showExamples?: boolean
+  /** Capacidade de oferta derivada no servidor; o BFF mantém o gate autoritativo. */
+  zappyEnabled?: boolean
 }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -163,9 +167,16 @@ export function StudioFullClient({
     }),
     [challenge],
   )
-  const tutor = useMemo<StudioTutorConfig>(
-    () => ({ adapter: createStudioZappyAdapter(), cooldownMs: 1_500 }),
-    [],
+  const tutor = useMemo<StudioTutorConfig | undefined>(
+    () =>
+      zappyEnabled
+        ? {
+            adapter: createStudioZappyAdapter(),
+            openLesson: openStudioZappyLesson,
+            cooldownMs: 1_500,
+          }
+        : undefined,
+    [zappyEnabled],
   )
 
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
@@ -235,7 +246,7 @@ function EditorScreen({
   projectId: string
   onExit: () => void
   share: StudioShareAdapter
-  tutor: StudioTutorConfig
+  tutor: StudioTutorConfig | undefined
   theme: 'light' | 'dark'
   tier: StudioTier
   showExamples: boolean

@@ -302,9 +302,29 @@ export function getStudioSubmission(
     passed: boolean
     /** Recado opcional do aluno ao professor. `null` = sem recado. */
     message: string | null
+    /** ISO do carimbo "já conferi"; `null` = nunca conferida. */
+    reviewedAt: string | null
+    /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
+    reviewed: boolean
   }>
 > {
   return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions/${enc(userId)}`)
+}
+
+/**
+ * "Já conferi esta entrega": `POST /members/admin/studio-submissions/:blockId/:userId/review`.
+ * É o que fecha a entrega SEM recado (não há conversa para responder). `reviewed:
+ * false` desfaz. Não manda recado nenhum ao aluno — só acende o selo dele.
+ */
+export function reviewStudioSubmission(
+  blockId: string,
+  userId: string,
+  reviewed: boolean,
+): Promise<GatewayResponse<{ reviewed: boolean; reviewedAt: string | null }>> {
+  return gatewayFetch(`/members/admin/studio-submissions/${enc(blockId)}/${enc(userId)}/review`, {
+    method: 'POST',
+    body: { reviewed },
+  })
 }
 
 // ── Conversas com o aluno (canal de retorno) ────────────────────────────────

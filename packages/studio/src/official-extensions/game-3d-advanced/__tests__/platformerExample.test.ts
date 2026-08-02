@@ -10,7 +10,6 @@ import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { gameKit3DBlocks } from '../blocks'
 import { saltoNasNuvensExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -88,7 +87,7 @@ beforeAll(() => {
 
 describe('Exemplo Salto nas Nuvens — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(saltoNasNuvensExample)
+    expect(gameKit3DExamples).toContain(saltoNasNuvensExample)
     expect(saltoNasNuvensExample.ir.extensions).toEqual([{ extensionId: 'game-3d-advanced' }])
   })
 
@@ -140,3 +139,5 @@ describe('Exemplo Salto nas Nuvens — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

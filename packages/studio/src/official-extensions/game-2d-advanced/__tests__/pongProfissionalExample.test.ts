@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { PONG_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_pongProfissional'
 import { gameKitBlocks } from '../blocks'
 import { pongProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Pong Profissional" — o nível 2 da trilogia Pong sobre o motor
@@ -28,7 +27,7 @@ beforeAll(() => {
 
 describe('Exemplo Pong Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(pongProfissionalExample)
+    expect(gameKitExamples).toContain(pongProfissionalExample)
     expect(pongProfissionalExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(pongProfissionalExample.name).toBe('Pong Profissional')
     expect(pongProfissionalExample.experience).toBe('game')
@@ -111,3 +110,5 @@ describe('Exemplo Pong Profissional — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

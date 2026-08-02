@@ -13,10 +13,16 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
+import {
+  type AiUsagePanelLoaders,
+  loadAiUsagePanels,
+  type ZappyKnowledgeReportView,
+  type ZappyMetricsView,
+} from '@/lib/ai-usage-panels'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { AiUsageStatsView } from '@/lib/types'
 
@@ -28,35 +34,32 @@ const FEATURE_LABELS: Record<string, string> = {
   'studio-zappy': 'Zappy do Studio',
 }
 
-interface ZappyMetrics {
-  questions: number
-  useful: number
-  notUseful: number
-  refusals: number
-  needsContext: number
-  quota: number
-  errors: number
-  averageLatencyMs: number
+interface PanelErrors {
+  usage?: string
+  metrics?: string
+  knowledge?: string
 }
 
-interface ZappyKnowledgeReport {
-  publishedKidsLessons: number
-  readySources: number
-  errorSources: number
-  pendingSources: number
-  lessonsWithVideoWithoutTranscript: Array<{
-    lessonId: string
-    lessonTitle: string
-    courseTitle: string
-  }>
-  coursesWithoutStudentNotebook: Array<{ courseId: string; courseTitle: string }>
-  failedSources: Array<{
-    sourceRef: string
-    sourceType: 'video-vtt' | 'rich-text' | 'student-notebook'
-    courseTitle: string
-    lessonTitle: string
-    error: string
-  }>
+const PANEL_LOADERS: AiUsagePanelLoaders = {
+  usage: (month) => apiGet<AiUsageStatsView>(`/api/members/ai-usage?month=${month}`),
+  metrics: (month) => apiGet<ZappyMetricsView>(`/api/members/zappy/metrics?month=${month}`),
+  knowledge: () => apiGet<ZappyKnowledgeReportView>('/api/members/zappy/knowledge'),
+}
+
+function panelError(result: PromiseRejectedResult, fallback: string): string {
+  const reason = result.reason as ApiError | undefined
+  return reason?.message ?? fallback
+}
+
+function PanelError({ children }: { children?: string }) {
+  return children ? (
+    <p
+      role="alert"
+      className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-destructive text-sm"
+    >
+      {children}
+    </p>
+  ) : null
 }
 
 /** Mês civil corrente em São Paulo (`YYYY-MM`) — espelha a régua do members. */
@@ -73,26 +76,34 @@ function currentMonthSp(): string {
 export function AiUsageClient() {
   const [month, setMonth] = useState(currentMonthSp)
   const [stats, setStats] = useState<AiUsageStatsView | null>(null)
-  const [zappyMetrics, setZappyMetrics] = useState<ZappyMetrics | null>(null)
-  const [knowledge, setKnowledge] = useState<ZappyKnowledgeReport | null>(null)
+  const [zappyMetrics, setZappyMetrics] = useState<ZappyMetricsView | null>(null)
+  const [knowledge, setKnowledge] = useState<ZappyKnowledgeReportView | null>(null)
+  const [errors, setErrors] = useState<PanelErrors>({})
   const [loading, setLoading] = useState(true)
   const [backfilling, setBackfilling] = useState(false)
+  const loadSequence = useRef(0)
 
   const load = useCallback(async (target: string) => {
+    const sequence = ++loadSequence.current
     setLoading(true)
     try {
-      const [usage, metrics, report] = await Promise.all([
-        apiGet<AiUsageStatsView>(`/api/members/ai-usage?month=${target}`),
-        apiGet<ZappyMetrics>(`/api/members/zappy/metrics?month=${target}`),
-        apiGet<ZappyKnowledgeReport>('/api/members/zappy/knowledge'),
-      ])
-      setStats(usage)
-      setZappyMetrics(metrics)
-      setKnowledge(report)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar o uso de IA.')
+      const result = await loadAiUsagePanels(target, PANEL_LOADERS)
+      if (sequence !== loadSequence.current) return
+      const nextErrors: PanelErrors = {}
+      if (result.usage.status === 'fulfilled') setStats(result.usage.value)
+      else nextErrors.usage = panelError(result.usage, 'Falha ao carregar o consumo de IA.')
+      if (result.metrics.status === 'fulfilled') setZappyMetrics(result.metrics.value)
+      else
+        nextErrors.metrics = panelError(result.metrics, 'Falha ao carregar as métricas do Zappy.')
+      if (result.knowledge.status === 'fulfilled') setKnowledge(result.knowledge.value)
+      else
+        nextErrors.knowledge = panelError(
+          result.knowledge,
+          'Falha ao carregar a saúde da base do Zappy.',
+        )
+      setErrors(nextErrors)
     } finally {
-      setLoading(false)
+      if (sequence === loadSequence.current) setLoading(false)
     }
   }, [])
 
@@ -135,6 +146,8 @@ export function AiUsageClient() {
           </div>
         }
       />
+
+      <PanelError>{errors.usage}</PanelError>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <OverviewCard
@@ -237,6 +250,7 @@ export function AiUsageClient() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-5">
+          <PanelError>{errors.metrics}</PanelError>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <OverviewCard title="Perguntas" value={fmt(zappyMetrics?.questions)} />
             <OverviewCard
@@ -256,6 +270,7 @@ export function AiUsageClient() {
               description={`${fmt(zappyMetrics?.quota)} quota · ${fmt(zappyMetrics?.errors)} erros`}
             />
           </div>
+          <PanelError>{errors.knowledge}</PanelError>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-lg border border-border p-4">
               <p className="font-medium">Fontes prontas</p>

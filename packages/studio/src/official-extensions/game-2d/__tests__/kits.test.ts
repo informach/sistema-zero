@@ -244,9 +244,48 @@ describe('Kit equilibrista v2 — sprite + caminho', () => {
     stick.length = target.x + target.w / 2 - stick.x
     path.phase = 'turning'
     stick.rotation = 89
-    frames(harness, 10, () => api.stickPathWalk(path, hero, 1))
+    frames(harness, 400, () => {
+      if (cross === 0) api.stickPathWalk(path, hero, 1)
+    })
     expect(cross).toBe(1)
     expect(perfect).toBe(1)
+  })
+
+  it('dispara travessia e perfeito somente quando o herói alcança a plataforma', () => {
+    const harness = loadRuntime()
+    const { api } = harness
+    const hero = api.createStickHero({})
+    const path = api.createStickPath(mockCtx(360, 480), {})
+    if (!path) return
+    const target = path.platforms[1]
+    const stick = path.sticks[0]
+    if (!target || !stick) throw new Error('caminho sem plataforma/bastão inicial')
+
+    const moments: Array<{ event: string; heroX: number; phase: string }> = []
+    api.stickPathOnCross(path, () => {
+      moments.push({ event: 'cross', heroX: hero.x, phase: path.phase })
+    })
+    api.stickPathOnPerfect(path, () => {
+      moments.push({ event: 'perfect', heroX: hero.x, phase: path.phase })
+    })
+    stick.length = target.x + target.w / 2 - stick.x
+    stick.rotation = 89
+    path.phase = 'turning'
+
+    frames(harness, 10, () => {
+      if (path.phase === 'turning') api.stickPathWalk(path, hero, 1)
+    })
+    expect(path.phase).toBe('walking')
+    expect(hero.x).toBeLessThan(target.x)
+    expect(moments).toEqual([])
+
+    frames(harness, 400, () => {
+      if (moments.length === 0) api.stickPathWalk(path, hero, 1)
+    })
+    expect(moments).toEqual([
+      { event: 'cross', heroX: hero.x, phase: 'transitioning' },
+      { event: 'perfect', heroX: hero.x, phase: 'transitioning' },
+    ])
   })
 
   it('o cenário e o desenho não estouram com o mock de canvas', () => {

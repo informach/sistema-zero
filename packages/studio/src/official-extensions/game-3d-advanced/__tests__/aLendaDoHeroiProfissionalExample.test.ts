@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { A_LENDA_DO_HEROI_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_aLendaDoHeroiProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { aLendaDoHeroiProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -33,7 +32,7 @@ beforeAll(() => {
 
 describe('Exemplo A Lenda do Herói Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(aLendaDoHeroiProfissionalExample)
+    expect(gameKit3DExamples).toContain(aLendaDoHeroiProfissionalExample)
     expect(aLendaDoHeroiProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -184,3 +183,5 @@ describe('Exemplo A Lenda do Herói Profissional — drift contra o parser real'
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

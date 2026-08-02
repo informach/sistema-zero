@@ -3,7 +3,6 @@ import { behaviorStatements } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { PORTAS_DO_CASTELO_SOURCE as SOURCE } from '../__gen_portasDoCastelo'
 import { portasDoCasteloExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Portas do Castelo — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(portasDoCasteloExample)
+    expect(gameTwoDExamples).toContain(portasDoCasteloExample)
     expect(portasDoCasteloExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(portasDoCasteloExample.name).toBe('Portas do Castelo')
     expect(portasDoCasteloExample.experience).toBe('game')
@@ -83,3 +82,5 @@ describe('Exemplo Portas do Castelo — drift contra o parser real', () => {
     expect(frameTypes.has('g2d:touches')).toBe(true)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

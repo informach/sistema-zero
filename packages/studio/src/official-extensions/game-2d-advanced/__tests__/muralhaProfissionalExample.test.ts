@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { MURALHA_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_muralhaProfissional'
 import { gameKitBlocks } from '../blocks'
 import { muralhaProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Muralha do Reino Profissional" — o tower-defense do Chris
@@ -32,7 +31,7 @@ beforeAll(() => {
 
 describe('Exemplo Muralha do Reino Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(muralhaProfissionalExample)
+    expect(gameKitExamples).toContain(muralhaProfissionalExample)
     expect(muralhaProfissionalExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(muralhaProfissionalExample.name).toBe('Muralha do Reino Profissional')
     expect(muralhaProfissionalExample.experience).toBe('game')
@@ -155,3 +154,5 @@ describe('Exemplo Muralha do Reino Profissional — drift contra o parser real',
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

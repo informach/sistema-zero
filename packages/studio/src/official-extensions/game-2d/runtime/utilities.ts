@@ -51,6 +51,8 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Verdadeiro com a chance dada (em %). Ex.: randomChance(30) ~ 30% das vezes.
   function randomChance(percent) {
     var p = _finiteNumber(percent, 50);
+    if (p <= 0) return false;
+    if (p >= 100) return true;
     return Math.random() * 100 < p;
   }
   // ---- Vida e tempo do sprite ----
@@ -130,8 +132,19 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Posição aleatória NA TELA — DINÂMICO: lê o tamanho REAL do palco a cada chamada
   // (largura lógica do jogo, ou o canvas), nunca um valor fixo. Evita a continha
   // Math.random()*largura na mão. Use no x/y ao criar/spawnar um sprite.
-  function randomX() { var visible = _visibleWorldRect(ensureStage()); return visible.left + Math.random() * visible.width; }
-  function randomY() { var visible = _visibleWorldRect(ensureStage()); return visible.top + Math.random() * visible.height; }
+  function _randomPositionOnAxis(start, length, reservedSize) {
+    var size = Math.max(0, _finiteNumber(reservedSize, 0));
+    var available = Math.max(0, length - size);
+    return start + Math.random() * available;
+  }
+  function randomX(width) {
+    var visible = _visibleWorldRect(ensureStage());
+    return _randomPositionOnAxis(visible.left, visible.width, width);
+  }
+  function randomY(height) {
+    var visible = _visibleWorldRect(ensureStage());
+    return _randomPositionOnAxis(visible.top, visible.height, height);
+  }
   // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
   function cooldownReady(sprite, frames, key) {
     if (!sprite) return false;
@@ -287,7 +300,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
       ordered.splice(i, 1);
       ordered.push(sprite);
       group.items = ordered;
-      _touchGroup(group);
+      _touchUnmanagedGroup(group);
     }
   }
   function sendToBack(group, sprite) {
@@ -298,7 +311,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
       ordered.splice(i, 1);
       ordered.unshift(sprite);
       group.items = ordered;
-      _touchGroup(group);
+      _touchUnmanagedGroup(group);
     }
   }
   // ---- Depuração: caixa de colisão e contador de FPS ----

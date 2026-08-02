@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { MINA_DE_CRISTAIS_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_minaDeCristaisProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { minaDeCristaisProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -37,7 +36,7 @@ beforeAll(() => {
 
 describe('Exemplo Mina de Cristais Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(minaDeCristaisProfissionalExample)
+    expect(gameKit3DExamples).toContain(minaDeCristaisProfissionalExample)
     expect(minaDeCristaisProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -165,3 +164,5 @@ describe('Exemplo Mina de Cristais Profissional — drift contra o parser real',
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

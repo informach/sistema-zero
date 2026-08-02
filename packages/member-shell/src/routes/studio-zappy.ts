@@ -1,11 +1,11 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { getEnv } from '../lib/env'
-import { isPrivilegedRole, resolveStudioTier } from '../lib/studio-tier'
+import { resolveStudioTier } from '../lib/studio-tier'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
+import { isStudioZappyPilotAllowed } from '../server/zappy-access'
 import {
   answerStudioZappy,
   deterministicZappyReply,
@@ -52,26 +52,6 @@ function error(code: string, status: number, message?: string): NextResponse {
   return NextResponse.json({ error: { code, ...(message ? { message } : {}) } }, { status })
 }
 
-function accountId(session: { id: string; activeProfile?: { accountId: string } }): string {
-  return session.activeProfile?.accountId ?? session.id
-}
-
-function pilotAllowed(session: {
-  id: string
-  role: string
-  activeProfile?: { accountId: string }
-}): boolean {
-  if (isPrivilegedRole(session.role)) return true
-  const env = getEnv()
-  if (!env.ZAPPY_ENABLED) return false
-  const allowlist = new Set(
-    env.ZAPPY_PILOT_ACCOUNT_IDS.split(',')
-      .map((value) => value.trim())
-      .filter(Boolean),
-  )
-  return allowlist.has(accountId(session))
-}
-
 async function hasStudioAccess(members: MembersClient): Promise<boolean> {
   const result = await members.checkStudioAccess()
   return result.status === 200 && result.body?.access?.['estudio-completo'] === true
@@ -112,7 +92,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       const projectId = historyProjectId(req)
       if (!user) return error('UNAUTHORIZED', 401)
-      if (!pilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
       if (!projectId) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
       const result = await members.zappyHistory(projectId)
@@ -123,7 +103,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const projectId = historyProjectId(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!pilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
       if (!projectId) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
       const result = await members.zappyDeleteHistory(projectId)
@@ -137,7 +117,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!pilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await req.json()
@@ -195,6 +175,9 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         })
       }
 
+      const fixed = deterministicZappyReply(parsed.data.question)
+      if (fixed) return complete(fixed)
+
       const quota = await consumeAiQuotaStrict(members, 'studio-zappy')
       if (!quota.allowed) {
         const response = deterministicZappyReply('assunto externo') ?? {
@@ -216,8 +199,6 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       }
 
       try {
-        const fixed = deterministicZappyReply(parsed.data.question)
-        if (fixed) return complete(fixed)
         const searchQuery = await normalizeZappySearchQuery(parsed.data.question)
         const knowledgeResult = await members.zappyKnowledgeSearch(searchQuery, 5)
         const response = await answerStudioZappy({
@@ -256,7 +237,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!pilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await req.json()

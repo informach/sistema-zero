@@ -307,8 +307,8 @@ export interface GameTwoDMathAndStateApi {
   isMoving(sprite: GameTwoDSprite): boolean
   isMovingH(sprite: GameTwoDSprite): boolean
   isMovingV(sprite: GameTwoDSprite): boolean
-  randomX(): number
-  randomY(): number
+  randomX(width?: number): number
+  randomY(height?: number): number
   cooldownReady(sprite: GameTwoDSprite, frames: number, key?: string): boolean
   pruneOld(group: GameTwoDGroup, seconds: number): void
   flipSprite(sprite: GameTwoDSprite, direction: 'left' | 'right'): void

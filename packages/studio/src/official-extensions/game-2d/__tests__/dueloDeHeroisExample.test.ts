@@ -3,7 +3,6 @@ import { behaviorStatements, type JSStatement } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { DUELO_DE_HEROIS_SOURCE as SOURCE } from '../__gen_dueloDeHerois'
 import { dueloDeHeroisExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Duelo de Heróis — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(dueloDeHeroisExample)
+    expect(gameTwoDExamples).toContain(dueloDeHeroisExample)
     expect(dueloDeHeroisExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(dueloDeHeroisExample.name).toBe('Duelo de Heróis')
     expect(dueloDeHeroisExample.experience).toBe('game')
@@ -89,3 +88,5 @@ describe('Exemplo Duelo de Heróis — drift contra o parser real', () => {
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

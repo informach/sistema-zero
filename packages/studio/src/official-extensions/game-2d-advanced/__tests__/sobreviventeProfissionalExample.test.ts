@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { SOBREVIVENTE_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_sobreviventeProfissional'
 import { gameKitBlocks } from '../blocks'
 import { sobreviventeProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Sobrevivente Profissional" — o nível 2 da família Vampire
@@ -28,7 +27,7 @@ beforeAll(() => {
 
 describe('Exemplo Sobrevivente Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(sobreviventeProfissionalExample)
+    expect(gameKitExamples).toContain(sobreviventeProfissionalExample)
     expect(sobreviventeProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-2d-advanced' },
     ])
@@ -155,3 +154,5 @@ describe('Exemplo Sobrevivente Profissional — drift contra o parser real', () 
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

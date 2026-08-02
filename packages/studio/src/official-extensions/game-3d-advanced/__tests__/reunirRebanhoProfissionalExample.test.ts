@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { REUNIR_REBANHO_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_reunirRebanhoProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { reunirRebanhoProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -31,7 +30,7 @@ beforeAll(() => {
 
 describe('Exemplo Reunir o Rebanho Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(reunirRebanhoProfissionalExample)
+    expect(gameKit3DExamples).toContain(reunirRebanhoProfissionalExample)
     expect(reunirRebanhoProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -180,3 +179,5 @@ describe('Exemplo Reunir o Rebanho Profissional — drift contra o parser real',
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

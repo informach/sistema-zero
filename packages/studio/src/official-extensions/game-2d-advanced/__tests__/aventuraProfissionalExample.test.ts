@@ -17,7 +17,6 @@ import { parseJS } from '../../../parsers/js'
 import { AVENTURA_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_aventuraProfissional'
 import { gameKitBlocks } from '../blocks'
 import { aventuraProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Aventura do Herói Profissional" — o nível 2 da família de
@@ -34,7 +33,7 @@ beforeAll(() => {
 
 describe('Exemplo Aventura do Herói Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(aventuraProfissionalExample)
+    expect(gameKitExamples).toContain(aventuraProfissionalExample)
     expect(aventuraProfissionalExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(aventuraProfissionalExample.name).toBe('Aventura do Herói Profissional')
     expect(aventuraProfissionalExample.experience).toBe('game')
@@ -192,3 +191,5 @@ describe('Exemplo Aventura do Herói Profissional — drift contra o parser real
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

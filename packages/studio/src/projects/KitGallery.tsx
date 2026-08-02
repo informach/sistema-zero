@@ -1,8 +1,9 @@
 import type { JSX } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { type ExampleExperience, t } from '#core'
+import { loadExtensionExamples } from '#extensions'
 import { generateProjectFiles } from '#generators'
 import type { SZIRV2 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
@@ -199,29 +200,31 @@ function toEntry(
   }
 }
 
-export function buildKitGroups(): Array<{ label: string; entries: KitEntry[] }> {
-  const groups: Array<{ label: string; entries: KitEntry[] }> = []
-  for (const ext of OFFICIAL_CATALOG) {
-    const label =
-      ext.manifest.id === 'game-2d'
-        ? t('kits.group.game2d')
-        : ext.manifest.id === 'game-3d'
-          ? t('kits.group.game3d')
-          : ext.manifest.name
-    groups.push({
-      label,
-      entries: ext.manifest.examples.map((example) =>
-        toEntry(
-          ext.manifest.id,
-          example.name,
-          example.description ?? '',
-          example.experience,
-          example.ir,
-          example.assets,
+export async function buildKitGroups(): Promise<Array<{ label: string; entries: KitEntry[] }>> {
+  const groups = await Promise.all(
+    OFFICIAL_CATALOG.map(async (ext) => {
+      const examples = await loadExtensionExamples(ext)
+      const label =
+        ext.manifest.id === 'game-2d'
+          ? t('kits.group.game2d')
+          : ext.manifest.id === 'game-3d'
+            ? t('kits.group.game3d')
+            : ext.manifest.name
+      return {
+        label,
+        entries: examples.map((example) =>
+          toEntry(
+            ext.manifest.id,
+            example.name,
+            example.description ?? '',
+            example.experience,
+            example.ir,
+            example.assets,
+          ),
         ),
-      ),
-    })
-  }
+      }
+    }),
+  )
   if (CORE_EXAMPLES.length > 0) {
     groups.push({
       label: t('kits.group.classic'),
@@ -279,7 +282,27 @@ export function KitGallery({
 }): JSX.Element {
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const groups = useMemo(buildKitGroups, [])
+  const [groups, setGroups] = useState<Array<{ label: string; entries: KitEntry[] }> | null>(null)
+  const [catalogError, setCatalogError] = useState(false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
+
+  useEffect(() => {
+    // A tentativa é um nonce explícito: cada incremento refaz apenas este carregamento.
+    void loadAttempt
+    let active = true
+    setCatalogError(false)
+    void buildKitGroups().then(
+      (nextGroups) => {
+        if (active) setGroups(nextGroups)
+      },
+      () => {
+        if (active) setCatalogError(true)
+      },
+    )
+    return () => {
+      active = false
+    }
+  }, [loadAttempt])
 
   async function handlePick(entry: KitEntry): Promise<void> {
     if (creating) return
@@ -305,7 +328,24 @@ export function KitGallery({
           {error}
         </p>
       ) : null}
-      {groups.map((group) => (
+      {groups === null && !catalogError ? (
+        <p role="status" aria-live="polite" className="text-sm text-sz-fg-soft">
+          {t('kits.loading')}
+        </p>
+      ) : null}
+      {catalogError ? (
+        <div role="alert" className="flex items-center gap-3 text-sm text-sz-error">
+          <span>{t('kits.loadError')}</span>
+          <button
+            type="button"
+            className="font-semibold text-sz-accent hover:underline"
+            onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+          >
+            {t('kits.retry')}
+          </button>
+        </div>
+      ) : null}
+      {(groups ?? []).map((group) => (
         <div key={group.label} className="flex flex-col gap-2">
           <h4 className="text-xs font-semibold uppercase tracking-wide text-sz-fg-soft">
             {group.label}

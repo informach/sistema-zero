@@ -67,7 +67,7 @@ Funções gerais — mira/contas, vida/tempo, aparência, mundo e pausa:
 - centerX(s)/centerY(s): o MEIO do sprite (x+largura/2, y+altura/2) — atirar/mirar/posicionar pelo centro.
 - spriteVx(s)/spriteVy(s)/spriteSpeed(s): velocidade horizontal/vertical e a total (magnitude) do sprite.
 - isMoving(s)/isMovingH(s)/isMovingV(s): true se o sprite se move (geral/horizontal/vertical) — use em if (limiar 0.01).
-- randomX()/randomY(): posição x/y aleatória NA TELA (0..largura/altura) — fazer um sprite nascer num lugar sorteado (asteroides, estrelas). Evita Math.random()*largura na mão.
+- randomX(largura?)/randomY(altura?): posição x/y aleatória NA TELA. Passe a largura/altura do sprite para ele caber inteiro; sem argumento preserva 0..largura/altura. Evita Math.random()*largura na mão.
 - pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
 - flipSprite(s, 'left'|'right') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): espelhar/transparência/tamanho.
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).

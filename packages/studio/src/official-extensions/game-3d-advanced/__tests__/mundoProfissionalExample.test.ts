@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { MUNDO_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_mundoProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { mundoDeBlocosProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -33,7 +32,7 @@ beforeAll(() => {
 
 describe('Exemplo Mundo de Blocos Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(mundoDeBlocosProfissionalExample)
+    expect(gameKit3DExamples).toContain(mundoDeBlocosProfissionalExample)
     expect(mundoDeBlocosProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -193,3 +192,5 @@ describe('Exemplo Mundo de Blocos Profissional — drift contra o parser real', 
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

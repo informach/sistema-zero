@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { PATRULHA_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_patrulhaProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { patrulhaEspacialProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -33,7 +32,7 @@ beforeAll(() => {
 
 describe('Exemplo Patrulha Espacial Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(patrulhaEspacialProfissionalExample)
+    expect(gameKit3DExamples).toContain(patrulhaEspacialProfissionalExample)
     expect(patrulhaEspacialProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -192,3 +191,5 @@ describe('Exemplo Patrulha Espacial Profissional — drift contra o parser real'
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

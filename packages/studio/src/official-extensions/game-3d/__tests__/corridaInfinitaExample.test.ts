@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { CORRIDA_INFINITA_SOURCE as SOURCE } from '../__gen_corridaInfinita'
 import { gameThreeDBlocks } from '../blocks'
 import { corridaInfinitaExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -30,7 +29,7 @@ beforeAll(() => {
 
 describe('Exemplo Corrida Infinita 3D — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(corridaInfinitaExample)
+    expect(gameThreeDExamples).toContain(corridaInfinitaExample)
     expect(corridaInfinitaExample.experience).toBe('game')
     expect(corridaInfinitaExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -116,3 +115,5 @@ describe('Exemplo Corrida Infinita 3D — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

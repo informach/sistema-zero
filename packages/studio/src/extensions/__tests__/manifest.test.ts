@@ -12,7 +12,6 @@ const validManifest = {
   enabledByDefault: false,
   permissions: ['canvas', 'keyboard'] as const,
   docs: '## Game 2D\n\nBlocos para sprites, colisão e loop de jogo.',
-  examples: [],
 }
 
 describe('ExtensionManifestSchema', () => {

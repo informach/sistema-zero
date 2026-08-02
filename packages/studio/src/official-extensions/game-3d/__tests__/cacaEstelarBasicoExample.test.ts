@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { CACA_ESTELAR_SOURCE as SOURCE } from '../__gen_cacaEstelar'
 import { gameThreeDBlocks } from '../blocks'
 import { cacaEstelarBasicoExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -33,7 +32,7 @@ beforeAll(() => {
 
 describe('Exemplo Caça Estelar — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(cacaEstelarBasicoExample)
+    expect(gameThreeDExamples).toContain(cacaEstelarBasicoExample)
     expect(cacaEstelarBasicoExample.experience).toBe('game')
     expect(cacaEstelarBasicoExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -122,3 +121,5 @@ describe('Exemplo Caça Estelar — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

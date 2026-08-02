@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { DINO_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_dinoProfissional'
 import { gameKitBlocks } from '../blocks'
 import { dinoProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Dino Corredor Profissional" — o nível 2 da família Dino
@@ -29,7 +28,7 @@ beforeAll(() => {
 
 describe('Exemplo Dino Corredor Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(dinoProfissionalExample)
+    expect(gameKitExamples).toContain(dinoProfissionalExample)
     expect(dinoProfissionalExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(dinoProfissionalExample.name).toBe('Dino Corredor Profissional')
     expect(dinoProfissionalExample.experience).toBe('game')
@@ -129,3 +128,5 @@ describe('Exemplo Dino Corredor Profissional — drift contra o parser real', ()
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

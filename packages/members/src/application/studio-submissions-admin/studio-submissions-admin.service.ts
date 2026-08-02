@@ -41,13 +41,19 @@ export interface StudioSubmissionCourseView {
   message: string | null
 }
 
-/** Linha da fila GLOBAL de entregas (todos os cursos) — o curso resolvido + `answered`. */
+/** Linha da fila GLOBAL de entregas (todos os cursos) — o curso resolvido + o estado. */
 export interface StudioSubmissionGlobalView extends StudioSubmissionCourseView {
   courseId: string
   courseTitle: string
   audience: CourseAudience
-  /** Há resposta do professor após o último envio (pendente = `false`). */
+  /** Há resposta do professor após o último envio. */
   answered: boolean
+  /**
+   * O professor carimbou "já conferi" após o último envio. É o que fecha a
+   * entrega SEM recado — antes disto ela ficava pendente para sempre.
+   * ⚠️ PENDENTE = nem `answered` nem `reviewed`.
+   */
+  reviewed: boolean
 }
 
 export interface StudioSubmissionDetailView {
@@ -61,6 +67,10 @@ export interface StudioSubmissionDetailView {
   passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** ISO do carimbo "já conferi"; `null` = nunca conferida. */
+  reviewedAt: string | null
+  /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
+  reviewed: boolean
 }
 
 /**
@@ -69,7 +79,10 @@ export interface StudioSubmissionDetailView {
  * + correção (lista) e o projeto inteiro + resultado por checagem (detalhe).
  */
 export class StudioSubmissionsAdminService {
-  constructor(private readonly submissions: StudioSubmissionRepository) {}
+  constructor(
+    private readonly submissions: StudioSubmissionRepository,
+    private readonly clock: () => Date = () => new Date(),
+  ) {}
 
   async list(blockId: string): Promise<StudioSubmissionSummaryView[]> {
     const rows = await this.submissions.listByBlock(blockId)
@@ -122,6 +135,7 @@ export class StudioSubmissionsAdminService {
         passed: r.passed,
         message: r.message,
         answered: r.answered,
+        reviewed: r.reviewed,
       })),
       total,
     }
@@ -138,6 +152,29 @@ export class StudioSubmissionsAdminService {
       checkedAt: row.checkedAt?.toISOString() ?? null,
       passed: row.passedAt != null,
       message: row.message,
+      reviewedAt: row.reviewedAt?.toISOString() ?? null,
+      reviewed: row.reviewedAt != null && row.reviewedAt >= row.submittedAt,
+    }
+  }
+
+  /**
+   * O professor diz "já conferi esta entrega" (ou desfaz). É a saída da fila para
+   * a entrega SEM recado: sem isto, só respondendo uma conversa que não existe.
+   * Não dispara NADA além do carimbo — sem XP, sem recado, sem sino, sem
+   * desbloqueio de aula. A criança só passa a ver o selo na aula.
+   */
+  async markReviewed(input: {
+    userId: string
+    blockId: string
+    reviewed: boolean
+    staffId: string | null
+  }): Promise<{ reviewed: boolean; reviewedAt: string | null }> {
+    const now = this.clock()
+    const ok = await this.submissions.markReviewed({ ...input, now })
+    if (!ok) throw new ContentNotFoundError('Entrega não encontrada')
+    return {
+      reviewed: input.reviewed,
+      reviewedAt: input.reviewed ? now.toISOString() : null,
     }
   }
 }

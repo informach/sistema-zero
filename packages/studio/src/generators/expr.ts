@@ -343,9 +343,13 @@ export function compileExpr(
     case 'g2d:cameraY':
       return 'SZGame2D.cameraY()'
     case 'g2d:randomX':
-      return 'SZGame2D.randomX()'
+      return expr.size === undefined
+        ? 'SZGame2D.randomX()'
+        : `SZGame2D.randomX(${compileExpr(valueToExpr(expr.size), 0, identifiers)})`
     case 'g2d:randomY':
-      return 'SZGame2D.randomY()'
+      return expr.size === undefined
+        ? 'SZGame2D.randomY()'
+        : `SZGame2D.randomY(${compileExpr(valueToExpr(expr.size), 0, identifiers)})`
     case 'g2d:tileAtSprite':
       return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
