@@ -30,6 +30,12 @@ const EnvSchema = z
     // o R2 do jogo). OPCIONAL: ausente → a rota é no-op (não há como autenticar o
     // chamador, então nada é apagado). ≥16 chars quando presente.
     GATEWAY_HMAC_SECRET: z.string().min(16, 'GATEWAY_HMAC_SECRET deve ter ≥16 chars').optional(),
+    // Consumer HMAC do BFF para as duas mutações privadas do Zappy. O gateway
+    // autentica `member-shell` e só então encaminha ao members.
+    MEMBER_SHELL_HMAC_SECRET: z
+      .string()
+      .min(16, 'MEMBER_SHELL_HMAC_SECRET deve ter ≥16 chars')
+      .optional(),
     // Chave estável do cookie temporário da Área dos Pais do community-kids. Em
     // produção aquele app a exige no boot; aqui permanece opcional porque o shell
     // também serve apps que não possuem esse portão.
@@ -93,6 +99,10 @@ const EnvSchema = z
     message:
       'Em produção, NÃO configure JWT_HS256_SECRET (um segredo HS256 forjaria a sessão local de mídia/downloads)',
     path: ['JWT_HS256_SECRET'],
+  })
+  .refine((e) => e.NODE_ENV !== 'production' || Boolean(e.MEMBER_SHELL_HMAC_SECRET), {
+    message: 'Em produção, MEMBER_SHELL_HMAC_SECRET é obrigatório para persistir o Zappy',
+    path: ['MEMBER_SHELL_HMAC_SECRET'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

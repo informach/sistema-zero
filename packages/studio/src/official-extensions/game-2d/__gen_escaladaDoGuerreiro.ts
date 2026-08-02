@@ -86,6 +86,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.cameraFollow(heroi, 320, 960);
     SZGame2D.arrowsX(heroi, 3);
     SZGame2D.applyVelocity(heroi);
+    SZGame2D.applyGravity(heroi);
     SZGame2D.collideGroup(heroi, plataformas);
     SZGame2D.clampToScreen(heroi, ctx);
     SZGame2D.drawGroup(ctx, plataformas);

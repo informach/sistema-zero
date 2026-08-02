@@ -1,0 +1,2 @@
+-- Baseline de snapshot para as migrations 0050–0055, que já possuem SQL próprio.
+-- Não há DDL a executar: este marco apenas restaura a continuidade do Drizzle Kit.

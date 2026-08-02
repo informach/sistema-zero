@@ -212,4 +212,20 @@ import { StudioProjectPlayer } from '@sistemazero/studio/player' // dynamic ssr:
 <StudioProjectPlayer project={projetoBuscadoDoServidor} />       // roda SÓ o jogo, autostart
 ```
 
-Também exportado no index principal (`StudioProjectPlayer` + a função pura `renderProjectToPreviewDoc(project): string`, caso o host queira montar o srcdoc por conta própria). `renderProjectToPreviewDoc` tolera `files` ausente e `installedExtensions`/`extraFiles`/`assets` não-array, usando defaults vazios para não quebrar páginas públicas antigas. O iframe usa `sandbox="allow-scripts allow-modals"` e a CSP/guards viajam dentro do doc — o host só precisa de `frame-src 'self' blob:` na própria CSP.
+Também exportado no index principal (`StudioProjectPlayer` + a função assíncrona pura
+`renderProjectToPreviewDocAsync(project): Promise<string>`, caso o host queira montar o srcdoc por
+conta própria):
+
+```ts
+import { renderProjectToPreviewDocAsync } from '@sistemazero/studio'
+
+const srcDoc = await renderProjectToPreviewDocAsync(project)
+```
+
+**Migração:** a montagem passou a ser assíncrona porque runtimes oficiais são chunks lazy. O nome antigo
+`renderProjectToPreviewDoc` continua como alias depreciado que também devolve `Promise<string>`; código
+que antes passava o retorno diretamente para `srcDoc` precisa usar `await` e preferir o nome `Async`.
+A função tolera `files` ausente e `installedExtensions`/`extraFiles`/`assets` não-array, usando defaults
+vazios para não quebrar páginas públicas antigas. O iframe usa
+`sandbox="allow-scripts allow-modals allow-pointer-lock"`, `allow="fullscreen"`, e a CSP/guards viajam
+dentro do doc — o host só precisa de `frame-src 'self' blob:` na própria CSP.

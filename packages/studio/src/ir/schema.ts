@@ -173,8 +173,8 @@ export type JSExpr =
   // Tier 2 — posição da câmera e leitura de tile (valores).
   | (JSExprCommon & { type: 'g2d:cameraX' })
   | (JSExprCommon & { type: 'g2d:cameraY' })
-  | (JSExprCommon & { type: 'g2d:randomX'; size?: number | JSExpr })
-  | (JSExprCommon & { type: 'g2d:randomY'; size?: number | JSExpr })
+  | (JSExprCommon & { type: 'g2d:randomX' })
+  | (JSExprCommon & { type: 'g2d:randomY' })
   | (JSExprCommon & { type: 'g2d:tileAtSprite'; mapVar: string; spriteVar: string })
   // Game 2D — a cena/tela atual é "name"? (valor booleano).
   | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
@@ -663,12 +663,10 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:cameraY'), ...idField }),
     z.object({
       type: z.literal('g2d:randomX'),
-      size: z.union([JSExprSchema, z.number()]).optional(),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:randomY'),
-      size: z.union([JSExprSchema, z.number()]).optional(),
       ...idField,
     }),
     z.object({
@@ -2095,11 +2093,15 @@ export type JSStatement =
       bVar: string
       body: JSStatement[]
     })
+  // "Quando o sprite pular" (o motor avisa) e "qualquer tecla ou toque".
+  | (JSStatementCommon & { type: 'g2d:onJump'; spriteVar: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g2d:onAnyInput'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'g2d:updateEachFrame'; body: JSStatement[] })
   // Física: gravidade do mundo, integração de velocidade, ricochete nas bordas,
   // colisão por círculo.
   | (JSStatementCommon & { type: 'g2d:setGravity'; value: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:applyVelocity'; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:applyGravity'; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:bounceOnEdges'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & {
       type: 'g2d:circleCollides'
@@ -5866,11 +5868,23 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:onJump'),
+      spriteVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onAnyInput'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:setGravity'),
       value: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:applyVelocity'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:applyGravity'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:bounceOnEdges'),
       spriteVar: irText(),
@@ -10587,7 +10601,13 @@ export type SZIRInput = SZIR | SZIRV2
 
 const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap'])
 
-const G2D_REGISTERED_EVENT_TYPES = new Set(['g2d:onPointer', 'g2d:onKey', 'g2d:onOverlap'])
+const G2D_REGISTERED_EVENT_TYPES = new Set([
+  'g2d:onPointer',
+  'g2d:onKey',
+  'g2d:onOverlap',
+  'g2d:onJump',
+  'g2d:onAnyInput',
+])
 
 const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   var: 'name',
@@ -11169,6 +11189,9 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:updateEachFrame',
   'g2d:setGravity',
   'g2d:applyVelocity',
+  'g2d:applyGravity',
+  'g2d:onJump',
+  'g2d:onAnyInput',
   'g2d:bounceOnEdges',
   'g2d:circleCollides',
   'g2d:playSound',

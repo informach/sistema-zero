@@ -54,7 +54,7 @@ export const gameTwoDKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com gravidade, chão e poeira. Use dentro do "a cada quadro".',
+      'Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o "Aplicar a gravidade do mundo" logo acima. Use dentro do "a cada quadro".',
   },
   {
     type: 'sz_g2d_spawn_obstacle',

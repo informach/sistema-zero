@@ -964,6 +964,11 @@ export interface ZappyHistoryMessageView {
   response?: ZappyStoredResponseView
 }
 
+export interface ZappyHistoryPageView {
+  messages: ZappyHistoryMessageView[]
+  nextCursor: string | null
+}
+
 export interface ZappyKnowledgeHitView {
   courseId: string
   courseSlug: string

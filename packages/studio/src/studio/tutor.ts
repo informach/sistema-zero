@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { createContext, createElement, type JSX, useContext, useMemo, useState } from 'react'
 import type { IDEMode, Project, ProjectKind } from '#core'
+import { isStudioTutorSensitivePath, redactStudioTutorSecrets } from './tutorSafety'
 
 export type StudioTutorScope =
   | 'block'
@@ -74,6 +75,11 @@ export interface StudioTutorHistoryMessage {
   response?: StudioTutorResponse
 }
 
+export interface StudioTutorHistoryPage {
+  messages: StudioTutorHistoryMessage[]
+  nextCursor: string | null
+}
+
 export interface StudioTutorAskInput {
   projectId: string
   clientMessageId: string
@@ -89,7 +95,7 @@ export interface StudioTutorFeedbackInput {
 
 /** I/O do host. O Studio nunca conhece sessão, provedor, quota ou banco. */
 export interface StudioTutorAdapter {
-  loadHistory(projectId: string): Promise<StudioTutorHistoryMessage[]>
+  loadHistory(projectId: string, before?: string): Promise<StudioTutorHistoryPage>
   deleteHistory(projectId: string): Promise<void>
   ask(input: StudioTutorAskInput): Promise<StudioTutorResponse>
   feedback(input: StudioTutorFeedbackInput): Promise<void>
@@ -197,11 +203,15 @@ function compactCode(project: Project): StudioTutorCodeFile[] {
     // Data URLs e binários nunca entram. Também evita mandar arquivos gerados/desnecessários.
     if (
       /^(?:data:|blob:)/i.test(file.content.trim()) ||
-      /(?:^|\/)(?:node_modules|dist)\//.test(file.path)
+      /(?:^|\/)(?:node_modules|dist)\//.test(file.path) ||
+      isStudioTutorSensitivePath(file.path)
     )
       continue
     const available = Math.min(MAX_CODE_CHARS_PER_FILE, MAX_CODE_TOTAL_CHARS - total)
-    const content = file.content.slice(0, available).replace(/data:[^\s"')]+/gi, '[asset removido]')
+    const withoutAssets = file.content
+      .slice(0, available)
+      .replace(/data:[^\s"')]+/gi, '[asset removido]')
+    const content = redactStudioTutorSecrets(withoutAssets).text
     total += content.length
     out.push({ path: file.path.slice(0, 240), content })
   }

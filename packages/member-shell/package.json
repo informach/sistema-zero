@@ -16,7 +16,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
+    "test": "bun test --preload ./tests/setup-env.ts",
     "check": "biome check .",
     "check:fix": "biome check --write ."
   },

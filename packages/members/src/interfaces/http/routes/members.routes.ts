@@ -48,6 +48,7 @@ import { AccessDeniedError } from '../../../domain/entitlement/entitlement.error
 import type { RoomState } from '../../../domain/room/room-catalog'
 import {
   assertInternalCaller,
+  assertZappyBffConsumer,
   isPrivilegedActor,
   resolveAccountId,
   resolveStudentName,
@@ -93,9 +94,9 @@ import {
   VideoPositionBody,
   ZappyFeedbackBody,
   ZappyHistoryQuery,
-  ZappyQuestionBody,
+  ZappyInternalQuestionBody,
+  ZappyInternalResponseBody,
   ZappyQuestionParams,
-  ZappyResponseBody,
 } from '../dtos'
 
 function idempotencyKey(headers: Record<string, string | undefined>): string | undefined {
@@ -186,6 +187,16 @@ export function membersRoutes(deps: MembersRoutesDeps) {
     await zappyAccess(headers)
     if (headers['x-auth-impersonator-id']) {
       throw new AccessDeniedError('Impersonação não pode conversar com o Zappy')
+    }
+  }
+  const zappyActorAccess = async (actor: { accountId: string; privileged: boolean }) => {
+    if (actor.privileged) return
+    const access = await deps.accessCheck.execute(actor.accountId, ['estudio-completo'])
+    if (
+      !access.grants.includes('estudio-completo') &&
+      !access.communities.includes('estudio-completo')
+    ) {
+      throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
     }
   }
   return (
@@ -292,7 +303,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/zappy/history',
         async ({ headers, query }) => {
           await zappyAccess(headers)
-          return { messages: await zappy().history(resolveUserId(headers), query.projectId) }
+          return zappy().history(resolveUserId(headers), query.projectId, query.before)
         },
         { query: ZappyHistoryQuery },
       )
@@ -306,25 +317,27 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         { query: ZappyHistoryQuery },
       )
       .post(
-        '/zappy/questions',
+        '/internal/zappy/questions',
         async ({ headers, body }) => {
-          await zappyWriteAccess(headers)
+          assertZappyBffConsumer(headers['x-consumer-id'])
+          await zappyActorAccess(body.actor)
           return zappy().reserve({
-            userId: resolveUserId(headers),
-            accountId: resolveAccountId(headers),
+            userId: body.actor.userId,
+            accountId: body.actor.accountId,
             projectId: body.projectId,
             clientMessageId: body.clientMessageId,
             question: body.question.trim(),
           })
         },
-        { body: ZappyQuestionBody },
+        { body: ZappyInternalQuestionBody },
       )
       .put(
-        '/zappy/questions/:id/response',
+        '/internal/zappy/questions/:id/response',
         async ({ headers, params, body }) => {
-          await zappyWriteAccess(headers)
+          assertZappyBffConsumer(headers['x-consumer-id'])
+          await zappyActorAccess(body.actor)
           return zappy().complete({
-            userId: resolveUserId(headers),
+            userId: body.actor.userId,
             projectId: body.projectId,
             questionId: params.id,
             response: body.response,
@@ -332,7 +345,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             outcome: body.outcome,
           })
         },
-        { params: ZappyQuestionParams, body: ZappyResponseBody },
+        { params: ZappyQuestionParams, body: ZappyInternalResponseBody },
       )
       .post(
         '/zappy/feedback',

@@ -95,6 +95,8 @@ principais:
 | `FUNNEL_HMAC_SECRET` | segredo HMAC de borda do consumidor `funnel` |
 | `FUNNEL_INTERNAL_TOKEN` | token interno injetado ao repassar o webhook |
 | `AUTH_HMAC_SECRET` | segredo HMAC de borda do consumidor `auth` (e-mail de reset via `/messaging/send`; vazio só dev/local; obrigatório em produção) |
+| `MEMBER_SHELL_HMAC_SECRET` | segredo compartilhado com Community/Community Kids para as mutações internas do histórico do Zappy (mínimo 16 caracteres; obrigatório em produção) |
+| `MEMBER_SHELL_ALLOWED_CIDRS` | CIDRs autorizados para o consumer HMAC `member-shell`; restrinja à rede dos BFFs em produção |
 | `AUTH_INTERNAL_TOKEN` | token interno injetado nas rotas S2S `/auth/internal/*` — = `AUTH_INTERNAL_TOKEN` do auth (vazio = só dev) |
 | `RATE_LIMIT_*` | rate limit global default |
 | `JWT_HS256_SECRET` | segredo HS256 compartilhado com o `auth` (verifica tokens HS256 sem JWKS) |

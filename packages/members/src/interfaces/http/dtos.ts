@@ -68,14 +68,24 @@ const STUDIO_LOCAL_PROJECT_ID = t.String({
   maxLength: 128,
   pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$',
 })
-export const ZappyHistoryQuery = t.Object({ projectId: STUDIO_LOCAL_PROJECT_ID })
-export const ZappyQuestionBody = t.Object({
+export const ZappyHistoryQuery = t.Object({
+  projectId: STUDIO_LOCAL_PROJECT_ID,
+  before: t.Optional(UUID),
+})
+const ZappyActor = t.Object({
+  userId: UUID,
+  accountId: UUID,
+  privileged: t.Boolean(),
+})
+export const ZappyInternalQuestionBody = t.Object({
+  actor: ZappyActor,
   projectId: STUDIO_LOCAL_PROJECT_ID,
   clientMessageId: UUID,
   question: t.String({ minLength: 1, maxLength: 1000 }),
 })
 export const ZappyQuestionParams = t.Object({ id: UUID })
-export const ZappyResponseBody = t.Object({
+export const ZappyInternalResponseBody = t.Object({
+  actor: ZappyActor,
   projectId: STUDIO_LOCAL_PROJECT_ID,
   latencyMs: t.Integer({ minimum: 0, maximum: 600000 }),
   outcome: t.Optional(

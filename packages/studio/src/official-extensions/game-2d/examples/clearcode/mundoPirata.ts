@@ -959,6 +959,10 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
                   spriteVar: 'heroi',
                 },
                 {
+                  type: 'g2d:applyGravity',
+                  spriteVar: 'heroi',
+                },
+                {
                   type: 'g2d:collideGroup',
                   spriteVar: 'heroi',
                   groupVar: 'plataformas',

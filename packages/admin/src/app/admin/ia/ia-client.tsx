@@ -20,8 +20,10 @@ import { OverviewCard } from '@/components/admin/overview-card'
 import {
   type AiUsagePanelLoaders,
   loadAiUsagePanels,
+  type ZappyBackfillSummary,
   type ZappyKnowledgeReportView,
   type ZappyMetricsView,
+  zappyBackfillNotice,
 } from '@/lib/ai-usage-panels'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { AiUsageStatsView } from '@/lib/types'
@@ -116,8 +118,10 @@ export function AiUsageClient() {
   const backfill = async () => {
     setBackfilling(true)
     try {
-      await apiSend('/api/members/zappy/knowledge', 'POST')
-      toast.success('Base do Zappy sincronizada.')
+      const result = await apiSend<ZappyBackfillSummary>('/api/members/zappy/knowledge', 'POST')
+      const notice = zappyBackfillNotice(result)
+      if (notice.kind === 'success') toast.success(notice.message)
+      else toast.warning(notice.message)
       await load(month)
     } catch (error) {
       toast.error((error as ApiError).message ?? 'Falha ao sincronizar a base do Zappy.')

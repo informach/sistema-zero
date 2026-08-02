@@ -7,6 +7,7 @@ import {
   type Project,
   soundManifest,
 } from '#core'
+import { loadExtensionBootstrapScript } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
 import { coreImportsForCode } from '../preview/coreImports'
@@ -137,7 +138,7 @@ export async function buildClassicFileMap(
     const ext = findExtension(installed.id)
     if (!ext) continue
     const src = `sz-ext/${installed.id}.js`
-    files[`public/${src}`] = await minifiers.js(ext.runtime.bootstrapScript, {
+    files[`public/${src}`] = await minifiers.js(await loadExtensionBootstrapScript(ext), {
       module: Boolean(ext.runtime.esmImports),
     })
     extensionScriptSrcs.push(src)

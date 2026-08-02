@@ -52,7 +52,16 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     return sprite.onGround;
   }
 
-  /** Integra a velocidade no sprite e soma a gravidade ao vy. */
+  /**
+   * Move o sprite pela velocidade dele. NÃO mexe na gravidade — quem puxa para
+   * baixo é o "Aplicar a gravidade do mundo", à parte.
+   *
+   * ⚠️ Até 08/2026 este helper somava \`world.gravity\` no fim, e o bloco se
+   * chamava "Aplicar velocidade E gravidade". Duas coisas num bloco só: o nome
+   * mentia num jogo sem gravidade (Pong) e não existia passo intermediário para
+   * ENSINAR queda — a criança não via "não cai" virar "cai" por causa de um
+   * bloco. Separar deixou os dois honestos.
+   */
   function applyVelocity(sprite) {
     if (!sprite) return;
     // A colisão do quadro anterior pode ter marcado o chão. A integração abre
@@ -64,7 +73,22 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     sprite.x = _finiteNumber(sprite.x, 0) + vx;
     sprite.y = _finiteNumber(sprite.y, 0) + vy;
     sprite.vx = vx;
-    sprite.vy = vy + world.gravity;
+    sprite.vy = vy;
+  }
+
+  /**
+   * Puxa o sprite para baixo somando a gravidade DO MUNDO na velocidade
+   * vertical. Uma fonte só de verdade: quem regula a força é o "Botar a
+   * gravidade do mundo"; sem ninguém declarar, vale 0.6 (o mesmo padrão que
+   * plataforma, pulo, dino e inimigos já usam).
+   *
+   * ⚠️ ORDEM: o applyVelocity é Euler EXPLÍCITO (move com o vy do quadro
+   * anterior). Para a trajetória bater com a de antes da separação, este bloco
+   * vai DEPOIS do "Aplicar a velocidade" no laço.
+   */
+  function applyGravity(sprite) {
+    if (!sprite) return;
+    sprite.vy = _finiteNumber(sprite.vy, 0) + _worldGravityOr(0.6);
   }
 
   /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */

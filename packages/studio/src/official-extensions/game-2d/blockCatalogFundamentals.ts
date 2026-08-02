@@ -157,12 +157,27 @@ export const gameTwoDFundamentalBlocks = [
   {
     type: 'sz_g2d_apply_velocity',
     placement: 'command',
-    message0: 'Aplicar velocidade e gravidade ao sprite %1',
+    message0: 'Aplicar a velocidade ao sprite %1',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Move o sprite pela sua velocidade (vx/vy) e soma a gravidade ao vy.',
+    tooltip:
+      'Move o sprite pela velocidade dele (vx e vy). Não mexe na gravidade: para o sprite cair, encaixe o "Aplicar a gravidade do mundo" logo abaixo deste.',
+  },
+  {
+    // Sem número de propósito: a força vem do "Botar a gravidade do mundo" (uma
+    // fonte só, a mesma que plataforma, pulo, dino e inimigos já leem). Sem
+    // ninguém declarar, vale 0.6.
+    type: 'sz_g2d_apply_gravity',
+    placement: 'command',
+    message0: 'Aplicar a gravidade do mundo ao sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Puxa o sprite para baixo, um pouquinho a cada quadro. A força é a do "Botar a gravidade do mundo" (sem ele, 0,6). Encaixe logo DEPOIS do "Aplicar a velocidade".',
   },
   {
     type: 'sz_g2d_bounce_edges',
@@ -399,22 +414,33 @@ export const gameTwoDFundamentalBlocks = [
       'Verdadeiro com a chance escolhida. Ex.: 30 = acontece em ~30% das vezes. Use num "se".',
   },
   {
+    // 🚫 NÃO MEXER NA FORMA DESTES DOIS BLOCOS — as crianças JÁ OS USAM.
+    //
+    // "um x/y aleatório na tela" é um dos blocos mais antigos da extensão e
+    // existe em projeto salvo de criança. Em 0.55.2 um full review acrescentou
+    // um soquete de "tamanho reservado" (para o sprite não nascer cortado na
+    // borda) e a usuária REVERTEU em 02/08: o bloco não tinha soquete nenhum,
+    // então todo projeto já salvo ganhava a sombra na reabertura e o sorteio
+    // passava a encolher sozinho, sem erro na tela. A intenção era boa; o
+    // estrago em projeto de criança não compensa.
+    //
+    // Vale para qualquer mudança daqui: acrescentar campo, renomear a face ou
+    // trocar a assinatura do helper QUEBRA jogo que já existe. Precisa de uma
+    // variação? Crie um bloco NOVO ao lado e deixe este em paz.
     type: 'sz_g2d_random_x',
-    message0: 'um x aleatório para largura %1',
-    args0: [{ type: 'input_value', name: 'SIZE', check: 'JSValue' }],
+    message0: 'um x aleatório na tela',
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Sorteia uma posição x onde essa largura inteira cabe na tela. Ligue “a largura do sprite” para ele não nascer cortado na borda.',
+      'Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…).',
   },
   {
     type: 'sz_g2d_random_y',
-    message0: 'um y aleatório para altura %1',
-    args0: [{ type: 'input_value', name: 'SIZE', check: 'JSValue' }],
+    message0: 'um y aleatório na tela',
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Sorteia uma posição y onde essa altura inteira cabe na tela. Ligue “a altura do sprite” para ele não nascer cortado na borda.',
+      'Sorteia uma posição y em qualquer lugar da altura da tela. Ótimo para um sprite nascer num y aleatório (asteroides, estrelas…).',
   },
 
   // ---- Tier 1: Vida e tempo ----

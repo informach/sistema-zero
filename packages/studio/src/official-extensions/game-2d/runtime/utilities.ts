@@ -132,19 +132,10 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Posição aleatória NA TELA — DINÂMICO: lê o tamanho REAL do palco a cada chamada
   // (largura lógica do jogo, ou o canvas), nunca um valor fixo. Evita a continha
   // Math.random()*largura na mão. Use no x/y ao criar/spawnar um sprite.
-  function _randomPositionOnAxis(start, length, reservedSize) {
-    var size = Math.max(0, _finiteNumber(reservedSize, 0));
-    var available = Math.max(0, length - size);
-    return start + Math.random() * available;
-  }
-  function randomX(width) {
-    var visible = _visibleWorldRect(ensureStage());
-    return _randomPositionOnAxis(visible.left, visible.width, width);
-  }
-  function randomY(height) {
-    var visible = _visibleWorldRect(ensureStage());
-    return _randomPositionOnAxis(visible.top, visible.height, height);
-  }
+  // ⚠️ NÃO acrescente um parâmetro de "tamanho reservado" aqui (já foi tentado
+  // em 0.55.2 e revertido — ver a nota no blockCatalogFundamentals).
+  function randomX() { var visible = _visibleWorldRect(ensureStage()); return visible.left + Math.random() * visible.width; }
+  function randomY() { var visible = _visibleWorldRect(ensureStage()); return visible.top + Math.random() * visible.height; }
   // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
   function cooldownReady(sprite, frames, key) {
     if (!sprite) return false;
@@ -209,12 +200,14 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     _paused = true;
     _suspendDriver();
     _pauseRuntimeDomains();
+    _announceGameStatus('Jogo pausado.');
   }
   function resumeGame() {
     if (!_paused) return;
     _resumeGameClock();
     _paused = false;
     _resumeRuntimeDomains();
+    _announceGameStatus('Jogo continuado.');
     _ensureDriver();
   }
   function isPaused() { return _paused; }

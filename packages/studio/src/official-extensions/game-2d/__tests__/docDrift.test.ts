@@ -167,7 +167,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(213)
+    expect(gameTwoDBlocks.length).toBe(216)
   })
 
   it('mantém o inventário da auditoria sincronizado com blocos e API reais', () => {
@@ -209,7 +209,9 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
 
     expect(tiposDaCategoria('🎛️ Controles')).toEqual([
       'sz_g2d_on_key',
+      'sz_g2d_on_any_input',
       'sz_g2d_on_pointer',
+      'sz_g2d_on_jump',
       'sz_g2d_key_down',
       'sz_g2d_pointer_down',
     ])

@@ -3,9 +3,10 @@
 O Sistema Zero Studio **não tem marketplace, loader remoto nem fetch remoto**.
 O único caminho para uma extensão existir é estar no array
 `OFFICIAL_CATALOG` em `src/official-extensions/index.ts`, bundlada
-estaticamente junto com a biblioteca. O manifesto, os blocos e o runtime entram
-no catálogo síncrono; apenas os exemplos pesados ficam em chunks de `import()`
-locais. Toda extensão é, portanto, código de primeira-parte que passou por
+estaticamente junto com a biblioteca. Manifesto, blocos, toolbox e contrato de
+lifecycle entram no catálogo síncrono; o runtime pesado e os exemplos ficam em
+chunks locais de `import()`, carregados somente quando usados. Toda extensão é,
+portanto, código de primeira-parte que passou por
 revisão humana.
 
 Este documento é o **portão de revisão** para adicionar (ou alterar) uma
@@ -14,7 +15,7 @@ mergeado sem passar por todos os itens abaixo.
 
 ## Por que a barra é alta
 
-O campo `runtime.bootstrapScript` de uma extensão é **injetado verbatim no
+O texto devolvido por `runtime.loadBootstrapScript()` é **injetado verbatim no
 `<head>` do iframe de preview** (`src/components/preview/PreviewIframe.tsx`),
 no mesmo contexto onde roda o código do aluno. Ele expõe uma API global (ex.:
 `window.SZGame2D`). Não há sandbox de script dentro do iframe além do próprio
@@ -27,7 +28,7 @@ projeto que instalar a extensão.
 
 ### 1. Auditoria do `bootstrapScript` (script não-confiável)
 
-- [ ] Leia o `bootstrapScript` **linha a linha**. Ele é injetado no iframe;
+- [ ] Leia o bootstrap carregado **linha a linha**. Ele é injetado no iframe;
       revise como se fosse código de terceiros.
 - [ ] Sem `eval`, `new Function`, `document.write`, nem injeção de `<script
       src>` remoto. O bootstrap deve ser autocontido e estático.
@@ -68,9 +69,15 @@ projeto que instalar a extensão.
       cenário de QA e tem IR válido contra `SZIRV2Schema`, com `start`, `events`
       e `loops` semanticamente válidos. `loadExtensionExamples()` valida, mantém
       a ordem, congela o catálogo e permite retentativa após falha.
+- [ ] Catálogos extensos preenchem os metadados editoriais opcionais
+      `difficulty`, `concepts`, `genre`, `recommendedOrder` e `featured`; eles
+      alimentam busca, filtros e percursos sem alterar nível ou allowlist de blocos.
 - [ ] `runtime.lifecycle` usa um dos contratos oficiais de
       `src/extensions/lifecycle.ts`. O `target`, nome global e métodos existem
       no `bootstrapScript`; o gerador nunca escolhe o motor por `switch` local.
+- [ ] `runtime.loadBootstrapScript()` usa `import()` relativo do `runtime.ts`.
+      Todo consumidor passa por `loadExtensionBootstrapScript()`, que compartilha
+      cargas concorrentes e remove falhas do cache para permitir retry.
 - [ ] Use `managedProjectRun: true` somente quando o runtime pode repetir a
       factory do projeto no mesmo documento. Nesse caso, incorpore
       `buildProjectRunContextRuntime()` no `bootstrapScript`: listeners DOM
@@ -238,7 +245,7 @@ antes de o código do aluno rodar). Regras:
 ### 6. Testes
 
 - [ ] A extensão tem testes (`__tests__/`) cobrindo manifest válido, blocos
-      registráveis e o catálogo carregado pelo provider.
+      registráveis e os catálogos/runtime carregados pelos providers.
 - [ ] O teste de bundle prova que nenhum nome/IR de exemplo entrou no chunk
       inicial do `OFFICIAL_CATALOG`; a vitrine cobre carregamento, erro e retry.
 - [ ] A guarda exaustiva definição → Blockly → IR → área aceita todas as raízes
@@ -253,9 +260,10 @@ antes de o código do aluno rodar). Regras:
 1. Crie `src/official-extensions/<id>/` com `manifest.ts`, `blocks.ts`,
    `runtime.ts`, `ai.ts`, `examples.ts`, `exampleCatalog.ts` e `index.ts`
    (espelhe `game-2d/`).
-2. O `index.ts` chama `validateManifest(manifest)`, declara o provider com
+2. O `index.ts` chama `validateManifest(manifest)`, declara os providers com
    `defineExtensionExamples(contagem, () => import('./exampleCatalog'))` e
-   exporta a `ExtensionDefinition`.
+   `runtime.loadBootstrapScript: () => import('./runtime')`, e exporta a
+   `ExtensionDefinition`.
 3. Adicione a definição ao array `OFFICIAL_CATALOG` em
    `src/official-extensions/index.ts`.
 4. Abra o PR e percorra **todo** o checklist acima na descrição.

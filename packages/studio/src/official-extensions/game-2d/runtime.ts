@@ -17,7 +17,7 @@ import { buildGameTwoDRuntimeApiSource } from './runtimeContract'
  * Runtime didático injetado no <head> do iframe quando a extensão "game-2d"
  * está instalada. Expõe `window.SZGame2D` com helpers simples.
  *
- * É intencionalmente legível — o aluno pode abrir o modo Código, ver
+ * É intencionalmente legível — o aluno pode abrir a Ponte, ver
  * `SZGame2D.createSprite(...)` no script.js e seguir o link mental até esta
  * função.
  */

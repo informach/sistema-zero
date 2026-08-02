@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 213 definições de bloco
-(211 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 216 definições de bloco
+(214 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.55.2** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.56.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -90,13 +90,31 @@ com cache concorrente e retry. O entrypoint oficial minificado caiu 41,2%, e os
 catálogos mantiveram hashes idênticos. Catálogo de blocos e runtimes grandes
 foram divididos por domínio sem mudar o script composto.
 
-Não há achados abertos no escopo desta revisão.
+O 0.55.3 (02/08) fechou os achados residuais: gestos e efeitos não retomam o
+`AudioContext` enquanto a partida continua pausada; pausa e retomada são anunciadas
+numa região viva própria; o palco usa `dvw`/`dvh` com fallback; cores da toolbox
+são aplicadas em cópias sem mutar o catálogo canônico. O loader agora devolve a
+saída sanitizada e profundamente congelada, isola falhas por extensão nas duas
+vitrines e carrega os cinco runtimes em chunks com cache e retry. O entrypoint
+oficial minificado passou a ter orçamento inferior a 800 kB e 230 kB gzip.
+
+O 0.55.4 (02/08) fechou o full review arquitetural seguinte, mantendo a decisão
+de produto sobre a paleta extensa: a fase ampla de grupos usa a hitbox efetiva;
+cliques fora do palco não disparam o jogo; snapshots deduplicam runtimes; player
+e preview anunciam a carga lazy; a API de srcdoc ganhou nome assíncrono explícito
+e migração documentada; backing store e tilemaps têm orçamentos defensivos. Os 31
+exemplos ganharam dificuldade, gênero, conceitos, busca, filtros e um percurso de
+quatro projetos. O runtime composto continua submetido ao `checkJs`, agora com
+regressão explícita para dependências internas e geometria compartilhada.
+
+Não há achados técnicos abertos no escopo desta revisão. A redução/progressão da
+paleta permanece deliberadamente fora da remediação por decisão explícita de produto.
 
 ## Escopo revisado
 
-- 116 arquivos próprios da extensão;
-- 213 definições de blocos e 24 subcategorias;
-- 212 métodos e valores públicos em `window.SZGame2D`;
+- 119 arquivos próprios da extensão;
+- 216 definições de blocos e 24 subcategorias;
+- 215 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;

@@ -393,6 +393,27 @@
       "when": 1785800000000,
       "tag": "0055_studio_submission_reviewed",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1785800100000,
+      "tag": "0056_schema_history_baseline",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1785800200000,
+      "tag": "0057_zappy_reliability_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1785800300000,
+      "tag": "0058_zappy_reliability_backfill",
+      "breakpoints": true
     }
   ]
 }

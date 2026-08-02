@@ -26,6 +26,10 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
       }
       if (_runGenerationChanged(generation)) return;
     }
+    // "Qualquer tecla" vem DEPOIS das teclas específicas (e herda o filtro de
+    // repetição acima: segurar a tecla não dispara em rajada). Se um handler
+    // específico reiniciou o jogo, o laço já saiu e este nem roda.
+    _emitAnyInput();
   });
   /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
   function onKey(key, fn, id) {
@@ -90,6 +94,85 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
     if (!overlapHandlers[handlerId]) _overlapOrder.push(handlerId);
     overlapHandlers[handlerId] = { getA: getA, getB: getB, fn: fn, wasOverlapping: false };
     _ensureDriver();
+  }
+
+  // ---- "Quando o sprite PULAR" ----
+  // Quem avisa é o MOTOR, no instante exato em que o pulo acontece: o "estilo
+  // plataforma", o "pular no chão" e o "controlar o dinossauro" chamam _emitJump
+  // logo depois de mandar o sprite para cima. Assim o bloco funciona em qualquer
+  // jogo de pulo, e não só no kit em que a criança está. O sprite entra como
+  // thunk (() => sprite), igual ao "quando encostar": resolvido no DISPARO, então
+  // a ordem dos blocos no topo não causa erro de "antes de declarar".
+  var jumpHandlers = Object.create(null);
+  var _jumpOrder = [];
+  function onJump(getSprite, fn, id) {
+    if (typeof getSprite !== 'function' || typeof fn !== 'function') return;
+    if (_runningLoopId && !id) {
+      warnOnce('evento-pulo-no-quadro', '“Quando o sprite pular” deve ficar no início, fora de “A cada quadro”.');
+      return;
+    }
+    var handlerId = _stableHandlerId('pulo', id, fn);
+    if (!jumpHandlers[handlerId]) _jumpOrder.push(handlerId);
+    jumpHandlers[handlerId] = { getSprite: getSprite, fn: fn };
+  }
+  /** Chamado pelo motor quando um sprite pula de verdade. */
+  function _emitJump(sprite) {
+    if (!sprite || _jumpOrder.length === 0) return;
+    var generation = _driverGeneration;
+    var handlers = _jumpOrder.slice();
+    for (var i = 0; i < handlers.length; i++) {
+      var id = handlers[i];
+      var h = jumpHandlers[id];
+      if (!h) continue;
+      var alvo = null;
+      try { alvo = _invokeProjectCallback(h.getSprite, h, []); }
+      catch (error) {
+        _reportHandlerError('“Quando o sprite pular”', id, error);
+        _removeOrderedIfCurrent(jumpHandlers, _jumpOrder, id, h);
+        continue;
+      }
+      if (alvo !== sprite) continue;
+      try { _invokeProjectCallback(h.fn, h, []); }
+      catch (error) {
+        _reportHandlerError('“Quando o sprite pular”', id, error);
+        _removeOrderedIfCurrent(jumpHandlers, _jumpOrder, id, h);
+      }
+      if (_runGenerationChanged(generation)) return;
+    }
+  }
+
+  // ---- "Quando apertar QUALQUER tecla ou tocar na tela" ----
+  // A tela de início ("aperte qualquer coisa para começar"). Uma lista só, viva
+  // aqui; o listener de PONTEIRO mora noutro arquivo e apenas chama o _emitAnyInput,
+  // p/ a limpeza do "Jogar de novo" ficar num domínio só (o 'world', abaixo).
+  var anyInputHandlers = Object.create(null);
+  var _anyInputOrder = [];
+  function onAnyInput(fn, id) {
+    if (typeof fn !== 'function') return;
+    if (_runningLoopId && !id) {
+      warnOnce('evento-qualquer-no-quadro', '“Quando apertar qualquer tecla ou tocar na tela” deve ficar no início, fora de “A cada quadro”.');
+      return;
+    }
+    var handlerId = _stableHandlerId('qualquer', id, fn);
+    if (!anyInputHandlers[handlerId]) _anyInputOrder.push(handlerId);
+    anyInputHandlers[handlerId] = { fn: fn };
+  }
+  /** Um disparo por APERTO/TOQUE (o keydown já filtrou a repetição da tecla). */
+  function _emitAnyInput() {
+    if (_anyInputOrder.length === 0) return;
+    var generation = _driverGeneration;
+    var handlers = _anyInputOrder.slice();
+    for (var i = 0; i < handlers.length; i++) {
+      var id = handlers[i];
+      var h = anyInputHandlers[id];
+      if (!h) continue;
+      try { _invokeProjectCallback(h.fn, h, []); }
+      catch (error) {
+        _reportHandlerError('“Quando apertar qualquer tecla ou tocar na tela”', id, error);
+        _removeOrderedIfCurrent(anyInputHandlers, _anyInputOrder, id, h);
+      }
+      if (_runGenerationChanged(generation)) return;
+    }
   }
 
   // ---- Perguntas (booleanos): "tecla apertada?" e "sprites se tocando?" ----

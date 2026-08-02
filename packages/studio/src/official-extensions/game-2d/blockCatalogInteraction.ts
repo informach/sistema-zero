@@ -74,6 +74,39 @@ export const gameTwoDInteractionBlocks = [
     tooltip:
       'Roda o que está dentro quando os dois sprites se encostam (ex.: pegar moeda, levar dano). Dispara uma vez a cada vez que começam a encostar.',
   },
+  {
+    // Sem userGesture: este dispara DENTRO do laço do jogo, não na pilha de um
+    // gesto do navegador (≠ do "qualquer tecla ou toque", logo abaixo).
+    type: 'sz_g2d_on_jump',
+    placement: 'event',
+    message0: 'Quando o sprite %1 pular',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Roda o que está dentro toda vez que o sprite pula de verdade (ex.: tocar um som, contar os pulos). Vale para os três jeitos de pular: estilo plataforma, pular no chão e o kit do dinossauro.',
+  },
+  {
+    // COM userGesture: roda dentro do listener de tecla/toque, então o corpo
+    // está mesmo num gesto do navegador (é o que libera som e tela cheia).
+    // ⚠️ O espelho no IR é a lista de `providesUserGesture` (ir/lifecycle.ts).
+    type: 'sz_g2d_on_any_input',
+    placement: 'event',
+    userGesture: true,
+    message0: 'Quando apertar qualquer tecla ou tocar na tela',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Roda o que está dentro quando a criança aperta qualquer tecla ou toca na tela. É o "aperte qualquer coisa para começar" das telas de início. Segurar a tecla dispara uma vez só.',
+  },
 
   // ---- Perguntas (booleanos) — caem dentro de um "se" ----
   {

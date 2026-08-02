@@ -39,6 +39,10 @@ if (prod) {
       'JWT_HS256_SECRET não deve existir em produção (use só JWKS — HS256 forjaria sessão)',
     )
   }
+  const memberShellSecret = process.env.MEMBER_SHELL_HMAC_SECRET?.trim()
+  if (!memberShellSecret || memberShellSecret.length < 16) {
+    problems.push('MEMBER_SHELL_HMAC_SECRET com pelo menos 16 chars (persistência do Zappy)')
+  }
   if (process.env.REQUIRE_PARENT_GATE_HMAC_SECRET === '1') {
     const parentGateSecret = process.env.PARENT_GATE_HMAC_SECRET?.trim()
     if (!parentGateSecret || parentGateSecret.length < 32) {

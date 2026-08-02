@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { loadExtensionBootstrapScript } from '#extensions'
 import { compileStatements, generateCSS, generateHTML } from '#generators'
 import { G3D_STATEMENT_TYPES, type JSStatement, SZIRV2Schema } from '#ir'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
@@ -23,16 +24,18 @@ describe('game-3d — definição da extensão', () => {
     expect(gameThreeDExtension.manifest.permissions).not.toContain('network')
   })
 
-  it('a bootstrap é um módulo (importa three)', () => {
-    expect(gameThreeDExtension.runtime.bootstrapScript).toMatch(/^import \* as THREE from 'three'/)
-    expect(gameThreeDExtension.runtime.bootstrapScript).toContain('window.SZGame3D')
+  it('a bootstrap é um módulo (importa three)', async () => {
+    const bootstrapScript = await loadExtensionBootstrapScript(gameThreeDExtension)
+    expect(bootstrapScript).toMatch(/^import \* as THREE from 'three'/)
+    expect(bootstrapScript).toContain('window.SZGame3D')
   })
 
-  it('setTexture usa NearestFilter no magFilter (pixel art do Pinta nítida de perto)', () => {
+  it('setTexture usa NearestFilter no magFilter (pixel art do Pinta nítida de perto)', async () => {
     // Guarda de drift: o comportamento real roda no browser (three via CDN não
     // executa no bun test) — aqui só garantimos que o ajuste não é removido.
-    expect(gameThreeDExtension.runtime.bootstrapScript).toContain('NearestFilter')
-    expect(gameThreeDExtension.runtime.bootstrapScript).toContain('magFilter')
+    const bootstrapScript = await loadExtensionBootstrapScript(gameThreeDExtension)
+    expect(bootstrapScript).toContain('NearestFilter')
+    expect(bootstrapScript).toContain('magFilter')
   })
 })
 

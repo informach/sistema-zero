@@ -3,6 +3,22 @@ import type { ExtensionDefinition, ExtensionExample, ExtensionExamplesProvider }
 
 const loadedExamples = new WeakMap<ExtensionDefinition, Promise<readonly ExtensionExample[]>>()
 
+export interface ExtensionExamplesFailure {
+  extensionId: string
+  error: unknown
+}
+
+export interface ExtensionExampleCatalogsResult {
+  loaded: Array<readonly [extensionId: string, examples: readonly ExtensionExample[]]>
+  failed: ExtensionExamplesFailure[]
+}
+
+function deepFreeze<T>(value: T): T {
+  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return value
+  for (const key of Reflect.ownKeys(value)) deepFreeze(Reflect.get(value, key))
+  return Object.freeze(value)
+}
+
 /** Declara um catálogo lazy com contagem leve disponível no carregamento inicial. */
 export function defineExtensionExamples(
   count: number,
@@ -29,13 +45,13 @@ export function loadExtensionExamples(
   const pending = Promise.resolve()
     .then(() => extension.examples.load())
     .then((input) => {
-      ExtensionExamplesSchema.parse(input)
-      if (input.length !== extension.examples.count) {
+      const parsed = ExtensionExamplesSchema.parse(input)
+      if (parsed.length !== extension.examples.count) {
         throw new Error(
-          `A extensão ${extension.manifest.id} declarou ${extension.examples.count} exemplos, mas carregou ${input.length}.`,
+          `A extensão ${extension.manifest.id} declarou ${extension.examples.count} exemplos, mas carregou ${parsed.length}.`,
         )
       }
-      return Object.freeze(input)
+      return deepFreeze(parsed)
     })
     .catch((error: unknown) => {
       loadedExamples.delete(extension)
@@ -44,4 +60,28 @@ export function loadExtensionExamples(
 
   loadedExamples.set(extension, pending)
   return pending
+}
+
+/**
+ * Carrega catálogos independentes sem transformar uma falha localizada em
+ * indisponibilidade global. A ordem editorial é preservada nos dois resultados.
+ */
+export async function loadExtensionExampleCatalogs(
+  extensions: readonly ExtensionDefinition[],
+): Promise<ExtensionExampleCatalogsResult> {
+  const settled = await Promise.allSettled(
+    extensions.map(async (extension) => ({
+      extensionId: extension.manifest.id,
+      examples: await loadExtensionExamples(extension),
+    })),
+  )
+  const loaded: ExtensionExampleCatalogsResult['loaded'] = []
+  const failed: ExtensionExampleCatalogsResult['failed'] = []
+  settled.forEach((result, index) => {
+    const extensionId = extensions[index]?.manifest.id
+    if (!extensionId) return
+    if (result.status === 'fulfilled') loaded.push([extensionId, result.value.examples])
+    else failed.push({ extensionId, error: result.reason })
+  })
+  return { loaded, failed }
 }

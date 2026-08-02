@@ -5,7 +5,6 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { world3DPromptContext } from './ai'
 import { world3DBlocks, world3DToolboxCategory } from './blocks'
 import { world3DManifest } from './manifest'
-import { world3DRuntime } from './runtime'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(world3DManifest)
@@ -36,7 +35,7 @@ export const worldThreeDExtension: ExtensionDefinition = {
     toolboxCategory: world3DToolboxCategory,
   },
   runtime: {
-    bootstrapScript: world3DRuntime,
+    loadBootstrapScript: async () => (await import('./runtime')).world3DRuntime,
     lifecycle: WORLD_3D_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,
@@ -49,4 +48,4 @@ export const worldThreeDExtension: ExtensionDefinition = {
   },
 }
 
-export { world3DBlocks, world3DManifest, world3DRuntime, world3DToolboxCategory }
+export { world3DBlocks, world3DManifest, world3DToolboxCategory }

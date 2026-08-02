@@ -1,4 +1,5 @@
 import 'server-only'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { headers } from 'next/headers'
 import { getEnv } from '../lib/env'
 import { type ForwardHeaders, refreshTokens } from './refresh'
@@ -179,6 +180,64 @@ export function createGatewayModule(session: SessionModule) {
     return { status: res.status, body: await readJson<T>(res) }
   }
 
+  /**
+   * Chamada S2S assinada pelo BFF. Não leva Bearer nem headers de identidade:
+   * o ator faz parte do JSON coberto pelo HMAC e o gateway re-injeta apenas a
+   * identidade autenticada do consumer `member-shell`.
+   */
+  async function gatewayFetchHmac<T = unknown>(
+    path: string,
+    opts: CallOpts = {},
+  ): Promise<GatewayResponse<T>> {
+    const env = getEnv()
+    const secret = env.MEMBER_SHELL_HMAC_SECRET
+    if (!secret) {
+      return {
+        status: 503,
+        body: {
+          error: { code: 'SERVICE_UNAVAILABLE', message: 'Persistência do Zappy indisponível.' },
+        } as T,
+      }
+    }
+    const method = opts.method ?? 'GET'
+    const url = new URL(path, env.GATEWAY_URL)
+    if (opts.query) {
+      for (const [key, value] of Object.entries(opts.query)) {
+        if (value !== undefined && value !== null && value !== '') {
+          url.searchParams.set(key, String(value))
+        }
+      }
+    }
+    const rawBody = opts.body === undefined ? '' : JSON.stringify(opts.body)
+    const timestamp = Math.floor(Date.now() / 1000)
+    const signature = signHmac(
+      secret,
+      canonicalHmacMessage({ method, path: url.pathname, body: rawBody }),
+      timestamp,
+    )
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'content-type': 'application/json',
+          'x-consumer-id': 'member-shell',
+          'x-signature': `t=${timestamp},v1=${signature}`,
+        },
+        body: opts.body === undefined ? undefined : rawBody,
+        cache: 'no-store',
+        signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+      })
+      return { status: response.status, body: await readJson<T>(response) }
+    } catch {
+      return {
+        status: 503,
+        body: {
+          error: { code: 'SERVICE_UNAVAILABLE', message: 'Serviço indisponível.' },
+        } as T,
+      }
+    }
+  }
+
   /** Login (rota pública do gateway → auth). NÃO leva Bearer. */
   function loginRequest(
     email: string,
@@ -220,6 +279,7 @@ export function createGatewayModule(session: SessionModule) {
     tryRefresh,
     gatewayFetch,
     gatewayFetchReadonly,
+    gatewayFetchHmac,
     loginRequest,
     verifyOtpRequest,
     exchangeImpersonation,

@@ -48,7 +48,8 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Dino Corredor", "Pule os cactos e sobreviva o maior tempo que você conseguir!", "Aperte Enter ou espaço para começar", "#185078");
   }
   if (SZGame2D.sceneIs("jogando")) {
-    SZGame2D.controlDino(dino, ctx, 15);
+    SZGame2D.applyGravity(dino);
+    SZGame2D.controlDino(dino, ctx, 14);
     SZGame2D.drawSprite(ctx, dino);
     SZGame2D.updateGroup(cactos);
     SZGame2D.drawGroup(ctx, cactos);

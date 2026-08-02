@@ -1,3 +1,4 @@
+import { ZAPPY_SOURCE_CONTENT_MAX_BYTES } from '@sistemazero/core/zappy'
 import { Elysia, t } from 'elysia'
 import type {
   AttachmentAdminService,
@@ -169,7 +170,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
               t.Literal('student-notebook'),
             ]),
             sourceRef: t.String({ minLength: 1, maxLength: 500 }),
-            content: t.Optional(t.String({ maxLength: 500_000 })),
+            content: t.Optional(t.String({ maxLength: ZAPPY_SOURCE_CONTENT_MAX_BYTES })),
             error: t.Optional(t.String({ maxLength: 2_000 })),
           }),
         },

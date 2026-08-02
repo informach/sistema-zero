@@ -25,6 +25,7 @@ import {
   FRAME_START,
   FRAME_STRUCTURE,
 } from './buildIR'
+import { patchDeleteContextMenus } from './deleteContextMenu'
 import { registerFieldAddonPicker } from './fields/FieldAddonPicker'
 import { registerFieldAnimationPicker } from './fields/FieldAnimationPicker'
 import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
@@ -333,6 +334,10 @@ export function ensureBlocklyInitialized(): void {
   registerScreenshotContextMenu()
   registerCopyBlocksContextMenu()
   registerPasteBlocksContextMenu()
+  // "Deletar 3 blocos" num bloco que a criança vê como UM (o Blockly conta os
+  // soquetes preenchidos, que são blocos-sombra). Só troca o TEXTO dos itens
+  // nativos de apagar — ver deleteContextMenu.ts.
+  patchDeleteContextMenus()
   initialized = true
 }
 

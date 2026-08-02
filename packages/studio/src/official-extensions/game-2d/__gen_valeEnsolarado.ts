@@ -125,6 +125,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.cameraFollow(heroi, 960, 270);
     SZGame2D.arrowsX(heroi, 3);
     SZGame2D.applyVelocity(heroi);
+    SZGame2D.applyGravity(heroi);
     SZGame2D.collideGroup(heroi, chao);
     if (SZGame2D.centerY(heroi) > 300) {
       SZGame2D.changeHealth(heroi, -1);

@@ -226,6 +226,7 @@ describe('loadGatewayConfig', () => {
       MEMBERS_INTERNAL_TOKEN: 'members-internal-16chars',
       CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
       MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
+      MEMBER_SHELL_HMAC_SECRET: 'member-shell-hmac-secret-16ch',
       AUTH_HMAC_SECRET: 'auth-hmac-secret-16chrs',
       AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
       PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
@@ -259,6 +260,7 @@ describe('loadGatewayConfig', () => {
       MEMBERS_INTERNAL_TOKEN: 'members-internal-16chars',
       CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
       MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
+      MEMBER_SHELL_HMAC_SECRET: 'member-shell-hmac-secret-16ch',
       AUTH_HMAC_SECRET: 'auth-hmac-secret-16chrs',
       AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
       PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
@@ -319,13 +321,13 @@ describe('gateway.config.ts (configuração real)', () => {
     }
   })
 
-  test('rotas do Zappy exigem JWT e preservam métodos separados', () => {
+  test('persistência gerada pelo BFF do Zappy exige HMAC; demais rotas preservam JWT', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
     type RouteMethod = (typeof realConfig.routes)[number]['methods'][number]
     const expected = new Map<string, RouteMethod[]>([
       ['members-zappy-history', ['GET', 'DELETE']],
-      ['members-zappy-questions', ['POST']],
-      ['members-zappy-response', ['PUT']],
+      ['members-internal-zappy-questions', ['POST']],
+      ['members-internal-zappy-response', ['PUT']],
       ['members-zappy-feedback', ['POST']],
       ['members-zappy-knowledge-search', ['POST']],
       ['members-admin-zappy-metrics', ['GET']],
@@ -336,5 +338,13 @@ describe('gateway.config.ts (configuração real)', () => {
       expect(route?.methods, id).toEqual(methods)
       expect(route?.auth).not.toBe('public')
     }
+    expect(byId.get('members-internal-zappy-questions')?.auth).toMatchObject({
+      strategies: ['hmac'],
+    })
+    expect(byId.get('members-internal-zappy-response')?.auth).toMatchObject({
+      strategies: ['hmac'],
+    })
+    expect(byId.has('members-zappy-questions')).toBe(false)
+    expect(byId.has('members-zappy-response')).toBe(false)
   })
 })

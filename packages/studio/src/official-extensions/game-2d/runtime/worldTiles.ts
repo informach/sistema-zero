@@ -10,52 +10,90 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // string. Por isso tokenizamos a grade na mão, comparando caracteres por código,
   // sem usar regex. Separadores de COLUNA: espaço(32), tab(9), vírgula(44).
   // Separadores de LINHA: ';'(59), nova linha(10), retorno(13).
+  var MAX_TILEMAP_TEXT_CHARS = 1000000;
+  var MAX_TILEMAP_ROWS = 512;
+  var MAX_TILEMAP_COLUMNS = 512;
+  var MAX_TILEMAP_CELLS = 262144;
+  var MAX_TILEMAP_SOLID_ENTRIES = 512;
+  var MAX_TILEMAP_TOKEN_CHARS = 32;
+  function _warnTileMapLimit() {
+    warnOnce(
+      'tilemap-input-budget',
+      'o mapa passou do limite seguro do mapa (512 linhas por 512 colunas); usei somente a parte que cabe.'
+    );
+  }
   function parseGrid(text) {
     var rows = [];
     if (typeof text !== 'string') return rows;
     var row = [];
     var token = '';
+    var cells = 0;
+    var truncated = text.length > MAX_TILEMAP_TEXT_CHARS;
     function pushToken() {
       if (token === '') return;
-      if (token === '.' || token === '-') { row.push(-1); }
+      if (row.length >= MAX_TILEMAP_COLUMNS || cells + row.length >= MAX_TILEMAP_CELLS) {
+        truncated = true;
+      } else if (token === '.' || token === '-') { row.push(-1); }
       else { var n = parseInt(token, 10); row.push(isNaN(n) ? -1 : n); }
       token = '';
     }
     function pushRow() {
       pushToken();
-      if (row.length > 0) rows.push(row);
+      if (row.length > 0) {
+        if (rows.length >= MAX_TILEMAP_ROWS || cells >= MAX_TILEMAP_CELLS) truncated = true;
+        else {
+          var remaining = MAX_TILEMAP_CELLS - cells;
+          if (row.length > remaining) { row.length = remaining; truncated = true; }
+          rows.push(row);
+          cells += row.length;
+        }
+      }
       row = [];
     }
-    for (var i = 0; i < text.length; i++) {
+    var textLength = Math.min(text.length, MAX_TILEMAP_TEXT_CHARS);
+    for (var i = 0; i < textLength; i++) {
+      if (rows.length >= MAX_TILEMAP_ROWS || cells >= MAX_TILEMAP_CELLS) {
+        truncated = true;
+        break;
+      }
       var ch = text.charAt(i);
       var code = text.charCodeAt(i);
       if (ch === ';' || code === 10 || code === 13) { pushRow(); }
       else if (code === 32 || code === 9 || ch === ',') { pushToken(); }
-      else { token += ch; }
+      else if (token.length < MAX_TILEMAP_TOKEN_CHARS) { token += ch; }
+      else { truncated = true; }
     }
     pushRow();
+    if (truncated) _warnTileMapLimit();
     return rows;
   }
   function parseSolidList(text) {
     var out = [];
     if (typeof text !== 'string') return out;
     var token = '';
+    var truncated = text.length > MAX_TILEMAP_TEXT_CHARS;
     function flush() {
       if (token === '') return;
       var n = parseInt(token, 10);
-      if (!isNaN(n)) out.push(n);
+      if (!isNaN(n)) {
+        if (out.length < MAX_TILEMAP_SOLID_ENTRIES) out.push(n);
+        else truncated = true;
+      }
       token = '';
     }
-    for (var i = 0; i < text.length; i++) {
+    var textLength = Math.min(text.length, MAX_TILEMAP_TEXT_CHARS);
+    for (var i = 0; i < textLength; i++) {
+      if (out.length >= MAX_TILEMAP_SOLID_ENTRIES) { truncated = true; break; }
       var code = text.charCodeAt(i);
       // separadores: espaço(32), tab(9), nova linha(10), retorno(13), vírgula(44), ';'(59)
       if (code === 32 || code === 9 || code === 10 || code === 13 || code === 44 || code === 59) {
         flush();
-      } else {
+      } else if (token.length < MAX_TILEMAP_TOKEN_CHARS) {
         token += text.charAt(i);
-      }
+      } else { truncated = true; }
     }
     flush();
+    if (truncated) _warnTileMapLimit();
     return out;
   }
   /**

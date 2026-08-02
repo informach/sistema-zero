@@ -37,6 +37,11 @@ export interface ZappyHistoryMessage {
   response?: ZappyStoredResponse
 }
 
+export interface ZappyHistoryPage {
+  messages: ZappyHistoryMessage[]
+  nextCursor: string | null
+}
+
 export interface ReserveZappyQuestionInput {
   userId: string
   accountId: string
@@ -45,6 +50,7 @@ export interface ReserveZappyQuestionInput {
   question: string
   now: Date
   expiresAt: Date
+  processingUntil: Date
 }
 
 export interface ReserveZappyQuestionResult {
@@ -83,7 +89,8 @@ export interface ZappyRepository {
     projectId: string,
     now: Date,
     expiresAt: Date,
-  ): Promise<ZappyHistoryMessage[]>
+    before?: string,
+  ): Promise<ZappyHistoryPage>
   reserveQuestion(input: ReserveZappyQuestionInput): Promise<ReserveZappyQuestionResult>
   completeQuestion(input: CompleteZappyQuestionInput): Promise<ZappyStoredResponse>
   deleteHistory(userId: string, projectId: string): Promise<void>

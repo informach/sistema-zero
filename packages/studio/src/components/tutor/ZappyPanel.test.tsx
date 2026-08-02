@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { type JSX, useEffect } from 'react'
 import { createEmptyProject } from '#core'
 import { useHighlightStore } from '../../state/highlightStore'
@@ -48,6 +48,14 @@ function response() {
   }
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((done) => {
+    resolve = done
+  })
+  return { promise, resolve }
+}
+
 beforeEach(() => {
   useProjectStore.setState({
     project: createEmptyProject('project-zappy-panel', 'Projeto Zappy'),
@@ -64,7 +72,7 @@ describe('ZappyPanel', () => {
   it('reutiliza o clientMessageId quando a mesma tentativa é reenviada', async () => {
     const ids: string[] = []
     const adapter: StudioTutorAdapter = {
-      loadHistory: async () => [],
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
       deleteHistory: async () => undefined,
       ask: async (input) => {
         ids.push(input.clientMessageId)
@@ -93,7 +101,7 @@ describe('ZappyPanel', () => {
 
     try {
       const adapter: StudioTutorAdapter = {
-        loadHistory: async () => [],
+        loadHistory: async () => ({ messages: [], nextCursor: null }),
         deleteHistory: async () => undefined,
         ask: async () => response(),
         feedback: async () => undefined,
@@ -126,15 +134,18 @@ describe('ZappyPanel', () => {
     const opened: StudioTutorLessonReference[] = []
     const tutorResponse = { ...response(), lessonReferences: [reference] }
     const adapter: StudioTutorAdapter = {
-      loadHistory: async () => [
-        {
-          id: tutorResponse.id,
-          role: 'assistant',
-          text: tutorResponse.text,
-          createdAt: tutorResponse.createdAt,
-          response: tutorResponse,
-        },
-      ],
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
       deleteHistory: async () => undefined,
       ask: async () => tutorResponse,
       feedback: async () => undefined,
@@ -150,5 +161,168 @@ describe('ZappyPanel', () => {
     fireEvent.click(await view.findByText('Aula: Criando movimentos ↗'))
 
     expect(opened).toEqual([reference])
+  })
+
+  it('exige confirmação antes de apagar todo o histórico', async () => {
+    let deleted = 0
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: 'message-1',
+            role: 'user',
+            text: 'Como faço o pulo?',
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => {
+        deleted += 1
+      },
+      ask: async () => response(),
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter))
+
+    fireEvent.click(await view.findByText('Apagar'))
+    expect(deleted).toBe(0)
+
+    fireEvent.click(await view.findByText('Confirmar exclusão'))
+    await waitFor(() => expect(deleted).toBe(1))
+  })
+
+  it('carrega mensagens anteriores usando o cursor devolvido pelo host', async () => {
+    const cursors: Array<string | undefined> = []
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async (_projectId, before) => {
+        cursors.push(before)
+        return before
+          ? {
+              messages: [
+                {
+                  id: 'old-message',
+                  role: 'user',
+                  text: 'Mensagem anterior',
+                  createdAt: '2026-08-01T12:00:00Z',
+                },
+              ],
+              nextCursor: null,
+            }
+          : {
+              messages: [
+                {
+                  id: 'new-message',
+                  role: 'user',
+                  text: 'Mensagem recente',
+                  createdAt: '2026-08-02T12:00:00Z',
+                },
+              ],
+              nextCursor: 'new-message',
+            }
+      },
+      deleteHistory: async () => undefined,
+      ask: async () => response(),
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter))
+
+    fireEvent.click(await view.findByText('Carregar mensagens anteriores'))
+
+    await view.findByText('Mensagem anterior')
+    expect(view.getByText('Mensagem recente')).toBeTruthy()
+    expect(cursors).toEqual([undefined, 'new-message'])
+  })
+
+  it('ignora resposta da pergunta quando o projeto troca durante a chamada', async () => {
+    const oldAnswer = deferred<ReturnType<typeof response>>()
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async (projectId) => ({
+        messages:
+          projectId === 'project-b'
+            ? [
+                {
+                  id: 'project-b-message',
+                  role: 'user',
+                  text: 'Histórico do projeto B',
+                  createdAt: '2026-08-02T12:00:00Z',
+                },
+              ]
+            : [],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => oldAnswer.promise,
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+    fireEvent.change(question, { target: { value: 'Pergunta do projeto A' } })
+    fireEvent.submit(form)
+    await view.findByText('Pergunta do projeto A')
+
+    act(() => {
+      useProjectStore.setState({ project: createEmptyProject('project-b', 'Projeto B') })
+    })
+    await view.findByText('Histórico do projeto B')
+    await act(async () => {
+      oldAnswer.resolve({ ...response(), text: 'Resposta atrasada do projeto A' })
+      await oldAnswer.promise
+    })
+
+    expect(view.queryByText('Resposta atrasada do projeto A')).toBeNull()
+    expect(view.getByText('Histórico do projeto B')).toBeTruthy()
+  })
+
+  it('ignora página antiga quando o projeto troca durante a paginação', async () => {
+    const oldPage = deferred<Awaited<ReturnType<StudioTutorAdapter['loadHistory']>>>()
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async (projectId, before) => {
+        if (projectId === 'project-zappy-panel' && before) return oldPage.promise
+        return projectId === 'project-b'
+          ? {
+              messages: [
+                {
+                  id: 'project-b-message',
+                  role: 'user',
+                  text: 'Histórico do projeto B',
+                  createdAt: '2026-08-02T12:00:00Z',
+                },
+              ],
+              nextCursor: null,
+            }
+          : { messages: [], nextCursor: 'cursor-a' }
+      },
+      deleteHistory: async () => undefined,
+      ask: async () => response(),
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter))
+    fireEvent.click(await view.findByText('Carregar mensagens anteriores'))
+
+    act(() => {
+      useProjectStore.setState({ project: createEmptyProject('project-b', 'Projeto B') })
+    })
+    await view.findByText('Histórico do projeto B')
+    await act(async () => {
+      oldPage.resolve({
+        messages: [
+          {
+            id: 'old-project-message',
+            role: 'user',
+            text: 'Página atrasada do projeto A',
+            createdAt: '2026-08-01T12:00:00Z',
+          },
+        ],
+        nextCursor: null,
+      })
+      await oldPage.promise
+    })
+
+    expect(view.queryByText('Página atrasada do projeto A')).toBeNull()
+    expect(view.getByText('Histórico do projeto B')).toBeTruthy()
   })
 })

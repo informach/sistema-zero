@@ -71,6 +71,10 @@ const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
   { key: 'MEMBERS_INTERNAL_TOKEN', why: 'prova ao members que a chamada veio do gateway' },
   { key: 'CATALOG_INTERNAL_TOKEN', why: 'prova ao catalog que a chamada veio do gateway' },
   { key: 'MESSAGING_INTERNAL_TOKEN', why: 'prova ao messaging que a chamada veio do gateway' },
+  {
+    key: 'MEMBER_SHELL_HMAC_SECRET',
+    why: 'autentica o BFF nas mutações privadas do Zappy',
+  },
   { key: 'AUTH_HMAC_SECRET', why: 'cadastra o auth como consumer HMAC da mensageria' },
   { key: 'AUTH_INTERNAL_TOKEN', why: 'prova ao auth que a chamada veio do gateway' },
   {
@@ -226,6 +230,10 @@ const EnvSchema = z
     // Consumer HMAC do auth (reset/OTP/convite via /messaging/send).
     AUTH_HMAC_SECRET: optionalSecret,
     AUTH_ALLOWED_CIDRS: z.string().optional(),
+
+    // Consumer HMAC do BFF compartilhado das comunidades (persistência do Zappy).
+    MEMBER_SHELL_HMAC_SECRET: optionalSecret,
+    MEMBER_SHELL_ALLOWED_CIDRS: z.string().optional(),
 
     // Consumer HMAC do marketing (lembrete de publicação manual via /messaging/send).
     MARKETING_HMAC_SECRET: optionalSecret,

@@ -41,7 +41,7 @@ const tutorHistory = new Map<string, StudioTutorHistoryMessage[]>()
  */
 const tutorDemo: StudioTutorAdapter = {
   async loadHistory(projectId) {
-    return tutorHistory.get(projectId) ?? []
+    return { messages: tutorHistory.get(projectId) ?? [], nextCursor: null }
   },
   async deleteHistory(projectId) {
     tutorHistory.delete(projectId)

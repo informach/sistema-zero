@@ -1059,6 +1059,7 @@ export const zappyMessages = members.table(
     outcome: varchar('outcome', { length: 24 }),
     useful: boolean('useful'),
     feedbackAt: timestamp('feedback_at', { withTimezone: true }),
+    processingUntil: timestamp('processing_until', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [
@@ -1082,6 +1083,8 @@ export const zappyKnowledgeSources = members.table(
     lessonId: uuid('lesson_id')
       .notNull()
       .references(() => lessons.id, { onDelete: 'cascade' }),
+    blockId: uuid('block_id').references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    blockRevision: varchar('block_revision', { length: 32 }),
     sourceType: varchar('source_type', { length: 32 }).notNull(),
     sourceRef: text('source_ref').notNull(),
     contentHash: varchar('content_hash', { length: 64 }).notNull(),
@@ -1093,6 +1096,7 @@ export const zappyKnowledgeSources = members.table(
   (t) => [
     uniqueIndex('zappy_knowledge_source_uq').on(t.lessonId, t.sourceType, t.sourceRef),
     index('zappy_knowledge_course_lesson_idx').on(t.courseId, t.lessonId),
+    index('zappy_knowledge_block_idx').on(t.blockId),
     index('zappy_knowledge_status_idx').on(t.status),
   ],
 )

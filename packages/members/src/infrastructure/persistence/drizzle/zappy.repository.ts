@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, eq, gt, gte, isNotNull, lt, lte, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, gte, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import type {
   CompleteZappyQuestionInput,
   ReserveZappyQuestionInput,
   ReserveZappyQuestionResult,
   ZappyHistoryMessage,
+  ZappyHistoryPage,
   ZappyMetrics,
   ZappyRepository,
   ZappyStoredResponse,
@@ -49,15 +50,22 @@ export function zappyMetricsPeriod(from: Date, to: Date) {
   return period
 }
 
+export function zappyReservationReclaimable(processingUntil: Date | null, now: Date): boolean {
+  return processingUntil === null || processingUntil <= now
+}
+
 export class DrizzleZappyRepository implements ZappyRepository {
   constructor(private readonly db: Database) {}
+
+  private static readonly HISTORY_PAGE_SIZE = 50
 
   async history(
     userId: string,
     projectId: string,
     now: Date,
     expiresAt: Date,
-  ): Promise<ZappyHistoryMessage[]> {
+    before?: string,
+  ): Promise<ZappyHistoryPage> {
     return this.db.transaction(async (tx) => {
       const [conversation] = await tx
         .select({ id: zappyConversations.id })
@@ -70,11 +78,22 @@ export class DrizzleZappyRepository implements ZappyRepository {
           ),
         )
         .limit(1)
-      if (!conversation) return []
+      if (!conversation) return { messages: [], nextCursor: null }
       await tx
         .update(zappyConversations)
         .set({ updatedAt: now, expiresAt })
         .where(eq(zappyConversations.id, conversation.id))
+      let cursor: { id: string; createdAt: Date } | undefined
+      if (before) {
+        ;[cursor] = await tx
+          .select({ id: zappyMessages.id, createdAt: zappyMessages.createdAt })
+          .from(zappyMessages)
+          .where(
+            and(eq(zappyMessages.conversationId, conversation.id), eq(zappyMessages.id, before)),
+          )
+          .limit(1)
+        if (!cursor) return { messages: [], nextCursor: null }
+      }
       const rows = await tx
         .select({
           id: zappyMessages.id,
@@ -84,9 +103,25 @@ export class DrizzleZappyRepository implements ZappyRepository {
           createdAt: zappyMessages.createdAt,
         })
         .from(zappyMessages)
-        .where(eq(zappyMessages.conversationId, conversation.id))
-        .orderBy(asc(zappyMessages.createdAt), asc(zappyMessages.id))
-      return rows.map((row) => {
+        .where(
+          and(
+            eq(zappyMessages.conversationId, conversation.id),
+            cursor
+              ? or(
+                  lt(zappyMessages.createdAt, cursor.createdAt),
+                  and(
+                    eq(zappyMessages.createdAt, cursor.createdAt),
+                    lt(zappyMessages.id, cursor.id),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(desc(zappyMessages.createdAt), desc(zappyMessages.id))
+        .limit(DrizzleZappyRepository.HISTORY_PAGE_SIZE + 1)
+      const hasMore = rows.length > DrizzleZappyRepository.HISTORY_PAGE_SIZE
+      const pageRows = rows.slice(0, DrizzleZappyRepository.HISTORY_PAGE_SIZE)
+      const messages: ZappyHistoryMessage[] = pageRows.reverse().map((row) => {
         const response = row.role === 'assistant' ? toResponse(row) : undefined
         return {
           id: row.id,
@@ -96,6 +131,10 @@ export class DrizzleZappyRepository implements ZappyRepository {
           ...(response ? { response } : {}),
         }
       })
+      return {
+        messages,
+        nextCursor: hasMore ? (messages[0]?.id ?? null) : null,
+      }
     })
   }
 
@@ -143,7 +182,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
       if (!conversation) throw new Error('Falha ao criar conversa do Zappy')
 
       const [existing] = await tx
-        .select({ id: zappyMessages.id })
+        .select({ id: zappyMessages.id, processingUntil: zappyMessages.processingUntil })
         .from(zappyMessages)
         .where(
           and(
@@ -162,11 +201,24 @@ export class DrizzleZappyRepository implements ZappyRepository {
           .from(zappyMessages)
           .where(eq(zappyMessages.replyToId, existing.id))
           .limit(1)
-        return {
-          created: false,
-          questionId: existing.id,
-          ...(answer ? { response: toResponse(answer) } : {}),
+        const response = answer ? toResponse(answer) : undefined
+        if (response) return { created: false, questionId: existing.id, response }
+        if (zappyReservationReclaimable(existing.processingUntil, input.now)) {
+          await tx
+            .update(zappyMessages)
+            .set({ processingUntil: input.processingUntil })
+            .where(
+              and(
+                eq(zappyMessages.id, existing.id),
+                or(
+                  isNull(zappyMessages.processingUntil),
+                  lte(zappyMessages.processingUntil, input.now),
+                ),
+              ),
+            )
+          return { created: true, questionId: existing.id }
         }
+        return { created: false, questionId: existing.id }
       }
 
       const [recent] = await tx
@@ -189,6 +241,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         role: 'user',
         content: input.question,
         clientMessageId: input.clientMessageId,
+        processingUntil: input.processingUntil,
         createdAt: input.now,
       })
       return { created: true, questionId }
@@ -219,7 +272,13 @@ export class DrizzleZappyRepository implements ZappyRepository {
         .from(zappyMessages)
         .where(eq(zappyMessages.replyToId, question.id))
         .limit(1)
-      if (existing) return toResponse(existing) ?? input.response
+      if (existing) {
+        await tx
+          .update(zappyMessages)
+          .set({ processingUntil: null })
+          .where(eq(zappyMessages.id, question.id))
+        return toResponse(existing) ?? input.response
+      }
 
       const id = input.response.id || randomUUID()
       const responseJson: StoredResponseJson = {
@@ -249,6 +308,10 @@ export class DrizzleZappyRepository implements ZappyRepository {
           response: zappyMessages.response,
           createdAt: zappyMessages.createdAt,
         })
+      await tx
+        .update(zappyMessages)
+        .set({ processingUntil: null })
+        .where(eq(zappyMessages.id, question.id))
       await tx
         .update(zappyConversations)
         .set({ updatedAt: input.now, expiresAt: input.expiresAt })

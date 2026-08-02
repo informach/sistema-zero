@@ -132,7 +132,9 @@ SZGame2D.gameLoop(function update() {
       heroi2.vx = 3;
     }
     SZGame2D.applyVelocity(heroi1);
+    SZGame2D.applyGravity(heroi1);
     SZGame2D.applyVelocity(heroi2);
+    SZGame2D.applyGravity(heroi2);
     SZGame2D.collideGroup(heroi1, chao);
     SZGame2D.collideGroup(heroi2, chao);
     SZGame2D.clampToScreen(heroi1, ctx);

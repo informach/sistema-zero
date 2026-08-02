@@ -7,11 +7,14 @@ import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
 import { isStudioZappyPilotAllowed } from '../server/zappy-access'
 import {
-  answerStudioZappy,
+  answerPreparedStudioZappy,
   deterministicZappyReply,
+  deterministicZappySafetyReply,
   normalizeZappySearchQuery,
+  prepareStudioZappyAnswer,
   type ZappyContextInput,
 } from '../server/zappy-ai'
+import { redactZappySensitiveText } from '../server/zappy-safety'
 
 const PROJECT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
 const QuestionBody = z.object({
@@ -69,9 +72,14 @@ function safeProfileName(value: string | undefined): string {
   return normalized || 'criador'
 }
 
-function historyProjectId(req: Request): string | null {
-  const value = new URL(req.url).searchParams.get('projectId') ?? ''
-  return PROJECT_ID.test(value) ? value : null
+function historyQuery(req: Request): { projectId: string; before?: string } | null {
+  const params = new URL(req.url).searchParams
+  const projectId = params.get('projectId') ?? ''
+  const before = params.get('before') ?? undefined
+  if (!PROJECT_ID.test(projectId) || (before && !z.string().uuid().safeParse(before).success)) {
+    return null
+  }
+  return { projectId, ...(before ? { before } : {}) }
 }
 
 function outcomeFor(response: { scope: string }) {
@@ -82,6 +90,15 @@ function outcomeFor(response: { scope: string }) {
   return 'normal' as const
 }
 
+function signedActor(user: Awaited<ReturnType<SessionModule['getSession']>>) {
+  if (!user) throw new Error('Sessão ausente')
+  return {
+    userId: user.id,
+    accountId: user.activeProfile?.accountId ?? user.id,
+    privileged: user.status === 'active' && ['superadmin', 'admin', 'staff'].includes(user.role),
+  }
+}
+
 type ZappyOutcome = 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
 
 export function createStudioZappyRoutes(deps: { members: MembersClient; session: SessionModule }) {
@@ -90,23 +107,26 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
   const studioZappyHistory = {
     GET: async (req: Request) => {
       const user = await sessions.getSession()
-      const projectId = historyProjectId(req)
+      const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
-      if (!projectId) return error('INVALID_INPUT', 400)
+      if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
-      const result = await members.zappyHistory(projectId)
-      return NextResponse.json(result.body ?? { messages: [] }, { status: result.status })
+
+      const result = await members.zappyHistory(query.projectId, query.before)
+      return NextResponse.json(result.body ?? { messages: [], nextCursor: null }, {
+        status: result.status,
+      })
     },
     DELETE: async (req: Request) => {
       const user = await sessions.getSession()
-      const projectId = historyProjectId(req)
+      const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
       if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
-      if (!projectId) return error('INVALID_INPUT', 400)
+      if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
-      const result = await members.zappyDeleteHistory(projectId)
+      const result = await members.zappyDeleteHistory(query.projectId)
       return NextResponse.json(result.body ?? { ok: false }, { status: result.status })
     },
   }
@@ -129,6 +149,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         return error('INVALID_INPUT', 400)
       }
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
+      const safeQuestion = redactZappySensitiveText(parsed.data.question)
 
       // Rank/modos/extensões vêm do members + catálogo da carreira, nunca do cliente.
       const gamification = await members.getGamification()
@@ -142,9 +163,10 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       }
 
       const reserved = await members.zappyReserveQuestion({
+        actor: signedActor(user),
         projectId: parsed.data.projectId,
         clientMessageId: parsed.data.clientMessageId,
-        question: parsed.data.question,
+        question: safeQuestion.text,
       })
       if (reserved.status !== 200 || !reserved.body) {
         return NextResponse.json(reserved.body ?? { error: { code: 'ZAPPY_UNAVAILABLE' } }, {
@@ -158,13 +180,15 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           ? NextResponse.json(reserved.body.response)
           : error('ZAPPY_IN_PROGRESS', 409)
       }
-      if (!reserved.body.questionId) return error('ZAPPY_UNAVAILABLE', 503)
+      const questionId = reserved.body.questionId
+      if (!questionId) return error('ZAPPY_UNAVAILABLE', 503)
 
       const complete = async (
         response: NonNullable<typeof reserved.body.response>,
         outcome: ZappyOutcome = outcomeFor(response),
       ) => {
-        const saved = await members.zappyCompleteQuestion(reserved.body.questionId!, {
+        const saved = await members.zappyCompleteQuestion(questionId, {
+          actor: signedActor(user),
           projectId: parsed.data.projectId,
           latencyMs: Date.now() - startedAt,
           response,
@@ -175,8 +199,63 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         })
       }
 
-      const fixed = deterministicZappyReply(parsed.data.question)
+      const safetyReply = deterministicZappySafetyReply(parsed.data.question, safeQuestion.hadPii)
+      if (safetyReply) return complete(safetyReply)
+
+      const fixed = deterministicZappyReply(safeQuestion.text)
       if (fixed) return complete(fixed)
+
+      let knowledge: Awaited<ReturnType<typeof members.zappyKnowledgeSearch>>['body']
+      try {
+        const searchQuery = await normalizeZappySearchQuery(safeQuestion.text)
+        const knowledgeResult = await members.zappyKnowledgeSearch(searchQuery, 5)
+        if (knowledgeResult.status !== 200 || !knowledgeResult.body) {
+          throw new Error(`Base do Zappy indisponível (${knowledgeResult.status})`)
+        }
+        knowledge = knowledgeResult.body
+      } catch (cause) {
+        console.error('[studio-zappy] falha ao recuperar conhecimento', { cause })
+        return complete(
+          {
+            id: crypto.randomUUID(),
+            text: 'Não consegui consultar as aulas agora. Rode o jogo ou selecione o bloco e tente novamente.',
+            scope: 'needs-context',
+            blockReferences: [],
+            createdAt: new Date().toISOString(),
+          },
+          'error',
+        )
+      }
+
+      let prepared: ReturnType<typeof prepareStudioZappyAnswer>
+      try {
+        prepared = prepareStudioZappyAnswer({
+          question: safeQuestion.text,
+          context: {
+            ...context,
+            // Modo Blocos nunca aceita código, mesmo se o cliente forjado enviar.
+            ...(context.mode === 'blocks' ? { code: undefined } : {}),
+            selectedBlockId: context.blocks.some((block) => block.id === context.selectedBlockId)
+              ? context.selectedBlockId
+              : null,
+          },
+          tier,
+          profileName: safeProfileName(user.activeProfile?.name),
+          knowledge: knowledge.hits,
+        })
+      } catch (cause) {
+        console.error('[studio-zappy] falha ao preparar resposta', { cause })
+        return complete(
+          {
+            id: crypto.randomUUID(),
+            text: 'Não consegui preparar essa explicação agora. Rode o jogo ou selecione o bloco e tente novamente.',
+            scope: 'needs-context',
+            blockReferences: [],
+            createdAt: new Date().toISOString(),
+          },
+          'error',
+        )
+      }
 
       const quota = await consumeAiQuotaStrict(members, 'studio-zappy')
       if (!quota.allowed) {
@@ -199,22 +278,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       }
 
       try {
-        const searchQuery = await normalizeZappySearchQuery(parsed.data.question)
-        const knowledgeResult = await members.zappyKnowledgeSearch(searchQuery, 5)
-        const response = await answerStudioZappy({
-          question: parsed.data.question,
-          context: {
-            ...context,
-            // Modo Blocos nunca aceita código, mesmo se o cliente forjado enviar.
-            ...(context.mode === 'blocks' ? { code: undefined } : {}),
-            selectedBlockId: context.blocks.some((block) => block.id === context.selectedBlockId)
-              ? context.selectedBlockId
-              : null,
-          },
-          tier,
-          profileName: safeProfileName(user.activeProfile?.name),
-          knowledge: knowledgeResult.status === 200 ? (knowledgeResult.body?.hits ?? []) : [],
-        })
+        const response = await answerPreparedStudioZappy(prepared)
         return complete(response)
       } catch (cause) {
         console.error('[studio-zappy] falha ao responder', { cause })

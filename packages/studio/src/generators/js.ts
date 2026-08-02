@@ -1084,6 +1084,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.setGravity(${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))});`
     case 'g2d:applyVelocity':
       return `${pad}SZGame2D.applyVelocity(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:applyGravity':
+      return `${pad}SZGame2D.applyGravity(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:bounceOnEdges':
       return `${pad}SZGame2D.bounceOnEdges(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)});`
     case 'g2d:circleCollides':
@@ -1171,6 +1173,32 @@ function compileStatementCode(
       // registro — assim a ordem dos blocos no topo não causa TDZ (const léxico).
       const id = stmt.__id ?? identifiers.reserveInternal('eventoDeContato')
       return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
+    case 'g2d:onJump': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      // Thunk (() => sprite) pela MESMA razão do onOverlap: o sprite resolve no
+      // DISPARO, então declarar o evento antes do sprite não dá TDZ.
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDePulo')
+      return `${pad}SZGame2D.onJump(() => ${identifiers.get(stmt.spriteVar)}, () => {
+${body}
+${pad}}, ${JSON.stringify(id)});`
+    }
+    case 'g2d:onAnyInput': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeQualquerToque')
+      return `${pad}SZGame2D.onAnyInput(() => {
+${body}
+${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:createImageSprite': {
       const v = identifiers.get(stmt.varName)
@@ -4368,6 +4396,8 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:onPointer':
       case 'g2d:onKey':
       case 'g2d:onOverlap':
+      case 'g2d:onJump':
+      case 'g2d:onAnyInput':
       case 'g2d:forEachInGroup':
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
@@ -4431,6 +4461,8 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:onPointer':
       case 'g2d:onKey':
       case 'g2d:onOverlap':
+      case 'g2d:onJump':
+      case 'g2d:onAnyInput':
       case 'g2d:forEachInGroup':
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
@@ -4807,6 +4839,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.text), names)
       return
     case 'g2d:applyVelocity':
+    case 'g2d:applyGravity':
       names.add(stmt.spriteVar)
       return
     case 'g2d:bounceOnEdges':
@@ -4915,6 +4948,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:onOverlap':
       names.add(stmt.aVar)
       names.add(stmt.bVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:onJump':
+      names.add(stmt.spriteVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:onAnyInput':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g2d:createGroup':

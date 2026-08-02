@@ -11,6 +11,12 @@ import type { StudioTier } from '../lib/studio-tier'
 import type { ZappyKnowledgeHitView, ZappyStoredResponseView } from '../lib/types'
 import { PENSA_CHILD_SAFETY_CLAUSE } from './pensa-agents/safety'
 import { completePensaJson } from './pensa-llm'
+import {
+  isSafeZappyAnswer,
+  isUnsafeZappyText,
+  isZappySelfHarmText,
+  redactZappySensitiveText,
+} from './zappy-safety'
 
 const PROFILE_MARKER = '{{NOME_DO_PERFIL}}'
 const LEVEL_RANK: Record<string, number> = {
@@ -121,14 +127,34 @@ export function deterministicZappyReply(question: string): ZappyStoredResponseVi
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-  const asksForAssetCreation =
-    /\b(crie|criar|faca|fazer|desenhe|desenhar|edite|editar|pinte|pintar|gere|gerar)\b/.test(q) &&
-    /\b(imagem|asset|desenho|pixel art|textura)\b/.test(q)
-  const asksForSpriteAsset =
-    /\b(crie|desenhe|pinte|gere)\b.{0,30}\bsprite\b.{0,20}\b(para mim|do personagem|visual)\b/.test(
-      q,
-    )
-  if (/\bpinta\b/.test(q) || asksForAssetCreation || asksForSpriteAsset) {
+  const tokens = q.match(/[a-z0-9]+/g) ?? []
+  const creationWords = new Set([
+    'crie',
+    'criar',
+    'faca',
+    'fazer',
+    'desenhe',
+    'desenhar',
+    'edite',
+    'editar',
+    'pinte',
+    'pintar',
+    'gere',
+    'gerar',
+  ])
+  const assetWords = new Set(['imagem', 'asset', 'desenho', 'textura', 'sprite'])
+  const asksForAssetCreation = tokens.some(
+    (token, index) =>
+      creationWords.has(token) &&
+      tokens.some(
+        (candidate, candidateIndex) =>
+          assetWords.has(candidate) && Math.abs(candidateIndex - index) <= 4,
+      ),
+  )
+  const explicitlyAsksForPinta =
+    /\b(?:abra|abrir|use|usar|no|na|pelo)\s+(?:o\s+)?pinta\b/.test(q) ||
+    /\bpinta\b.{0,24}\b(?:imagem|desenho|textura|sprite|asset)\b/.test(q)
+  if (explicitlyAsksForPinta || asksForAssetCreation) {
     return deterministic(
       'Para criar ou editar imagens, abra o Pinta. Aqui no Studio eu posso ajudar a usar um desenho que já está no projeto.',
       'redirect-pinta',
@@ -169,6 +195,31 @@ export function deterministicZappyReply(question: string): ZappyStoredResponseVi
   return null
 }
 
+export function deterministicZappySafetyReply(
+  question: string,
+  hadPii: boolean,
+): ZappyStoredResponseView | null {
+  if (hadPii) {
+    return deterministic(
+      'Eu não guardo dados pessoais. Vamos cuidar da sua privacidade e voltar para a dúvida de programação ou do jogo.',
+      'unsupported',
+    )
+  }
+  if (isZappySelfHarmText(question)) {
+    return deterministic(
+      'Sinto muito que você esteja passando por isso. Fale agora com um adulto de confiança que esteja perto de você e não fique sozinho. Se houver risco imediato, ligue 192 (SAMU). Você também pode ligar 188 (CVV) para conversar de graça, a qualquer hora.',
+      'unsupported',
+    )
+  }
+  if (isUnsafeZappyText(question)) {
+    return deterministic(
+      'Esse assunto não é para o Zappy. Posso ajudar com programação e jogos: selecione um bloco, rode o projeto ou conte qual mecânica travou.',
+      'unsupported',
+    )
+  }
+  return null
+}
+
 function catalogAllowed(entry: ServerBlockCatalogEntry, tier: StudioTier): boolean {
   if ((LEVEL_RANK[entry.level] ?? 99) > (LEVEL_RANK[tier.level] ?? -1)) return false
   if (entry.extension !== null && !tier.allowedExtensions.includes(entry.extension)) return false
@@ -184,6 +235,45 @@ function allowedCatalog(
     (entry) =>
       catalogAllowed(entry, tier) && (entry.extension === null || installed.has(entry.extension)),
   )
+}
+
+const BLOCK_TYPE_RE = /\bsz_[a-z0-9_:-]+\b/gi
+
+function redactForbiddenBlockTypes(value: string, allowedTypes: ReadonlySet<string>): string {
+  return value.replace(BLOCK_TYPE_RE, (type) =>
+    allowedTypes.has(type.toLowerCase()) ? type : '[bloco indisponível]',
+  )
+}
+
+function contextAllowedByCatalog(
+  context: ZappyContextInput,
+  allowed: readonly ServerBlockCatalogEntry[],
+): ZappyContextInput {
+  const allowedTypes = new Set(allowed.map((entry) => entry.type.toLowerCase()))
+  const blocks = context.blocks.filter((block) => allowedTypes.has(block.type.toLowerCase()))
+  const blockIds = new Set(blocks.map((block) => block.id))
+  return {
+    ...context,
+    blocks,
+    selectedBlockId:
+      context.selectedBlockId && blockIds.has(context.selectedBlockId)
+        ? context.selectedBlockId
+        : null,
+    lastError: context.lastError
+      ? redactForbiddenBlockTypes(redactZappySensitiveText(context.lastError).text, allowedTypes)
+      : null,
+    ...(context.code
+      ? {
+          code: context.code.map((file) => ({
+            ...file,
+            content: redactForbiddenBlockTypes(
+              redactZappySensitiveText(file.content).text,
+              allowedTypes,
+            ),
+          })),
+        }
+      : {}),
+  }
 }
 
 const SYSTEM_PROMPT_BUDGET_BYTES = 27_500
@@ -295,17 +385,31 @@ function relevantManualSnippets(
   question: string,
   context: ZappyContextInput,
   catalog: readonly ServerBlockCatalogEntry[],
+  tier: StudioTier,
+  allowedTypes: ReadonlySet<string>,
 ): ManualSnippet[] {
   const selectedType = context.blocks.find((block) => block.id === context.selectedBlockId)?.type
   const terms = searchTerms(`${question} ${context.lastError ?? ''} ${selectedType ?? ''}`)
   const relevantExtensions = new Set(
     catalog.slice(0, 16).flatMap((entry) => (entry.extension ? [entry.extension] : [])),
   )
-  return SERVER_MECHANIC_DOCUMENTS.filter((document) =>
-    context.installedExtensions.includes(document.extension),
+  const extensionManualIsAllowed = (extension: string) =>
+    !tier.allowBlocks?.length ||
+    SERVER_BLOCK_CATALOG.filter(
+      (entry) =>
+        entry.extension === extension &&
+        (LEVEL_RANK[entry.level] ?? 99) <= (LEVEL_RANK[tier.level] ?? -1),
+    ).every((entry) => allowedTypes.has(entry.type.toLowerCase()))
+  return SERVER_MECHANIC_DOCUMENTS.filter(
+    (document) =>
+      context.installedExtensions.includes(document.extension) &&
+      extensionManualIsAllowed(document.extension),
   )
     .flatMap((document) =>
-      textChunks(document.content, MANUAL_SNIPPET_CHARS).map((content, index) => {
+      textChunks(
+        redactForbiddenBlockTypes(document.content, allowedTypes),
+        MANUAL_SNIPPET_CHARS,
+      ).map((content, index) => {
         const searchable = normalizeSearchText(content)
         const matches = terms.reduce(
           (total, term) => total + (searchable.includes(term) ? Math.max(2, term.length) : 0),
@@ -468,26 +572,32 @@ export function buildStudioZappyPrompt(input: {
   context: ZappyContextInput
   tier: StudioTier
   knowledge?: readonly ZappyKnowledgeHitView[]
-}): { system: string; user: string; catalog: readonly ServerBlockCatalogEntry[] } {
-  const ranked = rankCatalog(
-    allowedCatalog(input.tier, input.context.installedExtensions),
-    input.question,
-    input.context,
-  )
+}): {
+  system: string
+  user: string
+  catalog: readonly ServerBlockCatalogEntry[]
+  context: ZappyContextInput
+} {
+  const allowed = allowedCatalog(input.tier, input.context.installedExtensions)
+  const allowedTypes = new Set(allowed.map((entry) => entry.type.toLowerCase()))
+  const context = contextAllowedByCatalog(input.context, allowed)
+  const question = redactForbiddenBlockTypes(input.question, allowedTypes)
+  const ranked = rankCatalog(allowed, question, context)
   const catalog = ranked.slice(0, MAX_RELEVANT_CATALOG)
-  const manuals = relevantManualSnippets(input.question, input.context, catalog)
-  let system = systemPrompt(input.context.mode, input.context.kind, catalog, manuals)
+  const manuals = relevantManualSnippets(question, context, catalog, input.tier, allowedTypes)
+  let system = systemPrompt(context.mode, context.kind, catalog, manuals)
   while (utf8Bytes(system) > SYSTEM_PROMPT_BUDGET_BYTES) {
     if (manuals.length > 1) manuals.pop()
     else if (catalog.length > 8) catalog.pop()
     else if (manuals.length === 1) manuals.pop()
     else break
-    system = systemPrompt(input.context.mode, input.context.kind, catalog, manuals)
+    system = systemPrompt(context.mode, context.kind, catalog, manuals)
   }
   return {
     system,
-    user: projectData(input.question, input.context, input.knowledge ?? []),
+    user: projectData(question, context, input.knowledge ?? []),
     catalog,
+    context,
   }
 }
 
@@ -498,7 +608,7 @@ function invalidAnswer(
   instances: ReadonlyMap<string, string>,
   lessons: ReadonlySet<string>,
 ): boolean {
-  if (/https?:\/\/|\bwww\./i.test(raw.text)) return true
+  if (!isSafeZappyAnswer(raw.text) || /https?:\/\/|\bwww\./i.test(raw.text)) return true
   if (
     mode === 'blocks' &&
     (/```|`[^`]+`/.test(raw.text) ||
@@ -576,59 +686,83 @@ function validatedResponse(
   }
 }
 
-export async function answerStudioZappy(input: {
+export interface StudioZappyAnswerInput {
   question: string
   context: ZappyContextInput
   tier: StudioTier
   profileName: string
   knowledge?: readonly ZappyKnowledgeHitView[]
-}): Promise<ZappyStoredResponseView> {
-  const fixed = deterministicZappyReply(input.question)
-  if (fixed) return fixed
-  const { catalog, system, user } = buildStudioZappyPrompt(input)
+}
+
+export interface PreparedStudioZappyAnswer {
+  system: string
+  user: string
+  model: string
+  mode: ZappyContextInput['mode']
+  profileName: string
+  knowledge: readonly ZappyKnowledgeHitView[]
+  byType: ReadonlyMap<string, ServerBlockCatalogEntry>
+  instances: ReadonlyMap<string, string>
+  lessons: ReadonlySet<string>
+}
+
+/** Executa toda preparação local antes de o BFF consumir a cota. */
+export function prepareStudioZappyAnswer(input: StudioZappyAnswerInput): PreparedStudioZappyAnswer {
+  const { catalog, context, system, user } = buildStudioZappyPrompt(input)
   const byType = new Map(catalog.map((entry) => [entry.type, entry]))
-  const instances = new Map(input.context.blocks.map((block) => [block.id, block.type]))
-  const lessons = new Set((input.knowledge ?? []).map((hit) => hit.lessonId))
-  let raw = await completePensaJson({
+  const instances = new Map(context.blocks.map((block) => [block.id, block.type]))
+  const knowledge = input.knowledge ?? []
+  const env = getEnv()
+  if (!env.OPENROUTER_API_KEY) {
+    throw new Error('OpenRouter não configurado')
+  }
+  return {
     system,
     user,
+    model: env.OPENROUTER_ZAPPY_MODEL || env.OPENROUTER_PENSA_MODEL || env.OPENROUTER_MODEL,
+    mode: context.mode,
+    profileName: input.profileName,
+    knowledge,
+    byType,
+    instances,
+    lessons: new Set(knowledge.map((hit) => hit.lessonId)),
+  }
+}
+
+/** Após a preparação, esta função faz exatamente uma tentativa no provider. */
+export async function answerPreparedStudioZappy(
+  prepared: PreparedStudioZappyAnswer,
+): Promise<ZappyStoredResponseView> {
+  const raw = await completePensaJson({
+    system: prepared.system,
+    user: prepared.user,
     schema: RawAnswer,
     jsonSchema: RAW_ANSWER_JSON_SCHEMA,
     schemaName: 'studio_zappy_answer',
-    model:
-      getEnv().OPENROUTER_ZAPPY_MODEL ||
-      getEnv().OPENROUTER_PENSA_MODEL ||
-      getEnv().OPENROUTER_MODEL,
+    model: prepared.model,
     maxTokens: 1200,
     temperature: 0.25,
+    maxAttempts: 1,
   })
-  if (invalidAnswer(raw, input.context.mode, byType, instances, lessons)) {
-    raw = await completePensaJson({
-      system: `${system}\nA resposta anterior foi rejeitada pelo validador. Corrija usando apenas IDs permitidos e obedecendo a regra do modo.`,
-      user,
-      schema: RawAnswer,
-      jsonSchema: RAW_ANSWER_JSON_SCHEMA,
-      schemaName: 'studio_zappy_answer_retry',
-      model:
-        getEnv().OPENROUTER_ZAPPY_MODEL ||
-        getEnv().OPENROUTER_PENSA_MODEL ||
-        getEnv().OPENROUTER_MODEL,
-      maxTokens: 1000,
-      temperature: 0.1,
-    })
-    if (invalidAnswer(raw, input.context.mode, byType, instances, lessons)) {
-      return deterministic(
-        'Não consegui validar essa explicação. Selecione o bloco, rode o jogo ou copie a mensagem de erro e tente novamente.',
-        'needs-context',
-      )
-    }
+  if (invalidAnswer(raw, prepared.mode, prepared.byType, prepared.instances, prepared.lessons)) {
+    return deterministic(
+      'Não consegui validar essa explicação. Selecione o bloco, rode o jogo ou copie a mensagem de erro e tente novamente.',
+      'needs-context',
+    )
   }
   return validatedResponse(
     raw,
-    input.profileName,
-    byType,
-    instances,
-    input.context.mode,
-    input.knowledge ?? [],
+    prepared.profileName,
+    prepared.byType,
+    prepared.instances,
+    prepared.mode,
+    prepared.knowledge,
   )
+}
+
+export async function answerStudioZappy(
+  input: StudioZappyAnswerInput,
+): Promise<ZappyStoredResponseView> {
+  const fixed = deterministicZappyReply(input.question)
+  return fixed ?? answerPreparedStudioZappy(prepareStudioZappyAnswer(input))
 }

@@ -7,8 +7,9 @@ import { worldThreeDExtension } from './world-3d'
 
 /**
  * Catálogo oficial de extensões. É a única fonte da verdade: manifestos,
- * blocos e runtimes são síncronos; exemplos são chunks locais carregados pelo
- * provider compartilhado. Não há fetch remoto nem marketplace. Para adicionar
+ * blocos e contratos de lifecycle são síncronos; runtimes e exemplos são chunks
+ * locais carregados pelos providers compartilhados. Não há fetch remoto nem
+ * marketplace. Para adicionar
  * uma extensão nova, edite este array E passe pelo processo de revisão descrito
  * em docs/EXTENSIONS.md.
  */

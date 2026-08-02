@@ -21,6 +21,9 @@ interface Engine {
   createSprite: (opts: Partial<Sprite>) => Sprite
   setGravity: (g: number) => void
   applyVelocity: (s: Sprite) => void
+  applyGravity: (s: Sprite) => void
+  createGroup: () => { items: Sprite[] }
+  updateGroup: (group: { items: Sprite[] }) => void
   bounceOnEdges: (s: Sprite, ctx: { canvas: { width: number; height: number } }) => void
   circleCollides: (a: Sprite, b: Sprite) => boolean
   onPointer: (fn: (x: number, y: number) => void) => void
@@ -56,8 +59,8 @@ interface Engine {
   spriteH: (s: Sprite) => number
   centerX: (s: Sprite) => number
   centerY: (s: Sprite) => number
-  randomX: (width?: number) => number
-  randomY: (height?: number) => number
+  randomX: () => number
+  randomY: () => number
   wrapEdges: (s: Sprite) => void
   touches: (a: Sprite, b: Sprite) => boolean
   randomChance: (percent: number) => boolean
@@ -431,17 +434,60 @@ describe('game-2d — gerador dos novos statements', () => {
 })
 
 describe('game-2d — runtime de física', () => {
-  it('applyVelocity integra velocidade e soma gravidade ao vy', () => {
+  // Os dois blocos eram UM só ("Aplicar velocidade e gravidade") até 08/2026.
+  // Separados, cada um faz uma coisa e o par reproduz a física de antes — desde
+  // que a gravidade venha DEPOIS (o applyVelocity move com o vy do quadro
+  // anterior; é Euler explícito).
+  it('applyVelocity SÓ move — não soma mais gravidade nenhuma', () => {
     const api = loadRuntime()
     api.setGravity(1)
     const s = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
     s.vx = 2
     api.applyVelocity(s)
     expect(s.x).toBe(2)
+    expect(s.vy).toBe(0)
+    api.applyVelocity(s)
+    expect(s.y).toBe(0)
+    expect(s.vy).toBe(0)
+  })
+
+  it('applyGravity puxa pelo valor do MUNDO, e o par reproduz a física antiga', () => {
+    const api = loadRuntime()
+    api.setGravity(1)
+    const s = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
+    s.vx = 2
+    api.applyVelocity(s)
+    api.applyGravity(s)
+    expect(s.x).toBe(2)
     expect(s.vy).toBe(1)
     api.applyVelocity(s)
+    api.applyGravity(s)
     expect(s.y).toBe(1)
     expect(s.vy).toBe(2)
+  })
+
+  it('sem ninguém declarar a gravidade do mundo, o bloco vale 0.6', () => {
+    const api = loadRuntime()
+    const s = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
+    api.applyGravity(s)
+    expect(s.vy).toBeCloseTo(0.6, 10)
+  })
+
+  // ⭐ O grupo NÃO herda o 0.6: ele soma a gravidade CRUA do mundo. Senão todo
+  // grupo de todo jogo que nunca declarou gravidade começaria a cair sozinho
+  // (no "Corre, Dino!" os cactos sumiriam pelo rodapé, sem erro na tela).
+  it('updateGroup só faz cair quando a gravidade do mundo foi declarada', () => {
+    const api = loadRuntime()
+    const grupo = api.createGroup()
+    const s = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
+    grupo.items.push(s)
+
+    api.updateGroup(grupo)
+    expect(s.vy).toBe(0)
+
+    api.setGravity(0.5)
+    api.updateGroup(grupo)
+    expect(s.vy).toBe(0.5)
   })
 
   it('bounceOnEdges quica e inverte a velocidade na borda', () => {
@@ -594,24 +640,6 @@ describe('game-2d — runtime de física', () => {
       expect(api.randomX()).toBeGreaterThanOrEqual(1000)
       expect(api.randomY()).toBeGreaterThanOrEqual(500)
     } finally {
-      random.mockRestore()
-    }
-  })
-
-  it('randomX/randomY reservam o tamanho informado para manter o sprite inteiro na tela', () => {
-    const random = spyOn(Math, 'random').mockReturnValue(0.999)
-    const canvas = document.createElement('canvas')
-    canvas.width = 800
-    canvas.height = 600
-    document.body.appendChild(canvas)
-    try {
-      const api = loadRuntime()
-      expect(api.randomX(40)).toBeLessThan(760)
-      expect(api.randomY(60)).toBeLessThan(540)
-      expect(api.randomX(900)).toBe(0)
-      expect(api.randomY(700)).toBe(0)
-    } finally {
-      canvas.remove()
       random.mockRestore()
     }
   })

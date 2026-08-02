@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, desc, eq, inArray, ne, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, like, ne, or, sql } from 'drizzle-orm'
 import type {
   PublishedZappyBlock,
   ZappyKnowledgeHit,
@@ -8,7 +8,10 @@ import type {
   ZappyKnowledgeSourceInput,
   ZappyKnowledgeSourceType,
 } from '../../../domain/ports/zappy-knowledge-repository.port'
-import { lessonsMissingVideoTranscript } from '../../../domain/zappy/zappy-knowledge-report'
+import {
+  coursesMissingStudentNotebook,
+  lessonsMissingVideoTranscript,
+} from '../../../domain/zappy/zappy-knowledge-report'
 import type { Database } from './db'
 import {
   courses,
@@ -18,16 +21,49 @@ import {
   zappyKnowledgeSources,
 } from './schema'
 
+interface ComparableZappySource {
+  id: string
+  courseId: string
+  lessonId: string
+  blockId: string | null
+  blockRevision: string | null
+  contentHash: string
+  status: string
+  error: string | null
+}
+
+export function zappyKnowledgeSourceUnchanged(
+  existing: ComparableZappySource,
+  input: ZappyKnowledgeSourceInput,
+): boolean {
+  return (
+    existing.courseId === input.courseId &&
+    existing.lessonId === input.lessonId &&
+    existing.blockId === input.blockId &&
+    existing.blockRevision === input.blockRevision &&
+    existing.contentHash === input.contentHash &&
+    existing.status === input.status &&
+    existing.error === (input.error ?? null)
+  )
+}
+
 export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository {
   constructor(private readonly db: Database) {}
 
-  async courseIdForLesson(lessonId: string): Promise<string | null> {
+  async blockAuthorityForSource(sourceRef: string) {
     const [row] = await this.db
-      .select({ courseId: lessons.courseId })
-      .from(lessons)
-      .where(eq(lessons.id, lessonId))
+      .select({
+        blockId: lessonBlocks.id,
+        courseId: courses.id,
+        lessonId: lessons.id,
+        blockRevision: sql<string>`md5(${lessonBlocks.content}::text)`,
+      })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
+      .innerJoin(courses, eq(courses.id, lessons.courseId))
+      .where(sql`${sourceRef} = 'block:' || ${lessonBlocks.id}::text`)
       .limit(1)
-    return row?.courseId ?? null
+    return row ?? null
   }
 
   async upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean }> {
@@ -48,6 +84,10 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       const [existing] = await tx
         .select({
           id: zappyKnowledgeSources.id,
+          courseId: zappyKnowledgeSources.courseId,
+          lessonId: zappyKnowledgeSources.lessonId,
+          blockId: zappyKnowledgeSources.blockId,
+          blockRevision: zappyKnowledgeSources.blockRevision,
           contentHash: zappyKnowledgeSources.contentHash,
           status: zappyKnowledgeSources.status,
           error: zappyKnowledgeSources.error,
@@ -61,11 +101,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           ),
         )
         .limit(1)
-      if (
-        existing?.contentHash === input.contentHash &&
-        existing.status === input.status &&
-        existing.error === (input.error ?? null)
-      ) {
+      if (existing && zappyKnowledgeSourceUnchanged(existing, input)) {
         return { id: existing.id, changed: false }
       }
 
@@ -75,6 +111,9 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           .update(zappyKnowledgeSources)
           .set({
             courseId: input.courseId,
+            lessonId: input.lessonId,
+            blockId: input.blockId,
+            blockRevision: input.blockRevision,
             contentHash: input.contentHash,
             status: input.status,
             error: input.error ?? null,
@@ -87,6 +126,8 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           id,
           courseId: input.courseId,
           lessonId: input.lessonId,
+          blockId: input.blockId,
+          blockRevision: input.blockRevision,
           sourceType: input.sourceType,
           sourceRef: input.sourceRef,
           contentHash: input.contentHash,
@@ -117,6 +158,38 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       .where(eq(zappyKnowledgeSources.sourceRef, sourceRef))
   }
 
+  async reconcilePublishedBlockSources(): Promise<number> {
+    // O anti-join consulta o estado ATUAL dentro do próprio DELETE. Um bloco
+    // publicado durante o backfill deixa de correr o risco de ser apagado por
+    // uma lista de refs capturada antes da edição concorrente.
+    const authoritativeBlockExists = sql`exists (
+      select 1
+      from ${lessonBlocks}
+      inner join ${lessons} on ${lessons.id} = ${lessonBlocks.lessonId}
+      inner join ${courses} on ${courses.id} = ${lessons.courseId}
+      where ${zappyKnowledgeSources.sourceRef} = 'block:' || ${lessonBlocks.id}::text
+        and ${courses.audience} = 'kids'
+        and ${courses.status} = 'published'
+        and ${lessons.isPublished} = true
+        and (
+          (${zappyKnowledgeSources.sourceType} = 'rich-text' and ${lessonBlocks.content}->>'kind' = 'rich_text')
+          or (${zappyKnowledgeSources.sourceType} = 'video-vtt' and ${lessonBlocks.content}->>'kind' = 'video')
+          or (
+            ${zappyKnowledgeSources.sourceType} = 'student-notebook'
+            and ${lessonBlocks.content}->>'kind' = 'ebook'
+            and coalesce((${lessonBlocks.content}->>'zappyStudentNotebook')::boolean, false)
+          )
+        )
+    )`
+    const deleted = await this.db
+      .delete(zappyKnowledgeSources)
+      .where(
+        and(like(zappyKnowledgeSources.sourceRef, 'block:%'), sql`not ${authoritativeBlockExists}`),
+      )
+      .returning({ id: zappyKnowledgeSources.id })
+    return deleted.length
+  }
+
   async search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]> {
     if (lessonIds.length === 0 || !query) return []
     const tsQuery = sql`websearch_to_tsquery('portuguese', ${query})`
@@ -135,12 +208,30 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       })
       .from(zappyKnowledgeChunks)
       .innerJoin(zappyKnowledgeSources, eq(zappyKnowledgeSources.id, zappyKnowledgeChunks.sourceId))
+      .innerJoin(lessonBlocks, eq(lessonBlocks.id, zappyKnowledgeSources.blockId))
       .innerJoin(lessons, eq(lessons.id, zappyKnowledgeSources.lessonId))
       .innerJoin(courses, eq(courses.id, zappyKnowledgeSources.courseId))
       .where(
         and(
           inArray(zappyKnowledgeSources.lessonId, lessonIds),
           eq(zappyKnowledgeSources.status, 'ready'),
+          eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
+          sql`${zappyKnowledgeSources.blockRevision} = md5(${lessonBlocks.content}::text)`,
+          or(
+            and(
+              eq(zappyKnowledgeSources.sourceType, 'rich-text'),
+              sql`${lessonBlocks.content}->>'kind' = 'rich_text'`,
+            ),
+            and(
+              eq(zappyKnowledgeSources.sourceType, 'video-vtt'),
+              sql`${lessonBlocks.content}->>'kind' = 'video'`,
+            ),
+            and(
+              eq(zappyKnowledgeSources.sourceType, 'student-notebook'),
+              sql`${lessonBlocks.content}->>'kind' = 'ebook'`,
+              sql`coalesce((${lessonBlocks.content}->>'zappyStudentNotebook')::boolean, false)`,
+            ),
+          ),
           eq(lessons.isPublished, true),
           eq(courses.status, 'published'),
           or(
@@ -216,6 +307,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           error: zappyKnowledgeSources.error,
         })
         .from(zappyKnowledgeSources)
+        .innerJoin(lessonBlocks, eq(lessonBlocks.id, zappyKnowledgeSources.blockId))
         .innerJoin(courses, eq(courses.id, zappyKnowledgeSources.courseId))
         .innerJoin(lessons, eq(lessons.id, zappyKnowledgeSources.lessonId))
         .where(
@@ -223,6 +315,8 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
             eq(courses.audience, 'kids'),
             eq(courses.status, 'published'),
             eq(lessons.isPublished, true),
+            eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
+            sql`${zappyKnowledgeSources.blockRevision} = md5(${lessonBlocks.content}::text)`,
           ),
         ),
     ])
@@ -242,11 +336,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         { courseId: lesson.courseId, courseTitle: lesson.courseTitle },
       ]),
     )
-    const coursesWithNotebook = new Set(
-      sourceRows
-        .filter((source) => source.sourceType === 'student-notebook' && source.status === 'ready')
-        .map((source) => source.courseId),
-    )
+    const publishedCourses = [...courseMap.values()]
     return {
       publishedKidsLessons: lessonRows.length,
       readySources: sourceRows.filter((source) => source.status === 'ready').length,
@@ -255,9 +345,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       ).length,
       pendingSources: sourceRows.filter((source) => source.status === 'pending').length,
       lessonsWithVideoWithoutTranscript,
-      coursesWithoutStudentNotebook: [...courseMap.values()].filter(
-        (course) => !coursesWithNotebook.has(course.courseId),
-      ),
+      coursesWithoutStudentNotebook: coursesMissingStudentNotebook(publishedCourses, blockRows),
       failedSources: sourceRows.flatMap((source) =>
         (source.status === 'error' || source.status === 'empty') && source.error
           ? [

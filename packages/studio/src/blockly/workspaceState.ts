@@ -1178,6 +1178,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     }
     case 'g2d:applyVelocity':
       return block('sz_g2d_apply_velocity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:applyGravity':
+      return block('sz_g2d_apply_gravity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
     case 'g2d:bounceOnEdges':
       return block('sz_g2d_bounce_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
     case 'g2d:circleCollides':
@@ -1360,6 +1362,15 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'g2d:onJump':
+      return block(
+        'sz_g2d_on_jump',
+        { SPRITE: stmt.spriteVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onAnyInput':
+      return block('sz_g2d_on_any_input', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'g2d:createImageSprite': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
@@ -7068,14 +7079,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_camera_x', {})
     case 'g2d:cameraY':
       return block('sz_g2d_camera_y', {})
-    case 'g2d:randomX': {
-      const size = exprToValueBlock(valueToExpr(expr.size ?? 0))
-      return size === null ? null : block('sz_g2d_random_x', {}, {}, expr.__id, { SIZE: size })
-    }
-    case 'g2d:randomY': {
-      const size = exprToValueBlock(valueToExpr(expr.size ?? 0))
-      return size === null ? null : block('sz_g2d_random_y', {}, {}, expr.__id, { SIZE: size })
-    }
+    case 'g2d:randomX':
+      return block('sz_g2d_random_x', {}, {}, expr.__id)
+    case 'g2d:randomY':
+      return block('sz_g2d_random_y', {}, {}, expr.__id)
     case 'g2d:tileAtSprite':
       return block('sz_g2d_tile_at', { MAP: expr.mapVar, SPRITE: expr.spriteVar })
     case 'g2d:sceneIs':

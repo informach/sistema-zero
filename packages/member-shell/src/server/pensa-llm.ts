@@ -267,6 +267,8 @@ export async function completePensaJson<T>(opts: {
   model?: string
   maxTokens?: number
   temperature?: number
+  /** Alguns fluxos cobram uma chamada exata e não podem reparar com nova geração. */
+  maxAttempts?: 1 | 2
 }): Promise<T> {
   const model = opts.model ?? pensaSynthesisModel()
   const baseMessages = [
@@ -279,7 +281,8 @@ export async function completePensaJson<T>(opts: {
   }
 
   let lastError: unknown
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  const maxAttempts = opts.maxAttempts ?? 2
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     // 2ª tentativa: o 1º erro de um plano grande costuma ser JSON CORTADO (estourou
     // os tokens) ou fora do schema. Em vez de repetir o MESMO corpo cru, pede um JSON
     // válido e mais enxuto — recupera a geração sem desistir com 502.

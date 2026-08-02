@@ -512,6 +512,10 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                   spriteVar: 'rei',
                 },
                 {
+                  type: 'g2d:applyGravity',
+                  spriteVar: 'rei',
+                },
+                {
                   type: 'g2d:collideGroup',
                   spriteVar: 'rei',
                   groupVar: 'blocos',

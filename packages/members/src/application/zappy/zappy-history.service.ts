@@ -6,6 +6,7 @@ import type {
 } from '../../domain/ports/zappy-repository.port'
 
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1_000
+const PROCESSING_LEASE_MS = 2 * 60 * 1_000
 
 export class ZappyHistoryService {
   constructor(
@@ -18,13 +19,18 @@ export class ZappyHistoryService {
     return { now, expiresAt: new Date(now.getTime() + RETENTION_MS) }
   }
 
-  history(userId: string, projectId: string) {
+  history(userId: string, projectId: string, before?: string) {
     const { now, expiresAt } = this.window()
-    return this.repository.history(userId, projectId, now, expiresAt)
+    return this.repository.history(userId, projectId, now, expiresAt, before)
   }
 
-  reserve(input: Omit<ReserveZappyQuestionInput, 'now' | 'expiresAt'>) {
-    return this.repository.reserveQuestion({ ...input, ...this.window() })
+  reserve(input: Omit<ReserveZappyQuestionInput, 'now' | 'expiresAt' | 'processingUntil'>) {
+    const window = this.window()
+    return this.repository.reserveQuestion({
+      ...input,
+      ...window,
+      processingUntil: new Date(window.now.getTime() + PROCESSING_LEASE_MS),
+    })
   }
 
   complete(input: Omit<CompleteZappyQuestionInput, 'now' | 'expiresAt'>) {

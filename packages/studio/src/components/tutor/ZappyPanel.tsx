@@ -22,6 +22,8 @@ function friendlyError(error: unknown): string {
   if (code === 'ZAPPY_QUOTA_DAY') return 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖'
   if (code === 'ZAPPY_QUOTA_MONTH') return 'A ajuda deste mês acabou. No mês que vem tem mais 🤖'
   if (code === 'RATE_LIMITED') return 'Uma pergunta de cada vez! Espera só um pouquinho.'
+  if (code === 'ZAPPY_IN_PROGRESS')
+    return 'Ainda estou terminando essa resposta. Tente novamente em instantes.'
   if (code === 'IMPERSONATION_READONLY') return 'O Zappy não conversa durante o acesso de suporte.'
   if (code === 'ZAPPY_NOT_ENABLED') return 'O Zappy ainda não está liberado para esta conta.'
   return 'O Zappy foi tomar um lanchinho. Tenta de novo em instantes!'
@@ -58,6 +60,9 @@ export function ZappyPanel(): JSX.Element | null {
   const [question, setQuestion] = useState('')
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [loadingEarlier, setLoadingEarlier] = useState(false)
+  const [nextHistoryCursor, setNextHistoryCursor] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [now, setNow] = useState(Date.now())
@@ -65,22 +70,37 @@ export function ZappyPanel(): JSX.Element | null {
   const endRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLElement>(null)
   const pendingAttemptRef = useRef<{ question: string; clientMessageId: string } | null>(null)
+  const operationGenerationRef = useRef(0)
 
   const projectId = project?.id ?? null
-  // biome-ignore lint/correctness/useExhaustiveDependencies: a troca de projeto invalida a tentativa idempotente anterior
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mudanças de sessão invalidam todas as continuações assíncronas anteriores
   useEffect(() => {
+    operationGenerationRef.current += 1
     pendingAttemptRef.current = null
-  }, [projectId])
+    setConfirmingDelete(false)
+    setNextHistoryCursor(null)
+    setBusy(false)
+    setLoadingEarlier(false)
+    if (!open) {
+      setLoading(false)
+      setError(null)
+    }
+  }, [projectId, open, config])
 
   useEffect(() => {
     if (!open || !config || !projectId) return
     let active = true
     setLoading(true)
     setError(null)
+    setMessages([])
+    setNextHistoryCursor(null)
     config.adapter
       .loadHistory(projectId)
-      .then((history) => {
-        if (active) setMessages(history)
+      .then((page) => {
+        if (active) {
+          setMessages(page.messages)
+          setNextHistoryCursor(page.nextCursor)
+        }
       })
       .catch(() => {
         if (active) setError('Não consegui carregar a conversa agora.')
@@ -148,6 +168,7 @@ export function ZappyPanel(): JSX.Element | null {
     event.preventDefault()
     const text = question.trim()
     if (!canAsk || !project || !config) return
+    const operationGeneration = operationGenerationRef.current
     const pendingAttempt = pendingAttemptRef.current
     const clientMessageId =
       pendingAttempt?.question === text ? pendingAttempt.clientMessageId : crypto.randomUUID()
@@ -170,40 +191,73 @@ export function ZappyPanel(): JSX.Element | null {
         question: text,
         context: buildStudioTutorContext({ project, selectedBlockId, lastError }),
       })
+      if (operationGenerationRef.current !== operationGeneration) return
       pendingAttemptRef.current = null
       setMessages((current) => [...current, responseMessage(response)])
       const until = Date.now() + Math.max(0, config.cooldownMs ?? 1_500)
       setCooldownUntil(until)
       setNow(Date.now())
     } catch (cause) {
+      if (operationGenerationRef.current !== operationGeneration) return
       setMessages((current) => current.filter((message) => message.id !== clientMessageId))
       setQuestion(text)
       setError(friendlyError(cause))
     } finally {
-      setBusy(false)
+      if (operationGenerationRef.current === operationGeneration) setBusy(false)
     }
   }
 
   const deleteHistory = async () => {
     if (!config || !projectId || busy) return
+    const operationGeneration = operationGenerationRef.current + 1
+    operationGenerationRef.current = operationGeneration
     setBusy(true)
+    setLoadingEarlier(false)
     setError(null)
     try {
       await config.adapter.deleteHistory(projectId)
+      if (operationGenerationRef.current !== operationGeneration) return
       pendingAttemptRef.current = null
       setMessages([])
+      setNextHistoryCursor(null)
+      setConfirmingDelete(false)
     } catch {
+      if (operationGenerationRef.current !== operationGeneration) return
       setError('Não consegui apagar a conversa agora.')
     } finally {
-      setBusy(false)
+      if (operationGenerationRef.current === operationGeneration) setBusy(false)
+    }
+  }
+
+  const loadEarlierHistory = async () => {
+    if (!config || !projectId || !nextHistoryCursor || loadingEarlier) return
+    const operationGeneration = operationGenerationRef.current
+    const historyCursor = nextHistoryCursor
+    setLoadingEarlier(true)
+    setError(null)
+    try {
+      const page = await config.adapter.loadHistory(projectId, historyCursor)
+      if (operationGenerationRef.current !== operationGeneration) return
+      setMessages((current) => {
+        const existingIds = new Set(current.map((message) => message.id))
+        return [...page.messages.filter((message) => !existingIds.has(message.id)), ...current]
+      })
+      setNextHistoryCursor(page.nextCursor)
+    } catch {
+      if (operationGenerationRef.current !== operationGeneration) return
+      setError('Não consegui carregar as mensagens anteriores agora.')
+    } finally {
+      if (operationGenerationRef.current === operationGeneration) setLoadingEarlier(false)
     }
   }
 
   const sendFeedback = async (responseId: string, useful: boolean) => {
     if (!config || !projectId) return
+    const operationGeneration = operationGenerationRef.current
     try {
       await config.adapter.feedback({ projectId, responseId, useful })
     } catch {
+      if (operationGenerationRef.current !== operationGeneration) return
       setError('Não consegui registrar sua avaliação agora.')
     }
   }
@@ -247,14 +301,35 @@ export function ZappyPanel(): JSX.Element | null {
             Uma dúvida por vez, sem mexer no projeto
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void deleteHistory()}
-          disabled={busy || messages.length === 0}
-          className="rounded-lg px-2 py-1 text-sz-fg-mute text-xs hover:bg-sz-bg disabled:opacity-40"
-        >
-          Apagar
-        </button>
+        {confirmingDelete ? (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => void deleteHistory()}
+              disabled={busy}
+              className="rounded-lg bg-sz-error/15 px-2 py-1 font-semibold text-sz-error text-xs hover:bg-sz-error/25 disabled:opacity-40"
+            >
+              Confirmar exclusão
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(false)}
+              disabled={busy}
+              className="rounded-lg px-2 py-1 text-sz-fg-mute text-xs hover:bg-sz-bg disabled:opacity-40"
+            >
+              Cancelar
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            disabled={busy || messages.length === 0}
+            className="rounded-lg px-2 py-1 text-sz-fg-mute text-xs hover:bg-sz-bg disabled:opacity-40"
+          >
+            Apagar
+          </button>
+        )}
         <button
           type="button"
           aria-label="Fechar Zappy"
@@ -272,6 +347,18 @@ export function ZappyPanel(): JSX.Element | null {
         {!loading && messages.length === 0 ? (
           <div className="rounded-2xl bg-sz-bg p-4 text-sm leading-relaxed">
             Oi! Selecione um bloco ou rode o jogo e me conte onde você travou.
+          </div>
+        ) : null}
+        {!loading && nextHistoryCursor ? (
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => void loadEarlierHistory()}
+              disabled={loadingEarlier}
+              className="rounded-lg border border-sz-border px-3 py-1.5 text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent disabled:opacity-40"
+            >
+              {loadingEarlier ? 'Carregando…' : 'Carregar mensagens anteriores'}
+            </button>
           </div>
         ) : null}
         {messages.map((message) => (

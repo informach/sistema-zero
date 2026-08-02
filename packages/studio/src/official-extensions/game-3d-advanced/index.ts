@@ -5,7 +5,6 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKit3DPromptContext } from './ai'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from './blocks'
 import { gameKit3DManifest } from './manifest'
-import { gameKit3DRuntime } from './runtime'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(gameKit3DManifest)
@@ -52,7 +51,7 @@ export const gameKit3DExtension: ExtensionDefinition = {
     toolboxCategory: gameKit3DToolboxCategory,
   },
   runtime: {
-    bootstrapScript: gameKit3DRuntime,
+    loadBootstrapScript: async () => (await import('./runtime')).gameKit3DRuntime,
     lifecycle: GAME_3D_ADVANCED_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,
@@ -66,4 +65,4 @@ export const gameKit3DExtension: ExtensionDefinition = {
   },
 }
 
-export { gameKit3DBlocks, gameKit3DManifest, gameKit3DRuntime, gameKit3DToolboxCategory }
+export { gameKit3DBlocks, gameKit3DManifest, gameKit3DToolboxCategory }

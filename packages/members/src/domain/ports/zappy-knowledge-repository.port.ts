@@ -11,6 +11,8 @@ export interface ZappyKnowledgeChunkInput {
 export interface ZappyKnowledgeSourceInput {
   courseId: string
   lessonId: string
+  blockId: string
+  blockRevision: string
   sourceType: ZappyKnowledgeSourceType
   sourceRef: string
   contentHash: string
@@ -18,6 +20,13 @@ export interface ZappyKnowledgeSourceInput {
   error?: string | null
   chunks: ZappyKnowledgeChunkInput[]
   now: Date
+}
+
+export interface ZappyBlockSourceAuthority {
+  blockId: string
+  courseId: string
+  lessonId: string
+  blockRevision: string
 }
 
 export interface ZappyKnowledgeHit {
@@ -60,10 +69,12 @@ export interface ZappyKnowledgeReport {
 }
 
 export interface ZappyKnowledgeRepository {
-  courseIdForLesson(lessonId: string): Promise<string | null>
+  blockAuthorityForSource(sourceRef: string): Promise<ZappyBlockSourceAuthority | null>
   upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean }>
   deleteByRef(sourceRef: string): Promise<void>
   search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]>
   listPublishedKidsBlocks(): Promise<PublishedZappyBlock[]>
+  /** Remove fontes cujo bloco publicado/tipo autoritativo já não existe no banco. */
+  reconcilePublishedBlockSources(): Promise<number>
   report(): Promise<ZappyKnowledgeReport>
 }

@@ -240,10 +240,30 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     if (!sprite) return;
     sprite.blinkFrames = Math.floor(_positiveFiniteNumber(frames, 60));
   }
-  /** Move cada sprite do grupo pela sua velocidade (e gravidade do mundo). */
+  /**
+   * Move cada sprite do grupo pela sua velocidade (e gravidade do mundo).
+   *
+   * ⚠️ A gravidade é somada AQUI, explicitamente. Ela vinha de carona no
+   * applyVelocity até 08/2026; quando ele deixou de somá-la (virou "só
+   * velocidade", com um bloco próprio de gravidade), o grupo teria perdido a
+   * queda junto — e não há bloco de gravidade POR GRUPO.
+   *
+   * ⚠️⚠️ E é a gravidade CRUA (world.gravity, 0 quando ninguém declarou), NÃO o
+   * _worldGravityOr(0.6) que o bloco novo usa. Os dois consumidores têm fontes
+   * DIFERENTES de propósito:
+   *   · o BLOCO "Aplicar a gravidade do mundo" é um pedido EXPLÍCITO da criança
+   *     → 0.6 é um padrão útil (a aula funciona sem declarar nada);
+   *   · aqui é comportamento HERDADO de todo jogo que já existe → 0.6 faria
+   *     TODO grupo de TODO jogo passar a cair sem ninguém pedir (no "Corre,
+   *     Dino!" os cactos sumiriam pelo rodapé, sem erro na tela).
+   */
   function updateGroup(group) {
     if (!group || !group.items) return;
-    for (var i = 0; i < group.items.length; i++) applyVelocity(group.items[i]);
+    for (var i = 0; i < group.items.length; i++) {
+      var s = group.items[i];
+      applyVelocity(s);
+      if (s) s.vy = _finiteNumber(s.vy, 0) + world.gravity;
+    }
   }
   /**
    * Move cada sprite do grupo pela sua velocidade, SEM somar gravidade — para
@@ -341,7 +361,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     for (var j = 0; j < secondItems.length; j++) {
       var second = secondItems[j];
       if (!second) continue;
-      var sx = second.x, sy = second.y, sw = second.w, sh = second.h;
+      var secondBounds = _hitboxOf(second);
+      var sx = secondBounds.x, sy = secondBounds.y, sw = secondBounds.w, sh = secondBounds.h;
       if (![sx, sy, sw, sh].every(Number.isFinite)) return null;
       sortedSecond.push({ index: j, left: sx, right: sx + sw, top: sy, bottom: sy + sh });
     }
@@ -352,7 +373,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     for (var i = 0; i < firstItems.length; i++) {
       var first = firstItems[i];
       if (!first) { candidates[i] = []; continue; }
-      var ax = first.x, ay = first.y, aw = first.w, ah = first.h;
+      var firstBounds = _hitboxOf(first);
+      var ax = firstBounds.x, ay = firstBounds.y, aw = firstBounds.w, ah = firstBounds.h;
       if (![ax, ay, aw, ah].every(Number.isFinite)) return null;
       var rightEdge = ax + aw;
       var lo = 0, hi = sortedSecond.length;
