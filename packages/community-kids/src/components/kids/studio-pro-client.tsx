@@ -7,6 +7,7 @@ import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-z
 import type { StudioTutorConfig } from '@sistemazero/studio'
 import { useTheme } from 'next-themes'
 import { useCallback, useMemo } from 'react'
+import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 
 /**
  * Wrapper KIDS fino da rota `/estudio/pro/[id]` (modo Código / WebContainer): provê
@@ -30,7 +31,14 @@ export function StudioProClient({
   // (COEP) limpo, evitando que o /estudio clássico herde o COEP do documento isolado.
   const onExit = useCallback(() => window.location.assign('/estudio'), [])
   const tutor = useMemo<StudioTutorConfig | undefined>(
-    () => (zappyEnabled ? { adapter: createStudioZappyAdapter(), cooldownMs: 1_500 } : undefined),
+    () =>
+      zappyEnabled
+        ? {
+            adapter: createStudioZappyAdapter(),
+            openLesson: openStudioZappyLesson,
+            cooldownMs: 1_500,
+          }
+        : undefined,
     [zappyEnabled],
   )
 

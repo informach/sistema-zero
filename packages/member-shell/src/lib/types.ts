@@ -941,7 +941,12 @@ export interface ZappyStoredResponseView {
     category: string
     area: string
   }>
-  lessonReferences?: Array<{ courseId: string; lessonId: string; title: string }>
+  lessonReferences?: Array<{
+    courseId: string
+    courseSlug?: string
+    lessonId: string
+    title: string
+  }>
   createdAt: string
 }
 
@@ -955,6 +960,7 @@ export interface ZappyHistoryMessageView {
 
 export interface ZappyKnowledgeHitView {
   courseId: string
+  courseSlug: string
   courseTitle: string
   lessonId: string
   lessonTitle: string

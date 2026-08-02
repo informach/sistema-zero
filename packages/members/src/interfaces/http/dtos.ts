@@ -115,6 +115,7 @@ export const ZappyResponseBody = t.Object({
       t.Array(
         t.Object({
           courseId: UUID,
+          courseSlug: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
           lessonId: UUID,
           title: t.String({ minLength: 1, maxLength: 240 }),
         }),

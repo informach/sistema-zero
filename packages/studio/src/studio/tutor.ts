@@ -51,6 +51,8 @@ export interface StudioTutorBlockReference {
 
 export interface StudioTutorLessonReference {
   courseId: string
+  /** Ausente apenas em respostas históricas gravadas antes de a navegação existir. */
+  courseSlug?: string
   lessonId: string
   title: string
 }
@@ -95,6 +97,8 @@ export interface StudioTutorAdapter {
 
 export interface StudioTutorConfig {
   adapter: StudioTutorAdapter
+  /** Navegação provida pelo host; o Studio não conhece as rotas da comunidade. */
+  openLesson?: (reference: StudioTutorLessonReference) => void
   /** Cooldown visual local; o rate limit autoritativo continua no BFF. */
   cooldownMs?: number
 }

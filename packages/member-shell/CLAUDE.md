@@ -581,6 +581,10 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - `createShell` publica os handlers BFF `/api/studio/zappy` (histórico/exclusão),
   `/messages` e `/feedback`; o adapter de UI vive em `lib/studio-zappy-adapter.ts`.
 - Cada pergunta revalida sessão, posse do Estúdio, carreira/modo/extensões e cursos liberados;
-  impersonação não conversa. Reserva idempotente precede o crédito `studio-zappy`.
+  impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
+  reais ao modelo consomem o crédito `studio-zappy`.
 - Rollout exige `ZAPPY_ENABLED=true` e a conta em `ZAPPY_PILOT_ACCOUNT_IDS`; equipe ignora o
-  gate para QA. O nome real não vai ao OpenRouter e o contexto do projeto não é persistido.
+  gate para QA. O mesmo gate server-side decide se o host injeta a UI. O nome real não vai ao
+  OpenRouter e o contexto do projeto não é persistido.
+- Catálogo, manuais, código e base didática são ranqueados por relevância e o prompt total fica em
+  até 48 kB. Referências de aula incluem `courseSlug` autoritativo para o host montar a navegação.

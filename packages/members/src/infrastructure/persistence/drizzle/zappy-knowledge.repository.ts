@@ -8,6 +8,7 @@ import type {
   ZappyKnowledgeSourceInput,
   ZappyKnowledgeSourceType,
 } from '../../../domain/ports/zappy-knowledge-repository.port'
+import { lessonsMissingVideoTranscript } from '../../../domain/zappy/zappy-knowledge-report'
 import type { Database } from './db'
 import {
   courses,
@@ -124,6 +125,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     const rows = await this.db
       .select({
         courseId: courses.id,
+        courseSlug: courses.slug,
         courseTitle: courses.title,
         lessonId: lessons.id,
         lessonTitle: lessons.title,
@@ -151,6 +153,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       .limit(Math.max(1, Math.min(10, limit)))
     return rows.map((row) => ({
       courseId: row.courseId,
+      courseSlug: row.courseSlug,
       courseTitle: row.courseTitle,
       lessonId: row.lessonId,
       lessonTitle: row.lessonTitle,
@@ -223,23 +226,15 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           ),
         ),
     ])
-    const ready = new Set(
+    const readyVideoSourceRefs = new Set(
       sourceRows
-        .filter((source) => source.status === 'ready')
-        .map((source) => `${source.sourceType}:${source.sourceRef}`),
+        .filter((source) => source.status === 'ready' && source.sourceType === 'video-vtt')
+        .map((source) => source.sourceRef),
     )
-    const videoLessonIds = new Set(
-      blockRows.filter((block) => block.content.kind === 'video').map((block) => block.lessonId),
-    )
-    const lessonsWithVideoWithoutTranscript = lessonRows.filter(
-      (lesson) =>
-        videoLessonIds.has(lesson.lessonId) &&
-        !blockRows.some(
-          (block) =>
-            block.lessonId === lesson.lessonId &&
-            block.content.kind === 'video' &&
-            ready.has(`video-vtt:block:${block.blockId}`),
-        ),
+    const lessonsWithVideoWithoutTranscript = lessonsMissingVideoTranscript(
+      lessonRows,
+      blockRows,
+      readyVideoSourceRefs,
     )
     const courseMap = new Map(
       lessonRows.map((lesson) => [

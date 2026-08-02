@@ -801,7 +801,9 @@ Dockerfile: valida e só então importa o `server.js` standalone).
 ## Zappy do Studio (08/2026)
 
 - A página de IA mostra consumo `studio-zappy`, métricas agregadas e saúde da base, sem expor
-  conversas infantis. O botão de backfill sincroniza todos os cursos kids publicados.
+  conversas infantis. Consumo, métricas e saúde carregam de forma independente: a falha de uma
+  fonte mantém os outros painéis e o último dado válido, com erro local na seção afetada. O botão
+  de backfill sincroniza todos os cursos kids publicados.
 - Salvar/excluir blocos sincroniza VTT re-hospedado, texto rico e PDFs explicitamente marcados
   como **Caderno do aluno**. PDF sem texto selecionável fica em erro visível para correção.
 ```

@@ -20,7 +20,12 @@ export interface ZappyStoredResponse {
     category: string
     area: string
   }>
-  lessonReferences?: Array<{ courseId: string; lessonId: string; title: string }>
+  lessonReferences?: Array<{
+    courseId: string
+    courseSlug?: string
+    lessonId: string
+    title: string
+  }>
   createdAt: string
 }
 

@@ -64,8 +64,14 @@ export function ZappyPanel(): JSX.Element | null {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLElement>(null)
+  const pendingAttemptRef = useRef<{ question: string; clientMessageId: string } | null>(null)
 
   const projectId = project?.id ?? null
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a troca de projeto invalida a tentativa idempotente anterior
+  useEffect(() => {
+    pendingAttemptRef.current = null
+  }, [projectId])
+
   useEffect(() => {
     if (!open || !config || !projectId) return
     let active = true
@@ -122,10 +128,18 @@ export function ZappyPanel(): JSX.Element | null {
   }, [messages, busy])
 
   useEffect(() => {
-    if (cooldownUntil <= Date.now()) return
-    const timer = window.setInterval(() => setNow(Date.now()), 250)
-    return () => window.clearInterval(timer)
-  }, [cooldownUntil])
+    if (!open) return
+    const current = Date.now()
+    if (cooldownUntil <= current) {
+      if (now < cooldownUntil) setNow(current)
+      return
+    }
+    const timer = window.setTimeout(
+      () => setNow(Date.now()),
+      Math.min(1_000, cooldownUntil - current),
+    )
+    return () => window.clearTimeout(timer)
+  }, [open, cooldownUntil, now])
 
   const cooldownSeconds = Math.max(0, Math.ceil((cooldownUntil - now) / 1_000))
   const canAsk = Boolean(question.trim() && !busy && cooldownSeconds === 0 && project && config)
@@ -134,7 +148,10 @@ export function ZappyPanel(): JSX.Element | null {
     event.preventDefault()
     const text = question.trim()
     if (!canAsk || !project || !config) return
-    const clientMessageId = crypto.randomUUID()
+    const pendingAttempt = pendingAttemptRef.current
+    const clientMessageId =
+      pendingAttempt?.question === text ? pendingAttempt.clientMessageId : crypto.randomUUID()
+    pendingAttemptRef.current = { question: text, clientMessageId }
     const createdAt = new Date().toISOString()
     const userMessage: StudioTutorHistoryMessage = {
       id: clientMessageId,
@@ -153,6 +170,7 @@ export function ZappyPanel(): JSX.Element | null {
         question: text,
         context: buildStudioTutorContext({ project, selectedBlockId, lastError }),
       })
+      pendingAttemptRef.current = null
       setMessages((current) => [...current, responseMessage(response)])
       const until = Date.now() + Math.max(0, config.cooldownMs ?? 1_500)
       setCooldownUntil(until)
@@ -172,6 +190,7 @@ export function ZappyPanel(): JSX.Element | null {
     setError(null)
     try {
       await config.adapter.deleteHistory(projectId)
+      pendingAttemptRef.current = null
       setMessages([])
     } catch {
       setError('Não consegui apagar a conversa agora.')
@@ -281,6 +300,24 @@ export function ZappyPanel(): JSX.Element | null {
                 ))}
               </div>
             ) : null}
+            {config?.openLesson &&
+            message.response?.lessonReferences?.some((reference) => reference.courseSlug) ? (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {message.response.lessonReferences.map((reference) =>
+                  reference.courseSlug ? (
+                    <button
+                      key={`${reference.courseId}:${reference.lessonId}`}
+                      type="button"
+                      onClick={() => config.openLesson?.(reference)}
+                      className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
+                      title="Abrir aula em nova aba"
+                    >
+                      Aula: {reference.title} ↗
+                    </button>
+                  ) : null,
+                )}
+              </div>
+            ) : null}
             {message.role === 'assistant' && message.response ? (
               <div className="mt-2 flex gap-1 text-sz-fg-mute text-xs">
                 <span>Isso ajudou?</span>
@@ -321,7 +358,13 @@ export function ZappyPanel(): JSX.Element | null {
           value={question}
           maxLength={MAX_QUESTION_CHARS}
           rows={3}
-          onChange={(event) => setQuestion(event.target.value)}
+          onChange={(event) => {
+            const next = event.target.value
+            if (pendingAttemptRef.current?.question !== next.trim()) {
+              pendingAttemptRef.current = null
+            }
+            setQuestion(next)
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault()

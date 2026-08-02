@@ -1446,3 +1446,6 @@ irmãos com `railway variables --kv`.
 - Rotas internas de autoria: `/members/admin/zappy/knowledge/*` e `/zappy/metrics`.
   Fontes aceitas: VTT, texto rico e PDF marcado como caderno do aluno; o snapshot do projeto
   nunca é persistido.
+- A busca devolve também o `courseSlug` autoritativo. O relatório considera a aula pendente se
+  qualquer vídeo estiver sem VTT pronto; a janela de métricas é semiaberta `[from, to)` e usa
+  comparadores tipados (`gte`/`lt`) para ambos os timestamps.

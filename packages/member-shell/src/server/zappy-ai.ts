@@ -555,7 +555,16 @@ function validatedResponse(
   const lessons = new Map(knowledge.map((hit) => [hit.lessonId, hit]))
   const lessonReferences = raw.lessonReferences.flatMap((reference) => {
     const hit = lessons.get(reference.lessonId)
-    return hit ? [{ courseId: hit.courseId, lessonId: hit.lessonId, title: hit.lessonTitle }] : []
+    return hit
+      ? [
+          {
+            courseId: hit.courseId,
+            courseSlug: hit.courseSlug,
+            lessonId: hit.lessonId,
+            title: hit.lessonTitle,
+          },
+        ]
+      : []
   })
   return {
     id: randomUUID(),

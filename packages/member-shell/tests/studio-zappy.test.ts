@@ -203,6 +203,7 @@ describe('Zappy do Studio — limites determinísticos', () => {
       tier,
       knowledge: Array.from({ length: 5 }, (_, index) => ({
         courseId: `course-${index}`,
+        courseSlug: `curso-${index}`,
         courseTitle: `Curso ${index}`,
         lessonId: `lesson-${index}`,
         lessonTitle: `Aula ${index}`,

@@ -22,6 +22,7 @@ export interface ZappyKnowledgeSourceInput {
 
 export interface ZappyKnowledgeHit {
   courseId: string
+  courseSlug: string
   courseTitle: string
   lessonId: string
   lessonTitle: string

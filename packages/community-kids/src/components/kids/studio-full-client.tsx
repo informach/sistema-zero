@@ -13,6 +13,7 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -167,7 +168,14 @@ export function StudioFullClient({
     [challenge],
   )
   const tutor = useMemo<StudioTutorConfig | undefined>(
-    () => (zappyEnabled ? { adapter: createStudioZappyAdapter(), cooldownMs: 1_500 } : undefined),
+    () =>
+      zappyEnabled
+        ? {
+            adapter: createStudioZappyAdapter(),
+            openLesson: openStudioZappyLesson,
+            cooldownMs: 1_500,
+          }
+        : undefined,
     [zappyEnabled],
   )
 
