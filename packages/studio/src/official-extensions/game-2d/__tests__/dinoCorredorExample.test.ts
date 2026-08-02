@@ -2,7 +2,6 @@ import { describe, expect, it } from 'bun:test'
 import { behaviorStatements, type JSStatement } from '#ir'
 import { collectTypes, DINO_CORREDOR_SOURCE as SOURCE } from '../__gen_dinoCorredor'
 import { dinoCorredorExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Dino Corredor — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(dinoCorredorExample)
+    expect(gameTwoDExamples).toContain(dinoCorredorExample)
     expect(dinoCorredorExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(dinoCorredorExample.name).toBe('Dino Corredor')
     expect(dinoCorredorExample.experience).toBe('game')
@@ -78,3 +77,5 @@ describe('Exemplo Dino Corredor — drift contra o parser real', () => {
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

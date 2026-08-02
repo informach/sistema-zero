@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { HEROI_QUE_EVOLUI_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_heroiQueEvoluiProfissional'
 import { gameKitBlocks } from '../blocks'
 import { heroiQueEvoluiProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Herói que Evolui Profissional" — o nível 2 da família Zelda
@@ -28,7 +27,7 @@ beforeAll(() => {
 
 describe('Exemplo Herói que Evolui Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(heroiQueEvoluiProfissionalExample)
+    expect(gameKitExamples).toContain(heroiQueEvoluiProfissionalExample)
     expect(heroiQueEvoluiProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-2d-advanced' },
     ])
@@ -131,3 +130,5 @@ describe('Exemplo Herói que Evolui Profissional — drift contra o parser real'
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

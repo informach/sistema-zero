@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { DUELO_DE_HEROIS_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_dueloDeHeroisProfissional'
 import { gameKitBlocks } from '../blocks'
 import { dueloDeHeroisProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Duelo de Heróis Profissional" — o fighting-game do Chris
@@ -32,7 +31,7 @@ beforeAll(() => {
 
 describe('Exemplo Duelo de Heróis Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(dueloDeHeroisProfissionalExample)
+    expect(gameKitExamples).toContain(dueloDeHeroisProfissionalExample)
     expect(dueloDeHeroisProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-2d-advanced' },
     ])
@@ -141,3 +140,5 @@ describe('Exemplo Duelo de Heróis Profissional — drift contra o parser real',
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

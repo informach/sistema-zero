@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { LABIRINTO_ROBOS_SOURCE as SOURCE } from '../__gen_labirintoRobos'
 import { gameThreeDBlocks } from '../blocks'
 import { labirintoRobosExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -31,7 +30,7 @@ beforeAll(() => {
 
 describe('Exemplo Labirinto dos Robôs — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(labirintoRobosExample)
+    expect(gameThreeDExamples).toContain(labirintoRobosExample)
     expect(labirintoRobosExample.experience).toBe('game')
     expect(labirintoRobosExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -139,3 +138,5 @@ describe('Exemplo Labirinto dos Robôs — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

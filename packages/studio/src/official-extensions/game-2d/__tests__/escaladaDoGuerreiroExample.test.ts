@@ -3,7 +3,6 @@ import { behaviorStatements } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { ESCALADA_DO_GUERREIRO_SOURCE as SOURCE } from '../__gen_escaladaDoGuerreiro'
 import { escaladaDoGuerreiroExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(escaladaDoGuerreiroExample)
+    expect(gameTwoDExamples).toContain(escaladaDoGuerreiroExample)
     expect(escaladaDoGuerreiroExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(escaladaDoGuerreiroExample.name).toBe('Escalada do Guerreiro')
     expect(escaladaDoGuerreiroExample.experience).toBe('game')
@@ -88,3 +87,5 @@ describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

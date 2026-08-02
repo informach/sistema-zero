@@ -3,7 +3,6 @@ import { behaviorStatements, type JSStatement } from '#ir'
 import { CHUVA_DE_METEOROS_SOURCE as SOURCE } from '../__gen_chuvaDeMeteoros'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { chuvaDeMeteorosExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Chuva de Meteoros — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(chuvaDeMeteorosExample)
+    expect(gameTwoDExamples).toContain(chuvaDeMeteorosExample)
     expect(chuvaDeMeteorosExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(chuvaDeMeteorosExample.name).toBe('Chuva de Meteoros')
     expect(chuvaDeMeteorosExample.experience).toBe('game')
@@ -114,3 +113,5 @@ describe('Exemplo Chuva de Meteoros — drift contra o parser real', () => {
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

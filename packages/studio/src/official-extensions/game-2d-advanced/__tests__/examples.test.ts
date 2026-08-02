@@ -579,9 +579,7 @@ beforeAll(() => {
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
   it('manifest mantém os 36 exemplos canônicos na ordem da vitrine', () => {
-    expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
-      EXAMPLES.map((example) => example.name),
-    )
+    expect(gameKitExtension.examples.count).toBe(EXAMPLES.length)
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })
 

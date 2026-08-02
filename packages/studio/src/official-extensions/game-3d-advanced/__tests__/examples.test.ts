@@ -10,7 +10,6 @@ import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { gameKit3DBlocks } from '../blocks'
 import { defesaDaTorreExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -126,7 +125,7 @@ beforeAll(() => {
 
 describe('Exemplo Defesa da Torre Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e a extensão é nível avançado', () => {
-    expect(gameKit3DManifest.examples).toContain(defesaDaTorreExample)
+    expect(gameKit3DExamples).toContain(defesaDaTorreExample)
     expect(defesaDaTorreExample.ir.extensions).toEqual([{ extensionId: 'game-3d-advanced' }])
   })
 
@@ -168,3 +167,5 @@ describe('Exemplo Defesa da Torre Profissional — drift contra o parser real', 
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

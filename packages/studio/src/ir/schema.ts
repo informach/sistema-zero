@@ -173,8 +173,8 @@ export type JSExpr =
   // Tier 2 — posição da câmera e leitura de tile (valores).
   | (JSExprCommon & { type: 'g2d:cameraX' })
   | (JSExprCommon & { type: 'g2d:cameraY' })
-  | (JSExprCommon & { type: 'g2d:randomX' })
-  | (JSExprCommon & { type: 'g2d:randomY' })
+  | (JSExprCommon & { type: 'g2d:randomX'; size?: number | JSExpr })
+  | (JSExprCommon & { type: 'g2d:randomY'; size?: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:tileAtSprite'; mapVar: string; spriteVar: string })
   // Game 2D — a cena/tela atual é "name"? (valor booleano).
   | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
@@ -661,8 +661,16 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:isPaused'), ...idField }),
     z.object({ type: z.literal('g2d:cameraX'), ...idField }),
     z.object({ type: z.literal('g2d:cameraY'), ...idField }),
-    z.object({ type: z.literal('g2d:randomX'), ...idField }),
-    z.object({ type: z.literal('g2d:randomY'), ...idField }),
+    z.object({
+      type: z.literal('g2d:randomX'),
+      size: z.union([JSExprSchema, z.number()]).optional(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:randomY'),
+      size: z.union([JSExprSchema, z.number()]).optional(),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:tileAtSprite'),
       mapVar: irText(),

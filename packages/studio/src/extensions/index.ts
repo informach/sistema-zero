@@ -1,5 +1,6 @@
 export * from './aiContext'
 export * from './compatibility'
+export * from './examples'
 export * from './lifecycle'
 export * from './manifest'
 export * from './projectRunContext'

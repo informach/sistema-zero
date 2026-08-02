@@ -1,5 +1,5 @@
 import type { ExtensionDefinition } from '#extensions'
-import { GAME_3D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import { defineExtensionExamples, GAME_3D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
 import { THREE_CDN } from '../../three/threeRuntimeContract'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKit3DPromptContext } from './ai'
@@ -37,6 +37,10 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
+  examples: defineExtensionExamples(
+    17,
+    async () => (await import('./exampleCatalog')).gameKit3DExamples,
+  ),
   conflictsWith: fullscreenConflictsFor('game-3d-advanced'),
   // Reclassificado p/ INTERMEDIÁRIO 3D (26/07/2026): o kit passa a abrir no Arquiteto
   // de Mundos (junto do Mundo 3D), não só na Lenda. Continua sendo base de engine

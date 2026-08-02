@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { ATRAVESSE_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_atravesseProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { atravesseProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -34,7 +33,7 @@ beforeAll(() => {
 
 describe('Exemplo Atravesse a Rua Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(atravesseProfissionalExample)
+    expect(gameKit3DExamples).toContain(atravesseProfissionalExample)
     expect(atravesseProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -132,3 +131,5 @@ describe('Exemplo Atravesse a Rua Profissional — drift contra o parser real', 
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

@@ -33,7 +33,6 @@ function fakeExtension(id: string, permissions: string[]): ExtensionDefinition {
       enabledByDefault: false,
       permissions: permissions as never,
       docs: '',
-      examples: [],
     },
   } as unknown as ExtensionDefinition
 }

@@ -264,7 +264,15 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     const missing = tiposDaCategoria('🏆 Placar e HUD').flatMap((type) => {
       const definition = gameTwoDBlocks.find((block) => block.type === type)
       const valueInputs = (definition?.args0 ?? [])
-        .filter((arg) => arg.type === 'input_value')
+        .filter(
+          (arg): arg is { type: string; name: string } =>
+            typeof arg === 'object' &&
+            arg !== null &&
+            'type' in arg &&
+            arg.type === 'input_value' &&
+            'name' in arg &&
+            typeof arg.name === 'string',
+        )
         .map((arg) => arg.name)
       const shadowedInputs = G2D_SOCKET_SHADOW_TYPES[type] ?? {}
       return valueInputs

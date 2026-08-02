@@ -3,7 +3,6 @@ import { behaviorStatements } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { VILA_NINJA_SOURCE as SOURCE } from '../__gen_vilaNinja'
 import { vilaNinjaExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Vila Ninja — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(vilaNinjaExample)
+    expect(gameTwoDExamples).toContain(vilaNinjaExample)
     expect(vilaNinjaExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(vilaNinjaExample.name).toBe('Vila Ninja')
     expect(vilaNinjaExample.experience).toBe('game')
@@ -89,3 +88,5 @@ describe('Exemplo Vila Ninja — drift contra o parser real', () => {
     expect(raw).toContain('"hp":{"type":"num","value":3}')
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

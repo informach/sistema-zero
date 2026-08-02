@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { MINA_DE_CRISTAIS_SOURCE as SOURCE } from '../__gen_minaDeCristais'
 import { gameThreeDBlocks } from '../blocks'
 import { minaDeCristaisBasicoExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -35,7 +34,7 @@ beforeAll(() => {
 
 describe('Exemplo Mina de Cristais — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(minaDeCristaisBasicoExample)
+    expect(gameThreeDExamples).toContain(minaDeCristaisBasicoExample)
     expect(minaDeCristaisBasicoExample.experience).toBe('game')
     expect(minaDeCristaisBasicoExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -132,3 +131,5 @@ describe('Exemplo Mina de Cristais — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

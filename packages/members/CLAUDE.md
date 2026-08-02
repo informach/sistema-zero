@@ -203,9 +203,24 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    Professor no admin: fila de TODOS os cursos, `listAll` com join `courses` → `courseId`/
    `courseTitle`/`audience` + **`answered`** derivado de `teacher_threads` [EXISTS de mensagem
    `teacher` com `created_at >= submitted_at` no contexto da entrega — um REENVIO do aluno REABRE a
-   pendência], PENDENTES primeiro + `submitted_at desc`, filtros `courseId/audience/status
-   pending|answered`, paginação com `total` e teto 100; query DTO local em `content.routes.ts`;
-   testes HTTP em `tests/integration/studio-global-submissions.test.ts`).
+   pendência] **+ `reviewed`** (ver abaixo), PENDENTES primeiro + `submitted_at desc`, filtros
+   `courseId/audience/status pending|answered|reviewed`, paginação com `total` e teto 100; query DTO
+   local em `content.routes.ts`; testes HTTP em `tests/integration/studio-global-submissions.test.ts`).
+   ⭐ **"Já conferi esta entrega" (08/2026, migration `0055`, colunas `reviewed_at`/`reviewed_by`):**
+   até aqui "fechada" era SÓ "respondi um recado" — e a conversa só nasce quando a criança escreve
+   algo no envio, então **a entrega sem recado ficava pendente para sempre** (não havia o que
+   responder). Agora **FECHADA = `answered` OU `reviewed`**: `reviewed = reviewed_at is not null and
+   reviewed_at >= submitted_at` (a MESMA régua do recado → **um reenvio reabre sozinho**, sem apagar
+   o carimbo), o filtro `pending` é a negação das DUAS e o `orderBy` de pendentes-primeiro acompanha.
+   Os dois campos vão SEPARADOS na linha (o painel distingue "respondi" de "só conferi"). Escrita:
+   **`POST /members/admin/studio-submissions/:blockId/:userId/review`** `{reviewed: boolean}`
+   (`false` desfaz; entrega inexistente → 404) — `markReviewed` no port/repo (UPDATE pela chave única,
+   sem advisory lock) + `StudioSubmissionsAdminService.markReviewed` (recebe o `clock` no construtor).
+   ⚠️ O `upsert` do reenvio NÃO lista `reviewed_at` no `set` — o carimbo sobrevive e é a COMPARAÇÃO
+   que o invalida. Não dispara NADA (sem XP, sem recado, sem sino, sem desbloqueio de aula): a
+   criança só passa a ver o selo — `studioState.reviewed` na projeção da aula
+   (`summarizeByBlockIds` traz `reviewedAt`; `get-lesson` compara com o `submittedAt`).
+   Gateway: entrada nova `members-admin-studio-submissions-write` (a de leitura é GET-only).
    A entrega grava **`account_id`**
    (conta responsável; no kids = o pai, ≠ do `user_id` que é o PERFIL da criança — no adulto são
    iguais; migration `0026`) → o BFF do admin hidrata a CRIANÇA (nome do perfil) + o RESPONSÁVEL.

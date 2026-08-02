@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { CERCO_NA_BASE_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_cercoNaBaseProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { cercoNaBaseProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -35,7 +34,7 @@ beforeAll(() => {
 
 describe('Exemplo Cerco na Base Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(cercoNaBaseProfissionalExample)
+    expect(gameKit3DExamples).toContain(cercoNaBaseProfissionalExample)
     expect(cercoNaBaseProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -194,3 +193,5 @@ describe('Exemplo Cerco na Base Profissional — drift contra o parser real', ()
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

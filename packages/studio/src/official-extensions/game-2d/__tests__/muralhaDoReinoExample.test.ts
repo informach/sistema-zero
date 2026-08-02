@@ -3,7 +3,6 @@ import { behaviorStatements, type JSStatement } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { MURALHA_DO_REINO_SOURCE as SOURCE } from '../__gen_muralhaDoReino'
 import { muralhaDoReinoExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Muralha do Reino — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(muralhaDoReinoExample)
+    expect(gameTwoDExamples).toContain(muralhaDoReinoExample)
     expect(muralhaDoReinoExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(muralhaDoReinoExample.name).toBe('Muralha do Reino')
     expect(muralhaDoReinoExample.experience).toBe('game')
@@ -110,3 +109,5 @@ describe('Exemplo Muralha do Reino — drift contra o parser real', () => {
     expect(collectTypes(frameLoop).has('g2d:everySeconds')).toBe(false)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

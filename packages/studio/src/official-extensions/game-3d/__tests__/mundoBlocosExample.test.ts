@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { MUNDO_BLOCOS_SOURCE as SOURCE } from '../__gen_mundoBlocos'
 import { gameThreeDBlocks } from '../blocks'
 import { mundoBlocosExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -31,7 +30,7 @@ beforeAll(() => {
 
 describe('Exemplo Mundo de Blocos — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(mundoBlocosExample)
+    expect(gameThreeDExamples).toContain(mundoBlocosExample)
     expect(mundoBlocosExample.experience).toBe('game')
     expect(mundoBlocosExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -126,3 +125,5 @@ describe('Exemplo Mundo de Blocos — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

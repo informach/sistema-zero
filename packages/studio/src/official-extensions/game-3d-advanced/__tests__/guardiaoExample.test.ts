@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { GUARDIAO_SOURCE as SOURCE } from '../__gen_guardiao'
 import { gameKit3DBlocks } from '../blocks'
 import { guardiaoDoPortalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -30,7 +29,7 @@ beforeAll(() => {
 
 describe('Exemplo Guardião do Portal — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(guardiaoDoPortalExample)
+    expect(gameKit3DExamples).toContain(guardiaoDoPortalExample)
     expect(guardiaoDoPortalExample.ir.extensions).toEqual([{ extensionId: 'game-3d-advanced' }])
   })
 
@@ -103,3 +102,5 @@ describe('Exemplo Guardião do Portal — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

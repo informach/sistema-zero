@@ -137,7 +137,7 @@ const MAX_DOCS_CHARS = 60_000
 // chamada e `loadPromptContext` para carregar o manual em um chunk sob demanda.
 // Nunca truncamos texto: cortar uma receita no meio ensinaria errado.
 export const MAX_PROMPT_CONTEXT_CHARS = 42_000
-const MAX_EXAMPLES = 50
+export const MAX_EXTENSION_EXAMPLES = 50
 
 export const ExtensionExampleSchema = z.object({
   name: z.string().min(1).max(MAX_NAME_CHARS),
@@ -164,6 +164,8 @@ export const ExtensionExampleSchema = z.object({
     .optional(),
 })
 
+export const ExtensionExamplesSchema = z.array(ExtensionExampleSchema).max(MAX_EXTENSION_EXAMPLES)
+
 export const ExtensionManifestSchema = z.object({
   id: z
     .string()
@@ -178,7 +180,6 @@ export const ExtensionManifestSchema = z.object({
   enabledByDefault: z.boolean(),
   permissions: z.array(ExtensionPermissionSchema),
   docs: z.string().max(MAX_DOCS_CHARS),
-  examples: z.array(ExtensionExampleSchema).max(MAX_EXAMPLES),
 }) satisfies z.ZodType<ExtensionManifest>
 
 export function validateManifest(input: unknown): ExtensionManifest {

@@ -7068,10 +7068,14 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_camera_x', {})
     case 'g2d:cameraY':
       return block('sz_g2d_camera_y', {})
-    case 'g2d:randomX':
-      return block('sz_g2d_random_x', {})
-    case 'g2d:randomY':
-      return block('sz_g2d_random_y', {})
+    case 'g2d:randomX': {
+      const size = exprToValueBlock(valueToExpr(expr.size ?? 0))
+      return size === null ? null : block('sz_g2d_random_x', {}, {}, expr.__id, { SIZE: size })
+    }
+    case 'g2d:randomY': {
+      const size = exprToValueBlock(valueToExpr(expr.size ?? 0))
+      return size === null ? null : block('sz_g2d_random_y', {}, {}, expr.__id, { SIZE: size })
+    }
     case 'g2d:tileAtSprite':
       return block('sz_g2d_tile_at', { MAP: expr.mapVar, SPRITE: expr.spriteVar })
     case 'g2d:sceneIs':

@@ -1277,6 +1277,9 @@ describe('gameTwoDRuntime — música e pausa', () => {
     const frequencies: number[] = []
     const frequencyRamps: number[] = []
     const sourceStops: number[][] = []
+    let audioSuspendCalls = 0
+    let audioResumeCalls = 0
+    let audioContextState = 'not-created'
     const setTimeoutControlled = (callback: () => void) => {
       const id = nextTimerId
       nextTimerId += 1
@@ -1291,7 +1294,15 @@ describe('gameTwoDRuntime — música e pausa', () => {
       destination = {}
 
       resume() {
+        audioResumeCalls += 1
         this.state = 'running'
+        audioContextState = this.state
+      }
+
+      suspend() {
+        audioSuspendCalls += 1
+        this.state = 'suspended'
+        audioContextState = this.state
       }
 
       createOscillator() {
@@ -1364,6 +1375,13 @@ describe('gameTwoDRuntime — música e pausa', () => {
       frequencyRamps,
       sourceStops,
       timers,
+      audioLifecycle() {
+        return {
+          resumeCalls: audioResumeCalls,
+          state: audioContextState,
+          suspendCalls: audioSuspendCalls,
+        }
+      },
       fireKeydown() {
         for (const listener of listeners.keydown ?? []) {
           listener({ key: 'ArrowRight', code: 'ArrowRight', repeat: false })
@@ -1421,6 +1439,19 @@ describe('gameTwoDRuntime — música e pausa', () => {
 
     expect(frequencies[0]).toBe(262)
     api.stopMusic()
+  })
+
+  it('suspende o AudioContext inteiro na pausa e o retoma com a partida', () => {
+    const { api, audioLifecycle, fireKeydown, sourceStops } = loadMusicRuntime()
+    fireKeydown()
+    api.playSound(440, 10_000)
+
+    api.pauseGame()
+    expect(audioLifecycle()).toEqual({ resumeCalls: 1, state: 'suspended', suspendCalls: 1 })
+    expect(sourceStops).toEqual([[10]])
+
+    api.resumeGame()
+    expect(audioLifecycle()).toEqual({ resumeCalls: 2, state: 'running', suspendCalls: 1 })
   })
 
   it('interrompe fontes de áudio ainda ativas quando a partida reinicia', () => {
@@ -1933,6 +1964,7 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
   }
   interface Group {
     items: Sprite[]
+    _revision: number
   }
   interface GroupApi {
     createGroup: () => Group
@@ -1978,6 +2010,24 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.countGroup(g)).toBe(1)
     expect(s?.x).toBe(10)
     expect(s?.vy).toBe(3)
+  })
+
+  it('cada mutação pública avança a revisão do grupo exatamente uma vez', () => {
+    const api = load()
+    const managed = api.createGroup()
+
+    const first = api.spawn(managed, { x: 0, y: 0, color: '#fff' })
+    expect(managed._revision).toBe(1)
+    api.spawn(managed, { x: 10, y: 0, color: '#fff' })
+    expect(managed._revision).toBe(2)
+    if (first) api.removeFromGroup(managed, first)
+    expect(managed._revision).toBe(3)
+    api.clearGroup(managed)
+    expect(managed._revision).toBe(4)
+
+    const external = { items: [], _revision: 0 } satisfies Group
+    api.spawn(external, { x: 0, y: 0, color: '#fff' })
+    expect(external._revision).toBe(1)
   })
 
   it('updateGroup move cada sprite pela velocidade; clear/remove tiram do grupo', () => {

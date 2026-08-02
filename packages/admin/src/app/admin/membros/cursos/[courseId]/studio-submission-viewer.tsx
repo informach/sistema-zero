@@ -5,11 +5,12 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowRight, Download, Maximize2, MessageSquare, Minimize2 } from 'lucide-react'
+import { ArrowRight, CheckCheck, Download, Maximize2, MessageSquare, Minimize2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { StudioEmbed } from '@/components/studio/studio-embed'
-import { type ApiError, apiGet } from '@/lib/api'
+import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { StudioSubmissionDetailView } from '@/lib/types'
 import { TeacherThreadPanel } from './teacher-thread-panel'
 
@@ -73,6 +74,10 @@ export function StudioSubmissionViewer({
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<StudioSubmissionDetailView | null>(null)
   const [maximized, setMaximized] = useState(false)
+  // "Já conferi": o estado vive aqui (e não só no detalhe recarregado) p/ o botão
+  // responder na hora — a lista atrás só recarrega quando o professor fecha.
+  const [reviewed, setReviewed] = useState(false)
+  const [reviewing, setReviewing] = useState(false)
   // Handle exigido pelo StudioEmbed; na inspeção é só leitura (não usamos getProject).
   const viewerRef = useRef<StudioHandle | null>(null)
 
@@ -86,7 +91,9 @@ export function StudioSubmissionViewer({
       `/api/members/blocks/${blockId}/studio-submissions/${userId}`,
     )
       .then((res) => {
-        if (active) setDetail(res)
+        if (!active) return
+        setDetail(res)
+        setReviewed(res.reviewed)
       })
       .catch((err) => {
         if (active) toast.error((err as ApiError).message ?? 'Falha ao abrir a entrega.')
@@ -98,6 +105,29 @@ export function StudioSubmissionViewer({
       active = false
     }
   }, [open, blockId, userId])
+
+  /**
+   * Carimba (ou tira) o "já conferi". É o que fecha a entrega quando o aluno NÃO
+   * mandou recado — não há conversa para responder. Não manda nada para a
+   * criança além do selo dela na aula.
+   */
+  async function toggleReviewed(): Promise<void> {
+    const next = !reviewed
+    setReviewing(true)
+    try {
+      await apiSend(`/api/members/studio-submissions/${blockId}/${userId}/review`, 'POST', {
+        reviewed: next,
+      })
+      setReviewed(next)
+      toast.success(next ? 'Entrega marcada como conferida.' : 'Marcação removida.')
+      // Sem isto o número de pendentes da barra lateral mente por até 60s.
+      refreshProfessorCounts()
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Não foi possível marcar a entrega.')
+    } finally {
+      setReviewing(false)
+    }
+  }
 
   return (
     <Dialog
@@ -119,6 +149,16 @@ export function StudioSubmissionViewer({
               {responsible ? <p>Responsável: {responsible}</p> : null}
             </div>
             <div className="flex items-center gap-2">
+              {/* Conferir + próxima é o laço da correção em sequência. */}
+              <Button
+                variant={reviewed ? 'outline' : 'default'}
+                size="sm"
+                onClick={toggleReviewed}
+                disabled={reviewing}
+              >
+                {reviewing ? <Spinner className="size-4" /> : <CheckCheck className="size-4" />}
+                {reviewed ? 'Desmarcar' : 'Marcar como conferida'}
+              </Button>
               {onNext ? (
                 <Button size="sm" onClick={onNext}>
                   {nextLabel ?? 'Próxima pendente'} <ArrowRight className="size-4" />

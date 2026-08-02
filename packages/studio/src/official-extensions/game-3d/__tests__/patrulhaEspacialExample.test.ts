@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { PATRULHA_ESPACIAL_SOURCE as SOURCE } from '../__gen_patrulhaEspacial'
 import { gameThreeDBlocks } from '../blocks'
 import { patrulhaEspacialExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -33,7 +32,7 @@ beforeAll(() => {
 
 describe('Exemplo Patrulha Espacial — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(patrulhaEspacialExample)
+    expect(gameThreeDExamples).toContain(patrulhaEspacialExample)
     expect(patrulhaEspacialExample.experience).toBe('game')
     expect(patrulhaEspacialExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -144,3 +143,5 @@ describe('Exemplo Patrulha Espacial — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

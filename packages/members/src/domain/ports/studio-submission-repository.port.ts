@@ -25,6 +25,14 @@ export interface StudioSubmissionRecord {
   passedAt?: Date | null
   /** Recado OPCIONAL do aluno ao professor (modal de envio). `null` = sem recado. */
   message?: string | null
+  /**
+   * Carimbo "já conferi" do professor. ⚠️ NÃO é escrito pelo `upsert` (o set do
+   * reenvio não o lista, de propósito): quem mexe aqui é só o `markReviewed`. O
+   * reenvio invalida o carimbo pela COMPARAÇÃO com `submittedAt`, não apagando.
+   */
+  reviewedAt?: Date | null
+  /** Qual staff carimbou (auditoria). Mesma regra do `reviewedAt`. */
+  reviewedBy?: string | null
 }
 
 /** Resumo de uma entrega para o painel do professor (sem o projeto inteiro). */
@@ -46,6 +54,11 @@ export interface StudioSubmissionState {
   score: number | null
   /** `passed_at` presente (sticky) — usado pelo gate de atividade com nota. */
   passed: boolean
+  /**
+   * Quando o professor carimbou "já conferi". NÃO é sticky: comparar com
+   * `submittedAt` diz se o carimbo vale para a entrega ATUAL (reenvio reabre).
+   */
+  reviewedAt: Date | null
 }
 
 /** Entrega completa de um aluno num bloco (admin detalhe + stickiness do submit). */
@@ -58,6 +71,8 @@ export interface StudioSubmissionDetail {
   passedAt: Date | null
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** Carimbo de "já conferi" (o botão do professor). `null` = nunca conferida. */
+  reviewedAt: Date | null
 }
 
 /**
@@ -84,10 +99,12 @@ export interface StudioSubmissionGlobalFilter {
   courseId?: string
   audience?: CourseAudience
   /**
-   * `pending` = sem resposta do professor APÓS o último envio (um reenvio
-   * reabre a pendência); `answered` = com resposta. Ausente = todas.
+   * `pending` = o professor ainda não fechou a entrega APÓS o último envio (um
+   * reenvio reabre a pendência); `answered` = ele respondeu um recado;
+   * `reviewed` = ele carimbou "já conferi" sem escrever nada. Ausente = todas.
+   * ⚠️ FECHADA = respondida OU conferida; `pending` é a negação das duas.
    */
-  status?: 'pending' | 'answered'
+  status?: 'pending' | 'answered' | 'reviewed'
   /**
    * Filtro por ALUNO (24/07): casa `user_id` OU `account_id` — o accountId pega a
    * família toda; o profileId (kids) estreita p/ uma criança.
@@ -104,6 +121,11 @@ export interface StudioSubmissionGlobalRow extends StudioSubmissionCourseRow {
   audience: CourseAudience
   /** Há mensagem do PROFESSOR na conversa da entrega após o último envio. */
   answered: boolean
+  /**
+   * O professor carimbou "já conferi" após o último envio. É o caminho para a
+   * entrega SEM recado, que não tinha como sair da fila (só respondendo).
+   */
+  reviewed: boolean
 }
 
 /** Uma entrega recente do Estúdio (ficha admin), com a aula/curso resolvidos. */
@@ -152,6 +174,17 @@ export interface StudioSubmissionRepository {
   ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }>
   /** Entrega de um aluno num bloco (abrir no Estúdio do professor + correção). */
   getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null>
+  /**
+   * Carimba (ou tira) o "já conferi" do professor. `reviewed: false` limpa o
+   * carimbo — desfazer um clique errado. Devolve `false` se a entrega não existe.
+   */
+  markReviewed(input: {
+    userId: string
+    blockId: string
+    reviewed: boolean
+    staffId: string | null
+    now: Date
+  }): Promise<boolean>
   /**
    * Quantos projetos o aluno ENTREGOU NA AUDIÊNCIA (linhas de `studio_submissions`
    * do usuário cujo curso é da vitrine pedida) — resumo do progresso na área dos pais

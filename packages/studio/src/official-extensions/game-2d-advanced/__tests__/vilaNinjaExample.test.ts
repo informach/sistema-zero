@@ -17,7 +17,6 @@ import { parseJS } from '../../../parsers/js'
 import { VILA_NINJA_SOURCE as SOURCE } from '../__gen_vilaNinja'
 import { gameKitBlocks } from '../blocks'
 import { vilaNinjaExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Vila Ninja Profissional" — o ninja-adventure (aventura
@@ -34,7 +33,7 @@ beforeAll(() => {
 
 describe('Exemplo Vila Ninja Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(vilaNinjaExample)
+    expect(gameKitExamples).toContain(vilaNinjaExample)
     expect(vilaNinjaExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(vilaNinjaExample.name).toBe('Vila Ninja Profissional')
     expect(vilaNinjaExample.experience).toBe('game')
@@ -187,3 +186,5 @@ describe('Exemplo Vila Ninja Profissional — drift contra o parser real', () =>
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

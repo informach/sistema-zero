@@ -447,7 +447,7 @@ export function buildApp(
       lessons: new LessonAdminService(courses, courses),
       blocks: new BlockAdminService(courses),
       attachments: new AttachmentAdminService(courses),
-      studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions),
+      studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),
     },
     internal: {
       accessCheck: new AccessCheckService(entitlements, clock),

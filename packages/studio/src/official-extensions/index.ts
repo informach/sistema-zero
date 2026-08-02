@@ -6,9 +6,10 @@ import { gameKit3DExtension } from './game-3d-advanced'
 import { worldThreeDExtension } from './world-3d'
 
 /**
- * Catálogo oficial de extensões. É a única fonte da verdade — não há loader
- * dinâmico, não há fetch remoto, não há marketplace. Para adicionar uma
- * extensão nova, edite este array E passe pelo processo de revisão descrito
+ * Catálogo oficial de extensões. É a única fonte da verdade: manifestos,
+ * blocos e runtimes são síncronos; exemplos são chunks locais carregados pelo
+ * provider compartilhado. Não há fetch remoto nem marketplace. Para adicionar
+ * uma extensão nova, edite este array E passe pelo processo de revisão descrito
  * em docs/EXTENSIONS.md.
  */
 export const OFFICIAL_CATALOG: readonly ExtensionDefinition[] = Object.freeze([

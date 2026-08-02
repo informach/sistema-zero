@@ -1,5 +1,13 @@
 # Auditoria completa da galeria de exemplos — 2026-07-19
 
+> **Snapshot histórico.** Os números abaixo descrevem o catálogo auditado em
+> 19/07/2026 e não representam mais o inventário atual. Em 02/08/2026 a galeria
+> possui **148 exemplos**: 31 de Jogo 2D, 36 de Jogo 2D Avançado, 18 de Jogo 3D,
+> 17 de Jogo 3D Avançado, 13 de Mundo 3D e 33 do núcleo. A classificação vigente
+> é **127 jogos, 9 demonstrações e 12 explorações**. O contrato executável em
+> `src/examples/qaContracts.ts` é a fonte atual; achados posteriores não devem
+> ser inferidos como “sem pendências” a partir deste documento histórico.
+
 ## Escopo e resultado
 
 O catálogo real possui **67 exemplos**, não 63: 14 de Jogo 2D, 19 de Jogo 2D

@@ -228,6 +228,39 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(blockAfter.studioState.submitted).toBe(true)
   })
 
+  // "O professor já conferiu sua entrega" (08/2026): o carimbo do professor
+  // aparece p/ a criança na aula — é o ÚNICO retorno dela quando não houve
+  // recado nenhum. Reenviar apaga o selo (a versão nova ainda não foi olhada).
+  test('studioState.reviewed acende com o carimbo do professor e some no reenvio', async () => {
+    const { app, courses, entitlements, studioSubmissions } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+    await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)
+
+    const stateOf = async () => {
+      const body = await readJson(await getLesson(app, slug, lessonIds[0]))
+      return body.blocks.find((b: { id: string }) => b.id === blockId).studioState
+    }
+    expect((await stateOf()).reviewed).toBe(false)
+
+    const carimbo = await app.handle(
+      new Request(`http://localhost/members/admin/studio-submissions/${blockId}/${USER}/review`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ reviewed: true }),
+      }),
+    )
+    expect(carimbo.status).toBe(200)
+    expect((await stateOf()).reviewed).toBe(true)
+
+    // Reenvio: o carimbo continua gravado, mas passa a ser ANTERIOR ao envio.
+    const row = studioSubmissions.submissions.find((s) => s.blockId === blockId)
+    if (!row?.reviewedAt) throw new Error('não carimbou')
+    row.submittedAt = new Date(row.reviewedAt.getTime() + 1000)
+    expect((await stateOf()).reviewed).toBe(false)
+  })
+
   test('o reenvio sobrescreve a entrega (último vence)', async () => {
     const { app, courses, entitlements, studioSubmissions } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)

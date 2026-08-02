@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { TORRES_DEFENSORAS_SOURCE as SOURCE } from '../__gen_torresDefensoras'
 import { gameThreeDBlocks } from '../blocks'
 import { defesaDaTorreBasicoExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -30,7 +29,7 @@ beforeAll(() => {
 
 describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(defesaDaTorreBasicoExample)
+    expect(gameThreeDExamples).toContain(defesaDaTorreBasicoExample)
     expect(defesaDaTorreBasicoExample.experience).toBe('game')
     expect(defesaDaTorreBasicoExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -118,3 +117,5 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

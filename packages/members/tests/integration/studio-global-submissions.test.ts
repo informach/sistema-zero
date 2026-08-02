@@ -142,3 +142,109 @@ describe('GET /members/admin/studio-submissions (fila global)', () => {
     expect((await readJson(await listAll(fakes.app, '?userIds=lixo'))).total).toBe(3)
   })
 })
+
+// "Já conferi esta entrega" (08/2026): a saída da fila para a entrega SEM recado
+// do aluno — antes dela, fechar exigia RESPONDER uma conversa que só nasce
+// quando a criança escreve algo no envio.
+describe('POST /members/admin/studio-submissions/:blockId/:userId/review', () => {
+  // ⚠️ O relógio do buildApp é FIXO (2026-06-02T12:00Z) e é ele que carimba o
+  // "conferi" — as entregas destes testes precisam ser ANTERIORES a ele, senão o
+  // carimbo nasce velho e a régua do `>=` (que é o ponto do reenvio) não fecha.
+  const ANTES_DO_CARIMBO = new Date('2026-06-01T10:00:00Z')
+
+  const review = (
+    app: ReturnType<typeof buildApp>['app'],
+    blockId: string,
+    userId: string,
+    reviewed: boolean,
+  ) =>
+    app.handle(
+      new Request(`http://localhost/members/admin/studio-submissions/${blockId}/${userId}/review`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ reviewed }),
+      }),
+    )
+
+  test('conferir tira da fila de pendentes sem mandar recado nenhum', async () => {
+    const fakes = buildApp()
+    const { courseId, lessonIds } = seedSampleCourse(fakes.courses, 'curso-review-1')
+    const blockId = seedSubmission(fakes, courseId, lessonIds[0], USER_A, ANTES_DO_CARIMBO)
+
+    expect((await readJson(await listAll(fakes.app, '?status=pending'))).total).toBe(1)
+
+    const res = await review(fakes.app, blockId, USER_A, true)
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).reviewed).toBe(true)
+
+    expect((await readJson(await listAll(fakes.app, '?status=pending'))).total).toBe(0)
+    const all = await readJson(await listAll(fakes.app))
+    expect(all.items[0].reviewed).toBe(true)
+    // Conferir NÃO é responder: nenhuma conversa, nenhuma mensagem para a criança.
+    expect(all.items[0].answered).toBe(false)
+    expect(fakes.teacherThreadsRepo.threads).toHaveLength(0)
+    expect(fakes.teacherThreadsRepo.messages).toHaveLength(0)
+  })
+
+  test('filtro status=reviewed separa quem foi conferida de quem foi respondida', async () => {
+    const fakes = buildApp()
+    const { courseId, lessonIds } = seedSampleCourse(fakes.courses, 'curso-review-2')
+    const conferida = seedSubmission(fakes, courseId, lessonIds[0], USER_A, ANTES_DO_CARIMBO)
+    const respondida = seedSubmission(fakes, courseId, lessonIds[0], USER_B, ANTES_DO_CARIMBO)
+    fakes.studioSubmissions.answeredKeys.add(`${USER_B}:${respondida}`)
+    await review(fakes.app, conferida, USER_A, true)
+
+    const onlyReviewed = await readJson(await listAll(fakes.app, '?status=reviewed'))
+    expect(onlyReviewed.total).toBe(1)
+    expect(onlyReviewed.items[0].blockId).toBe(conferida)
+
+    const onlyAnswered = await readJson(await listAll(fakes.app, '?status=answered'))
+    expect(onlyAnswered.total).toBe(1)
+    expect(onlyAnswered.items[0].blockId).toBe(respondida)
+
+    expect((await readJson(await listAll(fakes.app, '?status=pending'))).total).toBe(0)
+  })
+
+  test('⭐ REENVIAR depois de conferida devolve a entrega para a fila', async () => {
+    const fakes = buildApp()
+    const { courseId, lessonIds } = seedSampleCourse(fakes.courses, 'curso-review-3')
+    const blockId = seedSubmission(
+      fakes,
+      courseId,
+      lessonIds[0],
+      USER_A,
+      new Date('2026-06-01T10:00:00Z'),
+    )
+    await review(fakes.app, blockId, USER_A, true)
+    expect((await readJson(await listAll(fakes.app, '?status=pending'))).total).toBe(0)
+
+    // A criança manda outra versão: o carimbo NÃO é apagado, mas passa a ser
+    // anterior ao envio — e a régua do `>=` reabre a pendência sozinha.
+    const row = fakes.studioSubmissions.submissions.find((s) => s.blockId === blockId)
+    if (!row) throw new Error('entrega sumiu')
+    const carimbo = row.reviewedAt
+    if (!carimbo) throw new Error('não carimbou')
+    row.submittedAt = new Date(carimbo.getTime() + 1000)
+    const pending = await readJson(await listAll(fakes.app, '?status=pending'))
+    expect(pending.total).toBe(1)
+    expect(pending.items[0].reviewed).toBe(false)
+  })
+
+  test('desmarcar devolve para pendentes (desfazer clique errado)', async () => {
+    const fakes = buildApp()
+    const { courseId, lessonIds } = seedSampleCourse(fakes.courses, 'curso-review-4')
+    const blockId = seedSubmission(fakes, courseId, lessonIds[0], USER_A, ANTES_DO_CARIMBO)
+    await review(fakes.app, blockId, USER_A, true)
+
+    const res = await review(fakes.app, blockId, USER_A, false)
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).reviewedAt).toBeNull()
+    expect((await readJson(await listAll(fakes.app, '?status=pending'))).total).toBe(1)
+  })
+
+  test('entrega inexistente → 404, e uuid inválido → 400 na borda', async () => {
+    const fakes = buildApp()
+    expect((await review(fakes.app, randomUUID(), USER_A, true)).status).toBe(404)
+    expect((await review(fakes.app, 'nao-e-uuid', USER_A, true)).status).toBe(400)
+  })
+})

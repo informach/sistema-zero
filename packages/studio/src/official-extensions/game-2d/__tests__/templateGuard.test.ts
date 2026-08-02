@@ -78,21 +78,29 @@ describe('Guarda dos template literals do Jogo 2D', () => {
   it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
     expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 6).interpolations).toEqual([])
-    for (const [file, declaration] of [
-      ['../runtimeDomains.ts', 'gameRuntimeDomains ='],
-      ['runtime/arcadeKits.ts', 'gameTwoDArcadeKitsRuntime ='],
-      ['runtime/audio.ts', 'gameTwoDAudioRuntime ='],
-      ['runtime/casualKits.ts', 'gameTwoDCasualKitsRuntime ='],
-      ['runtime/inputAndMotion.ts', 'gameTwoDInputAndMotionRuntime ='],
-      ['runtime/lifecycle.ts', 'gameTwoDLifecycleRuntime ='],
-      ['runtime/physics.ts', 'gameTwoDPhysicsRuntime ='],
-      ['runtime/sprites.ts', 'gameTwoDSpritesRuntime ='],
-      ['runtime/stage.ts', 'gameTwoDStageRuntime ='],
-      ['runtime/utilities.ts', 'gameTwoDUtilitiesRuntime ='],
-      ['runtime/world.ts', 'gameTwoDWorldRuntime ='],
+    for (const [file, declaration, boundaries] of [
+      ['../runtimeDomains.ts', 'gameRuntimeDomains =', 2],
+      ['runtime/arcadeKits.ts', 'gameTwoDArcadeKitsRuntime =', 0],
+      ['runtime/arcadeKitsDino.ts', 'gameTwoDArcadeDinoRuntime =', 2],
+      ['runtime/arcadeKitsGorillas.ts', 'gameTwoDArcadeGorillasRuntime =', 2],
+      ['runtime/arcadeKitsHud.ts', 'gameTwoDArcadeHudRuntime =', 2],
+      ['runtime/arcadeKitsSpace.ts', 'gameTwoDArcadeSpaceRuntime =', 2],
+      ['runtime/audio.ts', 'gameTwoDAudioRuntime =', 2],
+      ['runtime/casualKits.ts', 'gameTwoDCasualKitsRuntime =', 2],
+      ['runtime/inputAndMotion.ts', 'gameTwoDInputAndMotionRuntime =', 2],
+      ['runtime/lifecycle.ts', 'gameTwoDLifecycleRuntime =', 2],
+      ['runtime/physics.ts', 'gameTwoDPhysicsRuntime =', 2],
+      ['runtime/sprites.ts', 'gameTwoDSpritesRuntime =', 2],
+      ['runtime/stage.ts', 'gameTwoDStageRuntime =', 2],
+      ['runtime/utilities.ts', 'gameTwoDUtilitiesRuntime =', 2],
+      ['runtime/world.ts', 'gameTwoDWorldRuntime =', 0],
+      ['runtime/worldEvents.ts', 'gameTwoDWorldEventsRuntime =', 2],
+      ['runtime/worldGroups.ts', 'gameTwoDWorldGroupsRuntime =', 2],
+      ['runtime/worldTiles.ts', 'gameTwoDWorldTilesRuntime =', 2],
+      ['runtime/worldTimers.ts', 'gameTwoDWorldTimersRuntime =', 2],
     ] as const) {
       const fragment = readFileSync(join(DIR, file), 'utf8')
-      expect(composedTemplateHazards(fragment, declaration, 2).interpolations).toEqual([])
+      expect(composedTemplateHazards(fragment, declaration, boundaries).interpolations).toEqual([])
     }
   })
 

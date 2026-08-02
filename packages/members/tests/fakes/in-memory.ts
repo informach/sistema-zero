@@ -1308,6 +1308,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         submittedAt: s.submittedAt,
         score: s.score ?? null,
         passed: s.passedAt != null,
+        reviewedAt: s.reviewedAt ?? null,
       })
     }
     return map
@@ -1392,16 +1393,20 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           passed: s.passedAt != null,
           message: s.message ?? null,
           answered: this.answeredKeys.has(`${s.userId}:${s.blockId}`),
+          // Espelha a régua do SQL: o carimbo só vale para a entrega ATUAL.
+          reviewed: s.reviewedAt != null && s.reviewedAt >= s.submittedAt,
         } satisfies StudioSubmissionGlobalRow
       })
       .filter((r) => !filter.courseId || r.courseId === filter.courseId)
       .filter((r) => !filter.audience || r.audience === filter.audience)
       .filter((r) =>
         filter.status === 'pending'
-          ? !r.answered
+          ? !r.answered && !r.reviewed
           : filter.status === 'answered'
             ? r.answered
-            : true,
+            : filter.status === 'reviewed'
+              ? r.reviewed
+              : true,
       )
       // Filtro por aluno (mirror do Drizzle): user_id OU account_id.
       .filter(
@@ -1411,9 +1416,10 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           (r.accountId !== null && filter.userIds.includes(r.accountId)),
       )
       // Pendentes primeiro, depois as mais recentes (espelha o repo real).
+      // "Fechada" = respondida OU conferida.
       .sort(
         (a, b) =>
-          Number(a.answered) - Number(b.answered) ||
+          Number(a.answered || a.reviewed) - Number(b.answered || b.reviewed) ||
           b.submittedAt.getTime() - a.submittedAt.getTime(),
       )
     return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
@@ -1430,8 +1436,23 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           checkedAt: s.checkedAt ?? null,
           passedAt: s.passedAt ?? null,
           message: s.message ?? null,
+          reviewedAt: s.reviewedAt ?? null,
         }
       : null
+  }
+
+  async markReviewed(input: {
+    userId: string
+    blockId: string
+    reviewed: boolean
+    staffId: string | null
+    now: Date
+  }): Promise<boolean> {
+    const s = this.submissions.find((x) => x.userId === input.userId && x.blockId === input.blockId)
+    if (!s) return false
+    s.reviewedAt = input.reviewed ? input.now : null
+    s.reviewedBy = input.reviewed ? input.staffId : null
+    return true
   }
 
   async countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number> {

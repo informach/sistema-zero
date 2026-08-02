@@ -3,7 +3,6 @@ import { behaviorStatements, type JSStatement } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { SOBREVIVENTE_SOURCE as SOURCE } from '../__gen_sobrevivente'
 import { sobreviventeExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -18,7 +17,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Sobrevivente — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(sobreviventeExample)
+    expect(gameTwoDExamples).toContain(sobreviventeExample)
     expect(sobreviventeExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(sobreviventeExample.name).toBe('Sobrevivente')
     expect(sobreviventeExample.experience).toBe('game')
@@ -104,3 +103,5 @@ describe('Exemplo Sobrevivente — drift contra o parser real', () => {
     )
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

@@ -1,10 +1,9 @@
 import type { ExtensionManifest } from '#extensions'
-import { world3DExamples } from './examples'
 
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '4.3.0',
+  version: '4.3.1',
   description:
     'Crie mundos 3D abertos só com primitivas: 7 cenários, arquipélago, cidade completa, distritos, redes de ruas e casas procedurais instanciadas. Passeie a pé, de carro ou barco; use física leve própria, inventário persistente, missões, clima e qualidade adaptativa. Sem Rapier, WASM ou pacote de assets.',
   category: 'games',
@@ -395,5 +394,4 @@ Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
 - O mundo é sempre O MESMO mundo: os morros não mudam de lugar entre uma
   jogada e outra. Dá para decorar o caminho como o seu quintal.
 `,
-  examples: world3DExamples,
 }

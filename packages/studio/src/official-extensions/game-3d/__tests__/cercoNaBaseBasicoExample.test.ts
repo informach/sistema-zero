@@ -12,7 +12,6 @@ import { collectTypes, stripIds } from '../../game-3d-advanced/exampleSourceUtil
 import { CERCO_NA_BASE_SOURCE as SOURCE } from '../__gen_cercoNaBase'
 import { gameThreeDBlocks } from '../blocks'
 import { cercoNaBaseBasicoExample } from '../examples'
-import { gameThreeDManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
@@ -33,7 +32,7 @@ beforeAll(() => {
 
 describe('Exemplo Cerco na Base — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d', () => {
-    expect(gameThreeDManifest.examples).toContain(cercoNaBaseBasicoExample)
+    expect(gameThreeDExamples).toContain(cercoNaBaseBasicoExample)
     expect(cercoNaBaseBasicoExample.experience).toBe('game')
     expect(cercoNaBaseBasicoExample.ir.extensions).toEqual([{ extensionId: 'game-3d' }])
   })
@@ -123,3 +122,5 @@ describe('Exemplo Cerco na Base — drift contra o parser real', () => {
     }
   })
 })
+
+import { gameThreeDExamples } from '../exampleCatalog'

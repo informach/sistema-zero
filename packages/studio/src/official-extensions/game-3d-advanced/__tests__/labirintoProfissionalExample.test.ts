@@ -11,7 +11,6 @@ import { parseJS } from '../../../parsers/js'
 import { LABIRINTO_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_labirintoProfissional'
 import { gameKit3DBlocks } from '../blocks'
 import { labirintoDosRobosProfissionalExample } from '../examples'
-import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
@@ -34,7 +33,7 @@ beforeAll(() => {
 
 describe('Exemplo Labirinto dos Robôs Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-3d-advanced', () => {
-    expect(gameKit3DManifest.examples).toContain(labirintoDosRobosProfissionalExample)
+    expect(gameKit3DExamples).toContain(labirintoDosRobosProfissionalExample)
     expect(labirintoDosRobosProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-3d-advanced' },
     ])
@@ -229,3 +228,5 @@ describe('Exemplo Labirinto dos Robôs Profissional — drift contra o parser re
     }
   })
 })
+
+import { gameKit3DExamples } from '../exampleCatalog'

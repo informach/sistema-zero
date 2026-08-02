@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { SAFARI_DE_MONSTROS_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_safariDeMonstrosProfissional'
 import { gameKitBlocks } from '../blocks'
 import { safariDeMonstrosProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Safári de Monstros Profissional" — o nível 2 da trilogia de
@@ -29,7 +28,7 @@ beforeAll(() => {
 
 describe('Exemplo Safári de Monstros Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(safariDeMonstrosProfissionalExample)
+    expect(gameKitExamples).toContain(safariDeMonstrosProfissionalExample)
     expect(safariDeMonstrosProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-2d-advanced' },
     ])
@@ -135,3 +134,5 @@ describe('Exemplo Safári de Monstros Profissional — drift contra o parser rea
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

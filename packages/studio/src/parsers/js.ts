@@ -2555,8 +2555,12 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'isPaused') return { type: 'g2d:isPaused' }
   if (method === 'cameraX') return { type: 'g2d:cameraX' }
   if (method === 'cameraY') return { type: 'g2d:cameraY' }
-  if (method === 'randomX') return { type: 'g2d:randomX' }
-  if (method === 'randomY') return { type: 'g2d:randomY' }
+  if (method === 'randomX' || method === 'randomY') {
+    const type = method === 'randomX' ? 'g2d:randomX' : 'g2d:randomY'
+    if (args.length === 0) return { type }
+    const size = toExpr(args[0], ctx)
+    if (isSimpleValue(size)) return { type, size }
+  }
   if (method === 'tileAtSprite') {
     const mapVar = identifierName(args[0])
     const spriteVar = identifierName(args[1])

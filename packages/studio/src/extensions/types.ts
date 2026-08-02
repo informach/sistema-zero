@@ -94,7 +94,6 @@ export interface ExtensionManifest {
    * contexto da IA vive em `ExtensionDefinition.ai.promptContext`.
    */
   docs: string
-  examples: ExtensionExample[]
 }
 
 export interface ExtensionExample {
@@ -108,6 +107,14 @@ export interface ExtensionExample {
    * `invadersStarfieldPng` do exemplo clássico). Vazio/ausente = exemplo sem asset.
    */
   assets?: ProjectAsset[]
+}
+
+/** Catálogo pesado de exemplos, carregado somente quando alguma UI o exibe. */
+export interface ExtensionExamplesProvider {
+  /** Quantidade disponível para metadados e estados vazios sem baixar o catálogo. */
+  count: number
+  /** Importa o chunk dos exemplos preservando a ordem editorial declarada. */
+  load(): Promise<readonly ExtensionExample[]>
 }
 
 /**
@@ -134,6 +141,8 @@ export interface ExtensionToolboxCategory {
  */
 export interface ExtensionDefinition {
   manifest: ExtensionManifest
+  /** Provider assíncrono obrigatório; mantém IRs e assets fora do boot do Studio. */
+  examples: ExtensionExamplesProvider
   /** Extensões oficiais que não podem coexistir no mesmo projeto. */
   conflictsWith?: readonly string[]
   /**

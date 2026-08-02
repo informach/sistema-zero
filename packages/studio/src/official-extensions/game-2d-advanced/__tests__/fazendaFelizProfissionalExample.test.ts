@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { FAZENDA_FELIZ_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_fazendaFelizProfissional'
 import { gameKitBlocks } from '../blocks'
 import { fazendaFelizProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Fazenda Feliz Profissional" — o nível 2 da família farming
@@ -28,7 +27,7 @@ beforeAll(() => {
 
 describe('Exemplo Fazenda Feliz Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(fazendaFelizProfissionalExample)
+    expect(gameKitExamples).toContain(fazendaFelizProfissionalExample)
     expect(fazendaFelizProfissionalExample.ir.extensions).toEqual([
       { extensionId: 'game-2d-advanced' },
     ])
@@ -123,3 +122,5 @@ describe('Exemplo Fazenda Feliz Profissional — drift contra o parser real', ()
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

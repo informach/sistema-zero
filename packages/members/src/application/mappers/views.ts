@@ -601,6 +601,11 @@ export interface StudioStateView {
   lastScore?: number | null
   /** Atingiu a nota de corte (sticky). `false` sem atividade/entrega. */
   passed?: boolean
+  /**
+   * O professor já conferiu ESTA entrega (o carimbo dele é posterior ao último
+   * envio). Reenviar volta para `false` — a entrega nova ainda não foi olhada.
+   */
+  reviewed?: boolean
 }
 
 export interface LessonBlockView {

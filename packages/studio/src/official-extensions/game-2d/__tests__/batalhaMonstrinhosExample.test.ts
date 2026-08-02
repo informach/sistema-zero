@@ -3,7 +3,6 @@ import { behaviorStatements, type JSStatement } from '#ir'
 import { BATALHA_MONSTRINHOS_SOURCE as SOURCE } from '../__gen_batalhaMonstrinhos'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { batalhaMonstrinhosExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Batalha de Monstrinhos — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(batalhaMonstrinhosExample)
+    expect(gameTwoDExamples).toContain(batalhaMonstrinhosExample)
     expect(batalhaMonstrinhosExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(batalhaMonstrinhosExample.name).toBe('Batalha de Monstrinhos')
     expect(batalhaMonstrinhosExample.experience).toBe('game')
@@ -167,3 +166,5 @@ describe('Exemplo Batalha de Monstrinhos — drift contra o parser real', () => 
     expect(collectTypes(frameLoop).has('g2d:afterSeconds')).toBe(false)
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'

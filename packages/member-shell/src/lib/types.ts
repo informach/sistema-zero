@@ -443,6 +443,12 @@ export interface StudioStateView {
   lastScore?: number | null
   /** Atingiu a nota de corte (sticky). */
   passed?: boolean
+  /**
+   * O professor já conferiu ESTA entrega. Reenviar volta para `false` (a versão
+   * nova ainda não foi olhada). Não tem relação com a nota: é o professor
+   * dizendo que viu.
+   */
+  reviewed?: boolean
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */

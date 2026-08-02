@@ -417,7 +417,7 @@ export async function createApplication(env: Env): Promise<Application> {
     progress,
     studioSubmissions,
   )
-  const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
+  const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions, clock)
   const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
   const issueCertificate = new IssueCertificateService(
     checkAccess,

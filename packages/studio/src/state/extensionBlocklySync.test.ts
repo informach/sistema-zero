@@ -20,7 +20,7 @@ mock.module('idb-keyval', () => ({
 const { buildExtensionBlocklyBlockTypes, EXTENSION_BLOCKLY_BLOCK_TYPES } = await import(
   './projectStore'
 )
-const { ExtensionManifestSchema, validateManifest } = await import('../extensions/manifest')
+const { ExtensionExamplesSchema } = await import('../extensions/manifest')
 
 /**
  * Drift guard: a allowlist por extensão (EXTENSION_BLOCKLY_BLOCK_TYPES, usada
@@ -81,23 +81,11 @@ describe('EXTENSION_BLOCKLY_BLOCK_TYPES ↔ OFFICIAL_CATALOG (sem drift)', () =>
 })
 
 /**
- * Pré-guarda de profundidade/tamanho do IR de exemplo do manifest. O SZIRSchema
+ * Pré-guarda de profundidade/tamanho do catálogo de exemplos. O SZIRSchema
  * é recursivo (z.lazy); um exemplo profundamente aninhado poderia estourar a
  * pilha no parse. A pré-checagem em manifest.ts barra ANTES do parse.
  */
-describe('validateManifest — pré-guarda de profundidade do IR de exemplo', () => {
-  const baseManifest = {
-    id: 'game-2d',
-    name: 'Jogo 2D',
-    version: '0.1.0',
-    description: 'Blocos para criar jogos 2D simples usando Canvas API.',
-    category: 'games',
-    official: true as const,
-    enabledByDefault: false,
-    permissions: ['canvas'] as const,
-    docs: '## docs',
-  }
-
+describe('ExtensionExamplesSchema — pré-guarda de profundidade do IR de exemplo', () => {
   /** Constrói um valor JSON com `depth` níveis de aninhamento de objeto. */
   function nest(depth: number): unknown {
     let node: Record<string, unknown> = { leaf: 'x' }
@@ -106,41 +94,32 @@ describe('validateManifest — pré-guarda de profundidade do IR de exemplo', ()
   }
 
   it('rejeita um IR de exemplo absurdamente profundo (antes do parse recursivo)', () => {
-    const overDeep = {
-      ...baseManifest,
-      examples: [{ name: 'fundo', experience: 'game' as const, ir: nest(5_000) }],
-    }
-    expect(() => validateManifest(overDeep)).toThrow()
+    const overDeep = [{ name: 'fundo', experience: 'game' as const, ir: nest(5_000) }]
+    expect(() => ExtensionExamplesSchema.parse(overDeep)).toThrow()
   })
 
-  it('rejeita via ExtensionManifestSchema.parse com a mensagem da pré-guarda', () => {
-    const overDeep = {
-      ...baseManifest,
-      examples: [{ name: 'fundo', ir: nest(5_000) }],
-    }
-    const result = ExtensionManifestSchema.safeParse(overDeep)
+  it('rejeita via ExtensionExamplesSchema.parse com a mensagem da pré-guarda', () => {
+    const overDeep = [{ name: 'fundo', experience: 'game', ir: nest(5_000) }]
+    const result = ExtensionExamplesSchema.safeParse(overDeep)
     expect(result.success).toBe(false)
     const messages = result.success ? [] : result.error.issues.map((issue) => issue.message)
     expect(messages.some((m) => m.includes('profundidade') || m.includes('tamanho'))).toBe(true)
   })
 
   it('aceita um IR de exemplo bem-formado e raso', () => {
-    const ok = {
-      ...baseManifest,
-      examples: [
-        {
-          name: 'exemplo',
-          experience: 'game' as const,
-          ir: {
-            version: 2 as const,
-            html: [],
-            css: [],
-            behavior: { start: [], events: [], loops: [] },
-            extensions: [],
-          },
+    const ok = [
+      {
+        name: 'exemplo',
+        experience: 'game' as const,
+        ir: {
+          version: 2 as const,
+          html: [],
+          css: [],
+          behavior: { start: [], events: [], loops: [] },
+          extensions: [],
         },
-      ],
-    }
-    expect(() => validateManifest(ok)).not.toThrow()
+      },
+    ]
+    expect(() => ExtensionExamplesSchema.parse(ok)).not.toThrow()
   })
 })

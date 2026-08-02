@@ -30,7 +30,7 @@ import {
   vocationProceduralExample,
   world3DExamples,
 } from '../examples'
-import { world3DManifest } from '../manifest'
+import { worldThreeDExtension } from '../index'
 
 /**
  * Drift dos exemplos da vitrine do Mundo 3D: a IR embutida em examples.ts foi
@@ -86,9 +86,9 @@ const CASES = [
 ]
 
 describe('Mundo 3D — exemplos da vitrine', () => {
-  it('o manifest registra os 13 exemplos', () => {
+  it('o provider registra os 13 exemplos', () => {
     expect(world3DExamples.length).toBe(13)
-    expect(world3DManifest.examples.length).toBe(13)
+    expect(worldThreeDExtension.examples.count).toBe(13)
   })
 
   for (const { name, source, example } of CASES) {

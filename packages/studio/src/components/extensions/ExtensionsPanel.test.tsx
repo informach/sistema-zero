@@ -35,7 +35,7 @@ describe('ExtensionsPanel — exemplos gated por showExamples', () => {
     expect(screen.queryByText('Exemplos clássicos (sem extensão)')).toBeNull()
   })
 
-  it('mostra os "Exemplos clássicos" quando o host libera (playground)', () => {
+  it('mostra os "Exemplos clássicos" quando o host libera (playground)', async () => {
     seedProject()
     render(
       <StudioExamplesVisibleProvider value={true}>
@@ -43,6 +43,18 @@ describe('ExtensionsPanel — exemplos gated por showExamples', () => {
       </StudioExamplesVisibleProvider>,
     )
     expect(screen.getByText('Exemplos clássicos (sem extensão)')).not.toBeNull()
+    await screen.findByRole('button', { name: 'Pegue a moeda' })
+  })
+
+  it('carrega o catálogo pesado somente quando o painel de exemplos está visível', async () => {
+    seedProject()
+    render(
+      <StudioExamplesVisibleProvider value={true}>
+        <ExtensionsPanel open onClose={() => {}} />
+      </StudioExamplesVisibleProvider>,
+    )
+
+    expect(await screen.findByRole('button', { name: 'Pegue a moeda' })).not.toBeNull()
   })
 
   it('default do contexto (sem provider) esconde — cliente nunca vê exemplo à toa', () => {

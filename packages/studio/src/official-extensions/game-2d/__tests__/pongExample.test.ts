@@ -2,8 +2,8 @@ import { describe, expect, it } from 'bun:test'
 import { behaviorStatements } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { PONG_SOURCE as SOURCE } from '../__gen_pong'
+import { gameTwoDExamples } from '../exampleCatalog'
 import { pongExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +19,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Pong — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(pongExample)
+    expect(gameTwoDExamples).toContain(pongExample)
     expect(pongExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(pongExample.name).toBe('Pong')
     expect(pongExample.experience).toBe('game')

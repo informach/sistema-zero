@@ -19,6 +19,11 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import {
+  isSubmissionPending,
+  SUBMISSION_STATUS_LABEL,
+  submissionStatus,
+} from '@/lib/submission-status'
 import type { CourseView, Paginated, StudioSubmissionQueueRow } from '@/lib/types'
 
 const PAGE = 30
@@ -120,7 +125,9 @@ export function EntregasClient() {
     const start = items.findIndex((s) => key(s) === key(open))
     for (let step = 1; step <= items.length; step++) {
       const candidate = items[(start + step) % items.length]
-      if (candidate && !candidate.answered && key(candidate) !== key(open)) return candidate
+      if (candidate && isSubmissionPending(candidate) && key(candidate) !== key(open)) {
+        return candidate
+      }
     }
     return null
   })()
@@ -181,6 +188,7 @@ export function EntregasClient() {
             <option value="">Todas</option>
             <option value="pending">Pendentes</option>
             <option value="answered">Respondidas</option>
+            <option value="reviewed">Conferidas</option>
           </Select>
         </Field>
         {!loading && items.length > 0 ? (
@@ -213,7 +221,7 @@ export function EntregasClient() {
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className={`truncate text-sm ${s.answered ? 'font-medium' : 'font-semibold'}`}
+                    className={`truncate text-sm ${isSubmissionPending(s) ? 'font-semibold' : 'font-medium'}`}
                   >
                     {studentNameOf(s)}
                   </span>
@@ -222,11 +230,9 @@ export function EntregasClient() {
                       resp.: {s.accountName}
                     </span>
                   ) : null}
-                  {s.answered ? (
-                    <Badge variant="success">Respondida</Badge>
-                  ) : (
-                    <Badge variant="outline">Pendente</Badge>
-                  )}
+                  <Badge variant={isSubmissionPending(s) ? 'outline' : 'success'}>
+                    {SUBMISSION_STATUS_LABEL[submissionStatus(s)]}
+                  </Badge>
                   {s.message ? (
                     <Badge variant="outline">
                       <MessageSquare className="size-3" /> Recado

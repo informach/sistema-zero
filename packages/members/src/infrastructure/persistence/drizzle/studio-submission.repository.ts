@@ -108,6 +108,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         submittedAt: studioSubmissions.submittedAt,
         score: studioSubmissions.score,
         passedAt: studioSubmissions.passedAt,
+        reviewedAt: studioSubmissions.reviewedAt,
       })
       .from(studioSubmissions)
       .where(
@@ -119,6 +120,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         submittedAt: r.submittedAt,
         score: r.score ?? null,
         passed: r.passedAt != null,
+        reviewedAt: r.reviewedAt ?? null,
       })
     }
     return map
@@ -207,11 +209,25 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         and tm.created_at >= ${studioSubmissions.submittedAt}
     )`
 
+    // `reviewed` = o professor carimbou "já conferi" APÓS o último envio. É o
+    // caminho da entrega SEM recado (que não tem conversa e por isso não tinha
+    // como sair da fila). Mesma régua do `answered`: comparar com submitted_at
+    // faz o reenvio reabrir sozinho.
+    const reviewed = sql<boolean>`(
+      ${studioSubmissions.reviewedAt} is not null
+      and ${studioSubmissions.reviewedAt} >= ${studioSubmissions.submittedAt}
+    )`
+    // FECHADA = respondida OU conferida. Os dois campos seguem separados na
+    // linha (o painel distingue "respondi" de "só conferi"), mas a fila de
+    // pendentes é a negação das DUAS.
+    const closed = sql<boolean>`(${answered} or ${reviewed})`
+
     const where = and(
       filter.courseId ? eq(studioSubmissions.courseId, filter.courseId) : undefined,
       filter.audience ? eq(courses.audience, filter.audience) : undefined,
-      filter.status === 'pending' ? sql`not ${answered}` : undefined,
+      filter.status === 'pending' ? sql`not ${closed}` : undefined,
       filter.status === 'answered' ? answered : undefined,
+      filter.status === 'reviewed' ? reviewed : undefined,
       // Filtro por aluno (24/07): accountId pega a família; profileId estreita.
       filter.userIds?.length
         ? or(
@@ -239,6 +255,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           passedAt: studioSubmissions.passedAt,
           message: studioSubmissions.message,
           answered,
+          reviewed,
         })
         .from(studioSubmissions)
         .innerJoin(lessons, eq(lessons.id, studioSubmissions.lessonId))
@@ -246,7 +263,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
         .where(where)
         // Pendentes primeiro (false < true), depois as mais recentes.
-        .orderBy(asc(answered), desc(studioSubmissions.submittedAt))
+        .orderBy(asc(closed), desc(studioSubmissions.submittedAt))
         .limit(filter.limit)
         .offset(filter.offset),
       this.db
@@ -275,6 +292,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         passed: r.passedAt != null,
         message: r.message ?? null,
         answered: r.answered,
+        reviewed: r.reviewed,
       })),
       total: totalRow?.value ?? 0,
     }
@@ -290,6 +308,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         checkedAt: studioSubmissions.checkedAt,
         passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
+        reviewedAt: studioSubmissions.reviewedAt,
       })
       .from(studioSubmissions)
       .where(and(eq(studioSubmissions.userId, userId), eq(studioSubmissions.blockId, blockId)))
@@ -304,7 +323,35 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: row.checkedAt ?? null,
       passedAt: row.passedAt ?? null,
       message: row.message ?? null,
+      reviewedAt: row.reviewedAt ?? null,
     }
+  }
+
+  async markReviewed(input: {
+    userId: string
+    blockId: string
+    reviewed: boolean
+    staffId: string | null
+    now: Date
+  }): Promise<boolean> {
+    // Uma coluna só, pela chave única (user_id, block_id) — sem advisory lock: o
+    // pior caso de dois cliques concorrentes é gravar o mesmo carimbo duas vezes.
+    // Desmarcar limpa os DOIS campos (não guardamos histórico de revisão).
+    const rows = await this.db
+      .update(studioSubmissions)
+      .set(
+        input.reviewed
+          ? { reviewedAt: input.now, reviewedBy: input.staffId }
+          : { reviewedAt: null, reviewedBy: null },
+      )
+      .where(
+        and(
+          eq(studioSubmissions.userId, input.userId),
+          eq(studioSubmissions.blockId, input.blockId),
+        ),
+      )
+      .returning({ blockId: studioSubmissions.blockId })
+    return rows.length > 0
   }
 
   async countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number> {

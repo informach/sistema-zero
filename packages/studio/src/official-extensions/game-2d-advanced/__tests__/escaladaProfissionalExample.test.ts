@@ -12,7 +12,6 @@ import { parseJS } from '../../../parsers/js'
 import { ESCALADA_PROFISSIONAL_SOURCE as SOURCE } from '../__gen_escaladaProfissional'
 import { gameKitBlocks } from '../blocks'
 import { escaladaProfissionalExample } from '../examples'
-import { gameKitManifest } from '../manifest'
 
 /**
  * Drift do exemplo "Escalada do Guerreiro Profissional" — o vertical-platformer
@@ -32,7 +31,7 @@ beforeAll(() => {
 
 describe('Exemplo Escalada do Guerreiro Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d-advanced', () => {
-    expect(gameKitManifest.examples).toContain(escaladaProfissionalExample)
+    expect(gameKitExamples).toContain(escaladaProfissionalExample)
     expect(escaladaProfissionalExample.ir.extensions).toEqual([{ extensionId: 'game-2d-advanced' }])
     expect(escaladaProfissionalExample.name).toBe('Escalada do Guerreiro Profissional')
     expect(escaladaProfissionalExample.experience).toBe('game')
@@ -137,3 +136,5 @@ describe('Exemplo Escalada do Guerreiro Profissional — drift contra o parser r
     }
   })
 })
+
+import { gameKitExamples } from '../exampleCatalog'

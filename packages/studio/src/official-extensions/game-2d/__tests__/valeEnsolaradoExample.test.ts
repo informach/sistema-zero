@@ -3,7 +3,6 @@ import { behaviorStatements } from '#ir'
 import { collectTypes } from '../__gen_dinoCorredor'
 import { VALE_ENSOLARADO_SOURCE as SOURCE } from '../__gen_valeEnsolarado'
 import { valeEnsolaradoExample } from '../examples'
-import { gameTwoDManifest } from '../manifest'
 import { registerExampleContractTests, setupGameTwoDExampleTests } from './exampleContractHarness'
 
 /**
@@ -19,7 +18,7 @@ setupGameTwoDExampleTests()
 
 describe('Exemplo Vale Ensolarado — drift contra o parser real', () => {
   it('está registrado no manifest e é da extensão game-2d', () => {
-    expect(gameTwoDManifest.examples).toContain(valeEnsolaradoExample)
+    expect(gameTwoDExamples).toContain(valeEnsolaradoExample)
     expect(valeEnsolaradoExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(valeEnsolaradoExample.name).toBe('Vale Ensolarado')
     expect(valeEnsolaradoExample.experience).toBe('game')
@@ -86,3 +85,5 @@ describe('Exemplo Vale Ensolarado — drift contra o parser real', () => {
     expect(raw).toContain('"behavior":"voador"')
   })
 })
+
+import { gameTwoDExamples } from '../exampleCatalog'
