@@ -1,5 +1,13 @@
 import { describe, expect, mock, test } from 'bun:test'
 
+// mock.module NÃO é isolado por arquivo (e no Linux/CI a chave de path casa entre
+// arquivos, ao contrário do Windows) — um stub INCOMPLETO de '@/server/zappy-knowledge'
+// vazava para zappy-backfill/zappy-knowledge.test.ts e apagava backfillZappyKnowledge/
+// extractPdfText (undefined → 3 falhas SÓ no CI). Espalhamos os exports REAIS e
+// sobrescrevemos só o que este teste precisa, para o vazamento ser inócuo.
+mock.module('server-only', () => ({}))
+const actualZappyKnowledge = await import('@/server/zappy-knowledge')
+
 mock.module('@/server/members', () => ({
   updateBlock: async () => ({
     status: 200,
@@ -8,6 +16,7 @@ mock.module('@/server/members', () => ({
   deleteBlock: async () => ({ status: 200, body: { ok: true } }),
 }))
 mock.module('@/server/zappy-knowledge', () => ({
+  ...actualZappyKnowledge,
   syncZappyKnowledgeForBlock: async () => {
     throw new Error('index indisponível')
   },
