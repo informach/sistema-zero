@@ -132,7 +132,7 @@ describe('StudioEditor', () => {
 
   it('provê o tutor somente quando o host do editor injeta o adapter', async () => {
     const adapter = {
-      loadHistory: async () => [],
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
       deleteHistory: async () => undefined,
       ask: async () => {
         throw new Error('não chamado neste teste')

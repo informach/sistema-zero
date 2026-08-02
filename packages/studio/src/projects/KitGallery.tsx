@@ -1,9 +1,13 @@
 import type { JSX } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { type ExampleExperience, t } from '#core'
-import { loadExtensionExamples } from '#extensions'
+import {
+  type ExtensionExample,
+  type ExtensionExampleDifficulty,
+  loadExtensionExampleCatalogs,
+} from '#extensions'
 import { generateProjectFiles } from '#generators'
 import type { SZIRV2 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
@@ -27,14 +31,65 @@ export interface KitEntry {
   ir: SZIRV2
   emoji: string
   experience: ExampleExperience
+  difficulty?: ExtensionExampleDifficulty
+  concepts?: readonly string[]
+  genre?: string
+  recommendedOrder?: number
+  featured?: boolean
   /** Assets que o exemplo embute (ex.: imagem de fundo por CSS). */
   assets?: readonly ProjectAsset[]
+}
+
+export interface KitGroup {
+  extensionId: string
+  label: string
+  entries: KitEntry[]
+}
+
+export interface KitGalleryFilters {
+  query: string
+  difficulty: 'all' | ExtensionExampleDifficulty
+  experience: 'all' | ExampleExperience
 }
 
 const EXPERIENCE_BADGE_CLASS: Record<ExampleExperience, string> = {
   game: 'bg-sz-accent/15 text-sz-accent',
   demo: 'bg-sz-warn/15 text-sz-warn',
   exploration: 'bg-sz-cyan/15 text-sz-cyan',
+}
+
+const DIFFICULTY_BADGE_CLASS: Record<ExtensionExampleDifficulty, string> = {
+  beginner: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+  intermediate: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
+  advanced: 'bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300',
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR')
+}
+
+export function filterKitGroups(
+  groups: readonly KitGroup[],
+  filters: KitGalleryFilters,
+): KitGroup[] {
+  const query = normalizeSearchText(filters.query.trim())
+  return groups.flatMap((group) => {
+    const entries = group.entries.filter((entry) => {
+      if (filters.difficulty !== 'all' && entry.difficulty !== filters.difficulty) return false
+      if (filters.experience !== 'all' && entry.experience !== filters.experience) return false
+      if (!query) return true
+      const searchable = normalizeSearchText(
+        [entry.name, entry.description, entry.genre, ...(entry.concepts ?? [])]
+          .filter(Boolean)
+          .join(' '),
+      )
+      return searchable.includes(query)
+    })
+    return entries.length > 0 ? [{ ...group, entries }] : []
+  })
 }
 
 /** Emoji decorativo por nome de exemplo (novo/renomeado cai no controle 🎮). */
@@ -188,6 +243,10 @@ function toEntry(
   experience: ExampleExperience,
   ir: SZIRV2,
   assets?: readonly ProjectAsset[],
+  metadata?: Pick<
+    ExtensionExample,
+    'difficulty' | 'concepts' | 'genre' | 'recommendedOrder' | 'featured'
+  >,
 ): KitEntry {
   return {
     key: `${prefix}:${name}`,
@@ -197,20 +256,33 @@ function toEntry(
     ir,
     emoji: KIT_EMOJI[name] ?? '🎮',
     assets,
+    difficulty: metadata?.difficulty,
+    concepts: metadata?.concepts,
+    genre: metadata?.genre,
+    recommendedOrder: metadata?.recommendedOrder,
+    featured: metadata?.featured,
   }
 }
 
-export async function buildKitGroups(): Promise<Array<{ label: string; entries: KitEntry[] }>> {
-  const groups = await Promise.all(
-    OFFICIAL_CATALOG.map(async (ext) => {
-      const examples = await loadExtensionExamples(ext)
-      const label =
-        ext.manifest.id === 'game-2d'
-          ? t('kits.group.game2d')
-          : ext.manifest.id === 'game-3d'
-            ? t('kits.group.game3d')
-            : ext.manifest.name
-      return {
+export interface KitGroupsResult {
+  groups: KitGroup[]
+  failedExtensionIds: string[]
+}
+
+export async function buildKitGroupsResult(): Promise<KitGroupsResult> {
+  const catalogs = await loadExtensionExampleCatalogs(OFFICIAL_CATALOG)
+  const groups = catalogs.loaded.flatMap(([extensionId, examples]) => {
+    const ext = OFFICIAL_CATALOG.find((candidate) => candidate.manifest.id === extensionId)
+    if (!ext) return []
+    const label =
+      ext.manifest.id === 'game-2d'
+        ? t('kits.group.game2d')
+        : ext.manifest.id === 'game-3d'
+          ? t('kits.group.game3d')
+          : ext.manifest.name
+    return [
+      {
+        extensionId,
         label,
         entries: examples.map((example) =>
           toEntry(
@@ -220,13 +292,15 @@ export async function buildKitGroups(): Promise<Array<{ label: string; entries: 
             example.experience,
             example.ir,
             example.assets,
+            example,
           ),
         ),
-      }
-    }),
-  )
+      },
+    ]
+  })
   if (CORE_EXAMPLES.length > 0) {
     groups.push({
+      extensionId: 'core',
       label: t('kits.group.classic'),
       entries: CORE_EXAMPLES.map((example) =>
         toEntry(
@@ -240,7 +314,11 @@ export async function buildKitGroups(): Promise<Array<{ label: string; entries: 
       ),
     })
   }
-  return groups
+  return { groups, failedExtensionIds: catalogs.failed.map((failure) => failure.extensionId) }
+}
+
+export async function buildKitGroups(): Promise<KitGroup[]> {
+  return (await buildKitGroupsResult()).groups
 }
 
 /** Projeto novo persistido a partir da IR do exemplo (registro independente). */
@@ -275,6 +353,70 @@ async function createProjectFromExample(entry: KitEntry): Promise<Project> {
   return project
 }
 
+function KitCard({
+  entry,
+  creating,
+  step,
+  onPick,
+}: {
+  entry: KitEntry
+  creating: string | null
+  step?: number
+  onPick: (entry: KitEntry) => void
+}): JSX.Element {
+  return (
+    <button
+      type="button"
+      disabled={creating !== null}
+      onClick={() => onPick(entry)}
+      className="flex h-full min-h-28 w-full flex-col items-start gap-1 rounded-lg border border-sz-border bg-sz-panel p-3 text-left transition-colors hover:border-sz-accent disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <span className="flex w-full items-start justify-between gap-2">
+        <span className="flex items-center gap-2">
+          {step !== undefined ? (
+            <span className="grid size-6 place-items-center rounded-full bg-sz-accent text-xs font-bold text-white">
+              {step}
+            </span>
+          ) : null}
+          <span aria-hidden className="text-2xl">
+            {entry.emoji}
+          </span>
+        </span>
+        <span className="flex flex-wrap justify-end gap-1">
+          {entry.difficulty ? (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${DIFFICULTY_BADGE_CLASS[entry.difficulty]}`}
+            >
+              {t(`kits.difficulty.${entry.difficulty}`)}
+            </span>
+          ) : null}
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${EXPERIENCE_BADGE_CLASS[entry.experience]}`}
+          >
+            {t(`kits.experience.${entry.experience}`)}
+          </span>
+        </span>
+      </span>
+      <span className="text-sm font-semibold text-sz-fg">
+        {creating === entry.key ? t('kits.creating') : entry.name}
+      </span>
+      {entry.description ? (
+        <span className="line-clamp-2 text-xs text-sz-fg-soft">{entry.description}</span>
+      ) : null}
+      {entry.genre || entry.concepts?.length ? (
+        <span className="mt-auto flex flex-wrap gap-1 pt-1 text-[10px] text-sz-fg-soft">
+          {entry.genre ? <span className="font-semibold">{entry.genre}</span> : null}
+          {(entry.concepts ?? []).slice(0, 2).map((concept) => (
+            <span key={concept} className="rounded bg-sz-bg px-1.5 py-0.5">
+              {concept}
+            </span>
+          ))}
+        </span>
+      ) : null}
+    </button>
+  )
+}
+
 export function KitGallery({
   onOpenProject,
 }: {
@@ -282,27 +424,53 @@ export function KitGallery({
 }): JSX.Element {
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [groups, setGroups] = useState<Array<{ label: string; entries: KitEntry[] }> | null>(null)
+  const [groups, setGroups] = useState<KitGroup[] | null>(null)
   const [catalogError, setCatalogError] = useState(false)
   const [loadAttempt, setLoadAttempt] = useState(0)
+  const [query, setQuery] = useState('')
+  const [difficulty, setDifficulty] = useState<'all' | ExtensionExampleDifficulty>('all')
+  const [experience, setExperience] = useState<'all' | ExampleExperience>('all')
+  const [showAllGameTwoD, setShowAllGameTwoD] = useState(false)
 
   useEffect(() => {
     // A tentativa é um nonce explícito: cada incremento refaz apenas este carregamento.
     void loadAttempt
     let active = true
     setCatalogError(false)
-    void buildKitGroups().then(
-      (nextGroups) => {
-        if (active) setGroups(nextGroups)
-      },
-      () => {
-        if (active) setCatalogError(true)
-      },
-    )
+    void buildKitGroupsResult().then(({ groups: nextGroups, failedExtensionIds }) => {
+      if (!active) return
+      setGroups(nextGroups)
+      setCatalogError(failedExtensionIds.length > 0)
+    })
     return () => {
       active = false
     }
   }, [loadAttempt])
+
+  const hasActiveFilters = query.trim() !== '' || difficulty !== 'all' || experience !== 'all'
+  const featuredEntries = useMemo(
+    () =>
+      (groups ?? [])
+        .find((group) => group.extensionId === 'game-2d')
+        ?.entries.filter((entry) => entry.featured)
+        .sort(
+          (left, right) =>
+            (left.recommendedOrder ?? Number.MAX_SAFE_INTEGER) -
+            (right.recommendedOrder ?? Number.MAX_SAFE_INTEGER),
+        ) ?? [],
+    [groups],
+  )
+  const filteredGroups = useMemo(
+    () => filterKitGroups(groups ?? [], { query, difficulty, experience }),
+    [groups, query, difficulty, experience],
+  )
+  const visibleGroups = useMemo(
+    () =>
+      filteredGroups.filter(
+        (group) => group.extensionId !== 'game-2d' || hasActiveFilters || showAllGameTwoD,
+      ),
+    [filteredGroups, hasActiveFilters, showAllGameTwoD],
+  )
 
   async function handlePick(entry: KitEntry): Promise<void> {
     if (creating) return
@@ -345,37 +513,96 @@ export function KitGallery({
           </button>
         </div>
       ) : null}
-      {(groups ?? []).map((group) => (
+      {groups !== null ? (
+        <div className="grid gap-3 rounded-lg border border-sz-border bg-sz-panel/50 p-3 sm:grid-cols-[minmax(12rem,1fr)_auto_auto] sm:items-end">
+          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
+            {t('kits.search.label')}
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+              placeholder={t('kits.search.placeholder')}
+              className="h-9 min-w-0 rounded-md border border-sz-border bg-sz-bg px-3 text-sm font-normal text-sz-fg outline-none focus:border-sz-accent"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
+            {t('kits.filter.difficulty')}
+            <select
+              value={difficulty}
+              onChange={(event) =>
+                setDifficulty(event.currentTarget.value as 'all' | ExtensionExampleDifficulty)
+              }
+              className="h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm font-normal text-sz-fg"
+            >
+              <option value="all">{t('kits.filter.all')}</option>
+              <option value="beginner">{t('kits.difficulty.beginner')}</option>
+              <option value="intermediate">{t('kits.difficulty.intermediate')}</option>
+              <option value="advanced">{t('kits.difficulty.advanced')}</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
+            {t('kits.filter.experience')}
+            <select
+              value={experience}
+              onChange={(event) =>
+                setExperience(event.currentTarget.value as 'all' | ExampleExperience)
+              }
+              className="h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm font-normal text-sz-fg"
+            >
+              <option value="all">{t('kits.filter.all')}</option>
+              <option value="game">{t('kits.experience.game')}</option>
+              <option value="demo">{t('kits.experience.demo')}</option>
+              <option value="exploration">{t('kits.experience.exploration')}</option>
+            </select>
+          </label>
+        </div>
+      ) : null}
+      {!hasActiveFilters && featuredEntries.length > 0 ? (
+        <div className="flex flex-col gap-2 rounded-xl border border-sz-accent/40 bg-sz-accent/5 p-3">
+          <div>
+            <h4 className="text-sm font-semibold text-sz-fg">{t('kits.path.title')}</h4>
+            <p className="text-xs text-sz-fg-soft">{t('kits.path.subtitle')}</p>
+          </div>
+          <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {featuredEntries.map((entry, index) => (
+              <li key={entry.key} className="h-full">
+                <KitCard
+                  entry={entry}
+                  creating={creating}
+                  step={index + 1}
+                  onPick={(picked) => void handlePick(picked)}
+                />
+              </li>
+            ))}
+          </ol>
+          <button
+            type="button"
+            className="self-start text-xs font-semibold text-sz-accent hover:underline"
+            aria-expanded={showAllGameTwoD}
+            onClick={() => setShowAllGameTwoD((showAll) => !showAll)}
+          >
+            {showAllGameTwoD ? t('kits.path.hideAll') : t('kits.path.showAll')}
+          </button>
+        </div>
+      ) : null}
+      {groups !== null && hasActiveFilters && visibleGroups.length === 0 ? (
+        <p role="status" className="text-sm text-sz-fg-soft">
+          {t('kits.noResults')}
+        </p>
+      ) : null}
+      {visibleGroups.map((group) => (
         <div key={group.label} className="flex flex-col gap-2">
           <h4 className="text-xs font-semibold uppercase tracking-wide text-sz-fg-soft">
             {group.label}
           </h4>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {group.entries.map((entry) => (
-              <button
+              <KitCard
                 key={entry.key}
-                type="button"
-                disabled={creating !== null}
-                onClick={() => void handlePick(entry)}
-                className="flex min-h-24 flex-col items-start gap-1 rounded-lg border border-sz-border bg-sz-panel p-3 text-left transition-colors hover:border-sz-accent disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <span className="flex w-full items-start justify-between gap-2">
-                  <span aria-hidden className="text-2xl">
-                    {entry.emoji}
-                  </span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${EXPERIENCE_BADGE_CLASS[entry.experience]}`}
-                  >
-                    {t(`kits.experience.${entry.experience}`)}
-                  </span>
-                </span>
-                <span className="text-sm font-semibold text-sz-fg">
-                  {creating === entry.key ? t('kits.creating') : entry.name}
-                </span>
-                {entry.description ? (
-                  <span className="line-clamp-2 text-xs text-sz-fg-soft">{entry.description}</span>
-                ) : null}
-              </button>
+                entry={entry}
+                creating={creating}
+                onPick={(picked) => void handlePick(picked)}
+              />
             ))}
           </div>
         </div>

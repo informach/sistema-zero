@@ -1,4 +1,5 @@
 import 'server-only'
+import { ZAPPY_SOURCE_CONTENT_MAX_BYTES, zappySourceContentBytes } from '@sistemazero/core/zappy'
 import { getEnv } from '@/lib/env'
 import { parseWhitelistDomains } from '@/lib/vimeo-helpers'
 import { MediaNotConfiguredError } from './r2'
@@ -179,7 +180,6 @@ export async function listTextTracks(vimeoVideoId: string): Promise<VimeoTextTra
 
 /** Hosts de onde aceitamos baixar o VTT (o `link` vem de um campo da API Vimeo). */
 const VTT_ALLOWED_HOST_SUFFIXES = ['.vimeo.com', '.vimeocdn.com']
-const MAX_VTT_BYTES = 5 * 1024 * 1024 // legendas são pequenas; teto generoso
 
 /**
  * Baixa o VTT do track (o `link` do Vimeo é assinado/temporário — re-hospede!).
@@ -201,11 +201,13 @@ export async function getTextTrackVtt(link: string): Promise<string> {
   const response = await fetch(link, { signal: AbortSignal.timeout(VIMEO_BYTES_TIMEOUT_MS) })
   if (!response.ok) throw new Error(`Falha ao baixar o VTT (${response.status})`)
   const declared = Number(response.headers.get('content-length'))
-  if (Number.isFinite(declared) && declared > MAX_VTT_BYTES) {
+  if (Number.isFinite(declared) && declared > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
     throw new Error('VTT excede o tamanho máximo')
   }
   const text = await response.text()
-  if (text.length > MAX_VTT_BYTES) throw new Error('VTT excede o tamanho máximo')
+  if (zappySourceContentBytes(text) > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
+    throw new Error('VTT excede o tamanho máximo')
+  }
   return text
 }
 

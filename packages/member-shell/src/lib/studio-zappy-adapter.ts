@@ -27,12 +27,15 @@ async function requireOk<T>(response: Response): Promise<T> {
 /** Adapter client-side do BFF. Não contém sessão, regras de rank nem chaves de IA. */
 export function createStudioZappyAdapter(baseUrl = '/api/studio/zappy'): StudioTutorAdapter {
   return {
-    async loadHistory(projectId) {
-      const response = await fetch(`${baseUrl}?projectId=${encodeURIComponent(projectId)}`, {
+    async loadHistory(projectId, before) {
+      const query = new URLSearchParams({ projectId })
+      if (before) query.set('before', before)
+      const response = await fetch(`${baseUrl}?${query.toString()}`, {
         cache: 'no-store',
       })
-      const body = await requireOk<{ messages: StudioTutorHistoryMessage[] }>(response)
-      return body.messages
+      return requireOk<{ messages: StudioTutorHistoryMessage[]; nextCursor: string | null }>(
+        response,
+      )
     },
     async deleteHistory(projectId) {
       const response = await fetch(`${baseUrl}?projectId=${encodeURIComponent(projectId)}`, {

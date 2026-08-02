@@ -168,6 +168,8 @@ export interface GameTwoDLifecycleApi {
   onStart(fn: () => void, id?: string): void
   onPointer(fn: (x: number, y: number) => void, id?: string): void
   onKey(key: string, fn: () => void, id?: string): void
+  /** Qualquer tecla OU toque na tela (a tela de "aperte para começar"). */
+  onAnyInput(fn: () => void, id?: string): void
   pointer: GameTwoDPointer
   restart(): void
   setupStage(width: number, height: number, background: string): void
@@ -261,7 +263,10 @@ export interface GameTwoDSpriteApi {
 
 export interface GameTwoDPhysicsApi {
   setGravity(gravity: number): void
+  /** Move o sprite pela velocidade. NÃO soma gravidade (ver `applyGravity`). */
   applyVelocity(sprite: GameTwoDSprite): void
+  /** Puxa o sprite para baixo somando a gravidade DO MUNDO (padrão 0.6). */
+  applyGravity(sprite: GameTwoDSprite): void
   bounceOnEdges(sprite: GameTwoDSprite, ctx: GameTwoDContext): void
   circleCollides(a: GameTwoDSprite, b: GameTwoDSprite): boolean
 }
@@ -307,8 +312,8 @@ export interface GameTwoDMathAndStateApi {
   isMoving(sprite: GameTwoDSprite): boolean
   isMovingH(sprite: GameTwoDSprite): boolean
   isMovingV(sprite: GameTwoDSprite): boolean
-  randomX(width?: number): number
-  randomY(height?: number): number
+  randomX(): number
+  randomY(): number
   cooldownReady(sprite: GameTwoDSprite, frames: number, key?: string): boolean
   pruneOld(group: GameTwoDGroup, seconds: number): void
   flipSprite(sprite: GameTwoDSprite, direction: 'left' | 'right'): void
@@ -374,6 +379,11 @@ export interface GameTwoDWorldApi {
     fn: () => void,
     id?: string,
   ): void
+  /**
+   * "Quando o sprite pular": o MOTOR avisa no instante do pulo (plataforma,
+   * pular no chão e kit dino). O sprite entra como thunk, como no onOverlap.
+   */
+  onJump(getSprite: () => GameTwoDSprite | null, fn: () => void, id?: string): void
   createTileMap(options: GameTwoDTileMapOptions): GameTwoDTileMap
   createTileMapFromAsset(name: string): GameTwoDTileMap
   drawTileMap(
@@ -611,6 +621,7 @@ export const GAME_TWO_D_API_KEYS = [
   'keys',
   'setGravity',
   'applyVelocity',
+  'applyGravity',
   'bounceOnEdges',
   'circleCollides',
   'playSound',
@@ -669,7 +680,9 @@ export const GAME_TWO_D_API_KEYS = [
   'showFps',
   'onPointer',
   'onKey',
+  'onAnyInput',
   'onOverlap',
+  'onJump',
   'keyDown',
   'pointerDown',
   'touches',

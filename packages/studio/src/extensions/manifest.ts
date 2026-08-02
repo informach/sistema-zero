@@ -143,6 +143,11 @@ export const ExtensionExampleSchema = z.object({
   name: z.string().min(1).max(MAX_NAME_CHARS),
   experience: z.enum(['game', 'demo', 'exploration']),
   description: z.string().max(MAX_DESCRIPTION_CHARS).optional(),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  concepts: z.array(z.string().min(1).max(40)).max(8).optional(),
+  genre: z.string().min(1).max(40).optional(),
+  recommendedOrder: z.number().int().min(1).max(1_000).optional(),
+  featured: z.boolean().optional(),
   // Pré-guarda de profundidade/tamanho ANTES do parse recursivo do SZIRSchema.
   ir: BoundedExampleIRSchema,
   // Assets embutidos (só imagens minúsculas). Forma permissiva (custom mantém

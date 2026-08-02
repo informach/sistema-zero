@@ -40,6 +40,12 @@ export const gameTwoDWorldTimersRuntime = `  // ---- Temporizadores didáticos: 
       keyHandlerOrder = [];
       overlapHandlers = Object.create(null);
       _overlapOrder = [];
+      // Sem estas duas linhas o handler do "Jogar de novo" seria REGISTRADO de
+      // novo por cima do antigo e o evento dispararia em dobro a cada partida.
+      jumpHandlers = Object.create(null);
+      _jumpOrder = [];
+      anyInputHandlers = Object.create(null);
+      _anyInputOrder = [];
       pressedKeys = Object.create(null);
       frameCounters = Object.create(null);
       secondTimers = Object.create(null);

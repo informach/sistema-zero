@@ -4,7 +4,6 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKitPromptSummary } from './aiSummary'
 import { gameKitBlocks, gameKitToolboxCategory } from './blocks'
 import { gameKitManifest } from './manifest'
-import { gameKitRuntime } from './runtime'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO se
 // alguém quebrar o contrato.
@@ -26,7 +25,7 @@ export const gameKitExtension: ExtensionDefinition = {
     toolboxCategory: gameKitToolboxCategory,
   },
   runtime: {
-    bootstrapScript: gameKitRuntime,
+    loadBootstrapScript: async () => (await import('./runtime')).gameKitRuntime,
     lifecycle: GAME_2D_ADVANCED_LIFECYCLE,
   },
   ai: {
@@ -35,4 +34,4 @@ export const gameKitExtension: ExtensionDefinition = {
   },
 }
 
-export { gameKitBlocks, gameKitManifest, gameKitRuntime, gameKitToolboxCategory }
+export { gameKitBlocks, gameKitManifest, gameKitToolboxCategory }

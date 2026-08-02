@@ -67,4 +67,32 @@ describe('buildStudioTutorContext', () => {
     )
     expect(JSON.stringify(context)).not.toContain('NAO_VAI')
   })
+
+  it('não envia arquivos secretos nem valores de credenciais ao BFF', () => {
+    const project = {
+      ...createEmptyProject('projeto-3', 'Ponte segura'),
+      mode: 'bridge' as const,
+      files: {
+        'index.html': '<p>Oi</p>',
+        'style.css': '',
+        'script.js': 'const API_KEY = "sk-live-secret"\nconsole.log("ok")',
+      },
+      extraFiles: [
+        {
+          name: '.env',
+          language: 'typescript' as const,
+          content: 'OPENROUTER_API_KEY=sk-env-secret',
+        },
+      ],
+    }
+
+    const context = buildStudioTutorContext({ project, selectedBlockId: null, lastError: null })
+
+    expect(context.code?.some((file) => file.path === '.env')).toBe(false)
+    expect(JSON.stringify(context)).not.toContain('sk-live-secret')
+    expect(JSON.stringify(context)).not.toContain('sk-env-secret')
+    expect(context.code?.find((file) => file.path === 'script.js')?.content).toContain(
+      '[segredo removido]',
+    )
+  })
 })

@@ -68,7 +68,7 @@ import type {
   TeacherThreadView,
   UserView,
   VacationResult,
-  ZappyHistoryMessageView,
+  ZappyHistoryPageView,
   ZappyKnowledgeHitView,
   ZappyStoredResponseView,
 } from '../lib/types'
@@ -847,13 +847,15 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     },
     zappyHistory(
       projectId: string,
-    ): Promise<GatewayResponse<{ messages: ZappyHistoryMessageView[] }>> {
-      return gw.gatewayFetch('/members/zappy/history', { query: { projectId } })
+      before?: string,
+    ): Promise<GatewayResponse<ZappyHistoryPageView>> {
+      return gw.gatewayFetch('/members/zappy/history', { query: { projectId, before } })
     },
     zappyDeleteHistory(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
       return gw.gatewayFetch('/members/zappy/history', { method: 'DELETE', query: { projectId } })
     },
     zappyReserveQuestion(body: {
+      actor: { userId: string; accountId: string; privileged: boolean }
       projectId: string
       clientMessageId: string
       question: string
@@ -865,18 +867,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         rateLimited?: boolean
       }>
     > {
-      return gw.gatewayFetch('/members/zappy/questions', { method: 'POST', body })
+      return gw.gatewayFetchHmac('/members/internal/zappy/questions', { method: 'POST', body })
     },
     zappyCompleteQuestion(
       questionId: string,
       body: {
+        actor: { userId: string; accountId: string; privileged: boolean }
         projectId: string
         latencyMs: number
         response: ZappyStoredResponseView
         outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
       },
     ): Promise<GatewayResponse<ZappyStoredResponseView>> {
-      return gw.gatewayFetch(`/members/zappy/questions/${enc(questionId)}/response`, {
+      return gw.gatewayFetchHmac(`/members/internal/zappy/questions/${enc(questionId)}/response`, {
         method: 'PUT',
         body,
       })

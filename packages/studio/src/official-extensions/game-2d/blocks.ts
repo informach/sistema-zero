@@ -1,6 +1,6 @@
 import type { ExtensionToolboxCategory } from '#extensions'
 import { categoryShades } from '../../blockly/colorShades'
-import { gameTwoDBlocks } from './blockCatalog'
+import { gameTwoDBlocks as canonicalGameTwoDBlocks } from './blockCatalog'
 
 const C = '#ec4899'
 
@@ -99,6 +99,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_follow_pointer',
       'sz_g2d_clamp_to_screen',
       'sz_g2d_apply_velocity',
+      'sz_g2d_apply_gravity',
       'sz_g2d_set_gravity',
       'sz_g2d_bounce_edges',
       'sz_g2d_drag_x',
@@ -115,7 +116,14 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎛️ Controles',
     colour: '#ffbf00',
-    types: ['sz_g2d_on_key', 'sz_g2d_on_pointer', 'sz_g2d_key_down', 'sz_g2d_pointer_down'],
+    types: [
+      'sz_g2d_on_key',
+      'sz_g2d_on_any_input',
+      'sz_g2d_on_pointer',
+      'sz_g2d_on_jump',
+      'sz_g2d_key_down',
+      'sz_g2d_pointer_down',
+    ],
   },
   {
     name: '💥 Colisões',
@@ -376,10 +384,10 @@ SUBCATS.forEach((sc, i) => {
 const COLOUR_BY_TYPE = new Map<string, string>(
   SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
 )
-for (const b of gameTwoDBlocks) {
-  const colour = COLOUR_BY_TYPE.get(b.type)
-  if (colour) b.colour = colour
-}
+export const gameTwoDBlocks = canonicalGameTwoDBlocks.map((block) => {
+  const colour = COLOUR_BY_TYPE.get(block.type)
+  return { ...block, colour: colour ?? block.colour }
+})
 
 // Rede de segurança: qualquer bloco que não esteja em nenhuma sub-categoria entra
 // num grupo "Mais" — nada some da paleta se um bloco novo esquecer de ser mapeado.
@@ -579,8 +587,6 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_hitbox_scale: { PERCENT: numShadow(80) },
   sz_g2d_random_between: { MIN: numShadow(1), MAX: numShadow(6) },
   sz_g2d_random_chance: { PERCENT: numShadow(30) },
-  sz_g2d_random_x: { SIZE: numShadow(40) },
-  sz_g2d_random_y: { SIZE: numShadow(40) },
   sz_g2d_cooldown_ready: { FRAMES: numShadow(20) },
 }
 
@@ -631,5 +637,3 @@ export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {
       : []),
   ],
 }
-
-export { gameTwoDBlocks } from './blockCatalog'

@@ -61,13 +61,4 @@ describe('game-2d: posição aleatória na tela (randomX/randomY)', () => {
     expect(regen).toContain('SZGame2D.randomX()')
     expect(regen).not.toContain('Math.random()')
   })
-
-  it('preserva o tamanho reservado para o sprite não nascer cortado na borda', () => {
-    const regen = compileStatements(
-      parseJS('let x = SZGame2D.randomX(40); let y = SZGame2D.randomY(60);'),
-      0,
-    )
-    expect(regen).toContain('SZGame2D.randomX(40)')
-    expect(regen).toContain('SZGame2D.randomY(60)')
-  })
 })

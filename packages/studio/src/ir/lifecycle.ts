@@ -506,6 +506,11 @@ function providesUserGesture(statement: JSStatement): boolean {
     return USER_GESTURE_EVENTS.has(statement.event)
   }
   if (statement.type === 'g2d:onKey') return true
+  // "Quando apertar qualquer tecla ou tocar na tela" roda DENTRO do listener de
+  // tecla/ponteiro, então o corpo está mesmo num gesto do navegador (é o que
+  // libera som e tela cheia lá dentro). ⚠️ O `userGesture` do bloco não chega
+  // aqui sozinho: esta lista é o espelho no IR, para o estado importado e a Ponte.
+  if (statement.type === 'g2d:onAnyInput') return true
   if (statement.type === 'g2d:onPointer' || statement.type === 'gk:onGameClick') return true
   if (
     statement.type === 'gk:addButton' ||

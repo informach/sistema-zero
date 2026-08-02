@@ -7,28 +7,28 @@ import { OFFICIAL_CATALOG } from './index'
 const goldenCatalogs = {
   'game-2d': {
     count: 31,
-    sha256: 'e646ea180367b6179f30db6c00b72abada6b6b48a963440284795b35499e86bf',
+    sha256: '65bff9fac46115405500f406f0209e6a213e5d6d30b29ba17716dc854634b41d',
   },
   'game-2d-advanced': {
     count: 36,
-    sha256: '9f421fb06f4d9043ef5198c2063df2133c17a8df064016c02157db96264f9417',
+    sha256: 'cf9c9971920d98a5e426df74afe9a68819a2c896686e47170a175024eb36019b',
   },
   'game-3d': {
     count: 18,
-    sha256: 'ef8209bc363bd5013497956473a42e2990655256d7b4c906dc1d3f31520452fd',
+    sha256: '7bf8721cc939d8726d8d6682fcb9cb1004b7920ab22bb21e34153aa32aa2ec21',
   },
   'game-3d-advanced': {
     count: 17,
-    sha256: '96aefa29ba530a0c5308b1bf82977cd42f81a1cc71c39e7c5db762aafc4d52dc',
+    sha256: '89ad4d0dd86684c404a5097171264bbc649d1a620e177b4b2d7cb29f150c3b84',
   },
   'world-3d': {
     count: 13,
-    sha256: 'a9390913a02aa4da88bfa2ab909204ddafa3a13cf8b3af6df8bccdabc6aa2486',
+    sha256: 'd015e060063e041bf2c96c15c7307b14c30815082444fd48d3f2da73c42b036e',
   },
 } as const
 
 describe('catálogos lazy das extensões oficiais', () => {
-  it('preserva quantidade, ordem, IR e assets byte a byte', async () => {
+  it('preserva quantidade e ordem da saída validada e sanitizada', async () => {
     for (const extension of OFFICIAL_CATALOG) {
       const golden = goldenCatalogs[extension.manifest.id as keyof typeof goldenCatalogs]
       expect(extension.examples.count).toBe(golden.count)
@@ -55,10 +55,13 @@ describe('catálogos lazy das extensões oficiais', () => {
     expect(entry).toBeDefined()
     if (!entry) throw new Error('build sem entry-point')
 
-    expect(entry.size).toBeLessThan(2_200_000)
-    expect(await entry.text()).not.toContain('Pegue a moeda')
+    expect(entry.size).toBeLessThan(800_000)
+    expect(Bun.gzipSync(new Uint8Array(await entry.arrayBuffer())).byteLength).toBeLessThan(230_000)
+    const entrySource = await entry.text()
+    expect(entrySource).not.toContain('Pegue a moeda')
+    expect(entrySource).not.toContain('Jogo 2D interativo')
     expect(build.outputs.filter((output) => output.kind === 'chunk').length).toBeGreaterThanOrEqual(
-      5,
+      15,
     )
   })
 })

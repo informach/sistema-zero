@@ -40,19 +40,20 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    */
   function _canvasEventTarget(target) {
     if (target === _stageCanvas) return _stageCanvas;
-    return (typeof HTMLCanvasElement !== 'undefined' && target instanceof HTMLCanvasElement)
-      ? target
-      : null;
+    return null;
   }
   window.addEventListener('pointerdown', function (e) {
-    var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
     var target = _canvasEventTarget(e && e.target);
-    if (target) {
-      if (typeof e.preventDefault === 'function') e.preventDefault();
-      if (typeof target.focus === 'function') { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
-      if (typeof target.setPointerCapture === 'function' && e.pointerId !== undefined) {
-        try { target.setPointerCapture(e.pointerId); } catch (ignored) {}
-      }
+    // O evento pertence ao JOGO somente quando começou no palco. Controles HTML,
+    // letterbox e outros canvases do documento não alteram o estado nem chamam
+    // blocos “Quando clicar/tocar”. A soltura continua global para encerrar um
+    // arraste que começou no palco e terminou fora dele.
+    if (!target) return;
+    var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof target.focus === 'function') { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
+    if (typeof target.setPointerCapture === 'function' && e.pointerId !== undefined) {
+      try { target.setPointerCapture(e.pointerId); } catch (ignored) {}
     }
     var generation = _driverGeneration;
     var handlers = pointerHandlerOrder.slice();
@@ -67,6 +68,9 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       }
       if (_runGenerationChanged(generation)) return;
     }
+    // "Qualquer tecla ou toque" — a lista mora no worldEvents (um lugar só, uma
+    // limpeza só no "Jogar de novo"); aqui é só o aviso do lado do ponteiro.
+    _emitAnyInput();
   });
   /**
    * Registra uma função chamada a cada clique/toque. O id vem do bloco Blockly:
@@ -105,6 +109,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (keys.up && sprite.onGround) {
       sprite.vy = _jumpVelocityForGravity(g, j);
       sprite.onGround = false;
+      _emitJump(sprite);
     }
   }
 

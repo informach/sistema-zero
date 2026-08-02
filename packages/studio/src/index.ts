@@ -65,7 +65,11 @@ export {
 } from './cover/coverCapture'
 export { createLocalPersistenceAdapter } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
-export { type RenderProjectOptions, renderProjectToPreviewDoc } from './preview/renderProject'
+export {
+  type RenderProjectOptions,
+  renderProjectToPreviewDoc,
+  renderProjectToPreviewDocAsync,
+} from './preview/renderProject'
 export { importProjectSnapshot } from './projects/importSnapshot'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export {

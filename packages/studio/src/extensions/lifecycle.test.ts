@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { lifecycleContractForExtensions } from './lifecycle'
+import { loadExtensionBootstrapScript } from './runtime'
 
 function exposesMethod(source: string, method: string): boolean {
   return (
@@ -10,14 +11,15 @@ function exposesMethod(source: string, method: string): boolean {
 }
 
 describe('contrato interno de ciclo de vida das extensões oficiais', () => {
-  it('é obrigatório, único e implementado pelo bootstrap de cada motor', () => {
+  it('é obrigatório, único e implementado pelo bootstrap de cada motor', async () => {
     for (const extension of OFFICIAL_CATALOG) {
       const contract = extension.runtime.lifecycle
+      const bootstrapScript = await loadExtensionBootstrapScript(extension)
       expect(contract.extensionId, extension.manifest.id).toBe(extension.manifest.id)
       expect(contract.globalName, extension.manifest.id).toBeTruthy()
       expect(contract.runMethod, extension.manifest.id).toBeTruthy()
       expect(
-        exposesMethod(extension.runtime.bootstrapScript, contract.runMethod ?? ''),
+        exposesMethod(bootstrapScript, contract.runMethod ?? ''),
         `${extension.manifest.id}: run`,
       ).toBe(true)
       for (const method of [
@@ -29,7 +31,7 @@ describe('contrato interno de ciclo de vida das extensões oficiais', () => {
       ]) {
         if (method) {
           expect(
-            exposesMethod(extension.runtime.bootstrapScript, method),
+            exposesMethod(bootstrapScript, method),
             `${extension.manifest.id}: ${method}`,
           ).toBe(true)
         }

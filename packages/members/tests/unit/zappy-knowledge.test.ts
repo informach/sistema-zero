@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { ZAPPY_SOURCE_CONTENT_MAX_BYTES } from '@sistemazero/core/zappy'
 import {
   normalizeZappyText,
   richTextToText,
@@ -9,15 +10,24 @@ import type {
   ZappyKnowledgeRepository,
   ZappyKnowledgeSourceInput,
 } from '../../src/domain/ports/zappy-knowledge-repository.port'
-import { lessonsMissingVideoTranscript } from '../../src/domain/zappy/zappy-knowledge-report'
+import {
+  coursesMissingStudentNotebook,
+  lessonsMissingVideoTranscript,
+} from '../../src/domain/zappy/zappy-knowledge-report'
 
 function repository(overrides: Partial<ZappyKnowledgeRepository> = {}): ZappyKnowledgeRepository {
   return {
-    courseIdForLesson: async () => 'course-1',
+    blockAuthorityForSource: async () => ({
+      blockId: 'block-1',
+      courseId: 'course-1',
+      lessonId: 'lesson-1',
+      blockRevision: 'revision-1',
+    }),
     upsert: async () => ({ id: 'source-1', changed: true }),
     deleteByRef: async () => undefined,
     search: async () => [],
     listPublishedKidsBlocks: async () => [],
+    reconcilePublishedBlockSources: async () => 0,
     report: async () => ({
       publishedKidsLessons: 0,
       readySources: 0,
@@ -88,6 +98,20 @@ describe('relatório de saúde do Zappy', () => {
       ),
     ).toEqual([])
   })
+
+  test('caderno marcado conta como presente mesmo quando sua extração falhou', () => {
+    const courses = [{ courseId: 'course-1', courseTitle: 'Curso com caderno' }]
+    const blocks = [
+      {
+        blockId: 'ebook-1',
+        courseId: 'course-1',
+        lessonId: 'lesson-1',
+        content: { kind: 'ebook', zappyStudentNotebook: true },
+      },
+    ]
+
+    expect(coursesMissingStudentNotebook(courses, blocks)).toEqual([])
+  })
 })
 
 describe('ZappyKnowledgeService', () => {
@@ -114,6 +138,25 @@ describe('ZappyKnowledgeService', () => {
     const captured = saved as ZappyKnowledgeSourceInput | null
     expect(captured?.error).toContain('sem texto selecionável')
     expect(captured?.chunks).toEqual([])
+  })
+
+  test('recusa fonte que cabe em chars, mas excede o orçamento UTF-8', async () => {
+    const service = new ZappyKnowledgeService(
+      repository(),
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+    const multibyte = 'ç'.repeat(Math.floor(ZAPPY_SOURCE_CONTENT_MAX_BYTES / 2) + 1)
+
+    await expect(
+      service.sync({
+        lessonId: 'lesson-1',
+        sourceType: 'student-notebook',
+        sourceRef: 'block:pdf-1',
+        content: multibyte,
+      }),
+    ).rejects.toThrow(/tamanho máximo/i)
   })
 
   test('busca envia ao repositório apenas aulas compradas, publicadas e liberadas', async () => {
@@ -152,5 +195,122 @@ describe('ZappyKnowledgeService', () => {
       query: 'Como faço colisão?',
     })
     expect(allowedLessonIds).toEqual(['lesson-open'])
+  })
+
+  test('vincula a fonte à revisão autoritativa do bloco', async () => {
+    let saved: (ZappyKnowledgeSourceInput & { blockId?: string; blockRevision?: string }) | null =
+      null
+    const repo = repository({
+      upsert: async (input) => {
+        saved = input
+        return { id: 'source-1', changed: true }
+      },
+    }) as ZappyKnowledgeRepository & {
+      blockAuthorityForSource(sourceRef: string): Promise<{
+        blockId: string
+        courseId: string
+        lessonId: string
+        blockRevision: string
+      } | null>
+    }
+    repo.blockAuthorityForSource = async () => ({
+      blockId: 'block-1',
+      courseId: 'course-1',
+      lessonId: 'lesson-1',
+      blockRevision: 'revision-1',
+    })
+    const service = new ZappyKnowledgeService(
+      repo,
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+
+    await service.sync({
+      lessonId: 'lesson-1',
+      sourceType: 'rich-text',
+      sourceRef: 'block:block-1',
+      content: 'Conteúdo atual',
+    })
+
+    const captured = saved as
+      | (ZappyKnowledgeSourceInput & {
+          blockId?: string
+          blockRevision?: string
+        })
+      | null
+    expect(captured?.blockId).toBe('block-1')
+    expect(captured?.blockRevision).toBe('revision-1')
+  })
+
+  test('backfill delega a reconciliação para o estado autoritativo do banco', async () => {
+    let reconciled = 0
+    const repo = repository({
+      listPublishedKidsBlocks: async () => [
+        {
+          blockId: 'rich-1',
+          courseId: 'course-1',
+          lessonId: 'lesson-1',
+          kind: 'rich_text',
+          content: { kind: 'rich_text', html: '<p>Atual</p>' },
+        },
+        {
+          blockId: 'quiz-1',
+          courseId: 'course-1',
+          lessonId: 'lesson-1',
+          kind: 'quiz',
+          content: { kind: 'quiz', questions: [] },
+        },
+      ],
+    }) as ZappyKnowledgeRepository & {
+      reconcilePublishedBlockSources(): Promise<number>
+    }
+    repo.reconcilePublishedBlockSources = async () => {
+      reconciled += 1
+      return 2
+    }
+    const service = new ZappyKnowledgeService(
+      repo,
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+
+    const result = await service.backfill()
+
+    expect(reconciled).toBe(1)
+    expect(result.deleted).toBe(2)
+  })
+
+  test('agenda recuperação Vimeo mesmo quando o bloco não persistiu captions', async () => {
+    const service = new ZappyKnowledgeService(
+      repository({
+        listPublishedKidsBlocks: async () => [
+          {
+            blockId: 'video-1',
+            courseId: 'course-1',
+            lessonId: 'lesson-1',
+            kind: 'video',
+            content: {
+              kind: 'video',
+              provider: 'vimeo',
+              src: 'https://player.vimeo.com/video/123456789?h=private',
+            },
+          },
+        ],
+      }),
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+
+    const result = await service.backfill()
+
+    expect(result.pending).toEqual([
+      expect.objectContaining({
+        sourceRef: 'block:video-1',
+        extraction: { kind: 'vimeo', videoId: '123456789' },
+      }),
+    ])
   })
 })

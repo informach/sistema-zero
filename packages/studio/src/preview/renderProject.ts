@@ -5,7 +5,11 @@ import {
   type Project,
   soundManifest,
 } from '#core'
-import type { ExtensionPermission } from '#extensions'
+import {
+  type ExtensionPermission,
+  loadExtensionBootstrapScripts,
+  uniqueExtensionIds,
+} from '#extensions'
 import { findExtension } from '#official-extensions'
 import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
 import { buildPreviewDoc } from './bootstrap'
@@ -31,10 +35,10 @@ export interface RenderProjectOptions {
  * modalGuard) viaja DENTRO do doc, independente do host. Projetos são
  * auto-suficientes (assets são data URLs) — nenhuma chamada externa é necessária.
  */
-export function renderProjectToPreviewDoc(
+export async function renderProjectToPreviewDocAsync(
   project: Project,
   opts: RenderProjectOptions = {},
-): string {
+): Promise<string> {
   const playableProject = migrateLegacyBlockProjectSnapshot(project)
   const files = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
   const installedExtensions = Array.isArray(playableProject.installedExtensions)
@@ -44,14 +48,19 @@ export function renderProjectToPreviewDoc(
     ? playableProject.extraFiles
     : undefined
   const assets = Array.isArray(playableProject.assets) ? playableProject.assets : undefined
-  const ids = installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : []))
-  const extensionScripts: string[] = []
+  const ids = uniqueExtensionIds(
+    installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : [])),
+  )
+  const extensions = ids.flatMap((id) => {
+    const extension = findExtension(id)
+    return extension ? [extension] : []
+  })
+  const extensionScripts = await loadExtensionBootstrapScripts(extensions)
   const extensionImports: Record<string, string> = {}
   const permissions = new Set<ExtensionPermission>()
   for (const id of ids) {
     const ext = findExtension(id)
     if (!ext) continue
-    if (ext.runtime.bootstrapScript) extensionScripts.push(ext.runtime.bootstrapScript)
     if (ext.runtime.esmImports) Object.assign(extensionImports, ext.runtime.esmImports)
     for (const p of ext.manifest.permissions) permissions.add(p)
   }
@@ -75,3 +84,9 @@ export function renderProjectToPreviewDoc(
     extensionImports: withCoreImports(extensionImports, files['script.js']),
   })
 }
+
+/**
+ * @deprecated A montagem passou a carregar runtimes lazy. Use o nome explícito
+ * `renderProjectToPreviewDocAsync` e aguarde a Promise retornada.
+ */
+export const renderProjectToPreviewDoc = renderProjectToPreviewDocAsync

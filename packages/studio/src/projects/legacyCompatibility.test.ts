@@ -10,7 +10,7 @@ import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { normalizeBlocksStateToFrames } from '../blockly/normalizeFrames'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
-import { renderProjectToPreviewDoc } from '../preview/renderProject'
+import { renderProjectToPreviewDocAsync } from '../preview/renderProject'
 import { sanitizeProjectForHost } from '../state/projectStore'
 import { migrateLegacyBlockProjectSnapshot } from './compatibility'
 
@@ -74,26 +74,26 @@ describe('compatibilidade do projeto real do curso — game-2d 0.19.0', () => {
     }
   })
 
-  it('o mural atualiza o snapshot em memória e mantém vitória, derrota e reinício', () => {
+  it('o mural atualiza o snapshot em memória e mantém vitória, derrota e reinício', async () => {
     const project = legacyProject()
     const migrated = migrateLegacyBlockProjectSnapshot(project)
     expect(migrated).not.toBe(project)
     expect(migrated.ir).toEqual(normalizeSZIR(project.ir!))
     expect(migrateLegacyBlockProjectSnapshot(migrated)).toBe(migrated)
 
-    const scripts = decodedScripts(renderProjectToPreviewDoc(project))
+    const scripts = decodedScripts(await renderProjectToPreviewDocAsync(project))
     expect(scripts).toContain('SZGame2D.onStart(')
     expect(scripts).toContain('SZGame2D.restart()')
     expect(scripts).toContain('pontos >= alvo')
     expect(scripts).toContain('vidas <= 0')
   })
 
-  it('não reescreve projeto da Ponte: o código da criança continua sagrado', () => {
+  it('não reescreve projeto da Ponte: o código da criança continua sagrado', async () => {
     const project = legacyProject()
     project.mode = 'bridge'
     project.files['script.js'] = '// edição manual insubstituível'
     expect(migrateLegacyBlockProjectSnapshot(project)).toBe(project)
-    expect(decodedScripts(renderProjectToPreviewDoc(project))).toContain(
+    expect(decodedScripts(await renderProjectToPreviewDocAsync(project))).toContain(
       '// edição manual insubstituível',
     )
   })

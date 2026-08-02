@@ -1,3 +1,4 @@
+import { ZAPPY_SOURCE_REQUEST_MAX_BYTES } from '@sistemazero/core/zappy'
 import type { GatewayConfigInput } from './src/infrastructure/config/gateway-config.schema'
 
 /**
@@ -111,6 +112,13 @@ const AUTH_ALLOWED_CIDRS = (process.env.AUTH_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
 // MEMBERS_HMAC_SECRET do members.
 const MEMBERS_HMAC_SECRET = process.env.MEMBERS_HMAC_SECRET ?? ''
 const MEMBERS_ALLOWED_CIDRS = (process.env.MEMBERS_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
+// BFF compartilhado das comunidades: persiste perguntas/respostas do Zappy só
+// depois de executar acesso, piloto, segurança infantil, RAG e quota.
+const MEMBER_SHELL_HMAC_SECRET = process.env.MEMBER_SHELL_HMAC_SECRET ?? ''
+const MEMBER_SHELL_ALLOWED_CIDRS = (process.env.MEMBER_SHELL_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
   .split(',')
   .map((c) => c.trim())
   .filter(Boolean)
@@ -246,6 +254,15 @@ const config: GatewayConfigInput = {
             id: 'members',
             hmacSecret: MEMBERS_HMAC_SECRET,
             allowedCidrs: MEMBERS_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    ...(MEMBER_SHELL_HMAC_SECRET
+      ? [
+          {
+            id: 'member-shell',
+            hmacSecret: MEMBER_SHELL_HMAC_SECRET,
+            allowedCidrs: MEMBER_SHELL_ALLOWED_CIDRS,
           },
         ]
       : []),
@@ -1221,23 +1238,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
-      id: 'members-zappy-questions',
+      id: 'members-internal-zappy-questions',
       methods: ['POST'],
-      pathPattern: '/members/zappy/questions',
+      pathPattern: '/members/internal/zappy/questions',
       service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { statuses: ['active'] },
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
     },
     {
-      id: 'members-zappy-response',
+      id: 'members-internal-zappy-response',
       methods: ['PUT'],
-      pathPattern: '/members/zappy/questions/:id/response',
+      pathPattern: '/members/internal/zappy/questions/:id/response',
       service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { statuses: ['active'] },
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 16 * 1024,
@@ -2101,7 +2116,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      maxBodyBytes: 600 * 1024,
+      maxBodyBytes: ZAPPY_SOURCE_REQUEST_MAX_BYTES,
     },
     {
       id: 'members-admin-zappy-knowledge-source-delete',

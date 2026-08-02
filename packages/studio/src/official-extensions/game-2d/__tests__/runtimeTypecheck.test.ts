@@ -122,7 +122,7 @@ function formatDiagnostic(diagnostic: ts.Diagnostic): string {
   return `${diagnostic.file.fileName}:${position.line + 1}:${position.character + 1} ${message}`
 }
 
-test('o runtime injetado não contém referências ou propriedades semanticamente inválidas', () => {
+function runtimeTypeErrors(source: string): string[] {
   const options: ts.CompilerOptions = {
     allowJs: true,
     checkJs: true,
@@ -135,7 +135,7 @@ test('o runtime injetado não contém referências ou propriedades semanticament
   }
   const defaultHost = ts.createCompilerHost(options)
   const virtualSources = new Map([
-    [RUNTIME_FILE, { source: gameTwoDRuntime, kind: ts.ScriptKind.JS }],
+    [RUNTIME_FILE, { source, kind: ts.ScriptKind.JS }],
     [RUNTIME_CONTRACT_FILE, { source: RUNTIME_CONTRACT, kind: ts.ScriptKind.TS }],
     [HOST_CONTRACT_FILE, { source: HOST_CONTRACT, kind: ts.ScriptKind.TS }],
   ])
@@ -155,12 +155,22 @@ test('o runtime injetado não contém referências ou propriedades semanticament
     options,
     host,
   )
-  const errors = ts
+  return ts
     .getPreEmitDiagnostics(program)
     .filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error)
     .map(formatDiagnostic)
+}
 
-  expect(errors).toEqual([])
+test('o runtime injetado não contém referências ou propriedades semanticamente inválidas', () => {
+  expect(runtimeTypeErrors(gameTwoDRuntime)).toEqual([])
+}, 20_000)
+
+test('o typecheck do arquivo composto detecta dependência interna ausente', () => {
+  const brokenRuntime = gameTwoDRuntime.replace('_hitboxOf(a)', '_missingHitboxOf(a)')
+
+  expect(runtimeTypeErrors(brokenRuntime).some((error) => error.includes('_missingHitboxOf'))).toBe(
+    true,
+  )
 }, 20_000)
 
 test('as funções públicas mantêm a ordem de parâmetros do contrato TypeScript', () => {

@@ -50,6 +50,17 @@ export function isPrivilegedActor(headers: Record<string, string | undefined>): 
 }
 
 /**
+ * As mutações do histórico do Zappy são exclusivas do BFF, que executa os
+ * guardrails antes de persistir. O gateway remove o valor cru e re-injeta este
+ * header somente após validar o HMAC do consumer.
+ */
+export function assertZappyBffConsumer(consumerId: string | undefined): void {
+  if (consumerId !== 'member-shell') {
+    throw new UnauthorizedError('Consumer do Zappy inválido')
+  }
+}
+
+/**
  * Identidade confiável do aluno. O gateway VERIFICA o JWT e injeta `x-auth-user-id`
  * (removendo qualquer um de entrada — anti-spoof), então o serviço só lê o header.
  * Em dev/local sem gateway, passe o header manualmente. Ausente → 401.

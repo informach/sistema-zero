@@ -87,6 +87,7 @@ import {
   RevokeCertificateService,
   ValidateCertificateService,
 } from '../src/application/validate-certificate/validate-certificate.service'
+import type { ZappyHistoryService } from '../src/application/zappy/zappy-history.service'
 import type {
   CourseAudience,
   CourseLevel,
@@ -133,6 +134,7 @@ export function buildApp(
     aiLimits?: { daily: number; monthly: number }
     /** Probe do /readyz (default: pronto). */
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
+    zappy?: ZappyHistoryService
   } = {},
 ) {
   const clockRef = { now: opts.now ?? new Date('2026-06-02T12:00:00.000Z') }
@@ -328,6 +330,7 @@ export function buildApp(
         defaultMaxProfiles: 1,
       }),
       consumeAiUsage,
+      zappy: opts.zappy,
       getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
       issueCertificate: new IssueCertificateService(
         checkAccess,

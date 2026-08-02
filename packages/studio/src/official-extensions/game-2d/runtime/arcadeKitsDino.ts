@@ -17,6 +17,7 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
     if (wantJump && sprite.onGround) {
       sprite.vy = _jumpVelocityForGravity(g, j);
       sprite.onGround = false;
+      _emitJump(sprite);
     }
   }
 
@@ -52,8 +53,12 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
     var gh = stageH(ctx);
     var gy = dinoGround(ctx);
     var visible = _visibleWorldRect(ctx);
-    // Gravidade + integração vertical.
-    sprite.vy = (sprite.vy || 0) + g;
+    // Integração vertical. ⚠️ A GRAVIDADE saiu daqui em 08/2026: quem puxa o dino
+    // para baixo é o bloco "Aplicar a gravidade do mundo", encaixado logo acima
+    // no laço. Assim a aula tem três passos com resultado na tela (o dino boia →
+    // cai → ajusta a altura do salto) em vez de um kit que já faz tudo sozinho.
+    // O g continua aqui para escolher a borda de apoio e o sinal do pulo.
+    sprite.vy = _finiteNumber(sprite.vy, 0);
     sprite.y += sprite.vy;
     var impactVelocity = sprite.vy;
     sk.onGround = _resolveGravityGround(sprite, visible.top, gy, g);
@@ -85,6 +90,7 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
       sprite.onGround = false;
       var takeoffY = _gravityPullsUp(g) ? sprite.y : sprite.y + sprite.h;
       emitParticles(sprite.x + sprite.w / 2, takeoffY, 8, '#caa977');
+      _emitJump(sprite);
     }
   }
 

@@ -10,7 +10,11 @@ import {
   type ProjectAsset,
   soundManifest,
 } from '#core'
-import type { ExtensionPermission } from '#extensions'
+import {
+  type ExtensionPermission,
+  loadExtensionBootstrapScripts,
+  uniqueExtensionIds,
+} from '#extensions'
 import { findExtension } from '#official-extensions'
 import {
   buildPreviewDoc,
@@ -228,7 +232,9 @@ export function PreviewIframe(): JSX.Element {
     rerenderPreview()
   }
 
-  const installedIds = installedExtensions.map((e) => e.id).join(',')
+  const installedIds = uniqueExtensionIds(
+    installedExtensions.map((extension) => extension.id),
+  ).join(',')
 
   const debouncedHtml = useDebounced(html, 800)
   const debouncedCss = useDebounced(css, 800)
@@ -252,12 +258,44 @@ export function PreviewIframe(): JSX.Element {
     [debouncedHtml, projectName],
   )
 
-  const extensionScripts = useMemo(() => {
+  const [runtimeAttempt, setRuntimeAttempt] = useState(0)
+  const [extensionRuntimeState, setExtensionRuntimeState] = useState<{
+    key: string
+    status: 'loading' | 'ready' | 'error'
+    scripts: string[]
+  }>({ key: '', status: 'ready', scripts: [] })
+
+  useEffect(() => {
+    void runtimeAttempt
     const ids = debouncedIds ? debouncedIds.split(',') : []
-    return ids
-      .map((id) => findExtension(id)?.runtime.bootstrapScript)
-      .filter((s): s is string => Boolean(s))
-  }, [debouncedIds])
+    const extensions = ids.flatMap((id) => {
+      const extension = findExtension(id)
+      return extension ? [extension] : []
+    })
+    if (extensions.length === 0) {
+      setExtensionRuntimeState({ key: debouncedIds, status: 'ready', scripts: [] })
+      return
+    }
+    let active = true
+    setExtensionRuntimeState({ key: debouncedIds, status: 'loading', scripts: [] })
+    void loadExtensionBootstrapScripts(extensions).then(
+      (scripts) => {
+        if (active) setExtensionRuntimeState({ key: debouncedIds, status: 'ready', scripts })
+      },
+      () => {
+        if (active) setExtensionRuntimeState({ key: debouncedIds, status: 'error', scripts: [] })
+      },
+    )
+    return () => {
+      active = false
+    }
+  }, [debouncedIds, runtimeAttempt])
+
+  const extensionRuntimesReady =
+    extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'ready'
+  const extensionRuntimesLoading =
+    extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'loading'
+  const extensionScripts = extensionRuntimesReady ? extensionRuntimeState.scripts : []
 
   // Módulos ESM declarados pelas extensões instaladas (specifier → URL pinada,
   // ex.: three via CDN). Entram no importmap; as origens vão para o script-src.
@@ -336,6 +374,7 @@ export function PreviewIframe(): JSX.Element {
     if (!previewRunning) return PAUSED_PREVIEW_DOC
     if (previewPaused) return PAUSED_PREVIEW_DOC
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
+    if (!extensionRuntimesReady) return PAUSED_PREVIEW_DOC
     // Aguarda hidratar o estado salvo antes do 1º build (ver storageReady acima).
     if (projectId && !storageReady) return PAUSED_PREVIEW_DOC
     const base = buildPreviewDoc({
@@ -371,6 +410,7 @@ export function PreviewIframe(): JSX.Element {
     previewRunning,
     previewPaused,
     currentProjectHasRun,
+    extensionRuntimesReady,
     projectId,
     storageReady,
     debouncedHtml,
@@ -520,7 +560,7 @@ export function PreviewIframe(): JSX.Element {
         )}
         {!compactToolbar && (
           <span className="ml-auto whitespace-nowrap pl-2 text-xs text-sz-fg-soft">
-            {previewRunning ? 'Executando' : 'Parado'}
+            {previewRunning ? (extensionRuntimesLoading ? 'Carregando' : 'Executando') : 'Parado'}
           </span>
         )}
       </div>
@@ -549,6 +589,43 @@ export function PreviewIframe(): JSX.Element {
         allow="fullscreen"
         className="h-full w-full flex-1 bg-white"
       />
+      {previewRunning && extensionRuntimesLoading && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center"
+        >
+          <div className="max-w-sm rounded-md border border-sz-border bg-sz-bg p-4 shadow-lg">
+            <p className="text-sm font-semibold text-sz-fg">Carregando o motor do jogo…</p>
+            <p className="mt-2 text-xs text-sz-fg-soft">
+              O preview começa assim que a extensão estiver pronta.
+            </p>
+          </div>
+        </div>
+      )}
+      {extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'error' && (
+        <div
+          role="alert"
+          className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center"
+        >
+          <div className="max-w-sm rounded-md border border-sz-border bg-sz-bg p-4 shadow-lg">
+            <p className="text-sm font-semibold text-sz-fg">
+              Não consegui carregar o motor do jogo
+            </p>
+            <p className="mt-2 text-xs text-sz-fg-soft">
+              O projeto ficou parado para não executar sem a extensão instalada.
+            </p>
+            <Button
+              className="mt-3"
+              size="sm"
+              variant="primary"
+              onClick={() => setRuntimeAttempt((attempt) => attempt + 1)}
+            >
+              Tentar de novo
+            </Button>
+          </div>
+        </div>
+      )}
       {touchInput && usesKeyboardControls && previewRunning && !previewPaused && (
         <VirtualGamepad onInput={sendVirtualGamepadInput} />
       )}

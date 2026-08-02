@@ -572,9 +572,13 @@ export function LessonEditorClient({
       editingBlock?.content as LessonBlockContent | undefined,
     )
     await run(async () => {
+      let result: { zappyKnowledgeStatus?: 'ready' | 'pending' }
       if (editingBlock)
-        await apiSend(`/api/members/blocks/${editingBlock.id}`, 'PATCH', { content })
-      else await apiSend(`/api/members/lessons/${lessonId}/blocks`, 'POST', { content })
+        result = await apiSend(`/api/members/blocks/${editingBlock.id}`, 'PATCH', { content })
+      else result = await apiSend(`/api/members/lessons/${lessonId}/blocks`, 'POST', { content })
+      if (result.zappyKnowledgeStatus === 'pending') {
+        toast.warning('Bloco salvo, mas a base do Zappy aguarda reindexação.')
+      }
       setBlockOpen(false)
     }, 'Bloco salvo.')
   }
@@ -585,7 +589,15 @@ export function LessonEditorClient({
       confirmText: 'Excluir',
       confirmVariant: 'destructive',
       onConfirm: () =>
-        run(() => apiSend(`/api/members/blocks/${b.id}`, 'DELETE'), 'Bloco excluído.'),
+        run(async () => {
+          const result = await apiSend<{ zappyKnowledgeStatus?: 'ready' | 'pending' }>(
+            `/api/members/blocks/${b.id}`,
+            'DELETE',
+          )
+          if (result.zappyKnowledgeStatus === 'pending') {
+            toast.warning('Bloco excluído; a limpeza do Zappy aguarda reindexação.')
+          }
+        }, 'Bloco excluído.'),
     })
   }
 

@@ -9,7 +9,7 @@ import {
   makeAnimatedGlb,
   makeHdrDataUrl,
 } from '../src/official-extensions/game-3d-advanced/__tests__/assetFixtures'
-import { renderProjectToPreviewDoc } from '../src/preview/renderProject'
+import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
 
 const EXPERIENCE_LABEL = {
   game: 'Jogo',
@@ -241,6 +241,11 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
 
   await page.goto('/')
   const card = kitCard(page, contract)
+  if (contract.key.startsWith('game-2d:') && !(await card.isVisible())) {
+    const showAll = page.getByRole('button', { name: 'Ver todos os jogos 2D' })
+    await expect(showAll).toBeVisible()
+    await showAll.click()
+  }
   await expect(card).toBeVisible()
   await expect(card.getByText(EXPERIENCE_LABEL[contract.experience], { exact: true })).toBeVisible()
   await card.click()
@@ -427,7 +432,7 @@ SZGameKit3D.start();
     blocksState: null,
     installedExtensions: [{ id: 'game-3d-advanced', version: '0.8.6', installedAt: now }],
   }
-  const srcdoc = renderProjectToPreviewDoc(project)
+  const srcdoc = await renderProjectToPreviewDocAsync(project)
 
   await page.goto('/')
   await page.evaluate((documentSource) => {
@@ -564,6 +569,12 @@ test('Jogo 2D mantém o viewport sem barras durante o tremor da tela', async ({ 
   if (!contract) throw new Error('contrato do exemplo Nave contra Asteroides ausente')
 
   const preview = await openAndExercise(page, contract)
+  const viewportWidth = await preview
+    .locator('canvas')
+    .first()
+    .evaluate((canvas) => (canvas as HTMLCanvasElement).style.width)
+  expect(viewportWidth).toContain('dvw')
+  expect(viewportWidth).toContain('dvh')
   const state = await preview
     .locator('canvas')
     .first()

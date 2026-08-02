@@ -7,7 +7,7 @@ import {
   type ExtensionDefinition,
   type ExtensionExample,
   extensionMinLevel,
-  loadExtensionExamples,
+  loadExtensionExampleCatalogs,
 } from '#extensions'
 import { generateProjectFiles } from '#generators'
 import { OFFICIAL_CATALOG } from '#official-extensions'
@@ -80,21 +80,11 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
     let active = true
     setExamplesStatus('loading')
 
-    void Promise.all(
-      OFFICIAL_CATALOG.map(
-        async (extension) =>
-          [extension.manifest.id, await loadExtensionExamples(extension)] as const,
-      ),
-    ).then(
-      (entries) => {
-        if (!active) return
-        setExamplesByExtension(Object.fromEntries(entries))
-        setExamplesStatus('ready')
-      },
-      () => {
-        if (active) setExamplesStatus('error')
-      },
-    )
+    void loadExtensionExampleCatalogs(OFFICIAL_CATALOG).then(({ loaded, failed }) => {
+      if (!active) return
+      setExamplesByExtension(Object.fromEntries(loaded))
+      setExamplesStatus(failed.length > 0 ? 'error' : 'ready')
+    })
 
     return () => {
       active = false

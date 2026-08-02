@@ -20,7 +20,17 @@ O manifesto volta a conter apenas dados leves e serializáveis. `ExtensionDefini
 - preserva a ordem e congela o array validado;
 - remove falhas do cache para permitir uma nova tentativa.
 
-`ExtensionsPanel` e `KitGallery` carregam os providers apenas quando a interface de exemplos está visível. Durante a carga, mostram um estado acessível; em erro, mostram uma mensagem e permitem tentar novamente. Catálogo, instalação, geração de preview e `findExtension` permanecem síncronos.
+`ExtensionsPanel` e `KitGallery` carregam os providers apenas quando a interface de exemplos está visível. Falhas são isoladas por extensão: grupos disponíveis continuam visíveis e a interface oferece retry. Catálogo, instalação e `findExtension` permanecem síncronos; preview, player, capa, checagens e export carregam o bootstrap assíncrono antes de executar.
+
+## Runtime sob demanda e orçamento
+
+As cinco extensões oficiais mantêm manifesto, blocos, toolbox e lifecycle síncronos — requisito para registrar blocos antes da desserialização — mas movem o texto pesado do runtime para `loadBootstrapScript()`. O helper compartilhado memoriza a Promise, preserva ordem e remove rejeições do cache. O preview nunca executa o código do aluno sem o runtime e oferece retry acessível se o chunk falhar.
+
+O catálogo oficial ganha orçamento minificado e gzip com folga, e o Jogo 2D recebe orçamento próprio. O conteúdo dos runtimes e exemplos não pode aparecer no entrypoint inicial.
+
+## Imutabilidade, viewport e acessibilidade
+
+O resultado do schema de exemplos é a única saída pública e fica profundamente congelado. A camada visual cria cópias coloridas dos blocos, preservando o catálogo canônico. O palco escolhe `dvw`/`dvh` quando suportado, mantém fallback legado e anuncia pausa/retomada sem sobrescrever a descrição acessível do jogo.
 
 ## Correções do runtime do Jogo 2D
 

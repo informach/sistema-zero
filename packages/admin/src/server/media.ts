@@ -298,12 +298,14 @@ export interface VideoStatus {
  * Sincroniza a transcrição: baixa o VTT do Vimeo (link assinado, EXPIRA) e
  * re-hospeda no R2 → `captions[].url` estável p/ o bloco de vídeo do members.
  */
-async function syncTranscript(vimeoVideoId: string): Promise<{ lang: string; url: string }[]> {
+export async function syncVimeoTranscript(
+  vimeoVideoId: string,
+): Promise<{ lang: string; url: string; content: string } | null> {
   const tracks = await listTextTracks(vimeoVideoId)
   const chosen = pickTranscriptTrack(tracks)
-  if (!chosen) return []
+  if (!chosen) return null
   const vtt = await getTextTrackVtt(chosen.link)
-  if (!vtt.trim()) return []
+  if (!vtt.trim()) return null
   // `lang` vem da API do Vimeo → sanitiza antes de entrar na key do R2 (um valor
   // com `/` ou `..` escaparia o prefixo `admin/captions/`; achado do review).
   const rawLang = chosen.language.toLowerCase()
@@ -315,7 +317,7 @@ async function syncTranscript(vimeoVideoId: string): Promise<{ lang: string; url
     // Legendas podem ser regeradas pelo Vimeo — cache curto em vez de imutável.
     cacheControl: 'public, max-age=3600',
   })
-  return [{ lang, url }]
+  return { lang, url, content: vtt }
 }
 
 /**
@@ -333,7 +335,8 @@ export async function getVideoStatus(vimeoVideoId: string): Promise<VideoStatus>
   }
   if (status === 'ready') {
     try {
-      result.captions = await syncTranscript(vimeoVideoId)
+      const transcript = await syncVimeoTranscript(vimeoVideoId)
+      result.captions = transcript ? [{ lang: transcript.lang, url: transcript.url }] : []
     } catch (error) {
       console.error('[media] syncTranscript falhou', { vimeoVideoId, error })
       result.captions = []

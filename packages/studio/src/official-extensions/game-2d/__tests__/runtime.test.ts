@@ -108,6 +108,7 @@ describe('gameTwoDRuntime', () => {
     const sz = api as unknown as {
       setGravity: (value: number) => void
       applyVelocity: (sprite: { x: number; y: number; vx: number; vy: number }) => void
+      applyGravity: (sprite: { x: number; y: number; vx: number; vy: number }) => void
       setCamera: (x: number, y: number) => void
       cameraX: () => number
       cameraY: () => number
@@ -136,9 +137,13 @@ describe('gameTwoDRuntime', () => {
       })
       expect(sprite).toMatchObject({ x: 0, y: 0, w: 32, h: 32 })
 
+      // Gravidade infinita é recusada e o valor anterior fica. Quem soma a
+      // gravidade agora é o applyGravity (o applyVelocity só move).
       sz.setGravity(0.25)
       sz.setGravity(Number.POSITIVE_INFINITY)
       sz.applyVelocity(sprite)
+      expect(sprite.vy).toBe(0)
+      sz.applyGravity(sprite)
       expect(sprite.vy).toBe(0.25)
 
       sz.setCamera(Number.NaN, Number.POSITIVE_INFINITY)
@@ -495,6 +500,7 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
   }
   interface DinoSZ {
     createDino(o: { x: number; y: number; size: number; color: string }): DinoSprite
+    applyGravity(s: DinoSprite): void
     controlDino(s: DinoSprite, ctx: unknown, jump: number): void
     jumpOnGround(s: unknown, ctx: unknown, jump: number): void
     spawnObstacle(
@@ -598,11 +604,17 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     expect(await runtimeWorkerCompletes('api.drawForest(ctx, Infinity);')).toBe(true)
   })
 
-  it('controlDino aplica gravidade e pousa na linha do chão (não atravessa o piso)', () => {
+  // ⚠️ Desde 08/2026 o kit NÃO inventa gravidade: quem puxa o dino é o bloco
+  // "Aplicar a gravidade do mundo", encaixado logo acima no laço. É o que dá à
+  // aula três passos com resultado na tela (boia → cai → ajusta o salto).
+  it('controlDino pousa na linha do chão quando a gravidade é aplicada por fora', () => {
     const sz = dinoApi()
     const ctx = fakeDinoCtx(480, 270)
     const dino = sz.createDino({ x: 100, y: 0, size: 64, color: '#5fb45f' })
-    for (let i = 0; i < 200; i++) sz.controlDino(dino, ctx, 15)
+    for (let i = 0; i < 200; i++) {
+      sz.applyGravity(dino)
+      sz.controlDino(dino, ctx, 15)
+    }
     // chão do dino = 270 - round(270*0.16) = 227; os pés (y+h) param em 227.
     expect(dino.y + dino.h).toBe(227)
     expect(dino.skin.onGround).toBe(true)
@@ -613,15 +625,20 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     const ctx = fakeDinoCtx(480, 270)
     const dino = sz.createDino({ x: 100, y: 30, size: 64, color: '#5fb45f' })
     sz.setGravity(-1)
-    for (let i = 0; i < 20; i++) sz.controlDino(dino, ctx, 15)
+    for (let i = 0; i < 20; i++) {
+      sz.applyGravity(dino)
+      sz.controlDino(dino, ctx, 15)
+    }
     expect(dino.y).toBe(0)
     expect(dino.skin.onGround).toBe(true)
 
     sz.keys.up = true
+    sz.applyGravity(dino)
     sz.controlDino(dino, ctx, 15)
     sz.keys.up = false
     expect(dino.vy).toBe(15)
     expect(dino.skin.onGround).toBe(false)
+    sz.applyGravity(dino)
     sz.controlDino(dino, ctx, 15)
     expect(dino.y).toBeGreaterThan(0)
   })
@@ -1454,6 +1471,23 @@ describe('gameTwoDRuntime — música e pausa', () => {
     expect(audioLifecycle()).toEqual({ resumeCalls: 2, state: 'running', suspendCalls: 1 })
   })
 
+  it('mantém o AudioContext suspenso quando há gesto ou efeito durante a pausa', () => {
+    const { api, audioLifecycle, fireKeydown, sourceStops } = loadMusicRuntime()
+    fireKeydown()
+    api.playSound(440, 10_000)
+    api.pauseGame()
+
+    fireKeydown()
+    api.playJump()
+    api.playSound(660, 100)
+
+    expect(audioLifecycle()).toEqual({ resumeCalls: 1, state: 'suspended', suspendCalls: 1 })
+    expect(sourceStops).toEqual([[10]])
+
+    api.resumeGame()
+    expect(audioLifecycle()).toEqual({ resumeCalls: 2, state: 'running', suspendCalls: 1 })
+  })
+
   it('interrompe fontes de áudio ainda ativas quando a partida reinicia', () => {
     const { api, fireKeydown, sourceStops } = loadMusicRuntime()
     fireKeydown()
@@ -1567,6 +1601,30 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
       [-1, 1, -1],
     ])
     expect(map.solid).toEqual([1])
+  })
+
+  it('createTileMap limita grades e listas manuais grandes com aviso único', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const row = Array.from({ length: 600 }, () => '0').join(' ')
+      const grid = Array.from({ length: 600 }, () => row).join(';')
+      const solid = Array.from({ length: 700 }, (_, index) => String(index)).join(' ')
+
+      const map = api.createTileMap({ image: 'tileset', tile: 32, solid, grid })
+
+      expect(map.rows).toHaveLength(512)
+      expect(map.rows.every((currentRow) => currentRow.length <= 512)).toBe(true)
+      expect(
+        map.rows.reduce((total, currentRow) => total + currentRow.length, 0),
+      ).toBeLessThanOrEqual(512 * 512)
+      expect(map.solid).toHaveLength(512)
+      expect(
+        warn.mock.calls.filter((call) => String(call[0]).includes('limite seguro do mapa')),
+      ).toHaveLength(1)
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('tileAt devolve o índice do tile no pixel (e -1 fora/vazio)', () => {
@@ -1845,6 +1903,7 @@ describe('gameTwoDRuntime.onPointer', () => {
   // Loader que captura os listeners registrados em window por nome de evento,
   // para podermos disparar um 'pointerdown' sintético e contar os handlers.
   function loadWithPointer() {
+    document.body.innerHTML = ''
     type Listener = (ev: unknown) => void
     const listeners: Record<string, Listener[]> = {}
     const win = {
@@ -1858,12 +1917,20 @@ describe('gameTwoDRuntime.onPointer', () => {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
     new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, requestAnimationFrame)
     const api = (
-      win as unknown as { SZGame2D: { onPointer: (fn: (x: number, y: number) => void) => void } }
+      win as unknown as {
+        SZGame2D: {
+          onPointer: (fn: (x: number, y: number) => void) => void
+          pointer: { down: boolean }
+          setupStage: (width: number, height: number, background: string) => void
+        }
+      }
     ).SZGame2D
-    const firePointerDown = (x: number, y: number) => {
-      for (const fn of listeners.pointerdown ?? []) fn({ clientX: x, clientY: y })
+    api.setupStage(320, 200, '#000000')
+    const stage = document.querySelector('canvas')
+    const firePointerDown = (x: number, y: number, target: EventTarget | null = stage) => {
+      for (const fn of listeners.pointerdown ?? []) fn({ clientX: x, clientY: y, target })
     }
-    return { api, firePointerDown }
+    return { api, firePointerDown, stage }
   }
 
   it('registrar a MESMA fn duas vezes mantém um único handler', () => {
@@ -1893,6 +1960,25 @@ describe('gameTwoDRuntime.onPointer', () => {
     firePointerDown(0, 0)
     expect(a).toBe(1)
     expect(b).toBe(1)
+  })
+
+  it('ignora clique em controles HTML e em outro canvas fora do palco', () => {
+    const { api, firePointerDown, stage } = loadWithPointer()
+    const button = document.createElement('button')
+    const otherCanvas = document.createElement('canvas')
+    let calls = 0
+    api.onPointer(() => {
+      calls += 1
+    })
+
+    firePointerDown(10, 20, button)
+    firePointerDown(10, 20, otherCanvas)
+
+    expect(calls).toBe(0)
+    expect(api.pointer.down).toBe(false)
+    firePointerDown(10, 20, stage)
+    expect(calls).toBe(1)
+    expect(api.pointer.down).toBe(true)
   })
 
   it('ignora valores que não são função', () => {
@@ -1961,6 +2047,7 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     h: number
     vx: number
     vy: number
+    _hitboxScale?: number
   }
   interface Group {
     items: Sprite[]
@@ -1982,6 +2069,7 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
       onLeave?: (s: Sprite) => void,
     ) => void
     overlapGroups: (a: Group, b: Group, fn: (a: Sprite, b: Sprite) => void) => void
+    setHitboxScale: (sprite: Sprite, percent: number) => void
     everyFrames: (key: string, n: number) => boolean
     everySeconds: (key: string, secs: number) => boolean
     drawSprite: (ctx: unknown, s: unknown) => void
@@ -2181,6 +2269,71 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
 
     // A varredura cartesiana faria dezenas de milhares de leituras de x.
     expect(geometryReads).toBeLessThan(10_000)
+  })
+
+  it('a fase ampla usa a hitbox efetiva nos dois lados do limiar de 2.048 pares', () => {
+    const api = load()
+    const countExpandedContacts = (size: number) => {
+      const a = api.createGroup()
+      const b = api.createGroup()
+      for (let index = 0; index < size; index += 1) {
+        const first = api.spawn(a, {
+          x: index === 0 ? 0 : 10_000 + index * 100,
+          y: 0,
+          w: 10,
+          h: 10,
+          color: '#fff',
+        })
+        const second = api.spawn(b, {
+          x: index === 0 ? 20 : -10_000 - index * 100,
+          y: 0,
+          w: 10,
+          h: 10,
+          color: '#fff',
+        })
+        if (first) api.setHitboxScale(first, 300)
+        if (second) api.setHitboxScale(second, 300)
+      }
+      let contacts = 0
+      api.overlapGroups(a, b, () => {
+        contacts += 1
+      })
+      return contacts
+    }
+
+    expect(countExpandedContacts(45)).toBe(1)
+    expect(countExpandedContacts(46)).toBe(1)
+  })
+
+  it('a fase ampla não cria contato quando a hitbox efetiva foi reduzida', () => {
+    const api = load()
+    const a = api.createGroup()
+    const b = api.createGroup()
+    for (let index = 0; index < 46; index += 1) {
+      const first = api.spawn(a, {
+        x: index === 0 ? 0 : 10_000 + index * 100,
+        y: 0,
+        w: 10,
+        h: 10,
+        color: '#fff',
+      })
+      const second = api.spawn(b, {
+        x: index === 0 ? 6 : -10_000 - index * 100,
+        y: 0,
+        w: 10,
+        h: 10,
+        color: '#fff',
+      })
+      if (first) api.setHitboxScale(first, 50)
+      if (second) api.setHitboxScale(second, 50)
+    }
+    let contacts = 0
+
+    api.overlapGroups(a, b, () => {
+      contacts += 1
+    })
+
+    expect(contacts).toBe(0)
   })
 
   it('a fase ampla preserva a ordem reversa e a remoção durante o callback', () => {

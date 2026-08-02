@@ -499,20 +499,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:cameraX' }
     case 'sz_g2d_camera_y':
       return { type: 'g2d:cameraY' }
-    case 'sz_g2d_random_x': {
-      const size = exprInput(block, 'SIZE', { type: 'num', value: 40 })
-      // O serializer usa zero como sentinela para projetos antigos que chamavam
-      // randomX() sem argumento. Omita-o para preservar o round-trip legado.
-      return size.type === 'num' && size.value === 0
-        ? { type: 'g2d:randomX' }
-        : { type: 'g2d:randomX', size }
-    }
-    case 'sz_g2d_random_y': {
-      const size = exprInput(block, 'SIZE', { type: 'num', value: 40 })
-      return size.type === 'num' && size.value === 0
-        ? { type: 'g2d:randomY' }
-        : { type: 'g2d:randomY', size }
-    }
+    case 'sz_g2d_random_x':
+      return { type: 'g2d:randomX' }
+    case 'sz_g2d_random_y':
+      return { type: 'g2d:randomY' }
     case 'sz_g2d_tile_at':
       return { type: 'g2d:tileAtSprite', mapVar: f(block, 'MAP'), spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_scene_is':
@@ -3244,6 +3234,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g2d_apply_velocity':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:applyVelocity', spriteVar: f(block, 'SPRITE') } }
+    case 'sz_g2d_apply_gravity':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:applyGravity', spriteVar: f(block, 'SPRITE') } }
     case 'sz_g2d_bounce_edges':
       seen.add('game-2d')
       return {
@@ -3500,6 +3493,22 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           bVar: f(block, 'B'),
           body: getStatementChildren(block, 'BODY', seen),
         },
+      }
+    case 'sz_g2d_on_jump':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onJump',
+          spriteVar: f(block, 'SPRITE'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_on_any_input':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:onAnyInput', body: getStatementChildren(block, 'BODY', seen) },
       }
     case 'sz_g2d_create_image_sprite':
       seen.add('game-2d')

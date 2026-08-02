@@ -5,7 +5,6 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameThreeDPromptSummary } from './aiSummary'
 import { gameThreeDBlocks, gameThreeDToolboxCategory } from './blocks'
 import { gameThreeDManifest } from './manifest'
-import { gameThreeDRuntime } from './runtime'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(gameThreeDManifest)
@@ -25,7 +24,7 @@ export const gameThreeDExtension: ExtensionDefinition = {
     toolboxCategory: gameThreeDToolboxCategory,
   },
   runtime: {
-    bootstrapScript: gameThreeDRuntime,
+    loadBootstrapScript: async () => (await import('./runtime')).gameThreeDRuntime,
     lifecycle: GAME_3D_LIFECYCLE,
     esmImports: { three: THREE_CDN },
   },
@@ -35,4 +34,4 @@ export const gameThreeDExtension: ExtensionDefinition = {
   },
 }
 
-export { gameThreeDBlocks, gameThreeDManifest, gameThreeDRuntime, gameThreeDToolboxCategory }
+export { gameThreeDBlocks, gameThreeDManifest, gameThreeDToolboxCategory }

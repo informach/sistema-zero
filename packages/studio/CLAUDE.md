@@ -13,7 +13,7 @@ Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidireci
 jogável/`.szproject.json` como projeto NOVO no namespace atual via `importProjectFromJSON` do
 projectStore, com `name` opcional sobrepondo o do snapshot — é o "Fazer a minha versão"/remix do
 Mural kids; o host chama `setStudioStorageNamespace(viewerId)` ANTES): DOIS componentes finos sobre um **núcleo comum** (`StudioCore`, interno) — `<StudioEditor>` (editor COMPLETO independente; sem conceito de aula/atividade; desde 07/2026 TAMBÉM aceita as props de curadoria `StudioLearningProps` — o kids abre o `/estudio` com o degrau derivado do RANK via `resolveStudioTier` do member-shell; `level` aceita a escada NOVA de 6 (`iniciante-2d`…`avancado-3d`) E os 3 valores legados (normalizados na fronteira `resolveLearning`); sem `level` segue o default `avancado-3d` [topo], zero regressão) e `<StudioLesson>` (bloco de AULA configurável: curadoria de aprendizado `level`/`allowBlocks`/`allowCategories`/`allowLevelReveal` + defaults restritos terminal/IA/profissional/export/download OFF + prop `activity` fiada p/ a auto-correção). Ambos uncontrolled (`initialProject` + `onChange`/`onSave`/`onError`; `persistence: 'local'|'none'|adapter`; `allowedModes`/`initialMode`; `theme`/`locale`; `limits`; **`share?: StudioShareAdapter`** (liga o botão Compartilhar); `ref` → `StudioHandle`). `<Studio>` (+ `StudioProps`) **@deprecated** = alias do `StudioCore` (compat; migrar p/ Editor/Lesson). Também: `<ProjectList>` (IndexedDB local; aceita `theme?` p/ o host FIXAR claro/escuro e esconder o toggle — espelha o `theme` do Editor/Lesson), `createLocalPersistenceAdapter`, **`setStudioStorageNamespace(ns)`** (namespeia o IndexedDB local por VIEWER — app-agnóstico: o host seta o id do perfil (kids) OU da conta (adulto) ANTES de usar a `ProjectList`/editor; vazio = store histórico `sistema-zero-studio`; é o que isola a lista do Estúdio Completo entre perfis/contas no mesmo navegador — a lição reseta p/ `''`), `createEmptyProject`, `prefetchStudioModes`, os tipos `LessonActivity`/`ActivityCheck`, **`captureCoverFromProject(project)`** (capa PNG da vitrine "Mural dos Criadores" — `src/cover/coverCapture.ts`: roda o projeto num iframe via `buildPreviewDoc` + harness que fotografa e posta ao parent autenticado por `ev.source`. **DUAS passadas:** (1) **canvas** — lê o MAIOR `<canvas>` com `toDataURL` (jogos 2D/3D), pipeline atual; (2) só se a 1ª voltar `null`, **DOM via html2canvas** carregado do esm.sh DENTRO do iframe (`extensionImports.html2canvas` → importmap + origem no `script-src`, igual ao `three` do Jogo 3D) rasterizando o `document.body` — cobre páginas HTML/CSS sem canvas. ⚠️ o iframe NÃO usa mais `visibility:hidden`/off-screen (parava o rAF → "sem foto" nos jogos): fica na viewport com `opacity:0`. Canvas tainted/timeout/falha do html2canvas → `null`, o chamador cai na capa do admin / upload; mesmos invariantes do `runSandboxChecks`, NUNCA `allow-same-origin`/`targetOrigin` no postMessage; happy-dom não roda o iframe → verificar em BROWSER real), **`<StudioProjectPlayer project>`** +
-**`renderProjectToPreviewDoc(project)`** (player AUTÔNOMO do jogo — só roda o jogo num iframe sandbox,
+**`renderProjectToPreviewDocAsync(project)`** (`renderProjectToPreviewDoc` = alias depreciado; player AUTÔNOMO do jogo — só roda o jogo num iframe sandbox,
 autostart, SEM editor — para a página PÚBLICA de jogar do community-kids; subpath LEVE
 **`@sistemazero/studio/player`** = só a cadeia de preview, sem Monaco/Blockly), o adapter
 **`StudioShareAdapter`** (botão "Compartilhar" — ver seção própria), e o CSS
@@ -229,9 +229,11 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   2D); agora fica na viewport com `opacity:0` (composto, rAF roda). Mesmo assim, projeto sem canvas / falha →
   `null` e a UI cai na capa do curso / upload.
 - **Player público** (`src/components/preview/StudioProjectPlayer.tsx` + `src/preview/renderProject.ts`):
-  `renderProjectToPreviewDoc(project)` é a MESMA receita do `coverCapture`/`PreviewIframe` (extensões →
+  `renderProjectToPreviewDocAsync(project)` é a MESMA receita do `coverCapture`/`PreviewIframe` (extensões →
   permissões → assets → `buildPreviewDoc`), extraída, pura e defensiva para snapshots legados
-  (sem `files` ou com `installedExtensions`/`extraFiles`/`assets` ausentes/não-array). O componente renderiza o srcdoc num iframe
+  (sem `files` ou com `installedExtensions`/`extraFiles`/`assets` ausentes/não-array), deduplica extensões
+  e devolve `Promise<string>` porque os runtimes são lazy. O nome sem `Async` é alias depreciado que
+  também devolve Promise. O componente mantém estado `loading|ready|error`, ignora resposta obsoleta e renderiza o srcdoc num iframe
   `sandbox="allow-scripts allow-modals allow-pointer-lock"` (NUNCA `allow-same-origin`), autostart. Exportado no index E no
   subpath leve `@sistemazero/studio/player` (sem Monaco/Blockly — importante p/ a página pública não
   carregar o editor inteiro).
@@ -376,6 +378,42 @@ mas o colar alcança o `projectStore` da instância via `WeakMap` (`registerPast
 (`installExtension` + aviso) e RECUSA tipo desconhecido (`isBlockTypeKnown` do `projectStore` — SEM o
 all-or-nothing do `sanitizeImportedBlocksState`). Aviso gentil = toast efêmero no `BlocklyPanel`. Frames
 (`sz_frame_*`) não são copiáveis.
+
+### "Deletar N blocos" mentia (02/08) — `blockly/deleteContextMenu.ts`
+
+⭐ O item NATIVO de apagar conta `block.getDescendants(false).length` — e, para o Blockly, **cada
+soquete PREENCHIDO é um bloco** (bloco-sombra). Como aqui a regra é que todo `input_value` nasça com
+sombra (ver "SOMBRA nos soquetes"), um único "Mover o sprite ⟨heroi⟩, velocidade ⟨4⟩ pulo ⟨11⟩"
+aparecia como **"Deletar 3 blocos"**: a criança lia três e via um. O mesmo valia para o "apagar tudo"
+do canvas (`getDeletableBlocks_` usa o mesmo `getDescendants`). Relato dela no playground.
+
+`patchDeleteContextMenus()` (chamado no fim do `ensureBlocklyInitialized`) **troca SÓ o
+`displayText`** dos itens nativos `blockDelete` e `workspaceDelete` — pega o item do registry,
+`unregister` + `register` com o resto **espalhado** (callback/precondição/peso/scopeType seguem sendo
+os do Blockly; o comportamento de apagar não é nosso). A contagem passa a ignorar `isShadow()`, e o
+que já estava certo no nativo fica: **a pilha ABAIXO do bloco não entra** (ela sobrevive, o Blockly
+religa). Texto: `Apagar este bloco` · `Apagar este bloco e o de dentro` · `Apagar este bloco e os N de
+dentro` · no canvas `Apagar os N blocos` (ali o número informa mesmo). ⚠️ `ActionRegistryItem` NÃO é
+exportado pelo Blockly 12 — o tipo sai de `Exclude<RegistryItem, {separator: true}>`. Teste:
+`__tests__/deleteContextMenu.test.ts` (contagem com sombra/dentro/pilha/valor-real + os textos).
+
+## 🚫 Bloco que a criança JÁ USA não muda de forma (02/08/2026)
+
+**Regra, não sugestão.** Bloco que já existe em projeto salvo tem a forma CONGELADA: não ganha
+campo, não perde campo, não muda a face nem a assinatura do helper. Precisa de uma variação?
+**Crie um bloco NOVO ao lado.**
+
+O caso que gerou a regra: em 0.55.2 um full review acrescentou um soquete de "tamanho reservado" ao
+**`sz_g2d_random_x`/`_y`** ("um x aleatório na tela" → "um x aleatório para largura ⟨40⟩"), para o
+sprite não nascer cortado na borda. A intenção era boa e o problema era real. Só que o bloco **não
+tinha soquete nenhum**: todo projeto de criança que já usava o bloco antigo passou a receber a sombra
+40 na reabertura (via `migrateValueFields`) e o sorteio encolhia sozinho — **sem erro na tela**.
+Revertido por inteiro em 02/08 a pedido da usuária ("avacalhou os projetos que já usavam").
+
+⚠️ **O sintoma é sempre esse:** soquete novo num bloco antigo não fica vazio no projeto salvo — a cura
+de sombras o preenche. Um campo novo OPCIONAL (dropdown com o padrão sendo o comportamento antigo, ou
+sombra que reproduza a saída anterior byte a byte) é o único acréscimo seguro; foi assim no `NAME` do
+"criar sprite no grupo" e no `SHAPE` do "criar o molde".
 
 ## Blocos: categorias + como adicionar um
 
@@ -525,7 +563,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.55.2`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.56.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -605,6 +643,14 @@ contra `GameTwoDRuntimeApi`, além da lista de chaves. Os 17 exemplos grandes de
 moram em módulos individuais sob `examples/clearcode/` e `examples/gamesTwoD/`, com barrels compatíveis
 e hashes de conteúdo preservados; seus quatro contratos repetidos de drift/fixpoint/round-trip ficam no
 harness único `__tests__/exampleContractHarness.ts`.
+
+**Remediação arquitetural do Jogo 2D (v0.55.4, 02/08):** `_overlapBroadPhase` consome `_hitboxOf`
+(mesma geometria do teste exato); `pointerdown` só nasce no `_stageCanvas`; runtime e preview deduplicam
+ids preservando a primeira ordem. `_resizeBacking` limita DPR 3, dimensão 8192 e 16.777.216 pixels;
+tilemaps manuais limitam 1M caracteres, 512×512 células e 512 sólidos, com `warnOnce`. O player/preview
+anunciam a carga lazy e a API principal é `renderProjectToPreviewDocAsync`. Os 31 exemplos têm metadados
+editoriais; `KitGallery` mostra o percurso Pegue a moeda → Herói que anda → Mini plataforma → Sala com
+paredes, além de busca/filtros e “Ver todos”. A paleta de 211 blocos permanece intacta por decisão explícita.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 

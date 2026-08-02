@@ -5,7 +5,7 @@ import {
   type Project,
   soundManifest,
 } from '#core'
-import type { ExtensionPermission } from '#extensions'
+import { type ExtensionPermission, loadExtensionBootstrapScripts } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, withCoreImports } from '#preview'
 
@@ -46,15 +46,17 @@ const MAX_DATA_URL_BYTES = 6_000_000
 const HTML2CANVAS_URL = 'https://esm.sh/html2canvas@1.4.1'
 
 /** Contexto de extensão do projeto (scripts/imports/permissões) p/ o `buildPreviewDoc`. */
-function extensionContext(project: Project): {
+async function extensionContext(project: Project): Promise<{
   extensionScripts: string[]
   extensionImports: Record<string, string>
   permissions: ExtensionPermission[]
-} {
+}> {
   const ids = project.installedExtensions.map((e) => e.id)
-  const extensionScripts = ids
-    .map((id) => findExtension(id)?.runtime.bootstrapScript)
-    .filter((s): s is string => Boolean(s))
+  const extensions = ids.flatMap((id) => {
+    const extension = findExtension(id)
+    return extension ? [extension] : []
+  })
+  const extensionScripts = await loadExtensionBootstrapScripts(extensions)
   const extensionImports: Record<string, string> = {}
   const permissions = new Set<ExtensionPermission>()
   for (const id of ids) {
@@ -71,13 +73,13 @@ function extensionContext(project: Project): {
  * ÚLTIMO, depois das extensões e do aluno), abre um iframe imperceptível na
  * viewport e resolve o data URL postado pelo harness (ou `null` em timeout).
  */
-function runCapture(
+async function runCapture(
   project: Project,
   opts: CaptureCoverOptions,
   harness: string,
   extraImports: Record<string, string>,
 ): Promise<string | null> {
-  const ctx = extensionContext(project)
+  const ctx = await extensionContext(project)
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
   const timeoutMs = opts.timeoutMs ?? warmupMs + 4_000

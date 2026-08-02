@@ -43,6 +43,25 @@ export interface AiUsagePanelResults {
   knowledge: PromiseSettledResult<ZappyKnowledgeReportView>
 }
 
+export interface ZappyBackfillSummary {
+  indexed: number
+  deleted: number
+  extracted: number
+  failed: number
+}
+
+export function zappyBackfillNotice(result: ZappyBackfillSummary): {
+  kind: 'success' | 'warning'
+  message: string
+} {
+  return result.failed === 0
+    ? { kind: 'success', message: 'Base do Zappy sincronizada.' }
+    : {
+        kind: 'warning',
+        message: `Base sincronizada parcialmente: ${result.failed} ${result.failed === 1 ? 'fonte precisa' : 'fontes precisam'} de correção.`,
+      }
+}
+
 /** Isola as três fontes para uma falha não descartar os demais painéis. */
 export async function loadAiUsagePanels(
   month: string,

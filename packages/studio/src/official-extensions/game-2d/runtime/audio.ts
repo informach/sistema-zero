@@ -38,6 +38,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   // em vez de gerar warning e deixar o contexto suspenso.
   var audioGestureSeen = false;
   function ensureAudio() {
+    if (_paused) return null;
     if (audioCtx) return audioCtx;
     if (!audioGestureSeen) return null;
     try {
@@ -48,6 +49,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   }
   function unlockAudio() {
     audioGestureSeen = true;
+    if (_paused) return;
     var ctx = ensureAudio();
     try {
       if (ctx && ctx.state === 'suspended' && ctx.resume) ctx.resume();
@@ -60,6 +62,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   }
   /** Toca um tom curto (freq em Hz, duração em ms). Sintetizado — não precisa de arquivo. */
   function playSound(frequency, milliseconds) {
+    if (_paused) return;
     var ctx = ensureAudio();
     if (!ctx) return;
     try {
@@ -81,6 +84,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
 
   // Um tom com varredura de frequência opcional (slide 'exp'|'linear'|'none').
   function _fxBeep(type, fromHz, toHz, durSec, slide, peak) {
+    if (_paused) return;
     var ctx = ensureAudio();
     if (!ctx) return;
     try {
@@ -102,6 +106,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   }
   // Uma sequência de notas: cada nota é [freqHz, inícioSeg, duraçãoSeg].
   function _fxSeq(type, notes, peak) {
+    if (_paused) return;
     var ctx = ensureAudio();
     if (!ctx) return;
     try {

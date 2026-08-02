@@ -91,7 +91,7 @@ const nextConfig: NextConfig = {
   // sharp é binário nativo (.node) — não deixe o bundler tentar empacotá-lo.
   // (O Sentry NÃO usa SDK aqui — fala o protocolo de ingestão via fetch, sem dep
   // externa, justamente p/ não depender do tracing de externos do standalone.)
-  serverExternalPackages: ['sharp'],
+  serverExternalPackages: ['sharp', 'pdfjs-dist', '@napi-rs/canvas'],
   // Pacotes workspace com TS cru (componentes compartilhados + editor embarcável) — transpilar junto.
   transpilePackages: ['@sistemazero/ui', '@sistemazero/studio', '@sistemazero/member-shell'],
   // Security headers em TODAS as respostas (inclui `/api/media/*`, que fica fora

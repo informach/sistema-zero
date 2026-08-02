@@ -9,6 +9,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   var _explicitStageDescription = '';
   var _announcedScreen = '';
   var STAGE_DESCRIPTION_ID = 'sz-game-2d-description';
+  var GAME_STATUS_ID = 'sz-game-2d-status';
   var HUD_STATUS_ID = 'sz-game-hud-status';
   var STAGE_FOCUS_STYLE_ID = 'sz-game-2d-focus-style';
   var HUD_ANNOUNCE_INTERVAL_MS = 500;
@@ -80,6 +81,26 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       document.body.appendChild(node);
     }
     return node;
+  }
+
+  function _ensureGameStatusNode() {
+    var node = null;
+    try { node = document.getElementById(GAME_STATUS_ID); } catch (e) {}
+    if (!node && document.body) {
+      node = document.createElement('p');
+      node.id = GAME_STATUS_ID;
+      node.setAttribute('role', 'status');
+      node.setAttribute('aria-live', 'polite');
+      node.setAttribute('aria-atomic', 'true');
+      _visuallyHide(node);
+      document.body.appendChild(node);
+    }
+    return node;
+  }
+
+  function _announceGameStatus(message) {
+    var node = _ensureGameStatusNode();
+    if (node) node.textContent = message;
   }
 
   function _cancelAccessibleHudTimer() {
@@ -189,6 +210,8 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     var node = null;
     try { node = document.getElementById(HUD_STATUS_ID); } catch (e) {}
     if (node) node.textContent = '';
+    try { node = document.getElementById(GAME_STATUS_ID); } catch (e) { node = null; }
+    if (node) node.textContent = '';
     // O reinício abre uma partida nova: a mesma tela terminal precisa voltar a
     // ser anunciada e a região viva não pode continuar descrevendo a partida
     // anterior. Reaplica a descrição-base e rearma a deduplicação de telas.
@@ -268,6 +291,16 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     return _stageCtx;
   }
   var _logicalW = 0, _logicalH = 0, _resizeHooked = false, _fillMode = false;
+  var MAX_STAGE_BACKING_DPR = 3;
+  var MAX_STAGE_BACKING_DIMENSION = 8192;
+  var MAX_STAGE_BACKING_PIXELS = 16777216;
+  function _viewportUnit(axis) {
+    var dynamicUnit = axis === 'width' ? 'dvw' : 'dvh';
+    try {
+      if (window.CSS && typeof window.CSS.supports === 'function' && window.CSS.supports(axis, '1' + dynamicUnit)) return dynamicUnit;
+    } catch (e) {}
+    return axis === 'width' ? 'vw' : 'vh';
+  }
   // Tamanho LÓGICO do palco (coordenadas do jogo). Sem fitScreen, é o tamanho do
   // próprio canvas; com fitScreen, fica FIXO enquanto o canvas REAL cresce para a
   // resolução da tela (nitidez) — os helpers usam o lógico para não dependerem disso.
@@ -287,9 +320,30 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     // janela. Setar ANTES do guard de _logicalW (que no início é 0).
     if (_fillMode) { _logicalW = Math.max(1, Math.round(rect.width)); _logicalH = Math.max(1, Math.round(rect.height)); }
     if (!_logicalW) return;
-    var dpr = window.devicePixelRatio || 1;
-    var bw = Math.max(1, Math.round(rect.width * dpr));
-    var bh = Math.max(1, Math.round(rect.height * dpr));
+    var rawDpr = _positiveFiniteNumber(window.devicePixelRatio, 1);
+    var dimensionScale = Math.min(
+      MAX_STAGE_BACKING_DIMENSION / rect.width,
+      MAX_STAGE_BACKING_DIMENSION / rect.height
+    );
+    var pixelScale = Math.sqrt(MAX_STAGE_BACKING_PIXELS / (rect.width * rect.height));
+    var dpr = Math.min(rawDpr, MAX_STAGE_BACKING_DPR, dimensionScale, pixelScale);
+    if (!_isFiniteNumber(dpr) || dpr <= 0) dpr = 1;
+    var bw = Math.max(1, Math.min(MAX_STAGE_BACKING_DIMENSION, Math.round(rect.width * dpr)));
+    var bh = Math.max(1, Math.min(MAX_STAGE_BACKING_DIMENSION, Math.round(rect.height * dpr)));
+    // O arredondamento independente pode ultrapassar o orçamento por poucos
+    // pixels; ajusta somente nesse extremo, preservando o round histórico nos
+    // DPRs normais.
+    if (bw * bh > MAX_STAGE_BACKING_PIXELS) {
+      var adjustment = Math.sqrt(MAX_STAGE_BACKING_PIXELS / (bw * bh));
+      bw = Math.max(1, Math.floor(bw * adjustment));
+      bh = Math.max(1, Math.floor(bh * adjustment));
+    }
+    if (dpr < rawDpr) {
+      warnOnce(
+        'stage-backing-budget',
+        'reduzi a nitidez do palco para manter uma resolução segura neste dispositivo.'
+      );
+    }
     if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; }
     _applyBaseTransform();
   }
@@ -329,7 +383,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     if (!_logicalW) { _logicalW = c.width || 4; _logicalH = c.height || 3; }
     var p = (_isFiniteNumber(percent) && percent > 0 && percent <= 100) ? percent : 100;
     var ar = _logicalW / _logicalH;
-    c.style.width = 'min(' + p + 'vw, ' + (p * ar) + 'vh)';
+    c.style.width = 'min(' + p + _viewportUnit('width') + ', ' + (p * ar) + _viewportUnit('height') + ')';
     c.style.height = 'auto';
     c.style.aspectRatio = _logicalW + ' / ' + _logicalH;
     c.style.maxWidth = '100%';
@@ -375,7 +429,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       // do jogo (ex.: jogo 800x480 numa janela 800x600), o espaço que sobra fica
       // igual dos dois lados, em vez de tudo num canto. O clique continua certo
       // porque o mapeamento do ponteiro usa getBoundingClientRect (posição real).
-      document.body.style.minHeight = '100vh';
+      document.body.style.minHeight = '100' + _viewportUnit('height');
       document.body.style.display = 'flex';
       document.body.style.alignItems = 'center';
       document.body.style.justifyContent = 'center';
@@ -400,8 +454,8 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     c.style.position = 'fixed';
     c.style.left = '0';
     c.style.top = '0';
-    c.style.width = '100vw';
-    c.style.height = '100vh';
+    c.style.width = '100' + _viewportUnit('width');
+    c.style.height = '100' + _viewportUnit('height');
     c.style.aspectRatio = '';
     c.style.maxWidth = '';
     c.style.boxSizing = 'border-box';
@@ -411,6 +465,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     if (document.body) {
       document.body.style.margin = '0';
       document.body.style.background = color;
+      document.body.style.minHeight = '100' + _viewportUnit('height');
     }
     _setStageDescription();
     _resizeBacking();

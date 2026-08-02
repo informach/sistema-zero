@@ -1,4 +1,10 @@
 import { createHash } from 'node:crypto'
+import { ValidationError } from '@sistemazero/core/errors'
+import {
+  ZAPPY_SOURCE_CONTENT_MAX_BYTES,
+  zappySourceContentBytes,
+  zappyVimeoVideoId,
+} from '@sistemazero/core/zappy'
 import type {
   ZappyKnowledgeHit,
   ZappyKnowledgeReport,
@@ -8,7 +14,7 @@ import type {
 import type { GetMyCourseService } from '../get-my-course/get-my-course.service'
 import type { ListMyCoursesService } from '../list-my-courses/list-my-courses.service'
 
-const MAX_SOURCE_CHARS = 500_000
+const MAX_SOURCE_CHARS = ZAPPY_SOURCE_CONTENT_MAX_BYTES
 const CHUNK_CHARS = 1_500
 const CHUNK_OVERLAP = 180
 
@@ -96,13 +102,24 @@ export interface ZappyKnowledgeSyncInput {
   error?: string
 }
 
-export interface ZappyKnowledgePendingExtraction {
+interface ZappyKnowledgePendingBase {
   courseId: string
   lessonId: string
-  sourceType: 'video-vtt' | 'student-notebook'
   sourceRef: string
-  location: string
 }
+
+export type ZappyKnowledgePendingExtraction =
+  | (ZappyKnowledgePendingBase & {
+      sourceType: 'video-vtt'
+      extraction:
+        | { kind: 'stable-vtt'; location: string }
+        | { kind: 'vimeo'; videoId: string }
+        | { kind: 'unavailable'; error: string }
+    })
+  | (ZappyKnowledgePendingBase & {
+      sourceType: 'student-notebook'
+      extraction: { kind: 'private-pdf'; location: string }
+    })
 
 export class ZappyKnowledgeService {
   constructor(
@@ -115,18 +132,26 @@ export class ZappyKnowledgeService {
   async sync(
     input: ZappyKnowledgeSyncInput,
   ): Promise<{ id: string; status: string; changed: boolean }> {
-    const authoritativeCourseId = await this.repository.courseIdForLesson(input.lessonId)
-    if (!authoritativeCourseId) throw new Error('Aula da fonte do Zappy não encontrada')
-    if (input.courseId && input.courseId !== authoritativeCourseId) {
+    const authority = await this.repository.blockAuthorityForSource(input.sourceRef)
+    if (!authority) throw new Error('Bloco da fonte do Zappy não encontrado')
+    if (authority.lessonId !== input.lessonId) {
+      throw new Error('Aula não corresponde ao bloco da fonte do Zappy')
+    }
+    if (input.courseId && input.courseId !== authority.courseId) {
       throw new Error('Curso não corresponde à aula da fonte do Zappy')
     }
     const raw = input.content ?? ''
+    if (zappySourceContentBytes(raw) > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
+      throw new ValidationError('Fonte do Zappy excede o tamanho máximo')
+    }
     const text = input.sourceType === 'video-vtt' ? vttToText(raw) : richTextToText(raw)
     const chunks = chunksFor(text)
     const status = input.error ? 'error' : chunks.length > 0 ? 'ready' : raw ? 'empty' : 'pending'
     const result = await this.repository.upsert({
-      courseId: authoritativeCourseId,
-      lessonId: input.lessonId,
+      courseId: authority.courseId,
+      lessonId: authority.lessonId,
+      blockId: authority.blockId,
+      blockRevision: authority.blockRevision,
       sourceType: input.sourceType,
       sourceRef: input.sourceRef,
       contentHash: createHash('sha256').update(raw).digest('hex'),
@@ -181,7 +206,11 @@ export class ZappyKnowledgeService {
   }
 
   /** Indexa texto rico e devolve os downloads externos que o admin precisa extrair. */
-  async backfill(): Promise<{ indexed: number; pending: ZappyKnowledgePendingExtraction[] }> {
+  async backfill(): Promise<{
+    indexed: number
+    deleted: number
+    pending: ZappyKnowledgePendingExtraction[]
+  }> {
     const blocks = await this.repository.listPublishedKidsBlocks()
     let indexed = 0
     const pending: ZappyKnowledgePendingExtraction[] = []
@@ -204,7 +233,18 @@ export class ZappyKnowledgeService {
             lessonId: block.lessonId,
             sourceType: 'video-vtt',
             sourceRef,
-            location,
+            extraction: { kind: 'stable-vtt', location },
+          })
+        } else {
+          const videoId = zappyVimeoVideoId(block.content.provider, block.content.src)
+          pending.push({
+            courseId: block.courseId,
+            lessonId: block.lessonId,
+            sourceType: 'video-vtt',
+            sourceRef,
+            extraction: videoId
+              ? { kind: 'vimeo', videoId }
+              : { kind: 'unavailable', error: 'Vídeo publicado sem transcrição compatível' },
           })
         }
       } else if (block.content.kind === 'ebook' && block.content.zappyStudentNotebook) {
@@ -213,11 +253,12 @@ export class ZappyKnowledgeService {
           lessonId: block.lessonId,
           sourceType: 'student-notebook',
           sourceRef,
-          location: block.content.url,
+          extraction: { kind: 'private-pdf', location: block.content.url },
         })
       }
     }
-    return { indexed, pending }
+    const deleted = await this.repository.reconcilePublishedBlockSources()
+    return { indexed, deleted, pending }
   }
 
   report(): Promise<ZappyKnowledgeReport> {

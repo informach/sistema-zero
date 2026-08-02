@@ -2555,12 +2555,8 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'isPaused') return { type: 'g2d:isPaused' }
   if (method === 'cameraX') return { type: 'g2d:cameraX' }
   if (method === 'cameraY') return { type: 'g2d:cameraY' }
-  if (method === 'randomX' || method === 'randomY') {
-    const type = method === 'randomX' ? 'g2d:randomX' : 'g2d:randomY'
-    if (args.length === 0) return { type }
-    const size = toExpr(args[0], ctx)
-    if (isSimpleValue(size)) return { type, size }
-  }
+  if (method === 'randomX') return { type: 'g2d:randomX' }
+  if (method === 'randomY') return { type: 'g2d:randomY' }
   if (method === 'tileAtSprite') {
     const mapVar = identifierName(args[0])
     const spriteVar = identifierName(args[1])
@@ -3259,6 +3255,17 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!aVar || !bVar || !isFn(args[2])) return null
       return { type: 'g2d:onOverlap', aVar, bVar, body: bodyOfFn(args[2], source, ctx) }
     }
+    case 'onJump': {
+      // generator: SZGame2D.onJump(() => sprite, function(){…}) — thunk, como o onOverlap
+      const spriteVar = arrowReturnIdentifier(args[0])
+      if (!spriteVar || !isFn(args[1])) return null
+      return { type: 'g2d:onJump', spriteVar, body: bodyOfFn(args[1], source, ctx) }
+    }
+    case 'onAnyInput': {
+      // generator: SZGame2D.onAnyInput(function(){…})
+      if (!isFn(args[0])) return null
+      return { type: 'g2d:onAnyInput', body: bodyOfFn(args[0], source, ctx) }
+    }
     case 'drawSprite': {
       // generator: SZGame2D.drawSprite(ctx, sprite)
       const ctxVar = identifierName(args[0])
@@ -3271,6 +3278,10 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'applyVelocity': {
       const spriteVar = identifierName(args[0])
       return spriteVar ? { type: 'g2d:applyVelocity', spriteVar } : null
+    }
+    case 'applyGravity': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:applyGravity', spriteVar } : null
     }
     case 'bounceOnEdges': {
       // generator: SZGame2D.bounceOnEdges(sprite, ctx)

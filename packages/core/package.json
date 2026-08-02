@@ -13,7 +13,8 @@
     "./errors": "./src/errors/index.ts",
     "./result": "./src/result/index.ts",
     "./http": "./src/http/index.ts",
-    "./studio": "./src/studio/index.ts"
+    "./studio": "./src/studio/index.ts",
+    "./zappy": "./src/zappy/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

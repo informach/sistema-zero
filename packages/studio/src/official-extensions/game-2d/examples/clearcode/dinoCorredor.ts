@@ -244,12 +244,16 @@ export const dinoCorredorExample: ExtensionExample = beginnerGameExample({
               },
               then: [
                 {
+                  type: 'g2d:applyGravity',
+                  spriteVar: 'dino',
+                },
+                {
                   type: 'g2d:controlDino',
                   spriteVar: 'dino',
                   ctxVar: 'ctx',
                   jump: {
                     type: 'num',
-                    value: 15,
+                    value: 14,
                   },
                 },
                 {

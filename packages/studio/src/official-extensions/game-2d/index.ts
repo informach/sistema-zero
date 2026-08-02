@@ -4,7 +4,6 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameTwoDPromptSummary } from './aiSummary'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from './blocks'
 import { gameTwoDManifest } from './manifest'
-import { gameTwoDRuntime } from './runtime'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO se
 // alguém quebrar o contrato.
@@ -26,7 +25,7 @@ export const gameTwoDExtension: ExtensionDefinition = {
     toolboxCategory: gameTwoDToolboxCategory,
   },
   runtime: {
-    bootstrapScript: gameTwoDRuntime,
+    loadBootstrapScript: async () => (await import('./runtime')).gameTwoDRuntime,
     lifecycle: GAME_2D_LIFECYCLE,
   },
   ai: {
@@ -41,4 +40,4 @@ export {
   type GameTwoDLifecycleApi,
   type GameTwoDRuntimeApi,
 } from './runtimeContract'
-export { gameTwoDBlocks, gameTwoDManifest, gameTwoDRuntime, gameTwoDToolboxCategory }
+export { gameTwoDBlocks, gameTwoDManifest, gameTwoDToolboxCategory }

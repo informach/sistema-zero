@@ -5,7 +5,7 @@ import {
   type Project,
   soundManifest,
 } from '#core'
-import type { ExtensionPermission } from '#extensions'
+import { type ExtensionPermission, loadExtensionBootstrapScripts } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, isCheckResultMessage, withCoreImports } from '#preview'
 import type { CheckResult } from '../studio/activity'
@@ -42,9 +42,11 @@ export async function runSandboxChecks(
   }
 
   const ids = project.installedExtensions.map((e) => e.id)
-  const extensionScripts = ids
-    .map((id) => findExtension(id)?.runtime.bootstrapScript)
-    .filter((s): s is string => Boolean(s))
+  const extensions = ids.flatMap((id) => {
+    const extension = findExtension(id)
+    return extension ? [extension] : []
+  })
+  const extensionScripts = await loadExtensionBootstrapScripts(extensions)
   const extensionImports: Record<string, string> = {}
   const permissions = new Set<ExtensionPermission>()
   for (const id of ids) {

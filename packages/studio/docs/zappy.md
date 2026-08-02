@@ -16,3 +16,31 @@ finito. Referências de aula com `courseSlug` viram chips somente quando o host 
 `openLesson`; respostas históricas sem slug continuam legíveis, sem link quebrado.
 O catálogo autoritativo é exportado em `@sistemazero/studio/server-catalog`, e os manuais oficiais
 server-safe em `@sistemazero/studio/server-knowledge`.
+
+## Limites operacionais
+
+Cada página do histórico contém até 50 mensagens. O adapter recebe `nextCursor` e busca páginas
+anteriores sob demanda. O painel exige confirmação antes de excluir a conversa.
+
+Uma pergunta não determinística consulta primeiro a base didática e consome a cota imediatamente
+antes da única chamada ao provedor. O cliente reutiliza `clientMessageId`; o servidor mantém um
+lease de dois minutos e recupera reservas abandonadas quando ele vence.
+
+O BFF remove dados pessoais antes de persistir ou enviar a pergunta. Regras locais recusam temas
+impróprios e rejeitam respostas do modelo que contenham conteúdo inseguro, solicitação de dados
+pessoais ou PII. O contexto, o bloco selecionado e os manuais usam o mesmo catálogo permitido pela
+carreira.
+
+## Deploy das migrations 0056–0058
+
+Execute `0056_schema_history_baseline`, `0057_zappy_reliability_schema` e
+`0058_zappy_reliability_backfill` nessa ordem. A baseline restaura a continuidade dos snapshots
+depois das migrations 0050–0055 e não executa DDL. A migration de schema adiciona colunas nullable,
+a chave estrangeira do bloco e o índice. A migration de backfill preenche o lease das perguntas
+antigas, vincula as fontes existentes ao hash da revisão atual e remove fontes `block:*` sem bloco
+autoritativo. O backfill é idempotente.
+
+O `ALTER TABLE` usa alterações de catálogo rápidas. A criação do índice e o backfill podem manter
+locks breves nas tabelas do Zappy; rode o deploy durante o piloto e acompanhe a duração antes do
+rollout geral. Para rollback, reverta primeiro a aplicação. As colunas nullable podem permanecer
+sem afetar a versão anterior; remova índice, chave e colunas apenas em uma migration posterior.

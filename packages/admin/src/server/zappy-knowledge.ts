@@ -1,18 +1,33 @@
 import 'server-only'
+import {
+  ZAPPY_SOURCE_CONTENT_MAX_BYTES,
+  zappySourceContentBytes,
+  zappyVimeoVideoId,
+} from '@sistemazero/core/zappy'
 import { getEnv } from '@/lib/env'
 import type { BlockView, EbookBlock, RichTextBlock, VideoBlock } from '@/lib/types'
 import { type GatewayResponse, gatewayFetch } from './gateway'
+import { syncVimeoTranscript } from './media'
 import { r2ReadPrivateObject } from './r2'
 
-interface PendingExtraction {
+interface PendingBase {
   courseId: string
   lessonId: string
-  sourceType: 'video-vtt' | 'student-notebook'
   sourceRef: string
-  location: string
 }
 
-const MAX_VTT_BYTES = 5 * 1024 * 1024
+type PendingExtraction =
+  | (PendingBase & {
+      sourceType: 'video-vtt'
+      extraction:
+        | { kind: 'stable-vtt'; location: string }
+        | { kind: 'vimeo'; videoId: string }
+        | { kind: 'unavailable'; error: string }
+    })
+  | (PendingBase & {
+      sourceType: 'student-notebook'
+      extraction: { kind: 'private-pdf'; location: string }
+    })
 
 function sourceRef(blockId: string): string {
   return `block:${blockId}`
@@ -25,6 +40,9 @@ async function postSource(input: {
   content?: string
   error?: string
 }): Promise<void> {
+  if (input.content && zappySourceContentBytes(input.content) > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
+    throw new Error('Fonte do Zappy excede o tamanho máximo')
+  }
   const result = await gatewayFetch('/members/admin/zappy/knowledge/sources', {
     method: 'POST',
     body: input,
@@ -48,28 +66,41 @@ async function downloadVtt(raw: string): Promise<string> {
   const response = await fetch(url, { signal: AbortSignal.timeout(20_000) })
   if (!response.ok) throw new Error(`Falha ao baixar VTT (${response.status})`)
   const declared = Number(response.headers.get('content-length') ?? '0')
-  if (declared > MAX_VTT_BYTES) throw new Error('VTT excede o tamanho máximo')
+  if (declared > ZAPPY_SOURCE_CONTENT_MAX_BYTES) throw new Error('VTT excede o tamanho máximo')
   const text = await response.text()
-  if (Buffer.byteLength(text, 'utf8') > MAX_VTT_BYTES) {
+  if (zappySourceContentBytes(text) > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
     throw new Error('VTT excede o tamanho máximo')
   }
   return text
 }
 
 export async function extractPdfText(bytes: Uint8Array): Promise<string> {
+  // Importe explicitamente o backend Node antes do PDF.js. Além de instalar os
+  // globals usados no carregamento do módulo, a aresta direta faz o file tracing
+  // do Next copiar o pacote e o binário opcional da plataforma para o standalone.
+  const canvas = await import('@napi-rs/canvas')
+  Object.assign(globalThis, {
+    ...(typeof globalThis.DOMMatrix === 'undefined' ? { DOMMatrix: canvas.DOMMatrix } : {}),
+    ...(typeof globalThis.ImageData === 'undefined' ? { ImageData: canvas.ImageData } : {}),
+    ...(typeof globalThis.Path2D === 'undefined' ? { Path2D: canvas.Path2D } : {}),
+  })
   const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs')
-  const task = getDocument({ data: bytes })
+  const task = getDocument({ data: bytes, useSystemFonts: true })
   try {
     const document = await task.promise
     const pages: string[] = []
+    let extractedBytes = 0
     for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
       const page = await document.getPage(pageNumber)
       const content = await page.getTextContent()
-      pages.push(
-        content.items
-          .flatMap((item) => ('str' in item && typeof item.str === 'string' ? [item.str] : []))
-          .join(' '),
-      )
+      const pageText = content.items
+        .flatMap((item) => ('str' in item && typeof item.str === 'string' ? [item.str] : []))
+        .join(' ')
+      extractedBytes += zappySourceContentBytes(pageText) + 1
+      if (extractedBytes > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
+        throw new Error('Texto do PDF excede o tamanho máximo')
+      }
+      pages.push(pageText)
     }
     return pages.join('\n').replace(/\s+/g, ' ').trim()
   } finally {
@@ -79,10 +110,18 @@ export async function extractPdfText(bytes: Uint8Array): Promise<string> {
 
 async function syncPending(input: PendingExtraction): Promise<void> {
   try {
-    const content =
-      input.sourceType === 'video-vtt'
-        ? await downloadVtt(input.location)
-        : await extractPdfText(await r2ReadPrivateObject(input.location))
+    let content: string
+    if (input.extraction.kind === 'stable-vtt') {
+      content = await downloadVtt(input.extraction.location)
+    } else if (input.extraction.kind === 'vimeo') {
+      const transcript = await syncVimeoTranscript(input.extraction.videoId)
+      if (!transcript) throw new Error('Vimeo ainda não disponibilizou transcrição')
+      content = transcript.content
+    } else if (input.extraction.kind === 'private-pdf') {
+      content = await extractPdfText(await r2ReadPrivateObject(input.extraction.location))
+    } else {
+      throw new Error(input.extraction.error)
+    }
     await postSource({
       lessonId: input.lessonId,
       sourceType: input.sourceType,
@@ -118,22 +157,18 @@ export async function syncZappyKnowledgeForBlock(block: BlockView): Promise<void
   if (block.content.kind === 'video') {
     const content = block.content as VideoBlock
     const location = content.captions?.[0]?.url
-    if (location) {
-      await syncPending({
-        courseId: '',
-        lessonId: block.lessonId,
-        sourceType: 'video-vtt',
-        sourceRef: ref,
-        location,
-      })
-    } else {
-      await postSource({
-        lessonId: block.lessonId,
-        sourceType: 'video-vtt',
-        sourceRef: ref,
-        error: 'Vídeo publicado sem transcrição',
-      })
-    }
+    const videoId = zappyVimeoVideoId(content.provider, content.src)
+    await syncPending({
+      courseId: '',
+      lessonId: block.lessonId,
+      sourceType: 'video-vtt',
+      sourceRef: ref,
+      extraction: location
+        ? { kind: 'stable-vtt', location }
+        : videoId
+          ? { kind: 'vimeo', videoId }
+          : { kind: 'unavailable', error: 'Vídeo publicado sem transcrição compatível' },
+    })
     return
   }
   if (block.content.kind === 'ebook') {
@@ -144,7 +179,7 @@ export async function syncZappyKnowledgeForBlock(block: BlockView): Promise<void
         lessonId: block.lessonId,
         sourceType: 'student-notebook',
         sourceRef: ref,
-        location: content.url,
+        extraction: { kind: 'private-pdf', location: content.url },
       })
       return
     }
@@ -173,12 +208,18 @@ export function getZappyMetrics(month: string): Promise<GatewayResponse<unknown>
 export async function backfillZappyKnowledge(): Promise<GatewayResponse<unknown>> {
   const result = await gatewayFetch<{
     indexed: number
+    deleted: number
     pending: PendingExtraction[]
   }>('/members/admin/zappy/knowledge/backfill', { method: 'POST', body: {} })
   if (result.status !== 200 || !result.body) return result
   let cursor = 0
   let extracted = 0
   let failed = 0
+  const failures: Array<{
+    sourceRef: string
+    sourceType: PendingExtraction['sourceType']
+    error: string
+  }> = []
   const workers = Array.from({ length: Math.min(3, result.body.pending.length) }, async () => {
     while (cursor < result.body!.pending.length) {
       const pending = result.body!.pending[cursor]
@@ -187,18 +228,25 @@ export async function backfillZappyKnowledge(): Promise<GatewayResponse<unknown>
       try {
         await syncPending(pending)
         extracted += 1
-      } catch {
+      } catch (cause) {
         failed += 1
+        failures.push({
+          sourceRef: pending.sourceRef,
+          sourceType: pending.sourceType,
+          error: cause instanceof Error ? cause.message : 'Falha desconhecida na extração',
+        })
       }
     }
   })
   await Promise.all(workers)
   return {
-    status: 200,
+    status: failed > 0 ? 207 : 200,
     body: {
       indexed: result.body.indexed,
+      deleted: result.body.deleted,
       extracted,
       failed,
+      failures,
     },
   }
 }

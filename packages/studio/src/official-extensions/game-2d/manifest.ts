@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.55.2',
+  version: '0.56.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -16,7 +16,7 @@ export const gameTwoDManifest: ExtensionManifest = {
 
 Esta extensão adiciona um pequeno runtime didático em \`window.SZGame2D\`
 que ajuda a montar jogos 2D simples sobre Canvas API. O código gerado é
-intencionalmente legível. Quando você abrir o modo Código vai ver
+  intencionalmente legível. Quando você abrir a Ponte vai ver
 chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(...)\`.
 Os HUDs, placares e telas dos kits usam a fonte arredondada Baloo 2, incorporada
 no próprio runtime para também funcionar offline. Fontes escolhidas por você nos

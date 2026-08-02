@@ -96,10 +96,22 @@ export interface ExtensionManifest {
   docs: string
 }
 
+export type ExtensionExampleDifficulty = 'beginner' | 'intermediate' | 'advanced'
+
 export interface ExtensionExample {
   name: string
   experience: ExampleExperience
   description?: string
+  /** Complexidade editorial para descoberta; não altera os blocos liberados. */
+  difficulty?: ExtensionExampleDifficulty
+  /** Conceitos pesquisáveis, em linguagem curta para criança/professor. */
+  concepts?: readonly string[]
+  /** Família do jogo (plataforma, corrida, RPG, quebra-cabeça…). */
+  genre?: string
+  /** Posição opcional num percurso recomendado; menor aparece primeiro. */
+  recommendedOrder?: number
+  /** Destaca o exemplo no percurso inicial da galeria. */
+  featured?: boolean
   ir: SZIRV2
   /**
    * Assets embutidos que o exemplo precisa (ex.: um sprite pequeno do inimigo). Como
@@ -136,6 +148,24 @@ export interface ExtensionToolboxCategory {
   >
 }
 
+export type ExtensionRuntimeDefinition = {
+  /** Contrato interno do ciclo de vida; obrigatório em toda extensão oficial. */
+  lifecycle: RuntimeLifecycleContract
+  /** Módulos ESM exigidos pelo bootstrap. */
+  esmImports?: Record<string, string>
+} & (
+  | {
+      /** Compatibilidade para fixtures/runtimes pequenos já residentes. */
+      bootstrapScript: string
+      loadBootstrapScript?: never
+    }
+  | {
+      /** Importa o chunk pesado somente quando a extensão vai executar. */
+      bootstrapScript?: never
+      loadBootstrapScript(): Promise<string>
+    }
+)
+
 /**
  * Definição completa de uma extensão oficial — bundlada estaticamente.
  */
@@ -156,20 +186,7 @@ export interface ExtensionDefinition {
     blocks: BlockDefinition[]
     toolboxCategory: ExtensionToolboxCategory
   }
-  runtime: {
-    /** Script injetado no <head> do iframe — expõe API global (ex.: window.SZGame2D). */
-    bootstrapScript: string
-    /** Contrato interno do ciclo de vida; obrigatório em toda extensão oficial. */
-    lifecycle: RuntimeLifecycleContract
-    /**
-     * Módulos ESM que a extensão precisa no preview, como mapa
-     * `specifier → URL` adicionado ao importmap do iframe (ex.:
-     * `{ three: 'https://esm.sh/three@0.180.0' }`). A URL é FIXADA (pinada) e a
-     * CSP libera SÓ essa origem em `script-src` — não é vetor de exfiltração
-     * (carregamento de lib de mão única). Use só com a permission `network`.
-     */
-    esmImports?: Record<string, string>
-  }
+  runtime: ExtensionRuntimeDefinition
   ai?: {
     /** Manual completo, disponível para operações especializadas/retrieval. */
     promptContext?: string

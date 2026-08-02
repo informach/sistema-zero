@@ -4,7 +4,7 @@ import type { GameTwoDRuntimeApi } from '../runtimeContract'
 
 type Listener = (event: Record<string, unknown>) => void
 
-function runtimeHarness() {
+function runtimeHarness(devicePixelRatio = 1) {
   const listeners: Record<string, Listener[]> = {}
   const frames: Array<{ id: number; callback: (time?: number) => void }> = []
   const canceled = new Set<number>()
@@ -19,7 +19,8 @@ function runtimeHarness() {
       listeners[name].push(listener)
     },
     performance: { now: () => time },
-    devicePixelRatio: 1,
+    devicePixelRatio,
+    CSS: { supports: () => true },
     SZGame2D: undefined,
   } as unknown as Record<string, unknown>
   const requestAnimationFrame = (callback: (time?: number) => void) => {
@@ -105,6 +106,8 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
   it('substitui o registro do mesmo bloco sem multiplicar cliques', () => {
     const { api, fire } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    const canvas = document.querySelector('canvas')
     let calls = 0
 
     for (let frame = 0; frame < 100; frame += 1) {
@@ -112,7 +115,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
         calls += 1
       }, 'clique-do-bloco')
     }
-    fire('pointerdown', { clientX: 10, clientY: 20 })
+    fire('pointerdown', { clientX: 10, clientY: 20, target: canvas })
 
     expect(calls).toBe(1)
   })
@@ -155,6 +158,9 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
   it('reinicia em memória, executa o início novamente e não duplica eventos', () => {
     const { api, fire, flushFrame } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    const canvas = document.querySelector('canvas')
+    flushFrame()
     let starts = 0
     let clicks = 0
     let updates = 0
@@ -169,10 +175,10 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
       }, 'quadro')
     }, 'inicio')
 
-    fire('pointerdown', { clientX: 0, clientY: 0 })
+    fire('pointerdown', { clientX: 0, clientY: 0, target: canvas })
     flushFrame()
     api.restart()
-    fire('pointerdown', { clientX: 0, clientY: 0 })
+    fire('pointerdown', { clientX: 0, clientY: 0, target: canvas })
     flushFrame()
 
     expect(starts).toBe(2)
@@ -252,6 +258,8 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
   it('não entrega o mesmo teclado ou ponteiro aos handlers da partida nova', () => {
     const { api, fire } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    const canvas = document.querySelector('canvas')
     let starts = 0
     let restartFromKey = true
     let restartFromPointer = true
@@ -288,7 +296,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(continuedOldKeyRuns).toEqual([])
     expect(api.keyDown('Enter')).toBe(false)
 
-    fire('pointerdown', { clientX: 0, clientY: 0 })
+    fire('pointerdown', { clientX: 0, clientY: 0, target: canvas })
 
     expect(starts).toBe(3)
     expect(pointerSecondRuns).toEqual([])
@@ -595,6 +603,39 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
       [0, 0],
       [320, 200],
     ])
+  })
+
+  it('limita o backing store por DPR, dimensão e orçamento de pixels', () => {
+    document.body.innerHTML = '<canvas id="tela"></canvas>'
+    const canvas = document.querySelector('canvas')
+    if (!canvas) throw new Error('palco não foi criado')
+    canvas.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 4_000,
+        bottom: 3_000,
+        width: 4_000,
+        height: 3_000,
+        x: 0,
+        y: 0,
+        toJSON() {},
+      }) as DOMRect
+    const originalWarn = console.warn
+    const warnings: string[] = []
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      const { api } = runtimeHarness(8)
+      api.setupStage(4_000, 3_000, '#000000')
+      api.setupStage(4_000, 3_000, '#000000')
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect(canvas.width).toBeLessThanOrEqual(8_192)
+    expect(canvas.height).toBeLessThanOrEqual(8_192)
+    expect(canvas.width * canvas.height).toBeLessThanOrEqual(16_777_216)
+    expect(warnings.filter((warning) => warning.includes('resolução segura'))).toHaveLength(1)
   })
 
   it('permite descrever objetivo e controles do jogo para leitores de tela', () => {
@@ -923,5 +964,27 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     api.setupStageFull('#111111')
     expect(document.documentElement.style.overflow).toBe('hidden')
     expect(document.body.style.overflow).toBe('hidden')
+  })
+
+  it('usa unidades dinâmicas quando o navegador oferece suporte', () => {
+    expect(gameTwoDRuntime).toContain("_viewportUnit('width')")
+    expect(gameTwoDRuntime).toContain("_viewportUnit('height')")
+    expect(gameTwoDRuntime).toContain("dynamicUnit = axis === 'width' ? 'dvw' : 'dvh'")
+  })
+
+  it('anuncia pausa e retomada sem apagar a descrição do jogo', () => {
+    document.body.innerHTML = ''
+    const { api } = runtimeHarness()
+    api.setupStage(320, 200, '#111111')
+    api.setStageDescription('Colete todas as moedas.')
+
+    api.pauseGame()
+    expect(document.getElementById('sz-game-2d-status')?.textContent).toBe('Jogo pausado.')
+    expect(document.getElementById('sz-game-2d-description')?.textContent).toBe(
+      'Colete todas as moedas.',
+    )
+
+    api.resumeGame()
+    expect(document.getElementById('sz-game-2d-status')?.textContent).toBe('Jogo continuado.')
   })
 })
