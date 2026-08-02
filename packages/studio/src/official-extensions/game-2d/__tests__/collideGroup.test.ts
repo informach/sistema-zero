@@ -23,7 +23,7 @@ interface Api {
   collideSprite: (s: Sprite, other: Sprite) => void
   spawn: (g: { items: Sprite[] }, o: Partial<Sprite>) => Sprite | null
   updateGroup: (g: { items: Sprite[] }) => void
-  updateGroupNoGravity: (g: { items: Sprite[] }) => void
+  applyGravityToGroup: (g: { items: Sprite[] }) => void
   setGravity: (v: number) => void
   applyVelocity: (s: Sprite) => void
 }
@@ -141,21 +141,19 @@ describe('collideSprite — colisão sólida contra UM sprite (R5/D1)', () => {
   })
 })
 
-describe('updateGroupNoGravity — mover o grupo sem gravidade (R5/D2)', () => {
-  it('move pela velocidade SEM somar gravidade (tiros vão retos)', () => {
+describe('updateGroup + applyGravityToGroup', () => {
+  it('tiros vão retos até a gravidade ser aplicada explicitamente', () => {
     const api = load()
     api.setGravity(1)
     const tiros = api.createGroup()
-    const semG = api.createGroup()
-    const comG = api.createGroup()
-    const t = api.spawn(semG, { x: 0, y: 100, w: 6, h: 6, vx: 0, vy: -5 })
-    const t2 = api.spawn(comG, { x: 0, y: 100, w: 6, h: 6, vx: 0, vy: -5 })
-    expect(tiros.items.length).toBe(0)
-    api.updateGroupNoGravity(semG) // sem gravidade
-    api.updateGroup(comG) // com gravidade (comparação)
-    // o "sem gravidade" mantém o vy constante; o normal já somou +1 de gravidade
+    const t = api.spawn(tiros, { x: 0, y: 100, w: 6, h: 6, vx: 0, vy: -5 })
+    api.updateGroup(tiros)
     expect(t?.vy).toBe(-5)
     expect(t?.y).toBe(95)
-    expect(t2?.vy).toBe(-4) // -5 + gravidade 1
+
+    api.applyGravityToGroup(tiros)
+    api.updateGroup(tiros)
+    expect(t?.vy).toBe(-4)
+    expect(t?.y).toBe(91)
   })
 })

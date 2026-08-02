@@ -1335,8 +1335,8 @@ ${pad}}, ${JSON.stringify(id)});`
       return `${pad}SZGame2D.blink(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.frames), 0, identifiers, recAt(base))});`
     case 'g2d:updateGroup':
       return `${pad}SZGame2D.updateGroup(${identifiers.get(stmt.groupVar)});`
-    case 'g2d:updateGroupNoGravity':
-      return `${pad}SZGame2D.updateGroupNoGravity(${identifiers.get(stmt.groupVar)});`
+    case 'g2d:applyGravityToGroup':
+      return `${pad}SZGame2D.applyGravityToGroup(${identifiers.get(stmt.groupVar)});`
     case 'g2d:drawGroup':
       return `${pad}SZGame2D.drawGroup(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:drawGroupByY':
@@ -4972,7 +4972,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.vy, names)
       return
     case 'g2d:updateGroup':
-    case 'g2d:updateGroupNoGravity':
+    case 'g2d:applyGravityToGroup':
     case 'g2d:clearGroup':
       names.add(stmt.groupVar)
       return

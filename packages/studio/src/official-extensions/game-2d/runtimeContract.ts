@@ -265,7 +265,7 @@ export interface GameTwoDPhysicsApi {
   setGravity(gravity: number): void
   /** Move o sprite pela velocidade. NÃO soma gravidade (ver `applyGravity`). */
   applyVelocity(sprite: GameTwoDSprite): void
-  /** Puxa o sprite para baixo somando a gravidade DO MUNDO (padrão 0.6). */
+  /** Soma a gravidade DO MUNDO ao `vy` do sprite (padrão 0.6; pode ser negativa). */
   applyGravity(sprite: GameTwoDSprite): void
   bounceOnEdges(sprite: GameTwoDSprite, ctx: GameTwoDContext): void
   circleCollides(a: GameTwoDSprite, b: GameTwoDSprite): boolean
@@ -403,8 +403,9 @@ export interface GameTwoDWorldApi {
     group: GameTwoDGroup,
     options?: GameTwoDSpriteOptions & { radius?: number },
   ): GameTwoDSprite | null
+  /** Soma a gravidade do mundo ao `vy` de cada sprite atual do grupo. */
+  applyGravityToGroup(group: GameTwoDGroup): void
   updateGroup(group: GameTwoDGroup): void
-  updateGroupNoGravity(group: GameTwoDGroup): void
   drawGroup(ctx: GameTwoDContext, group: GameTwoDGroup): void
   drawGroupByY(ctx: GameTwoDContext, group: GameTwoDGroup): void
   forEachInGroup(group: GameTwoDGroup, fn: (sprite: GameTwoDSprite, index: number) => void): void
@@ -724,8 +725,8 @@ export const GAME_TWO_D_API_KEYS = [
   'tileAt',
   'createGroup',
   'spawn',
+  'applyGravityToGroup',
   'updateGroup',
-  'updateGroupNoGravity',
   'drawGroup',
   'drawGroupByY',
   'forEachInGroup',

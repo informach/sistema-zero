@@ -544,6 +544,44 @@ adulto — deliberado), "Adicionar ao projeto" copia via `addAsset` com `uniqueN
 (`libId: personal:<id>`), "Excluir" é otimista/best-effort; estado vazio orienta "Desenhe no
 Pinta…". Testes em `src/asset-library/personal.test.ts` (mock idb FUNCIONAL Map-por-DB).
 
+### Editar o desenho + ele se atualizar sozinho nos jogos (mão DUPLA, 08/2026)
+
+A ponte deixou de ser mão única. Duas peças:
+
+**1. Botão "Editar"** — prop de host nova **`onEditDrawing?: (drawingId) => void`**
+(`studio/types.ts` → latch no `StudioCore` → contexto `studio/edit-drawing.ts`, molde exato do
+`onCloudSync`). O `AssetsPanel` mostra `✏️ Editar` em "Meus desenhos" E `✏️ editar desenho` no card
+de "No projeto" (só quando `libId` é `personal:*` **e** o desenho ainda existe na biblioteca — apagado
+no Pinta esconde o botão em vez de abrir editor vazio). Sem a prop, nenhum botão: aula e admin
+seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
+
+**2. Sincronia de volta** — `src/asset-library/personalSync.ts`
+(`syncDrawingsIntoProjects(storeApi)`), disparada pelo `DrawingSyncWatcher` (montado no `Shell`, no
+`focus`/`visibilitychange`) e ao abrir o painel de Imagens. Alcança **TODOS os jogos da criança**
+(decisão dela), não só o aberto:
+
+- **Portão barato:** marcador `localStorage sz:desenhos-alterados:<ns>` (escrito por
+  `savePersonalAsset`/`removePersonalAsset`) × relógio em memória da aba. Igual ⇒ sai sem tocar no
+  IndexedDB. `localStorage` (e não BroadcastChannel) pelo MESMO motivo do `blockClipboard`: precisa
+  sobreviver à aba fechada e ser lido sob demanda. A chave leva o namespace — irmão não dispara
+  sincronia do irmão.
+- **Projeto ABERTO** vai pela store (`updateAssetImage`, ação NOVA no `projectStore`); os demais pela
+  partição de assets (`loadProjectAssetsById`/`persistProjectAssets`, par novo em `persistence.ts` —
+  ⚠️ o persist esquece o id no `lastPersistedAssetsRef`, senão o dirty-check por referência mentiria).
+- **A comparação é de BYTES** (`dataUrl`), não de `updatedAt`: nada mais escreve pixels no asset do
+  projeto. Zero campo novo no `ProjectAsset`, zero migração, e já cobre assets anteriores à feature.
+- ⚠️ **`updateAssetImage` NUNCA toca em `name`/`id`/`libId`/`source`** — os blocos referenciam o asset
+  PELO NOME (`FieldAssetPicker` serializa a string). Metadados: o desenho novo traz os dele → valem
+  os dele; não traz e a geometria é a mesma → preserva o do projeto (peças/mapa do `TileConfigDialog`
+  não existem no Pinta); geometria MUDOU → descarta (índices inválidos).
+- **Silenciosa no sucesso** (decisão dela), **nunca na recusa**: cota estourada vai para
+  `takeDrawingSyncFailures()` e o painel de Imagens mostra ao abrir.
+- Preview, miniaturas de bloco e export reagem sozinhos (identidade nova de `project.assets`).
+
+Testes: `personalSync.test.ts` + `components/assets/AssetsPanelEditDrawing.test.tsx`. O playground
+liga a feature (`setPersonalAssetsNamespace('playground')` + `onEditDrawing`) — QA em navegador real
+feito: jogo aberto, jogo FECHADO, preview e as duas miniaturas.
+
 **Metadados de spritesheet/tileset (Pinta→Estúdio, 07/2026 — seletor por nome):** o `ProjectAsset`
 ganhou `sprite?: {frameW,frameH,animations:{name,from,to,fps,loop}[]}` e `tileset?: {tileSize,solid:
 number[]}` (os índices `from/to` da animação são os MESMOS que o runtime do Jogo 2D usa — o Pinta
@@ -563,7 +601,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.56.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.57.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar

@@ -230,6 +230,17 @@ export function StudioFullClient({
   )
 }
 
+/**
+ * "Editar o desenho" nos assets vindos do Pinta: abre o Pinta em ABA NOVA já
+ * naquele desenho. O id viaja na URL (e não em `sessionStorage`, como o intent do
+ * Pensa) porque `noopener` — o padrão de aba nova do app — corta o vínculo entre
+ * as abas, e `sessionStorage` não atravessa. Ao salvar lá, o desenho volta
+ * sozinho para os jogos daqui (ver `resyncToStudio` no pinta-client).
+ */
+function openDrawingInPinta(drawingId: string): void {
+  window.open(`/pinta?desenho=${encodeURIComponent(drawingId)}`, '_blank', 'noopener,noreferrer')
+}
+
 /** Carrega o projeto do IndexedDB e monta o editor completo (volta à lista no "Projetos"). */
 function EditorScreen({
   mod,
@@ -359,6 +370,8 @@ function EditorScreen({
       allowLevelReveal={tier.allowLevelReveal}
       features={{ professional }}
       onPromoteToPro={handlePromoteToPro}
+      // Botão "Editar" nos desenhos do Pinta (painel de Imagens) → abre o Pinta.
+      onEditDrawing={openDrawingInPinta}
       // Exemplos "clássicos" no painel de Extensões — só p/ a equipe (ver a página).
       showExamples={showExamples}
     />

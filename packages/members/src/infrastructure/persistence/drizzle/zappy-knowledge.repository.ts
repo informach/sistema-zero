@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, desc, eq, inArray, like, ne, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gt, inArray, like, ne, or, sql } from 'drizzle-orm'
 import type {
   PublishedZappyBlock,
   ZappyKnowledgeHit,
@@ -56,7 +56,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         blockId: lessonBlocks.id,
         courseId: courses.id,
         lessonId: lessons.id,
-        blockRevision: sql<string>`md5(${lessonBlocks.content}::text)`,
+        blockRevision: lessonBlocks.contentRevision,
       })
       .from(lessonBlocks)
       .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
@@ -216,7 +216,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           inArray(zappyKnowledgeSources.lessonId, lessonIds),
           eq(zappyKnowledgeSources.status, 'ready'),
           eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
-          sql`${zappyKnowledgeSources.blockRevision} = md5(${lessonBlocks.content}::text)`,
+          eq(zappyKnowledgeSources.blockRevision, lessonBlocks.contentRevision),
           or(
             and(
               eq(zappyKnowledgeSources.sourceType, 'rich-text'),
@@ -253,27 +253,30 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     }))
   }
 
-  async listPublishedKidsBlocks(): Promise<PublishedZappyBlock[]> {
-    const rows = await this.db
+  async listPublishedKidsBlocks(
+    input: { after?: string; limit?: number } = {},
+  ): Promise<PublishedZappyBlock[]> {
+    const clauses = [
+      eq(courses.audience, 'kids'),
+      eq(courses.status, 'published'),
+      eq(lessons.isPublished, true),
+    ]
+    if (input.after) clauses.push(gt(lessonBlocks.id, input.after))
+    const query = this.db
       .select({
         blockId: lessonBlocks.id,
         courseId: courses.id,
         lessonId: lessons.id,
+        blockRevision: lessonBlocks.contentRevision,
         kind: lessonBlocks.kind,
         content: lessonBlocks.content,
       })
       .from(lessonBlocks)
       .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
       .innerJoin(courses, eq(courses.id, lessons.courseId))
-      .where(
-        and(
-          eq(courses.audience, 'kids'),
-          eq(courses.status, 'published'),
-          eq(lessons.isPublished, true),
-        ),
-      )
-      .orderBy(asc(courses.id), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
-    return rows
+      .where(and(...clauses))
+      .orderBy(asc(lessonBlocks.id))
+    return input.limit ? query.limit(input.limit) : query
   }
 
   async report(): Promise<ZappyKnowledgeReport> {
@@ -316,7 +319,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
             eq(courses.status, 'published'),
             eq(lessons.isPublished, true),
             eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
-            sql`${zappyKnowledgeSources.blockRevision} = md5(${lessonBlocks.content}::text)`,
+            eq(zappyKnowledgeSources.blockRevision, lessonBlocks.contentRevision),
           ),
         ),
     ])

@@ -19,7 +19,7 @@ export const gameTwoDKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Pula com ↑/Espaço/W ou um toque na tela, com gravidade e pouso na borda atraída: base com gravidade positiva, teto com gravidade negativa. Ótimo para jogos de corrida e de pulo. Use dentro do "a cada quadro".',
+      'Pula com ↑/Espaço/W ou um toque na tela e pousa na borda atraída. Para o sprite cair, encaixe "Aplicar a gravidade do mundo" logo acima. Ótimo para jogos de corrida e de pulo. Use dentro do "a cada quadro".',
   },
 
   // ---- Kit dino (v0.9.0): desenhos prontos + sons para um jogo de corrida ----

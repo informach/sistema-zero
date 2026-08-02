@@ -14,6 +14,7 @@ interface PendingBase {
   courseId: string
   lessonId: string
   sourceRef: string
+  expectedBlockRevision: string
 }
 
 type PendingExtraction =
@@ -37,6 +38,7 @@ async function postSource(input: {
   lessonId: string
   sourceType: 'video-vtt' | 'rich-text' | 'student-notebook'
   sourceRef: string
+  expectedBlockRevision: string
   content?: string
   error?: string
 }): Promise<void> {
@@ -126,6 +128,7 @@ async function syncPending(input: PendingExtraction): Promise<void> {
       lessonId: input.lessonId,
       sourceType: input.sourceType,
       sourceRef: input.sourceRef,
+      expectedBlockRevision: input.expectedBlockRevision,
       content,
       ...(content ? {} : { error: 'Fonte sem texto selecionável' }),
     })
@@ -135,6 +138,7 @@ async function syncPending(input: PendingExtraction): Promise<void> {
       lessonId: input.lessonId,
       sourceType: input.sourceType,
       sourceRef: input.sourceRef,
+      expectedBlockRevision: input.expectedBlockRevision,
       error: message,
     })
     throw cause instanceof Error ? cause : new Error(message)
@@ -150,6 +154,7 @@ export async function syncZappyKnowledgeForBlock(block: BlockView): Promise<void
       lessonId: block.lessonId,
       sourceType: 'rich-text',
       sourceRef: ref,
+      expectedBlockRevision: block.blockRevision,
       content: content.markdown ?? content.html ?? '',
     })
     return
@@ -163,6 +168,7 @@ export async function syncZappyKnowledgeForBlock(block: BlockView): Promise<void
       lessonId: block.lessonId,
       sourceType: 'video-vtt',
       sourceRef: ref,
+      expectedBlockRevision: block.blockRevision,
       extraction: location
         ? { kind: 'stable-vtt', location }
         : videoId
@@ -179,6 +185,7 @@ export async function syncZappyKnowledgeForBlock(block: BlockView): Promise<void
         lessonId: block.lessonId,
         sourceType: 'student-notebook',
         sourceRef: ref,
+        expectedBlockRevision: block.blockRevision,
         extraction: { kind: 'private-pdf', location: content.url },
       })
       return
@@ -205,12 +212,21 @@ export function getZappyMetrics(month: string): Promise<GatewayResponse<unknown>
   return gatewayFetch('/members/admin/zappy/metrics', { query: { month } })
 }
 
-export async function backfillZappyKnowledge(): Promise<GatewayResponse<unknown>> {
+const BACKFILL_BATCH_SIZE = 3
+
+export async function backfillZappyKnowledge(
+  input: { cursor?: string } = {},
+): Promise<GatewayResponse<unknown>> {
   const result = await gatewayFetch<{
     indexed: number
     deleted: number
     pending: PendingExtraction[]
-  }>('/members/admin/zappy/knowledge/backfill', { method: 'POST', body: {} })
+    nextCursor: string | null
+    done: boolean
+  }>('/members/admin/zappy/knowledge/backfill', {
+    method: 'POST',
+    body: { ...(input.cursor ? { cursor: input.cursor } : {}), limit: BACKFILL_BATCH_SIZE },
+  })
   if (result.status !== 200 || !result.body) return result
   let cursor = 0
   let extracted = 0
@@ -247,6 +263,8 @@ export async function backfillZappyKnowledge(): Promise<GatewayResponse<unknown>
       extracted,
       failed,
       failures,
+      nextCursor: result.body.nextCursor,
+      done: result.body.done,
     },
   }
 }

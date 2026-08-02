@@ -2432,8 +2432,8 @@ export type JSStatement =
       vy: JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:updateGroup'; groupVar: string })
-  // Move o grupo sem gravidade (tiros do jogador num jogo com gravidade).
-  | (JSStatementCommon & { type: 'g2d:updateGroupNoGravity'; groupVar: string })
+  // Acelera explicitamente todos os sprites atuais do grupo pela gravidade do mundo.
+  | (JSStatementCommon & { type: 'g2d:applyGravityToGroup'; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:drawGroup'; groupVar: string; ctxVar: string })
   // Desenho com profundidade top-down: ordena a CÓPIA do grupo pela base (y+h).
   | (JSStatementCommon & { type: 'g2d:drawGroupByY'; groupVar: string; ctxVar: string })
@@ -6384,7 +6384,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:updateGroup'), groupVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:updateGroupNoGravity'), groupVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:applyGravityToGroup'), groupVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:drawGroup'),
       groupVar: irText(),
@@ -11266,7 +11266,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:spawnInGroup',
   'g2d:spawnImageInGroup',
   'g2d:updateGroup',
-  'g2d:updateGroupNoGravity',
+  'g2d:applyGravityToGroup',
   'g2d:drawGroup',
   'g2d:drawGroupByY',
   'g2d:forEachInGroup',

@@ -16,6 +16,8 @@ export const COPY = {
     emptyCta: 'Começar meu primeiro desenho',
     loading: 'Abrindo a sua galeria...',
     loadError: 'Não consegui abrir a sua galeria. Tente de novo daqui a pouco.',
+    /** Veio pelo botão "Editar" do Estúdio, mas o desenho já tinha sido apagado. */
+    drawingGone: 'Esse desenho não está mais aqui. Escolha outro na sua galeria.',
     retry: 'Tentar de novo',
     rename: 'Renomear',
     duplicate: 'Duplicar',
@@ -389,6 +391,8 @@ export const COPY = {
     tooBig: 'Esse desenho ficou grande demais para o Estúdio. Tente um tamanho menor.',
     openStudio: 'Abrir o Estúdio',
     sending: 'Enviando...',
+    /** Confirmação do reenvio automático (a criança abriu o desenho pelo jogo). */
+    resynced: 'Atualizado no Estúdio',
     // Mapa: viaja como ASSET completo (grade + peças embutidas), não mais só a
     // grade no clipboard — o caminho de texto continua no "Baixar".
     mapSuccess: 'Seu mapa já está no Estúdio! Procure o bloco "Criar mapa do meu desenho".',

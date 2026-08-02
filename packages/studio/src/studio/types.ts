@@ -138,6 +138,15 @@ export interface StudioCommonProps {
    */
   onCloudSync?: () => void
   /**
+   * Callback OPCIONAL "editar este desenho no Pinta": quando presente, os
+   * desenhos vindos do Pinta ganham um botão de editar no painel de Imagens (na
+   * biblioteca "Meus desenhos" e nas imagens já usadas no projeto). O HOST abre o
+   * Pinta — em aba nova — já naquele desenho; o Studio só entrega o id.
+   * Ausente (default) → sem botão (embed do admin, bloco de aula).
+   * Estável por instância (latchado, igual à `share`).
+   */
+  onEditDrawing?: (drawingId: string) => void
+  /**
    * Mostra os EXEMPLOS prontos (CORE_EXAMPLES + os `examples` das extensões) no
    * painel de Extensões. Default `false` — os exemplos são material de TESTE do
    * admin e podem estar desatualizados/com erro, então ficam escondidos para

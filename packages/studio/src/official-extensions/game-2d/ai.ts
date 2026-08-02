@@ -30,9 +30,12 @@ API global injetada como window.SZGame2D:
   chamada nem ofereça o bloco legado. Use as Áreas do projeto.
 - gameLoop(fn): adiciona fn ao agendador do jogo, com passo fixo de 60 Hz. Vários loops coexistem.
 - keys: estado das setas { left, right, up, down }.
-- setGravity(g) / applyVelocity(sprite): física simples com valor finito explícito
-  (vy += gravidade). Zero desliga e valores negativos puxam para cima; platformer,
-  jumpOnGround e inimigos terrestres respeitam o mesmo valor.
+- setGravity(g): define somente a aceleração do mundo (padrão 0.6). Zero desliga e
+  valores negativos puxam para cima; definir o valor sozinho não move nenhum sprite.
+- applyGravity(sprite): soma a gravidade do mundo ao vy neste quadro. Use antes do
+  movimento (Euler semi-implícito). applyVelocity(sprite) move por vx/vy sem gravidade.
+- applyGravityToGroup(grupo): aplica a gravidade a cada sprite atual do grupo;
+  updateGroup(grupo) somente move. Só sprites/grupos que recebem o apply respondem.
 - bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
 - circleCollides(a, b): colisão por círculo.
 - setHitboxScale(sprite, percent): dial da colisão PERDOADORA — a área usada nas perguntas de
@@ -48,6 +51,13 @@ API global injetada como window.SZGame2D:
 
 Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
 - onKey('ArrowRight', fn): roda fn a cada vez que a tecla é apertada (keydown).
+- onAnyInput(fn): roda ao apertar qualquer tecla ou tocar na tela; registra o palco
+  automaticamente e serve para começar/recomeçar com teclado ou toque. Bloco
+  "Quando apertar qualquer tecla ou tocar na tela".
+- onPointer((x, y) => {…}): clique/toque no palco, com coordenadas lógicas.
+- onJump(() => sprite, fn): roda no instante em que platformer, jumpOnGround ou
+  controlDino faz esse sprite pular. Registre uma vez em ⚡ Quando acontecer.
+  Bloco "Quando o sprite pular".
 - onOverlap(() => a, () => b, fn): roda fn quando os sprites a/b COMEÇAM a se tocar
   (edge-triggered, num loop interno). Os sprites entram como thunks (() => sprite).
 - keyDown('ArrowRight'): true enquanto a tecla está segurada — use dentro de if/gameLoop.
@@ -114,7 +124,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - createEnemyType({ behavior, color, image, hp, speed, dmg, w, h }): behavior em
   'patrulha'|'perseguidor'|'voador'|'voador-vertical'|'saltador'|'atirador'.
   Patrulha não cai num top-down; para fazê-la cair em plataforma, gere setGravity
-  em Ao iniciar, sem inferir o modo a partir de platformer/jumpOnGround.
+  em Ao iniciar e applyGravityToGroup(tipo) antes de updateEnemyType no gameLoop.
 - spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
 - updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do
   atirador + remove derrotados (hp<=0 -> particulas + onDefeat). Alvo = quem perseguir/mirar.
@@ -132,11 +142,11 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - loadImage('nome'): handle { img, loaded } (aceita nome do asset OU url/dataUrl direta).
 
 Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
-- platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + gravidade; a borda atraída é o chão (base com gravidade positiva, teto com gravidade negativa).
+- platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + pouso; não soma gravidade. Gere applyGravity(sprite) imediatamente antes. A borda atraída é o chão (base com gravidade positiva, teto com gravidade negativa).
 - topDown(sprite, speed): 4 direções com diagonal normalizada.
 - flyFree(sprite, speed): voar livre SEM gravidade, com INÉRCIA pesada (0.10 de aceleração, 0.96 de planeio): engata em ~0,17s, desliza ~72px por ~2,3s; ao inverter, cruza o zero e muda de direção em ~0,18s, chegando ao teto oposto em ~0,33s. É a inércia que o separa do topDown; speed é o TETO.
-- flap(sprite, ctx, force): bater as asas. Gravidade + empurrão pra cima na BORDA de seta pra cima/W/Espaço/toque, inclusive no ar (segurar não sobe sempre); pousa na borda de baixo.
-- swim(sprite, speed): nadar. Empuxo (afunda devagar parado, sobe segurando pra cima) + arrasto forte; gravidade do mundo em 0 = boiando.
+- flap(sprite, ctx, force): bater as asas. Empurrão na BORDA de seta pra cima/W/Espaço/toque, inclusive no ar (segurar não sobe sempre); não soma gravidade. Gere applyGravity(sprite) antes para o sprite voltar a cair.
+- swim(sprite, speed): nadar em 8 direções com arrasto forte; não soma gravidade. Sem applyGravity o sprite boia; gere applyGravity(sprite) antes para afundar solto.
 - followPointer(sprite, speed): anda em direção ao ponteiro.
 - clampToScreen(sprite, ctx): prende o sprite dentro do canvas.
 - flash(ctx, 'cor'): pinta a tela com cor translúcida (efeito de flash num frame).
@@ -169,8 +179,8 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
   na tela fica na FRENTE (profundidade de jogo top-down: o herói passa atrás da árvore). Ordena
   uma cópia; a ordem lógica do grupo (trazer p/ frente/fundo) não muda. Bloco "Desenhar o grupo
   ordenado pela base".
-- updateGroupNoGravity(grupo): move cada sprite pela velocidade SEM somar gravidade — para os TIROS do
-  jogador num jogo COM gravidade (senão os tiros arqueiam). Bloco "Mover o grupo sem gravidade".
+- applyGravityToGroup(grupo): soma a gravidade ao vy de cada sprite atual. Use antes de
+  updateGroup somente nos grupos que devem cair; tiros ficam retos usando apenas updateGroup.
 - forEachInGroup(grupo, function (sprite) {…}): roda o corpo para cada sprite (ordem reversa, pode remover no corpo).
 - countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa).
@@ -237,11 +247,11 @@ NAVE CLÁSSICA — girar + impulsionar na direção apontada (v0.10.0), para o A
 - shootFrom(sprite, grupo, { speed, color }): cria um tiro na PONTA do sprite, indo na direção que ele aponta (use no "quando apertar Espaço"). spawnAsteroidFromEdge(grupo, { size, color, speed }): solta um asteroide de uma borda aleatória rumo ao centro (use no "a cada X segundos"). Existe o exemplo pronto "Asteroides clássico" mostrando tudo junto.
 
 PULO NO CHÃO (genérico, v0.9.0) — para jogos de corrida/pulo SEM andar para os lados:
-- jumpOnGround(sprite, ctx, força): aplica gravidade, pousa na borda atraída (base com gravidade positiva, teto com gravidade negativa) e pula com ↑/Espaço/W OU um toque. Use dentro do gameLoop. Bloco "Fazer o sprite pular no chão". Diferente do platformer (que também anda esquerda/direita).
+- jumpOnGround(sprite, ctx, força): pousa na borda atraída (base com gravidade positiva, teto com gravidade negativa) e pula com ↑/Espaço/W OU um toque; não soma gravidade. Gere applyGravity(sprite) imediatamente antes. Use dentro do gameLoop. Bloco "Fazer o sprite pular no chão". Diferente do platformer (que também anda esquerda/direita).
 
 KIT DINO (v0.9.0) — categoria "🦕 Kit dino" com atalhos PRONTOS (não genéricos) para um jogo de corrida estilo "Dino Run"; os blocos genéricos seguem nas categorias normais:
 - createDino({ x, y, size, color }): dinossauro desenhado (perninhas que correm sozinhas; a pose muda no pulo/agachar). É um sprite normal (drawSprite desenha o dino).
-- controlDino(dino, ctx, força): controla o dino estilo corrida — pula com ↑/Espaço ou toque na metade de CIMA; abaixa com ↓ ou segurando o dedo embaixo. Já vem com gravidade, chão (linha um pouco acima da base, sobre a grama) e poeira. Use no gameLoop.
+- controlDino(dino, ctx, força): controla o dino estilo corrida — pula com ↑/Espaço ou toque na metade de CIMA; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira, mas não soma gravidade: gere applyGravity(dino) imediatamente antes. Use no gameLoop.
 - spawnObstacle(grupo, ctx, { type, x, size, vx }): coloca no grupo um obstáculo desenhado. type = 'cactus'/'rock' (no chão, pule por cima), 'bird' (no alto, abaixe por baixo) ou 'random' (sorteia). O y é automático pelo tipo; ligue x na borda direita e vx negativo. updateGroup/drawGroup tratam como sprite normal.
 - spawnEgg(grupo, { x, y, vx }): coloca no grupo um OVO (item de bônus). Quando o dino encosta, dê pontos extras e remova o ovo.
 - drawForest(ctx, velocidade): fundo de FLORESTA com parallax (céu, sol, nuvens, morros e grama que rola) — chame logo após clear(). O dino corre sobre a grama.

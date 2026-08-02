@@ -507,7 +507,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Esquerda/direita com as setas, pulo com a seta pra cima (só quando está no chão) e gravidade. Usa a gravidade do mundo quando ela foi definida; senão usa 0,6. O chão é a borda atraída: base com gravidade positiva, teto com gravidade negativa.',
+      'Esquerda/direita com as setas, pulo com a seta pra cima (só quando está no chão) e pouso na borda atraída. Para o sprite cair, encaixe "Aplicar a gravidade do mundo" logo acima. O valor da gravidade escolhe o chão: base quando positivo, teto quando negativo.',
   },
   {
     type: 'sz_g2d_top_down',
@@ -552,7 +552,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A gravidade puxa o tempo todo e cada toque na seta pra cima, no W, no espaço ou na tela dá um empurrão pra cima, inclusive no ar. É o passarinho dos canos, o foguete, o balão. Segurar a tecla não sobe para sempre: cada batida precisa de um toque novo.',
+      'Cada toque na seta pra cima, no W, no espaço ou na tela dá um empurrão, inclusive no ar. Para o sprite voltar a cair, encaixe "Aplicar a gravidade do mundo" logo acima. Segurar a tecla não sobe para sempre: cada batida precisa de um toque novo.',
   },
   {
     type: 'sz_g2d_swim',
@@ -567,7 +567,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Água pesada: solto, o bicho afunda devagarinho; segurando a seta pra cima, ele sobe. Tudo mais lento e mais macio que no ar, com as 8 direções. Com a gravidade do mundo em 0 ele fica boiando parado.',
+      'Água pesada: controla nas 8 direções com bastante arrasto. Sem aplicar gravidade, o bicho fica boiando; encaixe "Aplicar a gravidade do mundo" logo acima para ele afundar quando estiver solto.',
   },
   {
     type: 'sz_g2d_follow_pointer',

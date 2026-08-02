@@ -1,4 +1,5 @@
 import type { BlockLevel } from '#core'
+import { ESSENTIAL_2D_BLOCK_TYPES } from '../career/blockProfiles'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
 import { resolveProgrammingBlockLevel } from './programmingContract'
 
@@ -10,13 +11,12 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  * último" (decisão da usuária 26/07):** iniciante/intermediário criam com os KITS
  * (extensões facilitadoras) + um mínimo de web; o AVANÇADO faz tudo na unha, sem
  * kit (Canvas/HTML/CSS crus).
- * - **Iniciante 2D** = TODOS os blocos do Jogo 2D (`sz_g2d_*`) + facilitadores e um
- *   kit essencial de lógica + um **HTML/CSS ESSENCIAL** (título/parágrafo/imagem/
+ * - **Iniciante 2D** = perfil **Jogo 2D Essencial** + kit essencial de lógica +
+ *   **HTML/CSS ESSENCIAL** (título/parágrafo/imagem/
  *   botão/link/lista/caixa + cor de fundo/texto, tamanho de fonte, padding/margem/
  *   borda — o mínimo pra montar uma telinha). As aulas filtram o subconjunto de
- *   Jogo 2D que aparece; o nível não esconde peças da extensão.
- * - **Iniciante 3D** = a PORTA DE ENTRADA do 3D: todos os blocos do Jogo 3D
- *   (`sz_g3d_*`) — a aula continua escolhendo quais deles revelar.
+ * - **Iniciante 3D** = Jogo 2D completo + a PORTA DE ENTRADA do 3D: todos os
+ *   blocos do Jogo 3D (`sz_g3d_*`). A aula ainda pode restringir por allowBlocks.
  * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
  *   funções, getters/setters, matemática básica) + caminho feliz e kits de gênero
  *   do Jogo 2D Avançado + **SVG** (desenhar formas declarando — o primitivo gentil).
@@ -37,7 +37,8 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  * no tier certo) é travada por `blockLevels.test.ts`.
  *
  * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
- * ⚠️ Adicionou um bloco? Todo `sz_g2d_*` fica no iniciante-2d. Para o core,
+ * ⚠️ Adicionou um bloco? `sz_g2d_*` novo fica no iniciante-3d até entrar
+ * explicitamente no perfil Essencial. Para o core,
  * decida se entra nos conjuntos intermediário/avançado; senão os defaults por
  * prefixo decidem (canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d,
  * g3k→int-3d, t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
@@ -226,6 +227,7 @@ const INTERMEDIARIO_3D: ReadonlySet<string> = new Set<string>()
 // de 1 linha p/ ajuste fino futuro.
 const G3D_FLOOR: BlockLevel = 'iniciante-3d'
 const W3D_LEVEL: BlockLevel = 'intermediario-3d'
+const ESSENTIAL_2D_TYPES = new Set<string>(ESSENTIAL_2D_BLOCK_TYPES)
 
 /**
  * Degrau de um bloco pelo `type`. Regras invariantes por prefixo vêm primeiro,
@@ -233,8 +235,10 @@ const W3D_LEVEL: BlockLevel = 'intermediario-3d'
  * (facilitadores + kit essencial de lógica) é iniciante-2d.
  */
 export function resolveBlockLevel(type: string): BlockLevel {
-  // A aula, não o nível global, escolhe quais peças do Jogo 2D básico aparecem.
-  if (type.startsWith('sz_g2d_')) return 'iniciante-2d'
+  // O Construtor recebe o perfil Essencial; o Inventor abre o Jogo 2D completo.
+  if (type.startsWith('sz_g2d_')) {
+    return ESSENTIAL_2D_TYPES.has(type) ? 'iniciante-2d' : 'iniciante-3d'
+  }
   if (type.startsWith('sz_g3d_')) return G3D_FLOOR
   const programmingLevel = resolveProgrammingBlockLevel(type)
   if (programmingLevel) return programmingLevel

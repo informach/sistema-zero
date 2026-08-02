@@ -372,7 +372,7 @@ export function ZappyPanel(): JSX.Element | null {
             )}
           >
             <p className="whitespace-pre-wrap">{message.text}</p>
-            {message.response?.blockReferences.length ? (
+            {project.kind !== 'pro' && message.response?.blockReferences.length ? (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {message.response.blockReferences.map((reference) => (
                   <button

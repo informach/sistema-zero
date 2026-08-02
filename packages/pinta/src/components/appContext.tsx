@@ -19,6 +19,11 @@ export interface PintaAppContextValue {
    * limpa — voltar do editor à galeria não reabre o "Criar novo".
    */
   takeInitialIntent(): PintaInitialIntent | null
+  /**
+   * Id do desenho a abrir direto (botão "Editar" do Estúdio), consumido UMA
+   * vez — voltar à galeria não reabre o editor.
+   */
+  takeInitialAssetId(): string | null
 }
 
 const PintaAppContext = createContext<PintaAppContextValue | null>(null)

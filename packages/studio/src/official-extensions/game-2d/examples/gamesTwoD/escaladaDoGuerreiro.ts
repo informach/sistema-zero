@@ -651,11 +651,11 @@ export const escaladaDoGuerreiroExample: ExtensionExample = beginnerGameExample(
                   },
                 },
                 {
-                  type: 'g2d:applyVelocity',
+                  type: 'g2d:applyGravity',
                   spriteVar: 'heroi',
                 },
                 {
-                  type: 'g2d:applyGravity',
+                  type: 'g2d:applyVelocity',
                   spriteVar: 'heroi',
                 },
                 {

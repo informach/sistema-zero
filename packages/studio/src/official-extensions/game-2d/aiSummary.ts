@@ -31,6 +31,12 @@ automaticamente. Sprites sem imagem continuam visíveis por cor.
 O runtime prepara automaticamente os metadados internos do canvas e anuncia as
 telas de início, vitória e derrota sem repetir a cada quadro.
 
+GRAVIDADE EXPLÍCITA: setGravity só define o valor do mundo (padrão 0,6) e não move
+nada. Em cada quadro, use applyGravity(sprite) antes do bloco que movimenta somente
+os sprites que devem cair. Para grupos, use applyGravityToGroup(grupo) antes de
+updateGroup ou do atualizador de inimigos. applyVelocity, updateGroup, platformer,
+jumpOnGround, flap, swim e controlDino nunca acrescentam gravidade escondida.
+
 VIDAS: inicialize a vida do sprite uma vez em ⚙️ Ao iniciar. Para contato contínuo,
 use o bloco de machucar com invencibilidade; para perguntar pelo fim, prefira “as
 vidas acabaram?”. “O sprite está invencível?” reflete se um novo dano seria ignorado;

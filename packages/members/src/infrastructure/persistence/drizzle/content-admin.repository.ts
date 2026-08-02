@@ -76,6 +76,7 @@ const toBlock = (r: BlockRow): LessonBlock => ({
   kind: r.kind,
   sortOrder: r.sortOrder,
   content: r.content,
+  contentRevision: r.contentRevision,
 })
 const toAttachment = (r: AttachmentRow): LessonAttachment => ({
   id: r.id,
@@ -533,7 +534,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       const invalidateProgress = shouldInvalidateBlockProgress(current.content, content)
       const [row] = await tx
         .update(lessonBlocks)
-        .set({ kind, content })
+        .set({ kind, content, contentRevision: randomUUID().replaceAll('-', '') })
         .where(eq(lessonBlocks.id, id))
         .returning()
       if (!row) return null

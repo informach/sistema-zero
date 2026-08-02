@@ -6,12 +6,18 @@ process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
 process.env.OPENROUTER_API_KEY ??= 'test-openrouter-key'
 
 const { createStudioZappyRoutes } = await import('../src/routes/studio-zappy')
-const { buildStudioZappyPrompt, deterministicZappyReply, normalizeZappySearchQuery } = await import(
-  '../src/server/zappy-ai'
-)
+const {
+  buildStudioZappyPrompt,
+  deterministicZappyReply,
+  deterministicZappySafetyReply,
+  normalizeZappySearchQuery,
+  validatedStudioZappyResponse,
+} = await import('../src/server/zappy-ai')
 const { isStudioZappyPilotAllowed } = await import('../src/server/zappy-access')
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
-const { redactZappyPii, redactZappySensitiveText } = await import('../src/server/zappy-safety')
+const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
+  '../src/server/zappy-safety'
+)
 
 const PROJECT_ID = 'projeto-1'
 const MESSAGE_ID = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
@@ -147,6 +153,88 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(redacted.text.endsWith('`\n\n')).toBe(true)
     expect(redacted.text.split('\n')).toHaveLength(source.split('\n').length)
     expect(redacted.text).not.toContain('segredo-em-base64')
+  })
+
+  test('remove arquivos sensíveis e credenciais de URL mesmo em chamadas forjadas ao BFF', () => {
+    const prompt = buildStudioZappyPrompt({
+      question: 'Por que não conecta?',
+      context: {
+        projectId: PROJECT_ID,
+        mode: 'code',
+        kind: 'pro',
+        blocks: [],
+        installedExtensions: [],
+        selectedBlockId: null,
+        lastError: null,
+        code: [
+          { path: '.env', content: 'IGNORED_SECRET=nao-pode-sair' },
+          {
+            path: 'src/db.ts',
+            content: 'const DATABASE_URL="postgres://alice:pw1234@127.0.0.1/app"',
+          },
+        ],
+      },
+      tier: resolveStudioTier('god', 'staff'),
+    })
+
+    expect(prompt.user).not.toContain('.env')
+    expect(prompt.user).not.toContain('nao-pode-sair')
+    expect(prompt.user).not.toContain('alice')
+    expect(prompt.user).not.toContain('pw1234')
+    expect(prompt.user).toContain('[segredo removido]')
+  })
+
+  test.each([
+    'estou pensando em suicídio',
+    'quero me suicidar',
+  ])('reconhece variante de crise: %s', (question) => {
+    expect(isZappySelfHarmText(question)).toBe(true)
+  })
+
+  test('crise tem precedência sobre o aviso genérico de PII', () => {
+    const reply = deterministicZappySafetyReply(
+      'Meu telefone é 11987654321 e estou pensando em suicídio',
+      true,
+    )
+
+    expect(reply?.text).toContain('adulto de confiança')
+    expect(reply?.text).toContain('192')
+    expect(reply?.text).not.toContain('voltar para a dúvida de programação')
+  })
+
+  test('descarta referências de bloco devolvidas pelo provedor no modo Pro', () => {
+    const prompt = buildStudioZappyPrompt({
+      question: 'Explique este código',
+      context: {
+        projectId: PROJECT_ID,
+        mode: 'code',
+        kind: 'pro',
+        blocks: [],
+        installedExtensions: [],
+        selectedBlockId: null,
+        lastError: null,
+      },
+      tier: resolveStudioTier('god', 'staff'),
+    })
+    const entry = prompt.catalog[0]
+    if (!entry) throw new Error('Catálogo de teste vazio')
+
+    const response = validatedStudioZappyResponse(
+      {
+        text: 'Explicação curta.',
+        scope: 'concept',
+        blockReferences: [{ blockType: entry.type, blockId: null }],
+        lessonReferences: [],
+      },
+      'criador',
+      new Map([[entry.type, entry]]),
+      new Map(),
+      'code',
+      'pro',
+      [],
+    )
+
+    expect(response.blockReferences).toEqual([])
   })
 
   test('redireciona Pensa, Pinta, jogo inteiro e assunto externo sem oferecer conteúdo', () => {
@@ -483,6 +571,29 @@ describe('BFF do Zappy', () => {
     expect(quota).toBe(0)
   })
 
+  test('rejeita body acima de 1 MiB antes de reservar a pergunta', async () => {
+    let reserved = 0
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        zappyReserveQuestion: async () => {
+          reserved += 1
+          return { status: 200, body: { created: true, questionId: QUESTION_ID } }
+        },
+      }),
+    } as never)
+    const oversized = new Request('https://kids.test/api/studio/zappy/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ padding: 'x'.repeat(1024 * 1024) }),
+    })
+
+    const response = await routes.studioZappyMessage.POST(oversized)
+
+    expect(response.status).toBe(413)
+    expect(reserved).toBe(0)
+  })
+
   test('conteúdo impróprio recebe resposta infantil local antes da quota', async () => {
     let quota = 0
     const routes = createStudioZappyRoutes({
@@ -505,6 +616,7 @@ describe('BFF do Zappy', () => {
   test.each([
     'quero morrer',
     'não quero mais viver',
+    'quero me suicidar e meu e-mail é aluno@example.com',
   ])('pedido de ajuda em crise recebe orientação protetiva antes de conhecimento e quota: %s', async (question) => {
     let searched = 0
     let quota = 0

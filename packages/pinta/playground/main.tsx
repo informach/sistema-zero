@@ -41,6 +41,21 @@ createRoot(root).render(
             })
             return { ok: true }
           },
+          // Reenvio automático ao salvar: no app de verdade o host só atualiza o
+          // que JÁ está na biblioteca do Estúdio; aqui devolve sempre "atualizei"
+          // para dar como ver o aviso no cabeçalho.
+          resyncToStudio: async (asset) => {
+            console.log('[playground] resyncToStudio', {
+              id: asset.id,
+              name: asset.name,
+              dataUrlChars: asset.dataUrl.length,
+            })
+            return { updated: true }
+          },
+          // Deep link do botão "Editar" do Estúdio: `?desenho=<id>`.
+          ...(new URLSearchParams(window.location.search).get('desenho')
+            ? { initialAssetId: new URLSearchParams(window.location.search).get('desenho') ?? '' }
+            : {}),
           onOpenStudio: () => console.log('[playground] onOpenStudio'),
         }}
       />

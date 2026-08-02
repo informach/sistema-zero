@@ -163,6 +163,49 @@ describe('ZappyPanel', () => {
     expect(opened).toEqual([reference])
   })
 
+  it('não mostra referência Blockly histórica em projeto Pro', async () => {
+    const proProject = {
+      ...createEmptyProject('project-pro', 'Projeto Pro'),
+      kind: 'pro' as const,
+      mode: 'code' as const,
+      tree: { 'src/index.ts': { kind: 'file' as const, content: '' } },
+    }
+    useProjectStore.setState({ project: proProject })
+    const tutorResponse = {
+      ...response(),
+      blockReferences: [
+        {
+          blockType: 'sz_js_log',
+          name: 'mostrar no console',
+          category: 'Saída',
+          area: 'Código',
+        },
+      ],
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => tutorResponse,
+      feedback: async () => undefined,
+    }
+
+    const view = render(renderPanel(adapter))
+
+    await view.findByText(tutorResponse.text)
+    expect(view.queryByRole('button', { name: 'mostrar no console' })).toBeNull()
+  })
+
   it('exige confirmação antes de apagar todo o histórico', async () => {
     let deleted = 0
     const adapter: StudioTutorAdapter = {

@@ -16,8 +16,8 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Decisões do degrau BÁSICO (fidelidade em ESPÍRITO ao original em index.js):
  * - Os dois lutadores (Fighter que estende Sprite) viram sprites comuns
  *   desenhados por código (createShapeSprite, sem os PNGs de samuraiMack/kenji).
- *   Gravidade + chão montados na mão: setGravity, applyVelocity e um chão sólido
- *   (collideGroup) valem o velocity.y += gravity e o piso do original.
+ *   Gravidade + chão montados na mão: setGravity, applyGravity, applyVelocity e
+ *   um chão sólido (collideGroup) valem o velocity.y += gravity e o piso original.
  * - DOIS jogadores no MESMO teclado, como o original: o herói 1 anda com A/D,
  *   pula com W e golpeia com F; o herói 2 anda com as setas, pula com a seta pra
  *   cima e golpeia com a seta pra baixo. O andar é lido a cada quadro (keyDown),
@@ -131,10 +131,10 @@ SZGame2D.gameLoop(function update() {
     if (SZGame2D.keyDown("ArrowRight")) {
       heroi2.vx = 3;
     }
-    SZGame2D.applyVelocity(heroi1);
     SZGame2D.applyGravity(heroi1);
-    SZGame2D.applyVelocity(heroi2);
+    SZGame2D.applyVelocity(heroi1);
     SZGame2D.applyGravity(heroi2);
+    SZGame2D.applyVelocity(heroi2);
     SZGame2D.collideGroup(heroi1, chao);
     SZGame2D.collideGroup(heroi2, chao);
     SZGame2D.clampToScreen(heroi1, ctx);

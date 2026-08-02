@@ -40,7 +40,8 @@ describe('Exemplo Mundo Pirata — drift contra o parser real', () => {
       'g2d:spawnInGroup',
       'g2d:cameraFollow', // ⭐ o mundo LARGO com a câmera seguindo o herói
       'g2d:arrowsX', // andar para os lados
-      'g2d:applyVelocity', // integra velocidade + gravidade + preserva "no chão"
+      'g2d:applyGravity', // só o herói recebe a gravidade do mundo
+      'g2d:applyVelocity', // integra a velocidade, sem gravidade escondida
       'g2d:collideGroup', // pousa nas plataformas
       'g2d:forEachInGroup', // caranguejos patrulham
       'g2d:onSpriteGroupOverlap', // pegar moeda + pisar/encostar no inimigo

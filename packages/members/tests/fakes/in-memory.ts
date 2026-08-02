@@ -745,7 +745,14 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const sortOrder = this.blocks
       .filter((b) => b.lessonId === lessonId)
       .reduce((mx, b) => Math.max(mx, b.sortOrder + 1), 0)
-    const block: LessonBlock = { id: randomUUID(), lessonId, kind, sortOrder, content }
+    const block: LessonBlock = {
+      id: randomUUID(),
+      lessonId,
+      kind,
+      sortOrder,
+      content,
+      contentRevision: randomUUID().replaceAll('-', ''),
+    }
     this.blocks.push(block)
     return block
   }
@@ -760,6 +767,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const invalidateProgress = shouldInvalidateBlockProgress(b.content, content)
     b.kind = kind
     b.content = content
+    b.contentRevision = randomUUID().replaceAll('-', '')
     if (invalidateProgress) this.onEvaluativeBlockContentChanged?.(id)
     return b
   }

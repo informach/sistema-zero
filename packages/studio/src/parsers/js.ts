@@ -3864,9 +3864,9 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const groupVar = identifierName(args[0])
       return groupVar ? { type: 'g2d:updateGroup', groupVar } : null
     }
-    case 'updateGroupNoGravity': {
+    case 'applyGravityToGroup': {
       const groupVar = identifierName(args[0])
-      return groupVar ? { type: 'g2d:updateGroupNoGravity', groupVar } : null
+      return groupVar ? { type: 'g2d:applyGravityToGroup', groupVar } : null
     }
     case 'drawGroup': {
       // generator: SZGame2D.drawGroup(ctx, g)

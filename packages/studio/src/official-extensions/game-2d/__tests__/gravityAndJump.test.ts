@@ -9,8 +9,7 @@ import { gameTwoDRuntime } from '../runtime'
  * prova o pipeline dos blocos, não a semântica do motor):
  *  · o applyVelocity não soma mais gravidade nenhuma;
  *  · o bloco de gravidade usa a do MUNDO (0.6 quando ninguém declarou);
- *  · ⭐ o updateGroup usa a gravidade CRUA — senão todo grupo de todo jogo que
- *    nunca declarou gravidade começaria a cair sozinho;
+ *  · updateGroup só move e applyGravityToGroup acelera explicitamente;
  *  · o evento de pulo dispara nos TRÊS jeitos de pular, uma vez por pulo;
  *  · o "qualquer tecla ou toque" não dispara em rajada nem sobrevive ao reinício.
  */
@@ -36,11 +35,12 @@ interface Api {
   setGravity: Fn
   applyVelocity: Fn
   applyGravity: Fn
+  applyGravityToGroup: Fn
   updateGroup: Fn
-  updateGroupNoGravity: Fn
   platformer: Fn
   jumpOnGround: Fn
   controlDino: Fn
+  swim: Fn
   onJump: Fn
   onAnyInput: Fn
   restart: Fn
@@ -106,25 +106,33 @@ describe('a gravidade saiu do "aplicar a velocidade"', () => {
     expect(c.vy).toBe(0)
   })
 
-  it('velocidade + gravidade, nessa ordem, reproduz a física de antes', () => {
+  it('gravidade antes do movimento responde no mesmo quadro', () => {
     const { api } = load()
     api.setGravity(1)
     const s = sprite(api, 0, 0)
     s.vx = 2
     for (let i = 0; i < 3; i++) {
-      api.applyVelocity(s)
       api.applyGravity(s)
+      api.applyVelocity(s)
     }
-    // Euler explícito: o quadro move com o vy do quadro ANTERIOR, então a queda
-    // acumulada em três quadros é 0 + 1 + 2 = 3 (e não 1 + 2 + 3).
+    // Euler semi-implícito: a aceleração deste quadro participa do movimento.
     expect(s.x).toBe(6)
-    expect(s.y).toBe(3)
+    expect(s.y).toBe(6)
     expect(s.vy).toBe(3)
+  })
+
+  it('cada execução soma uma aceleração, sem mover a posição', () => {
+    const { api } = load()
+    const s = sprite(api)
+    api.applyGravity(s)
+    api.applyGravity(s)
+    expect(s.vy).toBeCloseTo(1.2, 10)
+    expect(s.y).toBe(0)
   })
 })
 
-describe('⭐ o grupo NÃO herda o padrão 0.6', () => {
-  it('sem gravidade declarada, o grupo continua parado no ar', () => {
+describe('gravidade explícita nos grupos', () => {
+  it('atualizar grupo nunca aplica a gravidade sozinho', () => {
     const { api } = load()
     const grupo = api.createGroup() as { items: Sprite[] }
     const s = sprite(api)
@@ -132,37 +140,44 @@ describe('⭐ o grupo NÃO herda o padrão 0.6', () => {
 
     for (let i = 0; i < 10; i++) api.updateGroup(grupo)
 
-    // Era o bug: com _worldGravityOr(0.6) aqui, os cactos do "Corre, Dino!"
-    // sumiriam pelo rodapé a partir do dia em que este lote entrasse.
     expect(s.vy).toBe(0)
     expect(s.y).toBe(0)
   })
 
-  it('com gravidade declarada, o grupo cai como sempre caiu', () => {
+  it('aplicar no grupo acelera todos; atualizar integra depois', () => {
     const { api } = load()
     api.setGravity(0.5)
     const grupo = api.createGroup() as { items: Sprite[] }
     const s = sprite(api)
     grupo.items.push(s)
 
-    api.updateGroup(grupo)
+    api.applyGravityToGroup(grupo)
     expect(s.vy).toBe(0.5)
+    expect(s.y).toBe(0)
     api.updateGroup(grupo)
     expect(s.y).toBe(0.5)
-    expect(s.vy).toBe(1)
+    expect(s.vy).toBe(0.5)
+  })
+})
+
+describe('helpers não escondem aceleração', () => {
+  it('plataforma sem aplicar gravidade não começa a cair', () => {
+    const { api } = load()
+    const heroi = sprite(api, 100, 100)
+    api.platformer(heroi, ctx, 4, 11)
+    expect(heroi.vy).toBe(0)
+    expect(heroi.y).toBe(100)
   })
 
-  it('o "sem gravidade" segue diferente: não cai nem mexe no chão', () => {
+  it('nadar boia sem gravidade e amortece a gravidade aplicada antes', () => {
     const { api } = load()
-    api.setGravity(0.5)
-    const grupo = api.createGroup() as { items: Sprite[] }
-    const s = sprite(api)
-    s.onGround = true
-    grupo.items.push(s)
-
-    api.updateGroupNoGravity(grupo)
-    expect(s.vy).toBe(0)
-    expect(s.onGround).toBe(true) // o updateGroup teria zerado (contabilidade de chão)
+    const peixe = sprite(api, 100, 100)
+    api.swim(peixe, 2)
+    expect(peixe.y).toBe(100)
+    api.applyGravity(peixe)
+    api.swim(peixe, 2)
+    expect(peixe.vy).toBeCloseTo(0.528, 10)
+    expect(peixe.y).toBeCloseTo(100.528, 10)
   })
 })
 
@@ -205,10 +220,14 @@ describe('"Quando o sprite pular" nos três jeitos de pular', () => {
     const { api } = load()
     const heroi = sprite(api, 100, 200)
     const pulos = conta(api, heroi)
-    for (let i = 0; i < 30; i++) api.jumpOnGround(heroi, ctx, 14)
+    for (let i = 0; i < 30; i++) {
+      api.applyGravity(heroi)
+      api.jumpOnGround(heroi, ctx, 14)
+    }
     expect(pulos()).toBe(0)
 
     api.keys.up = true
+    api.applyGravity(heroi)
     api.jumpOnGround(heroi, ctx, 14)
     expect(pulos()).toBe(1)
     api.keys.up = false
@@ -237,8 +256,12 @@ describe('"Quando o sprite pular" nos três jeitos de pular', () => {
     const outro = sprite(api, 300, 200)
     const pulos = conta(api, heroi)
 
-    for (let i = 0; i < 30; i++) api.jumpOnGround(outro, ctx, 14)
+    for (let i = 0; i < 30; i++) {
+      api.applyGravity(outro)
+      api.jumpOnGround(outro, ctx, 14)
+    }
     api.keys.up = true
+    api.applyGravity(outro)
     api.jumpOnGround(outro, ctx, 14)
     api.keys.up = false
 

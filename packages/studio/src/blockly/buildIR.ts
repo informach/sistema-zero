@@ -4025,11 +4025,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g2d_update_group':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:updateGroup', groupVar: f(block, 'GROUP') } }
-    case 'sz_g2d_update_group_no_gravity':
+    case 'sz_g2d_apply_gravity_group':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:updateGroupNoGravity', groupVar: f(block, 'GROUP') },
+        value: { type: 'g2d:applyGravityToGroup', groupVar: f(block, 'GROUP') },
       }
     case 'sz_g2d_draw_group':
       seen.add('game-2d')

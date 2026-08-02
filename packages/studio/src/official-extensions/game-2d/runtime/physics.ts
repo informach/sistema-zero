@@ -1,19 +1,14 @@
 export const gameTwoDPhysicsRuntime = `  // ---- Física ----
-  // Mundo com gravidade (px/frame² aplicada ao eixo Y por applyVelocity).
-  // configured distingue "nenhuma gravidade declarada" da gravidade 0. Assim
-  // inimigos top-down não caem por inferência e valores 0/negativos mantêm o
-  // mesmo significado em todos os helpers físicos.
-  var world = { gravity: 0, gravityConfigured: false };
+  // A gravidade do mundo é uma ACELERAÇÃO (px/frame²). Ela só muda a velocidade
+  // dos sprites quando applyGravity/applyGravityToGroup são chamados; definir o
+  // valor do mundo, sozinho, nunca faz um objeto cair.
+  var world = { gravity: 0.6 };
   function setGravity(gravity) {
     if (!_isFiniteNumber(gravity)) {
       warnOnce('gravidade-invalida', 'a gravidade precisa ser um número finito; mantive o valor anterior.');
       return;
     }
     world.gravity = gravity;
-    world.gravityConfigured = true;
-  }
-  function _worldGravityOr(fallback) {
-    return world.gravityConfigured ? world.gravity : fallback;
   }
   function _gravityPullsUp(gravity) {
     return _finiteNumber(gravity, 0) < 0;
@@ -77,18 +72,17 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   }
 
   /**
-   * Puxa o sprite para baixo somando a gravidade DO MUNDO na velocidade
-   * vertical. Uma fonte só de verdade: quem regula a força é o "Botar a
-   * gravidade do mundo"; sem ninguém declarar, vale 0.6 (o mesmo padrão que
-   * plataforma, pulo, dino e inimigos já usam).
+   * Soma a gravidade DO MUNDO à velocidade vertical do sprite. Uma fonte só
+   * de verdade: quem regula a força é o "Botar a
+   * gravidade do mundo"; sem ninguém declarar, vale 0.6.
    *
-   * ⚠️ ORDEM: o applyVelocity é Euler EXPLÍCITO (move com o vy do quadro
-   * anterior). Para a trajetória bater com a de antes da separação, este bloco
-   * vai DEPOIS do "Aplicar a velocidade" no laço.
+   * ORDEM didática/física: aplicar a aceleração ANTES de integrar a posição
+   * (Euler semi-implícito). Assim a queda responde no mesmo quadro e o contato
+   * com o chão é mais estável.
    */
   function applyGravity(sprite) {
     if (!sprite) return;
-    sprite.vy = _finiteNumber(sprite.vy, 0) + _worldGravityOr(0.6);
+    sprite.vy = _finiteNumber(sprite.vy, 0) + world.gravity;
   }
 
   /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */
@@ -114,7 +108,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   }
 
   _registerRuntimeDomain('physics', {
-    reset: function () { world.gravity = 0; world.gravityConfigured = false; }
+    reset: function () { world.gravity = 0.6; }
   });
 
 `

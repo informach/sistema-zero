@@ -320,7 +320,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     var c1 = Math.min(colsN - 1, Math.floor((sprite.x + sprite.w - 1 - ox) / t));
     var r0 = Math.max(0, Math.floor((sprite.y - oy) / t));
     var r1 = Math.min(rowsN - 1, Math.floor((sprite.y + sprite.h - 1 - oy) / t));
-    var gravity = _worldGravityOr(0.6);
+    var gravity = world.gravity;
     var pullsUp = _gravityPullsUp(gravity);
     var vy = _finiteNumber(sprite.vy, 0);
     if (pullsUp ? (vy < 0 || sprite._groundedLastFrame === true) : (vy > 0 || sprite._groundedLastFrame === true)) {
@@ -398,7 +398,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
   function collideSprite(sprite, obstacle) {
     if (!sprite || !obstacle || obstacle === sprite) return;
-    var collisionGravity = _worldGravityOr(0.6);
+    var collisionGravity = world.gravity;
     if (_touchesGravitySupport(sprite, obstacle.x, obstacle.y, obstacle.w, obstacle.h, collisionGravity)) {
       _restOnGravitySupport(sprite, obstacle.y, obstacle.h, collisionGravity);
       return;

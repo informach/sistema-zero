@@ -38,7 +38,8 @@ describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
       'g2d:defineShape', // guerreiro procedural (sem PNG do warrior)
       'g2d:setGravity', // a queda leve (o gravity = 0.1 do original)
       'g2d:arrowsX', // andar para os lados (o a/d do original)
-      'g2d:applyVelocity', // integra a velocidade somando a gravidade
+      'g2d:applyGravity', // só o guerreiro recebe a gravidade do mundo
+      'g2d:applyVelocity', // integra a velocidade sem força escondida
       'g2d:setVelocity', // o pulo (o velocity.y = -4 do original)
       'g2d:spriteVy', // o pulo só age parado na vertical (truque do Dino)
       'g2d:setHitboxScale', // colisão perdoadora de 80%

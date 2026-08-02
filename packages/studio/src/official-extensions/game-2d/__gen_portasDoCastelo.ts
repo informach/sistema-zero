@@ -80,8 +80,8 @@ SZGame2D.gameLoop(function update() {
     if (escurecendo == 0) {
       SZGame2D.arrowsX(rei, 3);
     }
-    SZGame2D.applyVelocity(rei);
     SZGame2D.applyGravity(rei);
+    SZGame2D.applyVelocity(rei);
     SZGame2D.collideGroup(rei, blocos);
     SZGame2D.clampToScreen(rei, ctx);
     SZGame2D.drawGroup(ctx, blocos);

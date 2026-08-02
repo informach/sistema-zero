@@ -184,6 +184,11 @@ export const lessonBlocks = members.table(
     sortOrder: integer('sort_order').notNull().default(0),
     // União discriminada por `kind` (ver domain/course/lesson-block.ts).
     content: jsonb('content').$type<LessonBlockContent>().notNull(),
+    // Token opaco da revisão do conteúdo. Muda somente em create/update do bloco;
+    // ordenação não invalida extrações do Zappy.
+    contentRevision: varchar('content_revision', { length: 32 })
+      .notNull()
+      .default(sql`md5(random()::text || clock_timestamp()::text)`),
   },
   (t) => [uniqueIndex('lesson_blocks_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],
 )

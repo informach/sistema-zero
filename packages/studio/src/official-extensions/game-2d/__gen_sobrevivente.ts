@@ -90,7 +90,7 @@ SZGame2D.gameLoop(function update() {
         SZGame2D.playShoot();
       }
     }
-    SZGame2D.updateGroupNoGravity(tiros);
+    SZGame2D.updateGroup(tiros);
     SZGame2D.overlapGroups(tiros, inimigos, function (tiro, bicho) {
       SZGame2D.changeHealth(bicho, -1);
       SZGame2D.removeFromGroup(tiros, tiro);

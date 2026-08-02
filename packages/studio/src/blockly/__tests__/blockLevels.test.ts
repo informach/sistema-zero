@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { ESSENTIAL_2D_BLOCK_TYPES } from '../../career/blockProfiles'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { _LEVEL_SETS, resolveBlockLevel } from '../blockLevels'
 import { PROGRAMMING_VISIBLE_TYPES } from '../programmingContract'
@@ -52,8 +53,8 @@ describe('blockLevels — conformidade dos conjuntos', () => {
 describe('resolveBlockLevel — amostras representativas', () => {
   it('facilitadores + kit essencial de lógica = iniciante-2d', () => {
     for (const t of [
-      'sz_g2d_create_sprite', // facilitador do Kit 2D
-      'sz_g2d_top_down', // mover em 4 direções
+      'sz_g2d_create_ship', // facilitador do Kit espaço Essencial
+      'sz_g2d_arrows_x', // movimento do primeiro jogo
       'sz_html_h1', // criar título (HTML essencial)
       'sz_html_p', // parágrafo (HTML essencial)
       'sz_css_text_color', // pintar o texto (CSS essencial)
@@ -84,10 +85,17 @@ describe('resolveBlockLevel — amostras representativas', () => {
     for (const type of game3dTypes) expect(resolveBlockLevel(type)).toBe('iniciante-3d')
   })
 
-  it('todos os blocos do Jogo 2D são iniciante-2d e podem ser filtrados pela aula', () => {
+  it('Jogo 2D Essencial fica no primeiro degrau e o restante abre no Inventor', () => {
     const game2dTypes = [...KNOWN].filter((type) => type.startsWith('sz_g2d_'))
+    const essential = new Set(ESSENTIAL_2D_BLOCK_TYPES)
     expect(game2dTypes.length).toBeGreaterThan(180)
-    for (const type of game2dTypes) expect(resolveBlockLevel(type)).toBe('iniciante-2d')
+    for (const type of game2dTypes) {
+      expect(resolveBlockLevel(type), type).toBe(
+        essential.has(type as (typeof ESSENTIAL_2D_BLOCK_TYPES)[number])
+          ? 'iniciante-2d'
+          : 'iniciante-3d',
+      )
+    }
   })
 
   it('programação real guiada + SVG + kits prontos do Jogo 2D Avançado = intermediario-2d', () => {

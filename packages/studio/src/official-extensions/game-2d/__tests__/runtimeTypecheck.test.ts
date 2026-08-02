@@ -5,6 +5,7 @@ import ts from 'typescript'
 import { gameTwoDRuntime } from '../runtime'
 
 const RUNTIME_FILE = 'game-2d-runtime.generated.js'
+const BROKEN_RUNTIME_FILE = 'game-2d-runtime.broken.generated.js'
 const RUNTIME_CONTRACT_FILE = 'runtimeContract.ts'
 const HOST_CONTRACT_FILE = 'game-2d-runtime-host.d.ts'
 const RUNTIME_CONTRACT = readFileSync(join(import.meta.dir, '../runtimeContract.ts'), 'utf8')
@@ -37,6 +38,21 @@ interface Window {
   webkitAudioContext?: typeof AudioContext
 }
 `
+const COMPILER_OPTIONS: ts.CompilerOptions = {
+  allowJs: true,
+  checkJs: true,
+  lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
+  module: ts.ModuleKind.ESNext,
+  noEmit: true,
+  // O runtime histórico ainda não anota todos os parâmetros. As demais opções
+  // de strict ficam ligadas, e uma catraca estrutural abaixo impede aumentar
+  // esse débito silenciosamente.
+  noImplicitAny: false,
+  skipLibCheck: true,
+  strict: true,
+  target: ts.ScriptTarget.ES2022,
+}
+const DEFAULT_COMPILER_HOST = ts.createCompilerHost(COMPILER_OPTIONS)
 
 function parameterNames(parameters: ts.NodeArray<ts.ParameterDeclaration>): string[] {
   return parameters.map((parameter) => parameter.name.getText())
@@ -122,56 +138,96 @@ function formatDiagnostic(diagnostic: ts.Diagnostic): string {
   return `${diagnostic.file.fileName}:${position.line + 1}:${position.character + 1} ${message}`
 }
 
-function runtimeTypeErrors(source: string): string[] {
-  const options: ts.CompilerOptions = {
-    allowJs: true,
-    checkJs: true,
-    lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
-    module: ts.ModuleKind.ESNext,
-    noEmit: true,
-    noImplicitAny: false,
-    skipLibCheck: true,
-    target: ts.ScriptTarget.ES2022,
-  }
-  const defaultHost = ts.createCompilerHost(options)
+function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<string, string[]> {
   const virtualSources = new Map([
-    [RUNTIME_FILE, { source, kind: ts.ScriptKind.JS }],
+    ...[...variants].map(
+      ([fileName, source]) =>
+        [fileName, { source: `${source}\nexport {}`, kind: ts.ScriptKind.JS }] as const,
+    ),
     [RUNTIME_CONTRACT_FILE, { source: RUNTIME_CONTRACT, kind: ts.ScriptKind.TS }],
     [HOST_CONTRACT_FILE, { source: HOST_CONTRACT, kind: ts.ScriptKind.TS }],
   ])
   const host: ts.CompilerHost = {
-    ...defaultHost,
-    fileExists: (fileName) => virtualSources.has(fileName) || defaultHost.fileExists(fileName),
-    readFile: (fileName) => virtualSources.get(fileName)?.source ?? defaultHost.readFile(fileName),
+    ...DEFAULT_COMPILER_HOST,
+    fileExists: (fileName) =>
+      virtualSources.has(fileName) || DEFAULT_COMPILER_HOST.fileExists(fileName),
+    readFile: (fileName) =>
+      virtualSources.get(fileName)?.source ?? DEFAULT_COMPILER_HOST.readFile(fileName),
     getSourceFile: (fileName, languageVersion, onError, shouldCreateNewSourceFile) => {
       const virtual = virtualSources.get(fileName)
       return virtual
         ? ts.createSourceFile(fileName, virtual.source, languageVersion, true, virtual.kind)
-        : defaultHost.getSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile)
+        : DEFAULT_COMPILER_HOST.getSourceFile(
+            fileName,
+            languageVersion,
+            onError,
+            shouldCreateNewSourceFile,
+          )
     },
   }
+  const variantFiles = [...variants.keys()]
   const program = ts.createProgram(
-    [HOST_CONTRACT_FILE, RUNTIME_CONTRACT_FILE, RUNTIME_FILE],
-    options,
+    [HOST_CONTRACT_FILE, RUNTIME_CONTRACT_FILE, ...variantFiles],
+    COMPILER_OPTIONS,
     host,
   )
-  return ts
+  const errorsByFile = new Map(variantFiles.map((fileName) => [fileName, [] as string[]]))
+  const sharedErrors: string[] = []
+  for (const diagnostic of ts
     .getPreEmitDiagnostics(program)
-    .filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error)
-    .map(formatDiagnostic)
+    .filter((item) => item.category === ts.DiagnosticCategory.Error)) {
+    const formatted = formatDiagnostic(diagnostic)
+    const bucket = diagnostic.file ? errorsByFile.get(diagnostic.file.fileName) : undefined
+    if (bucket) bucket.push(formatted)
+    else sharedErrors.push(formatted)
+  }
+  if (sharedErrors.length > 0) {
+    for (const errors of errorsByFile.values()) errors.push(...sharedErrors)
+  }
+  return errorsByFile
+}
+
+let cachedRuntimeTypeErrors: Map<string, string[]> | undefined
+function runtimeTypeErrors(fileName: string): string[] {
+  cachedRuntimeTypeErrors ??= compileRuntimeVariants(
+    new Map([
+      [RUNTIME_FILE, gameTwoDRuntime],
+      [BROKEN_RUNTIME_FILE, gameTwoDRuntime.replace('_hitboxOf(a)', '_missingHitboxOf(a)')],
+    ]),
+  )
+  return cachedRuntimeTypeErrors.get(fileName) ?? [`resultado ausente para ${fileName}`]
+}
+
+function runtimeFunctionParameterCount(source: string): number {
+  const file = ts.createSourceFile(
+    RUNTIME_FILE,
+    source,
+    ts.ScriptTarget.ES2022,
+    true,
+    ts.ScriptKind.JS,
+  )
+  let count = 0
+  const visit = (node: ts.Node) => {
+    if (ts.isFunctionLike(node)) count += node.parameters.length
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  return count
 }
 
 test('o runtime injetado não contém referências ou propriedades semanticamente inválidas', () => {
-  expect(runtimeTypeErrors(gameTwoDRuntime)).toEqual([])
+  expect(runtimeTypeErrors(RUNTIME_FILE)).toEqual([])
 }, 20_000)
 
 test('o typecheck do arquivo composto detecta dependência interna ausente', () => {
-  const brokenRuntime = gameTwoDRuntime.replace('_hitboxOf(a)', '_missingHitboxOf(a)')
-
-  expect(runtimeTypeErrors(brokenRuntime).some((error) => error.includes('_missingHitboxOf'))).toBe(
-    true,
-  )
+  expect(
+    runtimeTypeErrors(BROKEN_RUNTIME_FILE).some((error) => error.includes('_missingHitboxOf')),
+  ).toBe(true)
 }, 20_000)
+
+test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(744)
+})
 
 test('as funções públicas mantêm a ordem de parâmetros do contrato TypeScript', () => {
   expect(runtimeSignatureMismatches(gameTwoDRuntime)).toEqual([])

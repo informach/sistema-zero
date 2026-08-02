@@ -80,15 +80,15 @@ export const gameTwoDGroupAndHudBlocks = [
     tooltip: 'Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro.',
   },
   {
-    type: 'sz_g2d_update_group_no_gravity',
+    type: 'sz_g2d_apply_gravity_group',
     placement: 'command',
-    message0: 'Mover o grupo %1 sem gravidade',
-    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' }],
+    message0: 'Aplicar a gravidade do mundo aos sprites do grupo %1',
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Move cada sprite do grupo pela velocidade, SEM somar a gravidade. Para os TIROS do jogador num jogo com gravidade (senão eles caem/arqueiam em vez de ir reto).',
+      'Soma a gravidade do mundo à velocidade vertical de cada sprite do grupo neste quadro. Use antes de atualizar o grupo.',
   },
   {
     type: 'sz_g2d_draw_group',

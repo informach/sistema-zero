@@ -53,6 +53,7 @@ interface Api {
   drawTileMap: (ctx: unknown, map: unknown, x: number, y: number) => void
   collideTileMap: (s: Sprite, map: unknown) => void
   setGravity: (value: number) => void
+  applyGravity: (s: Sprite) => void
   applyVelocity: (s: Sprite) => void
   keys: { left: boolean; right: boolean; up: boolean; down: boolean }
 }
@@ -311,20 +312,28 @@ describe('onGround persistido nos helpers de movimento', () => {
     api.setGravity(-1)
 
     const platformerSprite = api.createSprite({ x: 50, y: 20, w: 20, h: 20 })
-    for (let i = 0; i < 20; i++) api.platformer(platformerSprite, ctx, 4, 11)
+    for (let i = 0; i < 20; i++) {
+      api.applyGravity(platformerSprite)
+      api.platformer(platformerSprite, ctx, 4, 11)
+    }
     expect(platformerSprite.y).toBe(0)
     expect(platformerSprite.onGround).toBe(true)
 
     api.keys.up = true
+    api.applyGravity(platformerSprite)
     api.platformer(platformerSprite, ctx, 4, 11)
     api.keys.up = false
     expect(platformerSprite.vy).toBe(11)
     expect(platformerSprite.onGround).toBe(false)
+    api.applyGravity(platformerSprite)
     api.platformer(platformerSprite, ctx, 4, 11)
     expect(platformerSprite.y).toBeGreaterThan(0)
 
     const genericSprite = api.createSprite({ x: 90, y: 20, w: 20, h: 20 })
-    for (let i = 0; i < 20; i++) api.jumpOnGround(genericSprite, ctx, 12)
+    for (let i = 0; i < 20; i++) {
+      api.applyGravity(genericSprite)
+      api.jumpOnGround(genericSprite, ctx, 12)
+    }
     expect(genericSprite.y).toBe(0)
     expect(genericSprite.onGround).toBe(true)
   })

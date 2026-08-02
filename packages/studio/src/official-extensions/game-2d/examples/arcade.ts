@@ -377,6 +377,7 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
               type: 'if',
               cond: { type: 'g2d:sceneIs', name: 'jogando' },
               then: [
+                { type: 'g2d:applyGravity', spriteVar: 'dino' },
                 { type: 'g2d:controlDino', spriteVar: 'dino', ctxVar: 'ctx', jump: 15 },
                 { type: 'g2d:drawSprite', spriteVar: 'dino', ctxVar: 'ctx' },
                 // a cada 1,3s nasce um obstáculo aleatório na borda direita

@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { loadAiUsagePanels, zappyBackfillNotice } from '../src/lib/ai-usage-panels'
+import {
+  loadAiUsagePanels,
+  runZappyBackfillBatches,
+  zappyBackfillNotice,
+} from '../src/lib/ai-usage-panels'
 
 describe('loadAiUsagePanels', () => {
   test('preserva painéis bem-sucedidos quando métricas do Zappy falham', async () => {
@@ -49,5 +53,43 @@ describe('zappyBackfillNotice', () => {
       kind: 'warning',
       message: 'Base sincronizada parcialmente: 4 fontes precisam de correção.',
     })
+  })
+})
+
+describe('runZappyBackfillBatches', () => {
+  test('retoma do cursor salvo, agrega progresso e limpa o checkpoint ao concluir', async () => {
+    const calls: Array<string | undefined> = []
+    const checkpoints: Array<{ cursor: string | null; processed: number }> = []
+    const result = await runZappyBackfillBatches({
+      initialCursor: 'cursor-salvo',
+      step: async (cursor) => {
+        calls.push(cursor)
+        return calls.length === 1
+          ? {
+              indexed: 1,
+              deleted: 0,
+              extracted: 1,
+              failed: 0,
+              nextCursor: 'cursor-2',
+              done: false,
+            }
+          : {
+              indexed: 2,
+              deleted: 3,
+              extracted: 0,
+              failed: 1,
+              nextCursor: null,
+              done: true,
+            }
+      },
+      checkpoint: (cursor, processed) => checkpoints.push({ cursor, processed }),
+    })
+
+    expect(calls).toEqual(['cursor-salvo', 'cursor-2'])
+    expect(checkpoints).toEqual([
+      { cursor: 'cursor-2', processed: 2 },
+      { cursor: null, processed: 5 },
+    ])
+    expect(result).toMatchObject({ indexed: 3, deleted: 3, extracted: 1, failed: 1, done: true })
   })
 })

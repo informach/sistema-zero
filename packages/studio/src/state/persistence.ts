@@ -1,5 +1,11 @@
 import { createStore, delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
-import { IDE_MODES, type IDEMode, type Project } from '#core'
+import {
+  IDE_MODES,
+  type IDEMode,
+  type Project,
+  type ProjectAsset,
+  sanitizeProjectAssets,
+} from '#core'
 import { cancelPendingAutosavesFor } from '../persistence/service'
 import { gameStorageKey } from './gameStorage'
 
@@ -229,6 +235,42 @@ export async function loadProjectBlocksById(id: string): Promise<unknown | null>
     return legacy
   }
   return null
+}
+
+/**
+ * Lê SÓ a partição de assets de um projeto FECHADO (sem meta/files/blocos).
+ *
+ * É o que torna viável percorrer todos os projetos da criança quando um desenho
+ * do Pinta muda: a partição de assets existe justamente por ser grande e mudar
+ * pouco (ver o comentário do prefixo), então varrer só ela evita materializar o
+ * IR e o `blocksState` de cada projeto. Projeto legado (assets dentro do doc
+ * único) devolve `[]` — a sincronia simplesmente não o alcança, e o caminho
+ * normal de load segue cuidando dele.
+ */
+export async function loadProjectAssetsById(id: string): Promise<ProjectAsset[]> {
+  const record = await get<unknown>(projectAssetsKey(id), getStore())
+  if (!record || typeof record !== 'object' || Array.isArray(record)) return []
+  return sanitizeProjectAssets((record as { assets?: unknown }).assets)
+}
+
+/**
+ * Grava SÓ a partição de assets de um projeto FECHADO. Par do
+ * `loadProjectAssetsById`; usa o MESMO mutex por id do `persistProject`, então
+ * não intercala com um autosave/rename em voo do mesmo projeto.
+ *
+ * ⚠️ NUNCA use isto no projeto ABERTO: lá a fonte da verdade é o `projectStore`
+ * em memória, e o próximo autosave dele sobrescreveria esta gravação.
+ */
+export async function persistProjectAssets(id: string, assets: ProjectAsset[]): Promise<void> {
+  await runSerializedWrite(id, () =>
+    set(projectAssetsKey(id), { id, assets }, getStore()).then(() => {
+      // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
+      // `persistProject`. Gravamos por fora dele: manter a referência antiga
+      // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
+      // é o lado seguro — no máximo custa uma reescrita da partição.
+      lastPersistedAssetsRef.delete(id)
+    }),
+  )
 }
 
 // CERCA de exclusão do armazenamento do programa do aluno (blocos guardar/ler).

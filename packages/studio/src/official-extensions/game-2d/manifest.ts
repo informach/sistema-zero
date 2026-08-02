@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.56.0',
+  version: '0.57.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -54,9 +54,16 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
 
 ### Faça o jogo reagir
 
-- **Definir gravidade** / **Aplicar velocidade**. Integra vx/vy e soma uma gravidade
-  explícita e finita. Zero desliga; valores negativos puxam para cima. Plataforma,
-  pulo no chão e inimigos terrestres respeitam o mesmo valor.
+- **Botar a gravidade do mundo em**. Define somente a aceleração do mundo (o padrão é
+  0,6). Zero desliga; valores negativos puxam para cima. Definir o valor, sozinho, não
+  faz nenhum sprite cair.
+- **Aplicar a gravidade do mundo ao sprite**. Soma essa aceleração ao \`vy\` do sprite
+  neste quadro. Use logo **antes** do bloco que o movimenta.
+- **Aplicar a gravidade do mundo aos sprites do grupo**. Faz o mesmo para os sprites
+  atuais de um grupo. Só os sprites que recebem um desses dois blocos respondem à gravidade.
+- **Aplicar velocidade** / **Atualizar o grupo**. Move por \`vx\`/\`vy\` sem acrescentar
+  gravidade escondida. A ordem física recomendada é: aplicar gravidade, mover e então
+  resolver o chão ou as paredes.
 - **Ricochetear nas bordas**. Quica o sprite nas bordas do canvas.
 - **Colisão por círculo**. Colisão mais justa para objetos redondos.
 - **Usar área de colisão de N% do tamanho**. O dial da colisão PERDOADORA: menor que
@@ -66,6 +73,10 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
   afundaria em chão e paredes). Veja a área real com **Mostrar a caixa de colisão**.
 - **Tocar som**. Bip sintetizado via Web Audio (sem arquivos). Permissão \`audio\`.
 - **Quando clicar/tocar**. Roda um bloco com a posição do ponteiro. Permissão \`mouse\`.
+- **Quando apertar qualquer tecla ou tocar na tela**. Útil para começar uma partida e
+  também funciona quando o palco ainda não tinha sido preparado explicitamente.
+- **Quando o sprite pular**. Dispara no instante do pulo feito por Plataforma, Pular no
+  chão ou Controlar o dinossauro.
 
 ### Dê aparência aos personagens
 
@@ -85,17 +96,18 @@ pronta. Se o nome não existir ou a carga falhar, o sprite usa um retângulo da 
 
 Use estes blocos dentro do **"A cada quadro do jogo"**:
 
-- **Plataforma**. Esquerda/direita + pulo com gravidade. O chão é a borda para a qual
-  a gravidade puxa: base com gravidade positiva e teto com gravidade negativa. Usa
-  a gravidade do mundo quando definida; sem o bloco, mantém o padrão 0,6.
+- **Plataforma**. Esquerda/direita + pulo + pouso. Encaixe **Aplicar a gravidade do
+  mundo ao sprite** logo acima para fazê-lo cair. O chão é a borda para a qual o valor
+  da gravidade aponta: base com gravidade positiva e teto com gravidade negativa.
 - **4 direções (top-down)**. Anda nas 4 direções; a diagonal não fica mais rápida.
 - **Voar livre**. Sem gravidade, mas com PESO: leva um tiquinho para engatar, plana um
   bom tanto quando você solta e demora para virar de lado (faça a curva antes!). É essa
   inércia que separa o voo do "4 direções". Passarinho, fadinha.
-- **Bater as asas**. A gravidade puxa e cada TOQUE (seta pra cima, W, espaço ou um toque
-  na tela) dá um empurrão pra cima, inclusive no ar. Segurar não sobe para sempre.
-- **Nadar**. Água pesada: solto, afunda devagarinho; segurando pra cima, sobe. Tudo mais
-  lento e mais macio. Com a gravidade do mundo em 0, o bicho fica boiando.
+- **Bater as asas**. Cada TOQUE (seta pra cima, W, espaço ou um toque na tela) dá um
+  empurrão, inclusive no ar. Aplique a gravidade logo acima para o sprite voltar a cair.
+  Segurar não sobe para sempre.
+- **Nadar**. Controle em 8 direções com bastante arrasto. Sem aplicar gravidade, o bicho
+  fica boiando; aplique-a logo acima para ele afundar quando estiver solto.
 - **Seguir o ponteiro**. O sprite persegue o mouse/dedo.
 - **Manter dentro da tela**. Gruda nas bordas em vez de sumir.
 - **Clarão**. Pinta a tela com uma cor translúcida (ex.: ao levar dano).
@@ -139,9 +151,9 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
   cria (por exemplo, dentro de \`A cada 2 segundos\`), ponha o \`Animar sprite\` logo abaixo
   usando esse nome. A animação começa no nascimento e cada um segue no próprio ritmo.
   ⚠️ O nome vale só ali, no trecho onde o sprite nasce.
-  Há também \`Mover o grupo sem gravidade\`. Para os TIROS do jogador num jogo COM
-  gravidade (senão os tiros arqueiam para baixo em vez de ir reto). Para jogos vistos de
-  cima (estilo aventura), \`Desenhar o grupo … ordenado pela base\` desenha quem está mais
+  \`Atualizar o grupo\` sempre move sem acrescentar gravidade: tiros continuam retos.
+  Use \`Aplicar a gravidade do mundo aos sprites do grupo\` antes dele somente nos grupos
+  que devem cair. Para jogos vistos de cima (estilo aventura), \`Desenhar o grupo … ordenado pela base\` desenha quem está mais
   para baixo na frente: o herói passa ATRÁS da árvore.
 - **Colisões com grupos**. \`Quando um sprite do grupo A encostar num do grupo B\` roda o
   "fazer" com os dois sprites; \`Para cada sprite do grupo que encostar no sprite\`
@@ -204,11 +216,11 @@ Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo ✨ A
 
 Para jogos de **corrida** (estilo "Dino Run"), em que o personagem não anda para os lados, só pula e abaixa:
 
-- **Fazer o sprite pular no chão** (genérico, em Movimento). Gravidade + pouso na borda
-  atraída (base com gravidade positiva, teto com gravidade negativa) + pulo com
-  ↑/Espaço/W ou um toque. Serve a qualquer jogo de pulo.
+- **Fazer o sprite pular no chão** (genérico, em Movimento). Pouso na borda atraída +
+  pulo com ↑/Espaço/W ou um toque. Aplique a gravidade ao sprite logo acima. Serve a
+  qualquer jogo de pulo.
 - A categoria **🦕 Kit dino** reúne atalhos PRONTOS: **criar dinossauro** (desenhado, com perninhas que
-  correm sozinhas), **controlar o dinossauro** (pula e abaixa, com gravidade/chão/poeira já embutidos),
+  correm sozinhas), **controlar o dinossauro** (pula e abaixa, com chão/poeira; aplique a gravidade logo acima),
   **criar obstáculo no grupo** (cacto/pedra no chão para pular, pássaro no alto para abaixar, ou sorteado),
   **criar ovo de bônus no grupo** (item para coletar), **desenhar fundo de floresta** (céu, sol, nuvens,
   morros e grama que rola. Parallax), e **sons** de pulo, dano e coletar.
@@ -418,7 +430,7 @@ Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Ko
   parede/borda), perseguidor, voador (deitado ou em pé), saltador e atirador (fica no chão e
   atira no alvo).
   A patrulha fica horizontal em jogos top-down; para ela cair num jogo de plataforma,
-  declare a gravidade do mundo em **Ao iniciar**.
+  defina o valor em **Ao iniciar** e aplique a gravidade ao grupo do tipo antes de atualizá-lo.
 - **Soltar um inimigo do tipo**. Solte quantos quiser, cada um nasce com a vida/dano do tipo.
 - **Atualizar os inimigos do tipo** (dentro do "a cada quadro"). Move pelo comportamento,
   anima, atira e REMOVE os derrotados (vida 0 → partículas + "Quando for derrotado").

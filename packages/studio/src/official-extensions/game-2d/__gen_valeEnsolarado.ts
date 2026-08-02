@@ -124,8 +124,8 @@ SZGame2D.gameLoop(function update() {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.cameraFollow(heroi, 960, 270);
     SZGame2D.arrowsX(heroi, 3);
-    SZGame2D.applyVelocity(heroi);
     SZGame2D.applyGravity(heroi);
+    SZGame2D.applyVelocity(heroi);
     SZGame2D.collideGroup(heroi, chao);
     if (SZGame2D.centerY(heroi) > 300) {
       SZGame2D.changeHealth(heroi, -1);
@@ -134,6 +134,7 @@ SZGame2D.gameLoop(function update() {
       heroi.vy = 0;
       SZGame2D.playFx("hurt");
     }
+    SZGame2D.applyGravityToGroup(gambas);
     SZGame2D.updateEnemyType(gambas, ctx, heroi);
     SZGame2D.forEachInGroup(gambas, (gamba) => {
       SZGame2D.collideGroup(gamba, chao);

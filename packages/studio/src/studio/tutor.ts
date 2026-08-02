@@ -208,10 +208,10 @@ function compactCode(project: Project): StudioTutorCodeFile[] {
     )
       continue
     const available = Math.min(MAX_CODE_CHARS_PER_FILE, MAX_CODE_TOTAL_CHARS - total)
-    const withoutAssets = file.content
-      .slice(0, available)
-      .replace(/data:[^\s"')]+/gi, '[asset removido]')
-    const content = redactStudioTutorSecrets(withoutAssets).text
+    const withoutAssets = file.content.replace(/data:[^\s"')]+/gi, '[asset removido]')
+    // Redija o valor inteiro antes do corte: uma aspa de fechamento fora do
+    // orçamento não pode transformar uma credencial em texto aparentemente comum.
+    const content = redactStudioTutorSecrets(withoutAssets).text.slice(0, available)
     total += content.length
     out.push({ path: file.path.slice(0, 240), content })
   }

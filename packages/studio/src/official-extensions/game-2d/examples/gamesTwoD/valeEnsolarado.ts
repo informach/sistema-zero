@@ -1204,11 +1204,11 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
                   },
                 },
                 {
-                  type: 'g2d:applyVelocity',
+                  type: 'g2d:applyGravity',
                   spriteVar: 'heroi',
                 },
                 {
-                  type: 'g2d:applyGravity',
+                  type: 'g2d:applyVelocity',
                   spriteVar: 'heroi',
                 },
                 {
@@ -1268,6 +1268,10 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
                       fx: 'hurt',
                     },
                   ],
+                },
+                {
+                  type: 'g2d:applyGravityToGroup',
+                  groupVar: 'gambas',
                 },
                 {
                   type: 'g2d:updateEnemyType',

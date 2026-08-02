@@ -1,12 +1,12 @@
 export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + Kit dino (v0.9.0) ----
-  // Bloco genérico "pular no chão": gravidade + pouso na borda atraída + pulo
-  // com ↑/Espaço/W ou um toque (borda de toque). Serve a QUALQUER jogo de pulo.
+  // Bloco genérico "pular no chão": pouso na borda atraída + pulo com
+  // ↑/Espaço/W ou um toque. A gravidade é aplicada à parte.
   var _jumpTapPrev = false;
   function jumpOnGround(sprite, ctx, jump) {
     if (!sprite || !ctx || !ctx.canvas) return;
     var j = (_isFiniteNumber(jump) && jump > 0) ? jump : 14;
-    var g = _worldGravityOr(0.6);
-    sprite.vy = (sprite.vy || 0) + g;
+    var g = world.gravity;
+    sprite.vy = _finiteNumber(sprite.vy, 0);
     sprite.y += sprite.vy;
     var visible = _visibleWorldRect(ctx);
     // Persiste "no chão" NO sprite (mesmo contrato do platformer/autoAnimate).
@@ -42,14 +42,14 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
   /**
    * Controla o dinossauro estilo "corrida": pula com ↑/Espaço/W ou toque na
    * METADE DE CIMA da tela; abaixa com ↓/S ou segurando o dedo na METADE DE
-   * BAIXO. Aplica gravidade, pousa na linha do chão (dinoGround) e solta poeira
-   * ao pular/pousar. Use DENTRO do "a cada quadro".
+   * BAIXO. Integra a velocidade, pousa na linha do chão e solta poeira ao
+   * pular/pousar. A gravidade é aplicada à parte, antes deste controle.
    */
   function controlDino(sprite, ctx, jump) {
     if (!sprite || !ctx || !ctx.canvas) return;
     var sk = sprite.skin || (sprite.skin = { kind: 'dino' });
     var j = _positiveFiniteNumber(jump, 15);
-    var g = _worldGravityOr(0.6);
+    var g = world.gravity;
     var gh = stageH(ctx);
     var gy = dinoGround(ctx);
     var visible = _visibleWorldRect(ctx);
@@ -108,7 +108,7 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
     // sombra: FICA na linha do chão (não sobe com o pulo, como acontecia quando era
     // desenhada nos pés) e encolhe/clareia conforme o dino ganha altura — dá
     // profundidade sem "grudar" no dino.
-    var invertedGravity = _gravityPullsUp(_worldGravityOr(0.6));
+    var invertedGravity = _gravityPullsUp(world.gravity);
     var groundY = invertedGravity ? _visibleWorldRect(ctx).top : dinoGround(ctx);
     var airborne = invertedGravity ? y - groundY : groundY - (y + h);
     if (airborne < 0) airborne = 0;

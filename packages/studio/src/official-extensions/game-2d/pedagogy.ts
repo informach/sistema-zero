@@ -20,7 +20,7 @@ export const GAME_TWO_D_PERIODIC_TOOLTIPS = {
 
 export const GAME_TWO_D_LIFECYCLE_GUIDANCE = {
   start: `Prepare tela, personagens, grupos, variáveis e estado inicial em “${GAME_TWO_D_AREAS.start}”. Essa área roda novamente em cada nova partida.`,
-  events: `Registre tecla, clique e começo de contato em “${GAME_TWO_D_AREAS.events}”, uma vez por partida.`,
+  events: `Registre tecla, qualquer tecla ou toque, clique, pulo e começo de contato em “${GAME_TWO_D_AREAS.events}”, uma vez por partida.`,
   loop: `Coloque “A cada quadro”, “A cada N quadros” e “A cada N segundos” como raízes independentes em “${GAME_TWO_D_AREAS.loop}”. As raízes periódicas rodam em todas as telas; coloque “se a tela atual é jogando?” dentro delas quando o comando só puder acontecer durante a partida. Comandos contínuos ficam no corpo dessas raízes ou em funções/métodos chamados por elas, nunca diretamente em “${GAME_TWO_D_AREAS.start}” ou “${GAME_TWO_D_AREAS.events}”.`,
 } as const
 

@@ -4,6 +4,7 @@ mock.module('server-only', () => ({}))
 
 let transcript: { lang: string; url: string; content: string } | null = null
 const sourceWrites: unknown[] = []
+const backfillRequests: unknown[] = []
 mock.module('@/server/media', () => ({
   syncVimeoTranscript: async () => transcript,
 }))
@@ -16,17 +17,21 @@ mock.module('@/lib/env', () => ({
 mock.module('@/server/gateway', () => ({
   gatewayFetch: async (path: string, options?: { body?: unknown }) => {
     if (path.endsWith('/backfill')) {
+      backfillRequests.push(options?.body)
       return {
         status: 200,
         body: {
           indexed: 0,
           deleted: 0,
+          nextCursor: null,
+          done: true,
           pending: [
             {
               courseId: 'course-1',
               lessonId: 'lesson-1',
               sourceType: 'video-vtt',
               sourceRef: 'block:video-1',
+              expectedBlockRevision: 'revision-video-1',
               extraction: { kind: 'vimeo', videoId: '123456789' },
             },
           ],
@@ -46,6 +51,7 @@ const { backfillZappyKnowledge } = await import('../src/server/zappy-knowledge')
 beforeEach(() => {
   transcript = null
   sourceWrites.length = 0
+  backfillRequests.length = 0
 })
 
 describe('backfill do conhecimento do Zappy', () => {
@@ -64,6 +70,7 @@ describe('backfill do conhecimento do Zappy', () => {
       expect.objectContaining({
         sourceRef: 'block:video-1',
         sourceType: 'video-vtt',
+        expectedBlockRevision: 'revision-video-1',
         content: transcript.content,
       }),
     )
@@ -83,5 +90,13 @@ describe('backfill do conhecimento do Zappy', () => {
         }),
       ],
     })
+  })
+
+  test('processa um lote limitado e encaminha o cursor de retomada', async () => {
+    const cursor = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e099'
+
+    await backfillZappyKnowledge({ cursor })
+
+    expect(backfillRequests).toEqual([{ cursor, limit: 3 }])
   })
 })

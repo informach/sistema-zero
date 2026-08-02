@@ -508,11 +508,11 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                   ],
                 },
                 {
-                  type: 'g2d:applyVelocity',
+                  type: 'g2d:applyGravity',
                   spriteVar: 'rei',
                 },
                 {
-                  type: 'g2d:applyGravity',
+                  type: 'g2d:applyVelocity',
                   spriteVar: 'rei',
                 },
                 {

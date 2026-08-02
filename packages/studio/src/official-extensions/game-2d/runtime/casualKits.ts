@@ -507,7 +507,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       dist: 0,
       meters: 0,
       hVel: Math.max(2, w * 0.006),
-      trees: [],
+      trees: /** @type {Array<{ x: number, th: number, color: string }>} */ ([]),
       _lastScroll: 0,
       _hitLatch: false,
       _hudKey: 'kit:balao:' + (++_casualKitSequence)
