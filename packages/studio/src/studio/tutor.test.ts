@@ -95,4 +95,41 @@ describe('buildStudioTutorContext', () => {
       '[segredo removido]',
     )
   })
+
+  it('redige segredo com aspas incompletas antes de truncar o arquivo', () => {
+    const project = {
+      ...createEmptyProject('projeto-4', 'Ponte truncada'),
+      mode: 'bridge' as const,
+      files: {
+        'index.html': '',
+        'style.css': '',
+        'script.js': `const apiKey = "${'segredo-sem-fechar'.repeat(2_000)}`,
+      },
+    }
+
+    const context = buildStudioTutorContext({ project, selectedBlockId: null, lastError: null })
+    const content = context.code?.find((file) => file.path === 'script.js')?.content ?? ''
+
+    expect(content).toContain('[segredo removido]')
+    expect(content).not.toContain('segredo-sem-fechar')
+  })
+
+  it('remove credenciais embutidas em URLs de conexão', () => {
+    const project = {
+      ...createEmptyProject('projeto-5', 'Ponte com banco'),
+      mode: 'bridge' as const,
+      files: {
+        'index.html': '',
+        'style.css': '',
+        'script.js': 'conectar("postgres://alice:pw1234@db.internal/app")',
+      },
+    }
+
+    const context = buildStudioTutorContext({ project, selectedBlockId: null, lastError: null })
+    const serialized = JSON.stringify(context)
+
+    expect(serialized).not.toContain('alice')
+    expect(serialized).not.toContain('pw1234')
+    expect(serialized).toContain('[segredo removido]')
+  })
 })

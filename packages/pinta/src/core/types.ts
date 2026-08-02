@@ -116,6 +116,18 @@ export interface PintaHostAdapter {
    */
   sendToStudio?: (asset: PintaExportedAsset) => Promise<PintaSendResult> | PintaSendResult
   /**
+   * REENVIO automático ao salvar (08/2026) — o outro lado do botão "Editar" do
+   * Estúdio: a criança abre o desenho pelo jogo, ajusta, e o jogo se atualiza
+   * sozinho. Chamado ao parar de desenhar (e ao sair/trocar de aba).
+   *
+   * ⚠️ Só atualiza o que JÁ foi enviado uma vez: o HOST devolve
+   * `{updated:false}` quando o desenho não está na biblioteca do Estúdio. Sem
+   * essa regra, todo rascunho cairia lá sozinho e o "Usar no Estúdio" deixaria
+   * de ser a decisão explícita que é hoje. Ausente = nada acontece.
+   */
+  resyncToStudio?: (asset: PintaExportedAsset) => Promise<{ updated: boolean }>
+
+  /**
    * "Jogar meu mapa" (só mapas): o host cria um PROJETO-JOGO completo e jogável
    * no Estúdio a partir do mapa (jogador + colisão + câmera montados). Ausente =
    * o botão não aparece.
@@ -123,4 +135,11 @@ export interface PintaHostAdapter {
   sendGameToStudio?: (asset: PintaExportedAsset) => Promise<PintaSendResult> | PintaSendResult
   /** Missão de arte do Pensa: abre a criação pré-configurada 1x no mount. */
   initialIntent?: PintaInitialIntent
+  /**
+   * Abre DIRETO um desenho da galeria, 1x no mount — o destino do botão
+   * "Editar" do Estúdio, que chega numa aba nova por `/pinta?desenho=<id>`.
+   * Aplicado só DEPOIS que a galeria carrega (o editor recusa um id que ele
+   * ainda não conhece); desenho apagado cai na galeria com um recado gentil.
+   */
+  initialAssetId?: string
 }

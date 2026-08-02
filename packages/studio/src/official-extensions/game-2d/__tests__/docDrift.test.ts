@@ -124,6 +124,41 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(gameTwoDManifest.docs).toContain('teto')
   })
 
+  it('mantém a gravidade explícita e seletiva em blocos, manual e contexto da IA', () => {
+    const byType = new Map(gameTwoDBlocks.map((block) => [block.type, String(block.tooltip ?? '')]))
+
+    expect(byType.get('sz_g2d_set_gravity')).toContain('Define somente o valor')
+    expect(byType.get('sz_g2d_apply_gravity')).toContain('ANTES')
+    expect(byType.get('sz_g2d_apply_gravity_group')).toContain('antes de atualizar o grupo')
+    for (const type of [
+      'sz_g2d_platformer',
+      'sz_g2d_flap',
+      'sz_g2d_swim',
+      'sz_g2d_jump_on_ground',
+      'sz_g2d_control_dino',
+    ]) {
+      expect(byType.get(type), type).toContain('Aplicar a gravidade do mundo')
+    }
+
+    for (const text of [gameTwoDPromptContext, gameTwoDPromptSummary]) {
+      expect(text).toContain('applyGravityToGroup')
+      expect(text).not.toContain('updateGroupNoGravity')
+    }
+    expect(gameTwoDManifest.docs).not.toContain('Mover o grupo sem gravidade')
+    expect(gameTwoDManifest.docs).toContain('Só os sprites que recebem')
+    expect(gameTwoDPromptContext).toContain('Só sprites/grupos que recebem o apply respondem')
+  })
+
+  it('documenta os eventos de qualquer entrada e de pulo', () => {
+    for (const label of [
+      'Quando apertar qualquer tecla ou tocar na tela',
+      'Quando o sprite pular',
+    ]) {
+      expect(gameTwoDManifest.docs).toContain(label)
+      expect(gameTwoDPromptContext).toContain(label)
+    }
+  })
+
   const reais = new Set(nomesDeCategoria(gameTwoDToolboxCategory))
 
   it('toda citação de chip nas docs do aluno é uma sub-categoria real (ou uma do núcleo)', () => {

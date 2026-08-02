@@ -21,6 +21,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@sistemazero/studio/styles.css': r('../src/styles/studio.css'),
+      // Subpaths ANTES do alias raiz: o alias do Vite casa por PREFIXO, então
+      // `@sistemazero/studio` sozinho transformaria `.../personal-assets` em
+      // `src/index.ts/personal-assets` (500 no dev server).
+      '@sistemazero/studio/personal-assets': r('../src/asset-library/personal.ts'),
       '@sistemazero/studio': r('../src/index.ts'),
     },
   },

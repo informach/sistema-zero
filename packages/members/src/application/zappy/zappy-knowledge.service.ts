@@ -97,6 +97,7 @@ export interface ZappyKnowledgeSyncInput {
   lessonId: string
   sourceType: ZappyKnowledgeSourceType
   sourceRef: string
+  expectedBlockRevision: string
   /** VTT cru em `video-vtt`; texto já extraído em PDF; HTML/Markdown em rich-text. */
   content?: string
   error?: string
@@ -106,6 +107,7 @@ interface ZappyKnowledgePendingBase {
   courseId: string
   lessonId: string
   sourceRef: string
+  expectedBlockRevision: string
 }
 
 export type ZappyKnowledgePendingExtraction =
@@ -140,6 +142,9 @@ export class ZappyKnowledgeService {
     if (input.courseId && input.courseId !== authority.courseId) {
       throw new Error('Curso não corresponde à aula da fonte do Zappy')
     }
+    if (input.expectedBlockRevision !== authority.blockRevision) {
+      throw new ValidationError('Fonte do Zappy pertence a uma revisão desatualizada do bloco')
+    }
     const raw = input.content ?? ''
     if (zappySourceContentBytes(raw) > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
       throw new ValidationError('Fonte do Zappy excede o tamanho máximo')
@@ -151,7 +156,7 @@ export class ZappyKnowledgeService {
       courseId: authority.courseId,
       lessonId: authority.lessonId,
       blockId: authority.blockId,
-      blockRevision: authority.blockRevision,
+      blockRevision: input.expectedBlockRevision,
       sourceType: input.sourceType,
       sourceRef: input.sourceRef,
       contentHash: createHash('sha256').update(raw).digest('hex'),
@@ -206,12 +211,20 @@ export class ZappyKnowledgeService {
   }
 
   /** Indexa texto rico e devolve os downloads externos que o admin precisa extrair. */
-  async backfill(): Promise<{
+  async backfill(input: { cursor?: string; limit?: number } = {}): Promise<{
     indexed: number
     deleted: number
     pending: ZappyKnowledgePendingExtraction[]
+    nextCursor: string | null
+    done: boolean
   }> {
-    const blocks = await this.repository.listPublishedKidsBlocks()
+    const limit = Math.min(Math.max(input.limit ?? 10, 1), 25)
+    const listed = await this.repository.listPublishedKidsBlocks({
+      ...(input.cursor ? { after: input.cursor } : {}),
+      limit: limit + 1,
+    })
+    const hasMore = listed.length > limit
+    const blocks = listed.slice(0, limit)
     let indexed = 0
     const pending: ZappyKnowledgePendingExtraction[] = []
     for (const block of blocks) {
@@ -222,6 +235,7 @@ export class ZappyKnowledgeService {
           lessonId: block.lessonId,
           sourceType: 'rich-text',
           sourceRef,
+          expectedBlockRevision: block.blockRevision,
           content: block.content.markdown ?? block.content.html ?? '',
         })
         indexed += 1
@@ -233,6 +247,7 @@ export class ZappyKnowledgeService {
             lessonId: block.lessonId,
             sourceType: 'video-vtt',
             sourceRef,
+            expectedBlockRevision: block.blockRevision,
             extraction: { kind: 'stable-vtt', location },
           })
         } else {
@@ -242,6 +257,7 @@ export class ZappyKnowledgeService {
             lessonId: block.lessonId,
             sourceType: 'video-vtt',
             sourceRef,
+            expectedBlockRevision: block.blockRevision,
             extraction: videoId
               ? { kind: 'vimeo', videoId }
               : { kind: 'unavailable', error: 'Vídeo publicado sem transcrição compatível' },
@@ -253,12 +269,19 @@ export class ZappyKnowledgeService {
           lessonId: block.lessonId,
           sourceType: 'student-notebook',
           sourceRef,
+          expectedBlockRevision: block.blockRevision,
           extraction: { kind: 'private-pdf', location: block.content.url },
         })
       }
     }
-    const deleted = await this.repository.reconcilePublishedBlockSources()
-    return { indexed, deleted, pending }
+    const deleted = hasMore ? 0 : await this.repository.reconcilePublishedBlockSources()
+    return {
+      indexed,
+      deleted,
+      pending,
+      nextCursor: hasMore ? (blocks.at(-1)?.blockId ?? null) : null,
+      done: !hasMore,
+    }
   }
 
   report(): Promise<ZappyKnowledgeReport> {

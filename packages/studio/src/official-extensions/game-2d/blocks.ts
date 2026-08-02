@@ -58,7 +58,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_spawn_image_in_group',
       'sz_g2d_spawn_bullet',
       'sz_g2d_update_group',
-      'sz_g2d_update_group_no_gravity',
+      'sz_g2d_apply_gravity_group',
       'sz_g2d_draw_group',
       'sz_g2d_draw_group_by_y',
       'sz_g2d_for_each_in_group',

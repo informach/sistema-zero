@@ -35,7 +35,8 @@ describe('Exemplo Dino Corredor — drift contra o parser real', () => {
     for (const t of [
       'g2d:setHitboxScale', // ⭐ a colisão PERDOADORA (dial Clear Code) no dino
       'g2d:createDino', // o dino do kit (100% procedural)
-      'g2d:controlDino', // pulo com espaço (gravidade + impulso, sem pulo duplo)
+      'g2d:applyGravity', // o dino responde à gravidade explicitamente
+      'g2d:controlDino', // pulo com espaço + chão, sem pulo duplo
       'g2d:forest', // o cenário de floresta do kit
       'g2d:spawnObstacle', // cactos na borda direita
       'g2d:randomBetween', // posição/velocidade levemente sorteadas

@@ -28,6 +28,62 @@ import {
 const ASSET_KEY_PREFIX = 'asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
 
+/**
+ * Marcador de "algum desenho mudou", em `localStorage` — o sinal que atravessa
+ * ABAS (a criança edita no Pinta numa aba e o jogo está aberto noutra).
+ *
+ * Por que aqui: `savePersonalAsset` é o funil ÚNICO de escrita da biblioteca,
+ * então o "Usar no Estúdio" e a reemissão automática do Pinta bumpam o marcador
+ * de graça — nenhum host precisa saber que ele existe.
+ *
+ * Por que `localStorage` e não `BroadcastChannel`: o valor precisa SOBREVIVER à
+ * aba fechada (editar hoje, abrir o Estúdio amanhã) e ser lido de forma
+ * SÍNCRONA sob demanda. É a mesma escolha (e o mesmo motivo) do
+ * `blockly/blockClipboard.ts`. Sem listener: quem sincroniza lê no foco.
+ *
+ * A chave leva o NAMESPACE porque a biblioteca é por PERFIL: o desenho de um
+ * irmão não pode disparar a sincronia dos projetos do outro.
+ */
+const CHANGED_KEY_PREFIX = 'sz:desenhos-alterados:'
+const changedKey = () => `${CHANGED_KEY_PREFIX}${storageNamespace}`
+
+/** `localStorage` pode não existir (SSR) ou lançar (Safari privado, cota). */
+function safeLocalStorage(): Storage | null {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage
+  } catch {
+    return null
+  }
+}
+
+/** Carimba "a biblioteca deste perfil mudou agora". Best-effort. */
+function markPersonalAssetsChanged(): void {
+  try {
+    safeLocalStorage()?.setItem(changedKey(), JSON.stringify({ at: Date.now() }))
+  } catch {
+    // fail-soft: sem o carimbo a sincronia só perde a otimização (ela ainda roda
+    // uma vez por aba, porque o relógio dela começa em 0).
+  }
+}
+
+/**
+ * Quando a biblioteca deste perfil mudou pela última vez (0 = nunca/indisponível).
+ * É o portão barato da sincronia: igual ao já visto ⇒ nada a fazer, sem tocar
+ * no IndexedDB.
+ */
+export function personalAssetsChangedAt(): number {
+  try {
+    const raw = safeLocalStorage()?.getItem(changedKey())
+    if (!raw) return 0
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return 0
+    const at = (parsed as { at?: unknown }).at
+    return typeof at === 'number' && Number.isFinite(at) ? at : 0
+  } catch {
+    return 0
+  }
+}
+
 export const PERSONAL_ASSET_LIMITS = {
   maxCount: 128,
   /** Orçamento total de `dataUrl` (~17 MB de binário inflado em base64). */
@@ -211,6 +267,7 @@ export async function savePersonalAsset(input: {
       updatedAt: Date.now(),
     }
     await set(assetKey(input.id), record, getStoreHandle())
+    markPersonalAssetsChanged()
     return { ok: true, name }
   } catch {
     return { ok: false, error: 'Não consegui salvar agora. Tente de novo daqui a pouco.' }
@@ -221,6 +278,7 @@ export async function savePersonalAsset(input: {
 export async function removePersonalAsset(id: string): Promise<void> {
   try {
     await del(assetKey(id), getStoreHandle())
+    markPersonalAssetsChanged()
   } catch {
     // fail-soft: sem IndexedDB/erro de quota não derruba a UI.
   }

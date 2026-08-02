@@ -161,6 +161,11 @@ interface ProjectStore {
    * Saneia na entrada (metadado inválido = erro amigável, asset intocado).
    */
   updateAssetMeta: (id: string, meta: { tileset?: unknown; tilemap?: unknown }) => string | null
+  /**
+   * Troca a IMAGEM de um asset preservando a identidade dele — o caminho de
+   * "editei o desenho no Pinta, o jogo se atualiza sozinho". Devolve erro ou null.
+   */
+  updateAssetImage: (id: string, image: UpdateAssetImageInput) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -197,6 +202,21 @@ export interface NewAssetInput {
   source?: 'upload' | 'library'
   libId?: string
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
+  sprite?: unknown
+  tileset?: unknown
+  tilemap?: unknown
+}
+
+/**
+ * Entrada de `updateAssetImage`: os PIXELS novos (e o que o desenho traz junto).
+ * Sem `name`/`id`/`libId` de propósito — trocar a imagem nunca muda a identidade
+ * do asset (ver o comentário da ação).
+ */
+export interface UpdateAssetImageInput {
+  dataUrl: string
+  width?: number
+  height?: number
+  /** Metadados do desenho de origem; ausentes seguem a regra da geometria. */
   sprite?: unknown
   tileset?: unknown
   tilemap?: unknown
@@ -2378,6 +2398,69 @@ export function createProjectStore(
         if (!tilemap) return 'Não consegui montar o mapa desta imagem.'
         next.tilemap = tilemap
       }
+      set({
+        project: bump({ ...p, assets: p.assets.map((a) => (a.id === id ? next : a)) }),
+        isDirty: true,
+        saveError: null,
+      })
+      return null
+    },
+    updateAssetImage: (id, image) => {
+      const p = get().project
+      if (!p?.assets) return 'Sem imagens no projeto.'
+      const target = p.assets.find((a) => a.id === id)
+      if (!target) return 'Imagem não encontrada.'
+      if (target.kind !== 'image') return 'Esse arquivo não é uma imagem.'
+      // Mesmos bytes = nada a fazer. Sem esta guarda, um chamador distraído
+      // marcaria o projeto como sujo e dispararia autosave à toa.
+      if (target.dataUrl === image.dataUrl) return null
+      if (!isValidAssetDataUrl(image.dataUrl)) return 'Imagem inválida ou grande demais.'
+      // Orçamento do projeto contando o asset NOVO no lugar do velho (o
+      // `addAsset` só checa o teto na entrada; um desenho reeditado pode ter
+      // ficado bem maior).
+      const othersChars = p.assets.reduce(
+        (sum, a) => (a.id === id ? sum : sum + a.dataUrl.length),
+        0,
+      )
+      if (othersChars + image.dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
+        return `O desenho "${target.name}" cresceu e não cabe mais neste jogo.`
+      }
+
+      const width = typeof image.width === 'number' && image.width > 0 ? image.width : undefined
+      const height = typeof image.height === 'number' && image.height > 0 ? image.height : undefined
+      // "Mesma geometria" trata dimensão AUSENTE como inalterada: sem medida
+      // nova não dá para provar que mudou, e o lado conservador é preservar o
+      // que a criança configurou.
+      const sameGeometry =
+        (width ?? target.width) === target.width && (height ?? target.height) === target.height
+      // Metadados: o desenho novo traz os dele → valem os dele. Não traz e a
+      // geometria não mudou → preserva o do projeto (peças/mapa configurados
+      // aqui pelo TileConfigDialog não existem no Pinta). Não traz e a geometria
+      // MUDOU → descarta: frameW/frameH e os índices de `solid` apontariam para
+      // quadros que não existem mais.
+      const sprite = sanitizeSpriteMeta(image.sprite) ?? (sameGeometry ? target.sprite : undefined)
+      const tileset =
+        sanitizeTilesetMeta(image.tileset) ?? (sameGeometry ? target.tileset : undefined)
+      const tilemap =
+        sanitizeTilemapMeta(image.tilemap) ?? (sameGeometry ? target.tilemap : undefined)
+
+      // ⚠️ `name`, `id`, `libId` e `source` ficam INTOCADOS: os blocos referenciam
+      // o asset PELO NOME (FieldAssetPicker serializa a string), então renomear
+      // aqui quebraria o jogo em silêncio — e o nome no projeto pode divergir do
+      // nome na biblioteca de propósito (o "Adicionar ao projeto" sufixa `-2`).
+      const next: ProjectAsset = {
+        ...target,
+        dataUrl: image.dataUrl,
+        ...(width ? { width } : {}),
+        ...(height ? { height } : {}),
+      }
+      if (sprite) next.sprite = sprite
+      else delete next.sprite
+      if (tileset) next.tileset = tileset
+      else delete next.tileset
+      if (tilemap) next.tilemap = tilemap
+      else delete next.tilemap
+
       set({
         project: bump({ ...p, assets: p.assets.map((a) => (a.id === id ? next : a)) }),
         isDirty: true,

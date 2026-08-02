@@ -527,7 +527,7 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
                   ],
                 },
                 {
-                  type: 'g2d:updateGroupNoGravity',
+                  type: 'g2d:updateGroup',
                   groupVar: 'tiros',
                 },
                 {

@@ -157,6 +157,7 @@ export const platformerExample: ExtensionExample = beginnerGameExample({
           type: 'g2d:updateEachFrame',
           body: [
             { type: 'g2d:clear' },
+            { type: 'g2d:applyGravity', spriteVar: 'heroi' },
             { type: 'g2d:platformer', spriteVar: 'heroi', ctxVar: 'ctx', speed: 4, jump: 11 },
             { type: 'g2d:clampToScreen', spriteVar: 'heroi', ctxVar: 'ctx' },
             { type: 'g2d:drawSprite', spriteVar: 'heroi', ctxVar: 'ctx' },

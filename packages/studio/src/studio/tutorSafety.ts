@@ -1,5 +1,5 @@
 const SECRET_KEY =
-  '(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|passwd|private[_-]?key|secret|token)'
+  '(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|passwd|private[_-]?key|secret|token|(?:database|postgres|mysql|mongo(?:db)?|redis|amqp)[_-]?url|connection[_-]?string|dsn)'
 
 const QUOTED_ASSIGNMENT_RE = new RegExp(
   `(\\b${SECRET_KEY}\\b\\s*=\\s*)(["'\\x60])([^\\r\\n]*?)\\2`,
@@ -13,6 +13,15 @@ const QUOTED_PROPERTY_RE = new RegExp(
   `((?:["']?${SECRET_KEY}["']?)\\s*:\\s*)(["'\\x60])([^\\r\\n]*?)\\2`,
   'giu',
 )
+const UNTERMINATED_QUOTED_ASSIGNMENT_RE = new RegExp(
+  `(\\b${SECRET_KEY}\\b\\s*=\\s*)(["'\\x60])((?:(?!\\2)[^\\r\\n])*)$`,
+  'gimu',
+)
+const UNTERMINATED_QUOTED_PROPERTY_RE = new RegExp(
+  `((?:["']?${SECRET_KEY}["']?)\\s*:\\s*)(["'\\x60])((?:(?!\\2)[^\\r\\n])*)$`,
+  'gimu',
+)
+const URL_CREDENTIALS_RE = /\b([a-z][a-z0-9+.-]*:\/\/)([^:/@\s"'\x60]+):([^/@\s"'\x60]+)@/giu
 const BEARER_RE = /\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/giu
 const KNOWN_TOKEN_RE = /\b(?:sk-[A-Za-z0-9_-]{8,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[A-Z0-9]{16})\b/g
 const PRIVATE_KEY_BLOCK_RE =
@@ -47,6 +56,21 @@ export function redactStudioTutorSecrets(value: string): {
   text = text.replace(QUOTED_PROPERTY_RE, (_match, prefix: string, quote: string) =>
     replacement(prefix, quote),
   )
+  text = text.replace(
+    UNTERMINATED_QUOTED_ASSIGNMENT_RE,
+    (_match, prefix: string, quote: string) => {
+      hadSecret = true
+      return `${prefix}${quote}[segredo removido]`
+    },
+  )
+  text = text.replace(UNTERMINATED_QUOTED_PROPERTY_RE, (_match, prefix: string, quote: string) => {
+    hadSecret = true
+    return `${prefix}${quote}[segredo removido]`
+  })
+  text = text.replace(URL_CREDENTIALS_RE, (_match, scheme: string) => {
+    hadSecret = true
+    return `${scheme}[segredo removido]@`
+  })
   text = text.replace(BEARER_RE, () => {
     hadSecret = true
     return 'Bearer [segredo removido]'

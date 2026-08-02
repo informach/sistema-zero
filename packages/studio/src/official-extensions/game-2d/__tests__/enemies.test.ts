@@ -77,6 +77,7 @@ interface Api {
   removeFromGroup: (g: unknown, s: Sprite) => void
   setCamera: (x: number, y: number) => void
   setGravity: (v: number) => void
+  applyGravityToGroup: (group: EnemyType) => void
   platformer: (sprite: Sprite, ctx: unknown, speed?: number, jump?: number) => void
 }
 
@@ -189,21 +190,24 @@ describe('createEnemyType / spawnEnemy', () => {
 })
 
 describe('comportamentos', () => {
-  it('patrulha (com gravidade): anda, vira na borda e cai no chão', () => {
+  it('patrulha com gravidade aplicada: anda, vira na borda e cai no chão', () => {
     const api = load()
     const ctx = fakeCtx(200, 100)
     // Mundo COM gravidade: a patrulha anda E cai no chão da tela.
     api.setGravity(0.6)
     const t = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
     const e = api.spawnEnemy(t, 100, 84) as Sprite
+    api.applyGravityToGroup(t)
     api.updateEnemyType(t, ctx, null)
     expect(e.vx).toBe(4) // começa indo pra direita
     // parede: algo (collideTileMap) zera o vx entre os quadros
     e.vx = 0
+    api.applyGravityToGroup(t)
     api.updateEnemyType(t, ctx, null)
     expect(e.vx).toBe(-4) // virou
     // borda esquerda: vira de novo
     e.x = -2
+    api.applyGravityToGroup(t)
     api.updateEnemyType(t, ctx, null)
     expect(e.vx).toBe(4)
     // gravidade + chão do canvas
@@ -224,7 +228,7 @@ describe('comportamentos', () => {
     expect(e.onGround).toBeUndefined() // sem chão num top-down
   })
 
-  it('patrulha usa somente a gravidade declarada, sem herdar o modo do platformer', () => {
+  it('patrulha só cai quando recebe gravidade, sem herdar o modo do platformer', () => {
     const api = load()
     const ctx = fakeCtx(200, 100)
     const hero = api.createSprite({ x: 20, y: 20, w: 16, h: 16 })
@@ -236,7 +240,10 @@ describe('comportamentos', () => {
     expect(e.onGround).toBeUndefined()
 
     api.setGravity(0.6)
-    for (let i = 0; i < 30; i++) api.updateEnemyType(t, ctx, null)
+    for (let i = 0; i < 30; i++) {
+      api.applyGravityToGroup(t)
+      api.updateEnemyType(t, ctx, null)
+    }
     expect(e.onGround).toBe(true)
     expect(e.y).toBe(100 - e.h)
   })
@@ -249,6 +256,7 @@ describe('comportamentos', () => {
     const t = api.createEnemyType({ behavior: 'patrulha', speed: 0 })
     const e = api.spawnEnemy(t, 100, 40) as Sprite
 
+    api.applyGravityToGroup(t)
     api.updateEnemyType(t, ctx, null)
 
     expect(e.y).toBe(40)
@@ -267,10 +275,14 @@ describe('comportamentos', () => {
     api.setEnemyTypeParam(jumperType, 'pulo', 9)
     const jumper = api.spawnEnemy(jumperType, 60, 0) as Sprite
 
-    for (let i = 0; i < 10; i++) api.updateEnemyType(patrolType, ctx, null)
-    api.updateEnemyType(jumperType, ctx, null)
-    api.updateEnemyType(jumperType, ctx, null)
-    api.updateEnemyType(jumperType, ctx, null)
+    for (let i = 0; i < 10; i++) {
+      api.applyGravityToGroup(patrolType)
+      api.updateEnemyType(patrolType, ctx, null)
+    }
+    for (let i = 0; i < 3; i++) {
+      api.applyGravityToGroup(jumperType)
+      api.updateEnemyType(jumperType, ctx, null)
+    }
 
     expect(patrol.y).toBe(0)
     expect(patrol.vy).toBe(0)
@@ -334,16 +346,19 @@ describe('comportamentos', () => {
     expect(e.x).toBe(50)
   })
 
-  it('saltador: pula exatamente a cada "ritmo" quadros no chão', () => {
+  it('saltador com gravidade aplicada pula exatamente a cada "ritmo" quadros no chão', () => {
     const api = load()
     const ctx = fakeCtx(200, 100)
     const t = api.createEnemyType({ behavior: 'saltador' })
     api.setEnemyTypeParam(t, 'ritmo', 3)
     api.setEnemyTypeParam(t, 'pulo', 9)
     const e = api.spawnEnemy(t, 50, 84) as Sprite
+    api.applyGravityToGroup(t)
     api.updateEnemyType(t, ctx, null) // pousa; contador 3->2
+    api.applyGravityToGroup(t)
     api.updateEnemyType(t, ctx, null) // 2->1
     expect(e.vy).toBe(0)
+    api.applyGravityToGroup(t)
     api.updateEnemyType(t, ctx, null) // 1->0: PULA
     expect(e.vy).toBe(-9)
     expect(e.onGround).toBe(false)
@@ -400,6 +415,7 @@ describe('comportamentos', () => {
 
     const patrol = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
     const walker = api.spawnEnemy(patrol, 1050, 708) as Sprite
+    api.applyGravityToGroup(patrol)
     api.updateEnemyType(patrol, ctx, null)
     expect(walker.vx).toBe(4)
     expect(walker.y).toBe(500 + 240 - walker.h)

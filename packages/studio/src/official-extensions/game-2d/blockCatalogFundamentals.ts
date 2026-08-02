@@ -152,7 +152,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Define a gravidade do mundo para física, plataforma, pulo e inimigos terrestres. Use 0 para desligar ou um valor negativo para puxar para cima.',
+      'Define somente o valor da gravidade do mundo (o padrão é 0,6). Use 0 para desligar ou um valor negativo para puxar para cima. Nenhum sprite cai até você aplicar a gravidade a ele ou ao grupo.',
   },
   {
     type: 'sz_g2d_apply_velocity',
@@ -163,12 +163,11 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Move o sprite pela velocidade dele (vx e vy). Não mexe na gravidade: para o sprite cair, encaixe o "Aplicar a gravidade do mundo" logo abaixo deste.',
+      'Move o sprite pela velocidade dele (vx e vy). Não mexe na gravidade: para o sprite cair, encaixe o "Aplicar a gravidade do mundo" logo acima deste.',
   },
   {
     // Sem número de propósito: a força vem do "Botar a gravidade do mundo" (uma
-    // fonte só, a mesma que plataforma, pulo, dino e inimigos já leem). Sem
-    // ninguém declarar, vale 0.6.
+    // fonte só). Sem ninguém declarar, vale 0.6.
     type: 'sz_g2d_apply_gravity',
     placement: 'command',
     message0: 'Aplicar a gravidade do mundo ao sprite %1',
@@ -177,7 +176,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Puxa o sprite para baixo, um pouquinho a cada quadro. A força é a do "Botar a gravidade do mundo" (sem ele, 0,6). Encaixe logo DEPOIS do "Aplicar a velocidade".',
+      'Soma a gravidade do mundo à velocidade vertical do sprite neste quadro. Sem definir outro valor, usa 0,6. Encaixe logo ANTES do bloco que movimenta o sprite.',
   },
   {
     type: 'sz_g2d_bounce_edges',

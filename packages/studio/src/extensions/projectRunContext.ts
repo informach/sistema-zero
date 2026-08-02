@@ -176,9 +176,8 @@ export function createProjectRunContext(options: {
     },
     setEventHandler(target, property, callback) {
       if (disposed || !target) return
-      const managedHandler = function (this: unknown, event: Event): unknown {
-        return runCallback(() => callback.call(this, event))
-      }
+      const managedHandler = (event: Event): unknown =>
+        runCallback(() => callback.call(target, event))
       Reflect.set(target, property, managedHandler)
       resources.push(() => {
         if (Reflect.get(target, property) === managedHandler) {

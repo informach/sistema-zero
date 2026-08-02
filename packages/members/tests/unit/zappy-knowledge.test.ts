@@ -132,6 +132,7 @@ describe('ZappyKnowledgeService', () => {
       lessonId: 'lesson-1',
       sourceType: 'student-notebook',
       sourceRef: 'block:pdf-1',
+      expectedBlockRevision: 'revision-1',
       content: '   ',
     })
     expect(result.status).toBe('empty')
@@ -154,6 +155,7 @@ describe('ZappyKnowledgeService', () => {
         lessonId: 'lesson-1',
         sourceType: 'student-notebook',
         sourceRef: 'block:pdf-1',
+        expectedBlockRevision: 'revision-1',
         content: multibyte,
       }),
     ).rejects.toThrow(/tamanho máximo/i)
@@ -230,6 +232,7 @@ describe('ZappyKnowledgeService', () => {
       lessonId: 'lesson-1',
       sourceType: 'rich-text',
       sourceRef: 'block:block-1',
+      expectedBlockRevision: 'revision-1',
       content: 'Conteúdo atual',
     })
 
@@ -243,6 +246,38 @@ describe('ZappyKnowledgeService', () => {
     expect(captured?.blockRevision).toBe('revision-1')
   })
 
+  test('recusa extração iniciada em uma revisão anterior do bloco', async () => {
+    let saved = false
+    const service = new ZappyKnowledgeService(
+      repository({
+        blockAuthorityForSource: async () => ({
+          blockId: 'block-1',
+          courseId: 'course-1',
+          lessonId: 'lesson-1',
+          blockRevision: 'revision-new',
+        }),
+        upsert: async () => {
+          saved = true
+          return { id: 'source-1', changed: true }
+        },
+      }),
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+
+    await expect(
+      service.sync({
+        lessonId: 'lesson-1',
+        sourceType: 'video-vtt',
+        sourceRef: 'block:block-1',
+        expectedBlockRevision: 'revision-old',
+        content: 'Conteúdo extraído antes da edição',
+      }),
+    ).rejects.toThrow(/revisão/i)
+    expect(saved).toBe(false)
+  })
+
   test('backfill delega a reconciliação para o estado autoritativo do banco', async () => {
     let reconciled = 0
     const repo = repository({
@@ -251,6 +286,7 @@ describe('ZappyKnowledgeService', () => {
           blockId: 'rich-1',
           courseId: 'course-1',
           lessonId: 'lesson-1',
+          blockRevision: 'revision-1',
           kind: 'rich_text',
           content: { kind: 'rich_text', html: '<p>Atual</p>' },
         },
@@ -258,6 +294,7 @@ describe('ZappyKnowledgeService', () => {
           blockId: 'quiz-1',
           courseId: 'course-1',
           lessonId: 'lesson-1',
+          blockRevision: 'revision-quiz-1',
           kind: 'quiz',
           content: { kind: 'quiz', questions: [] },
         },
@@ -290,6 +327,7 @@ describe('ZappyKnowledgeService', () => {
             blockId: 'video-1',
             courseId: 'course-1',
             lessonId: 'lesson-1',
+            blockRevision: 'revision-video-1',
             kind: 'video',
             content: {
               kind: 'video',
@@ -309,8 +347,49 @@ describe('ZappyKnowledgeService', () => {
     expect(result.pending).toEqual([
       expect.objectContaining({
         sourceRef: 'block:video-1',
+        expectedBlockRevision: 'revision-video-1',
         extraction: { kind: 'vimeo', videoId: '123456789' },
       }),
     ])
+  })
+
+  test('backfill processa somente um lote e devolve cursor retomável', async () => {
+    const listed: Array<{ after?: string; limit?: number }> = []
+    const service = new ZappyKnowledgeService(
+      repository({
+        listPublishedKidsBlocks: async (input) => {
+          listed.push(input ?? {})
+          return [
+            {
+              blockId: 'block-1',
+              courseId: 'course-1',
+              lessonId: 'lesson-1',
+              blockRevision: 'revision-1',
+              kind: 'video',
+              content: { kind: 'video', provider: 'vimeo', src: 'https://vimeo.com/1' },
+            },
+            {
+              blockId: 'block-2',
+              courseId: 'course-1',
+              lessonId: 'lesson-1',
+              blockRevision: 'revision-2',
+              kind: 'video',
+              content: { kind: 'video', provider: 'vimeo', src: 'https://vimeo.com/2' },
+            },
+          ]
+        },
+      }),
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+
+    const result = await service.backfill({ cursor: 'block-before', limit: 1 })
+
+    expect(listed).toEqual([{ after: 'block-before', limit: 2 }])
+    expect(result.pending).toHaveLength(1)
+    expect(result.nextCursor).toBe('block-1')
+    expect(result.done).toBe(false)
+    expect(result.deleted).toBe(0)
   })
 })

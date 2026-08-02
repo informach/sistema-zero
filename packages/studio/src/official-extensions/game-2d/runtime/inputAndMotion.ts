@@ -1,7 +1,11 @@
 export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, Pointer Events) ----
   var pointer = { x: 0, y: 0, down: false };
+  var _activePointerId = null;
   var pointerHandlers = Object.create(null);
   var pointerHandlerOrder = [];
+  function _eventPointerId(e) {
+    return e && e.pointerId !== undefined ? e.pointerId : '__mouse__';
+  }
   function pointerXY(e) {
     var c = _stageCanvas || document.querySelector('canvas');
     if (!c) return { x: e.clientX || 0, y: e.clientY || 0 };
@@ -21,13 +25,19 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     return { x: ((e.clientX || 0) - left) * sx, y: ((e.clientY || 0) - top) * sy };
   }
   window.addEventListener('pointermove', function (e) {
+    var fromStage = _canvasEventTarget(e && e.target);
+    var continuesStageDrag = pointer.down && _activePointerId === _eventPointerId(e);
+    if (!fromStage && !continuesStageDrag) return;
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y;
-    if (pointer.down && e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (continuesStageDrag && e && typeof e.preventDefault === 'function') e.preventDefault();
   });
   function _releasePointer(e) {
+    if (!pointer.down || _activePointerId !== _eventPointerId(e)) return;
+    var activeId = _activePointerId;
     pointer.down = false;
-    if (e && e.target && typeof e.target.releasePointerCapture === 'function' && e.pointerId !== undefined) {
-      try { e.target.releasePointerCapture(e.pointerId); } catch (ignored) {}
+    _activePointerId = null;
+    if (_stageCanvas && typeof _stageCanvas.releasePointerCapture === 'function' && activeId !== '__mouse__') {
+      try { _stageCanvas.releasePointerCapture(activeId); } catch (ignored) {}
     }
   }
   window.addEventListener('pointerup', _releasePointer);
@@ -49,7 +59,9 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     // blocos “Quando clicar/tocar”. A soltura continua global para encerrar um
     // arraste que começou no palco e terminou fora dele.
     if (!target) return;
+    if (pointer.down) return;
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
+    _activePointerId = _eventPointerId(e);
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof target.focus === 'function') { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
     if (typeof target.setPointerCapture === 'function' && e.pointerId !== undefined) {
@@ -83,24 +95,27 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       warnOnce('evento-clique-no-quadro', '“Quando clicar/tocar” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
+    // O evento pode ser o PRIMEIRO bloco que usa o canvas. Inicializar aqui
+    // associa um canvas já existente ao palco antes do primeiro toque.
+    ensureStage();
     var handlerId = _stableHandlerId('clique', id, fn);
     if (!pointerHandlers[handlerId]) pointerHandlerOrder.push(handlerId);
     pointerHandlers[handlerId] = fn;
   }
 
   // ---- Movimento (v0.4.0) ----
-  /** Plataforma: esq/dir + pulo (só no chão) + gravidade. */
+  /** Plataforma: esq/dir + pulo (só no chão); a gravidade é aplicada à parte. */
   function platformer(sprite, ctx, speed, jump) {
     if (!sprite || !ctx || !ctx.canvas) return;
     var s = _finiteNumber(speed, 4);
     var j = _positiveFiniteNumber(jump, 11);
-    var g = _worldGravityOr(0.6);
+    var g = world.gravity;
     // Grava a velocidade horizontal p/ os getters (vx/velocidade/está se movendo) —
-    // o vy já é real (gravidade/pulo abaixo).
+    // o vy já é real (gravidade explícita/pulo abaixo).
     sprite.vx = (keys.right ? s : 0) - (keys.left ? s : 0);
     if (keys.left) sprite.x -= s;
     if (keys.right) sprite.x += s;
-    sprite.vy = _finiteNumber(sprite.vy, 0) + g;
+    sprite.vy = _finiteNumber(sprite.vy, 0);
     sprite.y += sprite.vy;
     var visible = _visibleWorldRect(ctx);
     // Persiste "no chão" NO sprite: a animação por estado (autoAnimate) e os
@@ -186,17 +201,16 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
 
   /**
-   * Bater as asas: a gravidade puxa o tempo todo e cada TOQUE (↑/W/Espaço ou um
-   * toque na tela) dá um empurrão pra cima — no ar também, que é o que separa
-   * isto do "pular no chão". Passarinho do canos, foguete, balão.
+   * Bater as asas: cada TOQUE (↑/W/Espaço ou um toque na tela) dá um empurrão
+   * oposto à gravidade — no ar também. A queda vem do applyGravity explícito.
    * ⚠️ A borda do toque é por SPRITE, não por módulo: dois pássaros na mesma
    * tela precisam bater as asas cada um no seu.
    */
   function flap(sprite, ctx, force) {
     if (!sprite || !ctx || !ctx.canvas) return;
     var f = _positiveFiniteNumber(force, 8);
-    var g = _worldGravityOr(0.6);
-    sprite.vy = _finiteNumber(sprite.vy, 0) + g;
+    var g = world.gravity;
+    sprite.vy = _finiteNumber(sprite.vy, 0);
     sprite.y = _finiteNumber(sprite.y, 0) + sprite.vy;
     var visible = _visibleWorldRect(ctx);
     // Pousa no chão (senão o bicho some para sempre fora da tela); quem quiser
@@ -211,20 +225,19 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
 
   /**
-   * Nadar: água pesada. O empuxo quase anula a gravidade (afunda devagarinho
-   * parado, sobe segurando ↑) e o arrasto deixa tudo mais lento e mais macio.
-   * ⭐ Com a gravidade do mundo em 0 o bicho fica BOIANDO parado.
+   * Nadar: água pesada. O arrasto deixa tudo mais lento e macio. Sem aplicar
+   * gravidade o bicho boia; com applyGravity antes, afunda suavemente porque a
+   * água amortece a velocidade vertical.
    */
   function swim(sprite, speed) {
     if (!sprite) return;
     var s = _positiveFiniteNumber(speed, 2);
-    var sink = _worldGravityOr(0.6) * 0.18;
     var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
     var vx = (_finiteNumber(sprite.vx, 0) + dx * s * 0.3) * 0.88;
-    var vy = (_finiteNumber(sprite.vy, 0) + dy * s * 0.3 + sink) * 0.88;
-    // Migalha vira zero (com gravidade 0 e sem tecla, o bicho BOIA de verdade).
+    var vy = (_finiteNumber(sprite.vy, 0) + dy * s * 0.3) * 0.88;
+    // Migalha vira zero (sem gravidade explícita, o bicho BOIA de verdade).
     if (Math.abs(vx) < 0.01) vx = 0;
     if (Math.abs(vy) < 0.01) vy = 0;
     var v = _clampSpeed(vx, vy, s);
@@ -472,6 +485,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       pointer.x = 0;
       pointer.y = 0;
       pointer.down = false;
+      _activePointerId = null;
       pointerHandlers = Object.create(null);
       pointerHandlerOrder = [];
       _resetShake();

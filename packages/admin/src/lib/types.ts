@@ -686,6 +686,7 @@ export interface BlockView {
   kind: string
   sortOrder: number
   content: LessonBlockContent
+  blockRevision: string
 }
 
 export interface AttachmentView {

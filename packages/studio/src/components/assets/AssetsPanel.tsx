@@ -1,4 +1,4 @@
-import { type JSX, useEffect, useId, useRef, useState } from 'react'
+import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { normalizeAssetName, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
@@ -9,7 +9,13 @@ import {
   type PersonalAsset,
   removePersonalAsset,
 } from '../../asset-library/personal'
-import { useProjectStore } from '../../state/projectStore'
+import {
+  personalIdOf,
+  syncDrawingsIntoProjects,
+  takeDrawingSyncFailures,
+} from '../../asset-library/personalSync'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import {
   fileTo3DAssetDataUrl,
   fileToAssetDataUrl,
@@ -85,16 +91,44 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   // ao ABRIR o painel (a criança pode ter desenhado no Pinta em outra aba).
   const personalNamespace = getPersonalAssetsNamespace()
   const [personal, setPersonal] = useState<PersonalAsset[]>([])
+  const storeApi = useProjectStoreApi()
+  const onEditDrawing = useStudioEditDrawing()
   useEffect(() => {
     if (!open || !personalNamespace) return
     let cancelled = false
-    void listPersonalAssets().then((assets) => {
-      if (!cancelled) setPersonal(assets)
-    })
+    // Reconcilia ANTES de listar: abrir o painel é o momento em que a criança
+    // olha para as duas listas lado a lado, então elas têm que concordar. O
+    // portão da sincronia deixa isso barato quando nada mudou.
+    const refresh = () => {
+      void syncDrawingsIntoProjects(storeApi)
+        .then(() => listPersonalAssets())
+        .then((assets) => {
+          if (cancelled) return
+          setPersonal(assets)
+          // A troca é silenciosa; a RECUSA não pode ser (o jogo ficaria com a
+          // arte velha sem ninguém saber). Inclui as falhas da sincronia em
+          // segundo plano, que aconteceram com o painel fechado.
+          const failures = takeDrawingSyncFailures()
+          if (failures.length > 0) setError(failures.join(' '))
+        })
+    }
+    refresh()
+    // Voltar do Pinta com o painel ABERTO: sem isto, a imagem no jogo se
+    // atualizava (o watcher do Shell cuida disso) mas a miniatura em "Meus
+    // desenhos" ficava com o desenho velho até fechar e reabrir — duas listas
+    // lado a lado discordando.
+    window.addEventListener('focus', refresh)
     return () => {
       cancelled = true
+      window.removeEventListener('focus', refresh)
     }
-  }, [open, personalNamespace])
+  }, [open, personalNamespace, storeApi])
+
+  /** Desenhos que ainda existem no Pinta — quem pode abrir o editor de lá. */
+  const editableDrawingIds = useMemo(
+    () => (onEditDrawing ? new Set(personal.map((d) => d.id)) : null),
+    [personal, onEditDrawing],
+  )
 
   const addFromPersonal = (drawing: PersonalAsset) => {
     setError(null)
@@ -331,64 +365,82 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
               </p>
             ) : (
               <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {images.map((asset) => (
-                  <li
-                    key={asset.id}
-                    className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
-                  >
-                    <img
-                      src={asset.dataUrl}
-                      alt={asset.name}
-                      className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
-                      style={{ imageRendering: 'pixelated' }}
-                    />
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
-                      <input
-                        defaultValue={asset.name}
-                        spellCheck={false}
-                        aria-label={`Nome da imagem ${asset.name}`}
-                        className="w-full rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent"
-                        onBlur={(e) => handleRename(asset, e.target.value.trim())}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                        }}
+                {images.map((asset) => {
+                  // O desenho de origem no Pinta, quando esta imagem veio de
+                  // "Meus desenhos" E o desenho ainda existe lá (apagado no
+                  // Pinta → sem botão, em vez de abrir um editor vazio).
+                  const drawingId = personalIdOf(asset)
+                  const editableId =
+                    drawingId && editableDrawingIds?.has(drawingId) ? drawingId : null
+                  return (
+                    <li
+                      key={asset.id}
+                      className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
+                    >
+                      <img
+                        src={asset.dataUrl}
+                        alt={asset.name}
+                        className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
+                        style={{ imageRendering: 'pixelated' }}
                       />
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        {asset.tilemap ? (
-                          <span
-                            className="text-[9px] text-sz-fg-soft"
-                            title={`mapa ${asset.tilemap.cols}×${asset.tilemap.rows}`}
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <input
+                          defaultValue={asset.name}
+                          spellCheck={false}
+                          aria-label={`Nome da imagem ${asset.name}`}
+                          className="w-full rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent"
+                          onBlur={(e) => handleRename(asset, e.target.value.trim())}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                          }}
+                        />
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          {asset.tilemap ? (
+                            <span
+                              className="text-[9px] text-sz-fg-soft"
+                              title={`mapa ${asset.tilemap.cols}×${asset.tilemap.rows}`}
+                            >
+                              🗺️ mapa
+                            </span>
+                          ) : null}
+                          <button
+                            type="button"
+                            title="Definir o tamanho das peças e os tiles sólidos"
+                            className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                            onClick={() => setTileConfig({ asset, mode: 'tileset' })}
                           >
-                            🗺️ mapa
-                          </span>
-                        ) : null}
-                        <button
-                          type="button"
-                          title="Definir o tamanho das peças e os tiles sólidos"
-                          className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
-                          onClick={() => setTileConfig({ asset, mode: 'tileset' })}
-                        >
-                          🧩 peças
-                        </button>
-                        <button
-                          type="button"
-                          title="Fatiar esta imagem como um mapa de tiles"
-                          className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
-                          onClick={() => setTileConfig({ asset, mode: 'tilemap' })}
-                        >
-                          🗺️ fatiar
-                        </button>
-                        <button
-                          type="button"
-                          className="text-xs text-red-400 hover:underline"
-                          onClick={() => removeAsset(asset.id)}
-                        >
-                          Excluir
-                        </button>
+                            🧩 peças
+                          </button>
+                          <button
+                            type="button"
+                            title="Fatiar esta imagem como um mapa de tiles"
+                            className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                            onClick={() => setTileConfig({ asset, mode: 'tilemap' })}
+                          >
+                            🗺️ fatiar
+                          </button>
+                          {editableId && onEditDrawing ? (
+                            <button
+                              type="button"
+                              title="Abrir este desenho no Pinta (ele se atualiza aqui sozinho)"
+                              className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                              onClick={() => onEditDrawing(editableId)}
+                            >
+                              ✏️ editar desenho
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            className="text-xs text-red-400 hover:underline"
+                            onClick={() => removeAsset(asset.id)}
+                          >
+                            Excluir
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </section>
@@ -524,7 +576,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                             </span>
                           ) : null}
                         </span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                           <button
                             type="button"
                             className="text-xs text-sz-accent hover:underline"
@@ -532,6 +584,16 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                           >
                             Adicionar ao projeto
                           </button>
+                          {onEditDrawing ? (
+                            <button
+                              type="button"
+                              title="Abrir este desenho no Pinta (ele se atualiza nos seus jogos sozinho)"
+                              className="text-xs text-sz-fg-soft hover:text-sz-accent hover:underline"
+                              onClick={() => onEditDrawing(drawing.id)}
+                            >
+                              ✏️ Editar
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             className="text-xs text-red-400 hover:underline"

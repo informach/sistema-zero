@@ -20,6 +20,7 @@ import { OverviewCard } from '@/components/admin/overview-card'
 import {
   type AiUsagePanelLoaders,
   loadAiUsagePanels,
+  runZappyBackfillBatches,
   type ZappyBackfillSummary,
   type ZappyKnowledgeReportView,
   type ZappyMetricsView,
@@ -47,6 +48,8 @@ const PANEL_LOADERS: AiUsagePanelLoaders = {
   metrics: (month) => apiGet<ZappyMetricsView>(`/api/members/zappy/metrics?month=${month}`),
   knowledge: () => apiGet<ZappyKnowledgeReportView>('/api/members/zappy/knowledge'),
 }
+
+const ZAPPY_BACKFILL_CURSOR_KEY = 'sz:zappy-backfill:v2:cursor'
 
 function panelError(result: PromiseRejectedResult, fallback: string): string {
   const reason = result.reason as ApiError | undefined
@@ -83,6 +86,7 @@ export function AiUsageClient() {
   const [errors, setErrors] = useState<PanelErrors>({})
   const [loading, setLoading] = useState(true)
   const [backfilling, setBackfilling] = useState(false)
+  const [backfillProcessed, setBackfillProcessed] = useState(0)
   const loadSequence = useRef(0)
 
   const load = useCallback(async (target: string) => {
@@ -117,9 +121,24 @@ export function AiUsageClient() {
 
   const backfill = async () => {
     setBackfilling(true)
+    setBackfillProcessed(0)
     try {
-      const result = await apiSend<ZappyBackfillSummary>('/api/members/zappy/knowledge', 'POST')
-      const notice = zappyBackfillNotice(result)
+      const initialCursor = sessionStorage.getItem(ZAPPY_BACKFILL_CURSOR_KEY) ?? undefined
+      const total = await runZappyBackfillBatches({
+        ...(initialCursor ? { initialCursor } : {}),
+        step: (cursor) =>
+          apiSend<ZappyBackfillSummary>(
+            '/api/members/zappy/knowledge',
+            'POST',
+            cursor ? { cursor } : {},
+          ),
+        checkpoint: (cursor, processed) => {
+          setBackfillProcessed(processed)
+          if (cursor) sessionStorage.setItem(ZAPPY_BACKFILL_CURSOR_KEY, cursor)
+          else sessionStorage.removeItem(ZAPPY_BACKFILL_CURSOR_KEY)
+        },
+      })
+      const notice = zappyBackfillNotice(total)
       if (notice.kind === 'success') toast.success(notice.message)
       else toast.warning(notice.message)
       await load(month)
@@ -250,7 +269,10 @@ export function AiUsageClient() {
             </p>
           </div>
           <Button variant="outline" onClick={() => void backfill()} disabled={backfilling}>
-            {backfilling ? <Spinner /> : <RefreshCw className="size-4" />} Sincronizar base
+            {backfilling ? <Spinner /> : <RefreshCw className="size-4" />}{' '}
+            {backfilling
+              ? `Sincronizando… ${backfillProcessed.toLocaleString('pt-BR')}`
+              : 'Sincronizar base'}
           </Button>
         </CardHeader>
         <CardContent className="space-y-5">

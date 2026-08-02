@@ -240,42 +240,21 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     if (!sprite) return;
     sprite.blinkFrames = Math.floor(_positiveFiniteNumber(frames, 60));
   }
-  /**
-   * Move cada sprite do grupo pela sua velocidade (e gravidade do mundo).
-   *
-   * ⚠️ A gravidade é somada AQUI, explicitamente. Ela vinha de carona no
-   * applyVelocity até 08/2026; quando ele deixou de somá-la (virou "só
-   * velocidade", com um bloco próprio de gravidade), o grupo teria perdido a
-   * queda junto — e não há bloco de gravidade POR GRUPO.
-   *
-   * ⚠️⚠️ E é a gravidade CRUA (world.gravity, 0 quando ninguém declarou), NÃO o
-   * _worldGravityOr(0.6) que o bloco novo usa. Os dois consumidores têm fontes
-   * DIFERENTES de propósito:
-   *   · o BLOCO "Aplicar a gravidade do mundo" é um pedido EXPLÍCITO da criança
-   *     → 0.6 é um padrão útil (a aula funciona sem declarar nada);
-   *   · aqui é comportamento HERDADO de todo jogo que já existe → 0.6 faria
-   *     TODO grupo de TODO jogo passar a cair sem ninguém pedir (no "Corre,
-   *     Dino!" os cactos sumiriam pelo rodapé, sem erro na tela).
-   */
+  /** Move cada sprite do grupo somente pela velocidade atual. */
   function updateGroup(group) {
     if (!group || !group.items) return;
     for (var i = 0; i < group.items.length; i++) {
-      var s = group.items[i];
-      applyVelocity(s);
-      if (s) s.vy = _finiteNumber(s.vy, 0) + world.gravity;
+      applyVelocity(group.items[i]);
     }
   }
-  /**
-   * Move cada sprite do grupo pela sua velocidade, SEM somar gravidade — para
-   * TIROS do jogador num jogo com gravidade (senão eles arqueiam para baixo).
-   */
-  function updateGroupNoGravity(group) {
+
+  /** Soma a gravidade do mundo ao vy de cada sprite atual do grupo. */
+  function applyGravityToGroup(group) {
     if (!group || !group.items) return;
     for (var i = 0; i < group.items.length; i++) {
       var s = group.items[i];
       if (!s) continue;
-      s.x = _finiteNumber(s.x, 0) + _finiteNumber(s.vx, 0);
-      s.y = _finiteNumber(s.y, 0) + _finiteNumber(s.vy, 0);
+      applyGravity(s);
     }
   }
   /** Desenha todos os sprites do grupo. */

@@ -22,6 +22,7 @@ interface Engine {
   setGravity: (g: number) => void
   applyVelocity: (s: Sprite) => void
   applyGravity: (s: Sprite) => void
+  applyGravityToGroup: (group: { items: Sprite[] }) => void
   createGroup: () => { items: Sprite[] }
   updateGroup: (group: { items: Sprite[] }) => void
   bounceOnEdges: (s: Sprite, ctx: { canvas: { width: number; height: number } }) => void
@@ -435,9 +436,8 @@ describe('game-2d — gerador dos novos statements', () => {
 
 describe('game-2d — runtime de física', () => {
   // Os dois blocos eram UM só ("Aplicar velocidade e gravidade") até 08/2026.
-  // Separados, cada um faz uma coisa e o par reproduz a física de antes — desde
-  // que a gravidade venha DEPOIS (o applyVelocity move com o vy do quadro
-  // anterior; é Euler explícito).
+  // Separados, cada um faz uma coisa. A gravidade vem ANTES do movimento, em
+  // Euler semi-implícito, para responder no mesmo quadro.
   it('applyVelocity SÓ move — não soma mais gravidade nenhuma', () => {
     const api = loadRuntime()
     api.setGravity(1)
@@ -451,18 +451,19 @@ describe('game-2d — runtime de física', () => {
     expect(s.vy).toBe(0)
   })
 
-  it('applyGravity puxa pelo valor do MUNDO, e o par reproduz a física antiga', () => {
+  it('applyGravity puxa pelo valor do mundo antes do movimento', () => {
     const api = loadRuntime()
     api.setGravity(1)
     const s = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
     s.vx = 2
-    api.applyVelocity(s)
     api.applyGravity(s)
+    api.applyVelocity(s)
     expect(s.x).toBe(2)
-    expect(s.vy).toBe(1)
-    api.applyVelocity(s)
-    api.applyGravity(s)
     expect(s.y).toBe(1)
+    expect(s.vy).toBe(1)
+    api.applyGravity(s)
+    api.applyVelocity(s)
+    expect(s.y).toBe(3)
     expect(s.vy).toBe(2)
   })
 
@@ -473,10 +474,7 @@ describe('game-2d — runtime de física', () => {
     expect(s.vy).toBeCloseTo(0.6, 10)
   })
 
-  // ⭐ O grupo NÃO herda o 0.6: ele soma a gravidade CRUA do mundo. Senão todo
-  // grupo de todo jogo que nunca declarou gravidade começaria a cair sozinho
-  // (no "Corre, Dino!" os cactos sumiriam pelo rodapé, sem erro na tela).
-  it('updateGroup só faz cair quando a gravidade do mundo foi declarada', () => {
+  it('updateGroup nunca acrescenta gravidade; o grupo responde somente ao bloco explícito', () => {
     const api = loadRuntime()
     const grupo = api.createGroup()
     const s = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
@@ -487,7 +485,12 @@ describe('game-2d — runtime de física', () => {
 
     api.setGravity(0.5)
     api.updateGroup(grupo)
+    expect(s.vy).toBe(0)
+
+    api.applyGravityToGroup(grupo)
+    api.updateGroup(grupo)
     expect(s.vy).toBe(0.5)
+    expect(s.y).toBe(0.5)
   })
 
   it('bounceOnEdges quica e inverte a velocidade na borda', () => {

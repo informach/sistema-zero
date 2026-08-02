@@ -113,15 +113,18 @@ export interface BlockView {
   kind: string
   sortOrder: number
   content: unknown
+  blockRevision: string
 }
 
 export function toBlockView(b: LessonBlock): BlockView {
+  if (!b.contentRevision) throw new Error('Revisão do conteúdo do bloco ausente')
   return {
     id: b.id,
     lessonId: b.lessonId,
     kind: b.kind,
     sortOrder: b.sortOrder,
     content: b.content,
+    blockRevision: b.contentRevision,
   }
 }
 

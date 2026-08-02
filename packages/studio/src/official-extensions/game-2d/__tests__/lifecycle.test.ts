@@ -597,6 +597,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     const points: Array<[number, number]> = []
     api.onPointer((x, y) => points.push([x, y]), 'moldura-ponteiro')
     fire('pointerdown', { clientX: 140, clientY: 90, target: canvas })
+    fire('pointerup', { clientX: 140, clientY: 90, target: canvas })
     fire('pointerdown', { clientX: 380, clientY: 210, target: canvas })
 
     expect(points).toEqual([

@@ -65,7 +65,7 @@ describe('Exemplo Chuva de Meteoros — drift contra o parser real', () => {
     }
     // SEM gravidade e SEM vidas: um toque de meteoro encerra a partida.
     expect(types.has('g2d:setGravity')).toBe(false)
-    expect(types.has('g2d:updateGroupNoGravity')).toBe(false)
+    expect(types.has('g2d:applyGravityToGroup')).toBe(false)
     expect(types.has('g2d:setHealth')).toBe(false)
     // Diferente do "Nave contra Asteroides": aqui a nave voa nas 4 direções.
     expect(types.has('g2d:dragX')).toBe(false)

@@ -1,5 +1,9 @@
 # Correções da revisão do Jogo 2D
 
+> Nota de 2026-08-02: a decisão histórica de expor todos os blocos em
+> `iniciante-2d` foi substituída em 0.57.0. Somente o Kit Essencial permanece nesse
+> perfil; os demais blocos `sz_g2d_*` entram em `iniciante-3d`.
+
 ## Escopo
 
 Corrigir os defeitos encontrados no runtime da extensão Jogo 2D sem quebrar projetos salvos. Todos os blocos `sz_g2d_*` pertencem ao nível `iniciante-2d`; as aulas controlam quais deles aparecem. A regra não abrange a extensão Jogo 2D Avançado (`sz_gk_*`).

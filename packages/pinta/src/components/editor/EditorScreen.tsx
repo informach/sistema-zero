@@ -14,7 +14,7 @@
  * e prévia/animações colapsáveis.
  */
 import type { JSX } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { assetStyle, type PintaAsset } from '../../core/project'
 import { buildStudioPayload, type StudioPayload } from '../../export/studioBridge'
@@ -226,6 +226,12 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   )
 }
 
+/**
+ * Quanto tempo sem editar antes de reenviar o desenho ao Estúdio. Rasterizar a
+ * folha inteira custa, então não é a cada traço — é quando a criança para.
+ */
+const RESYNC_IDLE_MS = 1500
+
 function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   const { adapter, gallery } = usePintaApp()
   const { showToast } = useToast()
@@ -237,6 +243,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   const editorState = useEditor((state) => state)
   const [sending, setSending] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [resynced, setResynced] = useState(false)
 
   const kind = COPY.kinds[asset.kind]
 
@@ -314,6 +321,67 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
     }
   }
 
+  // ---- Reenvio automático ao salvar ("editei no Pinta, o jogo se atualiza") ----
+  // Dispara quando a criança PARA de desenhar (não a cada traço: rasterizar a
+  // folha inteira custa), e também ao esconder a aba/sair do editor — assim a
+  // biblioteca já está atualizada no instante em que ela volta para o Estúdio.
+  //
+  // O gatilho é a identidade de `asset` (o editorStore cria um objeto novo a
+  // cada commit), NÃO o autosave: a biblioteca pessoal é outra store, e esperar
+  // o disco só atrasaria. Quem decide se há o que atualizar é o HOST.
+  const resyncRef = useRef<(() => Promise<void>) | null>(null)
+  resyncRef.current = async () => {
+    if (!adapter.resyncToStudio) return
+    const payload = await exportForStudio().catch(() => null)
+    if (!payload || payload.dataUrl.length > 800_000) return
+    try {
+      const result = await adapter.resyncToStudio({
+        id: asset.id,
+        name: asset.name,
+        dataUrl: payload.dataUrl,
+        width: payload.width,
+        height: payload.height,
+        ...(payload.sprite ? { sprite: payload.sprite } : {}),
+        ...(payload.tileset ? { tileset: payload.tileset } : {}),
+        ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
+      })
+      // A ÚNICA confirmação visível do mecanismo — do lado do Estúdio a troca é
+      // silenciosa de propósito. Some sozinha, como o "Salvo".
+      if (result.updated) setResynced(true)
+    } catch {
+      // fail-soft: a sincronia do Estúdio ainda reconcilia no próximo foco.
+    }
+  }
+
+  // Abrir um desenho não reenvia nada: só EDITAR. A trava compara a IDENTIDADE
+  // do asset (não um booleano "já montei"): em StrictMode o React monta, limpa e
+  // monta de novo, e um booleano deixaria a 2ª montagem passar — o desenho era
+  // reenviado só por ter sido ABERTO (visto no playground).
+  const lastSeenAssetRef = useRef(asset)
+
+  // O gatilho é a IDENTIDADE de `asset` (cada edição commita um objeto novo); o
+  // reenvio em si sai do ref acima, sempre atual.
+  useEffect(() => {
+    if (!adapter.resyncToStudio) return
+    if (asset === lastSeenAssetRef.current) return
+    lastSeenAssetRef.current = asset
+    setResynced(false)
+    const run = () => void resyncRef.current?.()
+    const timer = setTimeout(run, RESYNC_IDLE_MS)
+    const onHidden = () => {
+      if (!document.hidden) return
+      clearTimeout(timer)
+      run()
+    }
+    document.addEventListener('visibilitychange', onHidden)
+    window.addEventListener('pagehide', run)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', onHidden)
+      window.removeEventListener('pagehide', run)
+    }
+  }, [asset, adapter.resyncToStudio])
+
   /** "Jogar meu mapa": envia o mapa p/ virar um JOGO pronto no Estúdio. */
   async function handlePlayMap(): Promise<void> {
     if (!adapter.sendGameToStudio || sending) return
@@ -385,6 +453,11 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
         <Redo2 aria-hidden="true" className="size-5" />
       </IconButton>
       <SaveBadge />
+      {resynced ? (
+        <span className="text-pin-text-soft text-xs" role="status">
+          {COPY.sendToStudio.resynced}
+        </span>
+      ) : null}
       <div className="ml-auto flex items-center gap-2">
         <Button onClick={() => setExportOpen(true)}>
           <Download aria-hidden="true" className="size-4" />

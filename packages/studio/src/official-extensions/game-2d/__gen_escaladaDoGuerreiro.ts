@@ -18,9 +18,9 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *   câmera sobe junto com o herói (cameraFollow), que é o pan da câmera do
  *   original (shouldPanCameraUp/Down/…). O herói começa embaixo e SOBE.
  * - Gravidade + pulo + andar montados NA MÃO (sem o helper platformer, que ancora
- *   o chão na BORDA da tela e brigaria com a câmera): setGravity deixa a queda
- *   leve como o gravity = 0.1 do original; arrowsX anda para os lados; applyVelocity
- *   integra a velocidade somando a gravidade e PRESERVA o "no chão" da colisão do
+ *   o chão na BORDA da tela e brigaria com a câmera): setGravity define a queda
+ *   leve como o gravity = 0.1 do original; arrowsX anda para os lados; applyGravity
+ *   acelera e applyVelocity integra a posição, preservando o "no chão" da colisão do
  *   quadro anterior. O pulo é um evento (seta pra cima) que só age quando o herói
  *   está PARADO na vertical (spriteVy == 0), o mesmo truque do Dino: assim ele pula
  *   das plataformas mas não voa no ar.
@@ -85,8 +85,8 @@ SZGame2D.gameLoop(function update() {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.cameraFollow(heroi, 320, 960);
     SZGame2D.arrowsX(heroi, 3);
-    SZGame2D.applyVelocity(heroi);
     SZGame2D.applyGravity(heroi);
+    SZGame2D.applyVelocity(heroi);
     SZGame2D.collideGroup(heroi, plataformas);
     SZGame2D.clampToScreen(heroi, ctx);
     SZGame2D.drawGroup(ctx, plataformas);

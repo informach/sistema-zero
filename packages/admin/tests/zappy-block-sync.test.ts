@@ -11,7 +11,12 @@ const actualZappyKnowledge = await import('@/server/zappy-knowledge')
 mock.module('@/server/members', () => ({
   updateBlock: async () => ({
     status: 200,
-    body: { id: 'block-1', lessonId: 'lesson-1', content: { kind: 'rich_text' } },
+    body: {
+      id: 'block-1',
+      lessonId: 'lesson-1',
+      blockRevision: 'revision-1',
+      content: { kind: 'rich_text' },
+    },
   }),
   deleteBlock: async () => ({ status: 200, body: { ok: true } }),
 }))

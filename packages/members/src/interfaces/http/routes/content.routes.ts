@@ -149,11 +149,20 @@ export function contentRoutes(deps: ContentRoutesDeps) {
         },
         { query: t.Object({ month: t.String({ pattern: '^\\d{4}-(0[1-9]|1[0-2])$' }) }) },
       )
-      .post('/zappy/knowledge/backfill', ({ headers }) => {
-        guard(headers)
-        if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
-        return deps.zappyKnowledge.backfill()
-      })
+      .post(
+        '/zappy/knowledge/backfill',
+        ({ headers, body }) => {
+          guard(headers)
+          if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
+          return deps.zappyKnowledge.backfill(body)
+        },
+        {
+          body: t.Object({
+            cursor: t.Optional(t.String({ pattern: UUID_PATTERN })),
+            limit: t.Optional(t.Numeric({ minimum: 1, maximum: 25 })),
+          }),
+        },
+      )
       .post(
         '/zappy/knowledge/sources',
         ({ headers, body }) => {
@@ -170,6 +179,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
               t.Literal('student-notebook'),
             ]),
             sourceRef: t.String({ minLength: 1, maxLength: 500 }),
+            expectedBlockRevision: t.String({ minLength: 1, maxLength: 64 }),
             content: t.Optional(t.String({ maxLength: ZAPPY_SOURCE_CONTENT_MAX_BYTES })),
             error: t.Optional(t.String({ maxLength: 2_000 })),
           }),

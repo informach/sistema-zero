@@ -1121,6 +1121,7 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
   }
   interface MoveApi {
     createSprite: (o: Partial<Sprite>) => Sprite
+    applyGravity: (s: Sprite) => void
     platformer: (s: Sprite, ctx: CanvasCtx, speed: number, jump: number) => void
     topDown: (s: Sprite, speed: number) => void
     followPointer: (s: Sprite, speed: number) => void
@@ -1161,11 +1162,12 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
     return { ctx, fills }
   }
 
-  it('platformer: gravidade puxa pra baixo e direita move', () => {
+  it('platformer: direita move e a gravidade explícita puxa pra baixo', () => {
     const { api } = load()
     const { ctx } = fakeCtx()
     const s = api.createSprite({ x: 50, y: 10, w: 20, h: 20 })
     api.keys.right = true
+    api.applyGravity(s)
     api.platformer(s, ctx, 4, 11)
     expect(s.x).toBe(54)
     expect(s.vy ?? 0).toBeGreaterThan(0)
@@ -1177,10 +1179,12 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
     const { api } = load()
     const { ctx } = fakeCtx(200, 200)
     const s = api.createSprite({ x: 50, y: 500, w: 20, h: 20 })
+    api.applyGravity(s)
     api.platformer(s, ctx, 4, 11) // cai e pousa no chão (200 - 20)
     expect(s.y).toBe(180)
     expect(s.vy).toBe(0)
     api.keys.up = true
+    api.applyGravity(s)
     api.platformer(s, ctx, 4, 11) // no chão + seta pra cima → pula
     expect(s.vy ?? 0).toBeLessThan(0)
     api.keys.up = false
@@ -1902,8 +1906,8 @@ describe('gameTwoDRuntime.gameLoop', () => {
 describe('gameTwoDRuntime.onPointer', () => {
   // Loader que captura os listeners registrados em window por nome de evento,
   // para podermos disparar um 'pointerdown' sintético e contar os handlers.
-  function loadWithPointer() {
-    document.body.innerHTML = ''
+  function loadWithPointer(options: { existingCanvas?: boolean; setup?: boolean } = {}) {
+    document.body.innerHTML = options.existingCanvas ? '<canvas id="tela"></canvas>' : ''
     type Listener = (ev: unknown) => void
     const listeners: Record<string, Listener[]> = {}
     const win = {
@@ -1920,17 +1924,21 @@ describe('gameTwoDRuntime.onPointer', () => {
       win as unknown as {
         SZGame2D: {
           onPointer: (fn: (x: number, y: number) => void) => void
-          pointer: { down: boolean }
+          onAnyInput: (fn: () => void) => void
+          pointer: { x: number; y: number; down: boolean }
           setupStage: (width: number, height: number, background: string) => void
         }
       }
     ).SZGame2D
-    api.setupStage(320, 200, '#000000')
+    if (options.setup !== false) api.setupStage(320, 200, '#000000')
     const stage = document.querySelector('canvas')
     const firePointerDown = (x: number, y: number, target: EventTarget | null = stage) => {
       for (const fn of listeners.pointerdown ?? []) fn({ clientX: x, clientY: y, target })
     }
-    return { api, firePointerDown, stage }
+    const firePointer = (name: string, event: Record<string, unknown>) => {
+      for (const fn of listeners[name] ?? []) fn(event)
+    }
+    return { api, firePointer, firePointerDown, stage }
   }
 
   it('registrar a MESMA fn duas vezes mantém um único handler', () => {
@@ -1979,6 +1987,56 @@ describe('gameTwoDRuntime.onPointer', () => {
     firePointerDown(10, 20, stage)
     expect(calls).toBe(1)
     expect(api.pointer.down).toBe(true)
+  })
+
+  it('associa um canvas existente ao registrar o evento, sem exigir setupStage', () => {
+    const { api, firePointerDown, stage } = loadWithPointer({ existingCanvas: true, setup: false })
+    let calls = 0
+    api.onPointer(() => {
+      calls += 1
+    })
+
+    firePointerDown(12, 18, stage)
+
+    expect(calls).toBe(1)
+    expect(stage?.hasAttribute('data-sz-game-2d-stage')).toBe(true)
+  })
+
+  it('onAnyInput também prepara o palco para receber toque', () => {
+    const { api, firePointerDown, stage } = loadWithPointer({ existingCanvas: true, setup: false })
+    let calls = 0
+    api.onAnyInput(() => {
+      calls += 1
+    })
+
+    firePointerDown(4, 6, stage)
+
+    expect(calls).toBe(1)
+  })
+
+  it('ignora hover estrangeiro e continua somente o pointerId iniciado no palco', () => {
+    const { api, firePointer, stage } = loadWithPointer()
+    const button = document.createElement('button')
+    const otherCanvas = document.createElement('canvas')
+
+    firePointer('pointermove', { clientX: 90, clientY: 80, pointerId: 1, target: button })
+    expect(api.pointer).toEqual({ x: 0, y: 0, down: false })
+
+    firePointer('pointerdown', { clientX: 10, clientY: 20, pointerId: 7, target: stage })
+    firePointer('pointermove', { clientX: 30, clientY: 40, pointerId: 7, target: button })
+    expect(api.pointer).toMatchObject({ x: 30, y: 40, down: true })
+
+    firePointer('pointermove', {
+      clientX: 100,
+      clientY: 120,
+      pointerId: 8,
+      target: otherCanvas,
+    })
+    firePointer('pointerup', { pointerId: 8, target: otherCanvas })
+    expect(api.pointer).toMatchObject({ x: 30, y: 40, down: true })
+
+    firePointer('pointerup', { pointerId: 7, target: button })
+    expect(api.pointer.down).toBe(false)
   })
 
   it('ignora valores que não são função', () => {

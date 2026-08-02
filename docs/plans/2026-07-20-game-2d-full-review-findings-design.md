@@ -1,5 +1,9 @@
 # Design — resolução integral dos achados do Jogo 2D
 
+> Nota de 2026-08-02: a decisão histórica de manter toda a extensão em
+> `iniciante-2d` foi substituída em 0.57.0. O perfil inicial agora contém somente
+> o Kit Essencial já usado em projetos reais; o restante entra em `iniciante-3d`.
+
 **Data:** 2026-07-20  
 **Escopo principal:** `packages/studio`  
 **Correção de conteúdo isolada:** `packages/studio-aulas`
@@ -69,4 +73,3 @@ A suíte criará um programa TypeScript sobre o JavaScript final injetado, com D
 - A allowlist deriva do catálogo; nenhuma extensão perde blocos ao importar ou reabrir projetos.
 - O bundle final do runtime passa pela checagem semântica.
 - As suítes de Jogo 2D, Jogo 2D Avançado, importação, preview, typecheck, lint e E2E continuam aprovadas.
-

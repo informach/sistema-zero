@@ -20,7 +20,8 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 - **`PintaHostAdapter`** (`src/core/types.ts`): `theme?` ('light' default kids | 'dark'),
   `studioOwned?` (só muda a COPY do sucesso da ponte), `onOpenStudio?`,
   `sendToStudio?(PintaExportedAsset) → PintaSendResult` — **ausente = o botão "Usar no Estúdio"
-  não aparece** (degrade, padrão Pensa) — e **`initialIntent?: PintaInitialIntent`** (Fase 5,
+  não aparece** (degrade, padrão Pensa) —, **`resyncToStudio?`** e **`initialAssetId?`** (ponte de
+  MÃO DUPLA, 08/2026 — ver abaixo) — e **`initialIntent?: PintaInitialIntent`** (Fase 5,
   07/2026): `{projectRef: PintaProjectRef, artKind?}` vindo da MISSÃO DE ARTE do Pensa — abre o
   "Criar novo" pré-configurado UMA vez no mount (`takeInitialIntent` no appContext consome via
   ref; voltar do editor à galeria NÃO reabre). Com `artKind`, escolher o ESTILO pula o passo de
@@ -352,6 +353,33 @@ das camadas de frente); `tilemapMetaFrom` a emite no meta COMPLETO quando `hasFr
 `tilemapFront` filtrado NÃO repete). O Estúdio (gk) desenha essa grade "por cima" — ver o CLAUDE.md do
 studio.
 
+## Ponte de MÃO DUPLA com o Estúdio (08/2026)
+
+Antes, ajustar um desenho que já estava no jogo era: voltar ao Pinta, achar, editar, "Usar no
+Estúdio" de novo, voltar, re-adicionar, apagar o velho. Agora o Estúdio tem um botão **"Editar"**
+nos desenhos vindos daqui e o desenho salvo **se atualiza sozinho nos jogos**.
+
+- **`initialAssetId?: string`** — abre DIRETO um desenho da galeria, 1× no mount. O kids preenche a
+  partir de `/pinta?desenho=<id>` (query string, não `sessionStorage`: o botão do Estúdio abre a aba
+  com `noopener` e `sessionStorage` não atravessa). ⚠️ Aplicado só DEPOIS de `gallery.loaded`, num
+  componente próprio (`InitialAssetOpener` no `PintaApp`): o `EditorScreen` resolve o asset num
+  inicializador de `useState` e volta p/ a galeria quando não acha — abrir cedo faria o link parecer
+  quebrado. Id inexistente → galeria + toast `COPY.gallery.drawingGone`.
+- **`resyncToStudio?(asset) → {updated}`** — reenvia ao PARAR de desenhar (debounce
+  `RESYNC_IDLE_MS` = 1,5s no `EditorTopbar`, + flush no `visibilitychange`→hidden e no `pagehide`,
+  p/ a biblioteca já estar em dia quando ela troca de aba). Gatilho = **identidade de `asset`**, não
+  o autosave. Devolvendo `updated`, o cabeçalho mostra "Atualizado no Estúdio" — a ÚNICA confirmação
+  visível (do lado do Estúdio a troca é silenciosa, decisão da usuária).
+- ⚠️ **Abrir NÃO reenvia, só editar** — a trava compara a IDENTIDADE do asset com a do 1º render.
+  Um booleano "já montei" NÃO serve: em StrictMode o React monta → limpa → monta, a 2ª montagem
+  passava e o desenho era reenviado só por ter sido aberto (visto no playground).
+- ⚠️ **Quem decide se há o que atualizar é o HOST**, não o Pinta: o `pinta-client` do kids só reemite
+  quando `getPersonalAsset(id)` já existe. Sem essa guarda, todo rascunho cairia na biblioteca do
+  Estúdio sozinho e o "Usar no Estúdio" deixaria de ser a decisão explícita que é.
+
+O outro lado (sincronia para dentro dos projetos, o botão, o marcador cross-aba) vive no studio —
+ver `packages/studio/CLAUDE.md` §"Editar o desenho".
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data
@@ -400,6 +428,10 @@ por px reais.
   abre o "Criar novo" pré-configurado), `NewAssetDialog` com `initialRole`/`initialName`/selo do
   jogo, exports novos `PintaInitialIntent`/`PintaProjectRef` no index. O intent chega do kids por
   `sessionStorage sz:pinta:intent` (escrito pelo pensa-client, lido/limpo pelo pinta-client).
+- **Ponte de MÃO DUPLA com o Estúdio (08/2026, não commitado)**: `initialAssetId` (deep link
+  `/pinta?desenho=`) + `resyncToStudio` (reenvio ao parar de desenhar). QA em browser real feito no
+  playground (:5199): abrir pelo link, abrir-sem-reenviar, e o reenvio após um traço. Ver a seção
+  dedicada.
 - **Seleção + atalhos + zoom pela rolagem (08/2026, não commitado)**: ver a seção dedicada.
   QA em browser real feito no playground (:5199) para o pixel — duplicar+espelhar+arrastar,
   Ctrl+C/V, Delete, área vazia não seleciona, clicar fora desseleciona, âncora do zoom.

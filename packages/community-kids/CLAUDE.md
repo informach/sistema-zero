@@ -455,7 +455,15 @@ dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria v
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
 (`@sistemazero/studio/personal-assets` → `savePersonalAsset`, upsert por id) — o desenho aparece
-em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil. `MainContainer` dá largura
+em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil.
+**Mão DUPLA (08/2026):** o Estúdio ganhou um botão "Editar" nos desenhos vindos daqui →
+`studio-full-client` passa `onEditDrawing` = `window.open('/pinta?desenho=<id>', '_blank',
+'noopener,noreferrer')`; o `pinta-client` lê `?desenho=` (query, porque `noopener` corta o
+`sessionStorage` usado pelo intent do Pensa), repassa como `initialAssetId` e LIMPA a URL
+(`router.replace('/pinta')`) p/ um F5 não reabrir. Salvar no Pinta chama o `resyncToStudio` do
+adapter, que **só atualiza o que JÁ foi enviado** (guarda `getPersonalAsset(id)` — sem ela todo
+rascunho cairia na biblioteca sozinho); o Estúdio então reconcilia os JOGOS (todos, inclusive
+fechados) no foco da aba, em silêncio. Ver `packages/studio/CLAUDE.md` §"Editar o desenho". `MainContainer` dá largura
 total a `/pinta`. Requisitos de build: `transpilePackages` + `@import` do `pinta.css` +
 `@source "../../../pinta/src"` no globals.css (MESMO gotcha das utilitárias `sz-*`/`pz-*` — sem
 isso as `pin-*` são no-op e os modais saem washed-out). Deploy: `packages/pinta/**` (e

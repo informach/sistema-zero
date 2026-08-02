@@ -5,7 +5,7 @@ import { gameTwoDRuntime } from '../runtime'
  * Nadar e voar (v0.55.0) — os jeitos NOVOS de o sprite se mover.
  *
  * Decisões da usuária: voar são DOIS blocos (livre e bater as asas) e nadar é
- * "água pesada" (afunda devagar, sobe com a tecla, tudo mais lento). Os três
+ * "água pesada" (com gravidade explícita afunda devagar; tudo é mais lento). Os três
  * são jeitos do sprite o tempo todo, no formato do "estilo plataforma".
  */
 
@@ -25,6 +25,7 @@ interface Sprite {
 interface MotionApi {
   createSprite: Fn
   setGravity: Fn
+  applyGravity: Fn
   flyFree: Fn
   flap: Fn
   swim: Fn
@@ -150,10 +151,14 @@ describe('game-2d — voar livre', () => {
 })
 
 describe('game-2d — bater as asas', () => {
-  it('sem tecla, a gravidade puxa pra baixo', () => {
+  it('sem o bloco de gravidade fica no ar; com ele, cai', () => {
     const passaro = sprite(100, 50)
     api.flap(passaro, ctx, 8)
+    expect(passaro.vy).toBe(0)
+    expect(passaro.y).toBe(50)
 
+    api.applyGravity(passaro)
+    api.flap(passaro, ctx, 8)
     expect(passaro.vy).toBeGreaterThan(0)
     expect(passaro.y).toBeGreaterThan(50)
   })
@@ -161,36 +166,47 @@ describe('game-2d — bater as asas', () => {
   it('cada TOQUE dá uma batida: segurar a tecla não sobe para sempre', () => {
     const passaro = sprite(100, 150)
     api.keys.up = true
+    api.applyGravity(passaro)
     api.flap(passaro, ctx, 8) // 1ª batida
     const depoisDaBatida = passaro.vy
     expect(depoisDaBatida).toBeLessThan(0) // subindo
 
-    // Segurando, os quadros seguintes só têm gravidade — a velocidade sobe.
+    // Segurando, o bloco não cria outra batida; só a gravidade explícita atua.
+    api.applyGravity(passaro)
     api.flap(passaro, ctx, 8)
     expect(passaro.vy).toBeGreaterThan(depoisDaBatida)
 
     // Soltar e apertar de novo bate outra vez.
     api.keys.up = false
+    api.applyGravity(passaro)
     api.flap(passaro, ctx, 8)
     api.keys.up = true
+    api.applyGravity(passaro)
     api.flap(passaro, ctx, 8)
     expect(passaro.vy).toBeLessThan(0)
   })
 
   it('bate no AR também (é o que separa do "pular no chão")', () => {
     const passaro = sprite(100, 20)
-    for (let i = 0; i < 10; i++) api.flap(passaro, ctx, 8) // caindo, longe do chão
+    for (let i = 0; i < 10; i++) {
+      api.applyGravity(passaro)
+      api.flap(passaro, ctx, 8)
+    }
     expect(passaro.vy).toBeGreaterThan(0)
     expect(passaro.onGround).not.toBe(true)
 
     api.keys.up = true
+    api.applyGravity(passaro)
     api.flap(passaro, ctx, 8)
     expect(passaro.vy).toBeLessThan(0)
   })
 
   it('pousa na borda de baixo em vez de sumir da tela', () => {
     const passaro = sprite(100, 200)
-    for (let i = 0; i < 200; i++) api.flap(passaro, ctx, 8)
+    for (let i = 0; i < 200; i++) {
+      api.applyGravity(passaro)
+      api.flap(passaro, ctx, 8)
+    }
 
     expect(passaro.y + passaro.h).toBeLessThanOrEqual(300)
     expect(passaro.onGround).toBe(true)
@@ -200,7 +216,9 @@ describe('game-2d — bater as asas', () => {
     const um = sprite(50, 100)
     const outro = sprite(150, 100)
     api.keys.up = true
+    api.applyGravity(um)
     api.flap(um, ctx, 8)
+    api.applyGravity(outro)
     api.flap(outro, ctx, 8)
 
     expect(um.vy).toBeLessThan(0)
@@ -209,11 +227,13 @@ describe('game-2d — bater as asas', () => {
 })
 
 describe('game-2d — nadar', () => {
-  it('parado, afunda devagarinho (bem mais devagar que cair no ar)', () => {
+  it('com gravidade explícita, afunda bem mais devagar que cair no ar', () => {
     const peixe = sprite(100, 100)
     const noAr = sprite(100, 100)
     for (let i = 0; i < 30; i++) {
+      api.applyGravity(peixe)
       api.swim(peixe, 2)
+      api.applyGravity(noAr)
       api.platformer(noAr, ctx, 4, 11)
     }
 
@@ -238,10 +258,21 @@ describe('game-2d — nadar', () => {
     expect(Math.hypot(peixe.vx, peixe.vy)).toBeLessThanOrEqual(2 + 1e-9)
   })
 
-  it('com a gravidade do mundo em 0, o bicho BOIA parado', () => {
-    api.setGravity(0)
+  it('sem aplicar gravidade, o bicho boia mesmo com o valor padrão', () => {
     const peixe = sprite(100, 100)
     for (let i = 0; i < 60; i++) api.swim(peixe, 2)
+
+    expect(peixe.y).toBe(100)
+    expect(peixe.vy).toBe(0)
+  })
+
+  it('com a gravidade do mundo em 0, aplicar continua sem puxar', () => {
+    api.setGravity(0)
+    const peixe = sprite(100, 100)
+    for (let i = 0; i < 60; i++) {
+      api.applyGravity(peixe)
+      api.swim(peixe, 2)
+    }
 
     expect(peixe.y).toBe(100)
     expect(peixe.vy).toBe(0)

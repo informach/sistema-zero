@@ -172,14 +172,14 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
 })
 
 describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
-  // Os níveis antigos normalizam para estes degraus. Jogo 2D é a exceção
-  // intencional: todos os seus blocos ficam no iniciante para a aula filtrá-los.
-  it('INICIANTE-2D: facilitadores + todo Jogo 2D + HTML/CSS essencial; sem 3D/programação real/na-unha', () => {
+  // Os níveis antigos normalizam para estes degraus. Jogo 2D começa no perfil
+  // Essencial e abre o catálogo completo no Inventor.
+  it('INICIANTE-2D: Jogo 2D Essencial + HTML/CSS essencial; sem catálogo completo/3D/na-unha', () => {
     const { types, names } = paletteAt('iniciante-2d')
     for (const t of [
       'sz_frame_structure',
-      'sz_g2d_create_sprite',
-      'sz_g2d_top_down',
+      'sz_g2d_create_ship',
+      'sz_g2d_arrows_x',
       // HTML/CSS ESSENCIAL (26/07): montar uma telinha simples.
       'sz_html_h1',
       'sz_html_p',
@@ -204,8 +204,6 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_g2d_sprite_y',
       'sz_g2d_random_x',
       'sz_g2d_clear',
-      'sz_g2d_sprite_vx',
-      'sz_g2d_apply_velocity',
     ]) {
       expect(types.has(t), t).toBe(true)
     }
@@ -217,6 +215,10 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_val_object',
       'sz_math_arithmetic',
       'sz_js_function',
+      'sz_g2d_create_sprite', // Jogo 2D completo abre no Inventor
+      'sz_g2d_top_down',
+      'sz_g2d_sprite_vx',
+      'sz_g2d_apply_velocity',
       'sz_g3d_create_scene',
       'sz_html_svg', // SVG subiu p/ intermediário (26/07)
       'sz_svg_circle',
@@ -296,6 +298,7 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
   it('INICIANTE-3D: a porta do 3D — facilitadores g3d entram; programação real ainda não', () => {
     const { types, names } = paletteAt('iniciante-3d')
     expect(types.has('sz_g2d_create_sprite')).toBe(true) // inclui o degrau abaixo
+    expect(types.has('sz_g2d_apply_velocity')).toBe(true) // Jogo 2D completo abre aqui
     expect(types.has('sz_g3d_create_scene')).toBe(true) // facilitador 3D
     expect(types.has('sz_g3d_get_pos')).toBe(true) // toda a extensão é iniciante-3d
     expect(names.has('Jogo 3D')).toBe(true)

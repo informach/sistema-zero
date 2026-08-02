@@ -9,6 +9,7 @@ import {
   type StudioTutorAdapter,
   type StudioTutorHistoryMessage,
 } from '@sistemazero/studio'
+import { setPersonalAssetsNamespace } from '@sistemazero/studio/personal-assets'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -21,6 +22,11 @@ import { useEffect, useMemo, useState } from 'react'
 // O host NÃO seta data-sz-theme no <html>: o tema é escopado pelo root do
 // <Studio> — o toggle da Topbar muda SÓ a área do editor, provando o isolamento.
 type View = { name: 'list' } | { name: 'editor'; projectId: string } | { name: 'dual' }
+
+// A biblioteca "Meus desenhos" (alimentada pelo Pinta) só aparece com namespace
+// de perfil. O playground liga um fixo para dar como testar aqui a ponte
+// Pinta↔Estúdio (botão "Editar" + a sincronia do desenho salvo).
+setPersonalAssetsNamespace('playground')
 
 function parseViewFromLocation(): View {
   if (window.location.pathname === '/dual') return { name: 'dual' }
@@ -179,6 +185,9 @@ function EditorScreen({
       onError={(error) => console.warn('[host] onError', error)}
       onModeChange={(mode) => console.debug('[host] onModeChange', mode)}
       onReady={() => console.debug('[host] onReady')}
+      // Botão "Editar" nos desenhos do Pinta. No app de verdade abre
+      // `/pinta?desenho=<id>` numa aba nova; aqui só loga (não há Pinta).
+      onEditDrawing={(drawingId) => console.debug('[host] onEditDrawing', drawingId)}
     />
   )
 }

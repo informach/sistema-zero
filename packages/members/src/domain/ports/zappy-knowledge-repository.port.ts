@@ -43,6 +43,7 @@ export interface PublishedZappyBlock {
   blockId: string
   courseId: string
   lessonId: string
+  blockRevision: string
   kind: string
   content: LessonBlockContent
 }
@@ -73,7 +74,10 @@ export interface ZappyKnowledgeRepository {
   upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean }>
   deleteByRef(sourceRef: string): Promise<void>
   search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]>
-  listPublishedKidsBlocks(): Promise<PublishedZappyBlock[]>
+  listPublishedKidsBlocks(input?: {
+    after?: string
+    limit?: number
+  }): Promise<PublishedZappyBlock[]>
   /** Remove fontes cujo bloco publicado/tipo autoritativo já não existe no banco. */
   reconcilePublishedBlockSources(): Promise<number>
   report(): Promise<ZappyKnowledgeReport>

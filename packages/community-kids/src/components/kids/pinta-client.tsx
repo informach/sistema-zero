@@ -5,7 +5,7 @@
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
 import type { PintaHostAdapter, PintaInitialIntent } from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { clearPintaIntent, readPintaIntent } from './pinta-intent'
@@ -40,6 +40,15 @@ export function PintaClient({
   useEffect(() => {
     clearPintaIntent()
   }, [])
+  // "Editar este desenho" vindo do Estúdio: `/pinta?desenho=<id>` numa ABA NOVA.
+  // Precisa ser query string — o botão de lá abre com `noopener` (padrão do app),
+  // e aí sessionStorage (o caminho do intent do Pensa) não atravessa. Lido no 1º
+  // render e limpo da URL logo depois, para um F5 não reabrir o mesmo desenho.
+  const searchParams = useSearchParams()
+  const [initialAssetId] = useState(() => searchParams.get('desenho'))
+  useEffect(() => {
+    if (initialAssetId) router.replace('/pinta')
+  }, [initialAssetId, router])
 
   const loadPinta = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -81,6 +90,18 @@ export function PintaClient({
         bridge.setPersonalAssetsNamespace(viewerId ?? '')
         return bridge.savePersonalAsset(asset)
       },
+      // A volta da ponte: salvar aqui atualiza o desenho que JÁ está no Estúdio,
+      // e de lá ele entra sozinho nos jogos da criança (a sincronia é do Studio).
+      // ⚠️ A guarda do `getPersonalAsset` é a regra do recurso: sem ela, TODO
+      // rascunho do Pinta cairia na biblioteca do Estúdio sozinho e o "Usar no
+      // Estúdio" deixaria de ser a decisão explícita que é hoje.
+      resyncToStudio: async (asset) => {
+        const bridge = await import('@sistemazero/studio/personal-assets')
+        bridge.setPersonalAssetsNamespace(viewerId ?? '')
+        if (!(await bridge.getPersonalAsset(asset.id))) return { updated: false }
+        const result = await bridge.savePersonalAsset(asset)
+        return { updated: result.ok }
+      },
       // "Jogar meu mapa": o Estúdio monta um JOGO pronto a partir do mapa e a
       // criança vai direto pra lá. SÓ com o Estúdio Completo (senão cairia na
       // tela bloqueada com o jogo já feito).
@@ -106,8 +127,10 @@ export function PintaClient({
         : {}),
       // Missão de arte do Pensa: abre a criação pré-configurada (1x no mount).
       ...(initialIntent ? { initialIntent } : {}),
+      // Botão "Editar" do Estúdio: abre direto o desenho pedido (1x no mount).
+      ...(initialAssetId ? { initialAssetId } : {}),
     }),
-    [theme, studioOwned, viewerId, router, initialIntent],
+    [theme, studioOwned, viewerId, router, initialIntent, initialAssetId],
   )
 
   return (

@@ -67,6 +67,7 @@ function toBlock(row: typeof lessonBlocks.$inferSelect): LessonBlock {
     kind: row.kind,
     sortOrder: row.sortOrder,
     content: row.content,
+    contentRevision: row.contentRevision,
   }
 }
 

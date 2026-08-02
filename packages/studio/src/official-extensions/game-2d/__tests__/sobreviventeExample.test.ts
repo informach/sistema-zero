@@ -56,7 +56,7 @@ describe('Exemplo Sobrevivente — drift contra o parser real', () => {
       'g2d:isInvincible', // i-frames
       'g2d:drawSpriteHealth',
       'g2d:healthDepleted', // acabar os corações = fim
-      'g2d:updateGroupNoGravity', // jogo SEM gravidade
+      'g2d:updateGroup', // move tiros; grupos nunca recebem gravidade escondida
       'g2d:pruneOffscreen',
       'g2d:everySeconds', // spawn + placar por tempo
       'g2d:randomBetween',
@@ -74,7 +74,7 @@ describe('Exemplo Sobrevivente — drift contra o parser real', () => {
     // Degrau básico: arena de UMA tela, sem câmera nem gravidade.
     expect(types.has('g2d:cameraFollow')).toBe(false)
     expect(types.has('g2d:setGravity')).toBe(false)
-    expect(types.has('g2d:updateGroup')).toBe(false)
+    expect(types.has('g2d:applyGravityToGroup')).toBe(false)
     expect(types.has('g2d:createTileMap')).toBe(false)
   })
 

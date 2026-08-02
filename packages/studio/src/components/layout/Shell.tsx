@@ -8,6 +8,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
+import { DrawingSyncWatcher } from '../assets/DrawingSyncWatcher'
 import { ZappyPanel } from '../tutor/ZappyPanel'
 import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
@@ -152,6 +153,7 @@ export function Shell({ onExit, onPromoteToPro, canToggleTheme }: ShellProps): J
               </ErrorBoundary>
             )}
             <ConvertLegacyPrompt />
+            <DrawingSyncWatcher />
             <ZappyPanel />
           </>
         )}

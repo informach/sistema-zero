@@ -6,7 +6,7 @@
 2. Configure o mesmo `MEMBER_SHELL_HMAC_SECRET` no API Gateway, Community e Community Kids.
 3. No gateway, configure `MEMBER_SHELL_ALLOWED_CIDRS` com a rede dos dois BFFs.
 4. Faça um deploy coordenado de `members`, API Gateway, Admin, Community e Community Kids; a mudança das rotas de persistência é incompatível com versões antigas do BFF durante a janela.
-5. Confirme que as migrations `0057_zappy_reliability_schema` e `0058_zappy_reliability_backfill` foram aplicadas no `members`.
+5. Confirme que as migrations `0057_zappy_reliability_schema`, `0058_zappy_reliability_backfill` e `0059_amused_retro_girl` foram aplicadas no `members`.
 6. Confirme que `/readyz` está saudável antes de iniciar a sincronização.
 
 Nunca reutilize o segredo de staging em produção. A ausência do segredo impede o boot em produção para não reabrir as mutações do Zappy via JWT público.
@@ -14,6 +14,10 @@ Nunca reutilize o segredo de staging em produção. A ausência do segredo imped
 ## Sincronização da base
 
 Depois de cada deploy que altere blocos publicados, abra **Admin → Uso de IA** e clique em **Sincronizar base**. Execute primeiro em staging e depois em produção.
+
+A migration `0059` invalida os chunks antigos porque eles não carregavam a revisão esperada durante a extração. Portanto, a sincronização é obrigatória logo após esse deploy. Enquanto ela não terminar, essas fontes ficam pendentes e não participam das respostas do tutor.
+
+O Admin processa lotes pequenos e salva o cursor no navegador. Se a aba fechar ou uma chamada falhar, clicar novamente retoma do último lote concluído; reiniciar desde o começo também é seguro e idempotente.
 
 - Sucesso significa que todas as fontes foram indexadas ou reconciliadas.
 - Resultado parcial informa quantas fontes falharam; elas permanecem em **Fontes que precisam de correção** com o erro real.

@@ -338,11 +338,10 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
     var generation = _driverGeneration;
     var c = type.config || {};
     var visible = _visibleWorldRect(ctx);
-    // A patrulha só usa gravidade quando o projeto a declara explicitamente.
-    // Saltador/atirador continuam com 0.6 por padrão, mas respeitam inclusive
-    // gravidade 0 ou negativa quando ela foi configurada.
-    var hasGravity = world.gravityConfigured && world.gravity !== 0;
-    var g = _worldGravityOr(0.6);
+    // A direção do mundo escolhe chão/pulo, mas a aceleração nunca vem escondida
+    // neste helper: use applyGravityToGroup(type) antes de atualizar inimigos
+    // terrestres que devem cair.
+    var g = world.gravity;
     for (var i = type.items.length - 1; i >= 0; i--) {
       var s = type.items[i];
       if (!s) { _removeGroupItemAt(type, i); continue; }
@@ -374,11 +373,13 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
         s.vx = 0;
         s.y += s.vy;
       } else if (b === 'saltador') {
-        // Pula de tempos em tempos ("ritmo" quadros), com gravidade e chao.
+        // Pula de tempos em tempos ("ritmo" quadros) e resolve o chão.
         s.vx = 0;
-        s.vy = (s.vy || 0) + g;
+        s.vy = _finiteNumber(s.vy, 0);
         s.y += s.vy;
-        _resolveGravityGround(s, visible.top, visible.bottom, g);
+        if (s.vy !== 0 || typeof s.onGround === 'boolean') {
+          _resolveGravityGround(s, visible.top, visible.bottom, g);
+        }
         if (typeof s._jcd !== 'number') s._jcd = c.jumpRate;
         if (s.onGround) {
           s._jcd -= 1;
@@ -387,9 +388,11 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
       } else if (b === 'atirador') {
         // Fica no chao, vira para o alvo e atira a cada "cadencia" quadros.
         s.vx = 0;
-        s.vy = (s.vy || 0) + g;
+        s.vy = _finiteNumber(s.vy, 0);
         s.y += s.vy;
-        _resolveGravityGround(s, visible.top, visible.bottom, g);
+        if (s.vy !== 0 || typeof s.onGround === 'boolean') {
+          _resolveGravityGround(s, visible.top, visible.bottom, g);
+        }
         if (target) {
           s.facing = ((target.x + (target.w || 0) / 2) < (s.x + s.w / 2)) ? -1 : 1;
           if (typeof s._scd !== 'number') s._scd = c.rate;
@@ -421,11 +424,11 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
         if (s.x + s.w >= visible.right) s._dir = -1;
         s.vx = (s._dir || 1) * c.speed;
         s.x += s.vx;
-        // Gravidade/chao SO quando o mundo declarou gravidade. Num top-down puro,
-        // o inimigo padrao patrulha na horizontal sem afundar.
-        if (hasGravity) {
-          s.vy = (s.vy || 0) + g;
-          s.y += s.vy;
+        // Integra o vy existente. Num top-down ele continua 0; num jogo de
+        // plataforma applyGravityToGroup o acelera explicitamente antes daqui.
+        s.vy = _finiteNumber(s.vy, 0);
+        s.y += s.vy;
+        if (s.vy !== 0 || typeof s.onGround === 'boolean') {
           _resolveGravityGround(s, visible.top, visible.bottom, g);
         }
         s._moved = true;

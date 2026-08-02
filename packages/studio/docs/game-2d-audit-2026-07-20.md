@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 216 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.56.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.57.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -445,11 +445,26 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
   de “Programação” instancia `FieldColourSZ` sem DOM e recebe
   `ReferenceError: document is not defined`; a falha também se reproduz sozinha.
 
+### Gravidade explícita, ponteiro e progressão da paleta — 0.57.0
+
+- `setGravity` passou a definir somente a aceleração do mundo; somente sprites que
+  recebem `applyGravity` ou grupos que recebem `applyGravityToGroup` respondem à
+  gravidade. A ordem canônica é aplicar a força, mover e resolver colisões;
+- `applyVelocity`, `updateGroup`, `platformer`, `jumpOnGround`, `flap`, `swim`,
+  `controlDino` e os inimigos não acrescentam gravidade escondida;
+- o bloco redundante “Mover o grupo sem gravidade” saiu da extensão 2D, pois
+  `updateGroup` agora tem exatamente essa semântica. O bloco 3D não foi alterado;
+- eventos de toque preparam o palco mesmo quando um canvas já existia, e o
+  acompanhamento global de arraste respeita o `pointerId` iniciado no palco;
+- o perfil `iniciante-2d` mostra somente o Kit Essencial já usado em projetos
+  reais; os demais blocos `sz_g2d_*` entram em `iniciante-3d`;
+- manifesto, manual, contexto da IA, tooltips, exemplos, parser, gerador, schema e
+  contrato do runtime compartilham a mesma semântica.
+
 ## Conclusão
 
-Todos os achados desta auditoria foram resolvidos sem reduzir a paleta. O runtime
+Todos os achados desta auditoria foram resolvidos. O runtime
 agora separa coordenadas lógicas da resolução física, trata pausa e reinício como
 responsabilidades de domínio, mantém erros do aluno numa fronteira única e expõe
-um contrato TypeScript verificável. A experiência dos blocos permanece curta e
-organizada por assunto, deixando posicionamento e sequência para documentação e
-aulas.
+um contrato TypeScript verificável. A experiência dos blocos permanece organizada
+por assunto; o Kit Essencial é a entrada e a paleta completa chega no nível seguinte.

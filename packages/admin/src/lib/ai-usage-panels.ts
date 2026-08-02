@@ -48,9 +48,51 @@ export interface ZappyBackfillSummary {
   deleted: number
   extracted: number
   failed: number
+  nextCursor: string | null
+  done: boolean
 }
 
-export function zappyBackfillNotice(result: ZappyBackfillSummary): {
+export async function runZappyBackfillBatches(input: {
+  initialCursor?: string
+  step(cursor?: string): Promise<ZappyBackfillSummary>
+  checkpoint(cursor: string | null, processed: number): void
+}): Promise<ZappyBackfillSummary> {
+  let cursor = input.initialCursor
+  const seen = new Set(cursor ? [cursor] : [])
+  const total: ZappyBackfillSummary = {
+    indexed: 0,
+    deleted: 0,
+    extracted: 0,
+    failed: 0,
+    nextCursor: cursor ?? null,
+    done: false,
+  }
+  while (!total.done) {
+    const batch = await input.step(cursor)
+    total.indexed += batch.indexed
+    total.deleted += batch.deleted
+    total.extracted += batch.extracted
+    total.failed += batch.failed
+    total.nextCursor = batch.nextCursor
+    total.done = batch.done
+    const processed = total.indexed + total.extracted + total.failed
+    if (batch.done) {
+      input.checkpoint(null, processed)
+      break
+    }
+    if (!batch.nextCursor || seen.has(batch.nextCursor)) {
+      throw new Error('Cursor inválido no backfill do Zappy')
+    }
+    cursor = batch.nextCursor
+    seen.add(cursor)
+    input.checkpoint(cursor, processed)
+  }
+  return total
+}
+
+export function zappyBackfillNotice(
+  result: Pick<ZappyBackfillSummary, 'failed'> & Partial<Omit<ZappyBackfillSummary, 'failed'>>,
+): {
   kind: 'success' | 'warning'
   message: string
 } {

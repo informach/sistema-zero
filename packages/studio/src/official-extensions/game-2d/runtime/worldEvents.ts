@@ -153,6 +153,9 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
       warnOnce('evento-qualquer-no-quadro', '“Quando apertar qualquer tecla ou tocar na tela” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
+    // "Qualquer entrada" inclui toque; prepare o palco mesmo quando não existe
+    // um bloco onPointer no projeto.
+    ensureStage();
     var handlerId = _stableHandlerId('qualquer', id, fn);
     if (!anyInputHandlers[handlerId]) _anyInputOrder.push(handlerId);
     anyInputHandlers[handlerId] = { fn: fn };
@@ -190,6 +193,7 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
     keys.left = keys.right = keys.up = keys.down = false;
     for (var k in pressedKeys) pressedKeys[k] = false;
     pointer.down = false;
+    _activePointerId = null;
   }
   function _suspendInputAndClock() {
     _releaseAllInputs();

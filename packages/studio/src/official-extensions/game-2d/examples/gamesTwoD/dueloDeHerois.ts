@@ -813,19 +813,19 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
                   ],
                 },
                 {
-                  type: 'g2d:applyVelocity',
-                  spriteVar: 'heroi1',
-                },
-                {
                   type: 'g2d:applyGravity',
                   spriteVar: 'heroi1',
                 },
                 {
                   type: 'g2d:applyVelocity',
+                  spriteVar: 'heroi1',
+                },
+                {
+                  type: 'g2d:applyGravity',
                   spriteVar: 'heroi2',
                 },
                 {
-                  type: 'g2d:applyGravity',
+                  type: 'g2d:applyVelocity',
                   spriteVar: 'heroi2',
                 },
                 {

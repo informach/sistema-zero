@@ -31,14 +31,16 @@ impróprios e rejeitam respostas do modelo que contenham conteúdo inseguro, sol
 pessoais ou PII. O contexto, o bloco selecionado e os manuais usam o mesmo catálogo permitido pela
 carreira.
 
-## Deploy das migrations 0056–0058
+## Deploy das migrations 0056–0059
 
-Execute `0056_schema_history_baseline`, `0057_zappy_reliability_schema` e
-`0058_zappy_reliability_backfill` nessa ordem. A baseline restaura a continuidade dos snapshots
-depois das migrations 0050–0055 e não executa DDL. A migration de schema adiciona colunas nullable,
-a chave estrangeira do bloco e o índice. A migration de backfill preenche o lease das perguntas
+Execute `0056_schema_history_baseline`, `0057_zappy_reliability_schema`,
+`0058_zappy_reliability_backfill` e `0059_amused_retro_girl` nessa ordem. A baseline restaura a
+continuidade dos snapshots depois das migrations 0050–0055 e não executa DDL. A migration de
+schema adiciona colunas nullable, a chave estrangeira do bloco e o índice. A migration de backfill preenche o lease das perguntas
 antigas, vincula as fontes existentes ao hash da revisão atual e remove fontes `block:*` sem bloco
-autoritativo. O backfill é idempotente.
+autoritativo. A `0059` adiciona uma revisão física ao conteúdo do bloco e invalida fontes antigas
+que não conseguiam provar a revisão usada na extração. Depois do deploy, execute **Sincronizar
+base** no Admin para reconstruí-las em lotes revisionados. O backfill é idempotente e retomável.
 
 O `ALTER TABLE` usa alterações de catálogo rápidas. A criação do índice e o backfill podem manter
 locks breves nas tabelas do Zappy; rode o deploy durante o piloto e acompanhe a duração antes do

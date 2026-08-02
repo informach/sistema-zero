@@ -73,6 +73,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       warnOnce('img:' + source, 'a imagem "' + source + '" não está no projeto. Confira o nome no painel Imagens (maiúsculas e espaços contam).');
     }
     if (imageCache[url]) return imageCache[url];
+    /** @type {{ img: HTMLImageElement | null, loaded: boolean, failed: boolean, url: string }} */
     var handle = { img: null, loaded: false, failed: false, url: url };
     try {
       var im = new Image();
@@ -301,7 +302,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   function _resolveAnimState(s) {
     if ((s.hurtFrames || 0) > 0 || (s.blinkFrames || 0) > 0) return 'dano';
     if (s.onGround === false) {
-      return _isJumpingForGravity(s.vy, _worldGravityOr(0.6)) ? 'pulando' : 'caindo';
+      return _isJumpingForGravity(s.vy, world.gravity) ? 'pulando' : 'caindo';
     }
     if (Math.abs(s.vx || 0) > 0.01) return 'andando';
     if (Math.abs(s.vy || 0) > 0.01) return 'vertical';

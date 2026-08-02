@@ -112,6 +112,8 @@ export interface LessonBlock {
   kind: LessonBlockKind
   sortOrder: number
   content: LessonBlockContent
+  /** Presente nas leituras persistidas; fixtures legadas de domínio podem omiti-lo. */
+  contentRevision?: string
 }
 
 export interface LessonAttachment {

@@ -1792,8 +1792,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     }
     case 'g2d:updateGroup':
       return block('sz_g2d_update_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g2d:updateGroupNoGravity':
-      return block('sz_g2d_update_group_no_gravity', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g2d:applyGravityToGroup':
+      return block('sz_g2d_apply_gravity_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:drawGroup':
       return block('sz_g2d_draw_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:drawGroupByY':

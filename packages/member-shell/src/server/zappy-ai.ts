@@ -5,6 +5,7 @@ import {
   type ServerBlockCatalogEntry,
 } from '@sistemazero/studio/server-catalog'
 import { SERVER_MECHANIC_DOCUMENTS } from '@sistemazero/studio/server-knowledge'
+import { isStudioTutorSensitivePath } from '@sistemazero/studio/tutor-safety'
 import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import type { StudioTier } from '../lib/studio-tier'
@@ -199,15 +200,15 @@ export function deterministicZappySafetyReply(
   question: string,
   hadPii: boolean,
 ): ZappyStoredResponseView | null {
-  if (hadPii) {
-    return deterministic(
-      'Eu não guardo dados pessoais. Vamos cuidar da sua privacidade e voltar para a dúvida de programação ou do jogo.',
-      'unsupported',
-    )
-  }
   if (isZappySelfHarmText(question)) {
     return deterministic(
       'Sinto muito que você esteja passando por isso. Fale agora com um adulto de confiança que esteja perto de você e não fique sozinho. Se houver risco imediato, ligue 192 (SAMU). Você também pode ligar 188 (CVV) para conversar de graça, a qualquer hora.',
+      'unsupported',
+    )
+  }
+  if (hadPii) {
+    return deterministic(
+      'Eu não guardo dados pessoais. Vamos cuidar da sua privacidade e voltar para a dúvida de programação ou do jogo.',
       'unsupported',
     )
   }
@@ -264,13 +265,15 @@ function contextAllowedByCatalog(
       : null,
     ...(context.code
       ? {
-          code: context.code.map((file) => ({
-            ...file,
-            content: redactForbiddenBlockTypes(
-              redactZappySensitiveText(file.content).text,
-              allowedTypes,
-            ),
-          })),
+          code: context.code
+            .filter((file) => !isStudioTutorSensitivePath(file.path))
+            .map((file) => ({
+              ...file,
+              content: redactForbiddenBlockTypes(
+                redactZappySensitiveText(file.content).text,
+                allowedTypes,
+              ),
+            })),
         }
       : {}),
   }
@@ -452,7 +455,7 @@ function systemPrompt(
       : mode === 'bridge'
         ? 'MODO PONTE: relacione o bloco ao pequeno trecho de código correspondente, sem entregar uma solução inteira.'
         : kind === 'pro'
-          ? 'MODO PRO: explique apenas trechos curtos do código do projeto atual; não reescreva arquivos inteiros.'
+          ? 'MODO PRO: explique apenas trechos curtos do código do projeto atual; não reescreva arquivos inteiros. Retorne blockReferences sempre como [].'
           : 'MODO CÓDIGO CLÁSSICO: não recebeu o código-fonte; peça para usar a Ponte ou selecionar um bloco antes de explicar.'
   return [
     'Você é o Zappy do Studio, tutor de programação somente leitura para crianças de 8 a 13 anos.',
@@ -604,6 +607,7 @@ export function buildStudioZappyPrompt(input: {
 function invalidAnswer(
   raw: RawAnswerValue,
   mode: ZappyContextInput['mode'],
+  kind: ZappyContextInput['kind'],
   byType: ReadonlyMap<string, ServerBlockCatalogEntry>,
   instances: ReadonlyMap<string, string>,
   lessons: ReadonlySet<string>,
@@ -617,10 +621,12 @@ function invalidAnswer(
     return true
   }
   return (
-    raw.blockReferences.some((ref) => {
-      if (!byType.has(ref.blockType)) return true
-      return ref.blockId !== null && instances.get(ref.blockId) !== ref.blockType
-    }) || raw.lessonReferences.some((ref) => !lessons.has(ref.lessonId))
+    (kind !== 'pro' &&
+      raw.blockReferences.some((ref) => {
+        if (!byType.has(ref.blockType)) return true
+        return ref.blockId !== null && instances.get(ref.blockId) !== ref.blockType
+      })) ||
+    raw.lessonReferences.some((ref) => !lessons.has(ref.lessonId))
   )
 }
 
@@ -637,15 +643,16 @@ function limitSteps(text: string): string {
     .trim()
 }
 
-function validatedResponse(
+export function validatedStudioZappyResponse(
   raw: RawAnswerValue,
   profileName: string,
   byType: ReadonlyMap<string, ServerBlockCatalogEntry>,
   instances: ReadonlyMap<string, string>,
   mode: ZappyContextInput['mode'],
+  kind: ZappyContextInput['kind'],
   knowledge: readonly ZappyKnowledgeHitView[],
 ): ZappyStoredResponseView {
-  const refs = raw.blockReferences.flatMap((ref) => {
+  const refs = (kind === 'pro' ? [] : raw.blockReferences).flatMap((ref) => {
     const entry = byType.get(ref.blockType)
     if (!entry) return []
     const blockId =
@@ -699,6 +706,7 @@ export interface PreparedStudioZappyAnswer {
   user: string
   model: string
   mode: ZappyContextInput['mode']
+  kind: ZappyContextInput['kind']
   profileName: string
   knowledge: readonly ZappyKnowledgeHitView[]
   byType: ReadonlyMap<string, ServerBlockCatalogEntry>
@@ -721,6 +729,7 @@ export function prepareStudioZappyAnswer(input: StudioZappyAnswerInput): Prepare
     user,
     model: env.OPENROUTER_ZAPPY_MODEL || env.OPENROUTER_PENSA_MODEL || env.OPENROUTER_MODEL,
     mode: context.mode,
+    kind: context.kind,
     profileName: input.profileName,
     knowledge,
     byType,
@@ -744,18 +753,28 @@ export async function answerPreparedStudioZappy(
     temperature: 0.25,
     maxAttempts: 1,
   })
-  if (invalidAnswer(raw, prepared.mode, prepared.byType, prepared.instances, prepared.lessons)) {
+  if (
+    invalidAnswer(
+      raw,
+      prepared.mode,
+      prepared.kind,
+      prepared.byType,
+      prepared.instances,
+      prepared.lessons,
+    )
+  ) {
     return deterministic(
       'Não consegui validar essa explicação. Selecione o bloco, rode o jogo ou copie a mensagem de erro e tente novamente.',
       'needs-context',
     )
   }
-  return validatedResponse(
+  return validatedStudioZappyResponse(
     raw,
     prepared.profileName,
     prepared.byType,
     prepared.instances,
     prepared.mode,
+    prepared.kind,
     prepared.knowledge,
   )
 }

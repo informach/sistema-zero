@@ -542,21 +542,25 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
               type: 'if',
               cond: { type: 'g2d:sceneIs', name: 'jogando' },
               then: [
+                { type: 'g2d:applyGravity', spriteVar: 'heroi' },
                 { type: 'g2d:platformer', spriteVar: 'heroi', ctxVar: 'ctx', speed: 4, jump: 11 },
                 { type: 'g2d:clampToScreen', spriteVar: 'heroi', ctxVar: 'ctx' },
                 { type: 'g2d:autoAnimate', spriteVar: 'heroi' },
+                { type: 'g2d:applyGravityToGroup', groupVar: 'goomba' },
                 {
                   type: 'g2d:updateEnemyType',
                   typeVar: 'goomba',
                   ctxVar: 'ctx',
                   targetVar: 'heroi',
                 },
+                { type: 'g2d:applyGravityToGroup', groupVar: 'sapinho' },
                 {
                   type: 'g2d:updateEnemyType',
                   typeVar: 'sapinho',
                   ctxVar: 'ctx',
                   targetVar: 'heroi',
                 },
+                { type: 'g2d:applyGravityToGroup', groupVar: 'canhao' },
                 {
                   type: 'g2d:updateEnemyType',
                   typeVar: 'canhao',
