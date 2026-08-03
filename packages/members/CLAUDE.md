@@ -122,6 +122,19 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > usuária). O card kids não mostra mais dica; o tema agora é só emoji/título/descrição).
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
+>
+> 🚨 **INCIDENTE 03/08/2026 — migration PULADA EM SILÊNCIO (aulas fora do ar em staging E prod).**
+> O drizzle aplica só o que tem `when` **acima da marca d'água** (`created_at` do último aplicado).
+> As `0055`–`0058` foram carimbadas À MÃO com datas no FUTURO (`1785800000000`–`1785800300000` =
+> 03/08 23:33–23:38); a `0059`, gerada pelo `db:generate` com o relógio REAL (02/08 21:17), nasceu
+> ~26h ABAIXO dessa marca → o `preDeploy` rodou, disse **`Exited with code 0` e não aplicou nada**.
+> O código novo foi ao ar consultando `lesson_blocks.content_revision`, que não existia: **toda**
+> consulta de blocos passou a falhar → `GET` da aula 500 → Server Component do kids quebrado.
+> Corrigido subindo o `when` da `0059` para `1785800400000` (+ `ADD COLUMN IF NOT EXISTS`).
+> ⚠️ **REGRA:** carimbo de migration é **relógio, não numeração** — NUNCA escreva `when` à mão no
+> futuro. Enquanto a marca d'água estiver adiantada (hoje 03/08 23:40), TODA migration nova gerada
+> antes desse instante nasce abaixo dela e será pulada: confira o `_journal.json` e suba o `when`
+> à mão. Sintoma a reconhecer: `db:migrate` verde + `column ... does not exist` no runtime.
 
 ## Conceito central (decisões travadas com o usuário)
 
