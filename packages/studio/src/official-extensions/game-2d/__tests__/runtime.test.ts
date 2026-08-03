@@ -2323,6 +2323,50 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(g.items.map((sprite) => [sprite.x, sprite.y])).toEqual([[1050, 540]])
   })
 
+  it('pruneOffscreen NÃO tira o obstáculo que nasceu fora e ainda vem entrando', () => {
+    const api = load()
+    const g = api.createGroup()
+    const ctx = { canvas: { width: 480, height: 270 } }
+    // O caso real do Dino: o cacto nasce em x 560 — fora da direita (o limite com
+    // margem 40 é 520) — andando para a ESQUERDA. Antes ele sumia antes de aparecer.
+    api.spawn(g, { x: 560, y: 100, w: 20, h: 44, vx: -5, vy: 0, color: '#fff' })
+    api.pruneOffscreen(ctx, g, 40)
+    expect(api.countGroup(g)).toBe(1)
+  })
+
+  it('pruneOffscreen tira o MESMO sprite quando ele passa a se afastar, e avisa no ato', () => {
+    const api = load()
+    const g = api.createGroup()
+    const ctx = { canvas: { width: 480, height: 270 } }
+    const escaparam: number[] = []
+    api.spawn(g, { x: 560, y: 100, w: 20, h: 44, vx: 5, vy: 0, color: '#fff' })
+    api.pruneOffscreen(ctx, g, 40, (s) => escaparam.push(s.x))
+    expect(api.countGroup(g)).toBe(0)
+    // O onLeave dispara no MESMO quadro em que ele cruza a margem indo embora —
+    // é o que mantém "asteroide escapou = perde vida" ligado à causa na tela.
+    expect(escaparam).toEqual([560])
+  })
+
+  it('pruneOffscreen decide por LADO: vir entrando num eixo não salva quem cai pelo outro', () => {
+    const api = load()
+    const g = api.createGroup()
+    const ctx = { canvas: { width: 480, height: 270 } }
+    // Fora à direita vindo para dentro (vx < 0), mas já abaixo do rodapé caindo.
+    api.spawn(g, { x: 560, y: 400, w: 20, h: 20, vx: -5, vy: 3, color: '#fff' })
+    api.pruneOffscreen(ctx, g, 40)
+    expect(api.countGroup(g)).toBe(0)
+  })
+
+  it('pruneOffscreen trata sprite PARADO fora da tela como saído (a câmera deixou p/ trás)', () => {
+    const api = load()
+    const g = api.createGroup()
+    const ctx = { canvas: { width: 480, height: 270 } }
+    api.spawn(g, { x: 560, y: 100, w: 20, h: 20, vx: 0, vy: 0, color: '#fff' })
+    api.spawn(g, { x: -100, y: 100, w: 20, h: 20, vx: 0, vy: 0, color: '#fff' })
+    api.pruneOffscreen(ctx, g, 40)
+    expect(api.countGroup(g)).toBe(0)
+  })
+
   it('overlapGroups chama fn para cada par que se encosta', () => {
     const api = load()
     const a = api.createGroup()
