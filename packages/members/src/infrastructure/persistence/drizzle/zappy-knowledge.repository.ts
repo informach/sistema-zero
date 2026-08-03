@@ -47,6 +47,14 @@ export function zappyKnowledgeSourceUnchanged(
   )
 }
 
+export function effectiveZappyKnowledgeStatus(input: {
+  status: string
+  blockRevision: string | null
+  authoritativeBlockRevision: string
+}): string {
+  return input.blockRevision === input.authoritativeBlockRevision ? input.status : 'pending'
+}
+
 export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository {
   constructor(private readonly db: Database) {}
 
@@ -66,11 +74,36 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     return row ?? null
   }
 
-  async upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean }> {
+  async upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean } | null> {
     return this.db.transaction(async (tx) => {
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`zappy-kb:${input.sourceRef}`}, 0))`,
       )
+      // Serializa contra a edição do bloco e revalida a autoridade na MESMA
+      // transação da escrita. Isso fecha a janela em que uma extração antiga
+      // podia sobrescrever uma revisão mais nova depois do primeiro SELECT.
+      const [authority] = await tx
+        .select({
+          blockId: lessonBlocks.id,
+          courseId: courses.id,
+          lessonId: lessons.id,
+          blockRevision: lessonBlocks.contentRevision,
+        })
+        .from(lessonBlocks)
+        .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
+        .innerJoin(courses, eq(courses.id, lessons.courseId))
+        .where(eq(lessonBlocks.id, input.blockId))
+        .limit(1)
+        .for('update')
+      if (
+        !authority ||
+        input.sourceRef !== `block:${authority.blockId}` ||
+        input.courseId !== authority.courseId ||
+        input.lessonId !== authority.lessonId ||
+        input.blockRevision !== authority.blockRevision
+      ) {
+        return null
+      }
       // Um bloco pode mudar de tipo (texto → vídeo → PDF). A referência é a
       // identidade estável; remova a versão antiga para ela nunca seguir pesquisável.
       await tx
@@ -308,6 +341,8 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           sourceType: zappyKnowledgeSources.sourceType,
           status: zappyKnowledgeSources.status,
           error: zappyKnowledgeSources.error,
+          blockRevision: zappyKnowledgeSources.blockRevision,
+          authoritativeBlockRevision: lessonBlocks.contentRevision,
         })
         .from(zappyKnowledgeSources)
         .innerJoin(lessonBlocks, eq(lessonBlocks.id, zappyKnowledgeSources.blockId))
@@ -319,12 +354,15 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
             eq(courses.status, 'published'),
             eq(lessons.isPublished, true),
             eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
-            eq(zappyKnowledgeSources.blockRevision, lessonBlocks.contentRevision),
           ),
         ),
     ])
+    const effectiveSources = sourceRows.map((source) => ({
+      ...source,
+      status: effectiveZappyKnowledgeStatus(source),
+    }))
     const readyVideoSourceRefs = new Set(
-      sourceRows
+      effectiveSources
         .filter((source) => source.status === 'ready' && source.sourceType === 'video-vtt')
         .map((source) => source.sourceRef),
     )
@@ -342,14 +380,14 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     const publishedCourses = [...courseMap.values()]
     return {
       publishedKidsLessons: lessonRows.length,
-      readySources: sourceRows.filter((source) => source.status === 'ready').length,
-      errorSources: sourceRows.filter(
+      readySources: effectiveSources.filter((source) => source.status === 'ready').length,
+      errorSources: effectiveSources.filter(
         (source) => source.status === 'error' || source.status === 'empty',
       ).length,
-      pendingSources: sourceRows.filter((source) => source.status === 'pending').length,
+      pendingSources: effectiveSources.filter((source) => source.status === 'pending').length,
       lessonsWithVideoWithoutTranscript,
       coursesWithoutStudentNotebook: coursesMissingStudentNotebook(publishedCourses, blockRows),
-      failedSources: sourceRows.flatMap((source) =>
+      failedSources: effectiveSources.flatMap((source) =>
         (source.status === 'error' || source.status === 'empty') && source.error
           ? [
               {

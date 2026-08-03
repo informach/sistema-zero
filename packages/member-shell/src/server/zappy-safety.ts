@@ -54,7 +54,7 @@ export function redactZappySensitiveText(value: string): {
 
 export function isZappySelfHarmText(value: string): boolean {
   const text = normalized(value)
-  return /\b(?:suicid[a-z]*|autoagressao|automutilacao|me matar|me machucar|me ferir|me cortar|cortar (?:meus )?pulsos|tirar minha vida|acabar com minha vida|quero morrer|queria morrer|nao quero (?:mais )?viver|queria estar mort[oa]|sumir para sempre)\b/.test(
+  return /\b(?:suicid[a-z]*|autoagressao|automutilacao|me matar|me machucar|me ferir|me cortar|cortar (?:meus )?pulsos|tirar (?:a )?minha vida|acabar com (?:a )?minha vida|quero morrer|queria morrer|nao quero (?:mais )?viver|nao aguento mais (?:viver|a vida)|queria estar mort[oa]|sumir para sempre)\b/.test(
     text,
   )
 }

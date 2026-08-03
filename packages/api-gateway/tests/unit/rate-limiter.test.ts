@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
+import { createRateLimitStage } from '../../src/application/pipeline/stages/rate-limit.stage'
 import { createRateLimiter } from '../../src/application/rate-limit/rate-limiter'
 import { createInMemoryStore } from '../../src/infrastructure/store/in-memory-store'
+import { makeContext } from '../helpers'
 
 describe('rate limiter', () => {
   test('permite até o limite, depois nega com retry-after', async () => {
@@ -32,5 +34,35 @@ describe('rate limiter', () => {
     const db = await rl.check('b', 1, 60_000)
     expect(da.allowed).toBe(false)
     expect(db.allowed).toBe(true)
+  })
+
+  test('isola consumidores HMAC pelo ator presente no corpo assinado', async () => {
+    const rateLimiter = createRateLimiter(createInMemoryStore())
+    const stage = createRateLimitStage({ rateLimiter, defaultMax: 100, defaultWindowMs: 60_000 })
+    const contextFor = (userId: string) => {
+      const ctx = makeContext({ method: 'POST', body: JSON.stringify({ actor: { userId } }) })
+      ctx.principal = { kind: 'hmac', subject: 'member-shell' }
+      ctx.rawBody = JSON.stringify({ actor: { userId } })
+      ctx.route = {
+        route: {
+          id: 'zappy-question',
+          methods: ['POST'],
+          pathPattern: '/zappy',
+          service: 'members',
+          upstreamGroup: 'default',
+          auth: 'public',
+          rateLimit: { max: 1, windowMs: 60_000, by: 'json-field', field: 'actor.userId' },
+          transforms: [],
+          stripPrefix: false,
+        },
+        params: {},
+        version: 'v1',
+      }
+      return ctx
+    }
+
+    expect(await stage.run(contextFor('student-a'))).toBeUndefined()
+    expect((await stage.run(contextFor('student-a'))) as Response).toHaveProperty('status', 429)
+    expect(await stage.run(contextFor('student-b'))).toBeUndefined()
   })
 })

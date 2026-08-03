@@ -1,17 +1,33 @@
-# Full review arquitetural — Jogo 2D (`game-2d`) v0.57.0
+# Full review arquitetural — Jogo 2D (`game-2d`) v0.57.1
 
 **Data:** 2026-08-02  
-**Estado analisado:** worktree corrente, com mudanças staged/uncommitted sobre `8c97ae05`  
-**Veredito:** **FAIL — não promover a v0.57.0 enquanto AA-01 e AA-02 estiverem abertos**
+**Estado analisado:** review da v0.57.0 e follow-up aprovado para a v0.57.1
+**Veredito:** **PASS COM RISCOS ACEITOS — AA-01/AA-02 sem exposição em produção; AA-05 é decisão de produto**
+
+## Follow-up da v0.57.1
+
+- **AA-01:** risco aceito. O inventário do produto não contém projetos que usem
+  o bloco removido.
+- **AA-02:** risco aceito. O inventário não contém projetos que usem as famílias
+  afetadas. `sz_g2d_update_group` pertence ao Kit Essencial; a decisão pressupõe
+  que esse bloco específico também não aparece nos projetos existentes.
+- **AA-04:** corrigido. No pior dos três lotes finais, o p95 da colisão máxima
+  caiu de 75,39 ms para 7,68 ms (−89,8%), com saída dourada idêntica.
+- **AA-05:** mantido como decisão explícita de produto.
+- **AA-06:** manutenção mitigada. `casualKits.ts` foi separado por
+  responsabilidade com fragmento final byte-idêntico. O payload único continua
+  sendo uma restrição do contrato atual do loader.
+- **AA-07:** corrigido; o comentário agora descreve a integração e a poda numa
+  passagem.
 
 ## Escopo e inventário
 
-- 119 arquivos TypeScript no diretório da extensão, 49.592 linhas.
-- 59 arquivos de produção, 34.133 linhas; todos alcançáveis a partir de `game-2d/index.ts`.
-- 43 arquivos de suporte/teste, 12.606 linhas; 17 fontes geradas, 2.853 linhas.
+- 122 arquivos TypeScript no diretório da extensão, 49.703 linhas.
+- 62 arquivos de produção, 34.189 linhas; todos alcançáveis a partir de `game-2d/index.ts`.
+- 43 arquivos de suporte/teste, 12.661 linhas; 17 fontes geradas, 2.853 linhas.
 - 216 definições de bloco, todas com `type` único; 215 chaves na API pública.
 - 31 exemplos, 24 subcategorias de toolbox.
-- Runtime injetado: 309.419 caracteres, 110.690 bytes em gzip.
+- Runtime injetado na v0.57.1: 311.774 caracteres, 111.334 bytes em gzip.
 - Documentação do manifest: 32.403 caracteres.
 - Também foram auditados os pontos transversais do pipeline: schema/IR, Blockly→IR,
   IR→Blockly, gerador, parser, allowlist/sanitização, níveis e galeria E2E.
@@ -24,29 +40,31 @@ round-trip possuem cobertura incomumente boa; não encontrei módulo de produç�
 rede ativa, `eval` ou `new Function` no bootstrap. As permissões declaradas
 (`canvas`, `keyboard`, `mouse`, `audio`) correspondem ao que o runtime usa.
 
-Porém, a versão corrente tem dois problemas de compatibilidade com projetos de
-crianças. O primeiro pode descartar o workspace inteiro ao reabrir um projeto. O
-segundo muda silenciosamente a física de blocos já publicados. Há ainda um
-caminho de colisão capaz de consumir cerca de 100 ms em um único quadro e uma
-progressão que libera 179 blocos 2D de uma vez no degrau chamado
-`iniciante-3d`. Um gate de catálogo que falhou durante a auditoria foi corrigido
-em paralelo no worktree e passou na verificação final.
+O review encontrou dois problemas de compatibilidade, um caminho de colisão
+quadrático e dois pontos de manutenção. O responsável pelo produto confirmou
+que os blocos incompatíveis não aparecem em projetos de produção e aceitou esses
+riscos. A progressão de 179 blocos no degrau `iniciante-3d` também foi mantida
+como decisão de produto. A v0.57.1 corrige performance e manutenção sem alterar
+a semântica física aprovada.
 
 | ID | Prioridade | Achado | Confiança |
 |---|---:|---|---|
-| AA-01 | P0 / Crítico | Bloco/API/IR publicados foram removidos sem migração; o workspace pode ser descartado | Alta |
-| AA-02 | P1 / Alto | Sete famílias de blocos existentes mudaram a semântica física sem migração | Alta |
+| AA-01 | Risco aceito | Sem exposição no inventário de produção | Alta |
+| AA-02 | Risco aceito | Sem exposição no inventário de produção | Alta |
 | AA-03 | Resolvido durante o review | Snapshot do catálogo estava desatualizado; verificação final passou | Alta |
-| AA-04 | P2 / Médio | Colisão de tilemap aceita trabalho de ~100 ms em uma chamada | Alta |
-| AA-05 | P2 / Médio | 179/216 blocos 2D são liberados de uma vez no degrau 3D | Alta |
-| AA-06 | P3 / Baixo | Bootstrap monolítico de 309 KB amplia custo e superfície de manutenção | Média |
-| AA-07 | P3 / Baixo | Comentário do atualizador de tiros contradiz a nova semântica de `updateGroup` | Alta |
+| AA-04 | Resolvido na v0.57.1 | Índices internos removem a busca linear por célula | Alta |
+| AA-05 | Decisão de produto | 179/216 blocos 2D são liberados de uma vez no degrau 3D | Alta |
+| AA-06 | Mitigado na v0.57.1 | Kits casuais separados; payload único permanece no loader | Alta |
+| AA-07 | Resolvido na v0.57.1 | Comentário passou a refletir o algoritmo atual | Alta |
 
 ---
 
 ## Achados
 
-### AA-01 — P0 — Remoção de bloco publicado descarta o workspace
+### AA-01 — Risco aceito — Remoção de bloco publicado descarta o workspace
+
+**Disposição:** não corrigir nesta release. O responsável pelo produto confirmou
+que nenhum projeto em produção usa o bloco removido.
 
 **Evidência**
 
@@ -101,7 +119,10 @@ Isso viola diretamente a regra de `CLAUDE.md:402`: a forma de um bloco já salvo
    catálogo corrente deve ser um superset dos tipos históricos ou declarar uma
    migração executada antes da allowlist.
 
-### AA-02 — P1 — Mudança silenciosa de semântica física
+### AA-02 — Risco aceito — Mudança silenciosa de semântica física
+
+**Disposição:** preservar a física nova. O responsável pelo produto confirmou
+que os blocos afetados não aparecem em projetos de produção.
 
 **Evidência**
 
@@ -173,11 +194,11 @@ verificação final passou com 2/2 no teste isolado e 6.462/6.462 na suíte ampl
 Fazer o teste imprimir o id da extensão antes do hash para reduzir o tempo de
 diagnóstico quando o loop falhar. Nenhuma ação bloqueante permanece neste item.
 
-### AA-04 — P2 — Colisão de tilemap excede o orçamento de quadro
+### AA-04 — Resolvido na v0.57.1 — Colisão de tilemap
 
 **Evidência**
 
-O runtime aceita até 512×512 células e até 512 índices sólidos
+Na v0.57.0, o runtime aceitava até 512×512 células e até 512 índices sólidos
 (`runtime/worldTiles.ts:13-18`). `isSolidCell` e `isPlatformCell` usam
 `Array.indexOf` (`worldTiles.ts:208,216`) dentro do duplo loop de colisão
 (`worldTiles.ts:331-332`). Um sprite grande pode cobrir todas as 262.144 células.
@@ -194,16 +215,30 @@ lista de 512 entradas:
 Uma chamada máxima consome cerca de seis orçamentos de 16,7 ms, antes de
 desenho, lógica ou outras colisões.
 
-**Recomendação**
+**Resolução**
 
-- Converter sólidos/plataformas para `Set` na criação do mapa.
-- Impor um orçamento de células por chamada, com aviso didático, ou subdividir
-  sprites/colisores grandes.
-- Manter as listas serializáveis para o contrato público, mas usar sets internos
-  não enumeráveis/cacheados.
-- Adicionar benchmark/regressão com um teto conservador e mapas grandes reais.
+A v0.57.1 mantém `solid` e `platform` como arrays públicos e cria índices
+internos com `Set`. Um snapshot detecta alterações feitas no modo código e
+reconstrói somente o índice afetado. A ordem e a geometria da colisão não mudam.
 
-### AA-05 — P2 — Progressão despeja 179 blocos 2D no degrau 3D
+Benchmark 512×512, 512 sólidos, três aquecimentos e trinta medições:
+
+| Métrica | Antes | Depois | Variação |
+|---|---:|---:|---:|
+| p50 | 66,73 ms | 4,25 ms | −93,6% |
+| p95 | 75,39 ms | 7,68 ms | −89,8% |
+| p99 | 76,59 ms | 10,12 ms | −86,8% |
+
+Os valores finais são os piores observados em três lotes de trinta medições,
+para evitar selecionar a execução mais favorável.
+
+O SHA-256 das saídas douradas permaneceu
+`37b78bdea61173af92d581cbb8b563b97fc129433ab7f28824dea9d53ffd2ee1`.
+
+### AA-05 — Decisão de produto — Progressão libera 179 blocos 2D no degrau 3D
+
+**Disposição:** manter a progressão atual. O responsável pelo produto confirmou
+que esse comportamento é intencional neste momento.
 
 **Evidência**
 
@@ -236,7 +271,7 @@ não avaliam sua carga cognitiva.
 - Se o desbloqueio global continuar, mudar o rótulo/explicação do degrau para
   não sugerir que ele contém apenas 3D.
 
-### AA-06 — P3 — Runtime monolítico de 309 KB
+### AA-06 — Mitigado na v0.57.1 — Runtime e manutenção
 
 Os fragments estão bem separados no source, mas são concatenados em uma única
 string com 215 métodos e injetados integralmente em todo preview que instala a
@@ -244,20 +279,23 @@ extensão. Isso amplia o tempo de parse/compilação, a superfície de auditoria
 custo de qualquer reexecução. Os 42 cenários de navegador passaram, portanto
 não há regressão funcional comprovada.
 
-**Melhoria:** instrumentar parse/boot no preview e, se o custo for relevante,
-carregar módulos por famílias usadas pelo IR ou gerar um bootstrap mínimo com
-dependências declaradas. Não fragmentar sem medida: lifecycle e estado global
-compartilhado tornam essa mudança de alto risco.
+**Resolução:** o maior fragmento misto, `casualKits.ts`, passou a compor módulos
+de utilidades compartilhadas, Equilibrista e Balão. O SHA-256 do fragmento
+montado permaneceu `f68f628752ca5580c3719129e5a7b5d7701c4582d02d75d82a33569362ce9e1`.
 
-### AA-07 — P3 — Comentário obsoleto no atualizador de tiros
+O bootstrap continua único porque o loader injeta toda a API antes do código do
+projeto. Reduzir esse payload exige um contrato de dependências por IR e fica
+fora desta correção de manutenção.
+
+### AA-07 — Resolvido na v0.57.1 — Comentário do atualizador de tiros
 
 `runtime/arcadeKitsSpace.ts:445-446` diz para não usar `updateGroup` porque os
 tiros devem ficar sem gravidade. Na v0.57, `updateGroup` é justamente o helper
 sem gravidade. O loop manual ainda é justificável porque também poda os tiros,
 mas o comentário registra uma razão falsa.
 
-**Melhoria:** explicar que o loop integra e poda em uma só passagem, sem afirmar
-que `updateGroup` adiciona gravidade.
+**Resolução:** o comentário explica que o loop integra e poda em uma passagem,
+mantendo os tiros sem gravidade e com margem de 40 px.
 
 ---
 
@@ -295,25 +333,24 @@ não substitui compatibilidade histórica.
 | Comando | Resultado |
 |---|---|
 | `bun install --frozen-lockfile` | PASS |
-| testes básicos de `game-2d` (42 arquivos) | 1.000 PASS |
-| `bun test src/official-extensions/game-2d` | 2.000 PASS, incluindo advanced pelo padrão do Bun |
+| testes básicos de `game-2d` (42 arquivos) | 1.002 PASS |
+| testes de runtime e contrato tipado | 140 PASS |
 | níveis + toolbox + sanitização + compatibilidade | 49 PASS |
 | Biome focado em extensão e pipeline | 126 arquivos, PASS |
-| `bun run check` | 1.040 arquivos, PASS |
+| `bun run check` | 1.043 arquivos, PASS |
 | `bun run typecheck` | PASS |
-| `bun test src` | 6.462 PASS / 0 FAIL / 70.626 expects |
+| `bun test src` | 6.468 PASS / 0 FAIL / 70.647 expects |
 | Playwright galeria `game-2d:` | 41 PASS |
 | Playwright tremor/viewport | 1 PASS |
 
-## Ordem recomendada de correção
+## Disposição final
 
-1. **Bloquear promoção da 0.57 e corrigir AA-01.** Recuperar todos os formatos
-   persistidos antes de mexer em comportamento.
-2. **Definir a política de AA-02.** O objetivo pedagógico é bom, mas precisa de
-   blocos novos ou migração equivalente, não de mutação silenciosa.
-3. **Otimizar AA-04** com sets/cache e limite de trabalho.
-4. **Testar a curadoria AA-05** com perfis menores e usuários reais.
-5. Tratar AA-06/AA-07 como manutenção posterior.
+1. AA-01 e AA-02 permanecem documentados como riscos aceitos sem exposição no
+   inventário de produção.
+2. AA-05 permanece como decisão de produto.
+3. AA-04, AA-06 e AA-07 foram tratados na v0.57.1.
+4. A redução do bootstrap exige mudança arquitetural no loader e não bloqueia
+   esta release.
 
 ## Artefatos relacionados
 

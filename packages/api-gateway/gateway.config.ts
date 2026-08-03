@@ -1,4 +1,7 @@
-import { ZAPPY_SOURCE_REQUEST_MAX_BYTES } from '@sistemazero/core/zappy'
+import {
+  ZAPPY_KNOWLEDGE_BACKFILL_RATE_LIMIT_PER_MINUTE,
+  ZAPPY_SOURCE_REQUEST_MAX_BYTES,
+} from '@sistemazero/core/zappy'
 import type { GatewayConfigInput } from './src/infrastructure/config/gateway-config.schema'
 
 /**
@@ -1244,7 +1247,12 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: membersInternalTransforms,
-      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      rateLimit: {
+        max: 10,
+        windowMs: 60_000,
+        by: 'json-field',
+        field: 'actor.userId',
+      },
       maxBodyBytes: 4096,
     },
     {
@@ -1254,7 +1262,12 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: membersInternalTransforms,
-      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      rateLimit: {
+        max: 60,
+        windowMs: 60_000,
+        by: 'json-field',
+        field: 'actor.userId',
+      },
       maxBodyBytes: 16 * 1024,
     },
     {
@@ -2104,7 +2117,11 @@ const config: GatewayConfigInput = {
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       transforms: membersInternalTransforms,
-      rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
+      rateLimit: {
+        max: ZAPPY_KNOWLEDGE_BACKFILL_RATE_LIMIT_PER_MINUTE,
+        windowMs: 60_000,
+        by: 'principal',
+      },
       maxBodyBytes: 1024,
     },
     {

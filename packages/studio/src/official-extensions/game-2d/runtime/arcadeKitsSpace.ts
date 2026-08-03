@@ -442,8 +442,8 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
         if (_runGenerationChanged(generation)) return;
       }
     }
-    // Tiros dos atiradores: linha RETA (sem a gravidade do mundo — nao usar
-    // updateGroup aqui) + poda fora da tela (margem 40).
+    // Integra e poda os tiros numa passagem. Eles seguem em linha reta, sem a
+    // gravidade do mundo, e usam uma margem de 40 px fora da área visível.
     var bs = (type.bullets && type.bullets.items) ? type.bullets.items : null;
     if (bs) {
       for (var k = bs.length - 1; k >= 0; k--) {

@@ -582,6 +582,20 @@ Testes: `personalSync.test.ts` + `components/assets/AssetsPanelEditDrawing.test.
 liga a feature (`setPersonalAssetsNamespace('playground')` + `onEditDrawing`) — QA em navegador real
 feito: jogo aberto, jogo FECHADO, preview e as duas miniaturas.
 
+**Full review (02/08) — 4 correções, todas com teste:**
+1. ⭐ **Jogo aberto NO MEIO da varredura perdia a atualização.** O id do projeto aberto era capturado
+   UMA vez, antes do laço; a varredura roda no foco da aba, que é exatamente quando a criança clica
+   num jogo. Abrir P depois do passo 1 fazia a varredura gravar a partição de P por fora — e o
+   autosave do editor (com a cópia VELHA em memória) desfazia, em silêncio. Fix: reler
+   `storeApi.getState().project?.id` a CADA volta + repetir o passo do projeto aberto no FIM.
+2. **Jogo fechado podia estourar a cota.** O caminho do disco não checava
+   `maxAssetsTotalChars`; passar do teto faz o `sanitizeProjectAssets` do LOAD **descartar** imagens
+   — o jogo abriria com arte faltando, sem aviso. Fix: mesmo orçamento da store, e a recusa entra no
+   `pendingFailures` nomeando o jogo.
+3. **Duas varreduras no mesmo evento** (painel aberto = observador de foco + painel): `inFlight`
+   compartilha a promessa.
+4. `EMPTY_RESULT` era uma constante compartilhada com um array mutável → virou `emptyResult()`.
+
 **Metadados de spritesheet/tileset (Pinta→Estúdio, 07/2026 — seletor por nome):** o `ProjectAsset`
 ganhou `sprite?: {frameW,frameH,animations:{name,from,to,fps,loop}[]}` e `tileset?: {tileSize,solid:
 number[]}` (os índices `from/to` da animação são os MESMOS que o runtime do Jogo 2D usa — o Pinta
@@ -601,7 +615,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.57.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.57.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar

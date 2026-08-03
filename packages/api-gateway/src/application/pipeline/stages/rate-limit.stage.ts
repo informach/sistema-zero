@@ -14,10 +14,24 @@ export interface RateLimitDeps {
   metrics?: RateLimitMetrics
 }
 
+function jsonFieldValue(rawBody: string | undefined, field: string | undefined): string | null {
+  if (!rawBody || !field) return null
+  try {
+    let value: unknown = JSON.parse(rawBody)
+    for (const segment of field.split('.')) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+      value = Reflect.get(value, segment)
+    }
+    return typeof value === 'string' && value.length > 0 && value.length <= 200 ? value : null
+  } catch {
+    return null
+  }
+}
+
 /**
- * Rate limit por identidade (principal → fallback IP), com regra por rota e
- * default global. 429 + Retry-After quando excede. O contador é refundado em 5xx
- * pelo finalize stage (não conta falhas do upstream contra o cliente).
+ * Rate limit por IP, principal ou campo de corpo autenticado por HMAC, com regra
+ * por rota e default global. 429 + Retry-After quando excede. O contador é
+ * refundado em 5xx pelo finalize stage (não conta falhas do upstream).
  */
 export function createRateLimitStage(deps: RateLimitDeps): Stage {
   return {
@@ -28,7 +42,14 @@ export function createRateLimitStage(deps: RateLimitDeps): Stage {
       const max = rule?.max ?? deps.defaultMax
       const windowMs = rule?.windowMs ?? deps.defaultWindowMs
       const by = rule?.by ?? 'principal'
-      const identity = by === 'ip' ? ctx.clientIp : (ctx.principal?.subject ?? ctx.clientIp)
+      const principalIdentity = ctx.principal?.subject ?? ctx.clientIp
+      const actorIdentity = by === 'json-field' ? jsonFieldValue(ctx.rawBody, rule?.field) : null
+      const identity =
+        by === 'ip'
+          ? ctx.clientIp
+          : actorIdentity
+            ? `${principalIdentity}:${JSON.stringify(actorIdentity)}`
+            : principalIdentity
       const key = `rl:${ctx.route.route.id}:${identity}`
 
       let decision: Awaited<ReturnType<typeof deps.rateLimiter.check>>

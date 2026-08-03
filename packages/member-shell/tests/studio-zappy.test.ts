@@ -155,6 +155,18 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(redacted.text).not.toContain('segredo-em-base64')
   })
 
+  test('remove todo o valor multilinha quando a própria variável é sensível', () => {
+    const source =
+      'const PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----\nsegredo-em-base64\n-----END PRIVATE KEY-----`'
+
+    const redacted = redactZappySensitiveText(source)
+
+    expect(redacted.hadSecret).toBe(true)
+    expect(redacted.text.split('\n')).toHaveLength(source.split('\n').length)
+    expect(redacted.text).not.toContain('segredo-em-base64')
+    expect(redacted.text).not.toContain('BEGIN PRIVATE KEY')
+  })
+
   test('remove arquivos sensíveis e credenciais de URL mesmo em chamadas forjadas ao BFF', () => {
     const prompt = buildStudioZappyPrompt({
       question: 'Por que não conecta?',
@@ -187,8 +199,25 @@ describe('Zappy do Studio — limites determinísticos', () => {
   test.each([
     'estou pensando em suicídio',
     'quero me suicidar',
+    'vou tirar a minha vida',
+    'quero acabar com a minha vida',
+    'não aguento mais viver',
   ])('reconhece variante de crise: %s', (question) => {
     expect(isZappySelfHarmText(question)).toBe(true)
+  })
+
+  test.each([
+    ['AWS_SECRET_ACCESS_KEY', 'aws-secret-value'],
+    ['SUPABASE_SERVICE_ROLE_KEY', 'supabase-secret-value'],
+    ['NEXT_PUBLIC_API_KEY', 'next-public-secret-value'],
+    ['awsSecretAccessKey', 'camel-case-secret-value'],
+  ])('remove segredo de chave prefixada %s', (key, secret) => {
+    const redacted = redactZappySensitiveText(`const ${key} = "${secret}"`)
+
+    expect(redacted.hadSecret).toBe(true)
+    expect(redacted.text).toContain(key)
+    expect(redacted.text).toContain('[segredo removido]')
+    expect(redacted.text).not.toContain(secret)
   })
 
   test('crise tem precedência sobre o aviso genérico de PII', () => {

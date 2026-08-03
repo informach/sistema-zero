@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
+  ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE,
   ZAPPY_SOURCE_CONTENT_MAX_BYTES,
   zappySourceContentBytes,
   zappyVimeoVideoId,
@@ -167,6 +168,9 @@ export class ZappyKnowledgeService {
       chunks,
       now: this.clock(),
     })
+    if (!result) {
+      throw new ValidationError('Fonte do Zappy pertence a uma revisão desatualizada do bloco')
+    }
     return { ...result, status }
   }
 
@@ -218,7 +222,7 @@ export class ZappyKnowledgeService {
     nextCursor: string | null
     done: boolean
   }> {
-    const limit = Math.min(Math.max(input.limit ?? 10, 1), 25)
+    const limit = Math.min(Math.max(input.limit ?? 10, 1), ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE)
     const listed = await this.repository.listPublishedKidsBlocks({
       ...(input.cursor ? { after: input.cursor } : {}),
       limit: limit + 1,

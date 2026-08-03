@@ -119,13 +119,14 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
     var t = _positiveFiniteNumber(options.tile, 32);
     var solid = parseSolidList(options.solid);
+    var solidIndex = new Set(solid);
     // Peças PLATAFORMA (one-way: pisa por cima, atravessa por baixo). Sólido
     // vence no conflito (uma peça não é sólida E plataforma ao mesmo tempo).
     var platform = parseSolidList(options.platform);
     if (platform.length && solid.length) {
-      platform = platform.filter(function (n) { return solid.indexOf(n) === -1; });
+      platform = platform.filter(function (n) { return !solidIndex.has(n); });
     }
-    return {
+    var map = {
       tileset: loadSpriteSheet(options.image, t, t),
       tile: t,
       draw: 0,
@@ -135,6 +136,13 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       ox: 0,
       oy: 0
     };
+    Object.defineProperties(map, {
+      _solidIndex: { value: solidIndex, writable: true, configurable: true },
+      _solidIndexSnapshot: { value: solid.slice(), writable: true, configurable: true },
+      _platformIndex: { value: new Set(platform), writable: true, configurable: true },
+      _platformIndexSnapshot: { value: platform.slice(), writable: true, configurable: true }
+    });
+    return map;
   }
 
   /**
@@ -205,7 +213,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (row < 0 || row >= map.rows.length) return false;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return false;
-    return map.solid.indexOf(r[col]) !== -1;
+    return map._solidIndex.has(r[col]);
   }
   /** Verdadeiro se a célula é uma PLATAFORMA (one-way). */
   function isPlatformCell(map, col, row) {
@@ -213,7 +221,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (row < 0 || row >= map.rows.length) return false;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return false;
-    return map.platform.indexOf(r[col]) !== -1;
+    return map._platformIndex.has(r[col]);
   }
   /** Índice do tile no PIXEL (px,py) do canvas (alinhado a onde o mapa foi desenhado); -1 fora/vazio. */
   function tileAt(map, x, y) {
@@ -320,6 +328,44 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     var c1 = Math.min(colsN - 1, Math.floor((sprite.x + sprite.w - 1 - ox) / t));
     var r0 = Math.max(0, Math.floor((sprite.y - oy) / t));
     var r1 = Math.min(rowsN - 1, Math.floor((sprite.y + sprite.h - 1 - oy) / t));
+    // solid/platform continuam arrays públicos. Como o modo código pode
+    // alterá-los em lugar, comparamos cada lista com seu snapshot antes de
+    // reutilizar o Set. O laço tem exatamente as duas famílias do contrato.
+    for (var indexKind = 0; indexKind < 2; indexKind++) {
+      var values = indexKind === 0 ? map.solid : map.platform;
+      var snapshot = indexKind === 0 ? map._solidIndexSnapshot : map._platformIndexSnapshot;
+      var index = indexKind === 0 ? map._solidIndex : map._platformIndex;
+      var indexChanged = !index || !snapshot || snapshot.length !== values.length;
+      if (!indexChanged) {
+        for (var indexI = 0; indexI < values.length; indexI++) {
+          var bothNaN = snapshot[indexI] !== snapshot[indexI] && values[indexI] !== values[indexI];
+          if ((indexI in snapshot) !== (indexI in values) ||
+              (!bothNaN && snapshot[indexI] !== values[indexI])) {
+            indexChanged = true;
+            break;
+          }
+        }
+      }
+      if (indexChanged) {
+        index = new Set();
+        for (var valueI = 0; valueI < values.length; valueI++) {
+          // Array.indexOf ignora lacunas e nunca encontra NaN. O índice mantém
+          // essa semântica para listas alteradas manualmente.
+          if (valueI in values && values[valueI] === values[valueI]) index.add(values[valueI]);
+        }
+        if (indexKind === 0) {
+          Object.defineProperties(map, {
+            _solidIndex: { value: index, writable: true, configurable: true },
+            _solidIndexSnapshot: { value: values.slice(), writable: true, configurable: true }
+          });
+        } else {
+          Object.defineProperties(map, {
+            _platformIndex: { value: index, writable: true, configurable: true },
+            _platformIndexSnapshot: { value: values.slice(), writable: true, configurable: true }
+          });
+        }
+      }
+    }
     var gravity = world.gravity;
     var pullsUp = _gravityPullsUp(gravity);
     var vy = _finiteNumber(sprite.vy, 0);

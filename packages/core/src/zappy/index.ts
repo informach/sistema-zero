@@ -8,6 +8,17 @@ export const ZAPPY_SOURCE_CONTENT_MAX_BYTES = 480 * 1024
  */
 export const ZAPPY_SOURCE_REQUEST_MAX_BYTES = 2 * 1024 * 1024
 
+/** Máximo aceito pelo caso de uso por página; reduz round-trips do backfill administrativo. */
+export const ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE = 25
+
+/** Contrato compartilhado entre o orquestrador Admin e o gateway. */
+export const ZAPPY_KNOWLEDGE_BACKFILL_RATE_LIMIT_PER_MINUTE = 60
+
+/** Reserva uma chamada da janela para tolerar jitter do relógio/rede. */
+export const ZAPPY_KNOWLEDGE_BACKFILL_MIN_INTERVAL_MS = Math.ceil(
+  60_000 / (ZAPPY_KNOWLEDGE_BACKFILL_RATE_LIMIT_PER_MINUTE - 1),
+)
+
 export function zappySourceContentBytes(value: string): number {
   return new TextEncoder().encode(value).byteLength
 }

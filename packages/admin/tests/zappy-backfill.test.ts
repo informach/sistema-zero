@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE } from '@sistemazero/core/zappy'
 
 mock.module('server-only', () => ({}))
 
@@ -97,6 +98,6 @@ describe('backfill do conhecimento do Zappy', () => {
 
     await backfillZappyKnowledge({ cursor })
 
-    expect(backfillRequests).toEqual([{ cursor, limit: 3 }])
+    expect(backfillRequests).toEqual([{ cursor, limit: ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE }])
   })
 })

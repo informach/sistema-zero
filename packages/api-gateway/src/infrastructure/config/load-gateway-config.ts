@@ -100,6 +100,26 @@ function validateReferences(
         )
       }
     }
+    if (route.rateLimit?.by === 'json-field') {
+      const hmacAuthenticated =
+        route.auth !== 'public' &&
+        route.auth.required &&
+        route.auth.strategies.includes('hmac') &&
+        (route.auth.mode === 'all' || route.auth.strategies.length === 1)
+      if (!hmacAuthenticated) {
+        problems.push(
+          `rota "${route.id}": rateLimit by=json-field exige corpo autenticado por HMAC`,
+        )
+      }
+      const methodsWithoutBody = route.methods.filter(
+        (method) => !['POST', 'PUT', 'PATCH'].includes(method),
+      )
+      if (methodsWithoutBody.length > 0) {
+        problems.push(
+          `rota "${route.id}": rateLimit by=json-field exige método com corpo; inválidos: ${methodsWithoutBody.join(', ')}`,
+        )
+      }
+    }
     if (route.auth !== 'public' && route.auth.strategies.includes('jwt')) usesJwt = true
     if (route.upstreamAuth === 'resign') usesResign = true
   }

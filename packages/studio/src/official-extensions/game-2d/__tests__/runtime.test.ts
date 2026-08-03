@@ -1543,13 +1543,21 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     vy?: number
   }
   interface TileApi {
-    createTileMap: (o: { image?: string; tile?: number; solid?: string; grid?: string }) => {
+    createTileMap: (o: {
+      image?: string
+      tile?: number
+      solid?: string
+      platform?: string
+      grid?: string
+    }) => {
       tile: number
       draw: number
       rows: number[][]
       solid: number[]
+      platform: number[]
       ox: number
       oy: number
+      _drawn?: boolean
     }
     drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size?: number) => void
     collideTileMap: (sprite: TileSprite, map: unknown) => void
@@ -1605,6 +1613,8 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
       [-1, 1, -1],
     ])
     expect(map.solid).toEqual([1])
+    expect(Object.keys(map)).not.toContain('_solidIndex')
+    expect(Object.keys(map)).not.toContain('_platformIndex')
   })
 
   it('createTileMap limita grades e listas manuais grandes com aviso único', () => {
@@ -1732,6 +1742,48 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(sprite.x).toBe(10)
     expect(sprite.y).toBe(10)
     expect(sprite.vy).toBe(5)
+  })
+
+  it('collideTileMap consulta a lista de sólidos uma vez por varredura, não por célula', () => {
+    const api = load()
+    const size = 32
+    const row = Array.from({ length: size }, () => String(size - 1)).join(' ')
+    const grid = Array.from({ length: size }, () => row).join(';')
+    const solid = Array.from({ length: size }, (_, index) => String(index)).join(' ')
+    const map = api.createTileMap({ image: '', tile: 1, solid, grid })
+    map._drawn = true
+    let solidReads = 0
+
+    map.solid = new Proxy(map.solid, {
+      get(target, property, receiver) {
+        if (typeof property === 'string' && /^\d+$/.test(property)) solidReads += 1
+        return Reflect.get(target, property, receiver)
+      },
+    })
+
+    api.collideTileMap({ x: 0, y: 0, w: size, h: size, vx: 0, vy: 0 }, map)
+
+    expect(solidReads).toBeLessThanOrEqual(size * 2)
+  })
+
+  it('reindexa listas públicas alteradas no modo código', () => {
+    const api = load()
+    const map = api.createTileMap({ image: '', tile: 32, solid: '1', platform: '', grid: '.;1' })
+    map._drawn = true
+
+    const solidCollision: TileSprite = { x: 4, y: 20, w: 16, h: 20, vx: 0, vy: 8 }
+    api.collideTileMap(solidCollision, map)
+    expect(solidCollision.y).toBe(12)
+
+    map.solid[0] = 2
+    const freePassage: TileSprite = { x: 4, y: 20, w: 16, h: 20, vx: 0, vy: 8 }
+    api.collideTileMap(freePassage, map)
+    expect(freePassage.y).toBe(20)
+
+    map.platform.push(1)
+    const platformLanding: TileSprite = { x: 4, y: 20, w: 16, h: 20, vx: 0, vy: 8 }
+    api.collideTileMap(platformLanding, map)
+    expect(platformLanding.y).toBe(12)
   })
 
   it('collideTileMap termina com geometria não finita e limita a busca ao mapa real', async () => {

@@ -376,6 +376,12 @@ nos desenhos vindos daqui e o desenho salvo **se atualiza sozinho nos jogos**.
 - ⚠️ **Quem decide se há o que atualizar é o HOST**, não o Pinta: o `pinta-client` do kids só reemite
   quando `getPersonalAsset(id)` já existe. Sem essa guarda, todo rascunho cairia na biblioteca do
   Estúdio sozinho e o "Usar no Estúdio" deixaria de ser a decisão explícita que é.
+- ⚠️ **Sair do editor NÃO pode engolir o reenvio** (full review 02/08): a limpeza do efeito do
+  debounce roda a cada TRAÇO (o `asset` muda), então flushar ali furaria a espera — mas só cancelar
+  significava que dar um traço e clicar em "voltar" antes de 1,5s nunca chegava ao Estúdio. Fix:
+  `resyncPendingRef` + um efeito `[]` que flusha no DESMONTE (espelha o flush do autosave). O ref
+  "versão mais nova" (`resyncRef`) é atribuído num efeito, não durante o render (render descartado
+  pelo React concorrente não pode virar o disparo).
 
 O outro lado (sincronia para dentro dos projetos, o botão, o marcador cross-aba) vive no studio —
 ver `packages/studio/CLAUDE.md` §"Editar o desenho".

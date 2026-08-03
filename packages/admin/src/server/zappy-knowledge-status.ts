@@ -1,4 +1,19 @@
+import { after } from 'next/server'
 import type { GatewayResponse } from './gateway'
+
+/** Agenda trabalho dependente da mutação sem atrasar a resposta de autoria. */
+export function scheduleZappyKnowledgeWork(
+  work: () => Promise<void>,
+  failureMessage: string,
+): void {
+  after(async () => {
+    try {
+      await work()
+    } catch (error) {
+      console.error(failureMessage, { error })
+    }
+  })
+}
 
 /** Expõe ao autor quando o bloco foi salvo, mas a reindexação ainda está pendente. */
 export function zappyKnowledgeMutationResult(
