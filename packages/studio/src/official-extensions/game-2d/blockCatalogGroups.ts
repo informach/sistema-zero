@@ -163,7 +163,7 @@ export const gameTwoDGroupAndHudBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa).',
+      'Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo.',
   },
   {
     type: 'sz_g2d_remove_from_group',

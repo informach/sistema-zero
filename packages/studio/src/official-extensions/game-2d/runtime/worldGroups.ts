@@ -306,9 +306,9 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     if (idx !== -1) _removeGroupItemAt(group, idx);
   }
   /**
-   * Remove do grupo os sprites que saíram da tela (com uma margem). Para cada
-   * um que sai, chama onLeave(sprite) — é assim que "asteroide escapou = perde
-   * vida". Roda dentro do "a cada quadro" do aluno; sem RAF próprio.
+   * Remove do grupo os sprites que saíram da tela (com uma margem) E estão indo
+   * embora. Para cada um que sai, chama onLeave(sprite) — é assim que "asteroide
+   * escapou = perde vida". Roda dentro do "a cada quadro" do aluno; sem RAF próprio.
    */
   function pruneOffscreen(ctx, group, margin, onLeave) {
     if (!ctx || !ctx.canvas || !group || !group.items) return;
@@ -318,7 +318,20 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     for (var i = group.items.length - 1; i >= 0; i--) {
       var s = group.items[i];
       if (!s) { _removeGroupItemAt(group, i); continue; }
-      if (s.x + s.w < visible.left - m || s.x > visible.right + m || s.y + s.h < visible.top - m || s.y > visible.bottom + m) {
+      // "Saiu" ≠ "ainda não entrou": numa foto só as duas são IDÊNTICAS (o sprite
+      // está fora da tela nas duas). O que as separa é para ONDE ele vai — então
+      // só descartamos quem está fora E se afastando. Sem isso, obstáculo criado
+      // fora da tela era apagado antes de entrar: com margem 40 num palco de 480 o
+      // limite fica em 520, e o cacto do dino nasce em x 560 (nenhum sobrevivia).
+      // Velocidade ausente conta como PARADO e segue sendo descartada — é o caso
+      // do sprite que a câmera deixou para trás.
+      var vx = _finiteNumber(s.vx, 0), vy = _finiteNumber(s.vy, 0);
+      if (
+        (s.x + s.w < visible.left - m && vx <= 0) ||
+        (s.x > visible.right + m && vx >= 0) ||
+        (s.y + s.h < visible.top - m && vy <= 0) ||
+        (s.y > visible.bottom + m && vy >= 0)
+      ) {
         _removeGroupItemAt(group, i);
         if (typeof onLeave === 'function') {
           _invokeProjectCallback(onLeave, undefined, [s]);
