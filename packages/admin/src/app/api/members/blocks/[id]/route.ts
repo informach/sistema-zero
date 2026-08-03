@@ -2,9 +2,14 @@ import type { BlockView } from '@/lib/types'
 import { forwardUpstream } from '@/server/forward'
 import { deleteBlock, updateBlock } from '@/server/members'
 import { deleteZappyKnowledgeForBlock, syncZappyKnowledgeForBlock } from '@/server/zappy-knowledge'
-import { zappyKnowledgeMutationResult } from '@/server/zappy-knowledge-status'
+import {
+  scheduleZappyKnowledgeWork,
+  zappyKnowledgeMutationResult,
+} from '@/server/zappy-knowledge-status'
 
 type Ctx = { params: Promise<{ id: string }> }
+
+export const maxDuration = 300
 
 export async function PATCH(req: Request, { params }: Ctx) {
   const { id } = await params
@@ -12,10 +17,11 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const { status, body } = await updateBlock(id, json)
   let synced = true
   if (status >= 200 && status < 300) {
-    await syncZappyKnowledgeForBlock(body as BlockView).catch((error) => {
-      synced = false
-      console.error('[zappy-knowledge] falha após atualizar bloco', { error })
-    })
+    synced = false
+    scheduleZappyKnowledgeWork(
+      () => syncZappyKnowledgeForBlock(body as BlockView),
+      '[zappy-knowledge] falha após atualizar bloco',
+    )
   }
   return forwardUpstream(zappyKnowledgeMutationResult({ status, body }, synced))
 }

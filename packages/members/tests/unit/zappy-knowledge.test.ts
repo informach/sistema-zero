@@ -278,6 +278,27 @@ describe('ZappyKnowledgeService', () => {
     expect(saved).toBe(false)
   })
 
+  test('recusa a fonte quando a revisão muda durante a extração', async () => {
+    const service = new ZappyKnowledgeService(
+      repository({
+        upsert: async () => null,
+      }),
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+
+    await expect(
+      service.sync({
+        lessonId: 'lesson-1',
+        sourceType: 'rich-text',
+        sourceRef: 'block:block-1',
+        expectedBlockRevision: 'revision-1',
+        content: 'Conteúdo extraído antes da edição concorrente',
+      }),
+    ).rejects.toThrow(/revisão/i)
+  })
+
   test('backfill delega a reconciliação para o estado autoritativo do banco', async () => {
     let reconciled = 0
     const repo = repository({

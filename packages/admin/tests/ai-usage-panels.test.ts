@@ -60,6 +60,7 @@ describe('runZappyBackfillBatches', () => {
   test('retoma do cursor salvo, agrega progresso e limpa o checkpoint ao concluir', async () => {
     const calls: Array<string | undefined> = []
     const checkpoints: Array<{ cursor: string | null; processed: number }> = []
+    const delays: number[] = []
     const result = await runZappyBackfillBatches({
       initialCursor: 'cursor-salvo',
       step: async (cursor) => {
@@ -83,6 +84,9 @@ describe('runZappyBackfillBatches', () => {
             }
       },
       checkpoint: (cursor, processed) => checkpoints.push({ cursor, processed }),
+      waitBetweenBatches: async (minimumDelayMs) => {
+        delays.push(minimumDelayMs)
+      },
     })
 
     expect(calls).toEqual(['cursor-salvo', 'cursor-2'])
@@ -90,6 +94,8 @@ describe('runZappyBackfillBatches', () => {
       { cursor: 'cursor-2', processed: 2 },
       { cursor: null, processed: 5 },
     ])
+    expect(delays).toEqual([expect.any(Number)])
+    expect(delays[0]).toBeGreaterThanOrEqual(1_000)
     expect(result).toMatchObject({ indexed: 3, deleted: 3, extracted: 1, failed: 1, done: true })
   })
 })

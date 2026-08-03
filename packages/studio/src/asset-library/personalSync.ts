@@ -18,7 +18,7 @@
  * aparece (ver `failures`), senão o jogo ficaria com a arte velha e ela acharia
  * que deu certo.
  */
-import type { ProjectAsset } from '#core'
+import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { listAllProjects, loadProjectAssetsById, persistProjectAssets } from '../state/persistence'
 import type { ProjectStoreApi } from '../state/projectStore'
 import { getPersonalAsset, type PersonalAsset, personalAssetsChangedAt } from './personal'
@@ -66,11 +66,20 @@ export interface DrawingSyncResult {
   failures: string[]
 }
 
-const EMPTY_RESULT: DrawingSyncResult = {
+/** Sempre um objeto NOVO: devolver uma constante compartilhada convidaria o
+ *  chamador a mutar `failures` e contaminar a próxima chamada. */
+const emptyResult = (): DrawingSyncResult => ({
   updatedInOpenProject: 0,
   updatedInOtherProjects: 0,
   failures: [],
-}
+})
+
+/**
+ * Uma varredura por vez. O painel de Imagens e o observador de foco disparam no
+ * MESMO evento quando o painel está aberto; sem isto, os dois varreriam o
+ * IndexedDB inteiro em paralelo (o portão só fecha no FIM da primeira).
+ */
+let inFlight: Promise<DrawingSyncResult> | null = null
 
 /** O id do desenho no Pinta, quando o asset veio de "Meus desenhos". */
 export function personalIdOf(asset: Pick<ProjectAsset, 'libId'>): string | null {
@@ -113,45 +122,24 @@ async function resolveDrawings(
  * Barato no caso comum: se nada mudou desde a última passada desta aba, sai sem
  * tocar no IndexedDB.
  */
-export async function syncDrawingsIntoProjects(
-  storeApi: ProjectStoreApi,
-): Promise<DrawingSyncResult> {
+export function syncDrawingsIntoProjects(storeApi: ProjectStoreApi): Promise<DrawingSyncResult> {
+  if (inFlight) return inFlight
   const changedAt = personalAssetsChangedAt()
-  if (didInitialSweep && changedAt === lastSyncAt) return EMPTY_RESULT
+  if (didInitialSweep && changedAt === lastSyncAt) return Promise.resolve(emptyResult())
+  const run = sweep(storeApi, changedAt)
+  inFlight = run
+  return run.finally(() => {
+    inFlight = null
+  })
+}
 
-  const result: DrawingSyncResult = {
-    updatedInOpenProject: 0,
-    updatedInOtherProjects: 0,
-    failures: [],
-  }
+async function sweep(storeApi: ProjectStoreApi, changedAt: number): Promise<DrawingSyncResult> {
+  const result = emptyResult()
   const drawings = new Map<string, PersonalAsset | null>()
 
   // 1) Projeto ABERTO: pela store, para que preview, miniaturas dos blocos e
   //    autosave sigam o caminho normal de uma edição.
-  const openProject = storeApi.getState().project
-  const openId = openProject?.id ?? null
-  if (openProject?.assets?.length) {
-    await resolveDrawings(openProject.assets, drawings)
-    for (const asset of openProject.assets) {
-      const id = personalIdOf(asset)
-      const drawing = id ? (drawings.get(id) ?? null) : null
-      if (!drawingNeedsSync(asset, drawing) || !drawing) continue
-      const error = storeApi.getState().updateAssetImage(asset.id, {
-        dataUrl: drawing.dataUrl,
-        width: drawing.width,
-        height: drawing.height,
-        sprite: drawing.sprite,
-        tileset: drawing.tileset,
-        tilemap: drawing.tilemap,
-      })
-      if (error) {
-        result.failures.push(error)
-        if (!pendingFailures.includes(error)) pendingFailures.push(error)
-      } else {
-        result.updatedInOpenProject += 1
-      }
-    }
-  }
+  await syncOpenProject(storeApi, drawings, result)
 
   // 2) Demais projetos: só a partição de assets (a lista de projetos lê apenas a
   //    partição leve de metadados, e a de assets só é reescrita quando mudou).
@@ -162,16 +150,35 @@ export async function syncDrawingsIntoProjects(
     summaries = []
   }
   for (const summary of summaries) {
-    if (summary.id === openId) continue
+    // ⚠️ Relido a CADA volta, não capturado antes do laço: a varredura roda logo
+    // que a aba volta ao foco — exatamente quando a criança pode clicar num
+    // jogo. Se ela abrir um projeto no meio da varredura, gravar a partição dele
+    // por fora seria sobrescrito pelo próximo autosave do editor (que ainda tem
+    // a cópia velha em memória) e a atualização se perderia em silêncio.
+    if (storeApi.getState().project?.id === summary.id) continue
     try {
       const assets = await loadProjectAssetsById(summary.id)
       if (assets.length === 0) continue
       await resolveDrawings(assets, drawings)
+      // Orçamento do projeto, igual ao da store: sem isto um desenho que cresceu
+      // podia empurrar o total acima do teto, e o `sanitizeProjectAssets` do
+      // LOAD descarta o que passa — a criança abriria o jogo com imagens
+      // faltando, sem nenhum aviso.
+      let total = assets.reduce((sum, a) => sum + a.dataUrl.length, 0)
       let changed = false
       const next = assets.map((asset) => {
         const id = personalIdOf(asset)
         const drawing = id ? (drawings.get(id) ?? null) : null
         if (!drawingNeedsSync(asset, drawing) || !drawing) return asset
+        const projected = total - asset.dataUrl.length + drawing.dataUrl.length
+        if (projected > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
+          pushFailure(
+            result,
+            `O desenho "${drawing.name}" cresceu e não cabe mais no jogo "${summary.name}".`,
+          )
+          return asset
+        }
+        total = projected
         changed = true
         return mergeDrawingIntoAsset(asset, drawing)
       })
@@ -183,17 +190,52 @@ export async function syncDrawingsIntoProjects(
     }
   }
 
+  // 3) De novo o projeto ABERTO: se ela abriu um jogo NO MEIO da varredura, o
+  //    passo 1 não o viu e o passo 2 o pulou de propósito. Custa quase nada
+  //    (comparação de bytes com os desenhos já lidos).
+  await syncOpenProject(storeApi, drawings, result)
+
   lastSyncAt = changedAt
   didInitialSweep = true
   return result
 }
 
+/** Reconcilia o projeto que está no editor, pela store (caminho de uma edição). */
+async function syncOpenProject(
+  storeApi: ProjectStoreApi,
+  drawings: Map<string, PersonalAsset | null>,
+  result: DrawingSyncResult,
+): Promise<void> {
+  const openProject = storeApi.getState().project
+  if (!openProject?.assets?.length) return
+  await resolveDrawings(openProject.assets, drawings)
+  for (const asset of openProject.assets) {
+    const id = personalIdOf(asset)
+    const drawing = id ? (drawings.get(id) ?? null) : null
+    if (!drawingNeedsSync(asset, drawing) || !drawing) continue
+    const error = storeApi.getState().updateAssetImage(asset.id, {
+      dataUrl: drawing.dataUrl,
+      width: drawing.width,
+      height: drawing.height,
+      sprite: drawing.sprite,
+      tileset: drawing.tileset,
+      tilemap: drawing.tilemap,
+    })
+    if (error) pushFailure(result, error)
+    else result.updatedInOpenProject += 1
+  }
+}
+
+/** Recusa vai para o resultado E para a fila que o painel de Imagens drena. */
+function pushFailure(result: DrawingSyncResult, message: string): void {
+  if (!result.failures.includes(message)) result.failures.push(message)
+  if (!pendingFailures.includes(message)) pendingFailures.push(message)
+}
+
 /**
  * Aplica o desenho novo a um asset de projeto FECHADO. Espelha a regra do
- * `updateAssetImage` da store (mesma decisão sobre geometria/metadados), mas sem
- * o orçamento: aqui não há UI para mostrar a recusa, e recusar em silêncio
- * deixaria a arte velha sem ninguém saber. O projeto fechado costuma ter folga —
- * e o teto real volta a valer assim que ela abrir o jogo e editar.
+ * `updateAssetImage` da store (mesma decisão sobre geometria e metadados); o
+ * orçamento do projeto é checado por quem chama, que conhece o total do arquivo.
  */
 function mergeDrawingIntoAsset(asset: ProjectAsset, drawing: PersonalAsset): ProjectAsset {
   const width = typeof drawing.width === 'number' && drawing.width > 0 ? drawing.width : undefined
@@ -225,4 +267,5 @@ export function resetDrawingSyncClockForTests(): void {
   lastSyncAt = 0
   didInitialSweep = false
   pendingFailures = []
+  inFlight = null
 }

@@ -248,6 +248,58 @@ describe('syncDrawingsIntoProjects', () => {
     expect(reads).toBe(0)
   })
 
+  it('jogo aberto NO MEIO da varredura não perde a atualização', async () => {
+    // A varredura roda quando a aba volta ao foco — o mesmo instante em que a
+    // criança pode clicar num jogo. Se o projeto for aberto depois do 1º passo,
+    // gravar a partição dele por fora seria desfeito pelo autosave do editor.
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const alvo = createEmptyProject('abre-no-meio', 'Jogo Clicado')
+    alvo.assets = [drawingAsset({ id: 'asset-3' })]
+    await persistProject(alvo)
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+
+    // A varredura já começou (o 1º passo não viu projeto nenhum) quando a
+    // criança abre o jogo.
+    const varredura = syncDrawingsIntoProjects(useProjectStore)
+    seedOpenProject([drawingAsset({ id: 'asset-3' })], 'abre-no-meio')
+    await varredura
+
+    // O jogo aberto tem que estar com a arte nova NA MEMÓRIA (é o que o autosave
+    // vai gravar), e não só no disco.
+    expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(PNG_NOVO)
+  })
+
+  it('não estoura a cota de um jogo fechado (o load descartaria as imagens)', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const cheio = createEmptyProject('cheio', 'Jogo Cheio')
+    cheio.assets = [drawingAsset({}), ...fillerAssets()]
+    await persistProject(cheio)
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_ENORME })
+
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOtherProjects).toBe(0)
+    expect(result.failures.join(' ')).toContain('Jogo Cheio')
+    // A imagem velha continua lá — nada foi descartado nem meio-gravado.
+    const assets = await loadProjectAssetsById('cheio')
+    expect(assets.find((a) => a.id === 'asset-1')?.dataUrl).toBe(PNG)
+    expect(assets).toHaveLength(QUASE_CHEIO + 1)
+  })
+
+  it('duas chamadas ao mesmo tempo viram UMA varredura', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+    seedOpenProject([drawingAsset({})])
+    const [a, b] = await Promise.all([
+      syncDrawingsIntoProjects(useProjectStore),
+      syncDrawingsIntoProjects(useProjectStore),
+    ])
+    // A 2ª compartilha o resultado da 1ª (o painel e o observador de foco
+    // disparam no mesmo evento quando o painel está aberto).
+    expect(a).toBe(b)
+    expect(a.updatedInOpenProject).toBe(1)
+  })
+
   it('a recusa fica guardada para o painel mostrar (o sucesso é silencioso)', async () => {
     await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_ENORME })
     seedOpenProject([drawingAsset({}), ...fillerAssets()])

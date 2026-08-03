@@ -218,6 +218,40 @@ describe('loadGatewayConfig', () => {
     expect(cfg.routes[0]?.audit).toEqual({})
   })
 
+  test('rate limit por campo JSON exige que HMAC autentique o corpo', async () => {
+    const route = {
+      id: 'body-rate-limit',
+      methods: ['POST'] as const,
+      pathPattern: '/x',
+      service: 'p',
+      rateLimit: { max: 10, by: 'json-field' as const, field: 'actor.userId' },
+    }
+
+    await expect(
+      loadGatewayConfig(env, {
+        services: { p: service },
+        routes: [
+          {
+            ...route,
+            auth: { required: true, mode: 'any', strategies: ['jwt', 'hmac'] },
+          },
+        ],
+      }),
+    ).rejects.toThrow(/autenticado por HMAC/)
+
+    const cfg = await loadGatewayConfig(env, {
+      consumers: [{ id: 'member-shell', hmacSecret: 'secret-with-16-chars' }],
+      services: { p: service },
+      routes: [
+        {
+          ...route,
+          auth: { required: true, mode: 'any', strategies: ['hmac'] },
+        },
+      ],
+    })
+    expect(cfg.routes[0]?.rateLimit).toMatchObject({ by: 'json-field', field: 'actor.userId' })
+  })
+
   test('produção: rota jwt sem JWT_ISSUER/JWT_AUDIENCE → erro', async () => {
     const prodEnv = loadEnv({
       NODE_ENV: 'production',
@@ -346,5 +380,24 @@ describe('gateway.config.ts (configuração real)', () => {
     })
     expect(byId.has('members-zappy-questions')).toBe(false)
     expect(byId.has('members-zappy-response')).toBe(false)
+  })
+
+  test('rate limit HMAC do Zappy é isolado pelo ator autenticado no corpo', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+
+    for (const id of ['members-internal-zappy-questions', 'members-internal-zappy-response']) {
+      expect(byId.get(id)?.rateLimit).toMatchObject({
+        by: 'json-field',
+        field: 'actor.userId',
+      })
+    }
+  })
+
+  test('backfill usa lotes suficientes para não esgotar o limite com bases pequenas', () => {
+    const route = realConfig.routes.find(
+      (candidate) => candidate.id === 'members-admin-zappy-knowledge-backfill',
+    )
+
+    expect(route?.rateLimit?.max).toBeGreaterThanOrEqual(60)
   })
 })

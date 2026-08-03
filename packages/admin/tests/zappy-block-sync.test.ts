@@ -1,4 +1,11 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
+
+const scheduled: Array<() => void | Promise<void>> = []
+const actualNextServer = await import('next/server')
+mock.module('next/server', () => ({
+  ...actualNextServer,
+  after: (callback: () => void | Promise<void>) => scheduled.push(callback),
+}))
 
 // mock.module NÃO é isolado por arquivo (e no Linux/CI a chave de path casa entre
 // arquivos, ao contrário do Windows) — um stub INCOMPLETO de '@/server/zappy-knowledge'
@@ -7,6 +14,8 @@ import { describe, expect, mock, test } from 'bun:test'
 // sobrescrevemos só o que este teste precisa, para o vazamento ser inócuo.
 mock.module('server-only', () => ({}))
 const actualZappyKnowledge = await import('@/server/zappy-knowledge')
+
+let syncCalls = 0
 
 mock.module('@/server/members', () => ({
   updateBlock: async () => ({
@@ -18,11 +27,21 @@ mock.module('@/server/members', () => ({
       content: { kind: 'rich_text' },
     },
   }),
+  createBlock: async () => ({
+    status: 201,
+    body: {
+      id: 'block-created',
+      lessonId: 'lesson-1',
+      blockRevision: 'revision-created',
+      content: { kind: 'video' },
+    },
+  }),
   deleteBlock: async () => ({ status: 200, body: { ok: true } }),
 }))
 mock.module('@/server/zappy-knowledge', () => ({
   ...actualZappyKnowledge,
   syncZappyKnowledgeForBlock: async () => {
+    syncCalls += 1
     throw new Error('index indisponível')
   },
   deleteZappyKnowledgeForBlock: async () => undefined,
@@ -33,9 +52,15 @@ mock.module('@/server/forward', () => ({
 }))
 
 const { PATCH } = await import('../src/app/api/members/blocks/[id]/route')
+const { POST } = await import('../src/app/api/members/lessons/[id]/blocks/route')
+
+beforeEach(() => {
+  scheduled.length = 0
+  syncCalls = 0
+})
 
 describe('sincronização do conhecimento após autoria', () => {
-  test('expõe estado pendente sem fingir que a indexação terminou', async () => {
+  test('atualização responde como pendente antes de iniciar a extração', async () => {
     const response = await PATCH(
       new Request('https://admin.test/api/members/blocks/block-1', {
         method: 'PATCH',
@@ -46,5 +71,25 @@ describe('sincronização do conhecimento após autoria', () => {
 
     expect(response.status).toBe(202)
     expect(await response.json()).toMatchObject({ zappyKnowledgeStatus: 'pending' })
+    expect(syncCalls).toBe(0)
+    expect(scheduled).toHaveLength(1)
+
+    await expect(scheduled[0]?.()).resolves.toBeUndefined()
+    expect(syncCalls).toBe(1)
+  })
+
+  test('criação também retira a extração pesada do caminho da resposta', async () => {
+    const response = await POST(
+      new Request('https://admin.test/api/members/lessons/lesson-1/blocks', {
+        method: 'POST',
+        body: JSON.stringify({ content: { kind: 'video' } }),
+      }),
+      { params: Promise.resolve({ id: 'lesson-1' }) },
+    )
+
+    expect(response.status).toBe(202)
+    expect(await response.json()).toMatchObject({ zappyKnowledgeStatus: 'pending' })
+    expect(syncCalls).toBe(0)
+    expect(scheduled).toHaveLength(1)
   })
 })

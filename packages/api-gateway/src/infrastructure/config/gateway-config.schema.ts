@@ -53,11 +53,24 @@ export const authorizePolicySchema = z.object({
   scopes: z.array(z.string()).optional(),
 })
 
-export const rateLimitRuleSchema = z.object({
-  max: z.number().int().positive(),
-  windowMs: z.number().int().positive().default(60_000),
-  by: z.enum(['principal', 'ip']).default('principal'),
-})
+export const rateLimitRuleSchema = z
+  .object({
+    max: z.number().int().positive(),
+    windowMs: z.number().int().positive().default(60_000),
+    by: z.enum(['principal', 'ip', 'json-field']).default('principal'),
+    field: z
+      .string()
+      .regex(/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/)
+      .optional(),
+  })
+  .superRefine((rule, ctx) => {
+    if (rule.by === 'json-field' && !rule.field) {
+      ctx.addIssue({ code: 'custom', path: ['field'], message: 'field é obrigatório' })
+    }
+    if (rule.by !== 'json-field' && rule.field) {
+      ctx.addIssue({ code: 'custom', path: ['field'], message: 'field exige by=json-field' })
+    }
+  })
 
 export const stickyConfigSchema = z.object({
   // Origem da chave de afinidade: IP do cliente, principal autenticado ou um header.

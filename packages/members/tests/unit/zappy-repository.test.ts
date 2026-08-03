@@ -4,7 +4,10 @@ import {
   zappyMetricsPeriod,
   zappyReservationReclaimable,
 } from '../../src/infrastructure/persistence/drizzle/zappy.repository'
-import { zappyKnowledgeSourceUnchanged } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
+import {
+  effectiveZappyKnowledgeStatus,
+  zappyKnowledgeSourceUnchanged,
+} from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
 
 describe('DrizzleZappyRepository', () => {
   test('codifica os dois limites da janela de métricas como timestamp', () => {
@@ -78,5 +81,25 @@ describe('DrizzleZappyKnowledgeRepository', () => {
         input,
       ),
     ).toBe(true)
+  })
+
+  test('fonte invalidada pela migração aparece como pendente no relatório', () => {
+    expect(
+      effectiveZappyKnowledgeStatus({
+        status: 'pending',
+        blockRevision: null,
+        authoritativeBlockRevision: 'revision-current',
+      }),
+    ).toBe('pending')
+  })
+
+  test('fonte de revisão antiga nunca conta como pronta no relatório', () => {
+    expect(
+      effectiveZappyKnowledgeStatus({
+        status: 'ready',
+        blockRevision: 'revision-old',
+        authoritativeBlockRevision: 'revision-current',
+      }),
+    ).toBe('pending')
   })
 })

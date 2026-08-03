@@ -71,7 +71,8 @@ export interface ZappyKnowledgeReport {
 
 export interface ZappyKnowledgeRepository {
   blockAuthorityForSource(sourceRef: string): Promise<ZappyBlockSourceAuthority | null>
-  upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean }>
+  /** Retorna null quando a revisão deixou de ser autoritativa antes da escrita atômica. */
+  upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean } | null>
   deleteByRef(sourceRef: string): Promise<void>
   search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]>
   listPublishedKidsBlocks(input?: {

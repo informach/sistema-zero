@@ -1,3 +1,4 @@
+import { ZAPPY_KNOWLEDGE_BACKFILL_MIN_INTERVAL_MS } from '@sistemazero/core/zappy'
 import type { AiUsageStatsView } from './types'
 
 export interface ZappyMetricsView {
@@ -56,6 +57,7 @@ export async function runZappyBackfillBatches(input: {
   initialCursor?: string
   step(cursor?: string): Promise<ZappyBackfillSummary>
   checkpoint(cursor: string | null, processed: number): void
+  waitBetweenBatches?(minimumDelayMs: number): Promise<void>
 }): Promise<ZappyBackfillSummary> {
   let cursor = input.initialCursor
   const seen = new Set(cursor ? [cursor] : [])
@@ -86,6 +88,11 @@ export async function runZappyBackfillBatches(input: {
     cursor = batch.nextCursor
     seen.add(cursor)
     input.checkpoint(cursor, processed)
+    await (input.waitBetweenBatches
+      ? input.waitBetweenBatches(ZAPPY_KNOWLEDGE_BACKFILL_MIN_INTERVAL_MS)
+      : new Promise<void>((resolve) =>
+          setTimeout(resolve, ZAPPY_KNOWLEDGE_BACKFILL_MIN_INTERVAL_MS),
+        ))
   }
   return total
 }

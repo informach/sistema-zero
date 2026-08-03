@@ -1,5 +1,6 @@
 import 'server-only'
 import {
+  ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE,
   ZAPPY_SOURCE_CONTENT_MAX_BYTES,
   zappySourceContentBytes,
   zappyVimeoVideoId,
@@ -212,8 +213,6 @@ export function getZappyMetrics(month: string): Promise<GatewayResponse<unknown>
   return gatewayFetch('/members/admin/zappy/metrics', { query: { month } })
 }
 
-const BACKFILL_BATCH_SIZE = 3
-
 export async function backfillZappyKnowledge(
   input: { cursor?: string } = {},
 ): Promise<GatewayResponse<unknown>> {
@@ -225,7 +224,10 @@ export async function backfillZappyKnowledge(
     done: boolean
   }>('/members/admin/zappy/knowledge/backfill', {
     method: 'POST',
-    body: { ...(input.cursor ? { cursor: input.cursor } : {}), limit: BACKFILL_BATCH_SIZE },
+    body: {
+      ...(input.cursor ? { cursor: input.cursor } : {}),
+      limit: ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE,
+    },
   })
   if (result.status !== 200 || !result.body) return result
   let cursor = 0

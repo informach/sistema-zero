@@ -69,6 +69,36 @@ beforeEach(() => {
 afterEach(() => cleanup())
 
 describe('ZappyPanel', () => {
+  it('não envia pergunta antes de concluir o carregamento inicial do histórico', async () => {
+    const history = deferred<Awaited<ReturnType<StudioTutorAdapter['loadHistory']>>>()
+    let asked = 0
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => history.promise,
+      deleteHistory: async () => undefined,
+      ask: async () => {
+        asked += 1
+        return response()
+      },
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+    expect(asked).toBe(0)
+
+    await act(async () => {
+      history.resolve({ messages: [], nextCursor: null })
+      await history.promise
+    })
+    fireEvent.submit(form)
+    await waitFor(() => expect(asked).toBe(1))
+  })
+
   it('reutiliza o clientMessageId quando a mesma tentativa é reenviada', async () => {
     const ids: string[] = []
     const adapter: StudioTutorAdapter = {

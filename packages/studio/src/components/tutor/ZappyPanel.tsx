@@ -162,7 +162,9 @@ export function ZappyPanel(): JSX.Element | null {
   }, [open, cooldownUntil, now])
 
   const cooldownSeconds = Math.max(0, Math.ceil((cooldownUntil - now) / 1_000))
-  const canAsk = Boolean(question.trim() && !busy && cooldownSeconds === 0 && project && config)
+  const canAsk = Boolean(
+    question.trim() && !loading && !busy && cooldownSeconds === 0 && project && config,
+  )
 
   const handleAsk = async (event: FormEvent) => {
     event.preventDefault()

@@ -330,7 +330,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   // cada commit), NÃO o autosave: a biblioteca pessoal é outra store, e esperar
   // o disco só atrasaria. Quem decide se há o que atualizar é o HOST.
   const resyncRef = useRef<(() => Promise<void>) | null>(null)
-  resyncRef.current = async () => {
+  const doResync = async (): Promise<void> => {
     if (!adapter.resyncToStudio) return
     const payload = await exportForStudio().catch(() => null)
     if (!payload || payload.dataUrl.length > 800_000) return
@@ -352,12 +352,19 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       // fail-soft: a sincronia do Estúdio ainda reconcilia no próximo foco.
     }
   }
+  // Ref de "versão mais nova" atualizado no COMMIT (não durante o render, que
+  // pode ser descartado): o disparo é sempre com o desenho que está na tela.
+  useEffect(() => {
+    resyncRef.current = doResync
+  })
 
   // Abrir um desenho não reenvia nada: só EDITAR. A trava compara a IDENTIDADE
   // do asset (não um booleano "já montei"): em StrictMode o React monta, limpa e
   // monta de novo, e um booleano deixaria a 2ª montagem passar — o desenho era
   // reenviado só por ter sido ABERTO (visto no playground).
   const lastSeenAssetRef = useRef(asset)
+  /** Há edição esperando o reenvio? (o que ainda não foi levado ao Estúdio). */
+  const resyncPendingRef = useRef(false)
 
   // O gatilho é a IDENTIDADE de `asset` (cada edição commita um objeto novo); o
   // reenvio em si sai do ref acima, sempre atual.
@@ -365,8 +372,12 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
     if (!adapter.resyncToStudio) return
     if (asset === lastSeenAssetRef.current) return
     lastSeenAssetRef.current = asset
+    resyncPendingRef.current = true
     setResynced(false)
-    const run = () => void resyncRef.current?.()
+    const run = () => {
+      resyncPendingRef.current = false
+      void resyncRef.current?.()
+    }
     const timer = setTimeout(run, RESYNC_IDLE_MS)
     const onHidden = () => {
       if (!document.hidden) return
@@ -376,11 +387,26 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
     document.addEventListener('visibilitychange', onHidden)
     window.addEventListener('pagehide', run)
     return () => {
+      // Só cancela o relógio: a limpeza roda a cada TRAÇO (o `asset` muda), então
+      // reenviar aqui furaria a espera. Quem cobre a saída do editor é o efeito
+      // de desmonte abaixo.
       clearTimeout(timer)
       document.removeEventListener('visibilitychange', onHidden)
       window.removeEventListener('pagehide', run)
     }
   }, [asset, adapter.resyncToStudio])
+
+  // Sair do editor com um traço recém-dado NÃO pode engolir o reenvio: a limpeza
+  // acima cancela o relógio, e sem isto o desenho só chegaria ao Estúdio na
+  // próxima vez que ela editasse — justamente o trabalho manual que a ponte
+  // veio remover. Espelha o flush do autosave no `EditorScreen`.
+  useEffect(() => {
+    return () => {
+      if (!resyncPendingRef.current) return
+      resyncPendingRef.current = false
+      void resyncRef.current?.()
+    }
+  }, [])
 
   /** "Jogar meu mapa": envia o mapa p/ virar um JOGO pronto no Estúdio. */
   async function handlePlayMap(): Promise<void> {
