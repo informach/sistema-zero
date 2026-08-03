@@ -1,4 +1,4 @@
-ALTER TABLE "members"."lesson_blocks" ADD COLUMN "content_revision" varchar(32) DEFAULT md5(random()::text || clock_timestamp()::text) NOT NULL;
+ALTER TABLE "members"."lesson_blocks" ADD COLUMN IF NOT EXISTS "content_revision" varchar(32) DEFAULT md5(random()::text || clock_timestamp()::text) NOT NULL;
 --> statement-breakpoint
 -- Fontes anteriores não carregavam a revisão esperada durante a extração. Elas
 -- não podem ser promovidas para o novo contrato por inferência: o backfill

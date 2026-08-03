@@ -50,16 +50,23 @@ const INERT: LessonChromeContextValue = {
 }
 
 /**
- * `true` quando a viewport tem ao menos `minWidthPx`. SSR-safe (init lazy guarda
- * `typeof window` → `false` no servidor; reage a `change`). Espelha o
- * `useIsDesktop` do member-shell, mas parametrizado — precisamos de DOIS limiares
- * (768 p/ o menu, 1024 p/ a lista de aulas).
+ * `true` quando a viewport tem ao menos `minWidthPx`. Espelha o `useIsDesktop` do
+ * member-shell, mas parametrizado — precisamos de DOIS limiares (768 p/ o menu,
+ * 1024 p/ a lista de aulas).
+ *
+ * ⚠️ Começa `false` TAMBÉM no cliente, de propósito. Ler o `matchMedia` no
+ * inicializador não quebra o SSR, mas quebra a HIDRATAÇÃO: o servidor renderiza
+ * com `false` e o 1º render do cliente (o que o React compara) já vinha `true`
+ * num desktop — e o `FocusModeToggle` faz `if (!available) return null`, então o
+ * HTML do servidor saía SEM os botões e o do cliente COM eles. Isso é o React
+ * #418 ("the server rendered HTML didn't match the client") que aparecia no
+ * console de toda página de aula. O efeito abaixo aplica o valor real logo após
+ * a montagem — mesma escolha já feita para as preferências salvas (ver o
+ * comentário do `navHidden`/`outlineHidden`).
  */
 function useMinWidth(minWidthPx: number): boolean {
   const query = `(min-width: ${minWidthPx}px)`
-  const [matches, setMatches] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia(query).matches,
-  )
+  const [matches, setMatches] = useState(false)
   useEffect(() => {
     const mq = window.matchMedia(query)
     const onChange = () => setMatches(mq.matches)
