@@ -216,6 +216,27 @@ export function creatorCareerLevel(slug: string | null | undefined): CreatorCare
   return LEVEL_BY_SLUG.get(slug as CareerLevelSlug) ?? CREATOR_CAREER_LEVELS[0]!
 }
 
+/**
+ * O aluno já chegou (ou passou) do degrau `min`? Compara a POSIÇÃO na escada —
+ * `CAREER_LEVEL_SLUGS` é a ordem canônica, então acrescentar um degrau no meio
+ * reordena esta comparação junto, sem tocar em quem a consome.
+ *
+ * ⚠️ Distinta de `meetsCareerLevel`, que responde outra pergunta: aquela cruza os
+ * SLOTS de curso concluídos com os exigidos por um nível (é como o nível é
+ * DERIVADO). Esta compara dois slugs já resolvidos, que é o que um portão de
+ * produto precisa.
+ *
+ * Slug ausente/desconhecido cai no 1º degrau — **fail-closed**: dado ruim ou
+ * gamificação fora do ar nunca DESTRAVA nada. Quem não pode rebaixar o aluno em
+ * cima de uma falha transitória (portão de produto pago) deve checar a
+ * indisponibilidade ANTES de chamar, em vez de tratar `false` como "não tem nível".
+ */
+export function careerLevelAtLeast(slug: string | null | undefined, min: CareerLevelSlug): boolean {
+  const current = CAREER_LEVEL_SLUGS.indexOf(slug as CareerLevelSlug)
+  if (current < 0) return false
+  return current >= CAREER_LEVEL_SLUGS.indexOf(min)
+}
+
 export type QualifiedCareerSlots = Readonly<Partial<Record<CareerCourseTier, readonly number[]>>>
 
 function slotSet(slots: QualifiedCareerSlots, tier: CareerCourseTier): ReadonlySet<number> {

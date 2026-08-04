@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  CAREER_LEVEL_SLUGS,
   CAREER_SLOT_MAX,
   CREATOR_CAREER_LEVELS,
+  careerLevelAtLeast,
   computeCareerLevelSlug,
   creatorCareerLevel,
   meetsCareerLevel,
@@ -141,5 +143,37 @@ describe('catálogo da Carreira do Criador', () => {
       locked: true,
       reason: 'future-tier',
     })
+  })
+})
+
+describe('careerLevelAtLeast', () => {
+  test('compara pela POSIÇÃO na escada, não por igualdade de slug', () => {
+    // Inventor(a) = `hacker`, 3º degrau — a barra dos apps criativos.
+    expect(careerLevelAtLeast('hacker', 'hacker')).toBe(true)
+    expect(careerLevelAtLeast('explorer', 'hacker')).toBe(true)
+    expect(careerLevelAtLeast('god', 'hacker')).toBe(true)
+    expect(careerLevelAtLeast('coder', 'hacker')).toBe(false)
+    expect(careerLevelAtLeast('noob', 'hacker')).toBe(false)
+  })
+
+  test('fail-closed: slug ausente, vazio ou desconhecido NÃO destrava', () => {
+    // Gamificação fora do ar chega aqui como undefined; destravar seria dar a
+    // ferramenta a quem não conquistou. Quem não pode REBAIXAR o aluno numa
+    // falha transitória trata a indisponibilidade antes de chamar.
+    for (const bad of [undefined, null, '', 'lenda', 'HACKER', 'inventor']) {
+      expect(careerLevelAtLeast(bad, 'hacker'), String(bad)).toBe(false)
+    }
+  })
+
+  test('todo degrau satisfaz a si mesmo e ao primeiro', () => {
+    for (const slug of CAREER_LEVEL_SLUGS) {
+      expect(careerLevelAtLeast(slug, slug), slug).toBe(true)
+      expect(careerLevelAtLeast(slug, CAREER_LEVEL_SLUGS[0]), slug).toBe(true)
+    }
+    // ...e só a Lenda satisfaz a Lenda.
+    const top = CAREER_LEVEL_SLUGS.at(-1)!
+    for (const slug of CAREER_LEVEL_SLUGS.slice(0, -1)) {
+      expect(careerLevelAtLeast(slug, top), slug).toBe(false)
+    }
   })
 })
