@@ -106,12 +106,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     return scriptTagContent(content, attrs)
   }
   const authorizeDataScript = (code: string): AuthorizedDataScript => {
-    const integrity = scriptIntegrity(code)
-    scriptHashes.add(integrity)
-    return {
-      url: `data:text/javascript;base64,${base64Encode(code)}`,
-      integrity,
-    }
+    // O hash entra na CSP (declara os bytes exatos), mas NÃO vira atributo
+    // `integrity` na tag — ver AuthorizedDataScript.
+    scriptHashes.add(scriptIntegrity(code))
+    return { url: `data:text/javascript;base64,${base64Encode(code)}` }
   }
   const userHtml = input.html.trim()
   const split = splitHtml(userHtml)
@@ -173,7 +171,6 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     (f) => f.language === 'javascript' || f.language === 'typescript',
   )
   const importmap: Record<string, string> = {}
-  const importmapIntegrity: Record<string, string> = {}
   // Módulos ESM de extensões (specifier → URL pinada, ex.: three via CDN).
   for (const [spec, url] of Object.entries(input.extensionImports ?? {})) {
     if (spec && typeof url === 'string') importmap[spec] = url
@@ -181,7 +178,6 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   for (const file of extraJsFiles) {
     const transpiled = transpileExtra(file.name, file.content)
     const asset = authorizeDataScript(instrumentLoops(transpiled))
-    importmapIntegrity[asset.url] = asset.integrity
     for (const key of importmapKeysFor(file.name)) {
       // Skip-on-conflict: o PRIMEIRO specifier (módulo de extensão ou extra
       // anterior, ex.: `utils.ts` vs `utils.js` que ambos mapeiam `./utils`)
@@ -203,12 +199,11 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const importmapTag =
     Object.keys(importmap).length > 0
       ? trustedScriptTag(
-          JSON.stringify({
-            imports: importmap,
-            ...(Object.keys(importmapIntegrity).length > 0
-              ? { integrity: importmapIntegrity }
-              : {}),
-          }).replace(/<\/script/gi, '<\\/script'),
+          // Sem a chave `integrity` do importmap: ela aplicaria SRI aos imports
+          // de módulo das `data:` URLs dos arquivos extras — não-elegíveis, então
+          // o Firefox recusaria (mesma causa do script canônico; ver
+          // AuthorizedDataScript). Atingia justamente quem usa arquivos extras.
+          JSON.stringify({ imports: importmap }).replace(/<\/script/gi, '<\\/script'),
           {
             type: 'importmap',
           },
@@ -260,23 +255,14 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     const tagTail = trustedScriptTag(
       `window.__SZ_USER_JS_TAIL=${JSON.stringify(asset.url.slice(-64))};`,
     )
+    // ⚠️ SEM `integrity`: ver AuthorizedDataScript. Uma `data:` URL não é elegível
+    // para SRI e declarar o atributo faz o Firefox RECUSAR o script.
     if (jsNeedsModule) {
-      userScript = `${tagTail}\n${scriptTag('', {
-        type: 'module',
-        src: asset.url,
-        integrity: asset.integrity,
-      })}`
+      userScript = `${tagTail}\n${scriptTag('', { type: 'module', src: asset.url })}`
     } else if (jsNeedsDeferredClassic) {
-      userScript = `${tagTail}\n${scriptTag('', {
-        defer: '',
-        src: asset.url,
-        integrity: asset.integrity,
-      })}`
+      userScript = `${tagTail}\n${scriptTag('', { defer: '', src: asset.url })}`
     } else {
-      userScript = `${tagTail}\n${scriptTag('', {
-        src: asset.url,
-        integrity: asset.integrity,
-      })}`
+      userScript = `${tagTail}\n${scriptTag('', { src: asset.url })}`
     }
   }
 
@@ -384,9 +370,21 @@ ${userScript}
  * Externalizar um clássico preserva o escopo GLOBAL e a ordem de documento (igual
  * ao caminho do JS canônico); module continua deferido.
  */
+/**
+ * Script do aluno já externalizado para `data:text/javascript;base64,…`.
+ *
+ * ⚠️ NÃO carrega `integrity`, e isso é deliberado: pela especificação de SRI, um
+ * recurso que não é elegível para verificação (uma `data:` URL não é CORS nem
+ * same-origin) mas que MESMO ASSIM declara `integrity` deve FALHAR. O Firefox
+ * aplica a regra e recusava todo script do aluno com
+ * "not eligible for integrity checks"; o Chromium a ignora. O atributo também não
+ * protegia nada aqui — a URL É o conteúdo, não há rede onde adulterar entre
+ * declarar e executar. O hash continua sendo calculado e entrando na CSP, onde
+ * autoriza os scripts INLINE (guardas e bridges), que é onde hash funciona em
+ * qualquer motor; o script externo é autorizado pelo esquema `data:`.
+ */
 interface AuthorizedDataScript {
   url: string
-  integrity: `sha256-${string}`
 }
 
 function instrumentInlineScripts(
@@ -419,7 +417,9 @@ function instrumentInlineScripts(
         .replace(/\s+/g, ' ')
         .trim()
       const typeAttr = isModule ? ' type="module"' : ''
-      return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${asset.url}" integrity="${asset.integrity}"></script>`
+      // Sem `integrity` (ver AuthorizedDataScript); o `keptAttrs` acima já retira
+      // um `integrity` que o aluno tivesse escrito à mão, pelo mesmo motivo.
+      return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${asset.url}"></script>`
     },
   )
 }

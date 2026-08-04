@@ -136,6 +136,15 @@ Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__t
   parecia vivo e **o programa nunca executava**. Era o bug de "no Firefox nada acontece" (relatado
   08/2026). Quem barra script `data:`/`blob:` criado em RUNTIME passou a ser o `scriptSourceGuard`.
   `data:` só entra quando há algo autorizado (sem script ⇒ segue `script-src 'none'`).
+  ⚠️⚠️ **E nenhum recurso `data:` pode declarar `integrity`** — nem a tag `<script src="data:…">`
+  nem a chave `integrity` do **importmap** (as duas existiam e as duas foram removidas). Pela
+  especificação de SRI, recurso NÃO-elegível para verificação (uma `data:` URL não é CORS nem
+  same-origin) que mesmo assim declara `integrity` deve FALHAR; o Firefox aplica
+  ("not eligible for integrity checks"), o Chromium ignora. Foi a **segunda metade** do mesmo bug:
+  liberar `data:` no `script-src` sozinho só trocou o motivo da recusa, e o preview seguiu em
+  branco no Firefox. O atributo também não protegia nada — a URL É o conteúdo. O hash continua
+  calculado e na policy, onde autoriza os scripts INLINE. Travas: `bootstrap.test.ts`
+  ("NENHUM script data: leva `integrity`", cobre tag + importmap).
 - **`scriptSourceGuard.ts`** — fecha o setter IDL `HTMLScriptElement.prototype.src` e
   `setAttribute`/`setAttributeNS` contra `data:`/`blob:`, travando-os (`configurable:false`, idioma do
   `__szLoopTick`). Distingue nosso script do dele SEM allowlist: os scripts autorizados nascem no PARSE
@@ -251,6 +260,18 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   `sandbox="allow-scripts allow-modals allow-pointer-lock"` (NUNCA `allow-same-origin`), autostart. Exportado no index E no
   subpath leve `@sistemazero/studio/player` (sem Monaco/Blockly — importante p/ a página pública não
   carregar o editor inteiro).
+  ⚠️ **O `<iframe>` leva `key={generation}` (08/2026): cada documento novo nasce num ELEMENTO novo**,
+  nunca por reescrita do `srcDoc` de um iframe já montado. Trocar `srcDoc` logo após a montagem faz o
+  navegador DESCARTAR a troca (o primeiro load ainda não se firmou) e o jogo fica preso em
+  "Carregando o jogo…" para sempre. Só aparecia em REMONTAGEM — no Mural, ao ligar/desligar os
+  controles (`public-player.tsx` troca o ramo do ternário, o que desmonta o player) —, porque aí o
+  documento já está memoizado e a troca chega milissegundos depois do mount. Teste:
+  "REMONTADO, chega ao jogo e não fica preso no doc de carregamento".
+  ⚠️ **Pendência conhecida (não corrigida):** alternar os controles no Mural ainda REINICIA a
+  partida, porque `public-player.tsx:161-176` renderiza o `<Player>` em posições diferentes da
+  árvore nos dois estados (e o `MobileGamepad` faz o mesmo entre retrato e paisagem, então girar o
+  aparelho também reinicia). Corrigir exige um contêiner ÚNICO que troque de aparência por CSS —
+  reparentar um `<iframe>` sempre o recarrega, então portal não resolve.
 - **Desafio do mês (Fase 5, 07/2026):** `StudioShareAdapter.challenge?: { key, title }` — presente
   (o host SÓ passa quando a criança possui Clube+Estúdio), o `ShareDialog` mostra o checkbox
   "🏆 Participar do Desafio do mês: {title}" (opt-in explícito, reseta a cada abertura); marcado, o

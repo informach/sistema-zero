@@ -11,8 +11,13 @@
  *   professor libere origens (`fetchAllowedOrigins`); reforçado pelo
  *   permissionGuard em runtime (defesa dupla).
  *
- * Cada script gerado recebe uma fonte SHA-256 exata na policy e, quando é externo
- * (`data:text/javascript;base64,…`), o MESMO hash como `integrity` (SRI).
+ * Cada script gerado recebe uma fonte SHA-256 exata na policy. Nos scripts INLINE
+ * (guardas e bridges) é esse hash que autoriza, e ele funciona em qualquer motor.
+ *
+ * ⚠️ O script EXTERNO (`data:text/javascript;base64,…`) NÃO leva `integrity`: uma
+ * `data:` URL não é elegível para SRI (não é CORS nem same-origin) e declarar o
+ * atributo faz o Firefox RECUSAR o recurso. Quem o autoriza é o esquema `data:`
+ * abaixo. Ver `AuthorizedDataScript` em bootstrap.ts.
  *
  * ⚠️ `script-src` INCLUI o esquema `data:` — e isso NÃO é um descuido. Casar uma
  * fonte de HASH com um script EXTERNO é recurso do CSP nível 3 que só o Chromium
