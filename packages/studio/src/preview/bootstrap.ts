@@ -11,6 +11,7 @@ import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
 import { buildModalGuardRuntime } from './modalGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
 import { scriptIntegrity } from './scriptIntegrity'
+import { buildScriptSourceGuardRuntime } from './scriptSourceGuard'
 import { buildStorageBridgeRuntime } from './storageBridge'
 import { transpileExtra } from './transpile'
 
@@ -282,7 +283,8 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // Camadas de segurança no <head>, em ordem (defesa em profundidade):
   // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
   // loopGuard (runtime do __szLoopTick) → modalGuard (rate-limit de alert/confirm/
-  // prompt) → inputBridge → storageBridge (localStorage shim) → assetsBridge
+  // prompt) → scriptSourceGuard (recusa <script src=data:|blob:> feito em runtime)
+  // → inputBridge → storageBridge (localStorage shim) → assetsBridge
   // (window.__SZGAME_ASSETS) → IMPORTMAP → scripts de extensão (NÃO instrumentados)
   // → estilos → conteúdo do <head> do aluno → corpo → código do aluno. ⚠️ O
   // importmap PRECISA vir antes
@@ -299,6 +301,13 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // enxurrada não travar a aba — sem REMOVER a permissão (`alert` é bloco ensinado,
   // o `allow-modals` continua). Vem DEPOIS do loopGuard e ANTES de extensões/aluno.
   const modalGuardTag = trustedScriptTag(buildModalGuardRuntime())
+  // Guarda de origem de script (1st-party): recusa `<script src="data:|blob:">`
+  // criado EM RUNTIME pelo aluno, que rodaria fora do loopGuard e travaria a aba.
+  // A CSP não barra mais isso sozinha porque `script-src` precisou liberar `data:`
+  // (fora do Chromium, hash não casa com script externo — ver csp.ts). Vem ANTES
+  // do importmap, das extensões e do aluno; os scripts do Studio não passam pelo
+  // setter que ela fecha (o parser do srcdoc escreve o atributo direto).
+  const scriptSourceGuardTag = trustedScriptTag(buildScriptSourceGuardRuntime())
   // Bridge de entrada: window.__szInput (teclado + ponteiro) — sempre presente,
   // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
   // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
@@ -343,6 +352,7 @@ ${interceptorTag}
 ${permissionGuardTag}
 ${loopGuardTag}
 ${modalGuardTag}
+${scriptSourceGuardTag}
 ${inputBridgeTag}
 ${storageBridgeTag}
 ${assetsBridgeTag}

@@ -15,7 +15,11 @@ describe('buildPreviewDoc', () => {
     const scriptPolicy = doc.match(/script-src[^;]*/)?.[0] ?? ''
     expect(scriptPolicy).not.toContain("'unsafe-inline'")
     expect(scriptPolicy).not.toContain("'nonce-")
-    expect(scriptPolicy).not.toMatch(/\bdata:|\bblob:/)
+    // `data:` É esperado (hash não casa com script externo fora do Chromium — ver
+    // csp.ts); `blob:` continua fora, e quem barra `data:` feito em RUNTIME é o
+    // scriptSourceGuard.
+    expect(scriptPolicy).toMatch(/\bdata:/)
+    expect(scriptPolicy).not.toMatch(/\bblob:/)
 
     const inlineScripts = [...doc.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)].filter(
       (match) => !/\bsrc=/i.test(match[1] ?? ''),
@@ -286,16 +290,15 @@ describe('buildPreviewDoc', () => {
     expect(sources).toContain('https://esm.sh/three@0.180.0')
     expect(sources).toContain('https://esm.sh/three@0.180.0/')
     expect(sources).not.toContain('https://esm.sh')
-    expect(scriptSrc).not.toContain(' data:')
     expect(scriptSrc).not.toContain(' blob:')
   })
 
   it('sem módulos de extensão, a CSP não libera origens externas em script-src', () => {
     const doc = buildPreviewDoc({ html: '<body></body>', css: '', js: '' })
     const scriptSrc = doc.match(/script-src[^;]*/)?.[0] ?? ''
-    expect(scriptSrc).toMatch(/^script-src(?: 'sha256-[A-Za-z0-9+/=]+')+$/)
+    // Hashes + `data:` no fim, e NADA mais: nenhuma origem externa entra sozinha.
+    expect(scriptSrc).toMatch(/^script-src(?: 'sha256-[A-Za-z0-9+/=]+')+ data:$/)
     expect(scriptSrc).not.toContain("'unsafe-inline'")
-    expect(scriptSrc).not.toContain('data:')
     expect(scriptSrc).not.toContain('blob:')
   })
 

@@ -121,7 +121,7 @@ memória com `loaded:true` em vez de lançar.
 
 ## Segurança do preview (defesa em camadas — 4º full review)
 
-Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
+Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
 - **`csp.ts`** — CSP interna do srcdoc: libera subrecursos PASSIVOS de `https:` (img/font/media/css/
   frame), mas `script-src` NÃO inclui `https:` genérico. Scripts gerados são autorizados pelo hash
   SHA-256 exato; ESM oficial entra só pela URL declarada e, no `esm.sh`, pelo prefixo do pacote com
@@ -129,6 +129,20 @@ Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__te
   `connect-src 'none'` por default (sem fetch/XHR/WS a menos que o professor libere origens) e
   `worker-src 'none'`. Trade-off aceito: img/media/font/frame de `https:` = GET passivo de mão única
   (sem resposta legível, sem cookies) — NÃO alterar.
+  ⚠️ **`script-src` INCLUI `data:` (08/2026) e isso é obrigatório, não descuido**: todo JS do aluno é
+  externalizado p/ `data:text/javascript;base64,…` e casar fonte de HASH com script EXTERNO é CSP
+  nível 3 que **só o Chromium implementa** (Firefox: bug 1409200, aberto). Sem `data:`, TODO navegador
+  não-Chromium recusava os scripts do aluno em silêncio — guardas e CSS (inline) rodavam, o preview
+  parecia vivo e **o programa nunca executava**. Era o bug de "no Firefox nada acontece" (relatado
+  08/2026). Quem barra script `data:`/`blob:` criado em RUNTIME passou a ser o `scriptSourceGuard`.
+  `data:` só entra quando há algo autorizado (sem script ⇒ segue `script-src 'none'`).
+- **`scriptSourceGuard.ts`** — fecha o setter IDL `HTMLScriptElement.prototype.src` e
+  `setAttribute`/`setAttributeNS` contra `data:`/`blob:`, travando-os (`configurable:false`, idioma do
+  `__szLoopTick`). Distingue nosso script do dele SEM allowlist: os scripts autorizados nascem no PARSE
+  do srcdoc (atributo escrito pelo parser), injeção em runtime passa pelo setter. Assume a promessa
+  anti-travamento que a CSP deixou de dar ao liberar `data:` — agora nos DOIS navegadores. É ergonomia
+  best-effort, não barreira dura (`document.write` fica fora; `innerHTML`/`insertAdjacentHTML` não
+  executam script por especificação).
 - **`loopGuard.ts`** — instrumenta `for/while/do-while/for-of/for-in` (parse Babel + walk AST; clássico
   1º, cai p/ módulo com errorRecovery) injetando `__szLoopTick()`, que estoura um **orçamento contínuo**
   (`budgetMs`, default 4000) reiniciado a cada macrotask. `performance.now()` é capturado/bindado no
@@ -272,8 +286,14 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
    `targetOrigin` (nunca `'*'`); snapshot via `JSON.parse`. `writeGameStorage` roda no MESMO mutex de
    `deleteProject` + cerca de exclusão — um write em voo NÃO ressuscita `sz:game-storage:<id>` órfão.
 9. **Guardas do preview travadas**: `__szLoopTick` é `writable:false/configurable:false` e captura o
-   `performance.now()` no boot; a CSP NÃO libera `script-src https:` nem `connect-src` (só o professor
-   abre origens). Mexeu em segurança de preview? Replique o teste em `src/preview/__tests__`.
+   `performance.now()` no boot; os acessores fechados pelo `scriptSourceGuard` (`script.src`,
+   `setAttribute`/`setAttributeNS`) também são `configurable:false`; a CSP NÃO libera `script-src
+   https:`, `script-src blob:` nem `connect-src` (só o professor abre origens). ⚠️ `script-src data:`
+   É liberado e NÃO deve ser "consertado": sem ele nenhum navegador fora do Chromium executa o código
+   do aluno (bug 1409200 — ver "Segurança do preview"); quem cobre o vetor é o `scriptSourceGuard`.
+   Mexeu em segurança de preview? Replique o teste em `src/preview/__tests__` — e lembre que o
+   `bun test` NÃO enforça CSP: comportamento de policy só se prova em browser real, em **mais de um
+   motor** (o `playwright.config.ts` tem projeto `firefox` justamente por isso).
 10. **`convertToPro` é one-way**; os minificadores SÃO injetáveis (`identityMinifiers` nos testes,
     terser/csso em prod). No `FsDiff`, o conflito arquivo↔diretório sai de `removeFirstPaths` e é
     aplicado RECURSIVAMENTE ANTES de mkdir/write.
@@ -1013,7 +1033,7 @@ Foi um full review com 4 blocos de família nova. A documentação atual do alun
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
 - `bun run typecheck` / `bun run test` / `bun run check`
-- `bun run e2e` — suíte Playwright completa contra o playground (manual); o CI roda o subconjunto `examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"`
+- `bun run e2e` — suíte Playwright completa contra o playground (manual); o CI roda o subconjunto `examples-gallery.spec.ts --project=chromium --grep "game-2d(?:-advanced)?:"`. ⚠️ Há DOIS projetos (`chromium` e `firefox` — o preview já quebrou inteiro fora do Chromium sem ninguém ver; ver "Segurança do preview"): comando de CI PRECISA fixar `--project`, e o Firefox pede `bunx playwright install firefox` uma vez
 
 ## Vitrine de kits + micro-celebração (07/2026)
 
