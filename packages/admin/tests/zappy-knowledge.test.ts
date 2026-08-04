@@ -42,6 +42,20 @@ describe('extração PDF do Zappy em Node', () => {
     )
   })
 
+  test('mantém a aresta estática que leva o worker do PDF.js ao standalone', async () => {
+    // O `pdf.mjs` carrega o worker por import DINÂMICO: o file tracing não vê a
+    // aresta e o arquivo ficava fora da imagem — a extração quebrava SÓ em
+    // produção ("Setting up fake worker failed"), nunca em dev. O import estático
+    // é o que faz o tracer copiar (`outputFileTracingIncludes` NÃO funciona: o
+    // build com Turbopack ignora). Sem esta guarda, apagar a linha volta a ser um
+    // erro que só aparece depois do deploy.
+    const source = await Bun.file(
+      new URL('../src/server/zappy-knowledge.ts', import.meta.url),
+    ).text()
+    expect(source).toContain("import('pdfjs-dist/legacy/build/pdf.worker.mjs')")
+    expect(source).toContain('pdfjsWorker')
+  })
+
   test('extrai texto de um PDF real sem DOMMatrix pré-existente', async () => {
     Reflect.deleteProperty(globalThis, 'DOMMatrix')
 

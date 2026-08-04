@@ -200,7 +200,18 @@
  * `.blocklyEditableField` NÃO alcança rótulos `.blocklyLabelField`, que seguem
  * visíveis) — some o fantasma independentemente do px exato do editor.
  */
-[data-sz-theme] .blocklyEditing .blocklyEditableField text.blocklyText {
+/*
+ * ⚠️ DUAS formas do seletor porque o Blockly põe `blocklyEditing` em lugares
+ * DIFERENTES conforme o campo (`Field.initView`): campo COM caixa (texto comum)
+ * fica com a classe no PRÓPRIO elemento — o mesmo que tem `blocklyEditableField`
+ * —, e campo SEM caixa (socket oval, full-block) põe no BLOCO, onde o campo é
+ * descendente. Só com a forma de descendente, o fantasma sobrevivia em TODO campo
+ * de texto: no "Mostrar tela com título" o Blockly trunca a exibição em ~50 chars
+ * e o <input> mostra o texto inteiro por cima — duas strings sobrepostas, que a
+ * criança vê como letras duplicadas e escorregadas para o lado.
+ */
+[data-sz-theme] .blocklyEditing .blocklyEditableField text.blocklyText,
+[data-sz-theme] .blocklyEditableField.blocklyEditing text.blocklyText {
   fill-opacity: 0;
 }
 

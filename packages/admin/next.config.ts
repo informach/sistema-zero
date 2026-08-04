@@ -92,6 +92,10 @@ const nextConfig: NextConfig = {
   // (O Sentry NÃO usa SDK aqui — fala o protocolo de ingestão via fetch, sem dep
   // externa, justamente p/ não depender do tracing de externos do standalone.)
   serverExternalPackages: ['sharp', 'pdfjs-dist', '@napi-rs/canvas'],
+  // ⚠️ NÃO tente resolver o worker do PDF.js aqui com `outputFileTracingIncludes`:
+  // o build com Turbopack IGNORA essa opção (testado — o arquivo não entra no
+  // standalone). O que funciona é a aresta de import ESTÁTICA no código, como já
+  // é feito com o @napi-rs/canvas — ver `extractPdfText` em server/zappy-knowledge.ts.
   // Pacotes workspace com TS cru (componentes compartilhados + editor embarcável) — transpilar junto.
   transpilePackages: ['@sistemazero/ui', '@sistemazero/studio', '@sistemazero/member-shell'],
   // Security headers em TODAS as respostas (inclui `/api/media/*`, que fica fora
