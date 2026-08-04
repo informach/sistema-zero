@@ -1,4 +1,4 @@
-import { isStudioZappyPilotAllowed } from '@sistemazero/member-shell/server/zappy-access'
+import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
 import { redirect } from 'next/navigation'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
@@ -45,7 +45,7 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
     <StudioProClient
       viewerId={session?.id ?? null}
       projectId={id}
-      zappyEnabled={isStudioZappyPilotAllowed(session)}
+      zappyEnabled={isStudioZappyAllowed(session, gam.body?.level?.slug)}
     />
   )
 }

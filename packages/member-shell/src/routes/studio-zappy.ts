@@ -5,7 +5,7 @@ import { resolveStudioTier } from '../lib/studio-tier'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
-import { isStudioZappyPilotAllowed } from '../server/zappy-access'
+import { isStudioZappyAllowedForRequest } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
   deterministicZappyReply,
@@ -149,7 +149,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await isStudioZappyAllowedForRequest(members, user)))
+        return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
 
@@ -163,7 +164,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await isStudioZappyAllowedForRequest(members, user)))
+        return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
       const result = await members.zappyDeleteHistory(query.projectId)
@@ -177,7 +179,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await isStudioZappyAllowedForRequest(members, user)))
+        return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, QUESTION_BODY_MAX_BYTES)
@@ -342,7 +345,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await isStudioZappyAllowedForRequest(members, user)))
+        return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, FEEDBACK_BODY_MAX_BYTES)

@@ -13,7 +13,7 @@ const {
   normalizeZappySearchQuery,
   validatedStudioZappyResponse,
 } = await import('../src/server/zappy-ai')
-const { isStudioZappyPilotAllowed } = await import('../src/server/zappy-access')
+const { isStudioZappyAllowed } = await import('../src/server/zappy-access')
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
 const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
   '../src/server/zappy-safety'
@@ -32,26 +32,32 @@ const STAFF = {
   status: 'active',
 }
 
-describe('Piloto do Zappy', () => {
-  test('equipe entra para QA mesmo com flag desligada', () => {
-    expect(isStudioZappyPilotAllowed(STAFF, { enabled: false, accountIds: [] })).toBe(true)
+describe('Portão do Zappy (carreira, 08/2026)', () => {
+  const KID = { ...STAFF, role: 'student', activeProfile: { accountId: 'account-1' } }
+
+  test('equipe entra para QA mesmo com o interruptor desligado', () => {
+    // O interruptor existe p/ cortar custo de IA numa emergência; quando ele cai,
+    // a equipe ainda precisa conseguir reproduzir o problema.
+    expect(isStudioZappyAllowed(STAFF, undefined, { enabled: false })).toBe(true)
+    expect(isStudioZappyAllowed(STAFF, 'noob', { enabled: false })).toBe(true)
   })
 
-  test('perfil kids exige flag e a conta ativa na allowlist', () => {
-    const session = {
-      ...STAFF,
-      role: 'student',
-      activeProfile: { accountId: 'account-1' },
-    }
-    expect(isStudioZappyPilotAllowed(session, { enabled: false, accountIds: ['account-1'] })).toBe(
-      false,
-    )
-    expect(isStudioZappyPilotAllowed(session, { enabled: true, accountIds: ['account-2'] })).toBe(
-      false,
-    )
-    expect(isStudioZappyPilotAllowed(session, { enabled: true, accountIds: ['account-1'] })).toBe(
-      true,
-    )
+  test('aluno precisa do interruptor ligado E de Inventor(a) ou acima', () => {
+    // Inventor(a) = `hacker`, 3º degrau. Abaixo dele o tutor não aparece.
+    expect(isStudioZappyAllowed(KID, 'hacker', { enabled: false })).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'coder', { enabled: true })).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'noob', { enabled: true })).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'hacker', { enabled: true })).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'god', { enabled: true })).toBe(true)
+  })
+
+  test('sem sessão, e nível indeterminado NÃO destrava', () => {
+    // `undefined` aqui é gamificação fora do ar. Liberar seria dar a ferramenta a
+    // quem não conquistou; quem não pode rebaixar o aluno numa falha transitória
+    // trata a indisponibilidade ANTES de chamar (é o que as páginas fazem).
+    expect(isStudioZappyAllowed(null, 'god', { enabled: true })).toBe(false)
+    expect(isStudioZappyAllowed(KID, undefined, { enabled: true })).toBe(false)
+    expect(isStudioZappyAllowed(KID, '', { enabled: true })).toBe(false)
   })
 })
 
