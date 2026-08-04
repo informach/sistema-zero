@@ -2,6 +2,7 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import type { MembersClient } from '../server/clients'
+import { hasCreativeAppsLevel } from '../server/creative-apps-access'
 import type { SessionModule } from '../server/session'
 
 export type PensaRoutes = ReturnType<typeof createPensaRoutes>
@@ -108,14 +109,39 @@ const ChecklistToggleBody = z.object({ done: z.boolean() })
 export function createPensaRoutes(deps: { members: MembersClient; session: SessionModule }) {
   const { members, session } = deps
 
-  /** Impersonação (claim `act`) é SOMENTE-LEITURA: suporte não planeja pelo aluno. */
+  /**
+   * Portão de ESCRITA do Pensa: impersonação (claim `act`) é somente-leitura
+   * (suporte não planeja pelo aluno) **e** a carreira precisa estar em
+   * Inventor(a) ou acima (08/2026 — a mesma barra do Zappy e do Pinta).
+   *
+   * A posse do produto continua sendo do members, que é o portão dela.
+   *
+   * ⚠️ Só as ESCRITAS passam por aqui, de propósito. Ler os próprios projetos não
+   * causa dano (quem está abaixo do degrau nem tem o que ler, e a página já não
+   * abre), enquanto cobrar o nível em toda leitura somaria uma ida ao members em
+   * cada chamada de um app conversador. O que precisa ser barrado de verdade —
+   * criar/alterar plano e gastar IA — passa por este guard e pelo `pensa-ai`.
+   */
   async function requireWritableSession(): Promise<NextResponse | null> {
     const user = await session.getSession()
-    if (!user?.act) return null
-    return NextResponse.json(
-      { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
-      { status: 403 },
-    )
+    if (user?.act) {
+      return NextResponse.json(
+        { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
+        { status: 403 },
+      )
+    }
+    if (!(await hasCreativeAppsLevel(members, user?.role))) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'CAREER_LEVEL_REQUIRED',
+            message: 'O Pensa abre quando você chegar no nível Inventor(a).',
+          },
+        },
+        { status: 403 },
+      )
+    }
+    return null
   }
 
   const pensaProjects = {

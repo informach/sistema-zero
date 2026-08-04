@@ -583,8 +583,29 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - Cada pergunta revalida sessão, posse do Estúdio, carreira/modo/extensões e cursos liberados;
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
-- Rollout exige `ZAPPY_ENABLED=true` e a conta em `ZAPPY_PILOT_ACCOUNT_IDS`; equipe ignora o
-  gate para QA. O mesmo gate server-side decide se o host injeta a UI. O nome real não vai ao
-  OpenRouter e o contexto do projeto não é persistido.
+- **Portão por CARREIRA (08/2026 — substituiu o piloto por allowlist).** `server/zappy-access.ts`:
+  equipe sempre; senão `ZAPPY_ENABLED` ligado **E** carreira em **Inventor(a) (`hacker`)** ou acima.
+  `ZAPPY_PILOT_ACCOUNT_IDS` foi REMOVIDA (não escalava e mantinha o Zappy invisível em produção);
+  `ZAPPY_ENABLED` virou **interruptor de emergência, default `true`** — o tutor gasta cota de IA por
+  interação, então derrubá-lo sem deploy tem valor. A equipe passa ANTES do interruptor de propósito
+  (com o Zappy desligado ainda é preciso reproduzir o problema).
+  Duas formas, MESMA regra: `isStudioZappyAllowed(session, levelSlug, policy?)` (síncrona, p/ as
+  páginas, que já resolvem o nível) e **`isStudioZappyAllowedForRequest(members, session)`**
+  (assíncrona, p/ os 4 guards do BFF — o nível não viaja no token, vem do members). ⚠️ Nunca
+  reimplemente a regra no handler: é assim que o portão da UI e o do servidor divergem.
+  O nome real não vai ao OpenRouter e o contexto do projeto não é persistido.
+- **A barra é compartilhada com Pensa e Pinta**: `CREATIVE_APPS_MIN_LEVEL` (`lib/studio-tier.ts` —
+  fica em `lib/` porque as TELAS também a leem p/ nomear o degrau; `server/creative-apps-access.ts`
+  a reexporta) + `meetsCreativeAppsLevel(levelSlug, role)` (síncrona) e
+  `hasCreativeAppsLevel(members, role)` (assíncrona, p/ handlers). Primitivo de ordem:
+  **`careerLevelAtLeast(slug, min)`** no `@sistemazero/core/career` — ⚠️ NÃO confundir com
+  `meetsCareerLevel`, que cruza SLOTS de curso (é como o nível é derivado).
+  **Assimetria deliberada de falha:** nas PÁGINAS, gamificação fora do ar → tela de
+  "indisponível" (rebaixar p/ Faísca tiraria o produto de quem já conquistou o degrau); nos
+  HANDLERS → recusa (fail-closed), porque um handler não tem tela de retry p/ mostrar.
+  No Pensa o portão vive no guard de ESCRITA de `routes/pensa.ts` e nos 2 de `routes/pensa-ai.ts`
+  (403 `CAREER_LEVEL_REQUIRED`); as LEITURAS ficam abertas de propósito — ler os próprios projetos
+  não causa dano e cobrar o nível em toda leitura somaria uma ida ao members por chamada. O Pinta
+  não tem rota de BFF (galeria no IndexedDB), então lá a página é a superfície inteira.
 - Catálogo, manuais, código e base didática são ranqueados por relevância e o prompt total fica em
   até 48 kB. Referências de aula incluem `courseSlug` autoritativo para o host montar a navegação.

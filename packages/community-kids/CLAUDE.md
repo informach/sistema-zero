@@ -281,6 +281,32 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
   mudando por XP de OUTRAS crianças enquanto a tela fica parada — o número do ranking é calculado ao vivo
   no servidor (members `getRanking`), só faltava re-buscar. Sem polling contínuo (custo do cálculo caro).
 
+## Nível mínimo dos apps criativos: Inventor(a) (08/2026)
+
+Zappy do Estúdio, **Pensa** e **Pinta** exigem carreira em **Inventor(a)** (slug `hacker`, 3º dos 8)
+ou acima; equipe passa sempre. A barra vive num lugar só — `CREATIVE_APPS_MIN_LEVEL`
+(`member-shell/src/lib/studio-tier.ts`) — e as telas leem dela o nome do degrau, então mudar a barra
+reescreve a copy junto.
+
+⚠️ **É um portão SOMADO à posse, não um substituto.** Pensa e Pinta continuam sendo produtos
+vendáveis: sem o produto → `KidsLockedPensa`/`KidsLockedPinta` (CTA da assinatura, como sempre);
+COM o produto e abaixo do degrau → **`KidsCareerLockedPensa`/`KidsCareerLockedPinta`**, wrappers do
+novo `kids-career-locked-product.tsx`. ⚠️ **Essa tela NUNCA fala em comprar**: quem a vê já pagou, e
+repetir o CTA da assinatura diria a uma família que ela não comprou o que comprou. O caminho de lá é
+a carreira, então o CTA são os cursos.
+
+**Ordem dos estados nas páginas (não inverter):** members ≠ 200 → indisponível; sem produto →
+bloqueio de compra; **gamificação ≠ 200 → indisponível** (rebaixar p/ Faísca tiraria a ferramenta de
+quem já conquistou o degrau — mesma razão registrada no `/estudio`); abaixo do degrau → trava de
+nível; senão abre.
+
+**Servidor também recusa** (não é gate só de fachada): Pensa nos guards de ESCRITA
+(`routes/pensa.ts`) e nas 2 rotas de IA (`routes/pensa-ai.ts`), com 403 `CAREER_LEVEL_REQUIRED`;
+Zappy nos 4 guards de `routes/studio-zappy.ts`. Leituras do Pensa ficam abertas de propósito (ler os
+próprios projetos não causa dano; cobrar o nível em toda leitura somaria uma ida ao members por
+chamada). O Pinta não tem BFF — a página é a superfície inteira.
+
+
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 
 As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,
@@ -426,10 +452,10 @@ antes de construir no Estúdio: projeto → ciclos "Versão N" → etapas **Z** 
 chat com o Zappy pelas 5 perguntas) / **E** (Enxergar o Jogo) / **R** (Rodar as Missões) /
 **O** (O Grande Lançamento). Item "Pensa" no `nav.ts` (Lightbulb, entre Mural e Pinta — o trio
 criativo Pensa→Pinta→Estúdio anda JUNTO no menu) → rota
-`/pensa` (`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+`/pensa` (`protectedPrefixes`), gate de produto em **4 ESTADOS** espelhando o `/estudio`:
 `app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
 ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
-`KidsPensaUnavailable` (retry); com acesso = `pensa-client.tsx` (`'use client'`, import dinâmico
+`KidsPensaUnavailable` (retry); **com o produto mas abaixo de Inventor(a) = `KidsCareerLockedPensa`** (08/2026 — ver §"Nível mínimo"); com acesso = `pensa-client.tsx` (`'use client'`, import dinâmico
 do pacote no effect, tema do next-themes, **`mascotImages` = os sprites `/zappy/*.webp`** — a
 carinha do Zappy dentro do Pensa). Diferente do Estúdio (IndexedDB), a persistência é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
@@ -447,10 +473,10 @@ O **Pinta** (`@sistemazero/pinta`) é o ateliê onde a criança DESENHA os asset
 art (personagens com ANIMAÇÕES + prévia rodando, cenários), peças/mapas e desenho livre —
 terceiro irmão do fluxo criativo (**Pensa planeja → Pinta desenha → Estúdio constrói**). Item
 "Pinta" no `nav.ts` (Palette, imediatamente antes de Estúdio) → rota `/pinta`
-(`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+(`protectedPrefixes`), gate de produto em **4 ESTADOS** espelhando o `/estudio`:
 `app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
 ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
-= `KidsPintaUnavailable` (retry); com acesso = `pinta-client.tsx` (`'use client'`, import
+= `KidsPintaUnavailable` (retry); **com o produto mas abaixo de Inventor(a) = `KidsCareerLockedPinta`**; com acesso = `pinta-client.tsx` (`'use client'`, import
 dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria vive no IndexedDB
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
@@ -1118,8 +1144,12 @@ Sentry `sistema-zero-community-kids` + DSN no host.
 
 - O tutor é injetado somente em `StudioFullClient` e `StudioProClient`; players de aula e o
   Pensa não recebem `tutor`, portanto não exibem o botão. A capability `zappyEnabled` é derivada
-  no Server Component pelo mesmo gate do BFF, então contas fora do piloto não veem a UI.
-- Configuração do piloto: `ZAPPY_ENABLED`, `ZAPPY_PILOT_ACCOUNT_IDS` e, opcionalmente,
+  no Server Component pelo mesmo gate do BFF, então quem não passa no portão não vê a UI.
+- **Portão por CARREIRA (08/2026):** equipe sempre; senão `ZAPPY_ENABLED` (interruptor de
+  emergência, **default `true`**) **E** nível ≥ **Inventor(a)**. O piloto por
+  `ZAPPY_PILOT_ACCOUNT_IDS` foi REMOVIDO. As páginas passam o slug que já resolvem
+  (`isStudioZappyAllowed(session, levelSlug)`); os handlers reaplicam via
+  `isStudioZappyAllowedForRequest`. Envs: `ZAPPY_ENABLED` e, opcionalmente,
   `OPENROUTER_ZAPPY_MODEL`. As rotas Next são shims finos para os handlers do member-shell.
 - Chips de aula só existem em respostas com `courseSlug` autoritativo e abrem
   `/cursos/:slug/aulas/:lessonId` em nova aba com `noopener,noreferrer`.

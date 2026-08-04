@@ -5,6 +5,7 @@ import { sanitizeIconSvg } from '../lib/svg-sanitize'
 import type { PensaChatMessage, PensaZState } from '../lib/types'
 import { aiQuotaMessage, consumeAiQuota } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
+import { hasCreativeAppsLevel } from '../server/creative-apps-access'
 import { generateIcons, suggestIdentity } from '../server/pensa-agents/identity'
 import { synthesizeSpec } from '../server/pensa-agents/stage-e-spec'
 import { buildChecklistSeed } from '../server/pensa-agents/stage-o-checklist'
@@ -189,6 +190,19 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       if (user.act) {
         return NextResponse.json(
           { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
+          { status: 403 },
+        )
+      }
+      // Carreira em Inventor(a) ou acima (08/2026). Vem ANTES de qualquer ida ao
+      // OpenRouter: quem não chegou no degrau não pode gastar cota de IA da conta.
+      if (!(await hasCreativeAppsLevel(members, user.role))) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'CAREER_LEVEL_REQUIRED',
+              message: 'O Pensa abre quando você chegar no nível Inventor(a).',
+            },
+          },
           { status: 403 },
         )
       }
@@ -401,6 +415,19 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       if (user.act) {
         return NextResponse.json(
           { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
+          { status: 403 },
+        )
+      }
+      // Carreira em Inventor(a) ou acima (08/2026). Vem ANTES de qualquer ida ao
+      // OpenRouter: quem não chegou no degrau não pode gastar cota de IA da conta.
+      if (!(await hasCreativeAppsLevel(members, user.role))) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'CAREER_LEVEL_REQUIRED',
+              message: 'O Pensa abre quando você chegar no nível Inventor(a).',
+            },
+          },
           { status: 403 },
         )
       }
