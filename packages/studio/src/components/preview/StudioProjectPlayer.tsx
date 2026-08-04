@@ -8,6 +8,18 @@ type PlayerLoadStatus = 'loading' | 'ready' | 'error'
 interface PlayerLoadState {
   status: PlayerLoadStatus
   doc: string
+  /**
+   * Muda a cada documento novo e vira `key` do `<iframe>`, forçando um elemento
+   * NOVO em vez de reescrever o `srcDoc` do existente.
+   *
+   * ⚠️ Não é cosmético: trocar `srcDoc` logo depois da montagem faz o navegador
+   * DESCARTAR a troca quando o primeiro load ainda não se firmou, e o iframe fica
+   * preso no doc de carregamento para sempre. Só aparecia numa REMONTAGEM (no
+   * player público, ao ligar/desligar os controles do Mural), porque aí o
+   * documento já está em cache e a troca chega milissegundos após o mount — na
+   * primeira vez a montagem demora o bastante para a corrida não acontecer.
+   */
+  generation: number
 }
 
 const PLAYER_LOADING_DOC = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>html,body{height:100%;margin:0}body{display:grid;place-items:center;background:#fff;color:#334155;font:600 16px system-ui,sans-serif}p{margin:0;padding:24px;text-align:center}</style></head><body><p role="status" aria-live="polite">Carregando o jogo…</p></body></html>`
@@ -56,22 +68,34 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
     const [loadState, setLoadState] = useState<PlayerLoadState>({
       status: 'loading',
       doc: PLAYER_LOADING_DOC,
+      generation: 0,
     })
     useEffect(() => {
       let ignore = false
-      setLoadState((current) => ({
-        status: 'loading',
-        doc: current.status === 'ready' ? current.doc : PLAYER_LOADING_DOC,
-      }))
+      setLoadState((current) =>
+        current.status === 'ready'
+          ? current
+          : { status: 'loading', doc: PLAYER_LOADING_DOC, generation: current.generation },
+      )
       void renderProjectToPreviewDocAsync(project, {
         parentOrigin:
           parentOrigin ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
       }).then(
         (nextDoc) => {
-          if (!ignore) setLoadState({ status: 'ready', doc: nextDoc })
+          if (ignore) return
+          setLoadState((current) =>
+            current.doc === nextDoc && current.status === 'ready'
+              ? current
+              : { status: 'ready', doc: nextDoc, generation: current.generation + 1 },
+          )
         },
         () => {
-          if (!ignore) setLoadState({ status: 'error', doc: PLAYER_ERROR_DOC })
+          if (ignore) return
+          setLoadState((current) => ({
+            status: 'error',
+            doc: PLAYER_ERROR_DOC,
+            generation: current.generation + 1,
+          }))
         },
       )
       return () => {
@@ -89,6 +113,9 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
     return (
       <>
         <iframe
+          // Elemento NOVO a cada documento — nunca reescreve o srcDoc de um
+          // iframe já montado. Ver PlayerLoadState.generation.
+          key={loadState.generation}
           ref={ref}
           title={title ?? project.name ?? 'Projeto'}
           srcDoc={loadState.doc}
