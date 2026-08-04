@@ -5,7 +5,7 @@ import { resolveStudioTier } from '../lib/studio-tier'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
-import { isStudioZappyAllowedForRequest } from '../server/zappy-access'
+import { isStudioZappyAllowed, isStudioZappyAllowedForRequest } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
   deterministicZappyReply,
@@ -179,8 +179,6 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!(await isStudioZappyAllowedForRequest(members, user)))
-        return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, QUESTION_BODY_MAX_BYTES)
@@ -198,6 +196,12 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       // Rank/modos/extensões vêm do members + catálogo da carreira, nunca do cliente.
       const gamification = await members.getGamification()
       if (gamification.status !== 200) return error('ZAPPY_UNAVAILABLE', 503)
+      // Portão do tutor reusando ESTE rank, em vez de buscá-lo de novo: a variante
+      // assíncrona faria uma 2ª ida ao members em cada pergunta da criança — o
+      // caminho mais quente do recurso. As outras 3 rotas não têm o rank em mãos e
+      // seguem com `isStudioZappyAllowedForRequest`.
+      if (!isStudioZappyAllowed(user, gamification.body?.level?.slug))
+        return error('ZAPPY_NOT_ENABLED', 403)
       const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
       const context = parsed.data.context as ZappyContextInput
       if (!tier.allowedModes.includes(context.mode)) return error('FORBIDDEN_MODE', 403)

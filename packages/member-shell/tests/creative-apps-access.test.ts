@@ -12,7 +12,7 @@ const { CREATIVE_APPS_MIN_LEVEL } = await import('../src/lib/studio-tier')
 /** Só o que o gate consome do client — evita montar o MembersClient inteiro. */
 function membersStub(result: { status: number; body?: unknown }) {
   return {
-    getGamificationReadonly: async () => result,
+    getGamification: async () => result,
   } as unknown as Parameters<typeof hasCreativeAppsLevel>[0]
 }
 
@@ -56,7 +56,7 @@ describe('portão de carreira dos apps criativos', () => {
       // Se consultasse, o stub que lança derrubaria o teste — é a prova de que o
       // passe-livre da equipe corta antes da ida à rede.
       const exploding = {
-        getGamificationReadonly: async () => {
+        getGamification: async () => {
           throw new Error('não deveria ser chamado')
         },
       } as unknown as Parameters<typeof hasCreativeAppsLevel>[0]
@@ -70,7 +70,7 @@ describe('portão de carreira dos apps criativos', () => {
       expect(await hasCreativeAppsLevel(membersStub({ status: 502 }), 'student')).toBe(false)
       expect(await hasCreativeAppsLevel(membersStub({ status: 200 }), 'student')).toBe(false)
       const throwing = {
-        getGamificationReadonly: async () => {
+        getGamification: async () => {
           throw new Error('rede caiu')
         },
       } as unknown as Parameters<typeof hasCreativeAppsLevel>[0]

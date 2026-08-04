@@ -47,6 +47,13 @@ export function meetsCreativeAppsLevel(
  * Falha de rede/gateway → `false` (fail-closed). Aqui isso é o certo, ao
  * contrário das páginas: um handler não tem tela de "tente de novo" para mostrar,
  * e liberar escrita por causa de um soluço seria pior que recusar.
+ *
+ * ⚠️ Usa `getGamification()`, NÃO a variante `Readonly`. A `Readonly` não renova
+ * a sessão (é a segura em Server Components, onde escrever cookie é proibido);
+ * num handler ela devolveria 401 para um token vencido e o fail-closed viraria
+ * "você precisa ser Inventor(a)" para quem JÁ é — recusa correta pelo motivo
+ * errado, e sem caminho de recuperação. É também o que `hasStudioAccess` e o
+ * resto de `routes/studio-zappy.ts` fazem (`checkStudioAccess`, `getGamification`).
  */
 export async function hasCreativeAppsLevel(
   members: MembersClient,
@@ -54,7 +61,7 @@ export async function hasCreativeAppsLevel(
 ): Promise<boolean> {
   if (isPrivilegedRole(role)) return true
   try {
-    const result = await members.getGamificationReadonly()
+    const result = await members.getGamification()
     if (result.status !== 200) return false
     return careerLevelAtLeast(result.body?.level?.slug, CREATIVE_APPS_MIN_LEVEL)
   } catch {

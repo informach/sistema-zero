@@ -130,7 +130,11 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
         { status: 403 },
       )
     }
-    if (!(await hasCreativeAppsLevel(members, user?.role))) {
+    // Sem sessão, quem responde é o members (401 autoritativo) — como sempre foi.
+    // Cobrar carreira aqui trocaria esse 401 por "você precisa ser Inventor(a)",
+    // que é enganoso e esconde o motivo real de a chamada ter sido recusada.
+    if (!user) return null
+    if (!(await hasCreativeAppsLevel(members, user.role))) {
       return NextResponse.json(
         {
           error: {
