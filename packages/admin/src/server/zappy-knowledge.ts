@@ -87,6 +87,16 @@ export async function extractPdfText(bytes: Uint8Array): Promise<string> {
     ...(typeof globalThis.ImageData === 'undefined' ? { ImageData: canvas.ImageData } : {}),
     ...(typeof globalThis.Path2D === 'undefined' ? { Path2D: canvas.Path2D } : {}),
   })
+  // Mesma razão do canvas acima, e o motivo é ainda mais concreto aqui: o
+  // `pdf.mjs` só carrega o worker por import DINÂMICO, aresta que o file tracing
+  // NÃO enxerga — o arquivo ficava fora do standalone e a extração quebrava só no
+  // container ("Setting up fake worker failed: Cannot find module …/pdf.worker.mjs"),
+  // nunca em dev. Publicar em `globalThis.pdfjsWorker` fecha de vez: o PDF.js checa
+  // esse handler ANTES de resolver o worker no disco (`#mainThreadWorkerMessageHandler`
+  // em pdf.mjs), então não há mais resolução dinâmica para falhar.
+  // @ts-expect-error o pdf.worker.mjs não publica tipos (o pacote não tem exports map).
+  const pdfWorker = await import('pdfjs-dist/legacy/build/pdf.worker.mjs')
+  Object.assign(globalThis, { pdfjsWorker: pdfWorker })
   const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs')
   const task = getDocument({ data: bytes, useSystemFonts: true })
   try {
