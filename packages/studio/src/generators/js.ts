@@ -1370,6 +1370,8 @@ ${pad}}, ${JSON.stringify(id)});`
       )
       return `${pad}SZGame2D.overlapGroups(${identifiers.get(stmt.aGroup)}, ${identifiers.get(stmt.bGroup)}, (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) => {\n${body}\n${pad}});`
     }
+    case 'g2d:addToGroup':
+      return `${pad}SZGame2D.addToGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.spriteVar)});`
     case 'g2d:removeFromGroup':
       return `${pad}SZGame2D.removeFromGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.spriteVar)});`
     case 'g2d:everyFrames': {
@@ -5002,6 +5004,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.bName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'g2d:addToGroup':
     case 'g2d:removeFromGroup':
       names.add(stmt.groupVar)
       names.add(stmt.spriteVar)

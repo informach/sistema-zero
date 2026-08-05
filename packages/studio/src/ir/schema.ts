@@ -2459,6 +2459,7 @@ export type JSStatement =
       bName: string
       body: JSStatement[]
     })
+  | (JSStatementCommon & { type: 'g2d:addToGroup'; spriteVar: string; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:removeFromGroup'; spriteVar: string; groupVar: string })
   // Temporizadores: "a cada N quadros/segundos" — vira if (SZGame2D.everyX(...)).
   | (JSStatementCommon & { type: 'g2d:everyFrames'; n: JSExpr; body: JSStatement[] })
@@ -6420,6 +6421,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       bGroup: irText(),
       bName: irText(),
       body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:addToGroup'),
+      spriteVar: irText(),
+      groupVar: irText(),
       ...idField,
     }),
     z.object({
@@ -11273,6 +11280,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:clearGroup',
   'g2d:pruneOffscreen',
   'g2d:onGroupOverlap',
+  'g2d:addToGroup',
   'g2d:removeFromGroup',
   'g2d:everyFrames',
   'g2d:everySeconds',

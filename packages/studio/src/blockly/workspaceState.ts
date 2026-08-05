@@ -1821,6 +1821,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'g2d:addToGroup':
+      return block(
+        'sz_g2d_add_to_group',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+        {},
+        stmt.__id,
+      )
     case 'g2d:removeFromGroup':
       return block(
         'sz_g2d_remove_from_group',

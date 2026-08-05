@@ -226,7 +226,7 @@ test('o typecheck do arquivo composto detecta dependência interna ausente', () 
 }, 20_000)
 
 test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(744)
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(746)
 })
 
 test('as funções públicas mantêm a ordem de parâmetros do contrato TypeScript', () => {

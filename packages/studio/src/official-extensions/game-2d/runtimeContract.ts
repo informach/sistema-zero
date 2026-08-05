@@ -411,6 +411,7 @@ export interface GameTwoDWorldApi {
   forEachInGroup(group: GameTwoDGroup, fn: (sprite: GameTwoDSprite, index: number) => void): void
   countGroup(group: GameTwoDGroup): number
   clearGroup(group: GameTwoDGroup): void
+  addToGroup(group: GameTwoDGroup, sprite: GameTwoDSprite): void
   removeFromGroup(group: GameTwoDGroup, sprite: GameTwoDSprite): void
   pruneOffscreen(
     ctx: GameTwoDContext,
@@ -732,6 +733,7 @@ export const GAME_TWO_D_API_KEYS = [
   'forEachInGroup',
   'countGroup',
   'clearGroup',
+  'addToGroup',
   'removeFromGroup',
   'pruneOffscreen',
   'overlapGroups',

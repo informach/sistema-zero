@@ -182,7 +182,7 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - applyGravityToGroup(grupo): soma a gravidade ao vy de cada sprite atual. Use antes de
   updateGroup somente nos grupos que devem cair; tiros ficam retos usando apenas updateGroup.
 - forEachInGroup(grupo, function (sprite) {…}): roda o corpo para cada sprite (ordem reversa, pode remover no corpo).
-- countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. removeFromGroup(grupo, sprite): tira um.
+- countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. addToGroup(grupo, sprite): põe um sprite que JÁ existe no grupo (repetido não entra duas vezes). removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa). Só descarta quem está fora E SE AFASTANDO: um obstáculo criado fora da tela que ainda vem entrando (o caso normal de "nasce à direita e anda para a esquerda") NÃO é removido, então pode criar o obstáculo bem longe da borda sem medo. Sprite parado fora da tela é removido.
 - overlapGroups(a, b, function (sa, sb) {…}): para cada par (um de cada grupo) que se encosta, roda o corpo com os dois sprites (use DENTRO do gameLoop). NÃO confundir com onOverlap (que é 1 sprite × 1 sprite).
 - overlapSpriteGroup(() => sprite, grupo, (item) => {…}): genérico — para cada item do grupo que encosta no sprite, roda o corpo (ex.: coletar moeda ou tirar vida). Fica em “💥 Colisões” e deve ser usado no gameLoop.

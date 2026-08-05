@@ -166,6 +166,20 @@ export const gameTwoDGroupAndHudBlocks = [
       'Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo.',
   },
   {
+    type: 'sz_g2d_add_to_group',
+    placement: 'command',
+    message0: 'Pôr o sprite %1 no grupo %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe um sprite que já existe dentro do grupo. A partir daí, tudo que o grupo faz (atualizar, desenhar, colisões) vale para ele também. Repetido não entra duas vezes.',
+  },
+  {
     type: 'sz_g2d_remove_from_group',
     placement: 'command',
     message0: 'Tirar o sprite %1 do grupo %2',

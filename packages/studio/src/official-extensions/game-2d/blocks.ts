@@ -65,6 +65,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_count_group',
       'sz_g2d_clear_group',
       'sz_g2d_prune_offscreen',
+      'sz_g2d_add_to_group',
       'sz_g2d_remove_from_group',
       'sz_g2d_bring_to_front',
       'sz_g2d_send_to_back',

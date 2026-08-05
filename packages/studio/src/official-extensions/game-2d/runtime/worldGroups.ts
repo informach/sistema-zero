@@ -299,6 +299,18 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   function clearGroup(group) {
     _clearGroupItems(group);
   }
+  /**
+   * Põe um sprite que JÁ EXISTE dentro do grupo (o espelho do removeFromGroup).
+   * Repetido não entra duas vezes; acima do teto, descarta em silêncio (mesma
+   * régua do spawn — nunca lança no meio do jogo da criança).
+   */
+  function addToGroup(group, sprite) {
+    if (!group || !group.items || !sprite || typeof sprite !== 'object') return;
+    if (group.items.indexOf(sprite) !== -1) return;
+    if (group.items.length >= MAX_GROUP) return;
+    group.items.push(sprite);
+    _touchUnmanagedGroup(group);
+  }
   /** Tira um sprite específico do grupo (por referência). */
   function removeFromGroup(group, sprite) {
     if (!group || !group.items) return;

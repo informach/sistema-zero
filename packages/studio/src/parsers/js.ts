@@ -3931,6 +3931,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(args[2], source, ctx),
       }
     }
+    case 'addToGroup': {
+      // generator: SZGame2D.addToGroup(g, sprite)
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:addToGroup', spriteVar, groupVar } : null
+    }
     case 'removeFromGroup': {
       // generator: SZGame2D.removeFromGroup(g, sprite)
       const groupVar = identifierName(args[0])

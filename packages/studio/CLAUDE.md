@@ -633,7 +633,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.57.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.58.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -665,8 +665,11 @@ entraram em `SPRITE_DECL_BLOCKS` (miniatura no seletor); ⚠️ `collectSprites`
 então o nome aparece no seletor fora do trecho — usar lá é pego pela validação da IR. Testes:
 `__tests__/spawnNamed.test.ts` (saída byte-idêntica sem nome, `const` com nome, parser das duas
 formas, escopo e runtime: o nomeado É o mesmo objeto do grupo e cada um anima no próprio ritmo).
-**Faltam ainda** (conversado com a usuária, fora deste lote): "pôr o sprite ⟨X⟩ no grupo ⟨G⟩"
-(runtime não tem `addToGroup`) e animação por ESTADO no grupo (espelho do `setEnemyStateAnimation`).
+**"Pôr o sprite ⟨X⟩ no grupo ⟨G⟩" SAIU do backlog (v0.58.0, 05/08):** `sz_g2d_add_to_group` em
+📦 Muitos (espelho do "Tirar do grupo"; runtime `addToGroup(grupo, sprite)` — dedup + teto
+`MAX_GROUP`, mesma régua do spawn). Nasceu porque o Zappy sugeriu esse bloco sem ele existir.
+**Falta ainda** (conversado com a usuária): animação por ESTADO no grupo (espelho do
+`setEnemyStateAnimation`).
 
 **Nadar e voar (v0.55.0, 01/08):** três jeitos NOVOS de o sprite se mover em 🕹️ Movimento, todos
 `command` como o `platformer` e todos em `runtime/inputAndMotion.ts`. Antes deste lote a extensão tinha
