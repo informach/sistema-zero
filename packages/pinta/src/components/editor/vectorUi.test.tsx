@@ -101,6 +101,76 @@ describe('UI vetorial (F5)', () => {
     })
   })
 
+  it('a grade nasce DESLIGADA no vetor e liga/desliga pelo botão', async () => {
+    await openVectorEditor()
+    expect(document.querySelector('#pin-editor-grid')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.grid }))
+    await waitFor(() => {
+      expect(document.querySelector('#pin-editor-grid')).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.grid }))
+    await waitFor(() => {
+      expect(document.querySelector('#pin-editor-grid')).toBeNull()
+    })
+  })
+
+  it('com a grade LIGADA, desenhar uma forma encaixa nos cruzamentos', async () => {
+    await openVectorEditor()
+    const stage = screen.getByRole('img', { name: 'Área de desenho' })
+    // happy-dom não faz layout: o palco precisa de medida p/ converter o clique.
+    ;(stage as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        width: 480,
+        height: 360,
+        right: 480,
+        bottom: 360,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.grid }))
+    // 480×360 → grade de 16: (30,30)→(32,32) e (93,61)→(96,64).
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 93, clientY: 61 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const rect = document.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('x')).toBe('32')
+      expect(rect?.getAttribute('y')).toBe('32')
+      expect(rect?.getAttribute('width')).toBe('64')
+      expect(rect?.getAttribute('height')).toBe('32')
+    })
+  })
+
+  it('sem a grade, o desenho fica LIVRE (sem encaixe)', async () => {
+    await openVectorEditor()
+    const stage = screen.getByRole('img', { name: 'Área de desenho' })
+    ;(stage as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        width: 480,
+        height: 360,
+        right: 480,
+        bottom: 360,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 93, clientY: 61 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const rect = document.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('x')).toBe('30')
+      expect(rect?.getAttribute('width')).toBe('63')
+    })
+  })
+
   it('apagar a seleção remove o shape', async () => {
     await openVectorEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))

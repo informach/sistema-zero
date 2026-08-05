@@ -476,7 +476,9 @@ function sessionDefaultsFor(asset: PintaAsset): Partial<PintaSessionState> {
           ? Math.max(asset.width, asset.height)
           : 0
   const zoom = docSize <= 48 ? 8 : docSize <= 160 ? 4 : 1
-  return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS }
+  // A grade do vetor NASCE desligada (pedido da usuária: papel liso, com a
+  // grade como apoio opcional) — no pixel ela segue ligada por padrão.
+  return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS, showGrid: false }
 }
 
 export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | null {

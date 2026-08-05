@@ -27,6 +27,7 @@ import {
   shapeNodes,
   translateShape,
 } from '../../../vector/geometry'
+import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
 import type { Vec2, VectorShape } from '../../../vector/model'
 import {
   makeEllipse,
@@ -51,7 +52,10 @@ import { constrainPoint, expandToGroups } from './vectorTools'
 // segundo dedo/palma no palco dispararia move/up do gesto do primeiro dedo.
 type Gesture =
   | { kind: 'draw'; pointerId: number; start: Vec2; points: Vec2[] }
-  | { kind: 'move'; pointerId: number; last: Vec2; base: PintaAsset }
+  // Mover guarda o PONTO inicial + os shapes da BASE: cada move aplica o delta
+  // TOTAL (com snap opcional) sobre a base — sem deriva acumulada e com os
+  // offsets internos da seleção preservados.
+  | { kind: 'move'; pointerId: number; start: Vec2; base: PintaAsset; baseShapes: VectorShape[] }
   | {
       kind: 'resize'
       pointerId: number
@@ -124,6 +128,7 @@ export function VectorStage(): JSX.Element {
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
   const zoom = useSession((state) => state.zoom)
+  const showGrid = useSession((state) => state.showGrid)
   const [preview, setPreview] = useState<VectorShape | null>(null)
   const [textAt, setTextAt] = useState<Vec2 | null>(null)
   const [textValue, setTextValue] = useState('')
@@ -138,6 +143,13 @@ export function VectorStage(): JSX.Element {
   }, [animationId, frameIndex])
 
   useWheelZoom(stageRef, svgRef)
+
+  const gridSpacing = gridSpacingFor(doc.width, doc.height)
+
+  /** Encaixa na grade quando ela está LIGADA (desenho de formas, mover, redimensionar). */
+  function maybeSnap(point: Vec2): Vec2 {
+    return showGrid ? snapPoint(point, gridSpacing) : point
+  }
 
   function svgPoint(event: PointerEvent<Element>): Vec2 {
     const svg = svgRef.current
@@ -216,8 +228,10 @@ export function VectorStage(): JSX.Element {
       showToast(COPY.vector.shapeLimit)
       return
     }
-    gestureRef.current = { kind: 'draw', pointerId: event.pointerId, start: at, points: [at] }
-    setPreview(drawPreview(at, at, [at]))
+    // Formas encaixam o PONTO INICIAL na grade; o pincel fica livre.
+    const start = tool === 'brush' ? at : maybeSnap(at)
+    gestureRef.current = { kind: 'draw', pointerId: event.pointerId, start, points: [at] }
+    setPreview(drawPreview(start, start, [at]))
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
@@ -242,8 +256,9 @@ export function VectorStage(): JSX.Element {
     gestureRef.current = {
       kind: 'move',
       pointerId: event.pointerId,
-      last: at,
+      start: at,
       base: editor.getState().asset,
+      baseShapes: currentShapes(),
     }
   }
 
@@ -321,29 +336,39 @@ export function VectorStage(): JSX.Element {
       const last = gesture.points[gesture.points.length - 1]
       if (last && Math.hypot(at.x - last.x, at.y - last.y) < BRUSH_MIN_POINT_DISTANCE) return
       gesture.points.push(at)
-      // Shift trava a proporção (quadrado/círculo/45°) — não vale pro pincel.
-      const end = event.shiftKey && tool !== 'brush' ? constrainPoint(tool, gesture.start, at) : at
+      // Grade PRIMEIRO, Shift depois: o quadrado travado fica com lado em
+      // múltiplos da grade. Nada disso vale pro pincel (traço livre).
+      const target = tool === 'brush' ? at : maybeSnap(at)
+      const end =
+        event.shiftKey && tool !== 'brush' ? constrainPoint(tool, gesture.start, target) : target
       setPreview(drawPreview(gesture.start, end, gesture.points))
       return
     }
     if (gesture.kind === 'move') {
-      const dx = at.x - gesture.last.x
-      const dy = at.y - gesture.last.y
-      gesture.last = at
+      // Delta TOTAL desde o início, sobre a BASE (sem deriva); com a grade
+      // ligada o delta anda em passos do espaçamento — a seleção mantém os
+      // offsets internos e "pula" de cruzamento em cruzamento.
+      let dx = at.x - gesture.start.x
+      let dy = at.y - gesture.start.y
+      if (showGrid) {
+        dx = snapValue(dx, gridSpacing)
+        dy = snapValue(dy, gridSpacing)
+      }
       commitShapes(
-        currentShapes().map((s) => (selectedIds.includes(s.id) ? translateShape(s, dx, dy) : s)),
+        gesture.baseShapes.map((s) => (selectedIds.includes(s.id) ? translateShape(s, dx, dy) : s)),
         false,
       )
       return
     }
     if (gesture.kind === 'resize') {
       const { anchor, start, baseShape, handle } = gesture
+      const point = maybeSnap(at)
       const isCorner = handle.length === 2
       const horizontal = handle === 'e' || handle === 'w'
       const denomX = start.x - anchor.x
       const denomY = start.y - anchor.y
-      const fx = isCorner || horizontal ? (denomX === 0 ? 1 : (at.x - anchor.x) / denomX) : 1
-      const fy = isCorner || !horizontal ? (denomY === 0 ? 1 : (at.y - anchor.y) / denomY) : 1
+      const fx = isCorner || horizontal ? (denomX === 0 ? 1 : (point.x - anchor.x) / denomX) : 1
+      const fy = isCorner || !horizontal ? (denomY === 0 ? 1 : (point.y - anchor.y) / denomY) : 1
       const resized = scaleShape(baseShape, anchor, fx, fy)
       commitShapes(
         currentShapes().map((s) => (s.id === baseShape.id ? resized : s)),
@@ -448,6 +473,32 @@ export function VectorStage(): JSX.Element {
               />
             ))}
             {preview ? <ShapeElement shape={preview} /> : null}
+
+            {/* Grade de APOIO (só no editor, nunca no export): um <pattern> e um
+                <rect> — O(1) nós de DOM em qualquer documento; o traço divide
+                pelo zoom para ficar fininho em qualquer aproximação. */}
+            {showGrid ? (
+              // Decorativa por herança: o <svg> pai é role="img" com rótulo.
+              <g pointerEvents="none">
+                <defs>
+                  <pattern
+                    id="pin-editor-grid"
+                    width={gridSpacing}
+                    height={gridSpacing}
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path
+                      d={`M ${gridSpacing} 0 L 0 0 0 ${gridSpacing}`}
+                      fill="none"
+                      stroke="#64748b"
+                      strokeOpacity={0.35}
+                      strokeWidth={1 / zoom}
+                    />
+                  </pattern>
+                </defs>
+                <rect width={doc.width} height={doc.height} fill="url(#pin-editor-grid)" />
+              </g>
+            ) : null}
 
             {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
                 para manter um tamanho CONSTANTE na tela (alça pequena demais
