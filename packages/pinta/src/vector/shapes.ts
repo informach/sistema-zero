@@ -25,15 +25,19 @@ const base = (style: ShapeStyle) => ({
   rotation: 0,
 })
 
-export function makeRect(a: Vec2, b: Vec2, style: ShapeStyle): VectorShape {
+export function makeRect(a: Vec2, b: Vec2, style: ShapeStyle, radius = 0): VectorShape {
+  const w = Math.abs(b.x - a.x)
+  const h = Math.abs(b.y - a.y)
   return {
     ...base(style),
     type: 'rect',
     x: Math.min(a.x, b.x),
     y: Math.min(a.y, b.y),
-    w: Math.abs(b.x - a.x),
-    h: Math.abs(b.y - a.y),
-    rx: 0,
+    w,
+    h,
+    // Raio clampado à metade do menor lado (acima disso o SVG "capa" sozinho,
+    // mas o número guardado ficaria mentiroso).
+    rx: Math.max(Math.min(radius, Math.min(w, h) / 2), 0),
   }
 }
 
@@ -84,6 +88,14 @@ export function makeStar(a: Vec2, b: Vec2, tips: number, style: ShapeStyle): Vec
     points.push({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) })
   }
   return { ...base(style), type: 'polygon', points }
+}
+
+/**
+ * Polígono LIVRE da Caneta (clique a clique). Espera 3+ pontos (o chamador
+ * garante); respeita o teto de pontos do sanitize (64).
+ */
+export function makePolygonFromPoints(points: Vec2[], style: ShapeStyle): VectorShape {
+  return { ...base(style), type: 'polygon', points: points.slice(0, 64) }
 }
 
 export function makePath(d: string, style: ShapeStyle): VectorShape {

@@ -42,6 +42,17 @@ interface VectorShapeBase {
   rotation: number
   /** Grupo: shapes com o MESMO id se movem/selecionam juntos. Ausente = solto. */
   groupId?: string
+  /**
+   * Escondida pelo olhinho do painel Camadas: some do PALCO e de TODO export/
+   * prévia (paridade com a camada escondida do pixel). Ausente = visível
+   * (convenção do sanitize: `false` OMITE a chave).
+   */
+  hidden?: boolean
+}
+
+/** Só as formas visíveis (o funil de render/export respeita o olhinho). */
+export function visibleShapes(shapes: VectorShape[]): VectorShape[] {
+  return shapes.filter((s) => s.hidden !== true)
 }
 
 /** id do `<linearGradient>/<radialGradient>` de um shape (único = id do shape). */
@@ -128,7 +139,15 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   const opacity = isFiniteNumber(s.opacity) ? Math.min(Math.max(s.opacity, 0), 1) : 1
   const rotation = isFiniteNumber(s.rotation) ? s.rotation % 360 : 0
   const groupId = isSafeVectorId(s.groupId) ? s.groupId : undefined
-  const base = { id: s.id, fill, stroke, opacity, rotation, ...(groupId ? { groupId } : {}) }
+  const base = {
+    id: s.id,
+    fill,
+    stroke,
+    opacity,
+    rotation,
+    ...(groupId ? { groupId } : {}),
+    ...(s.hidden === true ? { hidden: true } : {}),
+  }
 
   switch (s.type) {
     case 'rect':

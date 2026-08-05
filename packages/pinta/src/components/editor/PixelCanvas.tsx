@@ -666,7 +666,7 @@ export function PixelCanvas(): JSX.Element {
             rolável fica com a medida velha por um quadro — a âncora do zoom
             pela rolagem media errado. */}
         <div
-          className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner"
+          className="pin-checkerboard border-2 border-pin-border shadow-inner"
           style={{ width: bitmap.width * zoom, height: bitmap.height * zoom }}
         >
           <canvas

@@ -45,7 +45,10 @@ import { TileStrip } from './TileStrip'
 import { ToolBar } from './ToolBar'
 import { useMediaQuery } from './useMediaQuery'
 import { useStudioResync } from './useStudioResync'
-import { VectorEditor } from './VectorEditor'
+import { VectorEditorScope } from './vector/VectorEditorScope'
+import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightColumn'
+import { VectorStage } from './vector/VectorStage'
+import { VectorToolbox } from './vector/VectorToolbox'
 import { ZoomControls } from './ZoomControls'
 
 function SaveBadge(): JSX.Element {
@@ -206,18 +209,19 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
-  // Kinds vetoriais: o MESMO editor de shapes; personagem ganha o painel de
-  // prévia/detalhes + a faixa Spritesheet (espelho do pixel), peças ganham a
-  // tira de tiles. As cores do vetor vivem dentro do próprio VectorEditor.
+  // Kinds vetoriais: o MESMO arranjo do pixel — caixa de ferramentas à
+  // esquerda, palco no meio, UMA coluna direita `w-68` (prévia → cores →
+  // aparência) e a faixa (Spritesheet/peças + zoom) em LARGURA TOTAL embaixo.
   const isVectorSprite = asset.kind === 'vector-sprite'
   if (wide) {
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
         <div className="flex min-h-0 flex-1 items-stretch gap-2">
-          {/* Vetor não tem camadas indexadas: a coluna leva só a prévia (o
-              LayerPanel se auto-remove fora dos kinds de pixel). */}
-          <VectorEditor />
-          {isVectorSprite ? <PixelRightColumn /> : null}
+          <VectorEditorScope>
+            <VectorToolbox />
+            <VectorStage />
+            <VectorRightColumn />
+          </VectorEditorScope>
         </div>
         <EditorFooter asset={asset} />
       </div>
@@ -225,7 +229,11 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-      <VectorEditor />
+      <VectorEditorScope>
+        <VectorToolbox orientation="horizontal" />
+        <VectorStage />
+        <VectorPanelsDisclosure />
+      </VectorEditorScope>
       {isVectorSprite ? <SpritePanelDisclosure /> : null}
       <EditorFooter asset={asset} stacked />
     </div>
@@ -468,7 +476,9 @@ function sessionDefaultsFor(asset: PintaAsset): Partial<PintaSessionState> {
           ? Math.max(asset.width, asset.height)
           : 0
   const zoom = docSize <= 48 ? 8 : docSize <= 160 ? 4 : 1
-  return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS }
+  // A grade do vetor NASCE desligada (pedido da usuária: papel liso, com a
+  // grade como apoio opcional) — no pixel ela segue ligada por padrão.
+  return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS, showGrid: false }
 }
 
 export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | null {

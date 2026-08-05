@@ -1,9 +1,21 @@
+/**
+ * Painel de APARÊNCIA do vetor (largura fixa `w-68`, como os painéis do
+ * pixel): degradê, espessura do contorno e opacidade; lados/pontas quando a
+ * ferramenta de polígono/estrela está ativa; e as operações da seleção
+ * (espelhar, ordem, agrupar, duplicar, apagar). As CORES de preenchimento e
+ * contorno vivem no painel "Cores" (VectorColorsPanel).
+ */
 import type { JSX } from 'react'
 import { COPY } from '../../core/copy'
-import { isVectorGradient, type VectorGradient, type VectorShape } from '../../vector/model'
-import type { ShapeStyle } from '../../vector/shapes'
+import { isVectorGradient } from '../../vector/model'
 import { ToolButton } from '../ui/Button'
 import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignStartVertical,
   BringToFront,
   ChevronsDown,
   ChevronsUp,
@@ -19,97 +31,48 @@ import {
   Ungroup,
 } from '../ui/icons'
 import { ColorButton } from './ColorPicker'
+import { useVectorEditor } from './vector/VectorEditorScope'
 
 const STROKE_WIDTHS = [1, 2, 3, 4, 6, 8] as const
 
-export type VectorPropertyTool = 'polygon' | 'star' | string
-
-interface VectorPropertiesPanelProps {
-  style: ShapeStyle
-  swatches: readonly string[]
-  customColors: readonly string[]
-  selected: readonly VectorShape[]
-  tool: VectorPropertyTool
-  polygonSides: number
-  starTips: number
-  rememberColor: (hex: string) => void
-  applyStyle: (partial: Partial<ShapeStyle>) => void
-  currentGradient: () => VectorGradient
-  applyGradient: (partial: Partial<VectorGradient>) => void
-  setPolygonSides: (value: number) => void
-  setStarTips: (value: number) => void
-  flipSelected: (axis: 'h' | 'v') => void
-  moveOrder: (to: 1 | -1 | 'front' | 'back') => void
-  groupSelected: () => void
-  ungroupSelected: () => void
-  duplicateSelected: () => void
-  removeSelected: () => void
-}
-
 /** Painel lateral de aparência e operações da seleção vetorial. */
-export function VectorPropertiesPanel({
-  style,
-  swatches,
-  customColors,
-  selected,
-  tool,
-  polygonSides,
-  starTips,
-  rememberColor,
-  applyStyle,
-  currentGradient,
-  applyGradient,
-  setPolygonSides,
-  setStarTips,
-  flipSelected,
-  moveOrder,
-  groupSelected,
-  ungroupSelected,
-  duplicateSelected,
-  removeSelected,
-}: VectorPropertiesPanelProps): JSX.Element {
+export function VectorPropertiesPanel(): JSX.Element {
+  const {
+    style,
+    customColors,
+    selected,
+    tool,
+    polygonSides,
+    starTips,
+    rectRadius,
+    setRectRadius,
+    updateSelected,
+    rememberColor,
+    applyStyle,
+    currentGradient,
+    applyGradient,
+    setPolygonSides,
+    setStarTips,
+    flipSelected,
+    alignSelected,
+    moveOrder,
+    groupSelected,
+    ungroupSelected,
+    duplicateSelected,
+    removeSelected,
+  } = useVectorEditor()
   const single = selected.length === 1
+  const singleShape = single ? (selected[0] ?? null) : null
+  const selectedRect = singleShape?.type === 'rect' ? singleShape : null
+  const selectedText = singleShape?.type === 'text' ? singleShape : null
   const activeGradient = isVectorGradient(style.fill) ? style.fill : null
 
   return (
-    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
-      <section className="pin-panel p-3">
-        <span className="mb-1 block text-sm font-bold text-pin-muted">{COPY.vector.fill}</span>
-        <div className="flex flex-wrap gap-1">
-          <button
-            type="button"
-            aria-label={`${COPY.vector.fill}: ${COPY.vector.none}`}
-            aria-pressed={style.fill === 'none'}
-            title={COPY.vector.none}
-            onClick={() => applyStyle({ fill: 'none' })}
-            className={`pin-checkerboard size-11 rounded-lg border-2 ${style.fill === 'none' ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-          />
-          {swatches.map((hex) => (
-            <button
-              key={`fill-${hex}`}
-              type="button"
-              aria-label={`${COPY.vector.fill}: ${COPY.colorNames[hex] ?? hex}`}
-              aria-pressed={style.fill === hex}
-              title={COPY.colorNames[hex] ?? hex}
-              onClick={() => applyStyle({ fill: hex })}
-              className={`size-11 rounded-lg border-2 ${style.fill === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-              style={{ backgroundColor: hex }}
-            />
-          ))}
-          <ColorButton
-            label={`${COPY.vector.fill}: ${COPY.vector.customColor}`}
-            value={
-              typeof style.fill === 'string' && style.fill.startsWith('#') ? style.fill : '#000000'
-            }
-            recentColors={customColors}
-            onChange={(hex) => {
-              rememberColor(hex)
-              applyStyle({ fill: hex })
-            }}
-          />
-        </div>
+    <div className="flex w-68 shrink-0 flex-col gap-2">
+      <section aria-label={COPY.vector.appearance} className="pin-panel p-3">
+        <span className="block px-1 font-bold text-pin-text">{COPY.vector.appearance}</span>
 
-        <span className="mt-3 mb-1 block text-sm font-bold text-pin-muted">
+        <span className="mt-2 mb-1 block text-sm font-bold text-pin-muted">
           {COPY.vector.gradient}
         </span>
         <div className="flex flex-wrap items-center gap-1">
@@ -147,43 +110,6 @@ export function VectorPropertiesPanel({
             onChange={(hex) => {
               rememberColor(hex)
               applyGradient({ to: hex })
-            }}
-          />
-        </div>
-
-        <span className="mt-3 mb-1 block text-sm font-bold text-pin-muted">
-          {COPY.vector.stroke}
-        </span>
-        <div className="flex flex-wrap gap-1">
-          <button
-            type="button"
-            aria-label={`${COPY.vector.stroke}: ${COPY.vector.none}`}
-            aria-pressed={style.stroke === null}
-            title={COPY.vector.none}
-            onClick={() => applyStyle({ stroke: null })}
-            className={`pin-checkerboard size-11 rounded-lg border-2 ${style.stroke === null ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-          />
-          {swatches.map((hex) => (
-            <button
-              key={`stroke-${hex}`}
-              type="button"
-              aria-label={`${COPY.vector.stroke}: ${COPY.colorNames[hex] ?? hex}`}
-              aria-pressed={style.stroke?.color === hex}
-              title={COPY.colorNames[hex] ?? hex}
-              onClick={() =>
-                applyStyle({ stroke: { color: hex, width: style.stroke?.width ?? 2 } })
-              }
-              className={`size-11 rounded-lg border-2 ${style.stroke?.color === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-              style={{ backgroundColor: hex }}
-            />
-          ))}
-          <ColorButton
-            label={`${COPY.vector.stroke}: ${COPY.vector.customColor}`}
-            value={style.stroke?.color ?? '#000000'}
-            recentColors={customColors}
-            onChange={(hex) => {
-              rememberColor(hex)
-              applyStyle({ stroke: { color: hex, width: style.stroke?.width ?? 2 } })
             }}
           />
         </div>
@@ -248,8 +174,93 @@ export function VectorPropertiesPanel({
         </section>
       ) : null}
 
+      {tool === 'rect' || selectedRect ? (
+        <section className="pin-panel p-3">
+          {/* Vale para o PRÓXIMO retângulo e edita o selecionado na hora. */}
+          <label className="block text-sm font-bold text-pin-muted">
+            {`${COPY.vector.cornerRadius}: ${selectedRect ? Math.round(selectedRect.rx) : rectRadius}`}
+            <input
+              type="range"
+              name="vector-rect-radius"
+              min={0}
+              max={24}
+              step={1}
+              value={selectedRect ? Math.round(selectedRect.rx) : rectRadius}
+              onChange={(event) => {
+                const radius = Number(event.target.value)
+                setRectRadius(radius)
+                if (selectedRect) {
+                  updateSelected((s) =>
+                    s.type === 'rect' ? { ...s, rx: Math.min(radius, Math.min(s.w, s.h) / 2) } : s,
+                  )
+                }
+              }}
+              className="mt-1 w-full accent-pin-accent"
+            />
+          </label>
+        </section>
+      ) : null}
+
+      {selectedText ? (
+        <section className="pin-panel p-3">
+          <label className="block text-sm font-bold text-pin-muted">
+            {`${COPY.vector.fontSize}: ${Math.round(selectedText.fontSize)}`}
+            <input
+              type="range"
+              name="vector-font-size"
+              min={8}
+              max={96}
+              step={2}
+              value={Math.min(Math.max(Math.round(selectedText.fontSize), 8), 96)}
+              onChange={(event) => {
+                // Clamp do MODELO (6–200) preservado.
+                const fontSize = Math.min(Math.max(Number(event.target.value), 6), 200)
+                updateSelected((s) => (s.type === 'text' ? { ...s, fontSize } : s))
+              }}
+              className="mt-1 w-full accent-pin-accent"
+            />
+          </label>
+        </section>
+      ) : null}
+
       {selected.length > 0 ? (
         <section className="pin-panel flex flex-col gap-2 p-3">
+          {/* Alinhar: 2+ formas alinham entre si; 1 forma alinha na TELA. */}
+          <span className="block px-1 text-sm font-bold text-pin-muted">
+            {COPY.vector.alignTitle}
+          </span>
+          <div className="flex flex-wrap justify-center gap-1">
+            <ToolButton
+              icon={AlignStartVertical}
+              label={COPY.vector.alignLeft}
+              onClick={() => alignSelected('left')}
+            />
+            <ToolButton
+              icon={AlignCenterVertical}
+              label={COPY.vector.alignCenterH}
+              onClick={() => alignSelected('centerH')}
+            />
+            <ToolButton
+              icon={AlignEndVertical}
+              label={COPY.vector.alignRight}
+              onClick={() => alignSelected('right')}
+            />
+            <ToolButton
+              icon={AlignStartHorizontal}
+              label={COPY.vector.alignTop}
+              onClick={() => alignSelected('top')}
+            />
+            <ToolButton
+              icon={AlignCenterHorizontal}
+              label={COPY.vector.alignMiddleV}
+              onClick={() => alignSelected('middleV')}
+            />
+            <ToolButton
+              icon={AlignEndHorizontal}
+              label={COPY.vector.alignBottom}
+              onClick={() => alignSelected('bottom')}
+            />
+          </div>
           <div className="flex flex-wrap justify-center gap-1">
             <ToolButton
               icon={FlipHorizontal2}
