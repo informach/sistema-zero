@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { isVectorGradient, sanitizeVectorShape } from './model'
+import { isVectorGradient, sanitizeVectorShape, visibleShapes } from './model'
 
 const base = { id: 's1', stroke: null, opacity: 1, rotation: 0 }
 
@@ -68,5 +68,35 @@ describe('sanitizeVectorShape — grupo', () => {
     expect(
       sanitizeVectorShape({ ...rectRaw, groupId: 'grupo com espaço' })?.groupId,
     ).toBeUndefined()
+  })
+})
+
+describe('sanitizeVectorShape — campo hidden (olhinho das Camadas)', () => {
+  const rect = { ...base, type: 'rect', x: 0, y: 0, w: 10, h: 10, rx: 0, fill: '#78dc52' }
+
+  it('hidden: true sobrevive ao round-trip', () => {
+    const shape = sanitizeVectorShape({ ...rect, hidden: true })
+    expect(shape?.hidden).toBe(true)
+  })
+
+  it('hidden: false (ou ausente) OMITE a chave — payload antigo byte-idêntico', () => {
+    const withFalse = sanitizeVectorShape({ ...rect, hidden: false })
+    expect(withFalse).not.toBeNull()
+    expect(withFalse && 'hidden' in withFalse).toBe(false)
+    const absent = sanitizeVectorShape(rect)
+    expect(absent && 'hidden' in absent).toBe(false)
+  })
+
+  it('hidden não-booleano é descartado sem derrubar o shape', () => {
+    const shape = sanitizeVectorShape({ ...rect, hidden: 'sim' })
+    expect(shape).not.toBeNull()
+    expect(shape && 'hidden' in shape).toBe(false)
+  })
+
+  it('visibleShapes filtra só as escondidas', () => {
+    const a = sanitizeVectorShape({ ...rect, id: 'a' })
+    const b = sanitizeVectorShape({ ...rect, id: 'b', hidden: true })
+    if (!a || !b) throw new Error('shapes esperados')
+    expect(visibleShapes([a, b]).map((s) => s.id)).toEqual(['a'])
   })
 })

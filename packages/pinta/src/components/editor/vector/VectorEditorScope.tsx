@@ -388,7 +388,12 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   function selectAll(): void {
-    setSelectedIds(currentShapes().map((s) => s.id))
+    // Só as visíveis: selecionar (e apagar) algo invisível assustaria.
+    setSelectedIds(
+      currentShapes()
+        .filter((s) => s.hidden !== true)
+        .map((s) => s.id),
+    )
   }
 
   /** Espelha cada shape selecionado em torno do PRÓPRIO centro. */

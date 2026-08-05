@@ -6,7 +6,13 @@
  */
 import type { JSX, PointerEvent } from 'react'
 import { memo } from 'react'
-import { gradientId, isVectorGradient, type VectorGradient, type VectorShape } from './model'
+import {
+  gradientId,
+  isVectorGradient,
+  type VectorGradient,
+  type VectorShape,
+  visibleShapes,
+} from './model'
 import { linearGradientVector, shapeCommonAttrs, shapeGeometryAttrs } from './svg'
 
 /**
@@ -100,6 +106,8 @@ export const VectorFrameSvg = memo(function VectorFrameSvg({
   shapes: VectorShape[]
   className?: string
 }): JSX.Element {
+  // O olhinho do painel Camadas vale em TODA prévia/miniatura (WYSIWYG).
+  const visible = visibleShapes(shapes)
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
@@ -107,8 +115,8 @@ export const VectorFrameSvg = memo(function VectorFrameSvg({
       aria-hidden="true"
       focusable="false"
     >
-      <GradientDefs shapes={shapes} />
-      {shapes.map((shape) => (
+      <GradientDefs shapes={visible} />
+      {visible.map((shape) => (
         <ShapeElement key={shape.id} shape={shape} />
       ))}
     </svg>

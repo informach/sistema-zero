@@ -4,7 +4,13 @@
  * snapshot-testável e abre em qualquer navegador/editor de SVG.
  */
 import { boundsCenter, shapeBounds } from './geometry'
-import { gradientId, isVectorGradient, type VectorGradient, type VectorShape } from './model'
+import {
+  gradientId,
+  isVectorGradient,
+  type VectorGradient,
+  type VectorShape,
+  visibleShapes,
+} from './model'
 
 /**
  * Um "documento" vetorial ESTRUTURAL: qualquer coisa com dimensões + shapes
@@ -48,9 +54,12 @@ export function linearGradientVector(angle: number): {
   }
 }
 
-/** `<defs>` com um gradiente por shape de preenchimento degradê (`''` se nenhum). */
+/**
+ * `<defs>` com um gradiente por shape de preenchimento degradê (`''` se
+ * nenhum). Formas ESCONDIDAS ficam fora (paridade com o markup dos shapes).
+ */
 export function gradientDefsMarkup(shapes: VectorShape[], idPrefix = ''): string {
-  const defs = shapes
+  const defs = visibleShapes(shapes)
     .filter((s) => isVectorGradient(s.fill))
     .map((s) => {
       const g = s.fill as VectorGradient
@@ -152,9 +161,15 @@ export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
   return `<${tag} ${attrText}/>`
 }
 
-/** Markup dos shapes (sem o elemento `<svg>` em volta), na ordem do z-order. */
+/**
+ * Markup dos shapes (sem o elemento `<svg>` em volta), na ordem do z-order.
+ * Formas ESCONDIDAS ficam fora — este é o funil ÚNICO de todo export string
+ * (SVG solto, folhas, tilemap, PNG via raster, ZIP, ponte com o Estúdio).
+ */
 export function shapesToMarkup(shapes: VectorShape[], indent = '  ', idPrefix = ''): string {
-  return shapes.map((shape) => `${indent}${shapeToMarkup(shape, idPrefix)}`).join('\n')
+  return visibleShapes(shapes)
+    .map((shape) => `${indent}${shapeToMarkup(shape, idPrefix)}`)
+    .join('\n')
 }
 
 /** O documento SVG inteiro (ordem do array = z-order, fundo primeiro). */

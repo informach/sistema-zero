@@ -30,7 +30,7 @@ import {
   translateShape,
 } from '../../../vector/geometry'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
-import type { Vec2, VectorShape } from '../../../vector/model'
+import { type Vec2, type VectorShape, visibleShapes } from '../../../vector/model'
 import {
   makeEllipse,
   makeLine,
@@ -237,7 +237,9 @@ export function VectorStage(): JSX.Element {
       // Conta-gotas: adota o estilo da forma mais AO TOPO sob o toque (bbox — o
       // clique de forma borbulha até aqui porque não é a ferramenta de seleção).
       // `adoptStyle` muda SÓ o estilo vigente (não re-estiliza a seleção).
-      const hit = [...currentShapes()].reverse().find((s) => bboxContains(shapeBounds(s), at))
+      const hit = [...visibleShapes(currentShapes())]
+        .reverse()
+        .find((s) => bboxContains(shapeBounds(s), at))
       if (hit) {
         adoptStyle({
           fill: hit.fill,
@@ -448,7 +450,10 @@ export function VectorStage(): JSX.Element {
         return
       }
       const shapes = currentShapes()
-      const hit = shapes.filter((s) => boundsIntersect(shapeBounds(s), box)).map((s) => s.id)
+      // O laço só pega formas VISÍVEIS (apagar algo invisível assustaria).
+      const hit = visibleShapes(shapes)
+        .filter((s) => boundsIntersect(shapeBounds(s), box))
+        .map((s) => s.id)
       const expanded = expandToGroups(shapes, hit)
       setSelectedIds((current) =>
         gesture.additive ? [...new Set([...current, ...expanded])] : expanded,
@@ -534,19 +539,24 @@ export function VectorStage(): JSX.Element {
             onPointerUp={endGesture}
             onPointerCancel={endGesture}
           >
-            {/* Degradês de TODOS os shapes visíveis (doc + onion + prévia). */}
+            {/* Degradês de TODOS os shapes visíveis (doc + onion + prévia) — o
+                olhinho do painel Camadas tira a forma do palco inteiro. */}
             <GradientDefs
-              shapes={[...doc.shapes, ...(onionShapes ?? []), ...(preview ? [preview] : [])]}
+              shapes={[
+                ...visibleShapes(doc.shapes),
+                ...visibleShapes(onionShapes ?? []),
+                ...(preview ? [preview] : []),
+              ]}
             />
             {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
             {onionShapes ? (
               <g opacity={0.3} pointerEvents="none">
-                {onionShapes.map((shape) => (
+                {visibleShapes(onionShapes).map((shape) => (
                   <ShapeElement key={`onion-${shape.id}`} shape={shape} />
                 ))}
               </g>
             ) : null}
-            {doc.shapes.map((shape) => (
+            {visibleShapes(doc.shapes).map((shape) => (
               <ShapeElement
                 key={shape.id}
                 shape={shape}

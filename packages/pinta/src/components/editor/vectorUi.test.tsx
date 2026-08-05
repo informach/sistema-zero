@@ -84,7 +84,8 @@ describe('UI vetorial (F5)', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
     await waitFor(() => {
-      expect(screen.getByText('Olá!')).toBeTruthy()
+      // Aparece no palco E na miniatura do painel Camadas.
+      expect(screen.getAllByText('Olá!').length).toBeGreaterThan(0)
     })
     // Shape criado fica SELECIONADO: painel de ações aparece.
     expect(screen.getByRole('button', { name: COPY.vector.remove })).toBeTruthy()
@@ -152,7 +153,7 @@ describe('UI vetorial (F5)', () => {
     // 480×360 → grade de 16: (30,30)→(32,32) e (93,61)→(96,64).
     drawRect(stage, [30, 30], [93, 61])
     await waitFor(() => {
-      const rect = document.querySelector('rect[fill="#78dc52"]')
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
       expect(rect?.getAttribute('x')).toBe('32')
       expect(rect?.getAttribute('y')).toBe('32')
       expect(rect?.getAttribute('width')).toBe('64')
@@ -166,7 +167,7 @@ describe('UI vetorial (F5)', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
     drawRect(stage, [30, 30], [93, 61])
     await waitFor(() => {
-      const rect = document.querySelector('rect[fill="#78dc52"]')
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
       expect(rect?.getAttribute('x')).toBe('30')
       expect(rect?.getAttribute('width')).toBe('63')
     })
@@ -179,7 +180,7 @@ describe('UI vetorial (F5)', () => {
     drawRect(stage, [16, 16], [48, 48])
     drawRect(stage, [112, 16], [176, 80])
     await waitFor(() => {
-      expect(document.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
     })
     // Laço com a ferramenta Selecionar, do (8,8) ao (200,100): pega as duas.
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
@@ -201,7 +202,7 @@ describe('UI vetorial (F5)', () => {
     fireEvent.pointerMove(stage, { pointerId: 2, clientX: 336, clientY: 144 })
     fireEvent.pointerUp(stage, { pointerId: 2 })
     await waitFor(() => {
-      const rects = document.querySelectorAll('rect[fill="#78dc52"]')
+      const rects = stage.querySelectorAll('rect[fill="#78dc52"]')
       expect(rects[0]?.getAttribute('width')).toBe('64')
       expect(rects[1]?.getAttribute('x')).toBe('208')
       expect(rects[1]?.getAttribute('width')).toBe('128')
@@ -218,7 +219,7 @@ describe('UI vetorial (F5)', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.selDuplicate }))
     await waitFor(() => {
-      expect(document.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
     })
   })
 
@@ -233,7 +234,7 @@ describe('UI vetorial (F5)', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.alignCenterH }))
     await waitFor(() => {
       // (480 - 32) / 2 = 224.
-      const rect = document.querySelector('rect[fill="#78dc52"]')
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
       expect(rect?.getAttribute('x')).toBe('224')
     })
   })
@@ -252,7 +253,7 @@ describe('UI vetorial (F5)', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
     await waitFor(() => {
-      expect(screen.getByText('some')).toBeTruthy()
+      expect(screen.getAllByText('some').length).toBeGreaterThan(0)
     })
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.remove }))
     await waitFor(() => {

@@ -378,6 +378,15 @@ export const COPY = {
     alignTop: 'Alinhar em cima',
     alignMiddleV: 'Centralizar na altura',
     alignBottom: 'Alinhar embaixo',
+    /** Rótulo por tipo de forma no painel Camadas (texto mostra o próprio conteúdo). */
+    shapeNames: {
+      rect: 'Retângulo',
+      ellipse: 'Círculo',
+      line: 'Linha',
+      polygon: 'Forma',
+      path: 'Traço',
+      text: 'Texto',
+    } as Record<string, string>,
     opacity: 'Quanto aparece',
     none: 'Sem cor',
     customColor: 'Cor personalizada',

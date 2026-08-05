@@ -10,11 +10,13 @@ import { ChevronDown } from '../../ui/icons'
 import { PreviewPlayer } from '../PreviewPlayer'
 import { VectorPropertiesPanel } from '../VectorPropertiesPanel'
 import { VectorColorsPanel } from './VectorColorsPanel'
+import { VectorLayerPanel } from './VectorLayerPanel'
 
 export function VectorRightColumn(): JSX.Element {
   return (
     <div className="flex min-h-0 w-68 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto">
       <PreviewPlayer />
+      <VectorLayerPanel />
       <VectorColorsPanel />
       <VectorPropertiesPanel />
     </div>
@@ -45,6 +47,7 @@ export function VectorPanelsDisclosure(): JSX.Element {
       {open ? (
         <div className="flex gap-2 overflow-x-auto pt-2">
           <VectorColorsPanel />
+          <VectorLayerPanel />
           <VectorPropertiesPanel />
         </div>
       ) : null}
