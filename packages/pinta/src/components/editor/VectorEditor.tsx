@@ -798,7 +798,9 @@ export function VectorEditor(): JSX.Element | null {
           ref={stageRef}
           className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
         >
-          <div className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner">
+          {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
+              RETO para a borda não "comer" o desenho da criança. */}
+          <div className="border-2 border-pin-border bg-white shadow-inner">
             <svg
               ref={svgRef}
               width={stageWidth}
