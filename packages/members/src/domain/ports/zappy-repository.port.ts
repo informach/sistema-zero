@@ -18,6 +18,7 @@ export interface ZappyStoredResponse {
     blockType: string
     name: string
     category: string
+    subcategory?: string
     area: string
   }>
   lessonReferences?: Array<{

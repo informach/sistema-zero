@@ -117,6 +117,7 @@ export const ZappyInternalResponseBody = t.Object({
         blockType: t.String({ minLength: 1, maxLength: 128 }),
         name: t.String({ minLength: 1, maxLength: 240 }),
         category: t.String({ minLength: 1, maxLength: 160 }),
+        subcategory: t.Optional(t.String({ maxLength: 160 })),
         area: t.String({ minLength: 1, maxLength: 80 }),
       }),
       { maxItems: 12 },

@@ -376,17 +376,24 @@ export function ZappyPanel(): JSX.Element | null {
             <p className="whitespace-pre-wrap">{message.text}</p>
             {project.kind !== 'pro' && message.response?.blockReferences.length ? (
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {message.response.blockReferences.map((reference) => (
-                  <button
-                    key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
-                    type="button"
-                    onClick={() => goToBlock(reference)}
-                    className="rounded-full border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 font-semibold text-sz-accent text-xs hover:bg-sz-accent/20"
-                    title={`${reference.category} · ${reference.area}`}
-                  >
-                    {reference.name}
-                  </button>
-                ))}
+                {message.response.blockReferences.map((reference) => {
+                  const trail =
+                    reference.subcategory && reference.subcategory !== reference.category
+                      ? `${reference.category} › ${reference.subcategory}`
+                      : reference.category
+                  return (
+                    <button
+                      key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
+                      type="button"
+                      onClick={() => goToBlock(reference)}
+                      className="flex flex-col items-start rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-left text-sz-accent hover:bg-sz-accent/20"
+                      title={`${trail} · ${reference.area}`}
+                    >
+                      <span className="font-semibold text-xs">{reference.name}</span>
+                      <span className="text-[0.6875rem] text-sz-accent/70">{trail}</span>
+                    </button>
+                  )
+                })}
               </div>
             ) : null}
             {config?.openLesson &&

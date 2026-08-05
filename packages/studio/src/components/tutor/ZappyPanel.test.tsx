@@ -236,6 +236,81 @@ describe('ZappyPanel', () => {
     expect(view.queryByRole('button', { name: 'mostrar no console' })).toBeNull()
   })
 
+  it('mostra a categoria e a subcategoria do bloco citado', async () => {
+    const tutorResponse = {
+      ...response(),
+      blockReferences: [
+        {
+          blockType: 'sz_g2d_create_sprite',
+          name: 'criar sprite',
+          category: 'Jogo 2D',
+          subcategory: '🎮 Sprites',
+          area: 'Código',
+        },
+      ],
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => tutorResponse,
+      feedback: async () => undefined,
+    }
+
+    const view = render(renderPanel(adapter))
+
+    await view.findByText('criar sprite')
+    expect(view.getByText('Jogo 2D › 🎮 Sprites')).toBeTruthy()
+  })
+
+  it('não repete a categoria quando a subcategoria é igual', async () => {
+    const tutorResponse = {
+      ...response(),
+      blockReferences: [
+        {
+          blockType: 'sz_js_log',
+          name: 'mostrar no console',
+          category: 'Programação',
+          subcategory: 'Programação',
+          area: 'Código',
+        },
+      ],
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => tutorResponse,
+      feedback: async () => undefined,
+    }
+
+    const view = render(renderPanel(adapter))
+
+    await view.findByText('mostrar no console')
+    expect(view.queryByText('Programação › Programação')).toBeNull()
+    expect(view.getByText('Programação')).toBeTruthy()
+  })
+
   it('exige confirmação antes de apagar todo o histórico', async () => {
     let deleted = 0
     const adapter: StudioTutorAdapter = {

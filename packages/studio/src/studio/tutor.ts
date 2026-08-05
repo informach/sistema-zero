@@ -46,7 +46,10 @@ export interface StudioTutorBlockReference {
   /** ID autoritativo do tipo no catálogo server-safe. */
   blockType: string
   name: string
+  /** Categoria de topo na paleta (ex.: "Jogo 2D"). */
   category: string
+  /** Subcategoria aninhada (ex.: "🎮 Sprites"). Ausente em respostas antigas. */
+  subcategory?: string
   area: string
 }
 
