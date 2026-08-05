@@ -78,19 +78,27 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   habilita com QUALQUER tileset (badge de estilo no seletor).
 - **Motor pixel (`src/pixel/`)**: `ops.ts` operações PURAS; `tools.ts` máquina PURA de gesto;
   `selection.ts`; `render.ts` única camada canvas.
-- **Editor vetorial (`VectorEditor`)**: shapes = elementos SVG REAIS; edita o "documento de shapes
-  ativo" via `activeShapesOf`/`withActiveShapes` (`core/assetEdit.ts` — espelho do par bitmap):
-  cenário inteiro, quadro da animação (vector-sprite) ou tile (vector-tileset, `frameIndex` da
-  sessão = índice do tile). ⚠️ O palco `<svg>` tem **width/height DEFINIDOS** (doc × zoom, como o
+- **Editor vetorial (pasta `components/editor/vector/`, 08/2026)**: shapes = elementos SVG REAIS;
+  edita o "documento de shapes ativo" via `activeShapesOf`/`withActiveShapes`
+  (`core/assetEdit.ts` — espelho do par bitmap): cenário inteiro, quadro da animação
+  (vector-sprite) ou tile (vector-tileset, `frameIndex` da sessão = índice do tile). O antigo
+  componente único `VectorEditor.tsx` foi DECOMPOSTO: **`VectorEditorScope`** (provider por
+  documento com estado + ações, consumido via `useVectorEditor()`), **`VectorToolbox`** (caixa),
+  **`VectorStage`** (palco + gestos + diálogo de texto), **`VectorColorsPanel`** (Cores),
+  **`VectorLayerPanel`** (Camadas), **`VectorRightColumn`** (coluna direita + disclosure
+  estreito), `vectorTools.ts` (catálogo/helpers) — o `VectorPropertiesPanel` (Aparência) lê do
+  contexto. ⚠️ O palco `<svg>` tem **width/height DEFINIDOS** (doc × zoom, como o
   canvas) — sem isso o wrapper shrink-to-fit colapsa a zero e "a área não aparece" (bug histórico;
   regressão testada). Zoom próprio (`VECTOR_ZOOM_LEVELS`, sessão com `zoomLevels` injetável) +
-  botão Ajustar + ferramenta Mão 🖐️ (pan — touch tem touch-action:none). Onion skin vetorial via
+  botão Ajustar + ferramenta Mão 🖐️ (pan — touch tem touch-action:none; SEGURAR ESPAÇO vira a Mão
+  em qualquer ferramenta). Onion skin vetorial via
   `previousShapesOf`. Alças de seleção dimensionadas em px de TELA (÷zoom). Teclado: Delete/setas
   na seleção (listener no window, ignora inputs). Todo gesto guarda `pointerId` (multi-touch não
   corrompe). Pincel usa `smoothStrokeToPathCapped` — o `d` criado SEMPRE cabe no `MAX_PATH_CHARS`
   do sanitize (senão o traço sumiria no reload); acima de 1500 pontos crus decima O(n)
   ANTES do RDP (O(n²) no pior caso — rabisco zigue-zague longo travava o soltar do
-  pincel por segundos e estourava o timeout de 5s do teste no CI).
+  pincel por segundos e estourava o timeout de 5s do teste no CI). Ver a seção
+  "Editor de VETOR: paridade + recursos (08/2026)".
 - **Animação compartilhada**: `animation/frames.ts` e `tiles/tilesetOps.ts` são GENÉRICOS sobre o
   estilo (`AnimatedSpriteAsset`/`AnyTilesetAsset`; clone vetorial regenera ids de shape);
   `SpriteSheetPanel` concentra animações+quadros e `PreviewPlayer`/`TileStrip` servem os 2 estilos
@@ -209,12 +217,13 @@ testes por `getByRole({name})`).
 
 | | Pixel | Vetor | Mapa |
 |---|---|---|---|
-| P/E/G/R | Lápis · Borracha · Balde · Trocar cor | — | Lápis · Borracha · Balde |
+| P/E/G/R | Lápis · Borracha · Balde · Trocar cor | Caneta | Lápis · Borracha · Balde |
 | M/V/A/H | Selecionar | Selecionar · Editar pontos · Mão | Selecionar · Mão |
 | B/L/U/O | Linha · Retângulo · Círculo | Pincel · Linha · Retângulo · Círculo | Linha · Retângulo |
 | I/T/Y/S | Conta-gotas | Conta-gotas · Texto · Polígono · Estrela | Conta-gotas |
 
-⚠️ No vetor, `A` sozinho é "editar os pontos" e `Ctrl+A` continua "selecionar tudo".
+⚠️ No vetor, `A` sozinho é "editar os pontos" e `Ctrl+A` continua "selecionar tudo". `P` é a
+Caneta SÓ no vetor (o Lápis do pixel usa o mesmo `P` — os mapas de atalho são POR editor).
 No MAPA, **Delete** aciona o "Apagar pedaço" que já existia (a ação vem por ref, montada
 depois das saídas antecipadas do componente).
 
@@ -344,6 +353,60 @@ Cenário e personagem animado têm **camadas** (peças NÃO — a pecinha é peq
   `core/project.test.ts`, achatamento em `export/spritesheet.test.ts`.
 - ⚠️ O painel do TILEMAP também se chama "Camadas" (`COPY.tiles.layers`) — ao consultar por
   `section[aria-label="Camadas"]` num teste/QA, confira qual editor está aberto.
+
+## Editor de VETOR: paridade + recursos (08/2026, inspiração Vectorpea)
+
+Pedido da usuária: o vetor com o MESMO layout do pixel (a criança não estranha ao trocar) e só
+ADIÇÕES de recursos — nada removido. Palco SEM canto arredondado nos DOIS editores (o raio da
+moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondados).
+
+- **Layout espelho do pixel**: caixa à ESQUERDA (espessuras do traço fixas no topo, ferramentas em
+  DUAS colunas rolando no meio, e os slots PREENCHIMENTO/CONTORNO fixos no pé — espelho do
+  principal/secundária, com botão de trocar; o slot clicado = `activeChannel`, quem recebe a
+  próxima cor) · palco no meio · coluna DIREITA `w-68` (Prévia → **Camadas** → **Cores** →
+  Aparência) · faixa (Spritesheet/peças + zoom) em LARGURA TOTAL. A coluna dupla do
+  vector-sprite MORREU (`PixelRightColumn` saiu do ramo vetor). Tela estreita: caixa horizontal +
+  disclosure "Cores e camadas" (`VectorPanelsDisclosure`).
+- **Papel BRANCO fixo** no palco (sem xadrez — decisão de produto: cor absoluta nos 2 temas;
+  forma branca sem contorno some — mitigado pelo contorno preto default e pela grade).
+- **Grade de apoio + snap** (`vector/grid.ts`): botão Grade na caixa (mesmo `session.showGrid` do
+  pixel; no VETOR nasce DESLIGADA via `sessionDefaultsFor`). Overlay = `<pattern>` + 1 `<rect>` SÓ
+  no editor (o export NUNCA a leva), traço `1/zoom`; espaçamento 4/8/16 por tamanho do doc
+  (≤64/≤256/acima). Ligada, encaixam: desenho de formas, Caneta, mover e redimensionar — o pincel
+  e os nós do editar pontos ficam LIVRES. Ordem: snap PRIMEIRO, Shift depois. ⚠️ O gesto de mover
+  virou delta TOTAL sobre a base (`baseShapes` no gesto) — sem deriva e com os offsets internos da
+  seleção preservados.
+- **Laço de seleção**: arrasto no fundo com a Selecionar (Shift acrescenta); pega toda forma
+  VISÍVEL cuja bbox encosta (`boundsIntersect`); toque parado continua limpando. **Multi-resize**:
+  a caixa da UNIÃO (`boundsUnion`) ganha as 8 alças; todas escalam em torno da mesma âncora
+  (girar segue só individual — futuro). **Barra flutuante da seleção** sobre o palco (espelho da
+  do pixel, via do touch; rótulos `sel*` DISTINTOS dos do painel p/ a11y/testes). **Alinhar**
+  (`alignShapes`): 6 botões no painel; 2+ = entre si, 1 = na tela; grupos transladam INTEIROS.
+- **CAMADAS do vetor** (`VectorLayerPanel`): uma linha por FORMA (topo primeiro) com olho,
+  miniatura, nome (`COPY.vector.shapeNames`; texto = "Texto: <conteúdo>") e alça (arrasto = UMA
+  entrada de undo via replace+`commitGesture`; ↑/↓ pelo teclado). Linha seleciona o GRUPO inteiro
+  (aria-label "Selecionar: <nome>" — distinto do botão de ferramenta). **`hidden?: boolean`** no
+  `VectorShapeBase` (sanitize OMITE quando falso; helper `visibleShapes`): escondida some do
+  palco e de TODO export/prévia num funil único (`shapesToMarkup`+`gradientDefsMarkup` no string,
+  `VectorFrameSvg` no React) — paridade com a camada escondida do pixel. Laço/Ctrl+A/conta-gotas
+  pulam escondidas; esconder desseleciona.
+- **Caneta** (`pen`, atalho P, ícone PenLine — o PenTool é do editar pontos): clique a clique,
+  fecha com clique perto do 1º ponto (raio 10/zoom), Enter ou duplo clique; Esc descarta; vira
+  POLÍGONO comum (≤64 pontos; teto de formas checado no 1º clique). Prévia elástica tracejada.
+- **Texto reeditável**: duplo clique (com a Selecionar) reabre o diálogo em "Mudar o texto";
+  slider "Tamanho da letra" no painel com 1 texto selecionado. **Raio do retângulo**: slider
+  "Cantos arredondados" (o modelo/export já tinham `rx`; `makeRect` ganhou o param `radius`).
+- **Cores por CANAL** (`VectorColorsPanel`): chips Preenchimento|Contorno + UMA grade de swatches
+  5/linha (recentes + paleta do projeto + fixos + "sem cor" + "+" livre) aplicando no canal
+  ativo. O conta-gotas usa `adoptStyle` (muda SÓ o estilo vigente, sem re-estilizar a seleção).
+- **Fora de escopo (futuro)**: operações booleanas (pathfinder), degradê multi-stop/ângulo livre,
+  importar SVG, máscaras/filtros/blend, alças de bézier, campos numéricos X/Y/W/H, girar
+  multi-seleção, snap dos nós do editar pontos.
+- Testes: `vectorUi.test.tsx` (caixa/canais/grade/snap/laço/multi-resize/alinhar/caneta/texto/
+  raio/espaço), `vectorLayersUi.test.tsx` (painel Camadas), `vector/grid.test.ts`,
+  `geometry.test.ts` (union/intersect/align), `model.test.ts`+`svg.test.ts` (hidden). ⚠️ Gotchas
+  de teste: escopar consultas de shapes NO PALCO (`stage.querySelector(...)` — miniaturas do
+  painel e ícones lucide também têm rect/text) e fixar o `getBoundingClientRect` do svg.
 
 ## Colisão por peça: sólido × plataforma (one-way) — lote MapperMate F2 (18/07)
 
@@ -555,9 +618,15 @@ por px reais.
   QA em browser real feito no playground (:5199) para o pixel — duplicar+espelhar+arrastar,
   Ctrl+C/V, Delete, área vazia não seleciona, clicar fora desseleciona, âncora do zoom.
   **Pende QA no vetor e no mapa** (atalhos + rolagem) e em toque/tablet.
+- **Editor de VETOR: paridade + recursos (08/2026, não commitado em main)**: ver a seção
+  dedicada — layout espelho do pixel (coluna direita única w-68 com Prévia → Camadas → Cores →
+  Aparência, slots de cor na caixa, faixa em largura total), palco de canto reto + papel branco,
+  grade+snap, laço, multi-resize, barra flutuante, alinhar, painel Camadas + `hidden`, Caneta,
+  texto reeditável, raio do retângulo, espaço-pan. Suíte 482 verde; QA de browser real pendente.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
-  Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio).
+  Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio; o lote novo do
+  vetor: grade/snap/laço/camadas/caneta em touch e nos 3 kinds).
 - **Backlog de produto conhecido (baixo)**: strings de UI soltas fora do copy.ts; auto-avançar no
   passo de tamanho; nome do estilo "Vetor" pode virar "Desenho de formas" se o QA com crianças
   mandar.
