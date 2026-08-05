@@ -4,6 +4,7 @@ import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
+import type { StudioPintaLibraryAdapter } from './pinta-library'
 import type { StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
 import type { StudioTheme } from './theme'
@@ -185,6 +186,15 @@ export interface StudioCommonProps {
    * Estável por instância (latchado, igual à `share`).
    */
   onEditDrawing?: (drawingId: string) => void
+  /**
+   * Adapter OPCIONAL "Trazer do Pinta": quando presente, o painel de Imagens
+   * ganha o botão que abre a modal com TODOS os desenhos da galeria do Pinta
+   * (busca + importar direto ao projeto), e a seção "Meus desenhos" some
+   * (substituída pela modal). O host só o passa com posse do Pinta E do
+   * Estúdio (produtos vendidos à parte). Ausente (default) → sem botão.
+   * Estável por instância (latchado, igual à `share`).
+   */
+  pintaLibrary?: StudioPintaLibraryAdapter
   /**
    * Mostra os EXEMPLOS prontos (CORE_EXAMPLES + os `examples` das extensões) no
    * painel de Extensões. Default `false` — os exemplos são material de TESTE do

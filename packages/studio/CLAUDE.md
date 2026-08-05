@@ -598,6 +598,39 @@ Testes: `personalSync.test.ts` + `components/assets/AssetsPanelEditDrawing.test.
 liga a feature (`setPersonalAssetsNamespace('playground')` + `onEditDrawing`) — QA em navegador real
 feito: jogo aberto, jogo FECHADO, preview e as duas miniaturas.
 
+### "Trazer do Pinta" — fluxo PULL (08/2026, substitui a seção "Meus desenhos")
+
+A dona rejeitou a lista "Meus desenhos" (enorme, sem busca, sem saber o que já foi trazido). O
+fluxo virou PULL: prop de host **`pintaLibrary?: StudioPintaLibraryAdapter`** (`studio/types.ts` →
+latch no `StudioCore` → contexto `studio/pinta-library.ts`, molde exato do `onEditDrawing`; tipos
+ESPELHO — o Studio segue sem importar o pinta). Com ela presente, o `AssetsPanel` ganha o botão
+**"🎨 Trazer do Pinta"** na barra (a barra renderiza com `allowUpload || pintaLibrary`; os uploads
+seguem gated por `allowUpload`) e **a seção "Meus desenhos" some** — o fallback (perfil sem posse
+do Pinta → host não passa o adapter) mantém a lista antiga. ⚠️ O EFEITO de carga/sincronia do
+painel fica vivo nos dois casos (alimenta o auto-update e o `editableDrawingIds`).
+
+- **`PintaImportDialog`** (modal ANINHADA, precedente TileConfigDialog): busca
+  (`filterPintaDrawings` puro + `core/searchText.ts normalizeSearchText`, extraída do KitGallery),
+  grade de cards (miniatura ou emoji do papel, selo do tipo, selo `jogo: <nome>`), selo
+  **"✓ no projeto"** derivado do `libId personal:<id>` dos assets do projeto; adicionar chama
+  `adapter.import(id)` → `addAsset` (clone do addFromPersonal; `uniqueAssetName` compartilhado em
+  `components/assets/assetNames.ts`); a modal FICA aberta (multi-import); card já no projeto vira
+  "Adicionar de novo" (sufixo `-2` legítimo). Erro `code: 'not-found'` remove o card.
+- **O import do host grava em personal-assets ANTES de devolver** — é o que preserva a mão-dupla
+  (guard `getPersonalAsset` do resync) e o botão editar. O Studio usa o `name` DEVOLVIDO (o upsert
+  pode sufixar).
+- **Lado Pinta**: subpath `@sistemazero/pinta/studio-library` (`listGalleryForStudio` +
+  `exportAssetForStudio`); o foguete "Usar no Estúdio" agora só aparece em desenho com
+  `projectRef` (missão do Pensa) — ver o CLAUDE.md do pinta.
+- ⚠️ **Fix no `Modal` (#ui) que a modal aninhada expôs:** o `cancel` do dialog DE CIMA borbulha
+  pela árvore REACT (portal propaga pelo componente, não pelo DOM) e fechava OS DOIS — o
+  `onCancel` agora ignora `e.target !== e.currentTarget` (valia também para o TileConfigDialog).
+
+Testes: `components/assets/PintaImportDialog.test.tsx` (⚠️ fixtures com nomes que NÃO colidem com
+o starter pack — `heroi` da ASSET_LIBRARY quebra `getByText`). QA browser no playground (:5173,
+fake `pintaLibraryDemo` no App.tsx que grava de verdade na biblioteca): busca com acento, import,
+selo ✓, sufixo -2, Esc fecha só a de cima, "✏️ editar desenho" aparece após o import.
+
 **Full review (02/08) — 4 correções, todas com teste:**
 1. ⭐ **Jogo aberto NO MEIO da varredura perdia a atualização.** O id do projeto aberto era capturado
    UMA vez, antes do laço; a varredura roda no foco da aba, que é exatamente quando a criança clica

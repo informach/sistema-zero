@@ -59,6 +59,10 @@ export function Modal({
           if (e.target === e.currentTarget) onClose()
         }}
         onCancel={(e) => {
+          // Modal ANINHADO (TileConfigDialog, Trazer do Pinta): o `cancel` do
+          // dialog de cima borbulha pela árvore REACT (portal propaga pelo
+          // componente, não pelo DOM) — sem o guard, um Esc fechava OS DOIS.
+          if (e.target !== e.currentTarget) return
           e.preventDefault()
           onClose()
         }}
