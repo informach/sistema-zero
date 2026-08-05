@@ -475,9 +475,15 @@ ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa
 `KidsPensaUnavailable` (retry); produto + carreira ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
 do pacote no effect, tema do next-themes e sprites do Zappy). A persistência do plano é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
-(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` tem
-`force-dynamic`). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
-dynamic import). `PensaHostAdapter.onOpenTask` navega para `/pinta?tarefa=<id>` ou
+(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` E o
+`…/artifacts/generate` têm `force-dynamic` — a geração responde SSE desde 08/2026, ver
+member-shell). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
+dynamic import). ⚠️ O `request()` do transport **sniffa `content-type: text/event-stream`**:
+resposta SSE é lida pelo helper `readSse` (compartilhado com o `streamChat`) e o evento terminal
+vira o resolve (`done` = corpo JSON de sempre) ou o MESMO erro duck-typed (`error`); stream que
+acaba sem terminal rejeita "A conexão caiu no meio.". Sniff por content-type (não por path)
+tolera skew de deploy. É o que matou o 502 do "Criar plano de tarefas" (borda derrubava o POST
+mudo de minutos). `PensaHostAdapter.onOpenTask` navega para `/pinta?tarefa=<id>` ou
 `/estudio?tarefa=<id>`; nenhuma tela do Estúdio monta dentro do Pensa. `MainContainer` dá largura
 total a `/pensa`. Requisitos de
 build: `transpilePackages` + `@import` do `pensa.css` + `@source "../../../pensa/src"` no

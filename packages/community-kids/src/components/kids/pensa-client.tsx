@@ -100,6 +100,60 @@ export function PensaClient({
   )
 }
 
+/** Erro duck-typed do transport (a classe PensaApiError não atravessa o dynamic import). */
+function requestError(
+  message: string | undefined,
+  status: number,
+  code: string | undefined,
+  scope?: 'day' | 'month',
+) {
+  const cause = new Error(message ?? 'Não deu certo agora.') as Error & {
+    status: number
+    code: string
+    scope?: 'day' | 'month'
+  }
+  cause.status = status
+  cause.code = code ?? 'REQUEST_FAILED'
+  cause.scope = scope
+  return cause
+}
+
+/**
+ * Lê uma resposta SSE (blocos `event:`/`data:` separados por linha vazia;
+ * comentários `: ping` são ignorados de graça, não têm `event:`). `onEvent`
+ * devolve true para encerrar; resolve true quando um evento terminal chegou.
+ */
+async function readSse(
+  body: ReadableStream<Uint8Array>,
+  onEvent: (event: string, data: unknown) => boolean,
+): Promise<boolean> {
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  while (true) {
+    const chunk = await reader.read()
+    if (chunk.done) break
+    buffer += decoder.decode(chunk.value, { stream: true })
+    const blocks = buffer.split('\n\n')
+    buffer = blocks.pop() ?? ''
+    for (const block of blocks) {
+      const event = block
+        .split('\n')
+        .find((line) => line.startsWith('event:'))
+        ?.slice(6)
+        .trim()
+      const raw = block
+        .split('\n')
+        .find((line) => line.startsWith('data:'))
+        ?.slice(5)
+        .trim()
+      if (!event || !raw) continue
+      if (onEvent(event, JSON.parse(raw) as unknown)) return true
+    }
+  }
+  return false
+}
+
 function createPensaTransport(): PensaTransport {
   return {
     async request<T>(
@@ -111,20 +165,44 @@ function createPensaTransport(): PensaTransport {
         headers: init?.body !== undefined ? { 'content-type': 'application/json' } : undefined,
         body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
       })
+      // Gerações longas respondem SSE (keepalive contra o 502 da borda): o
+      // JSON de sempre chega num único evento `done` — ou `error`, que vira o
+      // MESMO erro duck-typed do caminho JSON. Sniff por content-type (não por
+      // path) tolera skew de deploy.
+      const contentType = response.headers.get('content-type') ?? ''
+      if (response.ok && response.body && contentType.includes('text/event-stream')) {
+        let terminal: { event: string; data: unknown } | null = null
+        try {
+          await readSse(response.body, (event, data) => {
+            if (event !== 'done' && event !== 'error') return false
+            terminal = { event, data }
+            return true
+          })
+        } catch {
+          throw requestError('A conexão caiu no meio. Tente de novo.', 502, 'CONNECTION_LOST')
+        }
+        if (!terminal)
+          throw requestError('A conexão caiu no meio. Tente de novo.', 502, 'CONNECTION_LOST')
+        const { event, data } = terminal as { event: string; data: unknown }
+        if (event === 'done') return data as T
+        const value = data as {
+          status?: number
+          code?: string
+          message?: string
+          scope?: 'day' | 'month'
+        }
+        throw requestError(value.message, value.status ?? 502, value.code, value.scope)
+      }
       const body = (await response.json().catch(() => null)) as {
         error?: { code?: string; message?: string; scope?: 'day' | 'month' }
       } | null
-      if (!response.ok) {
-        const cause = new Error(body?.error?.message ?? 'Não deu certo agora.') as Error & {
-          status: number
-          code: string
-          scope?: 'day' | 'month'
-        }
-        cause.status = response.status
-        cause.code = body?.error?.code ?? 'REQUEST_FAILED'
-        cause.scope = body?.error?.scope
-        throw cause
-      }
+      if (!response.ok)
+        throw requestError(
+          body?.error?.message,
+          response.status,
+          body?.error?.code,
+          body?.error?.scope,
+        )
       return body as T
     },
     streamChat(input, handlers) {
@@ -151,41 +229,21 @@ function createPensaTransport(): PensaTransport {
             } | null
             return fail(body?.error?.message ?? 'O Zappy tropeçou aqui.', body?.error?.code)
           }
-          const reader = response.body.getReader()
-          const decoder = new TextDecoder()
-          let buffer = ''
-          while (true) {
-            const chunk = await reader.read()
-            if (chunk.done) break
-            buffer += decoder.decode(chunk.value, { stream: true })
-            const blocks = buffer.split('\n\n')
-            buffer = blocks.pop() ?? ''
-            for (const block of blocks) {
-              const event = block
-                .split('\n')
-                .find((line) => line.startsWith('event:'))
-                ?.slice(6)
-                .trim()
-              const raw = block
-                .split('\n')
-                .find((line) => line.startsWith('data:'))
-                ?.slice(5)
-                .trim()
-              if (!event || !raw) continue
-              const data = JSON.parse(raw) as unknown
-              if (event === 'delta' && typeof data === 'string') handlers.onDelta(data)
-              else if (event === 'state') handlers.onState?.(data as Record<string, unknown>)
-              else if (event === 'done') {
-                finished = true
-                handlers.onDone()
-                return
-              } else if (event === 'error') {
-                const value = data as { code?: string; message?: string }
-                return fail(value.message ?? 'O Zappy tropeçou aqui.', value.code)
-              }
+          const terminal = await readSse(response.body, (event, data) => {
+            if (event === 'delta' && typeof data === 'string') handlers.onDelta(data)
+            else if (event === 'state') handlers.onState?.(data as Record<string, unknown>)
+            else if (event === 'done') {
+              finished = true
+              handlers.onDone()
+              return true
+            } else if (event === 'error') {
+              const value = data as { code?: string; message?: string }
+              fail(value.message ?? 'O Zappy tropeçou aqui.', value.code)
+              return true
             }
-          }
-          fail('A conexão caiu no meio. Tente de novo.')
+            return false
+          })
+          if (!terminal) fail('A conexão caiu no meio. Tente de novo.')
         } catch {
           if (!controller.signal.aborted) fail('A conexão falhou. Tente de novo.')
         }

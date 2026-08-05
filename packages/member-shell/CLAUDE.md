@@ -223,8 +223,17 @@ aceita `oneOf` (400 real do `pensa_task_plan_v1`, 08/2026); o teste de deriva em
 `tests/pensa-ai.test.ts` trava os quatro schemas e `resolveTaskPlan` normaliza `null`→ausente
 antes do members (o DTO de lá usa `t.Optional`, que não aceita null). Sem stream o corpo só chega
 no FIM da geração: `completePensaJson` aceita `bodyTimeoutMs` (task_plan 180s, visual_direction
-90s — 30s derrubava o plano real, "pendurou o corpo" 08/2026) e timeout de corpo NÃO re-tenta
-(`PensaLlmError.retryable=false`); a rota loga o erro técnico e devolve frase gentil à criança. A geração rejeita referência
+90s — 30s derrubava o plano real, "pendurou o corpo" 08/2026), timeout de corpo NÃO re-tenta
+(`PensaLlmError.retryable=false`) e **ABORTA o socket do fetch** ao estourar (senão a conexão
+seguia pendurada); a rota loga o erro técnico e devolve frase gentil à criança.
+**O `pensaGenerateArtifact.POST` responde `text/event-stream` (08/2026):** o PRÉ-VOO
+(sessão/impersonação/carreira/validação/projeto/quota) segue JSON com os envelopes de sempre;
+dali em diante o stream manda `: ok` imediato (TTFB antes do LLM), `: ping` a cada 15s e um único
+evento terminal — `done` com o corpo antigo (`{artifact}`) ou `error` `{status, code, message?}`.
+Sem isso a borda (Railway; Cloudflare em prod ~100s) derrubava com **502** o POST mudo de minutos
+do task_plan (o banner mostrava o fallback "Não deu certo agora."). ⚠️ Desconexão do cliente NÃO
+aborta a geração (≠ chat): o resultado persiste no members e um F5 o mostra — abortar no meio
+podia deixar `pensaReplaceTasks` aplicado sem o artefato salvo. A geração rejeita referência
 inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset.
 A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
 persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).

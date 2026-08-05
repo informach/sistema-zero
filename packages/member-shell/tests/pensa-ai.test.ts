@@ -2,10 +2,15 @@ import { describe, expect, it, mock } from 'bun:test'
 
 mock.module('server-only', () => ({}))
 
+process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
+process.env.OPENROUTER_API_KEY ??= 'test-openrouter-key'
+
 const { buildStageZSystem } = await import('../src/server/pensa-agents/stage-z')
 const { PENSA_CHILD_SAFETY_CLAUSE } = await import('../src/server/pensa-agents/safety')
 const { transcriptForEvaluator } = await import('../src/server/pensa-agents/stage-z-evaluator')
-const { pensaChatRateLimited, GenerateBody } = await import('../src/routes/pensa-ai')
+const { pensaChatRateLimited, GenerateBody, createPensaAiRoutes } = await import(
+  '../src/routes/pensa-ai'
+)
 const { ClientArtifactBody, ClientValidatableArtifactType } = await import('../src/routes/pensa')
 const {
   GameDesignArtifactSchema,
@@ -201,5 +206,173 @@ describe('rate limit do chat', () => {
     for (let index = 0; index < 10; index += 1) expect(pensaChatRateLimited(key, now)).toBe(false)
     expect(pensaChatRateLimited(key, now)).toBe(true)
     expect(pensaChatRateLimited(key, now + 61_000)).toBe(false)
+  })
+})
+
+describe('geração de artefatos por SSE', () => {
+  // A geração leva minutos; a resposta é um stream com keepalive para a borda
+  // não derrubar o POST com 502 — só o PRÉ-VOO (sessão/gates/quota) segue JSON.
+  const projectId = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
+  const cycleId = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e002'
+
+  const idea = {
+    title: 'Dino Ninja',
+    idea: 'Um dinossauro pula obstáculos.',
+    objective: 'Chegar ao fim da fase.',
+    controls: ['setas', 'espaço'],
+    victory: 'Chegar à bandeira.',
+    defeat: 'Encostar em três obstáculos.',
+    dimension: '2d',
+  }
+  const visual = {
+    style: 'Pixel art simples.',
+    camera: 'Lateral.',
+    mood: 'Aventura alegre.',
+    shapeLanguage: 'Formas arredondadas para amigos e pontas para perigos.',
+    palette: [
+      { role: 'herói', color: '#22C55E' },
+      { role: 'perigo', color: '#EF4444' },
+      { role: 'fundo', color: '#0F172A' },
+    ],
+    visualRules: ['Contorno escuro', 'Perigos sempre vermelhos'],
+    screens: [{ screenId: 'inicio', description: 'Título grande e botão.' }],
+    assets: [
+      {
+        id: 'hero',
+        name: 'Dinossauro',
+        kind: 'sprite',
+        appearance: 'Verde e arredondado.',
+        animations: ['correndo'],
+        states: ['normal'],
+        usage: 'Personagem do jogador.',
+      },
+    ],
+  }
+
+  const artifact = (type: string, content: unknown) => ({
+    id: `${type}-1`,
+    type,
+    status: 'validated',
+    version: 1,
+    createdAt: '2026-08-01T00:00:00.000Z',
+    content,
+  })
+  const stageView = (stage: string, extra?: Record<string, unknown>) => ({
+    stage,
+    conversation: { messages: [], messageCount: 0 },
+    state: {},
+    artifacts: [],
+    tasks: [],
+    nextTaskId: null,
+    ...extra,
+  })
+
+  function makeRoutes(overrides: { members?: Record<string, unknown>; user?: unknown } = {}) {
+    const members = {
+      pensaGetProject: async () => ({
+        status: 200,
+        body: {
+          project: {
+            id: projectId,
+            name: 'Runo',
+            cycles: [{ id: cycleId, number: 1, stage: 'o' }],
+          },
+        },
+      }),
+      aiUsageConsume: async () => ({ status: 200, body: { allowed: true } }),
+      getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+      pensaSaveArtifact: async (_cycle: string, input: { type: string; content: unknown }) => ({
+        status: 200,
+        body: { artifact: artifact(input.type, input.content) },
+      }),
+      ...overrides.members,
+    }
+    const session = {
+      getSession: async () =>
+        'user' in overrides ? overrides.user : { id: 'user-1', role: 'staff' },
+    }
+    return createPensaAiRoutes({
+      members: members as never,
+      session: session as never,
+    })
+  }
+
+  const post = (routes: ReturnType<typeof createPensaAiRoutes>, body: unknown) =>
+    routes.pensaGenerateArtifact.POST(
+      new Request('http://localhost/api/pensa/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+      { params: Promise.resolve({ cycleId }) },
+    )
+
+  it('plan_review responde SSE: keepalive imediato e o corpo de sempre no evento done', async () => {
+    const routes = makeRoutes({
+      members: {
+        pensaGetStage: async (_cycle: string, stage: string) => ({
+          status: 200,
+          body:
+            stage === 'z'
+              ? stageView('z', { artifacts: [artifact('idea', idea)] })
+              : stage === 'e'
+                ? stageView('e', { artifacts: [artifact('visual_direction', visual)] })
+                : stageView('r'),
+        }),
+      },
+    })
+    const res = await post(routes, { type: 'plan_review', projectId, approved: false })
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type') ?? '').toContain('text/event-stream')
+    expect(res.headers.get('x-accel-buffering')).toBe('no')
+    const text = await res.text()
+    // TTFB imediato: o comentário de abertura sai ANTES de qualquer geração.
+    expect(text.startsWith(': ok\n\n')).toBe(true)
+    const doneBlock = text.split('\n\n').find((block) => block.startsWith('event: done')) ?? ''
+    expect(doneBlock).not.toBe('')
+    const dataLine = doneBlock.split('\n').find((line) => line.startsWith('data:')) ?? 'data: {}'
+    const payload = JSON.parse(dataLine.slice(5).trim()) as {
+      artifact?: { type?: string; content?: { approved?: boolean } }
+    }
+    expect(payload.artifact?.type).toBe('plan_review')
+    // Plano sem tarefas reprova na auditoria — o conteúdo de sempre, agora via done.
+    expect(payload.artifact?.content?.approved).toBe(false)
+  })
+
+  it('recusa de gate vira evento error dentro do stream (não um 4xx pendurado)', async () => {
+    const routes = makeRoutes({
+      members: {
+        pensaGetProject: async () => ({
+          status: 200,
+          body: {
+            project: {
+              id: projectId,
+              name: 'Runo',
+              cycles: [{ id: cycleId, number: 1, stage: 'z' }],
+            },
+          },
+        }),
+        pensaGetStage: async () => ({
+          status: 200,
+          body: stageView('z', { state: { ready: false } }),
+        }),
+      },
+    })
+    const res = await post(routes, { type: 'idea', projectId })
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type') ?? '').toContain('text/event-stream')
+    const text = await res.text()
+    const errorBlock = text.split('\n\n').find((block) => block.startsWith('event: error')) ?? ''
+    expect(errorBlock).toContain('PENSA_GATE_NOT_READY')
+    expect(errorBlock).toContain('"status":409')
+    expect(text).not.toContain('event: done')
+  })
+
+  it('sem sessão o pré-voo responde 401 em JSON, sem abrir stream', async () => {
+    const routes = makeRoutes({ user: null })
+    const res = await post(routes, { type: 'plan_review', projectId, approved: false })
+    expect(res.status).toBe(401)
+    expect(res.headers.get('content-type') ?? '').toContain('application/json')
+    expect(await res.json()).toEqual({ error: { code: 'UNAUTHENTICATED' } })
   })
 })

@@ -114,6 +114,51 @@ describe('completePensaJson', () => {
     }
   })
 
+  test('timeout de corpo ABORTA o socket do fetch (não fica pendurado)', async () => {
+    process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
+    process.env.JWT_HS256_SECRET = 'test-jwt-secret-with-32-characters'
+    let capturedSignal: AbortSignal | null | undefined
+    const hangingBody = () => {
+      const response = new Response(null, { status: 200 })
+      Object.defineProperty(response, 'json', {
+        // Corpo que NUNCA chega — o pior caso do provider pendurar a resposta.
+        value: () => new Promise(() => {}),
+      })
+      return response
+    }
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
+      Object.assign(
+        async (...args: Parameters<typeof fetch>) => {
+          capturedSignal = (args[1] as RequestInit | undefined)?.signal
+          return hangingBody()
+        },
+        { preconnect: globalThis.fetch.preconnect },
+      ),
+    )
+    try {
+      await expect(
+        completePensaJson({
+          system: 'system',
+          user: 'user',
+          schema: z.object({ ok: z.boolean() }),
+          jsonSchema: {
+            type: 'object',
+            properties: { ok: { type: 'boolean' } },
+            required: ['ok'],
+            additionalProperties: false,
+          },
+          schemaName: 'hung_body',
+          bodyTimeoutMs: 10,
+        }),
+      ).rejects.toThrow('pendurou o corpo')
+      // O relógio de corpo derruba o socket junto — sem isto a conexão seguia
+      // viva consumindo o pool mesmo após a rejeição.
+      expect(capturedSignal?.aborted).toBe(true)
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
   test('substitui saída imprópria por fallback local sem segunda chamada', async () => {
     process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
     process.env.JWT_HS256_SECRET = 'test-jwt-secret-with-32-characters'

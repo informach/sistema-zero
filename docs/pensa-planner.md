@@ -8,6 +8,10 @@ O Pensa cria e revisa o plano. O Pinta cria `sprite`, `background`, `tileset` e 
 
 O método ZERO produz cinco artefatos: `idea`, `game_design`, `visual_direction`, `task_plan` e `plan_review`. A Bíblia Visual registra estilo, câmera, clima, formas, paleta por função, regras, telas e inventário. Cada item do inventário recebe exatamente um Cartão de Criação.
 
+## Geração por SSE
+
+`POST /cycles/:id/artifacts/generate` responde `text/event-stream`: um comentário `: ok` imediato, `: ping` a cada 15s e um único evento terminal — `done` com o corpo JSON de sempre (`{artifact}`) ou `error` com `{status, code, message?}`. O pré-voo (sessão, gates, quota) continua respondendo JSON com os envelopes usuais. Sem o stream, a borda (Railway; Cloudflare em produção) derrubava com 502 o POST que fica mudo por minutos durante a síntese. A desconexão do cliente não aborta a geração: o resultado persiste no members e um reload o mostra.
+
 ## Tarefas e progresso
 
 Cada tarefa registra destino, categoria, estimativa, posição, dependências anteriores, guia com IDs estáveis, contexto discriminado e progresso. Dependências formam um DAG. A conclusão exige todos os itens obrigatórios e um `outputRef` da ferramenta correta.

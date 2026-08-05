@@ -147,7 +147,15 @@ function readWithGuards<T>(
   })
 }
 
-async function connectWithTimeout(body: unknown, signal?: AbortSignal): Promise<Response> {
+/**
+ * Conecta e devolve também o `abort` do controller interno: quem espera o CORPO
+ * depois dos headers precisa conseguir derrubar o socket (o timeout de corpo do
+ * `completePensaJson` rejeitava a Promise mas deixava a conexão pendurada).
+ */
+async function connectWithTimeout(
+  body: unknown,
+  signal?: AbortSignal,
+): Promise<{ res: Response; abort: () => void }> {
   const env = getEnv()
   const apiKey = env.OPENROUTER_API_KEY
   if (!apiKey) throw new PensaLlmError('IA não configurada', 503)
@@ -179,7 +187,7 @@ async function connectWithTimeout(body: unknown, signal?: AbortSignal): Promise<
       const text = await res.text().catch(() => '')
       throw new PensaLlmError(`OpenRouter erro ${res.status}: ${text.slice(0, 300)}`, res.status)
     }
-    return res
+    return { res, abort: () => controller.abort() }
   } finally {
     if (timer) clearTimeout(timer)
     signal?.removeEventListener('abort', onCallerAbort)
@@ -199,7 +207,7 @@ export async function streamPensaChat(opts: {
   signal?: AbortSignal
   onDelta: (text: string) => void
 }): Promise<string> {
-  const res = await connectWithTimeout(
+  const { res } = await connectWithTimeout(
     {
       model: opts.model ?? pensaChatModel(),
       messages: opts.messages,
@@ -307,14 +315,15 @@ export async function completePensaJson<T>(opts: {
       response_format: responseFormat,
     }
     try {
-      const res = await connectWithTimeout(body)
+      const { res, abort } = await connectWithTimeout(body)
       let timer: ReturnType<typeof setTimeout> | undefined
       const timeout = new Promise<never>((_, reject) => {
-        timer = setTimeout(
-          () =>
-            reject(new PensaLlmError('OpenRouter pendurou o corpo da resposta', undefined, false)),
-          opts.bodyTimeoutMs ?? CONNECT_TIMEOUT_MS,
-        )
+        timer = setTimeout(() => {
+          // Derruba o socket junto com o relógio — sem isto o fetch seguia
+          // pendurado consumindo a conexão mesmo após a rejeição.
+          abort()
+          reject(new PensaLlmError('OpenRouter pendurou o corpo da resposta', undefined, false))
+        }, opts.bodyTimeoutMs ?? CONNECT_TIMEOUT_MS)
       })
       try {
         const data = (await Promise.race([res.json(), timeout])) as {

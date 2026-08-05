@@ -72,6 +72,12 @@ export const GenerateBody = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('plan_review'), projectId: UUID, approved: z.boolean() }),
 ])
 
+/** Resposta interna da geração — vira `done` (200 sem error) ou `error` no SSE. */
+interface GenerateReply {
+  status: number
+  body: unknown
+}
+
 const RL_KEY = Symbol.for('@sistemazero/member-shell/pensa-chat-rl')
 interface RlEntry {
   count: number
@@ -300,27 +306,34 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       const project = projectRes.body.project
       const cycle = project.cycles.find((item) => item.id === cycleId)
       if (!cycle) return error('PENSA_NOT_FOUND', 404)
+      // Pré-voo rápido segue em JSON (mesmos envelopes de sempre): quota e
+      // disponibilidade recusam ANTES de abrir o stream, como no chat.
+      if (body.type !== 'plan_review') {
+        if (!pensaLlmAvailable()) return error('PENSA_AI_UNAVAILABLE', 503)
+        const quota = await consumeAiQuota(members, 'pensa-synthesis')
+        if (!quota.allowed)
+          return error('AI_QUOTA_EXCEEDED', 429, aiQuotaMessage(quota.scope), {
+            scope: quota.scope,
+          })
+      }
       const getStage = async (stage: 'z' | 'e' | 'r' | 'o') => {
         const result = await members.pensaGetStage(cycleId, stage)
         if (result.status !== 200 || !result.body) throw new Error('Não consegui carregar o plano')
         return result.body
       }
-      try {
-        if (body.type !== 'plan_review') {
-          if (!pensaLlmAvailable()) return error('PENSA_AI_UNAVAILABLE', 503)
-          const quota = await consumeAiQuota(members, 'pensa-synthesis')
-          if (!quota.allowed)
-            return error('AI_QUOTA_EXCEEDED', 429, aiQuotaMessage(quota.scope), {
-              scope: quota.scope,
-            })
-        }
-
+      // Mesmo envelope do error(), como objeto plano — o miolo da geração roda
+      // DENTRO do stream SSE e devolve {status, body} p/ virar done/error.
+      const fail = (code: string, status: number, message?: string): GenerateReply => ({
+        status,
+        body: { error: { code, ...(message ? { message } : {}) } },
+      })
+      const runGenerate = async (): Promise<GenerateReply> => {
         let content: unknown
         if (body.type === 'idea') {
           const zStage = await getStage('z')
           const state = zStage.state as unknown as Partial<PensaZState>
           if (!state.ready)
-            return error('PENSA_GATE_NOT_READY', 409, 'Conclua as cinco decisões da etapa Z.')
+            return fail('PENSA_GATE_NOT_READY', 409, 'Conclua as cinco decisões da etapa Z.')
           content = await generateJson({
             schema: IdeaArtifactSchema,
             schemaName: 'pensa_idea_v2',
@@ -357,7 +370,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             requireValidated(eStage, 'visual_direction').content,
           )
           const gamification = await members.getGamification()
-          if (gamification.status !== 200) return error('PENSA_TIER_UNAVAILABLE', 503)
+          if (gamification.status !== 200) return fail('PENSA_TIER_UNAVAILABLE', 503)
           const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
           const catalog = plannerCatalogPrompt(tier, idea.dimension)
           const raw = await generateJson({
@@ -383,9 +396,10 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           validateVisualTaskCoverage(tasks, visual)
           const written = await members.pensaReplaceTasks(cycleId, tasks)
           if (written.status !== 200 || !written.body)
-            return NextResponse.json(written.body ?? { error: { code: 'PENSA_TASKS_NOT_SAVED' } }, {
+            return {
               status: written.status,
-            })
+              body: written.body ?? { error: { code: 'PENSA_TASKS_NOT_SAVED' } },
+            }
           content = TaskPlanArtifactSchema.parse({
             taskIds: written.body.tasks.map((task) => task.id),
             generatedAt: new Date().toISOString(),
@@ -398,7 +412,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             getStage('e'),
             members.getGamification(),
           ])
-          if (gamification.status !== 200) return error('PENSA_TIER_UNAVAILABLE', 503)
+          if (gamification.status !== 200) return fail('PENSA_TIER_UNAVAILABLE', 503)
           const gameDimension = IdeaArtifactSchema.parse(
             requireValidated(zStage, 'idea').content,
           ).dimension
@@ -425,32 +439,86 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
                 : 'o'
         const saved = await members.pensaSaveArtifact(cycleId, { stage, type: body.type, content })
         if (saved.status !== 200 || !saved.body)
-          return NextResponse.json(saved.body ?? { error: { code: 'PENSA_ARTIFACT_NOT_SAVED' } }, {
+          return {
             status: saved.status,
-          })
+            body: saved.body ?? { error: { code: 'PENSA_ARTIFACT_NOT_SAVED' } },
+          }
         if (body.type === 'plan_review' && (content as PlanReviewArtifact).approved) {
           const validated = await members.pensaValidateArtifact(cycleId, 'plan_review')
-          return NextResponse.json(validated.body ?? saved.body, { status: validated.status })
+          return { status: validated.status, body: validated.body ?? saved.body }
         }
-        return NextResponse.json(saved.body)
-      } catch (cause) {
-        if (cause instanceof PensaCatalogDriftError) return error(cause.code, 422, cause.message)
+        return { status: 200, body: saved.body }
+      }
+      const mapGenerateError = (cause: unknown): GenerateReply => {
+        if (cause instanceof PensaCatalogDriftError) return fail(cause.code, 422, cause.message)
         if (cause instanceof PensaLlmError) {
           // O detalhe técnico (400 do provider, timeout etc.) vai ao LOG; a
           // criança recebe uma frase gentil — o banner mostrava o erro cru.
           console.error('[pensa-ai] geração falhou', { type: body.type, cause })
-          return error(
+          return fail(
             'PENSA_AI_UNAVAILABLE',
             cause.status ?? 502,
             'A IA demorou ou tropeçou agora. Espere um pouquinho e tente de novo.',
           )
         }
-        return error(
+        return fail(
           'PENSA_GENERATION_FAILED',
           409,
           cause instanceof Error ? cause.message : 'Não foi possível gerar o artefato',
         )
       }
+
+      // A geração leva MINUTOS sem stream (o corpo do task_plan só chega no
+      // fim) e a borda (Railway; Cloudflare em prod) derruba POST mudo com 502.
+      // A resposta vira SSE com TTFB imediato + ping 15s (padrão do chat) e o
+      // resultado final sai num único evento done/error.
+      const encoder = new TextEncoder()
+      let closed = false
+      let ping: ReturnType<typeof setInterval> | undefined
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          const write = (chunk: string) => {
+            if (closed) return
+            try {
+              controller.enqueue(encoder.encode(chunk))
+            } catch {
+              closed = true
+            }
+          }
+          const send = (event: string, data: unknown) =>
+            write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+          write(': ok\n\n')
+          ping = setInterval(() => write(': ping\n\n'), 15_000)
+          void (async () => {
+            try {
+              const reply = await runGenerate().catch(mapGenerateError)
+              const envelope = (reply.body ?? {}) as { error?: { code?: string; message?: string } }
+              if (reply.status === 200 && !envelope.error) send('done', reply.body)
+              else
+                send('error', {
+                  status: reply.status,
+                  code: envelope.error?.code ?? 'PENSA_GENERATION_FAILED',
+                  ...(envelope.error?.message ? { message: envelope.error.message } : {}),
+                })
+            } finally {
+              if (ping) clearInterval(ping)
+              closed = true
+              try {
+                controller.close()
+              } catch {}
+            }
+          })()
+        },
+        // Desconexão do cliente NÃO aborta a geração (≠ chat): se ela terminar,
+        // tasks/artefato persistem no members e um F5 mostra o resultado —
+        // abortar no meio poderia deixar pensaReplaceTasks aplicado sem o
+        // artefato salvo. Daqui em diante o write() vira no-op.
+        cancel() {
+          closed = true
+          if (ping) clearInterval(ping)
+        },
+      })
+      return new Response(stream, { headers: sseHeaders })
     },
   }
 
