@@ -17,7 +17,11 @@ import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { assetStyle, type PintaAsset } from '../../core/project'
-import { buildStudioPayload, type StudioPayload } from '../../export/studioBridge'
+import {
+  buildStudioPayload,
+  type StudioPayload,
+  validateStudioPayloadSize,
+} from '../../export/studioBridge'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
 import { persistAssets } from '../../state/persistence'
 import {
@@ -285,24 +289,9 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       showToast(COPY.sendToStudio.error)
       return
     }
-    // Teto de UM asset no Studio — manter em sincronia com
-    // MAX_ASSET_DATA_URL_CHARS de packages/studio/src/core/project.ts. Validar
-    // AQUI dá a mensagem gentil antes do fail-soft genérico da ponte.
-    const STUDIO_MAX_ASSET_CHARS = 800_000
-    if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) {
-      setSending(false)
-      showToast(COPY.sendToStudio.tooBig)
-      return
-    }
-    // Teto da FOLHA de peças embutida no metadado de MAPA — manter em sincronia
-    // com MAX_TILEMAP_SHEET_CHARS de packages/studio/src/core/project.ts (o
-    // sanitizador de lá descartaria o metadado em silêncio; validar AQUI dá a
-    // mensagem gentil).
-    const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
-    if (
-      payload.tilemap &&
-      payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS
-    ) {
+    // Tetos do Estúdio (asset e folha do mapa) — validar AQUI dá a mensagem
+    // gentil antes do fail-soft genérico da ponte.
+    if (validateStudioPayloadSize(payload) !== 'ok') {
       setSending(false)
       showToast(COPY.sendToStudio.tooBig)
       return
@@ -365,17 +354,9 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       showToast(COPY.sendToStudio.error)
       return
     }
-    // Teto de UM asset no Studio (miniatura do mapa) — paridade com o
-    // handleSendToStudio; a miniatura é capada em 512px, mas o guarda dá a
-    // mensagem gentil antes do fail-soft genérico se ainda assim estourar.
-    const STUDIO_MAX_ASSET_CHARS = 800_000
-    if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) {
-      setSending(false)
-      showToast(COPY.sendToStudio.tooBig)
-      return
-    }
-    const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
-    if (payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {
+    // Tetos do Estúdio — paridade com o handleSendToStudio (a miniatura é
+    // capada em 512px, mas o guarda dá a mensagem gentil se ainda estourar).
+    if (validateStudioPayloadSize(payload) !== 'ok') {
       setSending(false)
       showToast(COPY.sendToStudio.tooBig)
       return
@@ -442,7 +423,10 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
             {COPY.tiles.playMap}
           </Button>
         ) : null}
-        {adapter.sendToStudio ? (
+        {/* O foguete só existe em desenho DE UM JOGO do Pensa (projectRef): é
+            onde ele marca o progresso da missão. Desenho avulso chega ao
+            Estúdio pelo "Trazer do Pinta" de lá (decisão da dona, 08/2026). */}
+        {adapter.sendToStudio && asset.projectRef ? (
           <Button variant="primary" disabled={sending} onClick={() => void handleSendToStudio()}>
             <Rocket aria-hidden="true" className="size-4" />
             {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}

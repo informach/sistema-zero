@@ -13,6 +13,15 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 
 ## API pública (`src/index.ts` — TUDO fora dela é interno)
 
+> Exceção deliberada: o subpath **`@sistemazero/pinta/studio-library`**
+> (`src/export/studioLibrary.ts`) — a face de DADOS para o host ligar o "Trazer
+> do Pinta" do Estúdio (08/2026): `listGalleryForStudio()` (resumos + miniatura
+> leve: pixel/tilemap-pixel = PNG pequeno, vetor = SVG dataUrl sem canvas, cache
+> por `updatedAt`) e `exportAssetForStudio(id)` (payload da ponte já validado
+> pelos tetos — `ExportForStudioResult` com `reason` tipada). Zero React lá
+> dentro (o import dinâmico do host não puxa o app); o host seta o namespace
+> pelo `setPintaStorageNamespace` RE-EXPORTADO no próprio subpath.
+
 - **`setPintaStorageNamespace(viewerId)`** — o host chama ANTES de montar (isola a galeria por
   PERFIL no IndexedDB; vazio = store default `sistema-zero-pinta`; mesmo contrato do studio).
 - **`<PintaApp adapter={PintaHostAdapter} />`** — uncontrolled, navegação por ESTADO (galeria ⇄
@@ -20,7 +29,9 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 - **`PintaHostAdapter`** (`src/core/types.ts`): `theme?` ('light' default kids | 'dark'),
   `studioOwned?` (só muda a COPY do sucesso da ponte), `onOpenStudio?`,
   `sendToStudio?(PintaExportedAsset) → PintaSendResult` — **ausente = o botão "Usar no Estúdio"
-  não aparece** (degrade, padrão Pensa) —, **`resyncToStudio?`** e **`initialAssetId?`** (ponte de
+  não aparece** (degrade, padrão Pensa); desde 08/2026 o botão também exige
+  **`asset.projectRef`** (desenho de um jogo do Pensa, onde ele marca o progresso da missão) —
+  desenho avulso chega ao Estúdio pelo "Trazer do Pinta" de lá —, **`resyncToStudio?`** e **`initialAssetId?`** (ponte de
   MÃO DUPLA, 08/2026 — ver abaixo), **`taskSession?: PintaTaskSession`** e
   **`initialIntent?: PintaInitialIntent`**: `{projectRef, artKind?, style?}` vindo do Cartão de
   Criação aberto por `/pinta?tarefa=<id>` — abre o

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PintaAsset } from '../../core/project'
 import type { PintaHostAdapter } from '../../core/types'
-import { buildStudioPayload } from '../../export/studioBridge'
+import { buildStudioPayload, validateStudioPayloadSize } from '../../export/studioBridge'
 import type { PintaGalleryStore } from '../../state/galleryStore'
 import { createLatestTaskQueue, type LatestTaskQueue } from '../../state/latestTaskQueue'
 
@@ -23,7 +23,9 @@ async function sendResync(job: ResyncJob): Promise<{ updated: boolean }> {
     (id) => job.gallery.getState().assets.find((asset) => asset.id === id) ?? null,
     { animationId: job.animationId, frameIndex: job.frameIndex },
   )
-  if (!payload || payload.dataUrl.length > 800_000) return { updated: false }
+  // Tetos do Estúdio (o mesmo funil do envio manual — o reenvio silencioso
+  // também não pode atravessar um payload que o Estúdio recusaria).
+  if (!payload || validateStudioPayloadSize(payload) !== 'ok') return { updated: false }
   return job.send({
     id: job.asset.id,
     name: job.asset.name,

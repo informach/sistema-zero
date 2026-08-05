@@ -134,26 +134,53 @@ describe('PintaApp — galeria', () => {
     expect(screen.queryByRole('button', { name: /Abrir apagavel/ })).toBeNull()
   })
 
-  it('botão "Usar no Estúdio" só aparece com o callback do host', async () => {
+  it('botão "Usar no Estúdio" exige o callback do host E desenho de um jogo do Pensa', async () => {
+    // Desenho AVULSO e desenho vinculado a um jogo do Pensa (projectRef): o
+    // foguete só existe no segundo — avulso chega ao Estúdio pelo "Trazer do
+    // Pinta" de lá (decisão da dona, 08/2026).
     const seed = createGalleryStore()
     await seed.getState().create({ kind: 'pixel-background', name: 'ceu', width: 8, height: 8 })
+    await seed.getState().create({
+      kind: 'pixel-background',
+      name: 'ceu-do-jogo',
+      width: 8,
+      height: 8,
+      projectRef: { id: 'jogo-1', name: 'meu-jogo' },
+    })
 
+    // Sem callback: nada, nem no desenho do jogo.
     const { unmount } = render(<PintaApp />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir ceu-do-jogo/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu-do-jogo/ }))
     await waitFor(() => {
-      expect(screen.getByText('ceu')).toBeTruthy()
+      expect(screen.getByText('ceu-do-jogo')).toBeTruthy()
     })
     expect(screen.queryByText(new RegExp(COPY.editor.sendToStudio))).toBeNull()
     unmount()
 
+    // Com callback, desenho AVULSO: o foguete continua fora. (O "(" do nome
+    // acessível separa "ceu (" de "ceu-do-jogo (".)
+    const { unmount: unmountAvulso } = render(
+      <PintaApp adapter={{ sendToStudio: async () => ({ ok: true }) }} />,
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir ceu \(/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu \(/ }))
+    await waitFor(() => {
+      expect(screen.getByText('ceu')).toBeTruthy()
+    })
+    expect(screen.queryByText(new RegExp(COPY.editor.sendToStudio))).toBeNull()
+    unmountAvulso()
+
+    // Com callback, desenho DE JOGO: aparece.
     render(<PintaApp adapter={{ sendToStudio: async () => ({ ok: true }) }} />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir ceu-do-jogo/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu-do-jogo/ }))
     await waitFor(() => {
       expect(screen.getByText(new RegExp(COPY.editor.sendToStudio))).toBeTruthy()
     })
