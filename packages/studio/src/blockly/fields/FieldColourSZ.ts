@@ -1,7 +1,6 @@
 import { FieldColour, type FieldColourFromJsonConfig } from '@blockly/field-colour'
 import * as Blockly from 'blockly/core'
 import { SZ_PALETTE_COLOURS, SZ_PALETTE_COLUMNS, SZ_PALETTE_TITLES } from '../colorPalette'
-import { buildColourPickerPanel } from './colourPickerPanel'
 import { applyFieldDropdownTheme } from './dropdownTheme'
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
@@ -61,23 +60,19 @@ export class FieldColourSZ extends FieldColour {
     input.style.cssText =
       'flex:1;width:0;min-width:88px;padding:5px 8px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:13px;font-family:"JetBrains Mono",ui-monospace,monospace;'
 
-    // CÍRCULO CROMÁTICO (pedido da dona): a "corzinha" é a prévia da cor atual E
-    // o botão que abre o seletor LIVRE — a paleta dá a cor pronta/fácil, o painel
-    // dá QUALQUER cor. ⚠️ NÃO é mais o <input type=color> nativo: o diálogo do
-    // navegador/SO abria no idioma do SISTEMA (inglês) e com conta-gotas quebrado
-    // em Firefox/Linux — o painel nosso (colourPickerPanel) é PT, segue o tema e
-    // tem conta-gotas via API EyeDropper onde o navegador oferece.
-    const current = `${this.getValue() ?? ''}`
-    const initialHex = HEX_RE.test(current) ? current.toLowerCase() : '#22d3ee'
-    const picker = document.createElement('button')
-    picker.type = 'button'
-    picker.className = 'sz-colour-preview'
+    // CÍRCULO CROMÁTICO (pedido da dona): o <input type=color> NATIVO é ao mesmo
+    // tempo a "corzinha" de prévia da cor atual e o botão que abre o seletor LIVRE
+    // do navegador — a paleta dá a cor pronta/fácil, o círculo dá QUALQUER cor.
+    // Arrastar no seletor preenche o input com o hex ao vivo; confirmar aplica no
+    // bloco. Estilo do swatch em studio.css (`.sz-hex-input-row input[type=color]`
+    // — pseudo-elementos não entram em cssText inline).
+    const picker = document.createElement('input')
+    picker.type = 'color'
+    picker.className = 'sz-field-picker__input'
     picker.title = 'Escolher qualquer cor'
     picker.setAttribute('aria-label', 'Escolher qualquer cor')
-    picker.setAttribute('aria-expanded', 'false')
-    const preview = document.createElement('span')
-    preview.style.background = initialHex
-    picker.append(preview)
+    const current = `${this.getValue() ?? ''}`
+    picker.value = HEX_RE.test(current) ? current.toLowerCase() : '#22d3ee'
 
     const applyBtn = document.createElement('button')
     applyBtn.textContent = 'OK'
@@ -110,26 +105,11 @@ export class FieldColourSZ extends FieldColour {
       Blockly.DropDownDiv.hideIfOwner(this)
     }
 
-    // Painel de cor livre (SV + matiz + conta-gotas), fechado até clicar na
-    // corzinha. Arrastar preenche o input com o hex ao vivo; OK/Enter aplica.
-    const panel = buildColourPickerPanel({
-      initial: initialHex,
-      onChange: (hex) => {
-        input.value = hex
-        preview.style.background = hex
-        setError(null)
-      },
-    })
-    panel.root.hidden = true
-
     input.addEventListener('input', () => {
       setError(null)
-      // Hex válido digitado → espelha na "corzinha" e no painel (prévia ao vivo).
+      // Hex válido digitado → espelha na "corzinha" (prévia ao vivo).
       const val = input.value.trim()
-      if (HEX_RE.test(val)) {
-        preview.style.background = val.toLowerCase()
-        panel.setHex(val.toLowerCase())
-      }
+      if (HEX_RE.test(val)) picker.value = val.toLowerCase()
     })
     input.addEventListener('keydown', (ev) => {
       ev.stopPropagation()
@@ -138,19 +118,21 @@ export class FieldColourSZ extends FieldColour {
         apply()
       }
     })
-    picker.addEventListener('click', () => {
-      panel.root.hidden = !panel.root.hidden
-      picker.setAttribute('aria-expanded', panel.root.hidden ? 'false' : 'true')
-      if (!panel.root.hidden) {
-        const val = input.value.trim()
-        if (HEX_RE.test(val)) panel.setHex(val.toLowerCase())
-      }
-      Blockly.DropDownDiv.repositionForWindowResize()
+    // Arrastando no círculo: preenche o input com o código ao vivo (a prévia é o
+    // próprio swatch). Confirmou (fechou o seletor nativo) → aplica no bloco e
+    // fecha, igual ao clique numa cor da paleta.
+    picker.addEventListener('input', () => {
+      input.value = picker.value
+      setError(null)
+    })
+    picker.addEventListener('change', () => {
+      this.setValue(picker.value)
+      Blockly.DropDownDiv.hideIfOwner(this)
     })
     applyBtn.addEventListener('click', apply)
 
     row.append(label, input, picker, applyBtn)
-    content.append(row, panel.root, error)
+    content.append(row, error)
     Blockly.DropDownDiv.repositionForWindowResize()
   }
 }
