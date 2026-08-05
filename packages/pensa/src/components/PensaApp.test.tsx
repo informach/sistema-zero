@@ -149,6 +149,129 @@ describe('Pensa planejador', () => {
     expect(document.querySelector('iframe')).toBeNull()
   })
 
+  test('a Bíblia Visual mostra paleta com hex, regras, telas nomeadas e detalhes dos assets', async () => {
+    const eCycle = {
+      ...cycle,
+      stage: 'e' as const,
+      eCompletedAt: null,
+      rCompletedAt: null,
+      oCompletedAt: null,
+    }
+    const detail: PensaProjectDetailView = {
+      id: 'plan-1',
+      name: 'Bosque das Estrelas',
+      status: 'active',
+      createdAt: '2026-08-04T09:00:00.000Z',
+      updatedAt: '2026-08-04T10:10:00.000Z',
+      cycles: [eCycle],
+      currentCycle: eCycle,
+      artifactsIndex: [],
+    }
+    const stage: PensaStageView = {
+      stage: 'e',
+      conversation: { messages: [], summary: null, messageCount: 0 },
+      state: {},
+      artifacts: [
+        {
+          id: 'artifact-design',
+          stage: 'e',
+          type: 'game_design',
+          version: 1,
+          status: 'validated',
+          createdAt: '2026-08-04T10:05:00.000Z',
+          content: {
+            coreLoop: ['andar', 'coletar'],
+            scenes: [{ id: 'bosque', name: 'Bosque', purpose: 'Coletar estrelas.' }],
+            screens: [{ id: 'menu', name: 'Tela de Menu', purpose: 'Começar o jogo.' }],
+            camera: 'Lateral fixa.',
+          },
+        },
+        {
+          id: 'artifact-visual',
+          stage: 'e',
+          type: 'visual_direction',
+          version: 1,
+          status: 'draft',
+          createdAt: '2026-08-04T10:08:00.000Z',
+          content: {
+            style: 'Pixel art simples.',
+            camera: 'Lateral.',
+            mood: 'Aventura alegre.',
+            shapeLanguage: 'Formas arredondadas.',
+            palette: [{ role: 'herói', color: '#22c55e' }],
+            visualRules: ['Perigos sempre vermelhos'],
+            screens: [
+              { screenId: 'menu', description: 'Título grande e botão.' },
+              { screenId: 'fase-secreta', description: 'Sem nome no game design.' },
+            ],
+            assets: [
+              {
+                id: 'hero',
+                name: 'Estrela',
+                kind: 'sprite',
+                appearance: 'Amarela e brilhante.',
+                animations: ['girar'],
+                states: ['feliz'],
+                usage: 'Coletável principal.',
+              },
+            ],
+          },
+        },
+      ],
+      tasks: [],
+      nextTaskId: null,
+    }
+    const request = mock(async (path: string) => {
+      if (path === '/projects')
+        return {
+          projects: [
+            {
+              id: detail.id,
+              name: detail.name,
+              status: 'active',
+              cycleNumber: 1,
+              stage: 'e',
+              createdAt: detail.createdAt,
+              updatedAt: detail.updatedAt,
+            },
+          ],
+        }
+      if (path === '/projects/plan-1') return { project: detail }
+      if (path === '/cycles/cycle-1/stages/e') return stage
+      throw new Error(`Unexpected request: ${path}`)
+    })
+    const adapter: PensaHostAdapter = {
+      mode: 'kids',
+      capabilities: { pintaOwned: true, studioOwned: true },
+      onOpenTask: () => undefined,
+      transport: {
+        request: request as PensaHostAdapter['transport']['request'],
+        streamChat: () => () => {},
+      },
+    }
+    render(<PensaApp adapter={adapter} />)
+    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() => screen.getByText('Bíblia Visual'))
+    // Paleta: papel e hex visíveis como TEXTO (antes o hex vivia só no title).
+    expect(screen.getByText('herói')).toBeTruthy()
+    expect(screen.getByText('#22C55E')).toBeTruthy()
+    // Regras visuais e telas deixaram de ser descartadas na visualização.
+    expect(screen.getByText('Perigos sempre vermelhos')).toBeTruthy()
+    expect(screen.getByText('Título grande e botão.')).toBeTruthy()
+    // O nome vem do game_design; sem correspondência cai no screenId cru.
+    expect(screen.getAllByText('Tela de Menu').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('fase-secreta')).toBeTruthy()
+    // Asset com tipo, aparência, uso e chips de animação/estado.
+    expect(screen.getByText('Estrela')).toBeTruthy()
+    expect(screen.getByText('sprite')).toBeTruthy()
+    expect(screen.getByText('Amarela e brilhante.')).toBeTruthy()
+    expect(screen.getByText('🎬 girar')).toBeTruthy()
+    expect(screen.getByText('✨ feliz')).toBeTruthy()
+    // O gate de avanço continua no card: aprovar segue disponível no rascunho.
+    expect(screen.getByRole('button', { name: 'Está do meu jeito ✓' })).toBeTruthy()
+  })
+
   test('edita um cartão planejado por campos estruturados sem expor JSON ou referências oficiais', async () => {
     const planningCycle = { ...cycle, stage: 'r' as const, rCompletedAt: null, oCompletedAt: null }
     const detail: PensaProjectDetailView = {

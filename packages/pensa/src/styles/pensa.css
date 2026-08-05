@@ -724,45 +724,104 @@
   margin: 0;
 }
 .pensa-bible {
-  padding: 20px;
-}
-.pensa-palette {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin: 14px 0;
-}
-.pensa-palette span {
-  display: flex;
-  min-width: 34px;
-  height: 34px;
-  align-items: center;
-  border: 2px solid var(--pz-surface);
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--pz-line);
-}
-.pensa-palette i {
-  margin-left: 38px;
-  color: var(--pz-ink);
-  font-size: 0.7rem;
-  font-style: normal;
-  font-weight: 800;
-  white-space: nowrap;
-}
-.pensa-bible ul {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  align-content: start;
+  gap: 10px;
+}
+.pensa-bible h4 {
+  margin: 4px 0 0;
+}
+.pensa-bible-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 7px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
-.pensa-bible li {
-  border-radius: 9px;
-  padding: 8px 10px;
+.pensa-bible-palette li {
+  display: grid;
+  gap: 4px;
+  border-radius: 11px;
+  padding: 8px;
   background: var(--pz-surface-2);
 }
-.pensa-bible small {
-  color: var(--pz-muted);
+.pensa-bible-palette span {
+  height: 26px;
+  border: 1px solid var(--pz-line);
+  border-radius: 7px;
+}
+.pensa-bible-palette strong {
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+.pensa-bible-palette small {
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.pensa-bible-rules {
+  margin: 0;
+  list-style: none;
+}
+.pensa-bible-screens {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.pensa-bible-screens p {
+  display: grid;
+  margin: 0;
+  border-radius: 11px;
+  padding: 10px;
+  background: var(--pz-surface-2);
+}
+.pensa-bible-assets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-bible-assets li {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  border-radius: 11px;
+  padding: 10px;
+  background: var(--pz-surface-2);
+}
+.pensa-bible-assets li > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+.pensa-bible-kind {
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--pz-accent);
+  font-size: 0.65rem;
+  font-weight: 800;
+  white-space: nowrap;
+  background: color-mix(in oklch, var(--pz-accent) 14%, var(--pz-surface));
+}
+.pensa-bible-kind[data-tool="pinta"] {
+  color: var(--pz-orange);
+  background: color-mix(in oklch, var(--pz-orange) 14%, var(--pz-surface));
+}
+.pensa-bible-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pensa-bible-chips span {
+  border: 1px solid var(--pz-line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--pz-surface);
 }
 .pensa-generate {
   justify-self: start;
@@ -1221,7 +1280,8 @@
   .pensa-form-row {
     grid-template-columns: 1fr;
   }
-  .pensa-bible ul {
+  .pensa-bible-screens,
+  .pensa-bible-assets {
     grid-template-columns: 1fr;
   }
   .pensa-primary-action {

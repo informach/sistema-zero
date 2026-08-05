@@ -526,6 +526,12 @@ function StageZ(props: StageProps) {
 function StageE(props: StageProps) {
   const design = props.stage.artifacts.find((item) => item.type === 'game_design')
   const visual = props.stage.artifacts.find((item) => item.type === 'visual_direction')
+  const screenNames: Record<string, string> = {}
+  for (const item of asRecordList(asRecord(design?.content).screens)) {
+    const id = asText(item.id)
+    const name = asText(item.name)
+    if (id && name) screenNames[id] = name
+  }
   return (
     <div className="pensa-stack">
       <div className="pensa-two-column">
@@ -538,7 +544,12 @@ function StageE(props: StageProps) {
           ) : null}
         </div>
         <div className="pensa-stack">
-          <ArtifactEditor {...props} type="visual_direction" artifact={visual} />
+          <ArtifactEditor
+            {...props}
+            type="visual_direction"
+            artifact={visual}
+            screenNames={screenNames}
+          />
           {!visual ? (
             <GenerateButton {...props} type="visual_direction">
               Cocriar a Bíblia Visual
@@ -620,7 +631,12 @@ function StageO(props: StageProps) {
 }
 
 function ArtifactEditor(
-  props: StageProps & { type: PensaArtifactType; artifact?: PensaArtifactView; compact?: boolean },
+  props: StageProps & {
+    type: PensaArtifactType
+    artifact?: PensaArtifactView
+    compact?: boolean
+    screenNames?: Record<string, string>
+  },
 ) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<JsonRecord>(() => asRecord(props.artifact?.content))
@@ -677,7 +693,11 @@ function ArtifactEditor(
       {editing ? (
         <ArtifactForm type={props.type} value={draft} onChange={setDraft} />
       ) : (
-        <ArtifactPreview type={props.type} content={props.artifact.content} />
+        <ArtifactPreview
+          type={props.type}
+          content={props.artifact.content}
+          screenNames={props.screenNames}
+        />
       )}
       <footer>
         {editing ? (
@@ -1126,7 +1146,16 @@ function ArtifactForm(props: {
   return <ArtifactPreview type={props.type} content={props.value} />
 }
 
-function ArtifactPreview({ type, content }: { type: PensaArtifactType; content: unknown }) {
+function ArtifactPreview({
+  type,
+  content,
+  screenNames,
+}: {
+  type: PensaArtifactType
+  content: unknown
+  /** Nome amigável por screenId do game_design (a Bíblia só carrega o id). */
+  screenNames?: Record<string, string>
+}) {
   const record = asRecord(content)
   if (type === 'idea') {
     return (
@@ -1194,38 +1223,116 @@ function ArtifactPreview({ type, content }: { type: PensaArtifactType; content: 
     )
   }
   if (type === 'visual_direction') {
-    const palette = Array.isArray(record.palette)
-      ? (record.palette as Array<{ role?: string; color?: string }>)
-      : []
-    const assets = Array.isArray(record.assets)
-      ? (record.assets as Array<{ name?: string; kind?: string }>)
-      : []
+    const palette = asRecordList(record.palette)
+    const rules = asTextList(record.visualRules)
+    const screens = asRecordList(record.screens)
+    const assets = asRecordList(record.assets)
+    const PINTA_KINDS = new Set(['sprite', 'background', 'tileset', 'tilemap'])
     return (
-      <div className="pensa-bible">
-        <h4>{asText(record.style)}</h4>
-        <p>
-          {asText(record.mood)} · {asText(record.camera)}
-        </p>
-        <p>{asText(record.shapeLanguage)}</p>
-        <div className="pensa-palette">
-          {palette.map((color) => (
-            <span
-              key={`${color.role}-${color.color}`}
-              style={{ background: color.color }}
-              title={`${color.role}: ${color.color}`}
-            >
-              <i>{color.role}</i>
-            </span>
-          ))}
-        </div>
-        <strong>Inventário de assets</strong>
-        <ul>
-          {assets.map((asset) => (
-            <li key={`${asset.name}-${asset.kind}`}>
-              {asset.name} <small>{asset.kind}</small>
-            </li>
-          ))}
-        </ul>
+      <div className="pensa-artifact-preview pensa-bible">
+        <dl>
+          <div>
+            <dt>Estilo</dt>
+            <dd>{asText(record.style)}</dd>
+          </div>
+          <div>
+            <dt>Clima</dt>
+            <dd>{asText(record.mood)}</dd>
+          </div>
+          <div>
+            <dt>Câmera</dt>
+            <dd>{asText(record.camera)}</dd>
+          </div>
+          <div>
+            <dt>Formas</dt>
+            <dd>{asText(record.shapeLanguage)}</dd>
+          </div>
+        </dl>
+        {palette.length ? (
+          <>
+            <h4>Paleta de cores</h4>
+            <ul className="pensa-bible-palette">
+              {palette.map((entry) => {
+                const role = asText(entry.role)
+                const color = asText(entry.color)
+                return (
+                  <li key={`${role}-${color}`}>
+                    <span style={{ background: color }} aria-hidden="true" />
+                    <strong>{role}</strong>
+                    <small>{color.toUpperCase()}</small>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
+        ) : null}
+        {rules.length ? (
+          <>
+            <h4>Regras visuais</h4>
+            <ul className="pensa-loop pensa-bible-rules">
+              {rules.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+        {screens.length ? (
+          <>
+            <h4>Aparência das telas</h4>
+            <div className="pensa-bible-screens">
+              {screens.map((item) => {
+                const screenId = asText(item.screenId)
+                return (
+                  <p key={screenId}>
+                    <strong>{screenNames?.[screenId] ?? screenId}</strong>
+                    <small>{asText(item.description)}</small>
+                  </p>
+                )
+              })}
+            </div>
+          </>
+        ) : null}
+        {assets.length ? (
+          <>
+            <h4>Inventário de assets</h4>
+            <ul className="pensa-bible-assets">
+              {assets.map((asset) => {
+                const kind = asText(asset.kind)
+                const usage = asText(asset.usage)
+                const chips = [
+                  ...asTextList(asset.animations).map((item) => `🎬 ${item}`),
+                  ...asTextList(asset.states).map((item) => `✨ ${item}`),
+                ]
+                return (
+                  <li key={asText(asset.id) || `${asText(asset.name)}-${kind}`}>
+                    <header>
+                      <strong>{asText(asset.name)}</strong>
+                      <span
+                        className="pensa-bible-kind"
+                        data-tool={PINTA_KINDS.has(kind) ? 'pinta' : 'studio'}
+                      >
+                        {kind}
+                      </span>
+                    </header>
+                    <small>{asText(asset.appearance)}</small>
+                    {usage ? (
+                      <small>
+                        <strong>Uso:</strong> {usage}
+                      </small>
+                    ) : null}
+                    {chips.length ? (
+                      <div className="pensa-bible-chips">
+                        {chips.map((chip) => (
+                          <span key={chip}>{chip}</span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
+          </>
+        ) : null}
       </div>
     )
   }

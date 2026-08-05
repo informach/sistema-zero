@@ -10,7 +10,9 @@ const { ClientArtifactBody, ClientValidatableArtifactType } = await import('../s
 const {
   GameDesignArtifactSchema,
   IdeaArtifactSchema,
+  jsonSchemaFor,
   PlanReviewArtifactSchema,
+  TaskPlanDraftSchema,
   VisualDirectionArtifactSchema,
 } = await import('../src/server/pensa-agents/planner-contract')
 
@@ -111,6 +113,44 @@ describe('contratos dos cinco artefatos', () => {
       }).success,
     ).toBe(true)
     expect(IdeaArtifactSchema.safeParse({ who: 'crianças', problem: 'tédio' }).success).toBe(false)
+  })
+
+  it('todo schema enviado ao provider é compatível com o modo estrito', () => {
+    // O modo estrito exige `required` com TODAS as chaves de cada objeto (um `.optional()`
+    // no Zod vira 400 do provider em produção — caso real do pensa_task_plan_v1) e não
+    // aceita `oneOf`. Este teste trava a deriva para os quatro schemas gerados por IA.
+    const problems: string[] = []
+    const walk = (node: unknown, path: string): void => {
+      if (Array.isArray(node)) {
+        for (const [index, item] of node.entries()) walk(item, `${path}[${index}]`)
+        return
+      }
+      if (!node || typeof node !== 'object') return
+      const record = node as Record<string, unknown>
+      if ('oneOf' in record) problems.push(`${path}: usa oneOf (o modo estrito só aceita anyOf)`)
+      if (record.properties && typeof record.properties === 'object') {
+        if (record.additionalProperties !== false) {
+          problems.push(`${path}: objeto sem additionalProperties:false`)
+        }
+        const keys = Object.keys(record.properties as Record<string, unknown>)
+        const required = Array.isArray(record.required) ? (record.required as string[]) : []
+        for (const key of keys) {
+          if (!required.includes(key)) {
+            problems.push(`${path}.${key}: fora do required (use .nullable(), não .optional())`)
+          }
+        }
+      }
+      for (const [key, value] of Object.entries(record)) walk(value, `${path}.${key}`)
+    }
+    for (const [name, schema] of [
+      ['pensa_idea_v2', IdeaArtifactSchema],
+      ['pensa_game_design_v1', GameDesignArtifactSchema],
+      ['pensa_visual_direction_v1', VisualDirectionArtifactSchema],
+      ['pensa_task_plan_v1', TaskPlanDraftSchema],
+    ] as const) {
+      walk(jsonSchemaFor(schema), name)
+    }
+    expect(problems).toEqual([])
   })
 })
 

@@ -65,10 +65,12 @@ export const VisualDirectionArtifactSchema = z.strictObject({
   assets: z.array(AssetInventoryItemSchema).min(1).max(40),
 })
 
+// Campo sem valor é NULLABLE, nunca `.optional()`: o modo estrito do provider exige
+// `required` com TODAS as chaves, e o z.toJSONSchema omite as opcionais (400 no OpenRouter).
 const GuideItemSchema = z.strictObject({
   id: Id,
   text: z.string().trim().min(1).max(500),
-  hint: z.string().trim().max(500).optional(),
+  hint: z.string().trim().max(500).nullable(),
   required: z.boolean(),
 })
 export const TaskGuideSchema = z.strictObject({
@@ -81,7 +83,7 @@ const PintaTaskContextSchema = z.strictObject({
   assetId: Id,
   artKind: z.enum(['sprite', 'background', 'tileset', 'tilemap']),
   style: z.enum(['pixel', 'vector', 'either']),
-  preset: z.string().trim().max(100).optional(),
+  preset: z.string().trim().max(100).nullable(),
   palette: z
     .array(z.strictObject({ role: Short, color: z.string().regex(/^#[0-9A-Fa-f]{6}$/) }))
     .max(16),
@@ -145,8 +147,26 @@ export const PlanReviewArtifactSchema = z.strictObject({
   auditedAt: z.iso.datetime(),
 })
 
-export const jsonSchemaFor = (schema: z.ZodType) =>
-  z.toJSONSchema(schema) as Record<string, unknown>
+/** O modo estrito do provider não aceita `oneOf` (uniões discriminadas do Zod); `anyOf` é equivalente aqui. */
+function strictCompatible(node: unknown): void {
+  if (Array.isArray(node)) {
+    for (const item of node) strictCompatible(item)
+    return
+  }
+  if (!node || typeof node !== 'object') return
+  const record = node as Record<string, unknown>
+  if ('oneOf' in record && !('anyOf' in record)) {
+    record.anyOf = record.oneOf
+    delete record.oneOf
+  }
+  for (const value of Object.values(record)) strictCompatible(value)
+}
+
+export const jsonSchemaFor = (schema: z.ZodType) => {
+  const output = z.toJSONSchema(schema) as Record<string, unknown>
+  strictCompatible(output)
+  return output
+}
 
 export type IdeaArtifact = z.infer<typeof IdeaArtifactSchema>
 export type GameDesignArtifact = z.infer<typeof GameDesignArtifactSchema>
@@ -215,6 +235,20 @@ function documentMap(documents: readonly ServerMechanicDocument[]) {
   return new Map(documents.map((document) => [document.extension, document]))
 }
 
+type DraftGuideItem = z.infer<typeof GuideItemSchema>
+
+function resolveGuideItem({ hint, ...item }: DraftGuideItem) {
+  return { ...item, ...(hint ? { hint } : {}) }
+}
+
+/** O draft usa null para "sem dica" (exigência do modo estrito); o contrato do members usa ausência. */
+function resolveGuide(guide: z.infer<typeof TaskGuideSchema>): PensaTaskGuide {
+  return {
+    steps: guide.steps.map(resolveGuideItem),
+    criteria: guide.criteria.map(resolveGuideItem),
+  }
+}
+
 /** Valida IDs, disponibilidade pedagógica e ordem das dependências; nunca confia em rótulos da IA. */
 export function resolveTaskPlan(
   raw: TaskPlanDraft,
@@ -238,7 +272,12 @@ export function resolveTaskPlan(
     }
     seen.add(task.key)
     if (task.context.kind === 'pinta') {
-      return { ...task, context: task.context }
+      const { preset, ...pintaContext } = task.context
+      return {
+        ...task,
+        guide: resolveGuide(task.guide),
+        context: { ...pintaContext, ...(preset ? { preset } : {}) },
+      }
     }
     if (task.context.dimension !== dimension) {
       throw new PensaCatalogDriftError(`A tarefa ${task.key} usa a dimensão errada`)
@@ -266,6 +305,7 @@ export function resolveTaskPlan(
     }
     return {
       ...task,
+      guide: resolveGuide(task.guide),
       context: {
         kind: 'studio',
         dimension,

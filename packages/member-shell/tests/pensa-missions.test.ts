@@ -13,9 +13,11 @@ const {
 } = await import('../src/server/pensa-agents/planner-contract')
 const { auditPlan } = await import('../src/routes/pensa-ai')
 
+// `hint`/`preset` são nullable (nunca ausentes) no draft: o modo estrito do provider
+// exige todas as chaves no `required`, então o modelo emite null quando não há valor.
 const guide = {
-  steps: [{ id: 'step-create', text: 'Monte os blocos.', required: true }],
-  criteria: [{ id: 'criterion-run', text: 'Funciona ao rodar.', required: true }],
+  steps: [{ id: 'step-create', text: 'Monte os blocos.', hint: null, required: true }],
+  criteria: [{ id: 'criterion-run', text: 'Funciona ao rodar.', hint: null, required: true }],
 }
 
 describe('catálogo autoritativo do plano', () => {
@@ -149,6 +151,7 @@ describe('catálogo autoritativo do plano', () => {
             assetId: 'hero',
             artKind: 'sprite',
             style: 'pixel',
+            preset: null,
             palette: [],
             appearance: 'aventureira',
             animations: ['andar'],

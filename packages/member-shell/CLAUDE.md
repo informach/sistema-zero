@@ -216,7 +216,12 @@ read-only. `GET /tasks/:id/handoff` preserva o plano e informa a capability; `PA
 `createPensaAiRoutes` mantém o chat SSE da etapa Z e gera somente `idea`, `game_design`,
 `visual_direction`, `task_plan` e `plan_review`. `planner-contract.ts` usa Zod 4, filtra
 `SERVER_BLOCK_CATALOG` e `SERVER_MECHANIC_DOCUMENTS` pelo `StudioTier`, recebe apenas IDs da IA e
-resolve rótulo, categoria, subcategoria, área e extensão no servidor. A geração rejeita referência
+resolve rótulo, categoria, subcategoria, área e extensão no servidor. ⚠️ Campo sem valor nos
+schemas que vão ao provider é `.nullable()`, NUNCA `.optional()`, e o `jsonSchemaFor` troca
+`oneOf`→`anyOf`: o modo estrito do `response_format` exige `required` com todas as chaves e não
+aceita `oneOf` (400 real do `pensa_task_plan_v1`, 08/2026); o teste de deriva em
+`tests/pensa-ai.test.ts` trava os quatro schemas e `resolveTaskPlan` normaliza `null`→ausente
+antes do members (o DTO de lá usa `t.Optional`, que não aceita null). A geração rejeita referência
 inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset.
 A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
 persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
