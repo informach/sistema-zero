@@ -3,6 +3,7 @@
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import type {
   Project,
+  StudioPintaLibraryAdapter,
   StudioShareAdapter,
   StudioTaskSession,
   StudioTutorConfig,
@@ -36,6 +37,7 @@ export function StudioFullEditor({
   showExamples,
   professional,
   taskSession,
+  pintaLibrary,
 }: {
   mod: StudioModule
   projectId: string
@@ -47,6 +49,7 @@ export function StudioFullEditor({
   showExamples: boolean
   professional: boolean
   taskSession: StudioTaskSession | undefined
+  pintaLibrary: StudioPintaLibraryAdapter | undefined
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
@@ -151,6 +154,7 @@ export function StudioFullEditor({
       features={{ professional }}
       onPromoteToPro={handlePromoteToPro}
       onEditDrawing={openDrawingInPinta}
+      pintaLibrary={pintaLibrary}
       showExamples={showExamples}
       taskSession={taskSession}
     />

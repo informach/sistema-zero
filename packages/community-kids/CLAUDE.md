@@ -516,7 +516,18 @@ em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil.
 (`router.replace('/pinta')`) p/ um F5 não reabrir. Salvar no Pinta chama o `resyncToStudio` do
 adapter, que **só atualiza o que JÁ foi enviado** (guarda `getPersonalAsset(id)` — sem ela todo
 rascunho cairia na biblioteca sozinho); o Estúdio então reconcilia os JOGOS (todos, inclusive
-fechados) no foco da aba, em silêncio. Ver `packages/studio/CLAUDE.md` §"Editar o desenho". `MainContainer` dá largura
+fechados) no foco da aba, em silêncio. Ver `packages/studio/CLAUDE.md` §"Editar o desenho".
+**"Trazer do Pinta" — fluxo PULL (08/2026):** a página `/estudio` agora chama
+`checkPintaAccessReadonly()` (as MESMAS refs `pinta,estudio-completo` numa ida; o gate segue sendo
+`estudio-completo`) e passa `pintaOwned` ao `StudioFullClient`, que monta o adapter
+**`pintaLibrary`** SÓ com a posse (produtos vendidos à parte): `list()` = import dinâmico do
+subpath **`@sistemazero/pinta/studio-library`** (⚠️ NUNCA a raiz — puxaria o app do Pinta pro
+bundle) + `setPintaStorageNamespace(viewerId)` + `listGalleryForStudio()`; `import(id)` =
+`exportAssetForStudio(id)` → **`savePersonalAsset` ANTES de devolver** (preserva a mão-dupla e o
+botão editar) → devolve o asset com o NOME salvo (upsert pode sufixar). No Estúdio, o botão
+"🎨 Trazer do Pinta" abre a modal com a galeria INTEIRA + busca e a seção "Meus desenhos" some.
+No Pinta, o foguete "Usar no Estúdio" passou a aparecer SÓ em desenho de jogo do Pensa
+(`projectRef`) — desenho avulso chega ao Estúdio puxando de lá. `MainContainer` dá largura
 total a `/pinta`. Requisitos de build: `transpilePackages` + `@import` do `pinta.css` +
 `@source "../../../pinta/src"` no globals.css (MESMO gotcha das utilitárias `sz-*`/`pz-*` — sem
 isso as `pin-*` são no-op e os modais saem washed-out). Deploy: `packages/pinta/**` (e

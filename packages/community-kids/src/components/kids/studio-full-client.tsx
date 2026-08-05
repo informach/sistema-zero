@@ -8,7 +8,12 @@ import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
-import type { StudioShareAdapter, StudioTaskSession, StudioTutorConfig } from '@sistemazero/studio'
+import type {
+  StudioPintaLibraryAdapter,
+  StudioShareAdapter,
+  StudioTaskSession,
+  StudioTutorConfig,
+} from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -38,6 +43,7 @@ export function StudioFullClient({
   showExamples = false,
   zappyEnabled = false,
   taskId = null,
+  pintaOwned = false,
 }: {
   viewerId: string | null
   /**
@@ -59,6 +65,12 @@ export function StudioFullClient({
   zappyEnabled?: boolean
   /** Cartão de Criação aberto por `/estudio?tarefa=<id>`. */
   taskId?: string | null
+  /**
+   * Posse do PINTA (a página checa `refs=pinta,estudio-completo` numa ida) —
+   * liga o "Trazer do Pinta" no painel de Imagens. Produtos vendidos à parte:
+   * sem posse, o adapter nem é criado e o Estúdio esconde o botão.
+   */
+  pintaOwned?: boolean
 }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -356,6 +368,71 @@ export function StudioFullClient({
     [zappyEnabled],
   )
 
+  // "Trazer do Pinta" (fluxo pull): o Estúdio lista a galeria do Pinta e importa
+  // um desenho por id. O import GRAVA em personal-assets antes de devolver — é o
+  // que liga o auto-update dos jogos (guard `getPersonalAsset` do resyncToStudio
+  // no pinta-client) e o botão "editar desenho". Import dinâmico do SUBPATH
+  // `studio-library` (⚠️ NUNCA a raiz `@sistemazero/pinta` — puxaria o app
+  // inteiro do Pinta pro bundle do /estudio); namespaces re-setados DENTRO de
+  // cada método (nunca confiar em "já setei" — StrictMode/trocas de perfil).
+  const pintaLibrary = useMemo<StudioPintaLibraryAdapter | undefined>(() => {
+    if (!pintaOwned) return undefined
+    return {
+      async list() {
+        const lib = await import('@sistemazero/pinta/studio-library')
+        lib.setPintaStorageNamespace(viewerId ?? '')
+        const drawings = await lib.listGalleryForStudio()
+        return drawings.map((d) => ({
+          id: d.id,
+          name: d.name,
+          role: d.role,
+          style: d.style ?? undefined,
+          updatedAt: d.updatedAt,
+          thumbDataUrl: d.thumbDataUrl,
+          ...(d.projectName ? { projectName: d.projectName } : {}),
+        }))
+      },
+      async import(drawingId) {
+        const lib = await import('@sistemazero/pinta/studio-library')
+        lib.setPintaStorageNamespace(viewerId ?? '')
+        const result = await lib.exportAssetForStudio(drawingId)
+        if (!result.ok) {
+          if (result.reason === 'not-found') {
+            return {
+              ok: false,
+              error: 'Esse desenho não está mais na galeria do Pinta.',
+              code: 'not-found',
+            }
+          }
+          if (result.reason === 'asset-too-big' || result.reason === 'sheet-too-big') {
+            return {
+              ok: false,
+              error: 'Esse desenho é grande demais para o Estúdio.',
+              code: 'too-big',
+            }
+          }
+          return {
+            ok: false,
+            error: 'Não consegui preparar esse desenho agora. Tente de novo.',
+            code: 'raster-failed',
+          }
+        }
+        const bridge = await import('@sistemazero/studio/personal-assets')
+        bridge.setPersonalAssetsNamespace(viewerId ?? '')
+        const saved = await bridge.savePersonalAsset(result.asset)
+        if (!saved.ok) {
+          return {
+            ok: false,
+            error: saved.error ?? 'Não consegui trazer esse desenho agora. Tente de novo.',
+          }
+        }
+        // O upsert pode sufixar o nome (colisão com OUTRO desenho) — o Estúdio
+        // usa o nome salvo, senão os blocos referenciariam um nome divergente.
+        return { ok: true, asset: { ...result.asset, name: saved.name ?? result.asset.name } }
+      },
+    }
+  }, [pintaOwned, viewerId])
+
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
   const backToList = useCallback(() => setView({ name: 'list' }), [])
   const exitEditor = useCallback(() => {
@@ -455,6 +532,7 @@ export function StudioFullClient({
           showExamples={showExamples}
           professional={proAvailable && tier.canPromoteToPro}
           taskSession={taskSession}
+          pintaLibrary={pintaLibrary}
         />
       )}
     </div>

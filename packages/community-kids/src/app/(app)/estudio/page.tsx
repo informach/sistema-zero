@@ -6,7 +6,7 @@ import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable
 import { StudioFullClient } from '@/components/kids/studio-full-client'
 import {
   checkChallengeAccessReadonly,
-  checkStudioAccessReadonly,
+  checkPintaAccessReadonly,
   getChallengeReadonly,
   getGamificationReadonly,
 } from '@/server/members'
@@ -35,7 +35,10 @@ export default async function EstudioPage({
   // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
   // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
   const [res, session, challengeAccess, gam] = await Promise.all([
-    checkStudioAccessReadonly(),
+    // ⚠️ Pede refs `pinta,estudio-completo` numa ida SÓ: o gate segue sendo o
+    // `estudio-completo`; a posse do PINTA liga o "Trazer do Pinta" no editor
+    // (produtos vendidos à parte — cross-app só com posse dos dois lados).
+    checkPintaAccessReadonly(),
     getSession(),
     checkChallengeAccessReadonly().catch(() => null),
     // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
@@ -45,6 +48,7 @@ export default async function EstudioPage({
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
   if (!hasAccess) return <KidsLockedStudio />
+  const pintaOwned = res.body?.access?.pinta === true
   // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
   if (gam?.status !== 200) return <KidsStudioUnavailable />
@@ -77,6 +81,7 @@ export default async function EstudioPage({
       // da carreira (Inventor). O rank já veio na gamificação acima.
       zappyEnabled={isStudioZappyAllowed(session, levelSlug)}
       taskId={tarefa ?? null}
+      pintaOwned={pintaOwned}
     />
   )
 }
