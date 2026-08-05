@@ -239,6 +239,102 @@ describe('UI vetorial (F5)', () => {
     })
   })
 
+  it('slider de cantos arredondados aplica o raio no retângulo selecionado', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    await waitFor(() => {
+      expect(document.querySelector('input[name="vector-rect-radius"]')).toBeTruthy()
+    })
+    const slider = document.querySelector('input[name="vector-rect-radius"]')
+    if (!slider) throw new Error('slider esperado')
+    fireEvent.change(slider, { target: { value: '8' } })
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('rx')).toBe('8')
+    })
+  })
+
+  it('duplo clique no texto reabre o diálogo; salvar troca o conteúdo e o tamanho', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 40, clientY: 40 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.textPrompt)).toBeTruthy()
+    })
+    fireEvent.change(screen.getByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: 'Oi' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe('Oi')
+    })
+    // Duplo clique (a ferramenta já voltou p/ Selecionar) reabre para editar.
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.doubleClick(textEl)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.editText)).toBeTruthy()
+    })
+    fireEvent.change(screen.getByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: 'Tchau' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.saveText }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe('Tchau')
+    })
+    // Com o texto selecionado, o slider de tamanho da letra aparece e aplica.
+    const slider = document.querySelector('input[name="vector-font-size"]')
+    if (!slider) throw new Error('slider de tamanho esperado')
+    fireEvent.change(slider, { target: { value: '48' } })
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('font-size')).toBe('48')
+    })
+  })
+
+  it('Caneta: 3 cliques + Enter viram um polígono; Esc descarta os pontos', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.pen }))
+    for (const [x, y] of [
+      [16, 16],
+      [96, 16],
+      [56, 80],
+    ] as const) {
+      fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: x, clientY: y })
+      fireEvent.pointerUp(stage, { pointerId: 1 })
+    }
+    fireEvent.keyDown(window, { key: 'Enter' })
+    await waitFor(() => {
+      const poly = stage.querySelector('polygon[fill="#78dc52"]')
+      expect(poly?.getAttribute('points')).toBe('16,16 96,16 56,80')
+    })
+    // Esc no meio de uma nova forma descarta os pontos pendentes.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 120, clientY: 120 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    fireEvent.keyDown(window, { key: 'Escape' })
+    fireEvent.keyDown(window, { key: 'Enter' })
+    await waitFor(() => {
+      expect(stage.querySelectorAll('polygon[fill="#78dc52"]').length).toBe(1)
+    })
+  })
+
+  it('segurar ESPAÇO vira a Mão: arrastar com o pincel não desenha', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
+    fireEvent.keyDown(window, { key: ' ' })
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 90, clientY: 90 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    fireEvent.keyUp(window, { key: ' ' })
+    await waitFor(() => {
+      expect(stage.querySelectorAll('path').length).toBe(0)
+    })
+  })
+
   it('apagar a seleção remove o shape', async () => {
     await openVectorEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))

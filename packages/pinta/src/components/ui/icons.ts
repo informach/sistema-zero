@@ -55,6 +55,7 @@ export {
   Palette,
   Pause,
   Pencil,
+  PenLine,
   PenTool,
   Pipette,
   Play,

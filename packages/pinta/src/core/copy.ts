@@ -378,6 +378,11 @@ export const COPY = {
     alignTop: 'Alinhar em cima',
     alignMiddleV: 'Centralizar na altura',
     alignBottom: 'Alinhar embaixo',
+    pen: 'Caneta (clique para marcar os pontos)',
+    cornerRadius: 'Cantos arredondados',
+    fontSize: 'Tamanho da letra',
+    editText: 'Mudar o texto',
+    saveText: 'Salvar',
     /** Rótulo por tipo de forma no painel Camadas (texto mostra o próprio conteúdo). */
     shapeNames: {
       rect: 'Retângulo',
@@ -489,6 +494,8 @@ export const COPY = {
         'Escolha uma forma ou o Pincel e arraste no palco.',
         '"Selecionar" deixa mover, girar e trocar a cor.',
         '"Editar os pontos" muda o contorno; o Degradê mistura duas cores.',
+        'A Caneta marca pontos; aperte Enter para fechar a forma.',
+        'A Grade ajuda a desenhar tudo alinhado.',
         'Rode a bolinha do mouse para aproximar e afastar.',
         'Teclas rápidas: V selecionar, B pincel, H mão, T texto.',
       ],

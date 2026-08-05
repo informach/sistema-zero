@@ -12,6 +12,7 @@ import {
   Hexagon,
   type LucideIcon,
   MousePointer2,
+  PenLine,
   PenTool,
   Pipette,
   Slash,
@@ -26,6 +27,7 @@ export type VectorTool =
   | 'reshape'
   | 'pan'
   | 'brush'
+  | 'pen'
   | 'rect'
   | 'ellipse'
   | 'line'
@@ -44,6 +46,9 @@ export const TOOLS: Array<{ id: VectorTool; icon: LucideIcon; label: string; sho
   { id: 'reshape', icon: PenTool, label: COPY.vector.reshape, shortcut: 'A' },
   { id: 'pan', icon: Hand, label: COPY.vector.pan, shortcut: 'H' },
   { id: 'brush', icon: Brush, label: COPY.vector.brush, shortcut: 'B' },
+  // P está livre no mapa do vetor (o Lápis P é do pixel; mapas são por editor).
+  // Ícone PenLine — o PenTool é do "editar os pontos".
+  { id: 'pen', icon: PenLine, label: COPY.vector.pen, shortcut: 'P' },
   { id: 'rect', icon: Square, label: COPY.tools.rect, shortcut: 'U' },
   { id: 'ellipse', icon: Circle, label: COPY.tools.ellipse, shortcut: 'O' },
   { id: 'line', icon: Slash, label: COPY.tools.line, shortcut: 'L' },

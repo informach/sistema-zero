@@ -4,7 +4,7 @@
  * do editor, thumbnails (cards/strips) e o preview de animação: SVG inline é
  * síncrono, sem canvas e sem CSP — renderiza igual em qualquer lugar.
  */
-import type { JSX, PointerEvent } from 'react'
+import type { JSX, MouseEvent, PointerEvent } from 'react'
 import { memo } from 'react'
 import {
   gradientId,
@@ -56,13 +56,16 @@ export function GradientDefs({ shapes }: { shapes: VectorShape[] }): JSX.Element
 export function ShapeElement({
   shape,
   onPointerDown,
+  onDoubleClick,
 }: {
   shape: VectorShape
   onPointerDown?: (event: PointerEvent<SVGElement>) => void
+  /** Duplo clique (ex.: reeditar um texto no palco). Só render — o export string não muda. */
+  onDoubleClick?: (event: MouseEvent<SVGElement>) => void
 }): JSX.Element {
   const { tag, attrs, content } = shapeGeometryAttrs(shape)
   const common = shapeCommonAttrs(shape)
-  const props: Record<string, unknown> = { ...attrs, ...common, onPointerDown }
+  const props: Record<string, unknown> = { ...attrs, ...common, onPointerDown, onDoubleClick }
   // React usa camelCase p/ estes atributos.
   if ('stroke-width' in props) {
     props.strokeWidth = props['stroke-width']

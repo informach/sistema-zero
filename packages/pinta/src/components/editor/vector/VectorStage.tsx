@@ -36,6 +36,7 @@ import {
   makeLine,
   makePath,
   makePolygon,
+  makePolygonFromPoints,
   makeRect,
   makeStar,
   makeText,
@@ -125,6 +126,7 @@ export function VectorStage(): JSX.Element {
     single,
     polygonSides,
     starTips,
+    rectRadius,
     svgRef,
     stageRef,
     currentShapes,
@@ -143,8 +145,16 @@ export function VectorStage(): JSX.Element {
   const showGrid = useSession((state) => state.showGrid)
   const [preview, setPreview] = useState<VectorShape | null>(null)
   const [marquee, setMarquee] = useState<Bounds | null>(null)
-  const [textAt, setTextAt] = useState<Vec2 | null>(null)
+  // Diálogo do texto: criar num ponto OU reeditar um shape existente.
+  const [textDialog, setTextDialog] = useState<
+    { mode: 'new'; at: Vec2 } | { mode: 'edit'; shapeId: string } | null
+  >(null)
   const [textValue, setTextValue] = useState('')
+  // Pontos pendentes da CANETA + o cursor da linha elástica.
+  const [penPoints, setPenPoints] = useState<Vec2[]>([])
+  const [penCursor, setPenCursor] = useState<Vec2 | null>(null)
+  // Barra de espaço segurada = Mão temporária (qualquer ferramenta).
+  const [spaceHeld, setSpaceHeld] = useState(false)
   const gestureRef = useRef<Gesture | null>(null)
 
   // Trocar de quadro/tile é trocar de documento: prévia e gesto não migram.
@@ -153,8 +163,76 @@ export function VectorStage(): JSX.Element {
   useEffect(() => {
     setPreview(null)
     setMarquee(null)
+    setPenPoints([])
+    setPenCursor(null)
     gestureRef.current = null
   }, [animationId, frameIndex])
+
+  // Trocar de ferramenta descarta os pontos pendentes da Caneta.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a dep é o GATILHO (trocou de ferramenta), não leitura
+  useEffect(() => {
+    setPenPoints([])
+    setPenCursor(null)
+  }, [tool])
+
+  // Enter fecha a forma da Caneta; Esc descarta os pontos. Registrado só com
+  // pontos pendentes; ignora campos de texto E botões (Enter ativa botão).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: finishPen lê o estado vivo; re-registra por tool/pontos
+  useEffect(() => {
+    if (tool !== 'pen' || penPoints.length === 0) return
+    function onKey(event: globalThis.KeyboardEvent): void {
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'BUTTON' ||
+          target.isContentEditable)
+      ) {
+        return
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        finishPen(penPoints)
+      } else if (event.key === 'Escape') {
+        event.preventDefault()
+        setPenPoints([])
+        setPenCursor(null)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [tool, penPoints])
+
+  // Segurar ESPAÇO vira a Mão na hora (padrão dos programas de desenho).
+  // Botões ficam de fora (espaço é o clique deles); soltar no meio de um
+  // arrasto deixa o gesto de pan terminar sozinho.
+  useEffect(() => {
+    function onKeyDown(event: globalThis.KeyboardEvent): void {
+      if (event.key !== ' ') return
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'BUTTON' ||
+          target.isContentEditable)
+      ) {
+        return
+      }
+      event.preventDefault()
+      setSpaceHeld(true)
+    }
+    function onKeyUp(event: globalThis.KeyboardEvent): void {
+      if (event.key === ' ') setSpaceHeld(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+    }
+  }, [])
 
   useWheelZoom(stageRef, svgRef)
 
@@ -183,7 +261,7 @@ export function VectorStage(): JSX.Element {
         // Capped: garante que o `d` criado SEMPRE passa no sanitize do load.
         return makePath(smoothStrokeToPathCapped(points, 1.2), style)
       case 'rect':
-        return makeRect(start, current, style)
+        return makeRect(start, current, style, rectRadius)
       case 'ellipse':
         return makeEllipse(start, current, style)
       case 'line':
@@ -197,13 +275,67 @@ export function VectorStage(): JSX.Element {
     }
   }
 
+  /** Inicia o gesto de pan (Mão OU espaço segurado). */
+  function startPan(event: PointerEvent<SVGSVGElement>): void {
+    const stage = stageRef.current
+    if (!stage) return
+    gestureRef.current = {
+      kind: 'pan',
+      pointerId: event.pointerId,
+      startClient: { x: event.clientX, y: event.clientY },
+      startScroll: { x: stage.scrollLeft, y: stage.scrollTop },
+    }
+  }
+
+  /** Fecha a forma da Caneta (Enter, duplo clique ou clique perto do início). */
+  function finishPen(points: Vec2[]): void {
+    setPenPoints([])
+    setPenCursor(null)
+    // Duplo clique deixa um ponto duplicado no fim: pontos coladinhos caem.
+    const cleaned = points.filter((p, i) => {
+      const prev = points[i - 1]
+      return !prev || Math.hypot(p.x - prev.x, p.y - prev.y) >= 0.5
+    })
+    if (cleaned.length < 3) return
+    const shape = makePolygonFromPoints(cleaned, style)
+    commitShapes([...currentShapes(), shape])
+    setSelectedIds([shape.id])
+  }
+
   function handleCanvasPointerDown(event: PointerEvent<SVGSVGElement>): void {
     if (!event.isPrimary || gestureRef.current) return
     safeSetPointerCapture(event.currentTarget, event.pointerId)
     const at = svgPoint(event)
+    if (spaceHeld) {
+      startPan(event)
+      return
+    }
     if (tool === 'text') {
-      setTextAt(at)
+      setTextDialog({ mode: 'new', at })
       setTextValue('')
+      return
+    }
+    if (tool === 'pen') {
+      // O teto de formas é checado no PRIMEIRO ponto (mesma régua do desenho).
+      if (penPoints.length === 0 && currentShapes().length >= PINTA_LIMITS.maxShapes) {
+        showToast(COPY.vector.shapeLimit)
+        return
+      }
+      const point = maybeSnap(at)
+      const first = penPoints[0]
+      // Clicar perto do 1º ponto (com 3+) fecha a forma.
+      if (
+        first &&
+        penPoints.length >= 3 &&
+        Math.hypot(point.x - first.x, point.y - first.y) <= 10 / zoom
+      ) {
+        finishPen(penPoints)
+        return
+      }
+      // Teto de pontos do polígono (sanitize aceita até 64).
+      if (penPoints.length >= 64) return
+      setPenPoints([...penPoints, point])
+      setPenCursor(point)
       return
     }
     if (tool === 'select') {
@@ -223,14 +355,7 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (tool === 'pan') {
-      const stage = stageRef.current
-      if (!stage) return
-      gestureRef.current = {
-        kind: 'pan',
-        pointerId: event.pointerId,
-        startClient: { x: event.clientX, y: event.clientY },
-        startScroll: { x: stage.scrollLeft, y: stage.scrollTop },
-      }
+      startPan(event)
       return
     }
     if (tool === 'picker') {
@@ -262,6 +387,8 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
+    // Espaço segurado: deixa o evento SUBIR até o palco (vira pan).
+    if (spaceHeld) return
     if ((tool !== 'select' && tool !== 'reshape') || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
@@ -294,7 +421,7 @@ export function VectorStage(): JSX.Element {
     bounds: Bounds,
     event: PointerEvent<SVGElement>,
   ): void {
-    if (selected.length === 0 || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const anchor = {
@@ -314,7 +441,7 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleRotateDown(bounds: Bounds, event: PointerEvent<SVGElement>): void {
-    if (!single || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || !single || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const center = boundsCenter(bounds)
@@ -330,7 +457,7 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleReshapeDown(nodeIndex: number, event: PointerEvent<SVGElement>): void {
-    if (!single || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || !single || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     gestureRef.current = {
@@ -344,7 +471,18 @@ export function VectorStage(): JSX.Element {
     }
   }
 
+  /** Duplo clique num TEXTO (com a Selecionar) reabre o diálogo para editar. */
+  function handleShapeDoubleClick(shape: VectorShape): void {
+    if (tool !== 'select' || shape.type !== 'text') return
+    setTextDialog({ mode: 'edit', shapeId: shape.id })
+    setTextValue(shape.text)
+  }
+
   function handlePointerMove(event: PointerEvent<SVGSVGElement>): void {
+    // Linha elástica da Caneta (sem gesto ativo).
+    if (tool === 'pen' && penPoints.length > 0 && !gestureRef.current) {
+      setPenCursor(svgPoint(event))
+    }
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
 
@@ -531,13 +669,16 @@ export function VectorStage(): JSX.Element {
             height={stageHeight}
             viewBox={`0 0 ${doc.width} ${doc.height}`}
             className="block bg-white/60"
-            style={{ touchAction: 'none' }}
+            style={{ touchAction: 'none', cursor: spaceHeld ? 'grab' : undefined }}
             role="img"
             aria-label={COPY.a11y.drawArea}
             onPointerDown={handleCanvasPointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={endGesture}
             onPointerCancel={endGesture}
+            onDoubleClick={
+              tool === 'pen' && penPoints.length > 0 ? () => finishPen(penPoints) : undefined
+            }
           >
             {/* Degradês de TODOS os shapes visíveis (doc + onion + prévia) — o
                 olhinho do painel Camadas tira a forma do palco inteiro. */}
@@ -561,9 +702,40 @@ export function VectorStage(): JSX.Element {
                 key={shape.id}
                 shape={shape}
                 onPointerDown={(event) => handleShapePointerDown(shape, event)}
+                onDoubleClick={() => handleShapeDoubleClick(shape)}
               />
             ))}
             {preview ? <ShapeElement shape={preview} /> : null}
+
+            {/* Prévia da CANETA: contorno elástico até o cursor + os pontos já
+                marcados (o 1º maior = o alvo de fechar). O estilo de verdade
+                entra no commit. */}
+            {tool === 'pen' && penPoints.length > 0 ? (
+              <g pointerEvents="none">
+                <polyline
+                  points={[...penPoints, ...(penCursor ? [penCursor] : [])]
+                    .map((p) => `${p.x},${p.y}`)
+                    .join(' ')}
+                  fill={penPoints.length >= 3 ? '#00a0c8' : 'none'}
+                  fillOpacity={0.12}
+                  stroke="#00a0c8"
+                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                  strokeWidth={1.5 / zoom}
+                />
+                {penPoints.map((p, i) => (
+                  <circle
+                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do ponto
+                    key={`pen-${i}`}
+                    cx={p.x}
+                    cy={p.y}
+                    r={(i === 0 ? 6 : 4) / zoom}
+                    fill="#ffffff"
+                    stroke="#00a0c8"
+                    strokeWidth={1.5 / zoom}
+                  />
+                ))}
+              </g>
+            ) : null}
 
             {/* Grade de APOIO (só no editor, nunca no export): um <pattern> e um
                 <rect> — O(1) nós de DOM em qualquer documento; o traço divide
@@ -750,24 +922,40 @@ export function VectorStage(): JSX.Element {
         </div>
       </div>
 
-      {/* Texto novo */}
-      <Dialog open={textAt !== null} onClose={() => setTextAt(null)} title={COPY.vector.textPrompt}>
+      {/* Texto: criar num ponto OU reeditar (duplo clique no palco). Vazio
+          mantém o botão desabilitado — sem apagar texto sem querer. */}
+      <Dialog
+        open={textDialog !== null}
+        onClose={() => setTextDialog(null)}
+        title={textDialog?.mode === 'edit' ? COPY.vector.editText : COPY.vector.textPrompt}
+      >
         <form
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault()
-            if (!textAt || !textValue.trim()) return
+            const dialog = textDialog
+            const text = textValue.trim().slice(0, 200)
+            if (!dialog || !text) return
+            if (dialog.mode === 'edit') {
+              commitShapes(
+                currentShapes().map((s) =>
+                  s.id === dialog.shapeId && s.type === 'text' ? { ...s, text } : s,
+                ),
+              )
+              setTextDialog(null)
+              return
+            }
             const shapes = currentShapes()
             if (shapes.length >= PINTA_LIMITS.maxShapes) {
               showToast(COPY.vector.shapeLimit)
-              setTextAt(null)
+              setTextDialog(null)
               return
             }
-            const shape = makeText(textAt, textValue.trim().slice(0, 200), style)
+            const shape = makeText(dialog.at, text, style)
             commitShapes([...shapes, shape])
             setSelectedIds([shape.id])
             setTool('select')
-            setTextAt(null)
+            setTextDialog(null)
           }}
         >
           <input
@@ -777,15 +965,15 @@ export function VectorStage(): JSX.Element {
             value={textValue}
             onChange={(event) => setTextValue(event.target.value)}
             placeholder={COPY.vector.textPlaceholder}
-            aria-label={COPY.vector.textPrompt}
+            aria-label={textDialog?.mode === 'edit' ? COPY.vector.editText : COPY.vector.textPrompt}
             className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
           />
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setTextAt(null)}>
+            <Button variant="ghost" onClick={() => setTextDialog(null)}>
               {COPY.gallery.cancel}
             </Button>
             <Button type="submit" variant="primary" disabled={!textValue.trim()}>
-              {COPY.vector.add}
+              {textDialog?.mode === 'edit' ? COPY.vector.saveText : COPY.vector.add}
             </Button>
           </div>
         </form>

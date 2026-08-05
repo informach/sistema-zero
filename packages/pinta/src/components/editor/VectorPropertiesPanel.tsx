@@ -44,6 +44,9 @@ export function VectorPropertiesPanel(): JSX.Element {
     tool,
     polygonSides,
     starTips,
+    rectRadius,
+    setRectRadius,
+    updateSelected,
     rememberColor,
     applyStyle,
     currentGradient,
@@ -59,6 +62,9 @@ export function VectorPropertiesPanel(): JSX.Element {
     removeSelected,
   } = useVectorEditor()
   const single = selected.length === 1
+  const singleShape = single ? (selected[0] ?? null) : null
+  const selectedRect = singleShape?.type === 'rect' ? singleShape : null
+  const selectedText = singleShape?.type === 'text' ? singleShape : null
   const activeGradient = isVectorGradient(style.fill) ? style.fill : null
 
   return (
@@ -162,6 +168,55 @@ export function VectorPropertiesPanel(): JSX.Element {
                   ? setPolygonSides(Number(event.target.value))
                   : setStarTips(Number(event.target.value))
               }
+              className="mt-1 w-full accent-pin-accent"
+            />
+          </label>
+        </section>
+      ) : null}
+
+      {tool === 'rect' || selectedRect ? (
+        <section className="pin-panel p-3">
+          {/* Vale para o PRÓXIMO retângulo e edita o selecionado na hora. */}
+          <label className="block text-sm font-bold text-pin-muted">
+            {`${COPY.vector.cornerRadius}: ${selectedRect ? Math.round(selectedRect.rx) : rectRadius}`}
+            <input
+              type="range"
+              name="vector-rect-radius"
+              min={0}
+              max={24}
+              step={1}
+              value={selectedRect ? Math.round(selectedRect.rx) : rectRadius}
+              onChange={(event) => {
+                const radius = Number(event.target.value)
+                setRectRadius(radius)
+                if (selectedRect) {
+                  updateSelected((s) =>
+                    s.type === 'rect' ? { ...s, rx: Math.min(radius, Math.min(s.w, s.h) / 2) } : s,
+                  )
+                }
+              }}
+              className="mt-1 w-full accent-pin-accent"
+            />
+          </label>
+        </section>
+      ) : null}
+
+      {selectedText ? (
+        <section className="pin-panel p-3">
+          <label className="block text-sm font-bold text-pin-muted">
+            {`${COPY.vector.fontSize}: ${Math.round(selectedText.fontSize)}`}
+            <input
+              type="range"
+              name="vector-font-size"
+              min={8}
+              max={96}
+              step={2}
+              value={Math.min(Math.max(Math.round(selectedText.fontSize), 8), 96)}
+              onChange={(event) => {
+                // Clamp do MODELO (6–200) preservado.
+                const fontSize = Math.min(Math.max(Number(event.target.value), 6), 200)
+                updateSelected((s) => (s.type === 'text' ? { ...s, fontSize } : s))
+              }}
               className="mt-1 w-full accent-pin-accent"
             />
           </label>

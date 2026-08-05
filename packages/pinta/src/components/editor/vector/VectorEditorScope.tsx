@@ -70,6 +70,8 @@ export interface VectorEditorContextValue {
   setPolygonSides: (value: number) => void
   starTips: number
   setStarTips: (value: number) => void
+  rectRadius: number
+  setRectRadius: (value: number) => void
   svgRef: RefObject<SVGSVGElement | null>
   stageRef: RefObject<HTMLDivElement | null>
   currentRef: () => ActiveFrameRef
@@ -118,6 +120,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // Lados do polígono / pontas da estrela (configuráveis quando a ferramenta ativa).
   const [polygonSides, setPolygonSides] = useState(6)
   const [starTips, setStarTips] = useState(5)
+  // Raio dos cantos do PRÓXIMO retângulo (o slider também edita o selecionado).
+  const [rectRadius, setRectRadius] = useState(0)
   // Canal de cor SELECIONADO (espelho do activeSlot do pixel): a próxima cor
   // tocada na paleta cai no preenchimento ou no contorno.
   const [activeChannel, setActiveChannel] = useState<VectorColorChannel>('fill')
@@ -453,6 +457,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setPolygonSides,
     starTips,
     setStarTips,
+    rectRadius,
+    setRectRadius,
     svgRef,
     stageRef,
     currentRef,
