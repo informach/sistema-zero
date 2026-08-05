@@ -262,26 +262,95 @@
  * do navegador. Os pseudo-elementos do swatch não são estilizáveis por cssText
  * inline — por isso as regras vivem aqui (a classe sz-hex-input-row é nossa).
  */
-.sz-hex-input-row input[type="color"] {
+.sz-hex-input-row .sz-colour-preview {
   flex: none;
   width: 30px;
   height: 30px;
-  padding: 0;
+  padding: 2px;
   border: 1px solid var(--color-sz-border);
   border-radius: 7px;
   background: none;
   cursor: pointer;
 }
-.sz-hex-input-row input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 2px;
-}
-.sz-hex-input-row input[type="color"]::-webkit-color-swatch {
-  border: none;
+.sz-hex-input-row .sz-colour-preview > span {
+  display: block;
+  width: 100%;
+  height: 100%;
   border-radius: 5px;
 }
-.sz-hex-input-row input[type="color"]::-moz-color-swatch {
-  border: none;
-  border-radius: 5px;
+.sz-colour-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--color-sz-border);
+  background: var(--color-sz-panel);
+}
+.sz-colour-sv {
+  position: relative;
+  height: 110px;
+  border: 1px solid var(--color-sz-border);
+  border-radius: 6px;
+  cursor: crosshair;
+  touch-action: none;
+}
+.sz-colour-sv-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.sz-colour-hue {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
+  cursor: pointer;
+}
+.sz-colour-hue::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55);
+}
+.sz-colour-hue::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.55);
+}
+.sz-colour-eyedropper {
+  justify-self: start;
+  padding: 5px 10px;
+  border: 1px solid var(--color-sz-border);
+  border-radius: 4px;
+  background: var(--color-sz-bg);
+  color: var(--color-sz-fg);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sz-colour-eyedropper:hover {
+  background: var(--color-sz-panel);
 }
 
 /*

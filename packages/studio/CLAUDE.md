@@ -515,13 +515,17 @@ prove o caminho inválido e o round-trip nos testes.
     (nome local de laço 🔁/desconhecido/asset sumido sem cor) → só texto, como antes; a serialização
     fica INTOCADA (elementos extras no `fieldGroup_` não entram). Pop-up com swatch 36×36
     (`<img> object-fit:contain` p/ imagem). E o **FieldColourSZ** ganhou o CÍRCULO CROMÁTICO:
-    `<input type=color>` NATIVO na linha HEX — é a prévia da cor atual E o botão que abre o seletor
-    livre do navegador (arrastar preenche o input com o hex ao vivo; confirmar aplica no bloco e
-    fecha; digitar hex válido espelha no swatch). Estilos do swatch em `studio.css`
-    (`.sz-hex-input-row input[type=color]` — pseudo-elementos não entram em cssText); a GRADE da
-    paleta é centrada/espaçada via `[data-sz-theme].blocklyFieldColour …` (vence o CSS do plugin
-    por especificidade; o pop-up encolheu de ~240px e o input tem `min-width:88px` p/ o código
-    `#rrggbb` COMPLETO ficar sempre visível).
+    a "corzinha" na linha HEX é a prévia da cor atual E o botão que EXPANDE o painel de cor livre
+    (arrastar preenche o input com o hex ao vivo; OK/Enter aplica; digitar hex válido espelha no
+    swatch e no painel). ⚠️ **O painel é NOSSO** (`fields/colourPickerPanel.ts` — quadrado
+    saturação/brilho por gradientes CSS, sem canvas + slider de matiz + conta-gotas via API
+    `EyeDropper`, só onde o navegador oferece — Chromium; Firefox/Safari não têm a API e o botão
+    some): o `<input type=color>` NATIVO foi REMOVIDO em 08/2026 porque o diálogo do navegador/SO
+    abria no idioma do SISTEMA (títulos em inglês p/ a criança) e com conta-gotas quebrado em
+    Firefox/Linux. Estilos em `studio.css` (`.sz-colour-*`); testes em
+    `fields/__tests__/colourPickerPanel.test.ts`; a GRADE da paleta é centrada/espaçada via
+    `[data-sz-theme].blocklyFieldColour …` (vence o CSS do plugin por especificidade; o input tem
+    `min-width:88px` p/ o código `#rrggbb` COMPLETO ficar sempre visível).
   - **Bloco NOVO que declara um nome de um `kind` existente**: adicione-o ao `*_DECL_BLOCKS` correspondente em `FieldNamePicker.ts` (ex.: `VARIABLE_DECL_BLOCKS`, `SCENE3D_DECL_BLOCKS`, `OBJECT3D_DECL_BLOCKS`), senão o picker reporta "nenhum ainda". Sprite/asset têm o seu (`SPRITE_DECL_BLOCKS` no FieldSpritePicker).
   - **`kind` NOVO**: estenda a união `NameKind` + `NAME_KINDS` + `*_DECL_BLOCKS` + um `collect*` + entrada em `KIND_UI` (ícone/placeholder/empty) + um `case` no `collectGlobals`; então troque os campos consumidores.
   - **Nomes LOCAIS de laço** (o "i" do contar, o "item" do enxame): `LOOP_BINDERS_BY_KIND` + `collectScopedNames(block, binders)` sobem por `getSurroundParent` e só aparecem DENTRO do laço (swatch 🔁 "no laço"). Hoje `variable`, `object3d` e `g3d-object`.
