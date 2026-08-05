@@ -1,7 +1,6 @@
 import type { JSX } from 'react'
 import { COPY } from '../../core/copy'
-import { isVectorGradient, type VectorGradient, type VectorShape } from '../../vector/model'
-import type { ShapeStyle } from '../../vector/shapes'
+import { isVectorGradient } from '../../vector/model'
 import { ToolButton } from '../ui/Button'
 import {
   BringToFront,
@@ -19,55 +18,33 @@ import {
   Ungroup,
 } from '../ui/icons'
 import { ColorButton } from './ColorPicker'
+import { useVectorEditor } from './vector/VectorEditorScope'
 
 const STROKE_WIDTHS = [1, 2, 3, 4, 6, 8] as const
 
-export type VectorPropertyTool = 'polygon' | 'star' | string
-
-interface VectorPropertiesPanelProps {
-  style: ShapeStyle
-  swatches: readonly string[]
-  customColors: readonly string[]
-  selected: readonly VectorShape[]
-  tool: VectorPropertyTool
-  polygonSides: number
-  starTips: number
-  rememberColor: (hex: string) => void
-  applyStyle: (partial: Partial<ShapeStyle>) => void
-  currentGradient: () => VectorGradient
-  applyGradient: (partial: Partial<VectorGradient>) => void
-  setPolygonSides: (value: number) => void
-  setStarTips: (value: number) => void
-  flipSelected: (axis: 'h' | 'v') => void
-  moveOrder: (to: 1 | -1 | 'front' | 'back') => void
-  groupSelected: () => void
-  ungroupSelected: () => void
-  duplicateSelected: () => void
-  removeSelected: () => void
-}
-
 /** Painel lateral de aparência e operações da seleção vetorial. */
-export function VectorPropertiesPanel({
-  style,
-  swatches,
-  customColors,
-  selected,
-  tool,
-  polygonSides,
-  starTips,
-  rememberColor,
-  applyStyle,
-  currentGradient,
-  applyGradient,
-  setPolygonSides,
-  setStarTips,
-  flipSelected,
-  moveOrder,
-  groupSelected,
-  ungroupSelected,
-  duplicateSelected,
-  removeSelected,
-}: VectorPropertiesPanelProps): JSX.Element {
+export function VectorPropertiesPanel(): JSX.Element {
+  const {
+    style,
+    swatches,
+    customColors,
+    selected,
+    tool,
+    polygonSides,
+    starTips,
+    rememberColor,
+    applyStyle,
+    currentGradient,
+    applyGradient,
+    setPolygonSides,
+    setStarTips,
+    flipSelected,
+    moveOrder,
+    groupSelected,
+    ungroupSelected,
+    duplicateSelected,
+    removeSelected,
+  } = useVectorEditor()
   const single = selected.length === 1
   const activeGradient = isVectorGradient(style.fill) ? style.fill : null
 

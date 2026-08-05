@@ -45,7 +45,10 @@ import { TileStrip } from './TileStrip'
 import { ToolBar } from './ToolBar'
 import { useMediaQuery } from './useMediaQuery'
 import { useStudioResync } from './useStudioResync'
-import { VectorEditor } from './VectorEditor'
+import { VectorPropertiesPanel } from './VectorPropertiesPanel'
+import { VectorEditorScope } from './vector/VectorEditorScope'
+import { VectorStage } from './vector/VectorStage'
+import { VectorToolbox } from './vector/VectorToolbox'
 import { ZoomControls } from './ZoomControls'
 
 function SaveBadge(): JSX.Element {
@@ -206,17 +209,21 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
-  // Kinds vetoriais: o MESMO editor de shapes; personagem ganha o painel de
-  // prévia/detalhes + a faixa Spritesheet (espelho do pixel), peças ganham a
-  // tira de tiles. As cores do vetor vivem dentro do próprio VectorEditor.
+  // Kinds vetoriais: o MESMO editor de shapes (escopo + caixa + palco +
+  // painéis); personagem ganha o painel de prévia + a faixa Spritesheet
+  // (espelho do pixel), peças ganham a tira de tiles.
   const isVectorSprite = asset.kind === 'vector-sprite'
   if (wide) {
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
         <div className="flex min-h-0 flex-1 items-stretch gap-2">
+          <VectorEditorScope>
+            <VectorToolbox />
+            <VectorStage />
+            <VectorPropertiesPanel />
+          </VectorEditorScope>
           {/* Vetor não tem camadas indexadas: a coluna leva só a prévia (o
               LayerPanel se auto-remove fora dos kinds de pixel). */}
-          <VectorEditor />
           {isVectorSprite ? <PixelRightColumn /> : null}
         </div>
         <EditorFooter asset={asset} />
@@ -225,7 +232,13 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-      <VectorEditor />
+      <VectorEditorScope>
+        <div className="flex min-h-0 flex-1 items-stretch gap-2">
+          <VectorToolbox />
+          <VectorStage />
+          <VectorPropertiesPanel />
+        </div>
+      </VectorEditorScope>
       {isVectorSprite ? <SpritePanelDisclosure /> : null}
       <EditorFooter asset={asset} stacked />
     </div>
