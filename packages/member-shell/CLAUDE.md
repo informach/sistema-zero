@@ -234,7 +234,12 @@ Sem isso a borda (Railway; Cloudflare em prod ~100s) derrubava com **502** o POS
 do task_plan (o banner mostrava o fallback "Não deu certo agora."). ⚠️ Desconexão do cliente NÃO
 aborta a geração (≠ chat): o resultado persiste no members e um F5 o mostra — abortar no meio
 podia deixar `pensaReplaceTasks` aplicado sem o artefato salvo. A geração rejeita referência
-inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset.
+inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset —
+mas **arte 2D citada em `visualAssetIds` de tarefa do Estúdio é NORMALIZADA, não reprovada**
+(`stripPintaArtFromStudioTasks`, 08/2026): o modelo insiste em citar o fundo/sprite que o jogo USA
+(3 gerações seguidas reprovadas no QA) e a referência é redundante — a cobertura 1:1 segue garantida
+pela tarefa Pinta; id desconhecido continua reprovando. JSON quebrado do modelo (SyntaxError após o
+nudge) também vira frase gentil, não o erro cru do parser.
 A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
 persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 

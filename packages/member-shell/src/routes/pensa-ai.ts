@@ -22,6 +22,7 @@ import {
   type PlanReviewArtifact,
   plannerCatalogPrompt,
   resolveTaskPlan,
+  stripPintaArtFromStudioTasks,
   TaskPlanArtifactSchema,
   TaskPlanDraftSchema,
   VisualDirectionArtifactSchema,
@@ -382,7 +383,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
               `GAME DESIGN:\n${json(design)}`,
               `BÍBLIA VISUAL:\n${json(visual)}`,
               'Gere o plano completo na ordem de execução.',
-              'Crie uma tarefa Pinta para CADA sprite/background/tileset/tilemap usando assetId. Modelos, mundo e materiais são tarefas studio e entram em visualAssetIds.',
+              'Crie uma tarefa Pinta para CADA sprite/background/tileset/tilemap usando assetId — e NUNCA cite essas artes 2D em visualAssetIds: a tarefa do Estúdio que usa a arte deve apenas DEPENDER da tarefa Pinta. Modelos, mundo e materiais são tarefas studio e entram em visualAssetIds.',
               'Tarefas studio devem usar somente IDs do catálogo abaixo. IDs de steps e criteria precisam ser estáveis e únicos por tarefa.',
               `PEDIDO: ${body.feedback ?? 'nenhum'}`,
               catalog,
@@ -392,7 +393,10 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             // FIM — 30s derrubava o task_plan real ("pendurou o corpo", 08/2026).
             bodyTimeoutMs: 180_000,
           })
-          const tasks = resolveTaskPlan(raw, tier, idea.dimension)
+          const tasks = stripPintaArtFromStudioTasks(
+            resolveTaskPlan(raw, tier, idea.dimension),
+            visual,
+          )
           validateVisualTaskCoverage(tasks, visual)
           const written = await members.pensaReplaceTasks(cycleId, tasks)
           if (written.status !== 200 || !written.body)
@@ -459,6 +463,16 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             'PENSA_AI_UNAVAILABLE',
             cause.status ?? 502,
             'A IA demorou ou tropeçou agora. Espere um pouquinho e tente de novo.',
+          )
+        }
+        if (cause instanceof SyntaxError) {
+          // JSON quebrado do modelo (mesmo após o nudge de reparo) — a criança
+          // via o erro cru do parser ("Expected ',' or '}'…", QA 08/2026).
+          console.error('[pensa-ai] geração falhou', { type: body.type, cause })
+          return fail(
+            'PENSA_GENERATION_FAILED',
+            409,
+            'A IA se atrapalhou com o plano agora. Espere um pouquinho e tente de novo.',
           )
         }
         return fail(

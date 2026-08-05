@@ -17,6 +17,7 @@ const {
   IdeaArtifactSchema,
   jsonSchemaFor,
   PlanReviewArtifactSchema,
+  stripPintaArtFromStudioTasks,
   TaskPlanDraftSchema,
   VisualDirectionArtifactSchema,
 } = await import('../src/server/pensa-agents/planner-contract')
@@ -206,6 +207,50 @@ describe('rate limit do chat', () => {
     for (let index = 0; index < 10; index += 1) expect(pensaChatRateLimited(key, now)).toBe(false)
     expect(pensaChatRateLimited(key, now)).toBe(true)
     expect(pensaChatRateLimited(key, now + 61_000)).toBe(false)
+  })
+})
+
+describe('stripPintaArtFromStudioTasks', () => {
+  const visual = {
+    assets: [
+      { id: 'fundo_background', kind: 'background' },
+      { id: 'foguete_sprite', kind: 'sprite' },
+      { id: 'mundo_espacial', kind: 'world' },
+    ],
+  } as never
+
+  it('remove artes 2D redundantes das tarefas do Estúdio, preservando o resto', () => {
+    const studioTask = {
+      key: 'studio-setup',
+      destination: 'studio',
+      context: {
+        kind: 'studio',
+        dimension: '2d',
+        visualAssetIds: ['fundo_background', 'mundo_espacial', 'fantasma'],
+        blockIds: [],
+        blocks: [],
+        mechanicDocumentIds: [],
+        extensionIds: [],
+      },
+    } as never
+    const result = stripPintaArtFromStudioTasks([studioTask], visual) as unknown as Array<{
+      context: { visualAssetIds: string[] }
+    }>
+    // A arte 2D some (é tarefa do Pinta; citar de novo reprovava o plano
+    // inteiro); asset 3D fica; id desconhecido fica p/ a validação reprovar.
+    expect(result[0]?.context.visualAssetIds).toEqual(['mundo_espacial', 'fantasma'])
+  })
+
+  it('não toca tarefas do Pinta', () => {
+    const pintaTask = {
+      key: 'pinta-fundo',
+      destination: 'pinta',
+      context: { kind: 'pinta', assetId: 'fundo_background' },
+    } as never
+    const result = stripPintaArtFromStudioTasks([pintaTask], visual) as unknown as Array<{
+      context: { assetId: string }
+    }>
+    expect(result[0]?.context.assetId).toBe('fundo_background')
   })
 })
 

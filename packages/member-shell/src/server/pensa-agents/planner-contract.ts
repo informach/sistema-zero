@@ -321,6 +321,34 @@ export function resolveTaskPlan(
 
 const PINTA_ART_KINDS = new Set(['sprite', 'background', 'tileset', 'tilemap'])
 
+/**
+ * O modelo insiste em citar artes 2D nas tarefas do Estúdio ("o jogo USA o
+ * fundo") — mas sprite/background/tileset/tilemap são tarefas do PINTA, e a
+ * referência redundante reprovava o plano INTEIRO ("ferramenta errada"; 3
+ * gerações seguidas no QA de 08/2026). Remover a redundância é seguro: a
+ * cobertura 1:1 continua garantida pela tarefa Pinta do asset (validada em
+ * seguida) e id desconhecido continua reprovando na validação.
+ */
+export function stripPintaArtFromStudioTasks(
+  tasks: readonly ResolvedPlanTask[],
+  visual: VisualDirectionArtifact,
+): ResolvedPlanTask[] {
+  const pintaArt = new Set(
+    visual.assets.filter((asset) => PINTA_ART_KINDS.has(asset.kind)).map((asset) => asset.id),
+  )
+  return tasks.map((task) =>
+    task.context.kind === 'studio'
+      ? {
+          ...task,
+          context: {
+            ...task.context,
+            visualAssetIds: task.context.visualAssetIds.filter((id) => !pintaArt.has(id)),
+          },
+        }
+      : task,
+  )
+}
+
 /** Garante um Cartão de Criação — e somente um — para cada item da Bíblia Visual. */
 export function validateVisualTaskCoverage(
   tasks: readonly ResolvedPlanTask[],
