@@ -540,18 +540,12 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
 - **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
-  carreira **≥ `ZAPPY_MIN_LEVEL`** (default `hacker` = "Inventor(a)", o 3º degrau). A equipe
-  ignora tudo (QA) e `ZAPPY_PILOT_ACCOUNT_IDS` VIROU ESCOTILHA: libera uma conta ABAIXO do
-  degrau (não é mais a única porta). Duas funções em `server/zappy-access.ts`:
-  **`isStudioZappyAllowed(session, levelSlug, policy?)`** é a AUTORITATIVA (equipe → allowlist →
-  nível) e **`isStudioZappyRolloutOpen(session, policy?)`** é a recusa BARATA (equipe/flag, sem
-  o rank) p/ negar antes de gastar ida ao members. ⚠️ `levelSlug` ausente/desconhecido REPROVA
-  (fail-closed via `careerLevelAtLeast` em `lib/studio-tier.ts`, que usa o `CAREER_LEVEL_SLUGS`
-  do core — nunca reimplemente a escada). Passar `undefined` de propósito = "dá p/ decidir sem o
-  rank?" (equipe/allowlist respondem antes; só o aluno comum custa a busca). A rota da PERGUNTA
-  confere o nível junto do `tier` (a gamificação já é buscada ali — ida ZERO extra); histórico e
-  feedback usam o helper `zappyAllowedWithLevel`. `ZAPPY_MIN_LEVEL` é string CRUA no env (não
-  `z.enum`): slug errado no Railway cairia o boot do app — o access valida e volta ao default.
+  carreira **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
+  para QA. Não existe allowlist de contas nem degrau configurável: a barra compartilhada vive em
+  `CREATIVE_APPS_MIN_LEVEL`, usada também por Pensa/Pinta. `isStudioZappyAllowed` decide quando
+  o rank já foi carregado; `isStudioZappyAllowedForRequest` consulta o members nos handlers.
+  Slug ausente/desconhecido reprova (fail-closed via `careerLevelAtLeast` do core). A rota da
+  pergunta reutiliza a gamificação que já precisa para montar o tier, sem uma segunda consulta.
   O mesmo gate server-side decide se o host injeta a UI. O nome real não vai ao
   OpenRouter e o contexto do projeto não é persistido.
 - Catálogo, manuais, código e base didática são ranqueados por relevância e o prompt total fica em

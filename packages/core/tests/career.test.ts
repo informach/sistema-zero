@@ -1,13 +1,33 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  CAREER_LEVEL_SLUGS,
   CAREER_SLOT_MAX,
   CREATOR_CAREER_LEVELS,
+  careerLevelAtLeast,
   computeCareerLevelSlug,
   creatorCareerLevel,
   meetsCareerLevel,
   missingCareerSlots,
   resolveCareerCourseLock,
 } from '../src/career'
+
+describe('careerLevelAtLeast', () => {
+  test('compara pela posição na carreira e falha fechado para slugs inválidos', () => {
+    expect(careerLevelAtLeast('coder', 'hacker')).toBe(false)
+    expect(careerLevelAtLeast('hacker', 'hacker')).toBe(true)
+    expect(careerLevelAtLeast('god', 'hacker')).toBe(true)
+    for (const slug of [undefined, null, '', 'inventor']) {
+      expect(careerLevelAtLeast(slug, 'hacker')).toBe(false)
+    }
+  })
+
+  test('todo degrau satisfaz a si mesmo e ao primeiro degrau', () => {
+    for (const slug of CAREER_LEVEL_SLUGS) {
+      expect(careerLevelAtLeast(slug, slug)).toBe(true)
+      expect(careerLevelAtLeast(slug, CAREER_LEVEL_SLUGS[0])).toBe(true)
+    }
+  })
+})
 
 describe('catálogo da Carreira do Criador', () => {
   test('CAREER_SLOT_MAX é a fonte única do teto de posições por degrau', () => {

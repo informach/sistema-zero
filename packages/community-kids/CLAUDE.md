@@ -468,10 +468,11 @@ member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apr
 O **Pensa** (`@sistemazero/pensa`) planeja; Pinta e Estúdio executam. O método ZERO usa **Z**
 (ideia e regras), **E** (loop, cenas, telas e Bíblia Visual), **R** (Cartões de Criação ordenados)
 e **O** (auditoria e aprovação). Item "Pensa" no `nav.ts` → rota
-`/pensa` (`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+`/pensa` (`protectedPrefixes`), gate em 4 ESTADOS (indisponível, sem produto, comprado mas abaixo
+de Inventor(a), liberado):
 `app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
 ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
-`KidsPensaUnavailable` (retry); com acesso = `pensa-client.tsx` (`'use client'`, import dinâmico
+`KidsPensaUnavailable` (retry); produto + carreira ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
 do pacote no effect, tema do next-themes e sprites do Zappy). A persistência do plano é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
 (shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` tem
@@ -492,10 +493,11 @@ O **Pinta** (`@sistemazero/pinta`) é o ateliê onde a criança DESENHA os asset
 art (personagens com ANIMAÇÕES + prévia rodando, cenários), peças/mapas e desenho livre —
 terceiro irmão do fluxo criativo (**Pensa planeja → Pinta desenha → Estúdio constrói**). Item
 "Pinta" no `nav.ts` (Palette, imediatamente antes de Estúdio) → rota `/pinta`
-(`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+(`protectedPrefixes`), gate em 4 ESTADOS (indisponível, sem produto, comprado mas abaixo de
+Inventor(a), liberado):
 `app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
 ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
-= `KidsPintaUnavailable` (retry); com acesso = `pinta-client.tsx` (`'use client'`, import
+= `KidsPintaUnavailable` (retry); produto + carreira ≥ `hacker` = `pinta-client.tsx` (`'use client'`, import
 dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria vive no IndexedDB
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
@@ -1161,8 +1163,8 @@ Sentry `sistema-zero-community-kids` + DSN no host.
 
 - O tutor é injetado somente em `StudioFullClient` e `StudioProClient`; players de aula e o
   Pensa não recebem `tutor`, portanto não exibem o botão. A capability `zappyEnabled` é derivada
-  no Server Component pelo mesmo gate do BFF, então contas fora do piloto não veem a UI.
-- Configuração do piloto: `ZAPPY_ENABLED`, `ZAPPY_PILOT_ACCOUNT_IDS` e, opcionalmente,
-  `OPENROUTER_ZAPPY_MODEL`. As rotas Next são shims finos para os handlers do member-shell.
+  no Server Component pelo mesmo gate do BFF, então alunos abaixo de Inventor(a) não veem a UI.
+- Configuração: `ZAPPY_ENABLED` é o interruptor de emergência e `OPENROUTER_ZAPPY_MODEL` é
+  opcional. Não há allowlist de contas; a equipe mantém bypass de QA.
 - Chips de aula só existem em respostas com `courseSlug` autoritativo e abrem
   `/cursos/:slug/aulas/:lessonId` em nova aba com `noopener,noreferrer`.

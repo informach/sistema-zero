@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { resolveStudioTier } from '../lib/studio-tier'
 import type { PensaArtifactView, PensaStageView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
+import { hasCreativeAppsLevel } from '../server/creative-apps-access'
 import { auditPlan } from '../server/pensa-agents/plan-audit'
 import {
   availablePlannerCatalog,
@@ -150,11 +151,26 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
   const { members, session } = deps
   async function requireWritableSession(): Promise<NextResponse | null> {
     const user = await session.getSession()
-    if (!user?.act) return null
-    return NextResponse.json(
-      { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
-      { status: 403 },
-    )
+    if (user?.act) {
+      return NextResponse.json(
+        { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
+        { status: 403 },
+      )
+    }
+    // Sem sessão, o members preserva o 401 autoritativo em vez de um 403 enganoso.
+    if (!user) return null
+    if (!(await hasCreativeAppsLevel(members, user.role))) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'CAREER_LEVEL_REQUIRED',
+            message: 'O Pensa abre quando você chegar no nível Inventor(a).',
+          },
+        },
+        { status: 403 },
+      )
+    }
+    return null
   }
   const parseId = (id: string) => UUID.safeParse(id).success
   const latest = (stage: PensaStageView, type: string): PensaArtifactView | null =>

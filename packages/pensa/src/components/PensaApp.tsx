@@ -3,6 +3,7 @@ import type {
   PensaArtifactType,
   PensaArtifactView,
   PensaHostAdapter,
+  PensaMascotPose,
   PensaProjectDetailView,
   PensaProjectListView,
   PensaStage,
@@ -153,6 +154,7 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
           projects={projects}
           busy={busy}
           error={error}
+          mascot={adapter.mascotImages}
           onOpen={(id) => void loadProject(id)}
           onCreate={(name) =>
             run('create', async () => {
@@ -200,10 +202,34 @@ function Shell({
   return <main className={`pensa-planner pensa-theme-${theme}`}>{children}</main>
 }
 
+/** Mascote da comunidade kids. Some quando o host não passa o sprite da pose
+ *  (degrade — padrão do pacote; playground standalone não tem sprites). */
+function Zappy({
+  pose,
+  images,
+  className,
+}: {
+  pose: PensaMascotPose
+  images?: Partial<Record<PensaMascotPose, string>>
+  className?: string
+}) {
+  const src = images?.[pose]
+  if (!src) return null
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      className={`pensa-zappy${className ? ` ${className}` : ''}`}
+    />
+  )
+}
+
 function ProjectList(props: {
   projects: PensaProjectListView[]
   busy: string | null
   error: string | null
+  mascot?: Partial<Record<PensaMascotPose, string>>
   onOpen(id: string): void
   onCreate(name: string): void
 }) {
@@ -211,6 +237,7 @@ function ProjectList(props: {
   return (
     <section className="pensa-home">
       <div className="pensa-hero">
+        <Zappy pose="happy" images={props.mascot} className="pensa-hero-zappy" />
         <span className="pensa-kicker">PLANEJADOR DE JOGOS</span>
         <h1>
           Primeiro a ideia ganha forma.
@@ -250,7 +277,11 @@ function ProjectList(props: {
       </div>
       {props.projects.length === 0 ? (
         <div className="pensa-empty">
-          <span>✦</span>
+          {props.mascot?.happy ? (
+            <Zappy pose="happy" images={props.mascot} className="pensa-empty-zappy" />
+          ) : (
+            <span>✦</span>
+          )}
           <h3>Seu primeiro mundo começa aqui</h3>
           <p>Dê um nome ao jogo e vamos organizar a ideia juntos.</p>
         </div>
@@ -412,7 +443,10 @@ function StageZ(props: StageProps) {
   return (
     <div className="pensa-two-column">
       <div className="pensa-panel pensa-chat">
-        <h3>Converse com o Zappy</h3>
+        <div className="pensa-chat-head">
+          <Zappy pose="thinking" images={props.adapter.mascotImages} className="pensa-chat-zappy" />
+          <h3>Converse com o Zappy</h3>
+        </div>
         <fieldset className="pensa-decisions">
           <legend>Decisões da ideia</legend>
           <div className="pensa-decision-chips">
@@ -1268,6 +1302,11 @@ function MyPlan(props: Parameters<typeof StageWorkspace>[0]) {
           <h2>Meu plano</h2>
           <small>A criação acontece no Pinta e no Estúdio. O Pensa acompanha o caminho.</small>
         </div>
+        <Zappy
+          pose="celebrating"
+          images={props.adapter.mascotImages}
+          className="pensa-approved-zappy"
+        />
       </div>
       <TaskPlan {...props} editable />
       <div className="pensa-next-summary">

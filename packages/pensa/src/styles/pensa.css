@@ -1,40 +1,62 @@
 .pensa-planner {
-  --pz-bg: #f4f1e8;
-  --pz-surface: #fffdf7;
-  --pz-surface-2: #ebe6d8;
-  --pz-ink: #172019;
-  --pz-muted: #637066;
-  --pz-line: #d9d2c2;
-  --pz-green: #147d52;
-  --pz-lime: #c9f04b;
-  --pz-orange: #a83b18;
-  --pz-purple: #6552d9;
-  --pz-blue: #2774d8;
+  /* Paleta da MARCA KIDS (embarcado): referencia os primitivos --sz-kids-*
+     com FALLBACK LITERAL — sem depender do @sistemazero/ui. Dentro de um host
+     kids o valor de lá manda; fora dele vale o fallback (playground/standalone).
+     Hierarquia kids (diretriz 07/2026): AZUL = ação/identidade/foco · VERDE =
+     progresso/conclusão · laranja/amarelo = pontos de alegria · vermelho = alerta. */
+  --pz-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
+  --pz-surface: oklch(1 0 0);
+  --pz-surface-2: oklch(0.955 0.006 250);
+  --pz-ink: oklch(0.145 0.01 265);
+  --pz-muted: oklch(0.5 0.01 255);
+  --pz-line: oklch(0.9 0.01 250);
+  --pz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* ação/identidade/foco */
+  --pz-green: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152)); /* conclusão/sucesso */
+  --pz-orange: var(--sz-kids-laranja-texto, oklch(0.6 0.15 55)); /* destino Pinta / alegria */
+  --pz-danger: oklch(0.55 0.22 27); /* erro/alerta */
+  --pz-purple: oklch(0.5 0.2 300); /* auditoria/revisão (violeta) */
+  --pz-blue: var(--pz-accent); /* foco/interativo = azul */
+  /* CTA "3D" azul — espelho do --sz-gradient / --sz-cta do community-kids. */
+  --pz-gradient: var(
+    --sz-kids-grad-cta-azul,
+    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+  );
+  --pz-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --pz-on-fill: #fff; /* texto sobre superfície saturada da marca (azul/verde) */
   min-height: 100%;
   overflow: auto;
   color: var(--pz-ink);
   background:
     radial-gradient(
-      circle at 10% -10%,
-      color-mix(in srgb, var(--pz-lime) 30%, transparent),
-      transparent 28rem
+      circle at 12% -10%,
+      color-mix(in oklch, var(--pz-accent) 16%, transparent),
+      transparent 30rem
     ),
-    linear-gradient(180deg, var(--pz-bg), color-mix(in srgb, var(--pz-bg) 92%, #d6ddce));
-  font-family: ui-rounded, "Nunito Sans", system-ui, sans-serif;
+    linear-gradient(180deg, var(--pz-bg), color-mix(in oklch, var(--pz-bg) 88%, white));
+  font-family: var(--font-sans, "Nunito", ui-rounded, "Nunito Sans", system-ui, sans-serif);
   container-type: inline-size;
 }
 .pensa-theme-dark {
-  --pz-bg: #111713;
-  --pz-surface: #19211b;
-  --pz-surface-2: #222d25;
-  --pz-ink: #f5f7ed;
-  --pz-muted: #a6b2a8;
-  --pz-line: #354339;
-  --pz-green: #43d58f;
-  --pz-lime: #bfe447;
-  --pz-orange: #ff7a4d;
-  --pz-purple: #9d8cff;
-  --pz-blue: #65a4f2;
+  /* A NOITE do tema kids: navy #0C1E3E, azul-vivo como ação, gradiente claro
+     (texto navy por cima), verde-vivo p/ conclusão — espelha o dark do Pinta. */
+  --pz-bg: var(--sz-kids-navy, oklch(0.235 0.05 262));
+  --pz-surface: oklch(0.28 0.05 260);
+  --pz-surface-2: oklch(0.33 0.05 260);
+  --pz-ink: oklch(0.975 0.005 250);
+  --pz-muted: oklch(0.7 0.03 250);
+  --pz-line: oklch(0.34 0.05 260);
+  --pz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --pz-green: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
+  --pz-orange: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
+  --pz-danger: oklch(0.64 0.215 27);
+  --pz-purple: oklch(0.7 0.18 300);
+  --pz-blue: var(--pz-accent);
+  --pz-gradient: var(
+    --sz-kids-grad-cta-azul-suave,
+    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+  );
+  --pz-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --pz-on-fill: oklch(0.22 0.05 262); /* navy sobre o azul claro/verde-vivo do dark */
 }
 .pensa-planner *,
 .pensa-planner *::before,
@@ -46,6 +68,22 @@
 .pensa-planner textarea,
 .pensa-planner select {
   font: inherit;
+}
+/* Títulos e números em Baloo 2 (display) — herda a fonte do host kids via
+   var(--font-display); fallback arredondado p/ standalone. */
+.pensa-planner h1,
+.pensa-planner h2,
+.pensa-planner h3,
+.pensa-planner h4,
+.pensa-kicker,
+.pensa-section-heading span,
+.pensa-project-orbit,
+.pensa-map-node > span,
+.pensa-stage-title > span,
+.pensa-task-order span,
+.pensa-approved p,
+.pensa-approved h2 {
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
 }
 .pensa-sr-only {
   position: absolute;
@@ -64,7 +102,7 @@
   opacity: 0.5;
 }
 .pensa-planner :focus-visible {
-  outline: 3px solid var(--pz-blue);
+  outline: 3px solid var(--pz-accent);
   outline-offset: 3px;
 }
 .pensa-home,
@@ -82,36 +120,37 @@
   overflow: hidden;
   padding: clamp(28px, 6vw, 64px);
   border: 1px solid var(--pz-line);
-  border-radius: 32px;
+  border-radius: 24px;
   background: var(--pz-surface);
-  box-shadow: 0 22px 70px rgba(20, 40, 25, 0.09);
+  box-shadow: 0 6px 0 color-mix(in oklch, var(--pz-accent) 12%, transparent);
 }
 .pensa-hero::after {
   content: "ZERO";
   position: absolute;
   right: -24px;
   bottom: -45px;
-  color: color-mix(in srgb, var(--pz-green) 8%, transparent);
+  color: color-mix(in oklch, var(--pz-accent) 8%, transparent);
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
   font-size: clamp(7rem, 20vw, 16rem);
-  font-weight: 1000;
+  font-weight: 800;
   letter-spacing: -0.12em;
   line-height: 0.8;
   pointer-events: none;
 }
 .pensa-kicker {
-  color: var(--pz-green);
+  color: var(--pz-accent);
   font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.18em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
 }
 .pensa-hero h1 {
   position: relative;
   z-index: 1;
   max-width: 830px;
   margin: 14px 0;
-  font-size: clamp(2.2rem, 6vw, 5.5rem);
-  letter-spacing: -0.055em;
-  line-height: 0.94;
+  font-size: clamp(2rem, 5.4vw, 4.4rem);
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 .pensa-hero > p {
   position: relative;
@@ -148,28 +187,50 @@
 .pensa-chat-input textarea {
   width: 100%;
   border: 1px solid var(--pz-line);
-  border-radius: 14px;
+  border-radius: 12px;
   color: var(--pz-ink);
   background: var(--pz-bg);
   padding: 13px 16px;
 }
 .pensa-inline-error {
   margin: 8px 0 0;
-  color: var(--pz-orange);
+  color: var(--pz-danger);
   font-size: 0.8rem;
   font-weight: 800;
 }
+/* CTA "3D" azul (espelho do .sz-btn-gradient do kids): gradiente + sombra dura
+   que afunda no clique. Ações afirmativas de concluir/aprovar seguem VERDES. */
 .pensa-create button,
 .pensa-generate,
 .pensa-primary-action,
 .pensa-new-version {
   border: 0;
-  border-radius: 14px;
-  color: #102016;
-  background: var(--pz-lime);
-  padding: 12px 20px;
-  font-weight: 900;
+  border-radius: 9999px;
+  color: var(--pz-on-fill);
+  background-image: var(--pz-gradient);
+  padding: 12px 22px;
+  font-weight: 800;
   white-space: nowrap;
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+.pensa-create button:hover:not(:disabled),
+.pensa-generate:hover:not(:disabled),
+.pensa-primary-action:hover:not(:disabled),
+.pensa-new-version:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+}
+.pensa-create button:active:not(:disabled),
+.pensa-generate:active:not(:disabled),
+.pensa-primary-action:active:not(:disabled),
+.pensa-new-version:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
 }
 .pensa-section-heading {
   display: flex;
@@ -204,16 +265,19 @@
   padding: 22px;
   text-align: left;
   border: 1px solid var(--pz-line);
-  border-radius: 22px;
+  border-radius: 16px;
   color: var(--pz-ink);
   background: var(--pz-surface);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-accent) 10%, transparent);
   transition:
     transform 0.18s ease,
-    border-color 0.18s ease;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .pensa-project-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--pz-green);
+  transform: translateY(-2px) scale(1.02);
+  border-color: var(--pz-accent);
+  box-shadow: 0 6px 0 color-mix(in oklch, var(--pz-accent) 16%, transparent);
 }
 .pensa-project-orbit {
   grid-row: 1 / 4;
@@ -221,9 +285,9 @@
   place-items: center;
   width: 52px;
   height: 52px;
-  border-radius: 18px;
-  color: var(--pz-green);
-  background: color-mix(in srgb, var(--pz-lime) 35%, var(--pz-surface));
+  border-radius: 16px;
+  color: var(--pz-accent);
+  background: color-mix(in oklch, var(--pz-accent) 16%, var(--pz-surface));
   font-size: 1.5rem;
 }
 .pensa-project-card strong {
@@ -236,9 +300,9 @@
 }
 .pensa-project-card i {
   align-self: end;
-  color: var(--pz-green);
+  color: var(--pz-accent);
   font-style: normal;
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-empty,
 .pensa-status {
@@ -253,7 +317,7 @@
   color: var(--pz-muted);
 }
 .pensa-empty span {
-  color: var(--pz-green);
+  color: var(--pz-accent);
   font-size: 2.5rem;
 }
 .pensa-empty h3 {
@@ -283,13 +347,13 @@
 .pensa-project-header span {
   color: var(--pz-muted);
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.12em;
 }
 .pensa-project-header h1 {
   margin: 2px 0 0;
   font-size: clamp(1.4rem, 4vw, 2.4rem);
-  letter-spacing: -0.035em;
+  letter-spacing: -0.02em;
 }
 .pensa-plan-status {
   display: flex;
@@ -303,7 +367,7 @@
   font-weight: 800;
 }
 .pensa-plan-status span {
-  color: var(--pz-green);
+  color: var(--pz-accent);
 }
 .pensa-map {
   display: grid;
@@ -318,9 +382,9 @@
   gap: 10px;
   padding: 12px;
   border: 1px solid var(--pz-line);
-  border-radius: 16px;
+  border-radius: 14px;
   color: var(--pz-muted);
-  background: color-mix(in srgb, var(--pz-surface) 70%, transparent);
+  background: color-mix(in oklch, var(--pz-surface) 70%, transparent);
 }
 .pensa-map-node > span {
   display: grid;
@@ -329,7 +393,7 @@
   place-items: center;
   border-radius: 11px;
   background: var(--pz-surface-2);
-  font-weight: 1000;
+  font-weight: 800;
 }
 .pensa-map-node div {
   min-width: 0;
@@ -350,15 +414,15 @@
   font-size: 0.66rem;
 }
 .pensa-map-node.is-current {
-  border-color: var(--pz-green);
-  background: color-mix(in srgb, var(--pz-green) 9%, var(--pz-surface));
+  border-color: var(--pz-accent);
+  background: color-mix(in oklch, var(--pz-accent) 9%, var(--pz-surface));
 }
 .pensa-map-node.is-current > span {
-  color: #102016;
-  background: var(--pz-lime);
+  color: var(--pz-on-fill);
+  background: var(--pz-accent);
 }
 .pensa-map-node.is-complete > span {
-  color: white;
+  color: var(--pz-on-fill);
   background: var(--pz-green);
 }
 .pensa-workspace {
@@ -375,16 +439,17 @@
   width: 58px;
   height: 58px;
   place-items: center;
-  border-radius: 18px;
-  color: #102016;
-  background: var(--pz-lime);
+  border-radius: 16px;
+  color: var(--pz-on-fill);
+  background-image: var(--pz-gradient);
   font-size: 1.8rem;
-  font-weight: 1000;
+  font-weight: 800;
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 55%, black);
 }
 .pensa-stage-title h2 {
   margin: 0;
   font-size: clamp(1.5rem, 4vw, 2.4rem);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
 }
 .pensa-stage-title p {
   margin: 3px 0 0;
@@ -406,11 +471,20 @@
 .pensa-audit,
 .pensa-ribbon {
   border: 1px solid var(--pz-line);
-  border-radius: 22px;
+  border-radius: 16px;
   background: var(--pz-surface);
 }
 .pensa-chat {
   padding: 20px;
+}
+.pensa-chat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.pensa-chat-head h3 {
+  margin: 0;
 }
 .pensa-chat h3 {
   margin: 0 0 12px;
@@ -424,7 +498,7 @@
   margin-bottom: 6px;
   color: var(--pz-muted);
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-decision-chips {
   display: flex;
@@ -441,7 +515,7 @@
 }
 .pensa-decisions span.is-done {
   color: var(--pz-green);
-  background: color-mix(in srgb, var(--pz-green) 12%, var(--pz-surface));
+  background: color-mix(in oklch, var(--pz-green) 12%, var(--pz-surface));
 }
 .pensa-messages {
   display: flex;
@@ -462,8 +536,8 @@
 }
 .pensa-messages p.user {
   align-self: flex-end;
-  color: #102016;
-  background: var(--pz-lime);
+  color: var(--pz-on-fill);
+  background: var(--pz-accent);
 }
 .pensa-messages b {
   display: block;
@@ -483,10 +557,10 @@
 .pensa-chat-input button {
   border: 0;
   border-radius: 13px;
-  color: white;
-  background: var(--pz-green);
+  color: var(--pz-on-fill);
+  background: var(--pz-accent);
   padding: 10px 15px;
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-artifact {
   overflow: hidden;
@@ -500,9 +574,9 @@
   border-bottom: 1px solid var(--pz-line);
 }
 .pensa-artifact > header span {
-  color: var(--pz-green);
+  color: var(--pz-accent);
   font-size: 0.65rem;
-  font-weight: 1000;
+  font-weight: 800;
   letter-spacing: 0.12em;
 }
 .pensa-artifact > header h3 {
@@ -528,11 +602,11 @@
   border: 0;
   border-radius: 12px;
   padding: 10px 14px;
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-artifact > footer .primary,
 .pensa-task footer .primary {
-  color: white;
+  color: var(--pz-on-fill);
   background: var(--pz-green);
 }
 .pensa-artifact-preview,
@@ -610,7 +684,7 @@
 .pensa-task-dependency-edit legend {
   color: var(--pz-muted);
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-form-row {
   display: grid;
@@ -643,7 +717,7 @@
   color: var(--pz-muted);
 }
 .pensa-artifact-empty span {
-  color: var(--pz-green);
+  color: var(--pz-accent);
   font-size: 1.7rem;
 }
 .pensa-artifact-empty p {
@@ -730,7 +804,7 @@
   place-items: center;
   border-radius: 15px;
   color: var(--pz-purple);
-  background: color-mix(in srgb, var(--pz-purple) 13%, var(--pz-surface));
+  background: color-mix(in oklch, var(--pz-purple) 13%, var(--pz-surface));
   font-size: 1.5rem;
 }
 .pensa-audit h3 {
@@ -761,7 +835,7 @@
   border-radius: 12px;
   color: var(--pz-muted);
   background: var(--pz-surface-2);
-  font-weight: 1000;
+  font-weight: 800;
 }
 .pensa-task-order::after {
   width: 2px;
@@ -776,12 +850,12 @@
 .pensa-task > article {
   padding: 17px 18px;
   border: 1px solid var(--pz-line);
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--pz-surface);
 }
 .pensa-task.is-next > article {
   border-color: var(--pz-green);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pz-green) 11%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--pz-green) 11%, transparent);
 }
 .pensa-task article > header {
   display: flex;
@@ -795,16 +869,16 @@
   padding: 5px 8px;
   font-size: 0.62rem;
   font-style: normal;
-  font-weight: 1000;
+  font-weight: 800;
   letter-spacing: 0.06em;
 }
 .pensa-task article > header span[data-destination="pinta"] {
   color: var(--pz-orange);
-  background: color-mix(in srgb, var(--pz-orange) 12%, var(--pz-surface));
+  background: color-mix(in oklch, var(--pz-orange) 14%, var(--pz-surface));
 }
 .pensa-task article > header span[data-destination="studio"] {
   color: var(--pz-blue);
-  background: color-mix(in srgb, var(--pz-blue) 12%, var(--pz-surface));
+  background: color-mix(in oklch, var(--pz-blue) 14%, var(--pz-surface));
 }
 .pensa-task article > header em {
   color: var(--pz-muted);
@@ -812,7 +886,7 @@
 }
 .pensa-task article > header b {
   margin-left: auto;
-  color: var(--pz-green);
+  color: var(--pz-accent);
 }
 .pensa-task h3 {
   margin: 11px 0 4px;
@@ -842,9 +916,9 @@
 }
 .pensa-task summary {
   cursor: pointer;
-  color: var(--pz-green);
+  color: var(--pz-accent);
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-guide {
   display: grid;
@@ -871,7 +945,7 @@
   border-radius: 7px;
   padding: 5px 7px;
   color: var(--pz-purple);
-  background: color-mix(in srgb, var(--pz-purple) 10%, var(--pz-surface));
+  background: color-mix(in oklch, var(--pz-purple) 12%, var(--pz-surface));
   font-family: inherit;
   font-size: 0.68rem;
 }
@@ -932,16 +1006,16 @@
   background: var(--pz-surface);
 }
 .pensa-findings li[data-severity="error"] {
-  border-color: var(--pz-orange);
+  border-color: var(--pz-danger);
 }
 .pensa-alert {
   width: min(1160px, calc(100% - 32px));
   margin: 0 auto 12px;
-  border: 1px solid color-mix(in srgb, var(--pz-orange) 45%, var(--pz-line));
+  border: 1px solid color-mix(in oklch, var(--pz-danger) 45%, var(--pz-line));
   border-radius: 13px;
   padding: 11px 14px;
-  color: var(--pz-orange);
-  background: color-mix(in srgb, var(--pz-orange) 8%, var(--pz-surface));
+  color: var(--pz-danger);
+  background: color-mix(in oklch, var(--pz-danger) 8%, var(--pz-surface));
 }
 .pensa-approved {
   display: flex;
@@ -951,7 +1025,7 @@
   padding: 24px;
   border: 1px solid var(--pz-green);
   border-radius: 24px;
-  background: color-mix(in srgb, var(--pz-green) 8%, var(--pz-surface));
+  background: color-mix(in oklch, var(--pz-green) 8%, var(--pz-surface));
 }
 .pensa-approved > span {
   display: grid;
@@ -959,7 +1033,7 @@
   height: 58px;
   place-items: center;
   border-radius: 50%;
-  color: white;
+  color: var(--pz-on-fill);
   background: var(--pz-green);
   font-size: 1.7rem;
 }
@@ -971,7 +1045,7 @@
 .pensa-approved p {
   color: var(--pz-green);
   font-size: 0.65rem;
-  font-weight: 1000;
+  font-weight: 800;
   letter-spacing: 0.12em;
 }
 .pensa-approved h2 {
@@ -1001,7 +1075,7 @@
   background: var(--pz-surface);
 }
 .pensa-new-version-form label {
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-new-version-form textarea {
   min-height: 100px;
@@ -1017,13 +1091,57 @@
   padding: 9px 13px;
   color: var(--pz-ink);
   background: transparent;
-  font-weight: 900;
+  font-weight: 800;
 }
 .pensa-new-version-form button.primary {
   border-color: var(--pz-green);
-  color: white;
+  color: var(--pz-on-fill);
   background: var(--pz-green);
 }
+
+/* ── Zappy, o mascote da comunidade kids ─────────────────────────────────
+   O host passa os sprites em adapter.mascotImages; o componente <Zappy>
+   renderiza <img alt=""> decorativo e some quando o sprite da pose falta
+   (degrade — standalone sem host). Flutuação leve; parada no reduced-motion. */
+.pensa-zappy {
+  display: block;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.pensa-hero-zappy {
+  position: absolute;
+  top: clamp(14px, 3vw, 26px);
+  right: clamp(14px, 3vw, 30px);
+  z-index: 1;
+  width: clamp(72px, 12vw, 128px);
+  animation: pensa-float 4s ease-in-out infinite;
+}
+.pensa-empty-zappy {
+  width: clamp(84px, 22vw, 120px);
+  margin: 0 auto;
+  animation: pensa-float 4s ease-in-out infinite;
+}
+.pensa-chat-zappy {
+  width: 40px;
+  flex: 0 0 auto;
+}
+.pensa-approved-zappy {
+  width: clamp(60px, 14vw, 84px);
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+@keyframes pensa-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 @container (max-width: 820px) {
   .pensa-map {
     grid-template-columns: repeat(2, 1fr);
@@ -1047,8 +1165,13 @@
     padding-top: 16px;
   }
   .pensa-hero {
-    border-radius: 22px;
+    border-radius: 20px;
     padding: 24px 20px;
+  }
+  .pensa-hero-zappy {
+    top: 12px;
+    right: 12px;
+    width: 60px;
   }
   .pensa-create div {
     flex-direction: column;
@@ -1111,9 +1234,13 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pensa-planner * {
+  .pensa-planner *,
+  .pensa-planner *::before,
+  .pensa-planner *::after {
     scroll-behavior: auto;
     transition: none;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
   }
 }
 

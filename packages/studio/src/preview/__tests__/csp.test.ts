@@ -6,6 +6,7 @@ describe('buildPreviewCSP', () => {
     const csp = buildPreviewCSP()
     expect(csp).toContain("default-src 'none'")
     expect(csp).toContain("connect-src 'none'")
+    // Documento sem NENHUM script autorizado não tem o que liberar: nem `data:`.
     expect(csp).toContain("script-src 'none'")
     expect(csp.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
     expect(csp).not.toMatch(/script-src[^;]*\bdata:/)
@@ -19,6 +20,16 @@ describe('buildPreviewCSP', () => {
     expect(csp.match(new RegExp(`'${hash}'`, 'g'))).toHaveLength(1)
     expect(csp).not.toContain('sha256-invalido')
     expect(csp.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
+  })
+
+  it('havendo scripts autorizados, script-src inclui `data:` (Firefox não casa hash com externo)', () => {
+    const hash = 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+    const scriptSrc = buildPreviewCSP({ scriptHashes: [hash] }).match(/script-src[^;]*/)?.[0] ?? ''
+    expect(scriptSrc).toMatch(/\bdata:/)
+    expect(scriptSrc).not.toMatch(/\bblob:/)
+    expect(scriptSrc).not.toMatch(/https:/)
+    expect(scriptSrc).not.toContain("'unsafe-inline'")
+    expect(scriptSrc).toContain(`'${hash}'`)
   })
 
   it('habilita hashes de atributos somente quando há handlers autorizados', () => {

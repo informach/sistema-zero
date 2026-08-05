@@ -127,7 +127,7 @@ memória com `loaded:true` em vez de lançar.
 
 ## Segurança do preview (defesa em camadas — 4º full review)
 
-Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
+Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
 - **`csp.ts`** — CSP interna do srcdoc: libera subrecursos PASSIVOS de `https:` (img/font/media/css/
   frame), mas `script-src` NÃO inclui `https:` genérico. Scripts gerados são autorizados pelo hash
   SHA-256 exato; ESM oficial entra só pela URL declarada e, no `esm.sh`, pelo prefixo do pacote com
@@ -135,6 +135,13 @@ Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__te
   `connect-src 'none'` por default (sem fetch/XHR/WS a menos que o professor libere origens) e
   `worker-src 'none'`. Trade-off aceito: img/media/font/frame de `https:` = GET passivo de mão única
   (sem resposta legível, sem cookies) — NÃO alterar.
+  ⚠️ `script-src` inclui `data:` quando há scripts autorizados: fora do Chromium, hash não casa com
+  script EXTERNO, e todo JS do aluno é externalizado em `data:`. Esses recursos NÃO levam
+  `integrity`, pois Firefox recusa SRI em URL não elegível. O `scriptSourceGuard` cobre a injeção
+  dinâmica que essa liberação tornaria possível.
+- **`scriptSourceGuard.ts`** — fecha `HTMLScriptElement.prototype.src` e
+  `setAttribute`/`setAttributeNS` contra scripts `data:`/`blob:` criados em runtime; os scripts
+  autorizados nascem no parse do srcdoc e não passam pelos setters.
 - **`loopGuard.ts`** — instrumenta `for/while/do-while/for-of/for-in` (parse Babel + walk AST; clássico
   1º, cai p/ módulo com errorRecovery) injetando `__szLoopTick()`, que estoura um **orçamento contínuo**
   (`budgetMs`, default 4000) reiniciado a cada macrotask. `performance.now()` é capturado/bindado no
@@ -277,9 +284,10 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 8. **Storage do aluno**: o `storageBridge` é STRING PURA (sem imports); `postMessage` SEMPRE com
    `targetOrigin` (nunca `'*'`); snapshot via `JSON.parse`. `writeGameStorage` roda no MESMO mutex de
    `deleteProject` + cerca de exclusão — um write em voo NÃO ressuscita `sz:game-storage:<id>` órfão.
-9. **Guardas do preview travadas**: `__szLoopTick` é `writable:false/configurable:false` e captura o
-   `performance.now()` no boot; a CSP NÃO libera `script-src https:` nem `connect-src` (só o professor
-   abre origens). Mexeu em segurança de preview? Replique o teste em `src/preview/__tests__`.
+9. **Guardas do preview travadas**: `__szLoopTick` e os acessores do `scriptSourceGuard` são
+   `configurable:false`; a CSP NÃO libera `script-src https:`, `blob:` nem `connect-src` (só o
+   professor abre origens). `script-src data:` é deliberado e necessário ao Firefox. Mexeu em
+   segurança de preview? Replique o teste unitário e rode o cenário Playwright no Firefox.
 10. **`convertToPro` é one-way**; os minificadores SÃO injetáveis (`identityMinifiers` nos testes,
     terser/csso em prod). No `FsDiff`, o conflito arquivo↔diretório sai de `removeFirstPaths` e é
     aplicado RECURSIVAMENTE ANTES de mkdir/write.
@@ -1019,7 +1027,8 @@ Foi um full review com 4 blocos de família nova. A documentação atual do alun
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
 - `bun run typecheck` / `bun run test` / `bun run check`
-- `bun run e2e` — suíte Playwright completa contra o playground (manual); o CI roda o subconjunto `examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"`
+- `bun run e2e` — suíte Playwright completa em Chromium e Firefox contra o playground (manual); o
+  CI roda o subconjunto `examples-gallery.spec.ts --project=chromium --grep "game-2d(?:-advanced)?:"`
 
 ## Vitrine de kits + micro-celebração (07/2026)
 

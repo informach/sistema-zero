@@ -5,8 +5,9 @@ import { defineConfig, devices } from '@playwright/test'
  * para evitar testes contra servidores antigos de desenvolvimento.
  *
  * Além do boot, a suíte percorre criação/reabertura de projetos, colagem e
- * arrasto de blocos, instalação de extensões, Ponte, preview e interações reais
- * em Chromium, inclusive em layouts estreitos.
+ * arrasto de blocos, instalação de extensões, Ponte, preview e interações reais,
+ * inclusive em layouts estreitos. O projeto Firefox cobre diferenças reais de
+ * CSP/SRI que já quebraram a execução inteira do código do aluno.
  */
 const e2ePort = Number(process.env.E2E_PORT ?? 5195)
 const baseURL = `http://127.0.0.1:${e2ePort}`
@@ -29,6 +30,10 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
     },
   ],
   webServer: {

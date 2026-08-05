@@ -216,6 +216,13 @@ export function creatorCareerLevel(slug: string | null | undefined): CreatorCare
   return LEVEL_BY_SLUG.get(slug as CareerLevelSlug) ?? CREATOR_CAREER_LEVELS[0]!
 }
 
+/** Compara dois degraus já resolvidos pela posição na escada canônica. */
+export function careerLevelAtLeast(slug: string | null | undefined, min: CareerLevelSlug): boolean {
+  const current = CAREER_LEVEL_SLUGS.indexOf(slug as CareerLevelSlug)
+  if (current < 0) return false
+  return current >= CAREER_LEVEL_SLUGS.indexOf(min)
+}
+
 export type QualifiedCareerSlots = Readonly<Partial<Record<CareerCourseTier, readonly number[]>>>
 
 function slotSet(slots: QualifiedCareerSlots, tier: CareerCourseTier): ReadonlySet<number> {
