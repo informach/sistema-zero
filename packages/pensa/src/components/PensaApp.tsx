@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { splitSuggestions, stripStreamingSuggestions } from '../core/suggestions'
 import type {
   PensaArtifactType,
   PensaArtifactView,
@@ -84,6 +85,11 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // "Peek": rever uma etapa CONCLUÍDA em modo leitura, sem sair do agora.
+  const [peek, setPeek] = useState<PensaWorkStage | null>(null)
+  const [peekView, setPeekView] = useState<PensaStageView | null>(null)
+  const [peekError, setPeekError] = useState<string | null>(null)
+  const peekRef = useRef<PensaWorkStage | null>(null)
 
   const loadProjects = useCallback(async () => {
     setLoading(true)
@@ -116,6 +122,11 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
         )
         setDetail(project)
         setStage(stageResult)
+        // Abrir/recarregar um projeto sempre volta ao "agora" (peek fechado).
+        peekRef.current = null
+        setPeek(null)
+        setPeekView(null)
+        setPeekError(null)
       } catch (cause) {
         setError(errorMessage(cause))
       } finally {
@@ -171,12 +182,57 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
   }
 
   const refresh = () => loadProject(detail.id)
+  const closePeek = () => {
+    peekRef.current = null
+    setPeek(null)
+    setPeekView(null)
+    setPeekError(null)
+  }
+  const openPeek = (stageId: PensaWorkStage) => {
+    // Clicar a etapa atual (ou re-clicar a revisada) fecha o peek.
+    if (stageId === detail.currentCycle.stage || peek === stageId) {
+      closePeek()
+      return
+    }
+    peekRef.current = stageId
+    setPeek(stageId)
+    setPeekView(null)
+    setPeekError(null)
+    void adapter.transport
+      .request<PensaStageView>(`/cycles/${detail.currentCycle.id}/stages/${stageId}`)
+      .then(
+        (view) => {
+          // Guarda de corrida: só aplica se este ainda é o peek pedido.
+          if (peekRef.current === stageId) setPeekView(view)
+        },
+        (cause) => {
+          if (peekRef.current === stageId) setPeekError(errorMessage(cause))
+        },
+      )
+  }
   return (
     <Shell theme={adapter.theme}>
       <ProjectHeader detail={detail} onBack={() => void loadProjects()} />
       {error ? <Alert>{error}</Alert> : null}
-      <CreationMap current={detail.currentCycle.stage} />
-      {stage ? (
+      <CreationMap
+        current={detail.currentCycle.stage}
+        peek={peek}
+        onPeek={openPeek}
+        onExitPeek={closePeek}
+      />
+      {peek ? (
+        <StagePeek
+          adapter={adapter}
+          detail={detail}
+          stageId={peek}
+          view={peekView}
+          error={peekError}
+          busy={busy}
+          run={run}
+          refresh={refresh}
+          onClose={closePeek}
+        />
+      ) : stage ? (
         <StageWorkspace
           adapter={adapter}
           detail={detail}
@@ -331,24 +387,257 @@ function ProjectHeader({ detail, onBack }: { detail: PensaProjectDetailView; onB
   )
 }
 
-function CreationMap({ current }: { current: PensaStage }) {
+function CreationMap(props: {
+  current: PensaStage
+  peek: PensaWorkStage | null
+  onPeek(stage: PensaWorkStage): void
+  onExitPeek(): void
+}) {
   const currentIndex =
-    current === 'done' ? STAGES.length : STAGES.findIndex((item) => item.id === current)
+    props.current === 'done' ? STAGES.length : STAGES.findIndex((item) => item.id === props.current)
   return (
     <nav className="pensa-map" aria-label="Mapa da metodologia ZERO">
-      {STAGES.map((item, index) => (
-        <div
-          key={item.id}
-          className={`pensa-map-node ${index < currentIndex ? 'is-complete' : ''} ${index === currentIndex ? 'is-current' : ''}`}
-        >
-          <span>{index < currentIndex ? '✓' : item.letter}</span>
-          <div>
-            <strong>{item.title}</strong>
-            <small>{item.description}</small>
+      {STAGES.map((item, index) => {
+        const complete = index < currentIndex
+        const isCurrent = index === currentIndex
+        const viewing = props.peek === item.id
+        const className = `pensa-map-node ${complete ? 'is-complete' : ''} ${isCurrent ? 'is-current' : ''} ${viewing ? 'is-viewing' : ''}`
+        const inner = (
+          <>
+            <span>{complete ? '✓' : item.letter}</span>
+            <div>
+              <strong>{item.title}</strong>
+              <small>{item.description}</small>
+            </div>
+          </>
+        )
+        // Etapa vencida = botão de rever (toggle); a atual só vira botão
+        // enquanto há um peek aberto (clique = voltar); futuras seguem inertes.
+        if (complete)
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={className}
+              aria-pressed={viewing}
+              aria-label={`Rever a etapa ${item.title} (concluída)`}
+              onClick={() => props.onPeek(item.id)}
+            >
+              {inner}
+            </button>
+          )
+        if (isCurrent && props.peek)
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={className}
+              aria-current="step"
+              aria-label={`Voltar para a etapa atual (${item.title})`}
+              onClick={props.onExitPeek}
+            >
+              {inner}
+            </button>
+          )
+        return (
+          <div key={item.id} className={className} aria-current={isCurrent ? 'step' : undefined}>
+            {inner}
           </div>
-        </div>
-      ))}
+        )
+      })}
     </nav>
+  )
+}
+
+/** Transcrição do chat — compartilhada entre a etapa Z (viva) e o peek (leitura).
+ *  A linha SUGESTÕES: nunca renderiza crua (vira chips na etapa viva). */
+function ChatTranscript({
+  messages,
+  streamingText,
+}: {
+  messages: PensaStageView['conversation']['messages']
+  streamingText?: string
+}) {
+  const streamingBody = streamingText ? stripStreamingSuggestions(streamingText) : ''
+  return (
+    <div className="pensa-messages" aria-live="polite">
+      {messages.map((item) => (
+        <p key={`${item.at}-${item.role}-${item.content}`} className={item.role}>
+          <b>{item.role === 'user' ? 'Você' : 'Zappy'}</b>
+          {item.role === 'assistant' ? splitSuggestions(item.content).body : item.content}
+        </p>
+      ))}
+      {streamingBody ? (
+        <p className="assistant">
+          <b>Zappy</b>
+          {streamingBody}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function screenNamesFrom(designContent: unknown): Record<string, string> {
+  const names: Record<string, string> = {}
+  for (const item of asRecordList(asRecord(designContent).screens)) {
+    const id = asText(item.id)
+    const name = asText(item.name)
+    if (id && name) names[id] = name
+  }
+  return names
+}
+
+/** Casca do artefato SEM ações — o ArtifactEditor não serve para etapa passada
+ *  (save/validate miram a etapa ATUAL do ciclo). */
+function ReadOnlyArtifact(props: {
+  type: PensaArtifactType
+  artifact?: PensaArtifactView
+  screenNames?: Record<string, string>
+  compact?: boolean
+}) {
+  if (!props.artifact)
+    return (
+      <div className="pensa-artifact-empty">
+        <span>◇</span>
+        <p>{ARTIFACT_LABELS[props.type]} ainda não criada.</p>
+      </div>
+    )
+  return (
+    <article className={`pensa-artifact ${props.compact ? 'is-compact' : ''}`}>
+      <header>
+        <div>
+          <span>{props.artifact.status === 'validated' ? 'APROVADO' : 'RASCUNHO'}</span>
+          <h3>{ARTIFACT_LABELS[props.type]}</h3>
+        </div>
+      </header>
+      <ArtifactPreview
+        type={props.type}
+        content={props.artifact.content}
+        screenNames={props.screenNames}
+      />
+    </article>
+  )
+}
+
+function ReviewFindings({ content }: { content: unknown }) {
+  const findings = asRecordList(asRecord(content).findings)
+  if (!findings.length) return null
+  return (
+    <ul className="pensa-findings">
+      {findings.map((finding) => (
+        <li
+          key={`${asText(finding.severity)}-${asText(finding.message)}`}
+          data-severity={asText(finding.severity)}
+        >
+          {asText(finding.message)}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function StagePeek(props: {
+  adapter: PensaHostAdapter
+  detail: PensaProjectDetailView
+  stageId: PensaWorkStage
+  view: PensaStageView | null
+  error: string | null
+  busy: string | null
+  run(key: string, action: () => Promise<void>): Promise<void>
+  refresh(): Promise<void>
+  onClose(): void
+}) {
+  const config = STAGES.find((item) => item.id === props.stageId)
+  if (!config) return null
+  const backLabel =
+    props.detail.currentCycle.stage === 'done'
+      ? 'Voltar para o meu plano'
+      : 'Voltar para a etapa atual'
+  return (
+    <section className="pensa-workspace pensa-peek">
+      <div className="pensa-peek-banner" role="status">
+        <span>Você está revendo uma etapa que já foi concluída.</span>
+        <button type="button" onClick={props.onClose}>
+          {backLabel}
+        </button>
+      </div>
+      <div className="pensa-stage-title">
+        <span>{config.letter}</span>
+        <div>
+          <h2>{config.title}</h2>
+          <p>{config.description}</p>
+        </div>
+      </div>
+      {props.error ? (
+        <Alert>{props.error}</Alert>
+      ) : props.view ? (
+        <PeekContent {...props} view={props.view} />
+      ) : (
+        <Status>Abrindo a etapa concluída…</Status>
+      )}
+    </section>
+  )
+}
+
+function PeekContent(props: {
+  adapter: PensaHostAdapter
+  stageId: PensaWorkStage
+  view: PensaStageView
+  busy: string | null
+  run(key: string, action: () => Promise<void>): Promise<void>
+  refresh(): Promise<void>
+}) {
+  const view = props.view
+  if (props.stageId === 'z') {
+    const idea = view.artifacts.find((item) => item.type === 'idea')
+    return (
+      <div className="pensa-two-column">
+        <div className="pensa-panel pensa-chat">
+          <h3>Conversa com o Zappy</h3>
+          <ChatTranscript messages={view.conversation.messages} />
+        </div>
+        <div className="pensa-stack">
+          <ReadOnlyArtifact type="idea" artifact={idea} />
+        </div>
+      </div>
+    )
+  }
+  if (props.stageId === 'e') {
+    const design = view.artifacts.find((item) => item.type === 'game_design')
+    const visual = view.artifacts.find((item) => item.type === 'visual_direction')
+    return (
+      <div className="pensa-two-column">
+        <ReadOnlyArtifact type="game_design" artifact={design} />
+        <ReadOnlyArtifact
+          type="visual_direction"
+          artifact={visual}
+          screenNames={screenNamesFrom(design?.content)}
+        />
+      </div>
+    )
+  }
+  if (props.stageId === 'r') {
+    const plan = view.artifacts.find((item) => item.type === 'task_plan')
+    return (
+      <div className="pensa-stack">
+        <TaskPlan
+          adapter={props.adapter}
+          stage={view}
+          busy={props.busy}
+          editable={false}
+          run={props.run}
+          refresh={props.refresh}
+        />
+        <ReadOnlyArtifact type="task_plan" artifact={plan} compact />
+      </div>
+    )
+  }
+  const review = view.artifacts.find((item) => item.type === 'plan_review')
+  return (
+    <div className="pensa-stack">
+      <ReadOnlyArtifact type="plan_review" artifact={review} />
+      <ReviewFindings content={review?.content} />
+    </div>
   )
 }
 
@@ -395,6 +684,7 @@ function StageZ(props: StageProps) {
   const [streaming, setStreaming] = useState('')
   const [chatError, setChatError] = useState<string | null>(null)
   const abortRef = useRef<null | (() => void)>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   useEffect(
     () => () => {
       abortRef.current?.()
@@ -411,9 +701,9 @@ function StageZ(props: StageProps) {
     outcome: false,
     dimension: false,
   }
-  const send = () => {
-    if (!message.trim() || abortRef.current) return
-    const text = message.trim()
+  const sendText = (raw: string) => {
+    if (!raw.trim() || abortRef.current) return
+    const text = raw.trim()
     setMessage('')
     setStreaming('')
     setChatError(null)
@@ -439,6 +729,16 @@ function StageZ(props: StageProps) {
         },
       },
     )
+  }
+  const send = () => sendText(message)
+  // Sugestões clicáveis: só as da ÚLTIMA resposta do Zappy respondem à
+  // pergunta atual; o clique PREENCHE o campo (a criança revisa e envia).
+  const lastMessage = props.stage.conversation.messages.at(-1)
+  const suggestions =
+    lastMessage?.role === 'assistant' ? splitSuggestions(lastMessage.content).suggestions : []
+  const pickSuggestion = (suggestion: string) => {
+    setMessage(suggestion)
+    textareaRef.current?.focus()
   }
   return (
     <div className="pensa-two-column">
@@ -468,26 +768,29 @@ function StageZ(props: StageProps) {
             ))}
           </div>
         </fieldset>
-        <div className="pensa-messages" aria-live="polite">
-          {props.stage.conversation.messages.map((item) => (
-            <p key={`${item.at}-${item.role}-${item.content}`} className={item.role}>
-              <b>{item.role === 'user' ? 'Você' : 'Zappy'}</b>
-              {item.content}
-            </p>
-          ))}
-          {streaming ? (
-            <p className="assistant">
-              <b>Zappy</b>
-              {streaming}
-            </p>
-          ) : null}
-        </div>
+        <ChatTranscript messages={props.stage.conversation.messages} streamingText={streaming} />
+        {suggestions.length > 0 && !streaming && !abortRef.current ? (
+          <fieldset className="pensa-suggestion-chips">
+            <legend className="pensa-sr-only">Sugestões do Zappy</legend>
+            {suggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                disabled={!!abortRef.current}
+                onClick={() => pickSuggestion(suggestion)}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </fieldset>
+        ) : null}
         <div className="pensa-chat-input">
           <label className="pensa-sr-only" htmlFor="pensa-chat-message">
             Mensagem para o Zappy
           </label>
           <textarea
             id="pensa-chat-message"
+            ref={textareaRef}
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             onKeyDown={(event) => {
@@ -526,12 +829,7 @@ function StageZ(props: StageProps) {
 function StageE(props: StageProps) {
   const design = props.stage.artifacts.find((item) => item.type === 'game_design')
   const visual = props.stage.artifacts.find((item) => item.type === 'visual_direction')
-  const screenNames: Record<string, string> = {}
-  for (const item of asRecordList(asRecord(design?.content).screens)) {
-    const id = asText(item.id)
-    const name = asText(item.name)
-    if (id && name) screenNames[id] = name
-  }
+  const screenNames = screenNamesFrom(design?.content)
   return (
     <div className="pensa-stack">
       <div className="pensa-two-column">
@@ -612,15 +910,7 @@ function StageO(props: StageProps) {
           Revisar e aprovar
         </GenerateButton>
       </div>
-      {content?.findings?.length ? (
-        <ul className="pensa-findings">
-          {content.findings.map((finding) => (
-            <li key={`${finding.severity}-${finding.message}`} data-severity={finding.severity}>
-              {finding.message}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <ReviewFindings content={review?.content} />
       {review?.status === 'validated' && content?.approved ? (
         <PrimaryButton busy={props.busy === 'advance'} onClick={props.onAdvance}>
           Aprovar meu plano ✓

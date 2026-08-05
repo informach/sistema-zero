@@ -36,6 +36,27 @@ Uma tarefa carrega destino, categoria, estimativa, posição global, dependênci
 
 O Pensa só reflete o progresso. O servidor calcula `nextTaskId` quando todas as dependências anteriores estão concluídas. Ferramenta não possuída bloqueia o botão de envio, mas preserva o plano.
 
+## Sugestões do chat (etapa Z)
+
+Toda resposta do Zappy termina com a linha `SUGESTÕES: a | b | c` (contrato do prompt no
+member-shell). Ela NUNCA renderiza crua: `core/suggestions.ts` (`splitSuggestions`,
+tolerante a caixa/acento, só a linha FINAL) separa corpo e sugestões, e
+`stripStreamingSuggestions` esconde até o prefixo parcial durante o streaming. As sugestões da
+ÚLTIMA resposta viram chips (`.pensa-suggestion-chips`, fieldset com legend invisível) que
+PREENCHEM o campo e focam o textarea — decisão da usuária: a criança revisa e envia (trocar para
+envio direto = chamar `sendText(s)` no clique). Os chips somem com stream em andamento.
+
+## Rever etapa concluída (peek)
+
+Nós CONCLUÍDOS do `CreationMap` são botões (`aria-pressed`; re-clicar fecha) que abrem o
+`StagePeek`: leitura da etapa vencida via `GET /cycles/:id/stages/:stage` (o members serve
+qualquer etapa), com banner "Você está revendo…" + voltar (o nó da etapa ATUAL também vira botão
+de voltar enquanto o peek está aberto). Sem edição no peek: `ReadOnlyArtifact` embrulha o
+`ArtifactPreview` (o `ArtifactEditor` NÃO serve — save/validate miram a etapa atual do ciclo);
+etapa R usa `TaskPlan editable={false}` e o "Abrir no Pinta/Estúdio" PERMANECE (tarefas são do
+ciclo). `loadProject`/refresh fecham o peek; corrida guardada por `peekRef`. Compartilhados:
+`ChatTranscript` (Z vivo + peek), `screenNamesFrom`, `ReviewFindings`.
+
 ## Regras de edição
 
 Antes da aprovação em O, artefatos e tarefas planejadas podem ser editados. Depois da aprovação, editar uma tarefa planejada reabre O e invalida a revisão. Editar uma tarefa iniciada ou concluída cria uma nova revisão e arquiva a anterior.

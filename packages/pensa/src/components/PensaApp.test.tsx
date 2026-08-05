@@ -272,6 +272,263 @@ describe('Pensa planejador', () => {
     expect(screen.getByRole('button', { name: 'Está do meu jeito ✓' })).toBeTruthy()
   })
 
+  test('sugestões do Zappy viram chips que preenchem o campo — a linha crua nunca aparece', async () => {
+    const zCycle = {
+      ...cycle,
+      stage: 'z' as const,
+      zCompletedAt: null,
+      eCompletedAt: null,
+      rCompletedAt: null,
+      oCompletedAt: null,
+    }
+    const detail: PensaProjectDetailView = {
+      id: 'plan-1',
+      name: 'Bosque das Estrelas',
+      status: 'active',
+      createdAt: '2026-08-04T09:00:00.000Z',
+      updatedAt: '2026-08-04T09:05:00.000Z',
+      cycles: [zCycle],
+      currentCycle: zCycle,
+      artifactsIndex: [],
+    }
+    const stage: PensaStageView = {
+      stage: 'z',
+      conversation: {
+        messages: [
+          { role: 'user', content: 'Quero um jogo de estrelas', at: '2026-08-04T09:01:00.000Z' },
+          {
+            role: 'assistant',
+            content:
+              'Legal! Qual é o objetivo do jogo?\nSUGESTÕES: pegar todas as estrelas | fugir do robô',
+            at: '2026-08-04T09:01:05.000Z',
+          },
+        ],
+        summary: null,
+        messageCount: 2,
+      },
+      state: {},
+      artifacts: [],
+      tasks: [],
+      nextTaskId: null,
+    }
+    const request = mock(async (path: string) => {
+      if (path === '/projects')
+        return {
+          projects: [
+            {
+              id: detail.id,
+              name: detail.name,
+              status: 'active',
+              cycleNumber: 1,
+              stage: 'z',
+              createdAt: detail.createdAt,
+              updatedAt: detail.updatedAt,
+            },
+          ],
+        }
+      if (path === '/projects/plan-1') return { project: detail }
+      if (path === '/cycles/cycle-1/stages/z') return stage
+      throw new Error(`Unexpected request: ${path}`)
+    })
+    const adapter: PensaHostAdapter = {
+      mode: 'kids',
+      capabilities: { pintaOwned: true, studioOwned: true },
+      onOpenTask: () => undefined,
+      transport: {
+        request: request as PensaHostAdapter['transport']['request'],
+        streamChat: () => () => {},
+      },
+    }
+    render(<PensaApp adapter={adapter} />)
+    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() => screen.getByRole('group', { name: 'Sugestões do Zappy' }))
+    // O corpo da resposta fica na bolha; a linha SUGESTÕES: some do texto.
+    expect(screen.getByText(/Qual é o objetivo do jogo\?/)).toBeTruthy()
+    expect(screen.queryByText(/SUGESTÕES:/)).toBeNull()
+    // Clicar preenche o campo (decisão da usuária: a criança revisa e envia).
+    fireEvent.click(screen.getByRole('button', { name: 'fugir do robô' }))
+    expect((screen.getByLabelText('Mensagem para o Zappy') as HTMLTextAreaElement).value).toBe(
+      'fugir do robô',
+    )
+  })
+
+  test('rever etapa concluída abre o peek em modo leitura e o voltar restaura o agora', async () => {
+    const planningCycle = { ...cycle, stage: 'r' as const, rCompletedAt: null, oCompletedAt: null }
+    const detail: PensaProjectDetailView = {
+      id: 'plan-1',
+      name: 'Bosque das Estrelas',
+      status: 'active',
+      createdAt: '2026-08-04T09:00:00.000Z',
+      updatedAt: '2026-08-04T10:20:00.000Z',
+      cycles: [planningCycle],
+      currentCycle: planningCycle,
+      artifactsIndex: [],
+    }
+    const rStage: PensaStageView = {
+      stage: 'r',
+      conversation: { messages: [], summary: null, messageCount: 0 },
+      state: {},
+      artifacts: [],
+      tasks: [task('art-1', 0, 'pinta')],
+      nextTaskId: 'art-1',
+    }
+    const zStage: PensaStageView = {
+      stage: 'z',
+      conversation: {
+        messages: [
+          {
+            role: 'assistant',
+            content: 'Que ideia legal!\nSUGESTÕES: pegar estrelas | fugir do robô',
+            at: '2026-08-04T09:01:00.000Z',
+          },
+        ],
+        summary: null,
+        messageCount: 1,
+      },
+      state: {},
+      artifacts: [
+        {
+          id: 'artifact-idea',
+          stage: 'z',
+          type: 'idea',
+          version: 1,
+          status: 'validated',
+          createdAt: '2026-08-04T09:30:00.000Z',
+          content: {
+            title: 'Bosque das Estrelas',
+            idea: 'Coletar estrelas no bosque encantado.',
+            objective: 'Pegar todas as estrelas.',
+            controls: ['setas'],
+            victory: 'Pegar a última estrela.',
+            defeat: 'Encostar no robô três vezes.',
+            dimension: '2d',
+          },
+        },
+      ],
+      tasks: [],
+      nextTaskId: null,
+    }
+    const request = mock(async (path: string) => {
+      if (path === '/projects')
+        return {
+          projects: [
+            {
+              id: detail.id,
+              name: detail.name,
+              status: 'active',
+              cycleNumber: 1,
+              stage: 'r',
+              createdAt: detail.createdAt,
+              updatedAt: detail.updatedAt,
+            },
+          ],
+        }
+      if (path === '/projects/plan-1') return { project: detail }
+      if (path === '/cycles/cycle-1/stages/r') return rStage
+      if (path === '/cycles/cycle-1/stages/z') return zStage
+      throw new Error(`Unexpected request: ${path}`)
+    })
+    const adapter: PensaHostAdapter = {
+      mode: 'kids',
+      capabilities: { pintaOwned: true, studioOwned: true },
+      onOpenTask: () => undefined,
+      transport: {
+        request: request as PensaHostAdapter['transport']['request'],
+        streamChat: () => () => {},
+      },
+    }
+    render(<PensaApp adapter={adapter} />)
+    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() => screen.getByText('Cartões de Criação'))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Rever a etapa Zerar a Bagunça (concluída)' }),
+    )
+    await waitFor(() => screen.getByText('Você está revendo uma etapa que já foi concluída.'))
+    // Conteúdo da etapa vencida em LEITURA: carta + conversa, sem ações.
+    await waitFor(() => screen.getByText('Coletar estrelas no bosque encantado.'))
+    expect(screen.getByText('Que ideia legal!')).toBeTruthy()
+    expect(screen.queryByText(/SUGESTÕES:/)).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Está do meu jeito ✓' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar para a etapa atual' }))
+    await waitFor(() => screen.getByText('Cartões de Criação'))
+  })
+
+  test('peek da etapa R mostra o plano sem autoria, mas mantém o abrir na ferramenta', async () => {
+    const detail: PensaProjectDetailView = {
+      id: 'plan-1',
+      name: 'Bosque das Estrelas',
+      status: 'active',
+      createdAt: '2026-08-04T09:00:00.000Z',
+      updatedAt: '2026-08-04T10:30:00.000Z',
+      cycles: [cycle],
+      currentCycle: cycle,
+      artifactsIndex: [],
+    }
+    const doneStage: PensaStageView = {
+      stage: 'done',
+      conversation: { messages: [], summary: null, messageCount: 0 },
+      state: {},
+      artifacts: [],
+      tasks: [task('art-1', 0, 'pinta')],
+      nextTaskId: 'art-1',
+    }
+    const rStage: PensaStageView = {
+      stage: 'r',
+      conversation: { messages: [], summary: null, messageCount: 0 },
+      state: {},
+      artifacts: [],
+      tasks: [task('art-1', 0, 'pinta')],
+      nextTaskId: 'art-1',
+    }
+    const request = mock(async (path: string) => {
+      if (path === '/projects')
+        return {
+          projects: [
+            {
+              id: detail.id,
+              name: detail.name,
+              status: 'active',
+              cycleNumber: 1,
+              stage: 'done',
+              createdAt: detail.createdAt,
+              updatedAt: detail.updatedAt,
+            },
+          ],
+        }
+      if (path === '/projects/plan-1') return { project: detail }
+      if (path === '/cycles/cycle-1/stages/done') return doneStage
+      if (path === '/cycles/cycle-1/stages/r') return rStage
+      throw new Error(`Unexpected request: ${path}`)
+    })
+    const adapter: PensaHostAdapter = {
+      mode: 'kids',
+      capabilities: { pintaOwned: true, studioOwned: false },
+      onOpenTask: () => undefined,
+      transport: {
+        request: request as PensaHostAdapter['transport']['request'],
+        streamChat: () => () => {},
+      },
+    }
+    render(<PensaApp adapter={adapter} />)
+    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() => screen.getByRole('heading', { name: 'Meu plano' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Rever a etapa Roteirizar a Criação (concluída)' }),
+    )
+    await waitFor(() => screen.getByText('Você está revendo uma etapa que já foi concluída.'))
+    await waitFor(() => screen.getByText('Desenhar a estrela'))
+    // editable={false} de verdade: sem autoria, mas o deep link continua.
+    expect(screen.queryByRole('button', { name: 'Editar cartão' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Apagar cartão' })).toBeNull()
+    expect(screen.getByRole('button', { name: /Abrir no Pinta/ })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar para o meu plano' }))
+    await waitFor(() => screen.getByRole('heading', { name: 'Meu plano' }))
+  })
+
   test('edita um cartão planejado por campos estruturados sem expor JSON ou referências oficiais', async () => {
     const planningCycle = { ...cycle, stage: 'r' as const, rCompletedAt: null, oCompletedAt: null }
     const detail: PensaProjectDetailView = {
