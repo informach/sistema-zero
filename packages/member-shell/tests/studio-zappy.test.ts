@@ -12,6 +12,7 @@ const {
   deterministicZappySafetyReply,
   invalidStudioZappyAnswerReason,
   normalizeZappySearchQuery,
+  unknownBlockNamesInText,
   validatedStudioZappyResponse,
 } = await import('../src/server/zappy-ai')
 const { isStudioZappyAllowed } = await import('../src/server/zappy-access')
@@ -479,6 +480,24 @@ describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', (
   test('a regra do prompt pede a trilha em texto corrido, sem crases', () => {
     expect(prompt.system).toContain('sem crases')
     expect(prompt.system).toContain('"categoria" e "subcategoria"')
+  })
+
+  test('o prompt proíbe citar bloco fora do catálogo e amarra citação a blockReferences', () => {
+    expect(prompt.system).toContain('somente blocos que EXISTEM no catálogo')
+    expect(prompt.system).toContain('inclua cada bloco citado também em blockReferences')
+    expect(prompt.system).toContain('esse bloco ainda não existe')
+  })
+
+  test('unknownBlockNamesInText acusa bloco inventado e aceita os do catálogo', () => {
+    const known = `Use o bloco "${entry.label}" e depois o bloco “${entry.label.toUpperCase()}”.`
+    expect(unknownBlockNamesInText(known, byType)).toEqual([])
+    const invented =
+      'Agora use o bloco "Adicionar sprite ao grupo" para juntar tudo, e o bloco "Superpoder Secreto".'
+    expect(unknownBlockNamesInText(invented, byType)).toEqual([
+      'Adicionar sprite ao grupo',
+      'Superpoder Secreto',
+    ])
+    expect(unknownBlockNamesInText('Texto sem citação de bloco nenhum.', byType)).toEqual([])
   })
 })
 

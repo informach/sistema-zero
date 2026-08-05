@@ -557,7 +557,11 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
   até 48 kB. Referências de aula incluem `courseSlug` autoritativo para o host montar a navegação.
 - A resposta do modelo passa por `invalidStudioZappyAnswerReason` (zappy-ai), que loga o MOTIVO do
   descarte (`[studio-zappy] resposta do modelo reprovada` — antes era mudo e indiagnosticável em
-  staging). No modo Blocos, crase inline citando nome de bloco/categoria é DESEMBRULHADA antes da
+  staging). O prompt amarra TODO bloco citado no texto a um item de `blockReferences` (validado
+  contra o catálogo) e proíbe citar bloco inexistente ("esse bloco ainda não existe" é a saída
+  educada); `unknownBlockNamesInText` loga `[studio-zappy] bloco citado no texto fora do catálogo`
+  (telemetria, não reprova) — caso real: o Zappy sugeriu "Adicionar sprite ao grupo", que não
+  existe no Jogo 2D (08/2026). No modo Blocos, crase inline citando nome de bloco/categoria é DESEMBRULHADA antes da
   checagem de código — a regra do prompt pede a trilha categoria/subcategoria em texto corrido, e
   nome citado não é código (a etapa validada já removia as crases do texto exibido); cerca de
   código e código real seguem reprovados, e PII/URL/referências fora do catálogo (anti prompt
