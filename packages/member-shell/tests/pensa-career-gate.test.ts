@@ -65,7 +65,9 @@ describe('portão de carreira do BFF do Pensa', () => {
   })
 
   test('chat e geração de IA reaplicam o mesmo guard antes do trabalho', () => {
-    expect(pensaAiSource.match(/await hasCreativeAppsLevel\(members, user\.role\)/g)).toHaveLength(2)
+    expect(pensaAiSource.match(/await hasCreativeAppsLevel\(members, user\.role\)/g)).toHaveLength(
+      2,
+    )
     expect(pensaAiSource.match(/CAREER_LEVEL_REQUIRED/g)).toHaveLength(2)
   })
 })
