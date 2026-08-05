@@ -15,6 +15,7 @@
  * `png.ts` (composeSheetPngDataUrl).
  */
 import { type PintaBitmap, type PixelSpriteAsset, resolveAssetPalette } from '../core/project'
+import { flattenCels } from '../pixel/layers'
 import { composeSheetPngDataUrl } from './png'
 
 export interface SpritesheetAnimationMeta {
@@ -79,9 +80,13 @@ export function packSpritesheet(asset: PixelSpriteAsset): SpritesheetPack {
     })),
   )
   const cells: SpritesheetPack['cells'] = []
+  // ACHATA antes de montar as células: a folha leva o desenho VISÍVEL (todas as
+  // camadas), nunca uma camada só. A geometria (linha por animação, colunas =
+  // maior contagem de quadros) não muda — é a guarda do runtime do Studio.
   asset.animations.forEach((animation, row) => {
-    animation.frames.forEach((bitmap, col) => {
-      cells.push({ bitmap, col, row })
+    animation.frames.forEach((cels, col) => {
+      const bitmap = flattenCels(cels, asset.layers)
+      if (bitmap) cells.push({ bitmap, col, row })
     })
   })
   return { ...geometry, cells }

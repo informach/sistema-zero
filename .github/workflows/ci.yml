@@ -80,12 +80,9 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium
 
-      # `--project=chromium` é obrigatório: o config também define o projeto
-      # `firefox` (ver playwright.config.ts) e sem o filtro o Playwright tentaria
-      # rodá-lo com um browser que o passo acima não instala.
       - name: E2E Jogo 2D e Jogo 2D Avançado (Chromium)
         working-directory: packages/studio
-        run: bunx playwright test e2e/examples-gallery.spec.ts --project=chromium --grep "game-2d(?:-advanced)?:"
+        run: bunx playwright test e2e/examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"
 
   deploy-staging:
     name: deploy-staging

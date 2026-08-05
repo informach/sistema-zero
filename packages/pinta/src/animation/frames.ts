@@ -11,8 +11,13 @@
  * ex.: onion skin).
  */
 import { newId } from '../core/id'
-import type { AnimatedSpriteAsset, PintaEasing, VectorFrame } from '../core/project'
-import { createBitmap, PINTA_LIMITS, type PintaBitmap } from '../core/project'
+import type {
+  AnimatedSpriteAsset,
+  PintaEasing,
+  PintaPixelFrame,
+  VectorFrame,
+} from '../core/project'
+import { createBitmap, PINTA_LIMITS, uniqueAnimationName } from '../core/project'
 import { cloneBitmap } from '../pixel/bitmap'
 
 /** O tipo do quadro de um sprite: `PintaBitmap` (pixel) ou `VectorFrame` (vetor). */
@@ -20,16 +25,23 @@ export type FrameOf<A extends AnimatedSpriteAsset> = A['animations'][number]['fr
 
 type AnimationOf<A extends AnimatedSpriteAsset> = A['animations'][number]
 
+/**
+ * Quadro em branco. No pixel um quadro é a PILHA de cels (um por camada), então
+ * um quadro novo já nasce com todas as camadas do sprite — o painel de camadas
+ * é o mesmo em qualquer quadro.
+ */
 function emptyFrameFor<A extends AnimatedSpriteAsset>(asset: A): FrameOf<A> {
-  const frame: PintaBitmap | VectorFrame =
-    asset.kind === 'pixel-sprite' ? createBitmap(asset.frameWidth, asset.frameHeight) : []
+  const frame: PintaPixelFrame | VectorFrame =
+    asset.kind === 'pixel-sprite'
+      ? asset.layers.map(() => createBitmap(asset.frameWidth, asset.frameHeight))
+      : []
   return frame as FrameOf<A>
 }
 
 function cloneFrameOf<A extends AnimatedSpriteAsset>(asset: A, frame: FrameOf<A>): FrameOf<A> {
-  const clone: PintaBitmap | VectorFrame =
+  const clone: PintaPixelFrame | VectorFrame =
     asset.kind === 'pixel-sprite'
-      ? cloneBitmap(frame as PintaBitmap)
+      ? (frame as PintaPixelFrame).map(cloneBitmap)
       : (frame as VectorFrame).map((shape) => ({ ...shape, id: newId() }))
   return clone as FrameOf<A>
 }
@@ -169,8 +181,14 @@ export function renameAnimation<A extends AnimatedSpriteAsset>(
 ): A {
   const trimmed = name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
   if (!trimmed) return asset
+  const unique = uniqueAnimationName(
+    trimmed,
+    asset.animations
+      .filter((animation) => animation.id !== animationId)
+      .map((animation) => animation.name),
+  )
   return withAnimation(asset, animationId, (animation) =>
-    animation.name === trimmed ? animation : { ...animation, name: trimmed },
+    animation.name === unique ? animation : { ...animation, name: unique },
   )
 }
 
@@ -187,7 +205,10 @@ export function duplicateAnimation<A extends AnimatedSpriteAsset>(
   const copy = {
     ...source,
     id: newId(),
-    name: `${source.name} 2`.slice(0, PINTA_LIMITS.maxAnimationNameChars),
+    name: uniqueAnimationName(
+      source.name,
+      animations.map((animation) => animation.name),
+    ),
     frames: source.frames.map((frame) => cloneFrameOf(asset, frame as FrameOf<A>)),
   } as AnimationOf<A>
   const index = animations.findIndex((a) => a.id === animationId)

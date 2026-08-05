@@ -81,7 +81,7 @@ export function Dialog({
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-full overflow-y-auto rounded-2xl border-2 border-pin-border bg-pin-surface p-6 shadow-xl outline-none`}
+        className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-full overflow-y-auto overscroll-contain rounded-2xl border-2 border-pin-border bg-pin-surface p-6 shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent`}
       >
         <div className="flex items-start justify-between gap-3">
           <h2 id={titleId} className="pin-display text-xl text-pin-text">

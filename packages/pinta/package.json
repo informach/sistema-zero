@@ -21,7 +21,6 @@
     "fflate": "^0.8.2",
     "idb-keyval": "^6.2.1",
     "lucide-react": "^0.546.0",
-    "zod": "^4.4.3",
     "zustand": "^5.0.0"
   },
   "peerDependencies": {

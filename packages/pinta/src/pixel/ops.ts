@@ -146,31 +146,56 @@ export function drawEllipse(
 /**
  * Balde de tinta: preenche a região contígua da cor sob o clique. Scanline
  * ITERATIVO (pilha de segmentos) — sem recursão, aguenta 512×512.
+ *
+ * Com camadas, a REGIÃO é lida do `reference` (o desenho que a criança vê,
+ * todas as camadas achatadas) e a tinta cai no `bitmap` (a camada ativa). Sem
+ * isso a tinta "vaza": a criança clica dentro de uma área que parece fechada,
+ * mas cujas paredes estão em outra camada. `reference` ausente = o próprio
+ * bitmap (comportamento de sempre).
  */
-export function floodFill(bitmap: PintaBitmap, at: Vec2, color: number): PintaBitmap {
+export function floodFill(
+  bitmap: PintaBitmap,
+  at: Vec2,
+  color: number,
+  reference?: PintaBitmap,
+): PintaBitmap {
   const x = Math.round(at.x)
   const y = Math.round(at.y)
   if (!inBounds(bitmap, x, y)) return bitmap
-  const target = bitmap.data[y * bitmap.width + x]
-  if (target === color || target === undefined) return bitmap
+  const source =
+    reference && reference.width === bitmap.width && reference.height === bitmap.height
+      ? reference
+      : bitmap
+  const target = source.data[y * source.width + x]
+  if (target === undefined) return bitmap
+  // Sem `reference`, pintar da cor nela mesma é no-op; com máscara, a região
+  // pode estar vazia na camada ativa e ainda assim valer a pintura.
+  if (source === bitmap && target === color) return bitmap
   const next = cloneBitmap(bitmap)
-  const { width, height, data } = next
+  const { width, height } = next
+  const read = source.data
+  const write = next.data
+  // `seen` evita reprocessar quando a leitura e a escrita são arrays distintos
+  // (pintar não muda mais o critério de parada da varredura).
+  const seen = new Uint8Array(width * height)
   const stack: Array<[number, number]> = [[x, y]]
   while (stack.length > 0) {
     const seed = stack.pop()
     if (!seed) break
     let [sx] = seed
     const [, sy] = seed
-    if (data[sy * width + sx] !== target) continue
+    if (read[sy * width + sx] !== target || seen[sy * width + sx]) continue
     // Anda até a borda esquerda do trecho contíguo…
-    while (sx > 0 && data[sy * width + (sx - 1)] === target) sx -= 1
+    while (sx > 0 && read[sy * width + (sx - 1)] === target) sx -= 1
     // …e pinta para a direita, semeando as linhas de cima/baixo por transição.
     let aboveSeeded = false
     let belowSeeded = false
-    for (let cx = sx; cx < width && data[sy * width + cx] === target; cx += 1) {
-      data[sy * width + cx] = color
+    for (let cx = sx; cx < width && read[sy * width + cx] === target; cx += 1) {
+      if (seen[sy * width + cx]) break
+      seen[sy * width + cx] = 1
+      write[sy * width + cx] = color
       if (sy > 0) {
-        const above = data[(sy - 1) * width + cx] === target
+        const above = read[(sy - 1) * width + cx] === target
         if (above && !aboveSeeded) {
           stack.push([cx, sy - 1])
           aboveSeeded = true
@@ -179,7 +204,7 @@ export function floodFill(bitmap: PintaBitmap, at: Vec2, color: number): PintaBi
         }
       }
       if (sy < height - 1) {
-        const below = data[(sy + 1) * width + cx] === target
+        const below = read[(sy + 1) * width + cx] === target
         if (below && !belowSeeded) {
           stack.push([cx, sy + 1])
           belowSeeded = true
@@ -198,6 +223,21 @@ export function replaceColor(bitmap: PintaBitmap, from: number, to: number): Pin
   const next = cloneBitmap(bitmap)
   for (let i = 0; i < next.data.length; i += 1) {
     if (next.data[i] === from) next.data[i] = to
+  }
+  return next
+}
+
+/**
+ * Remove um índice da paleta: pixels com ele viram transparente e os índices
+ * MAIORES descem 1 (a cor sai do array e as seguintes deslocam). Um passe
+ * único — compor dois replaceColor não cobre o shift de N índices maiores.
+ */
+export function removeColorIndex(bitmap: PintaBitmap, index: number): PintaBitmap {
+  const next = cloneBitmap(bitmap)
+  for (let i = 0; i < next.data.length; i += 1) {
+    const value = next.data[i] ?? TRANSPARENT_INDEX
+    if (value === index) next.data[i] = TRANSPARENT_INDEX
+    else if (value > index) next.data[i] = value - 1
   }
   return next
 }

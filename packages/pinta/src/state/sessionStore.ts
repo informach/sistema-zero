@@ -5,6 +5,7 @@
  * (não suja o autosave nem entra no undo).
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import { TRANSPARENT_INDEX } from '../core/palette'
 import type { PintaBitmap } from '../core/project'
 import type { PixelToolId } from '../pixel/tools'
 import type { TileStamp } from '../tiles/stamp'
@@ -30,10 +31,17 @@ export const VECTOR_ZOOM_LEVELS = [0.25, 0.5, 1, 2, 4, 8, 12, 16] as const
  */
 export const TILEMAP_ZOOM_LEVELS = [0.5, 1, 2, 4, 8] as const
 
+/** Qual das duas cores da caixa de ferramentas recebe o clique na paleta. */
+export type PintaColorSlot = 'primary' | 'secondary'
+
 export interface PintaSessionState {
   tool: PintaSessionTool
-  /** Índice de paleta selecionado (1 = primeira cor visível). */
+  /** Cor PRINCIPAL (botão esquerdo do mouse). Índice na paleta. */
   color: number
+  /** Cor SECUNDÁRIA (botão direito do mouse). */
+  colorSecondary: number
+  /** Qual das duas está selecionada na caixa de ferramentas. */
+  activeSlot: PintaColorSlot
   brushSize: number
   mirrorX: boolean
   /** Simetria de cima e de baixo (espelha no eixo horizontal central). */
@@ -50,6 +58,12 @@ export interface PintaSessionState {
   animationId: string | null
   frameIndex: number
   /**
+   * CAMADA em edição (kinds de pixel com camadas; null = a de cima). Vive na
+   * sessão — e não no editor — porque interage com quadro/onion/seleção, e
+   * escolher camada não é edição do desenho (não entra no undo).
+   */
+  layerId: string | null
+  /**
    * Carimbo de tiles ATIVO no editor de mapa (bloco multi-tile pego no picker
    * ou "copiar pedaço"); `null` = pinta uma peça só (`frameIndex`). Vive na
    * sessão porque pegar um carimbo não é edição.
@@ -65,7 +79,15 @@ export interface PintaSessionState {
   autoExpand: boolean
 
   setTool(tool: PintaSessionTool): void
+  /** Define a cor PRINCIPAL (caminho histórico dos chamadores). */
   setColor(color: number): void
+  setColorSecondary(color: number): void
+  /** Escolhe qual cor a paleta vai pintar (a "selecionada" na caixa). */
+  setActiveSlot(slot: PintaColorSlot): void
+  /** Aplica uma cor da paleta no slot pedido (padrão: o ativo). */
+  applyColor(color: number, slot?: PintaColorSlot): void
+  /** Troca principal ↔ secundária (as setinhas da caixa de ferramentas). */
+  swapColors(): void
   setBrushSize(size: number): void
   toggleMirror(): void
   toggleMirrorY(): void
@@ -78,6 +100,7 @@ export interface PintaSessionState {
   setPlaying(playing: boolean): void
   selectAnimation(id: string): void
   selectFrame(index: number): void
+  selectLayer(id: string | null): void
   setStamp(stamp: TileStamp | null): void
   setClipboard(bitmap: PintaBitmap | null): void
   toggleAutoExpand(): void
@@ -96,6 +119,10 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
   return createStore<PintaSessionState>((set) => ({
     tool: 'pencil',
     color: 1,
+    // Nasce no TRANSPARENTE: o botão direito começa apagando, que é o uso mais
+    // natural da 2ª cor antes de a criança escolher uma.
+    colorSecondary: TRANSPARENT_INDEX,
+    activeSlot: 'primary',
     brushSize: 1,
     mirrorX: false,
     mirrorY: false,
@@ -107,6 +134,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     playing: true,
     animationId: null,
     frameIndex: 0,
+    layerId: null,
     stamp: null,
     clipboard: null,
     autoExpand: false,
@@ -114,6 +142,14 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
 
     setTool: (tool) => set({ tool }),
     setColor: (color) => set({ color }),
+    setColorSecondary: (color) => set({ colorSecondary: color }),
+    setActiveSlot: (activeSlot) => set({ activeSlot }),
+    applyColor: (color, slot) =>
+      set((state) =>
+        (slot ?? state.activeSlot) === 'secondary' ? { colorSecondary: color } : { color },
+      ),
+    swapColors: () =>
+      set((state) => ({ color: state.colorSecondary, colorSecondary: state.color })),
     setBrushSize: (size) => set({ brushSize: Math.min(Math.max(Math.round(size), 1), 3) }),
     toggleMirror: () => set((state) => ({ mirrorX: !state.mirrorX })),
     toggleMirrorY: () => set((state) => ({ mirrorY: !state.mirrorY })),
@@ -126,6 +162,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     setPlaying: (playing) => set({ playing }),
     selectAnimation: (id) => set({ animationId: id, frameIndex: 0 }),
     selectFrame: (index) => set({ frameIndex: Math.max(index, 0) }),
+    selectLayer: (id) => set({ layerId: id }),
     setStamp: (stamp) => set({ stamp }),
     setClipboard: (clipboard) => set({ clipboard }),
     toggleAutoExpand: () => set((state) => ({ autoExpand: !state.autoExpand })),

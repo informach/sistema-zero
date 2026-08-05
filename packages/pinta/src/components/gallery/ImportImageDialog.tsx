@@ -128,7 +128,8 @@ export function ImportImageDialog({
       })
       onImport({
         ...base,
-        bitmap: result.bitmap,
+        // A foto entra como a camada única do cenário.
+        cels: [result.bitmap],
         ...(result.extraColors.length ? { extraColors: result.extraColors } : {}),
       })
     } else {

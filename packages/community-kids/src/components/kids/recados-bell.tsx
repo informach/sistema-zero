@@ -32,7 +32,7 @@ export function RecadosBell() {
     <Link
       href="/recados"
       aria-label={count > 0 ? `${count} recados novos do professor` : 'Recados do professor'}
-      className="relative inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card transition-colors hover:border-primary"
+      className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card transition-colors hover:border-primary"
     >
       <Mail className="size-4" />
       {count > 0 ? (

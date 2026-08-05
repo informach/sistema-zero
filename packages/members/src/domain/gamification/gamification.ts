@@ -207,7 +207,7 @@ export function pensaStageBadgeSlugs(stagesCompleted: number): BadgeSlug[] {
   return stagesCompleted >= 1 ? ['pensa-first-idea'] : []
 }
 
-/** Badges por nº de CICLOS do Pensa lançados (ledger `pensa_cycle_complete`). */
+/** Badges por nº de planos de versão aprovados (ledger `pensa_cycle_complete`). */
 export function pensaCycleBadgeSlugs(cyclesCompleted: number): BadgeSlug[] {
   const slugs: BadgeSlug[] = []
   if (cyclesCompleted >= 1) slugs.push('pensa-first-launch')

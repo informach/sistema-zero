@@ -72,14 +72,18 @@ const EnvSchema = z
     OPENROUTER_PENSA_SYNTHESIS_MODEL: z.string().optional(),
     OPENROUTER_ZAPPY_MODEL: z.string().optional(),
     OPENROUTER_REFERER: z.string().url().optional(),
-    // INTERRUPTOR DE EMERGÊNCIA do Zappy, LIGADO por padrão (08/2026 — o piloto
-    // por allowlist de contas saiu; quem decide é a carreira, ver
-    // `server/zappy-access.ts`). Existe porque o tutor gasta cota de IA por
-    // interação: `false` derruba o tutor para todos menos a equipe, sem deploy.
+    // Piloto fechado do Zappy: feature flag + allowlist explícita de CONTAS.
+    // Equipe interna é liberada pelo role autoritativo, fora da lista.
     ZAPPY_ENABLED: z
       .enum(['true', 'false'])
-      .default('true')
+      .default('false')
       .transform((value) => value === 'true'),
+    ZAPPY_PILOT_ACCOUNT_IDS: z.string().default(''),
+    // Degrau da carreira que LIBERA o Zappy (rollout por mérito, 08/2026):
+    // default `hacker` = "Inventor(a)", o 3º da escada. String CRUA de propósito
+    // (não `z.enum`): um slug digitado errado no Railway derrubaria o boot do app
+    // inteiro — o `zappy-access` valida contra o catálogo e cai no default.
+    ZAPPY_MIN_LEVEL: z.string().default('hacker'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   // Sem nenhuma forma de verificar o token, toda sessão seria inválida em silêncio.

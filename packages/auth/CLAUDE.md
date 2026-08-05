@@ -258,7 +258,10 @@ hub/kids: nome clicável + página pública; migration `0009`), `status`
   `x-auth-account-id`). O `CreateProfileBody`/`UpdateProfileBody` ganham
   `publicProfileEnabled?`; `ProfileView.publicProfileEnabled` flui à área dos pais. Só
   com a flag LIGADA o nome da criança vira clicável e a página pública existe no
-  hub/kids. Rotas `/auth/profiles` (`profilesRoutes`,
+  hub/kids. **Desde 08/2026 o CREATE também aplica o campo** (tutorial de 1º acesso do
+  kids — o pai decide já no primeiro preenchimento): `CreateProfileService` chama
+  `setPublicProfileEnabled` após o `create` (que nasce OFF); o guard "só os pais" vale
+  por CONSTRUÇÃO na criação (a rota recusa sessão de perfil inteira). Rotas `/auth/profiles` (`profilesRoutes`,
 prefixo `/auth` com paths explícitos): `GET` lista os ativos, `POST` cria, `PATCH
 /:id` edita, `DELETE /:id` arquiva. O ator é a CONTA (`resolveGatewayActor` →
 `x-auth-user-id`) + `requireInternalToken` (defesa em profundidade); ownership por

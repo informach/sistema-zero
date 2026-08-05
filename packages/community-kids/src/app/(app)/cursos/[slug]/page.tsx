@@ -43,7 +43,13 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-2xl bg-muted md:w-80">
           {course.coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={course.coverImageUrl} alt="" className="h-full w-full object-cover" />
+            <img
+              src={course.coverImageUrl}
+              alt=""
+              width={16}
+              height={9}
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="h-full w-full bg-gradient-to-br from-secondary to-muted" />
           )}

@@ -116,11 +116,6 @@ const registry = new RouteRegistry([
     pathPattern: '/members/pensa/projects/:projectId/cycles',
   }),
   r({
-    id: 'pensa-studio-snapshot',
-    methods: ['GET', 'PUT'],
-    pathPattern: '/members/pensa/projects/:projectId/studio-snapshot',
-  }),
-  r({
     id: 'pensa-stage',
     methods: ['GET'],
     pathPattern: '/members/pensa/cycles/:cycleId/stages/:stage',
@@ -144,6 +139,16 @@ const registry = new RouteRegistry([
     id: 'pensa-task-update',
     methods: ['PATCH', 'DELETE'],
     pathPattern: '/members/pensa/tasks/:taskId',
+  }),
+  r({
+    id: 'pensa-task-handoff',
+    methods: ['GET'],
+    pathPattern: '/members/pensa/tasks/:taskId/handoff',
+  }),
+  r({
+    id: 'pensa-task-progress',
+    methods: ['PATCH'],
+    pathPattern: '/members/pensa/tasks/:taskId/progress',
   }),
 ])
 
@@ -406,16 +411,10 @@ describe('RouteRegistry', () => {
     const detail = registry.resolve('PATCH', '/members/pensa/projects/p-1', 'v1')
     expect(detail?.route.id).toBe('pensa-project')
     expect(detail?.params.projectId).toBe('p-1')
-    // 5 segmentos (cycles/snapshot) não caem no detalhe de 4; literais distintos não colidem.
+    // 5 segmentos de cycles não caem no detalhe de 4.
     expect(registry.resolve('POST', '/members/pensa/projects/p-1/cycles', 'v1')?.route.id).toBe(
       'pensa-cycle-create',
     )
-    expect(
-      registry.resolve('GET', '/members/pensa/projects/p-1/studio-snapshot', 'v1')?.route.id,
-    ).toBe('pensa-studio-snapshot')
-    expect(
-      registry.resolve('PUT', '/members/pensa/projects/p-1/studio-snapshot', 'v1')?.route.id,
-    ).toBe('pensa-studio-snapshot')
     // Stage (5 seg, GET) ≠ conversation (6 seg, PUT).
     const stage = registry.resolve('GET', '/members/pensa/cycles/c-1/stages/z', 'v1')
     expect(stage?.route.id).toBe('pensa-stage')
@@ -429,6 +428,15 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('PATCH', '/members/pensa/tasks/t-1', 'v1')?.route.id).toBe(
       'pensa-task-update',
     )
+    expect(registry.resolve('GET', '/members/pensa/tasks/t-1/handoff', 'v1')?.route.id).toBe(
+      'pensa-task-handoff',
+    )
+    expect(registry.resolve('PATCH', '/members/pensa/tasks/t-1/progress', 'v1')?.route.id).toBe(
+      'pensa-task-progress',
+    )
+    expect(
+      registry.resolve('GET', '/members/pensa/projects/p-1/studio-snapshot', 'v1'),
+    ).toBeUndefined()
     // Autoria manual: POST /cycles/:id/tasks (append) e DELETE /tasks/:id (apagar).
     expect(registry.resolve('POST', '/members/pensa/cycles/c-1/tasks', 'v1')?.route.id).toBe(
       'pensa-tasks-replace',

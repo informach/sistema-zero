@@ -21,15 +21,21 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   `studioOwned?` (só muda a COPY do sucesso da ponte), `onOpenStudio?`,
   `sendToStudio?(PintaExportedAsset) → PintaSendResult` — **ausente = o botão "Usar no Estúdio"
   não aparece** (degrade, padrão Pensa) —, **`resyncToStudio?`** e **`initialAssetId?`** (ponte de
-  MÃO DUPLA, 08/2026 — ver abaixo) — e **`initialIntent?: PintaInitialIntent`** (Fase 5,
-  07/2026): `{projectRef: PintaProjectRef, artKind?}` vindo da MISSÃO DE ARTE do Pensa — abre o
+  MÃO DUPLA, 08/2026 — ver abaixo), **`taskSession?: PintaTaskSession`** e
+  **`initialIntent?: PintaInitialIntent`**: `{projectRef, artKind?, style?}` vindo do Cartão de
+  Criação aberto por `/pinta?tarefa=<id>` — abre o
   "Criar novo" pré-configurado UMA vez no mount (`takeInitialIntent` no appContext consome via
   ref; voltar do editor à galeria NÃO reabre). Com `artKind`, escolher o ESTILO pula o passo de
   tipo (`NewAssetDialog.initialRole` mapeia sprite/background/tileset → kind do estilo), o nome
   vem sugerido (`heroi`/`cenario`/`pecas` com sufixo anti-colisão) e o topo mostra o selo
   "Desenho para o jogo: <nome>". Fechar o diálogo descarta o intent.
 
-## Modelo de dados (`src/core/project.ts` — NÃO em types.ts)
+`TaskBriefPanel` mantém “Brief do meu jogo”, passos e critérios visíveis. Abrir um desenho liga
+seu id ao `outputRef` e inicia a tarefa. A conclusão exige os itens obrigatórios, um asset local
+vinculado e, quando `requiresStudioUse`, o sucesso de “Usar no Estúdio”. O host persiste o
+progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+
+## Modelo de dados (`src/core/project.ts` + `projectConfig.ts` — NÃO em types.ts)
 
 - **Não há "projeto"**: a galeria é a lista de ASSETS do perfil; cada asset é um registro
   independente no IndexedDB (`pinta:asset:<id>`, store `sistema-zero-pinta-<ns>`). **MAS (Fase 5)
@@ -57,7 +63,9 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 - **`PintaBitmap { width, height, data: Uint8Array }`** — ÍNDICES de paleta (1 byte/pixel),
   índice 0 = TRANSPARENTE. Paletas SEMPRE 16 cores (`core/palette.ts`): `arcade` (MakeCode,
   default) + `pastel` + `cinzas`. O vetor usa COR LIVRE (hex), sem paleta.
-- Quotas em `PINTA_LIMITS` (compartilhadas criação↔sanitize — subir uma sobe em todos).
+- Quotas, normalização e fábricas vivem em `projectConfig.ts`; `project.ts` mantém os tipos,
+  helpers e o sanitizer e reexporta o contrato histórico. `PINTA_LIMITS` é compartilhado
+  criação↔sanitize — subir um teto sobe em todos os pontos.
   `sanitizePintaAsset(raw)` NUNCA lança (descarta com null, padrão studio). Tile corrompido vira
   tile VAZIO (não some — preservaria os índices dos mapas); quadro vetorial vazio `[]` é VÁLIDO.
 - Nome de asset: kebab via `normalizeAssetName` — ⚠️ manter em sincronia com o
@@ -85,8 +93,9 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   pincel por segundos e estourava o timeout de 5s do teste no CI).
 - **Animação compartilhada**: `animation/frames.ts` e `tiles/tilesetOps.ts` são GENÉRICOS sobre o
   estilo (`AnimatedSpriteAsset`/`AnyTilesetAsset`; clone vetorial regenera ids de shape);
-  `AnimationList`/`FrameStrip`/`PreviewPlayer`/`TileStrip` servem os 2 estilos (thumbs pixel =
-  canvas, vetor = `VectorFrameSvg` SVG inline, memoizado). `useAnimationPlayer` é puro.
+  `SpriteSheetPanel` concentra animações+quadros e `PreviewPlayer`/`TileStrip` servem os 2 estilos
+  (thumbs pixel = canvas, vetor = `VectorFrameSvg` SVG inline, memoizado).
+  `useAnimationPlayer` é puro.
 - **Compatibilidade com o Studio POR CONSTRUÇÃO** + testes-guarda que reimplementam as fórmulas do
   runtime: a GEOMETRIA da spritesheet é ÚNICA (`packAnimationsGeometry`/`SheetGeometry` — uma
   linha por animação, `columns = max(frames)`) e serve pixel (`packSpritesheet`) E vetor
@@ -115,21 +124,24 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   (history por snapshots com orçamento em bytes — `assetBytes` conta o payload real dos shapes —
   + autosave debounced ~1s com flush; `persist` injetável), `sessionStore`
   (ferramenta/cor/zoom/`zoomLevels`/onion — a Mão 'pan' é da sessão, não do motor pixel).
-- **Persistência (`src/state/persistence.ts`)**: idb-keyval + `runSerializedWrite(id, task)`
-  FIFO por asset (clone do studio).
+- **Persistência (`src/state/persistence.ts`)**: cada operação captura o store do namespace no
+  instante da chamada; a fila FIFO é por handle de IndexedDB, nunca por id/namespace global.
+  `persistAssets` usa um único `setMany`, portanto commits que alteram tileset+mapas dependentes
+  ficam atômicos e não atravessam de perfil durante uma troca de sessão.
 - **Copy 100% PT** centralizada em `src/core/copy.ts` (sem travessão, sem jargão; nomes de cor
   amigáveis em `colorNames` p/ os swatches).
 - **Seleção do PIXEL com ações + atalhos + zoom pela rolagem (08/2026)** — ver a seção
   dedicada mais abaixo.
-- **Layout dos kinds de PIXEL no desktop (08/2026)**: coluna ESQUERDA de altura inteira
-  (ferramentas em cima, cores embaixo) · à direita dela uma coluna com **palco + prévia lado a
-  lado em cima** e a **faixa (quadros/peças/zoom) encostada EMBAIXO, atravessando as duas**.
-  ⚠️ A faixa NÃO pode voltar a ser um rodapé de tudo: como linha à parte ela roubava altura de
-  TODAS as colunas e deixava a esquerda com ~380px para ~850px de conteúdo — a criança tinha de
-  rolar as ferramentas/cores o tempo todo. Medido em 1366×768: a sobra da coluna esquerda caiu de
-  **309px → 149px** (some de vez a partir de ~917px de altura) e o rail de ferramentas passou a
-  caber INTEIRO na tela. A faixa cresce até o teto interno dela (`max-h-56` na lista do
-  `SpriteSheetPanel`) e depois rola por dentro — **o topo do palco nunca se move**.
+- **Layout dos kinds de PIXEL no desktop (revisto 08/2026, pedido da usuária)**: coluna ESQUERDA
+  só com o rail de FERRAMENTAS · palco no meio · coluna DIREITA (`w-68`) com **Prévia → Camadas →
+  Cores** · faixa (Spritesheet/peças + zoom) em **LARGURA TOTAL** no rodapé.
+  ⚠️ O arranjo anterior (cores na esquerda, faixa só sob palco+prévia) existia porque
+  ferramentas+cores juntas não cabiam em 1366×768 quando a faixa era um rodapé de tudo. Com as
+  cores na direita esse conflito sumiu: medido em 1366×768, o rail sozinho ocupa 391px e a página
+  não rola. **A faixa segue com teto interno próprio** (`max-h-56` na lista do `SpriteSheetPanel`)
+  e rola por dentro — o topo do palco nunca se move. Efeito colateral aceito: no PERSONAGEM
+  animado a coluna direita (prévia 244 + camadas + cores ≈ 700px) rola por dentro; no cenário
+  cabe inteira (626px).
 - **Responsivo (07/2026)**: `EditorScreen` usa `useMediaQuery('(min-width: 768px)')`
   (`editor/useMediaQuery.ts`, espelho do pensa) — em tela ESTREITA a coluna lateral do sprite
   (prévia + animações, `SpriteSidePanel`) vira FAIXA horizontal rolável abaixo do palco (a
@@ -228,6 +240,110 @@ ponteiro→célula pela LARGURA REAL do canvas — em happy-dom (rect 0) todo cl
 MESMO turno de JS faz cada um partir do bitmap velho (o React ainda não re-renderizou) — só o
 último sobrevive; use UM gesto com vários `pointermove`; (3) o toast/o repaint aparecem um
 microtask/efeito DEPOIS do evento — ler no mesmo turno dá falso negativo.
+
+## Painel de cores do PIXEL (redesign 08/2026)
+
+O `PaletteBar` virou painel COMPACTO: header = **nome da paleta ativa** (abre o DROPDOWN de troca)
++ **lixeira** (exclui a cor selecionada, com confirmação) + **"+" azul** (seletor livre); embaixo,
+grade de swatches QUADRADOS, **5 por linha**, com **scroll interno** (`max-h-48` — as 17 células
+base cabem em 4 linhas sem scroll; a coluna esquerda NÃO cresce). Os 3 cartões de paleta em fluxo
+MORRERAM. ⚠️ O painel tem **largura FIXA (`w-68`)** — pedido da usuária: sem ela a largura era
+ditada pelo NOME da paleta ativa ("Arcade" × "Lápis e carvão") e a grade `1fr` esticava os vãos
+junto, alternando o espaçamento a cada troca.
+
+- **Dropdown de paletas em `position: fixed`** (rect do acionador): a coluna esquerda é um scroll
+  container (`overflow-y-auto`) que deceparia um `absolute`, e o pacote evita portais — o fixed
+  escapa do clip SEM sair da árvore DOM (tokens `pin-*` valem). Fecha em clique-fora/Esc (devolve
+  o foco)/scroll fora do menu/resize/seleção; `role="menu"` + itens `menuitemradio`/`aria-checked`
+  com preview de swatches + nome + Check; setas ↑↓ navegam. O layout `row` (tela estreita) usa o
+  MESMO dropdown ancorado no ToolButton de paleta (o Dialog de troca morreu) + lixeira na linha.
+- **Lixeira SÓ apaga cores EXTRAS** (adicionadas pelo "+", índice ≥16 — decisão da usuária): as 16
+  base são fixas por contrato do bitmap indexado; cor base/borracha → toast gentil (botão fica
+  `aria-disabled` + opacity, nunca `disabled` — o toast é o aviso). Excluir = **um commit só**
+  (desfazível): `removeExtraColor` (`core/assetEdit.ts`, puro) remapeia TODOS os bitmaps do asset
+  (sprite: animações × quadros; background; tileset: peças) via `removeColorIndex`
+  (`pixel/ops.ts`, passe único: pixels da cor → transparente, índices maiores descem 1 — NUNCA
+  compor dois `replaceColor`), tira a entrada de `extraColors` (**vazia → a CHAVE some**, convenção
+  do sanitize) e clampa a seleção (`setColor`, nunca no 0). Mapas dependentes de tileset NÃO
+  precisam de remap (guardam índice de PEÇA). A confirmação avisa que os pixels pintados viram
+  transparente e mostra o quadradinho da cor.
+- Testes: `paletteUi.test.tsx` (dropdown/lixeira/+/teto 48 — happy-dom monta o layout PANEL,
+  innerWidth 1024 ≥ 768) + puros em `ops.test.ts`/`assetEdit.test.ts`. ⚠️ O round-trip
+  `sanitizePintaAsset(result) ≡ result` trava a chave omitida.
+
+**Prévia da animação (mesmo lote):** os botões Reproduzir/Editar viraram TOOLBUTTONS de ícone
+(Play/SquarePen, tooltip = title) + um 3º de **Configurações** (Settings, `aria-haspopup="dialog"`)
+que abre a **MODAL "Animação selecionada"** — o `AnimationDetails` virou o CONTEÚDO de um `Dialog`
+dentro do `PreviewPlayer` (estado LOCAL `useState`, nada na sessão) e devolve só a pilha de
+controles (sem `<section>`/título/`aria-label` próprios: quem rotula é o `aria-labelledby` do
+Dialog — `aria-label` num `<div>` sem role reprova no biome). O `EditorScreen` NÃO monta mais o
+`AnimationDetails` (nem na coluna direita nem no disclosure estreito) → a coluna do sprite ficou
+só com a prévia. Testes: `animationPanelUi.test.tsx`.
+
+## Caixa de ferramentas com DUAS cores (08/2026)
+
+Layout de programa de desenho (pedido da usuária, com imagem-modelo): a caixa vertical é uma
+COLUNA com três blocos — tamanhos do traço FIXOS no topo, ferramentas em **duas colunas** rolando
+no meio (`flex-1 min-h-0 overflow-y-auto`) e as duas CORES FIXAS no pé. ⚠️ Os extremos fixos não
+são enfeite: em 768px (com a faixa do Spritesheet comendo altura) a caixa mede ~670px e as cores
+saíam da vista — que é justamente o que ela precisa mostrar sempre.
+
+- **Duas cores na sessão** (`sessionStore`): `color` (PRINCIPAL, botão esquerdo) +
+  `colorSecondary` (botão direito, nasce TRANSPARENTE = apagar) + `activeSlot` ('primary' |
+  'secondary'). Ações: `setColor`/`setColorSecondary`, `setActiveSlot`, **`applyColor(cor, slot?)`**
+  (aplica no slot ATIVO — é o que a paleta chama) e `swapColors`.
+- **A paleta pinta o quadrado SELECIONADO**: o `PaletteBar` usa `applyColor` e destaca o swatch
+  pelo `slotColor` (a cor do slot ativo), não mais pelo `color`. A lixeira e o "+" também seguem o
+  slot ativo; ao excluir uma extra, **as DUAS cores são clampadas** (a exclusão desloca índices).
+- **Botão direito pinta com a secundária**: `PixelCanvas` lê `event.button === 2` no `pointerdown`
+  (só ali o botão é confiável — o resto do traço herda pelo `settings` congelado no `ToolGesture`)
+  e passa `settings(secondary)`. O conta-gotas com o direito guarda na secundária. O canvas tem
+  `onContextMenu` com `preventDefault` (senão o menu do navegador abre por cima do desenho).
+- Testes: `toolboxUi.test.tsx`.
+
+## CAMADAS do pixel (08/2026)
+
+Cenário e personagem animado têm **camadas** (peças NÃO — a pecinha é pequena demais para valer).
+
+- **Modelo** (`core/project.ts`): `PintaPixelLayer {id,name,visible}` (só metadados) + os "cels" —
+  `PintaPixelFrame = PintaBitmap[]`, UM cel por camada, alinhado por índice com `asset.layers`. No
+  cenário são `asset.cels`; no sprite cada QUADRO é a pilha (`PintaAnimation<PintaPixelFrame>`).
+  Índice 0 = FUNDO; a UI lista invertida (topo da lista = camada de cima). Teto
+  `PINTA_LIMITS.maxPixelLayers = 4` (cada camada multiplica os bytes do snapshot de undo).
+- ⭐ **O que tornou isso barato:** `PintaAnimation<TFrame>` já era genérica (o vetor usa
+  `VectorFrame`) e só `emptyFrameFor`/`cloneFrameOf` (`animation/frames.ts`) conhecem o tipo
+  concreto — todo o resto do motor de animação ficou intocado. Quadro novo nasce com um cel por
+  camada, então o painel é o mesmo em qualquer quadro.
+- **MIGRAÇÃO lazy** (`sanitizePintaAsset`, o único ponto): cenário antigo (`bitmap` solto) →
+  `cels: [bitmap]`; sprite antigo (quadro = 1 bitmap) → `[bitmap]`; `layers` ausente → derivada do
+  nº de cels com nomes automáticos. `alignCels` impõe o invariante (falta cel → camada vazia,
+  sobra → corta). Travado por teste — sem isso um desenho antigo sumiria da galeria em silêncio.
+- **Ops puras** (`pixel/layers.ts`, molde do `tiles/tilemapOps.ts`): `flattenCels` (a de cima
+  vence; invisível fora; **1 visível devolve o próprio cel, sem cópia**), `flattenCelsRange`,
+  `stackBitmaps`, `addPixelLayer` (topo + cel vazio em TODOS os quadros), `removePixelLayer`
+  (nunca zero), `togglePixelLayerVisible`, `renamePixelLayer`, `movePixelLayer` (leva os cels
+  junto). Todas devolvem o MESMO asset quando nada muda (é como a UI detecta o teto).
+- **Camada ativa** vive na SESSÃO (`sessionStore.layerId`, null = a de cima) — interage com
+  quadro/onion/seleção. `assetEdit` é o funil: `activeBitmapOf`/`withActiveBitmap` leem/gravam o
+  cel da ativa (por isso `pixel/tools.ts`, `ops.ts` e `selection.ts` não mudaram de assinatura),
+  mais `activeCelsOf`, `flattenActiveOf` e `withActiveCels` (espelhar/girar valem para o quadro
+  INTEIRO — girar camadas separadamente as deixaria com dimensões diferentes e o sanitize as
+  descartaria).
+- **Regra das ferramentas**: "pego o que vejo, pinto onde estou" — conta-gotas e balde leem o
+  COMPOSTO (`floodFill` ganhou o param `reference`: região no composto, tinta na camada ativa,
+  senão vaza); lápis/borracha/recolor/limpar agem na camada ativa. Camada escondida avisa por
+  toast no 1º traço (régua do `isTileBlank`).
+- **Render** (`pixel/render.ts`): `paint(bitmap, colors, scale, {ghost, under, over, hideActive})`
+  — under/over são os compostos pré-achatados das camadas abaixo/acima (o gesto blita 3 imagens
+  por movimento em vez de recompor a pilha). ⚠️ `hideActive` existe porque esconder a camada EM
+  EDIÇÃO não tirava nada da tela (bug pego só no QA de browser — happy-dom não pinta).
+- **Achatamento obrigatório** em prévia, miniaturas (galeria/quadros), `packSpritesheet`, ZIP e
+  ponte com o Estúdio. O `.pinta.json` PRESERVA as camadas (backup ≠ export). Guarda de teste:
+  a célula da folha leva as camadas visíveis e deixa a escondida fora.
+- Testes: `pixel/layers.test.ts` (puros), `layersUi.test.tsx` (painel), migração em
+  `core/project.test.ts`, achatamento em `export/spritesheet.test.ts`.
+- ⚠️ O painel do TILEMAP também se chama "Camadas" (`COPY.tiles.layers`) — ao consultar por
+  `section[aria-label="Camadas"]` num teste/QA, confira qual editor está aberto.
 
 ## Colisão por peça: sólido × plataforma (one-way) — lote MapperMate F2 (18/07)
 
@@ -366,7 +482,7 @@ nos desenhos vindos daqui e o desenho salvo **se atualiza sozinho nos jogos**.
   inicializador de `useState` e volta p/ a galeria quando não acha — abrir cedo faria o link parecer
   quebrado. Id inexistente → galeria + toast `COPY.gallery.drawingGone`.
 - **`resyncToStudio?(asset) → {updated}`** — reenvia ao PARAR de desenhar (debounce
-  `RESYNC_IDLE_MS` = 1,5s no `EditorTopbar`, + flush no `visibilitychange`→hidden e no `pagehide`,
+  de 1,5s em `useStudioResync`, + flush no `visibilitychange`→hidden e no `pagehide`,
   p/ a biblioteca já estar em dia quando ela troca de aba). Gatilho = **identidade de `asset`**, não
   o autosave. Devolvendo `updated`, o cabeçalho mostra "Atualizado no Estúdio" — a ÚNICA confirmação
   visível (do lado do Estúdio a troca é silenciosa, decisão da usuária).
@@ -376,12 +492,10 @@ nos desenhos vindos daqui e o desenho salvo **se atualiza sozinho nos jogos**.
 - ⚠️ **Quem decide se há o que atualizar é o HOST**, não o Pinta: o `pinta-client` do kids só reemite
   quando `getPersonalAsset(id)` já existe. Sem essa guarda, todo rascunho cairia na biblioteca do
   Estúdio sozinho e o "Usar no Estúdio" deixaria de ser a decisão explícita que é.
-- ⚠️ **Sair do editor NÃO pode engolir o reenvio** (full review 02/08): a limpeza do efeito do
-  debounce roda a cada TRAÇO (o `asset` muda), então flushar ali furaria a espera — mas só cancelar
-  significava que dar um traço e clicar em "voltar" antes de 1,5s nunca chegava ao Estúdio. Fix:
-  `resyncPendingRef` + um efeito `[]` que flusha no DESMONTE (espelha o flush do autosave). O ref
-  "versão mais nova" (`resyncRef`) é atribuído num efeito, não durante o render (render descartado
-  pelo React concorrente não pode virar o disparo).
+- ⚠️ **Sair do editor NÃO pode engolir o reenvio**: `useStudioResync` alimenta uma fila
+  single-flight (`latestTaskQueue`) que serializa chamadas e mantém apenas o snapshot pendente mais
+  recente. Desmontar flusha a fila; respostas antigas nunca sobrescrevem o estado de uma edição
+  mais nova e toda rejeição é capturada.
 
 O outro lado (sincronia para dentro dos projetos, o botão, o marcador cross-aba) vive no studio —
 ver `packages/studio/CLAUDE.md` §"Editar o desenho".
@@ -406,7 +520,8 @@ ver `packages/studio/CLAUDE.md` §"Editar o desenho".
 
 `bun test src` (happy-dom via bunfig/test-setup, padrão pensa). Fixtures de bitmap como
 strings (`src/testing/fixtures.ts`); mock FUNCIONAL de idb-keyval em `src/testing/idbMock.ts`
-(importar ANTES do código sob teste). Sem fake timers: `setAutosaveDelayForTests(ms)`. Gotcha:
+(importar ANTES do código sob teste). Sem fake timers: testes passam `autosaveDelayMs` à factory
+do editor, sem estado global entre arquivos. Gotcha:
 update de store zustand fora de act → `await act(async () => Bun.sleep(0))`. happy-dom NÃO faz
 layout — o fix do palco é testado por ATRIBUTOS width/height (`vectorSpriteUi.test.tsx`), nunca
 por px reais.
@@ -429,11 +544,9 @@ por px reais.
   multi-touch, PNG vazio, contraste do selinho, Mão/pan, flip, teclado, zoom honesto do mapa,
   pintura incremental no arrasto do mapa). ZIP: a pasta `vetores/` MORREU — vetor sai em
   `personagens/`/`cenarios/`/`tilesets/` ao lado do pixel (+ `.svg` extra).
-- **Fase 5 — projeto transversal Pensa↔Pinta (07/2026, não commitado)**: `projectRef` no asset
-  (agrupamento da galeria + paleta no vetor), `PintaHostAdapter.initialIntent` (missão de arte
-  abre o "Criar novo" pré-configurado), `NewAssetDialog` com `initialRole`/`initialName`/selo do
-  jogo, exports novos `PintaInitialIntent`/`PintaProjectRef` no index. O intent chega do kids por
-  `sessionStorage sz:pinta:intent` (escrito pelo pensa-client, lido/limpo pelo pinta-client).
+- **Cartão de Criação Pensa→Pinta (08/2026):** `projectRef`, `PintaInitialIntent` e
+  `PintaTaskSession` restauram contexto por `/pinta?tarefa=<id>`; o host busca e persiste a
+  sessão no backend. Não use `sessionStorage` para o handoff.
 - **Ponte de MÃO DUPLA com o Estúdio (08/2026, não commitado)**: `initialAssetId` (deep link
   `/pinta?desenho=`) + `resyncToStudio` (reenvio ao parar de desenhar). QA em browser real feito no
   playground (:5199): abrir pelo link, abrir-sem-reenviar, e o reenvio após um traço. Ver a seção
@@ -444,8 +557,7 @@ por px reais.
   **Pende QA no vetor e no mapa** (atalhos + rolagem) e em toque/tablet.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
-  missão de arte → Pinta pré-preenchido → asset agrupado).
-- **Backlog conhecido (baixo, do full review)**: undo do tileset não desfaz o remap dos mapas
-  (pré-existente, exige transação tileset+mapas); strings de UI soltas fora do copy.ts;
-  auto-avançar no passo de tamanho; nome do estilo "Vetor" pode virar "Desenho de formas" se o
-  QA com crianças mandar.
+  Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio).
+- **Backlog de produto conhecido (baixo)**: strings de UI soltas fora do copy.ts; auto-avançar no
+  passo de tamanho; nome do estilo "Vetor" pode virar "Desenho de formas" se o QA com crianças
+  mandar.

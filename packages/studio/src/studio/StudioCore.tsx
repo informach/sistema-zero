@@ -24,6 +24,7 @@ import { StudioExamplesVisibleProvider } from './examples-visibility'
 import { StudioProRuntimeProvider } from './pro-runtime'
 import { disallowedProjectExtensions } from './project-access'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
+import { TaskGuidePanel } from './TaskGuidePanel'
 import { StudioThemeProvider } from './theme'
 import { StudioTutorProvider } from './tutor'
 import type { StudioCoreProps, StudioHandle } from './types'
@@ -81,6 +82,7 @@ function StudioCoreBody({
   allowLevelReveal,
   activity,
   tutor,
+  taskSession,
   share,
   shareDisabledReason,
   onCloudSync,
@@ -357,11 +359,16 @@ function StudioCoreBody({
                               resetKeys={[sanitizedId]}
                               label="Studio"
                             >
-                              <Shell
-                                onExit={onExit}
-                                onPromoteToPro={onPromoteToPro}
-                                canToggleTheme={theme === undefined}
-                              />
+                              <div className="flex h-full min-h-0 flex-col lg:flex-row">
+                                {taskSession ? <TaskGuidePanel session={taskSession} /> : null}
+                                <div className="min-h-0 min-w-0 flex-1">
+                                  <Shell
+                                    onExit={onExit}
+                                    onPromoteToPro={onPromoteToPro}
+                                    canToggleTheme={theme === undefined}
+                                  />
+                                </div>
+                              </div>
                             </ErrorBoundary>
                           ) : null}
                         </div>

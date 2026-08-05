@@ -97,7 +97,63 @@ export interface PintaSendResult {
  */
 export interface PintaInitialIntent {
   projectRef: PintaProjectRef
-  artKind?: 'sprite' | 'background' | 'tileset'
+  artKind?: 'sprite' | 'background' | 'tileset' | 'tilemap'
+  style?: 'pixel' | 'vector' | 'either'
+}
+
+export interface PintaTaskGuideItem {
+  id: string
+  text: string
+  hint?: string
+  required: boolean
+}
+export interface PintaTaskSession {
+  taskId: string
+  project: { id: string; name: string }
+  cycle: { id: string; number: number; goal: string | null }
+  title: string
+  summary: string | null
+  brief: {
+    /** Item correspondente no inventário da Bíblia Visual. */
+    assetId: string
+    artKind: 'sprite' | 'background' | 'tileset' | 'tilemap'
+    style: 'pixel' | 'vector' | 'either'
+    preset?: string
+    palette: Array<{ role: string; color: string }>
+    appearance: string
+    animations: string[]
+    states: string[]
+    usage: string
+    requiresStudioUse: boolean
+  }
+  guide: { steps: PintaTaskGuideItem[]; criteria: PintaTaskGuideItem[] }
+  /** Explicação do host quando o cartão exige a ponte, mas o Estúdio não foi liberado. */
+  studioUseBlockedReason?: string
+  progress: {
+    status: 'planned' | 'in_progress' | 'completed'
+    completedStepIds: string[]
+    completedCriteriaIds: string[]
+    startedAt: string | null
+    completedAt: string | null
+    updatedAt: string | null
+    outputRef: {
+      kind: 'pinta_asset'
+      assetId: string
+      assetName?: string
+      usedInStudioAt?: string
+    } | null
+  }
+  onProgress(input: {
+    status?: 'in_progress' | 'completed'
+    completedStepIds?: string[]
+    completedCriteriaIds?: string[]
+    outputRef?: {
+      kind: 'pinta_asset'
+      assetId: string
+      assetName?: string
+      usedInStudioAt?: string
+    }
+  }): Promise<void>
 }
 
 export interface PintaHostAdapter {
@@ -142,4 +198,6 @@ export interface PintaHostAdapter {
    * ainda não conhece); desenho apagado cai na galeria com um recado gentil.
    */
   initialAssetId?: string
+  /** Sessão desacoplada do Pensa, restaurada pelo host a partir de `?tarefa=`. */
+  taskSession?: PintaTaskSession
 }

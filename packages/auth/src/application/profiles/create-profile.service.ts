@@ -18,6 +18,12 @@ export interface CreateProfileCommand {
   whatsapp?: string | null
   /** Data de nascimento (`YYYY-MM-DD`) — controle de idade; só os pais informam. */
   birthDate?: string | null
+  /**
+   * Opt-in do perfil público já na CRIAÇÃO (08/2026). A rota de criar recusa
+   * sessão de perfil, então "só os pais" vale por construção. Ausente → OFF
+   * (o default seguro do agregado).
+   */
+  publicProfileEnabled?: boolean
 }
 
 /** Teto efetivo da equipe interna — sem limite prático de perfis. */
@@ -49,6 +55,11 @@ export class CreateProfileService {
       birthDate: cmd.birthDate,
       now: this.clock(),
     })
+    // O agregado nasce com o perfil público OFF (default seguro); o opt-in dos
+    // pais na criação entra pelo MESMO caminho autorizado do PATCH.
+    if (cmd.publicProfileEnabled !== undefined) {
+      profile.setPublicProfileEnabled(cmd.publicProfileEnabled, this.clock())
+    }
     const maxProfiles = cmd.privileged
       ? UNLIMITED_PROFILES
       : (await this.allowance.getAllowance(cmd.accountUserId)).maxProfiles

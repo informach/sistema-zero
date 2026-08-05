@@ -2,23 +2,21 @@ import type {
   PensaArtifact,
   PensaArtifactStatus,
   PensaArtifactType,
-  PensaBuildEnv,
   PensaChatMessage,
-  PensaChecklistCategory,
-  PensaChecklistItem,
   PensaConversation,
   PensaCycle,
-  PensaMission,
   PensaProject,
-  PensaProjectKind,
   PensaProjectStatus,
   PensaStage,
   PensaTask,
-  PensaTaskColumn,
+  PensaTaskCategory,
+  PensaTaskContext,
+  PensaTaskDestination,
+  PensaTaskGuide,
+  PensaTaskOutputRef,
+  PensaTaskStatus,
 } from '../../domain/pensa/pensa'
-
-// Views JSON do Pensa (shapes EXATOS do contrato entre camadas; datas SEMPRE
-// ISO string — Date→ISO acontece SÓ aqui, padrão do views.ts).
+import { nextAvailableTask } from '../../domain/pensa/task-plan'
 
 export interface PensaCycleView {
   id: string
@@ -34,9 +32,7 @@ export interface PensaCycleView {
 export interface PensaProjectListView {
   id: string
   name: string
-  kind: PensaProjectKind
   status: PensaProjectStatus
-  /** Do ciclo CORRENTE (maior number). */
   cycleNumber: number
   stage: PensaStage
   createdAt: string
@@ -54,20 +50,11 @@ export interface PensaArtifactIndexEntry {
 export interface PensaProjectDetailView {
   id: string
   name: string
-  kind: PensaProjectKind
   status: PensaProjectStatus
-  studioProjectId: string | null
-  /** Onde construir (fase R) — `null` = a etapa R mostra o chooser. */
-  buildEnv: PensaBuildEnv | null
-  /** Última gravação do snapshot do Estúdio (o BLOB nunca sai na view). */
-  studioSnapshotAt: string | null
   createdAt: string
   updatedAt: string
-  /** Ordenados por number ASC. */
   cycles: PensaCycleView[]
-  /** O de maior number. */
   currentCycle: PensaCycleView
-  /** Latest por type, do ciclo CORRENTE. */
   artifactsIndex: PensaArtifactIndexEntry[]
 }
 
@@ -81,45 +68,40 @@ export interface PensaArtifactView {
   createdAt: string
 }
 
-export interface PensaStageView {
-  stage: PensaStage
-  conversation: { messages: PensaChatMessage[]; summary: string | null; messageCount: number }
-  /** Etapa z → PensaZState; demais {}. */
-  state: Record<string, unknown>
-  /** Latest por type DESTA etapa. */
-  artifacts: PensaArtifactView[]
-  /**
-   * Estado VIVO do kanban/checklist do CICLO (não são por etapa — vêm em toda
-   * etapa p/ o reload da UI nunca perder o progresso do quadro; sem eles o front
-   * teria que re-gerar o plano ao voltar, zerando as colunas).
-   */
-  tasks: PensaTaskView[]
-  checklist: PensaChecklistItemView[]
-}
-
 export interface PensaTaskView {
   id: string
   title: string
   summary: string | null
-  taskType: string | null
-  column: PensaTaskColumn
+  destination: PensaTaskDestination
+  category: PensaTaskCategory
+  estimatedMinutes: number
   position: number
-  mission: PensaMission
-  notes: string | null
+  dependencies: string[]
+  guide: PensaTaskGuide
+  context: PensaTaskContext
+  progress: {
+    status: PensaTaskStatus
+    completedStepIds: string[]
+    completedCriteriaIds: string[]
+    outputRef: PensaTaskOutputRef | null
+    startedAt: string | null
+    completedAt: string | null
+    updatedAt: string | null
+  }
+  revision: number
+  supersedesTaskId: string | null
 }
 
-export interface PensaChecklistItemView {
-  id: string
-  category: PensaChecklistCategory
-  title: string
-  description: string | null
-  required: boolean
-  position: number
-  done: boolean
-  doneAt: string | null
+export interface PensaStageView {
+  stage: PensaStage
+  conversation: { messages: PensaChatMessage[]; summary: string | null; messageCount: number }
+  state: Record<string, unknown>
+  artifacts: PensaArtifactView[]
+  tasks: PensaTaskView[]
+  nextTaskId: string | null
 }
 
-const iso = (date: Date | null): string | null => (date ? date.toISOString() : null)
+const iso = (date: Date | null): string | null => date?.toISOString() ?? null
 
 export function toPensaCycleView(cycle: PensaCycle): PensaCycleView {
   return {
@@ -141,44 +123,11 @@ export function toPensaProjectListView(
   return {
     id: project.id,
     name: project.name,
-    kind: project.kind,
     status: project.status,
     cycleNumber: currentCycle.number,
     stage: currentCycle.stage,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
-  }
-}
-
-export function toPensaArtifactIndexEntry(artifact: PensaArtifact): PensaArtifactIndexEntry {
-  return {
-    type: artifact.type,
-    stage: artifact.stage,
-    version: artifact.version,
-    status: artifact.status,
-    createdAt: artifact.createdAt.toISOString(),
-  }
-}
-
-export function toPensaProjectDetailView(
-  project: PensaProject,
-  cycles: PensaCycle[],
-  currentCycle: PensaCycle,
-  currentCycleLatestArtifacts: PensaArtifact[],
-): PensaProjectDetailView {
-  return {
-    id: project.id,
-    name: project.name,
-    kind: project.kind,
-    status: project.status,
-    studioProjectId: project.studioProjectId,
-    buildEnv: project.buildEnv,
-    studioSnapshotAt: iso(project.studioSnapshotAt),
-    createdAt: project.createdAt.toISOString(),
-    updatedAt: project.updatedAt.toISOString(),
-    cycles: cycles.map(toPensaCycleView),
-    currentCycle: toPensaCycleView(currentCycle),
-    artifactsIndex: currentCycleLatestArtifacts.map(toPensaArtifactIndexEntry),
   }
 }
 
@@ -194,24 +143,26 @@ export function toPensaArtifactView(artifact: PensaArtifact): PensaArtifactView 
   }
 }
 
-export function toPensaStageView(
-  stage: PensaStage,
-  conversation: Pick<PensaConversation, 'messages' | 'summary' | 'state' | 'messageCount'>,
-  latestArtifacts: PensaArtifact[],
-  tasks: PensaTask[],
-  checklist: PensaChecklistItem[],
-): PensaStageView {
+export function toPensaArtifactIndexEntry(artifact: PensaArtifact): PensaArtifactIndexEntry {
+  const { content: _content, id: _id, ...entry } = toPensaArtifactView(artifact)
+  return entry
+}
+
+export function toPensaProjectDetailView(
+  project: PensaProject,
+  cycles: PensaCycle[],
+  currentCycle: PensaCycle,
+  artifacts: PensaArtifact[],
+): PensaProjectDetailView {
   return {
-    stage,
-    conversation: {
-      messages: conversation.messages,
-      summary: conversation.summary,
-      messageCount: conversation.messageCount,
-    },
-    state: conversation.state,
-    artifacts: latestArtifacts.map(toPensaArtifactView),
-    tasks: tasks.map(toPensaTaskView),
-    checklist: checklist.map(toPensaChecklistItemView),
+    id: project.id,
+    name: project.name,
+    status: project.status,
+    createdAt: project.createdAt.toISOString(),
+    updatedAt: project.updatedAt.toISOString(),
+    cycles: cycles.map(toPensaCycleView),
+    currentCycle: toPensaCycleView(currentCycle),
+    artifactsIndex: artifacts.map(toPensaArtifactIndexEntry),
   }
 }
 
@@ -220,23 +171,45 @@ export function toPensaTaskView(task: PensaTask): PensaTaskView {
     id: task.id,
     title: task.title,
     summary: task.summary,
-    taskType: task.taskType,
-    column: task.column,
+    destination: task.destination,
+    category: task.category,
+    estimatedMinutes: task.estimatedMinutes,
     position: task.position,
-    mission: task.mission,
-    notes: task.notes,
+    dependencies: task.dependencies,
+    guide: task.guide,
+    context: task.context,
+    progress: {
+      status: task.progress.status,
+      completedStepIds: task.progress.completedStepIds,
+      completedCriteriaIds: task.progress.completedCriteriaIds,
+      outputRef: task.progress.outputRef,
+      startedAt: iso(task.progress.startedAt),
+      completedAt: iso(task.progress.completedAt),
+      updatedAt: iso(task.progress.updatedAt),
+    },
+    revision: task.revision,
+    supersedesTaskId: task.supersedesTaskId,
   }
 }
 
-export function toPensaChecklistItemView(item: PensaChecklistItem): PensaChecklistItemView {
+export function toPensaStageView(
+  stage: PensaStage,
+  conversation: PensaConversation | null,
+  artifacts: PensaArtifact[],
+  tasks: PensaTask[],
+): PensaStageView {
   return {
-    id: item.id,
-    category: item.category,
-    title: item.title,
-    description: item.description,
-    required: item.required,
-    position: item.position,
-    done: item.done,
-    doneAt: iso(item.doneAt),
+    stage,
+    conversation: conversation
+      ? {
+          messages: conversation.messages,
+          summary: conversation.summary,
+          messageCount: conversation.messageCount,
+        }
+      : { messages: [], summary: null, messageCount: 0 },
+    state: conversation?.state ?? {},
+    artifacts: artifacts.map(toPensaArtifactView),
+    tasks: tasks.map(toPensaTaskView),
+    nextTaskId: nextAvailableTask(tasks)?.id ?? null,
   }
 }

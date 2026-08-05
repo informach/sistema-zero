@@ -7,7 +7,7 @@
  */
 import type { JSX } from 'react'
 import { useState } from 'react'
-import { type ActiveFrameRef, activeBitmapOf, activeShapesOf } from '../../core/assetEdit'
+import { type ActiveFrameRef, activeShapesOf, flattenActiveOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
@@ -299,7 +299,7 @@ export function ExportDialog({
               onClick={() =>
                 downloadDataUrl(
                   (() => {
-                    const bitmap = activeBitmapOf(asset, frameRef)
+                    const bitmap = flattenActiveOf(asset, frameRef)
                     return bitmap
                       ? bitmapToPngDataUrl(bitmap, resolveAssetPalette(asset), scale)
                       : null
@@ -414,7 +414,7 @@ export function ExportDialog({
             onClick={() =>
               downloadDataUrl(
                 (() => {
-                  const bitmap = activeBitmapOf(asset, frameRef)
+                  const bitmap = flattenActiveOf(asset, frameRef)
                   return bitmap
                     ? bitmapToPngDataUrl(bitmap, resolveAssetPalette(asset), scale)
                     : null

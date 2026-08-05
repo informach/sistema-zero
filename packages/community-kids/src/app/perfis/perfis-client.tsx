@@ -11,26 +11,50 @@ import {
   BookOpenCheck,
   Flame,
   Gamepad2,
-  LogOut,
   Plus,
   QrCode,
   Receipt,
+  RefreshCw,
   Sparkles,
   Star,
   Trophy,
 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { GameCardDialog } from '@/components/kids/game-card-dialog'
 import { KidsMascot } from '@/components/kids/mascot'
 import { ParentGateDialog } from '@/components/kids/parent-gate-dialog'
 import {
+  GuideBalloon,
+  GuideReopenButton,
+  GuideTargetItem,
+  GuideWelcomeDialog,
+  ParentConcludeTarget,
+} from '@/components/kids/parent-guide'
+import {
   ParentPasswordChange,
   ProfileForm,
   ProfileTile,
 } from '@/components/kids/profile-management'
+import {
+  ProfileLogoutButton,
+  ProfilesNotIncluded,
+  ProfilesUnavailable,
+} from '@/components/kids/profiles-unavailable'
 import { apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
+import {
+  clearGuideFlag,
+  guideDismissedKey,
+  guideWelcomeSeenKey,
+  parentWelcomeSteps,
+  readGuideFlag,
+  resolveParentGuideStep,
+  writeGuideFlag,
+} from '@/lib/guide'
+import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
+import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import {
   type ChildDashboardView,
   type ChildWeekGameView,
@@ -66,8 +90,8 @@ export function PerfisClient({
   isProfileSession,
   parentVerified,
   startManaging = false,
-  maxProfiles,
-  unlimitedProfiles = false,
+  profileAllowance,
+  guideKey = null,
 }: {
   initialProfiles: ProfileView[]
   /** profileId → snapshot do avatar 3D (a ÚNICA fonte da cara da criança, 24/07). */
@@ -75,10 +99,13 @@ export function PerfisClient({
   isProfileSession: boolean
   parentVerified: boolean
   startManaging?: boolean
-  /** Teto de perfis do plano (matrícula kids). `null` = desconhecido → não trava a UI. */
-  maxProfiles: number | null
-  /** Sem teto (equipe interna): não trava e mostra "ilimitado" em vez de "X de Y". */
-  unlimitedProfiles?: boolean
+  /** Direito CONFIRMADO pelo members; falha de leitura nunca libera um "+" otimista. */
+  profileAllowance: ProfileAllowance
+  /**
+   * Chave do tutorial guiado dos pais (o id da CONTA) — `null` em sessão de
+   * PERFIL (criança trocando de irmão), quando o guia nunca aparece.
+   */
+  guideKey?: string | null
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [managing, setManaging] = useState(startManaging)
@@ -92,21 +119,99 @@ export function PerfisClient({
   const [editing, setEditing] = useState<Editing>(null)
   const [showPurchases, setShowPurchases] = useState(false) // sub-tela "Minhas compras"
   const [removing, setRemoving] = useState<ProfileView | null>(null) // confirmação de remover perfil
+  const [profileCreatedDuringGuide, setProfileCreatedDuringGuide] = useState(false)
+  const parentAreaRef = useRef<HTMLButtonElement>(null)
+  const firstProfileRef = useRef<HTMLButtonElement>(null)
+  const focusAfterWelcomeRef = useRef(false)
 
-  // Atingiu o teto do plano? (`maxProfiles` nulo = desconhecido → não trava a UI; o
-  // servidor segue como rede de segurança, 409 ao salvar.)
+  const maxProfiles = profileAllowance.kind === 'limited' ? profileAllowance.maxProfiles : null
+  const unlimitedProfiles = profileAllowance.kind === 'unlimited'
   const atProfileLimit = maxProfiles != null && profiles.length >= maxProfiles
+  const canCreateProfile = canAddProfile(profileAllowance, profiles.length)
 
-  // Sair da conta a partir da grade de perfis: sem isto, quem entra (ex.: por
-  // código) e não sabe a senha da área dos pais fica PRESO aqui (não dá p/ criar
-  // perfil nem sair). Logout normal + navegação de documento (cookies HttpOnly).
-  async function logout() {
-    setBusy(true)
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-    } finally {
-      window.location.replace('/login')
+  // ---- Tutorial guiado dos pais (04/08/2026) ----
+  // O guia SEGUE O ESTADO (conta sem perfil = primeiro acesso), mas "Entendi" e
+  // "Pular" encerram o fluxo inteiro neste navegador. As leituras de
+  // localStorage acontecem em efeito pós-mount — SSR e 1º render do cliente
+  // concordam em "sem guia" (lição de hidratação do focus-mode, 03/08).
+  const [guideDismissed, setGuideDismissed] = useState(true)
+  const [welcomeOpen, setWelcomeOpen] = useState(false)
+  useEffect(() => {
+    if (!guideKey) return
+    const welcomeSeen = readGuideFlag(guideWelcomeSeenKey(guideKey))
+    const tourComplete = readGuideFlag(guideDismissedKey(guideKey))
+    // Famílias que já tinham perfil antes deste onboarding não devem receber um
+    // arremate órfão. Elas iniciam conscientemente por "Como funciona?". Se o
+    // modal já foi visto, porém, o guia estava em andamento e pode ser retomado.
+    const existingFamilyDidNotStart = initialProfiles.length > 0 && !welcomeSeen
+    setGuideDismissed(tourComplete || existingFamilyDidNotStart)
+    // Auto-abre o modal uma vez por conta neste navegador, e só na tela que ele
+    // descreve (grade sem perfil, fora da gestão).
+    if (initialProfiles.length === 0 && !startManaging && !welcomeSeen) {
+      setWelcomeOpen(true)
+      trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'welcome' })
     }
+  }, [guideKey, initialProfiles.length, startManaging])
+
+  const guideStep = guideKey
+    ? resolveParentGuideStep({
+        profilesCount: profiles.length,
+        managing,
+        canCreateProfile,
+        profileCreated: profileCreatedDuringGuide,
+        creatingOpen: editing?.mode === 'create',
+        dismissed: guideDismissed,
+        isProfileSession,
+      })
+    : null
+  const visibleGuideStep = welcomeOpen ? null : guideStep
+  const welcomeSteps = useMemo(
+    () => parentWelcomeSteps({ profilesCount: profiles.length, canCreateProfile }),
+    [profiles.length, canCreateProfile],
+  )
+
+  useEffect(() => {
+    if (welcomeOpen || !focusAfterWelcomeRef.current) return
+    focusAfterWelcomeRef.current = false
+    const target = profiles.length === 0 ? parentAreaRef.current : firstProfileRef.current
+    target?.focus()
+  }, [welcomeOpen, profiles.length])
+
+  function completeGuide() {
+    if (guideKey) writeGuideFlag(guideDismissedKey(guideKey))
+    setGuideDismissed(true)
+    trackOnboardingEvent({ audience: 'parent', action: 'tour_completed', step: 'tile' })
+  }
+
+  function closeWelcome(action: 'welcome_completed' | 'welcome_dismissed') {
+    if (guideKey) writeGuideFlag(guideWelcomeSeenKey(guideKey))
+    focusAfterWelcomeRef.current = true
+    setWelcomeOpen(false)
+    trackOnboardingEvent({ audience: 'parent', action, step: 'welcome' })
+  }
+
+  function skipGuide() {
+    if (guideKey) {
+      writeGuideFlag(guideWelcomeSeenKey(guideKey))
+      writeGuideFlag(guideDismissedKey(guideKey))
+    }
+    focusAfterWelcomeRef.current = true
+    setWelcomeOpen(false)
+    setGuideDismissed(true)
+    trackOnboardingEvent({ audience: 'parent', action: 'tour_skipped', step: 'welcome' })
+  }
+
+  function reopenGuide() {
+    if (guideKey) clearGuideFlag(guideDismissedKey(guideKey))
+    setGuideDismissed(false)
+    setWelcomeOpen(true)
+    trackOnboardingEvent({ audience: 'parent', action: 'guide_reopened', step: 'welcome' })
+    trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'welcome' })
+  }
+
+  function concludeManaging() {
+    setManaging(false)
+    setProfileCreatedDuringGuide(false)
   }
 
   // Entrou na gestão pelo `?manage=1` (logo após "Área dos pais" sair de um perfil):
@@ -118,13 +223,18 @@ export function PerfisClient({
   async function selectProfile(id: string) {
     if (busy) return
     setBusy(true)
-    const res = await fetch(`/api/profiles/${id}/select`, { method: 'POST' })
-    if (res.ok) {
-      window.location.replace('/') // full reload: o servidor passa a ver a sessão de perfil
-      return
+    try {
+      const res = await fetch(`/api/profiles/${id}/select`, { method: 'POST' })
+      if (res.ok) {
+        window.location.replace('/') // full reload: o servidor passa a ver a sessão de perfil
+        return
+      }
+      toast.error('Não foi possível entrar nesse perfil. Tente de novo.')
+    } catch {
+      toast.error('Falha de rede. Verifique a conexão e tente entrar novamente.')
+    } finally {
+      setBusy(false)
     }
-    setBusy(false)
-    toast.error('Não foi possível entrar nesse perfil. Tente de novo.')
   }
 
   function openParentArea() {
@@ -139,35 +249,49 @@ export function PerfisClient({
 
   async function exitToParent(password: string) {
     setBusy(true)
-    const res = await fetch('/api/profile-session/exit', {
-      method: 'POST',
-      headers: JSON_HEADERS,
-      body: JSON.stringify({ password }),
-    })
-    setBusy(false)
-    if (res.ok) {
-      // recarrega como sessão da conta (portão aberto); `?manage=1` já abre a gestão.
-      window.location.replace('/perfis?manage=1')
-      return
+    try {
+      const res = await fetch('/api/profile-session/exit', {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ password }),
+      })
+      if (res.ok) {
+        // recarrega como sessão da conta (portão aberto); `?manage=1` já abre a gestão.
+        window.location.replace('/perfis?manage=1')
+        return
+      }
+      toast.error(
+        res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.',
+      )
+    } catch {
+      toast.error('Falha de rede. Verifique a conexão e tente novamente.')
+    } finally {
+      setBusy(false)
     }
-    toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
   }
 
   async function verifyParent(password: string) {
     setBusy(true)
-    const res = await fetch('/api/parents/verify', {
-      method: 'POST',
-      headers: JSON_HEADERS,
-      body: JSON.stringify({ password }),
-    })
-    setBusy(false)
-    if (res.ok) {
-      setGate(false)
-      setVerified(true) // portão aberto no servidor (cookie) — não pedir a senha de novo nesta sessão
-      setManaging(true) // portão aberto no servidor (cookie) → libera a gestão
-      return
+    try {
+      const res = await fetch('/api/parents/verify', {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ password }),
+      })
+      if (res.ok) {
+        setGate(false)
+        setVerified(true) // portão aberto no servidor (cookie) — não pedir a senha de novo nesta sessão
+        setManaging(true) // portão aberto no servidor (cookie) → libera a gestão
+        return
+      }
+      toast.error(
+        res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.',
+      )
+    } catch {
+      toast.error('Falha de rede. Verifique a conexão e tente novamente.')
+    } finally {
+      setBusy(false)
     }
-    toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
   }
 
   async function saveProfile(
@@ -178,31 +302,44 @@ export function PerfisClient({
   ) {
     setBusy(true)
     // Campos parent-only: o auth recusa birthDate/publicProfileEnabled em sessão de perfil.
-    const payload = existing ? { name, birthDate, publicProfileEnabled } : { name, birthDate }
-    const res = existing
-      ? await fetch(`/api/profiles/${existing.id}`, {
-          method: 'PATCH',
-          headers: JSON_HEADERS,
-          body: JSON.stringify(payload),
-        })
-      : await fetch('/api/profiles', {
-          method: 'POST',
-          headers: JSON_HEADERS,
-          body: JSON.stringify(payload),
-        })
-    const body = (await res.json().catch(() => null)) as { profile?: ProfileView } | null
-    setBusy(false)
-    if (res.ok && body?.profile) {
-      const saved = body.profile
-      setProfiles((prev) =>
-        existing ? prev.map((p) => (p.id === saved.id ? saved : p)) : [...prev, saved],
-      )
-      setEditing(null)
-      return
+    // Desde 04/08 o CREATE também leva o opt-in de perfil público (o pai decide no
+    // primeiro preenchimento; auth/shell aceitam o campo no mesmo lote).
+    try {
+      const payload = { name, birthDate, publicProfileEnabled }
+      const res = existing
+        ? await fetch(`/api/profiles/${existing.id}`, {
+            method: 'PATCH',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(payload),
+          })
+        : await fetch('/api/profiles', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(payload),
+          })
+      const body = (await res.json().catch(() => null)) as { profile?: ProfileView } | null
+      if (res.ok && body?.profile) {
+        const saved = body.profile
+        setProfiles((prev) =>
+          existing ? prev.map((p) => (p.id === saved.id ? saved : p)) : [...prev, saved],
+        )
+        if (!existing) {
+          setProfileCreatedDuringGuide(true)
+          if (guideKey && !guideDismissed) {
+            trackOnboardingEvent({ audience: 'parent', action: 'profile_created', step: 'profile' })
+          }
+        }
+        setEditing(null)
+        return
+      }
+      if (res.status === 409) toast.error('Você atingiu o limite de perfis do seu plano.')
+      else if (res.status === 403) toast.error('Abra a área dos pais para gerenciar os perfis.')
+      else toast.error('Não foi possível salvar o perfil.')
+    } catch {
+      toast.error('Falha de rede. O perfil não foi salvo; tente novamente.')
+    } finally {
+      setBusy(false)
     }
-    if (res.status === 409) toast.error('Você atingiu o limite de perfis do seu plano.')
-    else if (res.status === 403) toast.error('Abra a área dos pais para gerenciar os perfis.')
-    else toast.error('Não foi possível salvar o perfil.')
   }
 
   // Remoção em DOIS passos: o botão abre um modal de confirmação (Dialog acessível — sem
@@ -211,15 +348,29 @@ export function PerfisClient({
     const p = removing
     if (!p) return
     setBusy(true)
-    const res = await fetch(`/api/profiles/${p.id}`, { method: 'DELETE' })
-    setBusy(false)
-    setRemoving(null)
-    if (res.ok) {
-      setProfiles((prev) => prev.filter((x) => x.id !== p.id))
-      setEditing(null)
-      return
+    try {
+      const res = await fetch(`/api/profiles/${p.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setRemoving(null)
+        setProfiles((prev) => prev.filter((x) => x.id !== p.id))
+        setEditing(null)
+        return
+      }
+      toast.error('Não foi possível remover o perfil.')
+    } catch {
+      toast.error('Falha de rede. O perfil não foi removido; tente novamente.')
+    } finally {
+      setBusy(false)
     }
-    toast.error('Não foi possível remover o perfil.')
+  }
+
+  // A lista muda no cliente após arquivar. Reaplicar aqui as mesmas fronteiras do
+  // Server Component impede uma tela vazia e um passo `plus` sem botão disponível.
+  if (profiles.length === 0 && profileAllowance.kind === 'unavailable') {
+    return <ProfilesUnavailable reason="allowance" />
+  }
+  if (profiles.length === 0 && profileAllowance.kind === 'none') {
+    return <ProfilesNotIncluded />
   }
 
   if (editing) {
@@ -228,6 +379,7 @@ export function PerfisClient({
         <ProfileForm
           editing={editing}
           busy={busy}
+          showGuideHint={visibleGuideStep === 'form'}
           onCancel={() => setEditing(null)}
           onSave={saveProfile}
           onArchive={(p) => setRemoving(p)}
@@ -271,9 +423,9 @@ export function PerfisClient({
         </h1>
       </div>
 
-      <ul className="flex flex-wrap justify-center gap-6">
-        {profiles.map((p) => (
-          <li key={p.id}>
+      <ul className="flex flex-wrap items-start justify-center gap-6">
+        {profiles.map((p, index) => (
+          <GuideTargetItem key={p.id}>
             <ProfileTile
               profile={p}
               photoUrl={avatarPhotoByProfile[p.id] ?? null}
@@ -281,13 +433,31 @@ export function PerfisClient({
               disabled={busy}
               onSelect={() => selectProfile(p.id)}
               onEdit={() => setEditing({ mode: 'edit', profile: p })}
+              buttonRef={index === 0 ? firstProfileRef : undefined}
+              ariaDescribedBy={
+                visibleGuideStep === 'tile' && index === 0 ? 'parent-profile-tile-guide' : undefined
+              }
             />
-          </li>
+            {visibleGuideStep === 'tile' && index === 0 ? (
+              <GuideBalloon
+                arrow="up"
+                onDismiss={completeGuide}
+                mobileFloating
+                descriptionId="parent-profile-tile-guide"
+              >
+                Tudo pronto! Quando <strong>{p.name}</strong> for estudar, é só tocar nesta bolinha.
+                😉
+              </GuideBalloon>
+            ) : null}
+          </GuideTargetItem>
         ))}
-        {managing && !atProfileLimit ? (
-          <li>
+        {managing && canCreateProfile ? (
+          <GuideTargetItem>
             <button
               type="button"
+              aria-describedby={
+                visibleGuideStep === 'plus' ? 'parent-add-profile-guide' : undefined
+              }
               disabled={busy}
               onClick={() => setEditing({ mode: 'create' })}
               className="kid-pop flex w-28 flex-col items-center gap-2 rounded-2xl p-2 disabled:opacity-50"
@@ -297,7 +467,12 @@ export function PerfisClient({
               </span>
               <span className="font-semibold text-muted-foreground text-sm">Adicionar</span>
             </button>
-          </li>
+            {visibleGuideStep === 'plus' ? (
+              <GuideBalloon arrow="up" descriptionId="parent-add-profile-guide">
+                Toque em <strong>Adicionar</strong> para criar o perfil da criança.
+              </GuideBalloon>
+            ) : null}
+          </GuideTargetItem>
         ) : null}
       </ul>
 
@@ -309,8 +484,16 @@ export function PerfisClient({
           {atProfileLimit ? (
             <>
               Você usou todos os <strong>{maxProfiles}</strong>{' '}
-              {maxProfiles === 1 ? 'perfil' : 'perfis'} do seu plano. Para liberar mais, fale com a
-              gente ou amplie o seu plano.
+              {maxProfiles === 1 ? 'perfil' : 'perfis'} do seu plano. Para liberar mais,{' '}
+              <a
+                href={COMUNIDADE_OFERTA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+              >
+                amplie o seu acesso
+              </a>
+              .
             </>
           ) : (
             <>
@@ -319,11 +502,31 @@ export function PerfisClient({
             </>
           )}
         </p>
+      ) : managing && profileAllowance.kind === 'none' ? (
+        <p className="text-center text-muted-foreground text-sm">
+          Seu acesso atual não inclui novos perfis.{' '}
+          <a
+            href={COMUNIDADE_OFERTA_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          >
+            Conheça a Comunidade dos Criadores
+          </a>
+          .
+        </p>
+      ) : managing && profileAllowance.kind === 'unavailable' ? (
+        <div className="flex flex-col items-center gap-2 text-center text-muted-foreground text-sm">
+          <p>Não foi possível verificar novas vagas agora.</p>
+          <Button variant="ghost" size="sm" onClick={() => window.location.reload()}>
+            <RefreshCw className="size-4" /> Tentar de novo
+          </Button>
+        </div>
       ) : null}
 
       {managing ? <ChildrenDashboard avatarPhotoByProfile={avatarPhotoByProfile} /> : null}
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className="flex flex-wrap items-end justify-center gap-3">
         {managing ? (
           <>
             <Button variant="ghost" onClick={() => setShowPurchases(true)} disabled={busy}>
@@ -333,21 +536,39 @@ export function PerfisClient({
             <Button variant="ghost" onClick={() => setChangingPassword(true)} disabled={busy}>
               Alterar senha do responsável
             </Button>
-            <Button variant="secondary" onClick={() => setManaging(false)} disabled={busy}>
-              Concluir
-            </Button>
+            <ParentConcludeTarget
+              created={visibleGuideStep === 'conclude-created'}
+              showGuide={visibleGuideStep === 'conclude' || visibleGuideStep === 'conclude-created'}
+              busy={busy}
+              onConclude={concludeManaging}
+            />
           </>
         ) : (
-          // `outline` (não `ghost`): a "Área dos pais" é a ação da tela e precisa PARECER
-          // botão (borda + fundo), não texto solto.
-          <Button variant="outline" onClick={openParentArea} disabled={busy}>
-            Área dos pais
-          </Button>
+          <div className="flex w-36 shrink-0 flex-col items-center gap-3">
+            {visibleGuideStep === 'welcome-area' ? (
+              <GuideBalloon arrow="down" mobileFloating descriptionId="parent-area-guide">
+                Toque em <strong>Área dos pais</strong> e digite a sua senha para criar o perfil do
+                seu filho.
+              </GuideBalloon>
+            ) : null}
+            {/* `outline` (não `ghost`): é a ação da tela e precisa parecer botão. */}
+            <Button
+              ref={parentAreaRef}
+              variant="outline"
+              onClick={openParentArea}
+              disabled={busy}
+              aria-describedby={
+                visibleGuideStep === 'welcome-area' ? 'parent-area-guide' : undefined
+              }
+            >
+              Área dos pais
+            </Button>
+          </div>
         )}
+        {/* Reabre o tutorial a qualquer momento (precedente: "📋 Combinados" do Clube). */}
+        {guideKey && !managing ? <GuideReopenButton onClick={reopenGuide} /> : null}
         {/* Sempre disponível: evita ficar preso na grade sem saber a senha dos pais. */}
-        <Button variant="ghost" onClick={logout} disabled={busy}>
-          <LogOut className="size-4" /> Sair
-        </Button>
+        <ProfileLogoutButton disabled={busy} onLoggingChange={setBusy} />
       </div>
 
       {gate ? (
@@ -362,6 +583,19 @@ export function PerfisClient({
       {changingPassword ? (
         <ParentPasswordChange onCancel={() => setChangingPassword(false)} />
       ) : null}
+      <GuideWelcomeDialog
+        open={welcomeOpen}
+        onClose={() => closeWelcome('welcome_dismissed')}
+        onContinue={() => closeWelcome('welcome_completed')}
+        onSkip={skipGuide}
+        title="Bem-vindo à plataforma!"
+        description={
+          profiles.length === 0
+            ? 'Em três passos o seu filho já está estudando:'
+            : 'Veja como escolher e acompanhar as crianças:'
+        }
+        steps={welcomeSteps}
+      />
     </main>
   )
 }

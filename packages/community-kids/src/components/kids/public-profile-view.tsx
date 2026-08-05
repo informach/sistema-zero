@@ -78,6 +78,8 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
                       <img
                         src={game.coverUrl}
                         alt=""
+                        width={16}
+                        height={9}
                         className="size-full object-cover"
                         loading="lazy"
                       />

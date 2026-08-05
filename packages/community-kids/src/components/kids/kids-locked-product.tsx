@@ -1,8 +1,6 @@
 import { Lock } from 'lucide-react'
+import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
 import { KidsMascot } from './mascot'
-
-/** URL pública da oferta de assinatura da Comunidade dos Criadores (funil kids). */
-const COMUNIDADE_OFERTA_URL = 'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta'
 
 type PreviewItem = { emoji: string; text: string }
 

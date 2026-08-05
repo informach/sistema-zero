@@ -21,6 +21,10 @@ import { SVG_BLOCKS } from './blocks/svg'
 import type { BlockDefinition, BlockPlacement } from './blocks/types'
 import { PROGRAMMING_CATALOG_GROUPS } from './programmingContract'
 
+// O subpath público `@sistemazero/studio/server-catalog` também expõe a ordem
+// pedagógica necessária aos consumidores server-only, sem importar o editor React.
+export { BLOCK_LEVELS } from '../core/levels'
+
 /** Entrada do catálogo de blocos p/ o picker da "lista de blocos" da aula (admin). */
 export interface BlockCatalogEntry {
   /** id do bloco — é o que entra na lista `allowBlocks` do bloco Estúdio. */

@@ -24,16 +24,17 @@ type EncodedAsset = EncodedAssetBase & Record<string, unknown>
 
 function encodeAsset(asset: PintaAsset): EncodedAsset {
   switch (asset.kind) {
+    // Backup PRESERVA as camadas (não achata): um quadro é a lista de cels.
     case 'pixel-sprite':
       return {
         ...asset,
         animations: asset.animations.map((a) => ({
           ...a,
-          frames: a.frames.map((f) => encodeBitmap(f)),
+          frames: a.frames.map((cels) => cels.map((cel) => encodeBitmap(cel))),
         })),
       }
     case 'pixel-background':
-      return { ...asset, bitmap: encodeBitmap(asset.bitmap) }
+      return { ...asset, cels: asset.cels.map((cel) => encodeBitmap(cel)) }
     case 'tileset':
       return { ...asset, tiles: asset.tiles.map((t) => encodeBitmap(t)) }
     case 'tilemap':
@@ -49,6 +50,16 @@ function encodeAsset(asset: PintaAsset): EncodedAsset {
   }
 }
 
+/**
+ * Um quadro de pixel do backup → lista de cels. Aceita o formato ANTIGO (um
+ * bitmap solto, antes das camadas): o sanitize também tolera, mas normalizar
+ * aqui deixa o decode previsível.
+ */
+function decodeFrame(raw: unknown): unknown[] {
+  const list = Array.isArray(raw) ? raw : [raw]
+  return list.map((cel) => decodeBitmap(cel as EncodedBitmap))
+}
+
 /** Reverte a codificação p/ o shape que o `sanitizePintaAsset` valida. */
 function decodeAsset(raw: unknown): unknown {
   if (!raw || typeof raw !== 'object') return raw
@@ -62,16 +73,17 @@ function decodeAsset(raw: unknown): unknown {
           if (!animation || typeof animation !== 'object') return animation
           const anim = animation as Record<string, unknown>
           if (!Array.isArray(anim.frames)) return anim
-          return { ...anim, frames: anim.frames.map((f) => decodeBitmap(f)).filter(Boolean) }
+          // Backup ANTIGO: o quadro era um bitmap só (o sanitize também aceita).
+          return { ...anim, frames: anim.frames.map((f) => decodeFrame(f)) }
         }),
       }
     }
     case 'pixel-background':
-      return { ...a, bitmap: decodeBitmap(a.bitmap as EncodedBitmap) }
+      return { ...a, cels: decodeFrame(a.cels ?? a.bitmap) }
     case 'tileset':
       return {
         ...a,
-        tiles: Array.isArray(a.tiles) ? a.tiles.map((t) => decodeBitmap(t)).filter(Boolean) : [],
+        tiles: Array.isArray(a.tiles) ? a.tiles.map((t) => decodeBitmap(t)) : [],
       }
     case 'tilemap': {
       if (!Array.isArray(a.layers)) return a
@@ -80,10 +92,7 @@ function decodeAsset(raw: unknown): unknown {
         layers: a.layers.map((layer) => {
           if (!layer || typeof layer !== 'object') return layer
           const l = layer as Record<string, unknown>
-          return {
-            ...l,
-            cells: Array.isArray(l.cells) ? Int16Array.from(l.cells as number[]) : l.cells,
-          }
+          return { ...l }
         }),
       }
     }
@@ -122,6 +131,12 @@ export function importPintaJson(text: string): PintaImportResult {
   const doc = parsed as Record<string, unknown>
   if (doc.format !== FORMAT || !Array.isArray(doc.assets)) {
     return { assets: [], warnings: ['O arquivo não parece um backup do Pinta.'] }
+  }
+  if (doc.version !== VERSION) {
+    return {
+      assets: [],
+      warnings: ['A versão deste backup não é compatível com esta versão do Pinta.'],
+    }
   }
   const assets: PintaAsset[] = []
   for (const raw of doc.assets) {

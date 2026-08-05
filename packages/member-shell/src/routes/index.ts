@@ -170,6 +170,9 @@ const CreateProfileBody = z.object({
   name: ProfileName,
   whatsapp: ProfileWhatsapp,
   birthDate: ProfileBirthDate,
+  // O pai decide o perfil público já na criação (tutorial de 1º acesso, 08/2026);
+  // o auth aceita o campo no create e a rota de lá é parent-only por construção.
+  publicProfileEnabled: z.boolean().optional(),
 })
 const UpdateProfileBody = z
   .object({

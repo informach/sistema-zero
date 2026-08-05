@@ -62,15 +62,13 @@ import { CreatePensaProjectService } from './application/pensa/create-project.se
 import { DeletePensaTaskService } from './application/pensa/delete-task.service'
 import { GetPensaProjectService } from './application/pensa/get-project.service'
 import { GetPensaStageService } from './application/pensa/get-stage.service'
-import { GetPensaStudioSnapshotService } from './application/pensa/get-studio-snapshot.service'
+import { GetPensaTaskHandoffService } from './application/pensa/get-task-handoff.service'
 import { ListPensaProjectsService } from './application/pensa/list-projects.service'
-import { ReplacePensaChecklistService } from './application/pensa/replace-checklist.service'
 import { ReplacePensaTasksService } from './application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from './application/pensa/save-artifact.service'
-import { SavePensaStudioSnapshotService } from './application/pensa/save-studio-snapshot.service'
-import { TogglePensaChecklistItemService } from './application/pensa/toggle-checklist-item.service'
 import { UpdatePensaProjectService } from './application/pensa/update-project.service'
 import { UpdatePensaTaskService } from './application/pensa/update-task.service'
+import { UpdatePensaTaskProgressService } from './application/pensa/update-task-progress.service'
 import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
@@ -430,15 +428,13 @@ export async function createApplication(env: Env): Promise<Application> {
   const validateCertificate = new ValidateCertificateService(certificates)
   const revokeCertificate = new RevokeCertificateService(certificates, clock)
 
-  // Pensa (planejamento guiado — projeto/ciclos/etapas/artefatos/kanban/checklist)
+  // Pensa (planejador de jogos — plano + Cartões de Criação + progresso externo)
   const pensaRepo = new DrizzlePensaRepository(db)
   const pensaNewId = () => randomUUID()
   const listPensaProjects = new ListPensaProjectsService(pensaRepo)
   const createPensaProject = new CreatePensaProjectService(pensaRepo, pensaNewId, clock)
   const getPensaProject = new GetPensaProjectService(pensaRepo)
   const updatePensaProject = new UpdatePensaProjectService(pensaRepo, clock)
-  const getPensaStudioSnapshot = new GetPensaStudioSnapshotService(pensaRepo)
-  const savePensaStudioSnapshot = new SavePensaStudioSnapshotService(pensaRepo, clock)
   const createPensaCycle = new CreatePensaCycleService(pensaRepo, pensaNewId, clock)
   const getPensaStage = new GetPensaStageService(pensaRepo)
   const appendPensaConversationTurn = new AppendPensaConversationTurnService(pensaRepo, clock)
@@ -448,10 +444,10 @@ export async function createApplication(env: Env): Promise<Application> {
   const advancePensaStage = new AdvancePensaStageService(pensaRepo, awardGamification, clock)
   const replacePensaTasks = new ReplacePensaTasksService(pensaRepo, pensaNewId, clock)
   const appendPensaTasks = new AppendPensaTasksService(pensaRepo, pensaNewId, clock)
-  const updatePensaTask = new UpdatePensaTaskService(pensaRepo, clock)
+  const updatePensaTask = new UpdatePensaTaskService(pensaRepo, pensaNewId, clock)
   const deletePensaTask = new DeletePensaTaskService(pensaRepo, clock)
-  const replacePensaChecklist = new ReplacePensaChecklistService(pensaRepo, pensaNewId, clock)
-  const togglePensaChecklistItem = new TogglePensaChecklistItemService(pensaRepo, clock)
+  const getPensaTaskHandoff = new GetPensaTaskHandoffService(pensaRepo)
+  const updatePensaTaskProgress = new UpdatePensaTaskProgressService(pensaRepo, clock)
 
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
@@ -563,8 +559,6 @@ export async function createApplication(env: Env): Promise<Application> {
       createProject: createPensaProject,
       getProject: getPensaProject,
       updateProject: updatePensaProject,
-      getStudioSnapshot: getPensaStudioSnapshot,
-      saveStudioSnapshot: savePensaStudioSnapshot,
       createCycle: createPensaCycle,
       getStage: getPensaStage,
       appendConversationTurn: appendPensaConversationTurn,
@@ -575,9 +569,10 @@ export async function createApplication(env: Env): Promise<Application> {
       appendTasks: appendPensaTasks,
       updateTask: updatePensaTask,
       deleteTask: deletePensaTask,
-      replaceChecklist: replacePensaChecklist,
-      toggleChecklistItem: togglePensaChecklistItem,
+      getTaskHandoff: getPensaTaskHandoff,
+      updateTaskProgress: updatePensaTaskProgress,
       accessCheck,
+      getGamification,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {

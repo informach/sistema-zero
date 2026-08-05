@@ -11,30 +11,9 @@
  *   professor libere origens (`fetchAllowedOrigins`); reforçado pelo
  *   permissionGuard em runtime (defesa dupla).
  *
- * Cada script gerado recebe uma fonte SHA-256 exata na policy. Nos scripts INLINE
- * (guardas e bridges) é esse hash que autoriza, e ele funciona em qualquer motor.
- *
- * ⚠️ O script EXTERNO (`data:text/javascript;base64,…`) NÃO leva `integrity`: uma
- * `data:` URL não é elegível para SRI (não é CORS nem same-origin) e declarar o
- * atributo faz o Firefox RECUSAR o recurso. Quem o autoriza é o esquema `data:`
- * abaixo. Ver `AuthorizedDataScript` em bootstrap.ts.
- *
- * ⚠️ `script-src` INCLUI o esquema `data:` — e isso NÃO é um descuido. Casar uma
- * fonte de HASH com um script EXTERNO é recurso do CSP nível 3 que só o Chromium
- * implementa: o Firefox só casa hash com script INLINE (bug aberto
- * https://bugzilla.mozilla.org/show_bug.cgi?id=1409200, `csp-external-hashes`).
- * Sem `data:` aqui, TODO navegador não-Chromium recusava os scripts do aluno em
- * silêncio — os guardas e o CSS (inline) rodavam, o preview aparecia vivo, e só o
- * PROGRAMA nunca executava. Era o bug de "no Firefox nada acontece".
- *
- * O que o `data:` custa e quem paga a conta: a policy deixa de barrar um script
- * `data:`/`blob:` que o PRÓPRIO código do aluno crie em runtime (o que fugiria da
- * instrumentação do loopGuard e poderia travar a aba). Essa promessa passou a ser
- * mantida pelo `scriptSourceGuard`, que fecha o setter de `src` de `<script>`
- * ANTES de qualquer código do aluno rodar. As DEMAIS garantias seguem só na CSP e
- * intactas: `script-src` continua sem `https:` (nada de `<script src=remoto>`),
- * sem `'unsafe-inline'` e sem `blob:`, então os únicos bytes que executam de fato
- * continuam sendo os que o Studio produziu e assinou.
+ * Cada script gerado recebe uma fonte SHA-256 exata na policy. Scripts externos
+ * `data:` usam o mesmo hash como SRI; a policy não libera `data:`/`blob:` como
+ * esquemas genéricos. Assim, somente os bytes produzidos pelo Studio executam.
  *
  * ⚠️ CANAL RESIDUAL DE EXFILTRAÇÃO (GET de mão única, ACEITO por design): como
  * `img-src`/`media-src`/`font-src`/`frame-src` liberam `https:` (subrecursos
@@ -123,17 +102,13 @@ export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
   const eventHandlerHashes = sanitizeScriptHashes(options.eventHandlerHashes).map(
     (hash) => `'${hash}'`,
   )
-  const scriptSources = [
-    ...(eventHandlerHashes.length > 0 ? ["'unsafe-hashes'"] : []),
-    ...scriptHashes,
-    ...eventHandlerHashes,
-    ...scriptUrls,
-  ]
-  // `data:` só entra quando JÁ existe algo autorizado — documento sem script
-  // nenhum continua `script-src 'none'` (nada a liberar). Ele acompanha os hashes
-  // porque fora do Chromium o hash NÃO casa com script externo (bug 1409200), e
-  // todo JS do aluno é externalizado para `data:text/javascript`. Ver o header.
-  const scriptSrc = scriptSources.length > 0 ? [...scriptSources, 'data:'].join(' ') : "'none'"
+  const scriptSrc =
+    [
+      ...(eventHandlerHashes.length > 0 ? ["'unsafe-hashes'"] : []),
+      ...scriptHashes,
+      ...eventHandlerHashes,
+      ...scriptUrls,
+    ].join(' ') || "'none'"
   return [
     "default-src 'none'",
     `script-src ${scriptSrc}`,

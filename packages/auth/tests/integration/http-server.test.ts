@@ -1655,6 +1655,23 @@ describe('Auth — perfis (estilo Netflix)', () => {
     })
   }
 
+  test('o pai decide o perfil público já na CRIAÇÃO (opt-in no POST; ausente → OFF)', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 2
+    // Com o opt-in ligado no próprio create (tutorial de 1º acesso, 08/2026).
+    const on = (await (
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { name: 'Sofia', publicProfileEnabled: true }),
+      )
+    ).json()) as { profile: Profile }
+    expect(on.profile.publicProfileEnabled).toBe(true)
+    // Ausente → nasce DESLIGADO (o default seguro do agregado, opt-in de verdade).
+    const off = (await (
+      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Théo' }))
+    ).json()) as { profile: Profile }
+    expect(off.profile.publicProfileEnabled).toBe(false)
+  })
+
   test('cria até o teto e barra o excedente; a lista volta ordenada', async () => {
     const { app, allowance } = buildApp()
     allowance.maxProfiles = 2

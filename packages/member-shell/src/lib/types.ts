@@ -1370,26 +1370,23 @@ export interface HubPage<T> {
   hasMore: boolean
 }
 
-// ── Pensa (planejamento guiado — metodologia ZERO) ───────────────────────────
-// Mirror das views do members (tabelas `pensa_*`). Projeto → ciclos ("Versão N",
-// 1 = MVP) → etapas z/e/r/o com artefatos versionados, kanban de missões e
-// checklist de lançamento. Datas SEMPRE ISO string.
+// ── Pensa (planejador de jogos — metodologia ZERO) ──────────────────────────
+// Mirror do contrato público de `members`. O Pensa descreve e audita o plano;
+// Pinta e Estúdio são os únicos donos da execução e do progresso.
 
 export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
-export type PensaProjectKind = 'game' | 'webapp'
 export type PensaProjectStatus = 'active' | 'archived'
 export type PensaArtifactType =
   | 'idea'
-  | 'prd'
-  | 'friendly_spec'
-  | 'identity'
-  | 'mission_plan'
-  | 'checklist_seed'
+  | 'game_design'
+  | 'visual_direction'
+  | 'task_plan'
+  | 'plan_review'
 export type PensaArtifactStatus = 'draft' | 'validated'
-export type PensaTaskColumn = 'backlog' | 'doing' | 'review' | 'done'
-export type PensaChecklistCategory = 'test' | 'polish' | 'publish' | 'share'
-/** Onde a criança escolheu CONSTRUIR (etapa R): junto da missão / Estúdio Completo / computador. */
-export type PensaBuildEnv = 'embedded' | 'studio' | 'external'
+export type PensaTaskDestination = 'pinta' | 'studio'
+export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
+export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
+export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
 
 export interface PensaCycleView {
   id: string
@@ -1405,7 +1402,6 @@ export interface PensaCycleView {
 export interface PensaProjectListView {
   id: string
   name: string
-  kind: PensaProjectKind
   status: PensaProjectStatus
   /** Ciclo CORRENTE (maior number) — o card da lista mostra "Versão N" + etapa. */
   cycleNumber: number
@@ -1425,14 +1421,7 @@ export interface PensaArtifactIndexEntry {
 export interface PensaProjectDetailView {
   id: string
   name: string
-  kind: PensaProjectKind
   status: PensaProjectStatus
-  /** Id do projeto semeado no IndexedDB do Estúdio (fase R) — `null` até semear. */
-  studioProjectId: string | null
-  /** Onde construir (escolha da criança na etapa R) — `null` = ainda não escolheu. */
-  buildEnv: PensaBuildEnv | null
-  /** Quando o snapshot do Estúdio foi salvo na nuvem — `null` = nunca (o BLOB não vem aqui). */
-  studioSnapshotAt: string | null
   createdAt: string
   updatedAt: string
   /** Ordenados por number ASC. */
@@ -1448,9 +1437,15 @@ export interface PensaChatMessage {
   at: string
 }
 
-/** Estado das 5 perguntas da etapa Z (dirigido pelo evaluator do BFF). */
+/** Estado das decisões essenciais da etapa Z. */
 export interface PensaZState {
-  answered: { who: boolean; problem: boolean; action: boolean; screens: boolean; success: boolean }
+  answered: {
+    idea: boolean
+    objective: boolean
+    controls: boolean
+    outcome: boolean
+    dimension: boolean
+  }
   ready: boolean
 }
 
@@ -1467,54 +1462,90 @@ export interface PensaArtifactView {
 export interface PensaStageView {
   stage: PensaStage
   conversation: { messages: PensaChatMessage[]; summary: string | null; messageCount: number }
-  /** Etapa z → PensaZState; demais etapas `{}` até existir estado próprio. */
   state: Record<string, unknown>
-  /** Latest por type DESTA etapa. */
   artifacts: PensaArtifactView[]
-  /**
-   * Estado VIVO do kanban/checklist do CICLO (vêm em TODA etapa): o reload da UI
-   * re-hidrata o quadro sem re-gerar o plano (que zeraria as colunas).
-   */
   tasks: PensaTaskView[]
-  checklist: PensaChecklistItemView[]
+  nextTaskId: string | null
 }
 
-export interface PensaMissionStep {
+export interface PensaGuideItem {
+  id: string
   text: string
   hint?: string
+  required: boolean
 }
 
-/** Missão executada pela CRIANÇA no Estúdio (fase R kids). */
-export interface PensaMission {
-  story?: string
-  steps: PensaMissionStep[]
-  studioHints?: { categories: string[]; blocks: string[] }
-  /** Critérios observáveis "Ficou pronto quando..." (1–3). */
-  doneWhen: string[]
-  /** Missão de ARTE (07/2026): abre o Pinta pré-configurado (só quem POSSUI o Pinta). */
-  artKind?: 'sprite' | 'background' | 'tileset'
-  /** Paleta do jogo (hex, ≤8) — vai junto da missão de arte p/ o Pinta colorir. */
-  palette?: string[]
+export interface PensaTaskGuide {
+  steps: PensaGuideItem[]
+  criteria: PensaGuideItem[]
 }
 
+export interface PensaPintaTaskContext {
+  kind: 'pinta'
+  assetId: string
+  artKind: PensaArtKind
+  style: 'pixel' | 'vector' | 'either'
+  preset?: string
+  palette: Array<{ role: string; color: string }>
+  appearance: string
+  animations: string[]
+  states: string[]
+  usage: string
+  requiresStudioUse: boolean
+}
+
+export interface PensaStudioBlockReference {
+  id: string
+  label: string
+  category: string
+  subcategory: string
+  area: 'structure' | 'appearance' | 'start' | 'events' | 'loops' | 'value'
+  extension: string | null
+}
+
+export interface PensaStudioTaskContext {
+  kind: 'studio'
+  dimension: '2d' | '3d'
+  visualAssetIds: string[]
+  blockIds: string[]
+  blocks: PensaStudioBlockReference[]
+  mechanicDocumentIds: string[]
+  extensionIds: string[]
+}
+
+export type PensaTaskContext = PensaPintaTaskContext | PensaStudioTaskContext
+export type PensaTaskOutputRef =
+  | { kind: 'pinta_asset'; assetId: string; assetName?: string; usedInStudioAt?: string }
+  | { kind: 'studio_project'; projectId: string; saveRevision?: string }
+
+/** Cartão de Criação compartilhado pelo plano e pela ferramenta de destino. */
 export interface PensaTaskView {
   id: string
   title: string
   summary: string | null
-  taskType: string | null
-  column: PensaTaskColumn
+  destination: PensaTaskDestination
+  category: PensaTaskCategory
+  estimatedMinutes: number
   position: number
-  mission: PensaMission
-  notes: string | null
+  dependencies: string[]
+  guide: PensaTaskGuide
+  context: PensaTaskContext
+  progress: {
+    status: PensaTaskStatus
+    completedStepIds: string[]
+    completedCriteriaIds: string[]
+    outputRef: PensaTaskOutputRef | null
+    startedAt: string | null
+    completedAt: string | null
+    updatedAt: string | null
+  }
+  revision: number
+  supersedesTaskId: string | null
 }
 
-export interface PensaChecklistItemView {
-  id: string
-  category: PensaChecklistCategory
-  title: string
-  description: string | null
-  required: boolean
-  position: number
-  done: boolean
-  doneAt: string | null
+export interface PensaTaskHandoffView {
+  task: PensaTaskView
+  project: { id: string; name: string }
+  cycle: { id: string; number: number; goal: string | null }
+  capability: { owned: boolean; blockedReason: string | null }
 }

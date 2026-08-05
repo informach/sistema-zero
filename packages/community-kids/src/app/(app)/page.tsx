@@ -1,7 +1,12 @@
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { ChallengeCard } from '@/components/kids/challenge-card'
-import { ContinueHero } from '@/components/kids/continue-hero'
+import { ChildGuide } from '@/components/kids/child-guide'
+import {
+  ContinueHero,
+  hasAnyCourseActivity,
+  pickContinueCourse,
+} from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
 import { CreatorCareerCard } from '@/components/kids/creator-career-card'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
@@ -60,13 +65,19 @@ export default async function HomePage() {
     .sort((a, b) => courseRank(a) - courseRank(b))
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   const missionsData = missions.status === 200 ? (missions.body ?? null) : null
-  const avatarPhotoUrl =
-    avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
+  // Avatar é tri-state para o guia: presente, ausente ou desconhecido. Um erro do
+  // members não pode virar "você ainda não criou", pois isso induziria uma ação
+  // baseada em informação falsa. Outras superfícies seguem degradando a foto para null.
+  const avatarState = avatarRes.status === 200 ? (avatarRes.body ?? null) : null
+  const avatarPhotoUrl = avatarState?.photoUrl ?? null
   const showcaseStats = showcaseRes?.status === 200 ? (showcaseRes.body ?? null) : null
   const challengeEligible =
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
     challengeAccess.body?.access?.['estudio-completo'] === true
+  const hasCourseActivity = hasAnyCourseActivity(courses)
+  const startAvailable = pickContinueCourse(courses) !== null
+  const childGuideEnabled = Boolean(user?.activeProfile && user.id)
   // Tema do mês só é buscado quando o card vai aparecer (best-effort).
   const challengeRes = challengeEligible ? await getChallengeReadonly().catch(() => null) : null
   const challengeData = challengeRes?.status === 200 ? (challengeRes.body ?? null) : null
@@ -90,7 +101,23 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <ContinueHero courses={courses} />
+      {/* Tutorial guiado da CRIANÇA (fase 2): boas-vindas 1×, convite ao avatar e o
+          aponte do "Começar" logo abaixo — tudo derivado do estado que a página já
+          buscou (zero fetch novo). A home roda sempre em sessão de perfil (o proxy
+          manda conta sem `pfl` p/ /perfis), então `user.id` é o PERFIL. */}
+      {childGuideEnabled && user?.id ? (
+        <ChildGuide
+          profileKey={user.id}
+          childName={greetName ?? null}
+          hasAvatar={avatarState === null ? null : avatarPhotoUrl !== null}
+          hasCourseActivity={hasCourseActivity}
+          startAvailable={startAvailable}
+        >
+          <ContinueHero courses={courses} />
+        </ChildGuide>
+      ) : (
+        <ContinueHero courses={courses} />
+      )}
 
       {/* Gamificação fora → os cards mostram placeholder gentil (não somem em silêncio). */}
       {courses.length > 0 ? (

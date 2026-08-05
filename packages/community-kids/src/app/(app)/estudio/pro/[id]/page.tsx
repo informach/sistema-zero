@@ -32,10 +32,11 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
     getGamificationReadonly({ withRanking: true }).catch(() => null),
   ])
   if (res.status !== 200 || gam?.status !== 200) return <KidsStudioUnavailable />
+  const levelSlug = gam.body?.level?.slug
   const access = resolveStudioProAccess({
     session,
     studioAccess: res.body?.access?.['estudio-completo'] === true,
-    levelSlug: gam.body?.level?.slug,
+    levelSlug,
   })
   if (!access.allowed && access.code === 'STUDIO_ACCESS_REQUIRED') return <KidsLockedStudio />
   // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
@@ -45,7 +46,9 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
     <StudioProClient
       viewerId={session?.id ?? null}
       projectId={id}
-      zappyEnabled={isStudioZappyAllowed(session, gam.body?.level?.slug)}
+      // Mesma política do /estudio: equipe sempre, aluno a partir do degrau
+      // mínimo da carreira (Inventor). Aqui o rank já foi buscado p/ o gate Pro.
+      zappyEnabled={isStudioZappyAllowed(session, levelSlug)}
     />
   )
 }

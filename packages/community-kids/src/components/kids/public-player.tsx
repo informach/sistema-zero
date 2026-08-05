@@ -131,7 +131,7 @@ export function PublicPlayer({ id }: { id: string }) {
               aria-label={gamepadVisible ? 'Ocultar controles' : 'Mostrar controles'}
               aria-pressed={gamepadVisible}
               onClick={() => setForceGamepad((v) => !v)}
-              className="ml-1 flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="ml-1 flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <Gamepad2 size={18} />
             </button>

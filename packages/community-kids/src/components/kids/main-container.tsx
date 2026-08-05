@@ -30,13 +30,19 @@ export function MainContainer({ children }: { children: ReactNode }) {
     // (h-14); o `pb-24` já reserva a tab bar (fixed). No desktop a sidebar
     // `h-screen` já trava a linha → volta ao `flex-1`.
     return (
-      <main className="flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-auto md:flex-1 md:px-4 md:py-4 md:pb-4">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-auto md:flex-1 md:px-4 md:py-4 md:pb-4"
+      >
         {children}
       </main>
     )
   }
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       className={
         isLessonPath(pathname)
           ? 'w-full flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8'

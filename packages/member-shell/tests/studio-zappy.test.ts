@@ -13,7 +13,9 @@ const {
   normalizeZappySearchQuery,
   validatedStudioZappyResponse,
 } = await import('../src/server/zappy-ai')
-const { isStudioZappyAllowed } = await import('../src/server/zappy-access')
+const { isStudioZappyAllowed, isStudioZappyRolloutOpen } = await import(
+  '../src/server/zappy-access'
+)
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
 const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
   '../src/server/zappy-safety'
@@ -32,32 +34,51 @@ const STAFF = {
   status: 'active',
 }
 
-describe('Portão do Zappy (carreira, 08/2026)', () => {
+describe('Acesso ao Zappy', () => {
+  // Rollout por MÉRITO (08/2026): o tutor abre no degrau `hacker` = "Inventor(a)".
+  const OPEN = { enabled: true, accountIds: [], minLevel: 'hacker' } as const
   const KID = { ...STAFF, role: 'student', activeProfile: { accountId: 'account-1' } }
 
-  test('equipe entra para QA mesmo com o interruptor desligado', () => {
-    // O interruptor existe p/ cortar custo de IA numa emergência; quando ele cai,
-    // a equipe ainda precisa conseguir reproduzir o problema.
-    expect(isStudioZappyAllowed(STAFF, undefined, { enabled: false })).toBe(true)
-    expect(isStudioZappyAllowed(STAFF, 'noob', { enabled: false })).toBe(true)
+  test('equipe entra para QA mesmo com flag desligada e sem rank', () => {
+    expect(isStudioZappyAllowed(STAFF, undefined, { ...OPEN, enabled: false })).toBe(true)
   })
 
-  test('aluno precisa do interruptor ligado E de Inventor(a) ou acima', () => {
-    // Inventor(a) = `hacker`, 3º degrau. Abaixo dele o tutor não aparece.
-    expect(isStudioZappyAllowed(KID, 'hacker', { enabled: false })).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'coder', { enabled: true })).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'noob', { enabled: true })).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'hacker', { enabled: true })).toBe(true)
-    expect(isStudioZappyAllowed(KID, 'god', { enabled: true })).toBe(true)
+  test('flag desligada barra o aluno mesmo no topo da carreira', () => {
+    expect(isStudioZappyAllowed(KID, 'god', { ...OPEN, enabled: false })).toBe(false)
   })
 
-  test('sem sessão, e nível indeterminado NÃO destrava', () => {
-    // `undefined` aqui é gamificação fora do ar. Liberar seria dar a ferramenta a
-    // quem não conquistou; quem não pode rebaixar o aluno numa falha transitória
-    // trata a indisponibilidade ANTES de chamar (é o que as páginas fazem).
-    expect(isStudioZappyAllowed(null, 'god', { enabled: true })).toBe(false)
-    expect(isStudioZappyAllowed(KID, undefined, { enabled: true })).toBe(false)
-    expect(isStudioZappyAllowed(KID, '', { enabled: true })).toBe(false)
+  test('abaixo de Inventor não entra; de Inventor para cima, entra', () => {
+    expect(isStudioZappyAllowed(KID, 'noob', OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'coder', OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'hacker', OPEN)).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'explorer', OPEN)).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'god', OPEN)).toBe(true)
+  })
+
+  test('sem rank (members fora) ou slug desconhecido REPROVA — fail-closed', () => {
+    expect(isStudioZappyAllowed(KID, undefined, OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, null, OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'nivel-que-nao-existe', OPEN)).toBe(false)
+  })
+
+  test('a allowlist segue valendo como escotilha abaixo do degrau', () => {
+    expect(isStudioZappyAllowed(KID, 'noob', { ...OPEN, accountIds: ['account-1'] })).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'noob', { ...OPEN, accountIds: ['account-2'] })).toBe(false)
+    // Escotilha decide SEM o rank — é o que evita a ida ao members no BFF.
+    expect(isStudioZappyAllowed(KID, undefined, { ...OPEN, accountIds: ['account-1'] })).toBe(true)
+  })
+
+  test('o degrau mínimo é configurável pela política', () => {
+    expect(isStudioZappyAllowed(KID, 'coder', { ...OPEN, minLevel: 'coder' })).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'explorer', { ...OPEN, minLevel: 'elite' })).toBe(false)
+  })
+
+  test('a checagem barata separa "talvez" de "não" sem consultar o rank', () => {
+    // Serve p/ recusar cedo no BFF: só quem passa aqui custa uma ida ao members.
+    expect(isStudioZappyRolloutOpen(STAFF, { ...OPEN, enabled: false })).toBe(true)
+    expect(isStudioZappyRolloutOpen(KID, { ...OPEN, enabled: false })).toBe(false)
+    expect(isStudioZappyRolloutOpen(KID, OPEN)).toBe(true)
+    expect(isStudioZappyRolloutOpen(null, OPEN)).toBe(false)
   })
 })
 

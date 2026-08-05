@@ -13,7 +13,7 @@ export class PensaNotFoundError extends DomainError {
   }
 }
 
-/** Estourou uma cota (projetos ativos/ciclos/tasks/checklist). → 409. */
+/** Estourou uma cota (projetos ativos, ciclos ou tarefas). → 409. */
 export class PensaQuotaExceededError extends DomainError {
   readonly code = 'PENSA_QUOTA_EXCEEDED'
   constructor(message = 'Limite atingido') {
@@ -48,6 +48,34 @@ export class PensaGateNotReadyError extends DomainError {
 export class PensaStageMismatchError extends DomainError {
   readonly code = 'PENSA_STAGE_MISMATCH'
   constructor(message = 'A etapa informada não é a etapa atual do ciclo') {
+    super(message)
+  }
+}
+
+export class PensaTaskLockedError extends DomainError {
+  readonly code = 'PENSA_TASK_LOCKED'
+  constructor(message = 'Uma tarefa iniciada não pode ser apagada nem substituída') {
+    super(message)
+  }
+}
+
+export class PensaTaskTransitionError extends DomainError {
+  readonly code = 'PENSA_TASK_TRANSITION_INVALID'
+  constructor(message = 'Esta mudança de progresso não é permitida') {
+    super(message)
+  }
+}
+
+export class PensaTaskDependencyError extends DomainError {
+  readonly code = 'PENSA_TASK_DEPENDENCY_PENDING'
+  constructor(message = 'Conclua as tarefas anteriores antes de começar esta') {
+    super(message)
+  }
+}
+
+export class PensaTaskProgressConflictError extends DomainError {
+  readonly code = 'PENSA_TASK_PROGRESS_CONFLICT'
+  constructor(message = 'A tarefa mudou em outro aparelho. Recarregue o guia e tente novamente.') {
     super(message)
   }
 }

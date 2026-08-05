@@ -130,6 +130,7 @@ export type {
   StudioLessonProps,
   StudioLocale,
   StudioProps,
+  StudioTaskSession,
 } from './studio/types'
 
 import { setPersonalAssetsNamespace } from './asset-library/personal'

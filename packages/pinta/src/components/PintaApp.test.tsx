@@ -59,7 +59,7 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText('meu-heroi')).toBeTruthy()
     })
     expect(screen.getByRole('toolbar', { name: 'Ferramentas' })).toBeTruthy()
-    expect(screen.getByText(COPY.editor.saved)).toBeTruthy()
+    expect(screen.getByText(COPY.editor.saved).getAttribute('role')).toBe('status')
 
     // Voltar → galeria com o card.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))

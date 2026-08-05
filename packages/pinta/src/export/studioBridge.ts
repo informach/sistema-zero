@@ -6,7 +6,7 @@
  * cenários a imagem. `null` = não deu para rasterizar (o chamador mostra toast).
  */
 import type { ActiveFrameRef } from '../core/assetEdit'
-import { activeBitmapOf } from '../core/assetEdit'
+import { flattenActiveOf } from '../core/assetEdit'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
@@ -243,7 +243,8 @@ export async function buildStudioPayload(
       }
     }
     default: {
-      const bitmap = activeBitmapOf(asset, frameRef)
+      // Cenário: o Estúdio recebe o desenho VISÍVEL (camadas achatadas).
+      const bitmap = flattenActiveOf(asset, frameRef)
       if (!bitmap) return null
       const dataUrl = bitmapToPngDataUrl(bitmap, resolveAssetPalette(asset))
       if (!dataUrl) return null

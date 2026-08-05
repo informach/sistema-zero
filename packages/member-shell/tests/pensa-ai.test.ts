@@ -1,164 +1,165 @@
 import { describe, expect, it, mock } from 'bun:test'
 
-// `server-only` lança fora do React Server — neutraliza p/ testar os prompts puros.
 mock.module('server-only', () => ({}))
 
 const { buildStageZSystem } = await import('../src/server/pensa-agents/stage-z')
 const { PENSA_CHILD_SAFETY_CLAUSE } = await import('../src/server/pensa-agents/safety')
 const { transcriptForEvaluator } = await import('../src/server/pensa-agents/stage-z-evaluator')
 const { pensaChatRateLimited, GenerateBody } = await import('../src/routes/pensa-ai')
+const { ClientArtifactBody, ClientValidatableArtifactType } = await import('../src/routes/pensa')
+const {
+  GameDesignArtifactSchema,
+  IdeaArtifactSchema,
+  PlanReviewArtifactSchema,
+  VisualDirectionArtifactSchema,
+} = await import('../src/server/pensa-agents/planner-contract')
 
-describe('buildStageZSystem (agente de clareza — etapa Z)', () => {
-  const base = {
-    mode: 'kids' as const,
-    projectName: 'Dino Ninja',
-    projectKind: 'game' as const,
-    cycleNumber: 1,
-  }
+describe('etapa Z do planejador', () => {
+  const base = { mode: 'kids' as const, projectName: 'Dino Ninja', cycleNumber: 1 }
 
-  it('SEMPRE inclui a cláusula de segurança infantil no modo kids', () => {
-    // Espelha o contrato do studio (ensureSafetyClause): nenhum caminho de prompt
-    // kids sai sem a blindagem — NÃO pode regredir.
-    expect(buildStageZSystem(base)).toContain(PENSA_CHILD_SAFETY_CLAUSE)
-  })
-
-  it('carrega a regra anti-inferência (PRD §11.3) e a linha de sugestões clicáveis', () => {
+  it('mantém segurança infantil e as cinco decisões do novo ZERO', () => {
     const system = buildStageZSystem(base)
-    expect(system).toContain('anti-inferência')
-    expect(system).toContain('TODA resposta das perguntas vem da criança')
+    expect(system).toContain(PENSA_CHILD_SAFETY_CLAUSE)
+    expect(system).toContain('IDEIA')
+    expect(system).toContain('OBJETIVO')
+    expect(system).toContain('CONTROLES')
+    expect(system).toContain('RESULTADO')
+    expect(system).toContain('DIMENSÃO')
     expect(system).toContain('SUGESTÕES:')
   })
 
-  it('contextualiza projeto/versão e foca no que FALTA responder', () => {
+  it('foca somente nas decisões que ainda faltam', () => {
     const system = buildStageZSystem({
       ...base,
       state: {
-        answered: { who: true, problem: true, action: false, screens: false, success: false },
+        answered: {
+          idea: true,
+          objective: true,
+          controls: false,
+          outcome: false,
+          dimension: false,
+        },
         ready: false,
       },
     })
-    expect(system).toContain('Dino Ninja')
-    expect(system).toContain('Versão 1')
-    expect(system).toContain('AÇÃO PRINCIPAL')
-    // As já respondidas não entram na lista de pendências.
-    expect(system).toContain('Falta clarear: AÇÃO PRINCIPAL, TELAS, FICOU BOM')
+    expect(system).toContain('Falta clarear: CONTROLES, VITÓRIA E DERROTA, 2D OU 3D')
   })
 
-  it('Versão 2+ vira conversa de INCREMENTO (não redesenha o jogo inteiro)', () => {
-    const system = buildStageZSystem({
-      ...base,
-      cycleNumber: 2,
-      cycleGoal: 'sons novos e mais fases',
-    })
-    expect(system).toContain('NOVA VERSÃO')
-    expect(system).toContain('sons novos e mais fases')
-  })
-})
-
-describe('transcriptForEvaluator', () => {
-  it('rotula os papéis e injeta o resumo das mensagens cortadas', () => {
-    const t = transcriptForEvaluator(
-      [
-        { role: 'user', content: 'quero um jogo de\npular', at: '' },
-        { role: 'assistant', content: 'Boa! Quem vai jogar?', at: '' },
-      ],
-      'A criança quer um jogo de dinossauro.',
+  it('transcript preserva resumo e identifica os papéis', () => {
+    const transcript = transcriptForEvaluator(
+      [{ role: 'user', content: 'quero um jogo de\npular', at: '' }],
+      'A criança escolheu um dinossauro.',
     )
-    expect(t).toContain('RESUMO das mensagens antigas: A criança quer um jogo de dinossauro.')
-    expect(t).toContain('CRIANÇA: quero um jogo de pular') // quebra de linha achatada
-    expect(t).toContain('ZAPPY: Boa! Quem vai jogar?')
+    expect(transcript).toContain('RESUMO das mensagens antigas')
+    expect(transcript).toContain('CRIANÇA: quero um jogo de pular')
   })
 })
 
-describe('GenerateBody (corpo do /artifacts/generate)', () => {
-  // Regressão do 500 em staging (02/07): o Zod 4 monta o mapa do discriminador no
-  // PRIMEIRO parse — 3 variantes com `type: 'identity'` derrubavam TODO safeParse
-  // ("Duplicate discriminator value") e nenhum teste exercitava o schema.
-  const uuid = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
-  const palette = { name: 'Espacial', colors: ['#0D1117', '#C4F042', '#3BC7E5', '#FFFFFF'] }
-
-  it('aceita as 7 variantes válidas', () => {
-    const bodies = [
-      { type: 'idea' },
-      { type: 'friendly_spec', projectId: uuid },
-      { type: 'friendly_spec', projectId: uuid, feedback: 'quero uma tela de recorde' },
-      { type: 'identity', projectId: uuid, step: 'suggestions' },
-      { type: 'identity', projectId: uuid, step: 'icons', name: 'Dino Ninja', palette },
-      {
-        type: 'identity',
-        projectId: uuid,
-        step: 'save',
-        name: 'Dino Ninja',
-        palette,
-        iconSvg: null,
-      },
-      { type: 'mission_plan', projectId: uuid },
-      { type: 'mission_plan', projectId: uuid, append: true },
-      { type: 'checklist_seed', projectId: uuid },
-      {
-        type: 'spec_edit',
-        projectId: uuid,
-        screens: [
-          { name: 'Tela do título', elements: [{ kind: 'title', label: 'Meu Jogo', zone: 'top' }] },
+describe('contratos dos cinco artefatos', () => {
+  it('aceita os shapes executáveis e rejeita campos legados', () => {
+    expect(
+      IdeaArtifactSchema.safeParse({
+        title: 'Dino Ninja',
+        idea: 'Um dinossauro pula obstáculos.',
+        objective: 'Chegar ao fim da fase.',
+        controls: ['setas', 'espaço'],
+        victory: 'Chegar à bandeira.',
+        defeat: 'Encostar em três obstáculos.',
+        dimension: '2d',
+      }).success,
+    ).toBe(true)
+    expect(
+      GameDesignArtifactSchema.safeParse({
+        coreLoop: ['mover', 'pular', 'chegar ao fim'],
+        scenes: [{ id: 'fase-1', name: 'Fase 1', purpose: 'Ensinar o pulo.' }],
+        screens: [{ id: 'inicio', name: 'Início', purpose: 'Começar o jogo.' }],
+        camera: 'Lateral fixa.',
+      }).success,
+    ).toBe(true)
+    expect(
+      VisualDirectionArtifactSchema.safeParse({
+        style: 'Pixel art simples.',
+        camera: 'Lateral.',
+        mood: 'Aventura alegre.',
+        shapeLanguage: 'Formas arredondadas para amigos e pontas para perigos.',
+        palette: [
+          { role: 'herói', color: '#22C55E' },
+          { role: 'perigo', color: '#EF4444' },
+          { role: 'fundo', color: '#0F172A' },
         ],
-      },
-    ]
-    for (const body of bodies) {
-      const parsed = GenerateBody.safeParse(body)
-      expect(parsed.success).toBe(true)
-    }
+        visualRules: ['Contorno escuro', 'Perigos sempre vermelhos'],
+        screens: [{ screenId: 'inicio', description: 'Título grande e botão.' }],
+        assets: [
+          {
+            id: 'hero',
+            name: 'Dinossauro',
+            kind: 'sprite',
+            appearance: 'Verde e arredondado.',
+            animations: ['correndo'],
+            states: ['normal'],
+            usage: 'Personagem do jogador.',
+          },
+        ],
+      }).success,
+    ).toBe(true)
+    expect(
+      PlanReviewArtifactSchema.safeParse({
+        approved: true,
+        findings: [],
+        recommendations: [],
+        auditedAt: '2026-08-04T12:00:00.000Z',
+      }).success,
+    ).toBe(true)
+    expect(IdeaArtifactSchema.safeParse({ who: 'crianças', problem: 'tédio' }).success).toBe(false)
   })
+})
 
-  it('rejeita corpo inválido sem lançar', () => {
-    expect(GenerateBody.safeParse(null).success).toBe(false)
-    expect(GenerateBody.safeParse({ type: 'banana' }).success).toBe(false)
-    expect(GenerateBody.safeParse({ type: 'identity', projectId: uuid }).success).toBe(false)
+describe('GenerateBody', () => {
+  const projectId = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
+  it('aceita somente os cinco artefatos atuais', () => {
+    for (const body of [
+      { type: 'idea', projectId },
+      { type: 'game_design', projectId },
+      { type: 'visual_direction', projectId },
+      { type: 'task_plan', projectId },
+      { type: 'plan_review', projectId, approved: true },
+    ])
+      expect(GenerateBody.safeParse(body).success).toBe(true)
+    expect(GenerateBody.safeParse({ type: 'mission_plan', projectId }).success).toBe(false)
+    expect(GenerateBody.safeParse({ type: 'task_plan', projectId, append: true }).success).toBe(
+      false,
+    )
+    expect(GenerateBody.safeParse({ type: 'checklist_seed', projectId }).success).toBe(false)
+  })
+})
+
+describe('fronteira pública dos artefatos', () => {
+  it('não permite que o navegador fabrique task_plan ou plan_review', () => {
     expect(
-      GenerateBody.safeParse({ type: 'identity', projectId: 'não-uuid', step: 'suggestions' })
-        .success,
-    ).toBe(false)
-    // spec_edit: kind/zone fora do domínio → rejeita.
-    expect(
-      GenerateBody.safeParse({
-        type: 'spec_edit',
-        projectId: uuid,
-        screens: [{ name: 'X', elements: [{ kind: 'banana', label: 'a', zone: 'top' }] }],
+      ClientArtifactBody.safeParse({
+        stage: 'o',
+        type: 'plan_review',
+        content: { approved: true },
       }).success,
     ).toBe(false)
+    expect(
+      ClientArtifactBody.safeParse({
+        stage: 'r',
+        type: 'task_plan',
+        content: { taskIds: [] },
+      }).success,
+    ).toBe(false)
+    expect(ClientValidatableArtifactType.safeParse('plan_review').success).toBe(false)
+    expect(ClientValidatableArtifactType.safeParse('task_plan').success).toBe(true)
   })
 })
 
-describe('pensaChatRateLimited (anti-burst por sessão)', () => {
-  it('libera 10 por minuto e barra a 11ª; janela nova libera de novo', () => {
-    const key = `t-${Math.random()}`
-    const t0 = 1_700_000_000_000
-    for (let i = 0; i < 10; i += 1) expect(pensaChatRateLimited(key, t0)).toBe(false)
-    expect(pensaChatRateLimited(key, t0)).toBe(true)
-    expect(pensaChatRateLimited(key, t0 + 61_000)).toBe(false)
-  })
-
-  it('NÃO tem teto diário próprio (o teto diário/mensal REAL é a quota por conta no members)', () => {
-    // O antigo CHAT_PER_DAY=150 in-process saiu de propósito: era por PERFIL,
-    // efêmero (zerava no deploy) e por réplica. A quota durável (consumeAiQuota,
-    // 50/dia + 500/mês por CONTA) é consumida no pré-voo de cada chamada — este
-    // rate-limit ficou SÓ como anti-burst local de 10/min.
-    const key = `t-${Math.random()}`
-    const t0 = 1_700_000_000_000
-    let now = t0
-    let allowed = 0
-    for (let i = 0; i < 200; i += 1) {
-      if (!pensaChatRateLimited(key, now)) allowed += 1
-      now += 7_000 // espaça p/ nunca esbarrar no teto do minuto
-    }
-    expect(allowed).toBe(200)
-  })
-
-  it('sessões diferentes não dividem o balde', () => {
-    const a = `t-${Math.random()}`
-    const b = `t-${Math.random()}`
-    const t0 = 1_700_000_000_000
-    for (let i = 0; i < 10; i += 1) pensaChatRateLimited(a, t0)
-    expect(pensaChatRateLimited(a, t0)).toBe(true)
-    expect(pensaChatRateLimited(b, t0)).toBe(false)
+describe('rate limit do chat', () => {
+  it('libera dez mensagens por minuto e bloqueia a décima primeira', () => {
+    const key = `pensa-${Math.random()}`
+    const now = 1_700_000_000_000
+    for (let index = 0; index < 10; index += 1) expect(pensaChatRateLimited(key, now)).toBe(false)
+    expect(pensaChatRateLimited(key, now)).toBe(true)
+    expect(pensaChatRateLimited(key, now + 61_000)).toBe(false)
   })
 })

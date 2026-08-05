@@ -108,7 +108,7 @@ export function ClubeActivityBell({
         type="button"
         onClick={toggle}
         aria-label={fresh.length > 0 ? `${fresh.length} novas respostas` : 'Suas conversas'}
-        className="relative inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card transition-colors hover:border-primary"
+        className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card transition-colors hover:border-primary"
       >
         <Bell className="size-4" />
         {fresh.length > 0 ? (

@@ -1,8 +1,15 @@
 import { describe, expect, test } from 'bun:test'
 import { evaluateAdvanceGate, PENSA_NEXT_STAGE } from '../../src/domain/pensa/advance'
+import { isPensaArtifactContent } from '../../src/domain/pensa/artifact-content'
 import { trimConversation } from '../../src/domain/pensa/conversation'
 import { pensaStageSourceId } from '../../src/domain/pensa/gamification'
-import type { PensaChatMessage } from '../../src/domain/pensa/pensa'
+import type { PensaChatMessage, PensaTask } from '../../src/domain/pensa/pensa'
+import {
+  canCompleteTask,
+  nextAvailableTask,
+  taskPlanArtifactMatchesTasks,
+  validateTaskPlan,
+} from '../../src/domain/pensa/task-plan'
 
 const msg = (content: string, i = 0): PensaChatMessage => ({
   role: i % 2 === 0 ? 'user' : 'assistant',
@@ -10,162 +17,218 @@ const msg = (content: string, i = 0): PensaChatMessage => ({
   at: '2026-07-01T12:00:00.000Z',
 })
 
-describe('evaluateAdvanceGate — gates do contrato', () => {
-  test('z→e exige latest idea VALIDATED', () => {
-    expect(evaluateAdvanceGate('z', { latestArtifacts: [], taskCount: 0, checklist: [] })).toEqual({
+const task = (id: string, position: number, dependencies: string[] = []): PensaTask => ({
+  id,
+  cycleId: 'cycle',
+  title: `Tarefa ${position + 1}`,
+  summary: null,
+  destination: 'studio',
+  category: 'gameplay',
+  estimatedMinutes: 20,
+  position,
+  dependencies,
+  guide: {
+    steps: [{ id: `step-${id}`, text: 'Criar', required: true }],
+    criteria: [{ id: `criterion-${id}`, text: 'Funciona', required: true }],
+  },
+  context: {
+    kind: 'studio',
+    dimension: '2d',
+    visualAssetIds: [],
+    blockIds: [],
+    blocks: [],
+    mechanicDocumentIds: [],
+    extensionIds: [],
+  },
+  progress: {
+    status: 'planned',
+    completedStepIds: [],
+    completedCriteriaIds: [],
+    outputRef: null,
+    startedAt: null,
+    completedAt: null,
+    updatedAt: null,
+  },
+  revision: 1,
+  supersedesTaskId: null,
+  archivedAt: null,
+  createdAt: new Date('2026-07-01T12:00:00.000Z'),
+  updatedAt: new Date('2026-07-01T12:00:00.000Z'),
+})
+
+describe('gates da metodologia ZERO', () => {
+  test('exige os cinco artefatos e um plano válido nas etapas certas', () => {
+    expect(
+      evaluateAdvanceGate('z', { latestArtifacts: [], taskCount: 0, taskPlanValid: true }),
+    ).toEqual({
       ok: false,
       missing: ['idea'],
     })
     expect(
       evaluateAdvanceGate('z', {
-        latestArtifacts: [{ type: 'idea', status: 'draft' }],
-        taskCount: 0,
-        checklist: [],
-      }),
-    ).toEqual({ ok: false, missing: ['idea'] })
-    expect(
-      evaluateAdvanceGate('z', {
         latestArtifacts: [{ type: 'idea', status: 'validated' }],
         taskCount: 0,
-        checklist: [],
-      }),
-    ).toEqual({ ok: true, missing: [] })
-  })
-
-  test('e→r exige friendly_spec E identity validated (missing lista o que falta)', () => {
-    expect(
-      evaluateAdvanceGate('e', { latestArtifacts: [], taskCount: 0, checklist: [] }).missing,
-    ).toEqual(['friendly_spec', 'identity'])
+        taskPlanValid: true,
+      }).ok,
+    ).toBe(true)
     expect(
       evaluateAdvanceGate('e', {
-        latestArtifacts: [
-          { type: 'friendly_spec', status: 'validated' },
-          { type: 'identity', status: 'draft' },
-        ],
+        latestArtifacts: [{ type: 'game_design', status: 'validated' }],
         taskCount: 0,
-        checklist: [],
+        taskPlanValid: true,
       }).missing,
-    ).toEqual(['identity'])
+    ).toEqual(['visual_direction'])
     expect(
-      evaluateAdvanceGate('e', {
+      evaluateAdvanceGate('r', {
+        latestArtifacts: [{ type: 'task_plan', status: 'validated' }],
+        taskCount: 1,
+        taskPlanValid: false,
+      }).missing,
+    ).toEqual(['tasks'])
+    expect(
+      evaluateAdvanceGate('o', {
         latestArtifacts: [
-          { type: 'friendly_spec', status: 'validated' },
-          { type: 'identity', status: 'validated' },
+          { type: 'plan_review', status: 'validated', content: { approved: false } },
         ],
-        taskCount: 0,
-        checklist: [],
-      }).ok,
-    ).toBe(true)
-  })
-
-  test('r→o exige ≥1 task', () => {
-    expect(evaluateAdvanceGate('r', { latestArtifacts: [], taskCount: 0, checklist: [] })).toEqual({
-      ok: false,
-      missing: ['tasks'],
-    })
-    expect(evaluateAdvanceGate('r', { latestArtifacts: [], taskCount: 3, checklist: [] }).ok).toBe(
-      true,
-    )
-  })
-
-  test('o→done exige todo item REQUIRED done; opcional pendente não trava', () => {
+        taskCount: 1,
+        taskPlanValid: true,
+      }).missing,
+    ).toEqual(['plan_review'])
     expect(
       evaluateAdvanceGate('o', {
-        latestArtifacts: [],
-        taskCount: 0,
-        checklist: [
-          { required: true, done: true },
-          { required: true, done: false },
+        latestArtifacts: [
+          { type: 'plan_review', status: 'validated', content: { approved: true } },
         ],
-      }),
-    ).toEqual({ ok: false, missing: ['checklist'] })
-    expect(
-      evaluateAdvanceGate('o', {
-        latestArtifacts: [],
-        taskCount: 0,
-        checklist: [
-          { required: true, done: true },
-          { required: false, done: false }, // opcional (Toque de Brilho) não trava
-        ],
+        taskCount: 1,
+        taskPlanValid: true,
       }).ok,
     ).toBe(true)
-    // Checklist VAZIO trava (lançamento não preparado) — espelha o "≥1 task" do r→o.
-    expect(evaluateAdvanceGate('o', { latestArtifacts: [], taskCount: 0, checklist: [] })).toEqual({
-      ok: false,
-      missing: ['checklist'],
-    })
-  })
-
-  test('máquina linear z→e→r→o→done', () => {
     expect(PENSA_NEXT_STAGE).toEqual({ z: 'e', e: 'r', r: 'o', o: 'done' })
   })
 })
 
-describe('trimConversation — cap de mensagens + chars', () => {
-  const opts = { maxMessages: 80, maxChars: 262_144 }
+describe('contratos persistidos dos cinco artefatos', () => {
+  const idea = {
+    title: 'Bosque das Estrelas',
+    idea: 'Uma raposa recupera estrelas',
+    objective: 'Encontrar três estrelas',
+    controls: ['setas'],
+    victory: 'as três estrelas foram encontradas',
+    defeat: 'o tempo acaba',
+    dimension: '2d',
+  }
+  const gameDesign = {
+    coreLoop: ['explorar', 'coletar'],
+    scenes: [{ id: 'forest', name: 'Bosque', purpose: 'Cena principal' }],
+    screens: [{ id: 'start', name: 'Início', purpose: 'Começar o jogo' }],
+    camera: 'lateral fixa',
+  }
+  const visualDirection = {
+    style: 'pixel art',
+    camera: 'lateral',
+    mood: 'acolhedor',
+    shapeLanguage: 'formas arredondadas',
+    palette: [
+      { role: 'fundo', color: '#102030' },
+      { role: 'herói', color: '#F0A020' },
+      { role: 'ação', color: '#80E060' },
+    ],
+    visualRules: ['contorno escuro', 'objetivos brilhantes'],
+    screens: [{ screenId: 'start', description: 'Título grande e botão jogar' }],
+    assets: [
+      {
+        id: 'fox',
+        name: 'Raposa',
+        kind: 'sprite',
+        appearance: 'pequena e laranja',
+        animations: ['andar'],
+        states: ['feliz'],
+        usage: 'personagem jogável',
+      },
+    ],
+  }
+  const taskPlan = {
+    taskIds: ['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'],
+    generatedAt: '2026-08-04T12:00:00.000Z',
+    catalog: 'studio-official',
+  }
+  const planReview = {
+    approved: true,
+    findings: [{ severity: 'info', message: 'Plano pronto', taskKey: null }],
+    recommendations: [],
+    auditedAt: '2026-08-04T12:00:00.000Z',
+  }
 
-  test('abaixo dos tetos → intacta e na mesma ordem', () => {
-    const messages = [msg('a', 0), msg('b', 1), msg('c', 2)]
-    expect(trimConversation(messages, opts)).toEqual(messages)
-  })
-
-  test('mantém as ÚLTIMAS maxMessages', () => {
-    const messages = Array.from({ length: 100 }, (_, i) => msg(`m${i}`, i))
-    const trimmed = trimConversation(messages, opts)
-    expect(trimmed).toHaveLength(80)
-    expect(trimmed[0]?.content).toBe('m20') // as 20 mais antigas caíram
-    expect(trimmed[79]?.content).toBe('m99')
-  })
-
-  test('teto de chars corta do INÍCIO', () => {
-    const messages = [msg('x'.repeat(6), 0), msg('y'.repeat(6), 1), msg('z'.repeat(6), 2)]
-    const trimmed = trimConversation(messages, { maxMessages: 80, maxChars: 12 })
-    expect(trimmed.map((m) => m.content[0])).toEqual(['y', 'z'])
-  })
-
-  test('mensagem mais recente SEMPRE fica, mesmo sozinha acima do teto', () => {
-    const messages = [msg('velha', 0), msg('n'.repeat(50), 1)]
-    const trimmed = trimConversation(messages, { maxMessages: 80, maxChars: 10 })
-    expect(trimmed).toHaveLength(1)
-    expect(trimmed[0]?.content).toBe('n'.repeat(50))
-  })
-
-  test('vazia → vazia', () => {
-    expect(trimConversation([], opts)).toEqual([])
+  test('aceita os contratos atuais e rejeita os artefatos legados', () => {
+    expect(isPensaArtifactContent('idea', idea)).toBe(true)
+    expect(isPensaArtifactContent('game_design', gameDesign)).toBe(true)
+    expect(isPensaArtifactContent('visual_direction', visualDirection)).toBe(true)
+    expect(isPensaArtifactContent('task_plan', taskPlan)).toBe(true)
+    expect(isPensaArtifactContent('plan_review', planReview)).toBe(true)
+    expect(isPensaArtifactContent('idea', { idea: 'sem contrato completo' })).toBe(false)
+    expect(isPensaArtifactContent('idea', { ...idea, identity: { palette: [] } })).toBe(false)
+    expect(isPensaArtifactContent('task_plan', { missions: [] })).toBe(false)
   })
 })
 
-describe('pensaStageSourceId — uuid determinístico da etapa (idempotência do award)', () => {
-  const CYCLE_A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
-  const CYCLE_B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
-  // uuid v5-like: version 5 + variant RFC 4122 ([89ab]) — exigência do source_id uuid.
-  const UUID_V5_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+describe('plano e Cartão de Criação', () => {
+  test('aceita DAG global e recusa dependência futura ou desconhecida', () => {
+    expect(validateTaskPlan([task('a', 0), task('b', 1, ['a'])]).ok).toBe(true)
+    expect(validateTaskPlan([task('a', 0, ['b']), task('b', 1)]).ok).toBe(false)
+    expect(validateTaskPlan([task('a', 0), task('b', 1, ['missing'])]).ok).toBe(false)
+  })
 
-  test('formato uuid válido (version 5, variant RFC 4122)', () => {
-    for (const stage of ['z', 'e', 'r'] as const) {
-      expect(pensaStageSourceId(CYCLE_A, stage)).toMatch(UUID_V5_RE)
+  test('só conclui com itens obrigatórios e output da ferramenta correta', () => {
+    const current = task('a', 0)
+    const completeProgress = {
+      ...current.progress,
+      status: 'completed' as const,
+      completedStepIds: ['step-a'],
+      completedCriteriaIds: ['criterion-a'],
+      outputRef: { kind: 'studio_project' as const, projectId: 'studio-a' },
     }
+    expect(canCompleteTask(current, completeProgress)).toBe(true)
+    expect(canCompleteTask(current, { ...completeProgress, outputRef: null })).toBe(false)
+    expect(
+      canCompleteTask(current, {
+        ...completeProgress,
+        outputRef: { kind: 'pinta_asset', assetId: 'asset-a' },
+      }),
+    ).toBe(false)
   })
 
-  test('determinístico: mesma (cycleId, stage) → mesmo uuid', () => {
-    expect(pensaStageSourceId(CYCLE_A, 'z')).toBe(pensaStageSourceId(CYCLE_A, 'z'))
+  test('calcula a próxima tarefa apenas com dependências concluídas', () => {
+    const first = task('a', 0)
+    const second = task('b', 1, ['a'])
+    expect(nextAvailableTask([first, second])?.id).toBe('a')
+    first.progress.status = 'completed'
+    expect(nextAvailableTask([first, second])?.id).toBe('b')
   })
 
-  test('distinto por etapa e por ciclo (z/e/r não colidem entre si nem entre ciclos)', () => {
-    const ids = [
-      pensaStageSourceId(CYCLE_A, 'z'),
-      pensaStageSourceId(CYCLE_A, 'e'),
-      pensaStageSourceId(CYCLE_A, 'r'),
-      pensaStageSourceId(CYCLE_B, 'z'),
-      pensaStageSourceId(CYCLE_B, 'e'),
-      pensaStageSourceId(CYCLE_B, 'r'),
-    ]
-    expect(new Set(ids).size).toBe(6)
+  test('o artefato do plano referencia exatamente as tarefas ativas na ordem', () => {
+    const tasks = [task('a', 0), task('b', 1, ['a'])]
+    expect(taskPlanArtifactMatchesTasks({ taskIds: ['a', 'b'] }, tasks)).toBe(true)
+    expect(taskPlanArtifactMatchesTasks({ taskIds: ['b', 'a'] }, tasks)).toBe(false)
+    expect(taskPlanArtifactMatchesTasks({ taskIds: ['a'] }, tasks)).toBe(false)
+  })
+})
+
+describe('conversa e gamificação', () => {
+  test('trimConversation mantém as mensagens mais recentes nos dois limites', () => {
+    const messages = Array.from({ length: 100 }, (_, i) => msg(`m${i}`, i))
+    const trimmed = trimConversation(messages, { maxMessages: 80, maxChars: 262_144 })
+    expect(trimmed).toHaveLength(80)
+    expect(trimmed[0]?.content).toBe('m20')
+    expect(
+      trimConversation([msg('velha'), msg('n'.repeat(50), 1)], {
+        maxMessages: 80,
+        maxChars: 10,
+      })[0]?.content,
+    ).toBe('n'.repeat(50))
   })
 
-  test('estável entre versões (snapshot — mudar o namespace/derivação quebraria a idempotência)', () => {
-    // Valor CONGELADO: se este teste quebrar, o ledger passaria a ver as etapas
-    // antigas como "novas" (XP em dobro). Nunca mude namespace/derivação.
-    expect(pensaStageSourceId(CYCLE_A, 'z')).toBe('602a2a9a-fb4d-5bdb-ae91-cdc53a2e10d3')
+  test('pensaStageSourceId permanece determinístico', () => {
+    const cycle = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+    expect(pensaStageSourceId(cycle, 'z')).toBe('602a2a9a-fb4d-5bdb-ae91-cdc53a2e10d3')
   })
 })

@@ -233,6 +233,10 @@ export const CreateProfileBody = t.Object({
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),
   birthDate: t.Optional(PROFILE_BIRTH_DATE),
+  // O pai decide o perfil público já na CRIAÇÃO (tutorial de 1º acesso, 08/2026).
+  // A rota de criar RECUSA sessão de perfil, então o guard "só os pais" vale por
+  // construção — diferente do PATCH, que precisa barrar a criança explicitamente.
+  publicProfileEnabled: t.Optional(t.Boolean()),
 })
 
 /** Corpo de `PATCH /auth/profiles/:id` (edição parcial). */

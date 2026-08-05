@@ -8,6 +8,12 @@ IDE educacional embarcável (Sistema Zero Studio) — biblioteca INTERNA do mono
 
 Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidirecional blocos⇄código via worker de reverse-parse) — + preview sandbox, console, terminal (WebContainer), painel de IA (OpenRouter) e extensões.
 
+**Tarefas do Pensa:** `StudioEditorProps` aceita `taskSession?: StudioTaskSession`, independente
+de `LessonActivity`. O `TaskGuidePanel` mostra passos, dicas, blocos oficiais e critérios e envia
+progresso pelo callback do host. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
+associado e mantém o guia após reload; o Studio não persiste vínculo ou backup no Pensa. Veja
+[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+
 **API pública** (`src/index.ts` — TUDO fora dela é interno; Fase 5 somou
 **`importProjectSnapshot(raw, {name?})`** — `src/projects/importSnapshot.ts`, importa um snapshot
 jogável/`.szproject.json` como projeto NOVO no namespace atual via `importProjectFromJSON` do
@@ -121,7 +127,7 @@ memória com `loaded:true` em vez de lançar.
 
 ## Segurança do preview (defesa em camadas — 4º full review)
 
-Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
+Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
 - **`csp.ts`** — CSP interna do srcdoc: libera subrecursos PASSIVOS de `https:` (img/font/media/css/
   frame), mas `script-src` NÃO inclui `https:` genérico. Scripts gerados são autorizados pelo hash
   SHA-256 exato; ESM oficial entra só pela URL declarada e, no `esm.sh`, pelo prefixo do pacote com
@@ -129,29 +135,6 @@ Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__t
   `connect-src 'none'` por default (sem fetch/XHR/WS a menos que o professor libere origens) e
   `worker-src 'none'`. Trade-off aceito: img/media/font/frame de `https:` = GET passivo de mão única
   (sem resposta legível, sem cookies) — NÃO alterar.
-  ⚠️ **`script-src` INCLUI `data:` (08/2026) e isso é obrigatório, não descuido**: todo JS do aluno é
-  externalizado p/ `data:text/javascript;base64,…` e casar fonte de HASH com script EXTERNO é CSP
-  nível 3 que **só o Chromium implementa** (Firefox: bug 1409200, aberto). Sem `data:`, TODO navegador
-  não-Chromium recusava os scripts do aluno em silêncio — guardas e CSS (inline) rodavam, o preview
-  parecia vivo e **o programa nunca executava**. Era o bug de "no Firefox nada acontece" (relatado
-  08/2026). Quem barra script `data:`/`blob:` criado em RUNTIME passou a ser o `scriptSourceGuard`.
-  `data:` só entra quando há algo autorizado (sem script ⇒ segue `script-src 'none'`).
-  ⚠️⚠️ **E nenhum recurso `data:` pode declarar `integrity`** — nem a tag `<script src="data:…">`
-  nem a chave `integrity` do **importmap** (as duas existiam e as duas foram removidas). Pela
-  especificação de SRI, recurso NÃO-elegível para verificação (uma `data:` URL não é CORS nem
-  same-origin) que mesmo assim declara `integrity` deve FALHAR; o Firefox aplica
-  ("not eligible for integrity checks"), o Chromium ignora. Foi a **segunda metade** do mesmo bug:
-  liberar `data:` no `script-src` sozinho só trocou o motivo da recusa, e o preview seguiu em
-  branco no Firefox. O atributo também não protegia nada — a URL É o conteúdo. O hash continua
-  calculado e na policy, onde autoriza os scripts INLINE. Travas: `bootstrap.test.ts`
-  ("NENHUM script data: leva `integrity`", cobre tag + importmap).
-- **`scriptSourceGuard.ts`** — fecha o setter IDL `HTMLScriptElement.prototype.src` e
-  `setAttribute`/`setAttributeNS` contra `data:`/`blob:`, travando-os (`configurable:false`, idioma do
-  `__szLoopTick`). Distingue nosso script do dele SEM allowlist: os scripts autorizados nascem no PARSE
-  do srcdoc (atributo escrito pelo parser), injeção em runtime passa pelo setter. Assume a promessa
-  anti-travamento que a CSP deixou de dar ao liberar `data:` — agora nos DOIS navegadores. É ergonomia
-  best-effort, não barreira dura (`document.write` fica fora; `innerHTML`/`insertAdjacentHTML` não
-  executam script por especificação).
 - **`loopGuard.ts`** — instrumenta `for/while/do-while/for-of/for-in` (parse Babel + walk AST; clássico
   1º, cai p/ módulo com errorRecovery) injetando `__szLoopTick()`, que estoura um **orçamento contínuo**
   (`budgetMs`, default 4000) reiniciado a cada macrotask. `performance.now()` é capturado/bindado no
@@ -260,18 +243,6 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   `sandbox="allow-scripts allow-modals allow-pointer-lock"` (NUNCA `allow-same-origin`), autostart. Exportado no index E no
   subpath leve `@sistemazero/studio/player` (sem Monaco/Blockly — importante p/ a página pública não
   carregar o editor inteiro).
-  ⚠️ **O `<iframe>` leva `key={generation}` (08/2026): cada documento novo nasce num ELEMENTO novo**,
-  nunca por reescrita do `srcDoc` de um iframe já montado. Trocar `srcDoc` logo após a montagem faz o
-  navegador DESCARTAR a troca (o primeiro load ainda não se firmou) e o jogo fica preso em
-  "Carregando o jogo…" para sempre. Só aparecia em REMONTAGEM — no Mural, ao ligar/desligar os
-  controles (`public-player.tsx` troca o ramo do ternário, o que desmonta o player) —, porque aí o
-  documento já está memoizado e a troca chega milissegundos depois do mount. Teste:
-  "REMONTADO, chega ao jogo e não fica preso no doc de carregamento".
-  ⚠️ **Pendência conhecida (não corrigida):** alternar os controles no Mural ainda REINICIA a
-  partida, porque `public-player.tsx:161-176` renderiza o `<Player>` em posições diferentes da
-  árvore nos dois estados (e o `MobileGamepad` faz o mesmo entre retrato e paisagem, então girar o
-  aparelho também reinicia). Corrigir exige um contêiner ÚNICO que troque de aparência por CSS —
-  reparentar um `<iframe>` sempre o recarrega, então portal não resolve.
 - **Desafio do mês (Fase 5, 07/2026):** `StudioShareAdapter.challenge?: { key, title }` — presente
   (o host SÓ passa quando a criança possui Clube+Estúdio), o `ShareDialog` mostra o checkbox
   "🏆 Participar do Desafio do mês: {title}" (opt-in explícito, reseta a cada abertura); marcado, o
@@ -307,14 +278,8 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
    `targetOrigin` (nunca `'*'`); snapshot via `JSON.parse`. `writeGameStorage` roda no MESMO mutex de
    `deleteProject` + cerca de exclusão — um write em voo NÃO ressuscita `sz:game-storage:<id>` órfão.
 9. **Guardas do preview travadas**: `__szLoopTick` é `writable:false/configurable:false` e captura o
-   `performance.now()` no boot; os acessores fechados pelo `scriptSourceGuard` (`script.src`,
-   `setAttribute`/`setAttributeNS`) também são `configurable:false`; a CSP NÃO libera `script-src
-   https:`, `script-src blob:` nem `connect-src` (só o professor abre origens). ⚠️ `script-src data:`
-   É liberado e NÃO deve ser "consertado": sem ele nenhum navegador fora do Chromium executa o código
-   do aluno (bug 1409200 — ver "Segurança do preview"); quem cobre o vetor é o `scriptSourceGuard`.
-   Mexeu em segurança de preview? Replique o teste em `src/preview/__tests__` — e lembre que o
-   `bun test` NÃO enforça CSP: comportamento de policy só se prova em browser real, em **mais de um
-   motor** (o `playwright.config.ts` tem projeto `firefox` justamente por isso).
+   `performance.now()` no boot; a CSP NÃO libera `script-src https:` nem `connect-src` (só o professor
+   abre origens). Mexeu em segurança de preview? Replique o teste em `src/preview/__tests__`.
 10. **`convertToPro` é one-way**; os minificadores SÃO injetáveis (`identityMinifiers` nos testes,
     terser/csso em prod). No `FsDiff`, o conflito arquivo↔diretório sai de `removeFirstPaths` e é
     aplicado RECURSIVAMENTE ANTES de mkdir/write.
@@ -1054,7 +1019,7 @@ Foi um full review com 4 blocos de família nova. A documentação atual do alun
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
 - `bun run typecheck` / `bun run test` / `bun run check`
-- `bun run e2e` — suíte Playwright completa contra o playground (manual); o CI roda o subconjunto `examples-gallery.spec.ts --project=chromium --grep "game-2d(?:-advanced)?:"`. ⚠️ Há DOIS projetos (`chromium` e `firefox` — o preview já quebrou inteiro fora do Chromium sem ninguém ver; ver "Segurança do preview"): comando de CI PRECISA fixar `--project`, e o Firefox pede `bunx playwright install firefox` uma vez
+- `bun run e2e` — suíte Playwright completa contra o playground (manual); o CI roda o subconjunto `examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"`
 
 ## Vitrine de kits + micro-celebração (07/2026)
 

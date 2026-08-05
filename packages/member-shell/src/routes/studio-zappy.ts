@@ -5,7 +5,7 @@ import { resolveStudioTier } from '../lib/studio-tier'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
-import { isStudioZappyAllowed, isStudioZappyAllowedForRequest } from '../server/zappy-access'
+import { isStudioZappyAllowed, isStudioZappyRolloutOpen } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
   deterministicZappyReply,
@@ -100,6 +100,26 @@ async function hasStudioAccess(members: MembersClient): Promise<boolean> {
   return result.status === 200 && result.body?.access?.['estudio-completo'] === true
 }
 
+/**
+ * Acesso ao Zappy com o degrau da carreira (autoritativo). Equipe e allowlist
+ * resolvem SEM ida ao members (o `undefined` pergunta "dá para decidir sem o
+ * rank?"); só o aluno comum custa a busca da gamificação. Members fora →
+ * reprova (fail-closed): o tutor some por um instante, mas nada abre no escuro.
+ *
+ * ⚠️ A rota da PERGUNTA não usa este helper — ela já busca a gamificação para
+ * montar o `tier`, então checa o nível ali mesmo, sem uma segunda ida.
+ */
+async function zappyAllowedWithLevel(
+  members: MembersClient,
+  user: Awaited<ReturnType<SessionModule['getSession']>>,
+): Promise<boolean> {
+  if (!isStudioZappyRolloutOpen(user)) return false
+  if (isStudioZappyAllowed(user, undefined)) return true
+  const gamification = await members.getGamification()
+  if (gamification.status !== 200) return false
+  return isStudioZappyAllowed(user, gamification.body?.level?.slug)
+}
+
 function safeProfileName(value: string | undefined): string {
   const normalized = Array.from(value ?? '')
     .filter((character) => {
@@ -149,10 +169,10 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
-      if (!(await isStudioZappyAllowedForRequest(members, user)))
-        return error('ZAPPY_NOT_ENABLED', 403)
+      if (!isStudioZappyRolloutOpen(user)) return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
+      if (!(await zappyAllowedWithLevel(members, user))) return error('ZAPPY_NOT_ENABLED', 403)
 
       const result = await members.zappyHistory(query.projectId, query.before)
       return NextResponse.json(result.body ?? { messages: [], nextCursor: null }, {
@@ -164,10 +184,10 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!(await isStudioZappyAllowedForRequest(members, user)))
-        return error('ZAPPY_NOT_ENABLED', 403)
+      if (!isStudioZappyRolloutOpen(user)) return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
+      if (!(await zappyAllowedWithLevel(members, user))) return error('ZAPPY_NOT_ENABLED', 403)
       const result = await members.zappyDeleteHistory(query.projectId)
       return NextResponse.json(result.body ?? { ok: false }, { status: result.status })
     },
@@ -179,6 +199,9 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
+      // Recusa BARATA (equipe/flag). O degrau da carreira é conferido logo abaixo,
+      // junto do `tier` — a gamificação já é buscada ali, sem ida extra.
+      if (!isStudioZappyRolloutOpen(user)) return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, QUESTION_BODY_MAX_BYTES)
@@ -196,13 +219,11 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       // Rank/modos/extensões vêm do members + catálogo da carreira, nunca do cliente.
       const gamification = await members.getGamification()
       if (gamification.status !== 200) return error('ZAPPY_UNAVAILABLE', 503)
-      // Portão do tutor reusando ESTE rank, em vez de buscá-lo de novo: a variante
-      // assíncrona faria uma 2ª ida ao members em cada pergunta da criança — o
-      // caminho mais quente do recurso. As outras 3 rotas não têm o rank em mãos e
-      // seguem com `isStudioZappyAllowedForRequest`.
-      if (!isStudioZappyAllowed(user, gamification.body?.level?.slug))
-        return error('ZAPPY_NOT_ENABLED', 403)
-      const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+      const levelSlug = gamification.body?.level?.slug
+      // Gate por MÉRITO: o tutor abre no degrau mínimo da carreira (Inventor por
+      // padrão). Equipe/allowlist já passaram sem depender do rank.
+      if (!isStudioZappyAllowed(user, levelSlug)) return error('ZAPPY_NOT_ENABLED', 403)
+      const tier = resolveStudioTier(levelSlug ?? 'noob', user.role)
       const context = parsed.data.context as ZappyContextInput
       if (!tier.allowedModes.includes(context.mode)) return error('FORBIDDEN_MODE', 403)
       if (context.kind === 'pro' && !tier.pro) return error('FORBIDDEN_MODE', 403)
@@ -349,8 +370,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!(await isStudioZappyAllowedForRequest(members, user)))
-        return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await zappyAllowedWithLevel(members, user))) return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, FEEDBACK_BODY_MAX_BYTES)

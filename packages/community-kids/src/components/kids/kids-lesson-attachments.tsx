@@ -71,7 +71,7 @@ export function KidsLessonAttachments({
                   disabled={downloading !== null}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-2xl border-2 border-border bg-background px-4 py-3 text-left font-semibold text-sm',
-                    'shadow-[0_3px_0_var(--border)] transition-all hover:border-ring/60',
+                    'shadow-[0_3px_0_var(--border)] transition-[border-color,box-shadow,transform] hover:border-ring/60',
                     'active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]',
                     'disabled:pointer-events-none disabled:opacity-60',
                   )}

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  createBitmap,
   createPixelBackgroundAsset,
+  createPixelLayer,
   createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
@@ -13,7 +15,7 @@ import { galleryToPintaJson, importPintaJson } from './projectJson'
 function makeGallery(): PintaAsset[] {
   const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
   const frame = sprite.animations[0]?.frames[0]
-  if (frame) frame.data[0] = 5
+  if (frame?.[0]) frame[0].data[0] = 5
   const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
   let tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 3, rows: 2 })
   const layerId = tilemap.layers[0]?.id
@@ -41,7 +43,7 @@ describe('galleryToPintaJson / importPintaJson', () => {
       'vector-background',
     ])
     const sprite = assets.find((a) => a.kind === 'pixel-sprite')
-    expect(sprite?.kind === 'pixel-sprite' && sprite.animations[0]?.frames[0]?.data[0]).toBe(5)
+    expect(sprite?.kind === 'pixel-sprite' && sprite.animations[0]?.frames[0]?.[0]?.data[0]).toBe(5)
     const tilemap = assets.find((a) => a.kind === 'tilemap')
     expect(tilemap?.kind === 'tilemap' && tilemap.layers[0]?.cells[4]).toBe(0)
   })
@@ -62,6 +64,80 @@ describe('galleryToPintaJson / importPintaJson', () => {
     expect(importPintaJson('{"foo": 1}').warnings[0]).toContain('backup do Pinta')
     expect(importPintaJson('não é json').warnings[0]).toContain('válido')
     expect(importPintaJson('não é json').assets).toEqual([])
+  })
+
+  it('preserva índices quando um cel ou tile intermediário está corrompido', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const spriteCels = [1, 2, 3].map((color) => {
+      const cel = createBitmap(8, 8)
+      cel.data[0] = color
+      return cel
+    })
+    sprite.layers = [createPixelLayer(0), createPixelLayer(1), createPixelLayer(2)]
+    const animation = sprite.animations[0]
+    if (!animation) throw new Error('animação esperada')
+    animation.frames = [spriteCels]
+
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    tileset.tiles = [1, 2, 3].map((color) => {
+      const tile = createBitmap(16, 16)
+      tile.data[0] = color
+      return tile
+    })
+    tileset.solid = [false, false, false]
+    tileset.platform = [false, false, false]
+    let tilemap = createTilemapAsset({
+      name: 'fase',
+      tilesetId: tileset.id,
+      cols: 1,
+      rows: 1,
+    })
+    const layerId = tilemap.layers[0]?.id
+    if (!layerId) throw new Error('camada esperada')
+    tilemap = setCell(tilemap, layerId, 0, 0, 2)
+
+    const document = JSON.parse(galleryToPintaJson([sprite, tileset, tilemap])) as {
+      assets: Array<Record<string, unknown>>
+    }
+    const encodedSprite = document.assets[0] as {
+      animations: Array<{ frames: Array<Array<Record<string, unknown>>> }>
+    }
+    const encodedTileset = document.assets[1] as { tiles: Array<Record<string, unknown>> }
+    const spriteFrame = encodedSprite.animations[0]?.frames[0]
+    if (!spriteFrame?.[1] || !encodedTileset.tiles[1]) throw new Error('backup esperado')
+    spriteFrame[1].rle = 'corrompido'
+    encodedTileset.tiles[1].rle = 'corrompido'
+
+    const result = importPintaJson(JSON.stringify(document))
+    expect(result.warnings).toEqual([])
+    const restoredSprite = result.assets.find((asset) => asset.kind === 'pixel-sprite')
+    const restoredTileset = result.assets.find((asset) => asset.kind === 'tileset')
+    const restoredMap = result.assets.find((asset) => asset.kind === 'tilemap')
+    if (restoredSprite?.kind !== 'pixel-sprite') throw new Error('sprite esperado')
+    if (restoredTileset?.kind !== 'tileset') throw new Error('tileset esperado')
+    if (restoredMap?.kind !== 'tilemap') throw new Error('mapa esperado')
+    expect(restoredSprite.animations[0]?.frames[0]?.map((cel) => cel.data[0])).toEqual([1, 0, 3])
+    expect(restoredTileset.tiles.map((tile) => tile.data[0])).toEqual([1, 0, 3])
+    expect(restoredMap.layers[0]?.cells[0]).toBe(2)
+  })
+
+  it('rejeita versão futura e células que exigiriam coerção silenciosa', () => {
+    const map = createTilemapAsset({ name: 'fase', tilesetId: 'pecas', cols: 1, rows: 1 })
+    const future = JSON.parse(galleryToPintaJson([map])) as Record<string, unknown>
+    future.version = 999
+    const futureResult = importPintaJson(JSON.stringify(future))
+    expect(futureResult.assets).toEqual([])
+    expect(futureResult.warnings[0]).toContain('versão')
+
+    const malformed = JSON.parse(galleryToPintaJson([map])) as {
+      assets: Array<{ layers: Array<{ cells: unknown[] }> }>
+    }
+    const cells = malformed.assets[0]?.layers[0]?.cells
+    if (!cells) throw new Error('células esperadas')
+    cells[0] = null
+    const malformedResult = importPintaJson(JSON.stringify(malformed))
+    expect(malformedResult.assets).toEqual([])
+    expect(malformedResult.warnings).toHaveLength(1)
   })
 })
 

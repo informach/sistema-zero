@@ -18,7 +18,6 @@ import { pensaSafetyClause, ZAPPY_VOICE_RULES } from './safety'
 export interface StageZPromptInput {
   mode: 'kids' | 'adult'
   projectName: string
-  projectKind: 'game' | 'webapp'
   cycleNumber: number
   /** Objetivo do ciclo (Versão 2+): a conversa foca no INCREMENTO, não no jogo inteiro. */
   cycleGoal?: string | null
@@ -28,21 +27,22 @@ export interface StageZPromptInput {
   state?: PensaZState | null
 }
 
-const FIVE_QUESTIONS_KIDS = `As 5 perguntas que precisam ficar claras (nesta ordem, uma por vez):
-1. QUEM (who): pra quem é esse jogo? Quem a criança imagina jogando?
-2. DIVERSÃO (problem): o que vai fazer a pessoa querer jogar DE NOVO? Qual é a graça?
-3. AÇÃO PRINCIPAL (action): o que o jogador FAZ no jogo? Qual é o botão mais importante?
-4. TELAS (screens): o que aparece primeiro quando alguém abre o jogo? E depois? (em linhas gerais: tela de título, o jogo, tela de fim)
-5. FICOU BOM (success): como saber que o jogo ficou bom DE VERDADE, com um sinal CONCRETO que dá pra ver ou testar no jogo (ex.: dá pra chegar na fase 3, o placar conta os pontos, alguém joga até o fim sem pedir ajuda). Sentimento vago ("as pessoas se divertem", "vai ficar legal") NÃO conta como resposta: acolha e peça um sinal que dê pra observar.`
+const FIVE_QUESTIONS_KIDS = `As 5 decisões que precisam ficar claras (nesta ordem, uma por vez):
+1. IDEIA (idea): qual é o jogo em uma frase?
+2. OBJETIVO (objective): o que o jogador precisa conseguir?
+3. CONTROLES (controls): como o jogador controla o jogo?
+4. RESULTADO (outcome): como vence e como perde?
+5. DIMENSÃO (dimension): o jogo será 2D ou 3D?`
 
 const FIVE_QUESTIONS_CYCLE2 = `Esta é uma NOVA VERSÃO de um jogo que já existe. Foque no INCREMENTO (não redesenhe o jogo inteiro). As perguntas que precisam ficar claras:
-1. AÇÃO PRINCIPAL (action): o que exatamente vamos ADICIONAR ou mudar nesta versão?
-2. DIVERSÃO (problem): por que isso deixa o jogo mais legal?
-3. FICOU BOM (success): como saber que a novidade deu certo, com um sinal concreto que dá pra ver ou testar?
-Considere QUEM (who) e TELAS (screens) já respondidas pela versão anterior, a menos que a novidade mude isso.`
+1. IDEIA (idea): o que exatamente vamos ADICIONAR ou mudar nesta versão?
+2. OBJETIVO (objective): o que a novidade permite alcançar?
+3. CONTROLES (controls): os controles mudam?
+4. RESULTADO (outcome): a vitória ou derrota muda?
+5. DIMENSÃO (dimension): confirme se continua 2D ou 3D.`
 
 const ANTI_INFERENCE_RULES = `REGRAS INEGOCIÁVEIS (anti-inferência):
-- Você NÃO pode assumir o público, inventar a graça do jogo, decidir a ação principal, criar telas que a criança não descreveu, nem afirmar que algo está claro quando ainda há lacuna.
+- Você NÃO pode inventar a ideia, objetivo, controles, vitória/derrota ou escolher 2D/3D pela criança.
 - TODA resposta das perguntas vem da criança: do que ela escreveu OU da sugestão que ela clicou (clicar conta como decisão dela).
 - Você PODE: explicar a pergunta, dar exemplos de jogos conhecidos, oferecer alternativas para ela escolher, organizar o que ela disse e apontar o que falta.
 - Se ela disser "sei lá" ou travar: dê UM exemplo concreto de um jogo conhecido e ofereça sugestões novas no tema dela.
@@ -62,23 +62,21 @@ export function buildStageZSystem(input: StageZPromptInput): string {
   const missing: string[] = []
   const answered = input.state?.answered
   if (answered) {
-    if (!answered.who) missing.push('QUEM')
-    if (!answered.problem) missing.push('DIVERSÃO')
-    if (!answered.action) missing.push('AÇÃO PRINCIPAL')
-    if (!answered.screens) missing.push('TELAS')
-    if (!answered.success) missing.push('FICOU BOM')
+    if (!answered.idea) missing.push('IDEIA')
+    if (!answered.objective) missing.push('OBJETIVO')
+    if (!answered.controls) missing.push('CONTROLES')
+    if (!answered.outcome) missing.push('VITÓRIA E DERROTA')
+    if (!answered.dimension) missing.push('2D OU 3D')
   }
   const progress =
     answered && missing.length < 5
       ? `Já estão claras: ${5 - missing.length} de 5 perguntas. Falta clarear: ${missing.join(', ') || 'nada — convide a criança a criar a Carta da Ideia'}.`
       : 'Nenhuma pergunta foi respondida ainda. Comece pedindo pra ela contar a ideia do jogo.'
 
-  const kindLabel = input.projectKind === 'game' ? 'um JOGO' : 'um site ou sistema'
-
   return [
     pensaSafetyClause(input.mode),
     ZAPPY_VOICE_RULES,
-    `CONTEXTO: você está no Pensa, o app onde a criança PLANEJA ${kindLabel} antes de construir no Estúdio (editor de blocos do Sistema Zero). O projeto se chama "${input.projectName}" e esta conversa é da etapa Z (Zerar a Bagunça) da Versão ${input.cycleNumber}.`,
+    `CONTEXTO: você está no Pensa, onde a criança PLANEJA um JOGO antes de criar as artes no Pinta e programá-lo no Estúdio. O projeto se chama "${input.projectName}" e esta conversa é da etapa Z (Zerar a Bagunça) da Versão ${input.cycleNumber}.`,
     input.cycleGoal ? `Objetivo desta versão, nas palavras da criança: "${input.cycleGoal}".` : '',
     isFirstCycle ? FIVE_QUESTIONS_KIDS : FIVE_QUESTIONS_CYCLE2,
     ANTI_INFERENCE_RULES,

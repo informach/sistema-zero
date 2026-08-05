@@ -1,8 +1,8 @@
 /**
  * Faixa "Spritesheet" do rodapé (layout da imagem-modelo): UMA linha por
  * animação, com os quadros DELA na própria linha. Junta o que antes eram dois
- * painéis — a lista de animações (`AnimationList`) e a tira de quadros
- * (`FrameStrip`) — num só lugar, sem perder nenhuma ação:
+ * painéis — a lista de animações e a tira de quadros — num só lugar, sem
+ * perder nenhuma ação:
  *  - cabeçalho: contagem de animações + "Nova animação";
  *  - cada linha: selecionar/renomear/duplicar/apagar a animação;
  *  - quadros inline: clicar seleciona (animação + quadro); na animação
@@ -31,9 +31,11 @@ import {
   type AnimatedSpriteAsset,
   isAnimatedSpriteKind,
   type PintaBitmap,
+  type PintaPixelFrame,
   resolveAssetPalette,
   type VectorFrame,
 } from '../../core/project'
+import { flattenCels } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Button } from '../ui/Button'
@@ -55,13 +57,14 @@ function PixelFrameThumb({
   bitmap,
   colors,
 }: {
-  bitmap: PintaBitmap
+  /** Já ACHATADO (camadas visíveis); null = quadro sem nada visível. */
+  bitmap: PintaBitmap | null
   colors: readonly string[]
 }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas = canvasRef.current
-    if (canvas) paintBitmap(canvas, bitmap, colors)
+    if (canvas && bitmap) paintBitmap(canvas, bitmap, colors)
   }, [bitmap, colors])
   return (
     <canvas
@@ -131,7 +134,7 @@ export function SpriteSheetPanel({
   const activeId = active?.id ?? asset.animations[0]?.id ?? null
   const selectedFrame = active ? Math.min(frameIndex, active.frames.length - 1) : 0
 
-  /** Muta os QUADROS da animação `animId` (mesmo contrato do FrameStrip). */
+  /** Muta os QUADROS da animação `animId`. */
   function mutateFrames(
     op: (sprite: AnimatedSpriteAsset) => {
       next: AnimatedSpriteAsset
@@ -174,7 +177,8 @@ export function SpriteSheetPanel({
     >
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-pin-text">{COPY.animation.spritesheet}</span>
+          {/* Mesmo título dos painéis irmãos (Camadas/Cores/Prévia). */}
+          <span className="px-1 font-bold text-pin-text">{COPY.animation.spritesheet}</span>
           <span className="rounded-full bg-pin-accent/15 px-2 py-0.5 text-xs font-bold text-pin-muted">
             {COPY.animation.animationCount(asset.animations.length)}
           </span>
@@ -233,7 +237,10 @@ export function SpriteSheetPanel({
                       }`}
                     >
                       {asset.kind === 'pixel-sprite' ? (
-                        <PixelFrameThumb bitmap={frame as PintaBitmap} colors={colors} />
+                        <PixelFrameThumb
+                          bitmap={flattenCels(frame as PintaPixelFrame, asset.layers)}
+                          colors={colors}
+                        />
                       ) : (
                         <VectorFrameSvg
                           width={asset.frameWidth}

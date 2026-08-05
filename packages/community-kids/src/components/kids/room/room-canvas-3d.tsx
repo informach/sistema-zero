@@ -2,7 +2,7 @@
 
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, type ThreeEvent, useThree } from '@react-three/fiber'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { type ComponentRef, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Color, Plane, Raycaster, Vector2, Vector3 } from 'three'
 import { lightingPreset, ROOM_ITEM_INFO, resolveRoomAppearance } from '@/lib/room-catalog'
 import type { RoomStateView } from '@/lib/types'
@@ -64,8 +64,8 @@ function Scene({
   const camera = useThree((s) => s.camera)
   const scene = useThree((s) => s.scene)
   const invalidate = useThree((s) => s.invalidate)
-  // Câmera de órbita (drei `makeDefault` injeta em `state.controls`) — desligada no arraste.
-  const controls = useThree((s) => s.controls) as unknown as { enabled: boolean } | null
+  // Ref tipado do controle real — desligado durante o arraste para os gestos não competirem.
+  const controlsRef = useRef<ComponentRef<typeof OrbitControls>>(null)
 
   // Células do CHÃO ocupadas por móveis (itens de parede e FILHOS em nicho NÃO contam) —
   // o pet desvia delas.
@@ -248,7 +248,7 @@ function Scene({
           el.releasePointerCapture(e.pointerId)
         } catch {}
         dragRef.current = null
-        if (controls) controls.enabled = true // reativa a órbita ao soltar a peça
+        if (controlsRef.current) controlsRef.current.enabled = true
       }
     }
     el.addEventListener('pointermove', onPointerMove)
@@ -259,19 +259,19 @@ function Scene({
       el.removeEventListener('pointerup', onUp)
       el.removeEventListener('pointercancel', onUp)
     }
-  }, [mode, gl, invalidate, controls])
+  }, [mode, gl, invalidate])
 
   const startDrag = useCallback(
     (index: number, e: ThreeEvent<PointerEvent>) => {
       if (paintColor) return // em modo pincel a peça não arrasta
       onSelect?.(index)
       dragRef.current = index
-      if (controls) controls.enabled = false // não orbitar enquanto arrasta a peça
+      if (controlsRef.current) controlsRef.current.enabled = false
       try {
         gl.domElement.setPointerCapture(e.pointerId)
       } catch {}
     },
-    [gl, onSelect, paintColor, controls],
+    [gl, onSelect, paintColor],
   )
 
   const editable = mode === 'edit'
@@ -279,6 +279,7 @@ function Scene({
     <>
       {/* Órbita REDUZIDA: gira um pouco p/ ver ângulos, sem sair do recorte isométrico. */}
       <OrbitControls
+        ref={controlsRef}
         makeDefault
         target={TARGET}
         enablePan={false}

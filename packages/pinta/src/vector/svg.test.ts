@@ -97,6 +97,13 @@ describe('degradê (gradient)', () => {
     expect(defs).toContain('x1="0.5" y1="0" x2="0.5" y2="1"')
   })
 
+  it('escapa o id do degradê mesmo para um shape construído fora do sanitizer', () => {
+    const malicious = { ...gradShape, id: 'x"><script>globalThis.pwned=1</script><g id="' }
+    const defs = gradientDefsMarkup([malicious])
+    expect(defs).not.toContain('<script>')
+    expect(defs).toContain('&quot;')
+  })
+
   it('radial emite radialGradient', () => {
     const radial: VectorShape = {
       ...gradShape,

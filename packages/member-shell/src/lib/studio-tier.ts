@@ -1,4 +1,5 @@
 import {
+  CAREER_LEVEL_SLUGS,
   type CareerLevelSlug,
   type CareerStudioBlockProfileId,
   type CareerStudioRewardId,
@@ -25,20 +26,26 @@ export interface StudioTier {
   canPromoteToPro: boolean
 }
 
-/**
- * Degrau mínimo dos apps criativos (Zappy do Estúdio, Pensa, Pinta) —
- * **Inventor(a)**, o 3º dos 8. A barra vive AQUI, num lugar só: repeti-la em cada
- * portão é como os três divergem depois de um "muda só no Pensa".
- *
- * Fica em `lib/` (não no `server/creative-apps-access.ts`, que é `server-only`)
- * porque as TELAS também precisam dela para nomear o degrau na copy.
- */
-export const CREATIVE_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
-
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
 export function isPrivilegedRole(role: string | undefined): boolean {
   return !!role && PRIVILEGED_ROLES.has(role)
+}
+
+/**
+ * O aluno já chegou (ou passou) neste degrau da carreira? A ordem canônica é a
+ * do `CAREER_LEVEL_SLUGS` do core — nunca reimplemente a escada aqui.
+ * Slug ausente ou fora do catálogo → `false` (**fail-closed**: sem PROVAR o
+ * nível, nada é liberado; é o que mantém honesto um gate de conteúdo infantil
+ * quando o members solta ou um rank novo chega antes do deploy daqui).
+ */
+export function careerLevelAtLeast(
+  slug: string | null | undefined,
+  minimum: CareerLevelSlug,
+): boolean {
+  const current = CAREER_LEVEL_SLUGS.indexOf(slug as CareerLevelSlug)
+  const floor = CAREER_LEVEL_SLUGS.indexOf(minimum)
+  return current >= 0 && floor >= 0 && current >= floor
 }
 
 const EXTENSIONS_BY_PROFILE: Record<CareerStudioBlockProfileId, readonly string[]> = {

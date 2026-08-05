@@ -20,12 +20,18 @@
  */
 import type { JSX, PointerEvent } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { activeBitmapOf, previousFrameOf, withActiveBitmap } from '../../core/assetEdit'
+import {
+  activeBitmapOf,
+  activeCelsOf,
+  previousFrameOf,
+  withActiveBitmap,
+} from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import { TRANSPARENT_INDEX } from '../../core/palette'
 import { safeSetPointerCapture } from '../../core/pointer'
-import { type PintaBitmap, resolveAssetPalette } from '../../core/project'
+import { isPixelLayeredKind, type PintaBitmap, resolveAssetPalette } from '../../core/project'
 import type { Vec2 } from '../../pixel/bitmap'
+import { flattenCelsRange, layerIndexOf, visibleComposite } from '../../pixel/layers'
 import { flipHorizontal, flipVertical } from '../../pixel/ops'
 import {
   createScaledPainter,
@@ -51,6 +57,7 @@ import {
 } from '../../pixel/tools'
 import { ToolButton } from '../ui/Button'
 import { Copy, FlipHorizontal2, FlipVertical2, Trash2 } from '../ui/icons'
+import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { useWheelZoom } from './useWheelZoom'
 
@@ -75,6 +82,7 @@ function inside(rect: SelectionRect, p: Vec2): boolean {
 
 export function PixelCanvas(): JSX.Element {
   const { editor, session } = useEditorStores()
+  const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const tool = useSession((state) => state.tool)
   const zoom = useSession((state) => state.zoom)
@@ -82,6 +90,7 @@ export function PixelCanvas(): JSX.Element {
   const showGrid = useSession((state) => state.showGrid)
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
+  const layerId = useSession((state) => state.layerId)
   // Paleta efetiva (base + extras), estável por asset — pintar uma cor extra
   // recém-adicionada é uma mudança de asset, então o canvas repinta.
   const colors = useMemo(() => resolveAssetPalette(asset), [asset])
@@ -130,21 +139,48 @@ export function PixelCanvas(): JSX.Element {
     hasSelection: () => selRef.current !== null,
   }
 
-  const frameRef = { animationId, frameIndex }
+  const frameRef = { animationId, frameIndex, layerId }
   const bitmap = activeBitmapOf(asset, frameRef)
-  const under = onion ? previousFrameOf(asset, frameRef) : null
+  const ghost = onion ? previousFrameOf(asset, frameRef) : null
+
+  // As camadas ao redor da que está sendo editada, achatadas UMA vez por
+  // (asset, camada, quadro): durante o gesto só o bitmap ativo muda, então o
+  // pintor blita 3 imagens por movimento em vez de recompor a pilha.
+  const surrounding = useMemo(() => {
+    if (!isPixelLayeredKind(asset)) return { under: null, over: null }
+    const cels = activeCelsOf(asset, { animationId, frameIndex, layerId })
+    if (!cels) return { under: null, over: null }
+    const active = layerIndexOf(asset, layerId)
+    return {
+      under: flattenCelsRange(cels, asset.layers, 0, active),
+      over: flattenCelsRange(cels, asset.layers, active + 1, cels.length),
+    }
+  }, [asset, layerId, animationId, frameIndex])
+
+  /** A camada ativa está escondida? Então o traço não apareceria. */
+  const activeHidden =
+    isPixelLayeredKind(asset) && asset.layers[layerIndexOf(asset, layerId)]?.visible === false
+
+  /**
+   * O desenho VISÍVEL inteiro (todas as camadas) — referência do balde e do
+   * conta-gotas. Sem camadas extras é o próprio bitmap ativo.
+   */
+  const composite = useMemo(() => {
+    if (!bitmap) return undefined
+    return visibleComposite(bitmap, !activeHidden, surrounding.under, surrounding.over)
+  }, [bitmap, surrounding, activeHidden])
 
   // Trocar de quadro/animação NO MEIO de um gesto (multi-touch) descarta o
   // gesto — sem isso o pointerup commitaria o bitmap antigo POR CIMA do quadro
   // recém-selecionado. A seleção flutuante também é largada (nunca commitou o
   // buraco, então o quadro antigo fica intacto).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro ativo)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro/camada ativa)
   useEffect(() => {
     gestureRef.current = null
     gesturePointerRef.current = null
     applySelection(null)
     movingRef.current = null
-  }, [animationId, frameIndex])
+  }, [animationId, frameIndex, layerId])
 
   function paint(current: PintaBitmap): void {
     const canvas = canvasRef.current
@@ -152,7 +188,12 @@ export function PixelCanvas(): JSX.Element {
     if (!painterRef.current) painterRef.current = createScaledPainter(canvas)
     const painter = painterRef.current
     if (!painter) return
-    painter.paint(current, colors, zoom, under ? { bitmap: under, alpha: ONION_ALPHA } : undefined)
+    painter.paint(current, colors, zoom, {
+      ...(ghost ? { ghost: { bitmap: ghost, alpha: ONION_ALPHA } } : {}),
+      under: surrounding.under,
+      over: surrounding.over,
+      hideActive: activeHidden,
+    })
     paintPixelGrid(canvas, current, zoom, showGrid)
   }
 
@@ -185,7 +226,7 @@ export function PixelCanvas(): JSX.Element {
     }
     lastBitmapRef.current = bitmap
     if (!gestureRef.current) renderCanvas()
-  }, [bitmap, zoom, onion, under, showGrid, colors])
+  }, [bitmap, zoom, onion, ghost, surrounding, activeHidden, showGrid, colors])
 
   // Sair da ferramenta seleção CARIMBA o recorte pendente (some sem sumir).
   // biome-ignore lint/correctness/useExhaustiveDependencies: stampPending lê refs; o gatilho é `tool`
@@ -281,13 +322,17 @@ export function PixelCanvas(): JSX.Element {
     }
   }
 
-  function settings(): ToolSettings {
+  /**
+   * `secondary` = o gesto veio do BOTÃO DIREITO do mouse: pinta com a 2ª cor
+   * da caixa de ferramentas (padrão dos programas de desenho).
+   */
+  function settings(secondary = false): ToolSettings {
     const s = session.getState()
     return {
       // 'pan'/'select' não são do motor pixel — nunca chegam aqui (o handler
       // trata a seleção antes), mas o fallback mantém o tipo honesto.
       tool: s.tool === 'pan' || s.tool === 'select' ? 'pencil' : s.tool,
-      color: s.color,
+      color: secondary ? s.colorSecondary : s.color,
       brushSize: s.brushSize,
       mirrorX: s.mirrorX,
       mirrorY: s.mirrorY,
@@ -302,16 +347,21 @@ export function PixelCanvas(): JSX.Element {
     const state = editor.getState()
     const s = session.getState()
     state.commit(
-      withActiveBitmap(state.asset, { animationId: s.animationId, frameIndex: s.frameIndex }, next),
+      withActiveBitmap(
+        state.asset,
+        { animationId: s.animationId, frameIndex: s.frameIndex, layerId: s.layerId },
+        next,
+      ),
     )
   }
 
-  /** Bitmap do quadro ATIVO segundo o estado vivo (não o do render). */
+  /** Cel da CAMADA ativa no quadro ativo, segundo o estado vivo (não o do render). */
   function liveBitmap(): PintaBitmap | null {
     const s = session.getState()
     return activeBitmapOf(editor.getState().asset, {
       animationId: s.animationId,
       frameIndex: s.frameIndex,
+      layerId: s.layerId,
     })
   }
 
@@ -505,13 +555,22 @@ export function PixelCanvas(): JSX.Element {
     if (!event.isPrimary || !bitmap || gestureRef.current) return
     safeSetPointerCapture(event.currentTarget, event.pointerId)
     gesturePointerRef.current = event.pointerId
-    const result = toolPointerDown(bitmap, settings(), pixelPos(event))
+    // Botão DIREITO pinta com a 2ª cor da caixa (padrão dos programas de
+    // desenho). Só o `pointerdown` traz o botão; o resto do traço herda a cor
+    // pelo `settings` que fica congelado dentro do ToolGesture.
+    const secondary = event.button === 2
+    // Camada escondida: o traço iria para um lugar invisível — avisa em vez de
+    // deixar a criança achar que a ferramenta quebrou (régua do `isTileBlank`).
+    if (activeHidden) showToast(COPY.layers.hiddenWarning)
+    // O balde e o conta-gotas trabalham sobre o que se VÊ (composto).
+    const result = toolPointerDown(bitmap, settings(secondary), pixelPos(event), composite)
     if (result.pickedColor !== undefined) {
       const s = session.getState()
       if (result.pickedColor === TRANSPARENT_INDEX) {
         s.setTool('eraser')
       } else {
-        s.setColor(result.pickedColor)
+        // Conta-gotas com o botão direito guarda na cor SECUNDÁRIA.
+        s.applyColor(result.pickedColor, secondary ? 'secondary' : undefined)
         s.setTool('pencil')
       }
       return
@@ -618,6 +677,9 @@ export function PixelCanvas(): JSX.Element {
             onPointerMove={handlePointerMove}
             onPointerUp={endGesture}
             onPointerCancel={endGesture}
+            // O botão direito PINTA (2ª cor): o menu do navegador não pode abrir
+            // por cima do desenho.
+            onContextMenu={(event) => event.preventDefault()}
             aria-label={COPY.a11y.drawArea}
             role="img"
           />

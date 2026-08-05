@@ -1,6 +1,19 @@
-import { Play } from 'lucide-react'
-import Link from 'next/link'
+import { ContinueHeroLink } from '@/components/kids/continue-hero-link'
 import type { MyCourseView } from '@/lib/types'
+
+interface CourseActivityView {
+  continueLessonId: string | null
+  progress: { completedLessons: number }
+}
+
+/** Abrir uma aula já é atividade; conclusão não é o único sinal de início. */
+export function courseHasActivity(course: CourseActivityView): boolean {
+  return course.continueLessonId !== null || course.progress.completedLessons > 0
+}
+
+export function hasAnyCourseActivity(courses: readonly CourseActivityView[]): boolean {
+  return courses.some(courseHasActivity)
+}
 
 /** Curso do herói: 1º com "continuar" pendente; senão o 1º da lista. */
 export function pickContinueCourse(courses: MyCourseView[]): MyCourseView | null {
@@ -24,7 +37,7 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
   const href = course.continueLessonId
     ? `${courseHref}/aulas/${encodeURIComponent(course.continueLessonId)}`
     : courseHref
-  const started = course.progress.completedLessons > 0
+  const started = courseHasActivity(course)
 
   return (
     <section className="kids-unit-grad relative overflow-hidden rounded-3xl p-6 [background-image:var(--sz-gradient)] text-(--sz-primary-fg) shadow-[0_5px_0_color-mix(in_oklch,var(--sz-primary)_55%,black)] md:p-8">
@@ -43,18 +56,18 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
             </div>
             <span className="sz-display text-sm">{course.progress.percent}%</span>
           </div>
-          <Link
-            href={href}
-            className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-card px-6 font-bold text-primary shadow-[0_4px_0_rgba(0,0,0,0.25)] transition-[transform,box-shadow,filter] duration-100 hover:brightness-105 active:translate-y-[3px] active:shadow-[0_1px_0_rgba(0,0,0,0.25)]"
-          >
-            <Play className="size-4 fill-current" />
-            {started ? 'Continuar' : 'Começar'}
-          </Link>
+          <ContinueHeroLink href={href} started={started} />
         </div>
         {course.coverImageUrl ? (
           <div className="hidden w-56 shrink-0 rotate-2 overflow-hidden rounded-2xl shadow-lg md:block">
             {/* Capa pode ser URL externa arbitrária (autoria) → <img> simples. */}
-            <img src={course.coverImageUrl} alt="" className="aspect-video w-full object-cover" />
+            <img
+              src={course.coverImageUrl}
+              alt=""
+              width={224}
+              height={126}
+              className="aspect-video w-full object-cover"
+            />
           </div>
         ) : null}
       </div>

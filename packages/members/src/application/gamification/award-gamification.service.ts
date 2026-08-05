@@ -220,7 +220,7 @@ export class AwardGamificationService {
   /**
    * Advance do Pensa bem-sucedido: fechar uma ETAPA (z→e/e→r/r→o) credita
    * `pensa_stage_complete`; fechar o CICLO (o→done) credita SÓ o
-   * `pensa_cycle_complete` — o lançamento vale o prêmio MAIOR, sem acumular
+   * `pensa_cycle_complete` — a aprovação do plano vale o prêmio MAIOR, sem acumular
    * com o de etapa (decisão do plano). Idempotência pelo ledger: a etapa usa
    * um uuid DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId` — e o
    * ciclo usa o próprio cycleId; um replay do award nunca duplica.

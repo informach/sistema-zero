@@ -19,6 +19,10 @@ export interface PintaAppContextValue {
    * limpa — voltar do editor à galeria não reabre o "Criar novo".
    */
   takeInitialIntent(): PintaInitialIntent | null
+  /** Número que muda quando o brief pede para recriar um desenho ausente. */
+  initialIntentVersion: number
+  /** Abre a criação guiada novamente sem remontar o Pinta inteiro. */
+  requestInitialIntent(intent: PintaInitialIntent): void
   /**
    * Id do desenho a abrir direto (botão "Editar" do Estúdio), consumido UMA
    * vez — voltar à galeria não reabre o editor.

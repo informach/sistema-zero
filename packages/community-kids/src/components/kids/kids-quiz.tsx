@@ -4,12 +4,13 @@ import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-pla
 import { renderInline, renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, Check, Sparkles, Timer, Trophy, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Check, Sparkles, Timer, Trophy } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { QuizAttemptResultView, QuizBlock, QuizQuestion, QuizStateView } from '@/lib/types'
 import { badgeInfo } from './badges'
+import { QuizReview, useQuizCooldown } from './kids-quiz-review'
 import { KidsMascot } from './mascot'
 
 interface Props {
@@ -52,7 +53,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   const passingScore = result?.passingScore ?? content.passingScore ?? null
   const retryAvailableAt =
     result?.retryAvailableAt ?? cooldownUntil ?? quizState?.retryAvailableAt ?? null
-  const cooldownLeft = useCooldown(passed ? null : retryAvailableAt)
+  const cooldownLeft = useQuizCooldown(passed ? null : retryAvailableAt)
 
   // Foco-roving do radiogroup (a11y): as setas movem foco+seleção dentro do grupo.
   const groupRef = useRef<HTMLDivElement>(null)
@@ -335,7 +336,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
               disabled={submitting}
               onClick={() => setAnswers((a) => ({ ...a, [question.id]: choice.id }))}
               className={cn(
-                'flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-left font-semibold text-base transition-all',
+                'flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-left font-semibold text-base transition-[color,background-color,border-color,box-shadow,transform]',
                 selected
                   ? 'border-primary bg-(--kids-cyan-tint) text-primary shadow-[0_4px_0_color-mix(in_oklch,var(--primary)_45%,transparent)]'
                   : 'border-border bg-card shadow-[0_4px_0_var(--border)] hover:border-ring/60 active:translate-y-[2px] active:shadow-[0_2px_0_var(--border)]',
@@ -395,132 +396,4 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
       </div>
     </Card>
   )
-}
-
-/** Correção pós-submit: cartão verde/vermelho por pergunta (estilo Duolingo). */
-function QuizReview({
-  questions,
-  result,
-  answers,
-}: {
-  questions: QuizQuestion[]
-  result: QuizAttemptResultView
-  answers: Record<string, string>
-}) {
-  const corrections = new Map(result.questions.map((c) => [c.questionId, c]))
-  return (
-    <div className="flex flex-col gap-3">
-      <p className="sz-display text-muted-foreground text-sm uppercase tracking-wide">Correção</p>
-      {questions.map((q, qi) => {
-        const correction = corrections.get(q.id)
-        if (!correction) return null
-        const chosen = answers[q.id]
-        return (
-          <div
-            key={q.id}
-            className={cn(
-              'rounded-2xl border-2 p-4',
-              correction.correct
-                ? 'border-(--kids-lime) bg-(--kids-lime-tint)'
-                : 'border-destructive bg-destructive/10',
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <span
-                className={cn(
-                  'mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-white',
-                  correction.correct ? 'bg-(--kids-lime)' : 'bg-destructive',
-                )}
-              >
-                {correction.correct ? (
-                  <Check className="size-4" strokeWidth={3} />
-                ) : (
-                  <X className="size-4" strokeWidth={3} />
-                )}
-              </span>
-              <div className="min-w-0 flex-1">
-                {/* Recap compacto: markdown inline (preserva o text-sm do cartão de correção). */}
-                <p className="font-bold text-sm [&_img]:my-1 [&_img]:max-h-32 [&_img]:rounded-lg [&_img]:align-middle">
-                  {qi + 1}. {renderInline(q.prompt)}
-                </p>
-                <div className="mt-2 flex flex-col gap-1 text-sm">
-                  {q.choices.map((choice) => {
-                    const isCorrect = correction.correctChoiceIds.includes(choice.id)
-                    const isChosen = chosen === choice.id
-                    if (!isCorrect && !isChosen) return null
-                    return (
-                      <p
-                        key={choice.id}
-                        className={cn(
-                          'flex items-center gap-1.5 [&_img]:max-h-24 [&_img]:rounded-lg [&_img]:align-middle',
-                          isCorrect
-                            ? 'font-semibold text-success-foreground'
-                            : 'text-destructive line-through',
-                        )}
-                      >
-                        {isCorrect ? (
-                          <Check className="size-3.5 shrink-0" strokeWidth={3} />
-                        ) : (
-                          <X className="size-3.5 shrink-0" strokeWidth={3} />
-                        )}
-                        {renderInline(choice.label)}
-                      </p>
-                    )
-                  })}
-                </div>
-                {correction.explanation ? (
-                  <div className="mt-2 rounded-xl bg-card px-3 py-2">
-                    <p
-                      className={cn(
-                        'mb-1 text-xs font-bold',
-                        correction.correct ? 'text-success-foreground' : 'text-destructive',
-                      )}
-                    >
-                      {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
-                    </p>
-                    <div className="lesson-prose text-muted-foreground">
-                      {renderMarkdown(correction.explanation)}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/**
- * Countdown MM:SS até `retryAvailableAt` (tick de 1s) — espelha o
- * member-shell/quiz-block. O primeiro cálculo roda dentro do effect (não no
- * render) — evita divergência de hidratação SSR/client com `Date.now()`.
- */
-function useCooldown(retryAvailableAt: string | null): string | null {
-  const [left, setLeft] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!retryAvailableAt) {
-      setLeft(null)
-      return
-    }
-    const target = new Date(retryAvailableAt).getTime()
-    const tick = () => {
-      const ms = target - Date.now()
-      setLeft(ms > 0 ? formatCountdown(ms) : null)
-    }
-    tick()
-    const interval = setInterval(tick, 1_000)
-    return () => clearInterval(interval)
-  }, [retryAvailableAt])
-
-  return left
-}
-
-function formatCountdown(ms: number): string {
-  const total = Math.ceil(ms / 1_000)
-  const minutes = Math.floor(total / 60)
-  const seconds = total % 60
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }

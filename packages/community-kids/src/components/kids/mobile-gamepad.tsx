@@ -2,7 +2,7 @@
 
 import { Camera, Maximize, RefreshCw, Volume2, VolumeX } from 'lucide-react'
 import type { CSSProperties, ReactNode, RefObject } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { requestGamepadFullscreen } from './gamepad-fullscreen'
 
 // Paleta do console (inspirada no MakeCode Arcade)
@@ -24,6 +24,24 @@ const C = {
   ctrl: 'rgba(0,0,0,0.22)',
   ctrlIcon: 'rgba(255,255,255,0.72)',
   ctrlBorder: 'rgba(255,255,255,0.10)',
+}
+
+const MAX_SCREENSHOT_DATA_URL_LENGTH = 8_000_000
+export const SCREENSHOT_REQUEST_TIMEOUT_MS = 5_000
+
+function isSafePngScreenshot(
+  data: unknown,
+): data is { type: 'sz:screenshot:result'; dataUrl: string } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    data.type === 'sz:screenshot:result' &&
+    'dataUrl' in data &&
+    typeof data.dataUrl === 'string' &&
+    data.dataUrl.length <= MAX_SCREENSHOT_DATA_URL_LENGTH &&
+    /^data:image\/png;base64,[a-zA-Z0-9+/]+={0,2}$/.test(data.dataUrl)
+  )
 }
 
 function sendKey(
@@ -286,21 +304,45 @@ function CtrlBar({
 }) {
   const [muted, setMuted] = useState(false)
   const [shooting, setShooting] = useState(false)
+  const screenshotPendingRef = useRef(false)
+  const screenshotExpiresAtRef = useRef(0)
+  const screenshotTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const finishScreenshotRequest = useCallback(() => {
+    screenshotPendingRef.current = false
+    screenshotExpiresAtRef.current = 0
+    if (screenshotTimeoutRef.current !== null) {
+      clearTimeout(screenshotTimeoutRef.current)
+      screenshotTimeoutRef.current = null
+    }
+    setShooting(false)
+  }, [])
 
   useEffect(() => {
     function onMsg(e: MessageEvent) {
-      if (e.data?.type !== 'sz:screenshot:result') return
-      setShooting(false)
-      const url: string | null = e.data.dataUrl
-      if (!url) return
+      if (e.source !== iframeRef.current?.contentWindow) return
+      if (!screenshotPendingRef.current) return
+      if (Date.now() > screenshotExpiresAtRef.current) {
+        finishScreenshotRequest()
+        return
+      }
+      if (!isSafePngScreenshot(e.data)) {
+        finishScreenshotRequest()
+        return
+      }
+      finishScreenshotRequest()
       const a = document.createElement('a')
-      a.href = url
+      a.href = e.data.dataUrl
       a.download = 'jogo.png'
       a.click()
     }
     window.addEventListener('message', onMsg)
-    return () => window.removeEventListener('message', onMsg)
-  }, [])
+    return () => {
+      window.removeEventListener('message', onMsg)
+      screenshotPendingRef.current = false
+      if (screenshotTimeoutRef.current !== null) clearTimeout(screenshotTimeoutRef.current)
+    }
+  }, [finishScreenshotRequest, iframeRef])
 
   function toggleMute() {
     const next = !muted
@@ -313,8 +355,14 @@ function CtrlBar({
   }
 
   function screenshot() {
-    if (shooting || !iframeRef.current?.contentWindow) return
+    if (screenshotPendingRef.current || !iframeRef.current?.contentWindow) return
+    screenshotPendingRef.current = true
+    screenshotExpiresAtRef.current = Date.now() + SCREENSHOT_REQUEST_TIMEOUT_MS
     setShooting(true)
+    screenshotTimeoutRef.current = setTimeout(
+      finishScreenshotRequest,
+      SCREENSHOT_REQUEST_TIMEOUT_MS,
+    )
     iframeRef.current.contentWindow.postMessage({ type: 'sz:screenshot' }, '*')
   }
 

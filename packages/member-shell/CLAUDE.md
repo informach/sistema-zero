@@ -207,59 +207,19 @@ Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssu
 `tone="kids"` (copy sem jargão/travessão); o estado de carga é `role="status"` e a virada de estado vai
 numa região `aria-live="polite"` (a11y — o leitor anuncia bloqueado→elegível→emitido).
 
-**Pensa (planejamento guiado — metodologia ZERO, 07/2026):** o shell é o BFF do app
-`@sistemazero/pensa` (embarcado no kids em `/pensa`; projeto → ciclos "Versão N" → etapas Z/E/R/O
-persistidos no members, tabelas `pensa_*`). Client members: métodos `pensa*` (list/create/get/update
-projeto, create cycle, get stage, append turn, save/validate artifact, advance, replace/update tasks,
-replace/toggle checklist — sempre `?audience=`) + **`PENSA_ACCESS_REF = 'pensa'`** +
-`checkPensaAccessReadonly()` (gate da página, espelha o `checkStudioAccessReadonly`; o gate REAL de
-produto é do members no CREATE do projeto). Handlers: **`createPensaRoutes`** (`routes/pensa.ts` —
-passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e **`createPensaAiRoutes`**
-(`routes/pensa-ai.ts`): **`pensaChat` = `POST /api/pensa/chat` SSE** — agente de clareza da etapa Z
-(Zappy): pré-voo em JSON (401/403/409 `PENSA_STAGE_MISMATCH`/429/503) → stream OpenRouter repassado como
-`event: delta` → **evaluator estruturado** das 5 perguntas (`stage-z-evaluator.ts`, modelo do chat,
-`response_format: json_schema`) → persiste o turno COMPLETO (`pensaAppendTurn`; **abort = nada
-persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
-rate-limit in-process por sessão (10/min anti-burst, `globalThis`/`Symbol.for`, réplica única; o teto diário/mensal REAL é a quota durável por CONTA — ver seção Quota de IA) — e
-`pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — TODAS as sínteses:
-idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed + **`spec_edit`** 07/2026 = edição
-PONTUAL de UMA tela SEM IA: troca só `friendly_spec.screens`, mantém fluxos/PRD e auto-valida). ⚠️ **`GenerateBody` (Zod 4): as 3
-variantes da identidade repetem `type:'identity'` → NÃO podem ser irmãs num `discriminatedUnion('type')`**
-(o Zod 4 monta o mapa do discriminador no PRIMEIRO parse e lança "Duplicate discriminator value" — foi o
-500 de TODA geração em staging 02/07; o erro é lazy, então import/testes que não parseiam não pegam).
-Elas vivem numa união ANINHADA discriminada por `step`; regressão travada em `tests/pensa-ai.test.ts`
-(safeParse das 7 variantes). Os catches das gerações LOGAM (`console.error('[pensa-ai] …')`) antes do
-502 — catch mudo foi o que escondeu esse bug. O `friendly_spec` recebe a Carta + o TRANSCRIPT da etapa Z
-(detalhes concretos da conversa) e gera PRD com seções FIXAS nomeadas (contrato do agente de missões);
-revisão com `feedback` atualiza também o PRD anterior (senão deriva) e o feedback entra MESMO sem
-previousSpec. `mission_plan` e `checklist_seed` respeitam o **`buildEnv`** do projeto ('external' = sem
-Estúdio/blocos/catálogo; o item obrigatório de publicar muda de texto). **As missões citam os
-BLOCOS REAIS do Estúdio** (07/2026): `stage-r-missions.ts` tem DOIS snapshots curados manuais —
-`STUDIO_CATEGORY_HINTS` (categorias) e `STUDIO_BLOCK_HINTS` (labels EXATOS do `message0` de
-`packages/studio/src/official-extensions/game-2d/blocks.ts`; drift manual — mudou label lá,
-atualize aqui; NÃO importar `BLOCK_CATALOG` no servidor: puxa blockly/core). O prompt exige
-labels entre aspas, segue a ARQUITETURA real (setup fora do loop → eventos → UM "A cada quadro
-do jogo, fazer" → HUD por último) e a 1ª missão SEMPRE ensina a instalar a extensão Jogo 2D
-(menu ⋯ → Extensões → Instalar) — o projeto semeado pelo Pensa nasce com
-`installedExtensions: []` (decisão: ensinar a instalar, não pré-instalar na semeadura).
-Prompt/clamp travados em `tests/pensa-missions.test.ts`. Plumbing LLM em
-**`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
-`completePensaJson` com Zod e 1 retry — a 2ª tentativa manda um NUDGE de reparo, não repete o corpo
-cru: recupera JSON cortado de plano grande sem 502; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
-OPCIONAL **`OPENROUTER_PENSA_MODEL`** (chat + base das sínteses) e **`OPENROUTER_PENSA_SYNTHESIS_MODEL`**
-(03/07: só as sínteses PESADAS spec/missões — pode ser mais forte p/ jogos grandes; ausente → PENSA_MODEL →
-MODEL). ⚠️ `pensaChatModel` = PENSA_MODEL || MODEL (o genérico gerava chips vagos — QA 02/07);
-`pensaSynthesisModel` = SYNTHESIS || PENSA_MODEL || MODEL.
-**Escalar p/ jogo GRANDE (03/07, full review):** o nº de missões é PROPORCIONAL ao spec
-(`missionTargetFromSpec` em `stage-r-missions.ts` — flows+telas, piso 5, teto `MISSION_CEILING=24`;
-era fixo 5-8); `clampSpec` sobe p/ 12 telas/8 fluxos/14 elem; `max_tokens` das sínteses = 8k; e o chat da
-etapa Z tem **sumarização rolante** (`summarizeStageZ`) quando passa da janela (`PROMPT_WINDOW=40`, = a do
-evaluator) — a ideia inicial não some numa conversa longa (o members já persistia `summary`; o BFF nunca
-mandava). Contrato: `pensa-contract.md`. Prompts VERSIONADOS em
-`server/pensa-agents/*` — a **cláusula de segurança infantil SEMPRE entra no system kids** e a regra
-anti-inferência (PRD §11.3: o agente não decide pela criança; chips `SUGESTÕES:` são escolha DELA) é
-travada em `tests/pensa-ai.test.ts`. Tipos mirror em `lib/types.ts` (`Pensa*`). A conversa do chat NÃO
-passa pelo gateway (OpenRouter é chamado do BFF); a persistência passa (members = portão de ownership).
+**Pensa (planejador de jogos — 08/2026):** o shell expõe o BFF de `@sistemazero/pensa` e espelha
+os contratos do members em `lib/types.ts` e `server/clients.ts`. `createPensaRoutes` valida e repassa
+projetos, ciclos, cinco artefatos, tarefas, handoff e progresso. Escritas respeitam impersonação
+read-only. `GET /tasks/:id/handoff` preserva o plano e informa a capability; `PATCH
+/tasks/:id/progress` valida IDs e transições.
+
+`createPensaAiRoutes` mantém o chat SSE da etapa Z e gera somente `idea`, `game_design`,
+`visual_direction`, `task_plan` e `plan_review`. `planner-contract.ts` usa Zod 4, filtra
+`SERVER_BLOCK_CATALOG` e `SERVER_MECHANIC_DOCUMENTS` pelo `StudioTier`, recebe apenas IDs da IA e
+resolve rótulo, categoria, subcategoria, área e extensão no servidor. A geração rejeita referência
+inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset.
+A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
+persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
 **Pinta (editor de assets de jogos, 07/2026):** diferente do Pensa, o Pinta NÃO tem backend — os
 desenhos vivem no IndexedDB do navegador (por perfil) e a ponte "Usar no Estúdio" grava direto na
@@ -306,16 +266,10 @@ snapshot jogável cru — a checagem AUTORITATIVA do clique no kids). Testes em 
   `challengeKey` no multipart (formato validado FROUXO na borda; posse+mês são do hub, com drop
   silencioso da tag) e o repassa ao `hub.createShowcaseThreadStudioStandalone`. O shim
   `GET /api/hub/channels/:id/threads` encaminha `?challenge=m:YYYY-MM` (prateleira do Mural).
-- **Missões de ARTE (Pensa→Pinta):** `stage-r-missions.ts` — o `MissionSchema`/`MISSIONS_JSON_SCHEMA`
-  ganhou `artKind` (string; ⚠️ additionalProperties:false — campo novo TEM que entrar em
-  required+properties) e o `missionsSystem` o param `includeArtMissions` (só liga fora do
-  buildEnv 'external'): o prompt pede 1–2 missões de DESENHO (artKind sprite/background/tileset,
-  passos citam o botão "Desenhar no Pinta" e o "🚀 Usar no Estúdio", categories/blocks vazios).
-  `clampMissions(raw, external, palette)` valida o artKind e anexa a PALETA da identidade só nas
-  missões de arte. O `pensa-ai.ts` (mission_plan) checa a POSSE do Pinta
-  (`members.checkPintaAccessReadonly()`, best-effort → false) antes de ligar `includeArtMissions` —
-  produto vendido à parte: sem posse o plano nasce sem missão de arte. `PensaMission` (mirror em
-  `lib/types.ts`) ganhou `artKind?`/`palette?`. Travado em `tests/pensa-missions.test.ts`.
+- **Cartões Pensa→Pinta/Estúdio:** `planner-contract.ts` exige `assetId` em cada arte 2D e
+  `visualAssetIds` para modelo, mundo e material. O plano continua completo sem entitlement; o
+  handoff informa o bloqueio. O Pinta exige asset vinculado e, quando configurado, envio ao
+  Estúdio. O Estúdio usa somente blocos, manuais e extensões liberados pelo tier.
 - **Report dos pais (Lote E):** o handler `childrenStats` repassa os campos novos da view do
   members — `week` ("Esta semana" por filho) e `games` (jogos do Mural na semana; `null` = hub
   fora, degrada) — mirrors `ChildWeekStatsView`/`ChildWeekGameView` em `lib/types.ts`
@@ -486,7 +440,9 @@ manual com hint.
 **Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
 (`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route
 handlers** `profilesList`/`profileCreate`/`profileUpdate`/`profileArchive`/`profileSelect`/
-`profileExit` (em `createShellRoutes`; ⚠️ o `profileAvatar` — upload de FOTO de perfil — foi
+`profileExit` (em `createShellRoutes`; o `CreateProfileBody` Zod aceita
+`publicProfileEnabled?` desde 08/2026 — o pai decide o perfil público JÁ na criação, tutorial
+de 1º acesso do kids; o auth aplica no create, parent-only por construção; ⚠️ o `profileAvatar` — upload de FOTO de perfil — foi
 REMOVIDO 24/07: a imagem da criança vem só do snapshot do avatar 3D via `avatarSnapshot` +
 allowlist `AVATAR_PHOTO_URL_PREFIXES` no members). `select`/`exit` EMITEM tokens novos
 e o handler TROCA os cookies (igual ao exchange de impersonação): `select` = entrar/trocar de
@@ -583,29 +539,20 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - Cada pergunta revalida sessão, posse do Estúdio, carreira/modo/extensões e cursos liberados;
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
-- **Portão por CARREIRA (08/2026 — substituiu o piloto por allowlist).** `server/zappy-access.ts`:
-  equipe sempre; senão `ZAPPY_ENABLED` ligado **E** carreira em **Inventor(a) (`hacker`)** ou acima.
-  `ZAPPY_PILOT_ACCOUNT_IDS` foi REMOVIDA (não escalava e mantinha o Zappy invisível em produção);
-  `ZAPPY_ENABLED` virou **interruptor de emergência, default `true`** — o tutor gasta cota de IA por
-  interação, então derrubá-lo sem deploy tem valor. A equipe passa ANTES do interruptor de propósito
-  (com o Zappy desligado ainda é preciso reproduzir o problema).
-  Duas formas, MESMA regra: `isStudioZappyAllowed(session, levelSlug, policy?)` (síncrona, p/ as
-  páginas, que já resolvem o nível) e **`isStudioZappyAllowedForRequest(members, session)`**
-  (assíncrona, p/ os 4 guards do BFF — o nível não viaja no token, vem do members). ⚠️ Nunca
-  reimplemente a regra no handler: é assim que o portão da UI e o do servidor divergem.
-  O nome real não vai ao OpenRouter e o contexto do projeto não é persistido.
-- **A barra é compartilhada com Pensa e Pinta**: `CREATIVE_APPS_MIN_LEVEL` (`lib/studio-tier.ts` —
-  fica em `lib/` porque as TELAS também a leem p/ nomear o degrau; `server/creative-apps-access.ts`
-  a reexporta) + `meetsCreativeAppsLevel(levelSlug, role)` (síncrona) e
-  `hasCreativeAppsLevel(members, role)` (assíncrona, p/ handlers). Primitivo de ordem:
-  **`careerLevelAtLeast(slug, min)`** no `@sistemazero/core/career` — ⚠️ NÃO confundir com
-  `meetsCareerLevel`, que cruza SLOTS de curso (é como o nível é derivado).
-  **Assimetria deliberada de falha:** nas PÁGINAS, gamificação fora do ar → tela de
-  "indisponível" (rebaixar p/ Faísca tiraria o produto de quem já conquistou o degrau); nos
-  HANDLERS → recusa (fail-closed), porque um handler não tem tela de retry p/ mostrar.
-  No Pensa o portão vive no guard de ESCRITA de `routes/pensa.ts` e nos 2 de `routes/pensa-ai.ts`
-  (403 `CAREER_LEVEL_REQUIRED`); as LEITURAS ficam abertas de propósito — ler os próprios projetos
-  não causa dano e cobrar o nível em toda leitura somaria uma ida ao members por chamada. O Pinta
-  não tem rota de BFF (galeria no IndexedDB), então lá a página é a superfície inteira.
+- **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
+  carreira **≥ `ZAPPY_MIN_LEVEL`** (default `hacker` = "Inventor(a)", o 3º degrau). A equipe
+  ignora tudo (QA) e `ZAPPY_PILOT_ACCOUNT_IDS` VIROU ESCOTILHA: libera uma conta ABAIXO do
+  degrau (não é mais a única porta). Duas funções em `server/zappy-access.ts`:
+  **`isStudioZappyAllowed(session, levelSlug, policy?)`** é a AUTORITATIVA (equipe → allowlist →
+  nível) e **`isStudioZappyRolloutOpen(session, policy?)`** é a recusa BARATA (equipe/flag, sem
+  o rank) p/ negar antes de gastar ida ao members. ⚠️ `levelSlug` ausente/desconhecido REPROVA
+  (fail-closed via `careerLevelAtLeast` em `lib/studio-tier.ts`, que usa o `CAREER_LEVEL_SLUGS`
+  do core — nunca reimplemente a escada). Passar `undefined` de propósito = "dá p/ decidir sem o
+  rank?" (equipe/allowlist respondem antes; só o aluno comum custa a busca). A rota da PERGUNTA
+  confere o nível junto do `tier` (a gamificação já é buscada ali — ida ZERO extra); histórico e
+  feedback usam o helper `zappyAllowedWithLevel`. `ZAPPY_MIN_LEVEL` é string CRUA no env (não
+  `z.enum`): slug errado no Railway cairia o boot do app — o access valida e volta ao default.
+  O mesmo gate server-side decide se o host injeta a UI. O nome real não vai ao
+  OpenRouter e o contexto do projeto não é persistido.
 - Catálogo, manuais, código e base didática são ranqueados por relevância e o prompt total fica em
   até 48 kB. Referências de aula incluem `courseSlug` autoritativo para o host montar a navegação.

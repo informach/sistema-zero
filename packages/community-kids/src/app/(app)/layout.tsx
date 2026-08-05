@@ -85,6 +85,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <a
+        href="#main-content"
+        className="fixed top-3 left-3 z-[100] -translate-y-20 rounded-full bg-primary px-4 py-3 font-bold text-primary-foreground shadow-lg transition-transform focus-visible:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        Pular para o conteúdo
+      </a>
       {/* Sessão de impersonação (suporte): faixa persistente acima de tudo. */}
       {session.act ? (
         <ImpersonationBanner

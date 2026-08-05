@@ -1,11 +1,8 @@
 import type { CourseAudience } from '../../domain/course/course'
-import { PensaNotFoundError } from '../../domain/pensa/pensa.errors'
+import { PensaNotFoundError, PensaTaskLockedError } from '../../domain/pensa/pensa.errors'
 import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
+import { ValidationError } from '../../domain/shared/errors'
 
-/**
- * Apaga UMA missão do kanban (autoria manual). Ownership pelo projeto dono → 404.
- * Deixar um buraco de `position` é inócuo (a ordem é relativa; os moves re-densam).
- */
 export class DeletePensaTaskService {
   constructor(
     private readonly repo: PensaRepository,
@@ -15,6 +12,14 @@ export class DeletePensaTaskService {
   async execute(userId: string, audience: CourseAudience, taskId: string): Promise<void> {
     const found = await this.repo.findTaskWithProject(taskId, userId, audience)
     if (!found) throw new PensaNotFoundError()
-    await this.repo.deleteTask(found.project.id, taskId, this.clock())
+    if (found.task.progress.status !== 'planned') throw new PensaTaskLockedError()
+    const tasks = await this.repo.listTasks(found.cycle.id)
+    if (tasks.some((task) => task.dependencies.includes(taskId))) {
+      throw new ValidationError('Remova esta dependência dos cartões seguintes antes de apagar')
+    }
+    const now = this.clock()
+    await this.repo.deleteTask(found.project.id, taskId, now)
+    if (found.cycle.stage === 'done')
+      await this.repo.reopenCycleReview(found.project.id, found.cycle.id, now)
   }
 }

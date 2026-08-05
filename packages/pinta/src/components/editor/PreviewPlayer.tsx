@@ -5,23 +5,30 @@
  * os DOIS estilos: pixel pinta num canvas (upscale CSS pixelated), vetor
  * renderiza o quadro como SVG inline (síncrono, sem canvas).
  *
- * Os controles de velocidade/repetição/suavização e a duração vivem no
- * `AnimationDetails` (bloco "Animação selecionada", logo abaixo).
+ * Ações em BOTÕES DE ÍCONE (tooltip = title do ToolButton): Reproduzir (play),
+ * Editar (parar no quadro atual para desenhar) e Configurações — este abre a
+ * MODAL "Animação selecionada" (`AnimationDetails` dentro de um Dialog, como o
+ * seletor de cor da paleta): o dia a dia usa os defaults, ajustar é um desvio
+ * explícito.
  */
 import type { JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAnimationPlayer } from '../../animation/player'
 import { activeAnimationOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import {
   isAnimatedSpriteKind,
-  type PintaBitmap,
+  type PintaPixelFrame,
   resolveAssetPalette,
   type VectorFrame,
 } from '../../core/project'
+import { flattenCelsOrBlank } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
-import { Button } from '../ui/Button'
+import { ToolButton } from '../ui/Button'
+import { Dialog } from '../ui/Dialog'
+import { Play, Settings, SquarePen } from '../ui/icons'
+import { AnimationDetails } from './AnimationDetails'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
 export function PreviewPlayer(): JSX.Element | null {
@@ -30,6 +37,7 @@ export function PreviewPlayer(): JSX.Element | null {
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
   const playing = useSession((state) => state.playing)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const animated = isAnimatedSpriteKind(asset) ? asset : null
@@ -48,7 +56,11 @@ export function PreviewPlayer(): JSX.Element | null {
     ? playingIndex
     : Math.min(frameIndex, (animation?.frames.length ?? 1) - 1)
   const shown = animation?.frames[shownIndex] ?? null
-  const shownBitmap = animated?.kind === 'pixel-sprite' && shown ? (shown as PintaBitmap) : null
+  // A prévia mostra o desenho VISÍVEL: camadas achatadas.
+  const shownBitmap =
+    animated?.kind === 'pixel-sprite' && shown
+      ? flattenCelsOrBlank(shown as PintaPixelFrame, animated.layers)
+      : null
   const shownShapes = animated?.kind === 'vector-sprite' && shown ? (shown as VectorFrame) : null
 
   useEffect(() => {
@@ -65,7 +77,10 @@ export function PreviewPlayer(): JSX.Element | null {
       aria-label={COPY.animation.preview}
       className="pin-panel flex flex-col items-center gap-2 p-3"
     >
-      <span className="self-start text-sm font-bold text-pin-muted">{COPY.animation.preview}</span>
+      {/* Mesmo título dos painéis irmãos (Camadas/Cores): px-1 font-bold text-pin-text. */}
+      <span className="w-full min-w-0 truncate px-1 font-bold text-pin-text">
+        {COPY.animation.preview}
+      </span>
       <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">
         {animated.kind === 'pixel-sprite' ? (
           <canvas
@@ -87,24 +102,35 @@ export function PreviewPlayer(): JSX.Element | null {
         <span className="min-w-0 max-w-full truncate">{animation.name}</span>
         <span className="font-normal text-pin-muted">{COPY.animation.selectedBadge}</span>
       </span>
-      <div className="flex w-full gap-2">
-        <Button
-          variant={playing ? 'primary' : 'outline'}
-          className="flex-1"
-          aria-pressed={playing}
+      <div className="flex w-full items-center justify-center gap-2">
+        <ToolButton
+          icon={Play}
+          label={COPY.animation.reproduce}
+          active={playing}
           onClick={() => session.getState().setPlaying(true)}
-        >
-          {COPY.animation.reproduce}
-        </Button>
-        <Button
-          variant={playing ? 'outline' : 'primary'}
-          className="flex-1"
-          aria-pressed={!playing}
+        />
+        <ToolButton
+          icon={SquarePen}
+          label={COPY.animation.edit}
+          active={!playing}
           onClick={() => session.getState().setPlaying(false)}
-        >
-          {COPY.animation.edit}
-        </Button>
+        />
+        <ToolButton
+          icon={Settings}
+          label={COPY.animation.settings}
+          aria-haspopup="dialog"
+          aria-expanded={settingsOpen}
+          onClick={() => setSettingsOpen(true)}
+        />
       </div>
+
+      <Dialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        title={COPY.animation.selected}
+      >
+        <AnimationDetails />
+      </Dialog>
     </section>
   )
 }

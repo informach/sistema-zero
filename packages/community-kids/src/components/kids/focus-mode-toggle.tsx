@@ -43,7 +43,7 @@ export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
       aria-pressed={hidden}
       title={label}
       className={cn(
-        'grid size-10 shrink-0 place-items-center rounded-full border-2 transition-all',
+        'grid size-11 shrink-0 place-items-center rounded-full border-2 transition-[color,background-color,border-color,box-shadow,transform]',
         'shadow-[0_3px_0_var(--border)] active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]',
         hidden
           ? 'border-primary bg-(--kids-cyan-tint) text-primary'

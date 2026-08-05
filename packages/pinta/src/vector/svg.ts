@@ -49,12 +49,12 @@ export function linearGradientVector(angle: number): {
 }
 
 /** `<defs>` com um gradiente por shape de preenchimento degradê (`''` se nenhum). */
-export function gradientDefsMarkup(shapes: VectorShape[]): string {
+export function gradientDefsMarkup(shapes: VectorShape[], idPrefix = ''): string {
   const defs = shapes
     .filter((s) => isVectorGradient(s.fill))
     .map((s) => {
       const g = s.fill as VectorGradient
-      const id = gradientId(s.id)
+      const id = escapeXml(gradientId(s.id, idPrefix))
       const stops = `<stop offset="0" stop-color="${g.from}"/><stop offset="1" stop-color="${g.to}"/>`
       if (g.type === 'radial') return `  <radialGradient id="${id}">${stops}</radialGradient>`
       const v = linearGradientVector(g.angle)
@@ -64,8 +64,8 @@ export function gradientDefsMarkup(shapes: VectorShape[]): string {
 }
 
 /** Atributos comuns (fill/stroke/opacity/transform de rotação). */
-export function shapeCommonAttrs(shape: VectorShape): Record<string, string> {
-  const fill = isVectorGradient(shape.fill) ? `url(#${gradientId(shape.id)})` : shape.fill
+export function shapeCommonAttrs(shape: VectorShape, idPrefix = ''): Record<string, string> {
+  const fill = isVectorGradient(shape.fill) ? `url(#${gradientId(shape.id, idPrefix)})` : shape.fill
   const attrs: Record<string, string> = { fill }
   if (shape.stroke) {
     attrs.stroke = shape.stroke.color
@@ -142,9 +142,9 @@ export function shapeGeometryAttrs(shape: VectorShape): {
   }
 }
 
-export function shapeToMarkup(shape: VectorShape): string {
+export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
   const { tag, attrs, content } = shapeGeometryAttrs(shape)
-  const all = { ...attrs, ...shapeCommonAttrs(shape) }
+  const all = { ...attrs, ...shapeCommonAttrs(shape, idPrefix) }
   const attrText = Object.entries(all)
     .map(([key, value]) => `${key}="${escapeXml(value)}"`)
     .join(' ')
@@ -153,8 +153,8 @@ export function shapeToMarkup(shape: VectorShape): string {
 }
 
 /** Markup dos shapes (sem o elemento `<svg>` em volta), na ordem do z-order. */
-export function shapesToMarkup(shapes: VectorShape[], indent = '  '): string {
-  return shapes.map((shape) => `${indent}${shapeToMarkup(shape)}`).join('\n')
+export function shapesToMarkup(shapes: VectorShape[], indent = '  ', idPrefix = ''): string {
+  return shapes.map((shape) => `${indent}${shapeToMarkup(shape, idPrefix)}`).join('\n')
 }
 
 /** O documento SVG inteiro (ordem do array = z-order, fundo primeiro). */

@@ -1,8 +1,9 @@
 /**
- * Detalhes da animação SELECIONADA (bloco "Animação selecionada", à direita da
- * prévia): Duração total, Velocidade (nome + o controle fino 🐢→🐇), Repetição
- * (Ligada/Desligada) e Suavização (Linear/Suave). Serve os dois estilos de
- * sprite. Só aparece para sprites animados.
+ * Detalhes da animação SELECIONADA: Duração total, Velocidade (nome + o
+ * controle fino 🐢→🐇), Repetição (Ligada/Desligada) e Suavização
+ * (Linear/Suave). Serve os dois estilos de sprite. É o CONTEÚDO do Dialog de
+ * configurações aberto pela engrenagem da prévia (PreviewPlayer) — o título e
+ * a moldura vêm do Dialog, então aqui é só a pilha de controles.
  *
  * fps arrasta com `replace` (sem encher o undo); repetição/suavização são
  * um-toque e commitam (desfazíveis).
@@ -96,9 +97,8 @@ export function AnimationDetails(): JSX.Element | null {
   }
 
   return (
-    <section aria-label={COPY.animation.selected} className="pin-panel flex flex-col gap-2.5 p-3">
-      <span className="text-sm font-bold text-pin-muted">{COPY.animation.selected}</span>
-
+    // Sem aria-label aqui: quem rotula é o Dialog (aria-labelledby do título).
+    <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
         <span className="text-sm text-pin-muted">{COPY.animation.duration}</span>
         <span className="text-sm font-bold text-pin-text">
@@ -157,6 +157,6 @@ export function AnimationDetails(): JSX.Element | null {
           onChange={(value) => updateEasing(value === 'ease' ? 'ease' : 'linear')}
         />
       </div>
-    </section>
+    </div>
   )
 }

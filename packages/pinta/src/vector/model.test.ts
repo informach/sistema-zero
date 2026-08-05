@@ -62,4 +62,11 @@ describe('sanitizeVectorShape — grupo', () => {
     expect(sanitizeVectorShape(rectRaw)?.groupId).toBeUndefined()
     expect(sanitizeVectorShape({ ...rectRaw, groupId: 42 })?.groupId).toBeUndefined()
   })
+
+  it('rejeita ids capazes de quebrar atributos SVG', () => {
+    expect(sanitizeVectorShape({ ...rectRaw, id: 'x"><script>alert(1)</script>' })).toBeNull()
+    expect(
+      sanitizeVectorShape({ ...rectRaw, groupId: 'grupo com espaço' })?.groupId,
+    ).toBeUndefined()
+  })
 })

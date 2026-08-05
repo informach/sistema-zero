@@ -11,6 +11,45 @@ import type { StudioTutorConfig } from './tutor'
 
 export type StudioLocale = Locale
 
+export interface StudioTaskGuideItem {
+  id: string
+  text: string
+  hint?: string
+  required: boolean
+}
+/** Guia de uma tarefa planejada no Pensa. É independente de LessonActivity. */
+export interface StudioTaskSession {
+  taskId: string
+  title: string
+  summary: string | null
+  project: { id: string; name: string }
+  cycle: { id: string; number: number; goal: string | null }
+  guide: { steps: StudioTaskGuideItem[]; criteria: StudioTaskGuideItem[] }
+  blocks: Array<{
+    id: string
+    label: string
+    category: string
+    subcategory: string
+    area: string
+    extension: string | null
+  }>
+  progress: {
+    status: 'planned' | 'in_progress' | 'completed'
+    completedStepIds: string[]
+    completedCriteriaIds: string[]
+    startedAt: string | null
+    completedAt: string | null
+    updatedAt: string | null
+    outputRef: { kind: 'studio_project'; projectId: string; saveRevision?: string } | null
+  }
+  onProgress(input: {
+    status?: 'in_progress' | 'completed'
+    completedStepIds?: string[]
+    completedCriteriaIds?: string[]
+    outputRef?: { kind: 'studio_project'; projectId: string; saveRevision?: string }
+  }): Promise<void>
+}
+
 /** Acesso imperativo à instância (prop `ref` do Studio — React 19). */
 export interface StudioHandle {
   /** Snapshot atual do projeto (síncrono). */
@@ -201,6 +240,8 @@ export type StudioCoreProps = StudioCommonProps &
     activity?: LessonActivity | null
     /** Interno: somente StudioEditor encaminha este contrato. */
     tutor?: StudioTutorConfig
+    /** Interno: somente StudioEditor encaminha este contrato. */
+    taskSession?: StudioTaskSession
   }
 
 /**
@@ -212,6 +253,8 @@ export type StudioEditorProps = StudioCommonProps &
   StudioLearningProps & {
     /** Tutor somente leitura do Estúdio Completo. Não existe no StudioLesson. */
     tutor?: StudioTutorConfig
+    /** Cartão de Criação restaurado pelo host via `?tarefa=`. */
+    taskSession?: StudioTaskSession
   }
 
 /**

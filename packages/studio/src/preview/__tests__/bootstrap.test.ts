@@ -15,11 +15,7 @@ describe('buildPreviewDoc', () => {
     const scriptPolicy = doc.match(/script-src[^;]*/)?.[0] ?? ''
     expect(scriptPolicy).not.toContain("'unsafe-inline'")
     expect(scriptPolicy).not.toContain("'nonce-")
-    // `data:` É esperado (hash não casa com script externo fora do Chromium — ver
-    // csp.ts); `blob:` continua fora, e quem barra `data:` feito em RUNTIME é o
-    // scriptSourceGuard.
-    expect(scriptPolicy).toMatch(/\bdata:/)
-    expect(scriptPolicy).not.toMatch(/\bblob:/)
+    expect(scriptPolicy).not.toMatch(/\bdata:|\bblob:/)
 
     const inlineScripts = [...doc.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)].filter(
       (match) => !/\bsrc=/i.test(match[1] ?? ''),
@@ -39,36 +35,9 @@ describe('buildPreviewDoc', () => {
     for (const [, attributes = '', encoded = ''] of externalDataScripts) {
       const code = Buffer.from(encoded, 'base64')
       const hash = `sha256-${createHash('sha256').update(code).digest('base64')}`
-      // O hash CONTINUA declarado na policy (são os bytes exatos)...
+      expect(attributes).toContain(`integrity="${hash}"`)
       expect(scriptPolicy, hash).toContain(`'${hash}'`)
-      // ...mas NUNCA vira atributo `integrity` na tag: `data:` não é elegível
-      // para SRI e o Firefox recusa o script que o declara.
-      expect(attributes, hash).not.toContain('integrity')
     }
-  })
-
-  it('NENHUM script data: leva `integrity` (Firefox recusa SRI não-elegível)', () => {
-    // Regressão 08/2026: liberar `data:` no script-src não bastou — o Firefox
-    // recusava com "not eligible for integrity checks since it's neither
-    // CORS-enabled nor same-origin", e o programa do aluno seguia sem executar.
-    // Vale para os 3 caminhos: script.js canônico, <script> inline do index.html
-    // e arquivos extras (que viram módulos no importmap).
-    const doc = buildPreviewDoc({
-      html: '<body><script>console.log(1)</script></body>',
-      css: '',
-      js: 'import { x } from "./extra.js"; console.log(x)',
-      extraFiles: [{ name: 'extra.js', language: 'javascript', content: 'export const x = 1' }],
-    })
-    const dataScripts = [...doc.matchAll(/<script([^>]*\bsrc="data:[^"]+"[^>]*)>/gi)]
-    expect(dataScripts.length).toBeGreaterThan(1)
-    for (const [, attributes = ''] of dataScripts) {
-      expect(attributes, attributes).not.toContain('integrity')
-    }
-    // E nem o IMPORTMAP: a chave `integrity` dele aplicaria SRI aos imports de
-    // módulo dos arquivos extras — mesma recusa, e escapou da primeira correção.
-    const importmapJson = doc.match(/<script type="importmap">([\s\S]*?)<\/script>/)?.[1] ?? ''
-    expect(importmapJson).not.toBe('')
-    expect(Object.keys(JSON.parse(importmapJson))).toEqual(['imports'])
   })
 
   it('instrumenta <script> inline do HTML do aluno (loopGuard cobre o index.html) — 5º review #9', () => {
@@ -233,9 +202,13 @@ describe('buildPreviewDoc', () => {
     // Clássico (sem type="module") e SEM defer (não há módulos de extensão) →
     // escopo global preservado + ordem do documento. Externo via data: URL.
     expect(doc).not.toContain('<script type="module"')
-    expect(doc).toMatch(/<script src="data:text\/javascript;base64,[A-Za-z0-9+/=]+"><\/script>/)
+    expect(doc).toMatch(
+      /<script src="data:text\/javascript;base64,[A-Za-z0-9+/=]+" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     expect(doc).not.toMatch(/\bdefer\b/)
-    const m = doc.match(/<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)"><\/script>/)
+    const m = doc.match(
+      /<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     const decoded = Buffer.from(m?.[1] ?? '', 'base64').toString('utf-8')
     expect(decoded).toContain('function oi()')
   })
@@ -313,15 +286,16 @@ describe('buildPreviewDoc', () => {
     expect(sources).toContain('https://esm.sh/three@0.180.0')
     expect(sources).toContain('https://esm.sh/three@0.180.0/')
     expect(sources).not.toContain('https://esm.sh')
+    expect(scriptSrc).not.toContain(' data:')
     expect(scriptSrc).not.toContain(' blob:')
   })
 
   it('sem módulos de extensão, a CSP não libera origens externas em script-src', () => {
     const doc = buildPreviewDoc({ html: '<body></body>', css: '', js: '' })
     const scriptSrc = doc.match(/script-src[^;]*/)?.[0] ?? ''
-    // Hashes + `data:` no fim, e NADA mais: nenhuma origem externa entra sozinha.
-    expect(scriptSrc).toMatch(/^script-src(?: 'sha256-[A-Za-z0-9+/=]+')+ data:$/)
+    expect(scriptSrc).toMatch(/^script-src(?: 'sha256-[A-Za-z0-9+/=]+')+$/)
     expect(scriptSrc).not.toContain("'unsafe-inline'")
+    expect(scriptSrc).not.toContain('data:')
     expect(scriptSrc).not.toContain('blob:')
   })
 
@@ -431,7 +405,9 @@ describe('buildPreviewDoc', () => {
     // O <script src="script.js"></script> original deve sumir
     expect(doc).not.toMatch(/<script[^>]+src=["'][^"']*script\.js["']/)
     // Mas o JS do aluno (console.log(1)) precisa estar — agora via data: URL externo.
-    const m = doc.match(/<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)"><\/script>/)
+    const m = doc.match(
+      /<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     expect(m).not.toBeNull()
     const decoded = Buffer.from(m?.[1] ?? '', 'base64').toString('utf-8')
     expect(decoded).toContain('console.log(1);')
@@ -539,7 +515,9 @@ describe('buildPreviewDoc', () => {
     const js = 'const re = /<!--/u;\nconsole.log("</script>", re.test("<!--"));'
     const doc = buildPreviewDoc({ html: '<body></body>', css: '', js })
     // Externo via data: URL (clássico, sem defer) — não passou por escape.
-    const m = doc.match(/<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)"><\/script>/)
+    const m = doc.match(
+      /<script src="data:text\/javascript;base64,([A-Za-z0-9+/=]+)" integrity="sha256-[A-Za-z0-9+/=]+"><\/script>/,
+    )
     expect(m).not.toBeNull()
     const decoded = Buffer.from(m?.[1] ?? '', 'base64').toString('utf-8')
     // O regex e a string ficam INTACTOS (sem `\` injetado por escapeScriptContent).

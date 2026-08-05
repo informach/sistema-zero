@@ -27,6 +27,7 @@ const ROLE_NAME_BASE: Record<NewAssetRole, string> = {
   sprite: 'heroi',
   background: 'cenario',
   tileset: 'pecas',
+  tilemap: 'mapa',
 }
 
 function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
@@ -39,7 +40,7 @@ function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
 }
 
 export function GalleryScreen(): JSX.Element {
-  const { gallery, openAsset, takeInitialIntent } = usePintaApp()
+  const { gallery, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
   const { showToast } = useToast()
   const assets = usePintaGallery((state) => state.assets)
   const loaded = usePintaGallery((state) => state.loaded)
@@ -52,12 +53,15 @@ export function GalleryScreen(): JSX.Element {
   // não engolir o intent; o segundo run recebe null e não faz nada.
   const [intent, setIntent] = useState<PintaInitialIntent | null>(null)
   useEffect(() => {
+    // O contador é o sinal para consumir um novo intent, mesmo que o callback
+    // estável continue com a mesma identidade.
+    void initialIntentVersion
     const taken = takeInitialIntent()
     if (taken) {
       setIntent(taken)
       setCreateOpen(true)
     }
-  }, [takeInitialIntent])
+  }, [takeInitialIntent, initialIntentVersion])
   const [renameId, setRenameId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [removeId, setRemoveId] = useState<string | null>(null)
@@ -103,7 +107,7 @@ export function GalleryScreen(): JSX.Element {
         setRenameValue(asset.name)
       }}
       onDuplicate={() => {
-        void gallery
+        return gallery
           .getState()
           .duplicate(asset.id)
           .then((copy) => {
@@ -275,7 +279,7 @@ export function GalleryScreen(): JSX.Element {
         tilesets={tilesets}
         takenNames={new Set(assets.map((a) => a.name))}
         creating={creating}
-        initialStyle={lastStyle}
+        initialStyle={intent?.style && intent.style !== 'either' ? intent.style : lastStyle}
         initialRole={intent?.artKind ?? null}
         initialName={
           intent?.artKind ? suggestName(intent.artKind, new Set(assets.map((a) => a.name))) : ''
@@ -363,6 +367,8 @@ export function GalleryScreen(): JSX.Element {
           }}
         >
           <input
+            name="pinta-asset-name"
+            autoComplete="off"
             value={renameValue}
             onChange={(event) => setRenameValue(event.target.value)}
             aria-label={COPY.newAsset.nameTitle}

@@ -6,7 +6,7 @@
  * GalleryScreen — o card só chama.
  */
 import type { JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import {
   assetStyle,
@@ -15,6 +15,7 @@ import {
   type PintaBitmap,
   resolveAssetPalette,
 } from '../../core/project'
+import { flattenCels } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import type { VectorShape } from '../../vector/model'
@@ -24,10 +25,13 @@ import { Copy, Pencil, Trash2 } from '../ui/icons'
 /** Bitmap "cara" do asset para a miniatura (null = sem prévia raster). */
 export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
   switch (asset.kind) {
-    case 'pixel-sprite':
-      return asset.animations[0]?.frames[0] ?? null
+    // Miniatura mostra o desenho VISÍVEL (camadas achatadas).
+    case 'pixel-sprite': {
+      const cels = asset.animations[0]?.frames[0]
+      return cels ? flattenCels(cels, asset.layers) : null
+    }
     case 'pixel-background':
-      return asset.bitmap
+      return flattenCels(asset.cels, asset.layers)
     case 'tileset':
       return asset.tiles[0] ?? null
     default:
@@ -169,11 +173,23 @@ export function AssetCard({
   findAsset?: (id: string) => PintaAsset | null
   onOpen: () => void
   onRename: () => void
-  onDuplicate: () => void
+  onDuplicate: () => Promise<void> | void
   onRemove: () => void
 }): JSX.Element {
   const kind = COPY.kinds[asset.kind]
   const style = assetStyle(asset.kind)
+  const [duplicating, setDuplicating] = useState(false)
+
+  async function handleDuplicate(): Promise<void> {
+    if (duplicating) return
+    setDuplicating(true)
+    try {
+      await onDuplicate()
+    } finally {
+      setDuplicating(false)
+    }
+  }
+
   return (
     <div
       className={`pin-panel pin-pop flex flex-col gap-2 p-3 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
@@ -214,15 +230,17 @@ export function AssetCard({
           type="button"
           onClick={onRename}
           aria-label={`${COPY.gallery.rename} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
         >
           <Pencil aria-hidden="true" className="size-4" />
         </button>
         <button
           type="button"
-          onClick={onDuplicate}
+          onClick={() => void handleDuplicate()}
+          disabled={duplicating}
+          aria-busy={duplicating}
           aria-label={`${COPY.gallery.duplicate} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent disabled:cursor-wait disabled:opacity-50"
         >
           <Copy aria-hidden="true" className="size-4" />
         </button>
@@ -230,7 +248,7 @@ export function AssetCard({
           type="button"
           onClick={onRemove}
           aria-label={`${COPY.gallery.remove} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-danger/20"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-danger/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
         >
           <Trash2 aria-hidden="true" className="size-4" />
         </button>

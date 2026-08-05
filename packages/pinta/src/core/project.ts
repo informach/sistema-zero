@@ -13,6 +13,35 @@ import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'
 import { DEFAULT_PALETTE_ID, getPalette, isPaletteId, type PaletteId } from './palette'
+import {
+  clampProjectInt,
+  createBitmap,
+  createPixelLayer,
+  normalizeAssetName,
+  PINTA_LIMITS,
+  uniqueAnimationName,
+} from './projectConfig'
+
+export {
+  BACKGROUND_SIZES,
+  createBitmap,
+  createPixelBackgroundAsset,
+  createPixelLayer,
+  createPixelSpriteAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  createVectorBackgroundAsset,
+  createVectorSpriteAsset,
+  createVectorTilesetAsset,
+  normalizeAssetName,
+  PINTA_LIMITS,
+  SPRITE_FRAME_SIZES,
+  TILE_SIZES,
+  uniqueAnimationName,
+  VECTOR_SIZES,
+  VECTOR_SPRITE_SIZES,
+  VECTOR_TILE_SIZES,
+} from './projectConfig'
 
 export interface PintaBitmap {
   width: number
@@ -122,21 +151,49 @@ export type PintaVectorAnimation = PintaAnimation<VectorFrame>
  */
 export type PintaExtraColors = readonly string[]
 
+/**
+ * CAMADA de um desenho de pixel — só os metadados (olho, nome, ordem). O
+ * desenho de cada camada vive nos "cels": um `PintaBitmap` por camada,
+ * ALINHADO por índice com `layers`. Espelha o `TilemapLayer`, mas sem os bytes
+ * dentro, porque no sprite a MESMA camada tem um cel por quadro.
+ *
+ * Índice 0 = camada de FUNDO (no achatamento a de cima vence). A UI lista ao
+ * contrário: o topo da lista é a camada de cima.
+ *
+ * ⚠️ O bitmap é INDEXADO (1 byte/pixel, sem alpha): a composição só sabe
+ * "índice opaco de cima vence". Opacidade/blend por camada são inexprimíveis.
+ */
+export interface PintaPixelLayer {
+  id: string
+  name: string
+  visible: boolean
+}
+
+/** Um quadro de pixel: um cel por camada, alinhado com `asset.layers`. */
+export type PintaPixelFrame = PintaBitmap[]
+
+export type PintaPixelAnimation = PintaAnimation<PintaPixelFrame>
+
 export interface PixelSpriteAsset extends PintaAssetBase {
   kind: 'pixel-sprite'
   frameWidth: number
   frameHeight: number
   paletteId: PaletteId
   extraColors?: PintaExtraColors
+  /** ≥1 camada, válida para TODAS as animações (cada quadro tem um cel por camada). */
+  layers: PintaPixelLayer[]
   /** Sempre ≥1; a primeira nasce "parado". */
-  animations: PintaAnimation[]
+  animations: PintaPixelAnimation[]
 }
 
 export interface PixelBackgroundAsset extends PintaAssetBase {
   kind: 'pixel-background'
   paletteId: PaletteId
   extraColors?: PintaExtraColors
-  bitmap: PintaBitmap
+  /** ≥1 camada (índice 0 = fundo). */
+  layers: PintaPixelLayer[]
+  /** Um bitmap por camada, alinhado com `layers`. */
+  cels: PintaPixelFrame
 }
 
 export interface TilesetAsset extends PintaAssetBase {
@@ -235,6 +292,13 @@ export function isAnimatedSpriteKind(asset: PintaAsset): asset is AnimatedSprite
   return asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite'
 }
 
+/** Os kinds de pixel com CAMADAS (peças ficaram de fora — ver pixel/layers.ts). */
+export type PixelLayeredAsset = PixelSpriteAsset | PixelBackgroundAsset
+
+export function isPixelLayeredKind(asset: PintaAsset): asset is PixelLayeredAsset {
+  return asset.kind === 'pixel-sprite' || asset.kind === 'pixel-background'
+}
+
 /**
  * Paleta do asset, com default para kinds sem paleta própria (tilemap herda a
  * das peças na prática; vetoriais usam cor livre e só precisam de um valor
@@ -269,236 +333,9 @@ export function resolveAssetPalette(asset: PintaAsset): readonly string[] {
  * Quotas do modelo — compartilhadas entre criação, edição e o sanitizer do
  * load (subir uma sobe em todos os pontos, sem re-recorte ao reabrir).
  */
-export const PINTA_LIMITS = {
-  maxAssets: 64,
-  maxAnimations: 12,
-  maxFramesPerAnimation: 24,
-  minFrameSize: 8,
-  maxFrameSize: 128,
-  maxBitmapSize: 512,
-  maxTiles: 64,
-  // Teto casado com o `MAX_TILEMAP_DIM` do Studio (128) — mapas maiores exigem
-  // grade compacta (RLE) nos dois parsers do runtime + culling no editor.
-  maxTilemapCols: 128,
-  maxTilemapRows: 128,
-  maxTilemapLayers: 4,
-  maxShapes: 500,
-  maxNameChars: 48,
-  maxAnimationNameChars: 30,
-  /**
-   * Teto de cores EXTRAS por asset (além das 16 base). 16 + 48 = 64 índices no
-   * total, bem abaixo dos 256 que o Uint8Array do bitmap comporta.
-   */
-  maxExtraColors: 48,
-} as const
-
-/** Tamanhos amigáveis oferecidos no passo "tamanho" da criação. */
-export const SPRITE_FRAME_SIZES = [16, 32, 48, 64] as const
-export const BACKGROUND_SIZES = [
-  { width: 160, height: 120 },
-  { width: 240, height: 180 },
-  { width: 480, height: 360 },
-] as const
-export const TILE_SIZES = [16, 32, 48] as const
-export const VECTOR_SIZES = [
-  { width: 480, height: 360 },
-  { width: 960, height: 540 },
-] as const
-/**
- * O quadro vetorial rasteriza 1:1 na folha do Estúdio, então o documento É o
- * tamanho do sprite no jogo (o zoom do editor dá o conforto, sem perda).
- */
-export const VECTOR_SPRITE_SIZES = [32, 64, 128] as const
-/** Paridade com os tamanhos que o bloco de tilemap do Studio espera. */
-export const VECTOR_TILE_SIZES = TILE_SIZES
-
-const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
-
-/**
- * Normaliza um nome de asset para kebab-case ASCII (`herói do mar` →
- * `heroi-do-mar`). `null` se sobrar vazio ou exceder o teto.
- * ⚠️ Manter em sincronia com `normalizeAssetName` de
- * packages/studio/src/core/project.ts — o nome atravessa a ponte p/ o Estúdio.
- */
-export function normalizeAssetName(input: string): string | null {
-  const trimmed = input
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[\s_]+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '')
-  if (!trimmed || trimmed.length > PINTA_LIMITS.maxNameChars) return null
-  return ASSET_NAME_PATTERN.test(trimmed) ? trimmed : null
-}
-
-// ── Fábricas ────────────────────────────────────────────────────────────────
-
-export function createBitmap(width: number, height: number): PintaBitmap {
-  return { width, height, data: new Uint8Array(width * height) }
-}
-
-export function createPixelSpriteAsset(input: {
-  name: string
-  frameSize: number
-  paletteId?: PaletteId
-  now?: number
-}): PixelSpriteAsset {
-  const now = input.now ?? Date.now()
-  const size = clampInt(input.frameSize, PINTA_LIMITS.minFrameSize, PINTA_LIMITS.maxFrameSize)
-  return {
-    id: newId(),
-    kind: 'pixel-sprite',
-    name: input.name,
-    createdAt: now,
-    updatedAt: now,
-    frameWidth: size,
-    frameHeight: size,
-    paletteId: input.paletteId ?? DEFAULT_PALETTE_ID,
-    animations: [
-      { id: newId(), name: 'parado', fps: 8, loop: true, frames: [createBitmap(size, size)] },
-    ],
-  }
-}
-
-export function createPixelBackgroundAsset(input: {
-  name: string
-  width: number
-  height: number
-  paletteId?: PaletteId
-  now?: number
-}): PixelBackgroundAsset {
-  const now = input.now ?? Date.now()
-  const width = clampInt(input.width, 1, PINTA_LIMITS.maxBitmapSize)
-  const height = clampInt(input.height, 1, PINTA_LIMITS.maxBitmapSize)
-  return {
-    id: newId(),
-    kind: 'pixel-background',
-    name: input.name,
-    createdAt: now,
-    updatedAt: now,
-    paletteId: input.paletteId ?? DEFAULT_PALETTE_ID,
-    bitmap: createBitmap(width, height),
-  }
-}
-
-export function createTilesetAsset(input: {
-  name: string
-  tileSize: number
-  paletteId?: PaletteId
-  now?: number
-}): TilesetAsset {
-  const now = input.now ?? Date.now()
-  const tileSize = TILE_SIZES.includes(input.tileSize as (typeof TILE_SIZES)[number])
-    ? input.tileSize
-    : 16
-  return {
-    id: newId(),
-    kind: 'tileset',
-    name: input.name,
-    createdAt: now,
-    updatedAt: now,
-    tileSize,
-    paletteId: input.paletteId ?? DEFAULT_PALETTE_ID,
-    tiles: [createBitmap(tileSize, tileSize)],
-    solid: [false],
-    platform: [false],
-  }
-}
-
-export function createTilemapAsset(input: {
-  name: string
-  tilesetId: string
-  cols: number
-  rows: number
-  now?: number
-}): TilemapAsset {
-  const now = input.now ?? Date.now()
-  const cols = clampInt(input.cols, 1, PINTA_LIMITS.maxTilemapCols)
-  const rows = clampInt(input.rows, 1, PINTA_LIMITS.maxTilemapRows)
-  return {
-    id: newId(),
-    kind: 'tilemap',
-    name: input.name,
-    createdAt: now,
-    updatedAt: now,
-    tilesetId: input.tilesetId,
-    cols,
-    rows,
-    layers: [
-      { id: newId(), name: COPY.a11y.defaultLayer, visible: true, cells: emptyCells(cols * rows) },
-    ],
-  }
-}
-
-export function createVectorSpriteAsset(input: {
-  name: string
-  frameSize: number
-  now?: number
-}): VectorSpriteAsset {
-  const now = input.now ?? Date.now()
-  const size = clampInt(input.frameSize, PINTA_LIMITS.minFrameSize, PINTA_LIMITS.maxFrameSize)
-  return {
-    id: newId(),
-    kind: 'vector-sprite',
-    name: input.name,
-    createdAt: now,
-    updatedAt: now,
-    frameWidth: size,
-    frameHeight: size,
-    animations: [{ id: newId(), name: 'parado', fps: 8, loop: true, frames: [[]] }],
-  }
-}
-
-export function createVectorBackgroundAsset(input: {
-  name: string
-  width: number
-  height: number
-  now?: number
-}): VectorBackgroundAsset {
-  const now = input.now ?? Date.now()
-  return {
-    id: newId(),
-    kind: 'vector-background',
-    name: input.name,
-    createdAt: now,
-    updatedAt: now,
-    width: clampInt(input.width, 1, 2048),
-    height: clampInt(input.height, 1, 2048),
-    shapes: [],
-  }
-}
-
-export function createVectorTilesetAsset(input: {
-  name: string
-  tileSize: number
-  now?: number
-}): VectorTilesetAsset {
-  const now = input.now ?? Date.now()
-  const tileSize = VECTOR_TILE_SIZES.includes(input.tileSize as (typeof VECTOR_TILE_SIZES)[number])
-    ? input.tileSize
-    : 16
-  return {
-    id: newId(),
-    kind: 'vector-tileset',
-    name: input.name,
-    createdAt: now,
-    updatedAt: now,
-    tileSize,
-    tiles: [[]],
-    solid: [false],
-    platform: [false],
-  }
-}
-
-function emptyCells(length: number): Int16Array {
-  return new Int16Array(length).fill(-1)
-}
 
 function clampInt(value: number, min: number, max: number): number {
-  const v = Math.round(Number.isFinite(value) ? value : min)
-  return Math.min(Math.max(v, min), max)
+  return clampProjectInt(value, min, max)
 }
 
 // ── Sanitização (dados vindos do disco/import — nunca lança) ────────────────
@@ -597,10 +434,107 @@ function sanitizeBase(raw: Record<string, unknown>): PintaAssetBase | null {
   return { id: raw.id, name, ...sanitizeTimestamps(raw), ...(projectRef ? { projectRef } : {}) }
 }
 
+/**
+ * Um QUADRO de pixel vindo do disco. Aceita os dois formatos:
+ * - LEGADO (antes das camadas): um bitmap solto → vira `[bitmap]`;
+ * - atual: lista de cels (um por camada).
+ * Devolve `null` só quando não sobra nenhum cel válido (o chamador descarta o
+ * quadro, como sempre fez).
+ */
+function sanitizePixelFrame(
+  raw: unknown,
+  /** Dimensão esperada (sprite/tile). Ausente = livre (cenário: manda o 1º cel). */
+  dims?: { width: number; height: number },
+): PintaPixelFrame | null {
+  const list = Array.isArray(raw) ? raw : [raw]
+  const limited = list.slice(0, PINTA_LIMITS.maxPixelLayers)
+  const valid = limited.map((cel) => sanitizeBitmap(cel, dims))
+  if (!valid.some((cel) => cel !== null)) return null
+  const inferred =
+    dims ??
+    valid.reduce<{ width: number; height: number } | null>((found, bitmap) => {
+      if (found) return found
+      return bitmap ? { width: bitmap.width, height: bitmap.height } : null
+    }, null)
+  if (!inferred) return null
+  return valid.map((cel) => cel ?? createBitmap(inferred.width, inferred.height))
+}
+
+/**
+ * Alinha os cels de um quadro ao número de camadas: falta cel → camada vazia;
+ * sobra → corta. É o invariante que o resto do motor assume (`cels[i]` é da
+ * `layers[i]`).
+ */
+function alignCels(
+  cels: PintaPixelFrame,
+  layerCount: number,
+  dims: { width: number; height: number },
+): PintaPixelFrame {
+  if (cels.length === layerCount) return cels
+  const out: PintaBitmap[] = []
+  for (let i = 0; i < layerCount; i += 1) {
+    out.push(cels[i] ?? createBitmap(dims.width, dims.height))
+  }
+  return out
+}
+
+/**
+ * Camadas vindas do disco. Ausentes/inválidas (registro anterior às camadas) →
+ * derivadas do nº de cels do desenho, com nomes automáticos. NUNCA devolve
+ * lista vazia: um asset sem camada some da galeria.
+ */
+function sanitizePixelLayers(raw: unknown, celCount: number): PintaPixelLayer[] {
+  const fallbackCount = Math.min(Math.max(celCount, 1), PINTA_LIMITS.maxPixelLayers)
+  if (Array.isArray(raw)) {
+    const seen = new Set<string>()
+    const layers = raw.slice(0, PINTA_LIMITS.maxPixelLayers).map((layer, index) => {
+      if (!layer || typeof layer !== 'object') {
+        const fallback = createPixelLayer(index)
+        seen.add(fallback.id)
+        return fallback
+      }
+      const l = layer as Record<string, unknown>
+      const candidate = typeof l.id === 'string' && l.id && !seen.has(l.id) ? l.id : newId()
+      seen.add(candidate)
+      const name =
+        typeof l.name === 'string' && l.name.trim()
+          ? l.name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
+          : `${COPY.layers.namePrefix} ${index + 1}`
+      return { id: candidate, name, visible: l.visible !== false }
+    })
+    if (layers.length > 0) return layers
+  }
+  return Array.from({ length: fallbackCount }, (_, index) => createPixelLayer(index))
+}
+
+function ensureUniqueIds<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>()
+  return items.map((item) => {
+    if (!seen.has(item.id)) {
+      seen.add(item.id)
+      return item
+    }
+    let id = newId()
+    while (seen.has(id)) id = newId()
+    seen.add(id)
+    return { ...item, id }
+  })
+}
+
+function ensureUniqueAnimationIdentity<T extends { id: string; name: string }>(items: T[]): T[] {
+  const withIds = ensureUniqueIds(items)
+  const names = new Set<string>()
+  return withIds.map((item) => {
+    const name = uniqueAnimationName(item.name, names)
+    names.add(name)
+    return name === item.name ? item : { ...item, name }
+  })
+}
+
 function sanitizeAnimation(
   raw: unknown,
   frame: { width: number; height: number },
-): PintaAnimation | null {
+): PintaPixelAnimation | null {
   if (!raw || typeof raw !== 'object') return null
   const a = raw as Record<string, unknown>
   if (typeof a.id !== 'string' || !a.id) return null
@@ -614,8 +548,8 @@ function sanitizeAnimation(
   const easing = sanitizeEasing(a.easing)
   const frames = a.frames
     .slice(0, PINTA_LIMITS.maxFramesPerAnimation)
-    .map((f) => sanitizeBitmap(f, frame))
-    .filter((f): f is PintaBitmap => f !== null)
+    .map((f) => sanitizePixelFrame(f, frame))
+    .filter((f): f is PintaPixelFrame => f !== null)
   if (frames.length === 0) return null
   return { id: a.id, name, fps, loop, frames, ...(easing === 'ease' ? { easing } : {}) }
 }
@@ -623,10 +557,28 @@ function sanitizeAnimation(
 /** Um quadro vetorial vindo do disco: shapes válidos sobrevivem, o resto cai. */
 function sanitizeVectorFrame(raw: unknown): VectorFrame | null {
   if (!Array.isArray(raw)) return null
-  return raw
+  const shapes = raw
     .slice(0, PINTA_LIMITS.maxShapes)
     .map((s) => sanitizeVectorShape(s))
     .filter((s): s is VectorShape => s !== null)
+  return ensureUniqueIds(shapes)
+}
+
+function sanitizeTilemapCells(raw: unknown, cellCount: number): Int16Array | null {
+  const values = raw instanceof Int16Array ? Array.from(raw) : Array.isArray(raw) ? raw : null
+  if (!values || values.length !== cellCount) return null
+  if (
+    !values.every(
+      (cell) =>
+        typeof cell === 'number' &&
+        Number.isInteger(cell) &&
+        cell >= -1 &&
+        cell < PINTA_LIMITS.maxTiles,
+    )
+  ) {
+    return null
+  }
+  return Int16Array.from(values)
 }
 
 function sanitizeVectorAnimation(raw: unknown): PintaVectorAnimation | null {
@@ -672,11 +624,16 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (!isFinitePositiveInt(record.frameHeight, PINTA_LIMITS.maxFrameSize)) return null
       const frame = { width: record.frameWidth, height: record.frameHeight }
       if (!Array.isArray(record.animations)) return null
-      const animations = record.animations
-        .slice(0, PINTA_LIMITS.maxAnimations)
-        .map((a) => sanitizeAnimation(a, frame))
-        .filter((a): a is PintaAnimation => a !== null)
+      const animations = ensureUniqueAnimationIdentity(
+        record.animations
+          .slice(0, PINTA_LIMITS.maxAnimations)
+          .map((a) => sanitizeAnimation(a, frame))
+          .filter((a): a is PintaPixelAnimation => a !== null),
+      )
       if (animations.length === 0) return null
+      // Camadas do sprite: o nº de cels do 1º quadro é a referência do legado
+      // (quadro solto → 1 camada). Todo quadro é alinhado a ela.
+      const layers = sanitizePixelLayers(record.layers, animations[0]?.frames[0]?.length ?? 1)
       const extraColors = sanitizeExtraColors(record.extraColors)
       return {
         ...base,
@@ -685,19 +642,31 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         frameHeight: frame.height,
         paletteId,
         ...(extraColors ? { extraColors } : {}),
-        animations,
+        layers,
+        animations: animations.map((animation) => ({
+          ...animation,
+          frames: animation.frames.map((cels) => alignCels(cels, layers.length, frame)),
+        })),
       }
     }
     case 'pixel-background': {
-      const bitmap = sanitizeBitmap(record.bitmap)
-      if (!bitmap) return null
+      // Legado (antes das camadas): `bitmap` solto vira o cel da camada única.
+      const cels = sanitizePixelFrame(record.cels ?? record.bitmap)
+      if (!cels) return null
+      const first = cels[0]
+      if (!first) return null
+      // O 1º cel manda no tamanho do cenário; divergentes caem (e o alignCels
+      // repõe uma camada vazia no lugar, preservando a ordem).
+      const dims = { width: first.width, height: first.height }
+      const layers = sanitizePixelLayers(record.layers, cels.length)
       const extraColors = sanitizeExtraColors(record.extraColors)
       return {
         ...base,
         kind: 'pixel-background',
         paletteId,
         ...(extraColors ? { extraColors } : {}),
-        bitmap,
+        layers,
+        cels: alignCels(cels, layers.length, dims),
       }
     }
     case 'tileset': {
@@ -741,13 +710,8 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
           const l = layer as Record<string, unknown>
           if (typeof l.id !== 'string' || !l.id) return null
           // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
-          const cells =
-            l.cells instanceof Int16Array
-              ? l.cells
-              : Array.isArray(l.cells)
-                ? Int16Array.from(l.cells as number[])
-                : null
-          if (!cells || cells.length !== cellCount) return null
+          const cells = sanitizeTilemapCells(l.cells, cellCount)
+          if (!cells) return null
           const name =
             typeof l.name === 'string' && l.name.trim()
               ? l.name.trim().slice(0, 30)
@@ -791,10 +755,12 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (!isFinitePositiveInt(record.frameWidth, PINTA_LIMITS.maxFrameSize)) return null
       if (!isFinitePositiveInt(record.frameHeight, PINTA_LIMITS.maxFrameSize)) return null
       if (!Array.isArray(record.animations)) return null
-      const animations = record.animations
-        .slice(0, PINTA_LIMITS.maxAnimations)
-        .map((a) => sanitizeVectorAnimation(a))
-        .filter((a): a is PintaVectorAnimation => a !== null)
+      const animations = ensureUniqueAnimationIdentity(
+        record.animations
+          .slice(0, PINTA_LIMITS.maxAnimations)
+          .map((a) => sanitizeVectorAnimation(a))
+          .filter((a): a is PintaVectorAnimation => a !== null),
+      )
       if (animations.length === 0) return null
       return {
         ...base,

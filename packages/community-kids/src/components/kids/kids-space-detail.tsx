@@ -250,6 +250,8 @@ export function ShowcaseCard({
             <img
               src={thread.coverImageUrl}
               alt={thread.title}
+              width={16}
+              height={9}
               className="size-full object-cover transition-transform group-hover:scale-105"
               loading="lazy"
             />
@@ -448,7 +450,13 @@ export function ThreadDetail({
       <div className="space-y-3 rounded-2xl border-2 border-border bg-card p-4">
         {isWall && thread.coverImageUrl ? (
           <div className="aspect-video w-full overflow-hidden rounded-xl bg-(--kids-cyan-tint)">
-            <img src={thread.coverImageUrl} alt={thread.title} className="size-full object-cover" />
+            <img
+              src={thread.coverImageUrl}
+              alt={thread.title}
+              width={16}
+              height={9}
+              className="size-full object-cover"
+            />
           </div>
         ) : null}
         <h2 className="[font-family:var(--font-display)] font-bold text-lg">{thread.title}</h2>

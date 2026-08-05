@@ -74,11 +74,21 @@ const STYLE_RING_CLASSES: Record<PintaAssetStyle, string> = {
 }
 
 /** Papel sugerido pela missão de arte do Pensa (a criança ainda escolhe o estilo). */
-export type NewAssetRole = 'sprite' | 'background' | 'tileset'
+export type NewAssetRole = 'sprite' | 'background' | 'tileset' | 'tilemap'
 
 const KIND_FOR_ROLE: Record<PintaAssetStyle, Record<NewAssetRole, PintaAssetKind>> = {
-  pixel: { sprite: 'pixel-sprite', background: 'pixel-background', tileset: 'tileset' },
-  vector: { sprite: 'vector-sprite', background: 'vector-background', tileset: 'vector-tileset' },
+  pixel: {
+    sprite: 'pixel-sprite',
+    background: 'pixel-background',
+    tileset: 'tileset',
+    tilemap: 'tilemap',
+  },
+  vector: {
+    sprite: 'vector-sprite',
+    background: 'vector-background',
+    tileset: 'vector-tileset',
+    tilemap: 'tilemap',
+  },
 }
 
 type Step = 'style' | 'kind' | 'size' | 'template' | 'name'

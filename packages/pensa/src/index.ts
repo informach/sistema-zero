@@ -1,24 +1,24 @@
-/**
- * API pública do @sistemazero/pensa (contrato Fase 0) — TUDO fora daqui é
- * interno. O CSS sai pelo subpath `@sistemazero/pensa/styles.css`.
- */
 export { PensaApp } from './components/PensaApp'
 export type {
+  PensaArtifactType,
   PensaArtifactView,
-  PensaBuildEnv,
   PensaChatHandlers,
   PensaChatInput,
-  PensaChecklistItemView,
   PensaCycleView,
   PensaHostAdapter,
   PensaMascotPose,
-  PensaMission,
+  PensaPintaTaskContext,
   PensaProjectDetailView,
-  PensaProjectKind,
   PensaProjectListView,
   PensaStage,
   PensaStageView,
-  PensaTaskColumn,
+  PensaStudioTaskContext,
+  PensaTaskContext,
+  PensaTaskDestination,
+  PensaTaskGuide,
+  PensaTaskHandoffView,
+  PensaTaskOutputRef,
+  PensaTaskStatus,
   PensaTaskView,
   PensaTransport,
   PensaZState,

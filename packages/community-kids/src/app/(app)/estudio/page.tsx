@@ -25,7 +25,12 @@ export const dynamic = 'force-dynamic'
  * ex.: 502/401) → "tente de novo" (`KidsStudioUnavailable`), pois mostrar "ainda não
  * liberado" a quem JÁ comprou, num erro transitório, mentiria que ela não tem acesso.
  */
-export default async function EstudioPage() {
+export default async function EstudioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tarefa?: string }>
+}) {
+  const { tarefa } = await searchParams
   // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
   // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
   // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
@@ -68,7 +73,10 @@ export default async function EstudioPage() {
       challenge={challenge}
       tier={tier}
       showExamples={showExamples}
+      // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
+      // da carreira (Inventor). O rank já veio na gamificação acima.
       zappyEnabled={isStudioZappyAllowed(session, levelSlug)}
+      taskId={tarefa ?? null}
     />
   )
 }

@@ -23,19 +23,15 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { cn } from '@/lib/cn'
+import { parseLessonBlock } from '@/lib/lesson-block-content'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
   AudioBlock,
-  CertificateBlock,
-  EbookBlock,
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
-  QuizBlock,
-  QuizStateView,
   RichTextBlock,
   StudioBlock,
-  StudioStateView,
   VideoBlock,
 } from '@/lib/types'
 import { KidsQuiz } from './kids-quiz'
@@ -95,16 +91,18 @@ export function GuidedCreationMode({
   onExit: () => void
 }) {
   const isDesktop = useIsDesktop()
-  const videoBlock = blocks.find((b) => b.kind === 'video')
-  const studioBlock = blocks.find((b) => b.kind === 'studio')
+  let videoBlock: ReturnType<typeof parseLessonBlock> = null
+  let studioBlock: ReturnType<typeof parseLessonBlock> = null
+  for (const block of blocks) {
+    const parsed = parseLessonBlock(block)
+    if (!videoBlock && parsed?.content.kind === 'video') videoBlock = parsed
+    if (!studioBlock && parsed?.content.kind === 'studio') studioBlock = parsed
+  }
   if (!videoBlock || !studioBlock) return null
-  const video = <Video content={videoBlock.content as unknown as VideoBlock} />
+  if (videoBlock.content.kind !== 'video' || studioBlock.content.kind !== 'studio') return null
+  const video = <Video content={videoBlock.content} />
   const studio = (
-    <StudioBlockKids
-      block={studioBlock}
-      content={studioBlock.content as unknown as StudioBlock}
-      fillHeight
-    />
+    <StudioBlockKids block={studioBlock.block} content={studioBlock.content} fillHeight />
   )
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
@@ -164,51 +162,44 @@ function BlockChip({
 }
 
 function BlockRenderer({ block }: { block: LessonBlockView }) {
-  const content = block.content as Record<string, unknown> | null
-  if (!content || typeof content !== 'object') return null
+  const parsed = parseLessonBlock(block)
+  if (!parsed) return null
+  const { content } = parsed
 
-  switch (block.kind) {
+  switch (content.kind) {
     case 'rich_text':
-      return <RichText content={content as unknown as RichTextBlock} />
+      return <RichText content={content} />
     case 'video':
-      return <Video content={content as unknown as VideoBlock} />
+      return <Video content={content} />
     case 'image':
-      return <ImageView content={content as unknown as ImageBlock} />
+      return <ImageView content={content} />
     case 'audio':
-      return <Audio content={content as unknown as AudioBlock} />
+      return <Audio content={content} />
     case 'quiz':
       return (
         <div className="kids-unit-lime flex flex-col gap-3">
           <BlockChip icon={ListChecks} label="Responda" themeClass="kids-unit-lime" />
-          <KidsQuiz
-            blockId={block.id}
-            content={content as unknown as QuizBlock}
-            quizState={(block.quizState as QuizStateView | null | undefined) ?? null}
-          />
+          <KidsQuiz blockId={block.id} content={content} quizState={block.quizState ?? null} />
         </div>
       )
     case 'embed':
-      return <Embed content={content as unknown as EmbedBlock} />
+      return <Embed content={content} />
     case 'ebook':
       return (
         <div className="flex flex-col gap-3">
           <BlockChip icon={BookOpenText} label="Leia o livro" themeClass="kids-unit-cyan" />
-          <EbookBlockView blockId={block.id} content={content as unknown as EbookBlock} />
+          <EbookBlockView blockId={block.id} content={content} />
         </div>
       )
     case 'certificate':
       return (
         <div className="kids-unit-lime flex flex-col gap-3">
           <BlockChip icon={Award} label="Conquiste" themeClass="kids-unit-lime" />
-          <CertificateBlockView
-            blockId={block.id}
-            content={content as unknown as CertificateBlock}
-            tone="kids"
-          />
+          <CertificateBlockView blockId={block.id} content={content} tone="kids" />
         </div>
       )
     case 'studio':
-      return <StudioBlockKids block={block} content={content as unknown as StudioBlock} />
+      return <StudioBlockKids block={block} content={content} />
     default:
       return null
   }
@@ -246,7 +237,7 @@ function StudioBlockKids({
       <StudioBlockView
         blockId={block.id}
         content={content}
-        studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
+        studioState={block.studioState ?? null}
         enableShare={Boolean(content.showcase?.enabled)}
         onShared={setShared}
         fillHeight={fillHeight}
@@ -358,7 +349,13 @@ function ImageView({ content }: { content: ImageBlock }) {
           o texto/botão "Concluir aula" enquanto a imagem baixa no tablet da criança. */}
       <div className="aspect-[4/3] w-full overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={content.url} alt={content.alt ?? ''} className="size-full object-contain" />
+        <img
+          src={content.url}
+          alt={content.alt ?? ''}
+          width={4}
+          height={3}
+          className="size-full object-contain"
+        />
       </div>
       {content.caption ? (
         <figcaption className="mt-3 text-center font-semibold text-muted-foreground text-sm [font-family:var(--font-display)]">

@@ -1,5 +1,7 @@
 import { redactProfilesForProfileSession } from '@sistemazero/member-shell/lib/profile-redaction'
 import { redirect } from 'next/navigation'
+import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
+import { resolveProfileAllowance } from '@/lib/profile-allowance'
 import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
 import { isParentVerifiedFor } from '@/server/parent-gate'
 import { listReadonly } from '@/server/profiles'
@@ -7,10 +9,6 @@ import { getSession } from '@/server/session'
 import { PerfisClient } from './perfis-client'
 
 export const dynamic = 'force-dynamic'
-
-/** Teto máximo de um plano REAL no catálogo (`OfferContent.maxProfiles` 1..50). Acima
- * disso só existe o sentinela ilimitado da equipe interna (`Number.MAX_SAFE_INTEGER`). */
-const MAX_REAL_PROFILES = 50
 
 /**
  * Grade de perfis (estilo Netflix): a CONTA escolhe qual perfil de criança usar.
@@ -27,21 +25,26 @@ export default async function PerfisPage({
   if (!session) redirect('/login')
   // Perfis + teto da conta (p/ a área dos pais travar o "Adicionar" e mostrar "X de Y").
   const [res, allowanceRes] = await Promise.all([listReadonly(), getProfileAllowanceReadonly()])
+  // Falha da API não é uma conta vazia. Manter os estados separados evita abrir o
+  // onboarding e sugerir a criação de um perfil que pode já existir.
+  if (res.status !== 200) return <ProfilesUnavailable />
   const isProfileSession = Boolean(session.activeProfile)
-  const profiles =
-    res.status === 200
-      ? redactProfilesForProfileSession(
-          res.body?.profiles ?? [],
-          isProfileSession ? session.id : null,
-        )
-      : []
-  // O members devolve `Number.MAX_SAFE_INTEGER` como teto p/ a EQUIPE interna (perfis
-  // ilimitados). Planos reais são limitados a 50 pelo catálogo, então qualquer valor
-  // acima disso é o sentinela "sem teto" — não é um número p/ mostrar cru na tela.
-  const rawMaxProfiles =
-    allowanceRes.status === 200 ? (allowanceRes.body?.maxProfiles ?? null) : null
-  const unlimitedProfiles = rawMaxProfiles != null && rawMaxProfiles > MAX_REAL_PROFILES
-  const maxProfiles = unlimitedProfiles ? null : rawMaxProfiles
+  const profiles = redactProfilesForProfileSession(
+    res.body?.profiles ?? [],
+    isProfileSession ? session.id : null,
+  )
+  const profileAllowance = resolveProfileAllowance({
+    status: allowanceRes.status,
+    maxProfiles: allowanceRes.body?.maxProfiles,
+  })
+  // Sem perfis, esses estados terminam aqui. Uma falha de leitura nunca vira uma
+  // conta vazia com botão "+"; zero é ausência real de matrícula, com CTA próprio.
+  if (profiles.length === 0 && profileAllowance.kind === 'unavailable') {
+    return <ProfilesUnavailable reason="allowance" />
+  }
+  if (profiles.length === 0 && profileAllowance.kind === 'none') {
+    return <ProfilesNotIncluded />
+  }
   // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
   // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
   const parentVerified = !isProfileSession && (await isParentVerifiedFor(session.id))
@@ -68,8 +71,11 @@ export default async function PerfisPage({
       isProfileSession={isProfileSession}
       parentVerified={parentVerified}
       startManaging={startManaging}
-      maxProfiles={maxProfiles}
-      unlimitedProfiles={unlimitedProfiles}
+      profileAllowance={profileAllowance}
+      // Tutorial guiado dos PAIS: keyado na CONTA (em sessão de conta, `session.id`
+      // É a conta). Em sessão de perfil (criança trocando de irmão) fica nulo — o
+      // guia nunca aparece para a criança.
+      guideKey={isProfileSession ? null : session.id}
     />
   )
 }
