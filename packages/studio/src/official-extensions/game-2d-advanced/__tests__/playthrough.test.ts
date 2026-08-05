@@ -2875,25 +2875,34 @@ describe('gk — playthrough mínimo: Vila Ninja Profissional (rede pré-e2e)', 
   })
 
   it('⭐ a lançada com janela derrota um monstro de verdade (didHit + recycle)', async () => {
-    const h = loadRuntime()
-    await bootNinja(h)
-    let caiu = 0
-    h.api.on('inimigo:caiu', () => {
-      caiu += 1
-    })
-    let tick = 0
-    h.fire('keydown', { key: 'ArrowRight' })
-    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
-    h.fire('keyup', { key: 'ArrowRight' })
-    // Martela o golpe virado para o bando que chega pela direita.
-    for (let i = 0; i < 500 && caiu === 0 && h.api.state() === 'jogando'; i++) {
-      h.fire('keydown', { key: ' ' })
-      h.nextFrame(++tick * 50)
-      h.fire('keyup', { key: ' ' })
+    // ⚠️ O vaguear dos monstros (patrolAround) sorteia o alvo com Math.random — com
+    // sorteios ruins ninguém entra na swingBox em 500 quadros (flake real no CI).
+    // RNG constante = encontro determinístico; a mecânica didHit/recycle é a mesma.
+    const realRandom = Math.random
+    Math.random = () => 0.99
+    try {
+      const h = loadRuntime()
+      await bootNinja(h)
+      let caiu = 0
+      h.api.on('inimigo:caiu', () => {
+        caiu += 1
+      })
+      let tick = 0
+      h.fire('keydown', { key: 'ArrowRight' })
+      for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowRight' })
+      // Martela o golpe virado para o bando que chega pela direita.
+      for (let i = 0; i < 500 && caiu === 0 && h.api.state() === 'jogando'; i++) {
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+        h.fire('keyup', { key: ' ' })
+      }
+      expect(caiu).toBeGreaterThan(0)
+      // O bando ENCOLHEU de verdade (didHit → hurt → recycle).
+      expect(h.api.countActive('bambu') + h.api.countActive('dragao')).toBeLessThan(6)
+    } finally {
+      Math.random = realRandom
     }
-    expect(caiu).toBeGreaterThan(0)
-    // O bando ENCOLHEU de verdade (didHit → hurt → recycle).
-    expect(h.api.countActive('bambu') + h.api.countActive('dragao')).toBeLessThan(6)
   })
 
   it('a missão de derrotar todos liga a tela de vitória pronta', async () => {
