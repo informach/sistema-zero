@@ -45,8 +45,8 @@ import { TileStrip } from './TileStrip'
 import { ToolBar } from './ToolBar'
 import { useMediaQuery } from './useMediaQuery'
 import { useStudioResync } from './useStudioResync'
-import { VectorPropertiesPanel } from './VectorPropertiesPanel'
 import { VectorEditorScope } from './vector/VectorEditorScope'
+import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightColumn'
 import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
 import { ZoomControls } from './ZoomControls'
@@ -209,9 +209,9 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
-  // Kinds vetoriais: o MESMO editor de shapes (escopo + caixa + palco +
-  // painéis); personagem ganha o painel de prévia + a faixa Spritesheet
-  // (espelho do pixel), peças ganham a tira de tiles.
+  // Kinds vetoriais: o MESMO arranjo do pixel — caixa de ferramentas à
+  // esquerda, palco no meio, UMA coluna direita `w-68` (prévia → cores →
+  // aparência) e a faixa (Spritesheet/peças + zoom) em LARGURA TOTAL embaixo.
   const isVectorSprite = asset.kind === 'vector-sprite'
   if (wide) {
     return (
@@ -220,11 +220,8 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
           <VectorEditorScope>
             <VectorToolbox />
             <VectorStage />
-            <VectorPropertiesPanel />
+            <VectorRightColumn />
           </VectorEditorScope>
-          {/* Vetor não tem camadas indexadas: a coluna leva só a prévia (o
-              LayerPanel se auto-remove fora dos kinds de pixel). */}
-          {isVectorSprite ? <PixelRightColumn /> : null}
         </div>
         <EditorFooter asset={asset} />
       </div>
@@ -233,11 +230,9 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
       <VectorEditorScope>
-        <div className="flex min-h-0 flex-1 items-stretch gap-2">
-          <VectorToolbox />
-          <VectorStage />
-          <VectorPropertiesPanel />
-        </div>
+        <VectorToolbox orientation="horizontal" />
+        <VectorStage />
+        <VectorPanelsDisclosure />
       </VectorEditorScope>
       {isVectorSprite ? <SpritePanelDisclosure /> : null}
       <EditorFooter asset={asset} stacked />

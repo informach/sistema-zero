@@ -24,7 +24,13 @@ import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import { PINTA_LIMITS } from '../../../core/project'
 import { boundsCenter, flipShape, shapeBounds, translateShape } from '../../../vector/geometry'
-import { isVectorGradient, type VectorGradient, type VectorShape } from '../../../vector/model'
+import {
+  isVectorGradient,
+  type VectorFill,
+  type VectorGradient,
+  type VectorShape,
+  type VectorStroke,
+} from '../../../vector/model'
 import { DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
 import { useToast } from '../../ui/Toast'
 import { useEditor, useEditorStores, useSession } from '../editorContext'
@@ -36,6 +42,9 @@ import {
   TOOL_SHORTCUTS,
   type VectorTool,
 } from './vectorTools'
+
+/** Qual "canal" de cor recebe o próximo clique na paleta. */
+export type VectorColorChannel = 'fill' | 'stroke'
 
 export interface VectorEditorContextValue {
   doc: ActiveShapesDoc
@@ -62,6 +71,10 @@ export interface VectorEditorContextValue {
   rememberColor: (hex: string) => void
   applyStyle: (partial: Partial<ShapeStyle>) => void
   adoptStyle: (partial: Partial<ShapeStyle>) => void
+  activeChannel: VectorColorChannel
+  setActiveChannel: (channel: VectorColorChannel) => void
+  applyChannelColor: (hex: string) => void
+  swapFillStroke: () => void
   currentGradient: () => VectorGradient
   applyGradient: (partial: Partial<VectorGradient>) => void
   moveOrder: (to: 1 | -1 | 'front' | 'back') => void
@@ -96,6 +109,9 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // Lados do polígono / pontas da estrela (configuráveis quando a ferramenta ativa).
   const [polygonSides, setPolygonSides] = useState(6)
   const [starTips, setStarTips] = useState(5)
+  // Canal de cor SELECIONADO (espelho do activeSlot do pixel): a próxima cor
+  // tocada na paleta cai no preenchimento ou no contorno.
+  const [activeChannel, setActiveChannel] = useState<VectorColorChannel>('fill')
   const svgRef = useRef<SVGSVGElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   // Área de transferência (copiar/colar) — shapes clonados, vive na sessão.
@@ -242,6 +258,34 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
         ...(partial.opacity !== undefined ? { opacity: partial.opacity } : {}),
       }))
     }
+  }
+
+  /** Aplica uma cor da paleta (ou `'none'`) no CANAL ativo. */
+  function applyChannelColor(hex: string): void {
+    if (activeChannel === 'stroke') {
+      applyStyle({
+        stroke: hex === 'none' ? null : { color: hex, width: style.stroke?.width ?? 2 },
+      })
+      return
+    }
+    applyStyle({ fill: hex })
+  }
+
+  /**
+   * Troca preenchimento ↔ contorno (o botão de trocar dos slots, espelho do
+   * swapColors do pixel). A espessura do traço fica; degradê no preenchimento
+   * passa a cor DO COMEÇO para o contorno.
+   */
+  function swapFillStroke(): void {
+    const width = style.stroke?.width ?? 2
+    const nextFill: VectorFill = style.stroke ? style.stroke.color : 'none'
+    const nextStroke: VectorStroke | null =
+      typeof style.fill === 'string'
+        ? style.fill === 'none'
+          ? null
+          : { color: style.fill, width }
+        : { color: style.fill.from, width }
+    applyStyle({ fill: nextFill, stroke: nextStroke })
   }
 
   /** Degradê "de trabalho": o atual, ou um novo a partir da cor sólida vigente. */
@@ -391,6 +435,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     rememberColor,
     applyStyle,
     adoptStyle,
+    activeChannel,
+    setActiveChannel,
+    applyChannelColor,
+    swapFillStroke,
     currentGradient,
     applyGradient,
     moveOrder,

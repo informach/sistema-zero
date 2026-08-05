@@ -359,6 +359,10 @@ export const COPY = {
     fill: 'Preenchimento',
     stroke: 'Contorno',
     strokeWidth: 'Espessura do contorno',
+    appearance: 'Aparência',
+    swapFillStroke: 'Trocar preenchimento e contorno',
+    /** Disclosure da tela estreita (cores + camadas + aparência). */
+    panelsTitle: 'Cores e camadas',
     opacity: 'Quanto aparece',
     none: 'Sem cor',
     customColor: 'Cor personalizada',

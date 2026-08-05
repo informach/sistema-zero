@@ -60,6 +60,47 @@ describe('UI vetorial (F5)', () => {
     expect(screen.getByRole('button', { name: COPY.vector.remove })).toBeTruthy()
   })
 
+  it('caixa de ferramentas: espessuras no topo, grade e os dois slots de cor no pé', async () => {
+    await openVectorEditor()
+    // Presets de espessura (espelho dos tamanhos de pincel do pixel).
+    expect(screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: 4` })).toBeTruthy()
+    // Toggle da grade de apoio (mesmo botão do pixel).
+    expect(screen.getByRole('button', { name: COPY.tools.grid })).toBeTruthy()
+    // Slots: preenchimento (verde default) na frente + o swatch verde da grade
+    // de cores compartilham o rótulo; contorno preto só existe no slot.
+    expect(
+      screen.getAllByRole('button', { name: `${COPY.vector.fill}: verde` }).length,
+    ).toBeGreaterThanOrEqual(2)
+    expect(screen.getByRole('button', { name: `${COPY.vector.stroke}: preto` })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.vector.swapFillStroke })).toBeTruthy()
+  })
+
+  it('trocar preenchimento e contorno inverte os slots', async () => {
+    await openVectorEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.swapFillStroke }))
+    await waitFor(() => {
+      // O contorno herda o verde do preenchimento (rótulo único: os swatches da
+      // grade seguem no canal de preenchimento).
+      expect(screen.getByRole('button', { name: `${COPY.vector.stroke}: verde` })).toBeTruthy()
+    })
+  })
+
+  it('o painel de cores pinta o CANAL ativo (chip do contorno)', async () => {
+    await openVectorEditor()
+    // Chip "Contorno" muda o canal: a grade re-rotula os swatches.
+    fireEvent.click(screen.getByText(COPY.vector.stroke))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: `${COPY.vector.stroke}: vermelho` })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.stroke}: vermelho` }))
+    await waitFor(() => {
+      // Agora o SLOT do contorno também mostra vermelho (2 botões com o rótulo).
+      expect(
+        screen.getAllByRole('button', { name: `${COPY.vector.stroke}: vermelho` }).length,
+      ).toBe(2)
+    })
+  })
+
   it('apagar a seleção remove o shape', async () => {
     await openVectorEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))

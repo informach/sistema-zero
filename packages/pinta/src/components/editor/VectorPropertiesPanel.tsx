@@ -1,3 +1,10 @@
+/**
+ * Painel de APARÊNCIA do vetor (largura fixa `w-68`, como os painéis do
+ * pixel): degradê, espessura do contorno e opacidade; lados/pontas quando a
+ * ferramenta de polígono/estrela está ativa; e as operações da seleção
+ * (espelhar, ordem, agrupar, duplicar, apagar). As CORES de preenchimento e
+ * contorno vivem no painel "Cores" (VectorColorsPanel).
+ */
 import type { JSX } from 'react'
 import { COPY } from '../../core/copy'
 import { isVectorGradient } from '../../vector/model'
@@ -26,7 +33,6 @@ const STROKE_WIDTHS = [1, 2, 3, 4, 6, 8] as const
 export function VectorPropertiesPanel(): JSX.Element {
   const {
     style,
-    swatches,
     customColors,
     selected,
     tool,
@@ -49,44 +55,11 @@ export function VectorPropertiesPanel(): JSX.Element {
   const activeGradient = isVectorGradient(style.fill) ? style.fill : null
 
   return (
-    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
-      <section className="pin-panel p-3">
-        <span className="mb-1 block text-sm font-bold text-pin-muted">{COPY.vector.fill}</span>
-        <div className="flex flex-wrap gap-1">
-          <button
-            type="button"
-            aria-label={`${COPY.vector.fill}: ${COPY.vector.none}`}
-            aria-pressed={style.fill === 'none'}
-            title={COPY.vector.none}
-            onClick={() => applyStyle({ fill: 'none' })}
-            className={`pin-checkerboard size-11 rounded-lg border-2 ${style.fill === 'none' ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-          />
-          {swatches.map((hex) => (
-            <button
-              key={`fill-${hex}`}
-              type="button"
-              aria-label={`${COPY.vector.fill}: ${COPY.colorNames[hex] ?? hex}`}
-              aria-pressed={style.fill === hex}
-              title={COPY.colorNames[hex] ?? hex}
-              onClick={() => applyStyle({ fill: hex })}
-              className={`size-11 rounded-lg border-2 ${style.fill === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-              style={{ backgroundColor: hex }}
-            />
-          ))}
-          <ColorButton
-            label={`${COPY.vector.fill}: ${COPY.vector.customColor}`}
-            value={
-              typeof style.fill === 'string' && style.fill.startsWith('#') ? style.fill : '#000000'
-            }
-            recentColors={customColors}
-            onChange={(hex) => {
-              rememberColor(hex)
-              applyStyle({ fill: hex })
-            }}
-          />
-        </div>
+    <div className="flex w-68 shrink-0 flex-col gap-2">
+      <section aria-label={COPY.vector.appearance} className="pin-panel p-3">
+        <span className="block px-1 font-bold text-pin-text">{COPY.vector.appearance}</span>
 
-        <span className="mt-3 mb-1 block text-sm font-bold text-pin-muted">
+        <span className="mt-2 mb-1 block text-sm font-bold text-pin-muted">
           {COPY.vector.gradient}
         </span>
         <div className="flex flex-wrap items-center gap-1">
@@ -124,43 +97,6 @@ export function VectorPropertiesPanel(): JSX.Element {
             onChange={(hex) => {
               rememberColor(hex)
               applyGradient({ to: hex })
-            }}
-          />
-        </div>
-
-        <span className="mt-3 mb-1 block text-sm font-bold text-pin-muted">
-          {COPY.vector.stroke}
-        </span>
-        <div className="flex flex-wrap gap-1">
-          <button
-            type="button"
-            aria-label={`${COPY.vector.stroke}: ${COPY.vector.none}`}
-            aria-pressed={style.stroke === null}
-            title={COPY.vector.none}
-            onClick={() => applyStyle({ stroke: null })}
-            className={`pin-checkerboard size-11 rounded-lg border-2 ${style.stroke === null ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-          />
-          {swatches.map((hex) => (
-            <button
-              key={`stroke-${hex}`}
-              type="button"
-              aria-label={`${COPY.vector.stroke}: ${COPY.colorNames[hex] ?? hex}`}
-              aria-pressed={style.stroke?.color === hex}
-              title={COPY.colorNames[hex] ?? hex}
-              onClick={() =>
-                applyStyle({ stroke: { color: hex, width: style.stroke?.width ?? 2 } })
-              }
-              className={`size-11 rounded-lg border-2 ${style.stroke?.color === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
-              style={{ backgroundColor: hex }}
-            />
-          ))}
-          <ColorButton
-            label={`${COPY.vector.stroke}: ${COPY.vector.customColor}`}
-            value={style.stroke?.color ?? '#000000'}
-            recentColors={customColors}
-            onChange={(hex) => {
-              rememberColor(hex)
-              applyStyle({ stroke: { color: hex, width: style.stroke?.width ?? 2 } })
             }}
           />
         </div>
