@@ -221,7 +221,10 @@ schemas que vão ao provider é `.nullable()`, NUNCA `.optional()`, e o `jsonSch
 `oneOf`→`anyOf`: o modo estrito do `response_format` exige `required` com todas as chaves e não
 aceita `oneOf` (400 real do `pensa_task_plan_v1`, 08/2026); o teste de deriva em
 `tests/pensa-ai.test.ts` trava os quatro schemas e `resolveTaskPlan` normaliza `null`→ausente
-antes do members (o DTO de lá usa `t.Optional`, que não aceita null). A geração rejeita referência
+antes do members (o DTO de lá usa `t.Optional`, que não aceita null). Sem stream o corpo só chega
+no FIM da geração: `completePensaJson` aceita `bodyTimeoutMs` (task_plan 180s, visual_direction
+90s — 30s derrubava o plano real, "pendurou o corpo" 08/2026) e timeout de corpo NÃO re-tenta
+(`PensaLlmError.retryable=false`); a rota loga o erro técnico e devolve frase gentil à criança. A geração rejeita referência
 inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset.
 A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
 persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).

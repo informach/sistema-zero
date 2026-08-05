@@ -137,6 +137,7 @@ async function generateJson<T>(input: {
   label: string
   user: string
   maxTokens?: number
+  bodyTimeoutMs?: number
 }) {
   return completePensaJson({
     system: plannerSystem(input.label),
@@ -146,6 +147,7 @@ async function generateJson<T>(input: {
     schemaName: input.schemaName,
     maxTokens: input.maxTokens ?? 2400,
     temperature: 0.25,
+    bodyTimeoutMs: input.bodyTimeoutMs,
   })
 }
 
@@ -345,6 +347,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             label: 'uma Bíblia Visual executável',
             user: `IDEIA:\n${json(idea)}\nGAME DESIGN:\n${json(design.content)}\nInclua papéis na paleta e um item para CADA asset. Em 3D, modelos, mundo e materiais continuam no inventário, mas serão tarefas do Estúdio.\nPEDIDO: ${body.feedback ?? 'nenhum'}`,
             maxTokens: 4200,
+            bodyTimeoutMs: 90_000,
           })
         } else if (body.type === 'task_plan') {
           const [zStage, eStage] = await Promise.all([getStage('z'), getStage('e')])
@@ -372,6 +375,9 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
               catalog,
             ].join('\n\n'),
             maxTokens: 8000,
+            // O plano inteiro sai numa geração só (sem stream): o corpo chega no
+            // FIM — 30s derrubava o task_plan real ("pendurou o corpo", 08/2026).
+            bodyTimeoutMs: 180_000,
           })
           const tasks = resolveTaskPlan(raw, tier, idea.dimension)
           validateVisualTaskCoverage(tasks, visual)
@@ -429,8 +435,16 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         return NextResponse.json(saved.body)
       } catch (cause) {
         if (cause instanceof PensaCatalogDriftError) return error(cause.code, 422, cause.message)
-        if (cause instanceof PensaLlmError)
-          return error('PENSA_AI_UNAVAILABLE', cause.status ?? 502, cause.message)
+        if (cause instanceof PensaLlmError) {
+          // O detalhe técnico (400 do provider, timeout etc.) vai ao LOG; a
+          // criança recebe uma frase gentil — o banner mostrava o erro cru.
+          console.error('[pensa-ai] geração falhou', { type: body.type, cause })
+          return error(
+            'PENSA_AI_UNAVAILABLE',
+            cause.status ?? 502,
+            'A IA demorou ou tropeçou agora. Espere um pouquinho e tente de novo.',
+          )
+        }
         return error(
           'PENSA_GENERATION_FAILED',
           409,

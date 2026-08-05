@@ -24,6 +24,8 @@ export class PensaLlmError extends Error {
   constructor(
     message: string,
     readonly status?: number,
+    /** Timeout de corpo não re-tenta: a repetição esperaria o relógio inteiro de novo. */
+    readonly retryable: boolean = true,
   ) {
     super(message)
     this.name = 'PensaLlmError'
@@ -269,6 +271,12 @@ export async function completePensaJson<T>(opts: {
   temperature?: number
   /** Alguns fluxos cobram uma chamada exata e não podem reparar com nova geração. */
   maxAttempts?: 1 | 2
+  /**
+   * Prazo para LER O CORPO após os headers (default CONNECT_TIMEOUT_MS). Sem
+   * stream, o provider entrega o JSON só ao FIM da geração — sínteses longas
+   * (ex.: task_plan com maxTokens 8000) precisam de folga maior que 30s.
+   */
+  bodyTimeoutMs?: number
 }): Promise<T> {
   const model = opts.model ?? pensaSynthesisModel()
   const baseMessages = [
@@ -303,8 +311,9 @@ export async function completePensaJson<T>(opts: {
       let timer: ReturnType<typeof setTimeout> | undefined
       const timeout = new Promise<never>((_, reject) => {
         timer = setTimeout(
-          () => reject(new PensaLlmError('OpenRouter pendurou o corpo da resposta')),
-          CONNECT_TIMEOUT_MS,
+          () =>
+            reject(new PensaLlmError('OpenRouter pendurou o corpo da resposta', undefined, false)),
+          opts.bodyTimeoutMs ?? CONNECT_TIMEOUT_MS,
         )
       })
       try {
@@ -323,7 +332,9 @@ export async function completePensaJson<T>(opts: {
       }
     } catch (err) {
       lastError = err
-      // 4xx do upstream (chave inválida/modelo inexistente) não melhora com retry.
+      // 4xx do upstream (chave inválida/modelo inexistente) não melhora com retry,
+      // e timeout de corpo re-tentado só faria a criança esperar o relógio 2x.
+      if (err instanceof PensaLlmError && !err.retryable) throw err
       if (err instanceof PensaLlmError && err.status && err.status < 500 && err.status !== 429) {
         throw err
       }
