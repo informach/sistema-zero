@@ -792,6 +792,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       workspace as Blockly.WorkspaceSvg,
       tutorTarget.blockType,
       tutorTarget.category,
+      tutorTarget.subcategory,
     )
   }, [workspace, highlightSource, tutorTarget])
 

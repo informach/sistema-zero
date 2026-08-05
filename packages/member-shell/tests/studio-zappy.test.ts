@@ -10,6 +10,7 @@ const {
   buildStudioZappyPrompt,
   deterministicZappyReply,
   deterministicZappySafetyReply,
+  invalidStudioZappyAnswerReason,
   normalizeZappySearchQuery,
   validatedStudioZappyResponse,
 } = await import('../src/server/zappy-ai')
@@ -410,6 +411,74 @@ describe('Zappy do Studio — limites determinísticos', () => {
     await expect(normalizeZappySearchQuery('Como faço a colisão do personagem?')).resolves.toBe(
       'colisao personagem',
     )
+  })
+})
+
+describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', () => {
+  const tier = resolveStudioTier('god', 'staff')
+  const prompt = buildStudioZappyPrompt({
+    question: 'Como faço o personagem pular quando encosta no chão?',
+    context: {
+      projectId: PROJECT_ID,
+      mode: 'blocks',
+      kind: 'classic',
+      blocks: [{ id: 'sprite-1', type: 'sz_g2d_create_sprite', topLevel: true }],
+      installedExtensions: [...tier.allowedExtensions],
+      selectedBlockId: 'sprite-1',
+      lastError: null,
+    },
+    tier,
+  })
+  const entry =
+    prompt.catalog.find((item) => item.type === 'sz_g2d_create_sprite') ?? prompt.catalog[0]
+  if (!entry) throw new Error('Catálogo de teste vazio')
+  const byType = new Map(prompt.catalog.map((item) => [item.type, item]))
+  const instances = new Map([['sprite-1', entry.type]])
+  const answer = (
+    text: string,
+    blockReferences: Array<{ blockType: string; blockId: string | null }> = [
+      { blockType: entry.type, blockId: null },
+    ],
+    lessonReferences: Array<{ lessonId: string }> = [],
+  ) => ({ text, scope: 'block' as const, blockReferences, lessonReferences })
+  const reason = (raw: ReturnType<typeof answer>) =>
+    invalidStudioZappyAnswerReason(raw, 'blocks', 'classic', byType, instances, new Set<string>())
+
+  test('aceita a trilha real de categoria e subcategoria em texto corrido (com emoji)', () => {
+    const trail = `Use o bloco "${entry.label}", que fica na categoria ${entry.category}, subcategoria ${entry.subcategory}. Depois rode o jogo.`
+    expect(reason(answer(trail))).toBeNull()
+  })
+
+  test('nome de bloco ou categoria em crase inline não é código — desembrulha e aceita', () => {
+    const text = `Arraste o bloco \`${entry.label}\` da categoria \`${entry.category}\` para a área de eventos.`
+    expect(reason(answer(text))).toBeNull()
+  })
+
+  test('código de verdade continua reprovado no modo Blocos', () => {
+    expect(reason(answer('Faça assim:\n```\nconst x = 1\n```'))).toBe('code-in-blocks')
+    expect(reason(answer('Basta escrever `const pontos = 0` no seu jogo.'))).toBe('code-in-blocks')
+    expect(reason(answer('Use uma função assim: () => pular()'))).toBe('code-in-blocks')
+  })
+
+  test('referência fora do catálogo ou com instância trocada segue reprovada', () => {
+    expect(reason(answer('Resposta.', [{ blockType: 'sz_bloco_inventado', blockId: null }]))).toBe(
+      'block-reference',
+    )
+    expect(
+      reason(answer('Resposta.', [{ blockType: entry.type, blockId: 'id-que-nao-existe' }])),
+    ).toBe('block-reference')
+  })
+
+  test('aula fora do conhecimento liberado reprova como lesson-reference', () => {
+    const raw = answer('Resposta.', undefined, [
+      { lessonId: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e099' },
+    ])
+    expect(reason(raw)).toBe('lesson-reference')
+  })
+
+  test('a regra do prompt pede a trilha em texto corrido, sem crases', () => {
+    expect(prompt.system).toContain('sem crases')
+    expect(prompt.system).toContain('"categoria" e "subcategoria"')
   })
 })
 

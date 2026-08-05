@@ -25,10 +25,21 @@ interface HighlightStore {
   cursorColumn: number | null
   /** Última fonte de evento; evita loops bloco→linha→bloco. */
   source: 'blocks' | 'editor' | 'tutor' | null
-  tutorTarget: { blockId?: string; blockType: string; category: string } | null
+  tutorTarget: {
+    blockId?: string
+    blockType: string
+    category: string
+    /** Subcategoria da paleta (nó folha) — preferida no fallback por rótulo. */
+    subcategory?: string
+  } | null
   selectBlock: (id: string | null) => void
   setCursor: (file: SourceMappedFile, line: number, column?: number) => void
-  focusTutorReference: (target: { blockId?: string; blockType: string; category: string }) => void
+  focusTutorReference: (target: {
+    blockId?: string
+    blockType: string
+    category: string
+    subcategory?: string
+  }) => void
   reset: () => void
 }
 

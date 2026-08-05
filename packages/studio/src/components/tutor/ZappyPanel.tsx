@@ -270,6 +270,7 @@ export function ZappyPanel(): JSX.Element | null {
       ...(reference.blockId ? { blockId: reference.blockId } : {}),
       blockType: reference.blockType,
       category: reference.category,
+      ...(reference.subcategory ? { subcategory: reference.subcategory } : {}),
     })
     if (isNarrow) setOpen(false)
   }

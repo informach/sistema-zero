@@ -550,3 +550,11 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
   OpenRouter e o contexto do projeto não é persistido.
 - Catálogo, manuais, código e base didática são ranqueados por relevância e o prompt total fica em
   até 48 kB. Referências de aula incluem `courseSlug` autoritativo para o host montar a navegação.
+- A resposta do modelo passa por `invalidStudioZappyAnswerReason` (zappy-ai), que loga o MOTIVO do
+  descarte (`[studio-zappy] resposta do modelo reprovada` — antes era mudo e indiagnosticável em
+  staging). No modo Blocos, crase inline citando nome de bloco/categoria é DESEMBRULHADA antes da
+  checagem de código — a regra do prompt pede a trilha categoria/subcategoria em texto corrido, e
+  nome citado não é código (a etapa validada já removia as crases do texto exibido); cerca de
+  código e código real seguem reprovados, e PII/URL/referências fora do catálogo (anti prompt
+  injection) ficam intactas. Foi o bug do "Não consegui validar essa explicação" em toda resposta
+  (08/2026).
