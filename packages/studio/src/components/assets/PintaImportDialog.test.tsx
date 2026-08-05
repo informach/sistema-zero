@@ -60,7 +60,14 @@ const { filterPintaDrawings } = await import('./PintaImportDialog')
 const PNG = 'data:image/png;base64,AAAA'
 
 const DRAWINGS: DrawingSummary[] = [
-  { id: 'd1', name: 'dragao-pintado', role: 'sprite', style: 'pixel', updatedAt: 2, thumbDataUrl: PNG },
+  {
+    id: 'd1',
+    name: 'dragao-pintado',
+    role: 'sprite',
+    style: 'pixel',
+    updatedAt: 2,
+    thumbDataUrl: PNG,
+  },
   {
     id: 'd2',
     name: 'ceu-azul',
@@ -174,7 +181,11 @@ describe('PintaImportDialog', () => {
     expect(adapter.importCalls).toEqual(['d1'])
     const assets = useProjectStore.getState().project?.assets ?? []
     expect(assets.length).toBe(1)
-    expect(assets[0]).toMatchObject({ name: 'dragao-pintado', source: 'library', libId: 'personal:d1' })
+    expect(assets[0]).toMatchObject({
+      name: 'dragao-pintado',
+      source: 'library',
+      libId: 'personal:d1',
+    })
     // Modal segue aberta; o card importado agora oferece "Adicionar de novo".
     expect(screen.getByRole('button', { name: 'Adicionar de novo' })).toBeTruthy()
   })
