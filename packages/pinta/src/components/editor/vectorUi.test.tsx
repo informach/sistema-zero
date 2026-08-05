@@ -27,6 +27,36 @@ async function openVectorEditor(): Promise<void> {
   })
 }
 
+/** happy-dom não faz layout: dá medida REAL ao palco p/ converter cliques. */
+function measureStage(): HTMLElement {
+  const stage = screen.getByRole('img', { name: 'Área de desenho' })
+  ;(stage as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
+    ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 360,
+      right: 480,
+      bottom: 360,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect
+  return stage
+}
+
+/** Desenha um retângulo pelo gesto (a ferramenta Retângulo precisa estar ativa). */
+function drawRect(stage: HTMLElement, from: [number, number], to: [number, number]): void {
+  fireEvent.pointerDown(stage, {
+    isPrimary: true,
+    pointerId: 1,
+    clientX: from[0],
+    clientY: from[1],
+  })
+  fireEvent.pointerMove(stage, { pointerId: 1, clientX: to[0], clientY: to[1] })
+  fireEvent.pointerUp(stage, { pointerId: 1 })
+}
+
 describe('UI vetorial (F5)', () => {
   it('abre com as ferramentas e os painéis de estilo', async () => {
     await openVectorEditor()
@@ -116,26 +146,11 @@ describe('UI vetorial (F5)', () => {
 
   it('com a grade LIGADA, desenhar uma forma encaixa nos cruzamentos', async () => {
     await openVectorEditor()
-    const stage = screen.getByRole('img', { name: 'Área de desenho' })
-    // happy-dom não faz layout: o palco precisa de medida p/ converter o clique.
-    ;(stage as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
-      ({
-        left: 0,
-        top: 0,
-        width: 480,
-        height: 360,
-        right: 480,
-        bottom: 360,
-        x: 0,
-        y: 0,
-        toJSON: () => ({}),
-      }) as DOMRect
+    const stage = measureStage()
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.grid }))
     // 480×360 → grade de 16: (30,30)→(32,32) e (93,61)→(96,64).
-    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
-    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 93, clientY: 61 })
-    fireEvent.pointerUp(stage, { pointerId: 1 })
+    drawRect(stage, [30, 30], [93, 61])
     await waitFor(() => {
       const rect = document.querySelector('rect[fill="#78dc52"]')
       expect(rect?.getAttribute('x')).toBe('32')
@@ -147,27 +162,79 @@ describe('UI vetorial (F5)', () => {
 
   it('sem a grade, o desenho fica LIVRE (sem encaixe)', async () => {
     await openVectorEditor()
-    const stage = screen.getByRole('img', { name: 'Área de desenho' })
-    ;(stage as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
-      ({
-        left: 0,
-        top: 0,
-        width: 480,
-        height: 360,
-        right: 480,
-        bottom: 360,
-        x: 0,
-        y: 0,
-        toJSON: () => ({}),
-      }) as DOMRect
+    const stage = measureStage()
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
-    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
-    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 93, clientY: 61 })
-    fireEvent.pointerUp(stage, { pointerId: 1 })
+    drawRect(stage, [30, 30], [93, 61])
     await waitFor(() => {
       const rect = document.querySelector('rect[fill="#78dc52"]')
       expect(rect?.getAttribute('x')).toBe('30')
       expect(rect?.getAttribute('width')).toBe('63')
+    })
+  })
+
+  it('laço seleciona 2 formas e a alça da UNIÃO redimensiona as duas juntas', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    drawRect(stage, [112, 16], [176, 80])
+    await waitFor(() => {
+      expect(document.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+    })
+    // Laço com a ferramenta Selecionar, do (8,8) ao (200,100): pega as duas.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 200, clientY: 100 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      // Barra flutuante com "Agrupar a seleção" = 2+ selecionadas.
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+      expect(screen.getByRole('button', { name: COPY.vector.selGroup })).toBeTruthy()
+    })
+    // As 8 alças da caixa da UNIÃO (14px em zoom 1; escopo no PALCO — ícones
+    // lucide também têm <rect width="14">). Arrasta a SE (índice 4):
+    // âncora (16,16), fatores ×2 → A vira 64 de largura, B começa em 208.
+    const handles = stage.querySelectorAll('rect[width="14"]')
+    expect(handles.length).toBe(8)
+    const se = handles[4] as SVGRectElement
+    fireEvent.pointerDown(se, { isPrimary: true, pointerId: 2, clientX: 176, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 336, clientY: 144 })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+    await waitFor(() => {
+      const rects = document.querySelectorAll('rect[fill="#78dc52"]')
+      expect(rects[0]?.getAttribute('width')).toBe('64')
+      expect(rects[1]?.getAttribute('x')).toBe('208')
+      expect(rects[1]?.getAttribute('width')).toBe('128')
+    })
+  })
+
+  it('barra flutuante da seleção duplica a forma', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selDuplicate }))
+    await waitFor(() => {
+      expect(document.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+    })
+  })
+
+  it('alinhar: uma forma sozinha centraliza na TELA', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.alignCenterH })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.alignCenterH }))
+    await waitFor(() => {
+      // (480 - 32) / 2 = 224.
+      const rect = document.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('x')).toBe('224')
     })
   })
 

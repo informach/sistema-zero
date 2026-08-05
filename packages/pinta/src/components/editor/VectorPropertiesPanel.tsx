@@ -10,6 +10,12 @@ import { COPY } from '../../core/copy'
 import { isVectorGradient } from '../../vector/model'
 import { ToolButton } from '../ui/Button'
 import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignStartVertical,
   BringToFront,
   ChevronsDown,
   ChevronsUp,
@@ -45,6 +51,7 @@ export function VectorPropertiesPanel(): JSX.Element {
     setPolygonSides,
     setStarTips,
     flipSelected,
+    alignSelected,
     moveOrder,
     groupSelected,
     ungroupSelected,
@@ -163,6 +170,42 @@ export function VectorPropertiesPanel(): JSX.Element {
 
       {selected.length > 0 ? (
         <section className="pin-panel flex flex-col gap-2 p-3">
+          {/* Alinhar: 2+ formas alinham entre si; 1 forma alinha na TELA. */}
+          <span className="block px-1 text-sm font-bold text-pin-muted">
+            {COPY.vector.alignTitle}
+          </span>
+          <div className="flex flex-wrap justify-center gap-1">
+            <ToolButton
+              icon={AlignStartVertical}
+              label={COPY.vector.alignLeft}
+              onClick={() => alignSelected('left')}
+            />
+            <ToolButton
+              icon={AlignCenterVertical}
+              label={COPY.vector.alignCenterH}
+              onClick={() => alignSelected('centerH')}
+            />
+            <ToolButton
+              icon={AlignEndVertical}
+              label={COPY.vector.alignRight}
+              onClick={() => alignSelected('right')}
+            />
+            <ToolButton
+              icon={AlignStartHorizontal}
+              label={COPY.vector.alignTop}
+              onClick={() => alignSelected('top')}
+            />
+            <ToolButton
+              icon={AlignCenterHorizontal}
+              label={COPY.vector.alignMiddleV}
+              onClick={() => alignSelected('middleV')}
+            />
+            <ToolButton
+              icon={AlignEndHorizontal}
+              label={COPY.vector.alignBottom}
+              onClick={() => alignSelected('bottom')}
+            />
+          </div>
           <div className="flex flex-wrap justify-center gap-1">
             <ToolButton
               icon={FlipHorizontal2}

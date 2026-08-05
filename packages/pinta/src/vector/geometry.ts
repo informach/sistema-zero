@@ -133,6 +133,86 @@ export function boundsCenter(bounds: Bounds): Vec2 {
   return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }
 }
 
+/** Caixa que envolve TODAS as caixas (bbox da seleção múltipla). */
+export function boundsUnion(list: Bounds[]): Bounds {
+  if (list.length === 0) return { x: 0, y: 0, width: 0, height: 0 }
+  let minX = Number.POSITIVE_INFINITY
+  let minY = Number.POSITIVE_INFINITY
+  let maxX = Number.NEGATIVE_INFINITY
+  let maxY = Number.NEGATIVE_INFINITY
+  for (const b of list) {
+    minX = Math.min(minX, b.x)
+    minY = Math.min(minY, b.y)
+    maxX = Math.max(maxX, b.x + b.width)
+    maxY = Math.max(maxY, b.y + b.height)
+  }
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+}
+
+/** As duas caixas se tocam/sobrepõem? (borda encostada conta — laço generoso). */
+export function boundsIntersect(a: Bounds, b: Bounds): boolean {
+  return (
+    a.x <= b.x + b.width && b.x <= a.x + a.width && a.y <= b.y + b.height && b.y <= a.y + a.height
+  )
+}
+
+/** Borda/centro alvo do alinhamento. */
+export type AlignEdge = 'left' | 'centerH' | 'right' | 'top' | 'middleV' | 'bottom'
+
+/**
+ * Alinha os shapes `ids` à caixa `target` (a bbox da seleção com 2+, ou a tela
+ * inteira com 1). Ciente de GRUPOS: cada cluster (grupo ou shape solto) é
+ * transladado INTEIRO — alinhar não amassa o desenho de um grupo.
+ */
+export function alignShapes(
+  shapes: VectorShape[],
+  ids: string[],
+  edge: AlignEdge,
+  target: Bounds,
+): VectorShape[] {
+  const selectedSet = new Set(ids)
+  const clusters = new Map<string, VectorShape[]>()
+  for (const s of shapes) {
+    if (!selectedSet.has(s.id)) continue
+    const key = s.groupId ?? s.id
+    const list = clusters.get(key)
+    if (list) list.push(s)
+    else clusters.set(key, [s])
+  }
+  const deltas = new Map<string, Vec2>()
+  for (const [key, members] of clusters) {
+    const b = boundsUnion(members.map(shapeBounds))
+    let dx = 0
+    let dy = 0
+    switch (edge) {
+      case 'left':
+        dx = target.x - b.x
+        break
+      case 'centerH':
+        dx = target.x + target.width / 2 - (b.x + b.width / 2)
+        break
+      case 'right':
+        dx = target.x + target.width - (b.x + b.width)
+        break
+      case 'top':
+        dy = target.y - b.y
+        break
+      case 'middleV':
+        dy = target.y + target.height / 2 - (b.y + b.height / 2)
+        break
+      case 'bottom':
+        dy = target.y + target.height - (b.y + b.height)
+        break
+    }
+    deltas.set(key, { x: dx, y: dy })
+  }
+  return shapes.map((s) => {
+    if (!selectedSet.has(s.id)) return s
+    const d = deltas.get(s.groupId ?? s.id)
+    return d && (d.x !== 0 || d.y !== 0) ? translateShape(s, d.x, d.y) : s
+  })
+}
+
 // ── Manipulação ─────────────────────────────────────────────────────────────
 
 export function translateShape(shape: VectorShape, dx: number, dy: number): VectorShape {

@@ -19,6 +19,8 @@ import { PINTA_LIMITS, type PintaAsset } from '../../../core/project'
 import {
   type Bounds,
   boundsCenter,
+  boundsIntersect,
+  boundsUnion,
   rotatePoint,
   rotateShapeTo,
   scaleShape,
@@ -40,8 +42,9 @@ import {
 } from '../../../vector/shapes'
 import { smoothStrokeToPathCapped } from '../../../vector/smoothing'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
-import { Button } from '../../ui/Button'
+import { Button, ToolButton } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
+import { Copy, FlipHorizontal2, FlipVertical2, Group, Trash2, Ungroup } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
 import { useWheelZoom } from '../useWheelZoom'
@@ -52,10 +55,14 @@ import { constrainPoint, expandToGroups } from './vectorTools'
 // segundo dedo/palma no palco dispararia move/up do gesto do primeiro dedo.
 type Gesture =
   | { kind: 'draw'; pointerId: number; start: Vec2; points: Vec2[] }
+  // Laço de seleção (arrasto no fundo com a ferramenta Selecionar).
+  | { kind: 'marquee'; pointerId: number; start: Vec2; additive: boolean }
   // Mover guarda o PONTO inicial + os shapes da BASE: cada move aplica o delta
   // TOTAL (com snap opcional) sobre a base — sem deriva acumulada e com os
   // offsets internos da seleção preservados.
   | { kind: 'move'; pointerId: number; start: Vec2; base: PintaAsset; baseShapes: VectorShape[] }
+  // Redimensionar vale para 1 OU várias formas: todas escalam em torno da
+  // MESMA âncora (o canto oposto da caixa da seleção).
   | {
       kind: 'resize'
       pointerId: number
@@ -63,7 +70,7 @@ type Gesture =
       anchor: Vec2
       start: Vec2
       base: PintaAsset
-      baseShape: VectorShape
+      baseShapes: VectorShape[]
     }
   | {
       kind: 'rotate'
@@ -124,12 +131,18 @@ export function VectorStage(): JSX.Element {
     commitShapes,
     rememberColor,
     adoptStyle,
+    duplicateSelected,
+    removeSelected,
+    flipSelected,
+    groupSelected,
+    ungroupSelected,
   } = useVectorEditor()
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
   const zoom = useSession((state) => state.zoom)
   const showGrid = useSession((state) => state.showGrid)
   const [preview, setPreview] = useState<VectorShape | null>(null)
+  const [marquee, setMarquee] = useState<Bounds | null>(null)
   const [textAt, setTextAt] = useState<Vec2 | null>(null)
   const [textValue, setTextValue] = useState('')
   const gestureRef = useRef<Gesture | null>(null)
@@ -139,6 +152,7 @@ export function VectorStage(): JSX.Element {
   // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro/tile ativo), não leituras
   useEffect(() => {
     setPreview(null)
+    setMarquee(null)
     gestureRef.current = null
   }, [animationId, frameIndex])
 
@@ -192,7 +206,18 @@ export function VectorStage(): JSX.Element {
       setTextValue('')
       return
     }
-    if (tool === 'select' || tool === 'reshape') {
+    if (tool === 'select') {
+      // Arrasto no fundo = LAÇO de seleção; um toque parado limpa (no solto).
+      gestureRef.current = {
+        kind: 'marquee',
+        pointerId: event.pointerId,
+        start: at,
+        additive: event.shiftKey,
+      }
+      setMarquee({ x: at.x, y: at.y, width: 0, height: 0 })
+      return
+    }
+    if (tool === 'reshape') {
       // Clique no fundo: limpa a seleção.
       setSelectedIds([])
       return
@@ -267,7 +292,7 @@ export function VectorStage(): JSX.Element {
     bounds: Bounds,
     event: PointerEvent<SVGElement>,
   ): void {
-    if (!single || !event.isPrimary || gestureRef.current) return
+    if (selected.length === 0 || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const anchor = {
@@ -281,7 +306,8 @@ export function VectorStage(): JSX.Element {
       anchor,
       start: svgPoint(event),
       base: editor.getState().asset,
-      baseShape: single,
+      // 1 forma OU várias: todas escalam em torno da mesma âncora.
+      baseShapes: selected,
     }
   }
 
@@ -330,6 +356,16 @@ export function VectorStage(): JSX.Element {
 
     const at = svgPoint(event)
 
+    if (gesture.kind === 'marquee') {
+      setMarquee({
+        x: Math.min(gesture.start.x, at.x),
+        y: Math.min(gesture.start.y, at.y),
+        width: Math.abs(at.x - gesture.start.x),
+        height: Math.abs(at.y - gesture.start.y),
+      })
+      return
+    }
+
     if (gesture.kind === 'draw') {
       // Decimação: ponto quase em cima do anterior não acrescenta nada e
       // encareceria a re-suavização do traço a cada move.
@@ -361,7 +397,7 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'resize') {
-      const { anchor, start, baseShape, handle } = gesture
+      const { anchor, start, baseShapes, handle } = gesture
       const point = maybeSnap(at)
       const isCorner = handle.length === 2
       const horizontal = handle === 'e' || handle === 'w'
@@ -369,9 +405,9 @@ export function VectorStage(): JSX.Element {
       const denomY = start.y - anchor.y
       const fx = isCorner || horizontal ? (denomX === 0 ? 1 : (point.x - anchor.x) / denomX) : 1
       const fy = isCorner || !horizontal ? (denomY === 0 ? 1 : (point.y - anchor.y) / denomY) : 1
-      const resized = scaleShape(baseShape, anchor, fx, fy)
+      const resized = new Map(baseShapes.map((s) => [s.id, scaleShape(s, anchor, fx, fy)]))
       commitShapes(
-        currentShapes().map((s) => (s.id === baseShape.id ? resized : s)),
+        currentShapes().map((s) => resized.get(s.id) ?? s),
         false,
       )
       return
@@ -403,6 +439,22 @@ export function VectorStage(): JSX.Element {
     if (event && event.pointerId !== gesture.pointerId) return
     gestureRef.current = null
     if (gesture.kind === 'pan') return
+    if (gesture.kind === 'marquee') {
+      const box = marquee
+      setMarquee(null)
+      // Toque sem arrasto: clique simples no fundo — limpa (Shift preserva).
+      if (!box || (box.width < 2 && box.height < 2)) {
+        if (!gesture.additive) setSelectedIds([])
+        return
+      }
+      const shapes = currentShapes()
+      const hit = shapes.filter((s) => boundsIntersect(shapeBounds(s), box)).map((s) => s.id)
+      const expanded = expandToGroups(shapes, hit)
+      setSelectedIds((current) =>
+        gesture.additive ? [...new Set([...current, ...expanded])] : expanded,
+      )
+      return
+    }
     if (gesture.kind === 'draw') {
       const shape = preview
       setPreview(null)
@@ -426,7 +478,36 @@ export function VectorStage(): JSX.Element {
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
   return (
-    <>
+    <div className="relative flex min-h-0 min-w-0 flex-1">
+      {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
+          palco, fora do fluxo — aparecer/sumir não move o desenho. É a via do
+          TOUCH; os rótulos são distintos dos do painel de aparência (a11y). */}
+      {selected.length > 0 ? (
+        <div
+          role="toolbar"
+          aria-label={COPY.vector.selectionBar}
+          className="pin-panel absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 p-1 shadow-lg"
+        >
+          <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
+          <ToolButton
+            icon={FlipHorizontal2}
+            label={COPY.vector.selFlipH}
+            onClick={() => flipSelected('h')}
+          />
+          <ToolButton
+            icon={FlipVertical2}
+            label={COPY.vector.selFlipV}
+            onClick={() => flipSelected('v')}
+          />
+          {selected.length >= 2 ? (
+            <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
+          ) : null}
+          {selected.some((s) => s.groupId) ? (
+            <ToolButton icon={Ungroup} label={COPY.vector.selUngroup} onClick={ungroupSelected} />
+          ) : null}
+          <ToolButton icon={Trash2} label={COPY.vector.selRemove} onClick={removeSelected} />
+        </div>
+      ) : null}
       {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
           que a área e rola quando maior. */}
       {/* `safe center` no lugar do `m-auto`: margem automática ENGOLE o que
@@ -585,9 +666,11 @@ export function VectorStage(): JSX.Element {
                 ))}
               </g>
             ) : null}
-            {/* Moldura fina nas seleções múltiplas */}
-            {selected.length > 1
-              ? selected.map((shape) => {
+            {/* Seleção múltipla: moldura fina POR forma + a caixa da UNIÃO com
+                as 8 alças (todas escalam juntas; girar segue só no individual). */}
+            {selected.length > 1 ? (
+              <>
+                {selected.map((shape) => {
                   const b = shapeBounds(shape)
                   return (
                     <rect
@@ -603,8 +686,56 @@ export function VectorStage(): JSX.Element {
                       pointerEvents="none"
                     />
                   )
-                })
-              : null}
+                })}
+                {(() => {
+                  const union = boundsUnion(selected.map(shapeBounds))
+                  return (
+                    <g>
+                      <rect
+                        x={union.x}
+                        y={union.y}
+                        width={union.width}
+                        height={union.height}
+                        fill="none"
+                        stroke="#00a0c8"
+                        strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                        strokeWidth={1.5 / zoom}
+                        pointerEvents="none"
+                      />
+                      {HANDLES.map((handle) => (
+                        <rect
+                          key={`multi-${handle.id}`}
+                          x={union.x + handle.fx * union.width - 7 / zoom}
+                          y={union.y + handle.fy * union.height - 7 / zoom}
+                          width={14 / zoom}
+                          height={14 / zoom}
+                          fill="#ffffff"
+                          stroke="#00a0c8"
+                          strokeWidth={1.5 / zoom}
+                          style={{ cursor: 'pointer' }}
+                          onPointerDown={(event) => handleResizeDown(handle, union, event)}
+                        />
+                      ))}
+                    </g>
+                  )
+                })()}
+              </>
+            ) : null}
+            {/* Laço de seleção em andamento */}
+            {marquee ? (
+              <rect
+                x={marquee.x}
+                y={marquee.y}
+                width={marquee.width}
+                height={marquee.height}
+                fill="#00a0c8"
+                fillOpacity={0.08}
+                stroke="#00a0c8"
+                strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                strokeWidth={1 / zoom}
+                pointerEvents="none"
+              />
+            ) : null}
           </svg>
         </div>
       </div>
@@ -649,6 +780,6 @@ export function VectorStage(): JSX.Element {
           </div>
         </form>
       </Dialog>
-    </>
+    </div>
   )
 }

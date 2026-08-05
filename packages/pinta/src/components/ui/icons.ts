@@ -5,6 +5,12 @@
  */
 export type { LucideIcon } from 'lucide-react'
 export {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignStartVertical,
   ArrowLeft,
   ArrowUpToLine,
   BrickWall,

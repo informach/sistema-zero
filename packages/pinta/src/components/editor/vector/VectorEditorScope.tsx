@@ -23,7 +23,15 @@ import {
 import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import { PINTA_LIMITS } from '../../../core/project'
-import { boundsCenter, flipShape, shapeBounds, translateShape } from '../../../vector/geometry'
+import {
+  type AlignEdge,
+  alignShapes,
+  boundsCenter,
+  boundsUnion,
+  flipShape,
+  shapeBounds,
+  translateShape,
+} from '../../../vector/geometry'
 import {
   isVectorGradient,
   type VectorFill,
@@ -83,6 +91,7 @@ export interface VectorEditorContextValue {
   groupSelected: () => void
   ungroupSelected: () => void
   flipSelected: (axis: 'h' | 'v') => void
+  alignSelected: (edge: AlignEdge) => void
   zoomToFit: () => void
 }
 
@@ -392,6 +401,19 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     )
   }
 
+  /**
+   * Alinha a seleção: com 2+ formas, em relação à CAIXA da própria seleção;
+   * com 1, em relação à TELA do documento. Um commit (desfazível de uma vez).
+   */
+  function alignSelected(edge: AlignEdge): void {
+    if (selected.length === 0 || !doc) return
+    const target =
+      selected.length >= 2
+        ? boundsUnion(selected.map(shapeBounds))
+        : { x: 0, y: 0, width: doc.width, height: doc.height }
+    commitShapes(alignShapes(currentShapes(), selectedIds, edge, target))
+  }
+
   /** Move a seleção com as setas (Shift = passos de 10). */
   function nudgeSelected(dx: number, dy: number): void {
     if (selectedIds.length === 0) return
@@ -447,6 +469,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     groupSelected,
     ungroupSelected,
     flipSelected,
+    alignSelected,
     zoomToFit,
   }
 
