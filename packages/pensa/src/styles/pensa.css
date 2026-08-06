@@ -110,29 +110,17 @@
   margin-inline: auto;
 }
 .pensa-home {
-  padding: 48px 0 72px;
+  padding: 8px 0 32px;
 }
 .pensa-hero {
+  /* Cabeçalho de SEÇÃO da comunidade, não um hero de landing: o Pensa é uma
+     seção do app kids. Saíram o card (borda/fundo/sombra), o respiro de página
+     inteira e a marca d'água "ZERO" gigante do ::after. */
   position: relative;
-  overflow: hidden;
-  padding: clamp(28px, 6vw, 64px);
-  border: 1px solid var(--pz-line);
-  border-radius: 24px;
-  background: var(--pz-surface);
-  box-shadow: 0 6px 0 color-mix(in oklch, var(--pz-accent) 12%, transparent);
-}
-.pensa-hero::after {
-  content: "ZERO";
-  position: absolute;
-  right: -24px;
-  bottom: -45px;
-  color: color-mix(in oklch, var(--pz-accent) 8%, transparent);
-  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
-  font-size: clamp(7rem, 20vw, 16rem);
-  font-weight: 800;
-  letter-spacing: -0.12em;
-  line-height: 0.8;
-  pointer-events: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
 }
 .pensa-kicker {
   color: var(--pz-accent);
@@ -144,18 +132,18 @@
   position: relative;
   z-index: 1;
   max-width: 830px;
-  margin: 14px 0;
-  font-size: clamp(2rem, 5.4vw, 4.4rem);
-  letter-spacing: -0.02em;
-  line-height: 1;
+  margin: 0;
+  font-size: 1.875rem;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
 }
 .pensa-hero > p {
   position: relative;
   z-index: 1;
   max-width: 650px;
-  margin: 0;
+  margin: 4px 0 0;
   color: var(--pz-muted);
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-size: 0.875rem;
 }
 .pensa-create {
   position: relative;
@@ -261,8 +249,8 @@
   min-height: 160px;
   padding: 22px;
   text-align: left;
-  border: 1px solid var(--pz-line);
-  border-radius: 16px;
+  border: 2px solid var(--pz-line);
+  border-radius: 1.5rem;
   color: var(--pz-ink);
   background: var(--pz-surface);
   box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-accent) 10%, transparent);
@@ -504,8 +492,8 @@ button.pensa-map-node:hover {
 .pensa-artifact-empty,
 .pensa-audit,
 .pensa-ribbon {
-  border: 1px solid var(--pz-line);
-  border-radius: 16px;
+  border: 2px solid var(--pz-line);
+  border-radius: 1.5rem;
   background: var(--pz-surface);
 }
 .pensa-chat {
@@ -968,8 +956,8 @@ button.pensa-map-node:hover {
 }
 .pensa-task > article {
   padding: 17px 18px;
-  border: 1px solid var(--pz-line);
-  border-radius: 16px;
+  border: 2px solid var(--pz-line);
+  border-radius: 1.5rem;
   background: var(--pz-surface);
 }
 .pensa-task.is-next > article {

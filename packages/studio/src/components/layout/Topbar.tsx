@@ -373,7 +373,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     <>
       <header
         className={cn(
-          'flex items-center border-b border-sz-border bg-sz-panel text-sm',
+          'flex items-center border-sz-border border-b-2 bg-sz-panel text-sm',
           isCompact ? 'gap-1.5 px-2 py-2' : 'gap-3 px-4 py-2',
         )}
       >

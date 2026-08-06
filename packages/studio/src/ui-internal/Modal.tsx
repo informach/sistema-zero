@@ -71,7 +71,7 @@ export function Modal({
             dentro com header/footer fixos — antes transbordava e cortava. */}
         <div
           className={cn(
-            'flex max-h-[85vh] w-full max-w-[640px] min-w-[320px] flex-col rounded-lg border border-sz-border bg-sz-panel shadow-2xl',
+            'flex max-h-[85vh] w-full max-w-[640px] min-w-[320px] flex-col rounded-2xl border-2 border-sz-border bg-sz-panel shadow-2xl',
             className,
           )}
           role="document"
