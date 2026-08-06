@@ -76,7 +76,9 @@ export const ptBR: Record<string, string> = {
   'project.saved': 'Salvo',
 
   'projects.title': 'Meus projetos',
-  'projects.subtitle': 'Seus projetos do Sistema Zero Studio',
+  // O título agora É "Sistema Zero Studio" (escrito, sem logo) — repetir a marca
+  // no subtítulo ficava redundante.
+  'projects.subtitle': 'Abra um projeto para continuar ou crie um novo.',
   'projects.new': 'Novo projeto',
   'projects.import': 'Importar',
   'projects.export': 'Exportar',

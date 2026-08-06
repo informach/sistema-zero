@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { t } from '#core'
-import { BrandWordmark, Button } from '#ui'
+import { Button } from '#ui'
 import { listProTemplates } from '../components/code/pro-templates'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
 import { ImportButton } from '../components/projects/ImportButton'
@@ -46,6 +46,9 @@ export interface ProjectListProps {
    */
   showExamples?: boolean
 }
+
+/** A marca escrita (nome próprio, não traduzido) — o logo saiu do Estúdio. */
+const BRAND_NAME = 'Sistema Zero Studio'
 
 export function ProjectList({
   onOpenProject,
@@ -139,10 +142,13 @@ export function ProjectList({
         className="flex h-full flex-col bg-sz-bg text-sz-fg"
         style={{ fontFamily: 'var(--font-family-sans)' }}
       >
-        <header className="flex items-center gap-3 border-b border-sz-border bg-sz-panel px-6 py-4">
-          <div className="flex flex-col gap-1">
-            <BrandWordmark className="h-5 w-auto" />
-            <p className="text-xs text-sz-fg-soft">{t('projects.subtitle')}</p>
+        {/* Cabeçalho de SEÇÃO da comunidade (mesma escala das páginas kids), no
+            lugar da barra com wordmark: a lista de projetos é a "capa" do
+            Estúdio quando ele está embarcado. */}
+        <header className="flex items-end gap-3 px-6 pt-6 pb-4">
+          <div className="flex flex-col">
+            <h1 className="sz-ui-display text-3xl md:text-4xl">{BRAND_NAME}</h1>
+            <p className="mt-1 text-sm text-sz-fg-soft md:text-base">{t('projects.subtitle')}</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             {themeProp === undefined && <ThemeToggle />}

@@ -98,6 +98,17 @@
   --color-sz-focus: #1d4ed8;
 }
 
+/*
+ * Títulos e marca do Studio na fonte de DISPLAY do host (Baloo no kids).
+ * ⚠️ Nome `sz-ui-display`, NUNCA `sz-display`: essa última é do community-kids
+ * e as duas brigariam por "última definição vence" dentro do mesmo documento.
+ */
+[data-sz-theme] .sz-ui-display {
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
 /* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
 .sz-highlight-line {
   background-color: color-mix(in oklab, var(--color-sz-accent) 18%, transparent);

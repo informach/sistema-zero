@@ -4,8 +4,6 @@ import { useShallow } from 'zustand/react/shallow'
 import { MODE_LABELS, modesForKind, type Project, t } from '#core'
 import {
   Badge,
-  BrandLogo,
-  BrandWordmark,
   ConfirmDialog,
   cn,
   IconDownload,
@@ -53,6 +51,14 @@ export interface TopbarProps {
   /** Mostra o controle claro/escuro (false quando o host fixa o tema via prop). */
   canToggleTheme?: boolean
 }
+
+/**
+ * A marca escrita (nome próprio, não traduzido). O logo saiu de propósito: com
+ * ele o Estúdio parecia outro produto dentro da comunidade.
+ */
+const BRAND_NAME = 'Sistema Zero Studio'
+/** Na barra compacta (<440px) só o essencial cabe. */
+const BRAND_SHORT = 'Studio'
 
 /** Botão de ação só-ícone, com tooltip — o padrão da Topbar compacta. */
 function IconButton({
@@ -377,26 +383,21 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           isCompact ? 'gap-1.5 px-2 py-2' : 'gap-3 px-4 py-2',
         )}
       >
+        {/* A marca é TEXTO, não logo (pedido da dona): o Estúdio é uma seção da
+            comunidade e o wordmark o fazia parecer outro produto. Na barra
+            compacta cabe só "Studio" — o nome do projeto é o que importa lá. */}
         {onExit ? (
           <button
             type="button"
             onClick={() => void exitToProjects()}
-            className="flex shrink-0 items-center text-sz-fg hover:opacity-80"
+            className="sz-ui-display flex shrink-0 items-center text-base text-sz-fg hover:opacity-80"
             title="Voltar à lista de projetos"
           >
-            {isCompact ? (
-              <BrandLogo className="h-6 w-6" />
-            ) : (
-              <BrandWordmark className="h-5 w-auto" />
-            )}
+            {isCompact ? BRAND_SHORT : BRAND_NAME}
           </button>
         ) : (
-          <span className="flex shrink-0 items-center text-sz-fg">
-            {isCompact ? (
-              <BrandLogo className="h-6 w-6" />
-            ) : (
-              <BrandWordmark className="h-5 w-auto" />
-            )}
+          <span className="sz-ui-display flex shrink-0 items-center text-base text-sz-fg">
+            {isCompact ? BRAND_SHORT : BRAND_NAME}
           </span>
         )}
         {!isCompact && <span className="shrink-0 text-sz-fg-mute">/</span>}
