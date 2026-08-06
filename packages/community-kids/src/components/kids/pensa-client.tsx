@@ -5,6 +5,7 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/embedded-app-loading'
 
 type PensaModule = typeof import('@sistemazero/pensa')
 
@@ -75,9 +76,11 @@ export function PensaClient({
   )
 
   return (
-    // ⚠️ SEM card em volta: o Pensa é uma SEÇÃO da comunidade e o fundo dele já
-    // é o `--background` da página (ver pensa.css). O `overflow-hidden` fica.
-    <div className="flex min-h-[34rem] w-full flex-1 flex-col overflow-hidden">
+    // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
+    // `embedded-app-loading.tsx`): sem card, porque o Pensa é uma SEÇÃO da
+    // comunidade, e idêntica à da espera anterior — é o que faz a troca ser
+    // invisível em vez de um piscar.
+    <div className={EMBEDDED_APP_FRAME}>
       {loadError ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
@@ -94,9 +97,7 @@ export function PensaClient({
       ) : mod ? (
         <mod.PensaApp adapter={adapter} />
       ) : (
-        <div className="grid flex-1 place-items-center text-muted-foreground text-sm">
-          Carregando o Pensa…
-        </div>
+        <EmbeddedAppLoadingBody label="Carregando o Pensa…" />
       )}
     </div>
   )

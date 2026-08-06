@@ -8,6 +8,7 @@ import type { StudioTutorConfig } from '@sistemazero/studio'
 import { useTheme } from 'next-themes'
 import { useCallback, useMemo } from 'react'
 import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { EMBEDDED_STUDIO_FRAME } from './embedded-app-loading'
 
 /**
  * Wrapper KIDS fino da rota `/estudio/pro/[id]` (modo Código / WebContainer): provê
@@ -43,7 +44,10 @@ export function StudioProClient({
   )
 
   return (
-    <div className="min-h-[34rem] w-full flex-1 overflow-hidden rounded-2xl border-2 border-border bg-card">
+    // O card daqui era órfão: saiu dos outros três em 08/2026 e ficou. Não era só
+    // cosmético — o `estudio/loading.tsx` TAMBÉM cobre `/estudio/pro/[id]`, então
+    // a espera vinha sem card e o editor entrava dentro de um.
+    <div className={EMBEDDED_STUDIO_FRAME}>
       <StudioProEditor
         viewerId={viewerId}
         projectId={projectId}

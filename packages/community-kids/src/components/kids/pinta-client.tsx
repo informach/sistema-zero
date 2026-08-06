@@ -8,6 +8,7 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
@@ -204,9 +205,11 @@ export function PintaClient({
   ])
 
   return (
-    // ⚠️ SEM card em volta: o Pinta é uma SEÇÃO da comunidade e o fundo dele já
-    // é o `--background` da página (ver pinta.css). O `overflow-hidden` fica.
-    <div className="flex min-h-[34rem] w-full flex-1 flex-col overflow-hidden">
+    // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
+    // `embedded-app-loading.tsx`): sem card, porque o Pinta é uma SEÇÃO da
+    // comunidade, e idêntica à da espera anterior — é o que faz a troca ser
+    // invisível em vez de um piscar.
+    <div className={EMBEDDED_APP_FRAME}>
       {handoffStatus === 'error' ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
@@ -219,10 +222,6 @@ export function PintaClient({
               <RefreshCw className="size-4" /> Tentar de novo
             </button>
           </div>
-        </div>
-      ) : handoffStatus === 'loading' ? (
-        <div className="grid flex-1 place-items-center text-muted-foreground text-sm">
-          Carregando o brief do jogo…
         </div>
       ) : handoff && !handoff.capability.owned ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
@@ -241,10 +240,11 @@ export function PintaClient({
             </button>
           </div>
         </div>
-      ) : mod === null ? (
-        <div className="grid flex-1 place-items-center text-muted-foreground text-sm">
-          Carregando o Pinta…
-        </div>
+      ) : // Espera do brief (deep link do Pensa) e espera do pacote viram UMA só:
+      // os dois fetches correm em paralelo, e mostrar dois textos diferentes em
+      // sequência fazia `/pinta?tarefa=` ter quatro telas.
+      handoffStatus === 'loading' || mod === null ? (
+        <EmbeddedAppLoadingBody label="Carregando o Pinta…" />
       ) : (
         <mod.PintaApp adapter={adapter} />
       )}

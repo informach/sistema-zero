@@ -1,16 +1,12 @@
+import { EmbeddedAppLoading } from '@/components/kids/embedded-app-loading'
+
 /**
- * Esqueleto do Pinta — fallback de Suspense enquanto o Server Component resolve o
- * acesso (`checkPintaAccessReadonly`). Espelha a MOLDURA real do app (a mesma caixa
- * que o `PintaClient` mostra enquanto o pacote carrega) — transição contínua, sem
- * salto de layout. Mesma régua do `PensaLoading`/`EstudioLoading`.
+ * Espera do Pinta enquanto o Server Component resolve o acesso.
+ *
+ * A moldura vem do módulo COMPARTILHADO com o `PintaClient` (ver
+ * `embedded-app-loading.tsx`) — as duas esperas precisam ser idênticas, senão a
+ * troca aparece como um piscar. Não duplique as classes aqui.
  */
 export default function PintaLoading() {
-  return (
-    <div
-      aria-busy="true"
-      className="grid min-h-[34rem] w-full flex-1 place-items-center overflow-hidden rounded-2xl border-2 border-border bg-card text-muted-foreground text-sm"
-    >
-      Carregando o Pinta…
-    </div>
-  )
+  return <EmbeddedAppLoading label="Carregando o Pinta…" />
 }

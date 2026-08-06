@@ -35,7 +35,14 @@ export default async function EstudioPage({
   // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
   // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
   // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
-  const [res, session, challengeAccess, gam] = await Promise.all([
+  // ⚠️ TUDO numa leva só. O desafio e o saldo de IA eram `await` CONDICIONAIS
+  // depois deste bloco — duas idas em SÉRIE que só terminavam depois de tudo
+  // aqui, e é a soma disso que a criança vê como tela de carregando. As duas são
+  // leituras memoizadas, sem efeito colateral e SEM consumo de crédito, então
+  // buscá-las mesmo quando a condição não se aplica custa uma ida a mais para
+  // quem não usa e devolve o tempo de duas para todo mundo. O resultado passa a
+  // ser FILTRADO pelas condições, mais abaixo.
+  const [res, session, challengeAccess, gam, challengeRes, creditsRes] = await Promise.all([
     // ⚠️ Pede refs `pinta,estudio-completo` numa ida SÓ: o gate segue sendo o
     // `estudio-completo`; a posse do PINTA liga o "Trazer do Pinta" no editor
     // (produtos vendidos à parte — cross-app só com posse dos dois lados).
@@ -45,6 +52,8 @@ export default async function EstudioPage({
     // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
+    getChallengeReadonly().catch(() => null),
+    getAiCreditsReadonly().catch(() => null),
   ])
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
@@ -62,9 +71,9 @@ export default async function EstudioPage({
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
     challengeAccess.body?.access?.['estudio-completo'] === true
-  const challengeRes = challengeEligible ? await getChallengeReadonly().catch(() => null) : null
+  // A posse é que decide se o Desafio APARECE — a leitura já foi feita acima.
   const challenge =
-    challengeRes?.status === 200 && challengeRes.body
+    challengeEligible && challengeRes?.status === 200 && challengeRes.body
       ? { key: challengeRes.body.challenge.key, title: challengeRes.body.challenge.title }
       : null
   // Exemplos prontos (vitrine + "Exemplos clássicos") aparecem SÓ p/ a EQUIPE
@@ -72,10 +81,10 @@ export default async function EstudioPage({
   // cliente segue sem eles. Deriva do PAPEL da conta, não do rank: uma criança
   // que chegou a Lenda (rank `god`) NÃO é equipe e continua sem exemplos.
   const showExamples = isPrivilegedRole(session?.role)
-  // Saldo da ajuda de IA (medidor do Zappy). Best-effort: falhou → `null` = "não
-  // sei" e o medidor some, nunca "0 restantes".
+  // Saldo da ajuda de IA (medidor do Zappy) — a leitura já foi feita acima; aqui
+  // só decidimos se o medidor aparece. Falhou → `null` = "não sei" e o medidor
+  // some, nunca "0 restantes".
   const zappyEnabled = isStudioZappyAllowed(session, levelSlug)
-  const creditsRes = zappyEnabled ? await getAiCreditsReadonly().catch(() => null) : null
   return (
     <StudioFullClient
       viewerId={session?.id ?? null}
@@ -85,7 +94,7 @@ export default async function EstudioPage({
       // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
       // da carreira (Inventor). O rank já veio na gamificação acima.
       zappyEnabled={zappyEnabled}
-      aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
+      aiCredits={zappyEnabled && creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}
       pintaOwned={pintaOwned}
     />

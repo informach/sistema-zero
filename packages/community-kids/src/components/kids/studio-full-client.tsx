@@ -20,6 +20,7 @@ import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
 import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { StudioFullEditor } from './studio-full-editor'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 
@@ -456,11 +457,13 @@ export function StudioFullClient({
   // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer
   // (no /estudio o main é `flex flex-col` de largura+altura totais). `min-h-[34rem]`
   // mantém a usabilidade em telas baixas (a página rola se não couber).
-  // ⚠️ SEM card em volta (borda/raio/fundo): o Estúdio é uma SEÇÃO da comunidade,
-  // não um app dentro de um cartão — o fundo dele já é o `--background` da página.
-  // O `overflow-hidden` FICA: era o card que clipava o canvas do Blockly.
+  // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
+  // `embedded-app-loading.tsx`): sem card, porque o Estúdio é uma SEÇÃO da
+  // comunidade, e idêntica à da espera anterior — é o que faz a troca ser
+  // invisível em vez de um piscar. Segue BLOCO (não coluna flex): os filhos se
+  // dimensionam por `h-full` contando com isso.
   return (
-    <div className="min-h-[34rem] w-full flex-1 overflow-hidden">
+    <div className={EMBEDDED_STUDIO_FRAME}>
       {taskHandoffStatus === 'error' || taskError ? (
         <div className="grid h-full place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
@@ -477,10 +480,6 @@ export function StudioFullClient({
               <RefreshCw className="size-4" /> Tentar de novo
             </button>
           </div>
-        </div>
-      ) : taskHandoffStatus === 'loading' ? (
-        <div className="grid h-full place-items-center text-muted-foreground text-sm">
-          Carregando o guia da tarefa…
         </div>
       ) : taskHandoff && !taskHandoff.capability.owned ? (
         <div className="grid h-full place-items-center p-6 text-center">
@@ -523,10 +522,11 @@ export function StudioFullClient({
             </button>
           </div>
         </div>
-      ) : mod === null ? (
-        <div className="grid h-full place-items-center text-muted-foreground text-sm">
-          Carregando o Estúdio…
-        </div>
+      ) : // Espera do guia da tarefa (deep link do Pensa) e espera do pacote viram
+      // UMA só: os dois correm em paralelo, e mostrar dois textos diferentes em
+      // sequência fazia `/estudio?tarefa=` ter uma tela a mais.
+      taskHandoffStatus === 'loading' || mod === null ? (
+        <EmbeddedAppLoadingBody label="Carregando o Estúdio…" />
       ) : view.name === 'list' ? (
         <mod.ProjectList
           onOpenProject={openProject}
