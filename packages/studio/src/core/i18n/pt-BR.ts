@@ -76,8 +76,8 @@ export const ptBR: Record<string, string> = {
   'project.saved': 'Salvo',
 
   'projects.title': 'Meus projetos',
-  // O título agora É "Sistema Zero Studio" (escrito, sem logo) — repetir a marca
-  // no subtítulo ficava redundante.
+  // Cabeçalho da home no padrão do Pinta ("Meus desenhos") — copy escolhida pela
+  // usuária na imagem-modelo; o ProjectList.test.tsx trava as duas strings.
   'projects.heroTitle': 'Meus Jogos',
   'projects.subtitle': 'Dê vida aos seus jogos...',
   'projects.new': 'Novo projeto',
