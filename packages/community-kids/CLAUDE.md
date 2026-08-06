@@ -1196,5 +1196,8 @@ Sentry `sistema-zero-community-kids` + DSN no host.
   padrão que a usuária aprovou no Pensa, e mantém cooldown/quota intactos). Sem conversa, o estado
   vazio mostra 3 perguntas fixas por modo. Cada sugestão passa pela mesma redação de PII/segurança
   da resposta antes de chegar aqui.
-- **Modelo:** `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1` (setar no serviço deste app E no do
-  community; ausente = default do member-shell).
+- **Modelo:** `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1-mini` (staging + prod, 06/08 — o 4.1 puro
+  custa 13× o 4o-mini e o prompt deste lote é maior de propósito; o 4.1-mini é 5× mais barato que
+  o 4.1 sem voltar ao modelo vago). O **Pensa fica no `gpt-4.1`**. Este é o ÚNICO app com
+  OpenRouter configurado — o community adulto não tem chave e não roda Zappy. Detalhes de preço,
+  cascata de fallback e por que a quota não é alavanca de custo: member-shell §Zappy.

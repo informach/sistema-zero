@@ -644,8 +644,20 @@ INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária rel
   (⚠️ modo estrito: **em `required`**, vazio ok — foi bug real no Pensa), cada uma passando por
   `redactZappyPii` + `isUnsafeZappyText` na validação. Viram chips que PREENCHEM o campo no
   `ZappyPanel` (padrão que a usuária aprovou no Pensa — não enviam sozinhos).
-- **Modelo:** `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1` (decisão da usuária; o gpt-4o-mini era o
-  mesmo que dava resposta vaga no Pensa). Setar em community **e** community-kids.
+- **Modelo: `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1-mini`** (staging + prod, 06/08). O gpt-4.1 puro
+  durou 20 minutos: preço real do OpenRouter é **$2/M entrada + $8/M saída = 13× o gpt-4o-mini**, e
+  este lote engordou o prompt DE PROPÓSITO (receitas + esboço + memória, teto 48KB) — pior caso
+  ~$0,042/pergunta, ~$21/mês por conta que estourasse a quota. O **4.1-mini ($0,40/$1,60) é 5×
+  mais barato que o 4.1 e uma geração à frente do 4o-mini**, então não volta a ser o modelo que
+  dava resposta vaga: ~$0,008/pergunta. ⚠️ O **Pensa fica no `gpt-4.1`** (JSON grande do
+  `task_plan`, poucas chamadas por ciclo). Cascata: `ZAPPY_MODEL → PENSA_MODEL → MODEL`, todas
+  `.optional()` — **o lote não exigiu env nova**. Só o community-kids tem OpenRouter configurado;
+  o community adulto não roda Zappy.
+- **Quota não é alavanca de custo** (medido 06/08, antes de mexer): equipe JÁ é ilimitada
+  (`privileged` → `unlimited:true` no members) e o teto `AI_LIMIT_DAILY`/`MONTHLY` é **global por
+  CONTA**, somando Pensa + Zappy + descrição do Mural — baixá-lo corta o Pensa junto (1 ciclo ≈
+  25-30 interações). Além disso teto não reduz custo MÉDIO, só a cauda. Se um dia cortar, corte o
+  MENSAL, nunca o diário. Medir primeiro no `/admin/ia` (breakdown por feature e por conta).
 - **Segurança infantil intacta:** URL, cerca de código, anti-grooming, PII na pergunta e quota
   seguem fail-closed. As flexibilizações são cirúrgicas: tag única sem atributo, `class`/`return`
   em texto, e `ANSWER_PHONE_RE` (telefone com DDD) usado SÓ no lado da RESPOSTA — a redação da
