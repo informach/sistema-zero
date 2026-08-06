@@ -77,3 +77,82 @@ export function buildProjectOutline(
   if (summary) lines.push(`Resumo por categoria: ${summary}`)
   return lines.join('\n')
 }
+
+export interface BehaviorEntryInput {
+  area: 'start' | 'events' | 'loops'
+  depth: number
+  type: string
+  blockId?: string
+  values: { name: string; value: string }[]
+}
+
+const AREA_TITLES = {
+  start: 'AO INICIAR (roda uma vez)',
+  events: 'QUANDO ACONTECER (só roda quando o gatilho dispara)',
+  loops: 'ENQUANTO ESTIVER RODANDO (repete o tempo todo)',
+} as const
+
+const MAX_VALUE_CHARS = 40
+const MAX_VALUES_PER_LINE = 4
+
+/** Nome de campo da IR: só letras/números/underscore chegam ao prompt. */
+function safeFieldName(name: string): string | null {
+  return /^[A-Za-z_][A-Za-z0-9_]{0,23}$/.test(name) ? name : null
+}
+
+/**
+ * O que o projeto FAZ, por área de execução, com os valores que a criança
+ * escolheu — é o que permite diagnosticar "roda mas não é o que eu queria" em
+ * vez de reensinar a mecânica.
+ *
+ * ⚠️ O digest chega do CLIENTE, então nada dele é ecoado cru: o RÓTULO vem do
+ * catálogo do servidor (resolvido pelo `blockId` → tipo do bloco → catálogo);
+ * entrada sem rótulo resolvível vira contador, igual ao esboço. Nome de campo
+ * passa por allowlist e o valor é capado — o valor é texto da criança.
+ */
+export function buildBehaviorDigest(
+  behavior: readonly BehaviorEntryInput[],
+  blocks: readonly OutlineBlockInput[],
+  catalog: ReadonlyMap<string, OutlineCatalogInfo>,
+  options?: { maxLines?: number },
+): string {
+  const maxLines = options?.maxLines ?? 90
+  const typeByBlockId = new Map(blocks.map((block) => [block.id, block.type]))
+  const lines: string[] = []
+  let unresolved = 0
+  let truncated = 0
+
+  for (const area of ['start', 'events', 'loops'] as const) {
+    const entries = behavior.filter((entry) => entry.area === area)
+    lines.push(AREA_TITLES[area])
+    if (entries.length === 0) {
+      lines.push('  (vazio)')
+      continue
+    }
+    for (const entry of entries) {
+      const blockType = entry.blockId ? typeByBlockId.get(entry.blockId) : undefined
+      const info = blockType ? catalog.get(blockType) : undefined
+      if (!info) {
+        // Sem rótulo confiável, não se ecoa o tipo cru vindo do cliente.
+        unresolved += 1
+        continue
+      }
+      if (lines.length >= maxLines) {
+        truncated += 1
+        continue
+      }
+      const values = entry.values
+        .flatMap((value) => {
+          const name = safeFieldName(value.name)
+          return name ? [`${name}=${value.value.slice(0, MAX_VALUE_CHARS)}`] : []
+        })
+        .slice(0, MAX_VALUES_PER_LINE)
+      const detail = values.length > 0 ? ` (${values.join(', ')})` : ''
+      lines.push(`${'  '.repeat(Math.min(entry.depth + 1, 8))}- ${info.label}${detail}`)
+    }
+  }
+
+  if (truncated > 0) lines.push(`… e mais ${truncated} passos`)
+  if (unresolved > 0) lines.push(`Passos não reconhecidos: ${unresolved}`)
+  return lines.join('\n')
+}

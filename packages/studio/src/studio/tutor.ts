@@ -2,6 +2,7 @@ import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import type { ReactNode } from 'react'
 import { createContext, createElement, type JSX, useContext, useMemo, useState } from 'react'
 import type { IDEMode, Project, ProjectKind } from '#core'
+import { buildTutorBehavior, type StudioTutorBehaviorEntry } from './tutorBehavior'
 import { isStudioTutorSensitivePath, redactStudioTutorSecrets } from './tutorSafety'
 
 export type StudioTutorScope =
@@ -44,6 +45,12 @@ export interface StudioTutorProjectContext {
   installedExtensions: string[]
   selectedBlockId: string | null
   lastError: string | null
+  /**
+   * O que o projeto FAZ, derivado da IR: valores escolhidos pela criança + em
+   * que área cada coisa roda. É o que permite diagnosticar erro de LÓGICA em vez
+   * de ensinar a mecânica do zero. Ausente quando não há IR (Pro, projeto antigo).
+   */
+  behavior?: StudioTutorBehaviorEntry[]
   /** Só existe em Ponte/Pro. O modo Blocos nunca envia código. */
   code?: StudioTutorCodeFile[]
 }
@@ -260,6 +267,7 @@ export function buildStudioTutorContext(input: {
 }): StudioTutorProjectContext {
   const { project } = input
   const includeCode = project.mode === 'bridge' || project.kind === 'pro'
+  const behavior = buildTutorBehavior(project.ir)
   return {
     projectId: project.id,
     mode: project.mode,
@@ -268,6 +276,7 @@ export function buildStudioTutorContext(input: {
     installedExtensions: project.installedExtensions.map((ext) => ext.id),
     selectedBlockId: input.selectedBlockId,
     lastError: input.lastError?.slice(0, MAX_ERROR_CHARS) ?? null,
+    ...(behavior?.length ? { behavior } : {}),
     ...(includeCode ? { code: compactCode(project) } : {}),
   }
 }
