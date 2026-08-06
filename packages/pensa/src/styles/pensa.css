@@ -26,13 +26,10 @@
   min-height: 100%;
   overflow: auto;
   color: var(--pz-ink);
-  background:
-    radial-gradient(
-      circle at 12% -10%,
-      color-mix(in oklch, var(--pz-accent) 16%, transparent),
-      transparent 30rem
-    ),
-    linear-gradient(180deg, var(--pz-bg), color-mix(in oklch, var(--pz-bg) 88%, white));
+  /* Fundo CHAPADO, igual ao da página da comunidade. O gradiente radial que
+     existia aqui era a textura de um app à parte: por mais que o --pz-bg já
+     fosse o azul-céu certo, o degradê denunciava a emenda com o host. */
+  background: var(--pz-bg);
   font-family: var(--font-sans, "Nunito", ui-rounded, "Nunito Sans", system-ui, sans-serif);
   container-type: inline-size;
 }

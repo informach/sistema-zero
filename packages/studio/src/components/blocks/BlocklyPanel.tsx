@@ -60,11 +60,13 @@ const REGEN_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
 function blocklyWorkspaceConfiguration(
   theme: 'dark' | 'light',
   horizontalLayout: boolean,
+  /** Container do canvas: de onde as cores do tema vigente são LIDAS. */
+  root: Element | null,
 ): Blockly.BlocklyOptions {
   return {
-    theme: szThemeFor(theme),
+    theme: szThemeFor(theme, root),
     renderer: 'zelos',
-    grid: { spacing: 24, length: 3, colour: szGridColourFor(theme), snap: true },
+    grid: { spacing: 24, length: 3, colour: szGridColourFor(theme, root), snap: true },
     zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
     move: { scrollbars: true, drag: true, wheel: true },
     trashcan: true,
@@ -910,7 +912,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const horizontalToolbox = container.clientWidth < STUDIO_COMPACT_MAX_PX
     container.dataset.szToolboxLayout = horizontalToolbox ? 'horizontal' : 'vertical'
     const injected = Blockly.inject(container, {
-      ...blocklyWorkspaceConfiguration(studioThemeRef.current, horizontalToolbox),
+      ...blocklyWorkspaceConfiguration(studioThemeRef.current, horizontalToolbox, container),
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox
@@ -1016,7 +1018,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).
   useEffect(() => {
     if (!workspace) return
-    workspace.setTheme(szThemeFor(studioTheme))
+    workspace.setTheme(szThemeFor(studioTheme, blocklyRef.current))
   }, [workspace, studioTheme])
 
   // Enquanto a partição de blocos hidrata em 2º plano (reabertura rápida), o

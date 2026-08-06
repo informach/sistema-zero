@@ -19,15 +19,21 @@
  * Valores default = tema ESCURO; o claro sobrescreve via [data-sz-theme="light"].
  */
 @theme {
-  --color-sz-bg: oklch(0.103 0.01 265); /* background  (#030406) */
-  --color-sz-bg-soft: oklch(0.125 0.01 265); /* meio-termo bg→card */
-  --color-sz-panel: oklch(0.14 0.01 265); /* card        (#07090d) */
-  --color-sz-panel-soft: oklch(0.185 0.01 265); /* secondary/muted */
-  --color-sz-border: oklch(0.21 0.01 265); /* border */
-  --color-sz-border-soft: oklch(0.17 0.01 265);
-  --color-sz-fg: oklch(0.975 0.003 255); /* foreground */
-  --color-sz-fg-soft: oklch(0.75 0.008 245);
-  --color-sz-fg-mute: oklch(0.6 0.012 235); /* muted-foreground */
+  /* SUPERFÍCIES: dentro de um host kids o Estúdio é uma SEÇÃO da comunidade —
+     fundo/painel/borda/texto vêm dos primitivos `--sz-kids-*`. O fallback é o
+     valor ANTIGO, então admin, comunidade adulta e playground (que não importam
+     os primitivos) seguem exatamente como estavam. Escuro = a noite navy. */
+  --color-sz-bg: var(--sz-kids-navy, oklch(0.103 0.01 265)); /* background */
+  --color-sz-bg-soft: color-mix(in oklab, var(--color-sz-bg) 85%, var(--color-sz-panel));
+  --color-sz-panel: var(--sz-kids-navy-superficie, oklch(0.14 0.01 265)); /* card */
+  --color-sz-panel-soft: var(--sz-kids-navy-superficie-2, oklch(0.185 0.01 265)); /* muted */
+  --color-sz-border: var(--sz-kids-navy-linha, oklch(0.21 0.01 265)); /* border */
+  --color-sz-border-soft: color-mix(in oklab, var(--color-sz-border) 70%, var(--color-sz-bg));
+  --color-sz-fg: var(--sz-kids-navy-tinta, oklch(0.975 0.003 255)); /* foreground */
+  --color-sz-fg-soft: var(--sz-kids-navy-tinta-suave, oklch(0.75 0.008 245));
+  --color-sz-fg-mute: color-mix(in oklab, var(--color-sz-fg-soft) 80%, var(--color-sz-bg));
+  /* Superfície = alias de painel (3 call sites usavam bg-sz-surface sem token). */
+  --color-sz-surface: var(--color-sz-panel);
   /* Primitivos --sz-kids-* vêm de @sistemazero/ui/theme-kids.css quando o HOST
      os importa (kids/funnel); o fallback literal mantém o standalone (playground,
      admin, community adulta) funcionando sem depender do pacote ui.
@@ -37,12 +43,31 @@
   --color-sz-accent-soft: oklch(0.8 0.11 240); /* link-hover */
   --color-sz-cyan: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro (detalhes) */
   --color-sz-warn: #fbbf24;
+  --color-sz-warning: var(--color-sz-warn); /* alias: 1 call site usava text-sz-warning */
   --color-sz-error: oklch(0.64 0.215 27); /* destructive */
+  --color-sz-danger: var(--color-sz-error); /* alias: 1 call site usava text-sz-danger */
   --color-sz-success: #34d399;
   --color-sz-focus: #60a5fa;
+  /*
+   * ⚠️ HERDA a fonte do host, mas SEM regredir quem não é kids. Antes eram os
+   * literais "Baloo 2", "Nunito", que NÃO resolvem num app Next: o next/font
+   * gera famílias com nome HASHEADO e as expõe só nas vars dele — o Estúdio
+   * caía em system-ui dentro da comunidade (o que mais denunciava "app de fora").
+   *
+   * A cadeia encabeça com `var(--font-nunito, sz-none)`: no kids resolve para a
+   * família hasheada de verdade; em admin/adulto/playground a var não existe e
+   * `sz-none` é um nome de família válido que não casa com fonte nenhuma, então
+   * o navegador PULA para o próximo item — sobrando exatamente a lista de hoje.
+   * ⚠️ NÃO usar `var(--font-sans, …)`: é token DEFAULT do Tailwind v4, nunca
+   * cairia no fallback e traria a fonte do admin junto.
+   */
   --font-family-sans:
-    "Baloo 2", "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    var(--font-nunito, sz-none), "Baloo 2", "Nunito", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  /* Títulos/marca: a display do host (Baloo no kids), mesma mecânica. */
+  --font-family-display:
+    var(--font-baloo, sz-none), "Baloo 2", "Nunito", ui-rounded, ui-sans-serif, system-ui,
+    sans-serif;
   --font-family-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
@@ -50,15 +75,20 @@
 
 /* Tema claro — override por atributo data-sz-theme="light" no root do Studio. */
 [data-sz-theme="light"] {
-  --color-sz-bg: oklch(0.975 0.012 85); /* creme MakeCode (#fef9ef) */
-  --color-sz-bg-soft: oklch(0.955 0.012 85); /* #f4ecdc */
-  --color-sz-panel: oklch(0.995 0.006 85); /* card quase-branco quente (#fffdf8) */
-  --color-sz-panel-soft: oklch(0.945 0.012 85); /* secondary/muted (#efe6d6) */
-  --color-sz-border: oklch(0.89 0.018 80); /* #e6d8c2 */
-  --color-sz-border-soft: oklch(0.92 0.015 80); /* #eee2d0 */
-  --color-sz-fg: oklch(0.105 0.01 265);
-  --color-sz-fg-soft: oklch(0.5 0.01 255); /* muted-foreground */
-  --color-sz-fg-mute: oklch(0.62 0.008 255);
+  /* ⚠️ TODOS os derivados (color-mix / alias) são RE-DECLARADOS aqui de
+     propósito: um custom property que referencia outro é substituído no
+     elemento onde é DECLARADO — herdados do :root, ficariam presos nas cores
+     do tema escuro. */
+  --color-sz-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85)); /* azul-céu do app kids */
+  --color-sz-bg-soft: var(--sz-kids-branco-suave, oklch(0.955 0.012 85));
+  --color-sz-panel: var(--sz-kids-branco, oklch(0.995 0.006 85)); /* card */
+  --color-sz-panel-soft: var(--sz-kids-branco-suave, oklch(0.945 0.012 85)); /* secondary/muted */
+  --color-sz-border: var(--sz-kids-linha, oklch(0.89 0.018 80));
+  --color-sz-border-soft: color-mix(in oklab, var(--color-sz-border) 55%, var(--color-sz-panel));
+  --color-sz-surface: var(--color-sz-panel);
+  --color-sz-fg: var(--sz-kids-tinta, oklch(0.105 0.01 265));
+  --color-sz-fg-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.01 255)); /* muted-foreground */
+  --color-sz-fg-mute: color-mix(in oklab, var(--color-sz-fg-soft) 85%, var(--color-sz-panel));
   --color-sz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* primary = azul (AA) */
   --color-sz-accent-soft: oklch(0.46 0.14 255); /* link */
   --color-sz-cyan: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
@@ -149,8 +179,14 @@
   background: color-mix(in srgb, var(--color-sz-accent) 12%, var(--color-sz-panel-soft));
   transform: translateX(2px);
 }
+/* Texto DENTRO dos blocos: vence a regra que o Blockly injeta (0,1,0) por
+   especificidade — é por aqui que a fonte do host chega ao canvas, já que o
+   `fontStyle` do Theme é resolvido antes do CSS do app. */
+[data-sz-theme] .blocklyText {
+  font-family: var(--font-family-display);
+}
 [data-sz-theme] .blocklyToolboxCategoryLabel {
-  font-family: "Baloo 2", "Nunito", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-family-display);
   font-size: 15px;
   font-weight: 600;
   color: var(--color-sz-fg);

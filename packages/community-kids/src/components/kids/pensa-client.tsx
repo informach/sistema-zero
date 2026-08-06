@@ -75,7 +75,9 @@ export function PensaClient({
   )
 
   return (
-    <div className="flex min-h-[34rem] w-full flex-1 flex-col overflow-hidden rounded-2xl border-2 border-border bg-card">
+    // ⚠️ SEM card em volta: o Pensa é uma SEÇÃO da comunidade e o fundo dele já
+    // é o `--background` da página (ver pensa.css). O `overflow-hidden` fica.
+    <div className="flex min-h-[34rem] w-full flex-1 flex-col overflow-hidden">
       {loadError ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">

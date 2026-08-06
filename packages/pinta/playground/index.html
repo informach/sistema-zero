@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Pinta — editor de assets de jogos para crianças (playground de dev)" />
     <title>Pinta — playground</title>
+    <!-- Fontes da marca kids (no app de verdade entram pelo next/font do host):
+         sem elas o playground renderia em system-ui e o QA visual mentiria. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>

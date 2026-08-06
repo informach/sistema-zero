@@ -443,8 +443,11 @@ export function StudioFullClient({
   // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer
   // (no /estudio o main é `flex flex-col` de largura+altura totais). `min-h-[34rem]`
   // mantém a usabilidade em telas baixas (a página rola se não couber).
+  // ⚠️ SEM card em volta (borda/raio/fundo): o Estúdio é uma SEÇÃO da comunidade,
+  // não um app dentro de um cartão — o fundo dele já é o `--background` da página.
+  // O `overflow-hidden` FICA: era o card que clipava o canvas do Blockly.
   return (
-    <div className="min-h-[34rem] w-full flex-1 overflow-hidden rounded-2xl border-2 border-border bg-card">
+    <div className="min-h-[34rem] w-full flex-1 overflow-hidden">
       {taskHandoffStatus === 'error' || taskError ? (
         <div className="grid h-full place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">

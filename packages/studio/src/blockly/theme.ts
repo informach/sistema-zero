@@ -1,62 +1,71 @@
 import * as Blockly from 'blockly/core'
 import { PROGRAMMING_CATEGORY_COLORS } from './programmingAppearance'
+import { readSzPalette, SZ_BLOCKLY_FALLBACK, type SzBlocklyPalette } from './themeColors'
 
-// O Blockly não lê CSS custom properties nos componentStyles — os valores são
-// hex equivalentes aos tokens oklch de src/styles/studio.css (paleta do
-// sistema-zero, referência comunidade-sistema-zero). Manter os dois em sincronia.
+// O Blockly não lê CSS custom properties nos componentStyles — precisa de cor
+// concreta. Desde que os tokens passaram a apontar para os primitivos da marca,
+// a paleta é LIDA DO TEMA em runtime (themeColors.ts); os valores abaixo são a
+// reserva de quem não tem DOM (testes) ou não resolve a cor.
 const FONT_STYLE = {
-  // Fontes redondas/amigáveis (o host kids carrega Baloo 2 + Nunito); cai para
-  // o sistema onde não estiverem disponíveis (admin/member-shell).
+  // ⚠️ A família REAL vem do CSS (`[data-sz-theme] .blocklyText` em studio.css,
+  // que vence a regra injetada pelo Blockly por especificidade) — é lá que a
+  // fonte do host entra. Aqui fica só a reserva de quem não carrega o CSS.
   family: "'Baloo 2', 'Nunito', ui-sans-serif, system-ui, sans-serif",
   weight: '500',
   size: 13,
 }
 
-export const szDarkTheme = Blockly.Theme.defineTheme('sz-dark', {
-  name: 'sz-dark',
-  base: Blockly.Themes.Classic,
-  componentStyles: {
-    workspaceBackgroundColour: '#030406' /* --color-sz-bg = oklch(0.103 0.01 265) */,
-    toolboxBackgroundColour: '#07090d' /* --color-sz-panel = oklch(0.14 0.01 265) */,
-    toolboxForegroundColour: '#f5f7f9' /* --color-sz-fg = oklch(0.975 0.003 255) */,
-    flyoutBackgroundColour: '#07090d',
-    flyoutForegroundColour: '#f5f7f9',
-    flyoutOpacity: 1,
-    scrollbarColour: '#16181d' /* --color-sz-border = oklch(0.21 0.01 265) */,
-    insertionMarkerColour: '#37A6F5' /* --color-sz-accent (azul claro) = oklch(0.72 0.13 245) */,
-    insertionMarkerOpacity: 0.5,
-    markerColour: '#37A6F5',
-    cursorColour: '#37A6F5',
-  },
-  fontStyle: FONT_STYLE,
-})
+function buildTheme(name: string, palette: SzBlocklyPalette): Blockly.Theme {
+  return Blockly.Theme.defineTheme(name, {
+    name,
+    base: Blockly.Themes.Classic,
+    componentStyles: {
+      workspaceBackgroundColour: palette.bg,
+      toolboxBackgroundColour: palette.panel,
+      toolboxForegroundColour: palette.fg,
+      flyoutBackgroundColour: palette.panelSoft,
+      flyoutForegroundColour: palette.fg,
+      flyoutOpacity: 1,
+      scrollbarColour: palette.border,
+      insertionMarkerColour: palette.accent,
+      insertionMarkerOpacity: 0.5,
+      markerColour: palette.accent,
+      cursorColour: palette.accent,
+    },
+    fontStyle: FONT_STYLE,
+  })
+}
 
-export const szLightTheme = Blockly.Theme.defineTheme('sz-light', {
-  name: 'sz-light',
-  base: Blockly.Themes.Classic,
-  componentStyles: {
-    workspaceBackgroundColour: '#fef9ef' /* --color-sz-bg = oklch(0.975 0.012 85) creme MakeCode */,
-    toolboxBackgroundColour: '#fffdf8' /* --color-sz-panel = oklch(0.995 0.006 85) */,
-    toolboxForegroundColour: '#1a1410' /* near-black quente p/ o creme */,
-    flyoutBackgroundColour: '#f4ecdc' /* --color-sz-panel-soft = oklch(0.945 0.012 85) */,
-    flyoutForegroundColour: '#1a1410',
-    flyoutOpacity: 1,
-    scrollbarColour: '#e6d8c2' /* --color-sz-border = oklch(0.89 0.018 80) */,
-    insertionMarkerColour: '#1565C0' /* --color-sz-accent (azul) = oklch(0.52 0.15 252) */,
-    insertionMarkerOpacity: 0.5,
-    markerColour: '#1565C0',
-    cursorColour: '#1565C0',
-  },
-  fontStyle: FONT_STYLE,
-})
+export const szDarkTheme = buildTheme('sz-dark', SZ_BLOCKLY_FALLBACK.dark)
+export const szLightTheme = buildTheme('sz-light', SZ_BLOCKLY_FALLBACK.light)
 
-export function szThemeFor(theme: 'dark' | 'light'): Blockly.Theme {
-  return theme === 'light' ? szLightTheme : szDarkTheme
+// ⚠️ `defineTheme` CACHEIA por nome: redefinir 'sz-light' com outras cores
+// devolveria o objeto antigo. Cada paleta lida vira um nome derivado, memoizado.
+const themeCache = new Map<string, Blockly.Theme>()
+
+function paletteKey(theme: 'dark' | 'light', palette: SzBlocklyPalette): string {
+  return `${theme}:${palette.bg}${palette.panel}${palette.panelSoft}${palette.fg}${palette.border}${palette.accent}`
+}
+
+/**
+ * Tema do Blockly. Com `root`, lê as cores do tema VIGENTE (o Studio dentro da
+ * comunidade kids fica azul; no admin segue creme) — ver themeColors.ts.
+ */
+export function szThemeFor(theme: 'dark' | 'light', root?: Element | null): Blockly.Theme {
+  if (root === undefined) return theme === 'light' ? szLightTheme : szDarkTheme
+  const palette = readSzPalette(root, theme)
+  const key = paletteKey(theme, palette)
+  const cached = themeCache.get(key)
+  if (cached) return cached
+  const built = buildTheme(`sz-${theme}-${themeCache.size}`, palette)
+  themeCache.set(key, built)
+  return built
 }
 
 /** Cor da grade do workspace por tema (opção de injeção, não do Theme). */
-export function szGridColourFor(theme: 'dark' | 'light'): string {
-  return theme === 'light' ? '#efe3cf' : '#1b212a'
+export function szGridColourFor(theme: 'dark' | 'light', root?: Element | null): string {
+  if (root === undefined) return SZ_BLOCKLY_FALLBACK[theme].grid
+  return readSzPalette(root, theme).grid
 }
 
 /** Compat: alias do tema PADRÃO (hoje o claro/creme; era o escuro). */

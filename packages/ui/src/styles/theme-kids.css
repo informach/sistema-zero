@@ -31,9 +31,25 @@
   --sz-kids-creme: #fff7e9; /* fundo da página de vendas */
   --sz-kids-navy: oklch(0.235 0.05 262); /* #0C1E3E — rodapé, noite do dark kids */
 
+  /* ── Superfícies do DIA (sobre o céu diluído) ───────────── */
+  /* Espelham os semânticos do app kids (--card, --muted, --border) para os
+     embarcados assentarem no MESMO plano visual do host, e não só na mesma
+     cor de acento. Ver community-kids/src/app/globals.css. */
+  --sz-kids-branco: oklch(1 0 0); /* cartão/painel */
+  --sz-kids-branco-suave: oklch(0.955 0.006 250); /* superfície secundária, hover */
+  --sz-kids-linha: oklch(0.9 0.01 250); /* borda */
+
+  /* ── Superfícies da NOITE (sobre o navy) ────────────────── */
+  --sz-kids-navy-superficie: oklch(0.28 0.05 260); /* cartão/painel */
+  --sz-kids-navy-superficie-2: oklch(0.33 0.05 260); /* superfície secundária, hover */
+  --sz-kids-navy-linha: oklch(0.34 0.05 260); /* borda */
+
   /* ── Texto neutro da marca (sobre claro) ────────────────── */
   --sz-kids-tinta: #26314a;
   --sz-kids-tinta-suave: #5c6b85;
+  /* Texto sobre o navy (a noite) */
+  --sz-kids-navy-tinta: oklch(0.975 0.005 250);
+  --sz-kids-navy-tinta-suave: oklch(0.7 0.03 250);
 
   /* ── Azuis (identidade primária) ────────────────────────── */
   --sz-kids-azul-vivo: oklch(0.72 0.13 245); /* #37A6F5 — acento claro, apoio no dark */

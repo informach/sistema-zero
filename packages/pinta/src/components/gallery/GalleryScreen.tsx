@@ -166,10 +166,13 @@ export function GalleryScreen(): JSX.Element {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6">
-      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      {/* Cabeçalho de SEÇÃO da comunidade (mesma escala de `/criar` e da home
+          do kids): este é o título da página quando o Pinta está embarcado —
+          por isso ele mora aqui e some sozinho ao abrir o editor. */}
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="pin-display text-2xl">{COPY.gallery.title}</h1>
-          <p className="text-base text-pin-muted">{COPY.gallery.subtitle}</p>
+          <h1 className="pin-display text-3xl md:text-4xl">{COPY.gallery.title}</h1>
+          <p className="mt-1 text-pin-muted text-sm md:text-base">{COPY.gallery.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <input
