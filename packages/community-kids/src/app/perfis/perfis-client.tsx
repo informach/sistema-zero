@@ -1,5 +1,6 @@
 'use client'
 
+import { type AiCreditsView, diaCivilPorExtenso } from '@sistemazero/core/ai-credits'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -525,6 +526,9 @@ export function PerfisClient({
       ) : null}
 
       {managing ? <ChildrenDashboard avatarPhotoByProfile={avatarPhotoByProfile} /> : null}
+      {/* IRMÃO do dashboard, não filho: aquele some quando não há filhos, e a
+          ajuda de IA é da CONTA — precisa aparecer de qualquer jeito. */}
+      {managing ? <FamilyAiCredits /> : null}
 
       <div className="flex flex-wrap items-end justify-center gap-3">
         {managing ? (
@@ -605,6 +609,70 @@ export function PerfisClient({
  * ao montar — só renderiza no modo gestão, atrás do portão de senha. Esqueleto no load;
  * falha é best-effort (some sem quebrar a gestão de perfis).
  */
+/**
+ * Quanta ajuda de IA a família já usou no mês. Fica na área dos pais porque é
+ * quem paga a conta e quem media a briga de irmão — a criança vê o próprio
+ * medidor dentro do Zappy/Pensa.
+ *
+ * NÃO quebra por criança de propósito: o pote é um só (a quota é da CONTA), e
+ * inventar um recorte por perfil seria mentira. Best-effort como o dashboard:
+ * falhou, o bloco some.
+ */
+function FamilyAiCredits() {
+  const [view, setView] = useState<AiCreditsView | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/parents/ai-credits')
+      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+      .then((data: { credits: AiCreditsView | null }) => {
+        if (alive && data.credits) setView(data.credits)
+        else if (alive) setFailed(true)
+      })
+      .catch(() => {
+        if (alive) setFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (failed || !view) return null
+  // Equipe não tem teto: um painel de consumo aqui não diria nada.
+  if (view.unlimited) return null
+
+  const usadoMes = view.monthLimit - view.monthRemaining
+  const usadoHoje = view.dayLimit - view.dayRemaining
+  const pct = Math.min(100, Math.round((usadoMes / view.monthLimit) * 100))
+  return (
+    <section className="w-full max-w-2xl">
+      <h2 className="sz-display mb-3 text-center text-foreground text-xl">Ajuda da IA neste mês</h2>
+      <div className="rounded-2xl border-2 border-border bg-card p-4">
+        <div
+          className="sz-progress"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={view.monthLimit}
+          aria-valuenow={usadoMes}
+          aria-label={`${usadoMes} de ${view.monthLimit} usados neste mês`}
+        >
+          <span style={{ width: `${pct}%` }} />
+        </div>
+        <p className="mt-2 font-bold text-foreground text-sm tabular-nums">
+          {usadoMes} de {view.monthLimit}
+        </p>
+        <p className="text-muted-foreground text-xs">
+          Renova em {diaCivilPorExtenso(view.monthRenewsOn)} · Hoje: {usadoHoje} de {view.dayLimit}
+        </p>
+        <p className="mt-1 text-muted-foreground text-xs">
+          As crianças da família dividem o mesmo total.
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function ChildrenDashboard({
   avatarPhotoByProfile,
 }: {

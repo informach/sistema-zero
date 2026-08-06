@@ -196,14 +196,18 @@ function createPensaTransport(): PensaTransport {
         throw requestError(value.message, value.status ?? 502, value.code, value.scope)
       }
       const body = (await response.json().catch(() => null)) as {
-        error?: { code?: string; message?: string; scope?: 'day' | 'month' }
+        error?: { code?: string; message?: string }
+        // ⚠️ O escopo (dia|mês) vem em `details`, IRMÃO de `error` — é assim que o
+        // helper de erro do BFF monta o corpo. Ler `error.scope` devolvia sempre
+        // undefined, e a criança nunca sabia se voltava amanhã ou só mês que vem.
+        details?: { scope?: 'day' | 'month' }
       } | null
       if (!response.ok)
         throw requestError(
           body?.error?.message,
           response.status,
           body?.error?.code,
-          body?.error?.scope,
+          body?.details?.scope,
         )
       return body as T
     },
@@ -211,11 +215,13 @@ function createPensaTransport(): PensaTransport {
       const controller = new AbortController()
       void (async () => {
         let finished = false
-        const fail = (message: string, code = 'PENSA_AI_UNAVAILABLE') => {
+        const fail = (message: string, code = 'PENSA_AI_UNAVAILABLE', scope?: 'day' | 'month') => {
           if (finished) return
           finished = true
-          const cause = new Error(message) as Error & { code: string }
+          const cause = new Error(message) as Error & { code: string; scope?: 'day' | 'month' }
           cause.code = code
+          // Sem o escopo o chat não distingue "volta amanhã" de "volta mês que vem".
+          if (scope) cause.scope = scope
           handlers.onError(cause)
         }
         try {
@@ -228,8 +234,13 @@ function createPensaTransport(): PensaTransport {
           if (!response.ok || !response.body) {
             const body = (await response.json().catch(() => null)) as {
               error?: { code?: string; message?: string }
+              details?: { scope?: 'day' | 'month' }
             } | null
-            return fail(body?.error?.message ?? 'O Zappy tropeçou aqui.', body?.error?.code)
+            return fail(
+              body?.error?.message ?? 'O Zappy tropeçou aqui.',
+              body?.error?.code,
+              body?.details?.scope,
+            )
           }
           const terminal = await readSse(response.body, (event, data) => {
             if (event === 'delta' && typeof data === 'string') handlers.onDelta(data)
