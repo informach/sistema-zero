@@ -303,3 +303,25 @@ describe('modo diagnóstico: erro deixa de virar aula de mecânica', () => {
     expect(JSON.parse(diagnostico.user).project.comportamento).toContain('vx=0')
   })
 })
+
+describe('review: o contexto sobrevive à borda da rota', () => {
+  it('não confunde a PREPOSIÇÃO "no"/"na" com negação', () => {
+    // "no meu jogo o personagem anda rápido" é pedido de AJUSTE, não relato de
+    // defeito — o padrão antigo (`n[ao]{1,2}`) mandava isso para o diagnóstico.
+    for (const question of [
+      'no meu jogo o personagem anda muito rapido',
+      'na hora do pulo quero que ele suba mais',
+      'por que o sprite fica no canto da tela?',
+    ]) {
+      expect(looksLikeDiagnosisQuestion(question)).toBe(false)
+    }
+    // E continua reconhecendo a negação de verdade.
+    for (const question of [
+      'meu personagem nao anda',
+      'na hora que aperto a tecla ele nao vai',
+      'nunca aparece o inimigo',
+    ]) {
+      expect(looksLikeDiagnosisQuestion(question)).toBe(true)
+    }
+  })
+})

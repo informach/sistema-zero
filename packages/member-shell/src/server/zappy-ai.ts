@@ -286,6 +286,29 @@ function contextAllowedByCatalog(
     lastError: context.lastError
       ? redactForbiddenBlockTypes(redactZappySensitiveText(context.lastError).text, allowedTypes)
       : null,
+    // Os VALORES do comportamento são texto que a criança digitou (nome de
+    // sprite, texto de fala, URL). Passam pela MESMA redação de segredos que o
+    // erro e o código já recebiam — eram o único campo livre do contexto que
+    // seguia cru para o provedor.
+    ...(context.behavior
+      ? {
+          behavior: context.behavior.map((entry) => ({
+            ...entry,
+            values: entry.values.map((value) => ({
+              ...value,
+              value: redactZappySensitiveText(value.value).text,
+            })),
+          })),
+        }
+      : {}),
+    ...(context.semanticIssues
+      ? {
+          semanticIssues: context.semanticIssues.map((issue) => ({
+            ...issue,
+            message: redactZappySensitiveText(issue.message).text,
+          })),
+        }
+      : {}),
     ...(context.code
       ? {
           code: context.code

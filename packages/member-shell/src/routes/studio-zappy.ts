@@ -40,6 +40,31 @@ const QuestionBody = z.object({
     installedExtensions: z.array(z.string().min(1).max(128)).max(20),
     selectedBlockId: z.string().max(128).nullable(),
     lastError: z.string().max(2000).nullable(),
+    // ⚠️ Campo do contexto que NÃO estiver declarado aqui é DESCARTADO em
+    // silêncio pelo Zod (`z.object` sem `.passthrough()`). Foi assim que o
+    // comportamento/rascunhos/avisos quase foram para produção mortos: os testes
+    // chamavam o montador de prompt direto e não passavam por esta borda.
+    behavior: z
+      .array(
+        z.object({
+          area: z.enum(['start', 'events', 'loops']),
+          depth: z.number().int().min(0).max(12),
+          type: z.string().min(1).max(128),
+          blockId: z.string().min(1).max(128).optional(),
+          values: z
+            .array(z.object({ name: z.string().min(1).max(40), value: z.string().max(80) }))
+            .max(8),
+        }),
+      )
+      .max(160)
+      .optional(),
+    draftBlockIds: z.array(z.string().min(1).max(128)).max(60).optional(),
+    semanticIssues: z
+      .array(
+        z.object({ blockId: z.string().min(1).max(128).optional(), message: z.string().max(300) }),
+      )
+      .max(10)
+      .optional(),
     code: z
       .array(z.object({ path: z.string().min(1).max(240), content: z.string().max(20000) }))
       .max(24)

@@ -196,9 +196,16 @@ export function scoreTokens(
  *
  * Puro e sobre texto normalizado (sem acento, minúsculo).
  */
+// ⚠️ A negação é `nao|nunca|nem`, NUNCA `n[ao]{1,2}`: aquele padrão casava as
+// PREPOSIÇÕES "no"/"na" e mandava "no meu jogo o personagem anda muito rápido"
+// para o modo diagnóstico — ou seja, transformava um pedido de ajuste em caça a
+// um defeito que não existe.
+const NEGACAO = String.raw`\b(?:nao|nunca|nem)\b`
 const FAILURE_MARKERS = [
-  // negação + verbo de funcionamento ("não anda", "nao ta funcionando", "não vai")
-  /\bn[ao]{1,2}\b[^.!?]{0,30}\b(funciona\w*|anda\w*|vai|move\w*|aparece\w*|acontece\w*|sai\w*|pula\w*|abre|roda\w*|responde\w*|deixa|consigo|consegue)\b/,
+  // negação + verbo de funcionamento ("não anda", "não tá funcionando", "não vai")
+  new RegExp(
+    `${NEGACAO}[^.!?]{0,30}\\b(funciona\\w*|anda\\w*|vai|move\\w*|aparece\\w*|acontece\\w*|sai\\w*|pula\\w*|abre|roda\\w*|responde\\w*|deixa|consigo|consegue)\\b`,
+  ),
   // falha declarada
   /\b(bug\w*|bugou|quebr(?:ou|ando|a)|trav(?:ou|ando|a)|parou|para de|sumiu|some|desapareceu|errad\w+|estranho|zoad\w+)\b/,
   // erro nomeado
@@ -206,7 +213,7 @@ const FAILURE_MARKERS = [
   // expectativa frustrada
   /\b(deveria|era pra|era para|tinha que|esperava)\b/,
   // pedido de revisão do que já existe
-  /\bo que (?:falta|est[aá] errado|t[aá] errado)\b|\bpor que\b[^.!?]{0,40}\bn[ao]{1,2}\b/,
+  new RegExp(`\\bo que (?:falta|esta errado|ta errado)\\b|\\bpor que\\b[^.!?]{0,40}${NEGACAO}`),
 ]
 
 export function looksLikeDiagnosisQuestion(question: string): boolean {

@@ -909,3 +909,87 @@ describe('BFF do Zappy', () => {
     expect(quota).toBe(0)
   })
 })
+
+describe('review: o contexto do projeto atravessa a borda da rota', () => {
+  /**
+   * ⚠️ Este teste existe por um bug REAL encontrado no full review: `behavior`,
+   * `draftBlockIds` e `semanticIssues` não estavam no schema Zod do corpo, e
+   * `z.object` DESCARTA chave desconhecida em silêncio. Tudo o que o cliente
+   * mandava sobre o projeto era jogado fora na borda, e o Zappy respondia sem
+   * ver nada — exatamente o sintoma que o lote tentava consertar. Os testes de
+   * prompt não pegavam porque chamavam o montador direto, sem passar por aqui.
+   */
+  test('comportamento, rascunhos soltos e avisos do editor chegam ao modelo', async () => {
+    let userPrompt = ''
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as { messages?: { content: string }[] }
+      userPrompt = body.messages?.[1]?.content ?? ''
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  text: 'Vamos conferir juntos.',
+                  scope: 'error',
+                  blockReferences: [],
+                  lessonReferences: [],
+                  suggestions: [],
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      )
+    }) as typeof fetch
+
+    try {
+      const routes = createStudioZappyRoutes({
+        session: { getSession: async () => STAFF },
+        members: members(),
+      } as never)
+      const body = {
+        projectId: PROJECT_ID,
+        clientMessageId: MESSAGE_ID,
+        question: 'meu personagem nao anda quando aperto a seta',
+        context: {
+          projectId: PROJECT_ID,
+          mode: 'blocks',
+          kind: 'classic',
+          blocks: [{ id: 'b1', type: 'sz_g2d_on_key', topLevel: true }],
+          installedExtensions: ['game-2d'],
+          selectedBlockId: null,
+          lastError: null,
+          behavior: [
+            {
+              area: 'events',
+              depth: 0,
+              type: 'g2d:onKey',
+              blockId: 'b1',
+              values: [{ name: 'key', value: 'ArrowRight' }],
+            },
+          ],
+          draftBlockIds: ['b1'],
+          semanticIssues: [{ blockId: 'b1', message: 'A variável heroi ainda não foi declarada' }],
+        },
+      }
+      await routes.studioZappyMessage.POST(
+        new Request('https://kids.test/api/studio/zappy/messages', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      )
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+
+    expect(userPrompt).toContain('comportamento')
+    expect(userPrompt).toContain('Quando apertar a tecla')
+    expect(userPrompt).toContain('rascunhosSoltos')
+    expect(userPrompt).toContain('avisosDoEditor')
+    expect(userPrompt).toContain('ainda não foi declarada')
+  })
+})
