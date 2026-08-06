@@ -94,9 +94,9 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
     steps.push({ id: 'avatar', text: 'Monte o seu avatar do seu jeito: cabelo, roupa, tudo!' })
   }
   if (input.startAvailable && !input.hasCourseActivity) {
-    steps.push({ id: 'start', text: 'Toque em "Começar" para a sua primeira aula.' })
+    steps.push({ id: 'start', text: 'Toque em "Começar" e a sua primeira aula abre na hora.' })
   }
-  steps.push({ id: 'xp', text: 'Estudando e criando jogos você ganha XP e conquistas!' })
+  steps.push({ id: 'xp', text: 'Cada aula e cada jogo que você cria valem XP e conquistas!' })
 
   const numbers = ['1️⃣', '2️⃣', '3️⃣'] as const
   return steps.map((step, index) => ({ ...step, emoji: numbers[index] ?? '⭐' }))
@@ -127,17 +127,17 @@ export function parentWelcomeSteps({
       {
         id: 'parent-1',
         emoji: '1️⃣',
-        text: 'Toque em "Área dos pais" e digite a sua senha — é lá que você cria o primeiro perfil.',
+        text: 'Toque em "Área dos pais" e digite a sua senha. É lá que você cria o primeiro perfil.',
       },
       {
         id: 'parent-2',
         emoji: '2️⃣',
-        text: 'Preencha o nome, informe o nascimento se quiser e decida se o perfil pode aparecer para outras crianças.',
+        text: 'Coloque o nome da criança. A data de nascimento é opcional, e você decide se o perfil aparece para outras crianças.',
       },
       {
         id: 'parent-3',
         emoji: '3️⃣',
-        text: 'Pronto! Quando a criança for estudar, é só tocar na bolinha com o nome dela.',
+        text: 'Pronto! Na hora de estudar, é só tocar na bolinha com o nome dela.',
       },
     ]
   }
@@ -158,7 +158,7 @@ export function parentWelcomeSteps({
     {
       id: 'parent-3',
       emoji: '3️⃣',
-      text: 'Use “Concluir” para fechar a Área dos pais e voltar à escolha de perfis.',
+      text: 'Quando terminar, toque em "Concluir" para voltar à escolha de perfis.',
     },
   ]
 }

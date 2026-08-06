@@ -127,6 +127,7 @@ export function ChildGuide({
       {step === 'avatar' ? (
         <GuideBalloon
           arrow="none"
+          align="start"
           descriptionId="child-avatar-guide"
           actions={
             <>
@@ -166,6 +167,9 @@ export function ChildGuide({
       {step === 'start' ? (
         <GuideBalloon
           arrow="down"
+          // O "Começar" mora na ESQUERDA do card-herói, não no meio da página: o balão
+          // encosta na mesma borda e a seta desce sobre o botão.
+          align="start"
           descriptionId="child-start-guide"
           dismissButtonRef={startDismissRef}
           onDismiss={() => {

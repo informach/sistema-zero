@@ -108,8 +108,8 @@ export function ProfileForm({
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-12">
       {showGuideHint ? (
         <GuideBalloon arrow="none">
-          Preencha o nome e, se quiser, a data de nascimento. Você também decide aqui se o perfil
-          pode aparecer para outras crianças na comunidade.
+          Coloque o nome da criança. A data de nascimento é opcional, e é aqui que você decide se o
+          perfil aparece para outras crianças na comunidade.
         </GuideBalloon>
       ) : null}
       <h1 className="sz-display text-2xl text-foreground">

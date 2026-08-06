@@ -98,7 +98,19 @@ describe('resolveParentGuideStep — o guia segue o ESTADO real', () => {
     const copy = parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })
       .map((step) => step.text)
       .join(' ')
-    expect(copy).toContain('se quiser')
+    expect(copy).toContain('opcional')
+  })
+
+  it('a copy do guia não usa travessão nem aspas curvas (voz da marca)', () => {
+    const copy = [
+      ...parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true }),
+      ...parentWelcomeSteps({ profilesCount: 1, canCreateProfile: true }),
+      ...parentWelcomeSteps({ profilesCount: 1, canCreateProfile: false }),
+      ...childWelcomeSteps({ hasAvatar: false, hasCourseActivity: false, startAvailable: true }),
+    ]
+      .map((step) => step.text)
+      .join(' ')
+    expect(copy).not.toMatch(/[—–“”]/)
   })
 })
 
@@ -180,8 +192,8 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
       startAvailable: true,
     })
     expect(steps).toEqual([
-      { id: 'start', emoji: '1️⃣', text: 'Toque em "Começar" para a sua primeira aula.' },
-      { id: 'xp', emoji: '2️⃣', text: 'Estudando e criando jogos você ganha XP e conquistas!' },
+      { id: 'start', emoji: '1️⃣', text: 'Toque em "Começar" e a sua primeira aula abre na hora.' },
+      { id: 'xp', emoji: '2️⃣', text: 'Cada aula e cada jogo que você cria valem XP e conquistas!' },
     ])
   })
 

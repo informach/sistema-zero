@@ -12,9 +12,12 @@ import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
 export function ProfileLogoutButton({
   disabled = false,
   onLoggingChange,
+  className,
 }: {
   disabled?: boolean
   onLoggingChange?: (logging: boolean) => void
+  /** Telas terminais passam `min-h-11` para casar com os vizinhos de 44px. */
+  className?: string
 }) {
   const [loggingOut, setLoggingOut] = useState(false)
   const locked = disabled || loggingOut
@@ -35,7 +38,7 @@ export function ProfileLogoutButton({
   }
 
   return (
-    <Button variant="ghost" onClick={() => void logout()} disabled={locked}>
+    <Button variant="ghost" className={className} onClick={() => void logout()} disabled={locked}>
       <LogOut className="size-4" /> {loggingOut ? 'Saindo…' : 'Sair'}
     </Button>
   )
@@ -71,7 +74,7 @@ export function ProfilesUnavailable({
         <Button className="min-h-11" onClick={() => router.refresh()}>
           <RefreshCw className="size-4" /> Tentar de novo
         </Button>
-        <ProfileLogoutButton />
+        <ProfileLogoutButton className="min-h-11" />
       </div>
     </main>
   )
@@ -86,22 +89,27 @@ export function ProfilesNotIncluded() {
       <KidsMascot expression="thinking" className="size-24" />
       <h1 className="sz-display mt-4 text-2xl text-foreground">Nenhum perfil liberado ainda</h1>
       <p className="mt-3 text-muted-foreground">
-        Esta conta ainda não tem uma matrícula Kids que libere perfis. Conheça a Comunidade dos
-        Criadores ou, se você acabou de comprar, verifique novamente.
+        Esta conta ainda não tem um acesso Kids que libere perfis para as crianças. Conheça a
+        Comunidade dos Criadores. Se você acabou de comprar, toque em "Já comprei".
       </p>
-      <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
+      {/* O CTA é a ação principal e o rótulo é longo: fica sozinho em largura total (padrão do
+          `KidsLockedProduct`). Dividir a linha com os secundários espremia a pílula, porque os
+          `<Button>` do ui têm `shrink-0`/`whitespace-nowrap` e só o `<a>` encolhia. */}
+      <div className="mt-6 flex w-full flex-col items-stretch gap-3">
         <a
           href={COMUNIDADE_OFERTA_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 font-bold text-primary-foreground transition-[transform,filter] hover:brightness-105 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+          className="flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-center font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
         >
           Conhecer a Comunidade dos Criadores
         </a>
-        <Button variant="outline" className="min-h-11" onClick={() => router.refresh()}>
-          <RefreshCw className="size-4" /> Já comprei
-        </Button>
-        <ProfileLogoutButton />
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button variant="outline" className="min-h-11" onClick={() => router.refresh()}>
+            <RefreshCw className="size-4" /> Já comprei
+          </Button>
+          <ProfileLogoutButton className="min-h-11" />
+        </div>
       </div>
     </main>
   )

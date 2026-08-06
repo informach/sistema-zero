@@ -468,7 +468,7 @@ export function PerfisClient({
               <span className="font-semibold text-muted-foreground text-sm">Adicionar</span>
             </button>
             {visibleGuideStep === 'plus' ? (
-              <GuideBalloon arrow="up" descriptionId="parent-add-profile-guide">
+              <GuideBalloon arrow="up" mobileFloating descriptionId="parent-add-profile-guide">
                 Toque em <strong>Adicionar</strong> para criar o perfil da criança.
               </GuideBalloon>
             ) : null}
@@ -547,8 +547,8 @@ export function PerfisClient({
           <div className="flex w-36 shrink-0 flex-col items-center gap-3">
             {visibleGuideStep === 'welcome-area' ? (
               <GuideBalloon arrow="down" mobileFloating descriptionId="parent-area-guide">
-                Toque em <strong>Área dos pais</strong> e digite a sua senha para criar o perfil do
-                seu filho.
+                Toque em <strong>Área dos pais</strong> e digite a sua senha para criar o perfil da
+                criança.
               </GuideBalloon>
             ) : null}
             {/* `outline` (não `ghost`): é a ação da tela e precisa parecer botão. */}
@@ -588,10 +588,10 @@ export function PerfisClient({
         onClose={() => closeWelcome('welcome_dismissed')}
         onContinue={() => closeWelcome('welcome_completed')}
         onSkip={skipGuide}
-        title="Bem-vindo à plataforma!"
+        title="Que bom ter você aqui!"
         description={
           profiles.length === 0
-            ? 'Em três passos o seu filho já está estudando:'
+            ? 'Em três passos a criança já começa a estudar:'
             : 'Veja como escolher e acompanhar as crianças:'
         }
         steps={welcomeSteps}

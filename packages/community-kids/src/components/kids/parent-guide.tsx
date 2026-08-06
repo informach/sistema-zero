@@ -24,6 +24,7 @@ import type { GuideWelcomeStep } from '@/lib/guide'
 export function GuideBalloon({
   children,
   arrow = 'down',
+  align = 'center',
   onDismiss,
   actions,
   className,
@@ -34,6 +35,12 @@ export function GuideBalloon({
   children: React.ReactNode
   /** De onde a seta sai ('down' = o alvo está ABAIXO do balão); 'none' = aviso solto. */
   arrow?: 'down' | 'up' | 'none'
+  /**
+   * Onde o balão (e portanto a seta) se ancora no contêiner. 'center' = o alvo está
+   * centrado sob/sobre o balão (colunas de alvo do guia dos pais). 'start' = o alvo
+   * está encostado à esquerda, largura de página (o "Começar" do herói na home).
+   */
+  align?: 'center' | 'start'
   /** Presente → mostra o "Entendi" (o arremate final do guia). */
   onDismiss?: () => void
   /** Ações customizadas (fase 2, criança: "Criar meu avatar"/"Agora não") — vence o `onDismiss`. */
@@ -49,7 +56,13 @@ export function GuideBalloon({
     <div
       role="status"
       className={[
-        'relative mx-auto flex min-w-0 w-[min(22rem,calc(100vw-2rem))] max-w-none items-start gap-3 rounded-2xl border-2 border-primary bg-card p-4 text-left shadow-[0_3px_0_var(--border)]',
+        'relative flex min-w-0 w-[min(22rem,calc(100vw-2rem))] max-w-none items-start gap-3 rounded-2xl border-2 border-primary bg-card p-4 text-left shadow-[0_3px_0_var(--border)]',
+        // ⚠️ `align-self`, NUNCA `mx-auto`: o balão é mais largo que a coluna do alvo
+        // (22rem contra 7-9rem) e, com margem auto no eixo cruzado maior que a linha,
+        // o flexbox zera a margem inline-start e ancora o balão à ESQUERDA — a seta
+        // (no centro do balão) saía ~100px fora do botão. `self-center` transborda
+        // igual dos dois lados, então centro do balão = centro do alvo.
+        align === 'start' ? 'self-start' : 'self-center',
         mobileFloating
           ? 'max-sm:fixed max-sm:inset-x-4 max-sm:bottom-4 max-sm:z-40 max-sm:w-auto'
           : '',
@@ -61,7 +74,10 @@ export function GuideBalloon({
         <span
           aria-hidden="true"
           className={[
-            'absolute left-1/2 size-3 -translate-x-1/2 rotate-45 border-primary bg-card',
+            'absolute size-3 -translate-x-1/2 rotate-45 border-primary bg-card',
+            // 6rem = padding do card-herói (1.5-2rem) + meia pílula do "Começar" (~4.5rem):
+            // com `align="start"` o alvo não é o centro do balão, é o CTA lá na esquerda.
+            align === 'start' ? 'left-24' : 'left-1/2',
             mobileFloating ? 'max-sm:hidden' : '',
             arrow === 'down'
               ? '-bottom-[7px] border-r-2 border-b-2'
@@ -119,12 +135,11 @@ export function ParentConcludeTarget({
         <GuideBalloon arrow="down" mobileFloating descriptionId={descriptionId}>
           {created ? (
             <>
-              Perfil criado! 🎉 Agora toque em <strong>Concluir</strong> para fechar a área dos
-              pais.
+              Perfil criado! 🎉 Agora é só tocar em <strong>Concluir</strong> para voltar.
             </>
           ) : (
             <>
-              Tudo certo por aqui. Toque em <strong>Concluir</strong> para fechar a área dos pais.
+              Tudo certo por aqui. Toque em <strong>Concluir</strong> quando quiser voltar.
             </>
           )}
         </GuideBalloon>
