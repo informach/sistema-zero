@@ -4,6 +4,7 @@ import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
 import { PurgeUserDataService } from './application/admin/purge-user-data/purge-user-data.service'
 import { ConsumeAiUsageService } from './application/ai-usage/consume-ai-usage.service'
+import { GetAiCreditsService } from './application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from './application/ai-usage/get-ai-usage-stats.service'
 import { GetCourseAnalyticsService } from './application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
@@ -210,6 +211,14 @@ export async function createApplication(env: Env): Promise<Application> {
   // Quota de IA por conta (o BFF consome 1 crédito antes de cada ida ao LLM).
   const aiUsageRepo = new DrizzleAiUsageRepository(db)
   const consumeAiUsage = new ConsumeAiUsageService({
+    aiUsage: aiUsageRepo,
+    dailyLimit: env.AI_LIMIT_DAILY,
+    monthlyLimit: env.AI_LIMIT_MONTHLY,
+    clock,
+  })
+  // Leitura do saldo (medidor da criança + painel dos pais). MESMO repo e MESMAS
+  // envs do consume: os tetos vivem num lugar só.
+  const aiCredits = new GetAiCreditsService({
     aiUsage: aiUsageRepo,
     dailyLimit: env.AI_LIMIT_DAILY,
     monthlyLimit: env.AI_LIMIT_MONTHLY,
@@ -550,6 +559,7 @@ export async function createApplication(env: Env): Promise<Application> {
       buyRoomItem,
       profileAllowance,
       consumeAiUsage,
+      aiCredits,
       zappy,
       zappyKnowledge,
       internalToken: env.INTERNAL_API_TOKEN,

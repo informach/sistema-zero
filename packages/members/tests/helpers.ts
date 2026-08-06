@@ -4,6 +4,7 @@ import { CheckAccessService } from '../src/application/access/check-access.servi
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
 import { PurgeUserDataService } from '../src/application/admin/purge-user-data/purge-user-data.service'
 import { ConsumeAiUsageService } from '../src/application/ai-usage/consume-ai-usage.service'
+import { GetAiCreditsService } from '../src/application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from '../src/application/ai-usage/get-ai-usage-stats.service'
 import { GetCourseAnalyticsService } from '../src/application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
@@ -169,6 +170,12 @@ export function buildApp(
     monthlyLimit: opts.aiLimits?.monthly ?? 500,
     clock,
   })
+  const aiCredits = new GetAiCreditsService({
+    aiUsage,
+    dailyLimit: opts.aiLimits?.daily ?? 50,
+    monthlyLimit: opts.aiLimits?.monthly ?? 500,
+    clock,
+  })
 
   const checkAccess = new CheckAccessService(courses, entitlements, gamification, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
@@ -328,6 +335,7 @@ export function buildApp(
         defaultMaxProfiles: 1,
       }),
       consumeAiUsage,
+      aiCredits,
       zappy: opts.zappy,
       getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
       issueCertificate: new IssueCertificateService(

@@ -1,3 +1,4 @@
+import { type AiCreditsView, computeAiCredits } from '../../domain/ai-usage/ai-credits'
 import { localDateSaoPaulo } from '../../domain/gamification/gamification'
 import type {
   AiUsageRepository,
@@ -28,6 +29,12 @@ export interface ConsumeAiUsageDeps {
 export interface ConsumeAiUsageResult extends ConsumeAiUsageOutcome {
   /** Equipe: sem teto (o front pode esconder contadores). */
   unlimited?: true
+  /**
+   * Saldo DEPOIS deste consumo (ou o atual, na recusa) — o medidor do chamador se
+   * atualiza sem uma 2ª ida. Sai de dados que o `execute` já tem em mãos: zero
+   * query extra.
+   */
+  credits: AiCreditsView
 }
 
 export class ConsumeAiUsageService {
@@ -51,6 +58,14 @@ export class ConsumeAiUsageService {
       monthlyLimit: this.deps.monthlyLimit,
       now,
     })
-    return privileged ? { ...outcome, unlimited: true } : outcome
+    const credits = computeAiCredits({
+      now,
+      usedDay: outcome.usedDay,
+      usedMonth: outcome.usedMonth,
+      dailyLimit: this.deps.dailyLimit,
+      monthlyLimit: this.deps.monthlyLimit,
+      unlimited: privileged,
+    })
+    return privileged ? { ...outcome, unlimited: true, credits } : { ...outcome, credits }
   }
 }

@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import type { ConsumeAiUsageService } from '../../../application/ai-usage/consume-ai-usage.service'
+import type { GetAiCreditsService } from '../../../application/ai-usage/get-ai-credits.service'
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
 import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
@@ -122,6 +123,7 @@ export interface MembersRoutesDeps {
   getShowcasePayload: GetShowcasePayloadService
   profileAllowance: GetProfileAllowanceService
   consumeAiUsage: ConsumeAiUsageService
+  aiCredits: GetAiCreditsService
   zappy?: ZappyHistoryService
   zappyKnowledge?: ZappyKnowledgeService
   getCertificate: GetCertificateService
@@ -296,6 +298,13 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
           ),
         { body: AiUsageConsumeBody },
+      )
+      // Quanto AINDA resta da ajuda de IA da conta — leitura pura, NÃO consome.
+      // Antes disto o único jeito de saber o saldo era chamar o `/consume`, que
+      // gasta um crédito para responder: mostrar "restam 13" custava um dos 13.
+      // Mesma identidade do consume (a CONTA), então irmãos veem o mesmo número.
+      .get('/ai-usage/me', async ({ headers }) =>
+        deps.aiCredits.execute(resolveAccountId(headers), isPrivilegedActor(headers)),
       )
       // Histórico do Zappy é isolado por perfil + projeto local. Snapshot/código
       // não atravessam estas rotas e nunca são persistidos no members.

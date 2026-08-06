@@ -1228,6 +1228,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 1024,
     },
+    // Quanto AINDA resta da ajuda de IA da conta — o medidor que a criança vê antes
+    // de bater na parede (e o painel do mês na área dos pais). Leitura PURA: não
+    // consome crédito. Literal `/members/ai-usage/me` (3 seg), sem colisão com o
+    // `/consume` irmão. Teto alto como o `members-avatars-batch`: é leitura de load
+    // de tela (layout + página + painel), memoizada por request no BFF.
+    {
+      id: 'members-ai-usage-me',
+      methods: ['GET'],
+      pathPattern: '/members/ai-usage/me',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
     // Persistência privada do Zappy (perfil + projeto local). O BFF é o consumidor;
     // o gateway ainda revalida o JWT e injeta perfil/conta confiáveis no members.
     {
