@@ -159,7 +159,7 @@ describe('completePensaJson', () => {
     }
   })
 
-  test('substitui saída imprópria por fallback local sem segunda chamada', async () => {
+  test('saída imprópria ganha UMA chamada de reparo e depois cai no fallback local', async () => {
     process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
     process.env.JWT_HS256_SECRET = 'test-jwt-secret-with-32-characters'
     let calls = 0
@@ -176,6 +176,7 @@ describe('completePensaJson', () => {
                     scope: 'concept',
                     blockReferences: [],
                     lessonReferences: [],
+                    suggestions: [],
                   }),
                 },
               },
@@ -204,7 +205,9 @@ describe('completePensaJson', () => {
 
       expect(response.text).toContain('Não consegui validar')
       expect(response.text).not.toContain('sexual')
-      expect(calls).toBe(1)
+      // 1ª tentativa reprovada pela validação → 1 chamada de REPARO com o
+      // motivo (desejado desde 08/2026); reprovou de novo → fallback gentil.
+      expect(calls).toBe(2)
     } finally {
       fetchSpy.mockRestore()
     }

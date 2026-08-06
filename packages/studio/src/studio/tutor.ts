@@ -13,6 +13,7 @@ export type StudioTutorScope =
   | 'redirect-pensa'
   | 'redirect-pinta'
   | 'unsupported'
+  | 'project-review'
 
 export interface StudioTutorCompactBlock {
   id: string
@@ -67,6 +68,8 @@ export interface StudioTutorResponse {
   scope: StudioTutorScope
   blockReferences: StudioTutorBlockReference[]
   lessonReferences?: StudioTutorLessonReference[]
+  /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
+  suggestions?: string[]
   createdAt: string
 }
 

@@ -343,6 +343,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             response: body.response,
             latencyMs: body.latencyMs,
             outcome: body.outcome,
+            rejection: body.rejection,
           })
         },
         { params: ZappyQuestionParams, body: ZappyInternalResponseBody },

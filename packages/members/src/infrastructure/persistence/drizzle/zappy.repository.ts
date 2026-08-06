@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto'
-import { and, desc, eq, gt, gte, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/pg-core'
 import type {
   CompleteZappyQuestionInput,
   ReserveZappyQuestionInput,
   ReserveZappyQuestionResult,
+  ZappyFailedQuestionsPage,
+  ZappyFailureFilter,
   ZappyHistoryMessage,
   ZappyHistoryPage,
   ZappyMetrics,
@@ -18,6 +21,9 @@ interface StoredResponseJson extends Record<string, unknown> {
   scope: ZappyStoredResponse['scope']
   blockReferences: ZappyStoredResponse['blockReferences']
   lessonReferences?: ZappyStoredResponse['lessonReferences']
+  suggestions?: ZappyStoredResponse['suggestions']
+  /** Motivo da reprova (auditoria) — NUNCA re-exposto pelo toResponse. */
+  rejection?: string
 }
 
 function toResponse(row: {
@@ -35,6 +41,7 @@ function toResponse(row: {
     scope: value.scope,
     blockReferences: Array.isArray(value.blockReferences) ? value.blockReferences : [],
     ...(Array.isArray(value.lessonReferences) ? { lessonReferences: value.lessonReferences } : {}),
+    ...(Array.isArray(value.suggestions) ? { suggestions: value.suggestions } : {}),
     createdAt: row.createdAt.toISOString(),
   }
 }
@@ -234,6 +241,18 @@ export class DrizzleZappyRepository implements ZappyRepository {
         )
       if ((recent?.count ?? 0) >= 10) return { created: false, rateLimited: true }
 
+      // Memória do tutor: últimos turnos ANTES da pergunta nova (cronológico).
+      // Vem na MESMA transação da reserva — zero roundtrip extra para o BFF.
+      const recentRows = await tx
+        .select({ role: zappyMessages.role, content: zappyMessages.content })
+        .from(zappyMessages)
+        .where(eq(zappyMessages.conversationId, conversation.id))
+        .orderBy(desc(zappyMessages.createdAt), desc(zappyMessages.id))
+        .limit(6)
+      const recentMessages = recentRows
+        .reverse()
+        .map((row) => ({ role: row.role as 'user' | 'assistant', text: row.content }))
+
       const questionId = randomUUID()
       await tx.insert(zappyMessages).values({
         id: questionId,
@@ -244,7 +263,11 @@ export class DrizzleZappyRepository implements ZappyRepository {
         processingUntil: input.processingUntil,
         createdAt: input.now,
       })
-      return { created: true, questionId }
+      return {
+        created: true,
+        questionId,
+        ...(recentMessages.length > 0 ? { recentMessages } : {}),
+      }
     })
   }
 
@@ -288,6 +311,8 @@ export class DrizzleZappyRepository implements ZappyRepository {
         ...(input.response.lessonReferences
           ? { lessonReferences: input.response.lessonReferences }
           : {}),
+        ...(input.response.suggestions ? { suggestions: input.response.suggestions } : {}),
+        ...(input.rejection ? { rejection: input.rejection } : {}),
       }
       const [answer] = await tx
         .insert(zappyMessages)
@@ -362,6 +387,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         needsContext: sql<number>`count(*) filter (where ${zappyMessages.outcome} = 'needs-context')::int`,
         quota: sql<number>`count(*) filter (where ${zappyMessages.outcome} = 'quota')::int`,
         errors: sql<number>`count(*) filter (where ${zappyMessages.outcome} = 'error')::int`,
+        rejected: sql<number>`count(*) filter (where ${zappyMessages.outcome} = 'rejected')::int`,
         averageLatencyMs: sql<number>`coalesce(round(avg(${zappyMessages.latencyMs})), 0)::int`,
       })
       .from(zappyMessages)
@@ -374,7 +400,67 @@ export class DrizzleZappyRepository implements ZappyRepository {
       needsContext: row?.needsContext ?? 0,
       quota: row?.quota ?? 0,
       errors: row?.errors ?? 0,
+      rejected: row?.rejected ?? 0,
       averageLatencyMs: row?.averageLatencyMs ?? 0,
+    }
+  }
+
+  async listFailedQuestions(
+    from: Date,
+    to: Date,
+    filter: ZappyFailureFilter,
+    limit: number,
+    offset: number,
+  ): Promise<ZappyFailedQuestionsPage> {
+    const question = alias(zappyMessages, 'zappy_question')
+    const failure =
+      filter === 'rejected'
+        ? eq(zappyMessages.outcome, 'rejected')
+        : filter === 'error'
+          ? eq(zappyMessages.outcome, 'error')
+          : filter === 'not-useful'
+            ? eq(zappyMessages.useful, false)
+            : or(
+                inArray(zappyMessages.outcome, ['rejected', 'error']),
+                eq(zappyMessages.useful, false),
+              )
+    const where = and(zappyMetricsPeriod(from, to), failure)
+    const rows = await this.db
+      .select({
+        question: question.content,
+        answerText: zappyMessages.content,
+        response: zappyMessages.response,
+        outcome: zappyMessages.outcome,
+        useful: zappyMessages.useful,
+        createdAt: zappyMessages.createdAt,
+      })
+      .from(zappyMessages)
+      .innerJoin(question, eq(question.id, zappyMessages.replyToId))
+      .where(where)
+      .orderBy(desc(zappyMessages.createdAt), desc(zappyMessages.id))
+      .limit(Math.max(1, Math.min(100, limit)))
+      .offset(Math.max(0, offset))
+    const [count] = await this.db
+      .select({ total: sql<number>`count(*)::int` })
+      .from(zappyMessages)
+      .innerJoin(question, eq(question.id, zappyMessages.replyToId))
+      .where(where)
+    return {
+      items: rows.map((row) => {
+        const rejection =
+          row.response && typeof row.response === 'object' && !Array.isArray(row.response)
+            ? (row.response as StoredResponseJson).rejection
+            : undefined
+        return {
+          question: row.question,
+          answerText: row.answerText,
+          ...(typeof rejection === 'string' ? { rejection } : {}),
+          outcome: row.outcome ?? 'normal',
+          useful: row.useful,
+          createdAt: row.createdAt.toISOString(),
+        }
+      }),
+      total: count?.total ?? 0,
     }
   }
 

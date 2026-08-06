@@ -1410,3 +1410,24 @@ irmãos com `railway variables --kv`.
 - A busca devolve também o `courseSlug` autoritativo. O relatório considera a aula pendente se
   qualquer vídeo estiver sem VTT pronto; a janela de métricas é semiaberta `[from, to)` e usa
   comparadores tipados (`gte`/`lt`) para ambos os timestamps.
+
+### Lote "Zappy mais inteligente" (08/2026) — SEM migration
+
+`zappy_messages.outcome`/`scope` são varchar sem CHECK e o resto vive no jsonb `response`, então
+nada de DDL. Três mudanças de contrato:
+
+- **`reserveQuestion` devolve `recentMessages`** (últimos 6 turnos da conversa) no MESMO SELECT
+  que já rodava — é a memória de 3 pares do member-shell, a custo ZERO de roundtrip. O campo é
+  OPCIONAL no consumidor (tolera members antigo durante o skew de deploy).
+- **`outcome:'rejected'`** (resposta reprovada pela validação → fallback gentil) entra no DTO do
+  `PUT …/response`, no `StoredResponseJson` (junto com `rejection` e `suggestions` — sem eles o
+  histórico/replay perderia os chips) e vira um bucket próprio em `metrics()`.
+- **`GET /members/admin/zappy/questions`** (staff+, paginada, `?month=&filter=all|rejected|error|
+  not-useful&limit&offset`) → `{items: [{question, answerText, rejection?, outcome, useful,
+  createdAt}], total}`. ⚠️ **SEM `userId`/`projectId` de propósito** (decisão da usuária: mostrar
+  só o que falhou, sem identificar a criança ou o projeto) — as perguntas já são PII-redigidas na
+  gravação, então a listagem é dado de produto, não de aluno. `listFailedQuestions` no port/repo.
+
+A busca da base didática (`zappy-knowledge.repository.ts`) passou a juntar os termos com `or`
+antes do `websearch_to_tsquery` — o `ts_rank` vira rank-merge natural em vez do AND implícito,
+que devolvia zero aula sempre que a criança escrevia uma frase inteira.

@@ -265,6 +265,7 @@ describe('Zappy do Studio — limites determinísticos', () => {
         scope: 'concept',
         blockReferences: [{ blockType: entry.type, blockId: null }],
         lessonReferences: [],
+        suggestions: [],
       },
       'criador',
       new Map([[entry.type, entry]]),
@@ -277,11 +278,23 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(response.blockReferences).toEqual([])
   })
 
-  test('redireciona Pensa, Pinta, jogo inteiro e assunto externo sem oferecer conteúdo', () => {
+  test('redireciona Pensa, jogo inteiro e assunto externo sem oferecer conteúdo', () => {
     expect(deterministicZappyReply('Planeje meu jogo')?.scope).toBe('redirect-pensa')
-    expect(deterministicZappyReply('Crie um sprite para mim')?.scope).toBe('redirect-pinta')
     expect(deterministicZappyReply('Faça o jogo inteiro completo')?.scope).toBe('needs-context')
     expect(deterministicZappyReply('Pesquise notícias na web')?.scope).toBe('unsupported')
+  })
+
+  test('só o pedido EXPLÍCITO da ferramenta redireciona ao Pinta', () => {
+    // "criar sprite" é conversa legítima do Estúdio (sz_g2d_create_sprite
+    // existe) — antes era sequestrada e nunca chegava à IA (QA 08/2026).
+    expect(deterministicZappyReply('Crie um sprite para mim')).toBeNull()
+    expect(deterministicZappyReply('como criar um sprite?')).toBeNull()
+    expect(deterministicZappyReply('quero desenhar a imagem na tela')).toBeNull()
+    expect(deterministicZappyReply('como pinta a imagem de fundo?')).toBeNull()
+    expect(deterministicZappyReply('abra o pinta para desenhar meu herói')?.scope).toBe(
+      'redirect-pinta',
+    )
+    expect(deterministicZappyReply('quero desenhar no pinta')?.scope).toBe('redirect-pinta')
   })
 
   test('isola prompt injection e não envia código no modo Blocos', () => {
@@ -441,9 +454,14 @@ describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', (
       { blockType: entry.type, blockId: null },
     ],
     lessonReferences: Array<{ lessonId: string }> = [],
-  ) => ({ text, scope: 'block' as const, blockReferences, lessonReferences })
-  const reason = (raw: ReturnType<typeof answer>) =>
-    invalidStudioZappyAnswerReason(raw, 'blocks', 'classic', byType, instances, new Set<string>())
+  ) => ({
+    text,
+    scope: 'block' as const,
+    blockReferences,
+    lessonReferences,
+    suggestions: [] as string[],
+  })
+  const reason = (raw: ReturnType<typeof answer>) => invalidStudioZappyAnswerReason(raw, 'blocks')
 
   test('aceita a trilha real de categoria e subcategoria em texto corrido (com emoji)', () => {
     const trail = `Use o bloco "${entry.label}", que fica na categoria ${entry.category}, subcategoria ${entry.subcategory}. Depois rode o jogo.`
@@ -459,22 +477,54 @@ describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', (
     expect(reason(answer('Faça assim:\n```\nconst x = 1\n```'))).toBe('code-in-blocks')
     expect(reason(answer('Basta escrever `const pontos = 0` no seu jogo.'))).toBe('code-in-blocks')
     expect(reason(answer('Use uma função assim: () => pular()'))).toBe('code-in-blocks')
-  })
-
-  test('referência fora do catálogo ou com instância trocada segue reprovada', () => {
-    expect(reason(answer('Resposta.', [{ blockType: 'sz_bloco_inventado', blockId: null }]))).toBe(
-      'block-reference',
+    // Markup de verdade: tag com atributo ou 2+ tags de fechamento.
+    expect(reason(answer('Cole <img src="foto.png"> na página.'))).toBe('code-in-blocks')
+    expect(reason(answer('Estruture com <div>…</div> e <p>…</p> aninhados.'))).toBe(
+      'code-in-blocks',
     )
-    expect(
-      reason(answer('Resposta.', [{ blockType: entry.type, blockId: 'id-que-nao-existe' }])),
-    ).toBe('block-reference')
   })
 
-  test('aula fora do conhecimento liberado reprova como lesson-reference', () => {
-    const raw = answer('Resposta.', undefined, [
-      { lessonId: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e099' },
-    ])
-    expect(reason(raw)).toBe('lesson-reference')
+  test('citar tag HTML ou palavras comuns não reprova mais (falso positivo)', () => {
+    // HTML/CSS são categorias de blocos legítimas — explicar "<img> mostra a
+    // imagem" derrubava a resposta inteira (QA 08/2026); "class"/"return" em
+    // texto corrido idem.
+    expect(reason(answer('O bloco de imagem cria uma tag <img> na página.'))).toBeNull()
+    expect(reason(answer('A class do botão define o estilo dele.'))).toBeNull()
+    expect(reason(answer('O jogo dá return ao menu quando você perde.'))).toBeNull()
+  })
+
+  test('referência inválida é FILTRADA sem derrubar a resposta', () => {
+    // Antes qualquer referência fora do catálogo reprovava a resposta INTEIRA
+    // ("Não consegui validar…"); agora a explicação sobrevive e só a referência cai.
+    const raw = {
+      text: 'Resposta boa.',
+      scope: 'block' as const,
+      blockReferences: [
+        { blockType: 'sz_bloco_inventado', blockId: null },
+        { blockType: entry.type, blockId: 'id-que-nao-existe' },
+        { blockType: entry.type, blockId: 'sprite-1' },
+      ],
+      lessonReferences: [{ lessonId: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e099' }],
+      suggestions: ['Como faço ele atirar?'],
+    }
+    expect(reason(raw)).toBeNull()
+    const response = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      byType,
+      instances,
+      'blocks',
+      'classic',
+      [],
+    )
+    // Inventado cai; instância trocada vira referência sem blockId; a válida fica.
+    expect(response.blockReferences.map((ref) => ref.blockType)).toEqual([entry.type, entry.type])
+    expect(response.blockReferences[0]?.blockId).toBeUndefined()
+    expect(response.blockReferences[1]?.blockId).toBe('sprite-1')
+    // Aula fora do conhecimento liberado também é filtrada em silêncio.
+    expect(response.lessonReferences).toBeUndefined()
+    // As sugestões de continuação sobrevivem (chips que preenchem o campo).
+    expect(response.suggestions).toEqual(['Como faço ele atirar?'])
   })
 
   test('a regra do prompt pede a trilha em texto corrido, sem crases', () => {

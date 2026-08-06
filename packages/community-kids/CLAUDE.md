@@ -138,6 +138,12 @@ família e do allowance, auto-abre na configuração do primeiro perfil
 `GuideBalloon` = balão responsivo no contêiner do alvo e preso à viewport em mobile — sobrevive
 aos early returns do perfis-client, zero medição de coordenada;
 `GuideTargetItem` mantém a largura-base do tile em 7rem para o balão não reorganizar a grade;
+⚠️ **a seta é CSS puro e mira no CENTRO do balão, então o balão precisa estar centrado no alvo:
+use `align-self` (`self-center`), NUNCA `mx-auto`** — o balão (22rem) é mais largo que a coluna do
+alvo (7-9rem) e, com margem auto no eixo cruzado maior que a linha, o flexbox zera a margem
+inline-start e ancora o balão à ESQUERDA (seta caía 104-120px fora do botão, medido no navegador
+06/08). Alvo que NÃO fica centrado sob o balão usa `align="start"` (balão encostado à esquerda +
+seta em `left-24`), o caso do "Começar" do card-herói na home;
 `GuideReopenButton` "Como funciona?" reabre). Regras:
 conta SEM perfil inicia o guia pelo estado real; **"Pular tutorial" encerra qualquer passo** e
 "Entendi" encerra o arremate (flags versionadas sob `sz:kids:onboarding:v2:*`; o modal só vira
@@ -1185,3 +1191,10 @@ Sentry `sistema-zero-community-kids` + DSN no host.
   opcional. Não há allowlist de contas; a equipe mantém bypass de QA.
 - Chips de aula só existem em respostas com `courseSlug` autoritativo e abrem
   `/cursos/:slug/aulas/:lessonId` em nova aba com `noopener,noreferrer`.
+- **Chips de sugestão (08/2026):** a resposta traz até 3 continuações prováveis (`suggestions`) que
+  viram chips sob a ÚLTIMA mensagem — clicar **PREENCHE o campo** e foca (não envia sozinho; é o
+  padrão que a usuária aprovou no Pensa, e mantém cooldown/quota intactos). Sem conversa, o estado
+  vazio mostra 3 perguntas fixas por modo. Cada sugestão passa pela mesma redação de PII/segurança
+  da resposta antes de chegar aqui.
+- **Modelo:** `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1` (setar no serviço deste app E no do
+  community; ausente = default do member-shell).

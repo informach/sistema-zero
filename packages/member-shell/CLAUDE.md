@@ -584,3 +584,69 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
   código e código real seguem reprovados, e PII/URL/referências fora do catálogo (anti prompt
   injection) ficam intactas. Foi o bug do "Não consegui validar essa explicação" em toda resposta
   (08/2026).
+
+### Lote "Zappy mais inteligente" (08/2026) — entender a pergunta, os exemplos e o projeto
+
+Diagnóstico MEDIDO (rodando o montador de prompt real, não por leitura): a busca era substring
+crua sem fronteira de palavra — "como faço **ele** pular?" punha `sz_html_image` em 1º ("ele" ⊂
+"elemento") — e o bônus de +10.000 para bloco já presente no projeto expulsava das vagas
+justamente o bloco NOVO que resolveria a dúvida. Some a isso: zero memória de conversa, um regex
+que sequestrava perguntas legítimas para o Pinta, e uma validação que descartava a resposta
+INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária relatou.
+
+- **`server/zappy-search.ts` (NOVO, PURO — a peça central):** `tokenizeSearchable` normaliza (NFD,
+  minúsculas) e quebra também em `_ : -` (`sz_g2d_jump_on_ground` → `jump`, `ground`);
+  `scoreTokens(termGroups, tokens)` casa por token exato **ou prefixo comum ≥ 4 chars** (cobre
+  pular/pulando, mata "ele"⊂"elemento"); `KID_SYNONYM_GROUPS` (24 grupos à mão: pular/salto/jump,
+  colisão/encostar/bater, vida/hp/morrer, ponto/placar/score, atirar/tiro/bala, fase/nível/cena…)
+  expande cada termo; stop-words no linguajar de criança (quero, preciso, ele, ela, isso, agora…).
+  ⚠️ `jogo`/`bloco` NÃO são stop-words — o peso de categoria é que caiu.
+- **`rankCatalog` reescrito** (`zappy-ai.ts`): `textScore = 120·label + 80·type + 40·tooltip +
+  15·categoria`; `score = (selecionado ? 100_000 : 0) + textScore·100 + (presente no projeto ?
+  250 : 0) + (core ? 1 : 0)`. O bônus de presença caiu 10.000 → **250** (abaixo de 1 acerto de
+  rótulo): o Zappy volta a ENSINAR bloco novo, e sem match textual a presença ainda ordena (bom
+  para "meu jogo não funciona"). O mesmo `scoreTokens` alimenta manuais e blocos.
+- **Memória de conversa (3 pares, ZERO roundtrip extra):** o `reserveQuestion` do members já
+  gravava a pergunta — passou a devolver `recentMessages` no MESMO SELECT. O `projectData` ganha
+  `conversaRecente` (280 chars/turno, PII já redigida na gravação) e o prompt avisa que a pergunta
+  pode ser continuação ("ele", "esse bloco", "e agora?").
+- **Não sequestrar:** o ramo `asksForAssetCreation` do `deterministicZappyReply` foi REMOVIDO —
+  "como criar um sprite?" ia para o Pinta sem nunca chegar ao modelo. Só pedido EXPLÍCITO da
+  ferramenta redireciona (`abra/usar o/no pinta`). Escadas Pensa/jogo-inteiro/off-topic ficam.
+- **Não descartar:** `invalidStudioZappyAnswerReason` monta o `byType` do catálogo permitido
+  COMPLETO (era o TRUNCADO — referência boa reprovava); `block-reference`/`lesson-reference`
+  saíram do descarte-total e agora são **filtradas** (a explicação sobrevive); `code-in-blocks`
+  não reprova mais por `class`/`return` em texto corrido nem por UMA tag sem atributo (`<img>`
+  citado explicando o bloco de imagem). Sobraram 3 motivos de reprovação.
+- **Retry com motivo** (`answerPreparedStudioZappy`): 1ª chamada `maxTokens 2000`/`maxAttempts 2`;
+  reprovou E o relógio permite (<~50s do início) → UMA chamada de reparo com o motivo em PT
+  (`REJECTION_HINTS`); reprovou de novo → fallback gentil com **`outcome:'rejected'`** e
+  `response.rejection = <motivo>` (jsonb, SEM migration). Teto duro de 3 chamadas por pergunta.
+- **Receitas internas dos exemplos, por NÍVEL** (`relevantExampleRecipes`): o Zappy consulta o
+  índice server-safe `@sistemazero/studio/server-examples` (148 exemplos) filtrado por
+  `requires ⊆ tier.allowedExtensions` **+ regra dos ≥80% de blocos permitidos**. ⚠️ **A injeção é
+  ANÔNIMA por decisão de produto (a usuária foi explícita): a criança NÃO sabe que os exemplos
+  existem e NÃO pode saber.** O payload nem leva `name`/`key` (o modelo não vaza o que não vê) —
+  só `{mecanicas, comoFunciona, blocos}` — e o prompt proíbe as palavras "exemplo", "jogo pronto",
+  "galeria" e "receita". Serve para o Zappy SABER montar a mecânica e descrever o passo a passo
+  como conhecimento próprio. Nada muda na galeria/`showExamples` (segue admin-only).
+- **Entender o projeto aberto** (`server/zappy-project-outline.ts`, NOVO/puro): `buildProjectOutline`
+  monta a árvore por id/parentId com recuo de 2 espaços e rótulos do `SERVER_BLOCK_CATALOG`
+  COMPLETO. ⚠️ Tipo desconhecido **NÃO é ecoado** (vira `blocosDesconhecidos: N`) — o `context.blocks`
+  vem do cliente e ecoar texto arbitrário reabriria prompt injection. Bloco acima do tier aparece
+  com `(nível futuro)`: existe no projeto, mas o prompt proíbe recomendá-lo. O `projectData` troca
+  `blocks` cru por `{esboco, blocosRelevantes}` e o `contextAllowedByCatalog` parou de filtrar o
+  projeto DELA (a redação por tier vale só para o que é RECOMENDADO).
+- **Orçamento de 48KB é contrato** (testes são o freio): ordem de encolhimento `catalog>24 →
+  receitas 2→1 → manuais>3 → catalog>8 → receitas 1→0 → manuais>0` — manuais deixaram de morrer
+  primeiro (sobreviviam ~1,4KB de 35KB).
+- **`suggestions` na resposta:** `array(string 1..60).max(3)` no `RawAnswer` e no JSON schema
+  (⚠️ modo estrito: **em `required`**, vazio ok — foi bug real no Pensa), cada uma passando por
+  `redactZappyPii` + `isUnsafeZappyText` na validação. Viram chips que PREENCHEM o campo no
+  `ZappyPanel` (padrão que a usuária aprovou no Pensa — não enviam sozinhos).
+- **Modelo:** `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1` (decisão da usuária; o gpt-4o-mini era o
+  mesmo que dava resposta vaga no Pensa). Setar em community **e** community-kids.
+- **Segurança infantil intacta:** URL, cerca de código, anti-grooming, PII na pergunta e quota
+  seguem fail-closed. As flexibilizações são cirúrgicas: tag única sem atributo, `class`/`return`
+  em texto, e `ANSWER_PHONE_RE` (telefone com DDD) usado SÓ no lado da RESPOSTA — a redação da
+  PERGUNTA mantém o regex largo.

@@ -31,8 +31,10 @@ describe('ZappyHistoryService', () => {
         needsContext: 0,
         quota: 0,
         errors: 0,
+        rejected: 0,
         averageLatencyMs: 0,
       }),
+      listFailedQuestions: async () => ({ items: [], total: 0 }),
     } as ZappyRepository
     const service = new ZappyHistoryService(repository, () => now)
     await service.reserve({
@@ -80,8 +82,10 @@ describe('ZappyHistoryService', () => {
         needsContext: 0,
         quota: 0,
         errors: 0,
+        rejected: 0,
         averageLatencyMs: 0,
       }),
+      listFailedQuestions: async () => ({ items: [], total: 0 }),
     } as ZappyRepository
     const service = new ZappyHistoryService(repository, () => new Date('2026-08-02T12:00:00Z'))
 

@@ -940,6 +940,7 @@ export interface ZappyStoredResponseView {
     | 'redirect-pensa'
     | 'redirect-pinta'
     | 'unsupported'
+    | 'project-review'
   blockReferences: Array<{
     blockId?: string
     blockType: string
@@ -954,6 +955,8 @@ export interface ZappyStoredResponseView {
     lessonId: string
     title: string
   }>
+  /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
+  suggestions?: string[]
   createdAt: string
 }
 

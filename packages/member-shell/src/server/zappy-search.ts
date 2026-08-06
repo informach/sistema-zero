@@ -1,0 +1,187 @@
+/**
+ * Busca léxica do Zappy do Studio — extraída do zappy-ai.ts e reescrita para o
+ * vocabulário de criança (QA 08/2026: "como faço ele pular?" punha
+ * sz_html_image em 1º lugar porque "ele" casava por SUBSTRING com "elemento",
+ * e "meu jogo não funciona" devolvia o começo do catálogo em ordem de índice).
+ *
+ * Regras: match por TOKEN (exato, ou prefixo quando o lado curto tem ≥4
+ * chars), sinônimos infantis expandidos, stop-words do linguajar kid. Cada
+ * termo da pergunta conta UMA vez, qual seja o sinônimo que casou.
+ * Módulo PURO (sem server-only) para ser testável direto.
+ */
+
+export function normalizeSearchText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_:-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/**
+ * Tokens de um texto pesquisável. Além do espaço, quebra em `_ : -` para ids
+ * de bloco renderem palavras (sz_g2d_jump_on_ground → jump, ground) — mas
+ * mantém também a palavra inteira (pergunta com o id cru casa exato).
+ */
+export function tokenizeSearchable(value: string): Set<string> {
+  const tokens = new Set<string>()
+  for (const word of normalizeSearchText(value).split(' ')) {
+    if (word.length > 1) tokens.add(word)
+    for (const part of word.split(/[_:-]+/)) {
+      if (part.length > 1) tokens.add(part)
+    }
+  }
+  return tokens
+}
+
+export const SEARCH_STOP_WORDS = new Set([
+  // núcleo original
+  'a',
+  'as',
+  'como',
+  'da',
+  'de',
+  'do',
+  'e',
+  'em',
+  'eu',
+  'faco',
+  'faz',
+  'fazer',
+  'meu',
+  'minha',
+  'no',
+  'o',
+  'os',
+  'para',
+  'por',
+  'que',
+  'um',
+  'uma',
+  // linguajar de criança (QA 08/2026) — `jogo`/`bloco` NÃO entram: têm valor,
+  // só pesam menos (o peso de categoria caiu no ranking).
+  'quero',
+  'queria',
+  'preciso',
+  'pode',
+  'poderia',
+  'ajuda',
+  'ajudar',
+  'agora',
+  'tambem',
+  'entao',
+  'muito',
+  'mais',
+  'so',
+  'ele',
+  'ela',
+  'eles',
+  'elas',
+  'isso',
+  'esse',
+  'essa',
+  'este',
+  'esta',
+  'aqui',
+  'ali',
+  'nao',
+  'sim',
+  'oi',
+  'tipo',
+  'coisa',
+  'negocio',
+  'jeito',
+])
+
+/** Grupos de sinônimos do vocabulário infantil (sem acento — pós-normalização). */
+const KID_SYNONYM_GROUPS: readonly (readonly string[])[] = [
+  ['pular', 'pulo', 'pula', 'salto', 'saltar', 'jump'],
+  ['colisao', 'colidir', 'encostar', 'bater', 'tocar', 'esbarrar', 'colide'],
+  ['vida', 'vidas', 'hp', 'morrer', 'morre', 'dano', 'machucar'],
+  ['ponto', 'pontos', 'pontuacao', 'placar', 'score'],
+  ['atirar', 'tiro', 'tiros', 'bala', 'projetil', 'disparar', 'shoot'],
+  ['inimigo', 'inimigos', 'vilao', 'monstro', 'chefe', 'chefao', 'boss'],
+  ['fase', 'nivel', 'cena', 'mundo', 'level'],
+  ['personagem', 'heroi', 'heroina', 'boneco', 'jogador', 'sprite', 'player'],
+  ['fundo', 'cenario', 'paisagem', 'background'],
+  ['mover', 'andar', 'correr', 'movimento', 'mexer', 'walk'],
+  ['velocidade', 'rapido', 'devagar', 'lento', 'speed'],
+  ['som', 'musica', 'barulho', 'audio', 'sound'],
+  ['imagem', 'desenho', 'figura', 'foto', 'textura'],
+  ['tecla', 'teclado', 'seta', 'setas', 'apertar', 'botao', 'key'],
+  ['mouse', 'clique', 'clicar', 'cursor', 'toque', 'touch'],
+  ['tempo', 'cronometro', 'timer', 'segundos', 'relogio'],
+  ['gravidade', 'cair', 'queda', 'peso'],
+  ['plataforma', 'chao', 'piso', 'parede', 'ground'],
+  ['aleatorio', 'sortear', 'sorteio', 'random'],
+  ['texto', 'palavra', 'frase', 'escrever', 'letreiro'],
+  ['grupo', 'enxame', 'varios', 'muitos', 'bando'],
+  ['mapa', 'tiles', 'tilemap', 'grade'],
+  ['ganhar', 'vencer', 'vitoria', 'win'],
+  ['fim', 'gameover', 'derrota', 'perder'],
+]
+
+const SYNONYMS = new Map<string, readonly string[]>()
+for (const group of KID_SYNONYM_GROUPS) {
+  for (const term of group) SYNONYMS.set(term, group)
+}
+
+/** Termos de busca da PERGUNTA (dedup, sem stop-words, teto 40). */
+export function searchTerms(value: string): string[] {
+  return [
+    ...new Set(
+      normalizeSearchText(value)
+        .split(' ')
+        .filter((term) => term.length > 1 && !SEARCH_STOP_WORDS.has(term)),
+    ),
+  ].slice(0, 40)
+}
+
+/** Um grupo por termo original: o termo + os sinônimos dele. */
+export function expandedTerms(terms: readonly string[]): (readonly string[])[] {
+  return terms.map((term) => SYNONYMS.get(term) ?? [term])
+}
+
+function tokenMatches(term: string, token: string): boolean {
+  if (term === token) return true
+  // Morfologia leve: prefixo COMUM ≥4 chars ("pulando"↔"pular" dividem
+  // "pula"; "ele" nunca alcança "elemento" — o lado curto tem 3).
+  const max = Math.min(term.length, token.length)
+  if (max < 4) return false
+  let shared = 0
+  while (shared < max && term[shared] === token[shared]) shared += 1
+  return shared >= 4
+}
+
+/**
+ * Quantos TERMOS da pergunta casam com o conjunto de tokens (cada termo conta
+ * uma vez, por qualquer sinônimo do grupo; fuzzy = prefixo comum ≥4 chars —
+ * mata o "ele" ⊂ "elemento" e cobre flexões pular/pulando/pulou).
+ */
+export function scoreTokens(
+  termGroups: readonly (readonly string[])[],
+  tokens: ReadonlySet<string>,
+): number {
+  let hits = 0
+  for (const group of termGroups) {
+    let matched = false
+    for (const term of group) {
+      if (tokens.has(term)) {
+        matched = true
+        break
+      }
+      if (term.length < 4) continue
+      for (const token of tokens) {
+        if (tokenMatches(term, token)) {
+          matched = true
+          break
+        }
+      }
+      if (matched) break
+    }
+    if (matched) hits += 1
+  }
+  return hits
+}

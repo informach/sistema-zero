@@ -139,7 +139,7 @@ function signedActor(user: Awaited<ReturnType<SessionModule['getSession']>>) {
   }
 }
 
-type ZappyOutcome = 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
+type ZappyOutcome = 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error' | 'rejected'
 
 export function createStudioZappyRoutes(deps: { members: MembersClient; session: SessionModule }) {
   const { members, session: sessions } = deps
@@ -231,6 +231,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const complete = async (
         response: NonNullable<typeof reserved.body.response>,
         outcome: ZappyOutcome = outcomeFor(response),
+        rejection?: string,
       ) => {
         const saved = await members.zappyCompleteQuestion(questionId, {
           actor: signedActor(user),
@@ -238,6 +239,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           latencyMs: Date.now() - startedAt,
           response,
           outcome,
+          ...(rejection ? { rejection } : {}),
         })
         return NextResponse.json(saved.body ?? response, {
           status: saved.status === 200 ? 200 : 502,
@@ -287,6 +289,9 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           tier,
           profileName: safeProfileName(user.activeProfile?.name),
           knowledge: knowledge.hits,
+          // Memória: últimos turnos da conversa vêm na reserva (members antigo
+          // sem o campo → sem memória, degrada sem quebrar).
+          recentTurns: reserved.body.recentMessages,
         })
       } catch (cause) {
         console.error('[studio-zappy] falha ao preparar resposta', { cause })
@@ -323,8 +328,9 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       }
 
       try {
-        const response = await answerPreparedStudioZappy(prepared)
-        return complete(response)
+        const result = await answerPreparedStudioZappy(prepared, { startedAt })
+        if (result.rejection) return complete(result.response, 'rejected', result.rejection)
+        return complete(result.response)
       } catch (cause) {
         console.error('[studio-zappy] falha ao responder', { cause })
         return complete(

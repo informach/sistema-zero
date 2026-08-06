@@ -149,6 +149,38 @@ export function contentRoutes(deps: ContentRoutesDeps) {
         },
         { query: t.Object({ month: t.String({ pattern: '^\\d{4}-(0[1-9]|1[0-2])$' }) }) },
       )
+      // Perguntas que FALHARAM (reprovadas/erro/👎) — SEM userId/projectId: a
+      // listagem mostra só o texto (já PII-redigido na gravação), nunca quem.
+      .get(
+        '/zappy/questions',
+        ({ headers, query }) => {
+          guard(headers)
+          if (!deps.zappyHistory) throw new Error('Zappy não configurado')
+          const bounds = monthBoundsUtc(query.month)
+          return deps.zappyHistory.failedQuestions(
+            bounds.from,
+            bounds.to,
+            query.filter ?? 'all',
+            query.limit ?? 50,
+            query.offset ?? 0,
+          )
+        },
+        {
+          query: t.Object({
+            month: t.String({ pattern: '^\\d{4}-(0[1-9]|1[0-2])$' }),
+            filter: t.Optional(
+              t.Union([
+                t.Literal('all'),
+                t.Literal('rejected'),
+                t.Literal('error'),
+                t.Literal('not-useful'),
+              ]),
+            ),
+            limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+            offset: t.Optional(t.Numeric({ minimum: 0, maximum: 100000 })),
+          }),
+        },
+      )
       .post(
         '/zappy/knowledge/backfill',
         ({ headers, body }) => {

@@ -850,6 +850,8 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         questionId?: string
         response?: ZappyStoredResponseView
         rateLimited?: boolean
+        /** Últimos turnos da conversa (≤6, cronológico) — memória do tutor. */
+        recentMessages?: Array<{ role: 'user' | 'assistant'; text: string }>
       }>
     > {
       return gw.gatewayFetchHmac('/members/internal/zappy/questions', { method: 'POST', body })
@@ -861,7 +863,9 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         projectId: string
         latencyMs: number
         response: ZappyStoredResponseView
-        outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
+        outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error' | 'rejected'
+        /** Motivo da reprova da validação (auditoria; nunca volta à criança). */
+        rejection?: string
       },
     ): Promise<GatewayResponse<ZappyStoredResponseView>> {
       return gw.gatewayFetchHmac(`/members/internal/zappy/questions/${enc(questionId)}/response`, {

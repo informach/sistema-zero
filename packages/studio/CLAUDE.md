@@ -1080,9 +1080,31 @@ Foi um full review com 4 blocos de família nova. A documentação atual do alun
   (`enemy_damage`, `shape_w/h`) e `enemy_type_param` = intermediário. Só o `spawn_bullet` fica em Muitos (é
   projétil genérico, não do Kit espaço — decisão da usuária).
 
+## Índice de exemplos server-safe (`./server-examples`, 08/2026)
+
+Subpath **`@sistemazero/studio/server-examples`** — o catálogo dos 148 exemplos oficiais em forma
+de DADO PURO, consumível no **servidor** (Node/Bun, sem DOM). Nasceu para o **Zappy do Estúdio**
+consultar "como se monta esta mecânica" e descrever o passo a passo à criança; o payload que vai
+ao modelo é **ANÔNIMO** (sem `name`/`key`) porque, por decisão de produto, **a criança não sabe
+que os exemplos existem** — o Zappy explica como conhecimento próprio, sem citar exemplo/galeria.
+
+- `src/examples/serverExamplesBuilder.ts` — monta o índice a partir dos 5 `exampleCatalog.ts` das
+  extensões + `examples/core.ts` + `examples/qaContracts.ts`. Por exemplo: `{key, extension|null,
+  name, description, difficulty?, concepts?, genre?, promise, scenario, blockTypes[], requires[]}`.
+  Os `blockTypes` saem de `buildWorkspaceStateFromIR(example.ir)` + walk recursivo — ⚠️ **esse
+  caminho NÃO importa Blockly** (verificado; é o que mantém o módulo server-safe). Chave sem
+  contrato QA = ERRO do gerador (o índice não pode divergir do que a suíte cobre).
+- `scripts/gen-server-examples.ts` (script `bun run gen:server-examples`) escreve
+  `src/examples/__gen_serverExamplesIndex.ts` (~291KB estáticos, precedente dos demais `__gen_*`).
+  `src/examples/serverExamples.ts` exporta os tipos + `SERVER_EXAMPLES_INDEX`.
+- **Drift test** `serverExamples.test.ts`: recomputa o índice e compara deep-equal + trava o
+  total em 148. Adicionou/mexeu num exemplo → rode o gerador e commite o `__gen_*`, senão a suíte
+  fecha a porta.
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
+- `bun run gen:server-examples` — regera o `__gen_serverExamplesIndex.ts` (ver seção acima)
 - `bun run typecheck` / `bun run test` / `bun run check`
 - `bun run e2e` — suíte Playwright completa em Chromium e Firefox contra o playground (manual); o
   CI roda o subconjunto `examples-gallery.spec.ts --project=chromium --grep "game-2d(?:-advanced)?:"`

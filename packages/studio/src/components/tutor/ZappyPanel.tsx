@@ -166,6 +166,31 @@ export function ZappyPanel(): JSX.Element | null {
     question.trim() && !loading && !busy && cooldownSeconds === 0 && project && config,
   )
 
+  // Chips que PREENCHEM o campo (a criança revisa e envia — padrão do Pensa):
+  // fixos no estado vazio, e as continuações sugeridas da ÚLTIMA resposta.
+  const starterQuestions =
+    project?.mode === 'blocks'
+      ? [
+          'Como faço meu personagem pular?',
+          'Deu um erro no meu jogo',
+          'O que posso adicionar agora?',
+        ]
+      : ['O que este código faz?', 'Deu um erro no meu jogo', 'O que posso adicionar agora?']
+  let lastAssistantResponse: StudioTutorHistoryMessage['response'] | undefined
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index]
+    if (message?.role === 'assistant' && message.response) {
+      lastAssistantResponse = message.response
+      break
+    }
+  }
+  const followUpSuggestions = busy || loading ? [] : (lastAssistantResponse?.suggestions ?? [])
+  const pickSuggestion = (suggestion: string) => {
+    pendingAttemptRef.current = null
+    setQuestion(suggestion)
+    inputRef.current?.focus()
+  }
+
   const handleAsk = async (event: FormEvent) => {
     event.preventDefault()
     const text = question.trim()
@@ -349,7 +374,19 @@ export function ZappyPanel(): JSX.Element | null {
         ) : null}
         {!loading && messages.length === 0 ? (
           <div className="rounded-2xl bg-sz-bg p-4 text-sm leading-relaxed">
-            Oi! Selecione um bloco ou rode o jogo e me conte onde você travou.
+            <p>Oi! Selecione um bloco ou rode o jogo e me conte onde você travou.</p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {starterQuestions.map((starter) => (
+                <button
+                  key={starter}
+                  type="button"
+                  onClick={() => pickSuggestion(starter)}
+                  className="rounded-full border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1.5 font-semibold text-sz-accent text-xs hover:bg-sz-accent/20"
+                >
+                  {starter}
+                </button>
+              ))}
+            </div>
           </div>
         ) : null}
         {!loading && nextHistoryCursor ? (
@@ -444,6 +481,22 @@ export function ZappyPanel(): JSX.Element | null {
         ) : null}
         <div ref={endRef} />
       </div>
+
+      {followUpSuggestions.length > 0 ? (
+        <fieldset className="m-0 flex flex-wrap gap-1.5 border-0 border-sz-border border-t p-0 px-3 pt-2">
+          <legend className="sr-only">Sugestões do Zappy</legend>
+          {followUpSuggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => pickSuggestion(suggestion)}
+              className="rounded-full border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1.5 font-semibold text-sz-accent text-xs hover:bg-sz-accent/20"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </fieldset>
+      ) : null}
 
       <form onSubmit={(event) => void handleAsk(event)} className="border-t border-sz-border p-3">
         <label htmlFor="sz-zappy-question" className="sr-only">

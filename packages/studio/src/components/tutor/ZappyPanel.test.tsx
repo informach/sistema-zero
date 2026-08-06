@@ -473,4 +473,70 @@ describe('ZappyPanel', () => {
     expect(view.queryByText('Página atrasada do projeto A')).toBeNull()
     expect(view.getByText('Histórico do projeto B')).toBeTruthy()
   })
+
+  it('chips de sugestão PREENCHEM o campo sem enviar (e só a última resposta mostra)', async () => {
+    let asked = 0
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: 'q1',
+            role: 'user',
+            text: 'Como faço ele pular?',
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 'a1',
+            role: 'assistant',
+            text: 'Primeira resposta.',
+            createdAt: new Date().toISOString(),
+            response: {
+              ...response(),
+              id: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001',
+              suggestions: ['Sugestão antiga'],
+            },
+          },
+          {
+            id: 'a2',
+            role: 'assistant',
+            text: 'Use o bloco de pular.',
+            createdAt: new Date().toISOString(),
+            response: { ...response(), suggestions: ['Como faço ele atirar?'] },
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => {
+        asked += 1
+        return response()
+      },
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const chip = await view.findByRole('button', { name: 'Como faço ele atirar?' })
+    // Só as sugestões da ÚLTIMA resposta viram chips.
+    expect(view.queryByRole('button', { name: 'Sugestão antiga' })).toBeNull()
+    fireEvent.click(chip)
+    const question = view.getByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    // Preenche e NÃO envia (cooldown/quota intactos; a criança revisa).
+    expect(question.value).toBe('Como faço ele atirar?')
+    expect(asked).toBe(0)
+  })
+
+  it('estado vazio oferece perguntas iniciais que preenchem o campo', async () => {
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => undefined,
+      ask: async () => response(),
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const starter = await view.findByRole('button', { name: 'Como faço meu personagem pular?' })
+    fireEvent.click(starter)
+    const question = view.getByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    expect(question.value).toBe('Como faço meu personagem pular?')
+  })
 })

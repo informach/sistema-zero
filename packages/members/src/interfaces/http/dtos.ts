@@ -95,8 +95,11 @@ export const ZappyInternalResponseBody = t.Object({
       t.Literal('needs-context'),
       t.Literal('quota'),
       t.Literal('error'),
+      t.Literal('rejected'),
     ]),
   ),
+  /** Motivo da reprova da validação (auditoria; nunca volta à criança). */
+  rejection: t.Optional(t.String({ minLength: 1, maxLength: 40 })),
   response: t.Object({
     id: UUID,
     text: t.String({ minLength: 1, maxLength: 8000 }),
@@ -110,6 +113,7 @@ export const ZappyInternalResponseBody = t.Object({
       t.Literal('redirect-pensa'),
       t.Literal('redirect-pinta'),
       t.Literal('unsupported'),
+      t.Literal('project-review'),
     ]),
     blockReferences: t.Array(
       t.Object({
@@ -133,6 +137,7 @@ export const ZappyInternalResponseBody = t.Object({
         { maxItems: 6 },
       ),
     ),
+    suggestions: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 60 }), { maxItems: 3 })),
     createdAt: t.String({ minLength: 20, maxLength: 40 }),
   }),
 })
