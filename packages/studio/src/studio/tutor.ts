@@ -51,6 +51,17 @@ export interface StudioTutorProjectContext {
    * de ensinar a mecânica do zero. Ausente quando não há IR (Pro, projeto antigo).
    */
   behavior?: StudioTutorBehaviorEntry[]
+  /**
+   * Ids das pilhas SOLTAS (fora das Áreas do projeto): estão salvas, mas nunca
+   * executam. O editor já marca isso no canvas; sem mandar, o tutor trata
+   * rascunho morto como código ativo.
+   */
+  draftBlockIds?: string[]
+  /**
+   * Problemas que o editor já detectou, com a frase pronta em português
+   * ("A variável X ainda não foi declarada neste ponto").
+   */
+  semanticIssues?: Array<{ blockId?: string; message: string }>
   /** Só existe em Ponte/Pro. O modo Blocos nunca envia código. */
   code?: StudioTutorCodeFile[]
 }
@@ -264,6 +275,9 @@ export function buildStudioTutorContext(input: {
   project: Project
   selectedBlockId: string | null
   lastError: string | null
+  /** Diagnósticos que o editor já calculou (pilhas soltas, problemas da IR). */
+  draftBlockIds?: readonly string[]
+  semanticIssues?: readonly { blockId?: string; message: string }[]
 }): StudioTutorProjectContext {
   const { project } = input
   const includeCode = project.mode === 'bridge' || project.kind === 'pro'
@@ -277,6 +291,12 @@ export function buildStudioTutorContext(input: {
     selectedBlockId: input.selectedBlockId,
     lastError: input.lastError?.slice(0, MAX_ERROR_CHARS) ?? null,
     ...(behavior?.length ? { behavior } : {}),
+    ...(input.draftBlockIds?.length
+      ? { draftBlockIds: [...input.draftBlockIds].slice(0, 40) }
+      : {}),
+    ...(input.semanticIssues?.length
+      ? { semanticIssues: input.semanticIssues.slice(0, 5).map((issue) => ({ ...issue })) }
+      : {}),
     ...(includeCode ? { code: compactCode(project) } : {}),
   }
 }

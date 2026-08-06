@@ -15,6 +15,19 @@ export const MAX_LOG_ENTRIES = 500
 export const LOG_RATE_LIMIT_WINDOW_MS = 1_000
 export const LOG_RATE_LIMIT_MAX_MESSAGES = 180
 
+/**
+ * O que conta como ERRO de verdade. Vive aqui (e não no Console) porque mais de
+ * um consumidor precisa da MESMA régua: o Console pinta, o Zappy diagnostica.
+ * ⚠️ `console.error` explícito é raro no código gerado — quem carrega o erro que
+ * a criança vê é `runtimeError`/`unhandledRejection`. Filtrar só por `'error'`
+ * deixa passar exatamente os que têm stack.
+ */
+export const ERROR_LOG_KINDS: ReadonlySet<LogKind> = new Set([
+  'error',
+  'runtimeError',
+  'unhandledRejection',
+])
+
 export interface LogEntry {
   id: number
   kind: LogKind

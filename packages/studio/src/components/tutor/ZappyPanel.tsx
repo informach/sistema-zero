@@ -2,8 +2,10 @@ import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credi
 import type { FormEvent, JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { cn, IconSparkles } from '#ui'
+import { useDiagnosticsStore } from '../../state/diagnosticsStore'
+import { glossErrorMessage } from '../../state/errorGloss'
 import { useHighlightStore } from '../../state/highlightStore'
-import { useLogsStore } from '../../state/logsStore'
+import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioLayout } from '../../studio/layoutContext'
 import {
@@ -51,13 +53,24 @@ export function ZappyPanel(): JSX.Element | null {
   const setMode = useProjectStore((s) => s.setMode)
   const selectedBlockId = useHighlightStore((s) => s.selectedBlockId)
   const focusTutorReference = useHighlightStore((s) => s.focusTutorReference)
+  // ⚠️ Antes filtrava só `kind === 'error'` (console.error explícito, raríssimo no
+  // código gerado) e deixava passar `runtimeError`/`unhandledRejection` — os que
+  // carregam o erro que a criança realmente vê, com stack. A régua canônica é a
+  // mesma do Console. A dica em PT-BR vai junto: o gloss já existe e só era usado
+  // na hora de pintar a linha.
   const lastError = useLogsStore((s) => {
     for (let i = s.entries.length - 1; i >= 0; i -= 1) {
       const entry = s.entries[i]
-      if (entry?.kind === 'error') return entry.errorStack || entry.text
+      if (!entry || !ERROR_LOG_KINDS.has(entry.kind)) continue
+      const gloss = glossErrorMessage(entry.text)
+      const local = entry.errorLine != null ? ` (linha ${entry.errorLine} do script.js)` : ''
+      return `${entry.errorStack || entry.text}${local}${gloss ? `\n${gloss}` : ''}`
     }
     return null
   })
+  // O editor já sabe o que nunca roda e o que está semanticamente errado.
+  const draftBlockIds = useDiagnosticsStore((s) => s.draftBlockIds)
+  const semanticIssues = useDiagnosticsStore((s) => s.semanticIssues)
   const { isNarrow } = useStudioLayout()
   const [messages, setMessages] = useState<StudioTutorHistoryMessage[]>([])
   const [question, setQuestion] = useState('')
@@ -223,7 +236,13 @@ export function ZappyPanel(): JSX.Element | null {
         projectId: project.id,
         clientMessageId,
         question: text,
-        context: buildStudioTutorContext({ project, selectedBlockId, lastError }),
+        context: buildStudioTutorContext({
+          project,
+          selectedBlockId,
+          lastError,
+          draftBlockIds,
+          semanticIssues,
+        }),
       })
       if (operationGenerationRef.current !== operationGeneration) return
       pendingAttemptRef.current = null

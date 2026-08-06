@@ -4,6 +4,7 @@ import { createLocalPersistenceAdapter } from '../persistence/local'
 import { createPersistenceService, type PersistenceService } from '../persistence/service'
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
 import { createChecksStore } from './checksStore'
+import { createDiagnosticsStore } from './diagnosticsStore'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createProjectStore, type StudioLimits, useProjectStore } from './projectStore'
@@ -28,6 +29,7 @@ export interface StudioStores {
   logs: ReturnType<typeof createLogsStore>
   sourcemap: ReturnType<typeof createSourcemapStore>
   checks: ReturnType<typeof createChecksStore>
+  diagnostics: ReturnType<typeof createDiagnosticsStore>
   persistence: PersistenceService
 }
 
@@ -56,6 +58,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     logs: createLogsStore(),
     sourcemap: createSourcemapStore(),
     checks: createChecksStore(),
+    diagnostics: createDiagnosticsStore(),
     persistence: createPersistenceService(project, adapter),
   }
 }

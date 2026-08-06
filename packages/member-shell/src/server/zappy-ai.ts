@@ -15,6 +15,7 @@ import { PENSA_CHILD_SAFETY_CLAUSE } from './pensa-agents/safety'
 import { completePensaJson } from './pensa-llm'
 import {
   buildBehaviorDigest,
+  buildDraftSummary,
   buildProjectOutline,
   type OutlineCatalogInfo,
 } from './zappy-project-outline'
@@ -70,6 +71,10 @@ export interface ZappyContextInput {
     blockId?: string
     values: Array<{ name: string; value: string }>
   }>
+  /** Pilhas SOLTAS: salvas, mas fora das Áreas do projeto — nunca executam. */
+  draftBlockIds?: string[]
+  /** Problemas que o editor já detectou, com frase pronta em PT-BR. */
+  semanticIssues?: Array<{ blockId?: string; message: string }>
   code?: Array<{ path: string; content: string }>
 }
 
@@ -539,6 +544,8 @@ function systemPrompt(
     'PROJETO DA CRIANÇA: o campo "esboco" mostra o que ela JÁ construiu, com os rótulos reais dos blocos (recuo = dentro de). Blocos marcados "(nível futuro)" existem no projeto dela, mas você NÃO pode recomendá-los nem detalhá-los; ensine com os blocos do catálogo permitido.',
     'O campo "comportamento" mostra o que o projeto FAZ de verdade, separado por quando roda: AO INICIAR (uma vez), QUANDO ACONTECER (só no gatilho) e ENQUANTO ESTIVER RODANDO (o tempo todo). Entre parênteses estão os VALORES que a criança escolheu (ex.: vx=0, key=ArrowRight). LEIA esse campo antes de responder qualquer dúvida sobre algo que não está funcionando: a causa quase sempre está num valor errado, num passo na área errada (ex.: mover o personagem só AO INICIAR, quando devia ser ENQUANTO ESTIVER RODANDO) ou num nome escrito diferente do que foi criado.',
     'O campo "blocosRelevantes" lista blocos do projeto dela com o id, para você citar a instância exata em blockReferences.',
+    'O campo "rascunhosSoltos" lista pilhas que estão SALVAS mas NUNCA rodam, porque ficaram fora das Áreas do projeto. Se a criança reclama que algo não acontece e aquilo está aqui, ESSA é a causa: diga com carinho que a pilha precisa ser arrastada para dentro da Área certa.',
+    'O campo "avisosDoEditor" traz problemas que o próprio editor já detectou, já escritos para a criança (ex.: um nome usado que nunca foi criado). Se houver algum relacionado à dúvida, use-o como a causa em vez de procurar outra.',
     'Pergunta de REVISÃO ("o que falta?", "por que não funciona?", "o que posso melhorar?"): use scope "project-review" e responda em 3 partes curtas — ✅ o que já está pronto; 🔧 o que corrigir (UMA causa provável, apontando o bloco); ➡️ próximo passo (UMA mecânica nova do catálogo).',
     'Em blockReferences use somente blockType da lista permitida. blockId só pode ser copiado de uma instância do contexto com o mesmo type; senão use null.',
     'Ao citar um bloco no texto, diga onde ele fica copiando EXATAMENTE o valor "caminho" do catálogo, em texto corrido e sem crases (ex.: o bloco "nome do bloco" fica em Programação › 🏷️ Variáveis). Nunca invente, encurte nem repita o nome de um nível no outro.',
@@ -590,6 +597,7 @@ function projectData(
   recentTurns: readonly ZappyRecentTurn[] = [],
   outline = '',
   comportamento = '',
+  rascunhosSoltos = '',
 ): string {
   // Só blocos CONHECIDOS do catálogo entram na lista citável (tipo forjado no
   // contexto nunca é ecoado — anti prompt-injection); o esboço legível cobre o
@@ -607,6 +615,10 @@ function projectData(
   // O que o projeto FAZ (valores + área de execução). Encolhe DEPOIS do esboço:
   // numa dúvida de lógica é ele que localiza o erro.
   let comportamentoAtual = comportamento
+  // Frases que o EDITOR já escreveu para a criança (nome não declarado, etc.).
+  const avisosDoEditor = (context.semanticIssues ?? [])
+    .slice(0, 5)
+    .map((issue) => issue.message.slice(0, 200))
   const code =
     context.mode === 'blocks'
       ? []
@@ -634,6 +646,8 @@ function projectData(
         kind: context.kind,
         ...(esboco ? { esboco } : {}),
         ...(comportamentoAtual ? { comportamento: comportamentoAtual } : {}),
+        ...(rascunhosSoltos ? { rascunhosSoltos } : {}),
+        ...(avisosDoEditor.length > 0 ? { avisosDoEditor } : {}),
         blocosRelevantes,
         installedExtensions: context.installedExtensions,
         selectedBlockId: context.selectedBlockId,
@@ -727,6 +741,11 @@ export function buildStudioZappyPrompt(input: {
   const outline = buildProjectOutline(context.blocks, FULL_CATALOG_INFO, { futureTypes })
   // O que o projeto FAZ (com os valores dela). Só existe quando há IR — projeto
   // Pro/antigo cai no esboço de tipos acima.
+  const rascunhosSoltos = buildDraftSummary(
+    context.draftBlockIds ?? [],
+    context.blocks,
+    FULL_CATALOG_INFO,
+  )
   const comportamento = context.behavior?.length
     ? buildBehaviorDigest(context.behavior, context.blocks, FULL_CATALOG_INFO)
     : ''
@@ -753,6 +772,7 @@ export function buildStudioZappyPrompt(input: {
       input.recentTurns ?? [],
       outline,
       comportamento,
+      rascunhosSoltos,
     ),
     catalog,
     allowed,

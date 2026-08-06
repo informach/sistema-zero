@@ -38,6 +38,7 @@ import {
 } from '../../blockly/fields/FieldSpritePicker'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
+import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore } from '../../state/highlightStore'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -308,6 +309,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
+  const diagnosticsStoreApi = useDiagnosticsStoreApi()
   const studioTheme = useStudioTheme()
   // Ref para a injeção (efeito de mount único) usar o tema vigente sem re-injetar.
   const studioThemeRef = useRef(studioTheme)
@@ -443,7 +445,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // casca do documento (head/doctype) que os blocos não representam.
       const current = projectStoreApi.getState().project
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
-      if (!applySemanticDiagnostics(workspace, ir)) {
+      // As mensagens já vêm escritas para a criança; publicá-las é o que permite
+      // ao Zappy apontar "o nome X não existe" em vez de adivinhar.
+      const collectIssues = (issues: { blockId?: string; message: string }[]) =>
+        diagnosticsStoreApi.getState().setSemanticIssues(issues)
+      if (!applySemanticDiagnostics(workspace, ir, collectIssues)) {
         // O desenho inválido continua salvo para a criança poder corrigi-lo, mas
         // o preview fica no último estado válido em vez de virar uma tela vazia.
         applyProjectState({ blocksState: state })
@@ -495,7 +501,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const storeState = projectStoreApi.getState()
       storeState.markBridgeBlocksSynced(storeState.bridgeCodeEditEpoch)
     },
-    [applyProjectState, setSourceMap, projectStoreApi],
+    [applyProjectState, setSourceMap, projectStoreApi, diagnosticsStoreApi],
   )
 
   const flushScheduledRegeneration = useCallback(() => {
@@ -551,7 +557,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const refresh = () => {
       refreshQueued = false
       if (disposed) return
-      applyDraftDiagnostics(workspace)
+      // O retorno (ids das pilhas SOLTAS) era descartado. Publicá-lo é o que
+      // permite ao Zappy dizer "essa parte está salva mas nunca roda" em vez de
+      // tratar rascunho morto como se fosse código ativo.
+      diagnosticsStoreApi.getState().setDraftBlockIds(applyDraftDiagnostics(workspace))
     }
     const scheduleRefresh = () => {
       if (refreshQueued) return
@@ -575,7 +584,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       disposed = true
       workspace.removeChangeListener(listener)
     }
-  }, [workspace])
+  }, [workspace, diagnosticsStoreApi])
 
   // Regeneração código a partir dos blocos. Filtra eventos para reagir apenas a
   // edições reais (criar/apagar/mover/alterar bloco). Eventos disparados durante

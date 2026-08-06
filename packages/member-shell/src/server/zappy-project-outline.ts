@@ -156,3 +156,36 @@ export function buildBehaviorDigest(
   if (unresolved > 0) lines.push(`Passos não reconhecidos: ${unresolved}`)
   return lines.join('\n')
 }
+
+/**
+ * As pilhas que estão salvas mas NUNCA rodam (fora das Áreas do projeto). O
+ * editor já marca no canvas; aqui viram texto para o tutor poder dizer "essa
+ * parte não está ligada em lugar nenhum" — causa clássica de "montei e não
+ * aconteceu nada".
+ */
+export function buildDraftSummary(
+  draftBlockIds: readonly string[],
+  blocks: readonly OutlineBlockInput[],
+  catalog: ReadonlyMap<string, OutlineCatalogInfo>,
+  options?: { maxItems?: number },
+): string {
+  if (draftBlockIds.length === 0) return ''
+  const maxItems = options?.maxItems ?? 8
+  const typeById = new Map(blocks.map((block) => [block.id, block.type]))
+  const labels: string[] = []
+  let unresolved = 0
+  for (const id of draftBlockIds) {
+    const type = typeById.get(id)
+    const info = type ? catalog.get(type) : undefined
+    if (!info) {
+      unresolved += 1
+      continue
+    }
+    if (labels.length < maxItems) labels.push(info.label)
+  }
+  if (labels.length === 0 && unresolved === 0) return ''
+  const extra = unresolved > 0 ? ` (e mais ${unresolved})` : ''
+  return labels.length > 0
+    ? `Pilhas SOLTAS, salvas mas que NUNCA rodam (estão fora das Áreas do projeto): ${labels.join(', ')}${extra}`
+    : `Há ${unresolved} pilha(s) solta(s) que nunca rodam (fora das Áreas do projeto).`
+}
