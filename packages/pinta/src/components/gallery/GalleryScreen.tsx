@@ -22,6 +22,16 @@ import { AssetCard } from './AssetCard'
 import { ImportImageDialog } from './ImportImageDialog'
 import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
 
+/**
+ * Grade da galeria: cards PEQUENOS, "só para reconhecer o desenho" (referência
+ * MakeCode Arcade). `auto-fill` + `minmax` em vez de um número fixo de colunas
+ * porque o card precisa ter o MESMO tamanho em qualquer tela: com
+ * `grid-cols-10` fixo, um monitor de 1920 esticaria cada card para ~148px e a
+ * galeria voltaria a ser uma lista de cartões grandes. Assim dá ~10 colunas num
+ * notebook de 1366 e ~15 em 1920, com o card sempre em ~92px.
+ */
+const GALLERY_GRID_CLASS = 'grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(88px,1fr))]'
+
 /** Nome sugerido pela missão de arte (com sufixo se a criança já usou o base). */
 const ROLE_NAME_BASE: Record<NewAssetRole, string> = {
   sprite: 'heroi',
@@ -245,9 +255,7 @@ export function GalleryScreen(): JSX.Element {
       ) : null}
 
       {projectSections.length === 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {assets.map(renderCard)}
-        </div>
+        <div className={GALLERY_GRID_CLASS}>{assets.map(renderCard)}</div>
       ) : (
         // Seções por jogo do Pensa (desenhos com projectRef) + avulsos no fim.
         <div className="flex flex-col gap-6">
@@ -257,9 +265,7 @@ export function GalleryScreen(): JSX.Element {
                 <span aria-hidden="true">🎮 </span>
                 {section.name}
               </h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {section.assets.map(renderCard)}
-              </div>
+              <div className={GALLERY_GRID_CLASS}>{section.assets.map(renderCard)}</div>
             </section>
           ))}
           {looseAssets.length > 0 ? (
@@ -267,9 +273,7 @@ export function GalleryScreen(): JSX.Element {
               <h2 className="pin-display mb-2 text-lg text-pin-muted">
                 {COPY.gallery.looseSection}
               </h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {looseAssets.map(renderCard)}
-              </div>
+              <div className={GALLERY_GRID_CLASS}>{looseAssets.map(renderCard)}</div>
             </section>
           ) : null}
         </div>

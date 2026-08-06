@@ -7,7 +7,29 @@ import { AssetCard } from './AssetCard'
 afterEach(cleanup)
 
 describe('AssetCard', () => {
-  it('bloqueia duplo clique enquanto a duplicação está em andamento', async () => {
+  it('as ações vivem atrás do botão "⋮" (um alvo de 44px no card pequeno)', () => {
+    const asset = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    render(
+      <AssetCard
+        asset={asset}
+        onOpen={() => {}}
+        onRename={() => {}}
+        onDuplicate={() => {}}
+        onRemove={() => {}}
+      />,
+    )
+    // Fechado: só abrir o desenho e o "⋮" — nada de renomear/duplicar/apagar.
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(screen.queryByRole('button', { name: `${COPY.gallery.remove} heroi` })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.cardActions('heroi') }))
+    expect(screen.getByRole('menu')).toBeTruthy()
+    for (const label of [COPY.gallery.rename, COPY.gallery.duplicate, COPY.gallery.remove]) {
+      expect(screen.getByRole('menuitem', { name: `${label} heroi` })).toBeTruthy()
+    }
+  })
+
+  it('duplicar fecha o menu e não dispara duas vezes no mesmo turno', async () => {
     let finish = (): void => {}
     const pending = new Promise<void>((resolve) => {
       finish = resolve
@@ -23,12 +45,19 @@ describe('AssetCard', () => {
         onRemove={() => {}}
       />,
     )
-    const button = screen.getByRole('button', { name: `${COPY.gallery.duplicate} heroi` })
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.cardActions('heroi') }))
+    const button = screen.getByRole('menuitem', { name: `${COPY.gallery.duplicate} heroi` })
     fireEvent.click(button)
     fireEvent.click(button)
     expect(onDuplicate).toHaveBeenCalledTimes(1)
-    expect(button.hasAttribute('disabled')).toBe(true)
+    // O menu some no 1º clique: a 2ª tentativa nem alcança o handler.
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
     finish()
-    await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false))
+    // Reabrir depois de terminar volta com o item liberado.
+    await waitFor(() => {
+      fireEvent.click(screen.getByRole('button', { name: COPY.gallery.cardActions('heroi') }))
+      const reopened = screen.getByRole('menuitem', { name: `${COPY.gallery.duplicate} heroi` })
+      expect(reopened.hasAttribute('disabled')).toBe(false)
+    })
   })
 })

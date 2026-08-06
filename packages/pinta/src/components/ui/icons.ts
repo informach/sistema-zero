@@ -47,6 +47,7 @@ export {
   Image,
   Map,
   Maximize,
+  MoreVertical,
   MousePointer2,
   MoveHorizontal,
   MoveVertical,

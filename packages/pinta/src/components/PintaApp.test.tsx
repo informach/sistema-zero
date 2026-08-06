@@ -123,7 +123,9 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByRole('button', { name: /Abrir apagavel/ })).toBeTruthy()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.remove} apagavel` }))
+    // As ações do card moram atrás do "⋮" (card pequeno, um alvo de 44px só).
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.cardActions('apagavel') }))
+    fireEvent.click(screen.getByRole('menuitem', { name: `${COPY.gallery.remove} apagavel` }))
     expect(screen.getByText(COPY.gallery.removeConfirmTitle)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: COPY.gallery.removeConfirm }))
     // O update vem de store zustand FORA de act — flush explícito (waitFor pena
