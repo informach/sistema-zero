@@ -1,3 +1,4 @@
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import type { ReactNode } from 'react'
 import { createContext, createElement, type JSX, useContext, useMemo, useState } from 'react'
 import type { IDEMode, Project, ProjectKind } from '#core'
@@ -14,6 +15,12 @@ export type StudioTutorScope =
   | 'redirect-pinta'
   | 'unsupported'
   | 'project-review'
+  /**
+   * Acabou a ajuda de IA da família. É PERSISTIDO de propósito: sem ele, uma
+   * recusa de ontem voltaria do histórico com cara de aula e com os botões de
+   * "isso ajudou?", como se fosse conteúdo que a criança pudesse avaliar.
+   */
+  | 'quota'
 
 export interface StudioTutorCompactBlock {
   id: string
@@ -99,11 +106,23 @@ export interface StudioTutorFeedbackInput {
   useful: boolean
 }
 
+/**
+ * Resposta do `ask` + o saldo FRESCO da ajuda de IA.
+ *
+ * ⚠️ O saldo vem no ENVELOPE, fora do `response`: aquele objeto é persistido no
+ * histórico, e crédito é volátil. `credits` ausente/nulo = "nada mudou agora"
+ * (resposta determinística, replay) — quem renderiza MANTÉM o valor anterior.
+ */
+export interface StudioTutorAskResult {
+  response: StudioTutorResponse
+  credits?: AiCreditsView | null
+}
+
 /** I/O do host. O Studio nunca conhece sessão, provedor, quota ou banco. */
 export interface StudioTutorAdapter {
   loadHistory(projectId: string, before?: string): Promise<StudioTutorHistoryPage>
   deleteHistory(projectId: string): Promise<void>
-  ask(input: StudioTutorAskInput): Promise<StudioTutorResponse>
+  ask(input: StudioTutorAskInput): Promise<StudioTutorAskResult>
   feedback(input: StudioTutorFeedbackInput): Promise<void>
 }
 
@@ -113,6 +132,11 @@ export interface StudioTutorConfig {
   openLesson?: (reference: StudioTutorLessonReference) => void
   /** Cooldown visual local; o rate limit autoritativo continua no BFF. */
   cooldownMs?: number
+  /**
+   * Saldo inicial (o host lê no Server Component). `null`/ausente = "não sei" →
+   * o medidor não aparece. NUNCA passe zeros para significar indisponibilidade.
+   */
+  credits?: AiCreditsView | null
 }
 
 interface StudioTutorState {

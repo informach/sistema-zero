@@ -120,6 +120,7 @@ export type { StudioTheme } from './studio/theme'
 export type {
   StudioTutorAdapter,
   StudioTutorAskInput,
+  StudioTutorAskResult,
   StudioTutorBlockReference,
   StudioTutorConfig,
   StudioTutorFeedbackInput,

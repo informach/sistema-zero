@@ -16,6 +16,7 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
+    "@sistemazero/core": "workspace:*",
     "clsx": "^2.1.1",
     "zod": "^4.4.3",
     "zustand": "^5.0.0"

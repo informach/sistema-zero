@@ -183,6 +183,37 @@
   font-size: 0.8rem;
   font-weight: 800;
 }
+/* Medidor da ajuda de IA. Âmbar, NUNCA vermelho: o vermelho (--pz-danger) é
+   reservado a falha técnica, e acabar a ajuda do dia não é o app quebrando. */
+.pensa-credits {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--pz-line);
+  border-radius: 9999px;
+  padding: 4px 10px;
+  background: var(--pz-surface-2);
+  color: var(--pz-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.pensa-credits.is-low,
+.pensa-credits.is-exhausted {
+  border-color: color-mix(in oklab, var(--pz-orange) 45%, var(--pz-line));
+  background: color-mix(in oklab, var(--pz-orange) 10%, var(--pz-surface));
+  color: var(--pz-orange);
+  font-weight: 800;
+}
+.pensa-credits-notice {
+  margin: 8px 0 0;
+  border: 1px solid color-mix(in oklab, var(--pz-orange) 45%, var(--pz-line));
+  border-radius: 13px;
+  padding: 11px 14px;
+  background: color-mix(in oklab, var(--pz-orange) 8%, var(--pz-surface));
+  color: var(--pz-ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
 /* CTA "3D" azul (espelho do .sz-btn-gradient do kids): gradiente + sombra dura
    que afunda no clique. Ações afirmativas de concluir/aprovar seguem VERDES. */
 .pensa-create button,

@@ -2,6 +2,7 @@ import 'server-only'
 import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
+  AiCreditsView,
   AiUsageConsumeView,
   AttachmentDownloadView,
   AvatarConfigInput,
@@ -300,6 +301,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
   const missionsReadonlyCached = cache(
     (): Promise<GatewayResponse<MissionsMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/missions/me', { query: { audience } }),
+  )
+  // Saldo de IA da CONTA. O `cache` é o que mata o custo do medidor "sempre
+  // visível": layout + página + painel pedem no mesmo render e vai UMA ida.
+  // ⚠️ SEM `?audience`: a quota é da conta e cruza as duas vitrines.
+  const aiCreditsReadonlyCached = cache(
+    (): Promise<GatewayResponse<AiCreditsView>> => gw.gatewayFetchReadonly('/members/ai-usage/me'),
   )
   const challengeReadonlyCached = cache(
     (): Promise<GatewayResponse<ChallengeMeView>> =>
@@ -829,6 +836,17 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         query: { audience },
         body: { feature },
       })
+    },
+    /**
+     * Quanto AINDA resta da ajuda de IA da conta — NÃO consome crédito. Alimenta
+     * o medidor da criança e o painel do mês na área dos pais.
+     */
+    getAiCredits(): Promise<GatewayResponse<AiCreditsView>> {
+      return gw.gatewayFetch('/members/ai-usage/me')
+    },
+    /** Idem, sem refresh/escrita de cookie — o seguro em Server Component. */
+    getAiCreditsReadonly(): Promise<GatewayResponse<AiCreditsView>> {
+      return aiCreditsReadonlyCached()
     },
     zappyHistory(
       projectId: string,

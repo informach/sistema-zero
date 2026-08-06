@@ -167,6 +167,7 @@
         "@dicebear/core": "^9",
         "@react-three/drei": "^10",
         "@react-three/fiber": "^9",
+        "@sistemazero/core": "workspace:*",
         "@sistemazero/member-shell": "workspace:*",
         "@sistemazero/pensa": "workspace:*",
         "@sistemazero/pinta": "workspace:*",
@@ -513,6 +514,7 @@
       "name": "@sistemazero/pensa",
       "version": "0.1.0",
       "dependencies": {
+        "@sistemazero/core": "workspace:*",
         "clsx": "^2.1.1",
         "zod": "^4.4.3",
         "zustand": "^5.0.0",

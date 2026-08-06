@@ -1,3 +1,5 @@
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
+
 export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
 export type PensaWorkStage = Exclude<PensaStage, 'done'>
 export type PensaArtifactType =
@@ -144,6 +146,11 @@ export interface PensaStageView {
   artifacts: PensaArtifactView[]
   tasks: PensaTaskView[]
   nextTaskId: string | null
+  /**
+   * Quanta ajuda de IA ainda resta para a família. Ausente = "não sei" (members
+   * antigo, indisponível) → o medidor some, nunca vira zero.
+   */
+  credits?: AiCreditsView | null
 }
 
 export interface PensaTaskHandoffView {

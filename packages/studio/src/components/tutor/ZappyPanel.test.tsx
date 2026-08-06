@@ -48,6 +48,11 @@ function response() {
   }
 }
 
+/** Envelope do ask: a resposta vem com o saldo ao lado, nunca dentro dela. */
+function answer(r: ReturnType<typeof response> | Record<string, unknown> = response()) {
+  return { response: r as ReturnType<typeof response> }
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void
   const promise = new Promise<T>((done) => {
@@ -77,7 +82,7 @@ describe('ZappyPanel', () => {
       deleteHistory: async () => undefined,
       ask: async () => {
         asked += 1
-        return response()
+        return answer()
       },
       feedback: async () => undefined,
     }
@@ -107,7 +112,7 @@ describe('ZappyPanel', () => {
       ask: async (input) => {
         ids.push(input.clientMessageId)
         if (ids.length === 1) throw new Error('resposta perdida')
-        return response()
+        return answer()
       },
       feedback: async () => undefined,
     }
@@ -133,7 +138,7 @@ describe('ZappyPanel', () => {
       const adapter: StudioTutorAdapter = {
         loadHistory: async () => ({ messages: [], nextCursor: null }),
         deleteHistory: async () => undefined,
-        ask: async () => response(),
+        ask: async () => answer(),
         feedback: async () => undefined,
       }
       const view = render(renderPanel(adapter, { cooldownMs: 20 }))
@@ -177,7 +182,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => tutorResponse,
+      ask: async () => answer(tutorResponse),
       feedback: async () => undefined,
     }
     const view = render(
@@ -226,7 +231,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => tutorResponse,
+      ask: async () => answer(tutorResponse),
       feedback: async () => undefined,
     }
 
@@ -263,7 +268,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => tutorResponse,
+      ask: async () => answer(tutorResponse),
       feedback: async () => undefined,
     }
 
@@ -300,7 +305,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => tutorResponse,
+      ask: async () => answer(tutorResponse),
       feedback: async () => undefined,
     }
 
@@ -328,7 +333,7 @@ describe('ZappyPanel', () => {
       deleteHistory: async () => {
         deleted += 1
       },
-      ask: async () => response(),
+      ask: async () => answer(),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter))
@@ -370,7 +375,7 @@ describe('ZappyPanel', () => {
             }
       },
       deleteHistory: async () => undefined,
-      ask: async () => response(),
+      ask: async () => answer(),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter))
@@ -400,7 +405,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => oldAnswer.promise,
+      ask: async () => answer(await oldAnswer.promise),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter, { cooldownMs: 0 }))
@@ -445,7 +450,7 @@ describe('ZappyPanel', () => {
           : { messages: [], nextCursor: 'cursor-a' }
       },
       deleteHistory: async () => undefined,
-      ask: async () => response(),
+      ask: async () => answer(),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter))
@@ -509,7 +514,7 @@ describe('ZappyPanel', () => {
       deleteHistory: async () => undefined,
       ask: async () => {
         asked += 1
-        return response()
+        return answer()
       },
       feedback: async () => undefined,
     }
@@ -529,7 +534,7 @@ describe('ZappyPanel', () => {
     const adapter: StudioTutorAdapter = {
       loadHistory: async () => ({ messages: [], nextCursor: null }),
       deleteHistory: async () => undefined,
-      ask: async () => response(),
+      ask: async () => answer(),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter, { cooldownMs: 0 }))
@@ -538,5 +543,102 @@ describe('ZappyPanel', () => {
     const question = view.getByLabelText('Sua dúvida para o Zappy')
     if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
     expect(question.value).toBe('Como faço meu personagem pular?')
+  })
+
+  const CREDITS = {
+    dayLimit: 50,
+    dayRemaining: 13,
+    monthLimit: 500,
+    monthRemaining: 300,
+    monthRenewsOn: '2026-09-01',
+  }
+
+  function silentAdapter(): StudioTutorAdapter {
+    return {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(),
+      feedback: async () => undefined,
+    }
+  }
+
+  it('mostra quanta ajuda resta, FORA da região que é anunciada a cada resposta', async () => {
+    const view = render(renderPanel(silentAdapter(), { credits: CREDITS }))
+    const medidor = await view.findByText('✨ 13 ideias hoje')
+    // Dentro do aria-live, o leitor de tela repetiria o contador junto de toda
+    // mensagem nova. O medidor tem que ficar fora dele.
+    expect(medidor.closest('[aria-live]')).toBeNull()
+  })
+
+  it('sem saber o saldo, o medidor some (nunca mostra zero)', async () => {
+    const view = render(renderPanel(silentAdapter(), { credits: null }))
+    await view.findByLabelText('Sua dúvida para o Zappy')
+    expect(view.queryByText(/ideias/)).toBeNull()
+  })
+
+  it('equipe vê "sem limite" em vez de número', async () => {
+    const view = render(
+      renderPanel(silentAdapter(), {
+        credits: { ...CREDITS, dayRemaining: 0, monthRemaining: 0, unlimited: true },
+      }),
+    )
+    expect(await view.findByText('✨ ideias sem limite')).toBeTruthy()
+  })
+
+  it('uma resposta sem saldo novo NÃO zera o medidor', async () => {
+    const adapter: StudioTutorAdapter = { ...silentAdapter(), ask: async () => answer() }
+    const view = render(renderPanel(adapter, { credits: CREDITS, cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+    await view.findByText('Tente novamente com este bloco.')
+    // O ask não trouxe `credits` (nada foi consumido): mantém o que já tinha.
+    expect(view.getByText('✨ 13 ideias hoje')).toBeTruthy()
+  })
+
+  it('aviso de limite não é aula: sem polegares e com cara de recado', async () => {
+    const quota = {
+      id: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e0aa',
+      text: 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖',
+      scope: 'quota' as const,
+      blockReferences: [],
+      createdAt: new Date().toISOString(),
+    }
+    const adapter: StudioTutorAdapter = {
+      ...silentAdapter(),
+      ask: async () => ({ response: quota, credits: { ...CREDITS, dayRemaining: 0 } }),
+    }
+    const view = render(renderPanel(adapter, { credits: CREDITS, cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+    await view.findByText(quota.text)
+
+    // Pedir "isso ajudou?" para "acabou a ajuda" é cruel — e o polegar viraria
+    // avaliação de qualidade sobre um aviso operacional.
+    expect(view.queryByLabelText('A resposta ajudou')).toBeNull()
+    expect(view.queryByLabelText('A resposta não ajudou')).toBeNull()
+    // O saldo fresco chegou junto: o medidor vira o aviso de esgotado.
+    expect(view.getByText('⚠️ As ideias de hoje acabaram')).toBeTruthy()
+  })
+
+  it('esgotado, o rodapé diz quando volta e o botão CONTINUA habilitado', async () => {
+    const view = render(renderPanel(silentAdapter(), { credits: { ...CREDITS, dayRemaining: 0 } }))
+    expect(await view.findByText('Amanhã de manhã tem mais.')).toBeTruthy()
+    const question = view.getByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    fireEvent.change(question, { target: { value: 'Tenho outra dúvida' } })
+    // O servidor é a autoridade: um saldo velho numa aba aberta desde ontem não
+    // pode trancar a criança de graça.
+    const enviar = view.getByRole('button', { name: 'Perguntar' })
+    expect(enviar.hasAttribute('disabled')).toBe(false)
   })
 })

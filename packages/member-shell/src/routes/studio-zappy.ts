@@ -2,6 +2,7 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { resolveStudioTier } from '../lib/studio-tier'
+import type { AiCreditsView } from '../lib/types'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
@@ -221,13 +222,20 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       // Idempotência: repetição concluída retorna a MESMA resposta sem rate/quota/modelo.
       if (!reserved.body.created) {
         if (reserved.body.rateLimited) return error('RATE_LIMITED', 429)
+        // Replay: mesmo envelope, sem saldo (nada foi consumido agora) — o painel
+        // mantém o número que já tinha em vez de zerar.
         return reserved.body.response
-          ? NextResponse.json(reserved.body.response)
+          ? NextResponse.json({ response: reserved.body.response, credits: null })
           : error('ZAPPY_IN_PROGRESS', 409)
       }
       const questionId = reserved.body.questionId
       if (!questionId) return error('ZAPPY_UNAVAILABLE', 503)
 
+      // ⚠️ O saldo (`credits`) viaja no ENVELOPE da resposta HTTP, NUNCA dentro do
+      // objeto `response` — esse é o que vai para o jsonb `zappy_messages.response`,
+      // e crédito é volátil: gravado ali, o histórico replayado mostraria um saldo
+      // de dias atrás como se fosse o de agora.
+      let freshCredits: AiCreditsView | undefined
       const complete = async (
         response: NonNullable<typeof reserved.body.response>,
         outcome: ZappyOutcome = outcomeFor(response),
@@ -241,9 +249,10 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           outcome,
           ...(rejection ? { rejection } : {}),
         })
-        return NextResponse.json(saved.body ?? response, {
-          status: saved.status === 200 ? 200 : 502,
-        })
+        return NextResponse.json(
+          { response: saved.body ?? response, credits: freshCredits ?? null },
+          { status: saved.status === 200 ? 200 : 502 },
+        )
       }
 
       const safetyReply = deterministicZappySafetyReply(parsed.data.question, safeQuestion.hadPii)
@@ -308,6 +317,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       }
 
       const quota = await consumeAiQuotaStrict(members, 'studio-zappy')
+      // A variante `unavailable` não carrega saldo (o members nem respondeu).
+      freshCredits = 'credits' in quota ? quota.credits : undefined
       if (!quota.allowed) {
         const response = deterministicZappyReply('assunto externo') ?? {
           id: crypto.randomUUID(),

@@ -20,6 +20,7 @@ export const {
   getGamification,
   getGamificationReadonly,
   getChallengeReadonly,
+  getAiCreditsReadonly,
   getAvatarReadonly,
   listAvatarsByProfileIdsReadonly,
   getPublicProfile,

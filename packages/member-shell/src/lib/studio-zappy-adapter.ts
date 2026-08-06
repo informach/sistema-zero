@@ -1,7 +1,7 @@
 import type {
   StudioTutorAdapter,
+  StudioTutorAskResult,
   StudioTutorHistoryMessage,
-  StudioTutorResponse,
 } from '@sistemazero/studio'
 
 interface ErrorBody {
@@ -49,7 +49,9 @@ export function createStudioZappyAdapter(baseUrl = '/api/studio/zappy'): StudioT
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(input),
       })
-      return requireOk<StudioTutorResponse>(response)
+      // O saldo vem AO LADO da resposta, não dentro dela (o `response` é o que o
+      // members persiste no histórico, e crédito é volátil).
+      return requireOk<StudioTutorAskResult>(response)
     },
     async feedback(input) {
       const response = await fetch(`${baseUrl}/feedback`, {

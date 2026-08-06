@@ -1,4 +1,4 @@
-import type { AiUsageConsumeView } from '../lib/types'
+import type { AiCreditsView, AiUsageConsumeView } from '../lib/types'
 import type { MembersClient } from './clients'
 
 /**
@@ -10,7 +10,14 @@ import type { MembersClient } from './clients'
  */
 export type AiFeature = 'pensa-chat' | 'pensa-synthesis' | 'studio-describe' | 'studio-zappy'
 
-export type AiQuotaResult = { allowed: true } | { allowed: false; scope: 'day' | 'month' }
+/**
+ * `credits` é o saldo FRESCO depois deste consumo — quem chamou atualiza o medidor
+ * sem uma 2ª ida. AUSENTE = "não sei" (members antigo em skew de deploy, ou o
+ * fail-open abaixo): quem renderiza mantém o último valor e NUNCA assume zero.
+ */
+export type AiQuotaResult =
+  | { allowed: true; credits?: AiCreditsView }
+  | { allowed: false; scope: 'day' | 'month'; credits?: AiCreditsView }
 export type StrictAiQuotaResult = AiQuotaResult | { allowed: false; scope: 'unavailable' }
 
 /**
@@ -32,8 +39,12 @@ export async function consumeAiQuota(
       return { allowed: true }
     }
     const body = res.body as AiUsageConsumeView
-    if (body.allowed) return { allowed: true }
-    return { allowed: false, scope: body.scope === 'month' ? 'month' : 'day' }
+    if (body.allowed) return { allowed: true, credits: body.credits }
+    return {
+      allowed: false,
+      scope: body.scope === 'month' ? 'month' : 'day',
+      credits: body.credits,
+    }
   } catch (error) {
     console.error('[ai-quota] falha ao consumir — liberando', { feature, error })
     return { allowed: true }
@@ -57,8 +68,12 @@ export async function consumeAiQuotaStrict(
       return { allowed: false, scope: 'unavailable' }
     }
     const body = res.body as AiUsageConsumeView
-    if (body.allowed) return { allowed: true }
-    return { allowed: false, scope: body.scope === 'month' ? 'month' : 'day' }
+    if (body.allowed) return { allowed: true, credits: body.credits }
+    return {
+      allowed: false,
+      scope: body.scope === 'month' ? 'month' : 'day',
+      credits: body.credits,
+    }
   } catch (error) {
     console.error('[ai-quota] falha ao consumir — bloqueando', { feature, error })
     return { allowed: false, scope: 'unavailable' }

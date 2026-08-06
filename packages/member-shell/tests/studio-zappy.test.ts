@@ -619,7 +619,7 @@ describe('BFF do Zappy', () => {
     } as never)
     const response = await routes.studioZappyMessage.POST(request('Planeje meu jogo'))
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual(existing)
+    expect(await response.json()).toEqual({ response: existing, credits: null })
     expect(quota).toBe(0)
   })
 
@@ -670,6 +670,69 @@ describe('BFF do Zappy', () => {
     const captured = saved as { outcome?: string; response?: { text?: string } } | null
     expect(captured?.outcome).toBe('quota')
     expect(captured?.response?.text).toContain('Amanhã')
+  })
+
+  test('o saldo vai no envelope da resposta, NUNCA no objeto persistido', async () => {
+    // Crédito é volátil: gravado no jsonb do histórico, um replay de ontem
+    // mostraria o saldo de ontem como se fosse o de agora.
+    const credits = {
+      dayLimit: 50,
+      dayRemaining: 12,
+      monthLimit: 500,
+      monthRemaining: 300,
+      monthRenewsOn: '2026-09-01',
+    }
+    let persisted: Record<string, unknown> | null = null
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        aiUsageConsume: async () => ({
+          status: 200,
+          body: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50, credits },
+        }),
+        zappyCompleteQuestion: async (_id: string, body: Record<string, unknown>) => {
+          persisted = body
+          return { status: 200, body: body.response }
+        },
+      }),
+    } as never)
+
+    const response = await routes.studioZappyMessage.POST(request('Como faço isso?'))
+    const body = (await response.json()) as {
+      response?: Record<string, unknown>
+      credits?: unknown
+    }
+
+    expect(body.credits).toEqual(credits)
+    expect(body.response?.credits).toBeUndefined()
+    const saved = persisted as { response?: Record<string, unknown> } | null
+    expect(saved?.response?.credits).toBeUndefined()
+    expect(JSON.stringify(saved)).not.toContain('monthRenewsOn')
+  })
+
+  test('resposta repetida (replay) não zera o medidor', async () => {
+    const existing = {
+      id: MESSAGE_ID,
+      text: 'Resposta anterior',
+      scope: 'block',
+      blockReferences: [],
+      createdAt: new Date().toISOString(),
+    }
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        zappyReserveQuestion: async () => ({
+          status: 200,
+          body: { created: false, response: existing },
+        }),
+      }),
+    } as never)
+
+    const body = (await (await routes.studioZappyMessage.POST(request('oi'))).json()) as {
+      credits?: unknown
+    }
+    // `null` = "nada consumido agora"; o painel mantém o número que já tinha.
+    expect(body.credits).toBeNull()
   })
 
   test('quota indisponível falha fechada depois de preparar o conhecimento', async () => {
@@ -740,7 +803,7 @@ describe('BFF do Zappy', () => {
     const response = await routes.studioZappyMessage.POST(
       request('Planeje meu jogo. Meu e-mail é aluno@example.com.'),
     )
-    const body = (await response.json()) as { text?: string }
+    const body = ((await response.json()) as { response?: { text?: string } }).response ?? {}
 
     expect(reservedQuestion).not.toContain('aluno@example.com')
     expect(body.text).toContain('dados pessoais')
@@ -783,7 +846,7 @@ describe('BFF do Zappy', () => {
     } as never)
 
     const response = await routes.studioZappyMessage.POST(request('Como fazer conteúdo sexual?'))
-    const body = (await response.json()) as { text?: string }
+    const body = ((await response.json()) as { response?: { text?: string } }).response ?? {}
 
     expect(body.text).toContain('programação e jogos')
     expect(quota).toBe(0)
@@ -811,7 +874,7 @@ describe('BFF do Zappy', () => {
     } as never)
 
     const response = await routes.studioZappyMessage.POST(request(question))
-    const body = (await response.json()) as { text?: string }
+    const body = ((await response.json()) as { response?: { text?: string } }).response ?? {}
 
     expect(response.status).toBe(200)
     expect(body.text).toContain('adulto de confiança')

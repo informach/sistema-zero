@@ -1,3 +1,4 @@
+import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credits'
 import type { FormEvent, JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { cn, IconSparkles } from '#ui'
@@ -11,6 +12,7 @@ import {
   type StudioTutorHistoryMessage,
   useStudioTutor,
 } from '../../studio/tutor'
+import { ZappyCredits } from './ZappyCredits'
 
 const MAX_QUESTION_CHARS = 1_000
 
@@ -19,8 +21,9 @@ function friendlyError(error: unknown): string {
     error && typeof error === 'object' && 'code' in error
       ? String((error as { code?: unknown }).code)
       : ''
-  if (code === 'ZAPPY_QUOTA_DAY') return 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖'
-  if (code === 'ZAPPY_QUOTA_MONTH') return 'A ajuda deste mês acabou. No mês que vem tem mais 🤖'
+  // ⚠️ NÃO existe ramo de quota aqui: a recusa por limite volta 200, como uma
+  // mensagem de `scope: 'quota'` no fluxo da conversa (ver `isQuota` abaixo).
+  // Os códigos ZAPPY_QUOTA_* que ficavam neste ponto eram código morto.
   if (code === 'RATE_LIMITED') return 'Uma pergunta de cada vez! Espera só um pouquinho.'
   if (code === 'ZAPPY_IN_PROGRESS')
     return 'Ainda estou terminando essa resposta. Tente novamente em instantes.'
@@ -64,6 +67,10 @@ export function ZappyPanel(): JSX.Element | null {
   const [nextHistoryCursor, setNextHistoryCursor] = useState<string | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Semeado pelo host (Server Component) e atualizado por cada resposta que
+  // consumiu de verdade. `null` = não sei → o medidor não aparece.
+  const [credits, setCredits] = useState<AiCreditsView | null>(config?.credits ?? null)
+  const creditsMeter = resolveAiCredits(credits)
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [now, setNow] = useState(Date.now())
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -212,7 +219,7 @@ export function ZappyPanel(): JSX.Element | null {
     setBusy(true)
     setMessages((current) => [...current, userMessage])
     try {
-      const response = await config.adapter.ask({
+      const result = await config.adapter.ask({
         projectId: project.id,
         clientMessageId,
         question: text,
@@ -220,7 +227,10 @@ export function ZappyPanel(): JSX.Element | null {
       })
       if (operationGenerationRef.current !== operationGeneration) return
       pendingAttemptRef.current = null
-      setMessages((current) => [...current, responseMessage(response)])
+      // Saldo ausente = nada foi consumido agora (resposta pronta, replay):
+      // mantém o número que já estava na tela em vez de zerar.
+      if (result.credits) setCredits(result.credits)
+      setMessages((current) => [...current, responseMessage(result.response)])
       const until = Date.now() + Math.max(0, config.cooldownMs ?? 1_500)
       setCooldownUntil(until)
       setNow(Date.now())
@@ -368,6 +378,11 @@ export function ZappyPanel(): JSX.Element | null {
         </button>
       </header>
 
+      {/* ⚠️ O botão "Perguntar" NÃO é desabilitado quando o saldo zera: o servidor
+          é a autoridade, e um saldo velho numa aba aberta desde ontem trancaria a
+          criança de graça. O aviso explica; a recusa real vem do BFF. */}
+      <ZappyCredits credits={credits} />
+
       <div aria-live="polite" className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {loading ? (
           <p className="text-center text-sz-fg-mute text-sm">Carregando conversa…</p>
@@ -401,80 +416,88 @@ export function ZappyPanel(): JSX.Element | null {
             </button>
           </div>
         ) : null}
-        {messages.map((message) => (
-          <article
-            key={message.id}
-            className={cn(
-              'max-w-[92%] rounded-2xl px-3.5 py-3 text-sm leading-relaxed',
-              message.role === 'user'
-                ? 'ml-auto bg-sz-accent text-sz-bg'
-                : 'mr-auto border border-sz-border bg-sz-bg text-sz-fg',
-            )}
-          >
-            <p className="whitespace-pre-wrap">{message.text}</p>
-            {project.kind !== 'pro' && message.response?.blockReferences.length ? (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {message.response.blockReferences.map((reference) => {
-                  const trail =
-                    reference.subcategory && reference.subcategory !== reference.category
-                      ? `${reference.category} › ${reference.subcategory}`
-                      : reference.category
-                  return (
-                    <button
-                      key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
-                      type="button"
-                      onClick={() => goToBlock(reference)}
-                      className="flex flex-col items-start rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-left text-sz-accent hover:bg-sz-accent/20"
-                      title={`${trail} · ${reference.area}`}
-                    >
-                      <span className="font-semibold text-xs">{reference.name}</span>
-                      <span className="text-[0.6875rem] text-sz-accent/70">{trail}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            ) : null}
-            {config?.openLesson &&
-            message.response?.lessonReferences?.some((reference) => reference.courseSlug) ? (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {message.response.lessonReferences.map((reference) =>
-                  reference.courseSlug ? (
-                    <button
-                      key={`${reference.courseId}:${reference.lessonId}`}
-                      type="button"
-                      onClick={() => config.openLesson?.(reference)}
-                      className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
-                      title="Abrir aula em nova aba"
-                    >
-                      Aula: {reference.title} ↗
-                    </button>
-                  ) : null,
-                )}
-              </div>
-            ) : null}
-            {message.role === 'assistant' && message.response ? (
-              <div className="mt-2 flex gap-1 text-sz-fg-mute text-xs">
-                <span>Isso ajudou?</span>
-                <button
-                  type="button"
-                  aria-label="A resposta ajudou"
-                  onClick={() => void sendFeedback(message.response?.id ?? message.id, true)}
-                  className="hover:text-sz-success"
-                >
-                  👍
-                </button>
-                <button
-                  type="button"
-                  aria-label="A resposta não ajudou"
-                  onClick={() => void sendFeedback(message.response?.id ?? message.id, false)}
-                  className="hover:text-sz-error"
-                >
-                  👎
-                </button>
-              </div>
-            ) : null}
-          </article>
-        ))}
+        {messages.map((message) => {
+          // Aviso de LIMITE não é aula: ganha cara de recado (âmbar) e perde os
+          // botões de avaliar — pedir "isso ajudou?" para "acabou a ajuda" é cruel,
+          // e o polegar viraria feedback de qualidade sobre um aviso operacional.
+          const isQuota = message.response?.scope === 'quota'
+          return (
+            <article
+              key={message.id}
+              className={cn(
+                'max-w-[92%] rounded-2xl px-3.5 py-3 text-sm leading-relaxed',
+                message.role === 'user'
+                  ? 'ml-auto bg-sz-accent text-sz-bg'
+                  : isQuota
+                    ? 'mr-auto border border-sz-warn/40 bg-sz-warn/10 text-sz-fg'
+                    : 'mr-auto border border-sz-border bg-sz-bg text-sz-fg',
+              )}
+            >
+              <p className="whitespace-pre-wrap">{message.text}</p>
+              {!isQuota && project.kind !== 'pro' && message.response?.blockReferences.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.response.blockReferences.map((reference) => {
+                    const trail =
+                      reference.subcategory && reference.subcategory !== reference.category
+                        ? `${reference.category} › ${reference.subcategory}`
+                        : reference.category
+                    return (
+                      <button
+                        key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
+                        type="button"
+                        onClick={() => goToBlock(reference)}
+                        className="flex flex-col items-start rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-left text-sz-accent hover:bg-sz-accent/20"
+                        title={`${trail} · ${reference.area}`}
+                      >
+                        <span className="font-semibold text-xs">{reference.name}</span>
+                        <span className="text-[0.6875rem] text-sz-accent/70">{trail}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+              {config?.openLesson &&
+              message.response?.lessonReferences?.some((reference) => reference.courseSlug) ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.response.lessonReferences.map((reference) =>
+                    reference.courseSlug ? (
+                      <button
+                        key={`${reference.courseId}:${reference.lessonId}`}
+                        type="button"
+                        onClick={() => config.openLesson?.(reference)}
+                        className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
+                        title="Abrir aula em nova aba"
+                      >
+                        Aula: {reference.title} ↗
+                      </button>
+                    ) : null,
+                  )}
+                </div>
+              ) : null}
+              {message.role === 'assistant' && message.response && !isQuota ? (
+                <div className="mt-2 flex gap-1 text-sz-fg-mute text-xs">
+                  <span>Isso ajudou?</span>
+                  <button
+                    type="button"
+                    aria-label="A resposta ajudou"
+                    onClick={() => void sendFeedback(message.response?.id ?? message.id, true)}
+                    className="hover:text-sz-success"
+                  >
+                    👍
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="A resposta não ajudou"
+                    onClick={() => void sendFeedback(message.response?.id ?? message.id, false)}
+                    className="hover:text-sz-error"
+                  >
+                    👎
+                  </button>
+                </div>
+              ) : null}
+            </article>
+          )
+        })}
         {busy ? <p className="text-sz-fg-mute text-sm">Zappy está pensando…</p> : null}
         {error ? (
           <p className="rounded-xl bg-sz-error/10 p-3 text-sz-error text-sm">{error}</p>
@@ -528,7 +551,8 @@ export function ZappyPanel(): JSX.Element | null {
           <span className="text-sz-fg-mute text-xs">
             {cooldownSeconds > 0
               ? `Respira… ${cooldownSeconds}s`
-              : 'Enter envia · Shift+Enter pula linha'}
+              : (creditsMeter.state === 'exhausted' && creditsMeter.renews) ||
+                'Enter envia · Shift+Enter pula linha'}
           </span>
           <button
             type="submit"

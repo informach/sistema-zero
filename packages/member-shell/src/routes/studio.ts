@@ -284,13 +284,19 @@ export function createStudioRoutes(deps: {
       const quota = await consumeAiQuota(members, 'studio-describe')
       if (!quota.allowed) {
         return NextResponse.json(
-          { description: '', fallback: true, quotaExceeded: true, scope: quota.scope },
+          {
+            description: '',
+            fallback: true,
+            quotaExceeded: true,
+            scope: quota.scope,
+            credits: quota.credits ?? null,
+          },
           { status: 200 },
         )
       }
       // Fail-soft: erro/sem chave → { description:'', fallback:true } (criança escreve).
       const result = await generateProjectDescription({ files, title })
-      return NextResponse.json(result, { status: 200 })
+      return NextResponse.json({ ...result, credits: quota.credits ?? null }, { status: 200 })
     },
   }
 

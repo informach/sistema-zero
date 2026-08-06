@@ -200,7 +200,12 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         rawState && 'answered' in rawState ? (rawState as unknown as PensaZState) : null
       const quota = await consumeAiQuota(members, 'pensa-chat')
       if (!quota.allowed)
-        return error('AI_QUOTA_EXCEEDED', 429, aiQuotaMessage(quota.scope), { scope: quota.scope })
+        // O `credits` viaja junto para a tela do "acabou" já saber quando volta,
+        // sem um GET extra (o caminho de erro não passa pelo refresh do stage).
+        return error('AI_QUOTA_EXCEEDED', 429, aiQuotaMessage(quota.scope), {
+          scope: quota.scope,
+          credits: quota.credits ?? null,
+        })
       const system = buildStageZSystem({
         mode: 'kids',
         projectName: project.name,
@@ -315,6 +320,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         if (!quota.allowed)
           return error('AI_QUOTA_EXCEEDED', 429, aiQuotaMessage(quota.scope), {
             scope: quota.scope,
+            credits: quota.credits ?? null,
           })
       }
       const getStage = async (stage: 'z' | 'e' | 'r' | 'o') => {

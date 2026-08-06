@@ -1,3 +1,5 @@
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
+import { isAiQuotaError } from '@sistemazero/core/ai-credits'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { splitSuggestions, stripStreamingSuggestions } from '../core/suggestions'
 import type {
@@ -12,6 +14,7 @@ import type {
   PensaWorkStage,
   PensaZState,
 } from '../core/types'
+import { AiCreditsBadge, AiCreditsNotice } from './AiCredits'
 import { TaskPlan } from './TaskPlan'
 
 const STAGES: Array<{ id: PensaWorkStage; letter: string; title: string; description: string }> = [
@@ -76,6 +79,18 @@ function useUnsavedChanges(active: boolean) {
 
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : 'Algo deu errado. Tente novamente.'
+}
+
+/**
+ * Acabar a ajuda de IA NÃO é falha: separar os dois estados é o que permite
+ * mostrar cor, `role` e recado diferentes. Só o ramo técnico promete "tente de
+ * novo" — insistir depois do limite não resolve nada e frustra a criança.
+ */
+type PensaFailure = { kind: 'quota' | 'technical'; text: string }
+
+function failure(cause: unknown): PensaFailure {
+  if (isAiQuotaError(cause)) return { kind: 'quota', text: errorMessage(cause) }
+  return { kind: 'technical', text: errorMessage(cause) }
 }
 
 export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
@@ -212,7 +227,7 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
   }
   return (
     <Shell theme={adapter.theme}>
-      <ProjectHeader detail={detail} onBack={() => void loadProjects()} />
+      <ProjectHeader detail={detail} credits={stage?.credits} onBack={() => void loadProjects()} />
       {error ? <Alert>{error}</Alert> : null}
       <CreationMap
         current={detail.currentCycle.stage}
@@ -369,7 +384,15 @@ function ProjectList(props: {
   )
 }
 
-function ProjectHeader({ detail, onBack }: { detail: PensaProjectDetailView; onBack(): void }) {
+function ProjectHeader({
+  detail,
+  credits,
+  onBack,
+}: {
+  detail: PensaProjectDetailView
+  credits?: AiCreditsView | null
+  onBack(): void
+}) {
   return (
     <header className="pensa-project-header">
       <button type="button" onClick={onBack} aria-label="Voltar aos meus planos">
@@ -379,6 +402,7 @@ function ProjectHeader({ detail, onBack }: { detail: PensaProjectDetailView; onB
         <span>VERSÃO {detail.currentCycle.number}</span>
         <h1>{detail.name}</h1>
       </div>
+      <AiCreditsBadge credits={credits} />
       <div className="pensa-plan-status">
         <span aria-hidden="true">●</span>
         {detail.currentCycle.stage === 'done' ? 'Plano aprovado' : 'Planejando'}
@@ -682,7 +706,7 @@ type StageProps = Parameters<typeof StageWorkspace>[0] & { onAdvance(): void }
 function StageZ(props: StageProps) {
   const [message, setMessage] = useState('')
   const [streaming, setStreaming] = useState('')
-  const [chatError, setChatError] = useState<string | null>(null)
+  const [chatError, setChatError] = useState<PensaFailure | null>(null)
   const abortRef = useRef<null | (() => void)>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   useEffect(
@@ -725,7 +749,7 @@ function StageZ(props: StageProps) {
           abortRef.current = null
           setStreaming('')
           setMessage(text)
-          setChatError(errorMessage(cause))
+          setChatError(failure(cause))
         },
       },
     )
@@ -746,6 +770,7 @@ function StageZ(props: StageProps) {
         <div className="pensa-chat-head">
           <Zappy pose="thinking" images={props.adapter.mascotImages} className="pensa-chat-zappy" />
           <h3>Converse com o Zappy</h3>
+          <AiCreditsBadge credits={props.stage.credits} />
         </div>
         <fieldset className="pensa-decisions">
           <legend>Decisões da ideia</legend>
@@ -803,9 +828,11 @@ function StageZ(props: StageProps) {
             Enviar
           </button>
         </div>
-        {chatError ? (
+        {chatError?.kind === 'quota' ? (
+          <AiCreditsNotice>{chatError.text}</AiCreditsNotice>
+        ) : chatError ? (
           <p className="pensa-inline-error" role="alert">
-            {chatError} Sua mensagem ficou aqui para tentar de novo.
+            {chatError.text} Sua mensagem ficou aqui para tentar de novo.
           </p>
         ) : null}
       </div>

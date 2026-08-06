@@ -1,5 +1,6 @@
 'use client'
 
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
@@ -42,6 +43,7 @@ export function StudioFullClient({
   tier,
   showExamples = false,
   zappyEnabled = false,
+  aiCredits = null,
   taskId = null,
   pintaOwned = false,
 }: {
@@ -63,6 +65,8 @@ export function StudioFullClient({
   showExamples?: boolean
   /** Capacidade de oferta derivada no servidor; o BFF mantém o gate autoritativo. */
   zappyEnabled?: boolean
+  /** Saldo lido no Server Component. Nulo = não sei → o medidor não aparece. */
+  aiCredits?: AiCreditsView | null
   /** Cartão de Criação aberto por `/estudio?tarefa=<id>`. */
   taskId?: string | null
   /**
@@ -312,12 +316,20 @@ export function StudioFullClient({
             }),
           })
           if (!res.ok) return ''
-          const body = (await res.json()) as { description?: string; quotaExceeded?: boolean }
+          const body = (await res.json()) as {
+            description?: string
+            quotaExceeded?: boolean
+            scope?: 'day' | 'month'
+          }
           // Teto de IA da conta atingido → o ShareDialog esconde o "Gerar" e cai
           // no modo manual (o throw com code é duck-typed lá).
           if (body.quotaExceeded) {
+            // ⚠️ O `scope` PRECISA viajar: sem ele o dialog dizia "a ajuda de HOJE
+            // acabou" mesmo quando o teto estourado era o do MÊS, mandando a
+            // criança voltar amanhã para nada.
             throw Object.assign(new Error('quota de IA esgotada'), {
               code: 'AI_QUOTA_EXCEEDED' as const,
+              scope: body.scope,
             })
           }
           return body.description ?? ''
@@ -363,9 +375,10 @@ export function StudioFullClient({
             adapter: createStudioZappyAdapter(),
             openLesson: openStudioZappyLesson,
             cooldownMs: 1_500,
+            credits: aiCredits,
           }
         : undefined,
-    [zappyEnabled],
+    [zappyEnabled, aiCredits],
   )
 
   // "Trazer do Pinta" (fluxo pull): o Estúdio lista a galeria do Pinta e importa

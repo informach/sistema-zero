@@ -7,6 +7,7 @@ import { StudioFullClient } from '@/components/kids/studio-full-client'
 import {
   checkChallengeAccessReadonly,
   checkPintaAccessReadonly,
+  getAiCreditsReadonly,
   getChallengeReadonly,
   getGamificationReadonly,
 } from '@/server/members'
@@ -71,6 +72,10 @@ export default async function EstudioPage({
   // cliente segue sem eles. Deriva do PAPEL da conta, não do rank: uma criança
   // que chegou a Lenda (rank `god`) NÃO é equipe e continua sem exemplos.
   const showExamples = isPrivilegedRole(session?.role)
+  // Saldo da ajuda de IA (medidor do Zappy). Best-effort: falhou → `null` = "não
+  // sei" e o medidor some, nunca "0 restantes".
+  const zappyEnabled = isStudioZappyAllowed(session, levelSlug)
+  const creditsRes = zappyEnabled ? await getAiCreditsReadonly().catch(() => null) : null
   return (
     <StudioFullClient
       viewerId={session?.id ?? null}
@@ -79,7 +84,8 @@ export default async function EstudioPage({
       showExamples={showExamples}
       // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
       // da carreira (Inventor). O rank já veio na gamificação acima.
-      zappyEnabled={isStudioZappyAllowed(session, levelSlug)}
+      zappyEnabled={zappyEnabled}
+      aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}
       pintaOwned={pintaOwned}
     />

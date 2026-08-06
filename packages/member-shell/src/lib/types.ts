@@ -919,12 +919,25 @@ export interface ParentReportPrefsView {
  * `allowed:false` + `scope` = teto diário/mensal atingido (recusa é domínio, não
  * erro); `unlimited` = equipe (nunca recusada, uso gravado só p/ telemetria).
  */
+/** Mirror do `AiCreditsView` do members (e do `@sistemazero/core/ai-credits`). */
+export interface AiCreditsView {
+  dayLimit: number
+  dayRemaining: number
+  monthLimit: number
+  monthRemaining: number
+  /** Data civil SP em que o mês vira (`YYYY-MM-DD`). */
+  monthRenewsOn: string
+  unlimited?: boolean
+}
+
 export interface AiUsageConsumeView {
   allowed: boolean
   scope?: 'day' | 'month'
   usedDay: number
   usedMonth: number
   unlimited?: boolean
+  /** OPCIONAL de propósito: members antigo (skew de deploy) não manda. */
+  credits?: AiCreditsView
 }
 
 export interface ZappyStoredResponseView {

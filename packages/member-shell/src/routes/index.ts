@@ -824,6 +824,24 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /**
+   * Saldo de IA da CONTA (o medidor "quantas ideias ainda tenho").
+   *
+   * SEMPRE 200: o medidor DEGRADA, não erra. Members/gateway fora → `credits: null`
+   * = "não sei", e a UI ESCONDE o medidor. Devolver 5xx aqui faria a tela da
+   * criança tratar indisponibilidade como se a ajuda tivesse acabado.
+   */
+  const aiCredits = {
+    GET: async () => {
+      const { status, body } = await members.getAiCredits()
+      if (status !== 200 || !body || typeof body.dayRemaining !== 'number') {
+        console.error('[ai-credits] leitura indisponível — medidor em "não sei"', { status })
+        return NextResponse.json({ credits: null }, { status: 200 })
+      }
+      return NextResponse.json({ credits: body }, { status: 200 })
+    },
+  }
+
   // ── Avatar 3D (configurador por categorias) ──────────────────────────────
   /** Estado do avatar (equipado + catálogo + paletas + foto + saldo) — configurador client-side. */
   const avatarGet = {
@@ -1456,6 +1474,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     courseRating,
     lessonComplete,
     gamificationMe,
+    aiCredits,
     avatarGet,
     avatarBuy,
     avatarEquip,

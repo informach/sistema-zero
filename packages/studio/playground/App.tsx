@@ -148,7 +148,8 @@ const tutorDemo: StudioTutorAdapter = {
         createdAt,
       },
     ])
-    return response
+    // O playground não tem quota: sem saldo, o medidor simplesmente não aparece.
+    return { response }
   },
   async feedback() {},
 }
