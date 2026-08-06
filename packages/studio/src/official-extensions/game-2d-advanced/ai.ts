@@ -20,6 +20,12 @@ RECEITA CANÔNICA POR ÁREA DO PROJETO:
      (CSS no canvas, capada em 40) e SZGameKit.showHitboxes() contorna de verde a
      caixa que COLIDE de tudo que está vivo. Os dois são de ensino/depuração e vão
      em Ao iniciar; blocos "Mostrar a borda da tela" e "Mostrar as caixas de colisão".
+   · SZGameKit.setBackdrop(nome) põe um DESENHO do projeto como cenário: cobre a
+     tela inteira sem deformar, centralizado, e o MOTOR o repinta a cada quadro
+     antes da câmera. Chame uma vez em Ao iniciar; bloco "Pôr o cenário atrás de
+     tudo". SZGameKit.drawBackdrop(nome) faz o mesmo AGORA, dentro do "Desenhar
+     o jogo", para quem quer mandar na ordem das camadas. drawBackground é opaco
+     e TAPA o cenário: use um ou o outro.
    · SZGameKit.setStageDescription(descricao) descreve objetivo, controles e
      perigos visuais para leitores de tela. Use 1x em Ao iniciar. O runtime cuida
      do nome do canvas, da semântica dos diálogos e da troca automática de foco.

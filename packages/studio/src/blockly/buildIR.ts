@@ -4269,6 +4269,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           percent: exprInput(block, 'PERCENT', { type: 'num', value: 100 }),
         },
       }
+    case 'sz_g2d_set_backdrop':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:setBackdrop', image: f(block, 'IMAGE') } }
+    case 'sz_g2d_draw_backdrop':
+      seen.add('game-2d')
+      // O pincel é o do palco implícito — o bloco não mostra "ctx" para a criança,
+      // igual aos irmãos de desenho desta extensão.
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: f(block, 'IMAGE') },
+      }
     case 'sz_g2d_stage_border':
       seen.add('game-2d')
       return {
@@ -5687,6 +5698,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           width: exprInput(block, 'WIDTH', { type: 'num', value: 4 }),
         },
       }
+    case 'sz_gk_set_backdrop':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:setBackdrop', image: f(block, 'IMAGE') } }
+    case 'sz_gk_draw_backdrop':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:drawBackdrop', image: f(block, 'IMAGE') } }
     case 'sz_gk_show_hitboxes':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:showHitboxes' } }

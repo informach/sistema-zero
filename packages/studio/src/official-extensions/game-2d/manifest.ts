@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.58.0',
+  version: '0.59.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -38,6 +38,8 @@ procura pelo assunto e usa as aulas para aprender em qual área colocar cada blo
 
 - **Preparar o jogo em tela cheia**. Atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Preparar o jogo para ocupar a tela toda**. Como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela. A resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
+- **Pôr o cenário atrás de tudo**. Escolhe um desenho seu (do Pinta ou das Imagens) como fundo do jogo. Ele **cobre** a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora, em cima e embaixo ou nas laterais. Um desenho de 960 por 540 cabe exatinho numa tela larga. Ponha UMA vez em **⚙️ Ao iniciar** e o jogo repinta sozinho a cada quadro, antes de tudo o mais.
+- **Desenhar o cenário**. O irmão do de cima, para quem quer mandar na ordem das camadas: desenha o cenário AGORA, neste quadro. Vai dentro do **🔁 Enquanto estiver rodando**, logo depois de limpar a tela. Use um OU o outro.
 - **Descrever o jogo para leitor de tela**. Conte o objetivo e os controles em uma frase, por exemplo: “Pegue as moedas. Use as setas para andar.” Coloque em **⚙️ Ao iniciar**; pode vir antes ou depois do bloco de preparação.
 - **Criar sprite**. Define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
 - **Desenhar o sprite**. Desenha o sprite no contexto do canvas.

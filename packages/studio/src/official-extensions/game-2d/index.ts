@@ -12,7 +12,7 @@ validateManifest(gameTwoDManifest)
 export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
   examples: defineExtensionExamples(
-    31,
+    32,
     async () => (await import('./exampleCatalog')).gameTwoDExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-2d'),

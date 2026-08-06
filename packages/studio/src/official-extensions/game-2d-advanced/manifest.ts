@@ -4,7 +4,7 @@ import { gameKitDocs } from './docs'
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.56.1',
+  version: '0.57.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, tempo, enxames, colisão, física, câmera, som e efeitos. Inclui sete kits prontos: 🏃 plataforma, 🧙 RPG com mapas autorais, 👾 monstrinhos, 🥊 luta, 🚀 nave, 🏰 defesa de torre e 🃏 cartas. Use os kits para começar e as peças de motor para inventar qualquer jogo 2D.',
   category: 'games',

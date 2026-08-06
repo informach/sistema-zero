@@ -6,8 +6,8 @@ import { OFFICIAL_CATALOG } from './index'
 
 const goldenCatalogs = {
   'game-2d': {
-    count: 31,
-    sha256: 'c7f5657ed78274e40a7d2269a47dd3678c5652a1513dde1cd243eaf2ae6856bc',
+    count: 32,
+    sha256: '9e9c218f577e2dace10dadc7fa60e424e55457965bb2a25112993b8c795b5019',
   },
   'game-2d-advanced': {
     count: 36,

@@ -1,6 +1,7 @@
 import type { ExtensionExample } from '#extensions'
 import {
   beginnerGameExample,
+  EXAMPLE_BACKDROP_IMAGE,
   EXAMPLE_HERO_IMAGE,
   EXAMPLE_HERO_WALK_SHEET,
   EXAMPLE_TILESET_IMAGE,
@@ -11,6 +12,79 @@ import {
  * spritesheet, movido pelas setas. Os nomes de asset (`heroi`, `heroi-andando`)
  * casam com os dois assets mínimos embutidos no próprio cartão.
  */
+/**
+ * Exemplo "Cenário do meu desenho": o desenho da criança virando o fundo do
+ * jogo. Existe porque o caminho Pinta → Estúdio não tinha receita nenhuma de
+ * "pôr o meu desenho de fundo" e o Zappy não sabia ensinar o que não existe.
+ *
+ * O cenário de 32x24 e o palco de 320x240 têm a MESMA proporção, então ele
+ * cobre exatinho, sem corte: é o caso bonito que a criança quer reproduzir.
+ * O bloco usado aqui é o FIXO (basta pôr uma vez, e o motor repinta a cada
+ * limpada da tela); o irmão por quadro fica dentro do 🔁.
+ */
+export const backdropExample: ExtensionExample = beginnerGameExample({
+  name: 'Cenário do meu desenho',
+  experience: 'demo',
+  description: 'Ponha um desenho seu como fundo do jogo e ande na frente dele.',
+  assets: [
+    {
+      id: 'example-backdrop',
+      name: 'cenario',
+      kind: 'image',
+      dataUrl: EXAMPLE_BACKDROP_IMAGE,
+      width: 32,
+      height: 24,
+      source: 'library',
+      libId: 'example-backdrop',
+    },
+  ],
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 320, height: 240 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#0b1020',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      { selector: 'canvas', declarations: { border: '2px solid #38bdf8' } },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g2d:setBackdrop', image: 'cenario' },
+        {
+          type: 'g2d:createSprite',
+          varName: 'heroi',
+          x: 148,
+          y: 150,
+          w: 24,
+          h: 24,
+          color: '#f97316',
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'g2d:updateEachFrame',
+          body: [
+            { type: 'g2d:clear' },
+            { type: 'g2d:topDown', spriteVar: 'heroi', speed: 3 },
+            { type: 'g2d:clampToScreen', spriteVar: 'heroi', ctxVar: 'ctx' },
+            { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'heroi' },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+})
+
 export const animatedHeroExample: ExtensionExample = beginnerGameExample({
   name: 'Herói que anda',
   experience: 'demo',

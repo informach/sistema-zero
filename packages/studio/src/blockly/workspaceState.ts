@@ -1966,6 +1966,10 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_g2d_fit_screen', {}, {}, stmt.__id, { PERCENT: percent })
     }
+    case 'g2d:setBackdrop':
+      return block('sz_g2d_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+    case 'g2d:drawBackdrop':
+      return block('sz_g2d_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
     case 'g2d:stageBorder': {
       const width = exprToValueBlock(valueToExpr(stmt.width))
       return width === null
@@ -2998,6 +3002,10 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_gk_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
     }
+    case 'gk:setBackdrop':
+      return block('sz_gk_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+    case 'gk:drawBackdrop':
+      return block('sz_gk_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
     case 'gk:showHitboxes':
       return block('sz_gk_show_hitboxes', {}, {}, stmt.__id)
     case 'gk:start':

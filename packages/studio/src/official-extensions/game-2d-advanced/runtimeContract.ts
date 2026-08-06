@@ -366,6 +366,8 @@ export const GAME_KIT_ENUMERABLE_API_KEYS = [
   'lutaComboOf',
   'lutaSpecialOf',
   'showStageBorder',
+  'setBackdrop',
+  'drawBackdrop',
   'showHitboxes',
   'setHitboxShape',
 ] as const

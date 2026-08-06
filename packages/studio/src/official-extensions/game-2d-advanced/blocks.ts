@@ -44,6 +44,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_setup',
       'sz_gk_setup_full',
       'sz_gk_stage_border',
+      'sz_gk_set_backdrop',
       'sz_gk_start',
       'sz_gk_load_image',
       'sz_gk_game_width',
@@ -251,6 +252,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     types: [
       'sz_gk_load_tilemap',
       'sz_gk_draw_tilemap',
+      'sz_gk_draw_backdrop',
       'sz_gk_draw_shadow',
       'sz_gk_draw_by_depth',
       'sz_gk_set_tile_size',

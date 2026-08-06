@@ -202,6 +202,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_draw_hitbox',
       'sz_g2d_show_fps',
       'sz_g2d_stage_border',
+      'sz_g2d_set_backdrop',
     ],
   },
   {
@@ -275,6 +276,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_create_tilemap_from_asset',
       'sz_g2d_create_tilemap',
       'sz_g2d_draw_tilemap',
+      'sz_g2d_draw_backdrop',
       'sz_g2d_tilemap_collide',
       'sz_g2d_break_tile_at',
       'sz_g2d_set_tile',

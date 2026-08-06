@@ -1444,6 +1444,10 @@ ${pad}}, ${JSON.stringify(id)});`
       return `${pad}SZGame2D.fitScreen(${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'g2d:stageBorder':
       return `${pad}SZGame2D.showStageBorder(${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
+    case 'g2d:setBackdrop':
+      return `${pad}SZGame2D.setBackdrop(${JSON.stringify(stmt.image)});`
+    case 'g2d:drawBackdrop':
+      return `${pad}SZGame2D.drawBackdrop(${identifiers.get(stmt.ctxVar) ?? stmt.ctxVar}, ${JSON.stringify(stmt.image)});`
     case 'g2d:setupStage':
       return `${pad}SZGame2D.setupStage(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)});`
     case 'g2d:setupFull':
@@ -1847,6 +1851,10 @@ ${pad}}, ${JSON.stringify(id)});`
       return `${pad}SZGameKit.setStageDescription(${JSON.stringify(stmt.description)});`
     case 'gk:stageBorder':
       return `${pad}SZGameKit.showStageBorder(${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
+    case 'gk:setBackdrop':
+      return `${pad}SZGameKit.setBackdrop(${JSON.stringify(stmt.image)});`
+    case 'gk:drawBackdrop':
+      return `${pad}SZGameKit.drawBackdrop(${JSON.stringify(stmt.image)});`
     case 'gk:showHitboxes':
       return `${pad}SZGameKit.showHitboxes();`
     case 'gk:start':
@@ -5257,6 +5265,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:stageBorder':
       collectExprIdentifiers(valueToExpr(stmt.width), names)
       return
+    case 'g2d:setBackdrop':
+      return
+    case 'g2d:drawBackdrop':
+      names.add(stmt.ctxVar)
+      return
     case 'g2d:setupStage':
       collectExprIdentifiers(valueToExpr(stmt.width), names)
       collectExprIdentifiers(valueToExpr(stmt.height), names)
@@ -5849,6 +5862,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'gk:setupFull':
     case 'gk:setStageDescription':
+    case 'gk:setBackdrop':
+    case 'gk:drawBackdrop':
     case 'gk:showHitboxes':
     case 'gk:start':
     case 'gk:loadImage':

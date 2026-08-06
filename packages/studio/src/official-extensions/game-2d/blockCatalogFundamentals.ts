@@ -953,4 +953,21 @@ export const gameTwoDFundamentalBlocks = [
     tooltip:
       'Desenha uma moldura colorida em volta da tela do jogo, para ver onde começa e termina a área de desenho. Ótimo para explicar o palco. Para tirar, apague o bloco.',
   },
+  {
+    // O cenário que a criança desenhou no Pinta virando o fundo do jogo. É
+    // "start-only" de propósito: o motor repinta sozinho a cada limpada da tela,
+    // então põe-se UMA vez e pronto. O irmão que se desenha a cada quadro é o
+    // "sz_g2d_draw_backdrop", que mora em 🗺️ Mapa (nunca no mesmo flyout que
+    // este) e serve a quem precisa escolher a ORDEM das camadas.
+    type: 'sz_g2d_set_backdrop',
+    placement: 'start-only-command',
+    message0: 'Pôr o cenário %1 atrás de tudo',
+    args0: [{ type: 'field_asset_picker', name: 'IMAGE', text: '' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe um desenho seu como fundo do jogo, atrás de todo o resto. Ele COBRE a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora. Um desenho de 960 por 540 cabe exatinho na tela larga. Ponha uma vez em "Ao iniciar" e ele volta sozinho em todo quadro. Para escolher a ordem das camadas você mesmo, use "Desenhar o cenário" dentro do 🔁.',
+  },
 ] satisfies BlockDefinition[]

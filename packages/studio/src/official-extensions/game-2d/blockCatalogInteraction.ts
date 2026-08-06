@@ -700,6 +700,22 @@ export const gameTwoDInteractionBlocks = [
       'Desenha o mapa de tiles. Com tiles de 0 px, ele ENCAIXA sozinho no tamanho da tela (tiles quadrados, sem distorcer) e fica centralizado. Escolha um tamanho (ex.: 32) para controlar você mesmo o tamanho dos tiles na tela: o mapa continua centralizado. x e y deslocam o mapa; use com a câmera para rolar um mapa maior que a tela.',
   },
   {
+    // Irmão do "Pôr o cenário atrás de tudo" (✨ Aparência): mesma geometria de
+    // cobertura, mas quem manda na ordem das camadas é a criança. É
+    // "loop-command" — o encaixe só aceita o 🔁, então pegar o bloco errado dá
+    // recusa na hora, em vez de um jogo estranho sem explicação.
+    type: 'sz_g2d_draw_backdrop',
+    placement: 'loop-command',
+    message0: 'Desenhar o cenário %1',
+    args0: [{ type: 'field_asset_picker', name: 'IMAGE', text: '' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha um desenho seu cobrindo a tela inteira, agora, neste quadro. Use logo depois de limpar a tela, para o cenário ficar atrás do resto. É o irmão de "Pôr o cenário atrás de tudo": aquele se põe uma vez em "Ao iniciar" e volta sozinho; este você desenha a cada quadro, escolhendo a ordem das camadas.',
+  },
+  {
     type: 'sz_g2d_tilemap_collide',
     placement: 'command',
     message0: 'Impedir o sprite %1 de atravessar os tiles sólidos do mapa %2',

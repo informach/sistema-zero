@@ -2547,6 +2547,10 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:fitScreen'; percent: number | JSExpr })
   // Moldura no elemento do canvas (enxergar a área do palco ao ensinar).
   | (JSStatementCommon & { type: 'g2d:stageBorder'; color: string; width: number | JSExpr })
+  // Cenário: o desenho da criança cobrindo o palco. O FIXO é repintado a cada
+  // clear(); o POR QUADRO desenha no ponto em que a criança pôs o bloco.
+  | (JSStatementCommon & { type: 'g2d:setBackdrop'; image: string })
+  | (JSStatementCommon & { type: 'g2d:drawBackdrop'; ctxVar: string; image: string })
   // Atalho de início: prepara o palco (tamanho do mundo) em tela cheia responsiva.
   | (JSStatementCommon & {
       type: 'g2d:setupStage'
@@ -3076,6 +3080,8 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:setStageDescription'; description: string })
   // Moldura da tela (enxergar a área do palco) e contorno das caixas que colidem.
   | (JSStatementCommon & { type: 'gk:stageBorder'; color: string; width: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:setBackdrop'; image: string })
+  | (JSStatementCommon & { type: 'gk:drawBackdrop'; image: string })
   | (JSStatementCommon & { type: 'gk:showHitboxes' })
   | (JSStatementCommon & { type: 'gk:start' })
   // `name` = como o jogo chama a imagem; `asset` = nome do desenho no projeto.
@@ -6548,6 +6554,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       width: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('g2d:setBackdrop'), image: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:drawBackdrop'),
+      ctxVar: irText(),
+      image: irText(),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:setupStage'),
       width: z.union([JSExprSchema, z.number()]),
@@ -7399,6 +7412,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       width: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:setBackdrop'), image: irText(), ...idField }),
+    z.object({ type: z.literal('gk:drawBackdrop'), image: irText(), ...idField }),
     z.object({ type: z.literal('gk:showHitboxes'), ...idField }),
     z.object({ type: z.literal('gk:start'), ...idField }),
     z.object({ type: z.literal('gk:loadImage'), name: irText(), asset: irText(), ...idField }),
@@ -11299,6 +11314,8 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:dragX',
   'g2d:fitScreen',
   'g2d:stageBorder',
+  'g2d:setBackdrop',
+  'g2d:drawBackdrop',
   'g2d:setupStage',
   'g2d:setupFull',
   'g2d:spawnBullet',
@@ -11465,6 +11482,8 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setupFull',
   'gk:setStageDescription',
   'gk:stageBorder',
+  'gk:setBackdrop',
+  'gk:drawBackdrop',
   'gk:showHitboxes',
   'gk:start',
   'gk:loadImage',

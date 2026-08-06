@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 217 definições de bloco
-(215 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 219 definições de bloco
+(217 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.58.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.59.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -110,15 +110,28 @@ regressão explícita para dependências internas e geometria compartilhada.
 Não há achados técnicos abertos no escopo desta revisão. A redução/progressão da
 paleta permanece deliberadamente fora da remediação por decisão explícita de produto.
 
+O 0.59.0 (06/08) fechou a lacuna do caminho Pinta → Estúdio: a criança podia
+desenhar um cenário e não existia bloco nenhum para recebê-lo (todos os blocos de
+fundo aceitavam só COR). Entraram dois, com verbos e encaixes diferentes de
+propósito: **Pôr o cenário atrás de tudo** (`start-only`, o motor repinta a cada
+`clear()`) e **Desenhar o cenário** (`loop-command`, para quem quer mandar na
+ordem das camadas). O encaixe é a trava: pegar o errado faz o Blockly recusar a
+conexão, em vez de gerar um jogo estranho sem explicação. A geometria é uma só,
+compartilhada pelos dois: COBRIR centralizado, sem deformar — esticar entortaria o
+desenho da criança e caber deixaria faixas lisas que leem como defeito. O desenho
+vai no CANVAS e não em CSS porque a capa do Mural é fotografada do `<canvas>` via
+`toDataURL`: um fundo em CSS não entraria no bitmap e o jogo seria publicado sem o
+cenário dela.
+
 ## Escopo revisado
 
-- 123 arquivos próprios da extensão;
-- 217 definições de blocos e 24 subcategorias;
-- 216 métodos e valores públicos em `window.SZGame2D`;
+- 124 arquivos próprios da extensão;
+- 219 definições de blocos e 24 subcategorias;
+- 218 métodos e valores públicos em `window.SZGame2D`;
 - 21 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
-- 31 exemplos, assets, classificação pedagógica e execução no Chromium;
+- 32 exemplos, assets, classificação pedagógica e execução no Chromium;
 - ciclo de vida, pausa, reinício, câmera, grupos, colisões, áudio, DPR,
   segurança, desempenho e tratamento de erros;
 - testes da extensão e integrações externas de Blockly/parser.

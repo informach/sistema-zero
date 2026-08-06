@@ -341,4 +341,56 @@ export const gameKitVisualEffectsRuntime = `
     ctx2d.fillText(label, num(x, 20), num(y, 40));
     ctx2d.restore();
   }
+
+  // ---- Cenário de fundo: o desenho do Pinta cobrindo a tela ----
+  // Fica no MOTOR (pintado no render(), antes do translate da câmera) e não numa
+  // camada de decoração porque o cenário é o chão de tudo: se dependesse de a
+  // criança lembrar de desenhá-lo primeiro, um bloco fora de ordem apagaria o
+  // fundo dela sem explicação.
+  var _backdropName = '';
+  /**
+   * COBRE a área visível sem entortar, centralizado. Uma geometria só, usada
+   * pelos DOIS blocos (o fixo e o por-quadro), para que trocar de bloco não mude
+   * o visual; ox/oy existem porque o motor pinta ANTES do translate da câmera
+   * (origem 0,0) e o bloco por-quadro pinta DEPOIS (origem na câmera, igual ao
+   * drawBackground) — os dois cobrem exatamente os mesmos pixels.
+   *
+   * "Cobrir" e não "esticar" nem "caber": esticar deforma o boneco que ela
+   * desenhou e ela vê que ficou errado sem saber consertar; caber deixa faixas
+   * lisas nas laterais e lê como defeito. Cobrir corta um pouco de céu e de
+   * chão, e lê como "a câmera está mais perto".
+   */
+  function _paintBackdrop(name, ox, oy) {
+    if (!ctx2d || !name) return false;
+    ensureImageLoaded(name);
+    var entry = images[name];
+    var img = entry && entry.loaded ? entry.img : null;
+    if (!img) return false; // ainda carregando, ou nome errado (o loadImage já avisou)
+    var sw = img.naturalWidth || img.width || 0;
+    var sh = img.naturalHeight || img.height || 0;
+    var cw = config.w, ch = config.h;
+    if (!(sw > 0) || !(sh > 0) || !(cw > 0) || !(ch > 0)) return false;
+    var scale = Math.max(cw / sw, ch / sh);
+    var dw = sw * scale, dh = sh * scale;
+    // O canvas inteiro roda com smoothing DESLIGADO (pixel art nítida). Ampliar
+    // um cenário pequeno agradece isso; reduzir um grande fica serrilhado, então
+    // só nesse caso religamos, e devolvemos como estava.
+    var smooth = scale < 1;
+    if (smooth) { try { ctx2d.imageSmoothingEnabled = true; } catch (e) {} }
+    try {
+      ctx2d.drawImage(img, num(ox, 0) + (cw - dw) / 2, num(oy, 0) + (ch - dh) / 2, dw, dh);
+    } catch (e) {}
+    if (smooth) { try { ctx2d.imageSmoothingEnabled = false; } catch (e) {} }
+    return true;
+  }
+  /** Fixa o cenário: o motor repinta a cada quadro, sem a criança fazer nada. */
+  function setBackdrop(name) {
+    _backdropName = text(name, '');
+    if (_backdropName) ensureImageLoaded(_backdropName);
+  }
+  /** Desenha o cenário AGORA, neste ponto do quadro (dentro do "Desenhar o jogo"). */
+  function drawBackdrop(name) {
+    var on = camera.on;
+    return _paintBackdrop(text(name, ''), on ? camera.x : 0, on ? camera.y : 0);
+  }
 `

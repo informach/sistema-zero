@@ -347,6 +347,44 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; }
     _applyBaseTransform();
   }
+  // Cenário de fundo: o desenho da criança cobrindo o palco inteiro.
+  var _backdropName = '';
+  /**
+   * COBRE o palco sem entortar, centralizado — uma geometria só, usada pelos DOIS
+   * blocos (o fixo e o por-quadro), para que trocar de bloco não mude o visual.
+   *
+   * "Cobrir" e não "esticar" nem "caber": esticar deforma o boneco que ela
+   * desenhou e ela vê que está errado sem saber consertar; caber deixa faixas de
+   * cor lisa nas laterais e lê como defeito. Cobrir corta um pouco de céu e de
+   * chão, e lê como "a câmera está mais perto" — ninguém percebe.
+   */
+  function _paintBackdrop(ctx, name) {
+    if (!ctx || !name) return false;
+    var handle = loadImage(name);
+    var img = handle && handle.loaded ? handle.img : null;
+    if (!img) return false; // ainda carregando, ou nome errado (o loadImage já avisou)
+    var sw = img.naturalWidth || img.width || 0;
+    var sh = img.naturalHeight || img.height || 0;
+    var cw = stageW(ctx), ch = stageH(ctx);
+    if (!(sw > 0) || !(sh > 0) || !(cw > 0) || !(ch > 0)) return false;
+    var scale = Math.max(cw / sw, ch / sh);
+    var dw = sw * scale, dh = sh * scale;
+    // O _crispDraw mantém pixel art nítida ao ampliar (o cenário do Pinta costuma
+    // ser bem menor que o palco) e suave ao reduzir.
+    return _crispDraw(ctx, sw, dw, function () {
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    });
+  }
+  /** Fixa o cenário: repintado a cada clear(), sem a criança fazer nada. */
+  function setBackdrop(name) {
+    _backdropName = (typeof name === 'string') ? name : '';
+    var ctx = ensureStage();
+    // Pinta já: um jogo sem laço (só "ao iniciar") também mostra o cenário.
+    if (ctx) _paintBackdrop(ctx, _backdropName);
+  }
+  /** Desenha o cenário AGORA, neste ponto do quadro. */
+  function drawBackdrop(ctx, name) { return _paintBackdrop(ctx, name); }
+
   /** Limpa a tela inteira do palco (use no começo de cada quadro). */
   function clear() {
     _beginAccessibleHudFrame();
@@ -359,6 +397,8 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     } else {
       c.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
+    // Guardado: sem cenário, o quadro é byte-idêntico ao de antes deste bloco.
+    if (_backdropName) _paintBackdrop(c, _backdropName);
   }
   /** O palco responsivo ocupa a viewport; o tremor não deve ampliar a área rolável. */
   function _lockStageViewportOverflow() {
@@ -515,6 +555,9 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     reset: _resetAccessibleHud,
     pause: _cancelAccessibleHudTimer,
     resume: _flushAccessibleHudIfDue
+  });
+  _registerRuntimeDomain('stage-backdrop', {
+    reset: function () { _backdropName = ''; }
   });
 
 `

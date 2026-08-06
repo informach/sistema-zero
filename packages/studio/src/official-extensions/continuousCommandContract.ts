@@ -3,6 +3,10 @@
  * statement mantém o encaixe físico do Blockly alinhado à gramática da IR.
  */
 export const CONTINUOUS_EXTENSION_COMMANDS = [
+  // O cenário por quadro é contínuo por natureza: pintar UMA vez no início não
+  // sobreviveria à primeira limpada da tela. O encaixe só no 🔁 é o que separa
+  // este bloco do irmão fixo ("Pôr o cenário atrás de tudo"), que é start-only.
+  { blockType: 'sz_g2d_draw_backdrop', statementType: 'g2d:drawBackdrop' },
   { blockType: 'sz_g2d_on_enemy_shot_hit', statementType: 'g2d:onEnemyShotHit' },
   { blockType: 'sz_g2d_on_group_overlap', statementType: 'g2d:onGroupOverlap' },
   { blockType: 'sz_g2d_on_sprite_group_overlap', statementType: 'g2d:onSpriteGroupOverlap' },

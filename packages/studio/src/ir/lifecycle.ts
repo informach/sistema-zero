@@ -62,6 +62,8 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:setupFull',
   'g2d:fitScreen',
   'g2d:stageBorder',
+  // O cenário FIXO é de preparação: só no 'ao iniciar' (o por-quadro NÃO entra).
+  'g2d:setBackdrop',
   'g2d:setStageDescription',
   'g2d:createSprite',
   'g2d:createImageSprite',
@@ -89,6 +91,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'gk:setupFull',
   'gk:setStageDescription',
   'gk:stageBorder',
+  'gk:setBackdrop',
   'gk:showHitboxes',
   'gk:loadImage',
   'gk:createScreen',

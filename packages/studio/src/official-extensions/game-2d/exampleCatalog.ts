@@ -4,6 +4,7 @@ import {
   asteroidsClassicExample,
   asteroidsExample,
   aventuraHeroiExample,
+  backdropExample,
   balloonExample,
   batalhaMonstrinhosExample,
   cameraAdventureExample,
@@ -58,6 +59,15 @@ export const gameTwoDExamples = [
     genre: 'coleta',
     recommendedOrder: 1,
     featured: true,
+  }),
+  // Sem `featured`/`recommendedOrder` de propósito: o percurso inicial de quatro
+  // passos da vitrine (Pegue a moeda → Herói que anda → Mini plataforma → Sala
+  // com paredes) é curadoria aprovada, e a razão de existir deste exemplo é o
+  // índice do Zappy, não a esteira de onboarding.
+  withMetadata(backdropExample, {
+    difficulty: 'beginner',
+    concepts: ['cenário', 'imagem de fundo', 'desenho do Pinta'],
+    genre: 'aventura',
   }),
   withMetadata(pongExample, {
     difficulty: 'intermediate',

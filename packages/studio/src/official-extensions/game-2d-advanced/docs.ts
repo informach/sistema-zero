@@ -13,6 +13,10 @@ substituir fontes escolhidas.
    largura/altura do jogo. A tela nasce SEM moldura; se quiser uma, some
    **Mostrar a borda da tela** (com cor e espessura) para todo mundo ver onde
    começa e termina a área do jogo.
+   Para o fundo ser um desenho seu, use **Pôr o cenário atrás de tudo**: ele
+   cobre a tela inteira sem deformar e o jogo o repinta sozinho a cada quadro.
+   Quem quiser mandar na ordem das camadas usa **Desenhar o cenário** dentro de
+   **Desenhar o jogo**. Um ou o outro; **Pintar o fundo** é opaco e tapa os dois.
    Some também **Descrever o jogo para leitor de tela** com o objetivo, os
    controles e os perigos que não aparecem em texto. O motor nomeia o canvas,
    anuncia as telas como diálogos e move o foco automaticamente.

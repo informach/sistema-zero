@@ -183,6 +183,15 @@ export interface GameTwoDStageApi {
   setupStageFull(background: string): void
   /** Moldura colorida em volta da tela do jogo (para enxergar a área do palco). */
   showStageBorder(color: string, width: number): void
+  /**
+   * Fixa o desenho da criança como cenário: repintado a cada `clear()`, cobrindo
+   * o palco sem deformar. ⚠️ NÃO entra nos overrides de câmera (`_camWrap`) de
+   * propósito — o cenário fica preso à tela, e é isso que deixa espaço para um
+   * bloco de paralaxe no futuro.
+   */
+  setBackdrop(name: string): void
+  /** Desenha o cenário AGORA, neste ponto do quadro (o que vier depois cobre). */
+  drawBackdrop(ctx: GameTwoDContext, name: string): void
 }
 
 export interface GameTwoDSpriteApi {
@@ -613,6 +622,8 @@ export const GAME_TWO_D_API_KEYS = [
   'setupStage',
   'setupStageFull',
   'showStageBorder',
+  'setBackdrop',
+  'drawBackdrop',
   'spawnBullet',
   'arrowsX',
   'blink',

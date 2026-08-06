@@ -27,6 +27,10 @@ type KitApiKey = keyof Pick<
   | 'setHitbox'
   | 'setHitboxShape'
   | 'showStageBorder'
+  | 'setBackdrop'
+  | 'drawBackdrop'
+  | 'drawBackground'
+  | 'cameraFollow'
   | 'showHitboxes'
   | 'touching'
   | 'touchCircle'
@@ -52,6 +56,8 @@ export interface Harness {
 export interface CanvasSpy {
   strokes: number[][]
   arcs: number[][]
+  /** Argumentos geométricos de drawImage (x, y, w, h) — a imagem em si sai fora. */
+  images: number[][]
   clear: () => void
 }
 
@@ -67,6 +73,7 @@ const canvasProto = (globalThis as { HTMLCanvasElement?: { prototype: object } }
 export function installCanvasSpy(): CanvasSpy & { restore: () => void } {
   const strokes: number[][] = []
   const arcs: number[][] = []
+  const images: number[][] = []
   const original = canvasProto?.getContext
   const fakeCtx = {
     fillStyle: '',
@@ -79,7 +86,9 @@ export function installCanvasSpy(): CanvasSpy & { restore: () => void } {
     strokeRect(...a: number[]) {
       strokes.push(a)
     },
-    drawImage() {},
+    drawImage(_img: unknown, ...a: number[]) {
+      images.push(a)
+    },
     beginPath() {},
     closePath() {},
     moveTo() {},
@@ -108,9 +117,11 @@ export function installCanvasSpy(): CanvasSpy & { restore: () => void } {
   return {
     strokes,
     arcs,
+    images,
     clear: () => {
       strokes.length = 0
       arcs.length = 0
+      images.length = 0
     },
     restore: () => {
       if (canvasProto) canvasProto.getContext = original

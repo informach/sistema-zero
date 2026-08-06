@@ -4122,6 +4122,18 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const percent = toExpr(args[0], ctx)
       return isSimpleValue(percent) ? { type: 'g2d:fitScreen', percent } : null
     }
+    case 'setBackdrop': {
+      // generator: SZGame2D.setBackdrop("cenario")
+      return args[0]?.type === 'StringLiteral'
+        ? { type: 'g2d:setBackdrop', image: args[0].value as string }
+        : null
+    }
+    case 'drawBackdrop': {
+      // generator: SZGame2D.drawBackdrop(ctx, "cenario")
+      const ctxVar = identifierName(args[0])
+      if (!ctxVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:drawBackdrop', ctxVar, image: args[1].value as string }
+    }
     case 'showStageBorder': {
       // generator: SZGame2D.showStageBorder("#e2e8f0", 4)
       if (args[0]?.type !== 'StringLiteral') return null
@@ -5411,6 +5423,16 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:stageBorder', color: args[0].value as string, width }
         : null
     }
+    case 'setBackdrop':
+      // generator: SZGameKit.setBackdrop("cenario")
+      return args[0]?.type === 'StringLiteral'
+        ? { type: 'gk:setBackdrop', image: args[0].value as string }
+        : null
+    case 'drawBackdrop':
+      // generator: SZGameKit.drawBackdrop("cenario")
+      return args[0]?.type === 'StringLiteral'
+        ? { type: 'gk:drawBackdrop', image: args[0].value as string }
+        : null
     case 'showHitboxes':
       return args.length === 0 ? { type: 'gk:showHitboxes' } : null
     case 'start':
