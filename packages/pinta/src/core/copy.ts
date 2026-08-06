@@ -81,6 +81,18 @@ export const COPY = {
     needTileset: 'Antes de criar um mapa, crie as suas "Peças do cenário".',
     forProjectPrefix: 'Desenho para o jogo',
     willLookLike: 'Vai ficar assim:',
+    customSize: {
+      card: 'Personalizado',
+      cardDetail: 'Você escolhe os números',
+      width: 'Largura',
+      height: 'Altura',
+      frame: 'Tamanho do quadro',
+      cols: 'Colunas',
+      rows: 'Linhas',
+      help: (min: number, max: number) => `Escolha números de ${min} até ${max}.`,
+      rangeError: (label: string, min: number, max: number) =>
+        `${label} precisa ser um número de ${min} até ${max}.`,
+    },
   },
   styles: {
     pixel: {

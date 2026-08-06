@@ -54,4 +54,51 @@ describe('ImportImageDialog', () => {
       expect(asset.platform).toHaveLength(asset.tiles.length)
     }
   })
+
+  it('foto → CENÁRIO → tamanho PERSONALIZADO → nome → importa nas dimensões digitadas', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={redImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+
+    // Personalizado revela o formulário (semeado do preset médio 240×180).
+    fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.customSize.card }))
+    const width = screen.getByLabelText(COPY.newAsset.customSize.width) as HTMLInputElement
+    const height = screen.getByLabelText(COPY.newAsset.customSize.height) as HTMLInputElement
+    expect(width.value).toBe('240')
+    expect(height.value).toBe('180')
+
+    // Inválido trava o Avançar (sem prévia p/ quantizar).
+    fireEvent.change(width, { target: { value: '4' } })
+    const next = screen.getByRole('button', { name: COPY.importImage.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(true)
+
+    fireEvent.change(width, { target: { value: '32' } })
+    fireEvent.change(height, { target: { value: '24' } })
+    expect(next.disabled).toBe(false)
+    fireEvent.click(next)
+
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'foto-do-ceu' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    expect(imported).not.toBeNull()
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('pixel-background')
+    if (asset.kind === 'pixel-background') {
+      expect(asset.cels[0]?.width).toBe(32)
+      expect(asset.cels[0]?.height).toBe(24)
+    }
+  })
 })

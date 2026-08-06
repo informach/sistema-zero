@@ -27,6 +27,15 @@ import {
 import { paintBitmap } from '../../pixel/render'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { CustomSizeFields } from './CustomSizeFields'
+import {
+  buildCustomSizeKey,
+  CUSTOM_SIZE_KEY,
+  type CustomSizeValues,
+  customSizeSpecFor,
+  EMPTY_CUSTOM_VALUES,
+  seedCustomValues,
+} from './customSize'
 
 type Target = 'background' | 'tileset'
 type Step = 'target' | 'size' | 'name'
@@ -69,6 +78,7 @@ export function ImportImageDialog({
   const [sizeKey, setSizeKey] = useState<string>(
     `${BACKGROUND_SIZES[1]?.width}x${BACKGROUND_SIZES[1]?.height}`,
   )
+  const [customValues, setCustomValues] = useState<CustomSizeValues>(EMPTY_CUSTOM_VALUES)
   const [tileSize, setTileSize] = useState<number>(16)
   const [name, setName] = useState('')
 
@@ -80,6 +90,7 @@ export function ImportImageDialog({
   function reset(): void {
     setStep('target')
     setTarget('background')
+    setCustomValues(EMPTY_CUSTOM_VALUES)
     setName('')
   }
   function close(): void {
@@ -87,11 +98,20 @@ export function ImportImageDialog({
     onClose()
   }
 
-  // Prévia: quantiza o resultado do alvo/tamanho corrente (memo por combinação).
+  // Tamanho personalizado (só o CENÁRIO — peças mantêm a whitelist do motor):
+  // o import cria sempre pixel-background, então a spec é a dele. Chave real
+  // derivada dos campos; inválida ⇒ null ⇒ sem prévia e Avançar desabilitado.
+  const customSpec = customSizeSpecFor('pixel-background')
+  const effectiveSizeKey =
+    sizeKey === CUSTOM_SIZE_KEY ? buildCustomSizeKey('pixel-background', customValues) : sizeKey
+
+  // Prévia: quantiza o resultado do alvo/tamanho corrente (memo por combinação
+  // VÁLIDA — digitação inválida não recomputa nem some com a prévia anterior).
   const result = useMemo(() => {
     if (!image) return null
     if (target === 'background') {
-      const [w = 240, h = 180] = sizeKey.split('x').map(Number)
+      if (!effectiveSizeKey) return null
+      const [w = 240, h = 180] = effectiveSizeKey.split('x').map(Number)
       const resized = resizeCover(image, w, h)
       const { bitmap, extraColors } = quantizeToIndexed(resized)
       return { kind: 'background' as const, bitmap, extraColors, width: w, height: h }
@@ -99,7 +119,7 @@ export function ImportImageDialog({
     const { bitmap, extraColors } = quantizeToIndexed(image)
     const { tiles, tooMany } = sliceIndexedTiles(bitmap, tileSize)
     return { kind: 'tileset' as const, tiles, extraColors, tooMany }
-  }, [image, target, sizeKey, tileSize])
+  }, [image, target, effectiveSizeKey, tileSize])
 
   const previewColors = useMemo(
     () => [...getPalette('arcade').colors, ...(result?.extraColors ?? [])],
@@ -183,24 +203,45 @@ export function ImportImageDialog({
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-3 gap-2">
             {target === 'background'
-              ? BACKGROUND_SIZES.map((size) => {
-                  const key = `${size.width}x${size.height}`
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setSizeKey(key)}
-                      aria-pressed={sizeKey === key}
-                      className={`pin-pop min-h-14 rounded-2xl border-2 p-2 text-sm transition ${
-                        sizeKey === key
-                          ? 'border-pin-accent bg-pin-accent/10'
-                          : 'border-pin-border bg-pin-bg hover:border-pin-accent'
-                      }`}
-                    >
-                      {size.width} × {size.height}
-                    </button>
-                  )
-                })
+              ? [
+                  ...BACKGROUND_SIZES.map((size) => {
+                    const key = `${size.width}x${size.height}`
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSizeKey(key)}
+                        aria-pressed={sizeKey === key}
+                        className={`pin-pop min-h-14 rounded-2xl border-2 p-2 text-sm transition ${
+                          sizeKey === key
+                            ? 'border-pin-accent bg-pin-accent/10'
+                            : 'border-pin-border bg-pin-bg hover:border-pin-accent'
+                        }`}
+                      >
+                        {size.width} × {size.height}
+                      </button>
+                    )
+                  }),
+                  <button
+                    key={CUSTOM_SIZE_KEY}
+                    type="button"
+                    // Só revela o formulário (aqui nem existe auto-avançar).
+                    onClick={() => {
+                      if (sizeKey !== CUSTOM_SIZE_KEY) {
+                        setCustomValues(seedCustomValues('pixel-background', sizeKey))
+                        setSizeKey(CUSTOM_SIZE_KEY)
+                      }
+                    }}
+                    aria-pressed={sizeKey === CUSTOM_SIZE_KEY}
+                    className={`pin-pop min-h-14 rounded-2xl border-2 p-2 text-sm transition ${
+                      sizeKey === CUSTOM_SIZE_KEY
+                        ? 'border-pin-accent bg-pin-accent/10'
+                        : 'border-pin-border bg-pin-bg hover:border-pin-accent'
+                    }`}
+                  >
+                    {COPY.newAsset.customSize.card}
+                  </button>,
+                ]
               : TILE_SIZES.map((ts) => (
                   <button
                     key={ts}
@@ -222,6 +263,15 @@ export function ImportImageDialog({
                   </button>
                 ))}
           </div>
+
+          {target === 'background' && sizeKey === CUSTOM_SIZE_KEY && customSpec ? (
+            <CustomSizeFields
+              spec={customSpec}
+              values={customValues}
+              onChange={(field, raw) => setCustomValues((v) => ({ ...v, [field]: raw }))}
+              idPrefix="pinta-import-size"
+            />
+          ) : null}
 
           {/* Prévia já quantizada + recado das cores. */}
           <div className="flex flex-col items-center gap-2 rounded-2xl bg-pin-bg p-3">
@@ -260,7 +310,7 @@ export function ImportImageDialog({
             <Button variant="ghost" onClick={() => setStep('target')}>
               {COPY.importImage.back}
             </Button>
-            <Button variant="primary" disabled={tooMany} onClick={() => setStep('name')}>
+            <Button variant="primary" disabled={tooMany || !result} onClick={() => setStep('name')}>
               {COPY.importImage.next}
             </Button>
           </div>

@@ -86,7 +86,16 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
 
 - **Fluxo de criação (`NewAssetDialog`)**: 4 passos — ESTILO (Pixel art | Vetor, lembra o último
   via `galleryStore.lastStyle`) → TIPO (mesmos papéis nos 2 estilos) → tamanho → nome. Mapa
-  habilita com QUALQUER tileset (badge de estilo no seletor).
+  habilita com QUALQUER tileset (badge de estilo no seletor). **Tamanho PERSONALIZADO
+  (08/2026)**: card "Personalizado" no passo de tamanho — cenários (16..512 pixel / 16..2048
+  vetor, largura × altura), personagens (quadro 8..128) e mapa (1..128 colunas × linhas); PEÇAS
+  ficam FORA (whitelist dura 16/32/48 do motor). Também no "Trazer uma foto" (só o alvo cenário).
+  Helpers PUROS em `gallery/customSize.ts`: a `sizeKey` fica na sentinela `'custom'` e a chave
+  REAL ("300x200"/"96"/"50x40") é derivada dos campos a cada render — `buildInput`, o
+  `galleryStore` e as fábricas ficam INTOCADOS (elas já clampam). Formulário compartilhado
+  `CustomSizeFields` (`inputMode="numeric"`, faixa/erro num `role=status`, padrão do nameError).
+  ⚠️ O card Personalizado NÃO auto-avança (selecionar só revela o formulário; os presets
+  continuam avançando ao toque) — não copiar o `setStep` dos presets para ele.
 - **Motor pixel (`src/pixel/`)**: `ops.ts` operações PURAS; `tools.ts` máquina PURA de gesto;
   `selection.ts`; `render.ts` única camada canvas.
 - **Editor vetorial (pasta `components/editor/vector/`, 08/2026)**: shapes = elementos SVG REAIS;
