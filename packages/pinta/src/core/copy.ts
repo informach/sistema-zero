@@ -22,8 +22,6 @@ export const COPY = {
     rename: 'Renomear',
     duplicate: 'Duplicar',
     remove: 'Apagar',
-    /** Botão "⋮" do card: junta renomear/duplicar/apagar num alvo só de 44px. */
-    cardActions: (name: string) => `O que fazer com ${name}`,
     removeConfirmTitle: 'Apagar este desenho?',
     removeConfirmBody: 'Ele vai sumir da galeria. Não dá para desfazer.',
     removeConfirm: 'Apagar',

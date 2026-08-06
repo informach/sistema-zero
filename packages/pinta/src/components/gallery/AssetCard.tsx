@@ -3,11 +3,12 @@
  * esticado por CSS pixelated para pixel; SVG inline para vetor; minimapa de
  * cores para o tilemap), nome e selinho de estilo.
  *
- * ⚠️ Card PEQUENO (~92px, referência MakeCode Arcade: "só para reconhecer o
- * desenho"). Nessa largura três botões de 44px não cabem — 3×44 = 132px —, então
- * renomear/duplicar/apagar foram para um menu atrás de UM botão de 44px
- * sobreposto à miniatura: a regra de toque infantil fica intacta e a grade
- * chega a 10 colunas. Os diálogos de renomear/apagar seguem no GalleryScreen.
+ * ⚠️ Card COMPACTO (~164px): pequeno o bastante para caber muita coisa na tela
+ * (referência MakeCode Arcade, "só para reconhecer o desenho") e largo o
+ * bastante para as três ações ficarem NO card, cada uma com o alvo de 44px da
+ * regra de toque infantil — 3×44 = 132px + respiros. Um menu "⋮" chegou a ser
+ * tentado para caber em 10 colunas e foi REJEITADO pela dona: as ações voltaram
+ * para o card. Os diálogos de renomear/apagar seguem no GalleryScreen.
  */
 import type { JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -24,8 +25,7 @@ import { paintBitmap } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import type { VectorShape } from '../../vector/model'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
-import { Copy, MoreVertical, Pencil, Trash2 } from '../ui/icons'
-import { useAnchoredMenu } from '../ui/useAnchoredMenu'
+import { Copy, Pencil, Trash2 } from '../ui/icons'
 
 /** Bitmap "cara" do asset para a miniatura (null = sem prévia raster). */
 export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
@@ -184,18 +184,14 @@ export function AssetCard({
   const kind = COPY.kinds[asset.kind]
   const style = assetStyle(asset.kind)
   const [duplicating, setDuplicating] = useState(false)
-  const menu = useAnchoredMenu({ align: 'end' })
-  // ⚠️ A trava do duplo clique é um REF, não o estado: ao duplicar o menu fecha
-  // na hora (como as outras ações), então o botão desmonta antes de qualquer
-  // re-render marcá-lo como desabilitado — só o ref segura o 2º clique disparado
-  // no MESMO turno de JS.
+  // A trava do duplo clique é um REF: dois cliques no MESMO turno de JS chegam
+  // antes de qualquer re-render marcar o botão como desabilitado.
   const duplicatingRef = useRef(false)
 
   async function handleDuplicate(): Promise<void> {
     if (duplicatingRef.current) return
     duplicatingRef.current = true
     setDuplicating(true)
-    menu.close()
     try {
       await onDuplicate()
     } finally {
@@ -204,12 +200,13 @@ export function AssetCard({
     }
   }
 
-  const menuItemClass =
-    'flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm font-bold text-pin-text transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-pin-accent'
+  /** Alvo de toque de 44px — a regra de mão de criança vale para as 3 ações. */
+  const actionClass =
+    'flex min-h-11 min-w-11 items-center justify-center rounded-xl transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent'
 
   return (
     <div
-      className={`pin-panel pin-pop group relative flex flex-col gap-1 p-1.5 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
+      className={`pin-panel pin-pop flex flex-col gap-1 p-2 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
     >
       <button
         type="button"
@@ -221,68 +218,6 @@ export function AssetCard({
       >
         <Thumb asset={asset} findAsset={findAsset} />
       </button>
-      {/* Ações: UM alvo de 44px sobre a miniatura. Fica translúcido até o card
-          receber mouse/foco; em tela de TOQUE (sem hover) é sempre opaco, senão
-          seria inalcançável no tablet. */}
-      <button
-        type="button"
-        ref={menu.triggerRef}
-        onClick={menu.toggle}
-        aria-haspopup="menu"
-        aria-expanded={menu.open}
-        aria-label={COPY.gallery.cardActions(asset.name)}
-        className="absolute top-1.5 right-1.5 flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-pin-surface/85 text-pin-text opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-pin-accent [@media(hover:none)]:opacity-100"
-      >
-        <MoreVertical aria-hidden="true" className="size-4" />
-      </button>
-      {menu.open && menu.position ? (
-        <div
-          ref={menu.menuRef}
-          role="menu"
-          aria-label={COPY.gallery.cardActions(asset.name)}
-          style={{ left: menu.position.left, top: menu.position.top }}
-          className="pin-panel fixed z-50 min-w-44 overflow-hidden p-1"
-        >
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              menu.close()
-              onRename()
-            }}
-            aria-label={`${COPY.gallery.rename} ${asset.name}`}
-            className={`${menuItemClass} rounded-lg`}
-          >
-            <Pencil aria-hidden="true" className="size-4" />
-            {COPY.gallery.rename}
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => void handleDuplicate()}
-            disabled={duplicating}
-            aria-busy={duplicating}
-            aria-label={`${COPY.gallery.duplicate} ${asset.name}`}
-            className={`${menuItemClass} rounded-lg disabled:cursor-wait disabled:opacity-50`}
-          >
-            <Copy aria-hidden="true" className="size-4" />
-            {COPY.gallery.duplicate}
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              menu.close()
-              onRemove()
-            }}
-            aria-label={`${COPY.gallery.remove} ${asset.name}`}
-            className={`${menuItemClass} rounded-lg text-pin-danger hover:bg-pin-danger/20`}
-          >
-            <Trash2 aria-hidden="true" className="size-4" />
-            {COPY.gallery.remove}
-          </button>
-        </div>
-      ) : null}
       <div className="flex items-center gap-1">
         <span
           aria-hidden="true"
@@ -303,6 +238,37 @@ export function AssetCard({
             {COPY.styleBadge[style]}
           </span>
         ) : null}
+      </div>
+      <div className="flex items-center justify-between gap-1">
+        <button
+          type="button"
+          onClick={onRename}
+          aria-label={`${COPY.gallery.rename} ${asset.name}`}
+          title={COPY.gallery.rename}
+          className={`${actionClass} hover:bg-pin-border/40`}
+        >
+          <Pencil aria-hidden="true" className="size-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => void handleDuplicate()}
+          disabled={duplicating}
+          aria-busy={duplicating}
+          aria-label={`${COPY.gallery.duplicate} ${asset.name}`}
+          title={COPY.gallery.duplicate}
+          className={`${actionClass} hover:bg-pin-border/40 disabled:cursor-wait disabled:opacity-50`}
+        >
+          <Copy aria-hidden="true" className="size-4" />
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`${COPY.gallery.remove} ${asset.name}`}
+          title={COPY.gallery.remove}
+          className={`${actionClass} text-pin-danger hover:bg-pin-danger/20`}
+        >
+          <Trash2 aria-hidden="true" className="size-4" />
+        </button>
       </div>
     </div>
   )

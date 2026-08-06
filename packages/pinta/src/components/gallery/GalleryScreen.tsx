@@ -23,14 +23,14 @@ import { ImportImageDialog } from './ImportImageDialog'
 import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
 
 /**
- * Grade da galeria: cards PEQUENOS, "só para reconhecer o desenho" (referência
- * MakeCode Arcade). `auto-fill` + `minmax` em vez de um número fixo de colunas
- * porque o card precisa ter o MESMO tamanho em qualquer tela: com
- * `grid-cols-10` fixo, um monitor de 1920 esticaria cada card para ~148px e a
- * galeria voltaria a ser uma lista de cartões grandes. Assim dá ~10 colunas num
- * notebook de 1366 e ~15 em 1920, com o card sempre em ~92px.
+ * Grade da galeria: cards COMPACTOS, mas largos o bastante para as três ações
+ * caberem no próprio card com alvo de 44px (3×44 = 132px + respiros ⇒ ~164px).
+ * `auto-fill` + `minmax` em vez de um número fixo de colunas porque o card
+ * precisa ter o MESMO tamanho em qualquer tela: com um `grid-cols-N` fixo, um
+ * monitor de 1920 esticaria cada card. Assim dá ~6 colunas num notebook de 1366
+ * e ~9 em 1920, com o card sempre em ~165px.
  */
-const GALLERY_GRID_CLASS = 'grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(88px,1fr))]'
+const GALLERY_GRID_CLASS = 'grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(164px,1fr))]'
 
 /** Nome sugerido pela missão de arte (com sufixo se a criança já usou o base). */
 const ROLE_NAME_BASE: Record<NewAssetRole, string> = {
