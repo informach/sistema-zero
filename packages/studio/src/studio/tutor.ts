@@ -58,6 +58,11 @@ export interface StudioTutorBlockReference {
   category: string
   /** Subcategoria aninhada (ex.: "🎮 Sprites"). Ausente em respostas antigas. */
   subcategory?: string
+  /**
+   * Caminho completo na paleta (ex.: `['Programação','🏷️ Variáveis']`) — é o que
+   * a criança realmente vê. Ausente em respostas gravadas antes de 08/2026.
+   */
+  palettePath?: readonly string[]
   area: string
 }
 

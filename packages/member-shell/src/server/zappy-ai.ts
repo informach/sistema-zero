@@ -415,8 +415,11 @@ function catalogPromptEntry(entry: ServerBlockCatalogEntry) {
   return {
     id: entry.type,
     nome: entry.label,
-    categoria: entry.category,
-    subcategoria: entry.subcategory,
+    // O caminho REAL da paleta ("Programação › 🏷️ Variáveis"). Substitui o par
+    // categoria/subcategoria, que mentia duas vezes: repetia o nome quando não
+    // havia segundo nível, e tratava Matemática/Valores/Funções/Objetos/Classes/
+    // Página como categorias de topo quando são filhas de "Programação".
+    caminho: entry.palettePath.join(' › ') || entry.category,
     area: entry.area,
     tooltip: entry.tooltip.slice(0, 160),
     entradas: entry.inputs,
@@ -520,7 +523,7 @@ function systemPrompt(
     'PROJETO DA CRIANÇA: o campo "esboco" mostra o que ela JÁ construiu, com os rótulos reais dos blocos (recuo = dentro de). Blocos marcados "(nível futuro)" existem no projeto dela, mas você NÃO pode recomendá-los nem detalhá-los; ensine com os blocos do catálogo permitido.',
     'Pergunta de REVISÃO ("o que falta?", "por que não funciona?", "o que posso melhorar?"): use scope "project-review" e responda em 3 partes curtas — ✅ o que já está pronto; 🔧 o que corrigir (UMA causa provável, apontando o bloco); ➡️ próximo passo (UMA mecânica nova do catálogo).',
     'Em blockReferences use somente blockType da lista permitida. blockId só pode ser copiado de uma instância do contexto com o mesmo type; senão use null.',
-    'Ao citar um bloco no texto, diga em texto corrido, sem crases, a categoria e a subcategoria dele, copiando exatamente os valores "categoria" e "subcategoria" do catálogo (ex.: o bloco "nome do bloco" fica na categoria X, subcategoria Y), para a criança achar na paleta.',
+    'Ao citar um bloco no texto, diga onde ele fica copiando EXATAMENTE o valor "caminho" do catálogo, em texto corrido e sem crases (ex.: o bloco "nome do bloco" fica em Programação › 🏷️ Variáveis). Nunca invente, encurte nem repita o nome de um nível no outro.',
     'Cite no texto somente blocos que EXISTEM no catálogo abaixo, pelo valor exato de "nome", e inclua cada bloco citado também em blockReferences. Nunca invente bloco: se a ação pedida não tem bloco no catálogo, diga que esse bloco ainda não existe no Estúdio e mostre um caminho com os blocos que existem.',
     'Em lessonReferences use somente lessonId de releasedLessonKnowledge. Nunca invente curso ou aula.',
     'Preencha "suggestions" com até 3 continuações prováveis da criança (≤ 8 palavras cada, em primeira pessoa, ex.: "Como faço ele atirar?"). Sem dado pessoal; [] quando não fizer sentido.',
@@ -800,6 +803,7 @@ export function validatedStudioZappyResponse(
         name: entry.label,
         category: entry.category,
         subcategory: entry.subcategory,
+        palettePath: [...entry.palettePath],
         area: entry.area,
       },
     ]

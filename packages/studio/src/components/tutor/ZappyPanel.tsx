@@ -437,8 +437,11 @@ export function ZappyPanel(): JSX.Element | null {
               {!isQuota && project.kind !== 'pro' && message.response?.blockReferences.length ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {message.response.blockReferences.map((reference) => {
-                    const trail =
-                      reference.subcategory && reference.subcategory !== reference.category
+                    // O caminho da paleta é a verdade; o par categoria/subcategoria
+                    // fica só como compat de resposta antiga do histórico.
+                    const trail = reference.palettePath?.length
+                      ? reference.palettePath.join(' › ')
+                      : reference.subcategory && reference.subcategory !== reference.category
                         ? `${reference.category} › ${reference.subcategory}`
                         : reference.category
                     return (

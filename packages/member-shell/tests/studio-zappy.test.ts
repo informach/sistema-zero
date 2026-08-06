@@ -527,9 +527,35 @@ describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', (
     expect(response.suggestions).toEqual(['Como faço ele atirar?'])
   })
 
-  test('a regra do prompt pede a trilha em texto corrido, sem crases', () => {
+  test('a regra do prompt pede o CAMINHO da paleta em texto corrido, sem crases', () => {
     expect(prompt.system).toContain('sem crases')
-    expect(prompt.system).toContain('"categoria" e "subcategoria"')
+    expect(prompt.system).toContain('"caminho"')
+    // O par categoria/subcategoria saiu: repetia o nome quando não havia segundo
+    // nível ("categoria Programação, subcategoria Programação") e promovia
+    // subcategorias a categorias de topo.
+    expect(prompt.system).not.toContain('subcategoria Y')
+  })
+
+  test('o catálogo do prompt manda o caminho real da paleta, sem repetir nível', () => {
+    const catalogo = JSON.parse(
+      prompt.system
+        .slice(prompt.system.indexOf('[{', prompt.system.indexOf('Catálogo autoritativo')))
+        .slice(
+          0,
+          prompt.system
+            .slice(prompt.system.indexOf('[{', prompt.system.indexOf('Catálogo autoritativo')))
+            .indexOf('}]') + 2,
+        ),
+    ) as Array<{ caminho?: string; categoria?: string; subcategoria?: string }>
+    expect(catalogo.length).toBeGreaterThan(0)
+    for (const item of catalogo) {
+      expect(item.categoria).toBeUndefined()
+      expect(item.subcategoria).toBeUndefined()
+      expect(typeof item.caminho).toBe('string')
+      const niveis = (item.caminho ?? '').split(' › ')
+      // "Programação › Programação" era exatamente o sintoma relatado.
+      expect(new Set(niveis).size).toBe(niveis.length)
+    }
   })
 
   test('o prompt proíbe citar bloco fora do catálogo e amarra citação a blockReferences', () => {
