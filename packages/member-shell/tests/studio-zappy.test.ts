@@ -1023,8 +1023,9 @@ describe('review 2: a recusa por limite chega marcada como aviso', () => {
     expect(body.response?.scope).toBe('quota')
     expect(body.response?.text).toContain('Amanhã')
     // O outcome segue separado: é o que alimenta a métrica do /admin/ia.
-    expect(persisted?.outcome).toBe('quota')
-    expect(persisted?.response?.scope).toBe('quota')
+    const saved = persisted as { outcome?: string; response?: { scope?: string } } | null
+    expect(saved?.outcome).toBe('quota')
+    expect(saved?.response?.scope).toBe('quota')
   })
 
   test('indisponibilidade NÃO vira quota (é erro, e a copy é outra)', async () => {

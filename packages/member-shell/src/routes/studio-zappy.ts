@@ -216,11 +216,17 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       if (!parsed.success || parsed.data.projectId !== parsed.data.context.projectId) {
         return error('INVALID_INPUT', 400)
       }
-      if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
+      // Posse e rank são INDEPENDENTES: em série custavam uma ida inteira de
+      // latência com a criança esperando. A ordem das CHECAGENS abaixo continua a
+      // mesma — só a espera virou uma só.
+      const [studioAccess, gamification] = await Promise.all([
+        hasStudioAccess(members),
+        members.getGamification(),
+      ])
+      if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
 
       // Rank/modos/extensões vêm do members + catálogo da carreira, nunca do cliente.
-      const gamification = await members.getGamification()
       if (gamification.status !== 200) return error('ZAPPY_UNAVAILABLE', 503)
       const levelSlug = gamification.body?.level?.slug
       // Reusa o rank desta rota para não consultar o members duas vezes.
