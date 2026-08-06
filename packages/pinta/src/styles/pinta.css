@@ -128,6 +128,21 @@
   letter-spacing: -0.01em;
 }
 
+/*
+ * Faixa de título dos painéis do editor (ver components/ui/Panel.tsx): fundo
+ * tonal no azul da marca + divisória, separando cabeçalho de conteúdo. Antes o
+ * título era um texto solto dentro do painel e tudo lia como uma caixa só.
+ */
+[data-pinta-theme] .pin-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.75rem; /* 44px: a faixa também é alvo de toque quando é botão */
+  padding: 0.125rem 0.25rem 0.125rem 0.5rem;
+  background: var(--pin-panel-head);
+  border-bottom: 2px solid var(--pin-panel-border, var(--color-pin-border));
+}
+
 /* CTA pill com sombra dura (espelho do .sz-btn-gradient do kids). */
 [data-pinta-theme] .pin-btn-3d {
   border-radius: 9999px;

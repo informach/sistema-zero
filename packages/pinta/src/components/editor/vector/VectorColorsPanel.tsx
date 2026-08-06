@@ -10,6 +10,7 @@
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { COPY } from '../../../core/copy'
+import { Panel } from '../../ui/Panel'
 import { ColorButton } from '../ColorPicker'
 import { useVectorEditor, type VectorColorChannel } from './VectorEditorScope'
 
@@ -51,11 +52,7 @@ export function VectorColorsPanel(): JSX.Element {
   )
 
   return (
-    <section
-      aria-label={COPY.palette.title}
-      className="pin-panel flex w-68 shrink-0 flex-col gap-2 p-3"
-    >
-      <span className="min-w-0 truncate px-1 font-bold text-pin-text">{COPY.palette.title}</span>
+    <Panel title={COPY.palette.title} className="w-68 shrink-0">
       {/* Chips do canal: onde a próxima cor vai cair. */}
       <div className="flex gap-1">
         {chip('fill', COPY.vector.fill)}
@@ -98,6 +95,6 @@ export function VectorColorsPanel(): JSX.Element {
           }}
         />
       </div>
-    </section>
+    </Panel>
   )
 }

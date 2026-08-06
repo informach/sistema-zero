@@ -18,6 +18,7 @@ import type { VectorShape } from '../../../vector/model'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { ToolButton } from '../../ui/Button'
 import { Eye, EyeOff, GripVertical } from '../../ui/icons'
+import { Panel } from '../../ui/Panel'
 import { useEditorStores } from '../editorContext'
 import { addPointerDragListeners } from '../pointerDrag'
 import { useVectorEditor } from './VectorEditorScope'
@@ -149,11 +150,7 @@ export function VectorLayerPanel(): JSX.Element | null {
   }
 
   return (
-    <section
-      aria-label={COPY.layers.title}
-      className="pin-panel flex w-68 shrink-0 flex-col gap-2 p-3"
-    >
-      <span className="min-w-0 truncate px-1 font-bold text-pin-text">{COPY.layers.title}</span>
+    <Panel title={COPY.layers.title} className="w-68 shrink-0">
       <ul
         ref={rowsRef}
         className="flex max-h-48 flex-col gap-1 overflow-y-auto overscroll-contain p-0.5"
@@ -220,6 +217,6 @@ export function VectorLayerPanel(): JSX.Element | null {
           )
         })}
       </ul>
-    </section>
+    </Panel>
   )
 }

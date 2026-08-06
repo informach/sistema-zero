@@ -36,6 +36,7 @@ import { paintBitmap } from '../../pixel/render'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { Eye, EyeOff, GripVertical, Plus, Trash2 } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { addPointerDragListeners } from './pointerDrag'
@@ -203,29 +204,30 @@ export function LayerPanel(): JSX.Element | null {
   }
 
   return (
-    <section aria-label={COPY.layers.title} className="pin-panel flex w-68 flex-col gap-2 p-3">
-      <div className="flex items-center gap-1">
-        <span className="min-w-0 flex-1 truncate px-1 font-bold text-pin-text">
-          {COPY.layers.title}
-        </span>
-        <ToolButton
-          icon={Trash2}
-          label={COPY.layers.remove}
-          onClick={handleTrash}
-          aria-disabled={layered.layers.length <= 1}
-          className={layered.layers.length <= 1 ? 'opacity-40' : undefined}
-        />
-        <button
-          type="button"
-          aria-label={COPY.layers.add}
-          title={COPY.layers.add}
-          onClick={handleAdd}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
-        >
-          <Plus aria-hidden="true" className="size-5" />
-        </button>
-      </div>
-
+    <Panel
+      title={COPY.layers.title}
+      className="w-68"
+      actions={
+        <>
+          <ToolButton
+            icon={Trash2}
+            label={COPY.layers.remove}
+            onClick={handleTrash}
+            aria-disabled={layered.layers.length <= 1}
+            className={layered.layers.length <= 1 ? 'opacity-40' : undefined}
+          />
+          <button
+            type="button"
+            aria-label={COPY.layers.add}
+            title={COPY.layers.add}
+            onClick={handleAdd}
+            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+          >
+            <Plus aria-hidden="true" className="size-5" />
+          </button>
+        </>
+      }
+    >
       <ul
         ref={rowsRef}
         className="flex max-h-48 flex-col gap-1 overflow-y-auto overscroll-contain p-0.5"
@@ -334,6 +336,6 @@ export function LayerPanel(): JSX.Element | null {
           </Button>
         </div>
       </Dialog>
-    </section>
+    </Panel>
   )
 }

@@ -21,6 +21,7 @@ import {
   SquareDashed,
   Trash2,
 } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { TilePicker } from './TilePicker'
 
 export type MapTool = 'pencil' | 'fill' | 'eraser' | 'line' | 'rect' | 'select' | 'picker' | 'pan'
@@ -131,8 +132,7 @@ export function TilemapSidebar({
         onSetStamp={onSetStamp}
       />
 
-      <section aria-label={COPY.tiles.layers} className="pin-panel p-3">
-        <span className="mb-2 block text-sm font-bold text-pin-muted">{COPY.tiles.layers}</span>
+      <Panel title={COPY.tiles.layers}>
         <div className="flex flex-col gap-1">
           {tilemap.layers.map((layer) => {
             const active = layer.id === activeLayerId
@@ -193,7 +193,7 @@ export function TilemapSidebar({
           <Plus aria-hidden="true" className="size-4" />
           {COPY.tiles.addLayer}
         </Button>
-      </section>
+      </Panel>
     </div>
   )
 }

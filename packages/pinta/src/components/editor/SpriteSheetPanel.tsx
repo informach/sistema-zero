@@ -50,6 +50,7 @@ import {
   Plus,
   Trash2,
 } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -171,27 +172,25 @@ export function SpriteSheetPanel({
   }
 
   return (
-    <section
-      aria-label={COPY.animation.spritesheet}
-      className={`pin-panel flex min-h-0 flex-col gap-2 p-2 ${className ?? ''}`}
-    >
-      <header className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {/* Mesmo título dos painéis irmãos (Camadas/Cores/Prévia). */}
-          <span className="px-1 font-bold text-pin-text">{COPY.animation.spritesheet}</span>
-          <span className="rounded-full bg-pin-accent/15 px-2 py-0.5 text-xs font-bold text-pin-muted">
-            {COPY.animation.animationCount(asset.animations.length)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
+    <Panel
+      title={COPY.animation.spritesheet}
+      className={className}
+      titleSuffix={
+        <span className="ml-2 shrink-0 rounded-full bg-pin-accent/15 px-2 py-0.5 font-bold text-pin-muted text-xs normal-case tracking-normal">
+          {COPY.animation.animationCount(asset.animations.length)}
+        </span>
+      }
+      actions={
+        <>
           {zoomSlot}
           <Button variant="primary" onClick={addNewAnimation}>
             <Plus aria-hidden="true" className="size-4" />
             {COPY.animation.addAnimation}
           </Button>
-        </div>
-      </header>
-
+        </>
+      }
+      bodyClassName="flex min-h-0 flex-col gap-2 p-2"
+    >
       <div className="flex max-h-56 min-h-0 flex-col gap-1 overflow-y-auto">
         {asset.animations.map((animation) => {
           const selected = animation.id === activeId
@@ -399,6 +398,6 @@ export function SpriteSheetPanel({
           </div>
         </form>
       </Dialog>
-    </section>
+    </Panel>
   )
 }

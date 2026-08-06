@@ -36,6 +36,7 @@ import { PINTA_LIMITS, resolveAssetPalette } from '../../core/project'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { Check, ChevronDown, Palette, Plus, Trash2 } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { ColorPicker } from './ColorPicker'
 import { useEditor, useEditorStores, useSession } from './editorContext'
@@ -374,25 +375,31 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     // Largura FIXA (w-68): sem ela o painel encolhia/alargava conforme o NOME
     // da paleta ativa ("Arcade" × "Lápis e carvão") e a grade 1fr esticava os
     // vãos junto — o espaçamento ficava alternando a cada troca.
-    <section aria-label={COPY.palette.title} className="pin-panel flex w-68 flex-col gap-2 p-3">
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={toggleMenu}
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          aria-label={`${COPY.palette.switchPalette}: ${paletteName}`}
-          className="flex min-h-11 min-w-0 flex-1 items-center gap-1 rounded-xl px-2 text-left font-bold text-pin-text transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
-        >
-          <span className="truncate">{paletteName}</span>
-          <ChevronDown
-            aria-hidden="true"
-            className={`size-4 shrink-0 transition ${menuOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-        {trashButton}
-        {addButton}
-      </div>
+    // O título É o seletor de paleta ("Arcade ∨"): o nome da paleta ativa abre
+    // o dropdown de troca, no lugar de um rótulo fixo "Cores".
+    <Panel
+      title={paletteName}
+      ariaLabel={COPY.palette.title}
+      className="w-68"
+      onTitleClick={toggleMenu}
+      titleProps={{
+        'aria-haspopup': 'menu',
+        'aria-expanded': menuOpen,
+        'aria-label': `${COPY.palette.switchPalette}: ${paletteName}`,
+      }}
+      titleSuffix={
+        <ChevronDown
+          aria-hidden="true"
+          className={`size-4 shrink-0 transition ${menuOpen ? 'rotate-180' : ''}`}
+        />
+      }
+      actions={
+        <>
+          {trashButton}
+          {addButton}
+        </>
+      }
+    >
       {/* 5 por linha → painel mais largo e mais curto; as 17 células base
           cabem em 4 linhas SEM scroll (extras rolam por dentro). */}
       <div className="grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto overscroll-contain p-0.5">
@@ -401,6 +408,6 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       {paletteMenu}
       {pickerDialog}
       {confirmDialog}
-    </section>
+    </Panel>
   )
 }

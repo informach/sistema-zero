@@ -28,6 +28,7 @@ import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { Play, Settings, SquarePen } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { AnimationDetails } from './AnimationDetails'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -73,14 +74,7 @@ export function PreviewPlayer(): JSX.Element | null {
   if (!animated || !animation) return null
 
   return (
-    <section
-      aria-label={COPY.animation.preview}
-      className="pin-panel flex flex-col items-center gap-2 p-3"
-    >
-      {/* Mesmo título dos painéis irmãos (Camadas/Cores): px-1 font-bold text-pin-text. */}
-      <span className="w-full min-w-0 truncate px-1 font-bold text-pin-text">
-        {COPY.animation.preview}
-      </span>
+    <Panel title={COPY.animation.preview} bodyClassName="flex flex-col items-center gap-2 p-2">
       <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">
         {animated.kind === 'pixel-sprite' ? (
           <canvas
@@ -131,6 +125,6 @@ export function PreviewPlayer(): JSX.Element | null {
       >
         <AnimationDetails />
       </Dialog>
-    </section>
+    </Panel>
   )
 }

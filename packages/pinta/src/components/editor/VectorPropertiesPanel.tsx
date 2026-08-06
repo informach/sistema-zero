@@ -30,6 +30,7 @@ import {
   Trash2,
   Ungroup,
 } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { ColorButton } from './ColorPicker'
 import { useVectorEditor } from './vector/VectorEditorScope'
 
@@ -69,9 +70,7 @@ export function VectorPropertiesPanel(): JSX.Element {
 
   return (
     <div className="flex w-68 shrink-0 flex-col gap-2">
-      <section aria-label={COPY.vector.appearance} className="pin-panel p-3">
-        <span className="block px-1 font-bold text-pin-text">{COPY.vector.appearance}</span>
-
+      <Panel title={COPY.vector.appearance}>
         <span className="mt-2 mb-1 block text-sm font-bold text-pin-muted">
           {COPY.vector.gradient}
         </span>
@@ -148,7 +147,7 @@ export function VectorPropertiesPanel(): JSX.Element {
             className="mt-1 w-full accent-pin-accent"
           />
         </label>
-      </section>
+      </Panel>
 
       {tool === 'polygon' || tool === 'star' ? (
         <section className="pin-panel p-3">
