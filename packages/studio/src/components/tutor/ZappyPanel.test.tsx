@@ -642,3 +642,41 @@ describe('ZappyPanel', () => {
     expect(enviar.hasAttribute('disabled')).toBe(false)
   })
 })
+
+describe('ZappyPanel sob rede ruim', () => {
+  function silent(): StudioTutorAdapter {
+    return {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(),
+      feedback: async () => undefined,
+    }
+  }
+
+  it('a pergunta volta para o campo quando a ida ao servidor falha', async () => {
+    // ⚠️ Achado do 4º review: sem teto de tempo no adapter, uma rede pendurada
+    // deixava a promessa sem resolver — o painel travava em "pensando…" e a
+    // pergunta digitada sumia (só o `catch` a devolve). O teto transforma o
+    // pendurado num erro, e é este caminho que devolve o texto e libera o botão.
+    const adapter: StudioTutorAdapter = {
+      ...silent(),
+      ask: async () => {
+        throw Object.assign(new Error('rede caiu'), { code: 'ZAPPY_UNAVAILABLE' })
+      },
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+
+    // O texto NÃO pode se perder, e o botão precisa voltar a funcionar.
+    await waitFor(() => expect(question.value).toBe('Como faço o pulo?'))
+    await waitFor(() =>
+      expect(view.getByRole('button', { name: 'Perguntar' }).hasAttribute('disabled')).toBe(false),
+    )
+  })
+})
