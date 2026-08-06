@@ -264,6 +264,23 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 1. **Workers cross-bundler**: todo worker nasce de `new Worker(new URL('./caminho-relativo.ts', import.meta.url), { type: 'module' })` com URL **literal inline** — nada de `?worker` (Vite-only), nada de bare specifier dentro de `new URL()` (Vite não resolve), nada de variável/helper no 1º argumento (quebra a análise estática de Vite/Turbopack/webpack). Os workers do Monaco usam os wrappers em `src/monaco/workers/`. Plano B se um bundler de host falhar: extrair a criação p/ factory injetável via prop.
 2. **`loader.config({ monaco })` em `src/monaco/workers.ts` é intocável**: sem ele o `@monaco-editor/react` injeta o loader AMD, que colide com o UMD do Blockly ("Can only have one anonymous define").
 3. **CSS**: `src/styles/studio.css` é o CSS exportado — SEM `@import "tailwindcss"`, SEM `@source`, SEM `@custom-variant dark` (sobrescreveria a variant dos apps) e SEM regras globais de app (html/body/scrollbar — vivem no `playground/styles.css`). Tema escopado por `[data-sz-theme]` no root do componente, NUNCA no `<html>` do host. Conteúdo PORTALADO p/ document.body precisa de `<StudioThemeScope>` (ver Modal/ProjectCard/Menu). ⚠️ O dropdown da Topbar (`Menu` de `#ui`) é PORTALADO de propósito: inline (`absolute`) ele ficava ATRÁS do `<iframe>` do preview (iframe = stacking context próprio, vence qualquer z-index local).
+3a. **O Studio HERDA a aparência do host (08/2026).** Fundo, painel, borda e texto dos
+   `--color-sz-*` apontam para os primitivos `--sz-kids-*` de `@sistemazero/ui/theme-kids.css`,
+   com **fallback = o valor literal de antes**: dentro do community-kids (que importa os
+   primitivos) o Estúdio fica azul-céu/navy, igual à página; no **admin** e na **comunidade
+   adulta**, que NÃO os importam, nada muda. É o que permite um só CSS servir 4 hosts.
+   - **Fonte**: `--font-family-sans` encabeça com `var(--font-nunito, sz-none)` (e a display com
+     `--font-baloo`). O `next/font` gera famílias com nome HASHEADO, então os literais `"Baloo 2"`
+     nunca resolviam e o Estúdio caía em system-ui dentro do kids. `sz-none` é uma família válida
+     que não casa com nada e é PULADA fora do kids, preservando a cascata antiga.
+     ⚠️ NÃO usar `var(--font-sans, …)`: é token DEFAULT do Tailwind v4 e nunca cai no fallback.
+   - **Blockly** lê a paleta do tema em RUNTIME (`blockly/themeColors.ts`): uma tabela HEX fixa não
+     consegue estar certa em dois hosts (canvas creme dentro de app azul). A conversão de cor
+     PINTA num canvas 1×1 — `getComputedStyle` devolve `oklch()`/`oklab()` crus, que regex de
+     `rgb()` não pega. `defineTheme` cacheia por NOME: cada paleta lida vira um nome derivado.
+   - ⚠️ Derivado por `color-mix` é substituído no elemento onde é DECLARADO: os tokens derivados
+     são RE-DECLARADOS no bloco `[data-sz-theme="light"]`, senão herdariam a mistura do escuro.
+   - O host não embrulha mais o editor num card (`studio-full-client.tsx`).
 3b. **A raiz do Studio é uma CERCA de stacking (`isolation: isolate` no style inline do
    `StudioCore`, 24/07/2026)**: o Blockly injeta `.blocklyToolbox { z-index: 70 }` e, sem a
    cerca, a paleta vazava por CIMA dos modais do host (o `Dialog` do `@sistemazero/ui` é overlay

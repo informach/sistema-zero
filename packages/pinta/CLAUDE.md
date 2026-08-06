@@ -169,6 +169,26 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   INPUT/TEXTAREA/contentEditable — mesmo guard do VectorEditor). **Onboarding**: galeria vazia
   mostra convite grande + CTA `gallery.emptyCta` (rótulo distinto do "Criar novo" do header, p/
   não colidir com o getByRole dos testes).
+- **⭐ O Pinta é uma SEÇÃO da comunidade kids, não um app à parte (08/2026)**: fundo, superfície,
+  borda e texto dos tokens `--color-pin-*` apontam para os primitivos `--sz-kids-*`
+  (`@sistemazero/ui/theme-kids.css`) com FALLBACK literal — dentro do kids o fundo é o MESMO
+  `--background` da página (azul-céu `#f0f8ff`; escuro = navy), então o app "assenta" nela sem
+  emenda; fora do kids vale a reserva (o creme MakeCode de antes). O host TIROU o card que
+  envolvia o app (`pinta-client.tsx`), e o cabeçalho da GALERIA é o cabeçalho de seção da
+  comunidade (`text-3xl md:text-4xl` + subtítulo) — some sozinho ao abrir o editor.
+  ⚠️ `color-mix` vai **`in oklab`, nunca `in oklch`**: oklch é polar e interpola o MATIZ —
+  misturar o azul (252°) com o branco (`oklch(1 0 0)`, matiz 0) dá ROSA (pego no QA).
+  ⚠️ O Tailwind v4 **PODA do `@theme`** os tokens que nenhuma utilitária usa: valor consumido só
+  por CSS (ex.: `--pin-panel-head`) mora no bloco `[data-pinta-theme]`, não no `@theme`.
+- **Galeria compacta (08/2026)**: grade `auto-fill minmax(88px,1fr)` (≈10 colunas num notebook de
+  1366, card sempre ~94px — número FIXO de colunas esticaria o card para ~148px em 1920) e as
+  ações do card (renomear/duplicar/apagar) num menu atrás de UM botão de 44px sobre a miniatura:
+  três alvos de 44px (132px) não cabem num card de 94px. O menu usa `components/ui/useAnchoredMenu`
+  (extraído do dropdown do `PaletteBar`) + trava dentro da viewport.
+- **Painéis com cabeçalho (`components/ui/Panel.tsx`)**: faixa de título tonal (`.pin-panel-head`)
+  + divisória, no lugar do `<span>` em negrito solto. ⚠️ O `aria-label` fica na MESMA `<section>`
+  (4 testes casam o seletor `section[aria-label=…]`) e o título é MOVIDO, nunca duplicado (Prévia
+  e Spritesheet têm `getByText` que quebra com dois nós do mesmo texto).
 - **CSS**: tokens `--color-pin-*` em `@theme` sob `[data-pinta-theme]` (claro default kids).
   Cor de chip por PAPEL (`pin-kind-*`, só emoji) + selinho de ESTILO (`pin-style-*`, carrega
   TEXTO branco — ⚠️ manter L ≤ ~0.55 nos DOIS temas). SEM `@import "tailwindcss"`, SEM `@source`,

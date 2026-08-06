@@ -67,6 +67,20 @@ O componente usa estado React por instância e navegação interna lista ⇄ pla
 
 O host transpila o TS source e importa `@sistemazero/pensa/styles.css`. Não reintroduza chooser de ambiente, kanban, checklist, lançamento executável, `renderStudio`, `createStudioProject`, `syncStudioSnapshot` ou chaves locais de retomada/checks/intents.
 
+**O Pensa é uma SEÇÃO da comunidade kids, não um app à parte (08/2026).** Os tokens `--pz-*` já
+apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
+
+- `.pensa-planner` tem fundo **CHAPADO** (`var(--pz-bg)`). O `radial-gradient` que existia era a
+  textura de um app próprio e denunciava a emenda com a página, mesmo com a cor certa.
+- `.pensa-hero` deixou de ser hero de LANDING: sem card (borda/fundo/sombra), sem a marca d'água
+  `"ZERO"` do `::after`, `h1` em 1.875rem (a escala das páginas kids) e `.pensa-home` com respiro
+  de seção — o `MainContainer` do host já dá o padding externo.
+- Cards (`.pensa-project-card`, `.pensa-panel`/`-artifact`/`-audit`/`-ribbon`, `.pensa-task > article`)
+  usam a geometria do `.kids-card`: borda **2px** + raio **1.5rem**.
+- O host não embrulha mais o app num card (`pensa-client.tsx`).
+⚠️ Mexer na largura interna (`width: min(1160px, …)`) desloca os `@container (max-width: 820px|560px)`
+— re-verifique os dois pontos de quebra em 1366 e 1920.
+
 ## Verificação
 
 Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem cobrir o mapa ZERO, os cinco artefatos, ordem/dependências, próxima tarefa, entitlement e abertura da ferramenta de destino.
