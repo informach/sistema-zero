@@ -90,6 +90,13 @@ export function ImportImageDialog({
   function reset(): void {
     setStep('target')
     setTarget('background')
+    // O diálogo fica MONTADO entre aberturas (só a prop `open` muda): reabrir
+    // com o card Personalizado selecionado e os campos recém-limpos seria um
+    // beco (Avançar travado, sem prévia). A sentinela volta ao preset médio;
+    // um preset comum escolhido continua lembrado, como antes.
+    setSizeKey((k) =>
+      k === CUSTOM_SIZE_KEY ? `${BACKGROUND_SIZES[1]?.width}x${BACKGROUND_SIZES[1]?.height}` : k,
+    )
     setCustomValues(EMPTY_CUSTOM_VALUES)
     setName('')
   }

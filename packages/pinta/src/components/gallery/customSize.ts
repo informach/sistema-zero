@@ -45,6 +45,9 @@ export function customSizeSpecFor(kind: PintaAssetKind): CustomSizeSpec | null {
     case 'vector-sprite':
       return { fields: ['frame'], min: PINTA_LIMITS.minFrameSize, max: PINTA_LIMITS.maxFrameSize }
     case 'tilemap':
+      // A spec tem UMA faixa para os dois campos (uma frase de ajuda só):
+      // maxTilemapCols === maxTilemapRows (128) hoje; se algum dia divergirem,
+      // o spec precisa de min/max POR campo.
       return { fields: ['cols', 'rows'], min: 1, max: PINTA_LIMITS.maxTilemapCols }
     case 'tileset':
     case 'vector-tileset':

@@ -215,6 +215,8 @@ export function createVectorBackgroundAsset(input: {
     name: input.name,
     createdAt: now,
     updatedAt: now,
+    // 2048 também é o teto MOSTRADO no tamanho personalizado do wizard
+    // (gallery/customSize.ts) — mudar aqui pede mudar lá (e no sanitize).
     width: clampProjectInt(input.width, 1, 2048),
     height: clampProjectInt(input.height, 1, 2048),
     shapes: [],

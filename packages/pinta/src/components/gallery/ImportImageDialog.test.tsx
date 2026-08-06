@@ -101,4 +101,25 @@ describe('ImportImageDialog', () => {
       expect(asset.cels[0]?.height).toBe(24)
     }
   })
+
+  it('fechar no Personalizado e reabrir volta ao preset médio (o diálogo fica montado)', () => {
+    const props = { image: redImage(), onClose: () => {}, onImport: () => {} }
+    const { rerender } = render(<ImportImageDialog open {...props} />)
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.customSize.card }))
+    expect(screen.getByLabelText(COPY.newAsset.customSize.width)).toBeTruthy()
+
+    // Fechar roda o reset ANTES do onClose do host; reabrir não pode cair no
+    // card Personalizado com campos vazios (Avançar travado, sem prévia).
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    rerender(<ImportImageDialog open {...props} />)
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+    expect(screen.queryByLabelText(COPY.newAsset.customSize.width)).toBeNull()
+    const medium = screen.getByRole('button', { name: '240 × 180' })
+    expect(medium.getAttribute('aria-pressed')).toBe('true')
+  })
 })
