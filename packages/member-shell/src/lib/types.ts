@@ -954,6 +954,7 @@ export interface ZappyStoredResponseView {
     | 'redirect-pinta'
     | 'unsupported'
     | 'project-review'
+    | 'quota'
   blockReferences: Array<{
     blockId?: string
     blockType: string

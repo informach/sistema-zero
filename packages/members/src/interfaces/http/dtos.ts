@@ -114,6 +114,9 @@ export const ZappyInternalResponseBody = t.Object({
       t.Literal('redirect-pinta'),
       t.Literal('unsupported'),
       t.Literal('project-review'),
+      // Acabou a ajuda de IA da família. Persistido de propósito: sem ele, a
+      // recusa volta do histórico com cara de aula (e com "isso ajudou?").
+      t.Literal('quota'),
     ]),
     blockReferences: t.Array(
       t.Object({

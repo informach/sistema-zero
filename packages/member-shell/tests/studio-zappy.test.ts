@@ -993,3 +993,47 @@ describe('review: o contexto do projeto atravessa a borda da rota', () => {
     expect(userPrompt).toContain('ainda não foi declarada')
   })
 })
+
+describe('review 2: a recusa por limite chega marcada como aviso', () => {
+  /**
+   * ⚠️ Achado do 2º full review: o `'quota'` passado ao `complete` é o OUTCOME
+   * (analítica), não o scope da resposta. O scope ficava 'unsupported', e o
+   * painel — que decide pelo scope se aquilo é aviso ou aula — renderizava o
+   * limite como conteúdo pedagógico, com os polegares de "isso ajudou?".
+   */
+  test('o scope da resposta vira quota, e é isso que o painel lê', async () => {
+    let persisted: { outcome?: string; response?: { scope?: string } } | null = null
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        aiUsageConsume: async () => ({
+          status: 200,
+          body: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50 },
+        }),
+        zappyCompleteQuestion: async (_id: string, body: Record<string, unknown>) => {
+          persisted = body as typeof persisted
+          return { status: 200, body: body.response }
+        },
+      }),
+    } as never)
+
+    const res = await routes.studioZappyMessage.POST(request('Como faço isso?'))
+    const body = (await res.json()) as { response?: { scope?: string; text?: string } }
+
+    expect(body.response?.scope).toBe('quota')
+    expect(body.response?.text).toContain('Amanhã')
+    // O outcome segue separado: é o que alimenta a métrica do /admin/ia.
+    expect(persisted?.outcome).toBe('quota')
+    expect(persisted?.response?.scope).toBe('quota')
+  })
+
+  test('indisponibilidade NÃO vira quota (é erro, e a copy é outra)', async () => {
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({ aiUsageConsume: async () => ({ status: 503, body: null }) }),
+    } as never)
+    const res = await routes.studioZappyMessage.POST(request('Como faço isso?'))
+    const body = (await res.json()) as { response?: { scope?: string } }
+    expect(body.response?.scope).not.toBe('quota')
+  })
+})

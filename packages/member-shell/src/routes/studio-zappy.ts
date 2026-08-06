@@ -356,6 +356,12 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           response.text = 'O Zappy não conseguiu acordar agora. Tente novamente em alguns minutos.'
           return complete(response, 'error')
         }
+        // ⚠️ O `scope` da RESPOSTA precisa virar 'quota' — o 'quota' do `complete`
+        // abaixo é só o OUTCOME (analítica do admin). Sem esta linha o scope
+        // continuava 'unsupported' e o painel renderizava o limite como aula,
+        // com os polegares de "isso ajudou?", que é justamente o que a separação
+        // de aviso × ensino veio consertar.
+        response.scope = 'quota'
         response.text =
           quota.scope === 'day'
             ? 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖'

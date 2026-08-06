@@ -9,6 +9,12 @@ export type ZappyScope =
   | 'redirect-pinta'
   | 'unsupported'
   | 'project-review'
+  /**
+   * Acabou a ajuda de IA da família. É PERSISTIDO: o front decide pelo scope se
+   * a mensagem é um AVISO ou uma aula, e uma recusa relida do histórico não pode
+   * voltar com cara de conteúdo avaliável. Sem migration — a coluna é varchar.
+   */
+  | 'quota'
 
 export interface ZappyStoredResponse {
   id: string
