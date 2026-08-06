@@ -10,6 +10,7 @@ const { buildBehaviorDigest, buildDraftSummary, buildProjectOutline } = await im
 )
 const { buildStudioZappyPrompt, relevantExampleRecipes } = await import('../src/server/zappy-ai')
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
+const { looksLikeDiagnosisQuestion } = await import('../src/server/zappy-search')
 
 const CATALOG = new Map([
   ['sz_g2d_create_sprite', { label: 'Criar sprite com imagem', category: 'Jogo 2D' }],
@@ -215,5 +216,90 @@ describe('pilhas que nunca rodam (buildDraftSummary)', () => {
     const resumo = buildDraftSummary(['<script>alert(1)</script>'], BLOCKS, CATALOG)
     expect(resumo).not.toContain('script')
     expect(resumo).toContain('1 pilha(s) solta(s)')
+  })
+})
+
+describe('modo diagnóstico: erro deixa de virar aula de mecânica', () => {
+  const CONTEXT = {
+    projectId: 'p1',
+    mode: 'blocks' as const,
+    kind: 'classic' as const,
+    blocks: [
+      { id: 'b1', type: 'sz_g2d_on_key', topLevel: true },
+      { id: 'b2', type: 'sz_g2d_create_sprite', parentId: 'b1', topLevel: false },
+    ],
+    installedExtensions: ['game-2d'],
+    selectedBlockId: null,
+    lastError: null,
+    behavior: [
+      {
+        area: 'events' as const,
+        depth: 0,
+        type: 'g2d:onKey',
+        blockId: 'b1',
+        values: [{ name: 'key', value: 'ArrowRight' }],
+      },
+      {
+        area: 'events' as const,
+        depth: 1,
+        type: 'g2d:setVelocity',
+        blockId: 'b2',
+        values: [{ name: 'vx', value: '0' }],
+      },
+    ],
+  }
+  const TIER = resolveStudioTier('god', 'staff')
+  const build = (question: string) =>
+    buildStudioZappyPrompt({ question, context: CONTEXT, tier: TIER })
+
+  it('reconhece as formas como a criança relata que algo não funciona', () => {
+    for (const question of [
+      'meu personagem não anda',
+      'Deu um erro no meu jogo',
+      'o jogo travou',
+      'o inimigo deveria sumir quando encosta',
+      'por que meu sprite não aparece?',
+      'ta bugado o pulo',
+    ]) {
+      expect(looksLikeDiagnosisQuestion(question)).toBe(true)
+    }
+  })
+
+  it('não confunde pedido de ENSINO com diagnóstico', () => {
+    for (const question of [
+      'como faço meu personagem pular?',
+      'como coloco uma imagem de fundo?',
+      'quero adicionar pontuação',
+    ]) {
+      expect(looksLikeDiagnosisQuestion(question)).toBe(false)
+    }
+  })
+
+  it('pergunta de erro NÃO leva receita de mecânica', () => {
+    // Era a causa medida do "passo a passo genérico": a própria sugestão da UI
+    // puxava receitas de jogos sem relação nenhuma com a dúvida.
+    expect(build('Deu um erro no meu jogo').system).not.toContain('RECEITAS INTERNAS')
+  })
+
+  it('pergunta de ensino continua levando receita', () => {
+    expect(build('como faço meu personagem pular?').system).toContain('RECEITAS INTERNAS')
+  })
+
+  it('o modo diagnóstico manda olhar o projeto e proíbe empurrar mecânica nova', () => {
+    const system = build('meu personagem não anda').system
+    expect(system).toContain('DIAGNÓSTICO')
+    expect(system).toContain('NÃO sugira mecânica nova')
+    expect(system).toContain('comportamento')
+    expect(system).toContain('rascunhosSoltos')
+  })
+
+  it('o projeto da criança tem peso real no orçamento da pergunta de erro', () => {
+    const diagnostico = build('meu personagem não anda')
+    const ensino = build('como faço meu personagem pular?')
+    const razao = (p: { system: string; user: string }) =>
+      Buffer.byteLength(p.system, 'utf8') / Buffer.byteLength(p.user, 'utf8')
+    // Medido antes deste lote: ~40:1 de conteúdo genérico contra o projeto dela.
+    expect(razao(diagnostico)).toBeLessThan(razao(ensino))
+    expect(JSON.parse(diagnostico.user).project.comportamento).toContain('vx=0')
   })
 })

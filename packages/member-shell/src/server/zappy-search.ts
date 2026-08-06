@@ -185,3 +185,31 @@ export function scoreTokens(
   }
   return hits
 }
+
+/**
+ * A pergunta está relatando que ALGO NÃO FUNCIONA como esperado?
+ *
+ * É o que separa "como faço o personagem pular?" (ensinar a mecânica) de "meu
+ * personagem não pula" (diagnosticar o que ela já montou). Sem essa distinção,
+ * toda pergunta virava aula: as receitas de mecânica entravam no prompt e o
+ * modelo respondia o passo a passo do zero em vez de olhar o projeto.
+ *
+ * Puro e sobre texto normalizado (sem acento, minúsculo).
+ */
+const FAILURE_MARKERS = [
+  // negação + verbo de funcionamento ("não anda", "nao ta funcionando", "não vai")
+  /\bn[ao]{1,2}\b[^.!?]{0,30}\b(funciona\w*|anda\w*|vai|move\w*|aparece\w*|acontece\w*|sai\w*|pula\w*|abre|roda\w*|responde\w*|deixa|consigo|consegue)\b/,
+  // falha declarada
+  /\b(bug\w*|bugou|quebr(?:ou|ando|a)|trav(?:ou|ando|a)|parou|para de|sumiu|some|desapareceu|errad\w+|estranho|zoad\w+)\b/,
+  // erro nomeado
+  /\berro\b|\bdeu ruim\b|\bnao deu certo\b/,
+  // expectativa frustrada
+  /\b(deveria|era pra|era para|tinha que|esperava)\b/,
+  // pedido de revisão do que já existe
+  /\bo que (?:falta|est[aá] errado|t[aá] errado)\b|\bpor que\b[^.!?]{0,40}\bn[ao]{1,2}\b/,
+]
+
+export function looksLikeDiagnosisQuestion(question: string): boolean {
+  const normalized = normalizeSearchText(question)
+  return FAILURE_MARKERS.some((pattern) => pattern.test(normalized))
+}

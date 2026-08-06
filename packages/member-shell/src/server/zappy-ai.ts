@@ -27,6 +27,7 @@ import {
 } from './zappy-safety'
 import {
   expandedTerms,
+  looksLikeDiagnosisQuestion,
   normalizeSearchText,
   scoreTokens,
   searchTerms,
@@ -304,6 +305,19 @@ function contextAllowedByCatalog(
 const SYSTEM_PROMPT_BUDGET_BYTES = 27_500
 const USER_PROMPT_BUDGET_BYTES = 20_000
 const MAX_RELEVANT_CATALOG = 48
+/** Em diagnóstico o catálogo é menor: citar o bloco dela, não ensinar 48 novos. */
+const DIAGNOSIS_RELEVANT_CATALOG = 24
+
+function dedupeCatalog(entries: readonly ServerBlockCatalogEntry[]): ServerBlockCatalogEntry[] {
+  const seen = new Set<string>()
+  const out: ServerBlockCatalogEntry[] = []
+  for (const entry of entries) {
+    if (seen.has(entry.type)) continue
+    seen.add(entry.type)
+    out.push(entry)
+  }
+  return out
+}
 const MAX_MANUAL_SNIPPETS = 4
 const MANUAL_SNIPPET_CHARS = 1_400
 
@@ -467,7 +481,13 @@ export function relevantExampleRecipes(
   context: ZappyContextInput,
   tier: StudioTier,
 ): ExampleRecipe[] {
-  const terms = expandedTerms(searchTerms(question))
+  // Mesma matéria-prima dos outros dois rankers (antes era só a pergunta, e por
+  // isso a receita ignorava o erro e o bloco selecionado).
+  const terms = expandedTerms(
+    searchTerms(
+      `${question} ${context.lastError ?? ''} ${context.selectedBlockId ? (context.blocks.find((b) => b.id === context.selectedBlockId)?.type ?? '') : ''}`,
+    ),
+  )
   if (terms.length === 0) return []
   const tierLabelByType = new Map(
     SERVER_BLOCK_CATALOG.filter((entry) => catalogAllowed(entry, tier)).map((entry) => [
@@ -522,6 +542,8 @@ function systemPrompt(
   allowed: readonly ServerBlockCatalogEntry[],
   manuals: readonly ManualSnippet[],
   recipes: readonly ExampleRecipe[] = [],
+  /** A criança está relatando algo que não funciona? Muda o modo da resposta. */
+  diagnosis = false,
 ): string {
   const modeRule =
     mode === 'blocks'
@@ -546,7 +568,14 @@ function systemPrompt(
     'O campo "blocosRelevantes" lista blocos do projeto dela com o id, para você citar a instância exata em blockReferences.',
     'O campo "rascunhosSoltos" lista pilhas que estão SALVAS mas NUNCA rodam, porque ficaram fora das Áreas do projeto. Se a criança reclama que algo não acontece e aquilo está aqui, ESSA é a causa: diga com carinho que a pilha precisa ser arrastada para dentro da Área certa.',
     'O campo "avisosDoEditor" traz problemas que o próprio editor já detectou, já escritos para a criança (ex.: um nome usado que nunca foi criado). Se houver algum relacionado à dúvida, use-o como a causa em vez de procurar outra.',
-    'Pergunta de REVISÃO ("o que falta?", "por que não funciona?", "o que posso melhorar?"): use scope "project-review" e responda em 3 partes curtas — ✅ o que já está pronto; 🔧 o que corrigir (UMA causa provável, apontando o bloco); ➡️ próximo passo (UMA mecânica nova do catálogo).',
+    'Pergunta de REVISÃO ("o que falta?", "o que posso melhorar?"): use scope "project-review" e responda em 3 partes curtas — ✅ o que já está pronto; 🔧 o que corrigir (UMA causa provável, apontando o bloco); ➡️ próximo passo (UMA mecânica nova do catálogo).',
+    ...(diagnosis
+      ? [
+          'ESTA PERGUNTA É UM DIAGNÓSTICO: a criança está dizendo que algo NÃO funciona como ela queria. Use scope "error". NÃO ensine a mecânica do zero e NÃO sugira mecânica nova — ela já montou alguma coisa, e o que ela precisa é descobrir o que está diferente do esperado.',
+          'Antes de escrever, LEIA "comportamento", "rascunhosSoltos" e "avisosDoEditor" e procure nesta ordem: (1) um passo que está numa área que não faz sentido para o que ela quer; (2) um VALOR suspeito (0, vazio, tecla diferente da que ela usa); (3) uma pilha que nunca roda; (4) um nome usado diferente do que foi criado.',
+          'Responda em 3 partes curtas: 🔍 o que você viu no projeto dela e por que isso causa o problema (UMA causa, citando o bloco e o valor exatos); 🔧 o que mudar, em um passo; e termine com uma linha convidando: se não era isso, ela conta o que esperava que acontecesse. Nada de lista de possibilidades.',
+        ]
+      : []),
     'Em blockReferences use somente blockType da lista permitida. blockId só pode ser copiado de uma instância do contexto com o mesmo type; senão use null.',
     'Ao citar um bloco no texto, diga onde ele fica copiando EXATAMENTE o valor "caminho" do catálogo, em texto corrido e sem crases (ex.: o bloco "nome do bloco" fica em Programação › 🏷️ Variáveis). Nunca invente, encurte nem repita o nome de um nível no outro.',
     'Cite no texto somente blocos que EXISTEM no catálogo abaixo, pelo valor exato de "nome", e inclua cada bloco citado também em blockReferences. Nunca invente bloco: se a ação pedida não tem bloco no catálogo, diga que esse bloco ainda não existe no Estúdio e mostre um caminho com os blocos que existem.',
@@ -729,9 +758,23 @@ export function buildStudioZappyPrompt(input: {
   const context = contextAllowedByCatalog(input.context, allowed)
   const question = redactForbiddenBlockTypes(input.question, allowedTypes)
   const ranked = rankCatalog(allowed, question, context)
-  const catalog = ranked.slice(0, MAX_RELEVANT_CATALOG)
+  const diagnostico = looksLikeDiagnosisQuestion(question)
+  // Diagnosticar não é ensinar: o que a resposta precisa citar são os blocos que
+  // ela JÁ TEM (para apontar qual corrigir), não dezenas de candidatos novos.
+  // Então os blocos do projeto entram primeiro e o teto cai pela metade — é o
+  // que devolve espaço de orçamento para o projeto dela.
+  const catalog = diagnostico
+    ? dedupeCatalog([
+        ...ranked.filter((entry) => context.blocks.some((block) => block.type === entry.type)),
+        ...ranked,
+      ]).slice(0, DIAGNOSIS_RELEVANT_CATALOG)
+    : ranked.slice(0, MAX_RELEVANT_CATALOG)
   const manuals = relevantManualSnippets(question, context, catalog, input.tier, allowedTypes)
-  const recipes = relevantExampleRecipes(question, context, input.tier)
+  // Pergunta de DIAGNÓSTICO não recebe receita de mecânica: era ela que fazia o
+  // Zappy responder o passo a passo do zero em vez de olhar o projeto. Medido: a
+  // própria sugestão da UI ("Deu um erro no meu jogo") puxava receita de jogo da
+  // memória e de caça-monstrinhos, sem relação com a dúvida.
+  const recipes = diagnostico ? [] : relevantExampleRecipes(question, context, input.tier)
   // Esboço legível do projeto DELA: rótulos reais; acima do tier = "(nível futuro)".
   const futureTypes = new Set(
     SERVER_BLOCK_CATALOG.filter((entry) => !catalogAllowed(entry, input.tier)).map(
@@ -749,19 +792,23 @@ export function buildStudioZappyPrompt(input: {
   const comportamento = context.behavior?.length
     ? buildBehaviorDigest(context.behavior, context.blocks, FULL_CATALOG_INFO)
     : ''
-  let system = systemPrompt(context.mode, context.kind, catalog, manuals, recipes)
+  let system = systemPrompt(context.mode, context.kind, catalog, manuals, recipes, diagnostico)
   // Ordem de corte: MANUAIS/RECEITAS são a receita da mecânica e sobrevivem até
   // o catálogo cair a 8 — antes era o inverso e o modelo via ~1 chunk de 35KB
   // de manuais (medido no QA 08/2026).
   while (utf8Bytes(system) > SYSTEM_PROMPT_BUDGET_BYTES) {
-    if (catalog.length > 24) catalog.pop()
+    // Em DIAGNÓSTICO o material genérico cede PRIMEIRO: o que resolve é o projeto
+    // dela + os blocos citáveis. Ensinando mecânica vale o inverso (a receita é a
+    // resposta), que é a ordem original.
+    if (diagnostico && manuals.length > 3) manuals.pop()
+    else if (catalog.length > 24) catalog.pop()
     else if (recipes.length > 1) recipes.pop()
     else if (manuals.length > 3) manuals.pop()
     else if (catalog.length > 8) catalog.pop()
     else if (recipes.length > 0) recipes.pop()
     else if (manuals.length > 0) manuals.pop()
     else break
-    system = systemPrompt(context.mode, context.kind, catalog, manuals, recipes)
+    system = systemPrompt(context.mode, context.kind, catalog, manuals, recipes, diagnostico)
   }
   return {
     system,
