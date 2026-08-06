@@ -29,6 +29,18 @@ export function setSearchProfileForWorkspace(
  */
 const KIND = 'search'
 
+/**
+ * Piso de largura do flyout da BUSCA, em px. O conteúdo de uma busca é BLOCO,
+ * não texto: dimensionado só pelo rótulo de dica, o painel nascia estreito e
+ * cortava os resultados. Cede em tela estreita (ver `fitFlyoutToContents`).
+ */
+const MIN_SEARCH_FLYOUT_WIDTH = 300
+
+/** Altura presumida do campo quando ele ainda não tem layout (px). */
+const DEFAULT_SEARCH_FIELD_HEIGHT = 34
+/** Respiro entre o campo e o primeiro bloco do resultado (px). */
+const SEARCH_FIELD_MARGIN = 14
+
 // COMPATIBILIDADE: este arquivo depende de internos PRIVADOS do Blockly e do
 // plugin de busca — campos com sufixo `_` (`flyoutItems_`, `rowContents_`,
 // `parentToolbox_`, `workspace_`, `svgGroup_`) e métodos `createDom_`,
@@ -71,7 +83,7 @@ interface SearchCategoryInstance {
   registerShortcut?(): void
   dispose(): void
   searchField?: HTMLInputElement
-  flyoutItems_: Array<{ kind: string; text?: string; type?: string }>
+  flyoutItems_: Array<{ kind: string; text?: string; type?: string; gap?: number }>
   // Blockly 12: devolve FlyoutItemInfo prontos (`{ kind: 'block', type, ... }`),
   // não mais `string[]` como no Blockly 11.
   blockSearcher?: {
@@ -84,7 +96,13 @@ interface SearchCategoryInstance {
     refreshSelection?(): void
     getFlyout(): {
       svgGroup_?: SVGGraphicsElement
-      getWorkspace?(): { getCanvas?(): SVGElement | null } | null
+      /** Recalcula a largura do flyout a partir do conteúdo (público no Blockly). */
+      reflow?(): void
+      getWidth?(): number
+      /** Redesenha o fundo/posição a partir de `width_` (público no Blockly). */
+      position?(): void
+      /** Interno do Blockly (`protected width_`) — só escrevemos com guarda. */
+      width_?: number
     } | null
   } | null
 }
@@ -190,6 +208,12 @@ export function registerPtSearchCategory(): void {
         field.spellcheck = false
         field.setAttribute('aria-label', 'Pesquisar blocos')
         field.placeholder = 'Pesquisar blocos…'
+        // ⚠️ O plugin dispara a busca no `keyup`, e o "×" nativo do
+        // `<input type=search>` (assim como colar/recortar pelo mouse) NÃO gera
+        // keyup: limpar o campo deixava os blocos da busca anterior na tela.
+        // `input` cobre todos os caminhos; o `matchBlocks` ignora repetição, então
+        // o keyup do plugin logo depois não re-renderiza à toa.
+        field.addEventListener('input', () => this.matchBlocks())
         stylizeSearchField(field)
         // Move o input da LINHA para o flyout (flutua sobre o topo do drawer).
         getInjectionDiv(this)?.appendChild(field)
@@ -229,14 +253,20 @@ export function registerPtSearchCategory(): void {
       if (isSelected) {
         field.style.display = ''
         field.style.visibility = 'hidden'
+        // Reabrir precisa renderizar mesmo com a mesma consulta de antes.
+        this.lastRenderedQuery = null
         this.matchBlocks()
         this.showFieldWhenReady()
       } else {
         field.style.display = 'none'
         field.style.visibility = 'hidden'
         field.value = ''
+        this.lastRenderedQuery = null
       }
     }
+
+    /** Última consulta já renderizada — evita re-render duplo (input + keyup). */
+    private lastRenderedQuery: string | null = null
 
     override matchBlocks(): void {
       // `flyoutItems_` é o array interno que o flyout renderiza. Se o plugin o
@@ -250,6 +280,11 @@ export function registerPtSearchCategory(): void {
       // Replica a lógica do plugin controlando o texto em PT-BR diretamente
       // (sem o "flash" em inglês que ocorre ao traduzir depois do super).
       const value = this.searchField?.value ?? ''
+      // O `input` (nosso) e o `keyup` (do plugin) chegam os dois a cada tecla —
+      // renderizar o flyout duas vezes por tecla pisca e custa caro com dezenas
+      // de blocos. A consulta é a identidade do resultado: repetiu, sai.
+      if (value === this.lastRenderedQuery) return
+      this.lastRenderedQuery = value
       const searcher = this.blockSearcher
       if (value && typeof searcher?.blockTypesMatching !== 'function') {
         warnIncompatibility('blockSearcher.blockTypesMatching ausente')
@@ -275,15 +310,60 @@ export function registerPtSearchCategory(): void {
           )
         }
       }
-      if (this.flyoutItems_.length === 0) {
+      // ⚠️ Reserva o espaço do CAMPO como um separador de verdade, e não mais
+      // deslocando o canvas por `transform`: aquele atributo é do Blockly, que o
+      // reescreve ao rolar/re-renderizar — o deslocamento sumia e o primeiro
+      // bloco ficava embaixo do input, sem como voltar. Sendo um item do flyout,
+      // o Blockly conta esse espaço no layout E na rolagem.
+      const fieldHeight = Math.round(this.searchField?.getBoundingClientRect().height ?? 0)
+      this.flyoutItems_.unshift({
+        kind: 'sep',
+        gap: (fieldHeight || DEFAULT_SEARCH_FIELD_HEIGHT) + SEARCH_FIELD_MARGIN,
+      })
+      if (this.flyoutItems_.length === 1) {
+        // Rótulos CURTOS de propósito: quando a busca não achou nada, este texto
+        // é o ÚNICO conteúdo do flyout e portanto quem define a largura dele —
+        // um texto comprido aqui deixava o painel largo e a dica cortada (a
+        // instrução completa já está no placeholder do campo, logo acima).
         this.flyoutItems_.push({
           kind: 'label',
-          text: value.length < 3 ? 'Digite para pesquisar blocos' : 'Nenhum bloco encontrado',
+          text: value.length < 3 ? 'Escreva para achar' : 'Nada encontrado',
         })
       }
       this.parentToolbox_?.refreshSelection?.()
-      // O flyout re-renderiza (resetando o deslocamento) — reposiciona depois.
-      requestAnimationFrame(() => this.positionField())
+      requestAnimationFrame(() => {
+        this.fitFlyoutToContents()
+        // O flyout re-renderiza (resetando o deslocamento) — reposiciona depois.
+        this.positionField()
+      })
+    }
+
+    /**
+     * Ajusta a largura do flyout da BUSCA ao conteúdo, com um piso.
+     *
+     * Dois problemas somados apareciam aqui: (1) o painel ficava preso na
+     * largura de quando abriu — quando o único conteúdo era o rótulo de dica —
+     * e os blocos do resultado saíam cortados; (2) mesmo recalculado, ele nascia
+     * estreito demais, porque o conteúdo de uma busca é BLOCO, não texto. Como
+     * o campo de digitação é dimensionado A PARTIR do flyout, parecia que era o
+     * input que mandava no tamanho.
+     *
+     * `reflow()` recalcula a partir do conteúdo (público e idempotente); o piso
+     * cobre o caso do rótulo sozinho. Tudo com guarda: se o Blockly mudar esses
+     * membros, a busca só deixa de alargar — nada quebra.
+     */
+    private fitFlyoutToContents(): void {
+      const flyout = this.parentToolbox_?.getFlyout()
+      if (!flyout) return
+      flyout.reflow?.()
+      if (typeof flyout.getWidth !== 'function' || typeof flyout.position !== 'function') return
+      // O piso cede em tela estreita: metade do editor, nunca o editor inteiro.
+      const available = getInjectionDiv(this)?.getBoundingClientRect().width ?? 0
+      const floor =
+        available > 0 ? Math.min(MIN_SEARCH_FLYOUT_WIDTH, available * 0.5) : MIN_SEARCH_FLYOUT_WIDTH
+      if (flyout.getWidth() >= floor) return
+      flyout.width_ = floor
+      flyout.position()
     }
 
     // O indexador do plugin só varre o `languageTree` ESTÁTICO; as categorias
@@ -317,6 +397,10 @@ export function registerPtSearchCategory(): void {
 
     /** Tenta posicionar o input por alguns frames até o flyout existir. */
     private showFieldWhenReady(tries = 0): void {
+      // Alarga ANTES de medir: o input é dimensionado a partir do flyout, então
+      // a ordem importa — senão o campo nasceria estreito e só cresceria depois
+      // da primeira busca.
+      this.fitFlyoutToContents()
       if (this.positionField()) {
         this.searchField?.focus()
         return
@@ -339,10 +423,9 @@ export function registerPtSearchCategory(): void {
       field.style.top = `${fr.top - ir.top + 8}px`
       field.style.width = `${Math.max(fr.width - 16, 100)}px`
       field.style.visibility = 'visible'
-      // Empurra o conteúdo do flyout para baixo, para o input não cobri-lo.
-      const offset = Math.round(field.getBoundingClientRect().height) + 14
-      const canvas = flyout.getWorkspace?.()?.getCanvas?.()
-      canvas?.setAttribute('transform', `translate(0, ${offset})`)
+      // O espaço para o campo é reservado por um separador nos itens do flyout
+      // (ver matchBlocks) — NÃO deslocar o canvas por `transform` aqui: aquele
+      // atributo é do Blockly e some na primeira rolagem.
       return true
     }
   }
