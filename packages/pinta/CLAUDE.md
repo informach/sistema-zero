@@ -180,11 +180,11 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   misturar o azul (252°) com o branco (`oklch(1 0 0)`, matiz 0) dá ROSA (pego no QA).
   ⚠️ O Tailwind v4 **PODA do `@theme`** os tokens que nenhuma utilitária usa: valor consumido só
   por CSS (ex.: `--pin-panel-head`) mora no bloco `[data-pinta-theme]`, não no `@theme`.
-- **Galeria compacta (08/2026)**: grade `auto-fill minmax(88px,1fr)` (≈10 colunas num notebook de
-  1366, card sempre ~94px — número FIXO de colunas esticaria o card para ~148px em 1920) e as
-  ações do card (renomear/duplicar/apagar) num menu atrás de UM botão de 44px sobre a miniatura:
-  três alvos de 44px (132px) não cabem num card de 94px. O menu usa `components/ui/useAnchoredMenu`
-  (extraído do dropdown do `PaletteBar`) + trava dentro da viewport.
+- **Galeria compacta (08/2026)**: grade `auto-fill minmax(164px,1fr)` — ≈6 colunas num notebook de
+  1366 e 9 em 1920, card sempre ~165px (número FIXO de colunas esticaria o card no monitor
+  grande). ⚠️ **O piso de 164px é a REGRA DE TOQUE**: as três ações (renomear/duplicar/apagar)
+  ficam NO card, e três alvos de 44px somam 132px + respiros. Um menu "⋮" com card de ~94px (10
+  colunas) chegou a ser feito e foi REJEITADO pela dona — não reintroduzir sem ela pedir.
 - **Painéis com cabeçalho (`components/ui/Panel.tsx`)**: faixa de título tonal (`.pin-panel-head`)
   + divisória, no lugar do `<span>` em negrito solto. ⚠️ O `aria-label` fica na MESMA `<section>`
   (4 testes casam o seletor `section[aria-label=…]`) e o título é MOVIDO, nunca duplicado (Prévia
