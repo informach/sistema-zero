@@ -136,7 +136,12 @@ describe('Pensa planejador', () => {
     render(<PensaApp adapter={adapter} />)
     await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
     // Home no padrão do Pinta: título de seção simples, sem o herói antigo.
-    expect(screen.getByRole('heading', { name: 'Meus projetos' })).toBeTruthy()
+    // ⚠️ A classe é a única trava possível aqui: em jsdom a folha externa não é
+    // computada, então peso/tamanho só se conferem no browser. Mas tirar a
+    // classe num refactor é exatamente como o título ficou em 400 antes.
+    expect(screen.getByRole('heading', { name: 'Meus projetos' }).className).toContain(
+      'pensa-display',
+    )
     expect(screen.queryByText('PLANEJADOR DE JOGOS')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Meu plano' })).toBeTruthy())

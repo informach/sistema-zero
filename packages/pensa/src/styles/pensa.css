@@ -7,8 +7,12 @@
   --pz-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
   --pz-surface: oklch(1 0 0);
   --pz-surface-2: oklch(0.955 0.006 250);
-  --pz-ink: oklch(0.145 0.01 265);
-  --pz-muted: oklch(0.5 0.01 255);
+  /* Tinta e apagado do HOST, como o accent/green/orange abaixo já faziam — estes
+     dois tinham ficado para trás na unificação e destoavam do Pinta/Estúdio ao
+     lado. Só aparecem em `color:` (nunca fundo/borda), então é troca de cor de
+     texto pura. Fallback = o valor de antes, para o Pensa standalone. */
+  --pz-ink: var(--sz-kids-tinta, oklch(0.145 0.01 265));
+  --pz-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.01 255));
   --pz-line: oklch(0.9 0.01 250);
   --pz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* ação/identidade/foco */
   --pz-green: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152)); /* conclusão/sucesso */
@@ -39,8 +43,10 @@
   --pz-bg: var(--sz-kids-navy, oklch(0.235 0.05 262));
   --pz-surface: oklch(0.28 0.05 260);
   --pz-surface-2: oklch(0.33 0.05 260);
-  --pz-ink: oklch(0.975 0.005 250);
-  --pz-muted: oklch(0.7 0.03 250);
+  /* No escuro os valores já eram idênticos aos tokens do host — apontar só fecha
+     a fiação, sem mudar um pixel. */
+  --pz-ink: var(--sz-kids-navy-tinta, oklch(0.975 0.005 250));
+  --pz-muted: var(--sz-kids-navy-tinta-suave, oklch(0.7 0.03 250));
   --pz-line: oklch(0.34 0.05 260);
   --pz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
   --pz-green: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
@@ -81,6 +87,27 @@
 .pensa-approved h2 {
   font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
 }
+/* ⚠️ O PESO precisa ser declarado: o Preflight do Tailwind zera
+   `h1..h6 { font-weight: inherit }`, e o host kids não define peso de heading em
+   lugar nenhum. Sem esta regra, TODO título do Pensa (a home, as etapas, as
+   tarefas) renderizava em 400 enquanto Pinta e Estúdio saíam em 700 ao lado.
+   Os spans decorativos ficam de fora: vários já declaram 800 por conta própria e
+   os demais não devem engordar. */
+.pensa-planner h1,
+.pensa-planner h2,
+.pensa-planner h3,
+.pensa-planner h4 {
+  font-weight: 700;
+}
+/* Espelho EXATO do `.pin-display` (pinta.css) e do `.sz-ui-display` (studio.css):
+   família + peso + tracking, e SÓ. Tamanho e entrelinha ficam na regra do
+   elemento — é a mesma divisão que os dois pares usam (lá o tamanho vem do
+   `text-3xl md:text-4xl` no markup; aqui, que não tem Tailwind, vem do CSS). */
+.pensa-planner .pensa-display {
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
 .pensa-sr-only {
   position: absolute;
   width: 1px;
@@ -114,8 +141,13 @@
 .pensa-home {
   padding: 8px 0 32px;
 }
-/* Cabeçalho de SEÇÃO no padrão do Pinta ("Meus desenhos"): título display +
-   subtítulo apagado à esquerda; Zappy PEQUENO decorativo à direita. */
+/* Cabeçalho de SEÇÃO no padrão do Pinta e do Estúdio — e agora seguindo de
+   verdade. Os pares, para conferir sem caçar:
+     `GalleryScreen.tsx` → <h1 className="pin-display text-3xl md:text-4xl">
+     `ProjectList.tsx`   → <h1 className="sz-ui-display text-3xl md:text-4xl">
+   ou seja: display + 1.875rem, subindo para 2.25rem a partir de 768px. Este
+   comentário já prometia "o padrão do Pinta" sem citar a fonte, e foi assim que
+   a divergência (peso 400, tamanho travado) passou despercebida. */
 .pensa-home-header {
   display: flex;
   align-items: flex-end;
@@ -125,9 +157,18 @@
 }
 .pensa-home-header h1 {
   margin: 0;
+  /* Par do `text-3xl` do Tailwind (o tracking mora no `.pensa-display`). */
   font-size: 1.875rem;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
+  line-height: 1.2;
+}
+/* Par do `md:text-4xl`. ⚠️ `@media` de VIEWPORT de propósito: o `md:` do Tailwind
+   é viewport, então este é o espelho fiel — e não encosta nos `@container`
+   820/560 do arquivo, cujo deslocamento exige re-verificar 1366 e 1920. */
+@media (min-width: 48rem) {
+  .pensa-home-header h1 {
+    font-size: 2.25rem;
+    line-height: 1.11;
+  }
 }
 .pensa-home-header p {
   max-width: 650px;
@@ -360,8 +401,11 @@
 }
 .pensa-project-header h1 {
   margin: 2px 0 0;
+  /* O nome do projeto mantém a escala fluida: o par dele não é o título da
+     galeria, e sim o título do editor no Pinta/Estúdio. O que faltava aqui era
+     peso e tinta — que vêm do `.pensa-display`, inclusive o tracking (por isso
+     o `-0.02em` local saiu: perdia por especificidade e virava ruído). */
   font-size: clamp(1.4rem, 4vw, 2.4rem);
-  letter-spacing: -0.02em;
 }
 .pensa-plan-status {
   display: flex;

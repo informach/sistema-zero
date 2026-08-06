@@ -309,7 +309,7 @@ function ProjectList(props: {
     <section className="pensa-home">
       <header className="pensa-home-header">
         <div>
-          <h1>Meus projetos</h1>
+          <h1 className="pensa-display">Meus projetos</h1>
           <p>
             Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao lugar
             certo.
@@ -397,7 +397,7 @@ function ProjectHeader({
       </button>
       <div>
         <span>VERSÃO {detail.currentCycle.number}</span>
-        <h1>{detail.name}</h1>
+        <h1 className="pensa-display">{detail.name}</h1>
       </div>
       <AiCreditsBadge credits={credits} />
       <div className="pensa-plan-status">
