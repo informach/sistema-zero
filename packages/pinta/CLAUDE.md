@@ -427,9 +427,10 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
 - **Texto reeditável**: duplo clique (com a Selecionar) reabre o diálogo em "Mudar o texto";
   slider "Tamanho da letra" no painel com 1 texto selecionado. **Raio do retângulo**: slider
   "Cantos arredondados" (o modelo/export já tinham `rx`; `makeRect` ganhou o param `radius`).
-- **Cores por CANAL** (`VectorColorsPanel`): chips Preenchimento|Contorno + UMA grade de swatches
-  5/linha (recentes + paleta do projeto + fixos + "sem cor" + "+" livre) aplicando no canal
+- **Cores por CANAL** (`VectorColorsPanel`): UMA grade de swatches 5/linha aplicando no canal
   ativo. O conta-gotas usa `adoptStyle` (muda SÓ o estilo vigente, sem re-estilizar a seleção).
+  Ver "Ajustes do vetor (08/2026)" abaixo — os chips saíram e o painel virou espelho do
+  `PaletteBar`.
 - **Fora de escopo (futuro)**: operações booleanas (pathfinder), degradê multi-stop/ângulo livre,
   importar SVG, máscaras/filtros/blend, alças de bézier, campos numéricos X/Y/W/H, girar
   multi-seleção, snap dos nós do editar pontos.
@@ -438,6 +439,59 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   `geometry.test.ts` (union/intersect/align), `model.test.ts`+`svg.test.ts` (hidden). ⚠️ Gotchas
   de teste: escopar consultas de shapes NO PALCO (`stage.querySelector(...)` — miniaturas do
   painel e ícones lucide também têm rect/text) e fixar o `getBoundingClientRect` do svg.
+
+## Ajustes do VETOR: faixa da seleção, caixa que encolhe, degradê em modal, paleta (08/2026)
+
+Pedido dela sobre a captura anotada: "os recursos de alinhamento quando o objeto está selecionado
+podem aparecer na barra", "ajustar a altura ao conteúdo" (a caixa), "colocar um botão para abrir o
+card de degradê", "altura fixa, sem rolagem na página, mas sim nos componentes internos" e "a paleta
+de cores tem que melhorar, ser igual a de pixel art, até porque pelo controle na caixa de ferramenta
+já saberemos o que é preenchimento e o que é contorno".
+
+- ⭐ **`VectorSelectionBar`**: faixa contextual colada EMBAIXO da barra de cima (mesmo
+  `bg-pin-surface` + `border-b-2`), com alinhar ×6 · espelhar ×2 · ordem ×4 · agrupar/desagrupar ·
+  duplicar · apagar. Só existe com seleção; `overflow-x-auto` (nunca `flex-wrap`: crescer em altura
+  roubaria palco). 14 botões = ~800px, cabem numa linha em 1366. O bloco equivalente SAIU do
+  `VectorPropertiesPanel` — era o fim da coluna da direita, onde a criança só achava rolando.
+  ⚠️ **Pré-requisito arquitetural**: o `VectorEditorScope` subiu para o TOPO do ramo vetorial
+  (`EditorScreen`), envolvendo a faixa + o corpo. A `EditorTopbar` continua FORA dele (ela é irmã
+  do corpo, e o escopo devolve `null` sem documento ativo — só o corpo pode sumir).
+- **Barra flutuante da seleção = só TOQUE** (`VectorStage` checa `useMediaQuery('(min-width:768px)')`):
+  no desktop as ações moram na faixa. As duas NUNCA coexistem — por isso compartilham o
+  `aria-label` `selectionBar` e os rótulos `sel*`. Os rótulos-irmãos do painel
+  (`vector.remove/duplicate/group/ungroup`) foram REMOVIDOS do copy (ficaram órfãos).
+- ⭐ **A caixa de ferramentas não estica mais**: `VectorToolbox` virou filha de um wrapper
+  (`VectorLeftColumn`, gêmeo do `PixelLeftColumn`) — era a ÚNICA assimetria estrutural entre os
+  dois editores. Sendo filha direta da linha `items-stretch`, o `.pin-panel` esticava até a altura
+  do palco e o `flex-1` do miolo virava um vão branco acima das cores (`shrink-0` não protege: ele
+  age no eixo PRINCIPAL, o stretch é no cruzado).
+- ⭐ **`max-h-full` nas DUAS caixas** (pixel e vetor): sem ele a caixa crescia até a altura do
+  CONTEÚDO (medido: 672px numa faixa de 532px), quem rolava era a coluna e as duas cores iam parar
+  embaixo da linha d'água — exatamente o que o comentário do `ToolBar` jurava evitar. Com o teto,
+  quem rola é a grade do meio e os extremos ficam fixos de verdade.
+- **Degradê em MODAL** (`VectorPropertiesPanel`): um `Button` com amostra do degradê vigente
+  (`gradientCss`, helper compartilhado com os slots da caixa) abre um `Dialog` com os 3 tipos + as
+  2 cores + **"Tirar o degradê"** (`applyStyle({fill: gradiente.from})`) — antes NÃO existia
+  caminho de volta e tocar qualquer controle já convertia o preenchimento. O `Panel` "Aparência"
+  continua existindo (botão + espessura + opacidade): `section[aria-label="Aparência"]` é asserido.
+  As seções condicionais (lados/pontas, cantos, tamanho da letra) viraram `Panel` com o VALOR no
+  título e `aria-label` no input (o `<label>` que envolvia o range sumiu).
+- ⭐ **Paleta do vetor = espelho do `PaletteBar`**: sem chips (o canal é dito pelos dois
+  quadradinhos da caixa), título = NOME da paleta com dropdown (Arcade/Doces/Lápis e carvão),
+  lixeira + "+" no cabeçalho, grade 5/linha com "sem cor" na frente. Ordem: paleta escolhida (15) →
+  cores do JOGO (Pensa) → personalizadas no fim (as apagáveis). O `paletteId` do vetor vive em
+  `useState` no `VectorEditorScope` (kinds vetoriais não têm o campo no asset, e criá-lo entraria
+  no desfazer sem mudar o desenho) → vale enquanto o editor está aberto, como as cores recentes.
+  A lixeira NÃO pede confirmação: no vetor a forma guarda o hex, então some só a sugestão.
+- **`PaletteMenu.tsx`** (novo): o dropdown ancorado (`position:fixed`, `role=menu` +
+  `menuitemradio`, fecha em clique-fora/Esc/scroll/resize, setas ↑↓) foi EXTRAÍDO do `PaletteBar` e
+  é consumido pelos dois. `paletteUi.test.tsx` é a prova de que a extração não mudou nada.
+  ⚠️ Ele é `w-56` e `vectorSpriteUi.test.tsx` exige `.w-56` ausente em REPOUSO → só pode renderizar
+  aberto. ⚠️ O menu mora DENTRO do `<section aria-label="Cores">`: contar botões da seção com o
+  menu aberto traz 3 a mais.
+- Medido no playground (1366×768, vector-sprite com Spritesheet + seleção): página não rola
+  (768=768), faixa 54px, caixa travada na altura da coluna com as cores à vista, coluna da direita
+  rolando por dentro. Em 375×812: faixa ausente, barra flutuante presente.
 
 ## Colisão por peça: sólido × plataforma (one-way) — lote MapperMate F2 (18/07)
 

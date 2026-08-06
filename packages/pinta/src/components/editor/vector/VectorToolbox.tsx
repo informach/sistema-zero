@@ -13,7 +13,7 @@ import { IconButton, ToolButton } from '../../ui/Button'
 import { Grid3x3, Maximize, Repeat } from '../../ui/icons'
 import { useEditorStores, useSession } from '../editorContext'
 import { useVectorEditor, type VectorColorChannel } from './VectorEditorScope'
-import { TOOLS } from './vectorTools'
+import { gradientCss, TOOLS } from './vectorTools'
 
 /** Mesmos degraus do slider de espessura do painel de aparência. */
 const STROKE_WIDTH_PRESETS = [1, 2, 3, 4, 6, 8] as const
@@ -100,13 +100,16 @@ export function VectorToolbox({
    * Caixa vertical (mesma régua da do pixel): espessuras FIXAS no topo,
    * ferramentas em duas colunas rolando no meio e os dois slots de cor FIXOS
    * no pé — os extremos fixos garantem que as cores nunca saem da vista.
+   * O `max-h-full` é o que faz o teto valer (senão a caixa cresce até o
+   * conteúdo e quem rola é a coluna, levando as cores para baixo da vista);
+   * quem estica com a linha do palco é a coluna de fora, não esta caixa.
    */
   return (
     <div
       role="toolbar"
       aria-label={COPY.a11y.tools}
       aria-orientation={orientation}
-      className="pin-panel flex min-h-0 shrink-0 flex-col gap-1 p-2"
+      className="pin-panel flex max-h-full min-h-0 shrink-0 flex-col gap-1 p-2"
     >
       <div className="grid shrink-0 grid-cols-2 justify-items-center gap-1">{strokeWidths}</div>
       {divider}
@@ -162,12 +165,7 @@ function VectorColorSlots(): JSX.Element {
         )}
         style={
           gradient
-            ? {
-                background:
-                  gradient.type === 'radial'
-                    ? `radial-gradient(circle, ${gradient.from}, ${gradient.to})`
-                    : `linear-gradient(to right, ${gradient.from}, ${gradient.to})`,
-              }
+            ? { background: gradientCss(gradient) }
             : hex
               ? { backgroundColor: hex }
               : undefined

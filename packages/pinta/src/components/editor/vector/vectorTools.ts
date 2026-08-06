@@ -4,7 +4,8 @@
  * do Shift). Só constantes e funções — o estado vive no `VectorEditorScope`.
  */
 import { COPY } from '../../../core/copy'
-import type { Vec2, VectorShape } from '../../../vector/model'
+import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../../../core/palette'
+import type { Vec2, VectorGradient, VectorShape } from '../../../vector/model'
 import {
   Brush,
   Circle,
@@ -63,26 +64,25 @@ export const TOOL_SHORTCUTS = toolShortcutMap(TOOLS)
 /** No máximo de cores personalizadas guardadas na sessão (aparecem como swatches). */
 export const MAX_CUSTOM_COLORS = 6
 
-/** Cores livres do vetorial (os hex da paleta Arcade, sem o slot transparente). */
-export const SWATCHES = [
-  '#ffffff',
-  '#ff2121',
-  '#ff93c4',
-  '#ff8135',
-  '#fff609',
-  '#249ca3',
-  '#78dc52',
-  '#003fad',
-  '#87f2ff',
-  '#8e2ec4',
-  '#a4839f',
-  '#5c406c',
-  '#e5cdc4',
-  '#91463d',
-  '#000000',
-] as const
+/**
+ * Degradê como `background` de CSS (amostras dos botões). O ângulo do modelo
+ * não vira `deg` de propósito: a amostra é pequena e só precisa dizer "é um
+ * degradê e são estas duas cores".
+ */
+export function gradientCss(gradient: VectorGradient): string {
+  return gradient.type === 'radial'
+    ? `radial-gradient(circle, ${gradient.from}, ${gradient.to})`
+    : `linear-gradient(to right, ${gradient.from}, ${gradient.to})`
+}
 
-export const SWATCH_SET: ReadonlySet<string> = new Set(SWATCHES)
+/**
+ * Cores SUGERIDAS do vetorial: os hex de uma paleta do Pinta, sem o slot
+ * transparente (no vetor quem faz esse papel é a célula "sem cor"). A cor do
+ * vetor é livre — a paleta só troca as sugestões da grade, sem tocar no desenho.
+ */
+export function paletteSwatches(id: PaletteId): string[] {
+  return getPalette(id).colors.filter((hex, index) => index !== TRANSPARENT_INDEX && hex !== '')
+}
 
 /** Expande ids para incluir TODOS os shapes dos mesmos grupos (seleção junta). */
 export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {

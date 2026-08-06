@@ -48,6 +48,7 @@ import { Dialog } from '../../ui/Dialog'
 import { Copy, FlipHorizontal2, FlipVertical2, Group, Trash2, Ungroup } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
+import { useMediaQuery } from '../useMediaQuery'
 import { useWheelZoom } from '../useWheelZoom'
 import { useVectorEditor } from './VectorEditorScope'
 import { constrainPoint, expandToGroups } from './vectorTools'
@@ -143,6 +144,9 @@ export function VectorStage(): JSX.Element {
   const frameIndex = useSession((state) => state.frameIndex)
   const zoom = useSession((state) => state.zoom)
   const showGrid = useSession((state) => state.showGrid)
+  // Mesmo corte do EditorScreen: no desktop a faixa da seleção substitui a
+  // barra flutuante.
+  const wide = useMediaQuery('(min-width: 768px)')
   const [preview, setPreview] = useState<VectorShape | null>(null)
   const [marquee, setMarquee] = useState<Bounds | null>(null)
   // Diálogo do texto: criar num ponto OU reeditar um shape existente.
@@ -624,8 +628,10 @@ export function VectorStage(): JSX.Element {
     <div className="relative flex min-h-0 min-w-0 flex-1">
       {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
           palco, fora do fluxo — aparecer/sumir não move o desenho. É a via do
-          TOUCH; os rótulos são distintos dos do painel de aparência (a11y). */}
-      {selected.length > 0 ? (
+          TOUCH e SÓ DELE: no desktop as mesmas ações (mais alinhar e ordem)
+          moram na faixa colada na barra de cima, e ter as duas na mesma tela
+          confunde. Por isso as duas compartilham `aria-label` e rótulos. */}
+      {selected.length > 0 && !wide ? (
         <div
           role="toolbar"
           aria-label={COPY.vector.selectionBar}

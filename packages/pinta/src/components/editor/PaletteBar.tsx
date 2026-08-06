@@ -20,26 +20,21 @@
  * Dois layouts: `panel` (coluna, desktop) e `row` (uma linha rolável, tela
  * estreita — o dropdown ancora no ToolButton de paleta).
  */
-import type { JSX, MouseEvent as ReactMouseEvent } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import type { JSX } from 'react'
+import { useState } from 'react'
 import { removeExtraColor } from '../../core/assetEdit'
 import { normalizeHex } from '../../core/color'
 import { COPY } from '../../core/copy'
-import {
-  getPalette,
-  PALETTE_SIZE,
-  PALETTES,
-  type PaletteId,
-  TRANSPARENT_INDEX,
-} from '../../core/palette'
+import { getPalette, PALETTE_SIZE, type PaletteId, TRANSPARENT_INDEX } from '../../core/palette'
 import { PINTA_LIMITS, resolveAssetPalette } from '../../core/project'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { Check, ChevronDown, Palette, Plus, Trash2 } from '../ui/icons'
+import { ChevronDown, Palette, Plus, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { ColorPicker } from './ColorPicker'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { PaletteMenu, usePaletteMenu } from './PaletteMenu'
 
 export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): JSX.Element | null {
   const { editor, session } = useEditorStores()
@@ -51,68 +46,10 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   const tool = useSession((state) => state.tool)
   /** A cor do quadrado SELECIONADO na caixa de ferramentas. */
   const slotColor = activeSlot === 'secondary' ? colorSecondary : color
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [menuPos, setMenuPos] = useState<{ left: number; top: number } | null>(null)
+  const menu = usePaletteMenu()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [draft, setDraft] = useState('#ff8800')
-  const menuRef = useRef<HTMLDivElement | null>(null)
-  const triggerRef = useRef<HTMLButtonElement | null>(null)
-
-  // Fecho do dropdown: clique-fora, Esc (devolve o foco), scroll fora do
-  // menu e resize (a âncora fixed fica velha — fechar é mais honesto).
-  useEffect(() => {
-    if (!menuOpen) return
-    function onPointerDown(event: PointerEvent): void {
-      const target = event.target as Node
-      if (menuRef.current?.contains(target) || triggerRef.current?.contains(target)) return
-      setMenuOpen(false)
-    }
-    function onKeyDown(event: KeyboardEvent): void {
-      if (event.key === 'Escape') {
-        setMenuOpen(false)
-        triggerRef.current?.focus()
-        return
-      }
-      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        const items = menuRef.current
-          ? Array.from(
-              menuRef.current.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]'),
-            )
-          : []
-        if (items.length === 0) return
-        event.preventDefault()
-        const index = items.indexOf(document.activeElement as HTMLButtonElement)
-        const delta = event.key === 'ArrowDown' ? 1 : -1
-        items[(index + delta + items.length) % items.length]?.focus()
-      }
-    }
-    function onScroll(event: Event): void {
-      if (menuRef.current?.contains(event.target as Node)) return
-      setMenuOpen(false)
-    }
-    function onResize(): void {
-      setMenuOpen(false)
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    window.addEventListener('scroll', onScroll, true)
-    window.addEventListener('resize', onResize)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('scroll', onScroll, true)
-      window.removeEventListener('resize', onResize)
-    }
-  }, [menuOpen])
-
-  // Foco entra no item da paleta ATIVA ao abrir (fallback: o primeiro).
-  useEffect(() => {
-    if (!menuOpen) return
-    const active = menuRef.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')
-    const first = menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitemradio"]')
-    ;(active ?? first)?.focus()
-  }, [menuOpen])
 
   // Só kinds com paleta indexada própria (vetoriais usam cor livre).
   if (!('paletteId' in asset)) return null
@@ -146,26 +83,13 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     setPickerOpen(false)
   }
 
-  /** Abre/fecha o dropdown ancorado no botão clicado (header ou ToolButton). */
-  function toggleMenu(event: ReactMouseEvent<HTMLButtonElement>): void {
-    if (menuOpen) {
-      setMenuOpen(false)
-      return
-    }
-    const rect = event.currentTarget.getBoundingClientRect()
-    triggerRef.current = event.currentTarget
-    setMenuPos({ left: rect.left, top: rect.bottom + 4 })
-    setMenuOpen(true)
-  }
-
   /** Troca a paleta base (commit desfazível; id igual é no-op) e fecha o menu. */
   function choosePalette(id: PaletteId): void {
     const current = editor.getState().asset
     if ('paletteId' in current && current.paletteId !== id) {
       editor.getState().commit({ ...current, paletteId: id })
     }
-    setMenuOpen(false)
-    triggerRef.current?.focus()
+    menu.close()
   }
 
   /** Lixeira: extra → confirmação; base/borracha → aviso gentil (sem dialog). */
@@ -260,51 +184,9 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     />
   )
 
-  const paletteMenu =
-    menuOpen && menuPos ? (
-      <div
-        ref={menuRef}
-        role="menu"
-        aria-label={COPY.palette.switchPalette}
-        style={{ position: 'fixed', left: menuPos.left, top: menuPos.top }}
-        className="pin-panel z-50 flex max-h-72 w-56 flex-col gap-1 overflow-y-auto p-2"
-      >
-        {PALETTES.map((p) => {
-          const active = asset.paletteId === p.id
-          return (
-            <button
-              key={p.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={active}
-              onClick={() => choosePalette(p.id)}
-              className={`flex min-h-11 shrink-0 items-center gap-2 rounded-xl border-2 px-2 transition ${
-                active ? 'border-pin-accent' : 'border-transparent hover:border-pin-border'
-              }`}
-            >
-              <span
-                aria-hidden="true"
-                className="flex h-2.5 min-w-0 flex-1 overflow-hidden rounded-full"
-              >
-                {p.colors.map((hex, i) =>
-                  i === TRANSPARENT_INDEX || !hex ? null : (
-                    <span
-                      key={hex + String(i)}
-                      className="h-full flex-1"
-                      style={{ background: hex }}
-                    />
-                  ),
-                )}
-              </span>
-              <span className="shrink-0 text-xs font-bold text-pin-text">{p.name}</span>
-              {active ? (
-                <Check aria-hidden="true" className="size-4 shrink-0 text-pin-accent" />
-              ) : null}
-            </button>
-          )
-        })}
-      </div>
-    ) : null
+  const paletteMenu = (
+    <PaletteMenu anchor={menu} activeId={asset.paletteId} onChoose={choosePalette} />
+  )
 
   const pickerDialog = (
     <Dialog
@@ -355,9 +237,9 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
         <ToolButton
           icon={Palette}
           label={COPY.palette.switchPalette}
-          onClick={toggleMenu}
+          onClick={menu.toggle}
           aria-haspopup="menu"
-          aria-expanded={menuOpen}
+          aria-expanded={menu.open}
         />
         {trashButton}
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
@@ -381,16 +263,17 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       title={paletteName}
       ariaLabel={COPY.palette.title}
       className="w-68"
-      onTitleClick={toggleMenu}
+      onTitleClick={menu.toggle}
+      titleRef={menu.triggerRef}
       titleProps={{
         'aria-haspopup': 'menu',
-        'aria-expanded': menuOpen,
+        'aria-expanded': menu.open,
         'aria-label': `${COPY.palette.switchPalette}: ${paletteName}`,
       }}
       titleSuffix={
         <ChevronDown
           aria-hidden="true"
-          className={`size-4 shrink-0 transition ${menuOpen ? 'rotate-180' : ''}`}
+          className={`size-4 shrink-0 transition ${menu.open ? 'rotate-180' : ''}`}
         />
       }
       actions={

@@ -363,7 +363,11 @@ export const COPY = {
     swapFillStroke: 'Trocar preenchimento e contorno',
     /** Disclosure da tela estreita (cores + camadas + aparência). */
     panelsTitle: 'Cores e camadas',
-    /** Barra flutuante da seleção (rótulos DIFERENTES dos do painel, p/ a11y). */
+    /**
+     * Ações da seleção. O MESMO conjunto serve a faixa colada na barra de cima
+     * (desktop) e a barra flutuante sobre o palco (toque) — as duas nunca
+     * aparecem juntas, então não há rótulo ambíguo.
+     */
     selectionBar: 'O que fazer com as formas selecionadas',
     selDuplicate: 'Duplicar a seleção',
     selFlipH: 'Espelhar a seleção para o lado',
@@ -401,16 +405,13 @@ export const COPY = {
     gradientRadial: 'Degradê redondo (do meio)',
     gradientFrom: 'Cor do começo',
     gradientTo: 'Cor do fim',
+    gradientOff: 'Tirar o degradê',
     forward: 'Uma camada para a frente',
     backward: 'Uma camada para trás',
     toFront: 'Trazer bem para a frente',
     toBack: 'Levar bem para o fundo',
-    group: 'Agrupar',
-    ungroup: 'Desagrupar',
     sides: 'Lados',
     tips: 'Pontas',
-    duplicate: 'Duplicar',
-    remove: 'Apagar',
     textPrompt: 'O que você quer escrever?',
     textPlaceholder: 'Digite aqui...',
     add: 'Adicionar',

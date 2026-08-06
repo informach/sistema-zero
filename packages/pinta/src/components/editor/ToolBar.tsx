@@ -223,13 +223,18 @@ export function ToolBar({
    * no meio e as duas cores FIXAS no pé. Sem os extremos fixos, numa tela de
    * 768px (onde a faixa do Spritesheet come altura) as cores saíam da vista —
    * justamente o que a caixa precisa mostrar sempre.
+   *
+   * `max-h-full` é o que faz isso valer de fato: sem ele a caixa crescia até a
+   * altura do CONTEÚDO (672px numa faixa de 532px), a coluna é que rolava e as
+   * cores iam parar embaixo da linha d'água. Com o teto, quem rola é a grade do
+   * meio — e quando sobra altura a caixa continua do tamanho do conteúdo.
    */
   return (
     <div
       role="toolbar"
       aria-label={COPY.a11y.tools}
       aria-orientation={orientation}
-      className="pin-panel flex min-h-0 shrink-0 flex-col gap-1 p-2"
+      className="pin-panel flex max-h-full min-h-0 shrink-0 flex-col gap-1 p-2"
     >
       <div className="grid shrink-0 grid-cols-2 justify-items-center gap-1">{brushSizes}</div>
       {divider}

@@ -63,8 +63,10 @@ describe('UI vetorial (F5)', () => {
     expect(screen.getByRole('button', { name: COPY.vector.select })).toBeTruthy()
     expect(screen.getByRole('button', { name: COPY.vector.brush })).toBeTruthy()
     expect(screen.getByRole('button', { name: COPY.vector.star })).toBeTruthy()
-    expect(screen.getByText(COPY.vector.fill)).toBeTruthy()
-    expect(screen.getByText(COPY.vector.stroke)).toBeTruthy()
+    // Quem diz o canal são os dois quadradinhos da CAIXA (o painel de cores não
+    // repete mais isso em chips).
+    expect(screen.getAllByRole('button', { name: /^Preenchimento:/ }).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: /^Contorno:/ })).toBeTruthy()
     expect(screen.getByRole('img', { name: 'Área de desenho' })).toBeTruthy()
   })
 
@@ -87,8 +89,8 @@ describe('UI vetorial (F5)', () => {
       // Aparece no palco E na miniatura do painel Camadas.
       expect(screen.getAllByText('Olá!').length).toBeGreaterThan(0)
     })
-    // Shape criado fica SELECIONADO: painel de ações aparece.
-    expect(screen.getByRole('button', { name: COPY.vector.remove })).toBeTruthy()
+    // Shape criado fica SELECIONADO: a faixa de ações aparece.
+    expect(screen.getByRole('button', { name: COPY.vector.selRemove })).toBeTruthy()
   })
 
   it('caixa de ferramentas: espessuras no topo, grade e os dois slots de cor no pé', async () => {
@@ -116,10 +118,11 @@ describe('UI vetorial (F5)', () => {
     })
   })
 
-  it('o painel de cores pinta o CANAL ativo (chip do contorno)', async () => {
+  it('o painel de cores pinta o CANAL ativo (quadradinho do contorno)', async () => {
     await openVectorEditor()
-    // Chip "Contorno" muda o canal: a grade re-rotula os swatches.
-    fireEvent.click(screen.getByText(COPY.vector.stroke))
+    // Escolher o quadradinho do CONTORNO na caixa muda o canal: a grade
+    // re-rotula os swatches (é o controle único, sem chips no painel).
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.stroke}: preto` }))
     await waitFor(() => {
       expect(screen.getByRole('button', { name: `${COPY.vector.stroke}: vermelho` })).toBeTruthy()
     })
@@ -209,7 +212,7 @@ describe('UI vetorial (F5)', () => {
     })
   })
 
-  it('barra flutuante da seleção duplica a forma', async () => {
+  it('a faixa da seleção duplica a forma', async () => {
     await openVectorEditor()
     const stage = measureStage()
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
@@ -351,9 +354,61 @@ describe('UI vetorial (F5)', () => {
     await waitFor(() => {
       expect(screen.getAllByText('some').length).toBeGreaterThan(0)
     })
-    fireEvent.click(screen.getByRole('button', { name: COPY.vector.remove }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selRemove }))
     await waitFor(() => {
       expect(screen.queryByText('some')).toBeNull()
+    })
+  })
+
+  it('a faixa da seleção só existe com algo selecionado (e traz alinhar + apagar)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.selectionBar })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    })
+    // Alinhar e apagar moravam no fim da coluna da direita; agora vivem na faixa.
+    const bar = screen.getByRole('toolbar', { name: COPY.vector.selectionBar })
+    expect(bar.contains(screen.getByRole('button', { name: COPY.vector.alignLeft }))).toBe(true)
+    expect(bar.contains(screen.getByRole('button', { name: COPY.vector.selRemove }))).toBe(true)
+    // Desselecionar (laço vazio com a ferramenta Selecionar) → a faixa some.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    drawRect(stage, [400, 300], [420, 320])
+    await waitFor(() => {
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.selectionBar })).toBeNull()
+    })
+  })
+
+  it('degradê fica atrás de um botão; "tirar o degradê" volta para cor sólida', async () => {
+    await openVectorEditor()
+    // Fechado: nenhum controle de degradê na árvore (aberto no painel, era o
+    // que convertia o preenchimento em degradê sem querer).
+    expect(screen.queryByRole('button', { name: COPY.vector.gradientH })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientV }))
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: `${COPY.vector.fill}: ${COPY.vector.gradient}` }),
+      ).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientOff }))
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole('button', { name: `${COPY.vector.fill}: verde` }).length,
+      ).toBeGreaterThan(0)
+    })
+  })
+
+  it('trocar a paleta troca as cores sugeridas da grade', async () => {
+    await openVectorEditor()
+    // Arcade (padrão) tem vermelho; Doces não.
+    expect(screen.getByRole('button', { name: `${COPY.vector.fill}: vermelho` })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.palette.switchPalette}: Arcade` }))
+    fireEvent.click(await screen.findByRole('menuitemradio', { name: /Doces/ }))
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: `${COPY.vector.fill}: vermelho` })).toBeNull()
     })
   })
 })

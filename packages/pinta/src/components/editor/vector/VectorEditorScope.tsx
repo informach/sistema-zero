@@ -22,6 +22,7 @@ import {
 } from '../../../core/assetEdit'
 import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
+import { DEFAULT_PALETTE_ID, type PaletteId } from '../../../core/palette'
 import { PINTA_LIMITS } from '../../../core/project'
 import {
   type AlignEdge,
@@ -43,13 +44,7 @@ import { DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
 import { useToast } from '../../ui/Toast'
 import { useEditor, useEditorStores, useSession } from '../editorContext'
 import { useToolShortcuts } from '../useToolShortcuts'
-import {
-  MAX_CUSTOM_COLORS,
-  SWATCH_SET,
-  SWATCHES,
-  TOOL_SHORTCUTS,
-  type VectorTool,
-} from './vectorTools'
+import { MAX_CUSTOM_COLORS, paletteSwatches, TOOL_SHORTCUTS, type VectorTool } from './vectorTools'
 
 /** Qual "canal" de cor recebe o próximo clique na paleta. */
 export type VectorColorChannel = 'fill' | 'stroke'
@@ -61,6 +56,10 @@ export interface VectorEditorContextValue {
   setTool: (tool: VectorTool) => void
   style: ShapeStyle
   customColors: string[]
+  /** Apaga uma cor personalizada das recentes (lixeira do painel de cores). */
+  forgetColor: (hex: string) => void
+  paletteId: PaletteId
+  setPaletteId: (id: PaletteId) => void
   swatches: string[]
   selectedIds: string[]
   setSelectedIds: Dispatch<SetStateAction<string[]>>
@@ -116,6 +115,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const [style, setStyle] = useState<ShapeStyle>(DEFAULT_STYLE)
   // Cores personalizadas recentes (conta-gotas + seletor livre) — viram swatches.
   const [customColors, setCustomColors] = useState<string[]>([])
+  // Paleta SUGERIDA (a cor do vetor é livre; a paleta só troca as sugestões da
+  // grade). Vive aqui, e não no asset como no pixel: kinds vetoriais não têm
+  // campo `paletteId` e criar um entraria no desfazer sem mudar o desenho.
+  const [paletteId, setPaletteId] = useState<PaletteId>(DEFAULT_PALETTE_ID)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   // Lados do polígono / pontas da estrela (configuráveis quando a ferramenta ativa).
   const [polygonSides, setPolygonSides] = useState(6)
@@ -215,13 +218,16 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const doc = activeShapesOf(asset, ref)
   if (!doc) return null
 
-  // Paleta do JOGO (Pensa) entra na frente das cores fixas, sem duplicar. Só
-  // no vetor (cor livre) — o bitmap é indexado em 16 cores e não muda. As cores
-  // personalizadas recentes (conta-gotas/seletor) vêm na frente de tudo.
-  const projectSwatches = (asset.projectRef?.palette ?? []).filter((hex) => !SWATCH_SET.has(hex))
-  const baseSwatches = [...projectSwatches, ...SWATCHES]
-  const extraCustom = customColors.filter((hex) => !baseSwatches.includes(hex))
-  const swatches = [...extraCustom, ...baseSwatches]
+  // Ordem da grade (espelho do pixel: base primeiro, adicionadas no fim): as 15
+  // cores da paleta escolhida → as cores do JOGO (Pensa), que não podem sumir na
+  // troca de paleta → as personalizadas recentes, que são as apagáveis.
+  const baseSwatches = paletteSwatches(paletteId)
+  const projectSwatches = (asset.projectRef?.palette ?? []).filter(
+    (hex) => !baseSwatches.includes(hex),
+  )
+  const fixedSwatches = [...baseSwatches, ...projectSwatches]
+  const extraCustom = customColors.filter((hex) => !fixedSwatches.includes(hex))
+  const swatches = [...fixedSwatches, ...extraCustom]
 
   const onionShapes = onion ? previousShapesOf(asset, ref) : null
   const selected = doc.shapes.filter((s) => selectedIds.includes(s.id))
@@ -254,6 +260,14 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   /** Guarda uma cor livre no topo das recentes (dedup, teto). */
   function rememberColor(hex: string): void {
     setCustomColors((cur) => [hex, ...cur.filter((c) => c !== hex)].slice(0, MAX_CUSTOM_COLORS))
+  }
+
+  /**
+   * Tira uma cor das recentes (lixeira). Diferente do pixel, aqui NÃO mexe no
+   * desenho: as formas guardam o hex, não um índice — some só a sugestão.
+   */
+  function forgetColor(hex: string): void {
+    setCustomColors((cur) => cur.filter((c) => c !== hex))
   }
 
   /** Adota um estilo (conta-gotas): muda só o estilo VIGENTE, sem re-estilizar a seleção. */
@@ -448,6 +462,9 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setTool,
     style,
     customColors,
+    forgetColor,
+    paletteId,
+    setPaletteId,
     swatches,
     selectedIds,
     setSelectedIds,

@@ -51,6 +51,7 @@ import { useMediaQuery } from './useMediaQuery'
 import { useStudioResync } from './useStudioResync'
 import { VectorEditorScope } from './vector/VectorEditorScope'
 import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightColumn'
+import { VectorSelectionBar } from './vector/VectorSelectionBar'
 import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
 import { ZoomControls } from './ZoomControls'
@@ -86,6 +87,20 @@ function PixelLeftColumn(): JSX.Element {
   return (
     <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
       <ToolBar />
+    </div>
+  )
+}
+
+/**
+ * Coluna ESQUERDA dos kinds VETORIAIS (desktop): gêmea da do pixel. O wrapper
+ * não é decoração: é ele quem recebe o `stretch` da linha do palco. Sem ele a
+ * caixa (que é o `.pin-panel` visível) esticava até a altura do palco e o
+ * `flex-1` do miolo virava um vão branco acima das duas cores.
+ */
+function VectorLeftColumn(): JSX.Element {
+  return (
+    <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
+      <VectorToolbox />
     </div>
   )
 }
@@ -218,17 +233,20 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   // aparência) e a faixa (Spritesheet/peças + zoom) em LARGURA TOTAL embaixo.
   const isVectorSprite = asset.kind === 'vector-sprite'
   if (wide) {
+    // O escopo envolve TUDO (não só a linha do palco) para a faixa da seleção
+    // poder nascer colada na barra de cima. Ele é só um Provider, não vira DOM.
     return (
-      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        <div className="flex min-h-0 flex-1 items-stretch gap-2">
-          <VectorEditorScope>
-            <VectorToolbox />
+      <VectorEditorScope>
+        <VectorSelectionBar />
+        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+            <VectorLeftColumn />
             <VectorStage />
             <VectorRightColumn />
-          </VectorEditorScope>
+          </div>
+          <EditorFooter asset={asset} />
         </div>
-        <EditorFooter asset={asset} />
-      </div>
+      </VectorEditorScope>
     )
   }
   return (
@@ -382,7 +400,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   }
 
   return (
-    <header className="flex flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
+    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
       <ToolButton icon={ArrowLeft} label={COPY.editor.back} onClick={onBack} />
       <span aria-hidden="true" className="text-xl">
         {kind.emoji}
