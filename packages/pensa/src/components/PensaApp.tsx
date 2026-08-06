@@ -307,40 +307,37 @@ function ProjectList(props: {
   const [name, setName] = useState('')
   return (
     <section className="pensa-home">
-      <div className="pensa-hero">
-        <Zappy pose="happy" images={props.mascot} className="pensa-hero-zappy" />
-        <span className="pensa-kicker">PLANEJADOR DE JOGOS</span>
-        <h1>
-          Primeiro a ideia ganha forma.
-          <br />
-          Depois o jogo ganha vida.
-        </h1>
-        <p>
-          Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao lugar
-          certo.
-        </p>
-        <form
-          className="pensa-create"
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (name.trim().length >= 2) props.onCreate(name.trim())
-          }}
-        >
-          <label htmlFor="pensa-project-name">Nome do novo jogo</label>
-          <div>
-            <input
-              id="pensa-project-name"
-              value={name}
-              maxLength={120}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Ex.: Guardiões da Lua"
-            />
-            <button type="submit" disabled={props.busy === 'create' || name.trim().length < 2}>
-              Criar meu plano
-            </button>
-          </div>
-        </form>
-      </div>
+      <header className="pensa-home-header">
+        <div>
+          <h1>Meus projetos</h1>
+          <p>
+            Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao lugar
+            certo.
+          </p>
+        </div>
+        <Zappy pose="happy" images={props.mascot} className="pensa-home-zappy" />
+      </header>
+      <form
+        className="pensa-create"
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (name.trim().length >= 2) props.onCreate(name.trim())
+        }}
+      >
+        <label htmlFor="pensa-project-name">Nome do novo jogo</label>
+        <div>
+          <input
+            id="pensa-project-name"
+            value={name}
+            maxLength={120}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Ex.: Guardiões da Lua"
+          />
+          <button type="submit" disabled={props.busy === 'create' || name.trim().length < 2}>
+            Criar meu plano
+          </button>
+        </div>
+      </form>
       {props.error ? <Alert>{props.error}</Alert> : null}
       <div className="pensa-section-heading">
         <h2>Meus planos</h2>

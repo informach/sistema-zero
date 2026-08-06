@@ -72,13 +72,21 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
 
 - `.pensa-planner` tem fundo **CHAPADO** (`var(--pz-bg)`). O `radial-gradient` que existia era a
   textura de um app próprio e denunciava a emenda com a página, mesmo com a cor certa.
-- `.pensa-hero` deixou de ser hero de LANDING: sem card (borda/fundo/sombra), sem a marca d'água
-  `"ZERO"` do `::after`, `h1` em 1.875rem (a escala das páginas kids) e `.pensa-home` com respiro
-  de seção — o `MainContainer` do host já dá o padding externo.
+- A home segue o **padrão do Pinta** ("Meus desenhos", 08/2026): o herói de landing SAIU de vez
+  (kicker "PLANEJADOR DE JOGOS", h1 de duas linhas e Zappy grande absoluto) e entrou o
+  `.pensa-home-header` — h1 **"Meus projetos"** (1.875rem) + subtítulo do método ZERO à esquerda,
+  Zappy PEQUENO decorativo à direita (64px; 48px no `@container 560`). O teste do PensaApp trava o
+  título e a ausência do kicker.
+- **Largura TOTAL** como a galeria do Pinta: `width: calc(100% - 32px)` (sem o teto de 1160px) na
+  regra compartilhada — vale para home E detalhe (`.pensa-workspace`/`.pensa-project-header`/
+  `.pensa-map`/`.pensa-alert`).
 - Cards (`.pensa-project-card`, `.pensa-panel`/`-artifact`/`-audit`/`-ribbon`, `.pensa-task > article`)
-  usam a geometria do `.kids-card`: borda **2px** + raio **1.5rem**.
+  usam a geometria do `.kids-card`: borda **2px** + raio **1.5rem**. O `.pensa-create` virou um
+  painel dessa mesma família (borda 2px, raio 1.5rem, sombra dura tingida pelo acento), os inputs
+  do grupo compartilhado têm borda **2px** (vale também no detalhe — receita de tema) e
+  `.pensa-empty`/`.pensa-status` são 2px dashed.
 - O host não embrulha mais o app num card (`pensa-client.tsx`).
-⚠️ Mexer na largura interna (`width: min(1160px, …)`) desloca os `@container (max-width: 820px|560px)`
+⚠️ Mexer na largura interna (`width: calc(100% - 32px)`) desloca os `@container (max-width: 820px|560px)`
 — re-verifique os dois pontos de quebra em 1366 e 1920.
 
 ## Verificação
