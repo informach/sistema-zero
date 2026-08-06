@@ -29,6 +29,7 @@ type KitApiKey = keyof Pick<
   | 'showStageBorder'
   | 'setBackdrop'
   | 'drawBackdrop'
+  | 'runProject'
   | 'drawBackground'
   | 'cameraFollow'
   | 'showHitboxes'

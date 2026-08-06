@@ -4609,7 +4609,11 @@ ${gameKitAudioRuntime}
   // restart apenas dispara a fase certa; novos kits não dependem de um checklist
   // central que pode esquecer recursos ao crescer.
   _registerRuntimeDomain('stage-backdrop', {
-    reset: function () { _backdropName = ''; }
+    // resetProject, NAO 'reset': a gk so dispara resetGame/resetProject/
+    // projectReady. Um hook com nome que ninguem chama nao limpa nada e ainda
+    // parece que limpa. O cenario e' registro de PROJETO (vem do "Ao iniciar"),
+    // entao some quando o programa roda de novo, como os demais deste grupo.
+    resetProject: function () { _backdropName = ''; }
   });
   _registerRuntimeDomain('core', {
     resetGame: resetCoreGameData,

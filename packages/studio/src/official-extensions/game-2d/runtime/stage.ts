@@ -379,8 +379,24 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   function setBackdrop(name) {
     _backdropName = (typeof name === 'string') ? name : '';
     var ctx = ensureStage();
-    // Pinta já: um jogo sem laço (só "ao iniciar") também mostra o cenário.
-    if (ctx) _paintBackdrop(ctx, _backdropName);
+    if (!ctx || !_backdropName) return;
+    if (_paintBackdrop(ctx, _backdropName)) return;
+    // A imagem quase nunca está pronta aqui: o load é assíncrono e este bloco
+    // roda no "Ao iniciar". Num jogo COM laço o clear() do próximo quadro
+    // resolve; mas um jogo que ainda não tem laço (a criança acabou de
+    // arrastar o bloco e rodou) não teria NINGUÉM repintando: a tela ficaria
+    // em branco e o bloco pareceria quebrado logo no primeiro uso. Então
+    // esperamos a imagem chegar.
+    var handle = loadImage(_backdropName);
+    var img = handle && handle.img;
+    if (!img || typeof img.addEventListener !== 'function') return;
+    var alvo = _backdropName;
+    img.addEventListener('load', function () {
+      // Trocou de cenário enquanto a imagem vinha: a antiga não pinta.
+      if (_backdropName !== alvo) return;
+      var c = ensureStage();
+      if (c) _paintBackdrop(c, alvo);
+    });
   }
   /** Desenha o cenário AGORA, neste ponto do quadro. */
   function drawBackdrop(ctx, name) { return _paintBackdrop(ctx, name); }

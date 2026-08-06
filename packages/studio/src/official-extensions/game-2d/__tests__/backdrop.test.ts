@@ -27,7 +27,14 @@ interface Api {
   clear: () => void
 }
 
-/** Imagem que "carrega" na hora — happy-dom não busca a URL de verdade. */
+/**
+ * Imagem de mentira — happy-dom não busca a URL de verdade.
+ *
+ * ⚠️ O load é ASSÍNCRONO de propósito. Uma versão que dispara `onload` dentro do
+ * `set src` prova só o caminho "a imagem já estava em cache" e esconde o caso
+ * real, que é o comum: no primeiro uso a imagem SEMPRE chega depois de o "Ao
+ * iniciar" terminar. Use `aImagemChegar()` para avançar até lá.
+ */
 class FakeImage {
   naturalWidth = 0
   naturalHeight = 0
@@ -35,13 +42,29 @@ class FakeImage {
   height = 0
   onload: (() => void) | null = null
   onerror: (() => void) | null = null
+  addEventListener(tipo: string, ouvinte: () => void) {
+    if (tipo === 'load') FakeImage.ouvintes.push(ouvinte)
+  }
   set src(_value: string) {
-    this.naturalWidth = FakeImage.nextWidth
-    this.naturalHeight = FakeImage.nextHeight
-    this.onload?.()
+    const largura = FakeImage.nextWidth
+    const altura = FakeImage.nextHeight
+    FakeImage.pendentes.push(() => {
+      this.naturalWidth = largura
+      this.naturalHeight = altura
+      this.onload?.()
+    })
   }
   static nextWidth = 32
   static nextHeight = 24
+  static pendentes: Array<() => void> = []
+  static ouvintes: Array<() => void> = []
+}
+
+/** Entrega as imagens pendentes, na ordem, como o navegador faria. */
+async function aImagemChegar(): Promise<void> {
+  for (const carga of FakeImage.pendentes.splice(0)) carga()
+  for (const ouvinte of FakeImage.ouvintes.splice(0)) ouvinte()
+  await Promise.resolve()
 }
 
 const realImage = globalThis.Image
@@ -49,6 +72,8 @@ const realImage = globalThis.Image
 beforeEach(() => {
   FakeImage.nextWidth = 32
   FakeImage.nextHeight = 24
+  FakeImage.pendentes = []
+  FakeImage.ouvintes = []
   ;(globalThis as { Image: unknown }).Image = FakeImage
 })
 
@@ -97,46 +122,55 @@ function withStageCanvas(width = 800, height = 480): Ctx {
   return ctx
 }
 
+const imagens = (ctx: Ctx) => ctx.calls.filter((call) => call.startsWith('drawImage'))
+
 describe('cenário de fundo: a geometria de cobrir', () => {
-  it('cobre a tela sem deformar, centralizado, cortando o excedente', () => {
+  it('cobre a tela sem deformar, centralizado, cortando o excedente', async () => {
     // 32x24 (4:3) num palco 800x480 (5:3): a escala manda pela largura
     // (800/32 = 25 > 480/24 = 20), o desenho vira 800x600 e sobra 60px de céu
     // e 60px de chão para fora. Estes números SÃO o contrato.
     const api = load()
     const ctx = fakeCtx(800, 480)
     api.drawBackdrop(ctx, 'cenario')
-    expect(ctx.calls).toEqual(['drawImage 0 -60 800 600'])
+    await aImagemChegar()
+    api.drawBackdrop(ctx, 'cenario')
+    expect(imagens(ctx)).toEqual(['drawImage 0 -60 800 600'])
   })
 
-  it('cenário na mesma proporção da tela encaixa exatinho, sem corte', () => {
+  it('cenário na mesma proporção da tela encaixa exatinho, sem corte', async () => {
     FakeImage.nextWidth = 960
     FakeImage.nextHeight = 540
     const api = load()
     const ctx = fakeCtx(1280, 720)
     api.drawBackdrop(ctx, 'cenario')
-    expect(ctx.calls).toEqual(['drawImage 0 0 1280 720'])
+    await aImagemChegar()
+    api.drawBackdrop(ctx, 'cenario')
+    expect(imagens(ctx)).toEqual(['drawImage 0 0 1280 720'])
   })
 
-  it('corta nas laterais quando o cenário é mais largo que a tela', () => {
+  it('corta nas laterais quando o cenário é mais largo que a tela', async () => {
     FakeImage.nextWidth = 64
     FakeImage.nextHeight = 24
     const api = load()
     const ctx = fakeCtx(320, 240)
     // 320/64 = 5, 240/24 = 10 → escala 10 → 640x240, sobra 160px de cada lado.
     api.drawBackdrop(ctx, 'cenario')
-    expect(ctx.calls).toEqual(['drawImage -160 0 640 240'])
+    await aImagemChegar()
+    api.drawBackdrop(ctx, 'cenario')
+    expect(imagens(ctx)).toEqual(['drawImage -160 0 640 240'])
   })
 
-  it('o bloco fixo e o por-quadro produzem a MESMA geometria', () => {
+  it('o bloco fixo e o por-quadro produzem a MESMA geometria', async () => {
     const api = load()
     const stage = withStageCanvas(800, 480)
     api.setBackdrop('cenario')
-    const doFixo = [...stage.calls]
+    await aImagemChegar()
+    const doFixo = imagens(stage)
 
     const porQuadro = fakeCtx(800, 480)
     api.drawBackdrop(porQuadro, 'cenario')
 
-    expect(doFixo).toEqual(porQuadro.calls)
+    expect(doFixo).toEqual(imagens(porQuadro))
   })
 })
 
@@ -145,30 +179,55 @@ describe('cenário de fundo: o que acontece sem cenário', () => {
     const api = load()
     const stage = withStageCanvas()
     api.clear()
-    expect(stage.calls.filter((call) => call.startsWith('drawImage'))).toEqual([])
+    expect(imagens(stage)).toEqual([])
   })
 
-  it('depois de fixar, cada clear() repinta o cenário sozinho', () => {
+  it('depois de fixar, cada clear() repinta o cenário sozinho', async () => {
     const api = load()
     const stage = withStageCanvas(800, 480)
     api.setBackdrop('cenario')
+    await aImagemChegar()
     stage.calls.length = 0
     api.clear()
     api.clear()
-    expect(stage.calls.filter((call) => call.startsWith('drawImage'))).toEqual([
-      'drawImage 0 -60 800 600',
-      'drawImage 0 -60 800 600',
-    ])
+    expect(imagens(stage)).toEqual(['drawImage 0 -60 800 600', 'drawImage 0 -60 800 600'])
   })
 
-  it('nome vazio apaga o cenário sem quebrar o quadro', () => {
+  it('nome vazio apaga o cenário sem quebrar o quadro', async () => {
+    const api = load()
+    const stage = withStageCanvas(800, 480)
+    api.setBackdrop('cenario')
+    await aImagemChegar()
+    api.setBackdrop('')
+    stage.calls.length = 0
+    api.clear()
+    expect(imagens(stage)).toEqual([])
+  })
+})
+
+describe('cenário de fundo: o jogo que ainda não tem laço', () => {
+  it('a imagem chega DEPOIS do "Ao iniciar", e mesmo sem laço o cenário aparece', async () => {
+    // A criança arrasta só "Pôr o cenário atrás de tudo" e roda. Sem 🔁 não há
+    // clear() nenhum para repintar, e a imagem SEMPRE chega depois (o load é
+    // assíncrono) — sem alguém esperando por ela, a tela fica em branco e o
+    // bloco parece quebrado logo no primeiro uso.
+    const api = load()
+    const stage = withStageCanvas(800, 480)
+    api.setBackdrop('cenario')
+    expect(imagens(stage)).toEqual([]) // ainda carregando: não há o que pintar
+
+    await aImagemChegar()
+    expect(imagens(stage)).toEqual(['drawImage 0 -60 800 600'])
+  })
+
+  it('trocar de cenário antes de a imagem chegar não deixa a antiga pintar por cima', async () => {
     const api = load()
     const stage = withStageCanvas(800, 480)
     api.setBackdrop('cenario')
     api.setBackdrop('')
-    stage.calls.length = 0
-    api.clear()
-    expect(stage.calls.filter((call) => call.startsWith('drawImage'))).toEqual([])
+    await aImagemChegar()
+
+    expect(imagens(stage)).toEqual([])
   })
 })
 

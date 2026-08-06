@@ -111,6 +111,29 @@ describe('Jogo 2D Avançado — o cenário cobre a tela sem deformar', () => {
   })
 })
 
+describe('Jogo 2D Avançado — o cenário é registro de PROJETO', () => {
+  it('rodar o programa de novo SEM o bloco limpa o cenário anterior', async () => {
+    // O cenário vem do "Ao iniciar". Se a criança apaga o bloco e o preview
+    // re-executa o programa no MESMO documento (o caminho managedProjectRun),
+    // um cenário que sobrevive continua pintando um fundo que já não existe no
+    // programa dela. ⚠️ Este teste também é a rede contra o defeito que ele
+    // achou: o hook estava registrado sob um nome que a gk NUNCA dispara, então
+    // parecia limpar e não limpava.
+    const h = loadRuntime(ASSETS)
+    await startPlaying(h, 800, 480)
+    h.api.setBackdrop('cenario')
+    spy.clear()
+    h.nextFrame(16)
+    expect(spy.images).toContainEqual([0, -60, 800, 600])
+
+    h.api.runProject(() => {})
+    spy.clear()
+    h.nextFrame(32)
+
+    expect(spy.images).toEqual([])
+  })
+})
+
 describe('Jogo 2D Avançado — o fundo chapado tapa o cenário, e o motor avisa', () => {
   it('avisa uma vez quando "Pintar o fundo" cobre o cenário escolhido', async () => {
     const avisos: string[] = []
