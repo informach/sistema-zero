@@ -193,9 +193,14 @@
 /* Texto DENTRO dos blocos: vence a regra que o Blockly injeta (0,1,0) por
    especificidade — é por aqui que a fonte do host chega ao canvas, já que o
    `fontStyle` do Theme é resolvido antes do CSS do app. */
-[data-sz-theme] .blocklyText {
-  font-family: var(--font-family-display);
-}
+/*
+ * ⚠️ NÃO force a fonte de `.blocklyText` por CSS. O Blockly MEDE o texto (com a
+ * família do `fontStyle` do Theme, em blockly/theme.ts) para calcular a largura
+ * do bloco e do flyout; trocar só a RENDERIZAÇÃO por CSS deixa o desenho mais
+ * largo que a medida e o texto sai cortado — regressão de 08/2026, revertida.
+ * Para mudar a fonte dos blocos, mude o `fontStyle` do Theme (medida + desenho
+ * juntos) e re-verifique a largura do flyout da busca.
+ */
 [data-sz-theme] .blocklyToolboxCategoryLabel {
   font-family: var(--font-family-display);
   font-size: 15px;
