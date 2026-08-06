@@ -614,8 +614,10 @@ painel fica vivo nos dois casos (alimenta o auto-update e o `editableDrawingIds`
   grade de cards (miniatura ou emoji do papel, selo do tipo, selo `jogo: <nome>`), selo
   **"✓ no projeto"** derivado do `libId personal:<id>` dos assets do projeto; adicionar chama
   `adapter.import(id)` → `addAsset` (clone do addFromPersonal; `uniqueAssetName` compartilhado em
-  `components/assets/assetNames.ts`); a modal FICA aberta (multi-import); card já no projeto vira
-  "Adicionar de novo" (sufixo `-2` legítimo). Erro `code: 'not-found'` remove o card.
+  `components/assets/assetNames.ts`); a modal FICA aberta (multi-import). ⚠️ Card já no projeto
+  mostra **SÓ o selinho, sem botão** (decisão da dona — o "Adicionar de novo" com sufixo `-2`
+  existiu por um dia e foi cortado: trazer a mesma arte duas vezes não é caso de uso da criança).
+  Erro `code: 'not-found'` remove o card.
 - **O import do host grava em personal-assets ANTES de devolver** — é o que preserva a mão-dupla
   (guard `getPersonalAsset` do resync) e o botão editar. O Studio usa o `name` DEVOLVIDO (o upsert
   pode sufixar).

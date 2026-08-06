@@ -186,11 +186,12 @@ describe('PintaImportDialog', () => {
       source: 'library',
       libId: 'personal:d1',
     })
-    // Modal segue aberta; o card importado agora oferece "Adicionar de novo".
-    expect(screen.getByRole('button', { name: 'Adicionar de novo' })).toBeTruthy()
+    // Modal segue aberta; o card importado perde o botão (só o selinho fica) e
+    // o OUTRO desenho continua adicionável.
+    expect(screen.getAllByRole('button', { name: 'Adicionar ao projeto' })).toHaveLength(1)
   })
 
-  it('já no projeto ao abrir: mostra o selo; "Adicionar de novo" sufixa o nome', async () => {
+  it('já no projeto ao abrir: SÓ o selinho, sem botão de adicionar naquele card', async () => {
     const project = createEmptyProject('p1', 'Meu Jogo')
     project.assets = [
       {
@@ -208,11 +209,10 @@ describe('PintaImportDialog', () => {
     await waitFor(() => {
       expect(screen.getByText('✓ no projeto')).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Adicionar de novo' }))
-    await waitFor(() => {
-      const names = (useProjectStore.getState().project?.assets ?? []).map((a) => a.name)
-      expect(names).toEqual(['dragao-pintado', 'dragao-pintado-2'])
-    })
+    // Nada de "Adicionar de novo": o único botão de adicionar é o do OUTRO
+    // desenho (ceu-azul), que ainda não está no projeto.
+    expect(screen.queryByRole('button', { name: /Adicionar de novo/ })).toBeNull()
+    expect(screen.getAllByRole('button', { name: 'Adicionar ao projeto' })).toHaveLength(1)
   })
 
   it('erro do adapter aparece na modal; desenho apagado (not-found) sai da lista', async () => {

@@ -157,7 +157,6 @@ export const ptBR: Record<string, string> = {
   'pintaImport.empty': 'Sua galeria do Pinta está vazia. Desenhe lá e volte aqui!',
   'pintaImport.noResults': 'Nenhum desenho combina com essa busca.',
   'pintaImport.add': 'Adicionar ao projeto',
-  'pintaImport.addAgain': 'Adicionar de novo',
   'pintaImport.adding': 'Trazendo…',
   'pintaImport.inProject': '✓ no projeto',
   'pintaImport.gameBadge': 'jogo: {name}',

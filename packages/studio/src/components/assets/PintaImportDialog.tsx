@@ -228,26 +228,23 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
                       ) : null}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-h-8 items-center justify-end gap-2">
+                    {/* Já no projeto → SÓ o selinho (decisão da dona: sem
+                        "Adicionar de novo" — re-add acidental não existe). */}
                     {added ? (
-                      <span className="text-[10px] font-semibold text-emerald-500">
+                      <span className="inline-flex items-center text-xs font-semibold text-emerald-500">
                         {t('pintaImport.inProject')}
                       </span>
                     ) : (
-                      <span />
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={busyId !== null}
+                        onClick={() => void handleAdd(drawing)}
+                      >
+                        {busyId === drawing.id ? t('pintaImport.adding') : t('pintaImport.add')}
+                      </Button>
                     )}
-                    <Button
-                      variant={added ? 'subtle' : 'primary'}
-                      size="sm"
-                      disabled={busyId !== null}
-                      onClick={() => void handleAdd(drawing)}
-                    >
-                      {busyId === drawing.id
-                        ? t('pintaImport.adding')
-                        : added
-                          ? t('pintaImport.addAgain')
-                          : t('pintaImport.add')}
-                    </Button>
                   </div>
                 </li>
               )
