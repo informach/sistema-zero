@@ -98,7 +98,12 @@ export function ImportButton({ onImported, allowedExtensions }: ImportButtonProp
           if (file) void handleFile(file)
         }}
       />
-      <Button variant="ghost" size="sm" onClick={() => inputRef.current?.click()}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="sz-home-btn-ghost"
+        onClick={() => inputRef.current?.click()}
+      >
         {t('projects.import')}
       </Button>
       <Modal

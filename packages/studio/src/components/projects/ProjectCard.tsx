@@ -29,8 +29,10 @@ function formatDate(ts: number): string {
   })
 }
 
-const MENU_WIDTH = 176
-const MENU_HEIGHT = 146
+// ⚠️ Acompanham o CSS do menu (w-48 + 4 itens de 44px + borda 2px): se os
+// itens mudarem, o posicionamento com flip perto da borda erra junto.
+const MENU_WIDTH = 192
+const MENU_HEIGHT = 180
 const VIEWPORT_MARGIN = 8
 
 interface MenuPosition {
@@ -208,13 +210,15 @@ export function ProjectCard({
 
   return (
     <>
+      {/* Painel no padrão do Pinta (borda 2 + sombra dura + pop no hover);
+          h-48 acomoda o "Abrir" com alvo de 44px no rodapé. */}
       <article
         onPointerEnter={prefetch}
-        className="group relative z-0 flex h-44 flex-col rounded-lg border border-sz-border bg-sz-panel p-4 text-left transition-colors hover:border-sz-accent/60 hover:bg-sz-panel-soft"
+        className="sz-home-panel sz-home-pop group relative z-0 flex h-48 flex-col p-4 text-left"
       >
         <button
           type="button"
-          className="absolute inset-0 z-0 cursor-pointer rounded-lg"
+          className="absolute inset-0 z-0 cursor-pointer rounded-2xl"
           aria-label={`Abrir projeto ${summary.name}`}
           onPointerDown={prefetch}
           onClick={openProject}
@@ -240,7 +244,7 @@ export function ProjectCard({
                 }}
                 onClick={(e) => e.stopPropagation()}
                 aria-invalid={duplicateDraft || undefined}
-                className="w-full rounded border border-sz-border bg-sz-bg px-2.5 py-1.5 text-sm text-sz-fg"
+                className="w-full rounded-xl border-2 border-sz-border bg-sz-bg px-2.5 py-1.5 text-sm text-sz-fg outline-none focus:border-sz-accent"
               />
               {duplicateDraft && (
                 <p role="status" className="mt-1 text-xs text-sz-error">
@@ -270,7 +274,7 @@ export function ProjectCard({
               aria-expanded={menuOpen}
               aria-haspopup="menu"
               style={{ touchAction: 'manipulation' }}
-              className="rounded p-1.5 text-sz-fg-soft hover:bg-sz-bg hover:text-sz-fg"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-sz-fg-soft hover:bg-sz-border/40 hover:text-sz-fg"
               onClick={(e) => {
                 e.stopPropagation()
                 setMenuOpen((v) => !v)
@@ -307,7 +311,7 @@ export function ProjectCard({
                     role="menu"
                     aria-label="Ações do projeto"
                     onKeyDown={onMenuKeyDown}
-                    className="fixed z-50 w-44 overflow-hidden rounded-md border border-sz-border bg-sz-panel shadow-2xl"
+                    className="fixed z-50 w-48 overflow-hidden rounded-xl border-2 border-sz-border bg-sz-panel shadow-2xl"
                     style={{ left: menuPosition.left, top: menuPosition.top }}
                   >
                     <MenuItem
@@ -355,6 +359,7 @@ export function ProjectCard({
           <Button
             variant="primary"
             size="sm"
+            className="sz-home-btn3d"
             disabled={opening}
             onPointerDown={prefetch}
             onClick={(e) => {
@@ -404,7 +409,8 @@ function MenuItem({
       role="menuitem"
       onClick={onClick}
       className={[
-        'block w-full px-3 py-2 text-left text-sm transition-colors',
+        // 44px por item — MENU_HEIGHT acompanha (4 × 44 + borda 2×2 = 180).
+        'flex min-h-11 w-full items-center px-4 text-left text-base transition-colors',
         danger
           ? 'text-sz-error hover:bg-sz-error/10'
           : 'text-sz-fg hover:bg-sz-bg hover:text-sz-fg',

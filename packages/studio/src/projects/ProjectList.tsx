@@ -47,9 +47,6 @@ export interface ProjectListProps {
   showExamples?: boolean
 }
 
-/** A marca escrita (nome próprio, não traduzido) — o logo saiu do Estúdio. */
-const BRAND_NAME = 'Sistema Zero Studio'
-
 export function ProjectList({
   onOpenProject,
   professional = false,
@@ -142,34 +139,42 @@ export function ProjectList({
         className="flex h-full flex-col bg-sz-bg text-sz-fg"
         style={{ fontFamily: 'var(--font-family-sans)' }}
       >
-        {/* Cabeçalho de SEÇÃO da comunidade (mesma escala das páginas kids), no
-            lugar da barra com wordmark: a lista de projetos é a "capa" do
-            Estúdio quando ele está embarcado. */}
-        <header className="flex items-end gap-3 px-6 pt-6 pb-4">
+        {/* Cabeçalho de SEÇÃO da comunidade no padrão do Pinta ("Meus desenhos"):
+            título display + subtítulo apagado à esquerda, ações à direita
+            terminando na ÚNICA pílula 3D primária. */}
+        <header className="flex flex-wrap items-end gap-3 px-6 pt-6 pb-4">
           <div className="flex flex-col">
-            <h1 className="sz-ui-display text-3xl md:text-4xl">{BRAND_NAME}</h1>
+            <h1 className="sz-ui-display text-3xl md:text-4xl">{t('projects.heroTitle')}</h1>
             <p className="mt-1 text-sm text-sz-fg-soft md:text-base">{t('projects.subtitle')}</p>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             {themeProp === undefined && <ThemeToggle />}
             <ImportButton onImported={handleImported} allowedExtensions={allowedExtensions} />
-            <Button variant="primary" size="sm" onClick={() => setModalOpen(true)}>
+            <Button
+              variant="primary"
+              size="sm"
+              className="sz-home-btn3d"
+              onClick={() => setModalOpen(true)}
+            >
               + {t('projects.new')}
             </Button>
           </div>
         </header>
 
+        {/* Largura TOTAL, como a galeria do Pinta (sem teto de max-w). */}
         <main className="flex-1 overflow-auto px-6 py-6">
-          <div className="mx-auto max-w-5xl">
+          <div>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <h2 className="text-lg font-semibold">{t('projects.title')}</h2>
-              <div className="flex items-center gap-2">
+              <h2 className="sz-ui-display text-lg">{t('projects.title')}</h2>
+              {/* Receita de input do Pinta: 44px, canto xl, borda 2, fundo
+                  RECUADO (bg) — cartões ficam em cima (panel). */}
+              <div className="flex flex-wrap items-center gap-2">
                 <select
                   name="project-sort"
                   aria-label={t('projects.sort')}
                   value={projectSort}
                   onChange={(e) => void setProjectSort(e.target.value as ProjectSortOrder)}
-                  className="rounded-md border border-sz-border bg-sz-panel px-2 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent"
+                  className="min-h-11 rounded-xl border-2 border-sz-border bg-sz-bg px-3 text-base text-sz-fg outline-none focus:border-sz-accent"
                 >
                   <option value="recent">{t('projects.sortRecent')}</option>
                   <option value="name">{t('projects.sortName')}</option>
@@ -181,20 +186,20 @@ export function ProjectList({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('projects.search')}
-                  className="w-72 rounded-md border border-sz-border bg-sz-panel px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
+                  className="min-h-11 w-72 rounded-xl border-2 border-sz-border bg-sz-bg px-4 text-base text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
                 />
               </div>
             </div>
 
             {filtered === null ? (
-              // Skeleton na MESMA grade dos cards (h-44): sem layout shift nem
+              // Skeleton na MESMA grade dos cards (h-48): sem layout shift nem
               // tela "travada" enquanto o IndexedDB responde.
               <output aria-label="Carregando projetos" className="block">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="h-44 animate-pulse rounded-lg border border-sz-border bg-sz-panel"
+                      className="h-48 animate-pulse rounded-2xl border-2 border-sz-border bg-sz-panel"
                     />
                   ))}
                 </div>
@@ -203,13 +208,14 @@ export function ProjectList({
               // Primeiro uso: com exemplos liberados (playground) a vitrine É o
               // onboarding, com o "começar do zero" como alternativa. Para clientes
               // (sem exemplos), o "criar do zero" vira a ação principal.
-              <div className="flex flex-col gap-6 rounded-lg border border-dashed border-sz-border bg-sz-panel/40 p-6">
-                <p className="text-sm text-sz-fg-soft">{t('projects.empty')}</p>
+              <div className="flex flex-col gap-6 rounded-2xl border-2 border-dashed border-sz-border bg-sz-panel/40 p-6">
+                <p className="text-base text-sz-fg-soft">{t('projects.empty')}</p>
                 {showExamples ? <KitGallery onOpenProject={onOpenProject} /> : null}
                 <div>
                   <Button
                     variant={showExamples ? 'ghost' : 'primary'}
                     size="sm"
+                    className={showExamples ? 'sz-home-btn-ghost' : 'sz-home-btn3d'}
                     onClick={() => setModalOpen(true)}
                   >
                     + {showExamples ? t('kits.scratch') : t('projects.new')}
@@ -217,7 +223,7 @@ export function ProjectList({
                 </div>
               </div>
             ) : filtered.length === 0 ? (
-              <p className="text-sm text-sz-fg-soft">{t('projects.emptySearch')}</p>
+              <p className="text-base text-sz-fg-soft">{t('projects.emptySearch')}</p>
             ) : (
               <div className="flex flex-col gap-6">
                 {showExamples ? (
@@ -225,19 +231,20 @@ export function ProjectList({
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="sz-home-btn-ghost"
                       aria-expanded={kitsOpen}
                       onClick={() => setKitsOpen((value) => !value)}
                     >
                       <span aria-hidden>🎮</span> {kitsOpen ? t('kits.hide') : t('kits.show')}
                     </Button>
                     {kitsOpen ? (
-                      <div className="mt-4 rounded-lg border border-sz-border bg-sz-panel/40 p-4">
+                      <div className="mt-4 rounded-2xl border-2 border-sz-border bg-sz-panel/40 p-4">
                         <KitGallery onOpenProject={onOpenProject} />
                       </div>
                     ) : null}
                   </div>
                 ) : null}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filtered.map((summary) => (
                     <ProjectCard
                       key={summary.id}

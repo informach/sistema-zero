@@ -109,6 +109,96 @@
   letter-spacing: -0.01em;
 }
 
+/*
+ * ── Home do Estúdio no padrão do Pinta (SÓ a ProjectList; o editor não usa) ──
+ * Nomes `sz-home-*` de propósito: `.sz-display`/`.sz-btn-gradient` são classes
+ * GLOBAIS do community-kids e colidiriam ("última definição vence"). Tudo que
+ * importa vive NA CLASSE ([data-sz-theme] .x vence utilitário por
+ * especificidade), porque o cn() do Button é um join simples — sem
+ * tailwind-merge para resolver conflito entre utilitários.
+ */
+[data-sz-theme] {
+  --sz-home-gradient: var(
+    --sz-kids-grad-cta-azul-suave,
+    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+  );
+  --sz-home-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+}
+[data-sz-theme="light"] {
+  --sz-home-gradient: var(
+    --sz-kids-grad-cta-azul,
+    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+  );
+  --sz-home-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+}
+
+/* Pílula "3D" (espelho do .pin-btn-3d do Pinta, em tokens sz; alvo 44px). */
+[data-sz-theme] .sz-home-btn3d {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 9999px;
+  padding-inline: 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background-image: var(--sz-home-gradient);
+  color: var(--color-sz-bg);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+[data-sz-theme] .sz-home-btn3d:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+}
+[data-sz-theme] .sz-home-btn3d:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+}
+
+/* Fantasma 44px do Pinta (o ghost do Button é 32px com borda — este não tem). */
+[data-sz-theme] .sz-home-btn-ghost {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  padding-inline: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: transparent;
+  color: var(--color-sz-fg);
+}
+[data-sz-theme] .sz-home-btn-ghost:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--color-sz-border) 40%, transparent);
+  color: var(--color-sz-fg);
+}
+
+/* Painel de card (espelho do .pin-panel: borda 2px + sombra dura da borda). */
+[data-sz-theme] .sz-home-panel {
+  border: 2px solid var(--color-sz-border);
+  border-radius: 1rem;
+  background: var(--color-sz-panel);
+  box-shadow: 0 3px 0 color-mix(in oklch, var(--color-sz-border) 45%, transparent);
+}
+
+/* Hover pop dos cards (espelho do .pin-pop). */
+[data-sz-theme] .sz-home-pop {
+  transition: transform 0.18s ease-out;
+}
+[data-sz-theme] .sz-home-pop:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-sz-theme] .sz-home-pop,
+  [data-sz-theme] .sz-home-btn3d {
+    transition: none;
+  }
+  [data-sz-theme] .sz-home-pop:hover {
+    transform: none;
+  }
+}
+
 /* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
 .sz-highlight-line {
   background-color: color-mix(in oklab, var(--color-sz-accent) 18%, transparent);
