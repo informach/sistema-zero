@@ -223,6 +223,23 @@ export function getZappyMetrics(month: string): Promise<GatewayResponse<unknown>
   return gatewayFetch('/members/admin/zappy/metrics', { query: { month } })
 }
 
+/** Perguntas que falharam (reprovadas/erro/👎) — redigidas, sem ids de criança. */
+export function getZappyFailedQuestions(input: {
+  month: string
+  filter?: 'all' | 'rejected' | 'error' | 'not-useful'
+  limit?: number
+  offset?: number
+}): Promise<GatewayResponse<unknown>> {
+  return gatewayFetch('/members/admin/zappy/questions', {
+    query: {
+      month: input.month,
+      ...(input.filter ? { filter: input.filter } : {}),
+      ...(input.limit ? { limit: String(input.limit) } : {}),
+      ...(input.offset ? { offset: String(input.offset) } : {}),
+    },
+  })
+}
+
 export async function backfillZappyKnowledge(
   input: { cursor?: string } = {},
 ): Promise<GatewayResponse<unknown>> {

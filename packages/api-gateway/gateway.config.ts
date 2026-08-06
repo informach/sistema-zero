@@ -2095,6 +2095,18 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
+      // Perguntas que falharam (reprovadas/erro/👎), redigidas e SEM ids de
+      // criança/projeto — alimenta a seção "Perguntas que falharam" do /admin/ia.
+      id: 'members-admin-zappy-questions',
+      methods: ['GET'],
+      pathPattern: '/members/admin/zappy/questions',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
       id: 'members-admin-zappy-knowledge-backfill',
       methods: ['POST'],
       pathPattern: '/members/admin/zappy/knowledge/backfill',
