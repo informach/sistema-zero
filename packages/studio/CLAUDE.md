@@ -497,6 +497,17 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
   bloco abaixo do campo depois de rolar e voltar, e último bloco inteiro no fim.
 - ⚠️ `bun test` não faz layout: os testes provam a ARITMÉTICA (`searchFlyoutMetrics.test.ts`) e o
   agrupamento puro (`searchGrouping.test.ts`). O pixel é QA de navegador, no playground.
+- ⚠️ **Armadilha de QA: metade desta tela vive numa `requestAnimationFrame`.** O `matchBlocks`
+  fecha agendando `fitFlyoutToContents()` + `positionField()` numa rAF, e **rAF não dispara em aba
+  oculta** (`document.visibilityState === 'hidden'` — foi o que derrubou a captura de capa também).
+  Num painel de navegador que não está sendo EXIBIDO, `setTimeout` roda e rAF não: a rolagem e o CSS
+  dão para verificar, mas a LARGURA do painel (o piso de `MIN_SEARCH_FLYOUT_WIDTH`, reaplicado só
+  naquela rAF) não — dá falso negativo, com o campo largo sobrando por cima de uma caixa estreita.
+  Quem instala o cálculo de rolagem é o `showFieldWhenReady`, SÍNCRONO na seleção da categoria, e
+  por isso ele é verificável mesmo assim.
+- ⚠️ **Medir o flyout pelo `.blocklyFlyoutBackground`, nunca pelo `<g class="blocklyFlyout">`**: o
+  `getBoundingClientRect()` do `<g>` é a UNIÃO dos filhos, então um bloco largo demais devolve a
+  largura do bloco, não a da caixa.
 
 **Adicionar um bloco = ~9 pontos (round-trip blocos⇄código)** — pular um quebra silenciosamente:
 1. `ir/schema.ts` — variante na união TS (`JSStatement`/`JSExpr`/`HTMLNode`/`CSSEntry`) **E** no `z.discriminatedUnion` (senão a validação rejeita o IR salvo/importado).
