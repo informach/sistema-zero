@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, setSystemTime } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import type { PublicationView } from '../../src/application/mappers/views'
 import type { BestTimesView } from '../../src/application/metrics/metrics.service'
@@ -46,22 +46,30 @@ async function publishedAt(
 
 describe('GET /marketing/metrics/best-times (heatmap 7×24 em SP)', () => {
   it('agrupa por dia×hora NO FUSO DE SP (virada de dia UTC não vaza) e soma views', async () => {
-    const t = buildTestApp()
-    // 02:30Z de quarta 08/07 = 23:30 de TERÇA 07/07 em SP (dow 2, hora 23).
-    await publishedAt(t, 'ig_feed', new Date('2026-07-08T02:30:00Z'), 100)
-    // Mais um post na MESMA célula SP (02:10Z → 23:10 de terça).
-    await publishedAt(t, 'ig_reels', new Date('2026-07-08T02:10:00Z'), 50)
-    // 15:00Z de quarta = 12:00 de QUARTA em SP (dow 3, hora 12).
-    await publishedAt(t, 'yt_video', new Date('2026-07-08T15:00:00Z'), 300)
+    // Relógio FIXO logo após os posts: as datas são cravadas em 08/07 e a janela
+    // `days=30` é relativa ao AGORA — sem pinar, os posts saíam da janela quando a
+    // data real passava de ~30 dias (time bomb: verde em julho, vermelho em agosto).
+    setSystemTime(new Date('2026-07-09T12:00:00Z'))
+    try {
+      const t = buildTestApp()
+      // 02:30Z de quarta 08/07 = 23:30 de TERÇA 07/07 em SP (dow 2, hora 23).
+      await publishedAt(t, 'ig_feed', new Date('2026-07-08T02:30:00Z'), 100)
+      // Mais um post na MESMA célula SP (02:10Z → 23:10 de terça).
+      await publishedAt(t, 'ig_reels', new Date('2026-07-08T02:10:00Z'), 50)
+      // 15:00Z de quarta = 12:00 de QUARTA em SP (dow 3, hora 12).
+      await publishedAt(t, 'yt_video', new Date('2026-07-08T15:00:00Z'), 300)
 
-    const res = await request(t.app, 'GET', '/marketing/metrics/best-times?days=30')
-    expect(res.status).toBe(200)
-    const body = (await res.json()) as BestTimesView
-    expect(body.totalPosts).toBe(3)
-    expect(body.cells).toEqual([
-      { dow: 2, hour: 23, posts: 2, views: 150, likes: 15 },
-      { dow: 3, hour: 12, posts: 1, views: 300, likes: 30 },
-    ])
+      const res = await request(t.app, 'GET', '/marketing/metrics/best-times?days=30')
+      expect(res.status).toBe(200)
+      const body = (await res.json()) as BestTimesView
+      expect(body.totalPosts).toBe(3)
+      expect(body.cells).toEqual([
+        { dow: 2, hour: 23, posts: 2, views: 150, likes: 15 },
+        { dow: 3, hour: 12, posts: 1, views: 300, likes: 30 },
+      ])
+    } finally {
+      setSystemTime()
+    }
   })
 
   it('filtro de rede e janela de dias funcionam; fora da janela fica de fora', async () => {
