@@ -654,6 +654,23 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   })
   if (canvasBlock !== undefined) return canvasBlock
   switch (stmt.type) {
+    // ----- 🔊 Som do núcleo -----
+    case 'somLoad':
+      return block('sz_som_load', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'somPlay':
+      return block('sz_som_play', { NAME: stmt.name }, {}, stmt.__id)
+    case 'somStop':
+      return block('sz_som_stop', { NAME: stmt.name }, {}, stmt.__id)
+    case 'somPlayMusic':
+      return block('sz_som_play_music', { NAME: stmt.name }, {}, stmt.__id)
+    case 'somStopMusic':
+      return block('sz_som_stop_music', {}, {}, stmt.__id)
+    case 'somVolume': {
+      const level = exprToValueBlock(stmt.level)
+      return level === null
+        ? rawJSBlock(stmt)
+        : block('sz_som_volume', {}, {}, stmt.__id, { LEVEL: level })
+    }
     case 'event': {
       const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
       const targetFields = { TARGET: stmt.target, TARGET_KIND: targetKind }

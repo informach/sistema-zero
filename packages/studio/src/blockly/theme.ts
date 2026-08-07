@@ -86,6 +86,9 @@ export const CATEGORY_COLORS = {
   svg: '#1aaf54', // verde
   canvas: '#9333ea', // roxo
   canvas3d: '#0d9488', // teal (Canvas 3D — three.js cru)
+  // Magenta escuro: precisa ser distinto do rosa da extensão (#ec4899) e do
+  // vermelho do CSS (#e63946). Este é mais escuro e mais roxo que os dois.
+  som: '#a21caf', // magenta (Som — tocar os arquivos que a criança enviou)
   advanced: '#38bdf8', // azul do céu (claro)
   extension: '#ec4899', // rosa (extensão genérica = Jogo 2D)
   // Programação (guarda-chuva) — TUDO em tons de LARANJA, variando por área.

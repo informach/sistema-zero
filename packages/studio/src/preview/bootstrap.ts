@@ -2,6 +2,7 @@ import { isReservedProjectFileName, normalizeExtraFileName } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildAssetsRuntime } from './assetsBridge'
+import { buildAudioRuntime } from './audioBridge'
 import { buildPreviewCSPMetaTag } from './csp'
 import { rewriteCssAssetUrls } from './cssAssets'
 import { prepareHtmlEventHandlers } from './htmlEventHandlers'
@@ -289,6 +290,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
   // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
   const inputBridgeTag = trustedScriptTag(buildInputBridgeRuntime())
+  // Bridge de som: window.__szAudio — mesma ideia, para os blocos da categoria
+  // 🔊 Som do núcleo tocarem os arquivos que a criança enviou sem depender de
+  // nenhuma extensão de jogo. Lê o mesmo __SZGAME_SOUNDS do bridge de assets.
+  const audioBridgeTag = trustedScriptTag(buildAudioRuntime())
   // Bridge de armazenamento: shima localStorage/sessionStorage (a origem opaca do
   // sandbox os faria LANÇAR) e espelha o store `local` ao parent. Vem antes do
   // importmap/extensões/aluno para que `localStorage` já exista quando rodarem.
@@ -331,6 +336,7 @@ ${loopGuardTag}
 ${modalGuardTag}
 ${scriptSourceGuardTag}
 ${inputBridgeTag}
+${audioBridgeTag}
 ${storageBridgeTag}
 ${assetsBridgeTag}
 ${importmapTag}

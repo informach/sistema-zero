@@ -17,6 +17,7 @@ import { CANVAS_BLOCKS } from './blocks/canvas'
 import { CANVAS3D_BLOCKS } from './blocks/canvas3d'
 import { CSS_BLOCKS } from './blocks/css'
 import { HTML_BLOCKS } from './blocks/html'
+import { SOM_BLOCKS } from './blocks/som'
 import { SVG_BLOCKS } from './blocks/svg'
 import type { BlockDefinition, BlockPlacement } from './blocks/types'
 import { palettePathOf } from './paletteMap'
@@ -156,6 +157,7 @@ const GROUPS: readonly (readonly [string, readonly BlockLike[]])[] = [
     ({ category, definitions }) => [category, definitions] as const,
   ),
   ['Canvas', CANVAS_BLOCKS],
+  ['Som', SOM_BLOCKS],
   ['Canvas 3D', CANVAS3D_BLOCKS],
   ...PROGRAMMING_CATALOG_GROUPS.slice(2).map(
     ({ category, definitions }) => [category, definitions] as const,

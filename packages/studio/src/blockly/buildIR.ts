@@ -1435,6 +1435,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_adv_raw_html':
       return { kind: 'html', value: { type: 'rawHTML', html: f(block, 'CODE'), advanced: true } }
 
+    // ----- 🔊 Som do núcleo (sem `seen.add`: não é extensão) -----
+    case 'sz_som_load':
+      return {
+        kind: 'js',
+        value: { type: 'somLoad', name: f(block, 'NAME') || 'som', asset: f(block, 'ASSET') },
+      }
+    case 'sz_som_play':
+      return { kind: 'js', value: { type: 'somPlay', name: f(block, 'NAME') || 'som' } }
+    case 'sz_som_stop':
+      return { kind: 'js', value: { type: 'somStop', name: f(block, 'NAME') || 'som' } }
+    case 'sz_som_play_music':
+      return { kind: 'js', value: { type: 'somPlayMusic', name: f(block, 'NAME') || 'musica' } }
+    case 'sz_som_stop_music':
+      return { kind: 'js', value: { type: 'somStopMusic' } }
+    case 'sz_som_volume':
+      return {
+        kind: 'js',
+        value: { type: 'somVolume', level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }) },
+      }
+
     case 'sz_adv_raw_css':
       return { kind: 'css', value: { type: 'rawCSS', code: f(block, 'CODE'), advanced: true } }
 

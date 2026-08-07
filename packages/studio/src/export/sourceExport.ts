@@ -45,7 +45,8 @@ O que tem aqui:
 - script.js   -> a programação do seu jogo/app
 - style.css   -> as cores e o visual (se você usou)
 - sz-ext/     -> peças prontas das extensões (ex.: o motor do Jogo 2D)
-- sz-assets.js-> suas imagens, já embutidas no projeto (se você adicionou alguma)
+- sz-assets.js-> suas imagens e sons, já embutidos no projeto (se você adicionou algum)
+- sz-audio.js -> o toca-sons dos blocos de 🔊 Som
 
 Divirta-se programando! 🚀
 `

@@ -13,6 +13,7 @@ import { HTML_BLOCKS, HTML_GROUPS } from './blocks/html'
 import { JS_BLOCKS, JS_GROUPS } from './blocks/js'
 import { MATH_BLOCKS } from './blocks/math'
 import { OBJECT_BLOCKS } from './blocks/objects'
+import { SOM_BLOCKS, SOM_GROUPS } from './blocks/som'
 import { SVG_BLOCKS, SVG_GROUPS } from './blocks/svg'
 import type { BlockDefinition } from './blocks/types'
 import { VALUE_BLOCKS } from './blocks/values'
@@ -150,6 +151,7 @@ assignAll(
 )
 
 assignGrouped('Canvas', CANVAS_BLOCKS, CANVAS_GROUPS)
+assignGrouped('Som', SOM_BLOCKS, SOM_GROUPS)
 assignGrouped('Canvas 3D', CANVAS3D_BLOCKS, CANVAS3D_GROUPS)
 // "Avançado" é plana de verdade na paleta (3 blocos, sem sub-grupo).
 assignAll(ADVANCED_BLOCKS, ['Avançado'])

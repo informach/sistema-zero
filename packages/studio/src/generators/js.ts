@@ -744,6 +744,19 @@ function compileStatementCode(
     throw new GeneratorError(`Statement Canvas sem codec: ${stmt.type}`)
   }
   switch (stmt.type) {
+    // ----- 🔊 Som do núcleo (window.__szAudio, ver preview/audioBridge) -----
+    case 'somLoad':
+      return `${pad}__szAudio.carregar(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.asset)});`
+    case 'somPlay':
+      return `${pad}__szAudio.tocar(${JSON.stringify(stmt.name)});`
+    case 'somStop':
+      return `${pad}__szAudio.parar(${JSON.stringify(stmt.name)});`
+    case 'somPlayMusic':
+      return `${pad}__szAudio.tocarSemParar(${JSON.stringify(stmt.name)});`
+    case 'somStopMusic':
+      return `${pad}__szAudio.pararMusica();`
+    case 'somVolume':
+      return `${pad}__szAudio.volume(${compileExpr(stmt.level, 0, identifiers, recAt(base))});`
     case 'var': {
       const keyword = stmt.kind === 'const' ? 'const' : 'let'
       return `${pad}${keyword} ${identifiers.get(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
@@ -4754,6 +4767,16 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.y, names)
       collectExprIdentifiers(stmt.w, names)
       collectExprIdentifiers(stmt.h, names)
+      return
+    // Apelido de som é texto solto, não identificador do programa.
+    case 'somLoad':
+    case 'somPlay':
+    case 'somStop':
+    case 'somPlayMusic':
+    case 'somStopMusic':
+      return
+    case 'somVolume':
+      collectExprIdentifiers(stmt.level, names)
       return
     case 'canvasSave':
     case 'canvasRestore':

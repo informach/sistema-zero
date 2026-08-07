@@ -22,6 +22,8 @@ import {
   JS_GROUPS,
   MATH_BLOCKS,
   OBJECT_BLOCKS,
+  SOM_BLOCKS,
+  SOM_GROUPS,
   SVG_BLOCKS,
   SVG_GROUPS,
   VALUE_BLOCKS,
@@ -429,6 +431,8 @@ export function buildCoreToolbox(
 
   // Canvas: categoria PRÓPRIA (fora da Programação) — desenho, será incrementada.
   pushGrouped('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS, CANVAS_GROUPS)
+  // Som: tocar os arquivos de audio do projeto, sem depender de extensao.
+  pushGrouped('Som', CATEGORY_COLORS.som, SOM_BLOCKS, SOM_GROUPS)
   // Canvas 3D inteiro é avançado-3d ("na unha por último", 26/07). A categoria
   // aparece somente no topo, quando todos os blocos técnicos e visuais cabem.
   pushGrouped('Canvas 3D', CATEGORY_COLORS.canvas3d, CANVAS3D_BLOCKS, CANVAS3D_GROUPS)

@@ -147,6 +147,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_random_between: { MIN: 'number', MAX: 'number' },
   sz_g2d_random_chance: { PERCENT: 'number' },
   sz_g2d_cooldown_ready: { FRAMES: 'number' },
+  sz_som_volume: { LEVEL: 'number' },
   sz_canvas_rotate: { ANGLE: 'number' },
   sz_canvas_scale: { SX: 'number', SY: 'number' },
   sz_canvas_gradient: { X0: 'number', Y0: 'number', X1: 'number', Y1: 'number' },

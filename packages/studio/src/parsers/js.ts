@@ -1874,6 +1874,11 @@ function mapExpressionStatement(
   const interval = tryMatchSetInterval(expr, source, ctx)
   if (interval) return interval
 
+  // 🔊 Som do núcleo: __szAudio.tocar("moeda") e cia. ANTES do método genérico —
+  // senão viram memberCall e o round-trip perde o bloco.
+  const somCall = tryMatchCoreAudioCall(expr)
+  if (somCall) return somCall
+
   // game-2d: SZGame2D.gameLoop(function update(){…}) / onPointer((px,py)=>{…}) e
   // helpers de uma linha (drawSprite, applyVelocity, bounceOnEdges, setGravity,
   // playSound). ANTES do método genérico — senão viram memberCall.
@@ -3214,6 +3219,53 @@ function readBulletOptions(
 }
 
 /** SZGame2D.gameLoop/onPointer/drawSprite/applyVelocity/bounceOnEdges/setGravity/playSound. */
+/**
+ * `__szAudio.tocar("moeda")` e cia. → blocos da categoria 🔊 Som do núcleo.
+ *
+ * Bem mais simples que os helpers de extensão: é sempre uma chamada de membro
+ * sobre um global fixo, com argumentos literais (o volume aceita expressão).
+ */
+function tryMatchCoreAudioCall(expr: Node): JSStatement | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== '__szAudio') return null
+  if (callee.property?.type !== 'Identifier') return null
+  const args = expr.arguments ?? []
+  const texto = (index: number): string | null =>
+    args[index]?.type === 'StringLiteral' ? (args[index].value as string) : null
+  switch (callee.property.name as string) {
+    case 'carregar': {
+      const name = texto(0)
+      const asset = texto(1)
+      return name !== null && asset !== null ? { type: 'somLoad', name, asset } : null
+    }
+    case 'tocar': {
+      const name = texto(0)
+      return name === null ? null : { type: 'somPlay', name }
+    }
+    case 'parar': {
+      const name = texto(0)
+      return name === null ? null : { type: 'somStop', name }
+    }
+    case 'tocarSemParar': {
+      const name = texto(0)
+      return name === null ? null : { type: 'somPlayMusic', name }
+    }
+    case 'pararMusica':
+      return args.length === 0 ? { type: 'somStopMusic' } : null
+    case 'volume': {
+      // Aceita número cru OU uma expressão simples (variável da criança).
+      const level = args[0]?.type === 'NumericLiteral' ? args[0] : null
+      return level
+        ? { type: 'somVolume', level: { type: 'num', value: Number(level.value) } }
+        : null
+    }
+    default:
+      return null
+  }
+}
+
 function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   const call = asSZGame2DCall(expr)
   if (!call) return null

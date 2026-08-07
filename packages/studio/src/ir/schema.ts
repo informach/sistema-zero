@@ -2002,6 +2002,15 @@ export type JSStatement =
       w: JSExpr
       h: JSExpr
     })
+  // 🔊 Som do NÚCLEO — tocar os arquivos que a criança enviou, sem extensão.
+  // Sem prefixo de namespace de propósito: `g2d:`/`g3d:` são de extensão; o
+  // núcleo usa nome cru, como `canvasDrawImage` logo acima.
+  | (JSStatementCommon & { type: 'somLoad'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'somPlay'; name: string })
+  | (JSStatementCommon & { type: 'somStop'; name: string })
+  | (JSStatementCommon & { type: 'somPlayMusic'; name: string })
+  | (JSStatementCommon & { type: 'somStopMusic' })
+  | (JSStatementCommon & { type: 'somVolume'; level: JSExpr })
   | (JSStatementCommon & { type: 'canvasSave'; ctxVar: string })
   | (JSStatementCommon & { type: 'canvasRestore'; ctxVar: string })
   | (JSStatementCommon & {
@@ -5718,6 +5727,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       h: JSExprSchema,
       ...idField,
     }),
+    z.object({ type: z.literal('somLoad'), name: irText(), asset: irText(), ...idField }),
+    z.object({ type: z.literal('somPlay'), name: irText(), ...idField }),
+    z.object({ type: z.literal('somStop'), name: irText(), ...idField }),
+    z.object({ type: z.literal('somPlayMusic'), name: irText(), ...idField }),
+    z.object({ type: z.literal('somStopMusic'), ...idField }),
+    z.object({ type: z.literal('somVolume'), level: JSExprSchema, ...idField }),
     z.object({ type: z.literal('canvasSave'), ctxVar: irText(), ...idField }),
     z.object({ type: z.literal('canvasRestore'), ctxVar: irText(), ...idField }),
     z.object({

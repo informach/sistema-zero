@@ -57,6 +57,8 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'funcDecl',
   'classDecl',
   'canvasSetup',
+  // 🔊 Som do núcleo: carregar prepara o arquivo e não toca nada.
+  'somLoad',
 
   'g2d:setupStage',
   'g2d:setupFull',

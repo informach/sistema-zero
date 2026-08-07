@@ -292,6 +292,13 @@ export const PROJECT_FILE_LIMITS = {
 // blocos ocultos da paleta. Um tipo ausente faz o blocksState salvo inteiro ser
 // descartado no load. O teste blockAllowlist.test garante que fica em sincronia.
 export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
+  // 🔊 Som do núcleo (tocar os arquivos que a criança enviou).
+  'sz_som_load',
+  'sz_som_play',
+  'sz_som_stop',
+  'sz_som_play_music',
+  'sz_som_stop_music',
+  'sz_som_volume',
   ...CANVAS3D_BLOCK_TYPES,
   'sz_adv_raw_css',
   'sz_adv_raw_html',

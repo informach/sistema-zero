@@ -176,6 +176,11 @@ export const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
   Matemática: 'intermediario-2d',
   Canvas: 'avancado-2d',
   'Canvas 3D': 'avancado-3d',
+  // Som fica CEDO de propósito: é o gesto mais imediato que existe (envio um
+  // arquivo, aperto um botão, ele toca) e não depende de entender canvas nem
+  // laço. Serve tanto ao projeto web quanto ao Canvas, e é a resposta ao
+  // "enviei um som e não achei bloco nenhum".
+  Som: 'iniciante-2d',
   Valores: 'iniciante-2d',
   Funções: 'intermediario-2d',
   Classes: 'avancado-2d',

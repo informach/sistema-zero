@@ -13,6 +13,7 @@ import { JS_BLOCKS, JS_GROUPS } from './js'
 import { MATH_BLOCKS } from './math'
 import { OBJECT_BLOCKS } from './objects'
 import { OOP_BLOCKS } from './oop'
+import { SOM_BLOCKS, SOM_GROUPS } from './som'
 import { SVG_BLOCKS, SVG_GROUPS } from './svg'
 import type { BlockDefinition } from './types'
 import { VALUE_BLOCKS } from './values'
@@ -36,6 +37,8 @@ export {
   MATH_BLOCKS,
   OBJECT_BLOCKS,
   OOP_BLOCKS,
+  SOM_BLOCKS,
+  SOM_GROUPS,
   SVG_BLOCKS,
   SVG_GROUPS,
   VALUE_BLOCKS,
@@ -49,6 +52,7 @@ export const CORE_BLOCKS: BlockDefinition[] = [
   ...DOM_BLOCKS,
   ...JS_BLOCKS,
   ...CANVAS_BLOCKS,
+  ...SOM_BLOCKS,
   ...CANVAS3D_BLOCKS,
   ...VALUE_BLOCKS,
   ...MATH_BLOCKS,
