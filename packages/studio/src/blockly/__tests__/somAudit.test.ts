@@ -85,6 +85,29 @@ describe('🔊 Som do núcleo — o fio fecha', () => {
     })
   }
 
+  it('o volume aceita VARIÁVEL no soquete, não só número', () => {
+    // ⚠️ Defeito real (revisão de 08/2026): o parser só reconhecia
+    // `NumericLiteral`, então uma variável da criança no soquete fazia o bloco
+    // virar `rawJS` ao passar pela Ponte — ela perdia o bloco. Os testes acima
+    // não pegavam porque só exercitam a sombra padrão (um número).
+    const ir: JSStatement[] = [
+      { type: 'somVolume', level: { type: 'var', name: 'meuVolume' } } as JSStatement,
+    ]
+    const code = compileStatements(ir, 0)
+    expect(code).toContain('__szAudio.volume(meuVolume)')
+    expect(stripIds(parseJS(code))).toEqual(ir)
+  })
+
+  it('o seletor de apelido conhece o "carregar" do núcleo', async () => {
+    // ⚠️ Defeito real (revisão de 08/2026): `sz_som_load` ficou de fora do
+    // `SOUND_DECL_BLOCKS` do FieldNamePicker. Os quatro irmãos (gk, g3k, w3d,
+    // g3d) estavam lá; o do núcleo não. Resultado: a criança carregava o som com
+    // um apelido e o seletor de "Tocar o som" abria VAZIO.
+    const fonte = await Bun.file(new URL('../fields/FieldNamePicker.ts', import.meta.url)).text()
+    const bloco = fonte.slice(fonte.indexOf('const SOUND_DECL_BLOCKS'))
+    expect(bloco.slice(0, bloco.indexOf('}'))).toContain('sz_som_load')
+  })
+
   it('todo bloco está na allowlist do núcleo', () => {
     // ⚠️ A allowlist é TUDO-OU-NADA no load: um tipo faltando não some só com
     // aquele bloco, zera TODOS os blocos do projeto da criança.

@@ -52,17 +52,23 @@ export function buildAudioRuntime(): string {
   window.addEventListener('touchstart', soltar);
 
   function chave(nome) { return typeof nome === 'string' ? nome.trim() : ''; }
-  function avisar(msg) {
+  // ⚠️ Dedupado por CHAVE, como o warnOnce das extensões: um nome errado dentro
+  // do laço de animação chamaria isto 60×/s e afogaria o console — e o aviso
+  // vira ruído justamente quando a criança mais precisa lê-lo.
+  var jaAvisado = Object.create(null);
+  function avisar(chaveDoAviso, msg) {
+    if (jaAvisado[chaveDoAviso]) return;
+    jaAvisado[chaveDoAviso] = true;
     if (window.console && console.warn) console.warn('[som] ' + msg);
   }
   function carregar(nome, arquivo) {
     var apelido = chave(nome) || chave(arquivo);
-    if (!apelido) { avisar('carregar precisa de um apelido.'); return; }
+    if (!apelido) { avisar('sem-apelido', 'carregar precisa de um apelido.'); return; }
     var quer = chave(arquivo) || apelido;
     var sons = manifesto();
     var src = sons[quer] || (quer.indexOf('data:audio/') === 0 ? quer : null);
     if (!src) {
-      avisar('o som "' + quer + '" não está no projeto. Envie o arquivo em "Imagens e sons".');
+      avisar('ausente:' + quer, 'o som "' + quer + '" não está no projeto. Envie o arquivo em "Imagens e sons".');
       return;
     }
     if (carregados[apelido] && fontes[apelido] === src) return;
@@ -71,7 +77,7 @@ export function buildAudioRuntime(): string {
       var el = new Audio();
       el.preload = 'auto';
       el.volume = volume;
-      el.onerror = function () { avisar('o som "' + apelido + '" não pôde ser carregado.'); };
+      el.onerror = function () { avisar('falhou:' + apelido, 'o som "' + apelido + '" não pôde ser carregado.'); };
       el.src = src;
       carregados[apelido] = el;
       fontes[apelido] = src;

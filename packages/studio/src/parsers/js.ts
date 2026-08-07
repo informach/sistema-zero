@@ -1876,7 +1876,7 @@ function mapExpressionStatement(
 
   // 🔊 Som do núcleo: __szAudio.tocar("moeda") e cia. ANTES do método genérico —
   // senão viram memberCall e o round-trip perde o bloco.
-  const somCall = tryMatchCoreAudioCall(expr)
+  const somCall = tryMatchCoreAudioCall(expr, ctx)
   if (somCall) return somCall
 
   // game-2d: SZGame2D.gameLoop(function update(){…}) / onPointer((px,py)=>{…}) e
@@ -3225,7 +3225,7 @@ function readBulletOptions(
  * Bem mais simples que os helpers de extensão: é sempre uma chamada de membro
  * sobre um global fixo, com argumentos literais (o volume aceita expressão).
  */
-function tryMatchCoreAudioCall(expr: Node): JSStatement | null {
+function tryMatchCoreAudioCall(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression') return null
   const callee = expr.callee
   if (callee?.type !== 'MemberExpression' || callee.computed) return null
@@ -3255,11 +3255,11 @@ function tryMatchCoreAudioCall(expr: Node): JSStatement | null {
     case 'pararMusica':
       return args.length === 0 ? { type: 'somStopMusic' } : null
     case 'volume': {
-      // Aceita número cru OU uma expressão simples (variável da criança).
-      const level = args[0]?.type === 'NumericLiteral' ? args[0] : null
-      return level
-        ? { type: 'somVolume', level: { type: 'num', value: Number(level.value) } }
-        : null
+      // ⚠️ Precisa aceitar EXPRESSÃO, não só número: o bloco tem soquete de
+      // valor, então a criança pode encaixar uma variável ali. Aceitando só
+      // `NumericLiteral`, o bloco dela virava `rawJS` ao passar pela Ponte.
+      const level = toExpr(args[0], ctx)
+      return isSimpleValue(level) ? { type: 'somVolume', level } : null
     }
     default:
       return null

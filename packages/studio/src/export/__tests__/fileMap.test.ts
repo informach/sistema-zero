@@ -52,6 +52,15 @@ describe('buildClassicFileMap', () => {
     const studentScript = index.indexOf('src="script.js"')
     expect(inputRuntime).toBeGreaterThan(-1)
     expect(studentScript).toBeGreaterThan(inputRuntime)
+
+    // ⚠️ O bridge de SOM é o irmão do de entrada e precisa da MESMA paridade
+    // preview↔export: faltando aqui, o jogo exportado fica MUDO e o defeito é
+    // silencioso (nada quebra, o som só não sai). Ele pode vir antes do
+    // sz-assets.js porque lê o manifesto de forma preguiçosa, na hora de tocar.
+    expect(String(files['public/sz-audio.js'])).toContain('window.__szAudio')
+    const audioRuntime = index.indexOf('src="sz-audio.js"')
+    expect(audioRuntime).toBeGreaterThan(-1)
+    expect(studentScript).toBeGreaterThan(audioRuntime)
   })
 
   it('placement external: emite os 3 arquivos sob public/ e mantem as referencias', async () => {
