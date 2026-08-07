@@ -95,14 +95,26 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
   seguir a borda no hover — o hover é só `translateY(-2px) scale(1.02)`, como `.pin-pop`/
   `.sz-home-pop`. Peso de fonte: **700** em todo o arquivo (era 800 em 29 lugares; `.pin-display`
   e `.sz-ui-display` são 700). Vazio: `p-6` = 24px, 2px dashed, raio 1rem.
+- ⭐ **A família dos títulos mora no ELEMENTO, não numa classe** (`.pensa-planner h1..h4`). O
+  Preflight do Tailwind zera `font-weight` E deixa a família cair na herdada (Nunito, do corpo do
+  host). Enquanto a família morou só em `.pensa-display`, bastava um título nascer sem a classe
+  para sair em **Nunito ao lado de um `<h2 className="sz-ui-display">` do Estúdio em Baloo** — foi
+  o que aconteceu com "Meus planos" e com outros 18 títulos do pacote. Travado por
+  `src/styles/headingFont.test.ts` (a folha externa não é computada em jsdom, então o teste lê o
+  CSS e exige família + peso 700 na regra de elemento).
 - Arranjo da home, pareado com `ProjectList.tsx`/`GalleryScreen.tsx`: `.pensa-create` **sem
   painel** (faixa solta; embrulhá-lo dava a ele o peso dos planos já criados), campo de ~440px ao
   lado do botão, 44px de respiro do subtítulo até a label; `.pensa-section-heading` h2 em
   **1.125rem** (`text-lg`) com `margin: 40px 0 24px` (`mb-6`); grade
-  `repeat(auto-fill, minmax(210px, 1fr))` + `gap: 16px` (`gap-4`).
+  `repeat(auto-fill, minmax(225px, 1fr))` + `gap: 16px` — **o mesmo piso do `PROJECT_GRID_CLASS`
+  do Estúdio**, de propósito: com a mesma receita nos dois, os cards saem do mesmo tamanho sem
+  número mágico para sincronizar (medido: 1280→5 · 1366→5 · 1440→5 · 1600→6 · 1920→7 colunas).
   ⚠️ `auto-fill`, NÃO `auto-fit`: com `auto-fit` as faixas vazias colapsam e dois planos numa tela
   larga viram dois cards de ~600px. Os inputs do grupo compartilhado têm borda **2px** (vale
   também no detalhe — receita de tema).
+- **Respiro lateral = 24px** (`width: calc(100% - 48px)`), que é o `sm:p-6` da galeria do Pinta e o
+  `px-6` da `ProjectList`; 16px no `@container 560` (`p-4`). Com os 16/10px de antes o conteúdo do
+  Pensa encostava na borda visivelmente mais que o dos irmãos.
 - O host não embrulha mais o app num card (`pensa-client.tsx`).
 ⚠️ Mexer na largura interna (`width: calc(100% - 32px)`) desloca os `@container (max-width: 820px|560px)`
 — re-verifique os dois pontos de quebra em 1366 e 1920.

@@ -159,19 +159,32 @@
 }
 
 /* Fantasma 44px do Pinta (o ghost do Button é 32px com borda — este não tem). */
+/* ⚠️ Secundário, mas AINDA um botão. Com `border: 0` + fundo transparente,
+   "Importar" e "Ver os jogos prontos" liam como texto solto na página — só o
+   hover revelava que eram clicáveis, e a criança não passa o mouse em tudo.
+   Agora usam a mesma receita do `.sz-home-panel` em escala de botão (borda 2px +
+   sombra dura da borda a 45%), que é o que diferencia "secundário" de "não é
+   botão". O primário segue sendo a ÚNICA pílula 3D (`.sz-home-btn3d`). */
 [data-sz-theme] .sz-home-btn-ghost {
   min-height: 2.75rem;
-  border: 0;
+  border: 2px solid var(--color-sz-border);
   border-radius: 0.75rem;
   padding-inline: 1rem;
   font-size: 1rem;
   font-weight: 700;
-  background: transparent;
+  background: var(--color-sz-panel);
   color: var(--color-sz-fg);
+  box-shadow: 0 2px 0 color-mix(in oklch, var(--color-sz-border) 45%, transparent);
 }
 [data-sz-theme] .sz-home-btn-ghost:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--color-sz-border) 40%, transparent);
+  border-color: var(--color-sz-accent);
+  background: color-mix(in oklch, var(--color-sz-border) 25%, var(--color-sz-panel));
   color: var(--color-sz-fg);
+}
+/* Afunda no clique, como a pílula 3D — o botão responde ao dedo. */
+[data-sz-theme] .sz-home-btn-ghost:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
 }
 
 /* Painel de card (espelho do .pin-panel: borda 2px + sombra dura da borda). */

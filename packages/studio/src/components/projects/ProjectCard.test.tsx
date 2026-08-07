@@ -147,6 +147,9 @@ describe('ProjectCard: a capa do jogo', () => {
       <ProjectCard summary={SUMMARY} onChanged={() => undefined} onOpen={() => undefined} />,
     )
     expect(view.container.querySelector('img')).toBeNull()
-    expect(view.getByText('Sem foto ainda')).toBeTruthy()
+    // A frase VISÍVEL, não um `title` — com o card em `h-72` a faixa da capa tem
+    // ~122px e cabe o recado inteiro, então ele não depende mais de passar o
+    // mouse (que no tablet da criança nem existe).
+    expect(view.getByText('A foto aparece quando você sai do editor')).toBeTruthy()
   })
 })

@@ -211,10 +211,14 @@ export function ProjectCard({
   return (
     <>
       {/* Painel no padrão do Pinta (borda 2 + sombra dura + pop no hover);
-          h-48 acomoda o "Abrir" com alvo de 44px no rodapé. */}
+          h-72 acomoda a capa em tamanho de capa + o "Abrir" com alvo de 44px. */}
       <article
         onPointerEnter={prefetch}
-        className="sz-home-panel sz-home-pop group relative z-0 flex h-48 flex-col p-4 text-left"
+        // ⚠️ `h-72` e não `h-48`: a capa é `flex-1`, então a altura do card é o
+        // que sobra para ela. Com 192px a foto do jogo virava uma tira de ~60px,
+        // achatada a ponto de não dar para reconhecer o jogo; com 288px ela ganha
+        // ~122px e volta a ser uma capa (proporção ~1.9:1, perto de um 16:9).
+        className="sz-home-panel sz-home-pop group relative z-0 flex h-72 flex-col p-4 text-left"
       >
         <button
           type="button"
@@ -358,21 +362,27 @@ export function ProjectCard({
             {summary.thumbDataUrl ? (
               <img src={summary.thumbDataUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              // ⚠️ Frase CURTA: a faixa tem ~60px de altura e o card fica
-              // estreito no grid de 4 colunas — o texto longo transbordava e era
-              // cortado pelo `overflow-hidden`. A explicação vai no `title`.
-              <div
-                title="A foto do jogo aparece quando você sai do editor"
-                className="grid h-full w-full place-items-center bg-sz-bg px-2 text-center text-[0.6875rem] text-sz-fg-mute"
-              >
-                Sem foto ainda
+              // Com o card em `h-72` a faixa passou de ~60px para ~122px, então
+              // a frase inteira cabe sem ser cortada pelo `overflow-hidden` — e o
+              // recado deixa de depender de passar o mouse para ser lido.
+              <div className="grid h-full w-full place-items-center gap-1 bg-sz-bg px-3 text-center text-[0.6875rem] text-sz-fg-mute">
+                <span aria-hidden className="text-lg opacity-60">
+                  📷
+                </span>
+                <span>A foto aparece quando você sai do editor</span>
               </div>
             )}
           </div>
         )}
 
-        <div className="relative z-10 mt-auto flex items-end justify-between pt-2 text-xs text-sz-fg-soft">
-          <span>Atualizado em {formatDate(summary.updatedAt)}</span>
+        {/* ⚠️ EMPILHADO, não lado a lado. Medido: "Atualizado em 06/08/2026,
+            20:13" ocupa 183px numa linha e o "Abrir" mais 79px — lado a lado o
+            card precisaria de 298px, e 298px derruba a grade para 4 colunas num
+            monitor de 1366. Com a data numa linha SÓ dela sobra espaço de sobra
+            (183px cabem nos ~219px úteis de um card de 5 colunas), e a criança
+            ainda ganha um "Abrir" de largura inteira, mais fácil de acertar. */}
+        <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-xs text-sz-fg-soft">
+          <span className="whitespace-nowrap">Atualizado em {formatDate(summary.updatedAt)}</span>
           <Button
             variant="primary"
             size="sm"

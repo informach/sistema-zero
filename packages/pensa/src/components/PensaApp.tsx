@@ -340,7 +340,10 @@ function ProjectList(props: {
       </form>
       {props.error ? <Alert>{props.error}</Alert> : null}
       <div className="pensa-section-heading">
-        <h2>Meus planos</h2>
+        {/* ⚠️ `pensa-display` é o que traz a Baloo 2: o Preflight do Tailwind zera
+            a família dos headings e sem a classe este título saía em Nunito, ao
+            lado de um "Meus jogos" do Estúdio em Baloo (<h2 className="sz-ui-display">). */}
+        <h2 className="pensa-display">Meus planos</h2>
         <span>{props.projects.length}</span>
       </div>
       {props.projects.length === 0 ? (

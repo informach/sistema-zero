@@ -47,6 +47,24 @@ export interface ProjectListProps {
   showExamples?: boolean
 }
 
+/**
+ * ⚠️ `auto-fill` + `minmax` no lugar de `sm:2 lg:3 xl:4`: com o teto de 4 colunas
+ * o card ENGORDAVA conforme a tela crescia (~456px num monitor de 1920), porque
+ * a largura sobrando era dividida entre sempre as mesmas 4 faixas. Agora a
+ * largura do card fica estável (~250–290px) e é a QUANTIDADE de colunas que
+ * acompanha a tela — é a mesma linha da galeria do Pinta (`GalleryScreen.tsx`,
+ * `minmax(164px, 1fr)`), com o piso maior porque o card daqui tem `h-72` e nome,
+ * data e ações. `auto-fill` (não `auto-fit`) mantém as faixas vazias de pé, então
+ * dois projetos numa tela larga continuam com o tamanho de card, não de faixa.
+ *
+ * Piso de 225px medido, não chutado (largura da grade = viewport − 48px do px-6):
+ * 1280→5 · 1366→5 · 1440→5 · 1600→6 · 1920→7 · 2560→9 colunas, com o card sempre
+ * entre ~230 e ~270px. É o mesmo piso do `.pensa-project-grid`, de propósito: com
+ * a mesma receita nos dois, os cards do Estúdio e do Pensa saem do mesmo tamanho
+ * sem ninguém precisar sincronizar número mágico.
+ */
+const PROJECT_GRID_CLASS = 'grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(225px,1fr))]'
+
 export function ProjectList({
   onOpenProject,
   professional = false,
@@ -192,14 +210,14 @@ export function ProjectList({
             </div>
 
             {filtered === null ? (
-              // Skeleton na MESMA grade dos cards (h-48): sem layout shift nem
+              // Skeleton na MESMA grade dos cards (h-72): sem layout shift nem
               // tela "travada" enquanto o IndexedDB responde.
               <output aria-label="Carregando projetos" className="block">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className={PROJECT_GRID_CLASS}>
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="h-48 animate-pulse rounded-2xl border-2 border-sz-border bg-sz-panel"
+                      className="h-72 animate-pulse rounded-2xl border-2 border-sz-border bg-sz-panel"
                     />
                   ))}
                 </div>
@@ -244,7 +262,7 @@ export function ProjectList({
                     ) : null}
                   </div>
                 ) : null}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className={PROJECT_GRID_CLASS}>
                   {filtered.map((summary) => (
                     <ProjectCard
                       key={summary.id}

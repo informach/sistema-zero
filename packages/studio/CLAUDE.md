@@ -1114,11 +1114,30 @@ que os exemplos existem** — o Zappy explica como conhecimento próprio, sem ci
 A `ProjectList` virou cabeçalho de SEÇÃO da comunidade, espelhando a galeria "Meus desenhos" do
 Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('projects.subtitle')`
 ("Dê vida aos seus jogos...") à esquerda, ações à direita terminando na ÚNICA pílula 3D primária
-("+ Novo projeto"); **largura TOTAL** (sem `max-w-5xl`; grid até `xl:grid-cols-4`).
+("+ Novo projeto"); **largura TOTAL** (sem `max-w-5xl`).
+
+- ⭐ **Grade por `auto-fill`, não por `grid-cols-N`** (`PROJECT_GRID_CLASS`,
+  `minmax(225px, 1fr)` + `gap-4`). Com o `xl:grid-cols-4` de antes o teto era o número de COLUNAS,
+  então o card ENGORDAVA conforme a tela crescia (~456px num monitor de 1920). Agora a largura do
+  card fica estável (~230–270px) e é a quantidade de colunas que acompanha a tela — medido:
+  1280→5 · 1366→5 · 1440→5 · 1600→6 · 1920→7 · 2560→9. `auto-fill` e NÃO `auto-fit`: com `auto-fit`
+  as faixas vazias colapsam e dois projetos numa tela larga viram dois cards de faixa inteira.
+  ⚠️ O piso 225px é o MESMO do `.pensa-project-grid` de propósito — os cards do Estúdio e do Pensa
+  saem do mesmo tamanho sem número mágico para sincronizar.
+- **Card em `h-72`** (era `h-48`): a capa é `flex-1`, então a altura do card é o que sobra para
+  ela. Com 192px a foto virava uma tira de ~60px, achatada demais para reconhecer o jogo; com
+  288px ela fica em ~124px, ou seja ~1.5:1 — perto do palco 5:3 do `/jogar`. O rodapé é
+  **EMPILHADO** (data numa linha só + "Abrir" de largura inteira): medido, "Atualizado em
+  06/08/2026, 20:13" ocupa 183px e o botão mais 79px, então lado a lado o card precisaria de 298px
+  — e 298px derruba a grade para 4 colunas num monitor de 1366. ⚠️ O skeleton de carregamento tem
+  a MESMA altura (senão volta o layout shift).
 
 - **Classes `sz-home-*` em `studio.css`** (sob `[data-sz-theme]`, vars `--sz-home-gradient`/
   `--sz-home-cta` com fallback kids + override no claro): `.sz-home-btn3d` (pílula gradiente com
-  sombra dura, espelho do `.pin-btn-3d`), `.sz-home-btn-ghost`, `.sz-home-panel` (borda 2px, raio
+  sombra dura, espelho do `.pin-btn-3d`), `.sz-home-btn-ghost` (⚠️ SECUNDÁRIO mas ainda BOTÃO:
+  borda 2px + sombra `0 2px 0` + fundo de painel. Com `border: 0` + fundo transparente, "Importar"
+  e "Ver os jogos prontos" liam como texto solto na página e só o hover revelava que eram
+  clicáveis), `.sz-home-panel` (borda 2px, raio
   1rem, sombra `0 3px 0` — espelho do `pin-panel`), `.sz-home-pop` (hover com guarda
   reduced-motion). ⚠️ Nomeadas `sz-home-*` porque o host kids tem GLOBAIS `.sz-display`/
   `.sz-btn-gradient` — não colidir. Estilo load-bearing vive nas classes CSS (o `cn()` do studio é
