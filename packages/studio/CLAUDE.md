@@ -704,9 +704,12 @@ da API). Teste: `__tests__/stageBorder.test.ts`.
 (`sz_g2d_spawn_in_group`/`_image_in_group`) ganharam o campo **`NAME` OPCIONAL** ("criar um sprite
 **chamado** …"). Preenchido, a IR leva `varName?` e o gerador emite `const ⟨nome⟩ = SZGame2D.spawn(…)`
 — o helper do runtime JÁ devolvia o sprite, então **nada mudou no motor**. É o que destrava ANIMAR um
-sprite de grupo: encaixar "Animar sprite ⟨nome⟩" logo abaixo do criar, no mesmo trecho (⚠️ `setAnimation`
-reinicia o tempo a cada chamada — dentro do "a cada quadro" congelaria no 1º quadro; por isso o lugar
-certo é o nascimento). ⭐ Vazio ⇒ a chave NÃO entra na IR e a saída fica **byte-idêntica** à de antes
+sprite de grupo: encaixar "Animar sprite ⟨nome⟩" logo abaixo do criar, no mesmo trecho (⚠️ **ISTO MUDOU
+em 08/2026, v0.63.0** — `setAnimation` passou a ter GUARDA DE TRANSIÇÃO: re-chamar com os MESMOS
+argumentos não reinicia o tempo, então dentro do "a cada quadro" ela roda normalmente em vez de
+congelar no 1º quadro. É mudança de comportamento num bloco JÁ enviado, e deliberada: o gk sempre
+guardou assim e o comentário de lá chamava isso de "padrão g2d" — que o g2d não tinha. Efeito
+colateral: não dá mais para reiniciar uma animação de LOOP re-chamando com os mesmos valores.). ⭐ Vazio ⇒ a chave NÃO entra na IR e a saída fica **byte-idêntica** à de antes
 (projeto antigo intocado) — mesma régua do `shape` no `defineEnemyType`. As duas entradas em
 `G2D_DECLARATION_FIELDS` (`ir/schema.ts`) dão de graça o símbolo, a recusa de nome repetido e o
 ESCOPO (nome criado dentro de um temporizador vale só ali). Parser: `case 'spawn'` no
@@ -1431,6 +1434,32 @@ para receber esse som, igual a gente tem para as imagens"*.
   admin e do Zappy). E os tipos em `CORE_BLOCKLY_BLOCK_TYPES` — faltar ali **zera TODOS** os
   blocos do projeto no load (é tudo-ou-nada). `blockly/__tests__/somAudit.test.ts` prova o fio
   inteiro e checa os seis pontos.
+
+## 🎬 Animação de UMA vez (v0.63.0, 08/2026)
+
+Toda animação de spritesheet do Jogo 2D era **loop infinito por construção**: o quadro é derivado do
+relógio numa linha só (`runtime/sprites.ts`, no `_drawSpriteBody`) e o `% quadros` dela era a ÚNICA
+coisa que existia — sem contador de voltas, sem flag, sem callback, sem como perguntar. Pedido da
+dona do produto: *"tenho uma estrela cadente e quero que ela anime apenas 1 vez"*.
+
+- **`sz_g2d_animate_once`** ("… uma vez só") + o VALOR **`sz_g2d_anim_ended`** ("a animação de …
+  acabou?"). Blocos NOVOS ao lado dos antigos — a regra "bloco que a criança já usa não muda de
+  forma". Molde: o par `sz_gk_play_anim_once`/`sz_gk_anim_ended` do Jogo 2D Avançado.
+- `animationEnded` é PURO (`(agora - start) * fps >= quadros`), sem estado novo; o clamp no desenho é
+  `once ? Math.min(quadros - 1, passo) : passo % quadros`.
+- ⚠️ **A guarda de idempotência vale só ENQUANTO a one-shot corre.** Com ela comparando apenas os
+  argumentos (como faz o gk), o MESMO golpe tocaria uma única vez na partida inteira — e "quando
+  apertar espaço, golpe" é o caso principal do bloco. Depois de acabar, chamar de novo REINICIA.
+  Posto solto no "a cada quadro" vira um laço; o que não pode é congelar no 1º quadro.
+- ⚠️ **`autoAnimate` cede a vez** enquanto uma one-shot corre (senão bastava o sprite andar para ela
+  ser trocada no quadro seguinte). ⭐ E, ao ceder, precisa **ZERAR `_animState`** quando ela acaba:
+  sem isso o estado velho bate com o calculado, o early-return corta a troca e o sprite fica
+  congelado no último quadro PARA SEMPRE. O g2d não tem trava de estado como a `sz_gk_set_entity_state`.
+- ⚠️ **`isSimpleValue` (`parsers/js.ts`) tem lista EXPLÍCITA**: valor de extensão que não entre nela
+  vira `rawJS` no round-trip e a criança PERDE o bloco. O `blockAudit` pega.
+- Comportamento provado em `__tests__/animateOnce.test.ts` (runtime avaliado de verdade, relógio
+  injetado). ⚠️ A ordem importa no teste do `autoAnimate`: o sprite precisa JÁ estar andando quando o
+  golpe começa, senão o `_animState` nunca fica sujo e o teste passa mesmo com o defeito.
 
 ## Comandos
 

@@ -269,12 +269,19 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var t = Math.max(0, Math.floor(_finiteNumber(to, f)));
     var r = _positiveFiniteNumber(fps, 8);
     // ⚠️ GUARDA DE IDEMPOTENCIA. O bloco e um comando e vai acabar dentro do "a
-    // cada quadro"; sem isto, "start" seria reescrito todo frame e a animacao de
-    // UMA VEZ nunca terminaria (ficaria presa no 1o quadro). E o mesmo gotcha ja
-    // documentado do v0.53.0, e o que o Jogo 2D Avancado resolve do mesmo jeito.
+    // cada quadro"; sem isto, "start" seria reescrito todo frame e a animacao
+    // ficaria presa no 1o quadro para sempre. E o gotcha ja documentado do
+    // v0.53.0 — o Jogo 2D Avancado ja guardava assim, e chamava isso de "padrao
+    // g2d" num comentario, embora o g2d nao tivesse.
+    //
+    // ⭐ Para a de UMA VEZ a guarda vale so ENQUANTO ELA CORRE. Depois de acabar,
+    // chamar de novo REINICIA — senao "quando apertar espaco, golpe" tocaria uma
+    // unica vez na vida da partida, que e o caso principal do bloco. Posto
+    // solto no "a cada quadro" ele vira um laco, que e o que a crianca pediu ao
+    // escrever isso; o que nao pode acontecer e congelar no 1o quadro.
     var a = sprite.anim;
     if (a && a.sheet === sheet && a.from === f && a.to === t && a.fps === r && !!a.once === !!once) {
-      return;
+      if (!once || !animationEnded(sprite)) return;
     }
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
