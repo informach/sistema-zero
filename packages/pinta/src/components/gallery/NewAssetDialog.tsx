@@ -327,6 +327,13 @@ export function NewAssetDialog({
       const k = KIND_FOR_ROLE[s][initialRole]
       setKind(k)
       setSizeKey(preferredSizeKeyFor(k))
+      if (k === 'tilemap') {
+        // A missão de MAPA pula o card de tipo, então replica a pré-seleção
+        // dele — sem isso o mapa nasceria com tilesetId '' (apontando para
+        // tileset nenhum); o Avançar do passo de tamanho também exige tileset.
+        const preferred = tilesets.find((t) => assetStyle(t.kind) === s)
+        setTilesetId(preferred?.id ?? tilesets[0]?.id ?? '')
+      }
       setStep('size')
       return
     }
@@ -537,6 +544,13 @@ export function NewAssetDialog({
               </div>
             </div>
           ) : null}
+          {kind === 'tilemap' && tilesets.length === 0 ? (
+            // Missão de mapa sem nenhum tileset: explica por que o Avançar
+            // está travado (botão desabilitado nunca fica sem explicação).
+            <p role="status" className="text-sm font-bold text-pin-muted">
+              {COPY.newAsset.needTileset}
+            </p>
+          ) : null}
           <div className="grid grid-cols-2 gap-3">
             {sizeChoicesFor(kind).map((choice) => (
               <button
@@ -596,7 +610,13 @@ export function NewAssetDialog({
             <Button variant="ghost" onClick={() => setStep(initialRole ? 'style' : 'kind')}>
               {COPY.newAsset.back}
             </Button>
-            <Button variant="primary" disabled={!effectiveSizeKey} onClick={() => setStep('name')}>
+            <Button
+              variant="primary"
+              // Mapa sem tileset não avança (a missão do Pensa entra aqui SEM
+              // passar pelo card de tipo, que é quem guardava esse portão).
+              disabled={!effectiveSizeKey || (kind === 'tilemap' && !tilesetId)}
+              onClick={() => setStep('name')}
+            >
               {COPY.newAsset.next}
             </Button>
           </div>

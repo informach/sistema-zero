@@ -306,18 +306,27 @@ export function ImportImageDialog({
                 ? ` · ${COPY.importImage.uniqueTiles(result.tiles.length)}`
                 : ''}
             </span>
-            {tooMany ? (
-              <span role="status" className="text-center text-sm font-bold text-pin-danger">
-                {COPY.importImage.tooManyTiles}
-              </span>
-            ) : null}
+            {/* SEMPRE montada: live region inserida no DOM já preenchida não é
+                anunciada pelos leitores — o texto entra numa região que existe. */}
+            <span
+              id="pinta-import-size-error"
+              role="status"
+              className="text-center text-sm font-bold text-pin-danger"
+            >
+              {tooMany ? COPY.importImage.tooManyTiles : ''}
+            </span>
           </div>
 
           <div className="mt-1 flex justify-between">
             <Button variant="ghost" onClick={() => setStep('target')}>
               {COPY.importImage.back}
             </Button>
-            <Button variant="primary" disabled={tooMany || !result} onClick={() => setStep('name')}>
+            <Button
+              variant="primary"
+              disabled={tooMany || !result}
+              aria-describedby="pinta-import-size-error"
+              onClick={() => setStep('name')}
+            >
               {COPY.importImage.next}
             </Button>
           </div>
@@ -339,9 +348,11 @@ export function ImportImageDialog({
             placeholder={COPY.newAsset.namePlaceholder}
             aria-label={COPY.newAsset.nameTitle}
             aria-invalid={Boolean(nameError)}
+            aria-describedby="pinta-import-name-help"
             className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
           />
-          <p role="status" className="text-sm text-pin-muted">
+          {/* Espelho do NewAssetDialog: ajuda LIGADA ao input (aria-describedby). */}
+          <p id="pinta-import-name-help" role="status" className="text-sm text-pin-muted">
             {nameError ?? COPY.newAsset.nameHelp}
           </p>
           <div className="mt-1 flex justify-between">

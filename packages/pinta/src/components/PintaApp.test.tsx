@@ -189,6 +189,40 @@ describe('PintaApp — galeria', () => {
     })
   })
 
+  it('missão de MAPA do Pensa sem tileset trava o Avançar com aviso; com tileset, pré-seleciona', async () => {
+    // O intent com artKind pula o card de tipo (que era quem guardava o portão
+    // do mapa): sem nenhum tileset o Avançar precisa travar COM explicação.
+    const intent = { projectRef: { id: 'jogo-1', name: 'meu-jogo' }, artKind: 'tilemap' as const }
+    const { unmount } = render(<PintaApp adapter={{ initialIntent: intent }} />)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.newAsset.styleTitle)).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
+    expect(screen.getByText(COPY.newAsset.sizeTitle)).toBeTruthy()
+    expect(screen.getByText(COPY.newAsset.needTileset)).toBeTruthy()
+    const next = screen.getByRole('button', { name: COPY.newAsset.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(true)
+    unmount()
+
+    // Com um tileset na galeria: pré-selecionado (espelho do card de tipo) e
+    // o Avançar liberado.
+    const seed = createGalleryStore()
+    await seed.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    render(<PintaApp adapter={{ initialIntent: intent }} />)
+    // Espera a GALERIA carregar (o card aparece por baixo do modal): a
+    // pré-seleção lê a lista no clique do estilo — clicar antes do load
+    // deixaria sem seleção (o portão do Avançar segura mesmo assim).
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir pecas/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
+    // `pressed: true` desambigua do card "Abrir pecas" da galeria atrás do
+    // modal E já assere a pré-seleção.
+    expect(screen.getByRole('button', { name: /pecas/, pressed: true })).toBeTruthy()
+    const next2 = screen.getByRole('button', { name: COPY.newAsset.next }) as HTMLButtonElement
+    expect(next2.disabled).toBe(false)
+  })
+
   it('mapa fica desabilitado sem peças do cenário (nos dois estilos)', async () => {
     render(<PintaApp />)
     await waitFor(() => {
