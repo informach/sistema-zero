@@ -121,6 +121,24 @@ export interface ToolboxConfiguration {
   contents: (ToolboxCategory | ToolboxSearchCategory | ToolboxCustomCategory)[]
 }
 
+/**
+ * Classes do rótulo das categorias de Programação (guarda-chuva + as filhas).
+ *
+ * ⚠️ O `cssconfig.label` do Blockly **SUBSTITUI** a classe padrão, não soma: o
+ * `parseCategoryDef_` faz `Object.assign(cssConfig_, cssconfig)` por cima do
+ * default `{ label: 'blocklyToolboxCategoryLabel' }`. Passando só a nossa, o
+ * rótulo de "Programação" perdia a classe padrão — e com ela o negrito, o
+ * tamanho, a fonte de display e os 6px de recuo (`studio.css`), ficando visivelmente
+ * diferente e mais à esquerda que as categorias irmãs. O defeito só aparecia com
+ * a categoria NÃO selecionada, porque no estado selecionado havia uma regra
+ * duplicada cobrindo a classe custom — por isso passou batido quando entrou.
+ *
+ * Repetir a padrão aqui é seguro: o `addClass` do Blockly faz `split(' ')` e
+ * aplica todas. A classe própria continua existindo como gancho do e2e de
+ * contraste (`e2e/programming-accessibility.spec.ts`).
+ */
+const PROGRAMMING_LABEL_CLASSES = 'blocklyToolboxCategoryLabel sz-toolbox-programming-label'
+
 function toEntries(
   blocks: BlockDefinition[],
   _categoryLevel: BlockLevel,
@@ -418,13 +436,13 @@ export function buildCoreToolbox(
   ])
   if (progSubs.length > 0) {
     for (const category of progSubs) {
-      category.cssconfig = { label: 'sz-toolbox-programming-label' }
+      category.cssconfig = { label: PROGRAMMING_LABEL_CLASSES }
     }
     contents.push({
       kind: 'category',
       name: 'Programação',
       colour: CATEGORY_COLORS.js,
-      cssconfig: { label: 'sz-toolbox-programming-label' },
+      cssconfig: { label: PROGRAMMING_LABEL_CLASSES },
       contents: progSubs,
     })
   }

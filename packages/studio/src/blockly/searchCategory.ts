@@ -1,6 +1,8 @@
 import * as Blockly from 'blockly/core'
 import type { LearningProfile } from '#core'
+import { palettePathOf } from './paletteMap'
 import { blockedDynamicSearchTypes, dynamicCategoryBlockTypes } from './paramsFlyout'
+import { installSearchFlyoutMetrics } from './searchFlyoutMetrics'
 
 // Perfil de aprendizado POR WORKSPACE para a busca respeitar o nível. A categoria
 // de busca é um registro GLOBAL (singleton por origin) e indexa os tipos
@@ -103,6 +105,8 @@ interface SearchCategoryInstance {
       position?(): void
       /** Interno do Blockly (`protected width_`) — só escrevemos com guarda. */
       width_?: number
+      /** Público no Blockly; o par `setMetricsManager` é chamado pelo próprio Flyout. */
+      getWorkspace?(): { setMetricsManager?(manager: unknown): void } | null
     } | null
   } | null
 }
@@ -171,6 +175,50 @@ function handBackSearchShortcut(disposing: SearchCategoryInstance): void {
       }
     }
   }
+}
+
+/** Balde final para bloco que não está em nenhuma paleta (não deve existir). */
+const GRUPO_SEM_CAMINHO = 'Outros blocos'
+
+/**
+ * Intercala CABEÇALHOS de "categoria › subcategoria" nos resultados da busca.
+ *
+ * Pedido da dona do produto: *"colocar a informação de qual categoria e
+ * subcategoria cada bloco pertence, para a criança ir aprendendo onde fica cada
+ * bloco"*. Achar o bloco pela busca resolve o problema de agora; saber ONDE ele
+ * mora resolve o da próxima vez.
+ *
+ * ⭐ Os grupos saem na ordem do seu MELHOR resultado, não em ordem alfabética: a
+ * criança digitou uma palavra, então o primeiro grupo tem que ser o que ela quis.
+ * O `Map` preserva a ordem de inserção, que é a ordem de relevância do plugin.
+ *
+ * O caminho vem do `palettePathOf` — o caminho REAL da paleta, e não o `category`
+ * do catálogo (que é curadoria do admin e *mente* sobre onde o bloco mora; ver o
+ * cabeçalho de `paletteMap.ts`). Função pura e sem DOM: dá para rodar a cada tecla.
+ */
+export function groupSearchResultsByPalette<T extends { kind: string; type?: string }>(
+  items: readonly T[],
+): (T | { kind: 'label'; text: string })[] {
+  const grupos = new Map<string, T[]>()
+  for (const item of items) {
+    const caminho = item.kind === 'block' && item.type ? palettePathOf(item.type) : []
+    const chave = caminho.length > 0 ? caminho.join(' › ') : GRUPO_SEM_CAMINHO
+    const atual = grupos.get(chave)
+    if (atual) atual.push(item)
+    else grupos.set(chave, [item])
+  }
+  // O balde dos desconhecidos vai para o FIM, onde quer que o primeiro tenha
+  // aparecido: ele é deriva do mapa de paletas, não uma resposta melhor.
+  const semCaminho = grupos.get(GRUPO_SEM_CAMINHO)
+  if (semCaminho) {
+    grupos.delete(GRUPO_SEM_CAMINHO)
+    grupos.set(GRUPO_SEM_CAMINHO, semCaminho)
+  }
+  const saida: (T | { kind: 'label'; text: string })[] = []
+  for (const [titulo, blocos] of grupos) {
+    saida.push({ kind: 'label', text: titulo }, ...blocos)
+  }
+  return saida
 }
 
 /** Re-registra a categoria de busca em português e com o input no flyout. */
@@ -310,6 +358,8 @@ export function registerPtSearchCategory(): void {
           )
         }
       }
+      // Cabeçalhos "categoria › subcategoria" entre os resultados (ver a função).
+      this.flyoutItems_ = groupSearchResultsByPalette(this.flyoutItems_)
       // ⚠️ Reserva o espaço do CAMPO como um separador de verdade, e não mais
       // deslocando o canvas por `transform`: aquele atributo é do Blockly, que o
       // reescreve ao rolar/re-renderizar — o deslocamento sumia e o primeiro
@@ -355,6 +405,10 @@ export function registerPtSearchCategory(): void {
     private fitFlyoutToContents(): void {
       const flyout = this.parentToolbox_?.getFlyout()
       if (!flyout) return
+      // ⚠️ O separador que reserva o espaço do campo (acima) não tem DOM, e a
+      // rolagem do flyout sai do bounding box do SVG — sem isto o FIM da lista
+      // fica inalcançável e o último bloco aparece cortado. Ver o arquivo.
+      installSearchFlyoutMetrics(flyout)
       flyout.reflow?.()
       if (typeof flyout.getWidth !== 'function' || typeof flyout.position !== 'function') return
       // O piso cede em tela estreita: metade do editor, nunca o editor inteiro.

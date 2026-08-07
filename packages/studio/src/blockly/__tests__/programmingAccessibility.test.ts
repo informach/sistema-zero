@@ -34,17 +34,26 @@ describe('acessibilidade da categoria Programação', () => {
   })
 
   it('marca o guarda-chuva e todas as subcategorias com o rótulo de alto contraste', () => {
+    // ⚠️ Este teste assertava IGUALDADE com a classe custom sozinha, e era isso
+    // que congelava o defeito: o `cssconfig.label` do Blockly SUBSTITUI a classe
+    // padrão, então Programação era a única categoria sem
+    // `blocklyToolboxCategoryLabel` — sem negrito e 6px mais à esquerda que as
+    // irmãs. Agora exigimos as DUAS: a padrão (aparência) e a nossa (gancho do
+    // e2e de contraste). Tirar qualquer uma tem que reprovar aqui.
+    const classesEsperadas = ['blocklyToolboxCategoryLabel', 'sz-toolbox-programming-label']
+    const temAsDuas = (label: string | undefined): boolean => {
+      const classes = (label ?? '').split(' ').filter(Boolean)
+      return classesEsperadas.every((c) => classes.includes(c))
+    }
     const programming = buildCoreToolbox([]).contents.find(
       (entry): entry is ToolboxCategory =>
         entry.kind === 'category' && entry.name === 'Programação',
     )
-    expect(programming?.cssconfig?.label).toBe('sz-toolbox-programming-label')
+    expect(temAsDuas(programming?.cssconfig?.label), programming?.cssconfig?.label).toBe(true)
     for (const category of programming?.contents ?? []) {
       if (category.kind !== 'category') continue
-      expect(
-        (category as ToolboxCategory | ToolboxCustomCategory).cssconfig?.label,
-        category.name,
-      ).toBe('sz-toolbox-programming-label')
+      const label = (category as ToolboxCategory | ToolboxCustomCategory).cssconfig?.label
+      expect(temAsDuas(label), `${category.name}: ${label}`).toBe(true)
     }
   })
 

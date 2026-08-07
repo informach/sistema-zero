@@ -326,11 +326,14 @@
   /* legível em QUALQUER cor de categoria (clara como o âmbar ou escura). */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
-[data-sz-theme] .blocklyToolboxSelected .sz-toolbox-programming-label {
-  color: #ffffff;
-  font-weight: 700;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-}
+/*
+ * ⚠️ Aqui havia uma cópia da regra acima para `.sz-toolbox-programming-label`.
+ * Ela existia porque o `cssconfig` de Programação SUBSTITUÍA a classe padrão do
+ * Blockly, e foi justamente essa cópia que MASCAROU o defeito: selecionada a
+ * categoria ficava certa, então ninguém olhou o estado normal — onde o rótulo
+ * saía sem negrito e sem o recuo. Agora o `cssconfig` leva as DUAS classes (ver
+ * `PROGRAMMING_LABEL_CLASSES` em `blockly/toolbox.ts`) e a regra padrão basta.
+ */
 [data-sz-theme] .blocklyToolboxCategoryContainer:focus-visible > .blocklyToolboxCategory,
 [data-sz-theme] .blocklyToolboxCategoryContainer.blocklyActiveFocus > .blocklyToolboxCategory,
 [data-sz-theme] .blocklyToolboxCategory:focus-visible {

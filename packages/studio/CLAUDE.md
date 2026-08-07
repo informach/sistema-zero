@@ -477,6 +477,27 @@ APARECE se a extensão estiver INSTALADA no projeto inicial). Catálogo + restri
 fecha com `pruneEmptyCategories` (rede de segurança) — categoria/sub-categoria que fica SEM nenhum
 bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); vale p/ nível E lista.
 
+### 🔎 A busca de blocos (`searchCategory.ts` + `searchFlyoutMetrics.ts`)
+
+- **Resultados AGRUPADOS** por `groupSearchResultsByPalette` (pura, exportada): um cabeçalho
+  `kind: 'label'` com `Jogo 2D › 🎬 Animação` antes de cada grupo, para a criança ir aprendendo onde
+  o bloco mora. O caminho vem do `palettePathOf` (`paletteMap.ts`) — o caminho REAL da paleta, e não
+  o `category` do catálogo, que é curadoria do admin. ⭐ Os grupos saem na ordem do MELHOR resultado
+  (o `Map` preserva inserção), nunca em ordem alfabética. Bloco sem caminho vai para "Outros
+  blocos", no FIM.
+- ⚠️ **A rolagem do flyout ignora o espaço do campo de busca.** O espaço é um separador
+  (`kind: 'sep'`) — e o `FlyoutSeparator` do Blockly **não tem DOM**. Como a faixa rolável sai do
+  `getBBox()` do canvas e o `getScrollMetrics` DESCARTA o `top` do conteúdo, sobram `gap − MARGIN`
+  px inalcançáveis e **o último bloco fica cortado** (medido: 21px no playground). O
+  `SearchAwareFlyoutMetrics` devolve essa altura somando `max(0, contentTop − MARGIN)` — parcela que
+  é ZERO nas categorias normais, o que importa porque **o flyout é um só para toda a toolbox**.
+- ⚠️ **Os dois defeitos são simétricos.** Antes, o espaço era feito deslocando o canvas por
+  `transform` (atributo que o Blockly reescreve ao rolar) e sumia o PRIMEIRO bloco; o `sep`
+  consertou o topo e criou o corte embaixo. Ao mexer aqui, verifique **os dois extremos**: primeiro
+  bloco abaixo do campo depois de rolar e voltar, e último bloco inteiro no fim.
+- ⚠️ `bun test` não faz layout: os testes provam a ARITMÉTICA (`searchFlyoutMetrics.test.ts`) e o
+  agrupamento puro (`searchGrouping.test.ts`). O pixel é QA de navegador, no playground.
+
 **Adicionar um bloco = ~9 pontos (round-trip blocos⇄código)** — pular um quebra silenciosamente:
 1. `ir/schema.ts` — variante na união TS (`JSStatement`/`JSExpr`/`HTMLNode`/`CSSEntry`) **E** no `z.discriminatedUnion` (senão a validação rejeita o IR salvo/importado).
 2. `blocks/<cat>.ts` — `BlockDefinition` + entrada num `*_GROUPS` (senão cai em "Mais"). Campo que REFERENCIA um nome já criado (variável/classe/método/propriedade/sprite/cena/objeto/imagem…)? Use um **seletor** (`field_name_picker`/`field_sprite_picker`/`field_asset_picker`), não `field_input` — e, se o bloco DECLARA um nome novo, registre-o no `*_DECL_BLOCKS` do picker (ver "Padrões já usados").
