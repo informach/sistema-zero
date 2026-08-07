@@ -119,6 +119,31 @@ describe('paleta: adicionar cor pelo +', () => {
     })
   })
 
+  it('abre JÁ na cor selecionada, para criar uma variação a partir dela', async () => {
+    // ⚠️ Este caso não existia e o defeito passou: o helper `addColor` SEMPRE
+    // digita o hex, então passava igual com o rascunho nascendo num laranja fixo.
+    // O que importa aqui é o VALOR INICIAL do campo, antes de digitar nada.
+    await openPixelEditor()
+    const escolhida = screen.getByRole('button', { name: COPY.a11y.colorLabel(3) })
+    fireEvent.click(escolhida)
+    // O swatch é pintado por `style.backgroundColor` com o hex da paleta.
+    const hexEsperado = escolhida.style.backgroundColor
+    expect(hexEsperado).toMatch(/^#[0-9a-f]{6}$/i)
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.addColor }))
+    const campo = (await screen.findByLabelText(COPY.colorPicker.hex)) as HTMLInputElement
+    expect(campo.value.toLowerCase()).toBe(hexEsperado.toLowerCase())
+  })
+
+  it('com a borracha ativa o + não quebra (não há cor de origem)', async () => {
+    await openPixelEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.eraser }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.addColor }))
+    // Abre normalmente, com um rascunho válido — só não semeia de lugar nenhum.
+    const campo = (await screen.findByLabelText(COPY.colorPicker.hex)) as HTMLInputElement
+    expect(campo.value).toMatch(/^#[0-9a-f]{6}$/i)
+  })
+
   it('no teto de 48 extras o + avisa e não adiciona', async () => {
     const extras = Array.from(
       { length: 48 },

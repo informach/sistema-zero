@@ -162,12 +162,26 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     </>
   )
 
+  /**
+   * Abre o seletor JÁ NA COR SELECIONADA, para a criança criar uma variação a
+   * partir dela (é como o painel do VETOR sempre funcionou). Antes o rascunho
+   * nascia num laranja fixo e nunca era sincronizado com a seleção.
+   *
+   * ⚠️ Borracha e o índice 0 (transparente, hex vazio por convenção da paleta)
+   * NÃO têm cor de origem — nesses casos mantemos o rascunho anterior em vez de
+   * semear com nada.
+   */
+  function openPicker(): void {
+    if (tool !== 'eraser' && selectedHex) setDraft(selectedHex)
+    setPickerOpen(true)
+  }
+
   const addButton = (
     <button
       type="button"
       aria-label={COPY.palette.addColor}
       title={COPY.palette.addColor}
-      onClick={() => setPickerOpen(true)}
+      onClick={openPicker}
       className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
     >
       <Plus aria-hidden="true" className="size-5" />
