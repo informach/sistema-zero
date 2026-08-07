@@ -57,13 +57,17 @@ export interface ProjectListProps {
  * data e ações. `auto-fill` (não `auto-fit`) mantém as faixas vazias de pé, então
  * dois projetos numa tela larga continuam com o tamanho de card, não de faixa.
  *
- * Piso de 225px medido, não chutado (largura da grade = viewport − 48px do px-6):
- * 1280→5 · 1366→5 · 1440→5 · 1600→6 · 1920→7 · 2560→9 colunas, com o card sempre
- * entre ~230 e ~270px. É o mesmo piso do `.pensa-project-grid`, de propósito: com
+ * Piso medido, não chutado (largura da grade = viewport − 48px do px-6):
+ * 1280→4 · 1366→5 · 1440→5 · 1600→6 · 1920→7 · 2560→9 colunas, com o card sempre
+ * entre ~245 e ~300px. É o mesmo piso do `.pensa-project-grid`, de propósito: com
  * a mesma receita nos dois, os cards do Estúdio e do Pensa saem do mesmo tamanho
  * sem ninguém precisar sincronizar número mágico.
+ * ⚠️ Os 240px vêm do PENSA, onde são conteúdo e não gosto: a linha de etapa mais
+ * longa ("Versão 20 · Plano aprovado") exige 239px de card para não quebrar em
+ * duas linhas. Aqui eles sobram — a data precisa de 215px —, mas o piso é comum
+ * de propósito, senão as duas home voltam a ter cards de tamanhos diferentes.
  */
-const PROJECT_GRID_CLASS = 'grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(225px,1fr))]'
+const PROJECT_GRID_CLASS = 'grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]'
 
 export function ProjectList({
   onOpenProject,

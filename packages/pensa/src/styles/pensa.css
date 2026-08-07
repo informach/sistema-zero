@@ -184,7 +184,9 @@
 }
 .pensa-home-header p {
   max-width: 650px;
-  margin: 4px 0 0;
+  /* 10px: com os 4px do `mt-1` do Estúdio o subtítulo colava na base do título,
+     que aqui é maior (36px em Baloo) e pede mais ar embaixo. */
+  margin: 10px 0 0;
   color: var(--pz-muted);
   font-size: 1rem;
 }
@@ -334,11 +336,16 @@
    que com o piso maior que um cartão de três linhas de texto pede. */
 .pensa-project-grid {
   display: grid;
-  /* Piso IDÊNTICO ao `PROJECT_GRID_CLASS` da `ProjectList` do Estúdio (225px +
-     gap 16px): com a mesma receita nos dois, os cards saem do mesmo tamanho em
-     qualquer tela, sem número mágico para manter em sincronia. Medido:
-     1280→5 · 1366→5 · 1440→5 · 1600→6 · 1920→7 colunas. */
-  grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+  /* Piso IDÊNTICO ao `PROJECT_GRID_CLASS` da `ProjectList` do Estúdio: com a
+     mesma receita nos dois, os cards saem do mesmo tamanho em qualquer tela, sem
+     número mágico para manter em sincronia.
+     ⚠️ 240px NÃO é estético, é o mínimo que o conteúdo exige: a linha mais longa
+     possível ("Versão 20 · Plano aprovado", com o teto de 20 ciclos) mede 173px em
+     Nunito 14px, e o card perde 66px fixos para padding + ícone + gap → 239px. Com
+     menos que isso a etapa quebra em duas linhas. Como `auto-fill` garante faixa
+     >= o piso, 240 vale para QUALQUER largura de tela.
+     Medido: 1280→4 · 1366→5 · 1440→5 · 1600→6 · 1920→7 colunas. */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
 }
 .pensa-project-card {
