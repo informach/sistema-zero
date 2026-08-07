@@ -86,7 +86,16 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
 
 - **Fluxo de criação (`NewAssetDialog`)**: 4 passos — ESTILO (Pixel art | Vetor, lembra o último
   via `galleryStore.lastStyle`) → TIPO (mesmos papéis nos 2 estilos) → tamanho → nome. Mapa
-  habilita com QUALQUER tileset (badge de estilo no seletor).
+  habilita com QUALQUER tileset (badge de estilo no seletor). **Tamanho PERSONALIZADO
+  (08/2026)**: card "Personalizado" no passo de tamanho — cenários (16..512 pixel / 16..2048
+  vetor, largura × altura), personagens (quadro 8..128) e mapa (1..128 colunas × linhas); PEÇAS
+  ficam FORA (whitelist dura 16/32/48 do motor). Também no "Trazer uma foto" (só o alvo cenário).
+  Helpers PUROS em `gallery/customSize.ts`: a `sizeKey` fica na sentinela `'custom'` e a chave
+  REAL ("300x200"/"96"/"50x40") é derivada dos campos a cada render — `buildInput`, o
+  `galleryStore` e as fábricas ficam INTOCADOS (elas já clampam). Formulário compartilhado
+  `CustomSizeFields` (`inputMode="numeric"`, faixa/erro num `role=status`, padrão do nameError).
+  ⚠️ O card Personalizado NÃO auto-avança (selecionar só revela o formulário; os presets
+  continuam avançando ao toque) — não copiar o `setStep` dos presets para ele.
 - **Motor pixel (`src/pixel/`)**: `ops.ts` operações PURAS; `tools.ts` máquina PURA de gesto;
   `selection.ts`; `render.ts` única camada canvas.
 - **Editor vetorial (pasta `components/editor/vector/`, 08/2026)**: shapes = elementos SVG REAIS;
@@ -194,7 +203,13 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   TEXTO branco — ⚠️ manter L ≤ ~0.55 nos DOIS temas). SEM `@import "tailwindcss"`, SEM `@source`,
   SEM regras globais. Prefixo `pin-` (NÃO `pt-`/`px-`).
 - **a11y**: alvos ≥44px, Dialog com foco/Esc/trap, Toast aria-live, wizard com bolinhas de
-  progresso + `role=status` no erro de nome.
+  progresso + `role=status` no erro de nome. ⚠️ Live region tem que MONTAR VAZIA e receber o
+  texto depois (região inserida no DOM já preenchida não é anunciada — receita do
+  `tooManyTiles` do import e do help do tamanho personalizado). O trap de Tab do Dialog foi
+  RE-VALIDADO em Chromium real (08/2026, foco no body + Tab volta ao modal — o `aria-modal`
+  confina a navegação); a leitura estática sugere que o ramo de foco-no-body do handler não
+  dispara via React, então em navegador NÃO-Chromium o cenário merece re-teste antes de
+  confiar só nele.
 
 ## Seleção do pixel, atalhos e zoom pela rolagem (08/2026)
 

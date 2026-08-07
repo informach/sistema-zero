@@ -54,4 +54,72 @@ describe('ImportImageDialog', () => {
       expect(asset.platform).toHaveLength(asset.tiles.length)
     }
   })
+
+  it('foto → CENÁRIO → tamanho PERSONALIZADO → nome → importa nas dimensões digitadas', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={redImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+
+    // Personalizado revela o formulário (semeado do preset médio 240×180).
+    fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.customSize.card }))
+    const width = screen.getByLabelText(COPY.newAsset.customSize.width) as HTMLInputElement
+    const height = screen.getByLabelText(COPY.newAsset.customSize.height) as HTMLInputElement
+    expect(width.value).toBe('240')
+    expect(height.value).toBe('180')
+
+    // Inválido trava o Avançar (sem prévia p/ quantizar).
+    fireEvent.change(width, { target: { value: '4' } })
+    const next = screen.getByRole('button', { name: COPY.importImage.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(true)
+
+    fireEvent.change(width, { target: { value: '32' } })
+    fireEvent.change(height, { target: { value: '24' } })
+    expect(next.disabled).toBe(false)
+    fireEvent.click(next)
+
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'foto-do-ceu' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    expect(imported).not.toBeNull()
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('pixel-background')
+    if (asset.kind === 'pixel-background') {
+      expect(asset.cels[0]?.width).toBe(32)
+      expect(asset.cels[0]?.height).toBe(24)
+    }
+  })
+
+  it('fechar no Personalizado e reabrir volta ao preset médio (o diálogo fica montado)', () => {
+    const props = { image: redImage(), onClose: () => {}, onImport: () => {} }
+    const { rerender } = render(<ImportImageDialog open {...props} />)
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.customSize.card }))
+    expect(screen.getByLabelText(COPY.newAsset.customSize.width)).toBeTruthy()
+
+    // Fechar roda o reset ANTES do onClose do host; reabrir não pode cair no
+    // card Personalizado com campos vazios (Avançar travado, sem prévia).
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    rerender(<ImportImageDialog open {...props} />)
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+    expect(screen.queryByLabelText(COPY.newAsset.customSize.width)).toBeNull()
+    const medium = screen.getByRole('button', { name: '240 × 180' })
+    expect(medium.getAttribute('aria-pressed')).toBe('true')
+  })
 })
