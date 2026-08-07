@@ -74,7 +74,15 @@ export async function fileToAudioAssetDataUrl(file: File): Promise<{ dataUrl: st
     throw new Error('Som inválido ou em formato não suportado.')
   }
   if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAudioDataUrlChars) {
-    throw new Error('O som é grande demais. Tente um arquivo mais curto ou mais leve.')
+    // ⚠️ A mensagem NOMEIA o wav: ele ocupa ~10× o de um mp3 pelo mesmo som, e é
+    // o motivo real de 9 em 10 recusas — dizer só "grande demais" deixava a
+    // criança achando que o som era longo, quando o problema era o formato.
+    const ehWav = file.type.includes('wav')
+    throw new Error(
+      ehWav
+        ? 'Esse wav é pesado demais (cabe só uns 30 segundos). Converta para mp3: o mesmo som fica bem menor.'
+        : 'O som é grande demais. Tente um arquivo mais curto ou converta para mp3.',
+    )
   }
   return { dataUrl }
 }

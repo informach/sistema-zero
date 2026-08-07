@@ -35,7 +35,10 @@ const csp = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https:",
   // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
-  "media-src 'self' blob: https:",
+  // `data:` pelo MESMO motivo do `script-src` abaixo: o som que o aluno envia ao
+  // Estúdio é embutido como `data:audio/…` e tocado dentro do iframe `srcdoc`,
+  // que herda esta CSP. Sem ele o som carrega e não toca, em silêncio.
+  "media-src 'self' blob: data: https:",
   "style-src 'self' 'unsafe-inline' https:",
   // `data:` p/ o preview do Estúdio (bloco `studio`): o script.js do aluno é injetado
   // como `<script src="data:text/javascript;base64,…">` no iframe `srcdoc`, que HERDA

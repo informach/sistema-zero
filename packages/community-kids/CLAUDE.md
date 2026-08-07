@@ -311,7 +311,14 @@ quer todo o espaço); demais páginas seguem com `max-w-5xl`. **SEGUE o tema da 
 `<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
 o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui
 **`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
-`srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa. `api/studio/publish-standalone` fica FORA do
+`srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa.
+⚠️ **`media-src … data:` pelo MESMO motivo (08/2026)**: o SOM que a criança envia é embutido como
+`data:audio/…` e tocado tanto pelo `<audio>` da PRÉVIA (nesta página) quanto pelo `new Audio()` do
+jogo (no `srcdoc`, que herda). A diretiva nasceu sem `data:` e ninguém a atualizou quando o som
+entrou → o som carregava e **não tocava**, com falha SILENCIOSA (só o console mostrava `Refused to
+load media from 'data:audio/…'`; a UI não dava sinal). Travado por `tests/csp-media-data.test.ts`,
+que chama o `headers()` REAL e confere todas as diretivas emitidas (a normal e a da rota Pro) —
+`bun test` não enforça CSP, então esta é a única rede possível. `api/studio/publish-standalone` fica FORA do
 matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
 **CRIAR segura o foguinho (07/2026):** o `studio-full-client` passa `onChange` ao `<StudioEditor>` que,
 na 1ª edição REAL da sessão (`ctx.reason === 'autosave'`, guardado por ref — NÃO em abrir/flush), dispara

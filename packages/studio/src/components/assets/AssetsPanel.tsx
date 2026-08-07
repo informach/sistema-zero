@@ -371,6 +371,18 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
             </div>
           ) : null}
 
+          {/* O que cabe, ANTES do envio. A dúvida veio da dona do produto ("qual
+              tipo de som aceita, quanto tempo?") e o WAV é a armadilha: pelo
+              mesmo som ele ocupa ~10× o de um mp3, então 1 minuto já estoura
+              enquanto o mp3 aguenta uns 5. O erro de teto já existia, mas só
+              aparecia DEPOIS de escolher o arquivo. */}
+          {allowUpload ? (
+            <p className="text-xs text-sz-fg-mute">
+              Som: mp3, wav, ogg ou m4a, até 5 MB por arquivo. Um mp3 cabe com uns 5 minutos; um
+              wav, só uns 30 segundos (ele ocupa bem mais pelo mesmo som).
+            </p>
+          ) : null}
+
           {error && (
             <p className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400">
               {error}
