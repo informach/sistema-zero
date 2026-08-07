@@ -153,7 +153,9 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  /* Respiro GENEROSO até o "criar": com 18px o subtítulo e o campo colavam e a
+     home lia como um bloco só. O cabeçalho é apresentação; o campo é ação. */
+  margin-bottom: 44px;
 }
 .pensa-home-header h1 {
   margin: 0;
@@ -176,23 +178,27 @@
   color: var(--pz-muted);
   font-size: 0.875rem;
 }
-/* Painel no padrão do card kids (mesma receita do .pensa-project-card). */
+/* SEM painel: na home o "criar" é uma faixa solta sobre o fundo da página, e não
+   um cartão. Embrulhá-lo dava a ele o mesmo peso visual dos planos já criados,
+   competindo com a lista — que é o que a criança vem ver. A geometria de cartão
+   (borda 2px + raio 1.5rem, do `.kids-card`) segue valendo nos planos e no
+   detalhe; aqui ela sai de propósito. */
 .pensa-create {
-  padding: 20px;
-  border: 2px solid var(--pz-line);
-  border-radius: 1.5rem;
-  background: var(--pz-surface);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-accent) 10%, transparent);
+  padding: 0;
 }
 .pensa-create label {
   display: block;
   margin: 0 0 8px;
   font-size: 0.84rem;
-  font-weight: 800;
+  font-weight: 700;
 }
+/* ⚠️ Largura CONTIDA: a home é de largura total, e um campo de nome esticado de
+   ponta a ponta lê como "escreva muito" — o nome do jogo é curto. O botão fica
+   ao lado, à vista, em vez de a um palmo de distância. */
 .pensa-create div {
   display: flex;
   gap: 10px;
+  max-width: 620px;
 }
 .pensa-create input,
 .pensa-task-edit input,
@@ -210,11 +216,19 @@
   background: var(--pz-bg);
   padding: 13px 16px;
 }
+/* O campo do nome é a ação principal da home: um pouco mais alto e com o texto
+   um pouco maior que os campos do detalhe, que são de formulário longo.
+   ⚠️ Escopado em `.pensa-create` — a regra de input acima é COMPARTILHADA com o
+   editor de tarefa e os formulários do plano, que não devem engordar junto. */
+.pensa-create input {
+  padding: 16px 18px;
+  font-size: 1.0625rem;
+}
 .pensa-inline-error {
   margin: 8px 0 0;
   color: var(--pz-danger);
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 /* Medidor da ajuda de IA. Âmbar, NUNCA vermelho: o vermelho (--pz-danger) é
    reservado a falha técnica, e acabar a ajuda do dia não é o app quebrando. */
@@ -235,7 +249,7 @@
   border-color: color-mix(in oklab, var(--pz-orange) 45%, var(--pz-line));
   background: color-mix(in oklab, var(--pz-orange) 10%, var(--pz-surface));
   color: var(--pz-orange);
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-credits-notice {
   margin: 8px 0 0;
@@ -258,7 +272,7 @@
   color: var(--pz-on-fill);
   background-image: var(--pz-gradient);
   padding: 12px 22px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
   box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
   transition:
@@ -281,15 +295,17 @@
   transform: translateY(3px);
   box-shadow: 0 1px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
 }
+/* Par do cabeçalho de seção do Estúdio (`ProjectList.tsx`):
+   <h2 className="sz-ui-display text-lg"> num bloco com `mb-6`. */
 .pensa-section-heading {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 42px 0 18px;
+  margin: 40px 0 24px;
 }
 .pensa-section-heading h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.125rem;
 }
 .pensa-section-heading span {
   display: grid;
@@ -299,59 +315,75 @@
   border-radius: 99px;
   color: var(--pz-muted);
   background: var(--pz-surface-2);
-  font-weight: 800;
+  font-weight: 700;
 }
+/* ⚠️ `auto-fill` (não `auto-fit`) é o que permite o `1fr` aqui: com `auto-fit` as
+   faixas VAZIAS colapsam e dois planos numa tela larga viravam dois cards de
+   ~600px. Com `auto-fill` as faixas vazias ficam de pé e seguram a largura — é a
+   mesma linha da galeria do Pinta (`GalleryScreen.tsx`, minmax(164px, 1fr)), só
+   que com o piso maior que um cartão de três linhas de texto pede. */
 .pensa-project-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 16px;
 }
 .pensa-project-card {
+  /* Três linhas na coluna do texto (nome / versão / continuar) e o ícone só na
+     PRIMEIRA, ao lado do nome. Antes o ícone era um bloco de 52px atravessando
+     as três linhas e o card tinha piso de 160px — um retângulo alto com muito
+     ar para três linhas curtas. */
   display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 4px 14px;
-  min-height: 160px;
-  padding: 22px;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  padding: 16px;
   text-align: left;
-  border: 2px solid var(--pz-line);
-  border-radius: 1.5rem;
+  /* A aresta é uma VARIÁVEL para que a sombra siga a borda no hover, como o
+     `--pin-panel-border` do `.pin-panel`. */
+  --pz-card-edge: var(--pz-line);
+  border: 2px solid var(--pz-card-edge);
+  border-radius: 1rem;
   color: var(--pz-ink);
   background: var(--pz-surface);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-accent) 10%, transparent);
+  box-shadow: 0 3px 0 color-mix(in oklch, var(--pz-card-edge) 45%, transparent);
   transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
+    transform 0.18s ease-out,
+    border-color 0.18s ease-out,
+    box-shadow 0.18s ease-out;
 }
 .pensa-project-card:hover {
   transform: translateY(-2px) scale(1.02);
-  border-color: var(--pz-accent);
-  box-shadow: 0 6px 0 color-mix(in oklch, var(--pz-accent) 16%, transparent);
+  --pz-card-edge: var(--pz-accent);
 }
 .pensa-project-orbit {
-  grid-row: 1 / 4;
+  grid-column: 1;
+  grid-row: 1;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 20px;
+  height: 20px;
   color: var(--pz-accent);
-  background: color-mix(in oklch, var(--pz-accent) 16%, var(--pz-surface));
-  font-size: 1.5rem;
+  font-size: 1.05rem;
 }
 .pensa-project-card strong {
-  align-self: end;
-  font-size: 1.1rem;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  font-size: 1rem;
 }
+/* As duas linhas de baixo alinham com o NOME, não com o ícone. */
 .pensa-project-card > span:not(.pensa-project-orbit) {
+  grid-column: 2;
+  grid-row: 2;
   color: var(--pz-muted);
   font-size: 0.86rem;
 }
 .pensa-project-card i {
-  align-self: end;
+  grid-column: 2;
+  grid-row: 3;
+  margin-top: 4px;
   color: var(--pz-accent);
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-empty,
 .pensa-status {
@@ -359,10 +391,11 @@
   min-height: 280px;
   place-items: center;
   align-content: center;
-  padding: 32px;
+  /* `p-6` do vazio do Estúdio (`ProjectList.tsx`: rounded-2xl + border-2 dashed). */
+  padding: 24px;
   text-align: center;
   border: 2px dashed var(--pz-line);
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   color: var(--pz-muted);
 }
 .pensa-empty span {
@@ -396,7 +429,7 @@
 .pensa-project-header span {
   color: var(--pz-muted);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
 }
 .pensa-project-header h1 {
@@ -416,7 +449,7 @@
   padding: 9px 13px;
   color: var(--pz-muted);
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-plan-status span {
   color: var(--pz-accent);
@@ -445,7 +478,7 @@
   place-items: center;
   border-radius: 11px;
   background: var(--pz-surface-2);
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-map-node div {
   min-width: 0;
@@ -503,7 +536,7 @@ button.pensa-map-node:hover {
   border-radius: 14px;
   padding: 12px 16px;
   background: color-mix(in oklch, var(--pz-accent) 8%, var(--pz-surface));
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-peek-banner button {
   border: 2px solid var(--pz-accent);
@@ -511,7 +544,7 @@ button.pensa-map-node:hover {
   padding: 8px 14px;
   color: var(--pz-accent);
   background: var(--pz-surface);
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 .pensa-workspace {
@@ -532,7 +565,7 @@ button.pensa-map-node:hover {
   color: var(--pz-on-fill);
   background-image: var(--pz-gradient);
   font-size: 1.8rem;
-  font-weight: 800;
+  font-weight: 700;
   box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 55%, black);
 }
 .pensa-stage-title h2 {
@@ -560,7 +593,7 @@ button.pensa-map-node:hover {
 .pensa-audit,
 .pensa-ribbon {
   border: 2px solid var(--pz-line);
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   background: var(--pz-surface);
 }
 .pensa-chat {
@@ -587,7 +620,7 @@ button.pensa-map-node:hover {
   margin-bottom: 6px;
   color: var(--pz-muted);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-decision-chips {
   display: flex;
@@ -600,7 +633,7 @@ button.pensa-map-node:hover {
   color: var(--pz-muted);
   background: var(--pz-surface-2);
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-decisions span.is-done {
   color: var(--pz-green);
@@ -650,7 +683,7 @@ button.pensa-map-node:hover {
   color: var(--pz-ink);
   background: color-mix(in oklch, var(--pz-accent) 8%, var(--pz-surface));
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 700;
   text-align: left;
   transition:
     transform 0.12s ease,
@@ -675,7 +708,7 @@ button.pensa-map-node:hover {
   color: var(--pz-on-fill);
   background: var(--pz-accent);
   padding: 10px 15px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-artifact {
   overflow: hidden;
@@ -691,7 +724,7 @@ button.pensa-map-node:hover {
 .pensa-artifact > header span {
   color: var(--pz-accent);
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
 }
 .pensa-artifact > header h3 {
@@ -705,7 +738,7 @@ button.pensa-map-node:hover {
   background: transparent;
   padding: 8px 11px;
   font-size: 0.76rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-artifact > footer {
   display: flex;
@@ -717,7 +750,7 @@ button.pensa-map-node:hover {
   border: 0;
   border-radius: 12px;
   padding: 10px 14px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-artifact > footer .primary,
 .pensa-task footer .primary {
@@ -749,7 +782,7 @@ button.pensa-map-node:hover {
 .pensa-artifact-preview small {
   color: var(--pz-muted);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-artifact-preview dd {
   margin: 3px 0 0;
@@ -778,7 +811,7 @@ button.pensa-map-node:hover {
   gap: 6px;
   color: var(--pz-muted);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-form-field textarea {
   min-height: 90px;
@@ -799,7 +832,7 @@ button.pensa-map-node:hover {
 .pensa-task-dependency-edit legend {
   color: var(--pz-muted);
   font-size: 0.76rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-form-row {
   display: grid;
@@ -917,7 +950,7 @@ button.pensa-map-node:hover {
   padding: 2px 9px;
   color: var(--pz-accent);
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
   background: color-mix(in oklch, var(--pz-accent) 14%, var(--pz-surface));
 }
@@ -1009,7 +1042,7 @@ button.pensa-map-node:hover {
   border-radius: 12px;
   color: var(--pz-muted);
   background: var(--pz-surface-2);
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-task-order::after {
   width: 2px;
@@ -1022,9 +1055,9 @@ button.pensa-map-node:hover {
   display: none;
 }
 .pensa-task > article {
-  padding: 17px 18px;
+  padding: 16px;
   border: 2px solid var(--pz-line);
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   background: var(--pz-surface);
 }
 .pensa-task.is-next > article {
@@ -1043,7 +1076,7 @@ button.pensa-map-node:hover {
   padding: 5px 8px;
   font-size: 0.62rem;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
 }
 .pensa-task article > header span[data-destination="pinta"] {
@@ -1092,7 +1125,7 @@ button.pensa-map-node:hover {
   cursor: pointer;
   color: var(--pz-accent);
   font-size: 0.76rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-guide {
   display: grid;
@@ -1219,7 +1252,7 @@ button.pensa-map-node:hover {
 .pensa-approved p {
   color: var(--pz-green);
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
 }
 .pensa-approved h2 {
@@ -1249,7 +1282,7 @@ button.pensa-map-node:hover {
   background: var(--pz-surface);
 }
 .pensa-new-version-form label {
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-new-version-form textarea {
   min-height: 100px;
@@ -1265,7 +1298,7 @@ button.pensa-map-node:hover {
   padding: 9px 13px;
   color: var(--pz-ink);
   background: transparent;
-  font-weight: 800;
+  font-weight: 700;
 }
 .pensa-new-version-form button.primary {
   border-color: var(--pz-green);
@@ -1341,11 +1374,13 @@ button.pensa-map-node:hover {
   .pensa-home-zappy {
     width: 48px;
   }
-  .pensa-create {
-    padding: 16px;
-  }
   .pensa-create div {
     flex-direction: column;
+    max-width: none;
+  }
+  /* Sem o teto da faixa, o card não pode estourar o contêiner estreito. */
+  .pensa-project-grid {
+    grid-template-columns: 1fr;
   }
   .pensa-map {
     display: flex;
