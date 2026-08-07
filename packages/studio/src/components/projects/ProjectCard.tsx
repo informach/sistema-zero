@@ -358,8 +358,14 @@ export function ProjectCard({
             {summary.thumbDataUrl ? (
               <img src={summary.thumbDataUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="grid h-full w-full place-items-center bg-sz-bg text-[0.6875rem] text-sz-fg-mute">
-                A foto aparece depois de você abrir e fechar o jogo
+              // ⚠️ Frase CURTA: a faixa tem ~60px de altura e o card fica
+              // estreito no grid de 4 colunas — o texto longo transbordava e era
+              // cortado pelo `overflow-hidden`. A explicação vai no `title`.
+              <div
+                title="A foto do jogo aparece quando você sai do editor"
+                className="grid h-full w-full place-items-center bg-sz-bg px-2 text-center text-[0.6875rem] text-sz-fg-mute"
+              >
+                Sem foto ainda
               </div>
             )}
           </div>

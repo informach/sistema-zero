@@ -45,23 +45,27 @@ function RestoDaIde(): JSX.Element {
   return <p>o editor continua aqui</p>
 }
 
-function Cena({ quebrar }: { quebrar: boolean }): JSX.Element {
+function Cena({ quebrar, aberto = true }: { quebrar: boolean; aberto?: boolean }): JSX.Element {
   const config: StudioTutorConfig = { adapter }
   return (
     <StudioLayoutProvider value={WIDE}>
       <StudioTutorProvider value={config}>
         <RestoDaIde />
-        <TutorAberto />
+        {aberto ? <TutorAberto /> : null}
         <ErrorBoundary
           label="zappy"
-          fallback={({ reset }) => (
-            <div role="alert">
-              <p>O Zappy tropeçou aqui</p>
-              <button type="button" onClick={reset}>
-                Tentar de novo
-              </button>
-            </div>
-          )}
+          fallback={({ reset }) =>
+            // Espelha a guarda do ZappyPanelBoundary: fechado, o erro fica
+            // contido em SILÊNCIO — nada aparece por cima do editor.
+            aberto ? (
+              <div role="alert">
+                <p>O Zappy tropeçou aqui</p>
+                <button type="button" onClick={reset}>
+                  Tentar de novo
+                </button>
+              </div>
+            ) : null
+          }
         >
           {quebrar ? <Explode /> : <p>painel do zappy</p>}
         </ErrorBoundary>
@@ -109,6 +113,21 @@ describe('o Zappy não pode derrubar o Estúdio', () => {
       view.rerender(<Cena quebrar={false} />)
       fireEvent.click(view.getByRole('button', { name: 'Tentar de novo' }))
       expect(view.getByText('painel do zappy')).toBeTruthy()
+    } finally {
+      quiet.mockRestore()
+    }
+  })
+  it('com o tutor FECHADO o erro fica em silêncio, sem abrir painel nenhum', () => {
+    // ⚠️ O ZappyPanel só devolve `null` DEPOIS de rodar os hooks dele, então ele
+    // consegue lançar com o painel fechado. Sem a guarda, o fallback abria um
+    // painel grande por cima do editor que a criança nunca pediu — pior que o
+    // silêncio, porque vira um susto sem causa visível.
+    const quiet = spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const view = render(<Cena quebrar aberto={false} />)
+      expect(view.queryByRole('alert')).toBeNull()
+      expect(view.queryByText('O Zappy tropeçou aqui')).toBeNull()
+      expect(view.getByText('o editor continua aqui')).toBeTruthy()
     } finally {
       quiet.mockRestore()
     }

@@ -147,6 +147,6 @@ describe('ProjectCard: a capa do jogo', () => {
       <ProjectCard summary={SUMMARY} onChanged={() => undefined} onOpen={() => undefined} />,
     )
     expect(view.container.querySelector('img')).toBeNull()
-    expect(view.getByText(/A foto aparece depois/)).toBeTruthy()
+    expect(view.getByText('Sem foto ainda')).toBeTruthy()
   })
 })

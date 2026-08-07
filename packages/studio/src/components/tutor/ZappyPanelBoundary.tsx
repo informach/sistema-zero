@@ -83,16 +83,25 @@ export function ZappyPanelBoundary({
       // copy do fallback sugere, e o que a criança faria por instinto.
       resetKeys={[open]}
       onError={onError}
-      fallback={(props) => (
-        <TutorErrorFallback
-          {...props}
-          isNarrow={isNarrow}
-          onClose={() => {
-            props.reset()
-            setOpen(false)
-          }}
-        />
-      )}
+      fallback={(props) =>
+        // ⚠️ Com o tutor FECHADO o recado não pode aparecer. O `ZappyPanel` só
+        // devolve `null` DEPOIS de rodar os hooks dele (seletores de logs, de
+        // diagnóstico, a varredura das mensagens), então ele consegue lançar com
+        // o painel fechado — e sem esta guarda o erro abria, sozinho, um painel
+        // grande por cima do editor que a criança nunca pediu. Fechado, o erro
+        // fica contido em silêncio; abrir o Zappy troca o `resetKeys` e a
+        // tentativa recomeça do zero.
+        open ? (
+          <TutorErrorFallback
+            {...props}
+            isNarrow={isNarrow}
+            onClose={() => {
+              props.reset()
+              setOpen(false)
+            }}
+          />
+        ) : null
+      }
     >
       <ZappyPanel />
     </ErrorBoundary>
