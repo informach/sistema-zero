@@ -125,7 +125,9 @@ describe('persistência privada do Zappy', () => {
     )
 
     expect(response.status).toBe(200)
-    const persisted = saved as { response?: { blockReferences?: Array<{ palettePath?: string[] }> } } | null
+    const persisted = saved as {
+      response?: { blockReferences?: Array<{ palettePath?: string[] }> }
+    } | null
     expect(persisted?.response?.blockReferences?.[0]?.palettePath).toEqual([
       'Jogo 2D',
       '🕹️ Movimento',

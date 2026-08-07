@@ -129,7 +129,9 @@ export const ZappyInternalResponseBody = t.Object({
         // Elysia — sem barulho, sem 422. Foi assim que o `palettePath` sumiu
         // entre o BFF e o banco desde que nasceu: o chip nunca mostrou a trilha
         // real, só o fallback categoria › subcategoria.
-        palettePath: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 80 }), { maxItems: 4 })),
+        palettePath: t.Optional(
+          t.Array(t.String({ minLength: 1, maxLength: 80 }), { maxItems: 4 }),
+        ),
         area: t.String({ minLength: 1, maxLength: 80 }),
       }),
       { maxItems: 12 },
