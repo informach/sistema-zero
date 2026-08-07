@@ -95,13 +95,20 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
   seguir a borda no hover — o hover é só `translateY(-2px) scale(1.02)`, como `.pin-pop`/
   `.sz-home-pop`. Peso de fonte: **700** em todo o arquivo (era 800 em 29 lugares; `.pin-display`
   e `.sz-ui-display` são 700). Vazio: `p-6` = 24px, 2px dashed, raio 1rem.
-- ⭐ **A família dos títulos mora no ELEMENTO, não numa classe** (`.pensa-planner h1..h4`). O
-  Preflight do Tailwind zera `font-weight` E deixa a família cair na herdada (Nunito, do corpo do
-  host). Enquanto a família morou só em `.pensa-display`, bastava um título nascer sem a classe
-  para sair em **Nunito ao lado de um `<h2 className="sz-ui-display">` do Estúdio em Baloo** — foi
-  o que aconteceu com "Meus planos" e com outros 18 títulos do pacote. Travado por
-  `src/styles/headingFont.test.ts` (a folha externa não é computada em jsdom, então o teste lê o
-  CSS e exige família + peso 700 na regra de elemento).
+- ⭐ **Tipografia dos títulos: família + peso + tracking no ELEMENTO, e num lugar só**
+  (`.pensa-planner h1..h4`). O Preflight do Tailwind zera `font-weight` E deixa a família cair na
+  herdada (Nunito, do corpo do host), e o host kids não define nada para heading.
+  ⚠️ **"É heading" não é o mesmo que "é título".** O que de fato escapou foi o nome do plano no
+  card — um `<strong>`, fora do seletor de headings, saindo na fonte do corpo. O par no Estúdio
+  tinha o mesmo defeito (`font-semibold` em Nunito em vez de `sz-ui-display`). Os dois casos estão
+  travados em `src/styles/headingFont.test.ts` (a folha externa não é computada em jsdom, então o
+  teste lê o CSS).
+- ⭐ **Tamanhos de fonte ANCORADOS na escala** (`0.75rem` = 12px, `0.875rem` = 14px). O arquivo
+  tinha 41 valores fora da escala, com um bolo entre **9,9px e 13,8px** — abaixo do texto normal
+  da Comunidade Kids, que é `text-sm`/**14px** (medido: 164 usos de `text-sm` contra 22 de
+  `text-base` nos componentes do kids; o Pinta na mesma proporção). Para um produto infantil o
+  piso é 12px e o texto de corpo é 14px; nada de valores intermediários "quase iguais" que somados
+  fazem o app inteiro ler menor que os irmãos ao lado.
 - Arranjo da home, pareado com `ProjectList.tsx`/`GalleryScreen.tsx`: `.pensa-create` **sem
   painel** (faixa solta; embrulhá-lo dava a ele o peso dos planos já criados), campo de ~440px ao
   lado do botão, 44px de respiro do subtítulo até a label; `.pensa-section-heading` h2 em

@@ -227,7 +227,11 @@ export function ProjectCard({
           onPointerDown={prefetch}
           onClick={openProject}
         />
-        <div className="relative z-10 flex items-start justify-between gap-2">
+        {/* ⚠️ `min-h-12` = DUAS linhas de título sempre reservadas. Sem a altura
+            fixa, um card de nome curto ficaria com a capa mais alta que o vizinho
+            de nome longo, e a fileira sairia desalinhada. Com ela, a capa tem a
+            mesma altura em todos os cards da grade. */}
+        <div className="relative z-10 flex min-h-12 items-start justify-between gap-2">
           {editing ? (
             <div className="w-full">
               <input
@@ -251,7 +255,7 @@ export function ProjectCard({
                 className="w-full rounded-xl border-2 border-sz-border bg-sz-bg px-2.5 py-1.5 text-sm text-sz-fg outline-none focus:border-sz-accent"
               />
               {duplicateDraft && (
-                <p role="status" className="mt-1 text-xs text-sz-error">
+                <p role="status" className="mt-1 text-sm text-sz-error">
                   {t('projects.newModal.duplicate')}
                 </p>
               )}
@@ -265,7 +269,18 @@ export function ProjectCard({
                 setEditing(true)
               }}
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 truncate text-left text-base font-semibold text-sz-fg"
+              // `sz-ui-display`: o nome do jogo é o título do card e tem que sair
+              // na MESMA fonte dos títulos da página (Baloo 2 700), não em
+              // Nunito 600 — lado a lado com o h1 "Meus Jogos" a diferença lia
+              // como fonte errada.
+              // `line-clamp-2` e não `truncate`: medido, o card perde 88px fixos
+              // (padding + o ⋯ de 44px), sobrando ~139–163px para o título — e
+              // nomes reais chegam a 174px ("Cenário do meu desenho"). Numa linha
+              // só, a criança lia "Cenário do meu d…". Alargar o card não resolve:
+              // entre os pisos 225 e 250 o número de colunas em 1366 é o mesmo, e
+              // subir mais custaria a 5ª coluna. Em duas linhas o nome cabe
+              // inteiro, e o card em `h-72` tem a altura para isso.
+              className="sz-ui-display line-clamp-2 flex-1 text-left text-base text-sz-fg"
             >
               {summary.name}
             </button>
@@ -365,7 +380,7 @@ export function ProjectCard({
               // Com o card em `h-72` a faixa passou de ~60px para ~122px, então
               // a frase inteira cabe sem ser cortada pelo `overflow-hidden` — e o
               // recado deixa de depender de passar o mouse para ser lido.
-              <div className="grid h-full w-full place-items-center gap-1 bg-sz-bg px-3 text-center text-[0.6875rem] text-sz-fg-mute">
+              <div className="grid h-full w-full place-items-center gap-1 bg-sz-bg px-3 text-center text-sm text-sz-fg-mute">
                 <span aria-hidden className="text-lg opacity-60">
                   📷
                 </span>
@@ -381,7 +396,7 @@ export function ProjectCard({
             monitor de 1366. Com a data numa linha SÓ dela sobra espaço de sobra
             (183px cabem nos ~219px úteis de um card de 5 colunas), e a criança
             ainda ganha um "Abrir" de largura inteira, mais fácil de acertar. */}
-        <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-xs text-sz-fg-soft">
+        <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-sm text-sz-fg-soft">
           <span className="whitespace-nowrap">Atualizado em {formatDate(summary.updatedAt)}</span>
           <Button
             variant="primary"
