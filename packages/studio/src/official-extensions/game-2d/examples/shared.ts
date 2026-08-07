@@ -44,6 +44,8 @@ function accessibleGameDescription(example: ExtensionExample): string {
     'Plataforma com inimigos':
       'Derrote os inimigos e faça pontos. Use as setas para andar e pular; Espaço atira.',
     'Jogo desenhado por código': 'Pegue as moedas. Use as setas para andar.',
+    'Cenário do meu desenho':
+      'O seu desenho vira o fundo do jogo. Use as setas para andar na frente dele.',
   }
   const tailoredDescription = descriptions[example.name]
   if (tailoredDescription) return tailoredDescription
