@@ -1101,6 +1101,48 @@ que os exemplos existem** — o Zappy explica como conhecimento próprio, sem ci
   total em 148. Adicionou/mexeu num exemplo → rode o gerador e commite o `__gen_*`, senão a suíte
   fecha a porta.
 
+## 🔊 Som: tocar os arquivos que a criança enviou (08/2026)
+
+Enviar som sempre funcionou por inteiro (botão "Enviar som" no `AssetsPanel`,
+`kind: 'audio'`, teto de 5 MB, prévia com `<audio>`), e o `assetsBridge` já semeava
+`window.__SZGAME_SOUNDS` (nome → dataURL). **O que faltava eram os blocos**, e só existiam nas
+extensões AVANÇADAS (gk, g3k, w3d). Relato da dona do produto: *"envio som e não acho bloco
+para receber esse som, igual a gente tem para as imagens"*.
+
+- ⭐ **A infraestrutura já estava pronta e sem gate de extensão.** `preview/bootstrap.ts` decide
+  injetar o bridge de assets olhando SÓ "existe algum asset?"; os 5 call sites passam `sounds`
+  incondicionalmente; a CSP tem `media-src data:` e `audio` é permissão baseline. Um projeto
+  Canvas puro com um mp3 importado **já** enxergava o manifesto.
+- **Seis blocos por alvo, mesmos rótulos nos três** (é o mesmo gesto; a criança não reaprende por
+  app): `Carregar o som %1 do arquivo %2` (start-only) · `Tocar o som %1` · `Parar o som %1` ·
+  `Tocar a música %1 sem parar` (resource-creator) · `Parar a música` · `Pôr o volume em %1`.
+- ⚠️ **Volume de 0 a 10, não de 0 a 1** nos alvos BÁSICOS e no núcleo: são a porta de entrada, e
+  `0.7` não é número de criança. O runtime divide por 10. O gk (avançado) fica com o seu `0..1`.
+- ⚠️ **Uma trilha por vez**: começar outra troca a que estava tocando (duas faixas sobrepostas não
+  teriam bloco que desfizesse); repetir a mesma não recomeça a faixa.
+- ⚠️ **Nomes internos divergem entre 2D e 3D de propósito.** No `game-2d`, `playSound`/`playMusic`
+  já pertenciam ao bip e à melodia sintetizada — e bloco que a criança já usa não muda de forma —,
+  então o runtime usa `loadSound`/`playClip`/`stopClip`/`playTrack`/`stopTrack`/`setSoundVolume`.
+  No `game-3d`, onde não havia conflito, são `playSound`/`playMusic`. O `stopTrack` do 2D para as
+  DUAS músicas (arquivo e sintetizada), para "Parar a música" sempre fazer o esperado.
+- ⭐ **Fila de gesto**: o navegador RECUSA `play()` antes de um clique e a recusa é SILENCIOSA
+  (promise rejeitada). Sem ela, "Tocar o som" dentro de "Ao iniciar" não acontecia e nada aparecia
+  no console. Agora o pedido espera o primeiro clique/tecla e então toca. O `game-3d` não tinha
+  destravamento algum (só `resume()` no toque) e ganhou o mesmo do 2D.
+- **NÚCLEO**: categoria de topo **🔊 Som** (magenta `#a21caf`), nível `iniciante-2d`, blocos
+  `sz_som_*` em `blockly/blocks/som.ts`. O código gerado chama **`window.__szAudio`**
+  (`preview/audioBridge.ts`), o SEGUNDO bridge do núcleo ao lado do `__szInput`: string
+  auto-contida, injetada em todo projeto pelo bootstrap e escrita como `public/sz-audio.js` no
+  export. Ele lê o manifesto de forma **preguiçosa**, então a ordem no `<head>` não importa.
+  ⚠️ O preâmbulo do gerador (molde do pré-carregador de imagens) foi REJEITADO: embrulha o
+  programa inteiro num `.then()` e exige codec de marcadores para a Ponte desfazer.
+- ⚠️ **Categoria nova do núcleo custa SEIS registros**: `theme.ts` (cor) · `core/levels.ts`
+  (`CORE_CATEGORY_LEVELS`) · `blocks/index.ts` (`CORE_BLOCKS`) · `toolbox.ts` (`pushGrouped`) ·
+  **`paletteMap.ts`** (espelho manual, server-safe) · `blockCatalog.ts` (senão some do picker do
+  admin e do Zappy). E os tipos em `CORE_BLOCKLY_BLOCK_TYPES` — faltar ali **zera TODOS** os
+  blocos do projeto no load (é tudo-ou-nada). `blockly/__tests__/somAudit.test.ts` prova o fio
+  inteiro e checa os seis pontos.
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
