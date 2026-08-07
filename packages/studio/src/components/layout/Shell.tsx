@@ -9,7 +9,7 @@ import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
 import { DrawingSyncWatcher } from '../assets/DrawingSyncWatcher'
-import { ZappyPanel } from '../tutor/ZappyPanel'
+import { ZappyPanelBoundary } from '../tutor/ZappyPanelBoundary'
 import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
@@ -33,9 +33,16 @@ export interface ShellProps {
   onPromoteToPro?: (project: Project) => void | Promise<void>
   /** Mostra o toggle claro/escuro na Topbar (false quando o host fixa o tema via prop). */
   canToggleTheme?: boolean
+  /** Telemetria de erro de RENDER contido por uma boundary de seção (ex.: o tutor). */
+  onRenderError?: (area: string, error: Error) => void
 }
 
-export function Shell({ onExit, onPromoteToPro, canToggleTheme }: ShellProps): JSX.Element {
+export function Shell({
+  onExit,
+  onPromoteToPro,
+  canToggleTheme,
+  onRenderError,
+}: ShellProps): JSX.Element {
   const { hasProject, projectId, projectMode } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -154,7 +161,9 @@ export function Shell({ onExit, onPromoteToPro, canToggleTheme }: ShellProps): J
             )}
             <ConvertLegacyPrompt />
             <DrawingSyncWatcher />
-            <ZappyPanel />
+            {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
+                derrubar o Estúdio (ver ZappyPanelBoundary.tsx). */}
+            <ZappyPanelBoundary onError={(error) => onRenderError?.('zappy', error)} />
           </>
         )}
       </div>

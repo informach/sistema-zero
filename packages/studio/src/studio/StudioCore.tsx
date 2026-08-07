@@ -4,6 +4,7 @@ import { modesForKind, type Project, setLocale } from '#core'
 import { ErrorBoundary } from '#ui'
 import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
+import { captureAndStoreProjectThumb } from '../cover/thumbCapture'
 import { useChecksStoreApi } from '../state/checksStore'
 import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
@@ -299,6 +300,37 @@ function StudioCoreBody({
     })
   }, [projectStoreApi])
 
+  const lastProjectRef = useRef<Project | null>(null)
+
+  // ⭐ A capa do card é tirada AO SAIR do editor, por QUALQUER caminho.
+  //
+  // Até 08/2026 o ÚNICO gatilho era o clique no botão da marca (Topbar). Ele
+  // ficou órfão quando o Estúdio virou uma SEÇÃO da comunidade: com a sidebar do
+  // kids sempre à vista, a criança passou a voltar pela navegação do host ou
+  // pelo botão voltar, e aí o `onExit` do editor nunca é chamado — a miniatura
+  // simplesmente nunca era tirada, e o card ficava só com nome e data.
+  //
+  // O unmount cobre esses caminhos: a captura roda num iframe PRÓPRIO no
+  // `document.body`, que sobrevive à desmontagem do React (é o caso das
+  // navegações client-side do Next). Recarregar/fechar a aba continua perdendo a
+  // foto — best-effort de propósito, nada aqui pode atrasar a saída.
+  useEffect(() => {
+    // ⚠️ Guardar o projeto num REF é load-bearing: no unmount a store já foi
+    // limpa por outro cleanup (medido — `project` chega null lá), então ler dela
+    // na hora de capturar não devolvia nada e a capa nunca era tirada.
+    const unsubscribe = projectStoreApi.subscribe((state) => {
+      if (state.project) lastProjectRef.current = state.project
+    })
+    const atual = projectStoreApi.getState().project
+    if (atual) lastProjectRef.current = atual
+    return () => {
+      unsubscribe()
+      if (!persistence.hasAdapter) return
+      const project = lastProjectRef.current
+      if (project) void captureAndStoreProjectThumb(project)
+    }
+  }, [persistence, projectStoreApi])
+
   useEffect(() => {
     if (!blockUnloadWhenDirty || !isDirty) return
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -374,6 +406,14 @@ function StudioCoreBody({
                                       onExit={onExit}
                                       onPromoteToPro={onPromoteToPro}
                                       canToggleTheme={theme === undefined}
+                                      onRenderError={(area, error) =>
+                                        onError?.({
+                                          kind: 'render',
+                                          area,
+                                          message: error.message,
+                                          ...(error.stack ? { stack: error.stack } : {}),
+                                        })
+                                      }
                                     />
                                   </div>
                                 </div>

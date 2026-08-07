@@ -10,6 +10,7 @@ import type {
 } from '@sistemazero/studio'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { reportClientError } from '@/lib/report-error'
 
 type StudioModule = typeof import('@sistemazero/studio')
 type EditorState =
@@ -23,6 +24,24 @@ type EditorState =
  */
 function openDrawingInPinta(drawingId: string): void {
   window.open(`/pinta?desenho=${encodeURIComponent(drawingId)}`, '_blank', 'noopener,noreferrer')
+}
+
+/**
+ * Erro que o Estúdio CONTEVE sozinho vira telemetria (o mesmo beacon das error
+ * boundaries do app → Sentry, com redação de PII). O `kind` distingue a falha
+ * de persistência do crash de render segurado por uma boundary de seção.
+ */
+function reportStudioError(
+  error:
+    | { kind: 'persistence'; message: string }
+    | { kind: 'render'; area: string; message: string; stack?: string },
+): void {
+  const failure = new Error(
+    error.kind === 'render' ? `[studio:${error.area}] ${error.message}` : error.message,
+  )
+  failure.name = error.kind === 'render' ? 'StudioRenderError' : 'StudioPersistenceError'
+  if (error.kind === 'render' && error.stack) failure.stack = error.stack
+  reportClientError(failure)
 }
 
 /** Carrega o projeto local e concentra apenas o ciclo de vida do editor aberto. */
@@ -143,6 +162,11 @@ export function StudioFullEditor({
       persistence="local"
       onExit={onExit}
       onChange={handleActivity}
+      // Erro que o editor CONTEVE sozinho (ex.: o painel do Zappy caindo na sua
+      // própria boundary). Sem este fio ele morria num console.error e a
+      // próxima ocorrência voltava a ser adivinhação — foi exatamente o que
+      // aconteceu com o tutor derrubando a IDE em 08/2026.
+      onError={reportStudioError}
       share={share}
       tutor={tutor}
       theme={theme}

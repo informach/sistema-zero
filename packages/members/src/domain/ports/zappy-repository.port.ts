@@ -26,6 +26,12 @@ export interface ZappyStoredResponse {
     name: string
     category: string
     subcategory?: string
+    /**
+     * Trilha REAL da paleta ("Jogo 2D › 🕹️ Movimento"). O par
+     * categoria/subcategoria é compat de resposta antiga; sem este campo o chip
+     * cai no fallback e mostra coisas como "Programação › Programação".
+     */
+    palettePath?: string[]
     area: string
   }>
   lessonReferences?: Array<{

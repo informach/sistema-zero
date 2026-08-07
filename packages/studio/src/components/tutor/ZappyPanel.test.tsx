@@ -679,4 +679,56 @@ describe('ZappyPanel sob rede ruim', () => {
       expect(view.getByRole('button', { name: 'Perguntar' }).hasAttribute('disabled')).toBe(false),
     )
   })
+  it('resposta SEM blockReferences não derruba o painel', async () => {
+    // ⚠️ O fixture `response()` SEMPRE trouxe `blockReferences: []`, e por isso a
+    // guarda que faltava nunca apareceu. Este é o envelope parcial: o campo
+    // simplesmente não vem. Antes da correção, o render lançava
+    // "Cannot read properties of undefined (reading 'length')" — o erro exato
+    // que trocava o Estúdio inteiro pela tela "Algo deu errado".
+    const { blockReferences: _drop, ...semBlocos } = response()
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => {},
+      ask: async () => answer(semBlocos),
+      feedback: async () => {},
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+
+    // A explicação aparece; os chips de bloco simplesmente não existem.
+    await waitFor(() => expect(view.getByText('Tente novamente com este bloco.')).toBeTruthy())
+  })
+
+  it('campos de lista inválidos viram ausência, não quebram a conversa', async () => {
+    // Defesa da MESMA classe nos opcionais: o servidor pode mandar qualquer
+    // coisa num campo novo, e o painel tem que continuar de pé.
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => {},
+      ask: async () =>
+        answer({
+          ...response(),
+          blockReferences: 'nada disso',
+          lessonReferences: 42,
+          suggestions: { isto: 'não é lista' },
+        }),
+      feedback: async () => {},
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'E agora?' } })
+    fireEvent.submit(form)
+
+    await waitFor(() => expect(view.getByText('Tente novamente com este bloco.')).toBeTruthy())
+  })
 })

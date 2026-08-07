@@ -125,6 +125,11 @@ export const ZappyInternalResponseBody = t.Object({
         name: t.String({ minLength: 1, maxLength: 240 }),
         category: t.String({ minLength: 1, maxLength: 160 }),
         subcategory: t.Optional(t.String({ maxLength: 160 })),
+        // ⚠️ Campo NÃO declarado aqui é REMOVIDO pelo `normalize` default do
+        // Elysia — sem barulho, sem 422. Foi assim que o `palettePath` sumiu
+        // entre o BFF e o banco desde que nasceu: o chip nunca mostrou a trilha
+        // real, só o fallback categoria › subcategoria.
+        palettePath: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 80 }), { maxItems: 4 })),
         area: t.String({ minLength: 1, maxLength: 80 }),
       }),
       { maxItems: 12 },

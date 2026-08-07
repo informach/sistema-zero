@@ -346,11 +346,22 @@ export function ProjectCard({
           </div>
         </div>
 
-        {summary.thumbDataUrl && !editing && (
+        {!editing && (
           // Capa capturada ao sair do editor. `pointer-events-none` deixa o clique
           // atravessar até o botão invisível de abrir (absolute inset-0 abaixo).
+          //
+          // ⚠️ SEM capa o bloco inteiro sumia, e o card ficava só com nome e data —
+          // a ausência lia como "a feature quebrou" em vez de "ainda não tem foto".
+          // Com o espaço reservado, todos os cards têm a MESMA altura e a capa que
+          // chega depois (a captura é assíncrona) não empurra o grid.
           <div className="pointer-events-none mt-2 min-h-0 flex-1 overflow-hidden rounded-md border border-sz-border-soft">
-            <img src={summary.thumbDataUrl} alt="" className="h-full w-full object-cover" />
+            {summary.thumbDataUrl ? (
+              <img src={summary.thumbDataUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid h-full w-full place-items-center bg-sz-bg text-[0.6875rem] text-sz-fg-mute">
+                A foto aparece depois de você abrir e fechar o jogo
+              </div>
+            )}
           </div>
         )}
 

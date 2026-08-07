@@ -119,8 +119,20 @@ export interface StudioCommonProps {
   onChange?: (project: Project, ctx?: { reason: 'autosave' | 'flush' }) => void
   /** Após salvar explícito (botão Salvar / handle.save()). Promise rejeitada marca erro no badge. */
   onSave?: (project: Project) => void | Promise<void>
-  /** Erros não-fatais de persistência (autosave/save que falhou). */
-  onError?: (error: { kind: 'persistence'; message: string }) => void
+  /**
+   * Erros não-fatais que o editor CONTEVE sozinho — o host decide se reporta.
+   *
+   * `persistence`: autosave/save que falhou.
+   * `render`: uma boundary de SEÇÃO segurou um erro de render (`area` diz qual,
+   * ex.: `zappy`). Sem este fio, um crash contido morre num `console.error` e a
+   * próxima ocorrência volta a ser adivinhação — foi o que aconteceu com o
+   * tutor derrubando a IDE em 08/2026.
+   */
+  onError?: (
+    error:
+      | { kind: 'persistence'; message: string }
+      | { kind: 'render'; area: string; message: string; stack?: string },
+  ) => void
   onModeChange?: (mode: IDEMode) => void
   /** Editor montado e projeto hidratado. */
   onReady?: () => void

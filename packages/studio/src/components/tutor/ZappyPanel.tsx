@@ -12,6 +12,8 @@ import {
   buildStudioTutorContext,
   type StudioTutorBlockReference,
   type StudioTutorHistoryMessage,
+  type StudioTutorLessonReference,
+  type StudioTutorResponse,
   useStudioTutor,
 } from '../../studio/tutor'
 import { ZappyCredits } from './ZappyCredits'
@@ -34,16 +36,46 @@ function friendlyError(error: unknown): string {
   return 'O Zappy foi tomar um lanchinho. Tenta de novo em instantes!'
 }
 
+/**
+ * ⚠️ ÚNICA porta de entrada da resposta AO VIVO no estado — e por isso o lugar
+ * certo de garantir a forma.
+ *
+ * O caminho do HISTÓRICO já normaliza no servidor (`toResponse`, no repositório
+ * do members: `Array.isArray(x) ? x : []`). O caminho ao vivo espalhava o
+ * payload como veio. Essa assimetria é exatamente o sintoma que a dona relatou
+ * em 08/2026: a conversa derrubava a IDE ao chegar, e depois de recarregar a
+ * MESMA resposta aparecia certinha — porque só a segunda passava por um
+ * normalizador. Aqui o cliente passa a ter a mesma tolerância que o servidor.
+ */
+function normalizeResponse(response: StudioTutorResponse): StudioTutorResponse {
+  const list = <T,>(value: unknown): T[] | undefined =>
+    Array.isArray(value) ? (value as T[]) : undefined
+  return {
+    ...response,
+    blockReferences: list<StudioTutorBlockReference>(response.blockReferences) ?? [],
+    // Opcionais seguem OPCIONAIS: presente-e-inválido vira ausente (a UI já sabe
+    // lidar com ausente), em vez de virar um array vazio que mente "buscamos e
+    // não achou".
+    ...(response.lessonReferences !== undefined
+      ? { lessonReferences: list<StudioTutorLessonReference>(response.lessonReferences) }
+      : {}),
+    ...(response.suggestions !== undefined
+      ? { suggestions: list<string>(response.suggestions) }
+      : {}),
+  }
+}
+
 function responseMessage(
   response: StudioTutorHistoryMessage['response'],
 ): StudioTutorHistoryMessage {
   if (!response) throw new Error('Resposta do Zappy ausente')
+  const safe = normalizeResponse(response)
   return {
-    id: response.id,
+    id: safe.id,
     role: 'assistant',
-    text: response.text,
-    createdAt: response.createdAt,
-    response,
+    text: safe.text,
+    createdAt: safe.createdAt,
+    response: safe,
   }
 }
 
@@ -453,7 +485,7 @@ export function ZappyPanel(): JSX.Element | null {
               )}
             >
               <p className="whitespace-pre-wrap">{message.text}</p>
-              {!isQuota && project.kind !== 'pro' && message.response?.blockReferences.length ? (
+              {!isQuota && project.kind !== 'pro' && message.response?.blockReferences?.length ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {message.response.blockReferences.map((reference) => {
                     // O caminho da paleta é a verdade; o par categoria/subcategoria
