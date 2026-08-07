@@ -258,7 +258,7 @@ export const gameTwoDInteractionBlocks = [
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'estrela' }],
     colour: C,
     tooltip:
-      'Responde sim quando a animação de "uma vez só" já tocou tudo. A que repete nunca acaba, então responde não. Encaixe num "se" para sumir com o sprite, trocar a imagem ou dar ponto.',
+      'Responde sim quando a animação de "uma vez só" já tocou tudo. A que repete nunca acaba, então responde não. Encaixe num "se" para sumir com o sprite ou trocar a imagem dele. ⚠️ Enquanto ele fica congelado no último quadro a resposta continua sendo sim, a cada quadro. Faça ali algo que MUDE o sprite: um "somar 1 ponto" sozinho somaria sem parar.',
   },
   {
     type: 'sz_g2d_set_state_anim',

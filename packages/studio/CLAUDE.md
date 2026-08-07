@@ -1455,6 +1455,15 @@ dona do produto: *"tenho uma estrela cadente e quero que ela anime apenas 1 vez"
   ser trocada no quadro seguinte). ⭐ E, ao ceder, precisa **ZERAR `_animState`** quando ela acaba:
   sem isso o estado velho bate com o calculado, o early-return corta a troca e o sprite fica
   congelado no último quadro PARA SEMPRE. O g2d não tem trava de estado como a `sz_gk_set_entity_state`.
+- ⚠️ **`animationEnded` não é 100% puro por causa dessa retomada.** Ao ceder a vez, o `autoAnimate`
+  TROCA a animação no mesmo quadro em que a one-shot acabou — e aí o cálculo puro responderia NÃO. A
+  resposta passaria a depender da ORDEM em que a criança empilhou os blocos ("mudei de lugar e parou
+  de funcionar"). Por isso o `_onceEndedStamp`: carimba `_frameStamp` DEPOIS do `setAnimation`, e o
+  `animationEnded` responde SIM até o fim daquele quadro. Uma one-shot nova no mesmo quadro volta ao
+  cálculo puro e responde NÃO — o carimbo não vaza.
+- ⚠️ É uma PERGUNTA, não um evento: enquanto o sprite fica congelado a resposta é SIM a cada quadro.
+  O balão manda mudar o sprite (sumir/trocar a imagem, que zeram o `anim`); um "somar ponto" solto
+  ali somaria sem parar.
 - ⚠️ **`isSimpleValue` (`parsers/js.ts`) tem lista EXPLÍCITA**: valor de extensão que não entre nela
   vira `rawJS` no round-trip e a criança PERDE o bloco. O `blockAudit` pega.
 - Comportamento provado em `__tests__/animateOnce.test.ts` (runtime avaliado de verdade, relógio

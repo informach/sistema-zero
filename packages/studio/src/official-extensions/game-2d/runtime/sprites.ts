@@ -300,10 +300,15 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * A animacao de UMA VEZ ja tocou tudo? (a que repete nunca acaba, entao
    * responde nao.) Calculo PURO a partir do relogio da partida — sem estado
    * novo, sem contador.
+   *
+   * ⚠️ A UNICA excecao e o carimbo: quando o "Animar sozinho" retoma o sprite
+   * no MESMO quadro em que a de uma vez acabou, ele TROCA a animacao e o
+   * calculo puro passaria a responder NAO. Sem o carimbo, a resposta dependeria
+   * da ORDEM em que a crianca empilhou os blocos.
    */
   function animationEnded(sprite) {
     var a = sprite && sprite.anim;
-    if (!a || !a.once) return false;
+    if (!a || !a.once) return !!sprite && sprite._onceEndedStamp === _frameStamp;
     var frames = (a.to - a.from) + 1;
     if (frames < 1) frames = 1;
     return ((now() - a.start) / 1000) * a.fps >= frames;
@@ -377,11 +382,13 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     // ⚠️ Uma animacao de UMA VEZ em andamento tem prioridade: sem isto o
     // "Animar sozinho" a trocaria no quadro seguinte (basta o sprite comecar a
     // andar) e o golpe/estrela cadente nunca chegaria ao fim.
+    var cedeuAgora = false;
     if (sprite.anim && sprite.anim.once) {
       if (!animationEnded(sprite)) return;
       // ⚠️ Acabou: ZERA o estado para o automatico reaplicar. Sem esta linha o
       // "_animState" velho bateria com o "key" logo abaixo, o return cortaria a
       // troca e o sprite ficaria congelado no ultimo quadro PARA SEMPRE.
+      cedeuAgora = true;
       sprite._animState = null;
     }
     var want = _resolveAnimState(sprite);
@@ -396,6 +403,10 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     sprite._animState = key;
     var cfg = states[key];
     setAnimation(sprite, cfg.sheet, cfg.from, cfg.to, cfg.fps);
+    // ⚠️ DEPOIS do setAnimation (que reescreve sprite.anim): carimba o quadro em
+    // que a de uma vez acabou, para o "acabou?" responder SIM ate o fim deste
+    // quadro mesmo com o "Animar sozinho" empilhado ANTES dele.
+    if (cedeuAgora) sprite._onceEndedStamp = _frameStamp;
   }
 
   /**

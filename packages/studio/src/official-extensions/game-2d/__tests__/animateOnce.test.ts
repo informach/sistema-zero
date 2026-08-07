@@ -150,6 +150,29 @@ describe('animação de uma vez', () => {
     expect(sprite.anim?.from).toBe(4)
   })
 
+  it('⭐ a ORDEM dos blocos não muda a resposta de "acabou?"', () => {
+    // ⚠️ Terceiro achado: quando o "Animar sozinho" retoma o sprite no MESMO
+    // quadro em que a one-shot acaba, ele TROCA a animação — e o cálculo puro
+    // passava a responder NÃO. Com o "Animar sozinho" empilhado ANTES do "se a
+    // animação acabou", o "se" da criança nunca disparava. Silencioso, e
+    // impossível de explicar para ela ("mudei de lugar e parou de funcionar").
+    const { api, clock, sprite, sheet } = cena()
+    api.setStateAnimation(sprite, 'andando', sheet, 4, 7, 10)
+    sprite.vx = 3
+    api.autoAnimate(sprite)
+    api.playAnimationOnce(sprite, sheet, 0, 3, 8)
+    clock.t = 500
+
+    api.autoAnimate(sprite) // ← o bloco que vem ANTES na pilha da criança
+    expect(api.animationEnded(sprite)).toBe(true)
+    expect(sprite.anim?.once).toBeFalsy() // o automático de fato retomou
+
+    // Mas uma one-shot NOVA no mesmo quadro reseta a resposta: o carimbo não
+    // pode vazar por cima de uma animação que acabou de começar.
+    api.playAnimationOnce(sprite, sheet, 0, 3, 8)
+    expect(api.animationEnded(sprite)).toBe(false)
+  })
+
   it('sem animação nenhuma, "acabou?" responde não (em vez de explodir)', () => {
     const { api, sprite } = cena()
     expect(api.animationEnded(sprite)).toBe(false)
