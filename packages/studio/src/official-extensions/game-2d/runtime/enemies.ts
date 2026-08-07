@@ -503,11 +503,17 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     // dizer, ao pé da letra), e não o "alcance": aquele número já significa voo,
     // raio do círculo, gatilho do mergulho e distância de reação, e um sexto
     // sentido tornaria impossível ajustar voador + atirador alinhado.
-    // Fora da coluna ele nem gasta a recarga: continua carregado para o momento
-    // em que a nave aparecer na frente.
+    // ⭐ A recarga corre SEMPRE, alinhado ou não; o alinhamento é o GATILHO.
+    // ⚠️ Era o contrário (o contador só descia dentro da coluna) e o efeito era
+    // um inimigo que passava por cima da nave sem atirar: patrulhando a 2 px por
+    // quadro ele fica alinhado uns 28 quadros por passagem, contra uma cadência
+    // de 90, então precisava de QUATRO passagens para o primeiro tiro. Relato
+    // dela, medido: 10 segundos parada embaixo dele, vendo passar três vezes.
+    // Nasce CARREGADO de propósito: quem dá a folga aqui é a coluna (ele só
+    // atira se ela estiver na frente), não um tempo de espera inicial.
+    if (typeof s._acd !== 'number') s._acd = 0;
+    if (s._acd > 0) s._acd -= 1;
     if (Math.abs(tcx - cx) > (s.w + (t.w || 0)) / 2) return;
-    if (typeof s._acd !== 'number') s._acd = c.rate;
-    s._acd -= 1;
     if (s._acd > 0) return;
     s._acd = c.rate;
     var shot = spawnBullet(env.type.bullets, {

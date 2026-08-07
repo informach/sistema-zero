@@ -1068,28 +1068,31 @@ describe('jogo de nave: os comportamentos novos', () => {
     expect(e.vx).toBe(-2)
   })
 
-  it('atirador alinhado espera o alvo passar na frente, e não gasta a recarga fora da coluna', () => {
+  it('atirador alinhado espera o alvo passar na frente e atira NA HORA (já vem carregado)', () => {
     const api = load()
     const ctx = fakeCtx(400, 300)
     const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20, dmg: 2 })
-    api.setEnemyTypeParam(t, 'cadencia', 3)
-    api.setEnemyTypeParam(t, 'alcance', 12) // a folga da coluna
+    api.setEnemyTypeParam(t, 'cadencia', 30)
     api.setEnemyTypeParam(t, 'tiro', 5)
     api.spawnEnemy(t, 100, 40)
     const longe = api.createSprite({ x: 300, y: 250, w: 20, h: 20 })
-    for (let i = 0; i < 10; i += 1) api.updateEnemyType(t, ctx, longe)
-    expect(t.bullets.items.length).toBe(0)
-    // Fica CARREGADO: assim que a nave entra na coluna, dispara na cadência cheia.
+    for (let i = 0; i < 100; i += 1) api.updateEnemyType(t, ctx, longe)
+    expect(t.bullets.items.length).toBe(0) // fora da coluna não atira NUNCA
+    // Entrou na coluna: dispara no MESMO quadro, porque a recarga corria o tempo
+    // todo. Esperar 30 quadros alinhado seria pedir que ela ficasse parada
+    // embaixo dele, e o inimigo que patrulha passa e vai embora.
     const naFrente = api.createSprite({ x: 100, y: 250, w: 20, h: 20 })
-    api.updateEnemyType(t, ctx, naFrente)
-    api.updateEnemyType(t, ctx, naFrente)
-    expect(t.bullets.items.length).toBe(0)
     api.updateEnemyType(t, ctx, naFrente)
     expect(t.bullets.items.length).toBe(1)
     const tiro = t.bullets.items[0] as Sprite
     expect(tiro.vx).toBe(0) // reto para baixo, é uma coluna
     expect(tiro.vy).toBe(5)
     expect(tiro.dmg).toBe(2)
+    // E aí sim respeita a cadência enquanto ela continuar na frente.
+    for (let i = 0; i < 29; i += 1) api.updateEnemyType(t, ctx, naFrente)
+    expect(t.bullets.items.length).toBe(1)
+    api.updateEnemyType(t, ctx, naFrente)
+    expect(t.bullets.items.length).toBe(2)
   })
 
   it('atirador alinhado também mira para CIMA quando o alvo está acima', () => {
@@ -2081,6 +2084,36 @@ describe('correções do quarto full review', () => {
     expect(compridos[0]?.[1]).toBeGreaterThan(corpo)
   })
 
+  it('a inteligência básica atira na PRIMEIRA passagem por cima da nave parada', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    // O cenário do relato: ela parou a nave embaixo e o inimigo passou por cima
+    // três vezes sem atirar. A recarga só descia DENTRO da coluna, e patrulhando
+    // a 2 px por quadro ele fica alinhado ~28 quadros contra uma cadência de 90:
+    // precisava de QUATRO passagens (medido: 602 quadros, 10 segundos).
+    const t = api.createSmartEnemyType({ smart: 'basica' })
+    const inimigo = api.spawnEnemy(t, 60, 30) as Sprite
+    const nave = api.createSprite({ x: 188, y: 250, w: 24, h: 24 })
+    const coluna = (t.config.w + nave.w) / 2
+    let passagens = 0
+    let dentroAntes = false
+    let quadroDoTiro = -1
+    for (let q = 1; q <= 1800; q += 1) {
+      api.updateEnemyType(t, ctx, nave)
+      const dentro = Math.abs(nave.x + nave.w / 2 - (inimigo.x + inimigo.w / 2)) <= coluna
+      if (dentro && !dentroAntes) passagens += 1
+      dentroAntes = dentro
+      if (t.bullets.items.length > 0) {
+        quadroDoTiro = q
+        break
+      }
+    }
+    expect(quadroDoTiro).toBeGreaterThan(0)
+    expect(passagens).toBe(1) // na PRIMEIRA vez que passou por cima dela
+    expect(quadroDoTiro).toBeLessThan(120) // e em menos de 2 segundos
+    expect(t.bullets.items[0]?.vx).toBe(0) // tiro reto para baixo
+  })
+
   it('o aviso do raio já nasce ACESO (o pisca começava apagado por 5 quadros)', () => {
     const api = load()
     const { ctx, rects } = recordingCtx()
@@ -2243,5 +2276,71 @@ describe('correções do quarto full review', () => {
     expect(tiroLento).toBeTruthy()
     expect(tiroLento?.vx).toBe(0)
     expect(tiroLento?.vy).toBeGreaterThan(0)
+  })
+})
+
+/**
+ * Quinto full review (07/08). A rodada olhou a correção do atirador alinhado
+ * (que veio de um relato de JOGO, não de teste) e a leva de copy do dano por
+ * ataque.
+ */
+describe('correções do quinto full review', () => {
+  it('o atirador alinhado nasce CARREGADO (a folga dele é a coluna, não um relógio)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    // Os dois testes que já existiam passariam também com o contador nascendo em
+    // "cadencia": num deles a nave só chega depois de 100 quadros, no outro o
+    // inimigo leva 70 quadros andando até a coluna. Quem prova a escolha é o
+    // inimigo que JÁ NASCE alinhado: se ele esperar, o contador nasceu cheio.
+    const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 90)
+    api.spawnEnemy(t, 100, 40)
+    const nave = api.createSprite({ x: 100, y: 250, w: 20, h: 20 })
+    api.updateEnemyType(t, ctx, nave)
+    expect(t.bullets.items.length).toBe(1)
+  })
+
+  it('nenhuma recarga fica escondida atrás de uma condição de POSIÇÃO', () => {
+    // A CLASSE do defeito que ela relatou jogando, não o caso: o `return` de
+    // "fora da coluna" vinha ANTES do decremento, então o relógio da recarga só
+    // andava durante o alinhamento e o inimigo passava por cima da nave sem
+    // atirar. Um comportamento novo que gateie por distância e repita o erro
+    // continua ATIRANDO (só que tarde), então nenhum teste de comportamento o
+    // pega: a rede tem que ser sobre a FORMA do código.
+    //
+    // ⚠️ Os nomes saem da TABELA, não de um padrão de nome: comportamento novo
+    // entra aqui sozinho, batizado como for.
+    const tabela = gameTwoDRuntime.slice(
+      gameTwoDRuntime.indexOf('var ENEMY_BEHAVIORS = {'),
+      gameTwoDRuntime.indexOf('\n  };', gameTwoDRuntime.indexOf('var ENEMY_BEHAVIORS = {')),
+    )
+    const nomes = [...new Set([...tabela.matchAll(/(?:act|move):\s*(\w+)/g)].map((m) => m[1]))]
+    expect(nomes.length, 'anti-vácuo: tabela de comportamentos não lida').toBeGreaterThan(15)
+
+    const semCorpo: string[] = []
+    const infratores: string[] = []
+    let comContador = 0
+    for (const nome of nomes) {
+      const at = gameTwoDRuntime.indexOf(`  function ${nome}(`)
+      if (at < 0) {
+        semCorpo.push(String(nome))
+        continue
+      }
+      const corpo = gameTwoDRuntime.slice(at, gameTwoDRuntime.indexOf('\n  }\n', at))
+      // Contador = campo do sprite que DESCE um por quadro. Pela forma, não pelo
+      // nome, senão um `_recarga` novo escaparia da rede.
+      const contador = /s\.(_\w+)\s*(?:-=\s*1|--)/.exec(corpo)
+      if (!contador) continue
+      comContador += 1
+      for (const linha of corpo.slice(0, contador.index).split('\n')) {
+        if (!/\breturn\b/.test(linha)) continue
+        // Única saída permitida antes do relógio: sem alvo, não há o que fazer.
+        if (/if \(!(t|target|env\.target)\) return;/.test(linha.trim())) continue
+        infratores.push(`${nome}: ${linha.trim()}`)
+      }
+    }
+    expect(semCorpo, 'comportamento da tabela sem função no runtime').toEqual([])
+    expect(comContador, 'anti-vácuo: nenhum contador encontrado').toBeGreaterThan(5)
+    expect(infratores).toEqual([])
   })
 })

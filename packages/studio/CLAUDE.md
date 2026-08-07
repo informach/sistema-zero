@@ -952,7 +952,7 @@ tipos + o evento de derrota; bônus = qualquer bloco no corpo do evento; 50% de 
   rei=perseguidor+atirador-preditivo+raio+chefao.
 - **4 comportamentos novos (18 → 22)**: `perseguidor-lado` (segue só na horizontal, o andar de
   shmup, que antes só existia por acidente com `arrancada`+alcance 9999), `atirador-alinhado` (só
-  atira na mesma coluna, e **não gasta a recarga** fora dela — fica carregado esperando a nave),
+  atira quando o alvo está na frente; a recarga corre SEMPRE e o alinhamento é só o GATILHO),
   `atirador-preditivo` (lead shot: `tempo = distância / tiro`, mira em `centro + velocidade ×
   tempo`; é o que separa ultra de avançada) e `raio`.
 - ⭐ **O raio é o primeiro ataque da extensão que NÃO é projétil.** Três fases por inimigo
@@ -1066,6 +1066,101 @@ Composição alfa, ordem de camada e pisca-pisca só aparecem lendo `getImageDat
 verdade. A pane fica oculta nesta máquina (rAF congelado), então o contorno é a página estática com
 o rAF trocado por fila e `window.__passo(n)` bombeado pelo `javascript_tool` — Chrome real, canvas
 real, sem depender de print.
+
+### O atirador alinhado passava por cima e não atirava (07/08, relato de jogo)
+
+Ela montou o shmup, parou a nave embaixo e viu o inimigo de inteligência **básica** passar por cima
+três vezes sem disparar. Reproduzido e medido: **602 quadros (10 segundos) e 4 passagens** até o
+primeiro tiro.
+
+⭐ **A causa era uma inversão de papéis entre recarga e gatilho.** O `_enemyAimedShootAct` saía cedo
+quando estava fora da coluna, ANTES de decrementar `_acd` — ou seja, a recarga só corria durante os
+poucos quadros de alinhamento. Patrulhando a 2 px/quadro, a coluna (largura dos dois sprites, 56 px
+com os padrões) dura ~28 quadros por passagem, contra uma cadência de 90: eram necessárias QUATRO
+passagens para carregar um tiro. O comentário no código dizia o contrário do que o código fazia
+("continua carregado para o momento em que a nave aparecer na frente").
+
+Agora a recarga corre SEMPRE e o alinhamento é só o gatilho; o contador nasce em 0 (pronto), porque
+quem dá a folga aqui é a coluna — ele já só atira se ela estiver na frente, e um tempo de espera
+inicial em cima disso é o que fazia o inimigo parecer quebrado. Medido depois, com a nave parada em
+três lugares diferentes: dispara **na 1ª passagem** em todos, em 0,8s / 0,0s / 2,1s, e todo tiro sai
+com o alvo alinhado. Nenhuma outra ação tinha o problema (leque, bomba, teleporte e raio já
+decrementavam incondicionalmente).
+
+⚠️ **A lição de teste**: o teste que existia usava `cadencia: 3` e um alvo TELEPORTADO para dentro da
+coluna, então o inimigo nunca precisava chegar lá andando. O caso real exige o cenário INTEIRO
+(patrulha de verdade + alvo parado + a cadência de fábrica), e é assim que a regressão está escrita
+agora: conta as PASSAGENS por cima da nave até o primeiro tiro e exige que seja a primeira.
+
+### Dano por ATAQUE: por que ele mora no bloco de acerto (07/08)
+
+Ela perguntou como dar danos diferentes aos três ataques do rei (encostar, leque, raio) e como as
+armas dela ferirem inimigos com vidas diferentes. **Já dava, sem bloco novo**, e a conversa virou uma
+decisão de design que vale registrar antes que alguém "conserte" isto:
+
+⭐ **O tipo guarda UM dano; quem aplica é sempre um bloco de acerto que ela põe.** É ali, no soquete
+do `sz_g2d_damage_sprite` ("Machucar o sprite ⟨X⟩ em ⟨N⟩ e deixá-lo invencível por ⟨M⟩ quadros"), que
+cada ataque ganha o número dele. Foi cogitado mover isso para o tipo (`Ajustar ... dano do tiro` /
+`dano do raio`) e **foi descartado**: os três blocos de acerto são obrigatórios de qualquer jeito, o
+número já cabe num soquete que existe, e a versão por-tipo custaria dois blocos a mais no "Ao
+iniciar" afastando o número do lugar onde ele age. Do jeito atual o bloco se lê como uma frase
+inteira ("quando o raio acertar a nave, tire 4"), e para criança adjacência ganha de organização.
+
+Também foi cogitado **duplicar o bloco de dano na gaveta 😈 Inimigos**, e a dona recusou (nada de
+mexer em bloco). ⚠️ **Ainda bem: a suíte PROÍBE isso.** O `docDrift` tem um teste de que todo bloco
+visível está na toolbox **em UM lugar só** (`emDoisLugares` tem que vir vazio, junto com a guarda do
+balde "Mais"). O montador da toolbox até aceitaria o tipo em dois SUBCATS (o mapa tipo→cor é um
+`flatMap` para `Map`, então ele herdaria o tom da última gaveta), mas o teste fecha a porta de
+propósito: bloco em duas gavetas é bloco que a criança acha duas vezes e conta como dois. Então quem ensina são três tooltips (`hurt_by_enemy`, `on_enemy_shot_hit`,
+`on_enemy_beam_hit`) e duas receitas novas no manual.
+
+⚠️ **O aviso que mais importa é o do raio**: aquele bloco roda A CADA QUADRO enquanto o feixe está
+ligado (~180 quadros), então "Mudar a vida" ali esvazia a barra num piscar. Os quadros de
+invencibilidade é que dão o ritmo (com 45, o feixe acerta ~4 vezes por disparo).
+
+⭐ Como os três tooltips agora CITAM a face de um bloco de outro arquivo, entrou um drift no
+`docDrift.test.ts`: o trecho entre os soquetes do `message0` do `sz_g2d_damage_sprite` tem que
+aparecer nos três. Renomear aquele bloco fazia os três mentirem em silêncio.
+
+### Quinto full review (07/08) — a doc mentindo o nome do bloco
+
+Rodada sobre a correção do atirador alinhado e sobre a leva de copy do dano por ataque. Quatro
+achados, três deles em texto que eu mesma tinha escrito nas 24h anteriores:
+
+1. ⭐ **O manual chamava um bloco por um nome que não existe.** A lista de blocos dizia "**Quando um
+   tiro acertar o sprite**" para um bloco que se chama "Para cada tiro do tipo ... que acertar o
+   sprite ...". Na gaveta, os blocos que começam com "Quando" são os EVENTOS de derrota e de dano:
+   a criança procuraria e pegaria o errado. No mesmo item, "Machucar o sprite com o dano do inimigo"
+   tinha perdido o "de contato", e a frase prometia "os DOIS jeitos de o ataque alcançar você"
+   quando são três (faltava o encostão, que agora aparece com o bloco de colisão certo).
+2. ⭐ **Estava anotado aqui que dá para listar um bloco em duas gavetas. NÃO dá**: o `docDrift` tem
+   um teste de que todo bloco visível está na toolbox em UM lugar só (`emDoisLugares` vazio). O
+   montador aceitaria; a suíte não. A anotação errada foi corrigida no lugar.
+3. **Duas dicas ficaram do tamanho de um parágrafo** (645 e 530 caracteres, contra mediana de 102
+   na extensão). Dica que ninguém lê não ensina; a explicação longa foi para o manual e as duas
+   encolheram para ~460 e ~424, na faixa dos outros blocos complexos.
+4. **O script de auditoria de citações estava frouxo** e por isso o achado 1 quase passou: o
+   casamento por prefixo não exigia tamanho mínimo da FACE, então face curta casava como prefixo de
+   qualquer citação. Corrigido, os "2 suspeitos" viraram 7, dos quais 2 eram drift de verdade.
+
+⭐ **Duas redes novas, ambas matando a CLASSE:**
+- `docDrift`: cada item da lista de blocos do manual (`- **nome**`) tem que abrir com a cara real de
+  um bloco. Cobre o buraco do drift antigo, que só olhava a forma `**Nome** (em **Categoria**)`.
+- `enemies.test.ts`: **nenhuma recarga pode ficar atrás de uma condição de POSIÇÃO**. O teste lê a
+  FORMA do runtime e exige que, entre o começo da função e o contador, só exista a guarda de "não
+  tem alvo". Provado que morde: reinserindo o código antigo do atirador alinhado, ele aponta a linha
+  exata. A versão comportamental disso NÃO pegaria um comportamento novo que repetisse o erro,
+  porque o inimigo continua atirando, só que tarde demais.
+  ⚠️ Duas escolhas que fazem a rede não envelhecer (endurecidas no 6º review): os nomes das funções
+  saem da **tabela `ENEMY_BEHAVIORS`** (19 hoje), não de um padrão `_enemy*`, e o contador é
+  reconhecido pela FORMA do decremento (`s._x -= 1`), não pelo nome. Comportamento novo entra na
+  rede sozinho, batizado como for e com o contador chamado como for.
+
+⚠️ **Observação de jogo, não defeito**: o `rei` dispara os dois ataques de projétil em LOCKSTEP (o
+tiro esperto e o leque do chefão nascem com o mesmo `rate` e zeram no mesmo quadro), então saem 4
+balas juntas a cada 90 quadros (medido). Lê-se como uma salva só, não como dois ataques. Quem quiser
+separar sem feature nova soma o `atirador em leque` DEPOIS (no "quando levar dano", por exemplo): o
+contador dele nasce naquele instante e fica defasado para sempre.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 

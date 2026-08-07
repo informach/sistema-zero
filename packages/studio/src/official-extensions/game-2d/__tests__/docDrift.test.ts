@@ -315,6 +315,30 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   /**
+   * O contexto da IA é um GERADOR DE CÓDIGO: helper que ele promete e não existe
+   * vira `SZGame2D.naoExiste is not a function` no jogo da criança, e o Zappy
+   * explica com toda a confiança do mundo. Seis nomes citados ali são do Canvas
+   * nativo ou do JS, não da nossa API; o resto tem que estar no contrato.
+   */
+  it('todo helper que o contexto da IA promete existe mesmo na API', () => {
+    const NATIVOS = new Set([
+      'clip',
+      'getContext',
+      'isPointInPath',
+      'isPointInStroke',
+      'random',
+      'rect',
+    ])
+    const api = new Set<string>(GAME_TWO_D_API_KEYS)
+    const citados = new Set<string>()
+    for (const m of gameTwoDPromptContext.matchAll(/\b([a-z][A-Za-z0-9]{3,})\(/g)) {
+      citados.add(String(m[1]))
+    }
+    expect(citados.size, 'anti-vácuo: nenhum nome lido').toBeGreaterThan(50)
+    expect([...citados].filter((n) => !api.has(n) && !NATIVOS.has(n)).sort()).toEqual([])
+  })
+
+  /**
    * ⭐ A lista de blocos do manual tem que chamar cada bloco pela cara DELE.
    * Um review meu escreveu "Quando um tiro acertar o sprite" para um bloco que
    * se chama "Para cada tiro do tipo ... que acertar o sprite ...": na gaveta,
@@ -328,10 +352,6 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
    */
   it('cada item da lista de blocos de inimigo abre com a cara real de um bloco', () => {
     const docs = gameTwoDManifest.docs ?? ''
-    const inicio = docs.indexOf('#### Soltar, atualizar, desenhar e reagir')
-    expect(inicio, 'seção da lista de blocos sumiu').toBeGreaterThan(-1)
-    const secao = docs.slice(inicio, docs.indexOf('####', inicio + 5))
-
     const semMarcadores = (texto: string) =>
       texto
         .replace(/%\d+/g, ' ')
@@ -342,13 +362,31 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
         .toLowerCase()
     const faces = gameTwoDBlocks.map((b) => semMarcadores(String(b.message0 ?? ''))).filter(Boolean)
 
-    // Cada item abre com `- **<nome do bloco>**`; o resto da linha é explicação.
-    const aberturas = [...secao.matchAll(/^- \*\*([^*]+)\*\*/gm)].map((m) =>
-      semMarcadores(String(m[1])),
-    )
-    expect(aberturas.length, 'anti-vácuo: nenhum item lido').toBeGreaterThan(6)
+    const aberturas: string[] = []
+    for (const titulo of [
+      '#### Os dois jeitos de criar um tipo',
+      '#### Soltar, atualizar, desenhar e reagir',
+    ]) {
+      const inicio = docs.indexOf(titulo)
+      expect(inicio, `seção sumiu: ${titulo}`).toBeGreaterThan(-1)
+      // ⚠️ `indexOf` devolve -1 quando esta é a última subseção, e `slice(i, -1)`
+      // engoliria o manual inteiro (aí as receitas, que abrem com o nome da
+      // RECEITA, cairiam aqui como se fossem bloco). Sem o guarda, o teste passa
+      // a acusar quem está certo no dia em que a seção virar a última.
+      const proxima = docs.indexOf('####', inicio + titulo.length)
+      const secao = docs.slice(inicio, proxima < 0 ? docs.length : proxima)
+      // Cada item abre com `- **<nome do bloco>**`; o resto da linha é explicação.
+      for (const m of secao.matchAll(/^- \*\*([^*]+)\*\*/gm))
+        aberturas.push(semMarcadores(String(m[1])))
+    }
+    expect(aberturas.length, 'anti-vácuo: nenhum item lido').toBeGreaterThan(8)
+
+    // ⚠️ O prefixo só vale para nome LONGO. Sem essa guarda (foi o furo do meu
+    // próprio script de auditoria), um item que abrisse com "Soltar" casaria com
+    // "Soltar um inimigo do tipo ..." e qualquer encurtamento passaria batido.
     const orfaos = aberturas.filter(
-      (nome) => !faces.some((face) => face === nome || face.startsWith(nome)),
+      (nome) =>
+        !faces.some((face) => face === nome || (nome.length >= 16 && face.startsWith(nome))),
     )
     expect(orfaos).toEqual([])
   })

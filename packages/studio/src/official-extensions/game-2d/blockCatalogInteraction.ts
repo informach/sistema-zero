@@ -548,7 +548,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Use DENTRO do "a cada quadro". Enquanto o feixe estiver LIGADO e encostando no sprite, o "fazer" roda com o inimigo dono do raio. Ao contrário do tiro, o raio NÃO some ao acertar: ele continua ligado até acabar. Ponha dentro o "Machucar o sprite com o dano de contato do inimigo" e ele já cuida do ritmo do dano. O raio costuma doer MAIS que encostar no inimigo: para isso, troque pelo "Machucar o sprite em ... e deixá-lo invencível por ... quadros" com o número que você quiser. ⚠️ Não ponha o "Mudar a vida" aqui: este bloco roda a cada quadro enquanto o feixe está ligado, e sem os quadros piscando o jogador perderia a vida toda de uma vez.',
+      'Use DENTRO do "a cada quadro". Enquanto o feixe estiver LIGADO e encostando no sprite, o "fazer" roda com o inimigo dono do raio; ao contrário do tiro, o raio NÃO some ao acertar. Ponha dentro o "Machucar o sprite com o dano de contato do inimigo", ou o "Machucar o sprite em ... e deixá-lo invencível por ... quadros" se o raio tiver que doer mais. ⚠️ "Mudar a vida" aqui não serve: este bloco roda a cada quadro, e sem os quadros piscando a vida some de uma vez.',
   },
   {
     type: 'sz_g2d_on_enemy_hurt',
@@ -580,7 +580,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo. Este bloco usa o dano que você deu ao tipo, o mesmo para todos os ataques dele; se cada ataque tiver que doer um tanto diferente (o raio mais que o encostão, por exemplo), use no lugar deste o "Machucar o sprite em ... e deixá-lo invencível por ... quadros".',
+      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo. Usa o dano do TIPO, igual nos três ataques dele; para um ataque doer mais, troque pelo "Machucar o sprite em ... e deixá-lo invencível por ... quadros".',
   },
   {
     type: 'sz_g2d_stomp_enemy',
