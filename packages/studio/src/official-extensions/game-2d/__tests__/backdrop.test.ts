@@ -30,20 +30,38 @@ interface Api {
 /**
  * Imagem de mentira — happy-dom não busca a URL de verdade.
  *
- * ⚠️ O load é ASSÍNCRONO de propósito. Uma versão que dispara `onload` dentro do
- * `set src` prova só o caminho "a imagem já estava em cache" e esconde o caso
- * real, que é o comum: no primeiro uso a imagem SEMPRE chega depois de o "Ao
- * iniciar" terminar. Use `aImagemChegar()` para avançar até lá.
+ * ⚠️ Duas fidelidades que parecem detalhe e não são:
+ *
+ * 1. O load é ASSÍNCRONO. Um fake que dispara `onload` dentro do `set src` prova
+ *    só o caminho "a imagem já estava em cache" e esconde o caso comum, que é a
+ *    imagem chegar depois do "Ao iniciar". Use `aImagemChegar()`.
+ * 2. Os ouvintes disparam na ORDEM DE REGISTRO, com o `onload` ocupando a vaga
+ *    de quando foi definido pela PRIMEIRA vez (é o que a spec manda). O runtime
+ *    depende disso: o `loadImage` define `onload` (que marca `loaded = true`) e
+ *    o `setBackdrop` acrescenta o dele DEPOIS, contando com essa ordem para
+ *    achar a imagem já pronta. Um fake que enfileira por tipo passaria verde com
+ *    o runtime reordenado — e o cenário sumiria em produção.
  */
 class FakeImage {
   naturalWidth = 0
   naturalHeight = 0
   width = 0
   height = 0
-  onload: (() => void) | null = null
   onerror: (() => void) | null = null
+  private aoCarregar: (() => void) | null = null
+  private fila: Array<() => void> = []
+
+  get onload(): (() => void) | null {
+    return this.aoCarregar
+  }
+  set onload(fn: (() => void) | null) {
+    // A vaga na fila é a do PRIMEIRO valor não-nulo; trocar depois só troca o
+    // corpo, não a posição.
+    if (this.aoCarregar === null && fn) this.fila.push(() => this.aoCarregar?.())
+    this.aoCarregar = fn
+  }
   addEventListener(tipo: string, ouvinte: () => void) {
-    if (tipo === 'load') FakeImage.ouvintes.push(ouvinte)
+    if (tipo === 'load') this.fila.push(ouvinte)
   }
   set src(_value: string) {
     const largura = FakeImage.nextWidth
@@ -51,19 +69,17 @@ class FakeImage {
     FakeImage.pendentes.push(() => {
       this.naturalWidth = largura
       this.naturalHeight = altura
-      this.onload?.()
+      for (const ouvinte of this.fila) ouvinte()
     })
   }
   static nextWidth = 32
   static nextHeight = 24
   static pendentes: Array<() => void> = []
-  static ouvintes: Array<() => void> = []
 }
 
 /** Entrega as imagens pendentes, na ordem, como o navegador faria. */
 async function aImagemChegar(): Promise<void> {
   for (const carga of FakeImage.pendentes.splice(0)) carga()
-  for (const ouvinte of FakeImage.ouvintes.splice(0)) ouvinte()
   await Promise.resolve()
 }
 
@@ -73,7 +89,6 @@ beforeEach(() => {
   FakeImage.nextWidth = 32
   FakeImage.nextHeight = 24
   FakeImage.pendentes = []
-  FakeImage.ouvintes = []
   ;(globalThis as { Image: unknown }).Image = FakeImage
 })
 

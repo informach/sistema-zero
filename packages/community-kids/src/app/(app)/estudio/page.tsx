@@ -71,10 +71,12 @@ export default async function EstudioPage({
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
     challengeAccess.body?.access?.['estudio-completo'] === true
-  // A posse é que decide se o Desafio APARECE — a leitura já está a caminho.
-  const challengeRes = await desafioPendente
+  // A posse é que decide se o Desafio aparece, então só ESPERA quem vai usar: a
+  // leitura já está a caminho desde o topo, e `await` numa promessa que não
+  // interessa é a mesma espera à toa que os gates acima evitam.
+  const challengeRes = challengeEligible ? await desafioPendente : null
   const challenge =
-    challengeEligible && challengeRes?.status === 200 && challengeRes.body
+    challengeRes?.status === 200 && challengeRes.body
       ? { key: challengeRes.body.challenge.key, title: challengeRes.body.challenge.title }
       : null
   // Exemplos prontos (vitrine + "Exemplos clássicos") aparecem SÓ p/ a EQUIPE
@@ -82,11 +84,11 @@ export default async function EstudioPage({
   // cliente segue sem eles. Deriva do PAPEL da conta, não do rank: uma criança
   // que chegou a Lenda (rank `god`) NÃO é equipe e continua sem exemplos.
   const showExamples = isPrivilegedRole(session?.role)
-  // Saldo da ajuda de IA (medidor do Zappy) — a leitura já foi feita acima; aqui
-  // só decidimos se o medidor aparece. Falhou → `null` = "não sei" e o medidor
-  // some, nunca "0 restantes".
+  // Saldo da ajuda de IA (medidor do Zappy) — mesma régua do Desafio acima: a
+  // leitura já está a caminho, mas quem não tem o tutor não espera por ela.
+  // Falhou → `null` = "não sei" e o medidor some, nunca "0 restantes".
   const zappyEnabled = isStudioZappyAllowed(session, levelSlug)
-  const creditsRes = await creditosPendentes
+  const creditsRes = zappyEnabled ? await creditosPendentes : null
   return (
     <StudioFullClient
       viewerId={session?.id ?? null}
@@ -96,7 +98,7 @@ export default async function EstudioPage({
       // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
       // da carreira (Inventor). O rank já veio na gamificação acima.
       zappyEnabled={zappyEnabled}
-      aiCredits={zappyEnabled && creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
+      aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}
       pintaOwned={pintaOwned}
     />
