@@ -3,7 +3,7 @@ import type { ExtensionManifest } from '#extensions'
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.27.1',
+  version: '0.28.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -83,12 +83,19 @@ em um evento ou em um construtor.
 - **Soltar 1 inimigo**. Cria 1 inimigo (cubo vermelho) que vem de longe na velocidade escolhida. Ponha dentro de **A cada N quadros** p/ soltar de tempos em tempos; mova com **Atualizar o grupo** e limpe com **Tirar quem saiu da tela**.
 - **Fim de jogo: parar a cena**. Use durante um quadro, evento ou função que roda durante a partida. O bloco não pode ficar solto em **Ao iniciar**.
 
-### Enxames & som
+### Enxames
 
 - **Grupo de objetos** e **enxame** são recursos diferentes e aparecem em seletores separados. O grupo (📦 Grupos) guarda vários objetos que você mesmo cria; o enxame administra cópias de um molde ligadas a uma cena.
 - O enxame compartilha a geometria do molde com segurança. Remover o molde não invalida cópias que ainda estão na cena; o recurso é liberado depois da última cópia.
 - Cópias visíveis do enxame participam de **objeto sob o mouse**, **mouse sobre o objeto** e das consultas de mira.
-- Toque notas e efeitos curtos depois da primeira interação do jogador. O runtime limita a 32 sons simultâneos e descarta as conexões no reinício.
+
+### Som
+
+- Há dois tipos de som aqui. **Nota** e **efeito** são inventados na hora pelo computador, e não precisam de arquivo nenhum. Já **"Tocar o som"** e **"Tocar a música"** tocam um arquivo que você enviou: use o botão **🔊 Enviar som** em "Imagens e sons", na barra de cima.
+- Para usar um arquivo, primeiro **carregue** ele em **Ao iniciar** e dê um apelido ("Carregar o som **moeda** do arquivo …"). Depois é só usar o apelido nos outros blocos.
+- Só toca **uma música por vez**: começar outra troca a que estava tocando. Repetir a mesma não recomeça a faixa.
+- **O volume vai de 0 a 10** e vale para todos os sons do projeto.
+- Toque notas e efeitos curtos depois da primeira interação do jogador. O runtime limita a 32 sons simultâneos e descarta as conexões no reinício. Um som de arquivo pedido antes do primeiro clique **espera** o clique e toca em seguida, em vez de sumir calado.
 
 ### Câmera & grade 3D (genéricos. Para jogos de grade/isométrico)
 

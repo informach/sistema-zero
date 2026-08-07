@@ -194,6 +194,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g3d_spawn_in_swarm: { X: 'number', Y: 'number', Z: 'number' },
   sz_g3d_prune_swarm: { MIN: 'number', MAX: 'number' },
   sz_g3d_play_note: { FREQ: 'number', MS: 'number' },
+  sz_g3d_set_volume: { LEVEL: 'number' },
   sz_g3d_is_near: { DIST: 'number' },
   sz_g3d_aim_ahead: { DIST: 'number' },
   // Jogo 2D Avançado (soquetes nascidos input_value — entradas inertes na

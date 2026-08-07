@@ -5655,6 +5655,37 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g3d:playEffect', kind: f(block, 'KIND') || 'coin' },
       }
+    case 'sz_g3d_load_sound':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:loadSound',
+          name: f(block, 'NAME') || 'som',
+          asset: f(block, 'ASSET'),
+        },
+      }
+    case 'sz_g3d_play_sound':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:playSound', name: f(block, 'NAME') || 'som' } }
+    case 'sz_g3d_stop_sound':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stopSound', name: f(block, 'NAME') || 'som' } }
+    case 'sz_g3d_play_music':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:playMusic', name: f(block, 'NAME') || 'musica' } }
+    case 'sz_g3d_stop_music':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stopMusic' } }
+    case 'sz_g3d_set_volume':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:setVolume',
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }),
+        },
+      }
 
     // ----- game-2d-advanced (kit profissional) -----
     case 'sz_gk_setup':

@@ -2984,6 +2984,22 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     }
     case 'g3d:playEffect':
       return block('sz_g3d_play_effect', { KIND: stmt.kind }, {}, stmt.__id)
+    case 'g3d:loadSound':
+      return block('sz_g3d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'g3d:playSound':
+      return block('sz_g3d_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3d:stopSound':
+      return block('sz_g3d_stop_sound', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3d:playMusic':
+      return block('sz_g3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3d:stopMusic':
+      return block('sz_g3d_stop_music', {}, {}, stmt.__id)
+    case 'g3d:setVolume': {
+      const level = exprToValueBlock(valueToExpr(stmt.level))
+      return level === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3d_set_volume', {}, {}, stmt.__id, { LEVEL: level })
+    }
     // ----- game-2d-advanced (kit profissional) -----
     case 'gk:setup': {
       const w = exprToValueBlock(valueToExpr(stmt.w))

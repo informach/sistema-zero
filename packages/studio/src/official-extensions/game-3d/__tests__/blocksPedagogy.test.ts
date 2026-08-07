@@ -42,7 +42,18 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
   })
 
   it('só permite iniciar áudio dentro de uma interação ou de um loop já ativo', () => {
-    for (const type of ['sz_g3d_play_note', 'sz_g3d_play_effect']) {
+    // ⚠️ Lista EXPLÍCITA: um bloco de áudio novo que não seja somado aqui passa
+    // batido pela guarda, e o custo é som que não toca sem ninguém entender por
+    // quê. `sz_g3d_load_sound` fica de fora de propósito — ele não toca nada, é
+    // `start-only-command`, e o teste de placement dele é o do blockAudit.
+    for (const type of [
+      'sz_g3d_play_note',
+      'sz_g3d_play_effect',
+      'sz_g3d_play_sound',
+      'sz_g3d_stop_sound',
+      'sz_g3d_stop_music',
+      'sz_g3d_set_volume',
+    ]) {
       const definition = gameThreeDBlocks.find((block) => block.type === type)
       if (!definition) throw new Error(`bloco ${type} não encontrado`)
       const placement = inferBlockContract(definition).placement

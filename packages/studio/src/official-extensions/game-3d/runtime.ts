@@ -57,6 +57,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // Texturas de imagem (Fase 6): o editor injeta os assets embutidos (data: URL)
   // em window.__SZGAME_ASSETS (nome -> dataURL). setTexture resolve o nome por aqui.
   var ASSETS = (typeof window !== 'undefined' && window.__SZGAME_ASSETS) || {};
+  // Sons do projeto (nome -> dataURL), semeados pelo mesmo bridge das imagens.
+  // O mapa NAO existe quando o projeto nao tem nenhum audio, por isso o || {}.
+  var SOUNDS = (typeof window !== 'undefined' && window.__SZGAME_SOUNDS) || {};
   var _texCache = null;
 
   // Estado do teclado (por event.code). Lido por keyDown(...) e controlWithKeys(...).
@@ -1194,7 +1197,138 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     else if (kind === 'hit') _beep('square', 440, 110, 0.12, 'exp');
     else _beep('square', 880, 1320, 0.18, 'exp'); // coin (padrão)
   }
+  // ---- Sons do projeto (os arquivos que a crianca enviou) ----
+  // O bipe acima e sintetizado; isto aqui toca o mp3/wav importado em "Imagens e
+  // sons". Sao dois caminhos de proposito: Web Audio para o bipe (precisa de
+  // oscilador) e HTMLAudio para o arquivo (comeca a tocar sem decodificar tudo).
+  var _sounds = {};
+  // Fonte de cada apelido num mapa PARALELO, e nao numa propriedade do elemento:
+  // o typecheck do runtime confere contra o DOM real, e HTMLAudioElement nao tem
+  // campo livre para pendurar coisa nossa.
+  var _soundSrc = {};
+  var _soundVolume = 0.8;
+  var _soundLoopKey = '';
+  // ⚠️ O navegador RECUSA play() antes de um gesto do usuario, e a recusa e
+  // silenciosa (promise rejeitada). Sem esta fila, "Tocar o som" dentro de
+  // "Ao iniciar" simplesmente nao acontecia, e a crianca nao tinha como
+  // descobrir por que. Aqui o pedido espera o primeiro clique/tecla e entao toca.
+  var _soundGesture = false;
+  var _soundWaiting = {};
+  function _releaseSounds() {
+    if (_soundGesture) return;
+    _soundGesture = true;
+    for (var key in _soundWaiting) {
+      if (Object.prototype.hasOwnProperty.call(_soundWaiting, key)) {
+        var start = _soundWaiting[key];
+        delete _soundWaiting[key];
+        try { start(); } catch (e) {}
+      }
+    }
+  }
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('pointerdown', _releaseSounds);
+    window.addEventListener('keydown', _releaseSounds);
+    window.addEventListener('touchstart', _releaseSounds);
+  }
+  function _soundKey(name) {
+    return typeof name === 'string' ? name.trim() : '';
+  }
+  function loadSound(name, asset) {
+    var key = _soundKey(name) || _soundKey(asset);
+    if (!key) { warnOnce('som-sem-apelido', 'o bloco "Carregar o som" precisa de um apelido.'); return; }
+    var wanted = _soundKey(asset);
+    var src = SOUNDS[wanted] || (wanted.indexOf('data:audio/') === 0 ? wanted : null);
+    if (!src) {
+      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Imagens e sons".');
+      return;
+    }
+    var already = _sounds[key];
+    if (already && _soundSrc[key] === src) return;
+    if (already) { try { already.pause(); } catch (e) {} }
+    try {
+      var el = new Audio();
+      el.preload = 'auto';
+      el.volume = _soundVolume;
+      el.onerror = function () { warnOnce('som-falhou-' + key, 'o som "' + key + '" nao pode ser carregado.'); };
+      el.src = src;
+      _sounds[key] = el;
+      _soundSrc[key] = src;
+    } catch (e) {}
+  }
+  function _startSound(key, loop) {
+    var el = _sounds[key];
+    if (!el) return;
+    try {
+      el.loop = !!loop;
+      el.volume = _soundVolume;
+      el.currentTime = 0;
+      var playing = el.play();
+      if (playing && playing.catch) {
+        playing.catch(function () {
+          if (!_soundGesture) _soundWaiting[key] = function () { _startSound(key, loop); };
+        });
+      }
+    } catch (e) {}
+  }
+  function _requestSound(key, loop) {
+    if (!key) return;
+    if (!_sounds[key]) {
+      warnOnce('som-nao-carregado-' + key, 'o som "' + key + '" ainda nao foi carregado. Use "Carregar o som" no bloco de iniciar.');
+      return;
+    }
+    if (!_soundGesture) { _soundWaiting[key] = function () { _startSound(key, loop); }; return; }
+    _startSound(key, loop);
+  }
+  function playSound(name) {
+    _requestSound(_soundKey(name), false);
+  }
+  function playMusic(name) {
+    var key = _soundKey(name);
+    if (!key) return;
+    // UMA trilha por vez: comecar outra troca a que estava tocando. Duas musicas
+    // sobrepostas nao teriam como ser desfeitas por bloco nenhum.
+    if (_soundLoopKey && _soundLoopKey !== key) stopSound(_soundLoopKey);
+    // Repetir a MESMA musica nao recomeca a faixa (o bloco costuma estar num
+    // trecho que roda mais de uma vez, e recomecar seria um solavanco).
+    if (_soundLoopKey === key && _sounds[key] && !_sounds[key].paused) return;
+    _soundLoopKey = key;
+    _requestSound(key, true);
+  }
+  function stopMusic() {
+    if (_soundLoopKey) stopSound(_soundLoopKey);
+  }
+  function stopSound(name) {
+    var key = _soundKey(name);
+    if (key === _soundLoopKey) _soundLoopKey = '';
+    delete _soundWaiting[key];
+    var el = _sounds[key];
+    if (!el) return;
+    try { el.pause(); el.currentTime = 0; el.loop = false; } catch (e) {}
+  }
+  function setSoundVolume(level) {
+    // A crianca pensa de 0 a 10; o navegador quer 0 a 1.
+    _soundVolume = clamp(level, 0, 10, 8) / 10;
+    for (var key in _sounds) {
+      if (Object.prototype.hasOwnProperty.call(_sounds, key)) {
+        try { _sounds[key].volume = _soundVolume; } catch (e) {}
+      }
+    }
+  }
+  /** Sem isto a trilha em loop sobrevive ao "jogar de novo" e some so no F5. */
+  function _disposeSounds() {
+    for (var key in _sounds) {
+      if (Object.prototype.hasOwnProperty.call(_sounds, key)) {
+        try { _sounds[key].pause(); _sounds[key].src = ''; } catch (e) {}
+      }
+    }
+    _sounds = {};
+    _soundSrc = {};
+    _soundWaiting = {};
+    _soundLoopKey = '';
+  }
+
   function disposeAudio() {
+    _disposeSounds();
     var audio = _audio;
     _audio = null;
     var voices = _audioVoices.slice();
@@ -3085,6 +3219,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     pruneSwarm: pruneSwarm,
     playNote: playNote,
     playEffect: playEffect,
+    loadSound: loadSound,
+    playSound: playSound,
+    stopSound: stopSound,
+    playMusic: playMusic,
+    stopMusic: stopMusic,
+    setSoundVolume: setSoundVolume,
     animate: animate,
     dispose: dispose,
     disposeAll: disposeAll,

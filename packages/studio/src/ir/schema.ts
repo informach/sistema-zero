@@ -3064,6 +3064,12 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:playNote'; freq: number | JSExpr; ms: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:playEffect'; kind: string })
+  | (JSStatementCommon & { type: 'g3d:loadSound'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'g3d:playSound'; name: string })
+  | (JSStatementCommon & { type: 'g3d:stopSound'; name: string })
+  | (JSStatementCommon & { type: 'g3d:playMusic'; name: string })
+  | (JSStatementCommon & { type: 'g3d:stopMusic' })
+  | (JSStatementCommon & { type: 'g3d:setVolume'; level: number | JSExpr })
   // Jogo 2D Avançado (extensão game-2d-advanced): esqueleto de jogo profissional
   // (kit P9) — máquina de estados, loop com delta-time, telas de UI injetadas
   // por JS e personagens nomeados. Config no setup; a mecânica a criança escreve
@@ -7393,6 +7399,21 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g3d:playEffect'), kind: irText(), ...idField }),
     z.object({
+      type: z.literal('g3d:loadSound'),
+      name: irText(),
+      asset: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:playSound'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stopSound'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:playMusic'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stopMusic'), ...idField }),
+    z.object({
+      type: z.literal('g3d:setVolume'),
+      level: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:setup'),
       w: z.union([JSExprSchema, z.number()]),
       h: z.union([JSExprSchema, z.number()]),
@@ -11475,6 +11496,12 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:pruneSwarm',
   'g3d:playNote',
   'g3d:playEffect',
+  'g3d:loadSound',
+  'g3d:playSound',
+  'g3d:stopSound',
+  'g3d:playMusic',
+  'g3d:stopMusic',
+  'g3d:setVolume',
 ])
 
 export const GK_STATEMENT_TYPES = new Set([

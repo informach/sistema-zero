@@ -10232,6 +10232,33 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'g3d:playEffect', kind: args[0].value as string }
     }
+    case 'loadSound': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'g3d:loadSound',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'playSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:playSound', name: args[0].value as string }
+    }
+    case 'stopSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:stopSound', name: args[0].value as string }
+    }
+    case 'playMusic': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:playMusic', name: args[0].value as string }
+    }
+    case 'stopMusic':
+      return args.length === 0 ? { type: 'g3d:stopMusic' } : null
+    case 'setSoundVolume': {
+      const level = toExpr(args[0], ctx)
+      if (!isSimpleValue(level)) return null
+      return { type: 'g3d:setVolume', level }
+    }
     default:
       // createScene/createBox/createSphere/createBlock/createGroup são var-init
       // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.

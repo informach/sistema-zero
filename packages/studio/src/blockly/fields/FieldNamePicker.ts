@@ -666,6 +666,7 @@ const SOUND_DECL_BLOCKS: Record<string, string[]> = {
   sz_gk_load_sound: ['NAME'],
   sz_g3k_load_sound: ['NAME'],
   sz_w3d_load_sound: ['NAME'],
+  sz_g3d_load_sound: ['NAME'],
 }
 function collectSounds(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, SOUND_DECL_BLOCKS)
@@ -974,11 +975,13 @@ const FUNCTION_LOCAL_BINDERS: ScopedBinderRegistry = {
 const GROUP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_group: ['NAME'],
   sz_g2d_define_enemy_type: ['NAME'],
+  sz_g2d_define_enemy_smart: ['NAME'],
 }
 
 /** Blocos que DECLARAM um TIPO de inimigo nomeado (Jogo 2D). */
 const ENEMYTYPE_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_define_enemy_type: ['NAME'],
+  sz_g2d_define_enemy_smart: ['NAME'],
 }
 
 /** Tipos de inimigo criados no workspace, na ordem dos blocos, sem repetir. */

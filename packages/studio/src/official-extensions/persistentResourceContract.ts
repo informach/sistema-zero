@@ -40,6 +40,10 @@ export const GAME_2D_PERSISTENT_COMMANDS = [
   { blockType: 'sz_g2d_play_music', statementType: 'g2d:playMusic' },
 ] as const
 
+export const GAME_3D_PERSISTENT_COMMANDS = [
+  { blockType: 'sz_g3d_play_music', statementType: 'g3d:playMusic' },
+] as const
+
 export const WORLD_3D_PERSISTENT_COMMANDS = [
   { blockType: 'sz_w3d_ambience', statementType: 'w3d:ambience' },
   { blockType: 'sz_w3d_play_music', statementType: 'w3d:playMusic' },
@@ -47,6 +51,7 @@ export const WORLD_3D_PERSISTENT_COMMANDS = [
 
 export const PERSISTENT_EXTENSION_COMMANDS = [
   ...GAME_2D_PERSISTENT_COMMANDS,
+  ...GAME_3D_PERSISTENT_COMMANDS,
   ...GAME_KIT_PERSISTENT_COMMANDS,
   ...GAME_KIT_3D_PERSISTENT_COMMANDS,
   ...WORLD_3D_PERSISTENT_COMMANDS,

@@ -1842,6 +1842,18 @@ ${pad}}, ${JSON.stringify(id)});`
       return `${pad}SZGame3D.playNote(${compileExpr(valueToExpr(stmt.freq), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.ms), 0, identifiers, recAt(base))});`
     case 'g3d:playEffect':
       return `${pad}SZGame3D.playEffect(${JSON.stringify(stmt.kind)});`
+    case 'g3d:loadSound':
+      return `${pad}SZGame3D.loadSound(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.asset)});`
+    case 'g3d:playSound':
+      return `${pad}SZGame3D.playSound(${JSON.stringify(stmt.name)});`
+    case 'g3d:stopSound':
+      return `${pad}SZGame3D.stopSound(${JSON.stringify(stmt.name)});`
+    case 'g3d:playMusic':
+      return `${pad}SZGame3D.playMusic(${JSON.stringify(stmt.name)});`
+    case 'g3d:stopMusic':
+      return `${pad}SZGame3D.stopMusic();`
+    case 'g3d:setVolume':
+      return `${pad}SZGame3D.setSoundVolume(${compileExpr(valueToExpr(stmt.level), 0, identifiers, recAt(base))});`
     // ----- game-2d-advanced (kit profissional) -----
     case 'gk:setup':
       return `${pad}SZGameKit.setup({ width: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, height: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
@@ -5852,6 +5864,17 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g3d:playNote':
       collectExprIdentifiers(valueToExpr(stmt.freq), names)
       collectExprIdentifiers(valueToExpr(stmt.ms), names)
+      return
+    // Apelido de som é texto solto, não identificador do programa — só o volume
+    // aceita expressão e portanto pode carregar variável da criança.
+    case 'g3d:loadSound':
+    case 'g3d:playSound':
+    case 'g3d:stopSound':
+    case 'g3d:playMusic':
+    case 'g3d:stopMusic':
+      return
+    case 'g3d:setVolume':
+      collectExprIdentifiers(valueToExpr(stmt.level), names)
       return
     case 'gk:setup':
       collectExprIdentifiers(valueToExpr(stmt.w), names)
