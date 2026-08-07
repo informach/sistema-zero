@@ -1264,6 +1264,8 @@ ${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:animateSprite':
       return `${pad}SZGame2D.setAnimation(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
+    case 'g2d:animateOnce':
+      return `${pad}SZGame2D.playAnimationOnce(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
     case 'g2d:setStateAnim':
       return `${pad}SZGame2D.setStateAnimation(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.state)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
     case 'g2d:autoAnimate':
@@ -5437,6 +5439,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.frameH), names)
       return
     case 'g2d:animateSprite':
+    case 'g2d:animateOnce':
       names.add(stmt.spriteVar)
       names.add(stmt.sheetVar)
       collectExprIdentifiers(valueToExpr(stmt.from), names)
@@ -8095,6 +8098,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g2d:getHealth':
     case 'g2d:getMaxHealth':
     case 'g2d:enemyDamage':
+    // O "quem" deste também é VARIÁVEL — só que o campo aqui é `spriteVar`,
+    // não `charVar` (o grupo da gk logo abaixo usa o outro nome).
+    case 'g2d:animEnded':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
     case 'g2d:spriteW':

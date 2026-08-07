@@ -284,6 +284,7 @@ export type JSExpr =
   // O gate do P24 ("if (applied)") em forma de pergunta — protege o dano.
   | (JSExprCommon & { type: 'gk:isInvincible'; charVar: string })
   | (JSExprCommon & { type: 'gk:healthOf'; charVar: string })
+  | (JSExprCommon & { type: 'g2d:animEnded'; spriteVar: string })
   | (JSExprCommon & { type: 'gk:animEnded'; charVar: string })
   | (JSExprCommon & { type: 'gk:lutaWinner' })
   | (JSExprCommon & { type: 'gk:lutaRound' })
@@ -803,6 +804,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:isDead'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInvincible'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:healthOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:animEnded'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:animEnded'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:lutaWinner'), ...idField }),
     z.object({ type: z.literal('gk:lutaRound'), ...idField }),
@@ -2311,6 +2313,14 @@ export type JSStatement =
     })
   | (JSStatementCommon & {
       type: 'g2d:animateSprite'
+      spriteVar: string
+      sheetVar: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:animateOnce'
       spriteVar: string
       sheetVar: string
       from: number | JSExpr
@@ -6270,6 +6280,15 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('g2d:animateSprite'),
+      spriteVar: irText(),
+      sheetVar: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:animateOnce'),
       spriteVar: irText(),
       sheetVar: irText(),
       from: z.union([JSExprSchema, z.number()]),
@@ -11440,6 +11459,8 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:paintLine',
   'g2d:loadSpritesheet',
   'g2d:animateSprite',
+  'g2d:animateOnce',
+  'g2d:animEnded',
   'g2d:setStateAnim',
   'g2d:autoAnimate',
   'g2d:defineEnemyType',

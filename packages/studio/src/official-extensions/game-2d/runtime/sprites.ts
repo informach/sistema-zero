@@ -254,20 +254,52 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * "fps" quadros por segundo. drawSprite avança o quadro pelo tempo e desenha.
    */
   function setAnimation(sprite, sheet, from, to, fps) {
+    _startAnimation(sprite, sheet, from, to, fps, false);
+  }
+  /**
+   * Anima UMA vez e CONGELA no ultimo quadro (estrela cadente, golpe, bau que
+   * abre). Depois de terminar, "animacaoAcabou" responde sim.
+   */
+  function playAnimationOnce(sprite, sheet, from, to, fps) {
+    _startAnimation(sprite, sheet, from, to, fps, true);
+  }
+  function _startAnimation(sprite, sheet, from, to, fps, once) {
     if (!sprite || !sheet) return;
+    var f = Math.max(0, Math.floor(_finiteNumber(from, 0)));
+    var t = Math.max(0, Math.floor(_finiteNumber(to, f)));
+    var r = _positiveFiniteNumber(fps, 8);
+    // ⚠️ GUARDA DE IDEMPOTENCIA. O bloco e um comando e vai acabar dentro do "a
+    // cada quadro"; sem isto, "start" seria reescrito todo frame e a animacao de
+    // UMA VEZ nunca terminaria (ficaria presa no 1o quadro). E o mesmo gotcha ja
+    // documentado do v0.53.0, e o que o Jogo 2D Avancado resolve do mesmo jeito.
+    var a = sprite.anim;
+    if (a && a.sheet === sheet && a.from === f && a.to === t && a.fps === r && !!a.once === !!once) {
+      return;
+    }
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = null;
     sprite._imgHooked = false;
-    var f = _finiteNumber(from, 0);
-    var t = _finiteNumber(to, f);
     sprite.anim = {
       sheet: sheet,
-      from: Math.max(0, Math.floor(f)),
-      to: Math.max(0, Math.floor(t)),
-      fps: _positiveFiniteNumber(fps, 8),
+      from: f,
+      to: t,
+      fps: r,
+      once: !!once,
       start: now()
     };
+  }
+  /**
+   * A animacao de UMA VEZ ja tocou tudo? (a que repete nunca acaba, entao
+   * responde nao.) Calculo PURO a partir do relogio da partida — sem estado
+   * novo, sem contador.
+   */
+  function animationEnded(sprite) {
+    var a = sprite && sprite.anim;
+    if (!a || !a.once) return false;
+    var frames = (a.to - a.from) + 1;
+    if (frames < 1) frames = 1;
+    return ((now() - a.start) / 1000) * a.fps >= frames;
   }
 
   // ---- Animação por ESTADO (troca sozinha conforme o sprite se move) ----
@@ -335,6 +367,16 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     else if (vx < -0.01) sprite.facing = -1;
     var states = sprite.animStates;
     if (!states) return;
+    // ⚠️ Uma animacao de UMA VEZ em andamento tem prioridade: sem isto o
+    // "Animar sozinho" a trocaria no quadro seguinte (basta o sprite comecar a
+    // andar) e o golpe/estrela cadente nunca chegaria ao fim.
+    if (sprite.anim && sprite.anim.once) {
+      if (!animationEnded(sprite)) return;
+      // ⚠️ Acabou: ZERA o estado para o automatico reaplicar. Sem esta linha o
+      // "_animState" velho bateria com o "key" logo abaixo, o return cortaria a
+      // troca e o sprite ficaria congelado no ultimo quadro PARA SEMPRE.
+      sprite._animState = null;
+    }
     var want = _resolveAnimState(sprite);
     var key = states[want] ? want : null;
     if (!key) {
@@ -435,7 +477,10 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       var frames = (a.to - a.from) + 1;
       if (frames < 1) frames = 1;
       var elapsed = (now() - a.start) / 1000;
-      var idx = a.from + (Math.floor(elapsed * a.fps) % frames);
+      var passo = Math.floor(elapsed * a.fps);
+      // UMA VEZ trava no ultimo quadro; a normal da a volta (o "%" era a unica
+      // coisa que existia aqui, e era o que tornava TODA animacao um loop).
+      var idx = a.from + (a.once ? Math.min(frames - 1, passo) : passo % frames);
       drawFrame(ctx, a.sheet, idx, sprite.x, sprite.y, sprite.w, sprite.h);
       return;
     }

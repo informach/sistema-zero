@@ -102,6 +102,7 @@ function chipsCitadosNaIA(texto: string): string[] {
 const TIPO_POR_ROTULO_DOCUMENTADO = new Map<string, string>([
   ['Impedir de atravessar os sprites de um grupo', 'sz_g2d_collide_group'],
   ['Impedir de atravessar o sprite', 'sz_g2d_collide_sprite'],
+  ['Para cada sprite do grupo … que colidir com o sprite …', 'sz_g2d_on_sprite_group_overlap'],
 ])
 
 /** Citações `**Nome do bloco** (em **💥 Categoria**)` no manual do aluno. */
@@ -207,7 +208,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(230)
+    expect(gameTwoDBlocks.length).toBe(232)
   })
 
   /**
@@ -310,6 +311,71 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     )
     for (const block of comNomeLocal) {
       expect(binders, `${block.type}: falta em SPRITE_LOOP_BINDERS`).toContain(`${block.type}: [`)
+    }
+  })
+
+  /**
+   * ⭐ A lista de blocos do manual tem que chamar cada bloco pela cara DELE.
+   * Um review meu escreveu "Quando um tiro acertar o sprite" para um bloco que
+   * se chama "Para cada tiro do tipo ... que acertar o sprite ...": na gaveta,
+   * os blocos que começam com "Quando" são os EVENTOS de derrota e de dano, e a
+   * criança pegaria o errado. O drift que existia só cobre a forma
+   * `**Nome** (em **Categoria**)`, e a lista de blocos não usa essa forma.
+   *
+   * A regra vale só onde o manual LISTA blocos (cada item abre com o nome do
+   * bloco em negrito). Nas receitas os itens abrem com o nome da receita, então
+   * elas ficam de fora de propósito.
+   */
+  it('cada item da lista de blocos de inimigo abre com a cara real de um bloco', () => {
+    const docs = gameTwoDManifest.docs ?? ''
+    const inicio = docs.indexOf('#### Soltar, atualizar, desenhar e reagir')
+    expect(inicio, 'seção da lista de blocos sumiu').toBeGreaterThan(-1)
+    const secao = docs.slice(inicio, docs.indexOf('####', inicio + 5))
+
+    const semMarcadores = (texto: string) =>
+      texto
+        .replace(/%\d+/g, ' ')
+        .replace(/⟨[^⟩]*⟩/g, ' ')
+        .replace(/…/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase()
+    const faces = gameTwoDBlocks.map((b) => semMarcadores(String(b.message0 ?? ''))).filter(Boolean)
+
+    // Cada item abre com `- **<nome do bloco>**`; o resto da linha é explicação.
+    const aberturas = [...secao.matchAll(/^- \*\*([^*]+)\*\*/gm)].map((m) =>
+      semMarcadores(String(m[1])),
+    )
+    expect(aberturas.length, 'anti-vácuo: nenhum item lido').toBeGreaterThan(6)
+    const orfaos = aberturas.filter(
+      (nome) => !faces.some((face) => face === nome || face.startsWith(nome)),
+    )
+    expect(orfaos).toEqual([])
+  })
+
+  /**
+   * O dano é UM por tipo, mas cada ATAQUE pode doer um tanto: o caminho é trocar
+   * o "Machucar com o dano de contato" pelo bloco de número livre, que mora em
+   * outra gaveta (❤️ Vida). Como a dona não quis duplicar o bloco em 😈 Inimigos,
+   * quem ensina isso são três tooltips que CITAM a face dele. Renomear aquele
+   * bloco faria os três mentirem em silêncio, e é a classe de defeito que esta
+   * extensão já colecionou (rótulo que descreve o que o código não faz mais).
+   */
+  it('os tooltips que mandam usar o dano por ataque citam a face real do bloco', () => {
+    const dano = gameTwoDBlocks.find((b) => b.type === 'sz_g2d_damage_sprite')
+    const face = String(dano?.message0 ?? '')
+    // O pedaço entre os dois últimos soquetes é o que os tooltips repetem.
+    const trecho = face.slice(face.indexOf('%2') + 2, face.indexOf('%3')).trim()
+    expect(trecho.length, 'anti-vácuo: não achei a face do bloco de dano').toBeGreaterThan(10)
+    for (const tipo of [
+      'sz_g2d_hurt_by_enemy',
+      'sz_g2d_on_enemy_shot_hit',
+      'sz_g2d_on_enemy_beam_hit',
+    ]) {
+      const tooltip = String(gameTwoDBlocks.find((b) => b.type === tipo)?.tooltip ?? '')
+      expect(tooltip, `${tipo}: o tooltip cita o bloco de dano por uma face que mudou`).toContain(
+        trecho,
+      )
     }
   })
 

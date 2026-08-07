@@ -231,7 +231,9 @@ test('o typecheck do arquivo composto detecta dependência interna ausente', () 
 test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 856 → 868: os 12 parâmetros do áudio de arquivo (loadSound/_startClip/
   // _requestClip/playClip/stopClip/playTrack/setSoundVolume/_clipKey).
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(869)
+  // 869 → 881: os 12 da animação de uma vez (_startAnimation/playAnimationOnce/
+  // animationEnded).
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(881)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

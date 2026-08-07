@@ -442,6 +442,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:getMaxHealth', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_enemy_damage':
       return { type: 'g2d:enemyDamage', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_anim_ended':
+      return { type: 'g2d:animEnded', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_x':
       return { type: 'g2d:spriteX', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_y':
@@ -3706,6 +3708,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'g2d:animateSprite',
+          spriteVar: f(block, 'SPRITE'),
+          sheetVar: f(block, 'SHEET'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 0 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_animate_once':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:animateOnce',
           spriteVar: f(block, 'SPRITE'),
           sheetVar: f(block, 'SHEET'),
           from: exprInput(block, 'FROM', { type: 'num', value: 0 }),

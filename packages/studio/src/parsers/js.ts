@@ -2474,6 +2474,10 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:enemyDamage', spriteVar }
   }
+  if (method === 'animationEnded') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:animEnded', spriteVar }
+  }
   if (method === 'spriteX') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:spriteX', spriteVar }
@@ -3639,6 +3643,17 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const fps = toExpr(args[4], ctx)
       return spriteVar && sheetVar && isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
         ? { type: 'g2d:animateSprite', spriteVar, sheetVar, from, to, fps }
+        : null
+    }
+    case 'playAnimationOnce': {
+      // generator: SZGame2D.playAnimationOnce(sprite, sheet, from, to, fps)
+      const spriteVar = identifierName(args[0])
+      const sheetVar = identifierName(args[1])
+      const from = toExpr(args[2], ctx)
+      const to = toExpr(args[3], ctx)
+      const fps = toExpr(args[4], ctx)
+      return spriteVar && sheetVar && isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
+        ? { type: 'g2d:animateOnce', spriteVar, sheetVar, from, to, fps }
         : null
     }
     case 'setStateAnimation': {
@@ -12835,6 +12850,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:getHealth':
     case 'g2d:getMaxHealth':
     case 'g2d:enemyDamage':
+    case 'g2d:animEnded':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
     case 'g2d:spriteW':

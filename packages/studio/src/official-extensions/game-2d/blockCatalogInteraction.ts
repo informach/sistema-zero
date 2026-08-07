@@ -229,6 +229,38 @@ export const gameTwoDInteractionBlocks = [
       'Escolha a animação pelo NOME (vem da sua folha do Pinta) e os quadros/velocidade se preenchem sozinhos. Sem animação nomeada, escreva os números dos quadros (do primeiro ao último).',
   },
   {
+    // Irmão do de cima: toca e PARA, em vez de repetir para sempre. Bloco NOVO
+    // ao lado (a regra da casa é não mudar a forma de bloco que a criança já
+    // usa), espelhando o par que o Jogo 2D Avançado já tem.
+    type: 'sz_g2d_animate_once',
+    placement: 'command',
+    message0:
+      'Animar sprite %1 com a folha %2 na animação %3, do quadro %4 ao %5 a %6 fps, uma vez só',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'estrela' },
+      { type: 'field_name_picker', name: 'SHEET', text: 'brilho', kind: 'spritesheet' },
+      { type: 'field_animation_picker', name: 'ANIM', text: 'Escolher' },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'FPS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca a animação UMA vez e PARA no último quadro, em vez de repetir. Bom para estrela cadente, golpe, baú que abre. Pergunte com "a animação acabou?" para fazer algo depois.',
+  },
+  {
+    type: 'sz_g2d_anim_ended',
+    output: 'JSValue',
+    message0: 'a animação de %1 acabou?',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'estrela' }],
+    colour: C,
+    tooltip:
+      'Responde sim quando a animação de "uma vez só" já tocou tudo. A que repete nunca acaba, então responde não. Encaixe num "se" para sumir com o sprite, trocar a imagem ou dar ponto.',
+  },
+  {
     type: 'sz_g2d_set_state_anim',
     placement: 'start-only-command',
     message0: 'Animação do sprite %1 no estado %2',
@@ -496,7 +528,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Use DENTRO do "a cada quadro". Para cada tiro dos inimigos do tipo que acertar o sprite, o tiro SOME e o "fazer" roda com ele (ex.: machucar o jogador).',
+      'Use DENTRO do "a cada quadro". Para cada tiro dos inimigos do tipo que acertar o sprite, o tiro SOME e o "fazer" roda com ele (ex.: machucar o jogador). Quer que o tiro doa diferente de encostar no inimigo? Ponha aqui dentro o "Machucar o sprite em ... e deixá-lo invencível por ... quadros" e escolha o número deste ataque.',
   },
   {
     type: 'sz_g2d_on_enemy_beam_hit',
@@ -516,7 +548,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Use DENTRO do "a cada quadro". Enquanto o feixe estiver LIGADO e encostando no sprite, o "fazer" roda com o inimigo dono do raio. Ao contrário do tiro, o raio NÃO some ao acertar: ele continua ligado até acabar. Ponha dentro o "Machucar o sprite com o dano de contato do inimigo" e ele já cuida do ritmo do dano.',
+      'Use DENTRO do "a cada quadro". Enquanto o feixe estiver LIGADO e encostando no sprite, o "fazer" roda com o inimigo dono do raio. Ao contrário do tiro, o raio NÃO some ao acertar: ele continua ligado até acabar. Ponha dentro o "Machucar o sprite com o dano de contato do inimigo" e ele já cuida do ritmo do dano. O raio costuma doer MAIS que encostar no inimigo: para isso, troque pelo "Machucar o sprite em ... e deixá-lo invencível por ... quadros" com o número que você quiser. ⚠️ Não ponha o "Mudar a vida" aqui: este bloco roda a cada quadro enquanto o feixe está ligado, e sem os quadros piscando o jogador perderia a vida toda de uma vez.',
   },
   {
     type: 'sz_g2d_on_enemy_hurt',
@@ -548,7 +580,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo.',
+      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo. Este bloco usa o dano que você deu ao tipo, o mesmo para todos os ataques dele; se cada ataque tiver que doer um tanto diferente (o raio mais que o encostão, por exemplo), use no lugar deste o "Machucar o sprite em ... e deixá-lo invencível por ... quadros".',
   },
   {
     type: 'sz_g2d_stomp_enemy',

@@ -91,6 +91,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_gk_stage_border: { WIDTH: 'number' },
   sz_g2d_load_spritesheet: { FW: 'number', FH: 'number' },
   sz_g2d_animate_sprite: { FROM: 'number', TO: 'number', FPS: 'number' },
+  sz_g2d_animate_once: { FROM: 'number', TO: 'number', FPS: 'number' },
   sz_g2d_set_state_anim: { FROM: 'number', TO: 'number', FPS: 'number' },
   sz_g2d_create_shape_sprite: { X: 'number', Y: 'number', W: 'number', H: 'number' },
   sz_g2d_paint_rect: { X: 'number', Y: 'number', W: 'number', H: 'number' },

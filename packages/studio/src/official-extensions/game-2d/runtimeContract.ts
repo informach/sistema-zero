@@ -217,6 +217,21 @@ export interface GameTwoDSpriteApi {
     to: number,
     fps: number,
   ): void
+  /**
+   * Anima UMA vez e CONGELA no último quadro (estrela cadente, golpe, baú que
+   * abre). O par `animationEnded` responde quando terminou. Toda animação daqui
+   * era loop infinito por construção — o `% quadros` do desenho era a única
+   * coisa que existia.
+   */
+  playAnimationOnce(
+    sprite: GameTwoDSprite,
+    sheet: GameTwoDSpriteSheet,
+    from: number,
+    to: number,
+    fps: number,
+  ): void
+  /** A animação de UMA VEZ já tocou tudo? (a que repete nunca acaba.) */
+  animationEnded(sprite: GameTwoDSprite): boolean
   drawFrame(
     ctx: GameTwoDContext,
     sheet: GameTwoDSpriteSheet,
@@ -739,6 +754,8 @@ export const GAME_TWO_D_API_KEYS = [
   'loadSpriteSheet',
   'setImage',
   'setAnimation',
+  'playAnimationOnce',
+  'animationEnded',
   'drawFrame',
   'setStateAnimation',
   'autoAnimate',

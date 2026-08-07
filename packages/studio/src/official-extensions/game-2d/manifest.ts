@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.62.1',
+  version: '0.63.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -88,7 +88,12 @@ depois é só usar o **nome** da imagem nos blocos.
 - **Criar sprite com imagem**. Um sprite que mostra uma imagem (em vez de um retângulo colorido).
 - **Trocar imagem do sprite**. Troca a imagem fixa do sprite.
 - **Carregar spritesheet**. Prepara uma folha com vários quadros (informe o tamanho de cada quadro).
-- **Animar sprite**. Percorre os quadros da spritesheet a N fps.
+- **Animar sprite**. Percorre os quadros da spritesheet a N fps. Fica repetindo para sempre.
+- **Animar sprite ... uma vez só**. O irmão que toca e PARA no último quadro, em vez de repetir. É o
+  bloco da estrela cadente, do golpe, do baú que abre.
+- **a animação de ... acabou?**. Pergunta que responde sim quando a animação de "uma vez só" já
+  tocou tudo (a que repete nunca acaba). Encaixe num **se** para sumir com o sprite, trocar a
+  imagem ou dar ponto quando ela terminar.
 - **Desenhar quadro**. Desenha um quadro específico da spritesheet (controle manual).
 
 Enquanto a imagem carrega, o cenário continua visível e ela aparece assim que fica
@@ -519,10 +524,14 @@ tempo acabar.
 - **Desenhar os inimigos do tipo**. Todos, mais os tiros e o raio deles.
 - **Animação dos inimigos do tipo no estado …**. Guarda a animação de um estado para TODOS os
   inimigos do tipo (o "Atualizar" troca sozinho).
-- **Quando um tiro acertar o sprite** e **Para cada raio do tipo … que acertar o sprite …**. Os
-  dois jeitos de o ataque do inimigo alcançar você.
-- **Machucar o sprite com o dano do inimigo**. Tira a vida e faz o sprite piscar; enquanto pisca
-  ele não leva dano de novo, então ficar encostado não acaba com a vida dele de uma vez.
+- **Para cada tiro do tipo … que acertar o sprite …** e **Para cada raio do tipo … que acertar o
+  sprite …**. Dois dos TRÊS jeitos de o ataque do inimigo alcançar você. O terceiro é encostar no
+  corpo dele, que você pega com o **Para cada sprite do grupo … que colidir com o sprite …**
+  (em **💥 Colisões**), porque o tipo de inimigo é um grupo.
+- **Machucar o sprite com o dano de contato do inimigo**. Tira a vida e faz o sprite piscar;
+  enquanto pisca ele não leva dano de novo, então ficar encostado não acaba com a vida dele de uma
+  vez. Este é o dano do TIPO, o mesmo nos três jeitos; para cada ataque doer um tanto diferente,
+  veja a receita do chefe mais abaixo.
 - **Quando um inimigo do tipo … levar dano**. Roda toda vez que um inimigo desse tipo perde vida
   e continua vivo. É o coração de um chefão em fases: leia a vida dele aqui dentro e, na metade,
   deixe-o furioso (trocar a cor, atirar mais rápido, juntar um comportamento novo).
@@ -536,8 +545,25 @@ tempo acabar.
 - O tipo É um grupo: os blocos de **Muitos (grupos)** funcionam nele. Patrulha em mapa de tiles:
   some o "Impedir de atravessar" num "Para cada" que o inimigo vira sozinho na parede.
 
-#### Duas receitas que a gente monta com o que já existe
+#### Receitas que a gente monta com o que já existe
 
+- **Um chefe com três ataques que doem diferente**: o tipo guarda UM dano, que vale para o corpo dele
+  e para os tirinhos. Mas quem tira a vida do jogador é sempre um bloco que você põe, e é ali que
+  cada ataque ganha o número dele. Em vez do "Machucar o sprite com o dano de contato do inimigo",
+  use o **Machucar o sprite ⟨nave⟩ em ⟨2⟩ e deixá-lo invencível por ⟨45⟩ quadros** (categoria
+  ❤️ Vida) dentro de cada bloco de acerto: no **Para cada sprite do grupo ⟨rei⟩ que colidir com o
+  sprite ⟨nave⟩** o encostão, no **Para cada tiro do tipo ⟨rei⟩ que acertar o sprite ⟨nave⟩** o tiro,
+  e no **Para cada raio do tipo ⟨rei⟩ que acertar o sprite ⟨nave⟩** o raio. Aí é só escolher três
+  números, tipo 1, 2 e 4.
+  ⚠️ **No raio, os quadros piscando não são enfeite.** O feixe fica ligado uns 3 segundos e esse
+  bloco roda a cada quadro, então sem eles a vida some de uma vez. Com 45, o feixe acerta umas 4
+  vezes enquanto está ligado, que é o ritmo certo.
+- **Cada arma sua tirando um tanto de vida**: do seu lado funciona igual, e o tipo de inimigo É um
+  grupo, então ele aparece no seletor. No **Para cada colisão entre os grupos ⟨meusTiros⟩ e ⟨rei⟩**,
+  ponha o "Mudar a vida do sprite ⟨alien⟩ em ⟨-2⟩" (o dano DAQUELA arma) e o "Tirar o sprite ⟨tiro⟩
+  do grupo ⟨meusTiros⟩". Aqui não precisa de quadros piscando, porque o tiro some ao acertar. E não
+  tire o inimigo do grupo na mão: deixe a vida chegar a zero, que o **Atualizar os inimigos do tipo**
+  cuida das partículas e do "Quando for derrotado".
 - **Um inimigo que às vezes não toma dano**: no bloco de colisão do seu tiro com ele, ponha o
   "Mudar a vida" DENTRO de um **se ⟨tem chance de 50%?⟩**. Metade dos tiros passa batido. Ponha um
   "Fazer o sprite piscar" no senão, para dar o barulhinho de escudo.

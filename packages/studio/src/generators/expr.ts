@@ -294,6 +294,8 @@ export function compileExpr(
       return `SZGame2D.getMaxHealth(${identifiers.get(expr.spriteVar)})`
     case 'g2d:enemyDamage':
       return `SZGame2D.enemyDamage(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:animEnded':
+      return `SZGame2D.animationEnded(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteX':
       return `SZGame2D.spriteX(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteY':

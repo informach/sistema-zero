@@ -1547,6 +1547,20 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
             { FROM: from, TO: to, FPS: fps },
           )
     }
+    case 'g2d:animateOnce': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_animate_once',
+            { SPRITE: stmt.spriteVar, SHEET: stmt.sheetVar },
+            {},
+            stmt.__id,
+            { FROM: from, TO: to, FPS: fps },
+          )
+    }
     case 'g2d:setStateAnim': {
       const from = exprToValueBlock(valueToExpr(stmt.from))
       const to = exprToValueBlock(valueToExpr(stmt.to))
@@ -7150,6 +7164,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_get_max_health', { SPRITE: expr.spriteVar })
     case 'g2d:enemyDamage':
       return block('sz_g2d_enemy_damage', { SPRITE: expr.spriteVar })
+    case 'g2d:animEnded':
+      return block('sz_g2d_anim_ended', { SPRITE: expr.spriteVar })
     case 'g2d:spriteX':
       return block('sz_g2d_sprite_x', { SPRITE: expr.spriteVar })
     case 'g2d:spriteY':

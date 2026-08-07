@@ -222,6 +222,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_load_spritesheet',
       'sz_g2d_animate_sprite',
+      'sz_g2d_animate_once',
+      'sz_g2d_anim_ended',
       'sz_g2d_set_state_anim',
       'sz_g2d_auto_animate',
       'sz_g2d_draw_frame',
@@ -524,6 +526,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_fit_screen: { PERCENT: numShadow(100) },
   sz_g2d_load_spritesheet: { FW: numShadow(32), FH: numShadow(32) },
   sz_g2d_animate_sprite: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
+  sz_g2d_animate_once: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
   sz_g2d_set_state_anim: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
   sz_g2d_create_shape_sprite: {
     X: numShadow(100),

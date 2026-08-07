@@ -101,7 +101,8 @@ nos blocos/código você usa o NOME do asset (string):
 - createSprite({ x, y, w, h, image: 'nome' }): sprite que mostra uma imagem (sem image, fica colorido).
 - setImage(sprite, 'nome'): troca a imagem fixa do sprite (cancela a animação).
 - loadSpriteSheet('nome', fw, fh): folha de sprites; fw/fh = tamanho de cada quadro em px.
-- setAnimation(sprite, sheet, from, to, fps): anima o sprite entre os quadros [from..to].
+- setAnimation(sprite, sheet, from, to, fps): anima o sprite entre os quadros [from..to]. REPETE para sempre.
+- playAnimationOnce(sprite, sheet, from, to, fps): mesma coisa, mas toca UMA vez e CONGELA no último quadro (estrela cadente, golpe, baú). animationEnded(sprite) responde se já acabou (a que repete nunca acaba) — use num "se" dentro do quadro para sumir com o sprite ou trocar a imagem. ⚠️ Os dois blocos são idempotentes: chamar todo quadro com os MESMOS argumentos não reinicia a animação. E o "Animar sozinho" (autoAnimate) NÃO rouba uma animação de uma vez em andamento; quando ela acaba, ele volta a mandar.
 - setStateAnimation(sprite, 'estado', sheet, from, to, fps): guarda a animação de UM estado do
   sprite ('parado'|'andando'|'vertical'|'pulando'|'caindo'|'dano'). Configuração: FORA do gameLoop.
 - autoAnimate(sprite): DENTRO do gameLoop; troca a animação sozinho conforme o estado (dano >
@@ -166,6 +167,12 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   tiro ao acertar.
 - hurtByEnemy(sprite, inimigoOuTiro): usa damageSprite com enemyDamage() e 45 quadros; piscando =
   invencivel (nao drena no contato continuo).
+  ⭐ O tipo guarda UM dano, que vale para o corpo e para os tiros dele. Para cada ATAQUE doer um
+  tanto diferente (o raio mais que o encostão, por exemplo), emita damageSprite(sprite, n, quadros)
+  DENTRO do varredor daquele ataque, em vez do hurtByEnemy: overlapSpriteGroup(() => nave, tipo, …)
+  para o encostão, overlapEnemyShots para o tiro, overlapEnemyBeams para o raio.
+  ⚠️ No raio os quadros de invencibilidade são OBRIGATÓRIOS (o callback roda a cada quadro enquanto
+  o feixe está ligado, uns 180): changeHealth ali esvazia a vida de uma vez.
 - enemyDamage(inimigoOuTiro): o dano de contato (default 1).
 - stompEnemyType(sprite, tipo, quique): DENTRO do gameLoop; derrota o inimigo em que o sprite
   PISAR (só caindo nele; encostar de lado não vale) e quica o sprite. O derrotado sai pelo
