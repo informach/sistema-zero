@@ -2,8 +2,13 @@ import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { ExtensionToolboxCategory } from '#extensions'
+import { G2D_ENEMY_BEHAVIORS, G2D_ENEMY_PARAMS, G2D_ENEMY_SMARTS } from '#ir'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDPromptSummary } from '../aiSummary'
+import {
+  GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS,
+  GAME_TWO_D_ENEMY_SMART_OPTIONS,
+} from '../blockCatalogShared'
 import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
 import { gameTwoDManifest } from '../manifest'
 import {
@@ -202,7 +207,235 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(219)
+    expect(gameTwoDBlocks.length).toBe(230)
+  })
+
+  /**
+   * O dropdown de comportamento de inimigo é uma CÓPIA à mão do enum da IR.
+   * A auditoria genérica só cobre a direção "opção que não existe no enum";
+   * a que falta é a perigosa: comportamento NOVO no enum + runtime e esquecido
+   * no dropdown. O parser aceitaria o nome vindo do modo Código, mas o
+   * FieldDropdown coage valor desconhecido para a PRIMEIRA opção — o inimigo da
+   * criança viraria "patrulha" sozinho ao reabrir o projeto.
+   */
+  it('as opções de comportamento do dropdown são exatamente o enum da IR, na mesma ordem', () => {
+    expect(GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS.map(([, valor]) => valor)).toEqual([
+      ...G2D_ENEMY_BEHAVIORS,
+    ])
+  })
+
+  /**
+   * A terceira cópia da lista é a TABELA do runtime. Um comportamento no enum e
+   * no dropdown mas fora da tabela cai no fallback de patrulha (índice 0) ou é
+   * ignorado: a criança escolhe "bombardeiro" e ganha outra coisa, sem erro.
+   */
+  it('a tabela de comportamentos do runtime cobre exatamente o enum da IR', () => {
+    const tabela = gameTwoDRuntime.slice(
+      gameTwoDRuntime.indexOf('var ENEMY_BEHAVIORS = {'),
+      gameTwoDRuntime.indexOf('var ENEMY_SMART_COMBOS'),
+    )
+    expect(tabela.length).toBeGreaterThan(200)
+    const naTabela = [...tabela.matchAll(/^\s{4}'([a-z-]+)':/gm)].map((m) => m[1])
+    expect(naTabela.sort()).toEqual([...G2D_ENEMY_BEHAVIORS].sort())
+  })
+
+  it('as opções de inteligência são exatamente o enum da IR, na mesma ordem', () => {
+    expect(GAME_TWO_D_ENEMY_SMART_OPTIONS.map(([, valor]) => valor)).toEqual([...G2D_ENEMY_SMARTS])
+  })
+
+  /** E o mapa que expande cada inteligência num pacote de comportamentos. */
+  it('cada inteligência tem um pacote no runtime, e só usa comportamento que existe', () => {
+    const mapa = gameTwoDRuntime.slice(
+      gameTwoDRuntime.indexOf('var ENEMY_SMART_COMBOS = {'),
+      gameTwoDRuntime.indexOf('function createSmartEnemyType'),
+    )
+    expect(mapa.length).toBeGreaterThan(150)
+    const niveis = [...mapa.matchAll(/^\s{4}'([a-z]+)':/gm)].map((m) => m[1])
+    expect(niveis.sort()).toEqual([...G2D_ENEMY_SMARTS].sort())
+    const usados = [...mapa.matchAll(/'([a-z-]+)'(?=[,\]])/g)].map((m) => m[1] ?? '')
+    expect(
+      usados.filter((nome) => !(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(nome)),
+    ).toEqual([])
+  })
+
+  /** Idem para os ajustes finos: o mapa que alimenta o aviso pedagógico. */
+  it('o mapa de donos de cada ajuste cobre exatamente os parâmetros da IR', () => {
+    const mapa = gameTwoDRuntime.slice(
+      gameTwoDRuntime.indexOf('var ENEMY_PARAM_OWNERS = {'),
+      gameTwoDRuntime.indexOf('var ENEMY_BEHAVIOR_LABELS = {'),
+    )
+    expect(mapa.length).toBeGreaterThan(200)
+    const donos = [...mapa.matchAll(/^\s{4}'([a-z]+)':/gm)].map((m) => m[1])
+    expect(donos.sort()).toEqual([...G2D_ENEMY_PARAMS].sort())
+  })
+
+  /**
+   * ⭐ A rede que faltava. A "cadeia de 9 pontos" do guia não cobre os mapas de
+   * CAMPO do Blockly, e foi ali que o bloco novo de inteligência nasceu órfão:
+   * ele declarava o tipo de inimigo e não aparecia em nenhum dos 8 seletores,
+   * porque ninguém o pôs no `*_DECL_BLOCKS`. Isso não quebra teste nenhum, não
+   * quebra o typecheck e não quebra o round-trip: só some da cara da criança.
+   */
+  it('todo bloco que DÁ NOME a alguma coisa está nos mapas de campo do Blockly', () => {
+    const picker = readFileSync(join(import.meta.dir, '../../../blockly/fields/FieldNamePicker.ts'))
+    const spritePicker = readFileSync(
+      join(import.meta.dir, '../../../blockly/fields/FieldSpritePicker.ts'),
+    )
+    const args = (block: (typeof gameTwoDBlocks)[number]) =>
+      [block.args0, block.args1, block.args2].flat().filter(Boolean) as Array<{
+        name?: string
+        type?: string
+      }>
+
+    // Quem CRIA um tipo de inimigo precisa alimentar o seletor de `enemytype` e,
+    // porque o tipo É um grupo, também o de `group`.
+    const criamTipo = gameTwoDBlocks.filter(
+      (b) =>
+        /Criar tipo de inimigo/.test(String(b.message0)) &&
+        args(b).some((a) => a.name === 'NAME' && a.type === 'field_input'),
+    )
+    expect(criamTipo.length, 'anti-vácuo: nenhum criador de tipo encontrado').toBeGreaterThan(1)
+    for (const block of criamTipo) {
+      expect(String(picker), `${block.type}: falta nos DECL do FieldNamePicker`).toContain(
+        `${block.type}: ['NAME']`,
+      )
+    }
+
+    // Quem dá um nome LOCAL ao item do corpo (o campo ANAME) precisa alimentar o
+    // seletor de sprite com escopo, senão a criança tem que digitar.
+    const comNomeLocal = gameTwoDBlocks.filter((b) => args(b).some((a) => a.name === 'ANAME'))
+    expect(comNomeLocal.length, 'anti-vácuo: nenhum bloco com nome local').toBeGreaterThan(3)
+    const binders = String(spritePicker).slice(
+      String(spritePicker).indexOf('const SPRITE_LOOP_BINDERS'),
+    )
+    for (const block of comNomeLocal) {
+      expect(binders, `${block.type}: falta em SPRITE_LOOP_BINDERS`).toContain(`${block.type}: [`)
+    }
+  })
+
+  /**
+   * A ordem da gaveta ENSINA a receita. Quem arrasta os primeiros blocos que vê
+   * tem que chegar a um inimigo na tela: criar, soltar, atualizar, desenhar. Um
+   * bloco novo inserido no meio (foi o que quase aconteceu com o "com
+   * inteligência") empurra o "Desenhar" para baixo da dobra, e o sintoma é a
+   * tela vazia sem erro nenhum. O comentário no `blocks.ts` prometia isso e
+   * nada cobrava.
+   */
+  it('a subcategoria de Inimigos abre pela receita mínima, nessa ordem', () => {
+    const sub = (
+      gameTwoDToolboxCategory.contents as Array<{
+        name?: string
+        contents?: Array<{ type?: string }>
+      }>
+    ).find((c) => String(c.name ?? '').includes('Inimigos'))
+    const tipos = (sub?.contents ?? []).map((b) => b.type)
+    expect(tipos.slice(0, 5)).toEqual([
+      'sz_g2d_define_enemy_type', // criar (o caminho)
+      'sz_g2d_define_enemy_smart', // criar (o atalho, logo ao lado)
+      'sz_g2d_spawn_enemy', // soltar
+      'sz_g2d_update_enemy_type', // atualizar
+      'sz_g2d_draw_enemy_type', // desenhar
+    ])
+  })
+
+  /**
+   * A outra metade da mesma rede, do lado do IR. Um bloco que DECLARA um nome
+   * aparece em dois mapas que vivem em arquivos diferentes: o do schema (que dá
+   * o símbolo e o escopo) e o do `programmingReferences` (que valida quem usa o
+   * nome). Faltar no segundo não quebra nada visível na hora: o jogo roda, o
+   * bloco encaixa, e a reprovação só aparece quando a criança APONTA para o
+   * nome, que é exatamente o motivo de o campo existir. Aconteceu duas vezes
+   * (o spawn nomeado em grupo e o tipo com inteligência), as duas em silêncio.
+   */
+  it('todo bloco do Jogo 2D que declara um nome está nos DOIS mapas de declaração', () => {
+    const chaves = (fonte: string, nome: string) => {
+      const inicio = fonte.indexOf(`const ${nome}`)
+      expect(inicio, `${nome}: não achei o mapa`).toBeGreaterThan(-1)
+      const corpo = fonte.slice(inicio, fonte.indexOf('\n}', inicio))
+      return new Set([...corpo.matchAll(/'(g2d:[A-Za-z]+)':/g)].map((m) => m[1] as string))
+    }
+    const doSchema = chaves(
+      readFileSync(join(import.meta.dir, '../../../ir/schema.ts'), 'utf8'),
+      'G2D_DECLARATION_FIELDS',
+    )
+    const dasReferencias = chaves(
+      readFileSync(join(import.meta.dir, '../../../ir/programmingReferences.ts'), 'utf8'),
+      'VARIABLE_DECLARATION_FIELDS',
+    )
+    expect(doSchema.size, 'anti-vácuo: o mapa do schema veio vazio').toBeGreaterThan(15)
+    expect([...doSchema].filter((tipo) => !dasReferencias.has(tipo))).toEqual([])
+  })
+
+  /**
+   * E a metade de dentro: bloco com CORPO que batiza o item (o "chamado ⟨chefe⟩"
+   * dos eventos de inimigo) precisa entrar no `g2dLocalNames`, senão o schema
+   * recusa o nome que o próprio bloco acabou de criar. O tooltip vende usar o
+   * nome ali dentro; sem esta linha a criança lê "o nome ainda não foi criado".
+   */
+  it('todo evento do Jogo 2D que batiza o item aparece no g2dLocalNames', () => {
+    const fonte = readFileSync(join(import.meta.dir, '../../../ir/schema.ts'), 'utf8')
+    // Cada variante do zod vai de um z.literal ao próximo: o trecho entre eles
+    // é o corpo daquele tipo.
+    const comItemName = fonte
+      .split("z.literal('")
+      .slice(1)
+      .filter((trecho) => trecho.startsWith('g2d:') && /\bitemName:/.test(trecho))
+      .map((trecho) => trecho.slice(0, trecho.indexOf("'")))
+    expect(comItemName.length, 'anti-vácuo: nenhum tipo com itemName').toBeGreaterThan(4)
+    const funcao = fonte.slice(
+      fonte.indexOf('function g2dLocalNames'),
+      fonte.indexOf('function validateG2DReferenceValue'),
+    )
+    for (const tipo of comItemName) {
+      expect(funcao, `${tipo}: falta o case em g2dLocalNames`).toContain(`case '${tipo}':`)
+    }
+  })
+
+  /**
+   * O tooltip do "Ajustar" LISTA quem aproveita cada valor, e essa prosa já ficou
+   * para trás duas vezes seguidas. A criança lê o menu e o tooltip, não o mapa:
+   * um dono que não aparece ali é um botão que ela não vai apertar.
+   */
+  it('o tooltip do Ajustar cita todo comportamento que aproveita algum valor', () => {
+    const ajustar = gameTwoDBlocks.find((b) => b.type === 'sz_g2d_enemy_type_param')
+    const tooltip = String(ajustar?.tooltip ?? '')
+    const mapa = gameTwoDRuntime.slice(
+      gameTwoDRuntime.indexOf('var ENEMY_PARAM_OWNERS = {'),
+      gameTwoDRuntime.indexOf('var ENEMY_BEHAVIOR_LABELS = {'),
+    )
+    // O rótulo do dropdown é como a criança lê o comportamento no tooltip.
+    const rotulo = new Map(
+      GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS.map(([texto, valor]) => [
+        valor,
+        texto.split(' (')[0] ?? '',
+      ]),
+    )
+    const donos = new Set([...mapa.matchAll(/'([a-z-]+)'(?=[,\]])/g)].map((m) => m[1] ?? ''))
+    const ausentes = [...donos]
+      .filter((valor) => rotulo.has(valor))
+      .filter((valor) => !tooltip.includes(rotulo.get(valor) ?? 'sem-rotulo'))
+    expect(ausentes).toEqual([])
+  })
+
+  /** O mapa que traduz o valor do enum para o nome que ela lê nos avisos. */
+  it('todo comportamento tem nome curto para o Console citar', () => {
+    const mapa = gameTwoDRuntime.slice(
+      gameTwoDRuntime.indexOf('var ENEMY_BEHAVIOR_LABELS = {'),
+      gameTwoDRuntime.indexOf('function _enemyOwnerLabels'),
+    )
+    expect(mapa.length).toBeGreaterThan(200)
+    const nomeados = [...mapa.matchAll(/^\s{4}'([a-z-]+)':/gm)].map((m) => m[1] ?? '')
+    expect(nomeados.sort()).toEqual([...G2D_ENEMY_BEHAVIORS].sort())
+  })
+
+  it('as opções de ajuste fino são exatamente os parâmetros da IR', () => {
+    const ajustar = gameTwoDBlocks.find((b) => b.type === 'sz_g2d_enemy_type_param')
+    const args = (ajustar?.args0 ?? []) as Array<{
+      name?: string
+      options?: Array<[string, string]>
+    }>
+    const param = args.find((a) => a.name === 'PARAM')
+    expect(param?.options?.map(([, valor]) => valor)).toEqual([...G2D_ENEMY_PARAMS])
   })
 
   it('mantém o inventário da auditoria sincronizado com blocos e API reais', () => {

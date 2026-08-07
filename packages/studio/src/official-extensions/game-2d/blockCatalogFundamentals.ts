@@ -338,6 +338,80 @@ export const gameTwoDFundamentalBlocks = [
     tooltip: 'Para a música de fundo que estiver tocando.',
   },
 
+  // ---- Áudio de ARQUIVO (o som que a criança enviou) ----
+  // Tudo acima é inventado pelo computador na hora. Estes tocam o mp3/wav que
+  // ela importou em "Imagens e sons". Rótulos iguais aos do Mundo 3D e do Jogo
+  // 3D de propósito: é o mesmo gesto, e ela não deveria reaprender por app.
+  {
+    type: 'sz_g2d_load_sound',
+    // Carregar não toca nada — prepara no começo, e por isso não precisa de gesto.
+    placement: 'start-only-command',
+    message0: 'Carregar o som %1 do arquivo %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'moeda' },
+      { type: 'field_asset_picker', name: 'ASSET', text: '', kind: 'audio' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Prepara um som do projeto (envie o arquivo com o botão "🔊 Enviar som", em "Imagens e sons") e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+  },
+  {
+    type: 'sz_g2d_play_clip',
+    placement: 'command',
+    message0: 'Tocar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moeda', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Toca um som que você carregou, pelo apelido. Use quando algo acontecer no jogo.',
+  },
+  {
+    type: 'sz_g2d_stop_clip',
+    placement: 'command',
+    message0: 'Parar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moeda', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Para o som e volta ele para o começo.',
+  },
+  {
+    type: 'sz_g2d_play_track',
+    // `resource-creator`: dentro de um laço a faixa recomeçaria a cada quadro.
+    placement: 'resource-creator',
+    message0: 'Tocar a música %1 sem parar',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca uma música SUA (um arquivo que você enviou) em loop. Só uma música toca por vez: começar outra troca a que estava tocando. Repetir a mesma não recomeça a faixa.',
+  },
+  {
+    type: 'sz_g2d_stop_track',
+    placement: 'command',
+    message0: 'Parar a música',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desliga QUALQUER música que estiver tocando: a sua (de arquivo) e também a música de fundo pronta. Na dúvida, use este.',
+  },
+  {
+    type: 'sz_g2d_set_volume',
+    placement: 'command',
+    message0: 'Pôr o volume em %1',
+    args0: [{ type: 'input_value', name: 'LEVEL', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Volume de 0 (mudo) a 10 (bem alto). Vale para os sons que você enviou.',
+  },
+
   // ---- Tier 1: Mira e contas ----
   {
     type: 'sz_g2d_aim_at',

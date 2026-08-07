@@ -114,10 +114,18 @@ export interface GameTwoDEnemyTypeOptions extends GameTwoDSpriteOptions {
   dmg?: number
 }
 
+export interface GameTwoDSmartEnemyTypeOptions extends GameTwoDEnemyTypeOptions {
+  /** burra | basica | avancada | ultra | rei — cada uma semeia um pacote de comportamentos. */
+  smart?: string
+}
+
 export interface GameTwoDEnemyType extends GameTwoDGroup {
   bullets: GameTwoDGroup
   config: {
+    /** O comportamento de NASCENÇA; nunca muda (o "Somar" mexe só em `behaviors`). */
     behavior: string
+    /** Os comportamentos somados, em ordem — a fonte da verdade do "atualizar". */
+    behaviors: string[]
     color: string
     image: string
     hp: number
@@ -286,6 +294,18 @@ export interface GameTwoDAudioApi {
   playMusic(name: string): void
   stopMusic(): void
   playNote(note: string, milliseconds: number): void
+  /**
+   * Áudio de ARQUIVO (o que a criança enviou), em oposição a tudo acima, que é
+   * sintetizado. `clip`/`track` em vez de `sound`/`music` porque esses dois já
+   * pertencem aos blocos de bip e de melodia pronta — e bloco que a criança já
+   * usa não muda de forma.
+   */
+  loadSound(name: string, asset: string): void
+  playClip(name: string): void
+  stopClip(name: string): void
+  playTrack(name: string): void
+  stopTrack(): void
+  setSoundVolume(level: number): void
   playShoot(): void
   playExplosion(): void
   playJump(): void
@@ -511,6 +531,7 @@ export interface GameTwoDArcadeApi {
     fn: (sprite: GameTwoDSprite) => void,
   ): void
   createEnemyType(options?: GameTwoDEnemyTypeOptions): GameTwoDEnemyType
+  createSmartEnemyType(options?: GameTwoDSmartEnemyTypeOptions): GameTwoDEnemyType
   setEnemyStateAnimation(
     type: GameTwoDEnemyType,
     state: string,
@@ -520,6 +541,7 @@ export interface GameTwoDArcadeApi {
     fps: number,
   ): void
   setEnemyTypeParam(type: GameTwoDEnemyType, param: string, value: number): void
+  addEnemyTypeBehavior(type: GameTwoDEnemyType, behavior: string): void
   spawnEnemy(type: GameTwoDEnemyType, x: number, y: number): GameTwoDSprite | null
   updateEnemyType(
     type: GameTwoDEnemyType,
@@ -528,13 +550,20 @@ export interface GameTwoDArcadeApi {
   ): void
   drawEnemyType(ctx: GameTwoDContext, type: GameTwoDEnemyType): void
   onEnemyDefeated(type: GameTwoDEnemyType, fn: (sprite: GameTwoDSprite) => void, id?: string): void
+  onEnemyHurt(type: GameTwoDEnemyType, fn: (sprite: GameTwoDSprite) => void, id?: string): void
   overlapEnemyShots(
     getSprite: () => GameTwoDSprite | null,
     type: GameTwoDEnemyType,
     fn: (shot: GameTwoDSprite) => void,
   ): void
+  overlapEnemyBeams(
+    getSprite: () => GameTwoDSprite | null,
+    type: GameTwoDEnemyType,
+    fn: (enemy: GameTwoDSprite) => void,
+  ): void
   enemyDamage(sprite: GameTwoDSprite): number
   hurtByEnemy(sprite: GameTwoDSprite, enemy: GameTwoDSprite): void
+  stompEnemyType(sprite: GameTwoDSprite, type: GameTwoDEnemyType, bounce: number): void
   jumpOnGround(sprite: GameTwoDSprite, ctx: GameTwoDContext, jump: number): void
   createDino(options?: GameTwoDSpriteOptions & { size?: number }): GameTwoDSprite
   controlDino(sprite: GameTwoDSprite, ctx: GameTwoDContext, jump: number): void
@@ -642,6 +671,12 @@ export const GAME_TWO_D_API_KEYS = [
   'playMusic',
   'stopMusic',
   'playNote',
+  'loadSound',
+  'playClip',
+  'stopClip',
+  'playTrack',
+  'stopTrack',
+  'setSoundVolume',
   'distance',
   'angleTo',
   'aimAt',
@@ -772,15 +807,20 @@ export const GAME_TWO_D_API_KEYS = [
   'playExplosion',
   'overlapSpriteGroup',
   'createEnemyType',
+  'createSmartEnemyType',
   'setEnemyStateAnimation',
   'setEnemyTypeParam',
+  'addEnemyTypeBehavior',
   'spawnEnemy',
   'updateEnemyType',
   'drawEnemyType',
   'onEnemyDefeated',
+  'onEnemyHurt',
   'overlapEnemyShots',
+  'overlapEnemyBeams',
   'enemyDamage',
   'hurtByEnemy',
+  'stompEnemyType',
   'rotateSprite',
   'pointSprite',
   'thrust',

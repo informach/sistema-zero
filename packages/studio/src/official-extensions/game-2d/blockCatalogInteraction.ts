@@ -2,6 +2,8 @@ import type { BlockDefinition } from '../../blockly/blocks/types'
 import {
   GAME_TWO_D_BLOCK_COLOR as C,
   GAME_TWO_D_EVENT_COLOR as EVENT_C,
+  GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS,
+  GAME_TWO_D_ENEMY_SMART_OPTIONS,
 } from './blockCatalogShared'
 
 export const gameTwoDInteractionBlocks = [
@@ -280,18 +282,7 @@ export const gameTwoDInteractionBlocks = [
       'Criar tipo de inimigo %1 que é %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'zumbi' },
-      {
-        type: 'field_dropdown',
-        name: 'BEHAVIOR',
-        options: [
-          ['patrulha (anda e volta)', 'patrulha'],
-          ['perseguidor (vai atrás do alvo)', 'perseguidor'],
-          ['voador (vai e volta no ar)', 'voador'],
-          ['voador (sobe e desce)', 'voador-vertical'],
-          ['saltador (pula de tempos em tempos)', 'saltador'],
-          ['atirador (fica no chão e atira no alvo)', 'atirador'],
-        ],
-      },
+      { type: 'field_dropdown', name: 'BEHAVIOR', options: [...GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS] },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#e4573d' },
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
       // Figura desenhada ("Desenhar a figura … assim") como visual do tipo —
@@ -308,7 +299,52 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha o comportamento e os atributos UMA vez, e solte quantos inimigos desse tipo quiser. O visual segue esta ordem: figura desenhada > imagem > cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).',
+      'Você escolhe o jeito dele: um comportamento agora, e mais quantos quiser depois com o "O tipo de inimigo ... também é ...". Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha os atributos UMA vez e solte quantos quiser. Monte no "Ao iniciar": ele roda uma vez só. O visual segue esta ordem: figura desenhada > imagem > cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).' +
+      'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+  },
+  {
+    // Irmão do de cima, com um campo SÓ no lugar do comportamento: cada
+    // inteligência já traz o pacote pronto de andar e atirar. É a porta de
+    // entrada para quem quer um inimigo bom sem saber a receita.
+    type: 'sz_g2d_define_enemy_smart',
+    placement: 'start-only-command',
+    message0:
+      'Criar tipo de inimigo %1 com inteligência %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'alien' },
+      { type: 'field_dropdown', name: 'SMART', options: [...GAME_TWO_D_ENEMY_SMART_OPTIONS] },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#e4573d' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_name_picker', name: 'SHAPE', text: '', kind: 'shape' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'DMG', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O ATALHO: escolha só o quanto ele é esperto e o resto vem pronto, inclusive os ajustes. Quer montar peça por peça? Use o "Criar tipo de inimigo" logo acima. Monte no "Ao iniciar". Dá para somar mais coisa depois com o "O tipo de inimigo ... também é ..." (é assim que um inimigo burro ganha um raio). ⚠️ Se você somar um jeito de ANDAR, ele TROCA o andar que veio com a inteligência; somar uma AÇÃO (atirar, raio, espinho) acrescenta.' +
+      'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+  },
+  {
+    type: 'sz_g2d_enemy_add_behavior',
+    placement: 'command',
+    message0: 'O tipo de inimigo %1 também é %2',
+    args0: [
+      { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
+      { type: 'field_dropdown', name: 'BEHAVIOR', options: [...GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS] },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Junte quantos comportamentos quiser no mesmo inimigo. Os jeitos de se mexer não se somam: se você juntar dois, vale o último que somou. Já as ações se juntam todas, então patrulha mais atirador anda E atira. O lugar normal é no "Ao iniciar", logo depois de criar o tipo; mas dá para somar no meio do jogo também, e o inimigo fica mais difícil na fase seguinte.' +
+      'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
     type: 'sz_g2d_enemy_state_anim',
@@ -353,12 +389,21 @@ export const gameTwoDInteractionBlocks = [
       {
         type: 'field_dropdown',
         name: 'PARAM',
+        // ⚠️ O parêntese diz PARA QUE SERVE, não de quem é: quase todo valor
+        // aqui serve a vários comportamentos, e nomear só um faz a criança
+        // achar que não é ali (o alcance, por exemplo, é de sete deles).
         options: [
-          ['força do pulo (saltador)', 'pulo'],
-          ['pular a cada tantos quadros (saltador)', 'ritmo'],
-          ['alcance do voo (voador)', 'alcance'],
-          ['atirar a cada tantos quadros (atirador)', 'cadencia'],
-          ['velocidade do tiro (atirador)', 'tiro'],
+          ['força do pulo', 'pulo'],
+          ['pular a cada tantos quadros', 'ritmo'],
+          ['alcance (o tamanho do voo, ou a distância para reagir)', 'alcance'],
+          [
+            'a cada tantos quadros ele age (atirar, bombardear, sumir, carregar o raio)',
+            'cadencia',
+          ],
+          ['velocidade do tiro', 'tiro'],
+          ['voltar depois de tantos quadros', 'voltar'],
+          ['vida dos próximos que nascerem', 'vida'],
+          ['o raio fica ligado por tantos quadros', 'duracao'],
         ],
       },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
@@ -368,14 +413,18 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ajuste fino do comportamento do tipo: força/ritmo do pulo (saltador), alcance do voo (voador) e cadência/velocidade do tiro (atirador).',
+      'Ajuste fino do comportamento do tipo. Ajuste no "Ao iniciar", logo depois de criar o tipo. Força e ritmo do pulo: saltador. Alcance: voador, sobe e desce, rondador, zigue-zague, mergulhador, teleporte, arrancada e medroso (para quem anda no chão, o alcance é a distância que faz o inimigo reagir). A cada tantos quadros ele age: atirador, atirador alinhado, atirador esperto, atirador em leque, bombardeiro, teleporte, chefão e raio. Velocidade do tiro: atirador, atirador alinhado, atirador esperto, atirador em leque, bombardeiro e chefão. Voltar: renascer. Quanto tempo o raio fica ligado: raio. A vida vale para todos, e só para os que nascerem daqui para a frente.',
   },
   {
     type: 'sz_g2d_spawn_enemy',
     placement: 'command',
-    message0: 'Soltar um inimigo do tipo %1 em x %2 y %3',
+    message0: 'Soltar um inimigo do tipo %1 chamado %2 em x %3 y %4',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
+      // Nome OPCIONAL: vazio, a chave nem entra na IR e a saída fica igual à de
+      // antes. Preenchido, o bloco DECLARA o inimigo solto, e ela consegue
+      // apontar para AQUELE chefão (barra de vida, buff, tela) sem laço nenhum.
+      { type: 'field_input', name: 'NAME', text: '' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
@@ -383,7 +432,8 @@ export const gameTwoDInteractionBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Solta um inimigo NOVO do tipo em x/y, já com a vida, o dano e as animações do tipo.',
+    tooltip:
+      'Solta um inimigo NOVO do tipo em x/y, já com a vida, o dano e as animações do tipo. Fora do "a cada quadro"; para ondas, ponha dentro de "A cada N quadros fazer". O "chamado" é opcional: preencha só quando quiser falar DESTE inimigo depois (a barra de vida do chefão, por exemplo).',
   },
   {
     type: 'sz_g2d_update_enemy_type',
@@ -449,6 +499,43 @@ export const gameTwoDInteractionBlocks = [
       'Use DENTRO do "a cada quadro". Para cada tiro dos inimigos do tipo que acertar o sprite, o tiro SOME e o "fazer" roda com ele (ex.: machucar o jogador).',
   },
   {
+    type: 'sz_g2d_on_enemy_beam_hit',
+    placement: 'loop-command',
+    bodyExecution: 'sync-callback',
+    message0: 'Para cada raio do tipo %1 que acertar o sprite %2',
+    args0: [
+      { type: 'field_name_picker', name: 'TYPE', text: 'rei', kind: 'enemytype' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+    ],
+    message1: 'chamar o dono do raio de %1',
+    args1: [{ type: 'field_input', name: 'ANAME', text: 'chefe' }],
+    message2: 'fazer %1',
+    args2: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Use DENTRO do "a cada quadro". Enquanto o feixe estiver LIGADO e encostando no sprite, o "fazer" roda com o inimigo dono do raio. Ao contrário do tiro, o raio NÃO some ao acertar: ele continua ligado até acabar. Ponha dentro o "Machucar o sprite com o dano de contato do inimigo" e ele já cuida do ritmo do dano.',
+  },
+  {
+    type: 'sz_g2d_on_enemy_hurt',
+    placement: 'event',
+    message0: 'Quando um inimigo do tipo %1 levar dano (chamado %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'TYPE', text: 'rei', kind: 'enemytype' },
+      { type: 'field_input', name: 'ANAME', text: 'chefe' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Roda toda vez que um inimigo desse tipo PERDE vida e continua vivo. É o coração de um chefão em várias fases: leia a vida dele aqui dentro e, quando chegar na metade, deixe-o furioso (mudar a cor, atirar mais rápido, juntar um comportamento). Quem chegou a zero não passa por aqui, e sim pelo "Quando um inimigo do tipo ... for derrotado".',
+  },
+  {
     type: 'sz_g2d_hurt_by_enemy',
     placement: 'command',
     message0: 'Machucar o sprite %1 com o dano de contato do inimigo %2',
@@ -461,7 +548,24 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano.',
+      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo.',
+  },
+  {
+    type: 'sz_g2d_stomp_enemy',
+    placement: 'command',
+    message0:
+      'Derrotar os inimigos do tipo %1 quando o sprite %2 pular em cima (dando um pulinho de %3)',
+    args0: [
+      { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'input_value', name: 'BOUNCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O pulo em cima do inimigo: se o sprite estiver CAINDO nele, o inimigo é derrotado e o sprite dá um quiquinho para cima. Encostar de lado não derrota, e ali quem age é o "Machucar o sprite com o dano de contato". Use dentro do "a cada quadro do jogo".',
   },
   {
     type: 'sz_g2d_enemy_damage',

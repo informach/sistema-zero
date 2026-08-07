@@ -37,6 +37,9 @@ const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string; nameF
   // ele nasce é pego pela validação da IR, com recado claro.
   sz_g2d_spawn_in_group: { color: 'COLOR' },
   sz_g2d_spawn_image_in_group: { image: 'IMAGE' },
+  // Soltar um inimigo "chamado ⟨X⟩": mesma régua dos dois de cima. É o que
+  // deixa a barra de vida do chefão apontar para ELE, sem laço.
+  sz_g2d_spawn_enemy: {},
   sz_g2d_create_ship: { color: 'BODY' }, // criar nave (Kit espaço)
   sz_g2d_create_dino: { color: 'COLOR' }, // criar dinossauro (Kit dino)
   sz_g2d_place_thrower: { color: 'COLOR' }, // pôr o gorila (Kit gorilas)
@@ -82,6 +85,8 @@ const SPRITE_LOOP_BINDERS: Record<string, string[]> = {
   sz_g2d_on_sprite_group_overlap: ['ANAME'],
   sz_g2d_on_enemy_defeated: ['ANAME'],
   sz_g2d_on_enemy_shot_hit: ['ANAME'],
+  sz_g2d_on_enemy_hurt: ['ANAME'],
+  sz_g2d_on_enemy_beam_hit: ['ANAME'],
 }
 
 /**

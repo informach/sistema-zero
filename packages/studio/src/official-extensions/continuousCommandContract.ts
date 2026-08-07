@@ -8,6 +8,7 @@ export const CONTINUOUS_EXTENSION_COMMANDS = [
   // este bloco do irmão fixo ("Pôr o cenário atrás de tudo"), que é start-only.
   { blockType: 'sz_g2d_draw_backdrop', statementType: 'g2d:drawBackdrop' },
   { blockType: 'sz_g2d_on_enemy_shot_hit', statementType: 'g2d:onEnemyShotHit' },
+  { blockType: 'sz_g2d_on_enemy_beam_hit', statementType: 'g2d:onEnemyBeamHit' },
   { blockType: 'sz_g2d_on_group_overlap', statementType: 'g2d:onGroupOverlap' },
   { blockType: 'sz_g2d_on_sprite_group_overlap', statementType: 'g2d:onSpriteGroupOverlap' },
   { blockType: 'sz_gk_overlap_groups', statementType: 'gk:overlapGroups' },

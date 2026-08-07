@@ -418,7 +418,6 @@ export const gameTwoDArcadeGorillasRuntime = `  // ---- Kit gorilas: batalha de 
 
   _registerRuntimeDomain('arcade-kits', {
     reset: function () {
-      _enemyTypeCreates = 0;
       _scene = 'inicio';
       _stars = null;
       _jumpTapPrev = false;

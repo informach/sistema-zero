@@ -38,6 +38,7 @@ export const GAME_KIT_3D_PERSISTENT_COMMANDS = [
 
 export const GAME_2D_PERSISTENT_COMMANDS = [
   { blockType: 'sz_g2d_play_music', statementType: 'g2d:playMusic' },
+  { blockType: 'sz_g2d_play_track', statementType: 'g2d:playTrack' },
 ] as const
 
 export const GAME_3D_PERSISTENT_COMMANDS = [

@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.59.0',
+  version: '0.62.1',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -326,7 +326,24 @@ precisar de arquivos:
   diretamente numa função, nunca dentro de **🔁 Enquanto estiver rodando**. Repetir o bloco
   com a mesma música mantém a faixa atual sem recomeçar. **Parar a música de fundo** silencia.
 
-Lembrete: o navegador só deixa o som tocar **depois** de um clique ou tecla do jogador.
+### Toque os SEUS sons
+
+Os blocos acima inventam o som na hora. Estes tocam um arquivo que **você** enviou: use o botão
+**Enviar som** (o do alto-falante) em "Imagens e sons", na barra de cima. Serve mp3, wav e ogg.
+
+- **Carregar o som … do arquivo …**. Prepara o arquivo e dá um apelido a ele ("moeda", "risada").
+  Vai em **⚙️ Ao iniciar**, porque ele não toca nada: só deixa pronto.
+- **Tocar o som …**. Toca uma vez, pelo apelido. Use quando algo acontecer no jogo.
+- **Parar o som …**. Para e volta para o começo.
+- **Tocar a música … sem parar**. Toca a SUA música em loop. Só uma toca por vez: começar outra
+  troca a que estava tocando, e repetir a mesma não recomeça a faixa.
+- **Parar a música**. Desliga qualquer música: a sua e também a de fundo pronta. Na dúvida, use
+  este.
+- **Pôr o volume em …**. De 0 (mudo) a 10 (bem alto).
+
+Lembrete: o navegador só deixa o som tocar **depois** de um clique ou tecla do jogador. Se você
+pedir um som antes disso, ele **espera** o primeiro clique e toca em seguida, em vez de sumir
+calado.
 
 ### Resolva regras comuns do jogo
 
@@ -426,24 +443,107 @@ Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de anima
 
 ### Crie tipos de inimigo
 
-Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario):
+Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario).
 
-- **Criar tipo de inimigo**. Defina UMA vez comportamento e atributos (vida, velocidade, dano
-  de contato, tamanho e o visual: cor, imagem OU uma **figura** desenhada com "Desenhar a
-  figura … assim"; a figura vence a imagem, que vence a cor): patrulha (anda e vira na
-  parede/borda), perseguidor, voador (deitado ou em pé), saltador e atirador (fica no chão e
-  atira no alvo).
-  A patrulha fica horizontal em jogos top-down; para ela cair num jogo de plataforma,
-  defina o valor em **Ao iniciar** e aplique a gravidade ao grupo do tipo antes de atualizá-lo.
-- **Soltar um inimigo do tipo**. Solte quantos quiser, cada um nasce com a vida/dano do tipo.
-- **Atualizar os inimigos do tipo** (dentro do "a cada quadro"). Move pelo comportamento,
+#### Os dois jeitos de criar um tipo
+
+- **Criar tipo de inimigo**. Você escolhe o jeito dele: UM comportamento agora, e mais quantos
+  quiser depois. Defina de uma vez os atributos (vida, velocidade, dano de contato, tamanho e o
+  visual: cor, imagem OU uma **figura** desenhada com "Desenhar a figura … assim"; a figura vence
+  a imagem, que vence a cor).
+- **Criar tipo de inimigo … com inteligência …**. O atalho: escolha só o quanto o inimigo é
+  esperto e o resto vem pronto, inclusive os ajustes. São cinco níveis, do mais bobo ao chefão:
+  - **burra** (patrulha + bombardeiro): anda de um lado para o outro soltando tiros para baixo,
+    sem olhar para onde você está.
+  - **básica** (patrulha + atirador alinhado): anda, e só atira quando você passa embaixo dele.
+  - **avançada** (perseguidor + atirador): vai atrás de você e mira em você.
+  - **ultra** (perseguidor + atirador esperto): mira onde você VAI estar. Dessa não dá para
+    escapar andando reto, só mudando de direção. Ela já vem com o tiro mais rápido, que é o que
+    faz a mira adiantada funcionar.
+  - **rei**: o chefão. Perseguidor, atirador esperto e raio, com cinco vezes mais vida (mas anda
+    mais devagar).
+
+  Os nomes entre parênteses são comportamentos do outro menu: a inteligência é um atalho que já
+  junta as peças por você.
+
+#### Os comportamentos, e como somar
+
+- **O tipo de inimigo … também é …**. Aqui mora a graça: um inimigo pode ter VÁRIOS
+  comportamentos ao mesmo tempo. Patrulha mais atirador anda E atira. Voador mais bombardeiro
+  passa por cima soltando tiros. Empilhe quantos quiser, e pode somar no meio do jogo para o
+  inimigo ficar mais difícil na fase seguinte.
+
+  A regra é simples: os jeitos de se mexer não se somam, então se você juntar dois vale o último
+  que somou; já as ações se juntam todas. ⚠️ Isso vale também em cima da inteligência: somar um
+  jeito de andar TROCA o andar que veio com ela.
+
+Os comportamentos, em três famílias:
+
+- **Anda no chão**: patrulha (anda e vira na parede ou na borda), saltador, arrancada (fica
+  quieto e sai correndo quando o alvo chega perto), medroso (foge quando o alvo chega perto),
+  parado e perseguidor de lado (segue você sem mudar de altura, o jeito clássico dos jogos de
+  nave). O perseguidor também vai atrás do alvo, mas por todo lado: ele sobe pelo ar atrás de
+  você e nunca pousa.
+- **Voa**: voador (para os lados, ou subindo e descendo), rondador (voa em círculo em volta de
+  onde nasceu), zigue-zague, mergulhador (mergulha no alvo que passa por baixo) e teleporte
+  (some e reaparece do lado do alvo).
+- **O que ele faz**: atirador (mira no alvo), atirador alinhado (só atira quando o alvo passa
+  bem embaixo ou bem em cima dele), atirador esperto (mira onde o alvo VAI estar, se o tiro dele
+  for mais rápido que o alvo), atirador em leque (3 tiros de uma vez), bombardeiro (solta tiros
+  para baixo, sem precisar de alvo), raio, espinho (nunca morre, só machuca), renascer (volta um
+  tempinho depois de morrer) e chefão (vida 5 vezes maior, mais lento, atira em leque).
+
+Quem anda no chão fica na horizontal em jogos top-down; para cair num jogo de plataforma,
+defina a gravidade em **Ao iniciar** e aplique a gravidade ao grupo do tipo antes de atualizá-lo.
+Quem voa nunca cai.
+
+#### O raio
+
+O **raio** é o único ataque que não é um tirinho, e o único cujo dano vem de um bloco separado.
+Ele tem três tempos: primeiro avisa por um segundo, com um risco fino piscando (é a sua chance de
+sair da frente); depois liga um feixe grosso, que desce reto do inimigo até a borda de baixo e
+machuca quem estiver embaixo dele; e então recarrega.
+
+Para o feixe machucar, use **Para cada raio do tipo … que acertar o sprite …** dentro do "a cada
+quadro" e ponha lá dentro o "Machucar o sprite com o dano de contato do inimigo". Sem esse bloco o
+raio aparece e não faz nada. Diferente do tiro, o raio NÃO some ao acertar: ele fica ligado até o
+tempo acabar.
+
+#### Soltar, atualizar, desenhar e reagir
+
+- **Soltar um inimigo do tipo**. Solte quantos quiser, cada um nasce com a vida e o dano do tipo.
+  O campo **chamado** é opcional: preencha quando quiser falar DAQUELE inimigo depois, por
+  exemplo para desenhar a barra de vida do chefão.
+- **Atualizar os inimigos do tipo** (dentro do "a cada quadro"). Move pelos comportamentos,
   anima, atira e REMOVE os derrotados (vida 0 → partículas + "Quando for derrotado").
-- **Desenhar os inimigos do tipo**. Todos + os tiros deles.
-- **Quando um tiro acertar o sprite** + **Machucar o sprite com o dano do inimigo**. Dano de
-  contato com INVENCIBILIDADE de piscar (não drena a vida no encostão contínuo).
+- **Desenhar os inimigos do tipo**. Todos, mais os tiros e o raio deles.
+- **Animação dos inimigos do tipo no estado …**. Guarda a animação de um estado para TODOS os
+  inimigos do tipo (o "Atualizar" troca sozinho).
+- **Quando um tiro acertar o sprite** e **Para cada raio do tipo … que acertar o sprite …**. Os
+  dois jeitos de o ataque do inimigo alcançar você.
+- **Machucar o sprite com o dano do inimigo**. Tira a vida e faz o sprite piscar; enquanto pisca
+  ele não leva dano de novo, então ficar encostado não acaba com a vida dele de uma vez.
+- **Quando um inimigo do tipo … levar dano**. Roda toda vez que um inimigo desse tipo perde vida
+  e continua vivo. É o coração de um chefão em fases: leia a vida dele aqui dentro e, na metade,
+  deixe-o furioso (trocar a cor, atirar mais rápido, juntar um comportamento novo).
+- **Derrotar os inimigos do tipo quando o sprite pular em cima**. O pulo clássico de plataforma:
+  caindo em cima derrota o inimigo e dá um quiquinho; encostar de lado não derrota.
+- **Ajustar no tipo de inimigo…**. Força e ritmo do pulo (saltador); alcance (quem voa e também
+  medroso e arrancada, para quem o alcance é a distância que faz o inimigo reagir); de quanto em
+  quanto tempo ele age e a velocidade do tiro (quem atira, e o raio usa o mesmo relógio para
+  recarregar); quantos quadros o raio fica ligado; voltar depois de tantos quadros (renascer); e a
+  vida dos próximos que nascerem.
 - O tipo É um grupo: os blocos de **Muitos (grupos)** funcionam nele. Patrulha em mapa de tiles:
   some o "Impedir de atravessar" num "Para cada" que o inimigo vira sozinho na parede.
-- **Ajustar no tipo de inimigo…**. Força/ritmo do pulo, alcance do voo, cadência/velocidade do tiro.
+
+#### Duas receitas que a gente monta com o que já existe
+
+- **Um inimigo que às vezes não toma dano**: no bloco de colisão do seu tiro com ele, ponha o
+  "Mudar a vida" DENTRO de um **se ⟨tem chance de 50%?⟩**. Metade dos tiros passa batido. Ponha um
+  "Fazer o sprite piscar" no senão, para dar o barulhinho de escudo.
+- **Um chefão que renasce mais forte**: crie DOIS tipos no "Ao iniciar" (o rei e o rei renascido,
+  com mais vida). No **Quando um inimigo do tipo ⟨rei⟩ for derrotado**, solte um do tipo
+  ⟨rei renascido⟩ na posição dele. Ali dentro também vai o prêmio que você quiser dar ao jogador.
 
 ### Desenhe personagens por código
 

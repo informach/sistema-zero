@@ -5,6 +5,7 @@ import {
   G2D_ANIM_STATES,
   G2D_ENEMY_BEHAVIORS,
   G2D_ENEMY_PARAMS,
+  G2D_ENEMY_SMARTS,
   type JSExpr,
   type JSStatement,
 } from '#ir'
@@ -2842,11 +2843,12 @@ function readEnemyTypeOptions(
       const v = toExpr(prop.value, ctx)
       if (!isSimpleValue(v)) return null
       out[key] = v
-    } else if (key === 'behavior') {
+    } else if (key === 'behavior' || key === 'smart') {
       // Dropdown no bloco: literal fora do enum NÃO vira bloco (rawJS).
       if (prop.value?.type !== 'StringLiteral') return null
       const b = prop.value.value as string
-      if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(b)) return null
+      const enumeracao: readonly string[] = key === 'smart' ? G2D_ENEMY_SMARTS : G2D_ENEMY_BEHAVIORS
+      if (!enumeracao.includes(b)) return null
       out.behavior = b
     } else if (key === 'color' || key === 'image' || key === 'shape') {
       if (prop.value?.type !== 'StringLiteral') return null
@@ -3362,6 +3364,32 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'stopMusic':
       return { type: 'g2d:stopMusic' }
+    case 'loadSound': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'g2d:loadSound',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'playClip': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playClip', name: args[0].value as string }
+    }
+    case 'stopClip': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:stopClip', name: args[0].value as string }
+    }
+    case 'playTrack': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playTrack', name: args[0].value as string }
+    }
+    case 'stopTrack':
+      return args.length === 0 ? { type: 'g2d:stopTrack' } : null
+    case 'setSoundVolume': {
+      const level = toExpr(args[0], ctx)
+      return isSimpleValue(level) ? { type: 'g2d:setVolume', level } : null
+    }
     case 'playNote': {
       if (args[0]?.type !== 'StringLiteral') return null
       const ms = toExpr(args[1], ctx)
@@ -3668,6 +3696,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:setEnemyTypeParam', typeVar, param, value }
         : null
     }
+    case 'addEnemyTypeBehavior': {
+      // generator: SZGame2D.addEnemyTypeBehavior(tipo, "comportamento")
+      const typeVar = identifierName(args[0])
+      const behavior = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      return typeVar && behavior && (G2D_ENEMY_BEHAVIORS as readonly string[]).includes(behavior)
+        ? { type: 'g2d:enemyAddBehavior', typeVar, behavior }
+        : null
+    }
     case 'spawnEnemy': {
       // generator: SZGame2D.spawnEnemy(tipo, x, y)
       const typeVar = identifierName(args[0])
@@ -3705,6 +3741,34 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(args[1], source, ctx),
       }
     }
+    case 'onEnemyHurt': {
+      // generator: SZGame2D.onEnemyHurt(tipo, function (chefe) {…})
+      const typeVar = identifierName(args[0])
+      if (!typeVar || !isFn(args[1])) return null
+      const itemName = identifierName(args[1].params?.[0]) ?? 'inimigo'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyHurt',
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'overlapEnemyBeams': {
+      // generator: SZGame2D.overlapEnemyBeams(() => sprite, tipo, function (chefe) {…})
+      const spriteVar = arrowReturnIdentifier(args[0])
+      const typeVar = identifierName(args[1])
+      if (!spriteVar || !typeVar || !isFn(args[2])) return null
+      const itemName = identifierName(args[2].params?.[0]) ?? 'chefe'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyBeamHit',
+        spriteVar,
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
     case 'overlapEnemyShots': {
       // generator: SZGame2D.overlapEnemyShots(() => sprite, tipo, function (tiro) {…})
       const spriteVar = arrowReturnIdentifier(args[0])
@@ -3725,6 +3789,15 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const spriteVar = identifierName(args[0])
       const enemyVar = identifierName(args[1])
       return spriteVar && enemyVar ? { type: 'g2d:hurtByEnemy', spriteVar, enemyVar } : null
+    }
+    case 'stompEnemyType': {
+      // generator: SZGame2D.stompEnemyType(sprite, tipo, quique)
+      const spriteVar = identifierName(args[0])
+      const typeVar = identifierName(args[1])
+      const bounce = toExpr(args[2], ctx)
+      return spriteVar && typeVar && isSimpleValue(bounce)
+        ? { type: 'g2d:stompEnemy', spriteVar, typeVar, bounce }
+        : null
     }
     case 'drawFrame': {
       // generator: SZGame2D.drawFrame(ctx, sheet, index, x, y, w, h)
@@ -4536,6 +4609,10 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     if (args[0]?.type !== 'ObjectExpression') return null
     const o = readEnemyTypeOptions(args[0], ctx)
     if (!o) return null
+    // Espelho da guarda do irmão esperto: sem ela, um `{ smart: "burra" }` escrito
+    // à mão aqui viraria IR com um behavior que o zod recusa (e a Ponte quebra em
+    // vez de cair no código bruto).
+    if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(o.behavior)) return null
     return {
       type: 'g2d:defineEnemyType',
       varName: name,
@@ -4550,6 +4627,35 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
       w: o.w,
       h: o.h,
     }
+  }
+  if (method === 'createSmartEnemyType') {
+    // generator: const alien = SZGame2D.createSmartEnemyType({ smart, color, image, hp, ... })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readEnemyTypeOptions(args[0], ctx)
+    if (!o) return null
+    if (!(G2D_ENEMY_SMARTS as readonly string[]).includes(o.behavior)) return null
+    return {
+      type: 'g2d:defineEnemySmart',
+      varName: name,
+      smart: o.behavior,
+      color: o.color,
+      image: o.image,
+      ...(o.shape ? { shape: o.shape } : {}),
+      hp: o.hp,
+      speed: o.speed,
+      dmg: o.dmg,
+      w: o.w,
+      h: o.h,
+    }
+  }
+  if (method === 'spawnEnemy') {
+    // generator: const chefe = SZGame2D.spawnEnemy(rei, x, y)  (forma NOMEADA)
+    const typeVar = identifierName(args[0])
+    const x = toExpr(args[1], ctx)
+    const y = toExpr(args[2], ctx)
+    if (!typeVar || !isSimpleValue(x) || !isSimpleValue(y)) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:spawnEnemy', typeVar, varName: name, x, y }
   }
   if (method === 'createShip') {
     // generator: const nave = SZGame2D.createShip({ x, y, w, h, body, wings })

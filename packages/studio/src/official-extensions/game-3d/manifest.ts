@@ -91,7 +91,7 @@ em um evento ou em um construtor.
 
 ### Som
 
-- Há dois tipos de som aqui. **Nota** e **efeito** são inventados na hora pelo computador, e não precisam de arquivo nenhum. Já **"Tocar o som"** e **"Tocar a música"** tocam um arquivo que você enviou: use o botão **🔊 Enviar som** em "Imagens e sons", na barra de cima.
+- Há dois tipos de som aqui. **Nota** e **efeito** são inventados na hora pelo computador, e não precisam de arquivo nenhum. Já **"Tocar o som"** e **"Tocar a música"** tocam um arquivo que você enviou: use o botão **Enviar som** (o do alto-falante) em "Imagens e sons", na barra de cima.
 - Para usar um arquivo, primeiro **carregue** ele em **Ao iniciar** e dê um apelido ("Carregar o som **moeda** do arquivo …"). Depois é só usar o apelido nos outros blocos.
 - Só toca **uma música por vez**: começar outra troca a que estava tocando. Repetir a mesma não recomeça a faixa.
 - **O volume vai de 0 a 10** e vale para todos os sons do projeto.

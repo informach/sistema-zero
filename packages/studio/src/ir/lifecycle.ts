@@ -66,6 +66,8 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:stageBorder',
   // O cenário FIXO é de preparação: só no 'ao iniciar' (o por-quadro NÃO entra).
   'g2d:setBackdrop',
+  // Carregar o som prepara o arquivo e não toca nada: pertence ao "Ao iniciar".
+  'g2d:loadSound',
   'g2d:setStageDescription',
   'g2d:createSprite',
   'g2d:createImageSprite',
@@ -84,6 +86,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:loadSpritesheet',
   'g2d:setStateAnim',
   'g2d:defineEnemyType',
+  'g2d:defineEnemySmart',
   'g2d:enemyStateAnim',
   'g2d:createTileMapFromAsset',
   'g2d:createTileMap',

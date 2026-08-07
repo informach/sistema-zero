@@ -74,16 +74,27 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '😈 Inimigos',
     colour: '#8a55d7',
+    // A ORDEM ensina a receita mínima: criar, soltar, atualizar, desenhar. Quem
+    // arrasta os CINCO primeiros (escolhendo UM dos dois criadores) já vê
+    // inimigo na tela; sem o desenhar, a tela fica vazia em silêncio.
+    // ⚠️ O criador clássico vem primeiro de propósito: a gaveta inteira fala a
+    // língua dele ("também é ⟨comportamento⟩", "Ajustar", os avisos do Console).
+    // O "com inteligência" é o ATALHO, e atalho vem depois do caminho.
     types: [
       'sz_g2d_define_enemy_type',
+      'sz_g2d_define_enemy_smart',
       'sz_g2d_spawn_enemy',
       'sz_g2d_update_enemy_type',
       'sz_g2d_draw_enemy_type',
-      'sz_g2d_enemy_state_anim',
+      'sz_g2d_enemy_add_behavior',
       'sz_g2d_enemy_type_param',
+      'sz_g2d_enemy_state_anim',
       'sz_g2d_on_enemy_defeated',
+      'sz_g2d_on_enemy_hurt',
       'sz_g2d_on_enemy_shot_hit',
+      'sz_g2d_on_enemy_beam_hit',
       'sz_g2d_hurt_by_enemy',
+      'sz_g2d_stomp_enemy',
       'sz_g2d_enemy_damage',
     ],
   },
@@ -236,6 +247,15 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     name: '🔊 Som',
     colour: '#d65cd6',
     types: [
+      // Os sons que a criança ENVIA vêm primeiro: é o que ela procura depois de
+      // subir um arquivo, e era exatamente o que não existia aqui até 08/2026.
+      'sz_g2d_load_sound',
+      'sz_g2d_play_clip',
+      'sz_g2d_stop_clip',
+      'sz_g2d_play_track',
+      'sz_g2d_stop_track',
+      'sz_g2d_set_volume',
+      // Sintetizados na hora, sem arquivo nenhum.
       'sz_g2d_play_fx',
       'sz_g2d_play_sound',
       'sz_g2d_play_note',
@@ -499,6 +519,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_balloonpath_scroll: { SPEED: numShadow(1) },
   sz_g2d_play_sound: { FREQ: numShadow(440), MS: numShadow(200) },
   sz_g2d_play_note: { MS: numShadow(300) },
+  sz_g2d_set_volume: { LEVEL: numShadow(8) },
   sz_g2d_setup_stage: { W: numShadow(800), H: numShadow(480) },
   sz_g2d_fit_screen: { PERCENT: numShadow(100) },
   sz_g2d_load_spritesheet: { FW: numShadow(32), FH: numShadow(32) },
@@ -528,6 +549,13 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     Y2: numShadow(24),
     WIDTH: numShadow(2),
   },
+  sz_g2d_define_enemy_smart: {
+    HP: numShadow(3),
+    SPEED: numShadow(2),
+    DMG: numShadow(1),
+    W: numShadow(32),
+    H: numShadow(32),
+  },
   sz_g2d_define_enemy_type: {
     HP: numShadow(3),
     SPEED: numShadow(2),
@@ -538,6 +566,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_enemy_state_anim: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
   sz_g2d_enemy_type_param: { VALUE: numShadow(10) },
   sz_g2d_spawn_enemy: { X: numShadow(100), Y: numShadow(100) },
+  sz_g2d_stomp_enemy: { BOUNCE: numShadow(8) },
   sz_g2d_draw_frame: {
     INDEX: numShadow(0),
     X: numShadow(100),

@@ -13,6 +13,13 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   var ASSET_META = (window.__SZGAME_ASSET_META && typeof window.__SZGAME_ASSET_META === 'object')
     ? window.__SZGAME_ASSET_META
     : {};
+  // Sons do projeto (nome -> dataUrl), do MESMO bridge. Fica aqui, com os outros
+  // manifestos, porque "sprites" e o primeiro pedaco concatenado do runtime e o
+  // dominio de audio vem depois. O mapa nao existe quando o projeto nao tem
+  // nenhum arquivo de audio, por isso o teste de objeto.
+  var SOUNDS = (window.__SZGAME_SOUNDS && typeof window.__SZGAME_SOUNDS === 'object')
+    ? window.__SZGAME_SOUNDS
+    : {};
   var imageCache = Object.create(null);
   var _pendingImageRedraws = new Set();
 

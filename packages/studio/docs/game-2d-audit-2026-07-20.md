@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 219 definições de bloco
-(217 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 230 definições de bloco
+(228 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.59.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.62.1** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -123,12 +123,46 @@ vai no CANVAS e não em CSS porque a capa do Mural é fotografada do `<canvas>` 
 `toDataURL`: um fundo em CSS não entraria no bitmap e o jogo seria publicado sem o
 cenário dela.
 
+O 0.60.0 (07/08) reformou a subcategoria 😈 Inimigos, que tinha dois limites
+apertados: seis arquétipos e um comportamento por tipo. O despacho por cadeia de
+`if/else` sobre `config.behavior` virou uma TABELA em que cada comportamento
+declara os EIXOS que dirige, num módulo próprio (`runtime/enemies.ts`), e o tipo
+passou a guardar uma LISTA de comportamentos. Com isso entrou o bloco **Somar no
+tipo de inimigo … o comportamento …**: patrulha + atirador anda e atira, voador +
+bombardeiro passa por cima soltando tiros. A regra de combinação é uma só e cabe
+numa frase: por eixo de movimento vale o último comportamento somado que dirige
+aquele eixo, e as ações rodam todas. Os comportamentos foram de 6 para 18 (parado,
+fugitivo, investida, rondador, mergulhador, teleporte, zigue-zague, atirador em
+leque, bombardeiro, espinho, ressuscitador e chefão), todos determinísticos, sem
+sorteio no caminho da posição. Entrou também **Derrotar os inimigos do tipo quando
+o sprite pular em cima**, o gesto de plataforma que só existia na extensão
+avançada. A IR do "Criar tipo de inimigo" não mudou um byte: projeto salvo abre
+igual, e com um único comportamento o quadro a quadro é idêntico ao de antes.
+
+O 0.61.0 (07/08) abriu o caminho do JOGO DE NAVE. Metade dele já era possível com
+os comportamentos combináveis, então o lote fechou só o que faltava e, principal-
+mente, transformou os cinco níveis de dificuldade numa escolha só: entrou o bloco
+**Criar tipo de inimigo … com inteligência …** (burra, básica, avançada, ultra e
+rei), em que cada nível semeia um pacote pronto de andar e atirar e o "também é"
+continua somando por cima. Quatro comportamentos novos sustentam os níveis:
+**atirador alinhado** (só atira quando o alvo passa na frente, o inimigo que
+espera a nave), **atirador esperto** (mira onde o alvo VAI estar, o que separa a
+ultra da avançada), **perseguidor de lado** (segue sem mudar de altura, o andar
+clássico de nave) e **raio**, o primeiro ataque da extensão que não é projétil:
+avisa por um segundo com um risco fino piscando, liga um feixe até a borda por
+três segundos e recarrega. O dano do raio não é automático: **Para cada raio do
+tipo … que acertar o sprite …** entrega o dono do feixe à criança, e ao contrário
+do tiro o raio não some ao acertar. Para o chefão entraram ainda o campo
+**chamado** (opcional) no soltar, o evento **Quando um inimigo do tipo … levar
+dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
+**quanto tempo o raio fica ligado**.
+
 ## Escopo revisado
 
-- 124 arquivos próprios da extensão;
-- 219 definições de blocos e 24 subcategorias;
-- 218 métodos e valores públicos em `window.SZGame2D`;
-- 21 módulos que compõem o runtime injetado;
+- 125 arquivos próprios da extensão;
+- 230 definições de blocos e 24 subcategorias;
+- 229 métodos e valores públicos em `window.SZGame2D`;
+- 22 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
 - 32 exemplos, assets, classificação pedagógica e execução no Chromium;

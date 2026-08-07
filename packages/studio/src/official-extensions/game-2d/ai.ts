@@ -49,6 +49,7 @@ API global injetada como window.SZGame2D:
 - playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
 - playNote("C"|"D"|"E"|"F"|"G"|"A"|"B"|"C5", ms): toca uma nota musical (dó ré mi…); junte várias para uma melodia.
 - playMusic("adventure"|"happy"|"tense"|"calm"|"victory") / stopMusic(): música de fundo persistente em loop (só uma por vez). Gere em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca dentro de 🔁 Enquanto estiver rodando. Repetir a mesma música não reinicia a faixa. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
+- ÁUDIO DE ARQUIVO (o som que a criança enviou em "Imagens e sons"), em oposição a tudo acima, que é sintetizado: loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em ⚙️ Ao iniciar; playClip("apelido") toca uma vez; stopClip("apelido") para e rebobina; playTrack("apelido") toca em loop (uma trilha por vez — começar outra troca a anterior, repetir a mesma não recomeça) e stopTrack() desliga QUALQUER música, inclusive a sintetizada do playMusic. setSoundVolume(0..10) vale para os sons de arquivo. NUNCA invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca. Um som pedido antes do primeiro clique ESPERA o clique em vez de falhar calado.
 - onPointer((x, y) => {…}): callback a cada clique/toque; pointer = { x, y, down }.
 
 Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
@@ -124,9 +125,38 @@ Figuras: sprite desenhado por código (v0.23.0) — o visual do sprite feito com
 Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um grupo estendido
 ({ items, bullets: {items}, config }), então os helpers de grupo funcionam nele:
 - createEnemyType({ behavior, color, image, hp, speed, dmg, w, h }): behavior em
-  'patrulha'|'perseguidor'|'voador'|'voador-vertical'|'saltador'|'atirador'.
-  Patrulha não cai num top-down; para fazê-la cair em plataforma, gere setGravity
+  'patrulha'|'perseguidor'|'voador'|'voador-vertical'|'saltador'|'atirador'|'parado'|
+  'medroso'|'arrancada'|'rondador'|'mergulhador'|'teleporte'|'zigue-zague'|
+  'atirador-alinhado'|'atirador-esperto'|'atirador-leque'|'bombardeiro'|'raio'|
+  'espinho'|'renascer'|'chefao'|'perseguidor-lado'.
+  Quem anda no chão não cai num top-down; para cair em plataforma, gere setGravity
   em Ao iniciar e applyGravityToGroup(tipo) antes de updateEnemyType no gameLoop.
+  Quem voa ('voador', 'voador-vertical', 'rondador', 'mergulhador', 'teleporte',
+  'zigue-zague') nunca cai nem resolve chão. ⚠️ 'perseguidor' dirige os DOIS
+  eixos, então também não pousa: ele sobe pelo ar atrás do alvo. Para um
+  perseguidor que respeite o chão, some 'saltador' (que toma o eixo Y).
+- createSmartEnemyType({ smart, color, image, hp, speed, dmg, w, h }): o ATALHO dos jogos de
+  nave. smart em 'burra'|'basica'|'avancada'|'ultra'|'rei'; cada um semeia um pacote:
+  burra=patrulha+bombardeiro (fica em cima e atira reto sem olhar), basica=patrulha+
+  atirador-alinhado (só atira quando o alvo passa bem embaixo ou bem em cima),
+  avancada=perseguidor+atirador, ultra=perseguidor+atirador-esperto (mira onde o alvo VAI
+  estar), rei=perseguidor+atirador-esperto+raio+chefao. ⚠️ ultra e rei também já sobem o
+  'tiro' para 8: a mira adiantada só existe quando o tiro é mais rápido que o alvo, e a nave
+  anda a 6 por padrão. Sem isso a ultra ficaria idêntica à avançada na tela.
+  O addEnemyTypeBehavior continua somando por cima (é assim que um burro ganha raio).
+- onEnemyHurt(tipo, function (chefe) {...}): DENTRO de Quando acontecer, registrar UMA vez. Roda
+  quando o inimigo PERDE vida e continua vivo (quem morre vai pelo onEnemyDefeated). É o gancho de
+  FASE do chefão: leia getHealth/getMaxHealth ali e deixe-o furioso na metade.
+- overlapEnemyBeams(() => sprite, tipo, function (dono) {...}): DENTRO do gameLoop; roda enquanto o
+  RAIO ligado encosta no sprite. Não remove nada (o feixe continua). Use hurtByEnemy(sprite, dono)
+  dentro: os 45 quadros de invencibilidade dele é que dão o ritmo do dano.
+- addEnemyTypeBehavior(tipo, 'comportamento'): SOMA mais um comportamento (é o jeito de ter
+  patrulha + atirador ao mesmo tempo). Pode rodar no meio do jogo (ondas). Regra de combinação:
+  por EIXO de movimento (horizontal e vertical) vale o ÚLTIMO comportamento somado que dirige
+  aquele eixo; as AÇÕES (atirar, bombardear) rodam TODAS. Somar de novo o que já está na lista
+  o move para o fim, então ele passa a mandar. Nome fora da lista é recusado com aviso.
+  Combos que valem a pena sugerir: patrulha+atirador (guarda), voador+bombardeiro (morcego),
+  perseguidor+saltador (persegue pulando), parado+espinho (armadilha), chefao+perseguidor.
 - spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
 - updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do
   atirador + remove derrotados (hp<=0 -> particulas + onDefeat). Alvo = quem perseguir/mirar.
@@ -137,8 +167,16 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - hurtByEnemy(sprite, inimigoOuTiro): usa damageSprite com enemyDamage() e 45 quadros; piscando =
   invencivel (nao drena no contato continuo).
 - enemyDamage(inimigoOuTiro): o dano de contato (default 1).
+- stompEnemyType(sprite, tipo, quique): DENTRO do gameLoop; derrota o inimigo em que o sprite
+  PISAR (só caindo nele; encostar de lado não vale) e quica o sprite. O derrotado sai pelo
+  updateEnemyType (partículas + onDefeat) e já não machuca neste quadro.
 - setEnemyStateAnimation(tipo, 'estado', sheet, from, to, fps): animação por estado do TIPO.
-- setEnemyTypeParam(tipo, 'pulo'|'ritmo'|'alcance'|'cadencia'|'tiro', valor): sintonia fina.
+- setEnemyTypeParam(tipo, 'pulo'|'ritmo'|'alcance'|'cadencia'|'tiro'|'voltar'|'vida'|'duracao', valor): sintonia
+  fina. pulo/ritmo = saltador; alcance = quem voa + medroso/arrancada/rondador/mergulhador/
+  teleporte/zigue-zague (distância que faz reagir); cadencia/tiro = quem atira; voltar =
+  renascer (quadros até renascer, default 180); vida = a vida dos PRÓXIMOS que nascerem;
+  duracao = quantos quadros o raio fica ligado (default 180). O raio recarrega por 'cadencia',
+  avisa 60 quadros e só então liga.
 - Patrulha em mapa de tiles: collideTileMap zera o vx na parede -> o inimigo vira sozinho
   (use forEachInGroup(tipo, ...) + collideTileMap dentro do gameLoop).
 - loadImage('nome'): handle { img, loaded } (aceita nome do asset OU url/dataUrl direta).

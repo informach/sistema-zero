@@ -69,19 +69,55 @@ export const G2D_ANIM_STATES = [
 
 /**
  * Comportamentos prontos dos TIPOS de inimigo do Jogo 2D (bloco "Criar tipo
- * de inimigo…"). Valores sem acento — viajam como literal no código gerado.
+ * de inimigo…" e bloco "Somar no tipo de inimigo…"). Valores sem acento —
+ * viajam como literal no código gerado. Os 6 primeiros são os originais e
+ * abrem a lista: o padrão da paleta continua sendo `patrulha`.
  */
 export const G2D_ENEMY_BEHAVIORS = [
+  // anda no chão
   'patrulha',
   'perseguidor',
+  'perseguidor-lado',
+  'saltador',
+  'arrancada',
+  'medroso',
+  'parado',
+  // voa
   'voador',
   'voador-vertical',
-  'saltador',
+  'rondador',
+  'zigue-zague',
+  'mergulhador',
+  'teleporte',
+  // o que ele faz
   'atirador',
+  'atirador-alinhado',
+  'atirador-esperto',
+  'atirador-leque',
+  'bombardeiro',
+  'raio',
+  'espinho',
+  'renascer',
+  'chefao',
 ] as const
 
+/**
+ * Os níveis de INTELIGÊNCIA do bloco "Criar tipo de inimigo … com inteligência":
+ * cada um semeia um pacote pronto de comportamentos. Sem acento, como os demais.
+ */
+export const G2D_ENEMY_SMARTS = ['burra', 'basica', 'avancada', 'ultra', 'rei'] as const
+
 /** Parâmetros ajustáveis por comportamento (bloco "Ajustar no tipo de inimigo…"). */
-export const G2D_ENEMY_PARAMS = ['pulo', 'ritmo', 'alcance', 'cadencia', 'tiro'] as const
+export const G2D_ENEMY_PARAMS = [
+  'pulo',
+  'ritmo',
+  'alcance',
+  'cadencia',
+  'tiro',
+  'voltar',
+  'vida',
+  'duracao',
+] as const
 
 // ---------- Expressions ----------
 
@@ -2130,6 +2166,12 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:playMusic'; tune: string })
   // Áudio: para a música de fundo.
   | (JSStatementCommon & { type: 'g2d:stopMusic' })
+  | (JSStatementCommon & { type: 'g2d:loadSound'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'g2d:playClip'; name: string })
+  | (JSStatementCommon & { type: 'g2d:stopClip'; name: string })
+  | (JSStatementCommon & { type: 'g2d:playTrack'; name: string })
+  | (JSStatementCommon & { type: 'g2d:stopTrack' })
+  | (JSStatementCommon & { type: 'g2d:setVolume'; level: number | JSExpr })
   // Áudio: toca uma nota musical (dó ré mi…) por uma duração em ms.
   | (JSStatementCommon & { type: 'g2d:playNote'; note: string; ms: number | JSExpr })
   // Tier 1 — mira/movimento, vida, aparência, mundo e pausa (comandos).
@@ -2315,8 +2357,41 @@ export type JSStatement =
       value: number | JSExpr
     })
   | (JSStatementCommon & {
+      type: 'g2d:enemyAddBehavior'
+      typeVar: string
+      behavior: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:defineEnemySmart'
+      varName: string
+      smart: string
+      color: string
+      image: string
+      shape?: string
+      hp: number | JSExpr
+      speed: number | JSExpr
+      dmg: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:onEnemyHurt'
+      typeVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:onEnemyBeamHit'
+      spriteVar: string
+      typeVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
       type: 'g2d:spawnEnemy'
       typeVar: string
+      /** Nome OPCIONAL: preenchido, o bloco declara a variável do inimigo solto. */
+      varName?: string
       x: number | JSExpr
       y: number | JSExpr
     })
@@ -2341,6 +2416,12 @@ export type JSStatement =
       body: JSStatement[]
     })
   | (JSStatementCommon & { type: 'g2d:hurtByEnemy'; spriteVar: string; enemyVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:stompEnemy'
+      spriteVar: string
+      typeVar: string
+      bounce: number | JSExpr
+    })
   | (JSStatementCommon & {
       type: 'g2d:drawFrame'
       sheetVar: string
@@ -5953,6 +6034,21 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:loadSound'),
+      name: irText(),
+      asset: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:playClip'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:stopClip'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:playTrack'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:stopTrack'), ...idField }),
+    z.object({
+      type: z.literal('g2d:setVolume'),
+      level: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:aimAt'),
       spriteVar: irText(),
       targetVar: irText(),
@@ -6228,8 +6324,44 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:enemyAddBehavior'),
+      typeVar: irText(),
+      behavior: z.enum(G2D_ENEMY_BEHAVIORS),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:defineEnemySmart'),
+      varName: irText(),
+      smart: z.enum(G2D_ENEMY_SMARTS),
+      color: irText(),
+      image: irText(),
+      shape: irText().optional(),
+      hp: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      dmg: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onEnemyHurt'),
+      typeVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onEnemyBeamHit'),
+      spriteVar: irText(),
+      typeVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:spawnEnemy'),
       typeVar: irText(),
+      varName: irText().optional(),
       x: z.union([JSExprSchema, z.number()]),
       y: z.union([JSExprSchema, z.number()]),
       ...idField,
@@ -6266,6 +6398,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:hurtByEnemy'),
       spriteVar: irText(),
       enemyVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:stompEnemy'),
+      spriteVar: irText(),
+      typeVar: irText(),
+      bounce: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -10683,6 +10822,8 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:spawnImageInGroup': 'varName',
   'g2d:loadSpritesheet': 'varName',
   'g2d:defineEnemyType': 'varName',
+  'g2d:defineEnemySmart': 'varName',
+  'g2d:spawnEnemy': 'varName',
   'g2d:createTileMap': 'varName',
   'g2d:createTileMapFromAsset': 'varName',
   'g2d:createShip': 'varName',
@@ -10967,7 +11108,9 @@ function g2dLocalNames(statement: JSStatement): string[] {
     case 'g2d:pruneOffscreen':
     case 'g2d:onSpriteGroupOverlap':
     case 'g2d:onEnemyDefeated':
+    case 'g2d:onEnemyHurt':
     case 'g2d:onEnemyShotHit':
+    case 'g2d:onEnemyBeamHit':
       return typeof record.itemName === 'string' ? [record.itemName] : []
     default:
       return []
@@ -11256,6 +11399,12 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:playFx',
   'g2d:playMusic',
   'g2d:stopMusic',
+  'g2d:loadSound',
+  'g2d:playClip',
+  'g2d:stopClip',
+  'g2d:playTrack',
+  'g2d:stopTrack',
+  'g2d:setVolume',
   'g2d:playNote',
   'g2d:aimAt',
   'g2d:moveToward',
@@ -11296,12 +11445,17 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:defineEnemyType',
   'g2d:enemyStateAnim',
   'g2d:setEnemyTypeParam',
+  'g2d:enemyAddBehavior',
+  'g2d:defineEnemySmart',
+  'g2d:onEnemyHurt',
+  'g2d:onEnemyBeamHit',
   'g2d:spawnEnemy',
   'g2d:updateEnemyType',
   'g2d:drawEnemyType',
   'g2d:onEnemyDefeated',
   'g2d:onEnemyShotHit',
   'g2d:hurtByEnemy',
+  'g2d:stompEnemy',
   'g2d:drawFrame',
   'g2d:platformer',
   'g2d:topDown',

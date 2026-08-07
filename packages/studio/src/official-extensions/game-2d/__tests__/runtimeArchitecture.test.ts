@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { gameTwoDArcadeKitsRuntime } from '../runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from '../runtime/audio'
+import { gameTwoDEnemiesRuntime } from '../runtime/enemies'
 import { gameTwoDInputAndMotionRuntime } from '../runtime/inputAndMotion'
 import { gameTwoDLifecycleRuntime } from '../runtime/lifecycle'
 import { gameTwoDPhysicsRuntime } from '../runtime/physics'
@@ -17,6 +18,7 @@ describe('gameTwoDRuntime — arquitetura dos domínios', () => {
       [gameTwoDInputAndMotionRuntime, 'input-and-motion'],
       [gameTwoDWorldRuntime, 'world'],
       [gameTwoDArcadeKitsRuntime, 'arcade-kits'],
+      [gameTwoDEnemiesRuntime, 'enemies'],
       [gameTwoDSpritesRuntime, 'sprites'],
       [gameTwoDUtilitiesRuntime, 'utilities'],
     ] as const

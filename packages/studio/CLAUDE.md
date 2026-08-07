@@ -683,7 +683,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.59.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.62.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -774,6 +774,295 @@ tilemaps manuais limitam 1M caracteres, 512×512 células e 512 sólidos, com `w
 anunciam a carga lazy e a API principal é `renderProjectToPreviewDocAsync`. Os 31 exemplos têm metadados
 editoriais; `KitGallery` mostra o percurso Pegue a moeda → Herói que anda → Mini plataforma → Sala com
 paredes, além de busca/filtros e “Ver todos”. A paleta de 211 blocos permanece intacta por decisão explícita.
+
+## Jogo 2D — inimigos COMBINÁVEIS + 18 comportamentos (v0.60.0, 07/08)
+
+A subcategoria 😈 Inimigos tinha 6 comportamentos MUTUAMENTE EXCLUSIVOS num dropdown, e o
+despacho era uma cadeia `if/else` sobre `config.behavior` dentro do laço de itens, com cada ramo
+sobrescrevendo `vx`/`vy` por conta própria. "Patrulha E atirador" era impossível: para ter três
+comportamentos a criança criava três TIPOS (3× gravidade, 3× atualizar, 3× desenhar, 3× derrotado).
+
+- ⭐ **Domínio próprio**: os inimigos saíram do `runtime/arcadeKitsSpace.ts` (l.210-536, onde
+  moravam por acidente histórico) para **`runtime/enemies.ts`**, com `_registerRuntimeDomain('enemies')`
+  e o reset de `_enemyTypeCreates` junto (saiu do `'arcade-kits'` no `arcadeKitsGorillas.ts`).
+- ⭐ **Tabela de EIXOS no lugar do if/else**: `ENEMY_BEHAVIORS` mapeia nome → `{x, y, flying, act,
+  immortal, revive, boss, move}`. Por chamada de `updateEnemyType` (não por item) resolve-se
+  `ownerX`/`ownerY`/`flying`/`acts`: **por eixo vale o ÚLTIMO da lista que o dirige** (é o que faz
+  o "Somar" ter sempre efeito visível) e **as ações rodam todas**. Sem dono do X ⇒ `vx = 0`; sem
+  dono do Y ⇒ voa? `vy = 0` : integra vy + `_resolveGravityGround` (o de sempre). Quem dirige os
+  DOIS eixos recebe `(ownX, ownY)` e escreve só o que venceu — é isso que faz perseguidor+saltador
+  perseguir no chão pulando.
+- ⚠️ **A compat é quadro-a-quadro, não "parecida"**: os 6 ramos foram portados VERBATIM para
+  funções, e a Etapa 1 rodou com a tabela contendo só os 6 antigos — `enemies.test.ts` (que assere
+  posições e cadências EXATAS) e os playthroughs passaram **sem uma edição**. Faça o mesmo se
+  mexer aqui: transcreva primeiro, só depois acrescente.
+- `config.behaviors: string[]` é a fonte da verdade; **`config.behavior` continua sendo o valor de
+  NASCENÇA e nunca é mutado** (o teste o assere no create). Nome desconhecido no ÍNDICE 0 da lista
+  resolve como `patrulha` — era o `else` da cadeia antiga, e sem esse ramo o modo Código regrediria
+  em silêncio para "parado".
+- **`sz_g2d_enemy_add_behavior`** ("O tipo de inimigo ⟨X⟩ também é ⟨Y⟩",
+  `placement: 'command'` de propósito: serve a ONDAS). Dedup **move para o fim** (somar de novo o
+  que já está passa a mandar). Nome fora do enum é recusado na entrada com aviso 1×/tipo.
+- **`sz_g2d_stomp_enemy`** ("Derrotar os inimigos do tipo ⟨X⟩ quando o sprite ⟨Y⟩ pular em cima,
+  quique ⟨8⟩") — o pisar no Goomba, que só existia na gk (`stompKill`). Exige `isColliding` E estar
+  caindo nele (invertido sob gravidade negativa via `_gravityPullsUp`). Marca `e.hp = 0` **e
+  `e.dmg = 0`**: a morte segue sendo do `updateEnemyType` (partículas + "quando for derrotado" +
+  aborto de geração num lugar só), e o dano zerado faz o `hurt_by_enemy` do MESMO quadro virar
+  no-op de verdade (`damageSprite` sai cedo com `damage <= 0`) — sem isso o pulo certo virava castigo.
+- **12 comportamentos novos** (6 → 18), todos determinísticos, **zero `Math.random` no caminho da
+  posição**: parado, fugitivo, investida · rondador, mergulhador, teleporte, zigue-zague ·
+  atirador-leque, bombardeiro, espinho (nunca morre), ressuscitador (fila `type._revives`, capada
+  em 100), chefão (vida ×5 uma vez por inimigo via `s._boss`, `env.speed` à metade).
+  `chefao` e `atirador-leque` compartilham a MESMA função de ação, e a montagem de `acts`
+  **deduplica por função** — juntos disparam uma rajada só.
+- Contadores por ação PRÓPRIOS (`_scd` atirador, `_lcd` leque, `_bcd` bomba, `_tcd` teleporte):
+  somar dois atiradores não divide a cadência de nenhum.
+- Params: **uma opção nova** no dropdown do "Ajustar no tipo de inimigo" (`voltar` →
+  `reviveRate`, default 180). Acrescentar OPÇÃO a dropdown existente é o acréscimo seguro
+  (projeto salvo mantém o valor e a saída) — mesmo precedente do `LAYER` da gk que ganhou `'frente'`.
+- ⚠️ **Campo por-eixo, não por-comportamento**: `_dir` é a direção do eixo X e pertence a quem
+  GANHOU o X; `_dirY` é a do Y. Como só o vencedor de cada eixo roda, dois donos do mesmo eixo
+  nunca se atrapalham. O `voador-vertical` chegou a usar `_dir` (herança do código antigo, onde só
+  um comportamento existia por vez) e isso fazia a patrulha VIRAR na horizontal toda vez que ele
+  batia no limite de cima. Comportamento novo que guarde direção: escolha o campo pelo EIXO.
+- Contadores travados que este lote mexeu: `docDrift` 219 → **221**, audit md (221 definições /
+  219 visíveis / **220** métodos / **125** arquivos / **22** módulos), catraca de parâmetros
+  751 → **829**, e a versão aqui. Testes: `__tests__/enemies.test.ts` foi de 26 para **83** casos.
+
+### Full review dos inimigos (07/08, mesmo lote) — 8 correções
+
+Review adversarial em 3 lentes logo depois de escrever a feature. Achados que viraram correção,
+todos com teste de regressão em `enemies.test.ts` (`describe('combinações que já quebraram')`):
+
+1. ⭐ **Espinho pisado virava enfeite para sempre.** `stompEnemyType` zera `e.dmg` contando que o
+   inimigo morra no mesmo quadro; o espinho não morre, e nada devolvia o dano. O combo mais natural
+   do mundo (plataforma + espinho + pisar) deixava o espinho inofensivo o jogo inteiro. A vida
+   restaurada também voltava para `c.hp` em vez do teto do PRÓPRIO inimigo (chefão-espinho ficava
+   3/15 na barra para sempre).
+2. ⭐ **Perseguidor que só ganhou o X andava a passo de formiga.** O vetor era normalizado em 2D e
+   só depois filtrado por eixo: com o alvo 250px acima e 10px ao lado, `vx` saía 0,12 px/quadro.
+   Justo no combo-vitrine (perseguidor + saltador). Agora, com posse de UM eixo, a velocidade vale
+   naquele eixo.
+3. **Somar chefão CURAVA o inimigo** (o comentário jurava o contrário): `setHealth` grava hp E
+   hpMax. Virou buff de teto que preserva o dano já levado.
+4. **`parado` era um no-op ao ser somado**: não dirigia eixo nenhum, então nunca vencia. O rótulo
+   promete "fica no lugar" e o inimigo continuava perseguindo. Agora dirige os dois eixos.
+5. **Fugitivo/investida grudavam na CÂMERA**: o clamp usava o retângulo visível, que anda com a
+   câmera, então um inimigo parado lá atrás era arrastado pelo mundo colado na borda. Agora só
+   segura quem já estava dentro antes de andar (isso também curou o inimigo mais largo que a tela,
+   que os dois ifs independentes empurravam para fora).
+6. **Mergulhador travava em mergulho eterno** quando outro comportamento tomava o eixo Y: a saída
+   do estado olha o `y`, que ele não movia. Agora só mergulha se for dono do Y.
+7. **Nome herdado de `Object.prototype`** (`'toString'`, `'constructor'`) passava por comportamento
+   válido, e no modo Código o inimigo ficava inerte em vez de cair no padrão. `hasOwnProperty`.
+8. **Drift do dropdown**: a auditoria T6 só cobre "opção que não existe no enum". A direção
+   perigosa (valor novo no enum esquecido no dropdown, que faz o `FieldDropdown` coagir para a 1ª
+   opção e mudar o inimigo da criança sozinho) ganhou teste próprio no `docDrift`.
+
+### Segundo full review, o mesmo dia — 9 correções + a fila de renascer
+
+O primeiro review produziu MUITO código (as 8 correções, os 3 avisos, os renomes) que ninguém
+tinha revisado. A segunda rodada mirou só nisso, e valeu:
+
+1. ⭐ **O aviso de "ninguém os desenha" acusava quem estava certo.** O tipo de inimigo É um grupo e
+   o seletor de **"Desenhar o grupo ordenado pela base"** o lista: num jogo visto de cima esse é o
+   bloco CERTO (é o que faz o herói passar atrás do monstro). O `_drawn` só era marcado em
+   `drawEnemyType`, então a criança via o aviso com a tela cheia de inimigos. Agora quem marca é o
+   `drawGroup`/`drawGroupByY`, no ponto em que o desenho de fato acontece.
+2. ⭐ **O buff do chefão RESSUSCITAVA um inimigo morto.** Sem guarda de `hp > 0`, um inimigo morto
+   no quadro anterior (padrão de onda: solta depois do update) tinha o primeiro update dele já com
+   vida 0, e o buff o trazia de volta com 12/15 antes da poda.
+3. **`parado` derrubava quem voa**: chamava `_resolveGravityGround` sem consultar `flying`, então
+   somar "parado" a um fantasma o fazia cair até o chão. O `env` passou a carregar `flying`.
+4. **O clamp nunca segurava inimigo nascido EM CIMA da borda** (padrão de onda). A guarda "estava
+   todo dentro" era permanente daquele lado; virou "estava ENCOSTANDO na tela", o que também curou
+   o inimigo mais largo que a tela.
+5. **O mergulhador escrevia `_dir` sem ser dono do X** — a mesma classe do bug do voador-vertical
+   que a rodada 1 corrigiu, num arquivo que a rodada 1 mexeu. Somado a uma patrulha, virava a
+   marcha dela sozinho no meio do caminho.
+6. **Mergulho em curso que PERDE o eixo Y ficava preso**: a saída do estado olha o `y`, que ele não
+   move mais. A guarda da rodada 1 cobria só a ENTRADA. Agora aborta.
+7. **A janela dos avisos contradizia o próprio comentário.** Eram disparos num quadro FIXO (360);
+   o comentário prometia tolerar a "fase 2". Viraram contadores de quadros SEGUIDOS que zeram
+   sozinhos quando a criança liga a peça que faltava (desenho e alvo em 360; ajuste órfão em 1800).
+8. **O aviso de alvo afirmava algo falso** ("então ele fica parado"): com patrulha + atirador o
+   inimigo anda normalmente, só não atira. Se o Console mente uma vez, ela para de ler.
+9. **O tooltip do "Ajustar" incluía `teleporte` na velocidade do tiro** e o mapa (corretamente) não:
+   o aviso novo passaria a contradizer o tooltip na cara dela.
+
+⭐ **A fila de renascer ganhou dono.** `type._revives` não era esvaziada por nada, e um tipo reusado
+entre fases fazia os mortos da fase 1 nascerem nas coordenadas velhas. O gancho certo já existia e
+é o gesto que a criança usa: **"Esvaziar o grupo"** (tooltip: "ex.: ao reiniciar a fase"), e o tipo
+aparece naquele seletor porque É um grupo. Agora `clearGroup` zera a fila junto. No mesmo lugar, o
+slot deixou de sumir em silêncio quando o grupo está no teto (`spawnEnemy` devolve null): ele fica
+na fila e tenta no quadro seguinte.
+
+⚠️ **A lição de teste que ficou**: nenhum teste de comportamento soltava mais de UM inimigo, então
+todo estado por-inimigo (`_scd`, `_lcd`, `_ang`, `_tside`…) era indistinguível de estado por-TIPO —
+trocar `s._ang` por `c._ang` passaria na suíte inteira. Entrou um `describe('dois inimigos do MESMO
+tipo')`. Mesma classe: os comportamentos simétricos só eram exercidos para um lado (fugir para a
+esquerda, virar na borda direita), então metade de cada `if` nunca rodava.
+
+### Lote de pedagogia do mesmo review (07/08)
+
+A revisão pela lente da criança pegou coisas que os testes nunca pegariam. Vale como molde:
+
+- **Rótulo que descreve o estado ISOLADO mente no mundo combinável.** "atirador (fica no chão e
+  atira no alvo)" era verdade sozinho (o fallback do eixo Y resolve o chão) e mentira somado a um
+  voador. Regra nova: o rótulo diz só o que aquele comportamento ACRESCENTA.
+- **A ordem da gaveta ENSINA a receita.** Os 12 blocos foram reordenados para os quatro primeiros
+  serem criar, soltar, atualizar, desenhar: quem arrasta os primeiros que vê tem que ver inimigo
+  na tela. O "também é" é tempero e não pode furar essa fila.
+- **O dropdown de 18 é agrupado por família** (anda no chão, voa, o que faz) e travado contra o
+  enum no `docDrift`. Blockly não tem separador em `FieldDropdown`, então a ordem e o parêntese
+  são a única marcação possível; o maior dropdown da extensão (`sz_g2d_play_fx`, 27 opções) já
+  resolvia assim.
+- **Parêntese de dropdown diz para que SERVE, não de quem é.** O menu do "Ajustar" nomeava um
+  comportamento por linha ("alcance do voo (voador)") enquanto o alcance serve a oito deles.
+- **Nomes**: `investida`→`arrancada`, `fugitivo`→`medroso`, `ressuscitador`→`renascer` (valor E
+  rótulo, para o modo Código não divergir do bloco). Face do combinar virou **"O tipo de inimigo
+  ⟨X⟩ também é ⟨Y⟩"** (encaixa na frase do "Criar tipo … que é …" logo acima); a do pisar trocou
+  "quique" por "(dando um pulinho de ⟨8⟩)".
+- **3 avisos pedagógicos novos** em `_warnEnemySetupOnce`, no molde dos dois que já existiam
+  (citam o bloco pela FACE, dizem onde pôr, disparam uma vez, com janela de graça de 360 quadros):
+  atualizou e nunca desenhou; ajustou um valor que nenhum comportamento do tipo usa; comportamento
+  que precisa de alvo com o campo "alvo:" vazio. ⚠️ A checagem do ajuste roda no UPDATE, não no
+  `setEnemyTypeParam`: a ordem normal de montar é ajustar a cadência ANTES de juntar o atirador,
+  então conferir na hora daria falso-positivo.
+- ⚠️ **O que o `blockContracts.test.ts` NÃO cobre**: os `console.warn` do runtime são copy de
+  produto (aparecem no Console da IDE, em português, escritos para criança) e nada vigia travessão
+  neles.
+
+## Jogo 2D — jogo de NAVE: inteligência, raio e chefão (v0.61.0, 07/08)
+
+Ela quis montar um shoot-em-up com inimigos de cinco níveis de inteligência, um raio de 3s e um
+chefão que renasce. O levantamento mostrou que **metade já dava** com os 18 comportamentos
+combináveis (burro = patrulha+bombardeiro; avançado = perseguidor+atirador; rei que renasce = 2
+tipos + o evento de derrota; bônus = qualquer bloco no corpo do evento; 50% de anular dano = o
+"se ⟨tem chance de 50%?⟩" em volta do "Mudar a vida"). O lote fechou só o que faltava.
+
+- ⭐ **`sz_g2d_define_enemy_smart`** — "Criar tipo de inimigo ⟨alien⟩ **com inteligência** ⟨burra⟩ …",
+  irmão do define de sempre (regra de 02/08: variação = bloco NOVO ao lado). Cada nível semeia um
+  pacote em `config.behaviors` via `ENEMY_SMART_COMBOS`; o "também é" soma por cima, que é como um
+  inimigo burro ganha um raio. burra=patrulha+bombardeiro · basica=patrulha+atirador-alinhado ·
+  avancada=perseguidor+atirador · ultra=perseguidor+atirador-preditivo ·
+  rei=perseguidor+atirador-preditivo+raio+chefao.
+- **4 comportamentos novos (18 → 22)**: `perseguidor-lado` (segue só na horizontal, o andar de
+  shmup, que antes só existia por acidente com `arrancada`+alcance 9999), `atirador-alinhado` (só
+  atira na mesma coluna, e **não gasta a recarga** fora dela — fica carregado esperando a nave),
+  `atirador-preditivo` (lead shot: `tempo = distância / tiro`, mira em `centro + velocidade ×
+  tempo`; é o que separa ultra de avançada) e `raio`.
+- ⭐ **O raio é o primeiro ataque da extensão que NÃO é projétil.** Três fases por inimigo
+  (`_beamPhase`): recarrega (`cadencia`) → **avisa 60 quadros** com um risco fino piscando → liga
+  (`duracao`, padrão 180). O aviso é o que torna o ataque justo, e é o molde do `swing window` da
+  gk (recuo + janela ativa). Geometria: coluna do pé do inimigo até a borda de baixo visível, 60%
+  da largura dele, reto para baixo (não precisa de alvo, então serve ao inimigo burro).
+  ⚠️ O dano **não** é automático: `sz_g2d_on_enemy_beam_hit` ("Para cada raio do tipo … que acertar
+  o sprite …") entrega o DONO do feixe e, ao contrário do `overlapEnemyShots`, **não remove nada**.
+  Quem segura o ritmo do dano é a invencibilidade de 45 quadros do "Machucar com o dano de contato".
+- **`sz_g2d_on_enemy_hurt`** — "Quando um inimigo do tipo ⟨rei⟩ levar dano". Dispara ao PERDER vida
+  e continuar vivo; quem chega a zero vai pelo evento de derrota (disparar os dois no mesmo golpe
+  faria o chefão trocar de fase morrendo). Máquina de handlers clonada da de derrota.
+- **Campo `NAME` opcional no "Soltar um inimigo do tipo"** — vazio, a chave sai da IR e a saída é
+  byte-idêntica (3º uso do idioma, depois do spawn-em-grupo e do `SHAPE`). Preenchido, declara o
+  sprite: é o que deixa a barra de vida do chefão apontar para ELE sem laço.
+- **2 ajustes novos**: `vida` (dos próximos que nascerem) e `duracao` (o raio). ⚠️ `vida` entra em
+  `ENEMY_PARAM_OWNERS` com valor **null** (serve a todos), senão o drift do mapa reprova e o aviso
+  de ajuste órfão acusaria quem está certo.
+- Contadores: blocos 221 → **224**, API 220 → **223**, manifest **0.61.0**, catraca 829 → **868**.
+  Os drifts criados no review anterior (dropdown × enum, tabela do runtime × enum) pegaram sozinhos
+  dois esquecimentos meus durante este lote — valeu ter escrito.
+
+### Terceiro full review (07/08, logo depois) — 11 correções, 3 delas graves
+
+O lote da nave foi revisado em duas lentes (runtime novo + integridade de cadeia) e o resultado
+mudou a régua do que eu considero "cadeia completa" nesta extensão:
+
+1. ⭐⭐ **O bloco carro-chefe nascia ÓRFÃO.** `sz_g2d_define_enemy_smart` ficou fora de
+   `ENEMYTYPE_DECL_BLOCKS` **e** de `GROUP_DECL_BLOCKS` (`FieldNamePicker.ts`). A criança criava o
+   tipo "com inteligência" e ele não aparecia em NENHUM dos 8 seletores de `enemytype`, nem nos
+   blocos de grupo. O caminho desenhado do produto estava morto e nenhum teste pegava.
+2. ⭐⭐ **O corpo do "quando levar dano" recusava o próprio nome que ele declara.** Faltavam os dois
+   eventos novos em `g2dLocalNames` (`ir/schema.ts`): usar ⟨chefe⟩ lá dentro, que é literalmente o
+   que o tooltip vende, dava "O nome 'chefe' ainda não foi criado neste jogo".
+3. ⭐⭐ **O atirador esperto mirava PARA TRÁS com os valores de fábrica.** Uma passada de correção
+   de lead inverte o sinal quando `|velocidade do alvo| > velocidade do tiro`, e é o caso comum: o
+   bloco de setas tem sombra 6 e o `shotSpeed` padrão é 4. Agora só adianta a mira quando o tiro é
+   mais rápido; senão mira direto (interceptar é impossível mesmo).
+4. `programmingReferences.ts` não conhecia `defineEnemySmart` nem o `spawnEnemy` nomeado, então a
+   barra de vida do chefão (o motivo do campo "chamado") reprovava no zod.
+5. **O raio ficava invisível pelo caminho de GRUPO** — que o review anterior legitimou. Agora
+   `drawGroup`/`drawGroupByY` desenham o feixe via `_drawEnemyBeamsIfAny` (reconhece o tipo pelo
+   formato: só ele tem `config` e `bullets`).
+6. **O espinho não disparava o "levou dano" no golpe que o mataria**: a cura rodava antes da
+   comparação. Passou a guardar `hpDoQuadro` ANTES da cura.
+7. **`clearGroup` deixava os tiros do tipo voando**: a nave renascia e levava dano sem inimigo na
+   tela. Esvaziar leva `type.bullets` junto.
+8. **`type._drawn` nunca voltava a `false`**, então o aviso da tela vazia não retomava a contagem
+   quando o "Desenhar" saía do ar na fase 2.
+9. ⚠️ **A coluna do atirador alinhado era o `alcance`** — que já significava voo, raio do círculo,
+   gatilho do mergulho e distância de reação. Com `voador + atirador-alinhado` (o arquétipo do
+   shmup) o mesmo número controlava o voo E a coluna, e não dava para ajustar os dois. Virou a
+   largura dos DOIS sprites, que é o sentido literal de "passa na frente dele".
+10. Guarda espelhada no parser (`createEnemyType({smart:…})` gerava IR que o zod reprova), aviso de
+    inteligência desconhecida com `warnOnce` e sem `"undefined"` cru, piso no `tiro` (zero entupia
+    o grupo com tiros parados), `overlapEnemyBeams` sem cópia por quadro, `SPRITE_LOOP_BINDERS` e
+    `ir/helpers.ts` com os dois corpos novos.
+11. Aviso pedagógico novo (o quarto da família): **tem raio e ninguém confere se acertou**. O raio
+    é o único ataque cujo dano exige um bloco separado, e sem isso a criança conclui que ele não
+    funciona.
+
+⚠️ **A lição que fica**: "cadeia de 9 pontos" está DEFASADA para esta extensão. Bloco que declara
+nome tem hoje **cinco** mapas fora do schema (`*_DECL_BLOCKS` do picker, `G2D_DECLARATION_FIELDS`,
+`VARIABLE_DECLARATION_FIELDS` do `programmingReferences`, e para bloco com corpo mais `g2dLocalNames`
+e `SPRITE_LOOP_BINDERS`). O 4º review escreveu os drifts que faltavam (abaixo).
+
+### Quarto full review (07/08) — o desenho, a régua da cadeia e o pixel
+
+A rodada mirou o que a TERCEIRA acabara de escrever, que é onde o defeito mora quando ninguém
+revisou a correção. Rendeu de novo, e a novidade foi um achado que **só o navegador dava**.
+
+1. ⭐ **O feixe era pintado DUAS vezes.** A rodada 3 pôs o `_drawEnemyBeamsIfAny` no `drawGroup`
+   (para o raio aparecer pelo caminho de grupo) e deixou o desenho antigo dentro do
+   `drawEnemyType` — que chama o `drawGroup`. O halo de 0.35 composto duas vezes dá 0.58: quase
+   sólido, comendo a leitura do que está atrás. E, desenhado ANTES dos sprites, o feixe passava
+   por baixo dos inimigos de baixo, contrariando a própria promessa. Agora o desenho vive num
+   lugar só e sai DEPOIS das figuras.
+2. ⭐ **O aviso do raio nascia invisível.** O pisca era `floor(_beamT / 8) % 2`, e `_beamT` DESCE
+   de 60: os 5 primeiros quadros caíam no lado apagado. O aviso existe para ela sair da frente, e
+   o começo dele é justamente o que importa. A conta virou o tempo DECORRIDO. ⚠️ Nenhum teste de
+   unidade pegaria: o ctx falso aceita qualquer sequência de chamadas. Foi lido no pixel, em
+   Chrome real, e a prova ficou como teste (o padrão do risco é `11111111 00000000 11111111`).
+3. **O buff do chefão ENGOLIA o golpe anterior ao primeiro update** (onda que solta depois de
+   atualizar): o `_hpAntes` ficava no valor pré-buff, então o "levou dano" não via a perda. Sobe
+   junto com o teto.
+4. **A ultra era a avançada com outro nome.** A mira adiantada só existe quando o tiro é mais
+   rápido que o alvo (guarda da rodada 3), e a nave anda a 6 contra um tiro de 4 — ou seja, o
+   nível que o menu vende como "mira onde você VAI estar" mirava direto. Os presets viraram
+   `{ fazer, tiro }` e ultra/rei nascem com `tiro: 8`.
+5. **`overlapEnemyBeams` com a lista mudando por baixo** (a criança remove o dono dentro do
+   bloco): varredura por SNAPSHOT + `Set` de vivos, o mesmo idioma dos outros varredores.
+6. **Sprite adotado pelo "Pôr no grupo" ia para o NaN**: não passou pelo spawn, então não tinha
+   `_homeX/_homeY/_dir`, e o rondador fazia a conta com `undefined`. Inicialização preguiçosa no
+   laço de itens.
+7. **`tiro` zero** agora avisa em vez de aceitar em silêncio (o tiro nasceria parado em cima dele).
+8. **Pedagogia**: 9 rótulos reescritos (cada nível de inteligência agora NOMEIA as peças que
+   traz), a gaveta reordenada com o criador clássico primeiro, e a seção do manual (80 linhas
+   corridas, com "os 18 comportamentos" quando já eram 22) virou cinco subtítulos. Um parágrafo
+   estava colado no último item de uma lista — em markdown isso é continuação preguiçosa, e o
+   texto sumia para dentro do bullet.
+
+⭐ **Os drifts que a lição da rodada 3 pedia agora existem** (`docDrift.test.ts`): todo tipo em
+`G2D_DECLARATION_FIELDS` está em `VARIABLE_DECLARATION_FIELDS`; todo tipo de IR com `itemName` tem
+`case` no `g2dLocalNames`; todo criador de tipo está nos `*_DECL_BLOCKS`; e a **ordem** dos cinco
+primeiros blocos da gaveta (criar, criar-atalho, soltar, atualizar, desenhar) é lei — inserir um
+bloco no meio empurra o "Desenhar" para baixo da dobra e o sintoma é tela vazia sem erro.
+
+⚠️ **A lição de QA que fica**: ctx falso prova ORDEM e CONTAGEM de chamadas; ele não prova cor.
+Composição alfa, ordem de camada e pisca-pisca só aparecem lendo `getImageData` num Chrome de
+verdade. A pane fica oculta nesta máquina (rAF congelado), então o contorno é a página estática com
+o rAF trocado por fila e `window.__passo(n)` bombeado pelo `javascript_tool` — Chrome real, canvas
+real, sem depender de print.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 

@@ -25,6 +25,10 @@ interface Sprite {
   blinkFrames?: number
   animStates?: Record<string, unknown>
   _dir?: number
+  _dive?: number
+  _beamPhase?: number
+  _homeX?: number
+  _homeY?: number
 }
 
 interface EnemyType {
@@ -32,6 +36,8 @@ interface EnemyType {
   bullets: { items: Sprite[] }
   config: Record<string, unknown> & {
     behavior: string
+    behaviors: string[]
+    reviveRate: number
     hp: number
     speed: number
     dmg: number
@@ -52,6 +58,9 @@ interface Api {
   restart: () => void
   createSprite: (opts: Record<string, unknown>) => Sprite
   createEnemyType: (opts: Record<string, unknown>) => EnemyType
+  createSmartEnemyType: (opts: Record<string, unknown>) => EnemyType
+  onEnemyHurt: (t: EnemyType, fn: (s: Sprite) => void, id?: string) => void
+  overlapEnemyBeams: (getSprite: () => Sprite, t: EnemyType, fn: (dono: Sprite) => void) => void
   setEnemyStateAnimation: (
     t: EnemyType,
     state: string,
@@ -61,6 +70,8 @@ interface Api {
     fps: number,
   ) => void
   setEnemyTypeParam: (t: EnemyType, param: string, value: number) => void
+  addEnemyTypeBehavior: (t: EnemyType, behavior: string) => void
+  stompEnemyType: (s: Sprite, t: EnemyType, bounce: number) => void
   spawnEnemy: (t: EnemyType, x: number, y: number) => Sprite | null
   updateEnemyType: (t: EnemyType, ctx: unknown, target: Sprite | null) => void
   drawEnemyType: (ctx: unknown, t: EnemyType) => void
@@ -75,6 +86,10 @@ interface Api {
   forEachInGroup: (g: unknown, fn: (s: Sprite, i: number) => void) => void
   overlapSpriteGroup: (getSprite: () => Sprite, g: unknown, fn: (s: Sprite) => void) => void
   removeFromGroup: (g: unknown, s: Sprite) => void
+  clearGroup: (g: unknown) => void
+  addToGroup: (g: unknown, s: Sprite) => void
+  drawGroup: (ctx: unknown, g: unknown) => void
+  drawGroupByY: (ctx: unknown, g: unknown) => void
   setCamera: (x: number, y: number) => void
   setGravity: (v: number) => void
   applyGravityToGroup: (group: EnemyType) => void
@@ -589,7 +604,7 @@ describe('compatibilidade TIPO = GRUPO', () => {
 })
 
 describe('setEnemyTypeParam', () => {
-  it('ajusta os cinco parâmetros e ignora valor/param inválido', () => {
+  it('ajusta os seis parâmetros e ignora valor/param inválido', () => {
     const api = load()
     const t = api.createEnemyType({})
     api.setEnemyTypeParam(t, 'pulo', 15)
@@ -597,14 +612,1230 @@ describe('setEnemyTypeParam', () => {
     api.setEnemyTypeParam(t, 'alcance', 120)
     api.setEnemyTypeParam(t, 'cadencia', 45)
     api.setEnemyTypeParam(t, 'tiro', 7)
+    api.setEnemyTypeParam(t, 'voltar', 60)
     expect(t.config.jump).toBe(15)
     expect(t.config.jumpRate).toBe(30)
     expect(t.config.range).toBe(120)
     expect(t.config.rate).toBe(45)
     expect(t.config.shotSpeed).toBe(7)
+    expect(t.config.reviveRate).toBe(60)
     api.setEnemyTypeParam(t, 'foguete', 99)
     api.setEnemyTypeParam(t, 'pulo', Number.NaN as unknown as number)
     expect(t.config.jump).toBe(15)
+  })
+})
+
+describe('comportamentos novos (sozinhos)', () => {
+  it('parado fica no lugar e, com gravidade, pousa no chão da tela', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    const t = api.createEnemyType({ behavior: 'parado', speed: 4, h: 20 })
+    const e = api.spawnEnemy(t, 60, 10) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBe(60)
+    expect(e.y).toBe(10)
+    expect(e.vx).toBe(0)
+    // Com gravidade ele CAI e pousa na base visível (100 - altura 20).
+    api.setGravity(0.6)
+    for (let i = 0; i < 60; i += 1) {
+      api.applyGravityToGroup(t)
+      api.updateEnemyType(t, ctx, null)
+    }
+    expect(e.x).toBe(60)
+    expect(e.y).toBe(80)
+    expect(e.onGround).toBe(true)
+  })
+
+  it('fugitivo só corre quando o alvo está no alcance, e para na borda', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'medroso', speed: 3 })
+    api.setEnemyTypeParam(t, 'alcance', 50)
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    const longe = api.createSprite({ x: 380, y: 100, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, longe)
+    expect(e.vx).toBe(0)
+    expect(e.x).toBe(200)
+    // Alvo à DIREITA e perto: foge para a esquerda.
+    const perto = api.createSprite({ x: 230, y: 100, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, perto)
+    expect(e.vx).toBe(-3)
+    expect(e.x).toBe(197)
+    // Encostado na borda esquerda ele para de sair da tela.
+    e.x = 1
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 20, y: 100, w: 10, h: 10 }))
+    expect(e.x).toBe(0)
+  })
+
+  it('investida corre para cima do alvo a 3× a velocidade quando ele entra no alcance', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'arrancada', speed: 2 })
+    api.setEnemyTypeParam(t, 'alcance', 60)
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 390, y: 100, w: 10, h: 10 }))
+    expect(e.vx).toBe(0)
+    // Alvo à ESQUERDA e dentro do alcance: parte para cima dele.
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 170, y: 100, w: 10, h: 10 }))
+    expect(e.vx).toBe(-6)
+    expect(e.x).toBe(194)
+  })
+
+  it('rondador voa em círculo a partir da casa, sem saltar no primeiro quadro', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'rondador', speed: 5, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 50)
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    // Δângulo = velocidade / raio = 5 / 50 = 0,1 por quadro.
+    api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBeCloseTo(100 + Math.sin(0.1) * 50, 6)
+    expect(e.y).toBeCloseTo(100 + (Math.cos(0.1) - 1) * 50, 6)
+    api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBeCloseTo(100 + Math.sin(0.2) * 50, 6)
+    // Voa: nunca resolve chão, mesmo com gravidade no mundo.
+    expect(e.onGround).toBeUndefined()
+  })
+
+  it('mergulhador ronda, mergulha no alvo que passa por baixo e volta para casa', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'mergulhador', speed: 4, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 60)
+    const e = api.spawnEnemy(t, 200, 40) as Sprite
+    // Sem ninguém por baixo, é só um voador: anda na horizontal.
+    api.updateEnemyType(t, ctx, null)
+    expect(e.y).toBe(40)
+    expect(e.vx).toBe(4)
+    // Alvo LOGO ABAIXO e dentro do alcance: dispara o mergulho.
+    const alvo = api.createSprite({ x: 204, y: 250, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e._dive).toBe(1)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.vy).toBeGreaterThan(0)
+    // Desce até bater embaixo e então SOBE de volta.
+    for (let i = 0; i < 200 && e._dive === 1; i += 1) api.updateEnemyType(t, ctx, alvo)
+    expect(e._dive).toBe(2)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.vy).toBe(-4) // subindo à velocidade do tipo
+    for (let i = 0; i < 200 && e._dive === 2; i += 1) api.updateEnemyType(t, ctx, alvo)
+    expect(e.y).toBe(40)
+    expect(e._dive).toBe(0)
+  })
+
+  it('teleporte reaparece na cadência, alternando o lado do alvo (sem sorteio)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'teleporte', w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 3)
+    api.setEnemyTypeParam(t, 'alcance', 50)
+    const e = api.spawnEnemy(t, 10, 10) as Sprite
+    const alvo = api.createSprite({ x: 195, y: 145, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(10) // ainda esperando
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(200 - 50 - 5) // 1º salto: à ESQUERDA do alvo
+    expect(e.y).toBe(150 - 5)
+    for (let i = 0; i < 3; i += 1) api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(200 + 50 - 5) // 2º salto: alternou de lado
+    // Sem alvo ele fica pairando onde está.
+    const parado = e.x
+    for (let i = 0; i < 5; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBe(parado)
+  })
+
+  it('zigue-zague quica nos dois eixos: bordas no X, alcance de casa no Y', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'zigue-zague', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 6)
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(e.vx).toBe(3)
+    expect(e.vy).toBe(3)
+    api.updateEnemyType(t, ctx, null)
+    api.updateEnemyType(t, ctx, null)
+    expect(e.vy).toBe(-3) // passou de 6px abaixo da casa e virou
+    e.x = 395
+    api.updateEnemyType(t, ctx, null)
+    expect(e.vx).toBe(-3) // encostou na borda direita e virou
+  })
+
+  it('atirador em leque solta 3 tiros de uma vez, abertos em volta do alvo', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador-leque', w: 10, h: 10, dmg: 2 })
+    api.setEnemyTypeParam(t, 'cadencia', 2)
+    api.setEnemyTypeParam(t, 'tiro', 6)
+    api.spawnEnemy(t, 100, 100)
+    const alvo = api.createSprite({ x: 300, y: 105, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    expect(t.bullets.items.length).toBe(0)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(t.bullets.items.length).toBe(3)
+    const base = Math.atan2(110 - 105, 305 - 105)
+    const angulos = t.bullets.items.map((b) => Math.atan2(b.vy, b.vx)).sort((a, b) => a - b)
+    expect(angulos[0]).toBeCloseTo(base - 0.35, 6)
+    expect(angulos[1]).toBeCloseTo(base, 6)
+    expect(angulos[2]).toBeCloseTo(base + 0.35, 6)
+    expect(t.bullets.items[0]?.dmg).toBe(2)
+    // Sem alvo não atira.
+    api.updateEnemyType(t, ctx, null)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.bullets.items.length).toBe(3)
+  })
+
+  it('bombardeiro solta tiro reto para baixo SEM precisar de alvo', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'bombardeiro', w: 10, h: 10, dmg: 3 })
+    api.setEnemyTypeParam(t, 'cadencia', 2)
+    api.setEnemyTypeParam(t, 'tiro', 5)
+    api.spawnEnemy(t, 100, 50)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.bullets.items.length).toBe(0)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.bullets.items.length).toBe(1)
+    const bomba = t.bullets.items[0] as Sprite
+    expect(bomba.vx).toBe(0)
+    expect(bomba.vy).toBe(5)
+    expect(bomba.dmg).toBe(3)
+  })
+
+  it('espinho nunca é derrotado: a vida volta antes da poda', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const t = api.createEnemyType({ behavior: 'espinho', hp: 4 })
+    const e = api.spawnEnemy(t, 50, 50) as Sprite
+    api.changeHealth(e, -10)
+    expect(e.hp).toBe(0)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(1)
+    expect(e.hp).toBe(4)
+  })
+
+  it('ressuscitador morre de verdade e volta na casa depois do prazo', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const t = api.createEnemyType({ behavior: 'renascer', hp: 1 })
+    api.setEnemyTypeParam(t, 'voltar', 3)
+    const derrotados: Sprite[] = []
+    api.onEnemyDefeated(t, (s) => derrotados.push(s), 'ev')
+    const e = api.spawnEnemy(t, 70, 40) as Sprite
+    api.changeHealth(e, -1)
+    api.updateEnemyType(t, ctx, null)
+    // A derrota é REAL: sai da lista e o "quando for derrotado" dispara.
+    expect(t.items.length).toBe(0)
+    expect(derrotados.length).toBe(1)
+    // O prazo conta a partir do quadro SEGUINTE ao da morte: 3 quadros, 3 esperas.
+    api.updateEnemyType(t, ctx, null)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(0)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(1)
+    expect(t.items[0]?.x).toBe(70)
+    expect(t.items[0]?.y).toBe(40)
+    expect(t.items[0]?.hp).toBe(1)
+  })
+
+  it('chefão engorda a vida uma única vez e anda pela metade da velocidade', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'chefao', hp: 3, speed: 4 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    expect(e.hp).toBe(3)
+    api.updateEnemyType(t, ctx, null)
+    expect(e.hp).toBe(15)
+    expect(e.hpMax).toBe(15)
+    api.changeHealth(e, -5)
+    api.updateEnemyType(t, ctx, null)
+    expect(e.hp).toBe(10) // não engorda de novo
+    // Somado a um jeito de andar, ele anda a METADE da velocidade do tipo.
+    api.addEnemyTypeBehavior(t, 'patrulha')
+    api.updateEnemyType(t, ctx, null)
+    expect(e.vx).toBe(2)
+  })
+})
+
+describe('addEnemyTypeBehavior (combinar comportamentos)', () => {
+  it('patrulha + atirador anda E atira, e quem anda decide o lado do desenho', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 2)
+    api.addEnemyTypeBehavior(t, 'atirador')
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    const alvo = api.createSprite({ x: 40, y: 100, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.vx).toBe(3)
+    expect(e.x).toBe(203)
+    expect(t.bullets.items.length).toBe(0)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(t.bullets.items.length).toBe(1)
+    expect(e.vx).toBe(3) // segue andando
+    // O alvo está à ESQUERDA, mas ele anda para a direita: o lado é de quem anda.
+    expect(e.facing).toBe(1)
+  })
+
+  it('voador + bombardeiro voa na horizontal e solta bombas retas', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'voador', speed: 2, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 2)
+    api.setEnemyTypeParam(t, 'tiro', 4)
+    api.addEnemyTypeBehavior(t, 'bombardeiro')
+    api.setGravity(0.6)
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBe(104)
+    expect(e.y).toBe(40) // voa: a gravidade do mundo não o puxa
+    expect(e.vy).toBe(0)
+    expect(t.bullets.items.length).toBe(1)
+    expect(t.bullets.items[0]?.vy).toBe(4)
+  })
+
+  it('perseguidor + saltador: o X vem do perseguidor e o Y do pulo', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'perseguidor', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'ritmo', 2)
+    api.addEnemyTypeBehavior(t, 'saltador')
+    const e = api.spawnEnemy(t, 100, 290) as Sprite
+    const alvo = api.createSprite({ x: 300, y: 290, w: 10, h: 10 })
+    // Encosta no chão e, no ritmo, pula — perseguindo o alvo na horizontal.
+    let pulou = false
+    for (let i = 0; i < 6; i += 1) {
+      api.applyGravityToGroup(t)
+      api.updateEnemyType(t, ctx, alvo)
+      expect(e.vx).toBeGreaterThan(0) // o perseguidor manda no X o tempo todo
+      if (e.vy < 0) pulou = true
+    }
+    expect(pulou).toBe(true)
+    expect(e.x).toBeGreaterThan(100)
+  })
+
+  it('chefão + atirador em leque dispara UMA rajada (a mesma ação não conta duas vezes)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'chefao', w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.addEnemyTypeBehavior(t, 'atirador-leque')
+    api.spawnEnemy(t, 100, 100)
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 300, y: 100, w: 10, h: 10 }))
+    expect(t.bullets.items.length).toBe(3)
+  })
+})
+
+describe('combinações que já quebraram (regressões do full review)', () => {
+  it('perseguidor que só ganhou o X anda na velocidade CHEIA, não na fração do vetor', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'perseguidor', speed: 3, w: 10, h: 10 })
+    api.addEnemyTypeBehavior(t, 'saltador') // o saltador toma o eixo Y
+    const e = api.spawnEnemy(t, 100, 290) as Sprite
+    // Alvo 10px ao lado e 250px ACIMA: normalizar em 2D daria vx de 0,12 e o
+    // inimigo levaria 83 quadros para andar 10px.
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 110, y: 40, w: 10, h: 10 }))
+    expect(e.vx).toBe(3)
+    // Perto o bastante, ele não ultrapassa o alvo.
+    e.x = 108
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 110, y: 40, w: 10, h: 10 }))
+    expect(e.vx).toBe(2)
+  })
+
+  it('espinho pisado volta a machucar (o pulo zera o dano contando que ele morra)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, dmg: 2, w: 20, h: 20 })
+    api.addEnemyTypeBehavior(t, 'espinho')
+    const espinho = api.spawnEnemy(t, 100, 200) as Sprite
+    const heroi = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.setHealth(heroi, 5)
+    api.stompEnemyType(heroi, t, 8)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(1) // não morre
+    expect(espinho.hp).toBe(3)
+    expect(espinho.dmg).toBe(2) // e volta a doer
+    api.hurtByEnemy(heroi, espinho)
+    expect(heroi.hp).toBe(3)
+  })
+
+  it('espinho + chefão volta ao teto DELE, não ao do tipo (a barra de vida lê hp/hpMax)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'chefao', hp: 3, w: 20, h: 20 })
+    api.addEnemyTypeBehavior(t, 'espinho')
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(e.hpMax).toBe(15)
+    api.changeHealth(e, -99)
+    api.updateEnemyType(t, ctx, null)
+    expect(e.hp).toBe(15)
+  })
+
+  it('somar chefão no meio do jogo é reforço, não cura: o dano já levado continua valendo', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 10, w: 20, h: 20 })
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    api.changeHealth(e, -9)
+    expect(e.hp).toBe(1)
+    api.addEnemyTypeBehavior(t, 'chefao')
+    api.updateEnemyType(t, ctx, null)
+    expect(e.hpMax).toBe(50)
+    expect(e.hp).toBe(41) // 1 + os 40 de teto novo, e NÃO 50
+  })
+
+  it('o vira-na-borda do voador vertical não vira mais a marcha de quem anda no X', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 2, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 4)
+    api.addEnemyTypeBehavior(t, 'voador-vertical')
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    // O voador vertical passa do alcance e inverte o eixo DELE já no 3º quadro.
+    for (let i = 0; i < 6; i += 1) {
+      api.updateEnemyType(t, ctx, null)
+      expect(e.vx).toBe(2) // a patrulha segue para a direita o tempo todo
+    }
+    expect(e.vy).toBe(-2) // e o vertical inverteu, como deve
+  })
+
+  it('somar parado congela o inimigo (senão o bloco mentiria)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'perseguidor', speed: 4, w: 10, h: 10 })
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    const alvo = api.createSprite({ x: 300, y: 100, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(104)
+    api.addEnemyTypeBehavior(t, 'parado')
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(104)
+    expect(e.vx).toBe(0)
+  })
+
+  it('fugitivo parado lá atrás não é ARRASTADO pela câmera que se afasta', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'medroso', speed: 3, w: 20, h: 20 })
+    const e = api.spawnEnemy(t, 50, 100) as Sprite
+    // A câmera anda 800px para a direita: o inimigo fica MUITO atrás dela.
+    api.setCamera(800, 0)
+    for (let i = 0; i < 5; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBe(50) // ficou onde estava, não colou na borda da tela
+  })
+
+  it('nome herdado de Object.prototype não passa por comportamento', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx(400, 300)
+      api.addEnemyTypeBehavior(api.createEnemyType({}), 'toString')
+      // No modo Código, um nome desses no nascimento cai no padrão patrulha
+      // (era o "senão" da cadeia antiga), em vez de deixar o inimigo inerte.
+      const t = api.createEnemyType({ behavior: 'constructor', speed: 5, w: 10, h: 10 })
+      const e = api.spawnEnemy(t, 100, 100) as Sprite
+      api.updateEnemyType(t, ctx, null)
+      expect(e.vx).toBe(5)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+})
+
+describe('jogo de nave: os comportamentos novos', () => {
+  it('perseguidor de lado segue na horizontal sem mudar de altura', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'perseguidor-lado', speed: 3, w: 10, h: 10 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    const alvo = api.createSprite({ x: 300, y: 260, w: 10, h: 10 })
+    for (let i = 0; i < 5; i += 1) api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(115)
+    expect(e.y).toBe(40) // a altura é a mesma o tempo todo
+    // Perto o bastante, não ultrapassa o alvo: o passo é o que falta, e não a
+    // velocidade cheia (alvo no centro 305, inimigo no centro 307).
+    e.x = 302
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.vx).toBe(-2)
+  })
+
+  it('atirador alinhado espera o alvo passar na frente, e não gasta a recarga fora da coluna', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20, dmg: 2 })
+    api.setEnemyTypeParam(t, 'cadencia', 3)
+    api.setEnemyTypeParam(t, 'alcance', 12) // a folga da coluna
+    api.setEnemyTypeParam(t, 'tiro', 5)
+    api.spawnEnemy(t, 100, 40)
+    const longe = api.createSprite({ x: 300, y: 250, w: 20, h: 20 })
+    for (let i = 0; i < 10; i += 1) api.updateEnemyType(t, ctx, longe)
+    expect(t.bullets.items.length).toBe(0)
+    // Fica CARREGADO: assim que a nave entra na coluna, dispara na cadência cheia.
+    const naFrente = api.createSprite({ x: 100, y: 250, w: 20, h: 20 })
+    api.updateEnemyType(t, ctx, naFrente)
+    api.updateEnemyType(t, ctx, naFrente)
+    expect(t.bullets.items.length).toBe(0)
+    api.updateEnemyType(t, ctx, naFrente)
+    expect(t.bullets.items.length).toBe(1)
+    const tiro = t.bullets.items[0] as Sprite
+    expect(tiro.vx).toBe(0) // reto para baixo, é uma coluna
+    expect(tiro.vy).toBe(5)
+    expect(tiro.dmg).toBe(2)
+  })
+
+  it('atirador alinhado também mira para CIMA quando o alvo está acima', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.setEnemyTypeParam(t, 'tiro', 6)
+    api.spawnEnemy(t, 100, 250)
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 100, y: 40, w: 20, h: 20 }))
+    expect(t.bullets.items[0]?.vy).toBe(-6)
+  })
+
+  it('atirador esperto joga o tiro NA FRENTE de um alvo em movimento', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    // ⚠️ O alvo tem que cruzar PERPENDICULAR à linha de tiro. Com ele correndo
+    // ao longo da mira, adiantar não muda o ângulo e o teste passaria mesmo sem
+    // predição nenhuma (foi assim que esta asserção nasceu, e não provava nada).
+    const t = api.createEnemyType({ behavior: 'atirador-esperto', w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.setEnemyTypeParam(t, 'tiro', 5)
+    api.spawnEnemy(t, 100, 100)
+    const alvo = api.createSprite({ x: 200, y: 100, w: 10, h: 10, vx: 0, vy: 3 })
+    api.updateEnemyType(t, ctx, alvo)
+    const tiro = t.bullets.items[0] as Sprite
+    // 100px de distância / 5 por quadro = 20 quadros; o alvo desce 60 nesse tempo.
+    expect(Math.atan2(tiro.vy, tiro.vx)).toBeCloseTo(Math.atan2(60, 100), 2)
+    expect(tiro.vy).toBeGreaterThan(2) // sem predição seria 0
+  })
+
+  it('com o alvo mais RÁPIDO que o tiro, ele mira direto em vez de atirar para trás', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador-esperto', w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.setEnemyTypeParam(t, 'tiro', 4) // o padrão do tipo
+    api.spawnEnemy(t, 100, 100)
+    // A nave anda a 6 (o padrão do bloco de setas) VINDO para cima dele. Uma
+    // passada de correção inverteria o sinal e o tiro sairia para a esquerda.
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 200, y: 100, w: 10, h: 10, vx: -6, vy: 0 }))
+    expect(t.bullets.items[0]?.vx).toBe(4) // para a DIREITA, onde a nave está
+  })
+
+  it('com o alvo PARADO, o atirador esperto mira igual ao atirador comum', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const alvo = { x: 200, y: 180, w: 10, h: 10, vx: 0, vy: 0 }
+    const esperto = api.createEnemyType({ behavior: 'atirador-esperto', w: 10, h: 10 })
+    const comum = api.createEnemyType({ behavior: 'atirador', w: 10, h: 10 })
+    for (const t of [esperto, comum]) {
+      api.setEnemyTypeParam(t, 'cadencia', 1)
+      api.setEnemyTypeParam(t, 'tiro', 5)
+      api.spawnEnemy(t, 100, 100)
+      api.updateEnemyType(t, ctx, api.createSprite({ ...alvo }))
+    }
+    expect(esperto.bullets.items[0]?.vx).toBeCloseTo(comum.bullets.items[0]?.vx ?? 0, 6)
+    expect(esperto.bullets.items[0]?.vy).toBeCloseTo(comum.bullets.items[0]?.vy ?? 0, 6)
+  })
+})
+
+describe('o raio', () => {
+  it('recarrega, avisa 60 quadros e só então liga pela duração escolhida', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'raio', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 10)
+    api.setEnemyTypeParam(t, 'duracao', 30)
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    const alvo = api.createSprite({ x: 100, y: 250, w: 20, h: 20 })
+    const passo = (n: number) => {
+      for (let i = 0; i < n; i += 1) api.updateEnemyType(t, ctx, alvo)
+    }
+    passo(9)
+    expect(e._beamPhase).toBe(0) // ainda recarregando
+    passo(1)
+    expect(e._beamPhase).toBe(1) // avisando
+    passo(59)
+    expect(e._beamPhase).toBe(1)
+    passo(1)
+    expect(e._beamPhase).toBe(2) // ligado
+    passo(29)
+    expect(e._beamPhase).toBe(2)
+    passo(1)
+    expect(e._beamPhase).toBe(0) // e volta a recarregar
+  })
+
+  it('o feixe só machuca na fase LIGADA, e não some ao acertar', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'raio', w: 20, h: 20, dmg: 2 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.setEnemyTypeParam(t, 'duracao', 20)
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    // Na coluna do inimigo, mais abaixo: o feixe passa por ele.
+    const nave = api.createSprite({ x: 100, y: 200, w: 20, h: 20 })
+    const acertos: Sprite[] = []
+    const varrer = () =>
+      api.overlapEnemyBeams(
+        () => nave,
+        t,
+        (dono) => acertos.push(dono),
+      )
+    api.updateEnemyType(t, ctx, nave) // recarga acaba -> avisando
+    varrer()
+    expect(acertos.length).toBe(0) // aviso não machuca
+    for (let i = 0; i < 60; i += 1) api.updateEnemyType(t, ctx, nave)
+    expect(e._beamPhase).toBe(2)
+    varrer()
+    varrer()
+    expect(acertos.length).toBe(2) // acerta em todo quadro: NÃO some ao acertar
+    expect(acertos[0]).toBe(e) // e entrega o DONO do raio
+  })
+
+  it('quem está fora da coluna do feixe não é atingido', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'raio', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.spawnEnemy(t, 100, 40)
+    const fora = api.createSprite({ x: 300, y: 200, w: 20, h: 20 })
+    for (let i = 0; i < 62; i += 1) api.updateEnemyType(t, ctx, fora)
+    let acertou = false
+    api.overlapEnemyBeams(
+      () => fora,
+      t,
+      () => {
+        acertou = true
+      },
+    )
+    expect(acertou).toBe(false)
+  })
+
+  it('o raio não precisa de alvo: um inimigo burro dispara igual', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', w: 20, h: 20 })
+    api.addEnemyTypeBehavior(t, 'raio')
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    for (let i = 0; i < 62; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e._beamPhase).toBe(2)
+  })
+})
+
+describe('os cinco níveis de inteligência', () => {
+  it('cada nível semeia o pacote certo, e o de nascença é o primeiro dele', () => {
+    const api = load()
+    const esperado: Record<string, string[]> = {
+      burra: ['patrulha', 'bombardeiro'],
+      basica: ['patrulha', 'atirador-alinhado'],
+      avancada: ['perseguidor', 'atirador'],
+      ultra: ['perseguidor', 'atirador-esperto'],
+      rei: ['perseguidor', 'atirador-esperto', 'raio', 'chefao'],
+    }
+    for (const [nivel, combo] of Object.entries(esperado)) {
+      const t = api.createSmartEnemyType({ smart: nivel })
+      expect(t.config.behaviors, nivel).toEqual(combo)
+      expect(t.config.behavior, nivel).toBe(combo[0] as string)
+    }
+  })
+
+  it('o "também é" soma por cima da inteligência (o inimigo burro com raio)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createSmartEnemyType({ smart: 'burra', w: 20, h: 20 })
+    api.addEnemyTypeBehavior(t, 'raio')
+    expect(t.config.behaviors).toEqual(['patrulha', 'bombardeiro', 'raio'])
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    for (let i = 0; i < 62; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e._beamPhase).toBe(2) // solta raio
+    expect(e.vx).not.toBe(0) // e continua patrulhando
+    expect(t.bullets.items.length).toBeGreaterThan(0) // e bombardeando
+  })
+
+  it('o rei nasce com vida 5 vezes maior e anda pela metade', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createSmartEnemyType({ smart: 'rei', hp: 4, speed: 4, w: 20, h: 20 })
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 300, y: 100, w: 10, h: 10 }))
+    expect(e.hpMax).toBe(20)
+    expect(e.vx).toBeCloseTo(2, 2)
+  })
+
+  it('inteligência desconhecida avisa e cai na burra', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const t = api.createSmartEnemyType({ smart: 'genial' })
+      expect(t.config.behaviors).toEqual(['patrulha', 'bombardeiro'])
+      expect(warn).toHaveBeenCalledTimes(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+})
+
+describe('chefão: quando levar dano e o inimigo com nome', () => {
+  it('dispara ao perder vida e continuar vivo, com o inimigo em mãos', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 5, w: 20, h: 20 })
+    const golpes: number[] = []
+    api.onEnemyHurt(t, (s) => golpes.push(s.hp ?? -1), 'ev')
+    const e = api.spawnEnemy(t, 50, 50) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(golpes).toEqual([]) // sem dano, sem evento
+    api.changeHealth(e, -2)
+    api.updateEnemyType(t, ctx, null)
+    expect(golpes).toEqual([3])
+    api.updateEnemyType(t, ctx, null)
+    expect(golpes).toEqual([3]) // não repete sem dano novo
+  })
+
+  it('NÃO dispara no golpe que mata (esse é o "quando for derrotado")', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 2, w: 20, h: 20 })
+    const machucou: string[] = []
+    const morreu: string[] = []
+    api.onEnemyHurt(t, () => machucou.push('dano'), 'a')
+    api.onEnemyDefeated(t, () => morreu.push('morte'), 'b')
+    const e = api.spawnEnemy(t, 50, 50) as Sprite
+    api.changeHealth(e, -2)
+    api.updateEnemyType(t, ctx, null)
+    expect(machucou).toEqual([])
+    expect(morreu).toEqual(['morte'])
+  })
+
+  it('o handler defeituoso é isolado e o saudável continua', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    const error = spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ behavior: 'patrulha', hp: 9, w: 20, h: 20 })
+      const bons: number[] = []
+      api.onEnemyHurt(
+        t,
+        () => {
+          throw new Error('boom')
+        },
+        'ruim',
+      )
+      api.onEnemyHurt(t, () => bons.push(1), 'bom')
+      const e = api.spawnEnemy(t, 50, 50) as Sprite
+      api.changeHealth(e, -1)
+      api.updateEnemyType(t, ctx, null)
+      api.changeHealth(e, -1)
+      api.updateEnemyType(t, ctx, null)
+      expect(bons.length).toBe(2) // o bom rodou nas duas
+    } finally {
+      warn.mockRestore()
+      error.mockRestore()
+    }
+  })
+
+  it('o inimigo solto com nome é o MESMO objeto que entrou na lista', () => {
+    const api = load()
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 7, w: 20, h: 20 })
+    const chefe = api.spawnEnemy(t, 200, 60)
+    expect(chefe).toBe(t.items[0] as Sprite)
+    expect(chefe?.hp).toBe(7)
+  })
+})
+
+describe('correções do terceiro full review', () => {
+  it('a coluna do atirador alinhado é a largura dos dois, e não o alcance', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    // Alcance ENORME não pode alargar a coluna: senão voador + alinhado seria
+    // impossível de ajustar (o mesmo número faz o voo e a coluna).
+    api.setEnemyTypeParam(t, 'alcance', 400)
+    api.spawnEnemy(t, 100, 40)
+    // Centro do inimigo 110; nave de 20 com centro em 200: 90 de distância, bem
+    // mais que os (20+20)/2 = 20 da coluna.
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 190, y: 250, w: 20, h: 20 }))
+    expect(t.bullets.items.length).toBe(0)
+    // Encostando na coluna, atira.
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 100, y: 250, w: 20, h: 20 }))
+    expect(t.bullets.items.length).toBe(1)
+  })
+
+  it('o espinho dispara o "levou dano" também no golpe que o mataria', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const t = api.createEnemyType({ behavior: 'espinho', hp: 3, w: 20, h: 20 })
+    const golpes: number[] = []
+    api.onEnemyHurt(t, () => golpes.push(1), 'ev')
+    const e = api.spawnEnemy(t, 50, 50) as Sprite
+    api.changeHealth(e, -1) // golpe fraco
+    api.updateEnemyType(t, ctx, null)
+    expect(golpes.length).toBe(1)
+    api.changeHealth(e, -99) // golpe que mataria
+    api.updateEnemyType(t, ctx, null)
+    expect(golpes.length).toBe(2)
+    expect(t.items.length).toBe(1) // e ele continua vivo
+  })
+
+  it('esvaziar o grupo leva os TIROS do tipo junto', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'bombardeiro', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.spawnEnemy(t, 100, 40)
+    for (let i = 0; i < 3; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(t.bullets.items.length).toBeGreaterThan(0)
+    api.clearGroup(t)
+    expect(t.items.length).toBe(0)
+    expect(t.bullets.items.length).toBe(0) // a nave não renasce levando tiro fantasma
+  })
+
+  it('parar de desenhar volta a contar para o aviso da tela vazia', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({})
+      api.spawnEnemy(t, 50, 50)
+      // Fase 1: desenha. Nenhum aviso.
+      for (let i = 0; i < 500; i += 1) {
+        api.updateEnemyType(t, ctx, null)
+        api.drawGroup(ctx, t)
+      }
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('ninguém os desenha'))).toEqual([])
+      // Fase 2: o "Desenhar" ficou dentro de um "se" que parou de valer.
+      for (let i = 0; i < 400; i += 1) api.updateEnemyType(t, ctx, null)
+      expect(
+        warn.mock.calls.filter((c) => String(c[0]).includes('ninguém os desenha')).length,
+      ).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('avisa quando o raio liga e ninguém confere se ele acertou', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx(400, 300)
+      const t = api.createEnemyType({ behavior: 'raio', w: 20, h: 20 })
+      api.setEnemyTypeParam(t, 'cadencia', 1)
+      api.spawnEnemy(t, 100, 40)
+      const nave = api.createSprite({ x: 100, y: 200, w: 20, h: 20 })
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t, ctx, nave)
+        api.drawEnemyType(ctx, t)
+      }
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('ninguém confere')).length).toBe(1)
+      // Quem confere não é incomodado.
+      const ok = api.createEnemyType({ behavior: 'raio', w: 20, h: 20 })
+      api.setEnemyTypeParam(ok, 'cadencia', 1)
+      api.spawnEnemy(ok, 100, 40)
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(ok, ctx, nave)
+        api.drawEnemyType(ctx, ok)
+        api.overlapEnemyBeams(
+          () => nave,
+          ok,
+          () => {},
+        )
+      }
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('ninguém confere')).length).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('velocidade de tiro zero não entope o grupo com tiros parados', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'bombardeiro', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    api.setEnemyTypeParam(t, 'tiro', 0) // fica no valor anterior, não em zero
+    api.spawnEnemy(t, 100, 40)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.bullets.items[0]?.vy).toBeGreaterThan(0)
+  })
+
+  it('inteligência desconhecida avisa UMA vez, mesmo criando o tipo sem parar', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      for (let i = 0; i < 20; i += 1) api.createSmartEnemyType({ smart: 'genial' })
+      const avisos = warn.mock.calls.filter((c) => String(c[0]).includes('genial'))
+      expect(avisos.length).toBe(1)
+      // Sem escolher nada, o recado não mostra "undefined" para a criança.
+      api.createSmartEnemyType({})
+      const semNada = warn.mock.calls.filter((c) => String(c[0]).includes('nenhuma'))
+      expect(semNada.length).toBe(1)
+      expect(warn.mock.calls.some((c) => String(c[0]).includes('undefined'))).toBe(false)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+})
+
+describe('dois inimigos do MESMO tipo (o estado é de cada um, não do tipo)', () => {
+  it('dois atiradores nascidos em quadros diferentes têm cadências independentes', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador', w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 4)
+    const alvo = api.createSprite({ x: 300, y: 100, w: 10, h: 10 })
+    api.spawnEnemy(t, 50, 100)
+    api.updateEnemyType(t, ctx, alvo) // o 1º já contou um quadro
+    api.spawnEnemy(t, 80, 100)
+    for (let i = 0; i < 3; i += 1) api.updateEnemyType(t, ctx, alvo)
+    // O 1º completou 4 quadros e atirou; o 2º ainda não.
+    expect(t.bullets.items.length).toBe(1)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(t.bullets.items.length).toBe(2)
+  })
+
+  it('dois rondadores nascidos em casas diferentes descrevem círculos próprios', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'rondador', speed: 5, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 50)
+    const a = api.spawnEnemy(t, 100, 100) as Sprite
+    const b = api.spawnEnemy(t, 300, 200) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(a.x).toBeCloseTo(100 + Math.sin(0.1) * 50, 6)
+    expect(b.x).toBeCloseTo(300 + Math.sin(0.1) * 50, 6)
+    expect(a.y).toBeCloseTo(100 + (Math.cos(0.1) - 1) * 50, 6)
+    expect(b.y).toBeCloseTo(200 + (Math.cos(0.1) - 1) * 50, 6)
+  })
+
+  it('atirador + atirador em leque disparam JUNTOS, cada um no seu contador', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador', w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 2)
+    api.addEnemyTypeBehavior(t, 'atirador-leque')
+    api.spawnEnemy(t, 100, 100)
+    const alvo = api.createSprite({ x: 300, y: 100, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    expect(t.bullets.items.length).toBe(0)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(t.bullets.items.length).toBe(4) // 1 do atirador + 3 do leque
+  })
+})
+
+describe('combinações que já quebraram, parte 2 (segundo full review)', () => {
+  it('mergulhador que perde o eixo Y não dispara mergulho nenhum', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'mergulhador', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 60)
+    api.addEnemyTypeBehavior(t, 'voador-vertical') // toma o eixo Y
+    const e = api.spawnEnemy(t, 200, 40) as Sprite
+    const alvo = api.createSprite({ x: 204, y: 250, w: 10, h: 10 })
+    for (let i = 0; i < 30; i += 1) api.updateEnemyType(t, ctx, alvo)
+    expect(e._dive).toBe(0)
+    // Sem a guarda, ele sairia voando na horizontal com o vetor congelado.
+    expect(Math.abs(e.x - 200)).toBeLessThanOrEqual(60 + 3)
+  })
+
+  it('mergulho em curso que PERDE o eixo Y aborta em vez de sair voando', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'mergulhador', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 60)
+    const e = api.spawnEnemy(t, 200, 40) as Sprite
+    const alvo = api.createSprite({ x: 204, y: 250, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e._dive).toBe(1)
+    api.addEnemyTypeBehavior(t, 'voador-vertical') // no meio do mergulho
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e._dive).toBe(0)
+  })
+
+  it('mergulhador não vira a marcha de quem ganhou o eixo X', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'mergulhador', speed: 2, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 10)
+    api.addEnemyTypeBehavior(t, 'patrulha') // a patrulha manda no X
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    for (let i = 0; i < 20; i += 1) {
+      api.updateEnemyType(t, ctx, null)
+      expect(e.vx).toBe(2) // sem parede, não pode virar sozinho
+    }
+  })
+
+  it('parado somado a quem VOA não derruba o inimigo até o chão', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'zigue-zague', speed: 2, w: 10, h: 10 })
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    api.addEnemyTypeBehavior(t, 'parado')
+    for (let i = 0; i < 60; i += 1) {
+      api.applyGravityToGroup(t)
+      api.updateEnemyType(t, ctx, null)
+    }
+    expect(e.y).toBe(100) // ficou no lugar, no ar
+    expect(e.vy).toBe(0)
+    expect(e.onGround).toBeUndefined()
+  })
+
+  it('chefão NÃO ressuscita quem já estava com a vida em zero', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'chefao', hp: 3, w: 10, h: 10 })
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    // Morto ANTES do primeiro update dele (onda que solta depois do atualizar).
+    api.changeHealth(e, -3)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(0)
+    expect(e.hp).toBe(0)
+  })
+
+  it('inimigo solto EM CIMA da borda ainda é segurado quando foge para fora', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'medroso', speed: 3, w: 32, h: 32 })
+    api.setEnemyTypeParam(t, 'alcance', 200)
+    // Nasce meio para fora, como numa onda solta na borda direita.
+    const e = api.spawnEnemy(t, 390, 100) as Sprite
+    // Alvo à esquerda: ele foge para a DIREITA, para fora da tela.
+    for (let i = 0; i < 20; i += 1) {
+      api.updateEnemyType(t, ctx, api.createSprite({ x: 300, y: 100, w: 10, h: 10 }))
+    }
+    expect(e.x + e.w).toBe(400)
+  })
+
+  it('esvaziar o grupo cancela quem estava a caminho de voltar', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'renascer', hp: 1, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'voltar', 5)
+    const e = api.spawnEnemy(t, 70, 40) as Sprite
+    api.changeHealth(e, -1)
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(0)
+    api.clearGroup(t) // "Esvaziar o grupo": a fase acabou
+    for (let i = 0; i < 20; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(0) // nenhum fantasma da fase anterior
+  })
+
+  it('renascer devolve o inimigo na CASA dele, não onde ele morreu', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 5, hp: 1, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'voltar', 2)
+    api.addEnemyTypeBehavior(t, 'renascer')
+    const e = api.spawnEnemy(t, 100, 80) as Sprite
+    for (let i = 0; i < 5; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBe(125) // andou
+    api.changeHealth(e, -1)
+    api.updateEnemyType(t, ctx, null)
+    for (let i = 0; i < 3; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(1)
+    // A casa do inimigo novo é onde o VELHO nasceu (100/80), não onde ele morreu
+    // (125). Olhamos a casa porque ele já anda no mesmo quadro em que renasce.
+    expect(t.items[0]?._homeX).toBe(100)
+    expect(t.items[0]?._homeY).toBe(80)
+  })
+})
+
+describe('espelhos: o outro lado de cada comportamento simétrico', () => {
+  it('medroso foge para a DIREITA quando o alvo está à esquerda', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'medroso', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 60)
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 170, y: 100, w: 10, h: 10 }))
+    expect(e.vx).toBe(3)
+  })
+
+  it('arrancada corre para a DIREITA quando o alvo está à direita', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'arrancada', speed: 2, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 60)
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 230, y: 100, w: 10, h: 10 }))
+    expect(e.vx).toBe(6)
+  })
+
+  it('o alcance é a distância CHEIA, não só a horizontal', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'medroso', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 40)
+    const e = api.spawnEnemy(t, 200, 200) as Sprite
+    // Bem em cima, longe demais na vertical: não reage.
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 200, y: 60, w: 10, h: 10 }))
+    expect(e.vx).toBe(0)
+  })
+
+  it('zigue-zague vira também na borda ESQUERDA', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'zigue-zague', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 100)
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    e._dir = -1
+    e.x = 0
+    api.updateEnemyType(t, ctx, null)
+    expect(e.vx).toBe(3)
+  })
+
+  it('patrulha vira na borda DIREITA e não sai da tela', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 4, w: 20, h: 20 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    for (let i = 0; i < 40; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e.x + e.w).toBeLessThanOrEqual(200 + 4)
+    expect(e.x).toBeGreaterThanOrEqual(-4)
+  })
+})
+
+describe('a regra do ÚLTIMO somado', () => {
+  it('quem chega por último manda no eixo, e somar de novo traz o antigo de volta', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 3, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'alcance', 20)
+    const e = api.spawnEnemy(t, 200, 100) as Sprite
+    const longe = api.createSprite({ x: 390, y: 100, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, longe)
+    expect(e.vx).toBe(3)
+    // Fugitivo somado depois vence o eixo X: com o alvo longe, ele fica quieto.
+    api.addEnemyTypeBehavior(t, 'medroso')
+    api.updateEnemyType(t, ctx, longe)
+    expect(e.vx).toBe(0)
+    // Somar patrulha DE NOVO a move para o fim: ela volta a mandar.
+    api.addEnemyTypeBehavior(t, 'patrulha')
+    expect(t.config.behaviors).toEqual(['medroso', 'patrulha'])
+    api.updateEnemyType(t, ctx, longe)
+    expect(e.vx).toBe(3)
+  })
+
+  it('somar no meio do jogo não reinicia posição nem direção', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 5, w: 10, h: 10 })
+    api.setEnemyTypeParam(t, 'cadencia', 2)
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    for (let i = 0; i < 5; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBe(125)
+    api.addEnemyTypeBehavior(t, 'atirador')
+    const alvo = api.createSprite({ x: 300, y: 100, w: 10, h: 10 })
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(130) // seguiu de onde estava
+    api.updateEnemyType(t, ctx, alvo)
+    expect(t.bullets.items.length).toBe(1)
+  })
+
+  it('nome desconhecido avisa uma vez e não entra na lista; o de nascença nunca muda', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const t = api.createEnemyType({ behavior: 'voador' })
+      api.addEnemyTypeBehavior(t, 'foguete')
+      api.addEnemyTypeBehavior(t, 'foguete-2')
+      expect(t.config.behaviors).toEqual(['voador'])
+      expect(warn).toHaveBeenCalledTimes(1)
+      api.addEnemyTypeBehavior(t, 'atirador')
+      api.addEnemyTypeBehavior(t, 'saltador')
+      expect(t.config.behaviors).toEqual(['voador', 'atirador', 'saltador'])
+      expect(t.config.behavior).toBe('voador')
+    } finally {
+      warn.mockRestore()
+    }
+  })
+})
+
+describe('derrotar pulando em cima (stompEnemyType)', () => {
+  it('caindo em cima derrota o inimigo e dá o quique', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    const heroi = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.stompEnemyType(heroi, t, 8)
+    expect(inimigo.hp).toBe(0)
+    expect(heroi.vy).toBe(-8)
+    expect(heroi.y).toBe(180) // encaixado em cima
+    expect(heroi.onGround).toBe(false)
+    // A morte é do "Atualizar os inimigos": partículas e o evento saem de lá.
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(0)
+  })
+
+  it('encostar de lado não derrota', () => {
+    const api = load()
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    const heroi = api.createSprite({ x: 90, y: 200, w: 20, h: 20, vy: 0 })
+    api.stompEnemyType(heroi, t, 8)
+    expect(inimigo.hp).toBe(3)
+    expect(heroi.vy).toBe(0)
+  })
+
+  it('de lado CAINDO também não derrota (a gravidade deixa todo mundo descendo)', () => {
+    const api = load()
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    // Encostado no flanco e descendo devagar, como logo depois de applyGravity:
+    // o pé JÁ estava fundo dentro do inimigo no começo do quadro.
+    const heroi = api.createSprite({ x: 84, y: 200, w: 20, h: 20, vy: 0.6 })
+    api.stompEnemyType(heroi, t, 8)
+    expect(inimigo.hp).toBe(3)
+    expect(heroi.vy).toBe(0.6)
+  })
+
+  it('o inimigo pisado não machuca mais neste quadro', () => {
+    const api = load()
+    api.setGravity(0.6)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, dmg: 2, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    const heroi = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.setHealth(heroi, 3)
+    api.stompEnemyType(heroi, t, 8)
+    api.hurtByEnemy(heroi, inimigo)
+    expect(heroi.hp).toBe(3)
+  })
+
+  it('com gravidade negativa o gesto se inverte: vale subindo nele', () => {
+    const api = load()
+    api.setGravity(-0.6)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    // Caindo (vy positivo) num mundo de cabeça para baixo NÃO vale.
+    const descendo = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.stompEnemyType(descendo, t, 8)
+    expect(inimigo.hp).toBe(3)
+    // Subindo nele, vale.
+    const subindo = api.createSprite({ x: 100, y: 210, w: 20, h: 20, vy: -5 })
+    api.stompEnemyType(subindo, t, 8)
+    expect(inimigo.hp).toBe(0)
+    expect(subindo.vy).toBe(8)
+    expect(subindo.y).toBe(220)
   })
 })
 
@@ -654,6 +1885,153 @@ describe('avisos pedagógicos (tipo sem spawn / criar dentro do laço)', () => {
     }
   })
 
+  it('atualizar sem NUNCA desenhar avisa (a tela vazia sem pista nenhuma)', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({})
+      api.spawnEnemy(t, 50, 50)
+      for (let i = 0; i < 400; i += 1) api.updateEnemyType(t, ctx, null)
+      const avisos = warn.mock.calls.filter((c) => String(c[0]).includes('ninguém os desenha'))
+      expect(avisos.length).toBe(1)
+      // Quem desenha não é incomodado.
+      const ok = api.createEnemyType({})
+      api.spawnEnemy(ok, 50, 50)
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(ok, ctx, null)
+        api.drawEnemyType(ctx, ok)
+      }
+      expect(
+        warn.mock.calls.filter((c) => String(c[0]).includes('ninguém os desenha')).length,
+      ).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('ajustar um valor que nenhum comportamento do tipo usa avisa, citando quem usa', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ behavior: 'patrulha' })
+      api.setEnemyTypeParam(t, 'pulo', 20) // patrulha não pula
+      api.spawnEnemy(t, 50, 50)
+      const quadro = () => {
+        api.updateEnemyType(t, ctx, null)
+        api.drawEnemyType(ctx, t)
+      }
+      for (let i = 0; i < 1799; i += 1) quadro()
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('força do pulo'))).toEqual([])
+      quadro()
+      const avisos = warn.mock.calls.filter((c) => String(c[0]).includes('força do pulo'))
+      expect(avisos.length).toBe(1)
+      expect(String(avisos[0]?.[0])).toContain('saltador')
+      // Não repete.
+      for (let i = 0; i < 1900; i += 1) quadro()
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('força do pulo')).length).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('juntar o comportamento que faltava DESARMA o aviso do ajuste órfão', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ behavior: 'patrulha' })
+      api.setEnemyTypeParam(t, 'pulo', 20)
+      api.spawnEnemy(t, 50, 50)
+      const quadro = () => {
+        api.updateEnemyType(t, ctx, null)
+        api.drawEnemyType(ctx, t)
+      }
+      for (let i = 0; i < 1700; i += 1) quadro() // quase lá
+      api.addEnemyTypeBehavior(t, 'saltador') // a fase 2 chegou
+      for (let i = 0; i < 2000; i += 1) quadro()
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('força do pulo'))).toEqual([])
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('desenhar pelo bloco de GRUPO também conta como desenhar', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      // O tipo É um grupo, e o seletor de "Desenhar o grupo" o lista: num jogo
+      // visto de cima, "ordenado pela base" é o bloco CERTO.
+      const t = api.createEnemyType({})
+      api.spawnEnemy(t, 50, 50)
+      for (let i = 0; i < 500; i += 1) {
+        api.updateEnemyType(t, ctx, null)
+        api.drawGroupByY(ctx, t)
+      }
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('ninguém os desenha'))).toEqual([])
+      const t2 = api.createEnemyType({})
+      api.spawnEnemy(t2, 50, 50)
+      for (let i = 0; i < 500; i += 1) {
+        api.updateEnemyType(t2, ctx, null)
+        api.drawGroup(ctx, t2)
+      }
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('ninguém os desenha'))).toEqual([])
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('ajustar ANTES de juntar o comportamento não avisa (é a ordem normal de montar)', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ behavior: 'patrulha' })
+      api.setEnemyTypeParam(t, 'cadencia', 40)
+      api.addEnemyTypeBehavior(t, 'atirador') // o dono chega DEPOIS do ajuste
+      api.spawnEnemy(t, 50, 50)
+      const alvo = api.createSprite({ x: 200, y: 50, w: 10, h: 10 })
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t, ctx, alvo)
+        api.drawEnemyType(ctx, t)
+      }
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('só muda alguma coisa'))).toEqual(
+        [],
+      )
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('comportamento que precisa de alvo sem alvo nenhum avisa e cita o campo do bloco', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ behavior: 'perseguidor' })
+      api.spawnEnemy(t, 50, 50)
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t, ctx, null)
+        api.drawEnemyType(ctx, t)
+      }
+      const avisos = warn.mock.calls.filter((c) => String(c[0]).includes('precisa de ALVO'))
+      expect(avisos.length).toBe(1)
+      expect(String(avisos[0]?.[0])).toContain('alvo:')
+      // Quem não precisa de alvo (patrulha) fica em paz.
+      const t2 = api.createEnemyType({ behavior: 'patrulha' })
+      api.spawnEnemy(t2, 50, 50)
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t2, ctx, null)
+        api.drawEnemyType(ctx, t2)
+      }
+      expect(warn.mock.calls.filter((c) => String(c[0]).includes('precisa de ALVO')).length).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
   it('createEnemyType chamado 61+ vezes (sinal de laço) avisa uma única vez', () => {
     const warn = spyOn(console, 'warn').mockImplementation(() => {})
     try {
@@ -664,5 +2042,206 @@ describe('avisos pedagógicos (tipo sem spawn / criar dentro do laço)', () => {
     } finally {
       warn.mockRestore()
     }
+  })
+})
+
+/**
+ * Quarto full review (07/08). A rodada mirou o que a TERCEIRA rodada tinha
+ * acabado de escrever, que é onde os defeitos moram quando ninguém revisou a
+ * correção. Cada caso aqui é um achado que virou conserto.
+ */
+describe('correções do quarto full review', () => {
+  /** Um ctx que ANOTA cada fillRect, para provar quantas vezes e em que ordem. */
+  function recordingCtx(w = 400, h = 300) {
+    const rects: Array<[number, number, number, number]> = []
+    const ctx = fakeCtx(w, h) as Record<string, unknown>
+    ctx.fillRect = (x: number, y: number, rw: number, rh: number) => {
+      rects.push([x, y, rw, rh])
+    }
+    return { ctx: ctx as unknown, rects }
+  }
+
+  it('o feixe é pintado UMA vez, e DEPOIS do inimigo (não duas, nem por baixo)', () => {
+    const api = load()
+    const { ctx, rects } = recordingCtx()
+    const t = api.createEnemyType({ behavior: 'raio', w: 20, h: 20, color: '#f00' })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    for (let i = 0; i < 62; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(e._beamPhase).toBe(2) // ligado
+    rects.length = 0
+    api.drawEnemyType(ctx, t)
+    // Só o feixe é comprido: ele vai do pé do inimigo até a borda de baixo. São
+    // DOIS retângulos (o halo e o miolo branco); pintado em dobro seriam quatro.
+    const compridos = rects.map((r, i) => [r, i] as const).filter(([r]) => r[3] > 100)
+    expect(compridos.length).toBe(2)
+    // O corpo do inimigo (20x20) sai ANTES: o feixe fica POR CIMA, como promete.
+    const corpo = rects.findIndex((r) => r[2] === 20 && r[3] === 20)
+    expect(corpo).toBeGreaterThanOrEqual(0)
+    expect(compridos[0]?.[1]).toBeGreaterThan(corpo)
+  })
+
+  it('o aviso do raio já nasce ACESO (o pisca começava apagado por 5 quadros)', () => {
+    const api = load()
+    const { ctx, rects } = recordingCtx()
+    const t = api.createEnemyType({ behavior: 'raio', w: 20, h: 20, color: '#f00' })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(e._beamPhase).toBe(1) // avisando
+    const riscoNoQuadro = () => {
+      rects.length = 0
+      api.drawEnemyType(ctx, t)
+      // O risco do aviso tem 2 de largura; o corpo do inimigo tem 20.
+      return rects.some((r) => r[2] === 2)
+    }
+    expect(riscoNoQuadro()).toBe(true) // 1º quadro do aviso: ela JÁ vê
+    for (let i = 0; i < 8; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(riscoNoQuadro()).toBe(false) // e então pisca
+    for (let i = 0; i < 8; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(riscoNoQuadro()).toBe(true)
+  })
+
+  it('o buff do chefão não ENGOLE o golpe que o inimigo levou antes do 1º update', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const t = api.createEnemyType({ behavior: 'parado', hp: 3 })
+    const e = api.spawnEnemy(t, 50, 50) as Sprite
+    api.changeHealth(e, -1) // a criança acertou um tiro ANTES de o update rodar
+    const golpes: number[] = []
+    api.onEnemyHurt(t, (s) => golpes.push(s.hp ?? 0))
+    api.addEnemyTypeBehavior(t, 'chefao')
+    api.updateEnemyType(t, ctx, null)
+    // Teto 3 vira 15, e ele carrega o dano que já tinha: 14/15, não 15/15.
+    expect(e.hpMax).toBe(15)
+    expect(e.hp).toBe(14)
+    expect(golpes).toEqual([14]) // o "quando levar dano" rodou, uma vez
+    // Sem golpe nenhum, o buff NÃO inventa evento.
+    const t2 = api.createEnemyType({ behavior: 'parado', hp: 3 })
+    const e2 = api.spawnEnemy(t2, 50, 50) as Sprite
+    const golpes2: number[] = []
+    api.onEnemyHurt(t2, (s) => golpes2.push(s.hp ?? 0))
+    api.addEnemyTypeBehavior(t2, 'chefao')
+    api.updateEnemyType(t2, ctx, null)
+    expect(e2.hp).toBe(15)
+    expect(golpes2).toEqual([])
+  })
+
+  it('o aviso do raio sem dano PARA quando ela liga o bloco, e VOLTA se ele sair', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ behavior: 'raio' })
+      const nave = api.createSprite({ x: 10, y: 10, w: 10, h: 10 })
+      api.spawnEnemy(t, 100, 40)
+      const conta = () =>
+        warn.mock.calls.filter((c) => String(c[0]).includes('Para cada raio do tipo')).length
+      // Ela CONFERE todo quadro: o contador zera e o aviso nunca aparece.
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t, ctx, nave)
+        api.drawEnemyType(ctx, t)
+        api.overlapEnemyBeams(
+          () => nave,
+          t,
+          () => {},
+        )
+      }
+      expect(conta()).toBe(0)
+      // Tirou o bloco na fase 2: o contador volta a andar e o aviso sai.
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t, ctx, nave)
+        api.drawEnemyType(ctx, t)
+      }
+      expect(conta()).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('overlapEnemyBeams sobrevive à criança REMOVENDO o dono dentro do bloco', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'raio', w: 20, h: 20 })
+    api.setEnemyTypeParam(t, 'cadencia', 1)
+    const a = api.spawnEnemy(t, 100, 40) as Sprite
+    const b = api.spawnEnemy(t, 100, 60) as Sprite
+    const nave = api.createSprite({ x: 100, y: 250, w: 20, h: 20 })
+    for (let i = 0; i < 62; i += 1) api.updateEnemyType(t, ctx, nave)
+    expect(a._beamPhase).toBe(2)
+    expect(b._beamPhase).toBe(2)
+    const donos: Sprite[] = []
+    api.overlapEnemyBeams(
+      () => nave,
+      t,
+      (dono) => {
+        donos.push(dono)
+        api.removeFromGroup(t, dono) // "sumir com o chefão quando ele acertar"
+      },
+    )
+    // Cada feixe acertou uma vez; ninguém foi pulado nem contado duas vezes.
+    expect(donos.length).toBe(2)
+    expect(new Set(donos).size).toBe(2)
+    expect(t.items.length).toBe(0)
+  })
+
+  it('sprite que entrou pelo "Pôr no grupo" ganha casa (o rondador não o manda para o NaN)', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const t = api.createEnemyType({ behavior: 'rondador', w: 20, h: 20 })
+    const adotado = api.createSprite({ x: 120, y: 80, w: 20, h: 20 })
+    api.addToGroup(t, adotado)
+    for (let i = 0; i < 30; i += 1) api.updateEnemyType(t, ctx, null)
+    expect(Number.isFinite(adotado.x)).toBe(true)
+    expect(Number.isFinite(adotado.y)).toBe(true)
+    // Ele orbita a casa dele (onde foi adotado), não a origem da tela.
+    expect(Math.abs(adotado.x - 120)).toBeLessThan(200)
+  })
+
+  it('velocidade de tiro zero é RECUSADA com aviso (o tiro nasceria parado em cima dele)', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const t = api.createEnemyType({ behavior: 'atirador' })
+      const antes = t.config.shotSpeed
+      api.setEnemyTypeParam(t, 'tiro', 0)
+      expect(t.config.shotSpeed).toBe(antes)
+      const calls = warn.mock.calls.filter((c) => String(c[0]).includes('velocidade do tiro'))
+      expect(calls.length).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('a ULTRA já nasce com o tiro rápido, senão seria a avançada com outro nome', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const ultra = api.createSmartEnemyType({ smart: 'ultra' })
+    const rei = api.createSmartEnemyType({ smart: 'rei' })
+    const avancada = api.createSmartEnemyType({ smart: 'avancada' })
+    expect(ultra.config.shotSpeed).toBe(8)
+    expect(rei.config.shotSpeed).toBe(8)
+    expect(avancada.config.shotSpeed).toBe(4) // a de sempre
+    // E com esse tiro a mira ADIANTA de verdade. O alvo fica bem ABAIXO andando
+    // para o lado: mira direta daria um tiro reto (vx 0), então qualquer vx é
+    // adiantamento (o alvo NÃO está na linha de fogo).
+    api.setEnemyTypeParam(ultra, 'cadencia', 1)
+    api.spawnEnemy(ultra, 200, 40)
+    const nave = api.createSprite({ x: 200, y: 200, w: 20, h: 20, vx: 6, vy: 0 })
+    api.updateEnemyType(ultra, ctx, nave)
+    const tiro = ultra.bullets.items[0]
+    expect(tiro).toBeTruthy()
+    expect(tiro?.vy).toBeGreaterThan(0)
+    expect(tiro?.vx).toBeGreaterThan(0) // saiu na FRENTE da nave
+    // Mesma cena com o tiro lento de fábrica: adiantar é impossível (a nave anda
+    // a 6, a bala a 4), então ele mira direto em vez de atirar para trás.
+    const lento = api.createEnemyType({ behavior: 'atirador-esperto', w: 20, h: 20 })
+    api.setEnemyTypeParam(lento, 'cadencia', 1)
+    api.spawnEnemy(lento, 200, 40)
+    api.updateEnemyType(lento, ctx, nave)
+    const tiroLento = lento.bullets.items[0]
+    expect(tiroLento).toBeTruthy()
+    expect(tiroLento?.vx).toBe(0)
+    expect(tiroLento?.vy).toBeGreaterThan(0)
   })
 })
