@@ -3,6 +3,7 @@ import {
   QuizBlockNotFoundError,
   QuizCooldownError,
 } from '../../domain/course/course.errors'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import {
   computeRetryAvailableAt,
   gradeQuizAttempt,
@@ -67,6 +68,12 @@ export class SubmitQuizAttemptService {
       userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+
+    // Aula EM PRODUÇÃO ("em breve"): o quiz não vai mais ao aluno, mas o id antigo
+    // ainda resolveria — e a resposta do submit carrega o GABARITO
+    // (`correctChoiceIds`/`explanation`), além de gravar tentativa e creditar XP de
+    // uma aula que ninguém viu. Para o aluno, o bloco não existe agora.
+    if (!privileged && hasComingSoonBlock(lesson.blocks)) throw new QuizBlockNotFoundError()
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'quiz') throw new QuizBlockNotFoundError()

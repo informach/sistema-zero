@@ -263,7 +263,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       var shot = spawnBullet(env.type.bullets, {
         x: cx,
         y: cy,
-        radius: 4,
+        radius: ENEMY_SHOT_R,
         color: c.color,
         vx: (ddx / dd) * c.shotSpeed,
         vy: (ddy / dd) * c.shotSpeed
@@ -447,7 +447,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       var shot = spawnBullet(env.type.bullets, {
         x: cx,
         y: cy,
-        radius: 4,
+        radius: ENEMY_SHOT_R,
         color: c.color,
         vx: Math.cos(a) * c.shotSpeed,
         vy: Math.sin(a) * c.shotSpeed
@@ -468,7 +468,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var shot = spawnBullet(env.type.bullets, {
       x: s.x + s.w / 2,
       y: s.y + s.h,
-      radius: 4,
+      radius: ENEMY_SHOT_R,
       color: c.color,
       vx: 0,
       vy: Math.abs(c.shotSpeed)
@@ -491,7 +491,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   /**
    * Só atira quando o alvo está NA MESMA COLUNA (a folga é o "alcance"). É o
    * inimigo que espera a nave passar na frente em vez de atirar para o nada.
-   * Contador PRÓPRIO (_acd) e tiro RETO na direção do alvo (já está alinhado).
+   * Contador PRÓPRIO (_acd) e tiro RETO na direção do alvo (já está alinhado):
+   * ele só dispara quando a bala, caindo reta, tem como encostar no alvo.
    */
   function _enemyAimedShootAct(s, c, env, hasXDriver) {
     var t = env.target;
@@ -499,30 +500,92 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var cx = s.x + s.w / 2, cy = s.y + s.h / 2;
     var tcx = t.x + (t.w || 0) / 2, tcy = t.y + (t.h || 0) / 2;
     if (!hasXDriver) s.facing = (tcx < cx) ? -1 : 1;
-    // ⚠️ A coluna é a largura dos DOIS (é o que "passar na frente dele" quer
-    // dizer, ao pé da letra), e não o "alcance": aquele número já significa voo,
-    // raio do círculo, gatilho do mergulho e distância de reação, e um sexto
-    // sentido tornaria impossível ajustar voador + atirador alinhado.
+    // ⭐ A pergunta é "se eu solto a bala AGORA, ela cai em cima dela?", e não
+    // "estamos nos cruzando?". A bala sai do MEIO do inimigo e desce reta, então
+    // quem manda é o corredor dela: meia caixa do alvo + o raio da bala.
+    // ⚠️ A régua anterior era a sobreposição dos SPRITES ((s.w + t.w) / 2), que
+    // mete a largura do INIMIGO numa conta em que ela não entra: a bala não sai
+    // do ombro dele, sai da barriga. Com os padrões isso liberava o tiro com até
+    // 28 px de desalinhamento contra 16 px de acerto possível, ou seja, 43% da
+    // janela era erro GARANTIDO. Como a patrulha é periódica, o inimigo repetia
+    // quase a mesma posição de disparo e, para uma nave parada, nunca acertava.
+    // Relato dela: "ele atira meio para o lado e nunca me pega".
+    // ⚠️ O _hitboxOf é o MESMO helper da colisão (respeita "área de colisão de
+    // ⚠️ Limite conhecido, aceito: como o corredor é estreito (32 px com os
+    // padrões), um inimigo que ande mais que isso por quadro PULA o corredor
+    // entre dois quadros e quase nunca atira. Vale para qualquer porteiro por
+    // posição em tempo discreto, e a alternativa (soltar a bala na beirada do
+    // corredor) a faria nascer longe do corpo dele. Velocidade de patrulha
+    // costuma ser 2.
+    // O _hitboxOf é o MESMO helper da colisão (respeita "área de colisão de
+    // N%"). O centro sai da CAIXA, não do sprite: hoje dá no mesmo (a caixa
+    // nasce centrada), mas se ela ganhar deslocamento, como na extensão
+    // avançada tem, o corredor acompanha sem ninguém lembrar disto aqui.
+    // A comparação com >= casa com o < estrito do isColliding: no limite
+    // há sobreposição, logo não há acerto.
     // ⭐ A recarga corre SEMPRE, alinhado ou não; o alinhamento é o GATILHO.
-    // ⚠️ Era o contrário (o contador só descia dentro da coluna) e o efeito era
+    // ⚠️ Era o contrário (o contador só descia dentro do corredor) e o efeito era
     // um inimigo que passava por cima da nave sem atirar: patrulhando a 2 px por
-    // quadro ele fica alinhado uns 28 quadros por passagem, contra uma cadência
+    // quadro ele fica alinhado poucos quadros por passagem, contra uma cadência
     // de 90, então precisava de QUATRO passagens para o primeiro tiro. Relato
     // dela, medido: 10 segundos parada embaixo dele, vendo passar três vezes.
-    // Nasce CARREGADO de propósito: quem dá a folga aqui é a coluna (ele só
+    // Nasce CARREGADO de propósito: quem dá a folga aqui é o corredor (ele só
     // atira se ela estiver na frente), não um tempo de espera inicial.
     if (typeof s._acd !== 'number') s._acd = 0;
     if (s._acd > 0) s._acd -= 1;
-    if (Math.abs(tcx - cx) > (s.w + (t.w || 0)) / 2) return;
+    var alvoHb = _hitboxOf(t);
+    var alvoCx = _finiteNumber(alvoHb.x, 0) + _finiteNumber(alvoHb.w, 0) / 2;
+    if (Math.abs(alvoCx - cx) >= _finiteNumber(alvoHb.w, 0) / 2 + ENEMY_SHOT_R) return;
     if (s._acd > 0) return;
     s._acd = c.rate;
     var shot = spawnBullet(env.type.bullets, {
       x: cx,
       y: cy,
-      radius: 4,
+      radius: ENEMY_SHOT_R,
       color: c.color,
       vx: 0,
       vy: (tcy < cy ? -1 : 1) * Math.abs(c.shotSpeed)
+    });
+    if (shot) shot.dmg = c.dmg;
+  }
+
+  /**
+   * Espelho horizontal do atirador alinhado: a TORRE de lado. Só dispara quando o
+   * alvo entra na mesma faixa de ALTURA, e a bala sai reta para o lado dele.
+   * Contador PROPRIO (_ycd) e o mesmo corredor de bala do irmao vertical: ele so
+   * atira quando a bala, indo reta, tem como encostar no alvo.
+   */
+  function _enemySideShootAct(s, c, env) {
+    var t = env.target;
+    if (!t) return;
+    var cx = s.x + s.w / 2, cy = s.y + s.h / 2;
+    var tcx = t.x + (t.w || 0) / 2;
+    // Nasce CARREGADO e recarrega SEMPRE: a faixa de altura e o GATILHO, nao o
+    // relogio. (Foi o defeito que ela achou jogando no irmao vertical: com o
+    // contador andando so dentro da faixa, ele passava e nao atirava.)
+    if (typeof s._ycd !== 'number') s._ycd = 0;
+    if (s._ycd > 0) s._ycd -= 1;
+    // O corredor agora e na ALTURA: meia caixa do alvo + o raio da bala. Mesmo
+    // helper da colisao, entao previsao e acerto nao podem divergir.
+    var alvoHb = _hitboxOf(t);
+    var alvoCy = _finiteNumber(alvoHb.y, 0) + _finiteNumber(alvoHb.h, 0) / 2;
+    if (Math.abs(alvoCy - cy) >= _finiteNumber(alvoHb.h, 0) / 2 + ENEMY_SHOT_R) return;
+    if (s._ycd > 0) return;
+    s._ycd = c.rate;
+    // ⚠️ Aqui o facing e definido SEMPRE, e nao so quando ninguem dirige o X como
+    // fazem os irmaos. Motivo: hasXDriver e verdadeiro tambem com "parado" (ele
+    // dirige os dois eixos), e numa TORRE parada a convencao deixaria o sprite
+    // olhando para um lado e atirando para o outro, que estraga o arquetipo. O
+    // autoAnimate roda DEPOIS das acoes e so mexe no facing com |vx| > 0.01,
+    // entao quem anda continua virando pelo movimento, de graca.
+    s.facing = (tcx < cx) ? -1 : 1;
+    var shot = spawnBullet(env.type.bullets, {
+      x: cx,
+      y: cy,
+      radius: ENEMY_SHOT_R,
+      color: c.color,
+      vx: (tcx < cx ? -1 : 1) * Math.abs(c.shotSpeed),
+      vy: 0
     });
     if (shot) shot.dmg = c.dmg;
   }
@@ -562,7 +625,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var shot = spawnBullet(env.type.bullets, {
       x: cx,
       y: cy,
-      radius: 4,
+      radius: ENEMY_SHOT_R,
       color: c.color,
       vx: (ddx / dd) * vel,
       vy: (ddy / dd) * vel
@@ -574,6 +637,15 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   // Três fases por inimigo: recarrega (cadencia) -> AVISA (60 quadros, um risco
   // fino piscando) -> LIGA (duracao). O aviso é o que torna o ataque justo: sem
   // ele a criança leva dano sem ter como sair da frente.
+  /**
+   * Raio da bala de TODO atirador de inimigo. É constante de propósito: o
+   * atirador alinhado usa este número para decidir se vale disparar (a bala cai
+   * reto e só acerta se passar dentro do alvo), então tamanho da bala e régua do
+   * disparo têm que sair do MESMO lugar. Com dois literais soltos, mudar o
+   * tamanho da bala desalinharia a mira em silêncio.
+   */
+  var ENEMY_SHOT_R = 4;
+
   var BEAM_WARN = 60;
   var BEAM_OFF = 0, BEAM_WARNING = 1, BEAM_ON = 2;
 
@@ -699,6 +771,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     // --- o que ele FAZ (soma com qualquer jeito de andar) ---
     'atirador':        { alvo: 1, act: _enemyShootAct },
     'atirador-alinhado': { alvo: 1, act: _enemyAimedShootAct },
+    'atirador-lado':   { alvo: 1, act: _enemySideShootAct },
     'atirador-esperto': { alvo: 1, act: _enemyPredictShootAct },
     'atirador-leque':  { alvo: 1, act: _enemyFanShootAct },
     'bombardeiro':     { act: _enemyBombAct },
@@ -815,8 +888,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     'pulo': ['saltador'],
     'ritmo': ['saltador'],
     'alcance': ['voador', 'voador-vertical', 'rondador', 'zigue-zague', 'mergulhador', 'teleporte', 'arrancada', 'medroso'],
-    'cadencia': ['atirador', 'atirador-alinhado', 'atirador-esperto', 'atirador-leque', 'bombardeiro', 'teleporte', 'chefao', 'raio'],
-    'tiro': ['atirador', 'atirador-alinhado', 'atirador-esperto', 'atirador-leque', 'bombardeiro', 'chefao'],
+    'cadencia': ['atirador', 'atirador-alinhado', 'atirador-lado', 'atirador-esperto', 'atirador-leque', 'bombardeiro', 'teleporte', 'chefao', 'raio'],
+    'tiro': ['atirador', 'atirador-alinhado', 'atirador-lado', 'atirador-esperto', 'atirador-leque', 'bombardeiro', 'chefao'],
     'voltar': ['renascer'],
     'duracao': ['raio'],
     // Serve a TODOS (é a vida de quem nasce), então nunca vira aviso de órfão.
@@ -845,6 +918,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     'teleporte': 'teleporte',
     'atirador': 'atirador',
     'atirador-alinhado': 'atirador alinhado',
+    'atirador-lado': 'atirador de lado',
     'atirador-esperto': 'atirador esperto',
     'atirador-leque': 'atirador em leque',
     'bombardeiro': 'bombardeiro',

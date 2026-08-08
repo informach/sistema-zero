@@ -12,6 +12,11 @@ export default function CourseLoading() {
   return (
     <div aria-busy="true" className="flex flex-col gap-8">
       <span className="sr-only">Carregando…</span>
+      {/* Voltar (círculo + rótulo) */}
+      <div className="flex items-center gap-2.5">
+        <Skeleton className="size-11 shrink-0 rounded-full" />
+        <Skeleton className="h-4 w-28" />
+      </div>
       {/* Cabeçalho do curso */}
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
         <Skeleton className="aspect-video w-full shrink-0 rounded-2xl md:w-80" />

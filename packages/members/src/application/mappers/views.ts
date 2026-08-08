@@ -1,6 +1,7 @@
 import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import type { StudentLevel, StudentLevelSlug } from '../../domain/gamification/levels'
@@ -669,7 +670,18 @@ export function toLessonDetailView(
   positionSeconds: number | null,
   quizStates: Map<string, QuizStateView> = new Map(),
   studioStates: Map<string, StudioStateView> = new Map(),
+  privileged = false,
 ): LessonDetailView {
+  // Aula EM PRODUÇÃO ("em breve"): o aluno recebe SÓ o recado — os demais blocos e
+  // os ANEXOS não saem do servidor. Esconder na UI não bastaria: o conteúdo
+  // inacabado viajaria no payload e qualquer um o leria no devtools. A EQUIPE vê a
+  // aula inteira (é como a autoria confere pelo "Ver como aluno"). O gate da
+  // conclusão vive no mark-lesson-complete; aqui é só a projeção.
+  const comingSoon = hasComingSoonBlock(lesson.blocks) && !privileged
+  const visibleBlocks = comingSoon
+    ? lesson.blocks.filter((b) => b.content.kind === 'coming_soon')
+    : lesson.blocks
+
   return {
     id: lesson.id,
     slug: lesson.slug,
@@ -679,7 +691,7 @@ export function toLessonDetailView(
     estimatedMinutes: lesson.estimatedMinutes,
     completed,
     positionSeconds,
-    blocks: lesson.blocks.map((b) => {
+    blocks: visibleBlocks.map((b) => {
       // Quiz: NUNCA envia o gabarito (correctChoiceIds/explanation) ao aluno —
       // a projeção member-facing remove e anexa o estado das tentativas.
       if (b.content.kind === 'quiz') {
@@ -715,7 +727,8 @@ export function toLessonDetailView(
       }
       return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: b.content }
     }),
-    attachments: lesson.attachments.map((a) => ({
+    // Anexo é conteúdo baixável da aula — numa aula "em breve" ele some junto.
+    attachments: (comingSoon ? [] : lesson.attachments).map((a) => ({
       id: a.id,
       label: a.label,
       fileType: a.fileType,

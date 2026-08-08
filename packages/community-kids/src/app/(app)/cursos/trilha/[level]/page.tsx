@@ -1,8 +1,9 @@
 import { COURSE_TIER_LABELS } from '@sistemazero/member-shell/lib/course-tier'
 import { buttonVariants } from '@sistemazero/ui/button'
-import { ArrowLeft, Map as MapIcon } from 'lucide-react'
+import { Map as MapIcon } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { KidsBackButton } from '@/components/kids/back-button'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsMascot } from '@/components/kids/mascot'
 import { unitThemeAt } from '@/components/kids/unit-theme'
@@ -80,12 +81,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
-        <Link
-          href="/cursos"
-          className="inline-flex w-fit items-center gap-1.5 font-semibold text-muted-foreground text-sm transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" /> Voltar ao mapa
-        </Link>
+        <KidsBackButton href="/cursos" label="Voltar ao mapa" showLabel />
         <div className="flex items-center gap-3">
           <span
             className="grid size-12 shrink-0 place-items-center rounded-full border-2 bg-card shadow-sm"

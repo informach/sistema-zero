@@ -39,6 +39,7 @@ export const GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS: Array<[string, string]> = [
     'atirador alinhado (só atira quando o alvo passa bem embaixo ou bem em cima)',
     'atirador-alinhado',
   ],
+  ['atirador de lado (só atira quando o alvo está na mesma altura, ao lado dele)', 'atirador-lado'],
   [
     'atirador esperto (mira onde o alvo VAI estar, se o tiro dele for mais rápido)',
     'atirador-esperto',

@@ -182,6 +182,17 @@ export class CertificateNotEligibleError extends DomainError {
   }
 }
 
+/**
+ * A aula tem um bloco "em breve" — ainda está sendo montada, então não conclui.
+ * Some sozinho quando a autoria tira o bloco. → 409.
+ */
+export class LessonComingSoonError extends DomainError {
+  readonly code = 'LESSON_COMING_SOON'
+  constructor(message = 'Esta aula ainda está sendo preparada') {
+    super(message)
+  }
+}
+
 /** Aula de certificado só pode ser concluída pela emissão do certificado. → 409. */
 export class CertificateGateNotIssuedError extends DomainError {
   readonly code = 'CERTIFICATE_GATE_NOT_ISSUED'

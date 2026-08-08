@@ -111,6 +111,9 @@ export class GetLessonService {
       positionSeconds,
       quizStates,
       studioStates,
+      // Aula "em breve" esconde o resto do conteúdo do ALUNO; a equipe vê tudo
+      // (é assim que a autoria confere a aula pelo "Ver como aluno").
+      privileged,
     )
   }
 }

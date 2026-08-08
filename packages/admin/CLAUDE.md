@@ -129,7 +129,14 @@ themes/[id]}` (adapters em `server/challenge.ts`, arquivo próprio); `apiSend` g
 > endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
 > publicadas · N min" + **publicação por aula** (switch no dialog — aula nova nasce RASCUNHO —,
 > badge Publicada/Rascunho; publicar curso sem aula publicada → 409 `NO_PUBLISHED_LESSON` no
-> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**/**studio**/**certificate**) e anexos,
+> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**/**studio**/**certificate**/**coming_soon**) e anexos,
+> — ⚠️ **`coming_soon` = "Em breve (aula em produção)"** (08/2026): você adiciona o bloco enquanto
+> monta a aula e o ALUNO passa a ver só um recado; os demais blocos e os anexos **não saem do
+> members** e o "Concluir aula" fica travado (409 `LESSON_COMING_SOON`). A EQUIPE vê a aula inteira,
+> inclusive no "Ver como aluno". Apagar o bloco devolve tudo ao normal. Campo único `message`
+> (opcional, ≤500) — vazio usa o recado padrão de cada plataforma. ⚠️ Ao acrescentar um `kind`,
+> **`buildContent` tem `default: return {kind:'quiz'}`**: sem o `case` novo o bloco vira quiz em
+> silêncio (o TS não avisa).
 > ambos com DnD; **autoria v3 (06/2026): upload é o ÚNICO caminho** — imagem upload-only
 > (`ImageUploader allowManualUrl={false}`; capa de curso mantém URL manual), vídeo **só Vimeo**
 > (sem select de provider/URL/duração manual — o uploader TUS preenche src/duração/transcrição;

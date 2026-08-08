@@ -233,7 +233,8 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // _requestClip/playClip/stopClip/playTrack/setSoundVolume/_clipKey).
   // 869 → 881: os 12 da animação de uma vez (_startAnimation/playAnimationOnce/
   // animationEnded).
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(881)
+  // 881 → 884: os 3 do atirador de lado (_enemySideShootAct).
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(884)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

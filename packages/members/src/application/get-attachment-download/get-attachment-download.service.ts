@@ -1,4 +1,5 @@
 import { AttachmentNotFoundError, LessonNotFoundError } from '../../domain/course/course.errors'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
@@ -38,6 +39,12 @@ export class GetAttachmentDownloadService {
       throw new LessonNotFoundError()
     }
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+
+    // Aula EM PRODUÇÃO ("em breve"): o GET da aula devolve `attachments: []`, mas o id
+    // de um anexo visto ANTES do bloco entrar sobrevive (aba aberta, histórico, HAR) e
+    // esta rota o resolveria normalmente. O portão precisa valer em TODA porta, não só
+    // na projeção — para o aluno o anexo simplesmente não existe agora.
+    if (!privileged && hasComingSoonBlock(lesson.blocks)) throw new AttachmentNotFoundError()
 
     const attachment = lesson.attachments.find((a) => a.id === attachmentId)
     if (!attachment) throw new AttachmentNotFoundError()

@@ -25,7 +25,12 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
   const done = progress.totalLessons > 0 && progress.completedLessons >= progress.totalLessons
 
   return (
-    <Link href={`/cursos/${encodeURIComponent(course.courseSlug)}`} className="group block">
+    // `?de=inicio` diz à página do curso que a volta é para a HOME (senão ela
+    // manda para a trilha do curso). Ver `lib/course-return.ts`.
+    <Link
+      href={`/cursos/${encodeURIComponent(course.courseSlug)}?de=inicio`}
+      className="group block"
+    >
       <Card
         className={cn(
           'kids-card kid-pop overflow-hidden p-0 dark:group-hover:brand-glow',

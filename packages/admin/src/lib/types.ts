@@ -410,6 +410,7 @@ export const LESSON_BLOCK_KINDS = [
   'ebook',
   'studio',
   'certificate',
+  'coming_soon',
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
@@ -530,6 +531,15 @@ export interface CertificateBlock {
   logoUrl?: string
   message?: string
 }
+/**
+ * "Em breve": marca a aula como EM PRODUÇÃO. Enquanto o bloco existir, o aluno vê só
+ * este recado (o members não serve os demais blocos nem os anexos) e não consegue
+ * concluir a aula. A equipe segue vendo tudo, inclusive no "Ver como aluno".
+ */
+export interface ComingSoonBlock {
+  kind: 'coming_soon'
+  message?: string
+}
 export type LessonBlockContent =
   | RichTextBlock
   | VideoBlock
@@ -540,6 +550,7 @@ export type LessonBlockContent =
   | EbookBlock
   | StudioBlock
   | CertificateBlock
+  | ComingSoonBlock
 
 /** Resumo de UMA entrega do Estúdio (admin), com identidade hidratada do auth. */
 export interface StudioSubmissionRow {

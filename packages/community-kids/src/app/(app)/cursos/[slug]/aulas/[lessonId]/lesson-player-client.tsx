@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
 import { useFocusMode } from '@/components/kids/focus-mode'
 import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
@@ -143,7 +144,23 @@ export function LessonPlayer({
       }),
     [lesson.blocks],
   )
-  const completeBlocked = blockedByQuiz || blockedByStudioNotSubmitted || blockedByStudioNotPassed
+  // Aula EM PRODUÇÃO: o bloco "em breve" é o único que a criança recebe (o members
+  // segura os demais) e a conclusão é recusada com 409 LESSON_COMING_SOON. Espelha o
+  // gate aqui p/ o botão já nascer desabilitado, em vez de só falhar no clique.
+  const blockedByComingSoon = useMemo(
+    () => lesson.blocks.some((b) => b.kind === 'coming_soon'),
+    [lesson.blocks],
+  )
+  const completeBlocked =
+    blockedByComingSoon || blockedByQuiz || blockedByStudioNotSubmitted || blockedByStudioNotPassed
+
+  // Com a trava sequencial, uma aula "em breve" prende TODAS as seguintes. O
+  // "Próxima" some e a mini-trilha enche de cadeado — sem dizer por quê, a leitura
+  // mais natural para uma criança é "eu fiz alguma coisa errada".
+  const nextLessonLocked = useMemo(() => {
+    const i = flatLessons.findIndex((l) => l.id === lesson.id)
+    return i >= 0 && Boolean(flatLessons[i + 1]?.locked)
+  }, [flatLessons, lesson.id])
 
   // ── Posição do vídeo: refs (sem re-render) + throttle + flush por beacon ────
   const positionUrl = `/api/members/lessons/${encodeURIComponent(lesson.id)}/position`
@@ -259,6 +276,11 @@ export function LessonPlayer({
           if (!opts.silent) {
             toast.error('Atinja a nota mínima do Estúdio para poder concluir a aula.')
           }
+        } else if (apiErr?.code === 'LESSON_COMING_SOON') {
+          // A aula ainda está sendo montada (bloco "em breve").
+          if (!opts.silent) {
+            toast.error('Essa aula ainda está sendo preparada. Volte daqui a pouquinho!')
+          }
         } else if (!opts.silent) {
           toast.error('Não foi possível marcar a aula. Tente de novo.')
         }
@@ -336,13 +358,10 @@ export function LessonPlayer({
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           {/* Header de "lição" (padrão Duolingo): voltar em círculo + progresso do CURSO. */}
           <div className="flex items-center gap-3">
-            <Link
-              href={courseHref}
-              aria-label={`Voltar à trilha de ${course.title}`}
-              className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-border bg-card text-muted-foreground shadow-[0_3px_0_var(--border)] transition-[color,border-color,box-shadow,transform] hover:text-foreground active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]"
-            >
-              <ArrowLeft className="size-5" />
-            </Link>
+            {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
+                a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
+                a dois lugares em telas seguidas. */}
+            <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
             <ProgressBar value={course.progress.percent} className="flex-1" />
             <span className="sz-display text-sm">{course.progress.percent}%</span>
             {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
@@ -408,7 +427,17 @@ export function LessonPlayer({
                   {completing ? <Spinner /> : <CheckCircle2 className="size-5" />}
                   Concluir aula
                 </Button>
-                {blockedByQuiz ? (
+                {blockedByComingSoon ? (
+                  <p className="text-muted-foreground text-xs">
+                    Essa aula ainda está sendo preparada.
+                    {/* As próximas NÃO abrem sozinhas quando o bloco sai: a criança
+                        ainda precisa concluir esta. Prometer o contrário faria ela
+                        voltar e encontrar os mesmos cadeados. */}
+                    {nextLessonLocked
+                      ? ' Quando ela ficar pronta, você termina e as próximas abrem.'
+                      : ''}
+                  </p>
+                ) : blockedByQuiz ? (
                   <p className="text-muted-foreground text-xs">
                     Passe no quiz da aula para poder concluí-la.
                   </p>
@@ -506,11 +535,17 @@ export function LessonPlayer({
                           <li key={item.id}>
                             <div
                               aria-disabled="true"
-                              title="Conclua a aula anterior para liberar"
                               className="flex cursor-not-allowed items-center gap-2.5 px-4 py-2 text-muted-foreground text-sm opacity-70"
                             >
                               {numberBadge}
                               <span className="truncate">{item.title}</span>
+                              {/* Descritivo, não imperativo: a aula anterior pode ser
+                                  uma "em breve", que ainda não dá para concluir. Vai
+                                  em `sr-only` porque `title` não aparece no touch e
+                                  um `<div>` sem role não aceita `aria-label`. */}
+                              <span className="sr-only">
+                                , bloqueada, abre quando a anterior for concluída
+                              </span>
                             </div>
                           </li>
                         )

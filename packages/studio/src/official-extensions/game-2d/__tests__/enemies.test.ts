@@ -1,5 +1,8 @@
 import { describe, expect, it, spyOn } from 'bun:test'
+import { parseJS } from '../../../parsers/js'
+import { GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS } from '../blockCatalogShared'
 import { gameTwoDRuntime } from '../runtime'
+import { gameTwoDEnemiesRuntime } from '../runtime/enemies'
 
 /**
  * Tipos de inimigo (v0.22.0): createEnemyType/spawnEnemy/updateEnemyType +
@@ -81,6 +84,7 @@ interface Api {
   hurtByEnemy: (s: Sprite, e: Sprite) => void
   loadSpriteSheet: (name: string, fw: number, fh: number) => unknown
   setHealth: (s: Sprite, n: number) => void
+  setHitboxScale: (s: Sprite, percent: number) => void
   changeHealth: (s: Sprite, d: number) => void
   countGroup: (g: unknown) => number
   forEachInGroup: (g: unknown, fn: (s: Sprite, i: number) => void) => void
@@ -1362,20 +1366,19 @@ describe('chefão: quando levar dano e o inimigo com nome', () => {
 })
 
 describe('correções do terceiro full review', () => {
-  it('a coluna do atirador alinhado é a largura dos dois, e não o alcance', () => {
+  it('a coluna do atirador alinhado não é o alcance (e nem a largura dos dois)', () => {
     const api = load()
     const ctx = fakeCtx(400, 300)
     const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20 })
     api.setEnemyTypeParam(t, 'cadencia', 1)
     // Alcance ENORME não pode alargar a coluna: senão voador + alinhado seria
-    // impossível de ajustar (o mesmo número faz o voo e a coluna).
+    // impossível de ajustar (o mesmo número faria o voo e a coluna).
     api.setEnemyTypeParam(t, 'alcance', 400)
     api.spawnEnemy(t, 100, 40)
-    // Centro do inimigo 110; nave de 20 com centro em 200: 90 de distância, bem
-    // mais que os (20+20)/2 = 20 da coluna.
+    // Centro do inimigo 110; nave de 20 com centro em 200: 90 de distância.
     api.updateEnemyType(t, ctx, api.createSprite({ x: 190, y: 250, w: 20, h: 20 }))
     expect(t.bullets.items.length).toBe(0)
-    // Encostando na coluna, atira.
+    // Alinhado, atira.
     api.updateEnemyType(t, ctx, api.createSprite({ x: 100, y: 250, w: 20, h: 20 }))
     expect(t.bullets.items.length).toBe(1)
   })
@@ -2342,5 +2345,321 @@ describe('correções do quinto full review', () => {
     expect(semCorpo, 'comportamento da tabela sem função no runtime').toEqual([])
     expect(comContador, 'anti-vácuo: nenhum contador encontrado').toBeGreaterThan(5)
     expect(infratores).toEqual([])
+  })
+})
+
+/**
+ * ⭐ O defeito que ela achou JOGANDO, na segunda rodada de relato: o inimigo
+ * alinhado atirava "meio para o lado" e a bala descia paralela à nave parada.
+ *
+ * ⚠️ E a lição de teste que veio com ele: TODOS os testes do atirador alinhado
+ * asseriam que uma bala NASCEU, nenhum que ela ACERTOU. Por isso o defeito
+ * atravessou três reviews. Aqui a asserção é o acerto.
+ */
+describe('o tiro do alinhado tem que ACERTAR, não só sair', () => {
+  /** Solta a bala e acompanha a queda até ela encostar (ou passar) na nave. */
+  function acertou(api: Api, ctx: unknown, t: EnemyType, nave: Sprite): boolean {
+    let bateu = false
+    for (let q = 0; q < 200 && !bateu; q += 1) {
+      api.updateEnemyType(t, ctx, nave)
+      api.overlapEnemyShots(
+        () => nave,
+        t,
+        () => {
+          bateu = true
+        },
+      )
+      if (t.bullets.items.length === 0 && q > 0) break // a bala já saiu de cena
+    }
+    return bateu
+  }
+
+  const cena = (api: Api, naveX: number) => {
+    const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20, dmg: 1 })
+    api.setEnemyTypeParam(t, 'cadencia', 999) // uma bala só, para medir aquela bala
+    api.spawnEnemy(t, 100, 40) // centro em x = 110
+    const nave = api.createSprite({ x: naveX, y: 250, w: 20, h: 20 })
+    return { t, nave }
+  }
+
+  it('acerta a nave parada em TODO o corredor, do centro às duas beiradas', () => {
+    // Corredor = meia caixa da nave (10) + raio da bala (4) = 14 a partir do
+    // centro do inimigo (110), ou seja, centro da nave de 96 a 124 (exclusive).
+    // ⚠️ As DUAS beiradas de verdade: 87 põe o centro em 97 (13 à esquerda) e 113
+    // põe em 123 (13 à direita). A primeira versão deste teste ia só até 10 à
+    // esquerda e o nome prometia as duas pontas: metade do `if` nunca rodava, que
+    // é a mesma classe que o 2º review já tinha pegado nos comportamentos.
+    for (const naveX of [87, 90, 100, 110, 113]) {
+      const api = load()
+      const ctx = fakeCtx(400, 300)
+      const { t, nave } = cena(api, naveX)
+      expect(acertou(api, ctx, t, nave), `nave em x=${naveX}: a bala não acertou`).toBe(true)
+    }
+  })
+
+  it('nenhum atirador escreve o raio da bala na mão (é isso que desalinha a mira)', () => {
+    // ⭐ O defeito de origem foi haver DOIS números para a mesma coisa: o tamanho
+    // da bala e a régua do disparo. Agora os dois saem de ENEMY_SHOT_R, e este
+    // teste impede que um atirador novo volte a escrever o número solto: a bala
+    // ficaria de um tamanho e a mira mediria outro, em silêncio.
+    // Escopado ao módulo dos inimigos: um literal legítimo noutro domínio do
+    // runtime não tem que reprovar aqui (teste que acusa vizinho é teste que
+    // alguém afrouxa depois).
+    const literais = [...gameTwoDEnemiesRuntime.matchAll(/radius:\s*\d/g)].map((m) => m[0])
+    const spawns = [...gameTwoDEnemiesRuntime.matchAll(/radius:\s*[^,\n]+/g)].map((m) =>
+      m[0].trim(),
+    )
+    expect(spawns.length, 'anti-vácuo: nenhum spawn de bala lido').toBeGreaterThan(4)
+    expect(literais).toEqual([])
+  })
+
+  it('a bala desce RETA, nunca em diagonal (é o que ela pediu)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    // Na beirada do corredor é onde uma mira "ajudada" apareceria: se alguém der
+    // um vx à bala para fechar a conta, o teste de acerto acima continuaria
+    // passando e a promessa de "atira para baixo" cairia em silêncio.
+    const { t, nave } = cena(api, 113)
+    api.updateEnemyType(t, ctx, nave)
+    const tiro = t.bullets.items[0]
+    expect(tiro).toBeTruthy()
+    expect(tiro?.vx).toBe(0)
+    expect(tiro?.vy).toBeGreaterThan(0)
+  })
+
+  it('fora do corredor ele NÃO gasta bala (a régua velha atirava e errava sempre)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    // Centro da nave em 127: 17 do centro do inimigo. A régua antiga era a
+    // sobreposição dos sprites ((20+20)/2 = 20), então ela liberava o tiro aqui
+    // e a bala (de 106 a 114) descia inteira ao lado da nave (117 a 137).
+    const { t, nave } = cena(api, 117)
+    for (let q = 0; q < 60; q += 1) api.updateEnemyType(t, ctx, nave)
+    expect(t.bullets.items.length).toBe(0)
+  })
+
+  it('o corredor segue a CAIXA de colisão, não o desenho', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { t, nave } = cena(api, 113) // 13 de desalinhamento: acerta com a caixa cheia
+    api.setHitboxScale(nave, 50) // caixa de 10 => corredor cai para 5 + 4 = 9
+    for (let q = 0; q < 60; q += 1) api.updateEnemyType(t, ctx, nave)
+    expect(t.bullets.items.length).toBe(0)
+    // ⚠️ Anti-vácuo, no mesmo teste: sem esta metade, quebrar o disparo por
+    // inteiro faria o "não atirou" passar como se fosse a caixa reduzida agindo.
+    // Alinhado, com a MESMA caixa reduzida, ele atira e acerta.
+    const api2 = load()
+    const ctx2 = fakeCtx(400, 300)
+    const cena2 = cena(api2, 100) // centro da nave em 110, alinhado
+    api2.setHitboxScale(cena2.nave, 50)
+    expect(acertou(api2, ctx2, cena2.t, cena2.nave)).toBe(true)
+  })
+})
+
+/**
+ * O espelho horizontal do alinhado: a TORRE de lado. Pedido dela depois de
+ * medirmos que o alinhado confere só a coluna.
+ *
+ * ⭐ A forma destes testes vem da lição do lote passado: cobrar o ACERTO, não o
+ * nascimento da bala. Foi o que deixou passar, por três reviews, um atirador que
+ * disparava sem ter como acertar.
+ */
+describe('atirador de lado (a torre)', () => {
+  /** Solta a bala e acompanha o voo até ela encostar na nave. */
+  function acertouDeLado(api: Api, ctx: unknown, t: EnemyType, nave: Sprite): boolean {
+    let bateu = false
+    for (let q = 0; q < 300 && !bateu; q += 1) {
+      api.updateEnemyType(t, ctx, nave)
+      api.overlapEnemyShots(
+        () => nave,
+        t,
+        () => {
+          bateu = true
+        },
+      )
+      if (t.bullets.items.length === 0 && q > 0) break
+    }
+    return bateu
+  }
+
+  /** Inimigo parado no meio do palco: centro em (110, 150). */
+  const torre = (api: Api, naveX: number, naveY: number) => {
+    const t = api.createEnemyType({ behavior: 'atirador-lado', w: 20, h: 20, dmg: 1 })
+    api.setEnemyTypeParam(t, 'cadencia', 999) // uma bala só, para medir aquela bala
+    api.spawnEnemy(t, 100, 140)
+    const nave = api.createSprite({ x: naveX, y: naveY, w: 20, h: 20 })
+    return { t, nave }
+  }
+
+  it('acerta dos DOIS lados, em toda a faixa de altura', () => {
+    // Corredor = meia caixa da nave (10) + raio da bala (4) = 14 a partir do
+    // centro do inimigo (150). ⚠️ `naveY` é o TOPO dela, e o centro é naveY + 10:
+    // a faixa é naveY de 127 a 153 (as duas beiradas inclusas aqui).
+    for (const naveY of [127, 134, 140, 146, 153]) {
+      for (const naveX of [20, 300]) {
+        const api = load()
+        const ctx = fakeCtx(400, 300)
+        const { t, nave } = torre(api, naveX, naveY)
+        expect(
+          acertouDeLado(api, ctx, t, nave),
+          `nave em (${naveX}, ${naveY}): a bala não acertou`,
+        ).toBe(true)
+      }
+    }
+  })
+
+  it('a bala vai RETA na horizontal, e a gravidade do mundo não a entorta', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.6)
+    const esquerda = torre(api, 20, 153) // beirada da faixa, onde uma mira "ajudada" apareceria
+    api.updateEnemyType(esquerda.t, ctx, esquerda.nave)
+    const tiroE = esquerda.t.bullets.items[0]
+    expect(tiroE).toBeTruthy()
+    expect(tiroE?.vx).toBeLessThan(0)
+    // ⚠️ Conferir o `vy` só no quadro do disparo não prova nada sobre a gravidade,
+    // que agiria DURANTE o voo. A primeira versão deste teste ligava a gravidade e
+    // media antes de a bala andar. Agora acompanha o voo: a altura tem que ficar
+    // CONGELADA do começo ao fim.
+    const alturaInicial = tiroE?.y
+    for (let q = 0; q < 40; q += 1) api.updateEnemyType(esquerda.t, ctx, esquerda.nave)
+    expect(tiroE?.vy).toBe(0)
+    expect(tiroE?.y).toBe(alturaInicial)
+    expect(tiroE?.x).toBeLessThan(110) // andou para a esquerda de verdade
+
+    const api2 = load()
+    const direita = torre(api2, 300, 127)
+    api2.updateEnemyType(direita.t, ctx, direita.nave)
+    const tiroD = direita.t.bullets.items[0]
+    expect(tiroD?.vy).toBe(0)
+    expect(tiroD?.vx).toBeGreaterThan(0)
+  })
+
+  it('fora da faixa de altura ele NÃO gasta bala', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    // Mesma coluna do inimigo, mas 17 acima do centro dele: dentro da coluna
+    // (que é assunto do irmão vertical) e FORA da faixa de altura.
+    const { t, nave } = torre(api, 100, 123)
+    for (let q = 0; q < 60; q += 1) api.updateEnemyType(t, ctx, nave)
+    expect(t.bullets.items.length).toBe(0)
+  })
+
+  it('a faixa segue a CAIXA de colisão, não o desenho', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { t, nave } = torre(api, 300, 152) // 12 de desalinhamento: acerta com a caixa cheia
+    api.setHitboxScale(nave, 50) // caixa de 10 => faixa cai para 5 + 4 = 9
+    for (let q = 0; q < 60; q += 1) api.updateEnemyType(t, ctx, nave)
+    expect(t.bullets.items.length).toBe(0)
+    // Anti-vácuo no mesmo teste: com a MESMA caixa reduzida, alinhado, acerta.
+    const api2 = load()
+    const ctx2 = fakeCtx(400, 300)
+    const alinhado = torre(api2, 300, 140)
+    api2.setHitboxScale(alinhado.nave, 50)
+    expect(acertouDeLado(api2, ctx2, alinhado.t, alinhado.nave)).toBe(true)
+  })
+
+  it('a torre PARADA encara o lado de quem ela mira', () => {
+    // ⚠️ O caso que fez o facing fugir da convenção dos irmãos: com "parado" o
+    // hasXDriver é verdadeiro, e seguir a convenção deixaria o sprite olhando
+    // para um lado e atirando para o outro.
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'parado', w: 20, h: 20 })
+    api.addEnemyTypeBehavior(t, 'atirador-lado')
+    const torreSprite = api.spawnEnemy(t, 100, 140) as Sprite
+    torreSprite.facing = 1 // nasce olhando para a direita
+    api.updateEnemyType(t, ctx, api.createSprite({ x: 20, y: 145, w: 20, h: 20 }))
+    expect(torreSprite.facing).toBe(-1) // virou para a esquerda, de onde vem o alvo
+    expect(t.bullets.items[0]?.vx).toBeLessThan(0)
+  })
+
+  it('somado ao irmão vertical, o inimigo cobre uma CRUZ com contadores próprios', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20 })
+    api.addEnemyTypeBehavior(t, 'atirador-lado')
+    api.setEnemyTypeParam(t, 'cadencia', 10)
+    api.spawnEnemy(t, 100, 140) // centro (110, 150)
+    // Alvo na coluna E na altura ao mesmo tempo (bem em cima dele): as DUAS ações
+    // disparam no mesmo quadro, cada uma com o seu contador.
+    const emCima = api.createSprite({ x: 100, y: 140, w: 20, h: 20 })
+    api.updateEnemyType(t, ctx, emCima)
+    expect(t.bullets.items.length).toBe(2)
+    const [a, b] = t.bullets.items as [Sprite, Sprite]
+    // Um desce/sobe reto, o outro vai reto para o lado.
+    expect([a, b].filter((s) => s.vx === 0).length).toBe(1)
+    expect([a, b].filter((s) => s.vy === 0).length).toBe(1)
+    // Cadência cheia respeitada: 10 quadros depois, mais DOIS.
+    for (let q = 0; q < 10; q += 1) api.updateEnemyType(t, ctx, emCima)
+    expect(t.bullets.items.length).toBe(4)
+  })
+
+  it('cada uma das duas ações tem o SEU contador (uma não gasta a recarga da outra)', () => {
+    // ⚠️ O teste acima chamava isso de "contadores próprios" e não provava: com o
+    // alvo nas duas faixas, os dois disparam juntos e um contador único daria o
+    // mesmo resultado. A prova é gastar SÓ um dos dois e ver o outro pronto.
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'atirador-alinhado', w: 20, h: 20 })
+    api.addEnemyTypeBehavior(t, 'atirador-lado')
+    api.setEnemyTypeParam(t, 'cadencia', 30)
+    api.spawnEnemy(t, 100, 140) // centro (110, 150)
+
+    // Fase 1: alvo só na faixa de ALTURA (longe na horizontal). Só o de lado atira,
+    // e ele queima a recarga DELE.
+    const doLado = api.createSprite({ x: 300, y: 140, w: 20, h: 20 })
+    for (let q = 0; q < 20; q += 1) api.updateEnemyType(t, ctx, doLado)
+    expect(t.bullets.items.length).toBe(1) // um tiro só: o lateral, no quadro 1
+    expect(t.bullets.items[0]?.vy).toBe(0) // e foi o horizontal mesmo
+
+    // Fase 2: o alvo aparece na COLUNA (e sai da faixa de altura). O vertical nunca
+    // gastou nada, então dispara NO PRIMEIRO quadro, sem esperar a recarga do irmão.
+    const naColuna = api.createSprite({ x: 100, y: 250, w: 20, h: 20 })
+    api.updateEnemyType(t, ctx, naColuna)
+    expect(t.bullets.items.length).toBe(2)
+    expect(t.bullets.items[1]?.vx).toBe(0) // o novo é o vertical
+  })
+})
+
+/**
+ * ⭐ Nenhum teste levava um VALOR de dropdown pela Ponte de volta. A cadeia é
+ * fechada por construção (o parser lê o enum, e o drift garante que o menu tenha
+ * o enum inteiro), mas "fechada por construção" foi exatamente o que eu disse do
+ * atirador alinhado antes dos dois defeitos que ela achou jogando.
+ *
+ * Um comportamento que o parser recusasse cairia em `rawJS`: o jogo continuaria
+ * rodando e a Ponte devolveria um bloco de "código avançado" no lugar do bloco de
+ * inimigo. Verde em tudo, e a criança perdendo o bloco dela ao abrir o projeto.
+ */
+describe('todo comportamento volta pela Ponte (código → blocos)', () => {
+  it('nenhum dos comportamentos do menu cai em rawJS', () => {
+    const rejeitados: string[] = []
+    for (const [, valor] of GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS) {
+      const codigo = `const bicho = SZGame2D.createEnemyType({ behavior: "${valor}", color: "#e4573d", image: "", shape: "", hp: 3, speed: 2, dmg: 1, w: 32, h: 32 });`
+      const ir = parseJS(codigo) as Array<{ type?: string; behavior?: string }>
+      const nó = ir[0]
+      if (nó?.type !== 'g2d:defineEnemyType' || nó.behavior !== valor) {
+        rejeitados.push(`${valor} -> ${nó?.type ?? 'nada'}`)
+      }
+    }
+    expect(GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS.length).toBeGreaterThan(20) // anti-vácuo
+    expect(rejeitados).toEqual([])
+  })
+
+  it('o "também é" também volta, para todos', () => {
+    const rejeitados: string[] = []
+    for (const [, valor] of GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS) {
+      const ir = parseJS(`SZGame2D.addEnemyTypeBehavior(bicho, "${valor}");`) as Array<{
+        type?: string
+        behavior?: string
+      }>
+      const nó = ir[0]
+      if (nó?.type !== 'g2d:enemyAddBehavior' || nó.behavior !== valor) {
+        rejeitados.push(`${valor} -> ${nó?.type ?? 'nada'}`)
+      }
+    }
+    expect(rejeitados).toEqual([])
   })
 })

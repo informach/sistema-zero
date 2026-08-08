@@ -1,5 +1,6 @@
 import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
@@ -59,6 +60,14 @@ export class GetShowcasePayloadService {
       courseId: course.id,
       audience: course.audience,
     } as const
+
+    // Aula EM PRODUÇÃO ("em breve"): a 5ª porta, e a única com efeito PÚBLICO. Além de
+    // devolver texto autoral (título/resumo/capa da vitrine), esta é a mesma service que
+    // o HUB revalida no publish (`/internal/showcase-eligibility`) — sem o portão, uma
+    // aba velha publicaria no Mural um projeto de aula que o servidor declara
+    // não-servida, gravando marco, badge e troféu. `eligible:false` (e não 404) mantém
+    // o contrato do consumidor e não revela o motivo, como os demais ramos daqui.
+    if (!privileged && hasComingSoonBlock(lesson.blocks)) return { ...base, eligible: false }
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     const showcase = block?.content.kind === 'studio' ? block.content.showcase : undefined

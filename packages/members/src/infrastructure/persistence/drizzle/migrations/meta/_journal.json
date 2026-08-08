@@ -428,6 +428,13 @@
       "when": 1785876820284,
       "tag": "0060_pensa_planner_v2",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1786184793918,
+      "tag": "0061_clammy_salo",
+      "breakpoints": true
     }
   ]
 }

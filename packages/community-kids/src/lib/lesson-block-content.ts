@@ -2,6 +2,7 @@ import type { Project } from '@sistemazero/studio'
 import type {
   AudioBlock,
   CertificateBlock,
+  ComingSoonBlock,
   EbookBlock,
   EmbedBlock,
   ImageBlock,
@@ -17,6 +18,7 @@ export type ParsedLessonBlock = {
   content:
     | AudioBlock
     | CertificateBlock
+    | ComingSoonBlock
     | EbookBlock
     | EmbedBlock
     | ImageBlock
@@ -250,6 +252,10 @@ function isStudioBlock(value: unknown): value is StudioBlock {
   )
 }
 
+function isComingSoonBlock(value: unknown): value is ComingSoonBlock {
+  return isRecord(value) && value.kind === 'coming_soon' && optionalString(value, 'message')
+}
+
 export function parseLessonBlock(block: LessonBlockView): ParsedLessonBlock | null {
   const value = block.content
   switch (block.kind) {
@@ -271,6 +277,8 @@ export function parseLessonBlock(block: LessonBlockView): ParsedLessonBlock | nu
       return isCertificateBlock(value) ? { block, content: value } : null
     case 'studio':
       return isStudioBlock(value) ? { block, content: value } : null
+    case 'coming_soon':
+      return isComingSoonBlock(value) ? { block, content: value } : null
     default:
       return null
   }

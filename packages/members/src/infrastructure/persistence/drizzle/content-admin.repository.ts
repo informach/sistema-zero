@@ -615,10 +615,13 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     lessonId: string,
     opts: { excludeBlockId?: string } = {},
   ): Promise<boolean> {
-    // Espelha `isCompletionGatingBlock` (domain) em SQL: estúdio SEMPRE trava; quiz só
-    // com `passingScore` (extração JSONB `->>` devolve NULL quando a chave falta/é null).
+    // Espelha `isCompletionGatingBlock` (domain) em SQL: estúdio e "em breve" SEMPRE
+    // travam; quiz só com `passingScore` (extração JSONB `->>` devolve NULL quando a
+    // chave falta/é null). Mexeu num, mexa no outro — o fake in-memory usa a função do
+    // domínio, então uma divergência aqui passaria batida nos testes.
     const gating = or(
       eq(lessonBlocks.kind, 'studio'),
+      eq(lessonBlocks.kind, 'coming_soon'),
       and(
         eq(lessonBlocks.kind, 'quiz'),
         sql`${lessonBlocks.content} ->> 'passingScore' is not null`,

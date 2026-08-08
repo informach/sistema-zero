@@ -195,6 +195,15 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     // O anti-join consulta o estado ATUAL dentro do próprio DELETE. Um bloco
     // publicado durante o backfill deixa de correr o risco de ser apagado por
     // uma lista de refs capturada antes da edição concorrente.
+    //
+    // ⚠️ Este DELETE **NÃO** filtra "em breve", de propósito. A tentação é filtrar
+    // (defesa em profundidade), mas aqui ele DESTRÓI: `video-vtt` e `student-notebook`
+    // não se reindexam sozinhos — o backfill é MANUAL (staff+) e devolve `pending[]`
+    // para o painel re-extrair (baixar o VTT do Vimeo, reprocessar o PDF privado). A
+    // autora que liga "em breve" por 5 minutos para arrumar um typo perderia a aula
+    // inteira da base do Zappy se um backfill passasse na janela, sem nada restaurar
+    // sozinho. E não protege ninguém: quem barra a leitura é o filtro do `search`, que
+    // vale no INSTANTE em que o bloco entra.
     const authoritativeBlockExists = sql`exists (
       select 1
       from ${lessonBlocks}
@@ -253,6 +262,15 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         and(
           inArray(zappyKnowledgeSources.lessonId, lessonIds),
           eq(zappyKnowledgeSources.status, 'ready'),
+          // Aula EM PRODUÇÃO ("em breve") não alimenta a resposta do tutor — o aluno
+          // não recebe o conteúdo dela na aula, então o Zappy também não pode contá-lo.
+          // O filtro do `listPublishedKidsBlocks` já a tira da INDEXAÇÃO, mas ali o
+          // efeito só chega na próxima varredura; aqui vale no instante em que a
+          // autora adiciona o bloco.
+          sql`not exists (
+            select 1 from ${lessonBlocks} as cs
+            where cs.lesson_id = ${zappyKnowledgeSources.lessonId} and cs.kind = 'coming_soon'
+          )`,
           eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
           eq(zappyKnowledgeSources.blockRevision, lessonBlocks.contentRevision),
           or(
@@ -298,6 +316,15 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       eq(courses.audience, 'kids'),
       eq(courses.status, 'published'),
       eq(lessons.isPublished, true),
+      // Aula EM PRODUÇÃO ("em breve") fica FORA da base didática: o conteúdo dela não
+      // é servido ao aluno, então o tutor também não pode falar dele. Aqui a aula só
+      // para de ser REINDEXADA — o que já estava indexado FICA (o `reconcile` não
+      // apaga de propósito; ver o comentário lá) e quem barra de verdade, no instante
+      // em que o bloco entra, é o filtro do `search`. Tirar o bloco reindexa na próxima.
+      sql`not exists (
+        select 1 from ${lessonBlocks} as cs
+        where cs.lesson_id = ${lessons.id} and cs.kind = 'coming_soon'
+      )`,
     ]
     if (input.after) clauses.push(gt(lessonBlocks.id, input.after))
     const query = this.db

@@ -7,21 +7,11 @@ import {
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
 import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
-import {
-  ArrowLeft,
-  Copy,
-  Flag,
-  Gamepad2,
-  Hammer,
-  Lock,
-  MessageCircle,
-  Play,
-  QrCode,
-  Send,
-} from 'lucide-react'
+import { Copy, Flag, Gamepad2, Hammer, Lock, MessageCircle, Play, QrCode, Send } from 'lucide-react'
 import { memo, type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import type { HubCommentView, HubMyThreadView, HubThreadView } from '@/lib/types'
+import { KidsBackButton } from './back-button'
 import { GameCardDialog } from './game-card-dialog'
 import { AuthorBadge, type AuthorItem } from './space-author'
 
@@ -439,13 +429,11 @@ export function ThreadDetail({
   const plays = thread.playsCount ?? 0
   return (
     <div className="space-y-4">
-      <button
-        type="button"
+      <KidsBackButton
         onClick={onBack}
-        className="inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" /> {isWall ? 'Projetos' : 'Conversas'}
-      </button>
+        label={isWall ? 'Voltar aos projetos' : 'Voltar às conversas'}
+        showLabel
+      />
 
       <div className="space-y-3 rounded-2xl border-2 border-border bg-card p-4">
         {isWall && thread.coverImageUrl ? (

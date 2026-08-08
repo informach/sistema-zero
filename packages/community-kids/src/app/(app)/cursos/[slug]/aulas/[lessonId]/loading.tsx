@@ -14,7 +14,8 @@ export default function LessonLoading() {
       <span className="sr-only">Carregando…</span>
       {/* Header da lição */}
       <div className="flex items-center gap-3">
-        <Skeleton className="size-10 shrink-0 rounded-full" />
+        {/* size-11 = o tamanho REAL do KidsBackButton (senão o header pula ao carregar). */}
+        <Skeleton className="size-11 shrink-0 rounded-full" />
         <Skeleton className="h-2.5 flex-1 rounded-full" />
         <Skeleton className="h-6 w-24 shrink-0 rounded-full" />
       </div>

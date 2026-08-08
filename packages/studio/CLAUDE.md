@@ -746,7 +746,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.63.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.64.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -1069,7 +1069,8 @@ mudou a régua do que eu considero "cadeia completa" nesta extensão:
 9. ⚠️ **A coluna do atirador alinhado era o `alcance`** — que já significava voo, raio do círculo,
    gatilho do mergulho e distância de reação. Com `voador + atirador-alinhado` (o arquétipo do
    shmup) o mesmo número controlava o voo E a coluna, e não dava para ajustar os dois. Virou a
-   largura dos DOIS sprites, que é o sentido literal de "passa na frente dele".
+   largura dos DOIS sprites. ⚠️ **Essa segunda régua também estava errada e caiu depois** (ver "o
+   corredor do tiro", abaixo): a bala sai do MEIO do inimigo, então a largura dele não entra na conta.
 10. Guarda espelhada no parser (`createEnemyType({smart:…})` gerava IR que o zod reprova), aviso de
     inteligência desconhecida com `warnOnce` e sem `"undefined"` cru, piso no `tiro` (zero entupia
     o grupo com tiros parados), `overlapEnemyBeams` sem cópia por quadro, `SPRITE_LOOP_BINDERS` e
@@ -1138,8 +1139,8 @@ primeiro tiro.
 
 ⭐ **A causa era uma inversão de papéis entre recarga e gatilho.** O `_enemyAimedShootAct` saía cedo
 quando estava fora da coluna, ANTES de decrementar `_acd` — ou seja, a recarga só corria durante os
-poucos quadros de alinhamento. Patrulhando a 2 px/quadro, a coluna (largura dos dois sprites, 56 px
-com os padrões) dura ~28 quadros por passagem, contra uma cadência de 90: eram necessárias QUATRO
+poucos quadros de alinhamento. Patrulhando a 2 px/quadro, a coluna de então (a largura dos dois
+sprites, 56 px com os padrões) durava ~28 quadros por passagem, contra uma cadência de 90: QUATRO
 passagens para carregar um tiro. O comentário no código dizia o contrário do que o código fazia
 ("continua carregado para o momento em que a nave aparecer na frente").
 
@@ -1224,6 +1225,134 @@ tiro esperto e o leque do chefão nascem com o mesmo `rate` e zeram no mesmo qua
 balas juntas a cada 90 quadros (medido). Lê-se como uma salva só, não como dois ataques. Quem quiser
 separar sem feature nova soma o `atirador em leque` DEPOIS (no "quando levar dano", por exemplo): o
 contador dele nasce naquele instante e fica defasado para sempre.
+
+### O corredor do tiro: o alinhado atirava ao LADO da nave (07/08, relato de jogo)
+
+Segundo relato de jogo dela na mesma feature. Com a recarga consertada, o inimigo básico passava a
+detectar e atirar, mas **a bala saía do lado da nave parada e descia paralela**, sem nunca acertar.
+O que ela descreveu como "atirar em arco" é o rastro de balas de um inimigo que continua andando
+enquanto cada bala cai reta no lugar onde foi solta (não existe arco: os tiros são integrados sem
+gravidade).
+
+⭐ **Havia DUAS réguas para a mesma coisa, e a de disparar era quase o dobro da de acertar.**
+- Disparar perguntava "os SPRITES se cruzam na horizontal?" → `(s.w + t.w) / 2`, **28 px** com os
+  padrões (inimigo 32, nave 24).
+- Acertar depende do **corredor da bala**: ela nasce no MEIO do inimigo, tem raio 4 e cai com
+  `vx: 0`, e o `isColliding` é AABB estrito → só encosta com menos de `meia caixa da nave + raio` =
+  **16 px**.
+
+De 16 a 28 px ele disparava um tiro **impossível** de acertar: 43% da janela era erro garantido. E
+como a patrulha é periódica, o inimigo repetia quase a mesma posição de disparo, então para uma nave
+parada não era "às vezes erra", era "não acerta".
+
+⚠️ **A raiz do erro conceitual**: a largura do INIMIGO entrou numa conta em que ela não tem parte. Ela
+faria sentido se a bala saísse da beirada do corpo dele; ela sai da barriga. "Passar na frente dele"
+não é "os dois se cruzam", é "a bala cai em cima dela".
+
+A pergunta virou literal: `|centroDaCaixaDoAlvo - centroDoInimigo| >= caixa/2 + ENEMY_SHOT_R` → não
+atira. Duas escolhas que impedem a régua de divergir de novo:
+- **`_hitboxOf`**, o MESMO helper que a colisão usa, então previsão e acerto não podem discordar; e
+  uma nave com "área de colisão de N%" encolhe o corredor de graça.
+- **`ENEMY_SHOT_R = 4` virou constante** e substituiu os cinco `radius: 4` literais dos atiradores.
+  Com dois números soltos, mudar o tamanho da bala desalinharia a mira em silêncio.
+
+Medido em Chrome real, varrendo o desalinhamento de 0 a 30: **dispara em 0..13, acerta em 0..13, zero
+tiro que não pode acertar**. No cenário dela (nave parada, básica patrulhando, 1800+ quadros, três
+posições de nave): **todo tiro acerta**, um por passagem.
+
+⚠️ **A lição de teste, e é a mais valiosa desta série**: todos os testes do atirador alinhado asseriam
+que uma bala **NASCEU**; nenhum que ela **ACERTOU**. Por isso o defeito atravessou três full reviews
+com a suíte verde. O `describe('o tiro do alinhado tem que ACERTAR, não só sair')` acompanha a queda
+da bala até a linha da nave e cobra o acerto no corredor inteiro, a recusa fora dele, e que o
+corredor siga a caixa de colisão.
+
+⚠️ Caí DE NOVO na armadilha da crase crua dentro do template literal do runtime (comentário com
+`` `_hitboxOf` `` e com `` `>=` ``). Fecha a string e a suíte inteira fica vermelha de uma vez.
+
+### Sétimo full review (07/08) — os testes do conserto anterior, e o que eu não checo
+
+Rodada sobre o conserto do corredor. Três furos, todos nos testes que eu tinha escrito na hora:
+
+1. **"Do centro às duas beiradas" era falso.** Os deslocamentos testados iam de -10 a +13: a beirada
+   ESQUERDA nunca era exercida, apesar do nome do teste. É a mesma classe que o 2º review catalogou
+   ("comportamento simétrico só exercido para um lado"), agora dentro da rede.
+2. **O teste da caixa de colisão não tinha anti-vácuo.** Ele só afirmava "não atirou" com a caixa
+   reduzida; se o disparo quebrasse por inteiro, passaria como se a caixa estivesse agindo. Ganhou a
+   metade positiva: com a MESMA caixa reduzida, alinhado, ele atira e acerta.
+3. **Nada travava "a bala desce RETA".** Era o pedido explícito dela, e os testes de acerto
+   continuariam verdes se alguém desse um `vx` à bala para "ajudar a mira".
+
+⭐ **Drift novo, do jeito que o defeito voltaria**: nenhum atirador pode escrever o raio da bala na
+mão. O tamanho da bala e a régua do disparo saem os dois de `ENEMY_SHOT_R`; um atirador novo com
+`radius: 8` solto teria bala de um tamanho e mira de outro, em silêncio. Escopado ao módulo dos
+inimigos de propósito, para não reprovar literal legítimo de outro domínio.
+
+**Conferido e limpo:** o RAIO usa o MESMO retângulo (`_enemyBeamRect`) para desenhar e para machucar,
+então não tem a doença de duas réguas; o objeto de retângulo é compartilhado mas só é lido ANTES do
+callback da criança; e os outros atiradores não prometem coluna nenhuma (o comum e o esperto miram no
+centro do alvo, o leque é leque de propósito, o bombardeiro solta reto sem olhar).
+
+⚠️ **Limite conhecido, documentado no código e aceito**: o corredor tem 32 px com os padrões, então um
+inimigo que ande mais que isso por quadro pula o corredor entre dois quadros e quase nunca atira.
+Vale para qualquer porteiro por posição em tempo discreto; a alternativa (soltar a bala na beirada do
+corredor) faria a bala nascer longe do corpo dele. Velocidade de patrulha costuma ser 2.
+
+### Comportamento novo: atirador de lado, a TORRE (v0.64.0, 22 → 23 comportamentos)
+
+Pedido dela depois de eu MEDIR que o atirador alinhado confere só o eixo X (mapa das oito posições em
+volta: ele atira para cima ou para baixo na mesma coluna, e cala nas laterais). Ela quis o espelho: a
+torre de plataforma, que dispara quando o herói entra na mesma faixa de ALTURA.
+
+- **Nome vindo do vocabulário que já existe**: `atirador-lado` → "atirador de lado", espelhando o
+  `perseguidor-lado` → "perseguidor de lado". A extensão já usa "de lado" para dizer "no eixo
+  horizontal", então a criança não aprende palavra nova. ⚠️ O `atirador-alinhado` NÃO foi renomeado:
+  o valor viaja no projeto salvo dela.
+- O `_enemySideShootAct` é o irmão vertical com os eixos trocados, e herda as duas lições que doeram:
+  contador PRÓPRIO (`_ycd`), **recarga que corre sempre** (a faixa é gatilho, não relógio) e a régua do
+  **corredor da bala** medida com o mesmo `_hitboxOf` da colisão, agora pela ALTURA da caixa.
+- ⚠️ **O `facing` foge da convenção dos irmãos DE PROPÓSITO.** Os outros só encaram o alvo quando
+  `!hasXDriver`, e `hasXDriver` é `!!ownerX` — o que inclui `parado`, que dirige os dois eixos desde o
+  1º review. Numa torre (`parado + atirador de lado`) a convenção deixaria o sprite olhando para um
+  lado e atirando para o outro. Como o `autoAnimate` roda DEPOIS das ações e só mexe no facing com
+  `|vx| > 0.01`, definir aqui acerta a torre parada e é sobrescrito de graça em quem anda.
+- Comportamento novo custou 8 pontos e ZERO contador de bloco/API: enum da IR, dropdown (valor **e**
+  ordem), tabela do runtime, `ENEMY_BEHAVIOR_LABELS`, donos de `cadencia`/`tiro` em
+  `ENEMY_PARAM_OWNERS`, **a prosa do tooltip do "Ajustar"** (tem drift que cobra cada dono), `ai.ts` e
+  o manual. Mais a catraca de parâmetros (881 → 884).
+- Medido em Chrome real: o mapa das oito posições é o espelho exato do irmão vertical (laterais
+  atiram para o lado certo, coluna e diagonais calam); e uma torre parada com o herói andando na
+  altura dela deu **20 tiros, 20 acertos, 2 de dano por acerto**, com a torre virada para ele.
+- ⚠️ **Armadilha de sonda que quase virou falso defeito**: na primeira medição o herói perdeu 2 de
+  vida em 20 acertos. Não era bug: `blinkFrames` (a invencibilidade) só escoa dentro do `drawSprite`,
+  e a minha sonda não desenhava o herói. Sonda de dano tem que desenhar o sprite, como o jogo faz.
+- ⚠️ E os valores do meu primeiro teste estavam errados porque confundi o TOPO do sprite com o centro
+  dele (`naveY` é o canto; o centro é `naveY + h/2`). O teste pegou.
+
+### Oitavo full review (07/08) — o lote da torre
+
+Rodada sobre o atirador de lado. Nada de errado no runtime; os quatro achados são de REDE, e dois são
+de testes meus que prometiam mais do que verificavam:
+
+1. ⭐ **Nada travava o manual e a IA contra o enum de comportamentos.** As duas superfícies estavam
+   completas (23/23, medido), mas por sorte: um comportamento novo esquecido ali significa uma opção
+   no menu que o manual não explica e que o Zappy nunca sugere, porque não sabe que existe. Drift novo
+   cruza o enum com o manual (pelo NOME DO MENU, que é o que a criança lê) e com o contexto da IA
+   (pelo VALOR, que é o que ela emite).
+2. ⭐ **Nenhum teste levava um VALOR de dropdown pela Ponte de volta.** A cadeia é fechada por
+   construção (o parser lê o enum em três pontos, sem lista própria), mas "fechado por construção" foi
+   o que eu disse do atirador alinhado antes dos dois defeitos que ela achou jogando. Um comportamento
+   que o parser recusasse cairia em `rawJS`: o jogo seguiria rodando e a Ponte devolveria um bloco de
+   "código avançado" no lugar do bloco de inimigo, verde em tudo. Agora os 23 fazem código → IR nos
+   dois blocos que os oferecem (criar e "também é").
+3. **O teste da bala reta ligava a gravidade e media ANTES de a bala andar** — não provava nada sobre
+   a gravidade. Agora acompanha 40 quadros de voo e exige a altura CONGELADA.
+4. **O teste da cruz dizia "com contadores próprios" e não provava**: com o alvo nas duas faixas os
+   dois disparam juntos, e um contador único daria o mesmo resultado. O teste novo gasta SÓ a recarga
+   do lateral e prova que o vertical dispara na hora em que o alvo entra na coluna.
+
+⚠️ **E eu quase relatei um defeito que não existia**: o round-trip do "também é" falhou para os 23, e
+a causa era o meu palpite do nome da IR (`g2d:addEnemyBehavior` em vez de `g2d:enemyAddBehavior`). O
+parser estava certo. Confirmar o nome no schema antes de acusar o produto.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 
