@@ -69,6 +69,10 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       'teacher_threads (id uuid primary key, user_id uuid not null, account_id uuid)',
       'teacher_messages (id uuid primary key, thread_id uuid not null)',
       'pensa_projects (id uuid primary key, user_id uuid not null, account_id uuid)',
+      // O DDL aqui é escrito à mão, então tabela nova alcançada pela purga precisa
+      // entrar nesta lista — senão o teste quebra com 42P01. Foi o caso do Zappy
+      // (migration `0054`), que só aflorou quando o Postgres local voltou.
+      'zappy_conversations (id uuid primary key, user_id uuid not null, account_id uuid)',
       'ai_usage_daily (account_id uuid not null, day date not null, feature varchar(40) not null)',
       'parent_reports_sent (account_id uuid not null, week_key text not null)',
       'parent_report_prefs (account_id uuid primary key)',
@@ -86,6 +90,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
   beforeEach(async () => {
     await conn.sql`
       truncate table
+        members.zappy_conversations,
         members.renewal_reminders_sent,
         members.parent_report_prefs,
         members.parent_reports_sent,

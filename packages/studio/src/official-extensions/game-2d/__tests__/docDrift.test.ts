@@ -315,6 +315,28 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   /**
+   * ⭐ Comportamento novo aparece no MENU e desaparece das explicações. O drift do
+   * dropdown garante que o menu e o enum andem juntos, mas nada garantia que o
+   * manual e o contexto da IA acompanhassem: a criança veria uma opção que o
+   * manual não explica, e o Zappy nunca sugeriria o comportamento novo porque não
+   * saberia que ele existe. As duas superfícies estavam completas quando este
+   * teste foi escrito; ele existe para que continuem.
+   */
+  it('todo comportamento de inimigo é explicado no manual e conhecido pela IA', () => {
+    const docs = gameTwoDManifest.docs ?? ''
+    const nomeCurto = new Map(
+      GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS.map(([texto, valor]) => [valor, texto.split(' (')[0]]),
+    )
+    expect(nomeCurto.size).toBe(G2D_ENEMY_BEHAVIORS.length)
+    expect({
+      // A IA precisa do VALOR (é o que ela emite no código).
+      foraDaIA: G2D_ENEMY_BEHAVIORS.filter((b) => !gameTwoDPromptContext.includes(`'${b}'`)),
+      // A criança precisa do NOME DO MENU (é o que ela lê na gaveta).
+      foraDoManual: G2D_ENEMY_BEHAVIORS.filter((b) => !docs.includes(String(nomeCurto.get(b)))),
+    }).toEqual({ foraDaIA: [], foraDoManual: [] })
+  })
+
+  /**
    * O contexto da IA é um GERADOR DE CÓDIGO: helper que ele promete e não existe
    * vira `SZGame2D.naoExiste is not a function` no jogo da criança, e o Zappy
    * explica com toda a confiança do mundo. Seis nomes citados ali são do Canvas

@@ -16,6 +16,7 @@ export const LESSON_BLOCK_KINDS = [
   'ebook',
   'studio',
   'certificate',
+  'coming_soon',
 ] as const
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
@@ -241,6 +242,18 @@ export interface CertificateBlock {
   message?: string
 }
 
+/**
+ * "Em breve": a aula está EM PRODUÇÃO. Enquanto este bloco existir, a projeção do
+ * aluno devolve só ele (os demais blocos e os anexos NÃO saem do servidor — ver
+ * `toLessonDetailView`) e a conclusão é barrada (`LESSON_COMING_SOON`). Tirar o
+ * bloco devolve a aula ao normal. `message` sobrescreve o recado padrão, que vive
+ * em cada renderizador (o tom do kids ≠ o do adulto).
+ */
+export interface ComingSoonBlock {
+  kind: 'coming_soon'
+  message?: string
+}
+
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */
 export type LessonBlockContent =
   | RichTextBlock
@@ -252,17 +265,43 @@ export type LessonBlockContent =
   | EbookBlock
   | StudioBlock
   | CertificateBlock
+  | ComingSoonBlock
 
 /**
  * O bloco TRAVA a conclusão da aula? Estúdio SEMPRE trava (exige envio —
- * `STUDIO_GATE_NOT_SUBMITTED`, ver mark-lesson-complete); quiz só trava COM nota de
- * corte (`passingScore`). Os demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de
- * fixação) são conteúdo livre. Usado pela autoria para manter a aula do certificado
- * SEM gates: a emissão conclui essa aula DIRETO (sem passar pelos gates), então um
- * bloco travante ali seria PULADO — o aluno emitiria o diploma sem fazê-lo.
+ * `STUDIO_GATE_NOT_SUBMITTED`, ver mark-lesson-complete); "em breve" SEMPRE trava (a
+ * aula ainda está sendo montada); quiz só trava COM nota de corte (`passingScore`). Os
+ * demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de fixação) são conteúdo livre.
+ * Usado pela autoria para manter a aula do certificado SEM gates: a emissão conclui
+ * essa aula DIRETO (sem passar pelos gates), então um bloco travante ali seria PULADO —
+ * o aluno emitiria o diploma sem fazê-lo.
  */
 export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
   if (content.kind === 'studio') return true
+  if (content.kind === 'coming_soon') return true
   if (content.kind === 'quiz') return content.passingScore !== undefined
   return false
+}
+
+/**
+ * A aula está EM PRODUÇÃO (tem bloco "em breve")? Portão do conteúdo e da conclusão.
+ *
+ * O portão NÃO pode viver só na projeção da aula (`toLessonDetailView`): um id de
+ * bloco/anexo visto ANTES de o bloco entrar sobrevive na aba aberta, no histórico e
+ * num HAR, e as rotas laterais resolvem o conteúdo direto de `lesson.blocks`. Por
+ * isso ele é aplicado nas CINCO portas que carregam a aula pelo id, além do
+ * `mark-lesson-complete`:
+ *  - `get-attachment-download` e `get-ebook-download` → 404;
+ *  - `submit-quiz-attempt` → 404 (a resposta ainda devolveria o GABARITO e daria XP);
+ *  - `submit-studio-project` → 404 (o upsert último-vence sobrescreveria a entrega boa);
+ *  - `get-showcase-payload` → `eligible:false` (mantém o contrato do consumidor). É a
+ *    única com efeito PÚBLICO: o HUB revalida por ela no publish, então sem o portão
+ *    uma aba velha publicaria no Mural um projeto de aula não-servida.
+ *
+ * FORA de propósito: `get-studio-carryover` e `get-own-studio-submission` devolvem o
+ * projeto do PRÓPRIO aluno, não conteúdo autoral — barrá-los só tiraria dele o
+ * trabalho que já é dele.
+ */
+export function hasComingSoonBlock(blocks: readonly { content: LessonBlockContent }[]): boolean {
+  return blocks.some((b) => b.content.kind === 'coming_soon')
 }

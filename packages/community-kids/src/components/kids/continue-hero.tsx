@@ -36,7 +36,9 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
   const courseHref = `/cursos/${encodeURIComponent(course.courseSlug)}`
   const href = course.continueLessonId
     ? `${courseHref}/aulas/${encodeURIComponent(course.continueLessonId)}`
-    : courseHref
+    : // Sem aula-alvo o herói cai na página do curso: marca a origem p/ a setinha
+      // de lá voltar PRA HOME (ver `lib/course-return.ts`).
+      `${courseHref}?de=inicio`
   const started = courseHasActivity(course)
 
   return (

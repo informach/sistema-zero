@@ -92,6 +92,7 @@ export const G2D_ENEMY_BEHAVIORS = [
   // o que ele faz
   'atirador',
   'atirador-alinhado',
+  'atirador-lado',
   'atirador-esperto',
   'atirador-leque',
   'bombardeiro',

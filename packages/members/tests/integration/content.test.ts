@@ -551,6 +551,54 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     expect(noHtml.status).toBe(400)
   })
 
+  test('bloco "em breve": aceito solto → 201; recusado numa aula de certificado → 400', async () => {
+    const { app } = buildApp()
+    const { mod, lesson } = await seedTree(app)
+
+    const semRecado = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'coming_soon' },
+    })
+    expect(semRecado.status).toBe(201)
+
+    const comRecado = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'coming_soon', message: 'Essa aula chega semana que vem!' },
+    })
+    expect(comRecado.status).toBe(201)
+
+    // "Em breve" TRAVA a conclusão, e a aula do certificado conclui direto pela
+    // emissão — juntos, o diploma sairia numa aula ainda em produção.
+    const outraAula = await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
+      slug: 'aula-diploma',
+      title: 'Diploma',
+      isPublished: true,
+    }).then(readJson)
+
+    const certificado = await send(app, `/members/admin/lessons/${outraAula.id}/blocks`, 'POST', {
+      content: { kind: 'certificate' },
+    })
+    expect(certificado.status).toBe(201)
+
+    const barrado = await send(app, `/members/admin/lessons/${outraAula.id}/blocks`, 'POST', {
+      content: { kind: 'coming_soon' },
+    })
+    expect(barrado.status).toBe(400)
+
+    // Sentido INVERSO: a aula já tem "em breve" e alguém tenta pôr o certificado.
+    // ⚠️ Isto cobre o caminho `lessonHasGatingBlock`, mas NÃO o SQL dele: o fake
+    // in-memory implementa o método chamando a função do DOMÍNIO, então uma
+    // divergência do espelho passaria batida aqui. Quem trava o SQL de verdade é
+    // `tests/db/gating-block-sql.test.ts`, contra Postgres real.
+    const certificadoDepois = await send(
+      app,
+      `/members/admin/lessons/${lesson.id}/blocks`,
+      'POST',
+      {
+        content: { kind: 'certificate' },
+      },
+    )
+    expect(certificadoDepois.status).toBe(400)
+  })
+
   test('embed sandbox: tokens seguros → 201; allow-same-origin (escapa do iframe) → 400', async () => {
     const { app } = buildApp()
     const { lesson } = await seedTree(app)

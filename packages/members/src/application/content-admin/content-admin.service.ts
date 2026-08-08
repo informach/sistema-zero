@@ -388,11 +388,12 @@ async function assertSingleCertificateBlock(
 }
 
 // A aula do certificado pode ter conteúdo livre (vídeo/texto/imagem de encerramento),
-// mas NÃO blocos que travam a conclusão (quiz com nota de corte / estúdio): a emissão
-// conclui essa aula DIRETO, sem passar pelos gates de mark-lesson-complete — um gate ali
-// seria pulado (o aluno emitiria o diploma sem fazer a atividade). Ver isCompletionGatingBlock.
+// mas NÃO blocos que travam a conclusão (quiz com nota de corte / estúdio / "em breve"):
+// a emissão conclui essa aula DIRETO, sem passar pelos gates de mark-lesson-complete — um
+// gate ali seria pulado (o aluno emitiria o diploma sem fazer a atividade, ou com a aula
+// ainda em produção). Ver isCompletionGatingBlock.
 const CERTIFICATE_LESSON_NO_GATES =
-  'A aula do certificado não pode ter blocos que travam a conclusão (quiz com nota de corte ou estúdio).'
+  'A aula do certificado não pode ter blocos que travam a conclusão (quiz com nota de corte, estúdio ou "em breve").'
 
 export class BlockAdminService {
   constructor(private readonly content: ContentAdminRepository) {}

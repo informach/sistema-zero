@@ -1,9 +1,10 @@
 'use client'
 
 import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
-import { ArrowLeft, Send } from 'lucide-react'
+import { Send } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { KidsBackButton } from '@/components/kids/back-button'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadView } from '@/lib/types'
 
@@ -110,13 +111,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-4">
       <div className="mb-3 flex items-center gap-3">
-        <Link
-          href="/recados"
-          aria-label="Voltar aos recados"
-          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card hover:border-primary"
-        >
-          <ArrowLeft className="size-4" />
-        </Link>
+        <KidsBackButton href="/recados" label="Voltar aos recados" />
         <div className="min-w-0">
           <p className="font-bold text-primary text-xs uppercase tracking-wide">
             {thread ? CONTEXT_LABEL[thread.contextType] : ''}

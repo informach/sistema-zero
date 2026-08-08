@@ -58,7 +58,11 @@ import {
 import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 
-const KIND_LABELS: Record<string, string> = {
+// `Record<LessonBlockKind, …>` (não `Record<string, …>`): assim o COMPILADOR cobra o
+// rótulo de todo tipo novo. Sem isso o `<select>` mostraria o slug cru — e o editor é
+// cheio de `default` silencioso (o `buildContent` grava QUIZ para kind sem case), então
+// vale prender o que dá para prender em tempo de compilação.
+const KIND_LABELS: Record<LessonBlockKind, string> = {
   rich_text: 'Texto',
   video: 'Vídeo',
   image: 'Imagem',
@@ -68,7 +72,11 @@ const KIND_LABELS: Record<string, string> = {
   ebook: 'E-book (livro 3D)',
   studio: 'Estúdio',
   certificate: 'Certificado',
+  coming_soon: 'Em breve (aula em produção)',
 }
+
+/** `BlockView.kind` vem como `string` da API — bloco de um deploy mais novo cai no slug. */
+const kindLabel = (kind: string): string => (KIND_LABELS as Record<string, string>)[kind] ?? kind
 
 // Largura do modal de bloco por tipo: só os que embutem editor PESADO fogem do `max-w-lg` padrão
 // (o Estúdio = IDE blocos/código/preview; o quiz = editores de texto rico por pergunta/opção).
@@ -144,6 +152,8 @@ interface BlockForm {
   certSig1Name: string
   certSig2Url: string
   certSig2Name: string
+  /** Em breve: recado que substitui o padrão do app. Vazio = usa o padrão. */
+  comingSoonMessage: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -182,6 +192,7 @@ const EMPTY_BLOCK: BlockForm = {
   certSig1Name: '',
   certSig2Url: '',
   certSig2Name: '',
+  comingSoonMessage: '',
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -231,6 +242,13 @@ function buildContent(
           : {}),
       }
     }
+    // ⚠️ O `default` deste switch cai em QUIZ — um kind sem `case` vira quiz em
+    // silêncio (o TS não avisa). Todo tipo novo precisa do seu case aqui.
+    case 'coming_soon':
+      return {
+        kind: 'coming_soon',
+        ...(opt(f.comingSoonMessage) ? { message: f.comingSoonMessage.trim() } : {}),
+      }
     case 'rich_text':
       return {
         kind: 'rich_text',
@@ -368,6 +386,8 @@ function blockSummary(b: BlockView): string {
       return (c.initialProject as { name?: string })?.name ?? 'Atividade do Estúdio'
     case 'certificate':
       return c.coursePhrase?.trim() || 'Certificado de conclusão'
+    case 'coming_soon':
+      return c.message?.trim() || 'A aula fica escondida até você tirar este bloco'
     default:
       return '—'
   }
@@ -519,6 +539,7 @@ export function LessonEditorClient({
       certSig1Name: c.kind === 'certificate' ? (c.signatures?.[0]?.name ?? '') : '',
       certSig2Url: c.kind === 'certificate' ? (c.signatures?.[1]?.imageUrl ?? '') : '',
       certSig2Name: c.kind === 'certificate' ? (c.signatures?.[1]?.name ?? '') : '',
+      comingSoonMessage: c.kind === 'coming_soon' ? (c.message ?? '') : '',
     })
     if (c.kind === 'studio') {
       const projectKind = (c.initialProject as { kind?: string } | undefined)?.kind
@@ -876,7 +897,7 @@ export function LessonEditorClient({
             >
               {LESSON_BLOCK_KINDS.map((k) => (
                 <option key={k} value={k}>
-                  {KIND_LABELS[k] ?? k}
+                  {KIND_LABELS[k]}
                 </option>
               ))}
             </Select>
@@ -889,6 +910,32 @@ export function LessonEditorClient({
                 onChange={(markdown) => setBlockForm((f) => ({ ...f, markdown }))}
               />
             </Field>
+          ) : null}
+
+          {blockForm.kind === 'coming_soon' ? (
+            <>
+              <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                Enquanto este bloco estiver aqui, o aluno vê <strong>só este recado</strong>. Os
+                outros blocos e os anexos da aula ficam escondidos e ele não consegue concluí-la.
+                Com a trava sequencial ligada,{' '}
+                <strong>as aulas seguintes também ficam bloqueadas</strong> até você tirar o bloco.
+                Você continua vendo a aula inteira, inclusive no “Ver como aluno”. Terminou de
+                montar? Apague o bloco e a aula volta ao normal.
+              </p>
+              <Field
+                label="Recado (opcional)"
+                hint="Em branco usa o recado padrão de cada plataforma (o do kids é escrito para crianças)."
+              >
+                <Textarea
+                  value={blockForm.comingSoonMessage}
+                  maxLength={500}
+                  placeholder="Ex.: esta aula chega na semana que vem."
+                  onChange={(e) =>
+                    setBlockForm((f) => ({ ...f, comingSoonMessage: e.target.value }))
+                  }
+                />
+              </Field>
+            </>
           ) : null}
 
           {blockForm.kind === 'video' ? (
@@ -1584,7 +1631,7 @@ function SortableBlockItem({
             <GripVertical className="size-4" />
           </button>
         ) : null}
-        <Badge variant="outline">{KIND_LABELS[block.kind] ?? block.kind}</Badge>
+        <Badge variant="outline">{kindLabel(block.kind)}</Badge>
         <span className="truncate text-sm text-muted-foreground">{blockSummary(block)}</span>
       </div>
       <div className="flex shrink-0 items-center gap-1">

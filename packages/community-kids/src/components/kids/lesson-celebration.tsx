@@ -88,20 +88,22 @@ export function LessonCelebration({
 
         <div className="mt-7 flex flex-col items-stretch gap-3">
           <Link href={nextHref ?? courseHref} className="sz-btn-gradient h-12 text-base">
-            {nextHref ? 'Próxima aula' : 'Voltar à trilha'}
+            {nextHref ? 'Próxima aula' : 'Voltar ao curso'}
           </Link>
           {nextHref ? (
             <Link
               href={courseHref}
-              className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+              // min-h-11: alvo de toque de mão pequena (a régua da casa) — era um
+              // link de texto puro de ~20px num modal que abre a cada aula concluída.
+              className="inline-flex min-h-11 items-center justify-center px-4 text-muted-foreground text-sm transition-colors hover:text-foreground"
             >
-              Voltar à trilha
+              Voltar ao curso
             </Link>
           ) : null}
           <button
             type="button"
             onClick={onClose}
-            className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 items-center justify-center px-4 text-muted-foreground text-sm transition-colors hover:text-foreground"
           >
             Ficar nesta aula
           </button>

@@ -120,6 +120,14 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > E **`0046`** (`0046_light_runaways`: `ALTER TABLE challenge_custom_themes DROP COLUMN suggested_kit`
 > — a "dica do kit" saiu do Desafio do mês (as sugestões confundiam mais que ajudavam; decisão da
 > usuária). O card kids não mostra mais dica; o tema agora é só emoji/título/descrição).
+> E **`0061`** (`0061_clammy_salo`: `ALTER TYPE "members"."lesson_block_kind" ADD VALUE IF NOT EXISTS
+> 'coming_soon'` — bloco "Em breve" da aula em produção, ver Conceito 6; carimbo `when`
+> **1786184793918**, acima da marca d'água da `0060`. SEM tabela/coluna nova) — **APLICADA em
+> LOCAL**, PENDENTE em staging/prod. ⚠️ Três consultas comparam a coluna enum ao literal
+> `'coming_soon'` (uma delas no caminho do ALUNO, o `search` do Zappy): subir o código ANTES da
+> migration dá `invalid input value for enum` — a mesma forma do incidente 03/08. O `preDeployCommand`
+> roda `db:migrate` primeiro, então a ordem está garantida; confirme que ela entrou antes de dar o
+> lote por no ar.
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 >
@@ -179,9 +187,46 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 5. **Convenção**: `entitlement.courseRef === course.slug` (e === `fulfillment.courseRef`
    do produto no catálogo). É o elo oferta→curso.
 6. **Aula = lista ordenada de BLOCOS** (`lesson_blocks`, união discriminada por
-   `kind`: rich_text/video/image/audio/quiz/embed/ebook/**studio**). Aula composta (vídeo +
+   `kind`: rich_text/video/image/audio/quiz/embed/ebook/**studio**/certificate/**coming_soon**).
+   Aula composta (vídeo +
    interativo + texto) = vários blocos. Comunidade só modelada (feature é fatia
-   seguinte). **Autoria v3 (06/2026):** `embed` aceita SÓ `{html, sandbox?}` no DTO
+   seguinte).
+   **`coming_soon` — "Em breve" (08/2026, migration `0061`):** marca a aula como EM
+   PRODUÇÃO. Conteúdo `{kind, message?}` (≤500 chars; vazio → o recado padrão de cada
+   renderizador, kids ≠ adulto). Enquanto o bloco existir: (a) `toLessonDetailView`
+   devolve ao ALUNO **só** os blocos `coming_soon` e **zera `attachments`** — o portão
+   começa aqui, na projeção, senão o conteúdo inacabado viajaria no payload e seria lido
+   no devtools; ⚠️ **mas NÃO pode parar aqui** (full review 08/2026): um id de bloco/anexo
+   visto ANTES sobrevive na aba aberta, no histórico e num HAR, e as rotas laterais
+   resolvem o conteúdo direto de `lesson.blocks`. O `hasComingSoonBlock` é aplicado nas
+   **CINCO portas** que carregam a aula pelo id — `get-attachment-download`,
+   `get-ebook-download`, `submit-quiz-attempt` (que ainda devolveria o **GABARITO** e
+   creditaria XP), `submit-studio-project` (cujo upsert último-vence SOBRESCREVERIA a
+   entrega boa) — todas com 404 — e **`get-showcase-payload`** com `eligible:false`, a
+   única com efeito **PÚBLICO** (o HUB revalida por ela no publish; sem o portão, uma
+   aba velha publicaria no Mural um projeto de aula não-servida, gravando marco/badge/
+   troféu). FORA de propósito: `get-studio-carryover` e `get-own-studio-submission`, que
+   devolvem o projeto do PRÓPRIO aluno; (b) `mark-lesson-complete` lança
+   `LessonComingSoonError` → **409
+   `LESSON_COMING_SOON`** (gate ANTES dos de quiz/estúdio, cujos blocos estão
+   escondidos; dentro do `if (!completedIds.includes(...))`, então aula JÁ concluída não
+   regride); (c) `isCompletionGatingBlock` devolve `true` → a autoria já recusa misturar
+   com certificado (⚠️ o espelho SQL `lessonHasGatingBlock` precisa acompanhar — o fake
+   in-memory usa a função do DOMÍNIO, então **nenhum teste de integração alcança o
+   SQL**; quem o trava é `tests/db/gating-block-sql.test.ts`, que roda o predicado real
+   contra Postgres e compara com o domínio caso a caso);
+   (d) a aula sai da base didática do **Zappy** por DOIS filtros: o `search` barra na
+   LEITURA (o que vale, e vale no instante em que a autora adiciona o bloco) e o
+   `listPublishedKidsBlocks` para de REINDEXAR. ⚠️ O `reconcilePublishedBlockSources`
+   NÃO filtra, de propósito: ele APAGA, e `video-vtt`/`student-notebook` não se
+   reindexam sozinhos (o backfill é manual e devolve `pending[]` para o painel
+   re-extrair) — ligar "em breve" por 5 minutos com um backfill na janela custaria a
+   aula inteira na base, sem nada restaurar. Defesa em profundidade cara e inútil, já
+   que quem barra a leitura é o `search`. **EQUIPE vê a aula
+   inteira** (`privileged` chega do `GetLessonService` ao mapper) — é o "Ver como aluno"
+   da autoria; mas nem a equipe conclui. Tirar o bloco devolve tudo ao normal. Testes:
+   `tests/integration/coming-soon.test.ts`.
+   **Autoria v3 (06/2026):** `embed` aceita SÓ `{html, sandbox?}` no DTO
    (sempre iframe sandbox no front; `embedType`/`src`/`height` são legado tolerado no
    TYPE mas rejeitado na escrita); `ebook` = `{url: 'r2priv:<key>', title?}` — PDF no
    bucket R2 privado que o community renderiza como livro 3D com marca d'água.

@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import type { CourseDetailView, LessonDetailView, QuizBlock } from '@/lib/types'
+import type { CourseDetailView, LessonDetailView, QuizBlock, StudioBlock } from '@/lib/types'
 
 interface Props {
   course: CourseDetailView
@@ -75,7 +75,26 @@ export function LessonPlayer({
     () => lesson.blocks.some((b) => b.kind === 'studio' && !b.studioState?.submitted),
     [lesson.blocks],
   )
-  const completeBlocked = blockedByQuiz || blockedByStudio
+  // Aula EM PRODUÇÃO: com o bloco "em breve" o members serve SÓ o recado (segura os
+  // demais blocos e os anexos) e recusa a conclusão com 409 LESSON_COMING_SOON.
+  const blockedByComingSoon = useMemo(
+    () => lesson.blocks.some((b) => b.kind === 'coming_soon'),
+    [lesson.blocks],
+  )
+  // Atividade do Estúdio COM nota mínima exige aprovação, não só envio. O backend já
+  // devolvia 409 `STUDIO_GATE_NOT_PASSED` (o kids espelha desde 06/2026), mas aqui o
+  // botão seguia habilitado: o aluno clicava e só descobria pelo toast.
+  const blockedByStudioNotPassed = useMemo(
+    () =>
+      lesson.blocks.some((b) => {
+        if (b.kind !== 'studio' || !b.studioState?.submitted) return false
+        const content = b.content as StudioBlock | null
+        return content?.activity?.passingScore !== undefined && !b.studioState?.passed
+      }),
+    [lesson.blocks],
+  )
+  const completeBlocked =
+    blockedByComingSoon || blockedByQuiz || blockedByStudio || blockedByStudioNotPassed
 
   // ── Posição do vídeo: refs (sem re-render) + throttle + flush por beacon ────
   const positionUrl = `/api/members/lessons/${encodeURIComponent(lesson.id)}/position`
@@ -166,6 +185,16 @@ export function LessonPlayer({
           if (!opts.silent) {
             toast.error('Envie o projeto do Estúdio para poder concluir a aula.')
           }
+        } else if (apiErr?.code === 'STUDIO_GATE_NOT_PASSED') {
+          // Atividade do Estúdio com nota mínima exige aprovação, não só envio.
+          if (!opts.silent) {
+            toast.error('Atinja a nota mínima do Estúdio para poder concluir a aula.')
+          }
+        } else if (apiErr?.code === 'LESSON_COMING_SOON') {
+          // A aula ainda está sendo montada (bloco "em breve").
+          if (!opts.silent) {
+            toast.error('Esta aula ainda está sendo preparada. Volte em breve.')
+          }
         } else if (!opts.silent) {
           toast.error('Não foi possível marcar a aula. Tente de novo.')
         }
@@ -248,13 +277,21 @@ export function LessonPlayer({
                   {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
                   Concluir aula
                 </Button>
-                {blockedByQuiz ? (
+                {blockedByComingSoon ? (
+                  <p className="text-xs text-muted-foreground">
+                    Esta aula ainda está sendo preparada.
+                  </p>
+                ) : blockedByQuiz ? (
                   <p className="text-xs text-muted-foreground">
                     Passe no quiz da aula para poder concluí-la.
                   </p>
                 ) : blockedByStudio ? (
                   <p className="text-xs text-muted-foreground">
                     Envie o projeto do Estúdio para poder concluir a aula.
+                  </p>
+                ) : blockedByStudioNotPassed ? (
+                  <p className="text-xs text-muted-foreground">
+                    Atinja a nota mínima do Estúdio para poder concluir a aula.
                   </p>
                 ) : null}
               </div>

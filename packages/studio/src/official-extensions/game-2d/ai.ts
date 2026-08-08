@@ -128,7 +128,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - createEnemyType({ behavior, color, image, hp, speed, dmg, w, h }): behavior em
   'patrulha'|'perseguidor'|'voador'|'voador-vertical'|'saltador'|'atirador'|'parado'|
   'medroso'|'arrancada'|'rondador'|'mergulhador'|'teleporte'|'zigue-zague'|
-  'atirador-alinhado'|'atirador-esperto'|'atirador-leque'|'bombardeiro'|'raio'|
+  'atirador-alinhado'|'atirador-lado'|'atirador-esperto'|'atirador-leque'|'bombardeiro'|'raio'|
   'espinho'|'renascer'|'chefao'|'perseguidor-lado'.
   Quem anda no chão não cai num top-down; para cair em plataforma, gere setGravity
   em Ao iniciar e applyGravityToGroup(tipo) antes de updateEnemyType no gameLoop.
@@ -156,7 +156,10 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   por EIXO de movimento (horizontal e vertical) vale o ÚLTIMO comportamento somado que dirige
   aquele eixo; as AÇÕES (atirar, bombardear) rodam TODAS. Somar de novo o que já está na lista
   o move para o fim, então ele passa a mandar. Nome fora da lista é recusado com aviso.
-  Combos que valem a pena sugerir: patrulha+atirador (guarda), voador+bombardeiro (morcego),
+  ⚠️ 'atirador-alinhado' confere a COLUNA (atira para cima ou para baixo) e 'atirador-lado' confere
+  a ALTURA (atira reto para o lado): são espelhos, e juntos cobrem uma cruz.
+  Combos que valem a pena sugerir: parado+atirador-lado (TORRE de plataforma),
+  patrulha+atirador (guarda), voador+bombardeiro (morcego),
   perseguidor+saltador (persegue pulando), parado+espinho (armadilha), chefao+perseguidor.
 - spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
 - updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do

@@ -7,7 +7,6 @@ import { Dialog } from '@sistemazero/ui/dialog'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Spinner } from '@sistemazero/ui/spinner'
 import {
-  ArrowLeft,
   Award,
   BookOpenCheck,
   Flame,
@@ -22,6 +21,7 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { KidsBackButton } from '@/components/kids/back-button'
 import { GameCardDialog } from '@/components/kids/game-card-dialog'
 import { KidsMascot } from '@/components/kids/mascot'
 import { ParentGateDialog } from '@/components/kids/parent-gate-dialog'
@@ -958,9 +958,7 @@ function PurchasesView({ onBack }: { onBack: () => void }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 px-4 py-12">
       <div>
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="size-4" /> Voltar
-        </Button>
+        <KidsBackButton onClick={onBack} label="Voltar à área dos pais" showLabel />
       </div>
       <div>
         <h1 className="sz-display text-2xl text-foreground">Minhas compras</h1>

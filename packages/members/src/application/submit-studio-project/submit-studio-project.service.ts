@@ -3,7 +3,7 @@ import { PayloadTooLargeError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError, StudioBlockNotFoundError } from '../../domain/course/course.errors'
-import { MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
+import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
 import {
   type ClientCheckResult,
   gradeStudioActivity,
@@ -81,6 +81,12 @@ export class SubmitStudioProjectService {
       userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+
+    // Aula EM PRODUÇÃO ("em breve"): a 4ª porta lateral. Com a aba ainda aberta, o
+    // "Enviar para o professor" passaria e o upsert último-vence SOBRESCREVERIA a
+    // entrega boa anterior, além de gravar marco, creditar XP e abrir conversa numa
+    // aula que o servidor declara não-servida.
+    if (!privileged && hasComingSoonBlock(lesson.blocks)) throw new StudioBlockNotFoundError()
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'studio') throw new StudioBlockNotFoundError()

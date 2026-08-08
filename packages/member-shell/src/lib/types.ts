@@ -415,6 +415,16 @@ export interface StudioBlock {
     defaultCoverUrl?: string
   }
 }
+/**
+ * "Em breve": a aula está EM PRODUÇÃO. Quando este bloco existe, o members devolve
+ * SÓ ele (os demais blocos e os anexos nem saem do servidor) e recusa a conclusão
+ * com `LESSON_COMING_SOON`. A equipe recebe a aula inteira. `message` sobrescreve o
+ * recado padrão, que vive em cada renderizador (o tom do kids ≠ o do adulto).
+ */
+export interface ComingSoonBlock {
+  kind: 'coming_soon'
+  message?: string
+}
 export type LessonBlockContent =
   | RichTextBlock
   | VideoBlock
@@ -424,6 +434,8 @@ export type LessonBlockContent =
   | EmbedBlock
   | EbookBlock
   | StudioBlock
+  | CertificateBlock
+  | ComingSoonBlock
 
 /** Estado das tentativas do aluno num bloco de quiz (vem no GET da aula). */
 export interface QuizStateView {

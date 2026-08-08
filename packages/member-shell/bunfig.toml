@@ -1,0 +1,9 @@
+[test]
+# Env compartilhada da suíte (JWT/OpenRouter/gateway/HMAC) — `getEnv()` é cacheado e
+# pode ser aquecido por QUALQUER arquivo, então precisa estar setada antes da carga.
+#
+# Vive aqui, e não só no `--preload` do script do package.json, porque `bun test` cru
+# é o que o CLAUDE.md manda rodar e o que qualquer um digita por instinto: sem isto ele
+# quebrava 10 testes com "Env inválida" / "OpenRouter não configurado", que lê como
+# suíte podre em vez de comando errado. Espelha o `bunfig.toml` do community-kids.
+preload = ["./tests/setup-env.ts"]

@@ -632,6 +632,15 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   --unit-bg: transparent;
   --unit-bg-image: var(--sz-gradient);
 }
+/* Tema NEUTRO: o estado "em obras" (bloco Em breve), onde não há nada a fazer. Os
+   temas coloridos são todos de ação — usar um deles ali daria ao vazio a ênfase
+   máxima do sistema, e o gradiente ainda colidiria com a pílula "AULA N DE M". */
+.kids-unit-muted {
+  --unit: var(--border);
+  --unit-fg: var(--muted-foreground);
+  --unit-bg: var(--muted);
+  --unit-bg-image: none;
+}
 /* No dark os sólidos são vivos → texto navy por cima. */
 .dark .kids-unit-cyan,
 .dark .kids-unit-lime,

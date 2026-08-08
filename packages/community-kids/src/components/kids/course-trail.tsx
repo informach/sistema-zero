@@ -23,9 +23,12 @@ function nodeAria(node: TrailNode): string {
       : node.state === 'current'
         ? 'aula atual'
         : node.state === 'locked'
-          ? 'bloqueada — conclua a aula anterior'
+          ? // Descritivo, não imperativo: a aula anterior pode estar "em breve" (não
+            // concluível), e mandar concluí-la seria pedir o impossível. Sem travessão,
+            // que é regra de voz da casa e ainda por cima o leitor de tela soletra.
+            'bloqueada, abre quando a anterior for concluída'
           : 'disponível'
-  const minutes = node.lesson.estimatedMinutes ? ` — ${node.lesson.estimatedMinutes} min` : ''
+  const minutes = node.lesson.estimatedMinutes ? `, ${node.lesson.estimatedMinutes} min` : ''
   return `${node.lesson.title} (${status})${minutes}`
 }
 

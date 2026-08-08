@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Camera, Check, Loader2, Lock, RefreshCw, Shuffle, X } from 'lucide-react'
+import { Camera, Check, Loader2, Lock, RefreshCw, Shuffle, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { AvatarReturnPath } from '@/lib/avatar-return'
@@ -14,6 +14,7 @@ import {
 } from '@/lib/avatar3d-catalog'
 import { cn } from '@/lib/cn'
 import type { AvatarPartView, AvatarStateView } from '@/lib/types'
+import { KidsBackButton } from '../back-button'
 import { KidsMascot } from '../mascot'
 import { ZappyCoin } from '../zappy-coin'
 import { AvatarScene, type CaptureFn } from './avatar-scene'
@@ -111,6 +112,9 @@ export function AvatarConfigurator({
   // re-renderiza a árvore inteira no servidor → layout + página leem o `avatarPhotoUrl` novo
   // (o `gatewayFetch` é `no-store`, sem cache de dados) e a imagem atualiza na hora em todo canto.
   const exitAvatar = () => window.location.assign(returnTo)
+  // Esta é a variante ícone-só: o `aria-label` é a ÚNICA informação que existe, então
+  // "Voltar" sozinho não diz nada. O destino é uma allowlist de dois valores.
+  const exitLabel = returnTo === '/' ? 'Voltar ao início' : 'Voltar ao meu perfil'
   const [state, setState] = useState<AvatarStateView | null>(null)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [slots, setSlots] = useState<Slots>({})
@@ -331,14 +335,7 @@ export function AvatarConfigurator({
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-background">
         <div className="relative z-10 flex items-center justify-between gap-2 p-4">
-          <button
-            type="button"
-            onClick={exitAvatar}
-            aria-label="Voltar"
-            className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90"
-          >
-            <ArrowLeft className="size-5" />
-          </button>
+          <KidsBackButton onClick={exitAvatar} label={exitLabel} variant="overlay" />
         </div>
         <div className="grid flex-1 place-items-center px-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
@@ -362,14 +359,7 @@ export function AvatarConfigurator({
       {/* Barra superior */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={exitAvatar}
-            aria-label="Voltar"
-            className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90"
-          >
-            <ArrowLeft className="size-5" />
-          </button>
+          <KidsBackButton onClick={exitAvatar} label={exitLabel} variant="overlay" />
           <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1.5 [font-family:var(--font-display)] font-bold text-sm shadow-md">
             <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
           </span>

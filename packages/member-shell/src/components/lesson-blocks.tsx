@@ -4,6 +4,7 @@ import { renderMarkdown } from '../lib/markdown'
 import type {
   AudioBlock,
   CertificateBlock,
+  ComingSoonBlock,
   EbookBlock,
   EmbedBlock,
   ImageBlock,
@@ -77,9 +78,34 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
           studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
         />
       )
+    case 'coming_soon':
+      return <ComingSoon content={content as unknown as ComingSoonBlock} />
     default:
       return null
   }
+}
+
+/** Recado padrão da aula em produção quando o autor não escreveu o dele. */
+export const COMING_SOON_DEFAULT_MESSAGE =
+  'Esta aula ainda está sendo preparada. Assim que o conteúdo estiver pronto, ele aparece aqui.'
+
+/**
+ * Bloco "em breve": a aula está EM PRODUÇÃO. Quando ele existe, é o ÚNICO bloco que
+ * o members serve ao aluno (os demais e os anexos ficam no servidor) e a conclusão é
+ * recusada — ver `LESSON_COMING_SOON`. Aqui é só o recado; o portão é o backend.
+ */
+function ComingSoon({ content }: { content: ComingSoonBlock }) {
+  // Sem `role="status"`: é conteúdo ESTÁTICO renderizado com a página, não um aviso
+  // que aparece depois — uma região `aria-live` aqui só arriscaria anúncio fora de
+  // ordem durante a carga.
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
+      <p className="font-medium text-foreground">Em breve</p>
+      <p className="text-sm text-muted-foreground">
+        {content.message?.trim() || COMING_SOON_DEFAULT_MESSAGE}
+      </p>
+    </div>
+  )
 }
 
 // ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─

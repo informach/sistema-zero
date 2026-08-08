@@ -15,6 +15,7 @@ import {
   Clapperboard,
   Code2,
   Gamepad2,
+  Hammer,
   Headphones,
   ListChecks,
   type LucideIcon,
@@ -27,6 +28,7 @@ import { parseLessonBlock } from '@/lib/lesson-block-content'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
   AudioBlock,
+  ComingSoonBlock,
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
@@ -35,6 +37,7 @@ import type {
   VideoBlock,
 } from '@/lib/types'
 import { KidsQuiz } from './kids-quiz'
+import { KidsMascot } from './mascot'
 import { MuralCelebration } from './mural-celebration'
 
 /**
@@ -145,7 +148,7 @@ function BlockChip({
 }: {
   icon: LucideIcon
   label: string
-  themeClass: 'kids-unit-cyan' | 'kids-unit-lime' | 'kids-unit-grad'
+  themeClass: 'kids-unit-cyan' | 'kids-unit-lime' | 'kids-unit-grad' | 'kids-unit-muted'
 }) {
   return (
     <span
@@ -200,9 +203,41 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       )
     case 'studio':
       return <StudioBlockKids block={block} content={content} />
+    case 'coming_soon':
+      return <ComingSoon content={content} />
     default:
       return null
   }
+}
+
+/**
+ * Bloco "em breve": a aula ainda está sendo montada pela professora. Quando ele
+ * existe, é o ÚNICO bloco que chega à criança (o members segura os outros e os
+ * anexos) e o "Concluir aula" fica desabilitado. Aqui é só o recado — o portão
+ * de verdade é o backend.
+ */
+function ComingSoon({ content }: { content: ComingSoonBlock }) {
+  return (
+    <div className="kids-unit-muted flex flex-col gap-3">
+      {/* Chip NEUTRO de propósito: `kids-unit-grad` é o gradiente de "Crie"/"Brinque"
+          (os blocos mais empolgantes) e é o mesmo da pílula "AULA N DE M" logo acima —
+          duas pílulas gêmeas na mesma dobra, com o visual de maior ênfase do sistema
+          num estado em que não há nada a fazer. A moldura tracejada já diz "em obras". */}
+      <BlockChip icon={Hammer} label="Em breve" themeClass="kids-unit-muted" />
+      <div className="flex flex-col items-center gap-3 rounded-3xl border-(--unit) border-4 border-dashed bg-card px-6 py-10 text-center">
+        <KidsMascot expression="thinking" className="size-20" />
+        {/* O título precisa ser verdade mesmo quando a autora escreve o recado dela
+            ("essa aula chega em setembro") — por isso não promete "quase pronta". */}
+        <p className="sz-display text-lg">Essa aula ainda está sendo preparada</p>
+        {/* Numa aula "em breve" este parágrafo é o CONTEÚDO INTEIRO da aula — não pode
+            ficar tipografado como legenda secundária (`text-sm text-muted-foreground`). */}
+        <p className="max-w-md text-base text-foreground">
+          {content.message?.trim() ||
+            'Estou terminando de montar tudo com muito carinho pra você. Volte daqui a pouquinho que ela vai estar te esperando! 🚀'}
+        </p>
+      </div>
+    </div>
+  )
 }
 
 /**

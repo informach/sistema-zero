@@ -445,7 +445,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ajuste fino do comportamento do tipo. Ajuste no "Ao iniciar", logo depois de criar o tipo. Força e ritmo do pulo: saltador. Alcance: voador, sobe e desce, rondador, zigue-zague, mergulhador, teleporte, arrancada e medroso (para quem anda no chão, o alcance é a distância que faz o inimigo reagir). A cada tantos quadros ele age: atirador, atirador alinhado, atirador esperto, atirador em leque, bombardeiro, teleporte, chefão e raio. Velocidade do tiro: atirador, atirador alinhado, atirador esperto, atirador em leque, bombardeiro e chefão. Voltar: renascer. Quanto tempo o raio fica ligado: raio. A vida vale para todos, e só para os que nascerem daqui para a frente.',
+      'Ajuste fino do comportamento do tipo. Ajuste no "Ao iniciar", logo depois de criar o tipo. Força e ritmo do pulo: saltador. Alcance: voador, sobe e desce, rondador, zigue-zague, mergulhador, teleporte, arrancada e medroso (para quem anda no chão, o alcance é a distância que faz o inimigo reagir). A cada tantos quadros ele age: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro, teleporte, chefão e raio. Velocidade do tiro: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro e chefão. Voltar: renascer. Quanto tempo o raio fica ligado: raio. A vida vale para todos, e só para os que nascerem daqui para a frente.',
   },
   {
     type: 'sz_g2d_spawn_enemy',

@@ -1,10 +1,12 @@
 import {
   CertificateGateNotIssuedError,
+  LessonComingSoonError,
   LessonNotFoundError,
   QuizGateNotPassedError,
   StudioGateNotPassedError,
   StudioGateNotSubmittedError,
 } from '../../domain/course/course.errors'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
@@ -63,6 +65,13 @@ export class MarkLessonCompleteService {
         },
         privileged,
       )
+
+      // Aula EM PRODUÇÃO ("em breve"): nem o aluno nem a equipe concluem — o resto
+      // do conteúdo sequer é servido (`toLessonDetailView`), então concluir aqui
+      // marcaria como visto algo que ninguém viu. Vem ANTES dos demais gates: os
+      // blocos de quiz/estúdio da aula estão escondidos, e reclamar deles seria
+      // um recado sem sentido. Tirar o bloco na autoria devolve a aula ao normal.
+      if (hasComingSoonBlock(lesson.blocks)) throw new LessonComingSoonError()
 
       // Só gateiam quizzes COM nota de corte E com questões: um quiz gated vazio
       // não é respondível (a UI não o renderiza), então gatear nele travaria a

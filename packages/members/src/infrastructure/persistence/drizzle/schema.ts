@@ -66,6 +66,7 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'ebook',
   'studio',
   'certificate',
+  'coming_soon',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',

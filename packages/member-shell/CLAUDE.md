@@ -250,6 +250,16 @@ biblioteca pessoal do `@sistemazero/studio` (client-side). O shell só carrega o
 **DUAS refs numa ida** (`refs: 'pinta,estudio-completo'`) — a segunda alimenta o `studioOwned` do
 adapter do Pinta (só muda a copy do sucesso da ponte). Sem rotas `/api/pinta`.
 
+**Bloco "Em breve" (`coming_soon`, 08/2026):** `ComingSoonBlock {kind, message?}` em `lib/types.ts`
+(+ o union `LessonBlockContent` ganhou também o `CertificateBlock`, que faltava) e o `case` no
+`BlockRenderer` do `components/lesson-blocks.tsx` — **obrigatório**: sem ele o `default: return null`
+some com o bloco e a aula fica VAZIA, o pior resultado possível (numa aula "em breve" ele é o ÚNICO
+bloco que o members serve). O componente é sóbrio (público adulto); o kids tem o seu, com Zappy. O
+recado padrão é a const exportada `COMING_SOON_DEFAULT_MESSAGE` (usada quando o autor não escreveu o
+dele). **O portão é o members** (esconde os outros blocos + anexos e recusa a conclusão com 409
+`LESSON_COMING_SOON`) — aqui é só apresentação. O `complete()` dos DOIS players trata o código novo e
+desabilita o botão por `blockedByComingSoon`.
+
 **Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (em
 `lib/types.ts`, mirror do members) = aula ainda bloqueada porque uma aula publicada anterior não
 foi concluída (curso com `sequential_lock` ON; equipe interna e aula já concluída vêm `false`). Só
@@ -544,7 +554,11 @@ PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../membe
 
 ## Comandos
 
-`bun run typecheck` · `bun test` (15 suítes) · `bun run check[:fix]`.
+`bun run typecheck` · `bun test` · `bun run check[:fix]`.
+⚠️ A suíte precisa da env de teste (JWT/OpenRouter/gateway/HMAC) e o preload vive no
+**`bunfig.toml`** (`[test] preload = ["./tests/setup-env.ts"]`), não só no script — antes só o
+`bun run test` funcionava e o `bun test` cru quebrava 10 testes com "Env inválida" / "OpenRouter não
+configurado", que lê como suíte podre em vez de comando errado. Os dois comandos valem agora.
 Os railway.json do community (e do kids) têm `/packages/member-shell/**` nos watchPatterns e o
 ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mudou aqui, redeploya lá.
 

@@ -1127,6 +1127,16 @@ const CertificateBlockSchema = t.Object({
   message: t.Optional(t.String({ maxLength: 2000 })),
 })
 
+/**
+ * "Em breve" (aula em produção): só o recado opcional. Enquanto o bloco existir, o
+ * aluno não vê os demais blocos/anexos e não conclui a aula — ver `toLessonDetailView`
+ * e o gate do `mark-lesson-complete`.
+ */
+const ComingSoonBlockSchema = t.Object({
+  kind: t.Literal('coming_soon'),
+  message: t.Optional(t.String({ maxLength: 500 })),
+})
+
 export const LessonBlockContentSchema = t.Union([
   RichTextBlockSchema,
   VideoBlockSchema,
@@ -1137,6 +1147,7 @@ export const LessonBlockContentSchema = t.Union([
   EbookBlockSchema,
   StudioBlockSchema,
   CertificateBlockSchema,
+  ComingSoonBlockSchema,
 ])
 
 /** Params da rota de entrega do Estúdio (aluno) — espelha o quiz-attempts. */

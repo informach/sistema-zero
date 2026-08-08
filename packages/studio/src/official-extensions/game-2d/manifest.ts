@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.63.0',
+  version: '0.64.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -493,7 +493,9 @@ Os comportamentos, em três famílias:
   onde nasceu), zigue-zague, mergulhador (mergulha no alvo que passa por baixo) e teleporte
   (some e reaparece do lado do alvo).
 - **O que ele faz**: atirador (mira no alvo), atirador alinhado (só atira quando o alvo passa
-  bem embaixo ou bem em cima dele), atirador esperto (mira onde o alvo VAI estar, se o tiro dele
+  bem embaixo ou bem em cima dele), atirador de lado (o espelho dele: só atira quando o alvo está na
+  mesma altura, e a bala vai reta para o lado; junte os dois e o inimigo cobre uma cruz), atirador
+  esperto (mira onde o alvo VAI estar, se o tiro dele
   for mais rápido que o alvo), atirador em leque (3 tiros de uma vez), bombardeiro (solta tiros
   para baixo, sem precisar de alvo), raio, espinho (nunca morre, só machuca), renascer (volta um
   tempinho depois de morrer) e chefão (vida 5 vezes maior, mais lento, atira em leque).

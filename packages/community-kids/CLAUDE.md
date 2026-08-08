@@ -435,6 +435,86 @@ o pontinho + atalho p/ `/recados`. Shims em `app/api/members/teacher-threads/*` 
 `shell.routes.teacherThreads*`). Texto do aluno é PLAIN (React escapa). Toda a LÓGICA/segurança é do
 member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apresentação.
 
+## Voltar: UM componente só (`back-button.tsx`, 08/2026)
+
+Havia **seis** "voltar" diferentes no kids (círculo com relevo na aula, círculo chapado nos Recados,
+círculo flutuante no avatar 3D, link de texto na trilha e no espaço do hub, botão fantasma nas
+compras) — cada tela inventou o seu e o app parecia costurado de retalhos. Agora todos são
+**`KidsBackButton`** (`components/kids/back-button.tsx`): o botão 3D da marca (mesmo relevo do CTA e
+do `FocusModeToggle`), `size-11` (alvo de toque de mão pequena), `aria-label`/`title` SEMPRE.
+- `href` → `<Link>` (rota); `onClick` → `<button>` (volta de estado local, ex.: lista ⇄ detalhe do
+  Clube/Mural, "Minhas compras" na área dos pais).
+- `variant='overlay'` é a ÚNICA variação legítima: no avatar 3D o botão flutua sobre a cena WebGL,
+  onde a sombra dura some no fundo e ele precisa do véu translúcido.
+- **Regra do `showLabel`** (para não voltar ao "cada um de um jeito"): LIGADO quando o botão está
+  sozinho numa linha de cabeçalho (a criança lê para onde vai — trilha, curso, espaço, compras);
+  DESLIGADO quando divide a linha com outros controles (aula, avatar). O botão é idêntico nos dois.
+- Deliberadamente FORA: os CTAs redondos de tela vazia/celebração (`kids-locked-lesson`, trilha
+  bloqueada, `lesson-celebration`, `not-found`, `esqueci-senha`) — são ação centralizada, não setinha
+  de cabeçalho; padronizar junto deixaria dois botões concorrendo na tela. Também fora o "Voltar ao
+  modo normal" do `kids-lesson-blocks` (criação guiada): fecha um overlay, não navega.
+- ⚠️ `variant='overlay'` NÃO aceita `showLabel` (o tipo proíbe): o véu translúcido que dá
+  legibilidade vive no CÍRCULO, então o texto cairia direto sobre a cena WebGL.
+- ⚠️ Os skeletons acompanham o `size-11` (o da aula reservava `size-10` e o header pulava ao carregar).
+- ⚠️ **SEM `title`, nunca**: um `title` igual ao nome acessível vira DESCRIÇÃO pela accname spec (o
+  leitor diria "Voltar aos recados, link, Voltar aos recados") e no público tablet/celular tooltip
+  nem aparece — custo sem benefício. O `rounded-full` fica no elemento FOCÁVEL (não no círculo
+  interno), senão o anel de foco sai retangular em volta de um botão redondo.
+- Props são união DISCRIMINADA (`href` XOR `onClick`) — sem isso `<KidsBackButton label="…" />`
+  compilava e rendia um botão sem handler, um controle morto com cara de clicável.
+Teste de contrato: `tests/back-button.test.tsx`.
+
+⚠️ **"Trilha" tem dois donos agora.** A trilha do CURSO é a serpentina de aulas (`course-trail`); a
+trilha do NÍVEL é `/cursos/trilha/[level]`. Como a página do curso ganhou uma setinha para a
+segunda, tudo que volta para a página do curso passou a dizer **"curso"** (o `aria-label` da aula, a
+`lesson-celebration` e o `kids-locked-lesson`) — senão a mesma palavra levaria a dois lugares em
+telas seguidas.
+
+**A setinha da página do curso lembra de onde você veio.** A página é alcançável por 6 caminhos e
+não tinha saída nenhuma. A origem viaja em **`?de=`** (allowlist, mesma régua do
+`resolveAvatarReturnPath` — `?de=` vem da URL, então valor desconhecido cai no default em silêncio),
+emitida SÓ pelas duas saídas da home (`course-card.tsx` e o `courseHref` do `continue-hero.tsx`).
+Sem ela — link direto, favorito, volta da aula, card da trilha — o destino é a **trilha DONA do
+curso**, resolvida por `lib/course-return.ts` (`trilhaHrefForCourse`/`resolveCourseBack`, puros):
+⚠️ não basta o degrau, porque o **Iniciante 2D é DIVIDIDO** (`LEVEL_STUDY`) — `careerSlot === 1` →
+Faísca, o resto e os bônus → Construtor; mandar para o nível errado joga a criança numa lista que
+não tem o curso dela. `lenda` → trilha da Lenda; curso sem `level` (members antigo) → o mapa
+(`/cursos`), nunca uma tela sem saída. ⚠️ **O `careerSlot` sozinho não basta durante o ROLLOUT**:
+enquanto a etapa não tem curso-base etiquetado, o `coursesForLevel` NÃO divide (fail-open) e os dois
+níveis listam o degrau inteiro — dividir pelo slot ali manda uma Faísca para a trilha do Construtor,
+que o mapa mostra com cadeado. Por isso a página passa o **nível do aluno** (de
+`getGamificationReadonly({withRanking:true})`, que casa a chave do `React.cache` com a do layout —
+zero ida extra ao gateway) e o desempate só SOBE, nunca rebaixa a trilha do curso-base. Testes:
+`tests/course-return.test.ts`.
+
+## Bloco "Em breve" na aula (`coming_soon`, 08/2026)
+
+Quando a autora cria a aula mas ainda não terminou de montá-la, a criança abria, via blocos pela
+metade e **concluía a aula** sem ter visto o que importa (e conclusão nunca regride). O bloco "Em
+breve" resolve: enquanto ele existir, o members serve à criança **só o recado** (os demais blocos e
+os ANEXOS não saem do servidor) e recusa a conclusão com **409 `LESSON_COMING_SOON`**. A EQUIPE vê a
+aula inteira, inclusive no "Ver como aluno" do admin. Apagar o bloco devolve tudo ao normal.
+⚠️ Com a trava sequencial (padrão `true`) a aula em produção **prende todas as seguintes** — a frase
+sob o botão travado avisa isso quando é o caso (`nextLessonLocked`), senão a criança lê os cadeados
+como "eu fiz algo errado"; o aviso do editor no admin diz o mesmo à autora. Pelo mesmo motivo a copy
+dos cadeados virou **DESCRITIVA** ("abre quando a anterior for concluída") em vez de imperativa
+("conclua a aula anterior"): quando a anterior é a "em breve", a ordem é impossível de cumprir —
+`kids-locked-lesson`, o `nodeAria` do `course-trail` e o item travado da mini-trilha.
+**Follow-up conhecido:** a trilha ainda não distingue "travada porque falta concluir" de "travada
+porque a anterior está em produção". Distinguir exige um `comingSoon` no `LessonOutlineView` (o
+`findOutline` do members não olha blocos hoje).
+O portão é o **members** (ver o CLAUDE.md de lá, Conceito 6); aqui é apresentação:
+- `lib/lesson-block-content.ts` — `isComingSoonBlock` + `case` no `parseLessonBlock` (⚠️ sem ele o
+  parser devolve `null` e o bloco **não aparece**, deixando a aula em branco).
+- `kids-lesson-blocks.tsx` — chip **"Em breve"** (`Hammer`, `kids-unit-grad`) + moldura tracejada +
+  Zappy `thinking` + copy de criança; `message` do admin sobrescreve o padrão.
+- `lesson-player-client.tsx` — `blockedByComingSoon` entra no `completeBlocked` (o botão já nasce
+  desabilitado, com a frase embaixo) e o `catch` do `complete()` trata o código novo.
+Decisão da usuária: a aula "em breve" **conta no progresso e trava as seguintes** (comportamento
+natural da trava sequencial — zero código a mais). Ela NÃO é marcada na trilha antes do clique
+(exigiria um flag novo até o `LessonOutlineView`, e o `findOutline` não olha blocos) — a criança abre
+e encontra o recado, que é justamente a mensagem que a autora quer dar.
+
 ## Diferenças deliberadas vs o community (decisões da v1, 06/2026)
 
 1. **Compras só na ÁREA DOS PAIS** (não no menu da criança): NÃO há página `/compras` nem item
