@@ -241,6 +241,37 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   oculto NÃO usa mais `visibility:hidden`/off-screen (parava o `requestAnimationFrame` → "sem foto" nos jogos
   2D); agora fica na viewport com `opacity:0` (composto, rAF roda). Mesmo assim, projeto sem canvas / falha →
   `null` e a UI cai na capa do curso / upload.
+- ⭐ **A capa "toda preta" (08/2026) — quatro fatos que só juntos viram o defeito.** Ela relatou um jogo
+  de fundo LARANJA cuja capa saía um retângulo preto. Na ordem:
+  1. **O fundo do palco é CSS, não pixel.** `game-2d/runtime/stage.ts` faz `c.style.background = cor` (e
+     no `document.body`), e o `clear()` de cada quadro usa **`clearRect`** — nunca um `fillRect` de fundo.
+     O gk faz igual, por regra CSS injetada (`game-2d-advanced/runtime/shell.ts`).
+  2. **`toDataURL` lê só o drawing buffer** → o PNG sai com o desenho sobre TRANSPARENTE, sem o laranja.
+  3. **A miniatura do card é JPEG, que não tem alfa** (`thumbCapture.ts`) → transparente vira **PRETO**.
+  4. **A passada 1 corta a passada 2** (`if (canvasUrl) return canvasUrl`): bastava a do canvas "dar certo"
+     para o html2canvas — o único que enxerga o CSS — nunca rodar.
+  ⚠️ **Funcionava por acidente** até 08/2026: o harness só agendava por `requestAnimationFrame`, que não
+  dispara em aba de fundo/página saindo; a passada 1 estourava o timeout e caía na 2. Quando o `2b918afb`
+  somou um `setTimeout` como rede, a passada 1 passou a "vencer" e a capa preta apareceu.
+  **Hoje o harness COMPÕE o fundo dentro do iframe** (único lugar onde a cor existe): copia para um canvas
+  2D próprio, DETECTA quadro em branco (todo alfa 0 → `post(null)`, devolvendo a vez ao html2canvas — é o
+  que cobre o 3D cujo buffer WebGL já foi descartado, já que nenhuma extensão passa `preserveDrawingBuffer`)
+  e pinta a cor em **`destination-over`** (`getComputedStyle(canvas).backgroundColor` → `body` → branco).
+  O `thumbCapture` ainda preenche branco antes do `drawImage`, como rede para qualquer print futuro.
+  Provado em `cover/__tests__/` (o harness é string de JS puro: avaliado com `new Function` sobre um
+  `document` falso, mesmo padrão dos testes de runtime das extensões). **Nunca havia teste nenhum da
+  captura** — só do elo card ⇄ miniatura —, e foi por isso que a regressão passou batida.
+- ⚠️⚠️ **A 2ª passada (html2canvas) NÃO FUNCIONA — medido 08/2026.** O `import` do esm.sh resolve
+  (importmap + `script-src` conferidos no navegador), mas o html2canvas **clona o documento num
+  iframe interno** e lê o `contentWindow.document` dele; com o sandbox `allow-scripts` **sem**
+  `allow-same-origin` a origem é opaca e isso é cross-origin *até para o próprio documento*:
+  `Blocked a frame with origin "null" from accessing a cross-origin frame`. `foreignObjectRendering:
+  true` **não** resolve (o clone vem antes nos dois modos), e `allow-same-origin` está fora de
+  questão. **Consequência: projeto SEM canvas (HTML/CSS puro) não tem capa hoje** — e o card promete
+  uma foto que não vem. Sair disso pede um rasterizador que não clone via iframe (serializar o DOM
+  num `<svg><foreignObject>`), que é trabalho de verdade e não um flag. ⭐ O que segura a peça: a
+  captura devolvendo `null` **não apaga a capa que já existe** (`captureAndStoreProjectThumb` sai
+  antes de gravar), então uma falha nunca destrói uma foto boa.
 - **Player público** (`src/components/preview/StudioProjectPlayer.tsx` + `src/preview/renderProject.ts`):
   `renderProjectToPreviewDocAsync(project)` é a MESMA receita do `coverCapture`/`PreviewIframe` (extensões →
   permissões → assets → `buildPreviewDoc`), extraída, pura e defensiva para snapshots legados

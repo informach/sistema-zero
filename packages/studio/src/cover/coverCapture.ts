@@ -184,6 +184,24 @@ export async function captureCoverFromProject(
 
   // 2ª passada (só projetos sem canvas — HTML/CSS): html2canvas rasteriza o DOM.
   // Warmup curto: a página é estática; o teto evita esperar à toa pelo html2canvas.
+  //
+  // ⚠️ MEDIDO 08/2026: esta passada NÃO FUNCIONA hoje, e não é por falta de rede
+  // nem de CSP (o esm.sh entra no importmap e no `script-src`, e o import resolve
+  // — conferido no navegador). O html2canvas CLONA o documento num iframe interno
+  // e lê o `contentWindow.document` dele; como o nosso sandbox é `allow-scripts`
+  // SEM `allow-same-origin`, a origem é opaca ("null") e esse acesso é
+  // cross-origin — até para o próprio documento:
+  //   "Blocked a frame with origin \"null\" from accessing a cross-origin frame."
+  // `foreignObjectRendering: true` não salva: o clone acontece antes, nos dois
+  // modos. E `allow-same-origin` está FORA de questão (é o que impede o código da
+  // criança de tocar no host). Ou seja: projeto sem canvas fica sem capa hoje.
+  // Sair disso pede um rasterizador que não clone via iframe (serializar o DOM
+  // num `<svg><foreignObject>` na mão) — trabalho de verdade, não um flag.
+  //
+  // Manter a chamada mesmo assim é de propósito: ela é barata quando falha, e a
+  // 1ª passada devolvendo `null` NÃO apaga a capa que já existe (o
+  // `captureAndStoreProjectThumb` sai antes de gravar) — melhor ficar com a foto
+  // antiga do que com um retângulo.
   const domWarmup = Math.min(warmupMs, 600)
   return runCapture(
     project,
@@ -196,9 +214,13 @@ export async function captureCoverFromProject(
 /**
  * Harness de captura por CANVAS (STRING pura injetada no sandbox — sem imports,
  * sem refs externas). Roda no `load`, espera `warmupMs` (o jogo desenha), pega o
- * MAIOR canvas e posta o PNG ao parent com `targetOrigin`.
+ * MAIOR canvas, COMPÕE o fundo do palco (que é CSS, não pixel) e posta o PNG ao
+ * parent com `targetOrigin`.
+ *
+ * Exportado só para o teste, que avalia esta string com um `window`/`document`
+ * falsos (mesmo padrão dos testes de runtime das extensões).
  */
-function buildCanvasHarness(opts: {
+export function buildCanvasHarness(opts: {
   parentOrigin: string
   warmupMs: number
   maxBytes: number
@@ -221,11 +243,48 @@ function buildCanvasHarness(opts: {
     }
     return best;
   }
+  function bgOf(el){
+    try {
+      if (!el || !window.getComputedStyle) return '';
+      var cor = window.getComputedStyle(el).backgroundColor;
+      if (!cor || cor === 'transparent') return '';
+      if (cor.indexOf('rgba') === 0) {
+        var partes = cor.slice(cor.indexOf('(') + 1, cor.lastIndexOf(')')).split(',');
+        if (partes.length > 3 && parseFloat(partes[3]) === 0) return '';
+      }
+      return cor;
+    } catch (e) { return ''; }
+  }
   function capture(){
     try {
       var c = pick();
       if (!c || !c.width || !c.height) { post(null); return; }
-      var url = c.toDataURL('image/png');
+      // Copia para um canvas NOSSO antes de exportar. O fundo do palco e CSS
+      // (style.background do canvas e do body), NUNCA pixel: o buffer do jogo tem
+      // so os desenhos, sobre transparente. Exportar o canvas cru manda um PNG sem
+      // o fundo, e a miniatura do card (JPEG, que nao tem alfa) achata isso para
+      // PRETO. A copia tambem funciona para canvas WebGL.
+      var tmp = document.createElement('canvas');
+      tmp.width = c.width; tmp.height = c.height;
+      var ctx = tmp.getContext('2d');
+      if (!ctx) { post(null); return; }
+      ctx.drawImage(c, 0, 0);
+      // Quadro EM BRANCO nao vira capa: posta null para a passada do DOM
+      // (html2canvas) assumir, que rasteriza o CSS e portanto enxerga o fundo.
+      // Cobre o jogo que ainda nao desenhou e o 3D cujo buffer WebGL ja foi
+      // descartado (sem preserveDrawingBuffer, ler fora do rAF volta vazio).
+      // Nao da para inspecionar (canvas contaminado)? Nao descarta por isso — o
+      // toDataURL logo abaixo lanca no mesmo caso e cai no catch.
+      try {
+        var d = ctx.getImageData(0, 0, tmp.width, tmp.height).data;
+        var pintado = false;
+        for (var i = 3; i < d.length; i += 4) { if (d[i] !== 0) { pintado = true; break; } }
+        if (!pintado) { post(null); return; }
+      } catch (e) {}
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.fillStyle = bgOf(c) || bgOf(document.body) || '#ffffff';
+      ctx.fillRect(0, 0, tmp.width, tmp.height);
+      var url = tmp.toDataURL('image/png');
       if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0 || url.length > MAX) { post(null); return; }
       post(url);
     } catch (e) { post(null); }
@@ -253,6 +312,10 @@ function buildCanvasHarness(opts: {
  * `extensionImports`, então `buildPreviewDoc` o emite `type="module"`): usa
  * `import('html2canvas')` (resolvido pelo importmap → esm.sh) e rasteriza o
  * `document.body`. Para projetos SEM canvas. Falha/timeout → posta `null`.
+ *
+ * ⚠️ Hoje ele SEMPRE cai no `catch`: o html2canvas precisa de acesso same-origin
+ * ao iframe em que clona o documento, e a nossa sandbox tem origem opaca. Ver o
+ * bloco em `captureCoverFromProject` — está medido lá.
  */
 function buildDomHarness(opts: {
   parentOrigin: string
