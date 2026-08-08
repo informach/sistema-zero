@@ -1,6 +1,6 @@
 import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { normalizeAssetName, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
+import { PROJECT_ASSET_LIMITS, type ProjectAsset, t } from '#core'
 import { Button, Modal } from '#ui'
 import { ASSET_LIBRARY, type LibraryAsset } from '../../asset-library/catalog'
 import {
@@ -16,11 +16,14 @@ import {
 } from '../../asset-library/personalSync'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
+import { useStudioPintaLibrary } from '../../studio/pinta-library'
+import { uniqueAssetName } from './assetNames'
 import {
   fileTo3DAssetDataUrl,
   fileToAssetDataUrl,
   fileToAudioAssetDataUrl,
 } from './imageProcessing'
+import { PintaImportDialog } from './PintaImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 
 /**
@@ -93,8 +96,18 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const [personal, setPersonal] = useState<PersonalAsset[]>([])
   const storeApi = useProjectStoreApi()
   const onEditDrawing = useStudioEditDrawing()
+  // "Trazer do Pinta" (fluxo pull): com o adapter presente, o botão abre a
+  // modal com a galeria inteira do Pinta e a seção "Meus desenhos" SOME
+  // (substituída pela modal — decisão da dona, 08/2026). O tick força a
+  // re-listagem da biblioteca pessoal após um import (alimenta o botão
+  // "✏️ editar desenho" de "No projeto" sem esperar o próximo focus).
+  const pintaLibrary = useStudioPintaLibrary()
+  const [pintaOpen, setPintaOpen] = useState(false)
+  const [personalTick, setPersonalTick] = useState(0)
   useEffect(() => {
     if (!open || !personalNamespace) return
+    // `personalTick` re-dispara a listagem após um import da modal do Pinta.
+    void personalTick
     let cancelled = false
     // Reconcilia ANTES de listar: abrir o painel é o momento em que a criança
     // olha para as duas listas lado a lado, então elas têm que concordar. O
@@ -122,7 +135,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       cancelled = true
       window.removeEventListener('focus', refresh)
     }
-  }, [open, personalNamespace, storeApi])
+  }, [open, personalNamespace, storeApi, personalTick])
 
   /** Desenhos que ainda existem no Pinta — quem pode abrir o editor de lá. */
   const editableDrawingIds = useMemo(
@@ -134,7 +147,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     setError(null)
     const taken = new Set(assets.map((a) => a.name))
     const err = addAsset({
-      name: uniqueName(drawing.name, taken),
+      name: uniqueAssetName(drawing.name, taken),
       dataUrl: drawing.dataUrl,
       width: drawing.width,
       height: drawing.height,
@@ -161,14 +174,6 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     Math.round((usedChars / PROJECT_ASSET_LIMITS.maxAssetsTotalChars) * 100),
   )
 
-  const uniqueName = (base: string, taken: Set<string>): string => {
-    const root = normalizeAssetName(base) ?? 'imagem'
-    if (!taken.has(root)) return root
-    let i = 2
-    while (taken.has(`${root}-${i}`)) i += 1
-    return `${root}-${i}`
-  }
-
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return
     setError(null)
@@ -180,7 +185,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       for (const file of Array.from(files)) {
         const { dataUrl, width, height } = await fileToAssetDataUrl(file)
         const base = file.name.replace(/\.[^.]+$/, '')
-        const name = uniqueName(base, taken)
+        const name = uniqueAssetName(base, taken)
         const err = addAsset({ name, dataUrl, width, height, source: 'upload' })
         if (err) {
           setError(err)
@@ -205,7 +210,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       for (const file of Array.from(files)) {
         const { dataUrl } = await fileToAudioAssetDataUrl(file)
         const base = file.name.replace(/\.[^.]+$/, '')
-        const name = uniqueName(base, taken)
+        const name = uniqueAssetName(base, taken)
         const err = addAsset({ name, dataUrl, kind: 'audio', source: 'upload' })
         if (err) {
           setError(err)
@@ -230,7 +235,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       for (const file of Array.from(files)) {
         const { dataUrl, kind, fileName } = await fileTo3DAssetDataUrl(file)
         const base = file.name.replace(/\.[^.]+$/, '')
-        const name = uniqueName(base, taken)
+        const name = uniqueAssetName(base, taken)
         // O nome do arquivo vai junto: a validação do store cruza a extensão
         // com o MIME e a assinatura binária (um .glb renomeado é recusado).
         const err = addAsset({ name, dataUrl, kind, originalFileName: fileName, source: 'upload' })
@@ -251,7 +256,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const addFromLibrary = (lib: LibraryAsset) => {
     setError(null)
     const taken = new Set(assets.map((a) => a.name))
-    const name = uniqueName(lib.name, taken)
+    const name = uniqueAssetName(lib.name, taken)
     const err = addAsset({
       name,
       dataUrl: lib.dataUrl,
@@ -286,68 +291,97 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
         <p className="text-sm text-sz-fg-soft">Abra um projeto para gerenciar imagens e sons.</p>
       ) : (
         <div className="flex flex-col gap-4">
-          {allowUpload && (
+          {allowUpload || pintaLibrary ? (
             <div className="flex flex-wrap items-center gap-3">
-              <input
-                ref={fileRef}
-                id={fileInputId}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => void handleFiles(e.target.files)}
-              />
-              <input
-                ref={soundRef}
-                type="file"
-                accept="audio/*"
-                multiple
-                className="hidden"
-                onChange={(e) => void handleAudioFiles(e.target.files)}
-              />
-              {has3DExtension ? (
-                <input
-                  ref={modelRef}
-                  type="file"
-                  accept=".glb,.hdr"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => void handle3DFiles(e.target.files)}
-                />
+              {allowUpload ? (
+                <>
+                  <input
+                    ref={fileRef}
+                    id={fileInputId}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => void handleFiles(e.target.files)}
+                  />
+                  <input
+                    ref={soundRef}
+                    type="file"
+                    accept="audio/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => void handleAudioFiles(e.target.files)}
+                  />
+                  {has3DExtension ? (
+                    <input
+                      ref={modelRef}
+                      type="file"
+                      accept=".glb,.hdr"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => void handle3DFiles(e.target.files)}
+                    />
+                  ) : null}
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    {busy ? 'Processando…' : 'Enviar imagem'}
+                  </Button>
+                </>
               ) : null}
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={busy}
-                onClick={() => fileRef.current?.click()}
-              >
-                {busy ? 'Processando…' : 'Enviar imagem'}
-              </Button>
-              <Button
-                variant="subtle"
-                size="sm"
-                disabled={busy}
-                onClick={() => soundRef.current?.click()}
-              >
-                🔊 Enviar som
-              </Button>
-              {has3DExtension ? (
+              {pintaLibrary ? (
                 <Button
-                  variant="subtle"
+                  variant={allowUpload ? 'subtle' : 'primary'}
                   size="sm"
-                  disabled={busy}
-                  title="Modelo 3D (.glb) ou céu 360° (.hdr) para Canvas 3D, Jogo 3D Avançado e Mundo 3D"
-                  onClick={() => modelRef.current?.click()}
+                  onClick={() => setPintaOpen(true)}
                 >
-                  📦 Enviar modelo 3D
+                  {t('pintaImport.button')}
                 </Button>
+              ) : null}
+              {allowUpload ? (
+                <>
+                  <Button
+                    variant="subtle"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => soundRef.current?.click()}
+                  >
+                    🔊 Enviar som
+                  </Button>
+                  {has3DExtension ? (
+                    <Button
+                      variant="subtle"
+                      size="sm"
+                      disabled={busy}
+                      title="Modelo 3D (.glb) ou céu 360° (.hdr) para Canvas 3D, Jogo 3D Avançado e Mundo 3D"
+                      onClick={() => modelRef.current?.click()}
+                    >
+                      📦 Enviar modelo 3D
+                    </Button>
+                  ) : null}
+                </>
               ) : null}
               <span className="text-xs text-sz-fg-soft">
                 {assets.length}/{PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos · {budgetPct}% do
                 espaço
               </span>
             </div>
-          )}
+          ) : null}
+
+          {/* O que cabe, ANTES do envio. A dúvida veio da dona do produto ("qual
+              tipo de som aceita, quanto tempo?") e o WAV é a armadilha: pelo
+              mesmo som ele ocupa ~10× o de um mp3, então 1 minuto já estoura
+              enquanto o mp3 aguenta uns 5. O erro de teto já existia, mas só
+              aparecia DEPOIS de escolher o arquivo. */}
+          {allowUpload ? (
+            <p className="text-xs text-sz-fg-mute">
+              Som: mp3, wav, ogg ou m4a, até 5 MB por arquivo. Um mp3 cabe com uns 5 minutos; um
+              wav, só uns 30 segundos (ele ocupa bem mais pelo mesmo som).
+            </p>
+          ) : null}
 
           {error && (
             <p className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400">
@@ -539,7 +573,12 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
             </section>
           ) : null}
 
-          {personalNamespace ? (
+          {/* Com o "Trazer do Pinta" presente, a seção morre (a modal cobre a
+              galeria INTEIRA, com busca). Sem o adapter (ex.: perfil que perdeu
+              a posse do Pinta), a lista antiga preserva o acesso ao que já foi
+              enviado. O EFEITO de sincronia acima roda nos dois casos — ele
+              alimenta o auto-update dos jogos e o "✏️ editar desenho". */}
+          {personalNamespace && !pintaLibrary ? (
             <section>
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
                 Meus desenhos
@@ -644,6 +683,12 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
           asset={tileConfig.asset}
           mode={tileConfig.mode}
           onClose={() => setTileConfig(null)}
+        />
+      ) : null}
+      {pintaOpen && pintaLibrary ? (
+        <PintaImportDialog
+          onClose={() => setPintaOpen(false)}
+          onImported={() => setPersonalTick((tick) => tick + 1)}
         />
       ) : null}
     </Modal>

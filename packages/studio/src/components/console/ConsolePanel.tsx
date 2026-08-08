@@ -5,14 +5,11 @@ import { Button } from '#ui'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { glossErrorMessage } from '../../state/errorGloss'
 import { useHighlightStore } from '../../state/highlightStore'
-import { type LogEntry, useLogsStore } from '../../state/logsStore'
+import { ERROR_LOG_KINDS, type LogEntry, useLogsStore } from '../../state/logsStore'
 
 // Tipos de log que representam ERRO — só neles tentamos a dica em português.
-const ERROR_KINDS: ReadonlySet<LogEntry['kind']> = new Set([
-  'error',
-  'runtimeError',
-  'unhandledRejection',
-])
+// A régua vive no store: o Zappy usa a MESMA para diagnosticar.
+const ERROR_KINDS = ERROR_LOG_KINDS
 
 // Margem (px) para considerar o scroll "no fim": pequenas folgas de
 // arredondamento/subpixel não devem desligar o auto-scroll.

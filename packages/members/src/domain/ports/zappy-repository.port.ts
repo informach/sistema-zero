@@ -8,6 +8,13 @@ export type ZappyScope =
   | 'redirect-pensa'
   | 'redirect-pinta'
   | 'unsupported'
+  | 'project-review'
+  /**
+   * Acabou a ajuda de IA da família. É PERSISTIDO: o front decide pelo scope se
+   * a mensagem é um AVISO ou uma aula, e uma recusa relida do histórico não pode
+   * voltar com cara de conteúdo avaliável. Sem migration — a coluna é varchar.
+   */
+  | 'quota'
 
 export interface ZappyStoredResponse {
   id: string
@@ -18,6 +25,13 @@ export interface ZappyStoredResponse {
     blockType: string
     name: string
     category: string
+    subcategory?: string
+    /**
+     * Trilha REAL da paleta ("Jogo 2D › 🕹️ Movimento"). O par
+     * categoria/subcategoria é compat de resposta antiga; sem este campo o chip
+     * cai no fallback e mostra coisas como "Programação › Programação".
+     */
+    palettePath?: string[]
     area: string
   }>
   lessonReferences?: Array<{
@@ -26,6 +40,8 @@ export interface ZappyStoredResponse {
     lessonId: string
     title: string
   }>
+  /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
+  suggestions?: string[]
   createdAt: string
 }
 
@@ -59,6 +75,11 @@ export interface ReserveZappyQuestionResult {
   response?: ZappyStoredResponse
   /** Limite distribuído de 10 novas perguntas/minuto por perfil. */
   rateLimited?: boolean
+  /**
+   * Últimos turnos da conversa (cronológico, ≤6) — memória do tutor no prompt.
+   * Só no caminho de pergunta NOVA (reclaim de lease fica sem, aceito).
+   */
+  recentMessages?: Array<{ role: 'user' | 'assistant'; text: string }>
 }
 
 export interface CompleteZappyQuestionInput {
@@ -69,7 +90,9 @@ export interface CompleteZappyQuestionInput {
   latencyMs: number
   now: Date
   expiresAt: Date
-  outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
+  outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error' | 'rejected'
+  /** Motivo da reprova da validação (auditoria; nunca volta à criança). */
+  rejection?: string
 }
 
 export interface ZappyMetrics {
@@ -80,7 +103,26 @@ export interface ZappyMetrics {
   needsContext: number
   quota: number
   errors: number
+  rejected: number
   averageLatencyMs: number
+}
+
+export type ZappyFailureFilter = 'all' | 'rejected' | 'error' | 'not-useful'
+
+/** Pergunta que falhou (reprovada/erro/👎) — SEM userId/projectId de propósito:
+ *  a listagem do admin mostra o texto (já PII-redigido na gravação), nunca quem. */
+export interface ZappyFailedQuestion {
+  question: string
+  answerText: string
+  rejection?: string
+  outcome: string
+  useful: boolean | null
+  createdAt: string
+}
+
+export interface ZappyFailedQuestionsPage {
+  items: ZappyFailedQuestion[]
+  total: number
 }
 
 export interface ZappyRepository {
@@ -102,5 +144,12 @@ export interface ZappyRepository {
     now: Date,
   ): Promise<boolean>
   metrics(from: Date, to: Date): Promise<ZappyMetrics>
+  listFailedQuestions(
+    from: Date,
+    to: Date,
+    filter: ZappyFailureFilter,
+    limit: number,
+    offset: number,
+  ): Promise<ZappyFailedQuestionsPage>
   pruneExpired(now: Date): Promise<number>
 }

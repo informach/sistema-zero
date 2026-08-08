@@ -48,6 +48,11 @@ function response() {
   }
 }
 
+/** Envelope do ask: a resposta vem com o saldo ao lado, nunca dentro dela. */
+function answer(r: ReturnType<typeof response> | Record<string, unknown> = response()) {
+  return { response: r as ReturnType<typeof response> }
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void
   const promise = new Promise<T>((done) => {
@@ -77,7 +82,7 @@ describe('ZappyPanel', () => {
       deleteHistory: async () => undefined,
       ask: async () => {
         asked += 1
-        return response()
+        return answer()
       },
       feedback: async () => undefined,
     }
@@ -107,7 +112,7 @@ describe('ZappyPanel', () => {
       ask: async (input) => {
         ids.push(input.clientMessageId)
         if (ids.length === 1) throw new Error('resposta perdida')
-        return response()
+        return answer()
       },
       feedback: async () => undefined,
     }
@@ -133,7 +138,7 @@ describe('ZappyPanel', () => {
       const adapter: StudioTutorAdapter = {
         loadHistory: async () => ({ messages: [], nextCursor: null }),
         deleteHistory: async () => undefined,
-        ask: async () => response(),
+        ask: async () => answer(),
         feedback: async () => undefined,
       }
       const view = render(renderPanel(adapter, { cooldownMs: 20 }))
@@ -177,7 +182,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => tutorResponse,
+      ask: async () => answer(tutorResponse),
       feedback: async () => undefined,
     }
     const view = render(
@@ -226,7 +231,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => tutorResponse,
+      ask: async () => answer(tutorResponse),
       feedback: async () => undefined,
     }
 
@@ -234,6 +239,81 @@ describe('ZappyPanel', () => {
 
     await view.findByText(tutorResponse.text)
     expect(view.queryByRole('button', { name: 'mostrar no console' })).toBeNull()
+  })
+
+  it('mostra a categoria e a subcategoria do bloco citado', async () => {
+    const tutorResponse = {
+      ...response(),
+      blockReferences: [
+        {
+          blockType: 'sz_g2d_create_sprite',
+          name: 'criar sprite',
+          category: 'Jogo 2D',
+          subcategory: '🎮 Sprites',
+          area: 'Código',
+        },
+      ],
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(tutorResponse),
+      feedback: async () => undefined,
+    }
+
+    const view = render(renderPanel(adapter))
+
+    await view.findByText('criar sprite')
+    expect(view.getByText('Jogo 2D › 🎮 Sprites')).toBeTruthy()
+  })
+
+  it('não repete a categoria quando a subcategoria é igual', async () => {
+    const tutorResponse = {
+      ...response(),
+      blockReferences: [
+        {
+          blockType: 'sz_js_log',
+          name: 'mostrar no console',
+          category: 'Programação',
+          subcategory: 'Programação',
+          area: 'Código',
+        },
+      ],
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(tutorResponse),
+      feedback: async () => undefined,
+    }
+
+    const view = render(renderPanel(adapter))
+
+    await view.findByText('mostrar no console')
+    expect(view.queryByText('Programação › Programação')).toBeNull()
+    expect(view.getByText('Programação')).toBeTruthy()
   })
 
   it('exige confirmação antes de apagar todo o histórico', async () => {
@@ -253,7 +333,7 @@ describe('ZappyPanel', () => {
       deleteHistory: async () => {
         deleted += 1
       },
-      ask: async () => response(),
+      ask: async () => answer(),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter))
@@ -295,7 +375,7 @@ describe('ZappyPanel', () => {
             }
       },
       deleteHistory: async () => undefined,
-      ask: async () => response(),
+      ask: async () => answer(),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter))
@@ -325,7 +405,7 @@ describe('ZappyPanel', () => {
         nextCursor: null,
       }),
       deleteHistory: async () => undefined,
-      ask: async () => oldAnswer.promise,
+      ask: async () => answer(await oldAnswer.promise),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter, { cooldownMs: 0 }))
@@ -370,7 +450,7 @@ describe('ZappyPanel', () => {
           : { messages: [], nextCursor: 'cursor-a' }
       },
       deleteHistory: async () => undefined,
-      ask: async () => response(),
+      ask: async () => answer(),
       feedback: async () => undefined,
     }
     const view = render(renderPanel(adapter))
@@ -397,5 +477,258 @@ describe('ZappyPanel', () => {
 
     expect(view.queryByText('Página atrasada do projeto A')).toBeNull()
     expect(view.getByText('Histórico do projeto B')).toBeTruthy()
+  })
+
+  it('chips de sugestão PREENCHEM o campo sem enviar (e só a última resposta mostra)', async () => {
+    let asked = 0
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: 'q1',
+            role: 'user',
+            text: 'Como faço ele pular?',
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 'a1',
+            role: 'assistant',
+            text: 'Primeira resposta.',
+            createdAt: new Date().toISOString(),
+            response: {
+              ...response(),
+              id: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001',
+              suggestions: ['Sugestão antiga'],
+            },
+          },
+          {
+            id: 'a2',
+            role: 'assistant',
+            text: 'Use o bloco de pular.',
+            createdAt: new Date().toISOString(),
+            response: { ...response(), suggestions: ['Como faço ele atirar?'] },
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => {
+        asked += 1
+        return answer()
+      },
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const chip = await view.findByRole('button', { name: 'Como faço ele atirar?' })
+    // Só as sugestões da ÚLTIMA resposta viram chips.
+    expect(view.queryByRole('button', { name: 'Sugestão antiga' })).toBeNull()
+    fireEvent.click(chip)
+    const question = view.getByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    // Preenche e NÃO envia (cooldown/quota intactos; a criança revisa).
+    expect(question.value).toBe('Como faço ele atirar?')
+    expect(asked).toBe(0)
+  })
+
+  it('estado vazio oferece perguntas iniciais que preenchem o campo', async () => {
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(),
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const starter = await view.findByRole('button', { name: 'Como faço meu personagem pular?' })
+    fireEvent.click(starter)
+    const question = view.getByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    expect(question.value).toBe('Como faço meu personagem pular?')
+  })
+
+  const CREDITS = {
+    dayLimit: 50,
+    dayRemaining: 13,
+    monthLimit: 500,
+    monthRemaining: 300,
+    monthRenewsOn: '2026-09-01',
+  }
+
+  function silentAdapter(): StudioTutorAdapter {
+    return {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(),
+      feedback: async () => undefined,
+    }
+  }
+
+  it('mostra quanta ajuda resta, FORA da região que é anunciada a cada resposta', async () => {
+    const view = render(renderPanel(silentAdapter(), { credits: CREDITS }))
+    const medidor = await view.findByText('✨ 13 ideias hoje')
+    // Dentro do aria-live, o leitor de tela repetiria o contador junto de toda
+    // mensagem nova. O medidor tem que ficar fora dele.
+    expect(medidor.closest('[aria-live]')).toBeNull()
+  })
+
+  it('sem saber o saldo, o medidor some (nunca mostra zero)', async () => {
+    const view = render(renderPanel(silentAdapter(), { credits: null }))
+    await view.findByLabelText('Sua dúvida para o Zappy')
+    expect(view.queryByText(/ideias/)).toBeNull()
+  })
+
+  it('equipe vê "sem limite" em vez de número', async () => {
+    const view = render(
+      renderPanel(silentAdapter(), {
+        credits: { ...CREDITS, dayRemaining: 0, monthRemaining: 0, unlimited: true },
+      }),
+    )
+    expect(await view.findByText('✨ ideias sem limite')).toBeTruthy()
+  })
+
+  it('uma resposta sem saldo novo NÃO zera o medidor', async () => {
+    const adapter: StudioTutorAdapter = { ...silentAdapter(), ask: async () => answer() }
+    const view = render(renderPanel(adapter, { credits: CREDITS, cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+    await view.findByText('Tente novamente com este bloco.')
+    // O ask não trouxe `credits` (nada foi consumido): mantém o que já tinha.
+    expect(view.getByText('✨ 13 ideias hoje')).toBeTruthy()
+  })
+
+  it('aviso de limite não é aula: sem polegares e com cara de recado', async () => {
+    const quota = {
+      id: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e0aa',
+      text: 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖',
+      scope: 'quota' as const,
+      blockReferences: [],
+      createdAt: new Date().toISOString(),
+    }
+    const adapter: StudioTutorAdapter = {
+      ...silentAdapter(),
+      ask: async () => ({ response: quota, credits: { ...CREDITS, dayRemaining: 0 } }),
+    }
+    const view = render(renderPanel(adapter, { credits: CREDITS, cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+    await view.findByText(quota.text)
+
+    // Pedir "isso ajudou?" para "acabou a ajuda" é cruel — e o polegar viraria
+    // avaliação de qualidade sobre um aviso operacional.
+    expect(view.queryByLabelText('A resposta ajudou')).toBeNull()
+    expect(view.queryByLabelText('A resposta não ajudou')).toBeNull()
+    // O saldo fresco chegou junto: o medidor vira o aviso de esgotado.
+    expect(view.getByText('⚠️ As ideias de hoje acabaram')).toBeTruthy()
+  })
+
+  it('esgotado, o rodapé diz quando volta e o botão CONTINUA habilitado', async () => {
+    const view = render(renderPanel(silentAdapter(), { credits: { ...CREDITS, dayRemaining: 0 } }))
+    expect(await view.findByText('Amanhã de manhã tem mais.')).toBeTruthy()
+    const question = view.getByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    fireEvent.change(question, { target: { value: 'Tenho outra dúvida' } })
+    // O servidor é a autoridade: um saldo velho numa aba aberta desde ontem não
+    // pode trancar a criança de graça.
+    const enviar = view.getByRole('button', { name: 'Perguntar' })
+    expect(enviar.hasAttribute('disabled')).toBe(false)
+  })
+})
+
+describe('ZappyPanel sob rede ruim', () => {
+  function silent(): StudioTutorAdapter {
+    return {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(),
+      feedback: async () => undefined,
+    }
+  }
+
+  it('a pergunta volta para o campo quando a ida ao servidor falha', async () => {
+    // ⚠️ Achado do 4º review: sem teto de tempo no adapter, uma rede pendurada
+    // deixava a promessa sem resolver — o painel travava em "pensando…" e a
+    // pergunta digitada sumia (só o `catch` a devolve). O teto transforma o
+    // pendurado num erro, e é este caminho que devolve o texto e libera o botão.
+    const adapter: StudioTutorAdapter = {
+      ...silent(),
+      ask: async () => {
+        throw Object.assign(new Error('rede caiu'), { code: 'ZAPPY_UNAVAILABLE' })
+      },
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+
+    // O texto NÃO pode se perder, e o botão precisa voltar a funcionar.
+    await waitFor(() => expect(question.value).toBe('Como faço o pulo?'))
+    await waitFor(() =>
+      expect(view.getByRole('button', { name: 'Perguntar' }).hasAttribute('disabled')).toBe(false),
+    )
+  })
+  it('resposta SEM blockReferences não derruba o painel', async () => {
+    // ⚠️ O fixture `response()` SEMPRE trouxe `blockReferences: []`, e por isso a
+    // guarda que faltava nunca apareceu. Este é o envelope parcial: o campo
+    // simplesmente não vem. Antes da correção, o render lançava
+    // "Cannot read properties of undefined (reading 'length')" — o erro exato
+    // que trocava o Estúdio inteiro pela tela "Algo deu errado".
+    const { blockReferences: _drop, ...semBlocos } = response()
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => {},
+      ask: async () => answer(semBlocos),
+      feedback: async () => {},
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'Como faço o pulo?' } })
+    fireEvent.submit(form)
+
+    // A explicação aparece; os chips de bloco simplesmente não existem.
+    await waitFor(() => expect(view.getByText('Tente novamente com este bloco.')).toBeTruthy())
+  })
+
+  it('campos de lista inválidos viram ausência, não quebram a conversa', async () => {
+    // Defesa da MESMA classe nos opcionais: o servidor pode mandar qualquer
+    // coisa num campo novo, e o painel tem que continuar de pé.
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => {},
+      ask: async () =>
+        answer({
+          ...response(),
+          blockReferences: 'nada disso',
+          lessonReferences: 42,
+          suggestions: { isto: 'não é lista' },
+        }),
+      feedback: async () => {},
+    }
+    const view = render(renderPanel(adapter, { cooldownMs: 0 }))
+    const question = await view.findByLabelText('Sua dúvida para o Zappy')
+    if (!(question instanceof HTMLTextAreaElement)) throw new Error('Campo do Zappy inválido')
+    const form = question.closest('form')
+    if (!form) throw new Error('Formulário do Zappy ausente')
+
+    fireEvent.change(question, { target: { value: 'E agora?' } })
+    fireEvent.submit(form)
+
+    await waitFor(() => expect(view.getByText('Tente novamente com este bloco.')).toBeTruthy())
   })
 })

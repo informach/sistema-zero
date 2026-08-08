@@ -3,6 +3,10 @@ import type { Project } from '#core'
 /**
  * Dispara o download de um Blob no navegador via `<a download>`. Único ponto do
  * módulo de export que toca o DOM.
+ *
+ * A revogação fica para o próximo macrotask: o Chrome já resolveu a URL depois
+ * do click, mas o Firefox ainda pode precisar lê-la e cancelaria o download se
+ * ela fosse revogada no mesmo tick.
  */
 export function triggerDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob)
@@ -12,7 +16,9 @@ export function triggerDownload(blob: Blob, filename: string): void {
   document.body.appendChild(a)
   a.click()
   a.remove()
-  URL.revokeObjectURL(url)
+  setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 0)
 }
 
 /** Nome de arquivo seguro a partir do nome do projeto (kebab; fallback "projeto"). */

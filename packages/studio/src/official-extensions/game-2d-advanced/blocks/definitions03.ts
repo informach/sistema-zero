@@ -419,6 +419,27 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
   },
 
   {
+    // Irmão do "Pôr o cenário atrás de tudo" (🧰 O jogo): mesma geometria de
+    // cobertura, mas quem manda na ordem das camadas é a criança. O encaixe só
+    // aceita corpos de desenho e de laço — em "Ao iniciar" o Blockly recusa a
+    // conexão, então pegar o bloco errado dá recusa na hora em vez de um jogo
+    // estranho sem explicação.
+    type: 'sz_gk_draw_backdrop',
+    placement: {
+      root: [],
+      nested: ['draw-world', 'map-draw', 'loop-body', 'function-body', 'derived-method-body'],
+      role: 'command',
+    },
+    message0: 'Desenhar o cenário %1',
+    args0: [{ type: 'field_asset_picker', name: 'IMAGE', text: '' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha um desenho seu cobrindo a tela inteira, agora, neste ponto do quadro. Use no começo do “Desenhar o jogo” para o cenário ficar atrás do resto. É o irmão de “Pôr o cenário atrás de tudo”: aquele se põe uma vez em “Ao iniciar” e o jogo repinta sozinho; este você desenha a cada quadro, escolhendo a ordem das camadas.',
+  },
+  {
     type: 'sz_gk_draw_tilemap',
     placement: 'command',
     message0: 'Desenhar o mapa de peças %1 (camada %2)',

@@ -82,7 +82,13 @@ export function GameCardDialog({
           </div>
           <div className="mb-3 aspect-video w-full overflow-hidden rounded-2xl bg-(--kids-cyan-tint)">
             {coverImageUrl ? (
-              <img src={coverImageUrl} alt="" className="size-full object-cover" />
+              <img
+                src={coverImageUrl}
+                alt=""
+                width={16}
+                height={9}
+                className="size-full object-cover"
+              />
             ) : (
               <div className="grid size-full place-items-center text-4xl" aria-hidden>
                 🎮
@@ -98,6 +104,8 @@ export function GameCardDialog({
               <img
                 src={qrDataUrl}
                 alt={`Código QR para jogar ${title}`}
+                width={160}
+                height={160}
                 className="size-40 rounded-xl border-2 border-border p-1"
               />
             ) : qrError ? (

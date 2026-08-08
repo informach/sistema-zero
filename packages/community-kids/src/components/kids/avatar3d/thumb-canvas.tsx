@@ -201,7 +201,16 @@ export function AvatarThumb({ partId, category }: { partId: string; category: st
   const [staticFailed, setStaticFailed] = useState(false)
   // Foto capturada ao vivo nesta sessão (fallback que já rodou) → mostra.
   if (captured) {
-    return <img src={captured} alt="" className="size-full object-contain" draggable={false} />
+    return (
+      <img
+        src={captured}
+        alt=""
+        width={96}
+        height={96}
+        className="size-full object-contain"
+        draggable={false}
+      />
+    )
   }
   // (1) PNG pré-gerado e commitado → zero WebGL. Faltou (404)? cai pro render ao vivo.
   if (!staticFailed) {
@@ -209,6 +218,8 @@ export function AvatarThumb({ partId, category }: { partId: string; category: st
       <img
         src={`/avatar3d/thumbs/${partId}.png`}
         alt=""
+        width={96}
+        height={96}
         className="size-full object-contain"
         draggable={false}
         onError={() => setStaticFailed(true)}

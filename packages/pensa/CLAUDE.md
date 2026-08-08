@@ -1,144 +1,131 @@
 # CLAUDE.md — @sistemazero/pensa
 
-> Sempre consulte o Context7 (docs atualizadas) antes de mexer em lib/framework, e use
-> Octocode para pesquisa/exploração de código no GitHub.
+> Consulte o Context7 antes de alterar bibliotecas ou frameworks.
 
-App de **planejamento guiado (metodologia ZERO)** — a criança pensa/organiza o jogo ANTES de
-construir no Estúdio. Biblioteca INTERNA do monorepo, consumida como **TS source** (modelo do
-`@sistemazero/studio`): sem build; os apps usam `transpilePackages` + `@source
-"../../../pensa/src"` + `@import "../../../pensa/src/styles/pensa.css"` no globals.css (MESMO
-gotcha do Studio — sem o @import as utilitárias `pz-*` são no-op e os modais saem washed-out).
+O Pensa é o planejador de jogos para crianças de 8 a 13 anos. Ele organiza a criação; não monta o Estúdio, executa tarefas, publica jogos ou mantém kanban e checklist.
 
-**⚠️ CONTRATO entre camadas** (nomes/rotas/shapes EXATOS de members/gateway/member-shell/este
-pacote): `C:\Users\tocha\.claude\plans\pensa-contract.md` — ler ANTES de mudar qualquer view/rota.
+## Método ZERO
 
-## O que é
+- **Z — Zerar a Bagunça:** ideia, objetivo, controles, vitória, derrota e escolha 2D/3D. Produz `idea`.
+- **E — Enxergar o Jogo:** loop, cenas, telas e Bíblia Visual. Produz `game_design` e `visual_direction`.
+- **R — Roteirizar a Criação:** Cartões de Criação pequenos, ordenados e destinados ao Pinta ou ao Estúdio. Produz `task_plan`.
+- **O — Organizar a Criação:** auditoria da ordem, dependências, guias e catálogo oficial. Produz `plan_review`.
+- **done — Meu plano:** mostra ordem, dependências, estado resumido e próxima tarefa. A execução ocorre na ferramenta de destino.
 
-Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
-- **Z — Zerar a Bagunça**: chat com o Zappy (SSE via host) pelas 5 perguntas; estrelas acendem
-  pelo `state` do evaluator (servidor); Carta da Ideia (artefato `idea`) → validar → advance.
-  Quando `ready`, o CTA "Criar a Carta da Ideia" aparece nas DUAS pontas: banner do topo E um
-  convite no FIM do log do chat (prop `footer` do ChatPanel — a criança termina a conversa lá
-  embaixo e não pode ter que rolar; travado em teste).
-- **E — Enxergar o Jogo**: spec amigável (tirinhas Entrada→Processamento→Saída + wireframes
-  DESENHADOS do JSON `screens`) com aprovação por seção + funil de identidade (nome → paleta →
-  ícone SVG; o save AUTO-valida e o pacote renomeia o projeto via PATCH). **Autoria manual
-  (07/2026):** cada telinha tem "✏️ Mudar esta tela" (`ScreenEditor`: nome + elementos
-  kind/label/zone, add/remove) → `stageEStore.editScreen` faz um POST generate `{type:'spec_edit'}`
-  que troca SÓ aquela tela, mantém fluxos/PRD e re-valida SEM refazer o desenho inteiro nem
-  re-aprovar tudo (conserta 1 tela de um jogo grande). A identidade JÁ SALVA (estado 'done') tem
-  "✏️ Mudar a identidade" (`reopenIdentity` reabre o funil). **Wireframes são
-  PICTÓRICOS** (07/2026): title = logo na fonte display do host (`[font-family:var(--font-display)]`,
-  Baloo no kids), button = botão "3D", score = chip de HUD, hero/enemy/item = SPRITES
-  (`WireframeSprites.tsx`, SVG inline decorativo por `currentColor`) com legenda pequenina, e o
-  background preenche a TELINHA (camada no card, sob as zonas). `KIND_PALETTE_INDEX` é contrato:
-  cor 0 = FUNDO da paleta, proibida em elemento visível. Tudo repinta via style inline com a
-  paleta escolhida; sem paleta caem nos tokens (`KIND_TOKEN_TEXT_CLASS`).
-- **R — Rodar as Missões**: kanban (Missões/Fazendo agora/Hora de testar/Prontas; máx 1 em
-  "Fazendo agora"; botões movem, não drag) de missões que a CRIANÇA executa no Estúdio.
-  **AUTORIA MANUAL (07/2026):** o quadro não é mais só-leitura — `KanbanBoard` tem "➕ Nova
-  missão" (abre o `MissionEditor`: nome + passos 1-12 + doneWhen 1-3) e "✨ Sugerir mais missões"
-  (append via IA — `mission_plan` com `append:true`, NÃO zera o quadro); cada `MissionCard` tem
-  barra de autoria (✏️ editar / ↑↓ reordenar dentro da coluna / 🗑️ apagar com confirmação / 📝
-  anotação inline que salva no blur). Ações no `stageRStore`
-  (`addTask`/`editTask`/`removeTask`/`reorderTask`/`setTaskNotes`/`suggestMoreMissions`, otimistas
-  com rollback) sobre as rotas POST/PATCH-amplia/DELETE de tasks. Copy em `stageR.author.*`; **Modo
-  Missão** (`renderStudio` do host + projeto semeado) — o MissionMode ADAPTA o layout à largura
-  (07/2026): ≥1024px = split com a missão à esquerda; abaixo disso a missão vira GAVETA sobre o
-  Estúdio (scrim fecha; toggle do header reabre) — a LARGURA não gateia mais o split no
-  StageRView. Os checks "Ficou pronto quando..." **PERSISTEM em localStorage por task.id**
-  (`pensa:checks:<taskId>`; card done limpa a chave; regenerar missões troca os ids = zera).
-  O MissionSheet também mostra **"Desenhar no Pinta"** quando o host dá `adapter.onOpenPinta`;
-  semeadura LAZY via `createStudioProject` do host + PATCH `studioProjectId`.
-  **O ESTÚDIO EMBUTIDO É OPCIONAL (buildEnv, 07/2026)**: com `detail.buildEnv === null` a etapa R
-  abre o CHOOSER "Onde você vai construir?" (3 cartões — `BuildEnvChooser`): `embedded` = split
-  (comportamento clássico, Recomendado), `studio` = semeia igual mas missão SEMPRE em painel com
-  "Abrir o Estúdio" primário, `external` = SEM semeadura, missão como guia puro (VS Code etc.).
-  Trocável pelo chip "Trocar" no header (preserva o quadro). Persistido no projeto
-  (PATCH `{buildEnv}` → `projectStore.setBuildEnv`).
-  **Missões de ARTE (Fase 5, 07/2026):** `PensaMission` ganhou `artKind?:
-  'sprite'|'background'|'tileset'` + `palette?: string[]` (geradas pelo BFF SÓ quando a
-  criança POSSUI o Pinta — produto à parte). No MissionSheet, missão com `artKind` inverte o
-  destaque: "🎨 Desenhar no Pinta" vira o botão primário. O clique monta um
-  **`PensaPintaIntent`** (`{pensaProjectId, projectName, artKind?, palette?}`) e o entrega ao
-  `adapter.onOpenPinta(intent)` — o HOST leva o intent ao Pinta (no kids: sessionStorage
-  `sz:pinta:intent` + router.push('/pinta') → o Pinta abre o "Criar novo" pré-configurado).
-- **O — O Grande Lançamento**: checklist (Caça aos Bugs/Teste do Convidado/Toque de
-  Brilho/Publicar no Mural/Mostrar; `required` trava o advance) → festa (confete finito +
-  carta carimbada + delta de XP) → "Criar a Versão N+1".
+Cada versão do jogo tem um ciclo próprio. Uma versão nova pode ser planejada depois de O, sem depender da execução da anterior.
 
-## API pública (`src/index.ts` — TUDO fora dela é interno)
+## Contrato público
 
-`<PensaApp adapter={PensaHostAdapter}>` + tipos (`PensaTransport`, views, `PensaApiError`).
-- **`PensaTransport.request(path, init)`** — paths RELATIVOS ('/projects', `/cycles/:id/...`);
-  o HOST prefixa `/api/pensa`. Erros HTTP → `PensaApiError`-shape `{status, code}` (o pacote
-  DUCK-TYPA — a classe não atravessa o dynamic import do host).
-- **`PensaTransport.streamChat(input, handlers)`** — SSE do chat (delta/state/done/error);
-  devolve fn de ABORT (abortar = o BFF não persiste o turno).
-- **`PensaHostAdapter`**: `mode` ('kids'|'adult' — troca a COPY inteira), `projectKind`,
-  `theme` (host fixa), **`stateKey`** (id do viewer p/ "continuar de onde parou": o PensaApp
-  espelha `activeProjectId` em `localStorage pensa:resume:<stateKey>` e REABRE no mount; voltar à
-  lista/arquivar limpa; ausente = não lembra), **`onOpenPinta(intent?: PensaPintaIntent)`** (botão
-  "Desenhar no Pinta" na missão aberta; ausente = some — o host SÓ passa com a POSSE do Pinta; o
-  `intent` leva projeto/artKind/paleta p/ abrir o Pinta pré-configurado), **`mascotImages`** (URLs do Zappy por pose happy/thinking/celebrating/
-  sleeping — o kids passa `/zappy/*.webp`; ausente → emoji de fallback; consumo SEMPRE via
-  `components/common/ZappyImage.tsx`), e as capabilities OPCIONAIS do Estúdio: `createStudioProject(name)`
-  (semeia no IndexedDB do perfil, id charset `[A-Za-z0-9_-]`),
-  `renderStudio(studioProjectId, pensaProjectId)` (editor embarcado do Modo Missão),
-  `onOpenStudio(seed)` e **`syncStudioSnapshot({pensaProjectId, studioProjectId})`** (fire-and-
-  forget: o pacote chama ao abrir o ProjectView quando há projeto semeado e buildEnv ∈
-  {embedded, studio}; o HOST sobe o snapshot local mais novo OU restaura no IndexedDB o que
-  faltar — backup do jogo na nuvem, rotas `/api/pensa/projects/:id/studio-snapshot`) —
-  ausentes = degrade com orientação textual.
+`<PensaApp adapter={PensaHostAdapter}>` é o único componente público. O adapter contém:
 
-## Arquitetura
+- `transport.request` para `/api/pensa/*`;
+- `transport.streamChat` para o chat SSE da etapa Z;
+- `capabilities.pintaOwned` e `capabilities.studioOwned`;
+- `onOpenTask({ taskId, destination })`, que navega para `/pinta?tarefa=<id>` ou `/estudio?tarefa=<id>`;
+- tema e imagens opcionais do mascote.
 
-- **Stores zustand POR INSTÂNCIA** (factories `create*Store(transport)`, nunca singleton):
-  `projectStore` (lista/detalhe/criar/renomear/arquivar/`absorbDetail`/`createCycle`),
-  `chatStore` (z), `stageEStore`, `stageRStore`, `stageOStore`. Mutações OTIMISTAS com rollback
-  (kanban/checklist); erros viram mensagem gentil (`friendlyErrorMessage`).
-- **Navegação por ESTADO** (sem router): lista ⇄ projeto ⇄ etapa. O host não roteia.
-- **Copy centralizada** em `src/core/copy.ts` por `mode` (kids: sem travessão, sem jargão —
-  nunca "PRD/MVP"). Nomes kids das etapas: Zerar a Bagunça / Enxergar o Jogo / Rodar as
-  Missões / O Grande Lançamento; ciclos = "Versão N".
-- **CHIPS do chat**: toda resposta do agente termina com a linha `SUGESTÕES: a | b | c` — o
-  pacote a OCULTA da bolha (`core/chips.ts`) e renderiza como chips clicáveis; clicar ENVIA o
-  texto (escolher também é responder — regra anti-inferência). Mensagens ficam CRUAS no estado.
-- **Stage view traz o estado VIVO**: `tasks` + `checklist` do CICLO vêm em TODA etapa — o
-  reload re-hidrata o quadro sem re-gerar o plano (regenerar = REPLACE, zera as colunas).
-- **SVG do ícone SEMPRE via `<img src="data:image/svg+xml...">`** — NUNCA
-  dangerouslySetInnerHTML (defesa em profundidade; o BFF já sanitiza por allowlist). Testado.
-- **CSS**: tokens `--color-pz-*` em `@theme` sob `[data-pensa-theme]` (light default, dark).
-  SEM `@import "tailwindcss"`, SEM `@source`, SEM regras globais. Portalados usam
-  `PensaThemeScope`. Animações respeitam `prefers-reduced-motion`; confete é FINITO.
-- **a11y**: alvos ≥44px, foco/Esc/trap nos overlays (Dialog interno + MissionMode), aria-live
-  nos toasts/celebrações, tracker com aria-label.
+O adapter não cria projetos do Estúdio, não sincroniza snapshots e não renderiza editores. O pacote não conhece router, IndexedDB ou `LessonActivity`.
 
-## Comandos
+## Cartão de Criação
 
-`bun run typecheck` · `bun test src` (154 testes, happy-dom via bunfig/test-setup) ·
-`bun run check[:fix]`. Testes usam `src/testing/fakeTransport.ts` (transport roteirizável +
-factories `make*` + `chatScript` de eventos SSE + adapter fake com as capabilities do Estúdio).
+Uma tarefa carrega destino, categoria, estimativa, posição global, dependências, guia e progresso. Os IDs de passos e critérios permanecem estáveis entre Pensa, Pinta e Estúdio.
 
-## Consumo (host de referência: community-kids)
+- Contexto Pinta: `assetId` da Bíblia Visual, tipo de arte, estilo, preset, paleta, aparência, animações, estados, uso e exigência de envio ao Estúdio.
+- Contexto Estúdio: dimensão, `visualAssetIds`, IDs e metadados oficiais de blocos, manuais e extensões.
+- Progresso: `planned | in_progress | completed`, itens marcados, `outputRef` e datas.
 
-`packages/community-kids/src/components/kids/pensa-client.tsx` — import dinâmico `ssr:false`,
-transport fetch+SSE p/ `/api/pensa/*`, tema do next-themes, `createStudioProject`/`renderStudio`
-sobre `@sistemazero/studio` (namespace `setStudioStorageNamespace(viewerId)` — MESMO do
-/estudio, então o jogo semeado aparece lá também). Página gateada por produto (ref `pensa`).
+O Pensa só reflete o progresso. O servidor calcula `nextTaskId` quando todas as dependências anteriores estão concluídas. Ferramenta não possuída bloqueia o botão de envio, mas preserva o plano.
 
-## Backlog
+## Sugestões do chat (etapa Z)
 
-- **Dar USO ao ícone do jogo antes de investir em geração por imagem** (decisão 02/07): hoje o
-  ícone aparece 1× no card "done" da identidade e nunca mais. Plano quando priorizar: exibir no
-  card da lista "Meus planos de jogo" (precisa do members expor iconUrl/iconSvg na list view), na
-  tela de título do wireframe e na festa do lançamento — e SÓ ENTÃO trocar a geração SVG por
-  modelo de imagem do OpenRouter (ex. google/gemini-2.5-flash-image ~US$0,03/img; desenho de
-  pipeline pronto no histórico: env `OPENROUTER_PENSA_IMAGE_MODEL` opcional + sharp preset icon
-  512² + R2 público `pensa/icons/<projectId>/` + `iconUrl` aditivo no artefato).
-- Modo adulto (`mode:'adult'` tem copy mas sem fluxos próprios: pesquisa de mercado, stack
-  técnica, prompts copiáveis, ASCII art).
-- "Bug vira card de conserto" na etapa O (hoje a Caça aos Bugs orienta sem materializar card —
-  precisaria de POST de task avulsa no contrato).
-- Checks locais do "Ficou pronto quando..." não persistem (só o estado da coluna persiste).
-- QA em browser real (tokens/tailwind só materializam no pipeline do host).
+Toda resposta do Zappy termina com a linha `SUGESTÕES: a | b | c` (contrato do prompt no
+member-shell). Ela NUNCA renderiza crua: `core/suggestions.ts` (`splitSuggestions`,
+tolerante a caixa/acento, só a linha FINAL) separa corpo e sugestões, e
+`stripStreamingSuggestions` esconde até o prefixo parcial durante o streaming. As sugestões da
+ÚLTIMA resposta viram chips (`.pensa-suggestion-chips`, fieldset com legend invisível) que
+PREENCHEM o campo e focam o textarea — decisão da usuária: a criança revisa e envia (trocar para
+envio direto = chamar `sendText(s)` no clique). Os chips somem com stream em andamento.
+
+## Rever etapa concluída (peek)
+
+Nós CONCLUÍDOS do `CreationMap` são botões (`aria-pressed`; re-clicar fecha) que abrem o
+`StagePeek`: leitura da etapa vencida via `GET /cycles/:id/stages/:stage` (o members serve
+qualquer etapa), com banner "Você está revendo…" + voltar (o nó da etapa ATUAL também vira botão
+de voltar enquanto o peek está aberto). Sem edição no peek: `ReadOnlyArtifact` embrulha o
+`ArtifactPreview` (o `ArtifactEditor` NÃO serve — save/validate miram a etapa atual do ciclo);
+etapa R usa `TaskPlan editable={false}` e o "Abrir no Pinta/Estúdio" PERMANECE (tarefas são do
+ciclo). `loadProject`/refresh fecham o peek; corrida guardada por `peekRef`. Compartilhados:
+`ChatTranscript` (Z vivo + peek), `screenNamesFrom`, `ReviewFindings`.
+
+## Regras de edição
+
+Antes da aprovação em O, artefatos e tarefas planejadas podem ser editados. Depois da aprovação, editar uma tarefa planejada reabre O e invalida a revisão. Editar uma tarefa iniciada ou concluída cria uma nova revisão e arquiva a anterior.
+
+## Arquitetura e estilo
+
+O componente usa estado React por instância e navegação interna lista ⇄ plano. O CSS vive em `src/styles/pensa.css`, sem regras globais. Preserve os temas claro/escuro, alvos de 44 px, navegação por teclado, foco visível e `prefers-reduced-motion`.
+
+O host transpila o TS source e importa `@sistemazero/pensa/styles.css`. Não reintroduza chooser de ambiente, kanban, checklist, lançamento executável, `renderStudio`, `createStudioProject`, `syncStudioSnapshot` ou chaves locais de retomada/checks/intents.
+
+**O Pensa é uma SEÇÃO da comunidade kids, não um app à parte (08/2026).** Os tokens `--pz-*` já
+apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
+
+- `.pensa-planner` tem fundo **CHAPADO** (`var(--pz-bg)`). O `radial-gradient` que existia era a
+  textura de um app próprio e denunciava a emenda com a página, mesmo com a cor certa.
+- A home segue o **padrão do Pinta** ("Meus desenhos", 08/2026): o herói de landing SAIU de vez
+  (kicker "PLANEJADOR DE JOGOS", h1 de duas linhas e Zappy grande absoluto) e entrou o
+  `.pensa-home-header` — h1 **"Meus projetos"** (1.875rem) + subtítulo do método ZERO à esquerda,
+  Zappy PEQUENO decorativo à direita (64px; 48px no `@container 560`). O teste do PensaApp trava o
+  título e a ausência do kicker.
+- **Largura TOTAL** como a galeria do Pinta: `width: calc(100% - 32px)` (sem o teto de 1160px) na
+  regra compartilhada — vale para home E detalhe (`.pensa-workspace`/`.pensa-project-header`/
+  `.pensa-map`/`.pensa-alert`).
+- ⭐ **Pinta, Pensa e Estúdio têm UM estilo visual só (08/2026).** O Estúdio já se declarava
+  espelho do Pinta (`.sz-home-panel` "espelho do `.pin-panel`"); o Pensa é que destoava. A receita
+  ÚNICA de card/painel, agora nos três:
+
+  ```css
+  border: 2px solid <aresta>;
+  border-radius: 1rem;                    /* era 1.5rem no Pensa */
+  box-shadow: 0 3px 0 color-mix(in oklch, <aresta> 45%, transparent);  /* era 0 4px 0 do acento a 10% */
+  padding: 16px;                          /* `p-4`; era 16px 18px / 17px 18px */
+  ```
+
+  A **aresta é uma variável** (`--pz-card-edge`, cópia do `--pin-panel-border`) para a sombra
+  seguir a borda no hover — o hover é só `translateY(-2px) scale(1.02)`, como `.pin-pop`/
+  `.sz-home-pop`. Peso de fonte: **700** em todo o arquivo (era 800 em 29 lugares; `.pin-display`
+  e `.sz-ui-display` são 700). Vazio: `p-6` = 24px, 2px dashed, raio 1rem.
+- ⭐ **Tipografia dos títulos: família + peso + tracking no ELEMENTO, e num lugar só**
+  (`.pensa-planner h1..h4`). O Preflight do Tailwind zera `font-weight` E deixa a família cair na
+  herdada (Nunito, do corpo do host), e o host kids não define nada para heading.
+  ⚠️ **"É heading" não é o mesmo que "é título".** O que de fato escapou foi o nome do plano no
+  card — um `<strong>`, fora do seletor de headings, saindo na fonte do corpo. O par no Estúdio
+  tinha o mesmo defeito (`font-semibold` em Nunito em vez de `sz-ui-display`). Os dois casos estão
+  travados em `src/styles/headingFont.test.ts` (a folha externa não é computada em jsdom, então o
+  teste lê o CSS).
+- ⭐ **Tamanhos de fonte ANCORADOS na escala** (`0.75rem` = 12px, `0.875rem` = 14px). O arquivo
+  tinha 41 valores fora da escala, com um bolo entre **9,9px e 13,8px** — abaixo do texto normal
+  da Comunidade Kids, que é `text-sm`/**14px** (medido: 164 usos de `text-sm` contra 22 de
+  `text-base` nos componentes do kids; o Pinta na mesma proporção). Para um produto infantil o
+  piso é 12px e o texto de corpo é 14px; nada de valores intermediários "quase iguais" que somados
+  fazem o app inteiro ler menor que os irmãos ao lado.
+- Arranjo da home, pareado com `ProjectList.tsx`/`GalleryScreen.tsx`: `.pensa-create` **sem
+  painel** (faixa solta; embrulhá-lo dava a ele o peso dos planos já criados), campo de ~440px ao
+  lado do botão, 44px de respiro do subtítulo até a label; `.pensa-section-heading` h2 em
+  **1.125rem** (`text-lg`) com `margin: 40px 0 24px` (`mb-6`); grade
+  `repeat(auto-fill, minmax(225px, 1fr))` + `gap: 16px` — **o mesmo piso do `PROJECT_GRID_CLASS`
+  do Estúdio**, de propósito: com a mesma receita nos dois, os cards saem do mesmo tamanho sem
+  número mágico para sincronizar (medido: 1280→5 · 1366→5 · 1440→5 · 1600→6 · 1920→7 colunas).
+  ⚠️ `auto-fill`, NÃO `auto-fit`: com `auto-fit` as faixas vazias colapsam e dois planos numa tela
+  larga viram dois cards de ~600px. Os inputs do grupo compartilhado têm borda **2px** (vale
+  também no detalhe — receita de tema).
+- **Respiro lateral = 24px** (`width: calc(100% - 48px)`), que é o `sm:p-6` da galeria do Pinta e o
+  `px-6` da `ProjectList`; 16px no `@container 560` (`p-4`). Com os 16/10px de antes o conteúdo do
+  Pensa encostava na borda visivelmente mais que o dos irmãos.
+- O host não embrulha mais o app num card (`pensa-client.tsx`).
+⚠️ Mexer na largura interna (`width: calc(100% - 32px)`) desloca os `@container (max-width: 820px|560px)`
+— re-verifique os dois pontos de quebra em 1366 e 1920.
+
+## Verificação
+
+Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem cobrir o mapa ZERO, os cinco artefatos, ordem/dependências, próxima tarefa, entitlement e abertura da ferramenta de destino.

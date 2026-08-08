@@ -95,13 +95,18 @@ export type {
   TestCaseCheck,
 } from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
+/** @deprecated Use {@link StudioEditor} ou {@link StudioLesson}. */
+export type {
+  StudioPintaDrawingSummary,
+  StudioPintaImportResult,
+  StudioPintaLibraryAdapter,
+} from './studio/pinta-library'
 export { prefetchStudioModes } from './studio/prefetch'
 export type {
   StudioProRuntimeAdapter,
   StudioProRuntimeBuildInput,
   StudioProRuntimeBuildResult,
 } from './studio/pro-runtime'
-/** @deprecated Use {@link StudioEditor} ou {@link StudioLesson}. */
 export { Studio } from './studio/Studio'
 export { StudioEditor } from './studio/StudioEditor'
 export { StudioLesson } from './studio/StudioLesson'
@@ -115,6 +120,7 @@ export type { StudioTheme } from './studio/theme'
 export type {
   StudioTutorAdapter,
   StudioTutorAskInput,
+  StudioTutorAskResult,
   StudioTutorBlockReference,
   StudioTutorConfig,
   StudioTutorFeedbackInput,
@@ -130,6 +136,7 @@ export type {
   StudioLessonProps,
   StudioLocale,
   StudioProps,
+  StudioTaskSession,
 } from './studio/types'
 
 import { setPersonalAssetsNamespace } from './asset-library/personal'

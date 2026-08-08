@@ -8,6 +8,12 @@ IDE educacional embarcável (Sistema Zero Studio) — biblioteca INTERNA do mono
 
 Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidirecional blocos⇄código via worker de reverse-parse) — + preview sandbox, console, terminal (WebContainer), painel de IA (OpenRouter) e extensões.
 
+**Tarefas do Pensa:** `StudioEditorProps` aceita `taskSession?: StudioTaskSession`, independente
+de `LessonActivity`. O `TaskGuidePanel` mostra passos, dicas, blocos oficiais e critérios e envia
+progresso pelo callback do host. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
+associado e mantém o guia após reload; o Studio não persiste vínculo ou backup no Pensa. Veja
+[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+
 **API pública** (`src/index.ts` — TUDO fora dela é interno; Fase 5 somou
 **`importProjectSnapshot(raw, {name?})`** — `src/projects/importSnapshot.ts`, importa um snapshot
 jogável/`.szproject.json` como projeto NOVO no namespace atual via `importProjectFromJSON` do
@@ -23,7 +29,7 @@ autostart, SEM editor — para a página PÚBLICA de jogar do community-kids; su
 
 **Arquitetura de estado**: stores Zustand POR INSTÂNCIA (factories + `StudioStoresContext`); os hooks `useXStore(selector)` caem na store DEFAULT de módulo fora de um `<Studio>` (lista/testes), e as estáticas `useXStore.getState/setState` operam SEMPRE na default (contrato dos testes). `settingsStore` é singleton de propósito (preferência do usuário). Persistência = `PersistenceService` por instância (`src/persistence/service.ts`): qualquer adapter ganha autosave debounced + flush (pagehide/unmount/Salvar); `onChange` SEMPRE no debounce, inclusive com 'none'.
 
-**Paleta**: tokens `--color-sz-*` em `src/styles/studio.css` espelham a paleta oficial do sistema-zero (referência comunidade-sistema-zero) em oklch, dark E light, com identidade dual (accent = brand-lime no dark, cyan no light). Blockly tem temas `sz-dark`/`sz-light` em HEX equivalentes (`src/blockly/theme.ts` — manter em SINCRONIA com o CSS); Monaco segue o tema da instância. Toggle sol/lua na Topbar (some quando o host fixa `theme`). **Revamp visual estilo MakeCode (público kids):** o tema PADRÃO virou CLARO/creme (`#fef9ef`; era dark) — flip em `settingsStore` (init + fallback `?? 'light'`), `studio/theme.tsx` (context default) e `theme.ts`; toggle e host que fixa `theme` seguem. **COR = IDENTIDADE DA CATEGORIA em arco-íris** (`CATEGORY_COLORS`): cada categoria de topo tem 1 cor BEM distinta (Pesquisa cinza · HTML azul-escuro · CSS vermelho · SVG verde · Programação laranja · Canvas roxo · Avançado azul-céu · Jogo 2D rosa · Jogo 3D amarelo) e as SUB-categorias são TONS dela via `categoryShades(base, n)` (`blockly/colorShades.ts`, PURO/sem Blockly, viés-ESCURO — o texto do bloco é BRANCO em TODOS via `.blocklyText`, por isso os tons não podem clarear demais). Mudar a cor base RE-DERIVA os tons; cada `blocks/*.ts` e as extensões game-2d/3d aplicam `categoryShades` + um loop `COLOUR_BY_TYPE`. Fonte redonda `Baloo 2`/`Nunito` (`--font-family-sans` + `FONT_STYLE`, sem `@font-face`) na interface do Studio; os iframes e exports das extensões com HUD usam a Baloo 2 local incorporada por `official-extensions/gameUiFont.ts`, com licença em `official-extensions/fonts/`. Toolbox = chips arredondados coloridos (só CSS no `studio.css`, faixa colorida por categoria). ⚠️ renderer custom foi TENTADO e REVERTIDO (dobrar o raio distorcia as "bocas" em C dos blocos com statement-input) — usa `zelos` puro; QA de bloco DEVE incluir blocos com statement-input. Logo oficial: `BrandLogo` (`src/ui-internal/BrandLogo.tsx`) = só o SÍMBOLO (160×160), para a Topbar compacta; `BrandWordmark` (`src/ui-internal/BrandWordmark.tsx`) = logo COMPLETO (símbolo + wordmark "Sistema Zero" do logoszs.svg, viewBox 1500×160), usado no header da ProjectList. O wordmark usa `fill="currentColor"` para recolorir conforme o tema (branco no escuro, escuro no claro); o símbolo mantém o gradiente lime→cyan e a moldura branca. Gradientes com id via `useId()` (multi-instância). Ambos extraídos do logoszs.svg oficial.
+**Paleta**: tokens `--color-sz-*` em `src/styles/studio.css` espelham a paleta oficial do sistema-zero (referência comunidade-sistema-zero) em oklch, dark E light, com identidade dual (accent = brand-lime no dark, cyan no light). Blockly tem temas `sz-dark`/`sz-light` em HEX equivalentes (`src/blockly/theme.ts` — manter em SINCRONIA com o CSS); Monaco segue o tema da instância. Toggle sol/lua na Topbar (some quando o host fixa `theme`). **Revamp visual estilo MakeCode (público kids):** o tema PADRÃO virou CLARO/creme (`#fef9ef`; era dark) — flip em `settingsStore` (init + fallback `?? 'light'`), `studio/theme.tsx` (context default) e `theme.ts`; toggle e host que fixa `theme` seguem. **COR = IDENTIDADE DA CATEGORIA em arco-íris** (`CATEGORY_COLORS`): cada categoria de topo tem 1 cor BEM distinta (Pesquisa cinza · HTML azul-escuro · CSS vermelho · SVG verde · Programação laranja · Canvas roxo · Avançado azul-céu · Jogo 2D rosa · Jogo 3D amarelo) e as SUB-categorias são TONS dela via `categoryShades(base, n)` (`blockly/colorShades.ts`, PURO/sem Blockly, viés-ESCURO — o texto do bloco é BRANCO em TODOS via `.blocklyText`, por isso os tons não podem clarear demais). Mudar a cor base RE-DERIVA os tons; cada `blocks/*.ts` e as extensões game-2d/3d aplicam `categoryShades` + um loop `COLOUR_BY_TYPE`. Fonte redonda `Baloo 2`/`Nunito` (`--font-family-sans` + `FONT_STYLE`, sem `@font-face`) na interface do Studio; os iframes e exports das extensões com HUD usam a Baloo 2 local incorporada por `official-extensions/gameUiFont.ts`, com licença em `official-extensions/fonts/`. Toolbox = chips arredondados coloridos (só CSS no `studio.css`, faixa colorida por categoria). ⚠️ renderer custom foi TENTADO e REVERTIDO (dobrar o raio distorcia as "bocas" em C dos blocos com statement-input) — usa `zelos` puro; QA de bloco DEVE incluir blocos com statement-input. Logo oficial: `BrandLogo` (`src/ui-internal/BrandLogo.tsx`) = só o SÍMBOLO (160×160), para a Topbar compacta; `BrandWordmark` (`src/ui-internal/BrandWordmark.tsx`) = logo COMPLETO (símbolo + wordmark "Sistema Zero" do logoszs.svg, viewBox 1500×160), hoje SEM uso na ProjectList (a home virou cabeçalho de seção no padrão Pinta — ver "Home 'Meus Jogos'"); fica exportado para hosts/Topbar futuros. O wordmark usa `fill="currentColor"` para recolorir conforme o tema (branco no escuro, escuro no claro); o símbolo mantém o gradiente lime→cyan e a moldura branca. Gradientes com id via `useId()` (multi-instância). Ambos extraídos do logoszs.svg oficial.
 
 ## Modos: básico × profissional (regra D2)
 
@@ -121,7 +127,7 @@ memória com `loaded:true` em vez de lançar.
 
 ## Segurança do preview (defesa em camadas — 4º full review)
 
-Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
+Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
 - **`csp.ts`** — CSP interna do srcdoc: libera subrecursos PASSIVOS de `https:` (img/font/media/css/
   frame), mas `script-src` NÃO inclui `https:` genérico. Scripts gerados são autorizados pelo hash
   SHA-256 exato; ESM oficial entra só pela URL declarada e, no `esm.sh`, pelo prefixo do pacote com
@@ -129,6 +135,13 @@ Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__te
   `connect-src 'none'` por default (sem fetch/XHR/WS a menos que o professor libere origens) e
   `worker-src 'none'`. Trade-off aceito: img/media/font/frame de `https:` = GET passivo de mão única
   (sem resposta legível, sem cookies) — NÃO alterar.
+  ⚠️ `script-src` inclui `data:` quando há scripts autorizados: fora do Chromium, hash não casa com
+  script EXTERNO, e todo JS do aluno é externalizado em `data:`. Esses recursos NÃO levam
+  `integrity`, pois Firefox recusa SRI em URL não elegível. O `scriptSourceGuard` cobre a injeção
+  dinâmica que essa liberação tornaria possível.
+- **`scriptSourceGuard.ts`** — fecha `HTMLScriptElement.prototype.src` e
+  `setAttribute`/`setAttributeNS` contra scripts `data:`/`blob:` criados em runtime; os scripts
+  autorizados nascem no parse do srcdoc e não passam pelos setters.
 - **`loopGuard.ts`** — instrumenta `for/while/do-while/for-of/for-in` (parse Babel + walk AST; clássico
   1º, cai p/ módulo com errorRecovery) injetando `__szLoopTick()`, que estoura um **orçamento contínuo**
   (`budgetMs`, default 4000) reiniciado a cada macrotask. `performance.now()` é capturado/bindado no
@@ -251,6 +264,23 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 1. **Workers cross-bundler**: todo worker nasce de `new Worker(new URL('./caminho-relativo.ts', import.meta.url), { type: 'module' })` com URL **literal inline** — nada de `?worker` (Vite-only), nada de bare specifier dentro de `new URL()` (Vite não resolve), nada de variável/helper no 1º argumento (quebra a análise estática de Vite/Turbopack/webpack). Os workers do Monaco usam os wrappers em `src/monaco/workers/`. Plano B se um bundler de host falhar: extrair a criação p/ factory injetável via prop.
 2. **`loader.config({ monaco })` em `src/monaco/workers.ts` é intocável**: sem ele o `@monaco-editor/react` injeta o loader AMD, que colide com o UMD do Blockly ("Can only have one anonymous define").
 3. **CSS**: `src/styles/studio.css` é o CSS exportado — SEM `@import "tailwindcss"`, SEM `@source`, SEM `@custom-variant dark` (sobrescreveria a variant dos apps) e SEM regras globais de app (html/body/scrollbar — vivem no `playground/styles.css`). Tema escopado por `[data-sz-theme]` no root do componente, NUNCA no `<html>` do host. Conteúdo PORTALADO p/ document.body precisa de `<StudioThemeScope>` (ver Modal/ProjectCard/Menu). ⚠️ O dropdown da Topbar (`Menu` de `#ui`) é PORTALADO de propósito: inline (`absolute`) ele ficava ATRÁS do `<iframe>` do preview (iframe = stacking context próprio, vence qualquer z-index local).
+3a. **O Studio HERDA a aparência do host (08/2026).** Fundo, painel, borda e texto dos
+   `--color-sz-*` apontam para os primitivos `--sz-kids-*` de `@sistemazero/ui/theme-kids.css`,
+   com **fallback = o valor literal de antes**: dentro do community-kids (que importa os
+   primitivos) o Estúdio fica azul-céu/navy, igual à página; no **admin** e na **comunidade
+   adulta**, que NÃO os importam, nada muda. É o que permite um só CSS servir 4 hosts.
+   - **Fonte**: `--font-family-sans` encabeça com `var(--font-nunito, sz-none)` (e a display com
+     `--font-baloo`). O `next/font` gera famílias com nome HASHEADO, então os literais `"Baloo 2"`
+     nunca resolviam e o Estúdio caía em system-ui dentro do kids. `sz-none` é uma família válida
+     que não casa com nada e é PULADA fora do kids, preservando a cascata antiga.
+     ⚠️ NÃO usar `var(--font-sans, …)`: é token DEFAULT do Tailwind v4 e nunca cai no fallback.
+   - **Blockly** lê a paleta do tema em RUNTIME (`blockly/themeColors.ts`): uma tabela HEX fixa não
+     consegue estar certa em dois hosts (canvas creme dentro de app azul). A conversão de cor
+     PINTA num canvas 1×1 — `getComputedStyle` devolve `oklch()`/`oklab()` crus, que regex de
+     `rgb()` não pega. `defineTheme` cacheia por NOME: cada paleta lida vira um nome derivado.
+   - ⚠️ Derivado por `color-mix` é substituído no elemento onde é DECLARADO: os tokens derivados
+     são RE-DECLARADOS no bloco `[data-sz-theme="light"]`, senão herdariam a mistura do escuro.
+   - O host não embrulha mais o editor num card (`studio-full-client.tsx`).
 3b. **A raiz do Studio é uma CERCA de stacking (`isolation: isolate` no style inline do
    `StudioCore`, 24/07/2026)**: o Blockly injeta `.blocklyToolbox { z-index: 70 }` e, sem a
    cerca, a paleta vazava por CIMA dos modais do host (o `Dialog` do `@sistemazero/ui` é overlay
@@ -271,9 +301,10 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 8. **Storage do aluno**: o `storageBridge` é STRING PURA (sem imports); `postMessage` SEMPRE com
    `targetOrigin` (nunca `'*'`); snapshot via `JSON.parse`. `writeGameStorage` roda no MESMO mutex de
    `deleteProject` + cerca de exclusão — um write em voo NÃO ressuscita `sz:game-storage:<id>` órfão.
-9. **Guardas do preview travadas**: `__szLoopTick` é `writable:false/configurable:false` e captura o
-   `performance.now()` no boot; a CSP NÃO libera `script-src https:` nem `connect-src` (só o professor
-   abre origens). Mexeu em segurança de preview? Replique o teste em `src/preview/__tests__`.
+9. **Guardas do preview travadas**: `__szLoopTick` e os acessores do `scriptSourceGuard` são
+   `configurable:false`; a CSP NÃO libera `script-src https:`, `blob:` nem `connect-src` (só o
+   professor abre origens). `script-src data:` é deliberado e necessário ao Firefox. Mexeu em
+   segurança de preview? Replique o teste unitário e rode o cenário Playwright no Firefox.
 10. **`convertToPro` é one-way**; os minificadores SÃO injetáveis (`identityMinifiers` nos testes,
     terser/csso em prod). No `FsDiff`, o conflito arquivo↔diretório sai de `removeFirstPaths` e é
     aplicado RECURSIVAMENTE ANTES de mkdir/write.
@@ -446,6 +477,38 @@ APARECE se a extensão estiver INSTALADA no projeto inicial). Catálogo + restri
 fecha com `pruneEmptyCategories` (rede de segurança) — categoria/sub-categoria que fica SEM nenhum
 bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); vale p/ nível E lista.
 
+### 🔎 A busca de blocos (`searchCategory.ts` + `searchFlyoutMetrics.ts`)
+
+- **Resultados AGRUPADOS** por `groupSearchResultsByPalette` (pura, exportada): um cabeçalho
+  `kind: 'label'` com `Jogo 2D › 🎬 Animação` antes de cada grupo, para a criança ir aprendendo onde
+  o bloco mora. O caminho vem do `palettePathOf` (`paletteMap.ts`) — o caminho REAL da paleta, e não
+  o `category` do catálogo, que é curadoria do admin. ⭐ Os grupos saem na ordem do MELHOR resultado
+  (o `Map` preserva inserção), nunca em ordem alfabética. Bloco sem caminho vai para "Outros
+  blocos", no FIM.
+- ⚠️ **A rolagem do flyout ignora o espaço do campo de busca.** O espaço é um separador
+  (`kind: 'sep'`) — e o `FlyoutSeparator` do Blockly **não tem DOM**. Como a faixa rolável sai do
+  `getBBox()` do canvas e o `getScrollMetrics` DESCARTA o `top` do conteúdo, sobram `gap − MARGIN`
+  px inalcançáveis e **o último bloco fica cortado** (medido: 21px no playground). O
+  `SearchAwareFlyoutMetrics` devolve essa altura somando `max(0, contentTop − MARGIN)` — parcela que
+  é ZERO nas categorias normais, o que importa porque **o flyout é um só para toda a toolbox**.
+- ⚠️ **Os dois defeitos são simétricos.** Antes, o espaço era feito deslocando o canvas por
+  `transform` (atributo que o Blockly reescreve ao rolar) e sumia o PRIMEIRO bloco; o `sep`
+  consertou o topo e criou o corte embaixo. Ao mexer aqui, verifique **os dois extremos**: primeiro
+  bloco abaixo do campo depois de rolar e voltar, e último bloco inteiro no fim.
+- ⚠️ `bun test` não faz layout: os testes provam a ARITMÉTICA (`searchFlyoutMetrics.test.ts`) e o
+  agrupamento puro (`searchGrouping.test.ts`). O pixel é QA de navegador, no playground.
+- ⚠️ **Armadilha de QA: metade desta tela vive numa `requestAnimationFrame`.** O `matchBlocks`
+  fecha agendando `fitFlyoutToContents()` + `positionField()` numa rAF, e **rAF não dispara em aba
+  oculta** (`document.visibilityState === 'hidden'` — foi o que derrubou a captura de capa também).
+  Num painel de navegador que não está sendo EXIBIDO, `setTimeout` roda e rAF não: a rolagem e o CSS
+  dão para verificar, mas a LARGURA do painel (o piso de `MIN_SEARCH_FLYOUT_WIDTH`, reaplicado só
+  naquela rAF) não — dá falso negativo, com o campo largo sobrando por cima de uma caixa estreita.
+  Quem instala o cálculo de rolagem é o `showFieldWhenReady`, SÍNCRONO na seleção da categoria, e
+  por isso ele é verificável mesmo assim.
+- ⚠️ **Medir o flyout pelo `.blocklyFlyoutBackground`, nunca pelo `<g class="blocklyFlyout">`**: o
+  `getBoundingClientRect()` do `<g>` é a UNIÃO dos filhos, então um bloco largo demais devolve a
+  largura do bloco, não a da caixa.
+
 **Adicionar um bloco = ~9 pontos (round-trip blocos⇄código)** — pular um quebra silenciosamente:
 1. `ir/schema.ts` — variante na união TS (`JSStatement`/`JSExpr`/`HTMLNode`/`CSSEntry`) **E** no `z.discriminatedUnion` (senão a validação rejeita o IR salvo/importado).
 2. `blocks/<cat>.ts` — `BlockDefinition` + entrada num `*_GROUPS` (senão cai em "Mais"). Campo que REFERENCIA um nome já criado (variável/classe/método/propriedade/sprite/cena/objeto/imagem…)? Use um **seletor** (`field_name_picker`/`field_sprite_picker`/`field_asset_picker`), não `field_input` — e, se o bloco DECLARA um nome novo, registre-o no `*_DECL_BLOCKS` do picker (ver "Padrões já usados").
@@ -500,14 +563,16 @@ prove o caminho inválido e o round-trip nos testes.
     `project.assets` — renomear/trocar asset no painel Imagens não gera evento Blockly). Sem visual
     (nome local de laço 🔁/desconhecido/asset sumido sem cor) → só texto, como antes; a serialização
     fica INTOCADA (elementos extras no `fieldGroup_` não entram). Pop-up com swatch 36×36
-    (`<img> object-fit:contain` p/ imagem). E o **FieldColourSZ** ganhou o CÍRCULO CROMÁTICO:
-    `<input type=color>` NATIVO na linha HEX — é a prévia da cor atual E o botão que abre o seletor
-    livre do navegador (arrastar preenche o input com o hex ao vivo; confirmar aplica no bloco e
-    fecha; digitar hex válido espelha no swatch). Estilos do swatch em `studio.css`
-    (`.sz-hex-input-row input[type=color]` — pseudo-elementos não entram em cssText); a GRADE da
-    paleta é centrada/espaçada via `[data-sz-theme].blocklyFieldColour …` (vence o CSS do plugin
-    por especificidade; o pop-up encolheu de ~240px e o input tem `min-width:88px` p/ o código
-    `#rrggbb` COMPLETO ficar sempre visível).
+    (`<img> object-fit:contain` p/ imagem). E o **FieldColourSZ** tem o CÍRCULO CROMÁTICO:
+    a "corzinha" na linha HEX é um `<input type=color>` **NATIVO** — prévia da cor atual E botão
+    que abre o seletor LIVRE do navegador (arrastar preenche o input com o hex ao vivo; confirmar
+    aplica no bloco; digitar hex válido espelha no swatch). ⚠️ Em 08/2026 chegou a ser trocado por
+    um painel custom (`colourPickerPanel.ts`), mas a dona REJEITOU o visual e pediu a volta do
+    nativo (revert em staging 05/08) — **não reintroduzir painel custom aqui sem ela pedir**.
+    Estilos do swatch em `studio.css` (`.sz-hex-input-row input[type=color]` — pseudo-elementos
+    não entram em cssText inline); a GRADE da paleta é centrada/espaçada via
+    `[data-sz-theme].blocklyFieldColour …` (vence o CSS do plugin por especificidade; o input tem
+    `min-width:88px` p/ o código `#rrggbb` COMPLETO ficar sempre visível).
   - **Bloco NOVO que declara um nome de um `kind` existente**: adicione-o ao `*_DECL_BLOCKS` correspondente em `FieldNamePicker.ts` (ex.: `VARIABLE_DECL_BLOCKS`, `SCENE3D_DECL_BLOCKS`, `OBJECT3D_DECL_BLOCKS`), senão o picker reporta "nenhum ainda". Sprite/asset têm o seu (`SPRITE_DECL_BLOCKS` no FieldSpritePicker).
   - **`kind` NOVO**: estenda a união `NameKind` + `NAME_KINDS` + `*_DECL_BLOCKS` + um `collect*` + entrada em `KIND_UI` (ícone/placeholder/empty) + um `case` no `collectGlobals`; então troque os campos consumidores.
   - **Nomes LOCAIS de laço** (o "i" do contar, o "item" do enxame): `LOOP_BINDERS_BY_KIND` + `collectScopedNames(block, binders)` sobem por `getSurroundParent` e só aparecem DENTRO do laço (swatch 🔁 "no laço"). Hoje `variable`, `object3d` e `g3d-object`.
@@ -582,6 +647,41 @@ Testes: `personalSync.test.ts` + `components/assets/AssetsPanelEditDrawing.test.
 liga a feature (`setPersonalAssetsNamespace('playground')` + `onEditDrawing`) — QA em navegador real
 feito: jogo aberto, jogo FECHADO, preview e as duas miniaturas.
 
+### "Trazer do Pinta" — fluxo PULL (08/2026, substitui a seção "Meus desenhos")
+
+A dona rejeitou a lista "Meus desenhos" (enorme, sem busca, sem saber o que já foi trazido). O
+fluxo virou PULL: prop de host **`pintaLibrary?: StudioPintaLibraryAdapter`** (`studio/types.ts` →
+latch no `StudioCore` → contexto `studio/pinta-library.ts`, molde exato do `onEditDrawing`; tipos
+ESPELHO — o Studio segue sem importar o pinta). Com ela presente, o `AssetsPanel` ganha o botão
+**"🎨 Trazer do Pinta"** na barra (a barra renderiza com `allowUpload || pintaLibrary`; os uploads
+seguem gated por `allowUpload`) e **a seção "Meus desenhos" some** — o fallback (perfil sem posse
+do Pinta → host não passa o adapter) mantém a lista antiga. ⚠️ O EFEITO de carga/sincronia do
+painel fica vivo nos dois casos (alimenta o auto-update e o `editableDrawingIds`).
+
+- **`PintaImportDialog`** (modal ANINHADA, precedente TileConfigDialog): busca
+  (`filterPintaDrawings` puro + `core/searchText.ts normalizeSearchText`, extraída do KitGallery),
+  grade de cards (miniatura ou emoji do papel, selo do tipo, selo `jogo: <nome>`), selo
+  **"✓ no projeto"** derivado do `libId personal:<id>` dos assets do projeto; adicionar chama
+  `adapter.import(id)` → `addAsset` (clone do addFromPersonal; `uniqueAssetName` compartilhado em
+  `components/assets/assetNames.ts`); a modal FICA aberta (multi-import). ⚠️ Card já no projeto
+  mostra **SÓ o selinho, sem botão** (decisão da dona — o "Adicionar de novo" com sufixo `-2`
+  existiu por um dia e foi cortado: trazer a mesma arte duas vezes não é caso de uso da criança).
+  Erro `code: 'not-found'` remove o card.
+- **O import do host grava em personal-assets ANTES de devolver** — é o que preserva a mão-dupla
+  (guard `getPersonalAsset` do resync) e o botão editar. O Studio usa o `name` DEVOLVIDO (o upsert
+  pode sufixar).
+- **Lado Pinta**: subpath `@sistemazero/pinta/studio-library` (`listGalleryForStudio` +
+  `exportAssetForStudio`); o foguete "Usar no Estúdio" agora só aparece em desenho com
+  `projectRef` (missão do Pensa) — ver o CLAUDE.md do pinta.
+- ⚠️ **Fix no `Modal` (#ui) que a modal aninhada expôs:** o `cancel` do dialog DE CIMA borbulha
+  pela árvore REACT (portal propaga pelo componente, não pelo DOM) e fechava OS DOIS — o
+  `onCancel` agora ignora `e.target !== e.currentTarget` (valia também para o TileConfigDialog).
+
+Testes: `components/assets/PintaImportDialog.test.tsx` (⚠️ fixtures com nomes que NÃO colidem com
+o starter pack — `heroi` da ASSET_LIBRARY quebra `getByText`). QA browser no playground (:5173,
+fake `pintaLibraryDemo` no App.tsx que grava de verdade na biblioteca): busca com acento, import,
+selo ✓, sufixo -2, Esc fecha só a de cima, "✏️ editar desenho" aparece após o import.
+
 **Full review (02/08) — 4 correções, todas com teste:**
 1. ⭐ **Jogo aberto NO MEIO da varredura perdia a atualização.** O id do projeto aberto era capturado
    UMA vez, antes do laço; a varredura roda no foco da aba, que é exatamente quando a criança clica
@@ -615,7 +715,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.57.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.63.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -636,9 +736,12 @@ da API). Teste: `__tests__/stageBorder.test.ts`.
 (`sz_g2d_spawn_in_group`/`_image_in_group`) ganharam o campo **`NAME` OPCIONAL** ("criar um sprite
 **chamado** …"). Preenchido, a IR leva `varName?` e o gerador emite `const ⟨nome⟩ = SZGame2D.spawn(…)`
 — o helper do runtime JÁ devolvia o sprite, então **nada mudou no motor**. É o que destrava ANIMAR um
-sprite de grupo: encaixar "Animar sprite ⟨nome⟩" logo abaixo do criar, no mesmo trecho (⚠️ `setAnimation`
-reinicia o tempo a cada chamada — dentro do "a cada quadro" congelaria no 1º quadro; por isso o lugar
-certo é o nascimento). ⭐ Vazio ⇒ a chave NÃO entra na IR e a saída fica **byte-idêntica** à de antes
+sprite de grupo: encaixar "Animar sprite ⟨nome⟩" logo abaixo do criar, no mesmo trecho (⚠️ **ISTO MUDOU
+em 08/2026, v0.63.0** — `setAnimation` passou a ter GUARDA DE TRANSIÇÃO: re-chamar com os MESMOS
+argumentos não reinicia o tempo, então dentro do "a cada quadro" ela roda normalmente em vez de
+congelar no 1º quadro. É mudança de comportamento num bloco JÁ enviado, e deliberada: o gk sempre
+guardou assim e o comentário de lá chamava isso de "padrão g2d" — que o g2d não tinha. Efeito
+colateral: não dá mais para reiniciar uma animação de LOOP re-chamando com os mesmos valores.). ⭐ Vazio ⇒ a chave NÃO entra na IR e a saída fica **byte-idêntica** à de antes
 (projeto antigo intocado) — mesma régua do `shape` no `defineEnemyType`. As duas entradas em
 `G2D_DECLARATION_FIELDS` (`ir/schema.ts`) dão de graça o símbolo, a recusa de nome repetido e o
 ESCOPO (nome criado dentro de um temporizador vale só ali). Parser: `case 'spawn'` no
@@ -647,8 +750,11 @@ entraram em `SPRITE_DECL_BLOCKS` (miniatura no seletor); ⚠️ `collectSprites`
 então o nome aparece no seletor fora do trecho — usar lá é pego pela validação da IR. Testes:
 `__tests__/spawnNamed.test.ts` (saída byte-idêntica sem nome, `const` com nome, parser das duas
 formas, escopo e runtime: o nomeado É o mesmo objeto do grupo e cada um anima no próprio ritmo).
-**Faltam ainda** (conversado com a usuária, fora deste lote): "pôr o sprite ⟨X⟩ no grupo ⟨G⟩"
-(runtime não tem `addToGroup`) e animação por ESTADO no grupo (espelho do `setEnemyStateAnimation`).
+**"Pôr o sprite ⟨X⟩ no grupo ⟨G⟩" SAIU do backlog (v0.58.0, 05/08):** `sz_g2d_add_to_group` em
+📦 Muitos (espelho do "Tirar do grupo"; runtime `addToGroup(grupo, sprite)` — dedup + teto
+`MAX_GROUP`, mesma régua do spawn). Nasceu porque o Zappy sugeriu esse bloco sem ele existir.
+**Falta ainda** (conversado com a usuária): animação por ESTADO no grupo (espelho do
+`setEnemyStateAnimation`).
 
 **Nadar e voar (v0.55.0, 01/08):** três jeitos NOVOS de o sprite se mover em 🕹️ Movimento, todos
 `command` como o `platformer` e todos em `runtime/inputAndMotion.ts`. Antes deste lote a extensão tinha
@@ -703,6 +809,390 @@ tilemaps manuais limitam 1M caracteres, 512×512 células e 512 sólidos, com `w
 anunciam a carga lazy e a API principal é `renderProjectToPreviewDocAsync`. Os 31 exemplos têm metadados
 editoriais; `KitGallery` mostra o percurso Pegue a moeda → Herói que anda → Mini plataforma → Sala com
 paredes, além de busca/filtros e “Ver todos”. A paleta de 211 blocos permanece intacta por decisão explícita.
+
+## Jogo 2D — inimigos COMBINÁVEIS + 18 comportamentos (v0.60.0, 07/08)
+
+A subcategoria 😈 Inimigos tinha 6 comportamentos MUTUAMENTE EXCLUSIVOS num dropdown, e o
+despacho era uma cadeia `if/else` sobre `config.behavior` dentro do laço de itens, com cada ramo
+sobrescrevendo `vx`/`vy` por conta própria. "Patrulha E atirador" era impossível: para ter três
+comportamentos a criança criava três TIPOS (3× gravidade, 3× atualizar, 3× desenhar, 3× derrotado).
+
+- ⭐ **Domínio próprio**: os inimigos saíram do `runtime/arcadeKitsSpace.ts` (l.210-536, onde
+  moravam por acidente histórico) para **`runtime/enemies.ts`**, com `_registerRuntimeDomain('enemies')`
+  e o reset de `_enemyTypeCreates` junto (saiu do `'arcade-kits'` no `arcadeKitsGorillas.ts`).
+- ⭐ **Tabela de EIXOS no lugar do if/else**: `ENEMY_BEHAVIORS` mapeia nome → `{x, y, flying, act,
+  immortal, revive, boss, move}`. Por chamada de `updateEnemyType` (não por item) resolve-se
+  `ownerX`/`ownerY`/`flying`/`acts`: **por eixo vale o ÚLTIMO da lista que o dirige** (é o que faz
+  o "Somar" ter sempre efeito visível) e **as ações rodam todas**. Sem dono do X ⇒ `vx = 0`; sem
+  dono do Y ⇒ voa? `vy = 0` : integra vy + `_resolveGravityGround` (o de sempre). Quem dirige os
+  DOIS eixos recebe `(ownX, ownY)` e escreve só o que venceu — é isso que faz perseguidor+saltador
+  perseguir no chão pulando.
+- ⚠️ **A compat é quadro-a-quadro, não "parecida"**: os 6 ramos foram portados VERBATIM para
+  funções, e a Etapa 1 rodou com a tabela contendo só os 6 antigos — `enemies.test.ts` (que assere
+  posições e cadências EXATAS) e os playthroughs passaram **sem uma edição**. Faça o mesmo se
+  mexer aqui: transcreva primeiro, só depois acrescente.
+- `config.behaviors: string[]` é a fonte da verdade; **`config.behavior` continua sendo o valor de
+  NASCENÇA e nunca é mutado** (o teste o assere no create). Nome desconhecido no ÍNDICE 0 da lista
+  resolve como `patrulha` — era o `else` da cadeia antiga, e sem esse ramo o modo Código regrediria
+  em silêncio para "parado".
+- **`sz_g2d_enemy_add_behavior`** ("O tipo de inimigo ⟨X⟩ também é ⟨Y⟩",
+  `placement: 'command'` de propósito: serve a ONDAS). Dedup **move para o fim** (somar de novo o
+  que já está passa a mandar). Nome fora do enum é recusado na entrada com aviso 1×/tipo.
+- **`sz_g2d_stomp_enemy`** ("Derrotar os inimigos do tipo ⟨X⟩ quando o sprite ⟨Y⟩ pular em cima,
+  quique ⟨8⟩") — o pisar no Goomba, que só existia na gk (`stompKill`). Exige `isColliding` E estar
+  caindo nele (invertido sob gravidade negativa via `_gravityPullsUp`). Marca `e.hp = 0` **e
+  `e.dmg = 0`**: a morte segue sendo do `updateEnemyType` (partículas + "quando for derrotado" +
+  aborto de geração num lugar só), e o dano zerado faz o `hurt_by_enemy` do MESMO quadro virar
+  no-op de verdade (`damageSprite` sai cedo com `damage <= 0`) — sem isso o pulo certo virava castigo.
+- **12 comportamentos novos** (6 → 18), todos determinísticos, **zero `Math.random` no caminho da
+  posição**: parado, fugitivo, investida · rondador, mergulhador, teleporte, zigue-zague ·
+  atirador-leque, bombardeiro, espinho (nunca morre), ressuscitador (fila `type._revives`, capada
+  em 100), chefão (vida ×5 uma vez por inimigo via `s._boss`, `env.speed` à metade).
+  `chefao` e `atirador-leque` compartilham a MESMA função de ação, e a montagem de `acts`
+  **deduplica por função** — juntos disparam uma rajada só.
+- Contadores por ação PRÓPRIOS (`_scd` atirador, `_lcd` leque, `_bcd` bomba, `_tcd` teleporte):
+  somar dois atiradores não divide a cadência de nenhum.
+- Params: **uma opção nova** no dropdown do "Ajustar no tipo de inimigo" (`voltar` →
+  `reviveRate`, default 180). Acrescentar OPÇÃO a dropdown existente é o acréscimo seguro
+  (projeto salvo mantém o valor e a saída) — mesmo precedente do `LAYER` da gk que ganhou `'frente'`.
+- ⚠️ **Campo por-eixo, não por-comportamento**: `_dir` é a direção do eixo X e pertence a quem
+  GANHOU o X; `_dirY` é a do Y. Como só o vencedor de cada eixo roda, dois donos do mesmo eixo
+  nunca se atrapalham. O `voador-vertical` chegou a usar `_dir` (herança do código antigo, onde só
+  um comportamento existia por vez) e isso fazia a patrulha VIRAR na horizontal toda vez que ele
+  batia no limite de cima. Comportamento novo que guarde direção: escolha o campo pelo EIXO.
+- Contadores travados que este lote mexeu: `docDrift` 219 → **221**, audit md (221 definições /
+  219 visíveis / **220** métodos / **125** arquivos / **22** módulos), catraca de parâmetros
+  751 → **829**, e a versão aqui. Testes: `__tests__/enemies.test.ts` foi de 26 para **83** casos.
+
+### Full review dos inimigos (07/08, mesmo lote) — 8 correções
+
+Review adversarial em 3 lentes logo depois de escrever a feature. Achados que viraram correção,
+todos com teste de regressão em `enemies.test.ts` (`describe('combinações que já quebraram')`):
+
+1. ⭐ **Espinho pisado virava enfeite para sempre.** `stompEnemyType` zera `e.dmg` contando que o
+   inimigo morra no mesmo quadro; o espinho não morre, e nada devolvia o dano. O combo mais natural
+   do mundo (plataforma + espinho + pisar) deixava o espinho inofensivo o jogo inteiro. A vida
+   restaurada também voltava para `c.hp` em vez do teto do PRÓPRIO inimigo (chefão-espinho ficava
+   3/15 na barra para sempre).
+2. ⭐ **Perseguidor que só ganhou o X andava a passo de formiga.** O vetor era normalizado em 2D e
+   só depois filtrado por eixo: com o alvo 250px acima e 10px ao lado, `vx` saía 0,12 px/quadro.
+   Justo no combo-vitrine (perseguidor + saltador). Agora, com posse de UM eixo, a velocidade vale
+   naquele eixo.
+3. **Somar chefão CURAVA o inimigo** (o comentário jurava o contrário): `setHealth` grava hp E
+   hpMax. Virou buff de teto que preserva o dano já levado.
+4. **`parado` era um no-op ao ser somado**: não dirigia eixo nenhum, então nunca vencia. O rótulo
+   promete "fica no lugar" e o inimigo continuava perseguindo. Agora dirige os dois eixos.
+5. **Fugitivo/investida grudavam na CÂMERA**: o clamp usava o retângulo visível, que anda com a
+   câmera, então um inimigo parado lá atrás era arrastado pelo mundo colado na borda. Agora só
+   segura quem já estava dentro antes de andar (isso também curou o inimigo mais largo que a tela,
+   que os dois ifs independentes empurravam para fora).
+6. **Mergulhador travava em mergulho eterno** quando outro comportamento tomava o eixo Y: a saída
+   do estado olha o `y`, que ele não movia. Agora só mergulha se for dono do Y.
+7. **Nome herdado de `Object.prototype`** (`'toString'`, `'constructor'`) passava por comportamento
+   válido, e no modo Código o inimigo ficava inerte em vez de cair no padrão. `hasOwnProperty`.
+8. **Drift do dropdown**: a auditoria T6 só cobre "opção que não existe no enum". A direção
+   perigosa (valor novo no enum esquecido no dropdown, que faz o `FieldDropdown` coagir para a 1ª
+   opção e mudar o inimigo da criança sozinho) ganhou teste próprio no `docDrift`.
+
+### Segundo full review, o mesmo dia — 9 correções + a fila de renascer
+
+O primeiro review produziu MUITO código (as 8 correções, os 3 avisos, os renomes) que ninguém
+tinha revisado. A segunda rodada mirou só nisso, e valeu:
+
+1. ⭐ **O aviso de "ninguém os desenha" acusava quem estava certo.** O tipo de inimigo É um grupo e
+   o seletor de **"Desenhar o grupo ordenado pela base"** o lista: num jogo visto de cima esse é o
+   bloco CERTO (é o que faz o herói passar atrás do monstro). O `_drawn` só era marcado em
+   `drawEnemyType`, então a criança via o aviso com a tela cheia de inimigos. Agora quem marca é o
+   `drawGroup`/`drawGroupByY`, no ponto em que o desenho de fato acontece.
+2. ⭐ **O buff do chefão RESSUSCITAVA um inimigo morto.** Sem guarda de `hp > 0`, um inimigo morto
+   no quadro anterior (padrão de onda: solta depois do update) tinha o primeiro update dele já com
+   vida 0, e o buff o trazia de volta com 12/15 antes da poda.
+3. **`parado` derrubava quem voa**: chamava `_resolveGravityGround` sem consultar `flying`, então
+   somar "parado" a um fantasma o fazia cair até o chão. O `env` passou a carregar `flying`.
+4. **O clamp nunca segurava inimigo nascido EM CIMA da borda** (padrão de onda). A guarda "estava
+   todo dentro" era permanente daquele lado; virou "estava ENCOSTANDO na tela", o que também curou
+   o inimigo mais largo que a tela.
+5. **O mergulhador escrevia `_dir` sem ser dono do X** — a mesma classe do bug do voador-vertical
+   que a rodada 1 corrigiu, num arquivo que a rodada 1 mexeu. Somado a uma patrulha, virava a
+   marcha dela sozinho no meio do caminho.
+6. **Mergulho em curso que PERDE o eixo Y ficava preso**: a saída do estado olha o `y`, que ele não
+   move mais. A guarda da rodada 1 cobria só a ENTRADA. Agora aborta.
+7. **A janela dos avisos contradizia o próprio comentário.** Eram disparos num quadro FIXO (360);
+   o comentário prometia tolerar a "fase 2". Viraram contadores de quadros SEGUIDOS que zeram
+   sozinhos quando a criança liga a peça que faltava (desenho e alvo em 360; ajuste órfão em 1800).
+8. **O aviso de alvo afirmava algo falso** ("então ele fica parado"): com patrulha + atirador o
+   inimigo anda normalmente, só não atira. Se o Console mente uma vez, ela para de ler.
+9. **O tooltip do "Ajustar" incluía `teleporte` na velocidade do tiro** e o mapa (corretamente) não:
+   o aviso novo passaria a contradizer o tooltip na cara dela.
+
+⭐ **A fila de renascer ganhou dono.** `type._revives` não era esvaziada por nada, e um tipo reusado
+entre fases fazia os mortos da fase 1 nascerem nas coordenadas velhas. O gancho certo já existia e
+é o gesto que a criança usa: **"Esvaziar o grupo"** (tooltip: "ex.: ao reiniciar a fase"), e o tipo
+aparece naquele seletor porque É um grupo. Agora `clearGroup` zera a fila junto. No mesmo lugar, o
+slot deixou de sumir em silêncio quando o grupo está no teto (`spawnEnemy` devolve null): ele fica
+na fila e tenta no quadro seguinte.
+
+⚠️ **A lição de teste que ficou**: nenhum teste de comportamento soltava mais de UM inimigo, então
+todo estado por-inimigo (`_scd`, `_lcd`, `_ang`, `_tside`…) era indistinguível de estado por-TIPO —
+trocar `s._ang` por `c._ang` passaria na suíte inteira. Entrou um `describe('dois inimigos do MESMO
+tipo')`. Mesma classe: os comportamentos simétricos só eram exercidos para um lado (fugir para a
+esquerda, virar na borda direita), então metade de cada `if` nunca rodava.
+
+### Lote de pedagogia do mesmo review (07/08)
+
+A revisão pela lente da criança pegou coisas que os testes nunca pegariam. Vale como molde:
+
+- **Rótulo que descreve o estado ISOLADO mente no mundo combinável.** "atirador (fica no chão e
+  atira no alvo)" era verdade sozinho (o fallback do eixo Y resolve o chão) e mentira somado a um
+  voador. Regra nova: o rótulo diz só o que aquele comportamento ACRESCENTA.
+- **A ordem da gaveta ENSINA a receita.** Os 12 blocos foram reordenados para os quatro primeiros
+  serem criar, soltar, atualizar, desenhar: quem arrasta os primeiros que vê tem que ver inimigo
+  na tela. O "também é" é tempero e não pode furar essa fila.
+- **O dropdown de 18 é agrupado por família** (anda no chão, voa, o que faz) e travado contra o
+  enum no `docDrift`. Blockly não tem separador em `FieldDropdown`, então a ordem e o parêntese
+  são a única marcação possível; o maior dropdown da extensão (`sz_g2d_play_fx`, 27 opções) já
+  resolvia assim.
+- **Parêntese de dropdown diz para que SERVE, não de quem é.** O menu do "Ajustar" nomeava um
+  comportamento por linha ("alcance do voo (voador)") enquanto o alcance serve a oito deles.
+- **Nomes**: `investida`→`arrancada`, `fugitivo`→`medroso`, `ressuscitador`→`renascer` (valor E
+  rótulo, para o modo Código não divergir do bloco). Face do combinar virou **"O tipo de inimigo
+  ⟨X⟩ também é ⟨Y⟩"** (encaixa na frase do "Criar tipo … que é …" logo acima); a do pisar trocou
+  "quique" por "(dando um pulinho de ⟨8⟩)".
+- **3 avisos pedagógicos novos** em `_warnEnemySetupOnce`, no molde dos dois que já existiam
+  (citam o bloco pela FACE, dizem onde pôr, disparam uma vez, com janela de graça de 360 quadros):
+  atualizou e nunca desenhou; ajustou um valor que nenhum comportamento do tipo usa; comportamento
+  que precisa de alvo com o campo "alvo:" vazio. ⚠️ A checagem do ajuste roda no UPDATE, não no
+  `setEnemyTypeParam`: a ordem normal de montar é ajustar a cadência ANTES de juntar o atirador,
+  então conferir na hora daria falso-positivo.
+- ⚠️ **O que o `blockContracts.test.ts` NÃO cobre**: os `console.warn` do runtime são copy de
+  produto (aparecem no Console da IDE, em português, escritos para criança) e nada vigia travessão
+  neles.
+
+## Jogo 2D — jogo de NAVE: inteligência, raio e chefão (v0.61.0, 07/08)
+
+Ela quis montar um shoot-em-up com inimigos de cinco níveis de inteligência, um raio de 3s e um
+chefão que renasce. O levantamento mostrou que **metade já dava** com os 18 comportamentos
+combináveis (burro = patrulha+bombardeiro; avançado = perseguidor+atirador; rei que renasce = 2
+tipos + o evento de derrota; bônus = qualquer bloco no corpo do evento; 50% de anular dano = o
+"se ⟨tem chance de 50%?⟩" em volta do "Mudar a vida"). O lote fechou só o que faltava.
+
+- ⭐ **`sz_g2d_define_enemy_smart`** — "Criar tipo de inimigo ⟨alien⟩ **com inteligência** ⟨burra⟩ …",
+  irmão do define de sempre (regra de 02/08: variação = bloco NOVO ao lado). Cada nível semeia um
+  pacote em `config.behaviors` via `ENEMY_SMART_COMBOS`; o "também é" soma por cima, que é como um
+  inimigo burro ganha um raio. burra=patrulha+bombardeiro · basica=patrulha+atirador-alinhado ·
+  avancada=perseguidor+atirador · ultra=perseguidor+atirador-preditivo ·
+  rei=perseguidor+atirador-preditivo+raio+chefao.
+- **4 comportamentos novos (18 → 22)**: `perseguidor-lado` (segue só na horizontal, o andar de
+  shmup, que antes só existia por acidente com `arrancada`+alcance 9999), `atirador-alinhado` (só
+  atira quando o alvo está na frente; a recarga corre SEMPRE e o alinhamento é só o GATILHO),
+  `atirador-preditivo` (lead shot: `tempo = distância / tiro`, mira em `centro + velocidade ×
+  tempo`; é o que separa ultra de avançada) e `raio`.
+- ⭐ **O raio é o primeiro ataque da extensão que NÃO é projétil.** Três fases por inimigo
+  (`_beamPhase`): recarrega (`cadencia`) → **avisa 60 quadros** com um risco fino piscando → liga
+  (`duracao`, padrão 180). O aviso é o que torna o ataque justo, e é o molde do `swing window` da
+  gk (recuo + janela ativa). Geometria: coluna do pé do inimigo até a borda de baixo visível, 60%
+  da largura dele, reto para baixo (não precisa de alvo, então serve ao inimigo burro).
+  ⚠️ O dano **não** é automático: `sz_g2d_on_enemy_beam_hit` ("Para cada raio do tipo … que acertar
+  o sprite …") entrega o DONO do feixe e, ao contrário do `overlapEnemyShots`, **não remove nada**.
+  Quem segura o ritmo do dano é a invencibilidade de 45 quadros do "Machucar com o dano de contato".
+- **`sz_g2d_on_enemy_hurt`** — "Quando um inimigo do tipo ⟨rei⟩ levar dano". Dispara ao PERDER vida
+  e continuar vivo; quem chega a zero vai pelo evento de derrota (disparar os dois no mesmo golpe
+  faria o chefão trocar de fase morrendo). Máquina de handlers clonada da de derrota.
+- **Campo `NAME` opcional no "Soltar um inimigo do tipo"** — vazio, a chave sai da IR e a saída é
+  byte-idêntica (3º uso do idioma, depois do spawn-em-grupo e do `SHAPE`). Preenchido, declara o
+  sprite: é o que deixa a barra de vida do chefão apontar para ELE sem laço.
+- **2 ajustes novos**: `vida` (dos próximos que nascerem) e `duracao` (o raio). ⚠️ `vida` entra em
+  `ENEMY_PARAM_OWNERS` com valor **null** (serve a todos), senão o drift do mapa reprova e o aviso
+  de ajuste órfão acusaria quem está certo.
+- Contadores: blocos 221 → **224**, API 220 → **223**, manifest **0.61.0**, catraca 829 → **868**.
+  Os drifts criados no review anterior (dropdown × enum, tabela do runtime × enum) pegaram sozinhos
+  dois esquecimentos meus durante este lote — valeu ter escrito.
+
+### Terceiro full review (07/08, logo depois) — 11 correções, 3 delas graves
+
+O lote da nave foi revisado em duas lentes (runtime novo + integridade de cadeia) e o resultado
+mudou a régua do que eu considero "cadeia completa" nesta extensão:
+
+1. ⭐⭐ **O bloco carro-chefe nascia ÓRFÃO.** `sz_g2d_define_enemy_smart` ficou fora de
+   `ENEMYTYPE_DECL_BLOCKS` **e** de `GROUP_DECL_BLOCKS` (`FieldNamePicker.ts`). A criança criava o
+   tipo "com inteligência" e ele não aparecia em NENHUM dos 8 seletores de `enemytype`, nem nos
+   blocos de grupo. O caminho desenhado do produto estava morto e nenhum teste pegava.
+2. ⭐⭐ **O corpo do "quando levar dano" recusava o próprio nome que ele declara.** Faltavam os dois
+   eventos novos em `g2dLocalNames` (`ir/schema.ts`): usar ⟨chefe⟩ lá dentro, que é literalmente o
+   que o tooltip vende, dava "O nome 'chefe' ainda não foi criado neste jogo".
+3. ⭐⭐ **O atirador esperto mirava PARA TRÁS com os valores de fábrica.** Uma passada de correção
+   de lead inverte o sinal quando `|velocidade do alvo| > velocidade do tiro`, e é o caso comum: o
+   bloco de setas tem sombra 6 e o `shotSpeed` padrão é 4. Agora só adianta a mira quando o tiro é
+   mais rápido; senão mira direto (interceptar é impossível mesmo).
+4. `programmingReferences.ts` não conhecia `defineEnemySmart` nem o `spawnEnemy` nomeado, então a
+   barra de vida do chefão (o motivo do campo "chamado") reprovava no zod.
+5. **O raio ficava invisível pelo caminho de GRUPO** — que o review anterior legitimou. Agora
+   `drawGroup`/`drawGroupByY` desenham o feixe via `_drawEnemyBeamsIfAny` (reconhece o tipo pelo
+   formato: só ele tem `config` e `bullets`).
+6. **O espinho não disparava o "levou dano" no golpe que o mataria**: a cura rodava antes da
+   comparação. Passou a guardar `hpDoQuadro` ANTES da cura.
+7. **`clearGroup` deixava os tiros do tipo voando**: a nave renascia e levava dano sem inimigo na
+   tela. Esvaziar leva `type.bullets` junto.
+8. **`type._drawn` nunca voltava a `false`**, então o aviso da tela vazia não retomava a contagem
+   quando o "Desenhar" saía do ar na fase 2.
+9. ⚠️ **A coluna do atirador alinhado era o `alcance`** — que já significava voo, raio do círculo,
+   gatilho do mergulho e distância de reação. Com `voador + atirador-alinhado` (o arquétipo do
+   shmup) o mesmo número controlava o voo E a coluna, e não dava para ajustar os dois. Virou a
+   largura dos DOIS sprites, que é o sentido literal de "passa na frente dele".
+10. Guarda espelhada no parser (`createEnemyType({smart:…})` gerava IR que o zod reprova), aviso de
+    inteligência desconhecida com `warnOnce` e sem `"undefined"` cru, piso no `tiro` (zero entupia
+    o grupo com tiros parados), `overlapEnemyBeams` sem cópia por quadro, `SPRITE_LOOP_BINDERS` e
+    `ir/helpers.ts` com os dois corpos novos.
+11. Aviso pedagógico novo (o quarto da família): **tem raio e ninguém confere se acertou**. O raio
+    é o único ataque cujo dano exige um bloco separado, e sem isso a criança conclui que ele não
+    funciona.
+
+⚠️ **A lição que fica**: "cadeia de 9 pontos" está DEFASADA para esta extensão. Bloco que declara
+nome tem hoje **cinco** mapas fora do schema (`*_DECL_BLOCKS` do picker, `G2D_DECLARATION_FIELDS`,
+`VARIABLE_DECLARATION_FIELDS` do `programmingReferences`, e para bloco com corpo mais `g2dLocalNames`
+e `SPRITE_LOOP_BINDERS`). O 4º review escreveu os drifts que faltavam (abaixo).
+
+### Quarto full review (07/08) — o desenho, a régua da cadeia e o pixel
+
+A rodada mirou o que a TERCEIRA acabara de escrever, que é onde o defeito mora quando ninguém
+revisou a correção. Rendeu de novo, e a novidade foi um achado que **só o navegador dava**.
+
+1. ⭐ **O feixe era pintado DUAS vezes.** A rodada 3 pôs o `_drawEnemyBeamsIfAny` no `drawGroup`
+   (para o raio aparecer pelo caminho de grupo) e deixou o desenho antigo dentro do
+   `drawEnemyType` — que chama o `drawGroup`. O halo de 0.35 composto duas vezes dá 0.58: quase
+   sólido, comendo a leitura do que está atrás. E, desenhado ANTES dos sprites, o feixe passava
+   por baixo dos inimigos de baixo, contrariando a própria promessa. Agora o desenho vive num
+   lugar só e sai DEPOIS das figuras.
+2. ⭐ **O aviso do raio nascia invisível.** O pisca era `floor(_beamT / 8) % 2`, e `_beamT` DESCE
+   de 60: os 5 primeiros quadros caíam no lado apagado. O aviso existe para ela sair da frente, e
+   o começo dele é justamente o que importa. A conta virou o tempo DECORRIDO. ⚠️ Nenhum teste de
+   unidade pegaria: o ctx falso aceita qualquer sequência de chamadas. Foi lido no pixel, em
+   Chrome real, e a prova ficou como teste (o padrão do risco é `11111111 00000000 11111111`).
+3. **O buff do chefão ENGOLIA o golpe anterior ao primeiro update** (onda que solta depois de
+   atualizar): o `_hpAntes` ficava no valor pré-buff, então o "levou dano" não via a perda. Sobe
+   junto com o teto.
+4. **A ultra era a avançada com outro nome.** A mira adiantada só existe quando o tiro é mais
+   rápido que o alvo (guarda da rodada 3), e a nave anda a 6 contra um tiro de 4 — ou seja, o
+   nível que o menu vende como "mira onde você VAI estar" mirava direto. Os presets viraram
+   `{ fazer, tiro }` e ultra/rei nascem com `tiro: 8`.
+5. **`overlapEnemyBeams` com a lista mudando por baixo** (a criança remove o dono dentro do
+   bloco): varredura por SNAPSHOT + `Set` de vivos, o mesmo idioma dos outros varredores.
+6. **Sprite adotado pelo "Pôr no grupo" ia para o NaN**: não passou pelo spawn, então não tinha
+   `_homeX/_homeY/_dir`, e o rondador fazia a conta com `undefined`. Inicialização preguiçosa no
+   laço de itens.
+7. **`tiro` zero** agora avisa em vez de aceitar em silêncio (o tiro nasceria parado em cima dele).
+8. **Pedagogia**: 9 rótulos reescritos (cada nível de inteligência agora NOMEIA as peças que
+   traz), a gaveta reordenada com o criador clássico primeiro, e a seção do manual (80 linhas
+   corridas, com "os 18 comportamentos" quando já eram 22) virou cinco subtítulos. Um parágrafo
+   estava colado no último item de uma lista — em markdown isso é continuação preguiçosa, e o
+   texto sumia para dentro do bullet.
+
+⭐ **Os drifts que a lição da rodada 3 pedia agora existem** (`docDrift.test.ts`): todo tipo em
+`G2D_DECLARATION_FIELDS` está em `VARIABLE_DECLARATION_FIELDS`; todo tipo de IR com `itemName` tem
+`case` no `g2dLocalNames`; todo criador de tipo está nos `*_DECL_BLOCKS`; e a **ordem** dos cinco
+primeiros blocos da gaveta (criar, criar-atalho, soltar, atualizar, desenhar) é lei — inserir um
+bloco no meio empurra o "Desenhar" para baixo da dobra e o sintoma é tela vazia sem erro.
+
+⚠️ **A lição de QA que fica**: ctx falso prova ORDEM e CONTAGEM de chamadas; ele não prova cor.
+Composição alfa, ordem de camada e pisca-pisca só aparecem lendo `getImageData` num Chrome de
+verdade. A pane fica oculta nesta máquina (rAF congelado), então o contorno é a página estática com
+o rAF trocado por fila e `window.__passo(n)` bombeado pelo `javascript_tool` — Chrome real, canvas
+real, sem depender de print.
+
+### O atirador alinhado passava por cima e não atirava (07/08, relato de jogo)
+
+Ela montou o shmup, parou a nave embaixo e viu o inimigo de inteligência **básica** passar por cima
+três vezes sem disparar. Reproduzido e medido: **602 quadros (10 segundos) e 4 passagens** até o
+primeiro tiro.
+
+⭐ **A causa era uma inversão de papéis entre recarga e gatilho.** O `_enemyAimedShootAct` saía cedo
+quando estava fora da coluna, ANTES de decrementar `_acd` — ou seja, a recarga só corria durante os
+poucos quadros de alinhamento. Patrulhando a 2 px/quadro, a coluna (largura dos dois sprites, 56 px
+com os padrões) dura ~28 quadros por passagem, contra uma cadência de 90: eram necessárias QUATRO
+passagens para carregar um tiro. O comentário no código dizia o contrário do que o código fazia
+("continua carregado para o momento em que a nave aparecer na frente").
+
+Agora a recarga corre SEMPRE e o alinhamento é só o gatilho; o contador nasce em 0 (pronto), porque
+quem dá a folga aqui é a coluna — ele já só atira se ela estiver na frente, e um tempo de espera
+inicial em cima disso é o que fazia o inimigo parecer quebrado. Medido depois, com a nave parada em
+três lugares diferentes: dispara **na 1ª passagem** em todos, em 0,8s / 0,0s / 2,1s, e todo tiro sai
+com o alvo alinhado. Nenhuma outra ação tinha o problema (leque, bomba, teleporte e raio já
+decrementavam incondicionalmente).
+
+⚠️ **A lição de teste**: o teste que existia usava `cadencia: 3` e um alvo TELEPORTADO para dentro da
+coluna, então o inimigo nunca precisava chegar lá andando. O caso real exige o cenário INTEIRO
+(patrulha de verdade + alvo parado + a cadência de fábrica), e é assim que a regressão está escrita
+agora: conta as PASSAGENS por cima da nave até o primeiro tiro e exige que seja a primeira.
+
+### Dano por ATAQUE: por que ele mora no bloco de acerto (07/08)
+
+Ela perguntou como dar danos diferentes aos três ataques do rei (encostar, leque, raio) e como as
+armas dela ferirem inimigos com vidas diferentes. **Já dava, sem bloco novo**, e a conversa virou uma
+decisão de design que vale registrar antes que alguém "conserte" isto:
+
+⭐ **O tipo guarda UM dano; quem aplica é sempre um bloco de acerto que ela põe.** É ali, no soquete
+do `sz_g2d_damage_sprite` ("Machucar o sprite ⟨X⟩ em ⟨N⟩ e deixá-lo invencível por ⟨M⟩ quadros"), que
+cada ataque ganha o número dele. Foi cogitado mover isso para o tipo (`Ajustar ... dano do tiro` /
+`dano do raio`) e **foi descartado**: os três blocos de acerto são obrigatórios de qualquer jeito, o
+número já cabe num soquete que existe, e a versão por-tipo custaria dois blocos a mais no "Ao
+iniciar" afastando o número do lugar onde ele age. Do jeito atual o bloco se lê como uma frase
+inteira ("quando o raio acertar a nave, tire 4"), e para criança adjacência ganha de organização.
+
+Também foi cogitado **duplicar o bloco de dano na gaveta 😈 Inimigos**, e a dona recusou (nada de
+mexer em bloco). ⚠️ **Ainda bem: a suíte PROÍBE isso.** O `docDrift` tem um teste de que todo bloco
+visível está na toolbox **em UM lugar só** (`emDoisLugares` tem que vir vazio, junto com a guarda do
+balde "Mais"). O montador da toolbox até aceitaria o tipo em dois SUBCATS (o mapa tipo→cor é um
+`flatMap` para `Map`, então ele herdaria o tom da última gaveta), mas o teste fecha a porta de
+propósito: bloco em duas gavetas é bloco que a criança acha duas vezes e conta como dois. Então quem ensina são três tooltips (`hurt_by_enemy`, `on_enemy_shot_hit`,
+`on_enemy_beam_hit`) e duas receitas novas no manual.
+
+⚠️ **O aviso que mais importa é o do raio**: aquele bloco roda A CADA QUADRO enquanto o feixe está
+ligado (~180 quadros), então "Mudar a vida" ali esvazia a barra num piscar. Os quadros de
+invencibilidade é que dão o ritmo (com 45, o feixe acerta ~4 vezes por disparo).
+
+⭐ Como os três tooltips agora CITAM a face de um bloco de outro arquivo, entrou um drift no
+`docDrift.test.ts`: o trecho entre os soquetes do `message0` do `sz_g2d_damage_sprite` tem que
+aparecer nos três. Renomear aquele bloco fazia os três mentirem em silêncio.
+
+### Quinto full review (07/08) — a doc mentindo o nome do bloco
+
+Rodada sobre a correção do atirador alinhado e sobre a leva de copy do dano por ataque. Quatro
+achados, três deles em texto que eu mesma tinha escrito nas 24h anteriores:
+
+1. ⭐ **O manual chamava um bloco por um nome que não existe.** A lista de blocos dizia "**Quando um
+   tiro acertar o sprite**" para um bloco que se chama "Para cada tiro do tipo ... que acertar o
+   sprite ...". Na gaveta, os blocos que começam com "Quando" são os EVENTOS de derrota e de dano:
+   a criança procuraria e pegaria o errado. No mesmo item, "Machucar o sprite com o dano do inimigo"
+   tinha perdido o "de contato", e a frase prometia "os DOIS jeitos de o ataque alcançar você"
+   quando são três (faltava o encostão, que agora aparece com o bloco de colisão certo).
+2. ⭐ **Estava anotado aqui que dá para listar um bloco em duas gavetas. NÃO dá**: o `docDrift` tem
+   um teste de que todo bloco visível está na toolbox em UM lugar só (`emDoisLugares` vazio). O
+   montador aceitaria; a suíte não. A anotação errada foi corrigida no lugar.
+3. **Duas dicas ficaram do tamanho de um parágrafo** (645 e 530 caracteres, contra mediana de 102
+   na extensão). Dica que ninguém lê não ensina; a explicação longa foi para o manual e as duas
+   encolheram para ~460 e ~424, na faixa dos outros blocos complexos.
+4. **O script de auditoria de citações estava frouxo** e por isso o achado 1 quase passou: o
+   casamento por prefixo não exigia tamanho mínimo da FACE, então face curta casava como prefixo de
+   qualquer citação. Corrigido, os "2 suspeitos" viraram 7, dos quais 2 eram drift de verdade.
+
+⭐ **Duas redes novas, ambas matando a CLASSE:**
+- `docDrift`: cada item da lista de blocos do manual (`- **nome**`) tem que abrir com a cara real de
+  um bloco. Cobre o buraco do drift antigo, que só olhava a forma `**Nome** (em **Categoria**)`.
+- `enemies.test.ts`: **nenhuma recarga pode ficar atrás de uma condição de POSIÇÃO**. O teste lê a
+  FORMA do runtime e exige que, entre o começo da função e o contador, só exista a guarda de "não
+  tem alvo". Provado que morde: reinserindo o código antigo do atirador alinhado, ele aponta a linha
+  exata. A versão comportamental disso NÃO pegaria um comportamento novo que repetisse o erro,
+  porque o inimigo continua atirando, só que tarde demais.
+  ⚠️ Duas escolhas que fazem a rede não envelhecer (endurecidas no 6º review): os nomes das funções
+  saem da **tabela `ENEMY_BEHAVIORS`** (19 hoje), não de um padrão `_enemy*`, e o contador é
+  reconhecido pela FORMA do decremento (`s._x -= 1`), não pelo nome. Comportamento novo entra na
+  rede sozinho, batizado como for e com o contador chamado como for.
+
+⚠️ **Observação de jogo, não defeito**: o `rei` dispara os dois ataques de projétil em LOCKSTEP (o
+tiro esperto e o leque do chefão nascem com o mesmo `rate` e zeram no mesmo quadro), então saem 4
+balas juntas a cada 90 quadros (medido). Lê-se como uma salva só, não como dois ataques. Quem quiser
+separar sem feature nova soma o `atirador em leque` DEPOIS (no "quando levar dano", por exemplo): o
+contador dele nasce naquele instante e fica defasado para sempre.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 
@@ -1009,11 +1499,152 @@ Foi um full review com 4 blocos de família nova. A documentação atual do alun
   (`enemy_damage`, `shape_w/h`) e `enemy_type_param` = intermediário. Só o `spawn_bullet` fica em Muitos (é
   projétil genérico, não do Kit espaço — decisão da usuária).
 
+## Índice de exemplos server-safe (`./server-examples`, 08/2026)
+
+Subpath **`@sistemazero/studio/server-examples`** — o catálogo dos 148 exemplos oficiais em forma
+de DADO PURO, consumível no **servidor** (Node/Bun, sem DOM). Nasceu para o **Zappy do Estúdio**
+consultar "como se monta esta mecânica" e descrever o passo a passo à criança; o payload que vai
+ao modelo é **ANÔNIMO** (sem `name`/`key`) porque, por decisão de produto, **a criança não sabe
+que os exemplos existem** — o Zappy explica como conhecimento próprio, sem citar exemplo/galeria.
+
+- `src/examples/serverExamplesBuilder.ts` — monta o índice a partir dos 5 `exampleCatalog.ts` das
+  extensões + `examples/core.ts` + `examples/qaContracts.ts`. Por exemplo: `{key, extension|null,
+  name, description, difficulty?, concepts?, genre?, promise, scenario, blockTypes[], requires[]}`.
+  Os `blockTypes` saem de `buildWorkspaceStateFromIR(example.ir)` + walk recursivo — ⚠️ **esse
+  caminho NÃO importa Blockly** (verificado; é o que mantém o módulo server-safe). Chave sem
+  contrato QA = ERRO do gerador (o índice não pode divergir do que a suíte cobre).
+- `scripts/gen-server-examples.ts` (script `bun run gen:server-examples`) escreve
+  `src/examples/__gen_serverExamplesIndex.ts` (~291KB estáticos, precedente dos demais `__gen_*`).
+  `src/examples/serverExamples.ts` exporta os tipos + `SERVER_EXAMPLES_INDEX`.
+- **Drift test** `serverExamples.test.ts`: recomputa o índice e compara deep-equal + trava o
+  total em 148. Adicionou/mexeu num exemplo → rode o gerador e commite o `__gen_*`, senão a suíte
+  fecha a porta.
+
+## 🔊 Som: tocar os arquivos que a criança enviou (08/2026)
+
+Enviar som sempre funcionou por inteiro (botão "Enviar som" no `AssetsPanel`,
+`kind: 'audio'`, teto de 5 MB, prévia com `<audio>`), e o `assetsBridge` já semeava
+`window.__SZGAME_SOUNDS` (nome → dataURL). **O que faltava eram os blocos**, e só existiam nas
+extensões AVANÇADAS (gk, g3k, w3d). Relato da dona do produto: *"envio som e não acho bloco
+para receber esse som, igual a gente tem para as imagens"*.
+
+- ⭐ **A infraestrutura já estava pronta e sem gate de extensão.** `preview/bootstrap.ts` decide
+  injetar o bridge de assets olhando SÓ "existe algum asset?"; os 5 call sites passam `sounds`
+  incondicionalmente; a CSP tem `media-src data:` e `audio` é permissão baseline. Um projeto
+  Canvas puro com um mp3 importado **já** enxergava o manifesto.
+- **Seis blocos por alvo, mesmos rótulos nos três** (é o mesmo gesto; a criança não reaprende por
+  app): `Carregar o som %1 do arquivo %2` (start-only) · `Tocar o som %1` · `Parar o som %1` ·
+  `Tocar a música %1 sem parar` (resource-creator) · `Parar a música` · `Pôr o volume em %1`.
+- ⚠️ **Volume de 0 a 10, não de 0 a 1** nos alvos BÁSICOS e no núcleo: são a porta de entrada, e
+  `0.7` não é número de criança. O runtime divide por 10. O gk (avançado) fica com o seu `0..1`.
+- ⚠️ **Uma trilha por vez**: começar outra troca a que estava tocando (duas faixas sobrepostas não
+  teriam bloco que desfizesse); repetir a mesma não recomeça a faixa.
+- ⚠️ **Nomes internos divergem entre 2D e 3D de propósito.** No `game-2d`, `playSound`/`playMusic`
+  já pertenciam ao bip e à melodia sintetizada — e bloco que a criança já usa não muda de forma —,
+  então o runtime usa `loadSound`/`playClip`/`stopClip`/`playTrack`/`stopTrack`/`setSoundVolume`.
+  No `game-3d`, onde não havia conflito, são `playSound`/`playMusic`. O `stopTrack` do 2D para as
+  DUAS músicas (arquivo e sintetizada), para "Parar a música" sempre fazer o esperado.
+- ⭐ **Fila de gesto**: o navegador RECUSA `play()` antes de um clique e a recusa é SILENCIOSA
+  (promise rejeitada). Sem ela, "Tocar o som" dentro de "Ao iniciar" não acontecia e nada aparecia
+  no console. Agora o pedido espera o primeiro clique/tecla e então toca. O `game-3d` não tinha
+  destravamento algum (só `resume()` no toque) e ganhou o mesmo do 2D.
+- **NÚCLEO**: categoria de topo **🔊 Som** (magenta `#a21caf`), nível `iniciante-2d`, blocos
+  `sz_som_*` em `blockly/blocks/som.ts`. O código gerado chama **`window.__szAudio`**
+  (`preview/audioBridge.ts`), o SEGUNDO bridge do núcleo ao lado do `__szInput`: string
+  auto-contida, injetada em todo projeto pelo bootstrap e escrita como `public/sz-audio.js` no
+  export. Ele lê o manifesto de forma **preguiçosa**, então a ordem no `<head>` não importa.
+  ⚠️ O preâmbulo do gerador (molde do pré-carregador de imagens) foi REJEITADO: embrulha o
+  programa inteiro num `.then()` e exige codec de marcadores para a Ponte desfazer.
+- ⚠️ **Categoria nova do núcleo custa SEIS registros**: `theme.ts` (cor) · `core/levels.ts`
+  (`CORE_CATEGORY_LEVELS`) · `blocks/index.ts` (`CORE_BLOCKS`) · `toolbox.ts` (`pushGrouped`) ·
+  **`paletteMap.ts`** (espelho manual, server-safe) · `blockCatalog.ts` (senão some do picker do
+  admin e do Zappy). E os tipos em `CORE_BLOCKLY_BLOCK_TYPES` — faltar ali **zera TODOS** os
+  blocos do projeto no load (é tudo-ou-nada). `blockly/__tests__/somAudit.test.ts` prova o fio
+  inteiro e checa os seis pontos.
+
+## 🎬 Animação de UMA vez (v0.63.0, 08/2026)
+
+Toda animação de spritesheet do Jogo 2D era **loop infinito por construção**: o quadro é derivado do
+relógio numa linha só (`runtime/sprites.ts`, no `_drawSpriteBody`) e o `% quadros` dela era a ÚNICA
+coisa que existia — sem contador de voltas, sem flag, sem callback, sem como perguntar. Pedido da
+dona do produto: *"tenho uma estrela cadente e quero que ela anime apenas 1 vez"*.
+
+- **`sz_g2d_animate_once`** ("… uma vez só") + o VALOR **`sz_g2d_anim_ended`** ("a animação de …
+  acabou?"). Blocos NOVOS ao lado dos antigos — a regra "bloco que a criança já usa não muda de
+  forma". Molde: o par `sz_gk_play_anim_once`/`sz_gk_anim_ended` do Jogo 2D Avançado.
+- `animationEnded` é PURO (`(agora - start) * fps >= quadros`), sem estado novo; o clamp no desenho é
+  `once ? Math.min(quadros - 1, passo) : passo % quadros`.
+- ⚠️ **A guarda de idempotência vale só ENQUANTO a one-shot corre.** Com ela comparando apenas os
+  argumentos (como faz o gk), o MESMO golpe tocaria uma única vez na partida inteira — e "quando
+  apertar espaço, golpe" é o caso principal do bloco. Depois de acabar, chamar de novo REINICIA.
+  Posto solto no "a cada quadro" vira um laço; o que não pode é congelar no 1º quadro.
+- ⚠️ **`autoAnimate` cede a vez** enquanto uma one-shot corre (senão bastava o sprite andar para ela
+  ser trocada no quadro seguinte). ⭐ E, ao ceder, precisa **ZERAR `_animState`** quando ela acaba:
+  sem isso o estado velho bate com o calculado, o early-return corta a troca e o sprite fica
+  congelado no último quadro PARA SEMPRE. O g2d não tem trava de estado como a `sz_gk_set_entity_state`.
+- ⚠️ **`animationEnded` não é 100% puro por causa dessa retomada.** Ao ceder a vez, o `autoAnimate`
+  TROCA a animação no mesmo quadro em que a one-shot acabou — e aí o cálculo puro responderia NÃO. A
+  resposta passaria a depender da ORDEM em que a criança empilhou os blocos ("mudei de lugar e parou
+  de funcionar"). Por isso o `_onceEndedStamp`: carimba `_frameStamp` DEPOIS do `setAnimation`, e o
+  `animationEnded` responde SIM até o fim daquele quadro. Uma one-shot nova no mesmo quadro volta ao
+  cálculo puro e responde NÃO — o carimbo não vaza.
+- ⚠️ É uma PERGUNTA, não um evento: enquanto o sprite fica congelado a resposta é SIM a cada quadro.
+  O balão manda mudar o sprite (sumir/trocar a imagem, que zeram o `anim`); um "somar ponto" solto
+  ali somaria sem parar.
+- ⚠️ **`isSimpleValue` (`parsers/js.ts`) tem lista EXPLÍCITA**: valor de extensão que não entre nela
+  vira `rawJS` no round-trip e a criança PERDE o bloco. O `blockAudit` pega.
+- Comportamento provado em `__tests__/animateOnce.test.ts` (runtime avaliado de verdade, relógio
+  injetado). ⚠️ A ordem importa no teste do `autoAnimate`: o sprite precisa JÁ estar andando quando o
+  golpe começa, senão o `_animState` nunca fica sujo e o teste passa mesmo com o defeito.
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
+- `bun run gen:server-examples` — regera o `__gen_serverExamplesIndex.ts` (ver seção acima)
 - `bun run typecheck` / `bun run test` / `bun run check`
-- `bun run e2e` — suíte Playwright completa contra o playground (manual); o CI roda o subconjunto `examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"`
+- `bun run e2e` — suíte Playwright completa em Chromium e Firefox contra o playground (manual); o
+  CI roda o subconjunto `examples-gallery.spec.ts --project=chromium --grep "game-2d(?:-advanced)?:"`
+
+## Home "Meus Jogos" no padrão Pinta (08/2026)
+
+A `ProjectList` virou cabeçalho de SEÇÃO da comunidade, espelhando a galeria "Meus desenhos" do
+Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('projects.subtitle')`
+("Dê vida aos seus jogos...") à esquerda, ações à direita terminando na ÚNICA pílula 3D primária
+("+ Novo projeto"); **largura TOTAL** (sem `max-w-5xl`).
+
+- ⭐ **Grade por `auto-fill`, não por `grid-cols-N`** (`PROJECT_GRID_CLASS`,
+  `minmax(225px, 1fr)` + `gap-4`). Com o `xl:grid-cols-4` de antes o teto era o número de COLUNAS,
+  então o card ENGORDAVA conforme a tela crescia (~456px num monitor de 1920). Agora a largura do
+  card fica estável (~230–270px) e é a quantidade de colunas que acompanha a tela — medido:
+  1280→5 · 1366→5 · 1440→5 · 1600→6 · 1920→7 · 2560→9. `auto-fill` e NÃO `auto-fit`: com `auto-fit`
+  as faixas vazias colapsam e dois projetos numa tela larga viram dois cards de faixa inteira.
+  ⚠️ O piso 225px é o MESMO do `.pensa-project-grid` de propósito — os cards do Estúdio e do Pensa
+  saem do mesmo tamanho sem número mágico para sincronizar.
+- **Card em `h-72`** (era `h-48`): a capa é `flex-1`, então a altura do card é o que sobra para
+  ela. Com 192px a foto virava uma tira de ~60px, achatada demais para reconhecer o jogo; com
+  288px ela fica em ~124px, ou seja ~1.5:1 — perto do palco 5:3 do `/jogar`. O rodapé é
+  **EMPILHADO** (data numa linha só + "Abrir" de largura inteira): medido, "Atualizado em
+  06/08/2026, 20:13" ocupa 183px e o botão mais 79px, então lado a lado o card precisaria de 298px
+  — e 298px derruba a grade para 4 colunas num monitor de 1366. ⚠️ O skeleton de carregamento tem
+  a MESMA altura (senão volta o layout shift).
+
+- **Classes `sz-home-*` em `studio.css`** (sob `[data-sz-theme]`, vars `--sz-home-gradient`/
+  `--sz-home-cta` com fallback kids + override no claro): `.sz-home-btn3d` (pílula gradiente com
+  sombra dura, espelho do `.pin-btn-3d`), `.sz-home-btn-ghost` (⚠️ SECUNDÁRIO mas ainda BOTÃO:
+  borda 2px + sombra `0 2px 0` + fundo de painel. Com `border: 0` + fundo transparente, "Importar"
+  e "Ver os jogos prontos" liam como texto solto na página e só o hover revelava que eram
+  clicáveis), `.sz-home-panel` (borda 2px, raio
+  1rem, sombra `0 3px 0` — espelho do `pin-panel`), `.sz-home-pop` (hover com guarda
+  reduced-motion). ⚠️ Nomeadas `sz-home-*` porque o host kids tem GLOBAIS `.sz-display`/
+  `.sz-btn-gradient` — não colidir. Estilo load-bearing vive nas classes CSS (o `cn()` do studio é
+  join simples, sem tailwind-merge), aplicadas via `className` nos `Button` — **`ui-internal/
+  Button.tsx` fica intocado** (vazaria pro editor inteiro).
+- `ProjectCard` usa `sz-home-panel sz-home-pop`; kebab/menu/inputs na receita 44px + borda 2 +
+  canto xl. ⚠️ As constantes `MENU_WIDTH`/`MENU_HEIGHT` (posicionamento do menu portalado) andam
+  em LOCKSTEP com o restyle do menu.
+- **Nomes acessíveis dos e2e INTOCÁVEIS** (lista na seção de regras): `+ Novo projeto`, `Importar`,
+  `Ordenar projetos`, `Buscar projeto…`, `Abrir`, `Mais ações`, etc. — `ProjectList.test.tsx`
+  trava o copy do cabeçalho E esses nomes.
 
 ## Vitrine de kits + micro-celebração (07/2026)
 

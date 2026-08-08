@@ -21,18 +21,23 @@
  * aqui; os componentes herdam a fonte do app — Baloo no kids).
  */
 @theme {
-  --color-pin-bg: oklch(0.975 0.012 85); /* creme MakeCode (#fef9ef) */
-  --color-pin-surface: oklch(0.995 0.006 85); /* card quase-branco quente */
-  --color-pin-border: oklch(0.89 0.018 80);
-  --color-pin-text: oklch(0.145 0.012 262);
-  --color-pin-muted: oklch(0.5 0.012 255);
-  /* Primitivo --sz-kids-* vem do host kids (@sistemazero/ui/theme-kids.css);
-     fallback literal mantém o playground standalone. */
+  /* SUPERFÍCIES: o Pinta é uma SEÇÃO da comunidade kids, não um app à parte —
+     fundo, painel, borda e texto vêm dos primitivos do host (o fundo é o mesmo
+     azul-céu da página, então o app "assenta" nela sem emenda). O fallback
+     literal é o creme MakeCode de antes, que mantém o playground standalone
+     e qualquer host sem os primitivos funcionando igual. */
+  --color-pin-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85)); /* = --background do kids */
+  --color-pin-surface: var(--sz-kids-branco, oklch(0.995 0.006 85)); /* = --card */
+  --color-pin-border: var(--sz-kids-linha, oklch(0.89 0.018 80)); /* = --border */
+  --color-pin-text: var(--sz-kids-tinta, oklch(0.145 0.012 262)); /* = --foreground */
+  --color-pin-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255)); /* = --muted-foreground */
+  /* Texto secundário sobre superfície (avisos discretos). */
+  --color-pin-text-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
   --color-pin-accent: var(
     --sz-kids-azul-texto,
     oklch(0.52 0.15 252)
-  ); /* azul escuro da marca (AA sobre creme) */
-  --color-pin-accent-fg: oklch(0.995 0.006 85); /* texto sobre o accent */
+  ); /* azul escuro da marca (AA sobre claro) */
+  --color-pin-accent-fg: var(--sz-kids-branco, oklch(0.995 0.006 85)); /* texto sobre o accent */
   --color-pin-ok: oklch(0.55 0.14 155);
   --color-pin-warn: oklch(0.6 0.14 65);
   --color-pin-danger: oklch(0.55 0.19 25);
@@ -54,13 +59,15 @@
 
 /* Tema escuro — override por atributo data-pinta-theme="dark" no root. */
 [data-pinta-theme="dark"] {
-  --color-pin-bg: oklch(0.17 0.014 262); /* #0d1117 */
-  --color-pin-surface: oklch(0.215 0.015 262); /* painel um tom acima do bg */
-  --color-pin-border: oklch(0.32 0.02 262);
-  --color-pin-text: oklch(0.965 0.005 250);
-  --color-pin-muted: oklch(0.72 0.015 250);
+  /* A NOITE do tema kids: navy da comunidade (era #0d1117, um cinza à parte). */
+  --color-pin-bg: var(--sz-kids-navy, oklch(0.17 0.014 262));
+  --color-pin-surface: var(--sz-kids-navy-superficie, oklch(0.215 0.015 262));
+  --color-pin-border: var(--sz-kids-navy-linha, oklch(0.32 0.02 262));
+  --color-pin-text: var(--sz-kids-navy-tinta, oklch(0.965 0.005 250));
+  --color-pin-muted: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
+  --color-pin-text-soft: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
   --color-pin-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro da marca */
-  --color-pin-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o azul claro */
+  --color-pin-accent-fg: var(--sz-kids-navy, oklch(0.17 0.014 262)); /* texto escuro sobre o azul */
   --color-pin-ok: oklch(0.8 0.16 155);
   --color-pin-warn: oklch(0.83 0.14 85);
   --color-pin-danger: oklch(0.72 0.17 25);
@@ -95,6 +102,15 @@
   );
   /* Base sólida das sombras 3D do CTA (espelho do --sz-cta do kids). */
   --pin-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  /* Barra de título dos painéis — espelho do --kids-cyan-tint do host.
+     ⚠️ Vive AQUI, e não no @theme: o Tailwind v4 PODA do @theme os tokens que
+     nenhuma utilitária usa, e este é consumido só por CSS (.pin-panel-head).
+     ⚠️ Re-declarado no bloco escuro DE PROPÓSITO: um custom property que
+     referencia outro é substituído no elemento onde é DECLARADO — herdado do
+     tema claro, o tom ficaria preso nas cores do claro. */
+  /* ⚠️ `in oklab`, NUNCA `in oklch`: oklch é polar e interpola o MATIZ — misturar
+     o azul (252°) com o branco (`oklch(1 0 0)`, matiz 0) dá ROSA. Pego no QA. */
+  --pin-panel-head: color-mix(in oklab, var(--color-pin-accent) 10%, var(--color-pin-surface));
 }
 [data-pinta-theme="dark"] {
   --pin-gradient: var(
@@ -102,6 +118,7 @@
     linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
   );
   --pin-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --pin-panel-head: color-mix(in oklab, var(--color-pin-accent) 16%, var(--color-pin-surface));
 }
 
 /* Títulos no tom do kids: Baloo 2 vem do body do host; fallback arredondado. */
@@ -109,6 +126,21 @@
   font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+/*
+ * Faixa de título dos painéis do editor (ver components/ui/Panel.tsx): fundo
+ * tonal no azul da marca + divisória, separando cabeçalho de conteúdo. Antes o
+ * título era um texto solto dentro do painel e tudo lia como uma caixa só.
+ */
+[data-pinta-theme] .pin-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.75rem; /* 44px: a faixa também é alvo de toque quando é botão */
+  padding: 0.125rem 0.25rem 0.125rem 0.5rem;
+  background: var(--pin-panel-head);
+  border-bottom: 2px solid var(--pin-panel-border, var(--color-pin-border));
 }
 
 /* CTA pill com sombra dura (espelho do .sz-btn-gradient do kids). */
@@ -175,12 +207,14 @@
   );
   background-size: 16px 16px;
 }
+/* ⚠️ Escurecido junto com a mudança para o navy: a superfície do painel subiu
+   de L 0.215 p/ 0.28 e o xadrez, que era 0.28, ficava indistinguível dela. */
 [data-pinta-theme="dark"] .pin-checkerboard {
-  background-color: oklch(0.28 0 0);
+  background-color: oklch(0.21 0 0);
   background-image: conic-gradient(
-    oklch(0.36 0 0) 0 25%,
+    oklch(0.29 0 0) 0 25%,
     transparent 0 50%,
-    oklch(0.36 0 0) 0 75%,
+    oklch(0.29 0 0) 0 75%,
     transparent 0
   );
 }

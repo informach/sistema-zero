@@ -1,5 +1,5 @@
 /**
- * Tira de PEÇAS do tileset (espelho do FrameStrip): miniaturas clicáveis +
+ * Tira de PEÇAS do tileset: miniaturas clicáveis +
  * nova/duplicar/apagar + o badge 🧱 de peça SÓLIDA. Inserir/remover uma peça
  * REMAPEIA as células de todos os MAPAS que usam este tileset (invariante:
  * índice no array = índice na folha = índice nas células) — o remap dos mapas

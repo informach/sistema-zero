@@ -13,5 +13,6 @@ export type {
   PintaHostAdapter,
   PintaInitialIntent,
   PintaSendResult,
+  PintaTaskSession,
 } from './core/types'
 export { setPintaStorageNamespace } from './state/persistence'

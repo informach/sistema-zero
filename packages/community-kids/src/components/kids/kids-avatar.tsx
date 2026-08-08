@@ -40,6 +40,8 @@ export function KidsAvatar({
         <img
           src={photoUrl}
           alt=""
+          width={112}
+          height={112}
           loading="lazy"
           decoding="async"
           className="size-full object-cover"

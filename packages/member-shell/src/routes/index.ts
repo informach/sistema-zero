@@ -170,6 +170,9 @@ const CreateProfileBody = z.object({
   name: ProfileName,
   whatsapp: ProfileWhatsapp,
   birthDate: ProfileBirthDate,
+  // O pai decide o perfil público já na criação (tutorial de 1º acesso, 08/2026);
+  // o auth aceita o campo no create e a rota de lá é parent-only por construção.
+  publicProfileEnabled: z.boolean().optional(),
 })
 const UpdateProfileBody = z
   .object({
@@ -821,6 +824,24 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /**
+   * Saldo de IA da CONTA (o medidor "quantas ideias ainda tenho").
+   *
+   * SEMPRE 200: o medidor DEGRADA, não erra. Members/gateway fora → `credits: null`
+   * = "não sei", e a UI ESCONDE o medidor. Devolver 5xx aqui faria a tela da
+   * criança tratar indisponibilidade como se a ajuda tivesse acabado.
+   */
+  const aiCredits = {
+    GET: async () => {
+      const { status, body } = await members.getAiCredits()
+      if (status !== 200 || !body || typeof body.dayRemaining !== 'number') {
+        console.error('[ai-credits] leitura indisponível — medidor em "não sei"', { status })
+        return NextResponse.json({ credits: null }, { status: 200 })
+      }
+      return NextResponse.json({ credits: body }, { status: 200 })
+    },
+  }
+
   // ── Avatar 3D (configurador por categorias) ──────────────────────────────
   /** Estado do avatar (equipado + catálogo + paletas + foto + saldo) — configurador client-side. */
   const avatarGet = {
@@ -1453,6 +1474,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     courseRating,
     lessonComplete,
     gamificationMe,
+    aiCredits,
     avatarGet,
     avatarBuy,
     avatarEquip,

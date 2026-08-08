@@ -1,79 +1,115 @@
+import { randomUUID } from 'node:crypto'
 import type { CourseAudience } from '../../src/domain/course/course'
 import type {
   PensaArtifact,
   PensaArtifactType,
-  PensaChecklistItem,
   PensaConversation,
   PensaCycle,
   PensaProject,
   PensaStage,
   PensaTask,
+  PensaTaskProgress,
   PensaWorkStage,
 } from '../../src/domain/pensa/pensa'
+import { PensaTaskProgressConflictError } from '../../src/domain/pensa/pensa.errors'
 import type {
   InheritedPensaArtifact,
   NewPensaArtifact,
-  NewPensaChecklistItem,
   NewPensaCycle,
   NewPensaProject,
   NewPensaTask,
   PensaConversationUpsert,
   PensaProjectPatch,
   PensaRepository,
-  PensaTaskBoardChange,
-  PensaTaskContentPatch,
+  PensaTaskPlanPatch,
 } from '../../src/domain/ports/pensa-repository.port'
 
-/**
- * Fake in-memory do `PensaRepository` — espelha o comportamento do Drizzle:
- * ownership por (userId, audience) nos `find*WithProject`, TODA escrita toca
- * `project.updatedAt`, artefato versionado por MAX+1.
- */
+const taskFromNew = (cycleId: string, task: NewPensaTask, now: Date): PensaTask => ({
+  ...task,
+  cycleId,
+  progress: {
+    status: 'planned',
+    completedStepIds: [],
+    completedCriteriaIds: [],
+    outputRef: null,
+    startedAt: null,
+    completedAt: null,
+    updatedAt: null,
+  },
+  revision: task.revision ?? 1,
+  supersedesTaskId: task.supersedesTaskId ?? null,
+  archivedAt: null,
+  createdAt: now,
+  updatedAt: now,
+})
+
 export class InMemoryPensaRepository implements PensaRepository {
-  readonly projects: PensaProject[] = []
-  readonly cycles: PensaCycle[] = []
-  readonly conversations: PensaConversation[] = []
+  readonly projects = new Map<string, PensaProject>()
+  readonly cycles = new Map<string, PensaCycle>()
+  readonly conversations = new Map<string, PensaConversation>()
   readonly artifacts: PensaArtifact[] = []
-  readonly tasks: PensaTask[] = []
-  readonly checklist: PensaChecklistItem[] = []
-  /** BLOB do snapshot do Estúdio por projectId (fora do PensaProject, como no Drizzle). */
-  readonly studioSnapshots = new Map<string, unknown>()
+  readonly tasks = new Map<string, PensaTask>()
 
   private touch(projectId: string, now: Date): void {
-    const project = this.projects.find((p) => p.id === projectId)
-    if (project) project.updatedAt = now
+    const project = this.projects.get(projectId)
+    if (project) this.projects.set(projectId, { ...project, updatedAt: now })
   }
 
-  private owned(project: PensaProject | undefined, userId: string, audience: CourseAudience) {
-    return project && project.userId === userId && project.audience === audience
-      ? project
-      : undefined
+  private draftLatestPlanReview(cycleId: string): void {
+    const latestReview = this.artifacts
+      .filter((artifact) => artifact.cycleId === cycleId && artifact.type === 'plan_review')
+      .sort((a, b) => b.version - a.version)[0]
+    if (!latestReview) return
+    const index = this.artifacts.findIndex((artifact) => artifact.id === latestReview.id)
+    if (index >= 0) this.artifacts[index] = { ...latestReview, status: 'draft' }
   }
 
-  private projectOfCycle(cycleId: string): PensaProject | undefined {
-    const cycle = this.cycles.find((c) => c.id === cycleId)
-    return cycle ? this.projects.find((p) => p.id === cycle.projectId) : undefined
+  private reconcileTaskPlan(cycleId: string, now: Date): void {
+    const latestPlan = this.artifacts
+      .filter((artifact) => artifact.cycleId === cycleId && artifact.type === 'task_plan')
+      .sort((a, b) => b.version - a.version)[0]
+    const cycle = this.cycles.get(cycleId)
+    if (latestPlan && cycle) {
+      const taskIds = [...this.tasks.values()]
+        .filter((task) => task.cycleId === cycleId && task.archivedAt === null)
+        .sort((a, b) => a.position - b.position)
+        .map((task) => task.id)
+      this.artifacts.push({
+        id: randomUUID(),
+        cycleId,
+        stage: 'r',
+        type: 'task_plan',
+        version: latestPlan.version + 1,
+        content: { taskIds, generatedAt: now.toISOString(), catalog: 'studio-official' },
+        status: cycle.stage === 'r' ? 'draft' : 'validated',
+        createdAt: now,
+      })
+    }
+    if (cycle?.stage === 'o' || cycle?.stage === 'done') {
+      this.cycles.set(cycleId, { ...cycle, stage: 'o', oCompletedAt: null, updatedAt: now })
+      this.draftLatestPlanReview(cycleId)
+    }
   }
 
-  // ── Projetos ──────────────────────────────────────────────────────────────
   async countActiveProjects(userId: string, audience: CourseAudience): Promise<number> {
-    return this.projects.filter(
-      (p) => p.userId === userId && p.audience === audience && p.status === 'active',
+    return [...this.projects.values()].filter(
+      (project) =>
+        project.userId === userId && project.audience === audience && project.status === 'active',
     ).length
   }
 
-  async listActiveProjects(
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<Array<{ project: PensaProject; currentCycle: PensaCycle }>> {
-    return this.projects
-      .filter((p) => p.userId === userId && p.audience === audience && p.status === 'active')
+  async listActiveProjects(userId: string, audience: CourseAudience) {
+    return [...this.projects.values()]
+      .filter(
+        (project) =>
+          project.userId === userId && project.audience === audience && project.status === 'active',
+      )
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
       .flatMap((project) => {
-        const current = this.cycles
-          .filter((c) => c.projectId === project.id)
+        const currentCycle = [...this.cycles.values()]
+          .filter((cycle) => cycle.projectId === project.id)
           .sort((a, b) => b.number - a.number)[0]
-        return current ? [{ project: { ...project }, currentCycle: { ...current } }] : []
+        return currentCycle ? [{ project, currentCycle }] : []
       })
   }
 
@@ -82,20 +118,41 @@ export class InMemoryPensaRepository implements PensaRepository {
     firstCycle: NewPensaCycle,
     now: Date,
   ): Promise<void> {
-    this.projects.push({
-      ...project,
-      status: 'active',
-      studioProjectId: null,
-      buildEnv: null,
-      studioSnapshotAt: null,
+    this.projects.set(project.id, { ...project, status: 'active', createdAt: now, updatedAt: now })
+    this.cycles.set(firstCycle.id, {
+      ...firstCycle,
+      stage: 'z',
+      zCompletedAt: null,
+      eCompletedAt: null,
+      rCompletedAt: null,
+      oCompletedAt: null,
       createdAt: now,
       updatedAt: now,
     })
-    this.cycles.push(this.newCycleRow(firstCycle, now))
   }
 
-  private newCycleRow(cycle: NewPensaCycle, now: Date): PensaCycle {
-    return {
+  async findProject(projectId: string, userId: string, audience: CourseAudience) {
+    const project = this.projects.get(projectId)
+    return project?.userId === userId && project.audience === audience ? project : null
+  }
+
+  async updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void> {
+    const project = this.projects.get(projectId)
+    if (project) this.projects.set(projectId, { ...project, ...patch, updatedAt: now })
+  }
+
+  async listCycles(projectId: string): Promise<PensaCycle[]> {
+    return [...this.cycles.values()]
+      .filter((cycle) => cycle.projectId === projectId)
+      .sort((a, b) => a.number - b.number)
+  }
+
+  async createCycle(
+    cycle: NewPensaCycle,
+    now: Date,
+    inherit: InheritedPensaArtifact[] = [],
+  ): Promise<void> {
+    this.cycles.set(cycle.id, {
       ...cycle,
       stage: 'z',
       zCompletedAt: null,
@@ -104,76 +161,12 @@ export class InMemoryPensaRepository implements PensaRepository {
       oCompletedAt: null,
       createdAt: now,
       updatedAt: now,
-    }
-  }
-
-  async findProject(
-    projectId: string,
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<PensaProject | null> {
-    const project = this.owned(
-      this.projects.find((p) => p.id === projectId),
-      userId,
-      audience,
-    )
-    return project ? { ...project } : null
-  }
-
-  async updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void> {
-    const project = this.projects.find((p) => p.id === projectId)
-    if (!project) return
-    if (patch.name !== undefined) project.name = patch.name
-    if (patch.status !== undefined) project.status = patch.status
-    if (patch.studioProjectId !== undefined) project.studioProjectId = patch.studioProjectId
-    if (patch.buildEnv !== undefined) project.buildEnv = patch.buildEnv
-    project.updatedAt = now
-  }
-
-  // ── Snapshot do Estúdio ───────────────────────────────────────────────────
-  async getStudioSnapshot(
-    projectId: string,
-  ): Promise<{ snapshot: unknown; snapshotAt: Date | null }> {
-    const project = this.projects.find((p) => p.id === projectId)
-    return {
-      snapshot: this.studioSnapshots.get(projectId) ?? null,
-      snapshotAt: project?.studioSnapshotAt ?? null,
-    }
-  }
-
-  async saveStudioSnapshot(
-    projectId: string,
-    snapshot: Record<string, unknown>,
-    now: Date,
-  ): Promise<void> {
-    this.studioSnapshots.set(projectId, snapshot)
-    const project = this.projects.find((p) => p.id === projectId)
-    if (project) project.studioSnapshotAt = now
-    this.touch(projectId, now)
-  }
-
-  // ── Ciclos ────────────────────────────────────────────────────────────────
-  async listCycles(projectId: string): Promise<PensaCycle[]> {
-    return this.cycles
-      .filter((c) => c.projectId === projectId)
-      .sort((a, b) => a.number - b.number)
-      .map((c) => ({ ...c }))
-  }
-
-  async createCycle(
-    cycle: NewPensaCycle,
-    now: Date,
-    inherit: InheritedPensaArtifact[] = [],
-  ): Promise<void> {
-    this.cycles.push(this.newCycleRow(cycle, now))
-    for (const a of inherit) {
+    })
+    for (const artifact of inherit) {
       this.artifacts.push({
-        id: a.id,
+        ...artifact,
         cycleId: cycle.id,
-        stage: a.stage,
-        type: a.type,
         version: 1,
-        content: a.content,
         status: 'validated',
         createdAt: now,
       })
@@ -181,14 +174,11 @@ export class InMemoryPensaRepository implements PensaRepository {
     this.touch(cycle.projectId, now)
   }
 
-  async findCycleWithProject(
-    cycleId: string,
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<{ cycle: PensaCycle; project: PensaProject } | null> {
-    const cycle = this.cycles.find((c) => c.id === cycleId)
-    const project = this.owned(this.projectOfCycle(cycleId), userId, audience)
-    return cycle && project ? { cycle: { ...cycle }, project: { ...project } } : null
+  async findCycleWithProject(cycleId: string, userId: string, audience: CourseAudience) {
+    const cycle = this.cycles.get(cycleId)
+    if (!cycle) return null
+    const project = await this.findProject(cycle.projectId, userId, audience)
+    return project ? { cycle, project } : null
   }
 
   async advanceCycle(
@@ -197,23 +187,35 @@ export class InMemoryPensaRepository implements PensaRepository {
     from: PensaWorkStage,
     to: PensaStage,
     now: Date,
-  ): Promise<PensaCycle> {
-    const cycle = this.cycles.find((c) => c.id === cycleId)
-    if (!cycle) throw new Error('ciclo inexistente no fake')
-    cycle.stage = to
-    if (from === 'z') cycle.zCompletedAt = now
-    else if (from === 'e') cycle.eCompletedAt = now
-    else if (from === 'r') cycle.rCompletedAt = now
-    else cycle.oCompletedAt = now
-    cycle.updatedAt = now
+  ) {
+    const cycle = this.cycles.get(cycleId)
+    if (!cycle) throw new Error('cycle not found')
+    const updated = {
+      ...cycle,
+      stage: to,
+      ...(from === 'z' ? { zCompletedAt: now } : {}),
+      ...(from === 'e' ? { eCompletedAt: now } : {}),
+      ...(from === 'r' ? { rCompletedAt: now } : {}),
+      ...(from === 'o' ? { oCompletedAt: now } : {}),
+      updatedAt: now,
+    }
+    this.cycles.set(cycleId, updated)
     this.touch(projectId, now)
-    return { ...cycle }
+    return updated
   }
 
-  // ── Conversas ─────────────────────────────────────────────────────────────
-  async getConversation(cycleId: string, stage: PensaStage): Promise<PensaConversation | null> {
-    const found = this.conversations.find((c) => c.cycleId === cycleId && c.stage === stage)
-    return found ? { ...found, messages: [...found.messages], state: { ...found.state } } : null
+  async reopenCycleReview(projectId: string, cycleId: string, now: Date) {
+    const cycle = this.cycles.get(cycleId)
+    if (!cycle) throw new Error('cycle not found')
+    const updated: PensaCycle = { ...cycle, stage: 'o', oCompletedAt: null, updatedAt: now }
+    this.cycles.set(cycleId, updated)
+    this.draftLatestPlanReview(cycleId)
+    this.touch(projectId, now)
+    return updated
+  }
+
+  async getConversation(cycleId: string, stage: PensaStage) {
+    return this.conversations.get(`${cycleId}:${stage}`) ?? null
   }
 
   async upsertConversation(
@@ -221,85 +223,59 @@ export class InMemoryPensaRepository implements PensaRepository {
     data: PensaConversationUpsert,
     now: Date,
   ): Promise<void> {
-    const existing = this.conversations.find(
-      (c) => c.cycleId === data.cycleId && c.stage === data.stage,
-    )
-    if (existing) {
-      existing.messages = data.messages
-      existing.summary = data.summary
-      existing.state = data.state
-      existing.messageCount = data.messageCount
-    } else {
-      this.conversations.push({ ...data })
-    }
+    this.conversations.set(`${data.cycleId}:${data.stage}`, { ...data })
     this.touch(projectId, now)
   }
 
-  // ── Artefatos ─────────────────────────────────────────────────────────────
-  private latestByType(pool: PensaArtifact[]): PensaArtifact[] {
+  async listLatestArtifacts(cycleId: string) {
     const latest = new Map<PensaArtifactType, PensaArtifact>()
-    for (const artifact of pool) {
+    for (const artifact of this.artifacts.filter((item) => item.cycleId === cycleId)) {
       const current = latest.get(artifact.type)
       if (!current || artifact.version > current.version) latest.set(artifact.type, artifact)
     }
-    return [...latest.values()].map((a) => ({ ...a }))
+    return [...latest.values()]
   }
 
-  async listLatestArtifacts(cycleId: string): Promise<PensaArtifact[]> {
-    return this.latestByType(this.artifacts.filter((a) => a.cycleId === cycleId))
+  async listLatestArtifactsByStage(cycleId: string, stage: PensaStage) {
+    return (await this.listLatestArtifacts(cycleId)).filter((artifact) => artifact.stage === stage)
   }
 
-  async listLatestArtifactsByStage(cycleId: string, stage: PensaStage): Promise<PensaArtifact[]> {
-    return this.latestByType(
-      this.artifacts.filter((a) => a.cycleId === cycleId && a.stage === stage),
+  async findLatestArtifact(cycleId: string, type: PensaArtifactType) {
+    return (
+      (await this.listLatestArtifacts(cycleId)).find((artifact) => artifact.type === type) ?? null
     )
   }
 
-  async findLatestArtifact(
-    cycleId: string,
-    type: PensaArtifactType,
-  ): Promise<PensaArtifact | null> {
-    const [latest] = this.latestByType(
-      this.artifacts.filter((a) => a.cycleId === cycleId && a.type === type),
-    )
-    return latest ?? null
-  }
-
-  async insertArtifact(
-    projectId: string,
-    artifact: NewPensaArtifact,
-    now: Date,
-  ): Promise<PensaArtifact> {
-    const latest = await this.findLatestArtifact(artifact.cycleId, artifact.type)
-    const row: PensaArtifact = {
-      ...artifact,
-      version: (latest?.version ?? 0) + 1,
-      status: 'draft',
-      createdAt: now,
-    }
-    this.artifacts.push(row)
+  async insertArtifact(projectId: string, artifact: NewPensaArtifact, now: Date) {
+    const version =
+      this.artifacts.filter(
+        (item) => item.cycleId === artifact.cycleId && item.type === artifact.type,
+      ).length + 1
+    const created: PensaArtifact = { ...artifact, version, status: 'draft', createdAt: now }
+    this.artifacts.push(created)
     this.touch(projectId, now)
-    return { ...row }
+    return created
   }
 
-  async validateArtifact(projectId: string, artifactId: string, now: Date): Promise<PensaArtifact> {
-    const artifact = this.artifacts.find((a) => a.id === artifactId)
-    if (!artifact) throw new Error('artefato inexistente no fake')
-    artifact.status = 'validated'
+  async validateArtifact(projectId: string, artifactId: string, now: Date) {
+    const index = this.artifacts.findIndex((artifact) => artifact.id === artifactId)
+    if (index < 0) throw new Error('artifact not found')
+    const current = this.artifacts[index]
+    if (!current) throw new Error('artifact not found')
+    const updated: PensaArtifact = { ...current, status: 'validated' }
+    this.artifacts[index] = updated
     this.touch(projectId, now)
-    return { ...artifact }
+    return updated
   }
 
-  // ── Tasks ─────────────────────────────────────────────────────────────────
   async countTasks(cycleId: string): Promise<number> {
-    return this.tasks.filter((t) => t.cycleId === cycleId).length
+    return (await this.listTasks(cycleId)).length
   }
 
   async listTasks(cycleId: string): Promise<PensaTask[]> {
-    return this.tasks
-      .filter((t) => t.cycleId === cycleId)
-      .sort((a, b) => a.column.localeCompare(b.column) || a.position - b.position)
-      .map((t) => ({ ...t }))
+    return [...this.tasks.values()]
+      .filter((task) => task.cycleId === cycleId && task.archivedAt === null)
+      .sort((a, b) => a.position - b.position)
   }
 
   async replaceTasks(
@@ -308,24 +284,10 @@ export class InMemoryPensaRepository implements PensaRepository {
     tasks: NewPensaTask[],
     now: Date,
   ): Promise<void> {
-    for (let i = this.tasks.length - 1; i >= 0; i--) {
-      if (this.tasks[i]?.cycleId === cycleId) this.tasks.splice(i, 1)
-    }
-    for (const task of tasks) {
-      this.tasks.push({ ...task, cycleId, createdAt: now, updatedAt: now })
-    }
+    for (const [id, task] of this.tasks) if (task.cycleId === cycleId) this.tasks.delete(id)
+    for (const task of tasks) this.tasks.set(task.id, taskFromNew(cycleId, task, now))
+    this.reconcileTaskPlan(cycleId, now)
     this.touch(projectId, now)
-  }
-
-  async findTaskWithProject(
-    taskId: string,
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<{ task: PensaTask; project: PensaProject } | null> {
-    const task = this.tasks.find((t) => t.id === taskId)
-    if (!task) return null
-    const project = this.owned(this.projectOfCycle(task.cycleId), userId, audience)
-    return project ? { task: { ...task }, project: { ...project } } : null
   }
 
   async appendTasks(
@@ -334,96 +296,108 @@ export class InMemoryPensaRepository implements PensaRepository {
     tasks: NewPensaTask[],
     now: Date,
   ): Promise<void> {
-    for (const task of tasks) {
-      this.tasks.push({ ...task, cycleId, createdAt: now, updatedAt: now })
-    }
+    for (const task of tasks) this.tasks.set(task.id, taskFromNew(cycleId, task, now))
+    this.reconcileTaskPlan(cycleId, now)
     this.touch(projectId, now)
   }
 
-  async applyTaskChanges(
-    projectId: string,
-    changes: PensaTaskBoardChange[],
-    now: Date,
-  ): Promise<void> {
-    for (const change of changes) {
-      const task = this.tasks.find((t) => t.id === change.id)
-      if (!task) continue
-      task.column = change.column
-      task.position = change.position
-      if (change.notes !== undefined) task.notes = change.notes
-      task.updatedAt = now
-    }
-    this.touch(projectId, now)
+  async findTaskWithProject(taskId: string, userId: string, audience: CourseAudience) {
+    const task = this.tasks.get(taskId)
+    if (!task || task.archivedAt !== null) return null
+    const cycle = this.cycles.get(task.cycleId)
+    if (!cycle) return null
+    const project = await this.findProject(cycle.projectId, userId, audience)
+    return project ? { task, project, cycle } : null
   }
 
-  async updateTaskContent(
+  async updateTaskPlan(projectId: string, taskId: string, patch: PensaTaskPlanPatch, now: Date) {
+    const task = this.tasks.get(taskId)
+    if (!task) throw new Error('task not found')
+    const updated = { ...task, ...patch, updatedAt: now }
+    this.tasks.set(taskId, updated)
+    this.reconcileTaskPlan(task.cycleId, now)
+    this.touch(projectId, now)
+    return updated
+  }
+
+  async reviseTask(projectId: string, source: PensaTask, replacement: NewPensaTask, now: Date) {
+    this.tasks.set(source.id, { ...source, archivedAt: now, updatedAt: now })
+    const revised = taskFromNew(
+      source.cycleId,
+      {
+        ...replacement,
+        revision: source.revision + 1,
+        supersedesTaskId: source.id,
+      },
+      now,
+    )
+    this.tasks.set(revised.id, revised)
+    const replacements = new Map([[source.id, revised.id]])
+    const dependants = [...this.tasks.entries()]
+      .filter(([, task]) => task.cycleId === source.cycleId && task.archivedAt === null)
+      .sort(([, a], [, b]) => a.position - b.position)
+    for (const [id, task] of dependants) {
+      const dependencies = task.dependencies.map(
+        (dependencyId) => replacements.get(dependencyId) ?? dependencyId,
+      )
+      if (dependencies.every((dependencyId, index) => dependencyId === task.dependencies[index]))
+        continue
+      if (task.progress.status === 'planned') {
+        this.tasks.set(id, { ...task, dependencies, updatedAt: now })
+        continue
+      }
+      const replacementId = randomUUID()
+      this.tasks.set(id, { ...task, archivedAt: now, updatedAt: now })
+      this.tasks.set(
+        replacementId,
+        taskFromNew(
+          source.cycleId,
+          {
+            id: replacementId,
+            title: task.title,
+            summary: task.summary,
+            destination: task.destination,
+            category: task.category,
+            estimatedMinutes: task.estimatedMinutes,
+            position: task.position,
+            dependencies,
+            guide: task.guide,
+            context: task.context,
+            revision: task.revision + 1,
+            supersedesTaskId: task.id,
+          },
+          now,
+        ),
+      )
+      replacements.set(task.id, replacementId)
+    }
+    this.reconcileTaskPlan(source.cycleId, now)
+    this.touch(projectId, now)
+    return revised
+  }
+
+  async updateTaskProgress(
     projectId: string,
     taskId: string,
-    patch: PensaTaskContentPatch,
+    progress: PensaTaskProgress,
+    expectedUpdatedAt: Date | null,
     now: Date,
-  ): Promise<PensaTask> {
-    const task = this.tasks.find((t) => t.id === taskId)
-    if (!task) throw new Error('task inexistente no fake')
-    if (patch.title !== undefined) task.title = patch.title
-    if (patch.summary !== undefined) task.summary = patch.summary
-    if (patch.taskType !== undefined) task.taskType = patch.taskType
-    if (patch.mission !== undefined) task.mission = patch.mission
-    task.updatedAt = now
+  ) {
+    const task = this.tasks.get(taskId)
+    if (!task) throw new Error('task not found')
+    if ((task.progress.updatedAt?.getTime() ?? null) !== (expectedUpdatedAt?.getTime() ?? null)) {
+      throw new PensaTaskProgressConflictError()
+    }
+    const updated = { ...task, progress, updatedAt: now }
+    this.tasks.set(taskId, updated)
     this.touch(projectId, now)
-    return { ...task }
+    return updated
   }
 
   async deleteTask(projectId: string, taskId: string, now: Date): Promise<void> {
-    const i = this.tasks.findIndex((t) => t.id === taskId)
-    if (i >= 0) this.tasks.splice(i, 1)
+    const task = this.tasks.get(taskId)
+    this.tasks.delete(taskId)
+    if (task) this.reconcileTaskPlan(task.cycleId, now)
     this.touch(projectId, now)
-  }
-
-  // ── Checklist ─────────────────────────────────────────────────────────────
-  async listChecklist(cycleId: string): Promise<PensaChecklistItem[]> {
-    return this.checklist
-      .filter((i) => i.cycleId === cycleId)
-      .sort((a, b) => a.position - b.position)
-      .map((i) => ({ ...i }))
-  }
-
-  async replaceChecklist(
-    projectId: string,
-    cycleId: string,
-    items: NewPensaChecklistItem[],
-    now: Date,
-  ): Promise<void> {
-    for (let i = this.checklist.length - 1; i >= 0; i--) {
-      if (this.checklist[i]?.cycleId === cycleId) this.checklist.splice(i, 1)
-    }
-    for (const item of items) {
-      this.checklist.push({ ...item, cycleId, done: false, doneAt: null })
-    }
-    this.touch(projectId, now)
-  }
-
-  async findChecklistItemWithProject(
-    itemId: string,
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<{ item: PensaChecklistItem; project: PensaProject } | null> {
-    const item = this.checklist.find((i) => i.id === itemId)
-    if (!item) return null
-    const project = this.owned(this.projectOfCycle(item.cycleId), userId, audience)
-    return project ? { item: { ...item }, project: { ...project } } : null
-  }
-
-  async setChecklistItemDone(
-    projectId: string,
-    itemId: string,
-    done: boolean,
-    now: Date,
-  ): Promise<PensaChecklistItem> {
-    const item = this.checklist.find((i) => i.id === itemId)
-    if (!item) throw new Error('item inexistente no fake')
-    item.done = done
-    item.doneAt = done ? now : null
-    this.touch(projectId, now)
-    return { ...item }
   }
 }

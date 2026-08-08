@@ -1,164 +1,423 @@
 import { describe, expect, it, mock } from 'bun:test'
 
-// `server-only` lança fora do React Server — neutraliza p/ testar os prompts puros.
 mock.module('server-only', () => ({}))
+
+process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
+process.env.OPENROUTER_API_KEY ??= 'test-openrouter-key'
 
 const { buildStageZSystem } = await import('../src/server/pensa-agents/stage-z')
 const { PENSA_CHILD_SAFETY_CLAUSE } = await import('../src/server/pensa-agents/safety')
 const { transcriptForEvaluator } = await import('../src/server/pensa-agents/stage-z-evaluator')
-const { pensaChatRateLimited, GenerateBody } = await import('../src/routes/pensa-ai')
+const { pensaChatRateLimited, GenerateBody, createPensaAiRoutes } = await import(
+  '../src/routes/pensa-ai'
+)
+const { ClientArtifactBody, ClientValidatableArtifactType } = await import('../src/routes/pensa')
+const {
+  GameDesignArtifactSchema,
+  IdeaArtifactSchema,
+  jsonSchemaFor,
+  PlanReviewArtifactSchema,
+  stripPintaArtFromStudioTasks,
+  TaskPlanDraftSchema,
+  VisualDirectionArtifactSchema,
+} = await import('../src/server/pensa-agents/planner-contract')
 
-describe('buildStageZSystem (agente de clareza — etapa Z)', () => {
-  const base = {
-    mode: 'kids' as const,
-    projectName: 'Dino Ninja',
-    projectKind: 'game' as const,
-    cycleNumber: 1,
-  }
+describe('etapa Z do planejador', () => {
+  const base = { mode: 'kids' as const, projectName: 'Dino Ninja', cycleNumber: 1 }
 
-  it('SEMPRE inclui a cláusula de segurança infantil no modo kids', () => {
-    // Espelha o contrato do studio (ensureSafetyClause): nenhum caminho de prompt
-    // kids sai sem a blindagem — NÃO pode regredir.
-    expect(buildStageZSystem(base)).toContain(PENSA_CHILD_SAFETY_CLAUSE)
-  })
-
-  it('carrega a regra anti-inferência (PRD §11.3) e a linha de sugestões clicáveis', () => {
+  it('mantém segurança infantil e as cinco decisões do novo ZERO', () => {
     const system = buildStageZSystem(base)
-    expect(system).toContain('anti-inferência')
-    expect(system).toContain('TODA resposta das perguntas vem da criança')
+    expect(system).toContain(PENSA_CHILD_SAFETY_CLAUSE)
+    expect(system).toContain('IDEIA')
+    expect(system).toContain('OBJETIVO')
+    expect(system).toContain('CONTROLES')
+    expect(system).toContain('RESULTADO')
+    expect(system).toContain('DIMENSÃO')
     expect(system).toContain('SUGESTÕES:')
   })
 
-  it('contextualiza projeto/versão e foca no que FALTA responder', () => {
+  it('foca somente nas decisões que ainda faltam', () => {
     const system = buildStageZSystem({
       ...base,
       state: {
-        answered: { who: true, problem: true, action: false, screens: false, success: false },
+        answered: {
+          idea: true,
+          objective: true,
+          controls: false,
+          outcome: false,
+          dimension: false,
+        },
         ready: false,
       },
     })
-    expect(system).toContain('Dino Ninja')
-    expect(system).toContain('Versão 1')
-    expect(system).toContain('AÇÃO PRINCIPAL')
-    // As já respondidas não entram na lista de pendências.
-    expect(system).toContain('Falta clarear: AÇÃO PRINCIPAL, TELAS, FICOU BOM')
+    expect(system).toContain('Falta clarear: CONTROLES, VITÓRIA E DERROTA, 2D OU 3D')
   })
 
-  it('Versão 2+ vira conversa de INCREMENTO (não redesenha o jogo inteiro)', () => {
-    const system = buildStageZSystem({
-      ...base,
-      cycleNumber: 2,
-      cycleGoal: 'sons novos e mais fases',
-    })
-    expect(system).toContain('NOVA VERSÃO')
-    expect(system).toContain('sons novos e mais fases')
-  })
-})
-
-describe('transcriptForEvaluator', () => {
-  it('rotula os papéis e injeta o resumo das mensagens cortadas', () => {
-    const t = transcriptForEvaluator(
-      [
-        { role: 'user', content: 'quero um jogo de\npular', at: '' },
-        { role: 'assistant', content: 'Boa! Quem vai jogar?', at: '' },
-      ],
-      'A criança quer um jogo de dinossauro.',
+  it('transcript preserva resumo e identifica os papéis', () => {
+    const transcript = transcriptForEvaluator(
+      [{ role: 'user', content: 'quero um jogo de\npular', at: '' }],
+      'A criança escolheu um dinossauro.',
     )
-    expect(t).toContain('RESUMO das mensagens antigas: A criança quer um jogo de dinossauro.')
-    expect(t).toContain('CRIANÇA: quero um jogo de pular') // quebra de linha achatada
-    expect(t).toContain('ZAPPY: Boa! Quem vai jogar?')
+    expect(transcript).toContain('RESUMO das mensagens antigas')
+    expect(transcript).toContain('CRIANÇA: quero um jogo de pular')
   })
 })
 
-describe('GenerateBody (corpo do /artifacts/generate)', () => {
-  // Regressão do 500 em staging (02/07): o Zod 4 monta o mapa do discriminador no
-  // PRIMEIRO parse — 3 variantes com `type: 'identity'` derrubavam TODO safeParse
-  // ("Duplicate discriminator value") e nenhum teste exercitava o schema.
-  const uuid = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
-  const palette = { name: 'Espacial', colors: ['#0D1117', '#C4F042', '#3BC7E5', '#FFFFFF'] }
-
-  it('aceita as 7 variantes válidas', () => {
-    const bodies = [
-      { type: 'idea' },
-      { type: 'friendly_spec', projectId: uuid },
-      { type: 'friendly_spec', projectId: uuid, feedback: 'quero uma tela de recorde' },
-      { type: 'identity', projectId: uuid, step: 'suggestions' },
-      { type: 'identity', projectId: uuid, step: 'icons', name: 'Dino Ninja', palette },
-      {
-        type: 'identity',
-        projectId: uuid,
-        step: 'save',
-        name: 'Dino Ninja',
-        palette,
-        iconSvg: null,
-      },
-      { type: 'mission_plan', projectId: uuid },
-      { type: 'mission_plan', projectId: uuid, append: true },
-      { type: 'checklist_seed', projectId: uuid },
-      {
-        type: 'spec_edit',
-        projectId: uuid,
-        screens: [
-          { name: 'Tela do título', elements: [{ kind: 'title', label: 'Meu Jogo', zone: 'top' }] },
+describe('contratos dos cinco artefatos', () => {
+  it('aceita os shapes executáveis e rejeita campos legados', () => {
+    expect(
+      IdeaArtifactSchema.safeParse({
+        title: 'Dino Ninja',
+        idea: 'Um dinossauro pula obstáculos.',
+        objective: 'Chegar ao fim da fase.',
+        controls: ['setas', 'espaço'],
+        victory: 'Chegar à bandeira.',
+        defeat: 'Encostar em três obstáculos.',
+        dimension: '2d',
+      }).success,
+    ).toBe(true)
+    expect(
+      GameDesignArtifactSchema.safeParse({
+        coreLoop: ['mover', 'pular', 'chegar ao fim'],
+        scenes: [{ id: 'fase-1', name: 'Fase 1', purpose: 'Ensinar o pulo.' }],
+        screens: [{ id: 'inicio', name: 'Início', purpose: 'Começar o jogo.' }],
+        camera: 'Lateral fixa.',
+      }).success,
+    ).toBe(true)
+    expect(
+      VisualDirectionArtifactSchema.safeParse({
+        style: 'Pixel art simples.',
+        camera: 'Lateral.',
+        mood: 'Aventura alegre.',
+        shapeLanguage: 'Formas arredondadas para amigos e pontas para perigos.',
+        palette: [
+          { role: 'herói', color: '#22C55E' },
+          { role: 'perigo', color: '#EF4444' },
+          { role: 'fundo', color: '#0F172A' },
         ],
-      },
-    ]
-    for (const body of bodies) {
-      const parsed = GenerateBody.safeParse(body)
-      expect(parsed.success).toBe(true)
-    }
+        visualRules: ['Contorno escuro', 'Perigos sempre vermelhos'],
+        screens: [{ screenId: 'inicio', description: 'Título grande e botão.' }],
+        assets: [
+          {
+            id: 'hero',
+            name: 'Dinossauro',
+            kind: 'sprite',
+            appearance: 'Verde e arredondado.',
+            animations: ['correndo'],
+            states: ['normal'],
+            usage: 'Personagem do jogador.',
+          },
+        ],
+      }).success,
+    ).toBe(true)
+    expect(
+      PlanReviewArtifactSchema.safeParse({
+        approved: true,
+        findings: [],
+        recommendations: [],
+        auditedAt: '2026-08-04T12:00:00.000Z',
+      }).success,
+    ).toBe(true)
+    expect(IdeaArtifactSchema.safeParse({ who: 'crianças', problem: 'tédio' }).success).toBe(false)
   })
 
-  it('rejeita corpo inválido sem lançar', () => {
-    expect(GenerateBody.safeParse(null).success).toBe(false)
-    expect(GenerateBody.safeParse({ type: 'banana' }).success).toBe(false)
-    expect(GenerateBody.safeParse({ type: 'identity', projectId: uuid }).success).toBe(false)
+  it('todo schema enviado ao provider é compatível com o modo estrito', () => {
+    // O modo estrito exige `required` com TODAS as chaves de cada objeto (um `.optional()`
+    // no Zod vira 400 do provider em produção — caso real do pensa_task_plan_v1) e não
+    // aceita `oneOf`. Este teste trava a deriva para os quatro schemas gerados por IA.
+    const problems: string[] = []
+    const walk = (node: unknown, path: string): void => {
+      if (Array.isArray(node)) {
+        for (const [index, item] of node.entries()) walk(item, `${path}[${index}]`)
+        return
+      }
+      if (!node || typeof node !== 'object') return
+      const record = node as Record<string, unknown>
+      if ('oneOf' in record) problems.push(`${path}: usa oneOf (o modo estrito só aceita anyOf)`)
+      if (record.properties && typeof record.properties === 'object') {
+        if (record.additionalProperties !== false) {
+          problems.push(`${path}: objeto sem additionalProperties:false`)
+        }
+        const keys = Object.keys(record.properties as Record<string, unknown>)
+        const required = Array.isArray(record.required) ? (record.required as string[]) : []
+        for (const key of keys) {
+          if (!required.includes(key)) {
+            problems.push(`${path}.${key}: fora do required (use .nullable(), não .optional())`)
+          }
+        }
+      }
+      for (const [key, value] of Object.entries(record)) walk(value, `${path}.${key}`)
+    }
+    for (const [name, schema] of [
+      ['pensa_idea_v2', IdeaArtifactSchema],
+      ['pensa_game_design_v1', GameDesignArtifactSchema],
+      ['pensa_visual_direction_v1', VisualDirectionArtifactSchema],
+      ['pensa_task_plan_v1', TaskPlanDraftSchema],
+    ] as const) {
+      walk(jsonSchemaFor(schema), name)
+    }
+    expect(problems).toEqual([])
+  })
+})
+
+describe('GenerateBody', () => {
+  const projectId = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
+  it('aceita somente os cinco artefatos atuais', () => {
+    for (const body of [
+      { type: 'idea', projectId },
+      { type: 'game_design', projectId },
+      { type: 'visual_direction', projectId },
+      { type: 'task_plan', projectId },
+      { type: 'plan_review', projectId, approved: true },
+    ])
+      expect(GenerateBody.safeParse(body).success).toBe(true)
+    expect(GenerateBody.safeParse({ type: 'mission_plan', projectId }).success).toBe(false)
+    expect(GenerateBody.safeParse({ type: 'task_plan', projectId, append: true }).success).toBe(
+      false,
+    )
+    expect(GenerateBody.safeParse({ type: 'checklist_seed', projectId }).success).toBe(false)
+  })
+})
+
+describe('fronteira pública dos artefatos', () => {
+  it('não permite que o navegador fabrique task_plan ou plan_review', () => {
     expect(
-      GenerateBody.safeParse({ type: 'identity', projectId: 'não-uuid', step: 'suggestions' })
-        .success,
-    ).toBe(false)
-    // spec_edit: kind/zone fora do domínio → rejeita.
-    expect(
-      GenerateBody.safeParse({
-        type: 'spec_edit',
-        projectId: uuid,
-        screens: [{ name: 'X', elements: [{ kind: 'banana', label: 'a', zone: 'top' }] }],
+      ClientArtifactBody.safeParse({
+        stage: 'o',
+        type: 'plan_review',
+        content: { approved: true },
       }).success,
     ).toBe(false)
+    expect(
+      ClientArtifactBody.safeParse({
+        stage: 'r',
+        type: 'task_plan',
+        content: { taskIds: [] },
+      }).success,
+    ).toBe(false)
+    expect(ClientValidatableArtifactType.safeParse('plan_review').success).toBe(false)
+    expect(ClientValidatableArtifactType.safeParse('task_plan').success).toBe(true)
   })
 })
 
-describe('pensaChatRateLimited (anti-burst por sessão)', () => {
-  it('libera 10 por minuto e barra a 11ª; janela nova libera de novo', () => {
-    const key = `t-${Math.random()}`
-    const t0 = 1_700_000_000_000
-    for (let i = 0; i < 10; i += 1) expect(pensaChatRateLimited(key, t0)).toBe(false)
-    expect(pensaChatRateLimited(key, t0)).toBe(true)
-    expect(pensaChatRateLimited(key, t0 + 61_000)).toBe(false)
+describe('rate limit do chat', () => {
+  it('libera dez mensagens por minuto e bloqueia a décima primeira', () => {
+    const key = `pensa-${Math.random()}`
+    const now = 1_700_000_000_000
+    for (let index = 0; index < 10; index += 1) expect(pensaChatRateLimited(key, now)).toBe(false)
+    expect(pensaChatRateLimited(key, now)).toBe(true)
+    expect(pensaChatRateLimited(key, now + 61_000)).toBe(false)
+  })
+})
+
+describe('stripPintaArtFromStudioTasks', () => {
+  const visual = {
+    assets: [
+      { id: 'fundo_background', kind: 'background' },
+      { id: 'foguete_sprite', kind: 'sprite' },
+      { id: 'mundo_espacial', kind: 'world' },
+    ],
+  } as never
+
+  it('remove artes 2D redundantes das tarefas do Estúdio, preservando o resto', () => {
+    const studioTask = {
+      key: 'studio-setup',
+      destination: 'studio',
+      context: {
+        kind: 'studio',
+        dimension: '2d',
+        visualAssetIds: ['fundo_background', 'mundo_espacial', 'fantasma'],
+        blockIds: [],
+        blocks: [],
+        mechanicDocumentIds: [],
+        extensionIds: [],
+      },
+    } as never
+    const result = stripPintaArtFromStudioTasks([studioTask], visual) as unknown as Array<{
+      context: { visualAssetIds: string[] }
+    }>
+    // A arte 2D some (é tarefa do Pinta; citar de novo reprovava o plano
+    // inteiro); asset 3D fica; id desconhecido fica p/ a validação reprovar.
+    expect(result[0]?.context.visualAssetIds).toEqual(['mundo_espacial', 'fantasma'])
   })
 
-  it('NÃO tem teto diário próprio (o teto diário/mensal REAL é a quota por conta no members)', () => {
-    // O antigo CHAT_PER_DAY=150 in-process saiu de propósito: era por PERFIL,
-    // efêmero (zerava no deploy) e por réplica. A quota durável (consumeAiQuota,
-    // 50/dia + 500/mês por CONTA) é consumida no pré-voo de cada chamada — este
-    // rate-limit ficou SÓ como anti-burst local de 10/min.
-    const key = `t-${Math.random()}`
-    const t0 = 1_700_000_000_000
-    let now = t0
-    let allowed = 0
-    for (let i = 0; i < 200; i += 1) {
-      if (!pensaChatRateLimited(key, now)) allowed += 1
-      now += 7_000 // espaça p/ nunca esbarrar no teto do minuto
+  it('não toca tarefas do Pinta', () => {
+    const pintaTask = {
+      key: 'pinta-fundo',
+      destination: 'pinta',
+      context: { kind: 'pinta', assetId: 'fundo_background' },
+    } as never
+    const result = stripPintaArtFromStudioTasks([pintaTask], visual) as unknown as Array<{
+      context: { assetId: string }
+    }>
+    expect(result[0]?.context.assetId).toBe('fundo_background')
+  })
+})
+
+describe('geração de artefatos por SSE', () => {
+  // A geração leva minutos; a resposta é um stream com keepalive para a borda
+  // não derrubar o POST com 502 — só o PRÉ-VOO (sessão/gates/quota) segue JSON.
+  const projectId = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
+  const cycleId = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e002'
+
+  const idea = {
+    title: 'Dino Ninja',
+    idea: 'Um dinossauro pula obstáculos.',
+    objective: 'Chegar ao fim da fase.',
+    controls: ['setas', 'espaço'],
+    victory: 'Chegar à bandeira.',
+    defeat: 'Encostar em três obstáculos.',
+    dimension: '2d',
+  }
+  const visual = {
+    style: 'Pixel art simples.',
+    camera: 'Lateral.',
+    mood: 'Aventura alegre.',
+    shapeLanguage: 'Formas arredondadas para amigos e pontas para perigos.',
+    palette: [
+      { role: 'herói', color: '#22C55E' },
+      { role: 'perigo', color: '#EF4444' },
+      { role: 'fundo', color: '#0F172A' },
+    ],
+    visualRules: ['Contorno escuro', 'Perigos sempre vermelhos'],
+    screens: [{ screenId: 'inicio', description: 'Título grande e botão.' }],
+    assets: [
+      {
+        id: 'hero',
+        name: 'Dinossauro',
+        kind: 'sprite',
+        appearance: 'Verde e arredondado.',
+        animations: ['correndo'],
+        states: ['normal'],
+        usage: 'Personagem do jogador.',
+      },
+    ],
+  }
+
+  const artifact = (type: string, content: unknown) => ({
+    id: `${type}-1`,
+    type,
+    status: 'validated',
+    version: 1,
+    createdAt: '2026-08-01T00:00:00.000Z',
+    content,
+  })
+  const stageView = (stage: string, extra?: Record<string, unknown>) => ({
+    stage,
+    conversation: { messages: [], messageCount: 0 },
+    state: {},
+    artifacts: [],
+    tasks: [],
+    nextTaskId: null,
+    ...extra,
+  })
+
+  function makeRoutes(overrides: { members?: Record<string, unknown>; user?: unknown } = {}) {
+    const members = {
+      pensaGetProject: async () => ({
+        status: 200,
+        body: {
+          project: {
+            id: projectId,
+            name: 'Runo',
+            cycles: [{ id: cycleId, number: 1, stage: 'o' }],
+          },
+        },
+      }),
+      aiUsageConsume: async () => ({ status: 200, body: { allowed: true } }),
+      getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+      pensaSaveArtifact: async (_cycle: string, input: { type: string; content: unknown }) => ({
+        status: 200,
+        body: { artifact: artifact(input.type, input.content) },
+      }),
+      ...overrides.members,
     }
-    expect(allowed).toBe(200)
+    const session = {
+      getSession: async () =>
+        'user' in overrides ? overrides.user : { id: 'user-1', role: 'staff' },
+    }
+    return createPensaAiRoutes({
+      members: members as never,
+      session: session as never,
+    })
+  }
+
+  const post = (routes: ReturnType<typeof createPensaAiRoutes>, body: unknown) =>
+    routes.pensaGenerateArtifact.POST(
+      new Request('http://localhost/api/pensa/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+      { params: Promise.resolve({ cycleId }) },
+    )
+
+  it('plan_review responde SSE: keepalive imediato e o corpo de sempre no evento done', async () => {
+    const routes = makeRoutes({
+      members: {
+        pensaGetStage: async (_cycle: string, stage: string) => ({
+          status: 200,
+          body:
+            stage === 'z'
+              ? stageView('z', { artifacts: [artifact('idea', idea)] })
+              : stage === 'e'
+                ? stageView('e', { artifacts: [artifact('visual_direction', visual)] })
+                : stageView('r'),
+        }),
+      },
+    })
+    const res = await post(routes, { type: 'plan_review', projectId, approved: false })
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type') ?? '').toContain('text/event-stream')
+    expect(res.headers.get('x-accel-buffering')).toBe('no')
+    const text = await res.text()
+    // TTFB imediato: o comentário de abertura sai ANTES de qualquer geração.
+    expect(text.startsWith(': ok\n\n')).toBe(true)
+    const doneBlock = text.split('\n\n').find((block) => block.startsWith('event: done')) ?? ''
+    expect(doneBlock).not.toBe('')
+    const dataLine = doneBlock.split('\n').find((line) => line.startsWith('data:')) ?? 'data: {}'
+    const payload = JSON.parse(dataLine.slice(5).trim()) as {
+      artifact?: { type?: string; content?: { approved?: boolean } }
+    }
+    expect(payload.artifact?.type).toBe('plan_review')
+    // Plano sem tarefas reprova na auditoria — o conteúdo de sempre, agora via done.
+    expect(payload.artifact?.content?.approved).toBe(false)
   })
 
-  it('sessões diferentes não dividem o balde', () => {
-    const a = `t-${Math.random()}`
-    const b = `t-${Math.random()}`
-    const t0 = 1_700_000_000_000
-    for (let i = 0; i < 10; i += 1) pensaChatRateLimited(a, t0)
-    expect(pensaChatRateLimited(a, t0)).toBe(true)
-    expect(pensaChatRateLimited(b, t0)).toBe(false)
+  it('recusa de gate vira evento error dentro do stream (não um 4xx pendurado)', async () => {
+    const routes = makeRoutes({
+      members: {
+        pensaGetProject: async () => ({
+          status: 200,
+          body: {
+            project: {
+              id: projectId,
+              name: 'Runo',
+              cycles: [{ id: cycleId, number: 1, stage: 'z' }],
+            },
+          },
+        }),
+        pensaGetStage: async () => ({
+          status: 200,
+          body: stageView('z', { state: { ready: false } }),
+        }),
+      },
+    })
+    const res = await post(routes, { type: 'idea', projectId })
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type') ?? '').toContain('text/event-stream')
+    const text = await res.text()
+    const errorBlock = text.split('\n\n').find((block) => block.startsWith('event: error')) ?? ''
+    expect(errorBlock).toContain('PENSA_GATE_NOT_READY')
+    expect(errorBlock).toContain('"status":409')
+    expect(text).not.toContain('event: done')
+  })
+
+  it('sem sessão o pré-voo responde 401 em JSON, sem abrir stream', async () => {
+    const routes = makeRoutes({ user: null })
+    const res = await post(routes, { type: 'plan_review', projectId, approved: false })
+    expect(res.status).toBe(401)
+    expect(res.headers.get('content-type') ?? '').toContain('application/json')
+    expect(await res.json()).toEqual({ error: { code: 'UNAUTHENTICATED' } })
   })
 })

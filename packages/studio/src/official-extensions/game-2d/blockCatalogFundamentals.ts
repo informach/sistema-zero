@@ -338,6 +338,80 @@ export const gameTwoDFundamentalBlocks = [
     tooltip: 'Para a música de fundo que estiver tocando.',
   },
 
+  // ---- Áudio de ARQUIVO (o som que a criança enviou) ----
+  // Tudo acima é inventado pelo computador na hora. Estes tocam o mp3/wav que
+  // ela importou em "Imagens e sons". Rótulos iguais aos do Mundo 3D e do Jogo
+  // 3D de propósito: é o mesmo gesto, e ela não deveria reaprender por app.
+  {
+    type: 'sz_g2d_load_sound',
+    // Carregar não toca nada — prepara no começo, e por isso não precisa de gesto.
+    placement: 'start-only-command',
+    message0: 'Carregar o som %1 do arquivo %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'moeda' },
+      { type: 'field_asset_picker', name: 'ASSET', text: '', kind: 'audio' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Prepara um som do projeto (envie o arquivo com o botão "🔊 Enviar som", em "Imagens e sons") e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+  },
+  {
+    type: 'sz_g2d_play_clip',
+    placement: 'command',
+    message0: 'Tocar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moeda', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Toca um som que você carregou, pelo apelido. Use quando algo acontecer no jogo.',
+  },
+  {
+    type: 'sz_g2d_stop_clip',
+    placement: 'command',
+    message0: 'Parar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moeda', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Para o som e volta ele para o começo.',
+  },
+  {
+    type: 'sz_g2d_play_track',
+    // `resource-creator`: dentro de um laço a faixa recomeçaria a cada quadro.
+    placement: 'resource-creator',
+    message0: 'Tocar a música %1 sem parar',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca uma música SUA (um arquivo que você enviou) em loop. Só uma música toca por vez: começar outra troca a que estava tocando. Repetir a mesma não recomeça a faixa.',
+  },
+  {
+    type: 'sz_g2d_stop_track',
+    placement: 'command',
+    message0: 'Parar a música',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desliga QUALQUER música que estiver tocando: a sua (de arquivo) e também a música de fundo pronta. Na dúvida, use este.',
+  },
+  {
+    type: 'sz_g2d_set_volume',
+    placement: 'command',
+    message0: 'Pôr o volume em %1',
+    args0: [{ type: 'input_value', name: 'LEVEL', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Volume de 0 (mudo) a 10 (bem alto). Vale para os sons que você enviou.',
+  },
+
   // ---- Tier 1: Mira e contas ----
   {
     type: 'sz_g2d_aim_at',
@@ -952,5 +1026,22 @@ export const gameTwoDFundamentalBlocks = [
     colour: C,
     tooltip:
       'Desenha uma moldura colorida em volta da tela do jogo, para ver onde começa e termina a área de desenho. Ótimo para explicar o palco. Para tirar, apague o bloco.',
+  },
+  {
+    // O cenário que a criança desenhou no Pinta virando o fundo do jogo. É
+    // "start-only" de propósito: o motor repinta sozinho a cada limpada da tela,
+    // então põe-se UMA vez e pronto. O irmão que se desenha a cada quadro é o
+    // "sz_g2d_draw_backdrop", que mora em 🗺️ Mapa (nunca no mesmo flyout que
+    // este) e serve a quem precisa escolher a ORDEM das camadas.
+    type: 'sz_g2d_set_backdrop',
+    placement: 'start-only-command',
+    message0: 'Pôr o cenário %1 atrás de tudo',
+    args0: [{ type: 'field_asset_picker', name: 'IMAGE', text: '' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe um desenho seu como fundo do jogo, atrás de todo o resto. Ele COBRE a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora. Um desenho de 960 por 540 cabe exatinho na tela larga. Ponha uma vez em "Ao iniciar" e ele volta sozinho em todo quadro. Para escolher a ordem das camadas você mesmo, use "Desenhar o cenário" dentro do 🔁.',
   },
 ] satisfies BlockDefinition[]

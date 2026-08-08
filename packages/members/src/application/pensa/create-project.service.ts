@@ -1,5 +1,5 @@
 import type { CourseAudience } from '../../domain/course/course'
-import { MAX_ACTIVE_PROJECTS, type PensaProjectKind } from '../../domain/pensa/pensa'
+import { MAX_ACTIVE_PROJECTS } from '../../domain/pensa/pensa'
 import { PensaNotFoundError, PensaQuotaExceededError } from '../../domain/pensa/pensa.errors'
 import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
@@ -22,7 +22,7 @@ export class CreatePensaProjectService {
     userId: string,
     accountId: string,
     audience: CourseAudience,
-    input: { name: string; kind: PensaProjectKind },
+    input: { name: string },
   ): Promise<PensaProjectDetailView> {
     const name = input.name.trim()
     if (name.length < 2 || name.length > 120) {
@@ -38,7 +38,7 @@ export class CreatePensaProjectService {
 
     const projectId = this.newId()
     await this.repo.createProject(
-      { id: projectId, userId, accountId, audience, kind: input.kind, name },
+      { id: projectId, userId, accountId, audience, kind: 'game', name },
       { id: this.newId(), projectId, number: 1, goal: null },
       this.clock(),
     )

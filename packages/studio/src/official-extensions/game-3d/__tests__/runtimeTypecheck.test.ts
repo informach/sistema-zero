@@ -8,6 +8,9 @@ const HOST_CONTRACT = `
 interface Window {
   SZGame3D: unknown
   __SZGAME_ASSETS?: Record<string, string>
+  // Semeado pelo mesmo bridge das imagens, e ausente quando o projeto não tem
+  // áudio nenhum — daí ser opcional (o runtime lê com \`|| {}\`).
+  __SZGAME_SOUNDS?: Record<string, string>
   webkitAudioContext?: typeof AudioContext
 }
 `

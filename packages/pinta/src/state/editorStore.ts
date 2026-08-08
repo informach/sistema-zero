@@ -2,7 +2,7 @@
  * Store do EDITOR por asset aberto (factory): o asset vivo + undo/redo por
  * snapshots (`core/history.ts`) + autosave debounced (~1s) com flush explícito
  * (pagehide/unmount/voltar). O `persist` é injetado (testes passam um fake; a
- * produção usa `persistAsset`), e `onSaved` deixa a galeria absorver o asset
+ * produção usa `persistAssets`), e `onSaved` deixa a galeria absorver o asset
  * atualizado sem reler o disco.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
@@ -77,10 +77,13 @@ export function assetBytes(asset: PintaAsset): number {
   const bitmaps: PintaBitmap[] = []
   switch (asset.kind) {
     case 'pixel-sprite':
-      for (const animation of asset.animations) bitmaps.push(...animation.frames)
+      // Cada quadro é uma PILHA de cels (um por camada) — contar só o primeiro
+      // subestimaria o snapshot em N× e furaria o orçamento do undo.
+      for (const animation of asset.animations)
+        for (const cels of animation.frames) bitmaps.push(...cels)
       break
     case 'pixel-background':
-      bitmaps.push(asset.bitmap)
+      bitmaps.push(...asset.cels)
       break
     case 'tileset':
       bitmaps.push(...asset.tiles)
@@ -104,13 +107,6 @@ export function assetBytes(asset: PintaAsset): number {
   return bitmaps.reduce((sum, bitmap) => sum + bitmapBytes(bitmap), 128)
 }
 
-// Encurtável nos testes (sem fake timers no bun:test — mesmo trade-off do studio).
-let autosaveDelayMs = 1000
-
-export function setAutosaveDelayForTests(ms: number): void {
-  autosaveDelayMs = ms
-}
-
 /** Bytes do snapshot de undo = o asset + os mapas ligados (se houver). */
 function snapshotBytes(snapshot: EditorSnapshot): number {
   let bytes = assetBytes(snapshot.asset)
@@ -120,8 +116,10 @@ function snapshotBytes(snapshot: EditorSnapshot): number {
 
 export function createEditorStore(options: {
   asset: PintaAsset
-  persist: (asset: PintaAsset) => Promise<void>
+  persist: (asset: PintaAsset, linkedAssets: readonly PintaAsset[]) => Promise<void>
   onSaved?: (asset: PintaAsset) => void
+  /** Delay por instância; produção usa 1s, testes podem injetar um valor curto. */
+  autosaveDelayMs?: number
   /**
    * Aplica os assets LIGADOS restaurados por undo/redo (ou por `commitLinked`):
    * o host absorve na galeria + persiste. Ausente = sem assets ligados (editores
@@ -148,9 +146,10 @@ export function createEditorStore(options: {
       if (!dirty) return
       dirty = false
       const snapshot = get().asset
+      const linkedSnapshot = currentLinked ? [...currentLinked] : []
       set({ saveState: 'saving' })
       saving = options
-        .persist(snapshot)
+        .persist(snapshot, linkedSnapshot)
         .then(() => {
           // Editou de novo enquanto salvava? Continua sujo, o timer re-salva.
           set({ saveState: dirty ? 'saving' : 'saved' })
@@ -172,7 +171,7 @@ export function createEditorStore(options: {
       timer = setTimeout(() => {
         timer = null
         void saveNow()
-      }, autosaveDelayMs)
+      }, options.autosaveDelayMs ?? 1000)
     }
 
     function apply(

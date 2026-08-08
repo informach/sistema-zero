@@ -728,7 +728,22 @@ function addSvgMessages(
  * precisam de correção. Retorna false para o chamador preservar o último preview
  * válido em vez de gerar JavaScript quebrado e uma tela vazia.
  */
-export function applySemanticDiagnostics(workspace: Blockly.Workspace, input: SZIRInput): boolean {
+export interface CollectedSemanticIssue {
+  blockId?: string
+  message: string
+}
+
+export function applySemanticDiagnostics(
+  workspace: Blockly.Workspace,
+  input: SZIRInput,
+  /**
+   * Recebe as mesmas mensagens que viram balão no canvas. Existe como PARÂMETRO
+   * (e não como retorno) para não mexer no contrato booleano que 36 testes e o
+   * painel já usam. É o que leva o diagnóstico pronto — "A variável X ainda não
+   * foi declarada neste ponto" — até o tutor, em vez de morrer no ícone amarelo.
+   */
+  collect?: (issues: CollectedSemanticIssue[]) => void,
+): boolean {
   for (const block of workspace.getAllBlocks(false)) {
     block.setWarningText?.(null, SEMANTIC_WARNING_ID)
   }
@@ -751,8 +766,17 @@ export function applySemanticDiagnostics(workspace: Blockly.Workspace, input: SZ
     }
   }
 
+  const collected: CollectedSemanticIssue[] = []
   for (const [block, messages] of messagesByBlock) {
     block.setWarningText?.([...messages].join('\n'), SEMANTIC_WARNING_ID)
+    const blockId = (block as { id?: unknown }).id
+    for (const message of messages) {
+      collected.push({
+        ...(typeof blockId === 'string' ? { blockId } : {}),
+        message,
+      })
+    }
   }
+  collect?.(collected)
   return parsed.success && semanticValid
 }

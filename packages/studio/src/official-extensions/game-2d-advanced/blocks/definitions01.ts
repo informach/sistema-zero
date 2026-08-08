@@ -74,6 +74,24 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   },
 
   {
+    // O cenário que a criança desenhou no Pinta virando o fundo do jogo. O MOTOR
+    // repinta a cada quadro (antes do translate da câmera), então ele fica preso
+    // à tela e nunca some por ordem errada de desenho. O irmão que se desenha
+    // dentro do "Desenhar o jogo" é o "sz_gk_draw_backdrop", em 🗺️ Mundo &
+    // profundidade — nunca no mesmo flyout que este.
+    type: 'sz_gk_set_backdrop',
+    placement: 'start-only-command',
+    message0: 'Pôr o cenário %1 atrás de tudo',
+    args0: [{ type: 'field_asset_picker', name: 'IMAGE', text: '' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe um desenho seu como fundo do jogo, atrás de todo o resto. Ele COBRE a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora. Um desenho de 960 por 540 cabe exatinho na tela larga. O jogo repinta sozinho a cada quadro. ⚠️ O bloco “Pintar o fundo” tapa o cenário: use um ou o outro.',
+  },
+
+  {
     type: 'sz_gk_start',
     placement: 'start-only-command',
     migration: 'remove-engine-boot',

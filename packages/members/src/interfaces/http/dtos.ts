@@ -95,8 +95,11 @@ export const ZappyInternalResponseBody = t.Object({
       t.Literal('needs-context'),
       t.Literal('quota'),
       t.Literal('error'),
+      t.Literal('rejected'),
     ]),
   ),
+  /** Motivo da reprova da validação (auditoria; nunca volta à criança). */
+  rejection: t.Optional(t.String({ minLength: 1, maxLength: 40 })),
   response: t.Object({
     id: UUID,
     text: t.String({ minLength: 1, maxLength: 8000 }),
@@ -110,6 +113,10 @@ export const ZappyInternalResponseBody = t.Object({
       t.Literal('redirect-pensa'),
       t.Literal('redirect-pinta'),
       t.Literal('unsupported'),
+      t.Literal('project-review'),
+      // Acabou a ajuda de IA da família. Persistido de propósito: sem ele, a
+      // recusa volta do histórico com cara de aula (e com "isso ajudou?").
+      t.Literal('quota'),
     ]),
     blockReferences: t.Array(
       t.Object({
@@ -117,6 +124,14 @@ export const ZappyInternalResponseBody = t.Object({
         blockType: t.String({ minLength: 1, maxLength: 128 }),
         name: t.String({ minLength: 1, maxLength: 240 }),
         category: t.String({ minLength: 1, maxLength: 160 }),
+        subcategory: t.Optional(t.String({ maxLength: 160 })),
+        // ⚠️ Campo NÃO declarado aqui é REMOVIDO pelo `normalize` default do
+        // Elysia — sem barulho, sem 422. Foi assim que o `palettePath` sumiu
+        // entre o BFF e o banco desde que nasceu: o chip nunca mostrou a trilha
+        // real, só o fallback categoria › subcategoria.
+        palettePath: t.Optional(
+          t.Array(t.String({ minLength: 1, maxLength: 80 }), { maxItems: 4 }),
+        ),
         area: t.String({ minLength: 1, maxLength: 80 }),
       }),
       { maxItems: 12 },
@@ -132,6 +147,7 @@ export const ZappyInternalResponseBody = t.Object({
         { maxItems: 6 },
       ),
     ),
+    suggestions: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 60 }), { maxItems: 3 })),
     createdAt: t.String({ minLength: 20, maxLength: 40 }),
   }),
 })
@@ -531,23 +547,10 @@ const PENSA_STAGE = t.Union([
 const PENSA_WORK_STAGE = t.Union([t.Literal('z'), t.Literal('e'), t.Literal('r'), t.Literal('o')])
 const PENSA_ARTIFACT_TYPE = t.Union([
   t.Literal('idea'),
-  t.Literal('prd'),
-  t.Literal('friendly_spec'),
-  t.Literal('identity'),
-  t.Literal('mission_plan'),
-  t.Literal('checklist_seed'),
-])
-const PENSA_TASK_COLUMN = t.Union([
-  t.Literal('backlog'),
-  t.Literal('doing'),
-  t.Literal('review'),
-  t.Literal('done'),
-])
-const PENSA_CHECKLIST_CATEGORY = t.Union([
-  t.Literal('test'),
-  t.Literal('polish'),
-  t.Literal('publish'),
-  t.Literal('share'),
+  t.Literal('game_design'),
+  t.Literal('visual_direction'),
+  t.Literal('task_plan'),
+  t.Literal('plan_review'),
 ])
 const PENSA_PROJECT_NAME = t.String({ minLength: 2, maxLength: 120 })
 
@@ -559,33 +562,23 @@ export const PensaStageParams = t.Object({ cycleId: UUID, stage: PENSA_STAGE })
 export const PensaConversationParams = t.Object({ cycleId: UUID, stage: PENSA_WORK_STAGE })
 export const PensaArtifactValidateParams = t.Object({ cycleId: UUID, type: PENSA_ARTIFACT_TYPE })
 export const PensaTaskParams = t.Object({ taskId: UUID })
-export const PensaChecklistItemParams = t.Object({ itemId: UUID })
 
 /** Corpo de `POST /members/pensa/projects` — o serviço trima e revalida 2..120. */
-export const PensaCreateProjectBody = t.Object({
-  name: PENSA_PROJECT_NAME,
-  kind: t.Union([t.Literal('game'), t.Literal('webapp')]),
-})
+export const PensaCreateProjectBody = t.Object(
+  {
+    name: PENSA_PROJECT_NAME,
+  },
+  { additionalProperties: false },
+)
 
 /** Corpo de `PATCH /members/pensa/projects/:projectId` (parcial). */
-export const PensaUpdateProjectBody = t.Object({
-  name: t.Optional(PENSA_PROJECT_NAME),
-  status: t.Optional(t.Union([t.Literal('active'), t.Literal('archived')])),
-  /** `null` limpa o vínculo com o projeto semeado no Estúdio. */
-  studioProjectId: t.Optional(t.Union([t.String({ maxLength: 200 }), t.Null()])),
-  /** "Onde você vai construir?" (fase R) — validado AQUI (não é enum pg). */
-  buildEnv: t.Optional(
-    t.Union([t.Literal('embedded'), t.Literal('studio'), t.Literal('external')]),
-  ),
-})
-
-/**
- * Corpo de `PUT /members/pensa/projects/:projectId/studio-snapshot` — `project`
- * é o Project do Estúdio serializado (JSON opaco); o use case exige objeto
- * PLAIN e ≤1.8M chars stringificado (400 acima), sob o teto de corpo de 2 MB
- * da rota (`bodyLimitForPath`).
- */
-export const PensaStudioSnapshotBody = t.Object({ project: t.Unknown() })
+export const PensaUpdateProjectBody = t.Object(
+  {
+    name: t.Optional(PENSA_PROJECT_NAME),
+    status: t.Optional(t.Union([t.Literal('active'), t.Literal('archived')])),
+  },
+  { additionalProperties: false },
+)
 
 /** Corpo de `POST /members/pensa/projects/:projectId/cycles`. */
 export const PensaCreateCycleBody = t.Object({ goal: t.String({ minLength: 2, maxLength: 500 }) })
@@ -617,31 +610,74 @@ export const PensaArtifactBody = t.Object({
 /** Corpo de `POST /members/pensa/cycles/:cycleId/advance`. */
 export const PensaAdvanceBody = t.Object({ from: PENSA_WORK_STAGE })
 
-const PensaMissionSchema = t.Object({
-  story: t.Optional(t.String({ maxLength: 2000 })),
-  steps: t.Array(
-    t.Object({
-      text: t.String({ minLength: 1, maxLength: 500 }),
-      hint: t.Optional(t.String({ maxLength: 500 })),
-    }),
-    { minItems: 1, maxItems: 12 },
-  ),
-  studioHints: t.Optional(
-    t.Object({
-      categories: t.Array(t.String({ maxLength: 80 }), { maxItems: 20 }),
-      blocks: t.Array(t.String({ maxLength: 80 }), { maxItems: 50 }),
-    }),
-  ),
-  /** 1–3 critérios observáveis de "pronto". */
-  doneWhen: t.Array(t.String({ minLength: 1, maxLength: 300 }), { minItems: 1, maxItems: 3 }),
-  // Missão de ARTE (07/2026): abre o Pinta pré-configurado no kids. Sem o campo
-  // AQUI o TypeBox o removeria em silêncio antes do jsonb (gargalo do contrato).
-  artKind: t.Optional(
-    t.Union([t.Literal('sprite'), t.Literal('background'), t.Literal('tileset')]),
-  ),
-  /** Paleta do jogo (hex) que acompanha a missão de arte (≤8 cores). */
-  palette: t.Optional(t.Array(t.String({ maxLength: 20 }), { maxItems: 8 })),
+const PENSA_TASK_DESTINATION = t.Union([t.Literal('pinta'), t.Literal('studio')])
+const PENSA_TASK_CATEGORY = t.Union([
+  t.Literal('art'),
+  t.Literal('setup'),
+  t.Literal('gameplay'),
+  t.Literal('scene'),
+  t.Literal('ui'),
+  t.Literal('polish'),
+])
+const PensaGuideItemSchema = t.Object({
+  id: t.String({ minLength: 1, maxLength: 100 }),
+  text: t.String({ minLength: 1, maxLength: 500 }),
+  hint: t.Optional(t.String({ maxLength: 500 })),
+  required: t.Boolean(),
 })
+const PensaTaskGuideSchema = t.Object({
+  steps: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 20 }),
+  criteria: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 10 }),
+})
+const PensaPintaContextSchema = t.Object({
+  kind: t.Literal('pinta'),
+  assetId: t.String({ minLength: 1, maxLength: 100 }),
+  artKind: t.Union([
+    t.Literal('sprite'),
+    t.Literal('background'),
+    t.Literal('tileset'),
+    t.Literal('tilemap'),
+  ]),
+  style: t.Union([t.Literal('pixel'), t.Literal('vector'), t.Literal('either')]),
+  preset: t.Optional(t.String({ maxLength: 100 })),
+  palette: t.Array(
+    t.Object({
+      role: t.String({ minLength: 1, maxLength: 80 }),
+      color: t.String({ maxLength: 20 }),
+    }),
+    { maxItems: 16 },
+  ),
+  appearance: t.String({ minLength: 1, maxLength: 2000 }),
+  animations: t.Array(t.String({ maxLength: 200 }), { maxItems: 20 }),
+  states: t.Array(t.String({ maxLength: 200 }), { maxItems: 20 }),
+  usage: t.String({ minLength: 1, maxLength: 2000 }),
+  requiresStudioUse: t.Boolean(),
+})
+const PensaStudioBlockSchema = t.Object({
+  id: t.String({ minLength: 1, maxLength: 160 }),
+  label: t.String({ minLength: 1, maxLength: 200 }),
+  category: t.String({ minLength: 1, maxLength: 100 }),
+  subcategory: t.String({ minLength: 1, maxLength: 100 }),
+  area: t.Union([
+    t.Literal('structure'),
+    t.Literal('appearance'),
+    t.Literal('start'),
+    t.Literal('events'),
+    t.Literal('loops'),
+    t.Literal('value'),
+  ]),
+  extension: t.Union([t.String({ maxLength: 100 }), t.Null()]),
+})
+const PensaStudioContextSchema = t.Object({
+  kind: t.Literal('studio'),
+  dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
+  visualAssetIds: t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
+  blockIds: t.Array(t.String({ maxLength: 160 }), { maxItems: 80 }),
+  blocks: t.Array(PensaStudioBlockSchema, { maxItems: 80 }),
+  mechanicDocumentIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
+  extensionIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
+})
+const PensaTaskContextSchema = t.Union([PensaPintaContextSchema, PensaStudioContextSchema])
 
 // REPLACE total das tasks. O teto de NEGÓCIO (≤60 → 409 PENSA_QUOTA_EXCEEDED) é
 // do use case — o `maxItems` da borda é só anti-DoS (mais folgado, senão viraria 400).
@@ -650,46 +686,61 @@ export const PensaTasksReplaceBody = t.Object({
     t.Object({
       title: t.String({ minLength: 1, maxLength: 200 }),
       summary: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
-      taskType: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
-      mission: PensaMissionSchema,
+      key: t.String({ minLength: 1, maxLength: 100 }),
+      destination: PENSA_TASK_DESTINATION,
+      category: PENSA_TASK_CATEGORY,
+      estimatedMinutes: t.Integer({ minimum: 5, maximum: 240 }),
+      dependencies: t.Optional(
+        t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 40 }),
+      ),
+      guide: PensaTaskGuideSchema,
+      context: PensaTaskContextSchema,
     }),
     { maxItems: 200 },
   ),
 })
 
 /**
- * Corpo de `PATCH /members/pensa/tasks/:taskId` — move no kanban, anota E/OU edita
- * o conteúdo da missão (autoria manual: título/summary/taskType/mission).
+ * Edição do plano. Progresso vive numa rota separada e só é escrito pelas
+ * ferramentas de destino.
  */
 export const PensaTaskUpdateBody = t.Object({
-  column: t.Optional(PENSA_TASK_COLUMN),
   position: t.Optional(t.Integer({ minimum: 0, maximum: 1000 })),
-  notes: t.Optional(t.Union([t.String({ maxLength: 5000 }), t.Null()])),
-  // Autoria manual (editar a missão à mão):
   title: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   summary: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
-  taskType: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
-  mission: t.Optional(PensaMissionSchema),
+  destination: t.Optional(PENSA_TASK_DESTINATION),
+  category: t.Optional(PENSA_TASK_CATEGORY),
+  estimatedMinutes: t.Optional(t.Integer({ minimum: 5, maximum: 240 })),
+  dependencies: t.Optional(t.Array(UUID, { maxItems: 40 })),
+  guide: t.Optional(PensaTaskGuideSchema),
+  context: t.Optional(PensaTaskContextSchema),
 })
-
-// REPLACE do checklist — mesmo racional das tasks (≤40 é 409 do use case).
-export const PensaChecklistReplaceBody = t.Object({
-  items: t.Array(
-    t.Object({
-      category: PENSA_CHECKLIST_CATEGORY,
-      title: t.String({ minLength: 1, maxLength: 200 }),
-      description: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
-      /** Ausente → `true` (obrigatório trava o o→done). */
-      required: t.Optional(t.Boolean()),
-      /** Ausente → índice do array. */
-      position: t.Optional(t.Integer({ minimum: 0, maximum: 1000 })),
-    }),
-    { maxItems: 200 },
+const PensaTaskOutputRefSchema = t.Union([
+  t.Object({
+    kind: t.Literal('pinta_asset'),
+    assetId: t.String({ minLength: 1, maxLength: 200 }),
+    assetName: t.Optional(t.String({ maxLength: 200 })),
+    usedInStudioAt: t.Optional(t.String({ maxLength: 60 })),
+  }),
+  t.Object({
+    kind: t.Literal('studio_project'),
+    projectId: t.String({ minLength: 1, maxLength: 200 }),
+    saveRevision: t.Optional(t.String({ maxLength: 200 })),
+  }),
+])
+export const PensaTaskProgressBody = t.Object({
+  status: t.Optional(
+    t.Union([t.Literal('planned'), t.Literal('in_progress'), t.Literal('completed')]),
   ),
+  completedStepIds: t.Optional(
+    t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
+  ),
+  completedCriteriaIds: t.Optional(
+    t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 10 }),
+  ),
+  outputRef: t.Optional(t.Union([PensaTaskOutputRefSchema, t.Null()])),
+  expectedUpdatedAt: t.Optional(t.Union([t.String({ format: 'date-time' }), t.Null()])),
 })
-
-/** Corpo de `PATCH /members/pensa/checklist/:itemId`. */
-export const PensaChecklistToggleBody = t.Object({ done: t.Boolean() })
 
 // ── Admin (painel `@sistemazero/admin`) ─────────────────────────────────────
 

@@ -44,6 +44,12 @@ export interface BuildProductionHtmlInput {
   assetsScriptSrc?: string
   /** Runtime core de teclado/ponteiro, carregado antes do código do aluno. */
   inputScriptSrc?: string
+  /**
+   * Runtime core de SOM (`window.__szAudio`), irmão do de entrada. Pode vir antes
+   * do script de assets: ele lê `__SZGAME_SOUNDS` de forma PREGUIÇOSA, na hora de
+   * tocar, e não no carregamento.
+   */
+  audioScriptSrc?: string
 }
 
 /**
@@ -90,7 +96,11 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
     ? `<script src="${escapeAttr(input.inputScriptSrc)}"></script>`
     : ''
 
-  const earlyHeadBlock = [HARDENING_META, inputScriptTag].filter(Boolean).join('\n')
+  const audioScriptTag = input.audioScriptSrc
+    ? `<script src="${escapeAttr(input.audioScriptSrc)}"></script>`
+    : ''
+
+  const earlyHeadBlock = [HARDENING_META, inputScriptTag, audioScriptTag].filter(Boolean).join('\n')
   const headBlock = [PWA_HEAD_TAGS, assetsScriptTag, importmapTag, extScriptsTag, extraCssTags]
     .filter(Boolean)
     .join('\n')

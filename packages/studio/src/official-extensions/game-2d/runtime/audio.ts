@@ -49,6 +49,9 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   }
   function unlockAudio() {
     audioGestureSeen = true;
+    // Solta os sons de ARQUIVO que ficaram esperando o gesto (o guard de _paused
+    // mora dentro do _startClip, entao pausado nada dispara).
+    _releaseClips();
     if (_paused) return;
     var ctx = ensureAudio();
     try {
@@ -220,6 +223,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _scheduleMusic(_musicState.remaining);
   }
   function _pauseAudio() {
+    _pauseClips();
     _pauseMusic();
     _audioResumeGeneration += 1;
     _audioSuspendedForPause = false;
@@ -240,6 +244,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     }
   }
   function _resumeAudio() {
+    _resumeClips();
     var ctx = audioCtx;
     var shouldResumeContext = _audioSuspendedForPause;
     _audioSuspendedForPause = false;
@@ -270,8 +275,154 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _musicName = null;
     _musicState = null;
   }
+  // ---- 🔊 Som de ARQUIVO (o que a crianca enviou em "Imagens e sons") ----
+  // Tudo acima e SINTETIZADO (oscilador). Daqui para baixo toca o mp3/wav dela,
+  // por HTMLAudio.
+  // ⚠️ Os nomes internos sao clip/track, e nao playSound/playMusic, porque esses
+  // dois ja pertencem aos blocos de bip e de melodia pronta — e bloco que a
+  // crianca ja usa nao muda de forma. No Jogo 3D, onde nao havia conflito, as
+  // mesmas funcoes se chamam playSound/playMusic.
+  var _clips = {};
+  // Fonte por apelido num mapa PARALELO: o typecheck do runtime confere contra o
+  // DOM real, e HTMLAudioElement nao tem campo livre para pendurar coisa nossa.
+  var _clipSrc = {};
+  var _clipVolume = 0.8;
+  var _trackKey = '';
+  // ⚠️ O navegador RECUSA play() antes de um gesto, e a recusa e SILENCIOSA
+  // (promise rejeitada). Sem esta fila, "Tocar o som" no "Ao iniciar" nao
+  // acontecia e nao havia nada no console explicando. Aqui o pedido espera o
+  // primeiro clique/tecla — o mesmo destravamento que o bip ja fazia acima.
+  var _clipWaiting = {};
+  function _releaseClips() {
+    for (var key in _clipWaiting) {
+      if (Object.prototype.hasOwnProperty.call(_clipWaiting, key)) {
+        var start = _clipWaiting[key];
+        delete _clipWaiting[key];
+        try { start(); } catch (e) {}
+      }
+    }
+  }
+  function _clipKey(name) {
+    return typeof name === 'string' ? name.trim() : '';
+  }
+  function loadSound(name, asset) {
+    var key = _clipKey(name) || _clipKey(asset);
+    if (!key) { warnOnce('som-sem-apelido', 'o bloco "Carregar o som" precisa de um apelido.'); return; }
+    var wanted = _clipKey(asset);
+    var src = SOUNDS[wanted] || (wanted.indexOf('data:audio/') === 0 ? wanted : null);
+    if (!src) {
+      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Imagens e sons".');
+      return;
+    }
+    if (_clips[key] && _clipSrc[key] === src) return;
+    if (_clips[key]) { try { _clips[key].pause(); } catch (e) {} }
+    try {
+      var el = new Audio();
+      el.preload = 'auto';
+      el.volume = _clipVolume;
+      el.onerror = function () { warnOnce('som-falhou-' + key, 'o som "' + key + '" nao pode ser carregado.'); };
+      el.src = src;
+      _clips[key] = el;
+      _clipSrc[key] = src;
+    } catch (e) {}
+  }
+  function _startClip(key, loop) {
+    var el = _clips[key];
+    if (!el || _paused) return;
+    try {
+      el.loop = !!loop;
+      el.volume = _clipVolume;
+      el.currentTime = 0;
+      var playing = el.play();
+      if (playing && playing.catch) {
+        playing.catch(function () {
+          if (!audioGestureSeen) _clipWaiting[key] = function () { _startClip(key, loop); };
+        });
+      }
+    } catch (e) {}
+  }
+  function _requestClip(key, loop) {
+    if (!key) return;
+    if (!_clips[key]) {
+      warnOnce('som-nao-carregado-' + key, 'o som "' + key + '" ainda nao foi carregado. Use "Carregar o som" em "Ao iniciar".');
+      return;
+    }
+    if (!audioGestureSeen) { _clipWaiting[key] = function () { _startClip(key, loop); }; return; }
+    _startClip(key, loop);
+  }
+  function playClip(name) {
+    _requestClip(_clipKey(name), false);
+  }
+  function stopClip(name) {
+    var key = _clipKey(name);
+    if (key === _trackKey) _trackKey = '';
+    delete _clipWaiting[key];
+    var el = _clips[key];
+    if (!el) return;
+    try { el.pause(); el.currentTime = 0; el.loop = false; } catch (e) {}
+  }
+  function playTrack(name) {
+    var key = _clipKey(name);
+    if (!key) return;
+    // UMA trilha por vez: comecar outra troca a que estava tocando.
+    if (_trackKey && _trackKey !== key) stopClip(_trackKey);
+    // Repetir a MESMA nao recomeca a faixa (o bloco costuma rodar mais de uma
+    // vez, e recomecar do zero seria um solavanco).
+    if (_trackKey === key && _clips[key] && !_clips[key].paused) return;
+    _trackKey = key;
+    _requestClip(key, true);
+  }
+  function stopTrack() {
+    // ⚠️ Para as DUAS: a do arquivo e a melodia sintetizada. Assim "Parar a
+    // musica" sempre faz o que a crianca espera, sem ela precisar lembrar de
+    // qual dos dois blocos de musica usou.
+    if (_trackKey) stopClip(_trackKey);
+    stopMusic();
+  }
+  function setSoundVolume(level) {
+    // ⚠️ NAO usar _positiveFiniteNumber aqui: ele so aceita > 0, entao o ZERO
+    // caia no fallback 8 e "por o volume em 0" DEIXAVA O SOM EM 80%, o oposto do
+    // que o bloco promete. E zero e justamente o valor que a crianca mais tenta,
+    // porque o rotulo diz "0 (mudo)".
+    var n = _isFiniteNumber(level) ? level : 8;
+    // A crianca pensa de 0 a 10; o navegador quer 0 a 1.
+    _clipVolume = Math.max(0, Math.min(10, n)) / 10;
+    for (var key in _clips) {
+      if (Object.prototype.hasOwnProperty.call(_clips, key)) {
+        try { _clips[key].volume = _clipVolume; } catch (e) {}
+      }
+    }
+  }
+  /** Sem isto a trilha em loop sobrevive ao "jogar de novo" e some so no F5. */
+  function _resetClips() {
+    for (var key in _clips) {
+      if (Object.prototype.hasOwnProperty.call(_clips, key)) {
+        try { _clips[key].pause(); _clips[key].src = ''; } catch (e) {}
+      }
+    }
+    _clips = {};
+    _clipSrc = {};
+    _clipWaiting = {};
+    _trackKey = '';
+  }
+  function _pauseClips() {
+    for (var key in _clips) {
+      if (Object.prototype.hasOwnProperty.call(_clips, key)) {
+        try { if (!_clips[key].paused) _clips[key].pause(); } catch (e) {}
+      }
+    }
+  }
+  function _resumeClips() {
+    // So a trilha volta sozinha: um efeito curto interrompido pela pausa nao
+    // deve ressurgir fora de contexto quando o jogo despausa.
+    if (_trackKey && _clips[_trackKey]) {
+      try { var pr = _clips[_trackKey].play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+    }
+  }
+
   function _resetAudio() {
     stopMusic();
+    _resetClips();
     _stopActiveAudioSources();
     _audioSuspendedForPause = false;
     _audioResumeGeneration += 1;

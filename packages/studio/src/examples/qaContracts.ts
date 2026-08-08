@@ -45,6 +45,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
+    key: 'game-2d:Cenário do meu desenho',
+    name: 'Cenário do meu desenho',
+    experience: 'demo',
+    promise: 'Pôr um desenho seu como fundo do jogo e andar na frente dele.',
+    scenario:
+      'Abrir, ver o cenário cobrindo a tela inteira sem deformar e mover o herói com as setas por cima dele.',
+    interactions: ['arrows'],
+  },
+  {
     key: 'game-2d:Pong',
     name: 'Pong',
     experience: 'game',

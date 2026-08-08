@@ -1,6 +1,8 @@
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import type { ReactNode } from 'react'
 import { createContext, createElement, type JSX, useContext, useMemo, useState } from 'react'
 import type { IDEMode, Project, ProjectKind } from '#core'
+import { buildTutorBehavior, type StudioTutorBehaviorEntry } from './tutorBehavior'
 import { isStudioTutorSensitivePath, redactStudioTutorSecrets } from './tutorSafety'
 
 export type StudioTutorScope =
@@ -13,6 +15,13 @@ export type StudioTutorScope =
   | 'redirect-pensa'
   | 'redirect-pinta'
   | 'unsupported'
+  | 'project-review'
+  /**
+   * Acabou a ajuda de IA da família. É PERSISTIDO de propósito: sem ele, uma
+   * recusa de ontem voltaria do histórico com cara de aula e com os botões de
+   * "isso ajudou?", como se fosse conteúdo que a criança pudesse avaliar.
+   */
+  | 'quota'
 
 export interface StudioTutorCompactBlock {
   id: string
@@ -36,6 +45,23 @@ export interface StudioTutorProjectContext {
   installedExtensions: string[]
   selectedBlockId: string | null
   lastError: string | null
+  /**
+   * O que o projeto FAZ, derivado da IR: valores escolhidos pela criança + em
+   * que área cada coisa roda. É o que permite diagnosticar erro de LÓGICA em vez
+   * de ensinar a mecânica do zero. Ausente quando não há IR (Pro, projeto antigo).
+   */
+  behavior?: StudioTutorBehaviorEntry[]
+  /**
+   * Ids das pilhas SOLTAS (fora das Áreas do projeto): estão salvas, mas nunca
+   * executam. O editor já marca isso no canvas; sem mandar, o tutor trata
+   * rascunho morto como código ativo.
+   */
+  draftBlockIds?: string[]
+  /**
+   * Problemas que o editor já detectou, com a frase pronta em português
+   * ("A variável X ainda não foi declarada neste ponto").
+   */
+  semanticIssues?: Array<{ blockId?: string; message: string }>
   /** Só existe em Ponte/Pro. O modo Blocos nunca envia código. */
   code?: StudioTutorCodeFile[]
 }
@@ -46,7 +72,15 @@ export interface StudioTutorBlockReference {
   /** ID autoritativo do tipo no catálogo server-safe. */
   blockType: string
   name: string
+  /** Categoria de topo na paleta (ex.: "Jogo 2D"). */
   category: string
+  /** Subcategoria aninhada (ex.: "🎮 Sprites"). Ausente em respostas antigas. */
+  subcategory?: string
+  /**
+   * Caminho completo na paleta (ex.: `['Programação','🏷️ Variáveis']`) — é o que
+   * a criança realmente vê. Ausente em respostas gravadas antes de 08/2026.
+   */
+  palettePath?: readonly string[]
   area: string
 }
 
@@ -64,6 +98,8 @@ export interface StudioTutorResponse {
   scope: StudioTutorScope
   blockReferences: StudioTutorBlockReference[]
   lessonReferences?: StudioTutorLessonReference[]
+  /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
+  suggestions?: string[]
   createdAt: string
 }
 
@@ -93,11 +129,23 @@ export interface StudioTutorFeedbackInput {
   useful: boolean
 }
 
+/**
+ * Resposta do `ask` + o saldo FRESCO da ajuda de IA.
+ *
+ * ⚠️ O saldo vem no ENVELOPE, fora do `response`: aquele objeto é persistido no
+ * histórico, e crédito é volátil. `credits` ausente/nulo = "nada mudou agora"
+ * (resposta determinística, replay) — quem renderiza MANTÉM o valor anterior.
+ */
+export interface StudioTutorAskResult {
+  response: StudioTutorResponse
+  credits?: AiCreditsView | null
+}
+
 /** I/O do host. O Studio nunca conhece sessão, provedor, quota ou banco. */
 export interface StudioTutorAdapter {
   loadHistory(projectId: string, before?: string): Promise<StudioTutorHistoryPage>
   deleteHistory(projectId: string): Promise<void>
-  ask(input: StudioTutorAskInput): Promise<StudioTutorResponse>
+  ask(input: StudioTutorAskInput): Promise<StudioTutorAskResult>
   feedback(input: StudioTutorFeedbackInput): Promise<void>
 }
 
@@ -107,6 +155,11 @@ export interface StudioTutorConfig {
   openLesson?: (reference: StudioTutorLessonReference) => void
   /** Cooldown visual local; o rate limit autoritativo continua no BFF. */
   cooldownMs?: number
+  /**
+   * Saldo inicial (o host lê no Server Component). `null`/ausente = "não sei" →
+   * o medidor não aparece. NUNCA passe zeros para significar indisponibilidade.
+   */
+  credits?: AiCreditsView | null
 }
 
 interface StudioTutorState {
@@ -222,9 +275,13 @@ export function buildStudioTutorContext(input: {
   project: Project
   selectedBlockId: string | null
   lastError: string | null
+  /** Diagnósticos que o editor já calculou (pilhas soltas, problemas da IR). */
+  draftBlockIds?: readonly string[]
+  semanticIssues?: readonly { blockId?: string; message: string }[]
 }): StudioTutorProjectContext {
   const { project } = input
   const includeCode = project.mode === 'bridge' || project.kind === 'pro'
+  const behavior = buildTutorBehavior(project.ir)
   return {
     projectId: project.id,
     mode: project.mode,
@@ -233,6 +290,13 @@ export function buildStudioTutorContext(input: {
     installedExtensions: project.installedExtensions.map((ext) => ext.id),
     selectedBlockId: input.selectedBlockId,
     lastError: input.lastError?.slice(0, MAX_ERROR_CHARS) ?? null,
+    ...(behavior?.length ? { behavior } : {}),
+    ...(input.draftBlockIds?.length
+      ? { draftBlockIds: [...input.draftBlockIds].slice(0, 40) }
+      : {}),
+    ...(input.semanticIssues?.length
+      ? { semanticIssues: input.semanticIssues.slice(0, 5).map((issue) => ({ ...issue })) }
+      : {}),
     ...(includeCode ? { code: compactCode(project) } : {}),
   }
 }

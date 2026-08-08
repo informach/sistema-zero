@@ -15,6 +15,8 @@ export function ZappyCoin({ className }: ZappyCoinProps) {
     <img
       src="/zappy/coin.webp"
       alt=""
+      width={16}
+      height={16}
       aria-hidden="true"
       draggable={false}
       className={cn('size-4 shrink-0 select-none object-contain', className)}

@@ -1,0 +1,6 @@
+[test]
+# DOM realista para os testes de integração do onboarding (efeitos, foco e storage).
+preload = ["./test-setup.ts"]
+coverageSkipTestFiles = true
+# Bun 1.3.x usa os nomes singulares neste parser (`line`/`function`).
+coverageThreshold = { line = 0.75, function = 0.65 }

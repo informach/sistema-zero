@@ -1,5 +1,7 @@
+import { creatorCareerLevel } from '@sistemazero/core/career'
 import { Elysia } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
+import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { AdvancePensaStageService } from '../../../application/pensa/advance-stage.service'
 import type { AppendPensaConversationTurnService } from '../../../application/pensa/append-conversation-turn.service'
 import type { AppendPensaTasksService } from '../../../application/pensa/append-tasks.service'
@@ -8,27 +10,26 @@ import type { CreatePensaProjectService } from '../../../application/pensa/creat
 import type { DeletePensaTaskService } from '../../../application/pensa/delete-task.service'
 import type { GetPensaProjectService } from '../../../application/pensa/get-project.service'
 import type { GetPensaStageService } from '../../../application/pensa/get-stage.service'
-import type { GetPensaStudioSnapshotService } from '../../../application/pensa/get-studio-snapshot.service'
+import type { GetPensaTaskHandoffService } from '../../../application/pensa/get-task-handoff.service'
 import type { ListPensaProjectsService } from '../../../application/pensa/list-projects.service'
-import type { ReplacePensaChecklistService } from '../../../application/pensa/replace-checklist.service'
 import type { ReplacePensaTasksService } from '../../../application/pensa/replace-tasks.service'
 import type { SavePensaArtifactService } from '../../../application/pensa/save-artifact.service'
-import type { SavePensaStudioSnapshotService } from '../../../application/pensa/save-studio-snapshot.service'
-import type { TogglePensaChecklistItemService } from '../../../application/pensa/toggle-checklist-item.service'
 import type { UpdatePensaProjectService } from '../../../application/pensa/update-project.service'
 import type { UpdatePensaTaskService } from '../../../application/pensa/update-task.service'
+import type { UpdatePensaTaskProgressService } from '../../../application/pensa/update-task-progress.service'
 import type { ValidatePensaArtifactService } from '../../../application/pensa/validate-artifact.service'
 import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
-import { PENSA_ACCESS_REF } from '../../../domain/pensa/pensa'
+import {
+  PENSA_ACCESS_REF,
+  PENSA_PINTA_ACCESS_REF,
+  PENSA_STUDIO_ACCESS_REF,
+} from '../../../domain/pensa/pensa'
 import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
   AudienceQuery,
   PensaAdvanceBody,
   PensaArtifactBody,
   PensaArtifactValidateParams,
-  PensaChecklistItemParams,
-  PensaChecklistReplaceBody,
-  PensaChecklistToggleBody,
   PensaConversationBody,
   PensaConversationParams,
   PensaCreateCycleBody,
@@ -36,8 +37,8 @@ import {
   PensaCycleParams,
   PensaProjectParams,
   PensaStageParams,
-  PensaStudioSnapshotBody,
   PensaTaskParams,
+  PensaTaskProgressBody,
   PensaTasksReplaceBody,
   PensaTaskUpdateBody,
   PensaUpdateProjectBody,
@@ -48,8 +49,6 @@ export interface PensaRoutesDeps {
   createProject: CreatePensaProjectService
   getProject: GetPensaProjectService
   updateProject: UpdatePensaProjectService
-  getStudioSnapshot: GetPensaStudioSnapshotService
-  saveStudioSnapshot: SavePensaStudioSnapshotService
   createCycle: CreatePensaCycleService
   getStage: GetPensaStageService
   appendConversationTurn: AppendPensaConversationTurnService
@@ -60,10 +59,12 @@ export interface PensaRoutesDeps {
   appendTasks: AppendPensaTasksService
   updateTask: UpdatePensaTaskService
   deleteTask: DeletePensaTaskService
-  replaceChecklist: ReplacePensaChecklistService
-  toggleChecklistItem: TogglePensaChecklistItemService
+  getTaskHandoff: GetPensaTaskHandoffService
+  updateTaskProgress: UpdatePensaTaskProgressService
   /** Gate de PRODUTO na criação de projeto (mesma régua da rota `/members/access`). */
   accessCheck: AccessCheckService
+  /** Rank autoritativo do perfil; tarefas do Estúdio respeitam a carreira. */
+  getGamification: GetGamificationService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -146,30 +147,6 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
         }),
         { body: PensaUpdateProjectBody, params: PensaProjectParams, query: AudienceQuery },
       )
-      // Snapshot do Estúdio na NUVEM (backup do jogo atrelado ao projeto): o
-      // BLOB só sai/entra AQUI (a detail view traz apenas `studioSnapshotAt`).
-      // ⚠️ o PUT tem teto de corpo de 2 MB próprio (`bodyLimitForPath`).
-      .get(
-        '/projects/:projectId/studio-snapshot',
-        async ({ headers, params, query }) =>
-          deps.getStudioSnapshot.execute(
-            resolveUserId(headers),
-            query.audience ?? 'adult',
-            params.projectId,
-          ),
-        { params: PensaProjectParams, query: AudienceQuery },
-      )
-      .put(
-        '/projects/:projectId/studio-snapshot',
-        async ({ headers, params, body, query }) =>
-          deps.saveStudioSnapshot.execute(
-            resolveUserId(headers),
-            query.audience ?? 'adult',
-            params.projectId,
-            body.project,
-          ),
-        { body: PensaStudioSnapshotBody, params: PensaProjectParams, query: AudienceQuery },
-      )
       // Ciclo n+1 (exige o anterior `done`; ≤10). Devolve o detail atualizado.
       .post(
         '/projects/:projectId/cycles',
@@ -251,7 +228,7 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
           ),
         { body: PensaAdvanceBody, params: PensaCycleParams, query: AudienceQuery },
       )
-      // REPLACE total das tasks (nascem backlog, position = índice do array; ≤60).
+      // REPLACE total do plano (somente enquanto nenhuma tarefa foi iniciada).
       .put(
         '/cycles/:cycleId/tasks',
         async ({ headers, params, body, query }) => ({
@@ -264,7 +241,7 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
         }),
         { body: PensaTasksReplaceBody, params: PensaCycleParams, query: AudienceQuery },
       )
-      // APPEND ao backlog (autoria manual "+ Nova missão" e "sugerir mais"; ≤60 total).
+      // APPEND em ordem global (autoria manual / sugestão complementar).
       .post(
         '/cycles/:cycleId/tasks',
         async ({ headers, params, body, query }) => ({
@@ -277,7 +254,7 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
         }),
         { body: PensaTasksReplaceBody, params: PensaCycleParams, query: AudienceQuery },
       )
-      // Edita/move/anota um card (re-sequencia a coluna destino).
+      // Edita o conteúdo planejado. Iniciada/concluída gera uma revisão imutável.
       .patch(
         '/tasks/:taskId',
         async ({ headers, params, body, query }) => ({
@@ -303,31 +280,64 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
         },
         { params: PensaTaskParams, query: AudienceQuery },
       )
-      // REPLACE do checklist de lançamento (≤40 itens).
-      .put(
-        '/cycles/:cycleId/checklist',
-        async ({ headers, params, body, query }) => ({
-          items: await deps.replaceChecklist.execute(
-            resolveUserId(headers),
-            query.audience ?? 'adult',
-            params.cycleId,
-            body.items,
-          ),
-        }),
-        { body: PensaChecklistReplaceBody, params: PensaCycleParams, query: AudienceQuery },
+      // Brief/guia completo para a ferramenta de destino. A posse não esconde o
+      // plano: devolve capability bloqueada com explicação.
+      .get(
+        '/tasks/:taskId/handoff',
+        async ({ headers, params, query }) => {
+          const userId = resolveUserId(headers)
+          const accountId = resolveAccountId(headers)
+          const audience = query.audience ?? 'adult'
+          const privileged = isPrivilegedActor(headers)
+          const handoff = await deps.getTaskHandoff.execute(userId, audience, params.taskId)
+          const requiredRef =
+            handoff.task.destination === 'pinta' ? PENSA_PINTA_ACCESS_REF : PENSA_STUDIO_ACCESS_REF
+          let owned = privileged
+          if (!owned) {
+            const access = await deps.accessCheck.execute(accountId, [requiredRef])
+            owned = access.grants.includes(requiredRef) || access.communities.includes(requiredRef)
+          }
+          let studioCareerLocked = false
+          if (owned && !privileged && handoff.task.destination === 'studio') {
+            try {
+              const gamification = await deps.getGamification.execute(userId, accountId, {
+                audience,
+              })
+              studioCareerLocked = !creatorCareerLevel(gamification.level.slug).reward.freeStudio
+            } catch {
+              // Sem conseguir provar o rank, o gate pedagógico falha fechado.
+              studioCareerLocked = true
+            }
+            if (studioCareerLocked) owned = false
+          }
+          return {
+            ...handoff,
+            capability: {
+              owned,
+              blockedReason: owned
+                ? null
+                : studioCareerLocked
+                  ? 'O Estúdio ainda não foi liberado pelo seu nível na carreira.'
+                  : handoff.task.destination === 'pinta'
+                    ? 'O Pinta ainda não está liberado para esta conta.'
+                    : 'O Estúdio Completo ainda não está liberado para esta conta.',
+            },
+          }
+        },
+        { params: PensaTaskParams, query: AudienceQuery },
       )
-      // Marca/desmarca um item do checklist.
+      // Progresso é escrito pelo Pinta/Estúdio; IDs e transições são validados.
       .patch(
-        '/checklist/:itemId',
+        '/tasks/:taskId/progress',
         async ({ headers, params, body, query }) => ({
-          item: await deps.toggleChecklistItem.execute(
+          task: await deps.updateTaskProgress.execute(
             resolveUserId(headers),
             query.audience ?? 'adult',
-            params.itemId,
-            body.done,
+            params.taskId,
+            body,
           ),
         }),
-        { body: PensaChecklistToggleBody, params: PensaChecklistItemParams, query: AudienceQuery },
+        { body: PensaTaskProgressBody, params: PensaTaskParams, query: AudienceQuery },
       )
   )
 }

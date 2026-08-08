@@ -654,6 +654,23 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   })
   if (canvasBlock !== undefined) return canvasBlock
   switch (stmt.type) {
+    // ----- 🔊 Som do núcleo -----
+    case 'somLoad':
+      return block('sz_som_load', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'somPlay':
+      return block('sz_som_play', { NAME: stmt.name }, {}, stmt.__id)
+    case 'somStop':
+      return block('sz_som_stop', { NAME: stmt.name }, {}, stmt.__id)
+    case 'somPlayMusic':
+      return block('sz_som_play_music', { NAME: stmt.name }, {}, stmt.__id)
+    case 'somStopMusic':
+      return block('sz_som_stop_music', {}, {}, stmt.__id)
+    case 'somVolume': {
+      const level = exprToValueBlock(stmt.level)
+      return level === null
+        ? rawJSBlock(stmt)
+        : block('sz_som_volume', {}, {}, stmt.__id, { LEVEL: level })
+    }
     case 'event': {
       const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
       const targetFields = { TARGET: stmt.target, TARGET_KIND: targetKind }
@@ -1202,6 +1219,22 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       return block('sz_g2d_play_music', { MUSIC: stmt.tune }, {}, stmt.__id)
     case 'g2d:stopMusic':
       return block('sz_g2d_stop_music', {}, {}, stmt.__id)
+    case 'g2d:loadSound':
+      return block('sz_g2d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'g2d:playClip':
+      return block('sz_g2d_play_clip', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g2d:stopClip':
+      return block('sz_g2d_stop_clip', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g2d:playTrack':
+      return block('sz_g2d_play_track', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g2d:stopTrack':
+      return block('sz_g2d_stop_track', {}, {}, stmt.__id)
+    case 'g2d:setVolume': {
+      const level = exprToValueBlock(valueToExpr(stmt.level))
+      return level === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_set_volume', {}, {}, stmt.__id, { LEVEL: level })
+    }
     case 'g2d:playNote': {
       const ms = exprToValueBlock(valueToExpr(stmt.ms))
       return ms === null
@@ -1514,6 +1547,20 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
             { FROM: from, TO: to, FPS: fps },
           )
     }
+    case 'g2d:animateOnce': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_animate_once',
+            { SPRITE: stmt.spriteVar, SHEET: stmt.sheetVar },
+            {},
+            stmt.__id,
+            { FROM: from, TO: to, FPS: fps },
+          )
+    }
     case 'g2d:setStateAnim': {
       const from = exprToValueBlock(valueToExpr(stmt.from))
       const to = exprToValueBlock(valueToExpr(stmt.to))
@@ -1552,6 +1599,28 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
             { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
           )
     }
+    case 'g2d:defineEnemySmart': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return hp === null || speed === null || dmg === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_define_enemy_smart',
+            {
+              NAME: stmt.varName,
+              SMART: stmt.smart,
+              COLOR: stmt.color,
+              IMAGE: stmt.image,
+              SHAPE: stmt.shape ?? '',
+            },
+            {},
+            stmt.__id,
+            { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
+          )
+    }
     case 'g2d:enemyStateAnim': {
       const from = exprToValueBlock(valueToExpr(stmt.from))
       const to = exprToValueBlock(valueToExpr(stmt.to))
@@ -1578,12 +1647,25 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
             { VALUE: value },
           )
     }
+    case 'g2d:enemyAddBehavior':
+      return block(
+        'sz_g2d_enemy_add_behavior',
+        { TYPE: stmt.typeVar, BEHAVIOR: stmt.behavior },
+        {},
+        stmt.__id,
+      )
     case 'g2d:spawnEnemy': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
       return x === null || y === null
         ? rawJSBlock(stmt)
-        : block('sz_g2d_spawn_enemy', { TYPE: stmt.typeVar }, {}, stmt.__id, { X: x, Y: y })
+        : block(
+            'sz_g2d_spawn_enemy',
+            { TYPE: stmt.typeVar, NAME: stmt.varName ?? '' },
+            {},
+            stmt.__id,
+            { X: x, Y: y },
+          )
     }
     case 'g2d:updateEnemyType':
       return block(
@@ -1601,6 +1683,20 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'g2d:onEnemyHurt':
+      return block(
+        'sz_g2d_on_enemy_hurt',
+        { TYPE: stmt.typeVar, ANAME: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onEnemyBeamHit':
+      return block(
+        'sz_g2d_on_enemy_beam_hit',
+        { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar, ANAME: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'g2d:onEnemyShotHit':
       return block(
         'sz_g2d_on_enemy_shot_hit',
@@ -1615,6 +1711,18 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         {},
         stmt.__id,
       )
+    case 'g2d:stompEnemy': {
+      const bounce = exprToValueBlock(valueToExpr(stmt.bounce))
+      return bounce === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_stomp_enemy',
+            { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar },
+            {},
+            stmt.__id,
+            { BOUNCE: bounce },
+          )
+    }
     case 'g2d:drawFrame': {
       const index = exprToValueBlock(valueToExpr(stmt.index))
       const x = exprToValueBlock(valueToExpr(stmt.x))
@@ -1821,6 +1929,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'g2d:addToGroup':
+      return block(
+        'sz_g2d_add_to_group',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+        {},
+        stmt.__id,
+      )
     case 'g2d:removeFromGroup':
       return block(
         'sz_g2d_remove_from_group',
@@ -1959,6 +2074,10 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_g2d_fit_screen', {}, {}, stmt.__id, { PERCENT: percent })
     }
+    case 'g2d:setBackdrop':
+      return block('sz_g2d_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+    case 'g2d:drawBackdrop':
+      return block('sz_g2d_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
     case 'g2d:stageBorder': {
       const width = exprToValueBlock(valueToExpr(stmt.width))
       return width === null
@@ -2973,6 +3092,22 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     }
     case 'g3d:playEffect':
       return block('sz_g3d_play_effect', { KIND: stmt.kind }, {}, stmt.__id)
+    case 'g3d:loadSound':
+      return block('sz_g3d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'g3d:playSound':
+      return block('sz_g3d_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3d:stopSound':
+      return block('sz_g3d_stop_sound', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3d:playMusic':
+      return block('sz_g3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3d:stopMusic':
+      return block('sz_g3d_stop_music', {}, {}, stmt.__id)
+    case 'g3d:setVolume': {
+      const level = exprToValueBlock(valueToExpr(stmt.level))
+      return level === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3d_set_volume', {}, {}, stmt.__id, { LEVEL: level })
+    }
     // ----- game-2d-advanced (kit profissional) -----
     case 'gk:setup': {
       const w = exprToValueBlock(valueToExpr(stmt.w))
@@ -2991,6 +3126,10 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_gk_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
     }
+    case 'gk:setBackdrop':
+      return block('sz_gk_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+    case 'gk:drawBackdrop':
+      return block('sz_gk_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
     case 'gk:showHitboxes':
       return block('sz_gk_show_hitboxes', {}, {}, stmt.__id)
     case 'gk:start':
@@ -7025,6 +7164,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_get_max_health', { SPRITE: expr.spriteVar })
     case 'g2d:enemyDamage':
       return block('sz_g2d_enemy_damage', { SPRITE: expr.spriteVar })
+    case 'g2d:animEnded':
+      return block('sz_g2d_anim_ended', { SPRITE: expr.spriteVar })
     case 'g2d:spriteX':
       return block('sz_g2d_sprite_x', { SPRITE: expr.spriteVar })
     case 'g2d:spriteY':

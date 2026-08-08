@@ -77,15 +77,21 @@ export function toolPointerDown(
   bitmap: PintaBitmap,
   settings: ToolSettings,
   rawPos: Vec2,
+  /**
+   * O desenho que a criança VÊ (camadas achatadas). Conta-gotas e balde leem
+   * daqui — "pego a cor que vejo, pinto na camada em que estou". Ausente = o
+   * próprio bitmap.
+   */
+  reference?: PintaBitmap,
 ): ToolDownResult {
   const pos = clampToBitmap(bitmap, rawPos)
   switch (settings.tool) {
     case 'picker': {
-      const picked = getPixel(bitmap, pos.x, pos.y)
+      const picked = getPixel(reference ?? bitmap, pos.x, pos.y)
       return { gesture: null, preview: bitmap, pickedColor: picked < 0 ? undefined : picked }
     }
     case 'fill': {
-      const next = floodFill(bitmap, pos, settings.color)
+      const next = floodFill(bitmap, pos, settings.color, reference)
       return {
         gesture: null,
         preview: next,

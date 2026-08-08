@@ -29,10 +29,11 @@ describe('quadros', () => {
     const base = sprite()
     const marked = { ...base }
     const firstFrame = marked.animations[0]?.frames[0]
-    if (firstFrame) firstFrame.data[0] = 5
+    // Um quadro de pixel é a PILHA de cels (um por camada).
+    if (firstFrame?.[0]) firstFrame[0].data[0] = 5
     const out = addFrame(marked, animId(marked), 0)
     expect(out.animations[0]?.frames).toHaveLength(2)
-    expect(out.animations[0]?.frames[1]?.data[0]).toBe(0)
+    expect(out.animations[0]?.frames[1]?.[0]?.data[0]).toBe(0)
     // structural sharing: o quadro original é a MESMA referência.
     expect(out.animations[0]?.frames[0]).toBe(firstFrame as never)
   })
@@ -40,11 +41,11 @@ describe('quadros', () => {
   it('duplicateFrame copia o bitmap (referência NOVA, mesmo conteúdo)', () => {
     const base = sprite()
     const frame = base.animations[0]?.frames[0]
-    if (frame) frame.data[3] = 7
+    if (frame?.[0]) frame[0].data[3] = 7
     const out = duplicateFrame(base, animId(base), 0)
     const copy = out.animations[0]?.frames[1]
-    expect(copy?.data[3]).toBe(7)
-    expect(copy).not.toBe(frame as never)
+    expect(copy?.[0]?.data[3]).toBe(7)
+    expect(copy?.[0]).not.toBe(frame?.[0] as never)
   })
 
   it('removeFrame nunca deixa a animação vazia', () => {
@@ -58,10 +59,10 @@ describe('quadros', () => {
   it('moveFrame troca posições e respeita as bordas', () => {
     let asset = sprite()
     const frame0 = asset.animations[0]?.frames[0]
-    if (frame0) frame0.data[0] = 1
+    if (frame0?.[0]) frame0[0].data[0] = 1
     asset = addFrame(asset, animId(asset), 0)
     const moved = moveFrame(asset, animId(asset), 0, 1)
-    expect(moved.animations[0]?.frames[1]?.data[0]).toBe(1)
+    expect(moved.animations[0]?.frames[1]?.[0]?.data[0]).toBe(1)
     expect(moveFrame(asset, animId(asset), 0, -1)).toBe(asset)
   })
 
@@ -100,16 +101,32 @@ describe('animações', () => {
     expect(renameAnimation(base, animId(base), '   ')).toBe(base)
   })
 
+  it('rename e duplicação mantêm nomes únicos', () => {
+    const base = sprite()
+    const firstDuplicate = duplicateAnimation(base, animId(base)).asset
+    const secondDuplicate = duplicateAnimation(firstDuplicate, animId(firstDuplicate)).asset
+    expect(secondDuplicate.animations.map((animation) => animation.name)).toEqual([
+      'parado',
+      'parado 3',
+      'parado 2',
+    ])
+
+    const duplicateId = secondDuplicate.animations[2]?.id
+    if (!duplicateId) throw new Error('cópia esperada')
+    const renamed = renameAnimation(secondDuplicate, duplicateId, 'parado')
+    expect(new Set(renamed.animations.map((animation) => animation.name)).size).toBe(3)
+  })
+
   it('duplicateAnimation clona quadros com referências novas', () => {
     const base = sprite()
     const frame = base.animations[0]?.frames[0]
-    if (frame) frame.data[0] = 9
+    if (frame?.[0]) frame[0].data[0] = 9
     const { asset, animationId } = duplicateAnimation(base, animId(base))
     expect(animationId).not.toBeNull()
     const copy = asset.animations[1]
     expect(copy?.name).toBe('parado 2')
-    expect(copy?.frames[0]?.data[0]).toBe(9)
-    expect(copy?.frames[0]).not.toBe(frame as never)
+    expect(copy?.frames[0]?.[0]?.data[0]).toBe(9)
+    expect(copy?.frames[0]?.[0]).not.toBe(frame?.[0] as never)
   })
 
   it('removeAnimation nunca deixa o sprite sem nenhuma', () => {

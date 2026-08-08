@@ -408,6 +408,12 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   pruneSwarm: 4,
   playNote: 2,
   playEffect: 1,
+  loadSound: 2,
+  playSound: 1,
+  stopSound: 1,
+  playMusic: 1,
+  stopMusic: 0,
+  setSoundVolume: 1,
   animate: 2,
 }
 
@@ -456,6 +462,9 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:setSky',
   'g3d:setShadows',
   'g3d:createSwarm',
+  // Carregar o som prepara o arquivo, não toca nada — logo não precisa de gesto
+  // do usuário e é o único bloco de áudio que pertence ao "Ao iniciar".
+  'g3d:loadSound',
 ])
 
 /** Comandos sem efeito antes de um loop, evento ou função entrar em execução. */

@@ -9,7 +9,26 @@ export interface ZappyMetricsView {
   needsContext: number
   quota: number
   errors: number
+  /** Respostas reprovadas pela validação (fallback gentil) — tolera members antigo. */
+  rejected?: number
   averageLatencyMs: number
+}
+
+export type ZappyFailureFilter = 'all' | 'rejected' | 'error' | 'not-useful'
+
+/** Pergunta que falhou — redigida na gravação, SEM ids de criança/projeto. */
+export interface ZappyFailedQuestionView {
+  question: string
+  answerText: string
+  rejection?: string
+  outcome: string
+  useful: boolean | null
+  createdAt: string
+}
+
+export interface ZappyFailedQuestionsPageView {
+  items: ZappyFailedQuestionView[]
+  total: number
 }
 
 export interface ZappyKnowledgeReportView {

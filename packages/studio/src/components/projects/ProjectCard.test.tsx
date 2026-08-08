@@ -113,3 +113,43 @@ describe('ProjectCard menu (a11y #8)', () => {
     expect(document.activeElement).toBe(trigger)
   })
 })
+
+/**
+ * O elo que faltava. A miniatura da galeria existe desde 07/2026 e NUNCA teve
+ * teste ligando "o resumo tem thumb" a "o card mostra a imagem" — por isso a
+ * regressão de 08/2026 (o gatilho da captura ficou órfão quando o Estúdio virou
+ * seção da comunidade) passou batida: `projectThumbs.test.ts` cobre só a
+ * persistência e fica VERDE com o card vazio.
+ */
+describe('ProjectCard: a capa do jogo', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
+  it('mostra a miniatura quando o resumo traz uma', () => {
+    const comCapa: ProjectSummary = {
+      ...SUMMARY,
+      thumbDataUrl: 'data:image/jpeg;base64,/9j/PRINT',
+    }
+    const view = render(
+      <ProjectCard summary={comCapa} onChanged={() => undefined} onOpen={() => undefined} />,
+    )
+    const img = view.container.querySelector('img')
+    expect(img).toBeTruthy()
+    expect(img?.getAttribute('src')).toBe('data:image/jpeg;base64,/9j/PRINT')
+  })
+
+  it('sem capa, reserva o espaço e explica — em vez de o bloco sumir', () => {
+    // ⚠️ Antes o bloco inteiro desaparecia: o card ficava só com nome e data, e a
+    // ausência lia como "a feature quebrou". O espaço reservado também impede
+    // que a capa (assíncrona) empurre o grid ao chegar.
+    const view = render(
+      <ProjectCard summary={SUMMARY} onChanged={() => undefined} onOpen={() => undefined} />,
+    )
+    expect(view.container.querySelector('img')).toBeNull()
+    // A frase VISÍVEL, não um `title` — com o card em `h-72` a faixa da capa tem
+    // ~122px e cabe o recado inteiro, então ele não depende mais de passar o
+    // mouse (que no tablet da criança nem existe).
+    expect(view.getByText('A foto aparece quando você sai do editor')).toBeTruthy()
+  })
+})

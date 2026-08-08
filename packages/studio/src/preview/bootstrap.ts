@@ -2,6 +2,7 @@ import { isReservedProjectFileName, normalizeExtraFileName } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildAssetsRuntime } from './assetsBridge'
+import { buildAudioRuntime } from './audioBridge'
 import { buildPreviewCSPMetaTag } from './csp'
 import { rewriteCssAssetUrls } from './cssAssets'
 import { prepareHtmlEventHandlers } from './htmlEventHandlers'
@@ -11,6 +12,7 @@ import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
 import { buildModalGuardRuntime } from './modalGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
 import { scriptIntegrity } from './scriptIntegrity'
+import { buildScriptSourceGuardRuntime } from './scriptSourceGuard'
 import { buildStorageBridgeRuntime } from './storageBridge'
 import { transpileExtra } from './transpile'
 
@@ -105,12 +107,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     return scriptTagContent(content, attrs)
   }
   const authorizeDataScript = (code: string): AuthorizedDataScript => {
-    const integrity = scriptIntegrity(code)
-    scriptHashes.add(integrity)
-    return {
-      url: `data:text/javascript;base64,${base64Encode(code)}`,
-      integrity,
-    }
+    // O hash segue na CSP, mas não vira SRI: `data:` não é elegível para
+    // integridade e o Firefox recusaria o recurso.
+    scriptHashes.add(scriptIntegrity(code))
+    return { url: `data:text/javascript;base64,${base64Encode(code)}` }
   }
   const userHtml = input.html.trim()
   const split = splitHtml(userHtml)
@@ -172,7 +172,6 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     (f) => f.language === 'javascript' || f.language === 'typescript',
   )
   const importmap: Record<string, string> = {}
-  const importmapIntegrity: Record<string, string> = {}
   // Módulos ESM de extensões (specifier → URL pinada, ex.: three via CDN).
   for (const [spec, url] of Object.entries(input.extensionImports ?? {})) {
     if (spec && typeof url === 'string') importmap[spec] = url
@@ -180,7 +179,6 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   for (const file of extraJsFiles) {
     const transpiled = transpileExtra(file.name, file.content)
     const asset = authorizeDataScript(instrumentLoops(transpiled))
-    importmapIntegrity[asset.url] = asset.integrity
     for (const key of importmapKeysFor(file.name)) {
       // Skip-on-conflict: o PRIMEIRO specifier (módulo de extensão ou extra
       // anterior, ex.: `utils.ts` vs `utils.js` que ambos mapeiam `./utils`)
@@ -202,12 +200,9 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const importmapTag =
     Object.keys(importmap).length > 0
       ? trustedScriptTag(
-          JSON.stringify({
-            imports: importmap,
-            ...(Object.keys(importmapIntegrity).length > 0
-              ? { integrity: importmapIntegrity }
-              : {}),
-          }).replace(/<\/script/gi, '<\\/script'),
+          // Sem `integrity`: a chave aplicaria SRI às `data:` URLs dos módulos
+          // extras, que o Firefox recusa pelo mesmo motivo do script canônico.
+          JSON.stringify({ imports: importmap }).replace(/<\/script/gi, '<\\/script'),
           {
             type: 'importmap',
           },
@@ -260,29 +255,18 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
       `window.__SZ_USER_JS_TAIL=${JSON.stringify(asset.url.slice(-64))};`,
     )
     if (jsNeedsModule) {
-      userScript = `${tagTail}\n${scriptTag('', {
-        type: 'module',
-        src: asset.url,
-        integrity: asset.integrity,
-      })}`
+      userScript = `${tagTail}\n${scriptTag('', { type: 'module', src: asset.url })}`
     } else if (jsNeedsDeferredClassic) {
-      userScript = `${tagTail}\n${scriptTag('', {
-        defer: '',
-        src: asset.url,
-        integrity: asset.integrity,
-      })}`
+      userScript = `${tagTail}\n${scriptTag('', { defer: '', src: asset.url })}`
     } else {
-      userScript = `${tagTail}\n${scriptTag('', {
-        src: asset.url,
-        integrity: asset.integrity,
-      })}`
+      userScript = `${tagTail}\n${scriptTag('', { src: asset.url })}`
     }
   }
 
   // Camadas de segurança no <head>, em ordem (defesa em profundidade):
   // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
   // loopGuard (runtime do __szLoopTick) → modalGuard (rate-limit de alert/confirm/
-  // prompt) → inputBridge → storageBridge (localStorage shim) → assetsBridge
+  // prompt) → scriptSourceGuard → inputBridge → storageBridge (localStorage shim) → assetsBridge
   // (window.__SZGAME_ASSETS) → IMPORTMAP → scripts de extensão (NÃO instrumentados)
   // → estilos → conteúdo do <head> do aluno → corpo → código do aluno. ⚠️ O
   // importmap PRECISA vir antes
@@ -299,10 +283,17 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // enxurrada não travar a aba — sem REMOVER a permissão (`alert` é bloco ensinado,
   // o `allow-modals` continua). Vem DEPOIS do loopGuard e ANTES de extensões/aluno.
   const modalGuardTag = trustedScriptTag(buildModalGuardRuntime())
+  // `script-src data:` é necessário no Firefox; esta guarda recusa scripts
+  // data:/blob: criados em runtime antes de qualquer código do aluno executar.
+  const scriptSourceGuardTag = trustedScriptTag(buildScriptSourceGuardRuntime())
   // Bridge de entrada: window.__szInput (teclado + ponteiro) — sempre presente,
   // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
   // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
   const inputBridgeTag = trustedScriptTag(buildInputBridgeRuntime())
+  // Bridge de som: window.__szAudio — mesma ideia, para os blocos da categoria
+  // 🔊 Som do núcleo tocarem os arquivos que a criança enviou sem depender de
+  // nenhuma extensão de jogo. Lê o mesmo __SZGAME_SOUNDS do bridge de assets.
+  const audioBridgeTag = trustedScriptTag(buildAudioRuntime())
   // Bridge de armazenamento: shima localStorage/sessionStorage (a origem opaca do
   // sandbox os faria LANÇAR) e espelha o store `local` ao parent. Vem antes do
   // importmap/extensões/aluno para que `localStorage` já exista quando rodarem.
@@ -343,7 +334,9 @@ ${interceptorTag}
 ${permissionGuardTag}
 ${loopGuardTag}
 ${modalGuardTag}
+${scriptSourceGuardTag}
 ${inputBridgeTag}
+${audioBridgeTag}
 ${storageBridgeTag}
 ${assetsBridgeTag}
 ${importmapTag}
@@ -376,7 +369,6 @@ ${userScript}
  */
 interface AuthorizedDataScript {
   url: string
-  integrity: `sha256-${string}`
 }
 
 function instrumentInlineScripts(
@@ -409,7 +401,7 @@ function instrumentInlineScripts(
         .replace(/\s+/g, ' ')
         .trim()
       const typeAttr = isModule ? ' type="module"' : ''
-      return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${asset.url}" integrity="${asset.integrity}"></script>`
+      return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${asset.url}"></script>`
     },
   )
 }

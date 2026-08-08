@@ -1,159 +1,1494 @@
-/*
- * Tokens + estilos do componente <PensaApp>. Este arquivo é exportado como
- * `@sistemazero/pensa/styles.css` e deve ser importado DENTRO do pipeline
- * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
- * `@source` apontando para packages/pensa/src.
- *
- * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
- * NÃO define `@custom-variant dark` (sobrescreveria a variant dark do app
- * consumidor — última definição vence). Sem regras globais de html/body.
- *
- * Tema: os valores no @theme valem para o tema CLARO (default do Pensa, público
- * kids). O escuro é ativado por `[data-pensa-theme="dark"]` no ROOT do
- * componente — nunca no <html> do host. Conteúdo portalado p/ fora do root
- * precisa do <PensaThemeScope> (reaplica o atributo).
- *
- * Paleta da marca (identidade dual): accent = CYAN escuro sobre off-white/creme
- * no claro; LIME (#C4F042) sobre #0D1117 no escuro. Fontes vêm do HOST
- * (nenhum @font-face aqui; os componentes herdam a fonte do app).
- */
-@theme {
-  --color-pz-bg: oklch(0.975 0.012 85); /* off-white/creme */
-  --color-pz-surface: oklch(0.995 0.006 85); /* card quase-branco quente */
-  --color-pz-border: oklch(0.89 0.018 80);
-  --color-pz-text: oklch(0.145 0.012 262);
-  --color-pz-muted: oklch(0.5 0.012 255);
-  /* Primitivo --sz-kids-* vem do host kids (@sistemazero/ui/theme-kids.css);
-     fallback literal mantém o playground standalone. */
-  --color-pz-accent: var(
-    --sz-kids-azul-texto,
-    oklch(0.52 0.15 252)
-  ); /* azul escuro da marca (AA sobre creme) */
-  --color-pz-accent-fg: oklch(0.995 0.006 85); /* texto sobre o accent */
-  --color-pz-ok: oklch(0.55 0.14 155);
-  --color-pz-warn: oklch(0.6 0.14 65);
-  --color-pz-scrim: oklch(0.2 0.02 260 / 0.45); /* fundo do modal */
-
-  /* Uma cor alegre e distinta por etapa da metodologia ZERO. */
-  --color-pz-stage-z: oklch(0.55 0.21 300); /* roxo    · Zerar a Bagunça */
-  --color-pz-stage-e: oklch(0.55 0.15 235); /* azul    · Enxergar o Jogo */
-  --color-pz-stage-r: oklch(0.66 0.17 55); /* laranja · Rodar as Missões */
-  --color-pz-stage-o: oklch(0.6 0.21 350); /* rosa    · O Grande Lançamento */
+.pensa-planner {
+  /* Paleta da MARCA KIDS (embarcado): referencia os primitivos --sz-kids-*
+     com FALLBACK LITERAL — sem depender do @sistemazero/ui. Dentro de um host
+     kids o valor de lá manda; fora dele vale o fallback (playground/standalone).
+     Hierarquia kids (diretriz 07/2026): AZUL = ação/identidade/foco · VERDE =
+     progresso/conclusão · laranja/amarelo = pontos de alegria · vermelho = alerta. */
+  --pz-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
+  --pz-surface: oklch(1 0 0);
+  --pz-surface-2: oklch(0.955 0.006 250);
+  /* Tinta e apagado do HOST, como o accent/green/orange abaixo já faziam — estes
+     dois tinham ficado para trás na unificação e destoavam do Pinta/Estúdio ao
+     lado. Só aparecem em `color:` (nunca fundo/borda), então é troca de cor de
+     texto pura. Fallback = o valor de antes, para o Pensa standalone. */
+  --pz-ink: var(--sz-kids-tinta, oklch(0.145 0.01 265));
+  --pz-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.01 255));
+  --pz-line: oklch(0.9 0.01 250);
+  --pz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* ação/identidade/foco */
+  --pz-green: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152)); /* conclusão/sucesso */
+  --pz-orange: var(--sz-kids-laranja-texto, oklch(0.6 0.15 55)); /* destino Pinta / alegria */
+  --pz-danger: oklch(0.55 0.22 27); /* erro/alerta */
+  --pz-purple: oklch(0.5 0.2 300); /* auditoria/revisão (violeta) */
+  --pz-blue: var(--pz-accent); /* foco/interativo = azul */
+  /* CTA "3D" azul — espelho do --sz-gradient / --sz-cta do community-kids. */
+  --pz-gradient: var(
+    --sz-kids-grad-cta-azul,
+    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+  );
+  --pz-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --pz-on-fill: #fff; /* texto sobre superfície saturada da marca (azul/verde) */
+  min-height: 100%;
+  overflow: auto;
+  color: var(--pz-ink);
+  /* Fundo CHAPADO, igual ao da página da comunidade. O gradiente radial que
+     existia aqui era a textura de um app à parte: por mais que o --pz-bg já
+     fosse o azul-céu certo, o degradê denunciava a emenda com o host. */
+  background: var(--pz-bg);
+  font-family: var(--font-sans, "Nunito", ui-rounded, "Nunito Sans", system-ui, sans-serif);
+  container-type: inline-size;
+}
+.pensa-theme-dark {
+  /* A NOITE do tema kids: navy #0C1E3E, azul-vivo como ação, gradiente claro
+     (texto navy por cima), verde-vivo p/ conclusão — espelha o dark do Pinta. */
+  --pz-bg: var(--sz-kids-navy, oklch(0.235 0.05 262));
+  --pz-surface: oklch(0.28 0.05 260);
+  --pz-surface-2: oklch(0.33 0.05 260);
+  /* No escuro os valores já eram idênticos aos tokens do host — apontar só fecha
+     a fiação, sem mudar um pixel. */
+  --pz-ink: var(--sz-kids-navy-tinta, oklch(0.975 0.005 250));
+  --pz-muted: var(--sz-kids-navy-tinta-suave, oklch(0.7 0.03 250));
+  --pz-line: oklch(0.34 0.05 260);
+  --pz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --pz-green: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
+  --pz-orange: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
+  --pz-danger: oklch(0.64 0.215 27);
+  --pz-purple: oklch(0.7 0.18 300);
+  --pz-blue: var(--pz-accent);
+  --pz-gradient: var(
+    --sz-kids-grad-cta-azul-suave,
+    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+  );
+  --pz-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --pz-on-fill: oklch(0.22 0.05 262); /* navy sobre o azul claro/verde-vivo do dark */
+}
+.pensa-planner *,
+.pensa-planner *::before,
+.pensa-planner *::after {
+  box-sizing: border-box;
+}
+.pensa-planner button,
+.pensa-planner input,
+.pensa-planner textarea,
+.pensa-planner select {
+  font: inherit;
+}
+/* Números e selos decorativos em Baloo 2 (display) — herda a fonte do host kids
+   via var(--font-display); fallback arredondado p/ standalone.
+   ⚠️ Os headings NÃO estão aqui: a tipografia deles (família + peso + tracking)
+   vive inteira na regra logo abaixo, para não ficar espalhada em dois lugares. */
+.pensa-section-heading span,
+.pensa-project-orbit,
+.pensa-map-node > span,
+.pensa-stage-title > span,
+.pensa-task-order span,
+.pensa-approved p,
+.pensa-approved h2 {
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+}
+/* ⚠️ FAMÍLIA, PESO e TRACKING dos títulos, os três no ELEMENTO e num lugar só.
+   O Preflight do Tailwind zera `h1..h6 { font-weight: inherit }` E deixa a
+   família cair na herdada (Nunito, do corpo do host), e o host kids não define
+   nada para heading — sem esta regra todo título do Pensa sairia em Nunito 400
+   ao lado de um `<h1 className="sz-ui-display">` do Estúdio em Baloo 2 700.
+   Os spans decorativos ficam de fora: vários já declaram peso por conta própria e
+   os demais não devem engordar.
+   ⚠️ "É heading" não é o mesmo que "é título": o nome do plano no card é um
+   `<strong>`, ficou de fora deste seletor e por isso saía na fonte do corpo — a
+   regra dele está em `.pensa-project-card strong`. `headingFont.test.ts` trava
+   os dois casos. */
+.pensa-planner h1,
+.pensa-planner h2,
+.pensa-planner h3,
+.pensa-planner h4 {
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+/* Espelho EXATO do `.pin-display` (pinta.css) e do `.sz-ui-display` (studio.css):
+   família + peso + tracking, e SÓ. Tamanho e entrelinha ficam na regra do
+   elemento — é a mesma divisão que os dois pares usam (lá o tamanho vem do
+   `text-3xl md:text-4xl` no markup; aqui, que não tem Tailwind, vem do CSS). */
+.pensa-planner .pensa-display {
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.pensa-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.pensa-planner button {
+  min-height: 44px;
+  cursor: pointer;
+}
+.pensa-planner button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.pensa-planner :focus-visible {
+  outline: 3px solid var(--pz-accent);
+  outline-offset: 3px;
+}
+.pensa-home,
+.pensa-workspace,
+.pensa-project-header,
+.pensa-map {
+  /* Largura TOTAL, como a galeria do Pinta: sem o teto de 1160px, só o respiro
+     lateral. ⚠️ 48px = **24px de cada lado**, que é o `sm:p-6` da galeria do
+     Pinta e o `px-6` da `ProjectList` do Estúdio. Com os 32px de antes o
+     conteúdo do Pensa encostava na borda visivelmente mais que o dos irmãos.
+     (⚠️ regra compartilhada home+detalhe — mexer aqui desloca os @container
+     820/560; re-verificar os dois pontos de quebra.) */
+  width: calc(100% - 48px);
+  margin-inline: auto;
+}
+.pensa-home {
+  /* 24px no TOPO = o `pt-6` da `ProjectList` e o `p-6` da galeria do Pinta. Com
+     8px o título nascia colado na borda de cima, enquanto os irmãos respiravam. */
+  padding: 24px 0 32px;
+}
+/* Cabeçalho de SEÇÃO no padrão do Pinta e do Estúdio — e agora seguindo de
+   verdade. Os pares, para conferir sem caçar:
+     `GalleryScreen.tsx` → <h1 className="pin-display text-3xl md:text-4xl">
+     `ProjectList.tsx`   → <h1 className="sz-ui-display text-3xl md:text-4xl">
+   ou seja: display + 1.875rem, subindo para 2.25rem a partir de 768px. Este
+   comentário já prometia "o padrão do Pinta" sem citar a fonte, e foi assim que
+   a divergência (peso 400, tamanho travado) passou despercebida. */
+.pensa-home-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  /* Respiro GENEROSO até o "criar": com 18px o subtítulo e o campo colavam e a
+     home lia como um bloco só. O cabeçalho é apresentação; o campo é ação. */
+  margin-bottom: 44px;
+}
+.pensa-home-header h1 {
+  margin: 0;
+  /* Par do `text-3xl` do Tailwind (o tracking mora no `.pensa-display`). */
+  font-size: 1.875rem;
+  line-height: 1.2;
+}
+/* Par do `md:text-4xl`. ⚠️ `@media` de VIEWPORT de propósito: o `md:` do Tailwind
+   é viewport, então este é o espelho fiel — e não encosta nos `@container`
+   820/560 do arquivo, cujo deslocamento exige re-verificar 1366 e 1920. */
+@media (min-width: 48rem) {
+  .pensa-home-header h1 {
+    font-size: 2.25rem;
+    line-height: 1.11;
+  }
+}
+.pensa-home-header p {
+  max-width: 650px;
+  /* 10px: com os 4px do `mt-1` do Estúdio o subtítulo colava na base do título,
+     que aqui é maior (36px em Baloo) e pede mais ar embaixo. */
+  margin: 10px 0 0;
+  color: var(--pz-muted);
+  font-size: 1rem;
+}
+/* SEM painel: na home o "criar" é uma faixa solta sobre o fundo da página, e não
+   um cartão. Embrulhá-lo dava a ele o mesmo peso visual dos planos já criados,
+   competindo com a lista — que é o que a criança vem ver. A geometria de cartão
+   (borda 2px + raio 1.5rem, do `.kids-card`) segue valendo nos planos e no
+   detalhe; aqui ela sai de propósito. */
+.pensa-create {
+  padding: 0;
+}
+.pensa-create label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+/* ⚠️ Largura CONTIDA: a home é de largura total, e um campo de nome esticado de
+   ponta a ponta lê como "escreva muito" — o nome do jogo é curto. O botão fica
+   ao lado, à vista, em vez de a um palmo de distância. */
+.pensa-create div {
+  display: flex;
+  gap: 10px;
+  max-width: 620px;
+}
+.pensa-create input,
+.pensa-task-edit input,
+.pensa-task-edit textarea,
+.pensa-task-edit select,
+.pensa-structured-form input,
+.pensa-structured-form textarea,
+.pensa-structured-form select,
+.pensa-new-version-form textarea,
+.pensa-chat-input textarea {
+  width: 100%;
+  border: 2px solid var(--pz-line);
+  border-radius: 12px;
+  color: var(--pz-ink);
+  background: var(--pz-bg);
+  padding: 13px 16px;
+}
+/* O campo do nome é a ação principal da home: um pouco mais alto e com o texto
+   um pouco maior que os campos do detalhe, que são de formulário longo.
+   ⚠️ Escopado em `.pensa-create` — a regra de input acima é COMPARTILHADA com o
+   editor de tarefa e os formulários do plano, que não devem engordar junto. */
+.pensa-create input {
+  padding: 16px 18px;
+  font-size: 1.0625rem;
+}
+.pensa-inline-error {
+  margin: 8px 0 0;
+  color: var(--pz-danger);
+  font-size: 1rem;
+  font-weight: 700;
+}
+/* Medidor da ajuda de IA. Âmbar, NUNCA vermelho: o vermelho (--pz-danger) é
+   reservado a falha técnica, e acabar a ajuda do dia não é o app quebrando. */
+.pensa-credits {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--pz-line);
+  border-radius: 9999px;
+  padding: 4px 10px;
+  background: var(--pz-surface-2);
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-credits.is-low,
+.pensa-credits.is-exhausted {
+  border-color: color-mix(in oklab, var(--pz-orange) 45%, var(--pz-line));
+  background: color-mix(in oklab, var(--pz-orange) 10%, var(--pz-surface));
+  color: var(--pz-orange);
+  font-weight: 700;
+}
+.pensa-credits-notice {
+  margin: 8px 0 0;
+  border: 1px solid color-mix(in oklab, var(--pz-orange) 45%, var(--pz-line));
+  border-radius: 13px;
+  padding: 11px 14px;
+  background: color-mix(in oklab, var(--pz-orange) 8%, var(--pz-surface));
+  color: var(--pz-ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+/* CTA "3D" azul (espelho do .sz-btn-gradient do kids): gradiente + sombra dura
+   que afunda no clique. Ações afirmativas de concluir/aprovar seguem VERDES. */
+.pensa-create button,
+.pensa-generate,
+.pensa-primary-action,
+.pensa-new-version {
+  border: 0;
+  border-radius: 9999px;
+  color: var(--pz-on-fill);
+  background-image: var(--pz-gradient);
+  padding: 12px 22px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+.pensa-create button:hover:not(:disabled),
+.pensa-generate:hover:not(:disabled),
+.pensa-primary-action:hover:not(:disabled),
+.pensa-new-version:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+}
+.pensa-create button:active:not(:disabled),
+.pensa-generate:active:not(:disabled),
+.pensa-primary-action:active:not(:disabled),
+.pensa-new-version:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+}
+/* Par do cabeçalho de seção do Estúdio (`ProjectList.tsx`):
+   <h2 className="sz-ui-display text-lg"> num bloco com `mb-6`. */
+.pensa-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 40px 0 24px;
+}
+.pensa-section-heading h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.pensa-section-heading span {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 99px;
+  color: var(--pz-muted);
+  background: var(--pz-surface-2);
+  font-weight: 700;
+}
+/* ⚠️ `auto-fill` (não `auto-fit`) é o que permite o `1fr` aqui: com `auto-fit` as
+   faixas VAZIAS colapsam e dois planos numa tela larga viravam dois cards de
+   ~600px. Com `auto-fill` as faixas vazias ficam de pé e seguram a largura — é a
+   mesma linha da galeria do Pinta (`GalleryScreen.tsx`, minmax(164px, 1fr)), só
+   que com o piso maior que um cartão de três linhas de texto pede. */
+.pensa-project-grid {
+  display: grid;
+  /* Piso IDÊNTICO ao `PROJECT_GRID_CLASS` da `ProjectList` do Estúdio: com a
+     mesma receita nos dois, os cards saem do mesmo tamanho em qualquer tela, sem
+     número mágico para manter em sincronia.
+     ⚠️ 240px NÃO é estético, é o mínimo que o conteúdo exige: a linha mais longa
+     possível ("Versão 20 · Plano aprovado", com o teto de 20 ciclos) mede 173px em
+     Nunito 14px, e o card perde 66px fixos para padding + ícone + gap → 239px. Com
+     menos que isso a etapa quebra em duas linhas. Como `auto-fill` garante faixa
+     >= o piso, 240 vale para QUALQUER largura de tela.
+     Medido: 1280→4 · 1366→5 · 1440→5 · 1600→6 · 1920→7 colunas. */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.pensa-project-card {
+  /* Três linhas na coluna do texto (nome / versão / continuar) e o ícone só na
+     PRIMEIRA, ao lado do nome. Antes o ícone era um bloco de 52px atravessando
+     as três linhas e o card tinha piso de 160px — um retângulo alto com muito
+     ar para três linhas curtas. */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  padding: 16px;
+  text-align: left;
+  /* A aresta é uma VARIÁVEL para que a sombra siga a borda no hover, como o
+     `--pin-panel-border` do `.pin-panel`. */
+  --pz-card-edge: var(--pz-line);
+  border: 2px solid var(--pz-card-edge);
+  border-radius: 1rem;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  box-shadow: 0 3px 0 color-mix(in oklch, var(--pz-card-edge) 45%, transparent);
+  transition:
+    transform 0.18s ease-out,
+    border-color 0.18s ease-out,
+    box-shadow 0.18s ease-out;
+}
+.pensa-project-card:hover {
+  transform: translateY(-2px) scale(1.02);
+  --pz-card-edge: var(--pz-accent);
+}
+.pensa-project-orbit {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--pz-accent);
+  font-size: 1.05rem;
+}
+/* O nome do plano é o TÍTULO do card: mesma fonte dos títulos da página (o par
+   é o nome do jogo no `ProjectCard` do Estúdio, que usa `sz-ui-display`). */
+.pensa-project-card strong {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+/* As duas linhas de baixo alinham com o NOME, não com o ícone. */
+.pensa-project-card > span:not(.pensa-project-orbit) {
+  grid-column: 2;
+  grid-row: 2;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+}
+.pensa-project-card i {
+  grid-column: 2;
+  grid-row: 3;
+  margin-top: 4px;
+  color: var(--pz-accent);
+  font-style: normal;
+  font-weight: 700;
+}
+.pensa-empty,
+.pensa-status {
+  display: grid;
+  min-height: 280px;
+  place-items: center;
+  align-content: center;
+  /* `p-6` do vazio do Estúdio (`ProjectList.tsx`: rounded-2xl + border-2 dashed). */
+  padding: 24px;
+  text-align: center;
+  border: 2px dashed var(--pz-line);
+  border-radius: 1rem;
+  color: var(--pz-muted);
+}
+.pensa-empty span {
+  color: var(--pz-accent);
+  font-size: 2.5rem;
+}
+.pensa-empty h3 {
+  margin: 10px 0 0;
+  color: var(--pz-ink);
+}
+.pensa-empty p {
+  margin: 5px 0;
+}
+.pensa-project-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 0 16px;
+}
+.pensa-project-header > button {
+  width: 46px;
+  border: 1px solid var(--pz-line);
+  border-radius: 50%;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  font-size: 1.3rem;
+}
+.pensa-project-header div:nth-child(2) {
+  flex: 1;
+}
+.pensa-project-header span {
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.pensa-project-header h1 {
+  margin: 2px 0 0;
+  /* O nome do projeto mantém a escala fluida: o par dele não é o título da
+     galeria, e sim o título do editor no Pinta/Estúdio. O que faltava aqui era
+     peso e tinta — que vêm do `.pensa-display`, inclusive o tracking (por isso
+     o `-0.02em` local saiu: perdia por especificidade e virava ruído). */
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+}
+.pensa-plan-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--pz-line);
+  border-radius: 99px;
+  padding: 9px 13px;
+  color: var(--pz-muted);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pensa-plan-status span {
+  color: var(--pz-accent);
+}
+.pensa-map {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 12px 0 30px;
+}
+.pensa-map-node {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--pz-line);
+  border-radius: 14px;
+  color: var(--pz-muted);
+  background: color-mix(in oklch, var(--pz-surface) 70%, transparent);
+}
+.pensa-map-node > span {
+  display: grid;
+  flex: 0 0 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--pz-surface-2);
+  font-weight: 700;
+}
+.pensa-map-node div {
+  min-width: 0;
+}
+.pensa-map-node strong,
+.pensa-map-node small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pensa-map-node strong {
+  color: var(--pz-ink);
+  font-size: 1rem;
+}
+.pensa-map-node small {
+  margin-top: 2px;
+  font-size: 0.875rem;
+}
+.pensa-map-node.is-current {
+  border-color: var(--pz-accent);
+  background: color-mix(in oklch, var(--pz-accent) 9%, var(--pz-surface));
+}
+.pensa-map-node.is-current > span {
+  color: var(--pz-on-fill);
+  background: var(--pz-accent);
+}
+.pensa-map-node.is-complete > span {
+  color: var(--pz-on-fill);
+  background: var(--pz-green);
+}
+/* Etapa concluída vira BOTÃO de rever (peek read-only). */
+button.pensa-map-node {
+  text-align: left;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease;
+}
+button.pensa-map-node:hover {
+  border-color: var(--pz-accent);
+  transform: translateY(-1px);
+}
+.pensa-map-node.is-viewing {
+  border-style: dashed;
+  border-color: var(--pz-accent);
+  background: color-mix(in oklch, var(--pz-accent) 12%, var(--pz-surface));
+}
+.pensa-peek-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 18px;
+  border: 1px dashed var(--pz-accent);
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: color-mix(in oklch, var(--pz-accent) 8%, var(--pz-surface));
+  font-weight: 700;
+}
+.pensa-peek-banner button {
+  border: 2px solid var(--pz-accent);
+  border-radius: 99px;
+  padding: 8px 14px;
+  color: var(--pz-accent);
+  background: var(--pz-surface);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pensa-workspace {
+  padding-bottom: 72px;
+}
+.pensa-stage-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0 22px;
+}
+.pensa-stage-title > span {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--pz-on-fill);
+  background-image: var(--pz-gradient);
+  font-size: 1.8rem;
+  font-weight: 700;
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 55%, black);
+}
+.pensa-stage-title h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+.pensa-stage-title p {
+  margin: 3px 0 0;
+  color: var(--pz-muted);
+}
+.pensa-two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+.pensa-stack {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+.pensa-panel,
+.pensa-artifact,
+.pensa-artifact-empty,
+.pensa-audit,
+.pensa-ribbon {
+  border: 2px solid var(--pz-line);
+  border-radius: 1rem;
+  background: var(--pz-surface);
+}
+.pensa-chat {
+  padding: 20px;
+}
+.pensa-chat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.pensa-chat-head h3 {
+  margin: 0;
+}
+.pensa-chat h3 {
+  margin: 0 0 12px;
+}
+.pensa-decisions {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.pensa-decisions legend {
+  margin-bottom: 6px;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-decision-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pensa-decisions span {
+  border-radius: 99px;
+  padding: 6px 9px;
+  color: var(--pz-muted);
+  background: var(--pz-surface-2);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-decisions span.is-done {
+  color: var(--pz-green);
+  background: color-mix(in oklch, var(--pz-green) 12%, var(--pz-surface));
+}
+.pensa-messages {
+  display: flex;
+  min-height: 280px;
+  max-height: 430px;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding: 18px 2px;
+}
+.pensa-messages p {
+  max-width: 86%;
+  margin: 0;
+  border-radius: 16px;
+  padding: 11px 13px;
+  background: var(--pz-surface-2);
+  white-space: pre-wrap;
+}
+.pensa-messages p.user {
+  align-self: flex-end;
+  color: var(--pz-on-fill);
+  background: var(--pz-accent);
+}
+.pensa-messages b {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+.pensa-suggestion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  border: 0;
+  padding: 2px 0 10px;
+  min-inline-size: auto;
+}
+.pensa-suggestion-chips button {
+  border: 2px solid color-mix(in oklch, var(--pz-accent) 40%, var(--pz-line));
+  border-radius: 99px;
+  padding: 8px 14px;
+  color: var(--pz-ink);
+  background: color-mix(in oklch, var(--pz-accent) 8%, var(--pz-surface));
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: left;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease;
+}
+.pensa-suggestion-chips button:hover:not(:disabled) {
+  border-color: var(--pz-accent);
+  transform: translateY(-1px);
+}
+.pensa-chat-input {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+.pensa-chat-input textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+.pensa-chat-input button {
+  border: 0;
+  border-radius: 13px;
+  color: var(--pz-on-fill);
+  background: var(--pz-accent);
+  padding: 10px 15px;
+  font-weight: 700;
+}
+.pensa-artifact {
+  overflow: hidden;
+}
+.pensa-artifact > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--pz-line);
+}
+.pensa-artifact > header span {
+  color: var(--pz-accent);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.pensa-artifact > header h3 {
+  margin: 4px 0 0;
+}
+.pensa-artifact > header button,
+.pensa-task footer button {
+  border: 1px solid var(--pz-line);
+  border-radius: 11px;
+  color: var(--pz-ink);
+  background: transparent;
+  padding: 8px 11px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pensa-artifact > footer {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+  padding: 12px 18px 18px;
+}
+.pensa-artifact > footer button {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+}
+.pensa-artifact > footer .primary,
+.pensa-task footer .primary {
+  color: var(--pz-on-fill);
+  background: var(--pz-green);
+}
+.pensa-artifact-preview,
+.pensa-structured-form {
+  padding: 18px 20px;
+}
+.pensa-artifact-preview h4,
+.pensa-artifact-preview p {
+  margin: 0 0 10px;
+}
+.pensa-artifact-preview dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.pensa-artifact-preview dl div,
+.pensa-preview-columns section,
+.pensa-loop li {
+  border-radius: 11px;
+  padding: 10px;
+  background: var(--pz-surface-2);
+}
+.pensa-artifact-preview dt,
+.pensa-artifact-preview small {
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-artifact-preview dd {
+  margin: 3px 0 0;
+}
+.pensa-loop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0;
+  list-style-position: inside;
+}
+.pensa-preview-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.pensa-preview-columns section > p {
+  display: grid;
+}
+.pensa-structured-form {
+  display: grid;
+  gap: 14px;
+}
+.pensa-form-field {
+  display: grid;
+  gap: 6px;
+  color: var(--pz-muted);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pensa-form-field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.pensa-form-group,
+.pensa-guide-edit,
+.pensa-task-dependency-edit {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  border: 1px solid var(--pz-line);
+  border-radius: 14px;
+  padding: 12px;
+}
+.pensa-form-group legend,
+.pensa-guide-edit legend,
+.pensa-task-dependency-edit legend {
+  color: var(--pz-muted);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pensa-form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) auto;
+  gap: 7px;
+}
+.pensa-color-row {
+  grid-template-columns: 1fr 56px auto;
+}
+.pensa-asset-form,
+.pensa-guide-edit > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  border-radius: 11px;
+  padding: 10px;
+  background: var(--pz-surface-2);
+}
+.pensa-asset-form button,
+.pensa-guide-edit > div button {
+  justify-self: start;
+}
+.pensa-artifact-empty {
+  display: flex;
+  min-height: 140px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px;
+  color: var(--pz-muted);
+}
+.pensa-artifact-empty span {
+  color: var(--pz-accent);
+  font-size: 1.7rem;
+}
+.pensa-artifact-empty p {
+  margin: 0;
+}
+.pensa-bible {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.pensa-bible h4 {
+  margin: 4px 0 0;
+}
+.pensa-bible-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-bible-palette li {
+  display: grid;
+  gap: 4px;
+  border-radius: 11px;
+  padding: 8px;
+  background: var(--pz-surface-2);
+}
+.pensa-bible-palette span {
+  height: 26px;
+  border: 1px solid var(--pz-line);
+  border-radius: 7px;
+}
+.pensa-bible-palette strong {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+.pensa-bible-palette small {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-bible-rules {
+  margin: 0;
+  list-style: none;
+}
+.pensa-bible-screens {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.pensa-bible-screens p {
+  display: grid;
+  margin: 0;
+  border-radius: 11px;
+  padding: 10px;
+  background: var(--pz-surface-2);
+}
+.pensa-bible-assets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-bible-assets li {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  border-radius: 11px;
+  padding: 10px;
+  background: var(--pz-surface-2);
+}
+.pensa-bible-assets li > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+.pensa-bible-kind {
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--pz-accent);
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: color-mix(in oklch, var(--pz-accent) 14%, var(--pz-surface));
+}
+.pensa-bible-kind[data-tool="pinta"] {
+  color: var(--pz-orange);
+  background: color-mix(in oklch, var(--pz-orange) 14%, var(--pz-surface));
+}
+.pensa-bible-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pensa-bible-chips span {
+  border: 1px solid var(--pz-line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: var(--pz-surface);
+}
+.pensa-generate {
+  justify-self: start;
+}
+.pensa-primary-action {
+  justify-self: end;
+  min-width: 250px;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+.pensa-ribbon,
+.pensa-audit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+}
+.pensa-ribbon div,
+.pensa-audit > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pensa-ribbon strong,
+.pensa-ribbon span {
+  display: block;
+}
+.pensa-ribbon span,
+.pensa-audit p {
+  margin: 2px 0 0;
+  color: var(--pz-muted);
+  font-size: 1rem;
+}
+.pensa-audit > div > span {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--pz-purple);
+  background: color-mix(in oklch, var(--pz-purple) 13%, var(--pz-surface));
+  font-size: 1.5rem;
+}
+.pensa-audit h3 {
+  margin: 0;
+}
+.pensa-task-plan {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-task {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 0;
+}
+.pensa-task-order {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pensa-task-order span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--pz-muted);
+  background: var(--pz-surface-2);
+  font-weight: 700;
+}
+.pensa-task-order::after {
+  width: 2px;
+  flex: 1;
+  margin-top: 5px;
+  content: "";
+  background: var(--pz-line);
+}
+.pensa-task:last-child .pensa-task-order::after {
+  display: none;
+}
+.pensa-task > article {
+  padding: 16px;
+  border: 2px solid var(--pz-line);
+  border-radius: 1rem;
+  background: var(--pz-surface);
+}
+.pensa-task.is-next > article {
+  border-color: var(--pz-green);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--pz-green) 11%, transparent);
+}
+.pensa-task article > header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.pensa-task article > header span,
+.pensa-task article > header em,
+.pensa-task article > header b {
+  border-radius: 99px;
+  padding: 5px 8px;
+  font-size: 0.875rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.pensa-task article > header span[data-destination="pinta"] {
+  color: var(--pz-orange);
+  background: color-mix(in oklch, var(--pz-orange) 14%, var(--pz-surface));
+}
+.pensa-task article > header span[data-destination="studio"] {
+  color: var(--pz-blue);
+  background: color-mix(in oklch, var(--pz-blue) 14%, var(--pz-surface));
+}
+.pensa-task article > header em {
+  color: var(--pz-muted);
+  background: var(--pz-surface-2);
+}
+.pensa-task article > header b {
+  margin-left: auto;
+  color: var(--pz-accent);
+}
+.pensa-task h3 {
+  margin: 11px 0 4px;
+}
+.pensa-task p {
+  margin: 0;
+  color: var(--pz-muted);
+}
+.pensa-task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  text-transform: capitalize;
+}
+.pensa-dependencies {
+  border-left: 3px solid var(--pz-line);
+  padding-left: 9px;
+  font-size: 0.875rem;
+}
+.pensa-task details {
+  margin-top: 12px;
+  border-top: 1px solid var(--pz-line);
+  padding-top: 10px;
+}
+.pensa-task summary {
+  cursor: pointer;
+  color: var(--pz-accent);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pensa-guide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 12px 4px 2px;
+  font-size: 1rem;
+}
+.pensa-guide small {
+  display: block;
+  color: var(--pz-muted);
+}
+.pensa-guide ul li {
+  margin-bottom: 7px;
+  color: var(--pz-green);
+}
+.pensa-blocks {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pensa-blocks code {
+  border-radius: 7px;
+  padding: 5px 7px;
+  color: var(--pz-purple);
+  background: color-mix(in oklch, var(--pz-purple) 12%, var(--pz-surface));
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+.pensa-task footer {
+  display: flex;
+  justify-content: end;
+  gap: 7px;
+  margin-top: 12px;
+}
+.pensa-task-edit {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pensa-task-edit textarea {
+  min-height: 70px;
+}
+.pensa-task-edit label {
+  color: var(--pz-muted);
+  font-size: 1rem;
+}
+.pensa-task-dependency-edit label {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+}
+.pensa-context-lock,
+.pensa-revision-note {
+  display: grid;
+  gap: 4px;
+  border-radius: 12px;
+  padding: 11px;
+  color: var(--pz-muted);
+  background: var(--pz-surface-2);
+  font-size: 0.875rem;
+}
+.pensa-context-lock strong {
+  color: var(--pz-ink);
+}
+.pensa-revision-note {
+  border-left: 4px solid var(--pz-purple);
+}
+.pensa-task-edit label input {
+  width: 75px;
+  margin: 0 4px;
+}
+.pensa-findings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-findings li {
+  margin-bottom: 7px;
+  border-left: 4px solid var(--pz-green);
+  border-radius: 10px;
+  padding: 10px 13px;
+  background: var(--pz-surface);
+}
+.pensa-findings li[data-severity="error"] {
+  border-color: var(--pz-danger);
+}
+.pensa-alert {
+  width: calc(100% - 32px);
+  margin: 0 auto 12px;
+  border: 1px solid color-mix(in oklch, var(--pz-danger) 45%, var(--pz-line));
+  border-radius: 13px;
+  padding: 11px 14px;
+  color: var(--pz-danger);
+  background: color-mix(in oklch, var(--pz-danger) 8%, var(--pz-surface));
+}
+.pensa-approved {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 24px;
+  border: 1px solid var(--pz-green);
+  border-radius: 24px;
+  background: color-mix(in oklch, var(--pz-green) 8%, var(--pz-surface));
+}
+.pensa-approved > span {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--pz-on-fill);
+  background: var(--pz-green);
+  font-size: 1.7rem;
+}
+.pensa-approved p,
+.pensa-approved h2,
+.pensa-approved small {
+  margin: 0;
+}
+.pensa-approved p {
+  color: var(--pz-green);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.pensa-approved h2 {
+  font-size: 2rem;
+}
+.pensa-approved small {
+  color: var(--pz-muted);
+}
+.pensa-next-summary {
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  color: var(--pz-muted);
+  background: var(--pz-surface-2);
+}
+.pensa-new-version {
+  justify-self: center;
+}
+.pensa-new-version-form {
+  display: grid;
+  width: min(560px, 100%);
+  justify-self: center;
+  gap: 8px;
+  border: 1px solid var(--pz-line);
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--pz-surface);
+}
+.pensa-new-version-form label {
+  font-weight: 700;
+}
+.pensa-new-version-form textarea {
+  min-height: 100px;
+}
+.pensa-new-version-form div {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+}
+.pensa-new-version-form button {
+  border: 1px solid var(--pz-line);
+  border-radius: 12px;
+  padding: 9px 13px;
+  color: var(--pz-ink);
+  background: transparent;
+  font-weight: 700;
+}
+.pensa-new-version-form button.primary {
+  border-color: var(--pz-green);
+  color: var(--pz-on-fill);
+  background: var(--pz-green);
 }
 
-/* Tema escuro — override por atributo data-pensa-theme="dark" no root. */
-[data-pensa-theme="dark"] {
-  --color-pz-bg: oklch(0.17 0.014 262); /* #0d1117 */
-  --color-pz-surface: oklch(0.215 0.015 262); /* painel um tom acima do bg */
-  --color-pz-border: oklch(0.32 0.02 262);
-  --color-pz-text: oklch(0.965 0.005 250);
-  --color-pz-muted: oklch(0.72 0.015 250);
-  --color-pz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro da marca */
-  --color-pz-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o azul claro */
-  --color-pz-ok: oklch(0.8 0.16 155);
-  --color-pz-warn: oklch(0.83 0.14 85);
-  --color-pz-scrim: oklch(0.08 0.01 262 / 0.6);
-
-  --color-pz-stage-z: oklch(0.74 0.16 300);
-  --color-pz-stage-e: oklch(0.76 0.12 235);
-  --color-pz-stage-r: oklch(0.79 0.14 65);
-  --color-pz-stage-o: oklch(0.75 0.16 350);
+/* ── Zappy, o mascote da comunidade kids ─────────────────────────────────
+   O host passa os sprites em adapter.mascotImages; o componente <Zappy>
+   renderiza <img alt=""> decorativo e some quando o sprite da pose falta
+   (degrade — standalone sem host). Flutuação leve; parada no reduced-motion. */
+.pensa-zappy {
+  display: block;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
 }
-
-/*
- * Pulso do nó ATUAL do Mapa da criação. A cor entra por --pz-pulse-color
- * (setada inline pelo componente com o token da etapa). Respeita
- * prefers-reduced-motion: sem animação, o nó atual segue destacado pelo anel
- * estático que o componente desenha.
- */
-@keyframes pz-stage-pulse {
+.pensa-home-zappy {
+  width: 64px;
+  flex: 0 0 auto;
+  animation: pensa-float 4s ease-in-out infinite;
+}
+.pensa-empty-zappy {
+  width: clamp(84px, 22vw, 120px);
+  margin: 0 auto;
+  animation: pensa-float 4s ease-in-out infinite;
+}
+.pensa-chat-zappy {
+  width: 40px;
+  flex: 0 0 auto;
+}
+.pensa-approved-zappy {
+  width: clamp(60px, 14vw, 84px);
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+@keyframes pensa-float {
   0%,
   100% {
-    box-shadow: 0 0 0 0
-      color-mix(in srgb, var(--pz-pulse-color, var(--color-pz-accent)) 45%, transparent);
+    transform: translateY(0);
   }
-  70% {
-    box-shadow: 0 0 0 10px
-      color-mix(in srgb, var(--pz-pulse-color, var(--color-pz-accent)) 0%, transparent);
-  }
-}
-[data-pensa-theme] .pz-stage-pulse {
-  animation: pz-stage-pulse 1.8s ease-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-pensa-theme] .pz-stage-pulse {
-    animation: none;
+  50% {
+    transform: translateY(-8px);
   }
 }
 
-/*
- * Pop suave da estrela do QuestionTracker quando ACENDE (uma vez, ao entrar
- * com a classe). Com prefers-reduced-motion a estrela só muda de cor, sem pop.
- */
-@keyframes pz-star-pop {
-  0% {
-    transform: scale(0.4);
+@container (max-width: 820px) {
+  .pensa-map {
+    grid-template-columns: repeat(2, 1fr);
   }
-  60% {
-    transform: scale(1.25);
+  .pensa-two-column {
+    grid-template-columns: 1fr;
   }
-  100% {
-    transform: scale(1);
+  .pensa-project-header .pensa-plan-status {
+    display: none;
   }
 }
-[data-pensa-theme] .pz-star-pop {
-  animation: pz-star-pop 0.45s ease-out;
+@container (max-width: 560px) {
+  .pensa-home,
+  .pensa-workspace,
+  .pensa-project-header,
+  .pensa-map,
+  .pensa-alert {
+    /* 16px de cada lado = o `p-4` do Pinta no estreito (era 10px). */
+    width: calc(100% - 32px);
+  }
+  .pensa-home {
+    padding-top: 16px;
+  }
+  .pensa-home-header {
+    align-items: flex-start;
+  }
+  .pensa-home-zappy {
+    width: 48px;
+  }
+  .pensa-create div {
+    flex-direction: column;
+    max-width: none;
+  }
+  /* Sem o teto da faixa, o card não pode estourar o contêiner estreito. */
+  .pensa-project-grid {
+    grid-template-columns: 1fr;
+  }
+  .pensa-map {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 20px;
+  }
+  .pensa-map-node {
+    min-width: 170px;
+  }
+  .pensa-map-node small {
+    display: none;
+  }
+  .pensa-peek-banner {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pensa-ribbon,
+  .pensa-audit {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pensa-ribbon .pensa-generate,
+  .pensa-audit .pensa-generate {
+    width: 100%;
+  }
+  .pensa-task {
+    grid-template-columns: 40px 1fr;
+  }
+  .pensa-task-order span {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+  .pensa-task > article {
+    padding: 14px;
+  }
+  .pensa-task footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pensa-guide {
+    grid-template-columns: 1fr;
+  }
+  .pensa-artifact-preview dl,
+  .pensa-preview-columns,
+  .pensa-asset-form,
+  .pensa-guide-edit > div,
+  .pensa-form-row {
+    grid-template-columns: 1fr;
+  }
+  .pensa-bible-screens,
+  .pensa-bible-assets {
+    grid-template-columns: 1fr;
+  }
+  .pensa-primary-action {
+    width: 100%;
+    min-width: 0;
+  }
+  .pensa-stage-title > span {
+    width: 48px;
+    height: 48px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-pensa-theme] .pz-star-pop {
-    animation: none;
+  .pensa-planner *,
+  .pensa-planner *::before,
+  .pensa-planner *::after {
+    scroll-behavior: auto;
+    transition: none;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
   }
 }
 
-/*
- * Confete da festa do lançamento (LaunchCelebration): CSS puro, animação
- * FINITA (uma queda, `forwards` — nunca infinita) com cor/posição/atraso
- * inline por peça. Com prefers-reduced-motion o confete fica invisível
- * (opacity 0 é o estado base) e a festa segue sem movimento.
- */
-@keyframes pz-confetti-fall {
-  0% {
-    transform: translateY(-8vh) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(108vh) rotate(540deg);
-    opacity: 0;
-  }
+.pensa-task-edit label {
+  display: grid;
+  gap: 5px;
 }
-[data-pensa-theme] .pz-confetti-piece {
-  position: absolute;
-  top: 0;
-  width: 10px;
-  height: 16px;
-  border-radius: 3px;
-  opacity: 0;
-  animation: pz-confetti-fall 2.8s ease-in forwards;
+.pensa-task-edit .pensa-task-time {
+  display: block;
 }
-@media (prefers-reduced-motion: reduce) {
-  [data-pensa-theme] .pz-confetti-piece {
-    animation: none;
-  }
-}
-
-/* Selo "VERSÃO N LANÇADA" carimbado sobre a Carta da Ideia. */
-[data-pensa-theme] .pz-launch-stamp {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-12deg);
-  border: 3px solid var(--color-pz-ok);
-  border-radius: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  color: var(--color-pz-ok);
-  background: color-mix(in srgb, var(--color-pz-surface) 82%, transparent);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
+.pensa-task-edit label:not(.pensa-task-time) input {
+  width: 100%;
+  margin: 0;
 }

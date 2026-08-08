@@ -50,48 +50,14 @@ import {
 } from '../../tiles/tilemapOps'
 import { isTileBlank } from '../../tiles/tilesetOps'
 import { usePintaGallery } from '../appContext'
-import { Button, IconButton, ToolButton } from '../ui/Button'
-import {
-  BrickWall,
-  BringToFront,
-  Eraser,
-  Eye,
-  EyeOff,
-  Hand,
-  type LucideIcon,
-  Maximize,
-  PaintBucket,
-  Pencil,
-  Pipette,
-  Plus,
-  Slash,
-  Square,
-  SquareDashed,
-  Trash2,
-} from '../ui/icons'
+import { Button } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { MapStatusBar } from './MapStatusBar'
-import { TilePicker } from './TilePicker'
+import { MAP_TOOLS, type MapTool, TilemapSidebar, TilemapToolbar } from './TilemapPanels'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 import { useWheelZoom } from './useWheelZoom'
 import { ZoomControls } from './ZoomControls'
-
-type MapTool = 'pencil' | 'fill' | 'eraser' | 'line' | 'rect' | 'select' | 'picker' | 'pan'
-
-/** Mesmas letras do editor de pixel (o que existe nos dois não muda de tecla). */
-const MAP_TOOLS: Array<{ id: MapTool; icon: LucideIcon; label: string; shortcut: string }> = [
-  { id: 'pencil', icon: Pencil, label: COPY.tools.pencil, shortcut: 'P' },
-  { id: 'line', icon: Slash, label: COPY.tools.line, shortcut: 'L' },
-  { id: 'rect', icon: Square, label: COPY.tools.rect, shortcut: 'U' },
-  { id: 'fill', icon: PaintBucket, label: COPY.tools.fill, shortcut: 'G' },
-  { id: 'eraser', icon: Eraser, label: COPY.tools.eraser, shortcut: 'E' },
-  { id: 'select', icon: SquareDashed, label: COPY.tools.select, shortcut: 'M' },
-  { id: 'picker', icon: Pipette, label: COPY.tools.picker, shortcut: 'I' },
-  // Em touch o palco tem touch-action:none (todo toque pinta) — a Mão é o
-  // jeito de navegar um mapa maior que a tela.
-  { id: 'pan', icon: Hand, label: COPY.vector.pan, shortcut: 'H' },
-]
 
 const TOOL_SHORTCUTS = toolShortcutMap(MAP_TOOLS)
 
@@ -823,40 +789,68 @@ export function TilemapEditor(): JSX.Element | null {
     hoverRef.current(null)
   }
 
+  function selectTile(index: number): void {
+    const state = session.getState()
+    state.setStamp(null)
+    state.selectFrame(index)
+    if (state.tool === 'eraser' || state.tool === 'picker') state.setTool('pencil')
+  }
+
+  function selectStamp(next: TileStamp | null): void {
+    const state = session.getState()
+    state.setStamp(next)
+    if (state.tool === 'eraser' || state.tool === 'picker' || state.tool === 'select') {
+      state.setTool('pencil')
+    }
+  }
+
+  function toggleMapLayerFront(id: string): void {
+    const state = editor.getState()
+    if (state.asset.kind !== 'tilemap') return
+    state.commit(toggleLayerFront(state.asset, id))
+  }
+
+  function toggleMapLayerVisible(id: string): void {
+    const state = editor.getState()
+    if (state.asset.kind !== 'tilemap') return
+    state.commit(toggleLayerVisible(state.asset, id))
+  }
+
+  function removeMapLayer(id: string): void {
+    const state = editor.getState()
+    if (state.asset.kind !== 'tilemap') return
+    const next = removeLayer(state.asset, id)
+    if (next === state.asset) return
+    state.commit(next)
+    if (id === layerId) setActiveLayerId(next.layers[0]?.id ?? null)
+  }
+
+  function addMapLayer(): void {
+    const state = editor.getState()
+    if (state.asset.kind !== 'tilemap') return
+    const next = addLayer(
+      state.asset,
+      `${COPY.tiles.layerNamePrefix} ${state.asset.layers.length + 1}`,
+    )
+    if (next === state.asset) {
+      showToast(COPY.tiles.layerLimit)
+      return
+    }
+    state.commit(next)
+    setActiveLayerId(next.layers[next.layers.length - 1]?.id ?? null)
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
       <div className="flex min-h-0 flex-1 items-stretch gap-2">
-        {/* Ferramentas do mapa */}
-        <div
-          role="toolbar"
-          aria-label={COPY.a11y.tools}
-          aria-orientation="vertical"
-          className="pin-panel flex shrink-0 flex-col items-center gap-1 overflow-y-auto p-2"
-        >
-          {MAP_TOOLS.map((entry) => (
-            <ToolButton
-              key={entry.id}
-              icon={entry.icon}
-              label={entry.label}
-              shortcut={entry.shortcut}
-              active={tool === entry.id}
-              onClick={() => session.getState().setTool(entry.id)}
-            />
-          ))}
-          <div className="my-1 h-px w-6 bg-pin-border" />
-          <ToolButton
-            icon={Maximize}
-            label={COPY.tiles.autoExpand}
-            active={autoExpand}
-            onClick={() => session.getState().toggleAutoExpand()}
-          />
-          <ToolButton
-            icon={BrickWall}
-            label={COPY.tiles.showCollision}
-            active={showCollision}
-            onClick={() => setShowCollision((v) => !v)}
-          />
-        </div>
+        <TilemapToolbar
+          tool={tool}
+          autoExpand={autoExpand}
+          showCollision={showCollision}
+          onSelectTool={(nextTool) => session.getState().setTool(nextTool)}
+          onToggleAutoExpand={() => session.getState().toggleAutoExpand()}
+          onToggleCollision={() => setShowCollision((visible) => !visible)}
+        />
 
         {/* A grade do mapa (centraliza quando menor; rola quando maior — com
             `safe center`, senão o que passa do topo fica inalcançável). */}
@@ -887,7 +881,7 @@ export function TilemapEditor(): JSX.Element | null {
             ref={stageRef}
             className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
           >
-            <div className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner">
+            <div className="pin-checkerboard border-2 border-pin-border shadow-inner">
               <canvas
                 ref={canvasRef}
                 className="pin-pixelated block"
@@ -904,121 +898,20 @@ export function TilemapEditor(): JSX.Element | null {
           </div>
         </div>
 
-        {/* Picker de peças + camadas */}
-        <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
-          <TilePicker
-            tileset={tileset}
-            selectedTile={selectedTile}
-            stamp={stamp}
-            onSelectTile={(index) => {
-              const s = session.getState()
-              s.setStamp(null)
-              s.selectFrame(index)
-              if (s.tool === 'eraser' || s.tool === 'picker') s.setTool('pencil')
-            }}
-            onSetStamp={(next) => {
-              const s = session.getState()
-              s.setStamp(next)
-              if (s.tool === 'eraser' || s.tool === 'picker' || s.tool === 'select')
-                s.setTool('pencil')
-            }}
-          />
-
-          <section aria-label={COPY.tiles.layers} className="pin-panel p-3">
-            <span className="mb-2 block text-sm font-bold text-pin-muted">{COPY.tiles.layers}</span>
-            <div className="flex flex-col gap-1">
-              {tilemap.layers.map((l) => {
-                const active = l.id === layerId
-                return (
-                  <div key={l.id} className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => setActiveLayerId(l.id)}
-                      className={`min-h-11 flex-1 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
-                        active
-                          ? 'border-pin-accent bg-pin-accent/10'
-                          : 'border-pin-border hover:border-pin-accent'
-                      }`}
-                    >
-                      {l.name}
-                      {l.front ? (
-                        <span className="ml-1 rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
-                          {COPY.tiles.frontBadge}
-                        </span>
-                      ) : null}
-                    </button>
-                    <IconButton
-                      aria-label={`${COPY.tiles.frontLayer}: ${l.name}`}
-                      aria-pressed={l.front === true}
-                      active={l.front === true}
-                      title={COPY.tiles.frontLayer}
-                      onClick={() => {
-                        const state = editor.getState()
-                        if (state.asset.kind !== 'tilemap') return
-                        state.commit(toggleLayerFront(state.asset, l.id))
-                      }}
-                    >
-                      <BringToFront aria-hidden="true" className="size-5" />
-                    </IconButton>
-                    <IconButton
-                      aria-label={`${COPY.tiles.show} ou ${COPY.tiles.hide.toLowerCase()}: ${l.name}`}
-                      aria-pressed={l.visible}
-                      title={l.visible ? COPY.tiles.hide : COPY.tiles.show}
-                      onClick={() => {
-                        const state = editor.getState()
-                        if (state.asset.kind !== 'tilemap') return
-                        state.commit(toggleLayerVisible(state.asset, l.id))
-                      }}
-                    >
-                      {l.visible ? (
-                        <Eye aria-hidden="true" className="size-5" />
-                      ) : (
-                        <EyeOff aria-hidden="true" className="size-5" />
-                      )}
-                    </IconButton>
-                    {tilemap.layers.length > 1 ? (
-                      <IconButton
-                        aria-label={`${COPY.tiles.removeLayer}: ${l.name}`}
-                        title={COPY.tiles.removeLayer}
-                        onClick={() => {
-                          const state = editor.getState()
-                          if (state.asset.kind !== 'tilemap') return
-                          const next = removeLayer(state.asset, l.id)
-                          if (next === state.asset) return
-                          state.commit(next)
-                          if (l.id === layerId) setActiveLayerId(next.layers[0]?.id ?? null)
-                        }}
-                      >
-                        <Trash2 aria-hidden="true" className="size-5" />
-                      </IconButton>
-                    ) : null}
-                  </div>
-                )
-              })}
-            </div>
-            <Button
-              className="mt-2 w-full"
-              onClick={() => {
-                const state = editor.getState()
-                if (state.asset.kind !== 'tilemap') return
-                const next = addLayer(
-                  state.asset,
-                  `${COPY.tiles.layerNamePrefix} ${state.asset.layers.length + 1}`,
-                )
-                if (next === state.asset) {
-                  showToast(COPY.tiles.layerLimit)
-                  return
-                }
-                state.commit(next)
-                setActiveLayerId(next.layers[next.layers.length - 1]?.id ?? null)
-              }}
-            >
-              <Plus aria-hidden="true" className="size-4" />
-              {COPY.tiles.addLayer}
-            </Button>
-          </section>
-        </div>
+        <TilemapSidebar
+          tilemap={tilemap}
+          tileset={tileset}
+          selectedTile={selectedTile}
+          stamp={stamp}
+          activeLayerId={layerId}
+          onSelectTile={selectTile}
+          onSetStamp={selectStamp}
+          onSelectLayer={setActiveLayerId}
+          onToggleFront={toggleMapLayerFront}
+          onToggleVisible={toggleMapLayerVisible}
+          onRemoveLayer={removeMapLayer}
+          onAddLayer={addMapLayer}
+        />
       </div>
       <div className="flex shrink-0 items-center justify-between gap-2">
         <MapStatusBar cols={tilemap.cols} rows={tilemap.rows} register={registerHover} />

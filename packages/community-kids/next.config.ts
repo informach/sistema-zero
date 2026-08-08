@@ -53,7 +53,13 @@ function buildCsp({ pro }: { pro: boolean }): string {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https:",
     // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
-    "media-src 'self' blob: https:",
+    // `data:` p/ o SOM do Estúdio: o áudio que a criança envia é embutido como
+    // `data:audio/…` e tocado tanto pelo `<audio>` da prévia (nesta página) quanto
+    // pelo `new Audio()` do jogo, dentro do iframe `srcdoc` — que HERDA esta CSP
+    // (só pode RESTRINGIR, nunca relaxar), exatamente como o `script-src` abaixo.
+    // Sem `data:` aqui, o som carrega mas NÃO TOCA, e a recusa é silenciosa: só
+    // aparece no console como "Refused to load media from 'data:audio/…'".
+    "media-src 'self' blob: data: https:",
     "style-src 'self' 'unsafe-inline' https:",
     // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
     // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe

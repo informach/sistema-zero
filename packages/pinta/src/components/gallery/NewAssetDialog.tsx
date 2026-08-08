@@ -29,6 +29,15 @@ import type { NewAssetInput } from '../../state/galleryStore'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { CustomSizeFields } from './CustomSizeFields'
+import {
+  buildCustomSizeKey,
+  CUSTOM_SIZE_KEY,
+  type CustomSizeValues,
+  customSizeSpecFor,
+  EMPTY_CUSTOM_VALUES,
+  seedCustomValues,
+} from './customSize'
 import { TemplatePicker } from './TemplatePicker'
 
 /** Primeiro nome livre por sufixo (`heroi` → `heroi-2`) para o passo de nome. */
@@ -74,11 +83,21 @@ const STYLE_RING_CLASSES: Record<PintaAssetStyle, string> = {
 }
 
 /** Papel sugerido pela missão de arte do Pensa (a criança ainda escolhe o estilo). */
-export type NewAssetRole = 'sprite' | 'background' | 'tileset'
+export type NewAssetRole = 'sprite' | 'background' | 'tileset' | 'tilemap'
 
 const KIND_FOR_ROLE: Record<PintaAssetStyle, Record<NewAssetRole, PintaAssetKind>> = {
-  pixel: { sprite: 'pixel-sprite', background: 'pixel-background', tileset: 'tileset' },
-  vector: { sprite: 'vector-sprite', background: 'vector-background', tileset: 'vector-tileset' },
+  pixel: {
+    sprite: 'pixel-sprite',
+    background: 'pixel-background',
+    tileset: 'tileset',
+    tilemap: 'tilemap',
+  },
+  vector: {
+    sprite: 'vector-sprite',
+    background: 'vector-background',
+    tileset: 'vector-tileset',
+    tilemap: 'tilemap',
+  },
 }
 
 type Step = 'style' | 'kind' | 'size' | 'template' | 'name'
@@ -269,9 +288,17 @@ export function NewAssetDialog({
   const [style, setStyle] = useState<PintaAssetStyle>(initialStyle)
   const [kind, setKind] = useState<PintaAssetKind | null>(null)
   const [sizeKey, setSizeKey] = useState<string>('')
+  const [customValues, setCustomValues] = useState<CustomSizeValues>(EMPTY_CUSTOM_VALUES)
   const [tilesetId, setTilesetId] = useState<string>('')
   const [templateId, setTemplateId] = useState<string | null>(null)
   const [name, setName] = useState(initialName)
+
+  // Tamanho personalizado: `sizeKey` fica na sentinela 'custom' e a chave REAL
+  // ("300x200"/"96"/"50x40") é derivada dos campos — inválida ⇒ null ⇒ o
+  // "Avançar" desabilita. `buildInput` segue lendo a mesma string de sempre.
+  const customSpec = kind ? customSizeSpecFor(kind) : null
+  const customKey = kind && customSpec ? buildCustomSizeKey(kind, customValues) : null
+  const effectiveSizeKey = sizeKey === CUSTOM_SIZE_KEY ? customKey : sizeKey
 
   const normalized = useMemo(() => normalizeAssetName(name), [name])
   const nameError = !name.trim()
@@ -287,6 +314,7 @@ export function NewAssetDialog({
     setStyle(initialStyle)
     setKind(null)
     setSizeKey('')
+    setCustomValues(EMPTY_CUSTOM_VALUES)
     setTilesetId('')
     setTemplateId(null)
     setName(initialName)
@@ -299,6 +327,13 @@ export function NewAssetDialog({
       const k = KIND_FOR_ROLE[s][initialRole]
       setKind(k)
       setSizeKey(preferredSizeKeyFor(k))
+      if (k === 'tilemap') {
+        // A missão de MAPA pula o card de tipo, então replica a pré-seleção
+        // dele — sem isso o mapa nasceria com tilesetId '' (apontando para
+        // tileset nenhum); o Avançar do passo de tamanho também exige tileset.
+        const preferred = tilesets.find((t) => assetStyle(t.kind) === s)
+        setTilesetId(preferred?.id ?? tilesets[0]?.id ?? '')
+      }
       setStep('size')
       return
     }
@@ -509,6 +544,13 @@ export function NewAssetDialog({
               </div>
             </div>
           ) : null}
+          {kind === 'tilemap' && tilesets.length === 0 ? (
+            // Missão de mapa sem nenhum tileset: explica por que o Avançar
+            // está travado (botão desabilitado nunca fica sem explicação).
+            <p role="status" className="text-sm font-bold text-pin-muted">
+              {COPY.newAsset.needTileset}
+            </p>
+          ) : null}
           <div className="grid grid-cols-2 gap-3">
             {sizeChoicesFor(kind).map((choice) => (
               <button
@@ -531,12 +573,50 @@ export function NewAssetDialog({
                 <span className="text-sm text-pin-muted">{choice.detail}</span>
               </button>
             ))}
+            {customSpec ? (
+              <button
+                type="button"
+                // ⚠️ SEM setStep: selecionar só revela o formulário (a criança
+                // ainda vai digitar) — o caminho de saída é o "Avançar".
+                onClick={() => {
+                  if (sizeKey !== CUSTOM_SIZE_KEY) {
+                    setCustomValues(seedCustomValues(kind, sizeKey))
+                    setSizeKey(CUSTOM_SIZE_KEY)
+                  }
+                }}
+                aria-pressed={sizeKey === CUSTOM_SIZE_KEY}
+                className={`pin-pop flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 p-3 transition ${
+                  sizeKey === CUSTOM_SIZE_KEY
+                    ? 'border-pin-accent bg-pin-accent/10'
+                    : 'border-pin-border bg-pin-bg hover:border-pin-accent'
+                }`}
+              >
+                <span className="text-base font-bold">{COPY.newAsset.customSize.card}</span>
+                <span className="text-sm text-pin-muted">
+                  {COPY.newAsset.customSize.cardDetail}
+                </span>
+              </button>
+            ) : null}
           </div>
+          {sizeKey === CUSTOM_SIZE_KEY && customSpec ? (
+            <CustomSizeFields
+              spec={customSpec}
+              values={customValues}
+              onChange={(field, raw) => setCustomValues((v) => ({ ...v, [field]: raw }))}
+              idPrefix="pinta-new-asset-size"
+            />
+          ) : null}
           <div className="mt-1 flex justify-between">
             <Button variant="ghost" onClick={() => setStep(initialRole ? 'style' : 'kind')}>
               {COPY.newAsset.back}
             </Button>
-            <Button variant="primary" disabled={!sizeKey} onClick={() => setStep('name')}>
+            <Button
+              variant="primary"
+              // Mapa sem tileset não avança (a missão do Pensa entra aqui SEM
+              // passar pelo card de tipo, que é quem guardava esse portão).
+              disabled={!effectiveSizeKey || (kind === 'tilemap' && !tilesetId)}
+              onClick={() => setStep('name')}
+            >
               {COPY.newAsset.next}
             </Button>
           </div>
@@ -550,7 +630,8 @@ export function NewAssetDialog({
             event.preventDefault()
             if (!normalized || nameError) return
             if (templateId) onCreateFromTemplate({ templateId, name: normalized })
-            else if (kind) onCreate(buildInput(kind, sizeKey, normalized, tilesetId))
+            else if (kind && effectiveSizeKey)
+              onCreate(buildInput(kind, effectiveSizeKey, normalized, tilesetId))
           }}
         >
           <input

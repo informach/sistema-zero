@@ -207,59 +207,41 @@ Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssu
 `tone="kids"` (copy sem jargão/travessão); o estado de carga é `role="status"` e a virada de estado vai
 numa região `aria-live="polite"` (a11y — o leitor anuncia bloqueado→elegível→emitido).
 
-**Pensa (planejamento guiado — metodologia ZERO, 07/2026):** o shell é o BFF do app
-`@sistemazero/pensa` (embarcado no kids em `/pensa`; projeto → ciclos "Versão N" → etapas Z/E/R/O
-persistidos no members, tabelas `pensa_*`). Client members: métodos `pensa*` (list/create/get/update
-projeto, create cycle, get stage, append turn, save/validate artifact, advance, replace/update tasks,
-replace/toggle checklist — sempre `?audience=`) + **`PENSA_ACCESS_REF = 'pensa'`** +
-`checkPensaAccessReadonly()` (gate da página, espelha o `checkStudioAccessReadonly`; o gate REAL de
-produto é do members no CREATE do projeto). Handlers: **`createPensaRoutes`** (`routes/pensa.ts` —
-passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e **`createPensaAiRoutes`**
-(`routes/pensa-ai.ts`): **`pensaChat` = `POST /api/pensa/chat` SSE** — agente de clareza da etapa Z
-(Zappy): pré-voo em JSON (401/403/409 `PENSA_STAGE_MISMATCH`/429/503) → stream OpenRouter repassado como
-`event: delta` → **evaluator estruturado** das 5 perguntas (`stage-z-evaluator.ts`, modelo do chat,
-`response_format: json_schema`) → persiste o turno COMPLETO (`pensaAppendTurn`; **abort = nada
-persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
-rate-limit in-process por sessão (10/min anti-burst, `globalThis`/`Symbol.for`, réplica única; o teto diário/mensal REAL é a quota durável por CONTA — ver seção Quota de IA) — e
-`pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — TODAS as sínteses:
-idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed + **`spec_edit`** 07/2026 = edição
-PONTUAL de UMA tela SEM IA: troca só `friendly_spec.screens`, mantém fluxos/PRD e auto-valida). ⚠️ **`GenerateBody` (Zod 4): as 3
-variantes da identidade repetem `type:'identity'` → NÃO podem ser irmãs num `discriminatedUnion('type')`**
-(o Zod 4 monta o mapa do discriminador no PRIMEIRO parse e lança "Duplicate discriminator value" — foi o
-500 de TODA geração em staging 02/07; o erro é lazy, então import/testes que não parseiam não pegam).
-Elas vivem numa união ANINHADA discriminada por `step`; regressão travada em `tests/pensa-ai.test.ts`
-(safeParse das 7 variantes). Os catches das gerações LOGAM (`console.error('[pensa-ai] …')`) antes do
-502 — catch mudo foi o que escondeu esse bug. O `friendly_spec` recebe a Carta + o TRANSCRIPT da etapa Z
-(detalhes concretos da conversa) e gera PRD com seções FIXAS nomeadas (contrato do agente de missões);
-revisão com `feedback` atualiza também o PRD anterior (senão deriva) e o feedback entra MESMO sem
-previousSpec. `mission_plan` e `checklist_seed` respeitam o **`buildEnv`** do projeto ('external' = sem
-Estúdio/blocos/catálogo; o item obrigatório de publicar muda de texto). **As missões citam os
-BLOCOS REAIS do Estúdio** (07/2026): `stage-r-missions.ts` tem DOIS snapshots curados manuais —
-`STUDIO_CATEGORY_HINTS` (categorias) e `STUDIO_BLOCK_HINTS` (labels EXATOS do `message0` de
-`packages/studio/src/official-extensions/game-2d/blocks.ts`; drift manual — mudou label lá,
-atualize aqui; NÃO importar `BLOCK_CATALOG` no servidor: puxa blockly/core). O prompt exige
-labels entre aspas, segue a ARQUITETURA real (setup fora do loop → eventos → UM "A cada quadro
-do jogo, fazer" → HUD por último) e a 1ª missão SEMPRE ensina a instalar a extensão Jogo 2D
-(menu ⋯ → Extensões → Instalar) — o projeto semeado pelo Pensa nasce com
-`installedExtensions: []` (decisão: ensinar a instalar, não pré-instalar na semeadura).
-Prompt/clamp travados em `tests/pensa-missions.test.ts`. Plumbing LLM em
-**`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
-`completePensaJson` com Zod e 1 retry — a 2ª tentativa manda um NUDGE de reparo, não repete o corpo
-cru: recupera JSON cortado de plano grande sem 502; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
-OPCIONAL **`OPENROUTER_PENSA_MODEL`** (chat + base das sínteses) e **`OPENROUTER_PENSA_SYNTHESIS_MODEL`**
-(03/07: só as sínteses PESADAS spec/missões — pode ser mais forte p/ jogos grandes; ausente → PENSA_MODEL →
-MODEL). ⚠️ `pensaChatModel` = PENSA_MODEL || MODEL (o genérico gerava chips vagos — QA 02/07);
-`pensaSynthesisModel` = SYNTHESIS || PENSA_MODEL || MODEL.
-**Escalar p/ jogo GRANDE (03/07, full review):** o nº de missões é PROPORCIONAL ao spec
-(`missionTargetFromSpec` em `stage-r-missions.ts` — flows+telas, piso 5, teto `MISSION_CEILING=24`;
-era fixo 5-8); `clampSpec` sobe p/ 12 telas/8 fluxos/14 elem; `max_tokens` das sínteses = 8k; e o chat da
-etapa Z tem **sumarização rolante** (`summarizeStageZ`) quando passa da janela (`PROMPT_WINDOW=40`, = a do
-evaluator) — a ideia inicial não some numa conversa longa (o members já persistia `summary`; o BFF nunca
-mandava). Contrato: `pensa-contract.md`. Prompts VERSIONADOS em
-`server/pensa-agents/*` — a **cláusula de segurança infantil SEMPRE entra no system kids** e a regra
-anti-inferência (PRD §11.3: o agente não decide pela criança; chips `SUGESTÕES:` são escolha DELA) é
-travada em `tests/pensa-ai.test.ts`. Tipos mirror em `lib/types.ts` (`Pensa*`). A conversa do chat NÃO
-passa pelo gateway (OpenRouter é chamado do BFF); a persistência passa (members = portão de ownership).
+**Pensa (planejador de jogos — 08/2026):** o shell expõe o BFF de `@sistemazero/pensa` e espelha
+os contratos do members em `lib/types.ts` e `server/clients.ts`. `createPensaRoutes` valida e repassa
+projetos, ciclos, cinco artefatos, tarefas, handoff e progresso. Escritas respeitam impersonação
+read-only. `GET /tasks/:id/handoff` preserva o plano e informa a capability; `PATCH
+/tasks/:id/progress` valida IDs e transições.
+
+`createPensaAiRoutes` mantém o chat SSE da etapa Z e gera somente `idea`, `game_design`,
+`visual_direction`, `task_plan` e `plan_review`. `planner-contract.ts` usa Zod 4, filtra
+`SERVER_BLOCK_CATALOG` e `SERVER_MECHANIC_DOCUMENTS` pelo `StudioTier`, recebe apenas IDs da IA e
+resolve rótulo, categoria, subcategoria, área e extensão no servidor. ⚠️ Campo sem valor nos
+schemas que vão ao provider é `.nullable()`, NUNCA `.optional()`, e o `jsonSchemaFor` troca
+`oneOf`→`anyOf`: o modo estrito do `response_format` exige `required` com todas as chaves e não
+aceita `oneOf` (400 real do `pensa_task_plan_v1`, 08/2026); o teste de deriva em
+`tests/pensa-ai.test.ts` trava os quatro schemas e `resolveTaskPlan` normaliza `null`→ausente
+antes do members (o DTO de lá usa `t.Optional`, que não aceita null). Sem stream o corpo só chega
+no FIM da geração: `completePensaJson` aceita `bodyTimeoutMs` (task_plan 180s, visual_direction
+90s — 30s derrubava o plano real, "pendurou o corpo" 08/2026), timeout de corpo NÃO re-tenta
+(`PensaLlmError.retryable=false`) e **ABORTA o socket do fetch** ao estourar (senão a conexão
+seguia pendurada); a rota loga o erro técnico e devolve frase gentil à criança.
+**O `pensaGenerateArtifact.POST` responde `text/event-stream` (08/2026):** o PRÉ-VOO
+(sessão/impersonação/carreira/validação/projeto/quota) segue JSON com os envelopes de sempre;
+dali em diante o stream manda `: ok` imediato (TTFB antes do LLM), `: ping` a cada 15s e um único
+evento terminal — `done` com o corpo antigo (`{artifact}`) ou `error` `{status, code, message?}`.
+Sem isso a borda (Railway; Cloudflare em prod ~100s) derrubava com **502** o POST mudo de minutos
+do task_plan (o banner mostrava o fallback "Não deu certo agora."). ⚠️ Desconexão do cliente NÃO
+aborta a geração (≠ chat): o resultado persiste no members e um F5 o mostra — abortar no meio
+podia deixar `pensaReplaceTasks` aplicado sem o artefato salvo. A geração rejeita referência
+inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset —
+mas **arte 2D citada em `visualAssetIds` de tarefa do Estúdio é NORMALIZADA, não reprovada**
+(`stripPintaArtFromStudioTasks`, 08/2026): o modelo insiste em citar o fundo/sprite que o jogo USA
+(3 gerações seguidas reprovadas no QA) e a referência é redundante — a cobertura 1:1 segue garantida
+pela tarefa Pinta; id desconhecido continua reprovando. JSON quebrado do modelo (SyntaxError após o
+nudge) também vira frase gentil, não o erro cru do parser.
+A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
+persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
 **Pinta (editor de assets de jogos, 07/2026):** diferente do Pensa, o Pinta NÃO tem backend — os
 desenhos vivem no IndexedDB do navegador (por perfil) e a ponte "Usar no Estúdio" grava direto na
@@ -306,16 +288,10 @@ snapshot jogável cru — a checagem AUTORITATIVA do clique no kids). Testes em 
   `challengeKey` no multipart (formato validado FROUXO na borda; posse+mês são do hub, com drop
   silencioso da tag) e o repassa ao `hub.createShowcaseThreadStudioStandalone`. O shim
   `GET /api/hub/channels/:id/threads` encaminha `?challenge=m:YYYY-MM` (prateleira do Mural).
-- **Missões de ARTE (Pensa→Pinta):** `stage-r-missions.ts` — o `MissionSchema`/`MISSIONS_JSON_SCHEMA`
-  ganhou `artKind` (string; ⚠️ additionalProperties:false — campo novo TEM que entrar em
-  required+properties) e o `missionsSystem` o param `includeArtMissions` (só liga fora do
-  buildEnv 'external'): o prompt pede 1–2 missões de DESENHO (artKind sprite/background/tileset,
-  passos citam o botão "Desenhar no Pinta" e o "🚀 Usar no Estúdio", categories/blocks vazios).
-  `clampMissions(raw, external, palette)` valida o artKind e anexa a PALETA da identidade só nas
-  missões de arte. O `pensa-ai.ts` (mission_plan) checa a POSSE do Pinta
-  (`members.checkPintaAccessReadonly()`, best-effort → false) antes de ligar `includeArtMissions` —
-  produto vendido à parte: sem posse o plano nasce sem missão de arte. `PensaMission` (mirror em
-  `lib/types.ts`) ganhou `artKind?`/`palette?`. Travado em `tests/pensa-missions.test.ts`.
+- **Cartões Pensa→Pinta/Estúdio:** `planner-contract.ts` exige `assetId` em cada arte 2D e
+  `visualAssetIds` para modelo, mundo e material. O plano continua completo sem entitlement; o
+  handoff informa o bloqueio. O Pinta exige asset vinculado e, quando configurado, envio ao
+  Estúdio. O Estúdio usa somente blocos, manuais e extensões liberados pelo tier.
 - **Report dos pais (Lote E):** o handler `childrenStats` repassa os campos novos da view do
   members — `week` ("Esta semana" por filho) e `games` (jogos do Mural na semana; `null` = hub
   fora, degrada) — mirrors `ChildWeekStatsView`/`ChildWeekGameView` em `lib/types.ts`
@@ -486,7 +462,9 @@ manual com hint.
 **Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
 (`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route
 handlers** `profilesList`/`profileCreate`/`profileUpdate`/`profileArchive`/`profileSelect`/
-`profileExit` (em `createShellRoutes`; ⚠️ o `profileAvatar` — upload de FOTO de perfil — foi
+`profileExit` (em `createShellRoutes`; o `CreateProfileBody` Zod aceita
+`publicProfileEnabled?` desde 08/2026 — o pai decide o perfil público JÁ na criação, tutorial
+de 1º acesso do kids; o auth aplica no create, parent-only por construção; ⚠️ o `profileAvatar` — upload de FOTO de perfil — foi
 REMOVIDO 24/07: a imagem da criança vem só do snapshot do avatar 3D via `avatarSnapshot` +
 allowlist `AVATAR_PHOTO_URL_PREFIXES` no members). `select`/`exit` EMITEM tokens novos
 e o handler TROCA os cookies (igual ao exchange de impersonação): `select` = entrar/trocar de
@@ -583,8 +561,104 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - Cada pergunta revalida sessão, posse do Estúdio, carreira/modo/extensões e cursos liberados;
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
-- Rollout exige `ZAPPY_ENABLED=true` e a conta em `ZAPPY_PILOT_ACCOUNT_IDS`; equipe ignora o
-  gate para QA. O mesmo gate server-side decide se o host injeta a UI. O nome real não vai ao
+- **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
+  carreira **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
+  para QA. Não existe allowlist de contas nem degrau configurável: a barra compartilhada vive em
+  `CREATIVE_APPS_MIN_LEVEL`, usada também por Pensa/Pinta. `isStudioZappyAllowed` decide quando
+  o rank já foi carregado; `isStudioZappyAllowedForRequest` consulta o members nos handlers.
+  Slug ausente/desconhecido reprova (fail-closed via `careerLevelAtLeast` do core). A rota da
+  pergunta reutiliza a gamificação que já precisa para montar o tier, sem uma segunda consulta.
+  O mesmo gate server-side decide se o host injeta a UI. O nome real não vai ao
   OpenRouter e o contexto do projeto não é persistido.
 - Catálogo, manuais, código e base didática são ranqueados por relevância e o prompt total fica em
   até 48 kB. Referências de aula incluem `courseSlug` autoritativo para o host montar a navegação.
+- A resposta do modelo passa por `invalidStudioZappyAnswerReason` (zappy-ai), que loga o MOTIVO do
+  descarte (`[studio-zappy] resposta do modelo reprovada` — antes era mudo e indiagnosticável em
+  staging). O prompt amarra TODO bloco citado no texto a um item de `blockReferences` (validado
+  contra o catálogo) e proíbe citar bloco inexistente ("esse bloco ainda não existe" é a saída
+  educada); `unknownBlockNamesInText` loga `[studio-zappy] bloco citado no texto fora do catálogo`
+  (telemetria, não reprova) — caso real: o Zappy sugeriu "Adicionar sprite ao grupo", que não
+  existe no Jogo 2D (08/2026). No modo Blocos, crase inline citando nome de bloco/categoria é DESEMBRULHADA antes da
+  checagem de código — a regra do prompt pede a trilha categoria/subcategoria em texto corrido, e
+  nome citado não é código (a etapa validada já removia as crases do texto exibido); cerca de
+  código e código real seguem reprovados, e PII/URL/referências fora do catálogo (anti prompt
+  injection) ficam intactas. Foi o bug do "Não consegui validar essa explicação" em toda resposta
+  (08/2026).
+
+### Lote "Zappy mais inteligente" (08/2026) — entender a pergunta, os exemplos e o projeto
+
+Diagnóstico MEDIDO (rodando o montador de prompt real, não por leitura): a busca era substring
+crua sem fronteira de palavra — "como faço **ele** pular?" punha `sz_html_image` em 1º ("ele" ⊂
+"elemento") — e o bônus de +10.000 para bloco já presente no projeto expulsava das vagas
+justamente o bloco NOVO que resolveria a dúvida. Some a isso: zero memória de conversa, um regex
+que sequestrava perguntas legítimas para o Pinta, e uma validação que descartava a resposta
+INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária relatou.
+
+- **`server/zappy-search.ts` (NOVO, PURO — a peça central):** `tokenizeSearchable` normaliza (NFD,
+  minúsculas) e quebra também em `_ : -` (`sz_g2d_jump_on_ground` → `jump`, `ground`);
+  `scoreTokens(termGroups, tokens)` casa por token exato **ou prefixo comum ≥ 4 chars** (cobre
+  pular/pulando, mata "ele"⊂"elemento"); `KID_SYNONYM_GROUPS` (24 grupos à mão: pular/salto/jump,
+  colisão/encostar/bater, vida/hp/morrer, ponto/placar/score, atirar/tiro/bala, fase/nível/cena…)
+  expande cada termo; stop-words no linguajar de criança (quero, preciso, ele, ela, isso, agora…).
+  ⚠️ `jogo`/`bloco` NÃO são stop-words — o peso de categoria é que caiu.
+- **`rankCatalog` reescrito** (`zappy-ai.ts`): `textScore = 120·label + 80·type + 40·tooltip +
+  15·categoria`; `score = (selecionado ? 100_000 : 0) + textScore·100 + (presente no projeto ?
+  250 : 0) + (core ? 1 : 0)`. O bônus de presença caiu 10.000 → **250** (abaixo de 1 acerto de
+  rótulo): o Zappy volta a ENSINAR bloco novo, e sem match textual a presença ainda ordena (bom
+  para "meu jogo não funciona"). O mesmo `scoreTokens` alimenta manuais e blocos.
+- **Memória de conversa (3 pares, ZERO roundtrip extra):** o `reserveQuestion` do members já
+  gravava a pergunta — passou a devolver `recentMessages` no MESMO SELECT. O `projectData` ganha
+  `conversaRecente` (280 chars/turno, PII já redigida na gravação) e o prompt avisa que a pergunta
+  pode ser continuação ("ele", "esse bloco", "e agora?").
+- **Não sequestrar:** o ramo `asksForAssetCreation` do `deterministicZappyReply` foi REMOVIDO —
+  "como criar um sprite?" ia para o Pinta sem nunca chegar ao modelo. Só pedido EXPLÍCITO da
+  ferramenta redireciona (`abra/usar o/no pinta`). Escadas Pensa/jogo-inteiro/off-topic ficam.
+- **Não descartar:** `invalidStudioZappyAnswerReason` monta o `byType` do catálogo permitido
+  COMPLETO (era o TRUNCADO — referência boa reprovava); `block-reference`/`lesson-reference`
+  saíram do descarte-total e agora são **filtradas** (a explicação sobrevive); `code-in-blocks`
+  não reprova mais por `class`/`return` em texto corrido nem por UMA tag sem atributo (`<img>`
+  citado explicando o bloco de imagem). Sobraram 3 motivos de reprovação.
+- **Retry com motivo** (`answerPreparedStudioZappy`): 1ª chamada `maxTokens 2000`/`maxAttempts 2`;
+  reprovou E o relógio permite (<~50s do início) → UMA chamada de reparo com o motivo em PT
+  (`REJECTION_HINTS`); reprovou de novo → fallback gentil com **`outcome:'rejected'`** e
+  `response.rejection = <motivo>` (jsonb, SEM migration). Teto duro de 3 chamadas por pergunta.
+- **Receitas internas dos exemplos, por NÍVEL** (`relevantExampleRecipes`): o Zappy consulta o
+  índice server-safe `@sistemazero/studio/server-examples` (148 exemplos) filtrado por
+  `requires ⊆ tier.allowedExtensions` **+ regra dos ≥80% de blocos permitidos**. ⚠️ **A injeção é
+  ANÔNIMA por decisão de produto (a usuária foi explícita): a criança NÃO sabe que os exemplos
+  existem e NÃO pode saber.** O payload nem leva `name`/`key` (o modelo não vaza o que não vê) —
+  só `{mecanicas, comoFunciona, blocos}` — e o prompt proíbe as palavras "exemplo", "jogo pronto",
+  "galeria" e "receita". Serve para o Zappy SABER montar a mecânica e descrever o passo a passo
+  como conhecimento próprio. Nada muda na galeria/`showExamples` (segue admin-only).
+- **Entender o projeto aberto** (`server/zappy-project-outline.ts`, NOVO/puro): `buildProjectOutline`
+  monta a árvore por id/parentId com recuo de 2 espaços e rótulos do `SERVER_BLOCK_CATALOG`
+  COMPLETO. ⚠️ Tipo desconhecido **NÃO é ecoado** (vira `blocosDesconhecidos: N`) — o `context.blocks`
+  vem do cliente e ecoar texto arbitrário reabriria prompt injection. Bloco acima do tier aparece
+  com `(nível futuro)`: existe no projeto, mas o prompt proíbe recomendá-lo. O `projectData` troca
+  `blocks` cru por `{esboco, blocosRelevantes}` e o `contextAllowedByCatalog` parou de filtrar o
+  projeto DELA (a redação por tier vale só para o que é RECOMENDADO).
+- **Orçamento de 48KB é contrato** (testes são o freio): ordem de encolhimento `catalog>24 →
+  receitas 2→1 → manuais>3 → catalog>8 → receitas 1→0 → manuais>0` — manuais deixaram de morrer
+  primeiro (sobreviviam ~1,4KB de 35KB).
+- **`suggestions` na resposta:** `array(string 1..60).max(3)` no `RawAnswer` e no JSON schema
+  (⚠️ modo estrito: **em `required`**, vazio ok — foi bug real no Pensa), cada uma passando por
+  `redactZappyPii` + `isUnsafeZappyText` na validação. Viram chips que PREENCHEM o campo no
+  `ZappyPanel` (padrão que a usuária aprovou no Pensa — não enviam sozinhos).
+- **Modelo: `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1-mini`** (staging + prod, 06/08). O gpt-4.1 puro
+  durou 20 minutos: preço real do OpenRouter é **$2/M entrada + $8/M saída = 13× o gpt-4o-mini**, e
+  este lote engordou o prompt DE PROPÓSITO (receitas + esboço + memória, teto 48KB) — pior caso
+  ~$0,042/pergunta, ~$21/mês por conta que estourasse a quota. O **4.1-mini ($0,40/$1,60) é 5×
+  mais barato que o 4.1 e uma geração à frente do 4o-mini**, então não volta a ser o modelo que
+  dava resposta vaga: ~$0,008/pergunta. ⚠️ O **Pensa fica no `gpt-4.1`** (JSON grande do
+  `task_plan`, poucas chamadas por ciclo). Cascata: `ZAPPY_MODEL → PENSA_MODEL → MODEL`, todas
+  `.optional()` — **o lote não exigiu env nova**. Só o community-kids tem OpenRouter configurado;
+  o community adulto não roda Zappy.
+- **Quota não é alavanca de custo** (medido 06/08, antes de mexer): equipe JÁ é ilimitada
+  (`privileged` → `unlimited:true` no members) e o teto `AI_LIMIT_DAILY`/`MONTHLY` é **global por
+  CONTA**, somando Pensa + Zappy + descrição do Mural — baixá-lo corta o Pensa junto (1 ciclo ≈
+  25-30 interações). Além disso teto não reduz custo MÉDIO, só a cauda. Se um dia cortar, corte o
+  MENSAL, nunca o diário. Medir primeiro no `/admin/ia` (breakdown por feature e por conta).
+- **Segurança infantil intacta:** URL, cerca de código, anti-grooming, PII na pergunta e quota
+  seguem fail-closed. As flexibilizações são cirúrgicas: tag única sem atributo, `class`/`return`
+  em texto, e `ANSWER_PHONE_RE` (telefone com DDD) usado SÓ no lado da RESPOSTA — a redação da
+  PERGUNTA mantém o regex largo.

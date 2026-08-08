@@ -2,10 +2,11 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { resolveStudioTier } from '../lib/studio-tier'
+import type { AiCreditsView } from '../lib/types'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
-import { isStudioZappyPilotAllowed } from '../server/zappy-access'
+import { isStudioZappyAllowed, isStudioZappyAllowedForRequest } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
   deterministicZappyReply,
@@ -39,6 +40,31 @@ const QuestionBody = z.object({
     installedExtensions: z.array(z.string().min(1).max(128)).max(20),
     selectedBlockId: z.string().max(128).nullable(),
     lastError: z.string().max(2000).nullable(),
+    // ⚠️ Campo do contexto que NÃO estiver declarado aqui é DESCARTADO em
+    // silêncio pelo Zod (`z.object` sem `.passthrough()`). Foi assim que o
+    // comportamento/rascunhos/avisos quase foram para produção mortos: os testes
+    // chamavam o montador de prompt direto e não passavam por esta borda.
+    behavior: z
+      .array(
+        z.object({
+          area: z.enum(['start', 'events', 'loops']),
+          depth: z.number().int().min(0).max(12),
+          type: z.string().min(1).max(128),
+          blockId: z.string().min(1).max(128).optional(),
+          values: z
+            .array(z.object({ name: z.string().min(1).max(40), value: z.string().max(80) }))
+            .max(8),
+        }),
+      )
+      .max(160)
+      .optional(),
+    draftBlockIds: z.array(z.string().min(1).max(128)).max(60).optional(),
+    semanticIssues: z
+      .array(
+        z.object({ blockId: z.string().min(1).max(128).optional(), message: z.string().max(300) }),
+      )
+      .max(10)
+      .optional(),
     code: z
       .array(z.object({ path: z.string().min(1).max(240), content: z.string().max(20000) }))
       .max(24)
@@ -139,7 +165,7 @@ function signedActor(user: Awaited<ReturnType<SessionModule['getSession']>>) {
   }
 }
 
-type ZappyOutcome = 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
+type ZappyOutcome = 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error' | 'rejected'
 
 export function createStudioZappyRoutes(deps: { members: MembersClient; session: SessionModule }) {
   const { members, session: sessions } = deps
@@ -149,7 +175,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await isStudioZappyAllowedForRequest(members, user)))
+        return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
 
@@ -163,7 +190,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await isStudioZappyAllowedForRequest(members, user)))
+        return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
       if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
       const result = await members.zappyDeleteHistory(query.projectId)
@@ -177,7 +205,6 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, QUESTION_BODY_MAX_BYTES)
@@ -189,13 +216,22 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       if (!parsed.success || parsed.data.projectId !== parsed.data.context.projectId) {
         return error('INVALID_INPUT', 400)
       }
-      if (!(await hasStudioAccess(members))) return error('FORBIDDEN', 403)
+      // Posse e rank são INDEPENDENTES: em série custavam uma ida inteira de
+      // latência com a criança esperando. A ordem das CHECAGENS abaixo continua a
+      // mesma — só a espera virou uma só.
+      const [studioAccess, gamification] = await Promise.all([
+        hasStudioAccess(members),
+        members.getGamification(),
+      ])
+      if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
 
       // Rank/modos/extensões vêm do members + catálogo da carreira, nunca do cliente.
-      const gamification = await members.getGamification()
       if (gamification.status !== 200) return error('ZAPPY_UNAVAILABLE', 503)
-      const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+      const levelSlug = gamification.body?.level?.slug
+      // Reusa o rank desta rota para não consultar o members duas vezes.
+      if (!isStudioZappyAllowed(user, levelSlug)) return error('ZAPPY_NOT_ENABLED', 403)
+      const tier = resolveStudioTier(levelSlug ?? 'noob', user.role)
       const context = parsed.data.context as ZappyContextInput
       if (!tier.allowedModes.includes(context.mode)) return error('FORBIDDEN_MODE', 403)
       if (context.kind === 'pro' && !tier.pro) return error('FORBIDDEN_MODE', 403)
@@ -217,16 +253,24 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       // Idempotência: repetição concluída retorna a MESMA resposta sem rate/quota/modelo.
       if (!reserved.body.created) {
         if (reserved.body.rateLimited) return error('RATE_LIMITED', 429)
+        // Replay: mesmo envelope, sem saldo (nada foi consumido agora) — o painel
+        // mantém o número que já tinha em vez de zerar.
         return reserved.body.response
-          ? NextResponse.json(reserved.body.response)
+          ? NextResponse.json({ response: reserved.body.response, credits: null })
           : error('ZAPPY_IN_PROGRESS', 409)
       }
       const questionId = reserved.body.questionId
       if (!questionId) return error('ZAPPY_UNAVAILABLE', 503)
 
+      // ⚠️ O saldo (`credits`) viaja no ENVELOPE da resposta HTTP, NUNCA dentro do
+      // objeto `response` — esse é o que vai para o jsonb `zappy_messages.response`,
+      // e crédito é volátil: gravado ali, o histórico replayado mostraria um saldo
+      // de dias atrás como se fosse o de agora.
+      let freshCredits: AiCreditsView | undefined
       const complete = async (
         response: NonNullable<typeof reserved.body.response>,
         outcome: ZappyOutcome = outcomeFor(response),
+        rejection?: string,
       ) => {
         const saved = await members.zappyCompleteQuestion(questionId, {
           actor: signedActor(user),
@@ -234,10 +278,12 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           latencyMs: Date.now() - startedAt,
           response,
           outcome,
+          ...(rejection ? { rejection } : {}),
         })
-        return NextResponse.json(saved.body ?? response, {
-          status: saved.status === 200 ? 200 : 502,
-        })
+        return NextResponse.json(
+          { response: saved.body ?? response, credits: freshCredits ?? null },
+          { status: saved.status === 200 ? 200 : 502 },
+        )
       }
 
       const safetyReply = deterministicZappySafetyReply(parsed.data.question, safeQuestion.hadPii)
@@ -283,6 +329,9 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           tier,
           profileName: safeProfileName(user.activeProfile?.name),
           knowledge: knowledge.hits,
+          // Memória: últimos turnos da conversa vêm na reserva (members antigo
+          // sem o campo → sem memória, degrada sem quebrar).
+          recentTurns: reserved.body.recentMessages,
         })
       } catch (cause) {
         console.error('[studio-zappy] falha ao preparar resposta', { cause })
@@ -299,6 +348,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       }
 
       const quota = await consumeAiQuotaStrict(members, 'studio-zappy')
+      // A variante `unavailable` não carrega saldo (o members nem respondeu).
+      freshCredits = 'credits' in quota ? quota.credits : undefined
       if (!quota.allowed) {
         const response = deterministicZappyReply('assunto externo') ?? {
           id: crypto.randomUUID(),
@@ -311,6 +362,12 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
           response.text = 'O Zappy não conseguiu acordar agora. Tente novamente em alguns minutos.'
           return complete(response, 'error')
         }
+        // ⚠️ O `scope` da RESPOSTA precisa virar 'quota' — o 'quota' do `complete`
+        // abaixo é só o OUTCOME (analítica do admin). Sem esta linha o scope
+        // continuava 'unsupported' e o painel renderizava o limite como aula,
+        // com os polegares de "isso ajudou?", que é justamente o que a separação
+        // de aviso × ensino veio consertar.
+        response.scope = 'quota'
         response.text =
           quota.scope === 'day'
             ? 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖'
@@ -319,8 +376,9 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       }
 
       try {
-        const response = await answerPreparedStudioZappy(prepared)
-        return complete(response)
+        const result = await answerPreparedStudioZappy(prepared, { startedAt })
+        if (result.rejection) return complete(result.response, 'rejected', result.rejection)
+        return complete(result.response)
       } catch (cause) {
         console.error('[studio-zappy] falha ao responder', { cause })
         return complete(
@@ -342,7 +400,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403)
-      if (!isStudioZappyPilotAllowed(user)) return error('ZAPPY_NOT_ENABLED', 403)
+      if (!(await isStudioZappyAllowedForRequest(members, user)))
+        return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, FEEDBACK_BODY_MAX_BYTES)

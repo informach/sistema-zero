@@ -1,16 +1,22 @@
+import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credits'
 import type { FormEvent, JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { cn, IconSparkles } from '#ui'
+import { useDiagnosticsStore } from '../../state/diagnosticsStore'
+import { glossErrorMessage } from '../../state/errorGloss'
 import { useHighlightStore } from '../../state/highlightStore'
-import { useLogsStore } from '../../state/logsStore'
+import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioLayout } from '../../studio/layoutContext'
 import {
   buildStudioTutorContext,
   type StudioTutorBlockReference,
   type StudioTutorHistoryMessage,
+  type StudioTutorLessonReference,
+  type StudioTutorResponse,
   useStudioTutor,
 } from '../../studio/tutor'
+import { ZappyCredits } from './ZappyCredits'
 
 const MAX_QUESTION_CHARS = 1_000
 
@@ -19,8 +25,9 @@ function friendlyError(error: unknown): string {
     error && typeof error === 'object' && 'code' in error
       ? String((error as { code?: unknown }).code)
       : ''
-  if (code === 'ZAPPY_QUOTA_DAY') return 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖'
-  if (code === 'ZAPPY_QUOTA_MONTH') return 'A ajuda deste mês acabou. No mês que vem tem mais 🤖'
+  // ⚠️ NÃO existe ramo de quota aqui: a recusa por limite volta 200, como uma
+  // mensagem de `scope: 'quota'` no fluxo da conversa (ver `isQuota` abaixo).
+  // Os códigos ZAPPY_QUOTA_* que ficavam neste ponto eram código morto.
   if (code === 'RATE_LIMITED') return 'Uma pergunta de cada vez! Espera só um pouquinho.'
   if (code === 'ZAPPY_IN_PROGRESS')
     return 'Ainda estou terminando essa resposta. Tente novamente em instantes.'
@@ -29,16 +36,46 @@ function friendlyError(error: unknown): string {
   return 'O Zappy foi tomar um lanchinho. Tenta de novo em instantes!'
 }
 
+/**
+ * ⚠️ ÚNICA porta de entrada da resposta AO VIVO no estado — e por isso o lugar
+ * certo de garantir a forma.
+ *
+ * O caminho do HISTÓRICO já normaliza no servidor (`toResponse`, no repositório
+ * do members: `Array.isArray(x) ? x : []`). O caminho ao vivo espalhava o
+ * payload como veio. Essa assimetria é exatamente o sintoma que a dona relatou
+ * em 08/2026: a conversa derrubava a IDE ao chegar, e depois de recarregar a
+ * MESMA resposta aparecia certinha — porque só a segunda passava por um
+ * normalizador. Aqui o cliente passa a ter a mesma tolerância que o servidor.
+ */
+function normalizeResponse(response: StudioTutorResponse): StudioTutorResponse {
+  const list = <T,>(value: unknown): T[] | undefined =>
+    Array.isArray(value) ? (value as T[]) : undefined
+  return {
+    ...response,
+    blockReferences: list<StudioTutorBlockReference>(response.blockReferences) ?? [],
+    // Opcionais seguem OPCIONAIS: presente-e-inválido vira ausente (a UI já sabe
+    // lidar com ausente), em vez de virar um array vazio que mente "buscamos e
+    // não achou".
+    ...(response.lessonReferences !== undefined
+      ? { lessonReferences: list<StudioTutorLessonReference>(response.lessonReferences) }
+      : {}),
+    ...(response.suggestions !== undefined
+      ? { suggestions: list<string>(response.suggestions) }
+      : {}),
+  }
+}
+
 function responseMessage(
   response: StudioTutorHistoryMessage['response'],
 ): StudioTutorHistoryMessage {
   if (!response) throw new Error('Resposta do Zappy ausente')
+  const safe = normalizeResponse(response)
   return {
-    id: response.id,
+    id: safe.id,
     role: 'assistant',
-    text: response.text,
-    createdAt: response.createdAt,
-    response,
+    text: safe.text,
+    createdAt: safe.createdAt,
+    response: safe,
   }
 }
 
@@ -48,13 +85,24 @@ export function ZappyPanel(): JSX.Element | null {
   const setMode = useProjectStore((s) => s.setMode)
   const selectedBlockId = useHighlightStore((s) => s.selectedBlockId)
   const focusTutorReference = useHighlightStore((s) => s.focusTutorReference)
+  // ⚠️ Antes filtrava só `kind === 'error'` (console.error explícito, raríssimo no
+  // código gerado) e deixava passar `runtimeError`/`unhandledRejection` — os que
+  // carregam o erro que a criança realmente vê, com stack. A régua canônica é a
+  // mesma do Console. A dica em PT-BR vai junto: o gloss já existe e só era usado
+  // na hora de pintar a linha.
   const lastError = useLogsStore((s) => {
     for (let i = s.entries.length - 1; i >= 0; i -= 1) {
       const entry = s.entries[i]
-      if (entry?.kind === 'error') return entry.errorStack || entry.text
+      if (!entry || !ERROR_LOG_KINDS.has(entry.kind)) continue
+      const gloss = glossErrorMessage(entry.text)
+      const local = entry.errorLine != null ? ` (linha ${entry.errorLine} do script.js)` : ''
+      return `${entry.errorStack || entry.text}${local}${gloss ? `\n${gloss}` : ''}`
     }
     return null
   })
+  // O editor já sabe o que nunca roda e o que está semanticamente errado.
+  const draftBlockIds = useDiagnosticsStore((s) => s.draftBlockIds)
+  const semanticIssues = useDiagnosticsStore((s) => s.semanticIssues)
   const { isNarrow } = useStudioLayout()
   const [messages, setMessages] = useState<StudioTutorHistoryMessage[]>([])
   const [question, setQuestion] = useState('')
@@ -64,6 +112,10 @@ export function ZappyPanel(): JSX.Element | null {
   const [nextHistoryCursor, setNextHistoryCursor] = useState<string | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Semeado pelo host (Server Component) e atualizado por cada resposta que
+  // consumiu de verdade. `null` = não sei → o medidor não aparece.
+  const [credits, setCredits] = useState<AiCreditsView | null>(config?.credits ?? null)
+  const creditsMeter = resolveAiCredits(credits)
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [now, setNow] = useState(Date.now())
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -166,6 +218,31 @@ export function ZappyPanel(): JSX.Element | null {
     question.trim() && !loading && !busy && cooldownSeconds === 0 && project && config,
   )
 
+  // Chips que PREENCHEM o campo (a criança revisa e envia — padrão do Pensa):
+  // fixos no estado vazio, e as continuações sugeridas da ÚLTIMA resposta.
+  const starterQuestions =
+    project?.mode === 'blocks'
+      ? [
+          'Como faço meu personagem pular?',
+          'Deu um erro no meu jogo',
+          'O que posso adicionar agora?',
+        ]
+      : ['O que este código faz?', 'Deu um erro no meu jogo', 'O que posso adicionar agora?']
+  let lastAssistantResponse: StudioTutorHistoryMessage['response'] | undefined
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index]
+    if (message?.role === 'assistant' && message.response) {
+      lastAssistantResponse = message.response
+      break
+    }
+  }
+  const followUpSuggestions = busy || loading ? [] : (lastAssistantResponse?.suggestions ?? [])
+  const pickSuggestion = (suggestion: string) => {
+    pendingAttemptRef.current = null
+    setQuestion(suggestion)
+    inputRef.current?.focus()
+  }
+
   const handleAsk = async (event: FormEvent) => {
     event.preventDefault()
     const text = question.trim()
@@ -187,15 +264,24 @@ export function ZappyPanel(): JSX.Element | null {
     setBusy(true)
     setMessages((current) => [...current, userMessage])
     try {
-      const response = await config.adapter.ask({
+      const result = await config.adapter.ask({
         projectId: project.id,
         clientMessageId,
         question: text,
-        context: buildStudioTutorContext({ project, selectedBlockId, lastError }),
+        context: buildStudioTutorContext({
+          project,
+          selectedBlockId,
+          lastError,
+          draftBlockIds,
+          semanticIssues,
+        }),
       })
       if (operationGenerationRef.current !== operationGeneration) return
       pendingAttemptRef.current = null
-      setMessages((current) => [...current, responseMessage(response)])
+      // Saldo ausente = nada foi consumido agora (resposta pronta, replay):
+      // mantém o número que já estava na tela em vez de zerar.
+      if (result.credits) setCredits(result.credits)
+      setMessages((current) => [...current, responseMessage(result.response)])
       const until = Date.now() + Math.max(0, config.cooldownMs ?? 1_500)
       setCooldownUntil(until)
       setNow(Date.now())
@@ -270,6 +356,7 @@ export function ZappyPanel(): JSX.Element | null {
       ...(reference.blockId ? { blockId: reference.blockId } : {}),
       blockType: reference.blockType,
       category: reference.category,
+      ...(reference.subcategory ? { subcategory: reference.subcategory } : {}),
     })
     if (isNarrow) setOpen(false)
   }
@@ -342,13 +429,30 @@ export function ZappyPanel(): JSX.Element | null {
         </button>
       </header>
 
+      {/* ⚠️ O botão "Perguntar" NÃO é desabilitado quando o saldo zera: o servidor
+          é a autoridade, e um saldo velho numa aba aberta desde ontem trancaria a
+          criança de graça. O aviso explica; a recusa real vem do BFF. */}
+      <ZappyCredits credits={credits} />
+
       <div aria-live="polite" className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {loading ? (
           <p className="text-center text-sz-fg-mute text-sm">Carregando conversa…</p>
         ) : null}
         {!loading && messages.length === 0 ? (
           <div className="rounded-2xl bg-sz-bg p-4 text-sm leading-relaxed">
-            Oi! Selecione um bloco ou rode o jogo e me conte onde você travou.
+            <p>Oi! Selecione um bloco ou rode o jogo e me conte onde você travou.</p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {starterQuestions.map((starter) => (
+                <button
+                  key={starter}
+                  type="button"
+                  onClick={() => pickSuggestion(starter)}
+                  className="rounded-full border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1.5 font-semibold text-sz-accent text-xs hover:bg-sz-accent/20"
+                >
+                  {starter}
+                </button>
+              ))}
+            </div>
           </div>
         ) : null}
         {!loading && nextHistoryCursor ? (
@@ -363,79 +467,113 @@ export function ZappyPanel(): JSX.Element | null {
             </button>
           </div>
         ) : null}
-        {messages.map((message) => (
-          <article
-            key={message.id}
-            className={cn(
-              'max-w-[92%] rounded-2xl px-3.5 py-3 text-sm leading-relaxed',
-              message.role === 'user'
-                ? 'ml-auto bg-sz-accent text-sz-bg'
-                : 'mr-auto border border-sz-border bg-sz-bg text-sz-fg',
-            )}
-          >
-            <p className="whitespace-pre-wrap">{message.text}</p>
-            {project.kind !== 'pro' && message.response?.blockReferences.length ? (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {message.response.blockReferences.map((reference) => (
+        {messages.map((message) => {
+          // Aviso de LIMITE não é aula: ganha cara de recado (âmbar) e perde os
+          // botões de avaliar — pedir "isso ajudou?" para "acabou a ajuda" é cruel,
+          // e o polegar viraria feedback de qualidade sobre um aviso operacional.
+          const isQuota = message.response?.scope === 'quota'
+          return (
+            <article
+              key={message.id}
+              className={cn(
+                'max-w-[92%] rounded-2xl px-3.5 py-3 text-sm leading-relaxed',
+                message.role === 'user'
+                  ? 'ml-auto bg-sz-accent text-sz-bg'
+                  : isQuota
+                    ? 'mr-auto border border-sz-warn/40 bg-sz-warn/10 text-sz-fg'
+                    : 'mr-auto border border-sz-border bg-sz-bg text-sz-fg',
+              )}
+            >
+              <p className="whitespace-pre-wrap">{message.text}</p>
+              {!isQuota && project.kind !== 'pro' && message.response?.blockReferences?.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.response.blockReferences.map((reference) => {
+                    // O caminho da paleta é a verdade; o par categoria/subcategoria
+                    // fica só como compat de resposta antiga do histórico.
+                    const trail = reference.palettePath?.length
+                      ? reference.palettePath.join(' › ')
+                      : reference.subcategory && reference.subcategory !== reference.category
+                        ? `${reference.category} › ${reference.subcategory}`
+                        : reference.category
+                    return (
+                      <button
+                        key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
+                        type="button"
+                        onClick={() => goToBlock(reference)}
+                        className="flex flex-col items-start rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-left text-sz-accent hover:bg-sz-accent/20"
+                        title={`${trail} · ${reference.area}`}
+                      >
+                        <span className="font-semibold text-xs">{reference.name}</span>
+                        <span className="text-[0.6875rem] text-sz-accent/70">{trail}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+              {config?.openLesson &&
+              message.response?.lessonReferences?.some((reference) => reference.courseSlug) ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.response.lessonReferences.map((reference) =>
+                    reference.courseSlug ? (
+                      <button
+                        key={`${reference.courseId}:${reference.lessonId}`}
+                        type="button"
+                        onClick={() => config.openLesson?.(reference)}
+                        className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
+                        title="Abrir aula em nova aba"
+                      >
+                        Aula: {reference.title} ↗
+                      </button>
+                    ) : null,
+                  )}
+                </div>
+              ) : null}
+              {message.role === 'assistant' && message.response && !isQuota ? (
+                <div className="mt-2 flex gap-1 text-sz-fg-mute text-xs">
+                  <span>Isso ajudou?</span>
                   <button
-                    key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
                     type="button"
-                    onClick={() => goToBlock(reference)}
-                    className="rounded-full border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 font-semibold text-sz-accent text-xs hover:bg-sz-accent/20"
-                    title={`${reference.category} · ${reference.area}`}
+                    aria-label="A resposta ajudou"
+                    onClick={() => void sendFeedback(message.response?.id ?? message.id, true)}
+                    className="hover:text-sz-success"
                   >
-                    {reference.name}
+                    👍
                   </button>
-                ))}
-              </div>
-            ) : null}
-            {config?.openLesson &&
-            message.response?.lessonReferences?.some((reference) => reference.courseSlug) ? (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {message.response.lessonReferences.map((reference) =>
-                  reference.courseSlug ? (
-                    <button
-                      key={`${reference.courseId}:${reference.lessonId}`}
-                      type="button"
-                      onClick={() => config.openLesson?.(reference)}
-                      className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
-                      title="Abrir aula em nova aba"
-                    >
-                      Aula: {reference.title} ↗
-                    </button>
-                  ) : null,
-                )}
-              </div>
-            ) : null}
-            {message.role === 'assistant' && message.response ? (
-              <div className="mt-2 flex gap-1 text-sz-fg-mute text-xs">
-                <span>Isso ajudou?</span>
-                <button
-                  type="button"
-                  aria-label="A resposta ajudou"
-                  onClick={() => void sendFeedback(message.response?.id ?? message.id, true)}
-                  className="hover:text-sz-success"
-                >
-                  👍
-                </button>
-                <button
-                  type="button"
-                  aria-label="A resposta não ajudou"
-                  onClick={() => void sendFeedback(message.response?.id ?? message.id, false)}
-                  className="hover:text-sz-error"
-                >
-                  👎
-                </button>
-              </div>
-            ) : null}
-          </article>
-        ))}
+                  <button
+                    type="button"
+                    aria-label="A resposta não ajudou"
+                    onClick={() => void sendFeedback(message.response?.id ?? message.id, false)}
+                    className="hover:text-sz-error"
+                  >
+                    👎
+                  </button>
+                </div>
+              ) : null}
+            </article>
+          )
+        })}
         {busy ? <p className="text-sz-fg-mute text-sm">Zappy está pensando…</p> : null}
         {error ? (
           <p className="rounded-xl bg-sz-error/10 p-3 text-sz-error text-sm">{error}</p>
         ) : null}
         <div ref={endRef} />
       </div>
+
+      {followUpSuggestions.length > 0 ? (
+        <fieldset className="m-0 flex flex-wrap gap-1.5 border-0 border-sz-border border-t p-0 px-3 pt-2">
+          <legend className="sr-only">Sugestões do Zappy</legend>
+          {followUpSuggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => pickSuggestion(suggestion)}
+              className="rounded-full border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1.5 font-semibold text-sz-accent text-xs hover:bg-sz-accent/20"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </fieldset>
+      ) : null}
 
       <form onSubmit={(event) => void handleAsk(event)} className="border-t border-sz-border p-3">
         <label htmlFor="sz-zappy-question" className="sr-only">
@@ -467,7 +605,8 @@ export function ZappyPanel(): JSX.Element | null {
           <span className="text-sz-fg-mute text-xs">
             {cooldownSeconds > 0
               ? `Respira… ${cooldownSeconds}s`
-              : 'Enter envia · Shift+Enter pula linha'}
+              : (creditsMeter.state === 'exhausted' && creditsMeter.renews) ||
+                'Enter envia · Shift+Enter pula linha'}
           </span>
           <button
             type="submit"

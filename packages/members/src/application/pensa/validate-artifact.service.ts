@@ -1,6 +1,6 @@
 import type { CourseAudience } from '../../domain/course/course'
-import type { PensaArtifactType } from '../../domain/pensa/pensa'
-import { PensaNotFoundError } from '../../domain/pensa/pensa.errors'
+import type { PensaArtifactType, PensaWorkStage } from '../../domain/pensa/pensa'
+import { PensaNotFoundError, PensaStageMismatchError } from '../../domain/pensa/pensa.errors'
 import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
 import { type PensaArtifactView, toPensaArtifactView } from '../mappers/pensa-views'
 
@@ -22,6 +22,15 @@ export class ValidatePensaArtifactService {
   ): Promise<PensaArtifactView> {
     const found = await this.repo.findCycleWithProject(cycleId, userId, audience)
     if (!found) throw new PensaNotFoundError()
+
+    const expectedStage: Record<PensaArtifactType, PensaWorkStage> = {
+      idea: 'z',
+      game_design: 'e',
+      visual_direction: 'e',
+      task_plan: 'r',
+      plan_review: 'o',
+    }
+    if (found.cycle.stage !== expectedStage[type]) throw new PensaStageMismatchError()
 
     const latest = await this.repo.findLatestArtifact(cycleId, type)
     if (!latest) throw new PensaNotFoundError('Nenhum artefato deste tipo neste ciclo')

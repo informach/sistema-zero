@@ -9,64 +9,79 @@
  * para irmãos no mesmo navegador não compartilharem a galeria. Vazio = store
  * default `sistema-zero-pinta`.
  */
-import { createStore, del, get, getMany, keys, set } from 'idb-keyval'
+import { createStore, del, get, getMany, keys, setMany } from 'idb-keyval'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
 
 const ASSET_KEY_PREFIX = 'pinta:asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
 
 let storageNamespace = ''
-let store: ReturnType<typeof createStore> | null = null
+type StoreHandle = ReturnType<typeof createStore>
+const stores = new Map<string, StoreHandle>()
 
 /**
- * Define o namespace do armazenamento local. Idempotente; invalida o store em
- * cache para recriar com o DB do namespace (um write em voo já capturou o
- * store antigo — mesmo trade-off aceito no studio).
+ * Define o namespace do armazenamento local. Cada operação captura o store do
+ * perfil no instante da chamada; trocar de perfil não redireciona operações já
+ * enfileiradas.
  */
 export function setPintaStorageNamespace(namespace: string): void {
   const next = namespace.trim()
   if (next === storageNamespace) return
   storageNamespace = next
-  store = null
 }
 
-function getStoreHandle() {
-  if (!store) {
-    store = createStore(
-      storageNamespace ? `sistema-zero-pinta-${storageNamespace}` : 'sistema-zero-pinta',
-      'kv',
-    )
-  }
-  return store
+function getStoreHandle(): StoreHandle {
+  const namespace = storageNamespace
+  const cached = stores.get(namespace)
+  if (cached) return cached
+  const created = createStore(
+    namespace ? `sistema-zero-pinta-${namespace}` : 'sistema-zero-pinta',
+    'kv',
+  )
+  stores.set(namespace, created)
+  return created
 }
 
-// Cadeia de ESCRITA por id de asset (FIFO, clone do studio): autosave, rename
-// e delete do MESMO asset não intercalam. A cadeia guardada nunca rejeita (a
-// limpeza roda nos dois ramos), mas o resultado devolvido ao chamador propaga
-// a falha — o autosave precisa marcar o badge de erro.
-const writeChains = new Map<string, Promise<void>>()
+// Uma cadeia FIFO por BANCO. Além de impedir interleaving entre save/rename/
+// delete, permite gravar asset + mapas ligados numa única transação setMany.
+const writeChains = new WeakMap<StoreHandle, Promise<void>>()
 
-export function runSerializedWrite(id: string, task: () => Promise<void>): Promise<void> {
-  const prev = writeChains.get(id)
+export function runSerializedWrite(
+  storeHandle: StoreHandle,
+  task: () => Promise<void>,
+): Promise<void> {
+  const prev = writeChains.get(storeHandle)
   const next = prev ? prev.then(task, task) : task()
   const settled = next.then(
     () => {
-      if (writeChains.get(id) === settled) writeChains.delete(id)
+      if (writeChains.get(storeHandle) === settled) writeChains.delete(storeHandle)
     },
     () => {
-      if (writeChains.get(id) === settled) writeChains.delete(id)
+      if (writeChains.get(storeHandle) === settled) writeChains.delete(storeHandle)
     },
   )
-  writeChains.set(id, settled)
+  writeChains.set(storeHandle, settled)
   return next
 }
 
 export async function persistAsset(asset: PintaAsset): Promise<void> {
-  await runSerializedWrite(asset.id, () => set(assetKey(asset.id), asset, getStoreHandle()))
+  await persistAssets([asset])
+}
+
+/** Grava um conjunto relacionado atomicamente no IndexedDB do perfil atual. */
+export async function persistAssets(assets: readonly PintaAsset[]): Promise<void> {
+  if (assets.length === 0) return
+  const storeHandle = getStoreHandle()
+  const unique = new Map(assets.map((asset) => [asset.id, asset]))
+  const pairs = [...unique.values()].map(
+    (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
+  )
+  await runSerializedWrite(storeHandle, () => setMany(pairs, storeHandle))
 }
 
 export async function deleteAsset(id: string): Promise<void> {
-  await runSerializedWrite(id, () => del(assetKey(id), getStoreHandle()))
+  const storeHandle = getStoreHandle()
+  await runSerializedWrite(storeHandle, () => del(assetKey(id), storeHandle))
 }
 
 /**

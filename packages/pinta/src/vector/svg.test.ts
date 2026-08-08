@@ -97,6 +97,13 @@ describe('degradê (gradient)', () => {
     expect(defs).toContain('x1="0.5" y1="0" x2="0.5" y2="1"')
   })
 
+  it('escapa o id do degradê mesmo para um shape construído fora do sanitizer', () => {
+    const malicious = { ...gradShape, id: 'x"><script>globalThis.pwned=1</script><g id="' }
+    const defs = gradientDefsMarkup([malicious])
+    expect(defs).not.toContain('<script>')
+    expect(defs).toContain('&quot;')
+  })
+
   it('radial emite radialGradient', () => {
     const radial: VectorShape = {
       ...gradShape,
@@ -146,5 +153,42 @@ describe('vectorToSvg (snapshot do documento)', () => {
         '</svg>',
       ].join('\n'),
     )
+  })
+})
+
+describe('formas escondidas (olhinho) ficam FORA de todo export', () => {
+  const visible: VectorShape = {
+    ...base,
+    id: 'v1',
+    type: 'rect',
+    x: 0,
+    y: 0,
+    w: 10,
+    h: 10,
+    rx: 0,
+  }
+  const hiddenGrad: VectorShape = {
+    ...base,
+    id: 'h1',
+    type: 'rect',
+    x: 20,
+    y: 0,
+    w: 10,
+    h: 10,
+    rx: 0,
+    fill: { type: 'linear', from: '#ff2121', to: '#003fad', angle: 0 },
+    hidden: true,
+  }
+
+  it('vectorToSvg pula a forma escondida E o def do degradê dela', () => {
+    const asset = createVectorBackgroundAsset({ name: 'esconde', width: 100, height: 100 })
+    const svg = vectorToSvg({ ...asset, shapes: [visible, hiddenGrad] })
+    expect(svg).toContain('<rect x="0"')
+    expect(svg).not.toContain('x="20"')
+    expect(svg).not.toContain('pin-grad-h1')
+  })
+
+  it('gradientDefsMarkup ignora degradê de forma escondida', () => {
+    expect(gradientDefsMarkup([hiddenGrad])).toBe('')
   })
 })

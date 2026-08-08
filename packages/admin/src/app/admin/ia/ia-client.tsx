@@ -22,6 +22,8 @@ import {
   loadAiUsagePanels,
   runZappyBackfillBatches,
   type ZappyBackfillSummary,
+  type ZappyFailedQuestionsPageView,
+  type ZappyFailureFilter,
   type ZappyKnowledgeReportView,
   type ZappyMetricsView,
   zappyBackfillNotice,
@@ -265,7 +267,8 @@ export function AiUsageClient() {
           <div>
             <CardTitle>Zappy do Studio</CardTitle>
             <p className="mt-1 text-muted-foreground text-sm">
-              Somente métricas agregadas; as conversas infantis não aparecem neste painel.
+              Métricas agregadas; a lista abaixo mostra SÓ perguntas com falha, redigidas e sem
+              identificar a criança ou o projeto.
             </p>
           </div>
           <Button variant="outline" onClick={() => void backfill()} disabled={backfilling}>
@@ -293,7 +296,7 @@ export function AiUsageClient() {
               value={
                 zappyMetrics ? `${zappyMetrics.averageLatencyMs.toLocaleString('pt-BR')} ms` : '—'
               }
-              description={`${fmt(zappyMetrics?.quota)} quota · ${fmt(zappyMetrics?.errors)} erros`}
+              description={`${fmt(zappyMetrics?.quota)} quota · ${fmt(zappyMetrics?.errors)} erros · ${fmt(zappyMetrics?.rejected)} reprovadas`}
             />
           </div>
           <PanelError>{errors.knowledge}</PanelError>
@@ -345,6 +348,138 @@ export function AiUsageClient() {
           ) : null}
         </CardContent>
       </Card>
+
+      <ZappyFailedQuestionsCard month={month} />
     </div>
+  )
+}
+
+const FAILURE_FILTER_LABELS: Record<ZappyFailureFilter, string> = {
+  all: 'Todas as falhas',
+  rejected: 'Reprovadas pela validação',
+  error: 'Erros técnicos',
+  'not-useful': 'Marcadas com 👎',
+}
+
+const OUTCOME_LABELS: Record<string, string> = {
+  rejected: 'Reprovada',
+  error: 'Erro',
+  'needs-context': 'Pediu contexto',
+  refusal: 'Recusa',
+  quota: 'Quota',
+  normal: 'Respondida',
+}
+
+/** Perguntas que o Zappy não conseguiu responder — o dado que faltava para
+ *  melhorar o tutor. Redigidas na gravação; SEM identificar criança/projeto. */
+function ZappyFailedQuestionsCard({ month }: { month: string }) {
+  const [filter, setFilter] = useState<ZappyFailureFilter>('all')
+  const [page, setPage] = useState<ZappyFailedQuestionsPageView | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const load = useCallback(
+    async (offset = 0) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const result = await apiGet<ZappyFailedQuestionsPageView>(
+          `/api/members/zappy/questions?month=${month}&filter=${filter}&offset=${offset}`,
+        )
+        setPage((current) =>
+          offset > 0 && current
+            ? { items: [...current.items, ...result.items], total: result.total }
+            : result,
+        )
+      } catch (cause) {
+        setError((cause as ApiError)?.message ?? 'Não foi possível carregar as perguntas.')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [month, filter],
+  )
+
+  useEffect(() => {
+    void load(0)
+  }, [load])
+
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between gap-4">
+        <div>
+          <CardTitle>Perguntas que falharam</CardTitle>
+          <p className="mt-1 text-muted-foreground text-sm">
+            O que as crianças perguntaram e o Zappy não conseguiu responder bem —{' '}
+            {page ? `${page.total.toLocaleString('pt-BR')} no mês` : '—'}.
+          </p>
+        </div>
+        <select
+          value={filter}
+          onChange={(event) => setFilter(event.target.value as ZappyFailureFilter)}
+          aria-label="Filtro de falhas"
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+        >
+          {Object.entries(FAILURE_FILTER_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <PanelError>{error ?? undefined}</PanelError>
+        {loading && !page ? <Spinner /> : null}
+        {page && page.items.length === 0 ? (
+          <p className="text-muted-foreground text-sm">Nenhuma falha neste mês. 🎉</p>
+        ) : null}
+        {page && page.items.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Pergunta da criança</TableHead>
+                <TableHead>Resposta dada</TableHead>
+                <TableHead>Situação</TableHead>
+                <TableHead>Quando</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {page.items.map((item) => (
+                <TableRow key={`${item.createdAt}:${item.question.slice(0, 40)}`}>
+                  <TableCell className="max-w-72 whitespace-pre-wrap align-top font-medium">
+                    {item.question}
+                  </TableCell>
+                  <TableCell className="max-w-96 align-top text-muted-foreground">
+                    <span className="line-clamp-3">{item.answerText}</span>
+                    {item.rejection ? (
+                      <span className="mt-1 block text-destructive text-xs">
+                        motivo: {item.rejection}
+                      </span>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="align-top">
+                    <Badge variant="outline">{OUTCOME_LABELS[item.outcome] ?? item.outcome}</Badge>
+                    {item.useful === false ? <span className="ml-1">👎</span> : null}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap align-top text-muted-foreground text-sm">
+                    {new Date(item.createdAt).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : null}
+        {page && page.items.length < page.total ? (
+          <Button variant="outline" onClick={() => void load(page.items.length)} disabled={loading}>
+            {loading ? <Spinner /> : null} Carregar mais
+          </Button>
+        ) : null}
+      </CardContent>
+    </Card>
   )
 }

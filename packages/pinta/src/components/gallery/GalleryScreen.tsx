@@ -22,11 +22,22 @@ import { AssetCard } from './AssetCard'
 import { ImportImageDialog } from './ImportImageDialog'
 import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
 
+/**
+ * Grade da galeria: cards COMPACTOS, mas largos o bastante para as três ações
+ * caberem no próprio card com alvo de 44px (3×44 = 132px + respiros ⇒ ~164px).
+ * `auto-fill` + `minmax` em vez de um número fixo de colunas porque o card
+ * precisa ter o MESMO tamanho em qualquer tela: com um `grid-cols-N` fixo, um
+ * monitor de 1920 esticaria cada card. Assim dá ~6 colunas num notebook de 1366
+ * e ~9 em 1920, com o card sempre em ~165px.
+ */
+const GALLERY_GRID_CLASS = 'grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(164px,1fr))]'
+
 /** Nome sugerido pela missão de arte (com sufixo se a criança já usou o base). */
 const ROLE_NAME_BASE: Record<NewAssetRole, string> = {
   sprite: 'heroi',
   background: 'cenario',
   tileset: 'pecas',
+  tilemap: 'mapa',
 }
 
 function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
@@ -39,7 +50,7 @@ function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
 }
 
 export function GalleryScreen(): JSX.Element {
-  const { gallery, openAsset, takeInitialIntent } = usePintaApp()
+  const { gallery, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
   const { showToast } = useToast()
   const assets = usePintaGallery((state) => state.assets)
   const loaded = usePintaGallery((state) => state.loaded)
@@ -52,12 +63,15 @@ export function GalleryScreen(): JSX.Element {
   // não engolir o intent; o segundo run recebe null e não faz nada.
   const [intent, setIntent] = useState<PintaInitialIntent | null>(null)
   useEffect(() => {
+    // O contador é o sinal para consumir um novo intent, mesmo que o callback
+    // estável continue com a mesma identidade.
+    void initialIntentVersion
     const taken = takeInitialIntent()
     if (taken) {
       setIntent(taken)
       setCreateOpen(true)
     }
-  }, [takeInitialIntent])
+  }, [takeInitialIntent, initialIntentVersion])
   const [renameId, setRenameId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [removeId, setRemoveId] = useState<string | null>(null)
@@ -103,7 +117,7 @@ export function GalleryScreen(): JSX.Element {
         setRenameValue(asset.name)
       }}
       onDuplicate={() => {
-        void gallery
+        return gallery
           .getState()
           .duplicate(asset.id)
           .then((copy) => {
@@ -162,10 +176,13 @@ export function GalleryScreen(): JSX.Element {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6">
-      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      {/* Cabeçalho de SEÇÃO da comunidade (mesma escala de `/criar` e da home
+          do kids): este é o título da página quando o Pinta está embarcado —
+          por isso ele mora aqui e some sozinho ao abrir o editor. */}
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="pin-display text-2xl">{COPY.gallery.title}</h1>
-          <p className="text-base text-pin-muted">{COPY.gallery.subtitle}</p>
+          <h1 className="pin-display text-3xl md:text-4xl">{COPY.gallery.title}</h1>
+          <p className="mt-1 text-pin-muted text-sm md:text-base">{COPY.gallery.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -238,9 +255,7 @@ export function GalleryScreen(): JSX.Element {
       ) : null}
 
       {projectSections.length === 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {assets.map(renderCard)}
-        </div>
+        <div className={GALLERY_GRID_CLASS}>{assets.map(renderCard)}</div>
       ) : (
         // Seções por jogo do Pensa (desenhos com projectRef) + avulsos no fim.
         <div className="flex flex-col gap-6">
@@ -250,9 +265,7 @@ export function GalleryScreen(): JSX.Element {
                 <span aria-hidden="true">🎮 </span>
                 {section.name}
               </h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {section.assets.map(renderCard)}
-              </div>
+              <div className={GALLERY_GRID_CLASS}>{section.assets.map(renderCard)}</div>
             </section>
           ))}
           {looseAssets.length > 0 ? (
@@ -260,9 +273,7 @@ export function GalleryScreen(): JSX.Element {
               <h2 className="pin-display mb-2 text-lg text-pin-muted">
                 {COPY.gallery.looseSection}
               </h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {looseAssets.map(renderCard)}
-              </div>
+              <div className={GALLERY_GRID_CLASS}>{looseAssets.map(renderCard)}</div>
             </section>
           ) : null}
         </div>
@@ -275,7 +286,7 @@ export function GalleryScreen(): JSX.Element {
         tilesets={tilesets}
         takenNames={new Set(assets.map((a) => a.name))}
         creating={creating}
-        initialStyle={lastStyle}
+        initialStyle={intent?.style && intent.style !== 'either' ? intent.style : lastStyle}
         initialRole={intent?.artKind ?? null}
         initialName={
           intent?.artKind ? suggestName(intent.artKind, new Set(assets.map((a) => a.name))) : ''
@@ -363,6 +374,8 @@ export function GalleryScreen(): JSX.Element {
           }}
         >
           <input
+            name="pinta-asset-name"
+            autoComplete="off"
             value={renameValue}
             onChange={(event) => setRenameValue(event.target.value)}
             aria-label={COPY.newAsset.nameTitle}

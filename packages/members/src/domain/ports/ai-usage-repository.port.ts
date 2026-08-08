@@ -61,7 +61,20 @@ export interface AiUsageMonthStats {
   topAccounts: AiUsageAccountTotal[]
 }
 
+export interface AiUsageTotals {
+  usedDay: number
+  usedMonth: number
+}
+
 export interface AiUsageRepository {
   consume(input: ConsumeAiUsageInput): Promise<ConsumeAiUsageOutcome>
+  /**
+   * Leitura pura do consumo da conta — NÃO grava e NÃO consome crédito (é o que
+   * alimenta o medidor "quanto ainda tenho"). Deliberadamente SEM o advisory lock
+   * do `consume`: o lock é por conta e serializaria a leitura contra consumos em
+   * voo. Ler um crédito atrasado num medidor é irrelevante; travar o load da tela
+   * da criança não é.
+   */
+  totals(input: { accountId: string; day: string; month: string }): Promise<AiUsageTotals>
   statsForMonth(month: string, today: string, topLimit: number): Promise<AiUsageMonthStats>
 }

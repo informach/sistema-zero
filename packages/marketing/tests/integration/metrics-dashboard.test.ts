@@ -148,9 +148,15 @@ describe('GET /marketing/metrics/followers-series', () => {
     const yt = connectedAccount('youtube')
     await t.repos.accounts.create(ig)
     await t.repos.accounts.create(yt)
-    const day1 = new Date('2026-07-05T10:00:00-03:00')
-    const day1Later = new Date('2026-07-05T22:00:00-03:00')
-    const day2 = new Date('2026-07-06T09:00:00-03:00')
+    // Datas RELATIVAS ao agora (America/Sao_Paulo é fixo em UTC-3): fixar dias
+    // absolutos virava time-bomb — saíam da janela `days=30` quando o teste
+    // rodava semanas depois (foi o que reprovou o CI em 05/08).
+    const spDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' })
+    const spNoon = (daysAgo: number) =>
+      new Date(new Date(`${spDay.format(new Date(NOW))}T15:00:00.000Z`).getTime() - daysAgo * DAY)
+    const day1 = spNoon(3) // 12:00 SP, D-3
+    const day1Later = new Date(day1.getTime() + 6 * 3_600_000) // 18:00 SP, mesmo dia SP → vence
+    const day2 = spNoon(2) // 12:00 SP, D-2
     t.repos.metrics.accountSnapshots.push(
       accountSnapshot(ig.id, 100, day1),
       accountSnapshot(ig.id, 105, day1Later), // mesmo dia SP → este vence
@@ -163,8 +169,8 @@ describe('GET /marketing/metrics/followers-series', () => {
     const igSeries = body.series.find((s) => s.accountId === ig.id)
     expect(igSeries?.network).toBe('instagram')
     expect(igSeries?.points).toEqual([
-      { date: '2026-07-05', followers: 105 },
-      { date: '2026-07-06', followers: 110 },
+      { date: spDay.format(day1), followers: 105 },
+      { date: spDay.format(day2), followers: 110 },
     ])
 
     const onlyYt = (await (

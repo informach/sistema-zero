@@ -13,8 +13,8 @@ import { loadPensaProjectDetail } from './project-detail'
 /**
  * Cria o ciclo n+1 (nasce `stage z`). Regras do contrato: exige o ciclo de maior
  * `number` com `stage='done'` (senão 409 PENSA_CYCLE_NOT_DONE) e ≤20 ciclos por
- * projeto (senão 409 PENSA_QUOTA_EXCEEDED). HERDA a identidade validada do ciclo
- * anterior (a criança não refaz nome/paleta/ícone a cada Versão).
+ * projeto (senão 409 PENSA_QUOTA_EXCEEDED). Cada versão nasce como plano novo;
+ * a execução da anterior continua independente nas ferramentas de destino.
  */
 export class CreatePensaCycleService {
   constructor(
@@ -47,26 +47,9 @@ export class CreatePensaCycleService {
     if (!latest) throw new PensaNotFoundError() // invariante: nasce com ciclo 1
     if (latest.stage !== 'done') throw new PensaCycleNotDoneError()
 
-    // Herda a IDENTIDADE validada do ciclo anterior (nome/paleta/ícone não mudam
-    // entre versões) → a criança não refaz o funil de identidade a cada Versão. A
-    // ideia NÃO é herdada: o Z da nova Versão foca no INCREMENTO (goal).
-    const prevIdentity = await this.repo.findLatestArtifact(latest.id, 'identity')
-    const inherit =
-      prevIdentity && prevIdentity.status === 'validated'
-        ? [
-            {
-              id: this.newId(),
-              stage: 'e' as const,
-              type: 'identity' as const,
-              content: prevIdentity.content,
-            },
-          ]
-        : []
-
     await this.repo.createCycle(
       { id: this.newId(), projectId, number: latest.number + 1, goal: trimmedGoal },
       this.clock(),
-      inherit,
     )
 
     const updated = await this.repo.findProject(projectId, userId, audience)

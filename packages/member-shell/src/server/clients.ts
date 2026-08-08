@@ -2,6 +2,7 @@ import 'server-only'
 import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
+  AiCreditsView,
   AiUsageConsumeView,
   AttachmentDownloadView,
   AvatarConfigInput,
@@ -41,17 +42,18 @@ import type {
   PaymentView,
   PensaArtifactType,
   PensaArtifactView,
-  PensaBuildEnv,
-  PensaChecklistCategory,
-  PensaChecklistItemView,
-  PensaMission,
   PensaProjectDetailView,
-  PensaProjectKind,
   PensaProjectListView,
   PensaProjectStatus,
   PensaStage,
   PensaStageView,
-  PensaTaskColumn,
+  PensaTaskCategory,
+  PensaTaskContext,
+  PensaTaskDestination,
+  PensaTaskGuide,
+  PensaTaskHandoffView,
+  PensaTaskOutputRef,
+  PensaTaskStatus,
   PensaTaskView,
   ProductAccessView,
   ProfileView,
@@ -299,6 +301,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
   const missionsReadonlyCached = cache(
     (): Promise<GatewayResponse<MissionsMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/missions/me', { query: { audience } }),
+  )
+  // Saldo de IA da CONTA. O `cache` é o que mata o custo do medidor "sempre
+  // visível": layout + página + painel pedem no mesmo render e vai UMA ida.
+  // ⚠️ SEM `?audience`: a quota é da conta e cruza as duas vitrines.
+  const aiCreditsReadonlyCached = cache(
+    (): Promise<GatewayResponse<AiCreditsView>> => gw.gatewayFetchReadonly('/members/ai-usage/me'),
   )
   const challengeReadonlyCached = cache(
     (): Promise<GatewayResponse<ChallengeMeView>> =>
@@ -622,7 +630,6 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Cria projeto + ciclo 1 (Versão 1, etapa z). O members aplica o gate do produto. */
     pensaCreateProject(body: {
       name: string
-      kind: PensaProjectKind
     }): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
       return gw.gatewayFetch('/members/pensa/projects', {
         method: 'POST',
@@ -635,38 +642,18 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
       return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, { query: { audience } })
     },
-    /** Renomear/arquivar/anotar o projeto semeado no Estúdio/onde construir. */
+    /** Renomeia ou arquiva o plano. */
     pensaUpdateProject(
       projectId: string,
       body: {
         name?: string
         status?: PensaProjectStatus
-        studioProjectId?: string
-        buildEnv?: PensaBuildEnv
       },
     ): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
       return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, {
         method: 'PATCH',
         query: { audience },
         body,
-      })
-    },
-    /** Snapshot do projeto do ESTÚDIO na nuvem (backup do jogo em construção). */
-    pensaGetStudioSnapshot(
-      projectId: string,
-    ): Promise<GatewayResponse<{ project: unknown | null; updatedAt: string | null }>> {
-      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/studio-snapshot`, {
-        query: { audience },
-      })
-    },
-    pensaSaveStudioSnapshot(
-      projectId: string,
-      project: unknown,
-    ): Promise<GatewayResponse<{ updatedAt: string }>> {
-      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/studio-snapshot`, {
-        method: 'PUT',
-        query: { audience },
-        body: { project },
       })
     },
     /** Cria a Versão N+1 (exige a anterior `done`). */
@@ -746,14 +733,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: { from },
       })
     },
-    /** REPLACE total das missões do ciclo (geração da fase R / "recomeçar"). */
+    /** REPLACE total do plano; dependências referenciam `key` dentro do lote. */
     pensaReplaceTasks(
       cycleId: string,
       tasks: Array<{
+        key: string
         title: string
         summary?: string | null
-        taskType?: string | null
-        mission: PensaMission
+        destination: PensaTaskDestination
+        category: PensaTaskCategory
+        estimatedMinutes: number
+        dependencies?: string[]
+        guide: PensaTaskGuide
+        context: PensaTaskContext
       }>,
     ): Promise<GatewayResponse<{ tasks: PensaTaskView[] }>> {
       return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/tasks`, {
@@ -762,14 +754,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: { tasks },
       })
     },
-    /** APPEND ao backlog (autoria manual "+ Nova missão" / "sugerir mais"; ≤60 total). */
+    /** APPEND de Cartões de Criação planejados. */
     pensaAppendTasks(
       cycleId: string,
       tasks: Array<{
+        key: string
         title: string
         summary?: string | null
-        taskType?: string | null
-        mission: PensaMission
+        destination: PensaTaskDestination
+        category: PensaTaskCategory
+        estimatedMinutes: number
+        dependencies?: string[]
+        guide: PensaTaskGuide
+        context: PensaTaskContext
       }>,
     ): Promise<GatewayResponse<{ tasks: PensaTaskView[] }>> {
       return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/tasks`, {
@@ -778,17 +775,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: { tasks },
       })
     },
-    /** Move/anota E/OU edita o conteúdo de um card do kanban (autoria manual). */
+    /** Edita o plano. Tarefa iniciada/concluída gera revisão no members. */
     pensaUpdateTask(
       taskId: string,
       body: {
-        column?: PensaTaskColumn
         position?: number
-        notes?: string | null
         title?: string
         summary?: string | null
-        taskType?: string | null
-        mission?: PensaMission
+        destination?: PensaTaskDestination
+        category?: PensaTaskCategory
+        estimatedMinutes?: number
+        dependencies?: string[]
+        guide?: PensaTaskGuide
+        context?: PensaTaskContext
       },
     ): Promise<GatewayResponse<{ task: PensaTaskView }>> {
       return gw.gatewayFetch(`/members/pensa/tasks/${enc(taskId)}`, {
@@ -797,38 +796,31 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body,
       })
     },
-    /** Apaga um card do kanban (autoria manual). */
+    /** Apaga somente um cartão ainda planejável e sem dependentes. */
     pensaDeleteTask(taskId: string): Promise<GatewayResponse<{ ok: boolean }>> {
       return gw.gatewayFetch(`/members/pensa/tasks/${enc(taskId)}`, {
         method: 'DELETE',
         query: { audience },
       })
     },
-    /** REPLACE do checklist do ciclo (semeado na entrada da etapa O). */
-    pensaReplaceChecklist(
-      cycleId: string,
-      items: Array<{
-        category: PensaChecklistCategory
-        title: string
-        description?: string
-        required?: boolean
-        position?: number
-      }>,
-    ): Promise<GatewayResponse<{ items: PensaChecklistItemView[] }>> {
-      return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/checklist`, {
-        method: 'PUT',
+    pensaGetTaskHandoff(taskId: string): Promise<GatewayResponse<PensaTaskHandoffView>> {
+      return gw.gatewayFetch(`/members/pensa/tasks/${enc(taskId)}/handoff`, {
         query: { audience },
-        body: { items },
       })
     },
-    pensaToggleChecklist(
-      itemId: string,
-      done: boolean,
-    ): Promise<GatewayResponse<{ item: PensaChecklistItemView }>> {
-      return gw.gatewayFetch(`/members/pensa/checklist/${enc(itemId)}`, {
+    pensaUpdateTaskProgress(
+      taskId: string,
+      body: {
+        status?: PensaTaskStatus
+        completedStepIds?: string[]
+        completedCriteriaIds?: string[]
+        outputRef?: PensaTaskOutputRef | null
+      },
+    ): Promise<GatewayResponse<{ task: PensaTaskView }>> {
+      return gw.gatewayFetch(`/members/pensa/tasks/${enc(taskId)}/progress`, {
         method: 'PATCH',
         query: { audience },
-        body: { done },
+        body,
       })
     },
 
@@ -844,6 +836,17 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         query: { audience },
         body: { feature },
       })
+    },
+    /**
+     * Quanto AINDA resta da ajuda de IA da conta — NÃO consome crédito. Alimenta
+     * o medidor da criança e o painel do mês na área dos pais.
+     */
+    getAiCredits(): Promise<GatewayResponse<AiCreditsView>> {
+      return gw.gatewayFetch('/members/ai-usage/me')
+    },
+    /** Idem, sem refresh/escrita de cookie — o seguro em Server Component. */
+    getAiCreditsReadonly(): Promise<GatewayResponse<AiCreditsView>> {
+      return aiCreditsReadonlyCached()
     },
     zappyHistory(
       projectId: string,
@@ -865,6 +868,8 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         questionId?: string
         response?: ZappyStoredResponseView
         rateLimited?: boolean
+        /** Últimos turnos da conversa (≤6, cronológico) — memória do tutor. */
+        recentMessages?: Array<{ role: 'user' | 'assistant'; text: string }>
       }>
     > {
       return gw.gatewayFetchHmac('/members/internal/zappy/questions', { method: 'POST', body })
@@ -876,7 +881,9 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         projectId: string
         latencyMs: number
         response: ZappyStoredResponseView
-        outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error'
+        outcome?: 'normal' | 'refusal' | 'needs-context' | 'quota' | 'error' | 'rejected'
+        /** Motivo da reprova da validação (auditoria; nunca volta à criança). */
+        rejection?: string
       },
     ): Promise<GatewayResponse<ZappyStoredResponseView>> {
       return gw.gatewayFetchHmac(`/members/internal/zappy/questions/${enc(questionId)}/response`, {

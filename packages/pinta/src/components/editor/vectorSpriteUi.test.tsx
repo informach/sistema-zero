@@ -45,6 +45,15 @@ describe('personagem vetorial — paridade com o pixel', () => {
     expect(screen.getByRole('button', { name: 'parado: quadro 1' })).toBeTruthy()
   })
 
+  it('coluna direita ÚNICA (espelho do pixel): prévia + Cores + Aparência juntas', async () => {
+    await openVectorSprite()
+    expect(screen.getByText(COPY.animation.preview)).toBeTruthy()
+    expect(document.querySelector(`section[aria-label="${COPY.palette.title}"]`)).toBeTruthy()
+    expect(document.querySelector(`section[aria-label="${COPY.vector.appearance}"]`)).toBeTruthy()
+    // O painel avulso de w-56 morreu junto com a coluna dupla.
+    expect(document.querySelector('.w-56')).toBeNull()
+  })
+
   it('REGRESSÃO: o palco SVG tem width/height DEFINIDOS (doc × zoom)', async () => {
     await openVectorSprite()
     const stage = screen.getByRole('img', { name: 'Área de desenho' })

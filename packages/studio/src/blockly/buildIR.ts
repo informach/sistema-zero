@@ -442,6 +442,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:getMaxHealth', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_enemy_damage':
       return { type: 'g2d:enemyDamage', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_anim_ended':
+      return { type: 'g2d:animEnded', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_x':
       return { type: 'g2d:spriteX', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_y':
@@ -1434,6 +1436,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     }
     case 'sz_adv_raw_html':
       return { kind: 'html', value: { type: 'rawHTML', html: f(block, 'CODE'), advanced: true } }
+
+    // ----- 🔊 Som do núcleo (sem `seen.add`: não é extensão) -----
+    case 'sz_som_load':
+      return {
+        kind: 'js',
+        value: { type: 'somLoad', name: f(block, 'NAME') || 'som', asset: f(block, 'ASSET') },
+      }
+    case 'sz_som_play':
+      return { kind: 'js', value: { type: 'somPlay', name: f(block, 'NAME') || 'som' } }
+    case 'sz_som_stop':
+      return { kind: 'js', value: { type: 'somStop', name: f(block, 'NAME') || 'som' } }
+    case 'sz_som_play_music':
+      return { kind: 'js', value: { type: 'somPlayMusic', name: f(block, 'NAME') || 'musica' } }
+    case 'sz_som_stop_music':
+      return { kind: 'js', value: { type: 'somStopMusic' } }
+    case 'sz_som_volume':
+      return {
+        kind: 'js',
+        value: { type: 'somVolume', level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }) },
+      }
 
     case 'sz_adv_raw_css':
       return { kind: 'css', value: { type: 'rawCSS', code: f(block, 'CODE'), advanced: true } }
@@ -3277,6 +3299,37 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g2d_stop_music':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:stopMusic' } }
+    case 'sz_g2d_load_sound':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:loadSound',
+          name: f(block, 'NAME') || 'som',
+          asset: f(block, 'ASSET'),
+        },
+      }
+    case 'sz_g2d_play_clip':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playClip', name: f(block, 'NAME') || 'som' } }
+    case 'sz_g2d_stop_clip':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:stopClip', name: f(block, 'NAME') || 'som' } }
+    case 'sz_g2d_play_track':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playTrack', name: f(block, 'NAME') || 'musica' } }
+    case 'sz_g2d_stop_track':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:stopTrack' } }
+    case 'sz_g2d_set_volume':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setVolume',
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }),
+        },
+      }
     case 'sz_g2d_play_note':
       seen.add('game-2d')
       return {
@@ -3662,6 +3715,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
         },
       }
+    case 'sz_g2d_animate_once':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:animateOnce',
+          spriteVar: f(block, 'SPRITE'),
+          sheetVar: f(block, 'SHEET'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 0 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
     case 'sz_g2d_set_state_anim':
       seen.add('game-2d')
       return {
@@ -3704,6 +3770,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     }
+    case 'sz_g2d_define_enemy_smart': {
+      seen.add('game-2d')
+      const smartShape = f(block, 'SHAPE').trim()
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:defineEnemySmart',
+          varName: f(block, 'NAME'),
+          smart: f(block, 'SMART'),
+          color: f(block, 'COLOR'),
+          image: f(block, 'IMAGE'),
+          ...(smartShape ? { shape: smartShape } : {}),
+          hp: exprInput(block, 'HP', { type: 'num', value: 3 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 2 }),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 1 }),
+          w: exprInput(block, 'W', { type: 'num', value: 32 }),
+          h: exprInput(block, 'H', { type: 'num', value: 32 }),
+        },
+      }
+    }
     case 'sz_g2d_enemy_state_anim':
       seen.add('game-2d')
       return {
@@ -3729,17 +3815,32 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           value: exprInput(block, 'VALUE', { type: 'num', value: 10 }),
         },
       }
-    case 'sz_g2d_spawn_enemy':
+    case 'sz_g2d_enemy_add_behavior':
       seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:enemyAddBehavior',
+          typeVar: f(block, 'TYPE'),
+          behavior: f(block, 'BEHAVIOR'),
+        },
+      }
+    case 'sz_g2d_spawn_enemy': {
+      seen.add('game-2d')
+      // Nome opcional: chave OMITIDA quando vazio, então projeto antigo gera
+      // exatamente o mesmo código de antes.
+      const spawnName = f(block, 'NAME').trim()
       return {
         kind: 'js',
         value: {
           type: 'g2d:spawnEnemy',
           typeVar: f(block, 'TYPE'),
+          ...(spawnName ? { varName: spawnName } : {}),
           x: exprInput(block, 'X', { type: 'num', value: 100 }),
           y: exprInput(block, 'Y', { type: 'num', value: 100 }),
         },
       }
+    }
     case 'sz_g2d_update_enemy_type':
       seen.add('game-2d')
       return {
@@ -3768,6 +3869,29 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'BODY', seen),
         },
       }
+    case 'sz_g2d_on_enemy_hurt':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onEnemyHurt',
+          typeVar: f(block, 'TYPE'),
+          itemName: f(block, 'ANAME') || 'inimigo',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_on_enemy_beam_hit':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onEnemyBeamHit',
+          spriteVar: f(block, 'SPRITE'),
+          typeVar: f(block, 'TYPE'),
+          itemName: f(block, 'ANAME') || 'chefe',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
     case 'sz_g2d_on_enemy_shot_hit':
       seen.add('game-2d')
       return {
@@ -3788,6 +3912,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:hurtByEnemy',
           spriteVar: f(block, 'SPRITE'),
           enemyVar: f(block, 'ENEMY'),
+        },
+      }
+    case 'sz_g2d_stomp_enemy':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:stompEnemy',
+          spriteVar: f(block, 'SPRITE'),
+          typeVar: f(block, 'TYPE'),
+          bounce: exprInput(block, 'BOUNCE', { type: 'num', value: 8 }),
         },
       }
     case 'sz_g2d_draw_frame':
@@ -4082,6 +4217,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'BODY', seen),
         },
       }
+    case 'sz_g2d_add_to_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:addToGroup',
+          spriteVar: f(block, 'SPRITE'),
+          groupVar: f(block, 'GROUP'),
+        },
+      }
     case 'sz_g2d_remove_from_group':
       seen.add('game-2d')
       return {
@@ -4258,6 +4403,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:fitScreen',
           percent: exprInput(block, 'PERCENT', { type: 'num', value: 100 }),
         },
+      }
+    case 'sz_g2d_set_backdrop':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:setBackdrop', image: f(block, 'IMAGE') } }
+    case 'sz_g2d_draw_backdrop':
+      seen.add('game-2d')
+      // O pincel é o do palco implícito — o bloco não mostra "ctx" para a criança,
+      // igual aos irmãos de desenho desta extensão.
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: f(block, 'IMAGE') },
       }
     case 'sz_g2d_stage_border':
       seen.add('game-2d')
@@ -5634,6 +5790,37 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g3d:playEffect', kind: f(block, 'KIND') || 'coin' },
       }
+    case 'sz_g3d_load_sound':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:loadSound',
+          name: f(block, 'NAME') || 'som',
+          asset: f(block, 'ASSET'),
+        },
+      }
+    case 'sz_g3d_play_sound':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:playSound', name: f(block, 'NAME') || 'som' } }
+    case 'sz_g3d_stop_sound':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stopSound', name: f(block, 'NAME') || 'som' } }
+    case 'sz_g3d_play_music':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:playMusic', name: f(block, 'NAME') || 'musica' } }
+    case 'sz_g3d_stop_music':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stopMusic' } }
+    case 'sz_g3d_set_volume':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:setVolume',
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }),
+        },
+      }
 
     // ----- game-2d-advanced (kit profissional) -----
     case 'sz_gk_setup':
@@ -5677,6 +5864,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           width: exprInput(block, 'WIDTH', { type: 'num', value: 4 }),
         },
       }
+    case 'sz_gk_set_backdrop':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:setBackdrop', image: f(block, 'IMAGE') } }
+    case 'sz_gk_draw_backdrop':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:drawBackdrop', image: f(block, 'IMAGE') } }
     case 'sz_gk_show_hitboxes':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:showHitboxes' } }

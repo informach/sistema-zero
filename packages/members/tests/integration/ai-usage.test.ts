@@ -115,6 +115,85 @@ describe('POST /members/ai-usage/consume — quota de IA por conta', () => {
   })
 })
 
+describe('GET /members/ai-usage/me — quanto ainda resta (SEM consumir)', () => {
+  function me(headers: Record<string, string> = {}): Request {
+    return new Request('http://local/members/ai-usage/me', {
+      headers: { 'x-internal-token': TOKEN, ...headers },
+    })
+  }
+
+  test('ler NÃO gasta crédito', async () => {
+    const { app } = buildApp({ internalToken: TOKEN, aiLimits: { daily: 5, monthly: 100 } })
+    const user = randomUUID()
+
+    for (let i = 0; i < 3; i++) {
+      const res = await app.handle(me(studentHeaders(user)))
+      expect(res.status).toBe(200)
+      const body = (await res.json()) as { dayRemaining: number }
+      // Três leituras seguidas e o saldo não se move: a rota não consome.
+      expect(body.dayRemaining).toBe(5)
+    }
+
+    const consumed = await app.handle(consume('pensa-chat', studentHeaders(user)))
+    const body = (await consumed.json()) as { usedDay: number }
+    expect(body.usedDay).toBe(1)
+  })
+
+  test('devolve os tetos, o que resta e quando o mês renova', async () => {
+    const { app, clockRef } = buildApp({
+      internalToken: TOKEN,
+      aiLimits: { daily: 5, monthly: 100 },
+    })
+    clockRef.now = new Date('2026-08-06T15:00:00.000Z')
+    const user = randomUUID()
+    await app.handle(consume('pensa-chat', studentHeaders(user)))
+    await app.handle(consume('studio-zappy', studentHeaders(user)))
+
+    const res = await app.handle(me(studentHeaders(user)))
+    expect(await res.json()).toMatchObject({
+      dayLimit: 5,
+      dayRemaining: 3,
+      monthLimit: 100,
+      monthRemaining: 98,
+      monthRenewsOn: '2026-09-01',
+    })
+  })
+
+  test('irmãos da mesma conta veem o MESMO saldo', async () => {
+    const { app } = buildApp({ internalToken: TOKEN, aiLimits: { daily: 5, monthly: 100 } })
+    const account = randomUUID()
+    const kidA = randomUUID()
+    const kidB = randomUUID()
+
+    await app.handle(consume('pensa-chat', studentHeaders(kidA, account)))
+
+    for (const kid of [kidA, kidB]) {
+      const res = await app.handle(me(studentHeaders(kid, account)))
+      const body = (await res.json()) as { dayRemaining: number }
+      // O bolso é da família: o que o irmão gastou aparece para os dois.
+      expect(body.dayRemaining).toBe(4)
+    }
+  })
+
+  test('equipe vem marcada como sem teto', async () => {
+    const { app } = buildApp({ internalToken: TOKEN, aiLimits: { daily: 1, monthly: 1 } })
+    const res = await app.handle(
+      me({
+        ...studentHeaders(randomUUID()),
+        'x-auth-user-role': 'staff',
+        'x-auth-user-status': 'active',
+      }),
+    )
+    const body = (await res.json()) as { unlimited?: boolean }
+    expect(body.unlimited).toBe(true)
+  })
+
+  test('sem identidade → 401', async () => {
+    const { app } = buildApp({ internalToken: TOKEN })
+    expect((await app.handle(me())).status).toBe(401)
+  })
+})
+
 describe('GET /members/admin/ai-usage — agregados p/ o painel', () => {
   const adminHeaders = {
     'x-internal-token': TOKEN,

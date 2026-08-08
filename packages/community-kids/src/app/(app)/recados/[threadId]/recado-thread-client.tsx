@@ -113,7 +113,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
         <Link
           href="/recados"
           aria-label="Voltar aos recados"
-          className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card hover:border-primary"
+          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card hover:border-primary"
         >
           <ArrowLeft className="size-4" />
         </Link>

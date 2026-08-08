@@ -6,7 +6,7 @@
  * cenários a imagem. `null` = não deu para rasterizar (o chamador mostra toast).
  */
 import type { ActiveFrameRef } from '../core/assetEdit'
-import { activeBitmapOf } from '../core/assetEdit'
+import { flattenActiveOf } from '../core/assetEdit'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
@@ -119,7 +119,32 @@ export function tilemapMetaFrom(
 // Teto de UM asset no Studio — manter em sincronia com
 // MAX_ASSET_DATA_URL_CHARS de packages/studio/src/core/project.ts (o
 // EditorScreen valida de novo antes de enviar, com a mensagem gentil).
-const STUDIO_MAX_ASSET_CHARS = 800_000
+export const STUDIO_MAX_ASSET_CHARS = 800_000
+
+// Teto da FOLHA de peças embutida no metadado de MAPA — manter em sincronia com
+// MAX_TILEMAP_SHEET_CHARS de packages/studio/src/core/project.ts (o sanitizador
+// de lá descartaria o metadado em silêncio).
+export const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
+
+/**
+ * O payload cabe nos tetos do Estúdio? Funil ÚNICO das checagens que antes
+ * viviam duplicadas nos call sites (enviar, jogar o mapa, reenvio automático).
+ */
+export function validateStudioPayloadSize(
+  payload: StudioPayload,
+): 'ok' | 'asset-too-big' | 'sheet-too-big' {
+  if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) return 'asset-too-big'
+  if (payload.tilemap && payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {
+    return 'sheet-too-big'
+  }
+  if (
+    payload.tilemapFront &&
+    payload.tilemapFront.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS
+  ) {
+    return 'sheet-too-big'
+  }
+  return 'ok'
+}
 
 // Maior lado da MINIATURA do mapa na biblioteca (o runtime não usa esta imagem
 // — só a grade+folha do metadado). Capar evita cota estourada e canvas gigante.
@@ -243,7 +268,8 @@ export async function buildStudioPayload(
       }
     }
     default: {
-      const bitmap = activeBitmapOf(asset, frameRef)
+      // Cenário: o Estúdio recebe o desenho VISÍVEL (camadas achatadas).
+      const bitmap = flattenActiveOf(asset, frameRef)
       if (!bitmap) return null
       const dataUrl = bitmapToPngDataUrl(bitmap, resolveAssetPalette(asset))
       if (!dataUrl) return null

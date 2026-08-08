@@ -22,6 +22,7 @@ import { stampFromTileset, type TileStamp } from '../../tiles/stamp'
 import { tileCollisionAt } from '../../tiles/tilesetOps'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { X } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { TileCollisionBadge } from './TileStrip'
 
 const TILE_PX = 48
@@ -131,8 +132,7 @@ export function TilePicker({
   }
 
   return (
-    <section aria-label={COPY.tiles.pickTile} className="pin-panel p-3">
-      <span className="mb-2 block text-sm font-bold text-pin-muted">{COPY.tiles.pickTile}</span>
+    <Panel title={COPY.tiles.pickTile}>
       {stamp ? (
         <div className="mb-2 flex items-center justify-between gap-2 rounded-xl bg-pin-accent/10 px-2 py-1">
           <span className="text-sm font-bold text-pin-text">
@@ -212,6 +212,6 @@ export function TilePicker({
           />
         ) : null}
       </div>
-    </section>
+    </Panel>
   )
 }

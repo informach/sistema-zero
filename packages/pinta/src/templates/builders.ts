@@ -42,7 +42,8 @@ export function buildPixelSprite(
       name: a.name,
       fps: a.fps ?? 8,
       loop: a.loop ?? true,
-      frames: a.frames.map(bitmapFromArt),
+      // Modelo pronto nasce com UMA camada: a arte é o cel dela.
+      frames: a.frames.map((art) => [bitmapFromArt(art)]),
     })),
   }
 }

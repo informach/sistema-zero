@@ -1,6 +1,7 @@
 import type {
   CompleteZappyQuestionInput,
   ReserveZappyQuestionInput,
+  ZappyFailureFilter,
   ZappyRepository,
   ZappyStoredResponse,
 } from '../../domain/ports/zappy-repository.port'
@@ -47,6 +48,10 @@ export class ZappyHistoryService {
 
   metrics(from: Date, to: Date) {
     return this.repository.metrics(from, to)
+  }
+
+  failedQuestions(from: Date, to: Date, filter: ZappyFailureFilter, limit: number, offset: number) {
+    return this.repository.listFailedQuestions(from, to, filter, limit, offset)
   }
 
   pruneExpired() {

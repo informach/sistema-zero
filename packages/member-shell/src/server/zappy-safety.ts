@@ -71,8 +71,33 @@ export function isUnsafeZappyText(value: string): boolean {
   )
 }
 
+/**
+ * Telefone na RESPOSTA exige cara de telefone (DDD presente, ≥10 dígitos): o
+ * PHONE_RE largo reprovava qualquer sequência de 8 dígitos (pontuação, id,
+ * tamanho) e derrubava respostas boas do modelo. A redação da PERGUNTA da
+ * criança continua com o regex largo — lá, redigir demais é inofensivo.
+ */
+const ANSWER_PHONE_RE = /(?<!\d)(?:\+?55[\s.-]*)?\(?[1-9]\d\)?[\s.-]*9?\d{4}[\s.-]?\d{4}(?!\d)/g
+
+function answerHasPii(value: string): boolean {
+  for (const pattern of [
+    EMAIL_RE,
+    CPF_RE,
+    BIRTH_DATE_RE,
+    ANSWER_PHONE_RE,
+    SOCIAL_HANDLE_RE,
+    LABELED_PII_RE,
+    CHILD_IDENTITY_RE,
+    CHILD_LOCATION_RE,
+  ]) {
+    pattern.lastIndex = 0
+    if (pattern.test(value)) return true
+  }
+  return false
+}
+
 export function isSafeZappyAnswer(value: string): boolean {
-  if (isUnsafeZappyText(value) || redactZappyPii(value).hadPii) return false
+  if (isUnsafeZappyText(value) || answerHasPii(value)) return false
   const text = normalized(value)
   return !/\b(?:qual|diga|conte|envie|mande)\b.{0,40}\b(?:nome completo|endereco|telefone|e-mail|email|escola|foto|rede social)\b/.test(
     text,

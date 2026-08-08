@@ -81,6 +81,7 @@
    sombras duras 3D, radius 1rem.
    ============================================================ */
 :root {
+  color-scheme: light;
   --brand-lime: var(--sz-kids-laranja-viva); /* laranja vivo — era a lima */
   --brand-cyan: var(--sz-kids-azul-vivo); /* azul claro — era o ciano */
 
@@ -188,6 +189,7 @@
    acento; o toggle continua no menu do avatar)
    ============================================================ */
 .dark {
+  color-scheme: dark;
   /* No dark os sólidos kids SÃO os vivos da marca (texto navy por cima). */
   --kids-cyan: var(--brand-cyan);
   --kids-lime: var(--brand-lime);

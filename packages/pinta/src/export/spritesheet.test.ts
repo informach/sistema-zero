@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { addAnimation, addFrame } from '../animation/frames'
-import { createPixelSpriteAsset, type PixelSpriteAsset } from '../core/project'
+import { createBitmap, createPixelSpriteAsset, type PixelSpriteAsset } from '../core/project'
 import { packSpritesheet, spritesheetMetadata, spritesheetRecipe } from './spritesheet'
 
 /** Sprite com 2 animações: "parado" (2 quadros) e "andar" (3 quadros). */
@@ -43,6 +43,30 @@ describe('packSpritesheet — geometria', () => {
     expect(pack.cells).toHaveLength(5)
     expect(pack.cells.filter((c) => c.row === 0)).toHaveLength(2)
     expect(pack.cells.filter((c) => c.row === 1)).toHaveLength(3)
+  })
+
+  it('a célula leva o desenho ACHATADO (todas as camadas), não só a de baixo', () => {
+    const base = createPixelSpriteAsset({ name: 'heroi', frameSize: 4 })
+    const fundo = createBitmap(4, 4)
+    fundo.data[0] = 3
+    const topo = createBitmap(4, 4)
+    topo.data[1] = 7
+    const escondida = createBitmap(4, 4)
+    escondida.data[2] = 9
+    const asset: PixelSpriteAsset = {
+      ...base,
+      layers: [
+        { id: 'l1', name: 'Camada 1', visible: true },
+        { id: 'l2', name: 'Camada 2', visible: true },
+        { id: 'l3', name: 'Camada 3', visible: false },
+      ],
+      animations: [
+        { id: 'a1', name: 'parado', fps: 8, loop: true, frames: [[fundo, topo, escondida]] },
+      ],
+    }
+    const cell = packSpritesheet(asset).cells[0]
+    // As duas visíveis entram; a escondida NÃO vai para o jogo.
+    expect(Array.from(cell?.bitmap.data.slice(0, 3) ?? [])).toEqual([3, 7, 0])
   })
 })
 

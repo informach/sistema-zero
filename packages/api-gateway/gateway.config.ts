@@ -1228,6 +1228,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 1024,
     },
+    // Quanto AINDA resta da ajuda de IA da conta — o medidor que a criança vê antes
+    // de bater na parede (e o painel do mês na área dos pais). Leitura PURA: não
+    // consome crédito. Literal `/members/ai-usage/me` (3 seg), sem colisão com o
+    // `/consume` irmão. Teto alto como o `members-avatars-batch`: é leitura de load
+    // de tela (layout + página + painel), memoizada por request no BFF.
+    {
+      id: 'members-ai-usage-me',
+      methods: ['GET'],
+      pathPattern: '/members/ai-usage/me',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
     // Persistência privada do Zappy (perfil + projeto local). O BFF é o consumidor;
     // o gateway ainda revalida o JWT e injeta perfil/conta confiáveis no members.
     {
@@ -1517,7 +1532,7 @@ const config: GatewayConfigInput = {
     },
     // ── Pensa (planejamento guiado — metodologia ZERO, vitrine kids) ──────────
     // Recurso do PRÓPRIO perfil (como avatar/quarto): projetos → ciclos → etapas
-    // Z/E/R/O com artefatos, kanban de missões e checklist. O gate de PRODUTO
+    // Z/E/R/O com artefatos e Cartões de Criação. O gate de PRODUTO
     // (ref `pensa`) é aplicado pelo members no CREATE do projeto; as demais rotas
     // são ownership por user_id. Literal `pensa` no 2º segmento — não colide com
     // `/members/courses…`, `/members/profiles/:id/public` nem `/members/admin/*`.
@@ -1543,20 +1558,6 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
-    },
-    {
-      // Snapshot do projeto do ESTÚDIO atrelado ao projeto do Pensa (backup na
-      // nuvem do jogo em construção): GET restaura em navegador novo, PUT sobe o
-      // JSON inteiro (pode ter assets data-URL) — por isso SEM maxBodyBytes (cai
-      // no teto GLOBAL de 2MB, mesma régua da entrega do bloco estúdio).
-      id: 'members-pensa-studio-snapshot',
-      methods: ['GET', 'PUT'],
-      pathPattern: '/members/pensa/projects/:projectId/studio-snapshot',
-      service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { statuses: ['active'] },
-      transforms: membersInternalTransforms,
-      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'members-pensa-cycle-create',
@@ -1627,7 +1628,7 @@ const config: GatewayConfigInput = {
       maxBodyBytes: 1024,
     },
     {
-      // PUT = REPLACE total; POST = APPEND (autoria manual / "sugerir mais missões").
+      // PUT = REPLACE total; POST = APPEND de Cartões de Criação planejados.
       id: 'members-pensa-tasks-replace',
       methods: ['PUT', 'POST'],
       pathPattern: '/members/pensa/cycles/:cycleId/tasks',
@@ -1639,7 +1640,7 @@ const config: GatewayConfigInput = {
       maxBodyBytes: 512 * 1024,
     },
     {
-      // PATCH = mover/anotar/EDITAR o conteúdo da missão; DELETE = apagar 1 card.
+      // PATCH = editar o plano; DELETE = apagar cartão ainda planejável.
       id: 'members-pensa-task-update',
       methods: ['PATCH', 'DELETE'],
       pathPattern: '/members/pensa/tasks/:taskId',
@@ -1648,30 +1649,29 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      // O PATCH pode carregar a missão inteira editada (steps+hints) → 64KB de folga.
+      // O PATCH pode carregar o guia inteiro (steps+criteria) → 64KB de folga.
       maxBodyBytes: 64 * 1024,
     },
     {
-      id: 'members-pensa-checklist-replace',
-      methods: ['PUT'],
-      pathPattern: '/members/pensa/cycles/:cycleId/checklist',
+      id: 'members-pensa-task-handoff',
+      methods: ['GET'],
+      pathPattern: '/members/pensa/tasks/:taskId/handoff',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
-      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
-      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
-      id: 'members-pensa-checklist-toggle',
+      id: 'members-pensa-task-progress',
       methods: ['PATCH'],
-      pathPattern: '/members/pensa/checklist/:itemId',
+      pathPattern: '/members/pensa/tasks/:taskId/progress',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      maxBodyBytes: 1024,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
     },
     // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
     // confiável `x-auth-user-id` (o members usa resolveUserId — não o accountId do
@@ -2103,6 +2103,18 @@ const config: GatewayConfigInput = {
       id: 'members-admin-zappy-metrics',
       methods: ['GET'],
       pathPattern: '/members/admin/zappy/metrics',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      // Perguntas que falharam (reprovadas/erro/👎), redigidas e SEM ids de
+      // criança/projeto — alimenta a seção "Perguntas que falharam" do /admin/ia.
+      id: 'members-admin-zappy-questions',
+      methods: ['GET'],
+      pathPattern: '/members/admin/zappy/questions',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },

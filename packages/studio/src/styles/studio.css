@@ -19,15 +19,21 @@
  * Valores default = tema ESCURO; o claro sobrescreve via [data-sz-theme="light"].
  */
 @theme {
-  --color-sz-bg: oklch(0.103 0.01 265); /* background  (#030406) */
-  --color-sz-bg-soft: oklch(0.125 0.01 265); /* meio-termo bg→card */
-  --color-sz-panel: oklch(0.14 0.01 265); /* card        (#07090d) */
-  --color-sz-panel-soft: oklch(0.185 0.01 265); /* secondary/muted */
-  --color-sz-border: oklch(0.21 0.01 265); /* border */
-  --color-sz-border-soft: oklch(0.17 0.01 265);
-  --color-sz-fg: oklch(0.975 0.003 255); /* foreground */
-  --color-sz-fg-soft: oklch(0.75 0.008 245);
-  --color-sz-fg-mute: oklch(0.6 0.012 235); /* muted-foreground */
+  /* SUPERFÍCIES: dentro de um host kids o Estúdio é uma SEÇÃO da comunidade —
+     fundo/painel/borda/texto vêm dos primitivos `--sz-kids-*`. O fallback é o
+     valor ANTIGO, então admin, comunidade adulta e playground (que não importam
+     os primitivos) seguem exatamente como estavam. Escuro = a noite navy. */
+  --color-sz-bg: var(--sz-kids-navy, oklch(0.103 0.01 265)); /* background */
+  --color-sz-bg-soft: color-mix(in oklab, var(--color-sz-bg) 85%, var(--color-sz-panel));
+  --color-sz-panel: var(--sz-kids-navy-superficie, oklch(0.14 0.01 265)); /* card */
+  --color-sz-panel-soft: var(--sz-kids-navy-superficie-2, oklch(0.185 0.01 265)); /* muted */
+  --color-sz-border: var(--sz-kids-navy-linha, oklch(0.21 0.01 265)); /* border */
+  --color-sz-border-soft: color-mix(in oklab, var(--color-sz-border) 70%, var(--color-sz-bg));
+  --color-sz-fg: var(--sz-kids-navy-tinta, oklch(0.975 0.003 255)); /* foreground */
+  --color-sz-fg-soft: var(--sz-kids-navy-tinta-suave, oklch(0.75 0.008 245));
+  --color-sz-fg-mute: color-mix(in oklab, var(--color-sz-fg-soft) 80%, var(--color-sz-bg));
+  /* Superfície = alias de painel (3 call sites usavam bg-sz-surface sem token). */
+  --color-sz-surface: var(--color-sz-panel);
   /* Primitivos --sz-kids-* vêm de @sistemazero/ui/theme-kids.css quando o HOST
      os importa (kids/funnel); o fallback literal mantém o standalone (playground,
      admin, community adulta) funcionando sem depender do pacote ui.
@@ -37,12 +43,31 @@
   --color-sz-accent-soft: oklch(0.8 0.11 240); /* link-hover */
   --color-sz-cyan: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro (detalhes) */
   --color-sz-warn: #fbbf24;
+  --color-sz-warning: var(--color-sz-warn); /* alias: 1 call site usava text-sz-warning */
   --color-sz-error: oklch(0.64 0.215 27); /* destructive */
+  --color-sz-danger: var(--color-sz-error); /* alias: 1 call site usava text-sz-danger */
   --color-sz-success: #34d399;
   --color-sz-focus: #60a5fa;
+  /*
+   * ⚠️ HERDA a fonte do host, mas SEM regredir quem não é kids. Antes eram os
+   * literais "Baloo 2", "Nunito", que NÃO resolvem num app Next: o next/font
+   * gera famílias com nome HASHEADO e as expõe só nas vars dele — o Estúdio
+   * caía em system-ui dentro da comunidade (o que mais denunciava "app de fora").
+   *
+   * A cadeia encabeça com `var(--font-nunito, sz-none)`: no kids resolve para a
+   * família hasheada de verdade; em admin/adulto/playground a var não existe e
+   * `sz-none` é um nome de família válido que não casa com fonte nenhuma, então
+   * o navegador PULA para o próximo item — sobrando exatamente a lista de hoje.
+   * ⚠️ NÃO usar `var(--font-sans, …)`: é token DEFAULT do Tailwind v4, nunca
+   * cairia no fallback e traria a fonte do admin junto.
+   */
   --font-family-sans:
-    "Baloo 2", "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    var(--font-nunito, sz-none), "Baloo 2", "Nunito", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  /* Títulos/marca: a display do host (Baloo no kids), mesma mecânica. */
+  --font-family-display:
+    var(--font-baloo, sz-none), "Baloo 2", "Nunito", ui-rounded, ui-sans-serif, system-ui,
+    sans-serif;
   --font-family-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
@@ -50,15 +75,20 @@
 
 /* Tema claro — override por atributo data-sz-theme="light" no root do Studio. */
 [data-sz-theme="light"] {
-  --color-sz-bg: oklch(0.975 0.012 85); /* creme MakeCode (#fef9ef) */
-  --color-sz-bg-soft: oklch(0.955 0.012 85); /* #f4ecdc */
-  --color-sz-panel: oklch(0.995 0.006 85); /* card quase-branco quente (#fffdf8) */
-  --color-sz-panel-soft: oklch(0.945 0.012 85); /* secondary/muted (#efe6d6) */
-  --color-sz-border: oklch(0.89 0.018 80); /* #e6d8c2 */
-  --color-sz-border-soft: oklch(0.92 0.015 80); /* #eee2d0 */
-  --color-sz-fg: oklch(0.105 0.01 265);
-  --color-sz-fg-soft: oklch(0.5 0.01 255); /* muted-foreground */
-  --color-sz-fg-mute: oklch(0.62 0.008 255);
+  /* ⚠️ TODOS os derivados (color-mix / alias) são RE-DECLARADOS aqui de
+     propósito: um custom property que referencia outro é substituído no
+     elemento onde é DECLARADO — herdados do :root, ficariam presos nas cores
+     do tema escuro. */
+  --color-sz-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85)); /* azul-céu do app kids */
+  --color-sz-bg-soft: var(--sz-kids-branco-suave, oklch(0.955 0.012 85));
+  --color-sz-panel: var(--sz-kids-branco, oklch(0.995 0.006 85)); /* card */
+  --color-sz-panel-soft: var(--sz-kids-branco-suave, oklch(0.945 0.012 85)); /* secondary/muted */
+  --color-sz-border: var(--sz-kids-linha, oklch(0.89 0.018 80));
+  --color-sz-border-soft: color-mix(in oklab, var(--color-sz-border) 55%, var(--color-sz-panel));
+  --color-sz-surface: var(--color-sz-panel);
+  --color-sz-fg: var(--sz-kids-tinta, oklch(0.105 0.01 265));
+  --color-sz-fg-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.01 255)); /* muted-foreground */
+  --color-sz-fg-mute: color-mix(in oklab, var(--color-sz-fg-soft) 85%, var(--color-sz-panel));
   --color-sz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* primary = azul (AA) */
   --color-sz-accent-soft: oklch(0.46 0.14 255); /* link */
   --color-sz-cyan: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
@@ -66,6 +96,120 @@
   --color-sz-error: oklch(0.55 0.22 27); /* destructive */
   --color-sz-success: #047857;
   --color-sz-focus: #1d4ed8;
+}
+
+/*
+ * Títulos e marca do Studio na fonte de DISPLAY do host (Baloo no kids).
+ * ⚠️ Nome `sz-ui-display`, NUNCA `sz-display`: essa última é do community-kids
+ * e as duas brigariam por "última definição vence" dentro do mesmo documento.
+ */
+[data-sz-theme] .sz-ui-display {
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * ── Home do Estúdio no padrão do Pinta (SÓ a ProjectList; o editor não usa) ──
+ * Nomes `sz-home-*` de propósito: `.sz-display`/`.sz-btn-gradient` são classes
+ * GLOBAIS do community-kids e colidiriam ("última definição vence"). Tudo que
+ * importa vive NA CLASSE ([data-sz-theme] .x vence utilitário por
+ * especificidade), porque o cn() do Button é um join simples — sem
+ * tailwind-merge para resolver conflito entre utilitários.
+ */
+[data-sz-theme] {
+  --sz-home-gradient: var(
+    --sz-kids-grad-cta-azul-suave,
+    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+  );
+  --sz-home-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+}
+[data-sz-theme="light"] {
+  --sz-home-gradient: var(
+    --sz-kids-grad-cta-azul,
+    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+  );
+  --sz-home-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+}
+
+/* Pílula "3D" (espelho do .pin-btn-3d do Pinta, em tokens sz; alvo 44px). */
+[data-sz-theme] .sz-home-btn3d {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 9999px;
+  padding-inline: 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background-image: var(--sz-home-gradient);
+  color: var(--color-sz-bg);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+[data-sz-theme] .sz-home-btn3d:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+}
+[data-sz-theme] .sz-home-btn3d:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+}
+
+/* Fantasma 44px do Pinta (o ghost do Button é 32px com borda — este não tem). */
+/* ⚠️ Secundário, mas AINDA um botão. Com `border: 0` + fundo transparente,
+   "Importar" e "Ver os jogos prontos" liam como texto solto na página — só o
+   hover revelava que eram clicáveis, e a criança não passa o mouse em tudo.
+   Agora usam a mesma receita do `.sz-home-panel` em escala de botão (borda 2px +
+   sombra dura da borda a 45%), que é o que diferencia "secundário" de "não é
+   botão". O primário segue sendo a ÚNICA pílula 3D (`.sz-home-btn3d`). */
+[data-sz-theme] .sz-home-btn-ghost {
+  min-height: 2.75rem;
+  border: 2px solid var(--color-sz-border);
+  border-radius: 0.75rem;
+  padding-inline: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: var(--color-sz-panel);
+  color: var(--color-sz-fg);
+  box-shadow: 0 2px 0 color-mix(in oklch, var(--color-sz-border) 45%, transparent);
+}
+[data-sz-theme] .sz-home-btn-ghost:hover:not(:disabled) {
+  border-color: var(--color-sz-accent);
+  background: color-mix(in oklch, var(--color-sz-border) 25%, var(--color-sz-panel));
+  color: var(--color-sz-fg);
+}
+/* Afunda no clique, como a pílula 3D — o botão responde ao dedo. */
+[data-sz-theme] .sz-home-btn-ghost:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+/* Painel de card (espelho do .pin-panel: borda 2px + sombra dura da borda). */
+[data-sz-theme] .sz-home-panel {
+  border: 2px solid var(--color-sz-border);
+  border-radius: 1rem;
+  background: var(--color-sz-panel);
+  box-shadow: 0 3px 0 color-mix(in oklch, var(--color-sz-border) 45%, transparent);
+}
+
+/* Hover pop dos cards (espelho do .pin-pop). */
+[data-sz-theme] .sz-home-pop {
+  transition: transform 0.18s ease-out;
+}
+[data-sz-theme] .sz-home-pop:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-sz-theme] .sz-home-pop,
+  [data-sz-theme] .sz-home-btn3d {
+    transition: none;
+  }
+  [data-sz-theme] .sz-home-pop:hover {
+    transform: none;
+  }
 }
 
 /* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
@@ -149,8 +293,19 @@
   background: color-mix(in srgb, var(--color-sz-accent) 12%, var(--color-sz-panel-soft));
   transform: translateX(2px);
 }
+/* Texto DENTRO dos blocos: vence a regra que o Blockly injeta (0,1,0) por
+   especificidade — é por aqui que a fonte do host chega ao canvas, já que o
+   `fontStyle` do Theme é resolvido antes do CSS do app. */
+/*
+ * ⚠️ NÃO force a fonte de `.blocklyText` por CSS. O Blockly MEDE o texto (com a
+ * família do `fontStyle` do Theme, em blockly/theme.ts) para calcular a largura
+ * do bloco e do flyout; trocar só a RENDERIZAÇÃO por CSS deixa o desenho mais
+ * largo que a medida e o texto sai cortado — regressão de 08/2026, revertida.
+ * Para mudar a fonte dos blocos, mude o `fontStyle` do Theme (medida + desenho
+ * juntos) e re-verifique a largura do flyout da busca.
+ */
 [data-sz-theme] .blocklyToolboxCategoryLabel {
-  font-family: "Baloo 2", "Nunito", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-family-display);
   font-size: 15px;
   font-weight: 600;
   color: var(--color-sz-fg);
@@ -171,11 +326,14 @@
   /* legível em QUALQUER cor de categoria (clara como o âmbar ou escura). */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
-[data-sz-theme] .blocklyToolboxSelected .sz-toolbox-programming-label {
-  color: #ffffff;
-  font-weight: 700;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-}
+/*
+ * ⚠️ Aqui havia uma cópia da regra acima para `.sz-toolbox-programming-label`.
+ * Ela existia porque o `cssconfig` de Programação SUBSTITUÍA a classe padrão do
+ * Blockly, e foi justamente essa cópia que MASCAROU o defeito: selecionada a
+ * categoria ficava certa, então ninguém olhou o estado normal — onde o rótulo
+ * saía sem negrito e sem o recuo. Agora o `cssconfig` leva as DUAS classes (ver
+ * `PROGRAMMING_LABEL_CLASSES` em `blockly/toolbox.ts`) e a regra padrão basta.
+ */
 [data-sz-theme] .blocklyToolboxCategoryContainer:focus-visible > .blocklyToolboxCategory,
 [data-sz-theme] .blocklyToolboxCategoryContainer.blocklyActiveFocus > .blocklyToolboxCategory,
 [data-sz-theme] .blocklyToolboxCategory:focus-visible {

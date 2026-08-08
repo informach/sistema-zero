@@ -51,4 +51,38 @@ describe('openTutorCategory', () => {
     expect(openTutorCategory(workspace, 'unknown', 'Som')).toBe(true)
     expect(selected).toEqual([sound])
   })
+
+  it('no fallback por rótulo, a subcategoria (nó folha) vence a categoria de topo', () => {
+    const sprites = { getName: () => '🎮 Sprites' }
+    const topLevel: TutorToolboxItem = {
+      getName: () => 'Jogo 2D',
+      getChildToolboxItems: () => [sprites],
+    }
+    const selected: TutorToolboxItem[] = []
+    const toolbox: TutorToolbox = {
+      getToolboxItems: () => [topLevel],
+      setSelectedItem: (item) => {
+        selected.push(item)
+      },
+    }
+    const workspace: TutorWorkspace = { getToolbox: () => toolbox }
+
+    expect(openTutorCategory(workspace, 'unknown', 'Jogo 2D', '🎮 Sprites')).toBe(true)
+    expect(selected).toEqual([sprites])
+  })
+
+  it('sem subcategoria (histórico antigo), o fallback continua na categoria', () => {
+    const topLevel = { getName: () => 'Jogo 2D' }
+    const selected: TutorToolboxItem[] = []
+    const toolbox: TutorToolbox = {
+      getToolboxItems: () => [topLevel],
+      setSelectedItem: (item) => {
+        selected.push(item)
+      },
+    }
+    const workspace: TutorWorkspace = { getToolbox: () => toolbox }
+
+    expect(openTutorCategory(workspace, 'unknown', 'Jogo 2D')).toBe(true)
+    expect(selected).toEqual([topLevel])
+  })
 })

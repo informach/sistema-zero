@@ -1,12 +1,33 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { resolveStudioTier } from '../lib/studio-tier'
+import type { PensaArtifactView, PensaStageView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
+import { hasCreativeAppsLevel } from '../server/creative-apps-access'
+import { auditPlan } from '../server/pensa-agents/plan-audit'
+import {
+  availablePlannerCatalog,
+  IdeaArtifactSchema,
+  VisualDirectionArtifactSchema,
+} from '../server/pensa-agents/planner-contract'
 import type { SessionModule } from '../server/session'
 
 export type PensaRoutes = ReturnType<typeof createPensaRoutes>
 
-const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const UUID = z.uuid()
+const PROJECT_NAME = z.string().trim().min(2).max(120)
+const WorkStage = z.enum(['z', 'e', 'r', 'o'])
+const Stage = z.enum(['z', 'e', 'r', 'o', 'done'])
+const ClientEditableArtifactType = z.enum(['idea', 'game_design', 'visual_direction'])
+export const ClientValidatableArtifactType = z.enum([
+  'idea',
+  'game_design',
+  'visual_direction',
+  'task_plan',
+])
+const Destination = z.enum(['pinta', 'studio'])
+const Category = z.enum(['art', 'setup', 'gameplay', 'scene', 'ui', 'polish'])
 
 const invalid = () =>
   NextResponse.json(
@@ -14,175 +35,242 @@ const invalid = () =>
     { status: 400 },
   )
 const notFound = () => NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+const response = (status: number, body: unknown) =>
+  NextResponse.json(body ?? { ok: status === 200 }, { status })
 
-// ── Schemas da borda (o members revalida tudo; aqui é a 1ª linha de defesa) ──
-const PROJECT_NAME = z.string().trim().min(2).max(120)
-const StageParam = z.enum(['z', 'e', 'r', 'o'])
-const ArtifactTypeParam = z.enum([
-  'idea',
-  'prd',
-  'friendly_spec',
-  'identity',
-  'mission_plan',
-  'checklist_seed',
-])
-
-const CreateProjectBody = z.object({
-  name: PROJECT_NAME,
-  kind: z.enum(['game', 'webapp']),
-})
+const CreateProjectBody = z.strictObject({ name: PROJECT_NAME })
 const UpdateProjectBody = z
-  .object({
+  .strictObject({
     name: PROJECT_NAME.optional(),
     status: z.enum(['active', 'archived']).optional(),
-    // Charset do id de projeto do Estúdio (IndexedDB) — sem `:` (gotcha do studio).
-    studioProjectId: z
-      .string()
-      .regex(/^[A-Za-z0-9_-]{1,128}$/)
-      .optional(),
-    // Onde construir (escolha da criança na etapa R).
-    buildEnv: z.enum(['embedded', 'studio', 'external']).optional(),
   })
-  .refine(
-    (b) =>
-      b.name !== undefined ||
-      b.status !== undefined ||
-      b.studioProjectId !== undefined ||
-      b.buildEnv !== undefined,
-  )
-
-/** Teto do snapshot serializado (espelha o cap do members; o gateway corta em 2MB). */
-const SNAPSHOT_MAX_CHARS = 1_800_000
-const CreateCycleBody = z.object({ goal: z.string().trim().min(2).max(500) })
-const AdvanceBody = z.object({ from: StageParam })
-
-// Missão (autoria manual) — o members revalida com o TypeBox; aqui é a 1ª defesa.
-const MissionZod = z.object({
-  story: z.string().max(2000).optional(),
-  steps: z
-    .array(z.object({ text: z.string().min(1).max(500), hint: z.string().max(500).optional() }))
-    .min(1)
-    .max(12),
-  studioHints: z
-    .object({
-      categories: z.array(z.string().max(80)).max(20),
-      blocks: z.array(z.string().max(80)).max(50),
-    })
-    .optional(),
-  doneWhen: z.array(z.string().min(1).max(300)).min(1).max(3),
-  artKind: z.enum(['sprite', 'background', 'tileset']).optional(),
-  palette: z.array(z.string().max(20)).max(8).optional(),
+  .refine((body) => Object.values(body).some((value) => value !== undefined))
+const CreateCycleBody = z.strictObject({ goal: z.string().trim().min(2).max(500) })
+export const ClientArtifactBody = z.strictObject({
+  stage: WorkStage,
+  type: ClientEditableArtifactType,
+  content: z.unknown(),
 })
-const TaskInputZod = z.object({
-  title: z.string().min(1).max(200),
-  summary: z.string().max(2000).nullable().optional(),
-  taskType: z.string().max(40).nullable().optional(),
-  mission: MissionZod,
-})
-/** APPEND de missões (autoria manual "+ Nova missão"; o members cobra o teto de 60). */
-const TasksAppendBody = z.object({ tasks: z.array(TaskInputZod).min(1).max(60) })
+const AdvanceBody = z.strictObject({ from: WorkStage })
 
+const GuideItem = z.strictObject({
+  id: z.string().min(1).max(100),
+  text: z.string().min(1).max(500),
+  hint: z.string().max(500).optional(),
+  required: z.boolean(),
+})
+const Guide = z.strictObject({
+  steps: z.array(GuideItem).min(1).max(20),
+  criteria: z.array(GuideItem).min(1).max(10),
+})
+const PintaContext = z.strictObject({
+  kind: z.literal('pinta'),
+  assetId: z.string().min(1).max(100),
+  artKind: z.enum(['sprite', 'background', 'tileset', 'tilemap']),
+  style: z.enum(['pixel', 'vector', 'either']),
+  preset: z.string().max(100).optional(),
+  palette: z
+    .array(z.strictObject({ role: z.string().min(1).max(80), color: z.string().max(20) }))
+    .max(16),
+  appearance: z.string().min(1).max(2000),
+  animations: z.array(z.string().max(200)).max(20),
+  states: z.array(z.string().max(200)).max(20),
+  usage: z.string().min(1).max(2000),
+  requiresStudioUse: z.boolean(),
+})
+const StudioBlock = z.strictObject({
+  id: z.string().min(1).max(160),
+  label: z.string().min(1).max(200),
+  category: z.string().min(1).max(100),
+  subcategory: z.string().min(1).max(100),
+  area: z.enum(['structure', 'appearance', 'start', 'events', 'loops', 'value']),
+  extension: z.string().max(100).nullable(),
+})
+const StudioContext = z.strictObject({
+  kind: z.literal('studio'),
+  dimension: z.enum(['2d', '3d']),
+  visualAssetIds: z.array(z.string().min(1).max(100)).max(20),
+  blockIds: z.array(z.string().max(160)).max(80),
+  blocks: z.array(StudioBlock).max(80),
+  mechanicDocumentIds: z.array(z.string().max(100)).max(10),
+  extensionIds: z.array(z.string().max(100)).max(10),
+})
+const TaskContext = z.discriminatedUnion('kind', [PintaContext, StudioContext])
+const TaskInput = z
+  .strictObject({
+    key: z.string().min(1).max(100),
+    title: z.string().min(1).max(200),
+    summary: z.string().max(2000).nullable().optional(),
+    destination: Destination,
+    category: Category,
+    estimatedMinutes: z.number().int().min(5).max(240),
+    dependencies: z.array(z.string().min(1).max(100)).max(40).optional(),
+    guide: Guide,
+    context: TaskContext,
+  })
+  .refine((task) => task.destination === task.context.kind)
+const TasksBody = z.strictObject({ tasks: z.array(TaskInput).min(1).max(60) })
 const TaskUpdateBody = z
-  .object({
-    column: z.enum(['backlog', 'doing', 'review', 'done']).optional(),
-    position: z.number().int().min(0).max(500).optional(),
-    notes: z.string().max(2000).nullable().optional(),
-    // Autoria manual: editar o conteúdo da missão.
+  .strictObject({
+    position: z.number().int().min(0).max(1000).optional(),
     title: z.string().min(1).max(200).optional(),
     summary: z.string().max(2000).nullable().optional(),
-    taskType: z.string().max(40).nullable().optional(),
-    mission: MissionZod.optional(),
+    destination: Destination.optional(),
+    category: Category.optional(),
+    estimatedMinutes: z.number().int().min(5).max(240).optional(),
+    dependencies: z.array(UUID).max(40).optional(),
+    guide: Guide.optional(),
+    context: TaskContext.optional(),
   })
-  .refine((b) => Object.values(b).some((v) => v !== undefined))
-const ChecklistToggleBody = z.object({ done: z.boolean() })
+  .refine((body) => Object.values(body).some((value) => value !== undefined))
+const OutputRef = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('pinta_asset'),
+    assetId: z.string().min(1).max(200),
+    assetName: z.string().max(200).optional(),
+    usedInStudioAt: z.iso.datetime().optional(),
+  }),
+  z.strictObject({
+    kind: z.literal('studio_project'),
+    projectId: z.string().min(1).max(200),
+    saveRevision: z.string().max(200).optional(),
+  }),
+])
+const ProgressBody = z
+  .strictObject({
+    status: z.enum(['planned', 'in_progress', 'completed']).optional(),
+    completedStepIds: z.array(z.string().min(1).max(100)).max(20).optional(),
+    completedCriteriaIds: z.array(z.string().min(1).max(100)).max(10).optional(),
+    outputRef: OutputRef.nullable().optional(),
+    expectedUpdatedAt: z.iso.datetime().nullable(),
+  })
+  .refine((body) => Object.values(body).some((value) => value !== undefined))
 
-/**
- * Rotas do Pensa (planejamento guiado — metodologia ZERO), consumidas pelo pacote
- * `@sistemazero/pensa` embarcado nos apps de aluno. TUDO aqui é passthrough fino
- * (Zod na borda → client → members via gateway); o members é o portão real
- * (ownership por perfil, gate de produto no create, gates do advance).
- *
- * A rota de IA (chat SSE `/api/pensa/chat`) NÃO vive aqui — chega na fase da
- * etapa Z, em módulo próprio (streaming tem shape de handler diferente).
- */
+/** BFF fino do planejador; autoria do plano e progresso das ferramentas ficam separados. */
 export function createPensaRoutes(deps: { members: MembersClient; session: SessionModule }) {
   const { members, session } = deps
-
-  /** Impersonação (claim `act`) é SOMENTE-LEITURA: suporte não planeja pelo aluno. */
   async function requireWritableSession(): Promise<NextResponse | null> {
     const user = await session.getSession()
-    if (!user?.act) return null
+    if (user?.act) {
+      return NextResponse.json(
+        { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
+        { status: 403 },
+      )
+    }
+    // Sem sessão, o members preserva o 401 autoritativo em vez de um 403 enganoso.
+    if (!user) return null
+    if (!(await hasCreativeAppsLevel(members, user.role))) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'CAREER_LEVEL_REQUIRED',
+            message: 'O Pensa abre quando você chegar no nível Inventor(a).',
+          },
+        },
+        { status: 403 },
+      )
+    }
+    return null
+  }
+  const parseId = (id: string) => UUID.safeParse(id).success
+  const latest = (stage: PensaStageView, type: string): PensaArtifactView | null =>
+    stage.artifacts.find((artifact) => artifact.type === type) ?? null
+
+  async function auditBeforeApproval(cycleId: string): Promise<NextResponse | null> {
+    const [user, oStage, zStage, eStage, gamification] = await Promise.all([
+      session.getSession(),
+      members.pensaGetStage(cycleId, 'o'),
+      members.pensaGetStage(cycleId, 'z'),
+      members.pensaGetStage(cycleId, 'e'),
+      members.getGamification(),
+    ])
+    if (
+      !user ||
+      oStage.status !== 200 ||
+      !oStage.body ||
+      zStage.status !== 200 ||
+      !zStage.body ||
+      eStage.status !== 200 ||
+      !eStage.body ||
+      gamification.status !== 200
+    ) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'PENSA_AUDIT_UNAVAILABLE',
+            message: 'Não consegui conferir o plano agora. Tente novamente.',
+          },
+        },
+        { status: 503 },
+      )
+    }
+    const idea = IdeaArtifactSchema.safeParse(latest(zStage.body, 'idea')?.content)
+    const visual = VisualDirectionArtifactSchema.safeParse(
+      latest(eStage.body, 'visual_direction')?.content,
+    )
+    if (!idea.success || !visual.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'PENSA_PLAN_AUDIT_STALE',
+            message: 'A ideia ou a Bíblia Visual mudou. Execute uma nova auditoria.',
+          },
+        },
+        { status: 409 },
+      )
+    }
+    const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+    const review = auditPlan(
+      oStage.body,
+      availablePlannerCatalog(tier, idea.data.dimension),
+      idea.data.dimension,
+      true,
+      visual.data,
+    )
+    if (review.approved) return null
     return NextResponse.json(
-      { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
-      { status: 403 },
+      {
+        error: {
+          code: 'PENSA_PLAN_AUDIT_STALE',
+          message: 'O plano mudou ou usa algo que não está disponível. Revise novamente.',
+        },
+        details: { findings: review.findings },
+      },
+      { status: 409 },
     )
   }
 
   const pensaProjects = {
     GET: async () => {
-      const { status, body } = await members.pensaListProjects()
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      const result = await members.pensaListProjects()
+      return response(result.status, result.body)
     },
     POST: async (req: Request) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const parsed = CreateProjectBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
-      const { status, body } = await members.pensaCreateProject(parsed.data)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      const result = await members.pensaCreateProject(parsed.data)
+      return response(result.status, result.body)
     },
   }
 
   const pensaProject = {
     GET: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
       const { projectId } = await ctx.params
-      if (!UUID_RE.test(projectId)) return notFound()
-      const { status, body } = await members.pensaGetProject(projectId)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaGetProject(projectId)
+      return response(result.status, result.body)
     },
     PATCH: async (req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { projectId } = await ctx.params
-      if (!UUID_RE.test(projectId)) return notFound()
+      if (!parseId(projectId)) return notFound()
       const parsed = UpdateProjectBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
-      const { status, body } = await members.pensaUpdateProject(projectId, parsed.data)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
-    },
-  }
-
-  const pensaStudioSnapshot = {
-    // Backup do JOGO em construção (JSON do projeto do Estúdio) atrelado ao projeto
-    // do Pensa: GET restaura em navegador novo; PUT sobe o snapshot (debounced no
-    // host). O members é o portão (ownership + cap); aqui só a 1ª linha de defesa.
-    GET: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const { projectId } = await ctx.params
-      if (!UUID_RE.test(projectId)) return notFound()
-      const { status, body } = await members.pensaGetStudioSnapshot(projectId)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
-    },
-    PUT: async (req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { projectId } = await ctx.params
-      if (!UUID_RE.test(projectId)) return notFound()
-      let parsed: { project?: unknown }
-      try {
-        parsed = (await req.json()) as { project?: unknown }
-      } catch {
-        return invalid()
-      }
-      const project = parsed?.project
-      if (!project || typeof project !== 'object' || Array.isArray(project)) return invalid()
-      if (JSON.stringify(project).length > SNAPSHOT_MAX_CHARS) {
-        return NextResponse.json(
-          { error: { code: 'VALIDATION_ERROR', message: 'Projeto grande demais para o backup' } },
-          { status: 413 },
-        )
-      }
-      const { status, body } = await members.pensaSaveStudioSnapshot(projectId, project)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      const result = await members.pensaUpdateProject(projectId, parsed.data)
+      return response(result.status, result.body)
     },
   }
 
@@ -191,20 +279,31 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { projectId } = await ctx.params
-      if (!UUID_RE.test(projectId)) return notFound()
       const parsed = CreateCycleBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const { status, body } = await members.pensaCreateCycle(projectId, parsed.data.goal)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      if (!parseId(projectId) || !parsed.success) return invalid()
+      const result = await members.pensaCreateCycle(projectId, parsed.data.goal)
+      return response(result.status, result.body)
     },
   }
 
   const pensaStage = {
     GET: async (_req: Request, ctx: { params: Promise<{ cycleId: string; stage: string }> }) => {
       const { cycleId, stage } = await ctx.params
-      if (!UUID_RE.test(cycleId) || !StageParam.safeParse(stage).success) return notFound()
-      const { status, body } = await members.pensaGetStage(cycleId, stage)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      if (!parseId(cycleId) || !Stage.safeParse(stage).success) return notFound()
+      const result = await members.pensaGetStage(cycleId, stage)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaArtifactCreate = {
+    POST: async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { cycleId } = await ctx.params
+      const parsed = ClientArtifactBody.safeParse(await req.json().catch(() => null))
+      if (!parseId(cycleId) || !parsed.success) return invalid()
+      const result = await members.pensaSaveArtifact(cycleId, parsed.data)
+      return response(result.status, result.body)
     },
   }
 
@@ -213,10 +312,10 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { cycleId, type } = await ctx.params
-      const parsedType = ArtifactTypeParam.safeParse(type)
-      if (!UUID_RE.test(cycleId) || !parsedType.success) return notFound()
-      const { status, body } = await members.pensaValidateArtifact(cycleId, parsedType.data)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      const parsed = ClientValidatableArtifactType.safeParse(type)
+      if (!parseId(cycleId) || !parsed.success) return notFound()
+      const result = await members.pensaValidateArtifact(cycleId, parsed.data)
+      return response(result.status, result.body)
     },
   }
 
@@ -225,73 +324,85 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { cycleId } = await ctx.params
-      if (!UUID_RE.test(cycleId)) return notFound()
       const parsed = AdvanceBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const { status, body } = await members.pensaAdvance(cycleId, parsed.data.from)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      if (!parseId(cycleId) || !parsed.success) return invalid()
+      if (parsed.data.from === 'o') {
+        const auditFailure = await auditBeforeApproval(cycleId)
+        if (auditFailure) return auditFailure
+      }
+      const result = await members.pensaAdvance(cycleId, parsed.data.from)
+      return response(result.status, result.body)
     },
   }
 
-  // POST /cycles/:cycleId/tasks — APPEND (autoria manual "+ Nova missão").
-  const pensaTaskCreate = {
-    POST: async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
+  const taskCollection =
+    (method: 'PUT' | 'POST') =>
+    async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { cycleId } = await ctx.params
-      if (!UUID_RE.test(cycleId)) return notFound()
-      const parsed = TasksAppendBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const { status, body } = await members.pensaAppendTasks(cycleId, parsed.data.tasks)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
-    },
-  }
+      const parsed = TasksBody.safeParse(await req.json().catch(() => null))
+      if (!parseId(cycleId) || !parsed.success) return invalid()
+      const result =
+        method === 'PUT'
+          ? await members.pensaReplaceTasks(cycleId, parsed.data.tasks)
+          : await members.pensaAppendTasks(cycleId, parsed.data.tasks)
+      return response(result.status, result.body)
+    }
+  const pensaTasks = { PUT: taskCollection('PUT'), POST: taskCollection('POST') }
 
-  const pensaTaskUpdate = {
+  const pensaTask = {
     PATCH: async (req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { taskId } = await ctx.params
-      if (!UUID_RE.test(taskId)) return notFound()
       const parsed = TaskUpdateBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const { status, body } = await members.pensaUpdateTask(taskId, parsed.data)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      if (!parseId(taskId) || !parsed.success) return invalid()
+      const result = await members.pensaUpdateTask(taskId, parsed.data)
+      return response(result.status, result.body)
     },
-    // DELETE /tasks/:taskId — apagar 1 card (autoria manual).
     DELETE: async (_req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { taskId } = await ctx.params
-      if (!UUID_RE.test(taskId)) return notFound()
-      const { status, body } = await members.pensaDeleteTask(taskId)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      if (!parseId(taskId)) return notFound()
+      const result = await members.pensaDeleteTask(taskId)
+      return response(result.status, result.body)
     },
   }
 
-  const pensaChecklistToggle = {
-    PATCH: async (req: Request, ctx: { params: Promise<{ itemId: string }> }) => {
+  const pensaTaskHandoff = {
+    GET: async (_req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
+      const { taskId } = await ctx.params
+      if (!parseId(taskId)) return notFound()
+      const result = await members.pensaGetTaskHandoff(taskId)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaTaskProgress = {
+    PATCH: async (req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
-      const { itemId } = await ctx.params
-      if (!UUID_RE.test(itemId)) return notFound()
-      const parsed = ChecklistToggleBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const { status, body } = await members.pensaToggleChecklist(itemId, parsed.data.done)
-      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+      const { taskId } = await ctx.params
+      const parsed = ProgressBody.safeParse(await req.json().catch(() => null))
+      if (!parseId(taskId) || !parsed.success) return invalid()
+      const result = await members.pensaUpdateTaskProgress(taskId, parsed.data)
+      return response(result.status, result.body)
     },
   }
 
   return {
     pensaProjects,
     pensaProject,
-    pensaStudioSnapshot,
     pensaCycleCreate,
     pensaStage,
+    pensaArtifactCreate,
     pensaArtifactValidate,
     pensaAdvance,
-    pensaTaskCreate,
-    pensaTaskUpdate,
-    pensaChecklistToggle,
+    pensaTasks,
+    pensaTask,
+    pensaTaskHandoff,
+    pensaTaskProgress,
   }
 }

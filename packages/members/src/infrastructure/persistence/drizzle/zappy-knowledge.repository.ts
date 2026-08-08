@@ -225,7 +225,12 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
 
   async search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]> {
     if (lessonIds.length === 0 || !query) return []
-    const tsQuery = sql`websearch_to_tsquery('portuguese', ${query})`
+    // OR entre os termos: o websearch padrão junta com AND e "colisao personagem"
+    // exigia as duas palavras no MESMO chunk de 1500 chars — quase nunca acontecia
+    // e a base didática saía vazia (QA 08/2026). O ts_rank segue premiando quem
+    // casa MAIS termos, então vira um rank-merge natural.
+    const orQuery = query.trim().split(/\s+/).filter(Boolean).join(' or ')
+    const tsQuery = sql`websearch_to_tsquery('portuguese', ${orQuery})`
     const vector = sql`to_tsvector('portuguese', ${zappyKnowledgeChunks.normalizedText})`
     const rank = sql<number>`ts_rank(${vector}, ${tsQuery})`
     const rows = await this.db

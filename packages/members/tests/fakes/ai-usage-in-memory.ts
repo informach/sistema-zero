@@ -1,6 +1,7 @@
 import type {
   AiUsageMonthStats,
   AiUsageRepository,
+  AiUsageTotals,
   ConsumeAiUsageInput,
   ConsumeAiUsageOutcome,
 } from '../../src/domain/ports/ai-usage-repository.port'
@@ -51,6 +52,16 @@ export class InMemoryAiUsageRepository implements AiUsageRepository {
       })
     }
     return { allowed: true, usedDay: usedDay + 1, usedMonth: usedMonth + 1 }
+  }
+
+  async totals(input: { accountId: string; day: string; month: string }): Promise<AiUsageTotals> {
+    const inMonth = (r: Row) => r.accountId === input.accountId && r.day.startsWith(input.month)
+    return {
+      usedDay: this.rows
+        .filter((r) => inMonth(r) && r.day === input.day)
+        .reduce((a, r) => a + r.used, 0),
+      usedMonth: this.rows.filter(inMonth).reduce((a, r) => a + r.used, 0),
+    }
   }
 
   async statsForMonth(month: string, today: string, topLimit: number): Promise<AiUsageMonthStats> {

@@ -339,7 +339,7 @@ export function LessonPlayer({
             <Link
               href={courseHref}
               aria-label={`Voltar à trilha de ${course.title}`}
-              className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-border bg-card text-muted-foreground shadow-[0_3px_0_var(--border)] transition-all hover:text-foreground active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]"
+              className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-border bg-card text-muted-foreground shadow-[0_3px_0_var(--border)] transition-[color,border-color,box-shadow,transform] hover:text-foreground active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]"
             >
               <ArrowLeft className="size-5" />
             </Link>

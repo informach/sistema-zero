@@ -3,6 +3,7 @@
 import { ArrowLeft, Camera, Check, Loader2, Lock, RefreshCw, Shuffle, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import type { AvatarReturnPath } from '@/lib/avatar-return'
 import {
   AVATAR_CATEGORIES,
   AVATAR_CATEGORY_LABELS,
@@ -60,7 +61,7 @@ function ItemTile({
       title={label}
       aria-pressed={selected}
       className={cn(
-        'relative grid aspect-square place-items-center overflow-hidden rounded-2xl border-2 bg-muted/40 transition-all disabled:opacity-60',
+        'relative grid aspect-square place-items-center overflow-hidden rounded-2xl border-2 bg-muted/40 transition-[background-color,border-color,box-shadow,opacity] disabled:opacity-60',
         selected ? 'border-primary ring-2 ring-primary/40' : 'border-border',
       )}
     >
@@ -94,15 +95,22 @@ function ItemTile({
  * (vestir) e **Cabine de fotos** (escolher pose + posicionar a câmera e tirar a foto). A
  * "foto" (snapshot) vira o avatar em todo o app; a config 3D também é salva. Estado no members.
  */
-export function AvatarConfigurator({ dark }: { dark: boolean }) {
-  // Sair do avatar = navegação DURA (full reload), NÃO `router.push`. A foto nova do avatar
+export function AvatarConfigurator({
+  dark,
+  returnTo,
+}: {
+  dark: boolean
+  returnTo: AvatarReturnPath
+}) {
+  // Sair do avatar = navegação DURA para o destino interno permitido, NÃO `router.push`.
+  // A foto nova do avatar
   // precisa aparecer em TODO lugar (menu, tab bar, quarto, perfil), e o avatar do menu/tab bar
   // vive no LAYOUT do grupo (app), que PERSISTE entre navegações SPA e não re-busca o
   // `getAvatarReadonly` — `router.push` troca só a página, não o layout, e `push`+`refresh`
   // tem corrida conhecida (vercel/next#54766), então a foto "demorava" a trocar. Um reload
   // re-renderiza a árvore inteira no servidor → layout + página leem o `avatarPhotoUrl` novo
   // (o `gatewayFetch` é `no-store`, sem cache de dados) e a imagem atualiza na hora em todo canto.
-  const goToProfile = () => window.location.assign('/perfil')
+  const exitAvatar = () => window.location.assign(returnTo)
   const [state, setState] = useState<AvatarStateView | null>(null)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [slots, setSlots] = useState<Slots>({})
@@ -275,8 +283,8 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
   /**
    * Salva o avatar: PUT da config (a roupa/peças) + captura a "foto" (snapshot do enquadramento
    * atual → vira a imagem do avatar). A captura ESPERA a cena assentar (no `SnapshotBridge`), então
-   * não precisa de gate/nag. `redirect`: "Salvar" (Personalizar) fica na tela; "Tirar foto" (Cabine)
-   * finaliza e volta pro perfil.
+   * não precisa de gate/nag. `redirect`: no fluxo normal, "Salvar" (Personalizar) fica na tela;
+   * "Tirar foto" (Cabine) finaliza. No onboarding, ambos retornam à home para continuar o tour.
    */
   async function save({ redirect }: { redirect: boolean }) {
     if (saving || hasLocked || !state) return
@@ -306,7 +314,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         }
       }
       toast.success(redirect ? 'Avatar salvo! 😄' : 'Mudanças salvas! 😄')
-      if (redirect) goToProfile()
+      if (redirect) exitAvatar()
     } catch {
       toast.error('Não consegui salvar agora. Tente de novo!')
     } finally {
@@ -325,7 +333,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         <div className="relative z-10 flex items-center justify-between gap-2 p-4">
           <button
             type="button"
-            onClick={goToProfile}
+            onClick={exitAvatar}
             aria-label="Voltar"
             className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90"
           >
@@ -356,7 +364,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={goToProfile}
+            onClick={exitAvatar}
             aria-label="Voltar"
             className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90"
           >
@@ -380,7 +388,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
           {/* Botão de cima: SALVAR em Personalizar, TIRAR FOTO na Cabine de fotos. */}
           <button
             type="button"
-            onClick={() => save({ redirect: mode === 'photo' })}
+            onClick={() => save({ redirect: mode === 'photo' || returnTo === '/' })}
             disabled={saving || hasLocked || !state}
             className={cn(
               'inline-flex h-11 items-center gap-2 rounded-full px-4 font-bold text-sm shadow-md transition-transform active:scale-95',
@@ -476,7 +484,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
                       aria-label={`Cor ${i + 1}`}
                       aria-pressed={isCurrent}
                       className={cn(
-                        'grid size-9 shrink-0 place-items-center rounded-full border-2 transition-transform active:scale-90',
+                        'grid size-11 shrink-0 place-items-center rounded-full border-2 transition-transform active:scale-90',
                         isCurrent
                           ? 'border-foreground ring-2 ring-foreground/30'
                           : 'border-transparent',

@@ -14,6 +14,7 @@ import {
   type PintaBitmap,
   resolveAssetPalette,
 } from '../../core/project'
+import { flattenCels } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { PINTA_TEMPLATES, type PintaTemplate } from '../../templates/catalog'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
@@ -71,10 +72,15 @@ function TemplateThumb({
   const primary = assets[primaryIndex]
   if (!primary) return null
   switch (primary.kind) {
-    case 'pixel-sprite':
-      return <PixelThumb bitmap={primary.animations[0]?.frames[0] as PintaBitmap} asset={primary} />
-    case 'pixel-background':
-      return <PixelThumb bitmap={primary.bitmap} asset={primary} />
+    case 'pixel-sprite': {
+      const cels = primary.animations[0]?.frames[0]
+      const flat = cels ? flattenCels(cels, primary.layers) : null
+      return flat ? <PixelThumb bitmap={flat} asset={primary} /> : null
+    }
+    case 'pixel-background': {
+      const flat = flattenCels(primary.cels, primary.layers)
+      return flat ? <PixelThumb bitmap={flat} asset={primary} /> : null
+    }
     case 'tileset':
       return <TilesetStrip tileset={primary} />
     case 'tilemap': {

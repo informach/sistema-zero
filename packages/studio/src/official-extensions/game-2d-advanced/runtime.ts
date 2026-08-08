@@ -602,6 +602,9 @@ ${gameKitShellRuntime}
     // quadro (na pausa nada ATUALIZA, então a imagem congela — como no kit).
     // Com a câmera ligada, o MUNDO desenha transladado (main.js do RPG kit:
     // translate -> mundo -> restore -> HUD); o overlay de debug é world-space.
+    // Cenário ANTES do translate: fica preso à tela, atrás de tudo, e não some
+    // se a criança esquecer de desenhar o fundo no 'Desenhar o jogo'.
+    if (_backdropName) _paintBackdrop(_backdropName, 0, 0);
     updateCamera();
     // Tremor da câmera (impacto): desloca o mundo aleatoriamente enquanto dura.
     var shx = 0;
@@ -1095,6 +1098,8 @@ ${gameKitShellRuntime}
 ${gameKitAnimationRuntime}
   function drawBackground(color, grid) {
     if (!ctx2d) return;
+    // O fundo chapado é OPACO: por cima do cenário, ele some sem explicação.
+    if (_backdropName) warnOnce('backdrop-tapado', 'o bloco “Pintar o fundo” está tapando o seu cenário — tire um dos dois');
     // Cobre o retângulo VISÍVEL (com câmera, o ctx está transladado — pintar em
     // camera.x/y cobre a tela). A grade fica em coords do MUNDO: ela "anda"
     // quando a câmera segue, dando a sensação de mundo de graça.
@@ -4603,6 +4608,13 @@ ${gameKitAudioRuntime}
   // Cada domínio declara o estado e os registros que possui. O orquestrador de
   // restart apenas dispara a fase certa; novos kits não dependem de um checklist
   // central que pode esquecer recursos ao crescer.
+  _registerRuntimeDomain('stage-backdrop', {
+    // resetProject, NAO 'reset': a gk so dispara resetGame/resetProject/
+    // projectReady. Um hook com nome que ninguem chama nao limpa nada e ainda
+    // parece que limpa. O cenario e' registro de PROJETO (vem do "Ao iniciar"),
+    // entao some quando o programa roda de novo, como os demais deste grupo.
+    resetProject: function () { _backdropName = ''; }
+  });
   _registerRuntimeDomain('core', {
     resetGame: resetCoreGameData,
     resetProject: resetCoreProjectRegistrations
@@ -4668,6 +4680,8 @@ ${gameKitAudioRuntime}
     setStageDescription: guard('setStageDescription', setStageDescription),
     start: guard('start', start),
     showStageBorder: guard('showStageBorder', showStageBorder),
+    setBackdrop: guard('setBackdrop', setBackdrop),
+    drawBackdrop: guard('drawBackdrop', drawBackdrop),
     // Liga a MESMA chave que a tecla de crase alterna (agora exposta em bloco).
     showHitboxes: guard('showHitboxes', function () { debugOverlay = true; }),
     width: guard('width', function () { return config.w; }),

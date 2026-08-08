@@ -113,6 +113,8 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:onGroupOverlap':
     case 'g2d:onSpriteGroupOverlap':
     case 'g2d:onEnemyDefeated':
+    case 'g2d:onEnemyHurt':
+    case 'g2d:onEnemyBeamHit':
     case 'g2d:onEnemyShotHit':
     case 'g2d:defineShape':
     case 'g2d:everyFrames':

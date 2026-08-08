@@ -56,7 +56,7 @@ describe('fábricas', () => {
     const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 16 })
     expect(sprite.animations).toHaveLength(1)
     expect(sprite.animations[0]?.name).toBe('parado')
-    expect(sprite.animations[0]?.frames[0]?.width).toBe(16)
+    expect(sprite.animations[0]?.frames[0]?.[0]?.width).toBe(16)
     expect(sprite.frameWidth).toBe(16)
   })
 
@@ -94,6 +94,113 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
       expect(out?.kind).toBe(asset.kind)
       expect(out?.name).toBe(asset.name)
     }
+  })
+
+  it('MIGRAÇÃO das camadas: desenho ANTIGO (sem layers/cels) abre com 1 camada', () => {
+    // Cenário antigo: bitmap solto no campo `bitmap`.
+    const bitmapAntigo = createBitmap(4, 4)
+    bitmapAntigo.data[0] = 7
+    const bgAntigo = sanitizePintaAsset({
+      id: 'bg-1',
+      kind: 'pixel-background',
+      name: 'ceu',
+      createdAt: 1,
+      updatedAt: 1,
+      paletteId: 'arcade',
+      bitmap: bitmapAntigo,
+    })
+    expect(bgAntigo?.kind).toBe('pixel-background')
+    if (bgAntigo?.kind !== 'pixel-background') return
+    expect(bgAntigo.layers).toHaveLength(1)
+    expect(bgAntigo.layers[0]?.visible).toBe(true)
+    expect(bgAntigo.cels).toHaveLength(1)
+    expect(bgAntigo.cels[0]?.data[0]).toBe(7)
+
+    // Sprite antigo: cada quadro era UM bitmap.
+    const quadroAntigo = createBitmap(8, 8)
+    quadroAntigo.data[3] = 5
+    const spriteAntigo = sanitizePintaAsset({
+      id: 'sp-1',
+      kind: 'pixel-sprite',
+      name: 'heroi',
+      createdAt: 1,
+      updatedAt: 1,
+      paletteId: 'arcade',
+      frameWidth: 8,
+      frameHeight: 8,
+      animations: [{ id: 'a1', name: 'parado', fps: 8, loop: true, frames: [quadroAntigo] }],
+    })
+    expect(spriteAntigo?.kind).toBe('pixel-sprite')
+    if (spriteAntigo?.kind !== 'pixel-sprite') return
+    expect(spriteAntigo.layers).toHaveLength(1)
+    expect(spriteAntigo.animations[0]?.frames[0]).toHaveLength(1)
+    expect(spriteAntigo.animations[0]?.frames[0]?.[0]?.data[3]).toBe(5)
+  })
+
+  it('camadas: cels a MENOS ganham camada vazia; a MAIS são cortados', () => {
+    const base = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const out = sanitizePintaAsset({
+      ...base,
+      layers: [
+        { id: 'l1', name: 'Camada 1', visible: true },
+        { id: 'l2', name: 'Camada 2', visible: false },
+      ],
+      // Só um cel para duas camadas.
+      animations: [{ ...base.animations[0], frames: [[createBitmap(8, 8)]] }],
+    })
+    if (out?.kind !== 'pixel-sprite') throw new Error('sprite esperado')
+    expect(out.layers).toHaveLength(2)
+    expect(out.layers[1]?.visible).toBe(false)
+    expect(out.animations[0]?.frames[0]).toHaveLength(2)
+  })
+
+  it('camadas inválidas preservam a posição dos cels e dos metadados válidos', () => {
+    const background = createPixelBackgroundAsset({ name: 'ceu', width: 4, height: 4 })
+    const cels = [1, 2, 3].map((color) => {
+      const cel = createBitmap(4, 4)
+      cel.data[0] = color
+      return cel
+    })
+    const out = sanitizePintaAsset({
+      ...background,
+      layers: [
+        { id: 'baixo', name: 'Baixo', visible: true },
+        null,
+        { id: 'topo', name: 'Topo', visible: true },
+      ],
+      cels,
+    })
+    if (out?.kind !== 'pixel-background') throw new Error('cenário esperado')
+    expect(out.layers).toHaveLength(3)
+    expect(out.layers[2]?.name).toBe('Topo')
+    expect(out.cels.map((cel) => cel.data[0])).toEqual([1, 2, 3])
+  })
+
+  it('regenera ids duplicados sem descartar conteúdo', () => {
+    const vector = createVectorBackgroundAsset({ name: 'livre', width: 32, height: 32 })
+    const out = sanitizePintaAsset({ ...vector, shapes: [rectShape('igual'), rectShape('igual')] })
+    if (out?.kind !== 'vector-background') throw new Error('vetor esperado')
+    expect(out.shapes).toHaveLength(2)
+    expect(new Set(out.shapes.map((shape) => shape.id)).size).toBe(2)
+
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const first = sprite.animations[0]
+    if (!first) throw new Error('animação esperada')
+    const sanitized = sanitizePintaAsset({
+      ...sprite,
+      layers: [
+        { id: 'camada', name: 'Baixo', visible: true },
+        { id: 'camada', name: 'Topo', visible: true },
+      ],
+      animations: [
+        { ...first, id: 'animacao', frames: [[createBitmap(8, 8), createBitmap(8, 8)]] },
+        { ...first, id: 'animacao', frames: [[createBitmap(8, 8), createBitmap(8, 8)]] },
+      ],
+    })
+    if (sanitized?.kind !== 'pixel-sprite') throw new Error('sprite esperado')
+    expect(new Set(sanitized.layers.map((layer) => layer.id)).size).toBe(2)
+    expect(new Set(sanitized.animations.map((animation) => animation.id)).size).toBe(2)
+    expect(new Set(sanitized.animations.map((animation) => animation.name)).size).toBe(2)
   })
 
   it('projectRef (Pensa) sobrevive ao round-trip: hex minúsculo, teto de cores', () => {
@@ -187,12 +294,12 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
     const bg = createPixelBackgroundAsset({ name: 'ceu', width: 2, height: 2 })
     const out = sanitizePintaAsset({
       ...bg,
-      bitmap: { ...bg.bitmap, data: Array.from(bg.bitmap.data) },
+      cels: bg.cels.map((cel) => ({ ...cel, data: Array.from(cel.data) })),
     })
     expect(out?.kind).toBe('pixel-background')
     if (out?.kind !== 'pixel-background') return
-    expect(out.bitmap.data).toBeInstanceOf(Uint8Array)
-    expect(out.bitmap.data).toHaveLength(4)
+    expect(out.cels[0]?.data).toBeInstanceOf(Uint8Array)
+    expect(out.cels[0]?.data).toHaveLength(4)
 
     const map = createTilemapAsset({ name: 'fase', tilesetId: 't1', cols: 2, rows: 2 })
     const layer0 = map.layers[0]

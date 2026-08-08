@@ -29,8 +29,10 @@ function formatDate(ts: number): string {
   })
 }
 
-const MENU_WIDTH = 176
-const MENU_HEIGHT = 146
+// ⚠️ Acompanham o CSS do menu (w-48 + 4 itens de 44px + borda 2px): se os
+// itens mudarem, o posicionamento com flip perto da borda erra junto.
+const MENU_WIDTH = 192
+const MENU_HEIGHT = 180
 const VIEWPORT_MARGIN = 8
 
 interface MenuPosition {
@@ -208,18 +210,28 @@ export function ProjectCard({
 
   return (
     <>
+      {/* Painel no padrão do Pinta (borda 2 + sombra dura + pop no hover);
+          h-72 acomoda a capa em tamanho de capa + o "Abrir" com alvo de 44px. */}
       <article
         onPointerEnter={prefetch}
-        className="group relative z-0 flex h-44 flex-col rounded-lg border border-sz-border bg-sz-panel p-4 text-left transition-colors hover:border-sz-accent/60 hover:bg-sz-panel-soft"
+        // ⚠️ `h-72` e não `h-48`: a capa é `flex-1`, então a altura do card é o
+        // que sobra para ela. Com 192px a foto do jogo virava uma tira de ~60px,
+        // achatada a ponto de não dar para reconhecer o jogo; com 288px ela ganha
+        // ~122px e volta a ser uma capa (proporção ~1.9:1, perto de um 16:9).
+        className="sz-home-panel sz-home-pop group relative z-0 flex h-72 flex-col p-4 text-left"
       >
         <button
           type="button"
-          className="absolute inset-0 z-0 cursor-pointer rounded-lg"
+          className="absolute inset-0 z-0 cursor-pointer rounded-2xl"
           aria-label={`Abrir projeto ${summary.name}`}
           onPointerDown={prefetch}
           onClick={openProject}
         />
-        <div className="relative z-10 flex items-start justify-between gap-2">
+        {/* ⚠️ `min-h-12` = DUAS linhas de título sempre reservadas. Sem a altura
+            fixa, um card de nome curto ficaria com a capa mais alta que o vizinho
+            de nome longo, e a fileira sairia desalinhada. Com ela, a capa tem a
+            mesma altura em todos os cards da grade. */}
+        <div className="relative z-10 flex min-h-12 items-start justify-between gap-2">
           {editing ? (
             <div className="w-full">
               <input
@@ -240,10 +252,10 @@ export function ProjectCard({
                 }}
                 onClick={(e) => e.stopPropagation()}
                 aria-invalid={duplicateDraft || undefined}
-                className="w-full rounded border border-sz-border bg-sz-bg px-2.5 py-1.5 text-sm text-sz-fg"
+                className="w-full rounded-xl border-2 border-sz-border bg-sz-bg px-2.5 py-1.5 text-sm text-sz-fg outline-none focus:border-sz-accent"
               />
               {duplicateDraft && (
-                <p role="status" className="mt-1 text-xs text-sz-error">
+                <p role="status" className="mt-1 text-sm text-sz-error">
                   {t('projects.newModal.duplicate')}
                 </p>
               )}
@@ -257,7 +269,18 @@ export function ProjectCard({
                 setEditing(true)
               }}
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 truncate text-left text-base font-semibold text-sz-fg"
+              // `sz-ui-display`: o nome do jogo é o título do card e tem que sair
+              // na MESMA fonte dos títulos da página (Baloo 2 700), não em
+              // Nunito 600 — lado a lado com o h1 "Meus Jogos" a diferença lia
+              // como fonte errada.
+              // `line-clamp-2` e não `truncate`: medido, o card perde 88px fixos
+              // (padding + o ⋯ de 44px), sobrando ~139–163px para o título — e
+              // nomes reais chegam a 174px ("Cenário do meu desenho"). Numa linha
+              // só, a criança lia "Cenário do meu d…". Alargar o card não resolve:
+              // entre os pisos 225 e 250 o número de colunas em 1366 é o mesmo, e
+              // subir mais custaria a 5ª coluna. Em duas linhas o nome cabe
+              // inteiro, e o card em `h-72` tem a altura para isso.
+              className="sz-ui-display line-clamp-2 flex-1 text-left text-base text-sz-fg"
             >
               {summary.name}
             </button>
@@ -270,7 +293,7 @@ export function ProjectCard({
               aria-expanded={menuOpen}
               aria-haspopup="menu"
               style={{ touchAction: 'manipulation' }}
-              className="rounded p-1.5 text-sz-fg-soft hover:bg-sz-bg hover:text-sz-fg"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-sz-fg-soft hover:bg-sz-border/40 hover:text-sz-fg"
               onClick={(e) => {
                 e.stopPropagation()
                 setMenuOpen((v) => !v)
@@ -307,7 +330,7 @@ export function ProjectCard({
                     role="menu"
                     aria-label="Ações do projeto"
                     onKeyDown={onMenuKeyDown}
-                    className="fixed z-50 w-44 overflow-hidden rounded-md border border-sz-border bg-sz-panel shadow-2xl"
+                    className="fixed z-50 w-48 overflow-hidden rounded-xl border-2 border-sz-border bg-sz-panel shadow-2xl"
                     style={{ left: menuPosition.left, top: menuPosition.top }}
                   >
                     <MenuItem
@@ -342,19 +365,43 @@ export function ProjectCard({
           </div>
         </div>
 
-        {summary.thumbDataUrl && !editing && (
+        {!editing && (
           // Capa capturada ao sair do editor. `pointer-events-none` deixa o clique
           // atravessar até o botão invisível de abrir (absolute inset-0 abaixo).
+          //
+          // ⚠️ SEM capa o bloco inteiro sumia, e o card ficava só com nome e data —
+          // a ausência lia como "a feature quebrou" em vez de "ainda não tem foto".
+          // Com o espaço reservado, todos os cards têm a MESMA altura e a capa que
+          // chega depois (a captura é assíncrona) não empurra o grid.
           <div className="pointer-events-none mt-2 min-h-0 flex-1 overflow-hidden rounded-md border border-sz-border-soft">
-            <img src={summary.thumbDataUrl} alt="" className="h-full w-full object-cover" />
+            {summary.thumbDataUrl ? (
+              <img src={summary.thumbDataUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              // Com o card em `h-72` a faixa passou de ~60px para ~122px, então
+              // a frase inteira cabe sem ser cortada pelo `overflow-hidden` — e o
+              // recado deixa de depender de passar o mouse para ser lido.
+              <div className="grid h-full w-full place-items-center gap-1 bg-sz-bg px-3 text-center text-sm text-sz-fg-mute">
+                <span aria-hidden className="text-lg opacity-60">
+                  📷
+                </span>
+                <span>A foto aparece quando você sai do editor</span>
+              </div>
+            )}
           </div>
         )}
 
-        <div className="relative z-10 mt-auto flex items-end justify-between pt-2 text-xs text-sz-fg-soft">
-          <span>Atualizado em {formatDate(summary.updatedAt)}</span>
+        {/* ⚠️ EMPILHADO, não lado a lado. Medido: "Atualizado em 06/08/2026,
+            20:13" ocupa 183px numa linha e o "Abrir" mais 79px — lado a lado o
+            card precisaria de 298px, e 298px derruba a grade para 4 colunas num
+            monitor de 1366. Com a data numa linha SÓ dela sobra espaço de sobra
+            (183px cabem nos ~219px úteis de um card de 5 colunas), e a criança
+            ainda ganha um "Abrir" de largura inteira, mais fácil de acertar. */}
+        <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-sm text-sz-fg-soft">
+          <span className="whitespace-nowrap">Atualizado em {formatDate(summary.updatedAt)}</span>
           <Button
             variant="primary"
             size="sm"
+            className="sz-home-btn3d"
             disabled={opening}
             onPointerDown={prefetch}
             onClick={(e) => {
@@ -404,7 +451,8 @@ function MenuItem({
       role="menuitem"
       onClick={onClick}
       className={[
-        'block w-full px-3 py-2 text-left text-sm transition-colors',
+        // 44px por item — MENU_HEIGHT acompanha (4 × 44 + borda 2×2 = 180).
+        'flex min-h-11 w-full items-center px-4 text-left text-base transition-colors',
         danger
           ? 'text-sz-error hover:bg-sz-error/10'
           : 'text-sz-fg hover:bg-sz-bg hover:text-sz-fg',

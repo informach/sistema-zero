@@ -3,12 +3,13 @@
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
-import type { PintaHostAdapter, PintaInitialIntent } from '@sistemazero/pinta'
+import type { PintaHostAdapter, PintaInitialIntent, PintaTaskSession } from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { clearPintaIntent, readPintaIntent } from './pinta-intent'
+import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
 // effect (igual ao pensa-client) e o server renderiza só o placeholder.
@@ -22,10 +23,10 @@ type PintaModule = typeof import('@sistemazero/pinta')
  */
 export function PintaClient({
   viewerId,
-  studioOwned,
+  studioAvailable,
 }: {
   viewerId: string | null
-  studioOwned: boolean
+  studioAvailable: boolean
 }) {
   const [mod, setMod] = useState<PintaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -33,22 +34,23 @@ export function PintaClient({
   // O Pinta SEGUE o tema da comunidade (next-themes) — sem toggle próprio.
   const { resolvedTheme } = useTheme()
   const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
-  // Intent da missão de arte do Pensa: leitura SÍNCRONA no 1º render (o adapter
-  // precisa dele quando o PintaApp montar) + limpeza 1x no mount — recarregar
-  // /pinta depois não reabre o "Criar novo" pré-configurado.
-  const [initialIntent] = useState<PintaInitialIntent | null>(readPintaIntent)
-  useEffect(() => {
-    clearPintaIntent()
-  }, [])
   // "Editar este desenho" vindo do Estúdio: `/pinta?desenho=<id>` numa ABA NOVA.
   // Precisa ser query string — o botão de lá abre com `noopener` (padrão do app),
   // e aí sessionStorage (o caminho do intent do Pensa) não atravessa. Lido no 1º
   // render e limpo da URL logo depois, para um F5 não reabrir o mesmo desenho.
   const searchParams = useSearchParams()
+  const taskId = searchParams.get('tarefa')
+  const {
+    data: handoff,
+    status: handoffStatus,
+    error: handoffError,
+    retry: retryHandoff,
+    updateProgress: updateHandoffProgress,
+  } = usePintaTaskHandoff(taskId)
   const [initialAssetId] = useState(() => searchParams.get('desenho'))
   useEffect(() => {
-    if (initialAssetId) router.replace('/pinta')
-  }, [initialAssetId, router])
+    if (initialAssetId && !taskId) router.replace('/pinta')
+  }, [initialAssetId, taskId, router])
 
   const loadPinta = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -77,19 +79,74 @@ export function PintaClient({
     }
   }, [loadPinta])
 
-  const adapter = useMemo<PintaHostAdapter>(
-    () => ({
+  const adapter = useMemo<PintaHostAdapter>(() => {
+    const initialIntent: PintaInitialIntent | undefined =
+      handoff && !handoff.task.progress.outputRef
+        ? {
+            projectRef: {
+              id: handoff.project.id,
+              name: handoff.project.name,
+              palette: handoff.task.context.palette.map((item) => item.color),
+            },
+            artKind: handoff.task.context.artKind,
+            style: handoff.task.context.style,
+          }
+        : undefined
+    const taskSession: PintaTaskSession | undefined = handoff
+      ? {
+          taskId: handoff.task.id,
+          project: handoff.project,
+          cycle: handoff.cycle,
+          title: handoff.task.title,
+          summary: handoff.task.summary,
+          brief: handoff.task.context,
+          guide: handoff.task.guide,
+          ...(handoff.task.context.requiresStudioUse && !studioAvailable
+            ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua carreira.' }
+            : {}),
+          progress: handoff.task.progress,
+          onProgress: async (input) => {
+            const response = await fetch(
+              `/api/pensa/tasks/${encodeURIComponent(handoff.task.id)}/progress`,
+              {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  ...input,
+                  expectedUpdatedAt: handoff.task.progress.updatedAt,
+                }),
+              },
+            )
+            const body = (await response.json().catch(() => null)) as {
+              task?: { progress: PintaTaskSession['progress'] }
+              error?: { message?: string }
+            } | null
+            if (response.status === 409) {
+              retryHandoff()
+              throw new Error('A tarefa mudou em outro lugar. Recarreguei o brief para você.')
+            }
+            if (!response.ok || !body?.task)
+              throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
+            updateHandoffProgress(body.task.progress)
+          },
+        }
+      : undefined
+    return {
       theme,
-      studioOwned,
+      studioOwned: studioAvailable,
       // "Abrir o Estúdio" (link no sucesso da ponte).
       onOpenStudio: () => router.push('/estudio'),
       // A ponte: grava na biblioteca pessoal que o Estúdio lê ("Meus desenhos").
       // O Studio é o dono do formato/limites; aqui só ligamos os dois.
-      sendToStudio: async (asset) => {
-        const bridge = await import('@sistemazero/studio/personal-assets')
-        bridge.setPersonalAssetsNamespace(viewerId ?? '')
-        return bridge.savePersonalAsset(asset)
-      },
+      ...(studioAvailable
+        ? {
+            sendToStudio: async (asset) => {
+              const bridge = await import('@sistemazero/studio/personal-assets')
+              bridge.setPersonalAssetsNamespace(viewerId ?? '')
+              return bridge.savePersonalAsset(asset)
+            },
+          }
+        : {}),
       // A volta da ponte: salvar aqui atualiza o desenho que JÁ está no Estúdio,
       // e de lá ele entra sozinho nos jogos da criança (a sincronia é do Studio).
       // ⚠️ A guarda do `getPersonalAsset` é a regra do recurso: sem ela, TODO
@@ -105,7 +162,7 @@ export function PintaClient({
       // "Jogar meu mapa": o Estúdio monta um JOGO pronto a partir do mapa e a
       // criança vai direto pra lá. SÓ com o Estúdio Completo (senão cairia na
       // tela bloqueada com o jogo já feito).
-      ...(studioOwned
+      ...(studioAvailable
         ? {
             sendGameToStudio: async (asset) => {
               if (!asset.tilemap) return { ok: false }
@@ -127,15 +184,50 @@ export function PintaClient({
         : {}),
       // Missão de arte do Pensa: abre a criação pré-configurada (1x no mount).
       ...(initialIntent ? { initialIntent } : {}),
+      ...(taskSession ? { taskSession } : {}),
       // Botão "Editar" do Estúdio: abre direto o desenho pedido (1x no mount).
-      ...(initialAssetId ? { initialAssetId } : {}),
-    }),
-    [theme, studioOwned, viewerId, router, initialIntent, initialAssetId],
-  )
+      ...(handoff?.task.progress.outputRef?.assetId || initialAssetId
+        ? {
+            initialAssetId:
+              handoff?.task.progress.outputRef?.assetId ?? initialAssetId ?? undefined,
+          }
+        : {}),
+    }
+  }, [
+    theme,
+    studioAvailable,
+    viewerId,
+    router,
+    handoff,
+    updateHandoffProgress,
+    retryHandoff,
+    initialAssetId,
+  ])
 
   return (
-    <div className="flex min-h-[34rem] w-full flex-1 flex-col overflow-hidden rounded-2xl border-2 border-border bg-card">
-      {loadError ? (
+    // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
+    // `embedded-app-loading.tsx`): sem card, porque o Pinta é uma SEÇÃO da
+    // comunidade, e idêntica à da espera anterior — é o que faz a troca ser
+    // invisível em vez de um piscar.
+    <div className={EMBEDDED_APP_FRAME}>
+      {handoffStatus === 'error' ? (
+        <div className="grid flex-1 place-items-center p-6 text-center">
+          <div className="flex max-w-sm flex-col items-center gap-3">
+            <p className="font-semibold">{handoffError}</p>
+            <button
+              type="button"
+              onClick={retryHandoff}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
+            >
+              <RefreshCw className="size-4" /> Tentar de novo
+            </button>
+          </div>
+        </div>
+      ) : handoff && !handoff.capability.owned ? (
+        <div className="grid flex-1 place-items-center p-6 text-center">
+          <p className="max-w-sm font-semibold">{handoff.capability.blockedReason}</p>
+        </div>
+      ) : loadError ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
             <p className="font-semibold">Não consegui carregar o Pinta.</p>
@@ -148,10 +240,11 @@ export function PintaClient({
             </button>
           </div>
         </div>
-      ) : mod === null ? (
-        <div className="grid flex-1 place-items-center text-muted-foreground text-sm">
-          Carregando o Pinta…
-        </div>
+      ) : // Espera do brief (deep link do Pensa) e espera do pacote viram UMA só:
+      // os dois fetches correm em paralelo, e mostrar dois textos diferentes em
+      // sequência fazia `/pinta?tarefa=` ter quatro telas.
+      handoffStatus === 'loading' || mod === null ? (
+        <EmbeddedAppLoadingBody label="Carregando o Pinta…" />
       ) : (
         <mod.PintaApp adapter={adapter} />
       )}

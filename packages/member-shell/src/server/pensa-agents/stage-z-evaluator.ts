@@ -13,25 +13,24 @@ import { completePensaJson, pensaChatModel } from '../pensa-llm'
 
 const EVALUATOR_SYSTEM = `Você audita uma conversa entre o Zappy (assistente) e uma criança planejando um jogo.
 Julgue quais das 5 perguntas a CRIANÇA JÁ RESPONDEU DE FORMA EXPLÍCITA, com decisão dela própria (texto que ela escreveu ou sugestão que ela clicou e enviou):
-- who: pra quem é o jogo (quem vai jogar).
-- problem: qual é a graça / por que alguém vai querer jogar de novo.
-- action: qual é a ação principal do jogador (o que ele FAZ).
-- screens: quais telas ou etapas principais o jogo tem (em linhas gerais já basta: ex. título, jogo, fim).
-- success: como saber que o jogo ficou bom de verdade.
+- idea: a ideia do jogo em uma frase.
+- objective: o objetivo do jogador.
+- controls: como o jogador controla o jogo.
+- outcome: como vence E como perde.
+- dimension: uma escolha explícita entre 2D e 3D.
 REGRAS:
 - Só marque true se a INFORMAÇÃO VEIO DA CRIANÇA. Sugestão apresentada pelo Zappy mas NÃO confirmada pela criança = false.
 - Resposta vaga que o Zappy ainda está clareando = false.
-- success SÓ é true com um critério CONCRETO, que dá pra ver ou testar no jogo (ex.: chegar na fase 3, o placar contando pontos, alguém jogar até o fim sem ajuda). Sentimento genérico ("os amigos se divertem", "vai ficar legal") = false.
 - ready = true SOMENTE quando as 5 forem true.
-- Para versões 2+ (a conversa dirá), who e screens herdados da versão anterior contam como true a menos que a novidade os mude.`
+- Para versões 2+, confirme as cinco decisões para o incremento planejado.`
 
 const EvaluatorSchema = z.object({
   answered: z.object({
-    who: z.boolean(),
-    problem: z.boolean(),
-    action: z.boolean(),
-    screens: z.boolean(),
-    success: z.boolean(),
+    idea: z.boolean(),
+    objective: z.boolean(),
+    controls: z.boolean(),
+    outcome: z.boolean(),
+    dimension: z.boolean(),
   }),
   ready: z.boolean(),
 })
@@ -44,13 +43,13 @@ const EVALUATOR_JSON_SCHEMA = {
     answered: {
       type: 'object',
       additionalProperties: false,
-      required: ['who', 'problem', 'action', 'screens', 'success'],
+      required: ['idea', 'objective', 'controls', 'outcome', 'dimension'],
       properties: {
-        who: { type: 'boolean' },
-        problem: { type: 'boolean' },
-        action: { type: 'boolean' },
-        screens: { type: 'boolean' },
-        success: { type: 'boolean' },
+        idea: { type: 'boolean' },
+        objective: { type: 'boolean' },
+        controls: { type: 'boolean' },
+        outcome: { type: 'boolean' },
+        dimension: { type: 'boolean' },
       },
     },
     ready: { type: 'boolean' },
@@ -90,12 +89,16 @@ export async function evaluateStageZ(
   })
   const answered = result.answered
   const ready =
-    answered.who && answered.problem && answered.action && answered.screens && answered.success
+    answered.idea &&
+    answered.objective &&
+    answered.controls &&
+    answered.outcome &&
+    answered.dimension
   return { answered, ready }
 }
 
 const SUMMARY_SYSTEM = `Você resume uma conversa entre o Zappy e uma criança planejando um jogo, para NÃO perder o começo quando a conversa fica longa (a próxima resposta só enxerga as mensagens recentes + este resumo).
-Escreva um RESUMO curto (no máximo 6 frases), em 3ª pessoa, guardando SÓ o que a CRIANÇA decidiu e os fatos concretos do jogo: nome do jogo/personagem, para quem é, a graça, a ação principal, as telas, o critério de "ficou bom", inimigos/itens citados e o que ela recusou. NÃO invente; se algo não foi decidido, não afirme. Sem saudação, sem markdown, sem a linha SUGESTÕES.`
+Escreva um RESUMO curto (no máximo 6 frases), em 3ª pessoa, guardando SÓ o que a CRIANÇA decidiu: ideia, objetivo, controles, vitória, derrota, 2D/3D, personagens/itens citados e o que ela recusou. NÃO invente; se algo não foi decidido, não afirme. Sem saudação, sem markdown, sem a linha SUGESTÕES.`
 
 const SummarySchema = z.object({ summary: z.string() })
 const SUMMARY_JSON_SCHEMA = {

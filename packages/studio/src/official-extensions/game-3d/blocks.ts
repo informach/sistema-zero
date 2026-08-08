@@ -1697,6 +1697,73 @@ export const gameThreeDBlocks = [
     nextStatement: 'JSStmt',
     tooltip: 'Toca um efeito sonoro pronto (moeda, pulo, explosão ou acerto).',
   },
+  // ---- 🔊 Som do projeto (os arquivos que a criança enviou) ----
+  // Os dois blocos acima sintetizam o som na hora; estes tocam o mp3/wav que ela
+  // importou. Molde copiado do Mundo 3D (`sz_w3d_load_sound` e cia.), inclusive
+  // os rótulos — é o mesmo gesto, e a criança não deveria reaprender por app.
+  {
+    type: 'sz_g3d_load_sound',
+    // Carregar não toca nada, então não precisa de gesto: prepara no início.
+    placement: 'start-only-command',
+    message0: 'Carregar o som %1 do arquivo %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'moeda' },
+      { type: 'field_asset_picker', name: 'ASSET', text: '', kind: 'audio' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Prepara um som do projeto (envie o arquivo em "Imagens e sons", na barra de cima) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+  },
+  {
+    type: 'sz_g3d_play_sound',
+    placement: AUDIO_ACTION_PLACEMENT,
+    message0: 'Tocar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moeda', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Toca um som que você carregou, pelo apelido. Use quando algo acontecer no jogo.',
+  },
+  {
+    type: 'sz_g3d_stop_sound',
+    placement: AUDIO_ACTION_PLACEMENT,
+    message0: 'Parar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'moeda', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Para o som e volta ele para o começo.',
+  },
+  {
+    type: 'sz_g3d_play_music',
+    // `resource-creator`: dentro de um laço a faixa recomeçaria a cada quadro.
+    placement: 'resource-creator',
+    message0: 'Tocar a música %1 sem parar',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Toca uma música do projeto em loop. Só uma música toca por vez: começar outra troca a que estava tocando. Repetir a mesma não recomeça a faixa.',
+  },
+  {
+    type: 'sz_g3d_stop_music',
+    placement: AUDIO_ACTION_PLACEMENT,
+    message0: 'Parar a música',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Desliga a música que estava tocando.',
+  },
+  {
+    type: 'sz_g3d_set_volume',
+    placement: AUDIO_ACTION_PLACEMENT,
+    message0: 'Pôr o volume em %1',
+    args0: [{ type: 'input_value', name: 'LEVEL', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Volume de 0 (mudo) a 10 (bem alto). Vale para todos os sons do projeto.',
+  },
 ] satisfies BlockDefinition[]
 
 /**
@@ -1842,7 +1909,7 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
     ],
   },
   {
-    name: '👯 Enxames & som',
+    name: '👯 Enxames',
     types: [
       'sz_g3d_create_swarm',
       'sz_g3d_spawn_in_swarm',
@@ -1850,6 +1917,19 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
       'sz_g3d_for_each_swarm',
       'sz_g3d_remove_from_swarm',
       'sz_g3d_prune_swarm',
+    ],
+  },
+  {
+    // Som ganhou casa própria: eram 2 blocos pendurados em "Enxames", agora são
+    // 8 e o tema não tem nada a ver com o vizinho.
+    name: '🔊 Som',
+    types: [
+      'sz_g3d_load_sound',
+      'sz_g3d_play_sound',
+      'sz_g3d_stop_sound',
+      'sz_g3d_play_music',
+      'sz_g3d_stop_music',
+      'sz_g3d_set_volume',
       'sz_g3d_play_note',
       'sz_g3d_play_effect',
     ],
@@ -2009,6 +2089,7 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3d_spawn_in_swarm: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
   sz_g3d_prune_swarm: { MIN: numShadow(-20), MAX: numShadow(20) },
   sz_g3d_play_note: { FREQ: numShadow(440), MS: numShadow(200) },
+  sz_g3d_set_volume: { LEVEL: numShadow(8) },
   sz_g3d_is_near: { DIST: numShadow(2) },
   sz_g3d_aim_ahead: { DIST: numShadow(100) },
 }

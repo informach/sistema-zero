@@ -140,6 +140,28 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(store.getState().assets).toHaveLength(2)
   })
 
+  it('duplicações concorrentes reservam nomes diferentes', async () => {
+    const store = createGalleryStore()
+    const original = await store
+      .getState()
+      .create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 16 })
+    if (!original) throw new Error('asset esperado')
+
+    const [first, second] = await Promise.all([
+      store.getState().duplicate(original.id),
+      store.getState().duplicate(original.id),
+    ])
+    expect(first).not.toBeNull()
+    expect(second).not.toBeNull()
+    expect(new Set(store.getState().assets.map((asset) => asset.name)).size).toBe(3)
+    expect(
+      store
+        .getState()
+        .assets.map((asset) => asset.name)
+        .sort(),
+    ).toEqual(['heroi', 'heroi-2', 'heroi-3'])
+  })
+
   it('remove apaga do disco e da lista', async () => {
     const store = createGalleryStore()
     const a = await store.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 16 })

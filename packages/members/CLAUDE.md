@@ -1101,95 +1101,28 @@ juntos; requester sem perfil (XP 0) ainda é contado. Migration `0015`: `account
 (`audience, privileged, xp`) e `_account_idx` (`account_id`) — sem eles o cálculo do
 ranking varria a tabela inteira da vitrine.
 
-## Pensa (planejamento guiado — fatia 07/2026)
+## Pensa (planejador de jogos — 08/2026)
 
-App de planejamento (metodologia ZERO) p/ a criança planejar um jogo ANTES de construir no
-Estúdio. **Contrato entre camadas é a fonte da verdade** (members/gateway/member-shell/
-packages/pensa constroem contra os MESMOS nomes/shapes). Projeto → ciclos (1 = MVP/"Versão 1")
-→ etapas `z→e→r→o→done`; artefatos VERSIONADOS por etapa; kanban de missões; checklist de
-lançamento. Dono = `user_id` (perfil kids); `account_id` = conta responsável (snapshot no
-INSERT, imutável); tudo segregado por `audience` (`?audience=` como as demais, ausente →
-`adult`; o shell kids SEMPRE manda kids).
+O members persiste o plano; Pinta e Estúdio persistem seus próprios resultados. Projeto → ciclos
+→ `z→e→r→o→done`. Os artefatos são `idea`, `game_design`, `visual_direction`, `task_plan` e
+`plan_review`. Tarefas têm posição global, dependências anteriores, guia, contexto Pinta/Studio e
+progresso `planned | in_progress | completed`.
 
-- **Migration `0031`** (`0031_aberrant_hannibal_king`, APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)): 6 enums
-  `pensa_*` + 6 tabelas — `pensa_projects` (nome/kind/status/`studio_project_id`),
-  `pensa_cycles` (UNIQUE project+number; `<etapa>_completed_at`), `pensa_conversations`
-  (1 linha/ciclo+etapa, upsert; `message_count` TOTAL histórico não encolhe no trim),
-  `pensa_artifacts` (append-only, UNIQUE cycle+type+version; latest = MAX(version)),
-  `pensa_tasks` (kanban; `position` denso por coluna, re-sequenciado no move) e
-  `pensa_checklist_items` (`required=false` não trava o lançamento).
-- **Rotas** (`routes/pensa.routes.ts`, prefixo `/members/pensa`, JWT + `x-internal-token`):
-  GET/POST `/projects` · GET/PATCH `/projects/:projectId` · POST `…/cycles` (exige anterior
-  `done`; **HERDA a identidade validada** do ciclo anterior — `InheritedPensaArtifact` inserido
-  validated v1 na MESMA tx do `createCycle`; a criança não refaz nome/paleta/ícone a cada Versão)
-  · GET `/cycles/:cycleId/stages/:stage` (a view traz TAMBÉM `tasks` + `checklist`
-  VIVOS do ciclo — o reload da UI re-hidrata o kanban sem re-gerar o plano) · PUT
-  `…/stages/:stage/conversation` (turno
-  user+assistant; trim server-side) · POST `…/artifacts` (version = latest+1) · POST
-  `…/artifacts/:type/validate` · POST `…/advance` · PUT `…/tasks` (REPLACE; nascem backlog) ·
-  **POST `…/tasks` (APPEND ao fim do backlog — autoria manual "+ Nova missão"/"sugerir mais"; ≤60)**
-  · PATCH `/tasks/:taskId` (move re-sequencia origem+destino E/OU EDITA o conteúdo
-  title/summary/taskType/mission) · **DELETE `/tasks/:taskId` (apaga 1 card)** · PUT
-  `…/checklist` (REPLACE) · PATCH `/checklist/:itemId`. ⚠️ **Teto de corpo próprio de 1 MB**
-  (const `MAX_PENSA_BODY_BYTES` em `server.ts`, `bodyLimitForPath`) nas 3 rotas pesadas
-  (conversation/artifacts/tasks) — o teto padrão de 64 KB barraria payloads legítimos.
-- **GATE de produto SÓ no criar projeto**: `PENSA_ACCESS_REF = 'pensa'`
-  (`domain/pensa/pensa.ts`) — a ROTA pula se `isPrivilegedActor`; senão
-  `AccessCheckService.execute(accountId, ['pensa'])` e exige grant OU community (mesma régua
-  de `/members/access`; **chave-mestra de cursos NÃO conta**) → senão 403. Demais rotas: só
-  OWNERSHIP — todo acesso a cycle/task/item resolve o projeto dono e confere
-  (`user_id`+`audience`); mismatch → **404 `PENSA_NOT_FOUND` (nunca vazar existência)**.
-- **Gates do advance** (`domain/pensa/advance.ts`, puro — `evaluateAdvanceGate`): z→e exige
-  latest `idea` VALIDATED; e→r exige `friendly_spec` E `identity` validated; r→o ≥1 task;
-  o→done **checklist NÃO-VAZIO** com todo `required` done (checklist vazio TRAVA — espelha o
-  "≥1 task" do r→o; senão o→done daria o prêmio maior por nada). Reprovado → **409 `PENSA_GATE_NOT_READY` com
-  `details.{gate,missing}`** (case especial no error-handler, como o `retryAvailableAt` do
-  quiz); `from` ≠ stage atual → 409 `PENSA_STAGE_MISMATCH`. Sucesso grava
-  `<from>_completed_at`.
-- **Gamificação do advance (award-dentro-da-ação, FAIL-OPEN)**: a resposta vira
-  `{ cycle, gamification }` (delta aditivo; `null` = award falhou) via
-  `AwardGamificationService.awardPensaAdvance` — etapa (z→e/e→r/r→o) = **XP 15 + 5 coins**
-  (`pensa_stage_complete`, sourceId = uuid DETERMINÍSTICO `pensaStageSourceId(cycleId, stage)`,
-  `domain/pensa/gamification.ts` — v5-like sha1 com namespace FIXO, **NUNCA mudar** a derivação:
-  o ledger veria etapas antigas como novas); ciclo (o→done) = **XP 30 + 15 coins**
-  (`pensa_cycle_complete`, sourceId = cycleId, SEM stage_complete junto — o lançamento vale o
-  prêmio MAIOR). Audiência = a do PROJETO; a rota resolve `isPrivilegedActor`/`resolveAccountId`
-  (equipe fora do ranking, padrão do complete).
-- **Badges do Pensa** (catálogo em código, junto da maestria do Estúdio): `pensa-first-idea`
-  (1º `pensa_stage_complete` — a 1ª etapa é sempre a Z = 1ª Carta da Ideia),
-  `pensa-first-launch` (1º `pensa_cycle_complete`) e `pensa-creator-3` (3º) — detecção no repo
-  pelo count do ledger, como studio-first/-master.
-- **Migration `0032`** (`0032_zippy_runaways`, APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)): `ALTER TYPE … ADD VALUE
-  'pensa_stage_complete'/'pensa_cycle_complete'` nos DOIS enums (`xp_source_type` E
-  `coin_source_type` — a moeda reusa o mesmo (sourceType, sourceId) do XP).
-- **Cotas nos USE CASES (não no banco)**: ≤20 projetos `active`/(user,audience), ≤20
-  ciclos/projeto, ≤60 tasks e ≤40 itens no replace → 409 `PENSA_QUOTA_EXCEEDED` (por isso o
-  `maxItems` dos DTOs é mais folgado — na borda viraria 400). Conversa: trim p/ as últimas
-  80 msgs E ≤262K chars (`trimConversation`, puro — a msg mais recente SEMPRE fica);
-  artefato `content` ≤262K chars stringificado → 400. **TODA escrita toca
-  `pensa_projects.updated_at`** (a lista ordena por ele) — os métodos de escrita do repo
-  recebem `projectId` e tocam na MESMA transação.
-- **Estúdio OPCIONAL + snapshot na nuvem (migration `0033` `0033_third_captain_stacy`, APLICADA —
-  EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)):** `pensa_projects` ganhou `build_env` text NULL (`'embedded'|'studio'|'external'`,
-  validado no APP via union do DTO — preferência de UX, não enum pg; `null` = chooser da etapa R
-  pendente; o PATCH do projeto aceita `buildEnv`) + `studio_snapshot` jsonb NULL e
-  `studio_snapshot_at` timestamptz NULL — backup do jogo do Estúdio atrelado ao projeto do Pensa.
-- **Rotas do snapshot:** GET/PUT `/members/pensa/projects/:projectId/studio-snapshot` (ownership
-  como as demais; GET → `{project|null, updatedAt|null}`; PUT `{project}` exige objeto PLAIN
-  ≤1.8M chars serializado (`MAX_STUDIO_SNAPSHOT_CHARS`) → 400 acima, e toca `updated_at`).
-  ⚠️ O BLOB NUNCA sai na detail view (só `buildEnv` + `studioSnapshotAt`) e o repo Drizzle
-  seleciona colunas EXPLÍCITAS de projeto (`projectColumns`, sem o blob) em TODA leitura/join;
-  o PUT entra no teto de corpo de **2 MB** (`PENSA_STUDIO_SNAPSHOT_PATH` na régua do
-  `MAX_STUDIO_BODY_BYTES` em `server.ts` — o teto de 1 MB do Pensa não basta).
-- **Missões de ARTE (Fase 5, 07/2026):** `PensaMission` (domain + `PensaMissionSchema` no
-  DTO) ganhou `artKind?: 'sprite'|'background'|'tileset'` e `palette?: string[]` (≤8, hex) —
-  a missão de desenhar no Pinta atravessa o TypeBox (⚠️ o DTO remove campos não-declarados
-  em SILÊNCIO — campo novo de missão TEM que entrar aqui, senão some no PUT /tasks). A
-  geração/validação vive no member-shell (`stage-r-missions.ts`).
-- Camadas: `domain/pensa/*` (tipos/erros/gates/trim) + port `pensa-repository.port.ts` +
-  `application/pensa/*` (16 use cases) + `DrizzlePensaRepository` + views em
-  `mappers/pensa-views.ts` (Date→ISO). Testes: unit (gates/trim) + use cases + HTTP com
-  `InMemoryPensaRepository` (`tests/fakes/pensa-in-memory.ts`).
+- A migration destrutiva `0060_pensa_planner_v2.sql` apaga toda a árvore Pensa anterior e recria
+  o domínio. Ela não toca projetos autônomos do Estúdio nem desenhos do Pinta.
+- `validateTaskPlan` exige um DAG por ordem e IDs de guia únicos. `nextAvailableTask` libera a
+  primeira tarefa cujas dependências terminaram.
+- `GET /tasks/:id/handoff` aplica ownership e informa entitlement. `PATCH /tasks/:id/progress`
+  valida IDs, transições, itens obrigatórios e `outputRef` da ferramenta correta.
+- Tarefa planejada pode ser editada ou apagada. Depois de O, a mudança reabre O e invalida
+  `plan_review`. Alterar tarefa iniciada ou concluída cria revisão e arquiva a original.
+- Todos os acessos resolvem `user_id` + `audience`; mismatch retorna 404. O gate de produto
+  continua no create. As cotas e os limites de conversa/artefato permanecem nos use cases.
+- A gamificação do avanço preserva os source IDs determinísticos existentes.
+
+Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `application/pensa/*`,
+`DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:
+[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
 ## Admin (painel `@sistemazero/admin`)
 
@@ -1389,8 +1322,8 @@ user+course + serial — migration `0025`) e a **gamificação**: `gamification_
 `user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
 (`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`
 (`0020`), `mission_claims` (`0021`) e `league_membership` (ligas, `0022`), o **Pensa**
-(`0031`): `pensa_projects`/`pensa_cycles`/`pensa_conversations`/`pensa_artifacts`/
-`pensa_tasks`/`pensa_checklist_items` (ver §Pensa), e as **conversas com o professor**
+(`0060`, substituição destrutiva): `pensa_projects`/`pensa_cycles`/`pensa_conversations`/
+`pensa_artifacts`/`pensa_tasks` (ver §Pensa), e as **conversas com o professor**
 (`0039`): `teacher_threads`/`teacher_messages` (ver §Conversas com o professor).
 
 ## Sentry (monitoramento de erros)
@@ -1477,3 +1410,24 @@ irmãos com `railway variables --kv`.
 - A busca devolve também o `courseSlug` autoritativo. O relatório considera a aula pendente se
   qualquer vídeo estiver sem VTT pronto; a janela de métricas é semiaberta `[from, to)` e usa
   comparadores tipados (`gte`/`lt`) para ambos os timestamps.
+
+### Lote "Zappy mais inteligente" (08/2026) — SEM migration
+
+`zappy_messages.outcome`/`scope` são varchar sem CHECK e o resto vive no jsonb `response`, então
+nada de DDL. Três mudanças de contrato:
+
+- **`reserveQuestion` devolve `recentMessages`** (últimos 6 turnos da conversa) no MESMO SELECT
+  que já rodava — é a memória de 3 pares do member-shell, a custo ZERO de roundtrip. O campo é
+  OPCIONAL no consumidor (tolera members antigo durante o skew de deploy).
+- **`outcome:'rejected'`** (resposta reprovada pela validação → fallback gentil) entra no DTO do
+  `PUT …/response`, no `StoredResponseJson` (junto com `rejection` e `suggestions` — sem eles o
+  histórico/replay perderia os chips) e vira um bucket próprio em `metrics()`.
+- **`GET /members/admin/zappy/questions`** (staff+, paginada, `?month=&filter=all|rejected|error|
+  not-useful&limit&offset`) → `{items: [{question, answerText, rejection?, outcome, useful,
+  createdAt}], total}`. ⚠️ **SEM `userId`/`projectId` de propósito** (decisão da usuária: mostrar
+  só o que falhou, sem identificar a criança ou o projeto) — as perguntas já são PII-redigidas na
+  gravação, então a listagem é dado de produto, não de aluno. `listFailedQuestions` no port/repo.
+
+A busca da base didática (`zappy-knowledge.repository.ts`) passou a juntar os termos com `or`
+antes do `websearch_to_tsquery` — o `ts_rank` vira rank-merge natural em vez do AND implícito,
+que devolvia zero aula sempre que a criança escrevia uma frase inteira.

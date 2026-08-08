@@ -59,6 +59,10 @@ export function Modal({
           if (e.target === e.currentTarget) onClose()
         }}
         onCancel={(e) => {
+          // Modal ANINHADO (TileConfigDialog, Trazer do Pinta): o `cancel` do
+          // dialog de cima borbulha pela árvore REACT (portal propaga pelo
+          // componente, não pelo DOM) — sem o guard, um Esc fechava OS DOIS.
+          if (e.target !== e.currentTarget) return
           e.preventDefault()
           onClose()
         }}
@@ -67,7 +71,7 @@ export function Modal({
             dentro com header/footer fixos — antes transbordava e cortava. */}
         <div
           className={cn(
-            'flex max-h-[85vh] w-full max-w-[640px] min-w-[320px] flex-col rounded-lg border border-sz-border bg-sz-panel shadow-2xl',
+            'flex max-h-[85vh] w-full max-w-[640px] min-w-[320px] flex-col rounded-2xl border-2 border-sz-border bg-sz-panel shadow-2xl',
             className,
           )}
           role="document"

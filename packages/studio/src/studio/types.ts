@@ -4,12 +4,52 @@ import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
+import type { StudioPintaLibraryAdapter } from './pinta-library'
 import type { StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
 import type { StudioTheme } from './theme'
 import type { StudioTutorConfig } from './tutor'
 
 export type StudioLocale = Locale
+
+export interface StudioTaskGuideItem {
+  id: string
+  text: string
+  hint?: string
+  required: boolean
+}
+/** Guia de uma tarefa planejada no Pensa. É independente de LessonActivity. */
+export interface StudioTaskSession {
+  taskId: string
+  title: string
+  summary: string | null
+  project: { id: string; name: string }
+  cycle: { id: string; number: number; goal: string | null }
+  guide: { steps: StudioTaskGuideItem[]; criteria: StudioTaskGuideItem[] }
+  blocks: Array<{
+    id: string
+    label: string
+    category: string
+    subcategory: string
+    area: string
+    extension: string | null
+  }>
+  progress: {
+    status: 'planned' | 'in_progress' | 'completed'
+    completedStepIds: string[]
+    completedCriteriaIds: string[]
+    startedAt: string | null
+    completedAt: string | null
+    updatedAt: string | null
+    outputRef: { kind: 'studio_project'; projectId: string; saveRevision?: string } | null
+  }
+  onProgress(input: {
+    status?: 'in_progress' | 'completed'
+    completedStepIds?: string[]
+    completedCriteriaIds?: string[]
+    outputRef?: { kind: 'studio_project'; projectId: string; saveRevision?: string }
+  }): Promise<void>
+}
 
 /** Acesso imperativo à instância (prop `ref` do Studio — React 19). */
 export interface StudioHandle {
@@ -79,8 +119,20 @@ export interface StudioCommonProps {
   onChange?: (project: Project, ctx?: { reason: 'autosave' | 'flush' }) => void
   /** Após salvar explícito (botão Salvar / handle.save()). Promise rejeitada marca erro no badge. */
   onSave?: (project: Project) => void | Promise<void>
-  /** Erros não-fatais de persistência (autosave/save que falhou). */
-  onError?: (error: { kind: 'persistence'; message: string }) => void
+  /**
+   * Erros não-fatais que o editor CONTEVE sozinho — o host decide se reporta.
+   *
+   * `persistence`: autosave/save que falhou.
+   * `render`: uma boundary de SEÇÃO segurou um erro de render (`area` diz qual,
+   * ex.: `zappy`). Sem este fio, um crash contido morre num `console.error` e a
+   * próxima ocorrência volta a ser adivinhação — foi o que aconteceu com o
+   * tutor derrubando a IDE em 08/2026.
+   */
+  onError?: (
+    error:
+      | { kind: 'persistence'; message: string }
+      | { kind: 'render'; area: string; message: string; stack?: string },
+  ) => void
   onModeChange?: (mode: IDEMode) => void
   /** Editor montado e projeto hidratado. */
   onReady?: () => void
@@ -147,6 +199,15 @@ export interface StudioCommonProps {
    */
   onEditDrawing?: (drawingId: string) => void
   /**
+   * Adapter OPCIONAL "Trazer do Pinta": quando presente, o painel de Imagens
+   * ganha o botão que abre a modal com TODOS os desenhos da galeria do Pinta
+   * (busca + importar direto ao projeto), e a seção "Meus desenhos" some
+   * (substituída pela modal). O host só o passa com posse do Pinta E do
+   * Estúdio (produtos vendidos à parte). Ausente (default) → sem botão.
+   * Estável por instância (latchado, igual à `share`).
+   */
+  pintaLibrary?: StudioPintaLibraryAdapter
+  /**
    * Mostra os EXEMPLOS prontos (CORE_EXAMPLES + os `examples` das extensões) no
    * painel de Extensões. Default `false` — os exemplos são material de TESTE do
    * admin e podem estar desatualizados/com erro, então ficam escondidos para
@@ -201,6 +262,8 @@ export type StudioCoreProps = StudioCommonProps &
     activity?: LessonActivity | null
     /** Interno: somente StudioEditor encaminha este contrato. */
     tutor?: StudioTutorConfig
+    /** Interno: somente StudioEditor encaminha este contrato. */
+    taskSession?: StudioTaskSession
   }
 
 /**
@@ -212,6 +275,8 @@ export type StudioEditorProps = StudioCommonProps &
   StudioLearningProps & {
     /** Tutor somente leitura do Estúdio Completo. Não existe no StudioLesson. */
     tutor?: StudioTutorConfig
+    /** Cartão de Criação restaurado pelo host via `?tarefa=`. */
+    taskSession?: StudioTaskSession
   }
 
 /**

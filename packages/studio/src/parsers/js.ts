@@ -5,6 +5,7 @@ import {
   G2D_ANIM_STATES,
   G2D_ENEMY_BEHAVIORS,
   G2D_ENEMY_PARAMS,
+  G2D_ENEMY_SMARTS,
   type JSExpr,
   type JSStatement,
 } from '#ir'
@@ -1874,6 +1875,11 @@ function mapExpressionStatement(
   const interval = tryMatchSetInterval(expr, source, ctx)
   if (interval) return interval
 
+  // 🔊 Som do núcleo: __szAudio.tocar("moeda") e cia. ANTES do método genérico —
+  // senão viram memberCall e o round-trip perde o bloco.
+  const somCall = tryMatchCoreAudioCall(expr, ctx)
+  if (somCall) return somCall
+
   // game-2d: SZGame2D.gameLoop(function update(){…}) / onPointer((px,py)=>{…}) e
   // helpers de uma linha (drawSprite, applyVelocity, bounceOnEdges, setGravity,
   // playSound). ANTES do método genérico — senão viram memberCall.
@@ -2468,6 +2474,10 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:enemyDamage', spriteVar }
   }
+  if (method === 'animationEnded') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:animEnded', spriteVar }
+  }
   if (method === 'spriteX') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:spriteX', spriteVar }
@@ -2837,11 +2847,12 @@ function readEnemyTypeOptions(
       const v = toExpr(prop.value, ctx)
       if (!isSimpleValue(v)) return null
       out[key] = v
-    } else if (key === 'behavior') {
+    } else if (key === 'behavior' || key === 'smart') {
       // Dropdown no bloco: literal fora do enum NÃO vira bloco (rawJS).
       if (prop.value?.type !== 'StringLiteral') return null
       const b = prop.value.value as string
-      if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(b)) return null
+      const enumeracao: readonly string[] = key === 'smart' ? G2D_ENEMY_SMARTS : G2D_ENEMY_BEHAVIORS
+      if (!enumeracao.includes(b)) return null
       out.behavior = b
     } else if (key === 'color' || key === 'image' || key === 'shape') {
       if (prop.value?.type !== 'StringLiteral') return null
@@ -3214,6 +3225,53 @@ function readBulletOptions(
 }
 
 /** SZGame2D.gameLoop/onPointer/drawSprite/applyVelocity/bounceOnEdges/setGravity/playSound. */
+/**
+ * `__szAudio.tocar("moeda")` e cia. → blocos da categoria 🔊 Som do núcleo.
+ *
+ * Bem mais simples que os helpers de extensão: é sempre uma chamada de membro
+ * sobre um global fixo, com argumentos literais (o volume aceita expressão).
+ */
+function tryMatchCoreAudioCall(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== '__szAudio') return null
+  if (callee.property?.type !== 'Identifier') return null
+  const args = expr.arguments ?? []
+  const texto = (index: number): string | null =>
+    args[index]?.type === 'StringLiteral' ? (args[index].value as string) : null
+  switch (callee.property.name as string) {
+    case 'carregar': {
+      const name = texto(0)
+      const asset = texto(1)
+      return name !== null && asset !== null ? { type: 'somLoad', name, asset } : null
+    }
+    case 'tocar': {
+      const name = texto(0)
+      return name === null ? null : { type: 'somPlay', name }
+    }
+    case 'parar': {
+      const name = texto(0)
+      return name === null ? null : { type: 'somStop', name }
+    }
+    case 'tocarSemParar': {
+      const name = texto(0)
+      return name === null ? null : { type: 'somPlayMusic', name }
+    }
+    case 'pararMusica':
+      return args.length === 0 ? { type: 'somStopMusic' } : null
+    case 'volume': {
+      // ⚠️ Precisa aceitar EXPRESSÃO, não só número: o bloco tem soquete de
+      // valor, então a criança pode encaixar uma variável ali. Aceitando só
+      // `NumericLiteral`, o bloco dela virava `rawJS` ao passar pela Ponte.
+      const level = toExpr(args[0], ctx)
+      return isSimpleValue(level) ? { type: 'somVolume', level } : null
+    }
+    default:
+      return null
+  }
+}
+
 function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   const call = asSZGame2DCall(expr)
   if (!call) return null
@@ -3310,6 +3368,32 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'stopMusic':
       return { type: 'g2d:stopMusic' }
+    case 'loadSound': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'g2d:loadSound',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'playClip': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playClip', name: args[0].value as string }
+    }
+    case 'stopClip': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:stopClip', name: args[0].value as string }
+    }
+    case 'playTrack': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playTrack', name: args[0].value as string }
+    }
+    case 'stopTrack':
+      return args.length === 0 ? { type: 'g2d:stopTrack' } : null
+    case 'setSoundVolume': {
+      const level = toExpr(args[0], ctx)
+      return isSimpleValue(level) ? { type: 'g2d:setVolume', level } : null
+    }
     case 'playNote': {
       if (args[0]?.type !== 'StringLiteral') return null
       const ms = toExpr(args[1], ctx)
@@ -3561,6 +3645,17 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:animateSprite', spriteVar, sheetVar, from, to, fps }
         : null
     }
+    case 'playAnimationOnce': {
+      // generator: SZGame2D.playAnimationOnce(sprite, sheet, from, to, fps)
+      const spriteVar = identifierName(args[0])
+      const sheetVar = identifierName(args[1])
+      const from = toExpr(args[2], ctx)
+      const to = toExpr(args[3], ctx)
+      const fps = toExpr(args[4], ctx)
+      return spriteVar && sheetVar && isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
+        ? { type: 'g2d:animateOnce', spriteVar, sheetVar, from, to, fps }
+        : null
+    }
     case 'setStateAnimation': {
       // generator: SZGame2D.setStateAnimation(sprite, "estado", sheet, from, to, fps).
       // O estado é um dropdown no bloco: literal FORA do enum não vira bloco
@@ -3616,6 +3711,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:setEnemyTypeParam', typeVar, param, value }
         : null
     }
+    case 'addEnemyTypeBehavior': {
+      // generator: SZGame2D.addEnemyTypeBehavior(tipo, "comportamento")
+      const typeVar = identifierName(args[0])
+      const behavior = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      return typeVar && behavior && (G2D_ENEMY_BEHAVIORS as readonly string[]).includes(behavior)
+        ? { type: 'g2d:enemyAddBehavior', typeVar, behavior }
+        : null
+    }
     case 'spawnEnemy': {
       // generator: SZGame2D.spawnEnemy(tipo, x, y)
       const typeVar = identifierName(args[0])
@@ -3653,6 +3756,34 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(args[1], source, ctx),
       }
     }
+    case 'onEnemyHurt': {
+      // generator: SZGame2D.onEnemyHurt(tipo, function (chefe) {…})
+      const typeVar = identifierName(args[0])
+      if (!typeVar || !isFn(args[1])) return null
+      const itemName = identifierName(args[1].params?.[0]) ?? 'inimigo'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyHurt',
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'overlapEnemyBeams': {
+      // generator: SZGame2D.overlapEnemyBeams(() => sprite, tipo, function (chefe) {…})
+      const spriteVar = arrowReturnIdentifier(args[0])
+      const typeVar = identifierName(args[1])
+      if (!spriteVar || !typeVar || !isFn(args[2])) return null
+      const itemName = identifierName(args[2].params?.[0]) ?? 'chefe'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyBeamHit',
+        spriteVar,
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
     case 'overlapEnemyShots': {
       // generator: SZGame2D.overlapEnemyShots(() => sprite, tipo, function (tiro) {…})
       const spriteVar = arrowReturnIdentifier(args[0])
@@ -3673,6 +3804,15 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const spriteVar = identifierName(args[0])
       const enemyVar = identifierName(args[1])
       return spriteVar && enemyVar ? { type: 'g2d:hurtByEnemy', spriteVar, enemyVar } : null
+    }
+    case 'stompEnemyType': {
+      // generator: SZGame2D.stompEnemyType(sprite, tipo, quique)
+      const spriteVar = identifierName(args[0])
+      const typeVar = identifierName(args[1])
+      const bounce = toExpr(args[2], ctx)
+      return spriteVar && typeVar && isSimpleValue(bounce)
+        ? { type: 'g2d:stompEnemy', spriteVar, typeVar, bounce }
+        : null
     }
     case 'drawFrame': {
       // generator: SZGame2D.drawFrame(ctx, sheet, index, x, y, w, h)
@@ -3931,6 +4071,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(args[2], source, ctx),
       }
     }
+    case 'addToGroup': {
+      // generator: SZGame2D.addToGroup(g, sprite)
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:addToGroup', spriteVar, groupVar } : null
+    }
     case 'removeFromGroup': {
       // generator: SZGame2D.removeFromGroup(g, sprite)
       const groupVar = identifierName(args[0])
@@ -4115,6 +4261,18 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'fitScreen': {
       const percent = toExpr(args[0], ctx)
       return isSimpleValue(percent) ? { type: 'g2d:fitScreen', percent } : null
+    }
+    case 'setBackdrop': {
+      // generator: SZGame2D.setBackdrop("cenario")
+      return args[0]?.type === 'StringLiteral'
+        ? { type: 'g2d:setBackdrop', image: args[0].value as string }
+        : null
+    }
+    case 'drawBackdrop': {
+      // generator: SZGame2D.drawBackdrop(ctx, "cenario")
+      const ctxVar = identifierName(args[0])
+      if (!ctxVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:drawBackdrop', ctxVar, image: args[1].value as string }
     }
     case 'showStageBorder': {
       // generator: SZGame2D.showStageBorder("#e2e8f0", 4)
@@ -4466,6 +4624,10 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     if (args[0]?.type !== 'ObjectExpression') return null
     const o = readEnemyTypeOptions(args[0], ctx)
     if (!o) return null
+    // Espelho da guarda do irmão esperto: sem ela, um `{ smart: "burra" }` escrito
+    // à mão aqui viraria IR com um behavior que o zod recusa (e a Ponte quebra em
+    // vez de cair no código bruto).
+    if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(o.behavior)) return null
     return {
       type: 'g2d:defineEnemyType',
       varName: name,
@@ -4480,6 +4642,35 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
       w: o.w,
       h: o.h,
     }
+  }
+  if (method === 'createSmartEnemyType') {
+    // generator: const alien = SZGame2D.createSmartEnemyType({ smart, color, image, hp, ... })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readEnemyTypeOptions(args[0], ctx)
+    if (!o) return null
+    if (!(G2D_ENEMY_SMARTS as readonly string[]).includes(o.behavior)) return null
+    return {
+      type: 'g2d:defineEnemySmart',
+      varName: name,
+      smart: o.behavior,
+      color: o.color,
+      image: o.image,
+      ...(o.shape ? { shape: o.shape } : {}),
+      hp: o.hp,
+      speed: o.speed,
+      dmg: o.dmg,
+      w: o.w,
+      h: o.h,
+    }
+  }
+  if (method === 'spawnEnemy') {
+    // generator: const chefe = SZGame2D.spawnEnemy(rei, x, y)  (forma NOMEADA)
+    const typeVar = identifierName(args[0])
+    const x = toExpr(args[1], ctx)
+    const y = toExpr(args[2], ctx)
+    if (!typeVar || !isSimpleValue(x) || !isSimpleValue(y)) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:spawnEnemy', typeVar, varName: name, x, y }
   }
   if (method === 'createShip') {
     // generator: const nave = SZGame2D.createShip({ x, y, w, h, body, wings })
@@ -5405,6 +5596,16 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:stageBorder', color: args[0].value as string, width }
         : null
     }
+    case 'setBackdrop':
+      // generator: SZGameKit.setBackdrop("cenario")
+      return args[0]?.type === 'StringLiteral'
+        ? { type: 'gk:setBackdrop', image: args[0].value as string }
+        : null
+    case 'drawBackdrop':
+      // generator: SZGameKit.drawBackdrop("cenario")
+      return args[0]?.type === 'StringLiteral'
+        ? { type: 'gk:drawBackdrop', image: args[0].value as string }
+        : null
     case 'showHitboxes':
       return args.length === 0 ? { type: 'gk:showHitboxes' } : null
     case 'start':
@@ -10204,6 +10405,33 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'g3d:playEffect', kind: args[0].value as string }
     }
+    case 'loadSound': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'g3d:loadSound',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'playSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:playSound', name: args[0].value as string }
+    }
+    case 'stopSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:stopSound', name: args[0].value as string }
+    }
+    case 'playMusic': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:playMusic', name: args[0].value as string }
+    }
+    case 'stopMusic':
+      return args.length === 0 ? { type: 'g3d:stopMusic' } : null
+    case 'setSoundVolume': {
+      const level = toExpr(args[0], ctx)
+      if (!isSimpleValue(level)) return null
+      return { type: 'g3d:setVolume', level }
+    }
     default:
       // createScene/createBox/createSphere/createBlock/createGroup são var-init
       // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.
@@ -12622,6 +12850,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:getHealth':
     case 'g2d:getMaxHealth':
     case 'g2d:enemyDamage':
+    case 'g2d:animEnded':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
     case 'g2d:spriteW':

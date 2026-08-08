@@ -6,6 +6,7 @@ import {
   PensaNotFoundError,
   PensaStageMismatchError,
 } from '../../domain/pensa/pensa.errors'
+import { taskPlanArtifactMatchesTasks, validateTaskPlan } from '../../domain/pensa/task-plan'
 import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
 import { type PensaCycleView, toPensaCycleView } from '../mappers/pensa-views'
@@ -46,12 +47,15 @@ export class AdvancePensaStageService {
     if (!found) throw new PensaNotFoundError()
     if (found.cycle.stage !== from) throw new PensaStageMismatchError()
 
-    // Insumos SÓ do gate em questão (os demais entram neutros — o helper ignora).
-    const needsArtifacts = from === 'z' || from === 'e'
+    const latestArtifacts = await this.repo.listLatestArtifacts(cycleId)
+    const tasks = from === 'r' ? await this.repo.listTasks(cycleId) : []
+    const taskPlan = latestArtifacts.find((artifact) => artifact.type === 'task_plan')
     const gate = evaluateAdvanceGate(from, {
-      latestArtifacts: needsArtifacts ? await this.repo.listLatestArtifacts(cycleId) : [],
-      taskCount: from === 'r' ? await this.repo.countTasks(cycleId) : 0,
-      checklist: from === 'o' ? await this.repo.listChecklist(cycleId) : [],
+      latestArtifacts,
+      taskCount: tasks.length,
+      taskPlanValid:
+        from !== 'r' ||
+        (validateTaskPlan(tasks).ok && taskPlanArtifactMatchesTasks(taskPlan?.content, tasks)),
     })
     if (!gate.ok) throw new PensaGateNotReadyError(from, gate.missing)
 

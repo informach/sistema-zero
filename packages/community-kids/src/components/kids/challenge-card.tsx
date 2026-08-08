@@ -27,14 +27,14 @@ export function ChallengeCard({ data }: { data: ChallengeMeView }) {
           <p className="mt-1 text-muted-foreground text-sm">{challenge.description}</p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {entered ? (
-              <span className="inline-flex min-h-10 items-center gap-1.5 rounded-full border-2 border-(--kids-lime) px-4 font-bold text-sm">
+              <span className="inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-(--kids-lime) px-4 font-bold text-sm">
                 <Check className="size-4" /> Você já está participando!
               </span>
             ) : (
               <Link
                 href="/estudio"
                 prefetch={false}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
               >
                 Criar no Estúdio
               </Link>
@@ -42,7 +42,7 @@ export function ChallengeCard({ data }: { data: ChallengeMeView }) {
             <Link
               href="/mural-dos-criadores"
               prefetch={false}
-              className="inline-flex min-h-10 items-center rounded-full border-2 border-border px-4 font-bold text-sm transition-colors hover:bg-muted/60"
+              className="inline-flex min-h-11 items-center rounded-full border-2 border-border px-4 font-bold text-sm transition-colors hover:bg-muted/60"
             >
               Ver os jogos do desafio
             </Link>

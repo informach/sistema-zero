@@ -1,3 +1,4 @@
+import { aiQuotaScopeOf, isAiQuotaError } from '@sistemazero/core/ai-credits'
 import type { ChangeEvent, JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '#core'
@@ -46,7 +47,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   const [aiUses, setAiUses] = useState(0)
   // Teto de IA da CONTA atingido (o host lança AI_QUOTA_EXCEEDED): esconde o
   // "Gerar" e orienta a escrever à mão — o fluxo manual já existe.
-  const [aiExhausted, setAiExhausted] = useState(false)
+  // Guarda o ESCOPO junto: dizer 'de hoje' quando o teto estourado foi o do mês
+  // manda a criança voltar amanhã para nada.
+  const [aiExhausted, setAiExhausted] = useState<'day' | 'month' | null>(null)
   const [cover, setCover] = useState<Cover | null>(null)
   const [capturing, setCapturing] = useState(false)
   const [coverNote, setCoverNote] = useState<string | null>(null)
@@ -71,7 +74,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setDescription(adapter?.presetDescription?.trim() ?? '')
     setGenerating(false)
     setAiUses(0)
-    setAiExhausted(false)
+    setAiExhausted(null)
     setCover(null)
     setCapturing(false)
     setCoverNote(null)
@@ -106,7 +109,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         if (clean) setDescription(clean)
       })
       .catch((error: unknown) => {
-        if ((error as { code?: string })?.code === 'AI_QUOTA_EXCEEDED') setAiExhausted(true)
+        if (isAiQuotaError(error)) setAiExhausted(aiQuotaScopeOf(error))
       })
       .finally(() => setGenerating(false))
   }, [open, adapter, project, title])
@@ -125,7 +128,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         if (clean) setDescription(clean)
       })
       .catch((error: unknown) => {
-        if ((error as { code?: string })?.code === 'AI_QUOTA_EXCEEDED') setAiExhausted(true)
+        if (isAiQuotaError(error)) setAiExhausted(aiQuotaScopeOf(error))
       })
       .finally(() => setGenerating(false))
   }
@@ -354,7 +357,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
             </div>
             {adapter.generateDescription && aiExhausted ? (
               <p className="mt-1 text-sz-fg-mute text-xs" role="status">
-                {t('share.ai.quotaExhausted')}
+                {t(aiExhausted === 'month' ? 'share.ai.quota.month' : 'share.ai.quota.day')}
               </p>
             ) : null}
             {adapter.generateDescription &&

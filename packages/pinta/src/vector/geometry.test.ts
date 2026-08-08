@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  alignShapes,
   boundsCenter,
+  boundsIntersect,
+  boundsUnion,
   parsePathD,
   rotatePoint,
   rotateShapeTo,
@@ -183,5 +186,86 @@ describe('flipShape', () => {
     expect(flippedLine.x1).toBe(10)
     expect(flippedLine.x2).toBe(0)
     expect(flippedLine.y1).toBe(0)
+  })
+})
+
+describe('boundsUnion / boundsIntersect (seleção múltipla e laço)', () => {
+  it('união envolve todas as caixas', () => {
+    const union = boundsUnion([
+      { x: 10, y: 20, width: 30, height: 40 },
+      { x: 50, y: 0, width: 10, height: 10 },
+    ])
+    expect(union).toEqual({ x: 10, y: 0, width: 50, height: 60 })
+  })
+
+  it('união de lista vazia é a caixa nula', () => {
+    expect(boundsUnion([])).toEqual({ x: 0, y: 0, width: 0, height: 0 })
+  })
+
+  it('intersecção detecta sobreposição e borda encostada; separadas não', () => {
+    const a = { x: 0, y: 0, width: 10, height: 10 }
+    expect(boundsIntersect(a, { x: 5, y: 5, width: 10, height: 10 })).toBe(true)
+    expect(boundsIntersect(a, { x: 10, y: 0, width: 5, height: 5 })).toBe(true)
+    expect(boundsIntersect(a, { x: 11, y: 0, width: 5, height: 5 })).toBe(false)
+  })
+})
+
+describe('alignShapes (alinhar seleção)', () => {
+  const target = { x: 0, y: 0, width: 100, height: 100 }
+
+  it('alinha duas formas na esquerda do alvo', () => {
+    const a: VectorShape = { ...base, id: 'a', type: 'rect', x: 10, y: 0, w: 10, h: 10, rx: 0 }
+    const b: VectorShape = { ...base, id: 'b', type: 'rect', x: 40, y: 20, w: 20, h: 10, rx: 0 }
+    const result = alignShapes([a, b], ['a', 'b'], 'left', target)
+    expect(result[0]).toMatchObject({ x: 0 })
+    expect(result[1]).toMatchObject({ x: 0 })
+  })
+
+  it('centraliza uma forma na largura da tela', () => {
+    const a: VectorShape = { ...base, id: 'a', type: 'rect', x: 10, y: 0, w: 20, h: 10, rx: 0 }
+    const result = alignShapes([a], ['a'], 'centerH', target)
+    expect(result[0]).toMatchObject({ x: 40 })
+  })
+
+  it('alinha embaixo e no meio da altura', () => {
+    const a: VectorShape = { ...base, id: 'a', type: 'rect', x: 0, y: 10, w: 10, h: 20, rx: 0 }
+    expect(alignShapes([a], ['a'], 'bottom', target)[0]).toMatchObject({ y: 80 })
+    expect(alignShapes([a], ['a'], 'middleV', target)[0]).toMatchObject({ y: 40 })
+  })
+
+  it('grupo é transladado INTEIRO (offsets internos preservados)', () => {
+    const a: VectorShape = {
+      ...base,
+      id: 'a',
+      groupId: 'g',
+      type: 'rect',
+      x: 20,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+    }
+    const b: VectorShape = {
+      ...base,
+      id: 'b',
+      groupId: 'g',
+      type: 'rect',
+      x: 40,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+    }
+    const result = alignShapes([a, b], ['a', 'b'], 'left', target)
+    // O cluster (20..50) vai para 0: a→0, b→20 (distância interna de 20 mantida).
+    expect(result[0]).toMatchObject({ x: 0 })
+    expect(result[1]).toMatchObject({ x: 20 })
+  })
+
+  it('forma fora da seleção não se move', () => {
+    const a: VectorShape = { ...base, id: 'a', type: 'rect', x: 10, y: 0, w: 10, h: 10, rx: 0 }
+    const c: VectorShape = { ...base, id: 'c', type: 'rect', x: 70, y: 0, w: 10, h: 10, rx: 0 }
+    const result = alignShapes([a, c], ['a'], 'left', target)
+    expect(result[1]).toMatchObject({ x: 70 })
   })
 })

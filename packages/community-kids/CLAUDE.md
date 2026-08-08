@@ -128,6 +128,56 @@ DOIS apps). Este app define apenas:
 
 ## Perfis estilo Netflix (PR5) — quem vai aprender hoje?
 
+**⭐ Tutorial guiado dos PAIS (08/2026):** os primeiros passos confundiam (com ZERO perfis a grade
+renderizava VAZIA e o "+" só existe atrás da senha). O guia **segue o ESTADO real**, não um roteiro:
+cérebro PURO em `src/lib/guide.ts` (`resolveParentGuideStep` — `welcome-area`→`plus`→`form`→
+`conclude-created`→`tile`; gestão de perfil antigo usa `conclude` com texto neutro) + apresentação em
+`components/kids/parent-guide.tsx` (`GuideWelcomeDialog` = Dialog+Zappy com passos derivados da
+família e do allowance, auto-abre na configuração do primeiro perfil
+1×/conta **neste navegador/dispositivo**; famílias existentes iniciam por "Como funciona?";
+`GuideBalloon` = balão responsivo no contêiner do alvo e preso à viewport em mobile — sobrevive
+aos early returns do perfis-client, zero medição de coordenada;
+`GuideTargetItem` mantém a largura-base do tile em 7rem para o balão não reorganizar a grade;
+⚠️ **a seta é CSS puro e mira no CENTRO do balão, então o balão precisa estar centrado no alvo:
+use `align-self` (`self-center`), NUNCA `mx-auto`** — o balão (22rem) é mais largo que a coluna do
+alvo (7-9rem) e, com margem auto no eixo cruzado maior que a linha, o flexbox zera a margem
+inline-start e ancora o balão à ESQUERDA (seta caía 104-120px fora do botão, medido no navegador
+06/08). Alvo que NÃO fica centrado sob o balão usa `align="start"` (balão encostado à esquerda +
+seta em `left-24`), o caso do "Começar" do card-herói na home;
+`GuideReopenButton` "Como funciona?" reabre). Regras:
+conta SEM perfil inicia o guia pelo estado real; **"Pular tutorial" encerra qualquer passo** e
+"Entendi" encerra o arremate (flags versionadas sob `sz:kids:onboarding:v2:*`; o modal só vira
+visto após fechar/concluir, portanto as memórias são locais ao navegador); **NUNCA aparece em sessão de
+perfil** (`guideKey=null` na page). `src/lib/profile-allowance.ts` separa `limited`, `unlimited`,
+`none` e `unavailable`: `maxProfiles: 0` é **sem matrícula** (estado próprio + CTA da Comunidade dos
+Criadores), enquanto status não-200 é **falha de consulta** (retry). Nenhum dos dois libera o "+";
+status não-200 ao listar os próprios perfis também renderiza `ProfilesUnavailable` — jamais vira
+`[]`, porque isso abriria o onboarding e poderia induzir perfil duplicado.
+Junto no lote: o **opt-in de perfil público entrou na CRIAÇÃO** (antes só na edição — o auth/shell
+aceitam `publicProfileEnabled` no create desde 08/2026) e o nome valida **≥3 letras no client**
+(o auth já exigia; "Bê" caía em toast genérico).
+**Fase 2 — guia da CRIANÇA (08/2026):** na HOME, `components/kids/child-guide.tsx` (client) entre a
+saudação e o ContinueHero — boas-vindas do Zappy 1×/perfil **neste navegador/dispositivo** (flags
+versionadas `sz:kids:onboarding:v2:child:*`,
+copy criança, SEM "pular") + passo `avatar` (sem foto do avatar 3D → convite com CTA "Criar meu
+avatar" direto a `/meu-avatar?returnTo=%2F` + "Agora não", que grava apenas em `sessionStorage` e
+volta numa nova sessão) + passo `start` (nenhuma aula aberta/concluída E
+`pickContinueCourse` ≠ null → balão arrow-down apontando o "Começar" do herói + "Entendi").
+Resolver puro `resolveChildGuideStep` em `lib/guide.ts` (avatar PRIMEIRO — ordem da usuária; os
+passos somem SOZINHOS quando a coisa acontece: montou avatar/abriu aula). O modal usa
+`childWelcomeSteps`: lista e renumera somente o que ainda falta (não promete "primeira aula" para
+quem já estudou nem aponta "Começar" sem curso liberado). Sinais 100% derivados
+do que a home JÁ busca (`avatarPhotoUrl`, `courses[].progress`) — zero fetch novo; falha ao buscar
+avatar vira estado `null` (desconhecido) e não dispara convite falso. O
+`GuideWelcomeDialog` virou GENÉRICO (`title`/`description`/`steps`/`onSkip?`; os pais injetam
+passos dinâmicos) e o `GuideBalloon` ganhou `actions?`. Crianças e pais reabrem o guia por "Como
+funciona?"; `/api/onboarding/events` registra eventos agregáveis sem ids/PII. ⚠️ Deliberado: SEM balão no mapa
+`/cursos` (o medalhão "Você está aqui" já se autoguia) e SEM guiar a produtos vendidos à parte.
+Regressões puras e de componentes reais (modal, copy/clique do Concluir, largura dos targets e os
+estados sem matrícula/indisponível) ficam em `tests/guide.test.ts`,
+`tests/profile-allowance.test.ts`, `tests/guide-components.test.tsx`,
+`tests/profile-entry-states.test.tsx` e `tests/onboarding-integration.test.tsx`.
+
 O RESPONSÁVEL faz login (sessão da CONTA) e a borda manda escolher um **perfil de criança**
 antes de entrar na área de aprender. `src/proxy.ts` seta `requireProfileSelectPath: '/perfis'`
 (conta sem a claim `pfl` → redireciona p/ a grade) e `/perfis` entra nos `protectedPrefixes`
@@ -261,7 +311,14 @@ quer todo o espaço); demais páginas seguem com `max-w-5xl`. **SEGUE o tema da 
 `<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
 o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui
 **`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
-`srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa. `api/studio/publish-standalone` fica FORA do
+`srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa.
+⚠️ **`media-src … data:` pelo MESMO motivo (08/2026)**: o SOM que a criança envia é embutido como
+`data:audio/…` e tocado tanto pelo `<audio>` da PRÉVIA (nesta página) quanto pelo `new Audio()` do
+jogo (no `srcdoc`, que herda). A diretiva nasceu sem `data:` e ninguém a atualizou quando o som
+entrou → o som carregava e **não tocava**, com falha SILENCIOSA (só o console mostrava `Refused to
+load media from 'data:audio/…'`; a UI não dava sinal). Travado por `tests/csp-media-data.test.ts`,
+que chama o `headers()` REAL e confere todas as diretivas emitidas (a normal e a da rota Pro) —
+`bun test` não enforça CSP, então esta é a única rede possível. `api/studio/publish-standalone` fica FORA do
 matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
 **CRIAR segura o foguinho (07/2026):** o `studio-full-client` passa `onChange` ao `<StudioEditor>` que,
 na 1ª edição REAL da sessão (`ctx.reason === 'autosave'`, guardado por ref — NÃO em abrir/flush), dispara
@@ -419,27 +476,35 @@ member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apr
    marca (letras desenhadas em paths, nunca `<text>`). Favicons herdados do community DE
    PROPÓSITO (decisão: mesmo favicon).
 
-## Pensa (planejamento guiado — produto vendável, 07/2026)
+## Pensa (planejador de jogos — 08/2026)
 
-O **Pensa** (`@sistemazero/pensa`) é o app da metodologia ZERO onde a criança PLANEJA o jogo
-antes de construir no Estúdio: projeto → ciclos "Versão N" → etapas **Z** (Zerar a Bagunça,
-chat com o Zappy pelas 5 perguntas) / **E** (Enxergar o Jogo) / **R** (Rodar as Missões) /
-**O** (O Grande Lançamento). Item "Pensa" no `nav.ts` (Lightbulb, entre Mural e Pinta — o trio
-criativo Pensa→Pinta→Estúdio anda JUNTO no menu) → rota
-`/pensa` (`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+O **Pensa** (`@sistemazero/pensa`) planeja; Pinta e Estúdio executam. O método ZERO usa **Z**
+(ideia e regras), **E** (loop, cenas, telas e Bíblia Visual), **R** (Cartões de Criação ordenados)
+e **O** (auditoria e aprovação). Item "Pensa" no `nav.ts` → rota
+`/pensa` (`protectedPrefixes`), gate em 4 ESTADOS (indisponível, sem produto, comprado mas abaixo
+de Inventor(a), liberado):
 `app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
 ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
-`KidsPensaUnavailable` (retry); com acesso = `pensa-client.tsx` (`'use client'`, import dinâmico
-do pacote no effect, tema do next-themes, **`mascotImages` = os sprites `/zappy/*.webp`** — a
-carinha do Zappy dentro do Pensa). Diferente do Estúdio (IndexedDB), a persistência é
+`KidsPensaUnavailable` (retry); produto + carreira ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
+do pacote no effect, tema do next-themes e sprites do Zappy). A persistência do plano é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
-(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` tem
-`force-dynamic`). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
-dynamic import). `MainContainer` dá largura total a `/pensa` (kanban/Modo Missão). Requisitos de
+(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` E o
+`…/artifacts/generate` têm `force-dynamic` — a geração responde SSE desde 08/2026, ver
+member-shell). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
+dynamic import). ⚠️ O `request()` do transport **sniffa `content-type: text/event-stream`**:
+resposta SSE é lida pelo helper `readSse` (compartilhado com o `streamChat`) e o evento terminal
+vira o resolve (`done` = corpo JSON de sempre) ou o MESMO erro duck-typed (`error`); stream que
+acaba sem terminal rejeita "A conexão caiu no meio.". Sniff por content-type (não por path)
+tolera skew de deploy. É o que matou o 502 do "Criar plano de tarefas" (borda derrubava o POST
+mudo de minutos). `PensaHostAdapter.onOpenTask` navega para `/pinta?tarefa=<id>` ou
+`/estudio?tarefa=<id>`; nenhuma tela do Estúdio monta dentro do Pensa. `MainContainer` dá largura
+total a `/pensa`. Requisitos de
 build: `transpilePackages` + `@import` do `pensa.css` + `@source "../../../pensa/src"` no
 globals.css (MESMO gotcha das utilitárias `sz-*` do Estúdio — sem isso as `pz-*` são no-op).
 `api/pensa/*` fica DENTRO do matcher do proxy (JSON pequeno; a resposta SSE não é bufferizada
 pelo middleware). Deploy: `packages/pensa/**` nos watchPatterns do railway.json + case no ci.yml.
+O host remove chaves locais do fluxo anterior e mantém apenas os deep links de tarefa. Contrato:
+[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
 ## Pinta (editor de assets de jogos — produto vendável, 07/2026)
 
@@ -447,10 +512,11 @@ O **Pinta** (`@sistemazero/pinta`) é o ateliê onde a criança DESENHA os asset
 art (personagens com ANIMAÇÕES + prévia rodando, cenários), peças/mapas e desenho livre —
 terceiro irmão do fluxo criativo (**Pensa planeja → Pinta desenha → Estúdio constrói**). Item
 "Pinta" no `nav.ts` (Palette, imediatamente antes de Estúdio) → rota `/pinta`
-(`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+(`protectedPrefixes`), gate em 4 ESTADOS (indisponível, sem produto, comprado mas abaixo de
+Inventor(a), liberado):
 `app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
 ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
-= `KidsPintaUnavailable` (retry); com acesso = `pinta-client.tsx` (`'use client'`, import
+= `KidsPintaUnavailable` (retry); produto + carreira ≥ `hacker` = `pinta-client.tsx` (`'use client'`, import
 dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria vive no IndexedDB
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
@@ -463,7 +529,18 @@ em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil.
 (`router.replace('/pinta')`) p/ um F5 não reabrir. Salvar no Pinta chama o `resyncToStudio` do
 adapter, que **só atualiza o que JÁ foi enviado** (guarda `getPersonalAsset(id)` — sem ela todo
 rascunho cairia na biblioteca sozinho); o Estúdio então reconcilia os JOGOS (todos, inclusive
-fechados) no foco da aba, em silêncio. Ver `packages/studio/CLAUDE.md` §"Editar o desenho". `MainContainer` dá largura
+fechados) no foco da aba, em silêncio. Ver `packages/studio/CLAUDE.md` §"Editar o desenho".
+**"Trazer do Pinta" — fluxo PULL (08/2026):** a página `/estudio` agora chama
+`checkPintaAccessReadonly()` (as MESMAS refs `pinta,estudio-completo` numa ida; o gate segue sendo
+`estudio-completo`) e passa `pintaOwned` ao `StudioFullClient`, que monta o adapter
+**`pintaLibrary`** SÓ com a posse (produtos vendidos à parte): `list()` = import dinâmico do
+subpath **`@sistemazero/pinta/studio-library`** (⚠️ NUNCA a raiz — puxaria o app do Pinta pro
+bundle) + `setPintaStorageNamespace(viewerId)` + `listGalleryForStudio()`; `import(id)` =
+`exportAssetForStudio(id)` → **`savePersonalAsset` ANTES de devolver** (preserva a mão-dupla e o
+botão editar) → devolve o asset com o NOME salvo (upsert pode sufixar). No Estúdio, o botão
+"🎨 Trazer do Pinta" abre a modal com a galeria INTEIRA + busca e a seção "Meus desenhos" some.
+No Pinta, o foguete "Usar no Estúdio" passou a aparecer SÓ em desenho de jogo do Pensa
+(`projectRef`) — desenho avulso chega ao Estúdio puxando de lá. `MainContainer` dá largura
 total a `/pinta`. Requisitos de build: `transpilePackages` + `@import` do `pinta.css` +
 `@source "../../../pinta/src"` no globals.css (MESMO gotcha das utilitárias `sz-*`/`pz-*` — sem
 isso as `pin-*` são no-op e os modais saem washed-out). Deploy: `packages/pinta/**` (e
@@ -764,12 +841,10 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   `POST /api/studio/remix {playId}` (shim novo sobre `shell.routes.studioRemix`, DENTRO do matcher
   do proxy — JSON pequeno, ganha o anti-CSRF) → marco da missão `weekly-remix`/`monthly-remix-3` no
   members (que valida posse + playId real no hub + recusa self-remix; o toast não espera).
-- **Projeto transversal Pensa↔Pinta (C):** a página `/pensa` também checa
-  `checkPintaAccessReadonly` (best-effort) → `pintaOwned` no `PensaClient`, que SÓ então liga o
-  `onOpenPinta` — o intent da missão de arte vai por `sessionStorage sz:pinta:intent`
-  (`components/kids/pinta-intent.ts`: chave + reader/clear compartilhados) e o `pinta-client` o lê
-  1x no mount (lazy useState + clear em efeito) → `adapter.initialIntent` (o Pinta abre o "Criar
-  novo" pré-configurado; asset nasce com `projectRef` e a galeria agrupa por jogo).
+- **Handoff Pensa→Pinta/Estúdio:** a página `/pensa` checa as duas capabilities best-effort e
+  mantém o plano visível mesmo sem posse. O client abre `?tarefa=<id>`; cada ferramenta busca
+  `/api/pensa/tasks/:id/handoff`, restaura seu painel e sincroniza
+  `/api/pensa/tasks/:id/progress`. Não use `sessionStorage` para contexto de tarefa.
 - **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
   `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
   `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa
@@ -1118,8 +1193,18 @@ Sentry `sistema-zero-community-kids` + DSN no host.
 
 - O tutor é injetado somente em `StudioFullClient` e `StudioProClient`; players de aula e o
   Pensa não recebem `tutor`, portanto não exibem o botão. A capability `zappyEnabled` é derivada
-  no Server Component pelo mesmo gate do BFF, então contas fora do piloto não veem a UI.
-- Configuração do piloto: `ZAPPY_ENABLED`, `ZAPPY_PILOT_ACCOUNT_IDS` e, opcionalmente,
-  `OPENROUTER_ZAPPY_MODEL`. As rotas Next são shims finos para os handlers do member-shell.
+  no Server Component pelo mesmo gate do BFF, então alunos abaixo de Inventor(a) não veem a UI.
+- Configuração: `ZAPPY_ENABLED` é o interruptor de emergência e `OPENROUTER_ZAPPY_MODEL` é
+  opcional. Não há allowlist de contas; a equipe mantém bypass de QA.
 - Chips de aula só existem em respostas com `courseSlug` autoritativo e abrem
   `/cursos/:slug/aulas/:lessonId` em nova aba com `noopener,noreferrer`.
+- **Chips de sugestão (08/2026):** a resposta traz até 3 continuações prováveis (`suggestions`) que
+  viram chips sob a ÚLTIMA mensagem — clicar **PREENCHE o campo** e foca (não envia sozinho; é o
+  padrão que a usuária aprovou no Pensa, e mantém cooldown/quota intactos). Sem conversa, o estado
+  vazio mostra 3 perguntas fixas por modo. Cada sugestão passa pela mesma redação de PII/segurança
+  da resposta antes de chegar aqui.
+- **Modelo:** `OPENROUTER_ZAPPY_MODEL=openai/gpt-4.1-mini` (staging + prod, 06/08 — o 4.1 puro
+  custa 13× o 4o-mini e o prompt deste lote é maior de propósito; o 4.1-mini é 5× mais barato que
+  o 4.1 sem voltar ao modelo vago). O **Pensa fica no `gpt-4.1`**. Este é o ÚNICO app com
+  OpenRouter configurado — o community adulto não tem chave e não roda Zappy. Detalhes de preço,
+  cascata de fallback e por que a quota não é alavanca de custo: member-shell §Zappy.

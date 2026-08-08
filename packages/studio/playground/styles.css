@@ -4,9 +4,20 @@
  * docs/embedding.md.
  */
 @import "tailwindcss";
+/* Primitivos da marca kids — o host community-kids os importa, então sem isto o
+   playground mostraria só os valores de reserva (creme/quase-preto) e o QA
+   visual mentiria. Relativo de propósito: não cria dependência de package. */
+@import "../../ui/src/styles/theme-kids.css";
 @import "../src/styles/studio.css";
 
 @source "../src";
+
+/* Simula as vars do next/font do host: é o que prova a cadeia de fonte do
+   `--font-family-sans` (no kids elas têm nome hasheado). */
+:root {
+  --font-baloo: "Baloo 2";
+  --font-nunito: "Nunito";
+}
 
 /*
  * Resets de APP standalone — ficam FORA do CSS exportado pelo package porque

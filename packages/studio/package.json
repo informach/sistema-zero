@@ -10,6 +10,7 @@
     "./career": "./src/career/index.ts",
     "./server-catalog": "./src/blockly/blockCatalog.ts",
     "./server-knowledge": "./src/official-extensions/serverKnowledge.ts",
+    "./server-examples": "./src/examples/serverExamples.ts",
     "./tutor-safety": "./src/studio/tutorSafety.ts",
     "./player": "./src/components/preview/StudioProjectPlayer.tsx",
     "./personal-assets": "./src/asset-library/personal.ts",
@@ -32,6 +33,7 @@
     "dev": "vite --config playground/vite.config.ts",
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
     "test": "bun test src",
+    "gen:server-examples": "bun scripts/gen-server-examples.ts",
     "e2e": "playwright test",
     "check": "biome check .",
     "check:fix": "biome check --write ."

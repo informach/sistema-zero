@@ -1,306 +1,239 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { sanitizeIconSvg } from '../lib/svg-sanitize'
-import type { PensaChatMessage, PensaZState } from '../lib/types'
+import { resolveStudioTier } from '../lib/studio-tier'
+import type {
+  PensaArtifactType,
+  PensaArtifactView,
+  PensaChatMessage,
+  PensaStageView,
+  PensaZState,
+} from '../lib/types'
 import { aiQuotaMessage, consumeAiQuota } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
-import { generateIcons, suggestIdentity } from '../server/pensa-agents/identity'
-import { synthesizeSpec } from '../server/pensa-agents/stage-e-spec'
-import { buildChecklistSeed } from '../server/pensa-agents/stage-o-checklist'
-import { synthesizeMissions } from '../server/pensa-agents/stage-r-missions'
-import { buildStageZSystem } from '../server/pensa-agents/stage-z'
+import { hasCreativeAppsLevel } from '../server/creative-apps-access'
+import { auditPlan } from '../server/pensa-agents/plan-audit'
 import {
-  evaluateStageZ,
-  summarizeStageZ,
-  transcriptForEvaluator,
-} from '../server/pensa-agents/stage-z-evaluator'
-import { synthesizeIdea } from '../server/pensa-agents/stage-z-idea'
-import { PensaLlmError, pensaLlmAvailable, streamPensaChat } from '../server/pensa-llm'
+  availablePlannerCatalog,
+  GameDesignArtifactSchema,
+  IdeaArtifactSchema,
+  jsonSchemaFor,
+  PensaCatalogDriftError,
+  type PlanReviewArtifact,
+  plannerCatalogPrompt,
+  resolveTaskPlan,
+  stripPintaArtFromStudioTasks,
+  TaskPlanArtifactSchema,
+  TaskPlanDraftSchema,
+  VisualDirectionArtifactSchema,
+  validateVisualTaskCoverage,
+} from '../server/pensa-agents/planner-contract'
+
+export { auditPlan } from '../server/pensa-agents/plan-audit'
+
+import { pensaSafetyClause } from '../server/pensa-agents/safety'
+import { buildStageZSystem } from '../server/pensa-agents/stage-z'
+import { evaluateStageZ, summarizeStageZ } from '../server/pensa-agents/stage-z-evaluator'
+import {
+  completePensaJson,
+  PensaLlmError,
+  pensaLlmAvailable,
+  streamPensaChat,
+} from '../server/pensa-llm'
 import type { SessionModule } from '../server/session'
 
 export type PensaAiRoutes = ReturnType<typeof createPensaAiRoutes>
 
-const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
-
-const ChatBody = z.object({
-  projectId: z.string().regex(UUID_RE),
-  cycleId: z.string().regex(UUID_RE),
+const UUID = z.uuid()
+const ChatBody = z.strictObject({
+  projectId: UUID,
+  cycleId: UUID,
   stage: z.literal('z'),
   message: z.string().trim().min(1).max(2000),
 })
 
-const HEX_RE = /^#[0-9a-fA-F]{6}$/
-const PaletteSchema = z.object({
-  name: z.string().trim().min(1).max(40),
-  colors: z.array(z.string().regex(HEX_RE)).min(4).max(6),
-})
-
-// Um endpoint de geração por ciclo; o `type` (e o `step` da identidade) escolhe a síntese.
-// ⚠️ As 3 variantes da identidade repetem `type: 'identity'` — valor duplicado no
-// discriminador externo derruba o parse no Zod 4 ("Duplicate discriminator value"),
-// então elas compõem uma união ANINHADA discriminada por `step`.
-// Exportado só p/ o teste de regressão (tests/pensa-ai.test.ts).
-// Tela editada à mão pela criança (edição pontual da etapa E). Espelha o shape
-// de `friendly_spec.screens`; o members revalida o teto do artefato.
-const SPEC_EDIT_KINDS = [
-  'title',
-  'button',
-  'score',
-  'hero',
-  'enemy',
-  'item',
-  'background',
-  'text',
-] as const
-const SpecScreenSchema = z.object({
-  name: z.string().trim().min(1).max(40),
-  elements: z
-    .array(
-      z.object({
-        kind: z.enum(SPEC_EDIT_KINDS),
-        label: z.string().trim().min(1).max(60),
-        zone: z.enum(['top', 'middle', 'bottom']),
-      }),
-    )
-    .max(14),
-})
-
+/** Cinco artefatos públicos; não há variantes de Estúdio, checklist ou identidade legadas. */
 export const GenerateBody = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('idea') }),
-  z.object({
-    type: z.literal('friendly_spec'),
-    projectId: z.string().regex(UUID_RE),
-    /** Revisão: o pedido de mudança da criança sobre a versão anterior. */
+  z.strictObject({ type: z.literal('idea'), projectId: UUID }),
+  z.strictObject({
+    type: z.literal('game_design'),
+    projectId: UUID,
     feedback: z.string().trim().min(2).max(500).optional(),
   }),
-  // Edição pontual (sem IA): a criança mudou UMA tela à mão; troca só as telas,
-  // mantém os fluxos/PRD e auto-valida (edição deliberada = aprovada).
-  z.object({
-    type: z.literal('spec_edit'),
-    projectId: z.string().regex(UUID_RE),
-    screens: z.array(SpecScreenSchema).min(1).max(12),
+  z.strictObject({
+    type: z.literal('visual_direction'),
+    projectId: UUID,
+    feedback: z.string().trim().min(2).max(500).optional(),
   }),
-  z.discriminatedUnion('step', [
-    z.object({
-      type: z.literal('identity'),
-      projectId: z.string().regex(UUID_RE),
-      step: z.literal('suggestions'),
-    }),
-    z.object({
-      type: z.literal('identity'),
-      projectId: z.string().regex(UUID_RE),
-      step: z.literal('icons'),
-      name: z.string().trim().min(2).max(40),
-      palette: PaletteSchema,
-    }),
-    z.object({
-      type: z.literal('identity'),
-      projectId: z.string().regex(UUID_RE),
-      step: z.literal('save'),
-      name: z.string().trim().min(2).max(40),
-      palette: PaletteSchema,
-      iconSvg: z.string().max(16_384).nullable(),
-    }),
-  ]),
-  // Plano de missões da etapa R (a criança executa no Estúdio).
-  z.object({
-    type: z.literal('mission_plan'),
-    projectId: z.string().regex(UUID_RE),
-    // append = "sugerir MAIS missões" (não apaga o quadro; gera poucas novas que
-    // continuam o plano). Ausente/false = REPLACE (geração inicial / "recomeçar").
-    append: z.boolean().optional(),
+  z.strictObject({
+    type: z.literal('task_plan'),
+    projectId: UUID,
+    feedback: z.string().trim().min(2).max(500).optional(),
   }),
-  // Determinístico (sem LLM): semeia o checklist do Grande Lançamento na etapa O.
-  z.object({
-    type: z.literal('checklist_seed'),
-    projectId: z.string().regex(UUID_RE),
-  }),
+  z.strictObject({ type: z.literal('plan_review'), projectId: UUID, approved: z.boolean() }),
 ])
 
-// ── Rate limit in-process por SESSÃO (réplica única; estado em globalThis) ───
-// Chat: 10 msgs/min como ANTI-BURST local. O teto diário/mensal REAL é a quota
-// por CONTA no members (`consumeAiQuota` — durável, cross-perfil), consumida no
-// pré-voo de cada chamada de LLM.
+/** Resposta interna da geração — vira `done` (200 sem error) ou `error` no SSE. */
+interface GenerateReply {
+  status: number
+  body: unknown
+}
+
 const RL_KEY = Symbol.for('@sistemazero/member-shell/pensa-chat-rl')
 interface RlEntry {
   count: number
   resetAt: number
 }
-type RlMap = Map<string, RlEntry>
-const rlSlot = globalThis as Record<symbol, unknown>
-if (!rlSlot[RL_KEY]) rlSlot[RL_KEY] = new Map<string, RlEntry>()
-const rlStore = rlSlot[RL_KEY] as RlMap
-
+const globalStore = globalThis as Record<symbol, unknown>
+if (!globalStore[RL_KEY]) globalStore[RL_KEY] = new Map<string, RlEntry>()
+const rateLimits = globalStore[RL_KEY] as Map<string, RlEntry>
 const CHAT_PER_MINUTE = 10
-/**
- * Janela do prompt: summary + as últimas N mensagens persistidas. Igual à do
- * evaluator (o escritor da resposta não pode enxergar MENOS que o juiz das
- * estrelas); acima dela, `summarizeStageZ` preserva o começo da conversa.
- */
 const PROMPT_WINDOW = 40
 
 export function pensaChatRateLimited(key: string, now = Date.now()): boolean {
-  let e = rlStore.get(key)
-  if (!e) {
-    e = { count: 0, resetAt: now + 60_000 }
-    rlStore.set(key, e)
+  let entry = rateLimits.get(key)
+  if (!entry) {
+    entry = { count: 0, resetAt: now + 60_000 }
+    rateLimits.set(key, entry)
   }
-  if (e.resetAt <= now) {
-    e.count = 0
-    e.resetAt = now + 60_000
+  if (entry.resetAt <= now) {
+    entry.count = 0
+    entry.resetAt = now + 60_000
   }
-  if (e.count >= CHAT_PER_MINUTE) return true
-  e.count += 1
+  if (entry.count >= CHAT_PER_MINUTE) return true
+  entry.count += 1
   return false
 }
 
 const sseHeaders = {
   'Content-Type': 'text/event-stream; charset=utf-8',
-  // `no-transform` + X-Accel-Buffering: nada de buffering/compressão no caminho
-  // (Cloudflare respeita text/event-stream; o ping cobre o corte por ociosidade).
   'Cache-Control': 'no-cache, no-transform',
   'X-Accel-Buffering': 'no',
 } as const
 
-/**
- * Rotas de IA do Pensa (fase da etapa Z):
- * - `POST /api/pensa/chat` — chat SSE com o agente de clareza (Zappy). Fluxo:
- *   guards → carrega projeto+conversa (members) → stream OpenRouter (event: delta)
- *   → evaluator estruturado (5 perguntas) → persiste o turno COMPLETO no members
- *   (abort = nada persiste) → `event: state` + `event: done`.
- * - `POST /api/pensa/cycles/:cycleId/artifacts/generate` — sínteses. Fase atual:
- *   `type: 'idea'` (Carta da Ideia; exige as 5 perguntas respondidas).
- *
- * A chamada ao OpenRouter NÃO passa pelo gateway; a persistência sim (members é o
- * portão de ownership). SSE mesma origem — coberto pelo `connect-src 'self'`.
- */
+const error = (code: string, status: number, message?: string, details?: unknown) =>
+  NextResponse.json(
+    { error: { code, ...(message ? { message } : {}) }, ...(details ? { details } : {}) },
+    { status },
+  )
+
+function latest(stage: PensaStageView, type: PensaArtifactType): PensaArtifactView | null {
+  return stage.artifacts.find((artifact) => artifact.type === type) ?? null
+}
+
+function requireValidated(stage: PensaStageView, type: PensaArtifactType): PensaArtifactView {
+  const artifact = latest(stage, type)
+  if (artifact?.status !== 'validated') throw new Error(`O artefato ${type} ainda não foi aprovado`)
+  return artifact
+}
+
+const json = (value: unknown) => JSON.stringify(value, null, 2)
+
+function plannerSystem(label: string) {
+  return [
+    pensaSafetyClause('kids'),
+    `Você cocria ${label} para uma criança de 8 a 13 anos dentro do planejador de jogos Pensa.`,
+    'Não invente decisões que contradigam os artefatos aprovados. Use linguagem curta, concreta, executável e apropriada para crianças.',
+    'Responda somente o JSON exigido pelo schema.',
+  ].join('\n\n')
+}
+
+async function generateJson<T>(input: {
+  schema: z.ZodType<T>
+  schemaName: string
+  label: string
+  user: string
+  maxTokens?: number
+  bodyTimeoutMs?: number
+}) {
+  return completePensaJson({
+    system: plannerSystem(input.label),
+    user: input.user,
+    schema: input.schema,
+    jsonSchema: jsonSchemaFor(input.schema),
+    schemaName: input.schemaName,
+    maxTokens: input.maxTokens ?? 2400,
+    temperature: 0.25,
+    bodyTimeoutMs: input.bodyTimeoutMs,
+  })
+}
+
 export function createPensaAiRoutes(deps: { members: MembersClient; session: SessionModule }) {
   const { members, session } = deps
 
   const pensaChat = {
     POST: async (req: Request) => {
-      // Impersonação é SOMENTE-LEITURA (suporte não conversa pelo aluno) e o chat
-      // exige sessão viva (o gateway 401aria depois, mas falhar cedo é mais claro).
       const user = await session.getSession()
-      if (!user) {
-        return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 })
-      }
-      if (user.act) {
-        return NextResponse.json(
-          { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
-          { status: 403 },
+      if (!user) return error('UNAUTHENTICATED', 401)
+      if (user.act) return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
+      if (!(await hasCreativeAppsLevel(members, user.role))) {
+        return error(
+          'CAREER_LEVEL_REQUIRED',
+          403,
+          'O Pensa abre quando você chegar no nível Inventor(a).',
         )
       }
-      if (!pensaLlmAvailable()) {
-        return NextResponse.json(
-          {
-            error: {
-              code: 'PENSA_AI_UNAVAILABLE',
-              message: 'O Zappy está descansando agora. Tente mais tarde.',
-            },
-          },
-          { status: 503 },
+      if (!pensaLlmAvailable())
+        return error(
+          'PENSA_AI_UNAVAILABLE',
+          503,
+          'O Zappy está descansando agora. Tente mais tarde.',
         )
-      }
-      if (pensaChatRateLimited(user.id)) {
-        return NextResponse.json(
-          {
-            error: {
-              code: 'RATE_LIMITED',
-              message: 'O Zappy precisa descansar um pouquinho. Já volto!',
-            },
-          },
-          { status: 429 },
-        )
-      }
+      if (pensaChatRateLimited(user.id))
+        return error('RATE_LIMITED', 429, 'O Zappy precisa descansar um pouquinho. Já volto!')
       const parsed = ChatBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) {
-        return NextResponse.json({ error: { code: 'VALIDATION_ERROR' } }, { status: 400 })
-      }
+      if (!parsed.success) return error('VALIDATION_ERROR', 400)
       const { projectId, cycleId, stage, message } = parsed.data
-
-      // Pré-voo FORA do stream (erros viram JSON com status certo, não SSE quebrado):
-      // projeto (nome/kind/goal p/ o prompt) + conversa/estado da etapa. O members é
-      // o portão de ownership em ambos.
       const projectRes = await members.pensaGetProject(projectId)
-      if (projectRes.status !== 200 || !projectRes.body) {
-        return NextResponse.json(projectRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
-          status: projectRes.status === 200 ? 502 : projectRes.status,
-        })
-      }
+      if (projectRes.status !== 200 || !projectRes.body)
+        return error('PENSA_NOT_FOUND', projectRes.status === 200 ? 502 : projectRes.status)
       const project = projectRes.body.project
-      const cycle = project.cycles.find((c) => c.id === cycleId)
-      if (!cycle) {
-        return NextResponse.json({ error: { code: 'PENSA_NOT_FOUND' } }, { status: 404 })
-      }
-      // Conversa só na etapa CORRENTE do ciclo (voltar a etapas fechadas é leitura).
-      if (cycle.stage !== stage) {
-        return NextResponse.json({ error: { code: 'PENSA_STAGE_MISMATCH' } }, { status: 409 })
-      }
+      const cycle = project.cycles.find((item) => item.id === cycleId)
+      if (!cycle) return error('PENSA_NOT_FOUND', 404)
+      if (cycle.stage !== stage) return error('PENSA_STAGE_MISMATCH', 409)
       const stageRes = await members.pensaGetStage(cycleId, stage)
-      if (stageRes.status !== 200 || !stageRes.body) {
-        return NextResponse.json(stageRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
-          status: stageRes.status === 200 ? 502 : stageRes.status,
-        })
-      }
+      if (stageRes.status !== 200 || !stageRes.body)
+        return error('PENSA_NOT_FOUND', stageRes.status === 200 ? 502 : stageRes.status)
       const conversation = stageRes.body.conversation
-      const prevState = stageRes.body.state as unknown as PensaZState | Record<string, never>
-      const zState: PensaZState | null =
-        prevState && typeof prevState === 'object' && 'answered' in prevState
-          ? (prevState as PensaZState)
-          : null
-
-      // Quota de IA da CONTA (diária + mensal, durável no members) — ÚLTIMO guard
-      // do pré-voo, ANTES de abrir o stream (a recusa sai como JSON limpo, nunca
-      // SSE quebrado). 1 mensagem = 1 crédito. Fail-open dentro do helper.
+      const rawState = stageRes.body.state
+      const zState =
+        rawState && 'answered' in rawState ? (rawState as unknown as PensaZState) : null
       const quota = await consumeAiQuota(members, 'pensa-chat')
-      if (!quota.allowed) {
-        return NextResponse.json(
-          {
-            error: {
-              code: 'AI_QUOTA_EXCEEDED',
-              scope: quota.scope,
-              message: aiQuotaMessage(quota.scope),
-            },
-          },
-          { status: 429 },
-        )
-      }
-
+      if (!quota.allowed)
+        // O `credits` viaja junto para a tela do "acabou" já saber quando volta,
+        // sem um GET extra (o caminho de erro não passa pelo refresh do stage).
+        return error('AI_QUOTA_EXCEEDED', 429, aiQuotaMessage(quota.scope), {
+          scope: quota.scope,
+          credits: quota.credits ?? null,
+        })
       const system = buildStageZSystem({
         mode: 'kids',
         projectName: project.name,
-        projectKind: project.kind,
         cycleNumber: cycle.number,
         cycleGoal: cycle.goal,
         summary: conversation.summary,
         state: zState,
       })
-      const windowMessages = conversation.messages.slice(-PROMPT_WINDOW)
       const wire = [
         { role: 'system' as const, content: system },
-        ...windowMessages.map((m) => ({ role: m.role, content: m.content })),
+        ...conversation.messages
+          .slice(-PROMPT_WINDOW)
+          .map((item) => ({ role: item.role, content: item.content })),
         { role: 'user' as const, content: message },
       ]
-
       const encoder = new TextEncoder()
       const stream = new ReadableStream<Uint8Array>({
         start(controller) {
           let closed = false
-          const safeEnqueue = (bytes: Uint8Array) => {
-            if (closed) return
-            try {
-              controller.enqueue(bytes)
-            } catch {
-              closed = true
-            }
+          const send = (event: string, data: unknown) => {
+            if (!closed)
+              controller.enqueue(
+                encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
+              )
           }
-          const send = (event: string, data: unknown) =>
-            safeEnqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`))
-          // Cloudflare derruba conexão ociosa (~100s sem bytes) — ping a cada 15s.
-          const ping = setInterval(() => safeEnqueue(encoder.encode(': ping\n\n')), 15_000)
-
+          const ping = setInterval(() => {
+            if (!closed) controller.enqueue(encoder.encode(': ping\n\n'))
+          }, 15_000)
           void (async () => {
             try {
               const assistantText = await streamPensaChat({
@@ -308,84 +241,48 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
                 signal: req.signal,
                 onDelta: (text) => send('delta', text),
               })
-              if (req.signal.aborted) return // abort = nada persiste
-              if (!assistantText.trim()) {
-                send('error', {
-                  code: 'PENSA_AI_EMPTY',
-                  message: 'O Zappy se enrolou. Tente de novo.',
-                })
-                return
-              }
-
-              // Evaluator (juiz das 5 perguntas) sobre o transcript ATUALIZADO.
-              // Falha do juiz NÃO derruba o turno: mantém o estado anterior.
+              if (req.signal.aborted || !assistantText.trim()) return
               const updated: PensaChatMessage[] = [
                 ...conversation.messages,
                 { role: 'user', content: message, at: '' },
                 { role: 'assistant', content: assistantText, at: '' },
               ]
               let state: Record<string, unknown> | undefined
+              let summary: string | undefined
               try {
                 state = (await evaluateStageZ(updated, conversation.summary)) as unknown as Record<
                   string,
                   unknown
                 >
-              } catch (err) {
-                console.error('[pensa-ai] evaluator failed', err)
-                state = undefined
-              }
-
-              // Resumo rolante: quando a conversa passa da janela do prompt, resume
-              // o começo (senão a ideia inicial some do contexto num jogo grande).
-              // Best-effort — falha mantém o resumo anterior (members faz ?? existing).
-              let summary: string | undefined
+              } catch {}
               if (updated.length > PROMPT_WINDOW) {
                 try {
                   summary = await summarizeStageZ(updated)
-                } catch (err) {
-                  console.error('[pensa-ai] summary failed', err)
-                  summary = undefined
-                }
+                } catch {}
               }
-
-              // Persiste o turno COMPLETO (user+assistant+state+summary numa chamada).
               const saved = await members.pensaAppendTurn(cycleId, stage, {
                 userMessage: { content: message },
                 assistantMessage: { content: assistantText },
                 ...(state ? { state } : {}),
                 ...(summary ? { summary } : {}),
               })
-              if (saved.status !== 200 || !saved.body) {
-                send('error', {
-                  code: 'PENSA_TURN_NOT_SAVED',
-                  message: 'Não consegui guardar essa conversa. Tente de novo.',
-                })
-                return
-              }
+              if (saved.status !== 200 || !saved.body)
+                return send('error', { code: 'PENSA_TURN_NOT_SAVED' })
               send('state', saved.body.state)
               send('done', { messageCount: saved.body.messageCount })
-            } catch (err) {
-              if (req.signal.aborted) return
-              send('error', {
-                code: 'PENSA_AI_UNAVAILABLE',
-                message:
-                  err instanceof PensaLlmError && err.status === 503
-                    ? 'O Zappy está descansando agora. Tente mais tarde.'
-                    : 'O Zappy tropeçou aqui. Tente de novo.',
-              })
+            } catch (cause) {
+              if (!req.signal.aborted)
+                send('error', {
+                  code: cause instanceof PensaLlmError ? 'PENSA_AI_UNAVAILABLE' : 'PENSA_AI_FAILED',
+                })
             } finally {
               clearInterval(ping)
               closed = true
               try {
                 controller.close()
-              } catch {
-                // já fechado (cliente foi embora) — nada a fazer.
-              }
+              } catch {}
             }
           })()
-        },
-        cancel() {
-          // Reader do cliente cancelou — o abort do req.signal já corta o upstream.
         },
       })
       return new Response(stream, { headers: sseHeaders })
@@ -395,415 +292,253 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
   const pensaGenerateArtifact = {
     POST: async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
       const user = await session.getSession()
-      if (!user) {
-        return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 })
-      }
-      if (user.act) {
-        return NextResponse.json(
-          { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
-          { status: 403 },
+      if (!user) return error('UNAUTHENTICATED', 401)
+      if (user.act) return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
+      if (!(await hasCreativeAppsLevel(members, user.role))) {
+        return error(
+          'CAREER_LEVEL_REQUIRED',
+          403,
+          'O Pensa abre quando você chegar no nível Inventor(a).',
         )
       }
       const { cycleId } = await ctx.params
-      if (!UUID_RE.test(cycleId)) {
-        return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
-      }
+      if (!UUID.safeParse(cycleId).success) return error('NOT_FOUND', 404)
       const parsed = GenerateBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) {
-        return NextResponse.json({ error: { code: 'VALIDATION_ERROR' } }, { status: 400 })
-      }
+      if (!parsed.success) return error('VALIDATION_ERROR', 400)
       const body = parsed.data
-      // `identity/save` e `checklist_seed` NÃO chamam IA — dispensam disponibilidade e teto.
-      const callsLlm =
-        body.type !== 'checklist_seed' &&
-        body.type !== 'spec_edit' &&
-        !(body.type === 'identity' && body.step === 'save')
-      if (callsLlm && !pensaLlmAvailable()) {
-        return NextResponse.json({ error: { code: 'PENSA_AI_UNAVAILABLE' } }, { status: 503 })
-      }
-      // Reusa o anti-burst do chat (síntese também é chamada de IA).
-      if (callsLlm && pensaChatRateLimited(user.id)) {
-        return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 })
-      }
-      // Quota de IA da CONTA — só nos tipos que chamam LLM (os determinísticos são
-      // grátis). 1 geração = 1 crédito. Trade-off aceito: um 409 posterior
-      // (PENSA_NOT_READY) queima o crédito — raro, a UI gateia os CTAs.
-      if (callsLlm) {
+      const projectRes = await members.pensaGetProject(body.projectId)
+      if (projectRes.status !== 200 || !projectRes.body)
+        return error('PENSA_NOT_FOUND', projectRes.status === 200 ? 502 : projectRes.status)
+      const project = projectRes.body.project
+      const cycle = project.cycles.find((item) => item.id === cycleId)
+      if (!cycle) return error('PENSA_NOT_FOUND', 404)
+      // Pré-voo rápido segue em JSON (mesmos envelopes de sempre): quota e
+      // disponibilidade recusam ANTES de abrir o stream, como no chat.
+      if (body.type !== 'plan_review') {
+        if (!pensaLlmAvailable()) return error('PENSA_AI_UNAVAILABLE', 503)
         const quota = await consumeAiQuota(members, 'pensa-synthesis')
-        if (!quota.allowed) {
-          return NextResponse.json(
-            {
-              error: {
-                code: 'AI_QUOTA_EXCEEDED',
-                scope: quota.scope,
-                message: aiQuotaMessage(quota.scope),
-              },
-            },
-            { status: 429 },
-          )
-        }
-      }
-
-      /**
-       * Ideia clarificada (latest do type `idea` na etapa z) + o transcript da
-       * conversa — insumos das sínteses da E (o transcript carrega os detalhes
-       * concretos que a Carta resume).
-       */
-      const loadStageZ = async (): Promise<
-        { ideaText: string; transcript: string } | NextResponse
-      > => {
-        const zRes = await members.pensaGetStage(cycleId, 'z')
-        if (zRes.status !== 200 || !zRes.body) {
-          return NextResponse.json(zRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
-            status: zRes.status === 200 ? 502 : zRes.status,
+        if (!quota.allowed)
+          return error('AI_QUOTA_EXCEEDED', 429, aiQuotaMessage(quota.scope), {
+            scope: quota.scope,
+            credits: quota.credits ?? null,
           })
-        }
-        const idea = zRes.body.artifacts.find((a) => a.type === 'idea')
-        const text =
-          idea && typeof idea.content === 'object' && idea.content !== null
-            ? (idea.content as { text?: unknown }).text
-            : null
-        if (typeof text !== 'string' || !text.trim()) {
-          return NextResponse.json(
-            { error: { code: 'PENSA_NOT_READY', message: 'A Carta da Ideia ainda não existe.' } },
-            { status: 409 },
+      }
+      const getStage = async (stage: 'z' | 'e' | 'r' | 'o') => {
+        const result = await members.pensaGetStage(cycleId, stage)
+        if (result.status !== 200 || !result.body) throw new Error('Não consegui carregar o plano')
+        return result.body
+      }
+      // Mesmo envelope do error(), como objeto plano — o miolo da geração roda
+      // DENTRO do stream SSE e devolve {status, body} p/ virar done/error.
+      const fail = (code: string, status: number, message?: string): GenerateReply => ({
+        status,
+        body: { error: { code, ...(message ? { message } : {}) } },
+      })
+      const runGenerate = async (): Promise<GenerateReply> => {
+        let content: unknown
+        if (body.type === 'idea') {
+          const zStage = await getStage('z')
+          const state = zStage.state as unknown as Partial<PensaZState>
+          if (!state.ready)
+            return fail('PENSA_GATE_NOT_READY', 409, 'Conclua as cinco decisões da etapa Z.')
+          content = await generateJson({
+            schema: IdeaArtifactSchema,
+            schemaName: 'pensa_idea_v2',
+            label: 'a Carta da Ideia',
+            user: `Nome do plano: ${project.name}\nConversa:\n${json(zStage.conversation)}`,
+          })
+        } else if (body.type === 'game_design') {
+          const zStage = await getStage('z')
+          const idea = requireValidated(zStage, 'idea').content
+          content = await generateJson({
+            schema: GameDesignArtifactSchema,
+            schemaName: 'pensa_game_design_v1',
+            label: 'o loop, cenas, telas e câmera do jogo',
+            user: `IDEIA APROVADA:\n${json(idea)}\nPEDIDO DE REVISÃO: ${body.feedback ?? 'nenhum'}`,
+          })
+        } else if (body.type === 'visual_direction') {
+          const [zStage, eStage] = await Promise.all([getStage('z'), getStage('e')])
+          const idea = requireValidated(zStage, 'idea').content
+          const design = latest(eStage, 'game_design')
+          if (!design) throw new Error('Crie o game design antes da Bíblia Visual')
+          content = await generateJson({
+            schema: VisualDirectionArtifactSchema,
+            schemaName: 'pensa_visual_direction_v1',
+            label: 'uma Bíblia Visual executável',
+            user: `IDEIA:\n${json(idea)}\nGAME DESIGN:\n${json(design.content)}\nInclua papéis na paleta e um item para CADA asset. Em 3D, modelos, mundo e materiais continuam no inventário, mas serão tarefas do Estúdio.\nPEDIDO: ${body.feedback ?? 'nenhum'}`,
+            maxTokens: 4200,
+            bodyTimeoutMs: 90_000,
+          })
+        } else if (body.type === 'task_plan') {
+          const [zStage, eStage] = await Promise.all([getStage('z'), getStage('e')])
+          const idea = IdeaArtifactSchema.parse(requireValidated(zStage, 'idea').content)
+          const design = requireValidated(eStage, 'game_design').content
+          const visual = VisualDirectionArtifactSchema.parse(
+            requireValidated(eStage, 'visual_direction').content,
+          )
+          const gamification = await members.getGamification()
+          if (gamification.status !== 200) return fail('PENSA_TIER_UNAVAILABLE', 503)
+          const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+          const catalog = plannerCatalogPrompt(tier, idea.dimension)
+          const raw = await generateJson({
+            schema: TaskPlanDraftSchema,
+            schemaName: 'pensa_task_plan_v1',
+            label: 'Cartões de Criação pequenos, ordenados e com dependências',
+            user: [
+              `IDEIA:\n${json(idea)}`,
+              `GAME DESIGN:\n${json(design)}`,
+              `BÍBLIA VISUAL:\n${json(visual)}`,
+              'Gere o plano completo na ordem de execução.',
+              'Crie uma tarefa Pinta para CADA sprite/background/tileset/tilemap usando assetId — e NUNCA cite essas artes 2D em visualAssetIds: a tarefa do Estúdio que usa a arte deve apenas DEPENDER da tarefa Pinta. Modelos, mundo e materiais são tarefas studio e entram em visualAssetIds.',
+              'Tarefas studio devem usar somente IDs do catálogo abaixo. IDs de steps e criteria precisam ser estáveis e únicos por tarefa.',
+              `PEDIDO: ${body.feedback ?? 'nenhum'}`,
+              catalog,
+            ].join('\n\n'),
+            maxTokens: 8000,
+            // O plano inteiro sai numa geração só (sem stream): o corpo chega no
+            // FIM — 30s derrubava o task_plan real ("pendurou o corpo", 08/2026).
+            bodyTimeoutMs: 180_000,
+          })
+          const tasks = stripPintaArtFromStudioTasks(
+            resolveTaskPlan(raw, tier, idea.dimension),
+            visual,
+          )
+          validateVisualTaskCoverage(tasks, visual)
+          const written = await members.pensaReplaceTasks(cycleId, tasks)
+          if (written.status !== 200 || !written.body)
+            return {
+              status: written.status,
+              body: written.body ?? { error: { code: 'PENSA_TASKS_NOT_SAVED' } },
+            }
+          content = TaskPlanArtifactSchema.parse({
+            taskIds: written.body.tasks.map((task) => task.id),
+            generatedAt: new Date().toISOString(),
+            catalog: 'studio-official',
+          })
+        } else {
+          const [rStage, zStage, eStage, gamification] = await Promise.all([
+            getStage('r'),
+            getStage('z'),
+            getStage('e'),
+            members.getGamification(),
+          ])
+          if (gamification.status !== 200) return fail('PENSA_TIER_UNAVAILABLE', 503)
+          const gameDimension = IdeaArtifactSchema.parse(
+            requireValidated(zStage, 'idea').content,
+          ).dimension
+          const visual = VisualDirectionArtifactSchema.parse(
+            requireValidated(eStage, 'visual_direction').content,
+          )
+          const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+          content = auditPlan(
+            rStage,
+            availablePlannerCatalog(tier, gameDimension),
+            gameDimension,
+            body.approved,
+            visual,
           )
         }
-        const transcript = transcriptForEvaluator(
-          zRes.body.conversation.messages.slice(-PROMPT_WINDOW),
-          zRes.body.conversation.summary,
+
+        const stage =
+          body.type === 'idea'
+            ? 'z'
+            : body.type === 'game_design' || body.type === 'visual_direction'
+              ? 'e'
+              : body.type === 'task_plan'
+                ? 'r'
+                : 'o'
+        const saved = await members.pensaSaveArtifact(cycleId, { stage, type: body.type, content })
+        if (saved.status !== 200 || !saved.body)
+          return {
+            status: saved.status,
+            body: saved.body ?? { error: { code: 'PENSA_ARTIFACT_NOT_SAVED' } },
+          }
+        if (body.type === 'plan_review' && (content as PlanReviewArtifact).approved) {
+          const validated = await members.pensaValidateArtifact(cycleId, 'plan_review')
+          return { status: validated.status, body: validated.body ?? saved.body }
+        }
+        return { status: 200, body: saved.body }
+      }
+      const mapGenerateError = (cause: unknown): GenerateReply => {
+        if (cause instanceof PensaCatalogDriftError) return fail(cause.code, 422, cause.message)
+        if (cause instanceof PensaLlmError) {
+          // O detalhe técnico (400 do provider, timeout etc.) vai ao LOG; a
+          // criança recebe uma frase gentil — o banner mostrava o erro cru.
+          console.error('[pensa-ai] geração falhou', { type: body.type, cause })
+          return fail(
+            'PENSA_AI_UNAVAILABLE',
+            cause.status ?? 502,
+            'A IA demorou ou tropeçou agora. Espere um pouquinho e tente de novo.',
+          )
+        }
+        if (cause instanceof SyntaxError) {
+          // JSON quebrado do modelo (mesmo após o nudge de reparo) — a criança
+          // via o erro cru do parser ("Expected ',' or '}'…", QA 08/2026).
+          console.error('[pensa-ai] geração falhou', { type: body.type, cause })
+          return fail(
+            'PENSA_GENERATION_FAILED',
+            409,
+            'A IA se atrapalhou com o plano agora. Espere um pouquinho e tente de novo.',
+          )
+        }
+        return fail(
+          'PENSA_GENERATION_FAILED',
+          409,
+          cause instanceof Error ? cause.message : 'Não foi possível gerar o artefato',
         )
-        return { ideaText: text, transcript }
       }
 
-      /** Projeto + ciclo (contexto de prompt) com checagem de etapa corrente. */
-      const loadProjectCycle = async (projectId: string, requiredStage: 'e' | 'r' | 'o') => {
-        const projectRes = await members.pensaGetProject(projectId)
-        if (projectRes.status !== 200 || !projectRes.body) {
-          return NextResponse.json(projectRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
-            status: projectRes.status === 200 ? 502 : projectRes.status,
-          })
-        }
-        const project = projectRes.body.project
-        const cycle = project.cycles.find((c) => c.id === cycleId)
-        if (!cycle) {
-          return NextResponse.json({ error: { code: 'PENSA_NOT_FOUND' } }, { status: 404 })
-        }
-        if (cycle.stage !== requiredStage) {
-          return NextResponse.json({ error: { code: 'PENSA_STAGE_MISMATCH' } }, { status: 409 })
-        }
-        return { project, cycle }
-      }
-
-      const aiFailed = (message: string) =>
-        NextResponse.json({ error: { code: 'PENSA_AI_UNAVAILABLE', message } }, { status: 502 })
-
-      // ── type: 'idea' — a Carta da Ideia (etapa Z) ─────────────────────────
-      if (body.type === 'idea') {
-        // Exige as 5 perguntas respondidas (estado do evaluator).
-        const stageRes = await members.pensaGetStage(cycleId, 'z')
-        if (stageRes.status !== 200 || !stageRes.body) {
-          return NextResponse.json(stageRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
-            status: stageRes.status === 200 ? 502 : stageRes.status,
-          })
-        }
-        const state = stageRes.body.state as unknown as PensaZState | Record<string, never>
-        const ready = state && typeof state === 'object' && 'ready' in state && state.ready === true
-        if (!ready) {
-          return NextResponse.json(
-            {
-              error: {
-                code: 'PENSA_NOT_READY',
-                message: 'Ainda faltam perguntas para clarear a ideia.',
-              },
-            },
-            { status: 409 },
-          )
-        }
-        try {
-          const idea = await synthesizeIdea(
-            'kids',
-            stageRes.body.conversation.messages,
-            stageRes.body.conversation.summary,
-          )
-          const saved = await members.pensaSaveArtifact(cycleId, {
-            stage: 'z',
-            type: 'idea',
-            content: idea,
-          })
-          return NextResponse.json(saved.body ?? { ok: saved.status === 200 }, {
-            status: saved.status,
-          })
-        } catch (err) {
-          console.error('[pensa-ai] idea generate failed', err)
-          return aiFailed('Não consegui montar a Carta agora. Tente de novo.')
-        }
-      }
-
-      // ── type: 'friendly_spec' — PRD interno + tirinhas/wireframes (etapa E) ─
-      if (body.type === 'friendly_spec') {
-        const loaded = await loadProjectCycle(body.projectId, 'e')
-        if (loaded instanceof NextResponse) return loaded
-        const stageZ = await loadStageZ()
-        if (stageZ instanceof NextResponse) return stageZ
-
-        // Revisão: spec E prd anteriores vêm do latest da etapa E (o PRD também é
-        // atualizado, senão deriva do que a criança aprovou). Se o fetch falhar, o
-        // feedback AINDA entra no prompt — o pedido da criança nunca é descartado.
-        let previousSpec: unknown
-        let previousPrd: string | undefined
-        if (body.feedback) {
-          const eRes = await members.pensaGetStage(cycleId, 'e')
-          if (eRes.status === 200 && eRes.body) {
-            previousSpec = eRes.body.artifacts.find((a) => a.type === 'friendly_spec')?.content
-            const prdContent = eRes.body.artifacts.find((a) => a.type === 'prd')?.content as
-              | { markdown?: unknown }
-              | undefined
-            if (typeof prdContent?.markdown === 'string') previousPrd = prdContent.markdown
-          }
-        }
-        try {
-          const spec = await synthesizeSpec({
-            mode: 'kids',
-            projectName: loaded.project.name,
-            cycleNumber: loaded.cycle.number,
-            cycleGoal: loaded.cycle.goal,
-            ideaText: stageZ.ideaText,
-            transcript: stageZ.transcript,
-            ...(body.feedback ? { feedback: body.feedback } : {}),
-            ...(previousSpec ? { previousSpec } : {}),
-            ...(previousPrd ? { previousPrd } : {}),
-          })
-          // O PRD interno acompanha a spec (mesma chamada = consistentes); a criança
-          // valida SÓ a friendly_spec (o gate e→r exige friendly_spec + identity).
-          const prdSaved = await members.pensaSaveArtifact(cycleId, {
-            stage: 'e',
-            type: 'prd',
-            content: { markdown: spec.prdMarkdown },
-          })
-          if (prdSaved.status !== 200) {
-            return NextResponse.json(prdSaved.body ?? { ok: false }, { status: prdSaved.status })
-          }
-          const saved = await members.pensaSaveArtifact(cycleId, {
-            stage: 'e',
-            type: 'friendly_spec',
-            content: spec.friendly,
-          })
-          return NextResponse.json(saved.body ?? { ok: saved.status === 200 }, {
-            status: saved.status,
-          })
-        } catch (err) {
-          console.error('[pensa-ai] friendly_spec generate failed', err)
-          return aiFailed('Não consegui desenhar o jogo agora. Tente de novo.')
-        }
-      }
-
-      // ── type: 'spec_edit' — a criança editou UMA tela À MÃO (sem IA) ────────
-      // Mantém os fluxos/PRD, regrava só as telas e AUTO-VALIDA (edição pontual =
-      // não precisa refazer o desenho inteiro nem re-aprovar tudo).
-      if (body.type === 'spec_edit') {
-        const loaded = await loadProjectCycle(body.projectId, 'e')
-        if (loaded instanceof NextResponse) return loaded
-        const eRes = await members.pensaGetStage(cycleId, 'e')
-        if (eRes.status !== 200 || !eRes.body) {
-          return NextResponse.json(eRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
-            status: eRes.status === 200 ? 502 : eRes.status,
-          })
-        }
-        const current = eRes.body.artifacts.find((a) => a.type === 'friendly_spec')?.content as
-          | { flows?: unknown }
-          | undefined
-        if (!current) {
-          return NextResponse.json(
-            { error: { code: 'PENSA_NOT_READY', message: 'O desenho do jogo ainda não existe.' } },
-            { status: 409 },
-          )
-        }
-        const content = {
-          flows: Array.isArray(current.flows) ? current.flows : [],
-          screens: body.screens,
-        }
-        const saved = await members.pensaSaveArtifact(cycleId, {
-          stage: 'e',
-          type: 'friendly_spec',
-          content,
-        })
-        if (saved.status !== 200 || !saved.body) {
-          return NextResponse.json(saved.body ?? { ok: false }, { status: saved.status })
-        }
-        const validated = await members.pensaValidateArtifact(cycleId, 'friendly_spec')
-        return NextResponse.json(validated.body ?? saved.body, {
-          status: validated.status === 200 ? 200 : validated.status,
-        })
-      }
-
-      // ── type: 'mission_plan' — missões da etapa R (criança constrói no Estúdio) ─
-      if (body.type === 'mission_plan') {
-        const onR = await loadProjectCycle(body.projectId, 'r')
-        if (onR instanceof NextResponse) return onR
-        const eRes = await members.pensaGetStage(cycleId, 'e')
-        if (eRes.status !== 200 || !eRes.body) {
-          return NextResponse.json(eRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
-            status: eRes.status === 200 ? 502 : eRes.status,
-          })
-        }
-        const prd = eRes.body.artifacts.find((a) => a.type === 'prd')?.content as
-          | { markdown?: unknown }
-          | undefined
-        const friendly = eRes.body.artifacts.find((a) => a.type === 'friendly_spec')?.content
-        const identity = eRes.body.artifacts.find((a) => a.type === 'identity')?.content as
-          | { name?: string; palette?: { colors?: string[] } }
-          | undefined
-        if (typeof prd?.markdown !== 'string' || !friendly) {
-          return NextResponse.json(
-            { error: { code: 'PENSA_NOT_READY', message: 'O desenho do jogo ainda não existe.' } },
-            { status: 409 },
-          )
-        }
-        // Missões de ARTE só quando a criança POSSUI o Pinta (produtos são vendidos
-        // à parte — sem posse, nada de missão apontando p/ porta fechada). Best-effort:
-        // falha na checagem = sem missões de arte (o plano segue completo).
-        let includeArtMissions = false
-        try {
-          const access = await members.checkPintaAccessReadonly()
-          includeArtMissions = access.status === 200 && access.body?.access?.pinta === true
-        } catch {
-          // sem posse confirmada → sem missões de arte
-        }
-        // "Sugerir mais": junta os títulos que já existem p/ o modelo NÃO repetir e
-        // gerar poucas missões NOVAS que continuam o plano (sem apagar o quadro).
-        const append = body.append === true
-        let existingTitles: string[] | undefined
-        if (append) {
-          const rStage = await members.pensaGetStage(cycleId, 'r')
-          existingTitles =
-            rStage.status === 200
-              ? (rStage.body?.tasks ?? []).map((t) => t.title).slice(0, 60)
-              : undefined
-        }
-        try {
-          const tasks = await synthesizeMissions({
-            mode: 'kids',
-            projectName: onR.project.name,
-            cycleNumber: onR.cycle.number,
-            cycleGoal: onR.cycle.goal,
-            prdMarkdown: prd.markdown,
-            friendlySpec: friendly,
-            identity: identity ?? null,
-            buildEnv: onR.project.buildEnv ?? null,
-            includeArtMissions,
-            existingTitles,
-          })
-          // append = "sugerir mais" (não zera o quadro); senão REPLACE.
-          const saved = append
-            ? await members.pensaAppendTasks(cycleId, tasks)
-            : await members.pensaReplaceTasks(cycleId, tasks)
-          if (saved.status !== 200 || !saved.body) {
-            return NextResponse.json(saved.body ?? { ok: false }, { status: saved.status })
-          }
-          // Espelho auditável SÓ no replace (representa o plano INTEIRO da etapa R).
-          if (!append) {
-            const mirror = await members.pensaSaveArtifact(cycleId, {
-              stage: 'r',
-              type: 'mission_plan',
-              content: { tasks },
-            })
-            if (mirror.status !== 200) {
-              console.error('[pensa-ai] mission_plan mirror save failed', mirror.status)
+      // A geração leva MINUTOS sem stream (o corpo do task_plan só chega no
+      // fim) e a borda (Railway; Cloudflare em prod) derruba POST mudo com 502.
+      // A resposta vira SSE com TTFB imediato + ping 15s (padrão do chat) e o
+      // resultado final sai num único evento done/error.
+      const encoder = new TextEncoder()
+      let closed = false
+      let ping: ReturnType<typeof setInterval> | undefined
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          const write = (chunk: string) => {
+            if (closed) return
+            try {
+              controller.enqueue(encoder.encode(chunk))
+            } catch {
+              closed = true
             }
           }
-          return NextResponse.json(saved.body, { status: 200 })
-        } catch (err) {
-          console.error('[pensa-ai] mission_plan generate failed', err)
-          return aiFailed('Não consegui montar as missões agora. Tente de novo.')
-        }
-      }
-
-      // ── type: 'checklist_seed' — template determinístico do Grande Lançamento ─
-      if (body.type === 'checklist_seed') {
-        const seeded = await loadProjectCycle(body.projectId, 'o')
-        if (seeded instanceof NextResponse) return seeded
-        const items = buildChecklistSeed({
-          mode: 'kids',
-          gameName: seeded.project.name,
-          cycleNumber: seeded.cycle.number,
-          buildEnv: seeded.project.buildEnv ?? null,
-        })
-        const replaced = await members.pensaReplaceChecklist(cycleId, items)
-        if (replaced.status !== 200 || !replaced.body) {
-          return NextResponse.json(replaced.body ?? { ok: false }, { status: replaced.status })
-        }
-        // Espelho auditável do seed como artefato da etapa O (best-effort).
-        const mirror = await members.pensaSaveArtifact(cycleId, {
-          stage: 'o',
-          type: 'checklist_seed',
-          content: { items },
-        })
-        if (mirror.status !== 200) {
-          console.error('[pensa-ai] checklist_seed mirror save failed', mirror.status)
-        }
-        return NextResponse.json(replaced.body, { status: 200 })
-      }
-
-      // ── type: 'identity' — funil nome → paleta → ícone (etapa E) ───────────
-      const loaded = await loadProjectCycle(body.projectId, 'e')
-      if (loaded instanceof NextResponse) return loaded
-
-      if (body.step === 'suggestions') {
-        const stageZ = await loadStageZ()
-        if (stageZ instanceof NextResponse) return stageZ
-        try {
-          const suggestions = await suggestIdentity({
-            mode: 'kids',
-            projectName: loaded.project.name,
-            ideaText: stageZ.ideaText,
-          })
-          return NextResponse.json({ suggestions }, { status: 200 })
-        } catch (err) {
-          console.error('[pensa-ai] identity suggestions failed', err)
-          return aiFailed('Não consegui sugerir nomes agora. Tente de novo.')
-        }
-      }
-
-      if (body.step === 'icons') {
-        const stageZ = await loadStageZ()
-        if (stageZ instanceof NextResponse) return stageZ
-        try {
-          const icons = await generateIcons({
-            mode: 'kids',
-            gameName: body.name,
-            ideaText: stageZ.ideaText,
-            palette: body.palette,
-          })
-          if (icons.length === 0) {
-            return aiFailed('Os ícones não saíram bons. Tente gerar de novo.')
-          }
-          return NextResponse.json({ icons }, { status: 200 })
-        } catch (err) {
-          console.error('[pensa-ai] identity icons failed', err)
-          return aiFailed('Não consegui desenhar os ícones agora. Tente de novo.')
-        }
-      }
-
-      // step: 'save' — sem IA: sanitiza o ícone escolhido e grava o artefato.
-      // A escolha da criança no funil É a validação → valida o latest em seguida
-      // (o gate e→r exige `identity` validated).
-      const iconSvg = body.iconSvg === null ? null : sanitizeIconSvg(body.iconSvg)
-      if (body.iconSvg !== null && iconSvg === null) {
-        return NextResponse.json({ error: { code: 'VALIDATION_ERROR' } }, { status: 400 })
-      }
-      const saved = await members.pensaSaveArtifact(cycleId, {
-        stage: 'e',
-        type: 'identity',
-        content: { name: body.name, palette: body.palette, iconSvg },
+          const send = (event: string, data: unknown) =>
+            write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+          write(': ok\n\n')
+          ping = setInterval(() => write(': ping\n\n'), 15_000)
+          void (async () => {
+            try {
+              const reply = await runGenerate().catch(mapGenerateError)
+              const envelope = (reply.body ?? {}) as { error?: { code?: string; message?: string } }
+              if (reply.status === 200 && !envelope.error) send('done', reply.body)
+              else
+                send('error', {
+                  status: reply.status,
+                  code: envelope.error?.code ?? 'PENSA_GENERATION_FAILED',
+                  ...(envelope.error?.message ? { message: envelope.error.message } : {}),
+                })
+            } finally {
+              if (ping) clearInterval(ping)
+              closed = true
+              try {
+                controller.close()
+              } catch {}
+            }
+          })()
+        },
+        // Desconexão do cliente NÃO aborta a geração (≠ chat): se ela terminar,
+        // tasks/artefato persistem no members e um F5 mostra o resultado —
+        // abortar no meio poderia deixar pensaReplaceTasks aplicado sem o
+        // artefato salvo. Daqui em diante o write() vira no-op.
+        cancel() {
+          closed = true
+          if (ping) clearInterval(ping)
+        },
       })
-      if (saved.status !== 200 || !saved.body) {
-        return NextResponse.json(saved.body ?? { ok: false }, { status: saved.status })
-      }
-      const validated = await members.pensaValidateArtifact(cycleId, 'identity')
-      return NextResponse.json(validated.body ?? saved.body, {
-        status: validated.status === 200 ? 200 : validated.status,
-      })
+      return new Response(stream, { headers: sseHeaders })
     },
   }
 

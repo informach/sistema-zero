@@ -1,8 +1,8 @@
 /**
  * Faixa "Spritesheet" do rodapé (layout da imagem-modelo): UMA linha por
  * animação, com os quadros DELA na própria linha. Junta o que antes eram dois
- * painéis — a lista de animações (`AnimationList`) e a tira de quadros
- * (`FrameStrip`) — num só lugar, sem perder nenhuma ação:
+ * painéis — a lista de animações e a tira de quadros — num só lugar, sem
+ * perder nenhuma ação:
  *  - cabeçalho: contagem de animações + "Nova animação";
  *  - cada linha: selecionar/renomear/duplicar/apagar a animação;
  *  - quadros inline: clicar seleciona (animação + quadro); na animação
@@ -31,9 +31,11 @@ import {
   type AnimatedSpriteAsset,
   isAnimatedSpriteKind,
   type PintaBitmap,
+  type PintaPixelFrame,
   resolveAssetPalette,
   type VectorFrame,
 } from '../../core/project'
+import { flattenCels } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Button } from '../ui/Button'
@@ -48,6 +50,7 @@ import {
   Plus,
   Trash2,
 } from '../ui/icons'
+import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -55,13 +58,14 @@ function PixelFrameThumb({
   bitmap,
   colors,
 }: {
-  bitmap: PintaBitmap
+  /** Já ACHATADO (camadas visíveis); null = quadro sem nada visível. */
+  bitmap: PintaBitmap | null
   colors: readonly string[]
 }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas = canvasRef.current
-    if (canvas) paintBitmap(canvas, bitmap, colors)
+    if (canvas && bitmap) paintBitmap(canvas, bitmap, colors)
   }, [bitmap, colors])
   return (
     <canvas
@@ -131,7 +135,7 @@ export function SpriteSheetPanel({
   const activeId = active?.id ?? asset.animations[0]?.id ?? null
   const selectedFrame = active ? Math.min(frameIndex, active.frames.length - 1) : 0
 
-  /** Muta os QUADROS da animação `animId` (mesmo contrato do FrameStrip). */
+  /** Muta os QUADROS da animação `animId`. */
   function mutateFrames(
     op: (sprite: AnimatedSpriteAsset) => {
       next: AnimatedSpriteAsset
@@ -168,26 +172,25 @@ export function SpriteSheetPanel({
   }
 
   return (
-    <section
-      aria-label={COPY.animation.spritesheet}
-      className={`pin-panel flex min-h-0 flex-col gap-2 p-2 ${className ?? ''}`}
-    >
-      <header className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-pin-text">{COPY.animation.spritesheet}</span>
-          <span className="rounded-full bg-pin-accent/15 px-2 py-0.5 text-xs font-bold text-pin-muted">
-            {COPY.animation.animationCount(asset.animations.length)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
+    <Panel
+      title={COPY.animation.spritesheet}
+      className={className}
+      titleSuffix={
+        <span className="ml-2 shrink-0 rounded-full bg-pin-accent/15 px-2 py-0.5 font-bold text-pin-muted text-xs normal-case tracking-normal">
+          {COPY.animation.animationCount(asset.animations.length)}
+        </span>
+      }
+      actions={
+        <>
           {zoomSlot}
           <Button variant="primary" onClick={addNewAnimation}>
             <Plus aria-hidden="true" className="size-4" />
             {COPY.animation.addAnimation}
           </Button>
-        </div>
-      </header>
-
+        </>
+      }
+      bodyClassName="flex min-h-0 flex-col gap-2 p-2"
+    >
       <div className="flex max-h-56 min-h-0 flex-col gap-1 overflow-y-auto">
         {asset.animations.map((animation) => {
           const selected = animation.id === activeId
@@ -233,7 +236,10 @@ export function SpriteSheetPanel({
                       }`}
                     >
                       {asset.kind === 'pixel-sprite' ? (
-                        <PixelFrameThumb bitmap={frame as PintaBitmap} colors={colors} />
+                        <PixelFrameThumb
+                          bitmap={flattenCels(frame as PintaPixelFrame, asset.layers)}
+                          colors={colors}
+                        />
                       ) : (
                         <VectorFrameSvg
                           width={asset.frameWidth}
@@ -392,6 +398,6 @@ export function SpriteSheetPanel({
           </div>
         </form>
       </Dialog>
-    </section>
+    </Panel>
   )
 }

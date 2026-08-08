@@ -1,12 +1,17 @@
 /**
  * Card de um desenho na galeria: miniatura REAL do desenho (canvas 1:1
  * esticado por CSS pixelated para pixel; SVG inline para vetor; minimapa de
- * cores para o tilemap), nome, chip colorido por PAPEL + selinho de estilo e
- * as ações (renomear/duplicar/apagar). Os diálogos de renomear/apagar vivem no
- * GalleryScreen — o card só chama.
+ * cores para o tilemap), nome e selinho de estilo.
+ *
+ * ⚠️ Card COMPACTO (~164px): pequeno o bastante para caber muita coisa na tela
+ * (referência MakeCode Arcade, "só para reconhecer o desenho") e largo o
+ * bastante para as três ações ficarem NO card, cada uma com o alvo de 44px da
+ * regra de toque infantil — 3×44 = 132px + respiros. Um menu "⋮" chegou a ser
+ * tentado para caber em 10 colunas e foi REJEITADO pela dona: as ações voltaram
+ * para o card. Os diálogos de renomear/apagar seguem no GalleryScreen.
  */
 import type { JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import {
   assetStyle,
@@ -15,6 +20,7 @@ import {
   type PintaBitmap,
   resolveAssetPalette,
 } from '../../core/project'
+import { flattenCels } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import type { VectorShape } from '../../vector/model'
@@ -24,10 +30,13 @@ import { Copy, Pencil, Trash2 } from '../ui/icons'
 /** Bitmap "cara" do asset para a miniatura (null = sem prévia raster). */
 export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
   switch (asset.kind) {
-    case 'pixel-sprite':
-      return asset.animations[0]?.frames[0] ?? null
+    // Miniatura mostra o desenho VISÍVEL (camadas achatadas).
+    case 'pixel-sprite': {
+      const cels = asset.animations[0]?.frames[0]
+      return cels ? flattenCels(cels, asset.layers) : null
+    }
     case 'pixel-background':
-      return asset.bitmap
+      return flattenCels(asset.cels, asset.layers)
     case 'tileset':
       return asset.tiles[0] ?? null
     default:
@@ -169,14 +178,35 @@ export function AssetCard({
   findAsset?: (id: string) => PintaAsset | null
   onOpen: () => void
   onRename: () => void
-  onDuplicate: () => void
+  onDuplicate: () => Promise<void> | void
   onRemove: () => void
 }): JSX.Element {
   const kind = COPY.kinds[asset.kind]
   const style = assetStyle(asset.kind)
+  const [duplicating, setDuplicating] = useState(false)
+  // A trava do duplo clique é um REF: dois cliques no MESMO turno de JS chegam
+  // antes de qualquer re-render marcar o botão como desabilitado.
+  const duplicatingRef = useRef(false)
+
+  async function handleDuplicate(): Promise<void> {
+    if (duplicatingRef.current) return
+    duplicatingRef.current = true
+    setDuplicating(true)
+    try {
+      await onDuplicate()
+    } finally {
+      duplicatingRef.current = false
+      setDuplicating(false)
+    }
+  }
+
+  /** Alvo de toque de 44px — a regra de mão de criança vale para as 3 ações. */
+  const actionClass =
+    'flex min-h-11 min-w-11 items-center justify-center rounded-xl transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent'
+
   return (
     <div
-      className={`pin-panel pin-pop flex flex-col gap-2 p-3 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
+      className={`pin-panel pin-pop flex flex-col gap-1 p-2 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
     >
       <button
         type="button"
@@ -184,24 +214,24 @@ export function AssetCard({
         aria-label={COPY.a11y.openAsset(
           `${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`,
         )}
-        className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+        className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
       >
         <Thumb asset={asset} findAsset={findAsset} />
       </button>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <span
           aria-hidden="true"
-          className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm text-white ${KIND_CHIP_CLASSES[asset.kind]}`}
+          className={`inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[9px] text-white ${KIND_CHIP_CLASSES[asset.kind]}`}
           title={kind.title}
         >
           {kind.emoji}
         </span>
-        <span className="truncate text-base font-bold" title={asset.name}>
+        <span className="truncate font-bold text-xs" title={asset.name}>
           {asset.name}
         </span>
         {style ? (
           <span
-            className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-xs font-bold text-white ${
+            className={`ml-auto shrink-0 rounded-full px-1.5 py-px font-bold text-[10px] text-white ${
               style === 'pixel' ? 'bg-pin-style-pixel' : 'bg-pin-style-vector'
             }`}
           >
@@ -209,20 +239,24 @@ export function AssetCard({
           </span>
         ) : null}
       </div>
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center justify-between gap-1">
         <button
           type="button"
           onClick={onRename}
           aria-label={`${COPY.gallery.rename} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
+          title={COPY.gallery.rename}
+          className={`${actionClass} hover:bg-pin-border/40`}
         >
           <Pencil aria-hidden="true" className="size-4" />
         </button>
         <button
           type="button"
-          onClick={onDuplicate}
+          onClick={() => void handleDuplicate()}
+          disabled={duplicating}
+          aria-busy={duplicating}
           aria-label={`${COPY.gallery.duplicate} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
+          title={COPY.gallery.duplicate}
+          className={`${actionClass} hover:bg-pin-border/40 disabled:cursor-wait disabled:opacity-50`}
         >
           <Copy aria-hidden="true" className="size-4" />
         </button>
@@ -230,7 +264,8 @@ export function AssetCard({
           type="button"
           onClick={onRemove}
           aria-label={`${COPY.gallery.remove} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-danger/20"
+          title={COPY.gallery.remove}
+          className={`${actionClass} text-pin-danger hover:bg-pin-danger/20`}
         >
           <Trash2 aria-hidden="true" className="size-4" />
         </button>

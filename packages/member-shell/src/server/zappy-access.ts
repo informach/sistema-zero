@@ -1,37 +1,41 @@
 import 'server-only'
 import { getEnv } from '../lib/env'
 import { isPrivilegedRole } from '../lib/studio-tier'
+import type { MembersClient } from './clients'
+import { hasCreativeAppsLevel, meetsCreativeAppsLevel } from './creative-apps-access'
 
-interface ZappyPilotSession {
-  id: string
+interface ZappySession {
   role: string
-  activeProfile?: { accountId: string }
 }
 
-interface ZappyPilotPolicy {
+interface ZappyPolicy {
   enabled: boolean
-  accountIds: readonly string[]
 }
 
-function policyFromEnv(): ZappyPilotPolicy {
-  const env = getEnv()
-  return {
-    enabled: env.ZAPPY_ENABLED,
-    accountIds: env.ZAPPY_PILOT_ACCOUNT_IDS.split(',')
-      .map((value) => value.trim())
-      .filter(Boolean),
-  }
+function policyFromEnv(): ZappyPolicy {
+  return { enabled: getEnv().ZAPPY_ENABLED }
 }
 
-/** Mesma política autoritativa usada pelo BFF e pelas páginas que ofertam o tutor. */
-export function isStudioZappyPilotAllowed(
-  session: ZappyPilotSession | null | undefined,
-  policy?: ZappyPilotPolicy,
+/** Equipe sempre entra; alunos precisam da flag e de Inventor(a) ou acima. */
+export function isStudioZappyAllowed(
+  session: ZappySession | null | undefined,
+  levelSlug: string | null | undefined,
+  policy?: ZappyPolicy,
 ): boolean {
   if (!session) return false
   if (isPrivilegedRole(session.role)) return true
-  const effectivePolicy = policy ?? policyFromEnv()
-  if (!effectivePolicy.enabled) return false
-  const accountId = session.activeProfile?.accountId ?? session.id
-  return new Set(effectivePolicy.accountIds).has(accountId)
+  if (!(policy ?? policyFromEnv()).enabled) return false
+  return meetsCreativeAppsLevel(levelSlug, session.role)
+}
+
+/** Mesma política para handlers que ainda precisam consultar o nível no members. */
+export async function isStudioZappyAllowedForRequest(
+  members: MembersClient,
+  session: ZappySession | null | undefined,
+  policy?: ZappyPolicy,
+): Promise<boolean> {
+  if (!session) return false
+  if (isPrivilegedRole(session.role)) return true
+  if (!(policy ?? policyFromEnv()).enabled) return false
+  return hasCreativeAppsLevel(members, session.role)
 }

@@ -10,6 +10,7 @@ import {
 import { loadExtensionBootstrapScript } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
+import { buildAudioRuntime } from '../preview/audioBridge'
 import { coreImportsForCode } from '../preview/coreImports'
 import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { buildInputRuntime } from '../preview/inputBridge'
@@ -77,6 +78,10 @@ export async function buildClassicFileMap(
   // qualquer script do aluno, inclusive quando o JS foi escrito inline no HTML.
   const inputScriptSrc = 'sz-input.js'
   files[`public/${inputScriptSrc}`] = await minifiers.js(buildInputRuntime(), { module: false })
+  // Runtime core dos blocos da categoria 🔊 Som do núcleo. Sem ele o jogo
+  // exportado fica MUDO fora do Estúdio, mesmo com o sz-assets.js presente.
+  const audioScriptSrc = 'sz-audio.js'
+  files[`public/${audioScriptSrc}`] = await minifiers.js(buildAudioRuntime(), { module: false })
 
   // Extras → arquivos reais. CSS é linkado no <head>; HTML vira fragmento no
   // <body>; JS/TS é transpilado para `.js` real (import explícito com .js resolve).
@@ -237,6 +242,7 @@ export async function buildClassicFileMap(
     extraHtmlFragments,
     assetsScriptSrc,
     inputScriptSrc,
+    audioScriptSrc,
   })
   files['public/index.html'] = minifiers.html(indexHtml)
   files['public/manifest.webmanifest'] = buildWebAppManifest(project.name)

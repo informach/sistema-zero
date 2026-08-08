@@ -1,7 +1,10 @@
+import { meetsCreativeAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
+import { KidsCareerLockedPinta } from '@/components/kids/kids-career-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
 import { PintaClient } from '@/components/kids/pinta-client'
-import { checkPintaAccessReadonly } from '@/server/members'
+import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
+import { checkPintaAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -12,22 +15,28 @@ export const dynamic = 'force-dynamic'
  * O gate é resolvido no SERVIDOR (sem acesso → o app nem carrega); os DADOS são
  * locais ao navegador (IndexedDB por perfil) — zero backend próprio.
  *
- * São 3 estados, NÃO 2 (mesma régua do /estudio): members RESPONDEU (200) e não tem
- * o produto → bloqueio real (`KidsLockedPinta`); gateway/token soluçou (status ≠
- * 200) → "tente de novo" (`KidsPintaUnavailable`) — não mentir "não liberado" a quem
- * comprou. A MESMA ida também resolve `estudio-completo` → `studioOwned` (só muda a
- * copy do sucesso do "Usar no Estúdio").
+ * São 4 estados: indisponível, sem o produto, produto comprado mas carreira abaixo
+ * de Inventor(a), e acesso completo. A mesma ida também resolve o Estúdio.
  */
 export default async function PintaPage() {
   // `session.id` = o PERFIL ativo (kids) → a galeria do Pinta e a biblioteca
   // "Meus desenhos" do Estúdio usam o MESMO namespace do IndexedDB do /estudio.
-  const [res, session] = await Promise.all([checkPintaAccessReadonly(), getSession()])
+  const [res, session, gam] = await Promise.all([
+    checkPintaAccessReadonly(),
+    getSession(),
+    getGamificationReadonly().catch(() => null),
+  ])
   if (res.status !== 200) return <KidsPintaUnavailable />
   const hasAccess = res.body?.access?.pinta === true
-  const studioOwned = res.body?.access?.['estudio-completo'] === true
-  return hasAccess ? (
-    <PintaClient viewerId={session?.id ?? null} studioOwned={studioOwned} />
-  ) : (
-    <KidsLockedPinta />
-  )
+  if (!hasAccess) return <KidsLockedPinta />
+  if (gam?.status !== 200) return <KidsPintaUnavailable />
+  if (!meetsCreativeAppsLevel(gam.body?.level?.slug, session?.role)) {
+    return <KidsCareerLockedPinta />
+  }
+  const studioAvailable = canOpenPensaStudioTask({
+    studioProductOwned: res.body?.access?.['estudio-completo'] === true,
+    levelSlug: gam?.status === 200 ? gam.body?.level?.slug : undefined,
+    role: session?.role,
+  })
+  return <PintaClient viewerId={session?.id ?? null} studioAvailable={studioAvailable} />
 }

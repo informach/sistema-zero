@@ -1,5 +1,5 @@
 import { GeistMono } from 'geist/font/mono'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Baloo_2, Nunito } from 'next/font/google'
 import { Providers } from '@/components/providers'
 import './globals.css'
@@ -23,6 +23,14 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
+}
+
+export const viewport: Viewport = {
+  colorScheme: 'light dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f4f9ff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0c1e3e' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

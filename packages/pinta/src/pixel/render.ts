@@ -64,17 +64,31 @@ export function paintBitmap(
   return true
 }
 
+/**
+ * Camadas ao redor do bitmap em edição, na ordem de pintura:
+ * `ghost` (quadro anterior, translúcido) → `under` (camadas de baixo, opacas) →
+ * o bitmap ativo → `over` (camadas de cima, opacas).
+ *
+ * Vêm PRÉ-ACHATADAS: durante um gesto só o bitmap ativo muda, então o pintor
+ * blita 3 imagens por movimento em vez de recompor a pilha inteira.
+ */
+export interface PaintLayers {
+  ghost?: { bitmap: PintaBitmap; alpha: number }
+  under?: PintaBitmap | null
+  over?: PintaBitmap | null
+  /**
+   * A camada em edição está ESCONDIDA (olho fechado): o palco mostra só as
+   * outras. Sem isso, esconder a camada ativa não tirava nada da tela.
+   */
+  hideActive?: boolean
+}
+
 export interface ScaledPainter {
   /**
    * Repinta (offscreen 1:1 + blit escalado). Chamar a cada mudança de
-   * bitmap/zoom. `under` desenha um bitmap FANTASMA por baixo (onion skin).
+   * bitmap/zoom.
    */
-  paint(
-    bitmap: PintaBitmap,
-    colors: readonly string[],
-    scale: number,
-    under?: { bitmap: PintaBitmap; alpha: number },
-  ): void
+  paint(bitmap: PintaBitmap, colors: readonly string[], scale: number, layers?: PaintLayers): void
   dispose(): void
 }
 
@@ -98,21 +112,24 @@ export function createScaledPainter(canvas: HTMLCanvasElement): ScaledPainter | 
   }
 
   return {
-    paint(bitmap, colors, scale, under) {
+    paint(bitmap, colors, scale, layers) {
       const w = Math.max(Math.round(bitmap.width * scale), 1)
       const h = Math.max(Math.round(bitmap.height * scale), 1)
       if (canvas.width !== w) canvas.width = w
       if (canvas.height !== h) canvas.height = h
       ctx.imageSmoothingEnabled = false
       ctx.clearRect(0, 0, w, h)
-      if (under) {
-        blit1to1(under.bitmap, colors)
-        ctx.globalAlpha = under.alpha
+      const draw = (source: PintaBitmap, alpha = 1): void => {
+        blit1to1(source, colors)
+        if (alpha !== 1) ctx.globalAlpha = alpha
         ctx.drawImage(offscreen, 0, 0, w, h)
-        ctx.globalAlpha = 1
+        if (alpha !== 1) ctx.globalAlpha = 1
       }
-      blit1to1(bitmap, colors)
-      ctx.drawImage(offscreen, 0, 0, w, h)
+      // Ordem: fantasma → camadas de baixo → camada em edição → de cima.
+      if (layers?.ghost) draw(layers.ghost.bitmap, layers.ghost.alpha)
+      if (layers?.under) draw(layers.under)
+      if (!layers?.hideActive) draw(bitmap)
+      if (layers?.over) draw(layers.over)
     },
     dispose() {
       offscreen.width = 0

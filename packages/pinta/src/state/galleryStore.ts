@@ -150,7 +150,17 @@ function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
 }
 
 export function createGalleryStore(): PintaGalleryStore {
-  return createStore<PintaGalleryState>((set, get) => ({
+  let mutationTail = Promise.resolve()
+  function enqueueMutation<T>(task: () => Promise<T>): Promise<T> {
+    const result = mutationTail.then(task, task)
+    mutationTail = result.then(
+      () => undefined,
+      () => undefined,
+    )
+    return result
+  }
+
+  const store = createStore<PintaGalleryState>((set, get) => ({
     assets: [],
     loaded: false,
     loading: false,
@@ -393,4 +403,15 @@ export function createGalleryStore(): PintaGalleryStore {
       set({ mutateError: null })
     },
   }))
+  const actions = store.getState()
+  store.setState({
+    load: () => enqueueMutation(actions.load),
+    create: (input) => enqueueMutation(() => actions.create(input)),
+    createFromTemplate: (input) => enqueueMutation(() => actions.createFromTemplate(input)),
+    rename: (id, name) => enqueueMutation(() => actions.rename(id, name)),
+    duplicate: (id) => enqueueMutation(() => actions.duplicate(id)),
+    remove: (id) => enqueueMutation(() => actions.remove(id)),
+    importAssets: (assets) => enqueueMutation(() => actions.importAssets(assets)),
+  })
+  return store
 }

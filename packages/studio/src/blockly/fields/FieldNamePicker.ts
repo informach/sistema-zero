@@ -666,6 +666,13 @@ const SOUND_DECL_BLOCKS: Record<string, string[]> = {
   sz_gk_load_sound: ['NAME'],
   sz_g3k_load_sound: ['NAME'],
   sz_w3d_load_sound: ['NAME'],
+  sz_g3d_load_sound: ['NAME'],
+  sz_g2d_load_sound: ['NAME'],
+  // ⚠️ O do NÚCLEO também. Sem esta linha o seletor de "Tocar o som" abre VAZIO
+  // num projeto web/Canvas: a criança carrega com um apelido e o campo não sabe
+  // de onde vêm os nomes. O bloco ainda funciona digitando, mas o seletor perde
+  // a razão de existir.
+  sz_som_load: ['NAME'],
 }
 function collectSounds(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, SOUND_DECL_BLOCKS)
@@ -974,11 +981,13 @@ const FUNCTION_LOCAL_BINDERS: ScopedBinderRegistry = {
 const GROUP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_group: ['NAME'],
   sz_g2d_define_enemy_type: ['NAME'],
+  sz_g2d_define_enemy_smart: ['NAME'],
 }
 
 /** Blocos que DECLARAM um TIPO de inimigo nomeado (Jogo 2D). */
 const ENEMYTYPE_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_define_enemy_type: ['NAME'],
+  sz_g2d_define_enemy_smart: ['NAME'],
 }
 
 /** Tipos de inimigo criados no workspace, na ordem dos blocos, sem repetir. */

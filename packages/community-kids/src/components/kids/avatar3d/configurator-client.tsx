@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useTheme } from 'next-themes'
+import type { AvatarReturnPath } from '@/lib/avatar-return'
 import { KidsMascot } from '../mascot'
 
 /**
@@ -24,10 +25,10 @@ function ConfiguratorLoading() {
   )
 }
 
-export function AvatarConfiguratorClient() {
+export function AvatarConfiguratorClient({ returnTo }: { returnTo: AvatarReturnPath }) {
   // Fundo da cena casa com o tema DA COMUNIDADE (toggle do app via next-themes), não com a
   // preferência do SO — igual ao Estúdio (`studio-full-client`). Cosmético; `resolvedTheme` pode
   // vir `undefined` na 1ª render (pré-hidratação) → claro por padrão, ajusta ao montar.
   const { resolvedTheme } = useTheme()
-  return <AvatarConfigurator dark={resolvedTheme === 'dark'} />
+  return <AvatarConfigurator dark={resolvedTheme === 'dark'} returnTo={returnTo} />
 }

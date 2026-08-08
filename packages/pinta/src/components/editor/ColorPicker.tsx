@@ -145,6 +145,7 @@ export function ColorPicker({
         </label>
         <input
           id="pin-color-hex"
+          name="pinta-color-hex"
           type="text"
           inputMode="text"
           autoComplete="off"
@@ -182,7 +183,7 @@ export function ColorPicker({
                   setHexText(hex)
                   onChange(hex)
                 }}
-                className={`size-8 rounded-lg border-2 transition ${current === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
+                className={`size-11 rounded-lg border-2 transition ${current === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
                 style={{ backgroundColor: hex }}
               />
             ))}
@@ -220,7 +221,7 @@ export function ColorButton({
         title={label}
         onClick={() => setOpen(true)}
         className={clsx(
-          'size-10 rounded-lg border-2 border-pin-border transition hover:border-pin-accent',
+          'size-11 rounded-lg border-2 border-pin-border transition hover:border-pin-accent',
           className,
         )}
         style={{ backgroundColor: value }}

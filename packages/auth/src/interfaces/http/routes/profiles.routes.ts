@@ -112,6 +112,8 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             whatsapp: body.whatsapp,
             // Data de nascimento só entra na CRIAÇÃO pela conta (rota já é parent-only).
             birthDate: body.birthDate,
+            // Idem: o opt-in de perfil público na criação é parent-only por construção.
+            publicProfileEnabled: body.publicProfileEnabled,
           })
           set.status = 201
           return { profile }

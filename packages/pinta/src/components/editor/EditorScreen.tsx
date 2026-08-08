@@ -14,12 +14,16 @@
  * e prévia/animações colapsáveis.
  */
 import type { JSX } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { assetStyle, type PintaAsset } from '../../core/project'
-import { buildStudioPayload, type StudioPayload } from '../../export/studioBridge'
+import {
+  buildStudioPayload,
+  type StudioPayload,
+  validateStudioPayloadSize,
+} from '../../export/studioBridge'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
-import { persistAsset } from '../../state/persistence'
+import { persistAssets } from '../../state/persistence'
 import {
   createSessionStore,
   type PintaSessionState,
@@ -27,14 +31,15 @@ import {
   TILEMAP_ZOOM_LEVELS,
   VECTOR_ZOOM_LEVELS,
 } from '../../state/sessionStore'
+import { updateTaskProgress } from '../../state/taskProgress'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import { ArrowLeft, ChevronDown, Download, Gamepad2, Redo2, Rocket, Undo2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
-import { AnimationDetails } from './AnimationDetails'
 import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession } from './editorContext'
+import { LayerPanel } from './LayerPanel'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
@@ -43,7 +48,12 @@ import { TilemapEditor } from './TilemapEditor'
 import { TileStrip } from './TileStrip'
 import { ToolBar } from './ToolBar'
 import { useMediaQuery } from './useMediaQuery'
-import { VectorEditor } from './VectorEditor'
+import { useStudioResync } from './useStudioResync'
+import { VectorEditorScope } from './vector/VectorEditorScope'
+import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightColumn'
+import { VectorSelectionBar } from './vector/VectorSelectionBar'
+import { VectorStage } from './vector/VectorStage'
+import { VectorToolbox } from './vector/VectorToolbox'
 import { ZoomControls } from './ZoomControls'
 
 function SaveBadge(): JSX.Element {
@@ -60,33 +70,53 @@ function SaveBadge(): JSX.Element {
       : saveState === 'saving'
         ? 'text-pin-muted'
         : 'text-pin-danger'
-  return <span className={`text-sm font-bold ${tone}`}>{label}</span>
+  return (
+    <span
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className={`text-sm font-bold ${tone}`}
+    >
+      {label}
+    </span>
+  )
 }
 
-/**
- * Coluna ESQUERDA dos kinds PIXEL (desktop): rail de ferramentas + área de
- * cores logo abaixo (como na imagem-modelo). A PaletteBar se auto-remove nos
- * kinds sem paleta (nenhum pixel), então serve sprite/cenário/peças igual.
- */
+/** Coluna ESQUERDA dos kinds PIXEL (desktop): só o rail de ferramentas. */
 function PixelLeftColumn(): JSX.Element {
   return (
     <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
       <ToolBar />
-      <PaletteBar />
     </div>
   )
 }
 
 /**
- * Painel DIREITO dos SPRITES (desktop): a prévia rodando + os detalhes da
- * animação selecionada (Duração/Velocidade/Repetição/Suavização). Ambos se
- * auto-removem fora de sprite animado.
+ * Coluna ESQUERDA dos kinds VETORIAIS (desktop): gêmea da do pixel. O wrapper
+ * não é decoração: é ele quem recebe o `stretch` da linha do palco. Sem ele a
+ * caixa (que é o `.pin-panel` visível) esticava até a altura do palco e o
+ * `flex-1` do miolo virava um vão branco acima das duas cores.
  */
-function SpriteRightPanel(): JSX.Element {
+function VectorLeftColumn(): JSX.Element {
   return (
-    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto overflow-x-hidden">
+    <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
+      <VectorToolbox />
+    </div>
+  )
+}
+
+/**
+ * Coluna DIREITA dos kinds de pixel (desktop): prévia (só sprite animado — ela
+ * se auto-remove nos demais) → CAMADAS → CORES, todos na mesma largura
+ * (`w-68`). Os três rolam JUNTOS por dentro da coluna; os detalhes da animação
+ * vivem numa modal (engrenagem da prévia).
+ */
+function PixelRightColumn(): JSX.Element {
+  return (
+    <div className="flex min-h-0 w-68 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto">
       <PreviewPlayer />
-      <AnimationDetails />
+      <LayerPanel />
+      <PaletteBar />
     </div>
   )
 }
@@ -118,9 +148,7 @@ function SpritePanelDisclosure(): JSX.Element {
           <div className="w-44 shrink-0">
             <PreviewPlayer />
           </div>
-          <div className="min-w-56 flex-1">
-            <AnimationDetails />
-          </div>
+          <LayerPanel />
         </div>
       ) : null}
     </div>
@@ -169,23 +197,21 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     asset.kind === 'pixel-background' ||
     asset.kind === 'tileset'
   ) {
-    const isSprite = asset.kind === 'pixel-sprite'
     if (wide) {
       return (
-        <div className="flex min-h-0 flex-1 items-stretch gap-2 p-2">
-          <PixelLeftColumn />
-          {/* A faixa de baixo (quadros/peças/zoom) NÃO é mais uma linha no
-              rodapé de tudo — ela vive na coluna do palco, encostada embaixo e
-              atravessando também a coluna da prévia. No rodapé ela roubava
-              altura de TODAS as colunas, e era isso que espremia
-              ferramentas+cores e criava a rolagem da coluna da esquerda. */}
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-            <div className="flex min-h-0 flex-1 items-stretch gap-2">
-              <PixelCanvas />
-              {isSprite ? <SpriteRightPanel /> : null}
-            </div>
-            <EditorFooter asset={asset} />
+        // A faixa de baixo (Spritesheet/peças + zoom) atravessa a LARGURA
+        // INTEIRA. Isso só cabe porque as cores saíram da coluna esquerda (que
+        // agora tem só as ferramentas): era a soma ferramentas+cores que não
+        // cabia em 1366×768 quando a faixa era um rodapé de tudo.
+        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+            <PixelLeftColumn />
+            <PixelCanvas />
+            {/* A coluna existe também no CENÁRIO (que não tem prévia) porque é
+                onde moram camadas e cores; peças não têm camadas. */}
+            {asset.kind === 'tileset' ? <PaletteBar /> : <PixelRightColumn />}
           </div>
+          <EditorFooter asset={asset} />
         </div>
       )
     }
@@ -194,7 +220,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
         <ToolBar orientation="horizontal" />
         <PixelCanvas />
         <PaletteBar layout="row" />
-        {isSprite ? <SpritePanelDisclosure /> : null}
+        {asset.kind === 'tileset' ? null : <SpritePanelDisclosure />}
         <EditorFooter asset={asset} stacked />
       </div>
     )
@@ -202,35 +228,39 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
-  // Kinds vetoriais: o MESMO editor de shapes; personagem ganha o painel de
-  // prévia/detalhes + a faixa Spritesheet (espelho do pixel), peças ganham a
-  // tira de tiles. As cores do vetor vivem dentro do próprio VectorEditor.
+  // Kinds vetoriais: o MESMO arranjo do pixel — caixa de ferramentas à
+  // esquerda, palco no meio, UMA coluna direita `w-68` (prévia → cores →
+  // aparência) e a faixa (Spritesheet/peças + zoom) em LARGURA TOTAL embaixo.
   const isVectorSprite = asset.kind === 'vector-sprite'
   if (wide) {
+    // O escopo envolve TUDO (não só a linha do palco) para a faixa da seleção
+    // poder nascer colada na barra de cima. Ele é só um Provider, não vira DOM.
     return (
-      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        <div className="flex min-h-0 flex-1 items-stretch gap-2">
-          <VectorEditor />
-          {isVectorSprite ? <SpriteRightPanel /> : null}
+      <VectorEditorScope>
+        <VectorSelectionBar />
+        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+            <VectorLeftColumn />
+            <VectorStage />
+            <VectorRightColumn />
+          </div>
+          <EditorFooter asset={asset} />
         </div>
-        <EditorFooter asset={asset} />
-      </div>
+      </VectorEditorScope>
     )
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-      <VectorEditor />
+      <VectorEditorScope>
+        <VectorToolbox orientation="horizontal" />
+        <VectorStage />
+        <VectorPanelsDisclosure />
+      </VectorEditorScope>
       {isVectorSprite ? <SpritePanelDisclosure /> : null}
       <EditorFooter asset={asset} stacked />
     </div>
   )
 }
-
-/**
- * Quanto tempo sem editar antes de reenviar o desenho ao Estúdio. Rasterizar a
- * folha inteira custa, então não é a cada traço — é quando a criança para.
- */
-const RESYNC_IDLE_MS = 1500
 
 function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   const { adapter, gallery } = usePintaApp()
@@ -243,7 +273,13 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   const editorState = useEditor((state) => state)
   const [sending, setSending] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
-  const [resynced, setResynced] = useState(false)
+  const resynced = useStudioResync({
+    asset,
+    animationId,
+    frameIndex,
+    gallery,
+    send: adapter.resyncToStudio,
+  })
 
   const kind = COPY.kinds[asset.kind]
 
@@ -271,24 +307,9 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       showToast(COPY.sendToStudio.error)
       return
     }
-    // Teto de UM asset no Studio — manter em sincronia com
-    // MAX_ASSET_DATA_URL_CHARS de packages/studio/src/core/project.ts. Validar
-    // AQUI dá a mensagem gentil antes do fail-soft genérico da ponte.
-    const STUDIO_MAX_ASSET_CHARS = 800_000
-    if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) {
-      setSending(false)
-      showToast(COPY.sendToStudio.tooBig)
-      return
-    }
-    // Teto da FOLHA de peças embutida no metadado de MAPA — manter em sincronia
-    // com MAX_TILEMAP_SHEET_CHARS de packages/studio/src/core/project.ts (o
-    // sanitizador de lá descartaria o metadado em silêncio; validar AQUI dá a
-    // mensagem gentil).
-    const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
-    if (
-      payload.tilemap &&
-      payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS
-    ) {
+    // Tetos do Estúdio (asset e folha do mapa) — validar AQUI dá a mensagem
+    // gentil antes do fail-soft genérico da ponte.
+    if (validateStudioPayloadSize(payload) !== 'ok') {
       setSending(false)
       showToast(COPY.sendToStudio.tooBig)
       return
@@ -306,6 +327,20 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
         ...(payload.tileset ? { tileset: payload.tileset } : {}),
         ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
       })
+      let taskProgressSaved = true
+      if (result.ok && adapter.taskSession) {
+        taskProgressSaved = await updateTaskProgress(adapter.taskSession, {
+          ...(adapter.taskSession.progress.status === 'planned'
+            ? { status: 'in_progress' as const }
+            : {}),
+          outputRef: {
+            kind: 'pinta_asset',
+            assetId: asset.id,
+            assetName: result.name ?? asset.name,
+            usedInStudioAt: new Date().toISOString(),
+          },
+        })
+      }
       const successCopy = payload.tilemap
         ? adapter.studioOwned
           ? COPY.sendToStudio.mapSuccess
@@ -313,100 +348,19 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
         : adapter.studioOwned
           ? COPY.sendToStudio.success
           : COPY.sendToStudio.successLocked
-      showToast(result.ok ? successCopy : (result.error ?? COPY.sendToStudio.error))
+      showToast(
+        result.ok
+          ? taskProgressSaved
+            ? successCopy
+            : COPY.editor.taskStudioProgressError
+          : (result.error ?? COPY.sendToStudio.error),
+      )
     } catch {
       showToast(COPY.sendToStudio.error)
     } finally {
       setSending(false)
     }
   }
-
-  // ---- Reenvio automático ao salvar ("editei no Pinta, o jogo se atualiza") ----
-  // Dispara quando a criança PARA de desenhar (não a cada traço: rasterizar a
-  // folha inteira custa), e também ao esconder a aba/sair do editor — assim a
-  // biblioteca já está atualizada no instante em que ela volta para o Estúdio.
-  //
-  // O gatilho é a identidade de `asset` (o editorStore cria um objeto novo a
-  // cada commit), NÃO o autosave: a biblioteca pessoal é outra store, e esperar
-  // o disco só atrasaria. Quem decide se há o que atualizar é o HOST.
-  const resyncRef = useRef<(() => Promise<void>) | null>(null)
-  const doResync = async (): Promise<void> => {
-    if (!adapter.resyncToStudio) return
-    const payload = await exportForStudio().catch(() => null)
-    if (!payload || payload.dataUrl.length > 800_000) return
-    try {
-      const result = await adapter.resyncToStudio({
-        id: asset.id,
-        name: asset.name,
-        dataUrl: payload.dataUrl,
-        width: payload.width,
-        height: payload.height,
-        ...(payload.sprite ? { sprite: payload.sprite } : {}),
-        ...(payload.tileset ? { tileset: payload.tileset } : {}),
-        ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
-      })
-      // A ÚNICA confirmação visível do mecanismo — do lado do Estúdio a troca é
-      // silenciosa de propósito. Some sozinha, como o "Salvo".
-      if (result.updated) setResynced(true)
-    } catch {
-      // fail-soft: a sincronia do Estúdio ainda reconcilia no próximo foco.
-    }
-  }
-  // Ref de "versão mais nova" atualizado no COMMIT (não durante o render, que
-  // pode ser descartado): o disparo é sempre com o desenho que está na tela.
-  useEffect(() => {
-    resyncRef.current = doResync
-  })
-
-  // Abrir um desenho não reenvia nada: só EDITAR. A trava compara a IDENTIDADE
-  // do asset (não um booleano "já montei"): em StrictMode o React monta, limpa e
-  // monta de novo, e um booleano deixaria a 2ª montagem passar — o desenho era
-  // reenviado só por ter sido ABERTO (visto no playground).
-  const lastSeenAssetRef = useRef(asset)
-  /** Há edição esperando o reenvio? (o que ainda não foi levado ao Estúdio). */
-  const resyncPendingRef = useRef(false)
-
-  // O gatilho é a IDENTIDADE de `asset` (cada edição commita um objeto novo); o
-  // reenvio em si sai do ref acima, sempre atual.
-  useEffect(() => {
-    if (!adapter.resyncToStudio) return
-    if (asset === lastSeenAssetRef.current) return
-    lastSeenAssetRef.current = asset
-    resyncPendingRef.current = true
-    setResynced(false)
-    const run = () => {
-      resyncPendingRef.current = false
-      void resyncRef.current?.()
-    }
-    const timer = setTimeout(run, RESYNC_IDLE_MS)
-    const onHidden = () => {
-      if (!document.hidden) return
-      clearTimeout(timer)
-      run()
-    }
-    document.addEventListener('visibilitychange', onHidden)
-    window.addEventListener('pagehide', run)
-    return () => {
-      // Só cancela o relógio: a limpeza roda a cada TRAÇO (o `asset` muda), então
-      // reenviar aqui furaria a espera. Quem cobre a saída do editor é o efeito
-      // de desmonte abaixo.
-      clearTimeout(timer)
-      document.removeEventListener('visibilitychange', onHidden)
-      window.removeEventListener('pagehide', run)
-    }
-  }, [asset, adapter.resyncToStudio])
-
-  // Sair do editor com um traço recém-dado NÃO pode engolir o reenvio: a limpeza
-  // acima cancela o relógio, e sem isto o desenho só chegaria ao Estúdio na
-  // próxima vez que ela editasse — justamente o trabalho manual que a ponte
-  // veio remover. Espelha o flush do autosave no `EditorScreen`.
-  useEffect(() => {
-    return () => {
-      if (!resyncPendingRef.current) return
-      resyncPendingRef.current = false
-      void resyncRef.current?.()
-    }
-  }, [])
 
   /** "Jogar meu mapa": envia o mapa p/ virar um JOGO pronto no Estúdio. */
   async function handlePlayMap(): Promise<void> {
@@ -418,17 +372,9 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       showToast(COPY.sendToStudio.error)
       return
     }
-    // Teto de UM asset no Studio (miniatura do mapa) — paridade com o
-    // handleSendToStudio; a miniatura é capada em 512px, mas o guarda dá a
-    // mensagem gentil antes do fail-soft genérico se ainda assim estourar.
-    const STUDIO_MAX_ASSET_CHARS = 800_000
-    if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) {
-      setSending(false)
-      showToast(COPY.sendToStudio.tooBig)
-      return
-    }
-    const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
-    if (payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {
+    // Tetos do Estúdio — paridade com o handleSendToStudio (a miniatura é
+    // capada em 512px, mas o guarda dá a mensagem gentil se ainda estourar).
+    if (validateStudioPayloadSize(payload) !== 'ok') {
       setSending(false)
       showToast(COPY.sendToStudio.tooBig)
       return
@@ -454,7 +400,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   }
 
   return (
-    <header className="flex flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
+    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
       <ToolButton icon={ArrowLeft} label={COPY.editor.back} onClick={onBack} />
       <span aria-hidden="true" className="text-xl">
         {kind.emoji}
@@ -495,7 +441,10 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
             {COPY.tiles.playMap}
           </Button>
         ) : null}
-        {adapter.sendToStudio ? (
+        {/* O foguete só existe em desenho DE UM JOGO do Pensa (projectRef): é
+            onde ele marca o progresso da missão. Desenho avulso chega ao
+            Estúdio pelo "Trazer do Pinta" de lá (decisão da dona, 08/2026). */}
+        {adapter.sendToStudio && asset.projectRef ? (
           <Button variant="primary" disabled={sending} onClick={() => void handleSendToStudio()}>
             <Rocket aria-hidden="true" className="size-4" />
             {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}
@@ -529,26 +478,29 @@ function sessionDefaultsFor(asset: PintaAsset): Partial<PintaSessionState> {
           ? Math.max(asset.width, asset.height)
           : 0
   const zoom = docSize <= 48 ? 8 : docSize <= 160 ? 4 : 1
-  return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS }
+  // A grade do vetor NASCE desligada (pedido da usuária: papel liso, com a
+  // grade como apoio opcional) — no pixel ela segue ligada por padrão.
+  return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS, showGrid: false }
 }
 
 export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | null {
-  const { gallery, closeEditor } = usePintaApp()
+  const { adapter, gallery, closeEditor } = usePintaApp()
+  const { showToast } = useToast()
   const [stores] = useState<{ editor: PintaEditorStore; session: PintaSessionStore } | null>(() => {
     const asset = gallery.getState().assets.find((a) => a.id === assetId)
     if (!asset) return null
     return {
       editor: createEditorStore({
         asset,
-        persist: persistAsset,
+        persist: (saved, linked) => persistAssets([saved, ...linked]),
         onSaved: (saved) => gallery.getState().absorb(saved),
         // Assets ligados (mapas remapeados ao editar peças do tileset) restaurados
-        // por undo/redo: absorve na galeria + persiste — a transação cross-asset.
+        // por undo/redo: absorve na galeria; o editorStore persiste o conjunto
+        // atomicamente junto do tileset no mesmo ciclo do badge/flush.
         applyLinkedAssets: (assets) => {
           const g = gallery.getState()
           for (const linked of assets) {
             g.absorb(linked)
-            void persistAsset(linked)
           }
         },
       }),
@@ -560,6 +512,31 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
   useEffect(() => {
     if (!stores) closeEditor()
   }, [stores, closeEditor])
+
+  // O primeiro desenho aberto nesta sessão passa a ser o output vinculado do
+  // Cartão de Criação. Recarregar é idempotente; trocar de desenho religa.
+  useEffect(() => {
+    if (!stores || !adapter.taskSession || adapter.taskSession.progress.status === 'completed')
+      return
+    const asset = stores.editor.getState().asset
+    const current = adapter.taskSession.progress.outputRef
+    if (current?.assetId === asset.id && adapter.taskSession.progress.status !== 'planned') return
+    void updateTaskProgress(adapter.taskSession, {
+      ...(adapter.taskSession.progress.status === 'planned'
+        ? { status: 'in_progress' as const }
+        : {}),
+      outputRef: {
+        kind: 'pinta_asset',
+        assetId: asset.id,
+        assetName: asset.name,
+        ...(current?.assetId === asset.id && current.usedInStudioAt
+          ? { usedInStudioAt: current.usedInStudioAt }
+          : {}),
+      },
+    }).then((saved) => {
+      if (!saved) showToast(COPY.editor.taskLinkError)
+    })
+  }, [stores, adapter.taskSession, showToast])
 
   // Flush do autosave em pagehide e no desmonte (voltar/troca de tela).
   useEffect(() => {

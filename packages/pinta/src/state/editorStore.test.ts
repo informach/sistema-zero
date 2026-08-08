@@ -5,10 +5,12 @@ import {
   createTilesetAsset,
   type PintaAsset,
 } from '../core/project'
-import { assetBytes, createEditorStore, setAutosaveDelayForTests } from './editorStore'
+import { assetBytes, createEditorStore as createEditorStoreBase } from './editorStore'
 
-setAutosaveDelayForTests(10)
 const waitForAutosave = () => Bun.sleep(60)
+type EditorStoreOptions = Parameters<typeof createEditorStoreBase>[0]
+const createEditorStore = (options: EditorStoreOptions) =>
+  createEditorStoreBase({ ...options, autosaveDelayMs: 10 })
 
 function makeAsset(): PintaAsset {
   return createPixelBackgroundAsset({ name: 'ceu', width: 4, height: 4 })
@@ -16,9 +18,11 @@ function makeAsset(): PintaAsset {
 
 function edited(asset: PintaAsset): PintaAsset {
   if (asset.kind !== 'pixel-background') throw new Error('background esperado')
-  const data = new Uint8Array(asset.bitmap.data)
+  const cel = asset.cels[0]
+  if (!cel) throw new Error('cel esperado')
+  const data = new Uint8Array(cel.data)
   data[0] = (data[0] ?? 0) + 1
-  return { ...asset, bitmap: { ...asset.bitmap, data } }
+  return { ...asset, cels: [{ ...cel, data }, ...asset.cels.slice(1)] }
 }
 
 describe('editorStore — commit/undo/redo', () => {
@@ -111,6 +115,44 @@ describe('editorStore — commitLinked (transação cross-asset: tileset + mapas
     store.getState().commit(edited(asset))
     store.getState().undo()
     expect(store.getState().canRedo).toBe(true) // zero regressão no caminho comum
+  })
+
+  it('persiste asset principal e mapas ligados na mesma operação observável', async () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const mapBefore = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const mapAfter = { ...mapBefore, updatedAt: mapBefore.updatedAt + 1 }
+    const calls: Array<{ asset: PintaAsset; linked: readonly PintaAsset[] }> = []
+    const store = createEditorStore({
+      asset: tileset,
+      persist: async (asset, linked) => {
+        calls.push({ asset, linked })
+      },
+    })
+
+    store
+      .getState()
+      .commitLinked(
+        { ...tileset, updatedAt: tileset.updatedAt + 1 },
+        { before: [mapBefore], after: [mapAfter] },
+      )
+    await store.getState().flush()
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.linked).toEqual([mapAfter])
+    expect(store.getState().saveState).toBe('saved')
+  })
+
+  it('falha ao persistir mapas ligados mantém o editor sujo e mostra erro', async () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const store = createEditorStore({
+      asset: tileset,
+      persist: async (_asset, linked) => {
+        if (linked.length > 0) throw new Error('quota cheia')
+      },
+    })
+    store.getState().commitLinked(tileset, { before: [map], after: [map] })
+    await store.getState().flush()
+    expect(store.getState().saveState).toBe('error')
   })
 })
 

@@ -24,6 +24,8 @@ export class PensaLlmError extends Error {
   constructor(
     message: string,
     readonly status?: number,
+    /** Timeout de corpo não re-tenta: a repetição esperaria o relógio inteiro de novo. */
+    readonly retryable: boolean = true,
   ) {
     super(message)
     this.name = 'PensaLlmError'
@@ -145,7 +147,15 @@ function readWithGuards<T>(
   })
 }
 
-async function connectWithTimeout(body: unknown, signal?: AbortSignal): Promise<Response> {
+/**
+ * Conecta e devolve também o `abort` do controller interno: quem espera o CORPO
+ * depois dos headers precisa conseguir derrubar o socket (o timeout de corpo do
+ * `completePensaJson` rejeitava a Promise mas deixava a conexão pendurada).
+ */
+async function connectWithTimeout(
+  body: unknown,
+  signal?: AbortSignal,
+): Promise<{ res: Response; abort: () => void }> {
   const env = getEnv()
   const apiKey = env.OPENROUTER_API_KEY
   if (!apiKey) throw new PensaLlmError('IA não configurada', 503)
@@ -177,7 +187,7 @@ async function connectWithTimeout(body: unknown, signal?: AbortSignal): Promise<
       const text = await res.text().catch(() => '')
       throw new PensaLlmError(`OpenRouter erro ${res.status}: ${text.slice(0, 300)}`, res.status)
     }
-    return res
+    return { res, abort: () => controller.abort() }
   } finally {
     if (timer) clearTimeout(timer)
     signal?.removeEventListener('abort', onCallerAbort)
@@ -197,7 +207,7 @@ export async function streamPensaChat(opts: {
   signal?: AbortSignal
   onDelta: (text: string) => void
 }): Promise<string> {
-  const res = await connectWithTimeout(
+  const { res } = await connectWithTimeout(
     {
       model: opts.model ?? pensaChatModel(),
       messages: opts.messages,
@@ -269,6 +279,12 @@ export async function completePensaJson<T>(opts: {
   temperature?: number
   /** Alguns fluxos cobram uma chamada exata e não podem reparar com nova geração. */
   maxAttempts?: 1 | 2
+  /**
+   * Prazo para LER O CORPO após os headers (default CONNECT_TIMEOUT_MS). Sem
+   * stream, o provider entrega o JSON só ao FIM da geração — sínteses longas
+   * (ex.: task_plan com maxTokens 8000) precisam de folga maior que 30s.
+   */
+  bodyTimeoutMs?: number
 }): Promise<T> {
   const model = opts.model ?? pensaSynthesisModel()
   const baseMessages = [
@@ -299,13 +315,15 @@ export async function completePensaJson<T>(opts: {
       response_format: responseFormat,
     }
     try {
-      const res = await connectWithTimeout(body)
+      const { res, abort } = await connectWithTimeout(body)
       let timer: ReturnType<typeof setTimeout> | undefined
       const timeout = new Promise<never>((_, reject) => {
-        timer = setTimeout(
-          () => reject(new PensaLlmError('OpenRouter pendurou o corpo da resposta')),
-          CONNECT_TIMEOUT_MS,
-        )
+        timer = setTimeout(() => {
+          // Derruba o socket junto com o relógio — sem isto o fetch seguia
+          // pendurado consumindo a conexão mesmo após a rejeição.
+          abort()
+          reject(new PensaLlmError('OpenRouter pendurou o corpo da resposta', undefined, false))
+        }, opts.bodyTimeoutMs ?? CONNECT_TIMEOUT_MS)
       })
       try {
         const data = (await Promise.race([res.json(), timeout])) as {
@@ -323,7 +341,9 @@ export async function completePensaJson<T>(opts: {
       }
     } catch (err) {
       lastError = err
-      // 4xx do upstream (chave inválida/modelo inexistente) não melhora com retry.
+      // 4xx do upstream (chave inválida/modelo inexistente) não melhora com retry,
+      // e timeout de corpo re-tentado só faria a criança esperar o relógio 2x.
+      if (err instanceof PensaLlmError && !err.retryable) throw err
       if (err instanceof PensaLlmError && err.status && err.status < 500 && err.status !== 429) {
         throw err
       }

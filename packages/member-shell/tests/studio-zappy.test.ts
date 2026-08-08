@@ -10,10 +10,12 @@ const {
   buildStudioZappyPrompt,
   deterministicZappyReply,
   deterministicZappySafetyReply,
+  invalidStudioZappyAnswerReason,
   normalizeZappySearchQuery,
+  unknownBlockNamesInText,
   validatedStudioZappyResponse,
 } = await import('../src/server/zappy-ai')
-const { isStudioZappyPilotAllowed } = await import('../src/server/zappy-access')
+const { isStudioZappyAllowed } = await import('../src/server/zappy-access')
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
 const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
   '../src/server/zappy-safety'
@@ -32,26 +34,35 @@ const STAFF = {
   status: 'active',
 }
 
-describe('Piloto do Zappy', () => {
-  test('equipe entra para QA mesmo com flag desligada', () => {
-    expect(isStudioZappyPilotAllowed(STAFF, { enabled: false, accountIds: [] })).toBe(true)
+describe('Acesso ao Zappy', () => {
+  const OPEN = { enabled: true } as const
+  const KID = { ...STAFF, role: 'student', activeProfile: { accountId: 'account-1' } }
+
+  test('equipe entra para QA mesmo com o interruptor desligado e sem rank', () => {
+    expect(isStudioZappyAllowed(STAFF, undefined, { enabled: false })).toBe(true)
   })
 
-  test('perfil kids exige flag e a conta ativa na allowlist', () => {
-    const session = {
-      ...STAFF,
-      role: 'student',
-      activeProfile: { accountId: 'account-1' },
-    }
-    expect(isStudioZappyPilotAllowed(session, { enabled: false, accountIds: ['account-1'] })).toBe(
-      false,
-    )
-    expect(isStudioZappyPilotAllowed(session, { enabled: true, accountIds: ['account-2'] })).toBe(
-      false,
-    )
-    expect(isStudioZappyPilotAllowed(session, { enabled: true, accountIds: ['account-1'] })).toBe(
-      true,
-    )
+  test('flag desligada barra o aluno mesmo no topo da carreira', () => {
+    expect(isStudioZappyAllowed(KID, 'god', { ...OPEN, enabled: false })).toBe(false)
+  })
+
+  test('abaixo de Inventor não entra; de Inventor para cima, entra', () => {
+    expect(isStudioZappyAllowed(KID, 'noob', OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'coder', OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'hacker', OPEN)).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'explorer', OPEN)).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'god', OPEN)).toBe(true)
+  })
+
+  test('sem rank (members fora) ou slug desconhecido REPROVA — fail-closed', () => {
+    expect(isStudioZappyAllowed(KID, undefined, OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, null, OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'nivel-que-nao-existe', OPEN)).toBe(false)
+  })
+
+  test('não existe escotilha por conta nem degrau configurável', () => {
+    expect(isStudioZappyAllowed(KID, 'noob', OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'coder', OPEN)).toBe(false)
   })
 })
 
@@ -254,6 +265,7 @@ describe('Zappy do Studio — limites determinísticos', () => {
         scope: 'concept',
         blockReferences: [{ blockType: entry.type, blockId: null }],
         lessonReferences: [],
+        suggestions: [],
       },
       'criador',
       new Map([[entry.type, entry]]),
@@ -266,11 +278,23 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(response.blockReferences).toEqual([])
   })
 
-  test('redireciona Pensa, Pinta, jogo inteiro e assunto externo sem oferecer conteúdo', () => {
+  test('redireciona Pensa, jogo inteiro e assunto externo sem oferecer conteúdo', () => {
     expect(deterministicZappyReply('Planeje meu jogo')?.scope).toBe('redirect-pensa')
-    expect(deterministicZappyReply('Crie um sprite para mim')?.scope).toBe('redirect-pinta')
     expect(deterministicZappyReply('Faça o jogo inteiro completo')?.scope).toBe('needs-context')
     expect(deterministicZappyReply('Pesquise notícias na web')?.scope).toBe('unsupported')
+  })
+
+  test('só o pedido EXPLÍCITO da ferramenta redireciona ao Pinta', () => {
+    // "criar sprite" é conversa legítima do Estúdio (sz_g2d_create_sprite
+    // existe) — antes era sequestrada e nunca chegava à IA (QA 08/2026).
+    expect(deterministicZappyReply('Crie um sprite para mim')).toBeNull()
+    expect(deterministicZappyReply('como criar um sprite?')).toBeNull()
+    expect(deterministicZappyReply('quero desenhar a imagem na tela')).toBeNull()
+    expect(deterministicZappyReply('como pinta a imagem de fundo?')).toBeNull()
+    expect(deterministicZappyReply('abra o pinta para desenhar meu herói')?.scope).toBe(
+      'redirect-pinta',
+    )
+    expect(deterministicZappyReply('quero desenhar no pinta')?.scope).toBe('redirect-pinta')
   })
 
   test('isola prompt injection e não envia código no modo Blocos', () => {
@@ -404,6 +428,155 @@ describe('Zappy do Studio — limites determinísticos', () => {
   })
 })
 
+describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', () => {
+  const tier = resolveStudioTier('god', 'staff')
+  const prompt = buildStudioZappyPrompt({
+    question: 'Como faço o personagem pular quando encosta no chão?',
+    context: {
+      projectId: PROJECT_ID,
+      mode: 'blocks',
+      kind: 'classic',
+      blocks: [{ id: 'sprite-1', type: 'sz_g2d_create_sprite', topLevel: true }],
+      installedExtensions: [...tier.allowedExtensions],
+      selectedBlockId: 'sprite-1',
+      lastError: null,
+    },
+    tier,
+  })
+  const entry =
+    prompt.catalog.find((item) => item.type === 'sz_g2d_create_sprite') ?? prompt.catalog[0]
+  if (!entry) throw new Error('Catálogo de teste vazio')
+  const byType = new Map(prompt.catalog.map((item) => [item.type, item]))
+  const instances = new Map([['sprite-1', entry.type]])
+  const answer = (
+    text: string,
+    blockReferences: Array<{ blockType: string; blockId: string | null }> = [
+      { blockType: entry.type, blockId: null },
+    ],
+    lessonReferences: Array<{ lessonId: string }> = [],
+  ) => ({
+    text,
+    scope: 'block' as const,
+    blockReferences,
+    lessonReferences,
+    suggestions: [] as string[],
+  })
+  const reason = (raw: ReturnType<typeof answer>) => invalidStudioZappyAnswerReason(raw, 'blocks')
+
+  test('aceita a trilha real de categoria e subcategoria em texto corrido (com emoji)', () => {
+    const trail = `Use o bloco "${entry.label}", que fica na categoria ${entry.category}, subcategoria ${entry.subcategory}. Depois rode o jogo.`
+    expect(reason(answer(trail))).toBeNull()
+  })
+
+  test('nome de bloco ou categoria em crase inline não é código — desembrulha e aceita', () => {
+    const text = `Arraste o bloco \`${entry.label}\` da categoria \`${entry.category}\` para a área de eventos.`
+    expect(reason(answer(text))).toBeNull()
+  })
+
+  test('código de verdade continua reprovado no modo Blocos', () => {
+    expect(reason(answer('Faça assim:\n```\nconst x = 1\n```'))).toBe('code-in-blocks')
+    expect(reason(answer('Basta escrever `const pontos = 0` no seu jogo.'))).toBe('code-in-blocks')
+    expect(reason(answer('Use uma função assim: () => pular()'))).toBe('code-in-blocks')
+    // Markup de verdade: tag com atributo ou 2+ tags de fechamento.
+    expect(reason(answer('Cole <img src="foto.png"> na página.'))).toBe('code-in-blocks')
+    expect(reason(answer('Estruture com <div>…</div> e <p>…</p> aninhados.'))).toBe(
+      'code-in-blocks',
+    )
+  })
+
+  test('citar tag HTML ou palavras comuns não reprova mais (falso positivo)', () => {
+    // HTML/CSS são categorias de blocos legítimas — explicar "<img> mostra a
+    // imagem" derrubava a resposta inteira (QA 08/2026); "class"/"return" em
+    // texto corrido idem.
+    expect(reason(answer('O bloco de imagem cria uma tag <img> na página.'))).toBeNull()
+    expect(reason(answer('A class do botão define o estilo dele.'))).toBeNull()
+    expect(reason(answer('O jogo dá return ao menu quando você perde.'))).toBeNull()
+  })
+
+  test('referência inválida é FILTRADA sem derrubar a resposta', () => {
+    // Antes qualquer referência fora do catálogo reprovava a resposta INTEIRA
+    // ("Não consegui validar…"); agora a explicação sobrevive e só a referência cai.
+    const raw = {
+      text: 'Resposta boa.',
+      scope: 'block' as const,
+      blockReferences: [
+        { blockType: 'sz_bloco_inventado', blockId: null },
+        { blockType: entry.type, blockId: 'id-que-nao-existe' },
+        { blockType: entry.type, blockId: 'sprite-1' },
+      ],
+      lessonReferences: [{ lessonId: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e099' }],
+      suggestions: ['Como faço ele atirar?'],
+    }
+    expect(reason(raw)).toBeNull()
+    const response = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      byType,
+      instances,
+      'blocks',
+      'classic',
+      [],
+    )
+    // Inventado cai; instância trocada vira referência sem blockId; a válida fica.
+    expect(response.blockReferences.map((ref) => ref.blockType)).toEqual([entry.type, entry.type])
+    expect(response.blockReferences[0]?.blockId).toBeUndefined()
+    expect(response.blockReferences[1]?.blockId).toBe('sprite-1')
+    // Aula fora do conhecimento liberado também é filtrada em silêncio.
+    expect(response.lessonReferences).toBeUndefined()
+    // As sugestões de continuação sobrevivem (chips que preenchem o campo).
+    expect(response.suggestions).toEqual(['Como faço ele atirar?'])
+  })
+
+  test('a regra do prompt pede o CAMINHO da paleta em texto corrido, sem crases', () => {
+    expect(prompt.system).toContain('sem crases')
+    expect(prompt.system).toContain('"caminho"')
+    // O par categoria/subcategoria saiu: repetia o nome quando não havia segundo
+    // nível ("categoria Programação, subcategoria Programação") e promovia
+    // subcategorias a categorias de topo.
+    expect(prompt.system).not.toContain('subcategoria Y')
+  })
+
+  test('o catálogo do prompt manda o caminho real da paleta, sem repetir nível', () => {
+    const catalogo = JSON.parse(
+      prompt.system
+        .slice(prompt.system.indexOf('[{', prompt.system.indexOf('Catálogo autoritativo')))
+        .slice(
+          0,
+          prompt.system
+            .slice(prompt.system.indexOf('[{', prompt.system.indexOf('Catálogo autoritativo')))
+            .indexOf('}]') + 2,
+        ),
+    ) as Array<{ caminho?: string; categoria?: string; subcategoria?: string }>
+    expect(catalogo.length).toBeGreaterThan(0)
+    for (const item of catalogo) {
+      expect(item.categoria).toBeUndefined()
+      expect(item.subcategoria).toBeUndefined()
+      expect(typeof item.caminho).toBe('string')
+      const niveis = (item.caminho ?? '').split(' › ')
+      // "Programação › Programação" era exatamente o sintoma relatado.
+      expect(new Set(niveis).size).toBe(niveis.length)
+    }
+  })
+
+  test('o prompt proíbe citar bloco fora do catálogo e amarra citação a blockReferences', () => {
+    expect(prompt.system).toContain('somente blocos que EXISTEM no catálogo')
+    expect(prompt.system).toContain('inclua cada bloco citado também em blockReferences')
+    expect(prompt.system).toContain('esse bloco ainda não existe')
+  })
+
+  test('unknownBlockNamesInText acusa bloco inventado e aceita os do catálogo', () => {
+    const known = `Use o bloco "${entry.label}" e depois o bloco “${entry.label.toUpperCase()}”.`
+    expect(unknownBlockNamesInText(known, byType)).toEqual([])
+    const invented =
+      'Agora use o bloco "Adicionar sprite ao grupo" para juntar tudo, e o bloco "Superpoder Secreto".'
+    expect(unknownBlockNamesInText(invented, byType)).toEqual([
+      'Adicionar sprite ao grupo',
+      'Superpoder Secreto',
+    ])
+    expect(unknownBlockNamesInText('Texto sem citação de bloco nenhum.', byType)).toEqual([])
+  })
+})
+
 describe('BFF do Zappy', () => {
   test('impersonação bloqueia conversa antes de tocar members/quota', async () => {
     let calls = 0
@@ -472,7 +645,7 @@ describe('BFF do Zappy', () => {
     } as never)
     const response = await routes.studioZappyMessage.POST(request('Planeje meu jogo'))
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual(existing)
+    expect(await response.json()).toEqual({ response: existing, credits: null })
     expect(quota).toBe(0)
   })
 
@@ -523,6 +696,69 @@ describe('BFF do Zappy', () => {
     const captured = saved as { outcome?: string; response?: { text?: string } } | null
     expect(captured?.outcome).toBe('quota')
     expect(captured?.response?.text).toContain('Amanhã')
+  })
+
+  test('o saldo vai no envelope da resposta, NUNCA no objeto persistido', async () => {
+    // Crédito é volátil: gravado no jsonb do histórico, um replay de ontem
+    // mostraria o saldo de ontem como se fosse o de agora.
+    const credits = {
+      dayLimit: 50,
+      dayRemaining: 12,
+      monthLimit: 500,
+      monthRemaining: 300,
+      monthRenewsOn: '2026-09-01',
+    }
+    let persisted: Record<string, unknown> | null = null
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        aiUsageConsume: async () => ({
+          status: 200,
+          body: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50, credits },
+        }),
+        zappyCompleteQuestion: async (_id: string, body: Record<string, unknown>) => {
+          persisted = body
+          return { status: 200, body: body.response }
+        },
+      }),
+    } as never)
+
+    const response = await routes.studioZappyMessage.POST(request('Como faço isso?'))
+    const body = (await response.json()) as {
+      response?: Record<string, unknown>
+      credits?: unknown
+    }
+
+    expect(body.credits).toEqual(credits)
+    expect(body.response?.credits).toBeUndefined()
+    const saved = persisted as { response?: Record<string, unknown> } | null
+    expect(saved?.response?.credits).toBeUndefined()
+    expect(JSON.stringify(saved)).not.toContain('monthRenewsOn')
+  })
+
+  test('resposta repetida (replay) não zera o medidor', async () => {
+    const existing = {
+      id: MESSAGE_ID,
+      text: 'Resposta anterior',
+      scope: 'block',
+      blockReferences: [],
+      createdAt: new Date().toISOString(),
+    }
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        zappyReserveQuestion: async () => ({
+          status: 200,
+          body: { created: false, response: existing },
+        }),
+      }),
+    } as never)
+
+    const body = (await (await routes.studioZappyMessage.POST(request('oi'))).json()) as {
+      credits?: unknown
+    }
+    // `null` = "nada consumido agora"; o painel mantém o número que já tinha.
+    expect(body.credits).toBeNull()
   })
 
   test('quota indisponível falha fechada depois de preparar o conhecimento', async () => {
@@ -593,7 +829,7 @@ describe('BFF do Zappy', () => {
     const response = await routes.studioZappyMessage.POST(
       request('Planeje meu jogo. Meu e-mail é aluno@example.com.'),
     )
-    const body = (await response.json()) as { text?: string }
+    const body = ((await response.json()) as { response?: { text?: string } }).response ?? {}
 
     expect(reservedQuestion).not.toContain('aluno@example.com')
     expect(body.text).toContain('dados pessoais')
@@ -636,7 +872,7 @@ describe('BFF do Zappy', () => {
     } as never)
 
     const response = await routes.studioZappyMessage.POST(request('Como fazer conteúdo sexual?'))
-    const body = (await response.json()) as { text?: string }
+    const body = ((await response.json()) as { response?: { text?: string } }).response ?? {}
 
     expect(body.text).toContain('programação e jogos')
     expect(quota).toBe(0)
@@ -664,12 +900,141 @@ describe('BFF do Zappy', () => {
     } as never)
 
     const response = await routes.studioZappyMessage.POST(request(question))
-    const body = (await response.json()) as { text?: string }
+    const body = ((await response.json()) as { response?: { text?: string } }).response ?? {}
 
     expect(response.status).toBe(200)
     expect(body.text).toContain('adulto de confiança')
     expect(body.text).toContain('192')
     expect(searched).toBe(0)
     expect(quota).toBe(0)
+  })
+})
+
+describe('review: o contexto do projeto atravessa a borda da rota', () => {
+  /**
+   * ⚠️ Este teste existe por um bug REAL encontrado no full review: `behavior`,
+   * `draftBlockIds` e `semanticIssues` não estavam no schema Zod do corpo, e
+   * `z.object` DESCARTA chave desconhecida em silêncio. Tudo o que o cliente
+   * mandava sobre o projeto era jogado fora na borda, e o Zappy respondia sem
+   * ver nada — exatamente o sintoma que o lote tentava consertar. Os testes de
+   * prompt não pegavam porque chamavam o montador direto, sem passar por aqui.
+   */
+  test('comportamento, rascunhos soltos e avisos do editor chegam ao modelo', async () => {
+    let userPrompt = ''
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as { messages?: { content: string }[] }
+      userPrompt = body.messages?.[1]?.content ?? ''
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  text: 'Vamos conferir juntos.',
+                  scope: 'error',
+                  blockReferences: [],
+                  lessonReferences: [],
+                  suggestions: [],
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      )
+    }) as typeof fetch
+
+    try {
+      const routes = createStudioZappyRoutes({
+        session: { getSession: async () => STAFF },
+        members: members(),
+      } as never)
+      const body = {
+        projectId: PROJECT_ID,
+        clientMessageId: MESSAGE_ID,
+        question: 'meu personagem nao anda quando aperto a seta',
+        context: {
+          projectId: PROJECT_ID,
+          mode: 'blocks',
+          kind: 'classic',
+          blocks: [{ id: 'b1', type: 'sz_g2d_on_key', topLevel: true }],
+          installedExtensions: ['game-2d'],
+          selectedBlockId: null,
+          lastError: null,
+          behavior: [
+            {
+              area: 'events',
+              depth: 0,
+              type: 'g2d:onKey',
+              blockId: 'b1',
+              values: [{ name: 'key', value: 'ArrowRight' }],
+            },
+          ],
+          draftBlockIds: ['b1'],
+          semanticIssues: [{ blockId: 'b1', message: 'A variável heroi ainda não foi declarada' }],
+        },
+      }
+      await routes.studioZappyMessage.POST(
+        new Request('https://kids.test/api/studio/zappy/messages', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      )
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+
+    expect(userPrompt).toContain('comportamento')
+    expect(userPrompt).toContain('Quando apertar a tecla')
+    expect(userPrompt).toContain('rascunhosSoltos')
+    expect(userPrompt).toContain('avisosDoEditor')
+    expect(userPrompt).toContain('ainda não foi declarada')
+  })
+})
+
+describe('review 2: a recusa por limite chega marcada como aviso', () => {
+  /**
+   * ⚠️ Achado do 2º full review: o `'quota'` passado ao `complete` é o OUTCOME
+   * (analítica), não o scope da resposta. O scope ficava 'unsupported', e o
+   * painel — que decide pelo scope se aquilo é aviso ou aula — renderizava o
+   * limite como conteúdo pedagógico, com os polegares de "isso ajudou?".
+   */
+  test('o scope da resposta vira quota, e é isso que o painel lê', async () => {
+    let persisted: { outcome?: string; response?: { scope?: string } } | null = null
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        aiUsageConsume: async () => ({
+          status: 200,
+          body: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50 },
+        }),
+        zappyCompleteQuestion: async (_id: string, body: Record<string, unknown>) => {
+          persisted = body as typeof persisted
+          return { status: 200, body: body.response }
+        },
+      }),
+    } as never)
+
+    const res = await routes.studioZappyMessage.POST(request('Como faço isso?'))
+    const body = (await res.json()) as { response?: { scope?: string; text?: string } }
+
+    expect(body.response?.scope).toBe('quota')
+    expect(body.response?.text).toContain('Amanhã')
+    // O outcome segue separado: é o que alimenta a métrica do /admin/ia.
+    const saved = persisted as { outcome?: string; response?: { scope?: string } } | null
+    expect(saved?.outcome).toBe('quota')
+    expect(saved?.response?.scope).toBe('quota')
+  })
+
+  test('indisponibilidade NÃO vira quota (é erro, e a copy é outra)', async () => {
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({ aiUsageConsume: async () => ({ status: 503, body: null }) }),
+    } as never)
+    const res = await routes.studioZappyMessage.POST(request('Como faço isso?'))
+    const body = (await res.json()) as { response?: { scope?: string } }
+    expect(body.response?.scope).not.toBe('quota')
   })
 })

@@ -260,7 +260,13 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   /** Desenha todos os sprites do grupo. */
   function drawGroup(ctx, group) {
     if (!ctx || !group || !group.items) return;
+    // O tipo de inimigo É um grupo, e o seletor de "Desenhar o grupo" o lista.
+    // Marcar AQUI (e não só no drawEnemyType) é o que impede o aviso de "ninguém
+    // os desenha" de acusar quem desenhou pelo caminho de grupo, que é o certo
+    // num jogo visto de cima.
+    group._drawn = true;
     for (var i = 0; i < group.items.length; i++) drawSprite(ctx, group.items[i]);
+    _drawEnemyBeamsIfAny(ctx, group);
   }
   /**
    * Desenha o grupo ordenado pela BASE (y+h): quem está mais para baixo na tela
@@ -269,6 +275,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
    */
   function drawGroupByY(ctx, group) {
     if (!ctx || !group || !group.items) return;
+    group._drawn = true;
     var snapshot = group.items.slice();
     snapshot.sort(function (a, b) {
       var aBase = (a ? _finiteNumber(a.y, 0) + _finiteNumber(a.h, 0) : 0);
@@ -276,6 +283,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       return aBase - bBase;
     });
     for (var i = 0; i < snapshot.length; i++) drawSprite(ctx, snapshot[i]);
+    _drawEnemyBeamsIfAny(ctx, group);
   }
   /**
    * Roda fn(sprite, i) para cada sprite. Itera em ordem REVERSA para que o
@@ -298,6 +306,26 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   /** Esvazia o grupo (tira todos os sprites). */
   function clearGroup(group) {
     _clearGroupItems(group);
+    // Um TIPO de inimigo tem munição própria. Esvaziar a fase e deixar os tiros
+    // no ar faria a nave renascer e levar dano sem inimigo nenhum na tela.
+    if (group && group.bullets) _clearGroupItems(group.bullets);
+    // Esvaziar o grupo esvazia também quem estava A CAMINHO de voltar (o
+    // comportamento "renascer"). Sem isto, a criança limpa a fase 1, monta a
+    // fase 2 e três segundos depois os mortos da fase anterior nascem nas
+    // coordenadas velhas, possivelmente dentro de uma parede.
+    if (group && group._revives) group._revives.length = 0;
+  }
+  /**
+   * Põe um sprite que JÁ EXISTE dentro do grupo (o espelho do removeFromGroup).
+   * Repetido não entra duas vezes; acima do teto, descarta em silêncio (mesma
+   * régua do spawn — nunca lança no meio do jogo da criança).
+   */
+  function addToGroup(group, sprite) {
+    if (!group || !group.items || !sprite || typeof sprite !== 'object') return;
+    if (group.items.indexOf(sprite) !== -1) return;
+    if (group.items.length >= MAX_GROUP) return;
+    group.items.push(sprite);
+    _touchUnmanagedGroup(group);
   }
   /** Tira um sprite específico do grupo (por referência). */
   function removeFromGroup(group, sprite) {

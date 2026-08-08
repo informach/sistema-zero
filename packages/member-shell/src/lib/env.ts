@@ -72,13 +72,11 @@ const EnvSchema = z
     OPENROUTER_PENSA_SYNTHESIS_MODEL: z.string().optional(),
     OPENROUTER_ZAPPY_MODEL: z.string().optional(),
     OPENROUTER_REFERER: z.string().url().optional(),
-    // Piloto fechado do Zappy: feature flag + allowlist explícita de CONTAS.
-    // Equipe interna é liberada pelo role autoritativo, fora da lista.
+    // Interruptor de emergência. A carreira decide o acesso; equipe sempre entra.
     ZAPPY_ENABLED: z
       .enum(['true', 'false'])
-      .default('false')
+      .default('true')
       .transform((value) => value === 'true'),
-    ZAPPY_PILOT_ACCOUNT_IDS: z.string().default(''),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   // Sem nenhuma forma de verificar o token, toda sessão seria inválida em silêncio.

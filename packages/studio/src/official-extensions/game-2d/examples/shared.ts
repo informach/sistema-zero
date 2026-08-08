@@ -44,6 +44,8 @@ function accessibleGameDescription(example: ExtensionExample): string {
     'Plataforma com inimigos':
       'Derrote os inimigos e faça pontos. Use as setas para andar e pular; Espaço atira.',
     'Jogo desenhado por código': 'Pegue as moedas. Use as setas para andar.',
+    'Cenário do meu desenho':
+      'O seu desenho vira o fundo do jogo. Use as setas para andar na frente dele.',
   }
   const tailoredDescription = descriptions[example.name]
   if (tailoredDescription) return tailoredDescription
@@ -108,5 +110,12 @@ export const EXAMPLE_TILESET_IMAGE =
   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDY0IDMyIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIGZpbGw9IiMzMzQxNTUiLz48cGF0aCBkPSJNMCA4aDMyTTAgMTZoMzJNMCAyNGgzMiIgc3Ryb2tlPSIjNDc1NTY5Ii8+PHJlY3QgeD0iMzIiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iIzdjM2FlZCIvPjxwYXRoIGQ9Ik0zMiA4aDMyTTMyIDE2aDMyTTMyIDI0aDMyTTQwIDB2OG0xNiAwdjhtLTE2IDB2OG0xNiAwdjgiIHN0cm9rZT0iI2M0YjVmZCIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+'
 export const EXAMPLE_HOUSE_IMAGE =
   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTAiIGhlaWdodD0iODYiIHZpZXdCb3g9IjAgMCAxMTAgODYiPjxwYXRoIGZpbGw9IiM3YzJkMTIiIGQ9Ik00IDM4IDU1IDNsNTEgMzV2NDVINHoiLz48cGF0aCBmaWxsPSIjZmI5MjNjIiBkPSJNMTUgMzloODB2NDRIMTV6Ii8+PHJlY3QgZmlsbD0iIzdjM2FlZCIgeD0iNDciIHk9IjUyIiB3aWR0aD0iMjAiIGhlaWdodD0iMzEiIHJ4PSIyIi8+PHJlY3QgZmlsbD0iI2JhZTZmZCIgeD0iMjMiIHk9IjQ5IiB3aWR0aD0iMTciIGhlaWdodD0iMTciLz48cmVjdCBmaWxsPSIjYmFlNmZkIiB4PSI3NCIgeT0iNDkiIHdpZHRoPSIxNyIgaGVpZ2h0PSIxNyIvPjwvc3ZnPg=='
+/**
+ * Cenário 32x24 do exemplo "Cenário do meu desenho": céu, sol, montanhas e chão.
+ * Minúsculo de propósito (o mesmo tamanho que sai do Pinta em pixel art) para
+ * mostrar que o motor AMPLIA sem borrar e cobre a tela inteira.
+ */
+export const EXAMPLE_BACKDROP_IMAGE =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDMyIDI0Ij48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMjQiIGZpbGw9IiM3ZGQzZmMiLz48Y2lyY2xlIGN4PSIyNSIgY3k9IjUiIHI9IjMiIGZpbGw9IiNmZGU2OGEiLz48cGF0aCBkPSJNMCAxNiBMNyA5IEwxMyAxNiBaIiBmaWxsPSIjOTRhM2I4Ii8+PHBhdGggZD0iTTExIDE2IEwxOSA3IEwyNyAxNiBaIiBmaWxsPSIjY2JkNWUxIi8+PHJlY3QgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSI4IiBmaWxsPSIjNGFkZTgwIi8+PHJlY3QgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIxIiBmaWxsPSIjMjJjNTVlIi8+PC9zdmc+'
 export const EXAMPLE_TREE_IMAGE =
   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDU0IDcwIj48cmVjdCBmaWxsPSIjODU0ZDBlIiB4PSIyMiIgeT0iMzgiIHdpZHRoPSIxMSIgaGVpZ2h0PSIzMiIgcng9IjMiLz48Y2lyY2xlIGZpbGw9IiMxNjY1MzQiIGN4PSIxOCIgY3k9IjMwIiByPSIxNyIvPjxjaXJjbGUgZmlsbD0iIzE1ODAzZCIgY3g9IjM3IiBjeT0iMzEiIHI9IjE2Ii8+PGNpcmNsZSBmaWxsPSIjMjJjNTVlIiBjeD0iMjgiIGN5PSIxNyIgcj0iMTciLz48L3N2Zz4='

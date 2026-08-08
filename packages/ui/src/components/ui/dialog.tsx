@@ -75,8 +75,14 @@ export function Dialog({
               titleAlign === 'left' && onBack && 'pl-14',
             )}
           >
-            <h2 className="text-lg font-semibold leading-none">{title}</h2>
-            {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+            <h2 className="max-w-full min-w-0 break-words text-lg font-semibold leading-none [overflow-wrap:anywhere]">
+              {title}
+            </h2>
+            {description ? (
+              <p className="max-w-full min-w-0 break-words text-muted-foreground text-sm [overflow-wrap:anywhere]">
+                {description}
+              </p>
+            ) : null}
           </div>
           <button
             onClick={onClose}

@@ -17,9 +17,15 @@ import { CANVAS_BLOCKS } from './blocks/canvas'
 import { CANVAS3D_BLOCKS } from './blocks/canvas3d'
 import { CSS_BLOCKS } from './blocks/css'
 import { HTML_BLOCKS } from './blocks/html'
+import { SOM_BLOCKS } from './blocks/som'
 import { SVG_BLOCKS } from './blocks/svg'
 import type { BlockDefinition, BlockPlacement } from './blocks/types'
+import { palettePathOf } from './paletteMap'
 import { PROGRAMMING_CATALOG_GROUPS } from './programmingContract'
+
+// O subpath público `@sistemazero/studio/server-catalog` também expõe a ordem
+// pedagógica necessária aos consumidores server-only, sem importar o editor React.
+export { BLOCK_LEVELS } from '../core/levels'
 
 /** Entrada do catálogo de blocos p/ o picker da "lista de blocos" da aula (admin). */
 export interface BlockCatalogEntry {
@@ -41,6 +47,16 @@ interface BlockLike {
 export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
   /** Subcategoria real; famílias sem segundo nível repetem a categoria. */
   subcategory: string
+  /**
+   * O caminho que a criança REALMENTE vê na paleta (ex.: `['Programação',
+   * '🏷️ Variáveis']`). ⚠️ Não é derivável de `category` + `subcategory`: o
+   * `category` é a chave de curadoria do admin (`allowCategories`) e trata
+   * Matemática/Valores/Funções/Objetos/Classes/Página como categorias de topo,
+   * quando na paleta elas são filhas de "Programação". É este campo que o Zappy
+   * cita — mandar a criança para "a categoria Matemática" a faz procurar um item
+   * que não existe no topo. Vazio quando o bloco não está em nenhuma paleta.
+   */
+  palettePath: readonly string[]
   extension: string | null
   level: import('#core').BlockLevel
   tooltip: string
@@ -141,6 +157,7 @@ const GROUPS: readonly (readonly [string, readonly BlockLike[]])[] = [
     ({ category, definitions }) => [category, definitions] as const,
   ),
   ['Canvas', CANVAS_BLOCKS],
+  ['Som', SOM_BLOCKS],
   ['Canvas 3D', CANVAS3D_BLOCKS],
   ...PROGRAMMING_CATALOG_GROUPS.slice(2).map(
     ({ category, definitions }) => [category, definitions] as const,
@@ -230,6 +247,7 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
           label: labelOf(block),
           category,
           subcategory: TOOLBOX_SUBCATEGORY_BY_TYPE.get(block.type) ?? category,
+          palettePath: palettePathOf(block.type),
           extension: extensionFor(block.type),
           level: resolveBlockLevel(block.type),
           tooltip: typeof block.tooltip === 'string' ? block.tooltip : '',

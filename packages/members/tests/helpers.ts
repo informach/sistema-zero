@@ -4,6 +4,7 @@ import { CheckAccessService } from '../src/application/access/check-access.servi
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
 import { PurgeUserDataService } from '../src/application/admin/purge-user-data/purge-user-data.service'
 import { ConsumeAiUsageService } from '../src/application/ai-usage/consume-ai-usage.service'
+import { GetAiCreditsService } from '../src/application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from '../src/application/ai-usage/get-ai-usage-stats.service'
 import { GetCourseAnalyticsService } from '../src/application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
@@ -61,15 +62,13 @@ import { CreatePensaProjectService } from '../src/application/pensa/create-proje
 import { DeletePensaTaskService } from '../src/application/pensa/delete-task.service'
 import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
 import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
-import { GetPensaStudioSnapshotService } from '../src/application/pensa/get-studio-snapshot.service'
+import { GetPensaTaskHandoffService } from '../src/application/pensa/get-task-handoff.service'
 import { ListPensaProjectsService } from '../src/application/pensa/list-projects.service'
-import { ReplacePensaChecklistService } from '../src/application/pensa/replace-checklist.service'
 import { ReplacePensaTasksService } from '../src/application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from '../src/application/pensa/save-artifact.service'
-import { SavePensaStudioSnapshotService } from '../src/application/pensa/save-studio-snapshot.service'
-import { TogglePensaChecklistItemService } from '../src/application/pensa/toggle-checklist-item.service'
 import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
 import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
+import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
 import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
@@ -166,6 +165,12 @@ export function buildApp(
   const aiUsage = new InMemoryAiUsageRepository()
   const challengeConfig = new InMemoryChallengeConfigRepository()
   const consumeAiUsage = new ConsumeAiUsageService({
+    aiUsage,
+    dailyLimit: opts.aiLimits?.daily ?? 50,
+    monthlyLimit: opts.aiLimits?.monthly ?? 500,
+    clock,
+  })
+  const aiCredits = new GetAiCreditsService({
     aiUsage,
     dailyLimit: opts.aiLimits?.daily ?? 50,
     monthlyLimit: opts.aiLimits?.monthly ?? 500,
@@ -330,6 +335,7 @@ export function buildApp(
         defaultMaxProfiles: 1,
       }),
       consumeAiUsage,
+      aiCredits,
       zappy: opts.zappy,
       getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
       issueCertificate: new IssueCertificateService(
@@ -379,8 +385,6 @@ export function buildApp(
       createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
       getProject: new GetPensaProjectService(pensa),
       updateProject: new UpdatePensaProjectService(pensa, clock),
-      getStudioSnapshot: new GetPensaStudioSnapshotService(pensa),
-      saveStudioSnapshot: new SavePensaStudioSnapshotService(pensa, clock),
       createCycle: new CreatePensaCycleService(pensa, () => randomUUID(), clock),
       getStage: new GetPensaStageService(pensa),
       appendConversationTurn: new AppendPensaConversationTurnService(pensa, clock),
@@ -389,11 +393,12 @@ export function buildApp(
       advanceStage: new AdvancePensaStageService(pensa, awardGamification, clock),
       replaceTasks: new ReplacePensaTasksService(pensa, () => randomUUID(), clock),
       appendTasks: new AppendPensaTasksService(pensa, () => randomUUID(), clock),
-      updateTask: new UpdatePensaTaskService(pensa, clock),
+      updateTask: new UpdatePensaTaskService(pensa, () => randomUUID(), clock),
       deleteTask: new DeletePensaTaskService(pensa, clock),
-      replaceChecklist: new ReplacePensaChecklistService(pensa, () => randomUUID(), clock),
-      toggleChecklistItem: new TogglePensaChecklistItemService(pensa, clock),
+      getTaskHandoff: new GetPensaTaskHandoffService(pensa),
+      updateTaskProgress: new UpdatePensaTaskProgressService(pensa, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
+      getGamification: new GetGamificationService(gamification, clock),
       internalToken: opts.internalToken,
     },
     webhooks: {

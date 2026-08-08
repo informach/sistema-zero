@@ -1,5 +1,6 @@
 'use client'
 
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
@@ -8,22 +9,26 @@ import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
-import type { Project, StudioShareAdapter, StudioTutorConfig } from '@sistemazero/studio'
+import type {
+  StudioPintaLibraryAdapter,
+  StudioShareAdapter,
+  StudioTaskSession,
+  StudioTutorConfig,
+} from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
 import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { StudioFullEditor } from './studio-full-editor'
+import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
 // server renderiza só o placeholder. `mod` guarda os exports carregados.
 type StudioModule = typeof import('@sistemazero/studio')
 type View = { name: 'list' } | { name: 'editor'; projectId: string }
-type EditorState =
-  | { status: 'loading' }
-  | { status: 'ready'; project: Project }
-  | { status: 'not-found' }
 
 /**
  * Estúdio Completo embarcado na comunidade kids (produto vendável). Hospeda a navegação
@@ -39,6 +44,9 @@ export function StudioFullClient({
   tier,
   showExamples = false,
   zappyEnabled = false,
+  aiCredits = null,
+  taskId = null,
+  pintaOwned = false,
 }: {
   viewerId: string | null
   /**
@@ -58,10 +66,26 @@ export function StudioFullClient({
   showExamples?: boolean
   /** Capacidade de oferta derivada no servidor; o BFF mantém o gate autoritativo. */
   zappyEnabled?: boolean
+  /** Saldo lido no Server Component. Nulo = não sei → o medidor não aparece. */
+  aiCredits?: AiCreditsView | null
+  /** Cartão de Criação aberto por `/estudio?tarefa=<id>`. */
+  taskId?: string | null
+  /**
+   * Posse do PINTA (a página checa `refs=pinta,estudio-completo` numa ida) —
+   * liga o "Trazer do Pinta" no painel de Imagens. Produtos vendidos à parte:
+   * sem posse, o adapter nem é criado e o Estúdio esconde o botão.
+   */
+  pintaOwned?: boolean
 }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
+  const [taskError, setTaskError] = useState<string | null>(null)
+  const [missingTaskProject, setMissingTaskProject] = useState<{
+    projectId: string
+    projectName: string
+  } | null>(null)
+  const openedTaskKeyRef = useRef<string | null>(null)
   // O Estúdio SEGUE o tema da comunidade (next-themes) — sem toggle próprio e sem
   // destoar do app ao redor. `resolvedTheme` é undefined no 1º render → cai em claro.
   const { resolvedTheme } = useTheme()
@@ -71,6 +95,13 @@ export function StudioFullClient({
   // um PRÉ-FILTRO; o gate real é a capacidade (`canRunProMode`) na rota /estudio/pro.
   const isDesktop = useIsDesktop()
   const proAvailable = tier.pro && isDesktop
+  const {
+    data: taskHandoff,
+    status: taskHandoffStatus,
+    error: taskHandoffError,
+    retry: retryTaskHandoff,
+    updateProgress: updateTaskProgress,
+  } = useStudioTaskHandoff(taskId)
 
   const loadStudio = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -101,6 +132,169 @@ export function StudioFullClient({
     }
   }, [loadStudio])
 
+  const handoffTaskId = taskHandoff?.task.id ?? null
+  const handoffProjectId = taskHandoff?.project.id ?? null
+  const handoffProjectName = taskHandoff?.project.name ?? null
+  const handoffOwned = taskHandoff?.capability.owned ?? false
+  const handoffStatus = taskHandoff?.task.progress.status ?? null
+  const handoffProgressUpdatedAt = taskHandoff?.task.progress.updatedAt ?? null
+  const handoffOutputProjectId = taskHandoff?.task.progress.outputRef?.projectId ?? null
+
+  // O backup e o vínculo vivem no host do Estúdio. O id é determinístico e a
+  // chave inclui viewer + projeto Pensa para irmãos/dispositivos não colidirem.
+  useEffect(() => {
+    if (
+      !mod ||
+      !handoffOwned ||
+      !handoffTaskId ||
+      !handoffProjectId ||
+      handoffProjectName == null
+    ) {
+      if (!handoffTaskId) openedTaskKeyRef.current = null
+      return
+    }
+    const openKey = `${handoffTaskId}:${handoffProjectId}`
+    if (openedTaskKeyRef.current === openKey) return
+    openedTaskKeyRef.current = openKey
+    let active = true
+    void (async () => {
+      const mappingKey = pensaStudioLinkKey(viewerId, handoffProjectId)
+      const deterministicId = pensaStudioProjectId(handoffProjectId)
+      const projectId = deterministicId
+      const persistence = mod.createLocalPersistenceAdapter()
+      let project = await persistence.load(projectId)
+      if (!project) {
+        if (handoffOutputProjectId) {
+          if (active) setMissingTaskProject({ projectId, projectName: handoffProjectName })
+          return
+        }
+        project = mod.createEmptyProject(projectId, handoffProjectName)
+        await persistence.save(project)
+      }
+      try {
+        localStorage.setItem(mappingKey, projectId)
+      } catch {}
+      if (!active) return
+      setMissingTaskProject(null)
+      if (handoffStatus !== 'completed') {
+        const response = await fetch(
+          `/api/pensa/tasks/${encodeURIComponent(handoffTaskId)}/progress`,
+          {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              expectedUpdatedAt: handoffProgressUpdatedAt,
+              ...(handoffStatus === 'planned' ? { status: 'in_progress' } : {}),
+              outputRef: {
+                kind: 'studio_project',
+                projectId,
+                saveRevision: String(project.updatedAt),
+              },
+            }),
+          },
+        )
+        const updated = (await response.json().catch(() => null)) as {
+          task?: { progress: StudioTaskSession['progress'] }
+        } | null
+        if (response.status === 409) {
+          openedTaskKeyRef.current = null
+          retryTaskHandoff()
+          if (active) setTaskError('A tarefa mudou em outro lugar. Recarreguei o guia para você.')
+          return
+        } else if (active && response.ok && updated?.task) {
+          updateTaskProgress(updated.task.progress)
+        } else if (!response.ok || !updated?.task) {
+          throw new Error('Não consegui vincular o projeto a esta tarefa.')
+        }
+      }
+      if (active) setView({ name: 'editor', projectId })
+    })().catch(() => {
+      openedTaskKeyRef.current = null
+      if (active) setTaskError('Não consegui criar ou restaurar o projeto desta tarefa.')
+    })
+    return () => {
+      active = false
+    }
+  }, [
+    mod,
+    handoffOwned,
+    handoffTaskId,
+    handoffProjectId,
+    handoffProjectName,
+    handoffStatus,
+    handoffProgressUpdatedAt,
+    handoffOutputProjectId,
+    retryTaskHandoff,
+    updateTaskProgress,
+    viewerId,
+  ])
+
+  const recreateMissingTaskProject = useCallback(async () => {
+    if (!mod || !missingTaskProject) return
+    setTaskError(null)
+    try {
+      const persistence = mod.createLocalPersistenceAdapter()
+      const project = mod.createEmptyProject(
+        missingTaskProject.projectId,
+        missingTaskProject.projectName,
+      )
+      await persistence.save(project)
+      if (handoffProjectId) {
+        try {
+          localStorage.setItem(
+            pensaStudioLinkKey(viewerId, handoffProjectId),
+            missingTaskProject.projectId,
+          )
+        } catch {}
+      }
+      setMissingTaskProject(null)
+      setView({ name: 'editor', projectId: missingTaskProject.projectId })
+    } catch {
+      setTaskError('Não consegui recriar o projeto neste aparelho.')
+    }
+  }, [handoffProjectId, missingTaskProject, mod, viewerId])
+
+  const taskSession = useMemo<StudioTaskSession | undefined>(
+    () =>
+      taskHandoff
+        ? {
+            taskId: taskHandoff.task.id,
+            title: taskHandoff.task.title,
+            summary: taskHandoff.task.summary,
+            project: taskHandoff.project,
+            cycle: taskHandoff.cycle,
+            guide: taskHandoff.task.guide,
+            blocks: taskHandoff.task.context.blocks,
+            progress: taskHandoff.task.progress,
+            onProgress: async (input) => {
+              const response = await fetch(
+                `/api/pensa/tasks/${encodeURIComponent(taskHandoff.task.id)}/progress`,
+                {
+                  method: 'PATCH',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({
+                    ...input,
+                    expectedUpdatedAt: taskHandoff.task.progress.updatedAt,
+                  }),
+                },
+              )
+              const body = (await response.json().catch(() => null)) as {
+                task?: { progress: StudioTaskSession['progress'] }
+                error?: { message?: string }
+              } | null
+              if (response.status === 409) {
+                retryTaskHandoff()
+                throw new Error('A tarefa mudou em outro lugar. Recarreguei o guia para você.')
+              }
+              if (!response.ok || !body?.task)
+                throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
+              updateTaskProgress(body.task.progress)
+            },
+          }
+        : undefined,
+    [taskHandoff, updateTaskProgress, retryTaskHandoff],
+  )
+
   // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a
   // descrição via IA no servidor (fail-soft) e `publish` sobe projeto + capa por
   // multipart à rota standalone, que devolve os links. Memoizado (o Studio o latcha).
@@ -123,12 +317,20 @@ export function StudioFullClient({
             }),
           })
           if (!res.ok) return ''
-          const body = (await res.json()) as { description?: string; quotaExceeded?: boolean }
+          const body = (await res.json()) as {
+            description?: string
+            quotaExceeded?: boolean
+            scope?: 'day' | 'month'
+          }
           // Teto de IA da conta atingido → o ShareDialog esconde o "Gerar" e cai
           // no modo manual (o throw com code é duck-typed lá).
           if (body.quotaExceeded) {
+            // ⚠️ O `scope` PRECISA viajar: sem ele o dialog dizia "a ajuda de HOJE
+            // acabou" mesmo quando o teto estourado era o do MÊS, mandando a
+            // criança voltar amanhã para nada.
             throw Object.assign(new Error('quota de IA esgotada'), {
               code: 'AI_QUOTA_EXCEEDED' as const,
+              scope: body.scope,
             })
           }
           return body.description ?? ''
@@ -174,20 +376,140 @@ export function StudioFullClient({
             adapter: createStudioZappyAdapter(),
             openLesson: openStudioZappyLesson,
             cooldownMs: 1_500,
+            credits: aiCredits,
           }
         : undefined,
-    [zappyEnabled],
+    [zappyEnabled, aiCredits],
   )
+
+  // "Trazer do Pinta" (fluxo pull): o Estúdio lista a galeria do Pinta e importa
+  // um desenho por id. O import GRAVA em personal-assets antes de devolver — é o
+  // que liga o auto-update dos jogos (guard `getPersonalAsset` do resyncToStudio
+  // no pinta-client) e o botão "editar desenho". Import dinâmico do SUBPATH
+  // `studio-library` (⚠️ NUNCA a raiz `@sistemazero/pinta` — puxaria o app
+  // inteiro do Pinta pro bundle do /estudio); namespaces re-setados DENTRO de
+  // cada método (nunca confiar em "já setei" — StrictMode/trocas de perfil).
+  const pintaLibrary = useMemo<StudioPintaLibraryAdapter | undefined>(() => {
+    if (!pintaOwned) return undefined
+    return {
+      async list() {
+        const lib = await import('@sistemazero/pinta/studio-library')
+        lib.setPintaStorageNamespace(viewerId ?? '')
+        const drawings = await lib.listGalleryForStudio()
+        return drawings.map((d) => ({
+          id: d.id,
+          name: d.name,
+          role: d.role,
+          style: d.style ?? undefined,
+          updatedAt: d.updatedAt,
+          thumbDataUrl: d.thumbDataUrl,
+          ...(d.projectName ? { projectName: d.projectName } : {}),
+        }))
+      },
+      async import(drawingId) {
+        const lib = await import('@sistemazero/pinta/studio-library')
+        lib.setPintaStorageNamespace(viewerId ?? '')
+        const result = await lib.exportAssetForStudio(drawingId)
+        if (!result.ok) {
+          if (result.reason === 'not-found') {
+            return {
+              ok: false,
+              error: 'Esse desenho não está mais na galeria do Pinta.',
+              code: 'not-found',
+            }
+          }
+          if (result.reason === 'asset-too-big' || result.reason === 'sheet-too-big') {
+            return {
+              ok: false,
+              error: 'Esse desenho é grande demais para o Estúdio.',
+              code: 'too-big',
+            }
+          }
+          return {
+            ok: false,
+            error: 'Não consegui preparar esse desenho agora. Tente de novo.',
+            code: 'raster-failed',
+          }
+        }
+        const bridge = await import('@sistemazero/studio/personal-assets')
+        bridge.setPersonalAssetsNamespace(viewerId ?? '')
+        const saved = await bridge.savePersonalAsset(result.asset)
+        if (!saved.ok) {
+          return {
+            ok: false,
+            error: saved.error ?? 'Não consegui trazer esse desenho agora. Tente de novo.',
+          }
+        }
+        // O upsert pode sufixar o nome (colisão com OUTRO desenho) — o Estúdio
+        // usa o nome salvo, senão os blocos referenciariam um nome divergente.
+        return { ok: true, asset: { ...result.asset, name: saved.name ?? result.asset.name } }
+      },
+    }
+  }, [pintaOwned, viewerId])
 
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
   const backToList = useCallback(() => setView({ name: 'list' }), [])
+  const exitEditor = useCallback(() => {
+    if (taskId) window.location.assign('/pensa')
+    else backToList()
+  }, [backToList, taskId])
 
   // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer
   // (no /estudio o main é `flex flex-col` de largura+altura totais). `min-h-[34rem]`
   // mantém a usabilidade em telas baixas (a página rola se não couber).
+  // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
+  // `embedded-app-loading.tsx`): sem card, porque o Estúdio é uma SEÇÃO da
+  // comunidade, e idêntica à da espera anterior — é o que faz a troca ser
+  // invisível em vez de um piscar. Segue BLOCO (não coluna flex): os filhos se
+  // dimensionam por `h-full` contando com isso.
   return (
-    <div className="min-h-[34rem] w-full flex-1 overflow-hidden rounded-2xl border-2 border-border bg-card">
-      {loadError ? (
+    <div className={EMBEDDED_STUDIO_FRAME}>
+      {taskHandoffStatus === 'error' || taskError ? (
+        <div className="grid h-full place-items-center p-6 text-center">
+          <div className="flex max-w-sm flex-col items-center gap-3">
+            <p className="font-semibold">{taskHandoffError ?? taskError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setTaskError(null)
+                openedTaskKeyRef.current = null
+                retryTaskHandoff()
+              }}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
+            >
+              <RefreshCw className="size-4" /> Tentar de novo
+            </button>
+          </div>
+        </div>
+      ) : taskHandoff && !taskHandoff.capability.owned ? (
+        <div className="grid h-full place-items-center p-6 text-center">
+          <p className="max-w-sm font-semibold">{taskHandoff.capability.blockedReason}</p>
+        </div>
+      ) : missingTaskProject ? (
+        <div className="grid h-full place-items-center p-6 text-center">
+          <div className="flex max-w-md flex-col items-center gap-3">
+            <h2 className="font-black text-xl">Este projeto não está neste aparelho</h2>
+            <p className="text-muted-foreground">
+              O guia e o progresso continuam salvos. Você pode recriar o projeto associado com o
+              mesmo identificador e continuar por aqui.
+            </p>
+            <button
+              type="button"
+              onClick={() => void recreateMissingTaskProject()}
+              className="min-h-11 rounded-full bg-primary px-5 font-bold text-primary-foreground"
+            >
+              Recriar projeto neste aparelho
+            </button>
+            <button
+              type="button"
+              onClick={() => window.location.assign('/pensa')}
+              className="min-h-11 rounded-full border border-border px-5 font-bold"
+            >
+              Voltar ao meu plano
+            </button>
+          </div>
+        </div>
+      ) : loadError ? (
         <div className="grid h-full place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
             <p className="font-semibold">Não consegui carregar o Estúdio.</p>
@@ -200,10 +522,11 @@ export function StudioFullClient({
             </button>
           </div>
         </div>
-      ) : mod === null ? (
-        <div className="grid h-full place-items-center text-muted-foreground text-sm">
-          Carregando o Estúdio…
-        </div>
+      ) : // Espera do guia da tarefa (deep link do Pensa) e espera do pacote viram
+      // UMA só: os dois correm em paralelo, e mostrar dois textos diferentes em
+      // sequência fazia `/estudio?tarefa=` ter uma tela a mais.
+      taskHandoffStatus === 'loading' || mod === null ? (
+        <EmbeddedAppLoadingBody label="Carregando o Estúdio…" />
       ) : view.name === 'list' ? (
         <mod.ProjectList
           onOpenProject={openProject}
@@ -214,166 +537,20 @@ export function StudioFullClient({
           showExamples={showExamples}
         />
       ) : (
-        <EditorScreen
+        <StudioFullEditor
           mod={mod}
           projectId={view.projectId}
-          onExit={backToList}
+          onExit={exitEditor}
           share={share}
           tutor={tutor}
           theme={studioTheme}
           tier={tier}
           showExamples={showExamples}
           professional={proAvailable && tier.canPromoteToPro}
+          taskSession={taskSession}
+          pintaLibrary={pintaLibrary}
         />
       )}
     </div>
-  )
-}
-
-/**
- * "Editar o desenho" nos assets vindos do Pinta: abre o Pinta em ABA NOVA já
- * naquele desenho. O id viaja na URL (e não em `sessionStorage`, como o intent do
- * Pensa) porque `noopener` — o padrão de aba nova do app — corta o vínculo entre
- * as abas, e `sessionStorage` não atravessa. Ao salvar lá, o desenho volta
- * sozinho para os jogos daqui (ver `resyncToStudio` no pinta-client).
- */
-function openDrawingInPinta(drawingId: string): void {
-  window.open(`/pinta?desenho=${encodeURIComponent(drawingId)}`, '_blank', 'noopener,noreferrer')
-}
-
-/** Carrega o projeto do IndexedDB e monta o editor completo (volta à lista no "Projetos"). */
-function EditorScreen({
-  mod,
-  projectId,
-  onExit,
-  share,
-  tutor,
-  theme,
-  tier,
-  showExamples,
-  professional,
-}: {
-  mod: StudioModule
-  projectId: string
-  onExit: () => void
-  share: StudioShareAdapter
-  tutor: StudioTutorConfig | undefined
-  theme: 'light' | 'dark'
-  tier: StudioTier
-  showExamples: boolean
-  professional: boolean
-}) {
-  const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
-  const [state, setState] = useState<EditorState>({ status: 'loading' })
-  const router = useRouter()
-  // Guard "1×/sessão" do beacon de "criou hoje" (o dedupe REAL do dia é do members).
-  const activityBeaconedRef = useRef(false)
-
-  // A criança CRIOU/editou no Estúdio hoje → XP diário que SEGURA o foguinho de quem já
-  // terminou os cursos (1×/dia, gated por posse no members). Dispara UMA vez por sessão
-  // do editor, só numa edição REAL (autosave — NÃO em abrir/`onReady` nem no `flush` de
-  // fechamento). Best-effort/fire-and-forget; no sucesso re-sincroniza o chrome
-  // (foguinho/XP/ranking) sem a criança precisar recarregar.
-  const handleActivity = useCallback(
-    (_project: Project, ctx?: { reason: 'autosave' | 'flush' }) => {
-      if (ctx?.reason !== 'autosave' || activityBeaconedRef.current) return
-      activityBeaconedRef.current = true
-      fetch('/api/studio/activity', { method: 'POST' })
-        .then((res) => {
-          if (res.ok) router.refresh()
-        })
-        .catch(() => {})
-    },
-    [router],
-  )
-  const handlePromoteToPro = useCallback((project: Project) => {
-    window.location.assign(`/estudio/pro/${encodeURIComponent(project.id)}`)
-  }, [])
-
-  useEffect(() => {
-    let active = true
-    setState({ status: 'loading' })
-    adapter
-      .load(projectId)
-      .then((project) => {
-        if (!active) return
-        setState(project ? { status: 'ready', project } : { status: 'not-found' })
-      })
-      .catch(() => {
-        if (active) setState({ status: 'not-found' })
-      })
-    return () => {
-      active = false
-    }
-  }, [adapter, projectId])
-
-  // Projeto sumiu (apagado noutra aba) → volta à lista sem travar.
-  useEffect(() => {
-    if (state.status !== 'not-found') return
-    const timer = setTimeout(onExit, 1200)
-    return () => clearTimeout(timer)
-  }, [state.status, onExit])
-
-  // Projeto PRO (modo Código) abre na rota ISOLADA `/estudio/pro/[id]` — a ÚNICA
-  // com COOP/COEP (o WebContainer precisa do cross-origin isolation). ⚠️ Precisa ser
-  // navegação com CARGA COMPLETA (`window.location`), NÃO `router.push`: os headers
-  // COEP só são aplicados numa requisição HTTP nova do documento; um soft-nav do Next
-  // manteria o documento atual (/estudio, SEM COEP) → `crossOriginIsolated` false →
-  // o WebContainer se recusaria a bootar ("modo Código pede um computador").
-  useEffect(() => {
-    if (state.status === 'ready' && state.project.kind === 'pro') {
-      window.location.assign(`/estudio/pro/${state.project.id}`)
-    }
-  }, [state])
-
-  if (state.status === 'loading') {
-    return (
-      <div className="grid h-full place-items-center text-muted-foreground text-sm">
-        Carregando projeto…
-      </div>
-    )
-  }
-  if (state.status === 'not-found') {
-    return (
-      <div className="grid h-full place-items-center text-muted-foreground text-sm">
-        Projeto não encontrado. Voltando à lista…
-      </div>
-    )
-  }
-  // Projeto PRO: o effect acima já está roteando p/ /estudio/pro — não monta o
-  // editor clássico (ele nem mostraria o modo Código num projeto pro).
-  if (state.project.kind === 'pro') {
-    return (
-      <div className="grid h-full place-items-center text-muted-foreground text-sm">
-        Abrindo o modo Código…
-      </div>
-    )
-  }
-  return (
-    <mod.StudioEditor
-      initialProject={state.project}
-      persistence="local"
-      onExit={onExit}
-      onChange={handleActivity}
-      share={share}
-      tutor={tutor}
-      theme={theme}
-      // Modos + degrau de blocos pelo RANK do aluno (carreira de 8, Faísca→Lenda;
-      // admin=Lenda): cada nível libera o degrau que vai estudar em seguida; a
-      // Ponte abre no Mestre dos Jogos e o PRO somente na Lenda (ver
-      // member-shell/lib/studio-tier.ts). Sem "Mostrar blocos avançados" — o rank
-      // é o portão estrito.
-      level={tier.level}
-      allowBlocks={tier.allowBlocks}
-      allowExtensions={tier.allowedExtensions}
-      allowedModes={tier.allowedModes}
-      allowLevelReveal={tier.allowLevelReveal}
-      features={{ professional }}
-      onPromoteToPro={handlePromoteToPro}
-      // Botão "Editar" nos desenhos do Pinta (painel de Imagens) → abre o Pinta.
-      onEditDrawing={openDrawingInPinta}
-      // Exemplos "clássicos" no painel de Extensões — só p/ a equipe (ver a página).
-      showExamples={showExamples}
-    />
   )
 }

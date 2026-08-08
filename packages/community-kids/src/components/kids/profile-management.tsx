@@ -10,6 +10,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { GuideBalloon } from '@/components/kids/parent-guide'
 import type { ProfileView } from '@/lib/types'
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
@@ -21,6 +22,8 @@ export function ProfileTile({
   disabled,
   onSelect,
   onEdit,
+  buttonRef,
+  ariaDescribedBy,
 }: {
   profile: ProfileView
   /** SNAPSHOT do avatar 3D (members) — a ÚNICA fonte da cara da criança (24/07). */
@@ -29,9 +32,13 @@ export function ProfileTile({
   disabled: boolean
   onSelect: () => void
   onEdit: () => void
+  buttonRef?: React.Ref<HTMLButtonElement>
+  ariaDescribedBy?: string
 }) {
   return (
     <button
+      ref={buttonRef}
+      aria-describedby={ariaDescribedBy}
       type="button"
       disabled={disabled}
       onClick={managing ? onEdit : onSelect}
@@ -65,12 +72,15 @@ export function ProfileTile({
 export function ProfileForm({
   editing,
   busy,
+  showGuideHint = false,
   onCancel,
   onSave,
   onArchive,
 }: {
   editing: { mode: 'create' } | { mode: 'edit'; profile: ProfileView }
   busy: boolean
+  /** Passo `form` do tutorial guiado dos pais: dica do Zappy no topo. */
+  showGuideHint?: boolean
   onCancel: () => void
   onSave: (
     name: string,
@@ -89,39 +99,68 @@ export function ProfileForm({
   )
   // `max` do seletor = hoje (nascimento não pode ser no futuro).
   const today = new Date().toISOString().slice(0, 10)
+  // O auth exige nome com ≥3 caracteres — validar AQUI dá a mensagem amigável em
+  // vez do toast genérico ("Bê" e "Jô" caíam num "Não foi possível salvar").
+  const trimmedName = name.trim()
+  const nameTooShort = trimmedName.length > 0 && trimmedName.length < 3
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-12">
+      {showGuideHint ? (
+        <GuideBalloon arrow="none">
+          Coloque o nome da criança. A data de nascimento é opcional, e é aqui que você decide se o
+          perfil aparece para outras crianças na comunidade.
+        </GuideBalloon>
+      ) : null}
       <h1 className="sz-display text-2xl text-foreground">
         {isEdit ? 'Editar perfil' : 'Novo perfil'}
       </h1>
+      <form
+        className="flex flex-col gap-6"
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (busy || trimmedName.length < 3) return
+          onSave(trimmedName, birthDate || null, publicProfileEnabled, profile ?? undefined)
+        }}
+      >
+        <Field
+          label="Nome do perfil"
+          htmlFor="profileName"
+          error={nameTooShort ? 'O nome precisa de pelo menos 3 letras.' : undefined}
+        >
+          <Input
+            id="profileName"
+            name="profileName"
+            autoComplete="off"
+            value={name}
+            maxLength={60}
+            placeholder="Ex.: Sofia"
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Field>
 
-      <Field label="Nome do perfil" htmlFor="profileName">
-        <Input
-          id="profileName"
-          value={name}
-          maxLength={60}
-          placeholder="Ex.: Sofia"
-          onChange={(e) => setName(e.target.value)}
-        />
-      </Field>
+        <Field label="Data de nascimento da criança (opcional)" htmlFor="profileBirthDate">
+          <Input
+            id="profileBirthDate"
+            name="birthDate"
+            type="date"
+            autoComplete="off"
+            value={birthDate}
+            max={today}
+            onChange={(e) => setBirthDate(e.target.value)}
+          />
+          <p className="mt-1 text-muted-foreground text-xs">
+            Só os responsáveis editam. Ajuda a gente a cuidar da idade certa. 💙
+          </p>
+        </Field>
 
-      <Field label="Data de nascimento da criança" htmlFor="profileBirthDate">
-        <Input
-          id="profileBirthDate"
-          type="date"
-          value={birthDate}
-          max={today}
-          onChange={(e) => setBirthDate(e.target.value)}
-        />
-        <p className="mt-1 text-muted-foreground text-xs">
-          Só os responsáveis editam. Ajuda a gente a cuidar da idade certa. 💙
-        </p>
-      </Field>
-
-      {profile ? (
+        {/* Também na CRIAÇÃO (04/08/2026): o pai decide o perfil público já no primeiro
+            preenchimento — antes o opt-in só existia na edição, e ninguém voltava para
+            ligá-lo. Nasce DESLIGADO (opt-in de verdade); o auth aceita o campo no create
+            desde o mesmo lote. */}
         <label className="flex items-start gap-3 rounded-2xl border-2 border-border bg-card p-4">
           <input
+            name="publicProfileEnabled"
             type="checkbox"
             checked={publicProfileEnabled}
             onChange={(e) => setPublicProfileEnabled(e.target.checked)}
@@ -135,35 +174,31 @@ export function ProfileForm({
             </span>
           </span>
         </label>
-      ) : null}
 
-      <div className="flex items-center justify-between gap-3">
-        {profile ? (
-          <Button
-            variant="ghost"
-            disabled={busy}
-            onClick={() => onArchive(profile)}
-            className="text-destructive"
-          >
-            <Trash2 className="size-4" /> Remover
-          </Button>
-        ) : (
-          <span />
-        )}
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={onCancel} disabled={busy}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={() =>
-              onSave(name.trim(), birthDate || null, publicProfileEnabled, profile ?? undefined)
-            }
-            disabled={busy || name.trim().length === 0}
-          >
-            {busy ? <Spinner className="size-4" /> : 'Salvar'}
-          </Button>
+        <div className="flex items-center justify-between gap-3">
+          {profile ? (
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => onArchive(profile)}
+              className="text-destructive"
+            >
+              <Trash2 className="size-4" /> Remover
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex gap-3">
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={busy || trimmedName.length < 3}>
+              {busy ? <Spinner className="size-4" /> : 'Salvar'}
+            </Button>
+          </div>
         </div>
-      </div>
+      </form>
     </main>
   )
 }

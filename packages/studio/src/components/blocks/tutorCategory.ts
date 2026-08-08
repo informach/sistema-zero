@@ -50,16 +50,24 @@ function findExactCategory(items: TutorToolboxItem[], category: string): TutorTo
   return null
 }
 
-/** Seleciona a categoria que contém o tipo autoritativo; o rótulo é só fallback exato. */
+/**
+ * Seleciona a categoria que contém o tipo autoritativo; o rótulo é só fallback
+ * exato — a subcategoria (nó folha, quando presente) vence a categoria de topo,
+ * que num toolbox colapsável só expande em vez de abrir o flyout do bloco.
+ */
 export function openTutorCategory(
   workspace: TutorWorkspace,
   blockType: string,
   category: string,
+  subcategory?: string,
 ): boolean {
   const toolbox = workspace.getToolbox?.() as TutorToolbox | null | undefined
   if (!toolbox?.getToolboxItems || !toolbox.setSelectedItem) return false
   const items = toolbox.getToolboxItems()
-  const item = findBlockOwner(items, blockType) ?? findExactCategory(items, category)
+  const item =
+    findBlockOwner(items, blockType) ??
+    (subcategory ? findExactCategory(items, subcategory) : null) ??
+    findExactCategory(items, category)
   if (!item) return false
   toolbox.setSelectedItem(item)
   return true

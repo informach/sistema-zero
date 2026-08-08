@@ -5,11 +5,13 @@ import {
   ProjectList,
   prefetchStudioModes,
   StudioEditor,
+  type StudioPintaDrawingSummary,
+  type StudioPintaLibraryAdapter,
   type StudioShareAdapter,
   type StudioTutorAdapter,
   type StudioTutorHistoryMessage,
 } from '@sistemazero/studio'
-import { setPersonalAssetsNamespace } from '@sistemazero/studio/personal-assets'
+import { savePersonalAsset, setPersonalAssetsNamespace } from '@sistemazero/studio/personal-assets'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -40,6 +42,67 @@ type EditorState =
   | { status: 'not-found' }
 
 const tutorHistory = new Map<string, StudioTutorHistoryMessage[]>()
+
+// "Trazer do Pinta" de DEMONSTRAÇÃO: uma galeria fixa (sem o Pinta real) para
+// exercitar a modal (busca, selo "no projeto", erro de apagado). O `import`
+// grava DE VERDADE na biblioteca pessoal — igual ao host real — para provar a
+// mão-dupla: o desenho importado ganha o "✏️ editar desenho" em "No projeto".
+const PINTA_DEMO_PNG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+const PINTA_DEMO_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="4" fill="#38bdf8"/><circle cx="12" cy="12" r="6" fill="#fbbf24"/></svg>',
+)}`
+const pintaDrawingsDemo: StudioPintaDrawingSummary[] = [
+  {
+    id: 'pg-dragao',
+    name: 'dragao-do-pinta',
+    role: 'sprite',
+    style: 'pixel',
+    updatedAt: Date.now(),
+    thumbDataUrl: PINTA_DEMO_PNG,
+  },
+  {
+    id: 'pg-ceu',
+    name: 'ceu-do-pinta',
+    role: 'background',
+    style: 'vector',
+    updatedAt: Date.now() - 60_000,
+    thumbDataUrl: PINTA_DEMO_SVG,
+    projectName: 'jogo-demo',
+  },
+  {
+    id: 'pg-mapa',
+    name: 'mapa-sem-miniatura',
+    role: 'tilemap',
+    updatedAt: Date.now() - 120_000,
+    thumbDataUrl: null,
+  },
+]
+const pintaLibraryDemo: StudioPintaLibraryAdapter = {
+  async list() {
+    await new Promise((r) => setTimeout(r, 300))
+    return pintaDrawingsDemo
+  },
+  async import(drawingId) {
+    const drawing = pintaDrawingsDemo.find((d) => d.id === drawingId)
+    if (!drawing) {
+      return {
+        ok: false,
+        error: 'Esse desenho não está mais na galeria do Pinta.',
+        code: 'not-found',
+      }
+    }
+    const dataUrl = drawing.thumbDataUrl ?? PINTA_DEMO_PNG
+    const saved = await savePersonalAsset({ id: drawing.id, name: drawing.name, dataUrl })
+    if (!saved.ok) {
+      return { ok: false, error: saved.error ?? 'Não consegui trazer esse desenho agora.' }
+    }
+    return {
+      ok: true,
+      asset: { id: drawing.id, name: saved.name ?? drawing.name, dataUrl, width: 24, height: 24 },
+    }
+  },
+}
 
 /**
  * Adapter local do playground. Ele exercita a API pública completa do tutor sem
@@ -85,7 +148,8 @@ const tutorDemo: StudioTutorAdapter = {
         createdAt,
       },
     ])
-    return response
+    // O playground não tem quota: sem saldo, o medidor simplesmente não aparece.
+    return { response }
   },
   async feedback() {},
 }
@@ -188,6 +252,8 @@ function EditorScreen({
       // Botão "Editar" nos desenhos do Pinta. No app de verdade abre
       // `/pinta?desenho=<id>` numa aba nova; aqui só loga (não há Pinta).
       onEditDrawing={(drawingId) => console.debug('[host] onEditDrawing', drawingId)}
+      // "Trazer do Pinta" com galeria fake (ver pintaLibraryDemo).
+      pintaLibrary={pintaLibraryDemo}
     />
   )
 }

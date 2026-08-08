@@ -2,6 +2,7 @@ import { countDistinct, desc, sql, sum } from 'drizzle-orm'
 import type {
   AiUsageMonthStats,
   AiUsageRepository,
+  AiUsageTotals,
   ConsumeAiUsageInput,
   ConsumeAiUsageOutcome,
 } from '../../../domain/ports/ai-usage-repository.port'
@@ -14,6 +15,34 @@ function nextMonthStart(month: string): string {
   const ny = m === 12 ? (y as number) + 1 : (y as number)
   const nm = m === 12 ? 1 : (m as number) + 1
   return `${ny}-${String(nm).padStart(2, '0')}-01`
+}
+
+/** `db` OU a transação do `consume` — a mesma soma serve os dois caminhos. */
+type Queryable = Database | Parameters<Parameters<Database['transaction']>[0]>[0]
+
+/**
+ * Soma do dia e do mês da conta. É prefixo da PK `(account_id, day, feature)`, então
+ * varre no máximo ~1 mês de linhas da conta — a query mais barata da casa, sem
+ * índice novo.
+ */
+async function readTotals(
+  db: Queryable,
+  input: { accountId: string; day: string; month: string },
+): Promise<AiUsageTotals> {
+  const [totals] = await db
+    .select({
+      usedDay: sum(
+        sql`case when ${aiUsageDaily.day} = ${input.day} then ${aiUsageDaily.used} else 0 end`,
+      ).mapWith(Number),
+      usedMonth: sum(aiUsageDaily.used).mapWith(Number),
+    })
+    .from(aiUsageDaily)
+    .where(
+      sql`${aiUsageDaily.accountId} = ${input.accountId}
+        and ${aiUsageDaily.day} >= ${`${input.month}-01`}
+        and ${aiUsageDaily.day} < ${nextMonthStart(input.month)}`,
+    )
+  return { usedDay: totals?.usedDay ?? 0, usedMonth: totals?.usedMonth ?? 0 }
 }
 
 export class DrizzleAiUsageRepository implements AiUsageRepository {
@@ -30,23 +59,7 @@ export class DrizzleAiUsageRepository implements AiUsageRepository {
         sql`select pg_advisory_xact_lock(hashtextextended(${`ai-usage:${input.accountId}`}, 0))`,
       )
 
-      const monthStart = `${input.month}-01`
-      const [totals] = await tx
-        .select({
-          usedDay: sum(
-            sql`case when ${aiUsageDaily.day} = ${input.day} then ${aiUsageDaily.used} else 0 end`,
-          ).mapWith(Number),
-          usedMonth: sum(aiUsageDaily.used).mapWith(Number),
-        })
-        .from(aiUsageDaily)
-        .where(
-          sql`${aiUsageDaily.accountId} = ${input.accountId}
-            and ${aiUsageDaily.day} >= ${monthStart}
-            and ${aiUsageDaily.day} < ${nextMonthStart(input.month)}`,
-        )
-
-      const usedDay = totals?.usedDay ?? 0
-      const usedMonth = totals?.usedMonth ?? 0
+      const { usedDay, usedMonth } = await readTotals(tx, input)
 
       // Equipe grava mas NUNCA é recusada (visibilidade de custo sem atrito).
       if (!input.privileged) {
@@ -81,6 +94,10 @@ export class DrizzleAiUsageRepository implements AiUsageRepository {
 
       return { allowed: true, usedDay: usedDay + 1, usedMonth: usedMonth + 1 }
     })
+  }
+
+  totals(input: { accountId: string; day: string; month: string }): Promise<AiUsageTotals> {
+    return readTotals(this.db, input)
   }
 
   async statsForMonth(month: string, today: string, topLimit: number): Promise<AiUsageMonthStats> {

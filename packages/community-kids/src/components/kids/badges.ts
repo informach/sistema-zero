@@ -140,13 +140,13 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     icon: Lightbulb,
   },
   'pensa-first-launch': {
-    title: 'Grande lançamento',
-    description: 'Você planejou, construiu e lançou a Versão 1 de um jogo!',
+    title: 'Plano aprovado',
+    description: 'Você organizou e aprovou a Versão 1 do plano de um jogo!',
     icon: Rocket,
   },
   'pensa-creator-3': {
     title: 'Cabeça de criador',
-    description: 'Três versões lançadas com o Pensa. Você pensa como gente grande!',
+    description: 'Três versões planejadas com o Pensa. Você pensa como gente grande!',
     icon: BrainCircuit,
   },
   'challenge-first': {

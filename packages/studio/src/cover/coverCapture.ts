@@ -230,8 +230,18 @@ function buildCanvasHarness(opts: {
       post(url);
     } catch (e) { post(null); }
   }
+  var done = false;
+  function captureOnce(){ if (done) return; done = true; capture(); }
   function schedule(){
-    setTimeout(function(){ (window.requestAnimationFrame || window.setTimeout)(capture); }, WARMUP);
+    // O rAF é o caminho BOM (fotografa logo depois de um quadro pintado), mas ele
+    // NÃO dispara em aba de fundo nem numa página que está saindo — e é
+    // exatamente aí que a capa mais importa (a criança volta pela navegação do
+    // host ou fecha a aba). Sem a rede do setTimeout, a captura ficava pendurada
+    // até o timeout e a capa saía nula em silêncio. Quem chegar primeiro vence.
+    setTimeout(function(){
+      if (window.requestAnimationFrame) window.requestAnimationFrame(captureOnce);
+      setTimeout(captureOnce, 200);
+    }, WARMUP);
   }
   if (document.readyState === 'complete') schedule();
   else window.addEventListener('load', schedule);

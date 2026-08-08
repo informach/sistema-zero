@@ -42,17 +42,11 @@ const PENSA_ARTIFACT_CREATE_PATH = /\/members\/pensa\/cycles\/[^/]+\/artifacts$/
 const PENSA_TASKS_REPLACE_PATH = /\/members\/pensa\/cycles\/[^/]+\/tasks$/
 const MAX_PENSA_BODY_BYTES = 1024 * 1024
 
-// Snapshot do Estúdio na nuvem (Pensa): o PUT carrega o jogo INTEIRO serializado
-// (cap de 1.8M chars no use case) — o teto de 1 MB do Pensa NÃO basta; entra no
-// teto de 2 MB do Estúdio (MAX_STUDIO_BODY_BYTES — é o mesmo perfil de payload).
-const PENSA_STUDIO_SNAPSHOT_PATH = /\/members\/pensa\/projects\/[^/]+\/studio-snapshot$/
-
 function bodyLimitForPath(pathname: string, env: Env): number {
   if (
     STUDIO_SUBMISSION_PATH.test(pathname) ||
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
-    ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
-    PENSA_STUDIO_SNAPSHOT_PATH.test(pathname)
+    ADMIN_BLOCK_UPDATE_PATH.test(pathname)
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }

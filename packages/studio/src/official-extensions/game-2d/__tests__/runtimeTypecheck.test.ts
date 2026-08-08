@@ -35,6 +35,9 @@ interface Window {
   }
   __SZGAME_ASSETS?: Record<string, string>
   __SZGAME_ASSET_META?: Record<string, SZGameTileMapAssetMetadata>
+  // Sons do projeto, do mesmo bridge das imagens. Opcional porque o mapa não é
+  // semeado quando o projeto não tem nenhum arquivo de áudio.
+  __SZGAME_SOUNDS?: Record<string, string>
   webkitAudioContext?: typeof AudioContext
 }
 `
@@ -226,7 +229,31 @@ test('o typecheck do arquivo composto detecta dependência interna ausente', () 
 }, 20_000)
 
 test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(744)
+  // 856 → 868: os 12 parâmetros do áudio de arquivo (loadSound/_startClip/
+  // _requestClip/playClip/stopClip/playTrack/setSoundVolume/_clipKey).
+  // 869 → 881: os 12 da animação de uma vez (_startAnimation/playAnimationOnce/
+  // animationEnded).
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(881)
+})
+
+test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {
+  // ⚠️ Defeito real (revisão de 08/2026): `setSoundVolume` usava
+  // `_positiveFiniteNumber`, que só aceita `> 0`. O zero caía no fallback 8 e
+  // "pôr o volume em 0" deixava o som em 80% — o OPOSTO do que o bloco promete,
+  // justo no valor que a criança mais tenta (o rótulo diz "0 (mudo)").
+  // Guarda de FONTE porque avaliar o runtime inteiro custaria caro aqui; o
+  // comportamento equivalente é exercitado em `preview/__tests__/audioBridge`.
+  const inicio = gameTwoDRuntime.indexOf('function setSoundVolume')
+  expect(inicio).toBeGreaterThan(-1)
+  // Sem os comentários: o próprio aviso que explica o defeito CITA o helper
+  // proibido, e a guarda tropeçaria nele em vez de no código.
+  const corpo = gameTwoDRuntime
+    .slice(inicio, inicio + 700)
+    .split('\n')
+    .filter((linha) => !linha.trim().startsWith('//'))
+    .join('\n')
+  expect(corpo).not.toContain('_positiveFiniteNumber')
+  expect(corpo).toContain('Math.max(0,')
 })
 
 test('as funções públicas mantêm a ordem de parâmetros do contrato TypeScript', () => {

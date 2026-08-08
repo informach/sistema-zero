@@ -6,7 +6,7 @@
  */
 import type { TilemapAsset, VectorTilesetAsset } from '../core/project'
 import { svgToPngDataUrl } from '../vector/rasterize'
-import { shapesToMarkup } from '../vector/svg'
+import { gradientDefsMarkup, shapesToMarkup } from '../vector/svg'
 import { flattenLayers } from './tilemapOps'
 
 export function vectorTilemapSvg(tilemap: TilemapAsset, tileset: VectorTilesetAsset): string {
@@ -22,10 +22,18 @@ export function vectorTilemapSvg(tilemap: TilemapAsset, tileset: VectorTilesetAs
   }
   const symbols = [...used]
     .sort((a, b) => a - b)
-    .map(
-      (index) =>
-        `    <symbol id="tile-${index}" viewBox="0 0 ${tile} ${tile}">\n${shapesToMarkup(tileset.tiles[index] ?? [], '      ')}\n    </symbol>`,
-    )
+    .map((index) => {
+      const shapes = tileset.tiles[index] ?? []
+      const idPrefix = `tile-${index}-`
+      const defs = gradientDefsMarkup(shapes, idPrefix)
+      const content = [
+        defs ? `      ${defs.replace(/\n/g, '\n      ')}` : '',
+        shapesToMarkup(shapes, '      ', idPrefix),
+      ]
+        .filter(Boolean)
+        .join('\n')
+      return `    <symbol id="tile-${index}" viewBox="0 0 ${tile} ${tile}">\n${content}\n    </symbol>`
+    })
 
   const uses: string[] = []
   for (let row = 0; row < tilemap.rows; row += 1) {

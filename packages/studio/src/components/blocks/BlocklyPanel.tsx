@@ -38,6 +38,7 @@ import {
 } from '../../blockly/fields/FieldSpritePicker'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
+import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore } from '../../state/highlightStore'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -60,11 +61,13 @@ const REGEN_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
 function blocklyWorkspaceConfiguration(
   theme: 'dark' | 'light',
   horizontalLayout: boolean,
+  /** Container do canvas: de onde as cores do tema vigente são LIDAS. */
+  root: Element | null,
 ): Blockly.BlocklyOptions {
   return {
-    theme: szThemeFor(theme),
+    theme: szThemeFor(theme, root),
     renderer: 'zelos',
-    grid: { spacing: 24, length: 3, colour: szGridColourFor(theme), snap: true },
+    grid: { spacing: 24, length: 3, colour: szGridColourFor(theme, root), snap: true },
     zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
     move: { scrollbars: true, drag: true, wheel: true },
     trashcan: true,
@@ -306,6 +309,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
+  const diagnosticsStoreApi = useDiagnosticsStoreApi()
   const studioTheme = useStudioTheme()
   // Ref para a injeção (efeito de mount único) usar o tema vigente sem re-injetar.
   const studioThemeRef = useRef(studioTheme)
@@ -441,7 +445,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // casca do documento (head/doctype) que os blocos não representam.
       const current = projectStoreApi.getState().project
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
-      if (!applySemanticDiagnostics(workspace, ir)) {
+      // As mensagens já vêm escritas para a criança; publicá-las é o que permite
+      // ao Zappy apontar "o nome X não existe" em vez de adivinhar.
+      const collectIssues = (issues: { blockId?: string; message: string }[]) =>
+        diagnosticsStoreApi.getState().setSemanticIssues(issues)
+      if (!applySemanticDiagnostics(workspace, ir, collectIssues)) {
         // O desenho inválido continua salvo para a criança poder corrigi-lo, mas
         // o preview fica no último estado válido em vez de virar uma tela vazia.
         applyProjectState({ blocksState: state })
@@ -493,7 +501,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const storeState = projectStoreApi.getState()
       storeState.markBridgeBlocksSynced(storeState.bridgeCodeEditEpoch)
     },
-    [applyProjectState, setSourceMap, projectStoreApi],
+    [applyProjectState, setSourceMap, projectStoreApi, diagnosticsStoreApi],
   )
 
   const flushScheduledRegeneration = useCallback(() => {
@@ -549,7 +557,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const refresh = () => {
       refreshQueued = false
       if (disposed) return
-      applyDraftDiagnostics(workspace)
+      // O retorno (ids das pilhas SOLTAS) era descartado. Publicá-lo é o que
+      // permite ao Zappy dizer "essa parte está salva mas nunca roda" em vez de
+      // tratar rascunho morto como se fosse código ativo.
+      diagnosticsStoreApi.getState().setDraftBlockIds(applyDraftDiagnostics(workspace))
     }
     const scheduleRefresh = () => {
       if (refreshQueued) return
@@ -573,7 +584,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       disposed = true
       workspace.removeChangeListener(listener)
     }
-  }, [workspace])
+  }, [workspace, diagnosticsStoreApi])
 
   // Regeneração código a partir dos blocos. Filtra eventos para reagir apenas a
   // edições reais (criar/apagar/mover/alterar bloco). Eventos disparados durante
@@ -792,6 +803,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       workspace as Blockly.WorkspaceSvg,
       tutorTarget.blockType,
       tutorTarget.category,
+      tutorTarget.subcategory,
     )
   }, [workspace, highlightSource, tutorTarget])
 
@@ -909,7 +921,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const horizontalToolbox = container.clientWidth < STUDIO_COMPACT_MAX_PX
     container.dataset.szToolboxLayout = horizontalToolbox ? 'horizontal' : 'vertical'
     const injected = Blockly.inject(container, {
-      ...blocklyWorkspaceConfiguration(studioThemeRef.current, horizontalToolbox),
+      ...blocklyWorkspaceConfiguration(studioThemeRef.current, horizontalToolbox, container),
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox
@@ -1015,7 +1027,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).
   useEffect(() => {
     if (!workspace) return
-    workspace.setTheme(szThemeFor(studioTheme))
+    workspace.setTheme(szThemeFor(studioTheme, blocklyRef.current))
   }, [workspace, studioTheme])
 
   // Enquanto a partição de blocos hidrata em 2º plano (reabertura rápida), o

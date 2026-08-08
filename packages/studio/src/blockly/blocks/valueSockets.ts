@@ -38,6 +38,7 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_canvas_rotate: { ANGLE: 0 },
   sz_canvas_scale: { SX: 1, SY: 1 },
   sz_canvas_draw_image: { X: 0, Y: 0, W: 100, H: 100 },
+  sz_som_volume: { LEVEL: 8 },
   sz_canvas_gradient: { X0: 0, Y0: 0, X1: 200, Y1: 0 },
   sz_val_random: { MIN: 0, MAX: 100 },
   // Cor HSL: matiz (0–360) + saturação/luminosidade em % (0–100).

@@ -12,6 +12,7 @@ import { generateProjectFiles } from '#generators'
 import type { SZIRV2 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
+import { normalizeSearchText } from '../core/searchText'
 import { CORE_EXAMPLES } from '../examples/core'
 import { persistProject } from '../state/persistence'
 
@@ -62,13 +63,6 @@ const DIFFICULTY_BADGE_CLASS: Record<ExtensionExampleDifficulty, string> = {
   beginner: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
   intermediate: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
   advanced: 'bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300',
-}
-
-function normalizeSearchText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('pt-BR')
 }
 
 export function filterKitGroups(

@@ -18,6 +18,7 @@ import {
   type PintaAsset,
   resolveAssetPalette,
 } from '../core/project'
+import { flattenCels } from '../pixel/layers'
 import { tilesetPngDataUrl } from '../tiles/packTileset'
 import { vectorTilesetPngDataUrl, vectorTilesetSvg } from '../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../tiles/renderTilemap'
@@ -100,7 +101,10 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
         for (const [animationIndex, animation] of asset.animations.entries()) {
           const strip = await dataUrlBytes(
             composeSheetPngDataUrl({
-              cells: animation.frames.map((bitmap, col) => ({ bitmap, col, row: 0 })),
+              cells: animation.frames.flatMap((cels, col) => {
+                const bitmap = flattenCels(cels, asset.layers)
+                return bitmap ? [{ bitmap, col, row: 0 }] : []
+              }),
               cellWidth: asset.frameWidth,
               cellHeight: asset.frameHeight,
               columns: animation.frames.length,
@@ -117,7 +121,10 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
         break
       }
       case 'pixel-background': {
-        const png = await dataUrlBytes(bitmapToPngDataUrl(asset.bitmap, resolveAssetPalette(asset)))
+        const flat = flattenCels(asset.cels, asset.layers)
+        const png = flat
+          ? await dataUrlBytes(bitmapToPngDataUrl(flat, resolveAssetPalette(asset)))
+          : null
         if (png) files[`cenarios/${asset.name}.png`] = png
         break
       }

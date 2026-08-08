@@ -9,6 +9,7 @@ import {
   flipHorizontal,
   flipVertical,
   floodFill,
+  removeColorIndex,
   replaceColor,
   rotate90,
   shift,
@@ -170,5 +171,14 @@ describe('transformações de bitmap inteiro', () => {
 
   it('clearBitmap zera tudo', () => {
     expect(rows(clearBitmap(bmp(['12', '34'])))).toEqual(['..', '..'])
+  })
+
+  it('removeColorIndex: igual vira transparente, maiores descem 1, menores intactos', () => {
+    // Índices extras (≥16) não cabem no dialeto do bmp() — bitmap montado à mão.
+    const base = { width: 5, height: 1, data: Uint8Array.from([3, 16, 17, 18, 0]) }
+    const out = removeColorIndex(base, 17)
+    expect(Array.from(out.data)).toEqual([3, 16, 0, 17, 0])
+    // Original imutável.
+    expect(Array.from(base.data)).toEqual([3, 16, 17, 18, 0])
   })
 })

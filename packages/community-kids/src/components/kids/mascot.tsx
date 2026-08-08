@@ -28,6 +28,8 @@ export function KidsMascot({ expression = 'happy', className }: KidsMascotProps)
     <img
       src={ZAPPY_SRC[expression]}
       alt=""
+      width={48}
+      height={48}
       aria-hidden="true"
       draggable={false}
       className={cn('size-12 shrink-0 select-none object-contain', className)}

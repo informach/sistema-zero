@@ -818,4 +818,14 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   de backfill sincroniza todos os cursos kids publicados.
 - Salvar/excluir blocos sincroniza VTT re-hospedado, texto rico e PDFs explicitamente marcados
   como **Caderno do aluno**. PDF sem texto selecionável fica em erro visível para correção.
+- **"Perguntas que falharam" (08/2026):** card próprio abaixo das métricas em `/admin/ia`
+  (`ZappyFailedQuestionsCard` no `ia-client.tsx`) — a lista do que as crianças perguntaram e o
+  Zappy NÃO conseguiu responder bem, com filtro (todas / reprovadas pela validação / erros
+  técnicos / marcadas com 👎), motivo da reprovação e "Carregar mais". É o dado que faltava para
+  melhorar o tutor. ⚠️ **Só falhas e SEM identificação** (decisão da usuária): a rota não devolve
+  userId/projectId e as perguntas já vêm PII-redigidas do members. BFF: shim
+  `app/api/members/zappy/questions/route.ts` (valida `month` e a allowlist de filtro) →
+  `getZappyFailedQuestions` → gateway `GET /members/admin/zappy/questions` (staff+). As métricas
+  ganharam o bucket **reprovadas** (`ZappyMetricsView.rejected?`, opcional para tolerar members
+  antigo).
 ```

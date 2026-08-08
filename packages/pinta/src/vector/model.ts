@@ -42,11 +42,22 @@ interface VectorShapeBase {
   rotation: number
   /** Grupo: shapes com o MESMO id se movem/selecionam juntos. Ausente = solto. */
   groupId?: string
+  /**
+   * Escondida pelo olhinho do painel Camadas: some do PALCO e de TODO export/
+   * prévia (paridade com a camada escondida do pixel). Ausente = visível
+   * (convenção do sanitize: `false` OMITE a chave).
+   */
+  hidden?: boolean
+}
+
+/** Só as formas visíveis (o funil de render/export respeita o olhinho). */
+export function visibleShapes(shapes: VectorShape[]): VectorShape[] {
+  return shapes.filter((s) => s.hidden !== true)
 }
 
 /** id do `<linearGradient>/<radialGradient>` de um shape (único = id do shape). */
-export function gradientId(shapeId: string): string {
-  return `pin-grad-${shapeId}`
+export function gradientId(shapeId: string, prefix = ''): string {
+  return `${prefix}pin-grad-${shapeId}`
 }
 
 export type VectorShape = VectorShapeBase &
@@ -61,6 +72,11 @@ export type VectorShape = VectorShapeBase &
   )
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
+const SAFE_VECTOR_ID = /^[A-Za-z0-9_-]{1,128}$/
+
+export function isSafeVectorId(value: unknown): value is string {
+  return typeof value === 'string' && SAFE_VECTOR_ID.test(value)
+}
 
 export function isVectorColor(value: unknown): value is string {
   return value === 'none' || (typeof value === 'string' && HEX_COLOR.test(value))
@@ -111,7 +127,7 @@ const MAX_POLYGON_POINTS = 64
 export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   if (!raw || typeof raw !== 'object') return null
   const s = raw as Record<string, unknown>
-  if (typeof s.id !== 'string' || !s.id) return null
+  if (!isSafeVectorId(s.id)) return null
   const fill = sanitizeFill(s.fill)
   if (fill === null) return null
   let stroke: VectorStroke | null = null
@@ -122,8 +138,16 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   }
   const opacity = isFiniteNumber(s.opacity) ? Math.min(Math.max(s.opacity, 0), 1) : 1
   const rotation = isFiniteNumber(s.rotation) ? s.rotation % 360 : 0
-  const groupId = typeof s.groupId === 'string' && s.groupId ? s.groupId : undefined
-  const base = { id: s.id, fill, stroke, opacity, rotation, ...(groupId ? { groupId } : {}) }
+  const groupId = isSafeVectorId(s.groupId) ? s.groupId : undefined
+  const base = {
+    id: s.id,
+    fill,
+    stroke,
+    opacity,
+    rotation,
+    ...(groupId ? { groupId } : {}),
+    ...(s.hidden === true ? { hidden: true } : {}),
+  }
 
   switch (s.type) {
     case 'rect':

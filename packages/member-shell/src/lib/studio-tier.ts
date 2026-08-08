@@ -25,6 +25,9 @@ export interface StudioTier {
   canPromoteToPro: boolean
 }
 
+/** Inventor(a), o 3º degrau da carreira. */
+export const CREATIVE_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
+
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
 export function isPrivilegedRole(role: string | undefined): boolean {

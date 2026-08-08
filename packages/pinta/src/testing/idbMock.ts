@@ -12,10 +12,12 @@ const dbs = new Map<string, KV>()
 
 // Gancho de teste: um guard chamado ANTES de cada `set`; se lançar, o write
 // falha (simula disco cheio/quota p/ testar caminhos de erro). Default no-op.
-let writeGuard: ((key: IDBValidKey, value: unknown) => void) | null = null
+let writeGuard: ((key: IDBValidKey, value: unknown) => void | Promise<void>) | null = null
 
 /** Faz o próximo(s) `set` lançar quando o guard lançar. `null` desliga. */
-export function setIdbWriteGuard(guard: ((key: IDBValidKey, value: unknown) => void) | null): void {
+export function setIdbWriteGuard(
+  guard: ((key: IDBValidKey, value: unknown) => void | Promise<void>) | null,
+): void {
   writeGuard = guard
 }
 
@@ -36,10 +38,11 @@ mock.module('idb-keyval', () => ({
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
     keys.map((key) => resolveKV(store).get(key)),
   set: async (key: IDBValidKey, value: unknown, store?: { name?: string }) => {
-    writeGuard?.(key, value)
+    await writeGuard?.(key, value)
     resolveKV(store).set(key, value)
   },
   setMany: async (pairs: Array<[IDBValidKey, unknown]>, store?: { name?: string }) => {
+    for (const [key, value] of pairs) await writeGuard?.(key, value)
     for (const [key, value] of pairs) resolveKV(store).set(key, value)
   },
   del: async (key: IDBValidKey, store?: { name?: string }) => {
