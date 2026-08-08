@@ -27,6 +27,14 @@ export async function downscaleToThumb(coverDataUrl: string): Promise<string | n
     const img = new Image()
     img.onload = () => {
       try {
+        // ⚠️ Fundo OPACO antes de desenhar: o JPEG lá embaixo não tem canal alfa,
+        // então qualquer área transparente do print viraria PRETO — foi assim que
+        // a capa de um jogo de fundo laranja saiu toda preta (o fundo do palco é
+        // CSS, não pixel, então o canvas cru vem transparente). Quem compõe o
+        // fundo de verdade é o harness da captura, que conhece a cor do jogo;
+        // isto aqui é a rede para QUALQUER origem de print, hoje ou amanhã.
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, THUMB_WIDTH, THUMB_HEIGHT)
         // cover-fit: preenche a miniatura preservando a proporção do print.
         const scale = Math.max(THUMB_WIDTH / img.width, THUMB_HEIGHT / img.height)
         const w = img.width * scale
