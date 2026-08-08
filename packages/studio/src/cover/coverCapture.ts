@@ -184,6 +184,24 @@ export async function captureCoverFromProject(
 
   // 2ª passada (só projetos sem canvas — HTML/CSS): html2canvas rasteriza o DOM.
   // Warmup curto: a página é estática; o teto evita esperar à toa pelo html2canvas.
+  //
+  // ⚠️ MEDIDO 08/2026: esta passada NÃO FUNCIONA hoje, e não é por falta de rede
+  // nem de CSP (o esm.sh entra no importmap e no `script-src`, e o import resolve
+  // — conferido no navegador). O html2canvas CLONA o documento num iframe interno
+  // e lê o `contentWindow.document` dele; como o nosso sandbox é `allow-scripts`
+  // SEM `allow-same-origin`, a origem é opaca ("null") e esse acesso é
+  // cross-origin — até para o próprio documento:
+  //   "Blocked a frame with origin \"null\" from accessing a cross-origin frame."
+  // `foreignObjectRendering: true` não salva: o clone acontece antes, nos dois
+  // modos. E `allow-same-origin` está FORA de questão (é o que impede o código da
+  // criança de tocar no host). Ou seja: projeto sem canvas fica sem capa hoje.
+  // Sair disso pede um rasterizador que não clone via iframe (serializar o DOM
+  // num `<svg><foreignObject>` na mão) — trabalho de verdade, não um flag.
+  //
+  // Manter a chamada mesmo assim é de propósito: ela é barata quando falha, e a
+  // 1ª passada devolvendo `null` NÃO apaga a capa que já existe (o
+  // `captureAndStoreProjectThumb` sai antes de gravar) — melhor ficar com a foto
+  // antiga do que com um retângulo.
   const domWarmup = Math.min(warmupMs, 600)
   return runCapture(
     project,
@@ -294,6 +312,10 @@ export function buildCanvasHarness(opts: {
  * `extensionImports`, então `buildPreviewDoc` o emite `type="module"`): usa
  * `import('html2canvas')` (resolvido pelo importmap → esm.sh) e rasteriza o
  * `document.body`. Para projetos SEM canvas. Falha/timeout → posta `null`.
+ *
+ * ⚠️ Hoje ele SEMPRE cai no `catch`: o html2canvas precisa de acesso same-origin
+ * ao iframe em que clona o documento, e a nossa sandbox tem origem opaca. Ver o
+ * bloco em `captureCoverFromProject` — está medido lá.
  */
 function buildDomHarness(opts: {
   parentOrigin: string

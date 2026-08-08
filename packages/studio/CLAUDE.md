@@ -261,6 +261,17 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   Provado em `cover/__tests__/` (o harness é string de JS puro: avaliado com `new Function` sobre um
   `document` falso, mesmo padrão dos testes de runtime das extensões). **Nunca havia teste nenhum da
   captura** — só do elo card ⇄ miniatura —, e foi por isso que a regressão passou batida.
+- ⚠️⚠️ **A 2ª passada (html2canvas) NÃO FUNCIONA — medido 08/2026.** O `import` do esm.sh resolve
+  (importmap + `script-src` conferidos no navegador), mas o html2canvas **clona o documento num
+  iframe interno** e lê o `contentWindow.document` dele; com o sandbox `allow-scripts` **sem**
+  `allow-same-origin` a origem é opaca e isso é cross-origin *até para o próprio documento*:
+  `Blocked a frame with origin "null" from accessing a cross-origin frame`. `foreignObjectRendering:
+  true` **não** resolve (o clone vem antes nos dois modos), e `allow-same-origin` está fora de
+  questão. **Consequência: projeto SEM canvas (HTML/CSS puro) não tem capa hoje** — e o card promete
+  uma foto que não vem. Sair disso pede um rasterizador que não clone via iframe (serializar o DOM
+  num `<svg><foreignObject>`), que é trabalho de verdade e não um flag. ⭐ O que segura a peça: a
+  captura devolvendo `null` **não apaga a capa que já existe** (`captureAndStoreProjectThumb` sai
+  antes de gravar), então uma falha nunca destrói uma foto boa.
 - **Player público** (`src/components/preview/StudioProjectPlayer.tsx` + `src/preview/renderProject.ts`):
   `renderProjectToPreviewDocAsync(project)` é a MESMA receita do `coverCapture`/`PreviewIframe` (extensões →
   permissões → assets → `buildPreviewDoc`), extraída, pura e defensiva para snapshots legados
