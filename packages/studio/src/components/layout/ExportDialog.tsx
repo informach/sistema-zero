@@ -1,10 +1,11 @@
 import type { JSX } from 'react'
 import { useState } from 'react'
-import { t } from '#core'
+import type { Translator } from '#core'
 import { Button, Modal } from '#ui'
 import { type ExportStep, exportProject } from '../../export'
 import { triggerDownload } from '../../export/download'
 import { useProjectStore } from '../../state/projectStore'
+import { useT } from '../../studio/i18n'
 import { Spinner } from './LoadingViews'
 
 export interface ExportDialogProps {
@@ -12,7 +13,7 @@ export interface ExportDialogProps {
   onClose: () => void
 }
 
-function stepLabel(step: ExportStep): string {
+function stepLabel(step: ExportStep, t: Translator): string {
   switch (step) {
     case 'collecting':
       return t('export.collecting')
@@ -26,6 +27,7 @@ function stepLabel(step: ExportStep): string {
 }
 
 export function ExportDialog({ open, onClose }: ExportDialogProps): JSX.Element | null {
+  const t = useT()
   // Lê o projeto da store POR INSTÂNCIA (hook com seletor) — não a estática.
   const project = useProjectStore((s) => s.project)
   const isPro = project?.kind === 'pro'
@@ -50,7 +52,7 @@ export function ExportDialog({ open, onClose }: ExportDialogProps): JSX.Element 
     try {
       const result = await exportProject(project, {
         minify: isPro ? undefined : minify,
-        onProgress: (step) => setLabel(stepLabel(step)),
+        onProgress: (step) => setLabel(stepLabel(step, t)),
       })
       triggerDownload(result.blob, result.filename)
       setWorking(false)

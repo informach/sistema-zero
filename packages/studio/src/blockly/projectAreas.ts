@@ -32,6 +32,9 @@ export const FRAME_EVENTS = PROJECT_AREA_FRAMES.events
 export const FRAME_LOOPS = PROJECT_AREA_FRAMES.loops
 export const FRAME_BEHAVIOR_LEGACY = 'sz_frame_behavior'
 
+export type CurrentProjectAreaFrame = (typeof PROJECT_AREA_FRAMES)[ProjectAreaKind]
+export type ProjectAreaFrame = CurrentProjectAreaFrame | typeof FRAME_BEHAVIOR_LEGACY
+
 export const PROJECT_AREA_BY_FRAME: ReadonlyMap<string, ProjectAreaKind> = new Map(
   PROJECT_AREA_DEFINITIONS.map(({ kind, frame }) => [frame, kind]),
 )

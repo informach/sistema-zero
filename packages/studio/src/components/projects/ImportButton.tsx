@@ -1,8 +1,8 @@
 import type { JSX } from 'react'
 import { useRef, useState } from 'react'
-import { t } from '#core'
 import { Button, Modal } from '#ui'
 import { MAX_PROJECT_IMPORT_CHARS, useProjectStore } from '../../state/projectStore'
+import { useT } from '../../studio/i18n'
 
 export interface ImportButtonProps {
   onImported: (id: string) => void
@@ -11,6 +11,7 @@ export interface ImportButtonProps {
 }
 
 export function ImportButton({ onImported, allowedExtensions }: ImportButtonProps): JSX.Element {
+  const t = useT()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const importFromJSON = useProjectStore((s) => s.importProjectFromJSON)
   const [error, setError] = useState<string | null>(null)

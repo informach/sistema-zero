@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { Suspense, useMemo } from 'react'
-import { t } from '#core'
 import { ErrorBoundary } from '#ui'
 import { useProjectStore } from '../../state/projectStore'
 import { type BottomTab, resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { ConsolePanel } from '../console/ConsolePanel'
 import { SectionErrorFallback } from './ErrorViews'
 import { AIPanel, Terminal } from './lazyPanels'
@@ -77,6 +77,7 @@ export function renderBottomPanel(id: BottomTab): ReactNode {
  * que os três divirjam.
  */
 export function useVisibleBottomTabs(): TabItem[] {
+  const t = useT()
   const config = useStudioConfig()
   const mode = useProjectStore((s) => s.project?.mode)
   const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
@@ -99,5 +100,6 @@ export function useVisibleBottomTabs(): TabItem[] {
     consoleVisibilityOverride,
     showTerminal,
     showAI,
+    t,
   ])
 }

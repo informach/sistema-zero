@@ -157,13 +157,13 @@ export const gameTwoDFundamentalBlocks = [
   {
     type: 'sz_g2d_apply_velocity',
     placement: 'command',
-    message0: 'Aplicar a velocidade ao sprite %1',
+    message0: 'Mover o sprite %1 usando vx e vy',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Move o sprite pela velocidade dele (vx e vy). Não mexe na gravidade: para o sprite cair, encaixe o "Aplicar a gravidade do mundo" logo acima deste.',
+      'Soma o vx à posição x e o vy à posição y uma vez. Esses valores ficam guardados no próprio sprite: defina-os com “Mudar a velocidade do sprite” ou altere-os com gravidade, impulso e controles. Use a cada quadro; se vx e vy forem 0, ele não se move.',
   },
   {
     // Sem número de propósito: a força vem do "Botar a gravidade do mundo" (uma

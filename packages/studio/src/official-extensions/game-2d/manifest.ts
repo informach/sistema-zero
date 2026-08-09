@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.67.0',
+  version: '0.68.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -58,13 +58,13 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
 ### Faça o jogo reagir
 
 - **Botar a gravidade do mundo em**. Define somente a aceleração do mundo (o padrão é
-  0,6). Zero desliga; valores negativos puxam para cima. Definir o valor, sozinho, não
-  faz nenhum sprite cair.
+  0,6). Zero desliga; com gravidade negativa, o teto vira a borda atraída. Definir o
+  valor, sozinho, não faz nenhum sprite cair.
 - **Aplicar a gravidade do mundo ao sprite**. Soma essa aceleração ao \`vy\` do sprite
   neste quadro. Use logo **antes** do bloco que o movimenta.
 - **Aplicar a gravidade do mundo aos sprites do grupo**. Faz o mesmo para os sprites
   atuais de um grupo. Só os sprites que recebem um desses dois blocos respondem à gravidade.
-- **Aplicar velocidade** / **Atualizar o grupo**. Move por \`vx\`/\`vy\` sem acrescentar
+- **Mover usando vx e vy** / **Atualizar o grupo**. Move por \`vx\`/\`vy\` sem acrescentar
   gravidade escondida. A ordem física recomendada é: aplicar gravidade, mover e então
   resolver o chão ou as paredes.
 - **Ricochetear nas bordas**. Quica o sprite nas bordas do canvas.
@@ -105,8 +105,9 @@ pronta. Se o nome não existir ou a carga falhar, o sprite usa um retângulo da 
 Use estes blocos dentro do **"A cada quadro do jogo"**:
 
 - **Plataforma**. Esquerda/direita + pulo + pouso. Encaixe **Aplicar a gravidade do
-  mundo ao sprite** logo acima para fazê-lo cair. O chão é a borda para a qual o valor
-  da gravidade aponta: base com gravidade positiva e teto com gravidade negativa.
+  mundo ao sprite** logo acima para fazê-lo cair. A borda atraída sempre é chão (base com
+  gravidade positiva e teto com gravidade negativa); tiles e figuras também viram chão
+  quando um bloco de colisão os confirma depois do movimento.
 - **4 direções (top-down)**. Anda nas 4 direções; a diagonal não fica mais rápida.
 - **Voar livre**. Sem gravidade, mas com PESO: leva um tiquinho para engatar, plana um
   bom tanto quando você solta e demora para virar de lado (faça a curva antes!). É essa
@@ -131,17 +132,24 @@ quadros (o **tileset**). Escolha um da aba **Assets** (ex.: \`tileset\`).
 - **Criar mapa de tiles**. Informe o tileset, o tamanho do tile (px) e a **grade**:
   cada número escolhe um quadro do tileset; \`;\` separa as linhas e espaço separa as
   colunas; \`.\` é uma célula vazia. Em **tiles sólidos**, liste os números que barram o
-  jogador (ex.: \`1\`).
+  jogador (ex.: \`1\`); em **tiles plataforma**, os que seguram só na face atraída pela
+  gravidade e deixam atravessar pela outra.
 - **Desenhar mapa**. Desenha o mapa na tela (use no "a cada quadro", antes do sprite). Com
   "tiles de 0 px" ele ENCAIXA sozinho no canvas (centralizado, sem distorcer); um valor
   como \`32\` fixa o tamanho do tile na tela (controle de zoom do mapa).
-- **Impedir de atravessar tiles sólidos**. O sprite pousa no chão e bate nas paredes;
-  use a cada quadro, depois de mover o sprite.
+- **Colidir com os sólidos e plataformas do mapa**. Sólidos são chão e paredes;
+  plataformas seguram em uma face só. Use a cada quadro, depois de mover o sprite.
 - **Impedir de atravessar os sprites de um grupo** (em **💥 Colisões**). Mesma colisão, mas
   contra obstáculos SEM mapa: jogue as pedras/casas (até desenhadas por figura) num grupo
   e o sprite não atravessa nenhuma delas, deslizando pela beirada.
 - **Impedir de atravessar o sprite** (em **💥 Colisões**). A mesma ideia, mas contra UM sprite
-  só (uma parede, uma plataforma solta), sem precisar montar um grupo.
+  só, como chão ou parede, sem precisar montar um grupo.
+- **Fazer o sprite pousar na plataforma** / **nas plataformas do grupo** (em
+  **💥 Colisões**). Transforma figuras em plataformas de uma face: atravessa por baixo e
+  pelos lados, pousa na face atraída pela gravidade.
+- Uma figura-chão móvel transporta quem estiver apoiado. A ordem é: **mover as
+  plataformas → mover o jogador → resolver as colisões → desenhar**. O movimento do
+  jogador se soma ao da base; pular, sair da borda ou remover a base solta o apoio.
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos. O jogo
 nunca quebra por falta de imagem.

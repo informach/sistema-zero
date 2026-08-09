@@ -1,7 +1,7 @@
 import type { JSX, ReactNode } from 'react'
 import { useContext, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { MODE_LABELS, modesForKind, type Project, t } from '#core'
+import { modesForKind, type Project } from '#core'
 import {
   Badge,
   ConfirmDialog,
@@ -35,6 +35,7 @@ import { useStudioPersistence } from '../../state/studioStores'
 import { resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioCloudSync } from '../../studio/cloud-sync'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
@@ -83,7 +84,7 @@ function IconButton({
       onClick={onClick}
       style={{ touchAction: 'manipulation' }}
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-xl text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:cursor-not-allowed disabled:opacity-50',
+        'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-xl text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:cursor-not-allowed disabled:opacity-50',
         active && 'bg-sz-accent/15 text-sz-accent hover:bg-sz-accent/20',
       )}
     >
@@ -93,6 +94,7 @@ function IconButton({
 }
 
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
+  const t = useT()
   const { hasProject, projectName, projectMode, projectKind } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -384,7 +386,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           <button
             type="button"
             onClick={() => void exitToProjects()}
-            className="sz-ui-display flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-base text-sz-fg hover:bg-sz-panel-soft hover:opacity-80"
+            className="sz-touch-target sz-ui-display flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-base text-sz-fg hover:bg-sz-panel-soft hover:opacity-80"
             title="Voltar à lista de projetos"
           >
             {/* ⚠️ O ícone existe para o botão PARECER um botão. Quando a marca
@@ -419,7 +421,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               }
             }}
             className={cn(
-              'min-w-0 rounded-lg border border-sz-border bg-sz-bg px-2.5 py-1 text-sm text-sz-fg',
+              'sz-touch-target min-w-0 rounded-lg border border-sz-border bg-sz-bg px-2.5 py-1 text-sm text-sz-fg',
               nameMaxW,
             )}
           />
@@ -430,7 +432,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               setDraft(projectName)
               setEditing(true)
             }}
-            className={cn('min-w-0 truncate text-sz-fg hover:underline', nameMaxW)}
+            className={cn('sz-touch-target min-w-0 truncate text-sz-fg hover:underline', nameMaxW)}
             title={t('topbar.rename')}
           >
             {projectName}
@@ -471,14 +473,14 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                   onClick={() => setMode(m)}
                   style={{ touchAction: 'manipulation' }}
                   className={cn(
-                    'rounded-lg text-sm leading-none transition-colors',
+                    'sz-touch-target rounded-lg text-sm leading-none transition-colors',
                     isCompact ? 'px-2.5 py-1.5' : 'px-4 py-1.5',
                     active
                       ? 'bg-sz-accent font-bold text-sz-bg shadow-sm'
                       : 'font-medium text-sz-fg-soft hover:bg-sz-bg/60 hover:text-sz-fg',
                   )}
                 >
-                  {MODE_LABELS[m]}
+                  {t(`mode.${m}`)}
                 </button>
               )
             })}
@@ -496,7 +498,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               aria-controls="sz-zappy-panel"
               onClick={() => tutor.setOpen(!tutor.open)}
               className={cn(
-                'inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 font-bold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                'sz-touch-target inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 font-bold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
                 tutor.open
                   ? 'bg-sz-accent text-sz-bg'
                   : 'bg-sz-accent/10 text-sz-accent hover:bg-sz-accent/20',
@@ -521,7 +523,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 aria-label={shareDisabledReason ?? t('share.action')}
                 style={{ touchAction: 'manipulation' }}
                 className={cn(
-                  'inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                  'sz-touch-target inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
                   shareDisabledReason
                     ? 'cursor-not-allowed text-sz-fg-mute opacity-50'
                     : 'text-sz-accent hover:bg-sz-accent/15',

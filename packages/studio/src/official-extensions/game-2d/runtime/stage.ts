@@ -460,13 +460,37 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
     if (c && _isFiniteNumber(width) && width > 0 && _isFiniteNumber(height) && height > 0) {
+      // O limite precisa vir ANTES da primeira escrita: alguns navegadores tentam
+      // alocar o backing store imediatamente ao receber width/height no canvas.
+      var logicalScale = Math.min(
+        1,
+        MAX_STAGE_BACKING_DIMENSION / width,
+        MAX_STAGE_BACKING_DIMENSION / height
+      );
+      var safeWidth = width * logicalScale;
+      var safeHeight = height * logicalScale;
+      var logicalPixels = safeWidth * safeHeight;
+      if (logicalPixels > MAX_STAGE_BACKING_PIXELS) {
+        var logicalPixelScale = Math.sqrt(MAX_STAGE_BACKING_PIXELS / logicalPixels);
+        safeWidth *= logicalPixelScale;
+        safeHeight *= logicalPixelScale;
+      }
+      safeWidth = Math.max(1, Math.floor(safeWidth));
+      safeHeight = Math.max(1, Math.floor(safeHeight));
+      var logicalSizeLimited = safeWidth !== Math.round(width) || safeHeight !== Math.round(height);
       _fillMode = false;
-      c.width = Math.round(width);
-      c.height = Math.round(height);
+      c.width = safeWidth;
+      c.height = safeHeight;
       // Congela o tamanho lógico JÁ AQUI (não espera o fitScreen): qualquer
       // leitura de stageW/stageH entre este ponto e o resize do backing veria o
       // valor FÍSICO do canvas (DPR vezes o lógico) e desenharia fora do palco.
-      _logicalW = Math.round(width); _logicalH = Math.round(height);
+      _logicalW = safeWidth; _logicalH = safeHeight;
+      if (logicalSizeLimited) {
+        warnOnce(
+          'stage-logical-budget',
+          'reduzi o tamanho do palco para manter coordenadas seguras para o jogo.'
+        );
+      }
     }
     // Cor de fundo escolhida no bloco: vai no canvas E no fundo da janela (a sobra
     // ao redor do canvas centralizado), para a tela inteira combinar com o jogo.

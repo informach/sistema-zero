@@ -2912,6 +2912,34 @@ describe('a vista se defende sozinha (nono review)', () => {
     expect(api.countGroup(todos)).toBe(2)
   })
 
+  it('recusa delete e defineProperty sem corromper a vista', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const { t, todos } = cena(api)
+      const enemy = api.spawnEnemy(t, 40, 40)
+      if (!enemy) throw new Error('o cenário não conseguiu criar o inimigo de controle')
+      expect(api.countGroup(todos)).toBe(1)
+
+      delete todos.items[0]
+      expect(() =>
+        Object.defineProperty(todos.items, '0', {
+          configurable: true,
+          enumerable: true,
+          value: 'intruso',
+          writable: true,
+        }),
+      ).not.toThrow()
+
+      expect(api.countGroup(todos)).toBe(1)
+      expect(todos.items[0]).toBe(enemy)
+      expect(t.items[0]).toBe(enemy)
+      expect(warn.mock.calls.some((args) => String(args[0]).includes('mexer na lista'))).toBe(true)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
   it('a ORDEM não importa: a vista criada ANTES dos tipos enxerga todos', () => {
     const api = load()
     // A dica do bloco sugere criar depois dos tipos, mas a vista é derivada:

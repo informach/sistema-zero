@@ -23,6 +23,8 @@ describe('Exemplo Vale Ensolarado — drift contra o parser real', () => {
     expect(valeEnsolaradoExample.name).toBe('Vale Ensolarado')
     expect(valeEnsolaradoExample.experience).toBe('game')
     expect((valeEnsolaradoExample.description ?? '').length).toBeLessThanOrEqual(200)
+    expect(valeEnsolaradoExample.concepts).toEqual(['plataformas', 'coleta', 'inimigos'])
+    expect(valeEnsolaradoExample.genre).toBe('plataforma')
   })
 
   registerExampleContractTests({

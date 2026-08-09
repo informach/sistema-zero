@@ -4,7 +4,7 @@ async function createProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
-  await expect(page).toHaveURL(/\/editor\//)
+  await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
 }
 
 async function replaceBridgeScript(page: Page, code: string): Promise<void> {
@@ -12,9 +12,14 @@ async function replaceBridgeScript(page: Page, code: string): Promise<void> {
   await page.getByRole('button', { name: 'script.js' }).first().click()
   const editor = page.locator('.monaco-editor').first()
   await editor.waitFor({ state: 'visible', timeout: 15_000 })
-  await page.locator('.monaco-editor .view-line').first().click()
-  await page.keyboard.press('ControlOrMeta+A')
-  await page.keyboard.insertText(code)
+  const input = editor.getByRole('textbox', { name: 'Editor content' })
+  await editor.locator('.view-line').first().click()
+  await page.keyboard.press('Control+A')
+  await page.keyboard.press('Backspace')
+  await expect(input).toHaveValue('')
+  await page.evaluate((text) => navigator.clipboard.writeText(text), code)
+  await page.keyboard.press('Control+V')
+  await expect(input).toHaveValue(code)
 }
 
 async function replaceBridgeHtml(page: Page, code: string): Promise<void> {
@@ -22,9 +27,14 @@ async function replaceBridgeHtml(page: Page, code: string): Promise<void> {
   await page.getByRole('button', { name: 'index.html' }).first().click()
   const editor = page.locator('.monaco-editor').first()
   await editor.waitFor({ state: 'visible', timeout: 15_000 })
-  await page.locator('.monaco-editor .view-line').first().click()
-  await page.keyboard.press('ControlOrMeta+A')
-  await page.keyboard.insertText(code)
+  const input = editor.getByRole('textbox', { name: 'Editor content' })
+  await editor.locator('.view-line').first().click()
+  await page.keyboard.press('Control+A')
+  await page.keyboard.press('Backspace')
+  await expect(input).toHaveValue('')
+  await page.evaluate((text) => navigator.clipboard.writeText(text), code)
+  await page.keyboard.press('Control+V')
+  await expect(input).toHaveValue(code)
 }
 
 test.describe('segurança do preview', () => {
@@ -41,7 +51,7 @@ test.describe('segurança do preview', () => {
       ].join('\n'),
     )
 
-    const preview = page.frameLocator('iframe')
+    const preview = page.frameLocator('iframe[title="Pré-visualização"]')
     const action = preview.locator('#acao')
     await expect(action).toBeVisible({ timeout: 15_000 })
     await action.click()
@@ -70,7 +80,7 @@ test.describe('segurança do preview', () => {
       ].join('\n'),
     )
 
-    const body = page.frameLocator('iframe').locator('body')
+    const body = page.frameLocator('iframe[title="Pré-visualização"]').locator('body')
     await expect(body).toHaveAttribute('data-after-dynamic-script', 'responsive', {
       timeout: 15_000,
     })
@@ -95,7 +105,7 @@ test.describe('segurança do preview', () => {
       ].join('\n'),
     )
 
-    const body = page.frameLocator('iframe').locator('body')
+    const body = page.frameLocator('iframe[title="Pré-visualização"]').locator('body')
     await expect(body).toHaveAttribute('data-after-dynamic-external', 'responsive', {
       timeout: 15_000,
     })

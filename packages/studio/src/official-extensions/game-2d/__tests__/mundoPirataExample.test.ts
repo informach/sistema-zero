@@ -21,6 +21,8 @@ describe('Exemplo Mundo Pirata — drift contra o parser real', () => {
     expect(mundoPirataExample.ir.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(mundoPirataExample.name).toBe('Mundo Pirata')
     expect(mundoPirataExample.experience).toBe('game')
+    expect(mundoPirataExample.concepts).toEqual(['plataformas', 'câmera', 'coleta'])
+    expect(mundoPirataExample.genre).toBe('plataforma')
   })
 
   registerExampleContractTests({

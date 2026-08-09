@@ -2,7 +2,7 @@ import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
-import { type ExampleExperience, t } from '#core'
+import { t as defaultT, type ExampleExperience, type Translator } from '#core'
 import {
   type ExtensionExample,
   type ExtensionExampleDifficulty,
@@ -15,6 +15,7 @@ import { createEmptyProject, type Project, type ProjectAsset } from '../core/pro
 import { normalizeSearchText } from '../core/searchText'
 import { CORE_EXAMPLES } from '../examples/core'
 import { persistProject } from '../state/persistence'
+import { useT } from '../studio/i18n'
 
 /**
  * Vitrine "Que jogo você quer criar?" (07/2026): a descoberta de kit deixou de
@@ -263,7 +264,7 @@ export interface KitGroupsResult {
   failedExtensionIds: string[]
 }
 
-export async function buildKitGroupsResult(): Promise<KitGroupsResult> {
+export async function buildKitGroupsResult(t: Translator = defaultT): Promise<KitGroupsResult> {
   const catalogs = await loadExtensionExampleCatalogs(OFFICIAL_CATALOG)
   const groups = catalogs.loaded.flatMap(([extensionId, examples]) => {
     const ext = OFFICIAL_CATALOG.find((candidate) => candidate.manifest.id === extensionId)
@@ -311,8 +312,8 @@ export async function buildKitGroupsResult(): Promise<KitGroupsResult> {
   return { groups, failedExtensionIds: catalogs.failed.map((failure) => failure.extensionId) }
 }
 
-export async function buildKitGroups(): Promise<KitGroup[]> {
-  return (await buildKitGroupsResult()).groups
+export async function buildKitGroups(t: Translator = defaultT): Promise<KitGroup[]> {
+  return (await buildKitGroupsResult(t)).groups
 }
 
 /** Projeto novo persistido a partir da IR do exemplo (registro independente). */
@@ -358,6 +359,7 @@ function KitCard({
   step?: number
   onPick: (entry: KitEntry) => void
 }): JSX.Element {
+  const t = useT()
   return (
     <button
       type="button"
@@ -416,6 +418,7 @@ export function KitGallery({
 }: {
   onOpenProject: (projectId: string) => void
 }): JSX.Element {
+  const t = useT()
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [groups, setGroups] = useState<KitGroup[] | null>(null)
@@ -431,7 +434,7 @@ export function KitGallery({
     void loadAttempt
     let active = true
     setCatalogError(false)
-    void buildKitGroupsResult().then(({ groups: nextGroups, failedExtensionIds }) => {
+    void buildKitGroupsResult(t).then(({ groups: nextGroups, failedExtensionIds }) => {
       if (!active) return
       setGroups(nextGroups)
       setCatalogError(failedExtensionIds.length > 0)
@@ -439,7 +442,7 @@ export function KitGallery({
     return () => {
       active = false
     }
-  }, [loadAttempt])
+  }, [loadAttempt, t])
 
   const hasActiveFilters = query.trim() !== '' || difficulty !== 'all' || experience !== 'all'
   const featuredEntries = useMemo(
@@ -500,7 +503,7 @@ export function KitGallery({
           <span>{t('kits.loadError')}</span>
           <button
             type="button"
-            className="font-semibold text-sz-accent hover:underline"
+            className="sz-touch-target font-semibold text-sz-accent hover:underline"
             onClick={() => setLoadAttempt((attempt) => attempt + 1)}
           >
             {t('kits.retry')}
@@ -516,7 +519,7 @@ export function KitGallery({
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
               placeholder={t('kits.search.placeholder')}
-              className="h-9 min-w-0 rounded-md border border-sz-border bg-sz-bg px-3 text-sm font-normal text-sz-fg outline-none focus:border-sz-accent"
+              className="sz-touch-target h-9 min-w-0 rounded-md border border-sz-border bg-sz-bg px-3 text-sm font-normal text-sz-fg outline-none focus:border-sz-accent"
             />
           </label>
           <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
@@ -526,7 +529,7 @@ export function KitGallery({
               onChange={(event) =>
                 setDifficulty(event.currentTarget.value as 'all' | ExtensionExampleDifficulty)
               }
-              className="h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm font-normal text-sz-fg"
+              className="sz-touch-target h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm font-normal text-sz-fg"
             >
               <option value="all">{t('kits.filter.all')}</option>
               <option value="beginner">{t('kits.difficulty.beginner')}</option>
@@ -541,7 +544,7 @@ export function KitGallery({
               onChange={(event) =>
                 setExperience(event.currentTarget.value as 'all' | ExampleExperience)
               }
-              className="h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm font-normal text-sz-fg"
+              className="sz-touch-target h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm font-normal text-sz-fg"
             >
               <option value="all">{t('kits.filter.all')}</option>
               <option value="game">{t('kits.experience.game')}</option>
@@ -571,7 +574,7 @@ export function KitGallery({
           </ol>
           <button
             type="button"
-            className="self-start text-xs font-semibold text-sz-accent hover:underline"
+            className="sz-touch-target self-start text-xs font-semibold text-sz-accent hover:underline"
             aria-expanded={showAllGameTwoD}
             onClick={() => setShowAllGameTwoD((showAll) => !showAll)}
           >

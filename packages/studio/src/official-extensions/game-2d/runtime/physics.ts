@@ -22,6 +22,58 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     return _gravityPullsUp(gravity) ? vy > 0 : vy < 0;
   }
   /**
+   * Abre o quadro de física sem esquecer o apoio confirmado no quadro anterior.
+   * O movimento pode consumir essa informação para pular; a colisão executada
+   * depois do movimento precisa confirmar novamente o apoio do quadro atual.
+   */
+  function _beginGroundFrame(sprite) {
+    if (!sprite) return false;
+    var wasGrounded = sprite.onGround === true;
+    sprite._groundedLastFrame = wasGrounded;
+    sprite.onGround = false;
+    if (!wasGrounded) sprite._groundSupport = null;
+    return wasGrounded;
+  }
+  /** Confirma o chão atual e, quando é uma figura, guarda sua posição para transporte. */
+  function _confirmGroundSupport(sprite, support) {
+    if (!sprite) return;
+    sprite.onGround = true;
+    if (support && support !== sprite &&
+        _isFiniteNumber(support.x) && _isFiniteNumber(support.y)) {
+      sprite._groundSupport = { owner: support, x: support.x, y: support.y };
+    } else {
+      sprite._groundSupport = null;
+    }
+  }
+  /** Solta imediatamente o apoio (pulo, troca para movimento livre etc.). */
+  function _detachGroundSupport(sprite) {
+    if (!sprite) return;
+    sprite.onGround = false;
+    sprite._groundedLastFrame = false;
+    sprite._groundSupport = null;
+  }
+  /**
+   * Leva o passageiro pelo deslocamento que a figura de apoio já fez neste
+   * quadro. O deslocamento próprio do passageiro é preservado e somado ao da base.
+   */
+  function _carryByGroundSupport(sprite, support) {
+    if (!sprite || !support || sprite._groundedLastFrame !== true) return;
+    var previous = sprite._groundSupport;
+    if (!previous || previous.owner !== support) return;
+    var supportX = _finiteNumber(support.x, previous.x);
+    var supportY = _finiteNumber(support.y, previous.y);
+    sprite.x = _finiteNumber(sprite.x, 0) + supportX - previous.x;
+    sprite.y = _finiteNumber(sprite.y, 0) + supportY - previous.y;
+    previous.x = supportX;
+    previous.y = supportY;
+  }
+  function _jumpFromGround(sprite, gravity, strength) {
+    if (!sprite) return;
+    sprite.vy = _jumpVelocityForGravity(gravity, strength);
+    _detachGroundSupport(sprite);
+    _emitJump(sprite);
+  }
+  /**
    * Resolve a borda que funciona como chão para a gravidade atual. Gravidade
    * positiva pousa em bottom; gravidade negativa pousa em top.
    */
@@ -37,12 +89,12 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
       if (sprite.y <= ceiling) {
         sprite.y = ceiling;
         sprite.vy = 0;
-        sprite.onGround = true;
+        _confirmGroundSupport(sprite, null);
       }
     } else if (sprite.y >= floor) {
       sprite.y = floor;
       sprite.vy = 0;
-      sprite.onGround = true;
+      _confirmGroundSupport(sprite, null);
     }
     return sprite.onGround;
   }
@@ -60,11 +112,13 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   function applyVelocity(sprite) {
     if (!sprite) return;
     // A colisão do quadro anterior pode ter marcado o chão. A integração abre
-    // um novo quadro: se ainda houver apoio, collideTileMap/collideGroup/
-    // collideSprite o confirma de novo depois de mover.
-    sprite._groundedLastFrame = sprite.onGround === true;
-    if (sprite.onGround === true) sprite.onGround = false;
+    // um novo quadro: se ainda houver apoio, a colisão o confirma depois de mover.
+    var wasGrounded = _beginGroundFrame(sprite);
     var vx = _finiteNumber(sprite.vx, 0), vy = _finiteNumber(sprite.vy, 0);
+    // Código manual também pode iniciar um pulo atribuindo vy antes de mover.
+    if (wasGrounded && _isJumpingForGravity(vy, world.gravity)) {
+      _detachGroundSupport(sprite);
+    }
     sprite.x = _finiteNumber(sprite.x, 0) + vx;
     sprite.y = _finiteNumber(sprite.y, 0) + vy;
     sprite.vx = vx;

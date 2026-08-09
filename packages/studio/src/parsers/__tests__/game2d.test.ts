@@ -30,6 +30,18 @@ describe('parseJS — collideGroup (obstáculos sem tilemap)', () => {
       { type: 'g2d:collideGroup', spriteVar: 'heroi', groupVar: 'obstaculos' },
     ])
   })
+
+  it('round-trip das figuras usadas como plataformas unidirecionais', () => {
+    expect(
+      parseJS(`
+SZGame2D.collidePlatform(heroi, plataforma);
+SZGame2D.collidePlatformGroup(heroi, plataformas);
+`),
+    ).toEqual([
+      { type: 'g2d:collidePlatform', spriteVar: 'heroi', otherVar: 'plataforma' },
+      { type: 'g2d:collidePlatformGroup', spriteVar: 'heroi', groupVar: 'plataformas' },
+    ])
+  })
 })
 
 describe('parseJS — figura (sprite desenhado por código)', () => {

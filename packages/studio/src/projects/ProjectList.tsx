@@ -1,6 +1,5 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { t } from '#core'
 import { Button } from '#ui'
 import { listProTemplates } from '../components/code/pro-templates'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
@@ -17,6 +16,7 @@ import {
 } from '../state/persistence'
 import { useProjectStore } from '../state/projectStore'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
+import { useT } from '../studio/i18n'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
 import { KitGallery } from './KitGallery'
 
@@ -77,6 +77,7 @@ export function ProjectList({
   theme: themeProp,
   showExamples = false,
 }: ProjectListProps): JSX.Element {
+  const t = useT()
   const createProject = useProjectStore((s) => s.createProject)
   const createProProject = useProjectStore((s) => s.createProProject)
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)

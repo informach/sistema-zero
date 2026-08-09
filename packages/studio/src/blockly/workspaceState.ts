@@ -1881,6 +1881,20 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         {},
         stmt.__id,
       )
+    case 'g2d:collidePlatform':
+      return block(
+        'sz_g2d_collide_platform',
+        { SPRITE: stmt.spriteVar, OTHER: stmt.otherVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:collidePlatformGroup':
+      return block(
+        'sz_g2d_collide_platform_group',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+        {},
+        stmt.__id,
+      )
     case 'g2d:createGroup':
       return block('sz_g2d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
     case 'g2d:allEnemiesGroup':

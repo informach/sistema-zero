@@ -17,14 +17,6 @@ import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
 import { registerSafeDomAttributeExtension } from './blocks/safeDomAttributeExtension'
 import { registerSafeDomElementExtensions } from './blocks/safeDomElementExtension'
-import {
-  FRAME_APPEARANCE,
-  FRAME_BEHAVIOR,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-  FRAME_START,
-  FRAME_STRUCTURE,
-} from './buildIR'
 import { patchDeleteContextMenus } from './deleteContextMenu'
 import { registerFieldAddonPicker } from './fields/FieldAddonPicker'
 import { registerFieldAnimationPicker } from './fields/FieldAnimationPicker'
@@ -39,6 +31,7 @@ import { registerFieldSvgPaint } from './fields/FieldSvgPaint'
 import { registerFieldTileGrid } from './fields/FieldTileGrid'
 import { organizeBlocks } from './organize'
 import { registerProjectAreaSafeDeleteExtension } from './projectAreaSafeDelete'
+import { FRAME_BEHAVIOR_LEGACY, PROJECT_AREA_FRAME_TYPES } from './projectAreas'
 import { exportWorkspaceImage } from './screenshot'
 import { registerPtSearchCategory } from './searchCategory'
 import { szTheme } from './theme'
@@ -218,14 +211,7 @@ function registerScreenshotContextMenu(): void {
 }
 
 /** As áreas do projeto, inclusive a moldura legada, não são copiáveis. */
-const FRAME_TYPES = new Set<string>([
-  FRAME_STRUCTURE,
-  FRAME_APPEARANCE,
-  FRAME_BEHAVIOR,
-  FRAME_START,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-])
+const FRAME_TYPES = new Set<string>([...PROJECT_AREA_FRAME_TYPES, FRAME_BEHAVIOR_LEGACY])
 
 /**
  * "Copiar blocos" no menu de contexto de um BLOCO: guarda o bloco + tudo dentro

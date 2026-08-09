@@ -26,6 +26,7 @@ import {
   CLASS_CATEGORY_DEFINITIONS,
   FUNCTION_CATEGORY_DEFINITIONS,
 } from './programmingOfferability'
+import { PROJECT_AREA_FRAME_TYPES } from './projectAreas'
 
 /**
  * Onde cada bloco MORA na paleta que a criança vê — o caminho completo, não só a
@@ -92,14 +93,7 @@ function assignGrouped(
 }
 
 // 🗂️ Áreas do projeto — sempre visíveis, fora do catálogo, mas a criança as vê.
-for (const type of [
-  'sz_frame_structure',
-  'sz_frame_appearance',
-  'sz_frame_molds',
-  'sz_frame_start',
-  'sz_frame_events',
-  'sz_frame_loops',
-]) {
+for (const type of PROJECT_AREA_FRAME_TYPES) {
   assign(type, ['🗂️ Áreas do projeto'])
 }
 

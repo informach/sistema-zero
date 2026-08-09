@@ -25,9 +25,9 @@ function kitCard(page: Page, contract: ExampleQAContract) {
 }
 
 async function expectFirstFrame(page: Page): Promise<FrameLocator> {
-  const iframe = page.locator('iframe').first()
+  const iframe = page.locator('iframe[title="Pré-visualização"]')
   await expect(iframe).toHaveAttribute('srcdoc', /\S/, { timeout: 15_000 })
-  const preview = page.frameLocator('iframe').first()
+  const preview = page.frameLocator('iframe[title="Pré-visualização"]')
   const body = preview.locator('body')
   await expect(body).toBeAttached({ timeout: 15_000 })
   await expect
@@ -257,7 +257,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error)
     const frameDebug = await page
-      .frameLocator('iframe')
+      .frameLocator('iframe[title="Pré-visualização"]')
       .first()
       .locator('html')
       .evaluate(() => {
@@ -346,7 +346,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
 }
 
 async function expectLogicalCanvasAtDpr(page: Page, expectedDpr: number): Promise<void> {
-  const canvas = page.frameLocator('iframe').first().locator('canvas').first()
+  const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas').first()
   await expect(canvas).toBeVisible()
   const dimensions = await canvas.evaluate((element) => {
     const target = element as HTMLCanvasElement
@@ -627,7 +627,7 @@ test('game-2d-advanced: Defesa do Reino cobra uma compra e cria uma torre após 
   if (!contract) throw new Error('contrato do exemplo Defesa do Reino ausente')
 
   await openAndExercise(page, contract)
-  const preview = page.frameLocator('iframe').first()
+  const preview = page.frameLocator('iframe[title="Pré-visualização"]')
   const snapshot = () =>
     preview.locator('body').evaluate(() => {
       const api = (

@@ -10,7 +10,7 @@ const goldenCatalogs = {
     // ⚠️ Mudou em 07/08: a cadência do canhão (um 'Ajustar no tipo') saiu do
     // Ao iniciar do 'Plataforma com inimigos' e foi para os moldes do exemplo,
     // que é onde a identidade do inimigo passou a morar.
-    sha256: 'e4bc77959eb44c13652b2cdc6babb6f2709f685447e11d721650aadc4cee9a8e',
+    sha256: 'fff74702d40600a571ea1ac4fc51d5fa83b547adec6d7e1108cbc0701da4a920',
   },
   'game-2d-advanced': {
     count: 36,

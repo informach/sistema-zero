@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 235 definições de bloco
-(231 visíveis e 4 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 237 definições de bloco
+(233 visíveis e 4 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.67.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.68.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -159,9 +159,9 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 
 ## Escopo revisado
 
-- 129 arquivos próprios da extensão;
-- 235 definições de blocos e 24 subcategorias;
-- 232 métodos e valores públicos em `window.SZGame2D`;
+- 130 arquivos próprios da extensão;
+- 237 definições de blocos e 24 subcategorias;
+- 234 métodos e valores públicos em `window.SZGame2D`;
 - 22 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
@@ -507,6 +507,22 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
   reais; os demais blocos `sz_g2d_*` entram em `iniciante-3d`;
 - manifesto, manual, contexto da IA, tooltips, exemplos, parser, gerador, schema e
   contrato do runtime compartilham a mesma semântica.
+
+### Contrato unificado de chão e plataformas por figura — 0.68.0
+
+- `platformer` e `jumpOnGround` consomem o apoio confirmado no quadro anterior
+  antes de integrar a posição; por isso o pulo funciona na borda da tela, em
+  tiles sólidos ou plataforma e em figuras/grupos usados como chão;
+- os novos blocos **Fazer o sprite pousar na plataforma** e **nas plataformas do
+  grupo** expõem figuras unidirecionais, atravessáveis pelas laterais e pela face
+  oposta à gravidade, inclusive com gravidade invertida;
+- colisões sólidas continuam criando chão e paredes, e figuras de apoio móveis
+  transportam o jogador em X/Y sem apagar o movimento próprio. Pulo, saída da
+  borda e remoção da base encerram o transporte;
+- a ordem pública ficou explícita no manifesto, tooltips e contexto da IA:
+  mover plataformas, mover jogador, resolver colisões e desenhar;
+- os dois blocos novos percorrem catálogo, Blockly, IR, schema, gerador,
+  importador JavaScript e inventário tipado do runtime, sem migração de projetos.
 
 ## Conclusão
 

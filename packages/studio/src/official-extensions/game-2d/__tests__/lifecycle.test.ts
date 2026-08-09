@@ -639,6 +639,58 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(warnings.filter((warning) => warning.includes('resolução segura'))).toHaveLength(1)
   })
 
+  it('limita o tamanho lógico antes da primeira atribuição ao canvas', () => {
+    document.body.innerHTML = '<canvas id="tela"></canvas>'
+    const canvas = document.querySelector('canvas')
+    if (!canvas) throw new Error('palco não foi criado')
+    let width = canvas.width
+    let height = canvas.height
+    const widthAssignments: number[] = []
+    const heightAssignments: number[] = []
+    Object.defineProperties(canvas, {
+      width: {
+        configurable: true,
+        get: () => width,
+        set: (value: number) => {
+          widthAssignments.push(value)
+          width = value
+        },
+      },
+      height: {
+        configurable: true,
+        get: () => height,
+        set: (value: number) => {
+          heightAssignments.push(value)
+          height = value
+        },
+      },
+    })
+    canvas.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 800,
+        bottom: 480,
+        width: 800,
+        height: 480,
+        x: 0,
+        y: 0,
+        toJSON() {},
+      }) as DOMRect
+
+    const { api } = runtimeHarness()
+    api.setupStage(1_000_000_000, 1_000_000_000, '#000000')
+
+    expect(Math.max(...widthAssignments)).toBeLessThanOrEqual(8_192)
+    expect(Math.max(...heightAssignments)).toBeLessThanOrEqual(8_192)
+    const initialWidth = widthAssignments[0]
+    const initialHeight = heightAssignments[0]
+    if (initialWidth === undefined || initialHeight === undefined) {
+      throw new Error('setupStage não atribuiu as dimensões iniciais do canvas')
+    }
+    expect(initialWidth * initialHeight).toBeLessThanOrEqual(16_777_216)
+  })
+
   it('permite descrever objetivo e controles do jogo para leitores de tela', () => {
     document.body.innerHTML = ''
     const { api } = runtimeHarness()

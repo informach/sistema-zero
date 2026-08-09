@@ -44,7 +44,7 @@ API global injetada como window.SZGame2D:
 - setHitboxScale(sprite, percent): dial da colisão PERDOADORA — a área usada nas perguntas de
   encostar vira percent% do tamanho, centrada (menor = mais justo p/ DANO; maior = mais fácil
   de PEGAR). Vale p/ touches/onOverlap/overlapGroups/circleCollides; a física de EMPURRAR
-  (collideGroup/collideSprite/collideTileMap) usa o tamanho cheio de propósito. drawHitbox
+  (collideGroup/collideSprite/collidePlatform/collidePlatformGroup/collideTileMap) usa o tamanho cheio de propósito. drawHitbox
   mostra a área efetiva. Bloco "Usar área de colisão de N% do tamanho".
 - playSound(freq, ms): bip sintetizado (Web Audio).
 - playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
@@ -110,7 +110,7 @@ nos blocos/código você usa o NOME do asset (string):
   pulando/caindo > andando > vertical > parado) e vira o sprite (facing) pelo sinal do vx.
   Estado sem animação cai no parente (caindo->pulando->andando->parado). Perder vida
   (changeHealth negativo) ou piscar (blink) conta como 'dano'. Pulando/caindo exigem chão
-  (platformer/jumpOnGround/collideTileMap marcam sprite.onGround).
+  (platformer/jumpOnGround e as colisões de chão marcam sprite.onGround).
 - drawFrame(ctx, sheet, index, x, y, w, h): desenha um quadro específico (manual).
 
 Figuras: sprite desenhado por código (v0.23.0) — o visual do sprite feito com formas, sem imagem:
@@ -206,7 +206,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - loadImage('nome'): handle { img, loaded } (aceita nome do asset OU url/dataUrl direta).
 
 Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
-- platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + pouso; não soma gravidade. Gere applyGravity(sprite) imediatamente antes. A borda atraída é o chão (base com gravidade positiva, teto com gravidade negativa).
+- platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + pouso; não soma gravidade. Gere applyGravity(sprite) imediatamente antes. A borda atraída sempre é chão; collideTileMap/collideSprite/collideGroup/collidePlatform/collidePlatformGroup executados depois também confirmam tiles ou figuras como chão. O pulo consome o apoio confirmado no quadro anterior.
 - topDown(sprite, speed): 4 direções com diagonal normalizada.
 - flyFree(sprite, speed): voar livre SEM gravidade, com INÉRCIA pesada (0.10 de aceleração, 0.96 de planeio): engata em ~0,17s, desliza ~72px por ~2,3s; ao inverter, cruza o zero e muda de direção em ~0,18s, chegando ao teto oposto em ~0,33s. É a inércia que o separa do topDown; speed é o TETO.
 - flap(sprite, ctx, force): bater as asas. Empurrão na BORDA de seta pra cima/W/Espaço/toque, inclusive no ar (segurar não sobe sempre); não soma gravidade. Gere applyGravity(sprite) antes para o sprite voltar a cair.
@@ -220,17 +220,23 @@ Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
 Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vários quadros lado a lado):
 - createTileMapFromAsset('meu-mapa'): mapa PRONTO de um desenho de MAPA (Pinta/fatiador — asset
   com metadado de mapa: grade/peças/sólidos embutidos). Sem metadado -> mapa vazio + aviso.
-- createTileMap({ image: 'tileset', tile: 32, solid: '1', grid: '1 1 1;1 0 1;1 1 1' }): cria o mapa.
+- createTileMap({ image: 'tileset', tile: 32, solid: '1', platform: '2', grid: '1 1 1;1 0 1;1 2 1' }): cria o mapa.
   grid = texto da grade (cada número = um quadro do tileset; ';' separa linhas, espaço separa colunas, '.' = vazio);
-  solid = índices que barram o sprite (separados por vírgula).
+  solid = índices que barram o sprite; platform = índices que apoiam só na face atraída pela gravidade.
 - drawTileMap(ctx, map, x, y, size): desenha o mapa. size = tamanho do tile NA TELA (px);
   0 (ou ausente) = encaixa sozinho no canvas, centralizado. x/y deslocam o mapa (câmera).
-- collideTileMap(sprite, map): impede o sprite de atravessar os tiles sólidos (pousa no chão, bate nas paredes).
+- collideTileMap(sprite, map): sólidos viram chão/parede; plataformas seguram numa face e deixam atravessar pela outra.
 - collideGroup(sprite, group): impede o sprite de atravessar os sprites de um grupo (obstáculos SEM
   tilemap: pedras/casas/paredes desenhadas à mão, inclusive por figura). Mesma física do collideTileMap
   (empurra pra fora + desliza). Use no gameLoop, depois de mover o sprite.
-- collideSprite(sprite, other): a mesma colisão sólida, mas contra UM sprite só (uma parede/plataforma
-  solta), sem precisar montar um grupo. Bloco "Impedir de atravessar o sprite".
+- collideSprite(sprite, other): a mesma colisão sólida, mas contra UM sprite só (chão/parede),
+  sem precisar montar um grupo. Bloco "Impedir de atravessar o sprite".
+- collidePlatform(sprite, platform): faz UMA figura apoiar o sprite só na face atraída pela gravidade;
+  atravessa pela face oposta e pelas laterais. Bloco "Fazer o sprite pousar na plataforma".
+- collidePlatformGroup(sprite, group): a mesma plataforma unidirecional para todas as figuras do grupo.
+  Bloco "Fazer o sprite pousar nas plataformas do grupo".
+- Figura-chão móvel: mova as plataformas, depois o jogador, resolva as colisões e só então desenhe.
+  A base transporta em X/Y e soma seu deslocamento ao controle do jogador; pular, sair ou remover solta.
 - tileAt(map, px, py): índice do tile no pixel (px,py) — -1 se vazio/fora.
 
 Grupos de sprites (v0.6.0) — para MUITOS sprites (tiros, inimigos, estrelas), sem

@@ -240,7 +240,10 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // linhas da mesma função na tabela de eixos, e o _enemyTrackMove (o só-X
   // escrito à mão) saiu. Baixar o número em vez de deixar a folga é o que mantém
   // a catraca cobrando de verdade.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(893)
+  // 893 → 907: +14 parâmetros intencionais para o contrato de apoio do quadro,
+  // transporte por plataforma móvel, salto centralizado e plataformas de mão
+  // única. São funções de runtime exercitadas pelos testes de clareza de movimento.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(907)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

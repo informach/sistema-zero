@@ -1,4 +1,4 @@
-import { createStore, delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
+import { delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
 import {
   IDE_MODES,
   type IDEMode,
@@ -7,7 +7,15 @@ import {
   sanitizeProjectAssets,
 } from '#core'
 import { cancelPendingAutosavesFor } from '../persistence/service'
-import { gameStorageKey } from './gameStorage'
+import {
+  captureProjectStorageScope,
+  fenceGameStorageDelete,
+  gameStorageKey,
+  type ProjectStorageScope,
+  runSerializedProjectWrite,
+  scopedProjectIdentity,
+  setProjectStorageNamespace,
+} from './projectStorageRuntime'
 
 const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
 const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
@@ -36,13 +44,6 @@ const projectBlocksKey = (id: string) => `${PROJECT_BLOCKS_KEY_PREFIX}${id}`
 const projectAssetsKey = (id: string) => `${PROJECT_ASSETS_KEY_PREFIX}${id}`
 const projectThumbKey = (id: string) => `${PROJECT_THUMB_KEY_PREFIX}${id}`
 
-// Namespace do armazenamento LOCAL (IndexedDB) — isola por PERFIL. Vazio = store HISTÓRICO
-// compartilhado `sistema-zero-studio` (lições, que já se isolam pelo id do projeto; e o adulto,
-// que tem 1 usuário só). O Estúdio Completo (lista de vários projetos) seta o id do perfil → um
-// store por criança, p/ irmãos no MESMO navegador não compartilharem a lista.
-let storageNamespace = ''
-let store: ReturnType<typeof createStore> | null = null
-
 /**
  * Define o namespace do armazenamento local. O HOST chama ANTES de qualquer operação
  * (ProjectList/editor): no Estúdio Completo com o id do perfil kids; vazio = store padrão (a
@@ -50,20 +51,11 @@ let store: ReturnType<typeof createStore> | null = null
  * cache p/ recriar com o DB do namespace. Idempotente; um save em voo já capturou o store antigo.
  */
 export function setStorageNamespace(namespace: string): void {
-  const next = namespace.trim()
-  if (next === storageNamespace) return
-  storageNamespace = next
-  store = null
+  setProjectStorageNamespace(namespace)
 }
 
 function getStore() {
-  if (!store) {
-    store = createStore(
-      storageNamespace ? `sistema-zero-studio-${storageNamespace}` : 'sistema-zero-studio',
-      'kv',
-    )
-  }
-  return store
+  return captureProjectStorageScope().store
 }
 
 // O AGENDAMENTO (autosave debounced/flush/salvar explícito) vive em
@@ -80,27 +72,12 @@ function getStore() {
 // rename). A entrada é removida quando a própria cauda termina, para o Map não
 // crescer. Vive aqui (módulo, não por instância) porque as escritas de IDB também
 // vêm de create/import/duplicate, fora do mutex por instância do service.
-const writeChains = new Map<string, Promise<void>>()
-
-export function runSerializedWrite(id: string, task: () => Promise<void>): Promise<void> {
-  const prev = writeChains.get(id)
-  // `prev` é blindado contra rejeição (handler nos dois ramos) para uma falha de
-  // uma escrita anterior não derrubar a cadeia das seguintes.
-  const next = prev ? prev.then(task, task) : task()
-  // A cadeia GUARDADA no Map nunca rejeita (o ramo de erro vira a limpeza), para
-  // não vazar uma unhandled rejection quando uma escrita falha (ex.: quota cheia)
-  // — mas o RESULTADO devolvido ao chamador propaga a falha (o autosave precisa
-  // marcar o badge de erro). São dois consumidores distintos do mesmo `task`.
-  const settled = next.then(
-    () => {
-      if (writeChains.get(id) === settled) writeChains.delete(id)
-    },
-    () => {
-      if (writeChains.get(id) === settled) writeChains.delete(id)
-    },
-  )
-  writeChains.set(id, settled)
-  return next
+function runSerializedWrite(
+  id: string,
+  task: (scope: ProjectStorageScope) => Promise<void>,
+): Promise<void> {
+  const scope = captureProjectStorageScope()
+  return runSerializedProjectWrite(scope, id, () => task(scope))
 }
 
 // Última referência de `assets` PERSISTIDA por id. Os assets embutidos (até
@@ -115,8 +92,9 @@ export function runSerializedWrite(id: string, task: () => Promise<void>): Promi
 const lastPersistedAssetsRef = new Map<string, Project['assets']>()
 
 export async function persistProject(project: Project): Promise<void> {
-  await runSerializedWrite(project.id, () => {
+  await runSerializedWrite(project.id, (scope) => {
     const id = project.id
+    const scopedId = scopedProjectIdentity(scope, id)
     // meta/files/state são pequenos e mudam a cada tecla — sempre reescritos.
     // `blocksState` fica em partição própria: pode ser enorme e não deve inchar
     // a leitura inicial do projeto nem o registro leve de IR.
@@ -139,14 +117,17 @@ export async function persistProject(project: Project): Promise<void> {
     // distingue "nunca persistido" de "persistido como undefined" — sem isso, um
     // projeto sem assets nunca gravaria a partição (irrelevante hoje, mas o `has`
     // mantém o invariante: a 1ª gravação SEMPRE materializa a partição).
-    if (!lastPersistedAssetsRef.has(id) || lastPersistedAssetsRef.get(id) !== project.assets) {
+    if (
+      !lastPersistedAssetsRef.has(scopedId) ||
+      lastPersistedAssetsRef.get(scopedId) !== project.assets
+    ) {
       pairs.push([projectAssetsKey(id), projectToAssetsRecord(project)])
     }
-    return setMany(pairs, getStore()).then(() => {
+    return setMany(pairs, scope.store).then(() => {
       // Só registra a referência DEPOIS do write resolver: se o setMany falhar
       // (quota cheia), a partição não foi gravada e a próxima tentativa precisa
       // reescrevê-la — manter a ref antiga (ou não registrar) garante isso.
-      lastPersistedAssetsRef.set(id, project.assets)
+      lastPersistedAssetsRef.set(scopedId, project.assets)
     })
   })
 }
@@ -262,70 +243,33 @@ export async function loadProjectAssetsById(id: string): Promise<ProjectAsset[]>
  * em memória, e o próximo autosave dele sobrescreveria esta gravação.
  */
 export async function persistProjectAssets(id: string, assets: ProjectAsset[]): Promise<void> {
-  await runSerializedWrite(id, () =>
-    set(projectAssetsKey(id), { id, assets }, getStore()).then(() => {
+  await runSerializedWrite(id, (scope) =>
+    set(projectAssetsKey(id), { id, assets }, scope.store).then(() => {
       // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
       // `persistProject`. Gravamos por fora dele: manter a referência antiga
       // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
       // é o lado seguro — no máximo custa uma reescrita da partição.
-      lastPersistedAssetsRef.delete(id)
+      lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
     }),
   )
 }
 
-// CERCA de exclusão do armazenamento do programa do aluno (blocos guardar/ler).
-// O preview faz `writeGameStorage` à parte do mutex por id (flush do localStorage
-// do bichinho); um `set` desse flush pode CHEGAR depois do `delMany` do delete e
-// RESSUSCITAR um registro `sz:game-storage:<id>` órfão (o projeto já não existe).
-// Serializar a escrita no MESMO `runSerializedWrite` do delete ordena os dois, mas
-// uma escrita ENFILEIRADA depois que o delMany já saiu da cadeia ainda passaria —
-// por isso esta cerca: marcada no delete e checada DENTRO da cadeia da escrita,
-// derruba qualquer write tardio do id apagado. Map id→timestamp com poda lazy por
-// janela de graça (igual à cerca do service), para não vazar um ULID por exclusão.
-const GAME_STORAGE_FENCE_GRACE_MS = 60_000
-const deletedGameStorage = new Map<string, number>()
-
-function pruneGameStorageFence(now: number): void {
-  if (deletedGameStorage.size === 0) return
-  for (const [id, deletedAt] of deletedGameStorage) {
-    if (now - deletedAt >= GAME_STORAGE_FENCE_GRACE_MS) deletedGameStorage.delete(id)
-  }
-}
-
-/** Marca o id como apagado: um `writeGameStorage` tardio (flush do preview em voo)
- * é descartado em vez de recriar o registro órfão. Chamado pelo `deleteProject`. */
-export function fenceGameStorageDelete(id: string): void {
-  const now = Date.now()
-  pruneGameStorageFence(now)
-  deletedGameStorage.set(id, now)
-}
-
-/** A cerca ainda vale para este id? Poda lazy de passagem para limitar o Map. */
-export function isGameStorageDeleted(id: string): boolean {
-  const deletedAt = deletedGameStorage.get(id)
-  if (deletedAt === undefined) return false
-  if (Date.now() - deletedAt >= GAME_STORAGE_FENCE_GRACE_MS) {
-    deletedGameStorage.delete(id)
-    return false
-  }
-  return true
-}
-
 export async function deleteProject(id: string): Promise<void> {
+  const scope = captureProjectStorageScope()
   // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
   // re-persistiria o projeto recém-apagado.
-  cancelPendingAutosavesFor(id)
+  cancelPendingAutosavesFor(id, scope.identity)
   // Cerca o armazenamento do programa do aluno ANTES do delMany: um flush do
   // preview já em voo (writeGameStorage) que chegue depois é descartado.
-  fenceGameStorageDelete(id)
+  fenceGameStorageDelete(scope, id)
   // Esquece a referência de assets persistida deste id: o delMany apaga a
   // partição, e se o id voltar (improvável, mas duplicate/import mintam ulid
   // novo) o 1º persist precisa re-materializar a partição de assets. Também
   // evita o Map crescer sem limite por exclusão.
-  lastPersistedAssetsRef.delete(id)
+  lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
   // No MESMO mutex de escrita do id: o delMany não pode intercalar com um
   // persist/rename em voo do mesmo projeto.
-  await runSerializedWrite(id, () =>
+  await runSerializedProjectWrite(scope, id, () =>
     delMany(
       [
         projectMetaKey(id),
@@ -338,7 +282,7 @@ export async function deleteProject(id: string): Promise<void> {
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
       ],
-      getStore(),
+      scope.store,
     ),
   )
 }
@@ -355,8 +299,8 @@ export async function renameProjectMeta(id: string, name: string): Promise<void>
   // get-then-set SERIALIZADO contra persistProject/deleteProject do mesmo id: a
   // leitura e a gravação do meta correm como uma unidade, sem um autosave do
   // editor aberto intercalar entre elas e perder o nome novo (ou ser sobrescrito).
-  await runSerializedWrite(id, async () => {
-    const kvStore = getStore()
+  await runSerializedWrite(id, async (scope) => {
+    const kvStore = scope.store
     const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
     if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
       await set(projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }, kvStore)
@@ -398,8 +342,8 @@ export async function writeProjectThumb(id: string, dataUrl: string): Promise<bo
   }
   let stored = false
   try {
-    await runSerializedWrite(id, async () => {
-      const kvStore = getStore()
+    await runSerializedWrite(id, async (scope) => {
+      const kvStore = scope.store
       const meta = await get<unknown>(projectMetaKey(id), kvStore)
       if (!meta) return
       await set(projectThumbKey(id), { id, dataUrl }, kvStore)

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { MockAIProvider } from '#ai'
 import {
   DEFAULT_TERMINAL_PROCESS_TIMEOUT_MS,
   resolvePreviewSecurity,
@@ -37,6 +38,16 @@ describe('resolveStudioConfig — modo profissional', () => {
     expect(cfg.preview).toBe(true)
     expect(cfg.console).toBe(true)
     expect(cfg.extensions).toBe(true)
+  })
+})
+
+describe('resolveStudioConfig — IA gerenciada pelo host', () => {
+  it('aceita um provider sem transportar segredo e desliga BYOK por padrão', () => {
+    const provider = new MockAIProvider()
+    const cfg = resolveStudioConfig({ ai: { provider } }, undefined)
+
+    expect(cfg.aiConfig.provider).toBe(provider)
+    expect(cfg.aiConfig.allowUserKey).toBe(false)
   })
 })
 

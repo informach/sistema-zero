@@ -170,6 +170,32 @@ describe('OpenRouterProvider', () => {
     expect(Date.now() - started).toBeLessThan(2_000)
   })
 
+  it('rejeita dentro do connectTimeout quando o corpo de ERRO pendura', async () => {
+    const fetchMock = mock(async () => {
+      return {
+        ok: false,
+        status: 503,
+        statusText: 'Unavailable',
+        body: null,
+        json: async () => ({}),
+        text: () => new Promise<string>(() => {}),
+      } as unknown as Response
+    })
+    const provider = new OpenRouterProvider({
+      apiKey: 'k',
+      model: 'm',
+      mode: 'blocks',
+      fetchImpl: fetchMock as unknown as typeof fetch,
+      connectTimeoutMs: 20,
+    })
+
+    const started = Date.now()
+    await expect(
+      provider.chat({ model: 'm', messages: [{ role: 'user', content: 'oi' }] }),
+    ).rejects.toMatchObject({ name: 'TimeoutError' })
+    expect(Date.now() - started).toBeLessThan(2_000)
+  })
+
   it('não mata um fetch saudável que demora além do connectTimeout antes dos headers… mas com headers ok responde', async () => {
     // Headers chegam rápido; o relógio do handshake é desarmado e a leitura curta
     // do JSON conclui normalmente — sem timeout espúrio.

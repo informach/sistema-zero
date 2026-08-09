@@ -29,10 +29,17 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        permissions: ['clipboard-read', 'clipboard-write'],
+      },
     },
     {
       name: 'firefox',
+      // Firefox existe para o risco que justificou o segundo engine: CSP/SRI e
+      // execução no documento isolado. A galeria completa já é coberta pelo
+      // Chromium e duplicá-la adicionava centenas de casos sem sinal novo.
+      testMatch: [/preview-security\.spec\.ts/, /preview-executes-user-code\.spec\.ts/],
       use: { ...devices['Desktop Firefox'] },
     },
   ],

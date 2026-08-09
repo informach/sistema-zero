@@ -559,7 +559,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   /**
    * Dial da "colisão perdoadora": percentual do tamanho usado nas PERGUNTAS de
    * encostar (menor = mais justo para dano; maior = mais fácil de pegar).
-   * A física de empurrar (collideGroup/collideSprite/collideTileMap) ignora o
+   * A física de empurrar e apoiar (collideGroup/collideSprite/collidePlatform/
+   * collidePlatformGroup/collideTileMap) ignora o
    * fator de propósito — hitbox menor afundaria o sprite em chão e paredes.
    */
   function setHitboxScale(sprite, percent) {

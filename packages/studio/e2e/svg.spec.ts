@@ -35,7 +35,7 @@ test.describe('SVG — fluxo infantil', () => {
     await page.keyboard.press('ControlOrMeta+A')
     await page.keyboard.insertText('.forma { fill: #a78bfa; stroke: #fbbf24; stroke-width: 6; }')
 
-    const preview = page.frameLocator('iframe')
+    const preview = page.frameLocator('iframe[title="Pré-visualização"]')
     await expect(preview.locator('#planeta')).toBeVisible({ timeout: 15_000 })
     await expect(preview.locator('title#nome')).toHaveText('Planeta')
 

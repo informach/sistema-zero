@@ -110,21 +110,25 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     var s = _finiteNumber(speed, 4);
     var j = _positiveFiniteNumber(jump, 11);
     var g = world.gravity;
+    var wasGrounded = _beginGroundFrame(sprite);
     // Grava a velocidade horizontal p/ os getters (vx/velocidade/está se movendo) —
     // o vy já é real (gravidade explícita/pulo abaixo).
     sprite.vx = (keys.right ? s : 0) - (keys.left ? s : 0);
     if (keys.left) sprite.x -= s;
     if (keys.right) sprite.x += s;
     sprite.vy = _finiteNumber(sprite.vy, 0);
+    var jumped = false;
+    if (keys.up && wasGrounded) {
+      _jumpFromGround(sprite, g, j);
+      jumped = true;
+    }
     sprite.y += sprite.vy;
     var visible = _visibleWorldRect(ctx);
     // Persiste "no chão" NO sprite: a animação por estado (autoAnimate) e os
     // jogos leem s.onGround p/ saber se está pulando/caindo.
     _resolveGravityGround(sprite, visible.top, visible.bottom, g);
-    if (keys.up && sprite.onGround) {
-      sprite.vy = _jumpVelocityForGravity(g, j);
-      sprite.onGround = false;
-      _emitJump(sprite);
+    if (keys.up && !jumped && sprite.onGround) {
+      _jumpFromGround(sprite, g, j);
     }
   }
 
@@ -152,6 +156,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   function _leaveGroundMode(sprite) {
     delete sprite.onGround;
     delete sprite._groundedLastFrame;
+    delete sprite._groundSupport;
   }
 
   // ---- Voar e nadar (v0.55.0) ----

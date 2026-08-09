@@ -1,8 +1,8 @@
 import type { JSX, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
-import { t } from '#core'
 import { cn, IconFolder } from '#ui'
 import { type BottomTab, useUIStore } from '../../state/uiStore'
+import { useT } from '../../studio/i18n'
 import { renderBottomPanel, useVisibleBottomTabs } from './bottomTabs'
 import { type TabItem, Tabs } from './TabStrip'
 
@@ -54,6 +54,7 @@ export function NarrowPanels({
   preview,
   filesDrawer,
 }: NarrowPanelsProps): JSX.Element {
+  const t = useT()
   const setBottomTab = useUIStore((s) => s.setBottomTab)
   const bottomTabs = useVisibleBottomTabs()
   const [drawerOpen, setDrawerOpen] = useState(false)

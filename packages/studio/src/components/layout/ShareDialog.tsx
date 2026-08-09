@@ -1,10 +1,10 @@
 import { aiQuotaScopeOf, isAiQuotaError } from '@sistemazero/core/ai-credits'
 import type { ChangeEvent, JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { t } from '#core'
 import { Button, IconCheckCircle, IconLink, Modal } from '#ui'
 import { captureCoverFromProject } from '../../cover/coverCapture'
 import { useProjectStore } from '../../state/projectStore'
+import { useT } from '../../studio/i18n'
 import type { StudioShareAdapter, StudioShareResult } from '../../studio/share'
 import { Spinner } from './LoadingViews'
 
@@ -38,6 +38,7 @@ type Cover = { kind: 'image'; dataUrl: string } | { kind: 'preset' }
  * A imutabilidade do post é garantida no SERVIDOR; aqui só avisamos.
  */
 export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.Element | null {
+  const t = useT()
   // Projeto da store POR INSTÂNCIA (hook com seletor) — não a estática.
   const project = useProjectStore((s) => s.project)
 

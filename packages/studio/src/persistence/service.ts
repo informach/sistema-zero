@@ -59,6 +59,7 @@ interface PendingAutosave {
 }
 
 interface ServiceInternals {
+  readonly scopeIdentity: string
   clearTimerFor(projectId: string): void
   /** Descarrega o projeto desta instância se for o id apagado (null no store). */
   unloadIfLoaded(projectId: string): void
@@ -84,6 +85,10 @@ const liveServices = new Set<ServiceInternals>()
 const DELETED_FENCE_GRACE_MS = 60_000
 const deletedProjects = new Map<string, number>()
 
+function scopedProjectIdentity(scopeIdentity: string, projectId: string): string {
+  return `${scopeIdentity}\u0000${projectId}`
+}
+
 /** Remove marcas de exclusão mais velhas que a janela de graça. A cerca já fez
  * seu papel (o save em voo daquele id já terminou há muito); a entrada só ocupa
  * memória. Idempotente e barato — roda nas bordas (marcar/checar). */
@@ -96,22 +101,24 @@ function pruneDeletedFence(now: number): void {
 
 /** A cerca ainda vale para este id? (excluído há menos que a janela de graça.)
  * Poda lazy de passagem para limitar o crescimento do Map. */
-function isFenced(projectId: string): boolean {
-  const deletedAt = deletedProjects.get(projectId)
+function isFenced(scopeIdentity: string, projectId: string): boolean {
+  const identity = scopedProjectIdentity(scopeIdentity, projectId)
+  const deletedAt = deletedProjects.get(identity)
   if (deletedAt === undefined) return false
   const now = Date.now()
   if (now - deletedAt >= DELETED_FENCE_GRACE_MS) {
-    deletedProjects.delete(projectId)
+    deletedProjects.delete(identity)
     return false
   }
   return true
 }
 
-export function cancelPendingAutosavesFor(projectId: string): void {
+export function cancelPendingAutosavesFor(projectId: string, scopeIdentity = 'external'): void {
   const now = Date.now()
   pruneDeletedFence(now)
-  deletedProjects.set(projectId, now)
+  deletedProjects.set(scopedProjectIdentity(scopeIdentity, projectId), now)
   for (const service of liveServices) {
+    if (service.scopeIdentity !== scopeIdentity) continue
     service.clearTimerFor(projectId)
     // Fecha a janela de ressurreição ALÉM da janela de graça: um editor aberto
     // noutra instância com este projeto carregado continuaria sujo e, ao expirar
@@ -139,6 +146,7 @@ export function createPersistenceService(
   store: ProjectStoreApi,
   adapter: StudioPersistenceAdapter | null,
 ): PersistenceService {
+  const serviceScopeIdentity = adapter?.scopeIdentity ?? 'external'
   const pending = new Map<string, PendingAutosave>()
   // Capturado no attach: duas instâncias já ligadas não mudam de debounce se
   // outra instância (ou outro arquivo de teste concorrente) ajustar o default.
@@ -215,6 +223,7 @@ export function createPersistenceService(
   }
 
   const internals: ServiceInternals = {
+    scopeIdentity: serviceScopeIdentity,
     clearTimerFor(projectId) {
       const entry = pending.get(projectId)
       if (!entry) return
@@ -335,13 +344,13 @@ export function createPersistenceService(
   function persistAndMark(project: Project): Promise<void> {
     // Já excluído antes de começar: não persiste de volta o que foi apagado.
     // (checa fora da cadeia para nem enfileirar a task do projeto apagado.)
-    if (isFenced(project.id)) return Promise.resolve()
+    if (isFenced(serviceScopeIdentity, project.id)) return Promise.resolve()
     // Encadeia no mutex por id: dois autosaves do mesmo projeto confirmam EM
     // ORDEM (o 2º só envia ao adapter depois do 1º resolver).
     return runSerialized(project.id, async () => {
       // Re-checa DENTRO da cadeia: o delete pode ter chegado enquanto este save
       // esperava o anterior na fila.
-      if (isFenced(project.id)) return
+      if (isFenced(serviceScopeIdentity, project.id)) return
       try {
         // Tranca anti-perda avaliada NA HORA do write (o status pode ter mudado
         // enquanto este save aguardava a cadeia). `markSaved` compara a
@@ -350,7 +359,7 @@ export function createPersistenceService(
         // Excluído ENQUANTO o save estava em voo (adapter lento/remoto): aborta
         // sem marcar salvo — o `delMany` do delete já correu, re-persistir
         // ressuscitaria o projeto apagado.
-        if (isFenced(project.id)) return
+        if (isFenced(serviceScopeIdentity, project.id)) return
         if (store.getState().project === project) {
           store.getState().markSaved()
         }
@@ -454,9 +463,10 @@ export function createPersistenceService(
   async function save(): Promise<void> {
     const project = store.getState().project
     if (!project) return
-    // Salvar explícito é sobre o projeto carregado AGORA — está vivo: tira a
-    // marca de excluído para um id reaproveitado não ser bloqueado.
-    deletedProjects.delete(project.id)
+    // Nem um save explícito limpa a cerca: ele pode ter sido disparado por uma
+    // referência obsoleta enquanto o delete ainda disputa com um save em voo.
+    // IDs novos são ULIDs; um reaproveitamento excepcional só volta a ser
+    // aceito depois da janela de graça, quando `isFenced` poda a marca.
     internals.clearTimerFor(project.id)
     // reason 'flush': o salvar explícito é um ponto de drenagem como o
     // fechamento — se o host usa keepalive no flush, o save manual também o usa.
@@ -473,7 +483,7 @@ export function createPersistenceService(
     await runSerialized(project.id, async () => {
       // O delete pode ter chegado enquanto este save aguardava um autosave na
       // fila — não persiste de volta o apagado.
-      if (isFenced(project.id)) return
+      if (isFenced(serviceScopeIdentity, project.id)) return
       try {
         // Mesmo snapshot protegido para adapter E host (recalculado na hora do
         // write — o status pode ter resolvido enquanto o save aguardava a fila).

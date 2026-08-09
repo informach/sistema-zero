@@ -1,6 +1,6 @@
 import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { PROJECT_ASSET_LIMITS, type ProjectAsset, t } from '#core'
+import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
 import { ASSET_LIBRARY, type LibraryAsset } from '../../asset-library/catalog'
 import {
@@ -16,6 +16,7 @@ import {
 } from '../../asset-library/personalSync'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
+import { useT } from '../../studio/i18n'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
 import { uniqueAssetName } from './assetNames'
 import {
@@ -44,6 +45,7 @@ export interface AssetsPanelProps {
 const EMPTY_ASSETS: ProjectAsset[] = []
 
 export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelProps): JSX.Element {
+  const t = useT()
   const { hasProject, assets, has3DExtension } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),

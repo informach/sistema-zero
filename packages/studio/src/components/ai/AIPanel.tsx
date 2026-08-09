@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { type InstalledExtension, t } from '#core'
+import type { InstalledExtension } from '#core'
 import { Badge, Button } from '#ui'
 import { OpenRouterError } from '../../ai/providers/openRouterProvider'
 import { useAIProvider } from '../../state/aiAdapter'
@@ -9,6 +9,7 @@ import { useHighlightStore } from '../../state/highlightStore'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
+import { useT } from '../../studio/i18n'
 import { SettingsDrawer } from '../settings/SettingsDrawer'
 import {
   appendChatMessages,
@@ -108,6 +109,7 @@ const ChatMessageItem = memo(function ChatMessageItem({ message }: { message: Ch
 })
 
 export function AIPanel(): JSX.Element {
+  const t = useT()
   const { projectName, projectIR, installedExtensions } = useProjectStore(
     useShallow((s) => ({
       projectName: s.project?.name ?? '',

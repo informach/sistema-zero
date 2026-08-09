@@ -3,7 +3,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
-import { type InstalledExtension, t } from '#core'
+import type { InstalledExtension } from '#core'
 import type { GeneratedFiles, SourceMap, SourceMappedFile } from '#generators'
 import { buildCssSourceMapFromText } from '#generators'
 import { deepEqualIR, hasBehaviorStatements, irBlockStructureEqual, normalizeSZIR } from '#ir'
@@ -29,6 +29,7 @@ import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
+import { useT } from '../studio/i18n'
 import { useStudioLayout } from '../studio/layoutContext'
 import { useStudioTheme } from '../studio/theme'
 import { canvas3DInternalCodeRanges } from '../three/canvas3dMacroCodec'
@@ -51,8 +52,15 @@ export function isReverseParseResultStale(args: {
   currentRequestSeq: number
   epochAtPost: number
   currentStateEpoch: number
+  codeEpochAtPost: number
+  currentCodeEpoch: number
 }): boolean {
   if (args.resultRequestId !== args.currentRequestSeq) return true
+  // O debounce ainda pode não ter postado um segundo pedido quando o primeiro
+  // termina. A época do texto muda a cada onChange e fecha essa janela: um
+  // resultado parcial nunca pode reconstruir os blocos nem regenerar arquivos
+  // por cima do restante que o aluno acabou de digitar.
+  if (args.codeEpochAtPost !== args.currentCodeEpoch) return true
   // O epoch avançou desde que o pedido foi postado => o store (ir/blocksState)
   // mudou por OUTRA fonte (tipicamente uma edição de bloco) e tem precedência.
   return args.currentStateEpoch !== args.epochAtPost
@@ -65,6 +73,7 @@ export function isReverseParseResultStale(args: {
  * padrão (BlocklyPanel já atualiza files+IR).
  */
 export function BridgeMode(): JSX.Element {
+  const t = useT()
   const {
     hasProject,
     projectId,
@@ -342,6 +351,8 @@ export function BridgeMode(): JSX.Element {
           currentRequestSeq: reverseParseRequestSeq.current,
           epochAtPost: epochAtPost.current,
           currentStateEpoch: stateEpoch.current,
+          codeEpochAtPost: bridgeCodeEpochAtPost.current,
+          currentCodeEpoch: projectStoreApi.getState().bridgeCodeEditEpoch,
         })
       ) {
         return

@@ -383,6 +383,19 @@ export function MonacoTabs({
     onCursorChangeRef.current = onCursorChange
   }, [onCursorChange])
 
+  // O model do Monaco é a autoridade enquanto o aluno está digitando. Passar
+  // `value` ao wrapper o torna controlado; no Firefox, uma inserção longa pode
+  // produzir vários eventos no mesmo gesto e o eco atrasado de uma prop parcial
+  // recoloca esse prefixo no model. Reconciliamos apenas mudanças realmente
+  // externas: o eco normal já é igual ao conteúdo vivo e vira no-op.
+  useEffect(() => {
+    const model = mountedEditor?.getModel()
+    if (!model || !file) return
+    if (getMonacoModelPath(model) !== buildMonacoModelPath(saltedPrefix, file.name)) return
+    if (model.getValue() === file.value) return
+    model.setValue(file.value)
+  }, [file, mountedEditor, saltedPrefix])
+
   const clearHighlightDecorations = useCallback(() => {
     decorationsRef.current?.clear()
   }, [])
@@ -778,7 +791,7 @@ export function MonacoTabs({
           theme={monacoThemeName(theme)}
           path={buildMonacoModelPath(saltedPrefix, file.name)}
           defaultLanguage={inferLanguage(file.name)}
-          value={file.value}
+          defaultValue={file.value}
           onChange={handleChange}
           onMount={handleMount}
           // Cada projeto/instância recebe um path de model salgado e NUNCA reusado, então

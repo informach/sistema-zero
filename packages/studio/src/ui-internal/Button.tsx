@@ -35,7 +35,7 @@ export function Button({
       type="button"
       style={{ touchAction: 'manipulation' }}
       className={cn(
-        'inline-flex items-center justify-center whitespace-nowrap rounded-xl font-medium leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+        'sz-touch-target inline-flex items-center justify-center whitespace-nowrap rounded-xl font-medium leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
         variantClasses[variant],
         sizeClasses[size],
         className,

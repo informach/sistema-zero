@@ -16,6 +16,8 @@ describe('isReverseParseResultStale', () => {
         currentRequestSeq: 5,
         epochAtPost: 10,
         currentStateEpoch: 10,
+        codeEpochAtPost: 20,
+        currentCodeEpoch: 20,
       }),
     ).toBe(false)
   })
@@ -27,6 +29,8 @@ describe('isReverseParseResultStale', () => {
         currentRequestSeq: 6,
         epochAtPost: 10,
         currentStateEpoch: 10,
+        codeEpochAtPost: 20,
+        currentCodeEpoch: 20,
       }),
     ).toBe(true)
   })
@@ -41,6 +45,8 @@ describe('isReverseParseResultStale', () => {
         currentRequestSeq: 5,
         epochAtPost: 10,
         currentStateEpoch: 11,
+        codeEpochAtPost: 20,
+        currentCodeEpoch: 20,
       }),
     ).toBe(true)
   })
@@ -52,6 +58,21 @@ describe('isReverseParseResultStale', () => {
         currentRequestSeq: 7,
         epochAtPost: 10,
         currentStateEpoch: 12,
+        codeEpochAtPost: 20,
+        currentCodeEpoch: 20,
+      }),
+    ).toBe(true)
+  })
+
+  it('é obsoleto quando o aluno continua digitando antes da resposta do worker', () => {
+    expect(
+      isReverseParseResultStale({
+        resultRequestId: 5,
+        currentRequestSeq: 5,
+        epochAtPost: 10,
+        currentStateEpoch: 10,
+        codeEpochAtPost: 21,
+        currentCodeEpoch: 22,
       }),
     ).toBe(true)
   })
@@ -69,6 +90,8 @@ describe('isReverseParseResultStale', () => {
         currentRequestSeq: requestSeq,
         epochAtPost,
         currentStateEpoch: stateEpoch,
+        codeEpochAtPost: 20,
+        currentCodeEpoch: 20,
       }),
     ).toBe(false)
     // Agora simula uma edição de bloco APÓS o apply: o epoch avança, mas isso

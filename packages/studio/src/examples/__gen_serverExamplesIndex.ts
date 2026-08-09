@@ -3312,8 +3312,8 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     description:
       'Uma aventura de plataforma pirata: corra e pule com as setas por um mundo largo, pegue moedas, pise nos caranguejos e desvie dos buracos até a bandeira do fim. Enter começa e reinicia.',
     difficulty: 'advanced',
-    concepts: ['mapa', 'NPCs', 'missões'],
-    genre: 'mundo aberto',
+    concepts: ['plataformas', 'câmera', 'coleta'],
+    genre: 'plataforma',
     promise:
       'Atravessar uma fase de plataforma lateral pegando moedas e pisando nos inimigos até a bandeira.',
     scenario:
@@ -3665,8 +3665,8 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     description:
       'Guie o rei pelas plataformas e ache a porta de cada fase para atravessar o castelo em três salões. Use as setas para andar e pular. Enter começa e reinicia.',
     difficulty: 'advanced',
-    concepts: ['portas', 'chaves', 'estados'],
-    genre: 'quebra-cabeça',
+    concepts: ['plataformas', 'fases', 'transições'],
+    genre: 'plataforma',
     promise: 'Guiar o rei pelas plataformas e achar a porta de cada fase até vencer o castelo.',
     scenario: 'Começar, andar e pular com as setas, encostar na porta, trocar de fase e reiniciar.',
     blockTypes: [
@@ -3735,8 +3735,8 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     description:
       'Ande e pule pelo vale para juntar as 6 gemas azuis. Desvie do gambá e da águia e cuide da sua vida. Enter começa e reinicia.',
     difficulty: 'advanced',
-    concepts: ['mapa', 'coleta', 'economia'],
-    genre: 'simulação',
+    concepts: ['plataformas', 'coleta', 'inimigos'],
+    genre: 'plataforma',
     promise: 'Pular pelas plataformas, juntar gemas e desviar do gambá e da águia no vale.',
     scenario:
       'Começar, andar e pular com as setas, coletar gemas, encostar em inimigo, vencer e reiniciar.',

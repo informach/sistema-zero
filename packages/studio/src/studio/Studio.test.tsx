@@ -1,12 +1,20 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, render, waitFor } from '@testing-library/react'
-import { createRef } from 'react'
+import { act, cleanup, render, waitFor } from '@testing-library/react'
+import { createRef, StrictMode } from 'react'
 import { createEmptyProject } from '#core'
+import { useT } from './i18n'
 import type { StudioHandle } from './types'
 
 // bun:test não isola module mocks por arquivo: restaura o Shell real no
 // afterAll para não vazar o stub para os próximos arquivos da suíte.
 const realShell = { ...(await import('../components/layout/Shell')) }
+const realThumbCapture = { ...(await import('../cover/thumbCapture')) }
+const captureAndStoreProjectThumb = mock(async () => undefined)
+
+mock.module('../cover/thumbCapture', () => ({
+  ...realThumbCapture,
+  captureAndStoreProjectThumb,
+}))
 
 // idb-keyval mockado (sem restore, de propósito): o IndexedDB real não existe
 // no happy-dom e o registry de módulos é compartilhado pela suíte toda.
@@ -30,6 +38,7 @@ const { useUIStore } = await import('../state/uiStore')
 // os hooks aqui leem as stores POR INSTÂNCIA (as estáticas useXStore.getState
 // leem a default — não servem para inspecionar um <Studio>).
 function ShellProbe(): React.JSX.Element {
+  const t = useT()
   const projectId = useProjectStore((s) => s.project?.id ?? '')
   const mode = useProjectStore((s) => s.project?.mode ?? '')
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -41,6 +50,7 @@ function ShellProbe(): React.JSX.Element {
       data-mode={mode}
       data-dirty={String(isDirty)}
       data-preview={String(previewRunning)}
+      data-blocks-label={t('mode.blocks')}
     />
   )
 }
@@ -54,6 +64,7 @@ const { setAutosaveDelayForTests } = await import('../persistence/service')
 
 afterAll(() => {
   mock.module('../components/layout/Shell', () => realShell)
+  mock.module('../cover/thumbCapture', () => realThumbCapture)
 })
 
 describe('Studio', () => {
@@ -102,6 +113,21 @@ describe('Studio', () => {
     })
   })
 
+  it('duas instâncias podem renderizar locales diferentes sem last-mount-wins', async () => {
+    const { getAllByTestId } = render(
+      <>
+        <Studio initialProject={createEmptyProject('locale-pt', 'PT')} locale="pt-BR" />
+        <Studio initialProject={createEmptyProject('locale-en', 'EN')} locale="en" />
+      </>,
+    )
+
+    await waitFor(() => {
+      expect(
+        getAllByTestId('editor-shell').map((probe) => probe.getAttribute('data-blocks-label')),
+      ).toEqual(['Blocos', 'Blocks'])
+    })
+  })
+
   it('renderiza aviso quando o initialProject é inválido', () => {
     const { getByText } = render(
       <Studio initialProject={{ id: 'x' } as Parameters<typeof Studio>[0]['initialProject']} />,
@@ -143,7 +169,7 @@ describe('Studio', () => {
     expect(handleRef.current?.isDirty()).toBe(false)
 
     // D2: projeto básico só alterna entre Blocos e Ponte (Código é só do pro).
-    handleRef.current?.setMode('bridge')
+    act(() => handleRef.current?.setMode('bridge'))
     expect(handleRef.current?.isDirty()).toBe(true)
 
     await waitFor(() => {
@@ -166,6 +192,25 @@ describe('Studio', () => {
     expect(document.documentElement.getAttribute('data-sz-theme')).toBeNull()
   })
 
+  it('não captura capa durante a desmontagem simulada do StrictMode', async () => {
+    captureAndStoreProjectThumb.mockClear()
+    const project = createEmptyProject('project-strict-cover', 'Strict cover')
+
+    const { getByTestId, unmount } = render(
+      <StrictMode>
+        <Studio initialProject={project} />
+      </StrictMode>,
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('editor-shell').getAttribute('data-project')).toBe(project.id)
+    })
+    expect(captureAndStoreProjectThumb).not.toHaveBeenCalled()
+
+    unmount()
+    expect(captureAndStoreProjectThumb).toHaveBeenCalledTimes(1)
+  })
+
   it('re-render do host com allowedModes inline NÃO descarta edições não salvas', async () => {
     const handleRef = createRef<StudioHandle>()
     const project = createEmptyProject('project-keep', 'Manter')
@@ -180,7 +225,7 @@ describe('Studio', () => {
     })
 
     // Edição não salva do aluno (troca de modo marca sujo). D2: básico = Blocos/Ponte.
-    handleRef.current?.setMode('bridge')
+    act(() => handleRef.current?.setMode('bridge'))
     await waitFor(() => {
       expect(getByTestId('editor-shell').getAttribute('data-dirty')).toBe('true')
     })
@@ -234,7 +279,7 @@ describe('Studio', () => {
     })
 
     // Troca o projeto pelo handle → unload + re-hidrata: onReady re-dispara.
-    handleRef.current?.replaceProject(createEmptyProject('project-r2', 'R2'))
+    act(() => handleRef.current?.replaceProject(createEmptyProject('project-r2', 'R2')))
     await waitFor(() => {
       expect(readyIds).toEqual(['project-r1', 'project-r2'])
     })

@@ -498,6 +498,11 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         var bj = secondItems[j];
         if (!bj || ai === bj || !secondMembers.has(bj)) continue;
         if (isColliding(ai, bj)) {
+          // O callback pode mover qualquer sprite diretamente. A fase ampla foi
+          // calculada antes dele e deixa de ser válida a partir deste ponto; os
+          // pares restantes voltam à mesma varredura ao vivo dos grupos menores.
+          var usedBroadCandidates = !!candidateJs;
+          if (usedBroadCandidates) broadCandidates = null;
           _invokeProjectCallback(fn, undefined, [ai, bj]);
           if (_runGenerationChanged(generation)) return;
           refreshMembership();
@@ -505,6 +510,10 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
           // ninguém neste quadro — senão um tiro só derrubaria TODOS os inimigos
           // encostados. Se NÃO removeu, o laço segue (o tiro "perfura" de propósito).
           if (!firstMembers.has(ai)) break;
+          if (usedBroadCandidates) {
+            candidateJs = null;
+            cursor = j - 1;
+          }
         }
       }
     }

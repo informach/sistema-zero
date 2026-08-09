@@ -7,17 +7,21 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
     var j = (_isFiniteNumber(jump) && jump > 0) ? jump : 14;
     var g = world.gravity;
     sprite.vy = _finiteNumber(sprite.vy, 0);
+    var wasGrounded = _beginGroundFrame(sprite);
+    var tap = pointer.down && !_jumpTapPrev;
+    _jumpTapPrev = pointer.down;
+    var wantJump = keys.up || keyDown('Space') || tap;
+    var jumped = false;
+    if (wantJump && wasGrounded) {
+      _jumpFromGround(sprite, g, j);
+      jumped = true;
+    }
     sprite.y += sprite.vy;
     var visible = _visibleWorldRect(ctx);
     // Persiste "no chão" NO sprite (mesmo contrato do platformer/autoAnimate).
     _resolveGravityGround(sprite, visible.top, visible.bottom, g);
-    var tap = pointer.down && !_jumpTapPrev;
-    _jumpTapPrev = pointer.down;
-    var wantJump = keys.up || keyDown('Space') || tap;
-    if (wantJump && sprite.onGround) {
-      sprite.vy = _jumpVelocityForGravity(g, j);
-      sprite.onGround = false;
-      _emitJump(sprite);
+    if (wantJump && !jumped && sprite.onGround) {
+      _jumpFromGround(sprite, g, j);
     }
   }
 

@@ -32,12 +32,17 @@ interface Api {
   createSprite: Fn
   createGroup: Fn
   createDino: Fn
+  createTileMap: Fn
+  drawTileMap: Fn
   setGravity: Fn
   applyVelocity: Fn
   applyGravity: Fn
   applyGravityToGroup: Fn
   updateGroup: Fn
   platformer: Fn
+  collideTileMap: Fn
+  collideSprite: Fn
+  collideGroup: Fn
   jumpOnGround: Fn
   controlDino: Fn
   swim: Fn
@@ -178,6 +183,104 @@ describe('helpers não escondem aceleração', () => {
     api.swim(peixe, 2)
     expect(peixe.vy).toBeCloseTo(0.528, 10)
     expect(peixe.y).toBeCloseTo(100.528, 10)
+  })
+})
+
+describe('pulo conserva o apoio confirmado pela colisão do quadro anterior', () => {
+  it('pula no primeiro quadro sobre um tile sólido (ordem usada pelo projeto do Mario)', () => {
+    const { api } = load()
+    const mapCtx = { canvas: { width: 64, height: 64 }, fillRect() {} }
+    const mapa = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
+    api.drawTileMap(mapCtx, mapa, 0, 0, 32)
+    const heroi = sprite(api, 4, 10)
+    heroi.w = 16
+    heroi.h = 16
+    heroi.vy = 8
+
+    api.applyVelocity(heroi)
+    api.collideTileMap(heroi, mapa)
+    expect(heroi.onGround).toBe(true)
+
+    api.keys.up = true
+    api.applyGravity(heroi)
+    api.platformer(heroi, mapCtx, 4, 11)
+    api.collideTileMap(heroi, mapa)
+
+    expect(heroi.vy).toBe(-11)
+    expect(heroi.y).toBeLessThan(16)
+  })
+
+  it('pula no primeiro quadro sobre um tile plataforma', () => {
+    const { api } = load()
+    const mapCtx = { canvas: { width: 64, height: 64 }, fillRect() {} }
+    const mapa = api.createTileMap({
+      image: '',
+      tile: 32,
+      solid: '',
+      platform: '2',
+      grid: '. .;2 2',
+    })
+    api.drawTileMap(mapCtx, mapa, 0, 0, 32)
+    const heroi = sprite(api, 4, 10)
+    heroi.w = 16
+    heroi.h = 16
+    heroi.vy = 8
+    api.applyVelocity(heroi)
+    api.collideTileMap(heroi, mapa)
+
+    api.keys.up = true
+    api.applyGravity(heroi)
+    api.platformer(heroi, mapCtx, 4, 11)
+    api.collideTileMap(heroi, mapa)
+
+    expect(heroi.vy).toBe(-11)
+    expect(heroi.y).toBeLessThan(16)
+  })
+
+  it('pula no primeiro quadro sobre uma figura usada como chão sólido', () => {
+    const { api } = load()
+    const heroi = sprite(api, 4, 10)
+    heroi.w = 16
+    heroi.h = 16
+    heroi.vy = 8
+    const piso = sprite(api, 0, 32)
+    piso.w = 64
+    piso.h = 16
+
+    api.applyVelocity(heroi)
+    api.collideSprite(heroi, piso)
+    expect(heroi.onGround).toBe(true)
+
+    api.keys.up = true
+    api.applyGravity(heroi)
+    api.platformer(heroi, ctx, 4, 11)
+    api.collideSprite(heroi, piso)
+
+    expect(heroi.vy).toBe(-11)
+    expect(heroi.y).toBeLessThan(16)
+  })
+
+  it('pula sobre um grupo sólido e o helper genérico usa o mesmo contrato', () => {
+    const { api } = load()
+    const piso = sprite(api, 0, 32)
+    piso.w = 64
+    piso.h = 16
+    const grupo = api.createGroup() as { items: Sprite[] }
+    grupo.items.push(piso)
+    const heroi = sprite(api, 4, 10)
+    heroi.w = 16
+    heroi.h = 16
+    heroi.vy = 8
+    api.applyVelocity(heroi)
+    api.collideGroup(heroi, grupo)
+
+    api.keys.up = true
+    api.applyGravity(heroi)
+    api.jumpOnGround(heroi, ctx, 14)
+    api.collideGroup(heroi, grupo)
+
+    expect(heroi.vy).toBe(-14)
+    expect(heroi.y).toBeLessThan(16)
   })
 })
 

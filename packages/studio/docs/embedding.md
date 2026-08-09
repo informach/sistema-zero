@@ -68,7 +68,7 @@ import { createEmptyProject, type StudioHandle } from '@sistemazero/studio'
   persistence="none"                        // 'local' (IndexedDB, default) | 'none' | adapter custom
   onChange={(p, ctx) => salvarNoBackend(p, ctx)} // snapshot no autosave (1s) e em flushes; ctx?.reason: 'autosave' | 'flush'
   onSave={(p) => salvarAgora(p)}            // pós "Salvar" explícito; Promise rejeitada marca erro no badge
-  features={{ terminal: false, ai: { apiKey: chaveDoHost, model: 'anthropic/claude-sonnet-4.5' } }}
+  features={{ terminal: false, ai: { provider: providerDoBff } }}
   allowedModes={['blocks', 'bridge']}       // esconde modos; modo salvo fora da lista cai no 1º permitido
   theme="dark"                              // sem a prop: toggle interno (Topbar) + Settings
   onExit={() => router.back()}

@@ -41,6 +41,12 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     var rawLo = _finiteNumber(min, 0);
     var rawHi = _finiteNumber(max, 1);
     if (rawHi < rawLo) { var t = rawLo; rawLo = rawHi; rawHi = t; }
+    // Fora do intervalo seguro, JavaScript deixa de representar cada inteiro.
+    // Limitar aqui também impede que (hi - lo + 1) transborde para Infinity.
+    var minSafeInteger = -9007199254740991;
+    var maxSafeInteger = 9007199254740991;
+    rawLo = Math.max(minSafeInteger, Math.min(maxSafeInteger, rawLo));
+    rawHi = Math.max(minSafeInteger, Math.min(maxSafeInteger, rawHi));
     var lo = Math.ceil(rawLo);
     var hi = Math.floor(rawHi);
     // Um intervalo como 0,2..0,8 não contém inteiro. Nesse caso impossível,

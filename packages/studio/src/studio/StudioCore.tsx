@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { modesForKind, type Project, setLocale } from '#core'
+import { modesForKind, type Project } from '#core'
 import { ErrorBoundary } from '#ui'
 import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
@@ -22,6 +22,7 @@ import {
 } from './config'
 import { StudioEditDrawingProvider } from './edit-drawing'
 import { StudioExamplesVisibleProvider } from './examples-visibility'
+import { StudioI18nProvider } from './i18n'
 import { StudioPintaLibraryProvider } from './pinta-library'
 import { StudioProRuntimeProvider } from './pro-runtime'
 import { disallowedProjectExtensions } from './project-access'
@@ -61,12 +62,15 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
       persistence: props.persistence,
       limits: props.limits,
       proBuildLimits: props.proRuntime?.limits,
+      locale: props.locale,
     }),
   )
   return (
-    <StudioStoresContext.Provider value={stores}>
-      <StudioCoreBody {...props} />
-    </StudioStoresContext.Provider>
+    <StudioI18nProvider locale={props.locale}>
+      <StudioStoresContext.Provider value={stores}>
+        <StudioCoreBody {...props} />
+      </StudioStoresContext.Provider>
+    </StudioI18nProvider>
   )
 }
 
@@ -97,7 +101,6 @@ function StudioCoreBody({
   onModeChange,
   onReady,
   theme,
-  locale,
   onExit,
   onPromoteToPro,
   proRuntime,
@@ -106,12 +109,6 @@ function StudioCoreBody({
   style,
   ref,
 }: StudioCoreProps): JSX.Element {
-  // Locale é estático por instância e precisa valer ANTES do primeiro render
-  // dos filhos (há `t()` avaliado em escopo de módulo nos chunks lazy).
-  useState(() => {
-    if (locale) setLocale(locale)
-  })
-
   // Atividade é estática por instância (fixada pelo professor): latcha uma vez
   // para o provider entregar valor estável — re-render do host com `activity`
   // inline não re-renderiza o painel. Default `null` (sem atividade).
@@ -301,6 +298,7 @@ function StudioCoreBody({
   }, [projectStoreApi])
 
   const lastProjectRef = useRef<Project | null>(null)
+  const studioRootRef = useRef<HTMLDivElement>(null)
 
   // ⭐ A capa do card é tirada AO SAIR do editor, por QUALQUER caminho.
   //
@@ -315,6 +313,11 @@ function StudioCoreBody({
   // navegações client-side do Next). Recarregar/fechar a aba continua perdendo a
   // foto — best-effort de propósito, nada aqui pode atrasar a saída.
   useEffect(() => {
+    // O React 19 valida efeitos em StrictMode desmontando e remontando seus
+    // efeitos sem remover o DOM. Guardamos o nó visto na instalação do efeito:
+    // numa saída real ele estará desconectado; na validação do StrictMode,
+    // continuará conectado e não deve disparar uma captura em iframe.
+    const studioRoot = studioRootRef.current
     // ⚠️ Guardar o projeto num REF é load-bearing: no unmount a store já foi
     // limpa por outro cleanup (medido — `project` chega null lá), então ler dela
     // na hora de capturar não devolvia nada e a capa nunca era tirada.
@@ -325,6 +328,7 @@ function StudioCoreBody({
     if (atual) lastProjectRef.current = atual
     return () => {
       unsubscribe()
+      if (studioRoot?.isConnected) return
       if (!persistence.hasAdapter) return
       const project = lastProjectRef.current
       if (project) void captureAndStoreProjectThumb(project)
@@ -354,6 +358,7 @@ function StudioCoreBody({
                       <StudioConfigProvider value={config}>
                         <StudioThemeProvider value={effectiveTheme}>
                           <div
+                            ref={studioRootRef}
                             data-sz-theme={effectiveTheme}
                             className={['h-full min-h-0', className].filter(Boolean).join(' ')}
                             // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta

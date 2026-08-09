@@ -1,11 +1,11 @@
 import type { JSX } from 'react'
 import { memo, useLayoutEffect, useRef } from 'react'
-import { t } from '#core'
 import { Button } from '#ui'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { glossErrorMessage } from '../../state/errorGloss'
 import { useHighlightStore } from '../../state/highlightStore'
 import { ERROR_LOG_KINDS, type LogEntry, useLogsStore } from '../../state/logsStore'
+import { useT } from '../../studio/i18n'
 
 // Tipos de log que representam ERRO — só neles tentamos a dica em português.
 // A régua vive no store: o Zappy usa a MESMA para diagnosticar.
@@ -39,6 +39,7 @@ const KIND_LABEL: Record<LogEntry['kind'], string> = {
 }
 
 export function ConsolePanel(): JSX.Element {
+  const t = useT()
   const entries = useLogsStore((s) => s.entries)
   const clear = useLogsStore((s) => s.clear)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -96,6 +97,7 @@ export function ConsolePanel(): JSX.Element {
 // é estável — só o item recém-adicionado precisa renderizar (evita re-render dos
 // até 500 itens a cada console.log).
 const LogEntryItem = memo(function LogEntryItem({ entry }: { entry: LogEntry }) {
+  const t = useT()
   // Dica em português SÓ para entradas de erro (a linha original em inglês fica
   // intacta logo acima — a criança aprende a mensagem real e pode colá-la numa
   // IA/busca). `null` quando o padrão não é reconhecido (mostra só o original).

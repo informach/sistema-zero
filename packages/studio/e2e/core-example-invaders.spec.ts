@@ -75,7 +75,7 @@ test.describe('Exemplo do núcleo — Invasores do Espaço (na mão)', () => {
       .poll(
         async () =>
           page.evaluate(() => {
-            const iframe = document.querySelector('iframe')
+            const iframe = document.querySelector('iframe[title="Pré-visualização"]')
             const srcdoc = iframe?.getAttribute('srcdoc') ?? ''
             if (!srcdoc) return 'sem-preview'
             if (srcdoc.includes('url("data:image/png;base64,')) return 'ok'

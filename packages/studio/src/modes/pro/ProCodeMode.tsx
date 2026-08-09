@@ -2,7 +2,7 @@ import type { JSX } from 'react'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
-import { type ProjectTree, t } from '#core'
+import type { ProjectTree } from '#core'
 import { FontSizeControls } from '../../components/code/FontSizeControls'
 import { MonacoTabs } from '../../components/code/LazyMonacoTabs'
 import { ProFileTree } from '../../components/code/ProFileTree'
@@ -13,6 +13,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../../state/settingsStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioTheme } from '../../studio/theme'
 import { ProPreview } from './ProPreview'
@@ -30,6 +31,7 @@ const DEFAULT_OPEN_CANDIDATES = ['src/main.tsx', 'src/main.ts', 'src/App.tsx', '
  * único do FS). O `PreviewIframe`/`FileExplorer` clássicos NUNCA renderizam aqui.
  */
 export function ProCodeMode(): JSX.Element {
+  const t = useT()
   const { projectId, tree } = useProjectStore(
     useShallow((s) => ({
       projectId: s.project?.id,

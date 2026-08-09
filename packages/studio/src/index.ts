@@ -35,6 +35,12 @@ export {
   studioProBuildFileLimitError,
   studioProBuildRequestByteLength,
 } from '#core'
+export type {
+  AIFreeFormRequest,
+  AIProvider,
+  AIRequestOptions,
+  ProjectContext,
+} from './ai/contracts'
 export type { PersonalAsset, SavePersonalAssetResult } from './asset-library/personal'
 export {
   BLOCK_CATALOG,
@@ -95,7 +101,6 @@ export type {
   TestCaseCheck,
 } from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
-/** @deprecated Use {@link StudioEditor} ou {@link StudioLesson}. */
 export type {
   StudioPintaDrawingSummary,
   StudioPintaImportResult,
@@ -107,6 +112,7 @@ export type {
   StudioProRuntimeBuildInput,
   StudioProRuntimeBuildResult,
 } from './studio/pro-runtime'
+/** @deprecated Use {@link StudioEditor} ou {@link StudioLesson}. */
 export { Studio } from './studio/Studio'
 export { StudioEditor } from './studio/StudioEditor'
 export { StudioLesson } from './studio/StudioLesson'
