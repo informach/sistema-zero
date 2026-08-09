@@ -7,16 +7,7 @@ import {
   type LearningProfile,
 } from '#core'
 import { SERVER_BLOCK_CATALOG } from './blockCatalog'
-import {
-  FRAME_APPEARANCE,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-  FRAME_MOLDS,
-  FRAME_START,
-  FRAME_STRUCTURE,
-  getBlockContract,
-  inferBlockContract,
-} from './blockContracts'
+import { getBlockContract, inferBlockContract } from './blockContracts'
 import { resolveBlockLevel } from './blockLevels'
 import {
   ADVANCED_BLOCKS,
@@ -52,6 +43,7 @@ import {
   FUNCTION_STATIC_DEFINITIONS,
   restrictedFunctionsCategoryHasContent,
 } from './programmingOfferability'
+import { PROJECT_AREA_DEFINITIONS } from './projectAreas'
 import { CATEGORY_COLORS } from './theme'
 
 /** Shadow anexado a um slot `input_value` (número editável ou seletor de cor). */
@@ -259,14 +251,7 @@ function pruneEmptyCategories(contents: readonly unknown[]): unknown[] {
  * continua gerando, mesmo num degrau em que ela não seria oferecida.
  */
 /** Bloco-container de cada Área do projeto, na ordem em que a criança os lê. */
-const AREA_FRAMES = [
-  { area: 'structure', frame: FRAME_STRUCTURE },
-  { area: 'appearance', frame: FRAME_APPEARANCE },
-  { area: 'molds', frame: FRAME_MOLDS },
-  { area: 'start', frame: FRAME_START },
-  { area: 'events', frame: FRAME_EVENTS },
-  { area: 'loops', frame: FRAME_LOOPS },
-] as const
+const AREA_FRAMES = PROJECT_AREA_DEFINITIONS.map(({ kind, frame }) => ({ area: kind, frame }))
 
 type AreaKey = (typeof AREA_FRAMES)[number]['area']
 
@@ -283,7 +268,7 @@ function areaOfDefinition(definition: BlockDefinition): AreaKey | null {
   if (contract.domain === 'html') return 'structure'
   if (contract.domain === 'css') return 'appearance'
   if (contract.domain === 'frame' || contract.domain === 'value') return null
-  return (contract.placement?.root[0] as AreaKey | undefined) ?? null
+  return contract.placement?.root[0] ?? null
 }
 
 /** Idem, para as categorias de EXTENSÃO, que chegam prontas (só com tipos). */
@@ -293,7 +278,7 @@ function areaOfType(type: string): AreaKey | null {
   if (contract.domain === 'html') return 'structure'
   if (contract.domain === 'css') return 'appearance'
   if (contract.domain === 'frame' || contract.domain === 'value') return null
-  return (contract.placement?.root[0] as AreaKey | undefined) ?? null
+  return contract.placement?.root[0] ?? null
 }
 
 /**

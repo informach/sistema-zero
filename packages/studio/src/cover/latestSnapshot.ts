@@ -14,13 +14,14 @@
 
 import { MAX_PROJECT_THUMB_CHARS } from '../state/persistence'
 
-interface Guardada {
+export interface ProjectSnapshot {
+  projectId: string
   dataUrl: string
   /** Quando chegou, para o leitor recusar foto velha. */
   at: number
 }
 
-const porProjeto = new Map<string, Guardada>()
+const porProjeto = new Map<string, ProjectSnapshot>()
 
 /** Foto além disto é considerada velha demais para virar capa. */
 export const SNAPSHOT_MAX_AGE_MS = 5 * 60_000
@@ -44,22 +45,31 @@ export function rememberProjectSnapshot(
 ): void {
   if (!projectId || !dataUrl) return
   if (!dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS) return
-  porProjeto.set(projectId, { dataUrl, at: now })
+  porProjeto.set(projectId, { projectId, dataUrl, at: now })
 }
 
 /**
- * A foto guardada, se ainda for recente. Devolve `null` quando não há nenhuma ou
- * quando a que existe já passou do prazo — nesses casos o chamador cai no
- * caminho antigo (abrir um iframe), que é lento porém sempre disponível.
+ * Lê a foto recente sem consumi-la. O objeto devolvido funciona como recibo: o
+ * gravador confirma o consumo somente depois que a persistência termina.
  */
-export function takeProjectSnapshot(projectId: string, now = Date.now()): string | null {
+export function peekProjectSnapshot(projectId: string, now = Date.now()): ProjectSnapshot | null {
   const guardada = porProjeto.get(projectId)
   if (!guardada) return null
   if (now - guardada.at > SNAPSHOT_MAX_AGE_MS) {
     porProjeto.delete(projectId)
     return null
   }
-  return guardada.dataUrl
+  return guardada
+}
+
+/**
+ * Confirma o consumo da foto gravada. Uma captura mais nova nunca é apagada por
+ * uma gravação antiga que terminou depois dela.
+ */
+export function consumeProjectSnapshot(snapshot: ProjectSnapshot): boolean {
+  if (porProjeto.get(snapshot.projectId) !== snapshot) return false
+  porProjeto.delete(snapshot.projectId)
+  return true
 }
 
 /** Esquece o que foi guardado (troca de projeto, exclusão, testes). */

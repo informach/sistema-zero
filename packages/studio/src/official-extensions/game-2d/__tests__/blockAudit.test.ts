@@ -1,7 +1,13 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { behaviorStatements, type JSStatement, JSStatementSchema } from '#ir'
+import {
+  type BehaviorIR,
+  behaviorStatements,
+  type JSStatement,
+  JSStatementSchema,
+  lifecycleAreaForStatement,
+} from '#ir'
 import 'blockly/blocks'
 import { attachBlockInContractContext } from '../../../blockly/__tests__/blockContractTestUtils'
 import { inferBlockContract, materializeBlockDefinition } from '../../../blockly/blockContracts'
@@ -134,7 +140,18 @@ function buildIrForWithFields(
 
 /** IR → blocos (workspaceState) → IR (buildIR), sem os __id. */
 function irThroughBlocks(js: JSStatement[]): JSStatement[] {
-  const ir = { html: [], css: [], js, extensions: [{ extensionId: 'game-2d' }] }
+  const sections: Required<BehaviorIR> = { molds: [], start: [], events: [], loops: [] }
+  for (const statement of js) sections[lifecycleAreaForStatement(statement)].push(statement)
+  const behavior: BehaviorIR = sections.molds.length
+    ? sections
+    : { start: sections.start, events: sections.events, loops: sections.loops }
+  const ir = {
+    version: 2 as const,
+    html: [],
+    css: [],
+    behavior,
+    extensions: [{ extensionId: 'game-2d' }],
+  }
   const state = buildWorkspaceStateFromIR(ir as Parameters<typeof buildWorkspaceStateFromIR>[0])
   const ws = new Blockly.Workspace()
   try {
@@ -207,7 +224,9 @@ describe('Auditoria Jogo 2D — inventário', () => {
 describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
   const cases: { type: string; kind: 'statement' | 'expr' }[] = [
     ...statementDefs
-      .filter((definition) => inferBlockContract(definition).migration === 'keep')
+      .filter(
+        (definition) => !definition.hidden && inferBlockContract(definition).migration === 'keep',
+      )
       .map((d) => ({ type: d.type, kind: 'statement' as const })),
     ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
@@ -270,6 +289,7 @@ interface DropdownArg {
 const dropdownCases: { type: string; kind: 'statement' | 'expr'; field: string; value: string }[] =
   []
 for (const def of gameTwoDBlocks) {
+  if (def.hidden) continue
   const kind: 'statement' | 'expr' = def.output ? 'expr' : 'statement'
   for (const arg of (def.args0 ?? []) as DropdownArg[]) {
     if (arg.type !== 'field_dropdown' || !arg.name || !Array.isArray(arg.options)) continue

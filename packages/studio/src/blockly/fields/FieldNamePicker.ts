@@ -1559,6 +1559,15 @@ function enclosingProjectArea(block: Blockly.Block): Blockly.Block | null {
   return null
 }
 
+/** Ordem em que as áreas globais de comportamento são instaladas/executadas. */
+const BEHAVIOR_AREA_ORDER: Readonly<Record<string, number>> = Object.freeze({
+  sz_frame_molds: 0,
+  sz_frame_start: 1,
+  // Eventos e laços são callbacks irmãos: um não declara nomes para o outro.
+  sz_frame_events: 2,
+  sz_frame_loops: 2,
+})
+
 /** Bloco diretamente pertencente ao escopo informado. */
 function blockAtScope(block: Blockly.Block, scope: string): Blockly.Block | null {
   let child: Blockly.Block | null = block
@@ -1584,8 +1593,8 @@ function appearsBeforeInStatementChain(declaration: Blockly.Block, use: Blockly.
 
 /**
  * `let`/`const` só entram no seletor depois do comando declarador. Para usos em
- * outra Área, Ao iniciar acontece antes de Eventos/Loops e é o único lugar que
- * pode introduzir globais guiadas.
+ * outra Área, Meus moldes acontece antes de Ao iniciar, que acontece antes de
+ * Eventos/Loops. Eventos e laços não introduzem globais um para o outro.
  */
 function declarationPrecedesUse(
   declaration: Blockly.Block,
@@ -1604,7 +1613,9 @@ function declarationPrecedesUse(
     return true
   }
   if (scope === 'global' && declarationArea !== useArea) {
-    return declarationArea?.type === 'sz_frame_start'
+    const declarationOrder = declarationArea ? BEHAVIOR_AREA_ORDER[declarationArea.type] : undefined
+    const useOrder = useArea ? BEHAVIOR_AREA_ORDER[useArea.type] : undefined
+    return declarationOrder !== undefined && useOrder !== undefined && declarationOrder < useOrder
   }
   return appearsBeforeInStatementChain(declarationAtScope, useAtScope)
 }

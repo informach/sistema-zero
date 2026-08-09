@@ -63,16 +63,6 @@ const ALL_MANAGED_RESOURCES_BEHAVIOR: BehaviorIR = {
       delay: { type: 'num', value: 0.01 },
       body: [{ type: 'consoleLog', value: { type: 'str', value: 'timeout segundos' } }],
     },
-    {
-      type: 'setInterval',
-      delay: { type: 'num', value: 10 },
-      body: [{ type: 'consoleLog', value: { type: 'str', value: 'intervalo inline' } }],
-    },
-    {
-      type: 'setIntervalSeconds',
-      delay: { type: 'num', value: 0.01 },
-      body: [{ type: 'consoleLog', value: { type: 'str', value: 'intervalo segundos' } }],
-    },
     { type: 'requestFrame', fn: 'proximoQuadro' },
     {
       type: 'requestFrameDo',
@@ -89,7 +79,19 @@ const ALL_MANAGED_RESOURCES_BEHAVIOR: BehaviorIR = {
       handlerName: 'registrarClique',
     },
   ],
-  loops: [{ type: 'animationLoop', body: [] }],
+  loops: [
+    {
+      type: 'setInterval',
+      delay: { type: 'num', value: 10 },
+      body: [{ type: 'consoleLog', value: { type: 'str', value: 'intervalo inline' } }],
+    },
+    {
+      type: 'setIntervalSeconds',
+      delay: { type: 'num', value: 0.01 },
+      body: [{ type: 'consoleLog', value: { type: 'str', value: 'intervalo segundos' } }],
+    },
+    { type: 'animationLoop', body: [] },
+  ],
 }
 
 const DEFERRED_CALLBACKS_BEHAVIOR: BehaviorIR = {

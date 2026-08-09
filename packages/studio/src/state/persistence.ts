@@ -387,22 +387,28 @@ export interface ProjectSummary {
 }
 
 /**
- * Grava a miniatura do projeto (best-effort, NUNCA lança). No mesmo mutex de
- * escrita do id; exige o meta existir — um delete concorrente (que apaga o meta
- * na mesma cadeia) não é ressuscitado por uma captura que terminou depois.
+ * Grava a miniatura do projeto (best-effort, NUNCA lança). Devolve `true` apenas
+ * quando a persistência foi confirmada. No mesmo mutex de escrita do id; exige
+ * o meta existir — um delete concorrente (que apaga o meta na mesma cadeia) não
+ * é ressuscitado por uma captura que terminou depois.
  */
-export async function writeProjectThumb(id: string, dataUrl: string): Promise<void> {
-  if (!id || !dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS) return
+export async function writeProjectThumb(id: string, dataUrl: string): Promise<boolean> {
+  if (!id || !dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS) {
+    return false
+  }
+  let stored = false
   try {
     await runSerializedWrite(id, async () => {
       const kvStore = getStore()
       const meta = await get<unknown>(projectMetaKey(id), kvStore)
       if (!meta) return
       await set(projectThumbKey(id), { id, dataUrl }, kvStore)
+      stored = true
     })
   } catch {
     // Quota cheia / IndexedDB indisponível: o card só fica sem capa.
   }
+  return stored
 }
 
 function thumbDataUrlOf(value: unknown): string | undefined {

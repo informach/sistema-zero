@@ -328,7 +328,10 @@ valida e só então importa o `server.js` standalone).
 ## Deploy (Railway)
 
 - Serviço próprio via **`packages/community/railway.json`** (builder DOCKERFILE, build context =
-  RAIZ do monorepo, `healthcheckPath: /api/healthz`, watchPatterns community+ui+lock).
+  RAIZ do monorepo, `healthcheckPath: /api/healthz`, watchPatterns community+**core**+
+  member-shell+**studio**+ui+lock). ⚠️ O community empacota o **studio** TRANSITIVAMENTE (pelo
+  member-shell, que renderiza o bloco de Estúdio da aula) e o **core** — sem elas nos patterns o
+  app servia um bundle velho desses pacotes. Cobrir TODA dependência `workspace:*`.
 - **Dockerfile** (espelha o admin): build em `node:22-bookworm-slim` com o binário do **bun**
   copiado de `oven/bun:1` só p/ `bun install` (workspace); `next build` roda **package-local com
   runtime Node** (`npm run build`). Runner copia `.next/standalone` (árvore espelha o monorepo —

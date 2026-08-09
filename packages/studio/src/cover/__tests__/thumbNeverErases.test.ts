@@ -11,13 +11,17 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test'
  */
 
 const gravacoes: { id: string; dataUrl: string }[] = []
+let falharGravacao = false
+let duranteGravacao: (() => void) | null = null
 
 mock.module('../../state/persistence', () => ({
   MAX_PROJECT_THUMB_CHARS: 400_000,
   PROJECT_THUMB_UPDATED_EVENT: 'sz:project-thumb',
   writeProjectThumb: (id: string, dataUrl: string) => {
+    duranteGravacao?.()
+    if (falharGravacao) return Promise.resolve(false)
     gravacoes.push({ id, dataUrl })
-    return Promise.resolve()
+    return Promise.resolve(true)
   },
 }))
 
@@ -26,7 +30,9 @@ mock.module('../coverCapture', () => ({
   captureCoverFromProject: () => Promise.resolve(capaDevolvida),
 }))
 
-const { forgetProjectSnapshot, rememberProjectSnapshot } = await import('../latestSnapshot')
+const { forgetProjectSnapshot, peekProjectSnapshot, rememberProjectSnapshot } = await import(
+  '../latestSnapshot'
+)
 const { captureAndStoreProjectThumb } = await import('../thumbCapture')
 
 const projeto = { id: 'p1', name: 'jogo' } as unknown as Parameters<
@@ -36,6 +42,8 @@ const projeto = { id: 'p1', name: 'jogo' } as unknown as Parameters<
 describe('gravação da miniatura', () => {
   beforeEach(() => {
     gravacoes.length = 0
+    falharGravacao = false
+    duranteGravacao = null
     forgetProjectSnapshot()
   })
 
@@ -71,5 +79,32 @@ describe('gravação da miniatura', () => {
     // Nada gravado, mas o importante é que a RESERVA foi exercida (o
     // `captureCoverFromProject` mockado foi consultado e devolveu null).
     expect(gravacoes).toHaveLength(0)
+  })
+
+  it('mantém a foto para nova tentativa quando a gravação falha', async () => {
+    capaDevolvida = null
+    rememberProjectSnapshot('p1', 'data:image/jpeg;base64,RETRY')
+    falharGravacao = true
+
+    await captureAndStoreProjectThumb(projeto)
+    expect(gravacoes).toHaveLength(0)
+
+    falharGravacao = false
+    await captureAndStoreProjectThumb(projeto)
+    expect(gravacoes).toEqual([{ id: 'p1', dataUrl: 'data:image/jpeg;base64,RETRY' }])
+    expect(peekProjectSnapshot('p1')).toBeNull()
+  })
+
+  it('não consome uma foto mais nova que chega durante a gravação', async () => {
+    capaDevolvida = null
+    rememberProjectSnapshot('p1', 'data:image/jpeg;base64,ANTIGA')
+    duranteGravacao = () => {
+      rememberProjectSnapshot('p1', 'data:image/jpeg;base64,NOVA')
+    }
+
+    await captureAndStoreProjectThumb(projeto)
+
+    expect(gravacoes).toEqual([{ id: 'p1', dataUrl: 'data:image/jpeg;base64,ANTIGA' }])
+    expect(peekProjectSnapshot('p1')?.dataUrl).toBe('data:image/jpeg;base64,NOVA')
   })
 })

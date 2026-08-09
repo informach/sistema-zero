@@ -1,6 +1,5 @@
-import { BEHAVIOR_AREA_LABELS } from '../core/behaviorAreas'
+import { BEHAVIOR_AREA_LABELS, type ProjectAreaKind } from '../core/behaviorAreas'
 import type {
-  BehaviorArea,
   BlockDefinition,
   BlockMigration,
   BlockPlacement,
@@ -11,11 +10,24 @@ import type {
   StatementContext,
   UserGestureActivation,
 } from './blocks/types'
+import {
+  FRAME_BEHAVIOR_LEGACY,
+  PROJECT_AREA_BY_FRAME,
+  PROJECT_AREA_FRAME_TYPES,
+} from './projectAreas'
 
+export type { ProjectAreaKind } from '../core/behaviorAreas'
 export type { BlockMigration } from './blocks/types'
+export {
+  FRAME_APPEARANCE,
+  FRAME_BEHAVIOR_LEGACY,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_MOLDS,
+  FRAME_START,
+  FRAME_STRUCTURE,
+} from './projectAreas'
 export { BEHAVIOR_AREA_LABELS }
-
-export type ProjectAreaKind = 'structure' | 'appearance' | BehaviorArea
 
 export interface BlockContract {
   type: string
@@ -73,7 +85,7 @@ export const START_ONLY_DECLARATION_PLACEMENT: BlockPlacement = Object.freeze({
 
 /**
  * Declara um MOLDE: uma receita que existe sem fazer nada por si só (classe,
- * figura, tipo de inimigo, folha de quadros, som carregado). Vive somente em
+ * figura, tipo de inimigo, aparência ou efeito). Vive somente em
  * 🧩 Meus moldes, que gera antes do ⚙️ Ao iniciar dentro do mesmo envelope de
  * partida — o corpo só roda quando alguém usa a receita.
  *
@@ -189,22 +201,9 @@ export const ACTION_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
   role: 'command',
 })
 
-export const FRAME_STRUCTURE = 'sz_frame_structure'
-export const FRAME_APPEARANCE = 'sz_frame_appearance'
-export const FRAME_BEHAVIOR_LEGACY = 'sz_frame_behavior'
-export const FRAME_MOLDS = 'sz_frame_molds'
-export const FRAME_START = 'sz_frame_start'
-export const FRAME_EVENTS = 'sz_frame_events'
-export const FRAME_LOOPS = 'sz_frame_loops'
-
 export const PROJECT_AREA_TYPES = new Set<string>([
-  FRAME_STRUCTURE,
-  FRAME_APPEARANCE,
+  ...PROJECT_AREA_FRAME_TYPES,
   FRAME_BEHAVIOR_LEGACY,
-  FRAME_MOLDS,
-  FRAME_START,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
 ])
 
 export function isProjectAreaType(type: string): boolean {
@@ -541,12 +540,9 @@ export function materializeBlockDefinition(definition: BlockDefinition): BlockDe
 }
 
 export function areasForBlockType(type: string): readonly ProjectAreaKind[] | undefined {
-  if (type === FRAME_STRUCTURE) return ['structure']
-  if (type === FRAME_APPEARANCE) return ['appearance']
-  if (type === FRAME_MOLDS) return ['molds']
-  if (type === FRAME_START || type === FRAME_BEHAVIOR_LEGACY) return ['start']
-  if (type === FRAME_EVENTS) return ['events']
-  if (type === FRAME_LOOPS) return ['loops']
+  const frameArea = PROJECT_AREA_BY_FRAME.get(type)
+  if (frameArea) return [frameArea]
+  if (type === FRAME_BEHAVIOR_LEGACY) return ['start']
   const contract = contracts.get(type)
   if (!contract) return undefined
   if (contract.domain === 'html') return ['structure']

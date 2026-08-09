@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { normalizeSZIR, splitLegacyBehavior } from '../behavior'
+import { hasBehaviorStatements, normalizeSZIR, splitLegacyBehavior } from '../behavior'
 import type { JSStatement, SZIR } from '../schema'
 import { SZIRV2Schema } from '../schema'
 
@@ -9,6 +9,18 @@ const log = (text: string): JSStatement => ({
 })
 
 describe('IR de comportamento v2', () => {
+  it('considera conteúdo que existe somente em Meus moldes', () => {
+    expect(
+      hasBehaviorStatements({
+        molds: [{ type: 'var', name: 'dificuldade', value: { type: 'num', value: 3 } }],
+        start: [],
+        events: [],
+        loops: [],
+      }),
+    ).toBe(true)
+    expect(hasBehaviorStatements({ start: [], events: [], loops: [] })).toBe(false)
+  })
+
   it('separa início, eventos e loops e remove boot manual', () => {
     const behavior = splitLegacyBehavior([
       log('preparar'),

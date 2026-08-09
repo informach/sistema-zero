@@ -5,7 +5,9 @@
     "dockerfilePath": "packages/community/Dockerfile",
     "watchPatterns": [
       "/packages/community/**",
+      "/packages/core/**",
       "/packages/member-shell/**",
+      "/packages/studio/**",
       "/packages/ui/**",
       "/bun.lock",
       "/package.json",

@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import type { BehaviorArea } from '../core/behaviorAreas'
 import {
   areaForBlockType,
   areasForBlockType,
@@ -22,6 +23,7 @@ import { migrateAsyncBlocks } from './migrateAsyncBlocks'
 import { migrateHTMLStructure } from './migrateHTMLStructure'
 import { migrateIfElseBlocks } from './migrateIfElse'
 import { migrateLegacyValueFields, restoreShadowLiterals } from './migrateValueFields'
+import { BEHAVIOR_AREA_BY_FRAME, PROJECT_AREA_FRAMES } from './projectAreas'
 import { ensureBlocklyInitialized } from './setup'
 import { buildWorkspaceStateFromIR } from './workspaceState'
 
@@ -49,6 +51,10 @@ const START_WRAPPER_BLOCK_TYPES = new Set([
 ])
 const ENGINE_BOOT_BLOCK_TYPES = new Set(['sz_gk_start', 'sz_g3k_start', 'sz_w3d_start'])
 const USER_GESTURE_COMMAND_TYPES = new Set(['sz_js_request_fullscreen', 'sz_js_toggle_fullscreen'])
+const LEGACY_START_ENEMY_CONFIGURATION_TYPES: Readonly<Record<string, string>> = Object.freeze({
+  sz_g2d_enemy_type_param: 'sz_g2d_enemy_type_param_legacy_start',
+  sz_g2d_enemy_add_behavior: 'sz_g2d_enemy_add_behavior_legacy_start',
+})
 interface SerializedBlock {
   type: string
   id?: string
@@ -304,15 +310,6 @@ function frame(type: string, children: SerializedBlock[], x: number, y: number):
   }
 }
 
-const FRAME_FOR_AREA = {
-  structure: FRAME_STRUCTURE,
-  appearance: FRAME_APPEARANCE,
-  molds: FRAME_MOLDS,
-  start: FRAME_START,
-  events: FRAME_EVENTS,
-  loops: FRAME_LOOPS,
-} as const
-
 /**
  * Onde um frame CRIADO pela migração nasce no canvas. ⚠️ 🧩 Meus moldes ganha
  * uma linha própria em vez da coluna 0 da linha de baixo (que é do Ao iniciar):
@@ -320,7 +317,7 @@ const FRAME_FOR_AREA = {
  * criança montou. "Organizar blocos" recoloca tudo na ordem canônica quando ela
  * quiser.
  */
-function framePosition(area: keyof typeof FRAME_FOR_AREA): { column: number; row: number } {
+function framePosition(area: keyof typeof PROJECT_AREA_FRAMES): { column: number; row: number } {
   if (area === 'structure') return { column: 0, row: 0 }
   if (area === 'appearance') return { column: 1, row: 0 }
   if (area === 'molds') return { column: 0, row: 2 }
@@ -331,11 +328,11 @@ function framePosition(area: keyof typeof FRAME_FOR_AREA): { column: number; row
 
 function appendChildrenToArea(
   tops: SerializedBlock[],
-  area: keyof typeof FRAME_FOR_AREA,
+  area: keyof typeof PROJECT_AREA_FRAMES,
   children: SerializedBlock[],
 ): void {
   if (children.length === 0) return
-  const frameType = FRAME_FOR_AREA[area]
+  const frameType = PROJECT_AREA_FRAMES[area]
   const existing = tops.find((block) => block.type === frameType)
   if (!existing) {
     const { column, row } = framePosition(area)
@@ -347,15 +344,6 @@ function appendChildrenToArea(
   existing.inputs = head
     ? { ...(existing.inputs ?? {}), CHILDREN: { block: head } }
     : existing.inputs
-}
-
-type BehaviorArea = 'molds' | 'start' | 'events' | 'loops'
-
-const BEHAVIOR_AREA_FOR_FRAME: Readonly<Record<string, BehaviorArea>> = {
-  [FRAME_MOLDS]: 'molds',
-  [FRAME_START]: 'start',
-  [FRAME_EVENTS]: 'events',
-  [FRAME_LOOPS]: 'loops',
 }
 
 function emptyBehaviorCollection(): Record<BehaviorArea, SerializedBlock[]> {
@@ -399,7 +387,7 @@ function extractStrictLifecycleRoots(
 function migrateCurrentLifecyclePlacements(state: unknown, force = false): unknown {
   if (!force && hasCurrentLifecycleVersion(state)) return state
   const original = serializedTopBlocks(state)
-  if (!original?.some((block) => BEHAVIOR_AREA_FOR_FRAME[block.type])) return state
+  if (!original?.some((block) => BEHAVIOR_AREA_BY_FRAME.has(block.type))) return state
   const previousVersion =
     typeof state === 'object' && state !== null && !Array.isArray(state)
       ? (state as Record<string, unknown>)[BEHAVIOR_AREAS_STATE_KEY]
@@ -413,10 +401,19 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
   let changed = false
 
   for (const top of tops) {
-    const currentArea = BEHAVIOR_AREA_FOR_FRAME[top.type]
+    const currentArea = BEHAVIOR_AREA_BY_FRAME.get(top.type)
     if (!currentArea) continue
     const kept: SerializedBlock[] = []
-    for (const child of unlinkChain(top.inputs?.CHILDREN?.block)) {
+    for (const originalChild of unlinkChain(top.inputs?.CHILDREN?.block)) {
+      let child = originalChild
+      const legacyEnemyConfigurationType =
+        currentArea === 'start' && previousVersion !== BEHAVIOR_AREAS_STATE_VERSION
+          ? LEGACY_START_ENEMY_CONFIGURATION_TYPES[child.type]
+          : undefined
+      if (legacyEnemyConfigurationType) {
+        child = { ...child, type: legacyEnemyConfigurationType }
+        changed = true
+      }
       if (extractStrictLifecycleRoots(child, collected)) changed = true
       const target = areaForBlockType(child.type)
       const allowedAreas = areasForBlockType(child.type)
@@ -548,11 +545,11 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
   const replacements: SerializedBlock[] = []
   const mergeOrReplace = (area: BehaviorArea, children: SerializedBlock[], x: number): void => {
     if (children.length === 0) return
-    if (tops.some((block) => block.type === FRAME_FOR_AREA[area])) {
+    if (tops.some((block) => block.type === PROJECT_AREA_FRAMES[area])) {
       appendChildrenToArea(tops, area, children)
       return
     }
-    replacements.push(frame(FRAME_FOR_AREA[area], children, x, baseY))
+    replacements.push(frame(PROJECT_AREA_FRAMES[area], children, x, baseY))
   }
   mergeOrReplace('molds', sections.molds, baseX)
   mergeOrReplace('start', sections.start, baseX + 420)

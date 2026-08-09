@@ -1,3 +1,7 @@
+import type { BehaviorArea } from '../../core/behaviorAreas'
+
+export type { BehaviorArea } from '../../core/behaviorAreas'
+
 /**
  * Definição enxuta de bloco Blockly compatível com Blockly.Blocks.defineBlocksWithJsonArray.
  *
@@ -5,13 +9,6 @@
  * `blockly/blockLevels.ts` (`resolveBlockLevel`). O campo vestigial foi removido
  * na reforma 2D/3D (07/2026) — nada o lia e ele enganava como fonte dupla.
  */
-/**
- * As áreas de comportamento, na ORDEM em que executam. `molds` guarda o que
- * apenas DEFINE (classes, moldes, tipos de inimigo, figuras) e roda antes do
- * `start`, mas dentro do mesmo envelope de partida — ver `generators/js.ts`.
- */
-export type BehaviorArea = 'molds' | 'start' | 'events' | 'loops'
-
 export type StatementContext =
   | 'statement'
   | 'event-body'

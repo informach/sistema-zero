@@ -6,8 +6,8 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 233 definições de bloco
-(231 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 235 definições de bloco
+(231 visíveis e 4 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
@@ -159,8 +159,8 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 
 ## Escopo revisado
 
-- 127 arquivos próprios da extensão;
-- 233 definições de blocos e 24 subcategorias;
+- 129 arquivos próprios da extensão;
+- 235 definições de blocos e 24 subcategorias;
 - 232 métodos e valores públicos em `window.SZGame2D`;
 - 22 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;

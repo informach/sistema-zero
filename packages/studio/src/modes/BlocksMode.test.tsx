@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun
 import { cleanup, render, waitFor } from '@testing-library/react'
 import { type ReactNode, StrictMode } from 'react'
 import { createEmptyProject } from '#core'
-import type { SZIR } from '#ir'
+import type { SZIR, SZIRV2 } from '#ir'
 import { useProjectStore } from '../state/projectStore'
 import { BlocksMode } from './BlocksMode'
 
@@ -135,6 +135,45 @@ describe('BlocksMode', () => {
         (state.project?.blocksState as { blocks?: { blocks?: unknown[] } } | null)?.blocks
           ?.blocks ?? []
       expect(tops.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('reconstrói os blocos quando a IR tem conteúdo somente em Meus moldes', async () => {
+    const ir: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        molds: [{ type: 'var', name: 'dificuldade', value: { type: 'num', value: 3 } }],
+        start: [],
+        events: [],
+        loops: [],
+      },
+      extensions: [],
+    }
+    useProjectStore.setState({
+      project: {
+        ...createEmptyProject('project-moldes', 'Somente moldes'),
+        ir,
+        blocksState: { blocks: { languageVersion: 0, blocks: [] } },
+      },
+      isDirty: false,
+      saveError: null,
+    })
+
+    render(<BlocksMode />)
+
+    await waitFor(() => {
+      expect(useProjectStore.getState().project?.blocksState).toMatchObject({
+        blocks: {
+          blocks: [
+            {
+              type: 'sz_frame_molds',
+              inputs: { CHILDREN: { block: { type: 'sz_js_var_create' } } },
+            },
+          ],
+        },
+      })
     })
   })
 

@@ -50,7 +50,8 @@ describe('Ponte — colar defineShape num projeto com conteúdo', () => {
   }
 
   function statementTypes(parsed: ReturnType<typeof parseProjectFiles>): string[] {
-    return parsed.behavior.start
+    return (parsed.behavior.molds ?? [])
+      .concat(parsed.behavior.start)
       .concat(parsed.behavior.events, parsed.behavior.loops)
       .map((stmt) => stmt.type)
   }
@@ -63,10 +64,10 @@ describe('Ponte — colar defineShape num projeto com conteúdo', () => {
       'script.js': `${files['script.js']}\n${SNIPPET}\n`,
     })
     expect(statementTypes(parsed)).toEqual([
+      'g2d:defineShape',
       'g2d:setupStage',
       'g2d:createSprite',
       'consoleLog',
-      'g2d:defineShape',
     ])
   })
 

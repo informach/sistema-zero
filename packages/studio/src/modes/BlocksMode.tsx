@@ -4,7 +4,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { t } from '#core'
-import { normalizeSZIR } from '#ir'
+import { hasBehaviorStatements, normalizeSZIR } from '#ir'
 import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
@@ -110,14 +110,7 @@ export function BlocksMode(): JSX.Element {
     if (filesAheadOfBlocks) return
     if (!isBlocksStateEmpty(blocksState)) return
     const behavior = normalizeSZIR(ir).behavior
-    if (
-      ir.html.length === 0 &&
-      ir.css.length === 0 &&
-      behavior.start.length === 0 &&
-      behavior.events.length === 0 &&
-      behavior.loops.length === 0
-    )
-      return
+    if (ir.html.length === 0 && ir.css.length === 0 && !hasBehaviorStatements(behavior)) return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, filesAheadOfBlocks, applyProjectState])
 
@@ -160,9 +153,7 @@ export function BlocksMode(): JSX.Element {
         if (
           derived.html.length === 0 &&
           derived.css.length === 0 &&
-          behavior.start.length === 0 &&
-          behavior.events.length === 0 &&
-          behavior.loops.length === 0
+          !hasBehaviorStatements(behavior)
         )
           return
         state.hydrateProjectState({

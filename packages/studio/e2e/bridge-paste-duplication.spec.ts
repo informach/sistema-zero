@@ -68,9 +68,15 @@ function labelCount(page: Page, label: string) {
   return page.locator('.blocklySvg .blocklyBlockCanvas text', { hasText: label }).count()
 }
 
-test.use({ permissions: ['clipboard-read', 'clipboard-write'] })
-
 test.describe('Ponte — colar por cima do defineShape vazio (workspace vivo)', () => {
+  test.beforeEach(async ({ browserName, context }) => {
+    // O Playwright/Firefox recusa esses nomes de permissão ao criar o contexto;
+    // nele, o clipboard do localhost funciona sem a concessão explícita.
+    if (browserName === 'chromium') {
+      await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    }
+  })
+
   test('nada duplica após dois pastes e a poeira baixar', async ({ page }) => {
     test.setTimeout(180_000)
     const consoleErrors: string[] = []

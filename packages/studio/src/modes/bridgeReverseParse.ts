@@ -70,7 +70,11 @@ export function runBridgeReverseParse(input: BridgeReverseParseInput): BridgeRev
     cssSource: input.cssSource,
     jsSource: input.jsSource,
   })
-  if (result.diagnostics.some((diagnostic) => diagnostic.kind === 'syntaxError')) {
+  if (
+    result.diagnostics.some(
+      (diagnostic) => diagnostic.kind === 'syntaxError' || diagnostic.kind === 'semanticError',
+    )
+  ) {
     return {
       kind: 'parsed',
       diagnostics: result.diagnostics,

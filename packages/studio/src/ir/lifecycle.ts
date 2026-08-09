@@ -1,4 +1,4 @@
-import { BEHAVIOR_AREA_LABELS } from '../core/behaviorAreas'
+import { BEHAVIOR_AREA_LABELS, type BehaviorArea } from '../core/behaviorAreas'
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
 import { CANVAS3D_CONTINUOUS_STATEMENT_TYPES } from '../three/canvas3dContract'
 import {
@@ -15,7 +15,7 @@ import {
 } from './programmingExecution'
 import type { JSStatement } from './schema'
 
-export type LifecycleArea = 'molds' | 'start' | 'events' | 'loops'
+export type LifecycleArea = BehaviorArea
 
 export const LEGACY_START_WRAPPER_TYPES = new Set(['g2d:onStart', 'gk:onGameStart'])
 export const LEGACY_ENGINE_BOOT_TYPES = new Set(['gk:start', 'g3k:start', 'w3d:start'])
@@ -292,7 +292,7 @@ export const MOLD_ONLY_STATEMENT_TYPES = new Set([
  * ⚠️ Conjunto IRMÃO de `MOLD_ONLY_STATEMENT_TYPES`, e não uma frouxidão dele: o
  * invariante "molde só acontece na preparação, nunca aninhado" continua valendo
  * inteiro para quem está lá. Aqui moram os blocos que DESCREVEM o inimigo (ele
- * "também é" atirador, a cadência dele, a animação de cada estado) e que também
+ * "também é" atirador e a cadência dele) e que também
  * são usados no meio da partida para escalar dificuldade: o chefão que fica
  * furioso na metade da vida põe o "também é" dentro do "Quando ... levar dano",
  * e a onda seguinte fica mais dura com um "Ajustar ... vida" num temporizador.
@@ -304,7 +304,6 @@ export const MOLD_ONLY_STATEMENT_TYPES = new Set([
 export const MOLD_NESTABLE_STATEMENT_TYPES = new Set([
   'g2d:enemyAddBehavior',
   'g2d:setEnemyTypeParam',
-  'g2d:enemyStateAnim',
 ])
 
 export const MOLD_OR_START_STATEMENT_TYPES = new Set(['funcDecl', 'var', 'declareVar'])

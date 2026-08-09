@@ -29,23 +29,26 @@ function fakeWorkspace(blocks: ReturnType<typeof fakeBlock>[]) {
 }
 
 describe('organizeBlocks — áreas em duas linhas', () => {
-  it('organiza HTML/CSS na primeira linha e início/eventos/loops na segunda', () => {
+  it('organiza HTML/CSS na primeira linha e moldes/início/eventos/loops na segunda', () => {
     // Começam EMPILHADOS na mesma coluna (o sintoma reportado).
     const structure = fakeBlock('sz_frame_structure', 0, 0, 300, 120)
     const appearance = fakeBlock('sz_frame_appearance', 0, 140, 300, 120)
-    const start = fakeBlock('sz_frame_start', 0, 280, 300, 120)
-    const events = fakeBlock('sz_frame_events', 0, 420, 300, 120)
-    const loops = fakeBlock('sz_frame_loops', 0, 560, 300, 120)
-    organizeBlocks(fakeWorkspace([structure, appearance, start, events, loops]) as any)
+    const molds = fakeBlock('sz_frame_molds', 0, 280, 300, 120)
+    const start = fakeBlock('sz_frame_start', 0, 420, 300, 120)
+    const events = fakeBlock('sz_frame_events', 0, 560, 300, 120)
+    const loops = fakeBlock('sz_frame_loops', 0, 700, 300, 120)
+    organizeBlocks(fakeWorkspace([structure, appearance, molds, start, events, loops]) as any)
 
     expect(structure.pos.x).toBeLessThan(appearance.pos.x)
     expect(structure.pos.y).toBe(appearance.pos.y)
     expect(appearance.pos.x).toBeGreaterThanOrEqual(structure.pos.x + 300)
+    expect(molds.pos.x).toBeLessThan(start.pos.x)
     expect(start.pos.x).toBeLessThan(events.pos.x)
     expect(events.pos.x).toBeLessThan(loops.pos.x)
+    expect(molds.pos.y).toBe(start.pos.y)
     expect(start.pos.y).toBe(events.pos.y)
     expect(events.pos.y).toBe(loops.pos.y)
-    expect(start.pos.y).toBeGreaterThan(structure.pos.y)
+    expect(molds.pos.y).toBeGreaterThan(structure.pos.y)
   })
 
   it('o container fica no topo da coluna; rascunho solto da mesma categoria desce', () => {

@@ -117,13 +117,14 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
     await expect.poll(countStarts).toBe(1)
   })
 
-  test('organiza as cinco áreas nas duas linhas pedagógicas', async ({ page }) => {
+  test('organiza as seis áreas nas duas linhas pedagógicas', async ({ page }) => {
     await createProject(page)
     for (const [type, x, y] of [
       ['sz_frame_loops', 640, 80],
       ['sz_frame_structure', 620, 440],
       ['sz_frame_events', 80, 420],
       ['sz_frame_appearance', 100, 80],
+      ['sz_frame_molds', 500, 520],
       ['sz_frame_start', 360, 260],
     ] as const) {
       await pasteBlocks(page, { type, x, y })
@@ -139,23 +140,26 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
         .boundingBox()
     await expect
       .poll(async () => {
-        const [structure, appearance, start, events, loops] = await Promise.all([
+        const [structure, appearance, molds, start, events, loops] = await Promise.all([
           blockBox('sz_frame_structure'),
           blockBox('sz_frame_appearance'),
+          blockBox('sz_frame_molds'),
           blockBox('sz_frame_start'),
           blockBox('sz_frame_events'),
           blockBox('sz_frame_loops'),
         ])
-        if (!structure || !appearance || !start || !events || !loops) return null
+        if (!structure || !appearance || !molds || !start || !events || !loops) return null
         const sameFirstRow = Math.abs(structure.y - appearance.y) < 12
         const sameSecondRow =
-          Math.max(start.y, events.y, loops.y) - Math.min(start.y, events.y, loops.y) < 12
+          Math.max(molds.y, start.y, events.y, loops.y) -
+            Math.min(molds.y, start.y, events.y, loops.y) <
+          12
         return {
           firstRowOrder: structure.x < appearance.x,
-          secondRowOrder: start.x < events.x && events.x < loops.x,
+          secondRowOrder: molds.x < start.x && start.x < events.x && events.x < loops.x,
           sameFirstRow,
           sameSecondRow,
-          secondRowBelow: start.y > Math.max(structure.y, appearance.y) + 24,
+          secondRowBelow: molds.y > Math.max(structure.y, appearance.y) + 24,
         }
       })
       .toEqual({
@@ -202,7 +206,8 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
 
     const flyout = page.locator('.blocklyToolboxFlyout')
     await expect(flyout).toBeVisible()
-    await expect(flyout.locator('.blocklyDraggable')).toHaveCount(5)
+    await expect(flyout.locator('.blocklyDraggable')).toHaveCount(6)
+    await expect(flyout).toContainText('Meus moldes')
     await expect(flyout).toContainText('Ao iniciar')
     await expect(flyout).toContainText('Quando acontecer')
     await expect(flyout).toContainText('Enquanto estiver rodando')
@@ -282,7 +287,7 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
       .first()
     await expect(area).toBeVisible()
     await area.click({ button: 'right', position: { x: 24, y: 12 } })
-    await page.getByText(/^(Excluir|Deletar)/).click()
+    await page.getByText('Apagar este bloco e o de dentro', { exact: true }).click()
 
     const draft = page
       .locator('.blocklyWorkspace .blocklyBlockCanvas .sz_js_console_log_text.blocklyDraggable')

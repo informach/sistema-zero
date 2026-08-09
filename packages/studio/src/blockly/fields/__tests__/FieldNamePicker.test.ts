@@ -621,6 +621,50 @@ describe('FieldNamePicker', () => {
       expect(collectGroupsAndLists(ws)).toEqual(['asteroides'])
     })
 
+    it('oferece no início, eventos e laços o grupo de todos os inimigos', () => {
+      const ws = new Blockly.Workspace()
+      const molds = ws.newBlock('sz_frame_molds')
+      const allEnemies = ws.newBlock('sz_g2d_all_enemies_group')
+      allEnemies.setFieldValue('todosOsInimigos', 'NAME')
+      molds
+        .getInput('CHILDREN')
+        ?.connection?.connect(allEnemies.previousConnection as Blockly.Connection)
+
+      const start = ws.newBlock('sz_frame_start')
+      const startGroup = ws.newBlock('sz_g2d_create_group')
+      startGroup.setFieldValue('grupoDoInicio', 'NAME')
+      const startConsumer = ws.newBlock('sz_g2d_spawn_in_group')
+      start
+        .getInput('CHILDREN')
+        ?.connection?.connect(startGroup.previousConnection as Blockly.Connection)
+      startGroup.nextConnection?.connect(startConsumer.previousConnection as Blockly.Connection)
+
+      const events = ws.newBlock('sz_frame_events')
+      const onKey = ws.newBlock('sz_g2d_on_key')
+      const eventConsumer = ws.newBlock('sz_g2d_clear_group')
+      events
+        .getInput('CHILDREN')
+        ?.connection?.connect(onKey.previousConnection as Blockly.Connection)
+      onKey
+        .getInput('BODY')
+        ?.connection?.connect(eventConsumer.previousConnection as Blockly.Connection)
+
+      const loops = ws.newBlock('sz_frame_loops')
+      const update = ws.newBlock('sz_g2d_update_each_frame')
+      const loopConsumer = ws.newBlock('sz_g2d_draw_group')
+      loops
+        .getInput('CHILDREN')
+        ?.connection?.connect(update.previousConnection as Blockly.Connection)
+      update
+        .getInput('BODY')
+        ?.connection?.connect(loopConsumer.previousConnection as Blockly.Connection)
+
+      for (const consumer of [startConsumer, eventConsumer, loopConsumer]) {
+        expect(collectGroupsAndLists(consumer)).toContain('todosOsInimigos')
+      }
+      expect(collectGroupsAndLists(allEnemies)).not.toContain('grupoDoInicio')
+    })
+
     it('reconhece uma variável que guarda uma lista (sz_val_array no valor)', () => {
       const ws = new Blockly.Workspace()
       const varBlock = ws.newBlock('sz_js_var_create')
