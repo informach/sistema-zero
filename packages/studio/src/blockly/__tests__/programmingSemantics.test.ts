@@ -41,8 +41,10 @@ function classWithMember(
 ): { classBlock: Blockly.Block; member: Blockly.Block } {
   const classBlock = ws.newBlock('sz_js_class')
   if (options.extends) classBlock.loadExtraState?.({ extends: options.extends })
-  const member = ws.newBlock(memberType)
-  if (options.async) member.setFieldValue('TRUE', 'ASYNC')
+  // A espera é do TIPO do bloco: o método assíncrono é um bloco próprio.
+  const member = ws.newBlock(
+    options.async && memberType === 'sz_js_class_method' ? 'sz_js_class_method_async' : memberType,
+  )
   if (!connectStatement(classBlock, 'MEMBERS', member)) {
     throw new Error('Não foi possível montar a classe do teste')
   }
@@ -365,7 +367,7 @@ describe('contextos semânticos de Programação', () => {
     const regular = classWithMember(invalid, 'sz_js_class_method')
     expect(connectStatement(regular.member, 'BODY', invalid.newBlock('sz_js_await'))).toBe(true)
     expect(
-      connectStatement(invalid.newBlock('sz_frame_start'), 'CHILDREN', regular.classBlock),
+      connectStatement(invalid.newBlock('sz_frame_molds'), 'CHILDREN', regular.classBlock),
     ).toBe(false)
     invalid.dispose()
 
@@ -373,13 +375,12 @@ describe('contextos semânticos de Programação', () => {
     const asynchronous = classWithMember(valid, 'sz_js_class_method', { async: true })
     expect(connectStatement(asynchronous.member, 'BODY', valid.newBlock('sz_js_await'))).toBe(true)
     expect(
-      connectStatement(valid.newBlock('sz_frame_start'), 'CHILDREN', asynchronous.classBlock),
+      connectStatement(valid.newBlock('sz_frame_molds'), 'CHILDREN', asynchronous.classBlock),
     ).toBe(true)
     valid.dispose()
 
     const named = workspace()
-    const asyncFunction = named.newBlock('sz_js_function')
-    asyncFunction.setFieldValue('TRUE', 'ASYNC')
+    const asyncFunction = named.newBlock('sz_js_function_async')
     expect(connectStatement(asyncFunction, 'BODY', named.newBlock('sz_js_await'))).toBe(true)
     expect(connectStatement(named.newBlock('sz_frame_start'), 'CHILDREN', asyncFunction)).toBe(true)
     named.dispose()
@@ -388,7 +389,6 @@ describe('contextos semânticos de Programação', () => {
   it('não herda async através do executor síncrono de uma Promise', () => {
     const invalid = workspace()
     const fn = invalid.newBlock('sz_js_function')
-    fn.setFieldValue('TRUE', 'ASYNC')
     const log = invalid.newBlock('sz_js_console_log_value')
     const promise = invalid.newBlock('sz_val_new_promise')
     const condition = invalid.newBlock('sz_js_if_else')
@@ -406,7 +406,7 @@ describe('contextos semânticos de Programação', () => {
     const invalid = workspace()
     const plain = classWithMember(invalid, 'sz_js_constructor')
     expect(connectStatement(plain.member, 'BODY', invalid.newBlock('sz_js_super_ctor'))).toBe(true)
-    expect(connectStatement(invalid.newBlock('sz_frame_start'), 'CHILDREN', plain.classBlock)).toBe(
+    expect(connectStatement(invalid.newBlock('sz_frame_molds'), 'CHILDREN', plain.classBlock)).toBe(
       false,
     )
     invalid.dispose()
@@ -414,7 +414,7 @@ describe('contextos semânticos de Programação', () => {
     const valid = workspace()
     const derived = classWithMember(valid, 'sz_js_constructor', { extends: 'Base' })
     expect(connectStatement(derived.member, 'BODY', valid.newBlock('sz_js_super_ctor'))).toBe(true)
-    expect(connectStatement(valid.newBlock('sz_frame_start'), 'CHILDREN', derived.classBlock)).toBe(
+    expect(connectStatement(valid.newBlock('sz_frame_molds'), 'CHILDREN', derived.classBlock)).toBe(
       true,
     )
     valid.dispose()
@@ -505,7 +505,7 @@ describe('contextos semânticos de Programação', () => {
 
   it('não descarta construtores duplicados de um estado legado ao montar a IR', () => {
     const ws = new Blockly.Workspace()
-    const frame = ws.newBlock('sz_frame_start')
+    const frame = ws.newBlock('sz_frame_molds')
     const classBlock = ws.newBlock('sz_js_class')
     const first = ws.newBlock('sz_js_constructor')
     const second = ws.newBlock('sz_js_constructor')
@@ -521,7 +521,7 @@ describe('contextos semânticos de Programação', () => {
     const missing = workspace()
     const withoutSuper = classWithMember(missing, 'sz_js_constructor', { extends: 'Base' })
     expect(
-      connectStatement(missing.newBlock('sz_frame_start'), 'CHILDREN', withoutSuper.classBlock),
+      connectStatement(missing.newBlock('sz_frame_molds'), 'CHILDREN', withoutSuper.classBlock),
     ).toBe(false)
     missing.dispose()
 
@@ -532,7 +532,7 @@ describe('contextos semânticos de Programação', () => {
     expect(connectStatement(lateSuper.member, 'BODY', before)).toBe(true)
     expect(connectNext(before, superCall)).toBe(true)
     expect(
-      connectStatement(late.newBlock('sz_frame_start'), 'CHILDREN', lateSuper.classBlock),
+      connectStatement(late.newBlock('sz_frame_molds'), 'CHILDREN', lateSuper.classBlock),
     ).toBe(false)
     late.dispose()
 
@@ -543,7 +543,7 @@ describe('contextos semânticos de Programação', () => {
     expect(connectStatement(twoSupers.member, 'BODY', firstSuper)).toBe(true)
     expect(connectNext(firstSuper, secondSuper)).toBe(true)
     expect(
-      connectStatement(duplicate.newBlock('sz_frame_start'), 'CHILDREN', twoSupers.classBlock),
+      connectStatement(duplicate.newBlock('sz_frame_molds'), 'CHILDREN', twoSupers.classBlock),
     ).toBe(false)
     duplicate.dispose()
   })
@@ -557,7 +557,7 @@ describe('contextos semânticos de Programação', () => {
     const derived = classWithMember(source, 'sz_js_constructor', { extends: 'Base' })
     expect(connectStatement(derived.member, 'BODY', source.newBlock('sz_js_super_ctor'))).toBe(true)
     expect(
-      connectStatement(source.newBlock('sz_frame_start'), 'CHILDREN', derived.classBlock),
+      connectStatement(source.newBlock('sz_frame_molds'), 'CHILDREN', derived.classBlock),
     ).toBe(true)
     const state = Blockly.serialization.workspaces.save(source)
     source.dispose()
@@ -574,7 +574,7 @@ describe('contextos semânticos de Programação', () => {
 
   it('preserva as regras de super ao editar uma classe derivada já ancorada', () => {
     const addingConstructor = workspace()
-    const startWithDefault = addingConstructor.newBlock('sz_frame_start')
+    const startWithDefault = addingConstructor.newBlock('sz_frame_molds')
     const derivedWithDefault = addingConstructor.newBlock('sz_js_class')
     derivedWithDefault.loadExtraState?.({ extends: 'Base' })
     expect(connectStatement(startWithDefault, 'CHILDREN', derivedWithDefault)).toBe(true)
@@ -588,7 +588,7 @@ describe('contextos semânticos de Programação', () => {
     addingConstructor.dispose()
 
     const addingSuper = workspace()
-    const start = addingSuper.newBlock('sz_frame_start')
+    const start = addingSuper.newBlock('sz_frame_molds')
     const derived = classWithMember(addingSuper, 'sz_js_constructor', { extends: 'Base' })
     const firstSuper = addingSuper.newBlock('sz_js_super_ctor')
     expect(connectStatement(derived.member, 'BODY', firstSuper)).toBe(true)

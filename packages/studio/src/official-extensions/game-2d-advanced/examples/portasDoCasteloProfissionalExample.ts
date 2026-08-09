@@ -26,35 +26,7 @@ export const portasDoCasteloProfissionalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#2b2136',
-          accent: '#ffd166',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Portas do Castelo Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Use as setas para andar e pular. Chegue na porta de cada sala para passar de fase. São 3 salas até a saída!',
-          },
-          button: { type: 'str', value: 'Entrar' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Você escapou do castelo!' },
-          text: {
-            type: 'str',
-            value: 'Passou pelas 3 salas e achou a porta de saída. O rei está livre!',
-          },
-          button: { type: 'str', value: 'Jogar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'rei',
@@ -266,13 +238,6 @@ export const portasDoCasteloProfissionalExample: ExtensionExample = {
           baseH: { type: 'num', value: 72 },
         },
         {
-          type: 'gk:setJumpFeel',
-          coyote: { type: 'num', value: 0.1 },
-          buffer: { type: 'num', value: 0.1 },
-          hold: { type: 'num', value: 0.3 },
-          gravity: { type: 'num', value: 2200 },
-        },
-        {
           type: 'gk:defineMold',
           name: 'chao',
           w: { type: 'num', value: 120 },
@@ -293,6 +258,67 @@ export const portasDoCasteloProfissionalExample: ExtensionExample = {
           life: { type: 'num', value: 0.4 },
           speed: { type: 'num', value: 100 },
           gravity: { type: 'num', value: 300 },
+        },
+        {
+          type: 'gk:defineRegion',
+          name: 'porta1',
+          x: { type: 'num', value: 860 },
+          y: { type: 'num', value: 428 },
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 72 },
+        },
+        {
+          type: 'gk:defineRegion',
+          name: 'porta2',
+          x: { type: 'num', value: 1820 },
+          y: { type: 'num', value: 428 },
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 72 },
+        },
+        {
+          type: 'gk:defineRegion',
+          name: 'saida',
+          x: { type: 'num', value: 2820 },
+          y: { type: 'num', value: 428 },
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 72 },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#2b2136',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Portas do Castelo Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Use as setas para andar e pular. Chegue na porta de cada sala para passar de fase. São 3 salas até a saída!',
+          },
+          button: { type: 'str', value: 'Entrar' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Você escapou do castelo!' },
+          text: {
+            type: 'str',
+            value: 'Passou pelas 3 salas e achou a porta de saída. O rei está livre!',
+          },
+          button: { type: 'str', value: 'Jogar de novo' },
+        },
+        {
+          type: 'gk:setJumpFeel',
+          coyote: { type: 'num', value: 0.1 },
+          buffer: { type: 'num', value: 0.1 },
+          hold: { type: 'num', value: 0.3 },
+          gravity: { type: 'num', value: 2200 },
         },
         {
           type: 'gk:createCharacter',
@@ -472,30 +498,6 @@ export const portasDoCasteloProfissionalExample: ExtensionExample = {
           mold: 'chao',
           x: { type: 'num', value: 2280 },
           y: { type: 'num', value: 380 },
-        },
-        {
-          type: 'gk:defineRegion',
-          name: 'porta1',
-          x: { type: 'num', value: 860 },
-          y: { type: 'num', value: 428 },
-          w: { type: 'num', value: 48 },
-          h: { type: 'num', value: 72 },
-        },
-        {
-          type: 'gk:defineRegion',
-          name: 'porta2',
-          x: { type: 'num', value: 1820 },
-          y: { type: 'num', value: 428 },
-          w: { type: 'num', value: 48 },
-          h: { type: 'num', value: 72 },
-        },
-        {
-          type: 'gk:defineRegion',
-          name: 'saida',
-          x: { type: 'num', value: 2820 },
-          y: { type: 'num', value: 428 },
-          w: { type: 'num', value: 48 },
-          h: { type: 'num', value: 72 },
         },
         {
           type: 'gk:cameraFollow',

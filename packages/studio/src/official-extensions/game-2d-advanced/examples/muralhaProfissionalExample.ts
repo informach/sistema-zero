@@ -26,32 +26,7 @@ export const muralhaProfissionalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#3a5a40',
-          accent: '#ffd166',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Muralha do Reino Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Clique nos lugares de terra para comprar torres. Elas miram sozinhas o invasor mais na frente. Segure as ondas!',
-          },
-          button: { type: 'str', value: 'Defender' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: { type: 'str', value: 'A muralha caiu!' },
-          text: { type: 'str', value: 'O recorde fica guardado. Tente de novo!' },
-          button: { type: 'str', value: 'Defender de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'orc',
@@ -269,8 +244,6 @@ export const muralhaProfissionalExample: ExtensionExample = {
           speed: { type: 'num', value: 200 },
           gravity: { type: 'num', value: 0 },
         },
-        { type: 'var', name: 'vidas', value: { type: 'num', value: 10 } },
-        { type: 'var', name: 'leva', value: { type: 'num', value: 3 } },
         {
           type: 'gk:definePath',
           name: 'trilha',
@@ -327,6 +300,35 @@ export const muralhaProfissionalExample: ExtensionExample = {
             },
           ],
         },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#3a5a40',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Muralha do Reino Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Clique nos lugares de terra para comprar torres. Elas miram sozinhas o invasor mais na frente. Segure as ondas!',
+          },
+          button: { type: 'str', value: 'Defender' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: { type: 'str', value: 'A muralha caiu!' },
+          text: { type: 'str', value: 'O recorde fica guardado. Tente de novo!' },
+          button: { type: 'str', value: 'Defender de novo' },
+        },
+        { type: 'var', name: 'vidas', value: { type: 'num', value: 10 } },
+        { type: 'var', name: 'leva', value: { type: 'num', value: 3 } },
         { type: 'gk:tdSetCoins', n: { type: 'num', value: 100 } },
         {
           type: 'gk:tdSlot',

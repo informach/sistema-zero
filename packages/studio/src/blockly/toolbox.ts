@@ -6,6 +6,16 @@ import {
   isCategoryAllowed,
   type LearningProfile,
 } from '#core'
+import {
+  FRAME_APPEARANCE,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_MOLDS,
+  FRAME_START,
+  FRAME_STRUCTURE,
+  getBlockContract,
+  inferBlockContract,
+} from './blockContracts'
 import { resolveBlockLevel } from './blockLevels'
 import {
   ADVANCED_BLOCKS,
@@ -143,10 +153,12 @@ function toEntries(
   blocks: BlockDefinition[],
   _categoryLevel: BlockLevel,
   profile: LearningProfile,
+  onMold?: (definition: BlockDefinition) => void,
 ): ToolboxBlockEntry[] {
   return blocks
     .filter((b) => !b.hidden && isBlockTypeAllowed(b.type, resolveBlockLevel(b.type), profile))
     .map((b) => {
+      onMold?.(b)
       const inputs = socketInputsFor(b.type)
       if (!inputs) return { kind: 'block', type: b.type } as const
       return { kind: 'block', type: b.type, inputs }
@@ -230,6 +242,81 @@ function pruneEmptyCategories(contents: readonly unknown[]): unknown[] {
  * dentro de uma categoria visível, blocos acima do nível também são omitidos;
  * categorias de conteúdo que ficam vazias são descartadas.
  */
+/**
+ * A paleta montada oferece algum bloco que MORA em 🧩 Meus moldes?
+ *
+ * ⭐⭐ É assim que a área nova decide se aparece, e não por um degrau escolhido à
+ * mão. Um número fixo abre o pior buraco possível: a criança vê "Carregar o som"
+ * ou "Desenhar a figura assim:" na paleta, arrasta, e a área onde eles encaixam
+ * não existe para ela. Medido na primeira versão deste arquivo: SETE blocos
+ * ficavam órfãos, incluindo o som do núcleo, que é a porta de entrada.
+ *
+ * Derivando da paleta REAL, a área aparece exatamente quando existe algo para
+ * pôr dentro dela, seja qual for a lista de moldes ou a curadoria da aula.
+ *
+ * ⚠️ Só decide a PALETA: uma área que já existe no projeto continua no canvas e
+ * continua gerando, mesmo num degrau em que ela não seria oferecida.
+ */
+/** Bloco-container de cada Área do projeto, na ordem em que a criança os lê. */
+const AREA_FRAMES = [
+  { area: 'structure', frame: FRAME_STRUCTURE },
+  { area: 'appearance', frame: FRAME_APPEARANCE },
+  { area: 'molds', frame: FRAME_MOLDS },
+  { area: 'start', frame: FRAME_START },
+  { area: 'events', frame: FRAME_EVENTS },
+  { area: 'loops', frame: FRAME_LOOPS },
+] as const
+
+type AreaKey = (typeof AREA_FRAMES)[number]['area']
+
+/**
+ * A Área do projeto a que este bloco PERTENCE, do ponto de vista da paleta.
+ *
+ * ⚠️ É a área CANÔNICA (`root[0]`), não todas em que ele cabe. Variável e função
+ * cabem em 🧩 Meus moldes de propósito, e contá-las faria a área aparecer já no
+ * primeiro degrau, onde não existe molde nenhum para pôr dentro. Mesma régua do
+ * `areaForBlockType`, que decide para onde a migração move um bloco.
+ */
+function areaOfDefinition(definition: BlockDefinition): AreaKey | null {
+  const contract = inferBlockContract(definition)
+  if (contract.domain === 'html') return 'structure'
+  if (contract.domain === 'css') return 'appearance'
+  if (contract.domain === 'frame' || contract.domain === 'value') return null
+  return (contract.placement?.root[0] as AreaKey | undefined) ?? null
+}
+
+/** Idem, para as categorias de EXTENSÃO, que chegam prontas (só com tipos). */
+function areaOfType(type: string): AreaKey | null {
+  const contract = getBlockContract(type)
+  if (!contract) return null
+  if (contract.domain === 'html') return 'structure'
+  if (contract.domain === 'css') return 'appearance'
+  if (contract.domain === 'frame' || contract.domain === 'value') return null
+  return (contract.placement?.root[0] as AreaKey | undefined) ?? null
+}
+
+/** Há algum bloco (de qualquer área) nesta subárvore da paleta? */
+function offersAnyBlock(contents: readonly unknown[] | undefined): boolean {
+  return (contents ?? []).some((entry) => {
+    const node = entry as { kind?: string; contents?: readonly unknown[]; custom?: string }
+    if (node.kind === 'block') return true
+    if (node.custom !== undefined) return true
+    return offersAnyBlock(node.contents)
+  })
+}
+
+function collectOfferedAreas(contents: readonly unknown[], into: Set<AreaKey>): void {
+  for (const entry of contents) {
+    const node = entry as { kind?: string; type?: string; contents?: readonly unknown[] }
+    if (node.kind === 'block' && node.type) {
+      const area = areaOfType(node.type)
+      if (area) into.add(area)
+    } else if (Array.isArray(node.contents)) {
+      collectOfferedAreas(node.contents, into)
+    }
+  }
+}
+
 export function buildCoreToolbox(
   extraCategories: ToolboxCategory[] = [],
   profile: LearningProfile = FULL_LEARNING_PROFILE,
@@ -238,22 +325,19 @@ export function buildCoreToolbox(
     // Busca é sempre visível; ela só encontra os blocos que estão na toolbox
     // (já filtrada), então respeita o nível automaticamente.
     { kind: 'search', name: '🔎 Pesquisar', colour: CATEGORY_COLORS.search, contents: [] },
-    // 🗂️ Áreas do projeto: os cinco blocos-container. Sempre visíveis, pois a
-    // criança precisa deles em qualquer aula, então não passam pelo filtro de
-    // nível/categoria. Cada frame carrega sua própria cor (HTML/CSS/JS).
-    {
-      kind: 'category',
-      name: '🗂️ Áreas do projeto',
-      colour: '#475569',
-      contents: [
-        { kind: 'block', type: 'sz_frame_structure' },
-        { kind: 'block', type: 'sz_frame_appearance' },
-        { kind: 'block', type: 'sz_frame_start' },
-        { kind: 'block', type: 'sz_frame_events' },
-        { kind: 'block', type: 'sz_frame_loops' },
-      ],
-    },
+    // 🗂️ Áreas do projeto: os blocos-container. O CONTEÚDO é preenchido no fim
+    // desta função — cada área entra somente quando a paleta montada oferece
+    // algum bloco que mora nela. Cada frame carrega sua própria cor.
+    { kind: 'category', name: '🗂️ Áreas do projeto', colour: '#475569', contents: [] },
   ]
+  const projectAreas = contents[1] as ToolboxCategory
+  // Áreas que os flyouts DINÂMICOS (Funções/Classes) oferecem: o conteúdo deles
+  // não aparece no `contents` e escaparia da varredura.
+  const dynamicAreas = new Set<AreaKey>()
+  const markArea = (definition: BlockDefinition) => {
+    const area = areaOfDefinition(definition)
+    if (area) dynamicAreas.add(area)
+  }
 
   // Lista de blocos da aula (`allowBlocks` não-vazia) = modo RESTRITIVO: só os listados
   // entram na paleta (os frames seguem sempre). Decidido aqui p/ alcançar TAMBÉM os flyouts
@@ -264,7 +348,7 @@ export function buildCoreToolbox(
   const pushContent = (name: string, colour: string, blocks: BlockDefinition[]): void => {
     const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante-2d'
     if (!isCategoryAllowed(name, level, profile)) return
-    const entries = toEntries(blocks, level, profile)
+    const entries = toEntries(blocks, level, profile, markArea)
     if (entries.length === 0) return
     contents.push({ kind: 'category', name, colour, contents: entries })
   }
@@ -293,7 +377,7 @@ export function buildCoreToolbox(
           return byType.get(t)
         })
         .filter((b): b is BlockDefinition => Boolean(b))
-      const entries = toEntries(groupBlocks, level, profile)
+      const entries = toEntries(groupBlocks, level, profile, markArea)
       if (entries.length === 0) continue
       subCats.push({ kind: 'category', name: g.name, colour: g.colour, contents: entries })
     }
@@ -342,7 +426,7 @@ export function buildCoreToolbox(
               )
             : []
       const blocks = [...languageBlocks, ...relatedValues]
-      const entries = toEntries(blocks, 'iniciante-2d', profile)
+      const entries = toEntries(blocks, 'iniciante-2d', profile, markArea)
       if (entries.length > 0)
         progSubs.push({ kind: 'category', name: g.name, colour: g.colour, contents: entries })
     }
@@ -368,7 +452,7 @@ export function buildCoreToolbox(
     blocks: BlockDefinition[],
   ): void => {
     if (!isCategoryAllowed(orig, level, profile)) return
-    const entries = toEntries(blocks, level, profile)
+    const entries = toEntries(blocks, level, profile, markArea)
     if (entries.length > 0) progSubs.push({ kind: 'category', name, colour, contents: entries })
   }
   const pushSubCustom = (
@@ -386,6 +470,11 @@ export function buildCoreToolbox(
     // Restrição: o flyout dinâmico (Funções/Classes) só entra se a aula listou ALGUM
     // bloco dele — senão vazaria (não dá p/ filtrar o conteúdo gerado pelo callback).
     if (restrict && !restrictedContentAvailable) return
+    // ⚠️ O flyout dinâmico não tem `contents` para varrer, então quem procura
+    // blocos na paleta montada NÃO enxerga o que ele vai oferecer. A classe mora
+    // aqui, e sem este registro a área 🧩 Meus moldes não apareceria num projeto
+    // que só usa classes.
+    for (const block of blocks) markArea(block)
     progSubs.push({ kind: 'category', name, colour, custom })
   }
   pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario-2d', MATH_BLOCKS)
@@ -464,6 +553,43 @@ export function buildCoreToolbox(
     if (filtered) contents.push(filtered)
   }
   pushContent('Avançado', CATEGORY_COLORS.advanced, ADVANCED_BLOCKS)
+
+  // ⭐⭐ CADA Área do projeto entra somente quando a paleta já montada oferece
+  // algum bloco que mora nela — inclusive vindo de uma extensão ou de um flyout
+  // dinâmico. Decidido aqui, no fim, para enxergar tudo que sobreviveu ao filtro
+  // de nível e à lista de blocos da aula.
+  //
+  // ⚠️ Antes, as áreas eram FIXAS e ficavam fora de toda curadoria. O sintoma era
+  // silencioso e feio: uma aula de primeiros passos, sem HTML nem CSS liberados,
+  // mostrava 🧱 Estrutura e 🎨 Aparência na paleta, e a criança arrastava áreas
+  // que não tinham um único bloco para receber. A regra passa a ser a mesma para
+  // as seis: área é ferramenta de guardar bloco, e sem bloco não há o que guardar.
+  const offeredAreas = new Set<AreaKey>(dynamicAreas)
+  collectOfferedAreas(contents, offeredAreas)
+
+  // ⭐⭐ A lista da aula MANDA: área marcada no picker entra mesmo que nenhum
+  // bloco dela tenha sobrado. Sem isto, o professor marca 🧩 Meus moldes no
+  // admin e a área simplesmente não aparece — o picker vira um botão morto, que
+  // é o oposto do motivo de as áreas terem entrado no catálogo.
+  if (restrict) {
+    for (const { area, frame } of AREA_FRAMES) {
+      if (only.has(frame)) offeredAreas.add(area)
+    }
+  }
+
+  // ⚠️ Rede: uma paleta com blocos e NENHUMA área deixaria a criança sem lugar
+  // para encaixar o que ela vê (acontece com uma lista só de valores, que não
+  // pertencem a área nenhuma). Todo programa começa em ⚙️ Ao iniciar, então é
+  // ela que garante o piso.
+  const paletteHasBlocks = contents.some((c) => {
+    const node = c as { kind?: string; contents?: readonly unknown[]; custom?: string }
+    return node.kind === 'category' && (node.custom !== undefined || offersAnyBlock(node.contents))
+  })
+  if (offeredAreas.size === 0 && paletteHasBlocks) offeredAreas.add('start')
+
+  for (const { area, frame } of AREA_FRAMES) {
+    if (offeredAreas.has(area)) projectAreas.contents.push({ kind: 'block', type: frame })
+  }
 
   // Poda final: categoria/sub-categoria sem nenhum bloco some (garante o pedido — sem
   // categorias/sub-categorias vazias na paleta da aula).

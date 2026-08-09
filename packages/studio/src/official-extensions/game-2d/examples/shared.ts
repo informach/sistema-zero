@@ -80,6 +80,10 @@ export function beginnerGameExample(example: ExtensionExample): ExtensionExample
       html: example.ir.html.filter((node) => node !== canvas),
       version: 2,
       behavior: {
+        // ⚠️ Repassar 🧩 Meus moldes é obrigatório: este wrapper RECONSTRÓI o
+        // behavior campo a campo, então esquecer a chave apagaria em silêncio
+        // as figuras e os tipos de inimigo de todos os exemplos iniciantes.
+        molds: example.ir.behavior.molds ?? [],
         start: [
           {
             type: 'g2d:setupStage',

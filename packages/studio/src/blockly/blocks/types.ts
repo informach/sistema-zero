@@ -5,7 +5,12 @@
  * `blockly/blockLevels.ts` (`resolveBlockLevel`). O campo vestigial foi removido
  * na reforma 2D/3D (07/2026) — nada o lia e ele enganava como fonte dupla.
  */
-export type BehaviorArea = 'start' | 'events' | 'loops'
+/**
+ * As áreas de comportamento, na ORDEM em que executam. `molds` guarda o que
+ * apenas DEFINE (classes, moldes, tipos de inimigo, figuras) e roda antes do
+ * `start`, mas dentro do mesmo envelope de partida — ver `generators/js.ts`.
+ */
+export type BehaviorArea = 'molds' | 'start' | 'events' | 'loops'
 
 export type StatementContext =
   | 'statement'
@@ -51,6 +56,9 @@ export type BlockPlacementPreset =
   | 'command'
   | 'advanced-command'
   | 'start-declaration'
+  | 'mold-declaration'
+  | 'mold-or-start-declaration'
+  | 'mold-or-start-command'
   | 'event'
   | 'event-body'
   | 'user-gesture-command'
@@ -132,6 +140,7 @@ export type ProjectAreaBlockType =
   | 'sz_frame_structure'
   | 'sz_frame_appearance'
   | 'sz_frame_behavior'
+  | 'sz_frame_molds'
   | 'sz_frame_start'
   | 'sz_frame_events'
   | 'sz_frame_loops'

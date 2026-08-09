@@ -34,35 +34,7 @@ export const batalhaProfissionalExample: ExtensionExample = withIndependentPerio
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#8fce77',
-          accent: '#2b8a3e',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Batalha de Monstrinhos Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Setas: andar. ESPAÇO perto da rival Alice: batalhar! Fogo vence planta, planta vence água e água vence fogo. Cure o time na fonte e capture o Faiscolosso no mato fundo.',
-          },
-          button: { type: 'str', value: 'Começar' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Capturou!' },
-          text: {
-            type: 'str',
-            value: 'O Faiscolosso entrou para o seu time. Você é a nova lenda do quintal!',
-          },
-          button: { type: 'str', value: 'Jogar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'treinadora',
@@ -843,15 +815,6 @@ export const batalhaProfissionalExample: ExtensionExample = withIndependentPerio
           def: 'planta',
           mult: { type: 'num', value: 0.5 },
         },
-        { type: 'gk:pkmCatchDifficulty', creature: 'Faiscolosso', level: 'difícil' },
-        { type: 'gk:pkmGive', creature: 'Faisco', level: { type: 'num', value: 5 } },
-        { type: 'gk:pkmGive', creature: 'Gotinha', level: { type: 'num', value: 5 } },
-        { type: 'gk:pkmGive', creature: 'Brotinho', level: { type: 'num', value: 5 } },
-        {
-          type: 'gk:pkmGiveBall',
-          count: { type: 'num', value: 5 },
-          power: { type: 'num', value: 65 },
-        },
         {
           type: 'gk:defineRegion',
           name: 'fonte',
@@ -879,6 +842,45 @@ export const batalhaProfissionalExample: ExtensionExample = withIndependentPerio
           color: '#e03131',
           image: '',
           look: 'rival',
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#8fce77',
+          accent: '#2b8a3e',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Batalha de Monstrinhos Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Setas: andar. ESPAÇO perto da rival Alice: batalhar! Fogo vence planta, planta vence água e água vence fogo. Cure o time na fonte e capture o Faiscolosso no mato fundo.',
+          },
+          button: { type: 'str', value: 'Começar' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Capturou!' },
+          text: {
+            type: 'str',
+            value: 'O Faiscolosso entrou para o seu time. Você é a nova lenda do quintal!',
+          },
+          button: { type: 'str', value: 'Jogar de novo' },
+        },
+        { type: 'gk:pkmCatchDifficulty', creature: 'Faiscolosso', level: 'difícil' },
+        { type: 'gk:pkmGive', creature: 'Faisco', level: { type: 'num', value: 5 } },
+        { type: 'gk:pkmGive', creature: 'Gotinha', level: { type: 'num', value: 5 } },
+        { type: 'gk:pkmGive', creature: 'Brotinho', level: { type: 'num', value: 5 } },
+        {
+          type: 'gk:pkmGiveBall',
+          count: { type: 'num', value: 5 },
+          power: { type: 'num', value: 65 },
         },
         {
           type: 'gk:spawnNamed',

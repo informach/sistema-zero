@@ -41,8 +41,7 @@ export const treinadorDeCriaturasExample: ExtensionExample = beginnerGameExample
     ],
     version: 2,
     behavior: {
-      start: [
-        { type: 'g2d:fitScreen', percent: { type: 'num', value: 100 } },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'treinador',
@@ -178,6 +177,9 @@ export const treinadorDeCriaturasExample: ExtensionExample = beginnerGameExample
             },
           ],
         },
+      ],
+      start: [
+        { type: 'g2d:fitScreen', percent: { type: 'num', value: 100 } },
         {
           type: 'g2d:createShapeSprite',
           varName: 'heroi',

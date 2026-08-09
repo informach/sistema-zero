@@ -4,6 +4,7 @@ export const gameTwoDPromptSummary =
   withGameTwoDLifecycleGuidance(`Jogo 2D expõe window.SZGame2D e blocos facilitadores para crianças iniciantes.
 
 CICLO DE VIDA: use as Áreas do projeto.
+[[G2D_LIFECYCLE_MOLDS]]
 [[G2D_LIFECYCLE_START]]
 [[G2D_LIFECYCLE_EVENTS]]
 [[G2D_LIFECYCLE_LOOP]]

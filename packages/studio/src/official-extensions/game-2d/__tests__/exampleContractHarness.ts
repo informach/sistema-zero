@@ -53,16 +53,27 @@ export function registerExampleContractTests({
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('memberCall')).toBe(false)
 
-    const embedded = stripIds(behaviorStatements(example.ir)) as JSStatement[]
-    expect(embedded[0]).toEqual({
+    // ⚠️ A dupla do wrapper é conferida no início de `start`, e não da lista
+    // achatada: desde 🧩 Meus moldes, quem abre a lista são as definições
+    // (figura, tipo de inimigo), que rodam antes do preparo do palco.
+    const embeddedBehavior = normalizeSZIR(example.ir).behavior
+    const embeddedStart = stripIds(embeddedBehavior.start) as JSStatement[]
+    expect(embeddedStart[0]).toEqual({
       type: 'g2d:setupStage',
       ...stage,
     } as JSStatement)
-    expect(embedded[1]).toEqual({
+    expect(embeddedStart[1]).toEqual({
       type: 'g2d:setStageDescription',
       description: example.description ?? '',
     } as JSStatement)
-    expect(parsed).toEqual(embedded.slice(2))
+
+    const withoutWrapper = stripIds(
+      behaviorStatements({
+        ...normalizeSZIR(example.ir),
+        behavior: { ...embeddedBehavior, start: embeddedBehavior.start.slice(2) },
+      }),
+    )
+    expect(parsed).toEqual(withoutWrapper)
   })
 
   it('nenhum texto visível usa travessão', () => {

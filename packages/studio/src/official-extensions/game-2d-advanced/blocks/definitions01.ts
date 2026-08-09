@@ -624,7 +624,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   // ---- 👾 Moldes & enxames ----
   {
     type: 'sz_gk_define_mold',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0:
       'Criar o molde %1: tamanho %2 × %3, vida %4, velocidade %5, dano %6, cor %7, imagem %8, aparência %9, caixa %10',
     args0: [
@@ -789,7 +789,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   // ---- 🎨 Desenho (aparência vetorial) ----
   {
     type: 'sz_gk_define_look',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     bodyExecution: 'deferred-callback',
     message0: 'Criar a aparência %1 (tamanho-base %2 × %3), desenhando com o pincel %4 assim:',
     args0: [

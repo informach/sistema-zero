@@ -21,6 +21,35 @@ export const quebraBlocosExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
+      molds: [
+        {
+          type: 'gk:defineMold',
+          name: 'bloco',
+          w: {
+            type: 'num',
+            value: 72,
+          },
+          h: {
+            type: 'num',
+            value: 24,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#f472b6',
+          image: '',
+          look: '',
+        },
+      ],
       start: [
         {
           type: 'gk:setup',
@@ -102,33 +131,6 @@ export const quebraBlocosExample: ExtensionExample = {
             value: 0,
           },
           color: '#fde047',
-        },
-        {
-          type: 'gk:defineMold',
-          name: 'bloco',
-          w: {
-            type: 'num',
-            value: 72,
-          },
-          h: {
-            type: 'num',
-            value: 24,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
-          color: '#f472b6',
-          image: '',
-          look: '',
         },
         {
           type: 'gk:placeCharacter',

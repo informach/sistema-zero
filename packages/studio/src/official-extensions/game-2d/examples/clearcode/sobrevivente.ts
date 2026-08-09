@@ -38,14 +38,7 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g2d:fitScreen',
-          percent: {
-            type: 'num',
-            value: 100,
-          },
-        },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'heroizinho',
@@ -165,6 +158,43 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
           ],
         },
         {
+          type: 'g2d:defineEnemyType',
+          varName: 'inimigos',
+          behavior: 'perseguidor',
+          color: '#e05a5a',
+          image: '',
+          shape: 'monstrinho',
+          hp: {
+            type: 'num',
+            value: 2,
+          },
+          speed: {
+            type: 'num',
+            value: 1,
+          },
+          dmg: {
+            type: 'num',
+            value: 1,
+          },
+          w: {
+            type: 'num',
+            value: 30,
+          },
+          h: {
+            type: 'num',
+            value: 30,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
+        },
+        {
           type: 'g2d:createShapeSprite',
           varName: 'heroi',
           shapeName: 'heroizinho',
@@ -204,34 +234,6 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
         {
           type: 'g2d:createGroup',
           varName: 'tiros',
-        },
-        {
-          type: 'g2d:defineEnemyType',
-          varName: 'inimigos',
-          behavior: 'perseguidor',
-          color: '#e05a5a',
-          image: '',
-          shape: 'monstrinho',
-          hp: {
-            type: 'num',
-            value: 2,
-          },
-          speed: {
-            type: 'num',
-            value: 1,
-          },
-          dmg: {
-            type: 'num',
-            value: 1,
-          },
-          w: {
-            type: 'num',
-            value: 30,
-          },
-          h: {
-            type: 'num',
-            value: 30,
-          },
         },
         {
           type: 'var',

@@ -95,6 +95,7 @@ function assignGrouped(
 for (const type of [
   'sz_frame_structure',
   'sz_frame_appearance',
+  'sz_frame_molds',
   'sz_frame_start',
   'sz_frame_events',
   'sz_frame_loops',

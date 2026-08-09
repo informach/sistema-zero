@@ -23,69 +23,7 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 800,
-          },
-          h: {
-            type: 'num',
-            value: 400,
-          },
-          bg: '#8ecae6',
-          accent: '#e63946',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Mundo Pirata Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Corra com as setas, pule com a seta para cima e desça pelas tábuas com a seta para baixo. Pise nos inimigos, pegue as moedas e chegue na bandeira sem perder as 3 vidas!',
-          },
-          button: {
-            type: 'str',
-            value: 'Aventurar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Bandeira conquistada!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você atravessou o mundo pirata inteiro. Que capitão!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Fim da linha...',
-          },
-          text: {
-            type: 'str',
-            value: 'Suas vidas acabaram. Pise nos inimigos por cima e desvie das pérolas!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'piratao',
@@ -802,25 +740,6 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           },
         },
         {
-          type: 'gk:setJumpFeel',
-          coyote: {
-            type: 'num',
-            value: 0.1,
-          },
-          buffer: {
-            type: 'num',
-            value: 0.1,
-          },
-          hold: {
-            type: 'num',
-            value: 0.3,
-          },
-          gravity: {
-            type: 'num',
-            value: 2000,
-          },
-        },
-        {
           type: 'gk:defineMold',
           name: 'chao',
           w: {
@@ -1057,6 +976,109 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           gravity: {
             type: 'num',
             value: 0,
+          },
+        },
+        {
+          type: 'gk:defineRegion',
+          name: 'fim',
+          x: {
+            type: 'num',
+            value: 1560,
+          },
+          y: {
+            type: 'num',
+            value: 250,
+          },
+          w: {
+            type: 'num',
+            value: 90,
+          },
+          h: {
+            type: 'num',
+            value: 100,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 800,
+          },
+          h: {
+            type: 'num',
+            value: 400,
+          },
+          bg: '#8ecae6',
+          accent: '#e63946',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Mundo Pirata Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Corra com as setas, pule com a seta para cima e desça pelas tábuas com a seta para baixo. Pise nos inimigos, pegue as moedas e chegue na bandeira sem perder as 3 vidas!',
+          },
+          button: {
+            type: 'str',
+            value: 'Aventurar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Bandeira conquistada!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você atravessou o mundo pirata inteiro. Que capitão!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Fim da linha...',
+          },
+          text: {
+            type: 'str',
+            value: 'Suas vidas acabaram. Pise nos inimigos por cima e desvie das pérolas!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'gk:setJumpFeel',
+          coyote: {
+            type: 'num',
+            value: 0.1,
+          },
+          buffer: {
+            type: 'num',
+            value: 0.1,
+          },
+          hold: {
+            type: 'num',
+            value: 0.3,
+          },
+          gravity: {
+            type: 'num',
+            value: 2000,
           },
         },
         {
@@ -1480,26 +1502,6 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           y: {
             type: 'num',
             value: 312,
-          },
-        },
-        {
-          type: 'gk:defineRegion',
-          name: 'fim',
-          x: {
-            type: 'num',
-            value: 1560,
-          },
-          y: {
-            type: 'num',
-            value: 250,
-          },
-          w: {
-            type: 'num',
-            value: 90,
-          },
-          h: {
-            type: 'num',
-            value: 100,
           },
         },
         {

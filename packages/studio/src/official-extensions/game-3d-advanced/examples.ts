@@ -26,82 +26,7 @@ export const defesaDaTorreExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 60,
-          },
-          sky: '#0b1026',
-          ground: '#14532d',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.2,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Defesa da Torre Profissional',
-          },
-          text: {
-            type: 'str',
-            value: 'Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'O cristal sobreviveu!',
-          },
-          text: {
-            type: 'str',
-            value: 'As torres agradecem.',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O cristal caiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'Os invasores passaram. Proteja o cristal na próxima!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'cristal',
@@ -443,14 +368,6 @@ export const defesaDaTorreExample: ExtensionExample = {
           },
         },
         {
-          type: 'var',
-          name: 'pontos',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
           type: 'g3k:stateTimer',
           mold: 'torre',
           state: 'recarregar',
@@ -459,6 +376,91 @@ export const defesaDaTorreExample: ExtensionExample = {
             value: 1,
           },
           next: 'parado',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#0b1026',
+          ground: '#14532d',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.2,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Defesa da Torre Profissional',
+          },
+          text: {
+            type: 'str',
+            value: 'Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!',
+          },
+          button: {
+            type: 'str',
+            value: 'Defender',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'O cristal sobreviveu!',
+          },
+          text: {
+            type: 'str',
+            value: 'As torres agradecem.',
+          },
+          button: {
+            type: 'str',
+            value: 'Defender de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O cristal caiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'Os invasores passaram. Proteja o cristal na próxima!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
         },
       ],
       events: [
@@ -941,66 +943,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-3d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 60,
-          },
-          sky: '#0b1026',
-          ground: '#1e293b',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.1,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Salto nas Nuvens',
-          },
-          text: {
-            type: 'str',
-            value: 'Pule de plataforma em plataforma e junte as moedas. Cuidado para não cair!',
-          },
-          button: {
-            type: 'str',
-            value: 'Pular',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Você juntou tudo!',
-          },
-          text: {
-            type: 'str',
-            value: 'Que pulos!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -1172,10 +1115,6 @@ export const saltoNasNuvensExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:makeSolid',
-          mold: 'chao',
-        },
-        {
           type: 'g3k:defineEmitter',
           name: 'poeira',
           colorFrom: '#e0f2fe',
@@ -1236,6 +1175,71 @@ export const saltoNasNuvensExample: ExtensionExample = {
             type: 'num',
             value: 2,
           },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#0b1026',
+          ground: '#1e293b',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Salto nas Nuvens',
+          },
+          text: {
+            type: 'str',
+            value: 'Pule de plataforma em plataforma e junte as moedas. Cuidado para não cair!',
+          },
+          button: {
+            type: 'str',
+            value: 'Pular',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você juntou tudo!',
+          },
+          text: {
+            type: 'str',
+            value: 'Que pulos!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'chao',
         },
         {
           type: 'var',
@@ -1634,67 +1638,7 @@ export const parkourDoVulcaoExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-3d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 60,
-          },
-          sky: '#0b1026',
-          ground: '#1e293b',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.1,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Parkour do Vulcão',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Suba a rampa, pegue carona no elevador e junte as 3 gemas. O trampolim te joga longe!',
-          },
-          button: {
-            type: 'str',
-            value: 'Escalar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Você pegou todas!',
-          },
-          text: {
-            type: 'str',
-            value: 'Que parkour!',
-          },
-          button: {
-            type: 'str',
-            value: 'Escalar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -2004,47 +1948,6 @@ export const parkourDoVulcaoExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:setCollider',
-          mold: 'heroi',
-          shape: 'capsule',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'chao',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'rampa',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'elevador',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'trampolim',
-        },
-        {
-          type: 'g3k:setBounce',
-          mold: 'trampolim',
-          amount: {
-            type: 'num',
-            value: 0.9,
-          },
-        },
-        {
-          type: 'g3k:setFriction',
-          mold: 'chao',
-          amount: {
-            type: 'num',
-            value: 0.3,
-          },
-        },
-        {
-          type: 'g3k:makeTrigger',
-          mold: 'gema',
-        },
-        {
           type: 'g3k:defineEmitter',
           name: 'poeira',
           colorFrom: '#e0f2fe',
@@ -2105,6 +2008,109 @@ export const parkourDoVulcaoExample: ExtensionExample = {
             type: 'num',
             value: 2,
           },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#0b1026',
+          ground: '#1e293b',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Parkour do Vulcão',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Suba a rampa, pegue carona no elevador e junte as 3 gemas. O trampolim te joga longe!',
+          },
+          button: {
+            type: 'str',
+            value: 'Escalar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você pegou todas!',
+          },
+          text: {
+            type: 'str',
+            value: 'Que parkour!',
+          },
+          button: {
+            type: 'str',
+            value: 'Escalar de novo',
+          },
+        },
+        {
+          type: 'g3k:setCollider',
+          mold: 'heroi',
+          shape: 'capsule',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'chao',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'rampa',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'elevador',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'trampolim',
+        },
+        {
+          type: 'g3k:setBounce',
+          mold: 'trampolim',
+          amount: {
+            type: 'num',
+            value: 0.9,
+          },
+        },
+        {
+          type: 'g3k:setFriction',
+          mold: 'chao',
+          amount: {
+            type: 'num',
+            value: 0.3,
+          },
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'gema',
         },
         {
           type: 'var',
@@ -2620,67 +2626,7 @@ export const quadraMalucaExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-3d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 50,
-          },
-          sky: '#1e1b4b',
-          ground: '#4c1d95',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.2,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Quadra Maluca',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes, mas cuidado: o gelo escorrega!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Pegou todas!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você domou as bolas malucas.',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -2930,6 +2876,98 @@ export const quadraMalucaExample: ExtensionExample = {
           ],
         },
         {
+          type: 'g3k:defineEffect',
+          name: 'plim',
+          count: {
+            type: 'num',
+            value: 24,
+          },
+          colorFrom: '#fb7185',
+          colorTo: '#4c1d95',
+          spread: {
+            type: 'num',
+            value: 6,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.5,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.6,
+          },
+          gravity: {
+            type: 'num',
+            value: 3,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 50,
+          },
+          sky: '#1e1b4b',
+          ground: '#4c1d95',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.2,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Quadra Maluca',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes, mas cuidado: o gelo escorrega!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Pegou todas!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você domou as bolas malucas.',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
           type: 'g3k:setPhysics',
           mold: 'heroi',
           kind: 'personagem',
@@ -2960,36 +2998,6 @@ export const quadraMalucaExample: ExtensionExample = {
         {
           type: 'g3k:makeTrigger',
           mold: 'bola',
-        },
-        {
-          type: 'g3k:defineEffect',
-          name: 'plim',
-          count: {
-            type: 'num',
-            value: 24,
-          },
-          colorFrom: '#fb7185',
-          colorTo: '#4c1d95',
-          spread: {
-            type: 'num',
-            value: 6,
-          },
-          sizeFrom: {
-            type: 'num',
-            value: 0.5,
-          },
-          sizeTo: {
-            type: 'num',
-            value: 0,
-          },
-          life: {
-            type: 'num',
-            value: 0.6,
-          },
-          gravity: {
-            type: 'num',
-            value: 3,
-          },
         },
         {
           type: 'var',
@@ -3426,83 +3434,7 @@ export const guardiaoDoPortalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-3d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 60,
-          },
-          sky: '#082f49',
-          ground: '#134e4a',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.2,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Guardião do Portal',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o acaso é sempre o mesmo, por causa da semente.',
-          },
-          button: {
-            type: 'str',
-            value: 'Guardar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'O portal resistiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você segurou até o fim.',
-          },
-          button: {
-            type: 'str',
-            value: 'Guardar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O portal caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os invasores passaram.',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'portal',
@@ -3816,21 +3748,6 @@ export const guardiaoDoPortalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:setPhysics',
-          mold: 'guardiao',
-          kind: 'personagem',
-        },
-        {
-          type: 'g3k:setPhysics',
-          mold: 'pedra',
-          kind: 'bola',
-        },
-        {
-          type: 'g3k:showHealthBar',
-          mold: 'portal',
-          on: true,
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'poeira',
           count: {
@@ -3859,6 +3776,99 @@ export const guardiaoDoPortalExample: ExtensionExample = {
             type: 'num',
             value: 2,
           },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#082f49',
+          ground: '#134e4a',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.2,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Guardião do Portal',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o acaso é sempre o mesmo, por causa da semente.',
+          },
+          button: {
+            type: 'str',
+            value: 'Guardar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'O portal resistiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você segurou até o fim.',
+          },
+          button: {
+            type: 'str',
+            value: 'Guardar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O portal caiu...',
+          },
+          text: {
+            type: 'str',
+            value: 'Os invasores passaram.',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'guardiao',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'pedra',
+          kind: 'bola',
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'portal',
+          on: true,
         },
         {
           type: 'var',
@@ -4323,83 +4333,7 @@ export const tiroAoAlvoExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 40,
-          },
-          sky: '#1e1b4b',
-          ground: '#365314',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.1,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Tiro ao Alvo',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Clique nos alvos antes que eles fujam. O dourado vale 3! Faça 12 pontos em 25 segundos. Aperte H para a dica.',
-          },
-          button: {
-            type: 'str',
-            value: 'Valendo!',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Olho de águia!',
-          },
-          text: {
-            type: 'str',
-            value: 'Pontaria perfeita.',
-          },
-          button: {
-            type: 'str',
-            value: 'De novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O tempo acabou...',
-          },
-          text: {
-            type: 'str',
-            value: 'Foi por pouco!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'alvo',
@@ -4619,6 +4553,104 @@ export const tiroAoAlvoExample: ExtensionExample = {
           },
         },
         {
+          type: 'g3k:stateTimer',
+          mold: 'alvo',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 2.6,
+          },
+          next: 'fugiu',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'dourado',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.6,
+          },
+          next: 'fugiu',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 40,
+          },
+          sky: '#1e1b4b',
+          ground: '#365314',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Tiro ao Alvo',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique nos alvos antes que eles fujam. O dourado vale 3! Faça 12 pontos em 25 segundos. Aperte H para a dica.',
+          },
+          button: {
+            type: 'str',
+            value: 'Valendo!',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Olho de águia!',
+          },
+          text: {
+            type: 'str',
+            value: 'Pontaria perfeita.',
+          },
+          button: {
+            type: 'str',
+            value: 'De novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O tempo acabou...',
+          },
+          text: {
+            type: 'str',
+            value: 'Foi por pouco!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
           type: 'g3k:createScreen',
           name: 'dica',
           title: {
@@ -4651,26 +4683,6 @@ export const tiroAoAlvoExample: ExtensionExample = {
             type: 'num',
             value: 0,
           },
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'alvo',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 2.6,
-          },
-          next: 'fugiu',
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'dourado',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 1.6,
-          },
-          next: 'fugiu',
         },
       ],
       events: [
@@ -5085,83 +5097,7 @@ export const chefaoDasSombrasExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 50,
-          },
-          sky: '#1e1b4b',
-          ground: '#312e81',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.4,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'O Chefão das Sombras',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Clique no chefão para atacar e desvie do anel de tiros com WASD. Ele fica mais bravo (e se cura) a cada fase!',
-          },
-          button: {
-            type: 'str',
-            value: 'Enfrentar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Sombra derrotada!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você venceu as três fases do chefão.',
-          },
-          button: {
-            type: 'str',
-            value: 'Enfrentar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O herói caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'O anel de tiros te pegou. Desvie mais na próxima!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'chefao',
@@ -5461,16 +5397,6 @@ export const chefaoDasSombrasExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:showHealthBar',
-          mold: 'chefao',
-          on: true,
-        },
-        {
-          type: 'g3k:showHealthBar',
-          mold: 'heroi',
-          on: true,
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'explosao',
           count: {
@@ -5531,14 +5457,6 @@ export const chefaoDasSombrasExample: ExtensionExample = {
           },
         },
         {
-          type: 'var',
-          name: 'fase',
-          value: {
-            type: 'num',
-            value: 1,
-          },
-        },
-        {
           type: 'g3k:stateTimer',
           mold: 'chefao',
           state: 'parado',
@@ -5547,6 +5465,102 @@ export const chefaoDasSombrasExample: ExtensionExample = {
             value: 1.5,
           },
           next: 'atirando',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 50,
+          },
+          sky: '#1e1b4b',
+          ground: '#312e81',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.4,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'O Chefão das Sombras',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique no chefão para atacar e desvie do anel de tiros com WASD. Ele fica mais bravo (e se cura) a cada fase!',
+          },
+          button: {
+            type: 'str',
+            value: 'Enfrentar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Sombra derrotada!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você venceu as três fases do chefão.',
+          },
+          button: {
+            type: 'str',
+            value: 'Enfrentar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O herói caiu...',
+          },
+          text: {
+            type: 'str',
+            value: 'O anel de tiros te pegou. Desvie mais na próxima!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'chefao',
+          on: true,
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'heroi',
+          on: true,
+        },
+        {
+          type: 'var',
+          name: 'fase',
+          value: {
+            type: 'num',
+            value: 1,
+          },
         },
       ],
       events: [
@@ -6107,67 +6121,7 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 100,
-          },
-          sky: '#0f172a',
-          ground: '#1e293b',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.2,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Corrida Infinita Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Troque de faixa com A e D (ou as setas) e pule com espaço. Desvie das barreiras, pegue moedas e aguente firme: a corrida acelera sem parar!',
-          },
-          button: {
-            type: 'str',
-            value: 'Correr',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Bateu!',
-          },
-          text: {
-            type: 'str',
-            value: 'A pista venceu desta vez. Desvie das barreiras e pegue mais moedas na próxima!',
-          },
-          button: {
-            type: 'str',
-            value: 'Correr de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -6655,19 +6609,6 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:setPhysics',
-          mold: 'heroi',
-          kind: 'personagem',
-        },
-        {
-          type: 'g3k:makeTrigger',
-          mold: 'obstaculo',
-        },
-        {
-          type: 'g3k:makeTrigger',
-          mold: 'moeda',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'brilho',
           count: {
@@ -6726,6 +6667,81 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
             type: 'num',
             value: 3,
           },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 100,
+          },
+          sky: '#0f172a',
+          ground: '#1e293b',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.2,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Corrida Infinita Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Troque de faixa com A e D (ou as setas) e pule com espaço. Desvie das barreiras, pegue moedas e aguente firme: a corrida acelera sem parar!',
+          },
+          button: {
+            type: 'str',
+            value: 'Correr',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Bateu!',
+          },
+          text: {
+            type: 'str',
+            value: 'A pista venceu desta vez. Desvie das barreiras e pegue mais moedas na próxima!',
+          },
+          button: {
+            type: 'str',
+            value: 'Correr de novo',
+          },
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'obstaculo',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'moeda',
         },
         {
           type: 'var',
@@ -7863,83 +7879,7 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 44,
-          },
-          sky: '#0b1120',
-          ground: '#1e293b',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.2,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Labirinto dos Robôs',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Clique para travar a mira. Ande com WASD, olhe com o mouse e atire com o clique. Robôs patrulham os corredores: desligue os 5!',
-          },
-          button: {
-            type: 'str',
-            value: 'Entrar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Labirinto limpo!',
-          },
-          text: {
-            type: 'str',
-            value: 'Todos os robôs foram desligados. Que pontaria!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Os robôs venceram...',
-          },
-          text: {
-            type: 'str',
-            value: 'Sua energia acabou. Atire de longe e recue pelos corredores!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -8469,31 +8409,6 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:setPhysics',
-          mold: 'heroi',
-          kind: 'personagem',
-        },
-        {
-          type: 'g3k:makeTrigger',
-          mold: 'tiro',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'muralha',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'muralhaLado',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'parede',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'paredeLado',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'faisca',
           count: {
@@ -8584,22 +8499,6 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
           },
         },
         {
-          type: 'var',
-          name: 'restantes',
-          value: {
-            type: 'num',
-            value: 5,
-          },
-        },
-        {
-          type: 'var',
-          name: 'proximoTiro',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
           type: 'g3k:stateTimer',
           mold: 'tiro',
           state: 'parado',
@@ -8648,6 +8547,125 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
             value: 1.2,
           },
           next: 'perseguir',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 44,
+          },
+          sky: '#0b1120',
+          ground: '#1e293b',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.2,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Labirinto dos Robôs',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique para travar a mira. Ande com WASD, olhe com o mouse e atire com o clique. Robôs patrulham os corredores: desligue os 5!',
+          },
+          button: {
+            type: 'str',
+            value: 'Entrar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Labirinto limpo!',
+          },
+          text: {
+            type: 'str',
+            value: 'Todos os robôs foram desligados. Que pontaria!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Os robôs venceram...',
+          },
+          text: {
+            type: 'str',
+            value: 'Sua energia acabou. Atire de longe e recue pelos corredores!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'tiro',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'muralha',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'muralhaLado',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'parede',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'paredeLado',
+        },
+        {
+          type: 'var',
+          name: 'restantes',
+          value: {
+            type: 'num',
+            value: 5,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximoTiro',
+          value: {
+            type: 'num',
+            value: 0,
+          },
         },
       ],
       events: [
@@ -9949,68 +9967,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 44,
-          },
-          sky: '#7dd3fc',
-          ground: '#86efac',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1,
-          },
-          vignette: false,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Mundo de Blocos',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD e pule com espaço. Escolha o bloco com 1, 2 e 3 e clique no chão perto de você para construir. Aperte X para reciclar. Coloque um bloco junto da muralha, suba nele e pule até o topo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Construir',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Chegou ao topo!',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Você colocou um bloco, subiu nele e pulou até o topo da muralha. Jogue de novo e invente outro caminho!',
-          },
-          button: {
-            type: 'str',
-            value: 'Construir de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -10512,31 +10469,6 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:setPhysics',
-          mold: 'heroi',
-          kind: 'personagem',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'grama',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'pedra',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'madeira',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'muralha',
-        },
-        {
-          type: 'g3k:makeSolid',
-          mold: 'arvore',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'poeira',
           count: {
@@ -10565,6 +10497,94 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
             type: 'num',
             value: -4,
           },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 44,
+          },
+          sky: '#7dd3fc',
+          ground: '#86efac',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1,
+          },
+          vignette: false,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Mundo de Blocos',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD e pule com espaço. Escolha o bloco com 1, 2 e 3 e clique no chão perto de você para construir. Aperte X para reciclar. Coloque um bloco junto da muralha, suba nele e pule até o topo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Construir',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Chegou ao topo!',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Você colocou um bloco, subiu nele e pulou até o topo da muralha. Jogue de novo e invente outro caminho!',
+          },
+          button: {
+            type: 'str',
+            value: 'Construir de novo',
+          },
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'grama',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'pedra',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'madeira',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'muralha',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'arvore',
         },
         {
           type: 'var',
@@ -11460,83 +11480,7 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 130,
-          },
-          sky: '#020617',
-          ground: '#0b1120',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.3,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Patrulha Espacial Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com A e D (ou as setas) e atire com espaço. O meteoro atingido brilha antes de explodir: destrua 20 para cumprir a patrulha!',
-          },
-          button: {
-            type: 'str',
-            value: 'Patrulhar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Patrulha cumprida!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você destruiu 20 meteoros e o setor está seguro. Que pontaria!',
-          },
-          button: {
-            type: 'str',
-            value: 'Patrulhar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'A nave caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os meteoros venceram desta vez. Atire de longe e não pare de se mexer!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'nave',
@@ -11836,15 +11780,6 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:setPhysics',
-          mold: 'nave',
-          kind: 'flutuante',
-        },
-        {
-          type: 'g3k:makeTrigger',
-          mold: 'meteoro',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'clarao',
           count: {
@@ -11967,6 +11902,113 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
           curve: 'suave',
         },
         {
+          type: 'g3k:stateTimer',
+          mold: 'laser',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.6,
+          },
+          next: 'sumir',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'meteoro',
+          state: 'morrendo',
+          sec: {
+            type: 'num',
+            value: 0.25,
+          },
+          next: 'acabou',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 130,
+          },
+          sky: '#020617',
+          ground: '#0b1120',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.3,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Patrulha Espacial Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com A e D (ou as setas) e atire com espaço. O meteoro atingido brilha antes de explodir: destrua 20 para cumprir a patrulha!',
+          },
+          button: {
+            type: 'str',
+            value: 'Patrulhar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Patrulha cumprida!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você destruiu 20 meteoros e o setor está seguro. Que pontaria!',
+          },
+          button: {
+            type: 'str',
+            value: 'Patrulhar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'A nave caiu...',
+          },
+          text: {
+            type: 'str',
+            value: 'Os meteoros venceram desta vez. Atire de longe e não pare de se mexer!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'nave',
+          kind: 'flutuante',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'meteoro',
+        },
+        {
           type: 'var',
           name: 'pontos',
           value: {
@@ -12021,26 +12063,6 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
             type: 'num',
             value: 1.2,
           },
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'laser',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 1.6,
-          },
-          next: 'sumir',
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'meteoro',
-          state: 'morrendo',
-          sec: {
-            type: 'num',
-            value: 0.25,
-          },
-          next: 'acabou',
         },
       ],
       events: [
@@ -13058,83 +13080,7 @@ export const atravesseProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 80,
-          },
-          sky: '#bfe3ff',
-          ground: '#8ecb62',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: false,
-          strength: {
-            type: 'num',
-            value: 1,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Atravesse a Rua Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Pule com as setas (ou WASD) e atravesse 20 faixas sem ser atropelado. Espere a faixa abrir e pule na hora certa!',
-          },
-          button: {
-            type: 'str',
-            value: 'Atravessar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Voce atravessou!',
-          },
-          text: {
-            type: 'str',
-            value: 'Chegou do outro lado em seguranca depois de 20 faixas. Que reflexos!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Foi atropelado!',
-          },
-          text: {
-            type: 'str',
-            value: 'Um carro te pegou. Olhe as duas direcoes e pule na brecha!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -13292,15 +13238,6 @@ export const atravesseProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:setPhysics',
-          mold: 'heroi',
-          kind: 'personagem',
-        },
-        {
-          type: 'g3k:makeTrigger',
-          mold: 'carro',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'batida',
           count: {
@@ -13329,6 +13266,93 @@ export const atravesseProfissionalExample: ExtensionExample = {
             type: 'num',
             value: -3,
           },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 80,
+          },
+          sky: '#bfe3ff',
+          ground: '#8ecb62',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: false,
+          strength: {
+            type: 'num',
+            value: 1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Atravesse a Rua Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Pule com as setas (ou WASD) e atravesse 20 faixas sem ser atropelado. Espere a faixa abrir e pule na hora certa!',
+          },
+          button: {
+            type: 'str',
+            value: 'Atravessar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Voce atravessou!',
+          },
+          text: {
+            type: 'str',
+            value: 'Chegou do outro lado em seguranca depois de 20 faixas. Que reflexos!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Foi atropelado!',
+          },
+          text: {
+            type: 'str',
+            value: 'Um carro te pegou. Olhe as duas direcoes e pule na brecha!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'carro',
         },
         {
           type: 'var',
@@ -14236,84 +14260,7 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 60,
-          },
-          sky: '#7dd3fc',
-          ground: '#166534',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.1,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Reunir o Rebanho Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD ou as setas. Chegue perto dos bichinhos que vagam para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!',
-          },
-          button: {
-            type: 'str',
-            value: 'Pastorear',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Rebanho reunido!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você guiou 8 bichinhos até o curral. Que pastor!',
-          },
-          button: {
-            type: 'str',
-            value: 'Pastorear de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O tempo acabou...',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Faltaram bichinhos no curral. Chegue perto para eles seguirem e leve o grupo junto!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'pastor',
@@ -14581,10 +14528,6 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:makeTrigger',
-          mold: 'curral',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'laco',
           count: {
@@ -14645,6 +14588,99 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
           },
         },
         {
+          type: 'g3k:stateTimer',
+          mold: 'bicho',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.2,
+          },
+          next: 'vagando',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#7dd3fc',
+          ground: '#166534',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Reunir o Rebanho Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD ou as setas. Chegue perto dos bichinhos que vagam para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!',
+          },
+          button: {
+            type: 'str',
+            value: 'Pastorear',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Rebanho reunido!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você guiou 8 bichinhos até o curral. Que pastor!',
+          },
+          button: {
+            type: 'str',
+            value: 'Pastorear de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O tempo acabou...',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Faltaram bichinhos no curral. Chegue perto para eles seguirem e leve o grupo junto!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'curral',
+        },
+        {
           type: 'var',
           name: 'pontos',
           value: {
@@ -14683,16 +14719,6 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
             type: 'num',
             value: 1.5,
           },
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'bicho',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 0.2,
-          },
-          next: 'vagando',
         },
       ],
       events: [
@@ -15779,83 +15805,7 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 55,
-          },
-          sky: '#86efac',
-          ground: '#14532d',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'A Lenda do Herói Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD ou as setas e ataque com a barra de espaço ou o clique. Cada monstro tem cérebro próprio: vaga pela clareira e persegue você. Derrote 10 antes que seus corações acabem!',
-          },
-          button: {
-            type: 'str',
-            value: 'Começar a aventura',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Herói lendário!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você derrotou os 10 monstros da clareira. A floresta está a salvo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O herói caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os monstros foram demais. Ataque de perto e recue quando estiver sem corações!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -16109,16 +16059,6 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:showHealthBar',
-          mold: 'heroi',
-          on: true,
-        },
-        {
-          type: 'g3k:showHealthBar',
-          mold: 'monstro',
-          on: true,
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'golpe',
           count: {
@@ -16179,6 +16119,104 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
           },
         },
         {
+          type: 'g3k:stateTimer',
+          mold: 'monstro',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.3,
+          },
+          next: 'vagando',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 55,
+          },
+          sky: '#86efac',
+          ground: '#14532d',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'A Lenda do Herói Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD ou as setas e ataque com a barra de espaço ou o clique. Cada monstro tem cérebro próprio: vaga pela clareira e persegue você. Derrote 10 antes que seus corações acabem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Começar a aventura',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Herói lendário!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você derrotou os 10 monstros da clareira. A floresta está a salvo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O herói caiu...',
+          },
+          text: {
+            type: 'str',
+            value: 'Os monstros foram demais. Ataque de perto e recue quando estiver sem corações!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'heroi',
+          on: true,
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'monstro',
+          on: true,
+        },
+        {
           type: 'var',
           name: 'derrotados',
           value: {
@@ -16193,16 +16231,6 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
             type: 'num',
             value: 1.5,
           },
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'monstro',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 0.3,
-          },
-          next: 'vagando',
         },
       ],
       events: [
@@ -16905,83 +16933,7 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 60,
-          },
-          sky: '#0b1030',
-          ground: '#111827',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.3,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Caça Estelar Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Voe com WASD ou as setas e atire com a barra de espaço ou o clique. As naves inimigas vagam, perseguem e fogem quando atingidas. Abata 10 antes que os escudos acabem!',
-          },
-          button: {
-            type: 'str',
-            value: 'Decolar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Ás dos céus!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você abateu as 10 naves inimigas. O espaço está seguro!',
-          },
-          button: {
-            type: 'str',
-            value: 'Voar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Nave abatida...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os inimigos foram demais. Persiga as naves que fogem e desvie das que atacam!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'nave',
@@ -17281,20 +17233,6 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:showHealthBar',
-          mold: 'nave',
-          on: true,
-        },
-        {
-          type: 'g3k:showHealthBar',
-          mold: 'caca',
-          on: true,
-        },
-        {
-          type: 'g3k:makeTrigger',
-          mold: 'caca',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'faisca',
           count: {
@@ -17355,30 +17293,6 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
           },
         },
         {
-          type: 'var',
-          name: 'pontos',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'proximaCaca',
-          value: {
-            type: 'num',
-            value: 1,
-          },
-        },
-        {
-          type: 'var',
-          name: 'recarga',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
           type: 'g3k:stateTimer',
           mold: 'tiro',
           state: 'parado',
@@ -17407,6 +17321,122 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
             value: 1.5,
           },
           next: 'perseguindo',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#0b1030',
+          ground: '#111827',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.3,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Caça Estelar Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Voe com WASD ou as setas e atire com a barra de espaço ou o clique. As naves inimigas vagam, perseguem e fogem quando atingidas. Abata 10 antes que os escudos acabem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Decolar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Ás dos céus!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você abateu as 10 naves inimigas. O espaço está seguro!',
+          },
+          button: {
+            type: 'str',
+            value: 'Voar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Nave abatida...',
+          },
+          text: {
+            type: 'str',
+            value: 'Os inimigos foram demais. Persiga as naves que fogem e desvie das que atacam!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'nave',
+          on: true,
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'caca',
+          on: true,
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'caca',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximaCaca',
+          value: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'var',
+          name: 'recarga',
+          value: {
+            type: 'num',
+            value: 0,
+          },
         },
       ],
       events: [
@@ -18288,84 +18318,7 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 55,
-          },
-          sky: '#1a0f2e',
-          ground: '#2d1b3d',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.4,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Cerco na Base Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Olhe com o mouse e ande com WASD. Segure o espaço para CARREGAR o blaster e solte para atirar: quanto mais carregado, mais forte. A munição recarrega sozinha. Derrote 12 aliens antes que a vida acabe!',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Base salva!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você segurou a invasão e derrotou os 12 aliens.',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'A base caiu...',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Os aliens passaram. Carregue o tiro para acertar mais forte e cuide da munição!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'heroi',
@@ -18679,10 +18632,6 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:makeTrigger',
-          mold: 'alien',
-        },
-        {
           type: 'g3k:defineEffect',
           name: 'faisca',
           count: {
@@ -18743,6 +18692,119 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
           },
         },
         {
+          type: 'g3k:stateTimer',
+          mold: 'tiroFraco',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.2,
+          },
+          next: 'sumir',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'tiroForte',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.2,
+          },
+          next: 'sumir',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'alien',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.3,
+          },
+          next: 'avancando',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 55,
+          },
+          sky: '#1a0f2e',
+          ground: '#2d1b3d',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.4,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Cerco na Base Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Olhe com o mouse e ande com WASD. Segure o espaço para CARREGAR o blaster e solte para atirar: quanto mais carregado, mais forte. A munição recarrega sozinha. Derrote 12 aliens antes que a vida acabe!',
+          },
+          button: {
+            type: 'str',
+            value: 'Defender',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Base salva!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você segurou a invasão e derrotou os 12 aliens.',
+          },
+          button: {
+            type: 'str',
+            value: 'Defender de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'A base caiu...',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Os aliens passaram. Carregue o tiro para acertar mais forte e cuide da munição!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'alien',
+        },
+        {
           type: 'var',
           name: 'derrotados',
           value: {
@@ -18773,36 +18835,6 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
             type: 'num',
             value: 1,
           },
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'tiroFraco',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 1.2,
-          },
-          next: 'sumir',
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'tiroForte',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 1.2,
-          },
-          next: 'sumir',
-        },
-        {
-          type: 'g3k:stateTimer',
-          mold: 'alien',
-          state: 'parado',
-          sec: {
-            type: 'num',
-            value: 0.3,
-          },
-          next: 'avancando',
         },
       ],
       events: [
@@ -19667,84 +19699,7 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g3k:setup',
-          w: {
-            type: 'num',
-            value: 1280,
-          },
-          h: {
-            type: 'num',
-            value: 720,
-          },
-          world: {
-            type: 'num',
-            value: 44,
-          },
-          sky: '#0f0a1e',
-          ground: '#241a33',
-        },
-        {
-          type: 'g3k:setEffects',
-          shadows: true,
-          bloom: true,
-          strength: {
-            type: 'num',
-            value: 1.5,
-          },
-          vignette: true,
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Mina de Cristais Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD e clique nos blocos para CAVAR. A pedra é só entulho, mas os cristais brilhantes valem ponto! Veias novas de minério vão surgindo. Colete 10 cristais antes que o tempo acabe.',
-          },
-          button: {
-            type: 'str',
-            value: 'Minerar',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Filão lendário!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você garimpou os 10 cristais da mina.',
-          },
-          button: {
-            type: 'str',
-            value: 'Minerar de novo',
-          },
-        },
-        {
-          type: 'g3k:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'A mina fechou...',
-          },
-          text: {
-            type: 'str',
-            value:
-              'O tempo acabou. Cave a pedra rápido para achar os cristais escondidos entre ela!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'g3k:defineMold',
           name: 'mineiro',
@@ -20069,6 +20024,85 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
           gravity: {
             type: 'num',
             value: 0,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 44,
+          },
+          sky: '#0f0a1e',
+          ground: '#241a33',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.5,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Mina de Cristais Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD e clique nos blocos para CAVAR. A pedra é só entulho, mas os cristais brilhantes valem ponto! Veias novas de minério vão surgindo. Colete 10 cristais antes que o tempo acabe.',
+          },
+          button: {
+            type: 'str',
+            value: 'Minerar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Filão lendário!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você garimpou os 10 cristais da mina.',
+          },
+          button: {
+            type: 'str',
+            value: 'Minerar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'A mina fechou...',
+          },
+          text: {
+            type: 'str',
+            value:
+              'O tempo acabou. Cave a pedra rápido para achar os cristais escondidos entre ela!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
           },
         },
         {

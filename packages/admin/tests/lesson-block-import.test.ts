@@ -9,6 +9,10 @@ import {
 const CATALOG: readonly BlockCatalogEntry[] = [
   { type: 'sz_control_repeat', label: 'Repita', category: 'Controle' },
   { type: 'sz_val_number', label: 'Número', category: 'Valores' },
+  // As 🗂️ Áreas do projeto entram no catálogo do Estúdio desde 08/08, então a
+  // importação de lista de blocos precisa aceitá-las como qualquer outro id.
+  { type: 'sz_frame_start', label: '⚙️ Ao iniciar', category: '🗂️ Áreas do projeto' },
+  { type: 'sz_frame_molds', label: '🧩 Meus moldes', category: '🗂️ Áreas do projeto' },
 ]
 
 describe('parseQuizImport', () => {
@@ -165,6 +169,14 @@ describe('parseStudioBlocksImport', () => {
       CATALOG,
     )
     expect(extra.success).toBe(false)
+  })
+
+  test('aceita as Áreas do projeto, que a aula pode querer restringir', () => {
+    const result = parseStudioBlocksImport(
+      JSON.stringify({ blocks: ['sz_frame_molds', 'sz_frame_start', 'sz_val_number'] }),
+      CATALOG,
+    )
+    expect(result.success).toBe(true)
   })
 
   test('aplica os limites do contrato', () => {

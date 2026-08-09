@@ -52,7 +52,7 @@ O que o motor já faz por você:
 
 1. Em **⚙️ Ao iniciar**, use **Preparar o jogo 3D** uma vez: resolução, tamanho
    do mundo, céu e chão.
-2. Ainda em **⚙️ Ao iniciar**, use **Criar o molde 3D** uma vez por tipo de coisa
+2. Em **🧩 Meus moldes**, use **Criar o molde 3D** uma vez por tipo de coisa
    (herói, torre, invasor, tiro), com as peças dentro.
 3. Em **⚡ Quando acontecer**, use **Quando o jogo entrar no estado
    jogando** para montar a partida: nascer o herói ("chamando de"), espalhar

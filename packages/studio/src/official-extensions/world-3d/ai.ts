@@ -12,7 +12,7 @@ dirige um carrinho nele. Unidades em METROS; o carrinho tem ~3 m.
 ### Receita canônica por Área do projeto
 
 \`\`\`js
-// ⚙️ Ao iniciar
+// 🧩 Meus moldes (só receitas: carregar som) e depois ⚙️ Ao iniciar
 SZWorld3D.setup({ style: 'floresta', world: 160 });
 SZWorld3D.terrain(4, 5);
 SZWorld3D.car({ style: 'passeio', color: '#ef4444' });

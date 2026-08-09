@@ -3,7 +3,13 @@ import * as Blockly from 'blockly/core'
 import { generateJS } from '#generators'
 import { behaviorStatements, type SZIRV2, SZIRV2Schema } from '#ir'
 import { parseJS } from '../../parsers/js'
-import { FRAME_EVENTS, FRAME_LOOPS, FRAME_START, inferBlockContract } from '../blockContracts'
+import {
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_MOLDS,
+  FRAME_START,
+  inferBlockContract,
+} from '../blockContracts'
 import type { BlockDefinition } from '../blocks/types'
 import { buildIRFromWorkspace } from '../buildIR'
 import { FieldNamePicker, type NameKind } from '../fields/FieldNamePicker'
@@ -134,12 +140,24 @@ function declarationNames(target: Blockly.Block): {
   }
 }
 
+/**
+ * Os dois encaixes de preparação do cenário de teste. As classes vivem em
+ * 🧩 Meus moldes e o resto da preparação em ⚙️ Ao iniciar, então quem monta um
+ * caso precisa dos dois à mão.
+ */
+interface PreludeSlots {
+  start: Blockly.Connection | null
+  mold: Blockly.Connection | null
+}
+
 function addPrelude(
   workspace: Blockly.Workspace,
   startFrame: Blockly.Block,
+  moldFrame: Blockly.Block,
   target: Blockly.Block,
-): Blockly.Connection | null {
+): PreludeSlots {
   let slot = startFrame.getInput('CHILDREN')?.connection ?? null
+  let moldSlot = moldFrame.getInput('CHILDREN')?.connection ?? null
   const names = declarationNames(target)
 
   if (target.type === 'sz_val_canvas_width' || target.type === 'sz_val_canvas_height') {
@@ -157,14 +175,14 @@ function addPrelude(
   for (const name of names.classes) {
     const declaration = workspace.newBlock('sz_js_class')
     declaration.setFieldValue(name, 'NAME')
-    slot = appendStatement(slot, declaration)
+    moldSlot = appendStatement(moldSlot, declaration)
   }
   for (const name of names.functions) {
     const declaration = workspace.newBlock('sz_js_function')
     declaration.setFieldValue(name, 'NAME')
     slot = appendStatement(slot, declaration)
   }
-  return slot
+  return { start: slot, mold: moldSlot }
 }
 
 function attachReporter(host: Blockly.Block, input: string, target: Blockly.Block): void {
@@ -181,9 +199,8 @@ function attachInsideFunction(
   target: Blockly.Block,
   options: { async?: boolean; parameter?: string } = {},
 ): void {
-  const fn = workspace.newBlock('sz_js_function')
+  const fn = workspace.newBlock(options.async ? 'sz_js_function_async' : 'sz_js_function')
   fn.setFieldValue('funcaoDeTeste', 'NAME')
-  if (options.async) fn.setFieldValue('TRUE', 'ASYNC')
   if (options.parameter) {
     loadExtraState(fn, { params: [{ name: options.parameter, id: 'parametro-teste' }] })
   }
@@ -199,12 +216,13 @@ function attachInsideFunction(
 
 function attachInsideClass(
   workspace: Blockly.Workspace,
-  startSlot: Blockly.Connection | null,
+  moldSlot: Blockly.Connection | null,
   target: Blockly.Block,
   mode: 'member' | 'constructor-body' | 'method-body',
   derived = false,
 ): void {
-  let slot = startSlot
+  // A classe hospedeira é um molde: o cenário se monta em 🧩 Meus moldes.
+  let slot = moldSlot
   if (derived) {
     const base = workspace.newBlock('sz_js_class')
     base.setFieldValue('Base', 'NAME')
@@ -236,25 +254,28 @@ function attachInsideClass(
 
 function attachInDefaultContext(
   workspace: Blockly.Workspace,
-  startSlot: Blockly.Connection | null,
+  slots: PreludeSlots,
   target: Blockly.Block,
   definition: BlockDefinition,
 ): void {
   if (target.outputConnection) {
     const host = workspace.newBlock('sz_js_console_log_value')
-    connect(startSlot, host)
+    connect(slots.start, host)
     attachReporter(host, 'VALUE', target)
     return
   }
-  const role = inferBlockContract(definition).placement?.role
+  const placement = inferBlockContract(definition).placement
+  const role = placement?.role
   if (role === 'event') {
     const events = workspace.newBlock(FRAME_EVENTS)
     connect(events.getInput('CHILDREN')?.connection, target)
   } else if (role === 'loop') {
     const loops = workspace.newBlock(FRAME_LOOPS)
     connect(loops.getInput('CHILDREN')?.connection, target)
+  } else if (placement?.root[0] === 'molds') {
+    connect(slots.mold, target)
   } else {
-    connect(startSlot, target)
+    connect(slots.start, target)
   }
 }
 
@@ -296,7 +317,9 @@ function buildCase(
     const target = workspace.newBlock(definition.type)
     for (const [field, value] of Object.entries(fieldValues)) target.setFieldValue(value, field)
     const start = workspace.newBlock(FRAME_START)
-    const startSlot = addPrelude(workspace, start, target)
+    const molds = workspace.newBlock(FRAME_MOLDS)
+    const slots = addPrelude(workspace, start, molds, target)
+    const startSlot = slots.start
 
     switch (definition.type) {
       case 'sz_js_event_method': {
@@ -353,29 +376,30 @@ function buildCase(
         break
       case 'sz_js_constructor':
       case 'sz_js_class_method':
-        attachInsideClass(workspace, startSlot, target, 'member')
+      case 'sz_js_class_method_async':
+        attachInsideClass(workspace, slots.mold, target, 'member')
         break
       case 'sz_js_super_ctor':
-        attachInsideClass(workspace, startSlot, target, 'constructor-body', true)
+        attachInsideClass(workspace, slots.mold, target, 'constructor-body', true)
         break
       case 'sz_js_super_method':
-        attachInsideClass(workspace, startSlot, target, 'method-body', true)
+        attachInsideClass(workspace, slots.mold, target, 'method-body', true)
         break
       case 'sz_js_set_this_prop':
       case 'sz_val_this':
       case 'sz_val_this_prop':
-        attachInsideClass(workspace, startSlot, target, 'method-body')
+        attachInsideClass(workspace, slots.mold, target, 'method-body')
         break
       case 'sz_js_class_op':
       case 'sz_val_class_contains':
         if (target.getFieldValue('TARGET_KIND') === 'this') {
           attachInsideFunction(workspace, startSlot, target)
         } else {
-          attachInDefaultContext(workspace, startSlot, target, definition)
+          attachInDefaultContext(workspace, slots, target, definition)
         }
         break
       default:
-        attachInDefaultContext(workspace, startSlot, target, definition)
+        attachInDefaultContext(workspace, slots, target, definition)
     }
 
     return { ir: buildIRFromWorkspace(workspace), targetId: target.id }
@@ -421,10 +445,10 @@ function expectPipeline(
 
 beforeAll(() => ensureBlocklyInitialized())
 
-describe('Programação — matriz ponta a ponta dos 149 blocos visíveis', () => {
+describe('Programação — matriz ponta a ponta dos 151 blocos visíveis', () => {
   it('o inventário da matriz é exatamente o catálogo público', () => {
-    expect(PROGRAMMING_VISIBLE_DEFINITIONS).toHaveLength(149)
-    expect(new Set(PROGRAMMING_VISIBLE_DEFINITIONS.map(({ type }) => type)).size).toBe(149)
+    expect(PROGRAMMING_VISIBLE_DEFINITIONS).toHaveLength(151)
+    expect(new Set(PROGRAMMING_VISIBLE_DEFINITIONS.map(({ type }) => type)).size).toBe(151)
   })
 
   for (const definition of PROGRAMMING_VISIBLE_DEFINITIONS) {

@@ -31,42 +31,7 @@ export const vilaNinjaExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#3f7d4e',
-          accent: '#e63946',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Vila Ninja Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Setas: andar nas 4 direções. ESPAÇO: lançada na direção que olha. Derrote os 6 monstros da vila ninja!',
-          },
-          button: { type: 'str', value: 'Começar a missão' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Vila em paz!' },
-          text: {
-            type: 'str',
-            value: 'Você derrotou todos os monstros. A vila ninja está a salvo!',
-          },
-          button: { type: 'str', value: 'Jogar de novo' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: { type: 'str', value: 'O ninja caiu!' },
-          text: { type: 'str', value: 'Os monstros venceram desta vez. Tente de novo!' },
-          button: { type: 'str', value: 'Tentar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'ninja parado',
@@ -495,14 +460,6 @@ export const vilaNinjaExample: ExtensionExample = {
           gravity: { type: 'num', value: 0 },
         },
         {
-          type: 'gk:createEmptyTilemap',
-          name: 'vila',
-          cols: { type: 'num', value: 30 },
-          rows: { type: 'num', value: 17 },
-          fill: { type: 'num', value: -1 },
-          asset: '',
-        },
-        {
           type: 'gk:defineMold',
           name: 'casa',
           w: { type: 'num', value: 72 },
@@ -549,6 +506,51 @@ export const vilaNinjaExample: ExtensionExample = {
           color: '#b33939',
           image: '',
           look: 'dragao',
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#3f7d4e',
+          accent: '#e63946',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Vila Ninja Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Setas: andar nas 4 direções. ESPAÇO: lançada na direção que olha. Derrote os 6 monstros da vila ninja!',
+          },
+          button: { type: 'str', value: 'Começar a missão' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Vila em paz!' },
+          text: {
+            type: 'str',
+            value: 'Você derrotou todos os monstros. A vila ninja está a salvo!',
+          },
+          button: { type: 'str', value: 'Jogar de novo' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: { type: 'str', value: 'O ninja caiu!' },
+          text: { type: 'str', value: 'Os monstros venceram desta vez. Tente de novo!' },
+          button: { type: 'str', value: 'Tentar de novo' },
+        },
+        {
+          type: 'gk:createEmptyTilemap',
+          name: 'vila',
+          cols: { type: 'num', value: 30 },
+          rows: { type: 'num', value: 17 },
+          fill: { type: 'num', value: -1 },
+          asset: '',
         },
         {
           type: 'gk:spawnFromMold',

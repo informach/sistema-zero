@@ -132,7 +132,7 @@ Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
 - removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
 - playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Use diretamente em clique/tecla ou numa condição do quadro, nunca diretamente em Ao iniciar. O runtime aceita no máximo 32 vozes ao mesmo tempo.
 - ÁUDIO DE ARQUIVO (o som que a criança enviou em "Imagens e sons"): loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em Ao iniciar; depois playSound("apelido") toca uma vez, stopSound("apelido") para e rebobina, playMusic("apelido") toca em loop (uma música por vez — começar outra troca a anterior; repetir a mesma não recomeça) e stopMusic() desliga. setSoundVolume(0..10) vale para todos os sons. Nunca invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca.
-- Áreas: crie cena e recursos em **⚙️ Ao iniciar**; use os chapéus de tecla/clique
+- Áreas: as definições que só guardam uma receita ficam em **🧩 Meus moldes**; crie cena e recursos em **⚙️ Ao iniciar**; use os chapéus de tecla/clique
   do núcleo em **⚡ Quando acontecer**; coloque “A cada quadro 3D”, “A cada N
   quadros” e “A cada N segundos” em **🔁 Enquanto estiver rodando**. Para colisão, use
   "se collides(a, b)" dentro do "A cada quadro 3D" — a extensão 3D não tem chapéus

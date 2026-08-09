@@ -147,6 +147,8 @@ describe('🔊 Som do núcleo — o fio fecha', () => {
   })
 
   it('só o "carregar" nasce no Ao iniciar; a música é criadora de recurso', () => {
+    // ⚠️ Carregar NÃO é molde: molde é a receita que a criança escreve; trazer
+    // um arquivo que já existe é preparação de partida.
     expect(SOM_BLOCKS.find((b) => b.type === 'sz_som_load')?.placement).toBe('start-only-command')
     // `resource-creator`: dentro de um laço, a faixa recomeçaria a cada quadro.
     expect(SOM_BLOCKS.find((b) => b.type === 'sz_som_play_music')?.placement).toBe(

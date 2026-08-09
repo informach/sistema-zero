@@ -881,7 +881,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
   // ---- ⚔️ Fichas reutilizáveis: crie o inimigo separado e escolha na hora ----
   {
     type: 'sz_gk_rpg_define_battler',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0:
       'Criar a ficha do inimigo %1: vida %2, força %3, defesa %4, imagem %5, cor %6, chefão %7',
     args0: [

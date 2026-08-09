@@ -22,87 +22,7 @@ export const saltoNaFlorestaExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#87ceeb',
-          accent: '#e07a3f',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Salto na Floresta',
-          },
-          text: {
-            type: 'str',
-            value: 'Setas ou A/D para andar - espaço para pular - pise nos bichos!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Você chegou!',
-          },
-          text: {
-            type: 'str',
-            value: 'Pegou as 5 frutas e chegou na bandeira!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Ai!',
-          },
-          text: {
-            type: 'str',
-            value: 'Um bicho te pegou. Tente de novo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
-        {
-          type: 'gk:setJumpFeel',
-          coyote: {
-            type: 'num',
-            value: 0.1,
-          },
-          buffer: {
-            type: 'num',
-            value: 0.1,
-          },
-          hold: {
-            type: 'num',
-            value: 0.3,
-          },
-          gravity: {
-            type: 'num',
-            value: 2160,
-          },
-        },
+      molds: [
         {
           type: 'gk:defineMold',
           name: 'chao',
@@ -261,6 +181,88 @@ export const saltoNaFlorestaExample: ExtensionExample = {
           gravity: {
             type: 'num',
             value: 300,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#87ceeb',
+          accent: '#e07a3f',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Salto na Floresta',
+          },
+          text: {
+            type: 'str',
+            value: 'Setas ou A/D para andar - espaço para pular - pise nos bichos!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você chegou!',
+          },
+          text: {
+            type: 'str',
+            value: 'Pegou as 5 frutas e chegou na bandeira!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Ai!',
+          },
+          text: {
+            type: 'str',
+            value: 'Um bicho te pegou. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'gk:setJumpFeel',
+          coyote: {
+            type: 'num',
+            value: 0.1,
+          },
+          buffer: {
+            type: 'num',
+            value: 0.1,
+          },
+          hold: {
+            type: 'num',
+            value: 0.3,
+          },
+          gravity: {
+            type: 'num',
+            value: 2160,
           },
         },
         {

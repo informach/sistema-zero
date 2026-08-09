@@ -19,52 +19,7 @@ export const defesaDoReinoExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#26331f',
-          accent: '#ffd166',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Defesa do Reino',
-          },
-          text: {
-            type: 'str',
-            value: 'Clique nos lugares para comprar torres - não deixe os invasores passarem!',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O reino caiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'Os invasores passaram. Tente de novo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineMold',
           name: 'invasor',
@@ -172,40 +127,6 @@ export const defesaDoReinoExample: ExtensionExample = {
           },
         },
         {
-          type: 'gk:createCharacter',
-          varName: 'castelo',
-          image: '',
-          w: {
-            type: 'num',
-            value: 44,
-          },
-          h: {
-            type: 'num',
-            value: 64,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          color: '#f4a259',
-        },
-        {
-          type: 'var',
-          name: 'vidas',
-          value: {
-            type: 'num',
-            value: 5,
-          },
-        },
-        {
-          type: 'var',
-          name: 'leva',
-          value: {
-            type: 'num',
-            value: 3,
-          },
-        },
-        {
           type: 'gk:definePath',
           name: 'trilha',
           body: [
@@ -276,6 +197,87 @@ export const defesaDoReinoExample: ExtensionExample = {
               },
             },
           ],
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#26331f',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Defesa do Reino',
+          },
+          text: {
+            type: 'str',
+            value: 'Clique nos lugares para comprar torres - não deixe os invasores passarem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Defender',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O reino caiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'Os invasores passaram. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'castelo',
+          image: '',
+          w: {
+            type: 'num',
+            value: 44,
+          },
+          h: {
+            type: 'num',
+            value: 64,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#f4a259',
+        },
+        {
+          type: 'var',
+          name: 'vidas',
+          value: {
+            type: 'num',
+            value: 5,
+          },
+        },
+        {
+          type: 'var',
+          name: 'leva',
+          value: {
+            type: 'num',
+            value: 3,
+          },
         },
         {
           type: 'gk:tdSetCoins',

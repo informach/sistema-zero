@@ -45,7 +45,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     // criança renomear e quebrar tudo em silêncio (THREE is not defined + loaders/
     // áudio/sombra viravam no-op). O rótulo serializável preserva o valor no round-trip.
     type: 'sz_t3d_import',
-    placement: 'start-declaration',
+    placement: 'mold-declaration',
     message0: 'usar a biblioteca 3D como %1',
     args0: [{ type: 'field_label_serializable', name: 'NAME', text: 'THREE' }],
     previousStatement: 'JSStmt',
@@ -163,7 +163,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     // do addon escolhido (extensão de visibilidade) — só aparece p/ addon fora da
     // lista ou caminho não-canônico vindo da Ponte.
     type: 'sz_t3d_import_named',
-    placement: 'start-declaration',
+    placement: 'mold-declaration',
     message0: 'usar %1 da biblioteca',
     args0: [{ type: 'field_addon_picker', name: 'NAMES', text: 'GLTFLoader' }],
     message1: 'no arquivo %1',
@@ -1684,6 +1684,10 @@ const START_ONLY_TYPES = new Set<string>(CANVAS3D_START_ONLY_BLOCK_TYPES)
 const RESOURCE_CREATOR_TYPES = new Set<string>(CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES)
 const CONTINUOUS_TYPES = new Set<string>(CANVAS3D_CONTINUOUS_BLOCK_TYPES)
 for (const block of CANVAS3D_BLOCKS) {
+  // ⚠️ Um bloco já declarado como MOLDE não é rebaixado: o contrato central
+  // classifica "só no início", que os imports satisfazem por serem moldes — e
+  // sobrescrever aqui os tiraria de 🧩 Meus moldes sem ninguém perceber.
+  if (block.placement === 'mold-declaration') continue
   if (START_ONLY_TYPES.has(block.type)) block.placement = 'start-declaration'
   else if (RESOURCE_CREATOR_TYPES.has(block.type)) block.placement = 'resource-creator'
   else if (CONTINUOUS_TYPES.has(block.type)) block.placement = 'loop-command'

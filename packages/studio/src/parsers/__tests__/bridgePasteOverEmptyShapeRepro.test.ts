@@ -85,7 +85,11 @@ describe('Ponte — colar por CIMA do defineShape vazio (dentro do envelope)', (
       'style.css': '',
       'script.js': BEFORE,
     })
-    const types = r.ir.behavior.start.concat(r.ir.behavior.events, r.ir.behavior.loops)
+    const types = (r.ir.behavior.molds ?? []).concat(
+      r.ir.behavior.start,
+      r.ir.behavior.events,
+      r.ir.behavior.loops,
+    )
     console.log('antes:', JSON.stringify(types.map((s) => s.type)))
     console.log('diagnostics antes:', JSON.stringify(r.diagnostics))
     expect(types.filter((s) => s.type === 'g2d:defineShape')).toHaveLength(2)
@@ -98,7 +102,11 @@ describe('Ponte — colar por CIMA do defineShape vazio (dentro do envelope)', (
       'style.css': '',
       'script.js': AFTER,
     })
-    const all = r.ir.behavior.start.concat(r.ir.behavior.events, r.ir.behavior.loops)
+    const all = (r.ir.behavior.molds ?? []).concat(
+      r.ir.behavior.start,
+      r.ir.behavior.events,
+      r.ir.behavior.loops,
+    )
     console.log('depois:', JSON.stringify(all.map((s) => s.type)))
     console.log('diagnostics depois:', JSON.stringify(r.diagnostics))
     for (const stmt of all) {

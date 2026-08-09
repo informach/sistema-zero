@@ -37,21 +37,7 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
     version: 2,
     extensions: [{ extensionId: 'game-2d' }],
     behavior: {
-      start: [
-        {
-          type: 'g2d:fitScreen',
-          percent: {
-            type: 'num',
-            value: 100,
-          },
-        },
-        {
-          type: 'g2d:setGravity',
-          value: {
-            type: 'num',
-            value: 0.5,
-          },
-        },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'pirata',
@@ -227,6 +213,22 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
               color: '#c0392b',
             },
           ],
+        },
+      ],
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
+        },
+        {
+          type: 'g2d:setGravity',
+          value: {
+            type: 'num',
+            value: 0.5,
+          },
         },
         {
           type: 'g2d:createShapeSprite',

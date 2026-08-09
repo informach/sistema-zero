@@ -3,6 +3,7 @@ import {
   blockTypeProvidingBodyContext,
   FRAME_EVENTS,
   FRAME_LOOPS,
+  FRAME_MOLDS,
   FRAME_START,
   requireBlockContract,
 } from '../blockContracts'
@@ -19,6 +20,7 @@ interface AttachOptions {
 }
 
 const ROOT_FRAME = {
+  molds: FRAME_MOLDS,
   start: FRAME_START,
   events: FRAME_EVENTS,
   loops: FRAME_LOOPS,

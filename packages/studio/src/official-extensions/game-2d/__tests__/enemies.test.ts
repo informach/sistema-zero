@@ -92,6 +92,16 @@ interface Api {
   removeFromGroup: (g: unknown, s: Sprite) => void
   clearGroup: (g: unknown) => void
   addToGroup: (g: unknown, s: Sprite) => void
+  createAllEnemiesGroup: () => EnemyType
+  collideGroup: (s: Sprite, g: unknown) => void
+  sendToBack: (g: unknown, s: Sprite) => void
+  overlapGroups: (a: unknown, b: unknown, fn: (x: Sprite, y: Sprite) => void) => void
+  spawnBullet: (g: unknown, opts: Record<string, unknown>) => Sprite | null
+  spawn: (g: unknown, opts: Record<string, unknown>) => Sprite | null
+  createGroup: () => { items: Sprite[] }
+  pruneOffscreen: (ctx: unknown, g: unknown, margin: number, onLeave?: (s: Sprite) => void) => void
+  bringToFront: (g: unknown, s: Sprite) => void
+  updateGroup: (g: unknown) => void
   drawGroup: (ctx: unknown, g: unknown) => void
   drawGroupByY: (ctx: unknown, g: unknown) => void
   setCamera: (x: number, y: number) => void
@@ -2043,7 +2053,10 @@ describe('avisos pedagógicos (tipo sem spawn / criar dentro do laço)', () => {
     try {
       const api = load()
       for (let i = 0; i < 80; i += 1) api.createEnemyType({})
-      const calls = warn.mock.calls.filter((c) => String(c[0]).includes('Criar tipo de inimigo'))
+      // ⚠️ Filtro pela frase PRÓPRIA deste aviso: outros avisos citam o mesmo
+      // bloco pela face (o do teto de tipos, por exemplo), e "contém o nome do
+      // bloco" passou a casar com dois.
+      const calls = warn.mock.calls.filter((c) => String(c[0]).includes('está rodando sem parar'))
       expect(calls.length).toBe(1)
     } finally {
       warn.mockRestore()
@@ -2661,5 +2674,416 @@ describe('todo comportamento volta pela Ponte (código → blocos)', () => {
       }
     }
     expect(rejeitados).toEqual([])
+  })
+})
+
+/**
+ * ⭐ A VISTA de todos os inimigos ("Criar o grupo ... com os inimigos de todos os
+ * tipos"). Ela existe porque o atalho manual (um grupo comum + "Pôr o sprite no
+ * grupo" a cada nascimento) VAZA: a morte tira o inimigo do TIPO e não do grupo
+ * dela, e o morto segue colidindo para sempre. Por isso a vista é DERIVADA dos
+ * tipos, não uma cópia mantida em sincronia.
+ */
+describe('o grupo com os inimigos de TODOS os tipos', () => {
+  const cena = (api: Api) => {
+    const a = api.createEnemyType({ behavior: 'parado', w: 20, h: 20, hp: 1 })
+    const b = api.createEnemyType({ behavior: 'parado', w: 20, h: 20, hp: 1 })
+    const todos = api.createAllEnemiesGroup()
+    return { a, b, todos }
+  }
+
+  it('mostra os inimigos dos dois tipos, e some com quem morre NO MESMO quadro', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { a, b, todos } = cena(api)
+    expect(api.countGroup(todos)).toBe(0)
+    const e1 = api.spawnEnemy(a, 40, 40) as Sprite
+    api.spawnEnemy(b, 80, 40)
+    expect(api.countGroup(todos)).toBe(2) // um de cada tipo, sem bloco de sincronia
+    // ⭐ O caso do vazamento: mata um e a vista tem que perder o morto no MESMO
+    // quadro em que o tipo perde. (No atalho manual ele ficaria para sempre.)
+    api.changeHealth(e1, -1)
+    api.updateEnemyType(a, ctx, null)
+    expect(a.items.length).toBe(0)
+    expect(api.countGroup(todos)).toBe(1)
+  })
+
+  it('uma colisão contra a vista NÃO acerta inimigo morto', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { a, todos } = cena(api)
+    const morto = api.spawnEnemy(a, 100, 100) as Sprite
+    const nave = api.createSprite({ x: 100, y: 100, w: 20, h: 20 })
+    api.changeHealth(morto, -1)
+    api.updateEnemyType(a, ctx, null) // remove o derrotado
+    const acertos: Sprite[] = []
+    api.overlapSpriteGroup(
+      () => nave,
+      todos,
+      (s) => acertos.push(s),
+    )
+    expect(acertos).toEqual([])
+  })
+
+  it('pega o sprite ADOTADO por "Pôr o sprite no grupo ⟨tipo⟩"', () => {
+    const api = load()
+    const { a, todos } = cena(api)
+    const adotado = api.createSprite({ x: 10, y: 10, w: 20, h: 20 })
+    api.addToGroup(a, adotado)
+    // Uma sincronia feita no spawn perderia este; a vista derivada não.
+    expect(api.countGroup(todos)).toBe(1)
+  })
+
+  it('esvaziar a vista esvazia TODOS os tipos (o limpar a fase)', () => {
+    const api = load()
+    const { a, b, todos } = cena(api)
+    api.spawnEnemy(a, 40, 40)
+    api.spawnEnemy(b, 80, 40)
+    api.clearGroup(todos)
+    expect(a.items.length).toBe(0)
+    expect(b.items.length).toBe(0)
+    expect(api.countGroup(todos)).toBe(0)
+  })
+
+  it('tirar da vista tira do tipo que contém aquele inimigo', () => {
+    const api = load()
+    const { a, b, todos } = cena(api)
+    api.spawnEnemy(a, 40, 40)
+    const doB = api.spawnEnemy(b, 80, 40) as Sprite
+    api.removeFromGroup(todos, doB)
+    expect(a.items.length).toBe(1)
+    expect(b.items.length).toBe(0)
+    expect(api.countGroup(todos)).toBe(1)
+  })
+
+  it('podar a vista poda cada tipo, chamando o corpo por sprite', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { a, b, todos } = cena(api)
+    const fora1 = api.spawnEnemy(a, -400, 40) as Sprite
+    const fora2 = api.spawnEnemy(b, 900, 40) as Sprite
+    fora1.vx = -8 // "saiu" = fora E se afastando
+    fora2.vx = 8
+    api.spawnEnemy(a, 100, 100) // este fica
+    const saíram: Sprite[] = []
+    api.pruneOffscreen(ctx, todos, 40, (s) => saíram.push(s))
+    expect(saíram.length).toBe(2)
+    expect(api.countGroup(todos)).toBe(1)
+  })
+
+  it('avisa e NÃO faz nada no que não tem sentido na vista', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const { a, todos } = cena(api)
+      const e = api.spawnEnemy(a, 100, 100) as Sprite
+      const xAntes = e.x
+      const vyAntes = e.vy
+
+      api.updateGroup(todos) // moveria de novo
+      api.applyGravityToGroup(todos) // gravidade dobrada
+      api.addToGroup(todos, api.createSprite({ x: 0, y: 0, w: 10, h: 10 }))
+      api.bringToFront(todos, e)
+
+      expect(e.x).toBe(xAntes)
+      expect(e.vy).toBe(vyAntes)
+      expect(api.countGroup(todos)).toBe(1) // o addToGroup não entrou
+      const avisos = warn.mock.calls.map((c) => String(c[0]))
+      expect(avisos.filter((t) => t.includes('atualizar o grupo')).length).toBe(1)
+      expect(avisos.filter((t) => t.includes('aplicar a gravidade')).length).toBe(1)
+      expect(avisos.filter((t) => t.includes('por um sprite no grupo')).length).toBe(1)
+      expect(avisos.filter((t) => t.includes('a ordem de desenho')).length).toBe(1)
+      // Cada um avisa UMA vez, mesmo insistindo.
+      api.updateGroup(todos)
+      expect(avisos.filter((t) => t.includes('atualizar o grupo')).length).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('a lista só é remontada quando a composição muda (leitura barata)', () => {
+    const api = load()
+    const { a, todos } = cena(api)
+    api.spawnEnemy(a, 40, 40)
+    const primeira = todos.items
+    // Nada mudou: a mesma lista volta (sem remontar por leitura).
+    expect(todos.items).toBe(primeira)
+    api.spawnEnemy(a, 60, 40)
+    expect(todos.items).not.toBe(primeira) // mudou a composição, remontou
+  })
+
+  it('não atrapalha quem NÃO usa a vista (os blocos por tipo seguem iguais)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const t = api.createEnemyType({ behavior: 'patrulha', w: 20, h: 20, speed: 3 })
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    for (let q = 0; q < 5; q += 1) api.updateEnemyType(t, ctx, null)
+    const semVista = e.x
+    // Agora o MESMO cenário com a vista criada por cima: o tipo anda igual.
+    const api2 = load()
+    const ctx2 = fakeCtx(400, 300)
+    const t2 = api2.createEnemyType({ behavior: 'patrulha', w: 20, h: 20, speed: 3 })
+    api2.createAllEnemiesGroup()
+    const e2 = api2.spawnEnemy(t2, 100, 100) as Sprite
+    for (let q = 0; q < 5; q += 1) api2.updateEnemyType(t2, ctx2, null)
+    expect(e2.x).toBe(semVista)
+  })
+
+  it('volta pela Ponte (código → blocos)', () => {
+    const ir = parseJS('const todos = SZGame2D.createAllEnemiesGroup();') as Array<{
+      type?: string
+      varName?: string
+    }>
+    expect(ir[0]?.type).toBe('g2d:allEnemiesGroup')
+    expect(ir[0]?.varName).toBe('todos')
+  })
+})
+
+/**
+ * Nono full review, sobre a VISTA. O achado principal: a lista dela era um array
+ * cru devolvido por referência, então QUALQUER helper com `group.items.push`
+ * escrevia no cache — "Criar tiro no grupo", "Criar um sprite no grupo", os
+ * spawns dos kits. Seis criadores, e a lista dos que existiriam no futuro.
+ */
+describe('a vista se defende sozinha (nono review)', () => {
+  const cena = (api: Api) => {
+    const t = api.createEnemyType({ behavior: 'parado', w: 20, h: 20 })
+    const todos = api.createAllEnemiesGroup()
+    return { t, todos }
+  }
+
+  it('recusa quem tenta EMPURRAR sprite na lista, venha de qual bloco vier', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const { t, todos } = cena(api)
+      api.spawnEnemy(t, 40, 40)
+      // Os dois criadores mais fáceis de apontar para o grupo errado.
+      api.spawnBullet(todos, { x: 10, y: 10, radius: 4, vx: 0, vy: -5 })
+      api.spawn(todos, { x: 20, y: 20, w: 10, h: 10 })
+      expect(api.countGroup(todos)).toBe(1) // continua sendo só o inimigo de verdade
+      expect(t.items.length).toBe(1)
+      const avisos = warn.mock.calls.map((c) => String(c[0]))
+      expect(avisos.filter((x) => x.includes('mexer na lista')).length).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('a defesa não engole método HERDADO de Object.prototype', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const { t, todos } = cena(api)
+      api.spawnEnemy(t, 40, 40)
+      // ⚠️ Com um objeto literal guardando os métodos mutantes, 'toString',
+      // 'valueOf', 'constructor' e 'hasOwnProperty' vêm de Object.prototype,
+      // são TRUTHY e existem em Array.prototype: a guarda devolveria o aviso no
+      // lugar da função real, e qualquer coerção da lista quebraria em silêncio.
+      // É a mesma armadilha que o 1º review pegou neste arquivo.
+      const lista = todos.items as unknown as unknown[]
+      expect(typeof lista.toString).toBe('function')
+      expect(String(lista)).not.toBe('undefined')
+      expect(Object.hasOwn(lista, 0)).toBe(true)
+      expect(Array.isArray(lista)).toBe(true)
+      expect(warn).not.toHaveBeenCalled() // ler não avisa
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('a defesa não atrapalha a LEITURA (é só a mutação que cai)', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { t, todos } = cena(api)
+    api.spawnEnemy(t, 40, 40)
+    api.spawnEnemy(t, 80, 40)
+    // slice/iteração/length são o que os blocos de grupo usam de verdade.
+    expect(todos.items.slice().length).toBe(2)
+    expect([...todos.items].length).toBe(2)
+    let contados = 0
+    api.forEachInGroup(todos, () => {
+      contados += 1
+    })
+    expect(contados).toBe(2)
+    api.drawGroupByY(ctx, todos) // ordena uma CÓPIA: não pode cair na defesa
+    expect(api.countGroup(todos)).toBe(2)
+  })
+
+  it('a ORDEM não importa: a vista criada ANTES dos tipos enxerga todos', () => {
+    const api = load()
+    // A dica do bloco sugere criar depois dos tipos, mas a vista é derivada:
+    // se o contrário quebrasse, a dica seria uma regra escondida.
+    const todos = api.createAllEnemiesGroup()
+    const a = api.createEnemyType({ behavior: 'parado', w: 20, h: 20 })
+    const b = api.createEnemyType({ behavior: 'parado', w: 20, h: 20 })
+    api.spawnEnemy(a, 10, 10)
+    api.spawnEnemy(b, 20, 20)
+    expect(api.countGroup(todos)).toBe(2)
+  })
+
+  it('o teto de tipos avisa em vez de sumir com o tipo em silêncio', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const todos = api.createAllEnemiesGroup()
+      const tipos = []
+      for (let i = 0; i < 70; i += 1) tipos.push(api.createEnemyType({ behavior: 'parado' }))
+      // O 70º está fora do registro; sem aviso, a criança veria a colisão
+      // simplesmente não acontecer para ele.
+      const avisos = warn.mock.calls.map((c) => String(c[0]))
+      expect(avisos.filter((x) => x.includes('tipos de inimigo demais')).length).toBe(1)
+      const ultimo = tipos[69] as EnemyType
+      api.spawnEnemy(ultimo, 10, 10)
+      expect(ultimo.items.length).toBe(1) // o tipo funciona
+      expect(api.countGroup(todos)).toBe(0) // só não entra na vista
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('desenhar pela VISTA não faz o Console acusar quem está certo', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx(400, 300)
+      const a = api.createEnemyType({ behavior: 'parado', w: 20, h: 20 })
+      const b = api.createEnemyType({ behavior: 'parado', w: 20, h: 20 })
+      const todos = api.createAllEnemiesGroup()
+      api.spawnEnemy(a, 40, 40)
+      api.spawnEnemy(b, 80, 40)
+      // O jeito que o manual ensina: atualiza cada tipo, desenha UMA vez pela vista.
+      for (let q = 0; q < 500; q += 1) {
+        api.updateEnemyType(a, ctx, null)
+        api.updateEnemyType(b, ctx, null)
+        api.drawGroup(ctx, todos)
+      }
+      // ⚠️ Sem marcar os tipos, o aviso de "ninguém os desenha" dispararia com a
+      // tela CHEIA. É o defeito que o 2º review corrigiu, reaberto pelo bloco novo.
+      const acusacoes = warn.mock.calls.filter((c) => String(c[0]).includes('ninguém os desenha'))
+      expect(acusacoes).toEqual([])
+      // E o mesmo pelo desenhar ordenado pela base.
+      const api2 = load()
+      const ctx2 = fakeCtx(400, 300)
+      const c = api2.createEnemyType({ behavior: 'parado', w: 20, h: 20 })
+      const todos2 = api2.createAllEnemiesGroup()
+      api2.spawnEnemy(c, 40, 40)
+      for (let q = 0; q < 500; q += 1) {
+        api2.updateEnemyType(c, ctx2, null)
+        api2.drawGroupByY(ctx2, todos2)
+      }
+      expect(warn.mock.calls.filter((x) => String(x[0]).includes('ninguém os desenha'))).toEqual([])
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('duas vistas no mesmo jogo não se atrapalham', () => {
+    const api = load()
+    const { t, todos } = cena(api)
+    const outra = api.createAllEnemiesGroup()
+    api.spawnEnemy(t, 40, 40)
+    expect(api.countGroup(todos)).toBe(1)
+    expect(api.countGroup(outra)).toBe(1)
+  })
+})
+
+/**
+ * ⭐ O manual promete, item por item, o que cada bloco de grupo faz na VISTA:
+ * sete funcionam igual, três encaminham para os tipos e quatro avisam. Essa
+ * tabela é contrato com a criança, e até aqui parte dela existia só na minha
+ * leitura do runtime. Este describe exercita as três famílias inteiras.
+ */
+describe('a tabela do manual sobre a vista é contrato', () => {
+  const cena = (api: Api) => {
+    const a = api.createEnemyType({ behavior: 'parado', w: 20, h: 20, hp: 5 })
+    const b = api.createEnemyType({ behavior: 'parado', w: 20, h: 20, hp: 5 })
+    const todos = api.createAllEnemiesGroup()
+    api.spawnEnemy(a, 100, 100)
+    api.spawnEnemy(b, 200, 100)
+    return { a, b, todos }
+  }
+
+  it('os SETE blocos de leitura funcionam igual a qualquer grupo', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { todos } = cena(api)
+    const nave = api.createSprite({ x: 100, y: 100, w: 20, h: 20 })
+
+    // 1) contar
+    expect(api.countGroup(todos)).toBe(2)
+    // 2) para cada
+    let vistos = 0
+    api.forEachInGroup(todos, () => {
+      vistos += 1
+    })
+    expect(vistos).toBe(2)
+    // 3) colisão sprite × grupo
+    const encostou: Sprite[] = []
+    api.overlapSpriteGroup(
+      () => nave,
+      todos,
+      (s) => encostou.push(s),
+    )
+    expect(encostou.length).toBe(1)
+    // 4) colisão grupo × grupo
+    const meusTiros = api.createGroup()
+    api.spawnBullet(meusTiros, { x: 205, y: 105, radius: 4, vx: 0, vy: 0 })
+    let pares = 0
+    api.overlapGroups(meusTiros, todos, () => {
+      pares += 1
+    })
+    expect(pares).toBe(1)
+    // 5 e 6) os dois desenhos não estouram e marcam presença
+    api.drawGroup(ctx, todos)
+    api.drawGroupByY(ctx, todos)
+    // 7) impedir de atravessar: o empurrão acontece de verdade
+    const empurrado = api.createSprite({ x: 195, y: 100, w: 20, h: 20 })
+    const antes = empurrado.x
+    api.collideGroup(empurrado, todos)
+    expect(empurrado.x).not.toBe(antes)
+  })
+
+  it('os TRÊS encaminhamentos mexem nos tipos, não numa lista de mentira', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    // tirar
+    const um = load()
+    const c1 = cena(um)
+    const alvo = c1.b.items[0] as Sprite
+    um.removeFromGroup(c1.todos, alvo)
+    expect(c1.b.items.length).toBe(0)
+    // podar
+    const dois = load()
+    const c2 = cena(dois)
+    const fugitivo = c2.a.items[0] as Sprite
+    fugitivo.x = -500
+    fugitivo.vx = -9
+    dois.pruneOffscreen(fakeCtx(400, 300), c2.todos, 40)
+    expect(c2.a.items.length).toBe(0)
+    expect(c2.b.items.length).toBe(1)
+    // esvaziar
+    const { a, b, todos } = cena(api)
+    api.clearGroup(todos)
+    expect([a.items.length, b.items.length, api.countGroup(todos)]).toEqual([0, 0, 0])
+    expect(ctx).toBeTruthy()
+  })
+
+  it('os QUATRO avisos cobrem os dois irmãos de ordem, não só um', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const { todos } = cena(api)
+      const algum = todos.items[0] as Sprite
+      // ⚠️ O "Mandar para trás" é o irmão do "Trazer para a frente" e nunca tinha
+      // sido exercido: a guarda dele foi escrita por simetria, não por teste.
+      api.sendToBack(todos, algum)
+      const avisos = warn.mock.calls.map((c) => String(c[0]))
+      expect(avisos.filter((x) => x.includes('a ordem de desenho')).length).toBe(1)
+      // e a lista continua inteira (não reordenou nem perdeu ninguém)
+      expect(api.countGroup(todos)).toBe(2)
+    } finally {
+      warn.mockRestore()
+    }
   })
 })

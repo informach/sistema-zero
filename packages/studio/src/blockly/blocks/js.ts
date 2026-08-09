@@ -114,7 +114,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_declare',
-    placement: 'command',
+    placement: 'mold-or-start-command',
     message0: 'declarar variável %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'x' }],
     previousStatement: 'JSStmt',
@@ -124,7 +124,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_create',
-    placement: 'command',
+    placement: 'mold-or-start-command',
     message0: 'Criar variável %1 com valor %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'contador' },
@@ -138,7 +138,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_const_create',
-    placement: 'command',
+    placement: 'mold-or-start-command',
     message0: 'Criar constante %1 com valor %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'PI' },

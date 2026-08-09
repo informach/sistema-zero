@@ -1,6 +1,8 @@
 export const gameKitPromptSummary = `Jogo 2D Avançado expõe window.SZGameKit e usa blocos reais de motor 2D.
 
-ÁREAS: “⚙️ Ao iniciar” contém setup/setupFull e declara dados, personagens e mapas;
+ÁREAS: “🧩 Meus moldes” guarda o que só define uma receita (moldes, fichas, visuais,
+efeitos, caminhos, regiões, sons carregados) e nada acontece ao criá-la;
+“⚙️ Ao iniciar” contém setup/setupFull e declara dados, personagens e mapas;
 inclua setStageDescription com objetivo, controles e perigos visuais para leitores
 de tela; o runtime gerencia semântica e foco de canvas/painéis automaticamente.
 “⚡ Quando acontecer” contém os chapéus de clique, aviso, estado e mapa;

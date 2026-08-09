@@ -75,7 +75,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
   // ==========================================================================
   {
     type: 'sz_gk_pkm_creature',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0:
       'Criar a criatura %1 do tipo %2: vida %3, força %4, defesa %5, velocidade %6, imagem %7, aparência %8',
     args0: [
@@ -98,7 +98,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
 
   {
     type: 'sz_gk_pkm_move',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0: 'Ensinar o golpe %1 para %2: tipo %3, dano %4, acerto %5 %, efeito %6 na cor %7',
     args0: [
       { type: 'field_input', name: 'MOVE', text: 'Brasa' },
@@ -128,7 +128,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
 
   {
     type: 'sz_gk_pkm_type_chart',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0: 'Tabela de tipos: %1 contra %2 causa %3 × de dano',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'fogo', kind: 'pkmtype' },
@@ -850,7 +850,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     // O container (declara o NOME — segue field_input, regra de ouro). Espelho
     // do "Menu de escolha": os "ponto" viram a polilinha.
     type: 'sz_gk_define_path',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     bodyExecution: 'sync-callback',
     bodyContext: 'path-builder',
     message0: 'Criar o caminho %1, passando pelos pontos:',

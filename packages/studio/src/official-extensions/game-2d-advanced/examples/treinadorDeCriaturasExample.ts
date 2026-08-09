@@ -25,35 +25,7 @@ export const treinadorDeCriaturasExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#5c9e4a',
-          accent: '#e6398b',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Treinador de Criaturas Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Setas: andar pela cidade. ESPAÇO de frente para um aldeão: conversar. Pise na grama alta para achar criaturas selvagens, batalhe por turnos e jogue a bola para capturar. Pegue 3 criaturas!',
-          },
-          button: { type: 'str', value: 'Começar a jornada' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Você é um Mestre!' },
-          text: {
-            type: 'str',
-            value: 'Capturou 3 criaturas da cidade e virou a nova lenda dos treinadores!',
-          },
-          button: { type: 'str', value: 'Jogar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'treinador',
@@ -703,6 +675,36 @@ export const treinadorDeCriaturasExample: ExtensionExample = {
         { type: 'gk:pkmTypeChart', atk: 'fogo', def: 'planta', mult: { type: 'num', value: 2 } },
         { type: 'gk:pkmTypeChart', atk: 'planta', def: 'água', mult: { type: 'num', value: 2 } },
         { type: 'gk:pkmTypeChart', atk: 'água', def: 'fogo', mult: { type: 'num', value: 2 } },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#5c9e4a',
+          accent: '#e6398b',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Treinador de Criaturas Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Setas: andar pela cidade. ESPAÇO de frente para um aldeão: conversar. Pise na grama alta para achar criaturas selvagens, batalhe por turnos e jogue a bola para capturar. Pegue 3 criaturas!',
+          },
+          button: { type: 'str', value: 'Começar a jornada' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Você é um Mestre!' },
+          text: {
+            type: 'str',
+            value: 'Capturou 3 criaturas da cidade e virou a nova lenda dos treinadores!',
+          },
+          button: { type: 'str', value: 'Jogar de novo' },
+        },
         { type: 'gk:pkmCatchDifficulty', creature: 'Brotim', level: 'normal' },
         { type: 'gk:rpgSetStartMap', map: 'cidade' },
         {

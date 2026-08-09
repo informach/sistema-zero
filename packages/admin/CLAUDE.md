@@ -716,6 +716,14 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   extras da vitrine (título/resumo/capa — só editáveis com o toggle ligado). Escolher **Pro
   esconde TODA a curadoria de blocos** (estado preservado — editar legado não perde valores)
   e o payload OMITE `allowedModes` (o kind pro já resolve o modo Código).
+  **"Aluno pode revelar blocos avançados" nasce DESMARCADO (08/08):** a curadoria por nível é a
+  promessa da aula, e um botão que destrava tudo a esvazia sem ninguém perceber. Quem quiser a
+  escapatória marca de propósito. ⚠️ Vale só para bloco NOVO: a hidratação preserva o `?? true`
+  dos blocos já salvos, então aula publicada não muda de comportamento sozinha.
+  **As 🗂️ Áreas do projeto entram no picker de blocos (08/08):** o `BLOCK_CATALOG` do studio
+  passou a listá-las, então dá para restringir QUAIS áreas a criança recebe e a importação de
+  lista de blocos as aceita (ela valida contra o mesmo catálogo). Sem lista, cada área aparece
+  sozinha quando a paleta oferece algum bloco que mora nela.
   **Modos (default NOVO 24/07):** bloco novo nasce `studioModes: ['blocks']` → emite
   `allowedModes: ['blocks']` (aluno vê SÓ Blocos; Ponte é opt-in; Código NÃO é mais checkbox —
   bloco LEGADO com 'code' mostra "Código (legado)" removível e preserva ao salvar; legado SEM

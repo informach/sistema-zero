@@ -286,13 +286,13 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
 
     const workspace = new Blockly.Workspace()
     try {
-      const frame = workspace.newBlock('sz_frame_start')
+      const frame = workspace.newBlock('sz_frame_molds')
       const block = workspace.newBlock('sz_t3d_import_named')
       const frameConnection = frame.getInput('CHILDREN')?.connection
       const blockConnection = block.previousConnection
       if (!frameConnection || !blockConnection) throw new Error('Conexões do import ausentes')
       frameConnection.connect(blockConnection)
-      const statement = buildIRFromWorkspace(workspace).behavior.start[0]
+      const statement = (buildIRFromWorkspace(workspace).behavior.molds ?? [])[0]
       expect(statement).toMatchObject({
         type: 'importNamed',
         names: ['GLTFLoader'],
@@ -307,7 +307,7 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
     ensureBlocklyInitialized()
     const workspace = new Blockly.Workspace()
     try {
-      const frame = workspace.newBlock('sz_frame_start')
+      const frame = workspace.newBlock('sz_frame_molds')
       const block = workspace.newBlock('sz_t3d_import_named')
       const frameConnection = frame.getInput('CHILDREN')?.connection
       if (!frameConnection || !block.previousConnection) {
@@ -318,7 +318,7 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
       block.setFieldValue('automático', 'MODULE')
 
       const ir = buildIRFromWorkspace(workspace)
-      expect(ir.behavior.start).toMatchObject([
+      expect(ir.behavior.molds ?? []).toMatchObject([
         {
           type: 'importNamed',
           names: ['GLTFLoader'],
@@ -334,7 +334,7 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
 
       block.setFieldValue('three/addons/loaders/GLTFLoader.js', 'MODULE')
       const normalized = buildIRFromWorkspace(workspace)
-      expect(normalized.behavior.start).toMatchObject([
+      expect(normalized.behavior.molds ?? []).toMatchObject([
         {
           type: 'importNamed',
           names: ['GLTFLoader'],
@@ -355,7 +355,7 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
     ensureBlocklyInitialized()
     const workspace = new Blockly.Workspace()
     try {
-      const frame = workspace.newBlock('sz_frame_start')
+      const frame = workspace.newBlock('sz_frame_molds')
       const block = workspace.newBlock('sz_t3d_import_named')
       const frameConnection = frame.getInput('CHILDREN')?.connection
       if (!frameConnection || !block.previousConnection) {
@@ -378,7 +378,7 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
       block.setFieldValue('three/addons/controls/MeuControle.js', 'MODULE')
       const manual = buildIRFromWorkspace(workspace)
       expect(SZIRInputSchema.safeParse(manual).success).toBe(true)
-      expect(manual.behavior.start).toMatchObject([
+      expect(manual.behavior.molds ?? []).toMatchObject([
         {
           type: 'importNamed',
           names: ['MeuControle'],
@@ -446,7 +446,7 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
         }
         frameConnection.connect(resource.previousConnection)
 
-        const statement = buildIRFromWorkspace(workspace).behavior.start[0]
+        const statement = (buildIRFromWorkspace(workspace).behavior.molds ?? [])[0]
         expect(statement, type).not.toHaveProperty('heightFunction')
       } finally {
         workspace.dispose()

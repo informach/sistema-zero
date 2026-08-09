@@ -44,7 +44,7 @@ O que o motor já faz por você:
 
 ### Começando (a receita)
 
-1. Em **⚙️ Ao iniciar**, use **Criar o mundo 3D** uma vez: escolha o estilo e o tamanho.
+1. Em **🧩 Meus moldes** ficam as receitas (os sons carregados). Em **⚙️ Ao iniciar**, use **Criar o mundo 3D** uma vez: escolha o estilo e o tamanho.
 2. Ainda em **⚙️ Ao iniciar**, use **Deixar o chão com morros**. Altura 4,
    suavidade 5 é um ótimo passeio.
 3. Ainda em **⚙️ Ao iniciar**, use **Criar o carrinho dirigível** e escolha o jeitão e a cor.

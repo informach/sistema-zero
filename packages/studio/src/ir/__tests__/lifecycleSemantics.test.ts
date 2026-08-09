@@ -1,17 +1,38 @@
 import { describe, expect, it } from 'bun:test'
+import { lifecycleAreaForStatement } from '../lifecycle'
 import { type JSExpr, type JSStatement, SZIRV2Schema } from '../schema'
 
+/**
+ * Monta o projeto mínimo com o statement na área pedida.
+ *
+ * ⚠️ "start" aqui significa "a área onde este bloco vive antes de o jogo rodar",
+ * e desde a criação de 🧩 Meus moldes isso pode ser uma das duas: classe, figura
+ * e tipo de inimigo têm área própria. Deixar a escolha com
+ * `lifecycleAreaForStatement` mantém cada teste falando da SEMÂNTICA que ele
+ * quer provar, em vez de repetir o mapa de áreas em dezenas de lugares.
+ */
 function parse(
   area: 'start' | 'events' | 'loops',
   statement: JSStatement,
   prerequisites: JSStatement[] = [],
 ) {
+  const molds: JSStatement[] = []
+  const start: JSStatement[] = []
+  for (const prerequisite of prerequisites) {
+    if (lifecycleAreaForStatement(prerequisite) === 'molds') molds.push(prerequisite)
+    else start.push(prerequisite)
+  }
+  if (area === 'start') {
+    if (lifecycleAreaForStatement(statement) === 'molds') molds.push(statement)
+    else start.push(statement)
+  }
   return SZIRV2Schema.safeParse({
     version: 2,
     html: [],
     css: [],
     behavior: {
-      start: area === 'start' ? [...prerequisites, statement] : prerequisites,
+      molds,
+      start,
       events: area === 'events' ? [statement] : [],
       loops: area === 'loops' ? [statement] : [],
     },

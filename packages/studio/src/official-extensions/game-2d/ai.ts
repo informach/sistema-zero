@@ -3,6 +3,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDPromptContext = withGameTwoDLifecycleGuidance(`Extensão: Jogo 2D (id: game-2d)
 
 CICLO DE VIDA:
+- [[G2D_LIFECYCLE_MOLDS]]
 - [[G2D_LIFECYCLE_START]]
 - [[G2D_LIFECYCLE_EVENTS]]
 - [[G2D_LIFECYCLE_LOOP]]
@@ -161,6 +162,14 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   Combos que valem a pena sugerir: parado+atirador-lado (TORRE de plataforma),
   patrulha+atirador (guarda), voador+bombardeiro (morcego),
   perseguidor+saltador (persegue pulando), parado+espinho (armadilha), chefao+perseguidor.
+- createAllEnemiesGroup(): devolve um grupo com os inimigos de TODOS os tipos, sempre atualizado
+  (é uma VISTA montada dos tipos, não uma cópia: quem nasce entra, quem morre sai no mesmo quadro).
+  Emita em Ao iniciar (a ordem em relacao aos createEnemyType nao importa: e derivada). Serve para a ação que vale para todos com UM bloco:
+  overlapGroups/overlapSpriteGroup/forEachInGroup/countGroup/drawGroup/drawGroupByY/collideGroup.
+  clearGroup nela esvazia todos os tipos, removeFromGroup tira do tipo que contém, pruneOffscreen
+  poda cada tipo. ⚠️ NÃO emita updateGroup, applyGravityToGroup, addToGroup, bringToFront nem
+  sendToBack nela (o runtime avisa e não faz nada): mover/dar gravidade é do "Atualizar os inimigos
+  do tipo", senão andariam duas vezes por quadro.
 - spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
 - updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do
   atirador + remove derrotados (hp<=0 -> particulas + onDefeat). Alvo = quem perseguir/mirar.

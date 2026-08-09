@@ -307,11 +307,13 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   ...WEB_BLOCK_TYPES_BY_CATEGORY.css,
   ...WEB_BLOCK_TYPES_BY_CATEGORY.svg,
   ...WEB_BLOCK_TYPES_BY_CATEGORY.canvas,
-  // Cinco áreas: Estrutura, Aparência, Ao iniciar, Quando acontecer e Enquanto estiver rodando.
+  // Seis áreas: Estrutura, Aparência, Meus moldes, Ao iniciar, Quando acontecer
+  // e Enquanto estiver rodando.
   'sz_frame_appearance',
   'sz_frame_behavior',
   'sz_frame_events',
   'sz_frame_loops',
+  'sz_frame_molds',
   'sz_frame_start',
   'sz_frame_structure',
   'sz_legacy_nested_event',
@@ -386,8 +388,10 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_call_method',
   'sz_js_call_function',
   'sz_js_function',
+  'sz_js_function_async',
   'sz_js_class',
   'sz_js_class_method',
+  'sz_js_class_method_async',
   'sz_js_constructor',
   'sz_js_return',
   'sz_js_return_void',
@@ -1486,6 +1490,8 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
     case 'sz_js_constructor':
     case 'sz_js_class_method':
     case 'sz_js_function':
+    case 'sz_js_function_async':
+    case 'sz_js_class_method_async':
       return isSupportedParamsExtraState(raw)
     case 'sz_js_class':
       return isSupportedExtendsExtraState(raw)
@@ -1630,10 +1636,12 @@ function countIRNodes(input: SZIRInput): number {
     1 +
     ir.html.reduce((total, node) => total + countHTMLNode(node), 0) +
     ir.css.reduce((total, entry) => total + countCSSEntry(entry), 0) +
-    [...ir.behavior.start, ...ir.behavior.events, ...ir.behavior.loops].reduce(
-      (total, statement) => total + countJSStatement(statement),
-      0,
-    ) +
+    [
+      ...(ir.behavior.molds ?? []),
+      ...ir.behavior.start,
+      ...ir.behavior.events,
+      ...ir.behavior.loops,
+    ].reduce((total, statement) => total + countJSStatement(statement), 0) +
     ir.extensions.length +
     (ir.htmlShell ? 1 : 0)
   )

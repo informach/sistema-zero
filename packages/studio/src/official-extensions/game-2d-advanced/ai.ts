@@ -541,6 +541,8 @@ API global injetada como window.SZGameKit:
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.
 - onDraw: começar com drawBackground e desenhar TUDO de novo (o quadro zera).
+- Moldes, fichas, visuais, efeitos, caminhos, regiões e sons carregados vivem em
+  **🧩 Meus moldes**: são receitas e nada acontece ao criá-las.
 - Preparação de partida vive em **⚙️ Ao iniciar**. Chapéus ficam em **⚡ Quando acontecer**;
   onUpdate, onDraw, onDrawHud e cadências ficam em **🔁 Enquanto estiver rodando**.
   Comandos contínuos podem ficar no corpo dessas raízes ou em funções/métodos

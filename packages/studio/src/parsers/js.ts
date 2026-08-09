@@ -4619,6 +4619,10 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     // generator: const g = SZGame2D.createGroup()
     return { type: 'g2d:createGroup', varName: name }
   }
+  if (method === 'createAllEnemiesGroup') {
+    // generator: const todos = SZGame2D.createAllEnemiesGroup()
+    return { type: 'g2d:allEnemiesGroup', varName: name }
+  }
   if (method === 'createEnemyType') {
     // generator: const zumbi = SZGame2D.createEnemyType({ behavior, color, image, hp, speed, dmg, w, h })
     if (args[0]?.type !== 'ObjectExpression') return null

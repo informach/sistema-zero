@@ -17,6 +17,7 @@ import {
   FRAME_APPEARANCE,
   FRAME_EVENTS,
   FRAME_LOOPS,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_STRUCTURE,
   getBlockContract,
@@ -146,24 +147,28 @@ export function buildWorkspaceStateFromIR(
   const normalized = normalizeSZIR(ir)
   const startX = options.startX ?? 32
   const startY = options.startY ?? 32
-  // Cada categoria vira uma Área do projeto: Estrutura, Aparência, Ao iniciar,
-  // Quando acontecer ou Enquanto estiver rodando. É o inverso
+  // Cada categoria vira uma Área do projeto: Estrutura, Aparência, Meus moldes,
+  // Ao iniciar, Quando acontecer ou Enquanto estiver rodando. É o inverso
   // exato de buildIRFromWorkspace.
   const colGap = options.colGap ?? 420
 
   const htmlChildren = normalized.html.map(htmlNodeToBlock).filter(isBlock)
   const cssChildren = normalized.css.flatMap(cssEntryToBlocks)
+  const moldStatements = normalized.behavior.molds ?? []
   const allStatements = [
+    ...moldStatements,
     ...normalized.behavior.start,
     ...normalized.behavior.events,
     ...normalized.behavior.loops,
   ]
   const previousContextIndex = canvas3dContextIndex
   canvas3dContextIndex = createCanvas3DStatementContextIndex(allStatements)
+  let moldChildren: SerializedBlocklyBlock[]
   let startChildren: SerializedBlocklyBlock[]
   let eventChildren: SerializedBlocklyBlock[]
   let loopChildren: SerializedBlocklyBlock[]
   try {
+    moldChildren = statementsToBlocks(moldStatements, true)
     startChildren = statementsToBlocks(normalized.behavior.start, true)
     eventChildren = statementsToBlocks(normalized.behavior.events, true)
     loopChildren = statementsToBlocks(normalized.behavior.loops, true)
@@ -173,13 +178,19 @@ export function buildWorkspaceStateFromIR(
   }
 
   // Uma área por categoria, somente quando tem conteúdo. A disposição canônica
-  // usa duas linhas: HTML/CSS acima e lifecycle abaixo.
+  // usa duas linhas: HTML/CSS acima e lifecycle abaixo. 🧩 Meus moldes abre a
+  // linha de baixo, à ESQUERDA do Ao iniciar: no canvas a posição também ensina
+  // a ordem em que as áreas rodam.
+  // ⚠️ O deslocamento é CONDICIONAL: sem molde, as três áreas de sempre ficam
+  // nas colunas 0/1/2 e o layout de todo projeto que já existe continua idêntico.
+  const lifecycleCol = moldChildren.length > 0 ? 1 : 0
   const frameSpecs: Array<[string, SerializedBlocklyBlock[], number, number]> = [
     [FRAME_STRUCTURE, htmlChildren, 0, 0],
     [FRAME_APPEARANCE, cssChildren, 1, 0],
-    [FRAME_START, startChildren, 0, 1],
-    [FRAME_EVENTS, eventChildren, 1, 1],
-    [FRAME_LOOPS, loopChildren, 2, 1],
+    [FRAME_MOLDS, moldChildren, 0, 1],
+    [FRAME_START, startChildren, lifecycleCol, 1],
+    [FRAME_EVENTS, eventChildren, lifecycleCol + 1, 1],
+    [FRAME_LOOPS, loopChildren, lifecycleCol + 2, 1],
   ]
   const blocks: SerializedBlocklyBlock[] = []
   const rowGap = 360
@@ -1866,6 +1877,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       )
     case 'g2d:createGroup':
       return block('sz_g2d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
+    case 'g2d:allEnemiesGroup':
+      return block('sz_g2d_all_enemies_group', { NAME: stmt.varName }, {}, stmt.__id)
     case 'g2d:spawnInGroup': {
       const x = exprToValueBlock(stmt.x)
       const y = exprToValueBlock(stmt.y)
@@ -6956,8 +6969,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       const body = statementsToBlocks(stmt.body)
       for (const b of body) retypeParamsAsArgs(b, params)
       const blk = block(
-        'sz_js_function',
-        { NAME: stmt.name, ASYNC: stmt.async ? 'TRUE' : 'FALSE' },
+        stmt.async ? 'sz_js_function_async' : 'sz_js_function',
+        { NAME: stmt.name },
         { BODY: body },
         stmt.__id,
       )
@@ -7006,8 +7019,8 @@ function methodToBlock(m: {
   // Idem ao construtor: passar o `__id` mantém o vínculo entre o bloco no
   // canvas e a entrada de sourcemap após round-trips IR→Blocks.
   const blk = block(
-    'sz_js_class_method',
-    { NAME: m.name, ASYNC: m.async ? 'TRUE' : 'FALSE' },
+    m.async ? 'sz_js_class_method_async' : 'sz_js_class_method',
+    { NAME: m.name },
     { BODY: body },
     m.__id,
   )

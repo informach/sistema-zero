@@ -88,7 +88,9 @@ function bodyRoot(block: ParamsBlock): Blockly.Block | null {
  */
 const NESTED_DEFINITION_TYPES = new Set([
   'sz_js_function',
+  'sz_js_function_async',
   'sz_js_class_method',
+  'sz_js_class_method_async',
   'sz_js_constructor',
 ])
 

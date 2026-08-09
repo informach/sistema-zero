@@ -21,89 +21,7 @@ export const corridaTabuleiroExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 900,
-          },
-          h: {
-            type: 'num',
-            value: 600,
-          },
-          bg: '#1b3a2a',
-          accent: '#ffd166',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Corrida de Tabuleiro',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Clique para rolar o dado e andar as casas. Dois peoes: chegue ao fim e pegue os pontos da casa premiada!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar',
-          },
-        },
-        {
-          type: 'gk:createCharacter',
-          varName: 'azul',
-          image: '',
-          w: {
-            type: 'num',
-            value: 36,
-          },
-          h: {
-            type: 'num',
-            value: 36,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          color: '#4a9eff',
-        },
-        {
-          type: 'gk:createCharacter',
-          varName: 'vermelho',
-          image: '',
-          w: {
-            type: 'num',
-            value: 36,
-          },
-          h: {
-            type: 'num',
-            value: 36,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          color: '#ef4444',
-        },
-        {
-          type: 'var',
-          name: 'pontosAzul',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'pontosVermelho',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
+      molds: [
         {
           type: 'gk:definePath',
           name: 'trilha',
@@ -197,6 +115,90 @@ export const corridaTabuleiroExample: ExtensionExample = {
               },
             },
           ],
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 900,
+          },
+          h: {
+            type: 'num',
+            value: 600,
+          },
+          bg: '#1b3a2a',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Corrida de Tabuleiro',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique para rolar o dado e andar as casas. Dois peoes: chegue ao fim e pegue os pontos da casa premiada!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'azul',
+          image: '',
+          w: {
+            type: 'num',
+            value: 36,
+          },
+          h: {
+            type: 'num',
+            value: 36,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#4a9eff',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'vermelho',
+          image: '',
+          w: {
+            type: 'num',
+            value: 36,
+          },
+          h: {
+            type: 'num',
+            value: 36,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#ef4444',
+        },
+        {
+          type: 'var',
+          name: 'pontosAzul',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontosVermelho',
+          value: {
+            type: 'num',
+            value: 0,
+          },
         },
         {
           type: 'gk:playersSetup',

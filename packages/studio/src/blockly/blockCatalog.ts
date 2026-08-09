@@ -16,6 +16,7 @@ import { ADVANCED_BLOCKS } from './blocks/advanced'
 import { CANVAS_BLOCKS } from './blocks/canvas'
 import { CANVAS3D_BLOCKS } from './blocks/canvas3d'
 import { CSS_BLOCKS } from './blocks/css'
+import { FRAME_BLOCKS } from './blocks/frames'
 import { HTML_BLOCKS } from './blocks/html'
 import { SOM_BLOCKS } from './blocks/som'
 import { SVG_BLOCKS } from './blocks/svg'
@@ -63,7 +64,7 @@ export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
   inputs: string[]
   placement: BlockPlacement | null
   /** Área pedagógica preenchida por contrato, nunca inferida pela IA. */
-  area: 'structure' | 'appearance' | 'start' | 'events' | 'loops' | 'value'
+  area: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops' | 'value'
 }
 
 /**
@@ -150,6 +151,10 @@ function labelOf(b: BlockLike): string {
 // Cada array de blocos sob o RÓTULO de categoria que o aluno vê (DOM = Página e Eventos;
 // JS = Programação; extensões = Jogo 2D/3D). A ordem segue a da paleta.
 const GROUPS: readonly (readonly [string, readonly BlockLike[]])[] = [
+  // 🗂️ Áreas do projeto abrem a lista: a aula precisa poder escolher QUAIS áreas
+  // a criança recebe, e sem elas no catálogo o professor montava uma lista de
+  // blocos que não tinham onde ser encaixados.
+  ['🗂️ Áreas do projeto', FRAME_BLOCKS],
   ['HTML', HTML_BLOCKS],
   ['SVG', SVG_BLOCKS],
   ['CSS', CSS_BLOCKS],
@@ -172,10 +177,14 @@ const GROUPS: readonly (readonly [string, readonly BlockLike[]])[] = [
 
 /**
  * Catálogo dos blocos (id + rótulo + categoria) p/ o admin escolher a "lista de blocos" da
- * aula (`allowBlocks` restritivo). Inclui o CORE + todas as extensões oficiais (p/ restringir
- * blocos de jogo também). As 🗂️ Áreas do projeto (frames) ficam de FORA — são sempre
- * visíveis. Blocos `hidden` (legados) também. ⚠️ Bloco de extensão só APARECE pro aluno se a
- * extensão estiver instalada no projeto inicial — o picker oferece, a instalação habilita.
+ * aula (`allowBlocks` restritivo). Inclui o CORE, as 🗂️ Áreas do projeto e todas as extensões
+ * oficiais (p/ restringir blocos de jogo também). Blocos `hidden` (legados) ficam de fora.
+ * ⚠️ Bloco de extensão só APARECE pro aluno se a extensão estiver instalada no projeto
+ * inicial — o picker oferece, a instalação habilita.
+ *
+ * ⚠️ As áreas TAMBÉM entram sozinhas quando a paleta oferece algum bloco que mora nelas
+ * (`buildCoreToolbox`), então listá-las é para o professor RESTRINGIR de propósito, não uma
+ * obrigação: uma lista que só tem blocos de sprite já recebe ⚙️ Ao iniciar automaticamente.
  */
 export const BLOCK_CATALOG: readonly BlockCatalogEntry[] = GROUPS.flatMap(([category, blocks]) =>
   blocks.filter((b) => !b.hidden).map((b) => ({ type: b.type, label: labelOf(b), category })),
@@ -211,13 +220,29 @@ for (const category of [
   collectToolboxSubcategories(category, TOOLBOX_SUBCATEGORY_BY_TYPE)
 }
 
+/** A Área do projeto que cada bloco-container REPRESENTA. */
+const AREA_OF_FRAME: Readonly<Record<string, ServerBlockCatalogEntry['area']>> = {
+  sz_frame_structure: 'structure',
+  sz_frame_appearance: 'appearance',
+  sz_frame_molds: 'molds',
+  sz_frame_start: 'start',
+  sz_frame_events: 'events',
+  sz_frame_loops: 'loops',
+}
+
 function areaFor(definition: BlockDefinition): ServerBlockCatalogEntry['area'] {
   const contract = inferBlockContract(definition)
-  if (contract.domain === 'html' || contract.domain === 'frame') return 'structure'
+  // ⚠️ Um frame NÃO é "structure": ele É uma área, e dizer que ⚙️ Ao iniciar
+  // pertence à estrutura faz o Zappy ensinar o lugar errado. O mapa acima é a
+  // fonte; frame desconhecido cai no genérico em vez de mentir.
+  if (contract.domain === 'frame') return AREA_OF_FRAME[definition.type] ?? 'start'
+  if (contract.domain === 'html') return 'structure'
   if (contract.domain === 'css') return 'appearance'
   if (contract.domain === 'value') return 'value'
-  if (contract.placement?.root.length === 1)
-    return contract.placement.root[0] as 'start' | 'events' | 'loops'
+  // ⚠️ `root[0]` é a área CANÔNICA e pode ser 'molds' — o cast que existia aqui
+  // prometia só start/events/loops e escondia isso do compilador.
+  const canonical = contract.placement?.root[0]
+  if (canonical) return canonical
   if (contract.placement?.role === 'event') return 'events'
   if (contract.placement?.role === 'loop') return 'loops'
   return 'start'

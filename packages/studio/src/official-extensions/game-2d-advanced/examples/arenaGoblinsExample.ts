@@ -26,36 +26,7 @@ export const arenaGoblinsExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#12203a',
-          accent: '#4a9eff',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Arena dos Goblins',
-          },
-          text: {
-            type: 'str',
-            value: 'WASD anda - J golpeia - derrote 10!',
-          },
-          button: {
-            type: 'str',
-            value: 'Entrar na arena',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'goblin',
@@ -177,6 +148,37 @@ export const arenaGoblinsExample: ExtensionExample = {
           gravity: {
             type: 'num',
             value: 260,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#12203a',
+          accent: '#4a9eff',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Arena dos Goblins',
+          },
+          text: {
+            type: 'str',
+            value: 'WASD anda - J golpeia - derrote 10!',
+          },
+          button: {
+            type: 'str',
+            value: 'Entrar na arena',
           },
         },
         {

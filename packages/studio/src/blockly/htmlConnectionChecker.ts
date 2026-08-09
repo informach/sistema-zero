@@ -95,7 +95,13 @@ const SYNTACTIC_LOOP_TYPES = new Set([
   'sz_js_for_range',
 ])
 
-const FUNCTION_BODY_TYPES = new Set(['sz_js_function', 'sz_js_class_method', 'sz_js_constructor'])
+const FUNCTION_BODY_TYPES = new Set([
+  'sz_js_function',
+  'sz_js_function_async',
+  'sz_js_class_method',
+  'sz_js_class_method_async',
+  'sz_js_constructor',
+])
 
 function prospectiveAncestors(
   block: Blockly.Block,
@@ -380,9 +386,10 @@ function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<State
       contexts.add('loop-body')
       contexts.add('syntactic-loop-body')
     }
-    if (ancestor.type === 'sz_js_class_method') {
+    if (ancestor.type === 'sz_js_class_method' || ancestor.type === 'sz_js_class_method_async') {
       contexts.add('function-body')
-      if (!controlBoundaryReached && ancestor.getFieldValue('ASYNC') === 'TRUE') {
+      // A espera é do TIPO do bloco desde que ela virou um bloco próprio.
+      if (!controlBoundaryReached && ancestor.type === 'sz_js_class_method_async') {
         contexts.add('async-function-body')
       }
       if (!controlBoundaryReached && getSuperName(enclosingClass(ancestors)).length > 0) {
@@ -398,9 +405,9 @@ function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<State
         }
       }
     }
-    if (ancestor.type === 'sz_js_function') {
+    if (ancestor.type === 'sz_js_function' || ancestor.type === 'sz_js_function_async') {
       contexts.add('function-body')
-      if (!controlBoundaryReached && ancestor.getFieldValue('ASYNC') === 'TRUE') {
+      if (!controlBoundaryReached && ancestor.type === 'sz_js_function_async') {
         contexts.add('async-function-body')
       }
     }

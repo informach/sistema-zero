@@ -7,11 +7,11 @@ import { OFFICIAL_CATALOG } from './index'
 const goldenCatalogs = {
   'game-2d': {
     count: 32,
-    sha256: 'b98807972d628000803528ce6c095efc4e838e968a2aedd909067b308a181ca1',
+    sha256: 'd4980329bb383cdda4bd607eeea8a72190d1890c39aae5c685941e050373b326',
   },
   'game-2d-advanced': {
     count: 36,
-    sha256: 'cf9c9971920d98a5e426df74afe9a68819a2c896686e47170a175024eb36019b',
+    sha256: '04e02db3e9b627b2b3f6bfb720d044f3911ced7b6e2a5c01164731839bad012e',
   },
   'game-3d': {
     count: 18,
@@ -19,7 +19,7 @@ const goldenCatalogs = {
   },
   'game-3d-advanced': {
     count: 17,
-    sha256: '89ad4d0dd86684c404a5097171264bbc649d1a620e177b4b2d7cb29f150c3b84',
+    sha256: '5b38203f8294c4c18dc70c06fe95a8938e34b64a303906eb67809bcd7c90afca',
   },
   'world-3d': {
     count: 13,

@@ -35,53 +35,7 @@ export const chuvaProfissionalExample: ExtensionExample = withIndependentPeriodi
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#0f0a19',
-          accent: '#ffb347',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Chuva de Meteoros Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Setas ou WASD: voar para os 4 lados. Espaço: atirar. Desvie da chuva e destrua o que puder!',
-          },
-          button: {
-            type: 'str',
-            value: 'Decolar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'A nave explodiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'O recorde fica guardado. Tente de novo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Decolar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'nave',
@@ -408,6 +362,54 @@ export const chuvaProfissionalExample: ExtensionExample = withIndependentPeriodi
           gravity: {
             type: 'num',
             value: 0,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#0f0a19',
+          accent: '#ffb347',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Chuva de Meteoros Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Setas ou WASD: voar para os 4 lados. Espaço: atirar. Desvie da chuva e destrua o que puder!',
+          },
+          button: {
+            type: 'str',
+            value: 'Decolar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'A nave explodiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'O recorde fica guardado. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Decolar de novo',
           },
         },
         {

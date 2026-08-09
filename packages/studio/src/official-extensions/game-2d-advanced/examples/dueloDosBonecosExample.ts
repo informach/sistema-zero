@@ -23,6 +23,35 @@ export const dueloDosBonecosExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
+      molds: [
+        {
+          type: 'gk:defineMold',
+          name: 'chao',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 60,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#3d2b52',
+          image: '',
+          look: '',
+        },
+      ],
       start: [
         {
           type: 'gk:setup',
@@ -52,33 +81,6 @@ export const dueloDosBonecosExample: ExtensionExample = {
             type: 'str',
             value: 'Lutar',
           },
-        },
-        {
-          type: 'gk:defineMold',
-          name: 'chao',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 60,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
-          color: '#3d2b52',
-          image: '',
-          look: '',
         },
         {
           type: 'gk:createCharacter',

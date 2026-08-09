@@ -93,7 +93,7 @@ export const gameKit3DBlocks = [
   // ---- 🧊 Moldes & peças ----
   {
     type: 'sz_g3k_define_mold',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     bodyExecution: 'sync-callback',
     bodyContext: 'g3k-mold-parts',
     message0: 'Criar o molde 3D %1 com vida %2 e velocidade %3',
@@ -767,7 +767,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_state_timer',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0: 'No molde %1, depois de %2 s no estado %3, mudar para %4',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'torre', kind: 'mold3d' },
@@ -1013,7 +1013,7 @@ export const gameKit3DBlocks = [
   // ---- 💥 Faíscas 3D ----
   {
     type: 'sz_g3k_define_effect',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0: 'Criar o efeito 3D %1: %2 faíscas, cor %3 até %4, espalhar %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'explosao' },
@@ -1067,7 +1067,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_define_emitter',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0: 'Criar o emissor 3D %1: cor %2 até %3, tamanho %4 até %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'fogo' },

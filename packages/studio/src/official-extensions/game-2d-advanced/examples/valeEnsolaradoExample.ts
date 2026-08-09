@@ -30,42 +30,7 @@ export const valeEnsolaradoExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#8ecde6',
-          accent: '#e9c46a',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Vale Ensolarado Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Use as setas para andar e pular. Pise nos bichos, junte as 6 gemas e não caia no buraco!',
-          },
-          button: { type: 'str', value: 'Explorar o vale' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Vale limpo!' },
-          text: {
-            type: 'str',
-            value: 'Você juntou todas as gemas do vale ensolarado. Que aventura!',
-          },
-          button: { type: 'str', value: 'Explorar de novo' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: { type: 'str', value: 'Ai!' },
-          text: { type: 'str', value: 'Um bicho tirou todos os seus corações. Tente de novo!' },
-          button: { type: 'str', value: 'Tentar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'raposinha',
@@ -395,13 +360,6 @@ export const valeEnsolaradoExample: ExtensionExample = {
           baseH: { type: 'num', value: 28 },
         },
         {
-          type: 'gk:setJumpFeel',
-          coyote: { type: 'num', value: 0.1 },
-          buffer: { type: 'num', value: 0.1 },
-          hold: { type: 'num', value: 0.3 },
-          gravity: { type: 'num', value: 2000 },
-        },
-        {
           type: 'gk:defineMold',
           name: 'chao',
           w: { type: 'num', value: 96 },
@@ -480,6 +438,50 @@ export const valeEnsolaradoExample: ExtensionExample = {
           life: { type: 'num', value: 0.5 },
           speed: { type: 'num', value: 160 },
           gravity: { type: 'num', value: 0 },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#8ecde6',
+          accent: '#e9c46a',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Vale Ensolarado Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Use as setas para andar e pular. Pise nos bichos, junte as 6 gemas e não caia no buraco!',
+          },
+          button: { type: 'str', value: 'Explorar o vale' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Vale limpo!' },
+          text: {
+            type: 'str',
+            value: 'Você juntou todas as gemas do vale ensolarado. Que aventura!',
+          },
+          button: { type: 'str', value: 'Explorar de novo' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: { type: 'str', value: 'Ai!' },
+          text: { type: 'str', value: 'Um bicho tirou todos os seus corações. Tente de novo!' },
+          button: { type: 'str', value: 'Tentar de novo' },
+        },
+        {
+          type: 'gk:setJumpFeel',
+          coyote: { type: 'num', value: 0.1 },
+          buffer: { type: 'num', value: 0.1 },
+          hold: { type: 'num', value: 0.3 },
+          gravity: { type: 'num', value: 2000 },
         },
         {
           type: 'gk:createCharacter',

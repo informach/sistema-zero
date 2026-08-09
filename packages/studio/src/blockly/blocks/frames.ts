@@ -4,6 +4,7 @@ import {
   FRAME_BEHAVIOR_LEGACY,
   FRAME_EVENTS,
   FRAME_LOOPS,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_STRUCTURE,
 } from '../blockContracts'
@@ -12,9 +13,9 @@ import { CATEGORY_COLORS } from '../theme'
 import type { BlockDefinition } from './types'
 
 /**
- * As cinco Áreas do projeto. Só o conteúdo interno gera; bloco solto é rascunho.
+ * As seis Áreas do projeto. Só o conteúdo interno gera; bloco solto é rascunho.
  * São chapéus top-level, no máximo um de cada. Os checks especializados impedem
- * que início, evento e loop sejam misturados.
+ * que molde, início, evento e loop sejam misturados.
  */
 export const FRAME_BLOCKS: BlockDefinition[] = [
   {
@@ -36,6 +37,19 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
     extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
     tooltip:
       'O visual (CSS). Tudo DENTRO daqui vira o style.css. O que ficar de fora é só rascunho.',
+  },
+  {
+    // Roda ANTES do "Ao iniciar", mas dentro do mesmo envelope de partida: o
+    // corpo de um molde só executa quando alguém usa a receita, então ele
+    // enxerga tudo que o "Ao iniciar" cria depois.
+    type: FRAME_MOLDS,
+    message0: BEHAVIOR_AREA_LABELS.molds,
+    message1: '%1',
+    args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSMoldRoot' }],
+    colour: '#6366f1',
+    extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
+    tooltip:
+      'Aqui você cria os moldes: as figuras, os tipos de inimigo, as classes. Nada acontece ainda. É no Ao iniciar que você usa cada um deles.',
   },
   {
     type: FRAME_START,

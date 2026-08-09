@@ -6,6 +6,7 @@ import { behaviorStatements, SZIRV2Schema } from '#ir'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
 import { gameKitBlocks } from '../../official-extensions/game-2d-advanced/blocks'
 import { registerExtensionBlocks } from '../blocks'
+import { BEHAVIOR_AREAS_STATE_VERSION } from '../blocksStateVersion'
 import { buildIRFromWorkspace, collectFlatFromWorkspace } from '../buildIR'
 import {
   blocksStateHasFrame,
@@ -436,7 +437,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     }
 
     const migrated = normalizeBlocksStateToFrames(previousVersion) as typeof previousVersion
-    expect(migrated.szBehaviorAreasVersion).toBe(6)
+    expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
 
     const workspace = new Blockly.Workspace()
     expect(() => Blockly.serialization.workspaces.load(migrated, workspace)).not.toThrow()
@@ -499,7 +500,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     }
 
     const migrated = normalizeBlocksStateToFrames(previousVersion) as typeof previousVersion
-    expect(migrated.szBehaviorAreasVersion).toBe(6)
+    expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
 
     const workspace = new Blockly.Workspace()
     expect(() => Blockly.serialization.workspaces.load(migrated, workspace)).not.toThrow()
@@ -566,7 +567,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     }
 
     const migrated = normalizeBlocksStateToFrames(previousVersion) as typeof previousVersion
-    expect(migrated.szBehaviorAreasVersion).toBe(6)
+    expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
 
     const workspace = new Blockly.Workspace()
     expect(() => Blockly.serialization.workspaces.load(migrated, workspace)).not.toThrow()
@@ -617,7 +618,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
       szBehaviorAreasVersion: number
       blocks: { blocks: Array<{ type: string; [key: string]: unknown }> }
     }
-    expect(migrated.szBehaviorAreasVersion).toBe(6)
+    expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
     const byType = new Map(migrated.blocks.blocks.map((block) => [block.type, block]))
     expect(JSON.stringify(byType.get('sz_frame_start'))).toContain('preparo-no-loop')
     expect(JSON.stringify(byType.get('sz_frame_events'))).toContain('evento-no-inicio')
@@ -699,7 +700,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
       szBehaviorAreasVersion: number
       blocks: { blocks: Array<{ type: string; [key: string]: unknown }> }
     }
-    expect(migrated.szBehaviorAreasVersion).toBe(6)
+    expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
     expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
       'sz_frame_start',
       'sz_frame_events',

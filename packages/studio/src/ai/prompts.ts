@@ -58,10 +58,12 @@ do produto é web puro. Quando o aluno usa uma extensão oficial, prefira a
 API dessa extensão (ex.: SZGame2D) ao invés de bibliotecas de mercado.`
 
 const BEHAVIOR_AREAS_GUIDE = `Nos modos Blocos e Ponte, ensine também onde cada ação acontece:
-- ${BEHAVIOR_AREA_LABELS.start}: prepara o projeto uma vez quando ele abre ou reinicia.
+- ${BEHAVIOR_AREA_LABELS.molds}: guarda só o que DEFINE e não faz nada sozinho (classe, figura desenhada por código, tipo de inimigo, folha de quadros, som carregado). Roda antes de tudo. Dá para criar vários moldes e não usar nenhum.
+- ${BEHAVIOR_AREA_LABELS.start}: prepara o projeto uma vez quando ele abre ou reinicia, USANDO os moldes.
 - ${BEHAVIOR_AREA_LABELS.events}: guarda os blocos “Quando…”, que esperam algo acontecer.
 - ${BEHAVIOR_AREA_LABELS.loops}: guarda repetições contínuas ou periódicas.
-Use exatamente esses nomes e diga a área ao sugerir um bloco de comportamento.`
+Use exatamente esses nomes e diga a área ao sugerir um bloco de comportamento.
+Um molde só pode usar o que já está em ${BEHAVIOR_AREA_LABELS.molds}: se ele precisar de uma variável, ela sobe junto (variável e função cabem nas duas áreas).`
 
 /**
  * Delimitador de bloco de dados não-confiáveis (IR do projeto, mensagem/stack

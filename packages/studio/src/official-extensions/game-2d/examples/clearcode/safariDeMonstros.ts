@@ -38,14 +38,7 @@ export const safariDeMonstrosExample: ExtensionExample = beginnerGameExample({
     version: 2,
     extensions: [{ extensionId: 'game-2d' }],
     behavior: {
-      start: [
-        {
-          type: 'g2d:fitScreen',
-          percent: {
-            type: 'num',
-            value: 100,
-          },
-        },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'explorador',
@@ -682,6 +675,15 @@ export const safariDeMonstrosExample: ExtensionExample = beginnerGameExample({
               color: '#6a5acd',
             },
           ],
+        },
+      ],
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
         },
         {
           type: 'g2d:createShapeSprite',

@@ -147,8 +147,9 @@ describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
   })
 
   it('são 4 guardiões perseguidores; vitória ao derrotar todos, derrota sem vida', () => {
-    const start = aventuraHeroiExample.ir.behavior.start
-    const enemyType = start.find(
+    const { molds = [], start } = aventuraHeroiExample.ir.behavior
+    // A ficha do inimigo é MOLDE; soltar um inimigo continua sendo Ao iniciar.
+    const enemyType = molds.find(
       (statement): statement is Extract<JSStatement, { type: 'g2d:defineEnemyType' }> =>
         statement.type === 'g2d:defineEnemyType',
     )

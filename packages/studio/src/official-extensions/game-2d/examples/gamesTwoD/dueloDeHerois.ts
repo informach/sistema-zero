@@ -43,21 +43,7 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g2d:fitScreen',
-          percent: {
-            type: 'num',
-            value: 100,
-          },
-        },
-        {
-          type: 'g2d:setGravity',
-          value: {
-            type: 'num',
-            value: 0.7,
-          },
-        },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'heroiAzul',
@@ -229,6 +215,22 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
               color: '#7a2530',
             },
           ],
+        },
+      ],
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
+        },
+        {
+          type: 'g2d:setGravity',
+          value: {
+            type: 'num',
+            value: 0.7,
+          },
         },
         {
           type: 'g2d:createShapeSprite',
