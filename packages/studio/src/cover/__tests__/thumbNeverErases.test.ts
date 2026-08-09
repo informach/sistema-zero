@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 /**
  * Uma captura que FALHA não pode apagar a capa que já existe.
@@ -26,6 +26,7 @@ mock.module('../coverCapture', () => ({
   captureCoverFromProject: () => Promise.resolve(capaDevolvida),
 }))
 
+const { forgetProjectSnapshot, rememberProjectSnapshot } = await import('../latestSnapshot')
 const { captureAndStoreProjectThumb } = await import('../thumbCapture')
 
 const projeto = { id: 'p1', name: 'jogo' } as unknown as Parameters<
@@ -33,6 +34,11 @@ const projeto = { id: 'p1', name: 'jogo' } as unknown as Parameters<
 >[0]
 
 describe('gravação da miniatura', () => {
+  beforeEach(() => {
+    gravacoes.length = 0
+    forgetProjectSnapshot()
+  })
+
   it('⭐ captura que volta null NÃO grava nada (a capa anterior sobrevive)', async () => {
     capaDevolvida = null
     await captureAndStoreProjectThumb(projeto)
@@ -44,6 +50,26 @@ describe('gravação da miniatura', () => {
     // é exatamente o segundo portão, e ele também tem que barrar a gravação.
     capaDevolvida = 'data:image/png;base64,AAAA'
     await captureAndStoreProjectThumb(projeto)
+    expect(gravacoes).toHaveLength(0)
+  })
+
+  it('⭐⭐ prefere a foto que o PREVIEW já tirou, sem abrir iframe nenhum', async () => {
+    // O caminho novo: enquanto a criança edita, o preview manda a miniatura do
+    // jogo que está rodando na tela. Aqui é só gravar — nada de rodar o jogo de
+    // novo e torcer para o navegador entregar quadros na saída.
+    capaDevolvida = null // o caminho antigo FALHARIA, e mesmo assim tem que gravar
+    rememberProjectSnapshot('p1', 'data:image/jpeg;base64,PREVIEW')
+    await captureAndStoreProjectThumb(projeto)
+    expect(gravacoes).toEqual([{ id: 'p1', dataUrl: 'data:image/jpeg;base64,PREVIEW' }])
+    forgetProjectSnapshot()
+  })
+
+  it('sem foto do preview, ainda tenta o caminho antigo', async () => {
+    forgetProjectSnapshot()
+    capaDevolvida = null
+    await captureAndStoreProjectThumb(projeto)
+    // Nada gravado, mas o importante é que a RESERVA foi exercida (o
+    // `captureCoverFromProject` mockado foi consultado e devolveu null).
     expect(gravacoes).toHaveLength(0)
   })
 })

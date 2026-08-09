@@ -130,19 +130,23 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   'patrulha'|'perseguidor'|'voador'|'voador-vertical'|'saltador'|'atirador'|'parado'|
   'medroso'|'arrancada'|'rondador'|'mergulhador'|'teleporte'|'zigue-zague'|
   'atirador-alinhado'|'atirador-lado'|'atirador-esperto'|'atirador-leque'|'bombardeiro'|'raio'|
-  'espinho'|'renascer'|'chefao'|'perseguidor-lado'.
+  'espinho'|'renascer'|'chefao'|'perseguidor-lado'|'perseguidor-vertical'.
   Quem anda no chão não cai num top-down; para cair em plataforma, gere setGravity
   em Ao iniciar e applyGravityToGroup(tipo) antes de updateEnemyType no gameLoop.
   Quem voa ('voador', 'voador-vertical', 'rondador', 'mergulhador', 'teleporte',
-  'zigue-zague') nunca cai nem resolve chão. ⚠️ 'perseguidor' dirige os DOIS
-  eixos, então também não pousa: ele sobe pelo ar atrás do alvo. Para um
-  perseguidor que respeite o chão, some 'saltador' (que toma o eixo Y).
+  'zigue-zague') nunca cai nem resolve chão.
+  ⚠️ O perseguidor tem TRÊS modos, e a diferença é o eixo que ele dirige:
+  'perseguidor' pega os DOIS (então não pousa: sobe pelo ar atrás do alvo),
+  'perseguidor-lado' só o X (fica na altura em que nasceu) e
+  'perseguidor-vertical' só o Y (não sai da coluna). Para um perseguidor completo
+  que respeite o chão, some 'saltador' (que toma o eixo Y).
 - createSmartEnemyType({ smart, color, image, hp, speed, dmg, w, h }): o ATALHO dos jogos de
   nave. smart em 'burra'|'basica'|'avancada'|'ultra'|'rei'; cada um semeia um pacote:
   burra=patrulha+bombardeiro (fica em cima e atira reto sem olhar), basica=patrulha+
   atirador-alinhado (só atira quando o alvo passa bem embaixo ou bem em cima),
-  avancada=perseguidor+atirador, ultra=perseguidor+atirador-esperto (mira onde o alvo VAI
-  estar), rei=perseguidor+atirador-esperto+raio+chefao. ⚠️ ultra e rei também já sobem o
+  avancada=perseguidor-lado+atirador, ultra=perseguidor-lado+atirador-esperto (mira onde o
+  alvo VAI estar; as duas ficam na altura em que nasceram e seguem só pelos lados),
+  rei=perseguidor+atirador-esperto+raio+chefao (o chefao persegue por todo lado). ⚠️ ultra e rei também já sobem o
   'tiro' para 8: a mira adiantada só existe quando o tiro é mais rápido que o alvo, e a nave
   anda a 6 por padrão. Sem isso a ultra ficaria idêntica à avançada na tela.
   O addEnemyTypeBehavior continua somando por cima (é assim que um burro ganha raio).
@@ -164,7 +168,8 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   perseguidor+saltador (persegue pulando), parado+espinho (armadilha), chefao+perseguidor.
 - createAllEnemiesGroup(): devolve um grupo com os inimigos de TODOS os tipos, sempre atualizado
   (é uma VISTA montada dos tipos, não uma cópia: quem nasce entra, quem morre sai no mesmo quadro).
-  Emita em Ao iniciar (a ordem em relacao aos createEnemyType nao importa: e derivada). Serve para a ação que vale para todos com UM bloco:
+  Emita em 🧩 Meus moldes, junto dos tipos (a ordem em relacao aos createEnemyType nao importa: e
+  derivada). Serve para a ação que vale para todos com UM bloco:
   overlapGroups/overlapSpriteGroup/forEachInGroup/countGroup/drawGroup/drawGroupByY/collideGroup.
   clearGroup nela esvazia todos os tipos, removeFromGroup tira do tipo que contém, pruneOffscreen
   poda cada tipo. ⚠️ NÃO emita updateGroup, applyGravityToGroup, addToGroup, bringToFront nem

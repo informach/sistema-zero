@@ -261,6 +261,113 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   Provado em `cover/__tests__/` (o harness é string de JS puro: avaliado com `new Function` sobre um
   `document` falso, mesmo padrão dos testes de runtime das extensões). **Nunca havia teste nenhum da
   captura** — só do elo card ⇄ miniatura —, e foi por isso que a regressão passou batida.
+- ⭐⭐ **A capa do CARD não é mais tirada na saída: ela vem do preview que já está
+  rodando (08/2026).** Relato dela: *"não é toda vez que tira o print, e às vezes aparece a tela
+  desatualizada… precisei entrar e sair várias vezes, e quando apareceu foi só a cor de fundo, sem o
+  texto do placar"*. A causa é estrutural: fotografar AO SAIR exige que o navegador entregue quadros
+  exatamente no instante em que a página está sendo desmontada, e ele estrangula o `requestAnimationFrame`
+  justamente ali. Nenhum ajuste de espera conserta isso — o caminho depende de um recurso que o navegador
+  está retirando. Peças: **`preview/snapshotBridge.ts`** (string pura injetada no iframe, inerte até o
+  editor PEDIR; responde por `postMessage` com `targetOrigin`, autenticando `e.source === window.parent`)
+  + **`cover/latestSnapshot.ts`** (última foto boa por projeto, em memória de MÓDULO porque o
+  `PreviewIframe` que escreve e o `StudioCore` que lê são desmontados em ordens diferentes; prazo de
+  validade de 5 min) + o pedido periódico no `PreviewIframe`.
+  - ⭐⭐ **A foto sai em DUAS fases, e é isso que a torna barata.** Medido em Chrome real (palco
+    800×480 com 40 sprites e texto, 150 amostras): a foto inteira custa **1,7 ms** na mediana, mas o
+    `toDataURL` sozinho chegou a **17,5 ms** no pior caso — mais que um quadro inteiro (16,6 ms). Só
+    que a parte que PRECISA acontecer dentro do quadro é a cópia do canvas (`drawImage`), e ela custa
+    **0,02 ms** — o mesmo que o jogo gasta desenhando um quadro. Então a fase 1 (copiar) fica no
+    `requestAnimationFrame` e a fase 2 (codificar em JPEG) sai para `requestIdleCallback`, **com
+    `timeout`** — sem ele, uma página que nunca fica ociosa deixaria a foto pendurada e o `emVoo`
+    travado. ⚠️ Adiar as DUAS fases devolveria foto preta em jogo 3D: canvas WebGL sem
+    `preserveDrawingBuffer` volta vazio se lido fora da janela do quadro.
+  - **Orçamento**: primeira foto 2,5 s depois de o preview subir, depois uma a cada 20 s, **pulando
+    quando `document.hidden`** (aba escondida não recebe quadros, então ali a foto seria velha) e com
+    **um pedido em voo por vez**. O `emVoo` só é liberado no FIM das duas fases — liberar entre elas
+    deixaria uma cópia nova sobrescrever a que ainda espera codificação.
+  - ⚠️ **`loadedSrcDoc` fica FORA das dependências do efeito de propósito** (o `useExhaustiveDependencies`
+    do biome pede isso, e aqui a razão é performance, não lint): o preview recarrega a cada edição, e
+    reiniciar o ciclo a cada recarga dispararia uma foto poucos segundos depois de CADA mudança.
+  - ⭐ **Quadro EM BRANCO não vira capa.** O caminho antigo já descartava (varredura de alfa) e o
+    novo nasceu sem — então um jogo que ainda não desenhou, ou que quebrou no meio de uma edição,
+    sobrescreveria uma capa BOA por um retângulo liso: exatamente o sintoma que originou a peça. A
+    varredura custa até 6,4 ms, então mora na fase 2. ⚠️ Ela lê o ALFA, então o fundo entra DEPOIS
+    dela e por baixo (`destination-over`) — pintar o fundo antes deixaria tudo opaco e a checagem
+    nunca acusaria nada. ⚠️ Canvas contaminado não dá para inspecionar: ali NÃO se descarta (o
+    `toDataURL` lança no mesmo caso e o catch resolve).
+  - ⭐⭐⭐ **Tela DOM por cima do palco entra na foto — via `<svg><foreignObject>` (08/2026).**
+    Relato dela: *"no Jogo 2D, o print pega a tela de início certinho; no Jogo 2D Avançado, fica só
+    a cor de fundo"*. A causa é estrutural: as telas do gk são `<div class="szgk-panel">`
+    **sobrepostos** ao canvas (`runtime/shell.ts makeScreen`), enquanto o g2d desenha as telas NO
+    canvas. Fotografar só o canvas nunca as veria. ⚠️ **Isto NÃO é html2canvas** — aquele CLONA o
+    documento num iframe interno e lê o `contentWindow` dele, o que é cross-origin até para si mesmo
+    numa sandbox de origem opaca, e por isso nunca funcionou aqui. Serializar e desenhar não usa
+    iframe nenhum: **medido em sandbox `allow-scripts` SEM `allow-same-origin` — carrega, desenha,
+    NÃO contamina o canvas** (o `getImageData` de volta leu os 1293 px do texto) e exporta JPEG.
+    - **Gate O(1)**: `document.elementFromPoint` no CENTRO do palco. Diferente do canvas ⇒ tem algo
+      por cima ⇒ rasteriza. Assim o jogo comum (que desenha tudo no canvas) não paga nada.
+    - ⚠️⚠️ **O enquadramento tem DOIS jeitos de dar errado, e eu caí nos dois em sequência.** (1)
+      Encaixar a rasterização pela proporção da **página** faz a foto sair com zoom — relato dela:
+      *"parece que foi feito um zoom e pegou só as palavras"* —, porque o painel do editor tem a
+      forma que a criança deixou, não a do palco. (2) Recortar pelas coordenadas do canvas **na
+      página** cai no vazio — *"voltou a mostrar só a cor do fundo"* —, porque dentro do
+      `foreignObject` o layout de FORA não existe: o body que centraliza o palco não centraliza
+      nada ali, e o conteúdo fica no canto. **A resposta é ancorar no CONTÊINER do palco**
+      (`canvas.parentElement`): o SVG tem o tamanho dele e o recorte usa coordenadas RELATIVAS a
+      ele. Provado em Chrome nos quatro layouts (centralizado em página alta, centralizado em
+      página larga, canto superior esquerdo, com padding): foto idêntica nos quatro.
+    - ⚠️ Os estilos de LAYOUT do contêiner (`display`/`flex*`/`padding`/`boxSizing`/`overflow`) vão
+      para o **wrapper do foreignObject**, não para o clone: só os `childNodes` do clone são
+      serializados, então estilo posto no clone é JOGADO FORA. Os `<canvas>` do clone são
+      **escondidos**, porque canvas serializado vem SEM os pixels e viraria um retângulo vazio
+      tapando o jogo.
+    - ⚠️⚠️ **`background` NÃO entra na lista de layout, e `position` também não.** O `#szgk-stage`
+      pinta um fundo OPACO (`background: config.bg`): copiá-lo faria a rasterização TAPAR o jogo —
+      e as telas de lá são semitransparentes (`rgba(0,0,0,.35)`) justamente para o jogo aparecer
+      atrás. E o palco é `position:fixed`, que herdado tiraria o wrapper do lugar.
+    - ⚠️⚠️ **Geometria real do gk, que nenhum cenário inventado reproduz:** `#szgk-stage` é
+      `position:fixed; inset:0` (a JANELA inteira) com o canvas centralizado, **transbordando**
+      quando o jogo é maior que o painel do editor. Janela 500×700 com canvas 800×480 ⇒ origem do
+      recorte em **x = −150**, negativo — e isso é correto: a parte do palco fora da janela também
+      não existe na tela (`overflow:hidden`), e origem fora do SVG desenha transparente, que em
+      `source-over` preserva o jogo já copiado embaixo. Travado em `previewSnapshot.test.ts`.
+    - ⚠️ Um recurso externo (imagem de rede) derruba o SVG inteiro: `onerror` + timeout de 1,5 s
+      seguem sem a sobreposição em vez de perder a foto.
+    - ⭐ Com tela por cima, palco em branco **não** descarta — a tela de início é foto legítima com
+      o canvas ainda sem um pixel, que é o estado do gk antes de "começar".
+  - ⭐⭐ **A FRONTEIRA DE CONFIANÇA é o `rememberProjectSnapshot`, não o bridge.** O bridge roda no
+    mesmo contexto do programa da criança, que pode postar a mensagem à mão — validar lá dentro não
+    vale como garantia. Ali se exige `data:image/` e o teto **da gravação**
+    (`MAX_PROJECT_THUMB_CHARS`). ⚠️ Os dois tetos já divergiram: a ponte aceitava 400 KB e o
+    `writeProjectThumb` recusa acima de 300 KB **em silêncio** — no meio, a foto era guardada,
+    escolhida em vez da reserva, e depois descartada sem que ninguém soubesse.
+  - ⚠️⚠️ **Crase crua dentro do template literal do runtime = arquivo quebrado.** Aconteceu a 3ª e a
+    **4ª** vez no mesmo dia — a 4ª escrevendo o comentário sobre a 3ª —, e as duas chegaram à tela
+    da dona pelo HMR. Repetir o aviso não resolveu, então virou rede:
+    **`preview/__tests__/bridgeTemplateCrase.test.ts`** monta os DEZ runtimes injetados no preview e
+    compila cada um com `new Function`. ⭐ A régua não é contar crases (os arquivos têm vários
+    templates legítimos, e um par de crases pode deixar o arquivo parseável mudando o SENTIDO do
+    código): é que **o runtime gerado seja JavaScript válido** — o TypeScript não olha dentro da
+    string, então sem isto o erro só aparece no navegador da criança.
+  - ⚠️⚠️ **O painel do navegador desta sessão fica OCULTO, e ali a viewport do iframe é 0×0**:
+    `visibilityState: 'hidden'` ⇒ nenhum elemento tem layout, todo `getBoundingClientRect` volta
+    zero e `elementFromPoint` devolve `null`. Consequência prática: **qualquer coisa que dependa de
+    layout dependente de VIEWPORT é inverificável aqui** — inclusive esta rasterização inteira, cujo
+    gate é `elementFromPoint`. ⭐ E a armadilha é pior que "não dá para testar": um cenário de teste
+    com contêiner de tamanho FIXO em px passa, porque não depende da viewport, e dá a impressão de
+    ter provado o caso real. Foi exatamente o que aconteceu — a rodada anterior declarou "quatro
+    layouts provados" com um contêiner `width:400px`, que nunca exercitou o `position:fixed` do gk.
+    Ao medir layout aqui, **use o CSS de produção** e desconfie de zero.
+  - O caminho antigo (`captureCoverFromProject` + `downscaleToThumb`) continua como **RESERVA** e não
+    é decoração: cobre quem nunca abriu o preview, quem o deixou parado e a foto que envelheceu.
+    `resolveThumb` (`cover/thumbCapture.ts`) prefere a do preview e cai nele. ⚠️ Ele também é o único
+    caminho do **ShareDialog** ("Gerar capa"), que é síncrono com o clique e precisa de um print sob
+    demanda — os dois usos não se confundem.
+  - Testes: `cover/__tests__/previewSnapshot.test.ts` (o bridge é string de JS puro, avaliado com
+    `new Function` sobre window/document falsos, mesmo padrão dos runtimes de extensão) — inclusive os
+    dois testes simétricos que travam o corte entre as fases. ⚠️ **O round-trip real precisa de um
+    navegador com o painel VISÍVEL**: com a aba oculta, `document.hidden` é true e o editor
+    (corretamente) nem pede a foto, então esse caminho não é verificável aqui.
 - ⚠️⚠️ **A 2ª passada (html2canvas) NÃO FUNCIONA — medido 08/2026.** O `import` do esm.sh resolve
   (importmap + `script-src` conferidos no navegador), mas o html2canvas **clona o documento num
   iframe interno** e lê o `contentWindow.document` dele; com o sandbox `allow-scripts` **sem**
@@ -268,8 +375,11 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   `Blocked a frame with origin "null" from accessing a cross-origin frame`. `foreignObjectRendering:
   true` **não** resolve (o clone vem antes nos dois modos), e `allow-same-origin` está fora de
   questão. **Consequência: projeto SEM canvas (HTML/CSS puro) não tem capa hoje** — e o card promete
-  uma foto que não vem. Sair disso pede um rasterizador que não clone via iframe (serializar o DOM
-  num `<svg><foreignObject>`), que é trabalho de verdade e não um flag. ⭐ O que segura a peça: a
+  uma foto que não vem. ⭐⭐ **A saída apontada aqui — serializar o DOM num `<svg><foreignObject>`,
+  que não clona via iframe — foi MEDIDA e FUNCIONA na sandbox de origem opaca (08/2026), e já vive
+  em `preview/snapshotBridge.ts` (`rasterizarDOM`).** Hoje ela só é acionada quando existe um canvas
+  com algo por cima; ligar o caminho SEM canvas nenhum é reusar aquela função, não pesquisa nova.
+  ⭐ O que segura a peça: a
   captura devolvendo `null` **não apaga a capa que já existe** (`captureAndStoreProjectThumb` sai
   antes de gravar), então uma falha nunca destrói uma foto boa.
 - **Player público** (`src/components/preview/StudioProjectPlayer.tsx` + `src/preview/renderProject.ts`):
@@ -468,14 +578,27 @@ nasce sem áreas**; a criança adiciona somente as que a atividade precisa pela
 categoria **🗂️ Áreas do projeto**.
 
 ⭐⭐ **Cada área passa pela CURADORIA, como qualquer bloco (08/08).** A categoria
-🗂️ nasce VAZIA e `buildCoreToolbox` a preenche no fim: uma área entra somente
-quando a paleta já montada oferece algum bloco cuja área CANÔNICA é ela. Antes as
-seis eram fixas e ficavam fora de todo filtro — o sintoma era silencioso e feio:
-uma aula de primeiros passos, sem HTML nem CSS liberados, mostrava 🧱 Estrutura e
+🗂️ nasce VAZIA e `buildCoreToolbox` a preenche no fim: uma área entra quando o
+PERFIL dá direito a algum bloco cuja área CANÔNICA é ela. Antes as seis eram
+fixas e ficavam fora de todo filtro — o sintoma era silencioso e feio: uma aula
+de primeiros passos, sem HTML nem CSS liberados, mostrava 🧱 Estrutura e
 🎨 Aparência, e a criança arrastava áreas que não tinham um único bloco para
 receber. Medido: `allowBlocks: ['sz_g2d_create_sprite']` → só ⚙️ Ao iniciar;
 somar um laço traz 🔁 junto; `['sz_html_text']` → só 🧱. As áreas saem sempre na
 ordem em que EXECUTAM, não na ordem da lista da aula.
+
+⚠️⚠️ **A fonte é o UNIVERSO de blocos (`allowedAreasForProfile`, que varre o
+`SERVER_BLOCK_CATALOG`), NUNCA a paleta montada.** A primeira versão lia a paleta
+e causou um defeito de produção: uma criança no **Construtor**, no Estúdio
+Completo, ficou sem ⚡ Quando acontecer e sem 🔁 Enquanto estiver rodando, e não
+conseguia montar jogo nenhum. O detalhe que ela deu fechou o diagnóstico —
+*"quando criei apareceu, quando saí e voltei sumiu"*: ao criar, a extensão vinha
+junto; ao reabrir, a paleta era montada antes de a extensão hidratar. A lista do
+Kit essencial (`ESSENTIAL_2D_ALLOW_BLOCKS`) é quase toda de blocos do Jogo 2D,
+então sem a extensão carregada não sobrava evento nem laço para "provar" um
+direito que a criança tinha. Pelo universo, o direito vem do NÍVEL e da lista, e
+instalar ou remover extensão não mexe mais nas áreas. Regressão travada em
+`moldsArea.test.ts` com a lista REAL do produto e ZERO extensão passada.
 - ⚠️ É a área **canônica** (`root[0]`), não todas em que o bloco cabe: variável e
   função cabem em 🧩 Meus moldes de propósito, e contá-las traria a área já no
   primeiro degrau, sem molde nenhum para pôr dentro.
@@ -886,7 +1009,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.65.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.67.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -1592,6 +1715,20 @@ do CLAUDE.md, vieram de eu escrever código NOVO que cai na mesma armadilha por 
 vez que este arquivo ganha um mapa de nomes, ele precisa de protótipo nulo; toda vez que um caminho
 NOVO de desenho vira oficial, o `_drawn` precisa acompanhar.
 
+### O que a vista NÃO cobre, e a decisão de 07/08
+
+A vista é montada dos **inimigos** de cada tipo; os **tiros** vivem em `type.bullets`, uma lista por
+tipo que nenhum bloco nomeia. Então o grupo geral resolve o dano por ENCOSTÃO e não resolve o dano
+por TIRO nem por RAIO: esses seguem um bloco por tipo (o que tem o lado bom de dar dano diferente por
+tipo de graça).
+
+⚠️ **Buraco conhecido, deixado em aberto a pedido dela ("deixa assim mesmo por enquanto")**: o campo
+do "Para cada tiro do tipo …" é um seletor com texto livre, então dá para DIGITAR ali o nome do grupo
+geral. `overlapEnemyShots` sai cedo em `!type.bullets` — não quebra o jogo, mas também não avisa. Se
+alguém retomar isto: o conserto natural é um bloco irmão ("Para cada tiro de QUALQUER inimigo que
+acertar o sprite …", a mesma vista derivada aplicada às listas de tiros) mais o aviso no caminho
+silencioso. O raio seria o terceiro irmão.
+
 ### Décimo primeiro full review (07/08) — a tabela do manual virou contrato
 
 Rodada magra, e a magreza é o achado. Zero defeito no runtime; o que faltava era PROVA.
@@ -1616,6 +1753,132 @@ sobre a vista é contrato')`.
 DECLARAÇÕES e já experimentou trocar o `placement` de criadores para `mold-declaration`. O bloco novo
 da vista é um criador de recurso `start-only-command` e provavelmente vai querer o mesmo tratamento —
 decisão de quem estiver conduzindo aquele lote.
+
+### A identidade do inimigo mudou de área: 🧩 Meus moldes (v0.66.0)
+
+A área de moldes (lote da outra sessão) levou só os dois "Criar tipo de inimigo", e a configuração do
+tipo ficou em ⚙️ Ao iniciar. Pelo princípio da dona isso está errado: **molde é o que a coisa É**
+(preparo, posso nem usar), **Ao iniciar é pôr para funcionar nesta partida**. Ela pediu cada bloco
+numa área SÓ, a que lhe cabe — nada de "vale nas duas".
+
+Quatro blocos trocaram de encaixe: **"também é"**, **"Ajustar no tipo"**, **"Animação dos inimigos do
+tipo"** e o **grupo com todos os inimigos**.
+
+⭐ **A restrição que apareceu, e como saiu sem enfraquecer nada.** O contrato da área de moldes tem um
+invariante — `MOLD_ONLY_STATEMENT_TYPES ⊆ START_ONLY_STATEMENT_TYPES` — e `START_ONLY` **proíbe
+aninhar**. Só que "também é" e "Ajustar" PRECISAM caber dentro de um evento: é a receita do chefão que
+fica furioso na metade da vida e da onda que endurece. Em vez de afrouxar o `MOLD_ONLY`, entrou um
+conjunto IRMÃO, **`MOLD_NESTABLE_STATEMENT_TYPES`** ("raiz no molde, aninhado permitido"), com o
+preset `mold-command` do lado do Blockly. O invariante da outra sessão segue valendo inteiro e **o
+teste dela não foi editado**.
+
+⭐⭐ **A migração não custou uma linha**: as duas pontas já leem o contrato. `normalizeFrames.ts`
+compara `areaForBlockType` com a área do frame em que o bloco está e re-hospeda o que não cabe;
+`liftMoldDependencies` sobe junto as variáveis de que o molde depende; `appendChildrenToArea` CRIA o
+frame de destino quando o projeto salvo não tem a área; e `partitionMolds` faz o mesmo do lado da IR,
+preservando a ordem e a identidade de quem não tem nada a mover.
+
+⚠️ **Armadilhas do lote, todas pegas por teste:**
+- O `'g2d:allEnemiesGroup'` foi para o conjunto ERRADO: a âncora do meu script bateu primeiro no
+  `START_ONLY` (os dois conjuntos listam `defineEnemyType`/`defineEnemySmart` em sequência). O
+  `blockAudit` acusou na hora, porque o Blockly dizia molde e a IR dizia início.
+- Exemplos: **um** statement (a cadência do canhão em `examples/adventure.ts`) estava no `start` e foi
+  para o `molds` do exemplo — a dona pediu conserto na RAIZ, e o teste "NENHUM exemplo oficial deixou
+  molde em Ao iniciar" cobra isso. Isso mexeu no **hash do catálogo** (`examplesLoading.test.ts`).
+- ⚠️ O meu teste da variável que sobe junto FALHOU por culpa dele mesmo: usei tipos de bloco que não
+  existem (`sz_js_var` em vez de `sz_js_var_create`). O `liftMoldDependencies` estava certo.
+- `BODY_CONTEXTS` é `const` declarado no meio do arquivo: o preset novo precisou nascer DEPOIS dele,
+  senão TDZ no carregamento do módulo.
+
+Contadores: `+1` arquivo próprio (127) e manifest **0.66.0**. Teste novo:
+`__tests__/enemyMolds.test.ts` (10 casos: encaixe dos quatro, o aninhado que não pode morrer, o
+invariante do conjunto novo, `partitionMolds`, e o projeto salvo se consertando com e sem a área).
+
+#### Décimo segundo full review (07/08) — o lote da área de moldes
+
+Dois achados, e o primeiro é o mais importante do lote inteiro porque muda o SENTIDO de um jogo salvo.
+
+1. ⭐⭐ **A migração pode mudar o significado da receita da onda.** O "Ajustar … vida" existe para
+   endurecer a onda seguinte, e a receita natural era pôr o bloco no ⚙️ Ao iniciar ENTRE dois spawns:
+   quem nasceu antes fica fraco, quem nasce depois vem forte. Como o bloco agora é molde e **o molde
+   roda antes de TUDO**, um projeto salvo desses passa a dar a vida nova aos DOIS spawns. Não é bug de
+   código, é consequência da mudança de área — e estava sem uma linha de aviso. O manual agora diz,
+   no próprio bullet do Ajustar, que ajuste no molde vale para o jogo inteiro e que endurecer só a
+   onda seguinte pede o bloco dentro de um evento ou de um "A cada N segundos".
+2. **Concedi um aninhado sem decidir.** O preset `mold-command` usa `BODY_CONTEXTS`, que inclui corpo
+   de LAÇO, então a "Animação dos inimigos do tipo" — que era `start-only`, sem aninhar — ganhou a
+   permissão de rodar por quadro. Revisei em vez de reverter: manter é coerente com os dois irmãos (os
+   três são identidade que também muda no meio do jogo) e destrava o chefão que troca de animação
+   quando fica furioso. O que estava errado era estar sem decisão e sem registro; agora o manual
+   ensina os três no evento, e o teste cobra os três num evento E num temporizador.
+
+**Conferido:** o `role` do contrato só distingue `event`/`loop`/`value`, então `declaration` × `command`
+não muda checagem nenhuma; o grupo geral RECUSA corpo de evento (é preparação e só, e tem teste); e a
+ordem dentro do molde continua cobrada pela regra de declaração do schema — pôr o "também é" acima do
+"Criar tipo" reprova, como antes.
+
+### O perseguidor com TRÊS modos (v0.67.0, 23 → 24 comportamentos)
+
+Pedido dela: perseguir completo (os dois eixos), só no X e só no Y; e a **avançada** e a **ultra**
+passam a perseguir só no X, ficando na altura em que nasceram (o andar de jogo de nave, em vez de
+descer em cima do jogador). O REI mantém o perseguidor completo — ela citou só as duas, e o chefão que
+caça por todo lado é a escalada do último nível.
+
+⭐ **Os três modos são três LINHAS da tabela, não três funções.** O `_enemyChaseMove` já tratava posse
+de um eixo só desde a correção nº2 do 1º full review, então a tabela de eixos entrega os três com a
+mesma função (`{x,y}`, `{x}`, `{y}`). E aí o **`_enemyTrackMove` saiu**: ele era o só-X escrito à mão, e
+duas implementações da mesma regra é a receita de divergirem no próximo conserto. **A catraca de
+parâmetros DESCEU** (896 → 893) — baixar em vez de deixar folga é o que mantém a catraca cobrando.
+
+⭐ **A disciplina que provou a consolidação**: antes de trocar a função, CAPTUREI a sequência de
+posições do `perseguidor-lado` numa sonda descartável (103, 106, 109, 112, 115, 118, com passo curto
+119 e parada sem alvo). Depois da troca, idêntica. A sequência virou teste permanente, com o comentário
+dizendo que os números vieram da implementação anterior — é o que transforma "achei que não mudou" em
+prova. Mesma receita da Etapa 1 do lote original dos inimigos.
+
+- Nome pelo par que já existia (`voador`/`voador-vertical`): **`perseguidor-vertical`**, rótulo curto
+  "perseguidor (sobe e desce)".
+- Copy travada que mudou de sentido: os rótulos da avançada e da ultra ("perseguidor de lado +
+  atirador"), os cinco níveis do manual e a família "Anda no chão", que agora apresenta os três modos
+  juntos ("só muda o eixo em que ele se mexe; a esperteza é a mesma").
+- Medido em Chrome, do mesmo ponto e com o mesmo alvo: completo `108,96 → 156,132 → 204,168`; de lado
+  `120,60 → 180,60 → 240,60`; vertical `60,120 → 60,180 → 60,240`. E as inteligências: avançada e ultra
+  ficaram em y=40 (nasceram lá) chegando a x=202 sobre a nave em 200; o rei desceu para y=141.
+- ⚠️ O drift do 8º review (todo comportamento explicado no manual e conhecido pela IA) pegou o
+  esquecimento na hora: eu tinha editado a frase da família sem ACRESCENTAR o modo novo nela.
+
+#### Décimo terceiro full review (07/08) — o teste da gravidade era um VÁCUO
+
+Rodada sobre o lote dos três modos. Zero defeito no runtime; os quatro achados são de copy e de
+REDE, e o terceiro é a classe que mais reincide nesta série.
+
+1. **"sem mudar de lado" é ambíguo** (troca de lado? anda de lado?). O irmão diz "sem mudar de
+   altura", que é limpo, e o espelho tinha que ser igual de limpo: "sem andar para os lados".
+2. ⭐ **A distinção nova deixou o rótulo do REI sob-informativo.** Com a avançada e a ultra dizendo
+   "perseguidor de lado", o "perseguidor" seco do rei não conta mais a diferença que importa — que
+   ele é o único que vai atrás de você por todo lado. Virou "persegue por TODO LADO", e o item dele
+   no manual abre dizendo "diferente das duas de cima". Achado que só existe porque a mudança
+   anterior alterou o CONTRASTE entre rótulos vizinhos, não porque algum deles ficou errado.
+3. ⭐⭐ **`o vertical não cai com gravidade ligada` passava sem provar nada.** O teste chamava
+   `setGravity(0.6)` e afirmava que o inimigo não afundava — só que **gravidade de mundo não derruba
+   inimigo nenhum**: quem acelera o `vy` é o bloco "Aplicar a gravidade ao grupo", e sem ele o
+   fallback do eixo Y integra um `vy` que é zero. O teste passaria idêntico se o modo não fosse dono
+   do Y, que é exatamente o que ele existia para garantir. Agora aplica a gravidade a cada quadro,
+   como o jogo de plataforma faz, e tem **anti-vácuo**: no MESMO cenário a `patrulha` (que não é dona
+   do Y) afunda até o chão visível, em 280. É a 5ª vez nesta série que um teste meu promete mais do
+   que verifica, e a receita que pega todas é a mesma: escrever a metade que tem que FALHAR.
+4. **Rede nova de SIMETRIA**: os dois modos de um eixo saem da mesma função, então o de lado e o
+   vertical têm que produzir a mesma sequência de passos em cenários espelhados (alvo a +200 no eixo
+   de cada um, e a −200 também). É o teste que morde se alguém tratar um eixo diferente do outro —
+   a classe do `_dir` × `_dirY`, que já mordeu duas vezes neste arquivo.
+
+**Conferido e registrado no código:** nenhum dos três modos é `flying`, **inclusive o vertical**
+(diferente do `voador-vertical`, que é). É deliberado e agora está comentado na tabela: enquanto o
+modo é dono do eixo Y a gravidade nunca roda, e quando outro comportamento LEVA o Y quem manda é ele
+— marcar `flying` mudaria de tabela o `perseguidor` que já está em produção. Também conferido: as
+quatro superfícies de copy (dropdown, os cinco níveis do manual, a família "Anda no chão" e o
+`ai.ts`) descrevem os três modos sem divergência, e as duas menções restantes ao `_enemyTrackMove`
+são os comentários que explicam a remoção dele, não referências.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 

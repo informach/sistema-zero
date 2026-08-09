@@ -132,7 +132,12 @@ export function resolveStudioTier(
     level: reward.blockLevel,
     ...(reward.blockProfileId === '2d-essential' ? { allowBlocks: ESSENTIAL_2D_ALLOW_BLOCKS } : {}),
     allowedExtensions: EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? [],
-    initialExtensions: reward.freeStudio ? ['game-2d'] : [],
+    // ⚠️ NENHUMA extensão vem instalada. A criança abre o painel de Extensões e
+    // instala a que quiser, entre as que a carreira dela já liberou
+    // (`allowedExtensions`); os blocos continuam filtrados pelo `level`, então
+    // instalar não adianta a paleta de um degrau acima. Decisão dela, 08/08:
+    // instalar é parte do aprendizado, e o projeto novo nasce limpo.
+    initialExtensions: [],
     allowedModes: [...reward.modes],
     allowLevelReveal: false,
     bridge: reward.bridge,

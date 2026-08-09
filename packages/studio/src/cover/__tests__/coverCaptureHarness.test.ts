@@ -112,6 +112,131 @@ function rodar(opts: {
   return { postado, temp }
 }
 
+/**
+ * Roda o harness com controle sobre QUANDO o rAF e os timers disparam, para
+ * cobrir o AGENDAMENTO (o `rodar` acima executa tudo na hora e por isso não
+ * enxerga a ordem). Devolve as filas para o teste avançar o tempo à mão.
+ */
+function rodarComRelogio(opts: { rafDisponivel: boolean }) {
+  const temp = canvasFalso({ pixels: [0, 0, 0, 255] })
+  const palco = canvasFalso({})
+  let postado: string | null | undefined
+  let capturas = 0
+
+  const rafs: Array<() => void> = []
+  const timers: Array<{ fn: () => void; ms: number }> = []
+
+  const documento = {
+    readyState: 'complete',
+    body: { __bg: '' },
+    querySelectorAll: () => [palco],
+    createElement: () => {
+      capturas++
+      return temp
+    },
+  }
+  const janela: Record<string, unknown> = {
+    addEventListener() {},
+    getComputedStyle: (el: { __bg?: string }) => ({ backgroundColor: el?.__bg ?? '' }),
+  }
+  if (opts.rafDisponivel) {
+    janela.requestAnimationFrame = (fn: () => void) => {
+      rafs.push(fn)
+    }
+  }
+  const pai = {
+    postMessage: (msg: { dataUrl: string | null }) => {
+      postado = msg.dataUrl
+    },
+  }
+  const setTimeoutFalso = (fn: () => void, ms: number) => {
+    timers.push({ fn, ms })
+    return 0
+  }
+
+  new Function(
+    'window',
+    'document',
+    'parent',
+    'setTimeout',
+    buildCanvasHarness({ parentOrigin: 'https://x.test', warmupMs: 1_500, maxBytes: 6_000_000 }),
+  )(janela, documento, pai, setTimeoutFalso)
+
+  return {
+    /** Dispara os timers pendentes cujo atraso seja <= ms (uma leva). */
+    avancarTimers(ms: number) {
+      const prontos = timers.filter((t) => t.ms <= ms)
+      timers.length = 0
+      for (const t of prontos) t.fn()
+    },
+    /** Dispara um quadro de animação. */
+    quadro() {
+      const fila = [...rafs]
+      rafs.length = 0
+      for (const fn of fila) fn()
+    },
+    get postado() {
+      return postado
+    },
+    get capturas() {
+      return capturas
+    },
+    get quadrosPendentes() {
+      return rafs.length
+    },
+  }
+}
+
+describe('harness da capa — quando fotografar', () => {
+  it('⭐⭐ NÃO fotografa no primeiro quadro: espera o jogo desenhar', () => {
+    // O defeito relatado: "não é toda vez que tira o print, e quando saiu foi só
+    // a cor de fundo, sem o texto do placar". A captura esperava tempo de
+    // RELÓGIO; com o requestAnimationFrame estrangulado (é o que acontece na
+    // saída do editor), o jogo não avançava e saía a foto de um canvas quase
+    // vazio com o fundo composto por cima.
+    const h = rodarComRelogio({ rafDisponivel: true })
+    h.avancarTimers(1_500) // passou o warmup: agenda o 1º quadro
+    expect(h.capturas).toBe(0)
+
+    h.quadro() // 1º quadro: ainda pode ser só o clear + fundo
+    expect(h.capturas).toBe(0)
+
+    h.quadro() // 2º quadro: agora o jogo já pintou de verdade
+    expect(h.capturas).toBe(1)
+    expect(h.postado).toBe('data:image/png;base64,AAAA')
+  })
+
+  it('⭐ sem requestAnimationFrame, a rede fotografa mesmo assim (página estática)', () => {
+    // Um projeto HTML/CSS puro, ou um jogo que desenha uma vez só, nunca entrega
+    // os quadros — e esperar o timeout inteiro atrasaria a saída à toa.
+    const h = rodarComRelogio({ rafDisponivel: false })
+    h.avancarTimers(1_500)
+    expect(h.capturas).toBe(0)
+    h.avancarTimers(900)
+    expect(h.capturas).toBe(1)
+  })
+
+  it('a rede e os quadros não fotografam DUAS vezes', () => {
+    const h = rodarComRelogio({ rafDisponivel: true })
+    h.avancarTimers(1_500)
+    h.quadro()
+    h.quadro()
+    expect(h.capturas).toBe(1)
+    h.avancarTimers(900) // a rede chega depois: tem que ser inerte
+    h.quadro()
+    expect(h.capturas).toBe(1)
+  })
+
+  it('depois de fotografar, para de pedir quadros', () => {
+    const h = rodarComRelogio({ rafDisponivel: true })
+    h.avancarTimers(1_500)
+    h.quadro()
+    h.quadro()
+    expect(h.capturas).toBe(1)
+    expect(h.quadrosPendentes).toBe(0)
+  })
+})
+
 describe('harness da capa', () => {
   it('⭐ compõe o fundo do palco ATRÁS do desenho (o laranja que saía preto)', () => {
     // O fundo do jogo é CSS (style.background do canvas), nunca pixel — sem

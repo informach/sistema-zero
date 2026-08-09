@@ -13,6 +13,7 @@ import { buildModalGuardRuntime } from './modalGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
 import { scriptIntegrity } from './scriptIntegrity'
 import { buildScriptSourceGuardRuntime } from './scriptSourceGuard'
+import { buildSnapshotBridgeRuntime } from './snapshotBridge'
 import { buildStorageBridgeRuntime } from './storageBridge'
 import { transpileExtra } from './transpile'
 
@@ -317,6 +318,17 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
           buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds, input.models3d),
         )
       : ''
+  // Bridge de FOTO: fica inerte até o editor pedir uma miniatura do jogo que já
+  // está rodando na tela. É o que substitui abrir um iframe novo na saída (ver
+  // `snapshotBridge.ts`). Só entra quando há para quem responder.
+  const snapshotBridgeTag = input.parentOrigin
+    ? trustedScriptTag(
+        buildSnapshotBridgeRuntime({
+          parentOrigin: input.parentOrigin,
+          projectId: input.storageProjectId,
+        }),
+      )
+    : ''
   const interceptorTag = trustedScriptTag(buildInterceptorScript(input.parentOrigin))
   const cspMeta = buildPreviewCSPMetaTag({
     fetchAllowedOrigins: input.fetchAllowedOrigins,
@@ -338,6 +350,7 @@ ${scriptSourceGuardTag}
 ${inputBridgeTag}
 ${audioBridgeTag}
 ${storageBridgeTag}
+${snapshotBridgeTag}
 ${assetsBridgeTag}
 ${importmapTag}
 ${extScripts}

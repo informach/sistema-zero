@@ -236,7 +236,11 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 881 → 884: os 3 do atirador de lado (_enemySideShootAct).
   // 884 → 896: os 12 da VISTA de todos os inimigos (registrar, guardas,
   // encaminhamentos e o proxy que defende a lista derivada).
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(896)
+  // 896 → 893: a catraca DESCEU. Os três modos do perseguidor passaram a ser três
+  // linhas da mesma função na tabela de eixos, e o _enemyTrackMove (o só-X
+  // escrito à mão) saiu. Baixar o número em vez de deixar a folga é o que mantém
+  // a catraca cobrando de verdade.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(893)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

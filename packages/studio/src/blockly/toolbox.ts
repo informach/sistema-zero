@@ -6,6 +6,7 @@ import {
   isCategoryAllowed,
   type LearningProfile,
 } from '#core'
+import { SERVER_BLOCK_CATALOG } from './blockCatalog'
 import {
   FRAME_APPEARANCE,
   FRAME_EVENTS,
@@ -295,6 +296,30 @@ function areaOfType(type: string): AreaKey | null {
   return (contract.placement?.root[0] as AreaKey | undefined) ?? null
 }
 
+/**
+ * As Áreas do projeto a que o perfil dá direito, olhando TODOS os blocos que
+ * existem (núcleo + as cinco extensões oficiais), não só os carregados agora.
+ *
+ * ⚠️ A diferença importa: um bloco de evento do Jogo 2D dá direito à área
+ * ⚡ Quando acontecer mesmo que a extensão ainda não esteja instalada NAQUELE
+ * projeto. Sem isso, a criança abre um projeto novo e fica sem as áreas de que
+ * precisa exatamente para montar o jogo.
+ *
+ * O catálogo já reúne todo mundo com `level` e `area` resolvidos, então esta é a
+ * mesma fonte que o picker do admin e o Zappy leem — não há um terceiro mapa
+ * para divergir.
+ */
+function allowedAreasForProfile(profile: LearningProfile): Set<AreaKey> {
+  const areas = new Set<AreaKey>()
+  for (const entry of SERVER_BLOCK_CATALOG) {
+    // Valor não pertence a área; frame é a área, e contá-lo seria circular.
+    if (entry.area === 'value' || entry.type.startsWith('sz_frame_')) continue
+    if (!isBlockTypeAllowed(entry.type, entry.level, profile)) continue
+    areas.add(entry.area)
+  }
+  return areas
+}
+
 /** Há algum bloco (de qualquer área) nesta subárvore da paleta? */
 function offersAnyBlock(contents: readonly unknown[] | undefined): boolean {
   return (contents ?? []).some((entry) => {
@@ -564,7 +589,16 @@ export function buildCoreToolbox(
   // mostrava 🧱 Estrutura e 🎨 Aparência na paleta, e a criança arrastava áreas
   // que não tinham um único bloco para receber. A regra passa a ser a mesma para
   // as seis: área é ferramenta de guardar bloco, e sem bloco não há o que guardar.
-  const offeredAreas = new Set<AreaKey>(dynamicAreas)
+  // ⭐⭐ A fonte é o UNIVERSO de blocos que o perfil permite, não a paleta
+  // montada. Relato de produção (08/08): uma criança no Construtor, no Estúdio
+  // Completo, ficou sem ⚡ Quando acontecer e sem 🔁 Enquanto estiver rodando e
+  // não conseguia montar jogo nenhum. A causa era ler a paleta: a lista do Kit
+  // essencial é quase toda de blocos do Jogo 2D, e num projeto onde a extensão
+  // ainda não estava instalada não sobrava evento nem laço para "provar" que a
+  // criança tem direito àquelas áreas. Pelo universo, o direito vem do NÍVEL e
+  // da lista, e instalar ou remover uma extensão não muda mais as áreas.
+  const offeredAreas = allowedAreasForProfile(profile)
+  for (const area of dynamicAreas) offeredAreas.add(area)
   collectOfferedAreas(contents, offeredAreas)
 
   // ⭐⭐ A lista da aula MANDA: área marcada no picker entra mesmo que nenhum

@@ -57,6 +57,7 @@ export type BlockPlacementPreset =
   | 'advanced-command'
   | 'start-declaration'
   | 'mold-declaration'
+  | 'mold-command'
   | 'mold-or-start-declaration'
   | 'mold-or-start-command'
   | 'event'

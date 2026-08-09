@@ -256,6 +256,26 @@ export const ADVANCED_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
  * ⚠️ Mantém os mesmos contextos aninhados de `command`: criar variável dentro de
  * um evento, laço ou função continua valendo.
  */
+/**
+ * Raiz na área de MOLDES, mas pode aparecer aninhado num corpo.
+ *
+ * ⚠️ Não é o mesmo que `mold-declaration`. Existe para a configuração que
+ * DESCREVE a coisa (o inimigo que "também é" atirador, o ajuste da cadência) e
+ * que, além de preparar, é usada no meio da partida para escalar dificuldade:
+ * o chefão que fica furioso na metade da vida põe esses blocos dentro do
+ * "Quando um inimigo do tipo ... levar dano".
+ *
+ * ⚠️ O espelho na IR é `MOLD_NESTABLE_STATEMENT_TYPES` (`ir/lifecycle.ts`), um
+ * conjunto IRMÃO de `MOLD_ONLY_STATEMENT_TYPES` — e não uma frouxidão dele: o
+ * invariante "molde só acontece na preparação, nunca aninhado" continua valendo
+ * para quem está no MOLD_ONLY.
+ */
+export const MOLD_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['molds'] as const,
+  nested: BODY_CONTEXTS,
+  role: 'command',
+})
+
 const MOLD_OR_START_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
   root: ['start', 'molds'] as const,
   nested: BODY_CONTEXTS,
@@ -268,6 +288,7 @@ const PLACEMENT_PRESETS: Readonly<Record<BlockPlacementPreset, BlockPlacement>> 
   'advanced-command': ADVANCED_COMMAND_PLACEMENT,
   'start-declaration': START_ONLY_DECLARATION_PLACEMENT,
   'mold-declaration': MOLD_DECLARATION_PLACEMENT,
+  'mold-command': MOLD_COMMAND_PLACEMENT,
   'mold-or-start-declaration': MOLD_OR_START_DECLARATION_PLACEMENT,
   event: EVENT_ROOT_PLACEMENT,
   'event-body': EVENT_BODY_COMMAND_PLACEMENT,

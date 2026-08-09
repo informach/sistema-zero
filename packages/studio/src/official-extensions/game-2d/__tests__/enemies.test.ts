@@ -1258,8 +1258,10 @@ describe('os cinco níveis de inteligência', () => {
     const esperado: Record<string, string[]> = {
       burra: ['patrulha', 'bombardeiro'],
       basica: ['patrulha', 'atirador-alinhado'],
-      avancada: ['perseguidor', 'atirador'],
-      ultra: ['perseguidor', 'atirador-esperto'],
+      // ⚠️ 'perseguidor-lado': a avançada e a ultra ficam na altura em que
+      // nasceram e seguem só para os lados. O REI mantém o perseguidor completo.
+      avancada: ['perseguidor-lado', 'atirador'],
+      ultra: ['perseguidor-lado', 'atirador-esperto'],
       rei: ['perseguidor', 'atirador-esperto', 'raio', 'chefao'],
     }
     for (const [nivel, combo] of Object.entries(esperado)) {
@@ -3085,5 +3087,150 @@ describe('a tabela do manual sobre a vista é contrato', () => {
     } finally {
       warn.mockRestore()
     }
+  })
+})
+
+/**
+ * O perseguidor tem TRÊS modos, e os três são a mesma função com posse de eixo
+ * diferente na tabela (`_enemyChaseMove`). Ter uma função por modo seria duas
+ * implementações da mesma regra, prontas para divergir no próximo conserto.
+ */
+describe('os três modos do perseguidor', () => {
+  const cena = (api: Api, comportamento: string, alvoX: number, alvoY: number) => {
+    const t = api.createEnemyType({ behavior: comportamento, w: 20, h: 20, speed: 3 })
+    const e = api.spawnEnemy(t, 100, 100) as Sprite
+    const alvo = api.createSprite({ x: alvoX, y: alvoY, w: 20, h: 20 })
+    return { t, e, alvo }
+  }
+
+  it('cada modo mexe só nos eixos que são dele', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const completo = cena(api, 'perseguidor', 260, 250)
+    const lado = cena(api, 'perseguidor-lado', 260, 250)
+    const vertical = cena(api, 'perseguidor-vertical', 260, 250)
+    for (let q = 0; q < 6; q += 1) {
+      api.updateEnemyType(completo.t, ctx, completo.alvo)
+      api.updateEnemyType(lado.t, ctx, lado.alvo)
+      api.updateEnemyType(vertical.t, ctx, vertical.alvo)
+    }
+    // completo: anda nos dois
+    expect(completo.e.x).toBeGreaterThan(100)
+    expect(completo.e.y).toBeGreaterThan(100)
+    // de lado: só na horizontal
+    expect(lado.e.x).toBeGreaterThan(100)
+    expect(lado.e.y).toBe(100)
+    // vertical: só na vertical, e sem sair da coluna
+    expect(vertical.e.y).toBeGreaterThan(100)
+    expect(vertical.e.x).toBe(100)
+    expect(vertical.e.vx).toBe(0)
+  })
+
+  it('⭐ a consolidação não mudou o perseguidor de lado (medido antes e depois)', () => {
+    // A sequência abaixo foi CAPTURADA com a implementação anterior (a função
+    // própria `_enemyTrackMove`, hoje removida) antes de a tabela passar a usar o
+    // `_enemyChaseMove`. É a prova de que a troca preservou o comportamento
+    // quadro a quadro, inclusive o passo curto e o parar sem alvo.
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { t, e, alvo } = cena(api, 'perseguidor-lado', 260, 250)
+    const posicoes: number[] = []
+    for (let q = 0; q < 6; q += 1) {
+      api.updateEnemyType(t, ctx, alvo)
+      posicoes.push(e.x)
+    }
+    expect(posicoes).toEqual([103, 106, 109, 112, 115, 118])
+    expect(e.y).toBe(100)
+    // Perto do alvo, o passo encurta em vez de passar dele.
+    alvo.x = e.x + 1
+    api.updateEnemyType(t, ctx, alvo)
+    expect(e.x).toBe(119)
+    expect(e.vx).toBe(1)
+    // Sem alvo, para de vez.
+    api.updateEnemyType(t, ctx, null)
+    expect(e.x).toBe(119)
+    expect(e.vx).toBe(0)
+  })
+
+  it('⭐ os dois modos de UM eixo se mexem igual, cada um no seu (simetria)', () => {
+    // Os três modos saem da mesma função, então o de lado e o vertical têm que
+    // produzir a MESMA sequência de passos em cenários espelhados. Um bug que
+    // tratasse um eixo diferente do outro (a classe do `_dir` × `_dirY`, que já
+    // morde neste arquivo duas vezes) apareceria só aqui.
+    const passos = (comportamento: string, alvoX: number, alvoY: number, eixo: 'x' | 'y') => {
+      const api = load()
+      const ctx = fakeCtx(400, 300)
+      const t = api.createEnemyType({ behavior: comportamento, w: 20, h: 20, speed: 3 })
+      const e = api.spawnEnemy(t, 100, 100) as Sprite
+      const alvo = api.createSprite({ x: alvoX, y: alvoY, w: 20, h: 20 })
+      const seq: number[] = []
+      for (let q = 0; q < 8; q += 1) {
+        api.updateEnemyType(t, ctx, alvo)
+        seq.push(Math.round((e[eixo] - 100) * 100) / 100)
+      }
+      return seq
+    }
+    // Alvo a +200 no eixo de cada um: os deslocamentos têm que coincidir.
+    expect(passos('perseguidor-lado', 300, 100, 'x')).toEqual(
+      passos('perseguidor-vertical', 100, 300, 'y'),
+    )
+    // E para o lado NEGATIVO também (metade do `if` que ninguém exercita).
+    expect(passos('perseguidor-lado', -100, 100, 'x')).toEqual(
+      passos('perseguidor-vertical', 100, -100, 'y'),
+    )
+  })
+
+  it('⭐ o vertical não cai com a gravidade APLICADA ao grupo (o eixo Y é dele)', () => {
+    // ⚠️ A 1ª versão deste teste era um VÁCUO: chamava só `setGravity` e afirmava
+    // que o inimigo não afundava. Só que gravidade de MUNDO não derruba inimigo
+    // nenhum — quem acelera o vy é o bloco "Aplicar a gravidade ao grupo", e sem
+    // ele o fallback do Y integra um vy que é ZERO. O teste passava idêntico com
+    // o comportamento NÃO sendo dono do Y, ou seja, não provava nada.
+    const queda = (comportamento: string) => {
+      const api = load()
+      const ctx = fakeCtx(400, 300)
+      api.setGravity(0.6)
+      const t = api.createEnemyType({ behavior: comportamento, w: 20, h: 20, speed: 3 })
+      const e = api.spawnEnemy(t, 100, 100) as Sprite
+      const alvo = api.createSprite({ x: 100, y: 100, w: 20, h: 20 })
+      for (let q = 0; q < 30; q += 1) {
+        api.applyGravityToGroup(t) // é o bloco que a criança põe num jogo de plataforma
+        api.updateEnemyType(t, ctx, alvo)
+      }
+      return e.y
+    }
+    // Alvo na MESMA altura: o dono do Y manda ficar, e a queda acumulada não passa.
+    expect(queda('perseguidor-vertical')).toBe(100)
+    // Anti-vácuo: quem NÃO é dono do Y afunda no mesmo cenário, até o chão visível
+    // (300 - 20 de altura). Sem esta metade, o teste de cima passaria de graça.
+    expect(queda('patrulha')).toBe(280)
+  })
+
+  it('somado a uma patrulha: ela manda no X, ele no Y', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const { t, e, alvo } = cena(api, 'perseguidor-vertical', 300, 250)
+    api.addEnemyTypeBehavior(t, 'patrulha') // o último a somar leva o X
+    for (let q = 0; q < 6; q += 1) api.updateEnemyType(t, ctx, alvo)
+    expect(e.y).toBeGreaterThan(100) // o vertical segue dono do Y
+    // A patrulha anda com a velocidade DELA nos 6 quadros (3 × 6 = 18), para
+    // qualquer lado. `not.toBe(100)` passaria com um deslocamento de migalha.
+    expect(Math.abs(e.x - 100)).toBe(18)
+  })
+
+  it('⭐ a avançada e a ultra NÃO descem em cima do jogador; o rei desce', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    const nave = api.createSprite({ x: 200, y: 260, w: 24, h: 24 })
+    const naAltura: Record<string, number> = {}
+    for (const nivel of ['avancada', 'ultra', 'rei']) {
+      const t = api.createSmartEnemyType({ smart: nivel, w: 20, h: 20 })
+      const e = api.spawnEnemy(t, 60, 40) as Sprite
+      for (let q = 0; q < 40; q += 1) api.updateEnemyType(t, ctx, nave)
+      naAltura[nivel] = e.y
+    }
+    expect(naAltura.avancada).toBe(40)
+    expect(naAltura.ultra).toBe(40)
+    expect(naAltura.rei).toBeGreaterThan(40)
   })
 })

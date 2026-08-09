@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 233 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.65.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.67.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -159,7 +159,7 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 
 ## Escopo revisado
 
-- 126 arquivos próprios da extensão;
+- 127 arquivos próprios da extensão;
 - 233 definições de blocos e 24 subcategorias;
 - 232 métodos e valores públicos em `window.SZGame2D`;
 - 22 módulos que compõem o runtime injetado;
