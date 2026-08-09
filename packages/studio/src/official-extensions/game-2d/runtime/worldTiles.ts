@@ -303,11 +303,11 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     var movesTowardFace = pullsUp ? vy < 0 : vy > 0;
     return touchingFace && (movesTowardFace || sprite._groundedLastFrame === true);
   }
-  function _restOnGravitySupport(sprite, y, h, gravity) {
+  function _restOnGravitySupport(sprite, y, h, gravity, support) {
     if (!sprite) return;
     sprite.y = _gravityPullsUp(gravity) ? y + h : y - sprite.h;
     sprite.vy = 0;
-    sprite.onGround = true;
+    _confirmGroundSupport(sprite, support);
   }
   function collideTileMap(sprite, map) {
     if (!sprite || !map || !map.rows || !map.tile) return;
@@ -418,14 +418,14 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
             // Pousou num tile (empurrado p/ CIMA enquanto caía): está no chão.
             // Nunca seta false — o helper de gravidade do quadro já fez isso.
             if (!_gravityPullsUp(collisionGravity) && (sprite.vy || 0) > 0) {
-              sprite.vy = 0; sprite.onGround = true;
+              sprite.vy = 0; _confirmGroundSupport(sprite, null);
             }
           }
           else {
             sprite.y += overlapY;
             if ((sprite.vy || 0) < 0) {
               sprite.vy = 0;
-              if (_gravityPullsUp(collisionGravity)) sprite.onGround = true;
+              if (_gravityPullsUp(collisionGravity)) _confirmGroundSupport(sprite, null);
             }
           }
         }
@@ -444,9 +444,10 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
   function collideSprite(sprite, obstacle) {
     if (!sprite || !obstacle || obstacle === sprite) return;
+    _carryByGroundSupport(sprite, obstacle);
     var collisionGravity = world.gravity;
     if (_touchesGravitySupport(sprite, obstacle.x, obstacle.y, obstacle.w, obstacle.h, collisionGravity)) {
-      _restOnGravitySupport(sprite, obstacle.y, obstacle.h, collisionGravity);
+      _restOnGravitySupport(sprite, obstacle.y, obstacle.h, collisionGravity, obstacle);
       return;
     }
     var overlapX = Math.min(sprite.x + sprite.w, obstacle.x + obstacle.w) - Math.max(sprite.x, obstacle.x);
@@ -461,13 +462,13 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       if (cy < ocy) {
         sprite.y -= overlapY;
         if (!_gravityPullsUp(collisionGravity) && (sprite.vy || 0) > 0) {
-          sprite.vy = 0; sprite.onGround = true;
+          sprite.vy = 0; _confirmGroundSupport(sprite, obstacle);
         }
       } else {
         sprite.y += overlapY;
         if ((sprite.vy || 0) < 0) {
           sprite.vy = 0;
-          if (_gravityPullsUp(collisionGravity)) sprite.onGround = true;
+          if (_gravityPullsUp(collisionGravity)) _confirmGroundSupport(sprite, obstacle);
         }
       }
     }
@@ -475,6 +476,43 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   function collideGroup(sprite, group) {
     if (!sprite || !group || !group.items) return;
     for (var i = 0; i < group.items.length; i++) collideSprite(sprite, group.items[i]);
+  }
+
+  /**
+   * Faz uma figura funcionar como plataforma unidirecional: apoia somente na
+   * face atraída pela gravidade e nunca bloqueia pelas laterais ou pela face oposta.
+   */
+  function collidePlatform(sprite, platform) {
+    if (!sprite || !platform || platform === sprite) return;
+    _carryByGroundSupport(sprite, platform);
+    var gravity = world.gravity;
+    var pullsUp = _gravityPullsUp(gravity);
+    var vy = _finiteNumber(sprite.vy, 0);
+    var overlapX = Math.min(sprite.x + sprite.w, platform.x + platform.w) -
+      Math.max(sprite.x, platform.x);
+    var overlapY = Math.min(sprite.y + sprite.h, platform.y + platform.h) -
+      Math.max(sprite.y, platform.y);
+    var crossesFace = pullsUp
+      ? sprite.y - vy >= platform.y + platform.h - 1
+      : sprite.y + sprite.h - vy <= platform.y + 1;
+    var movesTowardFace = pullsUp ? vy < 0 : vy > 0;
+    var touchesFace = _touchesGravitySupport(
+      sprite,
+      platform.x,
+      platform.y,
+      platform.w,
+      platform.h,
+      gravity
+    );
+    if (overlapX > 0 && (overlapY > 0 || touchesFace) &&
+        (movesTowardFace || sprite._groundedLastFrame === true) &&
+        (crossesFace || touchesFace)) {
+      _restOnGravitySupport(sprite, platform.y, platform.h, gravity, platform);
+    }
+  }
+  function collidePlatformGroup(sprite, group) {
+    if (!sprite || !group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) collidePlatform(sprite, group.items[i]);
   }
 
 `

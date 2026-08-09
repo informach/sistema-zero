@@ -1,12 +1,12 @@
 import type { JSX, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { t } from '#core'
 import { Button, ConfirmDialog } from '#ui'
 import { downloadProjectAsJSON } from '../../export/download'
 import { prefetchMode } from '../../modes/lazyModes'
 import type { ProjectSummary } from '../../state/persistence'
 import { loadSanitizedProjectById, useProjectStore } from '../../state/projectStore'
+import { useT } from '../../studio/i18n'
 import { StudioThemeScope } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 
@@ -60,6 +60,7 @@ export function ProjectCard({
   onOpen,
   takenNames,
 }: ProjectCardProps): JSX.Element {
+  const t = useT()
   const renameProject = useProjectStore((s) => s.renameProject)
   const duplicateProject = useProjectStore((s) => s.duplicateProject)
   const deleteProject = useProjectStore((s) => s.deleteProject)

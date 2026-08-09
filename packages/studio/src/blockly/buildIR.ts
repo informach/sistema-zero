@@ -4139,6 +4139,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           otherVar: f(block, 'OTHER'),
         },
       }
+    case 'sz_g2d_collide_platform':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:collidePlatform',
+          spriteVar: f(block, 'SPRITE'),
+          otherVar: f(block, 'OTHER'),
+        },
+      }
+    case 'sz_g2d_collide_platform_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:collidePlatformGroup',
+          spriteVar: f(block, 'SPRITE'),
+          groupVar: f(block, 'GROUP'),
+        },
+      }
 
     // ---- Grupos de sprites + temporizadores (v0.6.0) ----
     case 'sz_g2d_create_group':

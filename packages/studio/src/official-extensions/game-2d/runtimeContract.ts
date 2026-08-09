@@ -440,6 +440,8 @@ export interface GameTwoDWorldApi {
   collideTileMap(sprite: GameTwoDSprite, map: GameTwoDTileMap): void
   collideGroup(sprite: GameTwoDSprite, group: GameTwoDGroup): void
   collideSprite(sprite: GameTwoDSprite, obstacle: GameTwoDSprite): void
+  collidePlatform(sprite: GameTwoDSprite, platform: GameTwoDSprite): void
+  collidePlatformGroup(sprite: GameTwoDSprite, group: GameTwoDGroup): void
   tileAt(map: GameTwoDTileMap, x: number, y: number): number
   createGroup(): GameTwoDGroup
   spawn(group: GameTwoDGroup, options?: GameTwoDSpriteOptions): GameTwoDSprite | null
@@ -788,6 +790,8 @@ export const GAME_TWO_D_API_KEYS = [
   'collideTileMap',
   'collideGroup',
   'collideSprite',
+  'collidePlatform',
+  'collidePlatformGroup',
   'tileAt',
   'createGroup',
   'spawn',

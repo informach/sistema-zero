@@ -76,26 +76,39 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    */
   // Usa a mesma fonte de verdade dos grupos normais: assim uma leitura herdada
   // nunca vira mutacao aqui nem la quando a lista de metodos mudar.
+  function _recusarMutacaoDaVista() {
+    _warnEnemyMirror(
+      'mexer na lista',
+      'Este grupo mostra os inimigos dos tipos, entao a lista dele nao se muda na mao. Para acrescentar, use o bloco de soltar do TIPO; para tirar, "Tirar o sprite do grupo" (ele sai do tipo dele).'
+    );
+    return true;
+  }
   function _protegerListaDaVista(lista) {
     return new Proxy(lista, {
       get: function (target, prop, receiver) {
         if (GROUP_MUTATING_METHODS[prop] && typeof Array.prototype[prop] === 'function') {
           return function () {
-            _warnEnemyMirror(
-              'mexer na lista',
-              'Este grupo mostra os inimigos dos tipos, entao a lista dele nao se muda na mao. Para acrescentar, use o bloco de soltar do TIPO; para tirar, "Tirar o sprite do grupo" (ele sai do tipo dele).'
-            );
+            _recusarMutacaoDaVista();
             return undefined;
           };
         }
         return Reflect.get(target, prop, receiver);
       },
       set: function () {
-        _warnEnemyMirror(
-          'mexer na lista',
-          'Este grupo mostra os inimigos dos tipos, entao a lista dele nao se muda na mao.'
-        );
-        return true;
+        return _recusarMutacaoDaVista();
+      },
+      deleteProperty: function () {
+        return _recusarMutacaoDaVista();
+      },
+      defineProperty: function () {
+        return _recusarMutacaoDaVista();
+      },
+      setPrototypeOf: function () {
+        return _recusarMutacaoDaVista();
+      },
+      preventExtensions: function () {
+        _recusarMutacaoDaVista();
+        return false;
       }
     });
   }

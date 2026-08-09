@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
-import { t } from '#core'
 import { hasBehaviorStatements, normalizeSZIR } from '#ir'
 import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
@@ -14,10 +13,12 @@ import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
+import { useT } from '../studio/i18n'
 import { useStudioLayout } from '../studio/layoutContext'
 import { BRIDGE_JS_HEADER } from './bridgeReverseParse'
 
 export function BlocksMode(): JSX.Element {
+  const t = useT()
   const { hasProject, blocksState, ir, projectName, js } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),

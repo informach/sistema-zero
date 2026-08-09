@@ -32,7 +32,7 @@ test.describe('Workspace do Blockly — arrasto (pan)', () => {
     await svg.waitFor({ state: 'visible' })
     await page.waitForTimeout(800)
     const box = await svg.boundingBox()
-    const iframeBox = await page.locator('iframe').first().boundingBox()
+    const iframeBox = await page.locator('iframe[title="Pré-visualização"]').boundingBox()
     if (!box || !iframeBox) throw new Error('layout sem workspace ou sem preview')
 
     // Pan real: aperta no fundo do workspace, arrasta para o lado e SOLTA o

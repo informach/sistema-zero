@@ -1396,6 +1396,10 @@ ${pad}});`
       return `${pad}SZGame2D.collideGroup(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:collideSprite':
       return `${pad}SZGame2D.collideSprite(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.otherVar)});`
+    case 'g2d:collidePlatform':
+      return `${pad}SZGame2D.collidePlatform(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.otherVar)});`
+    case 'g2d:collidePlatformGroup':
+      return `${pad}SZGame2D.collidePlatformGroup(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:createGroup':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createGroup();`
     case 'g2d:allEnemiesGroup':
@@ -5606,6 +5610,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:collideSprite':
       names.add(stmt.spriteVar)
       names.add(stmt.otherVar)
+      return
+    case 'g2d:collidePlatform':
+      names.add(stmt.spriteVar)
+      names.add(stmt.otherVar)
+      return
+    case 'g2d:collidePlatformGroup':
+      names.add(stmt.spriteVar)
+      names.add(stmt.groupVar)
       return
     case 'g3d:createScene':
     case 'g3d:createFullscreenScene':

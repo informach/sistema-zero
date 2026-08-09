@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { t } from '#core'
 import { Button, Modal } from '#ui'
+import { useT } from '../../studio/i18n'
 import type { ProTemplate } from '../code/pro-templates'
 
 export interface NewProjectCreateOptions {
@@ -31,6 +31,7 @@ export function NewProjectModal({
   templates = [],
   existingNames,
 }: NewProjectModalProps): JSX.Element | null {
+  const t = useT()
   const [name, setName] = useState(defaultName)
   const [kind, setKind] = useState<'basic' | 'pro'>('basic')
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? '')

@@ -294,6 +294,17 @@ describe('gameTwoDRuntime', () => {
     }
   })
 
+  it('randomBetween continua finito e inteiro com os maiores limites numéricos', () => {
+    const random = spyOn(Math, 'random').mockReturnValue(0.5)
+    try {
+      const value = api.randomBetween(-Number.MAX_VALUE, Number.MAX_VALUE)
+      expect(Number.isFinite(value)).toBe(true)
+      expect(Number.isSafeInteger(value)).toBe(true)
+    } finally {
+      random.mockRestore()
+    }
+  })
+
   it('velocidade: spriteVx/Vy/Speed + isMoving(H/V) leem a velocidade do sprite', () => {
     const sz = api as unknown as {
       spriteVx: (s: unknown) => number
@@ -2457,6 +2468,36 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
 
     expect(countExpandedContacts(45)).toBe(1)
     expect(countExpandedContacts(46)).toBe(1)
+  })
+
+  it('a fase ampla preserva a semântica ao vivo quando o callback move sprites', () => {
+    const countContacts = (secondGroupSize: number) => {
+      const api = load()
+      const first = api.createGroup()
+      const second = api.createGroup()
+      for (let index = 0; index < 8; index += 1) {
+        api.spawn(first, { x: index * 100, y: 0, w: 10, h: 10, color: '#fff' })
+      }
+      for (let index = 0; index < secondGroupSize; index += 1) {
+        api.spawn(second, {
+          x: index === secondGroupSize - 1 ? 700 : 10_000 + index * 100,
+          y: 0,
+          w: 10,
+          h: 10,
+          color: '#fff',
+        })
+      }
+
+      let contacts = 0
+      api.overlapGroups(first, second, (_a, b) => {
+        contacts += 1
+        if (contacts === 1) b.x = 0
+      })
+      return contacts
+    }
+
+    expect(countContacts(255)).toBe(2)
+    expect(countContacts(256)).toBe(2)
   })
 
   it('a fase ampla não cria contato quando a hitbox efetiva foi reduzida', () => {

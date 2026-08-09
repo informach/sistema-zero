@@ -32,11 +32,11 @@ export function SettingsDrawer({
   // nível fixado não é já o topo da escada (senão a paleta já mostra tudo).
   const showRevealToggle =
     config.learning.allowLevelReveal && config.learning.level !== MAX_BLOCK_LEVEL
-  // Host injetou chave/modelo? As seções correspondentes somem (a configuração
+  // Host injetou provider/modelo? As seções correspondentes somem (a configuração
   // é da plataforma, não do aluno).
-  const hostKey = Boolean(config.aiConfig.apiKey)
-  const showKeySection = config.ai && !hostKey && config.aiConfig.allowUserKey
-  const showModelSection = config.ai && !config.aiConfig.model
+  const hostProvider = Boolean(config.aiConfig.provider)
+  const showKeySection = config.ai && !hostProvider && config.aiConfig.allowUserKey
+  const showModelSection = config.ai && !hostProvider && !config.aiConfig.model
   const showAITab = showKeySection || showModelSection
 
   const [draftKey, setDraftKey] = useState(apiKey)
@@ -99,7 +99,7 @@ export function SettingsDrawer({
               type="button"
               onClick={() => setSection(s)}
               className={[
-                'border-b-2 px-2 py-1.5 text-xs font-medium transition-colors',
+                'sz-touch-target border-b-2 px-2 py-1.5 text-xs font-medium transition-colors',
                 section === s
                   ? 'border-sz-accent text-sz-fg'
                   : 'border-transparent text-sz-fg-soft hover:text-sz-fg',
@@ -140,7 +140,7 @@ export function SettingsDrawer({
                   value={draftKey}
                   onChange={(e) => setDraftKey(e.target.value)}
                   placeholder="sk-or-v1-…"
-                  className="flex-1 rounded border border-sz-border bg-sz-bg px-2 py-1.5 font-mono text-xs text-sz-fg"
+                  className="sz-touch-target flex-1 rounded border border-sz-border bg-sz-bg px-2 py-1.5 font-mono text-xs text-sz-fg"
                 />
                 <Button size="sm" variant="ghost" onClick={() => setShowKey((v) => !v)}>
                   {showKey ? 'Ocultar' : 'Mostrar'}
@@ -155,7 +155,7 @@ export function SettingsDrawer({
               {apiKey && (
                 <p className="mt-1 text-xs text-sz-success">Chave configurada. IA real ativa.</p>
               )}
-              <label className="mt-2 flex items-center gap-2 text-xs text-sz-fg-soft">
+              <label className="sz-touch-target mt-2 flex items-center gap-2 text-xs text-sz-fg-soft">
                 <input
                   type="checkbox"
                   checked={apiKeyStorage === 'persistent'}
@@ -178,7 +178,7 @@ export function SettingsDrawer({
                 name="ai-model"
                 value={model}
                 onChange={(e) => void setAIModel(e.target.value)}
-                className="mt-1 w-full rounded border border-sz-border bg-sz-bg px-2 py-1.5 text-xs text-sz-fg"
+                className="sz-touch-target mt-1 w-full rounded border border-sz-border bg-sz-bg px-2 py-1.5 text-xs text-sz-fg"
               >
                 {AI_MODEL_OPTIONS.map((opt) => (
                   <option key={opt.id} value={opt.id}>
@@ -213,7 +213,7 @@ export function SettingsDrawer({
                   aria-pressed={theme === t}
                   onClick={() => void setTheme(t)}
                   className={[
-                    'flex-1 rounded px-3 py-1 text-xs font-medium transition-colors',
+                    'sz-touch-target flex-1 rounded px-3 py-1 text-xs font-medium transition-colors',
                     theme === t ? 'bg-sz-accent text-sz-bg' : 'text-sz-fg-soft hover:text-sz-fg',
                   ].join(' ')}
                 >
@@ -230,7 +230,7 @@ export function SettingsDrawer({
           {showRevealToggle && (
             <div className="block text-xs text-sz-fg-soft">
               <span>Blocos avançados</span>
-              <label className="mt-1 flex items-center gap-2 text-xs text-sz-fg-soft">
+              <label className="sz-touch-target mt-1 flex items-center gap-2 text-xs text-sz-fg-soft">
                 <input
                   type="checkbox"
                   checked={revealAdvanced}

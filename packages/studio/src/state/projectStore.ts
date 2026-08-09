@@ -4,6 +4,7 @@ import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import {
   createEmptyProject,
+  t as defaultT,
   type ExtraFile,
   type ExtraFileLanguage,
   type FileName,
@@ -28,7 +29,7 @@ import {
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
   studioProBuildFileLimitError,
-  t,
+  type Translator,
 } from '#core'
 import {
   type CSSEntry,
@@ -1830,12 +1831,15 @@ export interface CreateProjectStoreOptions {
   limits?: StudioLimits
   /** Cotas do compilador remoto Pro desta instância, quando houver. */
   proBuildLimits?: StudioProBuildLimits
+  /** Tradutor estático da instância; a store não depende de React context. */
+  translator?: Translator
 }
 
 export function createProjectStore(
   options: CreateProjectStoreOptions = {},
 ): StoreApi<ProjectStore> {
   const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
+  const t = options.translator ?? defaultT
   const proBuildLimits = options.proBuildLimits
   const proTreeLimitError = (tree: ProjectTree): string | null => {
     if (!proBuildLimits) return null

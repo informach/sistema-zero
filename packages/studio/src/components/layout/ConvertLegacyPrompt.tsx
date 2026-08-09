@@ -1,9 +1,9 @@
 import type { JSX } from 'react'
 import { useState } from 'react'
-import { t } from '#core'
 import { ConfirmDialog } from '#ui'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 
 /**
  * Pergunta, ao abrir, se um projeto BÁSICO legado com arquivos extras deve virar
@@ -13,6 +13,7 @@ import { useStudioConfig } from '../../studio/config'
  * aluno ainda pode graduar pela Topbar depois. Não decide nada sem o "ok".
  */
 export function ConvertLegacyPrompt(): JSX.Element | null {
+  const t = useT()
   const projectId = useProjectStore((s) => s.project?.id ?? null)
   const kind = useProjectStore((s) => s.project?.kind)
   const extrasCount = useProjectStore((s) => s.project?.extraFiles?.length ?? 0)

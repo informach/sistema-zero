@@ -7,6 +7,11 @@ import type { ProjectSummary } from '../state/persistence'
  * salvar onde quiser (ex.: backend via BFF).
  */
 export interface StudioPersistenceAdapter {
+  /**
+   * Identidade estável do backend/tenant. Isola filas e cercas quando dois
+   * perfis mantêm o mesmo id de projeto na mesma página.
+   */
+  scopeIdentity?: string
   /** Carrega um projeto por id (usado pelo host/ProjectList; o Studio em si recebe initialProject). */
   load(id: string): Promise<Project | null>
   /**

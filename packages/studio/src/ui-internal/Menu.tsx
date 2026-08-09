@@ -145,7 +145,7 @@ export function Menu({
           }
         }}
         className={cn(
-          'inline-flex h-9 w-9 items-center justify-center rounded-md text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+          'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-md text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
           open && 'bg-sz-bg text-sz-fg',
           triggerClassName,
         )}
@@ -200,7 +200,7 @@ export function Menu({
                         }}
                         onKeyDown={(e) => onItemKeyDown(e, idx)}
                         className={cn(
-                          'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
+                          'sz-touch-target flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
                           'text-sz-fg hover:bg-sz-bg disabled:cursor-not-allowed disabled:opacity-50',
                           item.active && 'text-sz-accent',
                         )}

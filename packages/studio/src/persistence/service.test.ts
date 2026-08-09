@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test'
 import type { Project } from '#core'
 import { createEmptyProject } from '#core'
 import type { StudioPersistenceAdapter } from './types'
@@ -564,14 +564,16 @@ describe('PersistenceService — exclusão cross-instância (sem ressurreição)
 
 describe('PersistenceService — cerca de exclusão limitada (sem vazamento)', () => {
   afterEach(() => {
+    setSystemTime()
+    setAutosaveDelayForTests(null)
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
 
-  it('a cerca não bloqueia permanentemente um id reaproveitado (save tira a marca)', async () => {
-    // A marca de exclusão é uma CERCA temporária, não um bloqueio permanente: um
-    // id que volta a ser editado/salvo é des-cercado (schedule/save chamam
-    // deletedProjects.delete). Junto com a poda lazy por janela de graça, isso
-    // mantém o Map limitado em vez de vazar um ULID por exclusão para sempre.
+  it('a cerca só libera um id reaproveitado depois da janela de graça', async () => {
+    // A marca de exclusão é uma CERCA temporária, não um bloqueio permanente.
+    // Durante a janela ela não pode ser retirada nem pelo save explícito: esse
+    // save pode vir de uma referência obsoleta e ressuscitar o projeto apagado.
+    // Depois da janela, a poda lazy libera o id e limita o crescimento do Map.
     let saved = 0
     const adapter: StudioPersistenceAdapter = {
       load: async () => null,
@@ -582,17 +584,19 @@ describe('PersistenceService — cerca de exclusão limitada (sem vazamento)', (
     const service = createPersistenceService(useProjectStore, adapter)
     setAutosaveDelayForTests(AUTOSAVE_TEST_DELAY_MS)
 
-    // Marca o id como excluído (cerca ativa).
+    const deletedAt = Date.now()
     cancelPendingAutosavesFor('project-reuse')
 
-    // Reaproveita o MESMO id com um projeto vivo: o save explícito tira a cerca
-    // e persiste normalmente.
+    // O mesmo id continua bloqueado durante a janela de segurança.
     useProjectStore.getState().setProject(createEmptyProject('project-reuse', 'Reuso'))
     await service.save()
+    expect(saved).toBe(0)
+    expect(useProjectStore.getState().isDirty).toBe(true)
 
+    // A poda é lazy: a próxima consulta após 60 s remove a marca antiga.
+    setSystemTime(new Date(deletedAt + 60_001))
+    await service.save()
     expect(saved).toBe(1)
     expect(useProjectStore.getState().isDirty).toBe(false)
-
-    setAutosaveDelayForTests(null)
   })
 })

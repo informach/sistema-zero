@@ -208,7 +208,7 @@ test.describe('HTML, CSS, SVG e Canvas — blocos reais', () => {
     await pasteBlocks(page, appearanceArea())
     await expect(page.locator('.blocklyBlockCanvas').getByText('🎨 Aparência: CSS')).toHaveCount(1)
 
-    const preview = page.frameLocator('iframe')
+    const preview = page.frameLocator('iframe[title="Pré-visualização"]')
     const canvas = preview.locator('canvas#tela')
     await expect(canvas).toBeVisible({ timeout: 15_000 })
     await expect(canvas).toHaveText('Arena colorida controlada pelo teclado.')

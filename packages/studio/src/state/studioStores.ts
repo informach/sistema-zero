@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import type { StudioProBuildLimits } from '#core'
+import { createTranslator, type Locale, type StudioProBuildLimits } from '#core'
 import { createLocalPersistenceAdapter } from '../persistence/local'
 import { createPersistenceService, type PersistenceService } from '../persistence/service'
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
@@ -40,12 +40,15 @@ export interface CreateStudioStoresOptions {
   limits?: StudioLimits
   /** Cotas do compilador Pro remoto, quando o host usa um runtime remoto. */
   proBuildLimits?: StudioProBuildLimits
+  /** Locale estático usado também por mensagens produzidas fora do React. */
+  locale?: Locale
 }
 
 export function createStudioStores(options: CreateStudioStoresOptions = {}): StudioStores {
   const project = createProjectStore({
     limits: options.limits,
     proBuildLimits: options.proBuildLimits,
+    translator: createTranslator(options.locale ?? 'pt-BR'),
   })
   const adapter = resolvePersistenceAdapter(
     options.persistence ?? 'local',

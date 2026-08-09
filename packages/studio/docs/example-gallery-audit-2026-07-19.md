@@ -27,7 +27,7 @@ alteraram o gate privilegiado da galeria nem a API pública do pacote.
 1. Projetos antigos misturavam preparação, eventos e repetição. A migração agora
    classifica as raízes, preserva IDs e rascunhos e é idempotente; projetos novos
    começam vazios e só recebem as áreas que a criança criar.
-2. As cinco áreas são opcionais e únicas. Conexões erradas são recusadas; blocos
+2. As seis áreas são opcionais e únicas. Conexões erradas são recusadas; blocos
    soltos ou vindos de uma área excluída continuam visíveis como rascunho com
    aviso, sem executar silenciosamente.
 3. O motor inicia automaticamente por um `RuntimeLifecycleContract` obrigatório

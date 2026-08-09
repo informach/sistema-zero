@@ -23,6 +23,8 @@ describe('Exemplo Portas do Castelo — drift contra o parser real', () => {
     expect(portasDoCasteloExample.name).toBe('Portas do Castelo')
     expect(portasDoCasteloExample.experience).toBe('game')
     expect((portasDoCasteloExample.description ?? '').length).toBeLessThanOrEqual(200)
+    expect(portasDoCasteloExample.concepts).toEqual(['plataformas', 'fases', 'transições'])
+    expect(portasDoCasteloExample.genre).toBe('plataforma')
   })
 
   registerExampleContractTests({

@@ -3987,6 +3987,20 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const otherVar = identifierName(args[1])
       return spriteVar && otherVar ? { type: 'g2d:collideSprite', spriteVar, otherVar } : null
     }
+    case 'collidePlatform': {
+      // generator: SZGame2D.collidePlatform(sprite, platform)
+      const spriteVar = identifierName(args[0])
+      const otherVar = identifierName(args[1])
+      return spriteVar && otherVar ? { type: 'g2d:collidePlatform', spriteVar, otherVar } : null
+    }
+    case 'collidePlatformGroup': {
+      // generator: SZGame2D.collidePlatformGroup(sprite, group)
+      const spriteVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return spriteVar && groupVar
+        ? { type: 'g2d:collidePlatformGroup', spriteVar, groupVar }
+        : null
+    }
     case 'spawn': {
       // generator: SZGame2D.spawn(g, { x, y, w, h, color|image, vx, vy })
       const groupVar = identifierName(args[0])

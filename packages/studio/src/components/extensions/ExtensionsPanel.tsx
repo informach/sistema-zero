@@ -2,7 +2,7 @@ import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR } from '#blockly'
-import { type InstalledExtension, isCategoryAllowed, type LearningProfile, t } from '#core'
+import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import {
   type ExtensionDefinition,
   type ExtensionExample,
@@ -23,6 +23,7 @@ import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioExamplesVisible } from '../../studio/examples-visibility'
+import { useT } from '../../studio/i18n'
 import { renderLessonMarkdown } from '../layout/lessonMarkdown'
 
 export interface ExtensionsPanelProps {
@@ -33,6 +34,7 @@ export interface ExtensionsPanelProps {
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 
 export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.Element {
+  const t = useT()
   const { hasProject, installedExtensions } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),

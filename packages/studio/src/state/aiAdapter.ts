@@ -23,8 +23,8 @@ export function buildInstalledExtensionContext(
 }
 
 /**
- * Factory que escolhe o provider de IA. Precedência: chave/modelo injetados
- * pelo HOST (features.ai do <Studio>) > BYOK do aluno (Settings). Sem chave →
+ * Factory que escolhe o provider de IA. Precedência: provider seguro injetado
+ * pelo HOST (features.ai do <Studio>) > BYOK do aluno (Settings). Sem ambos →
  * MockAIProvider (respostas estáticas em PT-BR).
  *
  * Reage a mudanças de `mode` e `installedExtensions` para que o system prompt
@@ -34,7 +34,7 @@ export function useAIProvider(): { provider: AIProvider; isReal: boolean; mode: 
   const { aiConfig } = useStudioConfig()
   const userKey = useSettingsStore((s) => s.aiApiKey)
   const userModel = useSettingsStore((s) => s.aiModel)
-  const apiKey = aiConfig.apiKey ?? (aiConfig.allowUserKey ? userKey : '')
+  const apiKey = aiConfig.allowUserKey ? userKey : ''
   const model = aiConfig.model ?? userModel
   const { mode, installedExtensions } = useProjectStore(
     useShallow((s) => ({
@@ -44,6 +44,9 @@ export function useAIProvider(): { provider: AIProvider; isReal: boolean; mode: 
   )
 
   return useMemo(() => {
+    if (aiConfig.provider) {
+      return { provider: aiConfig.provider, isReal: true, mode }
+    }
     if (!apiKey) {
       return { provider: new MockAIProvider(), isReal: false, mode }
     }
@@ -58,5 +61,5 @@ export function useAIProvider(): { provider: AIProvider; isReal: boolean; mode: 
       isReal: true,
       mode,
     }
-  }, [apiKey, model, mode, installedExtensions])
+  }, [aiConfig.provider, apiKey, model, mode, installedExtensions])
 }

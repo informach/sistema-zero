@@ -22,6 +22,9 @@ const realEditorReact = { ...(await import('@monaco-editor/react')) }
 
 interface FakeModel extends DisposableMonacoModel {
   disposed: boolean
+  value: string
+  getValue: () => string
+  setValue: (value: string) => void
   getLineCount: () => number
   getLineMaxColumn: (line: number) => number
 }
@@ -35,10 +38,15 @@ type ModelListener = () => void
 
 const fakeModels = new Map<string, FakeModel>()
 
-function makeModel(path: string): FakeModel {
+function makeModel(path: string, initialValue = ''): FakeModel {
   const model: FakeModel = {
     disposed: false,
+    value: initialValue,
     uri: { path, toString: () => path },
+    getValue: () => model.value,
+    setValue: (value) => {
+      model.value = value
+    },
     // Stubs largos para `toMonacoRange` não clampar nas faixas dos testes.
     getLineCount: () => 1000,
     getLineMaxColumn: () => 200,
@@ -50,10 +58,10 @@ function makeModel(path: string): FakeModel {
   return model
 }
 
-function getOrCreateModel(path: string): FakeModel {
+function getOrCreateModel(path: string, initialValue = ''): FakeModel {
   const existing = fakeModels.get(path)
   if (existing) return existing
-  const model = makeModel(path)
+  const model = makeModel(path, initialValue)
   fakeModels.set(path, model)
   return model
 }
@@ -161,11 +169,12 @@ function makeEditor(initialPath: string): FakeEditor {
 // editor (espelha o `restoreViewState`/troca de aba do @monaco-editor/react).
 function EditorMock(props: {
   path: string
+  defaultValue?: string
   onMount?: (editor: FakeEditor) => void
 }): React.JSX.Element {
-  const { path, onMount } = props
+  const { path, defaultValue, onMount } = props
   const mountedRef = useRef(false)
-  getOrCreateModel(path)
+  getOrCreateModel(path, defaultValue)
   // biome-ignore lint/correctness/useExhaustiveDependencies: onMount é estável (useCallback no MonacoTabs); monta uma vez e só troca o model por path
   useEffect(() => {
     if (mountedRef.current) {

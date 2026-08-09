@@ -20,8 +20,8 @@ export const GAME_TWO_D_PERIODIC_TOOLTIPS = {
 } as const
 
 export const GAME_TWO_D_LIFECYCLE_GUIDANCE = {
-  molds: `Crie as figuras desenhadas por código, os tipos de inimigo, as folhas de quadros e os sons carregados em “${GAME_TWO_D_AREAS.molds}”. Nada acontece ali: são receitas, e você pode criar várias sem usar nenhuma. Usar cada uma é trabalho de “${GAME_TWO_D_AREAS.start}”.`,
-  start: `Prepare tela, personagens, grupos, variáveis e estado inicial em “${GAME_TWO_D_AREAS.start}”. Essa área roda novamente em cada nova partida.`,
+  molds: `Crie as figuras desenhadas por código, os tipos de inimigo e o grupo que reúne inimigos de todos os tipos em “${GAME_TWO_D_AREAS.molds}”. Nada acontece ali: são receitas, e você pode criar várias sem usar nenhuma. Usar cada uma é trabalho de “${GAME_TWO_D_AREAS.start}”.`,
+  start: `Prepare tela, personagens, grupos, variáveis e estado inicial em “${GAME_TWO_D_AREAS.start}”. Carregue também os sons e folhas de quadros nessa área. Ela roda novamente em cada nova partida.`,
   events: `Registre tecla, qualquer tecla ou toque, clique, pulo e começo de contato em “${GAME_TWO_D_AREAS.events}”, uma vez por partida.`,
   loop: `Coloque “A cada quadro”, “A cada N quadros” e “A cada N segundos” como raízes independentes em “${GAME_TWO_D_AREAS.loop}”. As raízes periódicas rodam em todas as telas; coloque “se a tela atual é jogando?” dentro delas quando o comando só puder acontecer durante a partida. Comandos contínuos ficam no corpo dessas raízes ou em funções/métodos chamados por elas, nunca diretamente em “${GAME_TWO_D_AREAS.start}” ou “${GAME_TWO_D_AREAS.events}”.`,
 } as const

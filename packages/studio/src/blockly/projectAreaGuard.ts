@@ -1,21 +1,9 @@
 import type * as Blockly from 'blockly/core'
-import {
-  FRAME_APPEARANCE,
-  FRAME_BEHAVIOR_LEGACY,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-  FRAME_START,
-  FRAME_STRUCTURE,
-  type ProjectAreaKind,
-} from './blockContracts'
+import type { ProjectAreaKind } from '../core/behaviorAreas'
+import { FRAME_BEHAVIOR_LEGACY, PROJECT_AREA_BY_FRAME } from './projectAreas'
 
 function areaKind(type: string): ProjectAreaKind | undefined {
-  if (type === FRAME_STRUCTURE) return 'structure'
-  if (type === FRAME_APPEARANCE) return 'appearance'
-  if (type === FRAME_START || type === FRAME_BEHAVIOR_LEGACY) return 'start'
-  if (type === FRAME_EVENTS) return 'events'
-  if (type === FRAME_LOOPS) return 'loops'
-  return undefined
+  return PROJECT_AREA_BY_FRAME.get(type) ?? (type === FRAME_BEHAVIOR_LEGACY ? 'start' : undefined)
 }
 
 export interface ProjectAreaGuardResult {

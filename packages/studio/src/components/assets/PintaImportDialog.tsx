@@ -1,10 +1,11 @@
 import { type JSX, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { type ProjectAsset, t } from '#core'
+import type { ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
 import { personalIdOf } from '../../asset-library/personalSync'
 import { normalizeSearchText } from '../../core/searchText'
 import { useProjectStore } from '../../state/projectStore'
+import { useT } from '../../studio/i18n'
 import { type StudioPintaDrawingSummary, useStudioPintaLibrary } from '../../studio/pinta-library'
 import { uniqueAssetName } from './assetNames'
 
@@ -57,6 +58,7 @@ type LoadState =
   | { phase: 'ready'; drawings: StudioPintaDrawingSummary[] }
 
 export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProps): JSX.Element {
+  const t = useT()
   const adapter = useStudioPintaLibrary()
   const assets = useProjectStore(useShallow((s) => s.project?.assets ?? EMPTY_ASSETS))
   const addAsset = useProjectStore((s) => s.addAsset)

@@ -2,7 +2,13 @@ import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { ExtensionToolboxCategory } from '#extensions'
-import { G2D_ENEMY_BEHAVIORS, G2D_ENEMY_PARAMS, G2D_ENEMY_SMARTS } from '#ir'
+import {
+  G2D_ENEMY_BEHAVIORS,
+  G2D_ENEMY_PARAMS,
+  G2D_ENEMY_SMARTS,
+  MOLD_ONLY_STATEMENT_TYPES,
+  START_ONLY_STATEMENT_TYPES,
+} from '#ir'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDPromptSummary } from '../aiSummary'
 import {
@@ -208,7 +214,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(235)
+    expect(gameTwoDBlocks.length).toBe(237)
   })
 
   /**
@@ -617,6 +623,8 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_set_hitbox_scale',
       'sz_g2d_collide_group',
       'sz_g2d_collide_sprite',
+      'sz_g2d_collide_platform',
+      'sz_g2d_collide_platform_group',
       'sz_g2d_on_group_overlap',
       'sz_g2d_on_sprite_group_overlap',
     ])
@@ -740,6 +748,16 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       expect(gameTwoDPromptSummary).toContain(guidance)
       expect(gameTwoDPromptContext).toContain(guidance)
     }
+  })
+
+  it('ensina carregamentos de arquivo na mesma área exigida pelo lifecycle', () => {
+    for (const type of ['g2d:loadSound', 'g2d:loadSpritesheet']) {
+      expect(START_ONLY_STATEMENT_TYPES.has(type), type).toBe(true)
+      expect(MOLD_ONLY_STATEMENT_TYPES.has(type), type).toBe(false)
+    }
+    expect(GAME_TWO_D_LIFECYCLE_GUIDANCE.molds).not.toContain('folhas de quadros')
+    expect(GAME_TWO_D_LIFECYCLE_GUIDANCE.molds).not.toContain('sons carregados')
+    expect(GAME_TWO_D_LIFECYCLE_GUIDANCE.start).toContain('sons e folhas de quadros')
   })
 
   it('organiza o guia por tarefas e documenta o fluxo automático de vidas', () => {

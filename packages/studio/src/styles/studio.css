@@ -555,3 +555,15 @@
     system-ui,
     sans-serif;
 }
+
+/* Alvos compactos crescem somente quando há um ponteiro de toque. A classe é
+ * global porque os menus do Studio são portalados para fora do root temático. */
+.sz-touch-target {
+  touch-action: manipulation;
+}
+@media (any-pointer: coarse) {
+  .sz-touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

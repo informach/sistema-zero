@@ -142,8 +142,8 @@ export const gameTwoDExamples = [
   }),
   withMetadata(mundoPirataExample, {
     difficulty: 'advanced',
-    concepts: ['mapa', 'NPCs', 'missões'],
-    genre: 'mundo aberto',
+    concepts: ['plataformas', 'câmera', 'coleta'],
+    genre: 'plataforma',
   }),
   withMetadata(safariDeMonstrosExample, {
     difficulty: 'advanced',
@@ -167,13 +167,13 @@ export const gameTwoDExamples = [
   }),
   withMetadata(portasDoCasteloExample, {
     difficulty: 'advanced',
-    concepts: ['portas', 'chaves', 'estados'],
-    genre: 'quebra-cabeça',
+    concepts: ['plataformas', 'fases', 'transições'],
+    genre: 'plataforma',
   }),
   withMetadata(valeEnsolaradoExample, {
     difficulty: 'advanced',
-    concepts: ['mapa', 'coleta', 'economia'],
-    genre: 'simulação',
+    concepts: ['plataformas', 'coleta', 'inimigos'],
+    genre: 'plataforma',
   }),
   withMetadata(vilaNinjaExample, {
     difficulty: 'advanced',

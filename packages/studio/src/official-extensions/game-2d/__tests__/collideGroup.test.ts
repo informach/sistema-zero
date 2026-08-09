@@ -21,12 +21,18 @@ interface Api {
   createGroup: () => { items: Sprite[] }
   collideGroup: (s: Sprite, g: { items: Sprite[] }) => void
   collideSprite: (s: Sprite, other: Sprite) => void
+  collidePlatform: (s: Sprite, platform: Sprite) => void
+  collidePlatformGroup: (s: Sprite, g: { items: Sprite[] }) => void
   spawn: (g: { items: Sprite[] }, o: Partial<Sprite>) => Sprite | null
   updateGroup: (g: { items: Sprite[] }) => void
   applyGravityToGroup: (g: { items: Sprite[] }) => void
   setGravity: (v: number) => void
   applyVelocity: (s: Sprite) => void
+  platformer: (s: Sprite, ctx: unknown, speed: number, jump: number) => void
+  keys: { left: boolean; right: boolean; up: boolean; down: boolean }
 }
+
+const ctx = { canvas: { width: 320, height: 200 } }
 
 function load(): Api {
   const win = {
@@ -138,6 +144,165 @@ describe('collideSprite — colisão sólida contra UM sprite (R5/D1)', () => {
     api.collideSprite(heroi, api.createSprite({ x: 200, y: 200, w: 20, h: 20 }))
     expect(heroi.x).toBe(0)
     expect(heroi.vx).toBe(5)
+  })
+})
+
+describe('figuras como plataformas unidirecionais', () => {
+  it('pousa por cima, mas atravessa por baixo e pelas laterais', () => {
+    const api = load()
+    const plataforma = api.createSprite({ x: 0, y: 32, w: 40, h: 16 })
+
+    const caindo = api.createSprite({ x: 4, y: 20, w: 16, h: 16, vy: 5 })
+    api.collidePlatform(caindo, plataforma)
+    expect(caindo.y).toBe(16)
+    expect(caindo.vy).toBe(0)
+    expect(caindo.onGround).toBe(true)
+
+    const subindo = api.createSprite({ x: 4, y: 36, w: 16, h: 16, vy: -5 })
+    api.collidePlatform(subindo, plataforma)
+    expect(subindo.y).toBe(36)
+    expect(subindo.vy).toBe(-5)
+
+    const lateral = api.createSprite({ x: 35, y: 36, w: 16, h: 16, vx: -4, vy: 0 })
+    api.collidePlatform(lateral, plataforma)
+    expect(lateral.x).toBe(35)
+    expect(lateral.vx).toBe(-4)
+  })
+
+  it('com gravidade invertida, apoia na face inferior e atravessa pela superior', () => {
+    const api = load()
+    api.setGravity(-0.6)
+    const plataforma = api.createSprite({ x: 0, y: 32, w: 40, h: 16 })
+
+    const subindo = api.createSprite({ x: 4, y: 44, w: 16, h: 16, vy: -5 })
+    api.collidePlatform(subindo, plataforma)
+    expect(subindo.y).toBe(48)
+    expect(subindo.vy).toBe(0)
+    expect(subindo.onGround).toBe(true)
+
+    const descendo = api.createSprite({ x: 4, y: 20, w: 16, h: 16, vy: 5 })
+    api.collidePlatform(descendo, plataforma)
+    expect(descendo.y).toBe(20)
+    expect(descendo.vy).toBe(5)
+  })
+
+  it('a versão de grupo usa todas as figuras como plataformas', () => {
+    const api = load()
+    const grupo = api.createGroup()
+    grupo.items.push(api.createSprite({ x: 0, y: 32, w: 40, h: 16 }))
+    const heroi = api.createSprite({ x: 4, y: 20, w: 16, h: 16, vy: 5 })
+
+    api.collidePlatformGroup(heroi, grupo)
+
+    expect(heroi.y).toBe(16)
+    expect(heroi.onGround).toBe(true)
+  })
+
+  it('o movimento estilo plataforma pula no primeiro quadro apoiado', () => {
+    const api = load()
+    const plataforma = api.createSprite({ x: 0, y: 32, w: 64, h: 16 })
+    const heroi = api.createSprite({ x: 4, y: 20, w: 16, h: 16, vy: 5 })
+    api.collidePlatform(heroi, plataforma)
+
+    api.keys.up = true
+    api.platformer(heroi, ctx, 4, 11)
+    api.collidePlatform(heroi, plataforma)
+
+    expect(heroi.vy).toBe(-11)
+    expect(heroi.y).toBe(5)
+    expect(heroi.onGround).toBe(false)
+  })
+})
+
+describe('figuras móveis transportam quem está apoiado', () => {
+  function land(api: Api, heroi: Sprite, plataforma: Sprite, oneWay: boolean): void {
+    heroi.vy = 8
+    api.applyVelocity(heroi)
+    if (oneWay) api.collidePlatform(heroi, plataforma)
+    else api.collideSprite(heroi, plataforma)
+    expect(heroi.onGround).toBe(true)
+  }
+
+  it('soma o deslocamento horizontal da base ao movimento próprio do jogador', () => {
+    for (const oneWay of [false, true]) {
+      const api = load()
+      const plataforma = api.createSprite({ x: 0, y: 32, w: 64, h: 16, vx: 5 })
+      const heroi = api.createSprite({ x: 4, y: 10, w: 16, h: 16 })
+      land(api, heroi, plataforma, oneWay)
+
+      api.applyVelocity(plataforma)
+      api.keys.right = true
+      api.platformer(heroi, ctx, 3, 11)
+      if (oneWay) api.collidePlatform(heroi, plataforma)
+      else api.collideSprite(heroi, plataforma)
+
+      expect(heroi.x).toBe(12) // x 4 + jogador 3 + plataforma 5
+      expect(heroi.onGround).toBe(true)
+    }
+  })
+
+  it('acompanha a base subindo e descendo', () => {
+    for (const platformVY of [-4, 4]) {
+      const api = load()
+      const plataforma = api.createSprite({ x: 0, y: 32, w: 64, h: 16, vy: platformVY })
+      const heroi = api.createSprite({ x: 4, y: 10, w: 16, h: 16 })
+      land(api, heroi, plataforma, true)
+
+      api.applyVelocity(plataforma)
+      api.platformer(heroi, ctx, 3, 11)
+      api.collidePlatform(heroi, plataforma)
+
+      expect(heroi.y).toBe(16 + platformVY)
+      expect(heroi.onGround).toBe(true)
+    }
+  })
+
+  it('solta imediatamente ao pular', () => {
+    const api = load()
+    const plataforma = api.createSprite({ x: 0, y: 32, w: 64, h: 16, vx: 5 })
+    const heroi = api.createSprite({ x: 4, y: 10, w: 16, h: 16 })
+    land(api, heroi, plataforma, true)
+
+    api.applyVelocity(plataforma)
+    api.keys.up = true
+    api.platformer(heroi, ctx, 3, 11)
+    api.collidePlatform(heroi, plataforma)
+
+    expect(heroi.x).toBe(4)
+    expect(heroi.vy).toBe(-11)
+    expect(heroi.onGround).toBe(false)
+  })
+
+  it('não transporta depois de sair andando nem depois de remover a base do grupo', () => {
+    const walkingApi = load()
+    const walkingPlatform = walkingApi.createSprite({ x: 0, y: 32, w: 32, h: 16 })
+    const walkingHero = walkingApi.createSprite({ x: 4, y: 10, w: 16, h: 16 })
+    land(walkingApi, walkingHero, walkingPlatform, true)
+    walkingApi.keys.right = true
+    walkingApi.platformer(walkingHero, ctx, 40, 11)
+    walkingApi.collidePlatform(walkingHero, walkingPlatform)
+    walkingApi.keys.right = false
+    walkingPlatform.vx = 5
+    walkingApi.applyVelocity(walkingPlatform)
+    walkingApi.platformer(walkingHero, ctx, 3, 11)
+    walkingApi.collidePlatform(walkingHero, walkingPlatform)
+    expect(walkingHero.x).toBe(44)
+    expect(walkingHero.onGround).toBe(false)
+
+    const groupApi = load()
+    const grupo = groupApi.createGroup()
+    const groupPlatform = groupApi.createSprite({ x: 0, y: 32, w: 64, h: 16, vx: 5 })
+    grupo.items.push(groupPlatform)
+    const groupHero = groupApi.createSprite({ x: 4, y: 10, w: 16, h: 16 })
+    groupHero.vy = 8
+    groupApi.applyVelocity(groupHero)
+    groupApi.collidePlatformGroup(groupHero, grupo)
+    grupo.items.pop()
+    groupApi.applyVelocity(groupPlatform)
+    groupApi.platformer(groupHero, ctx, 3, 11)
+    groupApi.collidePlatformGroup(groupHero, grupo)
+    expect(groupHero.x).toBe(4)
+    expect(groupHero.onGround).toBe(false)
   })
 })
 

@@ -12,17 +12,21 @@ import {
   DEFAULT_LOOP_BUDGET_MS,
   sanitizeFetchOrigins,
 } from '#preview'
+import type { AIProvider } from '../ai/contracts'
 import type { StudioLimits } from '../state/projectStore'
 
 /** Configuração de IA injetada pelo host. */
 export interface StudioAIConfig {
-  /** Chave OpenRouter do host. Quando presente, a seção de chave do Settings some. */
-  apiKey?: string
+  /**
+   * Provider gerenciado pelo host. Use um adapter que converse com o BFF do
+   * produto; segredos de OpenRouter nunca devem atravessar props client-side.
+   */
+  provider?: AIProvider
   /** Fixa o modelo (o seletor do Settings some). */
   model?: string
   /**
    * Permite o aluno colar a própria chave no Settings (BYOK). Default: true
-   * quando o host NÃO injeta apiKey; false quando injeta.
+   * quando o host NÃO injeta provider; false quando injeta.
    */
   allowUserKey?: boolean
 }
@@ -134,7 +138,7 @@ export interface ResolvedStudioConfig {
   ai: boolean
   /** Modo profissional ligado (dev-server WebContainer). */
   professional: boolean
-  aiConfig: { apiKey?: string; model?: string; allowUserKey: boolean }
+  aiConfig: { provider?: AIProvider; model?: string; allowUserKey: boolean }
   allowedModes: readonly IDEMode[]
   previewSecurity: PreviewSecurityPolicy
   learning: LearningConfig
@@ -176,9 +180,9 @@ export function resolveStudioConfig(
     ai: ai !== false,
     professional,
     aiConfig: {
-      apiKey: aiObject.apiKey,
+      provider: aiObject.provider,
       model: aiObject.model,
-      allowUserKey: aiObject.allowUserKey ?? !aiObject.apiKey,
+      allowUserKey: aiObject.allowUserKey ?? !aiObject.provider,
     },
     allowedModes: resolvedModes,
   }

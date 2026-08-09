@@ -83,6 +83,7 @@ const DEFAULT_MAX_TOKENS = 900
 export const AI_EMPTY_RESPONSE_FALLBACK = 'A IA não retornou conteúdo. Tente novamente.'
 /** Tempo máximo sem receber tokens antes de desistir do stream (ms). */
 const STREAM_IDLE_TIMEOUT_MS = 60_000
+const MAX_ERROR_BODY_CHARS = 4_096
 /**
  * Tempo máximo (relógio de parede) para o handshake/headers da request E para
  * o `response.json()` do caminho não-streaming. O `idleTimeoutMs` do stream só
@@ -227,12 +228,20 @@ export class OpenRouterProvider implements AIProvider {
     clearConnectTimer()
 
     if (!response.ok) {
-      options.signal?.removeEventListener('abort', onCallerAbort)
-      const text = await safeText(response)
-      throw new OpenRouterError(
-        `OpenRouter erro ${response.status}: ${text || response.statusText}`,
-        response.status,
-      )
+      try {
+        const text = await readBodyWithDeadline(
+          () => response.text(),
+          connectTimeoutMs,
+          connectController,
+          options.signal,
+        )
+        throw new OpenRouterError(
+          `OpenRouter erro ${response.status}: ${text.slice(0, MAX_ERROR_BODY_CHARS) || response.statusText}`,
+          response.status,
+        )
+      } finally {
+        options.signal?.removeEventListener('abort', onCallerAbort)
+      }
     }
 
     if (options.onToken && response.body) {
@@ -250,37 +259,18 @@ export class OpenRouterProvider implements AIProvider {
     // que o await sempre acerta o `finally` (que libera o "busy" no painel),
     // mesmo que o runtime não propague o abort a um Response já resolvido.
     // `connectController.abort()` ainda tenta liberar a conexão subjacente.
-    let jsonTimer: ReturnType<typeof setTimeout> | undefined
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      jsonTimer = setTimeout(() => {
-        connectController.abort()
-        reject(makeTimeoutError(connectTimeoutMs))
-      }, connectTimeoutMs)
-    })
-    // Espelha o braço de abort do caminho de streaming: um abort do caller
-    // DURANTE a leitura do corpo (já passados os headers) não chegava a
-    // `response.json()` — o `connectController.signal` foi pro fetch, não pro
-    // body já resolvido. Sem este braço o await ficaria pendente até o timeout.
-    let abortListener: (() => void) | undefined
-    const abortPromise = new Promise<never>((_, reject) => {
-      const sig = options.signal
-      if (!sig) return
-      if (sig.aborted) {
-        reject(makeAbortError('Requisição de IA abortada'))
-        return
-      }
-      abortListener = () => reject(makeAbortError('Requisição de IA abortada'))
-      sig.addEventListener('abort', abortListener, { once: true })
-    })
     try {
-      const data = (await Promise.race([response.json(), timeoutPromise, abortPromise])) as {
+      const data = (await readBodyWithDeadline(
+        () => response.json(),
+        connectTimeoutMs,
+        connectController,
+        options.signal,
+      )) as {
         choices?: Array<{ message?: { content?: string } }>
       }
       const content = data.choices?.[0]?.message?.content ?? ''
       return content.trim() ? content : AI_EMPTY_RESPONSE_FALLBACK
     } finally {
-      if (jsonTimer !== undefined) clearTimeout(jsonTimer)
-      if (abortListener) options.signal?.removeEventListener('abort', abortListener)
       options.signal?.removeEventListener('abort', onCallerAbort)
     }
   }
@@ -465,11 +455,35 @@ export class OpenRouterError extends Error {
   }
 }
 
-async function safeText(response: Response): Promise<string> {
+async function readBodyWithDeadline<T>(
+  read: () => Promise<T>,
+  timeoutMs: number,
+  controller: AbortController,
+  callerSignal?: AbortSignal,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let abortListener: (() => void) | undefined
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort()
+      reject(makeTimeoutError(timeoutMs))
+    }, timeoutMs)
+  })
+  const abortPromise = new Promise<never>((_, reject) => {
+    if (!callerSignal) return
+    if (callerSignal.aborted) {
+      reject(makeAbortError('Requisição de IA abortada'))
+      return
+    }
+    abortListener = () => reject(makeAbortError('Requisição de IA abortada'))
+    callerSignal.addEventListener('abort', abortListener, { once: true })
+  })
+
   try {
-    return await response.text()
-  } catch {
-    return ''
+    return await Promise.race([read(), timeoutPromise, abortPromise])
+  } finally {
+    if (timer !== undefined) clearTimeout(timer)
+    if (abortListener) callerSignal?.removeEventListener('abort', abortListener)
   }
 }
 

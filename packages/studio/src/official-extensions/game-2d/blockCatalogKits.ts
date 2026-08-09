@@ -203,7 +203,7 @@ export const gameTwoDKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Acelera o sprite na direção que ele está apontando (soma à velocidade). Combine com "aplicar velocidade" e "frear aos poucos" para o efeito de nave no espaço.',
+      'Acelera o sprite na direção que ele está apontando (soma à velocidade). Combine com “Mover usando vx e vy” e “frear aos poucos” para o efeito de nave no espaço.',
   },
   {
     type: 'sz_g2d_apply_friction',

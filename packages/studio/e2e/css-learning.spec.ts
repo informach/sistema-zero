@@ -35,7 +35,7 @@ test.describe('Aprender CSS — resultado visual e Ponte', () => {
       '#caixa { background-color: #7c3aed; color: #ffffff; padding: 24px; border-radius: 12px; }',
     )
 
-    const card = page.frameLocator('iframe').locator('#caixa')
+    const card = page.frameLocator('iframe[title="Pré-visualização"]').locator('#caixa')
     await expect(card).toBeVisible({ timeout: 15_000 })
     await expect
       .poll(

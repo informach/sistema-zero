@@ -94,7 +94,7 @@ aluno).
 | 1 | **Loop e desenho** | limpar → desenhar, todo quadro; camadas | `update_each_frame`, "Limpar a tela", `draw_sprite` |
 | 2 | **Sprite e movimento** | posição é estado; mudar posição = mover | `create_sprite`, `set_position`, `set_velocity`, `apply_velocity` |
 | 3 | **Input** | evento (apertar UMA vez) ≠ estado (segurando) | `on_key` (evento) vs `key_down` (pergunta) — a distinção ataque × andar |
-| 4 | **Gravidade e pulo** | velocity acumula gravidade; pulo = impulso único; chão = limite | `set_gravity`, `jump_on_ground`, `platformer` |
+| 4 | **Gravidade e pulo** | velocity acumula gravidade; pulo = impulso único; chão = borda, tile ou figura confirmado pela colisão | `set_gravity`, `jump_on_ground`, `platformer`, `tilemap_collide`, `collide_sprite`, `collide_platform` |
 | 5 | **Timers** | agir no ritmo do relógio, não "sempre" | `every_seconds`, `every_frames`, `after_seconds` (one-shot), `cooldown_ready` |
 | 6 | **Colisão** | pergunta contínua ≠ evento de borda; hitbox é um dial | `touches`, `on_overlap`, `circle_collides`, `set_hitbox_scale`, `draw_hitbox` |
 | 7 | **Grupos e spawn** | muitos iguais = um grupo; nascer fora da tela; limpar quem saiu | `create_group`, `spawn_in_group`, `for_each_in_group`, `prune_offscreen`, `count_group` |

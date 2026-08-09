@@ -156,6 +156,44 @@ describe('PersistenceService', () => {
     detach()
   })
 
+  it('excluir num namespace não cancela o mesmo id aberto em outro namespace', async () => {
+    const storeA = createProjectStore()
+    const storeB = createProjectStore()
+    const savedA: string[] = []
+    const savedB: string[] = []
+    const adapterA = {
+      scopeIdentity: 'scope-a',
+      load: async () => null,
+      save: async (project: ReturnType<typeof createEmptyProject>) => {
+        savedA.push(project.id)
+      },
+    }
+    const adapterB = {
+      scopeIdentity: 'scope-b',
+      load: async () => null,
+      save: async (project: ReturnType<typeof createEmptyProject>) => {
+        savedB.push(project.id)
+      },
+    }
+    const serviceA = createPersistenceService(storeA, adapterA)
+    const serviceB = createPersistenceService(storeB, adapterB)
+    const detachA = serviceA.attach()
+    const detachB = serviceB.attach()
+
+    storeA.getState().setProject(createEmptyProject('shared-id', 'Alice'))
+    storeB.getState().setProject(createEmptyProject('shared-id', 'Bob'))
+    cancelPendingAutosavesFor('shared-id', 'scope-a')
+    await waitForAutosave()
+
+    expect(savedA).toEqual([])
+    expect(storeA.getState().project).toBeNull()
+    expect(savedB).toEqual(['shared-id'])
+    expect(storeB.getState().project?.name).toBe('Bob')
+
+    detachA()
+    detachB()
+  })
+
   it('força gravação pendente quando a página está saindo', async () => {
     const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-pagehide', 'Projeto'))

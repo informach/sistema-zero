@@ -32,6 +32,21 @@ describe('unicidade das Áreas do projeto', () => {
     expect(enforceUniqueProjectAreas(workspace).removed).toBe(1)
   })
 
+  it('remove também uma segunda área Meus moldes e preserva seu conteúdo', () => {
+    const workspace = new Blockly.Workspace()
+    const first = workspace.newBlock('sz_frame_molds')
+    const duplicate = workspace.newBlock('sz_frame_molds')
+    const draft = workspace.newBlock('sz_js_function')
+    duplicate
+      .getInput('CHILDREN')
+      ?.connection?.connect(draft.previousConnection as Blockly.Connection)
+
+    expect(enforceUniqueProjectAreas(workspace)).toEqual({ removed: 1, focusedBlockId: first.id })
+    expect(workspace.getBlockById(duplicate.id)).toBeNull()
+    expect(workspace.getBlockById(draft.id)).toBe(draft)
+    expect(draft.getParent()).toBeNull()
+  })
+
   it('espera a desserialização da duplicata terminar antes de removê-la', async () => {
     const workspace = new Blockly.Workspace()
     const first = workspace.newBlock('sz_frame_start')

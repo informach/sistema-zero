@@ -1,4 +1,5 @@
 import type { BehaviorArea } from '../../core/behaviorAreas'
+import type { ProjectAreaFrame } from '../projectAreas'
 
 export type { BehaviorArea } from '../../core/behaviorAreas'
 
@@ -134,14 +135,7 @@ interface BlockDefinitionBase {
   eventObject?: EventObjectCapability
 }
 
-export type ProjectAreaBlockType =
-  | 'sz_frame_structure'
-  | 'sz_frame_appearance'
-  | 'sz_frame_behavior'
-  | 'sz_frame_molds'
-  | 'sz_frame_start'
-  | 'sz_frame_events'
-  | 'sz_frame_loops'
+export type ProjectAreaBlockType = ProjectAreaFrame
 
 type ContentStatementCheck = 'HTMLNode' | 'CSSEntry' | 'CSSDecl' | 'KeyframeStep'
 

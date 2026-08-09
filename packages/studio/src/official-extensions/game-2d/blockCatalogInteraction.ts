@@ -871,7 +871,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
   {
     type: 'sz_g2d_tilemap_collide',
     placement: 'command',
-    message0: 'Impedir o sprite %1 de atravessar os tiles sólidos do mapa %2',
+    message0: 'Fazer o sprite %1 colidir com os sólidos e plataformas do mapa %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
       { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
@@ -880,7 +880,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O sprite não atravessa os tiles marcados como sólidos: ele pousa sobre o chão e bate nas paredes. Use a cada quadro, depois de mover o sprite.',
+      'Tiles sólidos viram chão e paredes; tiles plataforma seguram apenas na face atraída pela gravidade e deixam atravessar pela outra. Use a cada quadro, depois de mover o sprite.',
   },
   {
     type: 'sz_g2d_collide_group',
@@ -894,7 +894,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O sprite não atravessa nenhum sprite do grupo (pedras, casas, paredes desenhadas por você): ele é empurrado para fora e desliza pela beirada. Ótimo para obstáculos sem mapa de tiles. Use a cada quadro, depois de mover o sprite.',
+      'Cada figura do grupo vira um obstáculo sólido: chão e parede. Bases móveis transportam quem estiver apoiado nelas. Use a cada quadro, depois de mover o grupo e o sprite.',
   },
   {
     type: 'sz_g2d_collide_sprite',
@@ -908,7 +908,35 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "impedir de atravessar os sprites do grupo", mas contra UM sprite só (uma parede, uma plataforma). O sprite é empurrado para fora e desliza pela beirada. Use a cada quadro, depois de mover o sprite.',
+      'A outra figura vira um obstáculo sólido: chão e parede. Se ela se mover antes do jogador, transporta quem estiver apoiado. Use a cada quadro, depois de mover as figuras.',
+  },
+  {
+    type: 'sz_g2d_collide_platform',
+    placement: 'command',
+    message0: 'Fazer o sprite %1 pousar na plataforma %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'field_sprite_picker', name: 'OTHER', text: 'plataforma' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A outra figura vira uma plataforma: segura na face atraída pela gravidade, mas deixa atravessar pelas laterais e pela face oposta. Se ela se mover antes do jogador, transporta quem estiver apoiado.',
+  },
+  {
+    type: 'sz_g2d_collide_platform_group',
+    placement: 'command',
+    message0: 'Fazer o sprite %1 pousar nas plataformas do grupo %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'plataformas', kind: 'group' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cada figura do grupo vira uma plataforma atravessável pelas laterais e pela face oposta à gravidade. Plataformas móveis transportam quem estiver apoiado. Mova o grupo antes do jogador e resolva a colisão depois.',
   },
 ]
 

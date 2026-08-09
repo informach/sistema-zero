@@ -8,42 +8,22 @@ import {
   getBlockContract,
 } from './blockContracts'
 import { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } from './blocksStateVersion'
-import {
-  collectFlatFromWorkspace,
-  FRAME_APPEARANCE,
-  FRAME_BEHAVIOR,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-  FRAME_MOLDS,
-  FRAME_START,
-  FRAME_STRUCTURE,
-} from './buildIR'
+import { collectFlatFromWorkspace, FRAME_BEHAVIOR } from './buildIR'
 import { VARIABLE_DECL_BLOCKS } from './fields/FieldNamePicker'
 import { migrateAsyncBlocks } from './migrateAsyncBlocks'
 import { migrateHTMLStructure } from './migrateHTMLStructure'
 import { migrateIfElseBlocks } from './migrateIfElse'
 import { migrateLegacyValueFields, restoreShadowLiterals } from './migrateValueFields'
-import { BEHAVIOR_AREA_BY_FRAME, PROJECT_AREA_FRAMES } from './projectAreas'
+import {
+  BEHAVIOR_AREA_BY_FRAME,
+  PROJECT_AREA_FRAME_TYPES,
+  PROJECT_AREA_FRAMES,
+} from './projectAreas'
 import { ensureBlocklyInitialized } from './setup'
 import { buildWorkspaceStateFromIR } from './workspaceState'
 
-const FRAME_TYPES = new Set<string>([
-  FRAME_STRUCTURE,
-  FRAME_APPEARANCE,
-  FRAME_BEHAVIOR,
-  FRAME_MOLDS,
-  FRAME_START,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-])
-const CURRENT_FRAME_TYPES = new Set<string>([
-  FRAME_STRUCTURE,
-  FRAME_APPEARANCE,
-  FRAME_MOLDS,
-  FRAME_START,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-])
+const FRAME_TYPES = new Set<string>([...PROJECT_AREA_FRAME_TYPES, FRAME_BEHAVIOR])
+const CURRENT_FRAME_TYPES = PROJECT_AREA_FRAME_TYPES
 const START_WRAPPER_BLOCK_TYPES = new Set([
   'sz_g2d_on_start',
   'sz_gk_on_game_start',
