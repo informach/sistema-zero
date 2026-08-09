@@ -261,10 +261,9 @@ describe('🧩 Meus moldes — a área de definições', () => {
     })
 
     it('⭐ drift: TODO frame visível tem área própria no catálogo e entra na paleta', () => {
-      // Dois mapas frame→área vivem separados (`AREA_FRAMES` no toolbox decide o
-      // que aparece; `AREA_OF_FRAME` no catálogo decide o que o Zappy lê). Uma
-      // sétima área criada só num deles some da paleta ou é anunciada errada,
-      // nos dois casos em silêncio.
+      // Toolbox e catálogo consomem o mesmo registro central de áreas. Este teste
+      // cerca os consumidores visíveis para impedir que um deles deixe de derivar
+      // desse contrato numa mudança futura.
       const frames = FRAME_BLOCKS.filter((b) => !b.hidden).map((b) => b.type)
       const noCatalogo = new Map(
         SERVER_BLOCK_CATALOG.filter((e) => e.type.startsWith('sz_frame_')).map((e) => [
@@ -366,9 +365,9 @@ describe('🧩 Meus moldes — a área de definições', () => {
         h: num(32),
       }) as unknown as JSStatement
 
-    it('⭐ recusa o molde que usa um nome criado só depois, no Ao iniciar', () => {
-      // A folha nasce no Ao iniciar e a animação do tipo (molde) tenta usá-la:
-      // ao rodar, o molde executaria antes de a folha existir.
+    it('⭐ recusa IR externa que põe a animação no molde antes da folha', () => {
+      // O Blockly não produz esse encaixe: é uma fronteira para IR importada ou
+      // corrompida que põe a animação na área errada e ainda olha para a frente.
       const parsed = SZIRV2Schema.safeParse(
         project({
           molds: [

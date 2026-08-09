@@ -3820,22 +3820,30 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     case 'sz_g2d_enemy_type_param':
+    case 'sz_g2d_enemy_type_param_legacy_start':
       seen.add('game-2d')
       return {
         kind: 'js',
         value: {
-          type: 'g2d:setEnemyTypeParam',
+          type:
+            block.type === 'sz_g2d_enemy_type_param_legacy_start'
+              ? 'g2d:setEnemyTypeParamLegacyStart'
+              : 'g2d:setEnemyTypeParam',
           typeVar: f(block, 'TYPE'),
           param: f(block, 'PARAM'),
           value: exprInput(block, 'VALUE', { type: 'num', value: 10 }),
         },
       }
     case 'sz_g2d_enemy_add_behavior':
+    case 'sz_g2d_enemy_add_behavior_legacy_start':
       seen.add('game-2d')
       return {
         kind: 'js',
         value: {
-          type: 'g2d:enemyAddBehavior',
+          type:
+            block.type === 'sz_g2d_enemy_add_behavior_legacy_start'
+              ? 'g2d:enemyAddBehaviorLegacyStart'
+              : 'g2d:enemyAddBehavior',
           typeVar: f(block, 'TYPE'),
           behavior: f(block, 'BEHAVIOR'),
         },

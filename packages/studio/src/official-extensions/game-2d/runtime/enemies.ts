@@ -74,27 +74,12 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    * existem. Idioma emprestado do _trackGroupItems, que ja faz isso nos grupos
    * normais para observar pertencimento.
    */
-  // ⚠️ Object.create(null) NAO e preciosismo: com um objeto literal, 'toString',
-  // 'valueOf', 'constructor' e 'hasOwnProperty' vem de Object.prototype e sao
-  // TRUTHY, e todos existem em Array.prototype — entao a guarda abaixo devolveria
-  // o aviso no lugar da funcao de verdade, e qualquer coercao da lista (String,
-  // concatenacao) dispararia aviso e voltaria undefined. E a MESMA armadilha que
-  // o 1o full review pegou neste arquivo (nome herdado passando por comportamento
-  // valido); repeti dois meses depois, agora com prototipo nulo.
-  var MIRROR_MUTANTES = Object.create(null);
-  MIRROR_MUTANTES.copyWithin = 1;
-  MIRROR_MUTANTES.fill = 1;
-  MIRROR_MUTANTES.pop = 1;
-  MIRROR_MUTANTES.push = 1;
-  MIRROR_MUTANTES.reverse = 1;
-  MIRROR_MUTANTES.shift = 1;
-  MIRROR_MUTANTES.sort = 1;
-  MIRROR_MUTANTES.splice = 1;
-  MIRROR_MUTANTES.unshift = 1;
+  // Usa a mesma fonte de verdade dos grupos normais: assim uma leitura herdada
+  // nunca vira mutacao aqui nem la quando a lista de metodos mudar.
   function _protegerListaDaVista(lista) {
     return new Proxy(lista, {
       get: function (target, prop, receiver) {
-        if (MIRROR_MUTANTES[prop] && typeof Array.prototype[prop] === 'function') {
+        if (GROUP_MUTATING_METHODS[prop] && typeof Array.prototype[prop] === 'function') {
           return function () {
             _warnEnemyMirror(
               'mexer na lista',

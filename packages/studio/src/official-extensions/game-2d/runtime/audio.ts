@@ -282,17 +282,17 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   // dois ja pertencem aos blocos de bip e de melodia pronta — e bloco que a
   // crianca ja usa nao muda de forma. No Jogo 3D, onde nao havia conflito, as
   // mesmas funcoes se chamam playSound/playMusic.
-  var _clips = {};
+  var _clips = Object.create(null);
   // Fonte por apelido num mapa PARALELO: o typecheck do runtime confere contra o
   // DOM real, e HTMLAudioElement nao tem campo livre para pendurar coisa nossa.
-  var _clipSrc = {};
+  var _clipSrc = Object.create(null);
   var _clipVolume = 0.8;
   var _trackKey = '';
   // ⚠️ O navegador RECUSA play() antes de um gesto, e a recusa e SILENCIOSA
   // (promise rejeitada). Sem esta fila, "Tocar o som" no "Ao iniciar" nao
   // acontecia e nao havia nada no console explicando. Aqui o pedido espera o
   // primeiro clique/tecla — o mesmo destravamento que o bip ja fazia acima.
-  var _clipWaiting = {};
+  var _clipWaiting = Object.create(null);
   function _releaseClips() {
     for (var key in _clipWaiting) {
       if (Object.prototype.hasOwnProperty.call(_clipWaiting, key)) {
@@ -309,7 +309,10 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     var key = _clipKey(name) || _clipKey(asset);
     if (!key) { warnOnce('som-sem-apelido', 'o bloco "Carregar o som" precisa de um apelido.'); return; }
     var wanted = _clipKey(asset);
-    var src = SOUNDS[wanted] || (wanted.indexOf('data:audio/') === 0 ? wanted : null);
+    var registered = Object.prototype.hasOwnProperty.call(SOUNDS, wanted) ? SOUNDS[wanted] : null;
+    var src = typeof registered === 'string'
+      ? registered
+      : (wanted.indexOf('data:audio/') === 0 ? wanted : null);
     if (!src) {
       warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Imagens e sons".');
       return;
@@ -400,9 +403,9 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
         try { _clips[key].pause(); _clips[key].src = ''; } catch (e) {}
       }
     }
-    _clips = {};
-    _clipSrc = {};
-    _clipWaiting = {};
+    _clips = Object.create(null);
+    _clipSrc = Object.create(null);
+    _clipWaiting = Object.create(null);
     _trackKey = '';
   }
   function _pauseClips() {

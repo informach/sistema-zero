@@ -5,7 +5,7 @@ import {
   writeProjectThumb,
 } from '../state/persistence'
 import { captureCoverFromProject } from './coverCapture'
-import { takeProjectSnapshot } from './latestSnapshot'
+import { consumeProjectSnapshot, type ProjectSnapshot, peekProjectSnapshot } from './latestSnapshot'
 
 /** Tamanho da miniatura do card (proporção do palco 800×480). */
 const THUMB_WIDTH = 320
@@ -71,12 +71,18 @@ export async function downscaleToThumb(coverDataUrl: string): Promise<string | n
  * abriu o preview (ficou só nos blocos), quem o deixou parado, e a foto que já
  * envelheceu. É lento e falível, mas é o único disponível nesses casos.
  */
-async function resolveThumb(project: Project): Promise<string | null> {
-  const doPreview = takeProjectSnapshot(project.id)
-  if (doPreview) return doPreview
+interface ResolvedThumb {
+  dataUrl: string
+  snapshot?: ProjectSnapshot
+}
+
+async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
+  const doPreview = peekProjectSnapshot(project.id)
+  if (doPreview) return { dataUrl: doPreview.dataUrl, snapshot: doPreview }
   const cover = await captureCoverFromProject(project)
   if (!cover) return null
-  return downscaleToThumb(cover)
+  const dataUrl = await downscaleToThumb(cover)
+  return dataUrl ? { dataUrl } : null
 }
 
 /**
@@ -90,7 +96,9 @@ export async function captureAndStoreProjectThumb(project: Project): Promise<voi
   try {
     const thumb = await resolveThumb(project)
     if (!thumb) return
-    await writeProjectThumb(project.id, thumb)
+    const stored = await writeProjectThumb(project.id, thumb.dataUrl)
+    if (!stored) return
+    if (thumb.snapshot) consumeProjectSnapshot(thumb.snapshot)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(PROJECT_THUMB_UPDATED_EVENT, { detail: project.id }))
     }

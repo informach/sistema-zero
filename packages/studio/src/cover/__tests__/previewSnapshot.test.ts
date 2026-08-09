@@ -7,10 +7,11 @@ import {
 } from '../../preview/snapshotBridge'
 import { MAX_PROJECT_THUMB_CHARS } from '../../state/persistence'
 import {
+  consumeProjectSnapshot,
   forgetProjectSnapshot,
+  peekProjectSnapshot,
   rememberProjectSnapshot,
   SNAPSHOT_MAX_AGE_MS,
-  takeProjectSnapshot,
 } from '../latestSnapshot'
 
 /**
@@ -499,23 +500,28 @@ describe('bridge de foto do preview', () => {
 describe('memória da última foto', () => {
   beforeEach(() => forgetProjectSnapshot())
 
-  it('guarda e devolve por projeto', () => {
+  it('guarda, lê e confirma o consumo por projeto', () => {
     rememberProjectSnapshot('a', JPEG)
-    expect(takeProjectSnapshot('a')).toBe(JPEG)
-    expect(takeProjectSnapshot('b')).toBeNull()
+    const snapshot = peekProjectSnapshot('a')
+    expect(snapshot?.dataUrl).toBe(JPEG)
+    if (!snapshot) throw new Error('snapshot não foi guardado')
+    expect(consumeProjectSnapshot(snapshot)).toBe(true)
+    expect(peekProjectSnapshot('a')).toBeNull()
+    expect(peekProjectSnapshot('b')).toBeNull()
   })
 
   it('⭐ foto velha NÃO vira capa: o chamador cai no caminho antigo', () => {
     const t0 = 1_000_000
     rememberProjectSnapshot('a', JPEG, t0)
-    expect(takeProjectSnapshot('a', t0 + SNAPSHOT_MAX_AGE_MS - 1)).toBe(JPEG)
-    expect(takeProjectSnapshot('a', t0 + SNAPSHOT_MAX_AGE_MS + 1)).toBeNull()
+    expect(peekProjectSnapshot('a', t0 + SNAPSHOT_MAX_AGE_MS - 1)?.dataUrl).toBe(JPEG)
+    rememberProjectSnapshot('b', JPEG, t0)
+    expect(peekProjectSnapshot('b', t0 + SNAPSHOT_MAX_AGE_MS + 1)).toBeNull()
   })
 
   it('a foto mais recente substitui a anterior', () => {
     rememberProjectSnapshot('a', JPEG, 1)
     rememberProjectSnapshot('a', 'data:image/jpeg;base64,BBBB', 2)
-    expect(takeProjectSnapshot('a', 3)).toBe('data:image/jpeg;base64,BBBB')
+    expect(peekProjectSnapshot('a', 3)?.dataUrl).toBe('data:image/jpeg;base64,BBBB')
   })
 
   it('⭐⭐ recusa o que não é imagem — o bridge roda no contexto da CRIANÇA', () => {
@@ -523,7 +529,7 @@ describe('memória da última foto', () => {
     // dentro. A validação do bridge não vale como garantia; a fronteira é aqui.
     rememberProjectSnapshot('a', 'javascript:alert(1)')
     rememberProjectSnapshot('a', '<script>x</script>')
-    expect(takeProjectSnapshot('a')).toBeNull()
+    expect(peekProjectSnapshot('a')).toBeNull()
   })
 
   it('⭐⭐ recusa acima do teto da GRAVAÇÃO, para a reserva assumir', () => {
@@ -532,11 +538,11 @@ describe('memória da última foto', () => {
     // silêncio pelo writeProjectThumb. Recusar aqui devolve a vez ao caminho antigo.
     const gorda = `data:image/jpeg;base64,${'A'.repeat(MAX_PROJECT_THUMB_CHARS)}`
     rememberProjectSnapshot('a', gorda)
-    expect(takeProjectSnapshot('a')).toBeNull()
+    expect(peekProjectSnapshot('a')).toBeNull()
 
     const cabe = `data:image/jpeg;base64,${'A'.repeat(MAX_PROJECT_THUMB_CHARS - 100)}`
     rememberProjectSnapshot('b', cabe)
-    expect(takeProjectSnapshot('b')).toBe(cabe)
+    expect(peekProjectSnapshot('b')?.dataUrl).toBe(cabe)
   })
 
   it('⚠️ e o teto da PONTE não pode ser mais frouxo que o da gravação', () => {

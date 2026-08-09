@@ -1292,8 +1292,10 @@ ${pad}}, ${JSON.stringify(id)});`
     case 'g2d:enemyStateAnim':
       return `${pad}SZGame2D.setEnemyStateAnimation(${identifiers.get(stmt.typeVar)}, ${JSON.stringify(stmt.state)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
     case 'g2d:setEnemyTypeParam':
+    case 'g2d:setEnemyTypeParamLegacyStart':
       return `${pad}SZGame2D.setEnemyTypeParam(${identifiers.get(stmt.typeVar)}, ${JSON.stringify(stmt.param)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))});`
     case 'g2d:enemyAddBehavior':
+    case 'g2d:enemyAddBehaviorLegacyStart':
       return `${pad}SZGame2D.addEnemyTypeBehavior(${identifiers.get(stmt.typeVar)}, ${JSON.stringify(stmt.behavior)});`
     case 'g2d:spawnEnemy': {
       // Sem nome, a saída é a de sempre (byte-idêntica p/ projeto antigo).
@@ -5490,10 +5492,12 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.fps), names)
       return
     case 'g2d:setEnemyTypeParam':
+    case 'g2d:setEnemyTypeParamLegacyStart':
       names.add(stmt.typeVar)
       collectExprIdentifiers(valueToExpr(stmt.value), names)
       return
     case 'g2d:enemyAddBehavior':
+    case 'g2d:enemyAddBehaviorLegacyStart':
       names.add(stmt.typeVar)
       return
     case 'g2d:spawnEnemy':

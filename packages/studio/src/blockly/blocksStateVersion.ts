@@ -8,8 +8,8 @@ export const BEHAVIOR_AREAS_STATE_KEY = 'szBehaviorAreasVersion'
 export const BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION = 2
 /**
  * 7: nasceu a área 🧩 Meus moldes. Os blocos que só DEFINEM (classe, figura,
- * tipo de inimigo, folha de quadros, som carregado) saem do ⚙️ Ao iniciar e
- * migram para lá, levando junto as variáveis de que dependem.
+ * função, tipo de inimigo e seus ajustes) saem do ⚙️ Ao iniciar e migram para
+ * lá, levando junto as variáveis de que dependem. Carregamentos ficam no início.
  */
 export const BEHAVIOR_AREAS_STATE_VERSION = 7
 

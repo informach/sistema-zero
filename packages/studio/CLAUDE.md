@@ -621,9 +621,9 @@ instalar ou remover extensão não mexe mais nas áreas. Regressão travada em
   rede, a criança via blocos e não tinha onde encaixá-los.
 - ⚠️ **`areaFor` (catálogo server-safe do Zappy) não pode achatar frame em
   "structure".** O mapa antigo mandava todo `domain: 'frame'` para lá, e o tutor
-  passava a ensinar que ⚙️ Ao iniciar pertence à estrutura da página. Cada frame
-  declara a área que REPRESENTA (`AREA_OF_FRAME`), e o `root[0]` deixou de levar
-  um cast que prometia só start/events/loops e escondia `'molds'` do compilador.
+  passava a ensinar que ⚙️ Ao iniciar pertence à estrutura da página. O registro
+  central `blockly/projectAreas.ts` liga cada área ao frame que representa; lista,
+  layout, paleta, normalização e catálogo derivam desse contrato.
 - ⚠️ **`ServerBlockCatalogEntry['area']` atravessa a fronteira do pacote**: o
   `member-shell` mantém um espelho em `PensaStudioBlockReference['area']`
   (planner do Pensa). Área nova aqui exige a mesma lá, senão aquele pacote
@@ -644,8 +644,9 @@ dos frames a cada reload de workspace povoado (colar código na Ponte). Regress�
   loops são raízes e não podem ser aninhados. Comandos contínuos usam o preset
   `loop-command`: cabem em loops e em funções/métodos, nunca diretamente em
   **Ao iniciar** nem no corpo direto de eventos ou construtores; um loop
-  aninhado nesses fluxos continua válido. Imports, funções e classes ficam
-  diretamente em **Ao iniciar**. Loops do motor executam callbacks e NÃO contam
+  aninhado nesses fluxos continua válido. Imports e classes ficam diretamente
+  em **Meus moldes**; funções e variáveis podem ficar em **Meus moldes** ou
+  **Ao iniciar**. Loops do motor executam callbacks e NÃO contam
   como laço sintático para `break`/`continue`; somente `for`/`while`/`repeat`
   concedem esse contexto. `break`, `continue`, `return`,
   `await`, `super` e valores dependentes de evento só cabem em seu contexto
@@ -661,7 +662,8 @@ dos frames a cada reload de workspace povoado (colar código na Ponte). Regress�
   projetos salvos, nunca aparecem na paleta. Conteúdo de áreas antigas
   duplicadas vira rascunho. O marcador `szBehaviorAreasVersion` impede que um
   rascunho criado intencionalmente seja migrado depois. O sanitizador aceita a
-  versão 2 conhecida para que ela chegue ao normalizador e vire versão 3;
+  qualquer versão conhecida de 2 a 7 para que ela chegue ao normalizador e vire
+  a versão 7 atual;
   versões futuras continuam rejeitadas até ganharem uma migração explícita.
   ⚠️ **O marcador também protege a migração de ESTRUTURA HTML (25/07)**: em estado
   ATUAL (marcado), bloco HTML solto no topo é rascunho deliberado (ex.: filho-de-svg
@@ -671,7 +673,7 @@ dos frames a cada reload de workspace povoado (colar código na Ponte). Regress�
   meio da edição ("o bloco se auto-encaixou e duplicou o resto" — bug real 24/07).
   Estado legado (sem marcador) segue migrando o topo; o conteúdo DENTRO do frame
   Estrutura normaliza sempre. Regressão: `__tests__/svgTitleDupRepro.test.ts`.
-- **Execução**: o gerador emite `start` → `events` → `loops` e conversa com o
+- **Execução**: o gerador emite `molds` → `start` → `events` → `loops` e conversa com o
   runtime pelo `RuntimeLifecycleContract` da extensão. O boot é automático;
   blocos antigos de “começar” não devem aparecer em projetos novos. Jogo 2D e
   Jogo 2D Avançado declaram `managedProjectRun`: seus runtimes incorporam o
@@ -1761,8 +1763,10 @@ tipo ficou em ⚙️ Ao iniciar. Pelo princípio da dona isso está errado: **mo
 (preparo, posso nem usar), **Ao iniciar é pôr para funcionar nesta partida**. Ela pediu cada bloco
 numa área SÓ, a que lhe cabe — nada de "vale nas duas".
 
-Quatro blocos trocaram de encaixe: **"também é"**, **"Ajustar no tipo"**, **"Animação dos inimigos do
-tipo"** e o **grupo com todos os inimigos**.
+Três blocos trocaram de encaixe: **"também é"**, **"Ajustar no tipo"** e o **grupo com todos os
+inimigos**. A **"Animação dos inimigos do tipo"** continua com raiz em ⚙️ Ao iniciar: ela consome uma
+folha carregada na mesma partida e precisa vir depois desse carregamento. Ela ainda cabe aninhada em
+evento/temporizador para trocar o visual no meio do jogo.
 
 ⭐ **A restrição que apareceu, e como saiu sem enfraquecer nada.** O contrato da área de moldes tem um
 invariante — `MOLD_ONLY_STATEMENT_TYPES ⊆ START_ONLY_STATEMENT_TYPES` — e `START_ONLY` **proíbe
@@ -1770,7 +1774,7 @@ aninhar**. Só que "também é" e "Ajustar" PRECISAM caber dentro de um evento: 
 fica furioso na metade da vida e da onda que endurece. Em vez de afrouxar o `MOLD_ONLY`, entrou um
 conjunto IRMÃO, **`MOLD_NESTABLE_STATEMENT_TYPES`** ("raiz no molde, aninhado permitido"), com o
 preset `mold-command` do lado do Blockly. O invariante da outra sessão segue valendo inteiro e **o
-teste dela não foi editado**.
+teste cobre os dois conjuntos separadamente**.
 
 ⭐⭐ **A migração não custou uma linha**: as duas pontas já leem o contrato. `normalizeFrames.ts`
 compara `areaForBlockType` com a área do frame em que o bloco está e re-hospeda o que não cabe;
@@ -1791,7 +1795,7 @@ preservando a ordem e a identidade de quem não tem nada a mover.
   senão TDZ no carregamento do módulo.
 
 Contadores: `+1` arquivo próprio (127) e manifest **0.66.0**. Teste novo:
-`__tests__/enemyMolds.test.ts` (10 casos: encaixe dos quatro, o aninhado que não pode morrer, o
+`__tests__/enemyMolds.test.ts` (encaixe dos três moldes, animação no início, o aninhado que não pode morrer, o
 invariante do conjunto novo, `partitionMolds`, e o projeto salvo se consertando com e sem a área).
 
 #### Décimo segundo full review (07/08) — o lote da área de moldes
@@ -1805,12 +1809,10 @@ Dois achados, e o primeiro é o mais importante do lote inteiro porque muda o SE
    código, é consequência da mudança de área — e estava sem uma linha de aviso. O manual agora diz,
    no próprio bullet do Ajustar, que ajuste no molde vale para o jogo inteiro e que endurecer só a
    onda seguinte pede o bloco dentro de um evento ou de um "A cada N segundos".
-2. **Concedi um aninhado sem decidir.** O preset `mold-command` usa `BODY_CONTEXTS`, que inclui corpo
-   de LAÇO, então a "Animação dos inimigos do tipo" — que era `start-only`, sem aninhar — ganhou a
-   permissão de rodar por quadro. Revisei em vez de reverter: manter é coerente com os dois irmãos (os
-   três são identidade que também muda no meio do jogo) e destrava o chefão que troca de animação
-   quando fica furioso. O que estava errado era estar sem decisão e sem registro; agora o manual
-   ensina os três no evento, e o teste cobra os três num evento E num temporizador.
+2. **Concedi um aninhado sem decidir.** A animação continua podendo aparecer em evento ou
+   temporizador para o chefão trocar de visual no meio do jogo, mas a raiz foi corrigida para
+   ⚙️ Ao iniciar. Ela consome a folha carregada nessa área; tratá-la como molde criava uma referência
+   para um nome que só existiria depois. O manual ensina essa ordem e os testes cobram raiz e corpos.
 
 **Conferido:** o `role` do contrato só distingue `event`/`loop`/`value`, então `declaration` × `command`
 não muda checagem nenhuma; o grupo geral RECUSA corpo de evento (é preparação e só, e tem teste); e a

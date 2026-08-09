@@ -14,6 +14,16 @@ export const BEHAVIOR_SECTION_MARKERS = {
   loops: '// Enquanto estiver rodando',
 } as const
 
+/** Diz se alguma das quatro áreas de comportamento contém statements. */
+export function hasBehaviorStatements(behavior: BehaviorIR): boolean {
+  return (
+    (behavior.molds?.length ?? 0) > 0 ||
+    behavior.start.length > 0 ||
+    behavior.events.length > 0 ||
+    behavior.loops.length > 0
+  )
+}
+
 function bodyOf(statement: JSStatement): JSStatement[] {
   const body = (statement as { body?: unknown }).body
   return Array.isArray(body) ? (body as JSStatement[]) : []
@@ -27,6 +37,21 @@ function liftDirectPeriodicLoops(statement: JSStatement, loops: JSStatement[]): 
     return false
   })
   return body.length === statement.body.length ? statement : { ...statement, body }
+}
+
+/**
+ * Preserva a posição observável dos dois ajustes que já existiam antes de
+ * 🧩 Meus moldes. Projetos novos usam os tipos canônicos na área de moldes; a
+ * variante interna só nasce ao ler uma raiz antiga de ⚙️ Ao iniciar.
+ */
+function preserveLegacyEnemyConfiguration(statement: JSStatement): JSStatement {
+  if (statement.type === 'g2d:setEnemyTypeParam') {
+    return { ...statement, type: 'g2d:setEnemyTypeParamLegacyStart' }
+  }
+  if (statement.type === 'g2d:enemyAddBehavior') {
+    return { ...statement, type: 'g2d:enemyAddBehaviorLegacyStart' }
+  }
+  return statement
 }
 
 /**
@@ -51,20 +76,21 @@ export function splitLegacyBehavior(statements: readonly JSStatement[]): Behavio
       return
     }
     if (LEGACY_ENGINE_BOOT_TYPES.has(statement.type)) return
-    const area = lifecycleAreaForStatement(statement)
+    const compatibleStatement = preserveLegacyEnemyConfiguration(statement)
+    const area = lifecycleAreaForStatement(compatibleStatement)
     if (area === 'loops') {
-      behavior.loops.push(liftDirectPeriodicLoops(statement, behavior.loops))
+      behavior.loops.push(liftDirectPeriodicLoops(compatibleStatement, behavior.loops))
       return
     }
     if (area === 'events') {
-      behavior.events.push(statement)
+      behavior.events.push(compatibleStatement)
       return
     }
     if (area === 'molds') {
-      behavior.molds.push(statement)
+      behavior.molds.push(compatibleStatement)
       return
     }
-    behavior.start.push(statement)
+    behavior.start.push(compatibleStatement)
   }
 
   for (const statement of statements) visit(statement)
@@ -91,8 +117,12 @@ export function partitionMolds(behavior: BehaviorIR): BehaviorIR {
   const molds = [...(behavior.molds ?? [])]
   const start: JSStatement[] = []
   for (const statement of behavior.start) {
-    if (lifecycleAreaForStatement(statement) === 'molds') molds.push(statement)
-    else start.push(statement)
+    const compatibleStatement = preserveLegacyEnemyConfiguration(statement)
+    if (lifecycleAreaForStatement(compatibleStatement) === 'molds') {
+      molds.push(compatibleStatement)
+    } else {
+      start.push(compatibleStatement)
+    }
   }
   return withMolds(molds, { start, events: behavior.events, loops: behavior.loops })
 }

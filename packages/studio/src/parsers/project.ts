@@ -6,9 +6,10 @@ import {
   countAdvancedCSS,
   countAdvancedHTML,
   countAdvancedJS,
-  partitionMolds,
+  SZIRV2Schema,
   splitLegacyBehavior,
 } from '#ir'
+import { routeBehaviorSections } from './behaviorSections'
 import { parseCSS } from './css'
 import { extractInlineAssets } from './html'
 import { parseJSWithDiagnostics } from './js'
@@ -39,7 +40,7 @@ export interface ParseProjectParts {
 export type ParsedFileName = keyof ParseProjectInput
 
 export interface ParseProjectDiagnostic {
-  kind: 'advanced' | 'syntaxError'
+  kind: 'advanced' | 'syntaxError' | 'semanticError'
   file: ParsedFileName
   message: string
   count?: number
@@ -98,7 +99,14 @@ function buildParseResult(
     })
   }
 
-  return { ir, diagnostics }
+  const validated = SZIRV2Schema.safeParse(ir)
+  if (!validated.success) {
+    for (const issue of validated.error.issues) {
+      diagnostics.push({ kind: 'semanticError', file: 'script.js', message: issue.message })
+    }
+  }
+
+  return { ir: validated.success ? validated.data : ir, diagnostics }
 }
 
 function parseBehaviorSource(source: string): {
@@ -106,6 +114,7 @@ function parseBehaviorSource(source: string): {
   diagnostics: ReturnType<typeof parseJSWithDiagnostics>['diagnostics']
 } {
   const lines = stripGeneratedLifecycleEnvelope(source.split(/\r?\n/))
+  const moldsIndex = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.molds)
   const startIndex = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.start)
   const eventsIndex = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.events)
   const loopsIndex = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.loops)
@@ -114,19 +123,44 @@ function parseBehaviorSource(source: string): {
     return { behavior: splitLegacyBehavior(legacy.statements), diagnostics: legacy.diagnostics }
   }
 
-  // ⭐ O trecho antes de "Ao iniciar" carrega o preâmbulo (imports içados,
-  // runtime injetado) E, quando existe, a seção 🧩 Meus moldes. Os três são
-  // parseados juntos e separados DEPOIS por `partitionMolds`, que classifica
-  // pelo TIPO do statement. É o que mantém o marcador puramente didático: a
-  // Ponte não passa a depender de um comentário para reconstruir a área, e um
-  // projeto escrito à mão no modo Código também entra organizado.
+  // O marcador de moldes é semântico para statements que cabem em DUAS áreas
+  // (`var`, `declareVar` e `funcDecl`): sem ele, o parser não teria como saber a
+  // escolha feita pela criança e os devolveria ao Ao iniciar no round-trip.
+  // Statements de área estrita continuam sendo classificados pelo contrato —
+  // inclusive no preâmbulo e no trecho de início — para organizar código antigo
+  // ou escrito à mão.
+  if (moldsIndex >= 0 && moldsIndex < startIndex) {
+    const preamble = parseJSWithDiagnostics(lines.slice(0, moldsIndex).join('\n'))
+    const molds = parseJSWithDiagnostics(lines.slice(moldsIndex + 1, startIndex).join('\n'))
+    const start = parseJSWithDiagnostics(lines.slice(startIndex + 1, eventsIndex).join('\n'))
+    const events = parseJSWithDiagnostics(lines.slice(eventsIndex + 1, loopsIndex).join('\n'))
+    const loops = parseJSWithDiagnostics(lines.slice(loopsIndex + 1).join('\n'))
+    return {
+      behavior: routeBehaviorSections({
+        preamble: preamble.statements,
+        molds: molds.statements,
+        start: start.statements,
+        events: events.statements,
+        loops: unwrapGeneratedPeriodicLoops(loops.statements),
+      }),
+      diagnostics: [
+        ...preamble.diagnostics,
+        ...molds.diagnostics,
+        ...start.diagnostics,
+        ...events.diagnostics,
+        ...loops.diagnostics,
+      ],
+    }
+  }
+
+  // Sem marcador de moldes, mantém a recuperação legada por tipo.
   const start = parseJSWithDiagnostics(
     [...lines.slice(0, startIndex), ...lines.slice(startIndex + 1, eventsIndex)].join('\n'),
   )
   const events = parseJSWithDiagnostics(lines.slice(eventsIndex + 1, loopsIndex).join('\n'))
   const loops = parseJSWithDiagnostics(lines.slice(loopsIndex + 1).join('\n'))
   return {
-    behavior: partitionMolds({
+    behavior: routeBehaviorSections({
       start: start.statements,
       events: events.statements,
       loops: unwrapGeneratedPeriodicLoops(loops.statements),

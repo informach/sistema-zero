@@ -6,7 +6,7 @@ import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { type InstalledExtension, t } from '#core'
 import type { GeneratedFiles, SourceMap, SourceMappedFile } from '#generators'
 import { buildCssSourceMapFromText } from '#generators'
-import { deepEqualIR, irBlockStructureEqual, normalizeSZIR } from '#ir'
+import { deepEqualIR, hasBehaviorStatements, irBlockStructureEqual, normalizeSZIR } from '#ir'
 import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { extractInlineAssets } from '#parsers'
@@ -261,7 +261,7 @@ export function BridgeMode(): JSX.Element {
     jsExternal: boolean
     result: ReturnType<typeof extractInlineAssets>
   } | null>(null)
-  const lastReportedSyntaxError = useRef<string | null>(null)
+  const lastReportedParseError = useRef<string | null>(null)
   const lastReportedLargeProject = useRef(false)
   const reverseParseWorkerRef = useRef<Worker | null>(null)
   const reverseParseRequestSeq = useRef(0)
@@ -285,7 +285,9 @@ export function BridgeMode(): JSX.Element {
   // no store e mantêm os blocos marcados como defasados — trocar de modo nesse
   // meio-tempo não pode regenerar arquivos deles.
   const bridgeCodeEpochAtPost = useRef(0)
-  const syntaxError = parseDiagnostics.find((diagnostic) => diagnostic.kind === 'syntaxError')
+  const parseError = parseDiagnostics.find(
+    (diagnostic) => diagnostic.kind === 'syntaxError' || diagnostic.kind === 'semanticError',
+  )
 
   // Inscreve no store e avança o `stateEpoch` sempre que `ir` OU `blocksState`
   // mudarem de referência, independentemente da fonte. `setFiles` (edição de
@@ -389,8 +391,9 @@ export function BridgeMode(): JSX.Element {
         return
       }
       // Modelo de áreas: o reverse-parse reconstrói Estrutura, Aparência,
-      // Ao iniciar, Quando acontecer e Enquanto estiver rodando a partir da IR. Rascunhos
-      // não estão na IR, então não voltam — esperado ao sincronizar pelo código.
+      // Meus moldes, Ao iniciar, Quando acontecer e Enquanto estiver rodando a
+      // partir da IR. Rascunhos não estão na IR, então não voltam — esperado ao
+      // sincronizar pelo código.
       // `omitEmptyAuxFrames`: HTML/CSS vazios NÃO ressuscitam num projeto só-JS
       // (ex.: Canvas 3D) a cada ida-e-volta pela Ponte.
       applyProjectStateRef.current({
@@ -437,31 +440,26 @@ export function BridgeMode(): JSX.Element {
     if (blocksHydration === 'pending') return
     if (!isBlocksStateEmpty(blocksState)) return
     const behavior = normalizeSZIR(ir).behavior
-    if (
-      ir.html.length === 0 &&
-      ir.css.length === 0 &&
-      behavior.start.length === 0 &&
-      behavior.events.length === 0 &&
-      behavior.loops.length === 0
-    )
-      return
+    if (ir.html.length === 0 && ir.css.length === 0 && !hasBehaviorStatements(behavior)) return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
 
-  // Centraliza erros de sintaxe no Console — evitamos painel próprio para
+  // Centraliza erros de parse no Console — evitamos painel próprio para
   // que todo aviso/erro da IDE viva num só lugar.
   useEffect(() => {
-    const message = syntaxError?.message ?? null
-    if (message === lastReportedSyntaxError.current) return
-    lastReportedSyntaxError.current = message
+    const message = parseError?.message ?? null
+    if (message === lastReportedParseError.current) return
+    lastReportedParseError.current = message
     if (!message) return
     pushLog({
       source: PREVIEW_MESSAGE_SOURCE,
       kind: 'error',
-      parts: [`Erro de sintaxe: ${message}`],
+      parts: [
+        `${parseError?.kind === 'semanticError' ? 'Código incompatível com as áreas' : 'Erro de sintaxe'}: ${message}`,
+      ],
       timestamp: Date.now(),
     })
-  }, [syntaxError, pushLog])
+  }, [parseError, pushLog])
 
   // Reverso: ao mudar arquivos, reparse → atualiza IR (que regenera arquivos
   // no próximo ciclo? Não — em modo Ponte, o blocosToFiles vem dos blocos,

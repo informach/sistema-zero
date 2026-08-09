@@ -452,13 +452,15 @@ Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de anima
 Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario).
 
 **Onde cada bloco fica.** O que o inimigo É mora em **🧩 Meus moldes**: criar o tipo, somar
-comportamento, ajustar os valores e as animações de cada estado. O que a PARTIDA faz com ele fica em
-**⚙️ Ao iniciar** e nos eventos: soltar, atualizar, desenhar e reagir. A regra é essa: molde descreve
-a criatura, o resto põe ela em jogo.
+comportamento, ajustar os valores e criar o grupo com todos os inimigos. O que a PARTIDA faz com ele
+fica em **⚙️ Ao iniciar** e nos eventos: soltar, atualizar, desenhar e reagir. A animação de estado
+também fica em **⚙️ Ao iniciar**, depois de carregar a folha de quadros que ela usa. A regra é essa:
+molde descreve a criatura; carregar recursos e pôr a receita em jogo pertence à partida.
 
-⚠️ Os três também cabem DENTRO de um evento, e é assim que o inimigo muda no meio do jogo: no
-**Quando um inimigo do tipo … levar dano**, some um comportamento novo, aperte a cadência dele ou até
-troque a animação de um estado para ele parecer furioso.
+⚠️ Os dois ajustes de molde também cabem DENTRO de um evento, e é assim que o inimigo muda no meio
+do jogo: no **Quando um inimigo do tipo … levar dano**, some um comportamento novo ou aperte a
+cadência dele. A animação de estado também cabe no evento ou num temporizador para o inimigo parecer
+furioso, mas sua raiz normal continua no **Ao iniciar**, depois da folha.
 
 #### Os dois jeitos de criar um tipo
 

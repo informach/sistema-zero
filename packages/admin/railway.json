@@ -5,6 +5,9 @@
     "dockerfilePath": "packages/admin/Dockerfile",
     "watchPatterns": [
       "/packages/admin/**",
+      "/packages/core/**",
+      "/packages/member-shell/**",
+      "/packages/studio/**",
       "/packages/ui/**",
       "/bun.lock",
       "/package.json",

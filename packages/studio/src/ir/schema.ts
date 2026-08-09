@@ -2363,13 +2363,13 @@ export type JSStatement =
       fps: number | JSExpr
     })
   | (JSStatementCommon & {
-      type: 'g2d:setEnemyTypeParam'
+      type: 'g2d:setEnemyTypeParam' | 'g2d:setEnemyTypeParamLegacyStart'
       typeVar: string
       param: string
       value: number | JSExpr
     })
   | (JSStatementCommon & {
-      type: 'g2d:enemyAddBehavior'
+      type: 'g2d:enemyAddBehavior' | 'g2d:enemyAddBehaviorLegacyStart'
       typeVar: string
       behavior: string
     })
@@ -6339,14 +6339,14 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
-      type: z.literal('g2d:setEnemyTypeParam'),
+      type: z.enum(['g2d:setEnemyTypeParam', 'g2d:setEnemyTypeParamLegacyStart']),
       typeVar: irText(),
       param: z.enum(G2D_ENEMY_PARAMS),
       value: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
-      type: z.literal('g2d:enemyAddBehavior'),
+      type: z.enum(['g2d:enemyAddBehavior', 'g2d:enemyAddBehaviorLegacyStart']),
       typeVar: irText(),
       behavior: z.enum(G2D_ENEMY_BEHAVIORS),
       ...idField,
@@ -11565,7 +11565,9 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:defineEnemyType',
   'g2d:enemyStateAnim',
   'g2d:setEnemyTypeParam',
+  'g2d:setEnemyTypeParamLegacyStart',
   'g2d:enemyAddBehavior',
+  'g2d:enemyAddBehaviorLegacyStart',
   'g2d:defineEnemySmart',
   'g2d:onEnemyHurt',
   'g2d:onEnemyBeamHit',

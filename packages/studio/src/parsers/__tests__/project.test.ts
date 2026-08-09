@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { generateProjectFiles } from '#generators'
-import { behaviorStatements } from '#ir'
+import { behaviorStatements, type SZIRV2, SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '../project'
 
 const SINGLE_FILE_HTML = `<!doctype html>
@@ -209,5 +209,51 @@ setInterval(() => {
     expect(result.ir.behavior.start.map((statement) => statement.type)).toEqual(['var'])
     expect(result.ir.behavior.events.map((statement) => statement.type)).toEqual(['event'])
     expect(result.ir.behavior.loops.map((statement) => statement.type)).toEqual(['setInterval'])
+  })
+
+  it('round-trip preserva variável e função escolhidas para Meus moldes', () => {
+    const original: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        molds: [
+          { type: 'var', name: 'dificuldade', value: { type: 'num', value: 30 } },
+          {
+            type: 'funcDecl',
+            name: 'mostrarDificuldade',
+            params: [],
+            body: [{ type: 'consoleLog', value: { type: 'var', name: 'dificuldade' } }],
+          },
+          {
+            type: 'g2d:defineEnemyType',
+            varName: 'alien',
+            behavior: 'patrulha',
+            color: '#e4573d',
+            image: '',
+            hp: { type: 'var', name: 'dificuldade' },
+            speed: 2,
+            dmg: 1,
+            w: 32,
+            h: 32,
+          },
+        ],
+        start: [{ type: 'consoleLog', value: { type: 'str', value: 'começou' } }],
+        events: [],
+        loops: [],
+      },
+      extensions: [{ extensionId: 'game-2d' }],
+    }
+
+    const files = generateProjectFiles({ ir: original, projectName: 'Moldes' })
+    const reparsed = parseProjectFilesWithDiagnostics(files).ir
+
+    expect(reparsed.behavior.molds?.map((statement) => statement.type)).toEqual([
+      'var',
+      'funcDecl',
+      'g2d:defineEnemyType',
+    ])
+    expect(reparsed.behavior.start.map((statement) => statement.type)).toEqual(['consoleLog'])
+    expect(SZIRV2Schema.safeParse(reparsed).success).toBe(true)
   })
 })

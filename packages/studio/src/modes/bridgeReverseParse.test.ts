@@ -126,4 +126,38 @@ describe('runBridgeReverseParse', () => {
     // O resultado precisa ser distinto da IR vigente — senão o handler o ignora.
     expect(deepEqualIR(result.ir, baseIr)).toBe(false)
   })
+
+  it('rejeita IR semanticamente inválida e mantém os blocos anteriores como fonte válida', () => {
+    const files: GeneratedFiles = {
+      'index.html': '',
+      'style.css': '',
+      'script.js': `// Meus moldes
+let dificuldade = base + 1;
+// Ao iniciar
+let base = 2;
+// Quando acontecer
+// Enquanto estiver rodando`,
+    }
+
+    const result = runBridgeReverseParse(
+      inputFromFiles(files, {
+        ir: null,
+        projectName: 'Projeto inválido',
+        installedExtensionIds: [],
+      }),
+    )
+
+    expect(result.kind).toBe('parsed')
+    if (result.kind !== 'parsed') return
+    expect(result.ir).toBeNull()
+    expect(result.sourceMap).toBeNull()
+    expect(result.diagnostics.some((diagnostic) => diagnostic.kind === 'semanticError')).toBe(true)
+    expect(
+      result.diagnostics.some(
+        (diagnostic) =>
+          diagnostic.message.includes('base') &&
+          diagnostic.message.includes('ainda não foi declarada'),
+      ),
+    ).toBe(true)
+  })
 })

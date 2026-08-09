@@ -6,7 +6,7 @@ import {
   GAME_TWO_D_ENEMY_SMART_OPTIONS,
 } from './blockCatalogShared'
 
-export const gameTwoDInteractionBlocks = [
+const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
   // ---- Mouse / toque ----
   {
     type: 'sz_g2d_on_pointer',
@@ -320,7 +320,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma janela para TODOS os inimigos, de todos os tipos, sempre atualizada: quem nasce entra, quem morre sai na hora. Serve para as ações que valem para todos, com um bloco só em vez de um por tipo: colisões, "para cada", contar quantos faltam, desenhar. Cada tipo continua tendo o seu "Atualizar" e o seu "Desenhar", porque cada um tem o seu jeito de se mexer e os seus tiros. Ponha em "Ao iniciar" (antes ou depois de criar os tipos, tanto faz).',
+      'Uma janela para TODOS os inimigos, de todos os tipos, sempre atualizada: quem nasce entra, quem morre sai na hora. Serve para as ações que valem para todos, com um bloco só em vez de um por tipo: colisões, "para cada", contar quantos faltam, desenhar. Cada tipo continua tendo o seu "Atualizar" e o seu "Desenhar", porque cada um tem o seu jeito de se mexer e os seus tiros. Ponha em "Meus moldes" (antes ou depois de criar os tipos, tanto faz).',
   },
   {
     type: 'sz_g2d_define_enemy_type',
@@ -346,7 +346,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Você escolhe o jeito dele: um comportamento agora, e mais quantos quiser depois com o "O tipo de inimigo ... também é ...". Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha os atributos UMA vez e solte quantos quiser. Monte no "Ao iniciar": ele roda uma vez só. O visual segue esta ordem: figura desenhada > imagem > cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).' +
+      'Você escolhe o jeito dele: um comportamento agora, e mais quantos quiser depois com o "O tipo de inimigo ... também é ...". Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha os atributos UMA vez e solte quantos quiser. Monte em "Meus moldes": ele descreve a receita sem soltar inimigo nenhum. O visual segue esta ordem: figura desenhada > imagem > cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).' +
       'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
@@ -374,7 +374,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O ATALHO: escolha só o quanto ele é esperto e o resto vem pronto, inclusive os ajustes. Quer montar peça por peça? Use o "Criar tipo de inimigo" logo acima. Monte no "Ao iniciar". Dá para somar mais coisa depois com o "O tipo de inimigo ... também é ..." (é assim que um inimigo burro ganha um raio). ⚠️ Se você somar um jeito de ANDAR, ele TROCA o andar que veio com a inteligência; somar uma AÇÃO (atirar, raio, espinho) acrescenta.' +
+      'O ATALHO: escolha só o quanto ele é esperto e o resto vem pronto, inclusive os ajustes. Quer montar peça por peça? Use o "Criar tipo de inimigo" logo acima. Monte em "Meus moldes". Dá para somar mais coisa depois com o "O tipo de inimigo ... também é ..." (é assim que um inimigo burro ganha um raio). ⚠️ Se você somar um jeito de ANDAR, ele TROCA o andar que veio com a inteligência; somar uma AÇÃO (atirar, raio, espinho) acrescenta.' +
       'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
@@ -390,12 +390,14 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Junte quantos comportamentos quiser no mesmo inimigo. Os jeitos de se mexer não se somam: se você juntar dois, vale o último que somou. Já as ações se juntam todas, então patrulha mais atirador anda E atira. O lugar normal é no "Ao iniciar", logo depois de criar o tipo; mas dá para somar no meio do jogo também, e o inimigo fica mais difícil na fase seguinte.' +
+      'Junte quantos comportamentos quiser no mesmo inimigo. Os jeitos de se mexer não se somam: se você juntar dois, vale o último que somou. Já as ações se juntam todas, então patrulha mais atirador anda E atira. O lugar normal é em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, também dá para somar no meio do jogo e deixar a fase seguinte mais difícil.' +
       'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
     type: 'sz_g2d_enemy_state_anim',
-    placement: 'mold-command',
+    // Consome uma folha carregada no início da partida: a raiz canônica é
+    // ⚙️ Ao iniciar, embora continue cabendo em eventos/laços para trocas.
+    placement: 'command',
     message0: 'Animação dos inimigos do tipo %1 no estado %2',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -425,7 +427,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Guarda a animação de UM estado para TODOS os inimigos do tipo (o "Atualizar os inimigos" troca sozinho). Configure FORA do "a cada quadro".',
+      'Guarda a animação de UM estado para TODOS os inimigos do tipo (o "Atualizar os inimigos" troca sozinho). Em "Ao iniciar", ponha depois de carregar a folha. Também cabe dentro de um evento ou temporizador para trocar a animação no meio do jogo; não repita a cada quadro.',
   },
   {
     type: 'sz_g2d_enemy_type_param',
@@ -460,7 +462,7 @@ export const gameTwoDInteractionBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ajuste fino do comportamento do tipo. Ajuste no "Ao iniciar", logo depois de criar o tipo. Força e ritmo do pulo: saltador. Alcance: voador, sobe e desce, rondador, zigue-zague, mergulhador, teleporte, arrancada e medroso (para quem anda no chão, o alcance é a distância que faz o inimigo reagir). A cada tantos quadros ele age: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro, teleporte, chefão e raio. Velocidade do tiro: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro e chefão. Voltar: renascer. Quanto tempo o raio fica ligado: raio. A vida vale para todos, e só para os que nascerem daqui para a frente.',
+      'Ajuste fino do comportamento do tipo. Ajuste em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, o novo valor passa a valer no meio do jogo. Força e ritmo do pulo: saltador. Alcance: voador, sobe e desce, rondador, zigue-zague, mergulhador, teleporte, arrancada e medroso (para quem anda no chão, o alcance é a distância que faz o inimigo reagir). A cada tantos quadros ele age: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro, teleporte, chefão e raio. Velocidade do tiro: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro e chefão. Voltar: renascer. Quanto tempo o raio fica ligado: raio. A vida vale para todos, e só para os que nascerem daqui para a frente.',
   },
   {
     type: 'sz_g2d_spawn_enemy',
@@ -908,4 +910,23 @@ export const gameTwoDInteractionBlocks = [
     tooltip:
       'Como "impedir de atravessar os sprites do grupo", mas contra UM sprite só (uma parede, uma plataforma). O sprite é empurrado para fora e desliza pela beirada. Use a cada quadro, depois de mover o sprite.',
   },
-] satisfies BlockDefinition[]
+]
+
+function legacyStartVariant(sourceType: string, legacyType: string): BlockDefinition {
+  const source = currentGameTwoDInteractionBlocks.find((block) => block.type === sourceType)
+  if (!source) throw new Error(`Bloco canônico ausente para a compatibilidade: ${sourceType}`)
+  return {
+    ...source,
+    type: legacyType,
+    placement: 'command',
+    hidden: true,
+    tooltip:
+      'Bloco antigo mantido no Ao iniciar para preservar a ordem de projetos salvos. Projetos novos usam a versão em Meus moldes.',
+  }
+}
+
+export const gameTwoDInteractionBlocks: BlockDefinition[] = [
+  ...currentGameTwoDInteractionBlocks,
+  legacyStartVariant('sz_g2d_enemy_type_param', 'sz_g2d_enemy_type_param_legacy_start'),
+  legacyStartVariant('sz_g2d_enemy_add_behavior', 'sz_g2d_enemy_add_behavior_legacy_start'),
+]

@@ -5,6 +5,7 @@
     "dockerfilePath": "packages/community-kids/Dockerfile",
     "watchPatterns": [
       "/packages/community-kids/**",
+      "/packages/core/**",
       "/packages/member-shell/**",
       "/packages/pensa/**",
       "/packages/pinta/**",

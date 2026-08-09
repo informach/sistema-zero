@@ -1646,12 +1646,15 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
             { FROM: from, TO: to, FPS: fps },
           )
     }
-    case 'g2d:setEnemyTypeParam': {
+    case 'g2d:setEnemyTypeParam':
+    case 'g2d:setEnemyTypeParamLegacyStart': {
       const value = exprToValueBlock(valueToExpr(stmt.value))
       return value === null
         ? rawJSBlock(stmt)
         : block(
-            'sz_g2d_enemy_type_param',
+            stmt.type === 'g2d:setEnemyTypeParamLegacyStart'
+              ? 'sz_g2d_enemy_type_param_legacy_start'
+              : 'sz_g2d_enemy_type_param',
             { TYPE: stmt.typeVar, PARAM: stmt.param },
             {},
             stmt.__id,
@@ -1659,8 +1662,11 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           )
     }
     case 'g2d:enemyAddBehavior':
+    case 'g2d:enemyAddBehaviorLegacyStart':
       return block(
-        'sz_g2d_enemy_add_behavior',
+        stmt.type === 'g2d:enemyAddBehaviorLegacyStart'
+          ? 'sz_g2d_enemy_add_behavior_legacy_start'
+          : 'sz_g2d_enemy_add_behavior',
         { TYPE: stmt.typeVar, BEHAVIOR: stmt.behavior },
         {},
         stmt.__id,

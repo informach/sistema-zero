@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { PROJECT_AREA_LAYOUT_ROWS, PROJECT_AREAS } from '../core/behaviorAreas'
 import { areaForBlockType, type ProjectAreaKind } from './blockContracts'
 
 /** Espaço inicial e folgas (em px de workspace) do layout em colunas. */
@@ -7,13 +8,6 @@ const START_Y = 32
 const GAP_X = 48
 const GAP_Y = 24
 const ROW_GAP = 64
-
-const ROWS: readonly (readonly ProjectAreaKind[])[] = [
-  ['structure', 'appearance'],
-  // 🧩 Meus moldes abre a linha de baixo: a ordem da esquerda para a direita é a
-  // ordem em que as áreas rodam.
-  ['molds', 'start', 'events', 'loops'],
-]
 
 /** Classifica um bloco top-level pela categoria a partir do seu tipo. */
 function categoryOf(type: string): ProjectAreaKind {
@@ -44,16 +38,13 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
   // Em workspace headless (testes) os blocos não têm geometria — nada a fazer.
   if (typeof tops[0]?.getBoundingRectangle !== 'function') return
 
-  const groups: Record<ProjectAreaKind, Blockly.BlockSvg[]> = {
-    structure: [],
-    appearance: [],
-    molds: [],
-    start: [],
-    events: [],
-    loops: [],
-  }
+  const groups = new Map<ProjectAreaKind, Blockly.BlockSvg[]>(
+    PROJECT_AREAS.map((area) => [area, []]),
+  )
   for (const top of tops) {
-    groups[categoryOf(top.type)].push(top)
+    const group = groups.get(categoryOf(top.type))
+    if (!group) throw new Error(`Área de projeto sem grupo de organização: ${top.type}`)
+    group.push(top)
   }
 
   const ws = workspace as Blockly.WorkspaceSvg
@@ -64,11 +55,12 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
   try {
     if (canToggleResizes) ws.setResizesEnabled(false)
     let rowY = START_Y
-    for (const row of ROWS) {
+    for (const row of PROJECT_AREA_LAYOUT_ROWS) {
       let runningX = START_X
       let rowHeight = 0
       for (const category of row) {
-        const group = groups[category]
+        const group = groups.get(category)
+        if (!group) throw new Error(`Área de projeto sem grupo de organização: ${category}`)
         if (group.length === 0) continue
         group.sort(
           (a, b) => Number(b.type.startsWith('sz_frame_')) - Number(a.type.startsWith('sz_frame_')),

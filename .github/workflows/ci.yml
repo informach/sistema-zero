@@ -155,7 +155,10 @@ jobs:
                 case "$f" in
                   bun.lock|package.json|.dockerignore) add_all ;;
                   railway.json) add payments ;; # o railway.json da RAIZ é do payments
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing; do add "$s"; done ;;
+                  # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
+                  # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
+                  # front servia um core VELHO até alguém deployar na mão.
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing admin community community-kids; do add "$s"; done ;;
                   packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
@@ -166,7 +169,7 @@ jobs:
                   packages/funnel/*) add funnel ;;
                   packages/admin/*) add admin ;;
                   packages/community/*) add community ;;
-                  packages/member-shell/*) add community; add community-kids ;; # BFF compartilhado pelos 2 apps de aluno
+                  packages/member-shell/*) add community; add community-kids; add admin ;; # BFF dos 2 apps de aluno + o admin (studio-embed/entregas dependem dele)
                   packages/community-kids/*) add community-kids ;;
                   packages/hub/*) add hub ;; # backend da comunidade (Clube/Mural) — serviço próprio
                   packages/fiscal/*) add fiscal ;;

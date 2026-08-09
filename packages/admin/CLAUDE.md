@@ -462,7 +462,10 @@ Dockerfile: valida e só então importa o `server.js` standalone).
 ## Deploy (Railway)
 
 - Serviço próprio via **`packages/admin/railway.json`** (builder DOCKERFILE, build context = RAIZ
-  do monorepo, `healthcheckPath: /api/healthz`, watchPatterns admin+ui+lock).
+  do monorepo, `healthcheckPath: /api/healthz`, watchPatterns admin+**core**+**member-shell**+
+  **studio**+ui+lock). ⚠️ Os watchPatterns têm que cobrir TODA dependência `workspace:*` — o
+  admin EMPACOTA studio/member-shell/core, e sem elas o painel servia um Estúdio VELHO até
+  alguém deployar na mão (aconteceu em 08/2026, PRs #116 e #119). Mesma régua no `ci.yml`.
 - **Dockerfile**: build em `node:22-bookworm-slim` com o binário do **bun copiado da imagem
   `oven/bun:1`** só p/ `bun install` (workspace); o `next build` roda **package-local com runtime
   Node** (`npm run build` — Next sob Bun não é suportado; e `--filter` da raiz quebra o React, ver

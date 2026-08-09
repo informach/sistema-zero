@@ -126,15 +126,16 @@ testes de round-trip + `cssBridgeHighlight` espelhado pro jogo.
 
 Projetos clássicos persistem **arquivos** (html/css/js) + IR + `blocksState`. Versões antigas conhecidas
 do schema de blocos passam primeiro pelo sanitizador e depois pela migração, preservando layout e IDs;
-a versão 2 das áreas, por exemplo, vira versão 3 no normalizador. Versão futura/desconhecida ou bloco
+as versões 2 a 6 das áreas, por exemplo, viram a versão 7 no normalizador. Versão futura/desconhecida ou bloco
 obsoleto sem migração segura descarta o `blocksState` e re-deriva por
 `buildWorkspaceStateFromIR(parse(arquivos))`. O JS é a fonte da verdade; o parser aceita as assinaturas
 antigas (`SZGame2D.x(ctx, …)`).
 
 **Áreas-container (migração transparente):** projetos legados com blocos soltos ou com a antiga área única
-de Comportamento são normalizados para as 5 áreas por `normalizeBlocksStateToFrames`
-(`blockly/normalizeFrames.ts`). A migração usa contratos explícitos de posicionamento para separar início,
-eventos e loops; quando mover um aninhamento mudaria a semântica, conserva-o em um invólucro legado oculto.
+de Comportamento são normalizados para as 6 áreas por `normalizeBlocksStateToFrames`
+(`blockly/normalizeFrames.ts`). A migração usa contratos explícitos de posicionamento para separar estrutura,
+aparência, moldes, início, eventos e loops; quando mover um aninhamento mudaria a semântica, conserva-o em um
+invólucro legado oculto.
 Rascunhos continuam rascunhos, a saída é preservada e a operação é idempotente. A mesma compatibilidade é
 usada ao abrir no Estúdio e ao renderizar projetos antigos na página pública.
 

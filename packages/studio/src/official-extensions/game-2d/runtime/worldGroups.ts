@@ -54,43 +54,53 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   function _disposeRemovedGroupItems(previousItems, nextItems) {
     _syncGroupOwnership(previousItems, nextItems);
   }
+  // Fonte única dos métodos que realmente mudam um array de grupo. O espelho
+  // de todos os inimigos usa a mesma guarda para recusar essas operações.
+  // Protótipo nulo é obrigatório: toString/valueOf também existem em Array,
+  // mas são LEITURAS e nunca podem invalidar a revisão do grupo.
+  var GROUP_MUTATING_METHODS = Object.create(null);
+  GROUP_MUTATING_METHODS.copyWithin = 1;
+  GROUP_MUTATING_METHODS.fill = 1;
+  GROUP_MUTATING_METHODS.pop = 1;
+  GROUP_MUTATING_METHODS.push = 1;
+  GROUP_MUTATING_METHODS.reverse = 1;
+  GROUP_MUTATING_METHODS.shift = 1;
+  GROUP_MUTATING_METHODS.sort = 1;
+  GROUP_MUTATING_METHODS.splice = 1;
+  GROUP_MUTATING_METHODS.unshift = 1;
   /**
    * O array do grupo faz parte da API pública no modo Código. Rastreá-lo aqui
    * mantém as varreduras corretas tanto pelos blocos quanto por push/splice,
    * atribuição por índice ou substituição direta de items feita pela criança.
    */
   function _trackGroupItems(group, initialItems) {
-    var mutatingMethods = {
-      copyWithin: true,
-      fill: true,
-      pop: true,
-      push: true,
-      reverse: true,
-      shift: true,
-      sort: true,
-      splice: true,
-      unshift: true
-    };
     var methodWrappers = Object.create(null);
     var proxy = null;
     proxy = new Proxy(initialItems, {
       get: function (target, property, receiver) {
         var arrayMethod = typeof property === 'string' ? Array.prototype[property] : null;
-        if (!mutatingMethods[property] || typeof arrayMethod !== 'function' || target[property] !== arrayMethod) {
+        if (!GROUP_MUTATING_METHODS[property] || typeof arrayMethod !== 'function' || target[property] !== arrayMethod) {
           return Reflect.get(target, property, receiver);
         }
         if (!methodWrappers[property]) {
           methodWrappers[property] = function () {
             var previousItems = target.slice();
             var result = arrayMethod.apply(target, arguments);
+            if (target.length > MAX_GROUP) target.length = MAX_GROUP;
             _disposeRemovedGroupItems(previousItems, target);
             _touchGroup(group);
+            if (property === 'push' || property === 'unshift') return target.length;
             return result === target ? proxy : result;
           };
         }
         return methodWrappers[property];
       },
       set: function (target, property, value) {
+        var arrayIndex = typeof property === 'string' && property
+          ? Number(property)
+          : -1;
+        if (Number.isInteger(arrayIndex) && arrayIndex >= MAX_GROUP && String(arrayIndex) === property) return true;
+        if (property === 'length' && value > MAX_GROUP) value = MAX_GROUP;
         var previousItems = target.slice();
         var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
         var previous = target[property];
@@ -110,6 +120,13 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         return true;
       },
       defineProperty: function (target, property, descriptor) {
+        var arrayIndex = typeof property === 'string' && property
+          ? Number(property)
+          : -1;
+        if (Number.isInteger(arrayIndex) && arrayIndex >= MAX_GROUP && String(arrayIndex) === property) return true;
+        if (property === 'length' && descriptor && descriptor.value > MAX_GROUP) {
+          descriptor = Object.assign({}, descriptor, { value: MAX_GROUP });
+        }
         var previousItems = target.slice();
         var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
         var previous = target[property];
@@ -134,7 +151,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       set: function (nextItems) {
         if (nextItems === items) return;
         var previousItems = items.slice();
-        var replacement = Array.isArray(nextItems) ? nextItems.slice() : [];
+        var replacement = Array.isArray(nextItems) ? nextItems.slice(0, MAX_GROUP) : [];
         items = _trackGroupItems(group, replacement);
         _disposeRemovedGroupItems(previousItems, replacement);
         _touchGroup(group);
@@ -479,7 +496,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       while (candidateJs ? cursor < candidateJs.length : cursor >= 0) {
         var j = candidateJs ? candidateJs[cursor++] : cursor--;
         var bj = secondItems[j];
-        if (!bj || !secondMembers.has(bj)) continue;
+        if (!bj || ai === bj || !secondMembers.has(bj)) continue;
         if (isColliding(ai, bj)) {
           _invokeProjectCallback(fn, undefined, [ai, bj]);
           if (_runGenerationChanged(generation)) return;

@@ -211,7 +211,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
     ).toBeVisible()
   })
 
-  test('Projeto novo começa sem áreas e oferece as cinco áreas separadas', async ({ page }) => {
+  test('Projeto novo começa sem áreas e oferece as seis áreas separadas', async ({ page }) => {
     await createProject(page)
     await expect(page.locator('.blocklyWorkspace .blocklyDraggable')).toHaveCount(0)
 
@@ -224,6 +224,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
     const flyout = page.locator('.blocklyToolboxFlyout')
     await expect(flyout).toContainText('Estrutura: HTML')
     await expect(flyout).toContainText('Aparência: CSS')
+    await expect(flyout).toContainText('Meus moldes')
     await expect(flyout).toContainText('Ao iniciar')
     await expect(flyout).toContainText('Quando acontecer')
     await expect(flyout).toContainText('Enquanto estiver rodando')

@@ -1,3 +1,4 @@
+import type { BlockCatalogArea } from '../core/behaviorAreas'
 import type { ExtensionToolboxCategory } from '../extensions/types'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from '../official-extensions/game-2d/blocks'
 import {
@@ -23,6 +24,7 @@ import { SVG_BLOCKS } from './blocks/svg'
 import type { BlockDefinition, BlockPlacement } from './blocks/types'
 import { palettePathOf } from './paletteMap'
 import { PROGRAMMING_CATALOG_GROUPS } from './programmingContract'
+import { PROJECT_AREA_BY_FRAME } from './projectAreas'
 
 // O subpath público `@sistemazero/studio/server-catalog` também expõe a ordem
 // pedagógica necessária aos consumidores server-only, sem importar o editor React.
@@ -64,7 +66,7 @@ export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
   inputs: string[]
   placement: BlockPlacement | null
   /** Área pedagógica preenchida por contrato, nunca inferida pela IA. */
-  area: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops' | 'value'
+  area: BlockCatalogArea
 }
 
 /**
@@ -220,22 +222,12 @@ for (const category of [
   collectToolboxSubcategories(category, TOOLBOX_SUBCATEGORY_BY_TYPE)
 }
 
-/** A Área do projeto que cada bloco-container REPRESENTA. */
-const AREA_OF_FRAME: Readonly<Record<string, ServerBlockCatalogEntry['area']>> = {
-  sz_frame_structure: 'structure',
-  sz_frame_appearance: 'appearance',
-  sz_frame_molds: 'molds',
-  sz_frame_start: 'start',
-  sz_frame_events: 'events',
-  sz_frame_loops: 'loops',
-}
-
 function areaFor(definition: BlockDefinition): ServerBlockCatalogEntry['area'] {
   const contract = inferBlockContract(definition)
   // ⚠️ Um frame NÃO é "structure": ele É uma área, e dizer que ⚙️ Ao iniciar
-  // pertence à estrutura faz o Zappy ensinar o lugar errado. O mapa acima é a
-  // fonte; frame desconhecido cai no genérico em vez de mentir.
-  if (contract.domain === 'frame') return AREA_OF_FRAME[definition.type] ?? 'start'
+  // pertence à estrutura faz o Zappy ensinar o lugar errado. O registro central
+  // é a fonte; frame desconhecido cai no genérico em vez de mentir.
+  if (contract.domain === 'frame') return PROJECT_AREA_BY_FRAME.get(definition.type) ?? 'start'
   if (contract.domain === 'html') return 'structure'
   if (contract.domain === 'css') return 'appearance'
   if (contract.domain === 'value') return 'value'
