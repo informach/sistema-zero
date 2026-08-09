@@ -10,6 +10,7 @@ import {
   type JSStatement,
 } from '#ir'
 import { prepareCanvasImageSourceForParse } from '../canvasImagePreloadCodec'
+import { executeProgrammingCodeToIR } from '../codecs/programming/adapters'
 import { isGuidedDomAttributeName, isGuidedDomElementTag, isGuidedDomProperty } from '../domSafety'
 import { canvas3DSymbolKindsForClass } from '../three/canvas3dContract'
 import {
@@ -44,6 +45,10 @@ export function parseJS(source: string): JSStatement[] {
 }
 
 export function parseJSWithDiagnostics(source: string): ParseJSResult {
+  return executeProgrammingCodeToIR(source, parseJSWithDiagnosticsCore)
+}
+
+function parseJSWithDiagnosticsCore(source: string): ParseJSResult {
   if (!source.trim()) return { statements: [], diagnostics: [] }
   const prepared = prepareCanvas3DSourceForParse(prepareCanvasImageSourceForParse(source))
   const parseSource = prepared.source
@@ -2575,6 +2580,10 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:sceneIs', name: args[0].value as string }
   }
+  if (method === 'levelIsActive') {
+    const levelVar = identifierName(args[0])
+    if (levelVar) return { type: 'g2d:levelIsActive', levelVar }
+  }
   if (method === 'stickPathFell') {
     const pathVar = identifierName(args[0])
     if (pathVar) return { type: 'g2d:stickPathFell', pathVar }
@@ -3324,6 +3333,11 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!isFn(args[0])) return null
       return { type: 'g2d:onAnyInput', body: bodyOfFn(args[0], source, ctx) }
     }
+    case 'onLevelEnter': {
+      const levelVar = arrowReturnIdentifier(args[0])
+      if (!levelVar || !isFn(args[1])) return null
+      return { type: 'g2d:onLevelEnter', levelVar, body: bodyOfFn(args[1], source, ctx) }
+    }
     case 'drawSprite': {
       // generator: SZGame2D.drawSprite(ctx, sprite)
       const ctxVar = identifierName(args[0])
@@ -3843,6 +3857,21 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:platformer', spriteVar, ctxVar, speed, jump }
         : null
     }
+    case 'platformerWithTerrain': {
+      const spriteVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      const jump = toExpr(args[2], ctx)
+      return spriteVar && isSimpleValue(speed) && isSimpleValue(jump)
+        ? { type: 'g2d:platformerWithTerrain', spriteVar, speed, jump }
+        : null
+    }
+    case 'jumpWithTerrain': {
+      const spriteVar = identifierName(args[0])
+      const jump = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(jump)
+        ? { type: 'g2d:jumpWithTerrain', spriteVar, jump }
+        : null
+    }
     case 'topDown': {
       const spriteVar = identifierName(args[0])
       const speed = toExpr(args[1], ctx)
@@ -3958,22 +3987,118 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return ctxVar ? { type: 'g2d:drawParticles', ctxVar } : null
     }
     case 'drawTileMap': {
-      // generator: SZGame2D.drawTileMap(ctx, map, x, y[, size]) — o 5º argumento
-      // (tamanho do tile na tela) é opcional; código antigo tem só 4.
+      // Novo contrato: com 2 argumentos, apenas desenha a geometria preparada.
+      // Com 4/5, preserva o bloco legado que preparava durante o desenho.
       const ctxVar = identifierName(args[0])
       const mapVar = identifierName(args[1])
+      if (!ctxVar || !mapVar) return null
+      if (args.length === 2) return { type: 'g2d:drawPreparedTileMap', ctxVar, mapVar }
       const x = toExpr(args[2], ctx)
       const y = toExpr(args[3], ctx)
-      if (!ctxVar || !mapVar || !isSimpleValue(x) || !isSimpleValue(y)) return null
+      if (!isSimpleValue(x) || !isSimpleValue(y)) return null
       if (args.length < 5) return { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y }
       const size = toExpr(args[4], ctx)
       return isSimpleValue(size) ? { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y, size } : null
+    }
+    case 'fitTileMapToStage': {
+      const ctxVar = identifierName(args[0])
+      const mapVar = identifierName(args[1])
+      return ctxVar && mapVar ? { type: 'g2d:fitTileMapToStage', ctxVar, mapVar } : null
+    }
+    case 'placeTileMap': {
+      const mapVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const size = toExpr(args[3], ctx)
+      return mapVar && isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(size)
+        ? { type: 'g2d:placeTileMap', mapVar, x, y, size }
+        : null
     }
     case 'collideTileMap': {
       // generator: SZGame2D.collideTileMap(sprite, map)
       const spriteVar = identifierName(args[0])
       const mapVar = identifierName(args[1])
       return spriteVar && mapVar ? { type: 'g2d:tileMapCollide', spriteVar, mapVar } : null
+    }
+    case 'addTileMapToWorld': {
+      const worldVar = identifierName(args[0])
+      const mapVar = identifierName(args[1])
+      return worldVar && mapVar ? { type: 'g2d:addTileMapToWorld', worldVar, mapVar } : null
+    }
+    case 'addSolidGroupToWorld': {
+      const worldVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return worldVar && groupVar ? { type: 'g2d:addSolidGroupToWorld', worldVar, groupVar } : null
+    }
+    case 'addPlatformGroupToWorld': {
+      const worldVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return worldVar && groupVar
+        ? { type: 'g2d:addPlatformGroupToWorld', worldVar, groupVar }
+        : null
+    }
+    case 'setWorldEdges': {
+      const worldVar = identifierName(args[0])
+      const edges = args[1]?.type === 'StringLiteral' ? String(args[1].value) : ''
+      return worldVar && ['none', 'floor', 'solid'].includes(edges)
+        ? { type: 'g2d:setWorldEdges', worldVar, edges: edges as 'none' | 'floor' | 'solid' }
+        : null
+    }
+    case 'configureWorldCamera': {
+      const worldVar = identifierName(args[0])
+      const horizontal = args[1]?.type === 'StringLiteral' ? String(args[1].value) : ''
+      const vertical = args[2]?.type === 'StringLiteral' ? String(args[2].value) : ''
+      const deadZoneX = toExpr(args[3], ctx)
+      const deadZoneY = toExpr(args[4], ctx)
+      if (
+        !worldVar ||
+        !['off', 'free', 'right', 'left'].includes(horizontal) ||
+        !['off', 'free', 'down', 'up'].includes(vertical) ||
+        !isSimpleValue(deadZoneX) ||
+        !isSimpleValue(deadZoneY)
+      ) {
+        return null
+      }
+      return {
+        type: 'g2d:configureWorldCamera',
+        worldVar,
+        horizontal: horizontal as 'off' | 'free' | 'right' | 'left',
+        vertical: vertical as 'off' | 'free' | 'down' | 'up',
+        deadZoneX,
+        deadZoneY,
+      }
+    }
+    case 'collideWorld': {
+      const spriteVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      return spriteVar && worldVar ? { type: 'g2d:collideWorld', spriteVar, worldVar } : null
+    }
+    case 'followCameraInWorld': {
+      const spriteVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      return spriteVar && worldVar ? { type: 'g2d:followCameraInWorld', spriteVar, worldVar } : null
+    }
+    case 'drawWorld': {
+      const ctxVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      return ctxVar && worldVar ? { type: 'g2d:drawWorld', ctxVar, worldVar } : null
+    }
+    case 'enterLevel': {
+      const levelVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return levelVar && spriteVar ? { type: 'g2d:enterLevel', levelVar, spriteVar } : null
+    }
+    case 'collideCurrentLevel': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:collideCurrentLevel', spriteVar } : null
+    }
+    case 'followCurrentLevelCamera': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:followCurrentLevelCamera', spriteVar } : null
+    }
+    case 'drawCurrentLevel': {
+      const ctxVar = identifierName(args[0])
+      return ctxVar ? { type: 'g2d:drawCurrentLevel', ctxVar } : null
     }
     case 'collideGroup': {
       // generator: SZGame2D.collideGroup(sprite, group)
@@ -4797,6 +4922,28 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     // generator: const m = SZGame2D.createTileMapFromAsset("meu-mapa")
     if (args[0]?.type !== 'StringLiteral') return null
     return { type: 'g2d:createTileMapFromAsset', varName: name, image: args[0].value as string }
+  }
+  if (method === 'createWorld') {
+    const width = toExpr(args[0], ctx)
+    const height = toExpr(args[1], ctx)
+    return isSimpleValue(width) && isSimpleValue(height)
+      ? { type: 'g2d:createWorld', varName: name, width, height }
+      : null
+  }
+  if (method === 'createWorldFromTileMap') {
+    const mapVar = identifierName(args[0])
+    const size = toExpr(args[1], ctx)
+    return mapVar && isSimpleValue(size)
+      ? { type: 'g2d:createWorldFromTileMap', varName: name, mapVar, size }
+      : null
+  }
+  if (method === 'createLevel') {
+    const worldVar = identifierName(args[0])
+    const spawnX = toExpr(args[1], ctx)
+    const spawnY = toExpr(args[2], ctx)
+    return worldVar && isSimpleValue(spawnX) && isSimpleValue(spawnY)
+      ? { type: 'g2d:createLevel', varName: name, worldVar, spawnX, spawnY }
+      : null
   }
   return null
 }
@@ -12896,6 +13043,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:randomY':
     case 'g2d:tileAtSprite':
     case 'g2d:sceneIs':
+    case 'g2d:levelIsActive':
     case 'g2d:stickPathFell':
     case 'g2d:balloonPathMeters':
     case 'g2d:balloonFuel':

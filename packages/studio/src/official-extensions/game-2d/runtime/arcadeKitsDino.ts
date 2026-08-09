@@ -1,16 +1,15 @@
 export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + Kit dino (v0.9.0) ----
   // Bloco genérico "pular no chão": pouso na borda atraída + pulo com
   // ↑/Espaço/W ou um toque. A gravidade é aplicada à parte.
-  var _jumpTapPrev = false;
   function jumpOnGround(sprite, ctx, jump) {
     if (!sprite || !ctx || !ctx.canvas) return;
     var j = (_isFiniteNumber(jump) && jump > 0) ? jump : 14;
     var g = world.gravity;
     sprite.vy = _finiteNumber(sprite.vy, 0);
     var wasGrounded = _beginGroundFrame(sprite);
-    var tap = pointer.down && !_jumpTapPrev;
-    _jumpTapPrev = pointer.down;
-    var wantJump = keys.up || keyDown('Space') || tap;
+    var pressing = keys.up || keyDown('Space') || pointer.down;
+    var wantJump = pressing && sprite._screenJumpHeld !== true;
+    sprite._screenJumpHeld = pressing;
     var jumped = false;
     if (wantJump && wasGrounded) {
       _jumpFromGround(sprite, g, j);

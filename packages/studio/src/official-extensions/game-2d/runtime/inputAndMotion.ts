@@ -104,9 +104,9 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
 
   // ---- Movimento (v0.4.0) ----
-  /** Plataforma: esq/dir + pulo (só no chão); a gravidade é aplicada à parte. */
-  function platformer(sprite, ctx, speed, jump) {
-    if (!sprite || !ctx || !ctx.canvas) return;
+  function _platformerMove(sprite, speed, jump, ctx) {
+    if (!sprite) return;
+    _recordPreviousPosition(sprite);
     var s = _finiteNumber(speed, 4);
     var j = _positiveFiniteNumber(jump, 11);
     var g = world.gravity;
@@ -117,19 +117,43 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (keys.left) sprite.x -= s;
     if (keys.right) sprite.x += s;
     sprite.vy = _finiteNumber(sprite.vy, 0);
+    var pressingJump = keys.up;
+    var wantsJump = pressingJump && sprite._platformJumpHeld !== true;
+    sprite._platformJumpHeld = pressingJump;
     var jumped = false;
-    if (keys.up && wasGrounded) {
+    if (wantsJump && wasGrounded) {
       _jumpFromGround(sprite, g, j);
       jumped = true;
     }
     sprite.y += sprite.vy;
-    var visible = _visibleWorldRect(ctx);
-    // Persiste "no chão" NO sprite: a animação por estado (autoAnimate) e os
-    // jogos leem s.onGround p/ saber se está pulando/caindo.
-    _resolveGravityGround(sprite, visible.top, visible.bottom, g);
-    if (keys.up && !jumped && sprite.onGround) {
-      _jumpFromGround(sprite, g, j);
+    if (ctx && ctx.canvas) {
+      var visible = _visibleWorldRect(ctx);
+      // O helper legado usa a borda visível como chão. O helper de terreno não.
+      _resolveGravityGround(sprite, visible.top, visible.bottom, g);
+      if (wantsJump && !jumped && sprite.onGround) _jumpFromGround(sprite, g, j);
     }
+  }
+  /** Plataforma na tela: a borda atraída pela gravidade funciona como chão. */
+  function platformer(sprite, ctx, speed, jump) {
+    if (!ctx || !ctx.canvas) return;
+    _platformerMove(sprite, speed, jump, ctx);
+  }
+  /** Plataforma no terreno: só tiles, figuras e bordas explícitas confirmam chão. */
+  function platformerWithTerrain(sprite, speed, jump) {
+    _platformerMove(sprite, speed, jump, null);
+  }
+  /** Só pula e integra no eixo vertical; o terreno confirma o pouso depois. */
+  function jumpWithTerrain(sprite, jump) {
+    if (!sprite) return;
+    _recordPreviousPosition(sprite);
+    var g = world.gravity;
+    var wasGrounded = _beginGroundFrame(sprite);
+    var pressing = keys.up || keyDown('Space') || pointer.down;
+    var wantsJump = pressing && sprite._terrainJumpHeld !== true;
+    sprite._terrainJumpHeld = pressing;
+    if (wantsJump && wasGrounded) _jumpFromGround(sprite, g, jump);
+    sprite.vy = _finiteNumber(sprite.vy, 0);
+    sprite.y = _finiteNumber(sprite.y, 0) + sprite.vy;
   }
 
   /** Top-down: 4 direções com diagonal normalizada (diagonal não fica mais rápida). */

@@ -32,12 +32,21 @@ describe('registro dos blocos de Programação', () => {
     expect(PROGRAMMING_BLOCK_REGISTRATIONS).toHaveLength(158)
   })
 
-  it('mantém tipos únicos, pesquisáveis e sem anunciar adapters inexistentes', () => {
+  it('mantém tipos únicos, pesquisáveis e com adapters reais nas quatro direções', () => {
     const types = PROGRAMMING_BLOCK_REGISTRATIONS.map((registration) => registration.blockType)
     expect(new Set(types).size).toBe(types.length)
     for (const registration of PROGRAMMING_BLOCK_REGISTRATIONS) {
       expect(programmingRegistrationForBlockType(registration.blockType)).toBe(registration)
-      expect('directions' in registration).toBe(false)
+      expect(Object.keys(registration.adapters).sort()).toEqual([
+        'blockToIR',
+        'codeToIR',
+        'irToBlock',
+        'irToCode',
+      ])
+      for (const adapter of Object.values(registration.adapters)) {
+        expect(typeof adapter).toBe('function')
+      }
+      expect(Object.isFrozen(registration.adapters)).toBe(true)
       expect(Object.isFrozen(registration)).toBe(true)
     }
     expect(Object.isFrozen(PROGRAMMING_BLOCK_REGISTRATIONS)).toBe(true)
@@ -51,11 +60,41 @@ describe('registro dos blocos de Programação', () => {
     )
   })
 
-  it('rejeita tipo duplicado e metadados divergentes', () => {
+  it('mantém os dispatchers centrais livres dos cases de Programação', async () => {
+    const [buildIR, workspaceState, jsGenerator, expressionGenerator, jsParser] = await Promise.all(
+      [
+        Bun.file(new URL('../../../blockly/buildIR.ts', import.meta.url)).text(),
+        Bun.file(new URL('../../../blockly/workspaceState.ts', import.meta.url)).text(),
+        Bun.file(new URL('../../../generators/js.ts', import.meta.url)).text(),
+        Bun.file(new URL('../../../generators/expr.ts', import.meta.url)).text(),
+        Bun.file(new URL('../../../parsers/js.ts', import.meta.url)).text(),
+      ],
+    )
+
+    expect(buildIR).toContain('programmingRegistration.adapters.blockToIR')
+    for (const { blockType } of PROGRAMMING_BLOCK_REGISTRATIONS) {
+      expect(buildIR).not.toContain(`case '${blockType}'`)
+    }
+    expect(workspaceState).toContain('programmingStatementIRToBlock')
+    expect(workspaceState).toContain('programmingExpressionIRToBlock')
+    expect(jsGenerator).toContain('programmingStatementIRToCode')
+    expect(expressionGenerator).toContain('programmingExpressionIRToCode')
+    expect(jsParser).toContain('executeProgrammingCodeToIR')
+  })
+
+  it('rejeita tipo duplicado, metadados divergentes e adapter ausente', () => {
     const complete = PROGRAMMING_BLOCK_REGISTRATIONS[0] as ProgrammingBlockRegistration
     expect(() => createProgrammingBlockRegistry([complete, complete])).toThrow('duplicado')
     expect(() =>
       createProgrammingBlockRegistry([{ ...complete, blockType: 'tipo-divergente' }]),
     ).toThrow('Definição divergente')
+    expect(() =>
+      createProgrammingBlockRegistry([
+        {
+          ...complete,
+          adapters: { ...complete.adapters, codeToIR: undefined },
+        } as unknown as ProgrammingBlockRegistration,
+      ]),
+    ).toThrow('adapter codeToIR')
   })
 })

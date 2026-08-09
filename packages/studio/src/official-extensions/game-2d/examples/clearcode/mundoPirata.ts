@@ -264,6 +264,30 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
           varName: 'plataformas',
         },
         {
+          type: 'g2d:createWorld',
+          varName: 'mundo',
+          width: { type: 'num', value: 1600 },
+          height: { type: 'num', value: 304 },
+        },
+        {
+          type: 'g2d:addSolidGroupToWorld',
+          worldVar: 'mundo',
+          groupVar: 'plataformas',
+        },
+        {
+          type: 'g2d:setWorldEdges',
+          worldVar: 'mundo',
+          edges: 'none',
+        },
+        {
+          type: 'g2d:configureWorldCamera',
+          worldVar: 'mundo',
+          horizontal: 'right',
+          vertical: 'off',
+          deadZoneX: { type: 'num', value: 120 },
+          deadZoneY: { type: 'num', value: 0 },
+        },
+        {
           type: 'g2d:spawnInGroup',
           groupVar: 'plataformas',
           x: {
@@ -847,52 +871,9 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
           ],
         },
         {
-          type: 'g2d:onKey',
-          key: 'ArrowUp',
-          body: [
-            {
-              type: 'if',
-              cond: {
-                type: 'g2d:sceneIs',
-                name: 'jogando',
-              },
-              then: [
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '==',
-                    left: {
-                      type: 'g2d:spriteVy',
-                      spriteVar: 'heroi',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 0,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'memberSet',
-                      object: {
-                        type: 'var',
-                        name: 'heroi',
-                      },
-                      name: 'vy',
-                      value: {
-                        type: 'num',
-                        value: -11,
-                      },
-                    },
-                    {
-                      type: 'g2d:playFx',
-                      fx: 'jump',
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+          type: 'g2d:onJump',
+          spriteVar: 'heroi',
+          body: [{ type: 'g2d:playFx', fx: 'jump' }],
         },
       ],
       loops: [
@@ -937,37 +918,24 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
               },
               then: [
                 {
-                  type: 'g2d:cameraFollow',
-                  spriteVar: 'heroi',
-                  worldW: {
-                    type: 'num',
-                    value: 1600,
-                  },
-                  worldH: {
-                    type: 'num',
-                    value: 300,
-                  },
-                },
-                {
-                  type: 'g2d:arrowsX',
-                  spriteVar: 'heroi',
-                  speed: {
-                    type: 'num',
-                    value: 3,
-                  },
-                },
-                {
                   type: 'g2d:applyGravity',
                   spriteVar: 'heroi',
                 },
                 {
-                  type: 'g2d:applyVelocity',
+                  type: 'g2d:platformerWithTerrain',
                   spriteVar: 'heroi',
+                  speed: { type: 'num', value: 3 },
+                  jump: { type: 'num', value: 11 },
                 },
                 {
-                  type: 'g2d:collideGroup',
+                  type: 'g2d:collideWorld',
                   spriteVar: 'heroi',
-                  groupVar: 'plataformas',
+                  worldVar: 'mundo',
+                },
+                {
+                  type: 'g2d:followCameraInWorld',
+                  spriteVar: 'heroi',
+                  worldVar: 'mundo',
                 },
                 {
                   type: 'g2d:forEachInGroup',
@@ -1267,8 +1235,8 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
                   ],
                 },
                 {
-                  type: 'g2d:drawGroup',
-                  groupVar: 'plataformas',
+                  type: 'g2d:drawWorld',
+                  worldVar: 'mundo',
                   ctxVar: 'ctx',
                 },
                 {

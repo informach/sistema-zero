@@ -51,6 +51,7 @@ export const gameTwoDWorldTimersRuntime = `  // ---- Temporizadores didáticos: 
       secondTimers = Object.create(null);
       onceTimers = Object.create(null);
       _tileMapCreates = 0;
+      _resetWorldsAndLevels();
       _releaseAllInputs();
     }
   });

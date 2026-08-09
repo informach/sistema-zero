@@ -243,7 +243,11 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 893 → 907: +14 parâmetros intencionais para o contrato de apoio do quadro,
   // transporte por plataforma móvel, salto centralizado e plataformas de mão
   // única. São funções de runtime exercitadas pelos testes de clareza de movimento.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(907)
+  // 907 → 995: +88 parâmetros dos contratos explícitos de layout de mapa,
+  // Mundo, câmera configurável e Fase. O último é do reset central que também
+  // inicializa corretamente os modos reversos; baixar este teto continua
+  // obrigatório quando uma refatoração remover parâmetros.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(995)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

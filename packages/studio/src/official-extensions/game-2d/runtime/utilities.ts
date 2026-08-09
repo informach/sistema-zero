@@ -271,8 +271,10 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     if (!map || !map.rows || !map.tile) return;
     var t = tileScreenSize(map);
     if (!_isFiniteNumber(px) || !_isFiniteNumber(py) || t <= 0) return;
-    var col = Math.floor((px - _finiteNumber(map.ox, 0)) / t);
-    var row = Math.floor((py - _finiteNumber(map.oy, 0)) / t);
+    var ox = map.layout ? _finiteNumber(map.layout.x, 0) : _finiteNumber(map.ox, 0);
+    var oy = map.layout ? _finiteNumber(map.layout.y, 0) : _finiteNumber(map.oy, 0);
+    var col = Math.floor((px - ox) / t);
+    var row = Math.floor((py - oy) / t);
     if (row < 0 || row >= map.rows.length) return;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return;

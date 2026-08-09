@@ -214,7 +214,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(237)
+    expect(gameTwoDBlocks.length).toBe(259)
   })
 
   /**
@@ -770,6 +770,26 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(docs).toContain('barra')
     expect(docs).toContain('as vidas acabaram?')
     expect(docs).toContain('Descrever o jogo para leitor de tela')
+  })
+
+  it('separa mapa, Mundo, Fase, cena e onda sem ensinar os blocos ambíguos', () => {
+    const docs = gameTwoDManifest.docs ?? ''
+    for (const text of [docs, gameTwoDPromptContext, gameTwoDPromptSummary]) {
+      expect(text).toContain('Mundo')
+      expect(text).toContain('Fase')
+      expect(text).toMatch(/[Oo]ndas?/)
+    }
+    expect(docs).toContain('Preparar o mapa encaixado na tela')
+    expect(docs).toContain('Mover estilo plataforma sobre o terreno')
+    expect(docs).not.toContain('"tiles de 0 px"')
+    expect(docs).not.toContain('A borda atraída sempre é chão')
+
+    for (const type of ['sz_g2d_draw_tilemap', 'sz_g2d_camera_follow', 'sz_g2d_set_camera']) {
+      const block = gameTwoDBlocks.find((candidate) => candidate.type === type)
+      expect(block?.hidden, type).toBe(true)
+      expect(block?.message0, type).toContain('Bloco antigo')
+      expect(block?.tooltip, type).toContain('Compatibilidade com projetos antigos')
+    }
   })
 
   it('todo bloco visível explica sua finalidade em um tooltip', () => {

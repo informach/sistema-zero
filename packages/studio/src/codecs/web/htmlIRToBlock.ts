@@ -1,11 +1,11 @@
 import type { HTMLNode } from '#ir'
-import type { SerializedBlocklyBlock } from '../../blockly/workspaceState'
 import {
   htmlElementForTag,
   isSupportedHTMLImageLoading,
   normalizeHTMLButtonType,
   normalizeHTMLInputType,
 } from '../../html/catalog'
+import type { SerializedBlocklyBlock } from '../types'
 
 export interface HTMLIRToBlockContext {
   block(

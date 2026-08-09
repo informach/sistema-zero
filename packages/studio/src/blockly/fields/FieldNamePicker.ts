@@ -90,6 +90,8 @@ export type NameKind =
   | 'animation'
   | 'spritesheet'
   | 'tilemap'
+  | 'g2d-world'
+  | 'g2d-level'
   | 'board'
   | 'stored-value'
   | 'combat-move'
@@ -160,6 +162,8 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'dom-target',
   'canvas3d-canvas',
   'canvas-context',
+  'g2d-world',
+  'g2d-level',
   'board',
   'stored-value',
   'combat-move',
@@ -225,6 +229,8 @@ const NAME_KINDS: readonly NameKind[] = [
   'animation',
   'spritesheet',
   'tilemap',
+  'g2d-world',
+  'g2d-level',
   'board',
   'stored-value',
   'combat-move',
@@ -526,6 +532,13 @@ const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
   // Jogo 2D Avançado (Kit): "Carregar mapa … do meu desenho" também declara um nome de mapa.
   sz_gk_load_tilemap: ['NAME'],
   sz_gk_create_empty_tilemap: ['NAME'],
+}
+const G2D_WORLD_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g2d_create_world: ['NAME'],
+  sz_g2d_create_world_from_tilemap: ['NAME'],
+}
+const G2D_LEVEL_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g2d_create_level: ['NAME'],
 }
 
 /** Figuras (desenho por código) do Jogo 2D — fonte do seletor SHAPE. */
@@ -1143,6 +1156,16 @@ const KIND_UI: Record<NameKind, KindUI> = {
     icon: '🗺️',
     placeholder: 'nome do mapa de tiles',
     empty: 'Nenhum mapa de tiles ainda — crie um ("Criar mapa de tiles") ou digite o nome abaixo.',
+  },
+  'g2d-world': {
+    icon: '🌍',
+    placeholder: 'nome do Mundo 2D',
+    empty: 'Nenhum Mundo 2D ainda — crie um Mundo vazio ou a partir de um mapa.',
+  },
+  'g2d-level': {
+    icon: '🚩',
+    placeholder: 'nome da Fase',
+    empty: 'Nenhuma Fase ainda — crie uma Fase usando um Mundo.',
   },
   board: {
     icon: '🧩',
@@ -1821,6 +1844,36 @@ export function collectTilemaps(workspace: Blockly.Workspace | null | undefined)
   return collectDeclaredNames(workspace, TILEMAP_DECL_BLOCKS)
 }
 
+export function collectGame2DWorlds(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const target = useBlock ?? workspace
+  const context = nameLookupContext(target)
+  if (!context.workspace) return []
+  return collectVariableDeclarations(
+    context.workspace,
+    G2D_WORLD_DECL_BLOCKS,
+    new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
+    context.useBlock,
+  )
+}
+
+export function collectGame2DLevels(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const target = useBlock ?? workspace
+  const context = nameLookupContext(target)
+  if (!context.workspace) return []
+  return collectVariableDeclarations(
+    context.workspace,
+    G2D_LEVEL_DECL_BLOCKS,
+    new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
+    context.useBlock,
+  )
+}
+
 /** Nomes das cenas Three.js cruas declaradas pelos blocos Canvas 3D. */
 export function collectScenes3d(
   workspace: Blockly.Workspace | null | undefined,
@@ -2195,6 +2248,10 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectSpritesheets(ws)
       case 'tilemap':
         return collectTilemaps(ws)
+      case 'g2d-world':
+        return collectGame2DWorlds(ws, block)
+      case 'g2d-level':
+        return collectGame2DLevels(ws, block)
       case 'scene3d':
         return collectScenes3d(ws, block)
       case 'g3d-world':

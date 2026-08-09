@@ -1015,7 +1015,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.68.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.69.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -2193,7 +2193,7 @@ Foi um full review com 4 blocos de família nova. A documentação atual do alun
 
 ## Índice de exemplos server-safe (`./server-examples`, 08/2026)
 
-Subpath **`@sistemazero/studio/server-examples`** — o catálogo dos 148 exemplos oficiais em forma
+Subpath **`@sistemazero/studio/server-examples`** — o catálogo dos 149 exemplos oficiais em forma
 de DADO PURO, consumível no **servidor** (Node/Bun, sem DOM). Nasceu para o **Zappy do Estúdio**
 consultar "como se monta esta mecânica" e descrever o passo a passo à criança; o payload que vai
 ao modelo é **ANÔNIMO** (sem `name`/`key`) porque, por decisão de produto, **a criança não sabe
@@ -2209,7 +2209,7 @@ que os exemplos existem** — o Zappy explica como conhecimento próprio, sem ci
   `src/examples/__gen_serverExamplesIndex.ts` (~291KB estáticos, precedente dos demais `__gen_*`).
   `src/examples/serverExamples.ts` exporta os tipos + `SERVER_EXAMPLES_INDEX`.
 - **Drift test** `serverExamples.test.ts`: recomputa o índice e compara deep-equal + trava o
-  total em 148. Adicionou/mexeu num exemplo → rode o gerador e commite o `__gen_*`, senão a suíte
+  total em 149. Adicionou/mexeu num exemplo → rode o gerador e commite o `__gen_*`, senão a suíte
   fecha a porta.
 
 ## 🔊 Som: tocar os arquivos que a criança enviou (08/2026)

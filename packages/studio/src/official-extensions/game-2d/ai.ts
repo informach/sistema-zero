@@ -87,11 +87,37 @@ Funções gerais — mira/contas, vida/tempo, aparência, mundo e pausa:
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
 - pauseGame()/resumeGame()/isPaused(): pausa congela os loops e contatos; teclas/cliques continuam ativos para permitir retomar.
 
-Funções para mundos maiores — câmera, mapa destrutível, ordem de desenho e depuração:
-- cameraFollow(s, worldW, worldH): centraliza a câmera no sprite (mundo maior que a tela), preso às bordas.
-  setCamera(x, y) posiciona na mão; cameraX()/cameraY() leem a posição (útil p/ parallax). A câmera rola
-  só o MUNDO (drawSprite/drawGroup/drawTileMap/drawParticles) — desenhe o HUD DEPOIS, que ele fica fixo.
-  ⚠️ onPointer/pointer continuam em coordenadas de TELA; com câmera, mundo = tela + câmera.
+Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o jogo precisa:
+- MAPA é a grade de tiles. Primeiro crie os dados; depois prepare a posição e o tamanho UMA vez em
+  ⚙️ Ao iniciar com fitTileMapToStage(ctx, map) (encaixar na tela) OU
+  placeTileMap(map, x, y, tileSize) (posição/tamanho exatos). Dentro do quadro, drawTileMap(ctx, map)
+  apenas desenha o layout preparado e nunca o reposiciona. Não gere a forma legada ambígua de
+  drawTileMap com x/y/tamanho: ela existe somente para abrir projetos antigos.
+- MUNDO é a área física jogável: limites + tilemaps + grupos de figuras que são terreno + câmera.
+  createWorld(w, h) cria um mundo vazio; createWorldFromTileMap(map, tileSize) prepara o mapa em
+  (0,0), dimensiona o mundo por ele e o adiciona. addTileMapToWorld exige mapa já posicionado.
+  addSolidGroupToWorld transforma figuras em chão/parede; addPlatformGroupToWorld transforma
+  figuras em plataformas atravessáveis por baixo. O mesmo Mundo pode misturar os três terrenos.
+  setWorldEdges(world, 'none'|'floor'|'solid') escolhe poços reais, somente chão na borda ou todas
+  as bordas sólidas. configureWorldCamera configura cada eixo: horizontal 'off'|'free'|'right'|'left'
+  e vertical 'off'|'free'|'down'|'up', mais zona morta X/Y. followCameraInWorld segue sem sair dos
+  limites; em Mundo do tamanho da tela a câmera fica em 0. collideWorld resolve todo o terreno;
+  drawWorld desenha mapa e figuras uma vez, usando a câmera. HUD vem DEPOIS para ficar fixo.
+- FASE é progressão OPCIONAL: um Mundo + posição inicial do jogador + evento de entrada.
+  createLevel(world, x, y), enterLevel(level, player), onLevelEnter(() => level, fn), levelIsActive(level).
+  Entrar zera vx/vy, apoio e câmera e põe o jogador no início; vida e pontuação continuam. Dentro do
+  quadro, collideCurrentLevel/followCurrentLevelCamera/drawCurrentLevel usam a fase atual. Fases
+  também servem para nave, puzzle ou mapa do tamanho da tela; não significam plataforma nem câmera.
+- ESCOLHA DIDÁTICA: uma tela fixa pode usar só Mapa; um jogo único rolável usa Mapa + Mundo sem
+  Fase; use Fases somente quando houver etapas jogáveis distintas. CENAS são estados de interface
+  ('inicio', 'jogando', 'ganhou', 'perdeu') e não são Fases. ONDAS são grupos/ritmos de inimigos
+  dentro da mesma Fase ou do mesmo Mundo: conte a onda numa variável; só crie outra Fase quando
+  também mudar a etapa jogável (mundo, início ou regras de entrada).
+- cameraFollow(s, worldW, worldH) e setCamera(x, y) são compatibilidade para projetos antigos.
+  Em projetos novos com terreno rolável, prefira a câmera do Mundo. cameraX()/cameraY() continuam
+  úteis para parallax. ⚠️ onPointer/pointer usam coordenadas de TELA; mundo = tela + câmera.
+
+Mapa destrutível, ordem de desenho e depuração:
 - breakTileAtSprite(map, s)/setTileAtSprite(map, index, s)/tileAtSprite(map, s): muda/quebra/lê o tile na
   célula onde está o sprite (mineração, terreno destrutível, construir).
 - bringToFront(grupo, s)/sendToBack(grupo, s): muda a ordem de desenho do sprite dentro do grupo.
@@ -206,7 +232,15 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - loadImage('nome'): handle { img, loaded } (aceita nome do asset OU url/dataUrl direta).
 
 Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
-- platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + pouso; não soma gravidade. Gere applyGravity(sprite) imediatamente antes. A borda atraída sempre é chão; collideTileMap/collideSprite/collideGroup/collidePlatform/collidePlatformGroup executados depois também confirmam tiles ou figuras como chão. O pulo consome o apoio confirmado no quadro anterior.
+- platformer(sprite, ctx, speed, jump): helper LEGADO para jogo de uma tela; a borda atraída da TELA
+  é sempre chão. Não use em plataforma com poços, mapa rolável ou figuras como chão.
+- platformerWithTerrain(sprite, speed, jump): controle de plataforma sem inventar chão na tela.
+  Gere, nesta ordem: applyGravity(sprite), platformerWithTerrain(sprite, speed, jump), depois
+  collideWorld(sprite, world) OU collideCurrentLevel(sprite). O apoio pode vir de tile sólido,
+  tile-plataforma, grupo sólido, grupo-plataforma ou borda escolhida no Mundo. Pular usa a borda
+  da tecla: segurar ↑/W/Espaço não repete o pulo ao pousar.
+- jumpWithTerrain(sprite, jump): versão sem andar para os lados, com o mesmo terreno do Mundo.
+  Também exige applyGravity antes e colisão do Mundo/Fase depois.
 - topDown(sprite, speed): 4 direções com diagonal normalizada.
 - flyFree(sprite, speed): voar livre SEM gravidade, com INÉRCIA pesada (0.10 de aceleração, 0.96 de planeio): engata em ~0,17s, desliza ~72px por ~2,3s; ao inverter, cruza o zero e muda de direção em ~0,18s, chegando ao teto oposto em ~0,33s. É a inércia que o separa do topDown; speed é o TETO.
 - flap(sprite, ctx, force): bater as asas. Empurrão na BORDA de seta pra cima/W/Espaço/toque, inclusive no ar (segurar não sobe sempre); não soma gravidade. Gere applyGravity(sprite) antes para o sprite voltar a cair.
@@ -223,8 +257,10 @@ Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vário
 - createTileMap({ image: 'tileset', tile: 32, solid: '1', platform: '2', grid: '1 1 1;1 0 1;1 2 1' }): cria o mapa.
   grid = texto da grade (cada número = um quadro do tileset; ';' separa linhas, espaço separa colunas, '.' = vazio);
   solid = índices que barram o sprite; platform = índices que apoiam só na face atraída pela gravidade.
-- drawTileMap(ctx, map, x, y, size): desenha o mapa. size = tamanho do tile NA TELA (px);
-  0 (ou ausente) = encaixa sozinho no canvas, centralizado. x/y deslocam o mapa (câmera).
+- fitTileMapToStage(ctx, map): prepara UMA vez o mapa para caber inteiro na tela, centralizado.
+- placeTileMap(map, x, y, size): prepara UMA vez posição no Mundo e tamanho exato de cada tile.
+- drawTileMap(ctx, map): desenha o mapa já preparado, sem alterar posição ou escala. Para rolagem,
+  adicione-o ao Mundo e use drawWorld/drawCurrentLevel; a câmera faz o deslocamento.
 - collideTileMap(sprite, map): sólidos viram chão/parede; plataformas seguram numa face e deixam atravessar pela outra.
 - collideGroup(sprite, group): impede o sprite de atravessar os sprites de um grupo (obstáculos SEM
   tilemap: pedras/casas/paredes desenhadas à mão, inclusive por figura). Mesma física do collideTileMap

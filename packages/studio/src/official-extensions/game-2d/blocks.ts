@@ -104,6 +104,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: '#4cbfe6',
     types: [
       'sz_g2d_platformer',
+      'sz_g2d_platformer_terrain',
       'sz_g2d_top_down',
       'sz_g2d_fly_free',
       'sz_g2d_flap',
@@ -118,6 +119,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_bounce_edges',
       'sz_g2d_drag_x',
       'sz_g2d_jump_on_ground',
+      'sz_g2d_jump_terrain',
       'sz_g2d_steer_thrust',
       'sz_g2d_rotate_sprite',
       'sz_g2d_point_sprite',
@@ -296,11 +298,14 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🗺️ Mapa',
+    name: '🗺️ Mapas',
     colour: '#59c059',
     types: [
       'sz_g2d_create_tilemap_from_asset',
       'sz_g2d_create_tilemap',
+      'sz_g2d_fit_tilemap_to_stage',
+      'sz_g2d_place_tilemap',
+      'sz_g2d_draw_prepared_tilemap',
       'sz_g2d_draw_tilemap',
       'sz_g2d_draw_backdrop',
       'sz_g2d_tilemap_collide',
@@ -310,9 +315,37 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🎥 Câmera',
+    name: '🌍 Mundos',
     colour: '#0ea5b7',
-    types: ['sz_g2d_camera_follow', 'sz_g2d_set_camera', 'sz_g2d_camera_x', 'sz_g2d_camera_y'],
+    types: [
+      'sz_g2d_create_world',
+      'sz_g2d_create_world_from_tilemap',
+      'sz_g2d_world_add_tilemap',
+      'sz_g2d_world_add_solid_group',
+      'sz_g2d_world_add_platform_group',
+      'sz_g2d_world_set_edges',
+      'sz_g2d_world_camera',
+      'sz_g2d_world_collide',
+      'sz_g2d_world_follow_camera',
+      'sz_g2d_world_draw',
+      'sz_g2d_camera_follow',
+      'sz_g2d_set_camera',
+      'sz_g2d_camera_x',
+      'sz_g2d_camera_y',
+    ],
+  },
+  {
+    name: '🚩 Fases',
+    colour: '#0f9f82',
+    types: [
+      'sz_g2d_create_level',
+      'sz_g2d_enter_level',
+      'sz_g2d_on_level_enter',
+      'sz_g2d_level_is_active',
+      'sz_g2d_current_level_collide',
+      'sz_g2d_current_level_follow_camera',
+      'sz_g2d_current_level_draw',
+    ],
   },
   // KITS POR TEMA: blocos prontos e NÃO genéricos, feitos para um tipo de jogo
   // específico (desenhos/efeitos/sons daquele tema). Os blocos genéricos seguem
@@ -475,7 +508,9 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_apply_friction: { FACTOR: numShadow(0.97) },
   sz_g2d_move_toward: { SPEED: numShadow(2) },
   sz_g2d_platformer: { SPEED: numShadow(4), JUMP: numShadow(11) },
+  sz_g2d_platformer_terrain: { SPEED: numShadow(4), JUMP: numShadow(11) },
   sz_g2d_jump_on_ground: { JUMP: numShadow(14) },
+  sz_g2d_jump_terrain: { JUMP: numShadow(14) },
   sz_g2d_control_dino: { JUMP: numShadow(15) },
   sz_g2d_steer_thrust: { SPEED: numShadow(3), TURN: numShadow(3) },
   sz_g2d_shoot_from: { SPEED: numShadow(6) },
@@ -584,6 +619,11 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_tile: { INDEX: numShadow(1) },
   sz_g2d_create_tilemap: { TILE: numShadow(32) },
   sz_g2d_draw_tilemap: { X: numShadow(0), Y: numShadow(0), SIZE: numShadow(0) },
+  sz_g2d_place_tilemap: { X: numShadow(0), Y: numShadow(0), SIZE: numShadow(32) },
+  sz_g2d_create_world: { W: numShadow(800), H: numShadow(512) },
+  sz_g2d_create_world_from_tilemap: { SIZE: numShadow(32) },
+  sz_g2d_world_camera: { DEAD_X: numShadow(160), DEAD_Y: numShadow(96) },
+  sz_g2d_create_level: { X: numShadow(32), Y: numShadow(32) },
   // Todos os soquetes de VALOR nascem preenchidos: soquete vazio compila para
   // `undefined` → o sprite nasce em posição/velocidade inválida (NaN) sem pista.
   sz_g2d_spawn_in_group: {

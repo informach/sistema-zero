@@ -82,6 +82,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g2d:onAnyInput',
     'g2d:onOverlap',
     'g2d:onJump',
+    'g2d:onLevelEnter',
     'g2d:onEnemyDefeated',
     'g2d:onEnemyHurt',
     'g2d:onStickPathCross',

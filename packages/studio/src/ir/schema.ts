@@ -216,6 +216,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:tileAtSprite'; mapVar: string; spriteVar: string })
   // Game 2D — a cena/tela atual é "name"? (valor booleano).
   | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
+  | (JSExprCommon & { type: 'g2d:levelIsActive'; levelVar: string })
   // Game 2D — Kit equilibrista / balão: leituras do estado do jogo (valores).
   | (JSExprCommon & { type: 'g2d:stickPathFell'; pathVar: string })
   | (JSExprCommon & { type: 'g2d:balloonPathMeters'; pathVar: string })
@@ -715,6 +716,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:sceneIs'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:levelIsActive'), levelVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:stickPathFell'), pathVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:balloonPathMeters'), pathVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:balloonFuel'), spriteVar: irText(), ...idField }),
@@ -2452,6 +2454,17 @@ export type JSStatement =
       speed: number | JSExpr
       jump: number | JSExpr
     })
+  | (JSStatementCommon & {
+      type: 'g2d:platformerWithTerrain'
+      spriteVar: string
+      speed: number | JSExpr
+      jump: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:jumpWithTerrain'
+      spriteVar: string
+      jump: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'g2d:topDown'; spriteVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:flyFree'; spriteVar: string; speed: number | JSExpr })
   | (JSStatementCommon & {
@@ -2488,6 +2501,15 @@ export type JSStatement =
   // Mapa PRONTO do Pinta/fatiador: tudo (grade/peças/sólidos) vem do metadado
   // do asset em runtime (__SZGAME_ASSET_META) — o bloco só aponta o desenho.
   | (JSStatementCommon & { type: 'g2d:createTileMapFromAsset'; varName: string; image: string })
+  | (JSStatementCommon & { type: 'g2d:fitTileMapToStage'; mapVar: string; ctxVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:placeTileMap'
+      mapVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:drawPreparedTileMap'; mapVar: string; ctxVar: string })
   | (JSStatementCommon & {
       type: 'g2d:drawTileMap'
       mapVar: string
@@ -2499,6 +2521,63 @@ export type JSStatement =
       size?: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
+  // Mundo = limites + terreno + câmera. Não implica Fase nem gênero de jogo.
+  | (JSStatementCommon & {
+      type: 'g2d:createWorld'
+      varName: string
+      width: number | JSExpr
+      height: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:createWorldFromTileMap'
+      varName: string
+      mapVar: string
+      size: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:addTileMapToWorld'; worldVar: string; mapVar: string })
+  | (JSStatementCommon & { type: 'g2d:addSolidGroupToWorld'; worldVar: string; groupVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:addPlatformGroupToWorld'
+      worldVar: string
+      groupVar: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:setWorldEdges'
+      worldVar: string
+      edges: 'none' | 'floor' | 'solid'
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:configureWorldCamera'
+      worldVar: string
+      horizontal: 'off' | 'free' | 'right' | 'left'
+      vertical: 'off' | 'free' | 'down' | 'up'
+      deadZoneX: number | JSExpr
+      deadZoneY: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:collideWorld'; spriteVar: string; worldVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:followCameraInWorld'
+      spriteVar: string
+      worldVar: string
+    })
+  | (JSStatementCommon & { type: 'g2d:drawWorld'; ctxVar: string; worldVar: string })
+  // Fase = entrada opcional em um Mundo. Ondas permanecem estado do mesmo Mundo.
+  | (JSStatementCommon & {
+      type: 'g2d:createLevel'
+      varName: string
+      worldVar: string
+      spawnX: number | JSExpr
+      spawnY: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:enterLevel'; levelVar: string; spriteVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:onLevelEnter'
+      levelVar: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g2d:collideCurrentLevel'; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:followCurrentLevelCamera'; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawCurrentLevel'; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:collideGroup'; spriteVar: string; groupVar: string })
   // Colisão sólida contra UM sprite só (chão e paredes).
   | (JSStatementCommon & { type: 'g2d:collideSprite'; spriteVar: string; otherVar: string })
@@ -6456,6 +6535,19 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:platformerWithTerrain'),
+      spriteVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      jump: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:jumpWithTerrain'),
+      spriteVar: irText(),
+      jump: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:topDown'),
       spriteVar: irText(),
       speed: z.union([JSExprSchema, z.number()]),
@@ -6525,6 +6617,26 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:fitTileMapToStage'),
+      mapVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:placeTileMap'),
+      mapVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      size: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawPreparedTileMap'),
+      mapVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:drawTileMap'),
       mapVar: irText(),
       ctxVar: irText(),
@@ -6540,6 +6652,102 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       mapVar: irText(),
       ...idField,
     }),
+    z.object({
+      type: z.literal('g2d:createWorld'),
+      varName: irText(),
+      width: z.union([JSExprSchema, z.number()]),
+      height: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createWorldFromTileMap'),
+      varName: irText(),
+      mapVar: irText(),
+      size: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:addTileMapToWorld'),
+      worldVar: irText(),
+      mapVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:addSolidGroupToWorld'),
+      worldVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:addPlatformGroupToWorld'),
+      worldVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setWorldEdges'),
+      worldVar: irText(),
+      edges: z.enum(['none', 'floor', 'solid']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:configureWorldCamera'),
+      worldVar: irText(),
+      horizontal: z.enum(['off', 'free', 'right', 'left']),
+      vertical: z.enum(['off', 'free', 'down', 'up']),
+      deadZoneX: z.union([JSExprSchema, z.number()]),
+      deadZoneY: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:collideWorld'),
+      spriteVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:followCameraInWorld'),
+      spriteVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawWorld'),
+      ctxVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createLevel'),
+      varName: irText(),
+      worldVar: irText(),
+      spawnX: z.union([JSExprSchema, z.number()]),
+      spawnY: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:enterLevel'),
+      levelVar: irText(),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onLevelEnter'),
+      levelVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:collideCurrentLevel'),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:followCurrentLevelCamera'),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:drawCurrentLevel'), ctxVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:collideGroup'),
       spriteVar: irText(),
@@ -10854,6 +11062,7 @@ const G2D_REGISTERED_EVENT_TYPES = new Set([
   'g2d:onOverlap',
   'g2d:onJump',
   'g2d:onAnyInput',
+  'g2d:onLevelEnter',
 ])
 
 const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
@@ -10877,6 +11086,9 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:spawnEnemy': 'varName',
   'g2d:createTileMap': 'varName',
   'g2d:createTileMapFromAsset': 'varName',
+  'g2d:createWorld': 'varName',
+  'g2d:createWorldFromTileMap': 'varName',
+  'g2d:createLevel': 'varName',
   'g2d:createShip': 'varName',
   'g2d:createDino': 'varName',
   'g2d:createCity': 'varName',
@@ -10904,6 +11116,8 @@ const G2D_REFERENCE_FIELDS = new Set([
   'enemyVar',
   'otherVar',
   'shapeName',
+  'worldVar',
+  'levelVar',
 ])
 
 const G2D_IMPLICIT_NAMES = new Set(['ctx', 'event', 'window', 'document', 'Math'])
@@ -11599,6 +11813,8 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:stompEnemy',
   'g2d:drawFrame',
   'g2d:platformer',
+  'g2d:platformerWithTerrain',
+  'g2d:jumpWithTerrain',
   'g2d:topDown',
   'g2d:flyFree',
   'g2d:flap',
@@ -11611,8 +11827,27 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawParticles',
   'g2d:createTileMap',
   'g2d:createTileMapFromAsset',
+  'g2d:fitTileMapToStage',
+  'g2d:placeTileMap',
+  'g2d:drawPreparedTileMap',
   'g2d:drawTileMap',
   'g2d:tileMapCollide',
+  'g2d:createWorld',
+  'g2d:createWorldFromTileMap',
+  'g2d:addTileMapToWorld',
+  'g2d:addSolidGroupToWorld',
+  'g2d:addPlatformGroupToWorld',
+  'g2d:setWorldEdges',
+  'g2d:configureWorldCamera',
+  'g2d:collideWorld',
+  'g2d:followCameraInWorld',
+  'g2d:drawWorld',
+  'g2d:createLevel',
+  'g2d:enterLevel',
+  'g2d:onLevelEnter',
+  'g2d:collideCurrentLevel',
+  'g2d:followCurrentLevelCamera',
+  'g2d:drawCurrentLevel',
   'g2d:collideGroup',
   'g2d:collideSprite',
   'g2d:collidePlatform',

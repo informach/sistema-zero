@@ -1,5 +1,5 @@
 import type { JSExpr, JSStatement } from '#ir'
-import type { SerializedBlocklyBlock } from '../../blockly/workspaceState'
+import type { SerializedBlocklyBlock } from '../types'
 import { isLosslessColor } from './losslessValues'
 
 export interface CanvasIRToBlockContext {

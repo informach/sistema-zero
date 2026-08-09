@@ -98,6 +98,50 @@
   --color-sz-focus: #1d4ed8;
 }
 
+/* Badges e avisos são semânticos porque o tema do Studio é controlado pelo
+   atributo local, não pela preferência de cor do documento hospedeiro. */
+[data-sz-theme] .sz-kit-badge-game {
+  color: #eff6ff;
+  background: rgb(37 99 235 / 16%);
+}
+[data-sz-theme] .sz-kit-badge-demo,
+[data-sz-theme] .sz-kit-badge-intermediate,
+[data-sz-theme] .sz-notice-warning {
+  color: #fffbeb;
+  background: rgb(217 119 6 / 16%);
+}
+[data-sz-theme] .sz-kit-badge-exploration {
+  color: #ecfeff;
+  background: rgb(8 145 178 / 16%);
+}
+[data-sz-theme] .sz-kit-badge-beginner {
+  color: #ecfdf5;
+  background: rgb(5 150 105 / 16%);
+}
+[data-sz-theme] .sz-kit-badge-advanced {
+  color: #fdf4ff;
+  background: rgb(192 38 211 / 16%);
+}
+[data-sz-theme="light"] .sz-kit-badge-game,
+[data-sz-theme="light"] .sz-kit-badge-exploration {
+  color: #075985;
+  background: rgb(14 116 144 / 14%);
+}
+[data-sz-theme="light"] .sz-kit-badge-demo,
+[data-sz-theme="light"] .sz-kit-badge-intermediate,
+[data-sz-theme="light"] .sz-notice-warning {
+  color: #78350f;
+  background: rgb(217 119 6 / 14%);
+}
+[data-sz-theme="light"] .sz-kit-badge-beginner {
+  color: #065f46;
+  background: rgb(5 150 105 / 14%);
+}
+[data-sz-theme="light"] .sz-kit-badge-advanced {
+  color: #701a75;
+  background: rgb(192 38 211 / 14%);
+}
+
 /*
  * Títulos e marca do Studio na fonte de DISPLAY do host (Baloo no kids).
  * ⚠️ Nome `sz-ui-display`, NUNCA `sz-display`: essa última é do community-kids

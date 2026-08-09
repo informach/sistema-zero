@@ -7,10 +7,9 @@ import { OFFICIAL_CATALOG } from './index'
 const goldenCatalogs = {
   'game-2d': {
     count: 32,
-    // ⚠️ Mudou em 07/08: a cadência do canhão (um 'Ajustar no tipo') saiu do
-    // Ao iniciar do 'Plataforma com inimigos' e foi para os moldes do exemplo,
-    // que é onde a identidade do inimigo passou a morar.
-    sha256: 'fff74702d40600a571ea1ac4fc51d5fa83b547adec6d7e1108cbc0701da4a920',
+    // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
+    // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados.
+    sha256: 'b8fe70ab85e77c8dc8b8b11b5b52ec5898e46382f8c3a6b117996952859edf7a',
   },
   'game-2d-advanced': {
     count: 36,
