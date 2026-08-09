@@ -43,21 +43,7 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g2d:fitScreen',
-          percent: {
-            type: 'num',
-            value: 100,
-          },
-        },
-        {
-          type: 'g2d:setGravity',
-          value: {
-            type: 'num',
-            value: 0.6,
-          },
-        },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'reizinho',
@@ -168,6 +154,22 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
               color: '#33407a',
             },
           ],
+        },
+      ],
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
+        },
+        {
+          type: 'g2d:setGravity',
+          value: {
+            type: 'num',
+            value: 0.6,
+          },
         },
         {
           type: 'g2d:createShapeSprite',

@@ -22,52 +22,7 @@ export const invasaoDosOvnisExample: ExtensionExample = {
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#0b1020',
-          accent: '#7cc7ff',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Invasão dos Óvnis',
-          },
-          text: {
-            type: 'str',
-            value: 'Setas ou A/D movem - espaço atira - não deixe descerem!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Fim de jogo',
-          },
-          text: {
-            type: 'str',
-            value: 'Os óvnis venceram desta vez. Tente de novo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineMold',
           name: 'ovni',
@@ -199,6 +154,53 @@ export const invasaoDosOvnisExample: ExtensionExample = {
           gravity: {
             type: 'num',
             value: 0,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#0b1020',
+          accent: '#7cc7ff',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Invasão dos Óvnis',
+          },
+          text: {
+            type: 'str',
+            value: 'Setas ou A/D movem - espaço atira - não deixe descerem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Fim de jogo',
+          },
+          text: {
+            type: 'str',
+            value: 'Os óvnis venceram desta vez. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
           },
         },
         {

@@ -28,53 +28,7 @@ export const sobreviventeProfissionalExample: ExtensionExample = withIndependent
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#140f24',
-          accent: '#9cff57',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Sobrevivente Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Setas ou WASD: fugir. O mouse mira e a arma atira sozinha. Aguente 90 segundos ou derrote 30 monstrinhos!',
-          },
-          button: {
-            type: 'str',
-            value: 'Começar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Os monstrinhos te alcançaram!',
-          },
-          text: {
-            type: 'str',
-            value: 'O recorde fica guardado. Tente de novo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'heroi',
@@ -333,6 +287,54 @@ export const sobreviventeProfissionalExample: ExtensionExample = withIndependent
           gravity: {
             type: 'num',
             value: 0,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#140f24',
+          accent: '#9cff57',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Sobrevivente Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Setas ou WASD: fugir. O mouse mira e a arma atira sozinha. Aguente 90 segundos ou derrote 30 monstrinhos!',
+          },
+          button: {
+            type: 'str',
+            value: 'Começar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Os monstrinhos te alcançaram!',
+          },
+          text: {
+            type: 'str',
+            value: 'O recorde fica guardado. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
           },
         },
         {

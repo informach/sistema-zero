@@ -23,36 +23,7 @@ export const safariDeMonstrosProfissionalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#3a7d44',
-          accent: '#e6398b',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Safári de Monstros Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Setas: explorar os dois biomas. ESPAÇO de frente para um monstro selvagem: jogar a rede e capturar na hora. Ande para a borda leste e entre na Caverna. Junte 5 monstros e veja seu parceiro evoluir!',
-          },
-          button: { type: 'str', value: 'Começar o safári' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Safári completo!' },
-          text: {
-            type: 'str',
-            value:
-              'Você capturou os 5 monstros da Floresta e da Caverna, e seu parceiro evoluiu. Um verdadeiro caçador de monstros!',
-          },
-          button: { type: 'str', value: 'Explorar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'explorador',
@@ -759,6 +730,37 @@ export const safariDeMonstrosProfissionalExample: ExtensionExample = {
           ],
           baseW: { type: 'num', value: 64 },
           baseH: { type: 'num', value: 64 },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#3a7d44',
+          accent: '#e6398b',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Safári de Monstros Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Setas: explorar os dois biomas. ESPAÇO de frente para um monstro selvagem: jogar a rede e capturar na hora. Ande para a borda leste e entre na Caverna. Junte 5 monstros e veja seu parceiro evoluir!',
+          },
+          button: { type: 'str', value: 'Começar o safári' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Safári completo!' },
+          text: {
+            type: 'str',
+            value:
+              'Você capturou os 5 monstros da Floresta e da Caverna, e seu parceiro evoluiu. Um verdadeiro caçador de monstros!',
+          },
+          button: { type: 'str', value: 'Explorar de novo' },
         },
         {
           type: 'gk:createCharacter',

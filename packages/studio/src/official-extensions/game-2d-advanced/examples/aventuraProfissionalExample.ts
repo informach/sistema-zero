@@ -31,39 +31,7 @@ export const aventuraProfissionalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#79b365',
-          accent: '#2b8a3e',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Aventura do Herói Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Setas: andar. ESPAÇO: golpe de espada. Fique EM CIMA do mato e golpeie para cortar. Passe atrás das árvores e derrote os 7 monstros do campo!',
-          },
-          button: { type: 'str', value: 'Aventurar' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Campo em paz!' },
-          text: { type: 'str', value: 'Você derrotou todos os monstros. O reino agradece, herói!' },
-          button: { type: 'str', value: 'Jogar de novo' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: { type: 'str', value: 'O herói caiu!' },
-          text: { type: 'str', value: 'Os monstros venceram desta vez. Tente de novo!' },
-          button: { type: 'str', value: 'Tentar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'heroi parado',
@@ -469,14 +437,6 @@ export const aventuraProfissionalExample: ExtensionExample = {
           gravity: { type: 'num', value: 0 },
         },
         {
-          type: 'gk:createEmptyTilemap',
-          name: 'campo',
-          cols: { type: 'num', value: 30 },
-          rows: { type: 'num', value: 17 },
-          fill: { type: 'num', value: -1 },
-          asset: '',
-        },
-        {
           type: 'gk:defineMold',
           name: 'arvore',
           w: { type: 'num', value: 64 },
@@ -511,6 +471,48 @@ export const aventuraProfissionalExample: ExtensionExample = {
           color: '#868e96',
           image: '',
           look: 'lobo',
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#79b365',
+          accent: '#2b8a3e',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Aventura do Herói Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Setas: andar. ESPAÇO: golpe de espada. Fique EM CIMA do mato e golpeie para cortar. Passe atrás das árvores e derrote os 7 monstros do campo!',
+          },
+          button: { type: 'str', value: 'Aventurar' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Campo em paz!' },
+          text: { type: 'str', value: 'Você derrotou todos os monstros. O reino agradece, herói!' },
+          button: { type: 'str', value: 'Jogar de novo' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: { type: 'str', value: 'O herói caiu!' },
+          text: { type: 'str', value: 'Os monstros venceram desta vez. Tente de novo!' },
+          button: { type: 'str', value: 'Tentar de novo' },
+        },
+        {
+          type: 'gk:createEmptyTilemap',
+          name: 'campo',
+          cols: { type: 'num', value: 30 },
+          rows: { type: 'num', value: 17 },
+          fill: { type: 'num', value: -1 },
+          asset: '',
         },
         {
           type: 'forRange',

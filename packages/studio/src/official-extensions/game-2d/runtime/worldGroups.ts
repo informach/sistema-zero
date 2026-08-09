@@ -243,6 +243,13 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   /** Move cada sprite do grupo somente pela velocidade atual. */
   function updateGroup(group) {
     if (!group || !group.items) return;
+    if (_isEnemyMirror(group)) {
+      _warnEnemyMirror(
+        'atualizar o grupo',
+        'O bloco "Atualizar os inimigos do tipo ..." ja move cada inimigo pelo comportamento dele; aqui eles andariam DUAS vezes por quadro.'
+      );
+      return;
+    }
     for (var i = 0; i < group.items.length; i++) {
       applyVelocity(group.items[i]);
     }
@@ -251,6 +258,13 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   /** Soma a gravidade do mundo ao vy de cada sprite atual do grupo. */
   function applyGravityToGroup(group) {
     if (!group || !group.items) return;
+    if (_isEnemyMirror(group)) {
+      _warnEnemyMirror(
+        'aplicar a gravidade ao grupo',
+        'Aplique a gravidade ao GRUPO DO TIPO, antes de atualiza-lo. Aqui a queda entraria duas vezes no mesmo quadro.'
+      );
+      return;
+    }
     for (var i = 0; i < group.items.length; i++) {
       var s = group.items[i];
       if (!s) continue;
@@ -265,6 +279,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     // os desenha" de acusar quem desenhou pelo caminho de grupo, que é o certo
     // num jogo visto de cima.
     group._drawn = true;
+    // Desenhar a VISTA de todos os inimigos conta como desenhar cada tipo.
+    if (_isEnemyMirror(group)) _marcarTiposDesenhados();
     for (var i = 0; i < group.items.length; i++) drawSprite(ctx, group.items[i]);
     _drawEnemyBeamsIfAny(ctx, group);
   }
@@ -276,6 +292,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   function drawGroupByY(ctx, group) {
     if (!ctx || !group || !group.items) return;
     group._drawn = true;
+    if (_isEnemyMirror(group)) _marcarTiposDesenhados();
     var snapshot = group.items.slice();
     snapshot.sort(function (a, b) {
       var aBase = (a ? _finiteNumber(a.y, 0) + _finiteNumber(a.h, 0) : 0);
@@ -305,6 +322,9 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   function countGroup(group) { return (group && group.items) ? group.items.length : 0; }
   /** Esvazia o grupo (tira todos os sprites). */
   function clearGroup(group) {
+    // A vista de TODOS os inimigos nao tem lista propria: esvaziar ela e esvaziar
+    // cada tipo (que e o "limpar a fase" que a crianca quer dizer).
+    if (_isEnemyMirror(group)) { _clearAllEnemyTypes(); return; }
     _clearGroupItems(group);
     // Um TIPO de inimigo tem munição própria. Esvaziar a fase e deixar os tiros
     // no ar faria a nave renascer e levar dano sem inimigo nenhum na tela.
@@ -322,6 +342,13 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
    */
   function addToGroup(group, sprite) {
     if (!group || !group.items || !sprite || typeof sprite !== 'object') return;
+    if (_isEnemyMirror(group)) {
+      _warnEnemyMirror(
+        'por um sprite no grupo',
+        'Este grupo mostra os inimigos dos tipos, entao nao da para acrescentar alguem nele: em qual tipo ele entraria? Use "Por o sprite ... no grupo" escolhendo um TIPO de inimigo, que e quem da comportamento a ele.'
+      );
+      return;
+    }
     if (group.items.indexOf(sprite) !== -1) return;
     if (group.items.length >= MAX_GROUP) return;
     group.items.push(sprite);
@@ -330,6 +357,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   /** Tira um sprite específico do grupo (por referência). */
   function removeFromGroup(group, sprite) {
     if (!group || !group.items) return;
+    // Na vista, tirar significa tirar do TIPO que contem o sprite.
+    if (_isEnemyMirror(group)) { _removeEnemyFromItsType(sprite); return; }
     var idx = group.items.indexOf(sprite);
     if (idx !== -1) _removeGroupItemAt(group, idx);
   }
@@ -340,6 +369,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
    */
   function pruneOffscreen(ctx, group, margin, onLeave) {
     if (!ctx || !ctx.canvas || !group || !group.items) return;
+    // Na vista, podar e podar cada tipo (o corpo da crianca roda por sprite).
+    if (_isEnemyMirror(group)) { _pruneAllEnemyTypes(ctx, margin, onLeave); return; }
     var generation = _driverGeneration;
     var m = _finiteNumber(margin, 40);
     var visible = _visibleWorldRect(ctx);

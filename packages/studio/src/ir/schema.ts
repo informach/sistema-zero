@@ -2505,6 +2505,7 @@ export type JSStatement =
   // grupo é uma lista gerenciada de sprites. x/y/vx/vy são expressões (aceitam
   // aleatório/contas); w/h números; color/image strings (nomes de asset).
   | (JSStatementCommon & { type: 'g2d:createGroup'; varName: string })
+  | (JSStatementCommon & { type: 'g2d:allEnemiesGroup'; varName: string })
   // `varName` OPCIONAL: nomear o sprite criado dá uma alça para os statements
   // seguintes (animar, dar vida…) — o helper `spawn` do runtime já DEVOLVE o
   // sprite. Ausente = saída idêntica à de antes do campo existir.
@@ -6544,6 +6545,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:createGroup'), varName: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:allEnemiesGroup'), varName: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:spawnInGroup'),
       groupVar: irText(),
@@ -10794,8 +10796,16 @@ export interface SZIR {
   htmlShell?: HTMLShell
 }
 
-/** Estrutura canônica do comportamento após a migração para áreas tipadas. */
+/**
+ * Estrutura canônica do comportamento após a migração para áreas tipadas, na
+ * ORDEM em que executa.
+ *
+ * ⚠️ `molds` é OPCIONAL de propósito: IR salva antes da área existir, e
+ * qualquer IR vinda de fora, chega sem a chave e é particionada por
+ * `normalizeSZIR`. Quem consome lê `behavior.molds ?? []`.
+ */
 export interface BehaviorIR {
+  molds?: JSStatement[]
   start: JSStatement[]
   events: JSStatement[]
   loops: JSStatement[]
@@ -10835,6 +10845,7 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:collides': 'varName',
   'g2d:circleCollides': 'varName',
   'g2d:createGroup': 'varName',
+  'g2d:allEnemiesGroup': 'varName',
   // Opcionais: só declaram quando a criança preencheu o nome (o coletor de
   // símbolos ignora ausente/vazio), e o escopo sai do próprio lugar do bloco —
   // nome criado dentro de um temporizador vale ali dentro, não no jogo todo.
@@ -11201,6 +11212,72 @@ function validateG2DReferences(
   }
 }
 
+/** Os nomes que estes statements CRIAM, no nível de topo da área. */
+function declaredNamesInArea(statements: readonly JSStatement[]): Set<string> {
+  const names = new Set<string>()
+  for (const statement of statements) {
+    const field = G2D_DECLARATION_FIELDS[statement.type]
+    const name = field ? (statement as unknown as Record<string, unknown>)[field] : undefined
+    if (typeof name === 'string' && name.trim()) names.add(name.trim())
+    if (statement.type === 'g2d:defineShape' && statement.shapeName.trim()) {
+      names.add(statement.shapeName.trim())
+    }
+  }
+  return names
+}
+
+/** Todo nome que a subárvore CONSOME por um campo de referência do Jogo 2D. */
+function referencedNames(value: unknown, into = new Set<string>()): Set<string> {
+  if (Array.isArray(value)) {
+    for (const child of value) referencedNames(child, into)
+    return into
+  }
+  if (typeof value !== 'object' || value === null) return into
+  const record = value as Record<string, unknown>
+  const type = typeof record.type === 'string' ? record.type : ''
+  for (const [key, child] of Object.entries(record)) {
+    if (key === '__id' || key === 'type') continue
+    if (G2D_REFERENCE_FIELDS.has(key) && typeof child === 'string' && child.trim()) {
+      if (G2D_DECLARATION_FIELDS[type] !== key) into.add(child.trim())
+    }
+    referencedNames(child, into)
+  }
+  return into
+}
+
+/**
+ * 🧩 Meus moldes roda ANTES de ⚙️ Ao iniciar, então um molde não pode usar um
+ * nome que só nasce depois dele. A checagem existe porque a validação geral de
+ * referências junta todos os nomes do projeto antes de conferir qualquer um:
+ * ela responde "existe em algum lugar", e aqui a pergunta é "existe AINDA".
+ *
+ * ⚠️ Sem isto, o erro só apareceria ao RODAR o jogo, e a criança não teria como
+ * ligar a tela preta ao bloco que ela arrastou para a área de baixo. O conserto
+ * é sempre o mesmo: mover para cima o bloco que cria o nome (variável e função
+ * cabem nas duas áreas justamente para isso).
+ */
+function validateMoldsDoNotLookAhead(behavior: BehaviorIR, ctx: z.RefinementCtx): void {
+  const molds = behavior.molds ?? []
+  if (molds.length === 0) return
+  const laterNames = declaredNamesInArea(behavior.start)
+  if (laterNames.size === 0) return
+  const moldNames = declaredNamesInArea(molds)
+
+  for (let index = 0; index < molds.length; index += 1) {
+    const statement = molds[index]
+    if (!statement) continue
+    for (const name of referencedNames(statement)) {
+      // Nome que TAMBÉM existe entre os moldes já é resolvido pela ordem local.
+      if (moldNames.has(name) || !laterNames.has(name)) continue
+      ctx.addIssue({
+        code: 'custom',
+        path: ['behavior', 'molds', index],
+        message: `“${name}” é criado depois, em Ao iniciar. Mova o bloco que cria “${name}” para Meus moldes.`,
+      })
+    }
+  }
+}
+
 function collectCanvasIds(nodes: readonly HTMLNode[], ids = new Set<string>()): Set<string> {
   for (const node of nodes) {
     if (node.type === 'canvas' && node.id?.trim()) ids.add(node.id.trim())
@@ -11319,23 +11396,30 @@ export const SZIRSchema = z
   })
 
 export const BehaviorIRSchema = z.object({
+  molds: z.array(JSStatementSchema).optional(),
   start: z.array(JSStatementSchema),
   events: z.array(JSStatementSchema),
   loops: z.array(JSStatementSchema),
 })
 
+/**
+ * Mapeia um caminho da validação legada (lista `js` achatada) de volta para a
+ * área correspondente. A ordem das fatias tem que ser a MESMA da concatenação
+ * feita em `SZIRV2Schema` — moldes, início, eventos e laços.
+ */
 function v2PathFromLegacy(
   path: PropertyKey[],
-  startLength: number,
-  eventsLength: number,
+  lengths: { molds: number; start: number; events: number },
 ): PropertyKey[] {
   if (path[0] !== 'js' || typeof path[1] !== 'number') return path
   const index = path[1]
-  if (index < startLength) return ['behavior', 'start', index, ...path.slice(2)]
-  if (index < startLength + eventsLength) {
-    return ['behavior', 'events', index - startLength, ...path.slice(2)]
-  }
-  return ['behavior', 'loops', index - startLength - eventsLength, ...path.slice(2)]
+  const rest = path.slice(2)
+  if (index < lengths.molds) return ['behavior', 'molds', index, ...rest]
+  const afterMolds = index - lengths.molds
+  if (afterMolds < lengths.start) return ['behavior', 'start', afterMolds, ...rest]
+  const afterStart = afterMolds - lengths.start
+  if (afterStart < lengths.events) return ['behavior', 'events', afterStart, ...rest]
+  return ['behavior', 'loops', afterStart - lengths.events, ...rest]
 }
 
 export const SZIRV2Schema = z
@@ -11348,10 +11432,11 @@ export const SZIRV2Schema = z
     htmlShell: HTMLShellSchema.optional(),
   })
   .superRefine((ir, ctx) => {
+    const molds = ir.behavior.molds ?? []
     const legacy = SZIRSchema.safeParse({
       html: ir.html,
       css: ir.css,
-      js: [...ir.behavior.start, ...ir.behavior.events, ...ir.behavior.loops],
+      js: [...molds, ...ir.behavior.start, ...ir.behavior.events, ...ir.behavior.loops],
       extensions: ir.extensions,
       ...(ir.htmlShell ? { htmlShell: ir.htmlShell } : {}),
     })
@@ -11359,15 +11444,27 @@ export const SZIRV2Schema = z
       for (const issue of legacy.error.issues) {
         ctx.addIssue({
           code: 'custom',
-          path: v2PathFromLegacy(issue.path, ir.behavior.start.length, ir.behavior.events.length),
+          path: v2PathFromLegacy(issue.path, {
+            molds: molds.length,
+            start: ir.behavior.start.length,
+            events: ir.behavior.events.length,
+          }),
           message: issue.message,
         })
       }
     }
 
-    for (const area of ['start', 'events', 'loops'] as const satisfies readonly LifecycleArea[]) {
-      for (let index = 0; index < ir.behavior[area].length; index += 1) {
-        const statement = ir.behavior[area][index]
+    validateMoldsDoNotLookAhead(ir.behavior, ctx)
+
+    for (const area of [
+      'molds',
+      'start',
+      'events',
+      'loops',
+    ] as const satisfies readonly LifecycleArea[]) {
+      const statements = ir.behavior[area] ?? []
+      for (let index = 0; index < statements.length; index += 1) {
+        const statement = statements[index]
         if (!statement) continue
         const rootPath: PropertyKey[] = ['behavior', area, index]
         if (!isLifecycleRootAllowed(statement, area)) {
@@ -11497,6 +11594,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:collideGroup',
   'g2d:collideSprite',
   'g2d:createGroup',
+  'g2d:allEnemiesGroup',
   'g2d:spawnInGroup',
   'g2d:spawnImageInGroup',
   'g2d:updateGroup',

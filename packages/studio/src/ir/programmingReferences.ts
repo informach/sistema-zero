@@ -72,6 +72,7 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:collides': 'varName',
   'g2d:circleCollides': 'varName',
   'g2d:createGroup': 'varName',
+  'g2d:allEnemiesGroup': 'varName',
   'g2d:loadSpritesheet': 'varName',
   'g2d:defineEnemyType': 'varName',
   'g2d:defineEnemySmart': 'varName',

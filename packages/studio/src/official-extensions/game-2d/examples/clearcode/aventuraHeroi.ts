@@ -69,14 +69,7 @@ export const aventuraHeroiExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g2d:fitScreen',
-          percent: {
-            type: 'num',
-            value: 100,
-          },
-        },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'heroizinho',
@@ -311,6 +304,43 @@ export const aventuraHeroiExample: ExtensionExample = beginnerGameExample({
               color: '#20122f',
             },
           ],
+        },
+        {
+          type: 'g2d:defineEnemyType',
+          varName: 'guarda',
+          behavior: 'perseguidor',
+          color: '#8d55c9',
+          image: '',
+          shape: 'guardiao',
+          hp: {
+            type: 'num',
+            value: 3,
+          },
+          speed: {
+            type: 'num',
+            value: 1.2,
+          },
+          dmg: {
+            type: 'num',
+            value: 1,
+          },
+          w: {
+            type: 'num',
+            value: 34,
+          },
+          h: {
+            type: 'num',
+            value: 34,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
         },
         {
           type: 'g2d:createTileMap',
@@ -562,34 +592,6 @@ export const aventuraHeroiExample: ExtensionExample = beginnerGameExample({
         {
           type: 'g2d:createGroup',
           varName: 'golpes',
-        },
-        {
-          type: 'g2d:defineEnemyType',
-          varName: 'guarda',
-          behavior: 'perseguidor',
-          color: '#8d55c9',
-          image: '',
-          shape: 'guardiao',
-          hp: {
-            type: 'num',
-            value: 3,
-          },
-          speed: {
-            type: 'num',
-            value: 1.2,
-          },
-          dmg: {
-            type: 'num',
-            value: 1,
-          },
-          w: {
-            type: 'num',
-            value: 34,
-          },
-          h: {
-            type: 'num',
-            value: 34,
-          },
         },
         {
           type: 'g2d:spawnEnemy',

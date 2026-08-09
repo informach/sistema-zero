@@ -22,52 +22,7 @@ export const vilaDoDragaoExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 640,
-          },
-          bg: '#1c1330',
-          accent: '#fbbf24',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Vila do Dragão',
-          },
-          text: {
-            type: 'str',
-            value: 'Setas andam - espaço conversa - derrote o dragão!',
-          },
-          button: {
-            type: 'str',
-            value: 'Começar a aventura',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Vila salva!',
-          },
-          text: {
-            type: 'str',
-            value: 'O dragão foi derrotado. Você é uma lenda!',
-          },
-          button: {
-            type: 'str',
-            value: '',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'ferreiro',
@@ -236,6 +191,53 @@ export const vilaDoDragaoExample: ExtensionExample = {
           baseH: {
             type: 'num',
             value: 64,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 640,
+          },
+          bg: '#1c1330',
+          accent: '#fbbf24',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Vila do Dragão',
+          },
+          text: {
+            type: 'str',
+            value: 'Setas andam - espaço conversa - derrote o dragão!',
+          },
+          button: {
+            type: 'str',
+            value: 'Começar a aventura',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Vila salva!',
+          },
+          text: {
+            type: 'str',
+            value: 'O dragão foi derrotado. Você é uma lenda!',
+          },
+          button: {
+            type: 'str',
+            value: '',
           },
         },
         {

@@ -18,14 +18,15 @@ const C = CATEGORY_COLORS.functions
  */
 export const FUNCTION_BLOCKS: BlockDefinition[] = [
   {
+    // ⚠️ Sem campo `ASYNC`: a palavra "assíncrona" aparecia na cara do bloco
+    // MAIS básico de função, e quem está vendo função pela primeira vez não tem
+    // repertório para ela. Quem precisa de espera usa o bloco irmão logo abaixo,
+    // que vive no degrau avançado junto do "esperar" e das Promises.
     type: 'sz_js_function',
     bodyExecution: 'function',
-    placement: 'start-declaration',
-    message0: 'função %1 assíncrona %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'fazerAlgo' },
-      { type: 'field_checkbox', name: 'ASYNC', checked: false },
-    ],
+    placement: 'mold-or-start-declaration',
+    message0: 'função %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'fazerAlgo' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
     inputsInline: true,
@@ -34,7 +35,23 @@ export const FUNCTION_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_params_mutator',
     tooltip:
-      'Cria uma função nomeada. Marque assíncrona para poder esperar Promises; use + para adicionar parâmetros e "retornar" para devolver um valor.',
+      'Cria uma função nomeada: um pedaço de programa com nome, que você chama quando quiser. Use + para adicionar parâmetros e "retornar" para devolver um valor.',
+  },
+  {
+    type: 'sz_js_function_async',
+    bodyExecution: 'function',
+    placement: 'mold-or-start-declaration',
+    message0: 'função assíncrona %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'carregarAlgo' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    mutator: 'sz_params_mutator',
+    tooltip:
+      'Igual à função comum, mas pode "esperar" uma promessa terminar lá dentro. Use quando algo demora, como carregar um arquivo.',
   },
   {
     type: 'sz_js_call_function',

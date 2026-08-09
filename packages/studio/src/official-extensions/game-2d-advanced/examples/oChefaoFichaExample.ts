@@ -18,6 +18,46 @@ export const oChefaoFichaExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
+      molds: [
+        {
+          type: 'gk:rpgDefineBattler',
+          name: 'Dragão',
+          hp: {
+            type: 'num',
+            value: 120,
+          },
+          str: {
+            type: 'num',
+            value: 9,
+          },
+          def: {
+            type: 'num',
+            value: 2,
+          },
+          image: 'dragao',
+          color: '#b23b6e',
+          boss: true,
+        },
+        {
+          type: 'gk:rpgDefineBattler',
+          name: 'Capanga',
+          hp: {
+            type: 'num',
+            value: 24,
+          },
+          str: {
+            type: 'num',
+            value: 5,
+          },
+          def: {
+            type: 'num',
+            value: 0,
+          },
+          image: '',
+          color: '#e05a5a',
+          boss: false,
+        },
+      ],
       start: [
         {
           type: 'gk:setup',
@@ -128,44 +168,6 @@ export const oChefaoFichaExample: ExtensionExample = {
             type: 'num',
             value: 25,
           },
-        },
-        {
-          type: 'gk:rpgDefineBattler',
-          name: 'Dragão',
-          hp: {
-            type: 'num',
-            value: 120,
-          },
-          str: {
-            type: 'num',
-            value: 9,
-          },
-          def: {
-            type: 'num',
-            value: 2,
-          },
-          image: 'dragao',
-          color: '#b23b6e',
-          boss: true,
-        },
-        {
-          type: 'gk:rpgDefineBattler',
-          name: 'Capanga',
-          hp: {
-            type: 'num',
-            value: 24,
-          },
-          str: {
-            type: 'num',
-            value: 5,
-          },
-          def: {
-            type: 'num',
-            value: 0,
-          },
-          image: '',
-          color: '#e05a5a',
-          boss: false,
         },
         {
           type: 'gk:rpgTeachMove',

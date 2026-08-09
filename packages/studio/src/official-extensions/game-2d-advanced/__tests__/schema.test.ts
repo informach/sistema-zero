@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import type { JSExpr, JSStatement } from '#ir'
-import { GK_STATEMENT_TYPES, SZIRSchema, SZIRV2Schema, statementIsExtension } from '#ir'
+import {
+  GK_STATEMENT_TYPES,
+  lifecycleAreaForStatement,
+  SZIRSchema,
+  SZIRV2Schema,
+  statementIsExtension,
+} from '#ir'
 
 /**
  * F1 do Jogo 2D Avançado: todo nó `gk:` do IR valida no schema zod (união TS e
@@ -222,14 +228,20 @@ describe('game-2d-advanced — IR no schema', () => {
       },
     ]
 
-    const parseStart = (statements: JSStatement[]) =>
-      SZIRV2Schema.safeParse({
+    // Alguns destes contêineres são MOLDES ("Criar o caminho"): o helper põe
+    // cada statement na área canônica dele para o teste continuar falando só
+    // sobre o contêiner certo, e não sobre onde a área mora.
+    const parseStart = (statements: JSStatement[]) => {
+      const molds = statements.filter((s) => lifecycleAreaForStatement(s) === 'molds')
+      const start = statements.filter((s) => lifecycleAreaForStatement(s) !== 'molds')
+      return SZIRV2Schema.safeParse({
         version: 2,
         html: [],
         css: [],
         extensions: [{ extensionId: 'game-2d-advanced' }],
-        behavior: { start: statements, events: [], loops: [] },
+        behavior: { molds, start, events: [], loops: [] },
       })
+    }
 
     for (const [index, entry] of cases.entries()) {
       expect(parseStart([entry.container]).success, entry.container.type).toBe(true)

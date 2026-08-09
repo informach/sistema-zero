@@ -350,7 +350,7 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 ## Áreas do projeto — só gera o que está DENTRO
 
 A geração não depende da posição dos blocos no canvas. Ela coleta somente o que a
-criança colocou dentro das cinco áreas opcionais definidas em
+criança colocou dentro das seis áreas opcionais definidas em
 `blockly/blocks/frames.ts`. Bloco solto é **rascunho**: continua salvo e aparece
 com aviso visual, mas não executa.
 
@@ -358,13 +358,153 @@ com aviso visual, mas não executa.
 |---|---|---|---|
 | `sz_frame_structure` (🧱 Estrutura) | `HTMLNode` | `ir.html` | index.html |
 | `sz_frame_appearance` (🎨 Aparência) | `CSSEntry` | `ir.css` | style.css |
+| `sz_frame_molds` (🧩 Meus moldes) | `JSMoldRoot` | `behavior.molds` | script.js |
 | `sz_frame_start` (⚙️ Ao iniciar) | `JSStartRoot` | `behavior.start` | script.js |
 | `sz_frame_events` (⚡ Quando acontecer) | `JSEventRoot` | `behavior.events` | script.js |
 | `sz_frame_loops` (🔁 Enquanto estiver rodando) | `JSLoopRoot` | `behavior.loops` | script.js |
 
+### 🧩 Meus moldes — a área de definições (08/2026)
+
+Nasceu porque o "Ao iniciar" dos jogos da família ficou grande demais. Medido nos
+32 exemplos do Jogo 2D (peso = nós da subárvore de `behavior.start`): **42% do
+conteúdo sai** para a área nova, **47% nos dez maiores** (Safári 247→98, Muralha
+71%, Sobrevivente 66%). ⭐ O peso vem do `Desenhar a figura ⟨X⟩ assim:` (15 dos 17
+exemplos com molde), não dos tipos de inimigo. Os jogos do Kit essencial (Pong,
+Dino Run, Pegue a moeda, Sala com paredes) medem **0%**: as crianças clientes não
+são afetadas e a área nem aparece para elas.
+
+- ⚠️⚠️ **A seção gera DENTRO do envelope da partida**, como a primeira. Fora dele
+  (a leitura ingênua de "antes do início") os tipos de inimigo e moldes morreriam
+  no restart — o runtime zera o domínio a cada partida — e uma função declarada
+  ali não enxergaria as variáveis do "Ao iniciar": quebra silenciosa em execução,
+  sem erro no editor. Dentro, o corpo do molde só roda quando alguém usa a
+  receita, então gerar antes não cria dependência sobre o que ainda não existe.
+- **Fonte ÚNICA da classificação:** `MOLD_ONLY_STATEMENT_TYPES` (`ir/lifecycle.ts`),
+  um subconjunto de `START_ONLY_STATEMENT_TYPES`. `lifecycleAreaForStatement`
+  devolve `'molds'` para eles, o preset `mold-declaration` deriva os checks do
+  Blockly e a migração de estado salvo lê a MESMA tabela.
+- ⭐ **A régua é "molde é a receita que EU escrevo", e CARREGAR não é.** Trazer um
+  arquivo que já existe (som, folha de quadros, imagem) é preparação de partida e
+  fica no Ao iniciar. Além de ser a distinção mais fácil de ensinar, é o que
+  mantém a área invisível no Kit essencial: som é o PRIMEIRO degrau, e torná-lo
+  molde fazia a área aparecer para todo mundo. Pelo mesmo motivo
+  `g2d:enemyStateAnim` ficou de fora: ele configura o tipo mas CONSOME a folha.
+- **O encaixe é ESTRITO** (o Blockly recusa um molde no Ao iniciar), com **duas
+  exceções deliberadas**: **`funcDecl`** (`mold-or-start-declaration`) e
+  **variável/constante** (`mold-or-start-command`, que preserva os contextos
+  aninhados: criar variável dentro de evento/laço continua valendo). ⚠️ Nos dois
+  presets, `start` vem PRIMEIRO no `root` de propósito: `areaForBlockType` lê
+  `root[0]` como canônica, e é isso que faz esses blocos **não migrarem** e
+  ficarem onde a criança deixou.
+- ⚠️⚠️ **A exceção da variável não é conforto, é requisito.** Ela é a ÚNICA receita
+  de conserto quando um molde precisa de um número ajustável, e sem ela a
+  migração que sobe a dependência junto do molde gera um estado que o Blockly
+  RECUSA — o projeto simplesmente não abre. Foi assim que o lote nasceu (a
+  exceção estava documentada mas não implementada) e o teste da época não pegou,
+  porque asseria a cadeia serializada e nunca se ela CARREGAVA.
+- **Classe NÃO é exceção**: ao contrário da função, não é içada, então uma classe
+  no Ao iniciar usada por um molde acima quebraria por TDZ.
+- ⚠️ **`molds` é OPCIONAL na IR e a chave é OMITIDA quando vazia** (`withMolds` em
+  `ir/behavior.ts`). Sem molde, o `behavior` tem a forma IDÊNTICA à de antes da
+  área, `normalizeSZIR` devolve a MESMA referência e o gerador não emite o
+  marcador — nenhuma fixture, drift ou dirty-check por referência enxerga uma
+  mudança que não houve.
+- **A Ponte organiza sozinha**: o parser devolve tudo em `start` e
+  `partitionMolds` divide por TIPO na fronteira (`parsers/project.ts`). O
+  marcador `// Meus moldes` é puramente didático — a Ponte não depende de
+  comentário para reconstruir a área, e código escrito à mão no modo Código entra
+  organizado. ⚠️ **`stripGeneratedLifecycleEnvelope` ancora na PRIMEIRA seção**, e
+  não em "Ao iniciar": contar linhas para trás a partir dali cairia no meio das
+  definições, o envelope não seria removido e a Ponte o re-embrulharia a cada
+  volta (erro de sintaxe real, pego pelo fixpoint dos exemplos).
+- **Migração `BEHAVIOR_AREAS_STATE_VERSION` 6 → 7**: `migrateCurrentLifecyclePlacements`
+  move os moldes e ⭐ **arrasta junto as variáveis de que eles dependem**
+  (`liftMoldDependencies`, casamento por texto de campo com ponto fixo). Isso só é
+  seguro porque variável cabe nas duas áreas. Um falso positivo sobe uma constante
+  a mais (programa segue válido); um falso negativo vira erro LEGÍVEL, não quebra
+  silenciosa.
+- **Validação de ordem entre áreas** (`validateMoldsDoNotLookAhead`, `ir/schema.ts`):
+  a validação geral de referências junta todos os nomes do projeto antes de
+  conferir qualquer um (responde "existe em algum lugar", não "existe ainda"), então
+  um molde que aponta para um nome criado no Ao iniciar precisava de checagem
+  própria. A mensagem diz o conserto: mover para cima o bloco que cria o nome.
+- ⭐⭐ **Primeira área com gate, e ele é DERIVADO, nunca um degrau escolhido à mão**
+  (`offersMoldBlock` em `toolbox.ts`): a área entra quando a paleta já montada
+  oferece algum bloco que PERTENCE a ela. Um número fixo abre o pior buraco
+  possível — a criança vê "Desenhar a figura assim:", arrasta, e a área onde ele
+  encaixa não existe para ela. Medido na primeira versão: SETE blocos órfãos,
+  incluindo o som do núcleo. Hoje: `iniciante-2d` sem a área (Kit essencial
+  limpo), `iniciante-3d` em diante com ela e os 3 moldes do Jogo 2D.
+  ⚠️ Três armadilhas neste detector, todas já pagas: (a) contar quem só CABE na
+  área (variável/função) fazia ela aparecer no primeiro degrau, sem nada para pôr
+  dentro; (b) o flyout DINÂMICO (Funções/Classes) não tem `contents`, então a
+  classe escapava da varredura e precisa de marcação própria no `pushSubCustom`;
+  (c) ler o REGISTRO global de contratos torna a detecção dependente da ordem de
+  inicialização e a área some em silêncio — para o núcleo lê-se a DEFINIÇÃO
+  (`definitionBelongsToMolds`), e só as categorias de extensão, que chegam
+  prontas, usam o registro. O gate é só de PALETA: área que já existe no projeto
+  continua no canvas e continua gerando.
+- **Os ~50 exemplos foram ajustados na FONTE**, não normalizados em runtime;
+  `__tests__/moldsArea.test.ts` varre os catálogos e falha se algum deixou molde
+  em `behavior.start`. ⚠️ O wrapper `beginnerGameExample` (`game-2d/examples/shared.ts`)
+  RECONSTRÓI o behavior campo a campo: esquecer `molds` ali apagaria em silêncio
+  as figuras de todos os exemplos iniciantes. Mesma armadilha em
+  `state/extensionsAdapter.ts`.
+
+### A espera virou um bloco próprio (08/2026)
+
+`sz_js_function` lia **"função ⟨fazerAlgo⟩ assíncrona ☐"**: a palavra aparecia na
+cara do bloco mais básico de função, para quem nunca ouviu falar de Promise. O
+campo `ASYNC` saiu de `sz_js_function` e de `sz_js_class_method`, e nasceram
+**`sz_js_function_async`** e **`sz_js_class_method_async`** no degrau avançado,
+junto do `await`. ⚠️ Isso REMOVE um campo de bloco existente (o que a regra de
+02/08 proíbe sem cuidado): a cobertura é `blockly/migrateAsyncBlocks.ts`, que roda
+ANTES das demais migrações (muda o TIPO, e as seguintes decidem por tipo) e troca
+`ASYNC: 'TRUE'` pelo bloco irmão preservando nome, parâmetros e corpo. Contadores
+de Programação: 149 → **151** blocos públicos, 156 → **158** registros.
+
 As áreas são chapéus top-level e existe no máximo uma de cada. **Projeto novo
 nasce sem áreas**; a criança adiciona somente as que a atividade precisa pela
-categoria **🗂️ Áreas do projeto**. Excluir uma área desconecta seus filhos no
+categoria **🗂️ Áreas do projeto**.
+
+⭐⭐ **Cada área passa pela CURADORIA, como qualquer bloco (08/08).** A categoria
+🗂️ nasce VAZIA e `buildCoreToolbox` a preenche no fim: uma área entra somente
+quando a paleta já montada oferece algum bloco cuja área CANÔNICA é ela. Antes as
+seis eram fixas e ficavam fora de todo filtro — o sintoma era silencioso e feio:
+uma aula de primeiros passos, sem HTML nem CSS liberados, mostrava 🧱 Estrutura e
+🎨 Aparência, e a criança arrastava áreas que não tinham um único bloco para
+receber. Medido: `allowBlocks: ['sz_g2d_create_sprite']` → só ⚙️ Ao iniciar;
+somar um laço traz 🔁 junto; `['sz_html_text']` → só 🧱. As áreas saem sempre na
+ordem em que EXECUTAM, não na ordem da lista da aula.
+- ⚠️ É a área **canônica** (`root[0]`), não todas em que o bloco cabe: variável e
+  função cabem em 🧩 Meus moldes de propósito, e contá-las traria a área já no
+  primeiro degrau, sem molde nenhum para pôr dentro.
+- ⚠️ Três armadilhas do detector, todas já pagas: o flyout DINÂMICO
+  (Funções/Classes) não tem `contents` e precisa marcar suas áreas no
+  `pushSubCustom`; ler o REGISTRO global de contratos torna tudo dependente da
+  ordem de inicialização (para o núcleo lê-se a DEFINIÇÃO); e a moldura legada
+  `sz_frame_behavior` é `hidden` e não pode vazar.
+- **As áreas entram no `BLOCK_CATALOG`** (categoria `🗂️ Áreas do projeto`), então
+  o professor pode listá-las na aula e a IMPORTAÇÃO de lista de blocos do admin
+  as aceita (ela valida contra o mesmo catálogo).
+- ⭐⭐ **No modo restritivo, a LISTA manda:** área marcada no picker entra mesmo
+  sem nenhum bloco dela na paleta. Sem isso o picker vira botão morto — o
+  professor marca 🧩 Meus moldes e a área não aparece, que é o oposto do motivo
+  de as áreas terem entrado no catálogo. A regra automática continua valendo por
+  cima, então marcar é opcional: uma lista só com blocos de sprite já recebe
+  ⚙️ Ao iniciar sozinha.
+- ⚠️ **Piso:** paleta COM blocos e NENHUMA área derivada garante ⚙️ Ao iniciar.
+  Acontece com uma lista só de valores, que não pertencem a área nenhuma — sem a
+  rede, a criança via blocos e não tinha onde encaixá-los.
+- ⚠️ **`areaFor` (catálogo server-safe do Zappy) não pode achatar frame em
+  "structure".** O mapa antigo mandava todo `domain: 'frame'` para lá, e o tutor
+  passava a ensinar que ⚙️ Ao iniciar pertence à estrutura da página. Cada frame
+  declara a área que REPRESENTA (`AREA_OF_FRAME`), e o `root[0]` deixou de levar
+  um cast que prometia só start/events/loops e escondia `'molds'` do compilador.
+- ⚠️ **`ServerBlockCatalogEntry['area']` atravessa a fronteira do pacote**: o
+  `member-shell` mantém um espelho em `PensaStudioBlockReference['area']`
+  (planner do Pensa). Área nova aqui exige a mesma lá, senão aquele pacote
+  deixa de compilar — e o typecheck do studio sozinho NÃO acusa. Excluir uma área desconecta seus filhos no
 mesmo grupo de undo, preservando-os como rascunho. Duplicatas recebem o mesmo
 tratamento. ⚠️ **O resgate de rascunho NÃO roda sob a cerca de carga**
 (`projectAreaSafeDelete` checa `isWorkspaceLoading()`, 25/07): o clear do
@@ -419,7 +559,7 @@ dos frames a cada reload de workspace povoado (colar código na Ponte). Regress�
   `projectRunResources.test.ts` cobre o restart no mesmo documento; o E2E
   `behavior-lifecycle.spec.ts` cobre início, evento, loop cancelável e remontagem
   pelo botão de atualizar o preview.
-- **Organizar blocos** (`blockly/organize.ts`): dispõe as cinco áreas em duas
+- **Organizar blocos** (`blockly/organize.ts`): dispõe as seis áreas em duas
   linhas e mantém os rascunhos próximos da família correspondente.
 - **World Composer**: adiciona conteúdo apenas numa área compatível já criada.
   Se faltar **Ao iniciar**, orienta a criança em vez de criar a área sozinho.
@@ -746,7 +886,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.64.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.65.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -1353,6 +1493,129 @@ de testes meus que prometiam mais do que verificavam:
 ⚠️ **E eu quase relatei um defeito que não existia**: o round-trip do "também é" falhou para os 23, e
 a causa era o meu palpite do nome da IR (`g2d:addEnemyBehavior` em vez de `g2d:enemyAddBehavior`). O
 parser estava certo. Confirmar o nome no schema antes de acusar o produto.
+
+### Um grupo com os inimigos de TODOS os tipos (v0.65.0, o bloco 233)
+
+Com vários tipos, cada tipo é um grupo separado, então toda ação COMPARTILHADA pedia um bloco por
+tipo (3 tipos × 4 ações = 12 blocos para 4 ideias). O bloco novo **"Criar o grupo ⟨todos⟩ com os
+inimigos de todos os tipos"** (`start-only`, em 😈 Inimigos) resolve com 1 + 4.
+
+⭐ **A escolha central: é uma VISTA derivada, não uma cópia sincronizada.** O `items` do grupo é um
+getter que monta a lista a partir dos tipos registrados. Motivo: o atalho manual (grupo comum + "Pôr
+o sprite no grupo" a cada nascimento) VAZA, porque a morte tira o inimigo do TIPO e não do grupo
+dela, e o morto segue colidindo para sempre. Derivar torna o vazamento impossível e pega de graça o
+sprite ADOTADO por "Pôr no grupo ⟨tipo⟩", que uma sincronia no spawn perderia.
+
+⚠️⚠️ **E aqui a lição do lote, que um teste meu pegou na hora:** a primeira versão do cache usava um
+contador de rotatividade que eu incrementava À MÃO no spawn e na morte. O teste da poda ("Tirar do
+grupo quem sair da tela") falhou imediatamente: aquele caminho remove do tipo sem passar pelos meus
+dois pontos, e a vista ficava mostrando inimigo que não existia mais — o MESMO defeito que o lote
+existe para eliminar. Conserto: o selo do cache é DERIVADO da soma dos `_revision` dos tipos. Todo
+grupo gerenciado já bump o próprio `_revision` em qualquer mutação da lista (o proxy de
+`_trackGroupItems` embrulha push/splice/sort/atribuição), então nenhum caminho pode ficar de fora.
+**Derivar mata a classe; sincronizar sempre deixa um caminho esquecido.**
+
+Três famílias de comportamento no grupo novo, todas conferidas uma a uma no runtime:
+- **Funciona igual a qualquer grupo** (só leem): colisões, "para cada", contar, desenhar, desenhar
+  ordenado pela base (usa `snapshot.sort`, não mexe na lista) e "impedir de atravessar".
+- **Encaminha para os tipos**, porque tem significado óbvio: esvaziar (limpa todos os tipos), tirar
+  o sprite (tira do tipo que o contém), podar quem saiu da tela (poda cada tipo).
+- **Avisa e não faz nada**: atualizar e aplicar gravidade (o "Atualizar os inimigos do tipo" já move
+  cada um; aqui andariam DUAS vezes por quadro), pôr um sprite (em qual tipo?), trazer para a
+  frente/mandar para trás (a ordem volta na remontagem).
+
+O `Atualizar` e o `Desenhar` continuam por tipo, e sempre vão: cada tipo tem a própria lista de
+comportamentos e os próprios tiros. **As duas formas convivem** (requisito dela): projeto sem o
+bloco novo tem saída byte-idêntica, e há teste comparando o andar do tipo com e sem a vista criada.
+
+Medido em Chrome real: 3 tipos (4+3+2) dão 9 na vista; o morto sai NO MESMO quadro do update (9→8);
+15 acertos e 7 mortes com UM bloco de colisão para os três tipos; esvaziar a vista zerou os três.
+Contadores: blocos 232 → **233**, API 231 → **232**, catraca 884 → **892**.
+
+### Nono full review (07/08) — o lote da vista
+
+Cinco achados, e o primeiro era um buraco de verdade no que eu tinha acabado de escrever.
+
+1. ⭐⭐ **A lista da vista era um array cru devolvido por referência.** Varri o runtime procurando
+   quem faz `group.items.push` e achei SEIS criadores fora das minhas guardas: "Criar tiro no grupo",
+   "Criar um sprite no grupo" e os spawns dos kits (obstáculo, ovo, asteroide). Apontar qualquer um
+   deles para o grupo da vista escrevia no cache: o sprite aparecia até a próxima remontagem e sumia
+   sozinho, em silêncio. Guardar os seis um a um seria a mesma sincronia frouxa que o lote existe
+   para eliminar, então a lista passou a **se defender sozinha**: sai embrulhada num proxy que recusa
+   os métodos mutantes e avisa. Vale para os criadores que ainda nem existem. Idioma emprestado do
+   `_trackGroupItems`, que já faz isso nos grupos normais.
+2. **Estado morto**: `_enemyMirrors` era populado e nunca lido. Removido.
+3. **O teto de 64 tipos descartava em silêncio**: o tipo 65 funcionava mas não entrava na vista.
+   Agora avisa, citando a causa provável (criar tipo dentro do laço).
+4. **A copy inventava uma regra que não existe**: dica, manual e `ai.ts` mandavam pôr o bloco
+   "depois de criar os tipos". A vista é DERIVADA, então a ordem não importa. Virou teste (a vista
+   criada ANTES dos tipos enxerga todos) e a frase caiu nos três lugares. Regra falsa é regra que a
+   criança vai obedecer e depois estranhar.
+5. **Colisão de texto entre avisos**: o meu aviso novo cita o bloco pela face, e um teste antigo
+   filtrava por "contém o nome do bloco" — passou a casar com dois. O filtro do teste ficou preciso
+   (a frase própria daquele aviso); a copy não foi degradada por causa de um teste.
+
+**Conferido e medido:**
+- O bump de `_revision` acontece só na REMONTAGEM. Se fosse por leitura, o `overlapGroups` (que
+  compara `_revision` para refrescar o Set de pertencimento) refaria o Set a cada item: O(n) virava
+  O(n²). Está comentado no código para não regredir.
+- **Custo do selo derivado, medido em Chrome**: 8 tipos, 200 inimigos, 60 tiros, colisão contra a
+  vista todo quadro → **0,141 ms/quadro contra 0,127 ms** de um grupo comum com os mesmos 200
+  sprites. Sobrecarga de **0,014 ms**, menos de 0,1% do quadro. O selo somar os revisions dos tipos
+  a cada leitura não é problema nesta escala.
+- O monotônico do selo é sólido: `_revision` só cresce e a contagem de tipos entra na conta, então
+  duas composições diferentes não colidem.
+
+### Décimo full review (07/08) — duas lições REPETIDAS, no mesmo arquivo
+
+Rodada sobre a defesa da vista, escrita na rodada 9. Os dois achados são reincidência de lições que
+este arquivo já tinha aprendido, o que faz deles os mais úteis da série.
+
+1. ⭐ **Objeto literal vazando `Object.prototype` na guarda.** O mapa dos métodos mutantes
+   (`MIRROR_MUTANTES`) era literal, então `toString`, `valueOf`, `constructor` e `hasOwnProperty`
+   vinham do protótipo, eram TRUTHY e existem em `Array.prototype`: a guarda devolvia o AVISO no
+   lugar da função real. Consequência: qualquer coerção da lista (`String(items)`, concatenação)
+   chamava o stub, recebia `undefined` dos dois lados e estourava "Cannot convert object to
+   primitive". ⚠️ É a MESMA armadilha do 1º full review neste arquivo (nome herdado passando por
+   comportamento válido, corrigido lá com `hasOwnProperty`). Agora com `Object.create(null)`, e com
+   teste que lê `toString`/`String()`/`Object.hasOwn` na lista da vista.
+2. ⭐⭐ **O aviso de "ninguém os desenha" voltou a acusar quem está certo.** O `_drawn` é marcado no
+   grupo que recebe o desenho; desenhando pela VISTA (que o manual apresenta como o jeito de fazer
+   uma coisa só para todos), cada TIPO ficava com `_drawn` falso e, em 360 quadros, o Console
+   acusava tela vazia com a tela cheia. É exatamente o defeito que o 2º full review corrigiu quando
+   o caminho de grupo virou oficial, reaberto pelo bloco novo. Fix: desenhar a vista marca todos os
+   tipos registrados, nos DOIS desenhadores. Teste com 500 quadros nos dois caminhos.
+3. Um `noPrototypeBuiltins` no teste que eu tinha acabado de escrever (`Object.hasOwn` resolve).
+
+⚠️ **A lição de segunda ordem desta série de reviews**: as reincidências não vieram de esquecimento
+do CLAUDE.md, vieram de eu escrever código NOVO que cai na mesma armadilha por outro caminho. Toda
+vez que este arquivo ganha um mapa de nomes, ele precisa de protótipo nulo; toda vez que um caminho
+NOVO de desenho vira oficial, o `_drawn` precisa acompanhar.
+
+### Décimo primeiro full review (07/08) — a tabela do manual virou contrato
+
+Rodada magra, e a magreza é o achado. Zero defeito no runtime; o que faltava era PROVA.
+
+O manual faz 14 afirmações item por item sobre o grupo da vista (sete blocos funcionam igual, três
+encaminham para os tipos, quatro avisam). Boa parte existia só na minha leitura do runtime. Duas
+nunca tinham sido exercidas: **"Impedir de atravessar os sprites de um grupo"** (o empurrão contra
+todos os inimigos) e **"Mandar para trás"** (cuja guarda eu escrevi por simetria com o "Trazer para a
+frente", sem teste). As duas estavam certas, e agora a tabela inteira é `describe('a tabela do manual
+sobre a vista é contrato')`.
+
+**Não-achados conferidos** (vale registrar para não reabrir):
+- `warnEnemyTypeEmptyOnce` é chamado do `updateEnemyType` E do `drawEnemyType`, então quem desenha só
+  pela vista NÃO perde o aviso de "tipo criado e nunca solto".
+- `_marcarTiposDesenhados` marcar todos os tipos é correto por construção: a vista contém os itens de
+  todos eles, então desenhar a vista desenha todos.
+- Erros de tipo no meu próprio teste (identificador duplicado na interface `Api` e um helper que eu
+  usei sem declarar) foram corrigidos; o typecheck do pacote agora só acusa `moldsArea.test.ts`, da
+  outra sessão.
+
+⚠️ **Observação para quando a feature "Meus moldes" da outra sessão pousar**: ela introduz uma área de
+DECLARAÇÕES e já experimentou trocar o `placement` de criadores para `mold-declaration`. O bloco novo
+da vista é um criador de recurso `start-only-command` e provavelmente vai querer o mesmo tratamento —
+decisão de quem estiver conduzindo aquele lote.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 

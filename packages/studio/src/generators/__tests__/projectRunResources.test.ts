@@ -93,8 +93,9 @@ const ALL_MANAGED_RESOURCES_BEHAVIOR: BehaviorIR = {
 }
 
 const DEFERRED_CALLBACKS_BEHAVIOR: BehaviorIR = {
+  // O import é MOLDE: traz a biblioteca e não faz nada por si só.
+  molds: [{ type: 'importStar', name: 'THREE', module: 'three' }],
   start: [
-    { type: 'importStar', name: 'THREE', module: 'three' },
     {
       type: 'newInstance',
       varName: 'carregador',

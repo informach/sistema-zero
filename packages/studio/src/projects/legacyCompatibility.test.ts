@@ -6,6 +6,7 @@ import type { Project } from '#core'
 import { generateProjectFiles } from '#generators'
 import { normalizeSZIR } from '#ir'
 import { registerExtensionBlocks } from '../blockly/blocks'
+import { BEHAVIOR_AREAS_STATE_VERSION } from '../blockly/blocksStateVersion'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { normalizeBlocksStateToFrames } from '../blockly/normalizeFrames'
 import { ensureBlocklyInitialized } from '../blockly/setup'
@@ -44,7 +45,7 @@ describe('compatibilidade do projeto real do curso — game-2d 0.19.0', () => {
       szBehaviorAreasVersion: number
       blocks: { blocks: Array<{ type: string }> }
     }
-    expect(migrated.szBehaviorAreasVersion).toBe(6)
+    expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
     expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
       'sz_frame_start',
       'sz_frame_events',

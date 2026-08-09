@@ -25,53 +25,7 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#2b4a1e',
-          accent: '#ffd24a',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Fazenda Feliz Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Setas ou WASD: andar. Q: trocar a ferramenta. Espaço: usar. C: dormir. V: vender. Junte 50 moedas!',
-          },
-          button: {
-            type: 'str',
-            value: 'Começar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Que fazenda!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você juntou 50 moedas cuidando da terra!',
-          },
-          button: {
-            type: 'str',
-            value: 'Plantar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'fazendeiro',
@@ -165,6 +119,54 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
           baseH: {
             type: 'num',
             value: 36,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#2b4a1e',
+          accent: '#ffd24a',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Fazenda Feliz Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Setas ou WASD: andar. Q: trocar a ferramenta. Espaço: usar. C: dormir. V: vender. Junte 50 moedas!',
+          },
+          button: {
+            type: 'str',
+            value: 'Começar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Que fazenda!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você juntou 50 moedas cuidando da terra!',
+          },
+          button: {
+            type: 'str',
+            value: 'Plantar de novo',
           },
         },
         {

@@ -279,7 +279,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
   // ---- ✨ Faíscas (partículas) ----
   {
     type: 'sz_gk_define_effect',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0:
       'Criar o efeito %1: %2 faíscas, cor %3, tamanho %4, vida %5 s, velocidade %6, gravidade %7',
     args0: [

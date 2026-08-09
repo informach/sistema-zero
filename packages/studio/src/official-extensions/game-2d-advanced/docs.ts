@@ -22,11 +22,14 @@ substituir fontes escolhidas.
    anuncia as telas como diálogos e move o foco automaticamente.
 2. Escolha a imagem no próprio bloco: personagem, NPC, item e animação carregam
    a arte sozinhos. **Carregar a imagem** serve para pré-carregar ou criar apelido.
-3. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
+3. Em **🧩 Meus moldes**, crie os moldes, as fichas, os visuais, os efeitos, os
+   caminhos, as regiões e os sons carregados. São receitas: nada acontece ao
+   criá-las, e dá para fazer várias sem usar nenhuma.
+4. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
    área roda de novo em cada Jogar/Jogar de novo.
-4. Em **⚡ Quando acontecer**, registre clique, aviso, entrada de estado/mapa e
+5. Em **⚡ Quando acontecer**, registre clique, aviso, entrada de estado/mapa e
    outras reações da partida.
-5. Em **🔁 Enquanto estiver rodando**, use **A cada quadro (dt)**, **Desenhar o
+6. Em **🔁 Enquanto estiver rodando**, use **A cada quadro (dt)**, **Desenhar o
    jogo (ctx)**, **Desenhar o HUD** e ritmos periódicos.
 
 Passos contínuos ficam nesses laços ou em funções chamadas por eles. Ações que já

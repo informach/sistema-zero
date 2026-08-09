@@ -27,69 +27,7 @@ export const heroiQueEvoluiProfissionalExample: ExtensionExample = withIndepende
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#2f5d3a',
-          accent: '#ffd166',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Herói que Evolui Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Setas ou WASD: andar. Espaço: golpe na direção. A cada nível, escolha uma melhoria. Chegue ao nível 6!',
-          },
-          button: {
-            type: 'str',
-            value: 'Começar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Herói lendário!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você chegou ao nível 6 evoluindo a cada batalha!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O herói caiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'Os monstros venceram. Treine para evoluir mais!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'heroi parado',
@@ -676,23 +614,6 @@ export const heroiQueEvoluiProfissionalExample: ExtensionExample = withIndepende
           },
         },
         {
-          type: 'gk:createEmptyTilemap',
-          name: 'campo',
-          cols: {
-            type: 'num',
-            value: 26,
-          },
-          rows: {
-            type: 'num',
-            value: 16,
-          },
-          fill: {
-            type: 'num',
-            value: -1,
-          },
-          asset: '',
-        },
-        {
           type: 'gk:defineMold',
           name: 'monstro',
           w: {
@@ -718,6 +639,87 @@ export const heroiQueEvoluiProfissionalExample: ExtensionExample = withIndepende
           color: '#8d55c9',
           image: '',
           look: 'monstro',
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#2f5d3a',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Herói que Evolui Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Setas ou WASD: andar. Espaço: golpe na direção. A cada nível, escolha uma melhoria. Chegue ao nível 6!',
+          },
+          button: {
+            type: 'str',
+            value: 'Começar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Herói lendário!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você chegou ao nível 6 evoluindo a cada batalha!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O herói caiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'Os monstros venceram. Treine para evoluir mais!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'gk:createEmptyTilemap',
+          name: 'campo',
+          cols: {
+            type: 'num',
+            value: 26,
+          },
+          rows: {
+            type: 'num',
+            value: 16,
+          },
+          fill: {
+            type: 'num',
+            value: -1,
+          },
+          asset: '',
         },
         {
           type: 'gk:createCharacter',

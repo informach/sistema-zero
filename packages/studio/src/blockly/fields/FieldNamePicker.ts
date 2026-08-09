@@ -291,7 +291,7 @@ interface FieldNamePickerFromJsonConfig extends Blockly.FieldTextInputFromJsonCo
  * quais campos está o nome. São os blocos que CRIAM o nome — os consumidores (ler/
  * alterar) é que ganham o seletor. ⚠️ Bloco novo que cria variável? Adicione aqui.
  */
-const VARIABLE_DECL_BLOCKS: NameFieldRegistry = {
+export const VARIABLE_DECL_BLOCKS: NameFieldRegistry = {
   // Núcleo: criar/declarar variável. Alterar consome um nome existente.
   sz_js_var_declare: ['NAME'],
   sz_js_var_create: ['NAME'],
@@ -344,6 +344,7 @@ const MUTABLE_VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
 const CLASS_DECL_BLOCKS: Record<string, string[]> = { sz_js_class: ['NAME'] }
 const FUNCTION_DECL_BLOCKS: NameFieldRegistry = {
   sz_js_function: ['NAME'],
+  sz_js_function_async: ['NAME'],
   ...CANVAS3D_FUNCTION_DECLARATION_FIELDS,
 }
 /** Telas de desenho declaradas (`sz_html_canvas` id) — fonte do seletor de canvas. */
@@ -980,6 +981,7 @@ const FUNCTION_LOCAL_BINDERS: ScopedBinderRegistry = {
  */
 const GROUP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_group: ['NAME'],
+  sz_g2d_all_enemies_group: ['NAME'],
   sz_g2d_define_enemy_type: ['NAME'],
   sz_g2d_define_enemy_smart: ['NAME'],
 }

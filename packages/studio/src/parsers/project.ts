@@ -6,6 +6,7 @@ import {
   countAdvancedCSS,
   countAdvancedHTML,
   countAdvancedJS,
+  partitionMolds,
   splitLegacyBehavior,
 } from '#ir'
 import { parseCSS } from './css'
@@ -113,17 +114,23 @@ function parseBehaviorSource(source: string): {
     return { behavior: splitLegacyBehavior(legacy.statements), diagnostics: legacy.diagnostics }
   }
 
+  // ⭐ O trecho antes de "Ao iniciar" carrega o preâmbulo (imports içados,
+  // runtime injetado) E, quando existe, a seção 🧩 Meus moldes. Os três são
+  // parseados juntos e separados DEPOIS por `partitionMolds`, que classifica
+  // pelo TIPO do statement. É o que mantém o marcador puramente didático: a
+  // Ponte não passa a depender de um comentário para reconstruir a área, e um
+  // projeto escrito à mão no modo Código também entra organizado.
   const start = parseJSWithDiagnostics(
     [...lines.slice(0, startIndex), ...lines.slice(startIndex + 1, eventsIndex)].join('\n'),
   )
   const events = parseJSWithDiagnostics(lines.slice(eventsIndex + 1, loopsIndex).join('\n'))
   const loops = parseJSWithDiagnostics(lines.slice(loopsIndex + 1).join('\n'))
   return {
-    behavior: {
+    behavior: partitionMolds({
       start: start.statements,
       events: events.statements,
       loops: unwrapGeneratedPeriodicLoops(loops.statements),
-    },
+    }),
     diagnostics: [...start.diagnostics, ...events.diagnostics, ...loops.diagnostics],
   }
 }
@@ -172,10 +179,16 @@ const GENERATED_PROJECT_RUN_CONTEXT =
 /** Remove somente a casca exata emitida pelo gerador; código do aluno fica intacto. */
 function stripGeneratedLifecycleEnvelope(sourceLines: string[]): string[] {
   const lines = [...sourceLines]
+  // ⚠️ A âncora é a PRIMEIRA seção do envelope, não a de Ao iniciar: desde que
+  // 🧩 Meus moldes existe, ela é que abre o corpo quando o projeto tem moldes, e
+  // contar para trás a partir de "Ao iniciar" cairia no meio das definições —
+  // o envelope não seria removido e a Ponte o re-embrulharia a cada volta.
+  const moldMarker = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.molds)
   const startMarker = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.start)
-  if (startMarker < 1) return lines
-  const hasManagedRun = GENERATED_PROJECT_RUN_CONTEXT.test(lines[startMarker - 1]?.trim() ?? '')
-  const openerIndex = startMarker - (hasManagedRun ? 2 : 1)
+  const firstMarker = moldMarker >= 0 ? moldMarker : startMarker
+  if (firstMarker < 1) return lines
+  const hasManagedRun = GENERATED_PROJECT_RUN_CONTEXT.test(lines[firstMarker - 1]?.trim() ?? '')
+  const openerIndex = firstMarker - (hasManagedRun ? 2 : 1)
   if (openerIndex < 0) return lines
   const opener = lines[openerIndex]?.trim() ?? ''
   if (!GENERATED_LIFECYCLE_OPENERS.has(opener)) return lines

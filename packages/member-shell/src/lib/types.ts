@@ -1529,7 +1529,9 @@ export interface PensaStudioBlockReference {
   label: string
   category: string
   subcategory: string
-  area: 'structure' | 'appearance' | 'start' | 'events' | 'loops' | 'value'
+  // ⚠️ Espelha `ServerBlockCatalogEntry['area']` do @sistemazero/studio. Área
+  // nova lá exige a mesma aqui, senão o planner do Pensa deixa de compilar.
+  area: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops' | 'value'
   extension: string | null
 }
 

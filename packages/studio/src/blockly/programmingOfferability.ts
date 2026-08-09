@@ -12,8 +12,12 @@ const FUNCTION_SHARED_TYPES = new Set(['sz_js_return', 'sz_js_return_void', 'sz_
 
 export const PROGRAMMING_PARAMETER_SCOPE_TYPES: ReadonlySet<string> = new Set([
   'sz_js_class_method',
+  // ⚠️ O irmão assíncrono conta igual: sem ele, a criança acrescenta um
+  // parâmetro no método que espera e o relator dele nunca aparece no flyout.
+  'sz_js_class_method_async',
   'sz_js_constructor',
   'sz_js_function',
+  'sz_js_function_async',
 ])
 
 export const FUNCTION_CATEGORY_DEFINITIONS: readonly BlockDefinition[] = [

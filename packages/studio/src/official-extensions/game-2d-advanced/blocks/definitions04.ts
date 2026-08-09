@@ -671,7 +671,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
   // ==========================================================================
   {
     type: 'sz_gk_define_region',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0: 'Criar a região %1 em x %2 y %3, largura %4 altura %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'grama' },

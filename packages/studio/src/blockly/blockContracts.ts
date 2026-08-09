@@ -72,6 +72,35 @@ export const START_ONLY_DECLARATION_PLACEMENT: BlockPlacement = Object.freeze({
 })
 
 /**
+ * Declara um MOLDE: uma receita que existe sem fazer nada por si só (classe,
+ * figura, tipo de inimigo, folha de quadros, som carregado). Vive somente em
+ * 🧩 Meus moldes, que gera antes do ⚙️ Ao iniciar dentro do mesmo envelope de
+ * partida — o corpo só roda quando alguém usa a receita.
+ *
+ * ⚠️ Função e variável NÃO usam este preset: elas servem tanto de molde quanto
+ * de agrupamento de um trecho do início, então cabem nas duas áreas.
+ */
+export const MOLD_DECLARATION_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['molds'] as const,
+  nested: [] as const,
+  role: 'declaration',
+})
+
+/**
+ * Cabe nas duas áreas: é molde reutilizável OU agrupamento do início.
+ *
+ * ⚠️ `start` vem PRIMEIRO de propósito: `areaForBlockType` lê `root[0]` como a
+ * área canônica, e é ela que a migração de estado salvo usa para decidir o que
+ * mover. Com `start` na frente, uma função que a criança deixou no Ao iniciar
+ * fica exatamente onde está.
+ */
+export const MOLD_OR_START_DECLARATION_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['start', 'molds'] as const,
+  nested: [] as const,
+  role: 'declaration',
+})
+
+/**
  * Recursos podem nascer no início, em eventos ou em funções, mas não diretamente
  * no corpo executado a cada quadro. O schema mantém a mesma regra em profundidade.
  */
@@ -163,6 +192,7 @@ export const ACTION_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
 export const FRAME_STRUCTURE = 'sz_frame_structure'
 export const FRAME_APPEARANCE = 'sz_frame_appearance'
 export const FRAME_BEHAVIOR_LEGACY = 'sz_frame_behavior'
+export const FRAME_MOLDS = 'sz_frame_molds'
 export const FRAME_START = 'sz_frame_start'
 export const FRAME_EVENTS = 'sz_frame_events'
 export const FRAME_LOOPS = 'sz_frame_loops'
@@ -171,6 +201,7 @@ export const PROJECT_AREA_TYPES = new Set<string>([
   FRAME_STRUCTURE,
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR_LEGACY,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_EVENTS,
   FRAME_LOOPS,
@@ -202,16 +233,42 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'g3k-mold-parts',
 ]
 
+/**
+ * Código bruto é opaco: a área escolhida pelo projeto é parte da sua semântica,
+ * então ele cabe em TODAS as raízes — inclusive 🧩 Meus moldes, onde um trecho
+ * de definição que a Ponte não soube reconhecer precisa poder ficar.
+ * `isLifecycleRootAllowed` diz o mesmo no IR; as duas travas têm que concordar.
+ */
 export const ADVANCED_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
-  root: ['start', 'events', 'loops'] as const,
+  root: ['start', 'events', 'loops', 'molds'] as const,
+  nested: BODY_CONTEXTS,
+  role: 'command',
+})
+
+/**
+ * Comando que TAMBÉM cabe em 🧩 Meus moldes: hoje só criar variável/constante.
+ *
+ * ⭐ É o que torna possível a única receita de conserto que a criança tem quando
+ * um molde precisa de um número ajustável ("mova a variável para cima"). Sem
+ * isto, a migração que sobe a dependência junto do molde gera um estado que o
+ * Blockly RECUSA ao carregar, e o projeto simplesmente não abre.
+ *
+ * ⚠️ Mantém os mesmos contextos aninhados de `command`: criar variável dentro de
+ * um evento, laço ou função continua valendo.
+ */
+const MOLD_OR_START_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['start', 'molds'] as const,
   nested: BODY_CONTEXTS,
   role: 'command',
 })
 
 const PLACEMENT_PRESETS: Readonly<Record<BlockPlacementPreset, BlockPlacement>> = Object.freeze({
   command: Object.freeze({ root: ['start'] as const, nested: BODY_CONTEXTS, role: 'command' }),
+  'mold-or-start-command': MOLD_OR_START_COMMAND_PLACEMENT,
   'advanced-command': ADVANCED_COMMAND_PLACEMENT,
   'start-declaration': START_ONLY_DECLARATION_PLACEMENT,
+  'mold-declaration': MOLD_DECLARATION_PLACEMENT,
+  'mold-or-start-declaration': MOLD_OR_START_DECLARATION_PLACEMENT,
   event: EVENT_ROOT_PLACEMENT,
   'event-body': EVENT_BODY_COMMAND_PLACEMENT,
   'user-gesture-command': USER_GESTURE_COMMAND_PLACEMENT,
@@ -303,6 +360,7 @@ export const NESTED_STATEMENT_CHECKS = [
 
 function statementChecks(placement: BlockPlacement): string[] {
   const checks = new Set<string>()
+  if (placement.root.includes('molds')) checks.add('JSMoldRoot')
   if (placement.root.includes('start')) checks.add('JSStartRoot')
   if (placement.root.includes('events')) checks.add('JSEventRoot')
   if (placement.root.includes('loops')) checks.add('JSLoopRoot')
@@ -464,6 +522,7 @@ export function materializeBlockDefinition(definition: BlockDefinition): BlockDe
 export function areasForBlockType(type: string): readonly ProjectAreaKind[] | undefined {
   if (type === FRAME_STRUCTURE) return ['structure']
   if (type === FRAME_APPEARANCE) return ['appearance']
+  if (type === FRAME_MOLDS) return ['molds']
   if (type === FRAME_START || type === FRAME_BEHAVIOR_LEGACY) return ['start']
   if (type === FRAME_EVENTS) return ['events']
   if (type === FRAME_LOOPS) return ['loops']

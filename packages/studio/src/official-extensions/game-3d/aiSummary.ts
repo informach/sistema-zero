@@ -6,7 +6,8 @@ canvas HTML específico. Crie cena, objetos, luzes, modelos e enxames uma única
 fora de “A cada quadro 3D”. Dentro do quadro, mova, anime, aplique física e teste colisões.
 Vários blocos “A cada quadro 3D” da mesma cena são combinados e rodam em ordem.
 
-ÁREAS: crie os recursos em “⚙️ Ao iniciar”; coloque chapéus de tecla/clique em
+ÁREAS: o que só define uma receita fica em “🧩 Meus moldes”;
+crie os recursos em “⚙️ Ao iniciar”; coloque chapéus de tecla/clique em
 “⚡ Quando acontecer”; coloque “A cada quadro 3D” e cadências em
 “🔁 Enquanto estiver rodando”.
 Comandos contínuos ficam no corpo do quadro ou em funções/métodos chamados por

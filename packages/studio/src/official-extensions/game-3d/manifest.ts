@@ -20,6 +20,7 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 
 ### Áreas do projeto
 
+- Em **🧩 Meus moldes**, deixe o que só define uma receita e não faz nada sozinho.
 - Em **⚙️ Ao iniciar**, crie a cena, objetos, modelos, luzes e enxames uma vez.
 - Em **⚡ Quando acontecer**, coloque chapéus de tecla e clique.
 - Em **🔁 Enquanto estiver rodando**, coloque **A cada quadro 3D** e

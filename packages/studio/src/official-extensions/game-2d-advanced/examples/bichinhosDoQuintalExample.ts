@@ -27,52 +27,7 @@ export const bichinhosDoQuintalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
-          bg: '#2d5a2d',
-          accent: '#e6398b',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Bichinhos do Quintal',
-          },
-          text: {
-            type: 'str',
-            value: 'Setas para andar - espaço para falar - pegue 3 bichinhos!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar',
-          },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Você conseguiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'Pegou 3 bichinhos do quintal!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'fogoso',
@@ -757,6 +712,53 @@ export const bichinhosDoQuintalExample: ExtensionExample = {
           mult: {
             type: 'num',
             value: 2,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#2d5a2d',
+          accent: '#e6398b',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Bichinhos do Quintal',
+          },
+          text: {
+            type: 'str',
+            value: 'Setas para andar - espaço para falar - pegue 3 bichinhos!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você conseguiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'Pegou 3 bichinhos do quintal!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
           },
         },
         {

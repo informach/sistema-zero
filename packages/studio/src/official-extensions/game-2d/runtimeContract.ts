@@ -546,6 +546,8 @@ export interface GameTwoDArcadeApi {
     fn: (sprite: GameTwoDSprite) => void,
   ): void
   createEnemyType(options?: GameTwoDEnemyTypeOptions): GameTwoDEnemyType
+  /** A VISTA de todos os inimigos: um grupo montado dos tipos vivos, sem copia. */
+  createAllEnemiesGroup(): GameTwoDGroup
   createSmartEnemyType(options?: GameTwoDSmartEnemyTypeOptions): GameTwoDEnemyType
   setEnemyStateAnimation(
     type: GameTwoDEnemyType,
@@ -824,6 +826,7 @@ export const GAME_TWO_D_API_KEYS = [
   'playExplosion',
   'overlapSpriteGroup',
   'createEnemyType',
+  'createAllEnemiesGroup',
   'createSmartEnemyType',
   'setEnemyStateAnimation',
   'setEnemyTypeParam',

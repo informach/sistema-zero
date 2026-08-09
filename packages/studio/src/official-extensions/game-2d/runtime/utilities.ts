@@ -287,6 +287,13 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // ---- Ordem de desenho dentro de um grupo (frente = desenhado por último) ----
   function bringToFront(group, sprite) {
     if (!group || !group.items) return;
+    if (_isEnemyMirror(group)) {
+      _warnEnemyMirror(
+        'a ordem de desenho',
+        'Reordenar este grupo nao dura, porque ele e montado dos tipos a cada mudanca. Para mandar na ordem, desenhe um tipo depois do outro com "Desenhar os inimigos do tipo ...".'
+      );
+      return;
+    }
     var i = group.items.indexOf(sprite);
     if (i >= 0) {
       var ordered = group.items.slice();
@@ -298,6 +305,13 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   function sendToBack(group, sprite) {
     if (!group || !group.items) return;
+    if (_isEnemyMirror(group)) {
+      _warnEnemyMirror(
+        'a ordem de desenho',
+        'Reordenar este grupo nao dura, porque ele e montado dos tipos a cada mudanca. Para mandar na ordem, desenhe um tipo depois do outro com "Desenhar os inimigos do tipo ...".'
+      );
+      return;
+    }
     var i = group.items.indexOf(sprite);
     if (i >= 0) {
       var ordered = group.items.slice();

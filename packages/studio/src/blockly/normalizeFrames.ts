@@ -13,9 +13,12 @@ import {
   FRAME_BEHAVIOR,
   FRAME_EVENTS,
   FRAME_LOOPS,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_STRUCTURE,
 } from './buildIR'
+import { VARIABLE_DECL_BLOCKS } from './fields/FieldNamePicker'
+import { migrateAsyncBlocks } from './migrateAsyncBlocks'
 import { migrateHTMLStructure } from './migrateHTMLStructure'
 import { migrateIfElseBlocks } from './migrateIfElse'
 import { migrateLegacyValueFields, restoreShadowLiterals } from './migrateValueFields'
@@ -26,6 +29,7 @@ const FRAME_TYPES = new Set<string>([
   FRAME_STRUCTURE,
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_EVENTS,
   FRAME_LOOPS,
@@ -33,6 +37,7 @@ const FRAME_TYPES = new Set<string>([
 const CURRENT_FRAME_TYPES = new Set<string>([
   FRAME_STRUCTURE,
   FRAME_APPEARANCE,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_EVENTS,
   FRAME_LOOPS,
@@ -122,6 +127,85 @@ function firstStatementInput(block: SerializedBlock): SerializedBlock | undefine
   return undefined
 }
 
+/** Todo texto de campo da subárvore de um bloco (inclui sombras e a pilha de dentro). */
+function fieldTextsInSubtree(block: SerializedBlock, into = new Set<string>()): Set<string> {
+  const fields = block.fields
+  if (typeof fields === 'object' && fields !== null) {
+    for (const value of Object.values(fields as Record<string, unknown>)) {
+      if (typeof value === 'string' && value.trim()) into.add(value.trim())
+    }
+  }
+  for (const input of Object.values(block.inputs ?? {})) {
+    if (input.block) for (const child of unlinkChain(input.block)) fieldTextsInSubtree(child, into)
+    if (input.shadow) fieldTextsInSubtree(input.shadow, into)
+  }
+  return into
+}
+
+/**
+ * Os nomes de variável que ESTE bloco cria, pelo registro do seletor de nomes.
+ *
+ * ⚠️ Só conta quem PODE viver em 🧩 Meus moldes. A maioria dos declaradores de
+ * variável cria um recurso concreto (a pontuação, o teclado, um elemento da
+ * página) e é exclusiva de ⚙️ Ao iniciar: mover um deles geraria um estado que o
+ * Blockly RECUSA ao carregar, e o projeto deixaria de abrir.
+ */
+function declaredVariableNames(block: SerializedBlock): string[] {
+  const fieldNames = VARIABLE_DECL_BLOCKS[block.type]
+  if (!fieldNames) return []
+  if (!areasForBlockType(block.type)?.includes('molds')) return []
+  const fields = block.fields
+  if (typeof fields !== 'object' || fields === null) return []
+  const record = fields as Record<string, unknown>
+  return fieldNames
+    .map((name) => record[name])
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .map((value) => value.trim())
+}
+
+/**
+ * Sobe para 🧩 Meus moldes as variáveis e constantes de que os moldes migrados
+ * dependem, para a área nova nunca nascer apontando para um nome que só passa a
+ * existir depois dela.
+ *
+ * ⭐ Isto só é seguro porque variável cabe nas DUAS áreas: mover uma para cima
+ * nunca a torna inválida, e o Ao iniciar continua enxergando o que foi criado
+ * antes dele. O contrário (descer o molde) seria proibido pelo encaixe.
+ *
+ * ⚠️ O casamento é por TEXTO de campo, não por análise de referência: a única
+ * consequência de um falso positivo é uma constante subir junto, o que continua
+ * sendo um programa válido. Um falso negativo, sim, apareceria — e aparece como
+ * erro legível de "nome ainda não foi criado", não como quebra silenciosa.
+ *
+ * O ponto fixo cobre a cadeia (a constante que o molde usa pode depender de
+ * outra), com um teto de voltas porque cada volta só pode mover para cima.
+ */
+function liftMoldDependencies(startChain: SerializedBlock[], molds: SerializedBlock[]): void {
+  if (molds.length === 0) return
+  const lifted: SerializedBlock[] = []
+
+  for (let round = 0; round < 8; round += 1) {
+    const used = new Set<string>()
+    for (const mold of [...molds, ...lifted]) fieldTextsInSubtree(mold, used)
+
+    const moved: SerializedBlock[] = []
+    for (let index = startChain.length - 1; index >= 0; index -= 1) {
+      const candidate = startChain[index]
+      if (!candidate) continue
+      const declares = declaredVariableNames(candidate)
+      if (declares.length === 0 || !declares.some((name) => used.has(name))) continue
+      startChain.splice(index, 1)
+      moved.unshift(candidate)
+    }
+    if (moved.length === 0) break
+    lifted.unshift(...moved)
+  }
+
+  // As dependências entram ANTES dos moldes, preservando a ordem em que estavam
+  // no Ao iniciar: uma constante que dependia de outra continua depois dela.
+  molds.unshift(...lifted)
+}
+
 interface UserGestureContext {
   userGestureBody: boolean
 }
@@ -173,16 +257,10 @@ function detachInvalidUserGestureCommands(
   return { head: linkChain(kept), changed }
 }
 
-function splitLegacySerializedBehavior(head: SerializedBlock | undefined): {
-  start: SerializedBlock[]
-  events: SerializedBlock[]
-  loops: SerializedBlock[]
-} {
-  const sections = {
-    start: [] as SerializedBlock[],
-    events: [] as SerializedBlock[],
-    loops: [] as SerializedBlock[],
-  }
+function splitLegacySerializedBehavior(
+  head: SerializedBlock | undefined,
+): Record<BehaviorArea, SerializedBlock[]> {
+  const sections = emptyBehaviorCollection()
 
   const visit = (block: SerializedBlock): void => {
     if (START_WRAPPER_BLOCK_TYPES.has(block.type)) {
@@ -196,6 +274,7 @@ function splitLegacySerializedBehavior(head: SerializedBlock | undefined): {
     const area = areaForBlockType(block.type) ?? 'start'
     if (area === 'events') sections.events.push(block)
     else if (area === 'loops') sections.loops.push(block)
+    else if (area === 'molds') sections.molds.push(block)
     else sections.start.push(block)
   }
 
@@ -228,10 +307,27 @@ function frame(type: string, children: SerializedBlock[], x: number, y: number):
 const FRAME_FOR_AREA = {
   structure: FRAME_STRUCTURE,
   appearance: FRAME_APPEARANCE,
+  molds: FRAME_MOLDS,
   start: FRAME_START,
   events: FRAME_EVENTS,
   loops: FRAME_LOOPS,
 } as const
+
+/**
+ * Onde um frame CRIADO pela migração nasce no canvas. ⚠️ 🧩 Meus moldes ganha
+ * uma linha própria em vez da coluna 0 da linha de baixo (que é do Ao iniciar):
+ * mover os frames que já existem para abrir espaço mudaria o arranjo que a
+ * criança montou. "Organizar blocos" recoloca tudo na ordem canônica quando ela
+ * quiser.
+ */
+function framePosition(area: keyof typeof FRAME_FOR_AREA): { column: number; row: number } {
+  if (area === 'structure') return { column: 0, row: 0 }
+  if (area === 'appearance') return { column: 1, row: 0 }
+  if (area === 'molds') return { column: 0, row: 2 }
+  if (area === 'events') return { column: 1, row: 1 }
+  if (area === 'loops') return { column: 2, row: 1 }
+  return { column: 0, row: 1 }
+}
 
 function appendChildrenToArea(
   tops: SerializedBlock[],
@@ -242,8 +338,7 @@ function appendChildrenToArea(
   const frameType = FRAME_FOR_AREA[area]
   const existing = tops.find((block) => block.type === frameType)
   if (!existing) {
-    const column = area === 'appearance' || area === 'events' ? 1 : area === 'loops' ? 2 : 0
-    const row = area === 'structure' || area === 'appearance' ? 0 : 1
+    const { column, row } = framePosition(area)
     tops.push(frame(frameType, children, 32 + column * 420, 32 + row * 360))
     return
   }
@@ -254,12 +349,17 @@ function appendChildrenToArea(
     : existing.inputs
 }
 
-type BehaviorArea = 'start' | 'events' | 'loops'
+type BehaviorArea = 'molds' | 'start' | 'events' | 'loops'
 
 const BEHAVIOR_AREA_FOR_FRAME: Readonly<Record<string, BehaviorArea>> = {
+  [FRAME_MOLDS]: 'molds',
   [FRAME_START]: 'start',
   [FRAME_EVENTS]: 'events',
   [FRAME_LOOPS]: 'loops',
+}
+
+function emptyBehaviorCollection(): Record<BehaviorArea, SerializedBlock[]> {
+  return { molds: [], start: [], events: [], loops: [] }
 }
 
 function extractStrictLifecycleRoots(
@@ -308,11 +408,7 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
   const cloned = structuredClone(state)
   const tops = serializedTopBlocks(cloned)
   if (!tops) return state
-  const collected: Record<BehaviorArea, SerializedBlock[]> = {
-    start: [],
-    events: [],
-    loops: [],
-  }
+  const collected = emptyBehaviorCollection()
   const gestureDrafts: SerializedBlock[] = []
   let changed = false
 
@@ -324,7 +420,7 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
       if (extractStrictLifecycleRoots(child, collected)) changed = true
       const target = areaForBlockType(child.type)
       const allowedAreas = areasForBlockType(child.type)
-      if (target === 'start' || target === 'events' || target === 'loops') {
+      if (target && target !== 'structure' && target !== 'appearance') {
         if (!allowedAreas?.includes(currentArea)) {
           collected[target].push(child)
           changed = true
@@ -332,6 +428,12 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
         }
       }
       kept.push(child)
+    }
+    // Os moldes saem do ⚙️ Ao iniciar, então é aqui — com a cadeia que FICA
+    // ainda em mãos — que as variáveis de que eles dependem sobem junto.
+    if (currentArea === 'start' && collected.molds.length > 0) {
+      liftMoldDependencies(kept, collected.molds)
+      changed = true
     }
     const sanitized = detachInvalidUserGestureCommands(
       linkChain(kept),
@@ -354,6 +456,7 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
     return state
   }
 
+  appendChildrenToArea(tops, 'molds', collected.molds)
   appendChildrenToArea(tops, 'start', collected.start)
   appendChildrenToArea(tops, 'events', collected.events)
   appendChildrenToArea(tops, 'loops', collected.loops)
@@ -376,9 +479,7 @@ function migrateLooseTopBlocks(state: unknown): unknown {
   const collected = {
     structure: [] as SerializedBlock[],
     appearance: [] as SerializedBlock[],
-    start: [] as SerializedBlock[],
-    events: [] as SerializedBlock[],
-    loops: [] as SerializedBlock[],
+    ...emptyBehaviorCollection(),
   }
   let changed = false
 
@@ -398,6 +499,7 @@ function migrateLooseTopBlocks(state: unknown): unknown {
       continue
     }
     const sections = splitLegacySerializedBehavior(top)
+    collected.molds.push(...sections.molds)
     collected.start.push(...sections.start)
     collected.events.push(...sections.events)
     collected.loops.push(...sections.loops)
@@ -407,6 +509,7 @@ function migrateLooseTopBlocks(state: unknown): unknown {
   tops.splice(0, tops.length, ...kept)
   appendChildrenToArea(tops, 'structure', collected.structure)
   appendChildrenToArea(tops, 'appearance', collected.appearance)
+  appendChildrenToArea(tops, 'molds', collected.molds)
   appendChildrenToArea(tops, 'start', collected.start)
   appendChildrenToArea(tops, 'events', collected.events)
   appendChildrenToArea(tops, 'loops', collected.loops)
@@ -451,9 +554,10 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
     }
     replacements.push(frame(FRAME_FOR_AREA[area], children, x, baseY))
   }
-  mergeOrReplace('start', sections.start, baseX)
-  mergeOrReplace('events', sections.events, baseX + 420)
-  mergeOrReplace('loops', sections.loops, baseX + 840)
+  mergeOrReplace('molds', sections.molds, baseX)
+  mergeOrReplace('start', sections.start, baseX + 420)
+  mergeOrReplace('events', sections.events, baseX + 840)
+  mergeOrReplace('loops', sections.loops, baseX + 1260)
   tops.splice(legacyIndex, 0, ...replacements, ...duplicateDrafts)
   return markLifecycleBlocksState(cloned)
 }
@@ -461,8 +565,8 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
 /**
  * MIGRAÇÃO transparente para o modelo CONTAINER (frames). Um projeto LEGADO
  * (blocos soltos, sem Áreas do projeto) é reemitido nas áreas necessárias:
- * 🧱 Estrutura, 🎨 Aparência, ⚙️ Ao iniciar, ⚡ Quando acontecer e
- * 🔁 Enquanto estiver rodando, sempre **preservando a saída**. Áreas antigas
+ * 🧱 Estrutura, 🎨 Aparência, 🧩 Meus moldes, ⚙️ Ao iniciar, ⚡ Quando acontecer
+ * e 🔁 Enquanto estiver rodando, sempre **preservando a saída**. Áreas antigas
  * duplicadas viram rascunhos soltos para
  * não executar duas vezes nem apagar o trabalho da criança.
  *
@@ -486,7 +590,12 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   // `restoreShadowLiterals` CURA estados poluídos pela reconstrução IR→blocos
   // antiga (literais de preset emitidos como blocos reais → sombras de novo),
   // reativando fillFrames/applySuggestedSize em projetos já salvos.
-  const premigrated = migrateIfElseBlocks(restoreShadowLiterals(migrateLegacyValueFields(state)))
+  // `migrateAsyncBlocks` desfaz o campo ASYNC que virou bloco próprio; roda
+  // ANTES de tudo porque muda o TIPO do bloco, e as migrações seguintes decidem
+  // por tipo.
+  const premigrated = migrateIfElseBlocks(
+    restoreShadowLiterals(migrateLegacyValueFields(migrateAsyncBlocks(state))),
+  )
   // ⚠️ Num estado ATUAL (marcador de versão), bloco HTML solto no topo é RASCUNHO
   // deliberado (ex.: um filho-de-svg que o encaixe semântico recusou) — a migração
   // de estrutura NÃO pode reescrevê-lo (embrulhar num svg novo etc.): a reescrita

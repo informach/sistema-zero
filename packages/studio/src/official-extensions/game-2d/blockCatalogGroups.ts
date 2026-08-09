@@ -542,7 +542,7 @@ export const gameTwoDGroupAndHudBlocks = [
   {
     // ---- Figuras: sprite desenhado por código (v0.23.0) ----
     type: 'sz_g2d_define_shape',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     bodyExecution: 'deferred-callback',
     message0: 'Desenhar a figura %1 assim:',
     args0: [{ type: 'field_input', name: 'NAME', text: 'heroi' }],

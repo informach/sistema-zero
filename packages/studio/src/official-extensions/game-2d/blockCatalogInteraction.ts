@@ -308,8 +308,23 @@ export const gameTwoDInteractionBlocks = [
   },
   // ---- Tipos de inimigo (v0.22.0): classes de inimigo com comportamento pronto ----
   {
-    type: 'sz_g2d_define_enemy_type',
+    // A VISTA: um grupo montado dos tipos vivos. Não é cópia, então não vaza (o
+    // atalho manual, com um grupo comum e "Pôr o sprite no grupo" a cada
+    // nascimento, deixava o morto colidindo para sempre).
+    type: 'sz_g2d_all_enemies_group',
     placement: 'start-only-command',
+    message0: 'Criar o grupo %1 com os inimigos de todos os tipos',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'todos' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma janela para TODOS os inimigos, de todos os tipos, sempre atualizada: quem nasce entra, quem morre sai na hora. Serve para as ações que valem para todos, com um bloco só em vez de um por tipo: colisões, "para cada", contar quantos faltam, desenhar. Cada tipo continua tendo o seu "Atualizar" e o seu "Desenhar", porque cada um tem o seu jeito de se mexer e os seus tiros. Ponha em "Ao iniciar" (antes ou depois de criar os tipos, tanto faz).',
+  },
+  {
+    type: 'sz_g2d_define_enemy_type',
+    placement: 'mold-declaration',
     message0:
       'Criar tipo de inimigo %1 que é %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10',
     args0: [
@@ -339,7 +354,7 @@ export const gameTwoDInteractionBlocks = [
     // inteligência já traz o pacote pronto de andar e atirar. É a porta de
     // entrada para quem quer um inimigo bom sem saber a receita.
     type: 'sz_g2d_define_enemy_smart',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0:
       'Criar tipo de inimigo %1 com inteligência %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10',
     args0: [

@@ -10,7 +10,9 @@ const ROW_GAP = 64
 
 const ROWS: readonly (readonly ProjectAreaKind[])[] = [
   ['structure', 'appearance'],
-  ['start', 'events', 'loops'],
+  // 🧩 Meus moldes abre a linha de baixo: a ordem da esquerda para a direita é a
+  // ordem em que as áreas rodam.
+  ['molds', 'start', 'events', 'loops'],
 ]
 
 /** Classifica um bloco top-level pela categoria a partir do seu tipo. */
@@ -45,6 +47,7 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
   const groups: Record<ProjectAreaKind, Blockly.BlockSvg[]> = {
     structure: [],
     appearance: [],
+    molds: [],
     start: [],
     events: [],
     loops: [],

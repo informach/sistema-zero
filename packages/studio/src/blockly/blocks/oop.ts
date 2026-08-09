@@ -23,7 +23,7 @@ const C = CATEGORY_COLORS.classes
 export const OOP_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_class',
-    placement: 'start-declaration',
+    placement: 'mold-declaration',
     message0: 'Classe %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'Pessoa' }],
     message1: '%1',
@@ -52,14 +52,13 @@ export const OOP_BLOCKS: BlockDefinition[] = [
       'O construtor da classe (roda ao criar o objeto). Use + para adicionar parâmetros; dentro, defina propriedades ou faça o que quiser.',
   },
   {
+    // Espelha a separação feita na função: o método comum não mostra a palavra
+    // "assíncrono", que vive no bloco irmão do degrau avançado.
     type: 'sz_js_class_method',
     bodyExecution: 'function',
     placement: 'class-member',
-    message0: 'método %1 assíncrono %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'falar' },
-      { type: 'field_checkbox', name: 'ASYNC', checked: false },
-    ],
+    message0: 'método %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'falar' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
     inputsInline: true,
@@ -68,7 +67,23 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_params_mutator',
     tooltip:
-      'Um método da classe. Use + para adicionar parâmetros; "retornar" devolve um valor. Marque "assíncrono" só se usar "esperar…" (await) dentro.',
+      'Um método da classe: uma ação que os objetos dela sabem fazer. Use + para adicionar parâmetros; "retornar" devolve um valor.',
+  },
+  {
+    type: 'sz_js_class_method_async',
+    bodyExecution: 'function',
+    placement: 'class-member',
+    message0: 'método assíncrono %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'carregar' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
+    inputsInline: true,
+    previousStatement: 'ClassMember',
+    nextStatement: 'ClassMember',
+    colour: C,
+    mutator: 'sz_params_mutator',
+    tooltip:
+      'Igual ao método comum, mas pode "esperar" uma promessa terminar lá dentro. Use quando a ação demora, como carregar um arquivo.',
   },
   {
     type: 'sz_js_return',

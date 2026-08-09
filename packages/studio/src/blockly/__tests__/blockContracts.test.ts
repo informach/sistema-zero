@@ -288,7 +288,8 @@ describe('contrato central de posicionamento', () => {
           contract.placement?.role === 'declaration' &&
           contract.placement.root.length === 0
         ) {
-          const frame = workspace.newBlock('sz_frame_start')
+          // Membro de classe: hospedado numa classe, que mora em 🧩 Meus moldes.
+          const frame = workspace.newBlock('sz_frame_molds')
           const classBlock = workspace.newBlock('sz_js_class')
           connect(frame, 'CHILDREN', classBlock)
           connect(classBlock, 'MEMBERS', target)
@@ -331,7 +332,11 @@ describe('contrato central de posicionamento', () => {
           continue
         }
 
-        if (block.type === 'sz_js_constructor' || block.type === 'sz_js_class_method') {
+        if (
+          block.type === 'sz_js_constructor' ||
+          block.type === 'sz_js_class_method' ||
+          block.type === 'sz_js_class_method_async'
+        ) {
           const classStatement = behaviorStatements(ir).find(
             (statement) => statement.type === 'classDecl',
           )
@@ -412,6 +417,7 @@ describe('contrato central de posicionamento', () => {
       ...OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks),
     ]
     const frameFor = {
+      molds: 'sz_frame_molds',
       start: 'sz_frame_start',
       events: 'sz_frame_events',
       loops: 'sz_frame_loops',
@@ -438,7 +444,7 @@ describe('contrato central de posicionamento', () => {
           if (!input || !block.previousConnection) throw new Error(`Conexão ausente: ${label}`)
           expect(input.connect(block.previousConnection), label).toBe(true)
           const ir = buildIRFromWorkspace(workspace)
-          expect(ir.behavior[area].length, label).toBeGreaterThan(0)
+          expect((ir.behavior[area] ?? []).length, label).toBeGreaterThan(0)
           const parsed = SZIRV2Schema.safeParse(ir)
           const lifecycleIssues = parsed.success
             ? []
@@ -470,24 +476,36 @@ describe('contrato central de posicionamento', () => {
     for (const definition of all) {
       const contract = inferBlockContract(definition)
       const placement = contract.placement
+      // Preparação exclusiva vale para as DUAS áreas sem aninhamento: ⚙️ Ao
+      // iniciar (montar a partida) e 🧩 Meus moldes (definir as receitas).
+      // Preparação exclusiva = só cabe em área(s) de preparação e NUNCA aninha.
+      // A função cabe nas DUAS (é molde ou agrupamento do início), então o
+      // critério é o conjunto de raízes, não uma raiz única.
+      const preparationAreas = new Set<string>(['start', 'molds'])
+      const exclusiveArea = placement?.root.includes('molds') ? 'molds' : 'start'
       if (
         definition.hidden ||
         contract.domain !== 'behavior' ||
         !placement ||
-        placement.root.length !== 1 ||
-        placement.root[0] !== 'start' ||
+        placement.root.length === 0 ||
+        !placement.root.every((area) => preparationAreas.has(area)) ||
         placement.nested.length !== 0
       ) {
         continue
       }
-
-      expect(materializeBlockDefinition(definition).previousStatement, definition.type).toEqual([
-        'JSStartRoot',
-      ])
+      const rootFrame = exclusiveArea === 'molds' ? 'sz_frame_molds' : 'sz_frame_start'
+      // O bloco aceita EXATAMENTE os checks das áreas de preparação que declara.
+      const expectedChecks = placement.root.map((area) =>
+        area === 'molds' ? 'JSMoldRoot' : 'JSStartRoot',
+      )
+      expect(
+        [...(materializeBlockDefinition(definition).previousStatement as string[])].sort(),
+        definition.type,
+      ).toEqual([...expectedChecks].sort())
 
       const workspace = new Blockly.Workspace()
       try {
-        const frame = workspace.newBlock('sz_frame_start')
+        const frame = workspace.newBlock(rootFrame)
         const block = workspace.newBlock(definition.type)
         const frameConnection = frame.getInput('CHILDREN')?.connection
         const blockConnection = block.previousConnection
@@ -496,13 +514,14 @@ describe('contrato central de posicionamento', () => {
         }
         frameConnection.connect(blockConnection)
         const ir = buildIRFromWorkspace(workspace)
-        const statement = ir.behavior.start[0]
+        const statement = (ir.behavior[exclusiveArea] ?? [])[0]
         if (!statement) throw new Error(`${definition.type}: não gerou statement`)
         derivedStatementTypes.add(statement.type)
 
         const nestedInEvent = {
           ...ir,
           behavior: {
+            molds: [],
             start: [],
             events: [{ type: 'event', target: 'window', event: 'click', body: [statement] }],
             loops: [],
@@ -511,6 +530,7 @@ describe('contrato central de posicionamento', () => {
         const nestedInLoop = {
           ...ir,
           behavior: {
+            molds: [],
             start: [],
             events: [],
             loops: [{ type: 'animationLoop', body: [statement] }],
@@ -529,7 +549,7 @@ describe('contrato central de posicionamento', () => {
         if (!legacyNested.success) {
           expect(
             legacyNested.error.issues.some((issue) =>
-              issue.message.includes('só pode ser usado diretamente em Ao iniciar'),
+              issue.message.includes('só pode ser usado diretamente em'),
             ),
             `${definition.type}: diagnóstico da IR legada`,
           ).toBe(true)
@@ -709,7 +729,8 @@ describe('contrato central de posicionamento', () => {
         new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
       )
       try {
-        const frame = classWorkspace.newBlock('sz_frame_start')
+        // A classe é molde: mora em 🧩 Meus moldes.
+        const frame = classWorkspace.newBlock('sz_frame_molds')
         const classBlock = classWorkspace.newBlock('sz_js_class')
         const member = classWorkspace.newBlock(memberType)
         const command = classWorkspace.newBlock('sz_g3d_control_keys')
@@ -741,7 +762,7 @@ describe('contrato central de posicionamento', () => {
       new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
     )
     try {
-      const frame = nestedConstructorWorkspace.newBlock('sz_frame_start')
+      const frame = nestedConstructorWorkspace.newBlock('sz_frame_molds')
       const classBlock = nestedConstructorWorkspace.newBlock('sz_js_class')
       const constructorBlock = nestedConstructorWorkspace.newBlock('sz_js_constructor')
       const loop = nestedConstructorWorkspace.newBlock('sz_js_repeat')
@@ -781,15 +802,18 @@ describe('contrato central de posicionamento', () => {
     expect(contract.placement?.nested).toEqual(['event-body'])
   })
 
-  it('mantém imports do Canvas 3D somente em Ao iniciar', () => {
+  it('mantém as declarações do Canvas 3D presas à sua área, sem aninhamento', () => {
+    // Os imports são MOLDES (só trazem a biblioteca); as demais declarações do
+    // Canvas 3D continuam sendo preparação de partida em Ao iniciar.
+    const MOLD_IMPORTS = new Set(['sz_t3d_import', 'sz_t3d_import_named'])
     for (const type of CANVAS3D_START_ONLY_BLOCK_TYPES) {
       const contract = inferBlockContract(definition(type))
-      expect(contract.placement?.root, type).toEqual(['start'])
+      const area = MOLD_IMPORTS.has(type) ? 'molds' : 'start'
+      const check = MOLD_IMPORTS.has(type) ? 'JSMoldRoot' : 'JSStartRoot'
+      expect(contract.placement?.root, type).toEqual([area])
       expect(contract.placement?.nested, type).toEqual([])
       expect(contract.placement?.role, type).toBe('declaration')
-      expect(materializeBlockDefinition(definition(type)).previousStatement, type).toEqual([
-        'JSStartRoot',
-      ])
+      expect(materializeBlockDefinition(definition(type)).previousStatement, type).toEqual([check])
     }
   })
 
@@ -932,7 +956,8 @@ describe('contrato central de posicionamento', () => {
       html: [],
       css: [],
       behavior: {
-        start: [
+        // A classe é molde: a área dela é 🧩 Meus moldes.
+        molds: [
           {
             type: 'classDecl',
             name: 'Jogo',
@@ -941,6 +966,7 @@ describe('contrato central de posicionamento', () => {
             methods: [],
           },
         ],
+        start: [],
         events: [],
         loops: [],
       },
@@ -1033,7 +1059,8 @@ describe('contrato central de posicionamento', () => {
         container: 'sz_gk_rpg_on_enter_map',
         child: 'sz_gk_rpg_on_step',
       },
-      { area: 'sz_frame_start', container: 'sz_gk_define_path', child: 'sz_gk_path_point' },
+      // "Criar o caminho" é molde: o caminho é uma receita, não uma instância.
+      { area: 'sz_frame_molds', container: 'sz_gk_define_path', child: 'sz_gk_path_point' },
       { area: 'sz_frame_start', container: 'sz_gk_rpg_menu', child: 'sz_gk_rpg_option' },
       { area: 'sz_frame_start', container: 'sz_gk_rpg_cutscene', child: 'sz_gk_rpg_wait' },
       {

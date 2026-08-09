@@ -28,34 +28,7 @@ export const escaladaProfissionalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#4a6fa5',
-          accent: '#e07a3f',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Escalada do Guerreiro Profissional' },
-          text: {
-            type: 'str',
-            value: 'Use as setas para andar e pular. Suba pelas tábuas até a bandeira no topo!',
-          },
-          button: { type: 'str', value: 'Escalar' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'vitoria',
-          title: { type: 'str', value: 'Chegou ao topo!' },
-          text: {
-            type: 'str',
-            value: 'Você escalou a torre inteira. A maior altura fica guardada!',
-          },
-          button: { type: 'str', value: 'Escalar de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'guerreiro',
@@ -268,13 +241,6 @@ export const escaladaProfissionalExample: ExtensionExample = {
           baseH: { type: 'num', value: 60 },
         },
         {
-          type: 'gk:setJumpFeel',
-          coyote: { type: 'num', value: 0.1 },
-          buffer: { type: 'num', value: 0.1 },
-          hold: { type: 'num', value: 0.3 },
-          gravity: { type: 'num', value: 2000 },
-        },
-        {
           type: 'gk:defineMold',
           name: 'chao',
           w: { type: 'num', value: 120 },
@@ -307,6 +273,50 @@ export const escaladaProfissionalExample: ExtensionExample = {
           life: { type: 'num', value: 0.4 },
           speed: { type: 'num', value: 100 },
           gravity: { type: 'num', value: 300 },
+        },
+        {
+          type: 'gk:defineRegion',
+          name: 'topo',
+          x: { type: 'num', value: 300 },
+          y: { type: 'num', value: 60 },
+          w: { type: 'num', value: 200 },
+          h: { type: 'num', value: 100 },
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#4a6fa5',
+          accent: '#e07a3f',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Escalada do Guerreiro Profissional' },
+          text: {
+            type: 'str',
+            value: 'Use as setas para andar e pular. Suba pelas tábuas até a bandeira no topo!',
+          },
+          button: { type: 'str', value: 'Escalar' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: { type: 'str', value: 'Chegou ao topo!' },
+          text: {
+            type: 'str',
+            value: 'Você escalou a torre inteira. A maior altura fica guardada!',
+          },
+          button: { type: 'str', value: 'Escalar de novo' },
+        },
+        {
+          type: 'gk:setJumpFeel',
+          coyote: { type: 'num', value: 0.1 },
+          buffer: { type: 'num', value: 0.1 },
+          hold: { type: 'num', value: 0.3 },
+          gravity: { type: 'num', value: 2000 },
         },
         {
           type: 'gk:createCharacter',
@@ -397,14 +407,6 @@ export const escaladaProfissionalExample: ExtensionExample = {
           mold: 'tabua',
           x: { type: 'num', value: 340 },
           y: { type: 'num', value: 180 },
-        },
-        {
-          type: 'gk:defineRegion',
-          name: 'topo',
-          x: { type: 'num', value: 300 },
-          y: { type: 'num', value: 60 },
-          w: { type: 'num', value: 200 },
-          h: { type: 'num', value: 100 },
         },
         {
           type: 'gk:cameraFollow',

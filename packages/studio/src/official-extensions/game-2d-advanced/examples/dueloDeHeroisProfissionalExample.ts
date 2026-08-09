@@ -26,25 +26,7 @@ export const dueloDeHeroisProfissionalExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#241733',
-          accent: '#ffd166',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Duelo de Heróis Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Jogador 1: A/D anda, W pula, S agacha, F defende, G soco, H chute, J especial. Jogador 2: setas anda e pula, 0 defende, teclas 1 soco, 2 chute, 3 especial. Melhor de 3 rounds!',
-          },
-          button: { type: 'str', value: 'Lutar' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'samurai',
@@ -341,6 +323,26 @@ export const dueloDeHeroisProfissionalExample: ExtensionExample = {
           color: '#3d2b52',
           image: '',
           look: '',
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#241733',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Duelo de Heróis Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Jogador 1: A/D anda, W pula, S agacha, F defende, G soco, H chute, J especial. Jogador 2: setas anda e pula, 0 defende, teclas 1 soco, 2 chute, 3 especial. Melhor de 3 rounds!',
+          },
+          button: { type: 'str', value: 'Lutar' },
         },
         {
           type: 'gk:createCharacter',

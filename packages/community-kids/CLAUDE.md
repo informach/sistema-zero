@@ -435,6 +435,54 @@ o pontinho + atalho p/ `/recados`. Shims em `app/api/members/teacher-threads/*` 
 `shell.routes.teacherThreads*`). Texto do aluno é PLAIN (React escapa). Toda a LÓGICA/segurança é do
 member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apresentação.
 
+## Modo foco: esconder o menu lateral (aula + apps de criação, 08/2026)
+
+`focus-mode.tsx` (`FocusModeProvider`/`useFocusMode`/`SidebarFallback`) guarda DUAS preferências
+independentes por PERFIL no localStorage — esconder o MENU esquerdo (`sz:kids:hide-nav:<perfil>`) e
+esconder a LISTA DE AULAS à direita (`sz:kids:hide-outline:<perfil>`) —; a sidebar
+(`app-sidebar.tsx`) e o esqueleto do Suspense já reagem a `navCollapsed` (`w-0` + `opacity-0`,
+transição de 300ms com `motion-reduce`). O provider mora no layout `(app)`, que NÃO remonta entre
+navegações, então o estado atravessa a navegação.
+
+- **Onde vale** (`navAvailable`): página de aula **OU app de criação embarcado**
+  (`isEmbeddedAppPath` — Estúdio/Pensa/Pinta, sub-rotas inclusas), sempre a partir de 768px (abaixo
+  disso a sidebar nem existe). `outlineAvailable` segue EXCLUSIVO da aula. A preferência persistida
+  nunca some a barra em `/cursos`, `/perfil` etc. — quem decide é o `available`.
+- ⚠️ **A preferência do menu é UMA SÓ**, não uma por tela: esconder no Estúdio mantém escondido na
+  aula e vice-versa. "Esconder o menu" é gosto da criança, não configuração de página.
+- **Duas roupas do MESMO botão** (`focus-mode-toggle.tsx`, prop `variant`): `header` (padrão) é o
+  círculo do cabeçalho da aula; **`edge`** é o PUXADOR colado na borda esquerda, para as três telas
+  de criação, que não têm cabeçalho nenhum onde pendurar o círculo. Mesmo rótulo, mesmo ícone,
+  mesmo `aria-pressed`.
+- ⚠️ **O puxador mora na CALHA do `MainContainer`** (`md:pl-9` contra `md:pr-4`), nunca flutuando
+  sobre o app: no Estúdio a borda esquerda é a **caixa de blocos do Blockly**, e um puxador por cima
+  cobriria uma categoria. Ele é IRMÃO do frame do app — a cerca `isolation: isolate` da raiz do
+  Estúdio prende os z-index de dentro dele (a toolbox é 70), então `z-30` basta; o que é portalado
+  p/ o `document.body` (menus da Topbar, dropdowns do Blockly) segue passando por cima, que é o certo.
+- **Um mount point só** (dentro do `MainContainer`) cobre Estúdio, Pensa, Pinta e `/estudio/pro` —
+  os três clients (`studio-full-client`/`pensa-client`/`pinta-client`) não sabem que ele existe.
+- ⚠️ `useMinWidth` e as preferências começam `false` TAMBÉM no cliente, de propósito (ver o
+  comentário longo no `focus-mode.tsx`): ler `matchMedia`/localStorage no inicializador dava React
+  #418 em toda página de aula, porque o botão faz `if (!available) return null`.
+
+**Full review do lote (08/2026) — 2 correções:**
+- ⭐ **O anel de foco do puxador é INSET** (`focus-visible:shadow-[inset_…_var(--ring),…]` +
+  `outline-none`). Ele encosta EXATAMENTE na borda de recorte do `<main>` (que é `overflow-hidden`,
+  e `tab.x === main.x` — medido), então qualquer indicador desenhado PARA FORA perde o lado
+  esquerdo: quem navega por teclado veria meio anel. A sombra dura (`2px 2px`) cresce p/ a direita e
+  p/ baixo, por isso sobrevive ao recorte. Regressão em `tests/focus-mode.test.tsx`.
+- **O `title` SAIU dos DOIS variantes** (vale também no cabeçalho da aula): com `aria-label`
+  presente o `title` não vira NOME e sim DESCRIÇÃO — o leitor dizia "Esconder menu, botão, Esconder
+  menu". É a MESMA regra já documentada no `KidsBackButton`, que o `FocusModeToggle` violava desde
+  que nasceu; e no público tablet o tooltip nem aparece.
+- Verificados e NÃO alterados (decisão consciente): `aria-pressed` + rótulo que muda junto (trocar
+  p/ `aria-expanded` + `aria-controls` mexeria na semântica das duas telas, sem ganho claro); o
+  puxador ser o 1º foco dentro do `#main-content` depois do "Pular para o conteúdo" (é controle do
+  host, faz sentido vir antes do app); `motion-reduce` (a regra global do `globals.css` já zera
+  transições).
+- Testes: `tests/focus-mode.test.tsx` (onde é oferecido + persistência por perfil + as duas
+  correções acima) e `tests/embedded-app-path.test.ts`.
+
 ## Voltar: UM componente só (`back-button.tsx`, 08/2026)
 
 Havia **seis** "voltar" diferentes no kids (círculo com relevo na aula, círculo chapado nos Recados,

@@ -41,21 +41,7 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'g2d:fitScreen',
-          percent: {
-            type: 'num',
-            value: 100,
-          },
-        },
-        {
-          type: 'g2d:setGravity',
-          value: {
-            type: 'num',
-            value: 0.6,
-          },
-        },
+      molds: [
         {
           type: 'g2d:defineShape',
           shapeName: 'raposinha',
@@ -495,6 +481,78 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
           ],
         },
         {
+          type: 'g2d:defineEnemyType',
+          varName: 'gambas',
+          behavior: 'patrulha',
+          color: '#7a5a3a',
+          image: '',
+          shape: 'gambazinho',
+          hp: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0.8,
+          },
+          dmg: {
+            type: 'num',
+            value: 1,
+          },
+          w: {
+            type: 'num',
+            value: 30,
+          },
+          h: {
+            type: 'num',
+            value: 30,
+          },
+        },
+        {
+          type: 'g2d:defineEnemyType',
+          varName: 'aguias',
+          behavior: 'voador',
+          color: '#a8763a',
+          image: '',
+          shape: 'aguiazinha',
+          hp: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 1,
+          },
+          dmg: {
+            type: 'num',
+            value: 1,
+          },
+          w: {
+            type: 'num',
+            value: 30,
+          },
+          h: {
+            type: 'num',
+            value: 24,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
+        },
+        {
+          type: 'g2d:setGravity',
+          value: {
+            type: 'num',
+            value: 0.6,
+          },
+        },
+        {
           type: 'g2d:createShapeSprite',
           varName: 'heroi',
           shapeName: 'raposinha',
@@ -921,34 +979,6 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
           },
         },
         {
-          type: 'g2d:defineEnemyType',
-          varName: 'gambas',
-          behavior: 'patrulha',
-          color: '#7a5a3a',
-          image: '',
-          shape: 'gambazinho',
-          hp: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0.8,
-          },
-          dmg: {
-            type: 'num',
-            value: 1,
-          },
-          w: {
-            type: 'num',
-            value: 30,
-          },
-          h: {
-            type: 'num',
-            value: 30,
-          },
-        },
-        {
           type: 'g2d:spawnEnemy',
           typeVar: 'gambas',
           x: {
@@ -970,34 +1000,6 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
           y: {
             type: 'num',
             value: 206,
-          },
-        },
-        {
-          type: 'g2d:defineEnemyType',
-          varName: 'aguias',
-          behavior: 'voador',
-          color: '#a8763a',
-          image: '',
-          shape: 'aguiazinha',
-          hp: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 1,
-          },
-          dmg: {
-            type: 'num',
-            value: 1,
-          },
-          w: {
-            type: 'num',
-            value: 30,
-          },
-          h: {
-            type: 'num',
-            value: 24,
           },
         },
         {

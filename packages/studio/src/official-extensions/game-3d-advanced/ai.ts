@@ -171,6 +171,7 @@ Quando ajudar o aluno com o Jogo 3D Avançado:
   em 'atirar' usa spawnFrom + moveForward no tiro e vai para 'recarregar';
   stateTimer volta para 'parado'.
 - Nunca crie moldes, ganchos ou atratores dentro do onUpdate. Registre recursos
+  moldes, efeitos, emissores e sons carregados em **🧩 Meus moldes** (são receitas),
   persistentes uma vez em **⚙️ Ao iniciar**, chapéus em **⚡ Quando acontecer**
   e onUpdate/cérebros em **🔁 Enquanto estiver rodando**. Luzes
   podem ser acesas em eventos de entrada de estado. Não gere start(): o projeto

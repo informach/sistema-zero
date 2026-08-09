@@ -6,7 +6,12 @@
 export const BEHAVIOR_AREAS_STATE_KEY = 'szBehaviorAreasVersion'
 /** Versão mais antiga que o normalizador atual sabe migrar sem perder o layout. */
 export const BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION = 2
-export const BEHAVIOR_AREAS_STATE_VERSION = 6
+/**
+ * 7: nasceu a área 🧩 Meus moldes. Os blocos que só DEFINEM (classe, figura,
+ * tipo de inimigo, folha de quadros, som carregado) saem do ⚙️ Ao iniciar e
+ * migram para lá, levando junto as variáveis de que dependem.
+ */
+export const BEHAVIOR_AREAS_STATE_VERSION = 7
 
 /**
  * Aceita legado sem marcador e versões conhecidas que ainda passarão pelo

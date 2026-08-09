@@ -1,3 +1,4 @@
+import { BEHAVIOR_AREA_LABELS } from '../core/behaviorAreas'
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
 import { CANVAS3D_CONTINUOUS_STATEMENT_TYPES } from '../three/canvas3dContract'
 import {
@@ -14,7 +15,7 @@ import {
 } from './programmingExecution'
 import type { JSStatement } from './schema'
 
-export type LifecycleArea = 'start' | 'events' | 'loops'
+export type LifecycleArea = 'molds' | 'start' | 'events' | 'loops'
 
 export const LEGACY_START_WRAPPER_TYPES = new Set(['g2d:onStart', 'gk:onGameStart'])
 export const LEGACY_ENGINE_BOOT_TYPES = new Set(['gk:start', 'g3k:start', 'w3d:start'])
@@ -81,6 +82,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:createBalloon',
   'g2d:createBalloonPath',
   'g2d:createGroup',
+  'g2d:allEnemiesGroup',
   'g2d:score',
   'g2d:setHealth',
   'g2d:loadSpritesheet',
@@ -225,6 +227,67 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'w3d:quality',
 ])
 
+/**
+ * Os MOLDES: statements que só DEFINEM uma receita reutilizável e não fazem
+ * nada por si sós. Vivem exclusivamente em 🧩 Meus moldes, que gera antes do
+ * ⚙️ Ao iniciar dentro do mesmo envelope de partida.
+ *
+ * ⚠️ Este conjunto é um SUBCONJUNTO de `START_ONLY_STATEMENT_TYPES` e a fonte
+ * ÚNICA da classificação — o `placement` dos blocos (`mold-declaration`) e a
+ * migração de estado salvo derivam daqui, e um drift prova que não divergem.
+ *
+ * ⭐ **A régua é "molde é a receita que EU escrevo"**, e CARREGAR não é. Trazer
+ * um arquivo que já existe (som, folha de quadros, imagem) é preparação de
+ * partida e fica em ⚙️ Ao iniciar. Além de ser a distinção mais fácil de ensinar,
+ * é o que mantém a área invisível para quem está no Kit essencial: som é o
+ * primeiro degrau, e torná-lo molde faria a área aparecer para todo mundo.
+ *
+ * ⚠️ Ficam DE FORA de propósito:
+ * - `funcDecl` e `var`/`declareVar`, que cabem nas DUAS áreas (ver
+ *   `MOLD_OR_START_DECLARATION_PLACEMENT` e `MOLD_OR_START_COMMAND_PLACEMENT`);
+ * - os criadores de coisa concreta (`g2d:createSprite`, `g2d:createGroup`,
+ *   `g2d:score`, os kits) e os que montam o palco (`g2d:setupStage` e irmãos);
+ * - todos os `load*` (som, folha, imagem, tilemap), pela régua acima;
+ * - `g2d:enemyStateAnim`, que configura o tipo mas CONSOME a folha carregada:
+ *   com a folha em Ao iniciar, ele olharia para frente;
+ * - `g2d:setStateAnim`, que fala de um SPRITE já existente.
+ */
+export const MOLD_ONLY_STATEMENT_TYPES = new Set([
+  'importStar',
+  'importNamed',
+  'classDecl',
+
+  'g2d:defineShape',
+  'g2d:defineEnemyType',
+  'g2d:defineEnemySmart',
+
+  'gk:defineMold',
+  'gk:defineLook',
+  'gk:defineEffect',
+  'gk:definePath',
+  'gk:defineRegion',
+  'gk:rpgDefineBattler',
+  'gk:pkmCreature',
+  'gk:pkmMove',
+  'gk:pkmTypeChart',
+
+  'g3k:defineMold',
+  'g3k:defineEffect',
+  'g3k:defineEmitter',
+  'g3k:stateTimer',
+])
+
+/**
+ * Cabe tanto em 🧩 Meus moldes quanto em ⚙️ Ao iniciar, por escolha de quem
+ * escreve o projeto.
+ *
+ * - `funcDecl`: é molde reutilizável OU agrupamento de um trecho do início.
+ * - `var`/`declareVar`: a constante de configuração (a dificuldade, a vida do
+ *   chefe) é conceitualmente molde, e precisa poder subir junto do molde que a
+ *   usa. É a ÚNICA receita de conserto quando um molde depende de um número.
+ */
+export const MOLD_OR_START_STATEMENT_TYPES = new Set(['funcDecl', 'var', 'declareVar'])
+
 const EVENT_BODY_ONLY_TYPES = new Set(['w3d:npcAsk'])
 
 type SpecializedBodyContext =
@@ -316,8 +379,13 @@ export function isLoopRootStatement(statement: JSStatement): boolean {
   return LOOP_ROOT_TYPES.has(statement.type)
 }
 
-/** Fonte única para classificar um statement nas três áreas de comportamento. */
+/**
+ * Fonte única para classificar um statement nas quatro áreas de comportamento.
+ * Devolve a área CANÔNICA: para quem cabe em mais de uma (a função), é a que a
+ * migração de estado salvo respeita, e por isso é `start`.
+ */
 export function lifecycleAreaForStatement(statement: JSStatement): LifecycleArea {
+  if (MOLD_ONLY_STATEMENT_TYPES.has(statement.type)) return 'molds'
   if (LOOP_ROOT_TYPES.has(statement.type) || isContinuousCommandType(statement.type)) {
     return 'loops'
   }
@@ -345,6 +413,11 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
   // Código bruto é opaco: a área escolhida pelo projeto é parte da sua
   // semântica e espelha o contrato multiárea do bloco `sz_adv_raw_js`.
   if (statement.type === 'rawJS') return true
+  // A função é molde reutilizável OU agrupamento de um trecho do início, então
+  // as duas áreas são válidas — quem decide é a criança.
+  if (MOLD_OR_START_STATEMENT_TYPES.has(statement.type)) {
+    return area === 'molds' || area === 'start'
+  }
   return lifecycleAreaForStatement(statement) === area
 }
 
@@ -682,7 +755,13 @@ function visitStatement(
     issue(issues, path, `A raiz “${statement.type}” deve ficar diretamente na sua Área do projeto`)
   }
   if (context.nested && START_ONLY_STATEMENT_TYPES.has(statement.type)) {
-    issue(issues, path, `“${statement.type}” só pode ser usado diretamente em Ao iniciar`)
+    // A área correta depende do tipo: molde vai para 🧩 Meus moldes, preparação
+    // de partida continua em ⚙️ Ao iniciar. Nomear a área errada aqui mandaria a
+    // criança para um lugar onde o bloco nem encaixa.
+    const area = MOLD_ONLY_STATEMENT_TYPES.has(statement.type)
+      ? BEHAVIOR_AREA_LABELS.molds
+      : BEHAVIOR_AREA_LABELS.start
+    issue(issues, path, `“${statement.type}” só pode ser usado diretamente em ${area}`)
   }
   if (context.directSpecializedBody === 'g3k-mold-parts' && statement.type !== 'g3k:part') {
     issue(issues, path, 'O corpo de “Criar o molde 3D” aceita somente blocos “Peça” diretos')

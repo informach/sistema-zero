@@ -21,6 +21,33 @@ export const florestaNinjaExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
+      molds: [
+        {
+          type: 'gk:defineEffect',
+          name: 'poeira',
+          count: {
+            type: 'num',
+            value: 14,
+          },
+          color: '#d9f5c8',
+          size: {
+            type: 'num',
+            value: 4,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          speed: {
+            type: 'num',
+            value: 180,
+          },
+          gravity: {
+            type: 'num',
+            value: 120,
+          },
+        },
+      ],
       start: [
         {
           type: 'gk:setup',
@@ -129,31 +156,6 @@ export const florestaNinjaExample: ExtensionExample = {
             value: 80,
           },
           color: '#e0526a',
-        },
-        {
-          type: 'gk:defineEffect',
-          name: 'poeira',
-          count: {
-            type: 'num',
-            value: 14,
-          },
-          color: '#d9f5c8',
-          size: {
-            type: 'num',
-            value: 4,
-          },
-          life: {
-            type: 'num',
-            value: 0.5,
-          },
-          speed: {
-            type: 'num',
-            value: 180,
-          },
-          gravity: {
-            type: 'num',
-            value: 120,
-          },
         },
         {
           type: 'gk:placeCharacter',

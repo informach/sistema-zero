@@ -176,7 +176,12 @@ const EMPTY_BLOCK: BlockForm = {
   // Default NOVO (24/07): o aluno vê SÓ Blocos; Ponte é opt-in do autor; Código é
   // automático do Pro (não é mais checkbox — bloco legado com 'code' preserva).
   studioModes: ['blocks'],
-  studioAllowReveal: true,
+  // Default NOVO (08/08): DESMARCADO. A curadoria por nível é a promessa da aula
+  // — se o autor escolheu "iniciante", deixar o aluno destravar tudo por um
+  // botão esvazia a escolha sem que ninguém perceba. Quem quiser a escapatória
+  // marca de propósito. ⚠️ Bloco JÁ SALVO sem o campo preserva o `true` de antes
+  // (ver o `?? true` na hidratação): aula publicada não muda sozinha.
+  studioAllowReveal: false,
   studioAllowBlocks: [],
   studioActivity: EMPTY_ACTIVITY,
   studioChain: '',
@@ -553,7 +558,11 @@ export function LessonEditorClient({
         (normalizeBlockLevel(c.level) ?? 'iniciante-2d') !== 'iniciante-2d' ||
           !modesDefault ||
           (c.allowCategories ?? []).length > 0 ||
-          c.allowLevelReveal === false ||
+          // ⚠️ Desde 08/08 o default é NÃO revelar, então quem foge do padrão é
+          // quem PERMITE. Bloco legado sem o campo valia `true` e também foge —
+          // deixar a condição antiga aqui abriria a seção em todo bloco novo e a
+          // esconderia justamente nas aulas que liberam o destravamento.
+          (c.allowLevelReveal ?? true) === true ||
           activity.checks.length > 0 ||
           activity.instructions.trim() !== '' ||
           Boolean(c.showcase?.title || c.showcase?.summary || c.showcase?.defaultCoverUrl),

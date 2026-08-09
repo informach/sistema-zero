@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react'
 import { cn } from '@/lib/cn'
+import { isEmbeddedAppPath } from '@/lib/embedded-app-path'
 import { isLessonPath } from '@/lib/lesson-path'
 
 interface LessonChromeContextValue {
@@ -19,9 +20,10 @@ interface LessonChromeContextValue {
   /** Preferência bruta: esconder a LISTA DE AULAS (barra direita da aula). */
   outlineHidden: boolean
   /**
-   * Oferecer o botão do MENU: página de aula + tela ≥768px (a barra esquerda
-   * aparece a partir do `md` do Tailwind, então dá p/ ganhar espaço já aqui —
-   * cobre notebook com zoom/telas menores).
+   * Oferecer o botão do MENU: página de aula OU app de criação embarcado
+   * (Estúdio/Pensa/Pinta) + tela ≥768px (a barra esquerda aparece a partir do
+   * `md` do Tailwind, então dá p/ ganhar espaço já aqui — cobre notebook com
+   * zoom/telas menores).
    */
   navAvailable: boolean
   /**
@@ -146,7 +148,12 @@ export function FocusModeProvider({
 
   const value = useMemo<LessonChromeContextValue>(() => {
     const onLesson = isLessonPath(pathname)
-    const navAvailable = onLesson && isTablet
+    // O menu também some nos apps de criação (Estúdio/Pensa/Pinta): são as telas
+    // que mais pedem área útil (Blockly + preview, kanban, canvas) e o menu de
+    // 240px não serve a nada enquanto a criança cria. A PREFERÊNCIA é a mesma da
+    // aula (uma só por perfil) — "esconder o menu" é gosto da criança, não de tela.
+    const navAvailable = (onLesson || isEmbeddedAppPath(pathname)) && isTablet
+    // A lista de aulas é EXCLUSIVA da aula: nos apps embarcados ela nem existe.
     const outlineAvailable = onLesson && isDesktop
     return {
       navHidden,

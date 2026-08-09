@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.64.0',
+  version: '0.65.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -24,6 +24,7 @@ blocos de Canvas continuam sendo respeitadas.
 
 ### Comece um projeto
 
+- [[G2D_LIFECYCLE_MOLDS]]
 - [[G2D_LIFECYCLE_START]]
 - [[G2D_LIFECYCLE_EVENTS]]
 - [[G2D_LIFECYCLE_LOOP]]
@@ -546,6 +547,31 @@ tempo acabar.
   vida dos próximos que nascerem.
 - O tipo É um grupo: os blocos de **Muitos (grupos)** funcionam nele. Patrulha em mapa de tiles:
   some o "Impedir de atravessar" num "Para cada" que o inimigo vira sozinho na parede.
+
+#### Um bloco só para VÁRIOS tipos de inimigo
+
+Com mais de um tipo, cada tipo é um grupo separado, então uma ação que vale para todos (o seu tiro
+acertando qualquer inimigo, contar quantos faltam) pediria um bloco por tipo. O atalho é:
+
+- **Criar o grupo … com os inimigos de todos os tipos**. Ponha em **Ao iniciar**; tanto faz se antes
+  ou depois de criar os tipos. Ele é uma JANELA para todos os inimigos, sempre atualizada: quem nasce entra e quem morre
+  sai na hora, sem você limpar nada. Aí a ação compartilhada vira um bloco só.
+
+O que funciona nesse grupo, e o que não:
+
+- **Funciona igual a qualquer grupo**: as colisões (**Para cada colisão entre os grupos**, **Para
+  cada sprite do grupo que colidir com o sprite**), **Para cada sprite do grupo**, **Quantos sprites
+  tem no grupo**, **Desenhar o grupo**, **Desenhar o grupo ordenado pela base** e **Impedir de
+  atravessar os sprites de um grupo**.
+- **Vale para todos os tipos de uma vez**: **Esvaziar o grupo** limpa a fase inteira; **Tirar o
+  sprite do grupo** tira do tipo dele; **Tirar do grupo quem sair da tela** poda todos.
+- ⚠️ **Não vale**: **Atualizar o grupo** e **Aplicar a gravidade do mundo aos sprites do grupo** (o
+  "Atualizar os inimigos do tipo" já move cada um pelo comportamento dele; aqui eles andariam duas
+  vezes por quadro), **Pôr o sprite no grupo** (em qual tipo ele entraria?) e **Trazer para a
+  frente**/**Mandar para trás**. Nesses casos o Console explica o que usar no lugar.
+
+O **Atualizar** e o **Desenhar os inimigos do tipo** continuam sendo um por tipo, porque cada tipo
+tem o seu jeito de se mexer e os seus tiros. É só a parte repetida que sai.
 
 #### Receitas que a gente monta com o que já existe
 

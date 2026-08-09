@@ -885,10 +885,11 @@ describe('buildWorkspaceStateFromIR', () => {
       extensions: [],
     }
     const state = buildWorkspaceStateFromIR(source)
+    // A espera virou o TIPO do bloco: não há mais campo ASYNC para conferir.
     const functionBlock = collectBlocks(state.blocks.blocks).find(
-      (candidate) => candidate.type === 'sz_js_function',
+      (candidate) => candidate.type === 'sz_js_function_async',
     )
-    expect(functionBlock?.fields).toMatchObject({ NAME: 'carregar', ASYNC: 'TRUE' })
+    expect(functionBlock?.fields).toMatchObject({ NAME: 'carregar' })
 
     const workspace = new Blockly.Workspace()
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, workspace)

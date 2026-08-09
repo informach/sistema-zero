@@ -96,6 +96,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_hurt_by_enemy',
       'sz_g2d_stomp_enemy',
       'sz_g2d_enemy_damage',
+      // A VISTA fecha a gaveta: é o atalho de quem já tem VÁRIOS tipos.
+      'sz_g2d_all_enemies_group',
     ],
   },
   {

@@ -185,6 +185,9 @@ export const PROGRAMMING_ADVANCED_TYPES = [
   'sz_js_class',
   'sz_js_constructor',
   'sz_js_class_method',
+  // A espera (await/Promise) é avançada: os dois blocos que a permitem moram aqui.
+  'sz_js_function_async',
+  'sz_js_class_method_async',
   'sz_js_new_var',
   'sz_js_super_ctor',
   'sz_js_super_method',

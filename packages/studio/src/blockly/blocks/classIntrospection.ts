@@ -25,10 +25,20 @@ export function findClass(scan: BlockScanner, name: string): Blockly.Block | nul
   return null
 }
 
+/**
+ * Método de classe, seja o comum ou o que espera. ⚠️ A espera virou o TIPO do
+ * bloco, então quem procura métodos precisa conhecer os DOIS: comparar só com
+ * `sz_js_class_method` faz o método assíncrono sumir da introspecção (nome e
+ * parâmetros somem dos seletores) sem erro nenhum.
+ */
+function isClassMethod(type: string): boolean {
+  return type === 'sz_js_class_method' || type === 'sz_js_class_method_async'
+}
+
 /** Acha a declaração de uma função (`sz_js_function`) pelo nome no workspace. */
 export function findFunction(scan: BlockScanner, name: string): Blockly.Block | null {
   if (!name) return null
-  for (const b of scan('sz_js_function')) {
+  for (const b of [...scan('sz_js_function'), ...scan('sz_js_function_async')]) {
     if (b.getFieldValue('NAME') === name) return b
   }
   return null
@@ -67,7 +77,7 @@ export function methodParams(classBlock: Blockly.Block, method: string): string[
       cur = cur.getNextBlock()
       continue
     }
-    if (cur.type === 'sz_js_class_method' && cur.getFieldValue('NAME') === method) {
+    if (isClassMethod(cur.type) && cur.getFieldValue('NAME') === method) {
       return getParamNames(cur)
     }
     cur = cur.getNextBlock()
@@ -137,8 +147,7 @@ export function classMethodNames(scan: BlockScanner, classBlock: Blockly.Block |
     if (className) visited.add(className)
     let member: Blockly.Block | null = cur.getInputTargetBlock('MEMBERS')
     while (member) {
-      if (member.type === 'sz_js_class_method')
-        pushUnique(ordered, seen, member.getFieldValue('NAME'))
+      if (isClassMethod(member.type)) pushUnique(ordered, seen, member.getFieldValue('NAME'))
       member = member.getNextBlock()
     }
     cur = findClass(scan, superClassName(cur))

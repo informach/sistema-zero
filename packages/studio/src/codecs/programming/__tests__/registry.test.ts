@@ -11,7 +11,7 @@ import {
 import type { ProgrammingBlockRegistration } from '../types'
 
 describe('registro dos blocos de Programação', () => {
-  it('registra exatamente os 149 blocos públicos e os 7 legados', () => {
+  it('registra exatamente os 151 blocos públicos e os 7 legados', () => {
     const publicBlocks = PROGRAMMING_BLOCK_REGISTRATIONS.filter(
       (registration) => registration.compatibility === 'public',
     )
@@ -22,14 +22,14 @@ describe('registro dos blocos de Programação', () => {
     expect(publicBlocks.map((registration) => registration.blockType)).toEqual(
       expect.arrayContaining(PROGRAMMING_VISIBLE_DEFINITIONS.map((definition) => definition.type)),
     )
-    expect(publicBlocks).toHaveLength(149)
+    expect(publicBlocks).toHaveLength(151)
     expect(legacyBlocks.map((registration) => registration.blockType)).toEqual(
       expect.arrayContaining(
         PROGRAMMING_COMPATIBILITY_DEFINITIONS.map((definition) => definition.type),
       ),
     )
     expect(legacyBlocks).toHaveLength(7)
-    expect(PROGRAMMING_BLOCK_REGISTRATIONS).toHaveLength(156)
+    expect(PROGRAMMING_BLOCK_REGISTRATIONS).toHaveLength(158)
   })
 
   it('mantém tipos únicos, pesquisáveis e sem anunciar adapters inexistentes', () => {

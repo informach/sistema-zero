@@ -17,8 +17,20 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     }
   })
 
-  it('NÃO inclui as Áreas do projeto (frames — sempre visíveis)', () => {
-    expect(BLOCK_CATALOG.some((e) => e.type.startsWith('sz_frame_'))).toBe(false)
+  it('inclui as Áreas do projeto, para a aula poder escolher quais a criança recebe', () => {
+    const areas = BLOCK_CATALOG.filter((e) => e.type.startsWith('sz_frame_'))
+    expect(areas.map((e) => e.type).sort()).toEqual([
+      'sz_frame_appearance',
+      'sz_frame_events',
+      'sz_frame_loops',
+      'sz_frame_molds',
+      'sz_frame_start',
+      'sz_frame_structure',
+    ])
+    // Todas sob a mesma categoria que a criança vê na paleta.
+    expect([...new Set(areas.map((e) => e.category))]).toEqual(['🗂️ Áreas do projeto'])
+    // ⚠️ A moldura LEGADA de migração é `hidden` e não pode vazar para o picker.
+    expect(BLOCK_CATALOG.some((e) => e.type === 'sz_frame_behavior')).toBe(false)
   })
 
   it('o rótulo vem do texto do bloco (ex.: sz_html_h1)', () => {
@@ -43,7 +55,7 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
       expect(server?.category).toBe(visible.category)
       expect(server?.subcategory).toBeTruthy()
       expect(server?.level).toMatch(/^(iniciante|intermediario|avancado)-(2d|3d)$/)
-      expect(server?.area).toMatch(/^(structure|appearance|start|events|loops|value)$/)
+      expect(server?.area).toMatch(/^(structure|appearance|molds|start|events|loops|value)$/)
       expect(Array.isArray(server?.inputs)).toBe(true)
     }
   })

@@ -124,6 +124,10 @@ function removeExtensionFromIR(input: SZIRInput, extId: string): SZIRV2 {
   return {
     ...ir,
     behavior: {
+      // ⚠️ 🧩 Meus moldes guarda justamente as definições das extensões
+      // (tipos de inimigo, moldes, figuras): esquecer a área aqui deixaria o
+      // projeto com blocos de uma extensão que acabou de ser desinstalada.
+      molds: removeExtensionStatements(ir.behavior.molds ?? [], extId),
       start: removeExtensionStatements(ir.behavior.start, extId),
       events: removeExtensionStatements(ir.behavior.events, extId),
       loops: removeExtensionStatements(ir.behavior.loops, extId),

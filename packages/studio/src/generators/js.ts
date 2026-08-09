@@ -343,7 +343,8 @@ function generateBehaviorJSWithMap(
   lifecycle: ProjectLifecycleTarget | RuntimeLifecycleContract | undefined,
 ): GenerateJSWithMapResult {
   const map = new SourceMapBuilder()
-  const ordered = [...behavior.start, ...behavior.events, ...behavior.loops]
+  const molds = behavior.molds ?? []
+  const ordered = [...molds, ...behavior.start, ...behavior.events, ...behavior.loops]
   assertJSDepth(ordered)
 
   const isImport = (statement: JSStatement): boolean =>
@@ -351,7 +352,20 @@ function generateBehaviorJSWithMap(
   const injectedImports = injectedCanvas3DImports(ordered)
 
   const imports = [...ordered.filter(isImport), ...injectedImports]
+  // 🧩 Meus moldes vem PRIMEIRO e, como as demais, DENTRO do envelope de
+  // partida: fora dele os moldes registrados no runtime morreriam no restart e
+  // nada aqui enxergaria as variáveis criadas no Ao iniciar. Como o corpo de um
+  // molde só roda quando alguém usa a receita, gerar antes não cria dependência
+  // sobre o que ainda não existe.
+  const moldStatements = molds.filter((statement) => !isImport(statement))
   const sections: Array<{ marker: string; statements: JSStatement[] }> = [
+    // ⚠️ A seção só aparece quando TEM molde. As outras três emitem o marcador
+    // mesmo vazias (comportamento histórico), mas repetir isso aqui somaria uma
+    // linha ao código de todo projeto que já existe — inclusive os que nunca
+    // vão usar a área. Sem molde, a saída fica byte-idêntica à de antes.
+    ...(moldStatements.length > 0
+      ? [{ marker: BEHAVIOR_SECTION_MARKERS.molds, statements: moldStatements }]
+      : []),
     {
       marker: BEHAVIOR_SECTION_MARKERS.start,
       statements: behavior.start.filter((statement) => !isImport(statement)),
@@ -1382,6 +1396,8 @@ ${pad}});`
       return `${pad}SZGame2D.collideSprite(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.otherVar)});`
     case 'g2d:createGroup':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createGroup();`
+    case 'g2d:allEnemiesGroup':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createAllEnemiesGroup();`
     // O `const …` só entra quando a criança NOMEOU o sprite (o helper `spawn`
     // já devolve ele) — sem nome, a saída é a mesma de sempre.
     case 'g2d:spawnInGroup':
@@ -5060,6 +5076,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g2d:createGroup':
+    case 'g2d:allEnemiesGroup':
       names.add(stmt.varName)
       return
     case 'g2d:spawnInGroup':

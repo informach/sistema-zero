@@ -132,7 +132,15 @@ export const animatedHeroExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
+      molds: [],
       start: [
+        {
+          type: 'g2d:loadSpritesheet',
+          varName: 'andar',
+          image: 'heroi-andando',
+          frameW: 32,
+          frameH: 32,
+        },
         {
           type: 'g2d:createImageSprite',
           varName: 'heroi',
@@ -141,13 +149,6 @@ export const animatedHeroExample: ExtensionExample = beginnerGameExample({
           w: 48,
           h: 48,
           image: 'heroi',
-        },
-        {
-          type: 'g2d:loadSpritesheet',
-          varName: 'andar',
-          image: 'heroi-andando',
-          frameW: 32,
-          frameH: 32,
         },
         {
           type: 'g2d:animateSprite',

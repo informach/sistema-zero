@@ -29,32 +29,7 @@ export const dinoProfissionalExample: ExtensionExample = withIndependentPeriodic
     extensions: [{ extensionId: 'game-2d-advanced' }],
     version: 2,
     behavior: {
-      start: [
-        {
-          type: 'gk:setup',
-          w: { type: 'num', value: 960 },
-          h: { type: 'num', value: 540 },
-          bg: '#dff6ff',
-          accent: '#2f9e44',
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'menu',
-          title: { type: 'str', value: 'Dino Corredor Profissional' },
-          text: {
-            type: 'str',
-            value:
-              'Espaço, seta para cima ou clique: pular. Salte os cactos e não bata nos pássaros!',
-          },
-          button: { type: 'str', value: 'Correr' },
-        },
-        {
-          type: 'gk:setScreenText',
-          screen: 'fim',
-          title: { type: 'str', value: 'Bateu!' },
-          text: { type: 'str', value: 'O recorde fica guardado. Tente de novo!' },
-          button: { type: 'str', value: 'Correr de novo' },
-        },
+      molds: [
         {
           type: 'gk:defineLook',
           name: 'sol',
@@ -434,6 +409,33 @@ export const dinoProfissionalExample: ExtensionExample = withIndependentPeriodic
           color: '#7048e8',
           image: '',
           look: 'passaro',
+        },
+      ],
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#dff6ff',
+          accent: '#2f9e44',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Dino Corredor Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Espaço, seta para cima ou clique: pular. Salte os cactos e não bata nos pássaros!',
+          },
+          button: { type: 'str', value: 'Correr' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: { type: 'str', value: 'Bateu!' },
+          text: { type: 'str', value: 'O recorde fica guardado. Tente de novo!' },
+          button: { type: 'str', value: 'Correr de novo' },
         },
         {
           type: 'gk:spawnFromMold',

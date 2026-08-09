@@ -21,6 +21,7 @@ import {
   FRAME_BEHAVIOR_LEGACY,
   FRAME_EVENTS,
   FRAME_LOOPS,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_STRUCTURE,
 } from './blockContracts'
@@ -28,12 +29,13 @@ import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 
 export { SHADOW_PRESETS } from '../codecs/web/cssBlockToIR'
-/** Tipos das cinco Áreas do projeto e da moldura legada de migração. */
+/** Tipos das seis Áreas do projeto e da moldura legada de migração. */
 export {
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR_LEGACY as FRAME_BEHAVIOR,
   FRAME_EVENTS,
   FRAME_LOOPS,
+  FRAME_MOLDS,
   FRAME_START,
   FRAME_STRUCTURE,
 }
@@ -55,7 +57,7 @@ function resolveCanvas3DAddonStatements(statements: JSStatement[]): JSStatement[
 
 /**
  * Percorre o workspace e devolve a SZ-IR V2. Só gera o que está dentro de
- * Estrutura, Aparência, Ao iniciar, Quando acontecer ou Enquanto
+ * Estrutura, Aparência, Meus moldes, Ao iniciar, Quando acontecer ou Enquanto
  * estiver rodando — Loops. **Bloco solto é
  * rascunho** e fica fora da geração.
  * A inclusão é por CONTÊINER, não por posição/ordem no canvas.
@@ -81,13 +83,20 @@ export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIRV2 {
   if (structure) ir.html.push(...getHtmlChildren(structure, 'CHILDREN', seen))
   const appearance = firstOf(FRAME_APPEARANCE)
   if (appearance) ir.css.push(...getCssEntryChildren(appearance, 'CHILDREN', seen))
+  const molds: JSStatement[] = []
   const legacyBehavior = firstOf(FRAME_BEHAVIOR_LEGACY)
   if (legacyBehavior) {
     const migrated = splitLegacyBehavior(getStatementChildren(legacyBehavior, 'CHILDREN', seen))
+    molds.push(...(migrated.molds ?? []))
     ir.behavior.start.push(...migrated.start)
     ir.behavior.events.push(...migrated.events)
     ir.behavior.loops.push(...migrated.loops)
   }
+  // 🧩 Meus moldes é coletado ANTES do Ao iniciar: a ordem das áreas aqui é a
+  // ordem em que o gerador emite, e é o que faz uma figura existir antes do
+  // tipo de inimigo que a usa.
+  const moldsFrame = firstOf(FRAME_MOLDS)
+  if (moldsFrame) molds.push(...getStatementChildren(moldsFrame, 'CHILDREN', seen))
   const start = firstOf(FRAME_START)
   if (start) ir.behavior.start.push(...getStatementChildren(start, 'CHILDREN', seen))
   const events = firstOf(FRAME_EVENTS)
@@ -95,6 +104,9 @@ export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIRV2 {
   const loops = firstOf(FRAME_LOOPS)
   if (loops) ir.behavior.loops.push(...getStatementChildren(loops, 'CHILDREN', seen))
 
+  // ⚠️ A chave só entra quando há molde: sem ela, um projeto que nunca usou a
+  // área tem a IR com a forma EXATA de antes de a área existir.
+  if (molds.length > 0) ir.behavior.molds = resolveCanvas3DAddonStatements(molds)
   ir.behavior.start = resolveCanvas3DAddonStatements(ir.behavior.start)
   ir.behavior.events = resolveCanvas3DAddonStatements(ir.behavior.events)
   ir.behavior.loops = resolveCanvas3DAddonStatements(ir.behavior.loops)
@@ -1304,13 +1316,13 @@ function getClassMembers(block: Blockly.Block, seen: Set<string>): ClassMembers 
       out.ctorParams = getParamNames(cur)
       out.ctorBody = getStatementChildren(cur, 'BODY', seen)
       out.ctorId = cur.id
-    } else if (cur.type === 'sz_js_class_method') {
+    } else if (cur.type === 'sz_js_class_method' || cur.type === 'sz_js_class_method_async') {
       out.methods.push({
         __id: cur.id,
         name: f(cur, 'NAME'),
         params: getParamNames(cur),
         body: getStatementChildren(cur, 'BODY', seen),
-        ...(f(cur, 'ASYNC') === 'TRUE' ? { async: true } : {}),
+        ...(cur.type === 'sz_js_class_method_async' ? { async: true } : {}),
       })
     }
     cur = cur.getNextBlock()
@@ -3129,14 +3141,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
     case 'sz_js_return_void':
       return { kind: 'js', value: { type: 'return' } }
+    // A espera é do TIPO do bloco, não de um campo: `sz_js_function` é a função
+    // simples e `sz_js_function_async` é a irmã que sabe esperar.
     case 'sz_js_function':
+    case 'sz_js_function_async':
       return {
         kind: 'js',
         value: {
           type: 'funcDecl',
           name: f(block, 'NAME'),
           params: getParamNames(block),
-          ...(f(block, 'ASYNC') === 'TRUE' ? { async: true } : {}),
+          ...(block.type === 'sz_js_function_async' ? { async: true } : {}),
           body: getStatementChildren(block, 'BODY', seen),
         },
       }
@@ -4121,6 +4136,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g2d_create_group':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:createGroup', varName: f(block, 'NAME') } }
+    case 'sz_g2d_all_enemies_group':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:allEnemiesGroup', varName: f(block, 'NAME') } }
     case 'sz_g2d_spawn_in_group':
       seen.add('game-2d')
       return {

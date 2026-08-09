@@ -7,6 +7,201 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   // lista) a cada quadro: os inimigos soltos somem da tela sem pista nenhuma.
   // O teto de chamadas detecta esse laço e avisa UMA vez (o jogo segue rodando).
   var _enemyTypeCreates = 0;
+  // ---- A VISTA de todos os inimigos ("Criar o grupo ... com os inimigos de
+  // todos os tipos") ----
+  // Registro dos tipos vivos + um contador de ROTATIVIDADE. A vista nao guarda
+  // sprite nenhum: ela MONTA a lista a partir dos tipos, e so remonta quando a
+  // composicao mudou de fato (nasceu, morreu, foi removido, tipo novo).
+  //
+  // ⚠️ Por que derivada e nao uma copia mantida em sincronia: o atalho manual
+  // (grupo comum + "Por o sprite no grupo" a cada nascimento) VAZA, porque a
+  // morte tira o inimigo do TIPO e nao do grupo dela, e o morto segue colidindo
+  // para sempre. Vista derivada nao pode vazar: se saiu do tipo, saiu da vista no
+  // mesmo instante. E pega de graca o sprite ADOTADO por "Por o sprite no grupo
+  // <tipo>", que uma sincronia no spawn perderia.
+  var _enemyTypes = [];
+  // Teto: "Criar tipo de inimigo" dentro do laco cria um tipo por quadro (ja tem
+  // aviso proprio). Sem teto o registro cresceria para sempre.
+  var MAX_ENEMY_TYPES = 64;
+
+  /**
+   * SELO da composicao, DERIVADO: todo grupo gerenciado bump o proprio _revision
+   * em qualquer mutacao da lista (o proxy de _trackGroupItems embrulha push,
+   * splice, sort, atribuicao...). Somando os revisions mais a quantidade de
+   * tipos, a vista sabe quando remontar sem que ninguem precise avisar.
+   *
+   * ⚠️ A primeira versao disto era um contador que eu incrementava na mao no
+   * spawn e na morte, e o teste da poda pegou o furo na hora: "Tirar do grupo
+   * quem sair da tela" removia do tipo sem avisar a vista, que ficava mostrando
+   * inimigo que nao existe mais. Derivar mata a classe; sincronizar sempre deixa
+   * um caminho de fora.
+   */
+  function _enemySelo() {
+    var selo = _enemyTypes.length;
+    for (var i = 0; i < _enemyTypes.length; i++) {
+      var t = _enemyTypes[i];
+      if (t) selo += _finiteNumber(t._revision, 0);
+    }
+    return selo;
+  }
+
+  function _registerEnemyType(type) {
+    if (_enemyTypes.length < MAX_ENEMY_TYPES) { _enemyTypes.push(type); return; }
+    warnOnce(
+      'tipos-demais',
+      'sao tipos de inimigo demais (mais de ' + MAX_ENEMY_TYPES + '): os tipos criados daqui para a frente nao entram no grupo de TODOS os inimigos. Normalmente isso quer dizer que "Criar tipo de inimigo" esta dentro do "A cada quadro do jogo".'
+    );
+  }
+
+  /** É uma vista de todos os inimigos? (usado pelas guardas dos blocos de grupo) */
+  function _isEnemyMirror(group) {
+    return !!group && group._enemyMirror === true;
+  }
+
+  /**
+   * Cria a VISTA. O 'items' é um getter: devolve a lista montada dos tipos, em
+   * cache pela rotatividade (leitura O(1) enquanto nada muda). O grupo entra em
+   * _managedGroups para o caminho de descarte por remocao nunca tocar nele: os
+   * sprites pertencem aos TIPOS, a vista so olha.
+   */
+  /**
+   * ⚠️ A lista da vista sai embrulhada num PROXY que recusa mutacao. Sem ele,
+   * QUALQUER helper que faca group.items.push escreveria no cache: "Criar tiro
+   * no grupo", "Criar um sprite no grupo", os spawns dos kits... O sprite
+   * apareceria ate a proxima remontagem e sumiria sozinho, em silencio. Guardar
+   * um a um os seis criadores seria a mesma sincronia frouxa que este lote
+   * existe para eliminar; a lista se defender sozinha vale para os que ainda nem
+   * existem. Idioma emprestado do _trackGroupItems, que ja faz isso nos grupos
+   * normais para observar pertencimento.
+   */
+  // ⚠️ Object.create(null) NAO e preciosismo: com um objeto literal, 'toString',
+  // 'valueOf', 'constructor' e 'hasOwnProperty' vem de Object.prototype e sao
+  // TRUTHY, e todos existem em Array.prototype — entao a guarda abaixo devolveria
+  // o aviso no lugar da funcao de verdade, e qualquer coercao da lista (String,
+  // concatenacao) dispararia aviso e voltaria undefined. E a MESMA armadilha que
+  // o 1o full review pegou neste arquivo (nome herdado passando por comportamento
+  // valido); repeti dois meses depois, agora com prototipo nulo.
+  var MIRROR_MUTANTES = Object.create(null);
+  MIRROR_MUTANTES.copyWithin = 1;
+  MIRROR_MUTANTES.fill = 1;
+  MIRROR_MUTANTES.pop = 1;
+  MIRROR_MUTANTES.push = 1;
+  MIRROR_MUTANTES.reverse = 1;
+  MIRROR_MUTANTES.shift = 1;
+  MIRROR_MUTANTES.sort = 1;
+  MIRROR_MUTANTES.splice = 1;
+  MIRROR_MUTANTES.unshift = 1;
+  function _protegerListaDaVista(lista) {
+    return new Proxy(lista, {
+      get: function (target, prop, receiver) {
+        if (MIRROR_MUTANTES[prop] && typeof Array.prototype[prop] === 'function') {
+          return function () {
+            _warnEnemyMirror(
+              'mexer na lista',
+              'Este grupo mostra os inimigos dos tipos, entao a lista dele nao se muda na mao. Para acrescentar, use o bloco de soltar do TIPO; para tirar, "Tirar o sprite do grupo" (ele sai do tipo dele).'
+            );
+            return undefined;
+          };
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+      set: function () {
+        _warnEnemyMirror(
+          'mexer na lista',
+          'Este grupo mostra os inimigos dos tipos, entao a lista dele nao se muda na mao.'
+        );
+        return true;
+      }
+    });
+  }
+
+  function createAllEnemiesGroup() {
+    var cache = [];
+    var protegida = _protegerListaDaVista(cache);
+    var seloDoCache = -1;
+    var group = { _revision: 0, _enemyMirror: true };
+    _managedGroups.add(group);
+    Object.defineProperty(group, 'items', {
+      enumerable: true,
+      get: function () {
+        var selo = _enemySelo();
+        if (seloDoCache !== selo) {
+          cache = [];
+          for (var i = 0; i < _enemyTypes.length; i++) {
+            var itens = _enemyTypes[i] && _enemyTypes[i].items;
+            if (!itens) continue;
+            for (var k = 0; k < itens.length; k++) if (itens[k]) cache.push(itens[k]);
+          }
+          protegida = _protegerListaDaVista(cache);
+          seloDoCache = selo;
+          // ⚠️ O bump so acontece na REMONTAGEM. Se acontecesse a cada leitura, o
+          // overlapGroups (que compara _revision para refrescar o Set de
+          // pertencimento) refaria o Set a cada item: O(n) virava O(n²).
+          group._revision += 1;
+        }
+        return protegida;
+      },
+      set: function () {
+        // Reordenar a vista (Trazer para a frente / Mandar para tras) nao tem
+        // efeito duradouro: ela e remontada dos tipos. Avisa em vez de mentir.
+        _warnEnemyMirror(
+          'a ordem de desenho',
+          'Reordenar este grupo nao dura, porque ele e montado dos tipos a cada mudanca. Para mandar na ordem, desenhe um tipo depois do outro com "Desenhar os inimigos do tipo ...".'
+        );
+      }
+    });
+    return group;
+  }
+
+  var _enemyMirrorWarned = Object.create(null);
+  /** Aviso da vista: cita o que a crianca tentou e o que fazer no lugar. */
+  function _warnEnemyMirror(oque, dica) {
+    if (_enemyMirrorWarned[oque]) return;
+    _enemyMirrorWarned[oque] = true;
+    console.warn('SZGame2D: ' + oque + ' nao vale no grupo de TODOS os inimigos. ' + dica);
+  }
+
+  /**
+   * Desenhar a VISTA conta como desenhar cada tipo. Sem isto, quem desenha pela
+   * vista (que o manual apresenta como o jeito de fazer uma coisa so para todos)
+   * levaria o aviso de "os inimigos estao vivos e ninguem os desenha" com a tela
+   * CHEIA. E o mesmo defeito que o 2o full review corrigiu quando o caminho de
+   * grupo virou oficial; o bloco novo reabriu a porta.
+   */
+  function _marcarTiposDesenhados() {
+    for (var i = 0; i < _enemyTypes.length; i++) {
+      if (_enemyTypes[i]) _enemyTypes[i]._drawn = true;
+    }
+  }
+
+  /** Esvaziar a vista = esvaziar todos os tipos (o "limpar a fase"). */
+  function _clearAllEnemyTypes() {
+    for (var i = 0; i < _enemyTypes.length; i++) {
+      if (_enemyTypes[i]) clearGroup(_enemyTypes[i]);
+    }
+  }
+
+  /** Tirar da vista = tirar do tipo que contem o sprite. */
+  function _removeEnemyFromItsType(sprite) {
+    for (var i = 0; i < _enemyTypes.length; i++) {
+      var t = _enemyTypes[i];
+      if (!t || !t.items) continue;
+      var idx = t.items.indexOf(sprite);
+      if (idx !== -1) {
+        _removeGroupItemAt(t, idx);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Podar a vista = podar cada tipo, com o mesmo corpo da crianca. */
+  function _pruneAllEnemyTypes(ctx, margin, onLeave) {
+    for (var i = 0; i < _enemyTypes.length; i++) {
+      if (_enemyTypes[i]) pruneOffscreen(ctx, _enemyTypes[i], margin, onLeave);
+    }
+  }
+
   function createEnemyType(options) {
     options = options || {};
     _enemyTypeCreates += 1;
@@ -47,6 +242,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     type._defeatOrder = [];
     type._hurtHandlers = Object.create(null);
     type._hurtOrder = [];
+    // Entra no registro que a VISTA de todos os inimigos monta.
+    _registerEnemyType(type);
     return type;
   }
 
@@ -1155,6 +1352,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       }
       // Derrotado: some soltando particulas e avisa o "quando for derrotado".
       if (typeof s.hp === 'number' && s.hp <= 0) {
+        // Saiu do tipo, sai da vista no MESMO quadro (o _revision do tipo muda,
+        // e o selo da vista muda com ele).
         _removeGroupItemAt(type, i);
         if (revive) {
           if (!type._revives) type._revives = [];
@@ -1340,6 +1539,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   _registerRuntimeDomain('enemies', {
     reset: function () {
       _enemyTypeCreates = 0;
+      _enemyTypes.length = 0;
+      _enemyMirrorWarned = Object.create(null);
     }
   });
 
