@@ -8,13 +8,19 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
  * derivações que quebram em silêncio: ONDE o botão é oferecido (`navAvailable`) e
  * a preferência ser lembrada POR PERFIL.
  *
- * ⚠️ `mock.module` NÃO é isolado por arquivo no bun. O mock abaixo devolve
- * `usePathname` E `useRouter` de propósito: os outros testes do pacote mockam só o
- * `useRouter`, e um mock mais pobre carregado depois deixaria este sem `usePathname`.
+ * ⚠️ `mock.module` NÃO é isolado por arquivo no bun: o último registro vale para
+ * TODO import seguinte, em qualquer arquivo. Por isso o mock ESPALHA o módulo atual
+ * em vez de substituí-lo — assim ele só CRESCE e nenhum arquivo perde um export de
+ * que precisa. Um mock estreito derrubou o CI (Linux ordena os arquivos diferente do
+ * Windows): `focus-mode.tsx` importa `usePathname`, e o link do ESM falhou com
+ * "Export named 'usePathname' not found". Os outros mocks de `next/navigation` do
+ * pacote seguem a MESMA receita.
  */
+const nav = await import('next/navigation')
 let pathname = '/estudio'
 const refresh = mock(() => {})
 mock.module('next/navigation', () => ({
+  ...nav,
   usePathname: () => pathname,
   useRouter: () => ({ refresh }),
 }))

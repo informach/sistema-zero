@@ -11,8 +11,11 @@ import {
   writeSessionGuideFlag,
 } from '../src/lib/guide'
 
+// ⚠️ Mock SUPERCONJUNTO: ver o comentário em `profile-entry-states.test.tsx`. Um
+// mock que só devolve `useRouter` quebra o link de quem importa `usePathname`.
+const nav = await import('next/navigation')
 const refresh = mock(() => {})
-mock.module('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
+mock.module('next/navigation', () => ({ ...nav, useRouter: () => ({ refresh }) }))
 
 const { PerfisClient } = await import('../src/app/perfis/perfis-client')
 const { ChildGuide } = await import('../src/components/kids/child-guide')

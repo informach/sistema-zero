@@ -1,8 +1,14 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { fireEvent, render, screen } from '@testing-library/react'
 
+// ⚠️ `mock.module` NÃO é isolado por arquivo: o último registro vale para TODO
+// import seguinte, em qualquer arquivo. Um mock ESTREITO (só `useRouter`) derruba
+// quem importa outro export — `focus-mode.tsx` importa `usePathname`, e o link do
+// ESM falha com "Export named 'usePathname' not found". Espalhar o módulo atual faz
+// o mock só CRESCER, então a ordem dos arquivos (que muda no Linux do CI) não pesa.
+const nav = await import('next/navigation')
 const refresh = mock(() => {})
-mock.module('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
+mock.module('next/navigation', () => ({ ...nav, useRouter: () => ({ refresh }) }))
 
 const { ProfilesNotIncluded, ProfilesUnavailable } = await import(
   '../src/components/kids/profiles-unavailable'
