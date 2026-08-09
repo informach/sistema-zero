@@ -284,6 +284,15 @@ da carreira com Estúdio livre que cobre extensões+pro — alimenta o selo; ext
 `null`, fail-closed cosmético) e `remixRequirementFromSnapshot(snapshot)` (extrai kind+extensões do
 snapshot jogável cru — a checagem AUTORITATIVA do clique no kids). Testes em `tests/studio-tier.test.ts`.
 
+⚠️ **`initialExtensions` é SEMPRE `[]` (08/08).** Nenhuma extensão vem instalada
+no projeto novo do Estúdio Completo: a criança abre o painel de Extensões e
+instala o que quiser entre as de `allowedExtensions` (o que a carreira liberou).
+Os blocos seguem filtrados pelo `level`, então instalar não adianta a paleta de
+um degrau acima. ⚠️ O Jogo 2D vinha instalado e isso MASCARAVA um defeito: a
+paleta do Construtor parecia completa ao criar o projeto e perdia as áreas
+⚡/🔁 ao reabrir. A curadoria de áreas do studio hoje deriva do NÍVEL e não do que
+está instalado, então o campo deixou de influenciar a paleta.
+
 **Fase 5 (07/2026) — plays/carreira/desafio/arte no shell:**
 - **Contador de jogadas:** o `studioPlay.GET` (público) deduplica por **`ip:playId`** (TTL 30min,
   in-process `globalThis`/`Symbol.for`, teto anti-OOM 50k entradas) e só o 1º hit da janela chama o

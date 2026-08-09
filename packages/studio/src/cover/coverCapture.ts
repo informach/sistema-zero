@@ -232,6 +232,12 @@ export function buildCanvasHarness(opts: {
   var PARENT_ORIGIN = ${origin};
   var WARMUP = ${warmup};
   var MAX = ${maxBytes};
+  // Quantos quadros o jogo precisa pintar antes da foto. Dois: o primeiro pode
+  // ser só o clear + o fundo, e é no segundo que placar e sprites já estão lá.
+  var FRAMES = 2;
+  // Quanto esperar por um rAF que talvez nunca venha (página estática, ou aba
+  // que perdeu composição). Curto de propósito: a captura roda na saída.
+  var PARADO = 900;
   function post(dataUrl){ try { parent.postMessage({ __szCover: true, dataUrl: dataUrl }, PARENT_ORIGIN); } catch (e) {} }
   function pick(){
     var list = document.querySelectorAll('canvas');
@@ -292,14 +298,37 @@ export function buildCanvasHarness(opts: {
   var done = false;
   function captureOnce(){ if (done) return; done = true; capture(); }
   function schedule(){
-    // O rAF é o caminho BOM (fotografa logo depois de um quadro pintado), mas ele
-    // NÃO dispara em aba de fundo nem numa página que está saindo — e é
-    // exatamente aí que a capa mais importa (a criança volta pela navegação do
-    // host ou fecha a aba). Sem a rede do setTimeout, a captura ficava pendurada
-    // até o timeout e a capa saía nula em silêncio. Quem chegar primeiro vence.
+    // ⭐⭐ Espera QUADROS DE ANIMAÇÃO, não tempo de relógio.
+    //
+    // ⚠️ O contador é de ticks do NOSSO rAF, não de desenhos do jogo — não há
+    // como saber quantas vezes o programa da criança pintou. Mas o loop do jogo
+    // roda na MESMA fila de animação, então um tick nosso significa que a fila
+    // andou e o jogo teve a vez dele; e, o mais importante, que o navegador não
+    // está estrangulando a animação. É essa a pergunta que decide se vale
+    // fotografar.
+    //
+    // Relato dela (08/2026): "não é toda vez que tira o print, e quando saiu foi
+    // só a cor de fundo, sem o texto do placar". A causa era esperar WARMUP no
+    // relógio e fotografar: o loop do jogo roda em requestAnimationFrame, que o
+    // navegador ESTRANGULA quando o iframe perde composição — e a captura é
+    // disparada exatamente aí, na saída do editor. O relógio corria, o jogo não
+    // desenhava, e saía uma foto do canvas quase vazio com o fundo composto por
+    // cima. Contando quadros, a foto só acontece depois de o jogo ter pintado de
+    // verdade; se o rAF nunca vier, a rede abaixo devolve null e o card MANTÉM a
+    // capa boa que já tinha, em vez de trocá-la por uma pela metade.
+    var pintados = 0;
+    function tick(){
+      if (done) return;
+      pintados++;
+      if (pintados >= FRAMES) { captureOnce(); return; }
+      if (window.requestAnimationFrame) window.requestAnimationFrame(tick);
+    }
     setTimeout(function(){
-      if (window.requestAnimationFrame) window.requestAnimationFrame(captureOnce);
-      setTimeout(captureOnce, 200);
+      if (window.requestAnimationFrame) window.requestAnimationFrame(tick);
+      // Rede para a página SEM loop de animação (HTML/CSS puro, jogo que desenha
+      // uma vez só): ali nunca virão FRAMES quadros, e esperar o timeout inteiro
+      // atrasaria a saída à toa.
+      setTimeout(captureOnce, PARADO);
     }, WARMUP);
   }
   if (document.readyState === 'complete') schedule();
@@ -329,6 +358,12 @@ function buildDomHarness(opts: {
   var PARENT_ORIGIN = ${origin};
   var WARMUP = ${warmup};
   var MAX = ${maxBytes};
+  // Quantos quadros o jogo precisa pintar antes da foto. Dois: o primeiro pode
+  // ser só o clear + o fundo, e é no segundo que placar e sprites já estão lá.
+  var FRAMES = 2;
+  // Quanto esperar por um rAF que talvez nunca venha (página estática, ou aba
+  // que perdeu composição). Curto de propósito: a captura roda na saída.
+  var PARADO = 900;
   function post(dataUrl){ try { parent.postMessage({ __szCover: true, dataUrl: dataUrl }, PARENT_ORIGIN); } catch (e) {} }
   async function capture(){
     try {

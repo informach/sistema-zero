@@ -19,11 +19,14 @@ import { findExtension } from '#official-extensions'
 import {
   buildPreviewDoc,
   isPreviewMessage,
+  isPreviewSnapshotMessage,
   isPreviewStorageWriteMessage,
+  PREVIEW_SNAPSHOT_REQUEST,
   sanitizePreviewStorageData,
   withCoreImports,
 } from '#preview'
 import { Button } from '#ui'
+import { rememberProjectSnapshot } from '../../cover/latestSnapshot'
 import { useDebounced } from '../../hooks/useDebounced'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
@@ -55,6 +58,11 @@ const EMPTY_ASSETS: ProjectAsset[] = []
  * não ao tamanho da página.
  */
 const PREVIEW_TOOLBAR_COMPACT_MAX_PX = 400
+
+/** Espera antes da 1ª foto: o jogo precisa desenhar antes de valer a pena. */
+const SNAPSHOT_FIRST_DELAY_MS = 2_500
+/** Intervalo entre fotos. Longo de propósito: a capa não precisa ser ao vivo. */
+const SNAPSHOT_INTERVAL_MS = 20_000
 
 export function PreviewIframe(): JSX.Element {
   const { projectId, html, css, js, ir, projectName, installedExtensions, extraFiles, assets } =
@@ -369,6 +377,42 @@ export function PreviewIframe(): JSX.Element {
     }
   }, [previewBudgetInput, renderLargePreviewForInput])
 
+  // ⭐ Foto do card tirada do preview que JÁ está rodando (ver `snapshotBridge`).
+  //
+  // Substitui o print da SAÍDA, que abria um iframe novo e dependia de o
+  // navegador continuar entregando quadros justamente quando a criança está
+  // saindo — ele não entrega, e o resultado era "não é toda vez que tira, e
+  // quando sai é só o fundo". Aqui o jogo está desenhando na tela, na aba ativa.
+  //
+  // ⚠️ Custo mantido baixo de propósito: o pedido só sai com o preview RODANDO e
+  // a aba VISÍVEL, no máximo um a cada `SNAPSHOT_INTERVAL_MS`, e o bridge devolve
+  // a imagem já reduzida ao tamanho do card (JPEG ~15 KB). Aba escondida não
+  // recebe quadros, então pedir ali só renderia uma foto velha.
+  useEffect(() => {
+    if (!projectId || !previewRunning || previewPaused) return
+    const pedir = () => {
+      if (typeof document !== 'undefined' && document.hidden) return
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: PREVIEW_SNAPSHOT_REQUEST },
+        // Origem opaca do sandbox: não há origem específica para mirar. O bridge
+        // do outro lado confere que o remetente é o próprio parent.
+        '*',
+      )
+    }
+    // A primeira espera o jogo desenhar; as seguintes mantêm a capa fresca.
+    const primeira = setTimeout(pedir, SNAPSHOT_FIRST_DELAY_MS)
+    const timer = setInterval(pedir, SNAPSHOT_INTERVAL_MS)
+    return () => {
+      clearTimeout(primeira)
+      clearInterval(timer)
+    }
+    // ⚠️ `loadedSrcDoc` fica FORA das dependências de propósito. O preview
+    // recarrega a cada edição (debounce), e reiniciar o ciclo a cada recarga
+    // dispararia uma foto poucos segundos depois de CADA mudança — exatamente o
+    // custo que este desenho evita. O ritmo é o do intervalo, e o bridge do doc
+    // novo responde ao próximo pedido normalmente.
+  }, [projectId, previewRunning, previewPaused])
+
   const doc = useMemo(() => {
     // Parar (Play desligado): esvazia o iframe → mata setInterval/timers em execução.
     if (!previewRunning) return PAUSED_PREVIEW_DOC
@@ -499,6 +543,16 @@ export function PreviewIframe(): JSX.Element {
         // Guarda só o último payload; o throttle sanitiza/persiste (ver acima).
         latestStoragePayload.current = ev.data.data
         scheduleStorageFlush()
+        return
+      }
+      if (isPreviewSnapshotMessage(ev.data)) {
+        // Mesma cerca do storageWrite: o iframe ANTIGO não pode carimbar foto no
+        // projeto NOVO durante a troca.
+        if (ev.data.projectId !== projectIdRef.current) return
+        const id = projectIdRef.current
+        if (id && typeof ev.data.dataUrl === 'string') {
+          rememberProjectSnapshot(id, ev.data.dataUrl)
+        }
         return
       }
       if (!isPreviewMessage(ev.data)) return

@@ -673,18 +673,6 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     if (shot) shot.dmg = c.dmg;
   }
 
-  /** Segue o alvo SÓ na horizontal, mantendo a altura. O andar clássico de nave. */
-  function _enemyTrackMove(s, c, env) {
-    var t = env.target;
-    s.vx = 0;
-    if (t) {
-      var dx = (t.x + (t.w || 0) / 2) - (s.x + s.w / 2);
-      if (Math.abs(dx) > env.speed) s.vx = dx < 0 ? -env.speed : env.speed;
-      else s.vx = dx;
-    }
-    s.x += s.vx;
-  }
-
   /**
    * Só atira quando o alvo está NA MESMA COLUNA (a folga é o "alcance"). É o
    * inimigo que espera a nave passar na frente em vez de atirar para o nada.
@@ -957,7 +945,16 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     'parado':          { x: 1, y: 1, move: _enemyIdleMove },
     'medroso':         { x: 1, alvo: 1, move: _enemyFleeMove },
     'arrancada':       { x: 1, alvo: 1, move: _enemyChargeMove },
-    'perseguidor-lado': { x: 1, alvo: 1, move: _enemyTrackMove },
+    // ⭐ Os TRES modos do perseguidor sao tres linhas da MESMA funcao: o
+    // _enemyChaseMove ja respeita posse de um eixo so (correcao nº2 do 1º full
+    // review). Ter uma funcao por modo seria duas implementacoes da mesma
+    // regra, prontas para divergir no proximo conserto.
+    // ⚠️ Nenhum dos tres e 'flying', inclusive o vertical (diferente do
+    // voador-vertical, que e). E deliberado: enquanto o modo e dono do eixo Y a
+    // gravidade nunca roda, e quando outro comportamento LEVA o Y quem manda e
+    // ele. Marcar flying aqui mudaria o 'perseguidor' que ja esta em producao.
+    'perseguidor-lado':     { x: 1, alvo: 1, move: _enemyChaseMove },
+    'perseguidor-vertical': { y: 1, alvo: 1, move: _enemyChaseMove },
     // --- jeitos de voar ---
     'voador':          { x: 1, flying: 1, move: _enemyFlyMove },
     'voador-vertical': { y: 1, flying: 1, move: _enemyFlyVerticalMove },
@@ -987,11 +984,15 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   var ENEMY_SMART_COMBOS = {
     'burra': { fazer: ['patrulha', 'bombardeiro'] },
     'basica': { fazer: ['patrulha', 'atirador-alinhado'] },
-    'avancada': { fazer: ['perseguidor', 'atirador'] },
+    // ⚠️ 'perseguidor-lado' e nao 'perseguidor': pedido dela. A avancada e a
+    // ultra ficam na altura em que nasceram e seguem so para os lados, que e o
+    // andar de jogo de nave. O REI continua com o perseguidor completo: e a
+    // escalada do ultimo nivel.
+    'avancada': { fazer: ['perseguidor-lado', 'atirador'] },
     // ⚠️ tiro 8: a mira adiantada só existe quando o tiro é mais rápido que o
     // alvo, e a nave anda a 6 por padrão. Sem este ajuste a "ultra" seria
     // idêntica à "avançada" na tela, e o menu estaria mentindo.
-    'ultra': { fazer: ['perseguidor', 'atirador-esperto'], tiro: 8 },
+    'ultra': { fazer: ['perseguidor-lado', 'atirador-esperto'], tiro: 8 },
     'rei': { fazer: ['perseguidor', 'atirador-esperto', 'raio', 'chefao'], tiro: 8 }
   };
 
@@ -1103,6 +1104,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     'patrulha': 'patrulha',
     'perseguidor': 'perseguidor',
     'perseguidor-lado': 'perseguidor de lado',
+    'perseguidor-vertical': 'perseguidor (sobe e desce)',
     'saltador': 'saltador',
     'arrancada': 'arrancada',
     'medroso': 'medroso',

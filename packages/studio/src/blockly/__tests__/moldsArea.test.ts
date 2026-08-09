@@ -13,6 +13,7 @@ import {
   SZIRV2Schema,
 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import { ESSENTIAL_2D_ALLOW_BLOCKS } from '../../career'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
 import { SERVER_BLOCK_CATALOG, type ServerBlockCatalogEntry } from '../blockCatalog'
 import { getBlockContract } from '../blockContracts'
@@ -155,8 +156,9 @@ describe('🧩 Meus moldes — a área de definições', () => {
       loops: 'sz_frame_loops',
     } as const
 
-    const areasDaPaleta = (profile: object): string[] => {
-      const extras = OFFICIAL_CATALOG.map((e) => e.blockly.toolboxCategory).filter(Boolean)
+    const areasDaPaleta = (profile: object, extensoes?: unknown[]): string[] => {
+      const extras =
+        extensoes ?? OFFICIAL_CATALOG.map((e) => e.blockly.toolboxCategory).filter(Boolean)
       const toolbox = buildCoreToolbox(extras as never, profile as never)
       const categoria = toolbox.contents.find(
         (c) => 'name' in c && c.name === '🗂️ Áreas do projeto',
@@ -215,6 +217,20 @@ describe('🧩 Meus moldes — a área de definições', () => {
           allowBlocks: ['sz_frame_start', 'sz_frame_loops'],
         }),
       ).toEqual([FRAME_DE.start, FRAME_DE.loops])
+    })
+
+    it('⭐⭐ o direito à área vem do NÍVEL, não da extensão estar carregada', () => {
+      // Relato de produção (08/08): uma criança no Construtor, no Estúdio
+      // Completo, perdeu ⚡ Quando acontecer e 🔁 Enquanto estiver rodando e não
+      // conseguia montar jogo nenhum. Ela contou o detalhe que fechou o
+      // diagnóstico: "quando criei apareceu, quando saí e voltei sumiu" — ao
+      // criar, a extensão vinha junto; ao reabrir, a paleta era montada antes de
+      // a extensão hidratar. A lista do Kit essencial é quase toda de blocos do
+      // Jogo 2D, então sem a extensão carregada não sobrava evento nem laço para
+      // "provar" o direito. ⚠️ Este cenário passa NENHUMA extensão de propósito.
+      expect(
+        areasDaPaleta({ level: 'iniciante-2d', allowBlocks: ESSENTIAL_2D_ALLOW_BLOCKS }, []),
+      ).toEqual([FRAME_DE.start, FRAME_DE.events, FRAME_DE.loops])
     })
 
     it('⭐ com blocos na paleta e nenhuma área derivada, o Ao iniciar é o piso', () => {

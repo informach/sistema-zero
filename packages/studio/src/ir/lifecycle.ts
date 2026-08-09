@@ -89,7 +89,6 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:setStateAnim',
   'g2d:defineEnemyType',
   'g2d:defineEnemySmart',
-  'g2d:enemyStateAnim',
   'g2d:createTileMapFromAsset',
   'g2d:createTileMap',
   'g2d:defineShape',
@@ -260,6 +259,7 @@ export const MOLD_ONLY_STATEMENT_TYPES = new Set([
   'g2d:defineShape',
   'g2d:defineEnemyType',
   'g2d:defineEnemySmart',
+  'g2d:allEnemiesGroup',
 
   'gk:defineMold',
   'gk:defineLook',
@@ -286,6 +286,27 @@ export const MOLD_ONLY_STATEMENT_TYPES = new Set([
  *   chefe) é conceitualmente molde, e precisa poder subir junto do molde que a
  *   usa. É a ÚNICA receita de conserto quando um molde depende de um número.
  */
+/**
+ * A área RAIZ é 🧩 Meus moldes, mas estes PODEM aparecer aninhados num corpo.
+ *
+ * ⚠️ Conjunto IRMÃO de `MOLD_ONLY_STATEMENT_TYPES`, e não uma frouxidão dele: o
+ * invariante "molde só acontece na preparação, nunca aninhado" continua valendo
+ * inteiro para quem está lá. Aqui moram os blocos que DESCREVEM o inimigo (ele
+ * "também é" atirador, a cadência dele, a animação de cada estado) e que também
+ * são usados no meio da partida para escalar dificuldade: o chefão que fica
+ * furioso na metade da vida põe o "também é" dentro do "Quando ... levar dano",
+ * e a onda seguinte fica mais dura com um "Ajustar ... vida" num temporizador.
+ *
+ * ⚠️ Por isso eles NÃO entram em `START_ONLY_STATEMENT_TYPES`: aquele conjunto
+ * proíbe aninhar, e proibir aqui mataria a receita do chefão em fases.
+ * O espelho no Blockly é o preset `mold-command`.
+ */
+export const MOLD_NESTABLE_STATEMENT_TYPES = new Set([
+  'g2d:enemyAddBehavior',
+  'g2d:setEnemyTypeParam',
+  'g2d:enemyStateAnim',
+])
+
 export const MOLD_OR_START_STATEMENT_TYPES = new Set(['funcDecl', 'var', 'declareVar'])
 
 const EVENT_BODY_ONLY_TYPES = new Set(['w3d:npcAsk'])
@@ -386,6 +407,7 @@ export function isLoopRootStatement(statement: JSStatement): boolean {
  */
 export function lifecycleAreaForStatement(statement: JSStatement): LifecycleArea {
   if (MOLD_ONLY_STATEMENT_TYPES.has(statement.type)) return 'molds'
+  if (MOLD_NESTABLE_STATEMENT_TYPES.has(statement.type)) return 'molds'
   if (LOOP_ROOT_TYPES.has(statement.type) || isContinuousCommandType(statement.type)) {
     return 'loops'
   }

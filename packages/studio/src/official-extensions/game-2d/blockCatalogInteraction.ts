@@ -312,7 +312,7 @@ export const gameTwoDInteractionBlocks = [
     // atalho manual, com um grupo comum e "Pôr o sprite no grupo" a cada
     // nascimento, deixava o morto colidindo para sempre).
     type: 'sz_g2d_all_enemies_group',
-    placement: 'start-only-command',
+    placement: 'mold-declaration',
     message0: 'Criar o grupo %1 com os inimigos de todos os tipos',
     args0: [{ type: 'field_input', name: 'NAME', text: 'todos' }],
     inputsInline: true,
@@ -379,7 +379,7 @@ export const gameTwoDInteractionBlocks = [
   },
   {
     type: 'sz_g2d_enemy_add_behavior',
-    placement: 'command',
+    placement: 'mold-command',
     message0: 'O tipo de inimigo %1 também é %2',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -395,7 +395,7 @@ export const gameTwoDInteractionBlocks = [
   },
   {
     type: 'sz_g2d_enemy_state_anim',
-    placement: 'start-only-command',
+    placement: 'mold-command',
     message0: 'Animação dos inimigos do tipo %1 no estado %2',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -429,7 +429,7 @@ export const gameTwoDInteractionBlocks = [
   },
   {
     type: 'sz_g2d_enemy_type_param',
-    placement: 'command',
+    placement: 'mold-command',
     message0: 'Ajustar no tipo de inimigo %1 o valor de %2 para %3',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },

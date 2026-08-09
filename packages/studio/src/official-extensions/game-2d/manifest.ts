@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.65.0',
+  version: '0.67.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -451,6 +451,15 @@ Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de anima
 
 Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario).
 
+**Onde cada bloco fica.** O que o inimigo É mora em **🧩 Meus moldes**: criar o tipo, somar
+comportamento, ajustar os valores e as animações de cada estado. O que a PARTIDA faz com ele fica em
+**⚙️ Ao iniciar** e nos eventos: soltar, atualizar, desenhar e reagir. A regra é essa: molde descreve
+a criatura, o resto põe ela em jogo.
+
+⚠️ Os três também cabem DENTRO de um evento, e é assim que o inimigo muda no meio do jogo: no
+**Quando um inimigo do tipo … levar dano**, some um comportamento novo, aperte a cadência dele ou até
+troque a animação de um estado para ele parecer furioso.
+
 #### Os dois jeitos de criar um tipo
 
 - **Criar tipo de inimigo**. Você escolhe o jeito dele: UM comportamento agora, e mais quantos
@@ -462,12 +471,14 @@ Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Ko
   - **burra** (patrulha + bombardeiro): anda de um lado para o outro soltando tiros para baixo,
     sem olhar para onde você está.
   - **básica** (patrulha + atirador alinhado): anda, e só atira quando você passa embaixo dele.
-  - **avançada** (perseguidor + atirador): vai atrás de você e mira em você.
-  - **ultra** (perseguidor + atirador esperto): mira onde você VAI estar. Dessa não dá para
+  - **avançada** (perseguidor de lado + atirador): te segue pelos LADOS, na altura em que
+    nasceu, e mira em você.
+  - **ultra** (perseguidor de lado + atirador esperto): também te segue pelos lados, e mira
+    onde você VAI estar. Dessa não dá para
     escapar andando reto, só mudando de direção. Ela já vem com o tiro mais rápido, que é o que
     faz a mira adiantada funcionar.
-  - **rei**: o chefão. Perseguidor, atirador esperto e raio, com cinco vezes mais vida (mas anda
-    mais devagar).
+  - **rei**: o chefão. Diferente das duas de cima, ele persegue por TODO LADO (sobe pelo ar atrás
+    de você); mais atirador esperto e raio, com cinco vezes mais vida (mas anda mais devagar).
 
   Os nomes entre parênteses são comportamentos do outro menu: a inteligência é um atalho que já
   junta as peças por você.
@@ -487,9 +498,10 @@ Os comportamentos, em três famílias:
 
 - **Anda no chão**: patrulha (anda e vira na parede ou na borda), saltador, arrancada (fica
   quieto e sai correndo quando o alvo chega perto), medroso (foge quando o alvo chega perto),
-  parado e perseguidor de lado (segue você sem mudar de altura, o jeito clássico dos jogos de
-  nave). O perseguidor também vai atrás do alvo, mas por todo lado: ele sobe pelo ar atrás de
-  você e nunca pousa.
+  parado, e os TRÊS modos de perseguir: **perseguidor** vai atrás de você por todo lado (sobe
+  pelo ar e nunca pousa), **perseguidor de lado** segue você sem mudar de altura (o jeito
+  clássico dos jogos de nave) e **perseguidor vertical** sobe e desce atrás de você sem sair da
+  coluna. Só muda o eixo em que ele se mexe; a esperteza é a mesma.
 - **Voa**: voador (para os lados, ou subindo e descendo), rondador (voa em círculo em volta de
   onde nasceu), zigue-zague, mergulhador (mergulha no alvo que passa por baixo) e teleporte
   (some e reaparece do lado do alvo).
@@ -545,6 +557,9 @@ tempo acabar.
   quanto tempo ele age e a velocidade do tiro (quem atira, e o raio usa o mesmo relógio para
   recarregar); quantos quadros o raio fica ligado; voltar depois de tantos quadros (renascer); e a
   vida dos próximos que nascerem.
+  ⚠️ O molde roda ANTES de tudo, então um ajuste que está lá vale para o jogo inteiro. Para endurecer
+  só a onda seguinte, ponha o "Ajustar" dentro de um evento ou de um "A cada N segundos": aí ele
+  acontece no meio da partida, e quem já nasceu fica como estava.
 - O tipo É um grupo: os blocos de **Muitos (grupos)** funcionam nele. Patrulha em mapa de tiles:
   some o "Impedir de atravessar" num "Para cada" que o inimigo vira sozinho na parede.
 
@@ -553,8 +568,8 @@ tempo acabar.
 Com mais de um tipo, cada tipo é um grupo separado, então uma ação que vale para todos (o seu tiro
 acertando qualquer inimigo, contar quantos faltam) pediria um bloco por tipo. O atalho é:
 
-- **Criar o grupo … com os inimigos de todos os tipos**. Ponha em **Ao iniciar**; tanto faz se antes
-  ou depois de criar os tipos. Ele é uma JANELA para todos os inimigos, sempre atualizada: quem nasce entra e quem morre
+- **Criar o grupo … com os inimigos de todos os tipos**. Ponha em **🧩 Meus moldes**, junto dos
+  tipos; tanto faz se antes ou depois deles. Ele é uma JANELA para todos os inimigos, sempre atualizada: quem nasce entra e quem morre
   sai na hora, sem você limpar nada. Aí a ação compartilhada vira um bloco só.
 
 O que funciona nesse grupo, e o que não:
@@ -595,7 +610,7 @@ tem o seu jeito de se mexer e os seus tiros. É só a parte repetida que sai.
 - **Um inimigo que às vezes não toma dano**: no bloco de colisão do seu tiro com ele, ponha o
   "Mudar a vida" DENTRO de um **se ⟨tem chance de 50%?⟩**. Metade dos tiros passa batido. Ponha um
   "Fazer o sprite piscar" no senão, para dar o barulhinho de escudo.
-- **Um chefão que renasce mais forte**: crie DOIS tipos no "Ao iniciar" (o rei e o rei renascido,
+- **Um chefão que renasce mais forte**: crie DOIS tipos em 🧩 Meus moldes (o rei e o rei renascido,
   com mais vida). No **Quando um inimigo do tipo ⟨rei⟩ for derrotado**, solte um do tipo
   ⟨rei renascido⟩ na posição dele. Ali dentro também vai o prêmio que você quiser dar ao jogador.
 

@@ -5,6 +5,7 @@ import {
   writeProjectThumb,
 } from '../state/persistence'
 import { captureCoverFromProject } from './coverCapture'
+import { takeProjectSnapshot } from './latestSnapshot'
 
 /** Tamanho da miniatura do card (proporção do palco 800×480). */
 const THUMB_WIDTH = 320
@@ -57,17 +58,37 @@ export async function downscaleToThumb(coverDataUrl: string): Promise<string | n
 }
 
 /**
+ * A miniatura a gravar, preferindo o que o PREVIEW já fotografou.
+ *
+ * ⭐ Caminho bom: enquanto a criança edita, o preview manda de tempos em tempos
+ * uma foto do jogo que está rodando na tela (ver `preview/snapshotBridge.ts`).
+ * Ela já vem no tamanho do card, então aqui é só usar — sem abrir iframe, sem
+ * rodar o jogo de novo, sem depender de o navegador entregar quadros na saída,
+ * que era exatamente o que falhava ("não é toda vez que tira o print, e quando
+ * saiu foi só a cor de fundo").
+ *
+ * ⚠️ O caminho antigo continua como RESERVA e não é decoração: cobre quem nunca
+ * abriu o preview (ficou só nos blocos), quem o deixou parado, e a foto que já
+ * envelheceu. É lento e falível, mas é o único disponível nesses casos.
+ */
+async function resolveThumb(project: Project): Promise<string | null> {
+  const doPreview = takeProjectSnapshot(project.id)
+  if (doPreview) return doPreview
+  const cover = await captureCoverFromProject(project)
+  if (!cover) return null
+  return downscaleToThumb(cover)
+}
+
+/**
  * Captura e grava a MINIATURA do projeto para o card da lista (fire-and-forget
- * ao sair do editor). Roda o projeto num iframe próprio no document.body —
- * sobrevive ao unmount do Studio — e avisa a lista pelo evento
- * `PROJECT_THUMB_UPDATED_EVENT` quando a gravação termina. Best-effort: sem
- * canvas/print/quota, o card só fica sem capa. NUNCA lança.
+ * ao sair do editor). Usa a foto que o preview já tirou; sem ela, roda o projeto
+ * num iframe próprio no document.body — que sobrevive ao unmount do Studio. Avisa
+ * a lista pelo evento `PROJECT_THUMB_UPDATED_EVENT` quando a gravação termina.
+ * Best-effort: sem canvas/print/quota, o card só fica sem capa. NUNCA lança.
  */
 export async function captureAndStoreProjectThumb(project: Project): Promise<void> {
   try {
-    const cover = await captureCoverFromProject(project)
-    if (!cover) return
-    const thumb = await downscaleToThumb(cover)
+    const thumb = await resolveThumb(project)
     if (!thumb) return
     await writeProjectThumb(project.id, thumb)
     if (typeof window !== 'undefined') {

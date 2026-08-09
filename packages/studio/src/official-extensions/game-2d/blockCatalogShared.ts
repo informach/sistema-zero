@@ -22,6 +22,10 @@ export const GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS: Array<[string, string]> = [
   ['patrulha (anda e volta)', 'patrulha'],
   ['perseguidor (vai atrás do alvo por todo lado, inclusive pelo ar)', 'perseguidor'],
   ['perseguidor de lado (segue o alvo sem mudar de altura)', 'perseguidor-lado'],
+  [
+    'perseguidor vertical (sobe e desce atrás do alvo, sem andar para os lados)',
+    'perseguidor-vertical',
+  ],
   ['saltador (pula de tempos em tempos)', 'saltador'],
   ['arrancada (fica quieto e sai correndo quando o alvo chega perto)', 'arrancada'],
   ['medroso (foge quando o alvo chega perto)', 'medroso'],
@@ -64,7 +68,10 @@ export const GAME_TWO_D_ENEMY_SMART_OPTIONS: [string, string][] = [
     'burra',
   ],
   ['básica (patrulha + atirador alinhado: anda e só atira quando você passa embaixo)', 'basica'],
-  ['avançada (perseguidor + atirador: vai atrás de você e mira em você)', 'avancada'],
-  ['ultra (perseguidor + atirador esperto: mira onde você VAI estar)', 'ultra'],
-  ['rei (o chefão: perseguidor + atirador esperto + raio, com 5 vezes mais vida)', 'rei'],
+  ['avançada (perseguidor de lado + atirador: te segue pelos lados e mira em você)', 'avancada'],
+  ['ultra (perseguidor de lado + atirador esperto: mira onde você VAI estar)', 'ultra'],
+  [
+    'rei (o chefão: persegue por TODO LADO + atirador esperto + raio, com 5 vezes mais vida)',
+    'rei',
+  ],
 ]

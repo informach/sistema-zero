@@ -78,6 +78,7 @@ export const G2D_ENEMY_BEHAVIORS = [
   'patrulha',
   'perseguidor',
   'perseguidor-lado',
+  'perseguidor-vertical',
   'saltador',
   'arrancada',
   'medroso',

@@ -398,6 +398,9 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
           w: 30,
           h: 30,
         },
+        // A cadência do canhão é IDENTIDADE dele, então mora com o molde (e
+        // depois do define, que é quem cria o tipo).
+        { type: 'g2d:setEnemyTypeParam', typeVar: 'canhao', param: 'cadencia', value: 120 },
       ],
       start: [
         { type: 'g2d:setGravity', value: 0.6 },
@@ -414,7 +417,6 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
         { type: 'g2d:score', varName: 'pontos', initial: 0 },
         { type: 'g2d:createGroup', varName: 'tiros' },
         { type: 'g2d:setScene', name: 'inicio' },
-        { type: 'g2d:setEnemyTypeParam', typeVar: 'canhao', param: 'cadencia', value: 120 },
         { type: 'g2d:spawnEnemy', typeVar: 'goomba', x: 220, y: 280 },
         { type: 'g2d:spawnEnemy', typeVar: 'goomba', x: 340, y: 280 },
         { type: 'g2d:spawnEnemy', typeVar: 'sapinho', x: 280, y: 280 },

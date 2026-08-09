@@ -21,7 +21,9 @@ describe('resolveStudioTier — ferramentas conquistadas', () => {
     expect(tier.level).toBe('iniciante-2d')
     expect(tier.allowBlocks).toEqual(ESSENTIAL_2D_ALLOW_BLOCKS)
     expect(tier.allowedExtensions).toEqual(['game-2d'])
-    expect(tier.initialExtensions).toEqual(['game-2d'])
+    // ⚠️ Nada vem instalado: a criança instala o Jogo 2D pelo painel de
+    // Extensões. `allowedExtensions` diz o que ela PODE instalar.
+    expect(tier.initialExtensions).toEqual([])
   })
 
   test.each([
