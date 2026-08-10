@@ -33,6 +33,7 @@ interface Group {
 }
 
 interface World {
+  _kind?: 'g2d-world'
   width: number
   height: number
   camera: {
@@ -44,6 +45,7 @@ interface World {
 }
 
 interface Level {
+  _kind?: 'g2d-level'
   world: World
 }
 
@@ -51,6 +53,7 @@ interface Api {
   keys: { left: boolean; right: boolean; up: boolean; down: boolean }
   setupStage(width: number, height: number, background: string): void
   createSprite(options: Partial<Sprite>): Sprite
+  setPosition(sprite: Sprite, x: number, y: number): void
   createGroup(): Group
   createTileMap(options: {
     image: string
@@ -86,6 +89,8 @@ interface Api {
   setGravity(gravity: number): void
   createLevel(world: World, spawnX: number, spawnY: number): Level
   enterLevel(level: Level, player: Sprite): void
+  resetGroupWithLevel(level: Level, group: Group): void
+  restartLevel(level: Level, player: Sprite): void
   onLevelEnter(getLevel: () => Level, fn: () => void, id?: string): void
   levelIsActive(level: Level): boolean
   collideCurrentLevel(sprite: Sprite): void
@@ -208,6 +213,19 @@ describe('Mapa tem layout definido antes do laço', () => {
 })
 
 describe('Mundo separa limites, câmera e terreno', () => {
+  it('não mantém todos os Mundos criados vivos em um registro global', () => {
+    expect(gameTwoDRuntime).not.toContain('_worldRegistry')
+  })
+
+  it('expõe tipos nominais para Mundo e Fase também no contrato público', () => {
+    const api = load()
+    const world = api.createWorld(800, 512)
+    const level = api.createLevel(world, 0, 0)
+
+    expect(world._kind).toBe('g2d-world')
+    expect(level._kind).toBe('g2d-level')
+  })
+
   it('deriva 864×512 do mapa 27×16 e a câmera percorre exatamente 0…64', () => {
     const api = load()
     const map = marioMap(api)
@@ -272,6 +290,21 @@ describe('Mundo separa limites, câmera e terreno', () => {
     expect(world.camera.y).toBe(0)
   })
 
+  it('recalibra a extremidade da câmera reversa no próximo uso após o palco mudar', () => {
+    const api = load()
+    const world = api.createWorld(1000, 800)
+
+    api.configureWorldCamera(world, 'left', 'up', 0, 0)
+    expect(world.camera.x).toBe(200)
+    expect(world.camera.y).toBe(288)
+
+    api.setupStage(600, 400, '#000000')
+    api.drawWorld(stageContext(), world)
+
+    expect(world.camera.x).toBe(400)
+    expect(world.camera.y).toBe(400)
+  })
+
   it('um Mundo de uma tela funciona com Fase e nunca liga rolagem', () => {
     const api = load()
     const world = api.createWorld(800, 512)
@@ -309,6 +342,45 @@ describe('Mundo separa limites, câmera e terreno', () => {
 })
 
 describe('Movimento com terreno não inventa chão na tela', () => {
+  it('reposicionar depois de mover não colide com o caminho antigo do sprite', () => {
+    const api = load()
+    const player = api.createSprite({ x: 0, y: 0, w: 10, h: 10, vx: 10 })
+    const wall = api.createSprite({ x: 50, y: 0, w: 10, h: 40 })
+
+    api.applyVelocity(player)
+    api.setPosition(player, 100, 0)
+    api.collideSprite(player, wall)
+
+    expect(player.x).toBe(100)
+    expect(player.vx).toBe(10)
+  })
+
+  it('atribuição manual incompatível invalida o caminho varrido antigo', () => {
+    const api = load()
+    const player = api.createSprite({ x: 0, y: 0, w: 10, h: 10, vx: 10 })
+    const wall = api.createSprite({ x: 50, y: 0, w: 10, h: 40 })
+
+    api.applyVelocity(player)
+    player.x = 100
+    api.collideSprite(player, wall)
+
+    expect(player.x).toBe(100)
+  })
+
+  it('preserva a varredura do quadro ao resolver mais de um obstáculo', () => {
+    const api = load()
+    const player = api.createSprite({ x: 0, y: 0, w: 10, h: 10, vx: 100, vy: 100 })
+    const wall = api.createSprite({ x: 50, y: 0, w: 10, h: 200 })
+    const floor = api.createSprite({ x: 0, y: 50, w: 200, h: 10 })
+
+    api.applyVelocity(player)
+    api.collideSprite(player, wall)
+    api.collideSprite(player, floor)
+
+    expect(player.x).toBe(40)
+    expect(player.y).toBe(40)
+  })
+
   it('cai por um buraco quando o Mundo não tem borda-chão', () => {
     const api = load()
     api.setGravity(1)
@@ -476,6 +548,38 @@ describe('Fases são opcionais e independentes do gênero', () => {
     expect(world.camera.x).toBe(0)
   })
 
+  it('entrar preserva o mapa e os grupos, enquanto reiniciar restaura os dois', () => {
+    const api = load()
+    const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '1 1' })
+    const world = api.createWorldFromTileMap(map, 32)
+    const enemies = api.createGroup()
+    const level = api.createLevel(world, 4, 8)
+    const player = api.createSprite({ x: 0, y: 0, w: 16, h: 16 })
+    let entries = 0
+
+    api.resetGroupWithLevel(level, enemies)
+    api.onLevelEnter(
+      () => level,
+      () => {
+        entries += 1
+        enemies.items.push(api.createSprite({ x: 40, y: 0, w: 16, h: 16 }))
+      },
+      'conteudo-da-fase',
+    )
+    api.enterLevel(level, player)
+    map.rows[0]![0] = -1
+    enemies.items.push(api.createSprite({ x: 80, y: 0, w: 16, h: 16 }))
+
+    api.enterLevel(level, player)
+    expect(map.rows[0]![0]).toBe(-1)
+    expect(enemies.items).toHaveLength(3)
+
+    api.restartLevel(level, player)
+    expect(map.rows[0]![0]).toBe(1)
+    expect(enemies.items).toHaveLength(1)
+    expect(entries).toBe(3)
+  })
+
   it('entrar descarta a posição anterior antes da primeira colisão da nova Fase', () => {
     const api = load()
     const world = api.createWorld(800, 512)
@@ -506,5 +610,52 @@ describe('Fases são opcionais e independentes do gênero', () => {
     expect(world.camera.y).toBe(688)
     expect(api.cameraX()).toBe(1200)
     expect(api.cameraY()).toBe(688)
+  })
+})
+
+describe('Layouts de tela e terreno grande permanecem responsivos', () => {
+  it('reencaixa automaticamente um mapa de tela depois que o palco muda', () => {
+    const api = load()
+    const map = api.createTileMap({
+      image: '',
+      tile: 16,
+      solid: '',
+      grid: '0 0 0 0;0 0 0 0',
+    })
+    const ctx = stageContext()
+
+    api.fitTileMapToStage(ctx, map)
+    api.setupStage(600, 400, '#000000')
+    api.drawTileMap(ctx, map)
+
+    expect(map.layout).toEqual({
+      x: 0,
+      y: 50,
+      tileSize: 150,
+      width: 600,
+      height: 300,
+      mode: 'fitted',
+    })
+  })
+
+  it('desenha somente as figuras do terreno que cruzam a câmera', () => {
+    const api = load()
+    const world = api.createWorld(40000, 512)
+    const terrain = api.createGroup()
+    for (let index = 0; index < 400; index += 1) {
+      terrain.items.push(api.createSprite({ x: index * 100, y: 100, w: 32, h: 32 }))
+    }
+    api.addSolidGroupToWorld(world, terrain)
+    let fills = 0
+    const ctx = {
+      ...stageContext(),
+      fillRect() {
+        fills += 1
+      },
+    } as CanvasRenderingContext2D
+
+    api.drawWorld(ctx, world)
+
+    expect(fills).toBeLessThan(20)
   })
 })

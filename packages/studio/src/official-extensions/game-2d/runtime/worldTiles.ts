@@ -142,7 +142,8 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       _solidIndex: { value: solidIndex, writable: true, configurable: true },
       _solidIndexSnapshot: { value: solid.slice(), writable: true, configurable: true },
       _platformIndex: { value: new Set(platform), writable: true, configurable: true },
-      _platformIndexSnapshot: { value: platform.slice(), writable: true, configurable: true }
+      _platformIndexSnapshot: { value: platform.slice(), writable: true, configurable: true },
+      _fitStageRevision: { value: -1, writable: true, configurable: true }
     });
     return map;
   }
@@ -228,9 +229,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (!_setTileMapLayout(map, x, y, tileSize, 'placed')) {
       warnOnce('mapa-vazio-posicionado', 'o mapa está vazio; coloque tiles na grade antes de posicioná-lo.');
     }
+    if (map) map._fitStageRevision = -1;
   }
-  /** Calcula uma vez o encaixe centralizado de um mapa usado como uma tela. */
-  function fitTileMapToStage(ctx, map) {
+  function _fitTileMapToCurrentStage(ctx, map) {
     if (!ctx || !map || !map.rows) return;
     var rowsN = map.rows.length;
     var cols = tileMapCols(map);
@@ -243,10 +244,25 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     var ox = Math.floor((cw - cols * cell) / 2);
     var oy = Math.floor((ch - rowsN * cell) / 2);
     _setTileMapLayout(map, ox, oy, cell, 'fitted');
+    map._fitStageRevision = _stageViewportRevision;
+  }
+  /**
+   * Marca o mapa como layout de uma tela. O encaixe é recalculado somente quando
+   * a resolução lógica do palco muda; desenho, consulta e colisão veem a mesma
+   * geometria no mesmo instante.
+   */
+  function fitTileMapToStage(ctx, map) {
+    _fitTileMapToCurrentStage(ctx, map);
+  }
+  function _refreshFittedTileMapLayout(ctx, map) {
+    if (!map || !map.layout || map.layout.mode !== 'fitted') return;
+    if (map._fitStageRevision === _stageViewportRevision) return;
+    _fitTileMapToCurrentStage(ctx || ensureStage(), map);
   }
   /** Tamanho do tile no layout preparado; compatibilidade cai no tamanho da arte. */
   function tileScreenSize(map) {
     if (!map) return 0;
+    _refreshFittedTileMapLayout(null, map);
     if (map.layout && _isFiniteNumber(map.layout.tileSize) && map.layout.tileSize > 0) {
       return map.layout.tileSize;
     }
@@ -305,7 +321,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       var legacyY = _finiteNumber(y, 0) +
         (hasCanvas ? Math.floor((ch - rowsN * legacyCell) / 2) : 0);
       _setTileMapLayout(map, legacyX, legacyY, legacyCell, 'legacy');
+      map._fitStageRevision = -1;
     }
+    _refreshFittedTileMapLayout(ctx, map);
     if (!map.layout) {
       warnOnce(
         'mapa-sem-layout',
@@ -381,12 +399,10 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (!rowsN || !colsN) return;
     var velocityX = _finiteNumber(sprite.vx, 0);
     var velocityY = _finiteNumber(sprite.vy, 0);
-    var previousX = _isFiniteNumber(sprite._previousX)
-      ? sprite._previousX
-      : sprite.x - velocityX;
-    var previousY = _isFiniteNumber(sprite._previousY)
-      ? sprite._previousY
-      : sprite.y - velocityY;
+    var previousPosition = _motionPreviousPosition(sprite);
+    try {
+    var previousX = previousPosition.x;
+    var previousY = previousPosition.y;
     var sweptLeft = Math.min(previousX, sprite.x);
     var sweptTop = Math.min(previousY, sprite.y);
     var sweptRight = Math.max(previousX + sprite.w, sprite.x + sprite.w);
@@ -533,6 +549,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
         }
       }
     }
+    } finally {
+      _refreshRecordedMotionAfterCollision(sprite, previousPosition);
+    }
   }
 
   /**
@@ -546,6 +565,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
   function collideSprite(sprite, obstacle) {
     if (!sprite || !obstacle || obstacle === sprite) return;
+    var spritePrevious = _motionPreviousPosition(sprite);
+    var obstaclePrevious = _motionPreviousPosition(obstacle);
+    try {
     _carryByGroundSupport(sprite, obstacle);
     var collisionGravity = world.gravity;
     if (_touchesGravitySupport(sprite, obstacle.x, obstacle.y, obstacle.w, obstacle.h, collisionGravity)) {
@@ -556,10 +578,10 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     // Colisão contínua: a sobreposição do quadro atual não basta quando
     // uma figura atravessa todo o obstáculo entre dois quadros. Tratamos o
     // movimento relativo para que obstáculos móveis tenham o mesmo resultado.
-    var spritePrevX = _finiteNumber(sprite._previousX, sprite.x - _finiteNumber(sprite.vx, 0));
-    var spritePrevY = _finiteNumber(sprite._previousY, sprite.y - _finiteNumber(sprite.vy, 0));
-    var obstaclePrevX = _finiteNumber(obstacle._previousX, obstacle.x - _finiteNumber(obstacle.vx, 0));
-    var obstaclePrevY = _finiteNumber(obstacle._previousY, obstacle.y - _finiteNumber(obstacle.vy, 0));
+    var spritePrevX = spritePrevious.x;
+    var spritePrevY = spritePrevious.y;
+    var obstaclePrevX = obstaclePrevious.x;
+    var obstaclePrevY = obstaclePrevious.y;
     var relativeDX = (sprite.x - spritePrevX) - (obstacle.x - obstaclePrevX);
     var relativeDY = (sprite.y - spritePrevY) - (obstacle.y - obstaclePrevY);
     var xEntry = -Infinity, xExit = Infinity;
@@ -631,6 +653,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
         }
       }
     }
+    } finally {
+      _refreshRecordedMotionAfterCollision(sprite, spritePrevious);
+    }
   }
   function collideGroup(sprite, group) {
     if (!sprite || !group || !group.items) return;
@@ -651,24 +676,24 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
    */
   function collidePlatform(sprite, platform) {
     if (!sprite || !platform || platform === sprite) return;
+    var spritePrevious = _motionPreviousPosition(sprite);
+    var platformPrevious = _motionPreviousPosition(platform);
+    try {
     _carryByGroundSupport(sprite, platform);
     var gravity = world.gravity;
     var pullsUp = _gravityPullsUp(gravity);
     var vy = _finiteNumber(sprite.vy, 0);
-    var previousY = _finiteNumber(sprite._previousY, sprite.y - vy);
-    var previousPlatformY = _finiteNumber(
-      platform._previousY,
-      platform.y - _finiteNumber(platform.vy, 0)
-    );
+    var previousY = spritePrevious.y;
+    var previousPlatformY = platformPrevious.y;
     var relativeDY = (sprite.y - previousY) - (platform.y - previousPlatformY);
     var overlapX = Math.min(sprite.x + sprite.w, platform.x + platform.w) -
       Math.max(sprite.x, platform.x);
     var previousOverlapX = Math.min(
-      _finiteNumber(sprite._previousX, sprite.x) + sprite.w,
-      _finiteNumber(platform._previousX, platform.x) + platform.w
+      spritePrevious.x + sprite.w,
+      platformPrevious.x + platform.w
     ) - Math.max(
-      _finiteNumber(sprite._previousX, sprite.x),
-      _finiteNumber(platform._previousX, platform.x)
+      spritePrevious.x,
+      platformPrevious.x
     );
     var overlapY = Math.min(sprite.y + sprite.h, platform.y + platform.h) -
       Math.max(sprite.y, platform.y);
@@ -693,6 +718,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
         (movesTowardFace || sprite._groundedLastFrame === true) &&
         (crossesFace || touchesFace)) {
       _restOnGravitySupport(sprite, platform.y, platform.h, gravity, platform);
+    }
+    } finally {
+      _refreshRecordedMotionAfterCollision(sprite, spritePrevious);
     }
   }
   function collidePlatformGroup(sprite, group) {

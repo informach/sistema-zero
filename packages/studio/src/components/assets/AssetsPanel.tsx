@@ -301,6 +301,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                     ref={fileRef}
                     id={fileInputId}
                     type="file"
+                    name="project-image-files"
                     accept="image/*"
                     multiple
                     className="hidden"
@@ -309,6 +310,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                   <input
                     ref={soundRef}
                     type="file"
+                    name="project-audio-files"
                     accept="audio/*"
                     multiple
                     className="hidden"
@@ -318,6 +320,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                     <input
                       ref={modelRef}
                       type="file"
+                      name="project-3d-files"
                       accept=".glb,.hdr"
                       multiple
                       className="hidden"
@@ -416,11 +419,16 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                       <img
                         src={asset.dataUrl}
                         alt={asset.name}
+                        width={48}
+                        height={48}
+                        loading="lazy"
                         className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
                         style={{ imageRendering: 'pixelated' }}
                       />
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <input
+                          name={`image-name-${asset.id}`}
+                          autoComplete="off"
                           defaultValue={asset.name}
                           spellCheck={false}
                           aria-label={`Nome da imagem ${asset.name}`}
@@ -496,6 +504,8 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                       🔊
                     </span>
                     <input
+                      name={`sound-name-${asset.id}`}
+                      autoComplete="off"
                       defaultValue={asset.name}
                       spellCheck={false}
                       aria-label={`Nome do som ${asset.name}`}
@@ -547,6 +557,8 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                       {asset.kind === 'model3d' ? '📦' : '🌅'}
                     </span>
                     <input
+                      name={`model-name-${asset.id}`}
+                      autoComplete="off"
                       defaultValue={asset.name}
                       spellCheck={false}
                       aria-label={`Nome do modelo 3D ${asset.name}`}
@@ -599,6 +611,9 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                       <img
                         src={drawing.dataUrl}
                         alt={drawing.name}
+                        width={48}
+                        height={48}
+                        loading="lazy"
                         className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
                         style={{ imageRendering: 'pixelated' }}
                       />
@@ -667,6 +682,9 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                     <img
                       src={lib.dataUrl}
                       alt={lib.name}
+                      width={40}
+                      height={40}
+                      loading="lazy"
                       className="h-10 w-10 object-contain"
                       style={{ imageRendering: 'pixelated' }}
                     />

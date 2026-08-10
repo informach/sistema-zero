@@ -375,6 +375,29 @@ export const aventuraHeroiExample: ExtensionExample = beginnerGameExample({
           },
         },
         {
+          type: 'g2d:createWorldFromTileMap',
+          varName: 'areaJogo',
+          mapVar: 'mapa',
+          size: {
+            type: 'num',
+            value: 40,
+          },
+        },
+        {
+          type: 'g2d:configureWorldCamera',
+          worldVar: 'areaJogo',
+          horizontal: 'free',
+          vertical: 'free',
+          deadZoneX: {
+            type: 'num',
+            value: 0,
+          },
+          deadZoneY: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
           type: 'g2d:setHitboxScale',
           spriteVar: 'heroi',
           percent: {
@@ -879,33 +902,14 @@ export const aventuraHeroiExample: ExtensionExample = beginnerGameExample({
               },
               then: [
                 {
-                  type: 'g2d:cameraFollow',
+                  type: 'g2d:followCameraInWorld',
                   spriteVar: 'heroi',
-                  worldW: {
-                    type: 'num',
-                    value: 1600,
-                  },
-                  worldH: {
-                    type: 'num',
-                    value: 1200,
-                  },
+                  worldVar: 'areaJogo',
                 },
                 {
-                  type: 'g2d:drawTileMap',
+                  type: 'g2d:drawWorld',
                   ctxVar: 'ctx',
-                  mapVar: 'mapa',
-                  x: {
-                    type: 'num',
-                    value: 560,
-                  },
-                  y: {
-                    type: 'num',
-                    value: 420,
-                  },
-                  size: {
-                    type: 'num',
-                    value: 40,
-                  },
+                  worldVar: 'areaJogo',
                 },
                 {
                   type: 'g2d:topDown',

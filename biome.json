@@ -266,14 +266,6 @@
       "includes": ["packages/studio/**"],
       "linter": {
         "rules": {
-          "a11y": {
-            "noStaticElementInteractions": "off",
-            "useKeyWithClickEvents": "off",
-            "useSemanticElements": "off",
-            "noSvgWithoutTitle": "off",
-            "useButtonType": "off",
-            "noLabelWithoutControl": "off"
-          },
           "correctness": {
             "useExhaustiveDependencies": "warn"
           },

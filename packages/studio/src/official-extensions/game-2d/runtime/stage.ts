@@ -291,6 +291,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     return _stageCtx;
   }
   var _logicalW = 0, _logicalH = 0, _resizeHooked = false, _fillMode = false;
+  var _stageViewportRevision = 0;
   var MAX_STAGE_BACKING_DPR = 3;
   var MAX_STAGE_BACKING_DIMENSION = 8192;
   var MAX_STAGE_BACKING_PIXELS = 16777216;
@@ -306,6 +307,19 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   // resolução da tela (nitidez) — os helpers usam o lógico para não dependerem disso.
   function stageW(ctx) { return _logicalW || (ctx && ctx.canvas ? ctx.canvas.width : 0); }
   function stageH(ctx) { return _logicalH || (ctx && ctx.canvas ? ctx.canvas.height : 0); }
+  function _setLogicalStageSize(width, height) {
+    var nextW = Math.max(1, Math.round(width));
+    var nextH = Math.max(1, Math.round(height));
+    var previousW = _logicalW;
+    var previousH = _logicalH;
+    _logicalW = nextW;
+    _logicalH = nextH;
+    if (previousW === nextW && previousH === nextH) return;
+    _stageViewportRevision += 1;
+    if (typeof _onStageViewportChanged === 'function') {
+      _onStageViewportChanged();
+    }
+  }
   function _applyBaseTransform() {
     if (!_stageCtx || !_logicalW || !_stageCanvas) return;
     try { _stageCtx.setTransform(_stageCanvas.width / _logicalW, 0, 0, _stageCanvas.height / _logicalH, 0, 0); } catch (e) {}
@@ -318,7 +332,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     // Modo "ocupar a tela toda": a resolução LÓGICA (coordenadas do jogo) acompanha
     // o tamanho REAL do canvas — a área do jogo É a tela e muda de tamanho com a
     // janela. Setar ANTES do guard de _logicalW (que no início é 0).
-    if (_fillMode) { _logicalW = Math.max(1, Math.round(rect.width)); _logicalH = Math.max(1, Math.round(rect.height)); }
+    if (_fillMode) _setLogicalStageSize(rect.width, rect.height);
     if (!_logicalW) return;
     var rawDpr = _positiveFiniteNumber(window.devicePixelRatio, 1);
     var dimensionScale = Math.min(
@@ -436,7 +450,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
     if (!c) return;
-    if (!_logicalW) { _logicalW = c.width || 4; _logicalH = c.height || 3; }
+    if (!_logicalW) _setLogicalStageSize(c.width || 4, c.height || 3);
     var p = (_isFiniteNumber(percent) && percent > 0 && percent <= 100) ? percent : 100;
     var ar = _logicalW / _logicalH;
     c.style.width = 'min(' + p + _viewportUnit('width') + ', ' + (p * ar) + _viewportUnit('height') + ')';
@@ -484,7 +498,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       // Congela o tamanho lógico JÁ AQUI (não espera o fitScreen): qualquer
       // leitura de stageW/stageH entre este ponto e o resize do backing veria o
       // valor FÍSICO do canvas (DPR vezes o lógico) e desenharia fora do palco.
-      _logicalW = safeWidth; _logicalH = safeHeight;
+      _setLogicalStageSize(safeWidth, safeHeight);
       if (logicalSizeLimited) {
         warnOnce(
           'stage-logical-budget',

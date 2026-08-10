@@ -19,12 +19,11 @@ export function ZappyCredits({ credits }: { credits?: AiCreditsView | null }): J
   return (
     <div className="border-sz-border border-b px-4 py-1.5">
       <span
-        role="group"
-        aria-label={meter.ariaLabel}
         // Âmbar, nunca vermelho: acabar a ajuda não é falha, é uma fronteira.
         className={cn('text-xs', alerta ? 'font-bold text-sz-warn' : 'text-sz-fg-mute')}
       >
-        {meter.inline}
+        <span className="sr-only">{meter.ariaLabel}</span>
+        <span aria-hidden="true">{meter.inline}</span>
       </span>
     </div>
   )

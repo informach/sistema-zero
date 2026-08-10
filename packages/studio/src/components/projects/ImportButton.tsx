@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useRef, useState } from 'react'
 import { Button, Modal } from '#ui'
-import { MAX_PROJECT_IMPORT_CHARS, useProjectStore } from '../../state/projectStore'
+import { MAX_PROJECT_IMPORT_CHARS } from '../../state/projectLimits'
 import { useT } from '../../studio/i18n'
 
 export interface ImportButtonProps {
@@ -13,7 +13,6 @@ export interface ImportButtonProps {
 export function ImportButton({ onImported, allowedExtensions }: ImportButtonProps): JSX.Element {
   const t = useT()
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const importFromJSON = useProjectStore((s) => s.importProjectFromJSON)
   const [error, setError] = useState<string | null>(null)
   // Avisos não-fatais do import (cota/permissão/bloco desconhecido): o projeto FOI
   // criado, mas mostramos o que ficou de fora antes de abrir. A navegação
@@ -49,7 +48,10 @@ export function ImportButton({ onImported, allowedExtensions }: ImportButtonProp
         setError(t('projects.importNotJson'))
         return
       }
-      const { project, warnings: importWarnings } = await importFromJSON(parsed)
+      const { useProjectStore } = await import('../../state/projectStore')
+      const { project, warnings: importWarnings } = await useProjectStore
+        .getState()
+        .importProjectFromJSON(parsed)
       const warns = [...importWarnings]
       if (allowedExtensions) {
         const unavailable = project.installedExtensions
@@ -90,6 +92,7 @@ export function ImportButton({ onImported, allowedExtensions }: ImportButtonProp
       <input
         ref={inputRef}
         type="file"
+        name="project-import-file"
         aria-label="Importar projeto"
         accept="application/json,.json"
         className="hidden"

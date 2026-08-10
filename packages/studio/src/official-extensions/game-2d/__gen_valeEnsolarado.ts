@@ -20,7 +20,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *   (platformer + collideGroup contra o grupo de plataformas). As "collisions"
  *   do original (CollisionBlock a partir da grade) viram retângulos coloridos.
  * - MUNDO MAIOR que a tela: o palco 480×270 mostra parte de um vale 960×270,
- *   e a câmera acompanha (cameraFollow), como o scroll do original.
+ *   e a câmera acompanha dentro da área do jogo, como o scroll do original.
  * - GEMAS: o coletável do original (símbolo 18 no l_Gems). Junte as 6 gemas para
  *   VENCER (o "colete todas as gemas" do original). overlapSpriteGroup remove a
  *   gema, dá 10 pontos e som.
@@ -41,6 +41,8 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  */
 export const VALE_ENSOLARADO_SOURCE = `
 SZGame2D.fitScreen(100);
+const areaJogo = SZGame2D.createWorld(960, 270);
+SZGame2D.configureWorldCamera(areaJogo, "free", "off", 0, 0);
 SZGame2D.setGravity(0.6);
 SZGame2D.defineShape("raposinha", function (ctx) {
   SZGame2D.paintCircle(ctx, 14, 9, 8, "#e8813a");
@@ -122,7 +124,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Vale Ensolarado", "Ande e pule pelo vale para juntar as 6 gemas azuis. Desvie do gambá e da águia. Use as setas e a seta pra cima para pular!", "Aperte Enter para começar", "#1d5a78");
   }
   if (SZGame2D.sceneIs("jogando")) {
-    SZGame2D.cameraFollow(heroi, 960, 270);
+    SZGame2D.followCameraInWorld(heroi, areaJogo);
     SZGame2D.arrowsX(heroi, 3);
     SZGame2D.applyGravity(heroi);
     SZGame2D.applyVelocity(heroi);

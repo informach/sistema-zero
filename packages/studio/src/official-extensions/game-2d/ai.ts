@@ -26,7 +26,7 @@ API global injetada como window.SZGame2D:
 - spawnBullet(grupo, { x, y, radius, color, vx, vy }): cria um TIRO (bolinha com brilho/glow) no grupo; x/y = centro. Bloco "Criar tiro no grupo".
 - arrowsX(sprite, speed): move o sprite SÓ na horizontal com as setas (combine com clampToScreen). Bloco "Mover o sprite com as setas".
 - blink(sprite, frames): faz o sprite PISCAR por N quadros (invencibilidade ao levar dano). Bloco "Fazer o sprite piscar".
-- everyFrames agora aceita NÚMERO ou VARIÁVEL no intervalo (ex.: a cada [intervalo] quadros) — dá para acelerar o spawn por fase.
+- everyFrames agora aceita NÚMERO ou VARIÁVEL no intervalo (ex.: a cada [intervalo] quadros) — dá para acelerar o spawn por onda.
 - spawnAsteroid varia o tamanho de cada asteroide sozinho; showScreen escurece de leve (o jogo aparece atrás) e quebra o subtítulo em linhas.
 - isColliding(a, b): AABB.
 - onStart(fn): adapter interno usado pelo gerador para reinício; NÃO gere essa
@@ -83,6 +83,7 @@ Funções gerais — mira/contas, vida/tempo, aparência, mundo e pausa:
 - isMoving(s)/isMovingH(s)/isMovingV(s): true se o sprite se move (geral/horizontal/vertical) — use em if (limiar 0.01).
 - randomX(largura?)/randomY(altura?): posição x/y aleatória NA TELA. Passe a largura/altura do sprite para ele caber inteiro; sem argumento preserva 0..largura/altura. Evita Math.random()*largura na mão.
 - pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
+- setPosition(s, x, y): teleporta/respawna sem colidir com o caminho antigo. Nunca gere atribuições x/y pareadas para o bloco de posição.
 - flipSprite(s, 'left'|'right') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): espelhar/transparência/tamanho.
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
 - pauseGame()/resumeGame()/isPaused(): pausa congela os loops e contatos; teclas/cliques continuam ativos para permitir retomar.
@@ -104,8 +105,11 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
   limites; em Mundo do tamanho da tela a câmera fica em 0. collideWorld resolve todo o terreno;
   drawWorld desenha mapa e figuras uma vez, usando a câmera. HUD vem DEPOIS para ficar fixo.
 - FASE é progressão OPCIONAL: um Mundo + posição inicial do jogador + evento de entrada.
-  createLevel(world, x, y), enterLevel(level, player), onLevelEnter(() => level, fn), levelIsActive(level).
-  Entrar zera vx/vy, apoio e câmera e põe o jogador no início; vida e pontuação continuam. Dentro do
+  createLevel(world, x, y), enterLevel(level, player), restartLevel(level, player),
+  resetGroupWithLevel(level, group), onLevelEnter(() => level, fn), levelIsActive(level).
+  Entrar preserva tiles e grupos; reiniciar restaura os tiles e limpa os grupos registrados antes
+  do evento recriá-los. Os dois zeram vx/vy, apoio e câmera e põem o jogador no início; vida e
+  pontuação continuam. Dentro do
   quadro, collideCurrentLevel/followCurrentLevelCamera/drawCurrentLevel usam a fase atual. Fases
   também servem para nave, puzzle ou mapa do tamanho da tela; não significam plataforma nem câmera.
 - ESCOLHA DIDÁTICA: uma tela fixa pode usar só Mapa; um jogo único rolável usa Mapa + Mundo sem
@@ -178,7 +182,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   O addEnemyTypeBehavior continua somando por cima (é assim que um burro ganha raio).
 - onEnemyHurt(tipo, function (chefe) {...}): DENTRO de Quando acontecer, registrar UMA vez. Roda
   quando o inimigo PERDE vida e continua vivo (quem morre vai pelo onEnemyDefeated). É o gancho de
-  FASE do chefão: leia getHealth/getMaxHealth ali e deixe-o furioso na metade.
+  MUDANÇA DE FORMA do chefão: leia getHealth/getMaxHealth ali e deixe-o furioso na metade.
 - overlapEnemyBeams(() => sprite, tipo, function (dono) {...}): DENTRO do gameLoop; roda enquanto o
   RAIO ligado encosta no sprite. Não remove nada (o feixe continua). Use hurtByEnemy(sprite, dono)
   dentro: os 45 quadros de invencibilidade dele é que dão o ritmo do dano.

@@ -79,6 +79,14 @@ describe('game-2d — todos os exemplos da vitrine', () => {
     expect(counts).toEqual({ game: 26, demo: 5, exploration: 1 })
   })
 
+  it('não ensina os blocos ambíguos de câmera e desenho mantidos só para projetos antigos', () => {
+    for (const example of gameTwoDExamples) {
+      const types = collectTypes(example.ir)
+      expect(types.has('g2d:cameraFollow')).toBe(false)
+      expect(types.has('g2d:drawTileMap')).toBe(false)
+    }
+  })
+
   for (const ex of gameTwoDExamples) {
     describe(ex.name, () => {
       it('IR válido no SZIRSchema, sem rawJS', () => {
@@ -414,7 +422,8 @@ describe('cameraAdventureExample (game-2d) — câmera + som (v0.16.0)', () => {
   it('gera câmera, paisagem, música, coleta, instruções e conclusão', () => {
     const code = compileStatements(behaviorStatements(cameraAdventureExample.ir), 0)
     expect(code).toContain('SZGame2D.playMusic("adventure")')
-    expect(code).toContain('SZGame2D.cameraFollow(heroi, 1600, 320)')
+    expect(code).toContain('const areaJogo = SZGame2D.createWorld(1600, 320)')
+    expect(code).toContain('SZGame2D.followCameraInWorld(heroi, areaJogo)')
     expect(code).toContain('SZGame2D.playFx("coin")')
     expect(code).toContain('const paisagem = SZGame2D.createGroup()')
     expect(code).toContain('SZGame2D.drawGroup(ctx, paisagem)')

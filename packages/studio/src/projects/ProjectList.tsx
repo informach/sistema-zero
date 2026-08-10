@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '#ui'
 import { listProTemplates } from '../components/code/pro-templates'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
@@ -14,11 +14,14 @@ import {
   PROJECT_THUMB_UPDATED_EVENT,
   type ProjectSummary,
 } from '../state/persistence'
-import { useProjectStore } from '../state/projectStore'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { useT } from '../studio/i18n'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
-import { KitGallery } from './KitGallery'
+
+const LazyKitGallery = lazy(async () => {
+  const module = await import('./KitGallery')
+  return { default: module.KitGallery }
+})
 
 export interface ProjectListProps {
   /** Chamado quando um projeto deve abrir no editor (criado, importado ou clicado). */
@@ -78,8 +81,6 @@ export function ProjectList({
   showExamples = false,
 }: ProjectListProps): JSX.Element {
   const t = useT()
-  const createProject = useProjectStore((s) => s.createProject)
-  const createProProject = useProjectStore((s) => s.createProProject)
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -143,6 +144,8 @@ export function ProjectList({
   const templates = useMemo(() => (professional ? listProTemplates() : undefined), [professional])
 
   const handleCreate = async (name: string, opts?: NewProjectCreateOptions) => {
+    const { useProjectStore } = await import('../state/projectStore')
+    const { createProject, createProProject } = useProjectStore.getState()
     const created =
       opts?.kind === 'pro'
         ? await createProProject(name, opts.templateId)
@@ -233,7 +236,17 @@ export function ProjectList({
               // (sem exemplos), o "criar do zero" vira a ação principal.
               <div className="flex flex-col gap-6 rounded-2xl border-2 border-dashed border-sz-border bg-sz-panel/40 p-6">
                 <p className="text-base text-sz-fg-soft">{t('projects.empty')}</p>
-                {showExamples ? <KitGallery onOpenProject={onOpenProject} /> : null}
+                {showExamples ? (
+                  <Suspense
+                    fallback={
+                      <p role="status" className="text-sm text-sz-fg-soft">
+                        {t('kits.loading')}
+                      </p>
+                    }
+                  >
+                    <LazyKitGallery onOpenProject={onOpenProject} />
+                  </Suspense>
+                ) : null}
                 <div>
                   <Button
                     variant={showExamples ? 'ghost' : 'primary'}
@@ -262,7 +275,15 @@ export function ProjectList({
                     </Button>
                     {kitsOpen ? (
                       <div className="mt-4 rounded-2xl border-2 border-sz-border bg-sz-panel/40 p-4">
-                        <KitGallery onOpenProject={onOpenProject} />
+                        <Suspense
+                          fallback={
+                            <p role="status" className="text-sm text-sz-fg-soft">
+                              {t('kits.loading')}
+                            </p>
+                          }
+                        >
+                          <LazyKitGallery onOpenProject={onOpenProject} />
+                        </Suspense>
                       </div>
                     ) : null}
                   </div>

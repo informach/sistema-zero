@@ -173,7 +173,11 @@ export function Menu({
               className="fixed z-50 max-h-[min(70vh,32rem)] min-w-56 overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg"
             >
               {sections.map((section, si) => (
-                <div key={section.id} role="group" aria-label={section.label}>
+                <fieldset
+                  key={section.id}
+                  aria-label={section.label}
+                  className="m-0 min-w-0 border-0 p-0"
+                >
                   {si > 0 && <div aria-hidden="true" className="my-1 h-px bg-sz-border" />}
                   {section.label && (
                     <div className="px-3 pb-1 pt-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-sz-fg-mute">
@@ -219,7 +223,7 @@ export function Menu({
                       </button>
                     )
                   })}
-                </div>
+                </fieldset>
               ))}
             </div>
           </StudioThemeScope>,

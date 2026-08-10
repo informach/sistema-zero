@@ -47,7 +47,9 @@ describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
       'g2d:spawnInGroup', // cada plataforma é um retângulo do grupo
       'g2d:collideGroup', // colisão sólida com as plataformas (pousa em cima)
       'g2d:clampToScreen', // não deixa o herói sair da coluna do mundo
-      'g2d:cameraFollow', // a câmera sobe com o herói (o pan do original)
+      'g2d:createWorld', // o mundo vertical existe sem depender da Fase
+      'g2d:configureWorldCamera',
+      'g2d:followCameraInWorld', // a câmera sobe com o herói
       'g2d:createSprite', // a bandeira do topo
       'g2d:spriteY', // detecta a chegada ao topo
       'g2d:playMusic',
@@ -77,7 +79,7 @@ describe('Exemplo Escalada do Guerreiro — drift contra o parser real', () => {
     const rawFrame = JSON.stringify(frameLoop)
     // O mundo tem 960 de altura (maior que os 480 do palco): a câmera sobe.
     expect(rawFrame).toContain(
-      '"type":"g2d:cameraFollow","spriteVar":"heroi","worldW":{"type":"num","value":320},"worldH":{"type":"num","value":960}',
+      '"type":"g2d:followCameraInWorld","spriteVar":"heroi","worldVar":"areaJogo"',
     )
     // A vitória dispara quando o herói passa da linha do topo (spriteY < 90).
     expect(rawFrame).toContain(

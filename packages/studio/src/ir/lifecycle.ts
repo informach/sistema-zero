@@ -101,6 +101,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:setWorldEdges',
   'g2d:configureWorldCamera',
   'g2d:createLevel',
+  'g2d:resetGroupWithLevel',
   'g2d:defineShape',
 
   'gk:setup',

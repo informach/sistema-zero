@@ -19,7 +19,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     return !!value && value._kind === 'g2d-level' && _isGameWorld(value.world);
   }
   function createWorld(width, height) {
-    return {
+    var worldValue = {
       _kind: 'g2d-world',
       width: _worldDimension(width, 800),
       height: _worldDimension(height, 480),
@@ -33,8 +33,11 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
         vertical: 'off',
         deadZoneX: 0,
         deadZoneY: 0
-      }
+      },
+      _viewportWidth: 0,
+      _viewportHeight: 0
     };
+    return worldValue;
   }
   function _mapFitsWorld(worldValue, map) {
     if (!_isGameWorld(worldValue) || !map || !map.layout) return false;
@@ -147,6 +150,41 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     var maxY = Math.max(0, worldValue.height - stageH(ctx));
     worldValue.camera.x = worldValue.camera.horizontal === 'left' ? maxX : 0;
     worldValue.camera.y = worldValue.camera.vertical === 'up' ? maxY : 0;
+    worldValue._viewportWidth = stageW(ctx);
+    worldValue._viewportHeight = stageH(ctx);
+  }
+  /**
+   * Mantém a âncora da câmera sem um registro global forte. Mundos inativos se
+   * atualizam quando voltam a ser usados; somente a Fase ativa sincroniza já no
+   * evento de resize.
+   */
+  function _syncWorldViewport(worldValue) {
+    if (!_isGameWorld(worldValue)) return;
+    var ctx = ensureStage();
+    var nextW = stageW(ctx), nextH = stageH(ctx);
+    var previousW = worldValue._viewportWidth || nextW;
+    var previousH = worldValue._viewportHeight || nextH;
+    if (previousW === nextW && previousH === nextH) return;
+    var oldMaxX = Math.max(0, worldValue.width - previousW);
+    var oldMaxY = Math.max(0, worldValue.height - previousH);
+    var nextMaxX = Math.max(0, worldValue.width - nextW);
+    var nextMaxY = Math.max(0, worldValue.height - nextH);
+    if (worldValue.camera.horizontal === 'left') {
+      worldValue.camera.x = nextMaxX - Math.max(0, oldMaxX - worldValue.camera.x);
+    }
+    if (worldValue.camera.vertical === 'up') {
+      worldValue.camera.y = nextMaxY - Math.max(0, oldMaxY - worldValue.camera.y);
+    }
+    worldValue.camera.x = Math.max(0, Math.min(nextMaxX, worldValue.camera.x));
+    worldValue.camera.y = Math.max(0, Math.min(nextMaxY, worldValue.camera.y));
+    worldValue._viewportWidth = nextW;
+    worldValue._viewportHeight = nextH;
+  }
+  function _onStageViewportChanged() {
+    if (!_currentLevel) return;
+    _syncWorldViewport(_currentLevel.world);
+    camera.x = _currentLevel.world.camera.x;
+    camera.y = _currentLevel.world.camera.y;
   }
   function _followCameraAxis(current, center, viewport, worldSize, deadZone, mode, positiveMode, negativeMode) {
     if (mode === 'off' || !(viewport > 0)) return 0;
@@ -161,6 +199,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   }
   function followCameraInWorld(sprite, worldValue) {
     if (!sprite || !_isGameWorld(worldValue)) return;
+    _syncWorldViewport(worldValue);
     var ctx = ensureStage();
     var viewW = stageW(ctx), viewH = stageH(ctx);
     var centerX = _finiteNumber(sprite.x, 0) + _finiteNumber(sprite.w, 0) / 2;
@@ -220,6 +259,116 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       _confirmGroundSupport(sprite, null);
     }
   }
+  // Índice espacial do terreno desenhado por figuras. O grupo continua sendo a
+  // fonte da verdade; o índice é reconstruído se pertencimento OU geometria
+  // mudarem, inclusive por atribuição direta no modo Código.
+  var TERRAIN_SPATIAL_CELL = 128;
+  var MAX_TERRAIN_BUCKETS_PER_SPRITE = 4096;
+  function _terrainGeometryIsCurrent(entry) {
+    var items = entry.group.items;
+    var snapshot = entry._spatialGeometry;
+    if (!snapshot || snapshot.length !== items.length * 7 ||
+        entry._spatialRevision !== entry.group._revision) return false;
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var offset = i * 7;
+      var previous = item ? _motionPreviousPosition(item) : { x: 0, y: 0 };
+      if (snapshot[offset] !== item ||
+          snapshot[offset + 1] !== (item && item.x) ||
+          snapshot[offset + 2] !== (item && item.y) ||
+          snapshot[offset + 3] !== (item && item.w) ||
+          snapshot[offset + 4] !== (item && item.h) ||
+          snapshot[offset + 5] !== previous.x ||
+          snapshot[offset + 6] !== previous.y) return false;
+    }
+    return true;
+  }
+  function _terrainBucketKey(col, row) { return col + ':' + row; }
+  function _rebuildTerrainSpatialIndex(entry) {
+    var items = entry.group.items;
+    var buckets = new Map();
+    var large = [];
+    var geometry = [];
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var previous = item ? _motionPreviousPosition(item) : { x: 0, y: 0 };
+      geometry.push(
+        item,
+        item && item.x,
+        item && item.y,
+        item && item.w,
+        item && item.h,
+        previous.x,
+        previous.y
+      );
+      if (!item) continue;
+      var w = _finiteNumber(item.w, 0), h = _finiteNumber(item.h, 0);
+      var left = Math.min(previous.x, _finiteNumber(item.x, 0));
+      var top = Math.min(previous.y, _finiteNumber(item.y, 0));
+      var right = Math.max(previous.x + w, _finiteNumber(item.x, 0) + w);
+      var bottom = Math.max(previous.y + h, _finiteNumber(item.y, 0) + h);
+      if (!(right >= left && bottom >= top)) continue;
+      var c0 = Math.floor(left / TERRAIN_SPATIAL_CELL);
+      var c1 = Math.floor((right - 0.0001) / TERRAIN_SPATIAL_CELL);
+      var r0 = Math.floor(top / TERRAIN_SPATIAL_CELL);
+      var r1 = Math.floor((bottom - 0.0001) / TERRAIN_SPATIAL_CELL);
+      var bucketCount = (c1 - c0 + 1) * (r1 - r0 + 1);
+      if (!(bucketCount > 0) || bucketCount > MAX_TERRAIN_BUCKETS_PER_SPRITE) {
+        large.push(i);
+        continue;
+      }
+      for (var row = r0; row <= r1; row++) for (var col = c0; col <= c1; col++) {
+        var key = _terrainBucketKey(col, row);
+        var bucket = buckets.get(key);
+        if (!bucket) { bucket = []; buckets.set(key, bucket); }
+        bucket.push(i);
+      }
+    }
+    entry._spatialBuckets = buckets;
+    entry._spatialLarge = large;
+    entry._spatialGeometry = geometry;
+    entry._spatialRevision = entry.group._revision;
+  }
+  function _terrainCandidates(entry, left, top, right, bottom) {
+    if (!_terrainGeometryIsCurrent(entry)) _rebuildTerrainSpatialIndex(entry);
+    var selected = new Set(entry._spatialLarge || []);
+    var c0 = Math.floor(left / TERRAIN_SPATIAL_CELL);
+    var c1 = Math.floor((right - 0.0001) / TERRAIN_SPATIAL_CELL);
+    var r0 = Math.floor(top / TERRAIN_SPATIAL_CELL);
+    var r1 = Math.floor((bottom - 0.0001) / TERRAIN_SPATIAL_CELL);
+    var queryBuckets = (c1 - c0 + 1) * (r1 - r0 + 1);
+    if (!(queryBuckets > 0) || queryBuckets > MAX_TERRAIN_BUCKETS_PER_SPRITE) {
+      var all = [];
+      for (var allIndex = 0; allIndex < entry.group.items.length; allIndex++) all.push(allIndex);
+      return all;
+    }
+    for (var row = r0; row <= r1; row++) for (var col = c0; col <= c1; col++) {
+      var bucket = entry._spatialBuckets.get(_terrainBucketKey(col, row));
+      if (bucket) for (var i = 0; i < bucket.length; i++) selected.add(bucket[i]);
+    }
+    return Array.from(selected).sort(function (a, b) { return a - b; });
+  }
+  function _collideTerrainEntry(sprite, entry) {
+    var previous = _motionPreviousPosition(sprite);
+    var left = Math.min(previous.x, sprite.x) - 1;
+    var top = Math.min(previous.y, sprite.y) - 1;
+    var right = Math.max(previous.x + sprite.w, sprite.x + sprite.w) + 1;
+    var bottom = Math.max(previous.y + sprite.h, sprite.y + sprite.h) + 1;
+    var indices = _terrainCandidates(entry, left, top, right, bottom);
+    var previousResolutionGroup = sprite._supportResolutionGroup;
+    sprite._supportResolutionGroup = entry.group;
+    _beginSupportResolution(sprite);
+    try {
+      for (var i = 0; i < indices.length; i++) {
+        var obstacle = entry.group.items[indices[i]];
+        if (entry.kind === 'solid') collideSprite(sprite, obstacle);
+        else collidePlatform(sprite, obstacle);
+      }
+    } finally {
+      _endSupportResolution(sprite);
+      sprite._supportResolutionGroup = previousResolutionGroup;
+    }
+  }
   function collideWorld(sprite, worldValue) {
     if (!sprite || !_isGameWorld(worldValue)) return;
     _beginSupportResolution(sprite);
@@ -228,9 +377,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
         collideTileMap(sprite, worldValue.tileMaps[i]);
       }
       for (var j = 0; j < worldValue.terrain.length; j++) {
-        var entry = worldValue.terrain[j];
-        if (entry.kind === 'solid') collideGroup(sprite, entry.group);
-        else collidePlatformGroup(sprite, entry.group);
+        _collideTerrainEntry(sprite, worldValue.terrain[j]);
       }
       _collideWorldEdges(sprite, worldValue);
     } finally {
@@ -239,13 +386,23 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   }
   function drawWorld(ctx, worldValue) {
     if (!ctx || !_isGameWorld(worldValue)) return;
+    _syncWorldViewport(worldValue);
     camera.x = worldValue.camera.x;
     camera.y = worldValue.camera.y;
     var camOn = camera.x !== 0 || camera.y !== 0;
     if (camOn) { ctx.save(); ctx.translate(-camera.x, -camera.y); }
-    for (var i = 0; i < worldValue.tileMaps.length; i++) drawTileMap(ctx, worldValue.tileMaps[i]);
-    for (var j = 0; j < worldValue.terrain.length; j++) drawGroup(ctx, worldValue.terrain[j].group);
-    if (camOn) ctx.restore();
+    try {
+      for (var i = 0; i < worldValue.tileMaps.length; i++) drawTileMap(ctx, worldValue.tileMaps[i]);
+      var visible = _visibleWorldRect(ctx);
+      for (var j = 0; j < worldValue.terrain.length; j++) {
+        var entry = worldValue.terrain[j];
+        var indices = _terrainCandidates(entry, visible.left, visible.top, visible.right, visible.bottom);
+        entry.group._drawn = true;
+        for (var k = 0; k < indices.length; k++) drawSprite(ctx, entry.group.items[indices[k]]);
+      }
+    } finally {
+      if (camOn) ctx.restore();
+    }
   }
 
   function createLevel(worldValue, spawnX, spawnY) {
@@ -253,13 +410,47 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       warnOnce('fase-sem-mundo', 'crie um Mundo antes de criar a Fase.');
       worldValue = createWorld(1, 1);
     }
-    return {
+    var level = {
       _kind: 'g2d-level',
       world: worldValue,
       spawnX: _finiteNumber(spawnX, 0),
       spawnY: _finiteNumber(spawnY, 0),
-      _entryGeneration: 0
+      resetGroups: [],
+      _entryGeneration: 0,
+      _mapSnapshots: null
     };
+    return level;
+  }
+  function _cloneTileRows(rows) {
+    var result = [];
+    if (!rows) return result;
+    for (var i = 0; i < rows.length; i++) result.push(rows[i] ? rows[i].slice() : []);
+    return result;
+  }
+  /**
+   * A linha de base nasce na primeira entrada, depois que todos os blocos de
+   * preparação tiveram chance de montar o Mundo. Mapas adicionados mais tarde
+   * ganham sua própria linha de base sem sobrescrever os snapshots existentes.
+   */
+  function _ensureLevelMapSnapshots(level) {
+    if (!level._mapSnapshots) level._mapSnapshots = [];
+    var maps = level.world.tileMaps;
+    for (var i = 0; i < maps.length; i++) {
+      var map = maps[i];
+      var known = false;
+      for (var j = 0; j < level._mapSnapshots.length; j++) {
+        if (level._mapSnapshots[j].map === map) { known = true; break; }
+      }
+      if (!known) level._mapSnapshots.push({ map: map, rows: _cloneTileRows(map.rows) });
+    }
+  }
+  /** Registra conteúdo dinâmico que pertence à Fase e deve renascer no reinício. */
+  function resetGroupWithLevel(level, group) {
+    if (!_isGameLevel(level) || !group || !group.items) {
+      warnOnce('grupo-de-fase-invalido', 'escolha uma Fase e um grupo para reiniciar juntos.');
+      return;
+    }
+    if (level.resetGroups.indexOf(group) === -1) level.resetGroups.push(group);
   }
   function _runLevelEnterHandler(handlerId, handler, generation) {
     if (!handler || handler.lastGeneration === generation) return;
@@ -297,17 +488,12 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       return;
     }
     _currentLevel = level;
+    _ensureLevelMapSnapshots(level);
     _levelEntryGeneration += 1;
     level._entryGeneration = _levelEntryGeneration;
-    player.x = level.spawnX;
-    player.y = level.spawnY;
+    setPosition(player, level.spawnX, level.spawnY);
     player.vx = 0;
     player.vy = 0;
-    _detachGroundSupport(player);
-    // Uma posição anterior de outro Mundo não pode participar da primeira
-    // colisão varrida da nova Fase.
-    player._previousX = level.spawnX;
-    player._previousY = level.spawnY;
     player._supportResolutionDepth = 0;
     player._supportResolutionGroup = null;
     delete player._supportPreferenceOwner;
@@ -316,6 +502,24 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     camera.x = level.world.camera.x;
     camera.y = level.world.camera.y;
     _dispatchLevelEnter(level);
+  }
+  /**
+   * Reinício é deliberadamente diferente de entrada: restaura tiles quebrados,
+   * esvazia somente os grupos registrados pela criança e então dispara a mesma
+   * entrada para que o conteúdo inicial seja criado uma vez.
+   */
+  function restartLevel(level, player) {
+    if (!_isGameLevel(level) || !player) {
+      warnOnce('reinicio-de-fase-invalido', 'escolha uma Fase e um sprite para reiniciá-la.');
+      return;
+    }
+    _ensureLevelMapSnapshots(level);
+    for (var i = 0; i < level._mapSnapshots.length; i++) {
+      var snapshot = level._mapSnapshots[i];
+      snapshot.map.rows = _cloneTileRows(snapshot.rows);
+    }
+    for (var j = 0; j < level.resetGroups.length; j++) clearGroup(level.resetGroups[j]);
+    enterLevel(level, player);
   }
   function onLevelEnter(getLevel, fn, id) {
     if (typeof getLevel !== 'function' || typeof fn !== 'function') return;

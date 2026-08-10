@@ -516,6 +516,8 @@ export function KitGallery({
             {t('kits.search.label')}
             <input
               type="search"
+              name="kit-search"
+              autoComplete="off"
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
               placeholder={t('kits.search.placeholder')}
@@ -525,6 +527,7 @@ export function KitGallery({
           <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
             {t('kits.filter.difficulty')}
             <select
+              name="kit-difficulty"
               value={difficulty}
               onChange={(event) =>
                 setDifficulty(event.currentTarget.value as 'all' | ExtensionExampleDifficulty)
@@ -540,6 +543,7 @@ export function KitGallery({
           <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
             {t('kits.filter.experience')}
             <select
+              name="kit-experience"
               value={experience}
               onChange={(event) =>
                 setExperience(event.currentTarget.value as 'all' | ExampleExperience)
@@ -555,7 +559,7 @@ export function KitGallery({
         </div>
       ) : null}
       {!hasActiveFilters && featuredEntries.length > 0 ? (
-        <div className="flex flex-col gap-2 rounded-xl border border-sz-accent/40 bg-sz-accent/5 p-3">
+        <div className="sz-kit-content-group flex flex-col gap-2 rounded-xl border border-sz-accent/40 bg-sz-accent/5 p-3">
           <div>
             <h4 className="text-sm font-semibold text-sz-fg">{t('kits.path.title')}</h4>
             <p className="text-xs text-sz-fg-soft">{t('kits.path.subtitle')}</p>
@@ -588,7 +592,7 @@ export function KitGallery({
         </p>
       ) : null}
       {visibleGroups.map((group) => (
-        <div key={group.label} className="flex flex-col gap-2">
+        <div key={group.label} className="sz-kit-content-group flex flex-col gap-2">
           <h4 className="text-xs font-semibold uppercase tracking-wide text-sz-fg-soft">
             {group.label}
           </h4>

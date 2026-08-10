@@ -340,6 +340,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_create_level',
       'sz_g2d_enter_level',
+      'sz_g2d_level_reset_group',
+      'sz_g2d_restart_level',
       'sz_g2d_on_level_enter',
       'sz_g2d_level_is_active',
       'sz_g2d_current_level_collide',

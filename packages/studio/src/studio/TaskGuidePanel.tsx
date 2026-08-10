@@ -67,6 +67,7 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }): JSX
           <label key={item.id} className="flex min-h-9 items-start gap-2 rounded-lg bg-sz-bg p-2">
             <input
               type="checkbox"
+              name={`task-step-${item.id}`}
               className="mt-1"
               disabled={updating || session.progress.status === 'completed'}
               checked={session.progress.completedStepIds.includes(item.id)}
@@ -100,6 +101,7 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }): JSX
           <label key={item.id} className="flex min-h-9 items-start gap-2 font-semibold">
             <input
               type="checkbox"
+              name={`task-criterion-${item.id}`}
               className="mt-1"
               disabled={updating || session.progress.status === 'completed'}
               checked={session.progress.completedCriteriaIds.includes(item.id)}

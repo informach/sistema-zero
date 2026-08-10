@@ -3460,6 +3460,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:setOpacity', spriteVar, percent }
         : null
     }
+    case 'setPosition': {
+      const spriteVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return spriteVar && isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'g2d:setPosition', spriteVar, x, y }
+        : null
+    }
     case 'setSize': {
       const spriteVar = identifierName(args[0])
       const w = toExpr(args[1], ctx)
@@ -4087,6 +4095,16 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const levelVar = identifierName(args[0])
       const spriteVar = identifierName(args[1])
       return levelVar && spriteVar ? { type: 'g2d:enterLevel', levelVar, spriteVar } : null
+    }
+    case 'resetGroupWithLevel': {
+      const levelVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return levelVar && groupVar ? { type: 'g2d:resetGroupWithLevel', levelVar, groupVar } : null
+    }
+    case 'restartLevel': {
+      const levelVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return levelVar && spriteVar ? { type: 'g2d:restartLevel', levelVar, spriteVar } : null
     }
     case 'collideCurrentLevel': {
       const spriteVar = identifierName(args[0])

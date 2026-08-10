@@ -15,7 +15,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *
  * Decisões do degrau BÁSICO (fidelidade em ESPÍRITO ao original em index.js):
  * - MINI-MUNDO: o original tem um mapa 28×28. Aqui o mundo é 720×540 (a câmera
- *   segue o herói, cameraFollow), com quatro muros de pedra em volta e alguns
+ *   segue o herói dentro da área do jogo), com quatro muros de pedra em volta e alguns
  *   blocos internos — feitos com um GRUPO de retângulos coloridos e colisão
  *   sólida (collideGroup). Nada de tilemap PNG: 100% procedural.
  * - HERÓI (Player top-down): anda nas 4 direções com as setas (topDown), o A/D/W/S
@@ -33,6 +33,8 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  */
 export const VILA_NINJA_SOURCE = `
 SZGame2D.fitScreen(100);
+const areaJogo = SZGame2D.createWorld(720, 540);
+SZGame2D.configureWorldCamera(areaJogo, "free", "free", 0, 0);
 SZGame2D.defineShape("ninjazinho", function (ctx) {
   SZGame2D.paintRect(ctx, 6, 4, 18, 14, "#2a2a3a");
   SZGame2D.paintRect(ctx, 6, 10, 18, 5, "#e8e0d0");
@@ -101,7 +103,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Vila Ninja", "Explore a vila com as setas e use espaço para atacar. Derrote os 4 monstros para vencer, mas cuidado com a sua vida!", "Aperte Enter para começar", "#1f2340");
   }
   if (SZGame2D.sceneIs("jogando")) {
-    SZGame2D.cameraFollow(heroi, 720, 540);
+    SZGame2D.followCameraInWorld(heroi, areaJogo);
     SZGame2D.topDown(heroi, 3);
     if (SZGame2D.keyDown("ArrowRight")) {
       miraX = 30;

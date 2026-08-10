@@ -619,7 +619,8 @@ describe('roundtrip do tilemapExample (tiles)', () => {
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
       'g2d:createTileMap',
-      'g2d:drawTileMap',
+      'g2d:fitTileMapToStage',
+      'g2d:drawPreparedTileMap',
       'g2d:tileMapCollide',
       'g2d:updateEachFrame',
       'g2d:topDown',

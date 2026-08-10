@@ -118,12 +118,13 @@ beforeAll(() => {
 describe('Auditoria Mundo 3D — inventário', () => {
   it('coleta identificadores para todos os comandos Mundo 3D que o compilador emite', () => {
     const generator = readFileSync(join(import.meta.dir, '../../../generators/js.ts'), 'utf8')
-    const collectorAt = generator.indexOf('function collectStatementIdentifiers')
-    const compiled = generator.slice(generator.indexOf("case 'w3d:setup':"), collectorAt)
-    const collectionStart = generator.indexOf('// ---- Mundo 3D (world-3d) ----', collectorAt)
+    const compiled = generator.slice(
+      generator.indexOf('function worldThreeDStatementToCode'),
+      generator.indexOf('function childMapContext'),
+    )
     const collected = generator.slice(
-      collectionStart,
-      generator.indexOf("case 'classDecl':", collectionStart),
+      generator.indexOf('function worldThreeDStatementIdentifiers'),
+      generator.indexOf('function collectExprIdentifiers'),
     )
     const commandTypes = (source: string) =>
       new Set(

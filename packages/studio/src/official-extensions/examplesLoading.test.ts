@@ -9,7 +9,7 @@ const goldenCatalogs = {
     count: 32,
     // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
     // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados.
-    sha256: 'b8fe70ab85e77c8dc8b8b11b5b52ec5898e46382f8c3a6b117996952859edf7a',
+    sha256: '3f7ebf8a502f75d1b057a361efa45d4d7523b29ecbef3d7f87c4c8b5161f8ee5',
   },
   'game-2d-advanced': {
     count: 36,

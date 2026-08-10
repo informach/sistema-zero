@@ -226,10 +226,9 @@ export function VirtualGamepad({ onInput }: VirtualGamepadProps): JSX.Element {
   }
 
   return (
-    <div
-      role="group"
+    <fieldset
       aria-label="Controles do jogo"
-      className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex items-end justify-between gap-4 px-3"
+      className="pointer-events-none absolute inset-x-0 bottom-3 z-20 m-0 flex min-w-0 items-end justify-between gap-4 border-0 px-3 py-0"
     >
       <div className="pointer-events-auto grid grid-cols-3 grid-rows-3 gap-1">
         {GAMEPAD_KEYS.map(controlButton)}
@@ -248,6 +247,6 @@ export function VirtualGamepad({ onInput }: VirtualGamepadProps): JSX.Element {
           ×
         </button>
       </div>
-    </div>
+    </fieldset>
   )
 }

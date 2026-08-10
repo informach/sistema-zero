@@ -3,7 +3,7 @@ import { beginnerGameExample } from '../shared'
 
 /**
  * Exemplo "Vila Ninja": recriação BÁSICA e MINI do ninja-adventure do Chris
- * Courses. Aventura top-down num mundo maior que a tela (cameraFollow) com muros
+ * Courses. Aventura top-down num mundo maior que a tela, com câmera e muros
  * de pedra sólidos (grupo + collideGroup, sem tilemap PNG). O ninja anda nas 4
  * direções (topDown) e ATACA corpo-a-corpo com espaço (golpe temporário na
  * direção olhada). Os monstros patrulham e levam 3 golpes; derrotar os 4 vence,
@@ -372,6 +372,20 @@ export const vilaNinjaExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 100,
           },
+        },
+        {
+          type: 'g2d:createWorld',
+          varName: 'areaJogo',
+          width: { type: 'num', value: 720 },
+          height: { type: 'num', value: 540 },
+        },
+        {
+          type: 'g2d:configureWorldCamera',
+          worldVar: 'areaJogo',
+          horizontal: 'free',
+          vertical: 'free',
+          deadZoneX: { type: 'num', value: 0 },
+          deadZoneY: { type: 'num', value: 0 },
         },
         {
           type: 'g2d:createShapeSprite',
@@ -912,16 +926,9 @@ export const vilaNinjaExample: ExtensionExample = beginnerGameExample({
               },
               then: [
                 {
-                  type: 'g2d:cameraFollow',
+                  type: 'g2d:followCameraInWorld',
                   spriteVar: 'heroi',
-                  worldW: {
-                    type: 'num',
-                    value: 720,
-                  },
-                  worldH: {
-                    type: 'num',
-                    value: 540,
-                  },
+                  worldVar: 'areaJogo',
                 },
                 {
                   type: 'g2d:topDown',

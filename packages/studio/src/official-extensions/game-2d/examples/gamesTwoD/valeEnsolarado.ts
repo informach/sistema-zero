@@ -4,7 +4,7 @@ import { beginnerGameExample } from '../shared'
 /**
  * Exemplo "Vale Ensolarado": recriação BÁSICA do sunnyland-platformer do Chris
  * Courses. O herói anda e pula (platformer + gravidade + colisão sólida contra o
- * grupo de plataformas) por um vale maior que a tela (cameraFollow), juntando as
+ * grupo de plataformas) por um vale maior que a tela, juntando as
  * 6 gemas para vencer. Um gambá patrulha o chão e uma águia voa; encostar tira 1
  * coração (hurtByEnemy com piscar). Ficar sem corações perde. 100% procedural
  * (formas e cores, sem tilemap nem PNGs). A behavior foi GERADA pelo parser real
@@ -544,6 +544,20 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 100,
           },
+        },
+        {
+          type: 'g2d:createWorld',
+          varName: 'areaJogo',
+          width: { type: 'num', value: 960 },
+          height: { type: 'num', value: 270 },
+        },
+        {
+          type: 'g2d:configureWorldCamera',
+          worldVar: 'areaJogo',
+          horizontal: 'free',
+          vertical: 'off',
+          deadZoneX: { type: 'num', value: 0 },
+          deadZoneY: { type: 'num', value: 0 },
         },
         {
           type: 'g2d:setGravity',
@@ -1186,16 +1200,9 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
               },
               then: [
                 {
-                  type: 'g2d:cameraFollow',
+                  type: 'g2d:followCameraInWorld',
                   spriteVar: 'heroi',
-                  worldW: {
-                    type: 'num',
-                    value: 960,
-                  },
-                  worldH: {
-                    type: 'num',
-                    value: 270,
-                  },
+                  worldVar: 'areaJogo',
                 },
                 {
                   type: 'g2d:arrowsX',

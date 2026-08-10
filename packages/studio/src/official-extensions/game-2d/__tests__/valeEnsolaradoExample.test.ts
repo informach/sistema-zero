@@ -47,7 +47,9 @@ describe('Exemplo Vale Ensolarado — drift contra o parser real', () => {
       'g2d:createGroup', // chão, gemas e corações
       'g2d:spawnInGroup', // plataformas, gemas e coração no mundo
       'g2d:collideGroup', // colisão sólida com as plataformas
-      'g2d:cameraFollow', // a câmera segue no vale maior que a tela
+      'g2d:createWorld',
+      'g2d:configureWorldCamera',
+      'g2d:followCameraInWorld', // a câmera segue no vale maior que a tela
       'g2d:defineEnemyType', // o gambá e a águia
       'g2d:spawnEnemy',
       'g2d:updateEnemyType',
@@ -80,7 +82,10 @@ describe('Exemplo Vale Ensolarado — drift contra o parser real', () => {
     const raw = JSON.stringify(behaviorStatements(valeEnsolaradoExample.ir))
     // O mundo tem 960 de largura (maior que os 480 do palco): a câmera rola.
     expect(raw).toContain(
-      '"type":"g2d:cameraFollow","spriteVar":"heroi","worldW":{"type":"num","value":960},"worldH":{"type":"num","value":270}',
+      '"type":"g2d:createWorld","varName":"areaJogo","width":{"type":"num","value":960},"height":{"type":"num","value":270}',
+    )
+    expect(raw).toContain(
+      '"type":"g2d:followCameraInWorld","spriteVar":"heroi","worldVar":"areaJogo"',
     )
     // Duas famílias de inimigo: o gambá que patrulha e a águia que voa.
     expect(raw).toContain('"behavior":"patrulha"')

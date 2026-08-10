@@ -142,6 +142,13 @@
   background: rgb(192 38 211 / 14%);
 }
 
+/* A galeria pode passar de cem cards; grupos fora da viewport não participam
+ * de layout/pintura até se aproximarem da área visível. */
+[data-sz-theme] .sz-kit-content-group {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+
 /*
  * Títulos e marca do Studio na fonte de DISPLAY do host (Baloo no kids).
  * ⚠️ Nome `sz-ui-display`, NUNCA `sz-display`: essa última é do community-kids

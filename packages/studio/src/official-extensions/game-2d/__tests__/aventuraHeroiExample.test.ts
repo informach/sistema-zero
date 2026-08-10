@@ -43,7 +43,10 @@ describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
     for (const t of [
       'g2d:createTileMap', // mundo em grade, com paredes sólidas
       'g2d:tileMapCollide',
-      'g2d:cameraFollow', // mundo MAIOR que a tela
+      'g2d:createWorldFromTileMap', // mapa e câmera usam o MESMO mundo 1600×1200
+      'g2d:configureWorldCamera',
+      'g2d:followCameraInWorld',
+      'g2d:drawWorld',
       'g2d:topDown', // movimento de vista de cima
       'g2d:setHitboxScale', // ⭐ colisão de dano perdoadora no herói
       'g2d:drawGroupByY', // ⭐ profundidade: o herói passa ATRÁS da árvore
@@ -142,7 +145,10 @@ describe('Exemplo Aventura do Herói — drift contra o parser real', () => {
       expect(row.split(' ').length).toBe(40)
     }
     expect(raw).toContain(
-      '"type":"g2d:cameraFollow","spriteVar":"heroi","worldW":{"type":"num","value":1600},"worldH":{"type":"num","value":1200}',
+      '"type":"g2d:createWorldFromTileMap","varName":"areaJogo","mapVar":"mapa","size":{"type":"num","value":40}',
+    )
+    expect(raw).toContain(
+      '"type":"g2d:followCameraInWorld","spriteVar":"heroi","worldVar":"areaJogo"',
     )
   })
 

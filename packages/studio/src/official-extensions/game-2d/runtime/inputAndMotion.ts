@@ -132,6 +132,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       _resolveGravityGround(sprite, visible.top, visible.bottom, g);
       if (wantsJump && !jumped && sprite.onGround) _jumpFromGround(sprite, g, j);
     }
+    _commitRecordedMotion(sprite);
   }
   /** Plataforma na tela: a borda atraída pela gravidade funciona como chão. */
   function platformer(sprite, ctx, speed, jump) {
@@ -154,11 +155,13 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (wantsJump && wasGrounded) _jumpFromGround(sprite, g, jump);
     sprite.vy = _finiteNumber(sprite.vy, 0);
     sprite.y = _finiteNumber(sprite.y, 0) + sprite.vy;
+    _commitRecordedMotion(sprite);
   }
 
   /** Top-down: 4 direções com diagonal normalizada (diagonal não fica mais rápida). */
   function topDown(sprite, speed) {
     if (!sprite) return;
+    _recordPreviousPosition(sprite);
     var s = _finiteNumber(speed, 3);
     var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
@@ -169,6 +172,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     sprite.vy = dy * s;
     sprite.x += dx * s;
     sprite.y += dy * s;
+    _commitRecordedMotion(sprite);
     _leaveGroundMode(sprite);
   }
 
@@ -208,6 +212,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    */
   function flyFree(sprite, speed) {
     if (!sprite) return;
+    _recordPreviousPosition(sprite);
     var s = _positiveFiniteNumber(speed, 3);
     var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
@@ -226,6 +231,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     sprite.vy = v.y;
     sprite.x = _finiteNumber(sprite.x, 0) + v.x;
     sprite.y = _finiteNumber(sprite.y, 0) + v.y;
+    _commitRecordedMotion(sprite);
     _leaveGroundMode(sprite);
   }
 
@@ -237,6 +243,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    */
   function flap(sprite, ctx, force) {
     if (!sprite || !ctx || !ctx.canvas) return;
+    _recordPreviousPosition(sprite);
     var f = _positiveFiniteNumber(force, 8);
     var g = world.gravity;
     sprite.vy = _finiteNumber(sprite.vy, 0);
@@ -251,6 +258,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       sprite.onGround = false;
     }
     sprite._flapHeld = pressing;
+    _commitRecordedMotion(sprite);
   }
 
   /**
@@ -260,6 +268,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    */
   function swim(sprite, speed) {
     if (!sprite) return;
+    _recordPreviousPosition(sprite);
     var s = _positiveFiniteNumber(speed, 2);
     var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
@@ -274,12 +283,14 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     sprite.vy = v.y;
     sprite.x = _finiteNumber(sprite.x, 0) + v.x;
     sprite.y = _finiteNumber(sprite.y, 0) + v.y;
+    _commitRecordedMotion(sprite);
     _leaveGroundMode(sprite);
   }
 
   /** Faz o sprite andar em direção ao ponteiro (mouse/toque). */
   function followPointer(sprite, speed) {
     if (!sprite) return;
+    _recordPreviousPosition(sprite);
     var s = _finiteNumber(speed, 3);
     var cx = sprite.x + sprite.w / 2, cy = sprite.y + sprite.h / 2;
     var pointerWorldX = pointer.x + camera.x, pointerWorldY = pointer.y + camera.y;
@@ -291,6 +302,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       sprite.x += sprite.vx; sprite.y += sprite.vy;
     }
     else { sprite.vx = 0; sprite.vy = 0; sprite.x = pointerWorldX - sprite.w / 2; sprite.y = pointerWorldY - sprite.h / 2; }
+    _commitRecordedMotion(sprite);
   }
 
   /** Gruda o sprite nas bordas do canvas (não deixa sair da tela). */
@@ -346,6 +358,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    */
   function steerThrust(sprite, speed, turnDegrees) {
     if (!sprite) return;
+    _recordPreviousPosition(sprite);
     _ensureAngle(sprite);
     var sp = _finiteNumber(speed, 3);
     var turn = _finiteNumber(turnDegrees, 3);
@@ -356,6 +369,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     else { sprite.vx = _finiteNumber(sprite.vx, 0) * 0.97; sprite.vy = _finiteNumber(sprite.vy, 0) * 0.97; }
     sprite.x = _finiteNumber(sprite.x, 0) + _finiteNumber(sprite.vx, 0);
     sprite.y = _finiteNumber(sprite.y, 0) + _finiteNumber(sprite.vy, 0);
+    _commitRecordedMotion(sprite);
   }
   /** Devolve a direção (em GRAUS) que o sprite está apontando. */
   function spriteAngleDeg(sprite) {

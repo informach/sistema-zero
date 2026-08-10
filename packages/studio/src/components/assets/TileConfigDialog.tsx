@@ -208,6 +208,8 @@ export function TileConfigDialog({ asset, mode, onClose }: TileConfigDialogProps
           ))}
           <input
             type="number"
+            name="tile-size"
+            autoComplete="off"
             min={2}
             max={128}
             value={tileSize}

@@ -15,7 +15,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *
  * Decisões do degrau BÁSICO (fidelidade em ESPÍRITO ao original em index.js):
  * - Mundo MAIOR que a tela: o palco é 320x480 mas o mundo tem 960 de altura; a
- *   câmera sobe junto com o herói (cameraFollow), que é o pan da câmera do
+ *   câmera sobe junto com o herói dentro da área do jogo, que é o pan da câmera do
  *   original (shouldPanCameraUp/Down/…). O herói começa embaixo e SOBE.
  * - Gravidade + pulo + andar montados NA MÃO (sem o helper platformer, que ancora
  *   o chão na BORDA da tela e brigaria com a câmera): setGravity define a queda
@@ -36,6 +36,8 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  */
 export const ESCALADA_DO_GUERREIRO_SOURCE = `
 SZGame2D.fitScreen(100);
+const areaJogo = SZGame2D.createWorld(320, 960);
+SZGame2D.configureWorldCamera(areaJogo, "off", "free", 0, 0);
 SZGame2D.setGravity(0.5);
 SZGame2D.defineShape("guerreirinho", function (ctx) {
   SZGame2D.paintCircle(ctx, 14, 8, 7, "#f7c8a2");
@@ -83,7 +85,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Escalada do Guerreiro", "Use as setas para andar e a seta pra cima para pular de plataforma em plataforma. Chegue lá no alto, na bandeira dourada!", "Aperte Enter para começar a subir", "#243a1c");
   }
   if (SZGame2D.sceneIs("jogando")) {
-    SZGame2D.cameraFollow(heroi, 320, 960);
+    SZGame2D.followCameraInWorld(heroi, areaJogo);
     SZGame2D.arrowsX(heroi, 3);
     SZGame2D.applyGravity(heroi);
     SZGame2D.applyVelocity(heroi);

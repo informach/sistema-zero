@@ -680,6 +680,12 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     varExpr,
   })
   if (programmingBlock !== PROGRAMMING_IR_TO_BLOCK_UNHANDLED) return programmingBlock
+  if (stmt.type.startsWith('g2d:')) return gameTwoDStatementToBlock()
+  if (stmt.type.startsWith('g3d:')) return gameThreeDStatementToBlock()
+  if (stmt.type.startsWith('gk:')) return gameKitStatementToBlock()
+  if (stmt.type.startsWith('g3k:')) return gameKitThreeDStatementToBlock()
+  if (stmt.type.startsWith('w3d:')) return worldThreeDStatementToBlock()
+
   switch (stmt.type) {
     // ----- 🔊 Som do núcleo -----
     case 'somLoad':
@@ -707,5343 +713,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         property: 'textContent',
       })
     }
-
-    case 'g2d:createSprite': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_create_sprite', { NAME: stmt.varName, COLOR: stmt.color }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            W: w,
-            H: h,
-          })
-    }
-    case 'g2d:drawSprite':
-      return block('sz_g2d_draw_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:setPosition': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_position', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'g2d:setVelocity': {
-      const vx = exprToValueBlock(stmt.vx)
-      const vy = exprToValueBlock(stmt.vy)
-      return vx === null || vy === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_velocity', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            VX: vx,
-            VY: vy,
-          })
-    }
-    case 'g2d:collides':
-      return block(
-        'sz_g2d_collides',
-        { NAME: stmt.varName, A: stmt.aVar, B: stmt.bVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:score': {
-      const initial = exprToValueBlock(valueToExpr(stmt.initial))
-      return initial === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_score', { NAME: stmt.varName }, {}, stmt.__id, { INITIAL: initial })
-    }
-    case 'g2d:gameOver': {
-      const text = exprToValueBlock(valueToExpr(stmt.text))
-      return text === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_game_over', {}, {}, stmt.__id, { TEXT: text })
-    }
-    case 'g2d:clear':
-      return block('sz_g2d_clear', {}, {}, stmt.__id)
-    case 'g2d:onStart':
-      return block('sz_g2d_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'g2d:updateEachFrame':
-      return block(
-        'sz_g2d_update_each_frame',
-        {},
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:setGravity': {
-      const value = exprToValueBlock(valueToExpr(stmt.value))
-      return value === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_gravity', {}, {}, stmt.__id, { VALUE: value })
-    }
-    case 'g2d:applyVelocity':
-      return block('sz_g2d_apply_velocity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:applyGravity':
-      return block('sz_g2d_apply_gravity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:bounceOnEdges':
-      return block('sz_g2d_bounce_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:circleCollides':
-      return block(
-        'sz_g2d_circle_collides',
-        { NAME: stmt.varName, A: stmt.aVar, B: stmt.bVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:playSound': {
-      const freq = exprToValueBlock(valueToExpr(stmt.freq))
-      const ms = exprToValueBlock(valueToExpr(stmt.durationMs))
-      return freq === null || ms === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_play_sound', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
-    }
-    case 'g2d:playFx':
-      return block('sz_g2d_play_fx', { FX: stmt.fx }, {}, stmt.__id)
-    case 'g2d:playMusic':
-      return block('sz_g2d_play_music', { MUSIC: stmt.tune }, {}, stmt.__id)
-    case 'g2d:stopMusic':
-      return block('sz_g2d_stop_music', {}, {}, stmt.__id)
-    case 'g2d:loadSound':
-      return block('sz_g2d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
-    case 'g2d:playClip':
-      return block('sz_g2d_play_clip', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g2d:stopClip':
-      return block('sz_g2d_stop_clip', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g2d:playTrack':
-      return block('sz_g2d_play_track', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g2d:stopTrack':
-      return block('sz_g2d_stop_track', {}, {}, stmt.__id)
-    case 'g2d:setVolume': {
-      const level = exprToValueBlock(valueToExpr(stmt.level))
-      return level === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_volume', {}, {}, stmt.__id, { LEVEL: level })
-    }
-    case 'g2d:playNote': {
-      const ms = exprToValueBlock(valueToExpr(stmt.ms))
-      return ms === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_play_note', { NOTE: stmt.note }, {}, stmt.__id, { MS: ms })
-    }
-    case 'g2d:aimAt':
-      return block(
-        'sz_g2d_aim_at',
-        { SPRITE: stmt.spriteVar, TARGET: stmt.targetVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:moveToward': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_move_toward',
-            { SPRITE: stmt.spriteVar, TARGET: stmt.targetVar },
-            {},
-            stmt.__id,
-            { SPEED: speed },
-          )
-    }
-    case 'g2d:setHealth': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      return amount === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_health', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { AMOUNT: amount })
-    }
-    case 'g2d:changeHealth': {
-      const delta = exprToValueBlock(valueToExpr(stmt.delta))
-      return delta === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_change_health', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { DELTA: delta })
-    }
-    case 'g2d:damageSprite': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      const frames = exprToValueBlock(valueToExpr(stmt.invincibilityFrames))
-      return amount === null || frames === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_damage_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            AMOUNT: amount,
-            FRAMES: frames,
-          })
-    }
-    case 'g2d:flipSprite':
-      return block('sz_g2d_flip_sprite', { SPRITE: stmt.spriteVar, DIR: stmt.dir }, {}, stmt.__id)
-    case 'g2d:setOpacity': {
-      const percent = exprToValueBlock(valueToExpr(stmt.percent))
-      return percent === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_opacity', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            PERCENT: percent,
-          })
-    }
-    case 'g2d:setSize': {
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_size', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { W: w, H: h })
-    }
-    case 'g2d:scaleSprite': {
-      const factor = exprToValueBlock(valueToExpr(stmt.factor))
-      return factor === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_scale_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            FACTOR: factor,
-          })
-    }
-    case 'g2d:wrapEdges':
-      return block('sz_g2d_wrap_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:pruneOld': {
-      const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
-      return seconds === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_prune_old', { GROUP: stmt.groupVar }, {}, stmt.__id, { SECONDS: seconds })
-    }
-    case 'g2d:pauseGame':
-      return block('sz_g2d_pause', {}, {}, stmt.__id)
-    case 'g2d:resumeGame':
-      return block('sz_g2d_resume', {}, {}, stmt.__id)
-    case 'g2d:cameraFollow': {
-      const worldW = exprToValueBlock(valueToExpr(stmt.worldW))
-      const worldH = exprToValueBlock(valueToExpr(stmt.worldH))
-      return worldW === null || worldH === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_camera_follow', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            WORLDW: worldW,
-            WORLDH: worldH,
-          })
-    }
-    case 'g2d:setCamera': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_camera', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'g2d:breakTile':
-      return block(
-        'sz_g2d_break_tile_at',
-        { MAP: stmt.mapVar, SPRITE: stmt.spriteVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:setTile': {
-      const index = exprToValueBlock(valueToExpr(stmt.index))
-      return index === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_tile', { MAP: stmt.mapVar, SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            INDEX: index,
-          })
-    }
-    case 'g2d:bringToFront':
-      return block(
-        'sz_g2d_bring_to_front',
-        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:sendToBack':
-      return block(
-        'sz_g2d_send_to_back',
-        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:drawHitbox':
-      return block('sz_g2d_draw_hitbox', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:showFps': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_show_fps', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'g2d:onPointer':
-      return block(
-        'sz_g2d_on_pointer',
-        { PX: stmt.xName, PY: stmt.yName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onKey':
-      return block(
-        'sz_g2d_on_key',
-        { KEY: stmt.key },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onOverlap':
-      return block(
-        'sz_g2d_on_overlap',
-        { A: stmt.aVar, B: stmt.bVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onJump':
-      return block(
-        'sz_g2d_on_jump',
-        { SPRITE: stmt.spriteVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onAnyInput':
-      return block('sz_g2d_on_any_input', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'g2d:onLevelEnter':
-      return block(
-        'sz_g2d_on_level_enter',
-        { LEVEL: stmt.levelVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:createImageSprite': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_create_image_sprite',
-            { NAME: stmt.varName, IMAGE: stmt.image },
-            {},
-            stmt.__id,
-            { X: x, Y: y, W: w, H: h },
-          )
-    }
-    case 'g2d:setImage':
-      return block('sz_g2d_set_image', { SPRITE: stmt.spriteVar, IMAGE: stmt.image }, {}, stmt.__id)
-    case 'g2d:defineShape':
-      return block(
-        'sz_g2d_define_shape',
-        { NAME: stmt.shapeName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:createShapeSprite': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_create_shape_sprite',
-            { SPRITE: stmt.varName, SHAPE: stmt.shapeName },
-            {},
-            stmt.__id,
-            { X: x, Y: y, W: w, H: h },
-          )
-    }
-    case 'g2d:setShape':
-      return block(
-        'sz_g2d_set_shape',
-        { SPRITE: stmt.spriteVar, SHAPE: stmt.shapeName },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:paintRect': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_paint_rect', { COLOR: stmt.color }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            W: w,
-            H: h,
-          })
-    }
-    case 'g2d:paintCircle': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return x === null || y === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_paint_circle', { COLOR: stmt.color }, {}, stmt.__id, { X: x, Y: y, R: r })
-    }
-    case 'g2d:paintEllipse': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_paint_ellipse', { COLOR: stmt.color }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            W: w,
-            H: h,
-          })
-    }
-    case 'g2d:paintTriangle': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
-      const x3 = exprToValueBlock(valueToExpr(stmt.x3))
-      const y3 = exprToValueBlock(valueToExpr(stmt.y3))
-      return x1 === null || y1 === null || x2 === null || y2 === null || x3 === null || y3 === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_paint_triangle', { COLOR: stmt.color }, {}, stmt.__id, {
-            X1: x1,
-            Y1: y1,
-            X2: x2,
-            Y2: y2,
-            X3: x3,
-            Y3: y3,
-          })
-    }
-    case 'g2d:paintLine': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
-      const width = exprToValueBlock(valueToExpr(stmt.width))
-      return x1 === null || y1 === null || x2 === null || y2 === null || width === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_paint_line', { COLOR: stmt.color }, {}, stmt.__id, {
-            X1: x1,
-            Y1: y1,
-            X2: x2,
-            Y2: y2,
-            WIDTH: width,
-          })
-    }
-    case 'g2d:loadSpritesheet': {
-      const fw = exprToValueBlock(valueToExpr(stmt.frameW))
-      const fh = exprToValueBlock(valueToExpr(stmt.frameH))
-      return fw === null || fh === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_load_spritesheet',
-            { NAME: stmt.varName, IMAGE: stmt.image },
-            {},
-            stmt.__id,
-            { FW: fw, FH: fh },
-          )
-    }
-    case 'g2d:animateSprite': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_animate_sprite',
-            { SPRITE: stmt.spriteVar, SHEET: stmt.sheetVar },
-            {},
-            stmt.__id,
-            { FROM: from, TO: to, FPS: fps },
-          )
-    }
-    case 'g2d:animateOnce': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_animate_once',
-            { SPRITE: stmt.spriteVar, SHEET: stmt.sheetVar },
-            {},
-            stmt.__id,
-            { FROM: from, TO: to, FPS: fps },
-          )
-    }
-    case 'g2d:setStateAnim': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_set_state_anim',
-            { SPRITE: stmt.spriteVar, STATE: stmt.state, SHEET: stmt.sheetVar },
-            {},
-            stmt.__id,
-            { FROM: from, TO: to, FPS: fps },
-          )
-    }
-    case 'g2d:autoAnimate':
-      return block('sz_g2d_auto_animate', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:defineEnemyType': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return hp === null || speed === null || dmg === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_define_enemy_type',
-            {
-              NAME: stmt.varName,
-              BEHAVIOR: stmt.behavior,
-              COLOR: stmt.color,
-              IMAGE: stmt.image,
-              SHAPE: stmt.shape ?? '',
-            },
-            {},
-            stmt.__id,
-            { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
-          )
-    }
-    case 'g2d:defineEnemySmart': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return hp === null || speed === null || dmg === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_define_enemy_smart',
-            {
-              NAME: stmt.varName,
-              SMART: stmt.smart,
-              COLOR: stmt.color,
-              IMAGE: stmt.image,
-              SHAPE: stmt.shape ?? '',
-            },
-            {},
-            stmt.__id,
-            { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
-          )
-    }
-    case 'g2d:enemyStateAnim': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_enemy_state_anim',
-            { TYPE: stmt.typeVar, STATE: stmt.state, SHEET: stmt.sheetVar },
-            {},
-            stmt.__id,
-            { FROM: from, TO: to, FPS: fps },
-          )
-    }
-    case 'g2d:setEnemyTypeParam':
-    case 'g2d:setEnemyTypeParamLegacyStart': {
-      const value = exprToValueBlock(valueToExpr(stmt.value))
-      return value === null
-        ? rawJSBlock(stmt)
-        : block(
-            stmt.type === 'g2d:setEnemyTypeParamLegacyStart'
-              ? 'sz_g2d_enemy_type_param_legacy_start'
-              : 'sz_g2d_enemy_type_param',
-            { TYPE: stmt.typeVar, PARAM: stmt.param },
-            {},
-            stmt.__id,
-            { VALUE: value },
-          )
-    }
-    case 'g2d:enemyAddBehavior':
-    case 'g2d:enemyAddBehaviorLegacyStart':
-      return block(
-        stmt.type === 'g2d:enemyAddBehaviorLegacyStart'
-          ? 'sz_g2d_enemy_add_behavior_legacy_start'
-          : 'sz_g2d_enemy_add_behavior',
-        { TYPE: stmt.typeVar, BEHAVIOR: stmt.behavior },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:spawnEnemy': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_spawn_enemy',
-            { TYPE: stmt.typeVar, NAME: stmt.varName ?? '' },
-            {},
-            stmt.__id,
-            { X: x, Y: y },
-          )
-    }
-    case 'g2d:updateEnemyType':
-      return block(
-        'sz_g2d_update_enemy_type',
-        { TYPE: stmt.typeVar, TARGET: stmt.targetVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:drawEnemyType':
-      return block('sz_g2d_draw_enemy_type', { TYPE: stmt.typeVar }, {}, stmt.__id)
-    case 'g2d:onEnemyDefeated':
-      return block(
-        'sz_g2d_on_enemy_defeated',
-        { TYPE: stmt.typeVar, ANAME: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onEnemyHurt':
-      return block(
-        'sz_g2d_on_enemy_hurt',
-        { TYPE: stmt.typeVar, ANAME: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onEnemyBeamHit':
-      return block(
-        'sz_g2d_on_enemy_beam_hit',
-        { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar, ANAME: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onEnemyShotHit':
-      return block(
-        'sz_g2d_on_enemy_shot_hit',
-        { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar, ANAME: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:hurtByEnemy':
-      return block(
-        'sz_g2d_hurt_by_enemy',
-        { SPRITE: stmt.spriteVar, ENEMY: stmt.enemyVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:stompEnemy': {
-      const bounce = exprToValueBlock(valueToExpr(stmt.bounce))
-      return bounce === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_stomp_enemy',
-            { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar },
-            {},
-            stmt.__id,
-            { BOUNCE: bounce },
-          )
-    }
-    case 'g2d:drawFrame': {
-      const index = exprToValueBlock(valueToExpr(stmt.index))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return index === null || x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_draw_frame', { SHEET: stmt.sheetVar }, {}, stmt.__id, {
-            INDEX: index,
-            X: x,
-            Y: y,
-            W: w,
-            H: h,
-          })
-    }
-    case 'g2d:platformer': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return speed === null || jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_platformer', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            SPEED: speed,
-            JUMP: jump,
-          })
-    }
-    case 'g2d:platformerWithTerrain': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return speed === null || jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_platformer_terrain', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            SPEED: speed,
-            JUMP: jump,
-          })
-    }
-    case 'g2d:jumpWithTerrain': {
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_jump_terrain', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            JUMP: jump,
-          })
-    }
-    case 'g2d:topDown': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_top_down', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g2d:flyFree': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_fly_free', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g2d:swim': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_swim', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g2d:flap': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_flap', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FORCE: force })
-    }
-    case 'g2d:followPointer': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_follow_pointer', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            SPEED: speed,
-          })
-    }
-    case 'g2d:clampToScreen':
-      return block('sz_g2d_clamp_to_screen', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:flash':
-      return block('sz_g2d_flash', { COLOR: stmt.color }, {}, stmt.__id)
-    case 'g2d:shake': {
-      const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
-      return intensity === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_shake', {}, {}, stmt.__id, { INTENSITY: intensity })
-    }
-    case 'g2d:emitParticles': {
-      const count = exprToValueBlock(valueToExpr(stmt.count))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return count === null || x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_emit_particles', { COLOR: stmt.color }, {}, stmt.__id, {
-            COUNT: count,
-            X: x,
-            Y: y,
-          })
-    }
-    case 'g2d:drawParticles':
-      return block('sz_g2d_draw_particles', {}, {}, stmt.__id)
-    case 'g2d:createTileMap': {
-      const tile = exprToValueBlock(valueToExpr(stmt.tile))
-      return tile === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_create_tilemap',
-            {
-              NAME: stmt.varName,
-              IMAGE: stmt.image,
-              SOLID: stmt.solid,
-              PLATFORM: stmt.platform ?? '',
-              GRID: stmt.grid,
-            },
-            {},
-            stmt.__id,
-            { TILE: tile },
-          )
-    }
-    case 'g2d:createTileMapFromAsset':
-      return block(
-        'sz_g2d_create_tilemap_from_asset',
-        { NAME: stmt.varName, IMAGE: stmt.image },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:fitTileMapToStage':
-      return block('sz_g2d_fit_tilemap_to_stage', { MAP: stmt.mapVar }, {}, stmt.__id)
-    case 'g2d:placeTileMap': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      return x === null || y === null || size === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_place_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            SIZE: size,
-          })
-    }
-    case 'g2d:drawPreparedTileMap':
-      return block('sz_g2d_draw_prepared_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id)
-    case 'g2d:drawTileMap': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      // IR antigo não tem "size": vira 0 = encaixar sozinho (comportamento de sempre).
-      const size = exprToValueBlock(valueToExpr(stmt.size ?? 0))
-      return x === null || y === null || size === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_draw_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            SIZE: size,
-          })
-    }
-    case 'g2d:tileMapCollide':
-      return block(
-        'sz_g2d_tilemap_collide',
-        { SPRITE: stmt.spriteVar, MAP: stmt.mapVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:createWorld': {
-      const width = exprToValueBlock(valueToExpr(stmt.width))
-      const height = exprToValueBlock(valueToExpr(stmt.height))
-      return width === null || height === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_create_world', { NAME: stmt.varName }, {}, stmt.__id, {
-            W: width,
-            H: height,
-          })
-    }
-    case 'g2d:createWorldFromTileMap': {
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      return size === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_create_world_from_tilemap',
-            { NAME: stmt.varName, MAP: stmt.mapVar },
-            {},
-            stmt.__id,
-            { SIZE: size },
-          )
-    }
-    case 'g2d:addTileMapToWorld':
-      return block(
-        'sz_g2d_world_add_tilemap',
-        { WORLD: stmt.worldVar, MAP: stmt.mapVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:addSolidGroupToWorld':
-      return block(
-        'sz_g2d_world_add_solid_group',
-        { WORLD: stmt.worldVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:addPlatformGroupToWorld':
-      return block(
-        'sz_g2d_world_add_platform_group',
-        { WORLD: stmt.worldVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:setWorldEdges':
-      return block(
-        'sz_g2d_world_set_edges',
-        { WORLD: stmt.worldVar, EDGES: stmt.edges },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:configureWorldCamera': {
-      const deadZoneX = exprToValueBlock(valueToExpr(stmt.deadZoneX))
-      const deadZoneY = exprToValueBlock(valueToExpr(stmt.deadZoneY))
-      return deadZoneX === null || deadZoneY === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_world_camera',
-            {
-              WORLD: stmt.worldVar,
-              HORIZONTAL: stmt.horizontal,
-              VERTICAL: stmt.vertical,
-            },
-            {},
-            stmt.__id,
-            { DEAD_X: deadZoneX, DEAD_Y: deadZoneY },
-          )
-    }
-    case 'g2d:collideWorld':
-      return block(
-        'sz_g2d_world_collide',
-        { SPRITE: stmt.spriteVar, WORLD: stmt.worldVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:followCameraInWorld':
-      return block(
-        'sz_g2d_world_follow_camera',
-        { WORLD: stmt.worldVar, SPRITE: stmt.spriteVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:drawWorld':
-      return block('sz_g2d_world_draw', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g2d:createLevel': {
-      const x = exprToValueBlock(valueToExpr(stmt.spawnX))
-      const y = exprToValueBlock(valueToExpr(stmt.spawnY))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_create_level',
-            { NAME: stmt.varName, WORLD: stmt.worldVar },
-            {},
-            stmt.__id,
-            { X: x, Y: y },
-          )
-    }
-    case 'g2d:enterLevel':
-      return block(
-        'sz_g2d_enter_level',
-        { LEVEL: stmt.levelVar, SPRITE: stmt.spriteVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:collideCurrentLevel':
-      return block('sz_g2d_current_level_collide', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:followCurrentLevelCamera':
-      return block('sz_g2d_current_level_follow_camera', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:drawCurrentLevel':
-      return block('sz_g2d_current_level_draw', {}, {}, stmt.__id)
-    case 'g2d:collideGroup':
-      return block(
-        'sz_g2d_collide_group',
-        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:collideSprite':
-      return block(
-        'sz_g2d_collide_sprite',
-        { SPRITE: stmt.spriteVar, OTHER: stmt.otherVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:collidePlatform':
-      return block(
-        'sz_g2d_collide_platform',
-        { SPRITE: stmt.spriteVar, OTHER: stmt.otherVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:collidePlatformGroup':
-      return block(
-        'sz_g2d_collide_platform_group',
-        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:createGroup':
-      return block('sz_g2d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g2d:allEnemiesGroup':
-      return block('sz_g2d_all_enemies_group', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g2d:spawnInGroup': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const vx = exprToValueBlock(stmt.vx)
-      const vy = exprToValueBlock(stmt.vy)
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      if (!x || !y || !vx || !vy || !w || !h) return rawJSBlock(stmt)
-      return block(
-        'sz_g2d_spawn_in_group',
-        { GROUP: stmt.groupVar, NAME: stmt.varName ?? '', COLOR: stmt.color },
-        {},
-        stmt.__id,
-        { X: x, Y: y, VX: vx, VY: vy, W: w, H: h },
-      )
-    }
-    case 'g2d:spawnImageInGroup': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const vx = exprToValueBlock(stmt.vx)
-      const vy = exprToValueBlock(stmt.vy)
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      if (!x || !y || !vx || !vy || !w || !h) return rawJSBlock(stmt)
-      return block(
-        'sz_g2d_spawn_image_in_group',
-        { GROUP: stmt.groupVar, NAME: stmt.varName ?? '', IMAGE: stmt.image },
-        {},
-        stmt.__id,
-        { X: x, Y: y, VX: vx, VY: vy, W: w, H: h },
-      )
-    }
-    case 'g2d:updateGroup':
-      return block('sz_g2d_update_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g2d:applyGravityToGroup':
-      return block('sz_g2d_apply_gravity_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g2d:drawGroup':
-      return block('sz_g2d_draw_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g2d:drawGroupByY':
-      return block('sz_g2d_draw_group_by_y', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g2d:forEachInGroup':
-      return block(
-        'sz_g2d_for_each_in_group',
-        { ITEM: stmt.itemName, GROUP: stmt.groupVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:clearGroup':
-      return block('sz_g2d_clear_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g2d:pruneOffscreen':
-      return block(
-        'sz_g2d_prune_offscreen',
-        { GROUP: stmt.groupVar, ITEM: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onGroupOverlap':
-      return block(
-        'sz_g2d_on_group_overlap',
-        { A: stmt.aGroup, ANAME: stmt.aName, B: stmt.bGroup, BNAME: stmt.bName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:addToGroup':
-      return block(
-        'sz_g2d_add_to_group',
-        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:removeFromGroup':
-      return block(
-        'sz_g2d_remove_from_group',
-        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:everyFrames': {
-      const n = exprToValueBlock(stmt.n)
-      if (!n) return rawJSBlock(stmt)
-      return block('sz_g2d_every_frames', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-        N: n,
-      })
-    }
-    case 'g2d:everySeconds': {
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            SECS: secs,
-          })
-    }
-    case 'g2d:afterSeconds': {
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_after_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            SECS: secs,
-          })
-    }
-    case 'g2d:setHitboxScale': {
-      const percent = exprToValueBlock(valueToExpr(stmt.percent))
-      return percent === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_set_hitbox_scale', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            PERCENT: percent,
-          })
-    }
-    case 'g2d:drawScore': {
-      const value = exprToValueBlock(stmt.value)
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      if (!value || !x || !y || !size) return rawJSBlock(stmt)
-      return block('sz_g2d_draw_score', { LABEL: stmt.label, COLOR: stmt.color }, {}, stmt.__id, {
-        VALUE: value,
-        X: x,
-        Y: y,
-        SIZE: size,
-      })
-    }
-    case 'g2d:drawLabel': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      if (!x || !y || !size) return rawJSBlock(stmt)
-      return block(
-        'sz_g2d_draw_label',
-        { TEXT: stmt.text, COLOR: stmt.color, ALIGN: stmt.align },
-        {},
-        stmt.__id,
-        { X: x, Y: y, SIZE: size },
-      )
-    }
-    case 'g2d:drawHearts': {
-      const count = exprToValueBlock(stmt.count)
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      if (!count || !x || !y || !size) return rawJSBlock(stmt)
-      return block('sz_g2d_draw_hearts', { COLOR: stmt.color }, {}, stmt.__id, {
-        COUNT: count,
-        X: x,
-        Y: y,
-        SIZE: size,
-      })
-    }
-    case 'g2d:drawSpriteHealth': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      if (!x || !y || !size) return rawJSBlock(stmt)
-      return block(
-        'sz_g2d_draw_sprite_health',
-        { SPRITE: stmt.spriteVar, STYLE: stmt.style, COLOR: stmt.color },
-        {},
-        stmt.__id,
-        { X: x, Y: y, SIZE: size },
-      )
-    }
-    case 'g2d:drawBar': {
-      const value = exprToValueBlock(stmt.value)
-      const max = exprToValueBlock(stmt.max)
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      if (!value || !max || !x || !y || !w || !h) return rawJSBlock(stmt)
-      return block('sz_g2d_draw_bar', { COLOR: stmt.color }, {}, stmt.__id, {
-        VALUE: value,
-        MAX: max,
-        X: x,
-        Y: y,
-        W: w,
-        H: h,
-      })
-    }
-    case 'g2d:setStageDescription':
-      return block('sz_g2d_set_stage_description', { DESCRIPTION: stmt.description }, {}, stmt.__id)
-    case 'g2d:setScene':
-      return block('sz_g2d_set_scene', { SCENE: stmt.name }, {}, stmt.__id)
-    case 'g2d:showScreen': {
-      const title = exprToValueBlock(screenTextToExpr(stmt.title))
-      const subtitle = exprToValueBlock(screenTextToExpr(stmt.subtitle))
-      const hint = exprToValueBlock(screenTextToExpr(stmt.hint))
-      if (!title || !subtitle || !hint) return rawJSBlock(stmt)
-      return block('sz_g2d_show_screen', { BG: stmt.bg }, {}, stmt.__id, {
-        TITLE: title,
-        SUBTITLE: subtitle,
-        HINT: hint,
-      })
-    }
-    case 'g2d:restart':
-      return block('sz_g2d_restart', {}, {}, stmt.__id)
-    case 'g2d:starfield': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_starfield', {}, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g2d:dragX':
-      return block('sz_g2d_drag_x', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:fitScreen': {
-      const percent = exprToValueBlock(valueToExpr(stmt.percent))
-      return percent === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_fit_screen', {}, {}, stmt.__id, { PERCENT: percent })
-    }
-    case 'g2d:setBackdrop':
-      return block('sz_g2d_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
-    case 'g2d:drawBackdrop':
-      return block('sz_g2d_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
-    case 'g2d:stageBorder': {
-      const width = exprToValueBlock(valueToExpr(stmt.width))
-      return width === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
-    }
-    case 'g2d:setupStage': {
-      const w = exprToValueBlock(valueToExpr(stmt.width))
-      const h = exprToValueBlock(valueToExpr(stmt.height))
-      return w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_setup_stage', { BG: stmt.bg }, {}, stmt.__id, { W: w, H: h })
-    }
-    case 'g2d:setupFull':
-      return block('sz_g2d_setup_full', { BG: stmt.bg }, {}, stmt.__id)
-    case 'g2d:spawnBullet': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const vx = exprToValueBlock(stmt.vx)
-      const vy = exprToValueBlock(stmt.vy)
-      const r = exprToValueBlock(valueToExpr(stmt.radius))
-      if (!x || !y || !vx || !vy || !r) return rawJSBlock(stmt)
-      return block(
-        'sz_g2d_spawn_bullet',
-        { GROUP: stmt.groupVar, COLOR: stmt.color },
-        {},
-        stmt.__id,
-        { X: x, Y: y, VX: vx, VY: vy, R: r },
-      )
-    }
-    case 'g2d:arrowsX': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_arrows_x', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g2d:blinkSprite': {
-      const frames = exprToValueBlock(valueToExpr(stmt.frames))
-      return frames === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_blink', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FRAMES: frames })
-    }
-    case 'g2d:createShip': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_create_ship',
-            { NAME: stmt.varName, BODY: stmt.bodyColor, WINGS: stmt.wingColor },
-            {},
-            stmt.__id,
-            { X: x, Y: y, W: w, H: h },
-          )
-    }
-    case 'g2d:spawnAsteroid': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const vx = exprToValueBlock(stmt.vx)
-      const vy = exprToValueBlock(stmt.vy)
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      if (!x || !y || !vx || !vy || !size) return rawJSBlock(stmt)
-      return block(
-        'sz_g2d_spawn_asteroid',
-        { GROUP: stmt.groupVar, COLOR: stmt.color },
-        {},
-        stmt.__id,
-        { X: x, Y: y, VX: vx, VY: vy, SIZE: size },
-      )
-    }
-    case 'g2d:explode':
-      return block('sz_g2d_explode', { SPRITE: stmt.spriteVar, COLOR: stmt.color }, {}, stmt.__id)
-    case 'g2d:playShoot':
-      return block('sz_g2d_play_shoot', {}, {}, stmt.__id)
-    case 'g2d:playExplosion':
-      return block('sz_g2d_play_explosion', {}, {}, stmt.__id)
-    case 'g2d:onSpriteGroupOverlap':
-      return block(
-        'sz_g2d_on_sprite_group_overlap',
-        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar, ANAME: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:steerThrust': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const turn = exprToValueBlock(valueToExpr(stmt.turn))
-      return speed === null || turn === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_steer_thrust', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            SPEED: speed,
-            TURN: turn,
-          })
-    }
-    case 'g2d:rotateSprite': {
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_rotate_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { DEG: deg })
-    }
-    case 'g2d:pointSprite': {
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_point_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { DEG: deg })
-    }
-    case 'g2d:thrust': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_thrust', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FORCE: force })
-    }
-    case 'g2d:applyFriction': {
-      const factor = exprToValueBlock(valueToExpr(stmt.factor))
-      return factor === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_apply_friction', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-            FACTOR: factor,
-          })
-    }
-    case 'g2d:shootFrom': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_shoot_from',
-            { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { SPEED: speed },
-          )
-    }
-    case 'g2d:spawnAsteroidEdge': {
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return size === null || speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_spawn_asteroid_edge',
-            { GROUP: stmt.groupVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { SIZE: size, SPEED: speed },
-          )
-    }
-    case 'g2d:jumpOnGround': {
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_jump_on_ground', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { JUMP: jump })
-    }
-    case 'g2d:createDino': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      return x === null || y === null || size === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_create_dino', { NAME: stmt.varName, COLOR: stmt.color }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            SIZE: size,
-          })
-    }
-    case 'g2d:createStickHero': {
-      // O equilibrista é um SPRITE: tamanho em soquetes + cor em campo.
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return w === null || h === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_stickhero_sprite',
-            { NAME: stmt.varName, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { W: w, H: h },
-          )
-    }
-    case 'g2d:createStickPath':
-      // O ctx é o PADRÃO do palco (a IR mantém ctxVar; o bloco não o mostra).
-      return block(
-        'sz_g2d_stickpath_create',
-        {
-          NAME: stmt.varName,
-          PLATFORM_COLOR: stmt.platformColor,
-          STICK_COLOR: stmt.stickColor,
-        },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:stickPathScenery':
-      return block('sz_g2d_stickpath_scenery', { PATH: stmt.pathVar }, {}, stmt.__id)
-    case 'g2d:stickPathGrow': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_stickpath_grow', { PATH: stmt.pathVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g2d:stickPathDrop':
-      return block('sz_g2d_stickpath_drop', { PATH: stmt.pathVar }, {}, stmt.__id)
-    case 'g2d:stickPathWalk': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_stickpath_walk',
-            { SPRITE: stmt.spriteVar, PATH: stmt.pathVar },
-            {},
-            stmt.__id,
-            { SPEED: speed },
-          )
-    }
-    case 'g2d:stickPathDraw':
-      return block('sz_g2d_stickpath_draw', { PATH: stmt.pathVar }, {}, stmt.__id)
-    case 'g2d:onStickPathCross':
-      return block(
-        'sz_g2d_stickpath_on_cross',
-        { PATH: stmt.pathVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:onStickPathPerfect':
-      return block(
-        'sz_g2d_stickpath_on_perfect',
-        { PATH: stmt.pathVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:createBalloon': {
-      // O balão é um SPRITE: posição/tamanho em soquetes + cores em campos.
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_balloon_sprite',
-            { NAME: stmt.varName, BODY: stmt.color, BASKET: stmt.basketColor },
-            {},
-            stmt.__id,
-            { X: x, Y: y, W: w, H: h },
-          )
-    }
-    case 'g2d:createBalloonPath':
-      return block('sz_g2d_balloonpath_create', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g2d:balloonPathScenery':
-      return block('sz_g2d_balloonpath_scenery', { PATH: stmt.pathVar }, {}, stmt.__id)
-    case 'g2d:balloonFire': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_balloon_fire', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FORCE: force })
-    }
-    case 'g2d:balloonFly':
-      return block('sz_g2d_balloon_fly', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-    case 'g2d:balloonPathScroll': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_balloonpath_scroll',
-            { PATH: stmt.pathVar, SPRITE: stmt.spriteVar },
-            {},
-            stmt.__id,
-            { SPEED: speed },
-          )
-    }
-    case 'g2d:onBalloonPathTreeHit':
-      return block(
-        'sz_g2d_balloonpath_on_tree',
-        { PATH: stmt.pathVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g2d:controlDino': {
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_control_dino', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { JUMP: jump })
-    }
-    case 'g2d:spawnObstacle': {
-      const x = exprToValueBlock(stmt.x)
-      const vx = exprToValueBlock(stmt.vx)
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      if (!x || !vx || !size) return rawJSBlock(stmt)
-      return block(
-        'sz_g2d_spawn_obstacle',
-        { GROUP: stmt.groupVar, SHAPE: stmt.shape },
-        {},
-        stmt.__id,
-        { X: x, VX: vx, SIZE: size },
-      )
-    }
-    case 'g2d:spawnEgg': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const vx = exprToValueBlock(stmt.vx)
-      if (!x || !y || !vx) return rawJSBlock(stmt)
-      return block('sz_g2d_spawn_egg', { GROUP: stmt.groupVar }, {}, stmt.__id, {
-        X: x,
-        Y: y,
-        VX: vx,
-      })
-    }
-    case 'g2d:forest': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g2d_forest', {}, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g2d:playJump':
-      return block('sz_g2d_play_jump', {}, {}, stmt.__id)
-    case 'g2d:playDinoHurt':
-      return block('sz_g2d_play_dino_hurt', {}, {}, stmt.__id)
-    case 'g2d:playCollect':
-      return block('sz_g2d_play_collect', {}, {}, stmt.__id)
-    case 'g2d:createCity':
-      return block('sz_g2d_create_city', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g2d:drawCity':
-      return block('sz_g2d_draw_city', { CITY: stmt.cityVar }, {}, stmt.__id)
-    case 'g2d:placeThrower':
-      return block(
-        'sz_g2d_place_thrower',
-        { NAME: stmt.varName, CITY: stmt.cityVar, SIDE: stmt.side, COLOR: stmt.color },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:newWind':
-      return block('sz_g2d_new_wind', { CITY: stmt.cityVar }, {}, stmt.__id)
-    case 'g2d:drawWind':
-      return block('sz_g2d_draw_wind', { CITY: stmt.cityVar }, {}, stmt.__id)
-    case 'g2d:aimDrag':
-      return block('sz_g2d_aim_drag', { THROWER: stmt.throwerVar }, {}, stmt.__id)
-    case 'g2d:throwBanana':
-      return block(
-        'sz_g2d_throw_banana',
-        { THROWER: stmt.throwerVar, CITY: stmt.cityVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:updateBanana':
-      return block('sz_g2d_update_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
-    case 'g2d:drawBanana':
-      return block('sz_g2d_draw_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
-    case 'g2d:playWhistle':
-      return block('sz_g2d_play_whistle', {}, {}, stmt.__id)
-    case 'g2d:playBoom':
-      return block('sz_g2d_play_boom', {}, {}, stmt.__id)
-    case 'g2d:computerTurn':
-      return block(
-        'sz_g2d_computer_turn',
-        { THROWER: stmt.throwerVar, CITY: stmt.cityVar, ENEMY: stmt.enemyVar },
-        {},
-        stmt.__id,
-      )
-    case 'g2d:drawAimReadout':
-      return block('sz_g2d_draw_aim_readout', {}, {}, stmt.__id)
-    case 'g3d:createScene':
-      return block(
-        'sz_g3d_create_scene',
-        { CANVAS: stmt.canvasId, NAME: stmt.varName },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:createFullscreenScene':
-      return block(
-        'sz_g3d_create_fullscreen_scene',
-        { NAME: stmt.varName, BG: stmt.bg },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:setBackground':
-      return block(
-        'sz_g3d_set_background',
-        { WORLD: stmt.worldVar, COLOR: stmt.color },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:setCameraPosition': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const z = exprToValueBlock(stmt.z)
-      if (!x || !y || !z) return rawJSBlock(stmt)
-      return block('sz_g3d_set_camera', { WORLD: stmt.worldVar }, {}, stmt.__id, {
-        X: x,
-        Y: y,
-        Z: z,
-      })
-    }
-    case 'g3d:createBox': {
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      return size === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_create_box',
-            { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { SIZE: size },
-          )
-    }
-    case 'g3d:createSphere': {
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      return radius === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_create_sphere',
-            { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { RADIUS: radius },
-          )
-    }
-    case 'g3d:setPosition': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const z = exprToValueBlock(stmt.z)
-      if (!x || !y || !z) return rawJSBlock(stmt)
-      return block('sz_g3d_set_position', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3d:setRotation': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const z = exprToValueBlock(stmt.z)
-      if (!x || !y || !z) return rawJSBlock(stmt)
-      return block('sz_g3d_set_rotation', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3d:animate':
-      return block(
-        'sz_g3d_animate',
-        { WORLD: stmt.worldVar },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3d:createBlock': {
-      const w = exprToValueBlock(valueToExpr(stmt.width))
-      const h = exprToValueBlock(valueToExpr(stmt.height))
-      const d = exprToValueBlock(valueToExpr(stmt.depth))
-      return w === null || h === null || d === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_create_block',
-            { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { W: w, H: h, D: d },
-          )
-    }
-    case 'g3d:setVelocity': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const z = exprToValueBlock(stmt.z)
-      if (!x || !y || !z) return rawJSBlock(stmt)
-      return block('sz_g3d_set_velocity', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3d:jump': {
-      const force = exprToValueBlock(stmt.force)
-      if (!force) return rawJSBlock(stmt)
-      return block('sz_g3d_jump', { OBJ: stmt.objVar }, {}, stmt.__id, { FORCE: force })
-    }
-    case 'g3d:setScale': {
-      const factor = exprToValueBlock(stmt.factor)
-      if (!factor) return rawJSBlock(stmt)
-      return block('sz_g3d_set_scale', { OBJ: stmt.objVar }, {}, stmt.__id, { FACTOR: factor })
-    }
-    case 'g3d:applyGravity':
-      return block(
-        'sz_g3d_apply_gravity',
-        { OBJ: stmt.objVar, GROUND: stmt.groundVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:controlWithKeys': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_control_keys', { OBJ: stmt.objVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g3d:cameraFollow':
-      return block(
-        'sz_g3d_camera_follow',
-        { WORLD: stmt.worldVar, OBJ: stmt.objVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:createGroup':
-      return block('sz_g3d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
-    case 'g3d:everyFrames': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_every_frames', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            N: n,
-          })
-    }
-    case 'g3d:everySeconds': {
-      const secs = exprToValueBlock(valueToExpr(stmt.secs))
-      return secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            SECS: secs,
-          })
-    }
-    case 'g3d:spawnEnemy': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_spawn_enemy',
-            { WORLD: stmt.worldVar, GROUP: stmt.groupVar },
-            {},
-            stmt.__id,
-            { SPEED: speed },
-          )
-    }
-    case 'g3d:updateGroup':
-      return block(
-        'sz_g3d_update_group',
-        { GROUP: stmt.groupVar, GROUND: stmt.groundVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:updateGroupNoGravity':
-      return block('sz_g3d_update_group_no_gravity', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g3d:pruneOffscreen':
-      return block(
-        'sz_g3d_prune_offscreen',
-        { WORLD: stmt.worldVar, GROUP: stmt.groupVar, ITEM: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3d:forEachInGroup':
-      return block(
-        'sz_g3d_for_each_in_group',
-        { GROUP: stmt.groupVar, ITEM: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3d:removeFromGroup':
-      return block(
-        'sz_g3d_remove_from_group',
-        { GROUP: stmt.groupVar, OBJ: stmt.objVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:clearGroup':
-      return block('sz_g3d_clear_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
-    case 'g3d:stop':
-      return block('sz_g3d_stop', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:createCrossingScene':
-      return block(
-        'sz_g3d_create_crossing_scene',
-        { CANVAS: stmt.canvasId, NAME: stmt.varName },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:createCrosser':
-      return block(
-        'sz_g3d_create_crosser',
-        { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:crosserMove':
-      return block('sz_g3d_crosser_move', { OBJ: stmt.objVar, DIR: stmt.direction }, {}, stmt.__id)
-    case 'g3d:crosserStep':
-      return block('sz_g3d_crosser_step', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:crosserReset':
-      return block(
-        'sz_g3d_crosser_reset',
-        { OBJ: stmt.objVar, WORLD: stmt.worldVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:addRow': {
-      const row = exprToValueBlock(stmt.rowIndex)
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      if (!row || !speed) return rawJSBlock(stmt)
-      return block(
-        'sz_g3d_add_row',
-        { WORLD: stmt.worldVar, KIND: stmt.kind, DIR: stmt.direction },
-        {},
-        stmt.__id,
-        { ROW: row, SPEED: speed },
-      )
-    }
-    case 'g3d:generateRows': {
-      const count = exprToValueBlock(valueToExpr(stmt.count))
-      return count === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_generate_rows', { WORLD: stmt.worldVar }, {}, stmt.__id, { COUNT: count })
-    }
-    case 'g3d:moveTraffic':
-      return block('sz_g3d_move_traffic', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:isometricCamera':
-      return block(
-        'sz_g3d_isometric_camera',
-        { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:gridStep':
-      return block('sz_g3d_grid_step', { OBJ: stmt.objVar }, {}, stmt.__id)
-    case 'g3d:gridMove':
-      return block('sz_g3d_grid_move', { OBJ: stmt.objVar, DIR: stmt.direction }, {}, stmt.__id)
-    case 'g3d:moveAcross': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const min = exprToValueBlock(valueToExpr(stmt.min))
-      const max = exprToValueBlock(valueToExpr(stmt.max))
-      return speed === null || min === null || max === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_move_across', { GROUP: stmt.groupVar }, {}, stmt.__id, {
-            SPEED: speed,
-            MIN: min,
-            MAX: max,
-          })
-    }
-    case 'g3d:gridPosition': {
-      const row = exprToValueBlock(stmt.row)
-      const col = exprToValueBlock(stmt.col)
-      if (!row || !col) return rawJSBlock(stmt)
-      return block('sz_g3d_grid_position', { OBJ: stmt.objVar }, {}, stmt.__id, {
-        ROW: row,
-        COL: col,
-      })
-    }
-    case 'g3d:topCamera':
-      return block(
-        'sz_g3d_top_camera',
-        { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:moveInCircle': {
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return radius === null || speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_move_in_circle', { OBJ: stmt.objVar }, {}, stmt.__id, {
-            RADIUS: radius,
-            SPEED: speed,
-          })
-    }
-    case 'g3d:createRaceScene':
-      return block(
-        'sz_g3d_create_race_scene',
-        { CANVAS: stmt.canvasId, NAME: stmt.varName },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:createRaceTrack':
-      return block('sz_g3d_create_race_track', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:createRaceCar':
-      return block(
-        'sz_g3d_create_race_car',
-        { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:raceStep':
-      return block('sz_g3d_race_step', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:raceControl':
-      return block('sz_g3d_race_control', { OBJ: stmt.objVar, MODE: stmt.mode }, {}, stmt.__id)
-    case 'g3d:runRivals':
-      return block('sz_g3d_run_rivals', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:raceReset':
-      return block('sz_g3d_race_reset', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:fall':
-      return block('sz_g3d_fall', { OBJ: stmt.objVar }, {}, stmt.__id)
-    case 'g3d:slideBetween': {
-      const min = exprToValueBlock(valueToExpr(stmt.min))
-      const max = exprToValueBlock(valueToExpr(stmt.max))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return min === null || max === null || speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_slide_between', { OBJ: stmt.objVar, AXIS: stmt.axis }, {}, stmt.__id, {
-            MIN: min,
-            MAX: max,
-            SPEED: speed,
-          })
-    }
-    case 'g3d:spin': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_spin', { OBJ: stmt.objVar, AXIS: stmt.axis }, {}, stmt.__id, {
-            SPEED: speed,
-          })
-    }
-    case 'g3d:createStackScene':
-      return block(
-        'sz_g3d_create_stack_scene',
-        { CANVAS: stmt.canvasId, NAME: stmt.varName },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:createStackTower':
-      return block('sz_g3d_create_stack_tower', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:stackDrop':
-      return block('sz_g3d_stack_drop', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:stackStep':
-      return block('sz_g3d_stack_step', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:stackReset':
-      return block('sz_g3d_stack_reset', { WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:moveBy': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const z = exprToValueBlock(stmt.z)
-      if (!x || !y || !z) return rawJSBlock(stmt)
-      return block('sz_g3d_move_by', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3d:rotateBy': {
-      const amount = exprToValueBlock(stmt.amount)
-      if (!amount) return rawJSBlock(stmt)
-      return block('sz_g3d_rotate_by', { OBJ: stmt.objVar, AXIS: stmt.axis }, {}, stmt.__id, {
-        AMOUNT: amount,
-      })
-    }
-    case 'g3d:moveTowards': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const z = exprToValueBlock(stmt.z)
-      const factor = exprToValueBlock(valueToExpr(stmt.factor))
-      if (!x || !y || !z || !factor) return rawJSBlock(stmt)
-      return block('sz_g3d_move_towards', { OBJ: stmt.objVar }, {}, stmt.__id, {
-        X: x,
-        Y: y,
-        Z: z,
-        FACTOR: factor,
-      })
-    }
-    case 'g3d:lookAtObject':
-      return block('sz_g3d_look_at_object', { A: stmt.aVar, B: stmt.bVar }, {}, stmt.__id)
-    case 'g3d:lookAtPoint': {
-      const x = exprToValueBlock(stmt.x)
-      const y = exprToValueBlock(stmt.y)
-      const z = exprToValueBlock(stmt.z)
-      if (!x || !y || !z) return rawJSBlock(stmt)
-      return block('sz_g3d_look_at_point', { OBJ: stmt.objVar }, {}, stmt.__id, {
-        X: x,
-        Y: y,
-        Z: z,
-      })
-    }
-    case 'g3d:moveForward': {
-      const dist = exprToValueBlock(stmt.dist)
-      if (!dist) return rawJSBlock(stmt)
-      return block('sz_g3d_move_forward', { OBJ: stmt.objVar }, {}, stmt.__id, { DIST: dist })
-    }
-    case 'g3d:faceVelocity':
-      return block('sz_g3d_face_velocity', { OBJ: stmt.objVar }, {}, stmt.__id)
-    case 'g3d:body': {
-      const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
-      return gravity === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_body', { OBJ: stmt.objVar }, {}, stmt.__id, { GRAVITY: gravity })
-    }
-    case 'g3d:stepBody':
-      return block('sz_g3d_step_body', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
-    case 'g3d:setSolid':
-      return block('sz_g3d_set_solid', { OBJ: stmt.objVar }, {}, stmt.__id)
-    case 'g3d:platformerControls': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return speed === null || jump === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_platformer_controls',
-            { OBJ: stmt.objVar, WORLD: stmt.worldVar },
-            {},
-            stmt.__id,
-            { SPEED: speed, JUMP: jump },
-          )
-    }
-    case 'g3d:fpsControls': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_fps_controls', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id, {
-            SPEED: speed,
-          })
-    }
-    case 'g3d:resolveCollision':
-      return block('sz_g3d_resolve_collision', { A: stmt.aVar, B: stmt.bVar }, {}, stmt.__id)
-    case 'g3d:fpsCamera':
-      return block('sz_g3d_fps_camera', { WORLD: stmt.worldVar, OBJ: stmt.objVar }, {}, stmt.__id)
-    case 'g3d:orbitCamera':
-      return block('sz_g3d_orbit_camera', { WORLD: stmt.worldVar, OBJ: stmt.objVar }, {}, stmt.__id)
-    case 'g3d:thirdPersonCamera': {
-      const dist = exprToValueBlock(valueToExpr(stmt.dist))
-      const height = exprToValueBlock(valueToExpr(stmt.height))
-      return dist === null || height === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_third_person_camera',
-            { WORLD: stmt.worldVar, OBJ: stmt.objVar },
-            {},
-            stmt.__id,
-            { DIST: dist, HEIGHT: height },
-          )
-    }
-    case 'g3d:cameraLookAt':
-      return block(
-        'sz_g3d_camera_look_at',
-        { WORLD: stmt.worldVar, OBJ: stmt.objVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:setFOV': {
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_set_fov', { WORLD: stmt.worldVar }, {}, stmt.__id, { DEG: deg })
-    }
-    case 'g3d:createCylinder': {
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      const height = exprToValueBlock(valueToExpr(stmt.height))
-      return radius === null || height === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_create_cylinder',
-            { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { RADIUS: radius, HEIGHT: height },
-          )
-    }
-    case 'g3d:createCone': {
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      const height = exprToValueBlock(valueToExpr(stmt.height))
-      return radius === null || height === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_create_cone',
-            { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { RADIUS: radius, HEIGHT: height },
-          )
-    }
-    case 'g3d:createPlane': {
-      const w = exprToValueBlock(valueToExpr(stmt.width))
-      const d = exprToValueBlock(valueToExpr(stmt.depth))
-      return w === null || d === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_create_plane',
-            { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { W: w, D: d },
-          )
-    }
-    case 'g3d:createTorus': {
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      const tube = exprToValueBlock(valueToExpr(stmt.tube))
-      return radius === null || tube === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_create_torus',
-            { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { RADIUS: radius, TUBE: tube },
-          )
-    }
-    case 'g3d:createModel':
-      return block(
-        'sz_g3d_create_model',
-        { NAME: stmt.varName, WORLD: stmt.worldVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:setColor':
-      return block('sz_g3d_set_color', { OBJ: stmt.objVar, COLOR: stmt.color }, {}, stmt.__id)
-    case 'g3d:setOpacity': {
-      const opacity = exprToValueBlock(valueToExpr(stmt.opacity))
-      return opacity === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_set_opacity', { OBJ: stmt.objVar }, {}, stmt.__id, { OPACITY: opacity })
-    }
-    case 'g3d:setMaterial':
-      return block('sz_g3d_set_material', { OBJ: stmt.objVar, KIND: stmt.kind }, {}, stmt.__id)
-    case 'g3d:setTexture':
-      return block('sz_g3d_set_texture', { OBJ: stmt.objVar, ASSET: stmt.asset }, {}, stmt.__id)
-    case 'g3d:setVisible':
-      return block('sz_g3d_set_visible', { OBJ: stmt.objVar, MODE: stmt.mode }, {}, stmt.__id)
-    case 'g3d:removeObject':
-      return block(
-        'sz_g3d_remove_object',
-        { WORLD: stmt.worldVar, OBJ: stmt.objVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:addToModel':
-      return block(
-        'sz_g3d_add_to_model',
-        { MODEL: stmt.modelVar, PART: stmt.partVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:addAmbientLight': {
-      const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
-      return intensity === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_add_ambient_light',
-            { WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { INTENSITY: intensity },
-          )
-    }
-    case 'g3d:addSunLight': {
-      const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
-      return intensity === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_add_sun_light',
-            { WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { INTENSITY: intensity },
-          )
-    }
-    case 'g3d:addPointLight': {
-      const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return intensity === null || x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_add_point_light',
-            { WORLD: stmt.worldVar, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { INTENSITY: intensity, X: x, Y: y, Z: z },
-          )
-    }
-    case 'g3d:setFog': {
-      const near = exprToValueBlock(valueToExpr(stmt.near))
-      const far = exprToValueBlock(valueToExpr(stmt.far))
-      return near === null || far === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_set_fog', { WORLD: stmt.worldVar, COLOR: stmt.color }, {}, stmt.__id, {
-            NEAR: near,
-            FAR: far,
-          })
-    }
-    case 'g3d:setSky':
-      return block(
-        'sz_g3d_set_sky',
-        { WORLD: stmt.worldVar, TOP: stmt.top, BOTTOM: stmt.bottom },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:setShadows':
-      return block('sz_g3d_set_shadows', { WORLD: stmt.worldVar, MODE: stmt.mode }, {}, stmt.__id)
-    case 'g3d:createSwarm':
-      return block(
-        'sz_g3d_create_swarm',
-        { NAME: stmt.varName, WORLD: stmt.worldVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:spawnInSwarm': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3d_spawn_in_swarm',
-            { SWARM: stmt.swarmVar, ORIGINAL: stmt.originalVar },
-            {},
-            stmt.__id,
-            { X: x, Y: y, Z: z },
-          )
-    }
-    case 'g3d:forEachInSwarm':
-      return block(
-        'sz_g3d_for_each_swarm',
-        { SWARM: stmt.swarmVar, ITEM: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3d:removeFromSwarm':
-      return block(
-        'sz_g3d_remove_from_swarm',
-        { SWARM: stmt.swarmVar, ITEM: stmt.itemVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3d:pruneSwarm': {
-      const min = exprToValueBlock(valueToExpr(stmt.min))
-      const max = exprToValueBlock(valueToExpr(stmt.max))
-      return min === null || max === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_prune_swarm', { SWARM: stmt.swarmVar, AXIS: stmt.axis }, {}, stmt.__id, {
-            MIN: min,
-            MAX: max,
-          })
-    }
-    case 'g3d:playNote': {
-      const freq = exprToValueBlock(valueToExpr(stmt.freq))
-      const ms = exprToValueBlock(valueToExpr(stmt.ms))
-      return freq === null || ms === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_play_note', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
-    }
-    case 'g3d:playEffect':
-      return block('sz_g3d_play_effect', { KIND: stmt.kind }, {}, stmt.__id)
-    case 'g3d:loadSound':
-      return block('sz_g3d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
-    case 'g3d:playSound':
-      return block('sz_g3d_play_sound', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g3d:stopSound':
-      return block('sz_g3d_stop_sound', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g3d:playMusic':
-      return block('sz_g3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g3d:stopMusic':
-      return block('sz_g3d_stop_music', {}, {}, stmt.__id)
-    case 'g3d:setVolume': {
-      const level = exprToValueBlock(valueToExpr(stmt.level))
-      return level === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3d_set_volume', {}, {}, stmt.__id, { LEVEL: level })
-    }
-    // ----- game-2d-advanced (kit profissional) -----
-    case 'gk:setup': {
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_setup', { BG: stmt.bg, ACCENT: stmt.accent }, {}, stmt.__id, { W: w, H: h })
-    }
-    case 'gk:setupFull':
-      return block('sz_gk_setup_full', { BG: stmt.bg, ACCENT: stmt.accent }, {}, stmt.__id)
-    case 'gk:setStageDescription':
-      return block('sz_gk_set_stage_description', { DESCRIPTION: stmt.description }, {}, stmt.__id)
-    case 'gk:stageBorder': {
-      const width = exprToValueBlock(valueToExpr(stmt.width))
-      return width === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
-    }
-    case 'gk:setBackdrop':
-      return block('sz_gk_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
-    case 'gk:drawBackdrop':
-      return block('sz_gk_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
-    case 'gk:showHitboxes':
-      return block('sz_gk_show_hitboxes', {}, {}, stmt.__id)
-    case 'gk:start':
-      return block('sz_gk_start', {}, {}, stmt.__id)
-    case 'gk:loadImage':
-      return block('sz_gk_load_image', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
-    case 'gk:setScreenText': {
-      const title = exprToValueBlock(valueToExpr(stmt.title))
-      const text = exprToValueBlock(valueToExpr(stmt.text))
-      const button = exprToValueBlock(valueToExpr(stmt.button))
-      return title === null || text === null || button === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_screen_text', { SCREEN: stmt.screen }, {}, stmt.__id, {
-            TITLE: title,
-            TEXT: text,
-            BTN: button,
-          })
-    }
-    case 'gk:createScreen': {
-      const title = exprToValueBlock(valueToExpr(stmt.title))
-      const text = exprToValueBlock(valueToExpr(stmt.text))
-      return title === null || text === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_create_screen', { NAME: stmt.name }, {}, stmt.__id, {
-            TITLE: title,
-            TEXT: text,
-          })
-    }
-    case 'gk:addButton': {
-      const label = exprToValueBlock(valueToExpr(stmt.label))
-      return label === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_add_button',
-            { SCREEN: stmt.screen },
-            { BODY: statementsToBlocks(stmt.body) },
-            stmt.__id,
-            { LABEL: label },
-          )
-    }
-    case 'gk:setScreenBg':
-      return block(
-        'sz_gk_set_screen_bg',
-        { SCREEN: stmt.screen, COLOR: stmt.color, IMAGE: stmt.image },
-        {},
-        stmt.__id,
-      )
-    case 'gk:showScreen':
-      return block('sz_gk_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
-    case 'gk:hideScreens':
-      return block('sz_gk_hide_screens', {}, {}, stmt.__id)
-    case 'gk:setState':
-      return block('sz_gk_set_state', { STATE: stmt.name }, {}, stmt.__id)
-    case 'gk:restartGame':
-      return block('sz_gk_restart_game', {}, {}, stmt.__id)
-    case 'gk:onGameStart':
-      return block('sz_gk_on_game_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'gk:onEnterState':
-      return block(
-        'sz_gk_on_enter_state',
-        { STATE: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:pause':
-      return block('sz_gk_pause', {}, {}, stmt.__id)
-    case 'gk:resume':
-      return block('sz_gk_resume', {}, {}, stmt.__id)
-    case 'gk:returnToMenu':
-      return block('sz_gk_return_to_menu', {}, {}, stmt.__id)
-    case 'gk:endGame':
-      return block('sz_gk_end_game', {}, {}, stmt.__id)
-    case 'gk:onUpdate':
-      return block(
-        'sz_gk_on_update',
-        { DT: stmt.dtName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:onDraw':
-      return block(
-        'sz_gk_on_draw',
-        { PARAM: stmt.ctxName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:onDrawHud':
-      return block(
-        'sz_gk_on_draw_hud',
-        { PARAM: stmt.ctxName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:onGameClick':
-      return block(
-        'sz_gk_on_game_click',
-        { PX: stmt.xName, PY: stmt.yName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:setSheet': {
-      const fw = exprToValueBlock(valueToExpr(stmt.fw))
-      const fh = exprToValueBlock(valueToExpr(stmt.fh))
-      return fw === null || fh === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_sheet', { CHAR: stmt.charVar, IMAGE: stmt.image }, {}, stmt.__id, {
-            FW: fw,
-            FH: fh,
-          })
-    }
-    case 'gk:playAnim': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_play_anim', { CHAR: stmt.charVar }, {}, stmt.__id, {
-            FROM: from,
-            TO: to,
-            FPS: fps,
-          })
-    }
-    case 'gk:cameraFollow': {
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_camera_follow', { CHAR: stmt.charVar }, {}, stmt.__id, { W: w, H: h })
-    }
-    case 'gk:cameraFollowMap':
-      return block('sz_gk_camera_follow_map', { CHAR: stmt.charVar, MAP: stmt.map }, {}, stmt.__id)
-    case 'gk:cameraStop':
-      return block('sz_gk_camera_stop', {}, {}, stmt.__id)
-    case 'gk:launchTowards': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_launch_towards',
-            { WHO: stmt.charVar, TARGET: stmt.targetVar },
-            {},
-            stmt.__id,
-            { V: speed },
-          )
-    }
-    case 'gk:moveByVelocity':
-      return block('sz_gk_move_by_velocity', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
-    case 'gk:setAngle': {
-      const degrees = exprToValueBlock(valueToExpr(stmt.degrees))
-      return degrees === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_angle', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: degrees })
-    }
-    case 'gk:drawBar': {
-      const current = exprToValueBlock(valueToExpr(stmt.current))
-      const max = exprToValueBlock(valueToExpr(stmt.max))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return current === null ||
-        max === null ||
-        x === null ||
-        y === null ||
-        w === null ||
-        h === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_draw_bar', { COLOR: stmt.color }, {}, stmt.__id, {
-            CUR: current,
-            MAX: max,
-            X: x,
-            Y: y,
-            W: w,
-            H: h,
-          })
-    }
-    case 'gk:rpgMoveGrid': {
-      const cell = exprToValueBlock(valueToExpr(stmt.cell))
-      return cell === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_move_grid', { CHAR: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
-            CELL: cell,
-          })
-    }
-    case 'gk:rpgBlockCell': {
-      const cx = exprToValueBlock(valueToExpr(stmt.cx))
-      const cy = exprToValueBlock(valueToExpr(stmt.cy))
-      return cx === null || cy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_block_cell', {}, {}, stmt.__id, { CX: cx, CY: cy })
-    }
-    case 'gk:rpgCreateNpc': {
-      const cx = exprToValueBlock(valueToExpr(stmt.cx))
-      const cy = exprToValueBlock(valueToExpr(stmt.cy))
-      return cx === null || cy === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_rpg_create_npc',
-            { NAME: stmt.name, IMAGE: stmt.image, LOOK: stmt.look },
-            {},
-            stmt.__id,
-            { CX: cx, CY: cy },
-          )
-    }
-    case 'gk:rpgDrawNpcs':
-      return block('sz_gk_rpg_draw_npcs', {}, {}, stmt.__id)
-    case 'gk:rpgOnTalk':
-      return block(
-        'sz_gk_rpg_on_talk',
-        { NPC: stmt.npc },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:rpgSay': {
-      const textValue = exprToValueBlock(valueToExpr(stmt.text))
-      const speaker = exprToValueBlock(valueToExpr(stmt.speaker))
-      return textValue === null || speaker === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_say', {}, {}, stmt.__id, { TEXT: textValue, NAME: speaker })
-    }
-    case 'gk:rpgAddFlag':
-      return block('sz_gk_rpg_add_flag', { FLAG: stmt.flag }, {}, stmt.__id)
-    case 'gk:rpgGiveItem':
-      return block('sz_gk_rpg_give_item', { NAME: stmt.item, IMAGE: stmt.image }, {}, stmt.__id)
-    case 'gk:rpgRemoveItem':
-      return block('sz_gk_rpg_remove_item', { NAME: stmt.item }, {}, stmt.__id)
-    case 'gk:rpgDrawInventory': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_draw_inventory', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:rpgGoMap':
-      return block('sz_gk_rpg_go_map', { MAP: stmt.map }, {}, stmt.__id)
-    case 'gk:rpgSetStartMap':
-      return block('sz_gk_rpg_set_start_map', { MAP: stmt.map }, {}, stmt.__id)
-    case 'gk:rpgCreateMap': {
-      const cols = exprToValueBlock(valueToExpr(stmt.cols))
-      const rows = exprToValueBlock(valueToExpr(stmt.rows))
-      return cols === null || rows === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_rpg_create_map',
-            { MAP: stmt.map, PARAM: stmt.ctxName },
-            { BODY: statementsToBlocks(stmt.body) },
-            stmt.__id,
-            { COLS: cols, ROWS: rows },
-          )
-    }
-    case 'gk:rpgOnEnterMap':
-      return block(
-        'sz_gk_rpg_on_enter_map',
-        { MAP: stmt.map },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:rpgCreateDoor': {
-      const cx = exprToValueBlock(valueToExpr(stmt.cx))
-      const cy = exprToValueBlock(valueToExpr(stmt.cy))
-      return cx === null || cy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_create_door', { MAP: stmt.map }, {}, stmt.__id, { CX: cx, CY: cy })
-    }
-    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
-    case 'gk:rpgConnectEdge':
-      return block('sz_gk_rpg_connect_edge', { SIDE: stmt.side, MAP: stmt.map }, {}, stmt.__id)
-    case 'gk:rpgBattleStats': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const str = exprToValueBlock(valueToExpr(stmt.str))
-      const def = exprToValueBlock(valueToExpr(stmt.def))
-      return hp === null || str === null || def === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_battle_stats', {}, {}, stmt.__id, { HP: hp, STR: str, DEF: def })
-    }
-    case 'gk:rpgBattleStart': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const str = exprToValueBlock(valueToExpr(stmt.str))
-      const def = exprToValueBlock(valueToExpr(stmt.def))
-      return hp === null || str === null || def === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_rpg_battle_start',
-            { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
-            {},
-            stmt.__id,
-            { HP: hp, STR: str, DEF: def },
-          )
-    }
-    case 'gk:rpgSetSpecial': {
-      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
-      const cost = exprToValueBlock(valueToExpr(stmt.cost))
-      return dmg === null || cost === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_set_special', { NAME: stmt.name }, {}, stmt.__id, {
-            DMG: dmg,
-            COST: cost,
-          })
-    }
-    case 'gk:rpgGivePotion': {
-      const heal = exprToValueBlock(valueToExpr(stmt.heal))
-      return heal === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_give_potion', { NAME: stmt.name }, {}, stmt.__id, { HEAL: heal })
-    }
-    case 'gk:rpgHealHero':
-      return block('sz_gk_rpg_heal_hero', {}, {}, stmt.__id)
-    case 'gk:rpgBattleReward': {
-      const xp = exprToValueBlock(valueToExpr(stmt.xp))
-      return xp === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_battle_reward', {}, {}, stmt.__id, { XP: xp })
-    }
-    case 'gk:rpgInflict': {
-      const turns = exprToValueBlock(valueToExpr(stmt.turns))
-      // R25: STATUS virou campo (veneno|regenera|atrapalha); default veneno.
-      return turns === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_inflict', { WHO: stmt.who, STATUS: stmt.status }, {}, stmt.__id, {
-            TURNS: turns,
-          })
-    }
-    case 'gk:rpgAddAlly': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const str = exprToValueBlock(valueToExpr(stmt.str))
-      const def = exprToValueBlock(valueToExpr(stmt.def))
-      return hp === null || str === null || def === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_rpg_add_ally',
-            { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
-            {},
-            stmt.__id,
-            { HP: hp, STR: str, DEF: def },
-          )
-    }
-    case 'gk:rpgAddFoe': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const str = exprToValueBlock(valueToExpr(stmt.str))
-      const def = exprToValueBlock(valueToExpr(stmt.def))
-      return hp === null || str === null || def === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_rpg_add_foe',
-            { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
-            {},
-            stmt.__id,
-            { HP: hp, STR: str, DEF: def },
-          )
-    }
-    case 'gk:rpgTeachMove': {
-      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
-      const cost = exprToValueBlock(valueToExpr(stmt.cost))
-      return dmg === null || cost === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_teach_move', { MOVE: stmt.move, WHO: stmt.who }, {}, stmt.__id, {
-            DMG: dmg,
-            COST: cost,
-          })
-    }
-    case 'gk:rpgTeachHeal': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      const cost = exprToValueBlock(valueToExpr(stmt.cost))
-      return amount === null || cost === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_teach_heal', { MOVE: stmt.move, WHO: stmt.who }, {}, stmt.__id, {
-            AMOUNT: amount,
-            COST: cost,
-          })
-    }
-    case 'gk:rpgAddBoss': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const str = exprToValueBlock(valueToExpr(stmt.str))
-      const def = exprToValueBlock(valueToExpr(stmt.def))
-      return hp === null || str === null || def === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_rpg_add_boss',
-            { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
-            {},
-            stmt.__id,
-            { HP: hp, STR: str, DEF: def },
-          )
-    }
-    case 'gk:rpgDefineBattler': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const str = exprToValueBlock(valueToExpr(stmt.str))
-      const def = exprToValueBlock(valueToExpr(stmt.def))
-      return hp === null || str === null || def === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_rpg_define_battler',
-            {
-              NAME: stmt.name,
-              IMAGE: stmt.image,
-              COLOR: stmt.color,
-              BOSS: stmt.boss ? 'TRUE' : 'FALSE',
-            },
-            {},
-            stmt.__id,
-            { HP: hp, STR: str, DEF: def },
-          )
-    }
-    case 'gk:rpgBattleNamed':
-      return block('sz_gk_rpg_battle_named', { NAME: stmt.name }, {}, stmt.__id)
-    case 'gk:rpgAddFoeNamed':
-      return block('sz_gk_rpg_add_foe_named', { NAME: stmt.name }, {}, stmt.__id)
-    case 'gk:rpgOnFoeTurn':
-      return block(
-        'sz_gk_rpg_on_foe_turn',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:rpgFoeUse':
-      return block('sz_gk_rpg_foe_use', { NAME: stmt.name, MOVE: stmt.move }, {}, stmt.__id)
-    case 'gk:rpgFoeHitAll': {
-      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
-      return dmg === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_foe_hit_all', { NAME: stmt.name }, {}, stmt.__id, { DMG: dmg })
-    }
-    case 'gk:rpgOnBattleEnd':
-      return block(
-        'sz_gk_rpg_on_battle_end',
-        {},
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:setWalkSheet': {
-      const fw = exprToValueBlock(valueToExpr(stmt.fw))
-      const fh = exprToValueBlock(valueToExpr(stmt.fh))
-      return fw === null || fh === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_walk_sheet', { CHAR: stmt.charVar, IMAGE: stmt.image }, {}, stmt.__id, {
-            FW: fw,
-            FH: fh,
-          })
-    }
-    case 'gk:rpgCutscene':
-      return block('sz_gk_rpg_cutscene', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'gk:rpgWait': {
-      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
-      return sec === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_wait', {}, {}, stmt.__id, { SECONDS: sec })
-    }
-    case 'gk:rpgFace':
-      return block('sz_gk_rpg_face', { NPC: stmt.npc, DIR: stmt.dir }, {}, stmt.__id)
-    case 'gk:rpgNpcWalkTo': {
-      const cx = exprToValueBlock(valueToExpr(stmt.cx))
-      const cy = exprToValueBlock(valueToExpr(stmt.cy))
-      return cx === null || cy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_npc_walk_to', { NPC: stmt.npc }, {}, stmt.__id, { CX: cx, CY: cy })
-    }
-    case 'gk:rpgNpcWander':
-      return block('sz_gk_rpg_npc_wander', { NPC: stmt.npc }, {}, stmt.__id)
-    case 'gk:rpgOnStep': {
-      const cx = exprToValueBlock(valueToExpr(stmt.cx))
-      const cy = exprToValueBlock(valueToExpr(stmt.cy))
-      return cx === null || cy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_on_step', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            CX: cx,
-            CY: cy,
-          })
-    }
-    case 'gk:rpgMenu': {
-      const title = exprToValueBlock(valueToExpr(stmt.title))
-      return title === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_menu', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            TITLE: title,
-          })
-    }
-    case 'gk:rpgOption': {
-      const label = exprToValueBlock(valueToExpr(stmt.label))
-      return label === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_option', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            LABEL: label,
-          })
-    }
-    case 'gk:rpgSave':
-      return block('sz_gk_rpg_save', {}, {}, stmt.__id)
-    case 'gk:rpgLoad':
-      return block('sz_gk_rpg_load', {}, {}, stmt.__id)
-    case 'gk:loadTilemap':
-      return block('sz_gk_load_tilemap', { NAME: stmt.name, IMAGE: stmt.asset }, {}, stmt.__id)
-    case 'gk:drawTilemap':
-      return block('sz_gk_draw_tilemap', { MAP: stmt.name, LAYER: stmt.layer }, {}, stmt.__id)
-    case 'gk:tilemapSolid':
-      return block('sz_gk_tilemap_solid', { MAP: stmt.name }, {}, stmt.__id)
-    case 'gk:drawShadow':
-      return block('sz_gk_draw_shadow', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'gk:drawByDepth':
-      return block('sz_gk_draw_by_depth', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'gk:cameraShake': {
-      const int = exprToValueBlock(valueToExpr(stmt.intensity))
-      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
-      return int === null || sec === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_camera_shake', {}, {}, stmt.__id, { INT: int, SEC: sec })
-    }
-    case 'gk:applyGravity': {
-      const g = exprToValueBlock(valueToExpr(stmt.g))
-      return g === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_apply_gravity', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
-            G: g,
-          })
-    }
-    case 'gk:jump': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_jump', { WHO: stmt.charVar }, {}, stmt.__id, { FORCE: force })
-    }
-    case 'gk:setVelocity': {
-      const vx = exprToValueBlock(valueToExpr(stmt.vx))
-      const vy = exprToValueBlock(valueToExpr(stmt.vy))
-      return vx === null || vy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_velocity', { WHO: stmt.charVar }, {}, stmt.__id, { VX: vx, VY: vy })
-    }
-    case 'gk:setTerminalVelocity': {
-      const max = exprToValueBlock(valueToExpr(stmt.max))
-      return max === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_terminal_velocity', { WHO: stmt.charVar }, {}, stmt.__id, { MAX: max })
-    }
-    case 'gk:bounceOnEdges':
-      return block('sz_gk_bounce_on_edges', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:paddleBounce':
-      return block(
-        'sz_gk_paddle_bounce',
-        { BALL: stmt.ballVar, PADDLE: stmt.paddleVar },
-        {},
-        stmt.__id,
-      )
-    case 'gk:boardCreate': {
-      const cols = exprToValueBlock(valueToExpr(stmt.cols))
-      const rows = exprToValueBlock(valueToExpr(stmt.rows))
-      const empty = exprToValueBlock(valueToExpr(stmt.empty))
-      return cols === null || rows === null || empty === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_board_create', { NAME: stmt.name }, {}, stmt.__id, {
-            COLS: cols,
-            ROWS: rows,
-            EMPTY: empty,
-          })
-    }
-    case 'gk:boardSet': {
-      const value = exprToValueBlock(valueToExpr(stmt.value))
-      const col = exprToValueBlock(valueToExpr(stmt.col))
-      const row = exprToValueBlock(valueToExpr(stmt.row))
-      return value === null || col === null || row === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_board_set', { NAME: stmt.name }, {}, stmt.__id, {
-            VALUE: value,
-            COL: col,
-            ROW: row,
-          })
-    }
-    case 'gk:playersSetup': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_players_setup', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:nextPlayer':
-      return block('sz_gk_next_player', {}, {}, stmt.__id)
-    case 'gk:onTurnChange':
-      return block('sz_gk_on_turn_change', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'gk:moveAlongTrack': {
-      const spaces = exprToValueBlock(valueToExpr(stmt.spaces))
-      return spaces === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_move_along_track', { WHO: stmt.who, PATH: stmt.path }, {}, stmt.__id, {
-            SPACES: spaces,
-          })
-    }
-    case 'gk:onLandSpace':
-      return block('sz_gk_on_land_space', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'gk:pileMoveTop':
-      return block('sz_gk_pile_move_top', { FROM: stmt.fromVar, TO: stmt.toVar }, {}, stmt.__id)
-    case 'gk:pileShuffleFrom':
-      return block(
-        'sz_gk_pile_shuffle_from',
-        { DECK: stmt.deckVar, DISCARD: stmt.discardVar },
-        {},
-        stmt.__id,
-      )
-    case 'gk:cardFlip': {
-      const card = exprToValueBlock(valueToExpr(stmt.card))
-      return card === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_card_flip', {}, {}, stmt.__id, { CARD: card })
-    }
-    case 'gk:handDraw': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_hand_draw',
-            { PILE: stmt.pileVar, FAN: stmt.fan ? 'TRUE' : 'FALSE' },
-            {},
-            stmt.__id,
-            { X: x, Y: y },
-          )
-    }
-    case 'gk:cardsStart': {
-      const hero = exprToValueBlock(valueToExpr(stmt.heroHp))
-      const enemy = exprToValueBlock(valueToExpr(stmt.enemyHp))
-      return hero === null || enemy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_cards_start', {}, {}, stmt.__id, { HERO_HP: hero, ENEMY_HP: enemy })
-    }
-    case 'gk:cardsEnergyPerTurn': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_cards_energy_per_turn', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:cardsSpend': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null ? rawJSBlock(stmt) : block('sz_gk_cards_spend', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:cardsOnTurn':
-      return block('sz_gk_cards_on_turn', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'gk:cardsEndTurn':
-      return block('sz_gk_cards_end_turn', {}, {}, stmt.__id)
-    case 'gk:cardsDrawHud':
-      return block('sz_gk_cards_draw_hud', {}, {}, stmt.__id)
-    case 'gk:cardsHurtEnemy': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_cards_hurt_enemy', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:cardsHurtMe': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_cards_hurt_me', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:cardsGainBlock': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_cards_gain_block', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:cardsEnemyIntent': {
-      const v = exprToValueBlock(valueToExpr(stmt.value))
-      return v === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_cards_enemy_intent', { ACTION: stmt.action }, {}, stmt.__id, { VALUE: v })
-    }
-    case 'gk:cardsOnEnemyTurn':
-      return block(
-        'sz_gk_cards_on_enemy_turn',
-        {},
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:wrapEdges':
-      return block('sz_gk_wrap_edges', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:collideTilemap':
-      return block('sz_gk_collide_tilemap', { WHO: stmt.charVar, MAP: stmt.map }, {}, stmt.__id)
-    case 'gk:collideGroup':
-      return block('sz_gk_collide_group', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id)
-    case 'gk:overlapGroups':
-      return block(
-        'sz_gk_overlap_groups',
-        { A_NAME: stmt.aName, MOLD_A: stmt.moldA, B_NAME: stmt.bName, MOLD_B: stmt.moldB },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:everySeconds': {
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-            SECS: secs,
-          })
-    }
-    case 'gk:setTileSize': {
-      const px = exprToValueBlock(valueToExpr(stmt.px))
-      return px === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_tile_size', {}, {}, stmt.__id, { PX: px })
-    }
-    case 'gk:setTileAt': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const index = exprToValueBlock(valueToExpr(stmt.index))
-      return x === null || y === null || index === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_tile_at', { MAP: stmt.map }, {}, stmt.__id, { X: x, Y: y, INDEX: index })
-    }
-    case 'gk:breakTileAt':
-      return block('sz_gk_break_tile_at', { MAP: stmt.map, WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:setProperty': {
-      const value = exprToValueBlock(valueToExpr(stmt.value))
-      return value === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_property', { WHO: stmt.charVar, PROP: stmt.prop }, {}, stmt.__id, {
-            VALUE: value,
-          })
-    }
-    case 'gk:setFacingDir':
-      return block('sz_gk_set_facing', { WHO: stmt.charVar, DIR: stmt.dir }, {}, stmt.__id)
-    case 'gk:tweenTo': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return x === null || y === null || secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_tween_to', { WHO: stmt.charVar }, {}, stmt.__id, { X: x, Y: y, SECS: secs })
-    }
-    // 🏃 Kit Plataforma
-    case 'gk:platformerHero': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const jump = exprToValueBlock(valueToExpr(stmt.force))
-      return speed === null || jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_hero', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
-            SPEED: speed,
-            JUMP: jump,
-          })
-    }
-    case 'gk:setJumpFeel': {
-      const coyote = exprToValueBlock(valueToExpr(stmt.coyote))
-      const buffer = exprToValueBlock(valueToExpr(stmt.buffer))
-      const hold = exprToValueBlock(valueToExpr(stmt.hold))
-      const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
-      return coyote === null || buffer === null || hold === null || gravity === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_jump_feel', {}, {}, stmt.__id, {
-            COYOTE: coyote,
-            BUFFER: buffer,
-            HOLD: hold,
-            GRAVITY: gravity,
-          })
-    }
-    case 'gk:doubleJump': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      const times = exprToValueBlock(valueToExpr(stmt.times))
-      return force === null || times === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_double_jump', { WHO: stmt.charVar }, {}, stmt.__id, {
-            FORCE: force,
-            TIMES: times,
-          })
-    }
-    case 'gk:wallSlide': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_wall_slide', { WHO: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'gk:wallJump': {
-      const fx = exprToValueBlock(valueToExpr(stmt.forceX))
-      const fy = exprToValueBlock(valueToExpr(stmt.forceY))
-      return fx === null || fy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_wall_jump', { WHO: stmt.charVar }, {}, stmt.__id, { FX: fx, FY: fy })
-    }
-    case 'gk:climbLadder': {
-      const tile = exprToValueBlock(valueToExpr(stmt.tile))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return tile === null || speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_ladder', { WHO: stmt.charVar, MAP: stmt.map }, {}, stmt.__id, {
-            TILE: tile,
-            SPEED: speed,
-          })
-    }
-    case 'gk:oneWayPlatform':
-      return block(
-        'sz_gk_plat_one_way',
-        { WHO: stmt.charVar, MOLD: stmt.mold, DT: stmt.dtVar },
-        {},
-        stmt.__id,
-      )
-    case 'gk:dropThrough':
-      return block('sz_gk_plat_drop_through', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:movingPlatform': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return x1 === null || y1 === null || x2 === null || y2 === null || secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_moving', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
-            X1: x1,
-            Y1: y1,
-            X2: x2,
-            Y2: y2,
-            SECS: secs,
-          })
-    }
-    case 'gk:rideOn':
-      return block('sz_gk_plat_ride_on', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id)
-    case 'gk:stompKill': {
-      const bounce = exprToValueBlock(valueToExpr(stmt.bounce))
-      return bounce === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_stomp', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id, {
-            BOUNCE: bounce,
-          })
-    }
-    case 'gk:patrolTurnAtWall': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_patrol_wall', { WHO: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'gk:setCheckpoint': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_plat_checkpoint', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:respawn':
-      return block('sz_gk_plat_respawn', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:platStateFrames': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_plat_state_frames',
-            { WHO: stmt.charVar, STATE: stmt.state },
-            {},
-            stmt.__id,
-            {
-              FROM: from,
-              TO: to,
-              FPS: fps,
-            },
-          )
-    }
-    case 'gk:platformerAnim':
-      return block('sz_gk_plat_anim', { WHO: stmt.charVar }, {}, stmt.__id)
-    // 👾 R16 — Kit Monstrinhos
-    case 'gk:pkmCreature': {
-      const hp = exprToValueBlock(valueToExpr(stmt.hp))
-      const st = exprToValueBlock(valueToExpr(stmt.str))
-      const df = exprToValueBlock(valueToExpr(stmt.def))
-      const sp = exprToValueBlock(valueToExpr(stmt.spd))
-      return hp === null || st === null || df === null || sp === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_pkm_creature',
-            { NAME: stmt.name, TYPE: stmt.creatureType, IMAGE: stmt.image, LOOK: stmt.look },
-            {},
-            stmt.__id,
-            { HP: hp, STR: st, DEF: df, SPD: sp },
-          )
-    }
-    case 'gk:pkmMove': {
-      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
-      const acc = exprToValueBlock(valueToExpr(stmt.acc))
-      return dmg === null || acc === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_pkm_move',
-            {
-              MOVE: stmt.move,
-              CREATURE: stmt.creature,
-              TYPE: stmt.moveType,
-              FX: stmt.fx,
-              COLOR: stmt.color,
-            },
-            {},
-            stmt.__id,
-            { DMG: dmg, ACC: acc },
-          )
-    }
-    case 'gk:pkmTypeChart': {
-      const m = exprToValueBlock(valueToExpr(stmt.mult))
-      return m === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_type_chart', { A: stmt.atk, B: stmt.def }, {}, stmt.__id, { MULT: m })
-    }
-    case 'gk:pkmEvolve': {
-      const l = exprToValueBlock(valueToExpr(stmt.level))
-      return l === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_evolve', { FROM: stmt.from, TO: stmt.to }, {}, stmt.__id, { LEVEL: l })
-    }
-    case 'gk:pkmCatchDifficulty':
-      return block(
-        'sz_gk_pkm_catch_difficulty',
-        { NAME: stmt.creature, LEVEL: stmt.level },
-        {},
-        stmt.__id,
-      )
-    case 'gk:pkmGive': {
-      const l = exprToValueBlock(valueToExpr(stmt.level))
-      return l === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_give', { CREATURE: stmt.creature }, {}, stmt.__id, { LEVEL: l })
-    }
-    case 'gk:pkmGiveBall': {
-      const c = exprToValueBlock(valueToExpr(stmt.count))
-      const pw = exprToValueBlock(valueToExpr(stmt.power))
-      return c === null || pw === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_give_ball', {}, {}, stmt.__id, { COUNT: c, POWER: pw })
-    }
-    case 'gk:pkmHealTeam':
-      return block('sz_gk_pkm_heal_team', {}, {}, stmt.__id)
-    case 'gk:pkmDrawTeam': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_draw_team', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:pkmGrassCells': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
-      return x1 === null || y1 === null || x2 === null || y2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_grass_cells', {}, {}, stmt.__id, { X1: x1, Y1: y1, X2: x2, Y2: y2 })
-    }
-    case 'gk:pkmGrassTiles': {
-      const i = exprToValueBlock(valueToExpr(stmt.index))
-      return i === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_grass_tiles', { MAP: stmt.map }, {}, stmt.__id, { INDEX: i })
-    }
-    case 'gk:pkmWild': {
-      const mn = exprToValueBlock(valueToExpr(stmt.min))
-      const mx = exprToValueBlock(valueToExpr(stmt.max))
-      return mn === null || mx === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_wild', { CREATURE: stmt.creature }, {}, stmt.__id, { MIN: mn, MAX: mx })
-    }
-    case 'gk:pkmEncounterRate': {
-      const p2 = exprToValueBlock(valueToExpr(stmt.percent))
-      return p2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_encounter_rate', {}, {}, stmt.__id, { PCT: p2 })
-    }
-    case 'gk:pkmBattleWild': {
-      const l = exprToValueBlock(valueToExpr(stmt.level))
-      return l === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_battle_wild', { CREATURE: stmt.creature }, {}, stmt.__id, { LEVEL: l })
-    }
-    case 'gk:pkmBattleTrainer':
-      return block(
-        'sz_gk_pkm_battle_trainer',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:pkmTrainerCreature': {
-      const l = exprToValueBlock(valueToExpr(stmt.level))
-      return l === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_pkm_trainer_creature', { CREATURE: stmt.creature }, {}, stmt.__id, {
-            LEVEL: l,
-          })
-    }
-    // 🧭 R15 — primitivos gerais
-    case 'gk:defineRegion': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_define_region', { NAME: stmt.name }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            W: w,
-            H: h,
-          })
-    }
-    case 'gk:launchToPoint': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const sp = exprToValueBlock(valueToExpr(stmt.speed))
-      return x === null || y === null || sp === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_launch_to_point', { WHO: stmt.charVar }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            SPEED: sp,
-          })
-    }
-    case 'gk:setVelocityAngle': {
-      const d = exprToValueBlock(valueToExpr(stmt.degrees))
-      const f2 = exprToValueBlock(valueToExpr(stmt.force))
-      return d === null || f2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_velocity_angle', { WHO: stmt.charVar }, {}, stmt.__id, {
-            DEG: d,
-            FORCE: f2,
-          })
-    }
-    // R21 — primitivos gerais
-    case 'gk:floatText': {
-      const t = exprToValueBlock(valueToExpr(stmt.text))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const sz = exprToValueBlock(valueToExpr(stmt.size))
-      return t === null || x === null || y === null || sz === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_float_text', { COLOR: stmt.color }, {}, stmt.__id, {
-            TEXT: t,
-            X: x,
-            Y: y,
-            SIZE: sz,
-          })
-    }
-    case 'gk:trailOn': {
-      const sz = exprToValueBlock(valueToExpr(stmt.size))
-      const rt = exprToValueBlock(valueToExpr(stmt.rate))
-      const lf = exprToValueBlock(valueToExpr(stmt.life))
-      return sz === null || rt === null || lf === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_trail_on', { WHO: stmt.charVar, COLOR: stmt.color }, {}, stmt.__id, {
-            SIZE: sz,
-            RATE: rt,
-            LIFE: lf,
-          })
-    }
-    case 'gk:trailOff':
-      return block('sz_gk_trail_off', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:shockwave': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const r = exprToValueBlock(valueToExpr(stmt.radius))
-      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
-      return x === null || y === null || r === null || s2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_shockwave', { COLOR: stmt.color }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            RADIUS: r,
-            SECS: s2,
-          })
-    }
-    case 'gk:scrollImage': {
-      const vx = exprToValueBlock(valueToExpr(stmt.vx))
-      const vy = exprToValueBlock(valueToExpr(stmt.vy))
-      return vx === null || vy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_scroll_image', { IMAGE: stmt.image }, {}, stmt.__id, { VX: vx, VY: vy })
-    }
-    case 'gk:leanOnMove': {
-      const d = exprToValueBlock(valueToExpr(stmt.degrees))
-      return d === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_lean_on_move', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: d })
-    }
-    case 'gk:fanShot': {
-      const c = exprToValueBlock(valueToExpr(stmt.count))
-      const a = exprToValueBlock(valueToExpr(stmt.arc))
-      const d = exprToValueBlock(valueToExpr(stmt.degrees))
-      const sp = exprToValueBlock(valueToExpr(stmt.speed))
-      return c === null || a === null || d === null || sp === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_fan_shot', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id, {
-            COUNT: c,
-            ARC: a,
-            DEG: d,
-            SPEED: sp,
-          })
-    }
-    // 🚀 R22 — Kit Nave
-    case 'gk:naveShip': {
-      const sp = exprToValueBlock(valueToExpr(stmt.speed))
-      const ln = exprToValueBlock(valueToExpr(stmt.lean))
-      return sp === null || ln === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_nave_ship', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
-            SPEED: sp,
-            LEAN: ln,
-          })
-    }
-    case 'gk:navePowerup': {
-      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
-      return s2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_nave_powerup', { POWER: stmt.power, WHO: stmt.charVar }, {}, stmt.__id, {
-            SECS: s2,
-          })
-    }
-    case 'gk:naveWave': {
-      const c = exprToValueBlock(valueToExpr(stmt.cols))
-      const r = exprToValueBlock(valueToExpr(stmt.rows))
-      const g = exprToValueBlock(valueToExpr(stmt.gap))
-      const sp = exprToValueBlock(valueToExpr(stmt.speed))
-      const dr = exprToValueBlock(valueToExpr(stmt.drop))
-      const ac = exprToValueBlock(valueToExpr(stmt.accel))
-      return c === null || r === null || g === null || sp === null || dr === null || ac === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_nave_wave', { MOLD: stmt.mold }, {}, stmt.__id, {
-            COLS: c,
-            ROWS: r,
-            GAP: g,
-            SPEED: sp,
-            DROP: dr,
-            ACCEL: ac,
-          })
-    }
-    case 'gk:naveWaveShooter': {
-      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
-      const sp = exprToValueBlock(valueToExpr(stmt.speed))
-      return s2 === null || sp === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_nave_wave_shooter',
-            { MOLD: stmt.mold, BULLET: stmt.bullet },
-            {},
-            stmt.__id,
-            { SECS: s2, SPEED: sp },
-          )
-    }
-    case 'gk:naveInvasionLine': {
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_nave_invasion_line', {}, {}, stmt.__id, { Y: y })
-    }
-    case 'gk:naveStarfield': {
-      const c = exprToValueBlock(valueToExpr(stmt.count))
-      const sp = exprToValueBlock(valueToExpr(stmt.speed))
-      return c === null || sp === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_nave_starfield', {}, {}, stmt.__id, { COUNT: c, SPEED: sp })
-    }
-    case 'gk:naveBomb': {
-      const r = exprToValueBlock(valueToExpr(stmt.radius))
-      return r === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_nave_bomb', { MOLD: stmt.mold, TARGET: stmt.target }, {}, stmt.__id, {
-            RADIUS: r,
-          })
-    }
-    // 🛤️ R25 — caminhos + paralaxe + explosão por folha
-    case 'gk:definePath':
-      return block(
-        'sz_gk_define_path',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:pathPoint': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_path_point', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:followPath': {
-      const sp = exprToValueBlock(valueToExpr(stmt.speed))
-      return sp === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_follow_path',
-            { WHO: stmt.charVar, PATH: stmt.path, DT: stmt.dtVar },
-            {},
-            stmt.__id,
-            {
-              SPEED: sp,
-            },
-          )
-    }
-    case 'gk:parallaxLayer': {
-      const fx = exprToValueBlock(valueToExpr(stmt.fx))
-      const fy = exprToValueBlock(valueToExpr(stmt.fy))
-      return fx === null || fy === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_parallax_layer', { IMAGE: stmt.image }, {}, stmt.__id, { FX: fx, FY: fy })
-    }
-    case 'gk:sheetBurst': {
-      const fr = exprToValueBlock(valueToExpr(stmt.frames))
-      const fp = exprToValueBlock(valueToExpr(stmt.fps))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const sz = exprToValueBlock(valueToExpr(stmt.size))
-      return fr === null || fp === null || x === null || y === null || sz === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_sheet_burst', { IMAGE: stmt.image }, {}, stmt.__id, {
-            FRAMES: fr,
-            FPS: fp,
-            X: x,
-            Y: y,
-            SIZE: sz,
-          })
-    }
-    // 🏰 R26 — Kit Defesa de Torre
-    case 'gk:tdWave': {
-      const count = exprToValueBlock(valueToExpr(stmt.count))
-      const gap = exprToValueBlock(valueToExpr(stmt.gap))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return count === null || gap === null || speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_td_wave', { PATH: stmt.path, MOLD: stmt.mold }, {}, stmt.__id, {
-            COUNT: count,
-            GAP: gap,
-            SPEED: speed,
-          })
-    }
-    case 'gk:tdSlot': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const sz = exprToValueBlock(valueToExpr(stmt.size))
-      return x === null || y === null || sz === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_td_slot', {}, {}, stmt.__id, { X: x, Y: y, SIZE: sz })
-    }
-    case 'gk:tdDrawSlots':
-      return block('sz_gk_td_draw_slots', {}, {}, stmt.__id)
-    case 'gk:tdOnBuy': {
-      const cost = exprToValueBlock(valueToExpr(stmt.cost))
-      return cost === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_td_on_buy',
-            { PX: stmt.xName, PY: stmt.yName },
-            { BODY: statementsToBlocks(stmt.body) },
-            stmt.__id,
-            { COST: cost },
-          )
-    }
-    case 'gk:tdFreeSlot': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_td_free_slot', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:tdDrawRange': {
-      const r = exprToValueBlock(valueToExpr(stmt.radius))
-      return r === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_td_draw_range', { WHO: stmt.charVar }, {}, stmt.__id, { RADIUS: r })
-    }
-    case 'gk:tdSetCoins': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_td_set_coins', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:tdAddCoins': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_td_add_coins', {}, {}, stmt.__id, { N: n })
-    }
-    case 'gk:setOpacity': {
-      const p = exprToValueBlock(valueToExpr(stmt.percent))
-      return p === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_opacity', { WHO: stmt.charVar }, {}, stmt.__id, { PCT: p })
-    }
-    case 'gk:fadeTo': {
-      const p = exprToValueBlock(valueToExpr(stmt.percent))
-      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
-      return p === null || s2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_fade_to', { WHO: stmt.charVar }, {}, stmt.__id, { PCT: p, SECS: s2 })
-    }
-    case 'gk:tweenProperty': {
-      const t = exprToValueBlock(valueToExpr(stmt.to))
-      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
-      return t === null || s2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_tween_property', { WHO: stmt.charVar, PROP: stmt.prop }, {}, stmt.__id, {
-            TO: t,
-            SECS: s2,
-          })
-    }
-    case 'gk:lutaMatch': {
-      const rounds = exprToValueBlock(valueToExpr(stmt.rounds))
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return rounds === null || secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_luta_match', { P1: stmt.p1Var, P2: stmt.p2Var }, {}, stmt.__id, {
-            ROUNDS: rounds,
-            SECS: secs,
-          })
-    }
-    case 'gk:lutaDrawHud':
-      return block('sz_gk_luta_draw_hud', {}, {}, stmt.__id)
-    case 'gk:lutaFighter':
-      return block(
-        'sz_gk_luta_fighter',
-        {
-          WHO: stmt.charVar,
-          LEFT: stmt.left,
-          RIGHT: stmt.right,
-          JUMP: stmt.jump,
-          CROUCH: stmt.crouch,
-          GUARD: stmt.guard,
-          DT: stmt.dtVar,
-        },
-        {},
-        stmt.__id,
-      )
-    case 'gk:lutaAI':
-      return block('sz_gk_luta_ai', { WHO: stmt.charVar, LEVEL: stmt.level }, {}, stmt.__id)
-    case 'gk:lutaMove': {
-      const dmg = exprToValueBlock(valueToExpr(stmt.damage))
-      const range = exprToValueBlock(valueToExpr(stmt.range))
-      return dmg === null || range === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_luta_move',
-            {
-              NAME: stmt.name,
-              WHO: stmt.charVar,
-              SPEED: stmt.speed,
-              PIERCE: stmt.pierce ? 'TRUE' : 'FALSE',
-              SPECIAL: stmt.special ? 'TRUE' : 'FALSE',
-            },
-            {},
-            stmt.__id,
-            { DMG: dmg, RANGE: range },
-          )
-    }
-    case 'gk:lutaMoveAnim': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      return from === null || to === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_luta_move_anim', { NAME: stmt.name, WHO: stmt.charVar }, {}, stmt.__id, {
-            FROM: from,
-            TO: to,
-          })
-    }
-    case 'gk:lutaAttack':
-      return block('sz_gk_luta_attack', { WHO: stmt.charVar, MOVE: stmt.move }, {}, stmt.__id)
-    case 'gk:setSwingWindow': {
-      const start = exprToValueBlock(valueToExpr(stmt.start))
-      const active = exprToValueBlock(valueToExpr(stmt.active))
-      return start === null || active === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_swing_window', { WHO: stmt.charVar }, {}, stmt.__id, {
-            START: start,
-            ACTIVE: active,
-          })
-    }
-    case 'gk:playAnimOnce': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_play_anim_once', { WHO: stmt.charVar }, {}, stmt.__id, {
-            FROM: from,
-            TO: to,
-            FPS: fps,
-          })
-    }
-    case 'gk:setEntityState': {
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_entity_state', { WHO: stmt.charVar, STATE: stmt.state }, {}, stmt.__id, {
-            SECS: secs,
-          })
-    }
-    case 'gk:stateAnim': {
-      const from = exprToValueBlock(valueToExpr(stmt.from))
-      const to = exprToValueBlock(valueToExpr(stmt.to))
-      const fps = exprToValueBlock(valueToExpr(stmt.fps))
-      return from === null || to === null || fps === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_state_anim',
-            { WHO: stmt.charVar, STATE: stmt.state, ONCE: stmt.once ? 'TRUE' : 'FALSE' },
-            {},
-            stmt.__id,
-            { FROM: from, TO: to, FPS: fps },
-          )
-    }
-    case 'gk:stateLook':
-      return block(
-        'sz_gk_state_look',
-        { WHO: stmt.charVar, STATE: stmt.state, LOOK: stmt.look },
-        {},
-        stmt.__id,
-      )
-    case 'gk:autoAnimate':
-      return block('sz_gk_auto_animate', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:thrust': {
-      const deg = exprToValueBlock(valueToExpr(stmt.degrees))
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return deg === null || force === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_thrust', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: deg, FORCE: force })
-    }
-    case 'gk:applyFriction': {
-      const factor = exprToValueBlock(valueToExpr(stmt.factor))
-      return factor === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_apply_friction', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
-            FACTOR: factor,
-          })
-    }
-    case 'gk:waitThen': {
-      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
-      return secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_wait', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, { SECS: secs })
-    }
-    case 'gk:setHitbox': {
-      const ox = exprToValueBlock(valueToExpr(stmt.ox))
-      const oy = exprToValueBlock(valueToExpr(stmt.oy))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return ox === null || oy === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_hitbox', { WHO: stmt.charVar }, {}, stmt.__id, {
-            OX: ox,
-            OY: oy,
-            W: w,
-            H: h,
-          })
-    }
-    case 'gk:setHitboxShape': {
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      return radius === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_hitbox_shape', { WHO: stmt.charVar, SHAPE: stmt.shape }, {}, stmt.__id, {
-            RADIUS: radius,
-          })
-    }
-    case 'gk:fadeScreen': {
-      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
-      return s2 === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_fade_screen',
-            { COLOR: stmt.color, DIR: stmt.toDark ? 'escurecer' : 'clarear' },
-            {},
-            stmt.__id,
-            { SECS: s2 },
-          )
-    }
-    case 'gk:flashScreen': {
-      const t = exprToValueBlock(valueToExpr(stmt.times))
-      return t === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_flash_screen', { COLOR: stmt.color }, {}, stmt.__id, { TIMES: t })
-    }
-    case 'gk:saveValue': {
-      const v = exprToValueBlock(stmt.value)
-      return v === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_save_value', { NAME: stmt.name }, {}, stmt.__id, { VALUE: v })
-    }
-    case 'gk:playMusic':
-      return block('sz_gk_play_music', { SOUND: stmt.sound }, {}, stmt.__id)
-    case 'gk:stopSound':
-      return block('sz_gk_stop_sound', { SOUND: stmt.sound }, {}, stmt.__id)
-    case 'gk:setVolume': {
-      const l = exprToValueBlock(valueToExpr(stmt.level))
-      return l === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_volume', { SOUND: stmt.sound }, {}, stmt.__id, { LEVEL: l })
-    }
-    case 'gk:createEmptyTilemap': {
-      const c = exprToValueBlock(valueToExpr(stmt.cols))
-      const r = exprToValueBlock(valueToExpr(stmt.rows))
-      const fi = exprToValueBlock(valueToExpr(stmt.fill))
-      return c === null || r === null || fi === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_create_empty_tilemap',
-            { NAME: stmt.name, ASSET: stmt.asset },
-            {},
-            stmt.__id,
-            { COLS: c, ROWS: r, FILL: fi },
-          )
-    }
-    case 'gk:moveWithCustomKeys':
-      return block(
-        'sz_gk_move_with_custom_keys',
-        {
-          WHO: stmt.charVar,
-          UP: stmt.up,
-          DOWN: stmt.down,
-          LEFT: stmt.left,
-          RIGHT: stmt.right,
-          DT: stmt.dtVar,
-        },
-        {},
-        stmt.__id,
-      )
-    case 'gk:attackFacing': {
-      const range = exprToValueBlock(valueToExpr(stmt.range))
-      const dur = exprToValueBlock(valueToExpr(stmt.duration))
-      return range === null || dur === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_attack_facing', { WHO: stmt.charVar }, {}, stmt.__id, {
-            RANGE: range,
-            DUR: dur,
-          })
-    }
-    case 'gk:patrolAround': {
-      const ox = exprToValueBlock(valueToExpr(stmt.ox))
-      const oy = exprToValueBlock(valueToExpr(stmt.oy))
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      return ox === null || oy === null || radius === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_patrol_around', { WHO: stmt.charVar }, {}, stmt.__id, {
-            OX: ox,
-            OY: oy,
-            RADIUS: radius,
-          })
-    }
-    case 'gk:drawHearts': {
-      const cur = exprToValueBlock(valueToExpr(stmt.current))
-      const mx = exprToValueBlock(valueToExpr(stmt.max))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return cur === null || mx === null || x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_draw_hearts', {}, {}, stmt.__id, { CUR: cur, MAX: mx, X: x, Y: y })
-    }
-    case 'gk:drawBackground':
-      return block(
-        'sz_gk_draw_background',
-        { COLOR: stmt.color, GRID: stmt.grid ? 'TRUE' : 'FALSE' },
-        {},
-        stmt.__id,
-      )
-    case 'gk:createCharacter': {
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return w === null || h === null || speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_create_character',
-            { NAME: stmt.varName, IMAGE: stmt.image, COLOR: stmt.color },
-            {},
-            stmt.__id,
-            { W: w, H: h, SPEED: speed },
-          )
-    }
-    case 'gk:moveWithKeys':
-      return block('sz_gk_move_with_keys', { CHAR: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
-    case 'gk:keepOnScreen':
-      return block('sz_gk_keep_on_screen', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'gk:drawCharacter':
-      return block('sz_gk_draw_character', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'gk:placeCharacter': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_place_character', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:resetCharacter':
-      return block('sz_gk_reset_character', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'gk:setSpeedMultiplier': {
-      const factor = exprToValueBlock(valueToExpr(stmt.factor))
-      return factor === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_speed_multiplier', { CHAR: stmt.charVar }, {}, stmt.__id, {
-            FACTOR: factor,
-          })
-    }
-    case 'gk:setPauseKey':
-      return block('sz_gk_set_pause_key', { KEY: stmt.key }, {}, stmt.__id)
-    // ----- game-2d-advanced P24 -----
-    case 'gk:onEvent':
-      return block(
-        'sz_gk_on_event',
-        { NAME: stmt.event },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:emit':
-      return block('sz_gk_emit', { NAME: stmt.event }, {}, stmt.__id)
-    case 'gk:defineMold': {
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      const health = exprToValueBlock(valueToExpr(stmt.health))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const damage = exprToValueBlock(valueToExpr(stmt.damage))
-      return w === null || h === null || health === null || speed === null || damage === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_define_mold',
-            {
-              NAME: stmt.name,
-              COLOR: stmt.color,
-              IMAGE: stmt.image,
-              LOOK: stmt.look,
-              SHAPE: stmt.shape === 'circulo' ? 'circulo' : 'retangulo',
-            },
-            {},
-            stmt.__id,
-            { W: w, H: h, HEALTH: health, SPEED: speed, DAMAGE: damage },
-          )
-    }
-    case 'gk:spawnFromMold': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_spawn_from_mold', { MOLD: stmt.mold }, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:startSpawner': {
-      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
-      return sec === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_start_spawner', { MOLD: stmt.mold }, {}, stmt.__id, { SEC: sec })
-    }
-    case 'gk:stopSpawner':
-      return block('sz_gk_stop_spawner', { MOLD: stmt.mold }, {}, stmt.__id)
-    case 'gk:spawnNamed': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_spawn_named', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-          })
-    }
-    case 'gk:forEachActive':
-      return block(
-        'sz_gk_for_each_active',
-        { MOLD: stmt.mold, ITEM: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'gk:cullOffscreen': {
-      const margin = exprToValueBlock(valueToExpr(stmt.margin))
-      return margin === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_cull_offscreen', { MOLD: stmt.mold }, {}, stmt.__id, { MARGIN: margin })
-    }
-    case 'gk:recycle':
-      return block('sz_gk_recycle', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'gk:drawActive':
-      return block('sz_gk_draw_active', { MOLD: stmt.mold }, {}, stmt.__id)
-    case 'gk:defineLook': {
-      // IR v0.2 (sem tamanho-base) normaliza p/ 40×40 — o default do runtime;
-      // o shouldEmitAsShadow marca os literais como SOMBRA (preset editável).
-      const baseW = exprToValueBlock(valueToExpr(stmt.baseW ?? 40))
-      const baseH = exprToValueBlock(valueToExpr(stmt.baseH ?? 40))
-      return baseW === null || baseH === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_gk_define_look',
-            { NAME: stmt.name, CTX: stmt.ctxName },
-            { BODY: statementsToBlocks(stmt.body) },
-            stmt.__id,
-            { W: baseW, H: baseH },
-          )
-    }
-    case 'gk:drawLook': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      return x === null || y === null || w === null || h === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_draw_look', { LOOK: stmt.look }, {}, stmt.__id, { X: x, Y: y, W: w, H: h })
-    }
-    case 'gk:seek':
-      return block(
-        'sz_gk_seek',
-        { WHO: stmt.charVar, TARGET: stmt.targetVar, DT: stmt.dtVar },
-        {},
-        stmt.__id,
-      )
-    case 'gk:drift':
-      return block('sz_gk_drift', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
-    case 'gk:face':
-      return block('sz_gk_face', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
-    case 'gk:hurt': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      const iframes = exprToValueBlock(valueToExpr(stmt.iframes))
-      return amount === null || iframes === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_hurt', { WHO: stmt.charVar }, {}, stmt.__id, {
-            AMOUNT: amount,
-            IFRAMES: iframes,
-          })
-    }
-    case 'gk:knockback': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_knockback', { WHO: stmt.charVar, FROM: stmt.fromVar }, {}, stmt.__id, {
-            FORCE: force,
-          })
-    }
-    case 'gk:drawHealthBar': {
-      const max = exprToValueBlock(valueToExpr(stmt.max))
-      return max === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_draw_health_bar', { WHO: stmt.charVar }, {}, stmt.__id, { MAX: max })
-    }
-    case 'gk:setMission': {
-      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
-      const kills = exprToValueBlock(valueToExpr(stmt.killCount))
-      return sec === null || kills === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_set_mission', {}, {}, stmt.__id, { SEC: sec, KILLS: kills })
-    }
-    case 'gk:missionKill':
-      return block('sz_gk_mission_kill', {}, {}, stmt.__id)
-    case 'gk:drawTimer': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_draw_timer', {}, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:defineEffect': {
-      const count = exprToValueBlock(valueToExpr(stmt.count))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      const life = exprToValueBlock(valueToExpr(stmt.life))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
-      return count === null || size === null || life === null || speed === null || gravity === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_define_effect', { NAME: stmt.name, COLOR: stmt.color }, {}, stmt.__id, {
-            COUNT: count,
-            SIZE: size,
-            LIFE: life,
-            SPEED: speed,
-            GRAVITY: gravity,
-          })
-    }
-    case 'gk:burst': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_burst', { EFFECT: stmt.effect }, {}, stmt.__id, { X: x, Y: y })
-    }
-    case 'gk:drawEffects':
-      return block('sz_gk_draw_effects', {}, {}, stmt.__id)
-    case 'gk:loadSound':
-      return block('sz_gk_load_sound', { NAME: stmt.name, SOUND: stmt.asset }, {}, stmt.__id)
-    case 'gk:playSound':
-      return block('sz_gk_play_sound', { NAME: stmt.name }, {}, stmt.__id)
-    case 'gk:playEffect':
-      return block('sz_gk_play_effect', { FX: stmt.fx }, {}, stmt.__id)
-    case 'gk:playTone': {
-      const freq = exprToValueBlock(valueToExpr(stmt.freq))
-      const ms = exprToValueBlock(valueToExpr(stmt.ms))
-      return freq === null || ms === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
-    }
-    // ---- Jogo 3D Avançado (game-3d-advanced) ----
-    case 'g3k:setup': {
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      const world = exprToValueBlock(valueToExpr(stmt.world))
-      return w === null || h === null || world === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_setup', { SKY: stmt.sky, GROUND: stmt.ground }, {}, stmt.__id, {
-            W: w,
-            H: h,
-            SIZE: world,
-          })
-    }
-    case 'g3k:scatterDecor': {
-      const count = exprToValueBlock(valueToExpr(stmt.count))
-      return count === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_scatter_decor', {}, {}, stmt.__id, { COUNT: count })
-    }
-    case 'g3k:setEffects': {
-      const strength = exprToValueBlock(valueToExpr(stmt.strength))
-      return strength === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_set_effects',
-            {
-              SHADOWS: stmt.shadows ? 'TRUE' : 'FALSE',
-              BLOOM: stmt.bloom ? 'TRUE' : 'FALSE',
-              VIGNETTE: stmt.vignette ? 'TRUE' : 'FALSE',
-            },
-            {},
-            stmt.__id,
-            { STRENGTH: strength },
-          )
-    }
-    case 'g3k:start':
-      return block('sz_g3k_start', {}, {}, stmt.__id)
-    case 'g3k:defineMold': {
-      const health = exprToValueBlock(valueToExpr(stmt.health))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return health === null || speed === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_define_mold',
-            { NAME: stmt.name },
-            { BODY: statementsToBlocks(stmt.body) },
-            stmt.__id,
-            { HEALTH: health, SPEED: speed },
-          )
-    }
-    case 'g3k:part': {
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      const d = exprToValueBlock(valueToExpr(stmt.d))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return w === null || h === null || d === null || x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_part',
-            {
-              SHAPE: stmt.shape,
-              MATERIAL: stmt.material,
-              COLOR: stmt.color,
-              TEXTURE: stmt.texture,
-              MODEL: stmt.model,
-            },
-            {},
-            stmt.__id,
-            { W: w, H: h, D: d, X: x, Y: y, Z: z },
-          )
-    }
-    case 'g3k:spawn': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_spawn', { MOLD: stmt.mold }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3k:spawnNamed': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_spawn_named', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            Z: z,
-          })
-    }
-    case 'g3k:spawnFrom':
-      return block('sz_g3k_spawn_from', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id)
-    case 'g3k:spawnRing': {
-      const count = exprToValueBlock(valueToExpr(stmt.count))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return count === null || speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_spawn_ring', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id, {
-            COUNT: count,
-            SPEED: speed,
-          })
-    }
-    case 'g3k:startSpawner': {
-      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
-      return sec === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_start_spawner', { MOLD: stmt.mold, WHERE: stmt.where }, {}, stmt.__id, {
-            SEC: sec,
-          })
-    }
-    case 'g3k:stopSpawner':
-      return block('sz_g3k_stop_spawner', { MOLD: stmt.mold }, {}, stmt.__id)
-    case 'g3k:forEachAlive':
-      return block(
-        'sz_g3k_for_each_alive',
-        { MOLD: stmt.mold, ITEM: stmt.itemName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:recycle':
-      return block('sz_g3k_recycle', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:recycleAll':
-      return block('sz_g3k_recycle_all', { MOLD: stmt.mold }, {}, stmt.__id)
-    case 'g3k:cullFar': {
-      const dist = exprToValueBlock(valueToExpr(stmt.dist))
-      return dist === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_cull_far', { MOLD: stmt.mold }, {}, stmt.__id, { DIST: dist })
-    }
-    case 'g3k:onUpdate':
-      return block(
-        'sz_g3k_on_update',
-        { DT: stmt.dtName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:moveWithKeys': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_move_with_keys', { CHAR: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g3k:setPauseKey':
-      return block('sz_g3k_set_pause_key', { KEY: stmt.key }, {}, stmt.__id)
-    case 'g3k:cameraFollow': {
-      const dist = exprToValueBlock(valueToExpr(stmt.dist))
-      const height = exprToValueBlock(valueToExpr(stmt.height))
-      return dist === null || height === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_follow', { CHAR: stmt.charVar }, {}, stmt.__id, {
-            DIST: dist,
-            HEIGHT: height,
-          })
-    }
-    case 'g3k:cameraOrbit': {
-      const dist = exprToValueBlock(valueToExpr(stmt.dist))
-      return dist === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_orbit', {}, {}, stmt.__id, { DIST: dist })
-    }
-    case 'g3k:cameraTop': {
-      const height = exprToValueBlock(valueToExpr(stmt.height))
-      return height === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_top', {}, {}, stmt.__id, { HEIGHT: height })
-    }
-    case 'g3k:cameraAngle': {
-      const az = exprToValueBlock(valueToExpr(stmt.az))
-      const el = exprToValueBlock(valueToExpr(stmt.el))
-      return az === null || el === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_angle', {}, {}, stmt.__id, { AZ: az, EL: el })
-    }
-    case 'g3k:cameraDistance': {
-      const dist = exprToValueBlock(valueToExpr(stmt.dist))
-      return dist === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_distance', {}, {}, stmt.__id, { DIST: dist })
-    }
-    case 'g3k:cameraShake': {
-      const strength = exprToValueBlock(valueToExpr(stmt.strength))
-      const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
-      return strength === null || seconds === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_shake', {}, {}, stmt.__id, { STRENGTH: strength, SECONDS: seconds })
-    }
-    case 'g3k:cameraLens': {
-      const fov = exprToValueBlock(valueToExpr(stmt.fov))
-      return fov === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_lens', {}, {}, stmt.__id, { FOV: fov })
-    }
-    case 'g3k:cameraLookAt':
-      return block('sz_g3k_camera_look_at', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:cameraLookAtPoint': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_look_at_point', {}, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3k:cameraSmooth': {
-      const lambda = exprToValueBlock(valueToExpr(stmt.lambda))
-      return lambda === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_camera_smooth', {}, {}, stmt.__id, { LAMBDA: lambda })
-    }
-    case 'g3k:place': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_place', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3k:setYaw': {
-      const deg = exprToValueBlock(valueToExpr(stmt.degrees))
-      return deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_yaw', { CHAR: stmt.charVar }, {}, stmt.__id, { DEG: deg })
-    }
-    case 'g3k:setVelocity': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_velocity', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3k:setDrag': {
-      const drag = exprToValueBlock(valueToExpr(stmt.drag))
-      return drag === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_drag', { CHAR: stmt.charVar }, {}, stmt.__id, { DRAG: drag })
-    }
-    case 'g3k:setEntityValue': {
-      const value = exprToValueBlock(stmt.value)
-      return value === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_entity_value', { CHAR: stmt.charVar, KEY: stmt.key }, {}, stmt.__id, {
-            VALUE: value,
-          })
-    }
-    case 'g3k:lookAt':
-      return block('sz_g3k_look_at', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
-    case 'g3k:moveForward': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_move_forward', { WHO: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g3k:fall': {
-      const g = exprToValueBlock(valueToExpr(stmt.g))
-      return g === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_fall', { CHAR: stmt.charVar }, {}, stmt.__id, { G: g })
-    }
-    case 'g3k:jump': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_jump', { CHAR: stmt.charVar }, {}, stmt.__id, { FORCE: force })
-    }
-    case 'g3k:makeSolid':
-      return block('sz_g3k_make_solid', { MOLD: stmt.mold }, {}, stmt.__id)
-    case 'g3k:setSeed': {
-      const seed = exprToValueBlock(valueToExpr(stmt.seed))
-      return seed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_seed', {}, {}, stmt.__id, { SEED: seed })
-    }
-    case 'g3k:makeTrigger':
-      return block('sz_g3k_make_trigger', { MOLD: stmt.mold }, {}, stmt.__id)
-    case 'g3k:setCollider':
-      return block('sz_g3k_set_collider', { MOLD: stmt.mold, SHAPE: stmt.shape }, {}, stmt.__id)
-    case 'g3k:setPhysics':
-      return block('sz_g3k_set_physics', { MOLD: stmt.mold, KIND: stmt.kind }, {}, stmt.__id)
-    case 'g3k:playAnim':
-      return block(
-        'sz_g3k_play_anim',
-        { CHAR: stmt.charVar, CLIP: stmt.clip, LOOP: stmt.loop ? 'LOOP' : 'ONCE' },
-        {},
-        stmt.__id,
-      )
-    case 'g3k:stopAnim':
-      return block('sz_g3k_stop_anim', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:setStateAnim':
-      return block(
-        'sz_g3k_state_anim',
-        { MOLD: stmt.mold, STATE: stmt.state, CLIP: stmt.clip },
-        {},
-        stmt.__id,
-      )
-    case 'g3k:playMusic':
-      return block('sz_g3k_play_music', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g3k:stopMusic':
-      return block('sz_g3k_stop_music', {}, {}, stmt.__id)
-    case 'g3k:startTimer': {
-      const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
-      return seconds === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_start_timer', {}, {}, stmt.__id, { SECONDS: seconds })
-    }
-    case 'g3k:stopTimer':
-      return block('sz_g3k_stop_timer', {}, {}, stmt.__id)
-    case 'g3k:onTimerEnd':
-      return block('sz_g3k_on_timer_end', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'g3k:say': {
-      const textValue = exprToValueBlock(valueToExpr(stmt.text))
-      const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
-      return textValue === null || seconds === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_say', { CHAR: stmt.charVar }, {}, stmt.__id, {
-            TEXT: textValue,
-            SECONDS: seconds,
-          })
-    }
-    case 'g3k:hideSay':
-      return block('sz_g3k_hide_say', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:passThrough':
-      return block(
-        'sz_g3k_pass_through',
-        { CHAR: stmt.charVar, GHOST: stmt.ghost ? 'TRUE' : 'FALSE' },
-        {},
-        stmt.__id,
-      )
-    case 'g3k:showHealthBar':
-      return block(
-        'sz_g3k_show_health_bar',
-        { MOLD: stmt.mold, ON: stmt.on ? 'TRUE' : 'FALSE' },
-        {},
-        stmt.__id,
-      )
-    case 'g3k:onOverlap':
-      return block(
-        'sz_g3k_on_overlap',
-        { ZONE: stmt.zoneName, MOLD: stmt.mold, WHO: stmt.whoName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:setBounce': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      return amount === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_bounce', { MOLD: stmt.mold }, {}, stmt.__id, { AMOUNT: amount })
-    }
-    case 'g3k:setFriction': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      return amount === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_friction', { MOLD: stmt.mold }, {}, stmt.__id, { AMOUNT: amount })
-    }
-    case 'g3k:platformerKeys': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return speed === null || jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_platformer_keys', { CHAR: stmt.charVar }, {}, stmt.__id, {
-            SPEED: speed,
-            JUMP: jump,
-          })
-    }
-    case 'g3k:addLight': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
-      return x === null || y === null || z === null || intensity === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_add_light', { COLOR: stmt.color }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            Z: z,
-            INTENSITY: intensity,
-          })
-    }
-    case 'g3k:setAmbient': {
-      const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
-      return intensity === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_ambient', {}, {}, stmt.__id, { INTENSITY: intensity })
-    }
-    case 'g3k:setFog': {
-      const near = exprToValueBlock(valueToExpr(stmt.near))
-      const far = exprToValueBlock(valueToExpr(stmt.far))
-      return near === null || far === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_fog', { COLOR: stmt.color }, {}, stmt.__id, { NEAR: near, FAR: far })
-    }
-    case 'g3k:setSkyPhoto':
-      return block('sz_g3k_set_sky_photo', { PHOTO: stmt.photo }, {}, stmt.__id)
-    case 'g3k:setSky':
-      return block('sz_g3k_set_sky', { TOP: stmt.top, BOTTOM: stmt.bottom }, {}, stmt.__id)
-    case 'g3k:pick':
-      return block('sz_g3k_pick', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id)
-    case 'g3k:cameraFps':
-      return block('sz_g3k_camera_fps', { CHAR: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:moveFps': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      return speed === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_move_fps', { CHAR: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
-    }
-    case 'g3k:onEnterEntityState':
-      return block(
-        'sz_g3k_on_enter_entity_state',
-        { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:onEntityStateUpdate':
-      return block(
-        'sz_g3k_on_entity_state_update',
-        { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state, DT: stmt.dtName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:onExitEntityState':
-      return block(
-        'sz_g3k_on_exit_entity_state',
-        { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:setEntityState':
-      return block(
-        'sz_g3k_set_entity_state',
-        { CHAR: stmt.charVar, STATE: stmt.state },
-        {},
-        stmt.__id,
-      )
-    case 'g3k:stateTimer': {
-      const sec = exprToValueBlock(valueToExpr(stmt.sec))
-      return sec === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_state_timer',
-            { MOLD: stmt.mold, STATE: stmt.state, NEXT: stmt.next },
-            {},
-            stmt.__id,
-            { SEC: sec },
-          )
-    }
-    case 'g3k:seek':
-      return block('sz_g3k_seek', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
-    case 'g3k:seekPoint': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_seek_point', { WHO: stmt.charVar }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'g3k:aimAt': {
-      const smooth = exprToValueBlock(valueToExpr(stmt.smooth))
-      return smooth === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_aim_at', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id, {
-            SMOOTH: smooth,
-          })
-    }
-    case 'g3k:faceVelocity':
-      return block('sz_g3k_face_velocity', { WHO: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:forEachNear': {
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      return radius === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_for_each_near',
-            { ITEM: stmt.itemName, MOLD: stmt.mold, CHAR: stmt.charVar },
-            { BODY: statementsToBlocks(stmt.body) },
-            stmt.__id,
-            { RADIUS: radius },
-          )
-    }
-    case 'g3k:storeNearest':
-      return block(
-        'sz_g3k_store_nearest',
-        { NAME: stmt.varName, MOLD: stmt.mold, CHAR: stmt.charVar },
-        {},
-        stmt.__id,
-      )
-    case 'g3k:hurt': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      return amount === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_hurt', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
-    }
-    case 'g3k:heal': {
-      const amount = exprToValueBlock(valueToExpr(stmt.amount))
-      return amount === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_heal', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
-    }
-    case 'g3k:onEntityDeath':
-      return block(
-        'sz_g3k_on_entity_death',
-        { ITEM: stmt.itemName, MOLD: stmt.mold },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:onHurt':
-      return block(
-        'sz_g3k_on_hurt',
-        { ITEM: stmt.itemName, MOLD: stmt.mold },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:defineEffect': {
-      const count = exprToValueBlock(valueToExpr(stmt.count))
-      const spread = exprToValueBlock(valueToExpr(stmt.spread))
-      const s1 = exprToValueBlock(valueToExpr(stmt.sizeFrom))
-      const s2 = exprToValueBlock(valueToExpr(stmt.sizeTo))
-      const life = exprToValueBlock(valueToExpr(stmt.life))
-      const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
-      return count === null ||
-        spread === null ||
-        s1 === null ||
-        s2 === null ||
-        life === null ||
-        gravity === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_define_effect',
-            { NAME: stmt.name, C1: stmt.colorFrom, C2: stmt.colorTo },
-            {},
-            stmt.__id,
-            { COUNT: count, SPREAD: spread, S1: s1, S2: s2, LIFE: life, GRAVITY: gravity },
-          )
-    }
-    case 'g3k:burstAt': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_burst_at', { EFFECT: stmt.effect }, {}, stmt.__id, { X: x, Y: y, Z: z })
-    }
-    case 'g3k:burstOn':
-      return block('sz_g3k_burst_on', { EFFECT: stmt.effect, WHO: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:defineEmitter': {
-      const s1 = exprToValueBlock(valueToExpr(stmt.sizeFrom))
-      const s2 = exprToValueBlock(valueToExpr(stmt.sizeTo))
-      const rate = exprToValueBlock(valueToExpr(stmt.rate))
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const cone = exprToValueBlock(valueToExpr(stmt.cone))
-      const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
-      return s1 === null ||
-        s2 === null ||
-        rate === null ||
-        speed === null ||
-        cone === null ||
-        gravity === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_define_emitter',
-            {
-              NAME: stmt.name,
-              C1: stmt.colorFrom,
-              C2: stmt.colorTo,
-              GLOW: stmt.glow ? 'TRUE' : 'FALSE',
-              CURVE: stmt.curve,
-            },
-            {},
-            stmt.__id,
-            { S1: s1, S2: s2, RATE: rate, SPEED: speed, CONE: cone, GRAVITY: gravity },
-          )
-    }
-    case 'g3k:startEmitter': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || y === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_start_emitter', { EFFECT: stmt.effect }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            Z: z,
-          })
-    }
-    case 'g3k:emitterOn':
-      return block('sz_g3k_emitter_on', { EFFECT: stmt.effect, WHO: stmt.charVar }, {}, stmt.__id)
-    case 'g3k:stopEmitter':
-      return block('sz_g3k_stop_emitter', { EFFECT: stmt.effect }, {}, stmt.__id)
-    case 'g3k:addAttractor': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
-      const radius = exprToValueBlock(valueToExpr(stmt.radius))
-      return x === null || y === null || z === null || intensity === null || radius === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_add_attractor', { EFFECT: stmt.effect }, {}, stmt.__id, {
-            X: x,
-            Y: y,
-            Z: z,
-            INT: intensity,
-            RAD: radius,
-          })
-    }
-    case 'g3k:setScreenText': {
-      const title = exprToValueBlock(valueToExpr(stmt.title))
-      const text = exprToValueBlock(valueToExpr(stmt.text))
-      const button = exprToValueBlock(valueToExpr(stmt.button))
-      return title === null || text === null || button === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_set_screen_text', { SCREEN: stmt.screen }, {}, stmt.__id, {
-            TITLE: title,
-            TEXT: text,
-            BTN: button,
-          })
-    }
-    case 'g3k:createScreen': {
-      const title = exprToValueBlock(valueToExpr(stmt.title))
-      const text = exprToValueBlock(valueToExpr(stmt.text))
-      return title === null || text === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_create_screen', { NAME: stmt.name }, {}, stmt.__id, {
-            TITLE: title,
-            TEXT: text,
-          })
-    }
-    case 'g3k:addButton': {
-      const label = exprToValueBlock(valueToExpr(stmt.label))
-      return label === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_g3k_add_button',
-            { SCREEN: stmt.screen },
-            { BODY: statementsToBlocks(stmt.body) },
-            stmt.__id,
-            { LABEL: label },
-          )
-    }
-    case 'g3k:showScreen':
-      return block('sz_g3k_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
-    case 'g3k:hideScreens':
-      return block('sz_g3k_hide_screens', {}, {}, stmt.__id)
-    case 'g3k:hudText': {
-      const text = exprToValueBlock(valueToExpr(stmt.text))
-      return text === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_hud_text', { SLOT: stmt.slot }, {}, stmt.__id, { TEXT: text })
-    }
-    case 'g3k:setState':
-      return block('sz_g3k_set_state', { STATE: stmt.name }, {}, stmt.__id)
-    case 'g3k:onEnterState':
-      return block(
-        'sz_g3k_on_enter_state',
-        { STATE: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:returnToMenu':
-      return block('sz_g3k_return_to_menu', {}, {}, stmt.__id)
-    case 'g3k:endGame':
-      return block('sz_g3k_end_game', {}, {}, stmt.__id)
-    case 'g3k:onEvent':
-      return block(
-        'sz_g3k_on_event',
-        { NAME: stmt.event },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'g3k:emit':
-      return block('sz_g3k_emit', { NAME: stmt.event }, {}, stmt.__id)
-    case 'g3k:loadSound':
-      return block('sz_g3k_load_sound', { SOUND: stmt.asset, NAME: stmt.name }, {}, stmt.__id)
-    case 'g3k:playSound':
-      return block('sz_g3k_play_sound', { NAME: stmt.name }, {}, stmt.__id)
-    case 'g3k:playEffect':
-      return block('sz_g3k_play_effect', { FX: stmt.fx }, {}, stmt.__id)
-    case 'g3k:playTone': {
-      const freq = exprToValueBlock(valueToExpr(stmt.freq))
-      const ms = exprToValueBlock(valueToExpr(stmt.ms))
-      return freq === null || ms === null
-        ? rawJSBlock(stmt)
-        : block('sz_g3k_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
-    }
-    // ---- Mundo 3D (world-3d) ----
-    case 'w3d:setup': {
-      const world = exprToValueBlock(valueToExpr(stmt.world))
-      return world === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_setup', { STYLE: stmt.style }, {}, stmt.__id, { WORLD: world })
-    }
-    case 'w3d:terrain': {
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      const s = exprToValueBlock(valueToExpr(stmt.s))
-      return h === null || s === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_terrain', {}, {}, stmt.__id, { H: h, S: s })
-    }
-    case 'w3d:flatten': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return x === null || z === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_flatten', {}, {}, stmt.__id, { X: x, Z: z, R: r })
-    }
-    case 'w3d:path': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      return x1 === null || z1 === null || x2 === null || z2 === null || w === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_path', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2, W: w })
-    }
-    case 'w3d:water': {
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return y === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_water', { COLOR: stmt.color }, {}, stmt.__id, { Y: y })
-    }
-    case 'w3d:skyPhoto':
-      return block('sz_w3d_sky_photo', { ASSET: stmt.asset }, {}, stmt.__id)
-    case 'w3d:start':
-      return block('sz_w3d_start', {}, {}, stmt.__id)
-    case 'w3d:car':
-      return block('sz_w3d_car', { STYLE: stmt.style, COLOR: stmt.color }, {}, stmt.__id)
-    case 'w3d:carBoost': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_car_boost', {}, {}, stmt.__id, { FORCE: force })
-    }
-    case 'w3d:engineSound':
-      return block('sz_w3d_engine_sound', { ON: stmt.on ? 'ligado' : 'desligado' }, {}, stmt.__id)
-    case 'w3d:loadSound':
-      return block('sz_w3d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
-    case 'w3d:playSound':
-      return block('sz_w3d_play_sound', { NAME: stmt.name }, {}, stmt.__id)
-    case 'w3d:playMusic':
-      return block('sz_w3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
-    case 'w3d:stopMusic':
-      return block('sz_w3d_stop_music', {}, {}, stmt.__id)
-    case 'w3d:hud': {
-      const t = exprToValueBlock(valueToExpr(stmt.text))
-      return t === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_hud', { CORNER: stmt.corner }, {}, stmt.__id, { TEXT: t })
-    }
-    case 'w3d:say': {
-      const t = exprToValueBlock(valueToExpr(stmt.text))
-      const secs = exprToValueBlock(valueToExpr(stmt.secs))
-      return t === null || secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_say', {}, {}, stmt.__id, { TEXT: t, SECS: secs })
-    }
-    case 'w3d:point': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_point', { NAME: stmt.name }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:onPoint':
-      return block(
-        'sz_w3d_on_point',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:zone': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return x === null || z === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_zone', { NAME: stmt.name }, {}, stmt.__id, { X: x, Z: z, R: r })
-    }
-    case 'w3d:onZone':
-      return block(
-        'sz_w3d_on_zone',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:totemText': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_totem_text', { TITLE: stmt.title, BODY: stmt.body }, {}, stmt.__id, {
-            X: x,
-            Z: z,
-          })
-    }
-    case 'w3d:totemImage': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      return x === null || z === null || w === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_totem_image', { IMAGE: stmt.image }, {}, stmt.__id, { X: x, Z: z, W: w })
-    }
-    case 'w3d:galleryCreate': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_gallery_create', { TITLE: stmt.title }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:galleryAdd':
-      return block(
-        'sz_w3d_gallery_add',
-        { IMAGE: stmt.image, CAPTION: stmt.caption },
-        {},
-        stmt.__id,
-      )
-    case 'w3d:raceCreate': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      const laps = exprToValueBlock(valueToExpr(stmt.laps))
-      return x === null || z === null || deg === null || laps === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_race_create', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg, LAPS: laps })
-    }
-    case 'w3d:raceCheckpoint': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_race_checkpoint', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
-    }
-    case 'w3d:raceOnStart':
-      return block('sz_w3d_race_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'w3d:raceOnCheckpoint':
-      return block(
-        'sz_w3d_race_on_checkpoint',
-        {},
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:raceOnFinish':
-      return block('sz_w3d_race_on_finish', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'w3d:bowlingCreate': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_bowling_create', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
-    }
-    case 'w3d:bowlingReset':
-      return block('sz_w3d_bowling_reset', {}, {}, stmt.__id)
-    case 'w3d:bowlingOnStrike':
-      return block(
-        'sz_w3d_bowling_on_strike',
-        {},
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:stack': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return n === null || x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_stack', { THING: stmt.thing }, {}, stmt.__id, { N: n, X: x, Z: z })
-    }
-    case 'w3d:carStats': {
-      const speed = exprToValueBlock(valueToExpr(stmt.speed))
-      const turn = exprToValueBlock(valueToExpr(stmt.turn))
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return speed === null || turn === null || jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_car_stats', {}, {}, stmt.__id, { SPEED: speed, TURN: turn, JUMP: jump })
-    }
-    case 'w3d:carPlace': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_car_place', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
-    }
-    case 'w3d:grass':
-      return block('sz_w3d_grass', { AMOUNT: stmt.amount }, {}, stmt.__id)
-    case 'w3d:scatter': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_scatter', { THING: stmt.thing }, {}, stmt.__id, { N: n })
-    }
-    case 'w3d:scatterModel': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const s = exprToValueBlock(valueToExpr(stmt.s))
-      return n === null || s === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_scatter_model', { MODEL: stmt.model }, {}, stmt.__id, { N: n, S: s })
-    }
-    case 'w3d:placeThing': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const s = exprToValueBlock(valueToExpr(stmt.s))
-      return x === null || z === null || s === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_place_thing', { THING: stmt.thing }, {}, stmt.__id, { X: x, Z: z, S: s })
-    }
-    case 'w3d:placeModel': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const s = exprToValueBlock(valueToExpr(stmt.s))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || s === null || deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_place_model', { MODEL: stmt.model }, {}, stmt.__id, {
-            X: x,
-            Z: z,
-            S: s,
-            DEG: deg,
-          })
-    }
-    case 'w3d:clearArea': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return x === null || z === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_clear_area', {}, {}, stmt.__id, { X: x, Z: z, R: r })
-    }
-    case 'w3d:onCrash':
-      return block('sz_w3d_on_crash', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'w3d:horn':
-      return block('sz_w3d_horn', {}, {}, stmt.__id)
-    case 'w3d:onHorn':
-      return block('sz_w3d_on_horn', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'w3d:carLights':
-      return block('sz_w3d_car_lights', {}, {}, stmt.__id)
-    case 'w3d:tireMarks':
-      return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
-    case 'w3d:carPaint':
-      return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
-    case 'w3d:achievement':
-      return block('sz_w3d_achievement', { NAME: stmt.name }, {}, stmt.__id)
-    case 'w3d:onAchievement':
-      return block(
-        'sz_w3d_on_achievement',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:minimap':
-      return block('sz_w3d_minimap', { MODE: stmt.mode }, {}, stmt.__id)
-    case 'w3d:racePodium':
-      return block('sz_w3d_race_podium', {}, {}, stmt.__id)
-    case 'w3d:whisperCorner': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_whisper_corner', {}, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:flameNote': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_flame_note', { TEXT: stmt.text }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:coinsScatter': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_coins_scatter', {}, {}, stmt.__id, { N: n })
-    }
-    case 'w3d:coinsRing': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return n === null || x === null || z === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_coins_ring', {}, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
-    }
-    case 'w3d:coinsLine': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
-      return n === null || x1 === null || z1 === null || x2 === null || z2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_coins_line', {}, {}, stmt.__id, { N: n, X1: x1, Z1: z1, X2: x2, Z2: z2 })
-    }
-    case 'w3d:onCollect':
-      return block('sz_w3d_on_collect', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'w3d:quest':
-      return block('sz_w3d_quest', { NAME: stmt.name, DESC: stmt.desc }, {}, stmt.__id)
-    case 'w3d:questDone':
-      return block('sz_w3d_quest_done', { NAME: stmt.name }, {}, stmt.__id)
-    case 'w3d:onQuestDone':
-      return block(
-        'sz_w3d_on_quest_done',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:marker': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_marker', { ICON: stmt.icon }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:guideArrow': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_guide_arrow', { ON: stmt.on ? 'ligada' : 'desligada' }, {}, stmt.__id, {
-            X: x,
-            Z: z,
-          })
-    }
-    case 'w3d:npc': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_w3d_npc',
-            { NAME: stmt.name, COLOR: stmt.color, HAT: stmt.hat },
-            {},
-            stmt.__id,
-            { X: x, Z: z },
-          )
-    }
-    case 'w3d:npcWander': {
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_npc_wander', { NAME: stmt.name }, {}, stmt.__id, { R: r })
-    }
-    case 'w3d:npcTalk':
-      return block(
-        'sz_w3d_npc_talk',
-        { NAME: stmt.name },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:npcAsk':
-      return block(
-        'sz_w3d_npc_ask',
-        { NAME: stmt.name, QUESTION: stmt.question, OPT_A: stmt.optA, OPT_B: stmt.optB },
-        { BODY_A: statementsToBlocks(stmt.bodyA), BODY_B: statementsToBlocks(stmt.bodyB) },
-        stmt.__id,
-      )
-    case 'w3d:door': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || deg === null
-        ? rawJSBlock(stmt)
-        : block(
-            'sz_w3d_door',
-            { TITLE: stmt.title, TEXT: stmt.body, IMAGE: stmt.image },
-            {},
-            stmt.__id,
-            { X: x, Z: z, DEG: deg },
-          )
-    }
-    case 'w3d:crops': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return n === null || x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_crops', { KIND: stmt.kind }, {}, stmt.__id, { N: n, X: x, Z: z })
-    }
-    case 'w3d:barn': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_barn', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
-    }
-    case 'w3d:windmill': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_windmill', {}, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:fence': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
-      return x1 === null || z1 === null || x2 === null || z2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_fence', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2 })
-    }
-    case 'w3d:animals': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return n === null || x === null || z === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_animals', { KIND: stmt.kind }, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
-    }
-    case 'w3d:crater': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return x === null || z === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_crater', {}, {}, stmt.__id, { X: x, Z: z, R: r })
-    }
-    case 'w3d:flag': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_flag', { COLOR: stmt.color }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:rocket': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_rocket', {}, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:npcSay':
-      return block('sz_w3d_npc_say', { NAME: stmt.name, TEXT: stmt.text }, {}, stmt.__id)
-    case 'w3d:npcEmote':
-      return block('sz_w3d_npc_emote', { NAME: stmt.name, EMOTE: stmt.emote }, {}, stmt.__id)
-    case 'w3d:islands': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const y = exprToValueBlock(valueToExpr(stmt.y))
-      return n === null || y === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_islands', {}, {}, stmt.__id, { N: n, Y: y })
-    }
-    case 'w3d:boat':
-      return block('sz_w3d_boat', { COLOR: stmt.color }, {}, stmt.__id)
-    case 'w3d:bridge': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
-      const w = exprToValueBlock(valueToExpr(stmt.w))
-      return x1 === null || z1 === null || x2 === null || z2 === null || w === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_bridge', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2, W: w })
-    }
-    case 'w3d:lighthouse': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_lighthouse', {}, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:ambience':
-      return block('sz_w3d_ambience', { KIND: stmt.kind }, {}, stmt.__id)
-    case 'w3d:person':
-      return block('sz_w3d_person', { COLOR: stmt.color, HAT: stmt.hat }, {}, stmt.__id)
-    case 'w3d:personStats': {
-      const walk = exprToValueBlock(valueToExpr(stmt.walk))
-      const run = exprToValueBlock(valueToExpr(stmt.run))
-      const jump = exprToValueBlock(valueToExpr(stmt.jump))
-      return walk === null || run === null || jump === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_person_stats', {}, {}, stmt.__id, { WALK: walk, RUN: run, JUMP: jump })
-    }
-    case 'w3d:personPlace': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_person_place', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
-    }
-    case 'w3d:personAccessory':
-      return block('sz_w3d_person_accessory', { ACC: stmt.acc }, {}, stmt.__id)
-    case 'w3d:personEmote':
-      return block('sz_w3d_person_emote', { EMOTE: stmt.emote }, {}, stmt.__id)
-    case 'w3d:onVehicle':
-      return block(
-        'sz_w3d_on_vehicle',
-        { WHEN: stmt.when },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:waterfall': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const h = exprToValueBlock(valueToExpr(stmt.h))
-      const deg = exprToValueBlock(valueToExpr(stmt.deg))
-      return x === null || z === null || h === null || deg === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_waterfall', {}, {}, stmt.__id, { X: x, Z: z, H: h, DEG: deg })
-    }
-    case 'w3d:lamp': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_lamp', {}, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:city': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_city', { SIZE: stmt.size, MODE: stmt.mode }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:district': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      return x === null || z === null || size === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_district', { KIND: stmt.kind }, {}, stmt.__id, { X: x, Z: z, SIZE: size })
-    }
-    case 'w3d:roadGrid': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const size = exprToValueBlock(valueToExpr(stmt.size))
-      const width = exprToValueBlock(valueToExpr(stmt.width))
-      return x === null || z === null || size === null || width === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_road_grid', { LAYOUT: stmt.layout }, {}, stmt.__id, {
-            X: x,
-            Z: z,
-            SIZE: size,
-            WIDTH: width,
-          })
-    }
-    case 'w3d:houseRow': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
-      return n === null || x1 === null || z1 === null || x2 === null || z2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_house_row', { STYLE: stmt.style }, {}, stmt.__id, {
-            N: n,
-            X1: x1,
-            Z1: z1,
-            X2: x2,
-            Z2: z2,
-          })
-    }
-    case 'w3d:quality':
-      return block('sz_w3d_quality', { MODE: stmt.mode }, {}, stmt.__id)
-    case 'w3d:inventoryGive': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_inventory_give', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
-    }
-    case 'w3d:inventoryRemove': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_inventory_remove', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
-    }
-    case 'w3d:traffic': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      return n === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_traffic', { SEM: stmt.sem }, {}, stmt.__id, { N: n })
-    }
-    case 'w3d:stringLights': {
-      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
-      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
-      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
-      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
-      return x1 === null || z1 === null || x2 === null || z2 === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_string_lights', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2 })
-    }
-    case 'w3d:fireflies':
-      return block('sz_w3d_fireflies', { AMOUNT: stmt.amount }, {}, stmt.__id)
-    case 'w3d:campfire': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_campfire', {}, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:pushPlace': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_push_place', { THING: stmt.thing }, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:pushScatter': {
-      const n = exprToValueBlock(valueToExpr(stmt.n))
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const r = exprToValueBlock(valueToExpr(stmt.r))
-      return n === null || x === null || z === null || r === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_push_scatter', {}, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
-    }
-    case 'w3d:letters': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      const s = exprToValueBlock(valueToExpr(stmt.s))
-      return x === null || z === null || s === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_letters', { WORD: stmt.word }, {}, stmt.__id, { X: x, Z: z, S: s })
-    }
-    case 'w3d:explosive': {
-      const x = exprToValueBlock(valueToExpr(stmt.x))
-      const z = exprToValueBlock(valueToExpr(stmt.z))
-      return x === null || z === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_explosive', {}, {}, stmt.__id, { X: x, Z: z })
-    }
-    case 'w3d:onExplosion':
-      return block('sz_w3d_on_explosion', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-    case 'w3d:confetti':
-      return block('sz_w3d_confetti', {}, {}, stmt.__id)
-    case 'w3d:fireworks':
-      return block('sz_w3d_fireworks', {}, {}, stmt.__id)
-    case 'w3d:tornado': {
-      const secs = exprToValueBlock(valueToExpr(stmt.secs))
-      return secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_tornado', {}, {}, stmt.__id, { SECS: secs })
-    }
-    case 'w3d:season':
-      return block('sz_w3d_season', { SEASON: stmt.season }, {}, stmt.__id)
-    case 'w3d:clouds':
-      return block('sz_w3d_clouds', { AMOUNT: stmt.amount }, {}, stmt.__id)
-    case 'w3d:cameraMode':
-      return block('sz_w3d_camera_mode', { MODE: stmt.mode }, {}, stmt.__id)
-    case 'w3d:cameraShake': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      const secs = exprToValueBlock(valueToExpr(stmt.secs))
-      return force === null || secs === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_camera_shake', {}, {}, stmt.__id, { FORCE: force, SECS: secs })
-    }
-    case 'w3d:effects': {
-      const strength = exprToValueBlock(valueToExpr(stmt.strength))
-      return strength === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_effects', { ON: stmt.on ? 'ligados' : 'desligados' }, {}, stmt.__id, {
-            STRENGTH: strength,
-          })
-    }
-    case 'w3d:dayNight': {
-      const minutes = exprToValueBlock(valueToExpr(stmt.minutes))
-      return minutes === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_daynight', {}, {}, stmt.__id, { MIN: minutes })
-    }
-    case 'w3d:setTime':
-      return block('sz_w3d_set_time', { TIME: stmt.time }, {}, stmt.__id)
-    case 'w3d:weather':
-      return block('sz_w3d_weather', { W: stmt.kind }, {}, stmt.__id)
-    case 'w3d:wind': {
-      const force = exprToValueBlock(valueToExpr(stmt.force))
-      return force === null
-        ? rawJSBlock(stmt)
-        : block('sz_w3d_wind', {}, {}, stmt.__id, { F: force })
-    }
-    case 'w3d:onDayNight':
-      return block(
-        'sz_w3d_on_daynight',
-        { WHEN: stmt.when },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
-    case 'w3d:onUpdate':
-      return block(
-        'sz_w3d_on_update',
-        { DT: stmt.dtName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
 
     case 'importStar':
       return stmt.module === 'three'
@@ -6561,6 +1230,5529 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
 
     case 'rawJS':
       return block('sz_adv_raw_js', { CODE: stmt.code }, {}, stmt.__id)
+  }
+
+  function gameTwoDStatementToBlock(): SerializedBlocklyBlock {
+    switch (stmt.type) {
+      case 'g2d:createSprite': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_create_sprite',
+              { NAME: stmt.varName, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              {
+                X: x,
+                Y: y,
+                W: w,
+                H: h,
+              },
+            )
+      }
+      case 'g2d:drawSprite':
+        return block('sz_g2d_draw_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:setPosition': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_position', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'g2d:setVelocity': {
+        const vx = exprToValueBlock(stmt.vx)
+        const vy = exprToValueBlock(stmt.vy)
+        return vx === null || vy === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_velocity', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              VX: vx,
+              VY: vy,
+            })
+      }
+      case 'g2d:collides':
+        return block(
+          'sz_g2d_collides',
+          { NAME: stmt.varName, A: stmt.aVar, B: stmt.bVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:score': {
+        const initial = exprToValueBlock(valueToExpr(stmt.initial))
+        return initial === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_score', { NAME: stmt.varName }, {}, stmt.__id, { INITIAL: initial })
+      }
+      case 'g2d:gameOver': {
+        const text = exprToValueBlock(valueToExpr(stmt.text))
+        return text === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_game_over', {}, {}, stmt.__id, { TEXT: text })
+      }
+      case 'g2d:clear':
+        return block('sz_g2d_clear', {}, {}, stmt.__id)
+      case 'g2d:onStart':
+        return block('sz_g2d_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'g2d:updateEachFrame':
+        return block(
+          'sz_g2d_update_each_frame',
+          {},
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:setGravity': {
+        const value = exprToValueBlock(valueToExpr(stmt.value))
+        return value === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_gravity', {}, {}, stmt.__id, { VALUE: value })
+      }
+      case 'g2d:applyVelocity':
+        return block('sz_g2d_apply_velocity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:applyGravity':
+        return block('sz_g2d_apply_gravity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:bounceOnEdges':
+        return block('sz_g2d_bounce_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:circleCollides':
+        return block(
+          'sz_g2d_circle_collides',
+          { NAME: stmt.varName, A: stmt.aVar, B: stmt.bVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:playSound': {
+        const freq = exprToValueBlock(valueToExpr(stmt.freq))
+        const ms = exprToValueBlock(valueToExpr(stmt.durationMs))
+        return freq === null || ms === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_play_sound', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
+      }
+      case 'g2d:playFx':
+        return block('sz_g2d_play_fx', { FX: stmt.fx }, {}, stmt.__id)
+      case 'g2d:playMusic':
+        return block('sz_g2d_play_music', { MUSIC: stmt.tune }, {}, stmt.__id)
+      case 'g2d:stopMusic':
+        return block('sz_g2d_stop_music', {}, {}, stmt.__id)
+      case 'g2d:loadSound':
+        return block('sz_g2d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+      case 'g2d:playClip':
+        return block('sz_g2d_play_clip', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g2d:stopClip':
+        return block('sz_g2d_stop_clip', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g2d:playTrack':
+        return block('sz_g2d_play_track', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g2d:stopTrack':
+        return block('sz_g2d_stop_track', {}, {}, stmt.__id)
+      case 'g2d:setVolume': {
+        const level = exprToValueBlock(valueToExpr(stmt.level))
+        return level === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_volume', {}, {}, stmt.__id, { LEVEL: level })
+      }
+      case 'g2d:playNote': {
+        const ms = exprToValueBlock(valueToExpr(stmt.ms))
+        return ms === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_play_note', { NOTE: stmt.note }, {}, stmt.__id, { MS: ms })
+      }
+      case 'g2d:aimAt':
+        return block(
+          'sz_g2d_aim_at',
+          { SPRITE: stmt.spriteVar, TARGET: stmt.targetVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:moveToward': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_move_toward',
+              { SPRITE: stmt.spriteVar, TARGET: stmt.targetVar },
+              {},
+              stmt.__id,
+              { SPEED: speed },
+            )
+      }
+      case 'g2d:setHealth': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        return amount === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_health', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              AMOUNT: amount,
+            })
+      }
+      case 'g2d:changeHealth': {
+        const delta = exprToValueBlock(valueToExpr(stmt.delta))
+        return delta === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_change_health', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              DELTA: delta,
+            })
+      }
+      case 'g2d:damageSprite': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        const frames = exprToValueBlock(valueToExpr(stmt.invincibilityFrames))
+        return amount === null || frames === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_damage_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              AMOUNT: amount,
+              FRAMES: frames,
+            })
+      }
+      case 'g2d:flipSprite':
+        return block('sz_g2d_flip_sprite', { SPRITE: stmt.spriteVar, DIR: stmt.dir }, {}, stmt.__id)
+      case 'g2d:setOpacity': {
+        const percent = exprToValueBlock(valueToExpr(stmt.percent))
+        return percent === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_opacity', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              PERCENT: percent,
+            })
+      }
+      case 'g2d:setSize': {
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_size', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { W: w, H: h })
+      }
+      case 'g2d:scaleSprite': {
+        const factor = exprToValueBlock(valueToExpr(stmt.factor))
+        return factor === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_scale_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              FACTOR: factor,
+            })
+      }
+      case 'g2d:wrapEdges':
+        return block('sz_g2d_wrap_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:pruneOld': {
+        const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
+        return seconds === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_prune_old', { GROUP: stmt.groupVar }, {}, stmt.__id, { SECONDS: seconds })
+      }
+      case 'g2d:pauseGame':
+        return block('sz_g2d_pause', {}, {}, stmt.__id)
+      case 'g2d:resumeGame':
+        return block('sz_g2d_resume', {}, {}, stmt.__id)
+      case 'g2d:cameraFollow': {
+        const worldW = exprToValueBlock(valueToExpr(stmt.worldW))
+        const worldH = exprToValueBlock(valueToExpr(stmt.worldH))
+        return worldW === null || worldH === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_camera_follow', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              WORLDW: worldW,
+              WORLDH: worldH,
+            })
+      }
+      case 'g2d:setCamera': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_camera', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'g2d:breakTile':
+        return block(
+          'sz_g2d_break_tile_at',
+          { MAP: stmt.mapVar, SPRITE: stmt.spriteVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:setTile': {
+        const index = exprToValueBlock(valueToExpr(stmt.index))
+        return index === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_tile', { MAP: stmt.mapVar, SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              INDEX: index,
+            })
+      }
+      case 'g2d:bringToFront':
+        return block(
+          'sz_g2d_bring_to_front',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:sendToBack':
+        return block(
+          'sz_g2d_send_to_back',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:drawHitbox':
+        return block('sz_g2d_draw_hitbox', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:showFps': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_show_fps', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'g2d:onPointer':
+        return block(
+          'sz_g2d_on_pointer',
+          { PX: stmt.xName, PY: stmt.yName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onKey':
+        return block(
+          'sz_g2d_on_key',
+          { KEY: stmt.key },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onOverlap':
+        return block(
+          'sz_g2d_on_overlap',
+          { A: stmt.aVar, B: stmt.bVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onJump':
+        return block(
+          'sz_g2d_on_jump',
+          { SPRITE: stmt.spriteVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onAnyInput':
+        return block('sz_g2d_on_any_input', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'g2d:onLevelEnter':
+        return block(
+          'sz_g2d_on_level_enter',
+          { LEVEL: stmt.levelVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:createImageSprite': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_create_image_sprite',
+              { NAME: stmt.varName, IMAGE: stmt.image },
+              {},
+              stmt.__id,
+              { X: x, Y: y, W: w, H: h },
+            )
+      }
+      case 'g2d:setImage':
+        return block(
+          'sz_g2d_set_image',
+          { SPRITE: stmt.spriteVar, IMAGE: stmt.image },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:defineShape':
+        return block(
+          'sz_g2d_define_shape',
+          { NAME: stmt.shapeName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:createShapeSprite': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_create_shape_sprite',
+              { SPRITE: stmt.varName, SHAPE: stmt.shapeName },
+              {},
+              stmt.__id,
+              { X: x, Y: y, W: w, H: h },
+            )
+      }
+      case 'g2d:setShape':
+        return block(
+          'sz_g2d_set_shape',
+          { SPRITE: stmt.spriteVar, SHAPE: stmt.shapeName },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:paintRect': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_paint_rect', { COLOR: stmt.color }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              W: w,
+              H: h,
+            })
+      }
+      case 'g2d:paintCircle': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return x === null || y === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_paint_circle', { COLOR: stmt.color }, {}, stmt.__id, { X: x, Y: y, R: r })
+      }
+      case 'g2d:paintEllipse': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_paint_ellipse', { COLOR: stmt.color }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              W: w,
+              H: h,
+            })
+      }
+      case 'g2d:paintTriangle': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+        const x3 = exprToValueBlock(valueToExpr(stmt.x3))
+        const y3 = exprToValueBlock(valueToExpr(stmt.y3))
+        return x1 === null ||
+          y1 === null ||
+          x2 === null ||
+          y2 === null ||
+          x3 === null ||
+          y3 === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_paint_triangle', { COLOR: stmt.color }, {}, stmt.__id, {
+              X1: x1,
+              Y1: y1,
+              X2: x2,
+              Y2: y2,
+              X3: x3,
+              Y3: y3,
+            })
+      }
+      case 'g2d:paintLine': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+        const width = exprToValueBlock(valueToExpr(stmt.width))
+        return x1 === null || y1 === null || x2 === null || y2 === null || width === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_paint_line', { COLOR: stmt.color }, {}, stmt.__id, {
+              X1: x1,
+              Y1: y1,
+              X2: x2,
+              Y2: y2,
+              WIDTH: width,
+            })
+      }
+      case 'g2d:loadSpritesheet': {
+        const fw = exprToValueBlock(valueToExpr(stmt.frameW))
+        const fh = exprToValueBlock(valueToExpr(stmt.frameH))
+        return fw === null || fh === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_load_spritesheet',
+              { NAME: stmt.varName, IMAGE: stmt.image },
+              {},
+              stmt.__id,
+              { FW: fw, FH: fh },
+            )
+      }
+      case 'g2d:animateSprite': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_animate_sprite',
+              { SPRITE: stmt.spriteVar, SHEET: stmt.sheetVar },
+              {},
+              stmt.__id,
+              { FROM: from, TO: to, FPS: fps },
+            )
+      }
+      case 'g2d:animateOnce': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_animate_once',
+              { SPRITE: stmt.spriteVar, SHEET: stmt.sheetVar },
+              {},
+              stmt.__id,
+              { FROM: from, TO: to, FPS: fps },
+            )
+      }
+      case 'g2d:setStateAnim': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_set_state_anim',
+              { SPRITE: stmt.spriteVar, STATE: stmt.state, SHEET: stmt.sheetVar },
+              {},
+              stmt.__id,
+              { FROM: from, TO: to, FPS: fps },
+            )
+      }
+      case 'g2d:autoAnimate':
+        return block('sz_g2d_auto_animate', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:defineEnemyType': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return hp === null || speed === null || dmg === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_define_enemy_type',
+              {
+                NAME: stmt.varName,
+                BEHAVIOR: stmt.behavior,
+                COLOR: stmt.color,
+                IMAGE: stmt.image,
+                SHAPE: stmt.shape ?? '',
+              },
+              {},
+              stmt.__id,
+              { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
+            )
+      }
+      case 'g2d:defineEnemySmart': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return hp === null || speed === null || dmg === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_define_enemy_smart',
+              {
+                NAME: stmt.varName,
+                SMART: stmt.smart,
+                COLOR: stmt.color,
+                IMAGE: stmt.image,
+                SHAPE: stmt.shape ?? '',
+              },
+              {},
+              stmt.__id,
+              { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
+            )
+      }
+      case 'g2d:enemyStateAnim': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_enemy_state_anim',
+              { TYPE: stmt.typeVar, STATE: stmt.state, SHEET: stmt.sheetVar },
+              {},
+              stmt.__id,
+              { FROM: from, TO: to, FPS: fps },
+            )
+      }
+      case 'g2d:setEnemyTypeParam':
+      case 'g2d:setEnemyTypeParamLegacyStart': {
+        const value = exprToValueBlock(valueToExpr(stmt.value))
+        return value === null
+          ? rawJSBlock(stmt)
+          : block(
+              stmt.type === 'g2d:setEnemyTypeParamLegacyStart'
+                ? 'sz_g2d_enemy_type_param_legacy_start'
+                : 'sz_g2d_enemy_type_param',
+              { TYPE: stmt.typeVar, PARAM: stmt.param },
+              {},
+              stmt.__id,
+              { VALUE: value },
+            )
+      }
+      case 'g2d:enemyAddBehavior':
+      case 'g2d:enemyAddBehaviorLegacyStart':
+        return block(
+          stmt.type === 'g2d:enemyAddBehaviorLegacyStart'
+            ? 'sz_g2d_enemy_add_behavior_legacy_start'
+            : 'sz_g2d_enemy_add_behavior',
+          { TYPE: stmt.typeVar, BEHAVIOR: stmt.behavior },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:spawnEnemy': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_spawn_enemy',
+              { TYPE: stmt.typeVar, NAME: stmt.varName ?? '' },
+              {},
+              stmt.__id,
+              { X: x, Y: y },
+            )
+      }
+      case 'g2d:updateEnemyType':
+        return block(
+          'sz_g2d_update_enemy_type',
+          { TYPE: stmt.typeVar, TARGET: stmt.targetVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:drawEnemyType':
+        return block('sz_g2d_draw_enemy_type', { TYPE: stmt.typeVar }, {}, stmt.__id)
+      case 'g2d:onEnemyDefeated':
+        return block(
+          'sz_g2d_on_enemy_defeated',
+          { TYPE: stmt.typeVar, ANAME: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onEnemyHurt':
+        return block(
+          'sz_g2d_on_enemy_hurt',
+          { TYPE: stmt.typeVar, ANAME: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onEnemyBeamHit':
+        return block(
+          'sz_g2d_on_enemy_beam_hit',
+          { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar, ANAME: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onEnemyShotHit':
+        return block(
+          'sz_g2d_on_enemy_shot_hit',
+          { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar, ANAME: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:hurtByEnemy':
+        return block(
+          'sz_g2d_hurt_by_enemy',
+          { SPRITE: stmt.spriteVar, ENEMY: stmt.enemyVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:stompEnemy': {
+        const bounce = exprToValueBlock(valueToExpr(stmt.bounce))
+        return bounce === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_stomp_enemy',
+              { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar },
+              {},
+              stmt.__id,
+              { BOUNCE: bounce },
+            )
+      }
+      case 'g2d:drawFrame': {
+        const index = exprToValueBlock(valueToExpr(stmt.index))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return index === null || x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_draw_frame', { SHEET: stmt.sheetVar }, {}, stmt.__id, {
+              INDEX: index,
+              X: x,
+              Y: y,
+              W: w,
+              H: h,
+            })
+      }
+      case 'g2d:platformer': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return speed === null || jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_platformer', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              SPEED: speed,
+              JUMP: jump,
+            })
+      }
+      case 'g2d:platformerWithTerrain': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return speed === null || jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_platformer_terrain', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              SPEED: speed,
+              JUMP: jump,
+            })
+      }
+      case 'g2d:jumpWithTerrain': {
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_jump_terrain', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              JUMP: jump,
+            })
+      }
+      case 'g2d:topDown': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_top_down', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g2d:flyFree': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_fly_free', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g2d:swim': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_swim', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g2d:flap': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_flap', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FORCE: force })
+      }
+      case 'g2d:followPointer': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_follow_pointer', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              SPEED: speed,
+            })
+      }
+      case 'g2d:clampToScreen':
+        return block('sz_g2d_clamp_to_screen', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:flash':
+        return block('sz_g2d_flash', { COLOR: stmt.color }, {}, stmt.__id)
+      case 'g2d:shake': {
+        const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
+        return intensity === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_shake', {}, {}, stmt.__id, { INTENSITY: intensity })
+      }
+      case 'g2d:emitParticles': {
+        const count = exprToValueBlock(valueToExpr(stmt.count))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return count === null || x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_emit_particles', { COLOR: stmt.color }, {}, stmt.__id, {
+              COUNT: count,
+              X: x,
+              Y: y,
+            })
+      }
+      case 'g2d:drawParticles':
+        return block('sz_g2d_draw_particles', {}, {}, stmt.__id)
+      case 'g2d:createTileMap': {
+        const tile = exprToValueBlock(valueToExpr(stmt.tile))
+        return tile === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_create_tilemap',
+              {
+                NAME: stmt.varName,
+                IMAGE: stmt.image,
+                SOLID: stmt.solid,
+                PLATFORM: stmt.platform ?? '',
+                GRID: stmt.grid,
+              },
+              {},
+              stmt.__id,
+              { TILE: tile },
+            )
+      }
+      case 'g2d:createTileMapFromAsset':
+        return block(
+          'sz_g2d_create_tilemap_from_asset',
+          { NAME: stmt.varName, IMAGE: stmt.image },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:fitTileMapToStage':
+        return block('sz_g2d_fit_tilemap_to_stage', { MAP: stmt.mapVar }, {}, stmt.__id)
+      case 'g2d:placeTileMap': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        return x === null || y === null || size === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_place_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              SIZE: size,
+            })
+      }
+      case 'g2d:drawPreparedTileMap':
+        return block('sz_g2d_draw_prepared_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id)
+      case 'g2d:drawTileMap': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        // IR antigo não tem "size": vira 0 = encaixar sozinho (comportamento de sempre).
+        const size = exprToValueBlock(valueToExpr(stmt.size ?? 0))
+        return x === null || y === null || size === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_draw_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              SIZE: size,
+            })
+      }
+      case 'g2d:tileMapCollide':
+        return block(
+          'sz_g2d_tilemap_collide',
+          { SPRITE: stmt.spriteVar, MAP: stmt.mapVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:createWorld': {
+        const width = exprToValueBlock(valueToExpr(stmt.width))
+        const height = exprToValueBlock(valueToExpr(stmt.height))
+        return width === null || height === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_create_world', { NAME: stmt.varName }, {}, stmt.__id, {
+              W: width,
+              H: height,
+            })
+      }
+      case 'g2d:createWorldFromTileMap': {
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        return size === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_create_world_from_tilemap',
+              { NAME: stmt.varName, MAP: stmt.mapVar },
+              {},
+              stmt.__id,
+              { SIZE: size },
+            )
+      }
+      case 'g2d:addTileMapToWorld':
+        return block(
+          'sz_g2d_world_add_tilemap',
+          { WORLD: stmt.worldVar, MAP: stmt.mapVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:addSolidGroupToWorld':
+        return block(
+          'sz_g2d_world_add_solid_group',
+          { WORLD: stmt.worldVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:addPlatformGroupToWorld':
+        return block(
+          'sz_g2d_world_add_platform_group',
+          { WORLD: stmt.worldVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:setWorldEdges':
+        return block(
+          'sz_g2d_world_set_edges',
+          { WORLD: stmt.worldVar, EDGES: stmt.edges },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:configureWorldCamera': {
+        const deadZoneX = exprToValueBlock(valueToExpr(stmt.deadZoneX))
+        const deadZoneY = exprToValueBlock(valueToExpr(stmt.deadZoneY))
+        return deadZoneX === null || deadZoneY === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_world_camera',
+              {
+                WORLD: stmt.worldVar,
+                HORIZONTAL: stmt.horizontal,
+                VERTICAL: stmt.vertical,
+              },
+              {},
+              stmt.__id,
+              { DEAD_X: deadZoneX, DEAD_Y: deadZoneY },
+            )
+      }
+      case 'g2d:collideWorld':
+        return block(
+          'sz_g2d_world_collide',
+          { SPRITE: stmt.spriteVar, WORLD: stmt.worldVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:followCameraInWorld':
+        return block(
+          'sz_g2d_world_follow_camera',
+          { WORLD: stmt.worldVar, SPRITE: stmt.spriteVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:drawWorld':
+        return block('sz_g2d_world_draw', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g2d:createLevel': {
+        const x = exprToValueBlock(valueToExpr(stmt.spawnX))
+        const y = exprToValueBlock(valueToExpr(stmt.spawnY))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_create_level',
+              { NAME: stmt.varName, WORLD: stmt.worldVar },
+              {},
+              stmt.__id,
+              { X: x, Y: y },
+            )
+      }
+      case 'g2d:enterLevel':
+        return block(
+          'sz_g2d_enter_level',
+          { LEVEL: stmt.levelVar, SPRITE: stmt.spriteVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:resetGroupWithLevel':
+        return block(
+          'sz_g2d_level_reset_group',
+          { LEVEL: stmt.levelVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:restartLevel':
+        return block(
+          'sz_g2d_restart_level',
+          { LEVEL: stmt.levelVar, SPRITE: stmt.spriteVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:collideCurrentLevel':
+        return block('sz_g2d_current_level_collide', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:followCurrentLevelCamera':
+        return block(
+          'sz_g2d_current_level_follow_camera',
+          { SPRITE: stmt.spriteVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:drawCurrentLevel':
+        return block('sz_g2d_current_level_draw', {}, {}, stmt.__id)
+      case 'g2d:collideGroup':
+        return block(
+          'sz_g2d_collide_group',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:collideSprite':
+        return block(
+          'sz_g2d_collide_sprite',
+          { SPRITE: stmt.spriteVar, OTHER: stmt.otherVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:collidePlatform':
+        return block(
+          'sz_g2d_collide_platform',
+          { SPRITE: stmt.spriteVar, OTHER: stmt.otherVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:collidePlatformGroup':
+        return block(
+          'sz_g2d_collide_platform_group',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:createGroup':
+        return block('sz_g2d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
+      case 'g2d:allEnemiesGroup':
+        return block('sz_g2d_all_enemies_group', { NAME: stmt.varName }, {}, stmt.__id)
+      case 'g2d:spawnInGroup': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const vx = exprToValueBlock(stmt.vx)
+        const vy = exprToValueBlock(stmt.vy)
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        if (!x || !y || !vx || !vy || !w || !h) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_spawn_in_group',
+          { GROUP: stmt.groupVar, NAME: stmt.varName ?? '', COLOR: stmt.color },
+          {},
+          stmt.__id,
+          { X: x, Y: y, VX: vx, VY: vy, W: w, H: h },
+        )
+      }
+      case 'g2d:spawnImageInGroup': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const vx = exprToValueBlock(stmt.vx)
+        const vy = exprToValueBlock(stmt.vy)
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        if (!x || !y || !vx || !vy || !w || !h) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_spawn_image_in_group',
+          { GROUP: stmt.groupVar, NAME: stmt.varName ?? '', IMAGE: stmt.image },
+          {},
+          stmt.__id,
+          { X: x, Y: y, VX: vx, VY: vy, W: w, H: h },
+        )
+      }
+      case 'g2d:updateGroup':
+        return block('sz_g2d_update_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+      case 'g2d:applyGravityToGroup':
+        return block('sz_g2d_apply_gravity_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+      case 'g2d:drawGroup':
+        return block('sz_g2d_draw_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+      case 'g2d:drawGroupByY':
+        return block('sz_g2d_draw_group_by_y', { GROUP: stmt.groupVar }, {}, stmt.__id)
+      case 'g2d:forEachInGroup':
+        return block(
+          'sz_g2d_for_each_in_group',
+          { ITEM: stmt.itemName, GROUP: stmt.groupVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:clearGroup':
+        return block('sz_g2d_clear_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+      case 'g2d:pruneOffscreen':
+        return block(
+          'sz_g2d_prune_offscreen',
+          { GROUP: stmt.groupVar, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onGroupOverlap':
+        return block(
+          'sz_g2d_on_group_overlap',
+          { A: stmt.aGroup, ANAME: stmt.aName, B: stmt.bGroup, BNAME: stmt.bName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:addToGroup':
+        return block(
+          'sz_g2d_add_to_group',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:removeFromGroup':
+        return block(
+          'sz_g2d_remove_from_group',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:everyFrames': {
+        const n = exprToValueBlock(stmt.n)
+        if (!n) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_every_frames',
+          {},
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+          {
+            N: n,
+          },
+        )
+      }
+      case 'g2d:everySeconds': {
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              SECS: secs,
+            })
+      }
+      case 'g2d:afterSeconds': {
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_after_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              SECS: secs,
+            })
+      }
+      case 'g2d:setHitboxScale': {
+        const percent = exprToValueBlock(valueToExpr(stmt.percent))
+        return percent === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_set_hitbox_scale', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              PERCENT: percent,
+            })
+      }
+      case 'g2d:drawScore': {
+        const value = exprToValueBlock(stmt.value)
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        if (!value || !x || !y || !size) return rawJSBlock(stmt)
+        return block('sz_g2d_draw_score', { LABEL: stmt.label, COLOR: stmt.color }, {}, stmt.__id, {
+          VALUE: value,
+          X: x,
+          Y: y,
+          SIZE: size,
+        })
+      }
+      case 'g2d:drawLabel': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        if (!x || !y || !size) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_draw_label',
+          { TEXT: stmt.text, COLOR: stmt.color, ALIGN: stmt.align },
+          {},
+          stmt.__id,
+          { X: x, Y: y, SIZE: size },
+        )
+      }
+      case 'g2d:drawHearts': {
+        const count = exprToValueBlock(stmt.count)
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        if (!count || !x || !y || !size) return rawJSBlock(stmt)
+        return block('sz_g2d_draw_hearts', { COLOR: stmt.color }, {}, stmt.__id, {
+          COUNT: count,
+          X: x,
+          Y: y,
+          SIZE: size,
+        })
+      }
+      case 'g2d:drawSpriteHealth': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        if (!x || !y || !size) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_draw_sprite_health',
+          { SPRITE: stmt.spriteVar, STYLE: stmt.style, COLOR: stmt.color },
+          {},
+          stmt.__id,
+          { X: x, Y: y, SIZE: size },
+        )
+      }
+      case 'g2d:drawBar': {
+        const value = exprToValueBlock(stmt.value)
+        const max = exprToValueBlock(stmt.max)
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        if (!value || !max || !x || !y || !w || !h) return rawJSBlock(stmt)
+        return block('sz_g2d_draw_bar', { COLOR: stmt.color }, {}, stmt.__id, {
+          VALUE: value,
+          MAX: max,
+          X: x,
+          Y: y,
+          W: w,
+          H: h,
+        })
+      }
+      case 'g2d:setStageDescription':
+        return block(
+          'sz_g2d_set_stage_description',
+          { DESCRIPTION: stmt.description },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:setScene':
+        return block('sz_g2d_set_scene', { SCENE: stmt.name }, {}, stmt.__id)
+      case 'g2d:showScreen': {
+        const title = exprToValueBlock(screenTextToExpr(stmt.title))
+        const subtitle = exprToValueBlock(screenTextToExpr(stmt.subtitle))
+        const hint = exprToValueBlock(screenTextToExpr(stmt.hint))
+        if (!title || !subtitle || !hint) return rawJSBlock(stmt)
+        return block('sz_g2d_show_screen', { BG: stmt.bg }, {}, stmt.__id, {
+          TITLE: title,
+          SUBTITLE: subtitle,
+          HINT: hint,
+        })
+      }
+      case 'g2d:restart':
+        return block('sz_g2d_restart', {}, {}, stmt.__id)
+      case 'g2d:starfield': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_starfield', {}, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g2d:dragX':
+        return block('sz_g2d_drag_x', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:fitScreen': {
+        const percent = exprToValueBlock(valueToExpr(stmt.percent))
+        return percent === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_fit_screen', {}, {}, stmt.__id, { PERCENT: percent })
+      }
+      case 'g2d:setBackdrop':
+        return block('sz_g2d_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+      case 'g2d:drawBackdrop':
+        return block('sz_g2d_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+      case 'g2d:stageBorder': {
+        const width = exprToValueBlock(valueToExpr(stmt.width))
+        return width === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
+      }
+      case 'g2d:setupStage': {
+        const w = exprToValueBlock(valueToExpr(stmt.width))
+        const h = exprToValueBlock(valueToExpr(stmt.height))
+        return w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_setup_stage', { BG: stmt.bg }, {}, stmt.__id, { W: w, H: h })
+      }
+      case 'g2d:setupFull':
+        return block('sz_g2d_setup_full', { BG: stmt.bg }, {}, stmt.__id)
+      case 'g2d:spawnBullet': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const vx = exprToValueBlock(stmt.vx)
+        const vy = exprToValueBlock(stmt.vy)
+        const r = exprToValueBlock(valueToExpr(stmt.radius))
+        if (!x || !y || !vx || !vy || !r) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_spawn_bullet',
+          { GROUP: stmt.groupVar, COLOR: stmt.color },
+          {},
+          stmt.__id,
+          { X: x, Y: y, VX: vx, VY: vy, R: r },
+        )
+      }
+      case 'g2d:arrowsX': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_arrows_x', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g2d:blinkSprite': {
+        const frames = exprToValueBlock(valueToExpr(stmt.frames))
+        return frames === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_blink', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FRAMES: frames })
+      }
+      case 'g2d:createShip': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_create_ship',
+              { NAME: stmt.varName, BODY: stmt.bodyColor, WINGS: stmt.wingColor },
+              {},
+              stmt.__id,
+              { X: x, Y: y, W: w, H: h },
+            )
+      }
+      case 'g2d:spawnAsteroid': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const vx = exprToValueBlock(stmt.vx)
+        const vy = exprToValueBlock(stmt.vy)
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        if (!x || !y || !vx || !vy || !size) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_spawn_asteroid',
+          { GROUP: stmt.groupVar, COLOR: stmt.color },
+          {},
+          stmt.__id,
+          { X: x, Y: y, VX: vx, VY: vy, SIZE: size },
+        )
+      }
+      case 'g2d:explode':
+        return block('sz_g2d_explode', { SPRITE: stmt.spriteVar, COLOR: stmt.color }, {}, stmt.__id)
+      case 'g2d:playShoot':
+        return block('sz_g2d_play_shoot', {}, {}, stmt.__id)
+      case 'g2d:playExplosion':
+        return block('sz_g2d_play_explosion', {}, {}, stmt.__id)
+      case 'g2d:onSpriteGroupOverlap':
+        return block(
+          'sz_g2d_on_sprite_group_overlap',
+          { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar, ANAME: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:steerThrust': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const turn = exprToValueBlock(valueToExpr(stmt.turn))
+        return speed === null || turn === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_steer_thrust', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              SPEED: speed,
+              TURN: turn,
+            })
+      }
+      case 'g2d:rotateSprite': {
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_rotate_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { DEG: deg })
+      }
+      case 'g2d:pointSprite': {
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_point_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { DEG: deg })
+      }
+      case 'g2d:thrust': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_thrust', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { FORCE: force })
+      }
+      case 'g2d:applyFriction': {
+        const factor = exprToValueBlock(valueToExpr(stmt.factor))
+        return factor === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_apply_friction', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              FACTOR: factor,
+            })
+      }
+      case 'g2d:shootFrom': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_shoot_from',
+              { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { SPEED: speed },
+            )
+      }
+      case 'g2d:spawnAsteroidEdge': {
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return size === null || speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_spawn_asteroid_edge',
+              { GROUP: stmt.groupVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { SIZE: size, SPEED: speed },
+            )
+      }
+      case 'g2d:jumpOnGround': {
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_jump_on_ground', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              JUMP: jump,
+            })
+      }
+      case 'g2d:createDino': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        return x === null || y === null || size === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_create_dino', { NAME: stmt.varName, COLOR: stmt.color }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              SIZE: size,
+            })
+      }
+      case 'g2d:createStickHero': {
+        // O equilibrista é um SPRITE: tamanho em soquetes + cor em campo.
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_stickhero_sprite',
+              { NAME: stmt.varName, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { W: w, H: h },
+            )
+      }
+      case 'g2d:createStickPath':
+        // O ctx é o PADRÃO do palco (a IR mantém ctxVar; o bloco não o mostra).
+        return block(
+          'sz_g2d_stickpath_create',
+          {
+            NAME: stmt.varName,
+            PLATFORM_COLOR: stmt.platformColor,
+            STICK_COLOR: stmt.stickColor,
+          },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:stickPathScenery':
+        return block('sz_g2d_stickpath_scenery', { PATH: stmt.pathVar }, {}, stmt.__id)
+      case 'g2d:stickPathGrow': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_stickpath_grow', { PATH: stmt.pathVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g2d:stickPathDrop':
+        return block('sz_g2d_stickpath_drop', { PATH: stmt.pathVar }, {}, stmt.__id)
+      case 'g2d:stickPathWalk': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_stickpath_walk',
+              { SPRITE: stmt.spriteVar, PATH: stmt.pathVar },
+              {},
+              stmt.__id,
+              { SPEED: speed },
+            )
+      }
+      case 'g2d:stickPathDraw':
+        return block('sz_g2d_stickpath_draw', { PATH: stmt.pathVar }, {}, stmt.__id)
+      case 'g2d:onStickPathCross':
+        return block(
+          'sz_g2d_stickpath_on_cross',
+          { PATH: stmt.pathVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:onStickPathPerfect':
+        return block(
+          'sz_g2d_stickpath_on_perfect',
+          { PATH: stmt.pathVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:createBalloon': {
+        // O balão é um SPRITE: posição/tamanho em soquetes + cores em campos.
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_balloon_sprite',
+              { NAME: stmt.varName, BODY: stmt.color, BASKET: stmt.basketColor },
+              {},
+              stmt.__id,
+              { X: x, Y: y, W: w, H: h },
+            )
+      }
+      case 'g2d:createBalloonPath':
+        return block('sz_g2d_balloonpath_create', { NAME: stmt.varName }, {}, stmt.__id)
+      case 'g2d:balloonPathScenery':
+        return block('sz_g2d_balloonpath_scenery', { PATH: stmt.pathVar }, {}, stmt.__id)
+      case 'g2d:balloonFire': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_balloon_fire', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+              FORCE: force,
+            })
+      }
+      case 'g2d:balloonFly':
+        return block('sz_g2d_balloon_fly', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+      case 'g2d:balloonPathScroll': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g2d_balloonpath_scroll',
+              { PATH: stmt.pathVar, SPRITE: stmt.spriteVar },
+              {},
+              stmt.__id,
+              { SPEED: speed },
+            )
+      }
+      case 'g2d:onBalloonPathTreeHit':
+        return block(
+          'sz_g2d_balloonpath_on_tree',
+          { PATH: stmt.pathVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g2d:controlDino': {
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_control_dino', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { JUMP: jump })
+      }
+      case 'g2d:spawnObstacle': {
+        const x = exprToValueBlock(stmt.x)
+        const vx = exprToValueBlock(stmt.vx)
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        if (!x || !vx || !size) return rawJSBlock(stmt)
+        return block(
+          'sz_g2d_spawn_obstacle',
+          { GROUP: stmt.groupVar, SHAPE: stmt.shape },
+          {},
+          stmt.__id,
+          { X: x, VX: vx, SIZE: size },
+        )
+      }
+      case 'g2d:spawnEgg': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const vx = exprToValueBlock(stmt.vx)
+        if (!x || !y || !vx) return rawJSBlock(stmt)
+        return block('sz_g2d_spawn_egg', { GROUP: stmt.groupVar }, {}, stmt.__id, {
+          X: x,
+          Y: y,
+          VX: vx,
+        })
+      }
+      case 'g2d:forest': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g2d_forest', {}, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g2d:playJump':
+        return block('sz_g2d_play_jump', {}, {}, stmt.__id)
+      case 'g2d:playDinoHurt':
+        return block('sz_g2d_play_dino_hurt', {}, {}, stmt.__id)
+      case 'g2d:playCollect':
+        return block('sz_g2d_play_collect', {}, {}, stmt.__id)
+      case 'g2d:createCity':
+        return block('sz_g2d_create_city', { NAME: stmt.varName }, {}, stmt.__id)
+      case 'g2d:drawCity':
+        return block('sz_g2d_draw_city', { CITY: stmt.cityVar }, {}, stmt.__id)
+      case 'g2d:placeThrower':
+        return block(
+          'sz_g2d_place_thrower',
+          { NAME: stmt.varName, CITY: stmt.cityVar, SIDE: stmt.side, COLOR: stmt.color },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:newWind':
+        return block('sz_g2d_new_wind', { CITY: stmt.cityVar }, {}, stmt.__id)
+      case 'g2d:drawWind':
+        return block('sz_g2d_draw_wind', { CITY: stmt.cityVar }, {}, stmt.__id)
+      case 'g2d:aimDrag':
+        return block('sz_g2d_aim_drag', { THROWER: stmt.throwerVar }, {}, stmt.__id)
+      case 'g2d:throwBanana':
+        return block(
+          'sz_g2d_throw_banana',
+          { THROWER: stmt.throwerVar, CITY: stmt.cityVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:updateBanana':
+        return block('sz_g2d_update_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
+      case 'g2d:drawBanana':
+        return block('sz_g2d_draw_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
+      case 'g2d:playWhistle':
+        return block('sz_g2d_play_whistle', {}, {}, stmt.__id)
+      case 'g2d:playBoom':
+        return block('sz_g2d_play_boom', {}, {}, stmt.__id)
+      case 'g2d:computerTurn':
+        return block(
+          'sz_g2d_computer_turn',
+          { THROWER: stmt.throwerVar, CITY: stmt.cityVar, ENEMY: stmt.enemyVar },
+          {},
+          stmt.__id,
+        )
+      case 'g2d:drawAimReadout':
+        return block('sz_g2d_draw_aim_readout', {}, {}, stmt.__id)
+      default:
+        throw new Error(`Statement de extensão sem codec Blockly: ${stmt.type}`)
+    }
+  }
+
+  function gameThreeDStatementToBlock(): SerializedBlocklyBlock {
+    switch (stmt.type) {
+      case 'g3d:createScene':
+        return block(
+          'sz_g3d_create_scene',
+          { CANVAS: stmt.canvasId, NAME: stmt.varName },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:createFullscreenScene':
+        return block(
+          'sz_g3d_create_fullscreen_scene',
+          { NAME: stmt.varName, BG: stmt.bg },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:setBackground':
+        return block(
+          'sz_g3d_set_background',
+          { WORLD: stmt.worldVar, COLOR: stmt.color },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:setCameraPosition': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const z = exprToValueBlock(stmt.z)
+        if (!x || !y || !z) return rawJSBlock(stmt)
+        return block('sz_g3d_set_camera', { WORLD: stmt.worldVar }, {}, stmt.__id, {
+          X: x,
+          Y: y,
+          Z: z,
+        })
+      }
+      case 'g3d:createBox': {
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        return size === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_box',
+              { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { SIZE: size },
+            )
+      }
+      case 'g3d:createSphere': {
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        return radius === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_sphere',
+              { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { RADIUS: radius },
+            )
+      }
+      case 'g3d:setPosition': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const z = exprToValueBlock(stmt.z)
+        if (!x || !y || !z) return rawJSBlock(stmt)
+        return block('sz_g3d_set_position', { OBJ: stmt.objVar }, {}, stmt.__id, {
+          X: x,
+          Y: y,
+          Z: z,
+        })
+      }
+      case 'g3d:setRotation': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const z = exprToValueBlock(stmt.z)
+        if (!x || !y || !z) return rawJSBlock(stmt)
+        return block('sz_g3d_set_rotation', { OBJ: stmt.objVar }, {}, stmt.__id, {
+          X: x,
+          Y: y,
+          Z: z,
+        })
+      }
+      case 'g3d:animate':
+        return block(
+          'sz_g3d_animate',
+          { WORLD: stmt.worldVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3d:createBlock': {
+        const w = exprToValueBlock(valueToExpr(stmt.width))
+        const h = exprToValueBlock(valueToExpr(stmt.height))
+        const d = exprToValueBlock(valueToExpr(stmt.depth))
+        return w === null || h === null || d === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_block',
+              { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { W: w, H: h, D: d },
+            )
+      }
+      case 'g3d:setVelocity': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const z = exprToValueBlock(stmt.z)
+        if (!x || !y || !z) return rawJSBlock(stmt)
+        return block('sz_g3d_set_velocity', { OBJ: stmt.objVar }, {}, stmt.__id, {
+          X: x,
+          Y: y,
+          Z: z,
+        })
+      }
+      case 'g3d:jump': {
+        const force = exprToValueBlock(stmt.force)
+        if (!force) return rawJSBlock(stmt)
+        return block('sz_g3d_jump', { OBJ: stmt.objVar }, {}, stmt.__id, { FORCE: force })
+      }
+      case 'g3d:setScale': {
+        const factor = exprToValueBlock(stmt.factor)
+        if (!factor) return rawJSBlock(stmt)
+        return block('sz_g3d_set_scale', { OBJ: stmt.objVar }, {}, stmt.__id, { FACTOR: factor })
+      }
+      case 'g3d:applyGravity':
+        return block(
+          'sz_g3d_apply_gravity',
+          { OBJ: stmt.objVar, GROUND: stmt.groundVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:controlWithKeys': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_control_keys', { OBJ: stmt.objVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g3d:cameraFollow':
+        return block(
+          'sz_g3d_camera_follow',
+          { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:createGroup':
+        return block('sz_g3d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
+      case 'g3d:everyFrames': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_every_frames', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              N: n,
+            })
+      }
+      case 'g3d:everySeconds': {
+        const secs = exprToValueBlock(valueToExpr(stmt.secs))
+        return secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              SECS: secs,
+            })
+      }
+      case 'g3d:spawnEnemy': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_spawn_enemy',
+              { WORLD: stmt.worldVar, GROUP: stmt.groupVar },
+              {},
+              stmt.__id,
+              { SPEED: speed },
+            )
+      }
+      case 'g3d:updateGroup':
+        return block(
+          'sz_g3d_update_group',
+          { GROUP: stmt.groupVar, GROUND: stmt.groundVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:updateGroupNoGravity':
+        return block('sz_g3d_update_group_no_gravity', { GROUP: stmt.groupVar }, {}, stmt.__id)
+      case 'g3d:pruneOffscreen':
+        return block(
+          'sz_g3d_prune_offscreen',
+          { WORLD: stmt.worldVar, GROUP: stmt.groupVar, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3d:forEachInGroup':
+        return block(
+          'sz_g3d_for_each_in_group',
+          { GROUP: stmt.groupVar, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3d:removeFromGroup':
+        return block(
+          'sz_g3d_remove_from_group',
+          { GROUP: stmt.groupVar, OBJ: stmt.objVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:clearGroup':
+        return block('sz_g3d_clear_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+      case 'g3d:stop':
+        return block('sz_g3d_stop', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:createCrossingScene':
+        return block(
+          'sz_g3d_create_crossing_scene',
+          { CANVAS: stmt.canvasId, NAME: stmt.varName },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:createCrosser':
+        return block(
+          'sz_g3d_create_crosser',
+          { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:crosserMove':
+        return block(
+          'sz_g3d_crosser_move',
+          { OBJ: stmt.objVar, DIR: stmt.direction },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:crosserStep':
+        return block(
+          'sz_g3d_crosser_step',
+          { OBJ: stmt.objVar, WORLD: stmt.worldVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:crosserReset':
+        return block(
+          'sz_g3d_crosser_reset',
+          { OBJ: stmt.objVar, WORLD: stmt.worldVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:addRow': {
+        const row = exprToValueBlock(stmt.rowIndex)
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        if (!row || !speed) return rawJSBlock(stmt)
+        return block(
+          'sz_g3d_add_row',
+          { WORLD: stmt.worldVar, KIND: stmt.kind, DIR: stmt.direction },
+          {},
+          stmt.__id,
+          { ROW: row, SPEED: speed },
+        )
+      }
+      case 'g3d:generateRows': {
+        const count = exprToValueBlock(valueToExpr(stmt.count))
+        return count === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_generate_rows', { WORLD: stmt.worldVar }, {}, stmt.__id, { COUNT: count })
+      }
+      case 'g3d:moveTraffic':
+        return block('sz_g3d_move_traffic', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:isometricCamera':
+        return block(
+          'sz_g3d_isometric_camera',
+          { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:gridStep':
+        return block('sz_g3d_grid_step', { OBJ: stmt.objVar }, {}, stmt.__id)
+      case 'g3d:gridMove':
+        return block('sz_g3d_grid_move', { OBJ: stmt.objVar, DIR: stmt.direction }, {}, stmt.__id)
+      case 'g3d:moveAcross': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const min = exprToValueBlock(valueToExpr(stmt.min))
+        const max = exprToValueBlock(valueToExpr(stmt.max))
+        return speed === null || min === null || max === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_move_across', { GROUP: stmt.groupVar }, {}, stmt.__id, {
+              SPEED: speed,
+              MIN: min,
+              MAX: max,
+            })
+      }
+      case 'g3d:gridPosition': {
+        const row = exprToValueBlock(stmt.row)
+        const col = exprToValueBlock(stmt.col)
+        if (!row || !col) return rawJSBlock(stmt)
+        return block('sz_g3d_grid_position', { OBJ: stmt.objVar }, {}, stmt.__id, {
+          ROW: row,
+          COL: col,
+        })
+      }
+      case 'g3d:topCamera':
+        return block(
+          'sz_g3d_top_camera',
+          { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:moveInCircle': {
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return radius === null || speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_move_in_circle', { OBJ: stmt.objVar }, {}, stmt.__id, {
+              RADIUS: radius,
+              SPEED: speed,
+            })
+      }
+      case 'g3d:createRaceScene':
+        return block(
+          'sz_g3d_create_race_scene',
+          { CANVAS: stmt.canvasId, NAME: stmt.varName },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:createRaceTrack':
+        return block('sz_g3d_create_race_track', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:createRaceCar':
+        return block(
+          'sz_g3d_create_race_car',
+          { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:raceStep':
+        return block('sz_g3d_race_step', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:raceControl':
+        return block('sz_g3d_race_control', { OBJ: stmt.objVar, MODE: stmt.mode }, {}, stmt.__id)
+      case 'g3d:runRivals':
+        return block('sz_g3d_run_rivals', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:raceReset':
+        return block('sz_g3d_race_reset', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:fall':
+        return block('sz_g3d_fall', { OBJ: stmt.objVar }, {}, stmt.__id)
+      case 'g3d:slideBetween': {
+        const min = exprToValueBlock(valueToExpr(stmt.min))
+        const max = exprToValueBlock(valueToExpr(stmt.max))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return min === null || max === null || speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_slide_between', { OBJ: stmt.objVar, AXIS: stmt.axis }, {}, stmt.__id, {
+              MIN: min,
+              MAX: max,
+              SPEED: speed,
+            })
+      }
+      case 'g3d:spin': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_spin', { OBJ: stmt.objVar, AXIS: stmt.axis }, {}, stmt.__id, {
+              SPEED: speed,
+            })
+      }
+      case 'g3d:createStackScene':
+        return block(
+          'sz_g3d_create_stack_scene',
+          { CANVAS: stmt.canvasId, NAME: stmt.varName },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:createStackTower':
+        return block('sz_g3d_create_stack_tower', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:stackDrop':
+        return block('sz_g3d_stack_drop', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:stackStep':
+        return block('sz_g3d_stack_step', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:stackReset':
+        return block('sz_g3d_stack_reset', { WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:moveBy': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const z = exprToValueBlock(stmt.z)
+        if (!x || !y || !z) return rawJSBlock(stmt)
+        return block('sz_g3d_move_by', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+      }
+      case 'g3d:rotateBy': {
+        const amount = exprToValueBlock(stmt.amount)
+        if (!amount) return rawJSBlock(stmt)
+        return block('sz_g3d_rotate_by', { OBJ: stmt.objVar, AXIS: stmt.axis }, {}, stmt.__id, {
+          AMOUNT: amount,
+        })
+      }
+      case 'g3d:moveTowards': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const z = exprToValueBlock(stmt.z)
+        const factor = exprToValueBlock(valueToExpr(stmt.factor))
+        if (!x || !y || !z || !factor) return rawJSBlock(stmt)
+        return block('sz_g3d_move_towards', { OBJ: stmt.objVar }, {}, stmt.__id, {
+          X: x,
+          Y: y,
+          Z: z,
+          FACTOR: factor,
+        })
+      }
+      case 'g3d:lookAtObject':
+        return block('sz_g3d_look_at_object', { A: stmt.aVar, B: stmt.bVar }, {}, stmt.__id)
+      case 'g3d:lookAtPoint': {
+        const x = exprToValueBlock(stmt.x)
+        const y = exprToValueBlock(stmt.y)
+        const z = exprToValueBlock(stmt.z)
+        if (!x || !y || !z) return rawJSBlock(stmt)
+        return block('sz_g3d_look_at_point', { OBJ: stmt.objVar }, {}, stmt.__id, {
+          X: x,
+          Y: y,
+          Z: z,
+        })
+      }
+      case 'g3d:moveForward': {
+        const dist = exprToValueBlock(stmt.dist)
+        if (!dist) return rawJSBlock(stmt)
+        return block('sz_g3d_move_forward', { OBJ: stmt.objVar }, {}, stmt.__id, { DIST: dist })
+      }
+      case 'g3d:faceVelocity':
+        return block('sz_g3d_face_velocity', { OBJ: stmt.objVar }, {}, stmt.__id)
+      case 'g3d:body': {
+        const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
+        return gravity === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_body', { OBJ: stmt.objVar }, {}, stmt.__id, { GRAVITY: gravity })
+      }
+      case 'g3d:stepBody':
+        return block('sz_g3d_step_body', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:setSolid':
+        return block('sz_g3d_set_solid', { OBJ: stmt.objVar }, {}, stmt.__id)
+      case 'g3d:platformerControls': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return speed === null || jump === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_platformer_controls',
+              { OBJ: stmt.objVar, WORLD: stmt.worldVar },
+              {},
+              stmt.__id,
+              { SPEED: speed, JUMP: jump },
+            )
+      }
+      case 'g3d:fpsControls': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_fps_controls',
+              { OBJ: stmt.objVar, WORLD: stmt.worldVar },
+              {},
+              stmt.__id,
+              {
+                SPEED: speed,
+              },
+            )
+      }
+      case 'g3d:resolveCollision':
+        return block('sz_g3d_resolve_collision', { A: stmt.aVar, B: stmt.bVar }, {}, stmt.__id)
+      case 'g3d:fpsCamera':
+        return block('sz_g3d_fps_camera', { WORLD: stmt.worldVar, OBJ: stmt.objVar }, {}, stmt.__id)
+      case 'g3d:orbitCamera':
+        return block(
+          'sz_g3d_orbit_camera',
+          { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:thirdPersonCamera': {
+        const dist = exprToValueBlock(valueToExpr(stmt.dist))
+        const height = exprToValueBlock(valueToExpr(stmt.height))
+        return dist === null || height === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_third_person_camera',
+              { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+              {},
+              stmt.__id,
+              { DIST: dist, HEIGHT: height },
+            )
+      }
+      case 'g3d:cameraLookAt':
+        return block(
+          'sz_g3d_camera_look_at',
+          { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:setFOV': {
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_set_fov', { WORLD: stmt.worldVar }, {}, stmt.__id, { DEG: deg })
+      }
+      case 'g3d:createCylinder': {
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        const height = exprToValueBlock(valueToExpr(stmt.height))
+        return radius === null || height === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_cylinder',
+              { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { RADIUS: radius, HEIGHT: height },
+            )
+      }
+      case 'g3d:createCone': {
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        const height = exprToValueBlock(valueToExpr(stmt.height))
+        return radius === null || height === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_cone',
+              { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { RADIUS: radius, HEIGHT: height },
+            )
+      }
+      case 'g3d:createPlane': {
+        const w = exprToValueBlock(valueToExpr(stmt.width))
+        const d = exprToValueBlock(valueToExpr(stmt.depth))
+        return w === null || d === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_plane',
+              { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { W: w, D: d },
+            )
+      }
+      case 'g3d:createTorus': {
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        const tube = exprToValueBlock(valueToExpr(stmt.tube))
+        return radius === null || tube === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_torus',
+              { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { RADIUS: radius, TUBE: tube },
+            )
+      }
+      case 'g3d:createModel':
+        return block(
+          'sz_g3d_create_model',
+          { NAME: stmt.varName, WORLD: stmt.worldVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:setColor':
+        return block('sz_g3d_set_color', { OBJ: stmt.objVar, COLOR: stmt.color }, {}, stmt.__id)
+      case 'g3d:setOpacity': {
+        const opacity = exprToValueBlock(valueToExpr(stmt.opacity))
+        return opacity === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_set_opacity', { OBJ: stmt.objVar }, {}, stmt.__id, { OPACITY: opacity })
+      }
+      case 'g3d:setMaterial':
+        return block('sz_g3d_set_material', { OBJ: stmt.objVar, KIND: stmt.kind }, {}, stmt.__id)
+      case 'g3d:setTexture':
+        return block('sz_g3d_set_texture', { OBJ: stmt.objVar, ASSET: stmt.asset }, {}, stmt.__id)
+      case 'g3d:setVisible':
+        return block('sz_g3d_set_visible', { OBJ: stmt.objVar, MODE: stmt.mode }, {}, stmt.__id)
+      case 'g3d:removeObject':
+        return block(
+          'sz_g3d_remove_object',
+          { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:addToModel':
+        return block(
+          'sz_g3d_add_to_model',
+          { MODEL: stmt.modelVar, PART: stmt.partVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:addAmbientLight': {
+        const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
+        return intensity === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_add_ambient_light',
+              { WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { INTENSITY: intensity },
+            )
+      }
+      case 'g3d:addSunLight': {
+        const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
+        return intensity === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_add_sun_light',
+              { WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { INTENSITY: intensity },
+            )
+      }
+      case 'g3d:addPointLight': {
+        const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return intensity === null || x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_add_point_light',
+              { WORLD: stmt.worldVar, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { INTENSITY: intensity, X: x, Y: y, Z: z },
+            )
+      }
+      case 'g3d:setFog': {
+        const near = exprToValueBlock(valueToExpr(stmt.near))
+        const far = exprToValueBlock(valueToExpr(stmt.far))
+        return near === null || far === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_set_fog', { WORLD: stmt.worldVar, COLOR: stmt.color }, {}, stmt.__id, {
+              NEAR: near,
+              FAR: far,
+            })
+      }
+      case 'g3d:setSky':
+        return block(
+          'sz_g3d_set_sky',
+          { WORLD: stmt.worldVar, TOP: stmt.top, BOTTOM: stmt.bottom },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:setShadows':
+        return block('sz_g3d_set_shadows', { WORLD: stmt.worldVar, MODE: stmt.mode }, {}, stmt.__id)
+      case 'g3d:createSwarm':
+        return block(
+          'sz_g3d_create_swarm',
+          { NAME: stmt.varName, WORLD: stmt.worldVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:spawnInSwarm': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_spawn_in_swarm',
+              { SWARM: stmt.swarmVar, ORIGINAL: stmt.originalVar },
+              {},
+              stmt.__id,
+              { X: x, Y: y, Z: z },
+            )
+      }
+      case 'g3d:forEachInSwarm':
+        return block(
+          'sz_g3d_for_each_swarm',
+          { SWARM: stmt.swarmVar, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3d:removeFromSwarm':
+        return block(
+          'sz_g3d_remove_from_swarm',
+          { SWARM: stmt.swarmVar, ITEM: stmt.itemVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:pruneSwarm': {
+        const min = exprToValueBlock(valueToExpr(stmt.min))
+        const max = exprToValueBlock(valueToExpr(stmt.max))
+        return min === null || max === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_prune_swarm', { SWARM: stmt.swarmVar, AXIS: stmt.axis }, {}, stmt.__id, {
+              MIN: min,
+              MAX: max,
+            })
+      }
+      case 'g3d:playNote': {
+        const freq = exprToValueBlock(valueToExpr(stmt.freq))
+        const ms = exprToValueBlock(valueToExpr(stmt.ms))
+        return freq === null || ms === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_play_note', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
+      }
+      case 'g3d:playEffect':
+        return block('sz_g3d_play_effect', { KIND: stmt.kind }, {}, stmt.__id)
+      case 'g3d:loadSound':
+        return block('sz_g3d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+      case 'g3d:playSound':
+        return block('sz_g3d_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g3d:stopSound':
+        return block('sz_g3d_stop_sound', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g3d:playMusic':
+        return block('sz_g3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g3d:stopMusic':
+        return block('sz_g3d_stop_music', {}, {}, stmt.__id)
+      case 'g3d:setVolume': {
+        const level = exprToValueBlock(valueToExpr(stmt.level))
+        return level === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_set_volume', {}, {}, stmt.__id, { LEVEL: level })
+      }
+      default:
+        throw new Error(`Statement de extensão sem codec Blockly: ${stmt.type}`)
+    }
+  }
+
+  function gameKitStatementToBlock(): SerializedBlocklyBlock {
+    switch (stmt.type) {
+      // ----- game-2d-advanced (kit profissional) -----
+      case 'gk:setup': {
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_setup', { BG: stmt.bg, ACCENT: stmt.accent }, {}, stmt.__id, {
+              W: w,
+              H: h,
+            })
+      }
+      case 'gk:setupFull':
+        return block('sz_gk_setup_full', { BG: stmt.bg, ACCENT: stmt.accent }, {}, stmt.__id)
+      case 'gk:setStageDescription':
+        return block(
+          'sz_gk_set_stage_description',
+          { DESCRIPTION: stmt.description },
+          {},
+          stmt.__id,
+        )
+      case 'gk:stageBorder': {
+        const width = exprToValueBlock(valueToExpr(stmt.width))
+        return width === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
+      }
+      case 'gk:setBackdrop':
+        return block('sz_gk_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+      case 'gk:drawBackdrop':
+        return block('sz_gk_draw_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
+      case 'gk:showHitboxes':
+        return block('sz_gk_show_hitboxes', {}, {}, stmt.__id)
+      case 'gk:start':
+        return block('sz_gk_start', {}, {}, stmt.__id)
+      case 'gk:loadImage':
+        return block('sz_gk_load_image', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+      case 'gk:setScreenText': {
+        const title = exprToValueBlock(valueToExpr(stmt.title))
+        const text = exprToValueBlock(valueToExpr(stmt.text))
+        const button = exprToValueBlock(valueToExpr(stmt.button))
+        return title === null || text === null || button === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_screen_text', { SCREEN: stmt.screen }, {}, stmt.__id, {
+              TITLE: title,
+              TEXT: text,
+              BTN: button,
+            })
+      }
+      case 'gk:createScreen': {
+        const title = exprToValueBlock(valueToExpr(stmt.title))
+        const text = exprToValueBlock(valueToExpr(stmt.text))
+        return title === null || text === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_create_screen', { NAME: stmt.name }, {}, stmt.__id, {
+              TITLE: title,
+              TEXT: text,
+            })
+      }
+      case 'gk:addButton': {
+        const label = exprToValueBlock(valueToExpr(stmt.label))
+        return label === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_add_button',
+              { SCREEN: stmt.screen },
+              { BODY: statementsToBlocks(stmt.body) },
+              stmt.__id,
+              { LABEL: label },
+            )
+      }
+      case 'gk:setScreenBg':
+        return block(
+          'sz_gk_set_screen_bg',
+          { SCREEN: stmt.screen, COLOR: stmt.color, IMAGE: stmt.image },
+          {},
+          stmt.__id,
+        )
+      case 'gk:showScreen':
+        return block('sz_gk_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
+      case 'gk:hideScreens':
+        return block('sz_gk_hide_screens', {}, {}, stmt.__id)
+      case 'gk:setState':
+        return block('sz_gk_set_state', { STATE: stmt.name }, {}, stmt.__id)
+      case 'gk:restartGame':
+        return block('sz_gk_restart_game', {}, {}, stmt.__id)
+      case 'gk:onGameStart':
+        return block('sz_gk_on_game_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'gk:onEnterState':
+        return block(
+          'sz_gk_on_enter_state',
+          { STATE: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:pause':
+        return block('sz_gk_pause', {}, {}, stmt.__id)
+      case 'gk:resume':
+        return block('sz_gk_resume', {}, {}, stmt.__id)
+      case 'gk:returnToMenu':
+        return block('sz_gk_return_to_menu', {}, {}, stmt.__id)
+      case 'gk:endGame':
+        return block('sz_gk_end_game', {}, {}, stmt.__id)
+      case 'gk:onUpdate':
+        return block(
+          'sz_gk_on_update',
+          { DT: stmt.dtName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:onDraw':
+        return block(
+          'sz_gk_on_draw',
+          { PARAM: stmt.ctxName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:onDrawHud':
+        return block(
+          'sz_gk_on_draw_hud',
+          { PARAM: stmt.ctxName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:onGameClick':
+        return block(
+          'sz_gk_on_game_click',
+          { PX: stmt.xName, PY: stmt.yName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:setSheet': {
+        const fw = exprToValueBlock(valueToExpr(stmt.fw))
+        const fh = exprToValueBlock(valueToExpr(stmt.fh))
+        return fw === null || fh === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_sheet', { CHAR: stmt.charVar, IMAGE: stmt.image }, {}, stmt.__id, {
+              FW: fw,
+              FH: fh,
+            })
+      }
+      case 'gk:playAnim': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_play_anim', { CHAR: stmt.charVar }, {}, stmt.__id, {
+              FROM: from,
+              TO: to,
+              FPS: fps,
+            })
+      }
+      case 'gk:cameraFollow': {
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_camera_follow', { CHAR: stmt.charVar }, {}, stmt.__id, { W: w, H: h })
+      }
+      case 'gk:cameraFollowMap':
+        return block(
+          'sz_gk_camera_follow_map',
+          { CHAR: stmt.charVar, MAP: stmt.map },
+          {},
+          stmt.__id,
+        )
+      case 'gk:cameraStop':
+        return block('sz_gk_camera_stop', {}, {}, stmt.__id)
+      case 'gk:launchTowards': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_launch_towards',
+              { WHO: stmt.charVar, TARGET: stmt.targetVar },
+              {},
+              stmt.__id,
+              { V: speed },
+            )
+      }
+      case 'gk:moveByVelocity':
+        return block('sz_gk_move_by_velocity', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
+      case 'gk:setAngle': {
+        const degrees = exprToValueBlock(valueToExpr(stmt.degrees))
+        return degrees === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_angle', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: degrees })
+      }
+      case 'gk:drawBar': {
+        const current = exprToValueBlock(valueToExpr(stmt.current))
+        const max = exprToValueBlock(valueToExpr(stmt.max))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return current === null ||
+          max === null ||
+          x === null ||
+          y === null ||
+          w === null ||
+          h === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_draw_bar', { COLOR: stmt.color }, {}, stmt.__id, {
+              CUR: current,
+              MAX: max,
+              X: x,
+              Y: y,
+              W: w,
+              H: h,
+            })
+      }
+      case 'gk:rpgMoveGrid': {
+        const cell = exprToValueBlock(valueToExpr(stmt.cell))
+        return cell === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_move_grid', { CHAR: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+              CELL: cell,
+            })
+      }
+      case 'gk:rpgBlockCell': {
+        const cx = exprToValueBlock(valueToExpr(stmt.cx))
+        const cy = exprToValueBlock(valueToExpr(stmt.cy))
+        return cx === null || cy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_block_cell', {}, {}, stmt.__id, { CX: cx, CY: cy })
+      }
+      case 'gk:rpgCreateNpc': {
+        const cx = exprToValueBlock(valueToExpr(stmt.cx))
+        const cy = exprToValueBlock(valueToExpr(stmt.cy))
+        return cx === null || cy === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_rpg_create_npc',
+              { NAME: stmt.name, IMAGE: stmt.image, LOOK: stmt.look },
+              {},
+              stmt.__id,
+              { CX: cx, CY: cy },
+            )
+      }
+      case 'gk:rpgDrawNpcs':
+        return block('sz_gk_rpg_draw_npcs', {}, {}, stmt.__id)
+      case 'gk:rpgOnTalk':
+        return block(
+          'sz_gk_rpg_on_talk',
+          { NPC: stmt.npc },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:rpgSay': {
+        const textValue = exprToValueBlock(valueToExpr(stmt.text))
+        const speaker = exprToValueBlock(valueToExpr(stmt.speaker))
+        return textValue === null || speaker === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_say', {}, {}, stmt.__id, { TEXT: textValue, NAME: speaker })
+      }
+      case 'gk:rpgAddFlag':
+        return block('sz_gk_rpg_add_flag', { FLAG: stmt.flag }, {}, stmt.__id)
+      case 'gk:rpgGiveItem':
+        return block('sz_gk_rpg_give_item', { NAME: stmt.item, IMAGE: stmt.image }, {}, stmt.__id)
+      case 'gk:rpgRemoveItem':
+        return block('sz_gk_rpg_remove_item', { NAME: stmt.item }, {}, stmt.__id)
+      case 'gk:rpgDrawInventory': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_draw_inventory', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:rpgGoMap':
+        return block('sz_gk_rpg_go_map', { MAP: stmt.map }, {}, stmt.__id)
+      case 'gk:rpgSetStartMap':
+        return block('sz_gk_rpg_set_start_map', { MAP: stmt.map }, {}, stmt.__id)
+      case 'gk:rpgCreateMap': {
+        const cols = exprToValueBlock(valueToExpr(stmt.cols))
+        const rows = exprToValueBlock(valueToExpr(stmt.rows))
+        return cols === null || rows === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_rpg_create_map',
+              { MAP: stmt.map, PARAM: stmt.ctxName },
+              { BODY: statementsToBlocks(stmt.body) },
+              stmt.__id,
+              { COLS: cols, ROWS: rows },
+            )
+      }
+      case 'gk:rpgOnEnterMap':
+        return block(
+          'sz_gk_rpg_on_enter_map',
+          { MAP: stmt.map },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:rpgCreateDoor': {
+        const cx = exprToValueBlock(valueToExpr(stmt.cx))
+        const cy = exprToValueBlock(valueToExpr(stmt.cy))
+        return cx === null || cy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_create_door', { MAP: stmt.map }, {}, stmt.__id, { CX: cx, CY: cy })
+      }
+      // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
+      case 'gk:rpgConnectEdge':
+        return block('sz_gk_rpg_connect_edge', { SIDE: stmt.side, MAP: stmt.map }, {}, stmt.__id)
+      case 'gk:rpgBattleStats': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const str = exprToValueBlock(valueToExpr(stmt.str))
+        const def = exprToValueBlock(valueToExpr(stmt.def))
+        return hp === null || str === null || def === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_battle_stats', {}, {}, stmt.__id, { HP: hp, STR: str, DEF: def })
+      }
+      case 'gk:rpgBattleStart': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const str = exprToValueBlock(valueToExpr(stmt.str))
+        const def = exprToValueBlock(valueToExpr(stmt.def))
+        return hp === null || str === null || def === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_rpg_battle_start',
+              { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+              {},
+              stmt.__id,
+              { HP: hp, STR: str, DEF: def },
+            )
+      }
+      case 'gk:rpgSetSpecial': {
+        const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+        const cost = exprToValueBlock(valueToExpr(stmt.cost))
+        return dmg === null || cost === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_set_special', { NAME: stmt.name }, {}, stmt.__id, {
+              DMG: dmg,
+              COST: cost,
+            })
+      }
+      case 'gk:rpgGivePotion': {
+        const heal = exprToValueBlock(valueToExpr(stmt.heal))
+        return heal === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_give_potion', { NAME: stmt.name }, {}, stmt.__id, { HEAL: heal })
+      }
+      case 'gk:rpgHealHero':
+        return block('sz_gk_rpg_heal_hero', {}, {}, stmt.__id)
+      case 'gk:rpgBattleReward': {
+        const xp = exprToValueBlock(valueToExpr(stmt.xp))
+        return xp === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_battle_reward', {}, {}, stmt.__id, { XP: xp })
+      }
+      case 'gk:rpgInflict': {
+        const turns = exprToValueBlock(valueToExpr(stmt.turns))
+        // R25: STATUS virou campo (veneno|regenera|atrapalha); default veneno.
+        return turns === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_inflict', { WHO: stmt.who, STATUS: stmt.status }, {}, stmt.__id, {
+              TURNS: turns,
+            })
+      }
+      case 'gk:rpgAddAlly': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const str = exprToValueBlock(valueToExpr(stmt.str))
+        const def = exprToValueBlock(valueToExpr(stmt.def))
+        return hp === null || str === null || def === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_rpg_add_ally',
+              { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+              {},
+              stmt.__id,
+              { HP: hp, STR: str, DEF: def },
+            )
+      }
+      case 'gk:rpgAddFoe': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const str = exprToValueBlock(valueToExpr(stmt.str))
+        const def = exprToValueBlock(valueToExpr(stmt.def))
+        return hp === null || str === null || def === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_rpg_add_foe',
+              { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+              {},
+              stmt.__id,
+              { HP: hp, STR: str, DEF: def },
+            )
+      }
+      case 'gk:rpgTeachMove': {
+        const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+        const cost = exprToValueBlock(valueToExpr(stmt.cost))
+        return dmg === null || cost === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_teach_move', { MOVE: stmt.move, WHO: stmt.who }, {}, stmt.__id, {
+              DMG: dmg,
+              COST: cost,
+            })
+      }
+      case 'gk:rpgTeachHeal': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        const cost = exprToValueBlock(valueToExpr(stmt.cost))
+        return amount === null || cost === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_teach_heal', { MOVE: stmt.move, WHO: stmt.who }, {}, stmt.__id, {
+              AMOUNT: amount,
+              COST: cost,
+            })
+      }
+      case 'gk:rpgAddBoss': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const str = exprToValueBlock(valueToExpr(stmt.str))
+        const def = exprToValueBlock(valueToExpr(stmt.def))
+        return hp === null || str === null || def === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_rpg_add_boss',
+              { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+              {},
+              stmt.__id,
+              { HP: hp, STR: str, DEF: def },
+            )
+      }
+      case 'gk:rpgDefineBattler': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const str = exprToValueBlock(valueToExpr(stmt.str))
+        const def = exprToValueBlock(valueToExpr(stmt.def))
+        return hp === null || str === null || def === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_rpg_define_battler',
+              {
+                NAME: stmt.name,
+                IMAGE: stmt.image,
+                COLOR: stmt.color,
+                BOSS: stmt.boss ? 'TRUE' : 'FALSE',
+              },
+              {},
+              stmt.__id,
+              { HP: hp, STR: str, DEF: def },
+            )
+      }
+      case 'gk:rpgBattleNamed':
+        return block('sz_gk_rpg_battle_named', { NAME: stmt.name }, {}, stmt.__id)
+      case 'gk:rpgAddFoeNamed':
+        return block('sz_gk_rpg_add_foe_named', { NAME: stmt.name }, {}, stmt.__id)
+      case 'gk:rpgOnFoeTurn':
+        return block(
+          'sz_gk_rpg_on_foe_turn',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:rpgFoeUse':
+        return block('sz_gk_rpg_foe_use', { NAME: stmt.name, MOVE: stmt.move }, {}, stmt.__id)
+      case 'gk:rpgFoeHitAll': {
+        const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+        return dmg === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_foe_hit_all', { NAME: stmt.name }, {}, stmt.__id, { DMG: dmg })
+      }
+      case 'gk:rpgOnBattleEnd':
+        return block(
+          'sz_gk_rpg_on_battle_end',
+          {},
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:setWalkSheet': {
+        const fw = exprToValueBlock(valueToExpr(stmt.fw))
+        const fh = exprToValueBlock(valueToExpr(stmt.fh))
+        return fw === null || fh === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_set_walk_sheet',
+              { CHAR: stmt.charVar, IMAGE: stmt.image },
+              {},
+              stmt.__id,
+              {
+                FW: fw,
+                FH: fh,
+              },
+            )
+      }
+      case 'gk:rpgCutscene':
+        return block('sz_gk_rpg_cutscene', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'gk:rpgWait': {
+        const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+        return sec === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_wait', {}, {}, stmt.__id, { SECONDS: sec })
+      }
+      case 'gk:rpgFace':
+        return block('sz_gk_rpg_face', { NPC: stmt.npc, DIR: stmt.dir }, {}, stmt.__id)
+      case 'gk:rpgNpcWalkTo': {
+        const cx = exprToValueBlock(valueToExpr(stmt.cx))
+        const cy = exprToValueBlock(valueToExpr(stmt.cy))
+        return cx === null || cy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_npc_walk_to', { NPC: stmt.npc }, {}, stmt.__id, { CX: cx, CY: cy })
+      }
+      case 'gk:rpgNpcWander':
+        return block('sz_gk_rpg_npc_wander', { NPC: stmt.npc }, {}, stmt.__id)
+      case 'gk:rpgOnStep': {
+        const cx = exprToValueBlock(valueToExpr(stmt.cx))
+        const cy = exprToValueBlock(valueToExpr(stmt.cy))
+        return cx === null || cy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_on_step', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              CX: cx,
+              CY: cy,
+            })
+      }
+      case 'gk:rpgMenu': {
+        const title = exprToValueBlock(valueToExpr(stmt.title))
+        return title === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_menu', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              TITLE: title,
+            })
+      }
+      case 'gk:rpgOption': {
+        const label = exprToValueBlock(valueToExpr(stmt.label))
+        return label === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_rpg_option', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              LABEL: label,
+            })
+      }
+      case 'gk:rpgSave':
+        return block('sz_gk_rpg_save', {}, {}, stmt.__id)
+      case 'gk:rpgLoad':
+        return block('sz_gk_rpg_load', {}, {}, stmt.__id)
+      case 'gk:loadTilemap':
+        return block('sz_gk_load_tilemap', { NAME: stmt.name, IMAGE: stmt.asset }, {}, stmt.__id)
+      case 'gk:drawTilemap':
+        return block('sz_gk_draw_tilemap', { MAP: stmt.name, LAYER: stmt.layer }, {}, stmt.__id)
+      case 'gk:tilemapSolid':
+        return block('sz_gk_tilemap_solid', { MAP: stmt.name }, {}, stmt.__id)
+      case 'gk:drawShadow':
+        return block('sz_gk_draw_shadow', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'gk:drawByDepth':
+        return block('sz_gk_draw_by_depth', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'gk:cameraShake': {
+        const int = exprToValueBlock(valueToExpr(stmt.intensity))
+        const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+        return int === null || sec === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_camera_shake', {}, {}, stmt.__id, { INT: int, SEC: sec })
+      }
+      case 'gk:applyGravity': {
+        const g = exprToValueBlock(valueToExpr(stmt.g))
+        return g === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_apply_gravity', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+              G: g,
+            })
+      }
+      case 'gk:jump': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_jump', { WHO: stmt.charVar }, {}, stmt.__id, { FORCE: force })
+      }
+      case 'gk:setVelocity': {
+        const vx = exprToValueBlock(valueToExpr(stmt.vx))
+        const vy = exprToValueBlock(valueToExpr(stmt.vy))
+        return vx === null || vy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_velocity', { WHO: stmt.charVar }, {}, stmt.__id, { VX: vx, VY: vy })
+      }
+      case 'gk:setTerminalVelocity': {
+        const max = exprToValueBlock(valueToExpr(stmt.max))
+        return max === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_terminal_velocity', { WHO: stmt.charVar }, {}, stmt.__id, { MAX: max })
+      }
+      case 'gk:bounceOnEdges':
+        return block('sz_gk_bounce_on_edges', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:paddleBounce':
+        return block(
+          'sz_gk_paddle_bounce',
+          { BALL: stmt.ballVar, PADDLE: stmt.paddleVar },
+          {},
+          stmt.__id,
+        )
+      case 'gk:boardCreate': {
+        const cols = exprToValueBlock(valueToExpr(stmt.cols))
+        const rows = exprToValueBlock(valueToExpr(stmt.rows))
+        const empty = exprToValueBlock(valueToExpr(stmt.empty))
+        return cols === null || rows === null || empty === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_board_create', { NAME: stmt.name }, {}, stmt.__id, {
+              COLS: cols,
+              ROWS: rows,
+              EMPTY: empty,
+            })
+      }
+      case 'gk:boardSet': {
+        const value = exprToValueBlock(valueToExpr(stmt.value))
+        const col = exprToValueBlock(valueToExpr(stmt.col))
+        const row = exprToValueBlock(valueToExpr(stmt.row))
+        return value === null || col === null || row === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_board_set', { NAME: stmt.name }, {}, stmt.__id, {
+              VALUE: value,
+              COL: col,
+              ROW: row,
+            })
+      }
+      case 'gk:playersSetup': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_players_setup', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:nextPlayer':
+        return block('sz_gk_next_player', {}, {}, stmt.__id)
+      case 'gk:onTurnChange':
+        return block('sz_gk_on_turn_change', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'gk:moveAlongTrack': {
+        const spaces = exprToValueBlock(valueToExpr(stmt.spaces))
+        return spaces === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_move_along_track', { WHO: stmt.who, PATH: stmt.path }, {}, stmt.__id, {
+              SPACES: spaces,
+            })
+      }
+      case 'gk:onLandSpace':
+        return block('sz_gk_on_land_space', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'gk:pileMoveTop':
+        return block('sz_gk_pile_move_top', { FROM: stmt.fromVar, TO: stmt.toVar }, {}, stmt.__id)
+      case 'gk:pileShuffleFrom':
+        return block(
+          'sz_gk_pile_shuffle_from',
+          { DECK: stmt.deckVar, DISCARD: stmt.discardVar },
+          {},
+          stmt.__id,
+        )
+      case 'gk:cardFlip': {
+        const card = exprToValueBlock(valueToExpr(stmt.card))
+        return card === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_card_flip', {}, {}, stmt.__id, { CARD: card })
+      }
+      case 'gk:handDraw': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_hand_draw',
+              { PILE: stmt.pileVar, FAN: stmt.fan ? 'TRUE' : 'FALSE' },
+              {},
+              stmt.__id,
+              { X: x, Y: y },
+            )
+      }
+      case 'gk:cardsStart': {
+        const hero = exprToValueBlock(valueToExpr(stmt.heroHp))
+        const enemy = exprToValueBlock(valueToExpr(stmt.enemyHp))
+        return hero === null || enemy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cards_start', {}, {}, stmt.__id, { HERO_HP: hero, ENEMY_HP: enemy })
+      }
+      case 'gk:cardsEnergyPerTurn': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cards_energy_per_turn', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:cardsSpend': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cards_spend', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:cardsOnTurn':
+        return block('sz_gk_cards_on_turn', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'gk:cardsEndTurn':
+        return block('sz_gk_cards_end_turn', {}, {}, stmt.__id)
+      case 'gk:cardsDrawHud':
+        return block('sz_gk_cards_draw_hud', {}, {}, stmt.__id)
+      case 'gk:cardsHurtEnemy': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cards_hurt_enemy', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:cardsHurtMe': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cards_hurt_me', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:cardsGainBlock': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cards_gain_block', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:cardsEnemyIntent': {
+        const v = exprToValueBlock(valueToExpr(stmt.value))
+        return v === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cards_enemy_intent', { ACTION: stmt.action }, {}, stmt.__id, { VALUE: v })
+      }
+      case 'gk:cardsOnEnemyTurn':
+        return block(
+          'sz_gk_cards_on_enemy_turn',
+          {},
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:wrapEdges':
+        return block('sz_gk_wrap_edges', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:collideTilemap':
+        return block('sz_gk_collide_tilemap', { WHO: stmt.charVar, MAP: stmt.map }, {}, stmt.__id)
+      case 'gk:collideGroup':
+        return block('sz_gk_collide_group', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id)
+      case 'gk:overlapGroups':
+        return block(
+          'sz_gk_overlap_groups',
+          { A_NAME: stmt.aName, MOLD_A: stmt.moldA, B_NAME: stmt.bName, MOLD_B: stmt.moldB },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:everySeconds': {
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+              SECS: secs,
+            })
+      }
+      case 'gk:setTileSize': {
+        const px = exprToValueBlock(valueToExpr(stmt.px))
+        return px === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_tile_size', {}, {}, stmt.__id, { PX: px })
+      }
+      case 'gk:setTileAt': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const index = exprToValueBlock(valueToExpr(stmt.index))
+        return x === null || y === null || index === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_tile_at', { MAP: stmt.map }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              INDEX: index,
+            })
+      }
+      case 'gk:breakTileAt':
+        return block('sz_gk_break_tile_at', { MAP: stmt.map, WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:setProperty': {
+        const value = exprToValueBlock(valueToExpr(stmt.value))
+        return value === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_property', { WHO: stmt.charVar, PROP: stmt.prop }, {}, stmt.__id, {
+              VALUE: value,
+            })
+      }
+      case 'gk:setFacingDir':
+        return block('sz_gk_set_facing', { WHO: stmt.charVar, DIR: stmt.dir }, {}, stmt.__id)
+      case 'gk:tweenTo': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return x === null || y === null || secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_tween_to', { WHO: stmt.charVar }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              SECS: secs,
+            })
+      }
+      // 🏃 Kit Plataforma
+      case 'gk:platformerHero': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const jump = exprToValueBlock(valueToExpr(stmt.force))
+        return speed === null || jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_hero', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+              SPEED: speed,
+              JUMP: jump,
+            })
+      }
+      case 'gk:setJumpFeel': {
+        const coyote = exprToValueBlock(valueToExpr(stmt.coyote))
+        const buffer = exprToValueBlock(valueToExpr(stmt.buffer))
+        const hold = exprToValueBlock(valueToExpr(stmt.hold))
+        const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
+        return coyote === null || buffer === null || hold === null || gravity === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_jump_feel', {}, {}, stmt.__id, {
+              COYOTE: coyote,
+              BUFFER: buffer,
+              HOLD: hold,
+              GRAVITY: gravity,
+            })
+      }
+      case 'gk:doubleJump': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        const times = exprToValueBlock(valueToExpr(stmt.times))
+        return force === null || times === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_double_jump', { WHO: stmt.charVar }, {}, stmt.__id, {
+              FORCE: force,
+              TIMES: times,
+            })
+      }
+      case 'gk:wallSlide': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_wall_slide', { WHO: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'gk:wallJump': {
+        const fx = exprToValueBlock(valueToExpr(stmt.forceX))
+        const fy = exprToValueBlock(valueToExpr(stmt.forceY))
+        return fx === null || fy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_wall_jump', { WHO: stmt.charVar }, {}, stmt.__id, { FX: fx, FY: fy })
+      }
+      case 'gk:climbLadder': {
+        const tile = exprToValueBlock(valueToExpr(stmt.tile))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return tile === null || speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_ladder', { WHO: stmt.charVar, MAP: stmt.map }, {}, stmt.__id, {
+              TILE: tile,
+              SPEED: speed,
+            })
+      }
+      case 'gk:oneWayPlatform':
+        return block(
+          'sz_gk_plat_one_way',
+          { WHO: stmt.charVar, MOLD: stmt.mold, DT: stmt.dtVar },
+          {},
+          stmt.__id,
+        )
+      case 'gk:dropThrough':
+        return block('sz_gk_plat_drop_through', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:movingPlatform': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return x1 === null || y1 === null || x2 === null || y2 === null || secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_moving', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+              X1: x1,
+              Y1: y1,
+              X2: x2,
+              Y2: y2,
+              SECS: secs,
+            })
+      }
+      case 'gk:rideOn':
+        return block('sz_gk_plat_ride_on', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id)
+      case 'gk:stompKill': {
+        const bounce = exprToValueBlock(valueToExpr(stmt.bounce))
+        return bounce === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_stomp', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id, {
+              BOUNCE: bounce,
+            })
+      }
+      case 'gk:patrolTurnAtWall': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_patrol_wall', { WHO: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'gk:setCheckpoint': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_plat_checkpoint', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:respawn':
+        return block('sz_gk_plat_respawn', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:platStateFrames': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_plat_state_frames',
+              { WHO: stmt.charVar, STATE: stmt.state },
+              {},
+              stmt.__id,
+              {
+                FROM: from,
+                TO: to,
+                FPS: fps,
+              },
+            )
+      }
+      case 'gk:platformerAnim':
+        return block('sz_gk_plat_anim', { WHO: stmt.charVar }, {}, stmt.__id)
+      // 👾 R16 — Kit Monstrinhos
+      case 'gk:pkmCreature': {
+        const hp = exprToValueBlock(valueToExpr(stmt.hp))
+        const st = exprToValueBlock(valueToExpr(stmt.str))
+        const df = exprToValueBlock(valueToExpr(stmt.def))
+        const sp = exprToValueBlock(valueToExpr(stmt.spd))
+        return hp === null || st === null || df === null || sp === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_pkm_creature',
+              { NAME: stmt.name, TYPE: stmt.creatureType, IMAGE: stmt.image, LOOK: stmt.look },
+              {},
+              stmt.__id,
+              { HP: hp, STR: st, DEF: df, SPD: sp },
+            )
+      }
+      case 'gk:pkmMove': {
+        const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+        const acc = exprToValueBlock(valueToExpr(stmt.acc))
+        return dmg === null || acc === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_pkm_move',
+              {
+                MOVE: stmt.move,
+                CREATURE: stmt.creature,
+                TYPE: stmt.moveType,
+                FX: stmt.fx,
+                COLOR: stmt.color,
+              },
+              {},
+              stmt.__id,
+              { DMG: dmg, ACC: acc },
+            )
+      }
+      case 'gk:pkmTypeChart': {
+        const m = exprToValueBlock(valueToExpr(stmt.mult))
+        return m === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_type_chart', { A: stmt.atk, B: stmt.def }, {}, stmt.__id, { MULT: m })
+      }
+      case 'gk:pkmEvolve': {
+        const l = exprToValueBlock(valueToExpr(stmt.level))
+        return l === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_evolve', { FROM: stmt.from, TO: stmt.to }, {}, stmt.__id, { LEVEL: l })
+      }
+      case 'gk:pkmCatchDifficulty':
+        return block(
+          'sz_gk_pkm_catch_difficulty',
+          { NAME: stmt.creature, LEVEL: stmt.level },
+          {},
+          stmt.__id,
+        )
+      case 'gk:pkmGive': {
+        const l = exprToValueBlock(valueToExpr(stmt.level))
+        return l === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_give', { CREATURE: stmt.creature }, {}, stmt.__id, { LEVEL: l })
+      }
+      case 'gk:pkmGiveBall': {
+        const c = exprToValueBlock(valueToExpr(stmt.count))
+        const pw = exprToValueBlock(valueToExpr(stmt.power))
+        return c === null || pw === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_give_ball', {}, {}, stmt.__id, { COUNT: c, POWER: pw })
+      }
+      case 'gk:pkmHealTeam':
+        return block('sz_gk_pkm_heal_team', {}, {}, stmt.__id)
+      case 'gk:pkmDrawTeam': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_draw_team', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:pkmGrassCells': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+        return x1 === null || y1 === null || x2 === null || y2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_grass_cells', {}, {}, stmt.__id, { X1: x1, Y1: y1, X2: x2, Y2: y2 })
+      }
+      case 'gk:pkmGrassTiles': {
+        const i = exprToValueBlock(valueToExpr(stmt.index))
+        return i === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_grass_tiles', { MAP: stmt.map }, {}, stmt.__id, { INDEX: i })
+      }
+      case 'gk:pkmWild': {
+        const mn = exprToValueBlock(valueToExpr(stmt.min))
+        const mx = exprToValueBlock(valueToExpr(stmt.max))
+        return mn === null || mx === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_wild', { CREATURE: stmt.creature }, {}, stmt.__id, {
+              MIN: mn,
+              MAX: mx,
+            })
+      }
+      case 'gk:pkmEncounterRate': {
+        const p2 = exprToValueBlock(valueToExpr(stmt.percent))
+        return p2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_encounter_rate', {}, {}, stmt.__id, { PCT: p2 })
+      }
+      case 'gk:pkmBattleWild': {
+        const l = exprToValueBlock(valueToExpr(stmt.level))
+        return l === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_battle_wild', { CREATURE: stmt.creature }, {}, stmt.__id, { LEVEL: l })
+      }
+      case 'gk:pkmBattleTrainer':
+        return block(
+          'sz_gk_pkm_battle_trainer',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:pkmTrainerCreature': {
+        const l = exprToValueBlock(valueToExpr(stmt.level))
+        return l === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_pkm_trainer_creature', { CREATURE: stmt.creature }, {}, stmt.__id, {
+              LEVEL: l,
+            })
+      }
+      // 🧭 R15 — primitivos gerais
+      case 'gk:defineRegion': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_define_region', { NAME: stmt.name }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              W: w,
+              H: h,
+            })
+      }
+      case 'gk:launchToPoint': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const sp = exprToValueBlock(valueToExpr(stmt.speed))
+        return x === null || y === null || sp === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_launch_to_point', { WHO: stmt.charVar }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              SPEED: sp,
+            })
+      }
+      case 'gk:setVelocityAngle': {
+        const d = exprToValueBlock(valueToExpr(stmt.degrees))
+        const f2 = exprToValueBlock(valueToExpr(stmt.force))
+        return d === null || f2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_velocity_angle', { WHO: stmt.charVar }, {}, stmt.__id, {
+              DEG: d,
+              FORCE: f2,
+            })
+      }
+      // R21 — primitivos gerais
+      case 'gk:floatText': {
+        const t = exprToValueBlock(valueToExpr(stmt.text))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const sz = exprToValueBlock(valueToExpr(stmt.size))
+        return t === null || x === null || y === null || sz === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_float_text', { COLOR: stmt.color }, {}, stmt.__id, {
+              TEXT: t,
+              X: x,
+              Y: y,
+              SIZE: sz,
+            })
+      }
+      case 'gk:trailOn': {
+        const sz = exprToValueBlock(valueToExpr(stmt.size))
+        const rt = exprToValueBlock(valueToExpr(stmt.rate))
+        const lf = exprToValueBlock(valueToExpr(stmt.life))
+        return sz === null || rt === null || lf === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_trail_on', { WHO: stmt.charVar, COLOR: stmt.color }, {}, stmt.__id, {
+              SIZE: sz,
+              RATE: rt,
+              LIFE: lf,
+            })
+      }
+      case 'gk:trailOff':
+        return block('sz_gk_trail_off', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:shockwave': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const r = exprToValueBlock(valueToExpr(stmt.radius))
+        const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+        return x === null || y === null || r === null || s2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_shockwave', { COLOR: stmt.color }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              RADIUS: r,
+              SECS: s2,
+            })
+      }
+      case 'gk:scrollImage': {
+        const vx = exprToValueBlock(valueToExpr(stmt.vx))
+        const vy = exprToValueBlock(valueToExpr(stmt.vy))
+        return vx === null || vy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_scroll_image', { IMAGE: stmt.image }, {}, stmt.__id, { VX: vx, VY: vy })
+      }
+      case 'gk:leanOnMove': {
+        const d = exprToValueBlock(valueToExpr(stmt.degrees))
+        return d === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_lean_on_move', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: d })
+      }
+      case 'gk:fanShot': {
+        const c = exprToValueBlock(valueToExpr(stmt.count))
+        const a = exprToValueBlock(valueToExpr(stmt.arc))
+        const d = exprToValueBlock(valueToExpr(stmt.degrees))
+        const sp = exprToValueBlock(valueToExpr(stmt.speed))
+        return c === null || a === null || d === null || sp === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_fan_shot', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id, {
+              COUNT: c,
+              ARC: a,
+              DEG: d,
+              SPEED: sp,
+            })
+      }
+      // 🚀 R22 — Kit Nave
+      case 'gk:naveShip': {
+        const sp = exprToValueBlock(valueToExpr(stmt.speed))
+        const ln = exprToValueBlock(valueToExpr(stmt.lean))
+        return sp === null || ln === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_nave_ship', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+              SPEED: sp,
+              LEAN: ln,
+            })
+      }
+      case 'gk:navePowerup': {
+        const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+        return s2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_nave_powerup', { POWER: stmt.power, WHO: stmt.charVar }, {}, stmt.__id, {
+              SECS: s2,
+            })
+      }
+      case 'gk:naveWave': {
+        const c = exprToValueBlock(valueToExpr(stmt.cols))
+        const r = exprToValueBlock(valueToExpr(stmt.rows))
+        const g = exprToValueBlock(valueToExpr(stmt.gap))
+        const sp = exprToValueBlock(valueToExpr(stmt.speed))
+        const dr = exprToValueBlock(valueToExpr(stmt.drop))
+        const ac = exprToValueBlock(valueToExpr(stmt.accel))
+        return c === null || r === null || g === null || sp === null || dr === null || ac === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_nave_wave', { MOLD: stmt.mold }, {}, stmt.__id, {
+              COLS: c,
+              ROWS: r,
+              GAP: g,
+              SPEED: sp,
+              DROP: dr,
+              ACCEL: ac,
+            })
+      }
+      case 'gk:naveWaveShooter': {
+        const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+        const sp = exprToValueBlock(valueToExpr(stmt.speed))
+        return s2 === null || sp === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_nave_wave_shooter',
+              { MOLD: stmt.mold, BULLET: stmt.bullet },
+              {},
+              stmt.__id,
+              { SECS: s2, SPEED: sp },
+            )
+      }
+      case 'gk:naveInvasionLine': {
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_nave_invasion_line', {}, {}, stmt.__id, { Y: y })
+      }
+      case 'gk:naveStarfield': {
+        const c = exprToValueBlock(valueToExpr(stmt.count))
+        const sp = exprToValueBlock(valueToExpr(stmt.speed))
+        return c === null || sp === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_nave_starfield', {}, {}, stmt.__id, { COUNT: c, SPEED: sp })
+      }
+      case 'gk:naveBomb': {
+        const r = exprToValueBlock(valueToExpr(stmt.radius))
+        return r === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_nave_bomb', { MOLD: stmt.mold, TARGET: stmt.target }, {}, stmt.__id, {
+              RADIUS: r,
+            })
+      }
+      // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+      case 'gk:definePath':
+        return block(
+          'sz_gk_define_path',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:pathPoint': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_path_point', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:followPath': {
+        const sp = exprToValueBlock(valueToExpr(stmt.speed))
+        return sp === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_follow_path',
+              { WHO: stmt.charVar, PATH: stmt.path, DT: stmt.dtVar },
+              {},
+              stmt.__id,
+              {
+                SPEED: sp,
+              },
+            )
+      }
+      case 'gk:parallaxLayer': {
+        const fx = exprToValueBlock(valueToExpr(stmt.fx))
+        const fy = exprToValueBlock(valueToExpr(stmt.fy))
+        return fx === null || fy === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_parallax_layer', { IMAGE: stmt.image }, {}, stmt.__id, { FX: fx, FY: fy })
+      }
+      case 'gk:sheetBurst': {
+        const fr = exprToValueBlock(valueToExpr(stmt.frames))
+        const fp = exprToValueBlock(valueToExpr(stmt.fps))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const sz = exprToValueBlock(valueToExpr(stmt.size))
+        return fr === null || fp === null || x === null || y === null || sz === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_sheet_burst', { IMAGE: stmt.image }, {}, stmt.__id, {
+              FRAMES: fr,
+              FPS: fp,
+              X: x,
+              Y: y,
+              SIZE: sz,
+            })
+      }
+      // 🏰 R26 — Kit Defesa de Torre
+      case 'gk:tdWave': {
+        const count = exprToValueBlock(valueToExpr(stmt.count))
+        const gap = exprToValueBlock(valueToExpr(stmt.gap))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return count === null || gap === null || speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_td_wave', { PATH: stmt.path, MOLD: stmt.mold }, {}, stmt.__id, {
+              COUNT: count,
+              GAP: gap,
+              SPEED: speed,
+            })
+      }
+      case 'gk:tdSlot': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const sz = exprToValueBlock(valueToExpr(stmt.size))
+        return x === null || y === null || sz === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_td_slot', {}, {}, stmt.__id, { X: x, Y: y, SIZE: sz })
+      }
+      case 'gk:tdDrawSlots':
+        return block('sz_gk_td_draw_slots', {}, {}, stmt.__id)
+      case 'gk:tdOnBuy': {
+        const cost = exprToValueBlock(valueToExpr(stmt.cost))
+        return cost === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_td_on_buy',
+              { PX: stmt.xName, PY: stmt.yName },
+              { BODY: statementsToBlocks(stmt.body) },
+              stmt.__id,
+              { COST: cost },
+            )
+      }
+      case 'gk:tdFreeSlot': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_td_free_slot', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:tdDrawRange': {
+        const r = exprToValueBlock(valueToExpr(stmt.radius))
+        return r === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_td_draw_range', { WHO: stmt.charVar }, {}, stmt.__id, { RADIUS: r })
+      }
+      case 'gk:tdSetCoins': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_td_set_coins', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:tdAddCoins': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_td_add_coins', {}, {}, stmt.__id, { N: n })
+      }
+      case 'gk:setOpacity': {
+        const p = exprToValueBlock(valueToExpr(stmt.percent))
+        return p === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_opacity', { WHO: stmt.charVar }, {}, stmt.__id, { PCT: p })
+      }
+      case 'gk:fadeTo': {
+        const p = exprToValueBlock(valueToExpr(stmt.percent))
+        const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+        return p === null || s2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_fade_to', { WHO: stmt.charVar }, {}, stmt.__id, { PCT: p, SECS: s2 })
+      }
+      case 'gk:tweenProperty': {
+        const t = exprToValueBlock(valueToExpr(stmt.to))
+        const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+        return t === null || s2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_tween_property', { WHO: stmt.charVar, PROP: stmt.prop }, {}, stmt.__id, {
+              TO: t,
+              SECS: s2,
+            })
+      }
+      case 'gk:lutaMatch': {
+        const rounds = exprToValueBlock(valueToExpr(stmt.rounds))
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return rounds === null || secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_luta_match', { P1: stmt.p1Var, P2: stmt.p2Var }, {}, stmt.__id, {
+              ROUNDS: rounds,
+              SECS: secs,
+            })
+      }
+      case 'gk:lutaDrawHud':
+        return block('sz_gk_luta_draw_hud', {}, {}, stmt.__id)
+      case 'gk:lutaFighter':
+        return block(
+          'sz_gk_luta_fighter',
+          {
+            WHO: stmt.charVar,
+            LEFT: stmt.left,
+            RIGHT: stmt.right,
+            JUMP: stmt.jump,
+            CROUCH: stmt.crouch,
+            GUARD: stmt.guard,
+            DT: stmt.dtVar,
+          },
+          {},
+          stmt.__id,
+        )
+      case 'gk:lutaAI':
+        return block('sz_gk_luta_ai', { WHO: stmt.charVar, LEVEL: stmt.level }, {}, stmt.__id)
+      case 'gk:lutaMove': {
+        const dmg = exprToValueBlock(valueToExpr(stmt.damage))
+        const range = exprToValueBlock(valueToExpr(stmt.range))
+        return dmg === null || range === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_luta_move',
+              {
+                NAME: stmt.name,
+                WHO: stmt.charVar,
+                SPEED: stmt.speed,
+                PIERCE: stmt.pierce ? 'TRUE' : 'FALSE',
+                SPECIAL: stmt.special ? 'TRUE' : 'FALSE',
+              },
+              {},
+              stmt.__id,
+              { DMG: dmg, RANGE: range },
+            )
+      }
+      case 'gk:lutaMoveAnim': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        return from === null || to === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_luta_move_anim', { NAME: stmt.name, WHO: stmt.charVar }, {}, stmt.__id, {
+              FROM: from,
+              TO: to,
+            })
+      }
+      case 'gk:lutaAttack':
+        return block('sz_gk_luta_attack', { WHO: stmt.charVar, MOVE: stmt.move }, {}, stmt.__id)
+      case 'gk:setSwingWindow': {
+        const start = exprToValueBlock(valueToExpr(stmt.start))
+        const active = exprToValueBlock(valueToExpr(stmt.active))
+        return start === null || active === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_swing_window', { WHO: stmt.charVar }, {}, stmt.__id, {
+              START: start,
+              ACTIVE: active,
+            })
+      }
+      case 'gk:playAnimOnce': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_play_anim_once', { WHO: stmt.charVar }, {}, stmt.__id, {
+              FROM: from,
+              TO: to,
+              FPS: fps,
+            })
+      }
+      case 'gk:setEntityState': {
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return secs === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_set_entity_state',
+              { WHO: stmt.charVar, STATE: stmt.state },
+              {},
+              stmt.__id,
+              {
+                SECS: secs,
+              },
+            )
+      }
+      case 'gk:stateAnim': {
+        const from = exprToValueBlock(valueToExpr(stmt.from))
+        const to = exprToValueBlock(valueToExpr(stmt.to))
+        const fps = exprToValueBlock(valueToExpr(stmt.fps))
+        return from === null || to === null || fps === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_state_anim',
+              { WHO: stmt.charVar, STATE: stmt.state, ONCE: stmt.once ? 'TRUE' : 'FALSE' },
+              {},
+              stmt.__id,
+              { FROM: from, TO: to, FPS: fps },
+            )
+      }
+      case 'gk:stateLook':
+        return block(
+          'sz_gk_state_look',
+          { WHO: stmt.charVar, STATE: stmt.state, LOOK: stmt.look },
+          {},
+          stmt.__id,
+        )
+      case 'gk:autoAnimate':
+        return block('sz_gk_auto_animate', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:thrust': {
+        const deg = exprToValueBlock(valueToExpr(stmt.degrees))
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return deg === null || force === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_thrust', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: deg, FORCE: force })
+      }
+      case 'gk:applyFriction': {
+        const factor = exprToValueBlock(valueToExpr(stmt.factor))
+        return factor === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_apply_friction', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+              FACTOR: factor,
+            })
+      }
+      case 'gk:waitThen': {
+        const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+        return secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_wait', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+              SECS: secs,
+            })
+      }
+      case 'gk:setHitbox': {
+        const ox = exprToValueBlock(valueToExpr(stmt.ox))
+        const oy = exprToValueBlock(valueToExpr(stmt.oy))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return ox === null || oy === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_hitbox', { WHO: stmt.charVar }, {}, stmt.__id, {
+              OX: ox,
+              OY: oy,
+              W: w,
+              H: h,
+            })
+      }
+      case 'gk:setHitboxShape': {
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        return radius === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_set_hitbox_shape',
+              { WHO: stmt.charVar, SHAPE: stmt.shape },
+              {},
+              stmt.__id,
+              {
+                RADIUS: radius,
+              },
+            )
+      }
+      case 'gk:fadeScreen': {
+        const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+        return s2 === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_fade_screen',
+              { COLOR: stmt.color, DIR: stmt.toDark ? 'escurecer' : 'clarear' },
+              {},
+              stmt.__id,
+              { SECS: s2 },
+            )
+      }
+      case 'gk:flashScreen': {
+        const t = exprToValueBlock(valueToExpr(stmt.times))
+        return t === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_flash_screen', { COLOR: stmt.color }, {}, stmt.__id, { TIMES: t })
+      }
+      case 'gk:saveValue': {
+        const v = exprToValueBlock(stmt.value)
+        return v === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_save_value', { NAME: stmt.name }, {}, stmt.__id, { VALUE: v })
+      }
+      case 'gk:playMusic':
+        return block('sz_gk_play_music', { SOUND: stmt.sound }, {}, stmt.__id)
+      case 'gk:stopSound':
+        return block('sz_gk_stop_sound', { SOUND: stmt.sound }, {}, stmt.__id)
+      case 'gk:setVolume': {
+        const l = exprToValueBlock(valueToExpr(stmt.level))
+        return l === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_volume', { SOUND: stmt.sound }, {}, stmt.__id, { LEVEL: l })
+      }
+      case 'gk:createEmptyTilemap': {
+        const c = exprToValueBlock(valueToExpr(stmt.cols))
+        const r = exprToValueBlock(valueToExpr(stmt.rows))
+        const fi = exprToValueBlock(valueToExpr(stmt.fill))
+        return c === null || r === null || fi === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_create_empty_tilemap',
+              { NAME: stmt.name, ASSET: stmt.asset },
+              {},
+              stmt.__id,
+              { COLS: c, ROWS: r, FILL: fi },
+            )
+      }
+      case 'gk:moveWithCustomKeys':
+        return block(
+          'sz_gk_move_with_custom_keys',
+          {
+            WHO: stmt.charVar,
+            UP: stmt.up,
+            DOWN: stmt.down,
+            LEFT: stmt.left,
+            RIGHT: stmt.right,
+            DT: stmt.dtVar,
+          },
+          {},
+          stmt.__id,
+        )
+      case 'gk:attackFacing': {
+        const range = exprToValueBlock(valueToExpr(stmt.range))
+        const dur = exprToValueBlock(valueToExpr(stmt.duration))
+        return range === null || dur === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_attack_facing', { WHO: stmt.charVar }, {}, stmt.__id, {
+              RANGE: range,
+              DUR: dur,
+            })
+      }
+      case 'gk:patrolAround': {
+        const ox = exprToValueBlock(valueToExpr(stmt.ox))
+        const oy = exprToValueBlock(valueToExpr(stmt.oy))
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        return ox === null || oy === null || radius === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_patrol_around', { WHO: stmt.charVar }, {}, stmt.__id, {
+              OX: ox,
+              OY: oy,
+              RADIUS: radius,
+            })
+      }
+      case 'gk:drawHearts': {
+        const cur = exprToValueBlock(valueToExpr(stmt.current))
+        const mx = exprToValueBlock(valueToExpr(stmt.max))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return cur === null || mx === null || x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_draw_hearts', {}, {}, stmt.__id, { CUR: cur, MAX: mx, X: x, Y: y })
+      }
+      case 'gk:drawBackground':
+        return block(
+          'sz_gk_draw_background',
+          { COLOR: stmt.color, GRID: stmt.grid ? 'TRUE' : 'FALSE' },
+          {},
+          stmt.__id,
+        )
+      case 'gk:createCharacter': {
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return w === null || h === null || speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_create_character',
+              { NAME: stmt.varName, IMAGE: stmt.image, COLOR: stmt.color },
+              {},
+              stmt.__id,
+              { W: w, H: h, SPEED: speed },
+            )
+      }
+      case 'gk:moveWithKeys':
+        return block('sz_gk_move_with_keys', { CHAR: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
+      case 'gk:keepOnScreen':
+        return block('sz_gk_keep_on_screen', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'gk:drawCharacter':
+        return block('sz_gk_draw_character', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'gk:placeCharacter': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_place_character', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:resetCharacter':
+        return block('sz_gk_reset_character', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'gk:setSpeedMultiplier': {
+        const factor = exprToValueBlock(valueToExpr(stmt.factor))
+        return factor === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_speed_multiplier', { CHAR: stmt.charVar }, {}, stmt.__id, {
+              FACTOR: factor,
+            })
+      }
+      case 'gk:setPauseKey':
+        return block('sz_gk_set_pause_key', { KEY: stmt.key }, {}, stmt.__id)
+      // ----- game-2d-advanced P24 -----
+      case 'gk:onEvent':
+        return block(
+          'sz_gk_on_event',
+          { NAME: stmt.event },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:emit':
+        return block('sz_gk_emit', { NAME: stmt.event }, {}, stmt.__id)
+      case 'gk:defineMold': {
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        const health = exprToValueBlock(valueToExpr(stmt.health))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const damage = exprToValueBlock(valueToExpr(stmt.damage))
+        return w === null || h === null || health === null || speed === null || damage === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_define_mold',
+              {
+                NAME: stmt.name,
+                COLOR: stmt.color,
+                IMAGE: stmt.image,
+                LOOK: stmt.look,
+                SHAPE: stmt.shape === 'circulo' ? 'circulo' : 'retangulo',
+              },
+              {},
+              stmt.__id,
+              { W: w, H: h, HEALTH: health, SPEED: speed, DAMAGE: damage },
+            )
+      }
+      case 'gk:spawnFromMold': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_spawn_from_mold', { MOLD: stmt.mold }, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:startSpawner': {
+        const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+        return sec === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_start_spawner', { MOLD: stmt.mold }, {}, stmt.__id, { SEC: sec })
+      }
+      case 'gk:stopSpawner':
+        return block('sz_gk_stop_spawner', { MOLD: stmt.mold }, {}, stmt.__id)
+      case 'gk:spawnNamed': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_spawn_named', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+            })
+      }
+      case 'gk:forEachActive':
+        return block(
+          'sz_gk_for_each_active',
+          { MOLD: stmt.mold, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:cullOffscreen': {
+        const margin = exprToValueBlock(valueToExpr(stmt.margin))
+        return margin === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_cull_offscreen', { MOLD: stmt.mold }, {}, stmt.__id, { MARGIN: margin })
+      }
+      case 'gk:recycle':
+        return block('sz_gk_recycle', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'gk:drawActive':
+        return block('sz_gk_draw_active', { MOLD: stmt.mold }, {}, stmt.__id)
+      case 'gk:defineLook': {
+        // IR v0.2 (sem tamanho-base) normaliza p/ 40×40 — o default do runtime;
+        // o shouldEmitAsShadow marca os literais como SOMBRA (preset editável).
+        const baseW = exprToValueBlock(valueToExpr(stmt.baseW ?? 40))
+        const baseH = exprToValueBlock(valueToExpr(stmt.baseH ?? 40))
+        return baseW === null || baseH === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_gk_define_look',
+              { NAME: stmt.name, CTX: stmt.ctxName },
+              { BODY: statementsToBlocks(stmt.body) },
+              stmt.__id,
+              { W: baseW, H: baseH },
+            )
+      }
+      case 'gk:drawLook': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        return x === null || y === null || w === null || h === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_draw_look', { LOOK: stmt.look }, {}, stmt.__id, { X: x, Y: y, W: w, H: h })
+      }
+      case 'gk:seek':
+        return block(
+          'sz_gk_seek',
+          { WHO: stmt.charVar, TARGET: stmt.targetVar, DT: stmt.dtVar },
+          {},
+          stmt.__id,
+        )
+      case 'gk:drift':
+        return block('sz_gk_drift', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
+      case 'gk:face':
+        return block('sz_gk_face', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
+      case 'gk:hurt': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        const iframes = exprToValueBlock(valueToExpr(stmt.iframes))
+        return amount === null || iframes === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_hurt', { WHO: stmt.charVar }, {}, stmt.__id, {
+              AMOUNT: amount,
+              IFRAMES: iframes,
+            })
+      }
+      case 'gk:knockback': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_knockback', { WHO: stmt.charVar, FROM: stmt.fromVar }, {}, stmt.__id, {
+              FORCE: force,
+            })
+      }
+      case 'gk:drawHealthBar': {
+        const max = exprToValueBlock(valueToExpr(stmt.max))
+        return max === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_draw_health_bar', { WHO: stmt.charVar }, {}, stmt.__id, { MAX: max })
+      }
+      case 'gk:setMission': {
+        const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+        const kills = exprToValueBlock(valueToExpr(stmt.killCount))
+        return sec === null || kills === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_set_mission', {}, {}, stmt.__id, { SEC: sec, KILLS: kills })
+      }
+      case 'gk:missionKill':
+        return block('sz_gk_mission_kill', {}, {}, stmt.__id)
+      case 'gk:drawTimer': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_draw_timer', {}, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:defineEffect': {
+        const count = exprToValueBlock(valueToExpr(stmt.count))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        const life = exprToValueBlock(valueToExpr(stmt.life))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
+        return count === null ||
+          size === null ||
+          life === null ||
+          speed === null ||
+          gravity === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_define_effect', { NAME: stmt.name, COLOR: stmt.color }, {}, stmt.__id, {
+              COUNT: count,
+              SIZE: size,
+              LIFE: life,
+              SPEED: speed,
+              GRAVITY: gravity,
+            })
+      }
+      case 'gk:burst': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return x === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_burst', { EFFECT: stmt.effect }, {}, stmt.__id, { X: x, Y: y })
+      }
+      case 'gk:drawEffects':
+        return block('sz_gk_draw_effects', {}, {}, stmt.__id)
+      case 'gk:loadSound':
+        return block('sz_gk_load_sound', { NAME: stmt.name, SOUND: stmt.asset }, {}, stmt.__id)
+      case 'gk:playSound':
+        return block('sz_gk_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+      case 'gk:playEffect':
+        return block('sz_gk_play_effect', { FX: stmt.fx }, {}, stmt.__id)
+      case 'gk:playTone': {
+        const freq = exprToValueBlock(valueToExpr(stmt.freq))
+        const ms = exprToValueBlock(valueToExpr(stmt.ms))
+        return freq === null || ms === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
+      }
+      default:
+        throw new Error(`Statement de extensão sem codec Blockly: ${stmt.type}`)
+    }
+  }
+
+  function gameKitThreeDStatementToBlock(): SerializedBlocklyBlock {
+    switch (stmt.type) {
+      // ---- Jogo 3D Avançado (game-3d-advanced) ----
+      case 'g3k:setup': {
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        const world = exprToValueBlock(valueToExpr(stmt.world))
+        return w === null || h === null || world === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_setup', { SKY: stmt.sky, GROUND: stmt.ground }, {}, stmt.__id, {
+              W: w,
+              H: h,
+              SIZE: world,
+            })
+      }
+      case 'g3k:scatterDecor': {
+        const count = exprToValueBlock(valueToExpr(stmt.count))
+        return count === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_scatter_decor', {}, {}, stmt.__id, { COUNT: count })
+      }
+      case 'g3k:setEffects': {
+        const strength = exprToValueBlock(valueToExpr(stmt.strength))
+        return strength === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_set_effects',
+              {
+                SHADOWS: stmt.shadows ? 'TRUE' : 'FALSE',
+                BLOOM: stmt.bloom ? 'TRUE' : 'FALSE',
+                VIGNETTE: stmt.vignette ? 'TRUE' : 'FALSE',
+              },
+              {},
+              stmt.__id,
+              { STRENGTH: strength },
+            )
+      }
+      case 'g3k:start':
+        return block('sz_g3k_start', {}, {}, stmt.__id)
+      case 'g3k:defineMold': {
+        const health = exprToValueBlock(valueToExpr(stmt.health))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return health === null || speed === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_define_mold',
+              { NAME: stmt.name },
+              { BODY: statementsToBlocks(stmt.body) },
+              stmt.__id,
+              { HEALTH: health, SPEED: speed },
+            )
+      }
+      case 'g3k:part': {
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        const d = exprToValueBlock(valueToExpr(stmt.d))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return w === null || h === null || d === null || x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_part',
+              {
+                SHAPE: stmt.shape,
+                MATERIAL: stmt.material,
+                COLOR: stmt.color,
+                TEXTURE: stmt.texture,
+                MODEL: stmt.model,
+              },
+              {},
+              stmt.__id,
+              { W: w, H: h, D: d, X: x, Y: y, Z: z },
+            )
+      }
+      case 'g3k:spawn': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_spawn', { MOLD: stmt.mold }, {}, stmt.__id, { X: x, Y: y, Z: z })
+      }
+      case 'g3k:spawnNamed': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_spawn_named', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              Z: z,
+            })
+      }
+      case 'g3k:spawnFrom':
+        return block('sz_g3k_spawn_from', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id)
+      case 'g3k:spawnRing': {
+        const count = exprToValueBlock(valueToExpr(stmt.count))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return count === null || speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_spawn_ring', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id, {
+              COUNT: count,
+              SPEED: speed,
+            })
+      }
+      case 'g3k:startSpawner': {
+        const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+        return sec === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_start_spawner', { MOLD: stmt.mold, WHERE: stmt.where }, {}, stmt.__id, {
+              SEC: sec,
+            })
+      }
+      case 'g3k:stopSpawner':
+        return block('sz_g3k_stop_spawner', { MOLD: stmt.mold }, {}, stmt.__id)
+      case 'g3k:forEachAlive':
+        return block(
+          'sz_g3k_for_each_alive',
+          { MOLD: stmt.mold, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:recycle':
+        return block('sz_g3k_recycle', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:recycleAll':
+        return block('sz_g3k_recycle_all', { MOLD: stmt.mold }, {}, stmt.__id)
+      case 'g3k:cullFar': {
+        const dist = exprToValueBlock(valueToExpr(stmt.dist))
+        return dist === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_cull_far', { MOLD: stmt.mold }, {}, stmt.__id, { DIST: dist })
+      }
+      case 'g3k:onUpdate':
+        return block(
+          'sz_g3k_on_update',
+          { DT: stmt.dtName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:moveWithKeys': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_move_with_keys', { CHAR: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g3k:setPauseKey':
+        return block('sz_g3k_set_pause_key', { KEY: stmt.key }, {}, stmt.__id)
+      case 'g3k:cameraFollow': {
+        const dist = exprToValueBlock(valueToExpr(stmt.dist))
+        const height = exprToValueBlock(valueToExpr(stmt.height))
+        return dist === null || height === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_follow', { CHAR: stmt.charVar }, {}, stmt.__id, {
+              DIST: dist,
+              HEIGHT: height,
+            })
+      }
+      case 'g3k:cameraOrbit': {
+        const dist = exprToValueBlock(valueToExpr(stmt.dist))
+        return dist === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_orbit', {}, {}, stmt.__id, { DIST: dist })
+      }
+      case 'g3k:cameraTop': {
+        const height = exprToValueBlock(valueToExpr(stmt.height))
+        return height === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_top', {}, {}, stmt.__id, { HEIGHT: height })
+      }
+      case 'g3k:cameraAngle': {
+        const az = exprToValueBlock(valueToExpr(stmt.az))
+        const el = exprToValueBlock(valueToExpr(stmt.el))
+        return az === null || el === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_angle', {}, {}, stmt.__id, { AZ: az, EL: el })
+      }
+      case 'g3k:cameraDistance': {
+        const dist = exprToValueBlock(valueToExpr(stmt.dist))
+        return dist === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_distance', {}, {}, stmt.__id, { DIST: dist })
+      }
+      case 'g3k:cameraShake': {
+        const strength = exprToValueBlock(valueToExpr(stmt.strength))
+        const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
+        return strength === null || seconds === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_shake', {}, {}, stmt.__id, {
+              STRENGTH: strength,
+              SECONDS: seconds,
+            })
+      }
+      case 'g3k:cameraLens': {
+        const fov = exprToValueBlock(valueToExpr(stmt.fov))
+        return fov === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_lens', {}, {}, stmt.__id, { FOV: fov })
+      }
+      case 'g3k:cameraLookAt':
+        return block('sz_g3k_camera_look_at', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:cameraLookAtPoint': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_look_at_point', {}, {}, stmt.__id, { X: x, Y: y, Z: z })
+      }
+      case 'g3k:cameraSmooth': {
+        const lambda = exprToValueBlock(valueToExpr(stmt.lambda))
+        return lambda === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_camera_smooth', {}, {}, stmt.__id, { LAMBDA: lambda })
+      }
+      case 'g3k:place': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_place', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+      }
+      case 'g3k:setYaw': {
+        const deg = exprToValueBlock(valueToExpr(stmt.degrees))
+        return deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_yaw', { CHAR: stmt.charVar }, {}, stmt.__id, { DEG: deg })
+      }
+      case 'g3k:setVelocity': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_velocity', { CHAR: stmt.charVar }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              Z: z,
+            })
+      }
+      case 'g3k:setDrag': {
+        const drag = exprToValueBlock(valueToExpr(stmt.drag))
+        return drag === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_drag', { CHAR: stmt.charVar }, {}, stmt.__id, { DRAG: drag })
+      }
+      case 'g3k:setEntityValue': {
+        const value = exprToValueBlock(stmt.value)
+        return value === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_entity_value', { CHAR: stmt.charVar, KEY: stmt.key }, {}, stmt.__id, {
+              VALUE: value,
+            })
+      }
+      case 'g3k:lookAt':
+        return block('sz_g3k_look_at', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
+      case 'g3k:moveForward': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_move_forward', { WHO: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g3k:fall': {
+        const g = exprToValueBlock(valueToExpr(stmt.g))
+        return g === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_fall', { CHAR: stmt.charVar }, {}, stmt.__id, { G: g })
+      }
+      case 'g3k:jump': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_jump', { CHAR: stmt.charVar }, {}, stmt.__id, { FORCE: force })
+      }
+      case 'g3k:makeSolid':
+        return block('sz_g3k_make_solid', { MOLD: stmt.mold }, {}, stmt.__id)
+      case 'g3k:setSeed': {
+        const seed = exprToValueBlock(valueToExpr(stmt.seed))
+        return seed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_seed', {}, {}, stmt.__id, { SEED: seed })
+      }
+      case 'g3k:makeTrigger':
+        return block('sz_g3k_make_trigger', { MOLD: stmt.mold }, {}, stmt.__id)
+      case 'g3k:setCollider':
+        return block('sz_g3k_set_collider', { MOLD: stmt.mold, SHAPE: stmt.shape }, {}, stmt.__id)
+      case 'g3k:setPhysics':
+        return block('sz_g3k_set_physics', { MOLD: stmt.mold, KIND: stmt.kind }, {}, stmt.__id)
+      case 'g3k:playAnim':
+        return block(
+          'sz_g3k_play_anim',
+          { CHAR: stmt.charVar, CLIP: stmt.clip, LOOP: stmt.loop ? 'LOOP' : 'ONCE' },
+          {},
+          stmt.__id,
+        )
+      case 'g3k:stopAnim':
+        return block('sz_g3k_stop_anim', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:setStateAnim':
+        return block(
+          'sz_g3k_state_anim',
+          { MOLD: stmt.mold, STATE: stmt.state, CLIP: stmt.clip },
+          {},
+          stmt.__id,
+        )
+      case 'g3k:playMusic':
+        return block('sz_g3k_play_music', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g3k:stopMusic':
+        return block('sz_g3k_stop_music', {}, {}, stmt.__id)
+      case 'g3k:startTimer': {
+        const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
+        return seconds === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_start_timer', {}, {}, stmt.__id, { SECONDS: seconds })
+      }
+      case 'g3k:stopTimer':
+        return block('sz_g3k_stop_timer', {}, {}, stmt.__id)
+      case 'g3k:onTimerEnd':
+        return block('sz_g3k_on_timer_end', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'g3k:say': {
+        const textValue = exprToValueBlock(valueToExpr(stmt.text))
+        const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
+        return textValue === null || seconds === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_say', { CHAR: stmt.charVar }, {}, stmt.__id, {
+              TEXT: textValue,
+              SECONDS: seconds,
+            })
+      }
+      case 'g3k:hideSay':
+        return block('sz_g3k_hide_say', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:passThrough':
+        return block(
+          'sz_g3k_pass_through',
+          { CHAR: stmt.charVar, GHOST: stmt.ghost ? 'TRUE' : 'FALSE' },
+          {},
+          stmt.__id,
+        )
+      case 'g3k:showHealthBar':
+        return block(
+          'sz_g3k_show_health_bar',
+          { MOLD: stmt.mold, ON: stmt.on ? 'TRUE' : 'FALSE' },
+          {},
+          stmt.__id,
+        )
+      case 'g3k:onOverlap':
+        return block(
+          'sz_g3k_on_overlap',
+          { ZONE: stmt.zoneName, MOLD: stmt.mold, WHO: stmt.whoName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:setBounce': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        return amount === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_bounce', { MOLD: stmt.mold }, {}, stmt.__id, { AMOUNT: amount })
+      }
+      case 'g3k:setFriction': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        return amount === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_friction', { MOLD: stmt.mold }, {}, stmt.__id, { AMOUNT: amount })
+      }
+      case 'g3k:platformerKeys': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return speed === null || jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_platformer_keys', { CHAR: stmt.charVar }, {}, stmt.__id, {
+              SPEED: speed,
+              JUMP: jump,
+            })
+      }
+      case 'g3k:addLight': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
+        return x === null || y === null || z === null || intensity === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_add_light', { COLOR: stmt.color }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              Z: z,
+              INTENSITY: intensity,
+            })
+      }
+      case 'g3k:setAmbient': {
+        const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
+        return intensity === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_ambient', {}, {}, stmt.__id, { INTENSITY: intensity })
+      }
+      case 'g3k:setFog': {
+        const near = exprToValueBlock(valueToExpr(stmt.near))
+        const far = exprToValueBlock(valueToExpr(stmt.far))
+        return near === null || far === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_fog', { COLOR: stmt.color }, {}, stmt.__id, { NEAR: near, FAR: far })
+      }
+      case 'g3k:setSkyPhoto':
+        return block('sz_g3k_set_sky_photo', { PHOTO: stmt.photo }, {}, stmt.__id)
+      case 'g3k:setSky':
+        return block('sz_g3k_set_sky', { TOP: stmt.top, BOTTOM: stmt.bottom }, {}, stmt.__id)
+      case 'g3k:pick':
+        return block('sz_g3k_pick', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id)
+      case 'g3k:cameraFps':
+        return block('sz_g3k_camera_fps', { CHAR: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:moveFps': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        return speed === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_move_fps', { CHAR: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g3k:onEnterEntityState':
+        return block(
+          'sz_g3k_on_enter_entity_state',
+          { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:onEntityStateUpdate':
+        return block(
+          'sz_g3k_on_entity_state_update',
+          { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state, DT: stmt.dtName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:onExitEntityState':
+        return block(
+          'sz_g3k_on_exit_entity_state',
+          { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:setEntityState':
+        return block(
+          'sz_g3k_set_entity_state',
+          { CHAR: stmt.charVar, STATE: stmt.state },
+          {},
+          stmt.__id,
+        )
+      case 'g3k:stateTimer': {
+        const sec = exprToValueBlock(valueToExpr(stmt.sec))
+        return sec === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_state_timer',
+              { MOLD: stmt.mold, STATE: stmt.state, NEXT: stmt.next },
+              {},
+              stmt.__id,
+              { SEC: sec },
+            )
+      }
+      case 'g3k:seek':
+        return block('sz_g3k_seek', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
+      case 'g3k:seekPoint': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_seek_point', { WHO: stmt.charVar }, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'g3k:aimAt': {
+        const smooth = exprToValueBlock(valueToExpr(stmt.smooth))
+        return smooth === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_aim_at', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id, {
+              SMOOTH: smooth,
+            })
+      }
+      case 'g3k:faceVelocity':
+        return block('sz_g3k_face_velocity', { WHO: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:forEachNear': {
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        return radius === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_for_each_near',
+              { ITEM: stmt.itemName, MOLD: stmt.mold, CHAR: stmt.charVar },
+              { BODY: statementsToBlocks(stmt.body) },
+              stmt.__id,
+              { RADIUS: radius },
+            )
+      }
+      case 'g3k:storeNearest':
+        return block(
+          'sz_g3k_store_nearest',
+          { NAME: stmt.varName, MOLD: stmt.mold, CHAR: stmt.charVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3k:hurt': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        return amount === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_hurt', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
+      }
+      case 'g3k:heal': {
+        const amount = exprToValueBlock(valueToExpr(stmt.amount))
+        return amount === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_heal', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
+      }
+      case 'g3k:onEntityDeath':
+        return block(
+          'sz_g3k_on_entity_death',
+          { ITEM: stmt.itemName, MOLD: stmt.mold },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:onHurt':
+        return block(
+          'sz_g3k_on_hurt',
+          { ITEM: stmt.itemName, MOLD: stmt.mold },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:defineEffect': {
+        const count = exprToValueBlock(valueToExpr(stmt.count))
+        const spread = exprToValueBlock(valueToExpr(stmt.spread))
+        const s1 = exprToValueBlock(valueToExpr(stmt.sizeFrom))
+        const s2 = exprToValueBlock(valueToExpr(stmt.sizeTo))
+        const life = exprToValueBlock(valueToExpr(stmt.life))
+        const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
+        return count === null ||
+          spread === null ||
+          s1 === null ||
+          s2 === null ||
+          life === null ||
+          gravity === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_define_effect',
+              { NAME: stmt.name, C1: stmt.colorFrom, C2: stmt.colorTo },
+              {},
+              stmt.__id,
+              { COUNT: count, SPREAD: spread, S1: s1, S2: s2, LIFE: life, GRAVITY: gravity },
+            )
+      }
+      case 'g3k:burstAt': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_burst_at', { EFFECT: stmt.effect }, {}, stmt.__id, { X: x, Y: y, Z: z })
+      }
+      case 'g3k:burstOn':
+        return block('sz_g3k_burst_on', { EFFECT: stmt.effect, WHO: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:defineEmitter': {
+        const s1 = exprToValueBlock(valueToExpr(stmt.sizeFrom))
+        const s2 = exprToValueBlock(valueToExpr(stmt.sizeTo))
+        const rate = exprToValueBlock(valueToExpr(stmt.rate))
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const cone = exprToValueBlock(valueToExpr(stmt.cone))
+        const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
+        return s1 === null ||
+          s2 === null ||
+          rate === null ||
+          speed === null ||
+          cone === null ||
+          gravity === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_define_emitter',
+              {
+                NAME: stmt.name,
+                C1: stmt.colorFrom,
+                C2: stmt.colorTo,
+                GLOW: stmt.glow ? 'TRUE' : 'FALSE',
+                CURVE: stmt.curve,
+              },
+              {},
+              stmt.__id,
+              { S1: s1, S2: s2, RATE: rate, SPEED: speed, CONE: cone, GRAVITY: gravity },
+            )
+      }
+      case 'g3k:startEmitter': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || y === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_start_emitter', { EFFECT: stmt.effect }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              Z: z,
+            })
+      }
+      case 'g3k:emitterOn':
+        return block('sz_g3k_emitter_on', { EFFECT: stmt.effect, WHO: stmt.charVar }, {}, stmt.__id)
+      case 'g3k:stopEmitter':
+        return block('sz_g3k_stop_emitter', { EFFECT: stmt.effect }, {}, stmt.__id)
+      case 'g3k:addAttractor': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const intensity = exprToValueBlock(valueToExpr(stmt.intensity))
+        const radius = exprToValueBlock(valueToExpr(stmt.radius))
+        return x === null || y === null || z === null || intensity === null || radius === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_add_attractor', { EFFECT: stmt.effect }, {}, stmt.__id, {
+              X: x,
+              Y: y,
+              Z: z,
+              INT: intensity,
+              RAD: radius,
+            })
+      }
+      case 'g3k:setScreenText': {
+        const title = exprToValueBlock(valueToExpr(stmt.title))
+        const text = exprToValueBlock(valueToExpr(stmt.text))
+        const button = exprToValueBlock(valueToExpr(stmt.button))
+        return title === null || text === null || button === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_set_screen_text', { SCREEN: stmt.screen }, {}, stmt.__id, {
+              TITLE: title,
+              TEXT: text,
+              BTN: button,
+            })
+      }
+      case 'g3k:createScreen': {
+        const title = exprToValueBlock(valueToExpr(stmt.title))
+        const text = exprToValueBlock(valueToExpr(stmt.text))
+        return title === null || text === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_create_screen', { NAME: stmt.name }, {}, stmt.__id, {
+              TITLE: title,
+              TEXT: text,
+            })
+      }
+      case 'g3k:addButton': {
+        const label = exprToValueBlock(valueToExpr(stmt.label))
+        return label === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3k_add_button',
+              { SCREEN: stmt.screen },
+              { BODY: statementsToBlocks(stmt.body) },
+              stmt.__id,
+              { LABEL: label },
+            )
+      }
+      case 'g3k:showScreen':
+        return block('sz_g3k_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
+      case 'g3k:hideScreens':
+        return block('sz_g3k_hide_screens', {}, {}, stmt.__id)
+      case 'g3k:hudText': {
+        const text = exprToValueBlock(valueToExpr(stmt.text))
+        return text === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_hud_text', { SLOT: stmt.slot }, {}, stmt.__id, { TEXT: text })
+      }
+      case 'g3k:setState':
+        return block('sz_g3k_set_state', { STATE: stmt.name }, {}, stmt.__id)
+      case 'g3k:onEnterState':
+        return block(
+          'sz_g3k_on_enter_state',
+          { STATE: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:returnToMenu':
+        return block('sz_g3k_return_to_menu', {}, {}, stmt.__id)
+      case 'g3k:endGame':
+        return block('sz_g3k_end_game', {}, {}, stmt.__id)
+      case 'g3k:onEvent':
+        return block(
+          'sz_g3k_on_event',
+          { NAME: stmt.event },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3k:emit':
+        return block('sz_g3k_emit', { NAME: stmt.event }, {}, stmt.__id)
+      case 'g3k:loadSound':
+        return block('sz_g3k_load_sound', { SOUND: stmt.asset, NAME: stmt.name }, {}, stmt.__id)
+      case 'g3k:playSound':
+        return block('sz_g3k_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+      case 'g3k:playEffect':
+        return block('sz_g3k_play_effect', { FX: stmt.fx }, {}, stmt.__id)
+      case 'g3k:playTone': {
+        const freq = exprToValueBlock(valueToExpr(stmt.freq))
+        const ms = exprToValueBlock(valueToExpr(stmt.ms))
+        return freq === null || ms === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3k_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
+      }
+      default:
+        throw new Error(`Statement de extensão sem codec Blockly: ${stmt.type}`)
+    }
+  }
+
+  function worldThreeDStatementToBlock(): SerializedBlocklyBlock {
+    switch (stmt.type) {
+      // ---- Mundo 3D (world-3d) ----
+      case 'w3d:setup': {
+        const world = exprToValueBlock(valueToExpr(stmt.world))
+        return world === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_setup', { STYLE: stmt.style }, {}, stmt.__id, { WORLD: world })
+      }
+      case 'w3d:terrain': {
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        const s = exprToValueBlock(valueToExpr(stmt.s))
+        return h === null || s === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_terrain', {}, {}, stmt.__id, { H: h, S: s })
+      }
+      case 'w3d:flatten': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return x === null || z === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_flatten', {}, {}, stmt.__id, { X: x, Z: z, R: r })
+      }
+      case 'w3d:path': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        return x1 === null || z1 === null || x2 === null || z2 === null || w === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_path', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2, W: w })
+      }
+      case 'w3d:water': {
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return y === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_water', { COLOR: stmt.color }, {}, stmt.__id, { Y: y })
+      }
+      case 'w3d:skyPhoto':
+        return block('sz_w3d_sky_photo', { ASSET: stmt.asset }, {}, stmt.__id)
+      case 'w3d:start':
+        return block('sz_w3d_start', {}, {}, stmt.__id)
+      case 'w3d:car':
+        return block('sz_w3d_car', { STYLE: stmt.style, COLOR: stmt.color }, {}, stmt.__id)
+      case 'w3d:carBoost': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_car_boost', {}, {}, stmt.__id, { FORCE: force })
+      }
+      case 'w3d:engineSound':
+        return block('sz_w3d_engine_sound', { ON: stmt.on ? 'ligado' : 'desligado' }, {}, stmt.__id)
+      case 'w3d:loadSound':
+        return block('sz_w3d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+      case 'w3d:playSound':
+        return block('sz_w3d_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+      case 'w3d:playMusic':
+        return block('sz_w3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
+      case 'w3d:stopMusic':
+        return block('sz_w3d_stop_music', {}, {}, stmt.__id)
+      case 'w3d:hud': {
+        const t = exprToValueBlock(valueToExpr(stmt.text))
+        return t === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_hud', { CORNER: stmt.corner }, {}, stmt.__id, { TEXT: t })
+      }
+      case 'w3d:say': {
+        const t = exprToValueBlock(valueToExpr(stmt.text))
+        const secs = exprToValueBlock(valueToExpr(stmt.secs))
+        return t === null || secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_say', {}, {}, stmt.__id, { TEXT: t, SECS: secs })
+      }
+      case 'w3d:point': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_point', { NAME: stmt.name }, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:onPoint':
+        return block(
+          'sz_w3d_on_point',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:zone': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return x === null || z === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_zone', { NAME: stmt.name }, {}, stmt.__id, { X: x, Z: z, R: r })
+      }
+      case 'w3d:onZone':
+        return block(
+          'sz_w3d_on_zone',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:totemText': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_totem_text', { TITLE: stmt.title, BODY: stmt.body }, {}, stmt.__id, {
+              X: x,
+              Z: z,
+            })
+      }
+      case 'w3d:totemImage': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        return x === null || z === null || w === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_totem_image', { IMAGE: stmt.image }, {}, stmt.__id, { X: x, Z: z, W: w })
+      }
+      case 'w3d:galleryCreate': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_gallery_create', { TITLE: stmt.title }, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:galleryAdd':
+        return block(
+          'sz_w3d_gallery_add',
+          { IMAGE: stmt.image, CAPTION: stmt.caption },
+          {},
+          stmt.__id,
+        )
+      case 'w3d:raceCreate': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        const laps = exprToValueBlock(valueToExpr(stmt.laps))
+        return x === null || z === null || deg === null || laps === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_race_create', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg, LAPS: laps })
+      }
+      case 'w3d:raceCheckpoint': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_race_checkpoint', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+      }
+      case 'w3d:raceOnStart':
+        return block('sz_w3d_race_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'w3d:raceOnCheckpoint':
+        return block(
+          'sz_w3d_race_on_checkpoint',
+          {},
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:raceOnFinish':
+        return block(
+          'sz_w3d_race_on_finish',
+          {},
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:bowlingCreate': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_bowling_create', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+      }
+      case 'w3d:bowlingReset':
+        return block('sz_w3d_bowling_reset', {}, {}, stmt.__id)
+      case 'w3d:bowlingOnStrike':
+        return block(
+          'sz_w3d_bowling_on_strike',
+          {},
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:stack': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return n === null || x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_stack', { THING: stmt.thing }, {}, stmt.__id, { N: n, X: x, Z: z })
+      }
+      case 'w3d:carStats': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const turn = exprToValueBlock(valueToExpr(stmt.turn))
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return speed === null || turn === null || jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_car_stats', {}, {}, stmt.__id, { SPEED: speed, TURN: turn, JUMP: jump })
+      }
+      case 'w3d:carPlace': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_car_place', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+      }
+      case 'w3d:grass':
+        return block('sz_w3d_grass', { AMOUNT: stmt.amount }, {}, stmt.__id)
+      case 'w3d:scatter': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_scatter', { THING: stmt.thing }, {}, stmt.__id, { N: n })
+      }
+      case 'w3d:scatterModel': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const s = exprToValueBlock(valueToExpr(stmt.s))
+        return n === null || s === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_scatter_model', { MODEL: stmt.model }, {}, stmt.__id, { N: n, S: s })
+      }
+      case 'w3d:placeThing': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const s = exprToValueBlock(valueToExpr(stmt.s))
+        return x === null || z === null || s === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_place_thing', { THING: stmt.thing }, {}, stmt.__id, { X: x, Z: z, S: s })
+      }
+      case 'w3d:placeModel': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const s = exprToValueBlock(valueToExpr(stmt.s))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || s === null || deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_place_model', { MODEL: stmt.model }, {}, stmt.__id, {
+              X: x,
+              Z: z,
+              S: s,
+              DEG: deg,
+            })
+      }
+      case 'w3d:clearArea': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return x === null || z === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_clear_area', {}, {}, stmt.__id, { X: x, Z: z, R: r })
+      }
+      case 'w3d:onCrash':
+        return block('sz_w3d_on_crash', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'w3d:horn':
+        return block('sz_w3d_horn', {}, {}, stmt.__id)
+      case 'w3d:onHorn':
+        return block('sz_w3d_on_horn', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'w3d:carLights':
+        return block('sz_w3d_car_lights', {}, {}, stmt.__id)
+      case 'w3d:tireMarks':
+        return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
+      case 'w3d:carPaint':
+        return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
+      case 'w3d:achievement':
+        return block('sz_w3d_achievement', { NAME: stmt.name }, {}, stmt.__id)
+      case 'w3d:onAchievement':
+        return block(
+          'sz_w3d_on_achievement',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:minimap':
+        return block('sz_w3d_minimap', { MODE: stmt.mode }, {}, stmt.__id)
+      case 'w3d:racePodium':
+        return block('sz_w3d_race_podium', {}, {}, stmt.__id)
+      case 'w3d:whisperCorner': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_whisper_corner', {}, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:flameNote': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_flame_note', { TEXT: stmt.text }, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:coinsScatter': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_coins_scatter', {}, {}, stmt.__id, { N: n })
+      }
+      case 'w3d:coinsRing': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return n === null || x === null || z === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_coins_ring', {}, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
+      }
+      case 'w3d:coinsLine': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+        return n === null || x1 === null || z1 === null || x2 === null || z2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_coins_line', {}, {}, stmt.__id, { N: n, X1: x1, Z1: z1, X2: x2, Z2: z2 })
+      }
+      case 'w3d:onCollect':
+        return block('sz_w3d_on_collect', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'w3d:quest':
+        return block('sz_w3d_quest', { NAME: stmt.name, DESC: stmt.desc }, {}, stmt.__id)
+      case 'w3d:questDone':
+        return block('sz_w3d_quest_done', { NAME: stmt.name }, {}, stmt.__id)
+      case 'w3d:onQuestDone':
+        return block(
+          'sz_w3d_on_quest_done',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:marker': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_marker', { ICON: stmt.icon }, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:guideArrow': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_guide_arrow', { ON: stmt.on ? 'ligada' : 'desligada' }, {}, stmt.__id, {
+              X: x,
+              Z: z,
+            })
+      }
+      case 'w3d:npc': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_w3d_npc',
+              { NAME: stmt.name, COLOR: stmt.color, HAT: stmt.hat },
+              {},
+              stmt.__id,
+              { X: x, Z: z },
+            )
+      }
+      case 'w3d:npcWander': {
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_npc_wander', { NAME: stmt.name }, {}, stmt.__id, { R: r })
+      }
+      case 'w3d:npcTalk':
+        return block(
+          'sz_w3d_npc_talk',
+          { NAME: stmt.name },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:npcAsk':
+        return block(
+          'sz_w3d_npc_ask',
+          { NAME: stmt.name, QUESTION: stmt.question, OPT_A: stmt.optA, OPT_B: stmt.optB },
+          { BODY_A: statementsToBlocks(stmt.bodyA), BODY_B: statementsToBlocks(stmt.bodyB) },
+          stmt.__id,
+        )
+      case 'w3d:door': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || deg === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_w3d_door',
+              { TITLE: stmt.title, TEXT: stmt.body, IMAGE: stmt.image },
+              {},
+              stmt.__id,
+              { X: x, Z: z, DEG: deg },
+            )
+      }
+      case 'w3d:crops': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return n === null || x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_crops', { KIND: stmt.kind }, {}, stmt.__id, { N: n, X: x, Z: z })
+      }
+      case 'w3d:barn': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_barn', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+      }
+      case 'w3d:windmill': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_windmill', {}, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:fence': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+        return x1 === null || z1 === null || x2 === null || z2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_fence', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2 })
+      }
+      case 'w3d:animals': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return n === null || x === null || z === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_animals', { KIND: stmt.kind }, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
+      }
+      case 'w3d:crater': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return x === null || z === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_crater', {}, {}, stmt.__id, { X: x, Z: z, R: r })
+      }
+      case 'w3d:flag': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_flag', { COLOR: stmt.color }, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:rocket': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_rocket', {}, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:npcSay':
+        return block('sz_w3d_npc_say', { NAME: stmt.name, TEXT: stmt.text }, {}, stmt.__id)
+      case 'w3d:npcEmote':
+        return block('sz_w3d_npc_emote', { NAME: stmt.name, EMOTE: stmt.emote }, {}, stmt.__id)
+      case 'w3d:islands': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const y = exprToValueBlock(valueToExpr(stmt.y))
+        return n === null || y === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_islands', {}, {}, stmt.__id, { N: n, Y: y })
+      }
+      case 'w3d:boat':
+        return block('sz_w3d_boat', { COLOR: stmt.color }, {}, stmt.__id)
+      case 'w3d:bridge': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+        const w = exprToValueBlock(valueToExpr(stmt.w))
+        return x1 === null || z1 === null || x2 === null || z2 === null || w === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_bridge', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2, W: w })
+      }
+      case 'w3d:lighthouse': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_lighthouse', {}, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:ambience':
+        return block('sz_w3d_ambience', { KIND: stmt.kind }, {}, stmt.__id)
+      case 'w3d:person':
+        return block('sz_w3d_person', { COLOR: stmt.color, HAT: stmt.hat }, {}, stmt.__id)
+      case 'w3d:personStats': {
+        const walk = exprToValueBlock(valueToExpr(stmt.walk))
+        const run = exprToValueBlock(valueToExpr(stmt.run))
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return walk === null || run === null || jump === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_person_stats', {}, {}, stmt.__id, { WALK: walk, RUN: run, JUMP: jump })
+      }
+      case 'w3d:personPlace': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_person_place', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+      }
+      case 'w3d:personAccessory':
+        return block('sz_w3d_person_accessory', { ACC: stmt.acc }, {}, stmt.__id)
+      case 'w3d:personEmote':
+        return block('sz_w3d_person_emote', { EMOTE: stmt.emote }, {}, stmt.__id)
+      case 'w3d:onVehicle':
+        return block(
+          'sz_w3d_on_vehicle',
+          { WHEN: stmt.when },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:waterfall': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const h = exprToValueBlock(valueToExpr(stmt.h))
+        const deg = exprToValueBlock(valueToExpr(stmt.deg))
+        return x === null || z === null || h === null || deg === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_waterfall', {}, {}, stmt.__id, { X: x, Z: z, H: h, DEG: deg })
+      }
+      case 'w3d:lamp': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_lamp', {}, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:city': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_city', { SIZE: stmt.size, MODE: stmt.mode }, {}, stmt.__id, {
+              X: x,
+              Z: z,
+            })
+      }
+      case 'w3d:district': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        return x === null || z === null || size === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_district', { KIND: stmt.kind }, {}, stmt.__id, { X: x, Z: z, SIZE: size })
+      }
+      case 'w3d:roadGrid': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        const width = exprToValueBlock(valueToExpr(stmt.width))
+        return x === null || z === null || size === null || width === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_road_grid', { LAYOUT: stmt.layout }, {}, stmt.__id, {
+              X: x,
+              Z: z,
+              SIZE: size,
+              WIDTH: width,
+            })
+      }
+      case 'w3d:houseRow': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+        return n === null || x1 === null || z1 === null || x2 === null || z2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_house_row', { STYLE: stmt.style }, {}, stmt.__id, {
+              N: n,
+              X1: x1,
+              Z1: z1,
+              X2: x2,
+              Z2: z2,
+            })
+      }
+      case 'w3d:quality':
+        return block('sz_w3d_quality', { MODE: stmt.mode }, {}, stmt.__id)
+      case 'w3d:inventoryGive': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_inventory_give', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
+      }
+      case 'w3d:inventoryRemove': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_inventory_remove', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
+      }
+      case 'w3d:traffic': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        return n === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_traffic', { SEM: stmt.sem }, {}, stmt.__id, { N: n })
+      }
+      case 'w3d:stringLights': {
+        const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+        const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+        const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+        const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+        return x1 === null || z1 === null || x2 === null || z2 === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_string_lights', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2 })
+      }
+      case 'w3d:fireflies':
+        return block('sz_w3d_fireflies', { AMOUNT: stmt.amount }, {}, stmt.__id)
+      case 'w3d:campfire': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_campfire', {}, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:pushPlace': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_push_place', { THING: stmt.thing }, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:pushScatter': {
+        const n = exprToValueBlock(valueToExpr(stmt.n))
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const r = exprToValueBlock(valueToExpr(stmt.r))
+        return n === null || x === null || z === null || r === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_push_scatter', {}, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
+      }
+      case 'w3d:letters': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        const s = exprToValueBlock(valueToExpr(stmt.s))
+        return x === null || z === null || s === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_letters', { WORD: stmt.word }, {}, stmt.__id, { X: x, Z: z, S: s })
+      }
+      case 'w3d:explosive': {
+        const x = exprToValueBlock(valueToExpr(stmt.x))
+        const z = exprToValueBlock(valueToExpr(stmt.z))
+        return x === null || z === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_explosive', {}, {}, stmt.__id, { X: x, Z: z })
+      }
+      case 'w3d:onExplosion':
+        return block('sz_w3d_on_explosion', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+      case 'w3d:confetti':
+        return block('sz_w3d_confetti', {}, {}, stmt.__id)
+      case 'w3d:fireworks':
+        return block('sz_w3d_fireworks', {}, {}, stmt.__id)
+      case 'w3d:tornado': {
+        const secs = exprToValueBlock(valueToExpr(stmt.secs))
+        return secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_tornado', {}, {}, stmt.__id, { SECS: secs })
+      }
+      case 'w3d:season':
+        return block('sz_w3d_season', { SEASON: stmt.season }, {}, stmt.__id)
+      case 'w3d:clouds':
+        return block('sz_w3d_clouds', { AMOUNT: stmt.amount }, {}, stmt.__id)
+      case 'w3d:cameraMode':
+        return block('sz_w3d_camera_mode', { MODE: stmt.mode }, {}, stmt.__id)
+      case 'w3d:cameraShake': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        const secs = exprToValueBlock(valueToExpr(stmt.secs))
+        return force === null || secs === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_camera_shake', {}, {}, stmt.__id, { FORCE: force, SECS: secs })
+      }
+      case 'w3d:effects': {
+        const strength = exprToValueBlock(valueToExpr(stmt.strength))
+        return strength === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_effects', { ON: stmt.on ? 'ligados' : 'desligados' }, {}, stmt.__id, {
+              STRENGTH: strength,
+            })
+      }
+      case 'w3d:dayNight': {
+        const minutes = exprToValueBlock(valueToExpr(stmt.minutes))
+        return minutes === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_daynight', {}, {}, stmt.__id, { MIN: minutes })
+      }
+      case 'w3d:setTime':
+        return block('sz_w3d_set_time', { TIME: stmt.time }, {}, stmt.__id)
+      case 'w3d:weather':
+        return block('sz_w3d_weather', { W: stmt.kind }, {}, stmt.__id)
+      case 'w3d:wind': {
+        const force = exprToValueBlock(valueToExpr(stmt.force))
+        return force === null
+          ? rawJSBlock(stmt)
+          : block('sz_w3d_wind', {}, {}, stmt.__id, { F: force })
+      }
+      case 'w3d:onDayNight':
+        return block(
+          'sz_w3d_on_daynight',
+          { WHEN: stmt.when },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'w3d:onUpdate':
+        return block(
+          'sz_w3d_on_update',
+          { DT: stmt.dtName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      default:
+        throw new Error(`Statement de extensão sem codec Blockly: ${stmt.type}`)
+    }
   }
   return null
 }

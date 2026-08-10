@@ -23,11 +23,12 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Move o sprite A na direção do sprite B (px por quadro). Move a posição direto.
   function moveToward(a, b, speed) {
     if (!a || !b) return;
+    _recordPreviousPosition(a);
     var sp = Math.max(0, _finiteNumber(speed, 3));
     var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
     var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
     var len = Math.sqrt(dx * dx + dy * dy);
-    if (!len || !sp) { a.vx = 0; a.vy = 0; return; }
+    if (!len || !sp) { a.vx = 0; a.vy = 0; _commitRecordedMotion(a); return; }
     var step = Math.min(sp, len);
     var stepX = dx / len * step;
     var stepY = dy / len * step;
@@ -35,6 +36,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     a.y += stepY;
     a.vx = stepX;
     a.vy = stepY;
+    _commitRecordedMotion(a);
   }
   // Sorteia um número inteiro de min a max (inclusive).
   function randomBetween(min, max) {
@@ -172,6 +174,18 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     var p = _finiteNumber(percent, 100);
     sprite.opacity = Math.max(0, Math.min(1, p / 100));
   }
+  /**
+   * Coloca o sprite em outro ponto sem transformar o teleporte em movimento
+   * contínuo. É a única saída dos blocos de posição e também serve ao modo Código.
+   */
+  function setPosition(sprite, x, y) {
+    if (!sprite) return;
+    sprite.x = _finiteNumber(x, _finiteNumber(sprite.x, 0));
+    sprite.y = _finiteNumber(y, _finiteNumber(sprite.y, 0));
+    _detachGroundSupport(sprite);
+    _recordPreviousPosition(sprite);
+    _commitRecordedMotion(sprite);
+  }
   function setSize(sprite, width, height) {
     if (!sprite) return;
     if (_isFiniteNumber(width) && width > 0) sprite.w = width;
@@ -184,17 +198,19 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     var sw = _finiteNumber(sprite.w, 0), sh = _finiteNumber(sprite.h, 0);
     var cx = sx + sw / 2, cy = sy + sh / 2;
     sprite.w = sw * f; sprite.h = sh * f;
-    sprite.x = cx - sprite.w / 2; sprite.y = cy - sprite.h / 2;
+    setPosition(sprite, cx - sprite.w / 2, cy - sprite.h / 2);
   }
   // ---- Mundo: dar a volta na tela (Pac-Man/Asteroids) ----
   function wrapEdges(sprite) {
     if (!sprite) return;
     var c = ensureStage();
     var visible = _visibleWorldRect(c);
-    if (sprite.x + (sprite.w || 0) < visible.left) sprite.x = visible.right;
-    else if (sprite.x > visible.right) sprite.x = visible.left - (sprite.w || 0);
-    if (sprite.y + (sprite.h || 0) < visible.top) sprite.y = visible.bottom;
-    else if (sprite.y > visible.bottom) sprite.y = visible.top - (sprite.h || 0);
+    var x = sprite.x, y = sprite.y;
+    if (x + (sprite.w || 0) < visible.left) x = visible.right;
+    else if (x > visible.right) x = visible.left - (sprite.w || 0);
+    if (y + (sprite.h || 0) < visible.top) y = visible.bottom;
+    else if (y > visible.bottom) y = visible.top - (sprite.h || 0);
+    if (x !== sprite.x || y !== sprite.y) setPosition(sprite, x, y);
   }
   // ---- Estado do jogo: pausa. "Pausar o jogo" CONGELA o gameLoop (o tick para de
   // rodar o quadro do aluno); "Continuar o jogo" descongela. "está pausado?" lê o

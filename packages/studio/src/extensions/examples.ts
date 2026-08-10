@@ -2,6 +2,7 @@ import { ExtensionExamplesSchema, MAX_EXTENSION_EXAMPLES } from './manifest'
 import type { ExtensionDefinition, ExtensionExample, ExtensionExamplesProvider } from './types'
 
 const loadedExamples = new WeakMap<ExtensionDefinition, Promise<readonly ExtensionExample[]>>()
+const MAX_CONCURRENT_EXAMPLE_LOADS = 3
 
 export interface ExtensionExamplesFailure {
   extensionId: string
@@ -69,11 +70,36 @@ export function loadExtensionExamples(
 export async function loadExtensionExampleCatalogs(
   extensions: readonly ExtensionDefinition[],
 ): Promise<ExtensionExampleCatalogsResult> {
-  const settled = await Promise.allSettled(
-    extensions.map(async (extension) => ({
-      extensionId: extension.manifest.id,
-      examples: await loadExtensionExamples(extension),
-    })),
+  const settled: PromiseSettledResult<{
+    extensionId: string
+    examples: readonly ExtensionExample[]
+  }>[] = new Array(extensions.length)
+  let nextIndex = 0
+
+  async function loadNext(): Promise<void> {
+    while (nextIndex < extensions.length) {
+      const index = nextIndex
+      nextIndex += 1
+      const extension = extensions[index]
+      if (!extension) continue
+      try {
+        settled[index] = {
+          status: 'fulfilled',
+          value: {
+            extensionId: extension.manifest.id,
+            examples: await loadExtensionExamples(extension),
+          },
+        }
+      } catch (reason) {
+        settled[index] = { status: 'rejected', reason }
+      }
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(MAX_CONCURRENT_EXAMPLE_LOADS, extensions.length) }, () =>
+      loadNext(),
+    ),
   )
   const loaded: ExtensionExampleCatalogsResult['loaded'] = []
   const failed: ExtensionExampleCatalogsResult['failed'] = []

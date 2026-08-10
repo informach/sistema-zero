@@ -42,7 +42,12 @@ describe('Exemplo Portas do Castelo — drift contra o parser real', () => {
       'g2d:createSprite', // a porta
       'g2d:setGravity', // gravidade do mundo
       'g2d:applyVelocity', // integra a queda
-      'g2d:collideGroup', // pousa nas plataformas e bate nas paredes
+      'g2d:createWorld', // cada salão é uma área jogável independente
+      'g2d:addSolidGroupToWorld',
+      'g2d:createLevel', // Fases reais, não apenas um contador com esse nome
+      'g2d:enterLevel',
+      'g2d:collideCurrentLevel', // pousa no Mundo da Fase atual
+      'g2d:drawCurrentLevel',
       'g2d:clampToScreen',
       'g2d:setHitboxScale',
       'g2d:arrowsX', // anda com as setas
