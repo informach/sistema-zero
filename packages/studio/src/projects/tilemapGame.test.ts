@@ -50,6 +50,10 @@ describe('assembleTilemapGameProject', () => {
       (s) => s.type === 'g2d:createTileMapFromAsset',
     )
     expect(create && 'image' in create && create.image).toBe('minha-fase')
+    const types = new Set(behaviorStatements(project.ir).map((statement) => statement.type))
+    expect(types.has('g2d:createWorldFromTileMap')).toBe(true)
+    expect(types.has('g2d:configureWorldCamera')).toBe(true)
+    expect(project.files['script.js']).not.toContain('cameraFollow(')
     // arquivos gerados de verdade (o jogo roda)
     expect(project.files['script.js']?.length ?? 0).toBeGreaterThan(0)
     expect(project.blocksState).toBeTruthy()
@@ -95,12 +99,12 @@ describe('assembleTilemapGameProject', () => {
     // dois assets (mapa + mapa-frente)
     expect(project.assets?.length).toBe(2)
     expect(project.assets?.some((a) => a.name === 'minha-fase-frente')).toBe(true)
-    // no loop: o drawTileMap da frente vem DEPOIS do drawSprite
+    // no loop: o mapa preparado da frente vem DEPOIS do drawSprite
     const body = loopBody(project.ir)
     const drawSpriteIdx = body.findIndex((s) => s.type === 'g2d:drawSprite')
     let frontDrawIdx = -1
     for (let i = 0; i < body.length; i++) {
-      if (body[i]?.type === 'g2d:drawTileMap') frontDrawIdx = i
+      if (body[i]?.type === 'g2d:drawPreparedTileMap') frontDrawIdx = i
     }
     expect(frontDrawIdx).toBeGreaterThan(drawSpriteIdx)
   })

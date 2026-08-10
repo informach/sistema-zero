@@ -246,11 +246,13 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   // combine com "prender o sprite na tela").
   function arrowsX(sprite, speed) {
     if (!sprite) return;
+    _recordPreviousPosition(sprite);
     var sp = _finiteNumber(speed, 5);
     // Grava a velocidade horizontal p/ os getters (parado → 0); só mexe no eixo X.
     sprite.vx = (keys.right ? sp : 0) - (keys.left ? sp : 0);
     if (keys.left) sprite.x -= sp;
     if (keys.right) sprite.x += sp;
+    _commitRecordedMotion(sprite);
   }
   // Faz o sprite PISCAR por N quadros (ex.: invencibilidade ao levar dano).
   function blink(sprite, frames) {

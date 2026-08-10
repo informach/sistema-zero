@@ -104,6 +104,7 @@ export function ExportDialog({ open, onClose }: ExportDialogProps): JSX.Element 
         <label className="flex items-center gap-2 text-sz-fg">
           <input
             type="checkbox"
+            name="minify-export"
             checked={minify}
             onChange={(e) => setMinify(e.target.checked)}
             disabled={working}

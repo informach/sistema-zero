@@ -205,6 +205,60 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
           varName: 'blocos',
         },
         {
+          type: 'g2d:createWorld',
+          varName: 'mundoSala1',
+          width: { type: 'num', value: 480 },
+          height: { type: 'num', value: 300 },
+        },
+        {
+          type: 'g2d:createWorld',
+          varName: 'mundoSala2',
+          width: { type: 'num', value: 480 },
+          height: { type: 'num', value: 300 },
+        },
+        {
+          type: 'g2d:createWorld',
+          varName: 'mundoSala3',
+          width: { type: 'num', value: 480 },
+          height: { type: 'num', value: 300 },
+        },
+        {
+          type: 'g2d:addSolidGroupToWorld',
+          worldVar: 'mundoSala1',
+          groupVar: 'blocos',
+        },
+        {
+          type: 'g2d:addSolidGroupToWorld',
+          worldVar: 'mundoSala2',
+          groupVar: 'blocos',
+        },
+        {
+          type: 'g2d:addSolidGroupToWorld',
+          worldVar: 'mundoSala3',
+          groupVar: 'blocos',
+        },
+        {
+          type: 'g2d:createLevel',
+          varName: 'sala1',
+          worldVar: 'mundoSala1',
+          spawnX: { type: 'num', value: 60 },
+          spawnY: { type: 'num', value: 200 },
+        },
+        {
+          type: 'g2d:createLevel',
+          varName: 'sala2',
+          worldVar: 'mundoSala2',
+          spawnX: { type: 'num', value: 60 },
+          spawnY: { type: 'num', value: 200 },
+        },
+        {
+          type: 'g2d:createLevel',
+          varName: 'sala3',
+          worldVar: 'mundoSala3',
+          spawnX: { type: 'num', value: 60 },
+          spawnY: { type: 'num', value: 200 },
+        },
+        {
           type: 'g2d:createSprite',
           varName: 'porta',
           x: {
@@ -344,6 +398,7 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
           type: 'g2d:setScene',
           name: 'inicio',
         },
+        { type: 'g2d:enterLevel', levelVar: 'sala1', spriteVar: 'rei' },
       ],
       events: [
         {
@@ -517,21 +572,13 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                   type: 'g2d:applyVelocity',
                   spriteVar: 'rei',
                 },
-                {
-                  type: 'g2d:collideGroup',
-                  spriteVar: 'rei',
-                  groupVar: 'blocos',
-                },
+                { type: 'g2d:collideCurrentLevel', spriteVar: 'rei' },
                 {
                   type: 'g2d:clampToScreen',
                   spriteVar: 'rei',
                   ctxVar: 'ctx',
                 },
-                {
-                  type: 'g2d:drawGroup',
-                  groupVar: 'blocos',
-                  ctxVar: 'ctx',
-                },
+                { type: 'g2d:drawCurrentLevel', ctxVar: 'ctx' },
                 {
                   type: 'g2d:drawSprite',
                   spriteVar: 'porta',
@@ -745,6 +792,7 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                             },
                           },
                           then: [
+                            { type: 'g2d:enterLevel', levelVar: 'sala2', spriteVar: 'rei' },
                             {
                               type: 'g2d:spawnInGroup',
                               groupVar: 'blocos',
@@ -832,6 +880,7 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                             },
                           },
                           then: [
+                            { type: 'g2d:enterLevel', levelVar: 'sala3', spriteVar: 'rei' },
                             {
                               type: 'g2d:spawnInGroup',
                               groupVar: 'blocos',

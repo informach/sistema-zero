@@ -233,7 +233,7 @@ girada na direção apontada.
 - **Criar tiro no grupo**. Um tiro redondo com brilho (em vez de retângulo).
 - **Mover o sprite com as setas**. Anda só na horizontal com ← → (1 bloco).
 - **Fazer o sprite piscar**. O sprite fica intermitente por N quadros (ex.: invencibilidade).
-- **A cada N quadros** agora aceita um número OU uma variável (spawn que acelera por fase).
+- **A cada N quadros** agora aceita um número OU uma variável (spawn que acelera por onda).
 - Asteroides nascem com tamanhos variados sozinhos; a tela de início/fim escurece de leve
   (o jogo aparece atrás) e quebra o subtítulo em linhas.
 
@@ -404,8 +404,10 @@ Um Mundo pode ser maior que a tela, caber exatamente nela ou nem usar câmera:
 - **🗺️ Mapas** (destrutíveis): prepare a geometria uma vez; depois use **Quebrar o tile** onde está um
   sprite (mineração/destruição), **pôr um tile** e **o número do tile** onde está o sprite
   (ler/construir em tempo real).
-- **🚩 Fases**: agrupe um Mundo e um ponto de entrada quando o jogo tiver progressão. Entrar na fase
-  posiciona o jogador e dispara o evento próprio; jogos de uma área só não precisam desse conceito.
+- **🚩 Fases**: agrupe um Mundo e um ponto de entrada quando o jogo tiver progressão. **Entrar**
+  preserva tiles, itens e inimigos já alterados; **Reiniciar** restaura os tiles e esvazia os grupos
+  registrados para a Fase. Os dois posicionam o jogador e disparam o evento próprio. Jogos de uma
+  área só não precisam desse conceito.
 - **📦 Muitos**: **Trazer para a frente** / **Mandar para trás**. Controla quem é desenhado por
   cima de quem dentro de um grupo.
 - **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS**. Para
@@ -431,15 +433,19 @@ receita serve para plataforma, nave, labirinto, corrida ou qualquer outro gêner
 Fases**. O exemplo **Mundo Pirata** usa esta receita com todo o chão feito por figuras.
 
 **3. Várias Fases.** Crie um Mundo para cada área e depois uma Fase para cada Mundo, escolhendo
-o ponto de entrada. Use **Quando entrar na Fase** para criar inimigos e itens daquela etapa. O
-bloco **Entrar na Fase** troca a etapa, reposiciona o personagem e reinicia vx, vy, apoio e câmera;
-vida e pontuação continuam. Os atalhos da **Fase atual** colidem, acompanham e desenham o Mundo
-ativo. Fase não significa “plataforma”: pode ser uma missão de nave ou uma arena de uma tela.
+o ponto de entrada. Registre os grupos de inimigos e itens com **reiniciar o grupo junto com a
+Fase**; em **Quando entrar na Fase**, preencha esses grupos. **Entrar na Fase** troca a área e
+preserva o que já aconteceu nela. **Reiniciar a Fase** restaura os tiles, limpa os grupos
+registrados e recria o conteúdo pelo evento. Os dois reposicionam o personagem e reiniciam vx,
+vy, apoio e câmera; vida e pontuação continuam. Os atalhos da **Fase atual** colidem, acompanham e
+desenham o Mundo ativo. Fase não significa “plataforma”: pode ser uma missão de nave ou uma arena
+de uma tela.
 
 **Ondas não são Fases.** Uma onda normal acontece no mesmo Mundo: guarde o número da onda numa
 variável, esvazie ou preencha grupos e ajuste a dificuldade com os blocos de tempo. Não entre de
 novo na Fase, porque isso também reposiciona o personagem e reinicia a física e a câmera. Use uma
-nova Fase somente quando a onda realmente troca a área jogável ou precisa desse reinício completo.
+nova Fase somente quando a onda realmente troca a área jogável. Para refazer a área atual, use o
+bloco explícito **Reiniciar a Fase**.
 
 **Telas e cenas continuam separadas.** “Início”, “jogando”, “venceu” e “perdeu” controlam o que
 o jogo mostra. Mundo descreve a área jogável; Fase descreve progressão. Um jogo pode usar cenas
@@ -545,7 +551,7 @@ furioso, mas sua raiz normal continua no **Ao iniciar**, depois da folha.
 - **O tipo de inimigo … também é …**. Aqui mora a graça: um inimigo pode ter VÁRIOS
   comportamentos ao mesmo tempo. Patrulha mais atirador anda E atira. Voador mais bombardeiro
   passa por cima soltando tiros. Empilhe quantos quiser, e pode somar no meio do jogo para o
-  inimigo ficar mais difícil na fase seguinte.
+  inimigo ficar mais difícil na próxima onda ou etapa de dificuldade.
 
   A regra é simples: os jeitos de se mexer não se somam, então se você juntar dois vale o último
   que somou; já as ações se juntam todas. ⚠️ Isso vale também em cima da inteligência: somar um
@@ -605,7 +611,7 @@ tempo acabar.
   vez. Este é o dano do TIPO, o mesmo nos três jeitos; para cada ataque doer um tanto diferente,
   veja a receita do chefe mais abaixo.
 - **Quando um inimigo do tipo … levar dano**. Roda toda vez que um inimigo desse tipo perde vida
-  e continua vivo. É o coração de um chefão em fases: leia a vida dele aqui dentro e, na metade,
+  e continua vivo. É o coração de um chefão com várias formas ou estados: leia a vida dele aqui dentro e, na metade,
   deixe-o furioso (trocar a cor, atirar mais rápido, juntar um comportamento novo).
 - **Derrotar os inimigos do tipo quando o sprite pular em cima**. O pulo clássico de plataforma:
   caindo em cima derrota o inimigo e dá um quiquinho; encostar de lado não derrota.

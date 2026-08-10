@@ -140,4 +140,26 @@ describe('loadExtensionExamples', () => {
     expect(result.failed.map((failure) => failure.extensionId)).toEqual(['failing'])
     expect(result.failed[0]?.error).toBeInstanceOf(Error)
   })
+
+  it('limita o carregamento concorrente dos catálogos', async () => {
+    let active = 0
+    let peak = 0
+    const extensions = Array.from({ length: 8 }, (_, index) => {
+      const extension = extensionWith(1, async () => {
+        active += 1
+        peak = Math.max(peak, active)
+        await Bun.sleep(10)
+        active -= 1
+        return [validExample]
+      })
+      extension.manifest.id = `fixture-${index}`
+      return extension
+    })
+
+    const result = await loadExtensionExampleCatalogs(extensions)
+
+    expect(result.loaded).toHaveLength(extensions.length)
+    expect(peak).toBeGreaterThan(1)
+    expect(peak).toBeLessThanOrEqual(3)
+  })
 })

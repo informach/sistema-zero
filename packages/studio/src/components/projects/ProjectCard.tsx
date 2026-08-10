@@ -5,7 +5,6 @@ import { Button, ConfirmDialog } from '#ui'
 import { downloadProjectAsJSON } from '../../export/download'
 import { prefetchMode } from '../../modes/lazyModes'
 import type { ProjectSummary } from '../../state/persistence'
-import { loadSanitizedProjectById, useProjectStore } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { StudioThemeScope } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
@@ -61,10 +60,6 @@ export function ProjectCard({
   takenNames,
 }: ProjectCardProps): JSX.Element {
   const t = useT()
-  const renameProject = useProjectStore((s) => s.renameProject)
-  const duplicateProject = useProjectStore((s) => s.duplicateProject)
-  const deleteProject = useProjectStore((s) => s.deleteProject)
-
   const [editing, setEditing] = useState(false)
   const [opening, setOpening] = useState(false)
   const [draft, setDraft] = useState(summary.name)
@@ -169,13 +164,15 @@ export function ProjectCard({
       setDraft(summary.name)
       return
     }
-    await renameProject(summary.id, next)
+    const { useProjectStore } = await import('../../state/projectStore')
+    await useProjectStore.getState().renameProject(summary.id, next)
     onChanged()
   }
 
   const handleDuplicate = async () => {
     closeMenu()
-    await duplicateProject(summary.id)
+    const { useProjectStore } = await import('../../state/projectStore')
+    await useProjectStore.getState().duplicateProject(summary.id)
     onChanged()
   }
 
@@ -183,7 +180,8 @@ export function ProjectCard({
     if (deleting) return
     setDeleting(true)
     try {
-      await deleteProject(summary.id)
+      const { useProjectStore } = await import('../../state/projectStore')
+      await useProjectStore.getState().deleteProject(summary.id)
       setDeleteOpen(false)
       onChanged()
     } finally {
@@ -193,6 +191,7 @@ export function ProjectCard({
 
   const handleExport = async () => {
     closeMenu()
+    const { loadSanitizedProjectById } = await import('../../state/projectStore')
     const full = await loadSanitizedProjectById(summary.id)
     if (!full) return
     downloadProjectAsJSON(full)
@@ -376,7 +375,14 @@ export function ProjectCard({
           // chega depois (a captura é assíncrona) não empurra o grid.
           <div className="pointer-events-none mt-2 min-h-0 flex-1 overflow-hidden rounded-md border border-sz-border-soft">
             {summary.thumbDataUrl ? (
-              <img src={summary.thumbDataUrl} alt="" className="h-full w-full object-cover" />
+              <img
+                src={summary.thumbDataUrl}
+                alt=""
+                width={640}
+                height={360}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
             ) : (
               // Com o card em `h-72` a faixa passou de ~60px para ~122px, então
               // a frase inteira cabe sem ser cortada pelo `overflow-hidden` — e o

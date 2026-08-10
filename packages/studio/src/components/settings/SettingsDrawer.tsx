@@ -158,6 +158,7 @@ export function SettingsDrawer({
               <label className="sz-touch-target mt-2 flex items-center gap-2 text-xs text-sz-fg-soft">
                 <input
                   type="checkbox"
+                  name="persist-openrouter-key"
                   checked={apiKeyStorage === 'persistent'}
                   onChange={(e) => void handleStorageToggle(e.currentTarget.checked)}
                 />
@@ -233,6 +234,7 @@ export function SettingsDrawer({
               <label className="sz-touch-target mt-1 flex items-center gap-2 text-xs text-sz-fg-soft">
                 <input
                   type="checkbox"
+                  name="reveal-advanced-blocks"
                   checked={revealAdvanced}
                   onChange={(e) => void setRevealAdvanced(e.currentTarget.checked)}
                 />

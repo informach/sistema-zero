@@ -2571,6 +2571,12 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g2d:enterLevel'; levelVar: string; spriteVar: string })
   | (JSStatementCommon & {
+      type: 'g2d:resetGroupWithLevel'
+      levelVar: string
+      groupVar: string
+    })
+  | (JSStatementCommon & { type: 'g2d:restartLevel'; levelVar: string; spriteVar: string })
+  | (JSStatementCommon & {
       type: 'g2d:onLevelEnter'
       levelVar: string
       body: JSStatement[]
@@ -6727,6 +6733,18 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('g2d:enterLevel'),
+      levelVar: irText(),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:resetGroupWithLevel'),
+      levelVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:restartLevel'),
       levelVar: irText(),
       spriteVar: irText(),
       ...idField,
@@ -11844,6 +11862,8 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawWorld',
   'g2d:createLevel',
   'g2d:enterLevel',
+  'g2d:resetGroupWithLevel',
+  'g2d:restartLevel',
   'g2d:onLevelEnter',
   'g2d:collideCurrentLevel',
   'g2d:followCurrentLevelCamera',

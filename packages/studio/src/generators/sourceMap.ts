@@ -1,5 +1,5 @@
 import { type CSSEntry, type CSSRule, cssDeclarationEntries } from '#ir'
-import { normalizeDeclKey, normalizeSelector, parseCSSWithSpans } from '#parsers'
+import { normalizeDeclKey, normalizeSelector, parseCSSWithSpans } from '../parsers/css'
 
 /**
  * Estrutura simples de source-map: para cada __id de nó da IR registramos

@@ -582,6 +582,8 @@ export function ZappyPanel(): JSX.Element | null {
         <textarea
           ref={inputRef}
           id="sz-zappy-question"
+          name="zappy-question"
+          autoComplete="off"
           value={question}
           maxLength={MAX_QUESTION_CHARS}
           rows={3}

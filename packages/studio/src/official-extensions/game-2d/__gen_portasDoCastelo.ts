@@ -44,6 +44,15 @@ SZGame2D.defineShape("reizinho", function (ctx) {
 const rei = SZGame2D.createShapeSprite("reizinho", { x: 60, y: 200, w: 30, h: 42 });
 SZGame2D.setHitboxScale(rei, 85);
 const blocos = SZGame2D.createGroup();
+const mundoSala1 = SZGame2D.createWorld(480, 300);
+const mundoSala2 = SZGame2D.createWorld(480, 300);
+const mundoSala3 = SZGame2D.createWorld(480, 300);
+SZGame2D.addSolidGroupToWorld(mundoSala1, blocos);
+SZGame2D.addSolidGroupToWorld(mundoSala2, blocos);
+SZGame2D.addSolidGroupToWorld(mundoSala3, blocos);
+const sala1 = SZGame2D.createLevel(mundoSala1, 60, 200);
+const sala2 = SZGame2D.createLevel(mundoSala2, 60, 200);
+const sala3 = SZGame2D.createLevel(mundoSala3, 60, 200);
 const porta = SZGame2D.createSprite({ x: 420, y: 216, w: 34, h: 52, color: "#4a2f22" });
 let fase = 1;
 let vitoria = false;
@@ -53,6 +62,7 @@ SZGame2D.spawn(blocos, { x: 0, y: 268, w: 480, h: 32, color: "#5a4632", vx: 0, v
 SZGame2D.spawn(blocos, { x: 150, y: 210, w: 90, h: 18, color: "#6f5640", vx: 0, vy: 0 });
 SZGame2D.spawn(blocos, { x: 300, y: 160, w: 90, h: 18, color: "#6f5640", vx: 0, vy: 0 });
 SZGame2D.setScene("inicio");
+SZGame2D.enterLevel(sala1, rei);
 SZGame2D.onKey("Enter", function () {
   if (SZGame2D.sceneIs("inicio")) {
     SZGame2D.setScene("jogando");
@@ -82,9 +92,9 @@ SZGame2D.gameLoop(function update() {
     }
     SZGame2D.applyGravity(rei);
     SZGame2D.applyVelocity(rei);
-    SZGame2D.collideGroup(rei, blocos);
+    SZGame2D.collideCurrentLevel(rei);
     SZGame2D.clampToScreen(rei, ctx);
-    SZGame2D.drawGroup(ctx, blocos);
+    SZGame2D.drawCurrentLevel(ctx);
     SZGame2D.drawSprite(ctx, porta);
     SZGame2D.drawSprite(ctx, rei);
     if (escurecendo == 0) {
@@ -108,12 +118,14 @@ SZGame2D.gameLoop(function update() {
         rei.vx = 0;
         rei.vy = 0;
         if (fase == 2) {
+          SZGame2D.enterLevel(sala2, rei);
           SZGame2D.spawn(blocos, { x: 90, y: 200, w: 80, h: 18, color: "#6f5640", vx: 0, vy: 0 });
           SZGame2D.spawn(blocos, { x: 250, y: 150, w: 80, h: 18, color: "#6f5640", vx: 0, vy: 0 });
           porta.x = 410;
           porta.y = 216;
         }
         if (fase == 3) {
+          SZGame2D.enterLevel(sala3, rei);
           SZGame2D.spawn(blocos, { x: 120, y: 170, w: 70, h: 18, color: "#6f5640", vx: 0, vy: 0 });
           SZGame2D.spawn(blocos, { x: 240, y: 220, w: 70, h: 18, color: "#6f5640", vx: 0, vy: 0 });
           SZGame2D.spawn(blocos, { x: 340, y: 150, w: 70, h: 18, color: "#6f5640", vx: 0, vy: 0 });

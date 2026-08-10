@@ -116,6 +116,50 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     if (!sprite) return;
     sprite._previousX = _finiteNumber(sprite.x, 0);
     sprite._previousY = _finiteNumber(sprite.y, 0);
+    sprite._previousFrameStamp = _frameStamp;
+    sprite._recordedMotionDX = 0;
+    sprite._recordedMotionDY = 0;
+  }
+  /**
+   * Fecha um passo de movimento iniciado por _recordPreviousPosition. A colisão
+   * usa o deslocamento REAL, não a velocidade que outro bloco pode mudar depois.
+   */
+  function _commitRecordedMotion(sprite) {
+    if (!sprite || sprite._previousFrameStamp !== _frameStamp) return;
+    sprite._recordedMotionDX = _finiteNumber(sprite.x, 0) - sprite._previousX;
+    sprite._recordedMotionDY = _finiteNumber(sprite.y, 0) - sprite._previousY;
+  }
+  /**
+   * Posição inicial confiável da varredura contínua. Se código manual teleportou
+   * o sprite depois de um helper de movimento, o deslocamento deixa de bater com
+   * o passo registrado e a nova posição vira o começo — nunca atravessamos o
+   * caminho antigo. Sem histórico deste quadro, mantemos a compatibilidade com
+   * código que soma x/y pela velocidade diretamente.
+   */
+  function _motionPreviousPosition(sprite) {
+    var currentX = _finiteNumber(sprite && sprite.x, 0);
+    var currentY = _finiteNumber(sprite && sprite.y, 0);
+    if (sprite && sprite._previousFrameStamp === _frameStamp &&
+        _isFiniteNumber(sprite._previousX) && _isFiniteNumber(sprite._previousY)) {
+      var actualDX = currentX - sprite._previousX;
+      var actualDY = currentY - sprite._previousY;
+      var expectedDX = _finiteNumber(sprite._recordedMotionDX, 0);
+      var expectedDY = _finiteNumber(sprite._recordedMotionDY, 0);
+      if (Math.abs(actualDX - expectedDX) <= 0.0001 &&
+          Math.abs(actualDY - expectedDY) <= 0.0001) {
+        return { x: sprite._previousX, y: sprite._previousY, recorded: true };
+      }
+      return { x: currentX, y: currentY, recorded: false };
+    }
+    return {
+      x: currentX - _finiteNumber(sprite && sprite.vx, 0),
+      y: currentY - _finiteNumber(sprite && sprite.vy, 0),
+      recorded: false
+    };
+  }
+  /** Mantém a origem varrida após uma resolução legítima, nunca após teleporte. */
+  function _refreshRecordedMotionAfterCollision(sprite, previous) {
+    if (previous && previous.recorded === true) _commitRecordedMotion(sprite);
   }
   function _jumpFromGround(sprite, gravity, strength) {
     if (!sprite) return;
@@ -174,6 +218,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     sprite.y = _finiteNumber(sprite.y, 0) + vy;
     sprite.vx = vx;
     sprite.vy = vy;
+    _commitRecordedMotion(sprite);
   }
 
   /**

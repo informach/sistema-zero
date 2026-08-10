@@ -390,7 +390,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Junte quantos comportamentos quiser no mesmo inimigo. Os jeitos de se mexer não se somam: se você juntar dois, vale o último que somou. Já as ações se juntam todas, então patrulha mais atirador anda E atira. O lugar normal é em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, também dá para somar no meio do jogo e deixar a fase seguinte mais difícil.' +
+      'Junte quantos comportamentos quiser no mesmo inimigo. Os jeitos de se mexer não se somam: se você juntar dois, vale o último que somou. Já as ações se juntam todas, então patrulha mais atirador anda E atira. O lugar normal é em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, também dá para somar no meio do jogo e deixar a próxima onda ou etapa de dificuldade mais difícil.' +
       'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
@@ -582,7 +582,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Roda toda vez que um inimigo desse tipo PERDE vida e continua vivo. É o coração de um chefão em várias fases: leia a vida dele aqui dentro e, quando chegar na metade, deixe-o furioso (mudar a cor, atirar mais rápido, juntar um comportamento). Quem chegou a zero não passa por aqui, e sim pelo "Quando um inimigo do tipo ... for derrotado".',
+      'Roda toda vez que um inimigo desse tipo PERDE vida e continua vivo. É o coração de um chefão com várias formas ou estados: leia a vida dele aqui dentro e, quando chegar na metade, deixe-o furioso (mudar a cor, atirar mais rápido, juntar um comportamento). Quem chegou a zero não passa por aqui, e sim pelo "Quando um inimigo do tipo ... for derrotado".',
   },
   {
     type: 'sz_g2d_hurt_by_enemy',

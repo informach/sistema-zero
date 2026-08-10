@@ -65,6 +65,7 @@ import {
   persistProject,
   renameProjectMeta,
 } from './persistence'
+import { MAX_PROJECT_IMPORT_CHARS } from './projectLimits'
 import {
   addProDir,
   addProFile,
@@ -233,7 +234,8 @@ function bump<T extends Project>(p: T): T {
 // aqui sobe em todos os caminhos de forma consistente (sem re-recorte ao reabrir).
 // `MAX_PROJECT_IMPORT_CHARS` precisa ser ≥ a soma dos sub-limites (arquivos +
 // blocksState + IR + assets) para um projeto cheio conseguir reimportar.
-export const MAX_PROJECT_IMPORT_CHARS = 48_000_000
+export { MAX_PROJECT_IMPORT_CHARS } from './projectLimits'
+
 const MAX_PROJECT_NAME_CHARS = 200
 const MAX_FILE_CHARS = 4_000_000 // ~4 MB por arquivo de texto
 const MAX_TOTAL_CHARS = 16_000_000 // soma de todos os arquivos

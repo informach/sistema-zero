@@ -25,6 +25,8 @@ export default defineConfig({
       // `@sistemazero/studio` sozinho transformaria `.../personal-assets` em
       // `src/index.ts/personal-assets` (500 no dev server).
       '@sistemazero/studio/personal-assets': r('../src/asset-library/personal.ts'),
+      '@sistemazero/studio/editor': r('../src/studio/StudioEditor.tsx'),
+      '@sistemazero/studio/project-list': r('../src/projects/ProjectList.tsx'),
       '@sistemazero/studio': r('../src/index.ts'),
     },
   },

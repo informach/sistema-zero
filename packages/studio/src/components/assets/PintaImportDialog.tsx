@@ -151,6 +151,8 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
 
         <input
           type="search"
+          name="pinta-drawing-search"
+          autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
           aria-label={t('pintaImport.search.label')}
@@ -199,6 +201,8 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
                       <img
                         src={drawing.thumbDataUrl}
                         alt=""
+                        width={48}
+                        height={48}
                         loading="lazy"
                         className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
                         style={

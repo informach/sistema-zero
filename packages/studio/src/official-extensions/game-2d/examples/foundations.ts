@@ -324,6 +324,7 @@ export const tilemapExample: ExtensionExample = beginnerGameExample({
           h: 28,
           image: 'heroi',
         },
+        { type: 'g2d:fitTileMapToStage', mapVar: 'mapa', ctxVar: 'ctx' },
       ],
       events: [],
       loops: [
@@ -331,7 +332,7 @@ export const tilemapExample: ExtensionExample = beginnerGameExample({
           type: 'g2d:updateEachFrame',
           body: [
             { type: 'g2d:clear' },
-            { type: 'g2d:drawTileMap', mapVar: 'mapa', ctxVar: 'ctx', x: 0, y: 0 },
+            { type: 'g2d:drawPreparedTileMap', mapVar: 'mapa', ctxVar: 'ctx' },
             { type: 'g2d:topDown', spriteVar: 'heroi', speed: 3 },
             { type: 'g2d:tileMapCollide', spriteVar: 'heroi', mapVar: 'mapa' },
             { type: 'g2d:drawSprite', spriteVar: 'heroi', ctxVar: 'ctx' },

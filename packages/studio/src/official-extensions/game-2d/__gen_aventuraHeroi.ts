@@ -11,7 +11,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *
  * Decisões do degrau básico:
  * - Mundo MAIOR que a tela: tilemap 40×30 com tiles de 40px na tela
- *   (mundo 1600×1200) + cameraFollow. O drawTileMap CENTRALIZA o mapa no
+ *   (mundo 1600×1200) com câmera. O mapa pertence ao mundo e é desenhado na
  *   canvas, então o deslocamento (560, 420) devolve o canto do mapa para
  *   (0, 0) do mundo — os mesmos [0..1600]×[0..1200] que a câmera prende.
  * - MATO DESTRUTÍVEL: peça 2 do tileset é sólida; o golpe da espada em cima
@@ -97,6 +97,8 @@ SZGame2D.defineShape("guardiao", function (ctx) {
 });
 const mapa = SZGame2D.createTileMap({ image: "pecas-da-vila", tile: 32, solid: "1 2", grid: ${JSON.stringify(AVENTURA_GRID)} });
 const heroi = SZGame2D.createShapeSprite("heroizinho", { x: 773, y: 580, w: 34, h: 40 });
+const areaJogo = SZGame2D.createWorldFromTileMap(mapa, 40);
+SZGame2D.configureWorldCamera(areaJogo, "free", "free", 0, 0);
 SZGame2D.setHitboxScale(heroi, 80);
 SZGame2D.setHealth(heroi, 6);
 const cenario = SZGame2D.createGroup();
@@ -146,8 +148,8 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Aventura do Herói", "Corte o mato com espaço e derrote os 4 guardiões que rondam a vila!", "Aperte Enter para começar", "#1d4d33");
   }
   if (SZGame2D.sceneIs("jogando")) {
-    SZGame2D.cameraFollow(heroi, 1600, 1200);
-    SZGame2D.drawTileMap(ctx, mapa, 560, 420, 40);
+    SZGame2D.followCameraInWorld(heroi, areaJogo);
+    SZGame2D.drawWorld(ctx, areaJogo);
     SZGame2D.topDown(heroi, 3);
     if (SZGame2D.keyDown("ArrowRight")) {
       miraX = 34;

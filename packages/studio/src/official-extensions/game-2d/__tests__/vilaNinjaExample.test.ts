@@ -42,7 +42,9 @@ describe('Exemplo Vila Ninja — drift contra o parser real', () => {
       'g2d:createGroup', // muros, corações e golpes
       'g2d:spawnInGroup', // os muros de pedra e o coração
       'g2d:collideGroup', // colisão sólida contra os muros (sem tilemap PNG)
-      'g2d:cameraFollow', // a câmera segue no mundo maior que a tela
+      'g2d:createWorld',
+      'g2d:configureWorldCamera',
+      'g2d:followCameraInWorld', // a câmera segue no mundo maior que a tela
       'g2d:keyDown', // a mira (última direção olhada) para o ataque
       'g2d:flipSprite',
       'g2d:centerX', // o golpe sai do centro do ninja na direção olhada
@@ -81,7 +83,10 @@ describe('Exemplo Vila Ninja — drift contra o parser real', () => {
     const raw = JSON.stringify(behaviorStatements(vilaNinjaExample.ir))
     // O mundo tem 720×540 (maior que os 480×270 do palco): a câmera rola.
     expect(raw).toContain(
-      '"type":"g2d:cameraFollow","spriteVar":"heroi","worldW":{"type":"num","value":720},"worldH":{"type":"num","value":540}',
+      '"type":"g2d:createWorld","varName":"areaJogo","width":{"type":"num","value":720},"height":{"type":"num","value":540}',
+    )
+    expect(raw).toContain(
+      '"type":"g2d:followCameraInWorld","spriteVar":"heroi","worldVar":"areaJogo"',
     )
     // Uma família de inimigo: monstros que patrulham (3 de vida).
     expect(raw).toContain('"behavior":"patrulha"')

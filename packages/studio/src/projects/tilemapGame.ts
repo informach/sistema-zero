@@ -87,8 +87,6 @@ function buildIR(
   meta: ProjectTilemapMeta,
   platformer: boolean,
 ): SZIR {
-  const worldW = meta.cols * meta.tileSize
-  const worldH = meta.rows * meta.tileSize
   const size = Math.max(8, meta.tileSize - 4)
   const move = platformer
     ? { type: 'g2d:platformer' as const, spriteVar: 'jogador', ctxVar: 'ctx', speed: 4, jump: 11 }
@@ -98,6 +96,31 @@ function buildIR(
     ...(frontName
       ? [{ type: 'g2d:createTileMapFromAsset' as const, varName: 'mapaFrente', image: frontName }]
       : []),
+    {
+      type: 'g2d:createWorldFromTileMap',
+      varName: 'mundo',
+      mapVar: 'mapa',
+      size: meta.tileSize,
+    },
+    ...(frontName
+      ? [
+          {
+            type: 'g2d:placeTileMap' as const,
+            mapVar: 'mapaFrente',
+            x: 0,
+            y: 0,
+            size: meta.tileSize,
+          },
+        ]
+      : []),
+    {
+      type: 'g2d:configureWorldCamera',
+      worldVar: 'mundo',
+      horizontal: 'free',
+      vertical: 'free',
+      deadZoneX: 0,
+      deadZoneY: 0,
+    },
     {
       type: 'g2d:createSprite',
       varName: 'jogador',
@@ -111,14 +134,20 @@ function buildIR(
       type: 'g2d:updateEachFrame',
       body: [
         { type: 'g2d:clear' },
-        { type: 'g2d:drawTileMap', mapVar: 'mapa', ctxVar: 'ctx', x: 0, y: 0 },
         move,
-        { type: 'g2d:tileMapCollide', spriteVar: 'jogador', mapVar: 'mapa' },
-        { type: 'g2d:cameraFollow', spriteVar: 'jogador', worldW, worldH },
+        { type: 'g2d:collideWorld', spriteVar: 'jogador', worldVar: 'mundo' },
+        { type: 'g2d:followCameraInWorld', spriteVar: 'jogador', worldVar: 'mundo' },
+        { type: 'g2d:drawWorld', ctxVar: 'ctx', worldVar: 'mundo' },
         { type: 'g2d:drawSprite', spriteVar: 'jogador', ctxVar: 'ctx' },
         // A frente (copa de árvore/telhado) desenha DEPOIS do jogador.
         ...(frontName
-          ? [{ type: 'g2d:drawTileMap' as const, mapVar: 'mapaFrente', ctxVar: 'ctx', x: 0, y: 0 }]
+          ? [
+              {
+                type: 'g2d:drawPreparedTileMap' as const,
+                mapVar: 'mapaFrente',
+                ctxVar: 'ctx',
+              },
+            ]
           : []),
       ],
     },

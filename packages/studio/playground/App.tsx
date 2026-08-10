@@ -3,8 +3,6 @@ import {
   createLocalPersistenceAdapter,
   type Project,
   ProjectList,
-  prefetchStudioModes,
-  StudioEditor,
   type StudioPintaDrawingSummary,
   type StudioPintaLibraryAdapter,
   type StudioShareAdapter,
@@ -13,7 +11,12 @@ import {
 } from '@sistemazero/studio'
 import { savePersonalAsset, setPersonalAssetsNamespace } from '@sistemazero/studio/personal-assets'
 import type { JSX } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+
+const StudioEditor = lazy(async () => {
+  const module = await import('@sistemazero/studio/editor')
+  return { default: module.StudioEditor }
+})
 
 // App do PLAYGROUND: simula o host que embarca o <Studio>, consumindo SOMENTE
 // a API pública do package — prova de que a superfície é suficiente. A
@@ -230,31 +233,42 @@ function EditorScreen({
   }
   const isPro = state.project.kind === 'pro'
   return (
-    <StudioEditor
-      initialProject={state.project}
-      onExit={onExit}
-      // Liga o botão "Compartilhar" (publicar no Mural) com um adapter de demo.
-      share={shareDemo}
-      // O tutor é opt-in e só existe no editor completo; aulas não recebem esta prop.
-      tutor={{ adapter: tutorDemo, cooldownMs: 0 }}
-      // Playground = superfície do admin: mostra os EXEMPLOS prontos (escondidos
-      // para clientes, pois podem estar desatualizados). Ver examples-visibility.ts.
-      showExamples
-      // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
-      // Projeto profissional força terminal + allowedModes:['code'] via a flag.
-      features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
-      // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
-      onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
-      onSave={(project) => console.debug('[host] onSave', project.id)}
-      onError={(error) => console.warn('[host] onError', error)}
-      onModeChange={(mode) => console.debug('[host] onModeChange', mode)}
-      onReady={() => console.debug('[host] onReady')}
-      // Botão "Editar" nos desenhos do Pinta. No app de verdade abre
-      // `/pinta?desenho=<id>` numa aba nova; aqui só loga (não há Pinta).
-      onEditDrawing={(drawingId) => console.debug('[host] onEditDrawing', drawingId)}
-      // "Trazer do Pinta" com galeria fake (ver pintaLibraryDemo).
-      pintaLibrary={pintaLibraryDemo}
-    />
+    <Suspense
+      fallback={
+        <div
+          role="status"
+          className="flex h-full items-center justify-center bg-sz-bg text-sm text-sz-fg-soft"
+        >
+          Carregando editor…
+        </div>
+      }
+    >
+      <StudioEditor
+        initialProject={state.project}
+        onExit={onExit}
+        // Liga o botão "Compartilhar" (publicar no Mural) com um adapter de demo.
+        share={shareDemo}
+        // O tutor é opt-in e só existe no editor completo; aulas não recebem esta prop.
+        tutor={{ adapter: tutorDemo, cooldownMs: 0 }}
+        // Playground = superfície do admin: mostra os EXEMPLOS prontos (escondidos
+        // para clientes, pois podem estar desatualizados). Ver examples-visibility.ts.
+        showExamples
+        // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
+        // Projeto profissional força terminal + allowedModes:['code'] via a flag.
+        features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
+        // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
+        onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
+        onSave={(project) => console.debug('[host] onSave', project.id)}
+        onError={(error) => console.warn('[host] onError', error)}
+        onModeChange={(mode) => console.debug('[host] onModeChange', mode)}
+        onReady={() => console.debug('[host] onReady')}
+        // Botão "Editar" nos desenhos do Pinta. No app de verdade abre
+        // `/pinta?desenho=<id>` numa aba nova; aqui só loga (não há Pinta).
+        onEditDrawing={(drawingId) => console.debug('[host] onEditDrawing', drawingId)}
+        // "Trazer do Pinta" com galeria fake (ver pintaLibraryDemo).
+        pintaLibrary={pintaLibraryDemo}
+      />
+    </Suspense>
   )
 }
 
@@ -266,14 +280,25 @@ function DualView(): JSX.Element {
   const [a] = useState(() => createEmptyProject('dual-a', 'Instância A'))
   const [b] = useState(() => createEmptyProject('dual-b', 'Instância B'))
   return (
-    <div className="grid h-full grid-cols-2 gap-2 p-2" style={{ background: '#333' }}>
-      <div className="h-full min-h-0 overflow-hidden rounded">
-        <StudioEditor initialProject={a} theme="dark" />
+    <Suspense
+      fallback={
+        <div
+          role="status"
+          className="flex h-full items-center justify-center bg-sz-bg text-sm text-sz-fg-soft"
+        >
+          Carregando editores…
+        </div>
+      }
+    >
+      <div className="grid h-full grid-cols-2 gap-2 p-2" style={{ background: '#333' }}>
+        <div className="h-full min-h-0 overflow-hidden rounded">
+          <StudioEditor initialProject={a} theme="dark" />
+        </div>
+        <div className="h-full min-h-0 overflow-hidden rounded">
+          <StudioEditor initialProject={b} theme="light" />
+        </div>
       </div>
-      <div className="h-full min-h-0 overflow-hidden rounded">
-        <StudioEditor initialProject={b} theme="light" />
-      </div>
-    </div>
+    </Suspense>
   )
 }
 
@@ -290,11 +315,6 @@ export function App(): JSX.Element {
     const onPopState = () => setView(parseViewFromLocation())
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
-  }, [])
-
-  // Aquece os chunks pesados (Blockly/Monaco) enquanto o aluno olha a lista.
-  useEffect(() => {
-    prefetchStudioModes()
   }, [])
 
   if (view.name === 'dual') {

@@ -247,7 +247,10 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // Mundo, câmera configurável e Fase. O último é do reset central que também
   // inicializa corretamente os modos reversos; baixar este teto continua
   // obrigatório quando uma refatoração remover parâmetros.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(995)
+  // 995 → 1028: +33 dos contratos de movimento varrido, índice espacial do
+  // terreno, palco lógico responsivo e mapas encaixados. O teto é o valor
+  // medido, sem folga: qualquer parâmetro novo continua quebrando a catraca.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1028)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

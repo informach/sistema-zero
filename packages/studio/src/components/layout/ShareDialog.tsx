@@ -304,6 +304,8 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
                 {t('share.step.title.label')}
               </span>
               <input
+                name="share-title"
+                autoComplete="off"
                 aria-label={t('share.step.title.label')}
                 value={title}
                 maxLength={MAX_TITLE}
@@ -319,6 +321,8 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               {t('share.field.summary')}
             </span>
             <textarea
+              name="share-description"
+              autoComplete="off"
               aria-label={t('share.field.summary')}
               value={description}
               maxLength={MAX_DESCRIPTION}
@@ -380,6 +384,8 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               <img
                 src={coverPreviewSrc}
                 alt=""
+                width={768}
+                height={432}
                 className="max-h-48 w-auto rounded-md border border-sz-border"
               />
             ) : (
@@ -437,6 +443,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               <input
                 ref={fileRef}
                 type="file"
+                name="share-cover-file"
                 accept="image/png,image/jpeg,image/webp"
                 className="hidden"
                 onChange={onPickFile}
@@ -449,6 +456,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
             <label className="flex items-start gap-2 rounded-md border border-sz-border bg-sz-bg px-3 py-2">
               <input
                 type="checkbox"
+                name="join-monthly-challenge"
                 checked={joinChallenge}
                 onChange={(e) => setJoinChallenge(e.target.checked)}
                 disabled={publishing}

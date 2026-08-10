@@ -1340,7 +1340,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       }
       // Levou dano e SOBREVIVEU: avisa o "quando levar dano". Quem chegou a zero
       // não passa por aqui — para esse a criança tem o "quando for derrotado", e
-      // disparar os dois no mesmo golpe faria o chefão trocar de fase morrendo.
+      // disparar os dois no mesmo golpe faria o chefão trocar de forma morrendo.
       if (hpDoQuadro !== null) {
         var antes = _finiteNumber(s._hpAntes, hpDoQuadro);
         // "Sobreviveu" = a vida de AGORA é positiva (o espinho já foi curado).
@@ -1438,7 +1438,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   }
 
   /**
-   * Registra o "quando levar dano" (o gancho de FASE do chefão: leia a vida dele
+   * Registra o "quando levar dano" (o gancho de FORMA do chefão: leia a vida dele
    * ali dentro para deixá-lo furioso na metade). Registre UMA vez, fora do laço.
    */
   function onEnemyHurt(type, fn, id) {

@@ -122,6 +122,7 @@ export type GameTwoDCameraHorizontal = 'off' | 'free' | 'right' | 'left'
 export type GameTwoDCameraVertical = 'off' | 'free' | 'down' | 'up'
 
 export interface GameTwoDWorld {
+  readonly _kind: 'g2d-world'
   width: number
   height: number
   edges: GameTwoDWorldEdges
@@ -138,9 +139,12 @@ export interface GameTwoDWorld {
 }
 
 export interface GameTwoDLevel {
+  readonly _kind: 'g2d-level'
   world: GameTwoDWorld
   spawnX: number
   spawnY: number
+  /** Grupos dinâmicos limpos somente por `restartLevel`. */
+  resetGroups: GameTwoDGroup[]
 }
 
 export interface GameTwoDEnemyTypeOptions extends GameTwoDSpriteOptions {
@@ -398,6 +402,8 @@ export interface GameTwoDMathAndStateApi {
   pruneOld(group: GameTwoDGroup, seconds: number): void
   flipSprite(sprite: GameTwoDSprite, direction: 'left' | 'right'): void
   setOpacity(sprite: GameTwoDSprite, percent: number): void
+  /** Reposiciona sem colidir com o caminho anterior (teleporte/respawn). */
+  setPosition(sprite: GameTwoDSprite, x: number, y: number): void
   setSize(sprite: GameTwoDSprite, width: number, height: number): void
   scaleSprite(sprite: GameTwoDSprite, factor: number): void
   wrapEdges(sprite: GameTwoDSprite): void
@@ -508,7 +514,12 @@ export interface GameTwoDWorldApi {
   followCameraInWorld(sprite: GameTwoDSprite, worldValue: GameTwoDWorld): void
   drawWorld(ctx: GameTwoDContext, worldValue: GameTwoDWorld): void
   createLevel(worldValue: GameTwoDWorld, spawnX: number, spawnY: number): GameTwoDLevel
+  /** Entra e preserva tiles/grupos já alterados. */
   enterLevel(level: GameTwoDLevel, player: GameTwoDSprite): void
+  /** Faz o grupo renascer junto da Fase quando `restartLevel` for usado. */
+  resetGroupWithLevel(level: GameTwoDLevel, group: GameTwoDGroup): void
+  /** Restaura mapas e grupos registrados antes de entrar novamente. */
+  restartLevel(level: GameTwoDLevel, player: GameTwoDSprite): void
   onLevelEnter(getLevel: () => GameTwoDLevel, fn: () => void, id?: string): void
   levelIsActive(level: GameTwoDLevel): boolean
   collideCurrentLevel(sprite: GameTwoDSprite): void
@@ -799,6 +810,7 @@ export const GAME_TWO_D_API_KEYS = [
   'pruneOld',
   'flipSprite',
   'setOpacity',
+  'setPosition',
   'setSize',
   'scaleSprite',
   'wrapEdges',
@@ -880,6 +892,8 @@ export const GAME_TWO_D_API_KEYS = [
   'drawWorld',
   'createLevel',
   'enterLevel',
+  'resetGroupWithLevel',
+  'restartLevel',
   'onLevelEnter',
   'levelIsActive',
   'collideCurrentLevel',

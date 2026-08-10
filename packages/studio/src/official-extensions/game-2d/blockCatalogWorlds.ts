@@ -292,7 +292,35 @@ export const gameTwoDWorldBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Troca a etapa jogável: posiciona o sprite na entrada e reinicia vx, vy, apoio e câmera. Vida e pontuação continuam. Para apenas começar outra onda, atualize seus grupos/variáveis.',
+      'Troca para essa área e posiciona o sprite na entrada, mas preserva tiles quebrados, itens e inimigos que já estavam nela. Use “Reiniciar a Fase” quando quiser tudo novo. Vida e pontuação continuam.',
+  },
+  {
+    type: 'sz_g2d_level_reset_group',
+    placement: 'start-only-command',
+    message0: 'Na Fase %1 reiniciar o grupo %2 junto com ela',
+    args0: [
+      { type: 'field_name_picker', name: 'LEVEL', text: 'fase1', kind: 'g2d-level' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Registra um grupo de inimigos ou itens que pertence à Fase. “Entrar” preserva esse grupo; “Reiniciar” o esvazia antes de rodar “Quando entrar” novamente.',
+  },
+  {
+    type: 'sz_g2d_restart_level',
+    placement: 'command',
+    message0: 'Reiniciar a Fase %1 com o sprite %2',
+    args0: [
+      { type: 'field_name_picker', name: 'LEVEL', text: 'fase1', kind: 'g2d-level' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Restaura os tiles alterados, esvazia os grupos registrados nessa Fase, reposiciona o jogador e roda “Quando entrar” uma vez para recriar o conteúdo.',
   },
   {
     type: 'sz_g2d_on_level_enter',
@@ -305,7 +333,7 @@ export const gameTwoDWorldBlocks = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Roda uma vez em cada entrada nessa Fase, inclusive na primeira. Use para criar inimigos, itens e regras da etapa. Reentrar dispara novamente.',
+      'Roda uma vez em cada “Entrar” ou “Reiniciar”. Use para regras de entrada. Para recriar inimigos e itens sem duplicar, registre os grupos com “reiniciar junto” e use “Reiniciar a Fase”.',
   },
   {
     type: 'sz_g2d_level_is_active',

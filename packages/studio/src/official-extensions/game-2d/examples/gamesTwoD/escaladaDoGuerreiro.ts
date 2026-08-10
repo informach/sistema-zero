@@ -4,7 +4,7 @@ import { beginnerGameExample } from '../shared'
 /**
  * Exemplo "Escalada do Guerreiro": recriação BÁSICA do vertical-platformer do
  * Chris Courses. O herói começa embaixo e sobe pulando de plataforma em plataforma
- * (arrowsX + gravidade + pulo no chão) enquanto a câmera acompanha (cameraFollow)
+ * (arrowsX + gravidade + pulo no chão) enquanto a câmera acompanha o herói
  * num mundo mais alto que a tela; a meta é a bandeira lá no topo. As plataformas
  * viraram um grupo de retângulos com colisão sólida (collideGroup), em ziguezague.
  * 100% procedural (sem os PNGs do warrior/fundo). A behavior foi GERADA pelo parser
@@ -178,6 +178,20 @@ export const escaladaDoGuerreiroExample: ExtensionExample = beginnerGameExample(
             type: 'num',
             value: 100,
           },
+        },
+        {
+          type: 'g2d:createWorld',
+          varName: 'areaJogo',
+          width: { type: 'num', value: 320 },
+          height: { type: 'num', value: 960 },
+        },
+        {
+          type: 'g2d:configureWorldCamera',
+          worldVar: 'areaJogo',
+          horizontal: 'off',
+          vertical: 'free',
+          deadZoneX: { type: 'num', value: 0 },
+          deadZoneY: { type: 'num', value: 0 },
         },
         {
           type: 'g2d:setGravity',
@@ -633,16 +647,9 @@ export const escaladaDoGuerreiroExample: ExtensionExample = beginnerGameExample(
               },
               then: [
                 {
-                  type: 'g2d:cameraFollow',
+                  type: 'g2d:followCameraInWorld',
                   spriteVar: 'heroi',
-                  worldW: {
-                    type: 'num',
-                    value: 320,
-                  },
-                  worldH: {
-                    type: 'num',
-                    value: 960,
-                  },
+                  worldVar: 'areaJogo',
                 },
                 {
                   type: 'g2d:arrowsX',

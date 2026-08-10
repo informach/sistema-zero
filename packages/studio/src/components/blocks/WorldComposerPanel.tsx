@@ -421,6 +421,8 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
               Posição X
               <input
                 type="number"
+                name="world-item-x"
+                autoComplete="off"
                 step="0.5"
                 value={selectedItem.x}
                 disabled={!selectedItem.movable}
@@ -432,6 +434,8 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
               Posição Z
               <input
                 type="number"
+                name="world-item-z"
+                autoComplete="off"
                 step="0.5"
                 value={selectedItem.z}
                 disabled={!selectedItem.movable}

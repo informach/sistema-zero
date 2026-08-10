@@ -56,6 +56,15 @@ export const cameraAdventureExample: ExtensionExample = beginnerGameExample({
     version: 2,
     behavior: {
       start: [
+        { type: 'g2d:createWorld', varName: 'areaJogo', width: 1600, height: 320 },
+        {
+          type: 'g2d:configureWorldCamera',
+          worldVar: 'areaJogo',
+          horizontal: 'free',
+          vertical: 'off',
+          deadZoneX: 0,
+          deadZoneY: 0,
+        },
         {
           type: 'g2d:createSprite',
           varName: 'heroi',
@@ -255,7 +264,7 @@ export const cameraAdventureExample: ExtensionExample = beginnerGameExample({
                 },
               ],
             },
-            { type: 'g2d:cameraFollow', spriteVar: 'heroi', worldW: 1600, worldH: 320 },
+            { type: 'g2d:followCameraInWorld', spriteVar: 'heroi', worldVar: 'areaJogo' },
             {
               type: 'g2d:onSpriteGroupOverlap',
               spriteVar: 'heroi',

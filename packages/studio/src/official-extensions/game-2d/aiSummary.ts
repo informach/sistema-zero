@@ -34,6 +34,8 @@ desenhe; a forma antiga de desenhar passando x/y/tamanho é só compatibilidade.
 MAPA → MUNDO → FASE: Mundo é a área física (limites, mapas, figuras sólidas ou
 plataformas e câmera) e pode existir sem Fases. Fase é opcional e genérica: Mundo +
 posição inicial + evento de entrada; serve também para nave, puzzle ou uma tela fixa.
+Entrar preserva o estado da área; Reiniciar restaura tiles e grupos registrados para a
+Fase antes do evento de entrada recriar o conteúdo.
 Cenas são estados de interface. Ondas são grupos/ritmos de inimigos dentro do mesmo
 Mundo ou Fase, normalmente controladas por uma variável — não crie uma Fase por onda.
 Para jogo de uma tela use só o necessário; para mapa rolável, prefira câmera do Mundo.
