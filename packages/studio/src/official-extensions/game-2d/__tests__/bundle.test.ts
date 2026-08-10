@@ -44,8 +44,12 @@ describe('bundle inicial do Jogo 2D', () => {
       containsRuntime: boolean
       containsExample: boolean
     }
-    expect(metrics.rawBytes).toBeLessThan(180_000)
-    expect(metrics.gzipBytes).toBeLessThan(50_000)
+    // Os contratos explícitos de Mapas, Mundos e Fases acrescentaram 22 blocos
+    // e tooltips pedagógicos ao catálogo inicial (≈ 8 KiB minificados). Runtime
+    // e exemplos continuam fora deste entrypoint; ambos os tamanhos ficam
+    // travados logo acima da medição atual para detectar nova regressão.
+    expect(metrics.rawBytes).toBeLessThan(189_000)
+    expect(metrics.gzipBytes).toBeLessThan(50_500)
     expect(metrics.chunks).toBeGreaterThanOrEqual(5)
     expect(metrics.containsRuntime).toBe(false)
     expect(metrics.containsExample).toBe(false)

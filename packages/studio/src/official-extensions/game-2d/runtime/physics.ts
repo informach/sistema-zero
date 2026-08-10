@@ -38,12 +38,27 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   function _confirmGroundSupport(sprite, support) {
     if (!sprite) return;
     sprite.onGround = true;
+    var candidateOwner = support && support !== sprite ? support : null;
+    if (sprite._supportResolutionDepth > 0) {
+      var preferred = sprite._supportPreferenceOwner || null;
+      var currentOwner = sprite._groundSupport && sprite._groundSupport.owner;
+      // O apoio do quadro anterior vence enquanto continuar válido. Assim um
+      // obstáculo sobreposto visitado antes/depois não muda o transporte.
+      if (preferred && candidateOwner !== preferred && currentOwner === preferred) return;
+      if (preferred && candidateOwner !== preferred && sprite._supportCandidateChosen) return;
+    }
     if (support && support !== sprite &&
         _isFiniteNumber(support.x) && _isFiniteNumber(support.y)) {
-      sprite._groundSupport = { owner: support, x: support.x, y: support.y };
+      sprite._groundSupport = {
+        owner: support,
+        x: support.x,
+        y: support.y,
+        group: sprite._supportResolutionGroup || null
+      };
     } else {
       sprite._groundSupport = null;
     }
+    if (sprite._supportResolutionDepth > 0) sprite._supportCandidateChosen = true;
   }
   /** Solta imediatamente o apoio (pulo, troca para movimento livre etc.). */
   function _detachGroundSupport(sprite) {
@@ -57,7 +72,8 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * quadro. O deslocamento próprio do passageiro é preservado e somado ao da base.
    */
   function _carryByGroundSupport(sprite, support) {
-    if (!sprite || !support || sprite._groundedLastFrame !== true) return;
+    if (!sprite || !support ||
+        (sprite._groundedLastFrame !== true && sprite.onGround !== true)) return;
     var previous = sprite._groundSupport;
     if (!previous || previous.owner !== support) return;
     var supportX = _finiteNumber(support.x, previous.x);
@@ -66,6 +82,40 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     sprite.y = _finiteNumber(sprite.y, 0) + supportY - previous.y;
     previous.x = supportX;
     previous.y = supportY;
+  }
+  function _beginSupportResolution(sprite) {
+    if (!sprite) return;
+    var depth = _finiteNumber(sprite._supportResolutionDepth, 0);
+    if (depth === 0) {
+      var previous = sprite._groundSupport;
+      // Uma figura removida do grupo deixa de ser terreno imediatamente. Sem
+      // esta validação, o passageiro ainda herdava o último deslocamento dela.
+      if (previous && previous.group &&
+          (!previous.group.items || previous.group.items.indexOf(previous.owner) === -1)) {
+        _detachGroundSupport(sprite);
+        previous = null;
+      }
+      sprite._supportPreferenceOwner = previous && previous.owner ? previous.owner : null;
+      sprite._supportCandidateChosen = false;
+      if (sprite._supportPreferenceOwner) {
+        _carryByGroundSupport(sprite, sprite._supportPreferenceOwner);
+      }
+    }
+    sprite._supportResolutionDepth = depth + 1;
+  }
+  function _endSupportResolution(sprite) {
+    if (!sprite) return;
+    var depth = Math.max(0, _finiteNumber(sprite._supportResolutionDepth, 1) - 1);
+    sprite._supportResolutionDepth = depth;
+    if (depth === 0) {
+      delete sprite._supportPreferenceOwner;
+      delete sprite._supportCandidateChosen;
+    }
+  }
+  function _recordPreviousPosition(sprite) {
+    if (!sprite) return;
+    sprite._previousX = _finiteNumber(sprite.x, 0);
+    sprite._previousY = _finiteNumber(sprite.y, 0);
   }
   function _jumpFromGround(sprite, gravity, strength) {
     if (!sprite) return;
@@ -111,6 +161,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    */
   function applyVelocity(sprite) {
     if (!sprite) return;
+    _recordPreviousPosition(sprite);
     // A colisão do quadro anterior pode ter marcado o chão. A integração abre
     // um novo quadro: se ainda houver apoio, a colisão o confirma depois de mover.
     var wasGrounded = _beginGroundFrame(sprite);

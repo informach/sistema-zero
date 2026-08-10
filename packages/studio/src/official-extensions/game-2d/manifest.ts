@@ -4,9 +4,9 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.68.0',
+  version: '0.69.0',
   description:
-    'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
+    'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, mapas, Mundos com câmera, Fases opcionais, colisões, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -104,10 +104,16 @@ pronta. Se o nome não existir ou a carga falhar, o sprite usa um retângulo da 
 
 Use estes blocos dentro do **"A cada quadro do jogo"**:
 
-- **Plataforma**. Esquerda/direita + pulo + pouso. Encaixe **Aplicar a gravidade do
-  mundo ao sprite** logo acima para fazê-lo cair. A borda atraída sempre é chão (base com
-  gravidade positiva e teto com gravidade negativa); tiles e figuras também viram chão
-  quando um bloco de colisão os confirma depois do movimento.
+- **Mover estilo plataforma na tela (a borda é chão)**. É o atalho para um jogo fixo:
+  esquerda/direita + pulo, usando a borda atraída da tela como piso. Encaixe **Aplicar a
+  gravidade do mundo ao sprite** logo acima. Não use este bloco quando o mapa tiver poços.
+- **Mover estilo plataforma sobre o terreno**. É o controle para mapas, Mundos e chão feito
+  por figuras. Ele não inventa piso na borda da tela. A ordem é: aplicar gravidade, mover,
+  **Colidir com o Mundo** e então acompanhar com a câmera. Tiles sólidos, tiles-plataforma,
+  grupos sólidos, grupos-plataforma ou a borda escolhida no Mundo confirmam o apoio.
+- **Fazer o sprite pular sobre o terreno**. A mesma regra, mas sem andar para os lados;
+  serve para corrida e outros gêneros que só precisam do salto. Segurar o botão não repete
+  o pulo quando o personagem pousa.
 - **4 direções (top-down)**. Anda nas 4 direções; a diagonal não fica mais rápida.
 - **Voar livre**. Sem gravidade, mas com PESO: leva um tiquinho para engatar, plana um
   bom tanto quando você solta e demora para virar de lado (faça a curva antes!). É essa
@@ -134,11 +140,18 @@ quadros (o **tileset**). Escolha um da aba **Assets** (ex.: \`tileset\`).
   colunas; \`.\` é uma célula vazia. Em **tiles sólidos**, liste os números que barram o
   jogador (ex.: \`1\`); em **tiles plataforma**, os que seguram só na face atraída pela
   gravidade e deixam atravessar pela outra.
-- **Desenhar mapa**. Desenha o mapa na tela (use no "a cada quadro", antes do sprite). Com
-  "tiles de 0 px" ele ENCAIXA sozinho no canvas (centralizado, sem distorcer); um valor
-  como \`32\` fixa o tamanho do tile na tela (controle de zoom do mapa).
-- **Colidir com os sólidos e plataformas do mapa**. Sólidos são chão e paredes;
-  plataformas seguram em uma face só. Use a cada quadro, depois de mover o sprite.
+- **Preparar o mapa encaixado na tela**. Use UMA vez em **⚙️ Ao iniciar** quando o mapa
+  inteiro for uma tela. Calcula posição e escala sem distorcer.
+- **Preparar o mapa em x/y com tiles de N px**. Use UMA vez quando quiser coordenadas
+  exatas, especialmente num Mundo maior que a tela.
+- **Desenhar o mapa preparado**. Use no "a cada quadro"; ele apenas desenha e nunca muda
+  a geometria. Assim arte e colisão não se deslocam quando a câmera liga.
+- **Criar Mundo do mapa**. Atalho para mapa rolável: posiciona em x 0/y 0, calcula os
+  limites por colunas × tile e linhas × tile e cadastra o mapa como terreno. Depois use
+  os blocos de colidir, acompanhar com câmera e desenhar o Mundo.
+- **Colidir com os sólidos e plataformas do mapa**. É a opção direta para a receita de
+  uma tela sem Mundo. Sólidos são chão e paredes; plataformas seguram em uma face só.
+  Use a cada quadro, depois de mover o sprite.
 - **Impedir de atravessar os sprites de um grupo** (em **💥 Colisões**). Mesma colisão, mas
   contra obstáculos SEM mapa: jogue as pedras/casas (até desenhadas por figura) num grupo
   e o sprite não atravessa nenhuma delas, deslizando pela beirada.
@@ -272,7 +285,7 @@ Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensõe
 Categoria **🤸 Kit equilibrista**. Um jogo estilo "Stick Hero" que VOCÊ monta: estique
 o bastão do tamanho certo e atravesse para a próxima plataforma. O EQUILIBRISTA é um
 **sprite comum** (os blocos de sprite funcionam nele) e as regras moram no **caminho**.
-Melhor num canvas **em pé** (ex.: 360×480). Estes kits não combinam com a 🎥 Câmera
+Melhor num canvas **em pé** (ex.: 360×480). Estes kits não combinam com 🌍 Mundos com câmera
 (o mundo já desliza sozinho).
 
 - **Criar equilibrista** (largura, altura e cor). É um sprite: dá para trocar a figura
@@ -380,15 +393,19 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
   (**Ir para a tela 'perdeu'/'ganhou'** + **a tela atual é …?**): o "a cada quadro" decide o que mostrar e o
   jogo segue rodando a tela de fim.
 
-### Crie mundos maiores e depure
+### Crie áreas jogáveis e depure
 
-Para mundos maiores que a tela e jogos mais ricos:
+Um Mundo pode ser maior que a tela, caber exatamente nela ou nem usar câmera:
 
-- **🎥 Câmera**: **Fazer a câmera seguir o sprite** (mundo maior que a tela, presa às bordas), **Mover a
-  câmera** na mão e **a posição x/y da câmera** (para fundos em parallax). A câmera rola só o MUNDO. Desenhe o HUD (placar, vidas, textos) DEPOIS do mundo que ele fica fixo na tela. ⚠️ Cliques/toques
-  continuam em coordenadas de tela; com câmera, a posição no mundo é tela + câmera.
-- **🗺️ Mapa** (destrutível): **Quebrar o tile** onde está um sprite (mineração/destruição), **pôr um tile**
-  e **o número do tile** onde está o sprite (ler/construir em tempo real).
+- **🌍 Mundos**: crie uma área jogável, cadastre mapas e grupos como terreno, escolha as bordas e
+  configure a câmera. A câmera rola só o MUNDO. Desenhe o HUD (placar, vidas, textos) DEPOIS do mundo
+  para ele ficar fixo na tela. ⚠️ Cliques/toques continuam em coordenadas de tela; com câmera, a
+  posição no mundo é tela + câmera.
+- **🗺️ Mapas** (destrutíveis): prepare a geometria uma vez; depois use **Quebrar o tile** onde está um
+  sprite (mineração/destruição), **pôr um tile** e **o número do tile** onde está o sprite
+  (ler/construir em tempo real).
+- **🚩 Fases**: agrupe um Mundo e um ponto de entrada quando o jogo tiver progressão. Entrar na fase
+  posiciona o jogador e dispara o evento próprio; jogos de uma área só não precisam desse conceito.
 - **📦 Muitos**: **Trazer para a frente** / **Mandar para trás**. Controla quem é desenhado por
   cima de quem dentro de um grupo.
 - **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS**. Para
@@ -397,6 +414,36 @@ Para mundos maiores que a tela e jogos mais ricos:
   palco para todo mundo ver onde começa e onde termina a área do jogo. Ótimo para explicar o palco
   a alguém. Ponha em **⚙️ Ao iniciar**; para tirar, apague o bloco. A moldura fica na beirada da
   tela, então ela não atrapalha o desenho nem é apagada pelo jogo.
+
+#### Escolha a receita certa
+
+**1. Um mapa que é só uma tela.** Em **⚙️ Ao iniciar**, crie o mapa e use **Preparar o mapa
+encaixado na tela**. Em **🔁 Enquanto estiver rodando**, desenhe o mapa preparado e faça o
+personagem colidir diretamente com ele. Não crie Mundo, câmera nem Fase se eles não ajudam esse
+jogo.
+
+**2. Uma área jogável, com ou sem rolagem.** Crie um **Mundo do mapa** ou um **Mundo vazio**.
+No vazio, cadastre grupos de figuras como terreno sólido ou plataforma; também dá para misturar
+figuras e mapas preparados. Configure as bordas e a câmera uma vez. A cada quadro, a ordem é:
+aplicar gravidade, mover sobre o terreno, colidir com o Mundo, fazer a câmera seguir e desenhar o
+Mundo. Um Mundo do tamanho da tela funciona normalmente e sua câmera permanece em x 0, y 0. Esta
+receita serve para plataforma, nave, labirinto, corrida ou qualquer outro gênero e **não exige
+Fases**. O exemplo **Mundo Pirata** usa esta receita com todo o chão feito por figuras.
+
+**3. Várias Fases.** Crie um Mundo para cada área e depois uma Fase para cada Mundo, escolhendo
+o ponto de entrada. Use **Quando entrar na Fase** para criar inimigos e itens daquela etapa. O
+bloco **Entrar na Fase** troca a etapa, reposiciona o personagem e reinicia vx, vy, apoio e câmera;
+vida e pontuação continuam. Os atalhos da **Fase atual** colidem, acompanham e desenham o Mundo
+ativo. Fase não significa “plataforma”: pode ser uma missão de nave ou uma arena de uma tela.
+
+**Ondas não são Fases.** Uma onda normal acontece no mesmo Mundo: guarde o número da onda numa
+variável, esvazie ou preencha grupos e ajuste a dificuldade com os blocos de tempo. Não entre de
+novo na Fase, porque isso também reposiciona o personagem e reinicia a física e a câmera. Use uma
+nova Fase somente quando a onda realmente troca a área jogável ou precisa desse reinício completo.
+
+**Telas e cenas continuam separadas.** “Início”, “jogando”, “venceu” e “perdeu” controlam o que
+o jogo mostra. Mundo descreve a área jogável; Fase descreve progressão. Um jogo pode usar cenas
+sem Fases, Fases sem rolagem ou as duas coisas juntas.
 
 ### Leia a posição e o tamanho do sprite
 
@@ -449,7 +496,7 @@ Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de anima
 
 ### Use um mapa pronto do Pinta
 
-- **Criar mapa do meu desenho** (🗺️ Mapa). Desenhe o MAPA no Pinta, toque no 🚀 e escolha o
+- **Criar mapa do meu desenho** (🗺️ Mapas). Desenhe o MAPA no Pinta, toque no 🚀 e escolha o
   desenho neste bloco: grade, peças e sólidos vêm JUNTOS, nada de colar texto.
 - No **Criar mapa de tiles** (o clássico, para montar/editar na mão), a GRADE agora abre um
   mini-editor visual: escolha uma peça e PINTE as células (borracha apaga, dá para mudar

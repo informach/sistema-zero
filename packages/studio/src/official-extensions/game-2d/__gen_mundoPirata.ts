@@ -9,7 +9,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * em examples/clearcode/mundoPirata.ts. O drift test (`mundoPirataExample.test.ts`) guarda.
  *
  * Fidelidade em ESPÍRITO ao side-scroller: um mundo LARGO (1600) com a câmera
- * seguindo o herói (cameraFollow), gravidade + pulo (só no chão, como o Dino),
+ * seguindo o herói (Mundo + câmera), gravidade + pulo confirmado pelo terreno,
  * chão em segmentos com 2 BURACOS, plataformas flutuantes para pular, moedas
  * para pegar, caranguejos que patrulham (pisão por cima derrota, encostar do
  * lado perde) e uma bandeira no fim. 100% procedural, sem assets.
@@ -32,6 +32,10 @@ SZGame2D.defineShape("caranguejo", function (ctx) {
 const heroi = SZGame2D.createShapeSprite("pirata", { x: 40, y: 190, w: 28, h: 44 });
 SZGame2D.setHitboxScale(heroi, 80);
 const plataformas = SZGame2D.createGroup();
+const mundo = SZGame2D.createWorld(1600, 304);
+SZGame2D.addSolidGroupToWorld(mundo, plataformas);
+SZGame2D.setWorldEdges(mundo, "none");
+SZGame2D.configureWorldCamera(mundo, "right", "off", 120, 0);
 SZGame2D.spawn(plataformas, { x: 0, y: 264, w: 360, h: 40, color: "#8d6e63", vx: 0, vy: 0 });
 SZGame2D.spawn(plataformas, { x: 440, y: 264, w: 360, h: 40, color: "#8d6e63", vx: 0, vy: 0 });
 SZGame2D.spawn(plataformas, { x: 880, y: 264, w: 720, h: 40, color: "#8d6e63", vx: 0, vy: 0 });
@@ -66,13 +70,8 @@ SZGame2D.onKey("Enter", function () {
     SZGame2D.restart();
   }
 });
-SZGame2D.onKey("ArrowUp", function () {
-  if (SZGame2D.sceneIs("jogando")) {
-    if (SZGame2D.spriteVy(heroi) == 0) {
-      heroi.vy = -11;
-      SZGame2D.playFx("jump");
-    }
-  }
+SZGame2D.onJump(() => heroi, function () {
+  SZGame2D.playFx("jump");
 });
 SZGame2D.gameLoop(function update() {
   SZGame2D.clear();
@@ -80,11 +79,10 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Mundo Pirata", "Corra com as setas e pule com a seta para cima. Pegue as moedas, pise nos caranguejos e chegue na bandeira do fim. Cuidado com os buracos!", "Aperte Enter para começar a aventura", "#123a4a");
   }
   if (SZGame2D.sceneIs("jogando")) {
-    SZGame2D.cameraFollow(heroi, 1600, 300);
-    SZGame2D.arrowsX(heroi, 3);
     SZGame2D.applyGravity(heroi);
-    SZGame2D.applyVelocity(heroi);
-    SZGame2D.collideGroup(heroi, plataformas);
+    SZGame2D.platformerWithTerrain(heroi, 3, 11);
+    SZGame2D.collideWorld(heroi, mundo);
+    SZGame2D.followCameraInWorld(heroi, mundo);
     SZGame2D.forEachInGroup(inimigos, function (bicho) {
       bicho.x = bicho.x + bicho.vx;
       if (bicho.x < 460) {
@@ -120,7 +118,7 @@ SZGame2D.gameLoop(function update() {
       SZGame2D.playFx("win");
       SZGame2D.setScene("venceu");
     }
-    SZGame2D.drawGroup(ctx, plataformas);
+    SZGame2D.drawWorld(ctx, mundo);
     SZGame2D.drawGroup(ctx, moedas);
     SZGame2D.drawGroup(ctx, inimigos);
     SZGame2D.drawSprite(ctx, bandeira);

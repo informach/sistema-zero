@@ -4,13 +4,12 @@ import {
   type RuntimeLifecycleContract,
 } from '#extensions'
 import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
-import {
-  BEHAVIOR_SECTION_MARKERS,
-  resolveEventTargetKind,
-  screenTextToExpr,
-  valueToExpr,
-} from '#ir'
+import { BEHAVIOR_SECTION_MARKERS, screenTextToExpr, valueToExpr } from '#ir'
 import { CANVAS_IMAGE_PRELOAD_MARKERS } from '../canvasImagePreloadCodec'
+import {
+  isProgrammingStatementIR,
+  programmingStatementIRToCode,
+} from '../codecs/programming/irToCode'
 import { canvasStatementToCode, isCanvasStatement } from '../codecs/web/canvasStatementToCode'
 import { programmingChildBodyEntries } from '../ir/programmingExecution'
 import { canvas3DAddonImport } from '../three/canvas3dAddons'
@@ -757,6 +756,22 @@ function compileStatementCode(
     if (canvasCode !== undefined) return canvasCode
     throw new GeneratorError(`Statement Canvas sem codec: ${stmt.type}`)
   }
+  if (isProgrammingStatementIR(stmt)) {
+    return programmingStatementIRToCode(stmt, indent, identifiers, mapContext, {
+      base,
+      childMapContext,
+      classKey,
+      compileStatements,
+      datasetAccess,
+      elementExpr,
+      lastLineEndColumn,
+      lifecycleCallback,
+      lifecycleResourceFunction,
+      pad,
+      recAt,
+      styleAccess,
+    })
+  }
   switch (stmt.type) {
     // ----- 🔊 Som do núcleo (window.__szAudio, ver preview/audioBridge) -----
     case 'somLoad':
@@ -771,82 +786,7 @@ function compileStatementCode(
       return `${pad}__szAudio.pararMusica();`
     case 'somVolume':
       return `${pad}__szAudio.volume(${compileExpr(stmt.level, 0, identifiers, recAt(base))});`
-    case 'var': {
-      const keyword = stmt.kind === 'const' ? 'const' : 'let'
-      return `${pad}${keyword} ${identifiers.get(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    }
-    case 'declareVar':
-      return `${pad}let ${identifiers.get(stmt.name)};`
-    case 'assign':
-      return `${pad}${identifiers.get(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'if': {
-      const startLine = mapContext?.startLine ?? 1
-      const thenBody = compileStatements(
-        stmt.then,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, startLine + 1),
-      )
-      let out = `${pad}if (${compileExpr(stmt.cond, 0, identifiers, recAt(base))}) {\n${thenBody}\n${pad}}`
-      // Cada "senão se" começa na linha SEGUINTE ao `} else if (…) {` (que fica na
-      // última linha do que já foi montado) — daí `startLine + countLines(out)`.
-      for (const clause of stmt.elseif ?? []) {
-        const body = compileStatements(
-          clause.then,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, startLine + countLines(out)),
-        )
-        out += ` else if (${compileExpr(clause.cond, 0, identifiers, recAt(base))}) {\n${body}\n${pad}}`
-      }
-      if (stmt.else) {
-        const elseBody = compileStatements(
-          stmt.else,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, startLine + countLines(out)),
-        )
-        // Corpo vazio (`else {}`) é no-op: não emite o `else` (round-trip idêntico).
-        if (elseBody) out += ` else {\n${elseBody}\n${pad}}`
-      }
-      return out
-    }
-    case 'repeat': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const times = compileExpr(stmt.times, 0, identifiers, recAt(base))
-      const loopVar = identifiers.reserveInternal('i')
-      const limitVar = identifiers.reserveInternal('limite')
-      return `${pad}for (let ${loopVar} = 0, ${limitVar} = ${times}; ${loopVar} < ${limitVar}; ${loopVar}++) {\n${body}\n${pad}}`
-    }
-    case 'while': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      return `${pad}while (${compileExpr(stmt.cond, 0, identifiers, recAt(base))}) {\n${body}\n${pad}}`
-    }
-    case 'doWhile': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      // `} while (cond);` é a última linha: base + 1 (abertura) + linhas do corpo.
-      const condLine = base + 1 + countLines(body)
-      return `${pad}do {\n${body}\n${pad}} while (${compileExpr(stmt.cond, 0, identifiers, recAt(condLine))});`
-    }
-    case 'break':
-      return `${pad}break;`
-    case 'continue':
-      return `${pad}continue;`
+
     case 'importStar':
       // Aspas simples (padrão do gerador). O nome entra pelo escopo para casar
       // com os usos (`THREE.Scene`, `new THREE.X`) que resolvem o mesmo THREE.
@@ -855,228 +795,16 @@ function compileStatementCode(
       // `import { GLTFLoader, RGBELoader } from 'three/addons/…';`. Os nomes são
       // identificadores de escopo (reservados em collectStatementIdentifiers).
       return `${pad}import { ${stmt.names.map((n) => identifiers.get(n)).join(', ')} } from '${stmt.module}';`
-    case 'forOf': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      return `${pad}for (const ${identifiers.get(stmt.itemName)} of ${identifiers.get(stmt.iterableVar)}) {\n${body}\n${pad}}`
-    }
-    case 'forRange': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const v = identifiers.get(stmt.varName)
-      const from = compileExpr(stmt.from, 0, identifiers, recAt(base))
-      const to = compileExpr(stmt.to, 0, identifiers, recAt(base))
-      const step = compileExpr(stmt.step, 0, identifiers, recAt(base))
-      const limitVar = identifiers.reserveInternal('fim')
-      const stepVar = identifiers.reserveInternal('passo')
-      const condition = `${stepVar} > 0 ? ${v} < ${limitVar} : ${stepVar} < 0 ? ${v} > ${limitVar} : false`
-      return `${pad}for (let ${v} = ${from}, ${limitVar} = ${to}, ${stepVar} = ${step}; ${condition}; ${v} += ${stepVar}) {\n${body}\n${pad}}`
-    }
-    case 'tryCatch': {
-      const startLine = mapContext?.startLine ?? 1
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, startLine + 1),
-      )
-      // `} catch (erro) {` fica na linha base + 1 (try) + linhas do corpo.
-      const catchHeaderLine = startLine + 1 + countLines(body)
-      const projectRunContext = identifiers.getProjectRunContextIdentifier()
-      const catchIdentifier = stmt.errorName
-        ? identifiers.get(stmt.errorName)
-        : projectRunContext
-          ? identifiers.reserveInternal('__szRestartSignal')
-          : undefined
-      const controlGuard =
-        projectRunContext && catchIdentifier
-          ? `${'  '.repeat(indent + 1)}if (${projectRunContext}.isControlSignal(${catchIdentifier})) throw ${catchIdentifier};`
-          : ''
-      const handler = compileStatements(
-        stmt.handler,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, catchHeaderLine + 1 + (controlGuard ? 1 : 0)),
-      )
-      const param = catchIdentifier ? `(${catchIdentifier}) ` : ''
-      const guardedHandler = [controlGuard, handler].filter(Boolean).join('\n')
-      let out = `${pad}try {\n${body}\n${pad}} catch ${param}{\n${guardedHandler}\n${pad}}`
-      if (stmt.finalizer) {
-        const finallyHeaderLine = catchHeaderLine + 1 + countLines(guardedHandler)
-        const finalizer = compileStatements(
-          stmt.finalizer,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, finallyHeaderLine + 1),
-        )
-        out += ` finally {\n${finalizer}\n${pad}}`
-      }
-      return out
-    }
-    case 'fetchJson': {
-      const startLine = mapContext?.startLine ?? 1
-      const url = compileExpr(stmt.url, 0, identifiers, recAt(startLine))
-      const resp = identifiers.reserveInternal('resposta')
-      const ok = identifiers.get(stmt.okName)
-      // A resposta HTTP é validada ANTES do JSON: fetch só rejeita em falha de
-      // rede, portanto 4xx/5xx precisam lançar explicitamente para chegar ao
-      // callback de erro do bloco.
-      const body = compileStatements(
-        stmt.body,
-        indent + 2,
-        identifiers,
-        childMapContext(mapContext, startLine + 8),
-      )
-      const successCallback = lifecycleCallback(identifiers, ok, body, `${pad}  `)
-      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => {\n${pad}    if (!${resp}.ok) {\n${pad}      throw new Error("Falha HTTP " + ${resp}.status);\n${pad}    }\n${pad}    return ${resp}.json();\n${pad}  })\n${pad}  .then(${successCallback})`
-      if (stmt.catchBody) {
-        const catchVar = stmt.catchName
-          ? identifiers.get(stmt.catchName)
-          : identifiers.reserveInternal('erro')
-        const catchBody = compileStatements(
-          stmt.catchBody,
-          indent + 2,
-          identifiers,
-          childMapContext(mapContext, startLine + 10 + countLines(body)),
-        )
-        const errorCallback = lifecycleCallback(identifiers, catchVar, catchBody, `${pad}  `)
-        out += `\n${pad}  .catch(${errorCallback})`
-      }
-      return `${out};`
-    }
-    case 'event': {
-      const hasExplicitFormProtection = stmt.body.some(
-        (child) => child.type === 'eventMethod' && child.method === 'preventDefault',
-      )
-      const injectsFormProtection = stmt.event === 'submit' && !hasExplicitFormProtection
-      const projectRunContext = identifiers.getProjectRunContextIdentifier()
-      const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + (injectsFormProtection ? 2 : 1)),
-      )
-      const protectedBody = injectsFormProtection
-        ? `${'  '.repeat(indent + 1)}event.preventDefault();${body ? `\n${body}` : ''}`
-        : body
-      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
-      const callback = lifecycleCallback(identifiers, 'event', protectedBody, pad)
-      if (targetKind === 'window') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
-      }
-      if (targetKind === 'document') {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
-      }
-      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
-    }
-    case 'consoleLog':
-      return `${pad}console.log(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
-    case 'alert':
-      return `${pad}alert(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
+
     case 'setText':
       // `el.textContent = <value>` fica na 3ª linha (base+2) do bloco `{ … }`.
       return `${pad}{\n${pad}  const el = document.getElementById(${JSON.stringify(stmt.targetId)});\n${pad}  if (el) el.textContent = ${compileExpr(stmt.value, 0, identifiers, recAt(base + 2))};\n${pad}}`
-    case 'setProperty':
-      return `${pad}${elementExpr(stmt.targetId, stmt.targetKind, identifiers)}.${stmt.property} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'getProperty':
-      return `${pad}const ${identifiers.get(stmt.varName)} = ${elementExpr(stmt.targetId, stmt.targetKind, identifiers)}?.${stmt.property};`
-    case 'getAttribute':
-      return `${pad}const ${identifiers.get(stmt.varName)} = ${elementExpr(stmt.targetId, stmt.targetKind, identifiers)}?.getAttribute(${JSON.stringify(stmt.name)});`
-    case 'setStyle':
-      return `${pad}${styleAccess(elementExpr(stmt.targetId, stmt.targetKind, identifiers), stmt.property)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'setAttribute':
-      return `${pad}${elementExpr(stmt.targetId, stmt.targetKind, identifiers)}?.setAttribute(${JSON.stringify(stmt.name)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
-    case 'querySelector':
-      return `${pad}const ${identifiers.get(stmt.varName)} = document.querySelector(${JSON.stringify(stmt.selector)});`
-    case 'querySelectorAll':
-      return `${pad}const ${identifiers.get(stmt.varName)} = document.querySelectorAll(${JSON.stringify(stmt.selector)});`
-    case 'storageSet': {
-      const store = stmt.store === 'session' ? 'sessionStorage' : 'localStorage'
-      return `${pad}${store}.setItem(${compileExpr(stmt.key, 0, identifiers, recAt(base))}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
-    }
-    case 'eventMethod':
-      return `${pad}event.${stmt.method}();`
-    case 'getElementById':
-      return `${pad}const ${identifiers.get(stmt.varName)} = document.getElementById(${JSON.stringify(stmt.id)});`
-    case 'classOp':
-      return `${pad}${elementExpr(stmt.targetId, stmt.targetKind, identifiers)}?.classList.${stmt.op}(${JSON.stringify(stmt.className)});`
-    case 'createElement':
-      return `${pad}const ${identifiers.get(stmt.varName)} = document.createElement(${JSON.stringify(stmt.tag)});`
-    case 'createElementNS':
-      return `${pad}const ${identifiers.get(stmt.varName)} = document.createElementNS("http://www.w3.org/2000/svg", ${JSON.stringify(stmt.tag)});`
-    case 'appendChild':
-      return `${pad}${identifiers.get(stmt.parentVar)}.appendChild(${identifiers.get(stmt.childVar)});`
-    case 'throwError':
-      return `${pad}throw new Error(${compileExpr(stmt.message, 0, identifiers, recAt(base))});`
-    case 'objectAssign':
-      return `${pad}Object.assign(${identifiers.get(stmt.targetVar)}, ${identifiers.get(stmt.sourceVar)});`
-    case 'switch': {
-      const subj = compileExpr(stmt.subject, 0, identifiers, recAt(base))
-      let cursorLine = base + 1
-      const caseChunks: string[] = []
-      for (const c of stmt.cases) {
-        const body = compileStatements(
-          c.body,
-          indent + 2,
-          identifiers,
-          childMapContext(mapContext, cursorLine + 1),
-        )
-        const matchContext: ExprMapContext | undefined = mapContext
-          ? { map: mapContext.map, line: cursorLine, indent: indent + 1 }
-          : undefined
-        const chunk = `${pad}  case ${compileExpr(c.match, 0, identifiers, matchContext)}: {\n${body}\n${pad}    break;\n${pad}  }`
-        const endLine = cursorLine + countLines(chunk) - 1
-        mapContext?.map.record(
-          c.__id,
-          'script.js',
-          cursorLine,
-          endLine,
-          (indent + 1) * 2 + 1,
-          lastLineEndColumn(chunk),
-        )
-        caseChunks.push(chunk)
-        cursorLine = endLine + 1
-      }
-      let def = ''
-      if (stmt.default) {
-        const defaultBody = compileStatements(
-          stmt.default,
-          indent + 2,
-          identifiers,
-          childMapContext(mapContext, cursorLine + 1),
-        )
-        def = `${caseChunks.length > 0 ? '\n' : ''}${pad}  default: {\n${defaultBody}\n${pad}  }`
-      }
-      return `${pad}switch (${subj}) {\n${caseChunks.join('\n')}${def}\n${pad}}`
-    }
+
     // Tela cheia na PÁGINA inteira (document.documentElement). Só funciona a partir
     // de um gesto do aluno (clique/tecla) — daí ir dentro de um "Quando ...".
-    case 'requestFullscreen':
-      return `${pad}document.documentElement.requestFullscreen();`
-    case 'exitFullscreen':
-      return `${pad}document.exitFullscreen();`
-    case 'toggleFullscreen':
-      return `${pad}if (document.fullscreenElement) {\n${pad}  document.exitFullscreen();\n${pad}} else {\n${pad}  document.documentElement.requestFullscreen();\n${pad}}`
-    case 'setDataset': {
-      const target = elementExpr(stmt.targetId, stmt.targetKind, identifiers)
-      return `${pad}${datasetAccess(target, stmt.key)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    }
+
     // Canvas
-    case 'arrayPush':
-      return `${pad}${identifiers.get(stmt.arrayVar)}.push(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
-    case 'arrayRemove':
-      return `${pad}${identifiers.get(stmt.arrayVar)}.${stmt.end}();`
-    case 'arraySplice':
-      return `${pad}${identifiers.get(stmt.arrayVar)}.splice(${compileExpr(stmt.start, 0, identifiers, recAt(base))}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))});`
+
     // ----- game-2d -----
     case 'g2d:onStart': {
       const body = compileStatements(
@@ -1239,6 +967,16 @@ ${pad}}, ${JSON.stringify(id)});`
 ${body}
 ${pad}}, ${JSON.stringify(id)});`
     }
+    case 'g2d:onLevelEnter': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeEntradaNaFase')
+      return `${pad}SZGame2D.onLevelEnter(() => ${identifiers.get(stmt.levelVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
     case 'g2d:createImageSprite': {
       const v = identifiers.get(stmt.varName)
       return `${pad}const ${v} = SZGame2D.createSprite({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, image: ${JSON.stringify(stmt.image)} });`
@@ -1358,6 +1096,10 @@ ${pad}});`
       return `${pad}SZGame2D.drawFrame(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.index), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
     case 'g2d:platformer':
       return `${pad}SZGame2D.platformer(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
+    case 'g2d:platformerWithTerrain':
+      return `${pad}SZGame2D.platformerWithTerrain(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
+    case 'g2d:jumpWithTerrain':
+      return `${pad}SZGame2D.jumpWithTerrain(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:topDown':
       return `${pad}SZGame2D.topDown(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:flyFree':
@@ -1387,11 +1129,47 @@ ${pad}});`
     }
     case 'g2d:createTileMapFromAsset':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createTileMapFromAsset(${JSON.stringify(stmt.image)});`
+    case 'g2d:fitTileMapToStage':
+      return `${pad}SZGame2D.fitTileMapToStage(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)});`
+    case 'g2d:placeTileMap':
+      return `${pad}SZGame2D.placeTileMap(${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
+    case 'g2d:drawPreparedTileMap':
+      return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)});`
     case 'g2d:drawTileMap':
       // size ausente (IR antigo) vira 0 = encaixar sozinho (comportamento de sempre).
       return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size ?? 0), 0, identifiers, recAt(base))});`
     case 'g2d:tileMapCollide':
       return `${pad}SZGame2D.collideTileMap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.mapVar)});`
+    case 'g2d:createWorld':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createWorld(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))});`
+    case 'g2d:createWorldFromTileMap':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createWorldFromTileMap(${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
+    case 'g2d:addTileMapToWorld':
+      return `${pad}SZGame2D.addTileMapToWorld(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.mapVar)});`
+    case 'g2d:addSolidGroupToWorld':
+      return `${pad}SZGame2D.addSolidGroupToWorld(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)});`
+    case 'g2d:addPlatformGroupToWorld':
+      return `${pad}SZGame2D.addPlatformGroupToWorld(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)});`
+    case 'g2d:setWorldEdges':
+      return `${pad}SZGame2D.setWorldEdges(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.edges)});`
+    case 'g2d:configureWorldCamera':
+      return `${pad}SZGame2D.configureWorldCamera(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.horizontal)}, ${JSON.stringify(stmt.vertical)}, ${compileExpr(valueToExpr(stmt.deadZoneX), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deadZoneY), 0, identifiers, recAt(base))});`
+    case 'g2d:collideWorld':
+      return `${pad}SZGame2D.collideWorld(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.worldVar)});`
+    case 'g2d:followCameraInWorld':
+      return `${pad}SZGame2D.followCameraInWorld(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.worldVar)});`
+    case 'g2d:drawWorld':
+      return `${pad}SZGame2D.drawWorld(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.worldVar)});`
+    case 'g2d:createLevel':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createLevel(${identifiers.get(stmt.worldVar)}, ${compileExpr(valueToExpr(stmt.spawnX), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.spawnY), 0, identifiers, recAt(base))});`
+    case 'g2d:enterLevel':
+      return `${pad}SZGame2D.enterLevel(${identifiers.get(stmt.levelVar)}, ${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:collideCurrentLevel':
+      return `${pad}SZGame2D.collideCurrentLevel(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:followCurrentLevelCamera':
+      return `${pad}SZGame2D.followCurrentLevelCamera(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:drawCurrentLevel':
+      return `${pad}SZGame2D.drawCurrentLevel(${identifiers.get(stmt.ctxVar)});`
     case 'g2d:collideGroup':
       return `${pad}SZGame2D.collideGroup(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:collideSprite':
@@ -3378,133 +3156,13 @@ ${pad}});`
       )
       return `${pad}SZWorld3D.onUpdate((${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
-    case 'classDecl': {
-      const className = identifiers.declareClassName(classKey(stmt), stmt.name)
-      const superClause = stmt.superClass
-        ? ` extends ${identifiers.getClassReference(stmt.superClass)}`
-        : ''
-      const ctorParams = (stmt.ctorParams ?? []).map((x) => normalizeIdentifier(x))
-      const lines = [`${pad}class ${className}${superClause} {`]
-      let cursorLine = (mapContext?.startLine ?? 1) + 1
-      // Gera o construtor quando há parâmetros OU corpo a executar.
-      if (ctorParams.length > 0 || stmt.ctorBody.length > 0) {
-        const ctorHeaderLine = cursorLine
-        lines.push(`${pad}  constructor(${ctorParams.join(', ')}) {`)
-        cursorLine += 1
-        const ctorBody = compileStatements(
-          stmt.ctorBody,
-          indent + 2,
-          identifiers,
-          childMapContext(mapContext, cursorLine),
-        )
-        if (ctorBody) lines.push(ctorBody)
-        cursorLine += countLines(ctorBody)
-        lines.push(`${pad}  }`)
-        cursorLine += 1
-        // Registra a faixa `constructor(...) { … }` no sourcemap para que clicar
-        // no bloco `sz_js_constructor` realce o cabeçalho + corpo no Monaco.
-        // Sem esta entrada, o construtor seguia sem destino e o realce sumia
-        // mesmo nas tentativas (esse era o sintoma B do plano).
-        if (stmt.ctorId && mapContext) {
-          mapContext.map.record(stmt.ctorId, 'script.js', ctorHeaderLine, cursorLine - 1)
-        }
-      }
-      for (const m of stmt.methods) {
-        const params = m.params.map((x) => normalizeIdentifier(x)).join(', ')
-        const methodHeaderLine = cursorLine
-        lines.push(`${pad}  ${m.async ? 'async ' : ''}${normalizeIdentifier(m.name)}(${params}) {`)
-        cursorLine += 1
-        const body = compileStatements(
-          m.body,
-          indent + 2,
-          identifiers,
-          childMapContext(mapContext, cursorLine),
-        )
-        if (body) lines.push(body)
-        cursorLine += countLines(body)
-        lines.push(`${pad}  }`)
-        cursorLine += 1
-        // Idem para cada método: a faixa do `metodo(...) { … }` é registrada
-        // sob o id do bloco `sz_js_class_method`.
-        if (m.__id && mapContext) {
-          mapContext.map.record(m.__id, 'script.js', methodHeaderLine, cursorLine - 1)
-        }
-      }
-      lines.push(`${pad}}`)
-      return lines.join('\n')
-    }
-    case 'newInstance': {
-      const args = (stmt.args ?? [])
-        .map((a) => compileExpr(a, 0, identifiers, recAt(base)))
-        .join(', ')
-      const ctor = stmt.namespace
-        ? `${identifiers.get(stmt.namespace)}.${stmt.className}`
-        : identifiers.getClassReference(stmt.className)
-      return `${pad}const ${identifiers.get(stmt.varName)} = new ${ctor}(${args});`
-    }
-    case 'callMethod': {
-      const args = (stmt.args ?? [])
-        .map((a) => compileExpr(a, 0, identifiers, recAt(base)))
-        .join(', ')
-      return `${pad}${identifiers.get(stmt.objectVar)}.${normalizeIdentifier(stmt.method)}(${args});`
-    }
-    case 'eventHandler': {
-      const handler = identifiers.get(stmt.handlerName)
-      const projectRunContext = identifiers.getProjectRunContextIdentifier()
-      const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
-      const callback = projectRunContext
-        ? `(event) => ${projectRunContext}.run(() => ${handler}(event))`
-        : handler
-      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
-      if (targetKind === 'window') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
-      }
-      if (targetKind === 'document') {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
-      }
-      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
-    }
-    case 'setThisProp':
-      return `${pad}this.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'setProp':
-      return `${pad}${identifiers.get(stmt.objectVar)}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'memberSet':
-      return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'memberCall': {
-      const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
-      return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.method)}(${args});`
-    }
-    case 'superCall': {
-      const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
-      return `${pad}super(${args});`
-    }
-    case 'superMethodCall': {
-      const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
-      return `${pad}super.${normalizeIdentifier(stmt.method)}(${args});`
-    }
+
     // Statement que só avalia um valor e descarta (round-trip fiel de um no-op).
-    case 'exprStatement':
-      return `${pad}${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
+
     // `requestAnimationFrame(nome)` — a função é uma REFERÊNCIA (nome), não uma chamada.
     case 'mountRenderer':
       return `${pad}document.body.appendChild(${identifiers.get(stmt.renderer)}.domElement);`
-    case 'indexSet':
-      return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}[${compileExpr(stmt.index, 0, identifiers, recAt(base))}] = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'onClickAssign': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
-      const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
-      const projectRunContext = identifiers.getProjectRunContextIdentifier()
-      if (projectRunContext) {
-        return `${pad}${projectRunContext}.setEventHandler(${target}, "onclick", (event) => {\n${body}\n${pad}});`
-      }
-      return `${pad}${target}.onclick = (event) => {\n${body}\n${pad}};`
-    }
+
     case 'loaderLoad': {
       const body = compileStatements(
         stmt.body,
@@ -4314,85 +3972,7 @@ ${pad}});`
       return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.body(${JSON.stringify(stmt.id)});`
     case 'physicsLiteStats':
       return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.stats();`
-    case 'return':
-      return stmt.value === undefined
-        ? `${pad}return;`
-        : `${pad}return ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'funcDecl': {
-      const params = stmt.params.map((x) => normalizeIdentifier(x)).join(', ')
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const head = `${pad}${stmt.async ? 'async ' : ''}function ${identifiers.get(stmt.name)}(${params}) {`
-      return body ? `${head}\n${body}\n${pad}}` : `${head}\n${pad}}`
-    }
-    case 'callFunction': {
-      const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
-      return `${pad}${identifiers.get(stmt.name)}(${args});`
-    }
-    case 'awaitStmt':
-      return `${pad}await ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'setTimeoutCall':
-      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(${identifiers.get(stmt.fn)}, ${compileExpr(stmt.delay, 0, identifiers, recAt(base))});`
-    case 'forEach': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const item = identifiers.get(stmt.itemName)
-      const params = stmt.indexName ? `${item}, ${identifiers.get(stmt.indexName)}` : item
-      const list = compileExpr(stmt.arrayExpr, 20, identifiers)
-      return `${pad}${list}.forEach((${params}) => {\n${body}\n${pad}});`
-    }
-    case 'setTimeout': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      // `}, <delay>);` é a última linha: base + 1 (abertura) + linhas do corpo.
-      const delayLine = base + 1 + countLines(body)
-      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
-    }
-    case 'setInterval': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      // `}, <delay>);` é a última linha: base + 1 (abertura) + linhas do corpo.
-      const delayLine = base + 1 + countLines(body)
-      return `${pad}${lifecycleResourceFunction(identifiers, 'setInterval')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
-    }
-    case 'setTimeoutSeconds': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      // Segundos → milissegundos no código: `<delay> * 1000`. A precedência 6 (`*`)
-      // garante que um delay composto (ex.: `a + b`) saia parentizado: `(a + b) * 1000`.
-      const delayLine = base + 1 + countLines(body)
-      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
-    }
-    case 'setIntervalSeconds': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const delayLine = base + 1 + countLines(body)
-      return `${pad}${lifecycleResourceFunction(identifiers, 'setInterval')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
-    }
+
     case 'rawJS': {
       // Indenta APENAS a 1ª linha física (e só se ela não for vazia). As linhas
       // seguintes ficam verbatim — re-indentar todas inseria o pad DENTRO de
@@ -4503,6 +4083,7 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:onOverlap':
       case 'g2d:onJump':
       case 'g2d:onAnyInput':
+      case 'g2d:onLevelEnter':
       case 'g2d:forEachInGroup':
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
@@ -4568,6 +4149,7 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:onOverlap':
       case 'g2d:onJump':
       case 'g2d:onAnyInput':
+      case 'g2d:onLevelEnter':
       case 'g2d:forEachInGroup':
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
@@ -5081,6 +4663,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:onAnyInput':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'g2d:onLevelEnter':
+      names.add(stmt.levelVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'g2d:createGroup':
     case 'g2d:allEnemiesGroup':
       names.add(stmt.varName)
@@ -5560,6 +5146,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
       collectExprIdentifiers(valueToExpr(stmt.jump), names)
       return
+    case 'g2d:platformerWithTerrain':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
+      return
+    case 'g2d:jumpWithTerrain':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
+      return
     case 'g2d:topDown':
     case 'g2d:flyFree':
     case 'g2d:swim':
@@ -5592,6 +5187,17 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:createTileMapFromAsset':
       names.add(stmt.varName)
       return
+    case 'g2d:fitTileMapToStage':
+    case 'g2d:drawPreparedTileMap':
+      names.add(stmt.mapVar)
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:placeTileMap':
+      names.add(stmt.mapVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
     case 'g2d:drawTileMap':
       names.add(stmt.mapVar)
       names.add(stmt.ctxVar)
@@ -5602,6 +5208,59 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:tileMapCollide':
       names.add(stmt.spriteVar)
       names.add(stmt.mapVar)
+      return
+    case 'g2d:createWorld':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.width), names)
+      collectExprIdentifiers(valueToExpr(stmt.height), names)
+      return
+    case 'g2d:createWorldFromTileMap':
+      names.add(stmt.varName)
+      names.add(stmt.mapVar)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
+    case 'g2d:addTileMapToWorld':
+      names.add(stmt.worldVar)
+      names.add(stmt.mapVar)
+      return
+    case 'g2d:addSolidGroupToWorld':
+    case 'g2d:addPlatformGroupToWorld':
+      names.add(stmt.worldVar)
+      names.add(stmt.groupVar)
+      return
+    case 'g2d:setWorldEdges':
+      names.add(stmt.worldVar)
+      return
+    case 'g2d:configureWorldCamera':
+      names.add(stmt.worldVar)
+      collectExprIdentifiers(valueToExpr(stmt.deadZoneX), names)
+      collectExprIdentifiers(valueToExpr(stmt.deadZoneY), names)
+      return
+    case 'g2d:collideWorld':
+    case 'g2d:followCameraInWorld':
+      names.add(stmt.spriteVar)
+      names.add(stmt.worldVar)
+      return
+    case 'g2d:drawWorld':
+      names.add(stmt.ctxVar)
+      names.add(stmt.worldVar)
+      return
+    case 'g2d:createLevel':
+      names.add(stmt.varName)
+      names.add(stmt.worldVar)
+      collectExprIdentifiers(valueToExpr(stmt.spawnX), names)
+      collectExprIdentifiers(valueToExpr(stmt.spawnY), names)
+      return
+    case 'g2d:enterLevel':
+      names.add(stmt.levelVar)
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:collideCurrentLevel':
+    case 'g2d:followCurrentLevelCamera':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:drawCurrentLevel':
+      names.add(stmt.ctxVar)
       return
     case 'g2d:collideGroup':
       names.add(stmt.spriteVar)
@@ -8158,6 +7817,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g2d:tileAtSprite':
       names.add(expr.mapVar)
       names.add(expr.spriteVar)
+      return
+    case 'g2d:levelIsActive':
+      names.add(expr.levelVar)
       return
     case 'g2d:stickPathFell':
     case 'g2d:balloonPathMeters':

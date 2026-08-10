@@ -57,8 +57,9 @@ export const SVG_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_svg_desc',
     // "em detalhes" separa do irmão "Dar um nome" (title = nome CURTO; desc =
-    // explicação LONGA) — os dois pareciam a mesma coisa (feedback 24/07).
-    message0: 'Descrever o desenho em detalhes %1',
+    // explicação LONGA). A face fica curta para caber no flyout de 375 px; o
+    // tooltip abaixo conserva o contexto completo para a criança.
+    message0: 'Descrever em detalhes %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Uma forma colorida.' }],
     ...classMsg1(),
     previousStatement: 'HTMLNode',

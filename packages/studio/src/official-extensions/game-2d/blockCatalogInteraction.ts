@@ -649,7 +649,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
   {
     type: 'sz_g2d_platformer',
     placement: 'command',
-    message0: 'Mover o sprite %1 estilo plataforma, velocidade %2 pulo %3',
+    message0: 'Mover o sprite %1 estilo plataforma na tela (a borda é chão), velocidade %2 pulo %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -660,7 +660,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Esquerda/direita com as setas, pulo com a seta pra cima (só quando está no chão) e pouso na borda atraída. Para o sprite cair, encaixe "Aplicar a gravidade do mundo" logo acima. O valor da gravidade escolhe o chão: base quando positivo, teto quando negativo.',
+      'Versão simples para jogos de UMA TELA: a própria borda atraída funciona como chão. Encaixe “Aplicar a gravidade do mundo” logo acima. Para cair em buracos ou pousar em mapas/figuras, use “Mover estilo plataforma sobre o terreno” e uma colisão de terreno.',
   },
   {
     type: 'sz_g2d_top_down',
@@ -813,7 +813,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta o mapa que você desenhou no Pinta: a grade, as peças e os sólidos já vêm JUNTOS no desenho (envie o mapa pelo 🚀 do Pinta e escolha-o aqui). Para montar ou editar uma grade na mão, use o bloco "Criar mapa de tiles".',
+      'Monta os DADOS do mapa desenhado no Pinta: grade, peças e colisões já vêm juntas. Depois prepare onde e com que tamanho ele fica, ou crie um Mundo diretamente desse mapa. Para editar uma grade na mão, use “Criar mapa de tiles”.',
   },
   {
     type: 'sz_g2d_create_tilemap',
@@ -833,12 +833,13 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). O "tamanho do tile" é o tamanho de cada quadro NA ARTE (o Pinta já sugere). Na tela o mapa se AJUSTA sozinho para encaixar no canvas. Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador. Em "tiles plataforma", toque nos que dá para PISAR por cima e passar por baixo (estilo Mario). Os sólidos e plataformas do Pinta já vêm sugeridos.',
+      'Monta os DADOS do mapa a partir de um tileset. O tamanho informado é o de cada quadro NA ARTE. Depois escolha uma preparação: encaixar na tela, posicionar no mundo ou criar um Mundo desse mapa. Cada número da grade escolhe um quadro; ";" separa linhas, espaço separa números e "." deixa vazio. Tiles sólidos barram por todos os lados; tiles plataforma deixam passar por baixo.',
   },
   {
     type: 'sz_g2d_draw_tilemap',
+    hidden: true,
     placement: 'command',
-    message0: 'Desenhar o mapa %1 em x %2 y %3 com tiles de %4 px (0 = encaixar na tela)',
+    message0: 'Bloco antigo: preparar e desenhar o mapa %1 em x %2 y %3 com tiles de %4 px',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -850,7 +851,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o mapa de tiles. Com tiles de 0 px, ele ENCAIXA sozinho no tamanho da tela (tiles quadrados, sem distorcer) e fica centralizado. Escolha um tamanho (ex.: 32) para controlar você mesmo o tamanho dos tiles na tela: o mapa continua centralizado. x e y deslocam o mapa; use com a câmera para rolar um mapa maior que a tela.',
+      'Compatibilidade com projetos antigos. Este bloco mistura preparação e desenho, por isso pode deslocar a colisão. Substitua por “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles” em Ao iniciar e “Desenhar o mapa preparado” no quadro.',
   },
   {
     // Irmão do "Pôr o cenário atrás de tudo" (✨ Aparência): mesma geometria de

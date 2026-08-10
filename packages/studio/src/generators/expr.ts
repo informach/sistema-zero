@@ -1,4 +1,8 @@
 import { type JSExpr, valueToExpr } from '#ir'
+import {
+  isProgrammingExpressionIR,
+  programmingExpressionIRToCode,
+} from '../codecs/programming/irToCode'
 import { canvasExpressionToCode, isCanvasExpression } from '../codecs/web/canvasExpressionToCode'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
@@ -50,28 +54,6 @@ let compileStatementsInjected:
   | null = null
 export function _setExprStatementCompiler(fn: typeof compileStatementsInjected): void {
   compileStatementsInjected = fn
-}
-
-/** Precedência do operador ternário (`?:`): a mais baixa, abaixo de `||`. */
-const TERNARY_PRECEDENCE = 0.5
-
-const PRECEDENCE: Record<string, number> = {
-  '||': 1,
-  '&&': 2,
-  '==': 3,
-  '!=': 3,
-  '===': 3,
-  '!==': 3,
-  '<': 4,
-  '<=': 4,
-  '>': 4,
-  '>=': 4,
-  '+': 5,
-  '-': 5,
-  '*': 6,
-  '/': 6,
-  '%': 6,
-  '**': 7,
 }
 
 export interface IdentifierResolver {
@@ -221,61 +203,19 @@ export function compileExpr(
     if (canvasCode !== undefined) return canvasCode
     throw new GeneratorError(`Expressão Canvas sem codec: ${expr.type}`)
   }
+  if (isProgrammingExpressionIR(expr)) {
+    return programmingExpressionIRToCode(expr, parentPrecedence, identifiers, rec, {
+      compileExpression: compileExpr,
+      compileStatements: (statements, indent, scope) =>
+        compileStatementsInjected?.(statements, indent, scope) ?? '',
+      escapeTemplateText,
+      formatNumber,
+      isPureExpression: isPureExpr,
+      normalizeHex,
+      objectKey,
+    })
+  }
   switch (expr.type) {
-    case 'num':
-      return formatNumber(expr.value)
-    case 'str':
-    case 'color':
-      return JSON.stringify(expr.value)
-    case 'colorAlpha': {
-      // `hex` é irText() não validado — sem normalizar, um valor malformado vira
-      // `rgba(NaN, NaN, NaN, …)`. Aceita #rgb (expande p/ #rrggbb) e #rrggbb;
-      // qualquer outra coisa cai para preto. Alpha é truncado a [0, 1].
-      const normalized = normalizeHex(expr.hex)
-      const r = Number.parseInt(normalized.slice(1, 3), 16)
-      const g = Number.parseInt(normalized.slice(3, 5), 16)
-      const b = Number.parseInt(normalized.slice(5, 7), 16)
-      const alpha = Math.min(1, Math.max(0, Number.isFinite(expr.alpha) ? expr.alpha : 0))
-      const a = Math.round(alpha * 100) / 100
-      return JSON.stringify(`rgba(${r}, ${g}, ${b}, ${a})`)
-    }
-    case 'bool':
-      return expr.value ? 'true' : 'false'
-    case 'null':
-      return 'null'
-    case 'var':
-      return identifiers.get(expr.name)
-    case 'binop': {
-      const p = PRECEDENCE[expr.op] ?? 0
-      const left = compileExpr(expr.left, p, identifiers, rec)
-      const right = compileExpr(expr.right, p + 1, identifiers, rec)
-      const out = `${left} ${expr.op} ${right}`
-      return p < parentPrecedence ? `(${out})` : out
-    }
-    case 'logical': {
-      const p = PRECEDENCE[expr.op] ?? 0
-      const left = compileExpr(expr.left, p, identifiers, rec)
-      const right = compileExpr(expr.right, p + 1, identifiers, rec)
-      const out = `${left} ${expr.op} ${right}`
-      return p < parentPrecedence ? `(${out})` : out
-    }
-    case 'logicalNot':
-      // Operando em alta precedência: `!a`, `!fn()`, mas `!(a && b)`.
-      return `!${compileExpr(expr.value, 20, identifiers, rec)}`
-    case 'ternary': {
-      // A condição não pode ser ela própria um ternário sem parênteses (só liga
-      // até `||`); por isso compila com precedência de `||`. Os ramos aceitam
-      // ternários aninhados sem parênteses (associatividade à direita).
-      const cond = compileExpr(expr.condition, PRECEDENCE['||'] ?? 1, identifiers, rec)
-      const whenTrue = compileExpr(expr.whenTrue, 0, identifiers, rec)
-      const whenFalse = compileExpr(expr.whenFalse, 0, identifiers, rec)
-      const out = `${cond} ? ${whenTrue} : ${whenFalse}`
-      return parentPrecedence > TERNARY_PRECEDENCE ? `(${out})` : out
-    }
-    case 'call': {
-      const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
-      return `${identifiers.get(expr.name)}(${args})`
-    }
     case 'g2d:keyDown':
       return `SZGame2D.keyDown(${JSON.stringify(expr.key)})`
     case 'g2d:touches':
@@ -352,6 +292,8 @@ export function compileExpr(
       return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
       return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
+    case 'g2d:levelIsActive':
+      return `SZGame2D.levelIsActive(${identifiers.get(expr.levelVar)})`
     case 'g2d:stickPathFell':
       return `SZGame2D.stickPathFell(${identifiers.get(expr.pathVar)})`
     case 'g2d:balloonPathMeters':
@@ -686,8 +628,7 @@ export function compileExpr(
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':
       return 'SZGameKit3D.state()'
-    case 'isFullscreen':
-      return 'document.fullscreenElement != null'
+
     case 'now':
       switch (expr.kind) {
         case 'year':
@@ -698,203 +639,7 @@ export function compileExpr(
           return 'new Date().toLocaleTimeString()'
       }
       return ''
-    case 'dateGet': {
-      const method = {
-        year: 'getFullYear',
-        month: 'getMonth',
-        dayOfMonth: 'getDate',
-        weekday: 'getDay',
-        hours: 'getHours',
-        minutes: 'getMinutes',
-        seconds: 'getSeconds',
-        ms: 'getMilliseconds',
-      }[expr.part]
-      return `new Date().${method}()`
-    }
-    case 'global':
-      switch (expr.kind) {
-        case 'innerWidth':
-          return 'window.innerWidth'
-        case 'innerHeight':
-          return 'window.innerHeight'
-        case 'devicePixelRatio':
-          return 'window.devicePixelRatio'
-      }
-      return ''
-    case 'systemDark':
-      return "window.matchMedia('(prefers-color-scheme: dark)').matches"
-    case 'perfNow':
-      return 'performance.now()'
-    case 'canvasDim':
-      return `${identifiers.getCanvasElement(expr.ctxVar)}.${expr.dim}`
-    case 'random': {
-      const min = compileExpr(expr.min, 0, identifiers, rec)
-      const max = compileExpr(expr.max, 0, identifiers, rec)
-      // Parenteses explícitos em cada operando: compilados em precedência 0, os
-      // limites aditivos (ex.: `a - b`) sairiam sem parênteses e a aritmética
-      // ficaria errada (`(m - a - b + 1)`).
-      if (isPureExpr(expr.min) && isPureExpr(expr.max)) {
-        // Limites sem efeito colateral: inline legível (o `min` aparecer duas
-        // vezes é inofensivo). Mantém a forma que o aluno reconhece.
-        return `Math.floor(Math.random() * ((${max}) - (${min}) + 1)) + (${min})`
-      }
-      // Limite com efeito colateral (ex.: `lista.pop()`): a forma inline emitia
-      // `min` DUAS vezes, avaliando o efeito em dobro. Uma IIFE liga cada limite
-      // a um parâmetro, garantindo avaliação única na ordem min→max.
-      return `((a, b) => Math.floor(Math.random() * (b - a + 1)) + a)(${min}, ${max})`
-    }
-    case 'hslColor': {
-      // Números literais entram inline (`50%`); o resto vira interpolação
-      // (`${...}`), reproduzindo o idioma `hsl(${Math.random() * 360}, 50%, 50%)`.
-      const part = (e: JSExpr) =>
-        e.type === 'num' ? formatNumber(e.value) : `\${${compileExpr(e, 0, identifiers, rec)}}`
-      return `\`hsl(${part(expr.h)}, ${part(expr.s)}%, ${part(expr.l)}%)\``
-    }
-    case 'randomFloat':
-      return 'Math.random()'
-    case 'thisRef':
-      return 'this'
-    case 'thisProp':
-      return `this.${normalizeIdentifier(expr.name)}`
-    case 'propAccess':
-      return `${identifiers.get(expr.objectVar)}.${normalizeIdentifier(expr.name)}`
-    case 'callMethodExpr': {
-      const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
-      return `${identifiers.get(expr.objectVar)}.${normalizeIdentifier(expr.method)}(${args})`
-    }
-    case 'mathUnary':
-      return `Math.${expr.fn}(${compileExpr(expr.arg, 0, identifiers, rec)})`
-    case 'mathBinary':
-      return `Math.${expr.fn}(${compileExpr(expr.a, 0, identifiers, rec)}, ${compileExpr(expr.b, 0, identifiers, rec)})`
-    case 'arrayMap':
-      return `${identifiers.get(expr.arrayVar)}.map((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.transform, 0, identifiers, rec)})`
-    case 'distance': {
-      if (isPureExpr(expr.a) && isPureExpr(expr.b)) {
-        // Operandos sem efeito colateral: forma inline legível (cada operando
-        // aparecer duas vezes é inofensivo). `MEMBER_PRECEDENCE` força parênteses
-        // em torno de operadores (ex.: `(a + b).x`).
-        const a = compileExpr(expr.a, MEMBER_PRECEDENCE, identifiers, rec)
-        const b = compileExpr(expr.b, MEMBER_PRECEDENCE, identifiers, rec)
-        return `Math.hypot(${a}.x - ${b}.x, ${a}.y - ${b}.y)`
-      }
-      // Operando com efeito colateral (ex.: `lista.pop()`): a forma inline emitia
-      // cada operando DUAS vezes, avaliando o efeito em dobro. Uma IIFE liga cada
-      // operando a um parâmetro, garantindo avaliação única na ordem a→b.
-      const a = compileExpr(expr.a, 0, identifiers, rec)
-      const b = compileExpr(expr.b, 0, identifiers, rec)
-      return `((a, b) => Math.hypot(a.x - b.x, a.y - b.y))(${a}, ${b})`
-    }
-    case 'mathConst':
-      return `Math.${expr.name}`
-    case 'angleConvert': {
-      const arg = compileExpr(expr.arg, 0, identifiers, rec)
-      return expr.dir === 'degToRad' ? `(${arg} * Math.PI / 180)` : `(${arg} * 180 / Math.PI)`
-    }
-    case 'eventProp':
-      return `event.${expr.prop}`
-    case 'storageGet': {
-      const store = expr.store === 'session' ? 'sessionStorage' : 'localStorage'
-      return `${store}.getItem(${compileExpr(expr.key, 0, identifiers, rec)})`
-    }
-    case 'vec2':
-      return `{ x: ${compileExpr(expr.x, 0, identifiers, rec)}, y: ${compileExpr(expr.y, 0, identifiers, rec)} }`
-    case 'vec3':
-      return `{ x: ${compileExpr(expr.x, 0, identifiers, rec)}, y: ${compileExpr(expr.y, 0, identifiers, rec)}, z: ${compileExpr(expr.z, 0, identifiers, rec)} }`
-    case 'array':
-      return `[${expr.items.map((it) => compileExpr(it, 0, identifiers, rec)).join(', ')}]`
-    case 'arrayLength':
-      return `${identifiers.get(expr.arrayVar)}.length`
-    case 'datasetGet': {
-      const base = identifiers.get(expr.objectVar)
-      return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(expr.key)
-        ? `${base}.dataset.${expr.key}`
-        : `${base}.dataset[${JSON.stringify(expr.key)}]`
-    }
-    case 'classContains': {
-      const base =
-        expr.targetKind === 'this'
-          ? 'this'
-          : expr.targetKind === 'var'
-            ? identifiers.get(expr.targetId)
-            : `document.getElementById(${JSON.stringify(expr.targetId)})`
-      return `${base}.classList.contains(${JSON.stringify(expr.className)})`
-    }
-    case 'concat': {
-      const inner = expr.parts
-        .map((p) =>
-          p.type === 'str'
-            ? escapeTemplateText(p.value)
-            : `\${${compileExpr(p, 0, identifiers, rec)}}`,
-        )
-        .join('')
-      return `\`${inner}\``
-    }
-    case 'index':
-      return `${identifiers.get(expr.arrayVar)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
-    case 'arrayLast': {
-      const a = identifiers.get(expr.arrayVar)
-      return `${a}[${a}.length - 1]`
-    }
-    case 'arrayFind':
-      return `${identifiers.get(expr.arrayVar)}.find((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
-    case 'arrayFilter':
-      // A lista é uma EXPRESSÃO (soquete): `this.enemies.filter(...)` funciona.
-      return `${compileExpr(expr.array, MEMBER_PRECEDENCE, identifiers, rec)}.filter((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
-    case 'concatArrays':
-      return `[${expr.parts.map((p) => `...${compileExpr(p, 0, identifiers, rec)}`).join(', ')}]`
-    case 'shuffle':
-      // Fisher–Yates é uniforme e trabalha numa cópia. A lista entra como
-      // argumento da IIFE para que até um nome como "__szLista" seja lido no
-      // escopo externo antes de o parâmetro local passar a existir.
-      return `((__szLista) => { for (let __szI = __szLista.length - 1; __szI > 0; __szI--) { const __szJ = Math.floor(Math.random() * (__szI + 1)); [__szLista[__szI], __szLista[__szJ]] = [__szLista[__szJ], __szLista[__szI]]; } return __szLista; })([...${identifiers.get(expr.arrayVar)}])`
-    case 'objectLiteral': {
-      const out =
-        expr.entries.length === 0
-          ? '{}'
-          : `{ ${expr.entries
-              .map((e) => `${objectKey(e.key)}: ${compileExpr(e.value, 0, identifiers, rec)}`)
-              .join(', ')} }`
-      // Um literal usado como receptor precisa de parênteses: `({}).x`.
-      // Sem isso, no início de um statement, `{}` é interpretado como bloco e
-      // o código deixa de ser JavaScript válido.
-      return parentPrecedence > 0 ? `(${out})` : out
-    }
-    case 'memberGet':
-      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}${expr.optional ? '?.' : '.'}${normalizeIdentifier(expr.name)}`
-    case 'memberCallExpr': {
-      const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
-      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`
-    }
-    case 'newExpr': {
-      // `new Classe(args)` como VALOR (espelha o statement `newInstance`). Sem
-      // namespace: o nome da classe resolve pela tabela das declarações do aluno
-      // (getClassReference). Com namespace (biblioteca): `new THREE.Scene()` — o
-      // namespace passa pelo scope (get) para casar com o memberGet de THREE, e o
-      // className fica LITERAL (é o nome real da lib, não renomeável).
-      const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
-      const ctor = expr.namespace
-        ? `${identifiers.get(expr.namespace)}.${expr.className}`
-        : identifiers.getClassReference(expr.className)
-      return `new ${ctor}(${args})`
-    }
-    case 'objectOp':
-      return `Object.${expr.op}(${compileExpr(expr.object, 0, identifiers, rec)})`
-    case 'getElement':
-      return `document.getElementById(${JSON.stringify(expr.id)})`
-    case 'querySelectorValue':
-      return `document.querySelector${expr.all ? 'All' : ''}(${JSON.stringify(expr.selector)})`
-    case 'promiseAll':
-      return `Promise.all(${compileExpr(expr.list, 0, identifiers, rec)})`
-    case 'newPromise': {
-      const indent = rec?.indent ?? 0
-      const pad = '  '.repeat(indent)
-      const body = compileStatementsInjected
-        ? compileStatementsInjected(expr.body, indent + 1, identifiers)
-        : ''
-      return `new Promise((${normalizeIdentifier(expr.param)}) => {\n${body}\n${pad}})`
-    }
-    case 'indexGet':
-      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
+
     default: {
       // Sem este ramo, uma expressão fora do esquema (ex.: IR de um JSON
       // importado por um estranho) caía pela borda do `switch` e `compileExpr`
@@ -986,14 +731,6 @@ function isPureExpr(expr: JSExpr): boolean {
       return false
   }
 }
-
-/**
- * Precedência (alta) do acesso a membro: ao compilar o OBJETO de
- * `memberGet`/`memberCallExpr`, força parênteses em torno de operadores
- * (ex.: `(a + b).x`). Identificadores/`this`/membros não checam precedência,
- * então saem sem parênteses redundantes.
- */
-const MEMBER_PRECEDENCE = 20
 
 /** Chave de objeto literal: nome cru se for identificador válido, senão entre aspas. */
 function objectKey(key: string): string {

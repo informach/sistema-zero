@@ -55,15 +55,15 @@ export interface KitGalleryFilters {
 }
 
 const EXPERIENCE_BADGE_CLASS: Record<ExampleExperience, string> = {
-  game: 'bg-sz-accent/15 text-sz-accent',
-  demo: 'bg-sz-warn/15 text-sz-warn',
-  exploration: 'bg-sz-cyan/15 text-sz-cyan',
+  game: 'sz-kit-badge-game',
+  demo: 'sz-kit-badge-demo',
+  exploration: 'sz-kit-badge-exploration',
 }
 
 const DIFFICULTY_BADGE_CLASS: Record<ExtensionExampleDifficulty, string> = {
-  beginner: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
-  intermediate: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
-  advanced: 'bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300',
+  beginner: 'sz-kit-badge-beginner',
+  intermediate: 'sz-kit-badge-intermediate',
+  advanced: 'sz-kit-badge-advanced',
 }
 
 export function filterKitGroups(

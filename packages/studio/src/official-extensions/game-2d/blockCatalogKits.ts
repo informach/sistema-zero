@@ -9,7 +9,7 @@ export const gameTwoDKitBlocks = [
   {
     type: 'sz_g2d_jump_on_ground',
     placement: 'command',
-    message0: 'Fazer o sprite %1 pular no chão, força do pulo %2',
+    message0: 'Fazer o sprite %1 pular na tela (a borda é chão), força %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
       { type: 'input_value', name: 'JUMP', check: 'JSValue' },
@@ -19,7 +19,7 @@ export const gameTwoDKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Pula com ↑/Espaço/W ou um toque na tela e pousa na borda atraída. Para o sprite cair, encaixe "Aplicar a gravidade do mundo" logo acima. Ótimo para jogos de corrida e de pulo. Use dentro do "a cada quadro".',
+      'Versão simples para jogos de UMA TELA: pula e pousa na própria borda atraída. Encaixe “Aplicar a gravidade do mundo” logo acima. Para mapa, chão desenhado, plataformas ou buracos, use “Pular sobre o terreno”.',
   },
 
   // ---- Kit dino (v0.9.0): desenhos prontos + sons para um jogo de corrida ----

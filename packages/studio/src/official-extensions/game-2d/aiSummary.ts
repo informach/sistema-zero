@@ -27,16 +27,27 @@ Jogos precisam de controles, objetivo alcançável, feedback e novo jogo.
 
 IMAGENS E MAPAS: use assets do projeto; nomes precisam coincidir. Tilemaps vêm do
 Pinta/upload ou de uma grade declarada pela criança, nunca de cenário inventado
-automaticamente. Sprites sem imagem continuam visíveis por cor.
+automaticamente. Sprites sem imagem continuam visíveis por cor. Mapa guarda tiles:
+prepare-o UMA vez com “encaixar na tela” ou “posicionar no mundo” e depois apenas
+desenhe; a forma antiga de desenhar passando x/y/tamanho é só compatibilidade.
+
+MAPA → MUNDO → FASE: Mundo é a área física (limites, mapas, figuras sólidas ou
+plataformas e câmera) e pode existir sem Fases. Fase é opcional e genérica: Mundo +
+posição inicial + evento de entrada; serve também para nave, puzzle ou uma tela fixa.
+Cenas são estados de interface. Ondas são grupos/ritmos de inimigos dentro do mesmo
+Mundo ou Fase, normalmente controladas por uma variável — não crie uma Fase por onda.
+Para jogo de uma tela use só o necessário; para mapa rolável, prefira câmera do Mundo.
 
 O runtime prepara automaticamente os metadados internos do canvas e anuncia as
 telas de início, vitória e derrota sem repetir a cada quadro.
 
 GRAVIDADE EXPLÍCITA: setGravity só define o valor do mundo (padrão 0,6) e não move
 nada. Em cada quadro, use applyGravity(sprite) antes do bloco que movimenta somente
-os sprites que devem cair. Para grupos, use applyGravityToGroup(grupo) antes de
-updateGroup ou do atualizador de inimigos. applyVelocity, updateGroup, platformer,
-jumpOnGround, flap, swim e controlDino nunca acrescentam gravidade escondida.
+os sprites que devem cair. Para terreno real, use platformerWithTerrain ou
+jumpWithTerrain e depois collideWorld/collideCurrentLevel. O platformer antigo usa
+a borda da tela como chão e fica restrito ao jogo de uma tela. Para grupos, use
+applyGravityToGroup(grupo) antes de updateGroup ou do atualizador de inimigos.
+Nenhum helper de movimento acrescenta gravidade escondida.
 
 VIDAS: inicialize a vida do sprite uma vez em ⚙️ Ao iniciar. Para contato contínuo,
 use o bloco de machucar com invencibilidade; para perguntar pelo fim, prefira “as

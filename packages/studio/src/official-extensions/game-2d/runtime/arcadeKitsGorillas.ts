@@ -420,7 +420,6 @@ export const gameTwoDArcadeGorillasRuntime = `  // ---- Kit gorilas: batalha de 
     reset: function () {
       _scene = 'inicio';
       _stars = null;
-      _jumpTapPrev = false;
       _dinoTapPrev = false;
       _forest = null;
       _banana = null;

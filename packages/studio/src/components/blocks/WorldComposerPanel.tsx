@@ -323,10 +323,7 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
             </button>
           </div>
           {addNotice && (
-            <p
-              role="status"
-              className="mt-2 rounded-lg bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300"
-            >
+            <p role="status" className="sz-notice-warning mt-2 rounded-lg p-2 text-xs">
               {addNotice}
             </p>
           )}
@@ -443,7 +440,7 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
               />
             </label>
             {!selectedItem.movable && (
-              <p className="rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-700 dark:text-amber-300">
+              <p className="sz-notice-warning rounded-lg p-3 text-xs leading-5">
                 A posição usa uma expressão. Troque-a por um bloco de número para mover visualmente.
               </p>
             )}

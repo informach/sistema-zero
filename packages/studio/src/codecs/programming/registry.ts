@@ -24,8 +24,18 @@ export function createProgrammingBlockRegistry(
     if (registration.definition.type !== registration.blockType) {
       throw new Error(`Definição divergente para o bloco ${registration.blockType}.`)
     }
+    for (const direction of ['blockToIR', 'irToBlock', 'irToCode', 'codeToIR'] as const) {
+      if (typeof registration.adapters[direction] !== 'function') {
+        throw new Error(
+          `Registro de Programação sem adapter ${direction}: ${registration.blockType}.`,
+        )
+      }
+    }
     seen.add(registration.blockType)
-    return Object.freeze({ ...registration })
+    return Object.freeze({
+      ...registration,
+      adapters: Object.freeze({ ...registration.adapters }),
+    })
   })
   return Object.freeze(frozen)
 }

@@ -6,7 +6,7 @@ import {
   hasDuplicateCSSDeclarations,
   hasOrderDependentCSSDeclarations,
 } from '#ir'
-import type { SerializedBlocklyBlock } from '../../blockly/workspaceState'
+import type { SerializedBlocklyBlock } from '../types'
 import { SHADOW_PRESETS } from './cssBlockToIR'
 import { isLosslessColor } from './losslessValues'
 

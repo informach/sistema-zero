@@ -96,6 +96,15 @@ export interface GameTwoDTileMapOptions {
   grid?: string
 }
 
+export interface GameTwoDTileLayout {
+  x: number
+  y: number
+  tileSize: number
+  width: number
+  height: number
+  mode: 'placed' | 'fitted' | 'legacy'
+}
+
 export interface GameTwoDTileMap {
   tileset: GameTwoDSpriteSheet
   tile: number
@@ -103,8 +112,35 @@ export interface GameTwoDTileMap {
   rows: number[][]
   solid: number[]
   platform: number[]
+  layout: GameTwoDTileLayout | null
   ox: number
   oy: number
+}
+
+export type GameTwoDWorldEdges = 'none' | 'floor' | 'solid'
+export type GameTwoDCameraHorizontal = 'off' | 'free' | 'right' | 'left'
+export type GameTwoDCameraVertical = 'off' | 'free' | 'down' | 'up'
+
+export interface GameTwoDWorld {
+  width: number
+  height: number
+  edges: GameTwoDWorldEdges
+  tileMaps: GameTwoDTileMap[]
+  terrain: Array<{ kind: 'solid' | 'platform'; group: GameTwoDGroup }>
+  camera: {
+    x: number
+    y: number
+    horizontal: GameTwoDCameraHorizontal
+    vertical: GameTwoDCameraVertical
+    deadZoneX: number
+    deadZoneY: number
+  }
+}
+
+export interface GameTwoDLevel {
+  world: GameTwoDWorld
+  spawnX: number
+  spawnY: number
 }
 
 export interface GameTwoDEnemyTypeOptions extends GameTwoDSpriteOptions {
@@ -375,7 +411,11 @@ export interface GameTwoDInputAndMotionApi {
   keyDown(key: string): boolean
   pointerDown(): boolean
   touches(a: GameTwoDSprite, b: GameTwoDSprite): boolean
+  /** Jogo fixo de uma tela: a borda atraída do canvas funciona como chão. */
   platformer(sprite: GameTwoDSprite, ctx: GameTwoDContext, speed: number, jump: number): void
+  /** Plataforma sobre terreno real; colida com o Mundo depois de mover. */
+  platformerWithTerrain(sprite: GameTwoDSprite, speed: number, jump: number): void
+  jumpWithTerrain(sprite: GameTwoDSprite, jump: number): void
   topDown(sprite: GameTwoDSprite, speed: number): void
   flyFree(sprite: GameTwoDSprite, speed: number): void
   flap(sprite: GameTwoDSprite, ctx: GameTwoDContext, force: number): void
@@ -406,7 +446,9 @@ export interface GameTwoDInputAndMotionApi {
 }
 
 export interface GameTwoDWorldApi {
+  /** @deprecated Prefira a câmera configurada por `GameTwoDWorld`. */
   cameraFollow(sprite: GameTwoDSprite, worldWidth: number, worldHeight: number): void
+  /** @deprecated Prefira `configureWorldCamera` + `followCameraInWorld`. */
   setCamera(x: number, y: number): void
   cameraX(): number
   cameraY(): number
@@ -430,6 +472,12 @@ export interface GameTwoDWorldApi {
   onJump(getSprite: () => GameTwoDSprite | null, fn: () => void, id?: string): void
   createTileMap(options: GameTwoDTileMapOptions): GameTwoDTileMap
   createTileMapFromAsset(name: string): GameTwoDTileMap
+  fitTileMapToStage(ctx: GameTwoDContext, map: GameTwoDTileMap): void
+  placeTileMap(map: GameTwoDTileMap, x: number, y: number, tileSize: number): void
+  /**
+   * Desenha o layout preparado. Os argumentos x/y/size são aceitos somente por
+   * compatibilidade; código novo deve preparar o mapa antes e passar dois argumentos.
+   */
   drawTileMap(
     ctx: GameTwoDContext,
     map: GameTwoDTileMap,
@@ -443,6 +491,29 @@ export interface GameTwoDWorldApi {
   collidePlatform(sprite: GameTwoDSprite, platform: GameTwoDSprite): void
   collidePlatformGroup(sprite: GameTwoDSprite, group: GameTwoDGroup): void
   tileAt(map: GameTwoDTileMap, x: number, y: number): number
+  createWorld(width: number, height: number): GameTwoDWorld
+  createWorldFromTileMap(map: GameTwoDTileMap, tileSize: number): GameTwoDWorld
+  addTileMapToWorld(worldValue: GameTwoDWorld, map: GameTwoDTileMap): void
+  addSolidGroupToWorld(worldValue: GameTwoDWorld, group: GameTwoDGroup): void
+  addPlatformGroupToWorld(worldValue: GameTwoDWorld, group: GameTwoDGroup): void
+  setWorldEdges(worldValue: GameTwoDWorld, edges: GameTwoDWorldEdges): void
+  configureWorldCamera(
+    worldValue: GameTwoDWorld,
+    horizontal: GameTwoDCameraHorizontal,
+    vertical: GameTwoDCameraVertical,
+    deadZoneX: number,
+    deadZoneY: number,
+  ): void
+  collideWorld(sprite: GameTwoDSprite, worldValue: GameTwoDWorld): void
+  followCameraInWorld(sprite: GameTwoDSprite, worldValue: GameTwoDWorld): void
+  drawWorld(ctx: GameTwoDContext, worldValue: GameTwoDWorld): void
+  createLevel(worldValue: GameTwoDWorld, spawnX: number, spawnY: number): GameTwoDLevel
+  enterLevel(level: GameTwoDLevel, player: GameTwoDSprite): void
+  onLevelEnter(getLevel: () => GameTwoDLevel, fn: () => void, id?: string): void
+  levelIsActive(level: GameTwoDLevel): boolean
+  collideCurrentLevel(sprite: GameTwoDSprite): void
+  followCurrentLevelCamera(sprite: GameTwoDSprite): void
+  drawCurrentLevel(ctx: GameTwoDContext): void
   createGroup(): GameTwoDGroup
   spawn(group: GameTwoDGroup, options?: GameTwoDSpriteOptions): GameTwoDSprite | null
   spawnBullet(
@@ -774,6 +845,8 @@ export const GAME_TWO_D_API_KEYS = [
   'paintTriangle',
   'paintLine',
   'platformer',
+  'platformerWithTerrain',
+  'jumpWithTerrain',
   'topDown',
   'flyFree',
   'flap',
@@ -786,6 +859,8 @@ export const GAME_TWO_D_API_KEYS = [
   'drawParticles',
   'createTileMap',
   'createTileMapFromAsset',
+  'fitTileMapToStage',
+  'placeTileMap',
   'drawTileMap',
   'collideTileMap',
   'collideGroup',
@@ -793,6 +868,23 @@ export const GAME_TWO_D_API_KEYS = [
   'collidePlatform',
   'collidePlatformGroup',
   'tileAt',
+  'createWorld',
+  'createWorldFromTileMap',
+  'addTileMapToWorld',
+  'addSolidGroupToWorld',
+  'addPlatformGroupToWorld',
+  'setWorldEdges',
+  'configureWorldCamera',
+  'collideWorld',
+  'followCameraInWorld',
+  'drawWorld',
+  'createLevel',
+  'enterLevel',
+  'onLevelEnter',
+  'levelIsActive',
+  'collideCurrentLevel',
+  'followCurrentLevelCamera',
+  'drawCurrentLevel',
   'createGroup',
   'spawn',
   'applyGravityToGroup',

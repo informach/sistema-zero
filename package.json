@@ -4,6 +4,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "overrides": {
+    "postcss": "8.5.23"
+  },
   "scripts": {
     "format": "biome format --write .",
     "lint": "biome lint .",

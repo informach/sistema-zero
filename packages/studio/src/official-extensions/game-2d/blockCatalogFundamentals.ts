@@ -871,8 +871,9 @@ export const gameTwoDFundamentalBlocks = [
   // ---- Tier 2: Câmera (rola o mundo; o HUD fica fixo) ----
   {
     type: 'sz_g2d_camera_follow',
+    hidden: true,
     placement: 'command',
-    message0: 'Fazer a câmera seguir o sprite %1 (mundo %2 x %3)',
+    message0: 'Bloco antigo: câmera seguir o sprite %1 (limites %2 x %3)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
       { type: 'input_value', name: 'WORLDW', check: 'JSValue' },
@@ -883,12 +884,13 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A câmera centraliza no sprite (mundo maior que a tela), presa às bordas do mundo. Desenhe o HUD DEPOIS do mundo. Ele não se move.',
+      'Compatibilidade com projetos antigos. Os números podem divergir do tamanho real do mapa. Substitua por “Configurar câmera” e “Fazer a câmera do Mundo seguir o sprite”.',
   },
   {
     type: 'sz_g2d_set_camera',
+    hidden: true,
     placement: 'command',
-    message0: 'Mover a câmera para x %1 y %2',
+    message0: 'Bloco antigo: mover a câmera para x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
@@ -897,7 +899,8 @@ export const gameTwoDFundamentalBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Posiciona a câmera na mão (canto superior esquerdo do que aparece na tela).',
+    tooltip:
+      'Compatibilidade com projetos antigos. Em jogos novos, configure a câmera do Mundo e faça ela seguir um sprite.',
   },
   {
     type: 'sz_g2d_camera_x',
