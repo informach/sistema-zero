@@ -25,6 +25,10 @@ export const COPY = {
     removeConfirmTitle: 'Apagar este desenho?',
     removeConfirmBody: 'Ele vai sumir da galeria. Não dá para desfazer.',
     removeConfirm: 'Apagar',
+    removeTilesetTitle: 'Estas peças estão sendo usadas',
+    removeTilesetBody:
+      'Antes de apagar este conjunto, apague os mapas abaixo ou crie versões deles com outras peças:',
+    tilesetInUse: 'Estas peças ainda são usadas por um ou mais mapas.',
     cancel: 'Cancelar',
     quotaFull: 'A sua galeria está cheia! Apague um desenho antigo para criar um novo.',
     downloadAll: 'Baixar tudo',
@@ -252,6 +256,7 @@ export const COPY = {
   colorPicker: {
     hex: 'Código da cor',
     recent: 'Cores recentes',
+    apply: 'Aplicar',
   },
   layers: {
     title: 'Camadas',
@@ -319,6 +324,12 @@ export const COPY = {
     moveFrameRight: 'Mover para a direita',
     animationLimit: 'Você chegou ao limite de animações deste personagem.',
     frameLimit: 'Essa animação já tem o máximo de quadros.',
+    expandTimeline: 'Expandir timeline',
+    compactTimeline: 'Compactar timeline',
+  },
+  panel: {
+    expand: (title: string) => `Mostrar ${title}`,
+    collapse: (title: string) => `Recolher ${title}`,
   },
   tiles: {
     tiles: 'Peças',

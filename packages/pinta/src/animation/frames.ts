@@ -126,19 +126,6 @@ export function moveFrame<A extends AnimatedSpriteAsset>(
   })
 }
 
-/** Substitui o conteúdo de um quadro (usado pelo editor via withActive*). */
-export function setFrame<A extends AnimatedSpriteAsset>(
-  asset: A,
-  animationId: string,
-  index: number,
-  frame: FrameOf<A>,
-): A {
-  return withAnimation(asset, animationId, (animation) => {
-    if (!animation.frames[index]) return animation
-    return { ...animation, frames: animation.frames.map((f, i) => (i === index ? frame : f)) }
-  })
-}
-
 // ── Animações ───────────────────────────────────────────────────────────────
 
 const DEFAULT_ANIMATION_NAMES = ['parado', 'andar', 'pular', 'correr', 'atacar', 'dano']

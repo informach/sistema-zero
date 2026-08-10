@@ -323,6 +323,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_world_add_tilemap',
       'sz_g2d_world_add_solid_group',
       'sz_g2d_world_add_platform_group',
+      'sz_g2d_world_add_enemy_type',
       'sz_g2d_world_set_edges',
       'sz_g2d_world_camera',
       'sz_g2d_world_collide',

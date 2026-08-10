@@ -65,7 +65,6 @@ import {
   persistProject,
   renameProjectMeta,
 } from './persistence'
-import { MAX_PROJECT_IMPORT_CHARS } from './projectLimits'
 import {
   addProDir,
   addProFile,

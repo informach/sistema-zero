@@ -14,12 +14,15 @@ import { findExtension } from '#official-extensions'
 import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
 import { buildPreviewDoc } from './bootstrap'
 import { withCoreImports } from './coreImports'
+import type { PreviewSecurityProfile } from './csp'
 
 export interface RenderProjectOptions {
   /** Origem do host (targetOrigin dos interceptors — defesa em profundidade). */
   parentOrigin?: string
   /** Origens liberadas para fetch/XHR (opt-in; raríssimo num player público). */
   fetchAllowedOrigins?: readonly string[]
+  /** Perfil da CSP. O player público usa `strict`; chamadas diretas preservam `creative`. */
+  securityProfile?: PreviewSecurityProfile
   /** Orçamento síncrono do loopGuard (ms). */
   loopBudgetMs?: number
 }
@@ -78,6 +81,7 @@ export async function renderProjectToPreviewDocAsync(
     parentOrigin: opts.parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
+    securityProfile: opts.securityProfile,
     loopBudgetMs: opts.loopBudgetMs,
     // + os imports do NÚCLEO (three.js) se o código os usa — lazy: 2D devolve o
     // mesmo objeto, sem importmap.

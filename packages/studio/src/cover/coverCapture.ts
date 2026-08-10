@@ -8,6 +8,7 @@ import {
 import { type ExtensionPermission, loadExtensionBootstrapScripts } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, withCoreImports } from '#preview'
+import { buildDomRasterizerRuntime } from '../preview/domRasterizerRuntime'
 
 /**
  * Captura uma CAPA (print PNG) do projeto RODANDO, para a vitrine "Mural dos
@@ -20,11 +21,9 @@ import { buildPreviewDoc, withCoreImports } from '#preview'
  * caso — decisão da usuária):
  *  1. **Canvas** — lê o MAIOR `<canvas>` com `toDataURL` (jogos 2D/3D). Rápido e
  *     exato; mantém o pipeline atual sem mexer no `needsModules` dos jogos.
- *  2. **DOM (html2canvas)** — só se a passada 1 voltar `null` (projeto sem canvas:
- *     páginas HTML/CSS). Rasteriza o `document.body` com o html2canvas carregado do
- *     CDN (esm.sh) DENTRO do iframe — o pai não acessa o sandbox null-origin, então
- *     a rasterização precisa rodar lá. Mesmo padrão do `three` do Jogo 3D
- *     (`extensionImports` → importmap + origem liberada no `script-src` da CSP).
+ *  2. **DOM (SVG/foreignObject)** — só se a passada 1 voltar `null` (projeto sem
+ *     canvas ou buffer vazio). Serializa o `document.body` dentro do próprio
+ *     iframe, sem clone cross-origin e sem dependência de CDN.
  *
  * Canvas "tainted" (imagem cross-origin sem CORS), timeout, ou fora do browser →
  * `null` (o chamador cai na capa do admin / upload). NUNCA lança.
@@ -42,9 +41,6 @@ export interface CaptureCoverOptions {
 const DEFAULT_WARMUP_MS = 1_500
 /** Teto do data URL aceito (~6 MB) — defesa contra payload absurdo; o BFF re-encoda. */
 const MAX_DATA_URL_BYTES = 6_000_000
-/** html2canvas (UMD/ESM) pinado no esm.sh — carregado SÓ na passada DOM (projeto sem canvas). */
-const HTML2CANVAS_URL = 'https://esm.sh/html2canvas@1.4.1'
-
 /** Contexto de extensão do projeto (scripts/imports/permissões) p/ o `buildPreviewDoc`. */
 async function extensionContext(project: Project): Promise<{
   extensionScripts: string[]
@@ -77,7 +73,6 @@ async function runCapture(
   project: Project,
   opts: CaptureCoverOptions,
   harness: string,
-  extraImports: Record<string, string>,
 ): Promise<string | null> {
   const ctx = await extensionContext(project)
   const parentOrigin = window.location.origin
@@ -100,12 +95,7 @@ async function runCapture(
     installedPermissions: ctx.permissions,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     loopBudgetMs: opts.loopBudgetMs,
-    // `extraImports` (ex.: html2canvas) entram no importmap E liberam apenas a
-    // URL/prefixo do pacote pinado no `script-src` da CSP do iframe.
-    extensionImports: withCoreImports(
-      { ...ctx.extensionImports, ...extraImports },
-      project.files['script.js'],
-    ),
+    extensionImports: withCoreImports(ctx.extensionImports, project.files['script.js']),
   })
 
   return new Promise<string | null>((resolve) => {
@@ -173,41 +163,22 @@ export async function captureCoverFromProject(
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
 
-  // 1ª passada: canvas (jogos). Pipeline atual, sem html2canvas (não muda módulos).
+  // 1ª passada: canvas (jogos). Pipeline rápido, sem rasterização DOM.
   const canvasUrl = await runCapture(
     project,
     opts,
     buildCanvasHarness({ parentOrigin, warmupMs, maxBytes: MAX_DATA_URL_BYTES }),
-    {},
   )
   if (canvasUrl) return canvasUrl
 
-  // 2ª passada (só projetos sem canvas — HTML/CSS): html2canvas rasteriza o DOM.
-  // Warmup curto: a página é estática; o teto evita esperar à toa pelo html2canvas.
-  //
-  // ⚠️ MEDIDO 08/2026: esta passada NÃO FUNCIONA hoje, e não é por falta de rede
-  // nem de CSP (o esm.sh entra no importmap e no `script-src`, e o import resolve
-  // — conferido no navegador). O html2canvas CLONA o documento num iframe interno
-  // e lê o `contentWindow.document` dele; como o nosso sandbox é `allow-scripts`
-  // SEM `allow-same-origin`, a origem é opaca ("null") e esse acesso é
-  // cross-origin — até para o próprio documento:
-  //   "Blocked a frame with origin \"null\" from accessing a cross-origin frame."
-  // `foreignObjectRendering: true` não salva: o clone acontece antes, nos dois
-  // modos. E `allow-same-origin` está FORA de questão (é o que impede o código da
-  // criança de tocar no host). Ou seja: projeto sem canvas fica sem capa hoje.
-  // Sair disso pede um rasterizador que não clone via iframe (serializar o DOM
-  // num `<svg><foreignObject>` na mão) — trabalho de verdade, não um flag.
-  //
-  // Manter a chamada mesmo assim é de propósito: ela é barata quando falha, e a
-  // 1ª passada devolvendo `null` NÃO apaga a capa que já existe (o
-  // `captureAndStoreProjectThumb` sai antes de gravar) — melhor ficar com a foto
-  // antiga do que com um retângulo.
+  // 2ª passada: o rasterizador compartilhado serializa o DOM diretamente para
+  // SVG/foreignObject. Ele funciona na origem opaca porque não cria nem lê outro
+  // iframe e preserva o sandbox sem allow-same-origin.
   const domWarmup = Math.min(warmupMs, 600)
   return runCapture(
     project,
     { ...opts, warmupMs: domWarmup, timeoutMs: domWarmup + 6_000 },
     buildDomHarness({ parentOrigin, warmupMs: domWarmup, maxBytes: MAX_DATA_URL_BYTES }),
-    { html2canvas: HTML2CANVAS_URL },
   )
 }
 
@@ -276,7 +247,7 @@ export function buildCanvasHarness(opts: {
       if (!ctx) { post(null); return; }
       ctx.drawImage(c, 0, 0);
       // Quadro EM BRANCO nao vira capa: posta null para a passada do DOM
-      // (html2canvas) assumir, que rasteriza o CSS e portanto enxerga o fundo.
+      // assumir; ela rasteriza o CSS e portanto enxerga o fundo.
       // Cobre o jogo que ainda nao desenhou e o 3D cujo buffer WebGL ja foi
       // descartado (sem preserveDrawingBuffer, ler fora do rAF volta vazio).
       // Nao da para inspecionar (canvas contaminado)? Nao descarta por isso — o
@@ -337,16 +308,10 @@ export function buildCanvasHarness(opts: {
 }
 
 /**
- * Harness de captura por DOM (html2canvas) — injetado como MÓDULO (há
- * `extensionImports`, então `buildPreviewDoc` o emite `type="module"`): usa
- * `import('html2canvas')` (resolvido pelo importmap → esm.sh) e rasteriza o
- * `document.body`. Para projetos SEM canvas. Falha/timeout → posta `null`.
- *
- * ⚠️ Hoje ele SEMPRE cai no `catch`: o html2canvas precisa de acesso same-origin
- * ao iframe em que clona o documento, e a nossa sandbox tem origem opaca. Ver o
- * bloco em `captureCoverFromProject` — está medido lá.
+ * Harness de captura por DOM: usa o mesmo rasterizador SVG/foreignObject do
+ * snapshot ao vivo. Não cria iframe interno e funciona com origem opaca.
  */
-function buildDomHarness(opts: {
+export function buildDomHarness(opts: {
   parentOrigin: string
   warmupMs: number
   maxBytes: number
@@ -354,38 +319,37 @@ function buildDomHarness(opts: {
   const origin = JSON.stringify(opts.parentOrigin)
   const warmup = Math.max(0, Math.floor(opts.warmupMs))
   const maxBytes = Math.max(0, Math.floor(opts.maxBytes))
+  const domRasterizer = buildDomRasterizerRuntime()
   return `;(function(){
   var PARENT_ORIGIN = ${origin};
   var WARMUP = ${warmup};
   var MAX = ${maxBytes};
-  // Quantos quadros o jogo precisa pintar antes da foto. Dois: o primeiro pode
-  // ser só o clear + o fundo, e é no segundo que placar e sprites já estão lá.
-  var FRAMES = 2;
-  // Quanto esperar por um rAF que talvez nunca venha (página estática, ou aba
-  // que perdeu composição). Curto de propósito: a captura roda na saída.
-  var PARADO = 900;
+  ${domRasterizer}
   function post(dataUrl){ try { parent.postMessage({ __szCover: true, dataUrl: dataUrl }, PARENT_ORIGIN); } catch (e) {} }
-  async function capture(){
+  function capture(){
     try {
-      var mod = await import('html2canvas');
-      var h2c = mod && (mod.default || mod);
-      if (typeof h2c !== 'function') { post(null); return; }
-      var body = document.body;
-      var w = Math.min(Math.max(body.scrollWidth || 1024, 320), 1600);
-      var h = Math.min(Math.max(body.scrollHeight || 768, 240), 1200);
-      var canvas = await h2c(body, {
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        logging: false,
-        scale: 1,
-        width: w,
-        height: h,
-        windowWidth: w,
-        windowHeight: h,
+      szRasterizarDOM(document.body, {
+        hideCanvases: true,
+        includeBackground: true,
+        fullDocument: true,
+        fallbackWidth: 1024,
+        fallbackHeight: 768,
+        maxWidth: 1600,
+        maxHeight: 1200
+      }, function(resultado){
+        if (!resultado || !resultado.image) { post(null); return; }
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = resultado.width;
+          canvas.height = resultado.height;
+          var ctx = canvas.getContext('2d');
+          if (!ctx) { post(null); return; }
+          ctx.drawImage(resultado.image, 0, 0, resultado.width, resultado.height);
+          var url = canvas.toDataURL('image/png');
+          if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0 || url.length > MAX) { post(null); return; }
+          post(url);
+        } catch (e) { post(null); }
       });
-      var url = canvas.toDataURL('image/png');
-      if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0 || url.length > MAX) { post(null); return; }
-      post(url);
     } catch (e) { post(null); }
   }
   function schedule(){ setTimeout(function(){ capture(); }, WARMUP); }

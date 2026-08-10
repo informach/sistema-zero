@@ -6,6 +6,15 @@ import type {
   ReactNode,
   Ref,
 } from 'react'
+import { useId } from 'react'
+import { ChevronDown } from './icons'
+
+export interface PanelDisclosure {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  expandLabel: string
+  collapseLabel: string
+}
 
 /**
  * Painel do editor com CABEÇALHO: faixa de título tonal + divisória, e o corpo
@@ -37,6 +46,8 @@ export interface PanelProps {
   titleProps?: ButtonHTMLAttributes<HTMLButtonElement>
   /** Sufixo do título (ex.: o chevron do dropdown, uma pílula de contagem). */
   titleSuffix?: ReactNode
+  /** Disclosure controlado; o botão fica separado do título e das ações. */
+  disclosure?: PanelDisclosure
   /** Layout EXTERNO do painel (w-68, flex, shrink-0…). */
   className?: string
   /** Padding e rolagem do CORPO. Default `flex flex-col gap-2 p-2`. */
@@ -55,10 +66,12 @@ export function Panel({
   titleRef,
   titleProps,
   titleSuffix,
+  disclosure,
   className,
   bodyClassName,
   children,
 }: PanelProps): JSX.Element {
+  const bodyId = useId()
   return (
     <section
       aria-label={ariaLabel ?? title}
@@ -86,9 +99,33 @@ export function Panel({
             {titleSuffix}
           </span>
         )}
-        {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
+        {actions || disclosure ? (
+          <div className="flex shrink-0 items-center gap-1">
+            {actions}
+            {disclosure ? (
+              <button
+                type="button"
+                aria-expanded={disclosure.open}
+                aria-controls={bodyId}
+                aria-label={disclosure.open ? disclosure.collapseLabel : disclosure.expandLabel}
+                title={disclosure.open ? disclosure.collapseLabel : disclosure.expandLabel}
+                onClick={() => disclosure.onOpenChange(!disclosure.open)}
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl text-pin-muted transition hover:bg-pin-border/40 hover:text-pin-text focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-pin-accent"
+              >
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`size-5 transition-transform ${disclosure.open ? 'rotate-180' : ''}`}
+                />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
-      <div className={bodyClassName ?? 'flex min-h-0 flex-col gap-2 p-2'}>{children}</div>
+      {!disclosure || disclosure.open ? (
+        <div id={bodyId} className={bodyClassName ?? 'flex min-h-0 flex-col gap-2 p-2'}>
+          {children}
+        </div>
+      ) : null}
     </section>
   )
 }

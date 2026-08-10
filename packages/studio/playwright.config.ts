@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Configuração mínima Playwright. Roda contra uma instância própria do Vite
- * para evitar testes contra servidores antigos de desenvolvimento.
+ * Roda contra um build de produção próprio servido pelo Vite Preview. Isso
+ * remove reotimizações e full reloads do dev server no meio de uma interação.
  *
  * Além do boot, a suíte percorre criação/reabertura de projetos, colagem e
  * arrasto de blocos, instalação de extensões, Ponte, preview e interações reais,
@@ -17,7 +17,7 @@ const outputDir = process.env.PLAYWRIGHT_OUTPUT_DIR ?? './.cache/playwright-resu
 export default defineConfig({
   testDir: './e2e',
   outputDir,
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
@@ -44,12 +44,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    // Sobe o playground do package (ver playground/vite.config.ts).
-    command: `bun run dev --host 127.0.0.1 --port ${e2ePort} --strictPort`,
+    command: 'bun run serve:e2e',
+    env: { E2E_PORT: String(e2ePort) },
     url: baseURL,
     reuseExistingServer,
     stdout: 'ignore',
     stderr: 'pipe',
-    timeout: 60_000,
+    timeout: 120_000,
   },
 })

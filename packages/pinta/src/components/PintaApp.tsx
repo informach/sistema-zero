@@ -16,7 +16,6 @@ import {
 } from './appContext'
 import { EditorScreen } from './editor/EditorScreen'
 import { GalleryScreen } from './gallery/GalleryScreen'
-import { PintaThemeProvider } from './PintaThemeScope'
 import { TaskBriefPanel } from './TaskBriefPanel'
 import { ToastProvider, useToast } from './ui/Toast'
 
@@ -116,33 +115,31 @@ export function PintaApp({ adapter }: { adapter?: PintaHostAdapter }): JSX.Eleme
       data-pinta-theme={theme}
       className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-pin-bg text-pin-text"
     >
-      <PintaThemeProvider value={theme}>
-        <PintaAppProvider value={context}>
-          <ToastProvider>
-            <InitialAssetOpener
-              onMissing={(id) => {
-                if (resolvedAdapter.taskSession?.progress.outputRef?.assetId === id) {
-                  setMissingAssetId(id)
-                }
-              }}
+      <PintaAppProvider value={context}>
+        <ToastProvider>
+          <InitialAssetOpener
+            onMissing={(id) => {
+              if (resolvedAdapter.taskSession?.progress.outputRef?.assetId === id) {
+                setMissingAssetId(id)
+              }
+            }}
+          />
+          {resolvedAdapter.taskSession ? (
+            <TaskBriefPanel
+              session={resolvedAdapter.taskSession}
+              outputMissing={taskOutputMissing}
+              onRecreate={recreateTaskAsset}
+              onRelink={() => setView({ screen: 'gallery' })}
             />
-            {resolvedAdapter.taskSession ? (
-              <TaskBriefPanel
-                session={resolvedAdapter.taskSession}
-                outputMissing={taskOutputMissing}
-                onRecreate={recreateTaskAsset}
-                onRelink={() => setView({ screen: 'gallery' })}
-              />
-            ) : null}
-            {view.screen === 'gallery' ? (
-              <GalleryScreen />
-            ) : (
-              // key por asset: trocar de desenho recria o editor (stores novas).
-              <EditorScreen key={view.assetId} assetId={view.assetId} />
-            )}
-          </ToastProvider>
-        </PintaAppProvider>
-      </PintaThemeProvider>
+          ) : null}
+          {view.screen === 'gallery' ? (
+            <GalleryScreen />
+          ) : (
+            // key por asset: trocar de desenho recria o editor (stores novas).
+            <EditorScreen key={view.assetId} assetId={view.assetId} />
+          )}
+        </ToastProvider>
+      </PintaAppProvider>
     </div>
   )
 }

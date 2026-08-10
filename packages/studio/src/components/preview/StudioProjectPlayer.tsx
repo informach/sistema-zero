@@ -2,12 +2,17 @@ import type { CSSProperties, JSX, Ref } from 'react'
 import { forwardRef, useEffect, useState } from 'react'
 import type { Project } from '#core'
 import { renderProjectToPreviewDocAsync } from '#preview'
+import type { PreviewSecurityProfile } from '../../preview/csp'
+import { type StudioPlayerOriginAdapter, validateIsolatedPreviewUrl } from './playerOriginAdapter'
+
+export type { StudioPlayerOriginAdapter, StudioPlayerOriginRequest } from './playerOriginAdapter'
 
 type PlayerLoadStatus = 'loading' | 'ready' | 'error'
 
 interface PlayerLoadState {
   status: PlayerLoadStatus
   doc: string
+  url?: string
   /**
    * Muda a cada documento novo e vira `key` do `<iframe>`, forçando um elemento
    * NOVO em vez de reescrever o `srcDoc` do existente.
@@ -39,6 +44,10 @@ export interface StudioProjectPlayerProps {
   project: Project
   /** Origem do host para o targetOrigin dos interceptors (defesa em profundidade). */
   parentOrigin?: string
+  /** `strict` por padrão; `creative` reabre imagens/fontes/mídia https. */
+  securityProfile?: PreviewSecurityProfile
+  /** Publica o documento numa origem isolada e faz o iframe navegar por `src`. */
+  originAdapter?: StudioPlayerOriginAdapter
   /** Título acessível do iframe (default = `project.name`). */
   title?: string
   className?: string
@@ -60,7 +69,15 @@ export interface StudioProjectPlayerProps {
  */
 export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPlayerProps>(
   function StudioProjectPlayer(
-    { project, parentOrigin, title, className, style }: StudioProjectPlayerProps,
+    {
+      project,
+      parentOrigin,
+      securityProfile = 'strict',
+      originAdapter,
+      title,
+      className,
+      style,
+    }: StudioProjectPlayerProps,
     ref: Ref<HTMLIFrameElement>,
   ): JSX.Element {
     const [loadState, setLoadState] = useState<PlayerLoadState>({
@@ -70,36 +87,69 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
     })
     useEffect(() => {
       let ignore = false
+      let activeUrl: string | null = null
+      const abortController = new AbortController()
+      const actualHostOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+      const resolvedParentOrigin = parentOrigin ?? actualHostOrigin
+      const isolationHostOrigin =
+        actualHostOrigin && actualHostOrigin !== 'null' ? actualHostOrigin : resolvedParentOrigin
+      const release = (url: string) => {
+        try {
+          void Promise.resolve(originAdapter?.releasePreviewUrl?.(url)).catch(() => {})
+        } catch {
+          // Limpeza best-effort: falha do host não deve derrubar a árvore React.
+        }
+      }
       setLoadState((current) =>
         current.status === 'ready'
           ? current
           : { status: 'loading', doc: PLAYER_LOADING_DOC, generation: current.generation },
       )
-      void renderProjectToPreviewDocAsync(project, {
-        parentOrigin:
-          parentOrigin ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
-      }).then(
-        (nextDoc) => {
-          if (ignore) return
-          setLoadState((current) =>
-            current.doc === nextDoc && current.status === 'ready'
-              ? current
-              : { status: 'ready', doc: nextDoc, generation: current.generation + 1 },
-          )
-        },
-        () => {
-          if (ignore) return
-          setLoadState((current) => ({
-            status: 'error',
-            doc: PLAYER_ERROR_DOC,
-            generation: current.generation + 1,
-          }))
-        },
-      )
+      void (async () => {
+        const nextDoc = await renderProjectToPreviewDocAsync(project, {
+          parentOrigin: resolvedParentOrigin || undefined,
+          securityProfile,
+        })
+        let nextUrl: string | undefined
+        if (originAdapter) {
+          const candidate = await originAdapter.createPreviewUrl({
+            project,
+            document: nextDoc,
+            signal: abortController.signal,
+          })
+          try {
+            nextUrl = validateIsolatedPreviewUrl(candidate, isolationHostOrigin)
+          } catch (error) {
+            release(candidate)
+            throw error
+          }
+          if (ignore) {
+            release(nextUrl)
+            return
+          }
+          activeUrl = nextUrl
+        }
+        if (ignore) return
+        setLoadState((current) => ({
+          status: 'ready',
+          doc: nextDoc,
+          url: nextUrl,
+          generation: current.generation + 1,
+        }))
+      })().catch(() => {
+        if (ignore) return
+        setLoadState((current) => ({
+          status: 'error',
+          doc: PLAYER_ERROR_DOC,
+          generation: current.generation + 1,
+        }))
+      })
       return () => {
         ignore = true
+        abortController.abort()
+        if (activeUrl) release(activeUrl)
       }
-    }, [project, parentOrigin])
+    }, [project, parentOrigin, securityProfile, originAdapter])
 
     const statusMessage =
       loadState.status === 'loading'
@@ -116,7 +166,8 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
           key={loadState.generation}
           ref={ref}
           title={title ?? project.name ?? 'Projeto'}
-          srcDoc={loadState.doc}
+          src={loadState.url}
+          srcDoc={loadState.url ? undefined : loadState.doc}
           aria-busy={loadState.status === 'loading'}
           // Mesmo sandbox do preview vivo do editor. Pointer Lock habilita a câmera FPS;
           // NUNCA adicionar `allow-same-origin`.

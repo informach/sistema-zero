@@ -2056,6 +2056,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           {},
           stmt.__id,
         )
+      case 'g2d:addEnemyTypeToWorld':
+        return block(
+          'sz_g2d_world_add_enemy_type',
+          { WORLD: stmt.worldVar, TYPE: stmt.typeVar },
+          {},
+          stmt.__id,
+        )
       case 'g2d:addSolidGroupToWorld':
         return block(
           'sz_g2d_world_add_solid_group',

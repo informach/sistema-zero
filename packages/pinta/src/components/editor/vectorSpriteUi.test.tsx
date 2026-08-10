@@ -54,6 +54,16 @@ describe('personagem vetorial — paridade com o pixel', () => {
     expect(document.querySelector('.w-56')).toBeNull()
   })
 
+  it('a timeline alterna entre altura compacta e expandida', async () => {
+    await openVectorSprite()
+    const expand = screen.getByRole('button', { name: COPY.animation.expandTimeline })
+    expect(expand.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(expand)
+    const compact = screen.getByRole('button', { name: COPY.animation.compactTimeline })
+    expect(compact.getAttribute('aria-expanded')).toBe('true')
+    expect(document.querySelector('[data-timeline-scroll]')?.className).toContain('max-h-96')
+  })
+
   it('REGRESSÃO: o palco SVG tem width/height DEFINIDOS (doc × zoom)', async () => {
     await openVectorSprite()
     const stage = screen.getByRole('img', { name: 'Área de desenho' })

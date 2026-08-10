@@ -171,6 +171,29 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(await listAllAssets()).toHaveLength(0)
   })
 
+  it('não apaga um tileset enquanto algum mapa depende dele', async () => {
+    const store = createGalleryStore()
+    const tileset = await store.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (!tileset) throw new Error('tileset esperado')
+    const map = await store.getState().create({
+      kind: 'tilemap',
+      name: 'fase',
+      tilesetId: tileset.id,
+      cols: 2,
+      rows: 2,
+    })
+    if (!map) throw new Error('mapa esperado')
+
+    expect(await store.getState().remove(tileset.id)).toBe(false)
+    expect(
+      store
+        .getState()
+        .assets.map((asset) => asset.id)
+        .sort(),
+    ).toEqual([tileset.id, map.id].sort())
+    expect(await listAllAssets()).toHaveLength(2)
+  })
+
   it('quota de assets barra a criação com copy gentil', async () => {
     const store = createGalleryStore()
     for (let i = 0; i < PINTA_LIMITS.maxAssets; i += 1) {
@@ -229,5 +252,35 @@ describe('setPintaStorageNamespace — isolamento por perfil', () => {
     const backA = createGalleryStore()
     await backA.getState().load()
     expect(backA.getState().assets).toHaveLength(1)
+  })
+
+  it('a fila de uma galeria continua presa ao perfil em que o store nasceu', async () => {
+    const { idbMockDb, setIdbWriteGuard } = await import('../testing/idbMock')
+    let releaseFirst = (): void => {}
+    const blocked = new Promise<void>((resolve) => {
+      releaseFirst = resolve
+    })
+    let writes = 0
+    setIdbWriteGuard(async () => {
+      writes += 1
+      if (writes === 1) await blocked
+    })
+
+    setPintaStorageNamespace('perfil-a')
+    const storeA = createGalleryStore()
+    const first = storeA.getState().create({ kind: 'pixel-sprite', name: 'primeiro', frameSize: 8 })
+    await Promise.resolve()
+    const second = storeA.getState().create({ kind: 'pixel-sprite', name: 'segundo', frameSize: 8 })
+
+    setPintaStorageNamespace('perfil-b')
+    releaseFirst()
+    await Promise.all([first, second])
+    setIdbWriteGuard(null)
+
+    const valuesA = [...idbMockDb('sistema-zero-pinta-perfil-a').values()] as Array<{
+      name?: string
+    }>
+    expect(valuesA.map((asset) => asset.name).sort()).toEqual(['primeiro', 'segundo'])
+    expect(idbMockDb('sistema-zero-pinta-perfil-b').size).toBe(0)
   })
 })

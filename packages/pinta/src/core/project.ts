@@ -19,7 +19,9 @@ import {
   createPixelLayer,
   normalizeAssetName,
   PINTA_LIMITS,
+  TILE_SIZES,
   uniqueAnimationName,
+  VECTOR_TILE_SIZES,
 } from './projectConfig'
 
 export {
@@ -389,10 +391,13 @@ export function sanitizeProjectRef(raw: unknown): PintaProjectRef | undefined {
   if (typeof r.id !== 'string' || !r.id || r.id.length > 64) return undefined
   if (typeof r.name !== 'string' || !r.name.trim()) return undefined
   const palette = Array.isArray(r.palette)
-    ? r.palette
-        .filter((c): c is string => typeof c === 'string' && PROJECT_REF_HEX.test(c))
-        .map((c) => c.toLowerCase())
-        .slice(0, 8)
+    ? [
+        ...new Set(
+          r.palette
+            .filter((c): c is string => typeof c === 'string' && PROJECT_REF_HEX.test(c))
+            .map((c) => c.toLowerCase()),
+        ),
+      ].slice(0, 8)
     : []
   return {
     id: r.id,
@@ -670,7 +675,12 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       }
     }
     case 'tileset': {
-      if (!isFinitePositiveInt(record.tileSize, PINTA_LIMITS.maxFrameSize)) return null
+      if (
+        typeof record.tileSize !== 'number' ||
+        !TILE_SIZES.includes(record.tileSize as (typeof TILE_SIZES)[number])
+      ) {
+        return null
+      }
       const tileSize = record.tileSize
       const tileDims = { width: tileSize, height: tileSize }
       if (!Array.isArray(record.tiles)) return null
@@ -703,28 +713,30 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (!isFinitePositiveInt(record.rows, PINTA_LIMITS.maxTilemapRows)) return null
       const cellCount = record.cols * record.rows
       if (!Array.isArray(record.layers)) return null
-      const layers = record.layers
-        .slice(0, PINTA_LIMITS.maxTilemapLayers)
-        .map((layer): TilemapLayer | null => {
-          if (!layer || typeof layer !== 'object') return null
-          const l = layer as Record<string, unknown>
-          if (typeof l.id !== 'string' || !l.id) return null
-          // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
-          const cells = sanitizeTilemapCells(l.cells, cellCount)
-          if (!cells) return null
-          const name =
-            typeof l.name === 'string' && l.name.trim()
-              ? l.name.trim().slice(0, 30)
-              : COPY.tiles.layerNamePrefix
-          return {
-            id: l.id,
-            name,
-            visible: l.visible !== false,
-            cells,
-            ...(l.front === true ? { front: true } : {}),
-          }
-        })
-        .filter((l): l is TilemapLayer => l !== null)
+      const layers = ensureUniqueIds(
+        record.layers
+          .slice(0, PINTA_LIMITS.maxTilemapLayers)
+          .map((layer): TilemapLayer | null => {
+            if (!layer || typeof layer !== 'object') return null
+            const l = layer as Record<string, unknown>
+            if (typeof l.id !== 'string' || !l.id) return null
+            // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
+            const cells = sanitizeTilemapCells(l.cells, cellCount)
+            if (!cells) return null
+            const name =
+              typeof l.name === 'string' && l.name.trim()
+                ? l.name.trim().slice(0, 30)
+                : COPY.tiles.layerNamePrefix
+            return {
+              id: l.id,
+              name,
+              visible: l.visible !== false,
+              cells,
+              ...(l.front === true ? { front: true } : {}),
+            }
+          })
+          .filter((l): l is TilemapLayer => l !== null),
+      )
       if (layers.length === 0) return null
       return {
         ...base,
@@ -771,7 +783,12 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       }
     }
     case 'vector-tileset': {
-      if (!isFinitePositiveInt(record.tileSize, PINTA_LIMITS.maxFrameSize)) return null
+      if (
+        typeof record.tileSize !== 'number' ||
+        !VECTOR_TILE_SIZES.includes(record.tileSize as (typeof VECTOR_TILE_SIZES)[number])
+      ) {
+        return null
+      }
       if (!Array.isArray(record.tiles)) return null
       // Como no pixel: tile corrompido vira VAZIO para preservar os índices.
       const tiles = record.tiles

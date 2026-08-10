@@ -98,6 +98,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:addTileMapToWorld',
   'g2d:addSolidGroupToWorld',
   'g2d:addPlatformGroupToWorld',
+  'g2d:addEnemyTypeToWorld',
   'g2d:setWorldEdges',
   'g2d:configureWorldCamera',
   'g2d:createLevel',

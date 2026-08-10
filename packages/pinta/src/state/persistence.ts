@@ -64,24 +64,12 @@ export function runSerializedWrite(
   return next
 }
 
-export async function persistAsset(asset: PintaAsset): Promise<void> {
-  await persistAssets([asset])
-}
-
-/** Grava um conjunto relacionado atomicamente no IndexedDB do perfil atual. */
-export async function persistAssets(assets: readonly PintaAsset[]): Promise<void> {
-  if (assets.length === 0) return
-  const storeHandle = getStoreHandle()
-  const unique = new Map(assets.map((asset) => [asset.id, asset]))
-  const pairs = [...unique.values()].map(
-    (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
-  )
-  await runSerializedWrite(storeHandle, () => setMany(pairs, storeHandle))
-}
-
-export async function deleteAsset(id: string): Promise<void> {
-  const storeHandle = getStoreHandle()
-  await runSerializedWrite(storeHandle, () => del(assetKey(id), storeHandle))
+export interface PintaPersistence {
+  persistAsset(asset: PintaAsset): Promise<void>
+  persistAssets(assets: readonly PintaAsset[]): Promise<void>
+  deleteAsset(id: string): Promise<void>
+  loadAssetById(id: string): Promise<PintaAsset | null>
+  listAllAssets(): Promise<PintaAsset[]>
 }
 
 /**
@@ -98,26 +86,63 @@ function safeSanitize(raw: unknown): PintaAsset | null {
   }
 }
 
-export async function loadAssetById(id: string): Promise<PintaAsset | null> {
-  const raw = await get<unknown>(assetKey(id), getStoreHandle())
-  return safeSanitize(raw)
+/**
+ * Cliente ligado ao banco do perfil ATUAL neste instante. Stores com fila
+ * própria guardam este objeto, então uma troca global posterior não redireciona
+ * mutações que ainda aguardam sua vez.
+ */
+export function createPintaPersistence(): PintaPersistence {
+  const storeHandle = getStoreHandle()
+  const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
+    if (assets.length === 0) return
+    const unique = new Map(assets.map((asset) => [asset.id, asset]))
+    const pairs = [...unique.values()].map(
+      (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
+    )
+    await runSerializedWrite(storeHandle, () => setMany(pairs, storeHandle))
+  }
+  return {
+    persistAsset: (asset) => persistAssetsForStore([asset]),
+    persistAssets: persistAssetsForStore,
+    deleteAsset: (id) => runSerializedWrite(storeHandle, () => del(assetKey(id), storeHandle)),
+    async loadAssetById(id) {
+      const raw = await get<unknown>(assetKey(id), storeHandle)
+      return safeSanitize(raw)
+    },
+    async listAllAssets() {
+      const allKeys = await keys(storeHandle)
+      const assetKeys = allKeys.filter(
+        (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
+      )
+      if (assetKeys.length === 0) return []
+      const values = await getMany<unknown>(assetKeys, storeHandle)
+      const assets = values
+        .map((value) => safeSanitize(value))
+        .filter((asset): asset is PintaAsset => asset !== null)
+      assets.sort((a, b) => b.updatedAt - a.updatedAt)
+      return assets
+    },
+  }
 }
 
-/**
- * Carrega TODOS os assets do perfil, saneados (registros corrompidos/de outra
- * versão são descartados em silêncio) e ordenados por edição mais recente.
- */
-export async function listAllAssets(): Promise<PintaAsset[]> {
-  const kvStore = getStoreHandle()
-  const allKeys = await keys(kvStore)
-  const assetKeys = allKeys.filter(
-    (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
-  )
-  if (assetKeys.length === 0) return []
-  const values = await getMany<unknown>(assetKeys, kvStore)
-  const assets = values
-    .map((value) => safeSanitize(value))
-    .filter((asset): asset is PintaAsset => asset !== null)
-  assets.sort((a, b) => b.updatedAt - a.updatedAt)
-  return assets
+export function persistAsset(asset: PintaAsset): Promise<void> {
+  return createPintaPersistence().persistAsset(asset)
+}
+
+/** Grava um conjunto relacionado atomicamente no IndexedDB do perfil atual. */
+export function persistAssets(assets: readonly PintaAsset[]): Promise<void> {
+  return createPintaPersistence().persistAssets(assets)
+}
+
+export function deleteAsset(id: string): Promise<void> {
+  return createPintaPersistence().deleteAsset(id)
+}
+
+export function loadAssetById(id: string): Promise<PintaAsset | null> {
+  return createPintaPersistence().loadAssetById(id)
+}
+
+/** Carrega todos os assets saneados do perfil atual, do mais novo ao mais antigo. */
+export function listAllAssets(): Promise<PintaAsset[]> {
+  return createPintaPersistence().listAllAssets()
 }

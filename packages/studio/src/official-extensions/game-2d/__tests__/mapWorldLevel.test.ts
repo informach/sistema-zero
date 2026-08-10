@@ -32,6 +32,10 @@ interface Group {
   items: Sprite[]
 }
 
+interface EnemyType extends Group {
+  config: { behaviors: string[] }
+}
+
 interface World {
   _kind?: 'g2d-world'
   width: number
@@ -68,7 +72,13 @@ interface Api {
   tileAt(map: TileMap, x: number, y: number): number
   createWorld(width: number, height: number): World
   createWorldFromTileMap(map: TileMap, tileSize: number): World
+  addTileMapToWorld(world: World, map: TileMap): void
   addSolidGroupToWorld(world: World, group: Group): void
+  addEnemyTypeToWorld(world: World, type: EnemyType): void
+  createEnemyType(options: { behavior?: string; speed?: number; w?: number; h?: number }): EnemyType
+  spawnEnemy(type: EnemyType, x: number, y: number): Sprite | null
+  updateEnemyType(type: EnemyType, ctx: CanvasRenderingContext2D, target: Sprite | null): void
+  applyGravityToGroup(group: Group): void
   addPlatformGroupToWorld(world: World, group: Group): void
   setWorldEdges(world: World, edges: 'none' | 'floor' | 'solid'): void
   configureWorldCamera(
@@ -195,6 +205,44 @@ describe('Mapa tem layout definido antes do laço', () => {
       height: 400,
       mode: 'fitted',
     })
+  })
+
+  /**
+   * Um mapa "encaixado na tela" se recalcula sozinho a cada mudança de resolução
+   * lógica. Como terreno de um Mundo isso desalinhava colisão, desenho e bordas
+   * em silêncio: o encaixe era conferido UMA vez, na hora de cadastrar, e depois
+   * o mapa escorregava sozinho (medido: 783×464 virava 378×224 com o Mundo
+   * parado em 800×512). Virar terreno congela a geometria.
+   */
+  it('mapa encaixado vira geometria fixa ao ser cadastrado como terreno do Mundo', () => {
+    const api = load()
+    const map = marioMap(api)
+    api.fitTileMapToStage(stageContext(), map)
+    expect(map.layout).toEqual({
+      x: 8,
+      y: 24,
+      tileSize: 29,
+      width: 783,
+      height: 464,
+      mode: 'fitted',
+    })
+
+    const world = api.createWorld(800, 512)
+    api.addTileMapToWorld(world, map)
+    const congelado: TileLayout = {
+      x: 8,
+      y: 24,
+      tileSize: 29,
+      width: 783,
+      height: 464,
+      mode: 'placed',
+    }
+    expect(map.layout).toEqual(congelado)
+
+    // o palco muda de tamanho (girar o aparelho, "ocupar a tela toda")
+    api.setupStage(400, 256, '#000000')
+    api.drawTileMap(stageContext(), map)
+    expect(map.layout).toEqual(congelado)
   })
 
   it('mantém tile sólido prioritário se código manual também o marcar como plataforma', () => {
@@ -487,6 +535,143 @@ describe('Movimento com terreno não inventa chão na tela', () => {
     expect(carriedX(false)).toBe(9)
     expect(carriedX(true)).toBe(9)
   })
+
+  /**
+   * O apoio do quadro anterior só continua valendo se ele mesmo se confirmar de
+   * novo. Quem anda de uma plataforma para a VIZINHA nunca reconfirma a antiga:
+   * prender o apoio nela dava carona vitalícia (35 px por quadro em cima de uma
+   * figura parada, para sempre).
+   */
+  it('deixa de herdar o passo da base que ficou para trás', () => {
+    const api = load()
+    api.setGravity(0.6)
+    const world = api.createWorld(800, 512)
+    const ground = api.createGroup()
+    const moving = api.createSprite({ x: 0, y: 200, w: 100, h: 16, vx: 5, vy: 0 })
+    const still = api.createSprite({ x: 100, y: 200, w: 600, h: 16, vx: 0, vy: 0 })
+    ground.items.push(moving, still)
+    api.addSolidGroupToWorld(world, ground)
+
+    const player = api.createSprite({ x: 40, y: 184, w: 16, h: 16, vx: 0, vy: 8 })
+    api.applyVelocity(player)
+    api.collideWorld(player, world)
+    expect(player.onGround).toBe(true)
+
+    api.keys.right = true
+    const steps: number[] = []
+    for (let frame = 0; frame < 4; frame++) {
+      api.applyVelocity(moving)
+      api.applyGravity(player)
+      api.platformerWithTerrain(player, 30, 11)
+      api.collideWorld(player, world)
+      steps.push(player.x)
+    }
+    api.keys.right = false
+
+    // 75 = último quadro em cima da móvel (30 do passo + 5 da base). Dali em
+    // diante ele pisa na parada e anda exatamente os 30 que pediu.
+    expect(steps).toEqual([75, 110, 140, 170])
+    expect(player.onGround).toBe(true)
+    expect(player.y).toBe(184)
+  })
+
+  /**
+   * O inimigo que anda no chão resolvia o pouso contra a borda VISÍVEL, que rola
+   * junto com a câmera: num Mundo mais alto que o palco ele ficava colado embaixo
+   * da viewport em vez de pisar no terreno. O bloco "os inimigos do tipo … andam
+   * no terreno" é a ponte; sem ele, o jogo de uma tela continua igual.
+   */
+  it('o inimigo ligado ao Mundo pisa no terreno, e sem o bloco fica na borda da tela', () => {
+    function quedaDoInimigo(ligadoAoMundo: boolean): { inimigo: number; jogador: number } {
+      const api = load()
+      const ctx = stageContext()
+      api.setGravity(0.6)
+      const world = api.createWorld(800, 900)
+      const ground = api.createGroup()
+      ground.items.push(api.createSprite({ x: 0, y: 860, w: 800, h: 40, vx: 0, vy: 0 }))
+      api.addSolidGroupToWorld(world, ground)
+      api.configureWorldCamera(world, 'free', 'free', 0, 0)
+
+      const player = api.createSprite({ x: 100, y: 700, w: 20, h: 20, vx: 0, vy: 0 })
+      const type = api.createEnemyType({ behavior: 'patrulha', speed: 2, w: 20, h: 20 })
+      if (ligadoAoMundo) api.addEnemyTypeToWorld(world, type)
+      api.spawnEnemy(type, 100, 300)
+
+      for (let frame = 0; frame < 200; frame++) {
+        api.applyGravity(player)
+        api.applyVelocity(player)
+        api.collideWorld(player, world)
+        api.followCameraInWorld(player, world)
+        api.applyGravityToGroup(type)
+        api.updateEnemyType(type, ctx, player)
+      }
+      const inimigo = type.items[0]
+      if (!inimigo) throw new Error('o inimigo sumiu do tipo')
+      return { inimigo: inimigo.y, jogador: player.y }
+    }
+
+    // Chão do Mundo em 860; sprite de 20 px pousa em 840.
+    expect(quedaDoInimigo(true)).toEqual({ inimigo: 840, jogador: 840 })
+    // Sem o bloco: a câmera parou em y 388 (900 − 512) e ele ficou na borda de
+    // baixo da TELA, 880, ou seja 40 px DENTRO do chão.
+    expect(quedaDoInimigo(false)).toEqual({ inimigo: 880, jogador: 840 })
+  })
+
+  /**
+   * Borda aberta é buraco de verdade, para o inimigo também. O que a saída larga
+   * do `_enemyResolveGround` evita é a consulta ao terreno crescer junto com uma
+   * queda infinita — e ela não pode virar um chão invisível.
+   */
+  it('inimigo que cai por um buraco do Mundo continua caindo, sem chão fantasma', () => {
+    const api = load()
+    const ctx = stageContext()
+    api.setGravity(0.6)
+    const world = api.createWorld(800, 600)
+    const chao = api.createGroup()
+    // Só a metade da esquerda tem chão; o inimigo nasce sobre o vazio.
+    chao.items.push(api.createSprite({ x: 0, y: 560, w: 300, h: 40, vx: 0, vy: 0 }))
+    api.addSolidGroupToWorld(world, chao)
+    const type = api.createEnemyType({ behavior: 'patrulha', speed: 0, w: 20, h: 20 })
+    api.addEnemyTypeToWorld(world, type)
+    const inimigo = api.spawnEnemy(type, 600, 100) as Sprite
+
+    for (let frame = 0; frame < 400; frame++) {
+      api.applyGravityToGroup(type)
+      api.updateEnemyType(type, ctx, null)
+    }
+    expect(inimigo.y).toBeGreaterThan(world.height + 2000)
+    // Nunca encostou em nada: para o inimigo o apoio só existe se o terreno o
+    // confirmar, então aqui ele nem chega a ser escrito.
+    expect(inimigo.onGround).toBeFalsy()
+
+    // …e continua caindo depois da folga, em vez de parar numa borda inventada.
+    const antes = inimigo.y
+    for (let frame = 0; frame < 60; frame++) {
+      api.applyGravityToGroup(type)
+      api.updateEnemyType(type, ctx, null)
+    }
+    expect(inimigo.y).toBeGreaterThan(antes)
+  })
+
+  it('o inimigo ligado ao Mundo vai e volta nos limites do Mundo, não nos da tela', () => {
+    const api = load()
+    const ctx = stageContext()
+    api.setGravity(0)
+    const world = api.createWorld(1600, 512)
+    api.setWorldEdges(world, 'solid')
+    const type = api.createEnemyType({ behavior: 'patrulha', speed: 8, w: 20, h: 20 })
+    api.addEnemyTypeToWorld(world, type)
+    const inimigo = api.spawnEnemy(type, 700, 100) as Sprite
+
+    let maiorX = inimigo.x
+    for (let frame = 0; frame < 400; frame++) {
+      api.updateEnemyType(type, ctx, null)
+      maiorX = Math.max(maiorX, inimigo.x)
+    }
+    // A tela tem 800 de largura e a câmera nunca saiu de 0: sem a ponte ele
+    // viraria em 780. O limite dele agora é o Mundo.
+    expect(maiorX).toBe(1580)
+  })
 })
 
 describe('Fases são opcionais e independentes do gênero', () => {
@@ -510,6 +695,59 @@ describe('Fases são opcionais e independentes do gênero', () => {
 
     api.enterLevel(level, player)
     expect(entries).toBe(2)
+  })
+
+  /**
+   * "Quando entrar na Fase → Entrar na Fase" é um engano fácil de montar e era
+   * recursivo de verdade: cada entrada abre uma geração nova, então a dedução
+   * por geração não segurava. Medido antes da trava: 4852 entradas aninhadas até
+   * "Maximum call stack size exceeded", e o que a criança lia era só "aconteceu
+   * um erro". Agora o corpo roda UMA vez e o Console diz o que tirar.
+   */
+  it('entrar ou reiniciar dentro do próprio evento de entrada não recursa', () => {
+    for (const acao of ['entrar', 'reiniciar'] as const) {
+      const api = load()
+      const world = api.createWorld(400, 300)
+      const level = api.createLevel(world, 10, 10)
+      const player = api.createSprite({ x: 0, y: 0, w: 16, h: 16, vx: 0, vy: 0 })
+      let entradas = 0
+
+      api.onLevelEnter(
+        () => level,
+        () => {
+          entradas += 1
+          if (entradas > 50) return
+          if (acao === 'entrar') api.enterLevel(level, player)
+          else api.restartLevel(level, player)
+        },
+        `laco-${acao}`,
+      )
+      api.enterLevel(level, player)
+
+      expect(entradas).toBe(1)
+      expect(api.levelIsActive(level)).toBe(true)
+      // O reposicionamento aninhado acontece; o que não acontece é o corpo rodar
+      // de novo. A Fase continua utilizável depois do engano.
+      expect(player.x).toBe(10)
+    }
+  })
+
+  it('“a Fase está ativa?” só responde sim para uma Fase de verdade', () => {
+    const api = load()
+    const world = api.createWorld(400, 300)
+    const level = api.createLevel(world, 10, 10)
+    const player = api.createSprite({ x: 0, y: 0, w: 16, h: 16, vx: 0, vy: 0 })
+
+    // Antes de qualquer entrada a Fase atual é NENHUMA: perguntar por um valor
+    // que não é Fase respondia SIM, porque os dois eram nulos.
+    expect(api.levelIsActive(null as unknown as Level)).toBe(false)
+    expect(api.levelIsActive(undefined as unknown as Level)).toBe(false)
+    expect(api.levelIsActive(world as unknown as Level)).toBe(false)
+    expect(api.levelIsActive(level)).toBe(false)
+
+    api.enterLevel(level, player)
+    expect(api.levelIsActive(level)).toBe(true)
+    expect(api.levelIsActive(null as unknown as Level)).toBe(false)
   })
 
   it('o evento pode ser registrado antes da declaração da Fase', () => {

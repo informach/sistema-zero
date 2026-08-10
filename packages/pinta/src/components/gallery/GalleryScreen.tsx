@@ -83,6 +83,10 @@ export function GalleryScreen(): JSX.Element {
 
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
+  const dependentMaps =
+    removeTarget && isTilesetKind(removeTarget)
+      ? assets.filter((asset) => asset.kind === 'tilemap' && asset.tilesetId === removeTarget.id)
+      : []
   const tilesets = assets.filter(isTilesetKind)
   const lastStyle = usePintaGallery((state) => state.lastStyle)
   const findAsset = (id: string): (typeof assets)[number] | null =>
@@ -396,25 +400,45 @@ export function GalleryScreen(): JSX.Element {
       <Dialog
         open={removeTarget !== null}
         onClose={() => setRemoveId(null)}
-        title={COPY.gallery.removeConfirmTitle}
+        title={
+          dependentMaps.length > 0
+            ? COPY.gallery.removeTilesetTitle
+            : COPY.gallery.removeConfirmTitle
+        }
       >
-        <p className="text-base text-pin-muted">{COPY.gallery.removeConfirmBody}</p>
+        <p className="text-base text-pin-muted">
+          {dependentMaps.length > 0
+            ? COPY.gallery.removeTilesetBody
+            : COPY.gallery.removeConfirmBody}
+        </p>
+        {dependentMaps.length > 0 ? (
+          <ul className="mt-3 list-inside list-disc text-pin-text text-sm">
+            {dependentMaps.map((map) => (
+              <li key={map.id}>{map.name}</li>
+            ))}
+          </ul>
+        ) : null}
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setRemoveId(null)}>
             {COPY.gallery.cancel}
           </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              if (!removeTarget) return
-              void gallery
-                .getState()
-                .remove(removeTarget.id)
-                .then(() => setRemoveId(null))
-            }}
-          >
-            {COPY.gallery.removeConfirm}
-          </Button>
+          {dependentMaps.length === 0 ? (
+            <Button
+              variant="danger"
+              onClick={() => {
+                if (!removeTarget) return
+                void gallery
+                  .getState()
+                  .remove(removeTarget.id)
+                  .then((ok) => {
+                    if (ok) setRemoveId(null)
+                    else showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
+                  })
+              }}
+            >
+              {COPY.gallery.removeConfirm}
+            </Button>
+          ) : null}
         </div>
       </Dialog>
     </div>

@@ -21,6 +21,7 @@ import {
   withActiveShapes,
 } from '../../../core/assetEdit'
 import { COPY } from '../../../core/copy'
+import { isTextEntryTarget } from '../../../core/dom'
 import { newId } from '../../../core/id'
 import { DEFAULT_PALETTE_ID, type PaletteId } from '../../../core/palette'
 import { PINTA_LIMITS } from '../../../core/project'
@@ -146,13 +147,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   useEffect(() => {
     if (selectedIds.length === 0) return
     function onKeyDown(event: globalThis.KeyboardEvent): void {
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
+      if (isTextEntryTarget(event.target)) return
       const step = event.shiftKey ? 10 : 1
       switch (event.key) {
         case 'Delete':
@@ -188,13 +183,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   useEffect(() => {
     function onKey(event: globalThis.KeyboardEvent): void {
       if (!(event.ctrlKey || event.metaKey)) return
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
+      if (isTextEntryTarget(event.target)) return
       const key = event.key.toLowerCase()
       if (key === 'a') {
         event.preventDefault()
@@ -216,22 +205,36 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
 
   const ref: ActiveFrameRef = { animationId, frameIndex }
   const doc = activeShapesOf(asset, ref)
+  const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
+  const single = selected.length === 1 ? (selected[0] ?? null) : null
+
+  // O estilo também funciona como inspetor da seleção. Undo/redo troca o
+  // objeto do shape sem trocar seu id; sem esta sincronização, o desenho era
+  // restaurado mas o painel (inclusive as pontas do degradê) ficava exibindo e
+  // reaplicando a versão anterior.
+  useEffect(() => {
+    if (!single) return
+    setStyle({
+      fill: single.fill,
+      stroke: single.stroke ? { ...single.stroke } : null,
+      opacity: single.opacity,
+    })
+  }, [single])
+
   if (!doc) return null
 
   // Ordem da grade (espelho do pixel: base primeiro, adicionadas no fim): as 15
   // cores da paleta escolhida → as cores do JOGO (Pensa), que não podem sumir na
   // troca de paleta → as personalizadas recentes, que são as apagáveis.
   const baseSwatches = paletteSwatches(paletteId)
-  const projectSwatches = (asset.projectRef?.palette ?? []).filter(
+  const projectSwatches = [...new Set(asset.projectRef?.palette ?? [])].filter(
     (hex) => !baseSwatches.includes(hex),
   )
   const fixedSwatches = [...baseSwatches, ...projectSwatches]
   const extraCustom = customColors.filter((hex) => !fixedSwatches.includes(hex))
-  const swatches = [...fixedSwatches, ...extraCustom]
+  const swatches = [...new Set([...fixedSwatches, ...extraCustom])]
 
   const onionShapes = onion ? previousShapesOf(asset, ref) : null
-  const selected = doc.shapes.filter((s) => selectedIds.includes(s.id))
-  const single = selected.length === 1 ? (selected[0] ?? null) : null
 
   function currentRef(): ActiveFrameRef {
     const s = session.getState()

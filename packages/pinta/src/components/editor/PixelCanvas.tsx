@@ -27,6 +27,7 @@ import {
   withActiveBitmap,
 } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
+import { isTextEntryTarget } from '../../core/dom'
 import { TRANSPARENT_INDEX } from '../../core/palette'
 import { safeSetPointerCapture } from '../../core/pointer'
 import { isPixelLayeredKind, type PintaBitmap, resolveAssetPalette } from '../../core/project'
@@ -247,13 +248,7 @@ export function PixelCanvas(): JSX.Element {
   // Ctrl+Z/Y do EditorScreen; campos de texto são ignorados (mesmo guard).
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
+      if (isTextEntryTarget(event.target)) return
       const actions = actionsRef.current
       if (event.ctrlKey || event.metaKey) {
         const key = event.key.toLowerCase()

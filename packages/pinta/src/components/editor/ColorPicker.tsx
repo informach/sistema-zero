@@ -195,10 +195,76 @@ export function ColorPicker({
 }
 
 /**
- * Amostra clicável que abre o `ColorPicker` num Dialog — o substituto do
- * `<input type=color>` no editor vetorial. Aplica a cor AO VIVO (mesmo contrato
- * do input nativo antigo: cada mudança já vale); fechar o modal é só "pronto".
+ * Transação compartilhada de cor: o picker mexe apenas num rascunho local e o
+ * consumidor recebe UMA cor quando a criança confirma. Assim pixel e vetor não
+ * divergem em histórico, autosave ou cores recentes.
  */
+export function ColorPickerDialog({
+  open,
+  value,
+  onClose,
+  onConfirm,
+  title,
+  confirmLabel,
+  recentColors,
+}: {
+  open: boolean
+  value: string
+  onClose: () => void
+  onConfirm: (hex: string) => void
+  title: string
+  confirmLabel: string
+  recentColors?: readonly string[]
+}): JSX.Element | null {
+  if (!open) return null
+  return (
+    <OpenColorPickerDialog
+      value={value}
+      onClose={onClose}
+      onConfirm={onConfirm}
+      title={title}
+      confirmLabel={confirmLabel}
+      recentColors={recentColors}
+    />
+  )
+}
+
+function OpenColorPickerDialog({
+  value,
+  onClose,
+  onConfirm,
+  title,
+  confirmLabel,
+  recentColors,
+}: Omit<Parameters<typeof ColorPickerDialog>[0], 'open'>): JSX.Element {
+  const [draft, setDraft] = useState(() => normalizeHex(value) ?? '#000000')
+  return (
+    <Dialog open onClose={onClose} title={title}>
+      <ColorPicker value={draft} onChange={setDraft} recentColors={recentColors} />
+      <div className="mt-4 flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 font-bold text-pin-text transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+        >
+          {COPY.gallery.cancel}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onConfirm(draft)
+            onClose()
+          }}
+          className="pin-btn-3d inline-flex min-h-11 items-center justify-center px-4 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+        >
+          {confirmLabel}
+        </button>
+      </div>
+    </Dialog>
+  )
+}
+
+/** Amostra clicável que abre a transação compartilhada de cor. */
 export function ColorButton({
   value,
   onChange,
@@ -226,9 +292,15 @@ export function ColorButton({
         )}
         style={{ backgroundColor: value }}
       />
-      <Dialog open={open} onClose={() => setOpen(false)} title={label}>
-        <ColorPicker value={value} onChange={onChange} recentColors={recentColors} />
-      </Dialog>
+      <ColorPickerDialog
+        open={open}
+        value={value}
+        onClose={() => setOpen(false)}
+        onConfirm={onChange}
+        title={label}
+        confirmLabel={COPY.colorPicker.apply}
+        recentColors={recentColors}
+      />
     </>
   )
 }

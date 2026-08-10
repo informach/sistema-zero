@@ -3,7 +3,7 @@ import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildAssetsRuntime } from './assetsBridge'
 import { buildAudioRuntime } from './audioBridge'
-import { buildPreviewCSPMetaTag } from './csp'
+import { buildPreviewCSPMetaTag, type PreviewSecurityProfile } from './csp'
 import { rewriteCssAssetUrls } from './cssAssets'
 import { prepareHtmlEventHandlers } from './htmlEventHandlers'
 import { buildInputBridgeRuntime } from './inputBridge'
@@ -44,6 +44,8 @@ export interface BuildPreviewDocInput {
   installedPermissions?: readonly ExtensionPermission[]
   /** Origens liberadas pelo professor para fetch/XHR (opt-in). */
   fetchAllowedOrigins?: readonly string[]
+  /** Perfil de subrecursos: editor criativo ou player público estrito. */
+  securityProfile?: PreviewSecurityProfile
   /** Orçamento de tempo síncrono do loopGuard (ms). */
   loopBudgetMs?: number
   /**
@@ -331,6 +333,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     : ''
   const interceptorTag = trustedScriptTag(buildInterceptorScript(input.parentOrigin))
   const cspMeta = buildPreviewCSPMetaTag({
+    securityProfile: input.securityProfile,
     fetchAllowedOrigins: input.fetchAllowedOrigins,
     scriptAllowedUrls: extensionImportUrls(input.extensionImports),
     scriptHashes: [...scriptHashes],

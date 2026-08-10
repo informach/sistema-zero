@@ -374,6 +374,32 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   }
 
   /**
+   * O chão de quem anda. Com o tipo ligado a um Mundo, quem confirma o apoio é o
+   * TERRENO (mapas, figuras sólidas, plataformas e as bordas escolhidas); sem
+   * Mundo, vale a borda VISÍVEL de sempre.
+   *
+   * ⚠️ Sem esta ponte o inimigo pousava na borda de baixo da TELA, que rola
+   * junto com a câmera: num Mundo mais alto que o palco ele ficava colado embaixo
+   * da viewport, deslizando com ela, em vez de pisar no mapa.
+   */
+  function _enemyResolveGround(s, env) {
+    if (env.world) {
+      // ⚠️ Com bordas abertas o inimigo cai no buraco e nunca para de cair (o
+      // jogador faz o mesmo). A diferença é que inimigo vem aos montes: sem esta
+      // saída cada um deles seguiria pedindo ao índice do terreno uma área que
+      // cresce com a queda, quadro após quadro. A folga é larga de propósito,
+      // porque nada obriga uma figura de terreno a caber dentro do Mundo.
+      var longeDoMundo = s.y > env.world.height + 2000 ||
+        s.y + _finiteNumber(s.h, 0) < -2000;
+      if (!longeDoMundo) collideWorld(s, env.world);
+      return;
+    }
+    // Sem Mundo é a borda VISÍVEL, e não env.bounds: aqui os dois são o mesmo
+    // objeto, mas escrever "bounds" faria parecer que a arena manda no chão.
+    _resolveGravityGround(s, env.visible.top, env.visible.bottom, env.g);
+  }
+
+  /**
    * Fica no lugar. Quem anda no chão cai e pousa (com gravidade aplicada); quem
    * VOA fica parado no ar, senão somar "parado" a um fantasma o derrubaria, e o
    * rótulo promete só que ele fica no lugar.
@@ -385,7 +411,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     s.vy = _finiteNumber(s.vy, 0);
     s.y += s.vy;
     if (s.vy !== 0 || typeof s.onGround === 'boolean') {
-      _resolveGravityGround(s, env.visible.top, env.visible.bottom, env.g);
+      _enemyResolveGround(s, env);
     }
   }
 
@@ -416,7 +442,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     s.vy = _finiteNumber(s.vy, 0);
     s.y += s.vy;
     if (s.vy !== 0 || typeof s.onGround === 'boolean') {
-      _resolveGravityGround(s, env.visible.top, env.visible.bottom, env.g);
+      _enemyResolveGround(s, env);
     }
     if (typeof s._jcd !== 'number') s._jcd = c.jumpRate;
     if (s.onGround) {
@@ -432,8 +458,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    */
   function _enemyPatrolMove(s, c, env) {
     if (s._moved && (s.vx || 0) === 0) s._dir = -(s._dir || 1);
-    if (s.x <= env.visible.left) s._dir = 1;
-    if (s.x + s.w >= env.visible.right) s._dir = -1;
+    if (s.x <= env.bounds.left) s._dir = 1;
+    if (s.x + s.w >= env.bounds.right) s._dir = -1;
     s.vx = (s._dir || 1) * env.speed;
     s.x += s.vx;
     s._moved = true;
@@ -501,7 +527,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       s.vx = (dx < 0 ? 1 : -1) * env.speed;
     }
     s.x += s.vx;
-    _clampEnemyX(s, env.visible, antesX);
+    _clampEnemyX(s, env.bounds, antesX);
   }
 
   /** Espera quieto e CORRE (3× a velocidade) quando o alvo entra no "alcance". */
@@ -514,7 +540,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       s.vx = (dx < 0 ? -1 : 1) * env.speed * 3;
     }
     s.x += s.vx;
-    _clampEnemyX(s, env.visible, antesX);
+    _clampEnemyX(s, env.bounds, antesX);
   }
 
   /**
@@ -570,7 +596,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       if (!ownY) { s._dive = 0; return; }
       if (ownX) { s.vx = _finiteNumber(s._dvx, 0); s.x += s.vx; }
       if (ownY) { s.vy = _finiteNumber(s._dvy, 0); s.y += s.vy; }
-      if (s.y + s.h >= env.visible.bottom || s.y - s._homeY >= c.range * 2) s._dive = 2;
+      if (s.y + s.h >= env.bounds.bottom || s.y - s._homeY >= c.range * 2) s._dive = 2;
     } else {
       if (ownX) s.vx = 0;
       if (ownY) {
@@ -607,8 +633,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   /** Voa na diagonal quicando: vira nas bordas no X e a "alcance" de casa no Y. */
   function _enemyZigZagMove(s, c, env, ownX, ownY) {
     if (ownX) {
-      if (s.x <= env.visible.left) s._dir = 1;
-      if (s.x + s.w >= env.visible.right) s._dir = -1;
+      if (s.x <= env.bounds.left) s._dir = 1;
+      if (s.x + s.w >= env.bounds.right) s._dir = -1;
       s.vx = (s._dir || 1) * env.speed;
       s.x += s.vx;
     }
@@ -851,7 +877,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   }
 
   function _enemyBeamAct(s, c, env) {
-    s._beamBottom = env.visible.bottom;
+    s._beamBottom = env.bounds.bottom;
     if (typeof s._beamPhase !== 'number') { s._beamPhase = BEAM_OFF; s._beamT = c.rate; }
     s._beamT -= 1;
     if (s._beamT > 0) return;
@@ -1248,9 +1274,17 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     }
     _warnEnemySetupOnce(type, c, list, target, precisaDeAlvo);
     var hasXDriver = !!ownerX;
+    // Ligado a um Mundo? Então a ARENA do inimigo é o Mundo inteiro, e não o
+    // retângulo que a câmera está mostrando neste instante. Sem Mundo,
+    // "bounds" É o visível e nada muda para os jogos de uma tela.
+    var arena = _isGameWorld(type._world) ? type._world : null;
     var env = {
       type: type,
       visible: visible,
+      world: arena,
+      bounds: arena
+        ? { left: 0, top: 0, right: arena.width, bottom: arena.height }
+        : visible,
       g: g,
       flying: flying,
       target: target,
@@ -1318,7 +1352,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
           s.vy = _finiteNumber(s.vy, 0);
           s.y += s.vy;
           if (s.vy !== 0 || typeof s.onGround === 'boolean') {
-            _resolveGravityGround(s, visible.top, visible.bottom, g);
+            _enemyResolveGround(s, env);
           }
         }
       }

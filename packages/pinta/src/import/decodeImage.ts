@@ -18,29 +18,26 @@ export async function decodeImageFile(file: File): Promise<RGBAImage | null> {
   const ctx = canvas.getContext('2d')
   // happy-dom: sem canvas 2D / sem createImageBitmap → aborta limpo.
   if (!ctx || typeof createImageBitmap === 'undefined') return null
-  let source: ImageBitmap
+  let source: ImageBitmap | null = null
   try {
     source = await createImageBitmap(file)
-  } catch {
-    return null
-  }
-  let width = source.width
-  let height = source.height
-  // Cap de origem (não alocar RGBA gigante): encolhe proporcional.
-  if (width > MAX_SOURCE || height > MAX_SOURCE) {
-    const scale = MAX_SOURCE / Math.max(width, height)
-    width = Math.max(1, Math.round(width * scale))
-    height = Math.max(1, Math.round(height * scale))
-  }
-  canvas.width = width
-  canvas.height = height
-  ctx.imageSmoothingEnabled = true
-  ctx.drawImage(source, 0, 0, width, height)
-  source.close?.()
-  try {
+    let width = source.width
+    let height = source.height
+    // Cap de origem (não alocar RGBA gigante): encolhe proporcional.
+    if (width > MAX_SOURCE || height > MAX_SOURCE) {
+      const scale = MAX_SOURCE / Math.max(width, height)
+      width = Math.max(1, Math.round(width * scale))
+      height = Math.max(1, Math.round(height * scale))
+    }
+    canvas.width = width
+    canvas.height = height
+    ctx.imageSmoothingEnabled = true
+    ctx.drawImage(source, 0, 0, width, height)
     const imageData = ctx.getImageData(0, 0, width, height)
     return { data: imageData.data, width, height }
   } catch {
     return null
+  } finally {
+    source?.close?.()
   }
 }

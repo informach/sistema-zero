@@ -51,6 +51,16 @@ describe('buildPreviewCSP', () => {
     expect(csp).toContain('font-src data: https:')
   })
 
+  it('perfil estrito bloqueia toda rede passiva e subframes', () => {
+    const csp = buildPreviewCSP({ securityProfile: 'strict' })
+    expect(csp).toContain("connect-src 'none'")
+    expect(csp).toContain('img-src data: blob:')
+    expect(csp).toContain('media-src data: blob:')
+    expect(csp).toContain('font-src data:')
+    expect(csp).toContain("frame-src 'none'")
+    expect(csp).not.toMatch(/(?:style|img|media|font|frame)-src[^;]*https:/)
+  })
+
   it('frame-src libera só https: (sem data:/blob: — anti subframe uninstrumentado)', () => {
     // Um subframe data:/blob: rodaria fora do loopGuard e não herdaria a meta-CSP,
     // reabrindo o furo de worker-src. Só `https:` é liberado.

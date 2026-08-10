@@ -56,6 +56,8 @@ export {
   type ProTemplate,
 } from './components/code/pro-templates'
 export {
+  type StudioPlayerOriginAdapter,
+  type StudioPlayerOriginRequest,
   StudioProjectPlayer,
   type StudioProjectPlayerProps,
 } from './components/preview/StudioProjectPlayer'
@@ -71,6 +73,7 @@ export {
 } from './cover/coverCapture'
 export { createLocalPersistenceAdapter } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
+export type { PreviewSecurityProfile } from './preview/csp'
 export {
   type RenderProjectOptions,
   renderProjectToPreviewDoc,

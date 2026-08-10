@@ -104,6 +104,10 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
   e vertical 'off'|'free'|'down'|'up', mais zona morta X/Y. followCameraInWorld segue sem sair dos
   limites; em Mundo do tamanho da tela a câmera fica em 0. collideWorld resolve todo o terreno;
   drawWorld desenha mapa e figuras uma vez, usando a câmera. HUD vem DEPOIS para ficar fixo.
+  addEnemyTypeToWorld(world, type) põe os inimigos daquele tipo NO terreno: sem ele o inimigo que
+  anda no chão pousa na borda visível, que rola com a câmera, e vai e volta nos limites da TELA.
+  Num Mundo maior que o palco, gere sempre este bloco junto dos inimigos terrestres. Quem voa não
+  precisa dele.
 - FASE é progressão OPCIONAL: um Mundo + posição inicial do jogador + evento de entrada.
   createLevel(world, x, y), enterLevel(level, player), restartLevel(level, player),
   resetGroupWithLevel(level, group), onLevelEnter(() => level, fn), levelIsActive(level).

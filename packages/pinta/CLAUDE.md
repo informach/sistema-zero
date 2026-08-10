@@ -152,10 +152,11 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   (history por snapshots com orçamento em bytes — `assetBytes` conta o payload real dos shapes —
   + autosave debounced ~1s com flush; `persist` injetável), `sessionStore`
   (ferramenta/cor/zoom/`zoomLevels`/onion — a Mão 'pan' é da sessão, não do motor pixel).
-- **Persistência (`src/state/persistence.ts`)**: cada operação captura o store do namespace no
-  instante da chamada; a fila FIFO é por handle de IndexedDB, nunca por id/namespace global.
-  `persistAssets` usa um único `setMany`, portanto commits que alteram tileset+mapas dependentes
-  ficam atômicos e não atravessam de perfil durante uma troca de sessão.
+- **Persistência (`src/state/persistence.ts`)**: `createPintaPersistence()` captura o store do
+  namespace ao criar a `galleryStore`; a instância inteira (inclusive mutações ainda na fila)
+  continua presa àquele perfil mesmo se o host trocar o namespace global. A fila FIFO é por
+  handle de IndexedDB, nunca por id/namespace global. `persistAssets` usa um único `setMany`,
+  portanto commits que alteram tileset+mapas dependentes ficam atômicos e não atravessam perfil.
 - **Copy 100% PT** centralizada em `src/core/copy.ts` (sem travessão, sem jargão; nomes de cor
   amigáveis em `colorNames` p/ os swatches).
 - **Seleção do PIXEL com ações + atalhos + zoom pela rolagem (08/2026)** — ver a seção
@@ -166,8 +167,9 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   ⚠️ O arranjo anterior (cores na esquerda, faixa só sob palco+prévia) existia porque
   ferramentas+cores juntas não cabiam em 1366×768 quando a faixa era um rodapé de tudo. Com as
   cores na direita esse conflito sumiu: medido em 1366×768, o rail sozinho ocupa 391px e a página
-  não rola. **A faixa segue com teto interno próprio** (`max-h-56` na lista do `SpriteSheetPanel`)
-  e rola por dentro — o topo do palco nunca se move. Efeito colateral aceito: no PERSONAGEM
+  não rola. **A faixa segue com teto interno próprio** (`max-h-56` compacta / `max-h-96`
+  expandida na lista do `SpriteSheetPanel`) e rola por dentro — o topo do palco nunca se move.
+  Efeito colateral aceito: no PERSONAGEM
   animado a coluna direita (prévia 244 + camadas + cores ≈ 700px) rola por dentro; no cenário
   cabe inteira (626px).
 - **Responsivo (07/2026)**: `EditorScreen` usa `useMediaQuery('(min-width: 768px)')`
@@ -197,7 +199,10 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
 - **Painéis com cabeçalho (`components/ui/Panel.tsx`)**: faixa de título tonal (`.pin-panel-head`)
   + divisória, no lugar do `<span>` em negrito solto. ⚠️ O `aria-label` fica na MESMA `<section>`
   (4 testes casam o seletor `section[aria-label=…]`) e o título é MOVIDO, nunca duplicado (Prévia
-  e Spritesheet têm `getByText` que quebra com dois nós do mesmo texto).
+  e Spritesheet têm `getByText` que quebra com dois nós do mesmo texto). `disclosure` é controlado
+  e põe o chevron em um botão separado (o título da paleta continua livre para abrir seu menu).
+  Na coluna direita do vetor, Prévia/Camadas/Cores/Aparência são accordions independentes; fechar a
+  Prévia também pausa seu loop de animação.
 - **CSS**: tokens `--color-pin-*` em `@theme` sob `[data-pinta-theme]` (claro default kids).
   Cor de chip por PAPEL (`pin-kind-*`, só emoji) + selinho de ESTILO (`pin-style-*`, carrega
   TEXTO branco — ⚠️ manter L ≤ ~0.55 nos DOIS temas). SEM `@import "tailwindcss"`, SEM `@source`,
@@ -498,6 +503,10 @@ já saberemos o que é preenchimento e o que é contorno".
   `useState` no `VectorEditorScope` (kinds vetoriais não têm o campo no asset, e criá-lo entraria
   no desfazer sem mudar o desenho) → vale enquanto o editor está aberto, como as cores recentes.
   A lixeira NÃO pede confirmação: no vetor a forma guarda o hex, então some só a sugestão.
+- **Cor livre é uma transação**: `ColorPickerDialog` mantém um rascunho local e só chama o
+  consumidor em “Aplicar”/“Adicionar”. Cancelar não cria swatch nem histórico; confirmar uma ponta
+  do degradê cria uma única entrada de undo. `VectorEditorScope` deduplica a união paleta base →
+  projeto → recentes e ressincroniza o inspetor com a forma após undo/redo.
 - **`PaletteMenu.tsx`** (novo): o dropdown ancorado (`position:fixed`, `role=menu` +
   `menuitemradio`, fecha em clique-fora/Esc/scroll/resize, setas ↑↓) foi EXTRAÍDO do `PaletteBar` e
   é consumido pelos dois. `paletteUi.test.tsx` é a prova de que a extração não mudou nada.

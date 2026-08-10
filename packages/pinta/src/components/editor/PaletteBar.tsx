@@ -32,7 +32,7 @@ import { Dialog } from '../ui/Dialog'
 import { ChevronDown, Palette, Plus, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
-import { ColorPicker } from './ColorPicker'
+import { ColorPickerDialog } from './ColorPicker'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { PaletteMenu, usePaletteMenu } from './PaletteMenu'
 
@@ -49,7 +49,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   const menu = usePaletteMenu()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [draft, setDraft] = useState('#ff8800')
+  const [pickerValue, setPickerValue] = useState('#ff8800')
 
   // Só kinds com paleta indexada própria (vetoriais usam cor livre).
   if (!('paletteId' in asset)) return null
@@ -60,8 +60,8 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   const selectedHex = colors[slotColor] ?? null
 
   /** Adiciona a cor do rascunho como swatch novo (ou seleciona se já existir). */
-  function addCustomColor(): void {
-    const norm = normalizeHex(draft)
+  function addCustomColor(value: string): void {
+    const norm = normalizeHex(value)
     if (!norm) return
     const current = editor.getState().asset
     if (!('paletteId' in current)) return
@@ -172,7 +172,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
    * semear com nada.
    */
   function openPicker(): void {
-    if (tool !== 'eraser' && selectedHex) setDraft(selectedHex)
+    if (tool !== 'eraser' && selectedHex) setPickerValue(selectedHex)
     setPickerOpen(true)
   }
 
@@ -203,19 +203,15 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   )
 
   const pickerDialog = (
-    <Dialog
+    <ColorPickerDialog
       open={pickerOpen}
+      value={pickerValue}
       onClose={() => setPickerOpen(false)}
       title={COPY.palette.addColorTitle}
-    >
-      <ColorPicker value={draft} onChange={setDraft} recentColors={asset.extraColors} />
-      <div className="mt-4 flex justify-end gap-2">
-        <Button onClick={() => setPickerOpen(false)}>{COPY.gallery.cancel}</Button>
-        <Button variant="primary" onClick={addCustomColor}>
-          {COPY.palette.add}
-        </Button>
-      </div>
-    </Dialog>
+      confirmLabel={COPY.palette.add}
+      recentColors={asset.extraColors}
+      onConfirm={addCustomColor}
+    />
   )
 
   const confirmDialog = (

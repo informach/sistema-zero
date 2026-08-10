@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 261 definições de bloco
-(254 visíveis e 7 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 262 definições de bloco
+(255 visíveis e 7 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.69.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.70.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -160,8 +160,8 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 ## Escopo revisado
 
 - 133 arquivos próprios da extensão;
-- 261 definições de blocos e 25 subcategorias;
-- 258 métodos e valores públicos em `window.SZGame2D`;
+- 262 definições de blocos e 25 subcategorias;
+- 259 métodos e valores públicos em `window.SZGame2D`;
 - 23 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
@@ -541,7 +541,7 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
   e pontuação;
 - ondas permanecem estado dentro do mesmo Mundo. Elas só usam Fases quando a
   própria área jogável ou o reinício completo também muda;
-- as 261 definições atravessam catálogo, Blockly, IR, schema, gerador,
+- as 262 definições atravessam catálogo, Blockly, IR, schema, gerador,
   importador JavaScript, allowlist, toolbox e contrato tipado. O exemplo Mundo
   Pirata comprova a receita de Mundo com câmera e terreno feito por figuras.
 

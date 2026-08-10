@@ -228,6 +228,10 @@ async function applyInteraction(
 
 async function openAndExercise(page: Page, contract: ExampleQAContract): Promise<FrameLocator> {
   const diagnostics: string[] = []
+  const successfulRequests = new Set<string>()
+  const transientAborts = new Map<string, string>()
+  const requestKey = (resourceType: string, url: string) => `${resourceType}\u0000${url}`
+  const currentDiagnostics = () => [...diagnostics, ...transientAborts.values()]
   page.on('pageerror', (error) => diagnostics.push(`pageerror: ${error.message}`))
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
@@ -235,8 +239,33 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
       // Diagnóstico emitido pelo driver ANGLE ao Playwright fazer screenshots/
       // readback. Não vem do projeto nem do runtime do Estúdio.
       if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
-      diagnostics.push(`${message.type()}: ${text}`)
+      const location = message.location()
+      const source = location.url ? ` (${location.url}:${location.lineNumber ?? 0})` : ''
+      diagnostics.push(`${message.type()}: ${text}${source}`)
     }
+  })
+  page.on('response', (response) => {
+    const request = response.request()
+    const key = requestKey(request.resourceType(), response.url())
+    if (response.status() >= 400) {
+      diagnostics.push(`http ${response.status()}: ${request.resourceType()} ${response.url()}`)
+      return
+    }
+    successfulRequests.add(key)
+    transientAborts.delete(key)
+  })
+  page.on('requestfailed', (request) => {
+    const failure = request.failure()?.errorText ?? 'erro desconhecido'
+    const detail = `requestfailed: ${request.resourceType()} ${request.url()} (${failure})`
+    const key = requestKey(request.resourceType(), request.url())
+    // O editor estabiliza os arquivos trocando o srcdoc. O Chromium cancela a
+    // árvore de módulos do documento antigo com ERR_ABORTED; isso só é saudável
+    // quando a mesma URL já respondeu ou responde no documento estabilizado.
+    if (failure === 'net::ERR_ABORTED') {
+      if (!successfulRequests.has(key)) transientAborts.set(key, detail)
+      return
+    }
+    diagnostics.push(detail)
   })
 
   await page.goto('/')
@@ -299,7 +328,11 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
       })
       .catch(() => null)
     throw new Error(
-      [detail, ...diagnostics, frameDebug ? JSON.stringify(frameDebug) : 'iframe indisponível']
+      [
+        detail,
+        ...currentDiagnostics(),
+        frameDebug ? JSON.stringify(frameDebug) : 'iframe indisponível',
+      ]
         .filter(Boolean)
         .join('\n'),
     )
@@ -341,7 +374,8 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   }
   await page.waitForTimeout(300)
   await expectFirstFrame(page)
-  expect(diagnostics, diagnostics.join('\n')).toEqual([])
+  const finalDiagnostics = currentDiagnostics()
+  expect(finalDiagnostics, finalDiagnostics.join('\n')).toEqual([])
   return preview
 }
 

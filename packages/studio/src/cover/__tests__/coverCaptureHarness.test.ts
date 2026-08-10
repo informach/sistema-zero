@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { buildCanvasHarness } from '../coverCapture'
+import { buildCanvasHarness, buildDomHarness } from '../coverCapture'
 
 /**
  * O harness que fotografa o jogo, avaliado de verdade.
@@ -254,7 +254,7 @@ describe('harness da capa', () => {
     expect(pintura?.rect).toEqual([0, 0, temp.width, temp.height])
   })
 
-  it('⭐ quadro EM BRANCO não vira capa: posta null para o html2canvas assumir', () => {
+  it('⭐ quadro EM BRANCO não vira capa: posta null para a passada DOM assumir', () => {
     // O caso exato do relato: canvas 100% transparente contava como sucesso, e a
     // passada do DOM (a única que enxerga o CSS) era cortada. Também é o 3D com
     // o buffer WebGL já descartado.
@@ -297,5 +297,97 @@ describe('harness da capa', () => {
 
   it('sem canvas nenhum na página, posta null (projeto HTML/CSS puro)', () => {
     expect(rodar({ palco: null }).postado).toBeNull()
+  })
+})
+
+describe('harness DOM da capa', () => {
+  it('⭐⭐ rasteriza uma página sem canvas sem depender de html2canvas ou same-origin', () => {
+    const imageOriginal = globalThis.Image
+    const serializerOriginal = globalThis.XMLSerializer
+    let postado: string | null | undefined
+    let copias = 0
+
+    class ImagemFalsa {
+      width = 640
+      height = 360
+      onload: (() => void) | null = null
+      onerror: (() => void) | null = null
+      set src(_value: string) {
+        this.onload?.()
+      }
+    }
+    class SerializadorFalso {
+      serializeToString() {
+        return '<main><h1>Minha página</h1></main>'
+      }
+    }
+
+    ;(globalThis as { Image: unknown }).Image = ImagemFalsa
+    ;(globalThis as { XMLSerializer: unknown }).XMLSerializer = SerializadorFalso
+    try {
+      const canvas = {
+        width: 0,
+        height: 0,
+        getContext: () => ({
+          drawImage() {
+            copias++
+          },
+        }),
+        toDataURL: () => 'data:image/png;base64,DOM',
+      }
+      const body = {
+        clientWidth: 640,
+        clientHeight: 360,
+        scrollWidth: 640,
+        scrollHeight: 360,
+        getBoundingClientRect: () => ({ width: 640, height: 360 }),
+        cloneNode: () => ({
+          childNodes: [{ nodeName: 'MAIN' }],
+          querySelectorAll: () => [],
+        }),
+      }
+      const documentFake = {
+        readyState: 'complete',
+        body,
+        querySelectorAll: (selector: string) => (selector === 'style' ? [] : []),
+        createElement: () => canvas,
+      }
+      const windowFake = {
+        addEventListener() {},
+        getComputedStyle: () => ({
+          backgroundColor: 'rgb(250, 250, 250)',
+          display: 'block',
+          position: 'static',
+        }),
+      }
+      const parentFake = {
+        postMessage: (message: { dataUrl: string | null }) => {
+          postado = message.dataUrl
+        },
+      }
+      const runNow = (fn: () => void, ms: number) => {
+        if (ms === 0) fn()
+        return 0
+      }
+
+      const source = buildDomHarness({
+        parentOrigin: 'https://x.test',
+        warmupMs: 0,
+        maxBytes: 6_000_000,
+      })
+      expect(source).not.toContain('html2canvas')
+      new Function('window', 'document', 'parent', 'setTimeout', source)(
+        windowFake,
+        documentFake,
+        parentFake,
+        runNow,
+      )
+
+      expect(copias).toBe(1)
+      expect(postado).toBe('data:image/png;base64,DOM')
+    } finally {
+      ;(globalThis as { Image: unknown }).Image = imageOriginal
+      ;(globalThis as { XMLSerializer: unknown }).XMLSerializer = serializerOriginal
+    }
   })
 })

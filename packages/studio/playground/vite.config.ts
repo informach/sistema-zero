@@ -14,6 +14,10 @@ const here = import.meta.dirname
 // optimizeDeps.entries — o crawl silenciosamente não acha nada e o Vite
 // re-otimiza (com full reload) na primeira navegação ao editor.
 const r = (p: string) => resolve(here, p).replace(/\\/g, '/')
+const isolationHeaders = {
+  'Cross-Origin-Embedder-Policy': 'credentialless',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+}
 
 export default defineConfig({
   root: here,
@@ -26,6 +30,8 @@ export default defineConfig({
       // `src/index.ts/personal-assets` (500 no dev server).
       '@sistemazero/studio/personal-assets': r('../src/asset-library/personal.ts'),
       '@sistemazero/studio/editor': r('../src/studio/StudioEditor.tsx'),
+      '@sistemazero/studio/project': r('../src/core/project.ts'),
+      '@sistemazero/studio/local-persistence': r('../src/persistence/local.ts'),
       '@sistemazero/studio/project-list': r('../src/projects/ProjectList.tsx'),
       '@sistemazero/studio': r('../src/index.ts'),
     },
@@ -104,9 +110,9 @@ export default defineConfig({
     port: 5173,
     host: '127.0.0.1',
     // O WebContainer (Terminal) exige cross-origin isolation no documento host.
-    headers: {
-      'Cross-Origin-Embedder-Policy': 'credentialless',
-      'Cross-Origin-Opener-Policy': 'same-origin',
-    },
+    headers: isolationHeaders,
+  },
+  preview: {
+    headers: isolationHeaders,
   },
 })

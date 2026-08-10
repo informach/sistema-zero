@@ -9,6 +9,7 @@
  * trocar de ferramenta. Mesmo guard dos outros listeners do editor.
  */
 import { useEffect, useRef } from 'react'
+import { isTextEntryTarget } from '../../core/dom'
 
 /** Monta o mapa tecla → ferramenta a partir da lista de botões do editor. */
 export function toolShortcutMap<T extends string>(
@@ -33,13 +34,7 @@ export function useToolShortcuts<T extends string>(
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
       if (event.ctrlKey || event.metaKey || event.altKey) return
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
+      if (isTextEntryTarget(event.target)) return
       const tool = shortcuts[event.key.toLowerCase()]
       if (tool) setToolRef.current(tool)
     }

@@ -501,6 +501,7 @@ export interface GameTwoDWorldApi {
   createWorldFromTileMap(map: GameTwoDTileMap, tileSize: number): GameTwoDWorld
   addTileMapToWorld(worldValue: GameTwoDWorld, map: GameTwoDTileMap): void
   addSolidGroupToWorld(worldValue: GameTwoDWorld, group: GameTwoDGroup): void
+  addEnemyTypeToWorld(worldValue: GameTwoDWorld, type: GameTwoDEnemyType): void
   addPlatformGroupToWorld(worldValue: GameTwoDWorld, group: GameTwoDGroup): void
   setWorldEdges(worldValue: GameTwoDWorld, edges: GameTwoDWorldEdges): void
   configureWorldCamera(
@@ -884,6 +885,7 @@ export const GAME_TWO_D_API_KEYS = [
   'createWorldFromTileMap',
   'addTileMapToWorld',
   'addSolidGroupToWorld',
+  'addEnemyTypeToWorld',
   'addPlatformGroupToWorld',
   'setWorldEdges',
   'configureWorldCamera',

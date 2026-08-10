@@ -258,6 +258,30 @@ describe('PintaApp — galeria', () => {
     expect(screen.queryByRole('button', { name: /Abrir apagavel/ })).toBeNull()
   })
 
+  it('não oferece apagar peças usadas e mostra os mapas dependentes', async () => {
+    const seed = createGalleryStore()
+    const tileset = await seed
+      .getState()
+      .create({ kind: 'tileset', name: 'pecas-usadas', tileSize: 16 })
+    if (!tileset) throw new Error('tileset esperado')
+    await seed.getState().create({
+      kind: 'tilemap',
+      name: 'fase-dependente',
+      tilesetId: tileset.id,
+      cols: 2,
+      rows: 2,
+    })
+
+    render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir pecas-usadas/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.remove} pecas-usadas` }))
+    expect(screen.getByText(COPY.gallery.removeTilesetTitle)).toBeTruthy()
+    expect(screen.getAllByText('fase-dependente')).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: COPY.gallery.removeConfirm })).toBeNull()
+  })
+
   it('botão "Usar no Estúdio" exige o callback do host E desenho de um jogo do Pensa', async () => {
     // Desenho AVULSO e desenho vinculado a um jogo do Pensa (projectRef): o
     // foguete só existe no segundo — avulso chega ao Estúdio pelo "Trazer do
