@@ -9,6 +9,26 @@ const inlineScript = fileURLToPath(
   new URL('../../studio-runtime/runtime/inline-preview.mjs', import.meta.url),
 )
 
+/**
+ * Forma do processo que ESTE spec usa, declarada aqui de propósito.
+ *
+ * ⚠️ O `tsconfig.json` do studio declara `types: ["bun", "vite/client"]` — SEM
+ * `node`. Então `node:child_process` é tipado pelo bun-types, cujo
+ * `ChildProcessWithoutNullStreams` não expõe os métodos de EventEmitter. Depender
+ * do `.on` ambiente faz o typecheck passar só onde algum `@types/node` aninhado
+ * estiver por perto: verde no Windows local, VERMELHO na instalação limpa do CI
+ * (`Property 'on' does not exist…`). Declarar o contrato aqui torna o arquivo
+ * independente de quais `@types` a instalação resolveu — o runtime é o Node que
+ * o Playwright usa, e é essa a forma que ele entrega.
+ */
+interface SpawnedInlinePreview {
+  stderr: { on: (event: 'data', listener: (chunk: unknown) => void) => void }
+  on: {
+    (event: 'error', listener: (error: Error) => void): void
+    (event: 'exit', listener: (code: number | null) => void): void
+  }
+}
+
 async function buildRuntimePreview(
   source: string,
 ): Promise<{ html: string; cleanup: () => Promise<void> }> {
@@ -16,7 +36,10 @@ async function buildRuntimePreview(
   await mkdir(join(root, 'dist'), { recursive: true })
   await writeFile(join(root, 'dist', 'index.html'), source)
   await new Promise<void>((resolve, reject) => {
-    const child = spawn(process.execPath, [inlineScript], { cwd: root, stdio: 'pipe' })
+    const child = spawn(process.execPath, [inlineScript], {
+      cwd: root,
+      stdio: 'pipe',
+    }) as unknown as SpawnedInlinePreview
     let stderr = ''
     child.stderr.on('data', (chunk) => {
       stderr += String(chunk)
