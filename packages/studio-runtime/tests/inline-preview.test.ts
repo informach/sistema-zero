@@ -38,4 +38,38 @@ describe('inline-preview', () => {
     expect(html).toContain('main { color: green }')
     expect(html).not.toContain('malicioso.test')
   })
+
+  test.each([
+    {
+      name: 'script antes do head',
+      document:
+        '<!doctype html><script>fetch("https://evil.test/antes")</script><html><head><title>Teste</title></head><body></body></html>',
+    },
+    {
+      name: 'comentário que contém head antes do head real',
+      document:
+        '<!doctype html><!-- <head> --><html><head><script>fetch("https://evil.test/comentario")</script></head><body></body></html>',
+    },
+    {
+      name: 'head com atributos e caixa diferente',
+      document:
+        '<!doctype html><html><HEAD data-app="teste"><script>fetch("https://evil.test/atributo")</script></HEAD><body></body></html>',
+    },
+  ])('insere a CSP antes de qualquer script em $name', async ({ document }) => {
+    const root = await mkdtemp(join(tmpdir(), 'sz-runtime-preview-order-'))
+    roots.push(root)
+    await mkdir(join(root, 'dist'), { recursive: true })
+    await writeFile(join(root, 'dist', 'index.html'), document)
+
+    const child = Bun.spawn([process.execPath, script], { cwd: root, stderr: 'pipe' })
+    expect(await child.exited).toBe(0)
+
+    const html = await readFile(join(root, 'preview.html'), 'utf8')
+    const cspIndex = html.indexOf('http-equiv="Content-Security-Policy"')
+    const attackerIndex = html.indexOf('fetch("https://evil.test/')
+    expect(cspIndex).toBeGreaterThanOrEqual(0)
+    expect(attackerIndex).toBeGreaterThanOrEqual(0)
+    expect(cspIndex).toBeLessThan(attackerIndex)
+    expect(html.match(/Content-Security-Policy/g) ?? []).toHaveLength(1)
+  })
 })

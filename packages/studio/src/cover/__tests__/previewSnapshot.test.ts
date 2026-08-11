@@ -349,13 +349,14 @@ describe('bridge de foto do preview', () => {
     expect(b.postados[0]?.dataUrl).toBe(JPEG)
   })
 
-  it('sem canvas na página, responde null em vez de calar', () => {
-    const b = rodar({ palco: null })
-    b.pedir()
-    b.quadro()
-    // Desiste já na fase 1: nem chega a agendar a codificação.
-    expect(b.postados[0]?.dataUrl).toBeNull()
-    expect(b.temOciosoPendente).toBe(false)
+  it('⭐⭐ sem canvas na página, rasteriza o DOM em vez de devolver null', () => {
+    comDOMRasterizavel('ok', () => {
+      const b = rodar({ palco: null })
+      b.pedir()
+      b.quadro()
+      b.ocioso()
+      expect(b.postados[0]?.dataUrl).toBe(JPEG)
+    })
   })
 
   it('⚠️ pedido repetido enquanto o anterior está em voo é ignorado', () => {

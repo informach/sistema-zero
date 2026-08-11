@@ -214,7 +214,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(261)
+    expect(gameTwoDBlocks.length).toBe(262)
   })
 
   /**
@@ -394,6 +394,10 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     for (const titulo of [
       '#### Os dois jeitos de criar um tipo',
       '#### Soltar, atualizar, desenhar e reagir',
+      // Mundo e Fase entraram na mesma rede: a família nasceu com 20 blocos e
+      // sem lista nenhuma no manual, e a prosa já chamava um deles por um nome
+      // que não existe ("Mundo vazio").
+      '#### Os blocos de Mundo e de Fase',
     ]) {
       const inicio = docs.indexOf(titulo)
       expect(inicio, `seção sumiu: ${titulo}`).toBeGreaterThan(-1)
@@ -521,6 +525,40 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     for (const tipo of comItemName) {
       expect(funcao, `${tipo}: falta o case em g2dLocalNames`).toContain(`case '${tipo}':`)
     }
+  })
+
+  /**
+   * ⭐ A LEI que separa 🧩 Meus moldes de ⚙️ Ao iniciar, e o motivo de Mundo e
+   * Fase ficarem no início: **molde roda ANTES de tudo, então ele só pode
+   * apontar para outro molde**. "Criar tipo de inimigo" é receita pura (quem
+   * instancia é o "Soltar"); "Criar Mundo" aponta para um mapa e para um grupo,
+   * que são containers vivos desta partida.
+   *
+   * Promover um desses a molde não quebraria teste nenhum hoje: o projeto salvo
+   * passaria a rodar com a referência vazia e o sintoma seria "não acontece
+   * nada", sem erro. Escopado ao Jogo 2D de propósito — teste que acusa vizinho
+   * é teste que alguém afrouxa depois.
+   */
+  it('nenhum molde do Jogo 2D aponta para coisa viva desta partida', () => {
+    const fonte = readFileSync(join(import.meta.dir, '../../../ir/schema.ts'), 'utf8')
+    const APONTA_PARA_VIVO = ['mapVar', 'groupVar', 'spriteVar', 'worldVar', 'levelVar', 'typeVar']
+    const moldes = [...MOLD_ONLY_STATEMENT_TYPES].filter((t) => t.startsWith('g2d:'))
+    expect(moldes.length, 'anti-vácuo: nenhum molde do Jogo 2D').toBeGreaterThan(3)
+
+    const corpoDe = new Map<string, string>()
+    for (const trecho of fonte.split("z.literal('").slice(1)) {
+      const tipo = trecho.slice(0, trecho.indexOf("'"))
+      if (!corpoDe.has(tipo)) corpoDe.set(tipo, trecho)
+    }
+    const infratores: string[] = []
+    for (const tipo of moldes) {
+      const corpo = corpoDe.get(tipo)
+      expect(corpo, `${tipo}: não achei a variante no schema`).toBeTruthy()
+      for (const campo of APONTA_PARA_VIVO) {
+        if (new RegExp(`\\b${campo}:`).test(String(corpo))) infratores.push(`${tipo}.${campo}`)
+      }
+    }
+    expect(infratores).toEqual([])
   })
 
   /**

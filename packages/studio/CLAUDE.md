@@ -19,6 +19,8 @@ associado e mantém o guia após reload; o Studio não persiste vínculo ou back
 jogável/`.szproject.json` como projeto NOVO no namespace atual via `importProjectFromJSON` do
 projectStore, com `name` opcional sobrepondo o do snapshot — é o "Fazer a minha versão"/remix do
 Mural kids; o host chama `setStudioStorageNamespace(viewerId)` ANTES): DOIS componentes finos sobre um **núcleo comum** (`StudioCore`, interno) — `<StudioEditor>` (editor COMPLETO independente; sem conceito de aula/atividade; desde 07/2026 TAMBÉM aceita as props de curadoria `StudioLearningProps` — o kids abre o `/estudio` com o degrau derivado do RANK via `resolveStudioTier` do member-shell; `level` aceita a escada NOVA de 6 (`iniciante-2d`…`avancado-3d`) E os 3 valores legados (normalizados na fronteira `resolveLearning`); sem `level` segue o default `avancado-3d` [topo], zero regressão) e `<StudioLesson>` (bloco de AULA configurável: curadoria de aprendizado `level`/`allowBlocks`/`allowCategories`/`allowLevelReveal` + defaults restritos terminal/IA/profissional/export/download OFF + prop `activity` fiada p/ a auto-correção). Ambos uncontrolled (`initialProject` + `onChange`/`onSave`/`onError`; `persistence: 'local'|'none'|adapter`; `allowedModes`/`initialMode`; `theme`/`locale`; `limits`; **`share?: StudioShareAdapter`** (liga o botão Compartilhar); `ref` → `StudioHandle`). `<Studio>` (+ `StudioProps`) **@deprecated** = alias do `StudioCore` (compat; migrar p/ Editor/Lesson). Também: `<ProjectList>` (IndexedDB local; aceita `theme?` p/ o host FIXAR claro/escuro e esconder o toggle — espelha o `theme` do Editor/Lesson), `createLocalPersistenceAdapter`, **`setStudioStorageNamespace(ns)`** (namespeia o IndexedDB local por VIEWER — app-agnóstico: o host seta o id do perfil (kids) OU da conta (adulto) ANTES de usar a `ProjectList`/editor; vazio = store histórico `sistema-zero-studio`; é o que isola a lista do Estúdio Completo entre perfis/contas no mesmo navegador — a lição reseta p/ `''`), `createEmptyProject`, `prefetchStudioModes`, os tipos `LessonActivity`/`ActivityCheck`, **`captureCoverFromProject(project)`** (capa PNG da vitrine "Mural dos Criadores" — `src/cover/coverCapture.ts`: roda o projeto num iframe via `buildPreviewDoc` + harness que fotografa e posta ao parent autenticado por `ev.source`. **DUAS passadas:** (1) **canvas** — lê o MAIOR `<canvas>` com `toDataURL` (jogos 2D/3D), pipeline atual; (2) só se a 1ª voltar `null`, **DOM via html2canvas** carregado do esm.sh DENTRO do iframe (`extensionImports.html2canvas` → importmap + origem no `script-src`, igual ao `three` do Jogo 3D) rasterizando o `document.body` — cobre páginas HTML/CSS sem canvas. ⚠️ o iframe NÃO usa mais `visibility:hidden`/off-screen (parava o rAF → "sem foto" nos jogos): fica na viewport com `opacity:0`. Canvas tainted/timeout/falha do html2canvas → `null`, o chamador cai na capa do admin / upload; mesmos invariantes do `runSandboxChecks`, NUNCA `allow-same-origin`/`targetOrigin` no postMessage; happy-dom não roda o iframe → verificar em BROWSER real), **`<StudioProjectPlayer project>`** +
+**Atualização 10/08/2026 da captura descrita acima:** a segunda passada não usa mais html2canvas/esm.sh;
+usa `preview/domRasterizerRuntime.ts` (SVG/foreignObject) em comum com o snapshot e cobre DOM-only.
 **`renderProjectToPreviewDocAsync(project)`** (`renderProjectToPreviewDoc` = alias depreciado; player AUTÔNOMO do jogo — só roda o jogo num iframe sandbox,
 autostart, SEM editor — para a página PÚBLICA de jogar do community-kids; subpath LEVE
 **`@sistemazero/studio/player`** = só a cadeia de preview, sem Monaco/Blockly), o adapter
@@ -253,12 +255,12 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   2. **`toDataURL` lê só o drawing buffer** → o PNG sai com o desenho sobre TRANSPARENTE, sem o laranja.
   3. **A miniatura do card é JPEG, que não tem alfa** (`thumbCapture.ts`) → transparente vira **PRETO**.
   4. **A passada 1 corta a passada 2** (`if (canvasUrl) return canvasUrl`): bastava a do canvas "dar certo"
-     para o html2canvas — o único que enxerga o CSS — nunca rodar.
+     para a passada DOM — a única que enxerga o CSS — nunca rodar.
   ⚠️ **Funcionava por acidente** até 08/2026: o harness só agendava por `requestAnimationFrame`, que não
   dispara em aba de fundo/página saindo; a passada 1 estourava o timeout e caía na 2. Quando o `2b918afb`
   somou um `setTimeout` como rede, a passada 1 passou a "vencer" e a capa preta apareceu.
   **Hoje o harness COMPÕE o fundo dentro do iframe** (único lugar onde a cor existe): copia para um canvas
-  2D próprio, DETECTA quadro em branco (todo alfa 0 → `post(null)`, devolvendo a vez ao html2canvas — é o
+  2D próprio, DETECTA quadro em branco (todo alfa 0 → `post(null)`, devolvendo a vez ao rasterizador DOM — é o
   que cobre o 3D cujo buffer WebGL já foi descartado, já que nenhuma extensão passa `preserveDrawingBuffer`)
   e pinta a cor em **`destination-over`** (`getComputedStyle(canvas).backgroundColor` → `body` → branco).
   O `thumbCapture` ainda preenche branco antes do `drawImage`, como rede para qualquer print futuro.
@@ -372,17 +374,9 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
     dois testes simétricos que travam o corte entre as fases. ⚠️ **O round-trip real precisa de um
     navegador com o painel VISÍVEL**: com a aba oculta, `document.hidden` é true e o editor
     (corretamente) nem pede a foto, então esse caminho não é verificável aqui.
-- ⚠️⚠️ **A 2ª passada (html2canvas) NÃO FUNCIONA — medido 08/2026.** O `import` do esm.sh resolve
-  (importmap + `script-src` conferidos no navegador), mas o html2canvas **clona o documento num
-  iframe interno** e lê o `contentWindow.document` dele; com o sandbox `allow-scripts` **sem**
-  `allow-same-origin` a origem é opaca e isso é cross-origin *até para o próprio documento*:
-  `Blocked a frame with origin "null" from accessing a cross-origin frame`. `foreignObjectRendering:
-  true` **não** resolve (o clone vem antes nos dois modos), e `allow-same-origin` está fora de
-  questão. **Consequência: projeto SEM canvas (HTML/CSS puro) não tem capa hoje** — e o card promete
-  uma foto que não vem. ⭐⭐ **A saída apontada aqui — serializar o DOM num `<svg><foreignObject>`,
-  que não clona via iframe — foi MEDIDA e FUNCIONA na sandbox de origem opaca (08/2026), e já vive
-  em `preview/snapshotBridge.ts` (`rasterizarDOM`).** Hoje ela só é acionada quando existe um canvas
-  com algo por cima; ligar o caminho SEM canvas nenhum é reusar aquela função, não pesquisa nova.
+- ⭐⭐ **A 2ª passada usa o runtime compartilhado `preview/domRasterizerRuntime.ts`.** Ele serializa
+  o DOM num `<svg><foreignObject>`, sem clone via iframe, e funciona na sandbox de origem opaca.
+  Tanto `coverCapture` quanto `snapshotBridge` o usam; página sem canvas agora produz foto.
   ⭐ O que segura a peça: a
   captura devolvendo `null` **não apaga a capa que já existe** (`captureAndStoreProjectThumb` sai
   antes de gravar), então uma falha nunca destrói uma foto boa.
@@ -394,7 +388,9 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   também devolve Promise. O componente mantém estado `loading|ready|error`, ignora resposta obsoleta e renderiza o srcdoc num iframe
   `sandbox="allow-scripts allow-modals allow-pointer-lock"` (NUNCA `allow-same-origin`), autostart. Exportado no index E no
   subpath leve `@sistemazero/studio/player` (sem Monaco/Blockly — importante p/ a página pública não
-  carregar o editor inteiro).
+  carregar o editor inteiro). O player usa CSP `strict` por padrão (sem rede passiva) e aceita
+  `originAdapter` para trocar `srcDoc` por uma URL HTTP(S) em outra origem; URL same-origin/data/blob
+  é recusada. `securityProfile="creative"` é opt-in para conteúdo público que dependa de recursos https.
 - **Desafio do mês (Fase 5, 07/2026):** `StudioShareAdapter.challenge?: { key, title }` — presente
   (o host SÓ passa quando a criança possui Clube+Estúdio), o `ShareDialog` mostra o checkbox
   "🏆 Participar do Desafio do mês: {title}" (opt-in explícito, reseta a cada abertura); marcado, o
@@ -497,6 +493,19 @@ são afetadas e a área nem aparece para elas.
   um subconjunto de `START_ONLY_STATEMENT_TYPES`. `lifecycleAreaForStatement`
   devolve `'molds'` para eles, o preset `mold-declaration` deriva os checks do
   Blockly e a migração de estado salvo lê a MESMA tabela.
+- ⭐⭐ **A LEI de dependência (registrada no full review de 10/08): molde só pode
+  apontar para outro MOLDE.** Molde roda antes de tudo, então um bloco que precisa
+  de um mapa, de um grupo, de um sprite ou de um Mundo desta partida é do
+  ⚙️ Ao iniciar. É o que separa `defineEnemyType` (receita pura — quem instancia é
+  o "Soltar") de `createWorld` (aponta para o mapa e para o grupo que são o terreno
+  dele). O `allEnemiesGroup` cabe em moldes porque só aponta para TIPOS, que são
+  moldes. Segunda metade da lei, da v0.66.0: **a família segue o membro mais preso**
+  — receita não se parte em duas áreas, então Mundo e Fase ficam inteiros no início.
+  ⚠️ Promover um deles a molde não quebra teste de tipo nem round-trip: o projeto
+  salvo passa a rodar com a referência vazia e o sintoma é "não acontece nada".
+  Por isso a lei virou drift (`docDrift.test.ts`, "nenhum molde do Jogo 2D aponta
+  para coisa viva desta partida"). Saída registrada, se um dia valer a pena: o
+  terreno virar declarativo (o Mundo guarda o NOME e resolve na primeira colisão).
 - ⭐ **A régua é "molde é a receita que EU escrevo", e CARREGAR não é.** Trazer um
   arquivo que já existe (som, folha de quadros, imagem) é preparação de partida e
   fica no Ao iniciar. Além de ser a distinção mais fácil de ensinar, é o que
@@ -1015,7 +1024,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.69.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.70.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar

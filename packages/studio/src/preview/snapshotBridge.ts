@@ -30,6 +30,8 @@
  * mesma regra do `storageBridge` e do `inputBridge`.
  */
 
+import { buildDomRasterizerRuntime } from './domRasterizerRuntime'
+
 /** Canal do pedido (editor → preview). */
 export const PREVIEW_SNAPSHOT_REQUEST = 'sz:snapshot-request' as const
 /** Canal da resposta (preview → editor); `kind` de `PreviewMessage`. */
@@ -65,12 +67,14 @@ export function buildSnapshotBridgeRuntime(input: {
 }): string {
   const origin = JSON.stringify(input.parentOrigin)
   const projectId = JSON.stringify(input.projectId ?? '')
+  const domRasterizer = buildDomRasterizerRuntime()
   return `;(function(){
   var PARENT_ORIGIN = ${origin};
   var PROJECT_ID = ${projectId};
   var W = ${SNAPSHOT_WIDTH};
   var H = ${SNAPSHOT_HEIGHT};
   var MAX = ${SNAPSHOT_MAX_CHARS};
+  ${domRasterizer}
   // Um pedido em voo por vez: se o editor insistir, o segundo é ignorado em vez
   // de empilhar trabalho no quadro de animação do jogo.
   var emVoo = false;
@@ -114,7 +118,7 @@ export function buildSnapshotBridgeRuntime(input: {
   function copiar(){
     try {
       var c = maiorCanvas();
-      if (!c) { desistir(); return; }
+      if (!c) { copiarDOM(); return; }
       var tmp = document.createElement('canvas');
       tmp.width = W; tmp.height = H;
       var ctx = tmp.getContext('2d');
@@ -131,6 +135,31 @@ export function buildSnapshotBridgeRuntime(input: {
       foraDoQuadro(codificar);
     } catch (e) { desistir(); }
   }
+  function copiarDOM(){
+    foraDoQuadro(function(){
+      szRasterizarDOM(document.body, {
+        hideCanvases: true,
+        includeBackground: true,
+        fullDocument: true,
+        fallbackWidth: W,
+        fallbackHeight: H,
+        maxWidth: 1600,
+        maxHeight: 1200
+      }, function(resultado){
+        if (!resultado || !resultado.image) { desistir(); return; }
+        try {
+          var tmp = document.createElement('canvas');
+          tmp.width = W; tmp.height = H;
+          var ctx = tmp.getContext('2d');
+          if (!ctx) { desistir(); return; }
+          var escala = Math.max(W / resultado.width, H / resultado.height);
+          var dw = resultado.width * escala, dh = resultado.height * escala;
+          ctx.drawImage(resultado.image, (W - dw) / 2, (H - dh) / 2, dw, dh);
+          exportar(tmp);
+        } catch (e) { desistir(); }
+      });
+    });
+  }
   // ⭐⭐ Tem algo do DOM COBRINDO o palco? (tela de início, menu, "fim de jogo")
   // O Jogo 2D Avançado desenha essas telas como <div> por cima do canvas, não no
   // canvas — então fotografar só o canvas devolvia "a cor de fundo e mais nada",
@@ -143,81 +172,6 @@ export function buildSnapshotBridgeRuntime(input: {
       var topo = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return !!topo && topo !== c;
     } catch (e) { return false; }
-  }
-  // Rasteriza o DOM num <svg><foreignObject>. ⚠️ NÃO é html2canvas: aquele CLONA o
-  // documento num iframe interno e lê o contentWindow dele, o que é cross-origin
-  // até para si mesmo numa sandbox de origem opaca — por isso nunca funcionou
-  // aqui. Isto serializa e desenha, sem iframe nenhum. Medido em sandbox
-  // allow-scripts SEM allow-same-origin: carrega, desenha e NÃO contamina o canvas.
-  // Estilos que carregam o LAYOUT do contêiner. ⚠️ Sem eles o clone perde o
-  // posicionamento (o palco centralizado vira canto) e o recorte cai no vazio.
-  // ⚠️⚠️ NADA de 'background' nesta lista. O fundo do palco JÁ foi composto no
-  // buffer, e o contêiner do Jogo 2D Avançado pinta um fundo OPACO
-  // (#szgk-stage leva background: config.bg): copiá-lo faria a rasterização
-  // TAPAR o jogo — e as telas de lá são semitransparentes de propósito, então o
-  // que tem que aparecer por trás delas é justamente o jogo.
-  var LAYOUT = ['display','flexDirection','alignItems','justifyContent','padding','boxSizing','position','overflow'];
-  function traco(nome){ return nome.replace(/[A-Z]/g, function(m){ return '-' + m.toLowerCase(); }); }
-  function rasterizarDOM(c, cb){
-    try {
-      // ⭐⭐ A raiz é o CONTÊINER DO PALCO, não o body. O foreignObject renderiza
-      // o conteúdo a partir do canto dele, e o layout de FORA (o body que
-      // centraliza o palco, no Jogo 2D Avançado) não existe lá dentro — recortar
-      // pelas coordenadas da PÁGINA caía numa área vazia e a foto voltava só com
-      // a cor de fundo. Ancorando no contêiner, as coordenadas são internas e o
-      // layout externo deixa de importar.
-      var raiz = (c && c.parentElement) || document.body;
-      if (!raiz || typeof XMLSerializer === 'undefined') { cb(null); return; }
-      var hr = raiz.getBoundingClientRect ? raiz.getBoundingClientRect() : null;
-      var lw = Math.max(1, Math.round((hr && hr.width) || raiz.clientWidth || W));
-      var lh = Math.max(1, Math.round((hr && hr.height) || raiz.clientHeight || H));
-      var clone = raiz.cloneNode(true);
-      // ⭐⭐ O layout vai para o WRAPPER do foreignObject, que é quem de fato
-      // envolve os filhos serializados. Aplicá-lo ao CLONE não servia de nada:
-      // logo abaixo só os childNodes dele são serializados, então o clone —
-      // e todo o estilo posto nele — era jogado fora. Funcionava por acidente
-      // enquanto o contêiner de teste não tinha padding nem flex.
-      var estilo = 'position:relative;margin:0;left:auto;top:auto;right:auto;bottom:auto;' +
-        'transform:none;width:' + lw + 'px;height:' + lh + 'px;';
-      try {
-        var viva = window.getComputedStyle(raiz);
-        for (var s = 0; s < LAYOUT.length; s++) {
-          var valor = viva[LAYOUT[s]];
-          // A propriedade position do contêiner não viaja: o wrapper JÁ é relative,
-          // e um fixed herdado (o palco da gk é fixed) o tiraria do lugar.
-          if (valor && LAYOUT[s] !== 'position') {
-            estilo += traco(LAYOUT[s]) + ':' + String(valor).replace(/"/g, '&quot;') + ';';
-          }
-        }
-      } catch (e) {}
-      // ⚠️ Canvas serializado vem SEM os pixels: no SVG ele viraria um retângulo
-      // vazio tapando o jogo. O desenho do jogo já está no nosso buffer; aqui só
-      // interessa o que está POR CIMA dele.
-      var telas = clone.querySelectorAll ? clone.querySelectorAll('canvas') : [];
-      for (var i = 0; i < telas.length; i++) telas[i].style.visibility = 'hidden';
-      // O CSS precisa viajar junto: dentro do foreignObject não há folha externa.
-      var css = '';
-      var tags = document.querySelectorAll('style');
-      for (var j = 0; j < tags.length; j++) css += tags[j].textContent || '';
-      var ser = new XMLSerializer();
-      var corpo = '';
-      for (var k = 0; k < clone.childNodes.length; k++) {
-        corpo += ser.serializeToString(clone.childNodes[k]);
-      }
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + lw + '" height="' + lh + '">' +
-        '<foreignObject width="100%" height="100%">' +
-        '<div xmlns="http://www.w3.org/1999/xhtml" style="' + estilo + '"><style>' + css + '</style>' + corpo + '</div>' +
-        '</foreignObject></svg>';
-      var img = new Image();
-      var pronto = false;
-      var fim = function(v){ if (pronto) return; pronto = true; cb(v); };
-      img.onload = function(){ fim(img); };
-      // Recurso externo (imagem de rede, fonte) derruba o SVG inteiro: aí segue
-      // sem a sobreposição, em vez de perder a foto.
-      img.onerror = function(){ fim(null); };
-      setTimeout(function(){ fim(null); }, 1500);
-      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-    } catch (e) { cb(null); }
   }
   function exportar(tmp){
     emVoo = false;
@@ -259,7 +213,13 @@ export function buildSnapshotBridgeRuntime(input: {
       ctx.fillRect(0, 0, W, H);
       ctx.globalCompositeOperation = 'source-over';
       if (temCoisaPorCima(c)) {
-        rasterizarDOM(c, function(img){
+        szRasterizarDOM((c && c.parentElement) || document.body, {
+          hideCanvases: true,
+          includeBackground: false,
+          fallbackWidth: W,
+          fallbackHeight: H
+        }, function(resultado){
+          var img = resultado && resultado.image;
           if (img) {
             try {
               // O canvas foi desenhado com ESTE cover-fit; a sobreposição tem

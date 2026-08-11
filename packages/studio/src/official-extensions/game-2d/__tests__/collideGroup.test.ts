@@ -304,6 +304,47 @@ describe('figuras móveis transportam quem está apoiado', () => {
     expect(groupHero.x).toBe(4)
     expect(groupHero.onGround).toBe(false)
   })
+
+  /**
+   * O passageiro que troca de base nunca reconfirma a antiga. Prender o apoio
+   * nela dava carona vitalícia: o herói andava 35 px por quadro em cima de uma
+   * figura PARADA porque a plataforma móvel, já para trás, continuava sendo o
+   * dono do apoio. O palco é grande de propósito, senão a borda da tela
+   * confirmaria o chão sozinha e o teste não provaria nada sobre as figuras.
+   */
+  it('para de ser transportado ao andar para uma base VIZINHA parada', () => {
+    const palcoGrande = { canvas: { width: 640, height: 400 } }
+    for (const oneWay of [false, true]) {
+      const api = load()
+      api.setGravity(0.6)
+      const grupo = api.createGroup()
+      const movel = api.createSprite({ x: 0, y: 200, w: 100, h: 16, vx: 5 })
+      const parada = api.createSprite({ x: 100, y: 200, w: 300, h: 16 })
+      grupo.items.push(movel, parada)
+      const heroi = api.createSprite({ x: 40, y: 184, w: 16, h: 16, vy: 8 })
+      const colidir = () =>
+        oneWay ? api.collidePlatformGroup(heroi, grupo) : api.collideGroup(heroi, grupo)
+
+      api.applyVelocity(heroi)
+      colidir()
+      expect(heroi.onGround).toBe(true)
+
+      api.keys.right = true
+      const passos: number[] = []
+      for (let quadro = 0; quadro < 4; quadro++) {
+        api.applyVelocity(movel)
+        api.platformer(heroi, palcoGrande, 30, 11)
+        colidir()
+        passos.push(heroi.x)
+      }
+      api.keys.right = false
+
+      // 75 = ainda em cima da móvel (30 do passo + 5 da base). Dali em diante
+      // ele está sobre a parada e anda exatamente os 30 que pediu.
+      expect(passos).toEqual([75, 110, 140, 170])
+      expect(heroi.onGround).toBe(true)
+    }
+  })
 })
 
 describe('updateGroup + applyGravityToGroup', () => {

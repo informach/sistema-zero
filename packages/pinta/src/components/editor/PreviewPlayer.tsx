@@ -28,11 +28,15 @@ import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { Play, Settings, SquarePen } from '../ui/icons'
-import { Panel } from '../ui/Panel'
+import { Panel, type PanelDisclosure } from '../ui/Panel'
 import { AnimationDetails } from './AnimationDetails'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
-export function PreviewPlayer(): JSX.Element | null {
+export function PreviewPlayer({
+  disclosure,
+}: {
+  disclosure?: PanelDisclosure
+} = {}): JSX.Element | null {
   const { session } = useEditorStores()
   const asset = useEditor((state) => state.asset)
   const animationId = useSession((state) => state.animationId)
@@ -45,7 +49,7 @@ export function PreviewPlayer(): JSX.Element | null {
   const animation = animated ? activeAnimationOf(animated, { animationId, frameIndex }) : null
 
   const playingIndex = useAnimationPlayer({
-    playing: playing && Boolean(animation),
+    playing: playing && Boolean(animation) && (disclosure?.open ?? true),
     fps: animation?.fps ?? 8,
     frameCount: animation?.frames.length ?? 0,
     loop: animation?.loop ?? true,
@@ -74,7 +78,11 @@ export function PreviewPlayer(): JSX.Element | null {
   if (!animated || !animation) return null
 
   return (
-    <Panel title={COPY.animation.preview} bodyClassName="flex flex-col items-center gap-2 p-2">
+    <Panel
+      title={COPY.animation.preview}
+      disclosure={disclosure}
+      bodyClassName="flex flex-col items-center gap-2 p-2"
+    >
       <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">
         {animated.kind === 'pixel-sprite' ? (
           <canvas

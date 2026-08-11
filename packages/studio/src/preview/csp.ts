@@ -3,9 +3,9 @@
  * ORTOGONAL ao sandbox do iframe (que continua a barreira primária: null-origin,
  * sem `allow-same-origin`).
  *
- * Filosofia (ambiente de aprendizado): liberar subrecursos PASSIVOS de https
- * (imagens, fontes, mídia, CSS, embeds) — comuns em páginas de aluno e de baixo
- * risco — mas TRAVAR os vetores de exfiltração/supply-chain:
+ * O perfil `creative` do editor libera subrecursos PASSIVOS de https (imagens,
+ * fontes, mídia, CSS, embeds). O perfil `strict`, usado pelo player público,
+ * fecha também esse canal de GET de mão única.
  * - `script-src` NÃO inclui `https:` → nada de `<script src=remoto>`.
  * - `connect-src` default `'none'` → sem `fetch`/XHR/WebSocket, a menos que o
  *   professor libere origens (`fetchAllowedOrigins`); reforçado pelo
@@ -23,7 +23,7 @@
  * proteção contra scripts `data:`/`blob:` criados em runtime. `https:`,
  * `'unsafe-inline'` e `blob:` continuam fora da policy.
  *
- * ⚠️ CANAL RESIDUAL DE EXFILTRAÇÃO (GET de mão única, ACEITO por design): como
+ * ⚠️ CANAL RESIDUAL DE EXFILTRAÇÃO NO PERFIL CREATIVE (GET de mão única): como
  * `img-src`/`media-src`/`font-src`/`frame-src` liberam `https:` (subrecursos
  * passivos comuns na página do aluno) enquanto `connect-src` é `'none'`, sobra
  * um caminho passivo de exfil por GET — p.ex. `new Image().src =
@@ -31,8 +31,7 @@
  * VAZAMENTO de mão única, não um canal bidirecional; e o iframe null-origin não
  * tem cookies/origem nossa para roubar. Trade-off do ambiente de aprendizado:
  * imagens/fontes/mídia remotas valem mais que fechar esse vetor. Um host que
- * precise blindar isso pediria um opt-in para zerar img/media/font/frame-src
- * (ver backlog em docs/embedding.md). NÃO alterar o comportamento da CSP aqui.
+ * precise blindar isso usa o perfil `strict`.
  *
  * ⚠️ `frame-src https:` NÃO inclui `data:`/`blob:` (de propósito): um subframe
  * `data:`/`blob:` (`<iframe src="data:text/html,<script>while(true){}</script>">`)
@@ -44,7 +43,11 @@
  * então liberamos só `https:` aqui.
  */
 
+export type PreviewSecurityProfile = 'creative' | 'strict'
+
 export interface PreviewCSPOptions {
+  /** `creative` preserva recursos https do editor; `strict` bloqueia rede passiva. */
+  securityProfile?: PreviewSecurityProfile
   /** Origens https/http que o aluno pode acessar via fetch/XHR (opt-in do host). */
   fetchAllowedOrigins?: readonly string[]
   /** URLs/caminhos exatos dos módulos ESM oficiais (nunca a origem inteira). */
@@ -103,6 +106,7 @@ function sanitizeScriptHashes(hashes: readonly string[] | undefined): string[] {
 }
 
 export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
+  const strict = options.securityProfile === 'strict'
   const origins = sanitizeFetchOrigins(options.fetchAllowedOrigins)
   const connectSrc = origins.length > 0 ? origins.join(' ') : "'none'"
   const scriptUrls = sanitizeScriptUrls(options.scriptAllowedUrls)
@@ -122,17 +126,17 @@ export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
   return [
     "default-src 'none'",
     `script-src ${scriptSrc}`,
-    "style-src 'unsafe-inline' https:",
-    'img-src data: blob: https:',
-    'media-src data: blob: https:',
-    'font-src data: https:',
+    strict ? "style-src 'unsafe-inline'" : "style-src 'unsafe-inline' https:",
+    strict ? 'img-src data: blob:' : 'img-src data: blob: https:',
+    strict ? 'media-src data: blob:' : 'media-src data: blob: https:',
+    strict ? 'font-src data:' : 'font-src data: https:',
     `connect-src ${connectSrc}`,
     // `frame-src https:` SEM data:/blob: — um subframe data:/blob: rodaria
     // uninstrumentado no mesmo thread (fora do loopGuard) e não herdaria esta
     // meta-CSP (reabrindo o furo de worker-src no filho). O preview nunca precisa
     // de subframe data:/blob: (importmap é script; JS do aluno é data:text/javascript
     // autorizado por hash em script-src, não frame-src). Ver o comentário do header.
-    'frame-src https:',
+    strict ? "frame-src 'none'" : 'frame-src https:',
     // Workers não são recurso suportado no preview básico e executariam fora da
     // instrumentação do thread principal, então continuam zerados por completo.
     "worker-src 'none'",

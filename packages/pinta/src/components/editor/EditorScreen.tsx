@@ -16,6 +16,7 @@
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { COPY } from '../../core/copy'
+import { isTextEntryTarget } from '../../core/dom'
 import { assetStyle, type PintaAsset } from '../../core/project'
 import {
   buildStudioPayload,
@@ -559,13 +560,7 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     const editorStore = stores.editor
     function onKeyDown(event: KeyboardEvent): void {
       if (!(event.ctrlKey || event.metaKey)) return
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
+      if (isTextEntryTarget(event.target)) return
       const key = event.key.toLowerCase()
       if (key === 'z' && !event.shiftKey) {
         event.preventDefault()

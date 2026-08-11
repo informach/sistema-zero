@@ -165,6 +165,20 @@ export const gameTwoDWorldBlocks = [
       'Cada figura do grupo vira plataforma: dá para passar por baixo e pousar na face atraída pela gravidade. Plataformas móveis carregam quem estiver apoiado.',
   },
   {
+    type: 'sz_g2d_world_add_enemy_type',
+    placement: 'start-only-command',
+    message0: 'No Mundo %1 os inimigos do tipo %2 andam no terreno',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g2d-world' },
+      { type: 'field_name_picker', name: 'TYPE', text: 'inimigos', kind: 'enemytype' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Sem isto o inimigo que anda no chão pousa na borda da tela, que rola junto com a câmera. Com isto ele pisa nos mapas e nas figuras do Mundo e vai e volta dentro dos limites dele. Quem voa não muda.',
+  },
+  {
     type: 'sz_g2d_world_set_edges',
     placement: 'start-only-command',
     message0: 'No Mundo %1 usar bordas %2',

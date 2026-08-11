@@ -25,6 +25,71 @@ describe('StudioProjectPlayer', () => {
     })
     expect(frame()?.getAttribute('srcdoc')).not.toContain('Carregando o jogo')
     expect(frame()?.getAttribute('srcdoc')?.length ?? 0).toBeGreaterThan(0)
+    expect(frame()?.getAttribute('srcdoc')).toContain("frame-src 'none'")
+    expect(frame()?.getAttribute('srcdoc')).not.toMatch(/img-src[^;]*https:/)
+  })
+
+  it('permite optar pelo perfil criativo para projetos que usam recursos externos', async () => {
+    const project = createEmptyProject('p1', 'Jogo')
+    const { container } = render(
+      <StudioProjectPlayer project={project} securityProfile="creative" />,
+    )
+    const frame = () => container.querySelector('iframe')
+    await waitFor(() => expect(frame()?.getAttribute('aria-busy')).toBe('false'))
+    expect(frame()?.getAttribute('srcdoc')).toMatch(/img-src[^;]*https:/)
+  })
+
+  it('usa URL cross-origin do adaptador e libera o recurso ao desmontar', async () => {
+    const project = createEmptyProject('p1', 'Jogo')
+    let documentReceived = ''
+    const released: string[] = []
+    const adapter = {
+      async createPreviewUrl(input: { document: string }) {
+        documentReceived = input.document
+        return 'https://preview.example.test/runs/p1'
+      },
+      releasePreviewUrl(url: string) {
+        released.push(url)
+      },
+    }
+
+    const view = render(
+      <StudioProjectPlayer
+        project={project}
+        parentOrigin="https://host.example.test"
+        originAdapter={adapter}
+      />,
+    )
+    await waitFor(() =>
+      expect(view.container.querySelector('iframe')?.getAttribute('aria-busy')).toBe('false'),
+    )
+    const iframe = view.container.querySelector('iframe')
+    expect(documentReceived).toContain("frame-src 'none'")
+    expect(iframe?.getAttribute('src')).toBe('https://preview.example.test/runs/p1')
+    expect(iframe?.hasAttribute('srcdoc')).toBe(false)
+
+    view.unmount()
+    expect(released).toEqual(['https://preview.example.test/runs/p1'])
+  })
+
+  it('recusa URL do adaptador na mesma origem do host', async () => {
+    const project = createEmptyProject('p1', 'Jogo')
+    const { container } = render(
+      <StudioProjectPlayer
+        project={project}
+        parentOrigin="https://host.example.test"
+        originAdapter={{
+          createPreviewUrl: async () => 'https://host.example.test/preview/p1',
+        }}
+      />,
+    )
+
+    await waitFor(() =>
+      expect(screen.getByRole('status').textContent).toContain('Não foi possível'),
+    )
+    expect(container.querySelector('iframe')?.getAttribute('srcdoc')).toContain(
+      'Não foi possível carregar',
+    )
   })
 
   it('usa o nome do projeto como título acessível por padrão', async () => {

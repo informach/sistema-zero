@@ -41,10 +41,13 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     var candidateOwner = support && support !== sprite ? support : null;
     if (sprite._supportResolutionDepth > 0) {
       var preferred = sprite._supportPreferenceOwner || null;
-      var currentOwner = sprite._groundSupport && sprite._groundSupport.owner;
-      // O apoio do quadro anterior vence enquanto continuar válido. Assim um
-      // obstáculo sobreposto visitado antes/depois não muda o transporte.
-      if (preferred && candidateOwner !== preferred && currentOwner === preferred) return;
+      // O apoio do quadro anterior vence quando ELE MESMO se confirma de novo,
+      // qualquer que seja a ordem da varredura: por isso o candidato preferido
+      // passa por aqui e sobrescreve o que já tinha sido escolhido.
+      // ⚠️ Não basta ele ser o apoio VIGENTE: quem anda de uma base para a
+      // VIZINHA nunca reconfirma a antiga, e prender o apoio nela fazia o
+      // passageiro herdar para sempre o deslocamento de uma plataforma que já
+      // tinha ficado para trás.
       if (preferred && candidateOwner !== preferred && sprite._supportCandidateChosen) return;
     }
     if (support && support !== sprite &&

@@ -3175,6 +3175,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             mapVar: f(block, 'MAP'),
           },
         }
+      case 'sz_g2d_world_add_enemy_type':
+        seen.add('game-2d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g2d:addEnemyTypeToWorld',
+            worldVar: f(block, 'WORLD'),
+            typeVar: f(block, 'TYPE'),
+          },
+        }
       case 'sz_g2d_world_add_solid_group':
         seen.add('game-2d')
         return {

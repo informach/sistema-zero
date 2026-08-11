@@ -19,7 +19,7 @@ import { isVectorGradient } from '../../vector/model'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { CircleDot, MoveHorizontal, MoveVertical } from '../ui/icons'
-import { Panel } from '../ui/Panel'
+import { Panel, type PanelDisclosure } from '../ui/Panel'
 import { ColorButton } from './ColorPicker'
 import { useVectorEditor } from './vector/VectorEditorScope'
 import { gradientCss } from './vector/vectorTools'
@@ -27,7 +27,11 @@ import { gradientCss } from './vector/vectorTools'
 const STROKE_WIDTHS = [1, 2, 3, 4, 6, 8] as const
 
 /** Painel lateral de aparência da seleção/ferramenta vetorial. */
-export function VectorPropertiesPanel(): JSX.Element {
+export function VectorPropertiesPanel({
+  disclosure,
+}: {
+  disclosure?: PanelDisclosure
+} = {}): JSX.Element {
   const {
     style,
     customColors,
@@ -52,9 +56,19 @@ export function VectorPropertiesPanel(): JSX.Element {
   const selectedText = singleShape?.type === 'text' ? singleShape : null
   const activeGradient = isVectorGradient(style.fill) ? style.fill : null
 
+  if (disclosure && !disclosure.open) {
+    return (
+      <div className="flex w-68 shrink-0 flex-col gap-2">
+        <Panel title={COPY.vector.appearance} disclosure={disclosure}>
+          {null}
+        </Panel>
+      </div>
+    )
+  }
+
   return (
     <div className="flex w-68 shrink-0 flex-col gap-2">
-      <Panel title={COPY.vector.appearance}>
+      <Panel title={COPY.vector.appearance} disclosure={disclosure}>
         {/* A amostra mostra o degradê VIGENTE (ou o que sairia ao ligar). */}
         <Button
           variant="outline"

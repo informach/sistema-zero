@@ -20,15 +20,19 @@ import { useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { getPalette } from '../../../core/palette'
 import { ToolButton } from '../../ui/Button'
-import { Dialog } from '../../ui/Dialog'
 import { ChevronDown, Plus, Trash2 } from '../../ui/icons'
+import type { PanelDisclosure } from '../../ui/Panel'
 import { Panel } from '../../ui/Panel'
 import { useToast } from '../../ui/Toast'
-import { ColorPicker } from '../ColorPicker'
+import { ColorPickerDialog } from '../ColorPicker'
 import { PaletteMenu, usePaletteMenu } from '../PaletteMenu'
 import { useVectorEditor } from './VectorEditorScope'
 
-export function VectorColorsPanel(): JSX.Element {
+export function VectorColorsPanel({
+  disclosure,
+}: {
+  disclosure?: PanelDisclosure
+} = {}): JSX.Element {
   const {
     style,
     swatches,
@@ -87,6 +91,7 @@ export function VectorColorsPanel(): JSX.Element {
           className={`size-4 shrink-0 transition ${menu.open ? 'rotate-180' : ''}`}
         />
       }
+      disclosure={disclosure}
       actions={
         <>
           <ToolButton
@@ -146,22 +151,18 @@ export function VectorColorsPanel(): JSX.Element {
         }}
       />
 
-      {/* Seletor livre: aplica AO VIVO no canal ativo (mesmo contrato de antes,
-          quando o "+" era a última célula da grade) e guarda nas recentes. */}
-      <Dialog
+      <ColorPickerDialog
         open={pickerOpen}
+        value={activeHex ?? '#000000'}
         onClose={() => setPickerOpen(false)}
         title={COPY.palette.addColorTitle}
-      >
-        <ColorPicker
-          value={activeHex ?? '#000000'}
-          recentColors={customColors}
-          onChange={(hex) => {
-            rememberColor(hex)
-            applyChannelColor(hex)
-          }}
-        />
-      </Dialog>
+        confirmLabel={COPY.palette.add}
+        recentColors={customColors}
+        onConfirm={(hex) => {
+          rememberColor(hex)
+          applyChannelColor(hex)
+        }}
+      />
     </Panel>
   )
 }

@@ -3,8 +3,8 @@
 # O passo global roda sem Postgres na porta local padrão, então os tests/db dos
 # pacotes continuam auto-pulando. O fiscal tem um passo explícito com Postgres
 # real em porta dedicada para provar as invariantes de concorrência críticas.
-# O Studio executa no Chromium os cenários focados da extensão Jogo 2D e prova
-# CSP/SRI e execução isolada do preview também no Firefox.
+# O Studio executa a suíte Chromium completa em três shards contra build de
+# produção e prova CSP/SRI também no Firefox.
 # Sem `.env` aqui — testes não podem depender de env local (handlers recebem tudo por deps).
 #
 # Push na STAGING também faz o DEPLOY do ambiente staging do Railway (job
@@ -76,21 +76,75 @@ jobs:
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
 
-      - name: Instalar Chromium e Firefox do Playwright
-        working-directory: packages/studio
-        run: bunx playwright install --with-deps chromium firefox
+  studio-e2e-chromium:
+    name: studio-e2e-chromium-${{ matrix.shard }}
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
 
-      - name: E2E de segurança do preview (Chromium e Firefox)
-        working-directory: packages/studio
-        run: bunx playwright test e2e/preview-security.spec.ts e2e/preview-executes-user-code.spec.ts --project=chromium --project=firefox
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
 
-      - name: E2E Jogo 2D e Jogo 2D Avançado (Chromium)
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+
+      - name: Instalar Chromium do Playwright
         working-directory: packages/studio
-        run: bunx playwright test e2e/examples-gallery.spec.ts --project=chromium --grep "game-2d(?:-advanced)?:"
+        run: bunx playwright install --with-deps chromium
+
+      - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
+        working-directory: packages/studio
+        run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
+
+      - name: Publicar diagnóstico Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-playwright-chromium-${{ matrix.shard }}
+          path: packages/studio/.cache/playwright-results
+          retention-days: 7
+
+  studio-e2e-firefox:
+    name: studio-e2e-firefox
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+
+      - name: Instalar Firefox do Playwright
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps firefox
+
+      - name: E2E de segurança no Firefox
+        working-directory: packages/studio
+        run: bunx playwright test --project=firefox
+
+      - name: Publicar diagnóstico Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-playwright-firefox
+          path: packages/studio/.cache/playwright-results
+          retention-days: 7
 
   deploy-staging:
     name: deploy-staging
-    needs: ci
+    needs: [ci, studio-e2e-chromium, studio-e2e-firefox]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest

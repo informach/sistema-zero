@@ -13,12 +13,19 @@ import { VectorColorsPanel } from './VectorColorsPanel'
 import { VectorLayerPanel } from './VectorLayerPanel'
 
 export function VectorRightColumn(): JSX.Element {
+  const [open, setOpen] = useState({ preview: true, layers: true, colors: true, appearance: true })
+  const disclosure = (key: keyof typeof open, title: string) => ({
+    open: open[key],
+    onOpenChange: (next: boolean) => setOpen((current) => ({ ...current, [key]: next })),
+    expandLabel: COPY.panel.expand(title),
+    collapseLabel: COPY.panel.collapse(title),
+  })
   return (
     <div className="flex min-h-0 w-68 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto">
-      <PreviewPlayer />
-      <VectorLayerPanel />
-      <VectorColorsPanel />
-      <VectorPropertiesPanel />
+      <PreviewPlayer disclosure={disclosure('preview', COPY.animation.preview)} />
+      <VectorLayerPanel disclosure={disclosure('layers', COPY.layers.title)} />
+      <VectorColorsPanel disclosure={disclosure('colors', COPY.palette.title)} />
+      <VectorPropertiesPanel disclosure={disclosure('appearance', COPY.vector.appearance)} />
     </div>
   )
 }

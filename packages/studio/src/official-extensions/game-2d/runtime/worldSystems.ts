@@ -8,6 +8,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   var _levelEnterHandlers = Object.create(null);
   var _levelEnterOrder = [];
   var _levelEntryGeneration = 0;
+  var _dispatchingLevelEnter = false;
 
   function _worldDimension(value, fallback) {
     return Math.max(1, Math.floor(_positiveFiniteNumber(value, fallback)));
@@ -21,8 +22,11 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   function createWorld(width, height) {
     var worldValue = {
       _kind: 'g2d-world',
+      // Os fallbacks são os MESMOS números das sombras do bloco (800x512): dois
+      // defaults diferentes para a mesma coisa só existem para confundir quem
+      // abre o modo Código depois de montar nos blocos.
       width: _worldDimension(width, 800),
-      height: _worldDimension(height, 480),
+      height: _worldDimension(height, 512),
       edges: 'none',
       tileMaps: [],
       terrain: [],
@@ -61,6 +65,19 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
         'o mapa não cabe nos limites deste Mundo. Aumente o Mundo ou reposicione o mapa.'
       );
       return;
+    }
+    // ⚠️ "Encaixado na tela" é geometria de TELA: ela se recalcula sozinha toda
+    // vez que o palco muda de tamanho. Como terreno de um Mundo isso desalinhava
+    // colisão, desenho e bordas EM SILÊNCIO, porque o encaixe só era conferido
+    // aqui, uma vez. Ao virar terreno, o mapa é congelado em coordenadas do
+    // Mundo e para de se reencaixar — que é o que o Mundo já promete.
+    if (map.layout.mode === 'fitted') {
+      _setTileMapLayout(map, map.layout.x, map.layout.y, map.layout.tileSize, 'placed');
+      map._fitStageRevision = -1;
+      warnOnce(
+        'mapa-encaixado-virou-terreno',
+        'o mapa encaixado na tela virou terreno do Mundo, então o tamanho dele ficou fixo e não acompanha mais a tela. Para um mapa que se reencaixa, desenhe-o fora do Mundo; para escolher o tamanho, use “Preparar o mapa em x y com tiles”.'
+      );
     }
     if (worldValue.tileMaps.indexOf(map) === -1) worldValue.tileMaps.push(map);
   }
@@ -112,6 +129,25 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   }
   function addPlatformGroupToWorld(worldValue, group) {
     _addTerrainGroup(worldValue, group, 'platform');
+  }
+  /**
+   * Faz os inimigos de um tipo andarem no terreno deste Mundo em vez de tratarem
+   * a borda da TELA como chão e como parede. Vale para os que andam no chão; quem
+   * voa continua voando, porque voador nunca resolveu apoio.
+   */
+  function addEnemyTypeToWorld(worldValue, type) {
+    if (!_isGameWorld(worldValue)) {
+      warnOnce('mundo-invalido-inimigos', 'crie o Mundo antes de pôr os inimigos no terreno dele.');
+      return;
+    }
+    if (!type || !type.items || !type.config || !type.bullets) {
+      warnOnce(
+        'tipo-de-inimigo-invalido-no-mundo',
+        'escolha um tipo de inimigo para andar no terreno do Mundo.'
+      );
+      return;
+    }
+    type._world = worldValue;
   }
   function setWorldEdges(worldValue, edges) {
     if (!_isGameWorld(worldValue)) return;
@@ -461,7 +497,23 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       _removeOrderedIfCurrent(_levelEnterHandlers, _levelEnterOrder, handlerId, handler);
     }
   }
+  /**
+   * ⚠️ Entrar (ou reiniciar) DENTRO do próprio "Quando entrar na Fase" é um
+   * engano fácil de montar ("quando entrar, comece de novo") e RECURSIVO: cada
+   * entrada abre uma geração nova, então a dedução por geração não segura nada.
+   * Sem esta trava eram milhares de entradas aninhadas até estourar a pilha, e o
+   * que a criança via era só "aconteceu um erro".
+   */
   function _dispatchLevelEnter(level) {
+    if (_dispatchingLevelEnter) {
+      warnOnce(
+        'entrada-de-fase-reentrante',
+        'o bloco “Quando entrar na Fase” entrou na Fase outra vez, e isso se repetiria para sempre. Tire o “Entrar na Fase” ou o “Reiniciar a Fase” de dentro dele.'
+      );
+      return;
+    }
+    _dispatchingLevelEnter = true;
+    try {
     var generation = level._entryGeneration;
     var order = _levelEnterOrder.slice();
     for (var i = 0; i < order.length; i++) {
@@ -480,6 +532,9 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       }
       if (handlerLevel !== level) continue;
       _runLevelEnterHandler(id, handler, generation);
+    }
+    } finally {
+      _dispatchingLevelEnter = false;
     }
   }
   function enterLevel(level, player) {
@@ -550,7 +605,9 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       _runLevelEnterHandler(handlerId, handler, level._entryGeneration);
     }
   }
-  function levelIsActive(level) { return _currentLevel === level; }
+  // Compara depois de conferir o tipo: antes da primeira entrada _currentLevel é
+  // null, e "null é a Fase atual?" respondia SIM.
+  function levelIsActive(level) { return _isGameLevel(level) && _currentLevel === level; }
   function _currentLevelOrWarn(action) {
     if (_currentLevel) return _currentLevel;
     warnOnce('fase-atual-ausente-' + action, 'entre em uma Fase antes de usar os blocos da Fase atual.');
@@ -570,6 +627,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   }
   function _resetWorldsAndLevels() {
     _currentLevel = null;
+    _dispatchingLevelEnter = false;
     _levelEnterHandlers = Object.create(null);
     _levelEnterOrder = [];
     _levelEntryGeneration = 0;

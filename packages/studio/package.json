@@ -8,6 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./editor": "./src/studio/StudioEditor.tsx",
+    "./project": "./src/core/project.ts",
+    "./local-persistence": "./src/persistence/local.ts",
     "./project-list": "./src/projects/ProjectList.tsx",
     "./career": "./src/career/index.ts",
     "./server-catalog": "./src/blockly/blockCatalog.ts",
@@ -37,6 +39,7 @@
     "test": "bun test src",
     "gen:server-examples": "bun scripts/gen-server-examples.ts",
     "e2e": "playwright test",
+    "serve:e2e": "bun scripts/serve-e2e.ts",
     "check": "biome check .",
     "check:fix": "biome check --write ."
   },

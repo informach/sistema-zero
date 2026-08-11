@@ -201,6 +201,17 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
     expect(new Set(sanitized.layers.map((layer) => layer.id)).size).toBe(2)
     expect(new Set(sanitized.animations.map((animation) => animation.id)).size).toBe(2)
     expect(new Set(sanitized.animations.map((animation) => animation.name)).size).toBe(2)
+
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: 'pecas', cols: 1, rows: 1 })
+    const layer = tilemap.layers[0]
+    if (!layer) throw new Error('camada esperada')
+    const sanitizedMap = sanitizePintaAsset({
+      ...tilemap,
+      layers: [layer, { ...layer, cells: new Int16Array([-1]) }],
+    })
+    if (sanitizedMap?.kind !== 'tilemap') throw new Error('mapa esperado')
+    expect(sanitizedMap.layers).toHaveLength(2)
+    expect(new Set(sanitizedMap.layers.map((item) => item.id)).size).toBe(2)
   })
 
   it('projectRef (Pensa) sobrevive ao round-trip: hex minúsculo, teto de cores', () => {
@@ -209,16 +220,21 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
       projectRef: {
         id: 'pensa-1',
         name: '  Corrida Maluca  ',
-        palette: ['#FF2121', '#00a0c8', 'azul', '#123', ...Array(10).fill('#aabbcc')],
+        palette: ['#FF2121', '#ff2121', '#00a0c8', 'azul', '#123', ...Array(10).fill('#aabbcc')],
       },
     }
     const out = sanitizePintaAsset(sprite)
     expect(out?.projectRef?.id).toBe('pensa-1')
     expect(out?.projectRef?.name).toBe('Corrida Maluca')
-    // Inválidas caem, válidas viram minúsculas, teto de 8.
-    expect(out?.projectRef?.palette?.[0]).toBe('#ff2121')
-    expect(out?.projectRef?.palette?.[1]).toBe('#00a0c8')
-    expect(out?.projectRef?.palette?.length).toBeLessThanOrEqual(8)
+    // Inválidas caem, válidas viram minúsculas e duplicatas não gastam os 8 slots.
+    expect(out?.projectRef?.palette).toEqual(['#ff2121', '#00a0c8', '#aabbcc'])
+  })
+
+  it('tilesets restaurados respeitam a whitelist dura de tamanho do motor', () => {
+    const pixel = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const vector = createVectorTilesetAsset({ name: 'pecas-v', tileSize: 16 })
+    expect(sanitizePintaAsset({ ...pixel, tileSize: 17 })).toBeNull()
+    expect(sanitizePintaAsset({ ...vector, tileSize: 17 })).toBeNull()
   })
 
   it('projectRef malformado é DESCARTADO sem derrubar o asset', () => {

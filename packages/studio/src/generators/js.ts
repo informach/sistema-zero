@@ -2011,6 +2011,8 @@ function compileStatementCode(
         return `${pad}SZGame2D.addSolidGroupToWorld(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)});`
       case 'g2d:addPlatformGroupToWorld':
         return `${pad}SZGame2D.addPlatformGroupToWorld(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)});`
+      case 'g2d:addEnemyTypeToWorld':
+        return `${pad}SZGame2D.addEnemyTypeToWorld(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.typeVar)});`
       case 'g2d:setWorldEdges':
         return `${pad}SZGame2D.setWorldEdges(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.edges)});`
       case 'g2d:configureWorldCamera':
@@ -5684,6 +5686,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       case 'g2d:addPlatformGroupToWorld':
         names.add(stmt.worldVar)
         names.add(stmt.groupVar)
+        return
+      case 'g2d:addEnemyTypeToWorld':
+        names.add(stmt.worldVar)
+        names.add(stmt.typeVar)
         return
       case 'g2d:setWorldEdges':
         names.add(stmt.worldVar)

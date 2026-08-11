@@ -18,7 +18,7 @@ import type { VectorShape } from '../../../vector/model'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { ToolButton } from '../../ui/Button'
 import { Eye, EyeOff, GripVertical } from '../../ui/icons'
-import { Panel } from '../../ui/Panel'
+import { Panel, type PanelDisclosure } from '../../ui/Panel'
 import { useEditorStores } from '../editorContext'
 import { addPointerDragListeners } from '../pointerDrag'
 import { useVectorEditor } from './VectorEditorScope'
@@ -61,7 +61,11 @@ function shapeLabel(shape: VectorShape): string {
   return COPY.vector.shapeNames[shape.type] ?? shape.type
 }
 
-export function VectorLayerPanel(): JSX.Element | null {
+export function VectorLayerPanel({
+  disclosure,
+}: {
+  disclosure?: PanelDisclosure
+} = {}): JSX.Element | null {
   const { editor } = useEditorStores()
   const { doc, selectedIds, setSelectedIds, currentShapes, commitShapes } = useVectorEditor()
   /** Forma sendo arrastada (id) — só para o feedback visual. */
@@ -150,7 +154,7 @@ export function VectorLayerPanel(): JSX.Element | null {
   }
 
   return (
-    <Panel title={COPY.layers.title} className="w-68 shrink-0">
+    <Panel title={COPY.layers.title} className="w-68 shrink-0" disclosure={disclosure}>
       <ul
         ref={rowsRef}
         className="flex max-h-48 flex-col gap-1 overflow-y-auto overscroll-contain p-0.5"

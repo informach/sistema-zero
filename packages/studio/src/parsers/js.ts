@@ -4038,6 +4038,11 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const groupVar = identifierName(args[1])
       return worldVar && groupVar ? { type: 'g2d:addSolidGroupToWorld', worldVar, groupVar } : null
     }
+    case 'addEnemyTypeToWorld': {
+      const worldVar = identifierName(args[0])
+      const typeVar = identifierName(args[1])
+      return worldVar && typeVar ? { type: 'g2d:addEnemyTypeToWorld', worldVar, typeVar } : null
+    }
     case 'addPlatformGroupToWorld': {
       const worldVar = identifierName(args[0])
       const groupVar = identifierName(args[1])

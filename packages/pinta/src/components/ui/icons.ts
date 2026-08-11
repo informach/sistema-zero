@@ -53,7 +53,6 @@ export {
   PaintBucket,
   PaintRoller,
   Palette,
-  Pause,
   Pencil,
   PenLine,
   PenTool,

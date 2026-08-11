@@ -11,7 +11,6 @@
  * Índice 0 = FUNDO; no achatamento a de cima vence (bitmap indexado não tem
  * alpha: só dá para "índice opaco cobre"). A UI lista ao contrário.
  */
-import { COPY } from '../core/copy'
 import { TRANSPARENT_INDEX } from '../core/palette'
 import {
   createBitmap,
@@ -201,9 +200,4 @@ export function movePixelLayer<A extends PixelLayeredAsset>(
   }
   const moved = mapCels(asset, (cels) => reorder(cels))
   return { ...moved, layers: reorder(asset.layers) }
-}
-
-/** Nome automático da próxima camada (usado só na UI de renomear vazio). */
-export function defaultLayerName(index: number): string {
-  return `${COPY.layers.namePrefix} ${index + 1}`
 }

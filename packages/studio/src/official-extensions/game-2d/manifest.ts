@@ -4,7 +4,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.69.0',
+  version: '0.70.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, mapas, Mundos com câmera, Fases opcionais, colisões, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -162,7 +162,8 @@ quadros (o **tileset**). Escolha um da aba **Assets** (ex.: \`tileset\`).
   pelos lados, pousa na face atraída pela gravidade.
 - Uma figura-chão móvel transporta quem estiver apoiado. A ordem é: **mover as
   plataformas → mover o jogador → resolver as colisões → desenhar**. O movimento do
-  jogador se soma ao da base; pular, sair da borda ou remover a base solta o apoio.
+  jogador se soma ao da base. O apoio muda de dono assim que ele pisa em outra
+  figura, e some quando ele pula, cai no vazio ou a base sai do grupo.
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos. O jogo
 nunca quebra por falta de imagem.
@@ -398,7 +399,8 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
 Um Mundo pode ser maior que a tela, caber exatamente nela ou nem usar câmera:
 
 - **🌍 Mundos**: crie uma área jogável, cadastre mapas e grupos como terreno, escolha as bordas e
-  configure a câmera. A câmera rola só o MUNDO. Desenhe o HUD (placar, vidas, textos) DEPOIS do mundo
+  configure a câmera. Os inimigos que andam no chão precisam do bloco **os inimigos do tipo … andam
+  no terreno**, senão eles pousam na borda da tela, que anda junto com a câmera. A câmera rola só o MUNDO. Desenhe o HUD (placar, vidas, textos) DEPOIS do mundo
   para ele ficar fixo na tela. ⚠️ Cliques/toques continuam em coordenadas de tela; com câmera, a
   posição no mundo é tela + câmera.
 - **🗺️ Mapas** (destrutíveis): prepare a geometria uma vez; depois use **Quebrar o tile** onde está um
@@ -417,6 +419,38 @@ Um Mundo pode ser maior que a tela, caber exatamente nela ou nem usar câmera:
   a alguém. Ponha em **⚙️ Ao iniciar**; para tirar, apague o bloco. A moldura fica na beirada da
   tela, então ela não atrapalha o desenho nem é apagada pelo jogo.
 
+#### Os blocos de Mundo e de Fase
+
+Mundo (🌍) monta a área jogável em **⚙️ Ao iniciar** e depois trabalha a cada quadro:
+
+- **Criar Mundo … com largura … altura …**. A área vazia, com limites próprios.
+- **Criar Mundo … do mapa … com tiles de … px**. Já prepara o mapa em x 0, y 0 e tira as medidas dele.
+- **No Mundo … usar o mapa preparado … como terreno**. Soma outro mapa ao terreno.
+- **No Mundo … usar as figuras do grupo … como terreno sólido**. Chão e parede por todos os lados.
+- **No Mundo … usar as figuras do grupo … como plataformas**. Segura só na face atraída pela gravidade.
+- **No Mundo … os inimigos do tipo … andam no terreno**. Sem ele o inimigo pousa na borda da tela.
+- **No Mundo … usar bordas …**. Abertas (com poços), só o chão ou as quatro sólidas.
+- **No Mundo … configurar câmera horizontal … vertical … folga x … y …**. Uma vez, no início.
+- **Fazer o sprite … colidir com o Mundo …**. A cada quadro, depois de mover.
+- **Fazer a câmera do Mundo … seguir o sprite …**. A cada quadro, depois de colidir.
+- **Desenhar o terreno do Mundo …**. Depois vêm os personagens e, por último, o HUD.
+- **a posição x da câmera** / **a posição y da câmera**. Para converter tela em mundo (tela + câmera).
+
+Fase (🚩) só entra quando o jogo tem progressão:
+
+- **Criar Fase … usando o Mundo …, entrada x … y …**. Junta a área e o ponto de entrada.
+- **Entrar na Fase … com o sprite …**. Troca de área preservando o que já aconteceu nela.
+- **Na Fase … reiniciar o grupo … junto com ela**. Registra inimigos e itens que pertencem à Fase.
+- **Reiniciar a Fase … com o sprite …**. Restaura os tiles, esvazia os grupos registrados e recria tudo.
+- **Quando entrar na Fase …**. Roda uma vez por entrada e por reinício.
+- **a Fase … está ativa?**. Para usar num “se”.
+- **Fazer o sprite … colidir com a Fase atual** / **Fazer a câmera da Fase atual seguir o sprite …** /
+  **Desenhar o terreno da Fase atual**. Os atalhos de quem realmente troca de Fase.
+
+Mundo e Fase moram em **⚙️ Ao iniciar**, e não em 🧩 Meus moldes, porque eles apontam para
+coisas VIVAS desta partida (um mapa, um grupo, um tipo de inimigo). Molde é a receita que não
+aponta para nada vivo: por isso “Criar tipo de inimigo” é molde e “Criar Mundo” não é.
+
 #### Escolha a receita certa
 
 **1. Um mapa que é só uma tela.** Em **⚙️ Ao iniciar**, crie o mapa e use **Preparar o mapa
@@ -424,11 +458,14 @@ encaixado na tela**. Em **🔁 Enquanto estiver rodando**, desenhe o mapa prepar
 personagem colidir diretamente com ele. Não crie Mundo, câmera nem Fase se eles não ajudam esse
 jogo.
 
-**2. Uma área jogável, com ou sem rolagem.** Crie um **Mundo do mapa** ou um **Mundo vazio**.
+**2. Uma área jogável, com ou sem rolagem.** Use **Criar Mundo … do mapa …** (terreno de tiles)
+ou **Criar Mundo … com largura … altura …** (terreno feito de figuras).
 No vazio, cadastre grupos de figuras como terreno sólido ou plataforma; também dá para misturar
 figuras e mapas preparados. Configure as bordas e a câmera uma vez. A cada quadro, a ordem é:
 aplicar gravidade, mover sobre o terreno, colidir com o Mundo, fazer a câmera seguir e desenhar o
-Mundo. Um Mundo do tamanho da tela funciona normalmente e sua câmera permanece em x 0, y 0. Esta
+Mundo. Se o jogo tem inimigos que andam no chão, ponha em **⚙️ Ao iniciar** o bloco **No Mundo …
+os inimigos do tipo … andam no terreno**: é ele que troca a borda da tela pelo terreno de verdade,
+tanto para pousar quanto para virar a marcha. Um Mundo do tamanho da tela funciona normalmente e sua câmera permanece em x 0, y 0. Esta
 receita serve para plataforma, nave, labirinto, corrida ou qualquer outro gênero e **não exige
 Fases**. O exemplo **Mundo Pirata** usa esta receita com todo o chão feito por figuras.
 

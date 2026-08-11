@@ -14,7 +14,7 @@
  * vetoriais são SVG inline.
  */
 import type { JSX, ReactNode } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import {
   addAnimation,
   addFrame,
@@ -43,6 +43,8 @@ import { Dialog } from '../ui/Dialog'
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronsDown,
+  ChevronsUp,
   Copy,
   Ghost,
   type LucideIcon,
@@ -83,6 +85,8 @@ function RowAction({
   onClick,
   disabled,
   active,
+  expanded,
+  controls,
   danger,
 }: {
   icon: LucideIcon
@@ -90,6 +94,8 @@ function RowAction({
   onClick: () => void
   disabled?: boolean
   active?: boolean
+  expanded?: boolean
+  controls?: string
   danger?: boolean
 }): JSX.Element {
   return (
@@ -97,6 +103,8 @@ function RowAction({
       type="button"
       aria-label={label}
       aria-pressed={active}
+      aria-expanded={expanded}
+      aria-controls={controls}
       title={label}
       disabled={disabled}
       onClick={onClick}
@@ -128,6 +136,8 @@ export function SpriteSheetPanel({
   const onion = useSession((state) => state.onion)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  const [timelineExpanded, setTimelineExpanded] = useState(false)
+  const timelineId = useId()
   const colors = useMemo(() => resolveAssetPalette(asset), [asset])
 
   if (!isAnimatedSpriteKind(asset)) return null
@@ -183,6 +193,16 @@ export function SpriteSheetPanel({
       actions={
         <>
           {zoomSlot}
+          <RowAction
+            icon={timelineExpanded ? ChevronsDown : ChevronsUp}
+            label={
+              timelineExpanded ? COPY.animation.compactTimeline : COPY.animation.expandTimeline
+            }
+            active={timelineExpanded}
+            expanded={timelineExpanded}
+            controls={timelineId}
+            onClick={() => setTimelineExpanded((expanded) => !expanded)}
+          />
           <Button variant="primary" onClick={addNewAnimation}>
             <Plus aria-hidden="true" className="size-4" />
             {COPY.animation.addAnimation}
@@ -191,7 +211,11 @@ export function SpriteSheetPanel({
       }
       bodyClassName="flex min-h-0 flex-col gap-2 p-2"
     >
-      <div className="flex max-h-56 min-h-0 flex-col gap-1 overflow-y-auto">
+      <div
+        id={timelineId}
+        data-timeline-scroll
+        className={`flex min-h-0 flex-col gap-1 overflow-y-auto ${timelineExpanded ? 'max-h-96' : 'max-h-56'}`}
+      >
         {asset.animations.map((animation) => {
           const selected = animation.id === activeId
           return (

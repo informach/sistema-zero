@@ -11,6 +11,7 @@
 import type { JSX, PointerEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
+import { isTextEntryTarget } from '../../core/dom'
 import { safeSetPointerCapture } from '../../core/pointer'
 import {
   type AnyTilesetAsset,
@@ -390,13 +391,7 @@ export function TilemapEditor(): JSX.Element | null {
     function onKeyDown(event: KeyboardEvent): void {
       if (event.key !== 'Delete' && event.key !== 'Backspace') return
       if (event.ctrlKey || event.metaKey) return
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
+      if (isTextEntryTarget(event.target)) return
       if (!selRef.current) return
       event.preventDefault()
       deleteSelectionRef.current()

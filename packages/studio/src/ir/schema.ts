@@ -2536,6 +2536,7 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g2d:addTileMapToWorld'; worldVar: string; mapVar: string })
   | (JSStatementCommon & { type: 'g2d:addSolidGroupToWorld'; worldVar: string; groupVar: string })
+  | (JSStatementCommon & { type: 'g2d:addEnemyTypeToWorld'; worldVar: string; typeVar: string })
   | (JSStatementCommon & {
       type: 'g2d:addPlatformGroupToWorld'
       worldVar: string
@@ -6682,6 +6683,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:addSolidGroupToWorld'),
       worldVar: irText(),
       groupVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:addEnemyTypeToWorld'),
+      worldVar: irText(),
+      typeVar: irText(),
       ...idField,
     }),
     z.object({
@@ -11855,6 +11862,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:addTileMapToWorld',
   'g2d:addSolidGroupToWorld',
   'g2d:addPlatformGroupToWorld',
+  'g2d:addEnemyTypeToWorld',
   'g2d:setWorldEdges',
   'g2d:configureWorldCamera',
   'g2d:collideWorld',

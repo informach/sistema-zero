@@ -48,8 +48,11 @@ describe('bundle inicial do Jogo 2D', () => {
     // e tooltips pedagógicos ao catálogo inicial (≈ 9 KiB minificados). Runtime
     // e exemplos continuam fora deste entrypoint; ambos os tamanhos ficam
     // travados logo acima da medição atual para detectar nova regressão.
-    expect(metrics.rawBytes).toBeLessThan(190_500)
-    expect(metrics.gzipBytes).toBeLessThan(51_000)
+    // 190_500 → 193_300: o full review de 10/08 somou o bloco que põe os
+    // inimigos no terreno do Mundo e a lista de blocos de Mundo e de Fase no
+    // manual do aluno (a família tinha 20 blocos e nenhuma lista).
+    expect(metrics.rawBytes).toBeLessThan(193_300)
+    expect(metrics.gzipBytes).toBeLessThan(51_700)
     expect(metrics.chunks).toBeGreaterThanOrEqual(5)
     expect(metrics.containsRuntime).toBe(false)
     expect(metrics.containsExample).toBe(false)

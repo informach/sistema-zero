@@ -139,8 +139,9 @@ export function addLayer(tilemap: TilemapAsset, name: string): TilemapAsset {
 /** Remove a camada — nunca deixa o mapa sem nenhuma. */
 export function removeLayer(tilemap: TilemapAsset, layerId: string): TilemapAsset {
   if (tilemap.layers.length <= 1) return tilemap
-  if (!tilemap.layers.some((l) => l.id === layerId)) return tilemap
-  return { ...tilemap, layers: tilemap.layers.filter((l) => l.id !== layerId) }
+  const index = tilemap.layers.findIndex((layer) => layer.id === layerId)
+  if (index === -1) return tilemap
+  return { ...tilemap, layers: tilemap.layers.filter((_, itemIndex) => itemIndex !== index) }
 }
 
 export function toggleLayerVisible(tilemap: TilemapAsset, layerId: string): TilemapAsset {

@@ -14,6 +14,7 @@
 import type { JSX, PointerEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
+import { isInteractiveControlTarget } from '../../../core/dom'
 import { safeSetPointerCapture } from '../../../core/pointer'
 import { PINTA_LIMITS, type PintaAsset } from '../../../core/project'
 import {
@@ -185,16 +186,7 @@ export function VectorStage(): JSX.Element {
   useEffect(() => {
     if (tool !== 'pen' || penPoints.length === 0) return
     function onKey(event: globalThis.KeyboardEvent): void {
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'BUTTON' ||
-          target.isContentEditable)
-      ) {
-        return
-      }
+      if (isInteractiveControlTarget(event.target)) return
       if (event.key === 'Enter') {
         event.preventDefault()
         finishPen(penPoints)
@@ -214,16 +206,7 @@ export function VectorStage(): JSX.Element {
   useEffect(() => {
     function onKeyDown(event: globalThis.KeyboardEvent): void {
       if (event.key !== ' ') return
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'BUTTON' ||
-          target.isContentEditable)
-      ) {
-        return
-      }
+      if (isInteractiveControlTarget(event.target)) return
       event.preventDefault()
       setSpaceHeld(true)
     }

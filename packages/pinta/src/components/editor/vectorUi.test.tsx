@@ -12,11 +12,17 @@ beforeEach(() => {
   setPintaStorageNamespace('')
 })
 
-async function openVectorEditor(): Promise<void> {
+async function openVectorEditor(projectPalette?: readonly string[]): Promise<void> {
   const seed = createGalleryStore()
-  await seed
-    .getState()
-    .create({ kind: 'vector-background', name: 'livre', width: 480, height: 360 })
+  await seed.getState().create({
+    kind: 'vector-background',
+    name: 'livre',
+    width: 480,
+    height: 360,
+    ...(projectPalette
+      ? { projectRef: { id: 'jogo', name: 'Meu jogo', palette: [...projectPalette] } }
+      : {}),
+  })
   render(<PintaApp />)
   await waitFor(() => {
     expect(screen.getByRole('button', { name: /Abrir livre/ })).toBeTruthy()
@@ -133,6 +139,46 @@ describe('UI vetorial (F5)', () => {
         screen.getAllByRole('button', { name: `${COPY.vector.stroke}: vermelho` }).length,
       ).toBe(2)
     })
+  })
+
+  it('a cor livre só entra na paleta ao confirmar e cancelar não deixa rastros', async () => {
+    await openVectorEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.addColor }))
+    const input = await screen.findByLabelText(COPY.colorPicker.hex)
+    fireEvent.change(input, { target: { value: '#111111' } })
+    fireEvent.change(input, { target: { value: '#222222' } })
+    expect(screen.queryByRole('button', { name: `${COPY.vector.fill}: #222222` })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.cancel }))
+    expect(screen.queryByRole('button', { name: `${COPY.vector.fill}: #222222` })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.addColor }))
+    fireEvent.change(await screen.findByLabelText(COPY.colorPicker.hex), {
+      target: { value: '#222222' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.add }))
+    // Um é o swatch do painel; o outro é o slot ativo na caixa de ferramentas.
+    expect(screen.getAllByRole('button', { name: `${COPY.vector.fill}: #222222` })).toHaveLength(2)
+  })
+
+  it('paleta do projeto não renderiza boxes nem keys duplicadas', async () => {
+    await openVectorEditor(['#123456', '#123456', '#abcdef'])
+    expect(screen.getAllByRole('button', { name: `${COPY.vector.fill}: #123456` })).toHaveLength(1)
+  })
+
+  it('os cards da direita abrem e fecham de forma independente', async () => {
+    await openVectorEditor()
+    const collapse = screen.getByRole('button', {
+      name: COPY.panel.collapse(COPY.palette.title),
+    })
+    expect(collapse.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(collapse)
+    expect(screen.queryByRole('button', { name: `${COPY.vector.fill}: vermelho` })).toBeNull()
+    expect(screen.getByRole('button', { name: COPY.vector.gradient })).toBeTruthy()
+
+    const expand = screen.getByRole('button', { name: COPY.panel.expand(COPY.palette.title) })
+    expect(expand.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(expand)
+    expect(screen.getByRole('button', { name: `${COPY.vector.fill}: vermelho` })).toBeTruthy()
   })
 
   it('a grade nasce DESLIGADA no vetor e liga/desliga pelo botão', async () => {
@@ -398,6 +444,33 @@ describe('UI vetorial (F5)', () => {
       expect(
         screen.getAllByRole('button', { name: `${COPY.vector.fill}: verde` }).length,
       ).toBeGreaterThan(0)
+    })
+  })
+
+  it('editar uma ponta do degradê cria uma única entrada de undo', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientV }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientFrom }))
+    const input = await screen.findByLabelText(COPY.colorPicker.hex)
+    fireEvent.change(input, { target: { value: '#111111' } })
+    fireEvent.change(input, { target: { value: '#222222' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.colorPicker.apply }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientFrom }))
+    const restoredInput = (await screen.findByLabelText(COPY.colorPicker.hex)) as HTMLInputElement
+    await waitFor(() => {
+      expect(restoredInput.value).toBe('#78dc52')
     })
   })
 

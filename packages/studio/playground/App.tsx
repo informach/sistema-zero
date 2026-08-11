@@ -1,15 +1,14 @@
-import {
-  createEmptyProject,
-  createLocalPersistenceAdapter,
-  type Project,
-  ProjectList,
-  type StudioPintaDrawingSummary,
-  type StudioPintaLibraryAdapter,
-  type StudioShareAdapter,
-  type StudioTutorAdapter,
-  type StudioTutorHistoryMessage,
+import type {
+  StudioPintaDrawingSummary,
+  StudioPintaLibraryAdapter,
+  StudioShareAdapter,
+  StudioTutorAdapter,
+  StudioTutorHistoryMessage,
 } from '@sistemazero/studio'
+import { createLocalPersistenceAdapter } from '@sistemazero/studio/local-persistence'
 import { savePersonalAsset, setPersonalAssetsNamespace } from '@sistemazero/studio/personal-assets'
+import { createEmptyProject, type Project } from '@sistemazero/studio/project'
+import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 

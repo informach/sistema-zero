@@ -9,6 +9,12 @@ async function setTheme(page: Page, theme: 'light' | 'dark'): Promise<void> {
     await page.getByRole('button', { name: 'Mudar tema' }).click()
   }
   await expect(root).toHaveAttribute('data-sz-theme', theme)
+  await root.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  )
 }
 
 async function badgeContrasts(page: Page): Promise<ContrastResult[]> {
@@ -75,6 +81,14 @@ async function badgeContrasts(page: Page): Promise<ContrastResult[]> {
 
 test('badges da galeria mantêm contraste AA nos temas do Studio', async ({ page }) => {
   await page.goto('/')
+  // A medição precisa materializar cards offscreen e observar a cor FINAL, não
+  // um frame intermediário da transição de tema.
+  await page.addStyleTag({
+    content: `
+      .sz-kit-content-group { content-visibility: visible !important; }
+      [data-sz-theme] .transition-colors { transition: none !important; }
+    `,
+  })
 
   for (const theme of ['light', 'dark'] as const) {
     await setTheme(page, theme)

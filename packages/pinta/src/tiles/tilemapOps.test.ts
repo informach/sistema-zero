@@ -166,6 +166,16 @@ describe('camadas', () => {
     expect(shrunk.layers).toHaveLength(1)
   })
 
+  it('remove só uma camada mesmo se receber ids duplicados de uma entrada não saneada', () => {
+    const { tilemap } = makeMap(1, 1)
+    const first = tilemap.layers[0]
+    if (!first) throw new Error('camada esperada')
+    const duplicated = { ...tilemap, layers: [first, { ...first, name: 'Topo' }] }
+    const out = removeLayer(duplicated, first.id)
+    expect(out.layers).toHaveLength(1)
+    expect(out.layers[0]?.name).toBe('Topo')
+  })
+
   it('flattenLayers: a camada de CIMA vence; invisível não conta', () => {
     const { tilemap, layerId } = makeMap(2, 1)
     let out = setCell(tilemap, layerId, 0, 0, 1)

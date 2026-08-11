@@ -250,7 +250,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 995 → 1028: +33 dos contratos de movimento varrido, índice espacial do
   // terreno, palco lógico responsivo e mapas encaixados. O teto é o valor
   // medido, sem folga: qualquer parâmetro novo continua quebrando a catraca.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1028)
+  // 1028 → 1032: +4 da ponte entre inimigo e terreno do Mundo
+  // (addEnemyTypeToWorld e _enemyResolveGround).
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1032)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

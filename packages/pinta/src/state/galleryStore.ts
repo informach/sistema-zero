@@ -16,6 +16,7 @@ import {
   createVectorBackgroundAsset,
   createVectorSpriteAsset,
   createVectorTilesetAsset,
+  isTilesetKind,
   normalizeAssetName,
   PINTA_LIMITS,
   type PintaAsset,
@@ -24,7 +25,7 @@ import {
   sanitizeProjectRef,
 } from '../core/project'
 import { findTemplate } from '../templates/catalog'
-import { deleteAsset, listAllAssets, persistAsset } from './persistence'
+import { createPintaPersistence } from './persistence'
 
 export type NewAssetInput = (
   | { kind: 'pixel-sprite'; name: string; frameSize: number }
@@ -150,6 +151,7 @@ function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
 }
 
 export function createGalleryStore(): PintaGalleryStore {
+  const persistence = createPintaPersistence()
   let mutationTail = Promise.resolve()
   function enqueueMutation<T>(task: () => Promise<T>): Promise<T> {
     const result = mutationTail.then(task, task)
@@ -171,7 +173,7 @@ export function createGalleryStore(): PintaGalleryStore {
     async load() {
       set({ loading: true, loadError: null })
       try {
-        const assets = await listAllAssets()
+        const assets = await persistence.listAllAssets()
         // O estilo do asset mais recente vira o default do "Criar novo".
         const recentStyle = assets
           .map((a) => assetStyle(a.kind))
@@ -204,7 +206,7 @@ export function createGalleryStore(): PintaGalleryStore {
       }
       const asset = buildAsset(input, name)
       try {
-        await persistAsset(asset)
+        await persistence.persistAsset(asset)
         set((state) => ({
           assets: upsertSorted(state.assets, asset),
           mutateError: null,
@@ -262,7 +264,7 @@ export function createGalleryStore(): PintaGalleryStore {
         // Persiste na ORDEM do build (tileset antes do mapa) — se a quota ou o
         // disco falhar no meio, o mapa não fica órfão sem as peças.
         for (const asset of prepared) {
-          await persistAsset(asset)
+          await persistence.persistAsset(asset)
           set((state) => ({ assets: upsertSorted(state.assets, asset) }))
         }
         set((state) => ({
@@ -292,7 +294,7 @@ export function createGalleryStore(): PintaGalleryStore {
       }
       const renamed = { ...asset, name: normalized, updatedAt: Date.now() } as PintaAsset
       try {
-        await persistAsset(renamed)
+        await persistence.persistAsset(renamed)
         set((state) => ({ assets: upsertSorted(state.assets, renamed), mutateError: null }))
         return true
       } catch {
@@ -317,7 +319,7 @@ export function createGalleryStore(): PintaGalleryStore {
       }
       const copy = cloneWithNewIds(asset, name)
       try {
-        await persistAsset(copy)
+        await persistence.persistAsset(copy)
         set((state) => ({ assets: upsertSorted(state.assets, copy), mutateError: null }))
         return copy
       } catch {
@@ -327,8 +329,17 @@ export function createGalleryStore(): PintaGalleryStore {
     },
 
     async remove(id) {
+      const asset = get().assets.find((item) => item.id === id)
+      if (!asset) return false
+      if (
+        isTilesetKind(asset) &&
+        get().assets.some((item) => item.kind === 'tilemap' && item.tilesetId === asset.id)
+      ) {
+        set({ mutateError: COPY.gallery.tilesetInUse })
+        return false
+      }
       try {
-        await deleteAsset(id)
+        await persistence.deleteAsset(id)
         set((state) => ({ assets: state.assets.filter((a) => a.id !== id), mutateError: null }))
         return true
       } catch {
@@ -388,7 +399,7 @@ export function createGalleryStore(): PintaGalleryStore {
           continue
         }
         try {
-          await persistAsset(restored)
+          await persistence.persistAsset(restored)
           persistedIds.add(restored.id)
           set((state) => ({ assets: upsertSorted(state.assets, restored) }))
           added += 1

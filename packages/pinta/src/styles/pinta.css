@@ -14,7 +14,7 @@
  * Tema: os valores no @theme valem para o tema CLARO (default do Pinta, público
  * kids — creme MakeCode, como o Estúdio). O escuro é ativado por
  * `[data-pinta-theme="dark"]` no ROOT do componente — nunca no <html> do host.
- * Conteúdo portalado p/ fora do root precisa do <PintaThemeScope>.
+ * Os diálogos permanecem dentro do root e herdam os mesmos tokens.
  *
  * Paleta da marca (identidade dual): accent = AZUL escuro sobre creme no claro;
  * LARANJA vivo sobre #0D1117 no escuro. Fontes vêm do HOST (nenhum @font-face
@@ -148,7 +148,7 @@
   border-radius: 9999px;
   background-image: var(--pin-gradient);
   color: var(--color-pin-accent-fg);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--pin-cta) 60%, black);
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--pin-cta) 60%, black);
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
@@ -157,15 +157,15 @@
 [data-pinta-theme] .pin-btn-3d:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklch, var(--pin-cta) 60%, black);
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--pin-cta) 60%, black);
 }
 [data-pinta-theme] .pin-btn-3d:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--pin-cta) 60%, black);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--pin-cta) 60%, black);
 }
 /* Estado ativo dos botões de ferramenta: mesma sombra dura, mais rasa. */
 [data-pinta-theme] .pin-tool-active {
-  box-shadow: 0 2px 0 color-mix(in oklch, var(--color-pin-accent) 60%, black);
+  box-shadow: 0 2px 0 color-mix(in oklab, var(--color-pin-accent) 60%, black);
 }
 
 /* Painel/card com borda 2px + sombra dura discreta (espelho do .kids-card).
@@ -177,7 +177,7 @@
   border-radius: 1rem;
   background: var(--color-pin-surface);
   box-shadow: 0 3px 0
-    color-mix(in oklch, var(--pin-panel-border, var(--color-pin-border)) 45%, transparent);
+    color-mix(in oklab, var(--pin-panel-border, var(--color-pin-border)) 45%, transparent);
 }
 
 /* Pop de hover dos cards (espelho do .kid-pop). */

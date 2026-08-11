@@ -5,9 +5,9 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test'
  *
  * ⭐ Esta propriedade passou a segurar a peça inteira: desde 08/2026 o harness
  * posta `null` quando o quadro está em branco (jogo que não desenhou, 3D com o
- * buffer WebGL já descartado), e a 2ª passada — html2canvas — **não funciona**
- * na nossa sandbox de origem opaca. Ou seja: `null` acontece de verdade, e com
- * frequência. Se ele chegasse até a gravação, uma foto boa viraria nada.
+ * buffer WebGL já descartado), e a 2ª passada DOM também pode falhar por um
+ * recurso externo não serializável. `null` continua sendo resultado normal; se
+ * ele chegasse até a gravação, uma foto boa viraria nada.
  */
 
 const gravacoes: { id: string; dataUrl: string }[] = []

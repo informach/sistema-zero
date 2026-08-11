@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { parse, parseFragment, serialize } from 'parse5'
 
 const root = process.cwd()
 const dist = path.join(root, 'dist')
@@ -45,7 +46,15 @@ const csp = [
   'worker-src blob:',
 ].join('; ')
 const security = `<meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="referrer" content="no-referrer">`
-html = html.includes('<head>') ? html.replace('<head>', `<head>${security}`) : `${security}${html}`
+const document = parse(html)
+const head = findElement(document, 'head')
+if (!head) throw new Error('Parser HTML não produziu um elemento head')
+
+const securityFragment = parseFragment(head, security)
+const securityNodes = [...securityFragment.childNodes]
+for (const node of securityNodes) node.parentNode = head
+head.childNodes.unshift(...securityNodes)
+html = serialize(document)
 
 await writeFile(path.join(root, 'preview.html'), html, 'utf8')
 
@@ -61,4 +70,13 @@ async function replaceAsync(input, pattern, replacer) {
     cursor = match.index + match[0].length
   }
   return output + input.slice(cursor)
+}
+
+function findElement(node, tagName) {
+  if (node.tagName === tagName) return node
+  for (const child of node.childNodes ?? []) {
+    const found = findElement(child, tagName)
+    if (found) return found
+  }
+  return null
 }
