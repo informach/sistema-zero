@@ -256,7 +256,10 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 1091 → 1100: +9 do evento semântico de ação, incluindo o registro estável
   // e o despacho dos callbacks de projeto pelo ciclo de vida gerenciado.
   // O teto continua sendo o valor medido, sem folga.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1100)
+  // 1100 → 1103: +3 do `_clampHudTextX`, a rede que impede o placar de sair pela
+  // borda direita do palco. O x é escolhido no bloco, mas a largura depende do
+  // VALOR e da fonte proporcional — não dá para prever na hora de montar.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1103)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

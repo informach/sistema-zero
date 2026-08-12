@@ -823,14 +823,18 @@ function enemyType(
 }
 
 function drawHud(): JSStatement[] {
+  // O placar cabe em DUAS linhas dentro dos 256px do palco. Numa linha só, com a
+  // fonte proporcional, o TEMPO começava a 30px da borda precisando de ~50 e era
+  // cortado; PONTOS invadia MOEDAS assim que passava de 4 dígitos.
+  // Também não há mais escurecimento: o `drawFade` cobria a TELA INTEIRA a cada
+  // quadro, depois de todo o desenho, e deixava o jogo 22% mais escuro para sempre.
   return [
-    { type: 'g2d:drawFade', ctxVar: 'ctx', percent: n(22), color: '#07111f' },
     {
       type: 'g2d:drawPixelText',
       ctxVar: 'ctx',
       text: 'REINO ZERO',
       x: n(8),
-      y: n(7),
+      y: n(6),
       size: n(1),
       color: '#ffffff',
       align: 'left',
@@ -850,9 +854,9 @@ function drawHud(): JSStatement[] {
       ctxVar: 'ctx',
       label: 'MOEDAS',
       value: variable('moedas'),
-      x: n(76),
+      x: n(140),
       y: n(24),
-      color: '#f7cf45',
+      color: '#ffffff',
       size: n(10),
     },
     {
@@ -860,8 +864,8 @@ function drawHud(): JSStatement[] {
       ctxVar: 'ctx',
       label: 'MUNDO',
       value: variable('mundo'),
-      x: n(142),
-      y: n(24),
+      x: n(8),
+      y: n(38),
       color: '#ffffff',
       size: n(10),
     },
@@ -870,8 +874,8 @@ function drawHud(): JSStatement[] {
       ctxVar: 'ctx',
       label: 'ETAPA',
       value: variable('etapa'),
-      x: n(188),
-      y: n(24),
+      x: n(72),
+      y: n(38),
       color: '#ffffff',
       size: n(10),
     },
@@ -880,8 +884,8 @@ function drawHud(): JSStatement[] {
       ctxVar: 'ctx',
       label: 'TEMPO',
       value: variable('tempo'),
-      x: n(226),
-      y: n(24),
+      x: n(140),
+      y: n(38),
       color: '#ffffff',
       size: n(10),
     },
@@ -937,15 +941,18 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:applyGravityToGroup', groupVar: 'cascos' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'espinhos' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'guardioes' },
+  // ⚠️ A pisada vem ANTES do "Atualizar": é o "Atualizar" que colhe quem morreu e
+  // solta as partículas. Na ordem invertida, a pisada do quadro N só era colhida no
+  // quadro N+1 — um quadro de atraso somado ao resto.
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'brasas', bounce: n(5.5) },
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'cascos', bounce: n(5.5) },
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'espinhos', bounce: n(5.5) },
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'guardioes', bounce: n(6) },
   { type: 'g2d:updateEnemyType', typeVar: 'brasas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'cascos', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'espinhos', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'asas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'guardioes', ctxVar: 'ctx', targetVar: 'lumi' },
-  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'brasas', bounce: n(5.5) },
-  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'cascos', bounce: n(5.5) },
-  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'espinhos', bounce: n(5.5) },
-  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'guardioes', bounce: n(6) },
   { type: 'g2d:updateEnemyShells', typeVar: 'cascos', worldVar: 'areaAtual' },
   {
     type: 'g2d:forEachTileContact',

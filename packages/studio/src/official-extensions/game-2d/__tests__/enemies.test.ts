@@ -85,6 +85,7 @@ interface Api {
   loadSpriteSheet: (name: string, fw: number, fh: number) => unknown
   setHealth: (s: Sprite, n: number) => void
   setHitboxScale: (s: Sprite, percent: number) => void
+  setEnemyStompMode: (t: EnemyType, mode: string) => void
   changeHealth: (s: Sprite, d: number) => void
   countGroup: (g: unknown) => number
   forEachInGroup: (g: unknown, fn: (s: Sprite, i: number) => void) => void
@@ -3260,5 +3261,57 @@ describe('os três modos do perseguidor', () => {
     expect(naAltura.avancada).toBe(40)
     expect(naAltura.ultra).toBe(40)
     expect(naAltura.rei).toBeGreaterThan(40)
+  })
+})
+
+describe('a pisada tem que MATAR no quadro do contato, não quando o herói sai de cima', () => {
+  // ⚠️ Defeito real relatado jogando: "ao pisar em um inimigo ele só morre e faz a
+  // animação quando sai de cima dele". O modo `squash` marcava 20 quadros de espera e
+  // só então zerava a vida — com quique 5.5 e gravidade 0.42 o herói volta ao mesmo
+  // nível em ~26 quadros, então as partículas saíam depois de ele já ter saído.
+  // Pior: a contagem não era lida por desenhista nenhum, então o "achatado" que ela
+  // pagava com o atraso não existia na tela.
+  it('o achatado morre no MESMO quadro, sem espera', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.42)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    api.setEnemyStompMode(t, 'squash')
+    const heroi = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.stompEnemyType(heroi, t, 5.5)
+    expect(inimigo.hp).toBe(0)
+    // Um único "Atualizar" colhe a morte. Antes eram 21.
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(0)
+  })
+
+  it('o achatado ACHATA de verdade, e pelos pés', () => {
+    const api = load()
+    api.setGravity(0.42)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    api.setEnemyStompMode(t, 'squash')
+    const base = inimigo.y + inimigo.h
+    const heroi = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.stompEnemyType(heroi, t, 5.5)
+    expect(inimigo.h).toBeLessThan(20)
+    // O pé fica onde estava: achatar a partir do topo faria o corpo flutuar.
+    expect(inimigo.y + inimigo.h).toBe(base)
+  })
+
+  it('a área de colisão reduzida não descarta a pisada certa', () => {
+    // ⚠️ Duas réguas: encostar usava a caixa EFETIVA e "veio de cima" usava a caixa
+    // CRUA. Com "usar área de colisão de N%" o herói encostava e a geometria
+    // recusava, e a pisada sumia sem nada na tela explicando.
+    const api = load()
+    api.setGravity(0.42)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    const heroi = api.createSprite({ x: 100, y: 188, w: 20, h: 20, vy: 5 })
+    api.setHitboxScale(heroi, 85)
+    api.stompEnemyType(heroi, t, 5.5)
+    expect(inimigo.hp).toBe(0)
+    expect(heroi.vy).toBe(-5.5)
   })
 })

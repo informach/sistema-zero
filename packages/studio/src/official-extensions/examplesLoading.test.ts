@@ -13,7 +13,10 @@ const goldenCatalogs = {
     // ⚠️ Mudou em 12/08: o Reino Zero teve a geometria das 32 fases refeita (cano de duas
     // colunas assentado sobre o chão, poço limitado ao alcance do pulo) e passou a usar o
     // fluxo de Fase do motor, que devolve posição, câmera e blocos `?` ao morrer.
-    sha256: '4b683a2036db37c2bc7f7b40693306af82d33d8c76d05cb9bb508417f39ae10c',
+    // ⚠️ Mudou de novo em 12/08: HUD do Reino Zero em duas linhas (cabia só assim nos
+    // 256px), sem o escurecimento de tela cheia, e a pisada passou a vir antes do
+    // "Atualizar os inimigos" no laço.
+    sha256: '215a41572c45434a4ca9c2634ab51e10bad5cc0f0c0a4e53438875bddba84c19',
   },
   'game-2d-advanced': {
     count: 37,

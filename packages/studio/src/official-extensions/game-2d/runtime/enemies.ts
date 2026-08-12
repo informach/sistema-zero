@@ -1315,16 +1315,9 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       // inimigo sumia da tela com x/y NaN, ocupando um slot para sempre.
       if (typeof s._homeX !== 'number') { s._homeX = s.x; s._homeY = s.y; }
       if (typeof s._dir !== 'number') s._dir = 1;
-      // Modos clássicos de pisada são opt-in. O achatado espera sua animação
-      // curta; o casco é dirigido por updateEnemyShells, sem o comportamento
-      // normal disputar o mesmo eixo no mesmo quadro.
-      if (s._stompSquashFrames > 0) {
-        s._stompSquashFrames -= 1;
-        s.vx = 0;
-        s.vy = 0;
-        if (s._stompSquashFrames > 0) { autoAnimate(s); continue; }
-        s.hp = 0;
-      }
+      // O casco é dirigido por updateEnemyShells, sem o comportamento normal
+      // disputar o mesmo eixo no mesmo quadro. (O achatado não tem contagem: ele
+      // achata e morre no quadro da pisada — ver stompEnemyType.)
       if (s._shell && s.hp > 0) { autoAnimate(s); continue; }
       // Chefão: engorda a vida UMA vez por inimigo. É um buff de TETO, não uma
       // cura: a vida máxima cresce 5× e o inimigo ganha a diferença, então o
@@ -1563,10 +1556,16 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       // (e o bloco promete o contrário). Ele também precisa ter VINDO de cima:
       // no começo do quadro o pé estava na altura do topo do inimigo, com a
       // folga de um quadro de queda para o pulo rápido não passar batido.
+      // ⚠️ A geometria usa a caixa EFETIVA, igual ao isColliding logo acima. Com
+      // as duas réguas (encostar pela hitbox, "veio de cima" pela caixa crua) um
+      // sprite com "área de colisão de N%" encostava sem passar na geometria, e a
+      // pisada certa era descartada em silêncio.
+      var hs = _hitboxOf(sprite);
+      var he = _hitboxOf(e);
       var folga = Math.max(4, Math.abs(svy));
       if (up) {
-        if (sprite.y - svy < e.y + e.h - folga) continue;
-      } else if (sprite.y + sprite.h - svy > e.y + folga) {
+        if (hs.y - svy < he.y + he.h - folga) continue;
+      } else if (hs.y + hs.h - svy > he.y + folga) {
         continue;
       }
       var stompMode = type._stompMode || 'defeat';
@@ -1600,10 +1599,21 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
         continue;
       }
       if (stompMode === 'squash') {
-        e._stompSquashFrames = 20;
+        // ⚠️ O achatado ACHATA e morre no MESMO quadro. Antes ele ficava 20 quadros
+        // congelado, vivo e idêntico, e só então soltava as partículas e o "quando
+        // for derrotado" — com quique 5.5 e gravidade 0.42 o jogador volta ao mesmo
+        // nível em ~26 quadros, então a morte saía quando ele JÁ TINHA SAÍDO DE CIMA.
+        // Era o defeito que a criança relatava como "só morre quando eu saio dele".
+        // O achatamento nunca foi desenhado por ninguém (o campo de contagem não era
+        // lido por desenhista nenhum): agora ele é geometria de verdade, no quadro em
+        // que a pisada acontece.
+        var squashBottom = e.y + e.h;
+        e.h = Math.max(4, Math.round(e.h * 0.35));
+        e.y = squashBottom - e.h;
         e.vx = 0;
         e.vy = 0;
         e.dmg = 0;
+        e.hp = 0;
         continue;
       }
       if (stompMode === 'damage') {

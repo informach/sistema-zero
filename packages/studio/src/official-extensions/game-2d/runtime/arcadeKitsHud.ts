@@ -1,4 +1,17 @@
 export const gameTwoDArcadeHudRuntime = `  // ---- HUD no canvas: placar, texto, vidas (corações) e barra ----
+  /**
+   * Puxa o x para a esquerda quando o texto passaria da borda direita do palco.
+   * Só age quando ia cortar: layout que já cabia continua idêntico ao pixel.
+   */
+  function _clampHudTextX(ctx, text, px) {
+    var largura = 0;
+    try { largura = ctx.measureText(text).width; } catch (e) { largura = 0; }
+    if (!(largura > 0)) return px;
+    var palco = stageW(ctx);
+    if (!(palco > 0)) return px;
+    var sobra = palco - 2 - (px + largura);
+    return sobra < 0 ? Math.max(2, px + sobra) : px;
+  }
   /** Escreve "rótulo valor" (ex.: "Pontos: 5") na tela. */
   function drawScore(ctx, label, value, x, y, color, size) {
     if (!ctx) return;
@@ -9,6 +22,12 @@ export const gameTwoDArcadeHudRuntime = `  // ---- HUD no canvas: placar, texto,
     ctx.textAlign = 'left';
     var text = (label === undefined || label === null || label === '') ? String(value)
       : String(label) + ' ' + String(value);
+    // ⚠️ Rede contra o placar que "sai pela direita e corta". O x é escolhido à mão
+    // pela criança, mas a LARGURA depende do valor (um placar de 6 dígitos ocupa o
+    // dobro de um de 1) e a fonte é proporcional — não dá para prever no bloco.
+    // Quando o texto passaria da borda, ele desliza para caber; quem já cabia não
+    // se mexe um pixel.
+    px = _clampHudTextX(ctx, text, px);
     ctx.fillText(text, px, py);
     ctx.restore();
     _updateAccessibleHud('score:' + String(label || '') + ':' + String(px) + ':' + String(py), text);
