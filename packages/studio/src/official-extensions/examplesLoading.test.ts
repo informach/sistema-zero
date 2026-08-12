@@ -19,7 +19,7 @@ const goldenCatalogs = {
   },
   'game-3d': {
     count: 19,
-    sha256: '0ecf89916c0b9bf9810e2ad2aee9bd96953dd15411882fbae99b179552f88e8d',
+    sha256: '4e1e5973eecc0738dfeed06d28bf7fb783441ec2ba1e62bfb09105627df3c3b8',
   },
   'game-3d-advanced': {
     count: 17,

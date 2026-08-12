@@ -1424,6 +1424,22 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_on_stage_event',
     placement: 'start-only-command',
     bodyExecution: 'deferred-callback',
+    // ⚠️ O bloco é REGISTRADO em "Ao iniciar" (por isso `start-only-command`),
+    // mas o corpo dele roda depois, e sem declarar contexto o corpo não
+    // concedia contexto NENHUM: o Blockly recusava qualquer bloco que exija
+    // estar dentro de alguma coisa, e o sintoma não era recusa de encaixe na
+    // tela — era o projeto salvo falhar ao RESTAURAR ("could not connect its
+    // previous connection"), que é como o exemplo Reino Cogumelo quebrou.
+    //
+    // É `loop-body`, e não `event-body`, porque o acontecimento é despachado de
+    // DENTRO do laço que já está rodando: `sz_g3d_stage_step` é `loop-command`
+    // e a cadeia é stage_step → stepStageCoins → takeCoin → fireStage. Isso
+    // casa com a regra de áudio da extensão ("só dentro de uma interação ou de
+    // um loop já ativo", em `blocksPedagogy.test.ts`) sem afrouxá-la: tocar o
+    // som da moeda no acontecimento da moeda passa a encaixar, e começar áudio
+    // fora de um laço ativo continua proibido. `syntactic-loop-body` NÃO é
+    // concedido, então `parar`/`continuar` seguem recusados aqui.
+    bodyContext: 'loop-body',
     message0: 'Quando na fase %1 acontecer %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },

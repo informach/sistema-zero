@@ -12899,6 +12899,11 @@ export const reinoCogumeloExample: ExtensionExample = {
     'Corra e pule por 32 fases: pise nos inimigos, quebre tijolos, ache blocos escondidos e chegue ao mastro antes do tempo acabar.',
   ir: {
     html: [
+      // ⚠️ O `g3d:createPlatformScene` abaixo resolve um canvas que PRECISA
+      // existir no HTML (`requireCanvas`), ao contrário do "criar cena em tela
+      // cheia", que cria o seu. Sem esta tela o exemplo subia sem canvas nenhum
+      // e o Console dizia "o canvas 'tela' não existe".
+      { type: 'canvas', id: 'tela', width: 480, height: 360 },
       {
         type: 'element',
         tag: 'div',
@@ -12926,7 +12931,28 @@ export const reinoCogumeloExample: ExtensionExample = {
     css: [
       {
         selector: 'body',
-        declarations: { margin: '0', background: '#5c94fc', 'font-family': 'monospace' },
+        declarations: {
+          margin: '0',
+          background: '#5c94fc',
+          'font-family': 'monospace',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          overflow: 'hidden',
+        },
+      },
+      {
+        // Mesmo enquadramento dos outros exemplos 3D. O placar e o aviso são
+        // `position: fixed`, então centralizar o palco não os desloca.
+        selector: 'canvas',
+        declarations: {
+          display: 'block',
+          width: 'min(480px, 100vw)',
+          height: 'auto',
+          'max-height': '100vh',
+          'object-fit': 'contain',
+        },
       },
       {
         selector: '#placar',
