@@ -256,10 +256,11 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 1091 → 1100: +9 do evento semântico de ação, incluindo o registro estável
   // e o despacho dos callbacks de projeto pelo ciclo de vida gerenciado.
   // O teto continua sendo o valor medido, sem folga.
-  // 1100 → 1103: +3 do `_clampHudTextX`, a rede que impede o placar de sair pela
-  // borda direita do palco. O x é escolhido no bloco, mas a largura depende do
-  // VALOR e da fonte proporcional — não dá para prever na hora de montar.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1103)
+  // 1100 → 1104: +3 do `_clampHudTextX`, a rede que impede o placar de sair pela
+  // borda direita do palco (o x é escolhido no bloco, mas a largura depende do VALOR
+  // e da fonte proporcional), e +1 do `_swimHeld`, que faz a natação ler o toque
+  // além do teclado — sem ele uma fase de natação é injogável no celular.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1104)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

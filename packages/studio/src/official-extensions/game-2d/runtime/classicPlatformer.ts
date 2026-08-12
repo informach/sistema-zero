@@ -248,7 +248,11 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       else vx -= (vx < 0 ? -1 : 1) * friction;
     }
 
-    if (!sprite._classicStandingH) sprite._classicStandingH = sprite.h;
+    // ⚠️ A altura "em pé" é RELIDA sempre que o sprite não está agachado. Memorizá-la
+    // só na primeira chamada fazia o primeiro agachar depois de um power-up de tamanho
+    // devolver a altura ANTIGA: crescer para 80, agachar e levantar voltava para 44,
+    // apagando o power-up em silêncio.
+    if (!sprite._classicCrouching) sprite._classicStandingH = sprite.h;
     var standingH = _positiveFiniteNumber(sprite._classicStandingH, sprite.h);
     var crouching = actionDown('down') && wasGrounded;
     if (crouching && !sprite._classicCrouching) {

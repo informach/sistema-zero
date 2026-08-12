@@ -1133,7 +1133,10 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         ...campaignShapes(),
         ...THEMES.flatMap((theme, index) => themeShapes(index, theme)),
         enemyType('brasas', 'patrulha', 'brasa', 1, 0.65, 16, 16),
-        enemyType('cascos', 'patrulha', 'casco', 1, 0.75, 16, 20),
+        // 16×16 e não 16×20: a figura do casco é desenhada num quadrado de 16, e
+        // `drawCustomShape` só translada (não escala). Com a caixa 4px mais alta que o
+        // desenho, o casco aparecia flutuando 4px acima do chão em que colidia.
+        enemyType('cascos', 'patrulha', 'casco', 1, 0.75, 16, 16),
         enemyType('espinhos', 'espinho', 'espinho', 1, 0.55, 16, 16),
         enemyType('asas', 'voador-vertical', 'asa', 1, 0.8, 16, 16),
         enemyType('guardioes', 'chefao', 'guardiao', 1, 0.75, 24, 24),

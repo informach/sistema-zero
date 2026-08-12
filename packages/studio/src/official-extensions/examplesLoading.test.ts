@@ -16,7 +16,7 @@ const goldenCatalogs = {
     // ⚠️ Mudou de novo em 12/08: HUD do Reino Zero em duas linhas (cabia só assim nos
     // 256px), sem o escurecimento de tela cheia, e a pisada passou a vir antes do
     // "Atualizar os inimigos" no laço.
-    sha256: '215a41572c45434a4ca9c2634ab51e10bad5cc0f0c0a4e53438875bddba84c19',
+    sha256: '9148760b8bcced9c17135e844d464ec4325d6bb976807b66d4fd5797bae5a947',
   },
   'game-2d-advanced': {
     count: 37,

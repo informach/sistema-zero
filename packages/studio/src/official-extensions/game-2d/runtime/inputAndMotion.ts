@@ -266,12 +266,20 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * gravidade o bicho boia; com applyGravity antes, afunda suavemente porque a
    * água amortece a velocidade vertical.
    */
+  /** Direcional apertado, pelo teclado OU pelo controle de toque. */
+  function _swimHeld(dir) {
+    if (keys[dir]) return true;
+    return typeof actionDown === 'function' && actionDown(dir);
+  }
   function swim(sprite, speed) {
     if (!sprite) return;
     _recordPreviousPosition(sprite);
     var s = _positiveFiniteNumber(speed, 2);
-    var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
-    var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    // ⚠️ Le o TOQUE junto do teclado. Lendo so as teclas, uma fase de natacao ficava
+    // injogavel no celular: os controles de toque alimentam a acao semantica, entao a
+    // crianca nao se movia e morria por tempo, em laco.
+    var dx = (_swimHeld('right') ? 1 : 0) - (_swimHeld('left') ? 1 : 0);
+    var dy = (_swimHeld('down') ? 1 : 0) - (_swimHeld('up') ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
     var vx = (_finiteNumber(sprite.vx, 0) + dx * s * 0.3) * 0.88;
     var vy = (_finiteNumber(sprite.vy, 0) + dy * s * 0.3) * 0.88;
