@@ -159,7 +159,7 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 
 ## Escopo revisado
 
-- 142 arquivos próprios da extensão;
+- 143 arquivos próprios da extensão;
 - 277 definições de blocos e 25 subcategorias;
 - 274 métodos e valores públicos em `window.SZGame2D`;
 - 24 módulos que compõem o runtime injetado;

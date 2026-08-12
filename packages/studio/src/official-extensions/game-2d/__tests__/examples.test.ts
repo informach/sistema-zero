@@ -108,7 +108,7 @@ describe('game-2d — todos os exemplos da vitrine', () => {
         } finally {
           ws.dispose()
         }
-      })
+      }, 20_000) // suíte roda em paralelo — é volume de exemplo, não lentidão de código. // e monta um workspace inteiro do Blockly aqui. Passa dos 5s padrão quando a // O Reino Zero carrega 32 grades de 15×72 mais as posições seguras de cada fase,
 
       it('a Ponte (JS→IR) não engole nada em rawJS', () => {
         const code = compileStatements(behaviorStatements(ex.ir), 0)

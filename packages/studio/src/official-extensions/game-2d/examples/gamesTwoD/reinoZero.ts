@@ -158,11 +158,20 @@ function themeShapes(index: number, theme: Theme): JSStatement[] {
       paintRect(9, 6, 2, 4, '#fff4ba'),
       paintRect(7, 11, 2, 2, '#fff4ba'),
     ]),
+    // A boca do cano mora SÓ nesta peça. Quando ela era o cano inteiro, um cano de
+    // dois tiles ganhava duas bocas — a de baixo caindo bem na linha do chão, que é
+    // o que dava a leitura de "cano enterrado".
     shape(`${prefix}Cano`, [
       paintRect(2, 0, 12, 16, theme.pipe),
       paintRect(0, 0, 16, 5, theme.edge),
       paintRect(4, 1, 3, 15, '#8fe06d'),
       paintRect(12, 1, 2, 15, '#174a2c'),
+    ]),
+    // Corpo: sem boca, e os brilhos vão de ponta a ponta para emendar entre tiles.
+    shape(`${prefix}CanoCorpo`, [
+      paintRect(2, 0, 12, 16, theme.pipe),
+      paintRect(4, 0, 3, 16, '#8fe06d'),
+      paintRect(12, 0, 2, 16, '#174a2c'),
     ]),
     tileShape(`${prefix}Plataforma`, theme.platform, '#fff5cf', theme.ground),
     shape(`${prefix}Perigo`, [
@@ -249,59 +258,196 @@ function seeded(seed: number, offset: number): number {
   return Math.abs((seed * 37 + offset * 17 + seed * offset * 3) % 997)
 }
 
-function levelGrid(world: number, stage: number): string {
-  const level = (world - 1) * 4 + stage
-  const rows = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => 5))
-  const row13 = rows[13]!
-  const row14 = rows[14]!
-  const pits = new Set<number>()
+/** Colunas de entrada e saída que nunca recebem poço. */
+const SAFE_MARGIN = 8
+/** Primeira linha de chão. A superfície pisável é o topo dela -> y = 208. */
+const GROUND_TOP_ROW = 13
+
+const T_CHAO = 0
+const T_TIJOLO = 1
+const T_PREMIO = 2
+const T_CANO_TOPO = 3
+const T_PLATAFORMA = 4
+const T_CEU = 5
+const T_PERIGO = 6
+const T_CANO_CORPO = 7
+
+/**
+ * Sorteia os poços em SEGMENTOS separados, em vez de colunas soltas.
+ *
+ * Antes cada poço era jogado no mapa de forma independente, e dois sorteios vizinhos
+ * se encostavam formando vãos de 4-5 tiles. Com gravidade 0.42, impulso 7.2 e
+ * velocidade 2.35 o pulo alcança ~80px (5 tiles) partindo da borda exata — ou seja,
+ * a 7-1 ficava intransponível na prática. Exigir 2 colunas firmes entre segmentos
+ * garante vão máximo de 2 tiles e plataforma de pouso de 32px.
+ */
+function levelPits(level: number, world: number, stage: number): Set<number> {
+  const segments: Array<{ start: number; width: number }> = []
   const pitCount = stage === 3 ? 6 : 2 + Math.floor(world / 3)
+  const span = COLS - SAFE_MARGIN * 2
   for (let index = 0; index < pitCount; index += 1) {
-    const start = 15 + (seeded(level, index) % 45)
-    pits.add(start)
-    if (stage >= 3 || index % 2 === 0) pits.add(start + 1)
+    const width = stage >= 3 || index % 2 === 0 ? 2 : 1
+    const start = SAFE_MARGIN + (seeded(level, index) % (span - width))
+    const tooClose = segments.some(
+      (seg) => start < seg.start + seg.width + 2 && seg.start < start + width + 2,
+    )
+    if (tooClose) continue
+    segments.push({ start, width })
   }
-  for (let col = 0; col < COLS; col += 1) {
-    if (col < 8 || col > COLS - 8 || !pits.has(col)) {
-      row13[col] = 0
-      row14[col] = 0
-    } else {
-      row14[col] = 6
+  const pits = new Set<number>()
+  for (const seg of segments) {
+    for (let offset = 0; offset < seg.width; offset += 1) pits.add(seg.start + offset)
+  }
+  return pits
+}
+
+/**
+ * Acha o par de colunas firmes mais próximo do lugar desejado para um cano.
+ *
+ * Canos têm 2 colunas (como no jogo de referência) e precisam de chão embaixo: antes
+ * o cano era escrito por cima da linha 13 — que É chão — e por isso aparecia meio
+ * enterrado, e em 10 das 32 fases ficava sólido pairando sobre um poço.
+ */
+function firmPipePair(desired: number, pits: Set<number>, taken: Set<number>): number | null {
+  for (let delta = 0; delta <= 8; delta += 1) {
+    const candidates = delta === 0 ? [desired] : [desired - delta, desired + delta]
+    for (const col of candidates) {
+      if (col < SAFE_MARGIN || col + 1 >= COLS - SAFE_MARGIN) continue
+      if (pits.has(col) || pits.has(col + 1)) continue
+      // Uma coluna de folga dos outros canos, senão dois canos vizinhos viram um só.
+      if (taken.has(col - 1) || taken.has(col) || taken.has(col + 1) || taken.has(col + 2)) {
+        continue
+      }
+      return col
     }
   }
+  return null
+}
+
+function levelRows(world: number, stage: number): number[][] {
+  const level = (world - 1) * 4 + stage
+  const rows = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => T_CEU))
+  const pits = levelPits(level, world, stage)
+
+  // Chão: duas linhas maciças, interrompidas só pelos poços. O fundo do poço recebe
+  // a peça de perigo, que é decorativa — quem cai atravessa e morre pela regra da fase.
+  for (let col = 0; col < COLS; col += 1) {
+    if (pits.has(col)) {
+      rows[14]![col] = T_PERIGO
+      continue
+    }
+    rows[GROUND_TOP_ROW]![col] = T_CHAO
+    rows[14]![col] = T_CHAO
+  }
+
+  // Canos: 2 colunas, assentados SOBRE o chão, com a boca só no tile de cima.
+  const pipeColumns = new Set<number>()
+  for (let index = 0; index < 3; index += 1) {
+    const desired = 21 + index * 16 + ((world + stage + index) % 4)
+    const col = firmPipePair(desired, pits, pipeColumns)
+    if (col === null) continue
+    const height = index === 1 && stage > 1 ? 3 : 2
+    for (const pipeCol of [col, col + 1]) {
+      pipeColumns.add(pipeCol)
+      for (let offset = 0; offset < height; offset += 1) {
+        const row = GROUND_TOP_ROW - 1 - offset
+        rows[row]![pipeCol] = offset === height - 1 ? T_CANO_TOPO : T_CANO_CORPO
+      }
+    }
+  }
+
+  const freeForScenery = (col: number): boolean => col >= 0 && col < COLS && !pipeColumns.has(col)
+
   const blocks = [10, 11, 18, 25, 33, 41, 52, 60]
   for (let index = 0; index < blocks.length; index += 1) {
     const col = blocks[index]! + ((level + index) % 3)
-    rows[9 + ((level + index) % 2)]![col] = index % 3 === 1 ? 2 : 1
-  }
-  for (let index = 0; index < 3; index += 1) {
-    const col = 21 + index * 16 + ((world + stage + index) % 4)
-    rows[12]![col] = 3
-    row13[col] = 3
-    if (index === 1 && stage > 1) rows[11]![col] = 3
+    if (!freeForScenery(col)) continue
+    rows[9 + ((level + index) % 2)]![col] = index % 3 === 1 ? T_PREMIO : T_TIJOLO
   }
   if (stage === 2) {
     for (let col = 13; col < COLS - 10; col += 1) {
-      if (col % 9 < 6) rows[3 + ((col + world) % 2)]![col] = 1
+      if (col % 9 < 6 && freeForScenery(col)) rows[3 + ((col + world) % 2)]![col] = T_TIJOLO
     }
   }
   if (stage === 3) {
     for (let col = 12; col < COLS - 8; col += 8) {
       const row = rows[8 + ((col + world) % 3)]!
-      row[col] = 4
-      row[col + 1] = 4
-      row[col + 2] = 4
+      for (const platformCol of [col, col + 1, col + 2]) {
+        if (freeForScenery(platformCol)) row[platformCol] = T_PLATAFORMA
+      }
     }
   }
   if (stage === 4) {
     for (let col = 8; col < COLS - 8; col += 7) {
       const row = rows[11 - ((col + world) % 4)]!
-      row[col] = 4
-      row[col + 1] = 4
+      for (const platformCol of [col, col + 1]) {
+        if (freeForScenery(platformCol)) row[platformCol] = T_PLATAFORMA
+      }
     }
-    for (let col = 28; col < 35; col += 1) row13[col] = 6
   }
-  return rows.map((row) => row.join(' ')).join(';')
+  return rows
+}
+
+function levelGrid(world: number, stage: number): string {
+  return levelRows(world, stage)
+    .map((row) => row.join(' '))
+    .join(';')
+}
+
+const SOLID_TILES = new Set([T_CHAO, T_TIJOLO, T_PREMIO, T_CANO_TOPO, T_CANO_CORPO])
+
+/** A coluna tem chão firme nas duas linhas de piso? */
+function isFirmColumn(rows: number[][], col: number): boolean {
+  if (col < 0 || col >= COLS) return false
+  return SOLID_TILES.has(rows[GROUND_TOP_ROW]![col]!) && SOLID_TILES.has(rows[14]![col]!)
+}
+
+/** O espaço acima do chão está livre para um corpo de `height` px nesta coluna? */
+function hasHeadroom(rows: number[][], col: number, height: number): boolean {
+  const tiles = Math.ceil(height / TILE)
+  for (let offset = 1; offset <= tiles; offset += 1) {
+    const row = GROUND_TOP_ROW - offset
+    if (row < 0) return false
+    if (SOLID_TILES.has(rows[row]![col]!)) return false
+  }
+  return true
+}
+
+/**
+ * Devolve o x (em px) da faixa de chão firme mais próxima do lugar pretendido, larga o
+ * bastante para o corpo e com pé-direito livre.
+ *
+ * Antes os inimigos, a gema e o portal nasciam em x fixos que ignoravam a grade — 16 de
+ * 164 inimigos terrestres nasciam sobre poço e caíam para fora do mundo, e a gema
+ * aparecia dentro de um tijolo em 9 das 32 fases (incluindo a 1-1).
+ */
+function firmSpotNear(rows: number[][], desiredX: number, width: number, height: number): number {
+  const span = Math.max(1, Math.ceil(width / TILE))
+  const desiredCol = Math.round(desiredX / TILE)
+  const fits = (start: number): boolean => {
+    for (let offset = 0; offset < span; offset += 1) {
+      if (!isFirmColumn(rows, start + offset)) return false
+      if (!hasHeadroom(rows, start + offset, height)) return false
+    }
+    return true
+  }
+  // Se o lugar pretendido já serve, ele fica onde está — alinhar ao tile por hábito
+  // moveria quase toda posição de quase toda fase, e cada uma dessas mudanças vira um
+  // statement a mais na IR sem melhorar nada no jogo.
+  const desiredStart = Math.floor(desiredX / TILE)
+  const desiredEnd = Math.floor((desiredX + width - 1) / TILE)
+  let firmWhereItIs = true
+  for (let col = desiredStart; col <= desiredEnd; col += 1) {
+    if (!isFirmColumn(rows, col) || !hasHeadroom(rows, col, height)) firmWhereItIs = false
+  }
+  if (firmWhereItIs) return desiredX
+  for (let delta = 0; delta <= COLS; delta += 1) {
+    for (const col of delta === 0 ? [desiredCol] : [desiredCol - delta, desiredCol + delta]) {
+      if (col < 1 || col + span > COLS - 1) continue
+      if (fits(col)) return col * TILE
+    }
+  }
+  return desiredX
 }
 
 function levelName(level: number): string {
@@ -314,8 +460,19 @@ function mapDeclarations(): JSStatement[] {
   const statements: JSStatement[] = []
   for (let world = 1; world <= 8; world += 1) {
     statements.push({ type: 'g2d:createVectorTileset', varName: `pecas${world}`, size: n(TILE) })
-    const names = ['Chao', 'Tijolo', 'Premio', 'Cano', 'Plataforma', 'Ceu', 'Perigo']
-    const roles = ['solid', 'solid', 'solid', 'solid', 'platform', 'decor', 'decor'] as const
+    // A ordem É o índice usado por `levelGrid`. 'CanoCorpo' entra no fim (7) para não
+    // deslocar os índices que as grades já usam.
+    const names = ['Chao', 'Tijolo', 'Premio', 'Cano', 'Plataforma', 'Ceu', 'Perigo', 'CanoCorpo']
+    const roles = [
+      'solid',
+      'solid',
+      'solid',
+      'solid',
+      'platform',
+      'decor',
+      'decor',
+      'solid',
+    ] as const
     for (let tile = 0; tile < names.length; tile += 1) {
       statements.push({
         type: 'g2d:defineVectorTile',
@@ -348,14 +505,22 @@ function mapDeclarations(): JSStatement[] {
         deadZoneX: n(48),
         deadZoneY: n(0),
       })
+      // "Criar a Fase" é start-only: os 32 têm que ficar aqui, planos no início, e não
+      // dentro de `carregarFase`. É o que dá ao motor o ponto de renascimento e o que
+      // habilita o "Reiniciar a Fase" a devolver posição, câmera e tiles quebrados.
+      statements.push({
+        type: 'g2d:createLevel',
+        varName: `fase${level}`,
+        worldVar: `area${level}`,
+        spawnX: n(32),
+        spawnY: n(SURFACE_Y - 24),
+      })
     }
   }
   return statements
 }
 
 function prepareActiveLevel(): JSStatement[] {
-  const enemyX = (base: number): JSExpr =>
-    binary('+', n(base), binary('*', binary('%', variable('fase'), n(3)), n(18)))
   return [
     { type: 'g2d:clearGroup', groupVar: 'brasas' },
     { type: 'g2d:clearGroup', groupVar: 'cascos' },
@@ -363,52 +528,79 @@ function prepareActiveLevel(): JSStatement[] {
     { type: 'g2d:clearGroup', groupVar: 'asas' },
     { type: 'g2d:clearGroup', groupVar: 'guardioes' },
     { type: 'assign', name: 'premioAtivo', value: n(1) },
-    { type: 'g2d:setPosition', spriteVar: 'lumi', x: n(32), y: n(192) },
-    { type: 'g2d:setVelocity', spriteVar: 'lumi', vx: n(0), vy: n(0) },
+    // O herói NÃO é reposicionado aqui: quem faz isso é o "Reiniciar a Fase" do
+    // `activateLevel`, que além da posição devolve a câmera e os blocos `?`.
     {
       type: 'g2d:setPosition',
       spriteVar: 'gema',
-      x: binary('+', n(382), binary('%', binary('*', variable('fase'), n(23)), n(180))),
-      y: n(150),
+      x: variable('xGema'),
+      y: n(GEMA_Y),
     },
     { type: 'g2d:setPosition', spriteVar: 'broto', x: n(-100), y: n(-100) },
-    { type: 'g2d:setPosition', spriteVar: 'portal', x: n((COLS - 4) * TILE), y: n(192) },
-    { type: 'g2d:setPosition', spriteVar: 'atalho', x: n(23 * TILE), y: n(192) },
+    {
+      type: 'g2d:setPosition',
+      spriteVar: 'portal',
+      x: variable('xPortal'),
+      y: n(standingY(32)),
+    },
+    {
+      type: 'g2d:setPosition',
+      spriteVar: 'atalho',
+      x: variable('xAtalho'),
+      y: variable('yAtalho'),
+    },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'brasas' },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'cascos' },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'espinhos' },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'asas' },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'guardioes' },
-    { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: enemyX(190), y: n(205) },
+    { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa1'), y: n(standingY(16)) },
     {
       type: 'if',
       cond: binary('>=', variable('etapa'), n(2)),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'brasas', x: enemyX(340), y: n(205) }],
+      then: [
+        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa2'), y: n(standingY(16)) },
+      ],
     },
     {
       type: 'if',
       cond: binary('>=', variable('etapa'), n(3)),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'brasas', x: enemyX(490), y: n(205) }],
+      then: [
+        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa3'), y: n(standingY(16)) },
+      ],
     },
     {
       type: 'if',
       cond: binary('>=', variable('mundo'), n(3)),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'brasas', x: enemyX(640), y: n(205) }],
+      then: [
+        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa4'), y: n(standingY(16)) },
+      ],
     },
     {
       type: 'if',
       cond: binary('>=', variable('mundo'), n(6)),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'brasas', x: enemyX(790), y: n(205) }],
+      then: [
+        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa5'), y: n(standingY(16)) },
+      ],
     },
     {
       type: 'if',
       cond: binary('>=', variable('mundo'), n(2)),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'cascos', x: n(350), y: n(201) }],
+      then: [
+        { type: 'g2d:spawnEnemy', typeVar: 'cascos', x: variable('xCasco'), y: n(standingY(16)) },
+      ],
     },
     {
       type: 'if',
       cond: binary('>=', variable('mundo'), n(4)),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'espinhos', x: n(610), y: n(205) }],
+      then: [
+        {
+          type: 'g2d:spawnEnemy',
+          typeVar: 'espinhos',
+          x: variable('xEspinho'),
+          y: n(standingY(16)),
+        },
+      ],
     },
     {
       type: 'if',
@@ -418,30 +610,152 @@ function prepareActiveLevel(): JSStatement[] {
     {
       type: 'if',
       cond: equals(variable('etapa'), 4),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'guardioes', x: n(930), y: n(192) }],
+      then: [
+        {
+          type: 'g2d:spawnEnemy',
+          typeVar: 'guardioes',
+          x: variable('xChefe'),
+          y: n(standingY(24)),
+        },
+      ],
     },
     {
       type: 'if',
       cond: equals(variable('jornada'), 2),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'espinhos', x: enemyX(760), y: n(205) }],
+      then: [
+        {
+          type: 'g2d:spawnEnemy',
+          typeVar: 'espinhos',
+          x: variable('xEspinhoExtra'),
+          y: n(standingY(16)),
+        },
+      ],
     },
   ]
 }
 
+/** Altura da superfície pisável: topo da primeira linha de chão. */
+const SURFACE_Y = GROUND_TOP_ROW * TILE
+
+/** Onde a base de um corpo de altura `h` encosta no chão. */
+const standingY = (height: number): number => SURFACE_Y - height
+
+/**
+ * Acha o atalho do cano: a peça de topo do cano do meio, com a caixa logo ACIMA dela.
+ *
+ * A caixa antiga ficava em y 192-224 e o cano tinha 1 tile: quem estava EM CIMA do cano
+ * (pés em 192) não sobrepunha nada, e quem estava em pé no chão (corpo 184-208)
+ * sobrepunha. O gatilho estava invertido — agachar no chão liso teleportava 4 fases e
+ * agachar no cano não fazia nada.
+ */
+function pipeShortcut(rows: number[][]): { x: number; y: number } | null {
+  const tops: number[] = []
+  for (let col = 0; col < COLS; col += 1) {
+    for (let row = 0; row < ROWS; row += 1) {
+      if (rows[row]![col] === T_CANO_TOPO) {
+        if (!tops.some((taken) => Math.abs(taken - col) <= 1)) tops.push(col)
+        break
+      }
+    }
+  }
+  if (tops.length === 0) return null
+  const col = tops[Math.min(1, tops.length - 1)]!
+  let topRow = ROWS
+  for (let row = 0; row < ROWS; row += 1) {
+    if (rows[row]![col] === T_CANO_TOPO) {
+      topRow = row
+      break
+    }
+  }
+  return { x: col * TILE, y: topRow * TILE - ATALHO_H }
+}
+
+const ATALHO_H = 16
+
+/**
+ * Altura da gema: linha 11, dois tiles acima da superfície. `firmSpotNear` exige 48px
+ * de pé-direito livre naquela coluna, então ela nunca nasce dentro de tijolo.
+ * O y=150 antigo era constante mágica: caía entre as linhas 9 e 10, que são exatamente
+ * as linhas de tijolo e bloco `?`.
+ */
+const GEMA_Y = SURFACE_Y - 32
+
+/** Coordenadas que mudam de fase para fase, derivadas da grade daquela fase. */
+function levelSpawnPoints(world: number, stage: number): Record<string, number> {
+  const rows = levelRows(world, stage)
+  const shortcut = pipeShortcut(rows)
+  return {
+    xGema: firmSpotNear(rows, 382 + ((((world - 1) * 4 + stage) * 23) % 180), 16, 48),
+    xPortal: firmSpotNear(rows, (COLS - 4) * TILE, 20, 48),
+    xAtalho: shortcut ? shortcut.x : 23 * TILE,
+    yAtalho: shortcut ? shortcut.y : SURFACE_Y - ATALHO_H,
+    xChefe: firmSpotNear(rows, 930, 24, 32),
+    xBrasa1: firmSpotNear(rows, 190, 16, 32),
+    xBrasa2: firmSpotNear(rows, 340, 16, 32),
+    xBrasa3: firmSpotNear(rows, 490, 16, 32),
+    xBrasa4: firmSpotNear(rows, 640, 16, 32),
+    xBrasa5: firmSpotNear(rows, 790, 16, 32),
+    xCasco: firmSpotNear(rows, 350, 16, 32),
+    xEspinho: firmSpotNear(rows, 610, 16, 32),
+    xEspinhoExtra: firmSpotNear(rows, 760, 16, 32),
+  }
+}
+
+/**
+ * Posições pretendidas, antes de a grade opinar. Servem de PADRÃO compartilhado: cada
+ * fase só reescreve as coordenadas que a própria grade obrigou a mover, em vez de
+ * repetir as treze em trinta e duas fases. São ~400 statements a menos na IR — e menos
+ * blocos no canvas da criança.
+ */
+const SPAWN_POINT_DEFAULTS: Record<string, number> = {
+  xGema: 390,
+  xPortal: (COLS - 4) * TILE,
+  xAtalho: 23 * TILE,
+  yAtalho: SURFACE_Y - ATALHO_H,
+  xChefe: 930,
+  xBrasa1: 190,
+  xBrasa2: 340,
+  xBrasa3: 490,
+  xBrasa4: 640,
+  xBrasa5: 790,
+  xCasco: 350,
+  xEspinho: 610,
+  xEspinhoExtra: 760,
+}
+
+const SPAWN_POINT_NAMES = Object.keys(SPAWN_POINT_DEFAULTS)
+
 function activateLevel(level: number): JSStatement[] {
   const world = Math.floor((level - 1) / 4) + 1
   const stage = ((level - 1) % 4) + 1
+  const points = levelSpawnPoints(world, stage)
   return [
     { type: 'assign', name: 'mapaAtual', value: variable(`mapa${level}`) },
     { type: 'assign', name: 'areaAtual', value: variable(`area${level}`) },
     { type: 'assign', name: 'mundo', value: n(world) },
     { type: 'assign', name: 'etapa', value: n(stage) },
     { type: 'assign', name: 'tempo', value: n(300 - world * 8) },
+    ...SPAWN_POINT_NAMES.filter((name) => points[name] !== SPAWN_POINT_DEFAULTS[name]).map(
+      (name): JSStatement => ({ type: 'assign', name, value: n(points[name]!) }),
+    ),
+    // Reiniciar a Fase é o que devolve o herói ao spawn, RESETA A CÂMERA e restaura os
+    // blocos `?` quebrados. Sem isto a câmera de `horizontal:'right'` ficava travada no
+    // lugar da morte e o jogador renascia fora da viewport, invisível.
+    { type: 'g2d:restartLevel', levelVar: `fase${level}`, spriteVar: 'lumi' },
   ]
 }
 
 function selectActiveLevel(): JSStatement[] {
   return [
+    // Os padrões primeiro: a fase anterior pode ter reescrito alguma coordenada, e sem
+    // isto a sobrescrita dela vazaria para a fase seguinte.
+    ...SPAWN_POINT_NAMES.map(
+      (name): JSStatement => ({
+        type: 'assign',
+        name,
+        value: n(SPAWN_POINT_DEFAULTS[name]!),
+      }),
+    ),
     ...Array.from(
       { length: LAST_LEVEL },
       (_, index): JSStatement => ({
@@ -827,8 +1141,8 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
           varName: 'lumi',
           shapeName: 'lumi',
           x: n(32),
-          y: n(192),
-          w: n(14),
+          y: n(SURFACE_Y - 24),
+          w: n(16),
           h: n(24),
         },
         { type: 'g2d:setHitboxScale', spriteVar: 'lumi', percent: n(85) },
@@ -838,8 +1152,8 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
           varName: 'gema',
           shapeName: 'gema',
           x: n(390),
-          y: n(150),
-          w: n(12),
+          y: n(GEMA_Y),
+          w: n(16),
           h: n(16),
         },
         {
@@ -856,7 +1170,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
           varName: 'portal',
           shapeName: 'portal',
           x: n((COLS - 4) * TILE),
-          y: n(192),
+          y: n(SURFACE_Y - 32),
           w: n(20),
           h: n(32),
         },
@@ -865,10 +1179,19 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
           varName: 'atalho',
           shapeName: 'invisivel',
           x: n(23 * TILE),
-          y: n(192),
-          w: n(20),
-          h: n(32),
+          y: n(SURFACE_Y - ATALHO_H),
+          w: n(2 * TILE),
+          h: n(ATALHO_H),
         },
+        // Coordenadas que cada fase preenche a partir da própria grade, para que gema,
+        // portal, atalho e inimigos nunca caiam sobre poço nem dentro de tijolo.
+        ...SPAWN_POINT_NAMES.map(
+          (name): JSStatement => ({
+            type: 'var',
+            name,
+            value: n(SPAWN_POINT_DEFAULTS[name]!),
+          }),
+        ),
         { type: 'var', name: 'fase', value: n(1) },
         { type: 'var', name: 'mundo', value: n(1) },
         { type: 'var', name: 'etapa', value: n(1) },

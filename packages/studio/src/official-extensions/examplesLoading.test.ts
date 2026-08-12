@@ -10,7 +10,10 @@ const goldenCatalogs = {
     // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
     // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados; Reino Zero
     // agora documenta a seleção de jogadores e preserva o sobrevivente após uma morte.
-    sha256: '7702f0318f799e74776ecb6931ff357a9f5056ab880bb35a178c456f77832086',
+    // ⚠️ Mudou em 12/08: o Reino Zero teve a geometria das 32 fases refeita (cano de duas
+    // colunas assentado sobre o chão, poço limitado ao alcance do pulo) e passou a usar o
+    // fluxo de Fase do motor, que devolve posição, câmera e blocos `?` ao morrer.
+    sha256: '4b683a2036db37c2bc7f7b40693306af82d33d8c76d05cb9bb508417f39ae10c',
   },
   'game-2d-advanced': {
     count: 37,

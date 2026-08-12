@@ -92,7 +92,11 @@ describe('contrato transversal dos 153 exemplos da KitGallery', () => {
   for (const entry of catalogEntries()) {
     // O Ultra serializa 562 KB de blocos; o round-trip real medido leva ~7 s no Windows.
     // A exceção é local para manter a catraca de 5 s nos outros 152 exemplos.
-    const timeout = entry.key === 'core:Reino Zero Ultra (na mão)' ? 10_000 : 5_000
+    // ⚠️ 12/08: 10 s não bastavam quando a suíte inteira roda em paralelo (medido de 12 s
+    // a 23 s em CI Linux, com a suíte verde) — é espera de agendamento, não regressão.
+    // O Reino Zero clássico entrou na exceção pelo mesmo motivo: 32 grades de 15×72.
+    const slowExamples = new Set(['core:Reino Zero Ultra (na mão)', 'game-2d:Reino Zero'])
+    const timeout = slowExamples.has(entry.key) ? 30_000 : 5_000
     it(
       `${entry.key}: schema, blocos, projeto real, assets e round-trip sem warning`,
       () => {
