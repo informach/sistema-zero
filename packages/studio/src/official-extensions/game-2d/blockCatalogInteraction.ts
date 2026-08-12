@@ -43,6 +43,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
           ['↓ seta para baixo', 'ArrowDown'],
           ['barra de espaço', 'Space'],
           ['Enter', 'Enter'],
+          ['Escape', 'Escape'],
           ['tecla A', 'a'],
           ['tecla D', 'd'],
           ['tecla W', 'w'],

@@ -5,6 +5,8 @@
  *
  *   - `window.__szInput.key("ArrowRight")` → true enquanto a tecla está apertada.
  *   - `window.__szInput.x` / `.y` → posição do mouse/dedo DENTRO do canvas.
+ *   - `.gamepadConnected(0)`, `.gamepadAxis(0, 0)` e `.gamepadButton(0, 0)`
+ *     → leitura segura de controles físicos, também no site exportado.
  *
  * Auto-contido (entra como STRING num `<script>`): sem imports nem refs externas.
  * É independente do runtime da extensão Jogo 2D (SZGame2D) — os dois podem
@@ -35,8 +37,56 @@ function buildInputRuntimeSource(includePreviewControls: boolean): string {
     key: function (name) {
       if (name === 'Space') return !!(pressed[' '] || pressed['Space']);
       return !!pressed[name];
+    },
+    gamepadConnected: function (index) {
+      var pad = gamepadAt(index);
+      return !!(pad && pad.connected !== false);
+    },
+    gamepadAxis: function (index, axis) {
+      var pad = gamepadAt(index);
+      var n = pad && pad.axes ? Number(pad.axes[safeIndex(axis)]) : 0;
+      if (!isFinite(n)) return 0;
+      n = Math.max(-1, Math.min(1, n));
+      var magnitude = Math.abs(n);
+      if (magnitude < 0.15) return 0;
+      return (n < 0 ? -1 : 1) * (magnitude - 0.15) / 0.85;
+    },
+    gamepadButton: function (index, button) {
+      var pad = gamepadAt(index);
+      var item = pad && pad.buttons ? pad.buttons[safeIndex(button)] : null;
+      var n = item && typeof item === 'object' ? Number(item.value) : Number(item);
+      return isFinite(n) ? Math.max(0, Math.min(1, n)) : 0;
     }
   };
+  function safeIndex(value) {
+    var n = Number(value);
+    return isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+  }
+  var gamepadsCache = null;
+  var gamepadsClearScheduled = false;
+  function clearGamepadsCache() {
+    gamepadsCache = null;
+    gamepadsClearScheduled = false;
+  }
+  function gamepadsNow() {
+    if (gamepadsCache !== null) return gamepadsCache;
+    try {
+      if (!window.navigator || typeof window.navigator.getGamepads !== 'function') return [];
+      gamepadsCache = window.navigator.getGamepads() || [];
+      if (!gamepadsClearScheduled && typeof window.requestAnimationFrame === 'function') {
+        gamepadsClearScheduled = true;
+        window.requestAnimationFrame(clearGamepadsCache);
+      }
+      return gamepadsCache;
+    } catch (err) {
+      gamepadsCache = [];
+      return gamepadsCache;
+    }
+  }
+  function gamepadAt(index) {
+    var pads = gamepadsNow();
+    return pads[safeIndex(index)] || null;
+  }
   // Cache do <canvas>: re-buscar no DOM a cada pointermove (que dispara dezenas de
   // vezes por segundo) é caro. Guardamos a referência e só re-consultamos quando
   // ela some (null) ou foi removida da página (isConnected === false).

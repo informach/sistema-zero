@@ -1,10 +1,46 @@
 import { describe, expect, it } from 'bun:test'
-import { decodeImageFile, IMPORT_ACCEPT } from './decodeImage'
+import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from './decodeImage'
 
 describe('decodeImageFile', () => {
   it('expõe somente os formatos aceitos e rejeita outros antes de decodificar', async () => {
     expect(IMPORT_ACCEPT).toBe('image/png,image/jpeg,image/webp')
     expect(await decodeImageFile(new File(['x'], 'x.gif', { type: 'image/gif' }))).toBeNull()
+  })
+
+  it('rejeita arquivo grande antes de chamar createImageBitmap', async () => {
+    const contextDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLCanvasElement.prototype,
+      'getContext',
+    )
+    const bitmapDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap')
+    let decodeCalls = 0
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      configurable: true,
+      value: () => ({}),
+    })
+    Object.defineProperty(globalThis, 'createImageBitmap', {
+      configurable: true,
+      value: async () => {
+        decodeCalls += 1
+        throw new Error('não deveria decodificar')
+      },
+    })
+    const file = new File(['x'], 'grande.png', { type: 'image/png' })
+    Object.defineProperty(file, 'size', {
+      configurable: true,
+      value: MAX_IMAGE_FILE_BYTES + 1,
+    })
+
+    try {
+      expect(await decodeImageFile(file)).toBeNull()
+      expect(decodeCalls).toBe(0)
+    } finally {
+      if (contextDescriptor) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', contextDescriptor)
+      }
+      if (bitmapDescriptor) Object.defineProperty(globalThis, 'createImageBitmap', bitmapDescriptor)
+      else Reflect.deleteProperty(globalThis, 'createImageBitmap')
+    }
   })
 
   it('limita a imagem proporcionalmente e sempre fecha o ImageBitmap', async () => {

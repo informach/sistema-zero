@@ -12,7 +12,7 @@ validateManifest(gameKitManifest)
 export const gameKitExtension: ExtensionDefinition = {
   manifest: gameKitManifest,
   examples: defineExtensionExamples(
-    36,
+    37,
     async () => (await import('./exampleCatalog')).gameKitExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-2d-advanced'),

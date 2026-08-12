@@ -1,11 +1,7 @@
 import type { JSExpr, JSStatement } from '#ir'
 import { resolveEventTargetKind } from '#ir'
-import {
-  compileExpr,
-  type ExprMapContext,
-  type IdentifierScope,
-  normalizeIdentifier,
-} from '../../generators/expr'
+import type { ExprMapContext, IdentifierScope } from '../../generators/expr'
+import { normalizeIdentifier } from '../../generators/identifier'
 import { countLines, type SourceMapBuilder } from '../../generators/sourceMap'
 
 export const PROGRAMMING_IR_TO_CODE_UNHANDLED = Symbol('programming-ir-to-code-unhandled')
@@ -42,6 +38,7 @@ type ProgrammingStatementType =
   | 'querySelector'
   | 'querySelectorAll'
   | 'storageSet'
+  | 'storageRemove'
   | 'eventMethod'
   | 'fetchJson'
   | 'getElementById'
@@ -84,6 +81,7 @@ type ProgrammingExpressionType =
   | 'null'
   | 'isFullscreen'
   | 'systemDark'
+  | 'systemReducedMotion'
   | 'perfNow'
   | 'dateGet'
   | 'global'
@@ -122,6 +120,12 @@ type ProgrammingExpressionType =
   | 'promiseAll'
   | 'newPromise'
   | 'storageGet'
+  | 'jsonLiteral'
+  | 'jsonParse'
+  | 'jsonStringify'
+  | 'gamepadConnected'
+  | 'gamepadAxis'
+  | 'gamepadButton'
   | 'classContains'
   | 'callMethodExpr'
   | 'objectLiteral'
@@ -166,6 +170,7 @@ const PROGRAMMING_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'querySelector',
   'querySelectorAll',
   'storageSet',
+  'storageRemove',
   'eventMethod',
   'fetchJson',
   'getElementById',
@@ -209,6 +214,7 @@ const PROGRAMMING_EXPRESSION_TYPES: ReadonlySet<string> = new Set([
   'null',
   'isFullscreen',
   'systemDark',
+  'systemReducedMotion',
   'perfNow',
   'dateGet',
   'global',
@@ -247,6 +253,12 @@ const PROGRAMMING_EXPRESSION_TYPES: ReadonlySet<string> = new Set([
   'promiseAll',
   'newPromise',
   'storageGet',
+  'jsonLiteral',
+  'jsonParse',
+  'jsonStringify',
+  'gamepadConnected',
+  'gamepadAxis',
+  'gamepadButton',
   'classContains',
   'callMethodExpr',
   'objectLiteral',
@@ -275,6 +287,12 @@ export interface ProgrammingStatementToCodeContext {
   pad: string
   base: number
   recAt(line: number): ExprMapContext | undefined
+  compileExpression(
+    expression: JSExpr,
+    parentPrecedence?: number,
+    identifiers?: IdentifierScope,
+    rec?: ExprMapContext,
+  ): string
   compileStatements(
     statements: JSStatement[],
     indent: number,
@@ -317,6 +335,7 @@ export function programmingStatementIRToCode(
     base,
     childMapContext,
     classKey,
+    compileExpression: compileExpr,
     compileStatements,
     datasetAccess,
     elementExpr,
@@ -548,6 +567,10 @@ export function programmingStatementIRToCode(
     case 'storageSet': {
       const store = stmt.store === 'session' ? 'sessionStorage' : 'localStorage'
       return `${pad}${store}.setItem(${compileExpr(stmt.key, 0, identifiers, recAt(base))}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
+    }
+    case 'storageRemove': {
+      const store = stmt.store === 'session' ? 'sessionStorage' : 'localStorage'
+      return `${pad}${store}.removeItem(${compileExpr(stmt.key, 0, identifiers, recAt(base))});`
     }
     case 'eventMethod':
       return `${pad}event.${stmt.method}();`
@@ -958,6 +981,8 @@ export function programmingExpressionIRToCode(
       return ''
     case 'systemDark':
       return "window.matchMedia('(prefers-color-scheme: dark)').matches"
+    case 'systemReducedMotion':
+      return "window.matchMedia('(prefers-reduced-motion: reduce)').matches"
     case 'perfNow':
       return 'performance.now()'
     case 'canvasDim':
@@ -1031,6 +1056,18 @@ export function programmingExpressionIRToCode(
       const store = expr.store === 'session' ? 'sessionStorage' : 'localStorage'
       return `${store}.getItem(${compileExpr(expr.key, 0, identifiers, rec)})`
     }
+    case 'jsonLiteral':
+      return `JSON.parse(${JSON.stringify(expr.json)})`
+    case 'jsonParse':
+      return `JSON.parse(String(${compileExpr(expr.value, 0, identifiers, rec)}))`
+    case 'jsonStringify':
+      return `JSON.stringify(${compileExpr(expr.value, 0, identifiers, rec)})`
+    case 'gamepadConnected':
+      return `__szInput.gamepadConnected(${compileExpr(expr.index, 0, identifiers, rec)})`
+    case 'gamepadAxis':
+      return `__szInput.gamepadAxis(${compileExpr(expr.index, 0, identifiers, rec)}, ${compileExpr(expr.axis, 0, identifiers, rec)})`
+    case 'gamepadButton':
+      return `__szInput.gamepadButton(${compileExpr(expr.index, 0, identifiers, rec)}, ${compileExpr(expr.button, 0, identifiers, rec)})`
     case 'vec2':
       return `{ x: ${compileExpr(expr.x, 0, identifiers, rec)}, y: ${compileExpr(expr.y, 0, identifiers, rec)} }`
     case 'vec3':

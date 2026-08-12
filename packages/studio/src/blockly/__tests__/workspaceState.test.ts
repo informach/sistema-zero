@@ -443,7 +443,7 @@ describe('buildWorkspaceStateFromIR', () => {
       label: 'handler nomeado no documento',
       source: 'document.addEventListener("click", tratar);',
       expected: 'document.addEventListener("click", tratar',
-      expectedBlock: 'sz_adv_raw_js',
+      expectedBlock: 'sz_js_on_event_named',
     },
   ])('preserva $label em um bloco válido na área de eventos', ({
     source,
@@ -995,11 +995,7 @@ describe('Canvas — round-trip de width/height pela Ponte', () => {
     expect(canvasBlock?.data).toBeUndefined()
   })
 
-  it('fallback de bloco "código avançado" carrega JS válido, não um dump do IR', () => {
-    // storageSet com chave NÃO-literal (variável) não cabe no bloco estruturado
-    // (cuja chave é um campo de texto) → cai no bloco de código avançado. O CODE
-    // tem que ser a CHAMADA real, não um JSON.stringify do nó (que sumia com o
-    // setItem ao gerar o código).
+  it('preserva storage com chave dinâmica em bloco estruturado, sem fallback avançado', () => {
     const state = buildWorkspaceStateFromIR({
       html: [],
       css: [],
@@ -1013,11 +1009,20 @@ describe('Canvas — round-trip de width/height pela Ponte', () => {
       ],
       extensions: [],
     })
-    const raw = collectBlocks(state.blocks.blocks).find((b) => b.type === 'sz_adv_raw_js')
-    expect(raw).toBeDefined()
-    expect(raw?.fields?.CODE).toBe('localStorage.setItem(chave, valor);')
-    // E NÃO um dump do IR.
-    expect(raw?.fields?.CODE).not.toContain('"type"')
+    const blocks = collectBlocks(state.blocks.blocks)
+    expect(blocks.map((block) => block.type)).toContain('sz_js_storage_set_dynamic')
+    expect(blocks.map((block) => block.type)).not.toContain('sz_adv_raw_js')
+
+    ensureBlocklyInitialized()
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state, workspace)
+      const rebuilt = buildIRFromWorkspace(workspace)
+      const out = generateProjectFiles({ ir: rebuilt, projectName: 'Storage dinâmico' })
+      expect(out['script.js']).toContain('localStorage.setItem(chave, valor);')
+    } finally {
+      workspace.dispose()
+    }
   })
 })
 

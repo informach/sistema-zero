@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
+import { loadExtensionDocs } from '#extensions'
 import {
   behaviorStatements,
   type JSExpr,
@@ -73,9 +74,9 @@ function nodeWithId(value: unknown, id: string): Record<string, unknown> | null 
 }
 
 describe('contrato central de posicionamento', () => {
-  it('mantém documentação e contexto da IA alinhados aos nomes canônicos das áreas', () => {
+  it('mantém documentação e contexto da IA alinhados aos nomes canônicos das áreas', async () => {
     for (const extension of OFFICIAL_CATALOG) {
-      const docs = extension.manifest.docs ?? ''
+      const docs = await loadExtensionDocs(extension)
       const ai = extension.ai?.promptContext ?? extension.ai?.promptSummary ?? ''
       for (const label of Object.values(BEHAVIOR_AREA_LABELS)) {
         expect(docs).toContain(label)

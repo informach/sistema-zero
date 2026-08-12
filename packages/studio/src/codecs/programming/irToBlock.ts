@@ -443,13 +443,38 @@ export function programmingStatementIRToBlock(
         stmt.__id,
       )
     case 'storageSet': {
-      // O bloco guarda a chave num campo de texto: só representável se for literal.
-      if (stmt.key.type !== 'str') return rawJSBlock(stmt)
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)
-      return block('sz_js_storage_set', { STORE: stmt.store, KEY: stmt.key.value }, {}, stmt.__id, {
-        VALUE: value,
-      })
+      if (stmt.key.type === 'str')
+        return block(
+          'sz_js_storage_set',
+          { STORE: stmt.store, KEY: stmt.key.value },
+          {},
+          stmt.__id,
+          {
+            VALUE: value,
+          },
+        )
+      const key = exprToValueBlock(stmt.key)
+      return key
+        ? block('sz_js_storage_set_dynamic', { STORE: stmt.store }, {}, stmt.__id, {
+            KEY: key,
+            VALUE: value,
+          })
+        : rawJSBlock(stmt)
+    }
+    case 'storageRemove': {
+      if (stmt.key.type === 'str')
+        return block(
+          'sz_js_storage_remove',
+          { STORE: stmt.store, KEY: stmt.key.value },
+          {},
+          stmt.__id,
+        )
+      const key = exprToValueBlock(stmt.key)
+      return key
+        ? block('sz_js_storage_remove_dynamic', { STORE: stmt.store }, {}, stmt.__id, { KEY: key })
+        : rawJSBlock(stmt)
     }
     case 'eventMethod':
       return block('sz_js_event_method', { METHOD: stmt.method }, {}, stmt.__id)
@@ -582,7 +607,6 @@ export function programmingStatementIRToBlock(
       )
     case 'eventHandler': {
       const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
-      if (targetKind === 'document' || targetKind === 'window') return rawJSBlock(stmt)
       const canonicalEvent =
         stmt.event === 'mousedown'
           ? 'pointerdown'
@@ -754,6 +778,8 @@ export function programmingExpressionIRToBlock(
       return block('sz_val_is_fullscreen')
     case 'systemDark':
       return block('sz_val_system_dark')
+    case 'systemReducedMotion':
+      return block('sz_val_system_reduced_motion')
     case 'perfNow':
       return block('sz_val_perf_now')
     case 'dateGet':
@@ -863,6 +889,7 @@ export function programmingExpressionIRToBlock(
         : null
     }
     case 'eventProp':
+      if (expr.prop === 'pointerId') return block('sz_val_event_pointer_id')
       return expr.prop === 'key' || expr.prop === 'code'
         ? block('sz_val_event_key', { PROP: expr.prop })
         : block('sz_val_event_pos', { AXIS: expr.prop })
@@ -963,10 +990,45 @@ export function programmingExpressionIRToBlock(
         expr.__id,
       )
     case 'storageGet':
-      // A chave vai num campo de texto: só representável como bloco se for literal.
-      return expr.key.type === 'str'
-        ? block('sz_val_storage_get', { STORE: expr.store, KEY: expr.key.value })
+      if (expr.key.type === 'str')
+        return block('sz_val_storage_get', { STORE: expr.store, KEY: expr.key.value })
+      {
+        const key = exprToValueBlock(expr.key)
+        return key
+          ? block('sz_val_storage_get_dynamic', { STORE: expr.store }, {}, expr.__id, { KEY: key })
+          : null
+      }
+    case 'jsonLiteral':
+      return block('sz_val_json_data', { JSON: expr.json }, {}, expr.__id)
+    case 'jsonParse': {
+      const value = exprToValueBlock(expr.value)
+      return value ? block('sz_val_json_parse', {}, {}, expr.__id, { VALUE: value }) : null
+    }
+    case 'jsonStringify': {
+      const value = exprToValueBlock(expr.value)
+      return value ? block('sz_val_json_stringify', {}, {}, expr.__id, { VALUE: value }) : null
+    }
+    case 'gamepadConnected': {
+      const index = exprToValueBlock(expr.index)
+      return index ? block('sz_val_gamepad_connected', {}, {}, expr.__id, { INDEX: index }) : null
+    }
+    case 'gamepadAxis': {
+      const index = exprToValueBlock(expr.index)
+      const axis = exprToValueBlock(expr.axis)
+      return index && axis
+        ? block('sz_val_gamepad_axis', {}, {}, expr.__id, { INDEX: index, AXIS: axis })
         : null
+    }
+    case 'gamepadButton': {
+      const index = exprToValueBlock(expr.index)
+      const buttonValue = exprToValueBlock(expr.button)
+      return index && buttonValue
+        ? block('sz_val_gamepad_button', {}, {}, expr.__id, {
+            INDEX: index,
+            BUTTON: buttonValue,
+          })
+        : null
+    }
     case 'classContains':
       return block('sz_val_class_contains', {
         TARGET_KIND: expr.targetKind ?? 'id',

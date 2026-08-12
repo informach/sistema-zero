@@ -2,12 +2,12 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { gameTwoDPromptContext } from '../ai'
-import { gameTwoDManifest } from '../manifest'
+import { gameTwoDDocs } from '../docs'
 import { gameTwoDRuntime } from '../runtime'
 
 /**
  * Clone da guarda de template do gk (Jogo 2D Avançado): o `runtime.ts`, o `ai.ts`
- * e o `docs` do `manifest.ts` são UM template literal cada. Uma crase CRUA lá
+ * e o manual de `docs.ts` são UM template literal cada. Uma crase CRUA lá
  * dentro fecha a string no meio e o módulo inteiro deixa de parsear — e o sintoma
  * cai LONGE da causa. Além da crase, também pega `${` cru: interpolação dentro do
  * literal avalia no load e é SEMPRE acidente aqui (o runtime é string pura de ES5).
@@ -112,16 +112,16 @@ describe('Guarda dos template literals do Jogo 2D', () => {
     expect(rawTemplateHazardsInside(src, 'gameTwoDPromptContext =')).toEqual([])
   })
 
-  it('manifest.ts: o docs escapa a crase (é markdown — a tentação é grande)', () => {
-    const src = readFileSync(join(DIR, 'manifest.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'docs: ')).toEqual([])
+  it('docs.ts: o manual escapa a crase (é markdown — a tentação é grande)', () => {
+    const src = readFileSync(join(DIR, 'docs.ts'), 'utf8')
+    expect(rawTemplateHazardsInside(src, 'gameTwoDDocs =')).toEqual([])
   })
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {
     // Se uma crase crua tivesse escapado, o import lá em cima nem carregaria.
     expect(gameTwoDRuntime.length).toBeGreaterThan(1000)
     expect(gameTwoDPromptContext.length).toBeGreaterThan(500)
-    expect(gameTwoDManifest.docs.length).toBeGreaterThan(500)
+    expect(gameTwoDDocs.length).toBeGreaterThan(500)
   })
 
   it('o runtime é avaliável como corpo de função (crase quebraria o parse)', () => {

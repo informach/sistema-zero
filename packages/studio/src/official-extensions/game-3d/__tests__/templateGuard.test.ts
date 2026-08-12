@@ -45,9 +45,16 @@ function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
 }
 
 describe('Guarda dos template literals do Jogo 3D', () => {
-  it('runtime.ts: o gameThreeDRuntime é UM literal — sem `${` cru no miolo', () => {
+  it('runtime.ts: a base é UM literal — sem `${` cru no miolo', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameThreeDRuntime =')).toEqual([])
+    expect(rawTemplateHazardsInside(src, 'gameThreeDRuntimeBase =')).toEqual([])
+  })
+
+  it('runtimePlatform.ts: o fragmento do Kit Plataforma também é um literal só', () => {
+    // O kit é injetado DENTRO da IIFE do runtime, então uma crase crua aqui
+    // quebraria o runtime inteiro — e o sintoma cairia no arquivo errado.
+    const src = readFileSync(join(DIR, 'runtimePlatform.ts'), 'utf8')
+    expect(rawTemplateHazardsInside(src, 'gameThreeDPlatformRuntimeSource =')).toEqual([])
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {

@@ -22,16 +22,20 @@ import {
   boundsCenter,
   boundsIntersect,
   boundsUnion,
-  rotatePoint,
   rotateShapeTo,
   scaleShape,
-  setShapeNode,
   shapeBounds,
-  shapeNodes,
   translateShape,
 } from '../../../vector/geometry'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
 import { type Vec2, type VectorShape, visibleShapes } from '../../../vector/model'
+import {
+  type EditablePath,
+  isSmoothNode,
+  moveNodes,
+  nearestOnPath,
+  setHandle,
+} from '../../../vector/pathNodes'
 import {
   makeEllipse,
   makeLine,
@@ -52,6 +56,14 @@ import { useEditorStores, useSession } from '../editorContext'
 import { useMediaQuery } from '../useMediaQuery'
 import { useWheelZoom } from '../useWheelZoom'
 import { useVectorEditor } from './VectorEditorScope'
+import { VectorNodeActions } from './VectorNodeActions'
+import {
+  mergeNodeSelection,
+  type NodeFrame,
+  nodeFrameOf,
+  nodesInBox,
+  toLocalPoint,
+} from './vectorNodeGestures'
 import { constrainPoint, expandToGroups } from './vectorTools'
 
 // Todo gesto guarda o pointerId: pointer capture é POR ponteiro, então um
@@ -83,16 +95,39 @@ type Gesture =
       baseRotation: number
       base: PintaAsset
     }
+  // Arrastar NOS: guarda o caminho da BASE e os indices escolhidos, e cada move
+  // aplica o delta TOTAL sobre essa base (mesma regra do mover forma).
   | {
-      kind: 'reshape'
+      kind: 'nodeMove'
       pointerId: number
       shapeId: string
+      indices: number[]
+      basePath: EditablePath
+      frame: NodeFrame
+      start: Vec2
+      base: PintaAsset
+    }
+  // Laco de nos: o irmao do marquee de formas, dentro do modo de pontos.
+  | { kind: 'nodeMarquee'; pointerId: number; start: Vec2; additive: boolean }
+  // Arrastar uma ALCA. `mirror` congela no down se o no era suave: e o que faz
+  // a outra alca acompanhar (ou nao, num no de canto) durante o arrasto inteiro.
+  | {
+      kind: 'handleMove'
+      pointerId: number
       nodeIndex: number
-      center: Vec2
-      rotation: number
+      which: 'in' | 'out'
+      mirror: boolean
+      basePath: EditablePath
+      frame: NodeFrame
       base: PintaAsset
     }
   | { kind: 'pan'; pointerId: number; startClient: Vec2; startScroll: Vec2 }
+
+/**
+ * Distância mínima, em px de TELA, entre o nó e a alça para a alça aparecer.
+ * Abaixo disso os dois círculos se sobrepõem e um rouba o toque do outro.
+ */
+const MIN_HANDLE_GAP = 24
 
 /** Pontos do pincel mais próximos que isso (em unidades do documento) são descartados. */
 const BRUSH_MIN_POINT_DISTANCE = 0.35
@@ -126,6 +161,12 @@ export function VectorStage(): JSX.Element {
     setSelectedIds,
     selected,
     single,
+    nodeTarget,
+    nodePath,
+    selectedNodes,
+    setSelectedNodes,
+    applyNodeEdit,
+    insertNodeOnSegment,
     polygonSides,
     starTips,
     rectRadius,
@@ -337,8 +378,9 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (tool === 'reshape') {
-      // Clique no fundo: limpa a seleção.
-      setSelectedIds([])
+      // Antes isto só limpava a seleção. Agora o arrasto no fundo é o LAÇO DE
+      // NÓS; o toque parado continua limpando (resolvido no solto).
+      startNodeMarquee(event, at)
       return
     }
     if (tool === 'pan') {
@@ -382,7 +424,24 @@ export function VectorStage(): JSX.Element {
     // Reshape: só seleciona (single) — quem arrasta o corpo NÃO move; os nós é
     // que reshapeiam.
     if (tool === 'reshape') {
-      setSelectedIds([shape.id])
+      // Forma diferente da que esta em edicao: so troca o alvo.
+      if (!nodeTarget || nodeTarget.id !== shape.id || !nodePath) {
+        setSelectedIds([shape.id])
+        return
+      }
+      // Na forma em edicao, tocar EM CIMA do traco acrescenta um ponto. A folga
+      // acompanha a espessura: traco grosso e mais facil de acertar, e o browser
+      // ja confirmou que o toque pegou a forma.
+      const frame = nodeFrameOf(nodeTarget)
+      const local = toLocalPoint(frame, svgPoint(event))
+      const slack = 10 / zoom + (nodeTarget.stroke?.width ?? 0) / 2
+      const hit = nearestOnPath(nodePath, local, slack)
+      if (hit) {
+        insertNodeOnSegment(hit.segmentIndex, hit.t)
+        return
+      }
+      // Tocou no miolo de uma forma preenchida: vale como laco de nos.
+      startNodeMarquee(event, svgPoint(event))
       return
     }
     const at = svgPoint(event)
@@ -443,17 +502,61 @@ export function VectorStage(): JSX.Element {
     }
   }
 
-  function handleReshapeDown(nodeIndex: number, event: PointerEvent<SVGElement>): void {
-    if (spaceHeld || !single || !event.isPrimary || gestureRef.current) return
+  /** Laco de nos: compartilhado pelo fundo e pelo miolo da forma em edicao. */
+  function startNodeMarquee(event: PointerEvent<SVGElement>, at: Vec2): void {
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     gestureRef.current = {
-      kind: 'reshape',
+      kind: 'nodeMarquee',
       pointerId: event.pointerId,
-      shapeId: single.id,
+      start: at,
+      additive: event.shiftKey,
+    }
+    setMarquee({ x: at.x, y: at.y, width: 0, height: 0 })
+  }
+
+  function handleBezierDown(
+    nodeIndex: number,
+    which: 'in' | 'out',
+    event: PointerEvent<SVGElement>,
+  ): void {
+    if (spaceHeld || !nodeTarget || !nodePath || !event.isPrimary || gestureRef.current) return
+    event.stopPropagation()
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
+    const node = nodePath.nodes[nodeIndex]
+    gestureRef.current = {
+      kind: 'handleMove',
+      pointerId: event.pointerId,
       nodeIndex,
-      center: boundsCenter(shapeBounds(single)),
-      rotation: single.rotation,
+      which,
+      mirror: node ? isSmoothNode(node) : false,
+      basePath: nodePath,
+      frame: nodeFrameOf(nodeTarget),
+      base: editor.getState().asset,
+    }
+  }
+
+  function handleNodeDown(nodeIndex: number, event: PointerEvent<SVGElement>): void {
+    if (spaceHeld || !nodeTarget || !nodePath || !event.isPrimary || gestureRef.current) return
+    event.stopPropagation()
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
+    // Tocar num no FORA da escolha passa a escolha para ele; tocar num que ja
+    // esta escolhido arrasta o conjunto inteiro (padrao de editor de formas).
+    const already = selectedNodes.includes(nodeIndex)
+    const indices = event.shiftKey
+      ? mergeNodeSelection(selectedNodes, [nodeIndex], true)
+      : already
+        ? selectedNodes
+        : [nodeIndex]
+    setSelectedNodes(indices)
+    gestureRef.current = {
+      kind: 'nodeMove',
+      pointerId: event.pointerId,
+      shapeId: nodeTarget.id,
+      indices,
+      basePath: nodePath,
+      frame: nodeFrameOf(nodeTarget),
+      start: svgPoint(event),
       base: editor.getState().asset,
     }
   }
@@ -548,13 +651,36 @@ export function VectorStage(): JSX.Element {
         false,
       )
     }
-    if (gesture.kind === 'reshape') {
-      // O ponteiro (coords do doc) volta ao espaço LOCAL do shape (sem rotação).
-      const local = rotatePoint(at, gesture.center, -gesture.rotation)
-      commitShapes(
-        currentShapes().map((s) =>
-          s.id === gesture.shapeId ? setShapeNode(s, gesture.nodeIndex, local) : s,
+    if (gesture.kind === 'nodeMarquee') {
+      setMarquee({
+        x: Math.min(gesture.start.x, at.x),
+        y: Math.min(gesture.start.y, at.y),
+        width: Math.abs(at.x - gesture.start.x),
+        height: Math.abs(at.y - gesture.start.y),
+      })
+      return
+    }
+    if (gesture.kind === 'handleMove') {
+      // A alca vai PARA o ponteiro (nao por delta): e o jeito que a mao espera.
+      applyNodeEdit(
+        setHandle(
+          gesture.basePath,
+          gesture.nodeIndex,
+          gesture.which,
+          toLocalPoint(gesture.frame, at),
+          gesture.mirror,
         ),
+        false,
+      )
+      return
+    }
+    if (gesture.kind === 'nodeMove') {
+      // O delta é medido no espaço LOCAL dos nós: numa forma girada, arrastar
+      // para a direita tem que empurrar o ponto para a direita na TELA.
+      const from = toLocalPoint(gesture.frame, gesture.start)
+      const to = toLocalPoint(gesture.frame, at)
+      applyNodeEdit(
+        moveNodes(gesture.basePath, gesture.indices, { x: to.x - from.x, y: to.y - from.y }),
         false,
       )
     }
@@ -585,6 +711,19 @@ export function VectorStage(): JSX.Element {
       )
       return
     }
+    if (gesture.kind === 'nodeMarquee') {
+      const box = marquee
+      setMarquee(null)
+      // Toque sem arrasto: clique simples, larga os nós (Shift preserva).
+      if (!box || (box.width < 2 && box.height < 2)) {
+        if (!gesture.additive) setSelectedNodes([])
+        return
+      }
+      if (!nodeTarget || !nodePath) return
+      const hit = nodesInBox(nodePath, nodeFrameOf(nodeTarget), box)
+      setSelectedNodes((current) => mergeNodeSelection(current, hit, gesture.additive))
+      return
+    }
     if (gesture.kind === 'draw') {
       const shape = preview
       setPreview(null)
@@ -603,7 +742,7 @@ export function VectorStage(): JSX.Element {
   }
 
   const singleBounds = single ? shapeBounds(single) : null
-  const reshapeNodes = tool === 'reshape' && single ? shapeNodes(single) : []
+  const reshapeNodes = tool === 'reshape' && nodePath ? nodePath.nodes.map((n) => n.p) : []
   const stageWidth = Math.max(Math.round(doc.width * zoom), 1)
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
@@ -614,7 +753,16 @@ export function VectorStage(): JSX.Element {
           TOUCH e SÓ DELE: no desktop as mesmas ações (mais alinhar e ordem)
           moram na faixa colada na barra de cima, e ter as duas na mesma tela
           confunde. Por isso as duas compartilham `aria-label` e rótulos. */}
-      {selected.length > 0 && !wide ? (
+      {tool === 'reshape' && nodeTarget && nodePath && !wide ? (
+        <div
+          role="toolbar"
+          aria-label={COPY.vector.nodeBar}
+          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1 shadow-lg"
+        >
+          <VectorNodeActions />
+        </div>
+      ) : null}
+      {tool !== 'reshape' && selected.length > 0 && !wide ? (
         <div
           role="toolbar"
           aria-label={COPY.vector.selectionBar}
@@ -822,19 +970,88 @@ export function VectorStage(): JSX.Element {
                   pointerEvents="none"
                 />
                 {reshapeNodes.map((node, i) => (
-                  <circle
+                  <g
                     // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó
                     key={`node-${i}`}
-                    cx={node.x}
-                    cy={node.y}
-                    r={7 / zoom}
-                    fill="#ffffff"
-                    stroke="#00a0c8"
-                    strokeWidth={1.5 / zoom}
                     style={{ cursor: 'move' }}
-                    onPointerDown={(event) => handleReshapeDown(i, event)}
-                  />
+                    onPointerDown={(event) => handleNodeDown(i, event)}
+                  >
+                    <circle
+                      data-node-hit={i}
+                      cx={node.x}
+                      cy={node.y}
+                      r={22 / zoom}
+                      fill="transparent"
+                    />
+                    <circle
+                      data-node={i}
+                      cx={node.x}
+                      cy={node.y}
+                      r={7 / zoom}
+                      // Escolhido = cheio; solto = vazado. É o único jeito de ver
+                      // quantos pontos o Delete vai levar.
+                      fill={selectedNodes.includes(i) ? '#00a0c8' : '#ffffff'}
+                      stroke="#00a0c8"
+                      strokeWidth={1.5 / zoom}
+                      pointerEvents="none"
+                    />
+                  </g>
                 ))}
+                {/* ⚠️ Alças DEPOIS das âncoras (ficam por cima e são pegáveis),
+                    mas só as que estão longe o bastante do nó para não brigarem
+                    com ele pelo toque. Num traço de pincel a Catmull-Rom deixa a
+                    alça a uns 4 px do nó: desenhada por cima ela roubaria o
+                    arrasto do PONTO, e escondida atrás ela era impossível de
+                    pegar. Aproximar o zoom afasta as duas e a alça reaparece. */}
+                {nodePath?.nodes.map((node, i) =>
+                  selectedNodes.includes(i) ? (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó (mesma regra das âncoras)
+                    <g key={`alcas-${i}`}>
+                      {(['in', 'out'] as const).map((which) => {
+                        const handle = node[which]
+                        if (!handle) return null
+                        const far =
+                          Math.hypot(handle.x - node.p.x, handle.y - node.p.y) * zoom >=
+                          MIN_HANDLE_GAP
+                        if (!far) return null
+                        return (
+                          <g
+                            key={which}
+                            style={{ cursor: 'move' }}
+                            onPointerDown={(event) => handleBezierDown(i, which, event)}
+                          >
+                            <line
+                              x1={node.p.x}
+                              y1={node.p.y}
+                              x2={handle.x}
+                              y2={handle.y}
+                              stroke="#00a0c8"
+                              strokeWidth={1 / zoom}
+                              pointerEvents="none"
+                            />
+                            <circle
+                              data-handle-hit={which}
+                              cx={handle.x}
+                              cy={handle.y}
+                              r={22 / zoom}
+                              fill="transparent"
+                            />
+                            <circle
+                              data-handle={which}
+                              cx={handle.x}
+                              cy={handle.y}
+                              r={5 / zoom}
+                              fill="#ffffff"
+                              stroke="#00a0c8"
+                              strokeWidth={1.5 / zoom}
+                              pointerEvents="none"
+                            />
+                          </g>
+                        )
+                      })}
+                    </g>
+                  ) : null,
+                )}
               </g>
             ) : null}
             {/* Seleção múltipla: moldura fina POR forma + a caixa da UNIÃO com

@@ -9,7 +9,7 @@ export const gameKitCardsRuntime = `
     if (!Array.isArray(deck) || !Array.isArray(discard)) return;
     while (discard.length) deck.push(discard.pop());
     for (var i = deck.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1)), t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+      var j = Math.floor(gameRandom() * (i + 1)), t = deck[i]; deck[i] = deck[j]; deck[j] = t;
     }
   }
   function pileTop(pile) { return (Array.isArray(pile) && pile.length) ? pile[pile.length - 1] : null; }

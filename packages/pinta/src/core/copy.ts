@@ -35,12 +35,14 @@ export const COPY = {
     looseSection: 'Desenhos avulsos',
     restore: 'Trazer de volta',
     restoreError: 'Não consegui ler esse arquivo. Ele é um backup do Pinta (.pinta.json)?',
+    restoreTooLarge: 'Esse backup é grande demais. Escolha um arquivo de até 32 MB.',
     zipError: 'Não consegui montar o arquivo agora. Tente de novo.',
     restoredOne: 'Trouxe 1 desenho de volta!',
     restoredMany: (count: number) => `Trouxe ${count} desenhos de volta!`,
     restorePartial: ' Alguns ficaram de fora.',
     importImage: 'Trazer uma foto',
     importDecodeError: 'Não consegui abrir essa imagem. Tente um PNG ou JPG.',
+    importTooLarge: 'Essa imagem é grande demais. Escolha um arquivo de até 20 MB.',
     importDone: 'Sua imagem já está na galeria!',
   },
   importImage: {
@@ -398,6 +400,28 @@ export const COPY = {
     selGroup: 'Agrupar a seleção',
     selUngroup: 'Desagrupar a seleção',
     selRemove: 'Apagar a seleção',
+    /**
+     * Ações do modo "Editar os pontos". Moram no MESMO lugar das de cima (a
+     * faixa troca de conteúdo com a ferramenta), então valem a mesma regra: um
+     * rótulo só, servindo desktop e toque.
+     */
+    nodeBar: 'O que fazer com os pontos',
+    nodeRemove: 'Apagar os pontos escolhidos',
+    nodeClose: 'Fechar o caminho',
+    nodeOpen: 'Abrir o caminho',
+    nodeHint: 'Toque no traço para acrescentar um ponto',
+    nodeToCurve: 'Transformar em curva',
+    nodeToLine: 'Transformar em reta',
+    nodeSmooth: 'Ponto suave',
+    nodeCorner: 'Ponto de canto',
+    nodeSimplify: 'Suavizar o traço',
+    nodeSimplifyDone: 'Este traço já está o mais liso que dá.',
+    /** O número vem da forma (3 num polígono, 2 num traço): dizer "alguns"
+     *  não ajuda quem está tentando entender por que não apagou. */
+    nodeFloor: (min: number) =>
+      `Este desenho precisa de pelo menos ${min} pontos para continuar existindo.`,
+    nodeCloseNeedsThree: 'Um caminho precisa de pelo menos 3 pontos para virar uma forma fechada.',
+    nodeCeiling: 'Esta forma já tem o máximo de pontos.',
     alignTitle: 'Alinhar',
     alignLeft: 'Alinhar na esquerda',
     alignCenterH: 'Centralizar na largura',

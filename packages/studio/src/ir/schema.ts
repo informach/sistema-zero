@@ -1,9 +1,30 @@
 import { z } from 'zod'
+import {
+  nativeRuntimeExpressionSchemas,
+  nativeRuntimeStatementSchemas,
+} from '../codecs/web/nativeRuntimeIR'
 import { normalizeGoogleFontFamily } from '../css/googleFonts'
 import { isCSSKeyframeSelector, isCSSKeyframesName } from '../css/keyframes'
 import { CSS_MEDIA_SIZE_FEATURES, type CSSMediaSizeFeature } from '../css/mediaQueries'
 import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
+import {
+  classicGameTwoDExpressionSchemas,
+  classicGameTwoDStatementSchemas,
+} from '../official-extensions/game-2d/classicIR'
+import {
+  GAME_KIT_CAMPAIGN_STATEMENT_TYPES,
+  type GameKitCampaignExpression,
+  type GameKitCampaignStatement,
+  gameKitCampaignExpressionSchemas,
+  gameKitCampaignStatementSchemas,
+} from '../official-extensions/game-2d-advanced/campaignIR'
+import {
+  type PlatformGameThreeDExpr,
+  type PlatformGameThreeDStatement,
+  platformGameThreeDExpressionSchemas,
+  platformGameThreeDStatementSchemas,
+} from '../official-extensions/game-3d/platformIR'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
 import { CANVAS3D_AUTO_ADDON_MODULE, isCanvas3DAddonImportCanonical } from '../three/canvas3dAddons'
 import {
@@ -175,6 +196,15 @@ export type JSExpr =
   | (JSExprCommon & { type: 'call'; name: string; args: JSExpr[] })
   // Game 2D — perguntas (booleanos): tecla apertada e sprites se encostando.
   | (JSExprCommon & { type: 'g2d:keyDown'; key: string })
+  | (JSExprCommon & {
+      type: 'g2d:actionDown' | 'g2d:actionPressed'
+      action: 'left' | 'right' | 'up' | 'down' | 'jump' | 'action' | 'select' | 'start' | 'pause'
+    })
+  | (JSExprCommon & {
+      type: 'g2d:tileContactIs'
+      contactVar: string
+      index: JSExpr
+    })
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
   // Game 2D — quantidade de sprites num grupo (valor numérico).
   | (JSExprCommon & { type: 'g2d:countGroup'; groupVar: string })
@@ -232,6 +262,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3d:keyDown'; key: string })
   | (JSExprCommon & { type: 'g3d:collides'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g3d:hitAny'; objVar: string; groupVar: string })
+  | PlatformGameThreeDExpr
   // Game 3D — Kit Travessia: bateu num veículo? e a linha (pontuação) atual.
   | (JSExprCommon & { type: 'g3d:crosserHit'; objVar: string; worldVar: string })
   | (JSExprCommon & { type: 'g3d:crosserRow'; objVar: string })
@@ -280,6 +311,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:keyDown'; key: string })
   // Edge-trigger: true SÓ no quadro do aperto (tiro 1-por-aperto sem flag manual).
   | (JSExprCommon & { type: 'gk:keyPressed'; key: string })
+  | GameKitCampaignExpression
   // Jogo 2D Avançado (P24) — valores: enxame, combate, HUD/missão.
   | (JSExprCommon & { type: 'gk:countActive'; mold: string })
   | (JSExprCommon & { type: 'gk:touchCircle'; aVar: string; bVar: string })
@@ -491,10 +523,20 @@ export type JSExpr =
   | (JSExprCommon & { type: 'mathConst'; name: 'PI' | 'E' })
   // Conversão de ângulo entre graus e radianos.
   | (JSExprCommon & { type: 'angleConvert'; dir: 'degToRad' | 'radToDeg'; arg: JSExpr })
-  // Propriedade do evento dentro de um listener (event.clientX/clientY/key/code).
-  | (JSExprCommon & { type: 'eventProp'; prop: 'clientX' | 'clientY' | 'key' | 'code' })
+  // Propriedade do evento dentro de um listener (posição, tecla ou ponteiro físico).
+  | (JSExprCommon & {
+      type: 'eventProp'
+      prop: 'clientX' | 'clientY' | 'key' | 'code' | 'pointerId'
+    })
   // Lê do armazenamento do navegador (`localStorage.getItem(chave)` / `sessionStorage`).
   | (JSExprCommon & { type: 'storageGet'; store: 'local' | 'session'; key: JSExpr })
+  // Dados estruturados e controles físicos do núcleo (sem extensão).
+  | (JSExprCommon & { type: 'jsonLiteral'; json: string })
+  | (JSExprCommon & { type: 'jsonParse'; value: JSExpr })
+  | (JSExprCommon & { type: 'jsonStringify'; value: JSExpr })
+  | (JSExprCommon & { type: 'gamepadConnected'; index: JSExpr })
+  | (JSExprCommon & { type: 'gamepadAxis'; index: JSExpr; axis: JSExpr })
+  | (JSExprCommon & { type: 'gamepadButton'; index: JSExpr; button: JSExpr })
   // Vetor 2D/3D literal ({ x, y } / { x, y, z }).
   | (JSExprCommon & { type: 'vec2'; x: JSExpr; y: JSExpr })
   | (JSExprCommon & { type: 'vec3'; x: JSExpr; y: JSExpr; z: JSExpr })
@@ -515,6 +557,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'global'; kind: 'innerWidth' | 'innerHeight' | 'devicePixelRatio' })
   // O sistema está no modo escuro? (window.matchMedia('(prefers-color-scheme: dark)').matches)
   | (JSExprCommon & { type: 'systemDark' })
+  // O sistema pediu animações reduzidas? (prefers-reduced-motion: reduce).
+  | (JSExprCommon & { type: 'systemReducedMotion' })
   // Milissegundos desde o carregamento da página (performance.now()) — para delta de quadro.
   | (JSExprCommon & { type: 'perfNow' })
   // Está em tela cheia? (Fullscreen API) → document.fullscreenElement != null.
@@ -651,6 +695,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:keyDown'), key: irText(), ...idField }),
+    ...classicGameTwoDExpressionSchemas(JSExprSchema, irText, idField),
     z.object({
       type: z.literal('g2d:touches'),
       aVar: irText(),
@@ -731,6 +776,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g2d:bananaHitCity'), cityVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:keyDown'), key: irText(), ...idField }),
+    ...platformGameThreeDExpressionSchemas(irText, idField),
     z.object({ type: z.literal('g3d:collides'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:hitAny'), objVar: irText(), groupVar: irText(), ...idField }),
     z.object({
@@ -803,6 +849,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:charY'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('gk:keyPressed'), key: irText(), ...idField }),
+    ...gameKitCampaignExpressionSchemas(irText, idField),
     z.object({ type: z.literal('gk:countActive'), mold: irText(), ...idField }),
     z.object({ type: z.literal('gk:touchCircle'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isDead'), charVar: irText(), ...idField }),
@@ -1056,6 +1103,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({ type: z.literal('isFullscreen'), ...idField }),
     z.object({ type: z.literal('systemDark'), ...idField }),
+    z.object({ type: z.literal('systemReducedMotion'), ...idField }),
     z.object({ type: z.literal('perfNow'), ...idField }),
     z.object({
       type: z.literal('mathUnary'),
@@ -1100,7 +1148,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('eventProp'),
-      prop: z.enum(['clientX', 'clientY', 'key', 'code']),
+      prop: z.enum(['clientX', 'clientY', 'key', 'code', 'pointerId']),
       ...idField,
     }),
     z.object({
@@ -1109,6 +1157,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       key: JSExprSchema,
       ...idField,
     }),
+    ...nativeRuntimeExpressionSchemas(JSExprSchema, irText, idField),
     z.object({ type: z.literal('vec2'), x: JSExprSchema, y: JSExprSchema, ...idField }),
     z.object({
       type: z.literal('vec3'),
@@ -1713,6 +1762,8 @@ export const EVENT_KINDS = [
   'pointermove',
   'pointerdown',
   'pointerup',
+  'pointercancel',
+  'lostpointercapture',
   'submit',
   'input',
   'change',
@@ -1895,6 +1946,7 @@ export type JSStatement =
       key: JSExpr
       value: JSExpr
     })
+  | (JSStatementCommon & { type: 'storageRemove'; store: 'local' | 'session'; key: JSExpr })
   // Dentro de um handler de evento: `event.preventDefault()` / `event.stopPropagation()`.
   | (JSStatementCommon & { type: 'eventMethod'; method: 'preventDefault' | 'stopPropagation' })
   | (JSStatementCommon & {
@@ -2053,6 +2105,14 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'somPlayMusic'; name: string })
   | (JSStatementCommon & { type: 'somStopMusic' })
   | (JSStatementCommon & { type: 'somVolume'; level: JSExpr })
+  | (JSStatementCommon & {
+      type: 'somTone'
+      wave: 'sine' | 'square' | 'sawtooth' | 'triangle'
+      frequency: JSExpr
+      duration: JSExpr
+      level: JSExpr
+    })
+  | (JSStatementCommon & { type: 'somNoise'; duration: JSExpr; level: JSExpr })
   | (JSStatementCommon & { type: 'canvasSave'; ctxVar: string })
   | (JSStatementCommon & { type: 'canvasRestore'; ctxVar: string })
   | (JSStatementCommon & {
@@ -2139,6 +2199,11 @@ export type JSStatement =
   // Eventos "Quando…" (hats): tecla apertada e sobreposição de sprites.
   | (JSStatementCommon & { type: 'g2d:onKey'; key: string; body: JSStatement[] })
   | (JSStatementCommon & {
+      type: 'g2d:onActionPressed'
+      action: 'left' | 'right' | 'up' | 'down' | 'jump' | 'action' | 'select' | 'start' | 'pause'
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
       type: 'g2d:onOverlap'
       aVar: string
       bVar: string
@@ -2196,7 +2261,11 @@ export type JSStatement =
       amount: number | JSExpr
       invincibilityFrames: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:flipSprite'; spriteVar: string; dir: string })
+  | (JSStatementCommon & {
+      type: 'g2d:flipSprite'
+      spriteVar: string
+      dir: 'left' | 'right' | 'up' | 'down'
+    })
   | (JSStatementCommon & { type: 'g2d:setOpacity'; spriteVar: string; percent: number | JSExpr })
   | (JSStatementCommon & {
       type: 'g2d:setSize'
@@ -2437,6 +2506,16 @@ export type JSStatement =
       bounce: number | JSExpr
     })
   | (JSStatementCommon & {
+      type: 'g2d:setEnemyStompMode'
+      typeVar: string
+      mode: 'defeat' | 'damage' | 'squash' | 'shell' | 'spiky'
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:updateEnemyShells'
+      typeVar: string
+      worldVar: string
+    })
+  | (JSStatementCommon & {
       type: 'g2d:drawFrame'
       sheetVar: string
       ctxVar: string
@@ -2456,6 +2535,13 @@ export type JSStatement =
     })
   | (JSStatementCommon & {
       type: 'g2d:platformerWithTerrain'
+      spriteVar: string
+      speed: number | JSExpr
+      jump: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:enableClassicControls'; mode: 'auto' | 'always' | 'off' })
+  | (JSStatementCommon & {
+      type: 'g2d:classicPlatformer'
       spriteVar: string
       speed: number | JSExpr
       jump: number | JSExpr
@@ -2501,6 +2587,37 @@ export type JSStatement =
   // Mapa PRONTO do Pinta/fatiador: tudo (grade/peças/sólidos) vem do metadado
   // do asset em runtime (__SZGAME_ASSET_META) — o bloco só aponta o desenho.
   | (JSStatementCommon & { type: 'g2d:createTileMapFromAsset'; varName: string; image: string })
+  | (JSStatementCommon & {
+      type: 'g2d:createVectorTileset'
+      varName: string
+      size: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:defineVectorTile'
+      tilesetVar: string
+      index: number | JSExpr
+      shape: string
+      role: 'decor' | 'solid' | 'platform'
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:createVectorTileMap'
+      varName: string
+      tilesetVar: string
+      grid: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:forEachTileContact'
+      spriteVar: string
+      mapVar: string
+      side: 'any' | 'head' | 'feet' | 'left' | 'right'
+      contactName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:setTileAtContact'
+      contactVar: string
+      index: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'g2d:fitTileMapToStage'; mapVar: string; ctxVar: string })
   | (JSStatementCommon & {
       type: 'g2d:placeTileMap'
@@ -2696,6 +2813,22 @@ export type JSStatement =
       color: string
       size: number | JSExpr
       align: 'left' | 'center' | 'right'
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawPixelText'
+      ctxVar: string
+      text: string
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
+      color: string
+      align: 'left' | 'center' | 'right'
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawFade'
+      ctxVar: string
+      percent: number | JSExpr
+      color: string
     })
   | (JSStatementCommon & {
       type: 'g2d:drawHearts'
@@ -3150,6 +3283,10 @@ export type JSStatement =
       speed: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:resolveCollision'; aVar: string; bVar: string })
+  // ---- Game 3D — plataforma clássica e Kit Plataforma (lote "Reino Cogumelo") ----
+  // Os membros vivem em `official-extensions/game-3d/platformIR.ts`, ao lado do
+  // zod e do codec do lote: é o que mantém esta fachada sob o teto de linhas.
+  | PlatformGameThreeDStatement
   // ---- Game 3D — câmeras vivas (1ª pessoa, orbital, 3ª pessoa, olhar, FOV) ----
   | (JSStatementCommon & { type: 'g3d:fpsCamera'; worldVar: string; objVar: string })
   | (JSStatementCommon & { type: 'g3d:orbitCamera'; worldVar: string; objVar: string })
@@ -3325,6 +3462,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:resume' })
   | (JSStatementCommon & { type: 'gk:returnToMenu' })
   | (JSStatementCommon & { type: 'gk:endGame' })
+  | GameKitCampaignStatement
   // Ganchos do loop: o corpo do update recebe o delta-time (nome escolhido no
   // bloco, padrão `dt`); o do draw recebe o pincel (padrão `ctx` — os blocos de
   // Canvas do núcleo funcionam dentro, como na figura do Jogo 2D).
@@ -5705,6 +5843,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       value: JSExprSchema,
       ...idField,
     }),
+    ...nativeRuntimeStatementSchemas(JSExprSchema, idField),
     z.object({
       type: z.literal('eventMethod'),
       method: z.enum(['preventDefault', 'stopPropagation']),
@@ -6075,6 +6214,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       body: z.array(JSStatementSchema),
       ...idField,
     }),
+    ...classicGameTwoDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('g2d:onOverlap'),
       aVar: irText(),
@@ -6189,7 +6329,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:flipSprite'),
       spriteVar: irText(),
-      dir: irText(),
+      dir: z.enum(['left', 'right', 'up', 'down']),
       ...idField,
     }),
     z.object({
@@ -7648,6 +7788,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       bVar: irText(),
       ...idField,
     }),
+    ...platformGameThreeDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('g3d:fpsCamera'),
       worldVar: irText(),
@@ -7915,6 +8056,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('gk:resume'), ...idField }),
     z.object({ type: z.literal('gk:returnToMenu'), ...idField }),
     z.object({ type: z.literal('gk:endGame'), ...idField }),
+    ...gameKitCampaignStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('gk:onUpdate'),
       dtName: irText(),
@@ -11084,6 +11226,7 @@ const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap']
 const G2D_REGISTERED_EVENT_TYPES = new Set([
   'g2d:onPointer',
   'g2d:onKey',
+  'g2d:onActionPressed',
   'g2d:onOverlap',
   'g2d:onJump',
   'g2d:onAnyInput',
@@ -11111,6 +11254,8 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:spawnEnemy': 'varName',
   'g2d:createTileMap': 'varName',
   'g2d:createTileMapFromAsset': 'varName',
+  'g2d:createVectorTileset': 'varName',
+  'g2d:createVectorTileMap': 'varName',
   'g2d:createWorld': 'varName',
   'g2d:createWorldFromTileMap': 'varName',
   'g2d:createLevel': 'varName',
@@ -11130,6 +11275,8 @@ const G2D_REFERENCE_FIELDS = new Set([
   'aVar',
   'bVar',
   'mapVar',
+  'tilesetVar',
+  'contactVar',
   'groupVar',
   'aGroup',
   'bGroup',
@@ -11402,6 +11549,8 @@ function g2dLocalNames(statement: JSStatement): string[] {
     case 'g2d:onEnemyShotHit':
     case 'g2d:onEnemyBeamHit':
       return typeof record.itemName === 'string' ? [record.itemName] : []
+    case 'g2d:forEachTileContact':
+      return typeof record.contactName === 'string' ? [record.contactName] : []
     default:
       return []
   }
@@ -11756,6 +11905,7 @@ export function isAdvancedJS(stmt: JSStatement): stmt is Extract<JSStatement, { 
 
 export const G2D_STATEMENT_TYPES = new Set([
   'g2d:onStart',
+  'g2d:onActionPressed',
   'g2d:createSprite',
   'g2d:drawSprite',
   'g2d:setPosition',
@@ -11836,9 +11986,13 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:onEnemyShotHit',
   'g2d:hurtByEnemy',
   'g2d:stompEnemy',
+  'g2d:setEnemyStompMode',
+  'g2d:updateEnemyShells',
   'g2d:drawFrame',
   'g2d:platformer',
   'g2d:platformerWithTerrain',
+  'g2d:enableClassicControls',
+  'g2d:classicPlatformer',
   'g2d:jumpWithTerrain',
   'g2d:topDown',
   'g2d:flyFree',
@@ -11852,6 +12006,11 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawParticles',
   'g2d:createTileMap',
   'g2d:createTileMapFromAsset',
+  'g2d:createVectorTileset',
+  'g2d:defineVectorTile',
+  'g2d:createVectorTileMap',
+  'g2d:forEachTileContact',
+  'g2d:setTileAtContact',
   'g2d:fitTileMapToStage',
   'g2d:placeTileMap',
   'g2d:drawPreparedTileMap',
@@ -11900,6 +12059,8 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:setHitboxScale',
   'g2d:drawScore',
   'g2d:drawLabel',
+  'g2d:drawPixelText',
+  'g2d:drawFade',
   'g2d:drawHearts',
   'g2d:drawSpriteHealth',
   'g2d:drawBar',
@@ -12042,6 +12203,15 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:platformerControls',
   'g3d:fpsControls',
   'g3d:resolveCollision',
+  'g3d:classicPlatformer',
+  'g3d:forEachHit',
+  'g3d:objectFlag',
+  'g3d:setObjectValue',
+  'g3d:createPlatformScene',
+  'g3d:createHero',
+  'g3d:stage',
+  'g3d:stageFrame',
+  'g3d:onStage',
   'g3d:fpsCamera',
   'g3d:orbitCamera',
   'g3d:thirdPersonCamera',
@@ -12104,6 +12274,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:resume',
   'gk:returnToMenu',
   'gk:endGame',
+  ...GAME_KIT_CAMPAIGN_STATEMENT_TYPES,
   'gk:onUpdate',
   'gk:onDraw',
   'gk:onDrawHud',

@@ -274,26 +274,41 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     // v0.53.0 — o Jogo 2D Avancado ja guardava assim, e chamava isso de "padrao
     // g2d" num comentario, embora o g2d nao tivesse.
     //
-    // ⭐ Para a de UMA VEZ a guarda vale so ENQUANTO ELA CORRE. Depois de acabar,
-    // chamar de novo REINICIA — senao "quando apertar espaco, golpe" tocaria uma
-    // unica vez na vida da partida, que e o caso principal do bloco. Posto
-    // solto no "a cada quadro" ele vira um laco, que e o que a crianca pediu ao
-    // escrever isso; o que nao pode acontecer e congelar no 1o quadro.
+    // Para a de UMA VEZ, cada handler de quadro guarda quando pediu a animacao.
+    // Pedido no quadro imediatamente anterior e uma chamada CONTINUA: depois do
+    // fim ela permanece congelada para "animar → acabou?" observar SIM. Evento
+    // ou handler que ficou um quadro sem pedir e uma nova ACAO e pode reiniciar.
     var a = sprite.anim;
     if (a && a.sheet === sheet && a.from === f && a.to === t && a.fps === r && !!a.once === !!once) {
-      if (!once || !animationEnded(sprite)) return;
+      if (!once) return;
+      var ended = animationEnded(sprite);
+      var loopId = _runningLoopId;
+      if (!ended) {
+        if (loopId) {
+          if (!a.loopRequests) a.loopRequests = Object.create(null);
+          a.loopRequests[loopId] = _frameStamp;
+        }
+        return;
+      }
+      if (loopId && a.loopRequests && a.loopRequests[loopId] === _frameStamp - 1) {
+        a.loopRequests[loopId] = _frameStamp;
+        return;
+      }
     }
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = null;
     sprite._imgHooked = false;
+    var loopRequests = Object.create(null);
+    if (_runningLoopId) loopRequests[_runningLoopId] = _frameStamp;
     sprite.anim = {
       sheet: sheet,
       from: f,
       to: t,
       fps: r,
       once: !!once,
-      start: now()
+      start: now(),
+      loopRequests: loopRequests
     };
   }
   /**
@@ -375,8 +390,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     // Flip automático: andando p/ a esquerda vira o desenho; parado mantém o
     // último lado (o "Virar o sprite" manual vale enquanto está parado).
     var vx = sprite.vx || 0;
-    if (vx > 0.01) sprite.facing = 1;
-    else if (vx < -0.01) sprite.facing = -1;
+    if (vx > 0.01) { sprite.facing = 1; sprite.direction = 'right'; }
+    else if (vx < -0.01) { sprite.facing = -1; sprite.direction = 'left'; }
     var states = sprite.animStates;
     if (!states) return;
     // ⚠️ Uma animacao de UMA VEZ em andamento tem prioridade: sem isto o
@@ -461,8 +476,10 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
   function _drawSpriteRaw(ctx, sprite) {
     if (!ctx || !sprite) return;
-    var ang = _finiteNumber(sprite.angle, 0);
-    var flip = sprite.facing === -1;
+    var direction = sprite.direction;
+    var directionAngle = direction === 'up' ? -Math.PI / 2 : direction === 'down' ? Math.PI / 2 : 0;
+    var ang = _finiteNumber(sprite.angle, 0) + directionAngle;
+    var flip = direction === 'left' || (!direction && sprite.facing === -1);
     if (!ang && !flip) { _drawSpriteBody(ctx, sprite); return; }
     // Gira/espelha o desenho em torno do CENTRO do sprite (o corpo segue em
     // coordenadas absolutas — mesmo truque translate/rotate/translate da referência).

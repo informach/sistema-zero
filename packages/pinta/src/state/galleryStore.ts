@@ -93,8 +93,9 @@ function upsertSorted(assets: PintaAsset[], asset: PintaAsset): PintaAsset[] {
 function uniqueName(base: string, taken: Set<string>): string | null {
   if (!taken.has(base)) return base
   for (let n = 2; n <= 99; n += 1) {
-    const candidate = `${base}-${n}`
-    if (candidate.length > PINTA_LIMITS.maxNameChars) return null
+    const suffix = `-${n}`
+    const prefix = base.slice(0, PINTA_LIMITS.maxNameChars - suffix.length).replace(/-+$/, '')
+    const candidate = `${prefix}${suffix}`
     if (!taken.has(candidate)) return candidate
   }
   return null
@@ -261,13 +262,11 @@ export function createGalleryStore(): PintaGalleryStore {
         return null
       }
       try {
-        // Persiste na ORDEM do build (tileset antes do mapa) — se a quota ou o
-        // disco falhar no meio, o mapa não fica órfão sem as peças.
-        for (const asset of prepared) {
-          await persistence.persistAsset(asset)
-          set((state) => ({ assets: upsertSorted(state.assets, asset) }))
-        }
+        // Um modelo é UMA criação lógica: o setMany do IndexedDB grava todos
+        // na mesma transação, sem deixar companheiro órfão em falha parcial.
+        await persistence.persistAssets(prepared)
         set((state) => ({
+          assets: prepared.reduce(upsertSorted, state.assets),
           mutateError: null,
           lastStyle: assetStyle(primary.kind) ?? state.lastStyle,
         }))

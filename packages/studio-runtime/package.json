@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "audit:image": "npm audit --package-lock-only --omit=dev --prefix runtime",
+    "build:image": "docker build --tag sistemazero-studio-runtime:verify .",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "check": "biome check .",

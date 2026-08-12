@@ -4,7 +4,9 @@
  * do Shift). Só constantes e funções — o estado vive no `VectorEditorScope`.
  */
 import { COPY } from '../../../core/copy'
+import { newId } from '../../../core/id'
 import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../../../core/palette'
+import { translateShape } from '../../../vector/geometry'
 import type { Vec2, VectorGradient, VectorShape } from '../../../vector/model'
 import {
   Brush,
@@ -92,6 +94,26 @@ export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
   const result = new Set(ids)
   for (const s of shapes) if (s.groupId && groups.has(s.groupId)) result.add(s.id)
   return [...result]
+}
+
+/**
+ * Clona formas para duplicar/colar: ids de forma sempre novos e cada grupo
+ * original recebe exatamente um NOVO groupId. Assim as cópias continuam juntas
+ * entre si sem ficarem acidentalmente ligadas aos originais.
+ */
+export function cloneShapesWithNewIds(
+  shapes: readonly VectorShape[],
+  dx = 12,
+  dy = 12,
+): VectorShape[] {
+  const groupIds = new Map<string, string>()
+  return shapes.map((shape) => {
+    const moved = translateShape({ ...structuredClone(shape), id: newId() }, dx, dy)
+    if (!shape.groupId) return moved
+    const groupId = groupIds.get(shape.groupId) ?? newId()
+    groupIds.set(shape.groupId, groupId)
+    return { ...moved, groupId }
+  })
 }
 
 /** Trava o ponto de arrasto: Shift = quadrado/círculo (formas) ou 45° (linha). */

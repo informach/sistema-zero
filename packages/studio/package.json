@@ -38,7 +38,15 @@
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
     "test": "bun test src",
     "gen:server-examples": "bun scripts/gen-server-examples.ts",
+    "gen:core-example-catalog": "bun scripts/gen-core-example-catalog.ts",
+    "gen:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts",
+    "gen:game-3d-examples": "bun scripts/gen-game-3d-examples.ts",
+    "check:game-3d-examples": "bun scripts/gen-game-3d-examples.ts --check",
     "e2e": "playwright test",
+    "e2e:smoke": "playwright test e2e/smoke.spec.ts --project=chromium",
+    "e2e:gallery": "playwright test e2e/examples-gallery.spec.ts --project=chromium",
+    "e2e:security": "playwright test e2e/preview-security.spec.ts e2e/preview-executes-user-code.spec.ts",
+    "e2e:a11y": "playwright test e2e/accessibility.spec.ts --project=chromium",
     "serve:e2e": "bun scripts/serve-e2e.ts",
     "check": "biome check .",
     "check:fix": "biome check --write ."
@@ -58,7 +66,6 @@
     "fflate": "^0.8.2",
     "idb-keyval": "^6.2.1",
     "monaco-editor": "^0.52.2",
-    "react-blockly": "^9.0.0",
     "react-resizable-panels": "^2.1.9",
     "sucrase": "^3.35.1",
     "terser": "^5.37.0",
@@ -72,6 +79,9 @@
     "react-dom": "^19"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@fontsource/baloo-2": "^5.2.7",
+    "@fontsource/nunito": "^5.2.7",
     "@happy-dom/global-registrator": "^20.10.2",
     "@playwright/test": "^1.48.2",
     "@tailwindcss/vite": "^4.3.0",

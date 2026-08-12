@@ -43,6 +43,7 @@ interface Api {
     to: number,
     fps: number,
   ) => void
+  flipSprite: (sprite: Record<string, unknown>, direction: string) => void
   drawSprite: (ctx: unknown, sprite: unknown) => void
   paintRect: (ctx: unknown, x: number, y: number, w: number, h: number, c: string) => void
   paintCircle: (ctx: unknown, x: number, y: number, r: number, c: string) => void
@@ -221,6 +222,21 @@ describe('figura: sprite desenhado por código', () => {
     api.drawSprite(ctx, s)
     // o wrapper faz save/translate/scale/translate ANTES da figura; conta 2 saves
     expect(ctx.calls.filter((c) => c === 'save').length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('vira a figura para cima e para baixo em torno do centro', () => {
+    const api = load()
+    const sprite = api.createSprite({ x: 40, y: 20, w: 20, h: 10 })
+
+    const paraCima = fakeCtx()
+    api.flipSprite(sprite, 'up')
+    api.drawSprite(paraCima, sprite)
+    expect(paraCima.calls).toContain(`rotate ${-Math.PI / 2}`)
+
+    const paraBaixo = fakeCtx()
+    api.flipSprite(sprite, 'down')
+    api.drawSprite(paraBaixo, sprite)
+    expect(paraBaixo.calls).toContain(`rotate ${Math.PI / 2}`)
   })
 
   it('restaura pilha e opacidade do canvas quando a figura da criança lança erro', () => {

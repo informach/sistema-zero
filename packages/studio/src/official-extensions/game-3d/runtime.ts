@@ -12,7 +12,9 @@
  *
  * É uma STRING template: sem regex, sem ${...}, sem barra-n literal.
  */
-export const gameThreeDRuntime = `import * as THREE from 'three';
+import { gameThreeDPlatformRuntimeSource } from './runtimePlatform'
+
+const gameThreeDRuntimeBase = `import * as THREE from 'three';
 (function () {
   // Registro dos mundos criados nesta página. O navegador limita o número de
   // contextos WebGL ativos (~16): a cada "Atualizar" o preview roda este runtime
@@ -64,7 +66,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   // Estado do teclado (por event.code). Lido por keyDown(...) e controlWithKeys(...).
   var keys = {};
+  // Teclas que ACABARAM de ser apertadas. O teclado do sistema repete o keydown
+  // enquanto a tecla fica presa; só a TRANSIÇÃO conta, senão "apertou agora"
+  // seria verdadeiro o tempo todo. Limpo no fim de cada quadro do animate.
+  var justPressed = {};
   function onKeyDown(e) {
+    if (!keys[e.code]) justPressed[e.code] = true;
     keys[e.code] = true;
     // Evita rolar a página com espaço/setas (atrapalharia o jogo).
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown' ||
@@ -73,8 +80,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     }
   }
   function onKeyUp(e) { keys[e.code] = false; }
-  function clearKeys() { keys = {}; }
+  function clearKeys() { keys = {}; justPressed = {}; }
   function keyDown(code) { return !!keys[code]; }
+  function keyPressed(code) { return justPressed[code] === true; }
 
   function listen(world, target, name, handler, options, owner) {
     if (!target || !target.addEventListener) return;
@@ -661,6 +669,155 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       material.map = tex;
       material.needsUpdate = true;
     });
+  }
+
+  // ---- Estampas procedurais: textura desenhada pelo próprio programa --------
+  // Nasce de um canvas 2D de 64x64 pintado com fillRect, o mesmo caminho do céu
+  // em degradê. Não depende de imagem nenhuma, o que deixa o jogo inteiro
+  // asset-free. O cache é do PROCESSO e compartilhado: a textura NUNCA é
+  // descartada por objeto (disposeGroup só descarta com disposeTextures ligado).
+  var _patternCache = null;
+  var _patternCount = 0;
+  var MAX_PATTERNS = 32;
+  function _fill(g, color, x, y, w, h) {
+    g.fillStyle = color;
+    g.fillRect(x, y, w, h);
+  }
+  function _drawPattern(g, kind, a, b) {
+    var S = 64;
+    _fill(g, a, 0, 0, S, S);
+    if (kind === 'tijolo') {
+      // Duas fiadas, a de baixo deslocada meia largura: a junta nunca alinha.
+      _fill(g, b, 0, 0, S, 3);
+      _fill(g, b, 0, 32, S, 3);
+      _fill(g, b, 30, 3, 3, 29);
+      _fill(g, b, 0, 35, 3, 29);
+      _fill(g, b, 61, 35, 3, 29);
+      return;
+    }
+    if (kind === 'pedra') {
+      _fill(g, b, 6, 8, 18, 14); _fill(g, b, 34, 6, 22, 12);
+      _fill(g, b, 10, 34, 24, 16); _fill(g, b, 42, 38, 16, 18);
+      return;
+    }
+    if (kind === 'terra') {
+      _fill(g, b, 8, 10, 6, 6); _fill(g, b, 30, 22, 5, 5);
+      _fill(g, b, 48, 12, 7, 7); _fill(g, b, 18, 44, 6, 6);
+      _fill(g, b, 40, 50, 5, 5); _fill(g, b, 56, 36, 5, 5);
+      return;
+    }
+    if (kind === 'grama') {
+      _fill(g, b, 0, 0, S, 22);
+      _fill(g, b, 4, 22, 4, 8); _fill(g, b, 18, 22, 4, 6);
+      _fill(g, b, 34, 22, 4, 9); _fill(g, b, 52, 22, 4, 7);
+      return;
+    }
+    if (kind === 'interrogacao') {
+      // Moldura de bloco surpresa + o ponto de interrogação em blocos 3x3.
+      _fill(g, b, 0, 0, S, 5); _fill(g, b, 0, 59, S, 5);
+      _fill(g, b, 0, 0, 5, S); _fill(g, b, 59, 0, 5, S);
+      _fill(g, b, 22, 16, 20, 8); _fill(g, b, 36, 24, 8, 8);
+      _fill(g, b, 28, 32, 10, 8); _fill(g, b, 28, 46, 8, 8);
+      return;
+    }
+    if (kind === 'cano') {
+      _fill(g, b, 0, 0, 10, S);
+      _fill(g, b, 52, 0, 12, S);
+      return;
+    }
+    if (kind === 'nuvem') {
+      _fill(g, b, 10, 26, 44, 18); _fill(g, b, 20, 16, 24, 12);
+      _fill(g, b, 4, 34, 12, 10); _fill(g, b, 48, 34, 12, 10);
+      return;
+    }
+    if (kind === 'agua') {
+      _fill(g, b, 0, 6, S, 4); _fill(g, b, 8, 22, 48, 4);
+      _fill(g, b, 0, 38, S, 4); _fill(g, b, 12, 54, 40, 4);
+      return;
+    }
+    if (kind === 'lava') {
+      _fill(g, b, 0, 0, S, 12); _fill(g, b, 6, 20, 22, 8);
+      _fill(g, b, 38, 26, 20, 8); _fill(g, b, 14, 44, 34, 10);
+      return;
+    }
+    if (kind === 'moeda') {
+      _fill(g, b, 22, 6, 20, 52); _fill(g, b, 14, 14, 8, 36);
+      _fill(g, b, 42, 14, 8, 36); _fill(g, a, 28, 18, 8, 28);
+      return;
+    }
+    if (kind === 'xadrez') {
+      _fill(g, b, 0, 0, 32, 32); _fill(g, b, 32, 32, 32, 32);
+      return;
+    }
+    if (kind === 'listras') {
+      _fill(g, b, 0, 0, S, 16); _fill(g, b, 0, 32, S, 16);
+      return;
+    }
+    // Desconhecida: bolinhas, para a criança ver que a estampa existe.
+    _fill(g, b, 12, 12, 12, 12); _fill(g, b, 40, 40, 12, 12);
+  }
+  function paintPattern(obj, kind, colorA, colorB) {
+    if (!obj || typeof document === 'undefined' || !THREE.CanvasTexture) return;
+    var name = String(kind || 'xadrez');
+    var a = colorA || '#c8c8c8';
+    var b = colorB || '#585858';
+    var s = obj.userData && obj.userData.sz ? obj.userData.sz : null;
+    // Quantas vezes a estampa se repete: uma cópia por unidade do mundo, senão
+    // um chão de 40 de comprimento receberia UM tijolo esticado.
+    var rx = s ? Math.max(1, Math.round(halfX(obj, s) * 2)) : 1;
+    var ry = s ? Math.max(1, Math.round(halfY(obj, s) * 2)) : 1;
+    if (rx > 32) rx = 32;
+    if (ry > 32) ry = 32;
+    var key = name + '|' + a + '|' + b + '|' + rx + '|' + ry;
+    if (!_patternCache) _patternCache = {};
+    var tex = _patternCache[key];
+    if (!tex) {
+      if (_patternCount >= MAX_PATTERNS) {
+        warnOnce('estampas-demais', 'há estampas demais nesta cena; use menos combinações de cor.');
+        return;
+      }
+      var cv = document.createElement('canvas');
+      cv.width = 64;
+      cv.height = 64;
+      var g = cv.getContext('2d');
+      if (!g) return;
+      _drawPattern(g, name, a, b);
+      tex = new THREE.CanvasTexture(cv);
+      if (THREE.NearestFilter) tex.magFilter = THREE.NearestFilter;
+      if (THREE.RepeatWrapping) {
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+      }
+      if (tex.repeat && tex.repeat.set) tex.repeat.set(rx, ry);
+      if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+      tex.needsUpdate = true;
+      _patternCache[key] = tex;
+      _patternCount = _patternCount + 1;
+    }
+    eachMaterial(obj, function (material) {
+      material.map = tex;
+      material.needsUpdate = true;
+    });
+  }
+  /** Tira o objeto do passe de sombra (continua recebendo sombra dos outros). */
+  function noShadow(obj) {
+    if (!obj) return;
+    if (obj.traverse) obj.traverse(function (child) { child.castShadow = false; });
+    else obj.castShadow = false;
+  }
+  // Gaveta por objeto: direção do inimigo, tempo de espera, quantas vidas tem.
+  // Espelho do "guardar valor na entidade" do Jogo 3D Avançado.
+  function setObjectValue(obj, key, value) {
+    var s = szData(obj);
+    if (!s) return;
+    if (!s.vals) s.vals = {};
+    s.vals[String(key)] = value;
+  }
+  function objectValue(obj, key) {
+    var s = obj && obj.userData && obj.userData.sz ? obj.userData.sz : null;
+    if (!s || !s.vals) return 0;
+    var v = s.vals[String(key)];
+    return v === undefined ? 0 : v;
   }
   function setVisible(obj, mode) {
     if (obj) obj.visible = mode !== 'hide';
@@ -1623,6 +1780,16 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       if (world._solids.indexOf(obj) === -1) world._solids.push(obj);
     }
   }
+  // Guarda uma batida do quadro corrente. Só registra quando alguém está lendo
+  // (o array nasce no stepBody): quem usa resolveCollision avulso não paga nada
+  // e não acumula lixo.
+  function _recordHit(sa, solid, side) {
+    if (!sa || !sa.hits) return;
+    for (var i = 0; i < sa.hits.length; i++) {
+      if (sa.hits[i].other === solid && sa.hits[i].side === side) return;
+    }
+    sa.hits.push({ other: solid, side: side });
+  }
   function resolveAABB(obj, solid) {
     if (!obj || !solid || !obj.position || !solid.position) return;
     var sa = szData(obj), sb = szData(solid);
@@ -1635,15 +1802,76 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var oy = ay + by - Math.abs(dy);
     var oz = az + bz - Math.abs(dz);
     if (ox <= 0 || oy <= 0 || oz <= 0) return;
+    // Plataforma que se atravessa por baixo: só segura quem vem CAINDO de cima.
+    // Subindo, andando por dentro ou encostando de lado, ela não existe.
+    if (solid.userData && solid.userData._passUnder) {
+      if (!(dy > 0 && sa.vy <= 0)) return;
+      obj.position.y += oy;
+      sa.grounded = true;
+      sa.vy = 0;
+      _recordHit(sa, solid, 'pes');
+      if (solid.userData._carry) _startRide(sa, solid);
+      return;
+    }
     if (ox <= oy && ox <= oz) {
       obj.position.x += dx < 0 ? -ox : ox; sa.vx = 0;
+      _recordHit(sa, solid, dx < 0 ? 'direita' : 'esquerda');
     } else if (oy <= ox && oy <= oz) {
       obj.position.y += dy < 0 ? -oy : oy;
       if (dy > 0) sa.grounded = true;
       sa.vy = 0;
+      _recordHit(sa, solid, dy > 0 ? 'pes' : 'cabeca');
+      if (dy > 0 && solid.userData && solid.userData._carry) _startRide(sa, solid);
     } else {
       obj.position.z += dz < 0 ? -oz : oz; sa.vz = 0;
+      _recordHit(sa, solid, dz > 0 ? 'tras' : 'frente');
     }
+  }
+  // Carona de plataforma. A lembrança de onde a plataforma estava fica NO
+  // PASSAGEIRO (não na plataforma): duas pessoas em cima do mesmo elevador
+  // precisam cada uma do seu deslocamento, e a plataforma não sabe quantas são.
+  function _startRide(sa, solid) {
+    sa.rideOn = solid;
+    sa.rideX = solid.position.x;
+    sa.rideY = solid.position.y;
+    sa.rideZ = solid.position.z;
+  }
+  function _applyRide(obj, s) {
+    var solid = s.rideOn;
+    s.rideOn = null;
+    if (!solid || !solid.position || !solid.userData || !solid.userData._carry) return;
+    obj.position.x += solid.position.x - s.rideX;
+    obj.position.y += solid.position.y - s.rideY;
+    obj.position.z += solid.position.z - s.rideZ;
+  }
+  function carryRiders(obj) {
+    if (!obj) return;
+    if (!obj.userData) obj.userData = {};
+    obj.userData._carry = true;
+  }
+  function passUnder(obj) {
+    if (!obj) return;
+    if (!obj.userData) obj.userData = {};
+    obj.userData._passUnder = true;
+  }
+  /** Para cada batida do último passo de física, no lado pedido. */
+  function forEachHit(obj, side, fn) {
+    if (!obj || typeof fn !== 'function') return;
+    var s = obj.userData && obj.userData.sz ? obj.userData.sz : null;
+    if (!s || !s.hits) return;
+    var wanted = side === 'pes' || side === 'cabeca' || side === 'esquerda' ||
+      side === 'direita' || side === 'frente' || side === 'tras' ? side : 'qualquer';
+    var list = s.hits.slice();
+    for (var i = 0; i < list.length; i++) {
+      if (wanted !== 'qualquer' && list[i].side !== wanted) continue;
+      try { fn(list[i]); } catch (e) {
+        console.error('SZGame3D: erro ao tratar uma batida:', e);
+      }
+    }
+  }
+  /** A batida foi contra este objeto? */
+  function hitIs(hit, obj) {
+    return !!(hit && obj && hit.other === obj);
   }
   function resolveCollision(a, b) {
     if (!shareWorld(a, b, 'resolve-collision-world', 'Resolver uma colisão')) return;
@@ -1654,6 +1882,11 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!belongsToWorld(world, obj, 'body-step-world', 'Atualizar o corpo físico')) return;
     var s = szData(obj);
     var scale = frameScale(world);
+    // A carona entra ANTES da integração: o passageiro acompanha a plataforma
+    // primeiro e só então cai/anda a partir do lugar novo.
+    if (s.rideOn) _applyRide(obj, s);
+    if (!s.hits) s.hits = [];
+    s.hits.length = 0;
     s.vy += s.gravity * scale;
     s.grounded = false;
     var maxMove = Math.max(Math.abs(s.vx * scale), Math.abs(s.vy * scale), Math.abs(s.vz * scale));
@@ -1684,6 +1917,55 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     s.vx = mx * sp;
     s.vz = mz * sp;
     if (keys.Space && s.grounded) s.vy = jp;
+    stepBody(obj, world);
+  }
+  // Movimento de plataforma CLÁSSICA, no corredor lateral (só o eixo X). É a
+  // tradução para 3D do que o Jogo 2D já faz: acelera e derrapa em vez de ligar
+  // e desligar, corre no dobro da velocidade segurando Shift, e o pulo é mais
+  // alto quanto mais tempo o botão fica apertado. Os números seguem os do 2D,
+  // reescalados pela velocidade máxima (lá a conta é em pixels, aqui em unidades).
+  function classicPlatformer(obj, world, speed, jump) {
+    if (!obj) return;
+    if (!belongsToWorld(world, obj, 'classic-platformer-world', 'Mover como plataforma clássica')) return;
+    var s = szData(obj);
+    var scale = frameScale(world);
+    var maxWalk = Math.abs(finite(speed, 0.08)) || 0.08;
+    var running = !!(keys.ShiftLeft || keys.ShiftRight || keys.KeyX);
+    var max = running ? maxWalk * 2 : maxWalk;
+    var dir = ((keys.ArrowRight || keys.KeyD) ? 1 : 0) - ((keys.ArrowLeft || keys.KeyA) ? 1 : 0);
+    var wasGrounded = s.grounded;
+    var vx = finite(s.vx, 0);
+    // Virar contra o próprio movimento freia mais rápido do que sair do zero:
+    // é o que dá o "derrapar" do gênero.
+    var against = dir !== 0 && vx !== 0 && (vx < 0 ? -1 : 1) !== dir;
+    var accel = (wasGrounded ? (against ? 0.34 : 0.16) : 0.09) * maxWalk;
+    if (dir !== 0) {
+      vx += dir * accel * scale;
+      if (Math.abs(vx) > max) vx = dir * max;
+    } else {
+      var friction = (wasGrounded ? 0.13 : 0.015) * maxWalk * scale;
+      if (Math.abs(vx) <= friction) vx = 0;
+      else vx -= (vx < 0 ? -1 : 1) * friction;
+    }
+    s.vx = vx;
+    s.vz = 0;
+
+    var jumpForce = Math.abs(finite(jump, 0.2)) || 0.2;
+    var jumpHeld = !!(keys.Space || keys.ArrowUp || keys.KeyW);
+    // A borda é lembrada NO OBJETO, não no teclado: assim cada personagem tem o
+    // seu pulo e o teste não depende de um quadro de animação estar rodando.
+    var jumpStarts = jumpHeld && !s.jumpWasHeld && wasGrounded;
+    s.jumpWasHeld = jumpHeld;
+    if (jumpStarts) {
+      s.vy = jumpForce;
+      s.jumpFrames = 0;
+    } else if (jumpHeld && s.vy > 0 && finite(s.jumpFrames, 10) < 10) {
+      s.vy += jumpForce * 0.09 * scale;
+      s.jumpFrames = finite(s.jumpFrames, 0) + 1;
+    } else if (!jumpHeld && s.vy > 0) {
+      s.vy = s.vy * 0.55;
+      s.jumpFrames = 10;
+    }
     stepBody(obj, world);
   }
   function fpsControls(obj, world, speed) {
@@ -1904,6 +2186,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
         if (!world._animationLoopInstalled) return;
         _updateCameras(world);
         world.renderer.render(world.scene, world.camera);
+        // Fim do quadro: "apertou agora" vale só para o quadro do aperto.
+        justPressed = {};
       } catch (e) {
         console.error('SZGame3D: erro durante a animação:', e);
         world.renderer.setAnimationLoop(null);
@@ -3089,7 +3373,23 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     try { fn(); } catch (e) { warn('erro em "Ao iniciar": ' + e); }
   }
 
+  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/
+
   window.SZGame3D = {
+    createPlatformScene: createPlatformScene,
+    setStageTheme: setStageTheme,
+    createHero: createHero,
+    loadStage: loadStage,
+    clearStage: clearStage,
+    stageReset: stageReset,
+    stageStep: stageStep,
+    shootFire: shootFire,
+    sideCamera: sideCamera,
+    onStageEvent: onStageEvent,
+    stageValue: stageValue,
+    setStageNumber: setStageNumber,
+    heroIs: heroIs,
+    stageIs: stageIs,
     runProject: runProject,
     createScene: createScene,
     createFullscreenScene: createFullscreenScene,
@@ -3107,6 +3407,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     controlWithKeys: controlWithKeys,
     cameraFollow: cameraFollow,
     keyDown: keyDown,
+    keyPressed: keyPressed,
     collides: collides,
     hitAny: hitAny,
     createGroup: createGroup,
@@ -3186,8 +3487,15 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     stepBody: stepBody,
     setSolid: setSolid,
     platformerControls: platformerControls,
+    classicPlatformer: classicPlatformer,
     fpsControls: fpsControls,
     resolveCollision: resolveCollision,
+    forEachHit: forEachHit,
+    hitIs: hitIs,
+    carryRiders: carryRiders,
+    passUnder: passUnder,
+    setObjectValue: setObjectValue,
+    objectValue: objectValue,
     fpsCamera: fpsCamera,
     orbitCamera: orbitCamera,
     thirdPersonCamera: thirdPersonCamera,
@@ -3203,6 +3511,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     setOpacity: setOpacity,
     setMaterial: setMaterial,
     setTexture: setTexture,
+    paintPattern: paintPattern,
+    noShadow: noShadow,
     setVisible: setVisible,
     remove: removeObject,
     addAmbientLight: addAmbientLight,
@@ -3231,3 +3541,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     THREE: THREE
   };
 })();`
+
+/**
+ * O Kit Plataforma entra por substituição, do mesmo jeito que o Jogo 3D Avançado
+ * compõe os seus subsistemas: o fragmento roda DENTRO da IIFE e enxerga tudo que
+ * o runtime principal já definiu, sem criar outro global nem outro import.
+ */
+export const gameThreeDRuntime = gameThreeDRuntimeBase.replace(
+  '  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/',
+  gameThreeDPlatformRuntimeSource,
+)

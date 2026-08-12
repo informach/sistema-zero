@@ -53,6 +53,7 @@ import {
   type ExtensionCompatibilityEntry,
   findExtensionConflict,
 } from '../extensions/compatibility'
+import { isCampaignStageExtraState } from '../official-extensions/game-2d-advanced/campaignSchema'
 import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
 import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
 import { CANVAS3D_BLOCK_TYPES } from '../three/canvas3dContract'
@@ -300,6 +301,8 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_som_stop',
   'sz_som_play_music',
   'sz_som_stop_music',
+  'sz_som_tone',
+  'sz_som_noise',
   'sz_som_volume',
   ...CANVAS3D_BLOCK_TYPES,
   'sz_adv_raw_css',
@@ -355,6 +358,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_query_selector',
   'sz_js_query_selector_all',
   'sz_js_storage_set',
+  'sz_js_storage_remove',
   'sz_js_event_method',
   'sz_js_fetch_json',
   'sz_js_repeat',
@@ -439,6 +443,12 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_ternary',
   'sz_val_concat_arrays',
   'sz_val_dataset',
+  'sz_val_json_data',
+  'sz_val_json_parse',
+  'sz_val_json_stringify',
+  'sz_val_gamepad_connected',
+  'sz_val_gamepad_axis',
+  'sz_val_gamepad_button',
   'sz_val_join',
   'sz_val_logic',
   'sz_val_not',
@@ -481,6 +491,11 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_window_width',
   'sz_val_device_pixel_ratio',
   'sz_val_system_dark',
+  'sz_val_system_reduced_motion',
+  'sz_val_event_pointer_id',
+  'sz_val_storage_get_dynamic',
+  'sz_js_storage_set_dynamic',
+  'sz_js_storage_remove_dynamic',
   'sz_val_perf_now',
   'sz_val_date_part',
 ])
@@ -1501,6 +1516,8 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
       return isSupportedIfElseExtraState(raw)
     case 'sz_canvas_anim_loop':
       return isSupportedHandleExtraState(raw)
+    case 'sz_gk_define_campaign_stage':
+      return isCampaignStageExtraState(raw)
     default:
       return false
   }
@@ -1723,6 +1740,7 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
     case 'g2d:onKey':
+    case 'g2d:onActionPressed':
     case 'g2d:onOverlap':
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':

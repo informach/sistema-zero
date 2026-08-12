@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { MAX_BLOCK_LEVEL } from '#core'
 import { Button, Modal } from '#ui'
 import { AI_MODEL_OPTIONS, useSettingsStore } from '../../state/settingsStore'
@@ -41,6 +41,11 @@ export function SettingsDrawer({
 
   const [draftKey, setDraftKey] = useState(apiKey)
   const [showKey, setShowKey] = useState(false)
+  const apiKeyInputId = useId()
+  const aiTabId = useId()
+  const appearanceTabId = useId()
+  const aiPanelId = useId()
+  const appearancePanelId = useId()
   const [section, setSection] = useState<'ai' | 'appearance'>(
     showAITab ? initialSection : 'appearance',
   )
@@ -90,14 +95,44 @@ export function SettingsDrawer({
         </Button>
       }
     >
-      <nav className="mb-3 flex gap-2 border-b border-sz-border-soft">
+      <div
+        role="tablist"
+        aria-label="Seções das configurações"
+        className="mb-3 flex gap-2 border-b border-sz-border-soft"
+      >
         {(showAITab ? (['ai', 'appearance'] as const) : (['appearance'] as const)).map((s) => {
           const label = s === 'ai' ? 'Assistente de IA' : 'Aparência'
           return (
             <button
               key={s}
+              id={s === 'ai' ? aiTabId : appearanceTabId}
               type="button"
+              role="tab"
+              aria-selected={section === s}
+              aria-controls={s === 'ai' ? aiPanelId : appearancePanelId}
+              tabIndex={section === s ? 0 : -1}
               onClick={() => setSection(s)}
+              onKeyDown={(event) => {
+                if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+                event.preventDefault()
+                const tabs = Array.from(
+                  event.currentTarget.parentElement?.querySelectorAll<HTMLElement>(
+                    '[role="tab"]',
+                  ) ?? [],
+                )
+                const current = tabs.indexOf(event.currentTarget)
+                const target =
+                  event.key === 'Home'
+                    ? tabs[0]
+                    : event.key === 'End'
+                      ? tabs.at(-1)
+                      : tabs[
+                          (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) %
+                            tabs.length
+                        ]
+                target?.click()
+                target?.focus()
+              }}
               className={[
                 'sz-touch-target border-b-2 px-2 py-1.5 text-xs font-medium transition-colors',
                 section === s
@@ -109,9 +144,9 @@ export function SettingsDrawer({
             </button>
           )
         })}
-      </nav>
+      </div>
       {section === 'ai' && showAITab && (
-        <section className="space-y-3">
+        <section id={aiPanelId} role="tabpanel" aria-labelledby={aiTabId} className="space-y-3">
           <header>
             <h3 className="text-sm font-semibold text-sz-fg">Assistente de IA</h3>
             <p className="mt-1 text-xs text-sz-fg-mute">
@@ -131,12 +166,14 @@ export function SettingsDrawer({
 
           {showKeySection && (
             <div className="block text-xs text-sz-fg-soft">
-              <span>Chave de API</span>
+              <label htmlFor={apiKeyInputId}>Chave de API</label>
               <div className="mt-1 flex gap-2">
                 <input
+                  id={apiKeyInputId}
                   name="openrouter-api-key"
                   type={showKey ? 'text' : 'password'}
                   autoComplete="off"
+                  spellCheck={false}
                   value={draftKey}
                   onChange={(e) => setDraftKey(e.target.value)}
                   placeholder="sk-or-v1-…"
@@ -196,7 +233,12 @@ export function SettingsDrawer({
       )}
 
       {section === 'appearance' && (
-        <section className="space-y-3">
+        <section
+          id={appearancePanelId}
+          role="tabpanel"
+          aria-labelledby={appearanceTabId}
+          className="space-y-3"
+        >
           <header>
             <h3 className="text-sm font-semibold text-sz-fg">Aparência</h3>
             <p className="mt-1 text-xs text-sz-fg-mute">

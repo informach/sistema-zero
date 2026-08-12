@@ -48,6 +48,7 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *  - `animation` → animações CSS declaradas por blocos de keyframes;
  *  - `spritesheet` → folha de quadros do Jogo 2D (`sz_g2d_load_spritesheet`);
  *  - `tilemap`  → mapa de tiles do Jogo 2D (`sz_g2d_create_tilemap`);
+ *  - `g2d-vector-tileset` → conjunto de tiles vetoriais do Jogo 2D;
  *  - `board` / `stored-value` → tabuleiros e valores persistidos do Jogo 2D Avançado;
  *  - `combat-move` / `fight-move` → golpes declarados nos dois sistemas de luta;
  *  - `scene3d`  → cena Three.js crua criada pelos blocos Canvas 3D;
@@ -90,6 +91,7 @@ export type NameKind =
   | 'animation'
   | 'spritesheet'
   | 'tilemap'
+  | 'g2d-vector-tileset'
   | 'g2d-world'
   | 'g2d-level'
   | 'board'
@@ -162,6 +164,7 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'dom-target',
   'canvas3d-canvas',
   'canvas-context',
+  'g2d-vector-tileset',
   'g2d-world',
   'g2d-level',
   'board',
@@ -229,6 +232,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'animation',
   'spritesheet',
   'tilemap',
+  'g2d-vector-tileset',
   'g2d-world',
   'g2d-level',
   'board',
@@ -529,9 +533,13 @@ const SPRITESHEET_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_load_spritesh
 const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_tilemap: ['NAME'],
   sz_g2d_create_tilemap_from_asset: ['NAME'],
+  sz_g2d_create_vector_tilemap: ['NAME'],
   // Jogo 2D Avançado (Kit): "Carregar mapa … do meu desenho" também declara um nome de mapa.
   sz_gk_load_tilemap: ['NAME'],
   sz_gk_create_empty_tilemap: ['NAME'],
+}
+const G2D_VECTOR_TILESET_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g2d_create_vector_tileset: ['NAME'],
 }
 const G2D_WORLD_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_world: ['NAME'],
@@ -1156,6 +1164,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     icon: '🗺️',
     placeholder: 'nome do mapa de tiles',
     empty: 'Nenhum mapa de tiles ainda — crie um ("Criar mapa de tiles") ou digite o nome abaixo.',
+  },
+  'g2d-vector-tileset': {
+    icon: '🧱',
+    placeholder: 'nome do conjunto de tiles vetoriais',
+    empty: 'Nenhum conjunto vetorial ainda — crie um com “Criar conjunto de tiles vetoriais”.',
   },
   'g2d-world': {
     icon: '🌍',
@@ -1844,6 +1857,13 @@ export function collectTilemaps(workspace: Blockly.Workspace | null | undefined)
   return collectDeclaredNames(workspace, TILEMAP_DECL_BLOCKS)
 }
 
+/** Conjuntos vetoriais declarados por `sz_g2d_create_vector_tileset`. */
+export function collectGame2DVectorTilesets(
+  workspace: Blockly.Workspace | null | undefined,
+): string[] {
+  return collectDeclaredNames(workspace, G2D_VECTOR_TILESET_DECL_BLOCKS)
+}
+
 export function collectGame2DWorlds(
   workspace: Blockly.Workspace | null | undefined,
   useBlock?: Blockly.Block | null,
@@ -2248,6 +2268,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectSpritesheets(ws)
       case 'tilemap':
         return collectTilemaps(ws)
+      case 'g2d-vector-tileset':
+        return collectGame2DVectorTilesets(ws)
       case 'g2d-world':
         return collectGame2DWorlds(ws, block)
       case 'g2d-level':

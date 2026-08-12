@@ -138,8 +138,21 @@ describe('criar no grupo: o jogo que a criança monta roda', () => {
 })
 
 describe('criar no grupo: escopo do nome', () => {
-  /** Monta o jogo inteiro (formato plano `js`) para exercitar a validação do schema. */
-  function ir(rest: JSStatement[]) {
+  /**
+   * Monta o jogo inteiro (formato plano `js`) para exercitar a validação do schema.
+   *
+   * ⚠️ O `js` é anotado como `JSStatement[]` de propósito. Sem a anotação, o
+   * TypeScript infere o tipo de CADA literal e cruza tudo contra a união
+   * `JSStatement` (centenas de membros), estourando o "union type too complex to
+   * represent". A anotação não muda nada do que o teste afirma: o schema segue
+   * validando os mesmos nós em tempo de execução.
+   */
+  function ir(rest: JSStatement[]): {
+    html: never[]
+    css: never[]
+    js: JSStatement[]
+    extensions?: { extensionId: string }[]
+  } {
     return {
       html: [],
       css: [],

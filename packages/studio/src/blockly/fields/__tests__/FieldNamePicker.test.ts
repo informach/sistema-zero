@@ -26,6 +26,7 @@ import {
   collectEnemyCombatants,
   collectFightMoves,
   collectFunctionNames,
+  collectGame2DVectorTilesets,
   collectGame3DObjects,
   collectGroups3d,
   collectGroupsAndLists,
@@ -1102,8 +1103,23 @@ describe('FieldNamePicker', () => {
       const ws = new Blockly.Workspace()
       ws.newBlock('sz_g2d_load_spritesheet').setFieldValue('correr', 'NAME')
       ws.newBlock('sz_g2d_create_tilemap').setFieldValue('fase1', 'NAME')
+      ws.newBlock('sz_g2d_create_vector_tilemap').setFieldValue('castelo', 'NAME')
       expect(collectSpritesheets(ws)).toEqual(['correr'])
-      expect(collectTilemaps(ws)).toEqual(['fase1'])
+      expect(collectTilemaps(ws)).toEqual(['fase1', 'castelo'])
+    })
+
+    it('conjunto vetorial é declarado uma vez e consumido pelo picker próprio', () => {
+      const ws = new Blockly.Workspace()
+      const declaration = ws.newBlock('sz_g2d_create_vector_tileset')
+      declaration.setFieldValue('pecasDoCastelo', 'NAME')
+
+      expect(declaration.getField('NAME')).not.toBeInstanceOf(FieldNamePicker)
+      expect(collectGame2DVectorTilesets(ws)).toEqual(['pecasDoCastelo'])
+      expect(kindOf(ws.newBlock('sz_g2d_define_vector_tile'), 'TILESET')).toBe('g2d-vector-tileset')
+      expect(kindOf(ws.newBlock('sz_g2d_create_vector_tilemap'), 'TILESET')).toBe(
+        'g2d-vector-tileset',
+      )
+      expect(nameKindAllowsFreeText('g2d-vector-tileset')).toBe(false)
     })
 
     it('mapa vazio criado por código também aparece no seletor de tilemaps', () => {

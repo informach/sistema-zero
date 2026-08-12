@@ -181,6 +181,21 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
     expect(gameKitPromptContext).toContain('troca automática de foco')
   })
 
+  it('documenta a receita completa de campanha, identidade e acontecimentos', () => {
+    const docs = gameKitManifest.docs ?? ''
+
+    expect(docs).toContain('### Campanhas com fases pintáveis')
+    expect(docs).toContain('quantas gemas são obrigatórias para concluir')
+    expect(docs).toContain('identificador único')
+    expect(docs).toContain('identidade fase + objeto')
+    expect(docs).toContain('Quando acontecer … na aventura')
+    expect(docs).toContain('O valor só existe enquanto o acontecimento está sendo tratado')
+    expect(docs).toContain('ficam ancorados na área visível do palco')
+    expect(gameKitPromptContext).toContain('requiredGems: 8')
+    expect(gameKitPromptContext).toContain('Gemas são persistidas por fase + entidade')
+    expect(gameKitPromptContext).toContain('campaignEventValue(campo)')
+  })
+
   it('documenta os limites que protegem projetos grandes', () => {
     const contratos = [
       ['sz_gk_create_empty_tilemap', '512'],

@@ -107,8 +107,10 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
     case 'g2d:onKey':
+    case 'g2d:onActionPressed':
     case 'g2d:onOverlap':
     case 'g2d:forEachInGroup':
+    case 'g2d:forEachTileContact':
     case 'g2d:pruneOffscreen':
     case 'g2d:onGroupOverlap':
     case 'g2d:onSpriteGroupOverlap':
@@ -128,6 +130,8 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:addButton':
     case 'gk:onEnterState':
     case 'gk:onUpdate':
+    case 'gk:onFixedUpdate':
+    case 'gk:onCampaignEvent':
     case 'gk:onDraw':
     case 'gk:onEvent':
     case 'gk:onDrawHud':

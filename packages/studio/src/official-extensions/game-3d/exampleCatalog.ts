@@ -12,6 +12,7 @@ import {
   nightExample,
   patrulhaEspacialExample,
   raceExample,
+  reinoCogumeloExample,
   reunirRebanhoBasicoExample,
   rotatingCubeExample,
   shapesExample,
@@ -38,4 +39,5 @@ export const gameThreeDExamples = [
   cercoNaBaseBasicoExample,
   minaDeCristaisBasicoExample,
   stackExample,
+  reinoCogumeloExample,
 ] as const

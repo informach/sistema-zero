@@ -7,12 +7,17 @@ import {
   type ExtensionDefinition,
   type ExtensionExample,
   extensionMinLevel,
+  loadExtensionDocs,
   loadExtensionExampleCatalogs,
 } from '#extensions'
 import { generateProjectFiles } from '#generators'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { Badge, Button, Modal } from '#ui'
-import { CORE_EXAMPLES, type CoreExample } from '../../examples/core'
+import {
+  CORE_EXAMPLE_SUMMARIES,
+  type CoreExampleSummary,
+  loadCoreExample,
+} from '../../examples/coreCatalog'
 import {
   countExtensionBlocksInProject,
   installExtension,
@@ -47,9 +52,12 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   // só aparecem quando o host libera (playground). Ver examples-visibility.ts.
   const showExamples = useStudioExamplesVisible()
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; count: number } | null>(null)
-  // "📖 Saiba mais": a docs rica do manifest (nunca era exibida) abre num
-  // expander por card — UM aberto por vez mantém o modal curto.
+  // "📖 Saiba mais": o resumo do manifest abre na hora; extensões grandes
+  // substituem pelo manual lazy. UM aberto por vez mantém o modal curto.
   const [docsOpenId, setDocsOpenId] = useState<string | null>(null)
+  const [docsByExtension, setDocsByExtension] = useState<Record<string, string>>({})
+  const [docsErrors, setDocsErrors] = useState<Record<string, boolean>>({})
+  const [docsAttempt, setDocsAttempt] = useState(0)
   const [examplesByExtension, setExamplesByExtension] = useState<
     Record<string, readonly ExtensionExample[]>
   >({})
@@ -57,6 +65,8 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
     'idle',
   )
   const [examplesAttempt, setExamplesAttempt] = useState(0)
+  const [coreExampleLoading, setCoreExampleLoading] = useState<string | null>(null)
+  const [coreExampleError, setCoreExampleError] = useState(false)
 
   // Nível de aprendizado (mesma fonte da paleta no BlocklyPanel): não adianta
   // OFERECER p/ instalar uma extensão cujos blocos o nível atual nem mostra —
@@ -92,6 +102,29 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
       active = false
     }
   }, [examplesAttempt, open, showExamples])
+
+  useEffect(() => {
+    void docsAttempt
+    if (!docsOpenId) return
+    const extension = OFFICIAL_CATALOG.find((item) => item.manifest.id === docsOpenId)
+    if (!extension?.documentation || docsByExtension[docsOpenId] !== undefined) return
+
+    let active = true
+    setDocsErrors((current) => ({ ...current, [docsOpenId]: false }))
+    void loadExtensionDocs(extension)
+      .then((docs) => {
+        if (!active) return
+        setDocsByExtension((current) => ({ ...current, [docsOpenId]: docs }))
+      })
+      .catch(() => {
+        if (!active) return
+        setDocsErrors((current) => ({ ...current, [docsOpenId]: true }))
+      })
+
+    return () => {
+      active = false
+    }
+  }, [docsAttempt, docsByExtension, docsOpenId])
 
   if (!hasProject)
     return (
@@ -182,27 +215,36 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   }
 
   // Exemplo CLÁSSICO (sem extensão): aplica a IR direto, sem registrar extensão.
-  const handleLoadCoreExample = (example: CoreExample) => {
+  const handleLoadCoreExample = async (summary: CoreExampleSummary) => {
     const project = projectStoreApi.getState().project
     if (!project) return
-    applyProjectState({
-      ir: example.ir,
-      blocksState: buildWorkspaceStateFromIR(example.ir),
-      installedExtensions: project.installedExtensions,
-      files: generateProjectFiles({ ir: example.ir, projectName: project.name }),
-    })
-    // Assets embutidos do exemplo (ex.: fundo por CSS): o patch acima não carrega
-    // `assets`, então entram pelo addAsset. Nome já existente no projeto = já tem
-    // uma imagem com esse nome referenciável pelo CSS — o erro é ignorado.
-    for (const asset of example.assets ?? []) {
-      projectStoreApi.getState().addAsset({
-        name: asset.name,
-        dataUrl: asset.dataUrl,
-        width: asset.width,
-        height: asset.height,
-        source: asset.source,
-        libId: asset.libId,
+    setCoreExampleLoading(summary.name)
+    setCoreExampleError(false)
+    try {
+      const example = await loadCoreExample(summary.name)
+      applyProjectState({
+        ir: example.ir,
+        blocksState: buildWorkspaceStateFromIR(example.ir),
+        installedExtensions: project.installedExtensions,
+        files: generateProjectFiles({ ir: example.ir, projectName: project.name }),
       })
+      // Assets embutidos do exemplo (ex.: fundo por CSS): o patch acima não carrega
+      // `assets`, então entram pelo addAsset. Nome já existente no projeto = já tem
+      // uma imagem com esse nome referenciável pelo CSS — o erro é ignorado.
+      for (const asset of example.assets ?? []) {
+        projectStoreApi.getState().addAsset({
+          name: asset.name,
+          dataUrl: asset.dataUrl,
+          width: asset.width,
+          height: asset.height,
+          source: asset.source,
+          libId: asset.libId,
+        })
+      }
+    } catch {
+      setCoreExampleError(true)
+    } finally {
+      setCoreExampleLoading(null)
     }
   }
 
@@ -257,6 +299,10 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
             const conflictName = OFFICIAL_CATALOG.find((item) => item.manifest.id === conflictId)
               ?.manifest.name
             const docsOpen = docsOpenId === ext.manifest.id
+            const loadedDocs = docsByExtension[ext.manifest.id]
+            const docsError = docsErrors[ext.manifest.id] === true
+            const docsLoading = Boolean(ext.documentation) && loadedDocs === undefined && !docsError
+            const docsToRender = loadedDocs ?? ext.manifest.docs
             return (
               <li
                 key={ext.manifest.id}
@@ -315,7 +361,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                       {p}
                     </Badge>
                   ))}
-                  {ext.manifest.docs.trim().length > 0 && (
+                  {(ext.manifest.docs.trim().length > 0 || ext.documentation) && (
                     <button
                       type="button"
                       aria-expanded={docsOpen}
@@ -327,11 +373,38 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                   )}
                 </div>
                 {docsOpen && (
-                  <div
-                    className="mt-2 flex max-h-[40vh] flex-col gap-2 overflow-y-auto rounded border border-sz-border bg-sz-panel p-3 text-xs text-sz-fg-soft"
-                    // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML saneado por renderLessonMarkdown (escape-first + subconjunto seguro)
-                    dangerouslySetInnerHTML={{ __html: renderLessonMarkdown(ext.manifest.docs) }}
-                  />
+                  <div className="mt-2 flex max-h-[40vh] flex-col gap-2 overflow-y-auto rounded border border-sz-border bg-sz-panel p-3 text-xs text-sz-fg-soft">
+                    <div
+                      // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML saneado por renderLessonMarkdown (escape-first + subconjunto seguro)
+                      dangerouslySetInnerHTML={{ __html: renderLessonMarkdown(docsToRender) }}
+                    />
+                    {docsLoading && (
+                      <p role="status" className="text-sz-fg-mute">
+                        {t('extensions.docsLoading')}
+                      </p>
+                    )}
+                    {docsError && (
+                      <div
+                        role="alert"
+                        className="flex items-center justify-between gap-2 text-sz-error"
+                      >
+                        <span>{t('extensions.docsError')}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setDocsErrors((current) => ({
+                              ...current,
+                              [ext.manifest.id]: false,
+                            }))
+                            setDocsAttempt((attempt) => attempt + 1)
+                          }}
+                        >
+                          {t('extensions.docsRetry')}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 )}
                 {showExamples && (examplesByExtension[ext.manifest.id]?.length ?? 0) > 0 && (
                   <div className="mt-2 flex flex-wrap items-center gap-1 border-t border-sz-border pt-2">
@@ -355,13 +428,13 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
           })}
         </ul>
 
-        {showExamples && CORE_EXAMPLES.length > 0 && (
+        {showExamples && CORE_EXAMPLE_SUMMARIES.length > 0 && (
           <div className="mt-5">
             <p className="text-xs font-semibold uppercase text-sz-fg-mute">
               Exemplos clássicos (sem extensão)
             </p>
             <ul className="mt-2 space-y-2">
-              {CORE_EXAMPLES.map((example: CoreExample) => (
+              {CORE_EXAMPLE_SUMMARIES.map((example) => (
                 <li
                   key={example.name}
                   className="flex items-center justify-between gap-3 rounded-md border border-sz-border bg-sz-panel-soft p-3"
@@ -370,12 +443,22 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                     <strong className="text-sm text-sz-fg">{example.name}</strong>
                     <p className="mt-1 text-xs text-sz-fg-soft">{example.description}</p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleLoadCoreExample(example)}>
-                    Abrir
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={coreExampleLoading !== null}
+                    onClick={() => void handleLoadCoreExample(example)}
+                  >
+                    {coreExampleLoading === example.name ? 'Carregando…' : 'Abrir'}
                   </Button>
                 </li>
               ))}
             </ul>
+            {coreExampleError && (
+              <p role="alert" className="mt-2 text-xs text-sz-error">
+                Não foi possível carregar o exemplo clássico. Tente novamente.
+              </p>
+            )}
           </div>
         )}
       </Modal>

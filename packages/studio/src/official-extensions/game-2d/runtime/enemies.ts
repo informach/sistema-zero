@@ -1315,6 +1315,17 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       // inimigo sumia da tela com x/y NaN, ocupando um slot para sempre.
       if (typeof s._homeX !== 'number') { s._homeX = s.x; s._homeY = s.y; }
       if (typeof s._dir !== 'number') s._dir = 1;
+      // Modos clássicos de pisada são opt-in. O achatado espera sua animação
+      // curta; o casco é dirigido por updateEnemyShells, sem o comportamento
+      // normal disputar o mesmo eixo no mesmo quadro.
+      if (s._stompSquashFrames > 0) {
+        s._stompSquashFrames -= 1;
+        s.vx = 0;
+        s.vy = 0;
+        if (s._stompSquashFrames > 0) { autoAnimate(s); continue; }
+        s.hp = 0;
+      }
+      if (s._shell && s.hp > 0) { autoAnimate(s); continue; }
       // Chefão: engorda a vida UMA vez por inimigo. É um buff de TETO, não uma
       // cura: a vida máxima cresce 5× e o inimigo ganha a diferença, então o
       // dano que ele já levou continua valendo (somar "chefão" no meio do jogo
@@ -1558,9 +1569,50 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       } else if (sprite.y + sprite.h - svy > e.y + folga) {
         continue;
       }
+      var stompMode = type._stompMode || 'defeat';
+      if (stompMode === 'spiky') {
+        // O contato continua disponível para hurtByEnemy; espinhos não aceitam
+        // a pisada e não reposicionam nem entregam um quique enganoso.
+        continue;
+      }
       sprite.y = up ? e.y + e.h : e.y - sprite.h;
       sprite.vy = up ? b : -b;
       sprite.onGround = false;
+      if (stompMode === 'shell') {
+        if (e._shell) {
+          e._shellMoving = !e._shellMoving;
+          if (e._shellMoving && !_finiteNumber(e._shellSpeed, 0)) {
+            e._shellSpeed = centerX(sprite) < centerX(e) ? 5 : -5;
+          }
+          e.vx = e._shellMoving ? e._shellSpeed : 0;
+        } else {
+          var enemyBottom = e.y + e.h;
+          e._shell = true;
+          e._shellMoving = true;
+          e._shellSpeed = centerX(sprite) < centerX(e) ? 5 : -5;
+          e.h = Math.max(8, Math.round(e.h * 0.65));
+          e.y = enemyBottom - e.h;
+          e.vx = e._shellSpeed;
+          e.vy = 0;
+          e.hp = Math.max(1, _finiteNumber(e.hp, 1));
+          e.dmg = 0;
+        }
+        continue;
+      }
+      if (stompMode === 'squash') {
+        e._stompSquashFrames = 20;
+        e.vx = 0;
+        e.vy = 0;
+        e.dmg = 0;
+        continue;
+      }
+      if (stompMode === 'damage') {
+        e.hp = Math.max(0, _finiteNumber(e.hp, 1) - 1);
+        // Enquanto sobrevive, o inimigo continua perigoso. Só o golpe final
+        // neutraliza o contato antes da poda do próximo update.
+        if (e.hp <= 0) e.dmg = 0;
+        continue;
+      }
       // Inimigo derrotado não machuca mais neste quadro: com dano 0 o "Machucar
       // com o dano de contato" sai cedo, então o pulo certo não vira castigo.
       e.dmg = 0;

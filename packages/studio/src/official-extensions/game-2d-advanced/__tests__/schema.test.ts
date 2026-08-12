@@ -87,16 +87,21 @@ const GK_EXPRS: JSExpr[] = [
 
 describe('game-2d-advanced — IR no schema', () => {
   it('todos os statements gk: validam no SZIRSchema', () => {
-    const parsed = SZIRSchema.safeParse({
+    const statements: unknown[] = [
+      { type: 'var', name: 'dica', value: { type: 'str', value: '' } },
+      { type: 'var', name: 'y', value: { type: 'num', value: 0 } },
+    ]
+    for (const statement of GK_STATEMENTS) statements.push(statement)
+    const document: unknown = {
       html: [],
       css: [],
-      js: [
-        { type: 'var', name: 'dica', value: { type: 'str', value: '' } },
-        { type: 'var', name: 'y', value: { type: 'num', value: 0 } },
-        ...GK_STATEMENTS,
-      ],
+      js: statements,
       extensions: [{ extensionId: 'game-2d-advanced' }],
-    })
+    }
+    const schema = SZIRSchema as unknown as {
+      safeParse(value: unknown): { success: boolean }
+    }
+    const parsed = schema.safeParse(document)
     expect(parsed.success).toBe(true)
   })
 
@@ -111,6 +116,21 @@ describe('game-2d-advanced — IR no schema', () => {
     ]
     const parsed = SZIRSchema.safeParse({ html: [], css: [], js, extensions: [] })
     expect(parsed.success).toBe(true)
+  })
+
+  it('rejeita ações e campos de acontecimento fora dos contratos canônicos', () => {
+    const parseExpression = (value: unknown) =>
+      SZIRSchema.safeParse({
+        html: [],
+        css: [],
+        extensions: [{ extensionId: 'game-2d-advanced' }],
+        js: [{ type: 'var', name: 'resultado', value }],
+      }).success
+
+    expect(parseExpression({ type: 'gk:actionDown', action: 'voar' })).toBe(false)
+    expect(parseExpression({ type: 'gk:campaignEventValue', field: 'qualquer-coisa' })).toBe(false)
+    expect(parseExpression({ type: 'gk:actionDown', action: 'pular' })).toBe(true)
+    expect(parseExpression({ type: 'gk:campaignEventValue', field: 'stageId' })).toBe(true)
   })
 
   it('os statements exercitados (v1) são todos tipos gk: reconhecidos', () => {

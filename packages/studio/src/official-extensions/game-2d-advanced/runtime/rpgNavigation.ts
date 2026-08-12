@@ -29,6 +29,37 @@ export const gameKitRpgNavigationRuntime = `
     if (maxX - minX + 1 > MAX_GRID_SIDE || maxY - minY + 1 > MAX_GRID_SIDE) return null;
     if (targetCx < minX || targetCx > maxX || targetCy < minY || targetCy > maxY) return null;
     if (cellOccupied(targetCx, targetCy, n)) return null;
+    // Em uma rota Manhattan livre, a BFS sempre consome primeiro a direção com
+    // menor índice em [direita, baixo, esquerda, cima]. Reproduzir exatamente
+    // esse desempate evita visitar até 262 mil células no caso comum sem mudar
+    // o caminho observável. Ao encontrar qualquer bloqueio, a BFS abaixo segue
+    // sendo a única responsável por procurar o desvio.
+    var xStep = targetCx > startCx ? 1 : targetCx < startCx ? -1 : 0;
+    var yStep = targetCy > startCy ? 1 : targetCy < startCy ? -1 : 0;
+    var xPriority = xStep > 0 ? 0 : xStep < 0 ? 2 : 4;
+    var yPriority = yStep > 0 ? 1 : yStep < 0 ? 3 : 4;
+    var firstIsX = xPriority < yPriority;
+    var directPath = [];
+    var directCx = startCx;
+    var directCy = startCy;
+    var directClear = true;
+    for (var pass = 0; pass < 2 && directClear; pass++) {
+      var moveX = pass === 0 ? firstIsX : !firstIsX;
+      if (moveX) {
+        while (directCx !== targetCx) {
+          directCx += xStep;
+          if (cellOccupied(directCx, directCy, n)) { directClear = false; break; }
+          directPath.push({ cx: directCx, cy: directCy });
+        }
+      } else {
+        while (directCy !== targetCy) {
+          directCy += yStep;
+          if (cellOccupied(directCx, directCy, n)) { directClear = false; break; }
+          directPath.push({ cx: directCx, cy: directCy });
+        }
+      }
+    }
+    if (directClear) return directPath;
     // A grade pode chegar a 512 × 512. Chaves "x,y", arrays que crescem e
     // unshift na reconstrução criavam centenas de milhares de strings/objetos e
     // paravam o quadro. Índices inteiros em buffers contíguos mantêm a mesma BFS
@@ -104,8 +135,8 @@ export const gameKitRpgNavigationRuntime = `
       } else if (n._wander) {
         n._wanderT = num(n._wanderT, 0) - dt;
         if (n._wanderT > 0) return;
-        n._wanderT = 1 + Math.random() * 2;
-        var pick = Math.floor(Math.random() * 4);
+        n._wanderT = 1 + gameRandom() * 2;
+        var pick = Math.floor(gameRandom() * 4);
         dx = pick === 0 ? 1 : pick === 1 ? -1 : 0;
         dy = pick === 2 ? 1 : pick === 3 ? -1 : 0;
         if (!dx && !dy) return;

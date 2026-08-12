@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, render, waitFor } from '@testing-library/react'
+import { act, cleanup, render, waitFor } from '@testing-library/react'
 import { type ReactNode, StrictMode } from 'react'
 import { createEmptyProject } from '#core'
 import type { SZIR, SZIRV2 } from '#ir'
@@ -246,6 +246,60 @@ describe('BlocksMode', () => {
       // O código digitado NUNCA é regenerado por cima.
       expect(state.project?.files['script.js']).toBe(typed)
     })
+  })
+
+  it('recovery da Ponte não substitui blocos válidos por código com erro de sintaxe', async () => {
+    const base = createEmptyProject('project-race-syntax', 'Código incompleto')
+    const previousBlocks = base.blocksState
+    useProjectStore.setState({
+      project: {
+        ...base,
+        files: { ...base.files, 'script.js': 'if (' },
+      },
+      blocksHydration: 'restored',
+      bridgeCodeEditEpoch: 2,
+      bridgeBlocksSyncedEpoch: 1,
+    })
+
+    render(<BlocksMode />)
+    await act(async () => {
+      await Bun.sleep(75)
+    })
+
+    const state = useProjectStore.getState()
+    expect(state.project?.blocksState).toBe(previousBlocks)
+    expect(state.bridgeBlocksSyncedEpoch).toBe(1)
+  })
+
+  it('recovery da Ponte não substitui blocos válidos por IR semanticamente inválida', async () => {
+    const base = createEmptyProject('project-race-semantic', 'Áreas incompatíveis')
+    const previousBlocks = base.blocksState
+    useProjectStore.setState({
+      project: {
+        ...base,
+        files: {
+          ...base.files,
+          'script.js': `// Meus moldes
+let dificuldade = base + 1;
+// Ao iniciar
+let base = 2;
+// Quando acontecer
+// Enquanto estiver rodando`,
+        },
+      },
+      blocksHydration: 'restored',
+      bridgeCodeEditEpoch: 3,
+      bridgeBlocksSyncedEpoch: 1,
+    })
+
+    render(<BlocksMode />)
+    await act(async () => {
+      await Bun.sleep(75)
+    })
+
+    const state = useProjectStore.getState()
+    expect(state.project?.blocksState).toBe(previousBlocks)
+    expect(state.bridgeBlocksSyncedEpoch).toBe(1)
   })
 
   it('rede de segurança no StrictMode: sem IR e sem partição, deriva blocos do CÓDIGO sem sujar', async () => {

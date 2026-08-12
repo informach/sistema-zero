@@ -11,7 +11,30 @@ import {
 } from '#ir'
 import { prepareCanvasImageSourceForParse } from '../canvasImagePreloadCodec'
 import { executeProgrammingCodeToIR } from '../codecs/programming/adapters'
+import {
+  coreAudioCallToIR,
+  nativeRuntimeExpressionToIR,
+  nativeRuntimeSimpleValue,
+  storageRemoveCallToIR,
+} from '../codecs/web/nativeRuntimeParserCodec'
 import { isGuidedDomAttributeName, isGuidedDomElementTag, isGuidedDomProperty } from '../domSafety'
+import {
+  classicGameTwoDCallExpressionToIR,
+  classicGameTwoDCallToIR,
+  classicGameTwoDDeclarationToIR,
+} from '../official-extensions/game-2d/classicCodec'
+import {
+  CAMPAIGN_CALL_UNHANDLED,
+  CAMPAIGN_EXPRESSION_CALL_UNHANDLED,
+  gameKitCampaignCallToIR,
+  gameKitCampaignExpressionCallToIR,
+} from '../official-extensions/game-2d-advanced/campaignParserCodec'
+import {
+  PLATFORM_SIMPLE_VALUE_TYPES,
+  platformGameThreeDCallToIR,
+  platformGameThreeDDeclarationToIR,
+  platformGameThreeDExpressionToIR,
+} from '../official-extensions/game-3d/platformCodec'
 import { canvas3DSymbolKindsForClass } from '../three/canvas3dContract'
 import {
   canvas3DMacroFromPlaceholder,
@@ -24,6 +47,8 @@ const BABEL_OPTS: ParserOptions = {
   errorRecovery: true,
   plugins: [],
 }
+
+const G2D_SPRITE_DIRECTIONS = new Set(['left', 'right', 'up', 'down'])
 
 export interface ParseJSDiagnostic {
   kind: 'syntaxError'
@@ -208,6 +233,8 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'pointermove',
   'pointerdown',
   'pointerup',
+  'pointercancel',
+  'lostpointercapture',
   'submit',
   'input',
   'change',
@@ -1792,6 +1819,12 @@ function mapExpressionStatement(
   const storageSet = tryMatchStorageSet(expr, ctx)
   if (storageSet) return storageSet
 
+  const storageRemove = storageRemoveCallToIR(expr, {
+    toExpr: (node) => toExpr(node, ctx),
+    isSimpleValue,
+  })
+  if (storageRemove) return storageRemove
+
   // event.preventDefault() / event.stopPropagation()
   const eventMethod = tryMatchEventMethod(expr, ctx)
   if (eventMethod) return eventMethod
@@ -1882,7 +1915,10 @@ function mapExpressionStatement(
 
   // 🔊 Som do núcleo: __szAudio.tocar("moeda") e cia. ANTES do método genérico —
   // senão viram memberCall e o round-trip perde o bloco.
-  const somCall = tryMatchCoreAudioCall(expr, ctx)
+  const somCall = coreAudioCallToIR(expr, {
+    toExpr: (node) => toExpr(node, ctx),
+    isSimpleValue,
+  })
   if (somCall) return somCall
 
   // game-2d: SZGame2D.gameLoop(function update(){…}) / onPointer((px,py)=>{…}) e
@@ -2441,6 +2477,12 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const call = asSZGame2DCall(node)
   if (!call) return null
   const { method, args } = call
+  const classicExpression = classicGameTwoDCallExpressionToIR(method, args, {
+    identifier: identifierName,
+    expression: (value) => toExpr(value, ctx),
+    simple: isSimpleValue,
+  })
+  if (classicExpression) return classicExpression
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:keyDown', key: args[0].value as string }
   }
@@ -3233,59 +3275,19 @@ function readBulletOptions(
   return out
 }
 
-/** SZGame2D.gameLoop/onPointer/drawSprite/applyVelocity/bounceOnEdges/setGravity/playSound. */
-/**
- * `__szAudio.tocar("moeda")` e cia. → blocos da categoria 🔊 Som do núcleo.
- *
- * Bem mais simples que os helpers de extensão: é sempre uma chamada de membro
- * sobre um global fixo, com argumentos literais (o volume aceita expressão).
- */
-function tryMatchCoreAudioCall(expr: Node, ctx: ParseCtx): JSStatement | null {
-  if (expr?.type !== 'CallExpression') return null
-  const callee = expr.callee
-  if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.object?.type !== 'Identifier' || callee.object.name !== '__szAudio') return null
-  if (callee.property?.type !== 'Identifier') return null
-  const args = expr.arguments ?? []
-  const texto = (index: number): string | null =>
-    args[index]?.type === 'StringLiteral' ? (args[index].value as string) : null
-  switch (callee.property.name as string) {
-    case 'carregar': {
-      const name = texto(0)
-      const asset = texto(1)
-      return name !== null && asset !== null ? { type: 'somLoad', name, asset } : null
-    }
-    case 'tocar': {
-      const name = texto(0)
-      return name === null ? null : { type: 'somPlay', name }
-    }
-    case 'parar': {
-      const name = texto(0)
-      return name === null ? null : { type: 'somStop', name }
-    }
-    case 'tocarSemParar': {
-      const name = texto(0)
-      return name === null ? null : { type: 'somPlayMusic', name }
-    }
-    case 'pararMusica':
-      return args.length === 0 ? { type: 'somStopMusic' } : null
-    case 'volume': {
-      // ⚠️ Precisa aceitar EXPRESSÃO, não só número: o bloco tem soquete de
-      // valor, então a criança pode encaixar uma variável ali. Aceitando só
-      // `NumericLiteral`, o bloco dela virava `rawJS` ao passar pela Ponte.
-      const level = toExpr(args[0], ctx)
-      return isSimpleValue(level) ? { type: 'somVolume', level } : null
-    }
-    default:
-      return null
-  }
-}
-
 function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   const call = asSZGame2DCall(expr)
   if (!call) return null
   const { method, args } = call
   const isFn = isInlineFunction
+  const classicStatement = classicGameTwoDCallToIR(method, args, {
+    identifier: identifierName,
+    expression: (node) => toExpr(node, ctx),
+    simple: isSimpleValue,
+    inlineFunction: isInlineFunction,
+    functionBody: (node) => bodyOfFn(node, source, ctx),
+  })
+  if (classicStatement) return classicStatement
 
   switch (method) {
     case 'onStart': {
@@ -3451,7 +3453,13 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'flipSprite': {
       const spriteVar = identifierName(args[0])
       if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:flipSprite', spriteVar, dir: args[1].value as string }
+      const dir = args[1].value as string
+      if (!G2D_SPRITE_DIRECTIONS.has(dir)) return null
+      return {
+        type: 'g2d:flipSprite',
+        spriteVar,
+        dir: dir as 'left' | 'right' | 'up' | 'down',
+      }
     }
     case 'setOpacity': {
       const spriteVar = identifierName(args[0])
@@ -4723,6 +4731,12 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   const call = asSZGame2DCall(init)
   if (!call) return null
   const { method, args } = call
+  const classicDeclaration = classicGameTwoDDeclarationToIR(name, method, args, {
+    identifier: identifierName,
+    expression: (node) => toExpr(node, ctx),
+    simple: isSimpleValue,
+  })
+  if (classicDeclaration) return classicDeclaration
   if (method === 'isColliding' || method === 'circleCollides') {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
@@ -5024,6 +5038,7 @@ function tryFuseGame2DSpriteAssign(nodes: Node[], i: number, ctx: ParseCtx): Fus
 // ficam em tryMatchGame3DVarInit; os demais (chamada solta) em tryMatchGame3DCall.
 
 /** `SZGame3D.<metodo>(args)` → `{ method, args }` se o objeto for exatamente SZGame3D. */
+const PLATFORM_NAMES = { identifierName: (n: unknown) => identifierName(n as Node) }
 function asSZGame3DCall(expr: Node): { method: string; args: Node[] } | null {
   if (expr?.type !== 'CallExpression') return null
   const callee = expr.callee
@@ -5255,6 +5270,8 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const call = asSZGameKitCall(node)
   if (!call) return null
   const { method, args } = call
+  const campaignExpression = gameKitCampaignExpressionCallToIR(method, args)
+  if (campaignExpression !== CAMPAIGN_EXPRESSION_CALL_UNHANDLED) return campaignExpression
   if (method === 'width' && args.length === 0) return { type: 'gk:gameWidth' }
   if (method === 'height' && args.length === 0) return { type: 'gk:gameHeight' }
   if (method === 'state' && args.length === 0) return { type: 'gk:gameState' }
@@ -5758,6 +5775,13 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
   if (!call) return null
   const { method, args } = call
   const isFn = isInlineFunction
+  const campaignStatement = gameKitCampaignCallToIR(method, args, {
+    toExpr: (node) => toExpr(node, ctx),
+    isSimpleValue,
+    identifierName,
+    bodyOfFunction: (node) => bodyOfFn(node, source, ctx),
+  })
+  if (campaignStatement !== CAMPAIGN_CALL_UNHANDLED) return campaignStatement
 
   switch (method) {
     case 'setup': {
@@ -9966,6 +9990,15 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
   const { method, args } = call
   const isFn = isInlineFunction
 
+  const platform = platformGameThreeDCallToIR(method, args, {
+    identifierName: (node) => identifierName(node as Node) ?? '',
+    toExpr: (node) => toExpr(node as Node, ctx),
+    isSimpleValue,
+    isInlineFunction: (node) => isInlineFunction(node as Node),
+    bodyOfFn: (node) => bodyOfFn(node as Node, source, ctx),
+  })
+  if (platform !== undefined) return platform
+
   switch (method) {
     case 'setBackground': {
       // generator: SZGame3D.setBackground(world, "#cor")
@@ -10632,6 +10665,9 @@ function tryMatchGame3DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   const call = asSZGame3DCall(init)
   if (!call) return null
   const { method, args } = call
+  // As duas declarações do Kit Plataforma moram no codec da extensão.
+  const decl = platformGameThreeDDeclarationToIR(name, method, args, PLATFORM_NAMES)
+  if (decl !== undefined) return decl
   if (method === 'createScene') {
     if (args[0]?.type !== 'StringLiteral') return null
     return { type: 'g3d:createScene', canvasId: args[0].value as string, varName: name }
@@ -10785,6 +10821,10 @@ function matchGame3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'g3d:keyDown', key: args[0].value as string }
   }
+  const platform = platformGameThreeDExpressionToIR(method, args, {
+    identifierName: (value) => identifierName(value as Node) ?? '',
+  })
+  if (platform !== undefined) return platform
   if (method === 'collides') {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
@@ -11978,7 +12018,7 @@ function mapIf(node: Babel.IfStatement, source: string, ctx: ParseCtx): JSStatem
     cond,
     then: thenBody,
     ...(elseif.length > 0 ? { elseif } : {}),
-    else: elseBody,
+    ...(elseBody ? { else: elseBody } : {}),
   }
 }
 
@@ -12478,7 +12518,7 @@ function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
         if (node.property.name === 'devicePixelRatio')
           return { type: 'global', kind: 'devicePixelRatio' }
       }
-      // window.matchMedia('(prefers-color-scheme: dark)').matches → modo escuro do sistema.
+      // window.matchMedia(...) → preferência visual do sistema.
       if (
         !node.computed &&
         node.property?.type === 'Identifier' &&
@@ -12493,6 +12533,20 @@ function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
       ) {
         return { type: 'systemDark' }
       }
+      if (
+        !node.computed &&
+        node.property?.type === 'Identifier' &&
+        node.property.name === 'matches' &&
+        node.object?.type === 'CallExpression' &&
+        node.object.callee?.type === 'MemberExpression' &&
+        !node.object.callee.computed &&
+        node.object.callee.property?.type === 'Identifier' &&
+        node.object.callee.property.name === 'matchMedia' &&
+        node.object.arguments?.[0]?.type === 'StringLiteral' &&
+        /prefers-reduced-motion:\s*reduce/.test(node.object.arguments[0].value as string)
+      ) {
+        return { type: 'systemReducedMotion' }
+      }
       // event.clientX/clientY → posição do clique (sz_val_event_pos);
       // event.key/code → tecla do evento (sz_val_event_key).
       if (
@@ -12503,7 +12557,8 @@ function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
         (node.property.name === 'clientX' ||
           node.property.name === 'clientY' ||
           node.property.name === 'key' ||
-          node.property.name === 'code')
+          node.property.name === 'code' ||
+          node.property.name === 'pointerId')
       ) {
         return { type: 'eventProp', prop: node.property.name }
       }
@@ -12744,6 +12799,11 @@ function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
           }
         }
       }
+      const nativeRuntimeExpr = nativeRuntimeExpressionToIR(node, {
+        toExpr: (value) => toExpr(value, ctx),
+        isSimpleValue,
+      })
+      if (nativeRuntimeExpr !== undefined) return nativeRuntimeExpr
       // Object.keys(x) / Object.values(x) / Object.entries(x) → objectOp (lista).
       if (
         node.callee?.type === 'MemberExpression' &&
@@ -12808,17 +12868,6 @@ function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
             y: py,
           }
         }
-      }
-      // __szInput.key("ArrowRight") → "a tecla … está apertada?" (caminho "na mão").
-      if (
-        node.type === 'CallExpression' &&
-        isNamedMemberExpression(node.callee) &&
-        node.callee.object?.type === 'Identifier' &&
-        node.callee.object.name === '__szInput' &&
-        node.callee.property.name === 'key' &&
-        node.arguments?.[0]?.type === 'StringLiteral'
-      ) {
-        return { type: 'inputKeyPressed', key: node.arguments[0].value as string }
       }
       // performance.now() → milissegundos desde o carregamento (sz_val_perf_now).
       if (
@@ -12995,6 +13044,10 @@ function tryMatchHslTemplate(node: Babel.TemplateLiteral, ctx?: ParseCtx): JSExp
  */
 function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
   if (!expr) return false
+  // Os reporters do lote de plataforma do Jogo 3D vivem no codec da extensão.
+  if (PLATFORM_SIMPLE_VALUE_TYPES.has(expr.type)) return true
+  const nativeRuntime = nativeRuntimeSimpleValue(expr, isSimpleValue)
+  if (nativeRuntime !== undefined) return nativeRuntime
   switch (expr.type) {
     case 'num':
     case 'str':
@@ -13030,6 +13083,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'call':
       return expr.args.every(isSimpleValue)
     case 'g2d:keyDown':
+    case 'g2d:actionDown':
+    case 'g2d:actionPressed':
     case 'g2d:touches':
     case 'g2d:countGroup':
     case 'g2d:spriteAngle':
@@ -13111,6 +13166,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:charY':
     case 'gk:keyDown':
     case 'gk:keyPressed':
+    case 'gk:actionDown':
+    case 'gk:actionPressed':
+    case 'gk:actionReleased':
+    case 'gk:currentStage':
+    case 'gk:campaignEventValue':
     case 'gk:countActive':
     case 'gk:touchCircle':
     case 'gk:didHit':
@@ -13235,9 +13295,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'inputPointer':
     case 'isFullscreen':
     case 'systemDark':
+    case 'systemReducedMotion':
     case 'perfNow':
     case 'dateGet':
       return true
+    case 'g2d:tileContactIs':
+      return isSimpleValue(expr.index)
     case 'datasetGet':
     case 'classContains':
     case 'shuffle':

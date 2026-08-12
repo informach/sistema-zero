@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // Mock FUNCIONAL (Map por DB) do idb-keyval — o IndexedDB não existe no
 // happy-dom. Como nos demais arquivos da suíte, o mock NÃO é restaurado (o
@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test'
 // para quem vier depois). `update` precisa existir p/ o settingsStore.
 type KV = Map<IDBValidKey, unknown>
 const dbs = new Map<string, KV>()
+let failDeletes = false
 const kvOf = (store?: { name?: string }): KV => {
   const key = store?.name ?? ''
   let kv = dbs.get(key)
@@ -28,6 +29,7 @@ mock.module('idb-keyval', () => ({
     for (const [key, value] of pairs) kvOf(store).set(key, value)
   },
   del: async (key: IDBValidKey, store?: { name?: string }) => {
+    if (failDeletes) throw new Error('IndexedDB indisponível')
     kvOf(store).delete(key)
   },
   delMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
@@ -56,6 +58,11 @@ const PNG = 'data:image/png;base64,AAAA'
 
 beforeEach(() => {
   dbs.clear()
+  failDeletes = false
+  setPersonalAssetsNamespace('')
+})
+
+afterEach(() => {
   setPersonalAssetsNamespace('')
 })
 
@@ -171,8 +178,20 @@ describe('savePersonalAsset / listPersonalAssets', () => {
 describe('removePersonalAsset + namespace', () => {
   it('remove é best-effort e some da lista', async () => {
     await savePersonalAsset({ id: 'a1', name: 'heroi', dataUrl: PNG })
-    await removePersonalAsset('a1')
+    expect(await removePersonalAsset('a1')).toEqual({ ok: true })
     expect(await listPersonalAssets()).toHaveLength(0)
+  })
+
+  it('informa a falha e mantém o desenho quando o IndexedDB não remove', async () => {
+    await savePersonalAsset({ id: 'a1', name: 'heroi', dataUrl: PNG })
+    failDeletes = true
+
+    expect(await removePersonalAsset('a1')).toEqual({
+      ok: false,
+      error: 'Não consegui excluir agora. Tente de novo daqui a pouco.',
+    })
+    failDeletes = false
+    expect(await listPersonalAssets()).toHaveLength(1)
   })
 
   it('perfis diferentes não se enxergam', async () => {

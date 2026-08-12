@@ -9,8 +9,8 @@ import {
 } from './KitGallery'
 
 describe('descoberta dos exemplos do Jogo 2D', () => {
-  it('todos os 32 exemplos têm dificuldade, gênero e conceitos pesquisáveis', () => {
-    expect(gameTwoDExamples).toHaveLength(32)
+  it('todos os 33 exemplos têm dificuldade, gênero e conceitos pesquisáveis', () => {
+    expect(gameTwoDExamples).toHaveLength(33)
     for (const example of gameTwoDExamples) {
       expect(['beginner', 'intermediate', 'advanced'].includes(example.difficulty ?? '')).toBe(true)
       expect(example.genre?.trim().length ?? 0).toBeGreaterThan(0)
@@ -34,7 +34,7 @@ describe('descoberta dos exemplos do Jogo 2D', () => {
   it('o loader validado entrega os metadados à galeria', async () => {
     const gameTwoDGroup = (await buildKitGroups()).find((group) => group.extensionId === 'game-2d')
 
-    expect(gameTwoDGroup?.entries).toHaveLength(32)
+    expect(gameTwoDGroup?.entries).toHaveLength(33)
     expect(gameTwoDGroup?.entries.find((entry) => entry.name === 'Pegue a moeda')).toMatchObject({
       difficulty: 'beginner',
       genre: 'coleta',

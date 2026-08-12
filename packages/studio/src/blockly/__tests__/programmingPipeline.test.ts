@@ -445,10 +445,10 @@ function expectPipeline(
 
 beforeAll(() => ensureBlocklyInitialized())
 
-describe('Programação — matriz ponta a ponta dos 151 blocos visíveis', () => {
+describe('Programação — matriz ponta a ponta dos 163 blocos visíveis', () => {
   it('o inventário da matriz é exatamente o catálogo público', () => {
-    expect(PROGRAMMING_VISIBLE_DEFINITIONS).toHaveLength(151)
-    expect(new Set(PROGRAMMING_VISIBLE_DEFINITIONS.map(({ type }) => type)).size).toBe(151)
+    expect(PROGRAMMING_VISIBLE_DEFINITIONS).toHaveLength(163)
+    expect(new Set(PROGRAMMING_VISIBLE_DEFINITIONS.map(({ type }) => type)).size).toBe(163)
   })
 
   for (const definition of PROGRAMMING_VISIBLE_DEFINITIONS) {
@@ -457,7 +457,7 @@ describe('Programação — matriz ponta a ponta dos 151 blocos visíveis', () =
     })
   }
 
-  it('preserva as 152 opções de dropdown pelo pipeline real', () => {
+  it('preserva as 165 opções de dropdown pelo pipeline real', () => {
     let total = 0
     for (const definition of PROGRAMMING_VISIBLE_DEFINITIONS) {
       for (const variant of dropdownVariants(definition)) {
@@ -465,7 +465,7 @@ describe('Programação — matriz ponta a ponta dos 151 blocos visíveis', () =
         expectPipeline(definition, { [variant.field]: variant.value })
       }
     }
-    expect(total).toBe(152)
+    expect(total).toBe(165)
   })
 
   it('atualiza o set_text legado para o bloco público sem cair em JavaScript bruto', () => {

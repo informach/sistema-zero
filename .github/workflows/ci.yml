@@ -62,11 +62,23 @@ jobs:
       - name: Instalar dependências (lockfile congelado)
         run: bun install --frozen-lockfile
 
+      - name: Auditar dependências da imagem do Studio Pro
+        working-directory: packages/studio-runtime
+        run: bun run audit:image
+
+      - name: Construir imagem do Studio Pro
+        working-directory: packages/studio-runtime
+        run: bun run build:image
+
       - name: Lint (biome ci)
         run: bun run ci
 
       - name: Testes (todos os pacotes)
         run: bun run --filter '*' test
+
+      - name: Verificar IR gerada dos exemplos 3D
+        working-directory: packages/studio
+        run: bun run check:game-3d-examples
 
       - name: Testes DB fiscal (Postgres real)
         run: cd packages/fiscal && bun test tests/db

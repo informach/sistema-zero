@@ -90,8 +90,8 @@ export interface ExtensionManifest {
   enabledByDefault: boolean
   permissions: ExtensionPermission[]
   /**
-   * Documentação em markdown para o usuário final — NÃO é o prompt da IA. O
-   * contexto da IA vive em `ExtensionDefinition.ai.promptContext`.
+   * Resumo em markdown disponível no carregamento inicial. Manuais extensos usam
+   * `ExtensionDefinition.documentation`; o contexto da IA vive em `ai`.
    */
   docs: string
 }
@@ -127,6 +127,11 @@ export interface ExtensionExamplesProvider {
   count: number
   /** Importa o chunk dos exemplos preservando a ordem editorial declarada. */
   load(): Promise<readonly ExtensionExample[]>
+}
+
+/** Manual completo carregado somente quando o usuário abre os detalhes. */
+export interface ExtensionDocumentationProvider {
+  load(): Promise<string>
 }
 
 /**
@@ -171,6 +176,8 @@ export type ExtensionRuntimeDefinition = {
  */
 export interface ExtensionDefinition {
   manifest: ExtensionManifest
+  /** Mantém manuais extensos fora do bundle inicial; `manifest.docs` é o resumo. */
+  documentation?: ExtensionDocumentationProvider
   /** Provider assíncrono obrigatório; mantém IRs e assets fora do boot do Studio. */
   examples: ExtensionExamplesProvider
   /** Extensões oficiais que não podem coexistir no mesmo projeto. */

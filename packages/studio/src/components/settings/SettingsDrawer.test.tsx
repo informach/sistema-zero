@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { act, cleanup, render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import {
   CODE_FONT_SIZE_DEFAULT,
   DEFAULT_AI_MODEL,
@@ -82,6 +82,23 @@ describe('SettingsDrawer', () => {
     expect(checkbox).toBeInstanceOf(HTMLInputElement)
     expect((checkbox as HTMLInputElement).checked).toBe(false)
     expect(document.body.textContent).toContain('Modo sessão')
+  })
+
+  it('expõe navegação e chave de API com semântica acessível', () => {
+    render(<SettingsDrawer open onClose={() => undefined} />)
+
+    const aiTab = screen.getByRole('tab', { name: 'Assistente de IA' })
+    const appearanceTab = screen.getByRole('tab', { name: 'Aparência' })
+    expect(aiTab.getAttribute('aria-selected')).toBe('true')
+    expect(appearanceTab.getAttribute('aria-selected')).toBe('false')
+
+    const key = screen.getByLabelText('Chave de API')
+    expect(key).toBeInstanceOf(HTMLInputElement)
+    expect(key.getAttribute('spellcheck')).toBe('false')
+
+    fireEvent.keyDown(aiTab, { key: 'ArrowRight' })
+    expect(appearanceTab.getAttribute('aria-selected')).toBe('true')
+    expect(document.activeElement).toBe(appearanceTab)
   })
 
   it('abre na Aparência (e não vazio) quando a aba de IA não existe', () => {

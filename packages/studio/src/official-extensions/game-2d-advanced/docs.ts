@@ -8,40 +8,43 @@ substituir fontes escolhidas.
 
 ### Começando (a receita)
 
-1. Use uma vez **Preparar o jogo profissional** (resolução fixa) ou **Preparar o
-   jogo para ocupar a tela toda**. Na tela cheia, calcule posições pela
-   largura/altura do jogo. A tela nasce SEM moldura; se quiser uma, some
-   **Mostrar a borda da tela** (com cor e espessura) para todo mundo ver onde
-   começa e termina a área do jogo.
-   Para o fundo ser um desenho seu, use **Pôr o cenário atrás de tudo**: ele
-   cobre a tela inteira sem deformar e o jogo o repinta sozinho a cada quadro.
-   Quem quiser mandar na ordem das camadas usa **Desenhar o cenário** dentro de
-   **Desenhar o jogo**. Um ou o outro; **Pintar o fundo** é opaco e tapa os dois.
-   Some também **Descrever o jogo para leitor de tela** com o objetivo, os
-   controles e os perigos que não aparecem em texto. O motor nomeia o canvas,
-   anuncia as telas como diálogos e move o foco automaticamente.
-2. Escolha a imagem no próprio bloco: personagem, NPC, item e animação carregam
-   a arte sozinhos. **Carregar a imagem** serve para pré-carregar ou criar apelido.
-3. Em **🧩 Meus moldes**, crie os moldes, as fichas, os visuais, os efeitos, os
-   caminhos, as regiões e os sons carregados. São receitas: nada acontece ao
-   criá-las, e dá para fazer várias sem usar nenhuma.
-4. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
-   área roda de novo em cada Jogar/Jogar de novo.
-5. Em **⚡ Quando acontecer**, registre clique, aviso, entrada de estado/mapa e
-   outras reações da partida.
-6. Em **🔁 Enquanto estiver rodando**, use **A cada quadro (dt)**, **Desenhar o
-   jogo (ctx)**, **Desenhar o HUD** e ritmos periódicos.
+1. Use **Preparar o jogo profissional** (tamanho fixo) ou **Preparar o jogo para
+   ocupar a tela toda**; neste, calcule posições pela largura/altura do jogo.
+   **Mostrar a borda**, **Pôr o cenário atrás de tudo** e **Descrever o jogo para
+   leitor de tela** completam palco, fundo e acessibilidade.
+2. Escolha artes no próprio bloco; **Carregar a imagem** pré-carrega ou cria apelido.
+3. Em **🧩 Meus moldes**, defina receitas de objetos, visuais, efeitos e sons.
+4. Em **⚙️ Ao iniciar**, crie dados, personagens e mapas; a área repete em cada partida.
+5. Em **⚡ Quando acontecer**, registre as reações da partida.
+6. Em **🔁 Enquanto estiver rodando**, atualize, desenhe e use ritmos periódicos.
 
-Passos contínuos ficam nesses laços ou em funções chamadas por eles. Ações que já
-duram sozinhas (**Mover suavemente**, **Sumir**, **Deslizar propriedade**,
-**Ligar o rastro**, **Inclinar ao andar** e o atirador de invasores) são ligadas
-uma vez, fora de laços. O Estúdio carrega assets e inicia o motor automaticamente;
-os blocos antigos de início aparecem apenas ao migrar projetos salvos.
+Ações contínuas ficam nos laços. Animações autônomas, como mover suavemente,
+sumir, rastro e tween, são ligadas uma vez fora deles. O Estúdio carrega assets e
+inicia o motor; blocos antigos de início só aparecem em projetos migrados.
 
-> ⭐ O jogo abre no \`menu\`; o botão **Jogar** inicia a partida. **A cada quadro**
-> só roda em \`jogando\`. **Desenhar o jogo** também roda em pausa, fim e estados
-> inventados, mas não em menu/carregamento. Para pular o menu, mude para
-> \`jogando\` em **⚙️ Ao iniciar**.
+> ⭐ O jogo abre no \`menu\`. **A cada quadro** roda em \`jogando\`; **Desenhar o
+> jogo** também roda em pausa, fim e estados inventados. Para pular o menu, mude
+> para \`jogando\` em **⚙️ Ao iniciar**.
+
+**Reino Zero Pro** demonstra 32 fases, simulação fixa, saves e replay sem assets.
+
+### Campanhas com fases pintáveis
+
+Em **⚙️ Ao iniciar**, combine **Preparar jogo suave com semente**, **Criar
+aventura** (inclui quantas gemas são obrigatórias para concluir), uma **Definir
+fase** por mapa e **Começar aventura**.
+
+Cada objeto exige identificador único. Projetos antigos sem ID são migrados;
+novos IDs vazios ou repetidos são recusados. A identidade fase + objeto faz só a
+gema coletada naquela fase desaparecer.
+
+**Quando acontecer … na aventura** recebe regiões e avisos de fase, coleta,
+checkpoint, bloco, guardião, saída e fim. **O … do acontecimento da aventura** lê
+seus dados. O valor só existe enquanto o acontecimento está sendo tratado.
+
+Guardar, continuar e apagar usam três slots validados. Replays guardam ações,
+não teclas. Teclado, controle e toque compartilham ações; no toque, todos os dez
+botões ficam ancorados na área visível do palco.
 
 ### Qual kit para qual jogo? 🎮
 

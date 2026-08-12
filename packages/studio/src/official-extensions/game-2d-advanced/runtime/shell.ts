@@ -348,6 +348,7 @@ export const gameKitShellRuntime = `
     window.addEventListener('pointerup', releasePointer);
     window.addEventListener('pointercancel', releasePointer);
     bindMouse();
+    if (proSim.enabled) ensureProfessionalInput();
   }
 
   /**
@@ -478,14 +479,16 @@ export const gameKitShellRuntime = `
       w = availW;
       h = w / ratio;
     }
-    // Resolução INTERNA fixa; o CSS estica mantendo a proporção (letterbox).
-    canvasEl.width = config.w;
-    canvasEl.height = config.h;
+    // A aventura em passos fixos mantém coordenadas lógicas, mas aumenta o
+    // backing store em telas densas. Projetos antigos preservam o canvas 1:1.
+    var dpr = proSim.enabled ? Math.max(1, Math.min(3, num(window.devicePixelRatio, 1))) : 1;
+    canvasEl.width = Math.round(config.w * dpr);
+    canvasEl.height = Math.round(config.h * dpr);
     canvasEl.style.width = w + 'px';
     canvasEl.style.height = h + 'px';
     // Atribuir canvas.width/height RESETA o estado do ctx (volta smoothing=true) —
     // re-aplicar aqui é o que mantém o pixel art nítido a cada resize.
-    if (ctx2d) { try { ctx2d.imageSmoothingEnabled = false; } catch (e) {} }
+    if (ctx2d) { try { ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0); ctx2d.imageSmoothingEnabled = false; } catch (e) {} }
   }
 
 `

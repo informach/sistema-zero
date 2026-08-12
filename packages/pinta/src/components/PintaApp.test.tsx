@@ -28,6 +28,53 @@ describe('PintaApp — galeria', () => {
     })
   })
 
+  it('recusa backup grande antes de ler o texto do arquivo', async () => {
+    const { container } = render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
+    })
+    const input = container.querySelector<HTMLInputElement>(
+      'input[accept=".json,application/json"]',
+    )
+    if (!input) throw new Error('input de backup esperado')
+    const file = new File(['{}'], 'grande.pinta.json', { type: 'application/json' })
+    let reads = 0
+    Object.defineProperties(file, {
+      size: { configurable: true, value: 33 * 1024 * 1024 },
+      text: {
+        configurable: true,
+        value: async () => {
+          reads += 1
+          return '{}'
+        },
+      },
+    })
+
+    fireEvent.change(input, { target: { files: [file] } })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.restoreTooLarge)).toBeTruthy()
+    })
+    expect(reads).toBe(0)
+  })
+
+  it('explica quando a foto passa do limite de 20 MB', async () => {
+    const { container } = render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
+    })
+    const input = container.querySelector<HTMLInputElement>(
+      'input[accept="image/png,image/jpeg,image/webp"]',
+    )
+    if (!input) throw new Error('input de foto esperado')
+    const file = new File(['x'], 'grande.png', { type: 'image/png' })
+    Object.defineProperty(file, 'size', { configurable: true, value: 21 * 1024 * 1024 })
+
+    fireEvent.change(input, { target: { files: [file] } })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.importTooLarge)).toBeTruthy()
+    })
+  })
+
   it('cria um personagem (estilo → tipo → tamanho → nome) e abre o editor; voltar mostra o card', async () => {
     render(<PintaApp />)
     await waitFor(() => {

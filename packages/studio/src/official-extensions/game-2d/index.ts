@@ -1,5 +1,10 @@
 import type { ExtensionDefinition } from '#extensions'
-import { defineExtensionExamples, GAME_2D_LIFECYCLE, validateManifest } from '#extensions'
+import {
+  defineExtensionDocumentation,
+  defineExtensionExamples,
+  GAME_2D_LIFECYCLE,
+  validateManifest,
+} from '#extensions'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameTwoDPromptSummary } from './aiSummary'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from './blocks'
@@ -11,8 +16,9 @@ validateManifest(gameTwoDManifest)
 
 export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
+  documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameTwoDDocs),
   examples: defineExtensionExamples(
-    32,
+    33,
     async () => (await import('./exampleCatalog')).gameTwoDExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-2d'),

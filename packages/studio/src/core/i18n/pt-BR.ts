@@ -51,6 +51,9 @@ export const ptBR: Record<string, string> = {
   'extensions.permissions': 'O que ela pode usar',
   'extensions.docsShow': '📖 Saiba mais',
   'extensions.docsHide': 'Esconder detalhes',
+  'extensions.docsLoading': 'Carregando o manual completo…',
+  'extensions.docsError': 'Não foi possível carregar o manual completo.',
+  'extensions.docsRetry': 'Tentar novamente',
   'extensions.removeWarning':
     'Existem {count} blocos desta extensão em uso. Removê-la apagará esses blocos.',
   'extensions.confirmRemove': 'Confirmar remoção',

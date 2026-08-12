@@ -57,9 +57,9 @@ describe('game-2d — todos os exemplos da vitrine', () => {
     registerExtensionBlocks(gameTwoDBlocks)
   })
 
-  it('a vitrine tem os 32 exemplos (anti-vácuo)', () => {
-    expect(gameTwoDExamples.length).toBe(32)
-    expect(gameTwoDExtension.examples.count).toBe(32)
+  it('a vitrine tem os 33 exemplos (anti-vácuo)', () => {
+    expect(gameTwoDExamples.length).toBe(33)
+    expect(gameTwoDExtension.examples.count).toBe(33)
   })
 
   it('todos ensinam início e preparo explícitos, sem canvas escondido no HTML', () => {
@@ -73,10 +73,10 @@ describe('game-2d — todos os exemplos da vitrine', () => {
     }
   })
 
-  it('mantém a classificação prometida: 26 jogos, 5 demonstrações e 1 exploração', () => {
+  it('mantém a classificação prometida: 27 jogos, 5 demonstrações e 1 exploração', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const example of gameTwoDExamples) counts[example.experience] += 1
-    expect(counts).toEqual({ game: 26, demo: 5, exploration: 1 })
+    expect(counts).toEqual({ game: 27, demo: 5, exploration: 1 })
   })
 
   it('não ensina os blocos ambíguos de câmera e desenho mantidos só para projetos antigos', () => {

@@ -30,6 +30,8 @@ Pinta/upload ou de uma grade declarada pela criança, nunca de cenário inventad
 automaticamente. Sprites sem imagem continuam visíveis por cor. Mapa guarda tiles:
 prepare-o UMA vez com “encaixar na tela” ou “posicionar no mundo” e depois apenas
 desenhe; a forma antiga de desenhar passando x/y/tamanho é só compatibilidade.
+Para arte sem arquivos, use tiles vetoriais ligados a Figuras. Em blocos de prêmio,
+teste o índice do contato antes de trocar a célula.
 
 MAPA → MUNDO → FASE: Mundo é a área física (limites, mapas, figuras sólidas ou
 plataformas e câmera) e pode existir sem Fases. Fase é opcional e genérica: Mundo +
@@ -50,6 +52,10 @@ jumpWithTerrain e depois collideWorld/collideCurrentLevel. O platformer antigo u
 a borda da tela como chão e fica restrito ao jogo de uma tela. Para grupos, use
 applyGravityToGroup(grupo) antes de updateGroup ou do atualizador de inimigos.
 Nenhum helper de movimento acrescenta gravidade escondida.
+Para plataforma clássica, o helper dedicado inclui aceleração, corrida, agachamento,
+gravidade e pulo variável e usa ações semânticas de teclado/multitoque. Ative os controles
+uma vez em Ao iniciar e registre “Quando a ação for apertada” em ⚡ Quando acontecer; a ação
+pausar não altera o estado do jogo implicitamente.
 
 VIDAS: inicialize a vida do sprite uma vez em ⚙️ Ao iniciar. Para contato contínuo,
 use o bloco de machucar com invencibilidade; para perguntar pelo fim, prefira “as

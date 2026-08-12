@@ -14,7 +14,7 @@
  * vetoriais são SVG inline.
  */
 import type { JSX, ReactNode } from 'react'
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   addAnimation,
   addFrame,
@@ -137,8 +137,36 @@ export function SpriteSheetPanel({
   const [renaming, setRenaming] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [timelineExpanded, setTimelineExpanded] = useState(false)
+  const [timelineCanExpand, setTimelineCanExpand] = useState(false)
   const timelineId = useId()
+  const timelineRef = useRef<HTMLDivElement>(null)
   const colors = useMemo(() => resolveAssetPalette(asset), [asset])
+  const animated = isAnimatedSpriteKind(asset)
+  // Só a estrutura VERTICAL da timeline pode mudar o overflow. Alterar pixels
+  // ou shapes troca `asset`, mas não deve reinstalar listener/ResizeObserver.
+  const timelineStructure = animated
+    ? asset.animations.map((animation) => animation.frames.length).join(',')
+    : null
+
+  useLayoutEffect(() => {
+    const timeline = timelineRef.current
+    if (timelineStructure === null || !timeline || timelineExpanded) return
+
+    const measureOverflow = (): void => {
+      setTimelineCanExpand(timeline.scrollHeight > timeline.clientHeight + 1)
+    }
+
+    measureOverflow()
+    window.addEventListener('resize', measureOverflow)
+    const observer =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measureOverflow)
+    observer?.observe(timeline)
+
+    return () => {
+      window.removeEventListener('resize', measureOverflow)
+      observer?.disconnect()
+    }
+  }, [timelineExpanded, timelineStructure])
 
   if (!isAnimatedSpriteKind(asset)) return null
   const active = activeAnimationOf(asset, { animationId, frameIndex })
@@ -193,16 +221,18 @@ export function SpriteSheetPanel({
       actions={
         <>
           {zoomSlot}
-          <RowAction
-            icon={timelineExpanded ? ChevronsDown : ChevronsUp}
-            label={
-              timelineExpanded ? COPY.animation.compactTimeline : COPY.animation.expandTimeline
-            }
-            active={timelineExpanded}
-            expanded={timelineExpanded}
-            controls={timelineId}
-            onClick={() => setTimelineExpanded((expanded) => !expanded)}
-          />
+          {timelineCanExpand || timelineExpanded ? (
+            <RowAction
+              icon={timelineExpanded ? ChevronsDown : ChevronsUp}
+              label={
+                timelineExpanded ? COPY.animation.compactTimeline : COPY.animation.expandTimeline
+              }
+              active={timelineExpanded}
+              expanded={timelineExpanded}
+              controls={timelineId}
+              onClick={() => setTimelineExpanded((expanded) => !expanded)}
+            />
+          ) : null}
           <Button variant="primary" onClick={addNewAnimation}>
             <Plus aria-hidden="true" className="size-4" />
             {COPY.animation.addAnimation}
@@ -212,6 +242,7 @@ export function SpriteSheetPanel({
       bodyClassName="flex min-h-0 flex-col gap-2 p-2"
     >
       <div
+        ref={timelineRef}
         id={timelineId}
         data-timeline-scroll
         className={`flex min-h-0 flex-col gap-1 overflow-y-auto ${timelineExpanded ? 'max-h-96' : 'max-h-56'}`}

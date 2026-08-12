@@ -12,7 +12,7 @@ validateManifest(gameThreeDManifest)
 export const gameThreeDExtension: ExtensionDefinition = {
   manifest: gameThreeDManifest,
   examples: defineExtensionExamples(
-    18,
+    19,
     async () => (await import('./exampleCatalog')).gameThreeDExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-3d'),

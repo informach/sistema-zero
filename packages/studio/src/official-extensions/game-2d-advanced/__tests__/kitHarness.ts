@@ -1,5 +1,5 @@
 import { gameKitRuntime } from '../runtime'
-import type { GameKitRuntimeApi } from '../runtimeContract'
+import type { GameKitEntity, GameKitRuntimeApi } from '../runtimeContract'
 
 /**
  * Harness enxuto do runtime da gk para os testes de CAIXA DE COLISÃO (borda do
@@ -41,11 +41,39 @@ type KitApiKey = keyof Pick<
   | 'recycle'
   | 'forEachActive'
   | 'setProperty'
+  | 'enableFixedSimulation'
+  | 'onFixedUpdate'
+  | 'fixedTick'
+  | 'simulationStats'
+  | 'bindAction'
+  | 'actionDown'
+  | 'actionPressed'
+  | 'actionReleased'
+  | 'activeInputDevice'
+  | 'defineCampaign'
+  | 'defineCampaignStage'
+  | 'startCampaign'
+  | 'goToStage'
+  | 'nextStage'
+  | 'currentStage'
+  | 'currentWorld'
+  | 'onCampaignEvent'
+  | 'campaignEventValue'
+  | 'setCampaignCheckpoint'
+  | 'saveCampaign'
+  | 'loadCampaign'
+  | 'campaignSaveInfo'
+  | 'startReplayRecording'
+  | 'stopReplayRecording'
+  | 'playReplay'
+  | 'playLastReplay'
+  | 'replayActive'
+  | 'replayHash'
+  | 'campaignHero'
+  | 'campaignProgress'
 >
 
-export type KitApi = {
-  [Key in KitApiKey]: (...args: unknown[]) => unknown
-}
+export type KitApi = Pick<GameKitRuntimeApi, KitApiKey>
 
 export interface Harness {
   api: KitApi
@@ -194,8 +222,8 @@ export function characterAt(
   y: number,
   w: number,
   hh: number,
-): Record<string, number> {
-  const c = h.api.createCharacter({ w, h: hh }) as Record<string, number>
+): GameKitEntity {
+  const c = h.api.createCharacter({ w, h: hh })
   h.api.placeCharacter(c, x, y)
   return c
 }

@@ -3,7 +3,7 @@ import { generateProjectFilesWithMap } from '#generators'
 import type { HTMLNode, HTMLShell, SZIRInput } from '#ir'
 import { assignStableIdsToIR } from '#ir'
 import type { ParseProjectDiagnostic } from '#parsers'
-import { parseProjectFilesFromParts } from '#parsers'
+import { hasBlockingParseDiagnostics, parseProjectFilesFromParts } from '#parsers'
 
 export const BRIDGE_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
 
@@ -70,11 +70,7 @@ export function runBridgeReverseParse(input: BridgeReverseParseInput): BridgeRev
     cssSource: input.cssSource,
     jsSource: input.jsSource,
   })
-  if (
-    result.diagnostics.some(
-      (diagnostic) => diagnostic.kind === 'syntaxError' || diagnostic.kind === 'semanticError',
-    )
-  ) {
+  if (hasBlockingParseDiagnostics(result.diagnostics)) {
     return {
       kind: 'parsed',
       diagnostics: result.diagnostics,

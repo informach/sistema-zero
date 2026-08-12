@@ -3,6 +3,7 @@ import { withGameUIFontRuntime } from '../gameUiFont'
 import { gameRuntimeDomains } from '../runtimeDomains'
 import { gameKitAnimationRuntime } from './runtime/animation'
 import { gameKitAudioRuntime } from './runtime/audio'
+import { gameKitCampaignRuntime } from './runtime/campaign'
 import { gameKitCardsRuntime } from './runtime/cards'
 import { gameKitMonsterBattleRuntime } from './runtime/monsterBattle'
 import { gameKitPlatformerRuntime } from './runtime/platformer'
@@ -610,8 +611,8 @@ ${gameKitShellRuntime}
     var shx = 0;
     var shy = 0;
     if (camera.shakeT > 0 && camera.shakeMag > 0) {
-      shx = (Math.random() * 2 - 1) * camera.shakeMag;
-      shy = (Math.random() * 2 - 1) * camera.shakeMag;
+      shx = (visualRandom() * 2 - 1) * camera.shakeMag;
+      shy = (visualRandom() * 2 - 1) * camera.shakeMag;
     }
     var cam = camera.on;
     // O tremor desloca o mundo mesmo SEM câmera — então o save/restore precisa
@@ -629,6 +630,7 @@ ${gameKitShellRuntime}
       catch (e) { warnOnce('mapdraw:' + rpg.currentMap, 'erro ao desenhar o mapa "' + rpg.currentMap + '": ' + e); }
       if (activeMap.empty) drawEmptyMapNotice(rpg.currentMap);
     }
+    drawCampaign();
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
     if (debugOverlay) drawDebugOverlay();
     // R21: onda de choque + textos flutuantes são do MUNDO (dentro do translate,
@@ -641,6 +643,7 @@ ${gameKitShellRuntime}
     if (pushed) ctx2d.restore();
     // HUD: por cima de tudo, SEM câmera (placar/barras ficam presos na tela).
     runHooks(hudHooks, ctx2d, 'Desenhar por cima (HUD)');
+    drawCampaignHud();
     // Transição de mapa: um preto por cima decaindo (o mapa surge do escuro).
     if (rpg.fade > 0) {
       ctx2d.save();
@@ -704,45 +707,54 @@ ${gameKitShellRuntime}
     ctx2d.restore();
   }
 
+  function stepGameState(dt) {
+    if (camera.shakeT > 0) camera.shakeT = Math.max(0, camera.shakeT - dt);
+    stepScreenFx(dt);
+    var estavaEmBatalha = state === 'batalha';
+    stepPkmBattle(dt);
+    stepRpgBattle(dt);
+    if (state === 'jogando' && !estavaEmBatalha) {
+      stepSystems(dt);
+      if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
+    }
+  }
+
   function gameLoop(timestamp) {
-    var dt = (timestamp - lastTime) / 1000;
-    if (!(dt >= 0)) dt = 0;
-    if (dt > 0.1) dt = 0.1; // clamp do kit: aba em segundo plano não teleporta o jogo
+    var frameDt = (timestamp - lastTime) / 1000;
+    if (!(frameDt >= 0)) frameDt = 0;
     lastTime = timestamp;
-    currentDt = dt;
-    frameCount += 1;
-    // ⭐ TUDO do quadro dentro de um try/catch que SEMPRE reagenda o próximo: um erro
-    // no motor (batalha, render, um sistema) avisa UMA vez e o jogo SEGUE — nunca
-    // congela de vez (antes, um throw aqui matava o requestAnimationFrame e a criança
-    // só recuperava recarregando). Os ganchos da criança já eram protegidos pelo
-    // runHooks; isto fecha o buraco do próprio motor.
     try {
-      // O tremor decai FORA do gate de estado: o render o aplica em todo estado
-      // (fim/vitória/pausado/batalha), então decair só em 'jogando' deixava a tela
-      // de fim vibrando PARA SEMPRE ("morrer → tremer + terminar o jogo").
-      if (camera.shakeT > 0) camera.shakeT = Math.max(0, camera.shakeT - dt);
-      stepScreenFx(dt); // idem: o render aplica em TODO estado
-      // ⭐ A batalha do Kit Monstrinhos roda no estado 'batalha', onde o
-      // stepSystems NÃO anda — e é ele que bombeia o relógio da fala, a
-      // navegação do menu, os tweens e as faíscas. Por isso o step é AQUI.
-      var estavaEmBatalha = state === 'batalha';
-      stepPkmBattle(dt);
-      stepRpgBattle(dt); // a batalha em equipe do Kit RPG (mesmo motivo: fora do gate)
-      // ⚠️ Se a batalha ACABOU neste quadro, o stepPkmBattle já bombeou relógio + UI +
-      // tweens + faíscas (ele faz isso justamente porque o stepSystems não anda em
-      // 'batalha'). Sem esta guarda o stepSystems rodaria tudo 2× no quadro da volta.
-      if (state === 'jogando' && !estavaEmBatalha) {
-        stepSystems(dt);
-        // A missão pode ter mudado o estado NESTE quadro (vitória) — não rodar o
-        // update da criança num jogo que acabou de terminar (paridade P24).
-        if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
+      if (proSim.enabled) {
+        proSim.accumulator += frameDt;
+        var maxAccumulated = proSim.step * proSim.maxCatchUpSteps;
+        if (proSim.accumulator > maxAccumulated) {
+          proSim.droppedSeconds += proSim.accumulator - maxAccumulated;
+          proSim.accumulator = maxAccumulated;
+        }
+        var steps = 0;
+        while (proSim.accumulator + 0.000000001 >= proSim.step && steps < proSim.maxCatchUpSteps) {
+          currentDt = proSim.step;
+          frameCount += 1;
+          professionalBeforeSimulationStep();
+          stepGameState(proSim.step);
+          professionalAfterSimulationStep();
+          proSim.accumulator -= proSim.step;
+          justPressed = {};
+          steps += 1;
+        }
+        proSim.lastFrameSteps = steps;
+        proSim.alpha = proSim.step > 0 ? proSim.accumulator / proSim.step : 0;
+      } else {
+        var dt = frameDt > 0.1 ? 0.1 : frameDt;
+        currentDt = dt;
+        frameCount += 1;
+        stepGameState(dt);
+        justPressed = {};
       }
       render();
     } catch (e) {
       warnOnce('gameloop', 'erro no laço do jogo: ' + e);
     }
-    // Limpa o edge de "apertada AGORA" no fim do quadro (padrão Input do RPG kit).
-    justPressed = {};
     requestAnimationFrame(gameLoop);
   }
 
@@ -1383,12 +1395,12 @@ ${gameKitAnimationRuntime}
     // nas bordas do retângulo VISÍVEL (o inimigo sempre entra "por perto").
     var ox = camera.on ? camera.x : 0;
     var oy = camera.on ? camera.y : 0;
-    var edge = Math.floor(Math.random() * 4);
+    var edge = Math.floor(gameRandom() * 4);
     var x, y;
-    if (edge === 0) { x = ox + Math.random() * config.w; y = oy - 100; }
-    else if (edge === 1) { x = ox + config.w + 100; y = oy + Math.random() * config.h; }
-    else if (edge === 2) { x = ox + Math.random() * config.w; y = oy + config.h + 100; }
-    else { x = ox - 100; y = oy + Math.random() * config.h; }
+    if (edge === 0) { x = ox + gameRandom() * config.w; y = oy - 100; }
+    else if (edge === 1) { x = ox + config.w + 100; y = oy + gameRandom() * config.h; }
+    else if (edge === 2) { x = ox + gameRandom() * config.w; y = oy + config.h + 100; }
+    else { x = ox - 100; y = oy + gameRandom() * config.h; }
     return spawnFromMold(name, x, y);
   }
   function recycle(e) {
@@ -1519,7 +1531,7 @@ ${gameKitAnimationRuntime}
       if (act[i] && act[i]._active !== false) n++;
     }
     if (!n) return null;
-    var pick = Math.floor(Math.random() * n);
+    var pick = Math.floor(gameRandom() * n);
     for (i = 0; i < act.length; i++) {
       var e = act[i];
       if (!e || e._active === false) continue;
@@ -1577,9 +1589,9 @@ ${gameKitAnimationRuntime}
   function drift(who, dt) {
     if (!who || typeof who !== 'object') return;
     var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
-    if (who._driftAngle == null) who._driftAngle = Math.random() * Math.PI * 2;
+    if (who._driftAngle == null) who._driftAngle = gameRandom() * Math.PI * 2;
     who._driftTimer = (who._driftTimer || 0) + d;
-    if (who._driftTimer >= 2) { who._driftAngle = Math.random() * Math.PI * 2; who._driftTimer = 0; }
+    if (who._driftTimer >= 2) { who._driftAngle = gameRandom() * Math.PI * 2; who._driftTimer = 0; }
     var dx = Math.cos(who._driftAngle);
     var dy = Math.sin(who._driftAngle);
     who.x += dx * num(who.speed, 0) * d;
@@ -2255,7 +2267,7 @@ ${gameKitCardsRuntime}
 
   // ---- 🎲 Sorte ----
   function chance(percent) {
-    return Math.random() * 100 < num(percent, 50);
+    return gameRandom() * 100 < num(percent, 50);
   }
 
   // ---- 📏 Distância / ponto ----
@@ -2544,6 +2556,7 @@ ${gameKitCardsRuntime}
   }
 
 ${gameKitPlatformerRuntime}
+${gameKitCampaignRuntime}
 
 ${gameKitMonsterBattleRuntime}
 
@@ -3065,11 +3078,11 @@ ${gameKitMonsterBattleRuntime}
       if (ddx * ddx + ddy * ddy < 16) needTarget = true; // chegou pertinho
     }
     if (needTarget) {
-      var a = Math.random() * Math.PI * 2;
-      var dist = Math.sqrt(Math.random()) * r; // distribuição uniforme no disco
+      var a = gameRandom() * Math.PI * 2;
+      var dist = Math.sqrt(gameRandom()) * r; // distribuição uniforme no disco
       who._patrolTX = homeX + Math.cos(a) * dist;
       who._patrolTY = homeY + Math.sin(a) * dist;
-      who._patrolTimer = 1 + Math.random() * 1.5;
+      who._patrolTimer = 1 + gameRandom() * 1.5;
     }
     var dx = who._patrolTX - centerX(who);
     var dy = who._patrolTY - centerY(who);
@@ -3179,7 +3192,7 @@ ${gameKitVisualEffectsRuntime}
   // Peças NEUTRAS: a criança MONTA o Ludo/Jogo-da-Vida. (o dado vai na 🎲 Sorte.)
   function rollDice(faces) {
     var n = Math.max(1, Math.round(num(faces, 6)));
-    return Math.floor(Math.random() * n) + 1;
+    return Math.floor(gameRandom() * n) + 1;
   }
   // Ordem de turno = um ANEL puro (1..N). Generaliza o nextAliveAfter das batalhas.
   var turnRing = { count: 1, current: 1 };
@@ -3366,9 +3379,9 @@ ${towerDefenseRuntime}
     if (!st || st.n !== n) {
       st = nave.stars = { n: n, xs: [], ys: [], rs: [], frame: -1 };
       for (var i = 0; i < n; i++) {
-        st.xs.push(Math.random() * config.w);
-        st.ys.push(Math.random() * config.h);
-        st.rs.push(1 + Math.random() * 2);
+        st.xs.push(visualRandom() * config.w);
+        st.ys.push(visualRandom() * config.h);
+        st.rs.push(1 + visualRandom() * 2);
       }
     }
     var v = num(speed, 20);
@@ -3377,8 +3390,8 @@ ${towerDefenseRuntime}
       st.frame = frameCount;
       for (var j = 0; j < n; j++) {
         st.ys[j] += v * currentDt;
-        if (st.ys[j] > config.h) { st.ys[j] = -2; st.xs[j] = Math.random() * config.w; }
-        else if (st.ys[j] < -4) { st.ys[j] = config.h; st.xs[j] = Math.random() * config.w; }
+        if (st.ys[j] > config.h) { st.ys[j] = -2; st.xs[j] = visualRandom() * config.w; }
+        else if (st.ys[j] < -4) { st.ys[j] = config.h; st.xs[j] = visualRandom() * config.w; }
       }
     }
     // Decor de TELA: com camera ligada, cola no retangulo visivel (drawBackground).
@@ -3415,11 +3428,11 @@ ${towerDefenseRuntime}
     // em coords de tela jogava a bomba p/ fora da vista (o quique segue o mundo).
     var ox = camera.on ? camera.x : 0;
     var oy = camera.on ? camera.y : 0;
-    e.x = ox + e.w + Math.random() * (config.w - e.w * 3);
-    e.y = oy + e.h + Math.random() * (config.h * 0.5);
+    e.x = ox + e.w + gameRandom() * (config.w - e.w * 3);
+    e.y = oy + e.h + gameRandom() * (config.h * 0.5);
     e._prevX = e.x; e._prevY = e.y;
-    e.vx = (Math.random() - 0.5) * 360; // o +-3 px/quadro do Chris, em px/s
-    e.vy = (Math.random() - 0.5) * 360;
+    e.vx = (gameRandom() - 0.5) * 360; // o +-3 px/quadro do Chris, em px/s
+    e.vy = (gameRandom() - 0.5) * 360;
     e._naveBomb = true;
     nave.bombs.push({ e: e, radius: Math.max(10, num(radius, 200)), target: text(targetMold, '') });
   }
@@ -4637,6 +4650,10 @@ ${gameKitAudioRuntime}
   _registerRuntimeDomain('project-resources', {
     resetProject: resetProjectOwnedResources
   });
+  _registerRuntimeDomain('campaign', {
+    resetGame: resetCampaignGame,
+    resetProject: resetCampaignProject
+  });
 
   // ---- API pública (1 método por bloco) ----
 
@@ -4783,6 +4800,46 @@ ${gameKitAudioRuntime}
     onUpdate: guard('onUpdate', function (fn) {
       if (typeof fn === 'function') updateHooks.push(fn);
     }),
+    enableFixedSimulation: guard('enableFixedSimulation', enableFixedSimulation),
+    onFixedUpdate: guard('onFixedUpdate', onFixedUpdate),
+    fixedTick: guard('fixedTick', function () { return proSim.tick; }),
+    renderAlpha: guard('renderAlpha', function () { return proSim.alpha; }),
+    simulationStats: guard('simulationStats', function () {
+      return { enabled: proSim.enabled, hz: proSim.hz, tick: proSim.tick, alpha: proSim.alpha, droppedSeconds: proSim.droppedSeconds, lastFrameSteps: proSim.lastFrameSteps };
+    }),
+    bindAction: guard('bindAction', bindAction),
+    actionDown: guard('actionDown', function (action) { return proActionDown[text(action, '')] === true; }),
+    actionPressed: guard('actionPressed', function (action) { return proActionPressed[text(action, '')] === true; }),
+    actionReleased: guard('actionReleased', function (action) { return proActionReleased[text(action, '')] === true; }),
+    activeInputDevice: guard('activeInputDevice', function () { return proInputDevice; }),
+    defineCampaign: guard('defineCampaign', defineCampaign),
+    defineCampaignStage: guard('defineCampaignStage', defineCampaignStage),
+    startCampaign: guard('startCampaign', startCampaign),
+    goToStage: guard('goToStage', goToStage),
+    nextStage: guard('nextStage', nextStage),
+    warpToStage: guard('warpToStage', warpToStage),
+    setCampaignCheckpoint: guard('setCampaignCheckpoint', setCampaignCheckpoint),
+    restartAtCheckpoint: guard('restartAtCheckpoint', restartAtCheckpoint),
+    currentStage: guard('currentStage', function () { return proCampaign.stageId; }),
+    currentWorld: guard('currentWorld', function () { return proCampaign.stage ? proCampaign.stage.world : 0; }),
+    onCampaignEvent: guard('onCampaignEvent', onCampaignEvent),
+    campaignEventValue: guard('campaignEventValue', campaignEventValue),
+    configureSaveSlots: guard('configureSaveSlots', configureSaveSlots),
+    saveCampaign: guard('saveCampaign', saveCampaign),
+    loadCampaign: guard('loadCampaign', loadCampaign),
+    deleteCampaignSave: guard('deleteCampaignSave', deleteCampaignSave),
+    campaignSaveInfo: guard('campaignSaveInfo', campaignSaveInfo),
+    startReplayRecording: guard('startReplayRecording', startReplayRecording),
+    stopReplayRecording: guard('stopReplayRecording', stopReplayRecording),
+    playReplay: guard('playReplay', playReplay),
+    playLastReplay: guard('playLastReplay', playLastReplay),
+    replayActive: guard('replayActive', function () { return proReplayPlaying != null; }),
+    replayHash: guard('replayHash', replayHash),
+    setHeroForm: guard('setHeroForm', setHeroForm),
+    heroForm: guard('heroForm', heroForm),
+    hurtHeroForm: guard('hurtHeroForm', hurtHeroForm),
+    campaignHero: guard('campaignHero', function () { return proCampaign.hero; }),
+    campaignProgress: guard('campaignProgress', campaignProgress),
     onDraw: guard('onDraw', function (fn) {
       if (typeof fn === 'function') drawHooks.push(fn);
     }),
@@ -4796,12 +4853,9 @@ ${gameKitAudioRuntime}
     drawCharacter: guard('drawCharacter', drawCharacter),
     placeCharacter: guard('placeCharacter', function (c, x, y) {
       if (!c || typeof c !== 'object') return;
-      c.x = num(x, c.x);
-      c.y = num(y, c.y);
+      placeCharacterAt(c, num(x, c.x), num(y, c.y));
       // Teleporte NÃO é movimento: zera a varredura, senão a colisão sólida tentaria
       // "varrer" do lugar antigo até aqui e travaria o personagem no caminho.
-      c._prevX = c.x;
-      c._prevY = c.y;
       c._sweepFromY = c.y;
       c._sweepFrame = -1;
     }),

@@ -18,6 +18,10 @@ import {
   canvas3DContextHasSymbol,
   createCanvas3DStatementContextIndex,
 } from '../ir/programmingReferences'
+import {
+  classicGameTwoDExpressionToBlock,
+  classicGameTwoDStatementToBlock,
+} from '../official-extensions/game-2d/classicCodec'
 import type { Canvas3DSymbolKind } from '../three/canvas3dContract'
 import {
   FRAME_APPEARANCE,
@@ -50,6 +54,9 @@ const NAMED_ELEMENT_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'mouseout',
   'pointerdown',
   'pointerup',
+  'pointercancel',
+  'lostpointercapture',
+  'blur',
   'submit',
   'input',
   'change',
@@ -704,6 +711,25 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_som_volume', {}, {}, stmt.__id, { LEVEL: level })
     }
+    case 'somTone': {
+      const frequency = exprToValueBlock(stmt.frequency)
+      const duration = exprToValueBlock(stmt.duration)
+      const level = exprToValueBlock(stmt.level)
+      return frequency && duration && level
+        ? block('sz_som_tone', { WAVE: stmt.wave }, {}, stmt.__id, {
+            FREQUENCY: frequency,
+            DURATION: duration,
+            LEVEL: level,
+          })
+        : rawJSBlock(stmt)
+    }
+    case 'somNoise': {
+      const duration = exprToValueBlock(stmt.duration)
+      const level = exprToValueBlock(stmt.level)
+      return duration && level
+        ? block('sz_som_noise', {}, {}, stmt.__id, { DURATION: duration, LEVEL: level })
+        : rawJSBlock(stmt)
+    }
 
     case 'setText': {
       return statementToBlock({
@@ -1233,6 +1259,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   }
 
   function gameTwoDStatementToBlock(): SerializedBlocklyBlock {
+    const classicBlock = classicGameTwoDStatementToBlock(stmt, {
+      block,
+      expression: exprToValueBlock,
+      statements: statementsToBlocks,
+      raw: rawJSBlock,
+    })
+    if (classicBlock) return classicBlock
     switch (stmt.type) {
       case 'g2d:createSprite': {
         const x = exprToValueBlock(valueToExpr(stmt.x))
@@ -3225,6 +3258,110 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
               { SPEED: speed, JUMP: jump },
             )
       }
+      case 'g3d:classicPlatformer': {
+        const speed = exprToValueBlock(valueToExpr(stmt.speed))
+        const jump = exprToValueBlock(valueToExpr(stmt.jump))
+        return speed === null || jump === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_classic_platformer',
+              { OBJ: stmt.objVar, WORLD: stmt.worldVar },
+              {},
+              stmt.__id,
+              { SPEED: speed, JUMP: jump },
+            )
+      }
+      case 'g3d:forEachHit':
+        return block(
+          'sz_g3d_for_each_hit',
+          { OBJ: stmt.objVar, SIDE: stmt.side, ITEM: stmt.itemName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3d:objectFlag': {
+        if (stmt.flag === 'estampa') {
+          return block(
+            'sz_g3d_paint_pattern',
+            {
+              OBJ: stmt.objVar,
+              PATTERN: stmt.pattern ?? 'xadrez',
+              COLOR_A: stmt.colorA ?? '#c8c8c8',
+              COLOR_B: stmt.colorB ?? '#585858',
+            },
+            {},
+            stmt.__id,
+          )
+        }
+        const tipo =
+          stmt.flag === 'carregar'
+            ? 'sz_g3d_carry_riders'
+            : stmt.flag === 'atravessavel'
+              ? 'sz_g3d_pass_under'
+              : 'sz_g3d_no_shadow'
+        return block(tipo, { OBJ: stmt.objVar }, {}, stmt.__id)
+      }
+      case 'g3d:setObjectValue': {
+        const value = exprToValueBlock(valueToExpr(stmt.value))
+        return value === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_set_object_value', { OBJ: stmt.objVar, KEY: stmt.key }, {}, stmt.__id, {
+              VALUE: value,
+            })
+      }
+      case 'g3d:createPlatformScene':
+        return block(
+          'sz_g3d_create_platform_scene',
+          { CANVAS: stmt.canvasId, VAR: stmt.varName },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:createHero':
+        return block(
+          'sz_g3d_create_hero',
+          { VAR: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:stage': {
+        const w = stmt.worldVar
+        if (stmt.op === 'tema') {
+          return block('sz_g3d_stage_theme', { WORLD: w, THEME: stmt.text ?? 'dia' }, {}, stmt.__id)
+        }
+        if (stmt.op === 'montar') {
+          const mapa = exprToValueBlock(valueToExpr(stmt.a ?? ''))
+          return mapa === null
+            ? rawJSBlock(stmt)
+            : block('sz_g3d_load_stage', { WORLD: w }, {}, stmt.__id, { MAP: mapa })
+        }
+        if (stmt.op === 'limpar') return block('sz_g3d_clear_stage', { WORLD: w }, {}, stmt.__id)
+        if (stmt.op === 'recomecar') return block('sz_g3d_stage_reset', { WORLD: w }, {}, stmt.__id)
+        if (stmt.op === 'numero') {
+          const a = exprToValueBlock(valueToExpr(stmt.a ?? 1))
+          const b = exprToValueBlock(valueToExpr(stmt.b ?? 1))
+          return a === null || b === null
+            ? rawJSBlock(stmt)
+            : block('sz_g3d_stage_number', { WORLD: w }, {}, stmt.__id, { WORLDN: a, STAGEN: b })
+        }
+        return rawJSBlock(stmt)
+      }
+      case 'g3d:stageFrame':
+        return block(
+          stmt.op === 'passo'
+            ? 'sz_g3d_stage_step'
+            : stmt.op === 'camera'
+              ? 'sz_g3d_side_camera'
+              : 'sz_g3d_shoot_fire',
+          { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:onStage':
+        return block(
+          'sz_g3d_on_stage_event',
+          { WORLD: stmt.worldVar, EVENT: stmt.event },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       case 'g3d:fpsControls': {
         const speed = exprToValueBlock(valueToExpr(stmt.speed))
         return speed === null
@@ -3600,6 +3737,61 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_gk_return_to_menu', {}, {}, stmt.__id)
       case 'gk:endGame':
         return block('sz_gk_end_game', {}, {}, stmt.__id)
+      case 'gk:fixedSetup': {
+        const seed = exprToValueBlock(valueToExpr(stmt.seed))
+        return seed === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_fixed_setup', {}, {}, stmt.__id, { SEED: seed })
+      }
+      case 'gk:onFixedUpdate':
+        return block(
+          'sz_gk_on_fixed_update',
+          { DT: stmt.dtName, TICK: stmt.tickName },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:onCampaignEvent':
+        return block(
+          'sz_gk_on_campaign_event',
+          { EVENT: stmt.event },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'gk:defineCampaign': {
+        const version = exprToValueBlock(valueToExpr(stmt.version))
+        const players = exprToValueBlock(valueToExpr(stmt.players))
+        const seed = exprToValueBlock(valueToExpr(stmt.seed))
+        const requiredGems = exprToValueBlock(valueToExpr(stmt.requiredGems))
+        return version === null || players === null || seed === null || requiredGems === null
+          ? rawJSBlock(stmt)
+          : block('sz_gk_define_campaign', { ID: stmt.id, FIRST: stmt.firstStage }, {}, stmt.__id, {
+              VERSION: version,
+              PLAYERS: players,
+              SEED: seed,
+              REQUIRED_GEMS: requiredGems,
+            })
+      }
+      case 'gk:defineCampaignStage': {
+        const stageBlock = block('sz_gk_define_campaign_stage', {}, {}, stmt.__id)
+        stageBlock.extraState = { stage: stmt.stage }
+        return stageBlock
+      }
+      case 'gk:startCampaign':
+        return block('sz_gk_start_campaign', { STAGE: stmt.stageId }, {}, stmt.__id)
+      case 'gk:goToStage':
+        return block('sz_gk_go_stage', { STAGE: stmt.stageId }, {}, stmt.__id)
+      case 'gk:saveCampaign':
+        return block('sz_gk_save_campaign', { SLOT: String(stmt.slot) }, {}, stmt.__id)
+      case 'gk:loadCampaign':
+        return block('sz_gk_load_campaign', { SLOT: String(stmt.slot) }, {}, stmt.__id)
+      case 'gk:deleteCampaignSave':
+        return block('sz_gk_delete_campaign_save', { SLOT: String(stmt.slot) }, {}, stmt.__id)
+      case 'gk:startReplayRecording':
+        return block('sz_gk_start_replay', {}, {}, stmt.__id)
+      case 'gk:stopReplayRecording':
+        return block('sz_gk_stop_replay', {}, {}, stmt.__id)
+      case 'gk:playLastReplay':
+        return block('sz_gk_play_last_replay', {}, {}, stmt.__id)
       case 'gk:onUpdate':
         return block(
           'sz_gk_on_update',
@@ -6935,6 +7127,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     varExpr,
   })
   if (programmingBlock !== PROGRAMMING_IR_TO_BLOCK_UNHANDLED) return programmingBlock
+  const classicBlock = classicGameTwoDExpressionToBlock(expr, block, exprToValueBlock)
+  if (classicBlock) return classicBlock
   switch (expr.type) {
     case 'g2d:keyDown':
       return block('sz_g2d_key_down', { KEY: expr.key })
@@ -7038,6 +7232,17 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_banana_hit_city', { CITY: expr.cityVar })
     case 'g3d:keyDown':
       return block('sz_g3d_key_down', { KEY: expr.key })
+    case 'g3d:keyPressed':
+      return block('sz_g3d_key_pressed', { KEY: expr.key })
+    case 'g3d:hitIs':
+      return block('sz_g3d_hit_is', { HIT: expr.hitVar, OBJ: expr.objVar })
+    case 'g3d:objectValue':
+      return block('sz_g3d_object_value', { KEY: expr.key, OBJ: expr.objVar })
+    case 'g3d:stageAsk':
+      if (expr.op === 'heroi') return block('sz_g3d_hero_is', { OBJ: expr.objVar, WHAT: expr.what })
+      return expr.op === 'fase'
+        ? block('sz_g3d_stage_value', { WORLD: expr.worldVar, FIELD: expr.what })
+        : block('sz_g3d_stage_is', { WORLD: expr.worldVar, STATUS: expr.what })
     case 'g3d:collides':
       return block('sz_g3d_collides', { A: expr.aVar, B: expr.bVar })
     case 'g3d:hitAny':
@@ -7119,6 +7324,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_key_down', { KEY: expr.key })
     case 'gk:keyPressed':
       return block('sz_gk_key_pressed', { KEY: expr.key })
+    case 'gk:actionDown':
+      return block('sz_gk_action_down', { ACTION: expr.action })
+    case 'gk:actionPressed':
+      return block('sz_gk_action_pressed', { ACTION: expr.action })
+    case 'gk:actionReleased':
+      return block('sz_gk_action_released', { ACTION: expr.action })
+    case 'gk:currentStage':
+      return block('sz_gk_current_stage', {})
+    case 'gk:campaignEventValue':
+      return block('sz_gk_campaign_event_value', { FIELD: expr.field })
     case 'gk:countActive':
       return block('sz_gk_count_active', { MOLD: expr.mold })
     case 'gk:touchCircle':
@@ -7510,8 +7725,8 @@ function rawJSBlock(stmt: JSStatement): SerializedBlocklyBlock {
 /**
  * Código que o bloco de "código avançado" carrega quando um statement do IR não é
  * representável como bloco estruturado. Para um `rawJS` é o código verbatim; para
- * qualquer outro (ex.: `storageSet`/`storageGet` com chave NÃO-literal, ou
- * `querySelector`/`fetchJson` com seletor/URL dinâmico) COMPILAMOS o statement
+ * qualquer outro (ex.: `querySelector`/`fetchJson` com seletor/URL dinâmico)
+ * COMPILAMOS o statement
  * para JS válido — antes era um `JSON.stringify` do nó do IR, que o gerador
  * re-emitia VERBATIM como um objeto literal quebrado, DESCARTANDO a chamada real
  * (ex.: o `localStorage.setItem(variavel, x)` sumia ao passar pela visão de

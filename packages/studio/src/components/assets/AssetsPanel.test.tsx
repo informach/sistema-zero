@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 import { AssetsPanel } from './AssetsPanel'
@@ -153,7 +153,7 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
     expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
   })
 
-  it('asset 3D ÓRFÃO (extensão desinstalada) continua listado e excluível', () => {
+  it('asset 3D ÓRFÃO continua listado e só é excluído após confirmação', () => {
     // O gate é só da porta de ENTRADA: esconder a seção criaria um órfão
     // invisível comendo a cota, sem como a criança excluir.
     seedProject()
@@ -168,6 +168,9 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
     expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
     expect(screen.getByText('Modelos 3D')).not.toBeNull()
     fireEvent.click(screen.getByText('Excluir'))
+    expect(useProjectStore.getState().project?.assets ?? []).toHaveLength(1)
+    const confirmation = screen.getByRole('dialog', { name: 'Excluir do projeto?' })
+    fireEvent.click(within(confirmation).getByRole('button', { name: 'Excluir' }))
     expect(useProjectStore.getState().project?.assets ?? []).toHaveLength(0)
   })
 })

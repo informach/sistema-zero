@@ -274,13 +274,16 @@ export async function savePersonalAsset(input: {
   }
 }
 
-/** Remove um desenho da biblioteca (best-effort). */
-export async function removePersonalAsset(id: string): Promise<void> {
+export type RemovePersonalAssetResult = { ok: true } | { ok: false; error: string }
+
+/** Remove um desenho da biblioteca sem esconder falhas de persistência. */
+export async function removePersonalAsset(id: string): Promise<RemovePersonalAssetResult> {
   try {
     await del(assetKey(id), getStoreHandle())
     markPersonalAssetsChanged()
+    return { ok: true }
   } catch {
-    // fail-soft: sem IndexedDB/erro de quota não derruba a UI.
+    return { ok: false, error: 'Não consegui excluir agora. Tente de novo daqui a pouco.' }
   }
 }
 

@@ -9,9 +9,9 @@ import { COPY } from '../../core/copy'
 import { isTilesetKind, type PintaAsset } from '../../core/project'
 import type { PintaInitialIntent } from '../../core/types'
 import { triggerDownload } from '../../export/download'
-import { importPintaJson } from '../../export/projectJson'
+import { importPintaJson, MAX_BACKUP_FILE_BYTES } from '../../export/projectJson'
 import { zipGallery } from '../../export/zip'
-import { decodeImageFile, IMPORT_ACCEPT } from '../../import/decodeImage'
+import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { Button } from '../ui/Button'
@@ -153,6 +153,10 @@ export function GalleryScreen(): JSX.Element {
   }
 
   async function handlePhoto(file: File): Promise<void> {
+    if (file.size > MAX_IMAGE_FILE_BYTES) {
+      showToast(COPY.gallery.importTooLarge)
+      return
+    }
     const decoded = await decodeImageFile(file)
     if (!decoded) {
       showToast(COPY.gallery.importDecodeError)
@@ -162,6 +166,10 @@ export function GalleryScreen(): JSX.Element {
   }
 
   async function handleRestore(file: File): Promise<void> {
+    if (file.size > MAX_BACKUP_FILE_BYTES) {
+      showToast(COPY.gallery.restoreTooLarge)
+      return
+    }
     try {
       const { assets: restored, warnings } = importPintaJson(await file.text())
       if (restored.length === 0) {

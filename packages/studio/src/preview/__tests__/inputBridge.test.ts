@@ -3,13 +3,24 @@ import { buildInputBridgeRuntime, buildInputRuntime } from '../inputBridge'
 
 interface InputApi {
   key: (name: string) => boolean
+  gamepadConnected: (index: number) => boolean
+  gamepadAxis: (index: number, axis: number) => number
+  gamepadButton: (index: number, button: number) => number
   x: number
   y: number
   down: boolean
 }
 
 /** Carrega o bridge num escopo controlado e devolve __szInput + disparadores. */
-function load(opts: { canvas?: unknown; onQuery?: () => void; runtime?: string } = {}) {
+function load(
+  opts: {
+    canvas?: unknown
+    gamepads?: unknown[]
+    onGamepadQuery?: () => void
+    onQuery?: () => void
+    runtime?: string
+  } = {},
+) {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
   const options: Record<string, unknown> = {}
@@ -50,6 +61,12 @@ function load(opts: { canvas?: unknown; onQuery?: () => void; runtime?: string }
       },
     },
     Audio: FakeAudio,
+    navigator: {
+      getGamepads: () => {
+        opts.onGamepadQuery?.()
+        return opts.gamepads ?? []
+      },
+    },
     parent,
     __szInput: undefined,
   } as unknown as Record<string, unknown>
@@ -98,6 +115,44 @@ describe('inputBridge — window.__szInput', () => {
     expect(input.key('Space')).toBe(true)
   })
 
+  it('lê gamepad físico com deadzone, normalização e limites seguros', () => {
+    const { input } = load({
+      gamepads: [
+        {
+          connected: true,
+          axes: [0.1, -0.575, 2, Number.NaN],
+          buttons: [{ value: 0.75 }, 2, { value: Number.NaN }],
+        },
+      ],
+    })
+
+    expect(input.gamepadConnected(0)).toBe(true)
+    expect(input.gamepadAxis(0, 0)).toBe(0)
+    expect(input.gamepadAxis(0, 1)).toBeCloseTo(-0.5, 5)
+    expect(input.gamepadAxis(0, 2)).toBe(1)
+    expect(input.gamepadAxis(0, 3)).toBe(0)
+    expect(input.gamepadButton(0, 0)).toBe(0.75)
+    expect(input.gamepadButton(0, 1)).toBe(1)
+    expect(input.gamepadButton(0, 2)).toBe(0)
+    expect(input.gamepadButton(99, 0)).toBe(0)
+  })
+
+  it('consulta o navegador uma vez para todas as leituras do mesmo frame', () => {
+    let queries = 0
+    const { input } = load({
+      gamepads: [{ connected: true, axes: [0.5], buttons: [{ value: 1 }] }],
+      onGamepadQuery: () => {
+        queries += 1
+      },
+    })
+
+    input.gamepadConnected(0)
+    input.gamepadAxis(0, 0)
+    input.gamepadButton(0, 0)
+
+    expect(queries).toBe(1)
+  })
+
   it('atualiza x/y do ponteiro no pointermove', () => {
     const { input, fire } = load()
     fire('pointermove', { clientX: 42, clientY: 17 })
@@ -109,14 +164,24 @@ describe('inputBridge — window.__szInput', () => {
     const first = {
       isConnected: true,
       getContext: () => ({}),
-      getBoundingClientRect: () => ({ left: 0, top: 0, width: 100, height: 100 }),
+      getBoundingClientRect: () => ({
+        left: 0,
+        top: 0,
+        width: 100,
+        height: 100,
+      }),
       width: 100,
       height: 100,
     }
     const second = {
       isConnected: true,
       getContext: () => ({}),
-      getBoundingClientRect: () => ({ left: 200, top: 50, width: 200, height: 100 }),
+      getBoundingClientRect: () => ({
+        left: 200,
+        top: 50,
+        width: 200,
+        height: 100,
+      }),
       width: 400,
       height: 200,
     }
@@ -177,7 +242,10 @@ describe('inputBridge — window.__szInput', () => {
   })
 
   it('ignora screenshot pedido por um subframe e responde somente ao parent autenticado', () => {
-    const canvas = { isConnected: true, toDataURL: () => 'data:image/png;base64,SEGREDO' }
+    const canvas = {
+      isConnected: true,
+      toDataURL: () => 'data:image/png;base64,SEGREDO',
+    }
     const { fire, parent, sent } = load({ canvas })
     const attackerSent: unknown[] = []
 
@@ -196,7 +264,10 @@ describe('inputBridge — window.__szInput', () => {
     })
     expect(sent).toEqual([
       {
-        message: { type: 'sz:screenshot:result', dataUrl: 'data:image/png;base64,SEGREDO' },
+        message: {
+          type: 'sz:screenshot:result',
+          dataUrl: 'data:image/png;base64,SEGREDO',
+        },
         targetOrigin: 'https://comunidade.sistemazero.com.br',
       },
     ])

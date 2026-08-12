@@ -124,6 +124,8 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_input_key_pressed',
   'sz_input_pointer_x',
   'sz_input_pointer_y',
+  'sz_som_tone',
+  'sz_som_noise',
   // A progressão de Programação vive integralmente em programmingContract.ts.
   // Avançado — código cru
   'sz_adv_raw_html',

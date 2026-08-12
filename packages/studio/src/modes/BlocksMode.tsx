@@ -73,7 +73,7 @@ export function BlocksMode(): JSX.Element {
     if (!project) return
     let cancelled = false
     void import('#parsers')
-      .then(({ parseProjectFiles }) => {
+      .then(({ hasBlockingParseDiagnostics, parseProjectFilesWithDiagnostics }) => {
         if (cancelled) return
         const state = projectStoreApi.getState()
         const current = state.project
@@ -82,7 +82,9 @@ export function BlocksMode(): JSX.Element {
         // Época capturada ANTES do parse: no modo Blocos não há editor de
         // código, então nenhuma edição avança a época durante o parse.
         const epoch = state.bridgeCodeEditEpoch
-        const derived = parseProjectFiles(current.files)
+        const parsed = parseProjectFilesWithDiagnostics(current.files)
+        if (hasBlockingParseDiagnostics(parsed.diagnostics)) return
+        const derived = parsed.ir
         state.applyProjectState({
           ir: derived,
           // HTML/CSS vazios não ressuscitam num projeto só-JS (ver BridgeMode).
@@ -140,7 +142,7 @@ export function BlocksMode(): JSX.Element {
     }
     let cancelled = false
     void import('#parsers')
-      .then(({ parseProjectFiles }) => {
+      .then(({ hasBlockingParseDiagnostics, parseProjectFilesWithDiagnostics }) => {
         if (cancelled) return
         // Re-checa com o estado FRESCO: a hidratação real pode ter chegado (ou o
         // projeto trocado) enquanto o chunk do parser carregava.
@@ -149,7 +151,9 @@ export function BlocksMode(): JSX.Element {
         if (!current || current.id !== project.id) return
         if (current.ir || !isBlocksStateEmpty(current.blocksState)) return
         if (state.blocksHydration === 'pending' || state.blocksHydration === 'restored') return
-        const derived = parseProjectFiles(current.files)
+        const parsed = parseProjectFilesWithDiagnostics(current.files)
+        if (hasBlockingParseDiagnostics(parsed.diagnostics)) return
+        const derived = parsed.ir
         const behavior = derived.behavior
         if (
           derived.html.length === 0 &&

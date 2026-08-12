@@ -225,7 +225,7 @@ export function ProjectList({
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="h-72 animate-pulse rounded-2xl border-2 border-sz-border bg-sz-panel"
+                      className="h-72 animate-pulse rounded-2xl border-2 border-sz-border bg-sz-panel motion-reduce:animate-none"
                     />
                   ))}
                 </div>

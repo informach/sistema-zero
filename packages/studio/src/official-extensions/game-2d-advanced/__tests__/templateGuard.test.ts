@@ -64,6 +64,7 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
           'gameKitAudioRuntime',
           'gameKitAnimationRuntime',
           'gameKitCardsRuntime',
+          'gameKitCampaignRuntime',
           'gameKitMonsterBattleRuntime',
           'gameKitPlatformerRuntime',
           'gameKitRpgBattleRuntime',
@@ -82,6 +83,11 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
       ['runtime/animation.ts', 'gameKitAnimationRuntime ='],
       ['runtime/audio.ts', 'gameKitAudioRuntime ='],
       ['runtime/cards.ts', 'gameKitCardsRuntime ='],
+      ['runtime/campaign.ts', 'gameKitCampaignRuntime ='],
+      ['runtime/campaignEvents.ts', 'gameKitCampaignEventsRuntime ='],
+      ['runtime/campaignInput.ts', 'gameKitCampaignInputStateRuntime ='],
+      ['runtime/campaignInput.ts', 'gameKitCampaignInputRuntime ='],
+      ['runtime/campaignPersistence.ts', 'gameKitCampaignPersistenceRuntime ='],
       ['runtime/monsterBattle.ts', 'gameKitMonsterBattleRuntime ='],
       ['runtime/platformer.ts', 'gameKitPlatformerRuntime ='],
       ['runtime/rpgBattle.ts', 'gameKitRpgBattleRuntime ='],
@@ -92,7 +98,23 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
       ['../runtimeDomains.ts', 'gameRuntimeDomains ='],
     ] as const) {
       const src = readFileSync(join(DIR, file), 'utf8')
-      expect(rawTemplateHazardsInside(src, declaration)).toEqual([])
+      expect(
+        rawTemplateHazardsInside(
+          src,
+          declaration,
+          file === 'runtime/campaign.ts'
+            ? new Set([
+                'CAMPAIGN_ENTITY_RUNTIME_CATALOG_JSON',
+                'gameKitCampaignEventsRuntime',
+                'gameKitCampaignInputRuntime',
+                'gameKitCampaignInputStateRuntime',
+                'gameKitCampaignPersistenceRuntime',
+              ])
+            : declaration === 'gameKitCampaignInputStateRuntime ='
+              ? new Set(['gameKitActionBitsJson', 'gameKitActionsJson'])
+              : new Set(),
+        ),
+      ).toEqual([])
     }
   })
 

@@ -4,6 +4,10 @@ import {
   programmingExpressionIRToCode,
 } from '../codecs/programming/irToCode'
 import { canvasExpressionToCode, isCanvasExpression } from '../codecs/web/canvasExpressionToCode'
+import {
+  classicGameTwoDExpressionToCode,
+  isClassicGameTwoDExpression,
+} from '../official-extensions/game-2d/classicCodec'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
 
@@ -215,6 +219,13 @@ export function compileExpr(
       objectKey,
     })
   }
+  if (isClassicGameTwoDExpression(expr)) {
+    return classicGameTwoDExpressionToCode(
+      expr,
+      (value) => compileExpr(value, 0, identifiers, rec),
+      (name) => identifiers.get(name),
+    )
+  }
   switch (expr.type) {
     case 'g2d:keyDown':
       return `SZGame2D.keyDown(${JSON.stringify(expr.key)})`
@@ -312,6 +323,20 @@ export function compileExpr(
       return `SZGame2D.bananaHitCity(${identifiers.get(expr.cityVar)})`
     case 'g3d:keyDown':
       return `SZGame3D.keyDown(${JSON.stringify(expr.key)})`
+    case 'g3d:keyPressed':
+      return `SZGame3D.keyPressed(${JSON.stringify(expr.key)})`
+    case 'g3d:hitIs':
+      return `SZGame3D.hitIs(${identifiers.get(expr.hitVar)}, ${identifiers.get(expr.objVar)})`
+    case 'g3d:objectValue':
+      return `SZGame3D.objectValue(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.key)})`
+    case 'g3d:stageAsk': {
+      const what = JSON.stringify(expr.what)
+      if (expr.op === 'heroi') return `SZGame3D.heroIs(${identifiers.get(expr.objVar)}, ${what})`
+      const w = identifiers.get(expr.worldVar)
+      return expr.op === 'fase'
+        ? `SZGame3D.stageValue(${w}, ${what})`
+        : `SZGame3D.stageIs(${w}, ${what})`
+    }
     case 'g3d:collides':
       return `SZGame3D.collides(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g3d:hitAny':
@@ -383,6 +408,16 @@ export function compileExpr(
       return `SZGameKit.keyDown(${JSON.stringify(expr.key)})`
     case 'gk:keyPressed':
       return `SZGameKit.keyPressed(${JSON.stringify(expr.key)})`
+    case 'gk:actionDown':
+      return `SZGameKit.actionDown(${JSON.stringify(expr.action)})`
+    case 'gk:actionPressed':
+      return `SZGameKit.actionPressed(${JSON.stringify(expr.action)})`
+    case 'gk:actionReleased':
+      return `SZGameKit.actionReleased(${JSON.stringify(expr.action)})`
+    case 'gk:currentStage':
+      return 'SZGameKit.currentStage()'
+    case 'gk:campaignEventValue':
+      return `SZGameKit.campaignEventValue(${JSON.stringify(expr.field)})`
     case 'gk:countActive':
       return `SZGameKit.countActive(${JSON.stringify(expr.mold)})`
     case 'gk:touchCircle':
