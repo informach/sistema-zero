@@ -77,6 +77,7 @@ interface Api {
   addEnemyTypeToWorld(world: World, type: EnemyType): void
   createEnemyType(options: { behavior?: string; speed?: number; w?: number; h?: number }): EnemyType
   spawnEnemy(type: EnemyType, x: number, y: number): Sprite | null
+  onEnemyDefeated(type: EnemyType, fn: (s: Sprite) => void, id?: string): void
   updateEnemyType(type: EnemyType, ctx: CanvasRenderingContext2D, target: Sprite | null): void
   applyGravityToGroup(group: Group): void
   addPlatformGroupToWorld(world: World, group: Group): void
@@ -633,7 +634,7 @@ describe('Movimento com terreno não inventa chão na tela', () => {
    * do `_enemyResolveGround` evita é a consulta ao terreno crescer junto com uma
    * queda infinita — e ela não pode virar um chão invisível.
    */
-  it('inimigo que cai por um buraco do Mundo continua caindo, sem chão fantasma', () => {
+  it('inimigo que cai por um buraco do Mundo é RECOLHIDO, sem chão fantasma', () => {
     const api = load()
     const ctx = stageContext()
     api.setGravity(0.6)
@@ -655,13 +656,30 @@ describe('Movimento com terreno não inventa chão na tela', () => {
     // confirmar, então aqui ele nem chega a ser escrito.
     expect(inimigo.onGround).toBeFalsy()
 
-    // …e continua caindo depois da folga, em vez de parar numa borda inventada.
-    const antes = inimigo.y
-    for (let frame = 0; frame < 60; frame++) {
+    // ⚠️ Passada a folga ele é RECOLHIDO, e não deixado caindo para sempre. Um
+    // inimigo em queda eterna continua contando no "quantos tem no grupo", e é
+    // comum a saída da fase ser "quando não sobrar nenhum": bastava um nascer
+    // sobre um buraco para o portão nunca abrir.
+    expect(type.items.length).toBe(0)
+  })
+
+  it('quem cai fora não dispara o "quando for derrotado" (ninguém o derrotou)', () => {
+    const api = load()
+    const ctx = stageContext()
+    api.setGravity(0.6)
+    const world = api.createWorld(800, 600)
+    const type = api.createEnemyType({ behavior: 'patrulha', speed: 0, w: 20, h: 20 })
+    api.addEnemyTypeToWorld(world, type)
+    api.spawnEnemy(type, 600, 100)
+    const derrotados: unknown[] = []
+    api.onEnemyDefeated(type, (s: Sprite) => derrotados.push(s))
+    for (let frame = 0; frame < 400; frame++) {
       api.applyGravityToGroup(type)
       api.updateEnemyType(type, ctx, null)
     }
-    expect(inimigo.y).toBeGreaterThan(antes)
+    expect(type.items.length).toBe(0)
+    // Premiar a queda daria ponto de graça e abriria portão sem luta.
+    expect(derrotados).toEqual([])
   })
 
   it('o inimigo ligado ao Mundo vai e volta nos limites do Mundo, não nos da tela', () => {

@@ -391,7 +391,13 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       // porque nada obriga uma figura de terreno a caber dentro do Mundo.
       var longeDoMundo = s.y > env.world.height + 2000 ||
         s.y + _finiteNumber(s.h, 0) < -2000;
-      if (!longeDoMundo) collideWorld(s, env.world);
+      // ⚠️ Quem saiu do mundo é RECOLHIDO, não deixado caindo para sempre. Um
+      // inimigo em queda eterna continua contando no "quantos tem no grupo", e é
+      // comum a saída da fase ser "quando não sobrar nenhum": bastava um nascer
+      // sobre um buraco para o portão nunca abrir. Quem recolhe é o laço do
+      // "Atualizar", que já é o dono da remoção.
+      if (longeDoMundo) { s._foraDoMundo = true; return; }
+      collideWorld(s, env.world);
       return;
     }
     // Sem Mundo é a borda VISÍVEL, e não env.bounds: aqui os dois são o mesmo
@@ -1308,6 +1314,9 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     for (var i = type.items.length - 1; i >= 0; i--) {
       var s = type.items[i];
       if (!s) { _removeGroupItemAt(type, i); continue; }
+      // Caiu para fora do mundo: some sem partículas e SEM o "quando for
+      // derrotado" — ninguém o derrotou, e premiar por isso daria ponto de graça.
+      if (s._foraDoMundo) { _removeGroupItemAt(type, i); continue; }
       // Animações registradas DEPOIS do spawn ainda alcançam este inimigo.
       if (c.animStates && !s.animStates) s.animStates = c.animStates;
       // Sprite que entrou pelo "Pôr o sprite no grupo" não passou pelo spawn e
