@@ -13,7 +13,11 @@ import type { SZIRV2 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { normalizeSearchText } from '../core/searchText'
-import { CORE_EXAMPLES } from '../examples/core'
+import {
+  CORE_EXAMPLE_SUMMARIES,
+  type CoreExampleSummary,
+  loadCoreExample,
+} from '../examples/coreCatalog'
 import { persistProject } from '../state/persistence'
 import { useT } from '../studio/i18n'
 
@@ -30,7 +34,9 @@ export interface KitEntry {
   key: string
   name: string
   description: string
-  ir: SZIRV2
+  /** Presente nos catálogos já carregados; exemplos core resolvem isto sob demanda. */
+  ir?: SZIRV2
+  load?: () => Promise<{ ir: SZIRV2; assets?: readonly ProjectAsset[] }>
   emoji: string
   experience: ExampleExperience
   difficulty?: ExtensionExampleDifficulty
@@ -89,6 +95,7 @@ export function filterKitGroups(
 
 /** Emoji decorativo por nome de exemplo (novo/renomeado cai no controle 🎮). */
 const KIT_EMOJI: Record<string, string> = {
+  'Reino Zero Ultra (na mão)': '👑',
   'Pegue a moeda': '💰',
   Pong: '🏓',
   'Pong Profissional': '🎾',
@@ -100,6 +107,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Safári de Monstros Profissional': '🫎',
   'Safári de Monstros (na mão)': '🪤',
   'Herói que anda': '🏃',
+  'Reino Cogumelo': '🍄',
   'Mini plataforma': '🦘',
   'Sala com paredes': '🧱',
   'Nave contra Asteroides': '🚀',
@@ -259,6 +267,20 @@ function toEntry(
   }
 }
 
+function toCoreEntry(summary: CoreExampleSummary): KitEntry {
+  return {
+    key: `core:${summary.name}`,
+    name: summary.name,
+    description: summary.description,
+    experience: summary.experience,
+    emoji: KIT_EMOJI[summary.name] ?? '🎮',
+    load: async () => {
+      const example = await loadCoreExample(summary.name)
+      return { ir: example.ir, assets: example.assets }
+    },
+  }
+}
+
 export interface KitGroupsResult {
   groups: KitGroup[]
   failedExtensionIds: string[]
@@ -293,20 +315,11 @@ export async function buildKitGroupsResult(t: Translator = defaultT): Promise<Ki
       },
     ]
   })
-  if (CORE_EXAMPLES.length > 0) {
+  if (CORE_EXAMPLE_SUMMARIES.length > 0) {
     groups.push({
       extensionId: 'core',
       label: t('kits.group.classic'),
-      entries: CORE_EXAMPLES.map((example) =>
-        toEntry(
-          'core',
-          example.name,
-          example.description,
-          example.experience,
-          example.ir,
-          example.assets,
-        ),
-      ),
+      entries: CORE_EXAMPLE_SUMMARIES.map(toCoreEntry),
     })
   }
   return { groups, failedExtensionIds: catalogs.failed.map((failure) => failure.extensionId) }
@@ -323,6 +336,7 @@ export async function buildKitGroups(t: Translator = defaultT): Promise<KitGroup
  */
 export function buildProjectFromKitEntry(entry: KitEntry): Project {
   const { name, ir, assets } = entry
+  if (!ir) throw new Error(`O exemplo ${name} ainda não foi carregado.`)
   const project: Project = {
     ...createEmptyProject(ulid(), name),
     ir,
@@ -343,7 +357,8 @@ export function buildProjectFromKitEntry(entry: KitEntry): Project {
 
 /** Persiste um projeto montado pelo caminho único da galeria. */
 async function createProjectFromExample(entry: KitEntry): Promise<Project> {
-  const project = buildProjectFromKitEntry(entry)
+  const loaded = entry.ir ? entry : { ...entry, ...(await entry.load?.()) }
+  const project = buildProjectFromKitEntry(loaded)
   await persistProject(project)
   return project
 }
@@ -521,7 +536,7 @@ export function KitGallery({
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
               placeholder={t('kits.search.placeholder')}
-              className="sz-touch-target h-9 min-w-0 rounded-md border border-sz-border bg-sz-bg px-3 text-sm font-normal text-sz-fg outline-none focus:border-sz-accent"
+              className="sz-touch-target h-9 min-w-0 rounded-md border border-sz-border bg-sz-bg px-3 text-sm font-normal text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
             />
           </label>
           <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">

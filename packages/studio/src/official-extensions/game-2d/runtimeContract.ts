@@ -26,6 +26,27 @@ export interface GameTwoDSpriteSheet {
   frameH: number
 }
 
+export type GameTwoDAction =
+  | 'left'
+  | 'right'
+  | 'up'
+  | 'down'
+  | 'jump'
+  | 'action'
+  | 'select'
+  | 'start'
+  | 'pause'
+
+export type GameTwoDSpriteDirection = 'left' | 'right' | 'up' | 'down'
+
+export type GameTwoDVectorTileRole = 'decor' | 'solid' | 'platform'
+
+export interface GameTwoDVectorTileset {
+  readonly _kind: 'g2d-vector-tileset'
+  tileSize: number
+  tiles: Record<number, { shape: string; role: GameTwoDVectorTileRole }>
+}
+
 export interface GameTwoDAnimation {
   sheet: GameTwoDSpriteSheet
   from: number
@@ -71,6 +92,7 @@ export interface GameTwoDSprite {
   skin?: GameTwoDSpriteSkin
   angle?: number
   facing?: number
+  direction?: GameTwoDSpriteDirection
   opacity?: number
   hp?: number
   hpMax?: number
@@ -106,7 +128,7 @@ export interface GameTwoDTileLayout {
 }
 
 export interface GameTwoDTileMap {
-  tileset: GameTwoDSpriteSheet
+  tileset: GameTwoDSpriteSheet | GameTwoDVectorTileset
   tile: number
   draw: number
   rows: number[][]
@@ -116,6 +138,20 @@ export interface GameTwoDTileMap {
   ox: number
   oy: number
 }
+
+export type GameTwoDTileContactSide = 'head' | 'feet' | 'left' | 'right'
+
+export interface GameTwoDTileContact {
+  map: GameTwoDTileMap
+  index: number
+  row: number
+  col: number
+  x: number
+  y: number
+  side: GameTwoDTileContactSide
+}
+
+export type GameTwoDStompMode = 'defeat' | 'damage' | 'squash' | 'shell' | 'spiky'
 
 export type GameTwoDWorldEdges = 'none' | 'floor' | 'solid'
 export type GameTwoDCameraHorizontal = 'off' | 'free' | 'right' | 'left'
@@ -216,6 +252,8 @@ export interface GameTwoDLifecycleApi {
   onStart(fn: () => void, id?: string): void
   onPointer(fn: (x: number, y: number) => void, id?: string): void
   onKey(key: string, fn: () => void, id?: string): void
+  /** Uma ação clássica apertada por teclado, toque ou tecnologia assistiva. */
+  onActionPressed(action: GameTwoDAction, fn: () => void, id?: string): void
   /** Qualquer tecla OU toque na tela (a tela de "aperte para começar"). */
   onAnyInput(fn: () => void, id?: string): void
   pointer: GameTwoDPointer
@@ -400,7 +438,7 @@ export interface GameTwoDMathAndStateApi {
   randomY(): number
   cooldownReady(sprite: GameTwoDSprite, frames: number, key?: string): boolean
   pruneOld(group: GameTwoDGroup, seconds: number): void
-  flipSprite(sprite: GameTwoDSprite, direction: 'left' | 'right'): void
+  flipSprite(sprite: GameTwoDSprite, direction: GameTwoDSpriteDirection): void
   setOpacity(sprite: GameTwoDSprite, percent: number): void
   /** Reposiciona sem colidir com o caminho anterior (teleporte/respawn). */
   setPosition(sprite: GameTwoDSprite, x: number, y: number): void
@@ -421,6 +459,10 @@ export interface GameTwoDInputAndMotionApi {
   platformer(sprite: GameTwoDSprite, ctx: GameTwoDContext, speed: number, jump: number): void
   /** Plataforma sobre terreno real; colida com o Mundo depois de mover. */
   platformerWithTerrain(sprite: GameTwoDSprite, speed: number, jump: number): void
+  enableClassicControls(mode: 'auto' | 'always' | 'off'): void
+  actionDown(action: GameTwoDAction): boolean
+  actionPressed(action: GameTwoDAction): boolean
+  classicPlatformer(sprite: GameTwoDSprite, speed: number, jump: number): void
   jumpWithTerrain(sprite: GameTwoDSprite, jump: number): void
   topDown(sprite: GameTwoDSprite, speed: number): void
   flyFree(sprite: GameTwoDSprite, speed: number): void
@@ -478,6 +520,14 @@ export interface GameTwoDWorldApi {
   onJump(getSprite: () => GameTwoDSprite | null, fn: () => void, id?: string): void
   createTileMap(options: GameTwoDTileMapOptions): GameTwoDTileMap
   createTileMapFromAsset(name: string): GameTwoDTileMap
+  createVectorTileset(tileSize: number): GameTwoDVectorTileset
+  defineVectorTile(
+    tileset: GameTwoDVectorTileset,
+    index: number,
+    shape: string,
+    role: GameTwoDVectorTileRole,
+  ): void
+  createVectorTileMap(tileset: GameTwoDVectorTileset, grid: string): GameTwoDTileMap
   fitTileMapToStage(ctx: GameTwoDContext, map: GameTwoDTileMap): void
   placeTileMap(map: GameTwoDTileMap, x: number, y: number, tileSize: number): void
   /**
@@ -492,6 +542,14 @@ export interface GameTwoDWorldApi {
     size?: number,
   ): void
   collideTileMap(sprite: GameTwoDSprite, map: GameTwoDTileMap): void
+  forEachTileContact(
+    sprite: GameTwoDSprite,
+    map: GameTwoDTileMap,
+    side: GameTwoDTileContactSide | 'any',
+    visit: (contact: GameTwoDTileContact) => void,
+  ): void
+  tileContactIs(contact: GameTwoDTileContact, index: number): boolean
+  setTileAtContact(contact: GameTwoDTileContact, index: number): void
   collideGroup(sprite: GameTwoDSprite, group: GameTwoDGroup): void
   collideSprite(sprite: GameTwoDSprite, obstacle: GameTwoDSprite): void
   collidePlatform(sprite: GameTwoDSprite, platform: GameTwoDSprite): void
@@ -577,6 +635,16 @@ export interface GameTwoDHudAndSceneApi {
     size: number,
     align: 'left' | 'center' | 'right',
   ): void
+  drawPixelText(
+    ctx: GameTwoDContext,
+    text: string,
+    x: number,
+    y: number,
+    pixelSize: number,
+    color: string,
+    align?: 'left' | 'center' | 'right',
+  ): void
+  drawFade(ctx: GameTwoDContext, percent: number, color: string): void
   drawHearts(
     ctx: GameTwoDContext,
     count: number,
@@ -666,6 +734,8 @@ export interface GameTwoDArcadeApi {
   enemyDamage(sprite: GameTwoDSprite): number
   hurtByEnemy(sprite: GameTwoDSprite, enemy: GameTwoDSprite): void
   stompEnemyType(sprite: GameTwoDSprite, type: GameTwoDEnemyType, bounce: number): void
+  setEnemyStompMode(type: GameTwoDEnemyType, mode: GameTwoDStompMode): void
+  updateEnemyShells(type: GameTwoDEnemyType, worldValue?: GameTwoDWorld): void
   jumpOnGround(sprite: GameTwoDSprite, ctx: GameTwoDContext, jump: number): void
   createDino(options?: GameTwoDSpriteOptions & { size?: number }): GameTwoDSprite
   controlDino(sprite: GameTwoDSprite, ctx: GameTwoDContext, jump: number): void
@@ -831,6 +901,7 @@ export const GAME_TWO_D_API_KEYS = [
   'showFps',
   'onPointer',
   'onKey',
+  'onActionPressed',
   'onAnyInput',
   'onOverlap',
   'onJump',
@@ -859,6 +930,10 @@ export const GAME_TWO_D_API_KEYS = [
   'paintLine',
   'platformer',
   'platformerWithTerrain',
+  'enableClassicControls',
+  'actionDown',
+  'actionPressed',
+  'classicPlatformer',
   'jumpWithTerrain',
   'topDown',
   'flyFree',
@@ -872,10 +947,16 @@ export const GAME_TWO_D_API_KEYS = [
   'drawParticles',
   'createTileMap',
   'createTileMapFromAsset',
+  'createVectorTileset',
+  'defineVectorTile',
+  'createVectorTileMap',
   'fitTileMapToStage',
   'placeTileMap',
   'drawTileMap',
   'collideTileMap',
+  'forEachTileContact',
+  'tileContactIs',
+  'setTileAtContact',
   'collideGroup',
   'collideSprite',
   'collidePlatform',
@@ -919,6 +1000,8 @@ export const GAME_TWO_D_API_KEYS = [
   'afterSeconds',
   'drawScore',
   'drawLabel',
+  'drawPixelText',
+  'drawFade',
   'drawHearts',
   'drawBar',
   'drawSpriteHealth',
@@ -953,6 +1036,8 @@ export const GAME_TWO_D_API_KEYS = [
   'enemyDamage',
   'hurtByEnemy',
   'stompEnemyType',
+  'setEnemyStompMode',
+  'updateEnemyShells',
   'rotateSprite',
   'pointSprite',
   'thrust',

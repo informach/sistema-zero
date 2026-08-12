@@ -72,7 +72,6 @@ export default defineConfig({
       'blockly/msg/pt-br',
       '@blockly/field-colour',
       '@blockly/toolbox-search',
-      'react-blockly',
       '@monaco-editor/react',
       '@babel/parser',
       'monaco-editor/esm/vs/editor/editor.api.js',

@@ -118,7 +118,10 @@ function isVec2(value: unknown): value is Vec2 {
 const MAX_TEXT_CHARS = 200
 /** Teto do `d` do pincel — o sanitize DESCARTA acima disso; a criação (smoothing) capa antes. */
 export const MAX_PATH_CHARS = 20_000
-const MAX_POLYGON_POINTS = 64
+/** Teto de pontos do polígono. Exportado: o editor de pontos recusa passar disso. */
+export const MAX_POLYGON_POINTS = 64
+/** Piso do polígono — abaixo disso o sanitize DESCARTA a forma no próximo load. */
+export const MIN_POLYGON_POINTS = 3
 
 /**
  * Valida um shape vindo de fonte não confiável (disco/import). Retorna o shape

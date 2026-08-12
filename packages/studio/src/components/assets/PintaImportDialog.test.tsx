@@ -228,7 +228,7 @@ describe('PintaImportDialog', () => {
     if (!add) throw new Error('botão esperado')
     fireEvent.click(add)
     await waitFor(() => {
-      expect(screen.getByText('Esse desenho sumiu.')).toBeTruthy()
+      expect(screen.getByRole('alert').textContent).toContain('Esse desenho sumiu.')
     })
     expect(screen.queryByText('dragao-pintado')).toBeNull()
     expect(useProjectStore.getState().project?.assets ?? []).toEqual([])
@@ -244,7 +244,9 @@ describe('PintaImportDialog', () => {
     })
     await openDialog(adapter)
     await waitFor(() => {
-      expect(screen.getByText('Não consegui abrir a sua galeria do Pinta agora.')).toBeTruthy()
+      expect(screen.getByRole('alert').textContent).toContain(
+        'Não consegui abrir a sua galeria do Pinta agora.',
+      )
     })
     fail = false
     fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))

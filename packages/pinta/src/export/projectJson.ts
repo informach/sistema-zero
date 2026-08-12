@@ -101,6 +101,9 @@ function decodeAsset(raw: unknown): unknown {
   }
 }
 
+/** Teto do arquivo comprimido em texto antes de carregá-lo inteiro na memória. */
+export const MAX_BACKUP_FILE_BYTES = 32 * 1024 * 1024
+
 /** A galeria inteira → texto do `.pinta.json`. */
 export function galleryToPintaJson(assets: PintaAsset[]): string {
   return JSON.stringify(

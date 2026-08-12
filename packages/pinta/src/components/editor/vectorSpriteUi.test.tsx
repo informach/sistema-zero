@@ -54,14 +54,30 @@ describe('personagem vetorial — paridade com o pixel', () => {
     expect(document.querySelector('.w-56')).toBeNull()
   })
 
-  it('a timeline alterna entre altura compacta e expandida', async () => {
+  it('oculta a expansão quando a timeline compacta já mostra todo o conteúdo', async () => {
     await openVectorSprite()
-    const expand = screen.getByRole('button', { name: COPY.animation.expandTimeline })
+    expect(Boolean(screen.queryByRole('button', { name: COPY.animation.expandTimeline }))).toBe(
+      false,
+    )
+  })
+
+  it('oferece expansão somente quando a timeline compacta esconde conteúdo', async () => {
+    await openVectorSprite()
+    const timeline = document.querySelector<HTMLElement>('[data-timeline-scroll]')
+    if (!timeline) throw new Error('timeline esperada')
+    Object.defineProperties(timeline, {
+      scrollHeight: { configurable: true, value: 400 },
+      clientHeight: { configurable: true, value: 224 },
+    })
+
+    fireEvent(window, new Event('resize'))
+    const expand = await screen.findByRole('button', { name: COPY.animation.expandTimeline })
     expect(expand.getAttribute('aria-expanded')).toBe('false')
+
     fireEvent.click(expand)
     const compact = screen.getByRole('button', { name: COPY.animation.compactTimeline })
     expect(compact.getAttribute('aria-expanded')).toBe('true')
-    expect(document.querySelector('[data-timeline-scroll]')?.className).toContain('max-h-96')
+    expect(timeline.className).toContain('max-h-96')
   })
 
   it('REGRESSÃO: o palco SVG tem width/height DEFINIDOS (doc × zoom)', async () => {
@@ -95,6 +111,39 @@ describe('personagem vetorial — paridade com o pixel', () => {
     // O pincel cria um path mesmo sem arrasto útil; nada de NaN no d.
     const svgText = document.body.innerHTML
     expect(svgText).not.toContain('NaN')
+  })
+
+  it('desenhar não recria o ResizeObserver da timeline', async () => {
+    const observerDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'ResizeObserver')
+    let observers = 0
+    Object.defineProperty(globalThis, 'ResizeObserver', {
+      configurable: true,
+      value: class {
+        constructor() {
+          observers += 1
+        }
+        observe(): void {}
+        disconnect(): void {}
+      },
+    })
+    try {
+      await openVectorSprite()
+      const beforeDrawing = observers
+      const stage = screen.getByRole('img', { name: COPY.a11y.drawArea })
+      fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 31, clientX: 10, clientY: 10 })
+      fireEvent.pointerMove(stage, { pointerId: 31, clientX: 30, clientY: 30 })
+      fireEvent.pointerUp(stage, { pointerId: 31 })
+      await waitFor(() => {
+        expect(stage.querySelector('path')).toBeTruthy()
+      })
+      expect(observers).toBe(beforeDrawing)
+    } finally {
+      if (observerDescriptor) {
+        Object.defineProperty(globalThis, 'ResizeObserver', observerDescriptor)
+      } else {
+        Reflect.deleteProperty(globalThis, 'ResizeObserver')
+      }
+    }
   })
 
   it('novo quadro e nova animação funcionam como no pixel', async () => {

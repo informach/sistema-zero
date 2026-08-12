@@ -12878,3 +12878,828 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
     },
   },
 }
+
+/**
+ * Exemplo bundlado: "Reino Cogumelo" — um jogo de correr e pular com as 32
+ * fases (8 mundos de 4 areas), montado sobre o Kit Plataforma.
+ *
+ * O programa da crianca cuida das REGRAS (o que cada aviso faz, o placar, a
+ * troca de fase, o fim de jogo); o motor do genero cuida do que bloco nenhum
+ * consegue expressar (decifrar o mapa, o laco de colisao, a camera travada).
+ * As 32 fases moram em `stagesReinoCogumelo.ts` e entram aqui pelo gerador
+ * `__gen_reinoCogumelo.ts` — uma copia so do mapa.
+ *
+ * Nada de imagem externa: as texturas de tijolo, interrogacao, cano, lava e
+ * moeda sao desenhadas na hora pelo bloco de estampa.
+ */
+export const reinoCogumeloExample: ExtensionExample = {
+  name: 'Reino Cogumelo',
+  experience: 'game',
+  description:
+    'Corra e pule por 32 fases: pise nos inimigos, quebre tijolos, ache blocos escondidos e chegue ao mastro antes do tempo acabar.',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'placar',
+        children: [
+          { type: 'element', tag: 'span', text: 'PONTOS ' },
+          { type: 'element', tag: 'span', id: 'pontos', text: '0' },
+          { type: 'element', tag: 'span', text: ' MOEDAS ' },
+          { type: 'element', tag: 'span', id: 'moedas', text: '0' },
+          { type: 'element', tag: 'span', text: ' MUNDO ' },
+          { type: 'element', tag: 'span', id: 'mundo', text: '1-1' },
+          { type: 'element', tag: 'span', text: ' TEMPO ' },
+          { type: 'element', tag: 'span', id: 'tempo', text: '400' },
+          { type: 'element', tag: 'span', text: ' VIDAS ' },
+          { type: 'element', tag: 'span', id: 'vidas', text: '5' },
+        ],
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'aviso',
+        text: 'Setas para andar, espaco para pular, shift para correr, F para o fogo',
+      },
+    ],
+    css: [
+      {
+        selector: 'body',
+        declarations: { margin: '0', background: '#5c94fc', 'font-family': 'monospace' },
+      },
+      {
+        selector: '#placar',
+        declarations: {
+          position: 'fixed',
+          top: '8px',
+          left: '0',
+          width: '100%',
+          'text-align': 'center',
+          color: '#ffffff',
+          'font-size': '18px',
+          'font-weight': 'bold',
+          'text-shadow': '2px 2px 0 #000000',
+          'pointer-events': 'none',
+          'z-index': '2',
+        },
+      },
+      {
+        selector: '#aviso',
+        declarations: {
+          position: 'fixed',
+          bottom: '12px',
+          left: '0',
+          width: '100%',
+          'text-align': 'center',
+          color: '#ffe08a',
+          'font-size': '15px',
+          'text-shadow': '2px 2px 0 #000000',
+          'pointer-events': 'none',
+          'z-index': '2',
+        },
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createPlatformScene',
+          canvasId: 'tela',
+          varName: 'jogo',
+        },
+        {
+          type: 'g3d:createHero',
+          varName: 'heroi',
+          worldVar: 'jogo',
+          color: '#e03010',
+        },
+        {
+          type: 'var',
+          name: 'fases',
+          value: {
+            type: 'array',
+            items: [
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-68,71-85,89-152,155-212;checkpoint=88;surpresa=16:4:moeda;inimigo=22:goomba;tijolo=20:4,22:4,24:4;surpresa=21:4:cogumelo,23:4:moeda,22:8:moeda;cano=28:2;cano=38:3,46:4,57:4;inimigo=41:goomba,50:goomba,52:goomba;escondido=64:4:vida;inimigo=63:goomba;tijolo=77:4,79:4;surpresa=78:4:cogumelo;inimigo=80:goomba,82:goomba;tijolo=91:4,92:4,93:4,94:4,95:4,96:4,97:4,98:4;surpresa=94:4:moeda,109:4:moeda;tijolo=100:8,101:8,102:8,103:8,104:8,105:8,106:8,107:8;inimigo=97:goomba,99:goomba;tijolo=118:4,119:4,120:4,121:4;surpresa=121:4:estrela;inimigo=113:koopa;surpresa=128:4:moeda,129:4:moeda,130:4:moeda,129:8:flor;inimigo=125:goomba,127:goomba;inimigo=134:goomba,136:goomba,138:goomba,140:goomba;solido=134:1,135:1-2,136:1-3,137:1-4;solido=140:1-4,141:1-3,142:1-2,143:1;solido=148:1,149:1-2,150:1-3,151:1-4;solido=155:1-4,156:1-3,157:1-2,158:1;cano=163:2;inimigo=168:goomba,170:goomba;tijolo=174:4,175:4;solido=181:1,182:1-2,183:1-3,184:1-4,185:1-5,186:1-6,187:1-7,188:1-8;mastro=198;castelo=202',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=subterraneo;tempo=400;chao=0-88,91-104,107-160;checkpoint=96;solido=6:10,7:10,8:10,9:10,10:10,11:10,12:10,13:10,14:10,15:10;solido=16:10,17:10,18:10,19:10,20:10,21:10,22:10,23:10,24:10,25:10;inimigo=9:goomba,10:goomba;surpresa=12:4:cogumelo,13:4:moeda,14:4:moeda;solido=18:1-2;solido=24:1-2,26:1-3,28:1-4,30:1-3;inimigo=27:goomba;tijolo=34:4,35:4,36:4;moeda=34:6,35:6,36:6;inimigo=35:goomba;tijolo=42:4,43:4,44:4,46:4,47:4,48:4;surpresa=45:4:estrela;moeda=42:6,43:6,44:6,46:6,47:6,48:6;inimigo=52:koopa,54:koopa;solido=58:5-9,59:5-9,60:5-9;tijolo=58:4,59:4,60:4;inimigo=57:koopa,62:goomba,64:goomba;escondido=70:4:vida;tijolo=74:4,75:4,76:4;inimigo=75:goomba;solido=84:1-4;escondido=86:9:vida;inimigo=88:goomba,90:goomba;cano=94:3,100:4,106:3;inimigo=94:planta,100:planta,106:planta;tijolo=112:1,112:2;solido=120:1,121:1-2,122:1-3,123:1-4;plataforma=128:5:y:6,134:6:y:6;solido=140:1-5;inimigo=141:koopa;plataforma=146:4:y:5;cano=152:3;inimigo=152:planta;mastro=157;castelo=160',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=300;chao=0-14,148-165;checkpoint=70;solido=19:5,24:6,29:7,34:6,39:5,44:7,49:8,54:6,59:9,64:7;solido=69:5,74:7,79:6,84:8,89:7,94:6,99:9,104:7,109:5,114:8;solido=119:6,124:7,129:5,134:8,139:6,144:5;moeda=24:8,39:7,54:8,69:7,84:10,99:11,114:10,129:7;surpresa=49:11:cogumelo,99:12:flor;inimigo=29:koopa,59:koopa,89:koopa,119:koopa;solido=150:1,151:1-2,152:1-3,153:1-4,154:1-5,155:1-6,156:1-7,157:1-8;mastro=160;castelo=163',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=300;chao=0-24,28-46,50-70,74-104;lava=25-27,47-49,71-73;solido=14:1-3,20:4-8,34:1-3,40:4-8,58:1-3,64:4-8;fogo=18:6:3,38:7:4,62:6:3,86:7:4;moeda=30:5,31:5,32:5,54:5,55:5,56:5;surpresa=44:5:flor;inimigo=33:besouro,57:besouro,80:besouro;chefao=94;castelo=101',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-150;checkpoint=75;cano=24:2,52:3,86:4,118:2;surpresa=18:4:cogumelo,40:4:moeda,72:4:flor,104:4:moeda,132:8:estrela;inimigo=20:goomba,30:koopa,44:goomba,46:goomba,64:koopa,90:goomba,110:koopa,124:goomba;tijolo=38:4,39:4,70:4,71:4,102:4,103:4;escondido=60:4:vida;moeda=56:6,57:6,58:6;solido=152:1-1,153:1-2,154:1-3,155:1-4,156:1-5,157:1-6,158:1-7,159:1-8;mastro=164;castelo=168',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=agua;tempo=400;chao=0-140;checkpoint=70;solido=20:4-6,34:5-8,48:3-5,62:6-9,76:4-7,90:5-8,104:3-6,118:6-9;moeda=22:8,36:10,50:7,64:11,78:9,92:10,106:8,120:11;surpresa=30:5:cogumelo,80:5:flor;inimigo=26:koopa,44:koopa,58:koopa,72:koopa,86:koopa,100:koopa,114:koopa;solido=142:1-1,143:1-2,144:1-3,145:1-4,146:1-5,147:1-6,148:1-7,149:1-8;mastro=154;castelo=158',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=300;chao=0-130;checkpoint=65;cano=30:3,74:4;surpresa=20:4:moeda,54:4:cogumelo,98:4:moeda;inimigo=24:goomba,40:koopa,58:goomba,60:goomba,84:koopa,108:goomba;solido=44:1-3,46:1-3,88:1-4,90:1-4;plataforma=64:5:y:5,104:5:x:6;moeda=45:5,89:6;solido=132:1-1,133:1-2,134:1-3,135:1-4,136:1-5,137:1-6,138:1-7,139:1-8;mastro=144;castelo=148',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=300;chao=0-20,24-44,48-68,72-96;lava=21-23,45-47,69-71;checkpoint=36;fogo=12:6:3,30:7:4,54:6:3,78:7:4;inimigo=16:besouro,40:besouro,64:besouro,84:besouro;chefao=86;castelo=93',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=noite;tempo=400;chao=0-160;checkpoint=80;cano=28:3,66:4,104:3,140:4;surpresa=20:4:cogumelo,48:4:moeda,86:4:flor,124:8:estrela;inimigo=24:goomba,34:koopa,52:goomba,54:goomba,72:koopa,96:espinho,118:koopa,146:goomba;tijolo=46:4,47:4,84:4,85:4;plataforma=110:6:y:6;solido=162:1-1,163:1-2,164:1-3,165:1-4,166:1-5,167:1-6,168:1-7,169:1-8;mastro=174;castelo=178',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=noite;tempo=300;chao=0-140;checkpoint=70;cano=36:2,88:3;surpresa=24:4:moeda,62:4:cogumelo,110:4:moeda;inimigo=30:koopa,48:goomba,50:goomba,74:espinho,96:koopa,120:goomba;solido=54:1-4,56:1-4,100:1-5,102:1-5;escondido=68:4:vida;solido=142:1-1,143:1-2,144:1-3,145:1-4,146:1-5,147:1-6,148:1-7,149:1-8;mastro=154;castelo=158',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=noite;tempo=300;chao=0-14,146-160;checkpoint=72;solido=19:6,24:8,29:5,34:9,39:6,44:7,49:10,54:6,59:8,64:5;solido=69:9,74:6,79:7,84:10,89:5,94:8,99:6,104:9,109:7,114:5;solido=119:8,124:6,129:9,134:7,139:5,144:6;moeda=24:11,39:9,54:9,69:12,89:8,104:12,124:9;surpresa=44:10:cogumelo,99:9:flor;inimigo=34:koopa,64:koopa,94:koopa,124:koopa;solido=148:1-1,149:1-2,150:1-3,151:1-4,152:1-5,153:1-6,154:1-7,155:1-8;mastro=160;castelo=164',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=300;chao=0-20,24-44,48-68,72-96;lava=21-23,45-47,69-71;checkpoint=36;fogo=10:6:4,28:7:3,52:6:4,76:7:3,88:6:4;inimigo=14:besouro,38:espinho,62:besouro,86:espinho;chefao=86;castelo=93',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-170;checkpoint=85;cano=30:4,72:3,116:4,152:2;surpresa=22:4:cogumelo,54:4:moeda,94:4:flor,134:8:estrela;inimigo=26:goomba,42:koopa,60:espinho,78:goomba,80:goomba,104:koopa,128:espinho,158:koopa;tijolo=52:4,53:4,92:4,93:4;plataforma=140:6:x:8;escondido=66:4:vida;solido=172:1-1,173:1-2,174:1-3,175:1-4,176:1-5,177:1-6,178:1-7,179:1-8;mastro=184;castelo=188',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=subterraneo;tempo=400;chao=0-150;checkpoint=74;solido=8:10,9:10,10:10,11:10,12:10,13:10,14:10,15:10,16:10,17:10;cano=26:3,58:4,92:3,124:4;inimigo=26:planta,58:planta,92:planta,124:planta;tijolo=34:4,35:4,36:4,68:4,69:4,70:4,104:4,105:4,106:4;surpresa=35:4:cogumelo,69:4:flor,105:4:moeda;moeda=34:6,36:6,68:6,70:6,104:6,106:6;inimigo=44:koopa,46:koopa,80:goomba,82:goomba,112:koopa,136:goomba;escondido=140:4:vida;solido=152:1-1,153:1-2,154:1-3,155:1-4,156:1-5,157:1-6,158:1-7,159:1-8;mastro=164;castelo=168',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=300;chao=0-14,150-164;checkpoint=76;solido=19:5,24:7,29:6,34:9,39:5,44:8,49:6,54:10,59:7,64:5;solido=69:8,74:6,79:10,84:7,89:5,94:9,99:6,104:8,109:7,114:10;solido=119:5,124:8,129:6,134:9,139:7,144:5;moeda=29:9,44:11,59:10,79:13,94:12,114:13,134:12;surpresa=54:13:cogumelo,104:11:flor;inimigo=39:koopa,74:koopa,109:koopa,139:koopa;solido=152:1-1,153:1-2,154:1-3,155:1-4,156:1-5,157:1-6,158:1-7,159:1-8;mastro=164;castelo=168',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=300;chao=0-20,24-44,48-68,72-92,96-120;lava=21-23,45-47,69-71,93-95;checkpoint=48;fogo=10:6:4,30:7:4,54:6:3,78:7:4,100:6:4;inimigo=14:besouro,38:espinho,62:besouro,86:espinho,106:besouro;chefao=110;castelo=117',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-175;checkpoint=88;cano=32:4,76:3,120:4,158:3;surpresa=24:4:cogumelo,58:4:moeda,100:4:flor,142:8:estrela;inimigo=28:goomba,46:koopa,64:espinho,84:goomba,86:goomba,110:koopa,134:espinho,164:koopa;tijolo=56:4,57:4,98:4,99:4;plataforma=148:6:y:7;escondido=70:4:vida;solido=177:1-1,178:1-2,179:1-3,180:1-4,181:1-5,182:1-6,183:1-7,184:1-8;mastro=189;castelo=193',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=350;chao=0-155;checkpoint=78;cano=40:3,96:4;surpresa=26:4:moeda,68:4:cogumelo,120:4:moeda;inimigo=34:koopa,52:goomba,54:goomba,80:espinho,104:koopa,132:goomba,134:goomba;solido=60:1-4,62:1-4,110:1-5,112:1-5;plataforma=88:6:x:7;solido=157:1-1,158:1-2,159:1-3,160:1-4,161:1-5,162:1-6,163:1-7,164:1-8;mastro=169;castelo=173',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=300;chao=0-14,152-166;checkpoint=78;solido=19:6,24:9,29:5,34:8,39:7,44:10,49:6,54:9,59:5,64:8;solido=69:7,74:10,79:6,84:9,89:5,94:8,99:7,104:10,109:6,114:9;solido=119:5,124:8,129:7,134:10,139:6,144:9,149:5;moeda=24:12,44:13,64:11,84:12,104:13,124:11,144:12;surpresa=49:9:cogumelo,109:9:flor;inimigo=34:koopa,69:koopa,99:espinho,134:koopa;solido=154:1-1,155:1-2,156:1-3,157:1-4,158:1-5,159:1-6,160:1-7,161:1-8;mastro=166;castelo=170',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=300;chao=0-20,24-44,48-68,72-92,96-120;lava=21-23,45-47,69-71,93-95;checkpoint=48;fogo=10:6:4,32:7:4,56:6:4,80:7:3,102:6:4;inimigo=16:besouro,40:espinho,64:besouro,88:espinho,108:besouro;chefao=110;castelo=117',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=noite;tempo=400;chao=0-180;checkpoint=90;cano=34:4,80:3,126:4,164:3;surpresa=26:4:cogumelo,62:4:moeda,106:4:flor,148:8:estrela;inimigo=30:goomba,48:koopa,68:espinho,88:goomba,90:goomba,116:koopa,140:espinho,170:koopa;tijolo=60:4,61:4,104:4,105:4;plataforma=154:6:y:8;escondido=74:4:vida;solido=182:1-1,183:1-2,184:1-3,185:1-4,186:1-5,187:1-6,188:1-7,189:1-8;mastro=194;castelo=198',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=noite;tempo=350;chao=0-165;checkpoint=83;cano=20:2,26:3,32:4,38:3,100:4;surpresa=48:4:moeda,74:4:cogumelo,130:4:moeda;inimigo=22:goomba,28:goomba,44:koopa,56:espinho,86:koopa,112:goomba,144:espinho;solido=64:1-4,66:1-4,120:1-5,122:1-5;plataforma=94:6:x:8;solido=167:1-1,168:1-2,169:1-3,170:1-4,171:1-5,172:1-6,173:1-7,174:1-8;mastro=179;castelo=183',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=noite;tempo=300;chao=0-14,156-170;checkpoint=80;solido=19:7,24:10,29:6,34:9,39:8,44:11,49:7,54:10,59:6,64:9;solido=69:8,74:11,79:7,84:10,89:6,94:9,99:8,104:11,109:7,114:10;solido=119:6,124:9,129:8,134:11,139:7,144:10,149:6,154:8;moeda=29:10,49:11,69:12,89:10,109:11,129:12,149:10;surpresa=54:14:cogumelo,114:14:flor;inimigo=39:koopa,74:koopa,104:espinho,139:koopa;solido=158:1-1,159:1-2,160:1-3,161:1-4,162:1-5,163:1-6,164:1-7,165:1-8;mastro=170;castelo=174',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=300;chao=0-20,24-44,48-68,72-92,96-120;lava=21-23,45-47,69-71,93-95;checkpoint=48;fogo=10:6:4,30:7:4,52:6:4,76:7:4,100:6:3;inimigo=14:espinho,38:besouro,62:espinho,86:besouro,106:espinho;chefao=110;castelo=117',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-185;checkpoint=93;cano=36:4,84:3,132:4,170:3;surpresa=28:4:cogumelo,66:4:moeda,110:4:flor,152:8:estrela;inimigo=32:goomba,52:koopa,72:espinho,92:goomba,94:goomba,120:koopa,146:espinho,176:koopa;tijolo=64:4,65:4,108:4,109:4;plataforma=160:6:y:8;escondido=78:4:vida;solido=187:1-1,188:1-2,189:1-3,190:1-4,191:1-5,192:1-6,193:1-7,194:1-8;mastro=199;castelo=203',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=agua;tempo=400;chao=0-160;checkpoint=80;solido=18:4-7,32:6-9,46:3-6,60:7-10,74:4-8,88:5-9,102:3-7,116:6-10,130:4-8;moeda=20:9,34:11,48:8,62:12,76:10,90:11,104:9,118:12,132:10;surpresa=28:5:cogumelo,96:5:flor;inimigo=24:koopa,40:koopa,54:koopa,68:koopa,82:koopa,96:koopa,110:koopa,124:koopa;solido=162:1-1,163:1-2,164:1-3,165:1-4,166:1-5,167:1-6,168:1-7,169:1-8;mastro=174;castelo=178',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=300;chao=0-150;checkpoint=75;cano=38:3,90:4;surpresa=24:4:moeda,64:4:cogumelo,116:4:moeda;inimigo=30:koopa,48:goomba,50:goomba,76:espinho,100:koopa,128:goomba,130:goomba;solido=56:1-4,58:1-4,106:1-5,108:1-5;plataforma=84:6:x:8,140:6:y:6;solido=152:1-1,153:1-2,154:1-3,155:1-4,156:1-5,157:1-6,158:1-7,159:1-8;mastro=164;castelo=168',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=300;chao=0-20,24-44,48-68,72-92,96-116,120-144;lava=21-23,45-47,69-71,93-95,117-119;checkpoint=60;fogo=10:6:4,32:7:4,56:6:4,80:7:4,104:6:4,126:7:3;inimigo=14:espinho,38:besouro,62:espinho,86:besouro,110:espinho,130:besouro;chefao=134;castelo=141',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-200;checkpoint=100;cano=30:4,58:3,92:4,124:3,160:4,186:3;surpresa=22:4:cogumelo,70:4:flor,140:8:estrela,172:4:moeda;inimigo=26:goomba,44:koopa,62:espinho,80:goomba,82:goomba,100:koopa,116:espinho,146:koopa,178:espinho;tijolo=68:4,69:4,138:4,139:4;plataforma=108:6:y:8,192:6:x:8;escondido=54:4:vida;solido=202:1-1,203:1-2,204:1-3,205:1-4,206:1-5,207:1-6,208:1-7,209:1-8;mastro=214;castelo=218',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-190;checkpoint=95;cano=46:4,110:3,166:4;surpresa=30:4:cogumelo,88:4:flor,148:4:moeda;inimigo=34:koopa,56:espinho,74:goomba,76:goomba,98:koopa,126:espinho,156:koopa,180:goomba;solido=20:1-3,22:1-4,24:1-5;plataforma=62:6:x:9,134:6:y:8;escondido=100:4:vida;solido=192:1-1,193:1-2,194:1-3,195:1-4,196:1-5,197:1-6,198:1-7,199:1-8;mastro=204;castelo=208',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=dia;tempo=400;chao=0-195;checkpoint=98;cano=52:4,118:3,174:4;surpresa=36:4:cogumelo,94:4:flor,152:8:estrela;inimigo=40:espinho,60:koopa,78:goomba,80:goomba,106:espinho,132:koopa,160:espinho,184:koopa;solido=66:1-6,68:1-6,140:1-7,142:1-7;plataforma=112:6:y:9;escondido=126:4:vida;solido=197:1-1,198:1-2,199:1-3,200:1-4,201:1-5,202:1-6,203:1-7,204:1-8;mastro=209;castelo=213',
+              },
+              {
+                type: 'str',
+                value:
+                  'tema=castelo;tempo=400;chao=0-20,24-44,48-68,72-92,96-116,120-140,144-168;lava=21-23,45-47,69-71,93-95,117-119,141-143;checkpoint=72;fogo=10:6:4,32:7:4,56:6:4,80:7:4,104:6:4,128:7:4,150:6:4;inimigo=14:espinho,38:besouro,62:espinho,86:besouro,110:espinho,134:besouro,154:espinho;chefao=158;castelo=165',
+              },
+            ],
+          },
+          kind: 'const',
+        },
+        {
+          type: 'var',
+          name: 'numeroDaFase',
+          value: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'var',
+          name: 'recorde',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'funcDecl',
+          name: 'mostrarPlacar',
+          params: [],
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'pontos',
+              property: 'textContent',
+              value: {
+                type: 'g3d:stageAsk',
+                op: 'fase',
+                worldVar: 'jogo',
+                objVar: '',
+                what: 'pontos',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'moedas',
+              property: 'textContent',
+              value: {
+                type: 'g3d:stageAsk',
+                op: 'fase',
+                worldVar: 'jogo',
+                objVar: '',
+                what: 'moedas',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'vidas',
+              property: 'textContent',
+              value: {
+                type: 'g3d:stageAsk',
+                op: 'fase',
+                worldVar: 'jogo',
+                objVar: '',
+                what: 'vidas',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'tempo',
+              property: 'textContent',
+              value: {
+                type: 'g3d:stageAsk',
+                op: 'fase',
+                worldVar: 'jogo',
+                objVar: '',
+                what: 'tempo',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'mundo',
+              property: 'textContent',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'g3d:stageAsk',
+                    op: 'fase',
+                    worldVar: 'jogo',
+                    objVar: '',
+                    what: 'mundo',
+                  },
+                  right: {
+                    type: 'str',
+                    value: '-',
+                  },
+                },
+                right: {
+                  type: 'g3d:stageAsk',
+                  op: 'fase',
+                  worldVar: 'jogo',
+                  objVar: '',
+                  what: 'fase',
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'funcDecl',
+          name: 'abrirFase',
+          params: [],
+          body: [
+            {
+              type: 'var',
+              name: 'mundo',
+              value: {
+                type: 'mathUnary',
+                fn: 'ceil',
+                arg: {
+                  type: 'binop',
+                  op: '/',
+                  left: {
+                    type: 'var',
+                    name: 'numeroDaFase',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 4,
+                  },
+                },
+              },
+              kind: 'const',
+            },
+            {
+              type: 'var',
+              name: 'area',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'numeroDaFase',
+                },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'mundo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                  right: {
+                    type: 'num',
+                    value: 4,
+                  },
+                },
+              },
+              kind: 'const',
+            },
+            {
+              type: 'g3d:stage',
+              op: 'numero',
+              worldVar: 'jogo',
+              a: {
+                type: 'var',
+                name: 'mundo',
+              },
+              b: {
+                type: 'var',
+                name: 'area',
+              },
+            },
+            {
+              type: 'g3d:stage',
+              op: 'montar',
+              worldVar: 'jogo',
+              a: {
+                type: 'index',
+                arrayVar: 'fases',
+                index: {
+                  type: 'binop',
+                  op: '-',
+                  left: {
+                    type: 'var',
+                    name: 'numeroDaFase',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              },
+            },
+            {
+              type: 'callFunction',
+              name: 'mostrarPlacar',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'callFunction',
+          name: 'abrirFase',
+          args: [],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'pegar-moeda',
+          body: [
+            {
+              type: 'callFunction',
+              name: 'mostrarPlacar',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'ganhar-vida',
+          body: [
+            {
+              type: 'g3d:playEffect',
+              kind: 'coin',
+            },
+            {
+              type: 'callFunction',
+              name: 'mostrarPlacar',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'pisar-inimigo',
+          body: [
+            {
+              type: 'callFunction',
+              name: 'mostrarPlacar',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'quebrar-tijolo',
+          body: [
+            {
+              type: 'callFunction',
+              name: 'mostrarPlacar',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'pegar-cogumelo',
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'aviso',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Cresceu!',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'pegar-flor',
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'aviso',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Agora joga fogo: aperte F',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'pegar-estrela',
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'aviso',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Invencivel!',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'levar-dano',
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'aviso',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Cuidado!',
+              },
+            },
+            {
+              type: 'callFunction',
+              name: 'mostrarPlacar',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'tocar-a-bandeira',
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'aviso',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Fase vencida!',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:onStage',
+          worldVar: 'jogo',
+          event: 'derrotar-o-chefe',
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'aviso',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'O castelo caiu!',
+              },
+            },
+          ],
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'jogo',
+          body: [
+            {
+              type: 'g3d:classicPlatformer',
+              objVar: 'heroi',
+              worldVar: 'jogo',
+              speed: {
+                type: 'num',
+                value: 0.09,
+              },
+              jump: {
+                type: 'num',
+                value: 0.22,
+              },
+            },
+            {
+              type: 'g3d:stageFrame',
+              op: 'passo',
+              worldVar: 'jogo',
+              objVar: 'heroi',
+            },
+            {
+              type: 'g3d:stageFrame',
+              op: 'camera',
+              worldVar: 'jogo',
+              objVar: 'heroi',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3d:keyPressed',
+                key: 'KeyF',
+              },
+              then: [
+                {
+                  type: 'g3d:stageFrame',
+                  op: 'fogo',
+                  worldVar: 'jogo',
+                  objVar: 'heroi',
+                },
+              ],
+            },
+            {
+              type: 'callFunction',
+              name: 'mostrarPlacar',
+              args: [],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'g3d:stageAsk',
+                  op: 'fase',
+                  worldVar: 'jogo',
+                  objVar: '',
+                  what: 'pontos',
+                },
+                right: {
+                  type: 'var',
+                  name: 'recorde',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'recorde',
+                  value: {
+                    type: 'g3d:stageAsk',
+                    op: 'fase',
+                    worldVar: 'jogo',
+                    objVar: '',
+                    what: 'pontos',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3d:stageAsk',
+                op: 'estado',
+                worldVar: 'jogo',
+                objVar: '',
+                what: 'venceu',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'numeroDaFase',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 32,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'numeroDaFase',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'numeroDaFase',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'callFunction',
+                      name: 'abrirFase',
+                      args: [],
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'setProperty',
+                      targetId: 'aviso',
+                      property: 'textContent',
+                      value: {
+                        type: 'str',
+                        value: 'Voce salvou o Reino Cogumelo!',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3d:stageAsk',
+                op: 'estado',
+                worldVar: 'jogo',
+                objVar: '',
+                what: 'perdeu',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'g3d:stageAsk',
+                      op: 'fase',
+                      worldVar: 'jogo',
+                      objVar: '',
+                      what: 'vidas',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:stage',
+                      op: 'recomecar',
+                      worldVar: 'jogo',
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'setProperty',
+                      targetId: 'aviso',
+                      property: 'textContent',
+                      value: {
+                        type: 'str',
+                        value: 'Fim de jogo',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d' }],
+  },
+}

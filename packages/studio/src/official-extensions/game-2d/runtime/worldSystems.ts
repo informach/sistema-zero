@@ -8,7 +8,9 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   var _levelEnterHandlers = Object.create(null);
   var _levelEnterOrder = [];
   var _levelEntryGeneration = 0;
-  var _dispatchingLevelEnter = false;
+  var _levelTransitionQueue = [];
+  var _processingLevelTransitions = false;
+  var MAX_LEVEL_TRANSITIONS_PER_CHAIN = 64;
 
   function _worldDimension(value, fallback) {
     return Math.max(1, Math.floor(_positiveFiniteNumber(value, fallback)));
@@ -267,14 +269,23 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   function _collideWorldEdges(sprite, worldValue) {
     if (!sprite || worldValue.edges === 'none') return;
     var pullsUp = _gravityPullsUp(world.gravity);
-    var floorY = worldValue.height - _finiteNumber(sprite.h, 0);
+    var spriteW = Math.max(0, _finiteNumber(sprite.w, 0));
+    var spriteH = Math.max(0, _finiteNumber(sprite.h, 0));
+    var maxX = Math.max(0, worldValue.width - spriteW);
+    var floorY = Math.max(0, worldValue.height - spriteH);
+    if (spriteW > worldValue.width || spriteH > worldValue.height) {
+      warnOnce(
+        'sprite-maior-que-mundo',
+        'um sprite é maior que os limites do Mundo; mantive a origem do eixo que não cabe.'
+      );
+    }
     if (worldValue.edges === 'solid') {
       if (sprite.x < 0) { sprite.x = 0; sprite.vx = 0; }
-      if (sprite.x + sprite.w > worldValue.width) {
-        sprite.x = worldValue.width - sprite.w;
+      if (sprite.x > maxX) {
+        sprite.x = maxX;
         sprite.vx = 0;
       }
-      if (pullsUp && sprite.y + sprite.h > worldValue.height) {
+      if (pullsUp && sprite.y > floorY) {
         sprite.y = floorY;
         if (sprite.vy > 0) sprite.vy = 0;
       }
@@ -497,23 +508,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       _removeOrderedIfCurrent(_levelEnterHandlers, _levelEnterOrder, handlerId, handler);
     }
   }
-  /**
-   * ⚠️ Entrar (ou reiniciar) DENTRO do próprio "Quando entrar na Fase" é um
-   * engano fácil de montar ("quando entrar, comece de novo") e RECURSIVO: cada
-   * entrada abre uma geração nova, então a dedução por geração não segura nada.
-   * Sem esta trava eram milhares de entradas aninhadas até estourar a pilha, e o
-   * que a criança via era só "aconteceu um erro".
-   */
   function _dispatchLevelEnter(level) {
-    if (_dispatchingLevelEnter) {
-      warnOnce(
-        'entrada-de-fase-reentrante',
-        'o bloco “Quando entrar na Fase” entrou na Fase outra vez, e isso se repetiria para sempre. Tire o “Entrar na Fase” ou o “Reiniciar a Fase” de dentro dele.'
-      );
-      return;
-    }
-    _dispatchingLevelEnter = true;
-    try {
     var generation = level._entryGeneration;
     var order = _levelEnterOrder.slice();
     for (var i = 0; i < order.length; i++) {
@@ -533,30 +528,90 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       if (handlerLevel !== level) continue;
       _runLevelEnterHandler(id, handler, generation);
     }
+  }
+
+  /**
+   * Handlers podem encaminhar A para B. A fila termina todos os handlers de A
+   * antes de entrar em B e usa a cadeia visitada para recusar apenas ciclos.
+   * Assim uma transição recusada não chega a mover o jogador nem restaurar mapa.
+   */
+  function _drainLevelTransitions() {
+    if (_processingLevelTransitions) return;
+    _processingLevelTransitions = true;
+    var visited = [];
+    var cursor = 0;
+    var processed = 0;
+    try {
+      while (cursor < _levelTransitionQueue.length) {
+        var transition = _levelTransitionQueue[cursor++];
+        processed++;
+        if (processed > MAX_LEVEL_TRANSITIONS_PER_CHAIN) {
+          warnOnce(
+            'muitas-transicoes-de-fase',
+            'muitas Fases foram abertas na mesma sequência; interrompi as próximas entradas para o jogo continuar responsivo.'
+          );
+          break;
+        }
+        if (visited.indexOf(transition.level) !== -1) {
+          warnOnce(
+            'ciclo-de-entrada-de-fase',
+            'os blocos “Quando entrar na Fase” formaram um ciclo. Tire a entrada ou o reinício que volta para uma Fase da mesma sequência.'
+          );
+          continue;
+        }
+        visited.push(transition.level);
+        var level = transition.level;
+        var player = transition.player;
+        if (transition.restart) {
+          _ensureLevelMapSnapshots(level);
+          for (var mapIndex = 0; mapIndex < level._mapSnapshots.length; mapIndex++) {
+            var snapshot = level._mapSnapshots[mapIndex];
+            snapshot.map.rows = _cloneTileRows(snapshot.rows);
+          }
+          for (var groupIndex = 0; groupIndex < level.resetGroups.length; groupIndex++) {
+            clearGroup(level.resetGroups[groupIndex]);
+          }
+        }
+        _currentLevel = level;
+        _ensureLevelMapSnapshots(level);
+        _levelEntryGeneration += 1;
+        level._entryGeneration = _levelEntryGeneration;
+        setPosition(player, level.spawnX, level.spawnY);
+        player.vx = 0;
+        player.vy = 0;
+        player._supportResolutionDepth = 0;
+        player._supportResolutionGroup = null;
+        delete player._supportPreferenceOwner;
+        delete player._supportCandidateChosen;
+        _resetWorldCamera(level.world);
+        camera.x = level.world.camera.x;
+        camera.y = level.world.camera.y;
+        _dispatchLevelEnter(level);
+      }
     } finally {
-      _dispatchingLevelEnter = false;
+      _levelTransitionQueue = [];
+      _processingLevelTransitions = false;
     }
   }
+
+  function _queueLevelTransition(level, player, restart) {
+    if (_processingLevelTransitions && _levelTransitionQueue.length >= MAX_LEVEL_TRANSITIONS_PER_CHAIN) {
+      warnOnce(
+        'muitas-transicoes-de-fase',
+        'muitas Fases foram abertas na mesma sequência; interrompi as próximas entradas para o jogo continuar responsivo.'
+      );
+      return;
+    }
+    _levelTransitionQueue.push({ level: level, player: player, restart: restart });
+  }
+
   function enterLevel(level, player) {
     if (!_isGameLevel(level) || !player) {
       warnOnce('entrada-de-fase-invalida', 'escolha uma Fase e um sprite para entrar nela.');
       return;
     }
-    _currentLevel = level;
-    _ensureLevelMapSnapshots(level);
-    _levelEntryGeneration += 1;
-    level._entryGeneration = _levelEntryGeneration;
-    setPosition(player, level.spawnX, level.spawnY);
-    player.vx = 0;
-    player.vy = 0;
-    player._supportResolutionDepth = 0;
-    player._supportResolutionGroup = null;
-    delete player._supportPreferenceOwner;
-    delete player._supportCandidateChosen;
-    _resetWorldCamera(level.world);
-    camera.x = level.world.camera.x;
-    camera.y = level.world.camera.y;
-    _dispatchLevelEnter(level);
+    _queueLevelTransition(level, player, false);
+    _drainLevelTransitions();
   }
   /**
    * Reinício é deliberadamente diferente de entrada: restaura tiles quebrados,
@@ -568,13 +623,8 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       warnOnce('reinicio-de-fase-invalido', 'escolha uma Fase e um sprite para reiniciá-la.');
       return;
     }
-    _ensureLevelMapSnapshots(level);
-    for (var i = 0; i < level._mapSnapshots.length; i++) {
-      var snapshot = level._mapSnapshots[i];
-      snapshot.map.rows = _cloneTileRows(snapshot.rows);
-    }
-    for (var j = 0; j < level.resetGroups.length; j++) clearGroup(level.resetGroups[j]);
-    enterLevel(level, player);
+    _queueLevelTransition(level, player, true);
+    _drainLevelTransitions();
   }
   function onLevelEnter(getLevel, fn, id) {
     if (typeof getLevel !== 'function' || typeof fn !== 'function') return;
@@ -627,7 +677,8 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   }
   function _resetWorldsAndLevels() {
     _currentLevel = null;
-    _dispatchingLevelEnter = false;
+    _levelTransitionQueue = [];
+    _processingLevelTransitions = false;
     _levelEnterHandlers = Object.create(null);
     _levelEnterOrder = [];
     _levelEntryGeneration = 0;

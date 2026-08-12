@@ -7,6 +7,8 @@ export interface Game3DReferenceField {
   field: string
   kind: Game3DSymbolKind
   objectScope?: Game3DObjectScope
+  /** Campo que pode faltar no nó (nós com vários `op` no mesmo tipo). */
+  optional?: boolean
 }
 
 /** Recursos nomeados que cada comando do Jogo 3D introduz no programa. */
@@ -16,6 +18,8 @@ export const GAME3D_SEMANTIC_DECLARATION_FIELDS: Readonly<Record<string, Game3DR
   'g3d:createCrossingScene': { field: 'varName', kind: 'world' },
   'g3d:createRaceScene': { field: 'varName', kind: 'world' },
   'g3d:createStackScene': { field: 'varName', kind: 'world' },
+  'g3d:createPlatformScene': { field: 'varName', kind: 'world' },
+  'g3d:createHero': { field: 'varName', kind: 'object' },
   'g3d:createBox': { field: 'varName', kind: 'object' },
   'g3d:createSphere': { field: 'varName', kind: 'object' },
   'g3d:createBlock': { field: 'varName', kind: 'object' },
@@ -113,6 +117,21 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:platformerControls': [gameObject(), world()],
   'g3d:fpsControls': [gameObject(), world()],
   'g3d:resolveCollision': [object('aVar'), object('bVar')],
+  'g3d:classicPlatformer': [gameObject(), world()],
+  'g3d:forEachHit': [gameObject()],
+  'g3d:objectFlag': [object()],
+  'g3d:setObjectValue': [object()],
+  'g3d:objectValue': [object()],
+  'g3d:createHero': [world()],
+  // O nó único do kit: o mundo é obrigatório, o objeto só aparece no passo e na
+  // câmera — por isso `optional`, senão a validação cobraria um nome que não há.
+  'g3d:onStage': [world()],
+  'g3d:stageFrame': [world(), gameObject()],
+  'g3d:stage': [world(), { field: 'objVar', kind: 'object', optional: true }],
+  'g3d:stageAsk': [
+    { field: 'worldVar', kind: 'world', optional: true },
+    { field: 'objVar', kind: 'object', optional: true },
+  ],
   'g3d:fpsCamera': [world(), gameObject()],
   'g3d:orbitCamera': [world(), gameObject()],
   'g3d:thirdPersonCamera': [world(), gameObject()],
@@ -180,6 +199,8 @@ export const GAME3D_DROPDOWN_OPTIONS = {
     ['A (esquerda)', 'KeyA'],
     ['D (direita)', 'KeyD'],
     ['espaço (pular)', 'Space'],
+    ['F (soltar fogo)', 'KeyF'],
+    ['shift (correr)', 'ShiftLeft'],
     ['↑ seta para cima', 'ArrowUp'],
     ['↓ seta para baixo', 'ArrowDown'],
     ['← seta esquerda', 'ArrowLeft'],
@@ -242,6 +263,73 @@ export const GAME3D_DROPDOWN_OPTIONS = {
     ['explosão', 'explosion'],
     ['acerto', 'hit'],
   ],
+  // Lado do corpo que encostou no sólido. É a diferença entre pisar num inimigo
+  // (pés), dar uma cabeçada num bloco (cabeça) e esbarrar numa parede (lados).
+  hitSide: [
+    ['qualquer lado', 'qualquer'],
+    ['os pés (pisou em cima)', 'pes'],
+    ['a cabeça (bateu por baixo)', 'cabeca'],
+    ['o lado esquerdo', 'esquerda'],
+    ['o lado direito', 'direita'],
+    ['a frente', 'frente'],
+    ['as costas', 'tras'],
+  ],
+  stageTheme: [
+    ['superfície de dia', 'dia'],
+    ['superfície de noite', 'noite'],
+    ['subterrâneo', 'subterraneo'],
+    ['dentro da água', 'agua'],
+    ['castelo', 'castelo'],
+  ],
+  stageEvent: [
+    ['pegar uma moeda', 'pegar-moeda'],
+    ['pegar o cogumelo', 'pegar-cogumelo'],
+    ['pegar a flor', 'pegar-flor'],
+    ['pegar a estrela', 'pegar-estrela'],
+    ['ganhar uma vida', 'ganhar-vida'],
+    ['quebrar um tijolo', 'quebrar-tijolo'],
+    ['pisar num inimigo', 'pisar-inimigo'],
+    ['chutar uma concha', 'chutar-concha'],
+    ['levar dano', 'levar-dano'],
+    ['tocar a bandeira', 'tocar-a-bandeira'],
+    ['derrotar o chefe', 'derrotar-o-chefe'],
+    ['acabar o tempo', 'acabar-o-tempo'],
+  ],
+  stageField: [
+    ['os pontos', 'pontos'],
+    ['as moedas', 'moedas'],
+    ['as vidas', 'vidas'],
+    ['o tempo', 'tempo'],
+    ['o mundo', 'mundo'],
+    ['a fase', 'fase'],
+  ],
+  stageStatus: [
+    ['acabou', 'acabou'],
+    ['foi vencida', 'venceu'],
+    ['foi perdida', 'perdeu'],
+    ['ficou sem vidas', 'sem vidas'],
+  ],
+  heroStatus: [
+    ['pequeno', 'pequeno'],
+    ['grande', 'grande'],
+    ['de fogo', 'de fogo'],
+    ['invencível', 'invencivel'],
+    ['no chão', 'no chao'],
+  ],
+  pattern: [
+    ['tijolo', 'tijolo'],
+    ['pedra', 'pedra'],
+    ['terra', 'terra'],
+    ['grama', 'grama'],
+    ['interrogação', 'interrogacao'],
+    ['cano', 'cano'],
+    ['nuvem', 'nuvem'],
+    ['água', 'agua'],
+    ['lava', 'lava'],
+    ['moeda', 'moeda'],
+    ['xadrez', 'xadrez'],
+    ['listras', 'listras'],
+  ],
 } satisfies Readonly<Record<string, readonly DropdownOption[]>>
 
 type Game3DDropdown = keyof typeof GAME3D_DROPDOWN_OPTIONS
@@ -250,6 +338,14 @@ const GAME3D_DROPDOWN_ARGUMENTS: Readonly<
   Record<string, Readonly<Partial<Record<number, Game3DDropdown>>>>
 > = {
   keyDown: { 0: 'key' },
+  keyPressed: { 0: 'key' },
+  forEachHit: { 1: 'hitSide' },
+  paintPattern: { 1: 'pattern' },
+  setStageTheme: { 1: 'stageTheme' },
+  onStageEvent: { 1: 'stageEvent' },
+  stageValue: { 1: 'stageField' },
+  stageIs: { 1: 'stageStatus' },
+  heroIs: { 1: 'heroStatus' },
   gridMove: { 1: 'gridDirection' },
   crosserMove: { 1: 'gridDirection' },
   addRow: { 2: 'rowKind', 3: 'rowDirection' },
@@ -375,6 +471,30 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   stepBody: 2,
   setSolid: 1,
   platformerControls: 4,
+  classicPlatformer: 4,
+  forEachHit: 3,
+  hitIs: 2,
+  carryRiders: 1,
+  passUnder: 1,
+  setObjectValue: 3,
+  objectValue: 2,
+  paintPattern: 4,
+  noShadow: 1,
+  keyPressed: 1,
+  createPlatformScene: 1,
+  setStageTheme: 2,
+  createHero: 2,
+  loadStage: 2,
+  clearStage: 1,
+  stageReset: 1,
+  stageStep: 2,
+  shootFire: 2,
+  sideCamera: 2,
+  setStageNumber: 3,
+  onStageEvent: 3,
+  stageValue: 2,
+  stageIs: 2,
+  heroIs: 2,
   fpsControls: 3,
   resolveCollision: 2,
   fpsCamera: 2,
@@ -447,6 +567,14 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:createStackTower',
   'g3d:body',
   'g3d:setSolid',
+  // Propriedades do sólido: como o setSolid, dizem o que a peça É, não o que ela
+  // faz agora. Ficam no "Ao iniciar" pelo mesmo motivo.
+  'g3d:objectFlag',
+  // O Kit Plataforma: montar a cena e criar o herói pertencem ao "Ao iniciar",
+  // como os outros quatro kits de gênero.
+  'g3d:createPlatformScene',
+  'g3d:createHero',
+  'g3d:onStage',
   'g3d:createCylinder',
   'g3d:createCone',
   'g3d:createPlane',
@@ -455,6 +583,8 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:addToModel',
   'g3d:setMaterial',
   'g3d:setTexture',
+  // A estampa cria uma textura na GPU: mesmo cuidado do setTexture, senão uma
+  // combinação de cor por quadro encheria a memória de vídeo.
   'g3d:addAmbientLight',
   'g3d:addSunLight',
   'g3d:addPointLight',

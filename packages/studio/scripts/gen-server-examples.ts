@@ -19,4 +19,13 @@ const body = [
   '',
 ].join('\n')
 writeFileSync(target, body)
+const formatted = Bun.spawnSync({
+  cmd: [process.execPath, 'x', 'biome', 'format', '--write', target],
+  cwd: join(import.meta.dir, '..'),
+  stdout: 'inherit',
+  stderr: 'inherit',
+})
+if (formatted.exitCode !== 0) {
+  throw new Error(`Biome não conseguiu formatar ${target} (código ${formatted.exitCode})`)
+}
 console.log(`gerado: ${entries.length} exemplos → src/examples/__gen_serverExamplesIndex.ts`)

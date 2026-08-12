@@ -1,5 +1,6 @@
 import type * as Blockly from 'blockly/core'
 import type { JSExpr, JSStatement } from '#ir'
+import { normalizeJsonData } from '../../blockly/fields/jsonData'
 
 export const PROGRAMMING_CODEC_UNHANDLED = Symbol('programming-codec-unhandled')
 
@@ -7,7 +8,9 @@ export interface ProgrammingBlockToIRContext {
   f(block: Blockly.Block, name: string): string
   fn(block: Blockly.Block, name: string, fallback?: number): number
   constructorReference(rawReference: string): { namespace?: string; className: string }
-  targetKindField(block: Blockly.Block): { targetKind?: 'var' }
+  targetKindField(block: Blockly.Block): {
+    targetKind?: 'var' | 'document' | 'window'
+  }
   eventTargetFields(
     block: Blockly.Block,
     fallback: 'document' | 'window',
@@ -80,6 +83,8 @@ export function programmingBlockToExpression(
       return { type: 'global', kind: 'devicePixelRatio' }
     case 'sz_val_system_dark':
       return { type: 'systemDark' }
+    case 'sz_val_system_reduced_motion':
+      return { type: 'systemReducedMotion' }
     case 'sz_val_perf_now':
       return { type: 'perfNow' }
     case 'sz_val_date_part':
@@ -209,6 +214,8 @@ export function programmingBlockToExpression(
       return { type: 'eventProp', prop: f(block, 'AXIS') as 'clientX' | 'clientY' }
     case 'sz_val_event_key':
       return { type: 'eventProp', prop: f(block, 'PROP') as 'key' | 'code' }
+    case 'sz_val_event_pointer_id':
+      return { type: 'eventProp', prop: 'pointerId' }
     case 'sz_val_vector2d':
       return {
         type: 'vec2',
@@ -333,6 +340,35 @@ export function programmingBlockToExpression(
         store: f(block, 'STORE') === 'session' ? 'session' : 'local',
         key: { type: 'str', value: f(block, 'KEY') },
       }
+    case 'sz_val_storage_get_dynamic':
+      return {
+        type: 'storageGet',
+        store: f(block, 'STORE') === 'session' ? 'session' : 'local',
+        key: exprInput(block, 'KEY', { type: 'str', value: '' }),
+      }
+    case 'sz_val_json_data':
+      return { type: 'jsonLiteral', json: normalizeJsonData(f(block, 'JSON'))?.canonical ?? '{}' }
+    case 'sz_val_json_parse':
+      return { type: 'jsonParse', value: exprInput(block, 'VALUE', { type: 'str', value: '{}' }) }
+    case 'sz_val_json_stringify':
+      return { type: 'jsonStringify', value: exprInput(block, 'VALUE', { type: 'null' }) }
+    case 'sz_val_gamepad_connected':
+      return {
+        type: 'gamepadConnected',
+        index: exprInput(block, 'INDEX', { type: 'num', value: 0 }),
+      }
+    case 'sz_val_gamepad_axis':
+      return {
+        type: 'gamepadAxis',
+        index: exprInput(block, 'INDEX', { type: 'num', value: 0 }),
+        axis: exprInput(block, 'AXIS', { type: 'num', value: 0 }),
+      }
+    case 'sz_val_gamepad_button':
+      return {
+        type: 'gamepadButton',
+        index: exprInput(block, 'INDEX', { type: 'num', value: 0 }),
+        button: exprInput(block, 'BUTTON', { type: 'num', value: 0 }),
+      }
     case 'sz_val_class_contains':
       return {
         type: 'classContains',
@@ -370,6 +406,8 @@ export function programmingBlockToStatement(
     getSwitchCases,
     targetKindField,
   } = context
+  const elementTargetKindField = (target: Blockly.Block): { targetKind?: 'var' } =>
+    targetKindField(target).targetKind === 'var' ? { targetKind: 'var' } : {}
   switch (block.type) {
     case 'sz_js_on_click':
       return {
@@ -553,7 +591,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'getProperty',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           property: f(block, 'PROP') as 'textContent' | 'value',
           varName: f(block, 'NAME'),
         },
@@ -564,7 +602,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setProperty',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           property: f(block, 'PROP') as 'textContent' | 'value',
           value: { type: 'str', value: f(block, 'VALUE') },
         },
@@ -575,7 +613,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setProperty',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           property: f(block, 'PROP') as 'textContent' | 'value',
           value: { type: 'var', name: f(block, 'NAME') },
         },
@@ -586,7 +624,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setProperty',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           property: f(block, 'PROP') as 'textContent' | 'value',
           value: { type: 'now', kind: f(block, 'CALC') as 'year' | 'date' | 'time' },
         },
@@ -597,7 +635,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setProperty',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           property: f(block, 'PROP') as 'textContent' | 'value' | 'innerHTML',
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
         },
@@ -609,7 +647,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setStyle',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           property: custom || f(block, 'PROP') || 'left',
           value: exprInput(block, 'VALUE', { type: 'str', value: '' }),
         },
@@ -621,7 +659,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setStyle',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           property: 'cssText',
           value: exprInput(block, 'VALUE', { type: 'str', value: '' }),
         },
@@ -632,7 +670,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setAttribute',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           name: f(block, 'NAME') || 'stroke',
           value: exprInput(block, 'VALUE', { type: 'str', value: '' }),
         },
@@ -900,6 +938,34 @@ export function programmingBlockToStatement(
           value: exprInput(block, 'VALUE', { type: 'str', value: '' }),
         },
       }
+    case 'sz_js_storage_remove':
+      return {
+        kind: 'js',
+        value: {
+          type: 'storageRemove',
+          store: f(block, 'STORE') === 'session' ? 'session' : 'local',
+          key: { type: 'str', value: f(block, 'KEY') },
+        },
+      }
+    case 'sz_js_storage_set_dynamic':
+      return {
+        kind: 'js',
+        value: {
+          type: 'storageSet',
+          store: f(block, 'STORE') === 'session' ? 'session' : 'local',
+          key: exprInput(block, 'KEY', { type: 'str', value: '' }),
+          value: exprInput(block, 'VALUE', { type: 'str', value: '' }),
+        },
+      }
+    case 'sz_js_storage_remove_dynamic':
+      return {
+        kind: 'js',
+        value: {
+          type: 'storageRemove',
+          store: f(block, 'STORE') === 'session' ? 'session' : 'local',
+          key: exprInput(block, 'KEY', { type: 'str', value: '' }),
+        },
+      }
     case 'sz_js_event_method':
       return {
         kind: 'js',
@@ -957,6 +1023,9 @@ export function programmingBlockToStatement(
             | 'mouseout'
             | 'pointerdown'
             | 'pointerup'
+            | 'pointercancel'
+            | 'lostpointercapture'
+            | 'blur'
             | 'submit'
             | 'input'
             | 'change',
@@ -983,7 +1052,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'getAttribute',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           name: f(block, 'ATTR') || 'cx',
           varName: f(block, 'NAME'),
         },
@@ -1031,7 +1100,7 @@ export function programmingBlockToStatement(
         value: {
           type: 'setDataset',
           targetId: f(block, 'TARGET'),
-          ...targetKindField(block),
+          ...elementTargetKindField(block),
           key: f(block, 'KEY'),
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
         },

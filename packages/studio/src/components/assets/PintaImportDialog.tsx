@@ -161,17 +161,22 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
         />
 
         {error ? (
-          <p className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+          <p
+            role="alert"
+            className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400"
+          >
             {error}
           </p>
         ) : null}
 
         {load.phase === 'loading' ? (
-          <p className="text-sm text-sz-fg-soft">{t('pintaImport.loading')}</p>
+          <p role="status" className="text-sm text-sz-fg-soft">
+            {t('pintaImport.loading')}
+          </p>
         ) : null}
 
         {load.phase === 'error' ? (
-          <div className="flex flex-wrap items-center gap-2">
+          <div role="alert" className="flex flex-wrap items-center gap-2">
             <p className="text-sm text-sz-fg-soft">{t('pintaImport.loadError')}</p>
             <Button variant="subtle" size="sm" onClick={() => setReloadKey((k) => k + 1)}>
               {t('pintaImport.retry')}

@@ -139,6 +139,9 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['tirar o mouse', 'mouseout'],
           ['apertar o mouse/dedo', 'pointerdown'],
           ['soltar o mouse/dedo', 'pointerup'],
+          ['cancelar o toque/ponteiro', 'pointercancel'],
+          ['perder a captura do ponteiro', 'lostpointercapture'],
+          ['perder o foco da janela', 'blur'],
           ['enviar', 'submit'],
           ['digitar', 'input'],
           ['mudar', 'change'],
@@ -152,6 +155,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o elemento id', 'id'],
           ['a variável', 'var'],
+          ['a janela', 'window'],
+          ['o documento', 'document'],
         ],
       },
       { type: 'field_name_picker', name: 'TARGET', text: 'meuBotao', kind: 'dom-target' },

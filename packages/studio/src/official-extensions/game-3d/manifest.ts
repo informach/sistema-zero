@@ -3,7 +3,7 @@ import type { ExtensionManifest } from '#extensions'
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.28.0',
+  version: '0.29.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -50,6 +50,7 @@ em um evento ou em um construtor.
 - Cilindro, cone, plano e anel completam as primitivas; os exemplos não dependem de assets externos.
 - **Criar modelo** agrupa peças da mesma cena: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
 - Texturas são opcionais e usam um asset escolhido no projeto; remover um objeto também libera seus recursos de GPU.
+- **Pintar com uma estampa** desenha a textura na hora, sem imagem nenhuma: tijolo, pedra, terra, grama, interrogação, cano, nuvem, água, lava, moeda, xadrez e listras, repetidas conforme o tamanho da peça. Dá para fazer um jogo inteiro sem depender de arquivo. **Deixar sem sombra** alivia cenários com muitas peças.
 - Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena e chamadas posteriores não descartam os mesmos recursos de novo.
 - Luz ambiente, sol, luz pontual, neblina, céu em degradê e sombras montam a atmosfera.
 
@@ -61,11 +62,20 @@ em um evento ou em um construtor.
 - Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital. Com a câmera em primeira pessoa no objeto, **andar para frente** segue para onde o jogador olha (no plano do chão) e **objeto que está mirando** mira o que o jogador vê, inclusive olhando para cima ou para baixo. O último modo de câmera escolhido substitui o anterior sem manter a câmera presa ao objeto do modo FPS. Entrar em primeira pessoa sempre ativa uma câmera em perspectiva, mesmo depois de uma câmera isométrica ou aérea.
 - **Corpo + sólido + atualizar corpo**. Física AABB leve da própria plataforma, sem biblioteca externa pesada.
 
+### Plataforma clássica (correr e pular de lado)
+
+- **Controle de plataforma clássica**: anda só para os lados, mas com peso. Acelera aos poucos, derrapa ao virar, corre no dobro da velocidade segurando Shift e **pula mais alto quanto mais tempo você segura o botão**. Com o botão preso ele não repica sozinho: é preciso soltar e apertar de novo.
+- **Para cada batida de … com …**: a física já sabe de que lado o choque foi resolvido, e agora conta. Pisar em cima (**os pés**), bater a cabeça num bloco (**a cabeça**) e esbarrar numa parede (**os lados**) são coisas diferentes, e é essa diferença que faz um inimigo morrer pisado, um bloco soltar item por baixo e outro inimigo virar ao encostar no muro.
+- **fazer … carregar quem está em cima**: elevadores e plataformas móveis levam o passageiro junto.
+- **fazer … ser atravessável por baixo**: dá para subir por dentro e pousar em cima.
+- **guardar … em … do objeto**: cada objeto ganha uma gaveta própria (a direção que o inimigo anda, quanto tempo falta, quantas vidas tem).
+
 ### Perguntas (booleanos. Caem num "se")
 
-- **a tecla … está apertada?**
+- **a tecla … está apertada?** e **a tecla … foi apertada agora?** (só no quadro do toque).
 - **o objeto … está encostando em … ?** (colisão AABB).
 - **o objeto … encostou em algum de … ?** (contra um grupo).
+- **a batida … foi contra … ?** e o valor guardado na gaveta de um objeto.
 
 ### ⏱️ Tempo e repetição (genéricos. Dentro de "A cada quadro 3D")
 

@@ -12,6 +12,26 @@ arquitetura. Não misturar as duas no mesmo projeto.
 
 RECEITA CANÔNICA POR ÁREA DO PROJETO:
 ⚙️ AO INICIAR:
+0. Para uma campanha longa, use SZGameKit.enableFixedSimulation({ hz: 60,
+   seed, maxCatchUpSteps: 5 }), defineCampaign({ id, version, firstStage,
+   players, seed, requiredGems }), defineCampaignStage(fase) para cada fase e
+   startCampaign. requiredGems é a condição explícita de conclusão; zero
+   significa que gemas não são obrigatórias.
+   A fase é JSON estático validado, criado pelo editor visual: até 512×512
+   células, 128 objetos, 256 gatilhos e 128 fases por campanha. Nunca emita
+   rawJS para contornar o esquema. Cada entidade nova exige id único e seguro
+   dentro da fase; dados legados sem id são normalizados pelo carregador.
+   Propriedades conhecidas são tipadas por tipo: speed, direction, range,
+   health e requiresBoss. Regras determinísticas próprias entram em
+   onFixedUpdate(fn(dt, tick)); use actionDown/actionPressed/actionReleased em
+   vez de teclas físicas. saveCampaign/loadCampaign/deleteCampaignSave aceitam
+   slots 1–3; startReplayRecording/stopReplayRecording/playLastReplay cuidam da
+   repetição. Registre onCampaignEvent(nome, fn) para regiões e avisos do motor;
+   dentro do callback, campaignEventValue(campo) lê event/id/kind/stageId/reason/
+   target/value/complete/journey/column/row. Fora do callback ele devolve vazio.
+   Gemas são persistidas por fase + entidade e não reaparecem após reload.
+   “Reino Zero Pro” é a referência completa de 8 mundos × 4 fases e declara
+   requiredGems: 8 no próprio projeto.
 1. SZGameKit.setup({ width, height, background, accent })  — 1x, no começo
    · OU SZGameKit.setupFull({ background, accent }) — "ocupar a tela toda": SEM
      dimensões, o canvas preenche a viewport e config.w/h (width()/height())

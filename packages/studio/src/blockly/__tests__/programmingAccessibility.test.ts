@@ -21,7 +21,7 @@ function contrast(a: string, b: string): number {
 
 describe('acessibilidade da categoria Programação', () => {
   it('mantém contraste AA entre o texto branco e todos os blocos visíveis', () => {
-    expect(PROGRAMMING_VISIBLE_DEFINITIONS).toHaveLength(151)
+    expect(PROGRAMMING_VISIBLE_DEFINITIONS).toHaveLength(163)
     for (const definition of PROGRAMMING_VISIBLE_DEFINITIONS) {
       if (typeof definition.colour !== 'string') {
         throw new Error(`${definition.type} não possui cor hexadecimal`)

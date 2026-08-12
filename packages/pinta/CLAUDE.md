@@ -168,7 +168,9 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   ferramentas+cores juntas não cabiam em 1366×768 quando a faixa era um rodapé de tudo. Com as
   cores na direita esse conflito sumiu: medido em 1366×768, o rail sozinho ocupa 391px e a página
   não rola. **A faixa segue com teto interno próprio** (`max-h-56` compacta / `max-h-96`
-  expandida na lista do `SpriteSheetPanel`) e rola por dentro — o topo do palco nunca se move.
+  expandida na lista do `SpriteSheetPanel`) e rola por dentro — o topo do palco nunca se move. O
+  controle de expansão só aparece quando a lista compacta tem overflow real; enquanto expandida,
+  permanece visível para permitir recolher a faixa.
   Efeito colateral aceito: no PERSONAGEM
   animado a coluna direita (prévia 244 + camadas + cores ≈ 700px) rola por dentro; no cenário
   cabe inteira (626px).
@@ -452,13 +454,105 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   Ver "Ajustes do vetor (08/2026)" abaixo — os chips saíram e o painel virou espelho do
   `PaletteBar`.
 - **Fora de escopo (futuro)**: operações booleanas (pathfinder), degradê multi-stop/ângulo livre,
-  importar SVG, máscaras/filtros/blend, alças de bézier, campos numéricos X/Y/W/H, girar
-  multi-seleção, snap dos nós do editar pontos.
+  importar SVG, máscaras/filtros/blend, campos numéricos X/Y/W/H, girar multi-seleção, snap dos
+  nós do editar pontos. ⚠️ **Alças de bézier SAIU desta lista** (08/2026): a Fase 2 da edição de
+  pontos as implementa — ver a seção abaixo.
 - Testes: `vectorUi.test.tsx` (caixa/canais/grade/snap/laço/multi-resize/alinhar/caneta/texto/
   raio/espaço), `vectorLayersUi.test.tsx` (painel Camadas), `vector/grid.test.ts`,
   `geometry.test.ts` (union/intersect/align), `model.test.ts`+`svg.test.ts` (hidden). ⚠️ Gotchas
   de teste: escopar consultas de shapes NO PALCO (`stage.querySelector(...)` — miniaturas do
   painel e ícones lucide também têm rect/text) e fixar o `getBoundingClientRect` do svg.
+
+## Editar os PONTOS e as CURVAS (08/2026)
+
+A ferramenta "Editar os pontos" (`reshape`, atalho `A`) só arrastava UM nó de UMA forma. Agora ela
+escolhe vários, acrescenta, apaga, fecha/abre o caminho (Fase 1) e mexe na curvatura: alças de
+bézier, curva↔reta, ponto suave/canto e "suavizar o traço" (Fase 2).
+
+### ⭐⭐ A decisão que evitou uma migração: nada é guardado por ponto
+
+O modelo não tem onde pôr metadado por ponto — `path` é uma **string `d`** e `polygon` é um
+`Vec2[]` cru. **`vector/pathNodes.ts`** é a visão canônica (`PathNode {p, in?, out?}` +
+`EditablePath {nodes, closed}`) e vive só em MEMÓRIA, entre `toEditablePath` e `fromEditablePath`.
+Guardar um campo por ponto custaria três coisas, todas silenciosas:
+`shapeBytes` (`state/editorStore.ts`) conta `points.length * 16` e passaria a subestimar o
+orçamento de 16 MB do undo; `sanitizeVectorShape` deixa passar chave extra **sem validar**; e
+`animation/frames.ts` clona o quadro de forma RASA (o array `points` é compartilhado por
+referência entre quadros duplicados — mutar um ponto no lugar corromperia o vizinho).
+
+Por isso **"suave" e "canto" são LIDOS da geometria**, não guardados: um nó é suave quando as duas
+alças estão na MESMA RETA, uma de cada lado da âncora. O pincel entrega isso de graça — a
+Catmull-Rom escreve saída `p + (p₊₁−p₋₁)/6` e entrada `p − (p₊₁−p₋₁)/6` (teste em
+`pathNodes.test.ts`, com folga de 0.02 = o arredondamento de 2 casas do `d`).
+
+⚠️ **Colinear, NÃO simétrico.** Exigir os dois lados do mesmo TAMANHO é mais forte que a
+continuidade da curva e barrava dois casos legítimos: o "ponto suave" que preserva os tamanhos que
+já existiam, e arrastar uma alça de um nó suave (que alonga um lado só). A primeira versão usava
+simetria e dois testes caíram na hora.
+
+### O que já estava pronto e não precisou de nada
+
+⭐ **O `Z` já atravessava a cadeia inteira**: `parsePathD` aceita, `shapeGeometryAttrs` passa o `d`
+verbatim. **Fechar o caminho não exigiu uma linha de modelo.**
+
+### Regras do lote
+
+- **Polígono e linha viram TRAÇO ao ganhar curva ou ao mudar de fechado/aberto** (decisão da dona,
+  sem perguntar). Enquanto continuam do jeito nativo a forma é preservada — senão arrastar um nó já
+  mataria o slider de lados. Só o nome no painel Camadas muda.
+- ⚠️ **A colisão do Delete.** `VectorEditorScope` já ligava Delete a "apagar a FORMA" num listener
+  de `window`. O ramo de apagar PONTO mora no MESMO handler, antes: o `VectorStage` é filho e
+  registra os listeners dele ANTES, então `preventDefault` daqui não seguraria o irmão (só
+  `stopImmediatePropagation`, que é a versão frágil). As setas seguem a mesma regra.
+- ⭐ **Nenhuma escolha de nó atravessa uma edição estrutural**: acrescentar deixa SÓ o ponto novo
+  escolhido e apagar limpa. Foi mudança do QA — somar o novo aos anteriores deixava três marcados e
+  o Delete seguinte levaria os três. De quebra, não existe índice velho para reindexar.
+- **Pisos duros**: traço nunca abaixo de 2 nós, polígono nunca abaixo de 3 (abaixo disso o sanitize
+  DESCARTA a forma no próximo load). Recusa com toast que diz o NÚMERO.
+- **Acrescentar ponto é um toque no traço**, não um botão: `nearestOnPath` com folga
+  `10/zoom + espessura/2`, e a divisão do cúbico é de **Casteljau** (a curva desenhada não muda —
+  teste amostra 21 pontos antes e depois). Como não há botão, a faixa carrega a dica escrita.
+- `shapeNodes`/`setShapeNode` **saíram do `geometry.ts`** (viraram `toEditablePath` + `moveNodes`,
+  com a mesma semântica de arrastar as alças do nó junto).
+- Os nós vivem em coordenadas LOCAIS (sem rotação) e o laço é medido em coordenadas do DOCUMENTO:
+  `vectorNodeGestures.ts` faz a ponte. ⚠️ Girar a CAIXA do laço estaria errado (caixa girada não é
+  retângulo); quem gira é o nó.
+- Testes: `vector/pathNodes.test.ts` (puros) e o bloco "editar os pontos do vetor" em
+  `vectorUi.test.tsx` — o `reshape` não tinha **nenhum** teste de UI antes deste lote. ⚠️ As UI
+  consultam `circle[data-node]`: as ALÇAS também são `<circle>` no palco.
+
+### Fase 2: as curvas
+
+- **Alvo dos botões de curva/reta**: os segmentos ENTRE os nós escolhidos; com UM nó só, os dois
+  que encostam nele (senão escolher um ponto e pedir "curva" não faria nada).
+- **Virar curva não move o desenho**: os controles nascem em 1/3 e 2/3 da corda, então a cúbica É
+  a própria reta e o que a criança vê é a alça aparecer. Travado por teste que amostra 21 pontos.
+- **"Ponto suave"** tem três casos, do que menos mexe ao que mais: com as DUAS alças alinha na
+  direção média preservando os tamanhos; com UMA espelha ela; sem nenhuma inventa as duas pela
+  corda dos vizinhos (é o "arredonde este canto"). **"Ponto de canto"** REMOVE as duas — marcar
+  canto sem mudar nada seria um botão que não faz nada.
+- **"Suavizar o traço" é repetível** e não pode ficar mudo: um toque vale se tirar ponto OU
+  arredondar um canto que ainda era quina. Quando nenhuma das duas se aplica (traço de pincel, que
+  já é todo curvo e cujos pontos o RDP guarda na mesma régua), a régua DOBRA até sair ponto.
+  Medido no playground: 21 → 18 → 13 nós em três toques. Sem isso, do segundo toque em diante o
+  botão não fazia nada.
+- ⚠️ **A ida e volta pelo `d` INVENTAVA alça** (defeito real, pego pelo teste de UI): um trecho com
+  alça de um lado só vira um cúbico com o outro controle EM CIMA da âncora, e a releitura lia isso
+  como alça degenerada no vizinho. Efeito: "ponto de canto" não fazia nada nele e a forma nunca
+  mais perdia a curvatura. **Controle colado na âncora não é alça** — o parser o descarta.
+- ⚠️ **Alça perto demais do nó não é desenhada** (`MIN_HANDLE_GAP`, 12 px de TELA). Num traço de
+  pincel a Catmull-Rom deixa a alça a ~4 px do nó: desenhada por cima ela roubava o arrasto do
+  PONTO, e desenhada por baixo era impossível de pegar. Aproximar o zoom afasta as duas e a alça
+  reaparece (medido). As alças que a criança CRIA de propósito (ponto suave, virar curva) nascem
+  longas e nunca caem nessa faixa.
+- **A conversão polígono → traço é de MÃO ÚNICA**: tirar a curvatura depois NÃO devolve o polígono
+  (o caminho de volta é o Ctrl+Z). O teste puro que exercita "volta a ser polígono" passa a forma
+  ORIGINAL, um cenário que a UI não produz — está lá para travar o `fromEditablePath`, não o fluxo.
+
+⚠️ **Armadilha de QA em navegador**: disparar `pointerdown/move/up` no mesmo turno de JS faz o
+`endGesture` ler o `marquee` ANTES da repintura e tratar o arrasto como toque (a seleção some).
+Dê uma folga entre os eventos. E o rect do palco tem que ser lido A CADA evento: a faixa contextual
+aparecendo/sumindo move o palco, e um rect cacheado joga o clique fora do alvo.
 
 ## Ajustes do VETOR: faixa da seleção, caixa que encolhe, degradê em modal, paleta (08/2026)
 

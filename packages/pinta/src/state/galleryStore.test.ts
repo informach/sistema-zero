@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { COPY } from '../core/copy'
 import { PINTA_LIMITS } from '../core/project'
-import { clearIdbMock } from '../testing/idbMock'
+import { clearIdbMock, setIdbWriteGuard } from '../testing/idbMock'
 
 const { createGalleryStore } = await import('./galleryStore')
 const { setPintaStorageNamespace, listAllAssets } = await import('./persistence')
@@ -66,6 +66,23 @@ describe('galleryStore — modelos prontos', () => {
     await store.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 16 })
     const asset = await store.getState().createFromTemplate({ templateId: 'heroi', name: 'heroi' })
     expect(asset?.name).toBe('heroi-2')
+  })
+
+  it('modelo com companheiro é atômico quando uma escrita falha', async () => {
+    let writes = 0
+    setIdbWriteGuard(() => {
+      writes += 1
+      if (writes === 2) throw new Error('disco cheio')
+    })
+    const store = createGalleryStore()
+    const result = await store
+      .getState()
+      .createFromTemplate({ templateId: 'fase-plataforma', name: 'fase' })
+    setIdbWriteGuard(null)
+
+    expect(result).toBeNull()
+    expect(store.getState().assets).toHaveLength(0)
+    expect(await listAllAssets()).toHaveLength(0)
   })
 })
 
@@ -138,6 +155,19 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
       expect(copy.animations[0]?.id).not.toBe(a.animations[0]?.id)
     }
     expect(store.getState().assets).toHaveLength(2)
+  })
+
+  it('duplicate reserva espaço para o sufixo em um nome de 48 caracteres', async () => {
+    const store = createGalleryStore()
+    const longName = 'a'.repeat(PINTA_LIMITS.maxNameChars)
+    const original = await store
+      .getState()
+      .create({ kind: 'pixel-sprite', name: longName, frameSize: 16 })
+    if (!original) throw new Error('asset esperado')
+
+    const copy = await store.getState().duplicate(original.id)
+    expect(copy?.name).toBe(`${'a'.repeat(PINTA_LIMITS.maxNameChars - 2)}-2`)
+    expect(copy?.name.length).toBe(PINTA_LIMITS.maxNameChars)
   })
 
   it('duplicações concorrentes reservam nomes diferentes', async () => {

@@ -7,6 +7,7 @@ import { gameKitBlockDefinitions03 } from './blocks/definitions03'
 import { gameKitBlockDefinitions04 } from './blocks/definitions04'
 import { gameKitBlockDefinitions05 } from './blocks/definitions05'
 import { gameKitBlockDefinitions06 } from './blocks/definitions06'
+import { gameKitBlockDefinitions07 } from './blocks/definitions07'
 // Jogo 2D Avançado = UMA cor da categoria: TEAL (verde-água). As sub-categorias
 // são TONS dela (derivados por categoryShades mais abaixo). É o furo que restava
 // no arco-íris das categorias (rosa = Jogo 2D, amarelo = Jogo 3D).
@@ -19,6 +20,7 @@ export const gameKitBlocks: BlockDefinition[] = [
   ...gameKitBlockDefinitions04,
   ...gameKitBlockDefinitions05,
   ...gameKitBlockDefinitions06,
+  ...gameKitBlockDefinitions07,
 ]
 
 /**
@@ -49,6 +51,36 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_load_image',
       'sz_gk_game_width',
       'sz_gk_game_height',
+    ],
+  },
+  {
+    name: '🧭 Aventura em fases',
+    colour: C,
+    types: [
+      'sz_gk_define_campaign',
+      'sz_gk_define_campaign_stage',
+      'sz_gk_start_campaign',
+      'sz_gk_go_stage',
+      'sz_gk_on_campaign_event',
+      'sz_gk_campaign_event_value',
+      'sz_gk_current_stage',
+      'sz_gk_save_campaign',
+      'sz_gk_load_campaign',
+      'sz_gk_delete_campaign_save',
+    ],
+  },
+  {
+    name: '🎛️ Jogo suave & repetição',
+    colour: C,
+    types: [
+      'sz_gk_fixed_setup',
+      'sz_gk_on_fixed_update',
+      'sz_gk_action_down',
+      'sz_gk_action_pressed',
+      'sz_gk_action_released',
+      'sz_gk_start_replay',
+      'sz_gk_stop_replay',
+      'sz_gk_play_last_replay',
     ],
   },
   {
@@ -822,6 +854,13 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_setup: { W: numShadow(1280), H: numShadow(720) },
+  sz_gk_fixed_setup: { SEED: numShadow(2026) },
+  sz_gk_define_campaign: {
+    VERSION: numShadow(1),
+    PLAYERS: numShadow(1),
+    SEED: numShadow(2026),
+    REQUIRED_GEMS: numShadow(0),
+  },
   sz_gk_stage_border: { WIDTH: numShadow(4) },
   sz_gk_card: { FRONT: txtShadow('🍎'), BACK: txtShadow('?') },
   sz_gk_card_flip: { CARD: numShadow(0) },

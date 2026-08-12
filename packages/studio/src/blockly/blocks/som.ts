@@ -76,6 +76,45 @@ export const SOM_BLOCKS: BlockDefinition[] = [
     tooltip: 'Desliga a música que estava tocando.',
   },
   {
+    type: 'sz_som_tone',
+    placement: 'command',
+    message0: 'tocar onda %1 em %2 Hz por %3 ms volume %4',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'WAVE',
+        options: [
+          ['suave', 'sine'],
+          ['quadrada', 'square'],
+          ['serrilhada', 'sawtooth'],
+          ['triangular', 'triangle'],
+        ],
+      },
+      { type: 'input_value', name: 'FREQUENCY', check: 'JSValue' },
+      { type: 'input_value', name: 'DURATION', check: 'JSValue' },
+      { type: 'input_value', name: 'LEVEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria um efeito sonoro vetorial sem arquivo externo.',
+  },
+  {
+    type: 'sz_som_noise',
+    placement: 'command',
+    message0: 'tocar ruído por %1 ms volume %2',
+    args0: [
+      { type: 'input_value', name: 'DURATION', check: 'JSValue' },
+      { type: 'input_value', name: 'LEVEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria um ruído curto para impactos e explosões, sem arquivo externo.',
+  },
+  {
     type: 'sz_som_volume',
     placement: 'command',
     message0: 'Pôr o volume em %1',
@@ -97,7 +136,13 @@ export const SOM_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎵 Música e volume',
     colour: C,
-    types: ['sz_som_play_music', 'sz_som_stop_music', 'sz_som_volume'],
+    types: [
+      'sz_som_play_music',
+      'sz_som_stop_music',
+      'sz_som_tone',
+      'sz_som_noise',
+      'sz_som_volume',
+    ],
   },
 ]
 

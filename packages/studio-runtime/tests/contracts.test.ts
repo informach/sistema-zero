@@ -18,6 +18,17 @@ const valid = {
   },
 }
 
+function versionAtLeast(actual: string, minimum: string): boolean {
+  const actualParts = actual.split('.').map(Number)
+  const minimumParts = minimum.split('.').map(Number)
+  for (let index = 0; index < Math.max(actualParts.length, minimumParts.length); index += 1) {
+    const actualPart = actualParts[index] ?? 0
+    const minimumPart = minimumParts[index] ?? 0
+    if (actualPart !== minimumPart) return actualPart > minimumPart
+  }
+  return true
+}
+
 describe('contrato do executor Pro', () => {
   test('aceita a árvore válida e remove arquivos de configuração não confiáveis', () => {
     const parsed = parseBuildRequest(valid)
@@ -63,5 +74,7 @@ describe('contrato do executor Pro', () => {
     expect(dockerfile).toContain('npm ci --ignore-scripts')
     expect(lockfile.lockfileVersion).toBeGreaterThanOrEqual(3)
     expect(lockfile.packages[''].dependencies.vite).toBe('8.0.16')
+    expect(versionAtLeast(lockfile.packages['node_modules/nanoid'].version, '3.3.17')).toBe(true)
+    expect(versionAtLeast(lockfile.packages['node_modules/postcss'].version, '8.5.23')).toBe(true)
   })
 })

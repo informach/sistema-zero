@@ -177,6 +177,24 @@ describe('ExtensionsPanel — "Saiba mais" expande a docs do manifest', () => {
     fireEvent.click(screen.getByText('Esconder detalhes'))
     expect(screen.queryByText('Esconder detalhes')).toBeNull()
   })
+
+  it('carrega o manual completo do Jogo 2D somente quando ele é aberto', async () => {
+    seedProject()
+    render(<ExtensionsPanel open onClose={() => {}} />)
+    const game2d = OFFICIAL_CATALOG.find((extension) => extension.manifest.id === 'game-2d')
+    if (!game2d) throw new Error('fixture: esperava o Jogo 2D no catálogo')
+    const heading = 'Construa o cenário com mapas'
+
+    expect(game2d.manifest.docs).not.toContain(heading)
+    expect(screen.queryByText(heading)).toBeNull()
+
+    const card = screen.getByText(game2d.manifest.name).closest('li')
+    const toggle = card?.querySelector('[aria-expanded]')
+    if (!(toggle instanceof HTMLElement)) throw new Error('botão de detalhes ausente')
+    fireEvent.click(toggle)
+
+    expect(await screen.findByText(heading)).not.toBeNull()
+  })
 })
 
 describe('ExtensionsPanel — conflitos entre motores', () => {

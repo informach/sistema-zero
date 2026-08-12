@@ -166,7 +166,7 @@ export const gameTwoDWorldBlocks = [
   },
   {
     type: 'sz_g2d_world_add_enemy_type',
-    placement: 'start-only-command',
+    placement: 'command',
     message0: 'No Mundo %1 os inimigos do tipo %2 andam no terreno',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g2d-world' },

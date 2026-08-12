@@ -36,6 +36,7 @@ const LOOP_ROOT_TYPES = new Set([
   'g3d:everyFrames',
   'g3d:everySeconds',
   'gk:onUpdate',
+  'gk:onFixedUpdate',
   'gk:onDraw',
   'gk:onDrawHud',
   'g3k:onUpdate',
@@ -91,6 +92,11 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:defineEnemySmart',
   'g2d:createTileMapFromAsset',
   'g2d:createTileMap',
+  'g2d:enableClassicControls',
+  'g2d:createVectorTileset',
+  'g2d:defineVectorTile',
+  'g2d:createVectorTileMap',
+  'g2d:setEnemyStompMode',
   'g2d:fitTileMapToStage',
   'g2d:placeTileMap',
   'g2d:createWorld',
@@ -98,7 +104,6 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:addTileMapToWorld',
   'g2d:addSolidGroupToWorld',
   'g2d:addPlatformGroupToWorld',
-  'g2d:addEnemyTypeToWorld',
   'g2d:setWorldEdges',
   'g2d:configureWorldCamera',
   'g2d:createLevel',
@@ -107,6 +112,10 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
 
   'gk:setup',
   'gk:setupFull',
+  'gk:fixedSetup',
+  'gk:defineCampaign',
+  'gk:defineCampaignStage',
+  'gk:startCampaign',
   'gk:setStageDescription',
   'gk:stageBorder',
   'gk:setBackdrop',
@@ -620,6 +629,7 @@ function providesUserGesture(statement: JSStatement): boolean {
     return USER_GESTURE_EVENTS.has(statement.event)
   }
   if (statement.type === 'g2d:onKey') return true
+  if (statement.type === 'g2d:onActionPressed') return true
   // "Quando apertar qualquer tecla ou tocar na tela" roda DENTRO do listener de
   // tecla/ponteiro, então o corpo está mesmo num gesto do navegador (é o que
   // libera som e tela cheia lá dentro). ⚠️ O `userGesture` do bloco não chega

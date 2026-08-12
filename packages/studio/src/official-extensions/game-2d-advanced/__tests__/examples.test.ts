@@ -40,6 +40,7 @@ import {
   portasDoCasteloProfissionalExample,
   quebraBlocosExample,
   reinoAbertoExample,
+  reinoZeroProExample,
   safariDeMonstrosProfissionalExample,
   saltoNaFlorestaExample,
   sobreviventeProfissionalExample,
@@ -52,6 +53,7 @@ import { gameKitExtension } from '../index'
 
 const EXAMPLES = [
   meuPrimeiroJogoExample,
+  reinoZeroProExample,
   cacaMoedasExample,
   arenaGoblinsExample,
   vilaDoDragaoExample,
@@ -99,6 +101,13 @@ const REQUIRED_TYPES = {
     'gk:onUpdate',
     'gk:moveWithKeys',
     'gk:onDraw',
+  ],
+  'Reino Zero Pro': [
+    'gk:setup',
+    'gk:fixedSetup',
+    'gk:defineCampaign',
+    'gk:defineCampaignStage',
+    'gk:startCampaign',
   ],
   'Caça-moedas profissional': [
     'gk:setScreenText',
@@ -578,7 +587,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 36 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 37 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.examples.count).toBe(EXAMPLES.length)
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })

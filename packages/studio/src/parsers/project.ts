@@ -51,6 +51,14 @@ export interface ParseProjectResult {
   diagnostics: ParseProjectDiagnostic[]
 }
 
+export function hasBlockingParseDiagnostics(
+  diagnostics: readonly ParseProjectDiagnostic[],
+): boolean {
+  return diagnostics.some(
+    (diagnostic) => diagnostic.kind === 'syntaxError' || diagnostic.kind === 'semanticError',
+  )
+}
+
 export function parseProjectFiles(input: ParseProjectInput): SZIRV2 {
   return parseProjectFilesWithDiagnostics(input).ir
 }

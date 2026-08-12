@@ -17,6 +17,8 @@ interface AudioApi {
   parar: (nome: string) => void
   pararMusica: () => void
   volume: (nivel: unknown) => void
+  tom: (onda: string, frequencia: number, duracao: number, nivel: number) => void
+  ruido: (duracao: number, nivel: number) => void
 }
 
 interface FakeEl {
@@ -36,6 +38,15 @@ function load(sons: Record<string, string> | undefined, opts: { recusarPlay?: bo
   const listeners: Record<string, Listener[]> = {}
   const criados: FakeEl[] = []
   const avisos: string[] = []
+  const sintese = {
+    osciladores: 0,
+    ruidos: 0,
+    starts: 0,
+    stops: 0,
+    frequencia: 0,
+    ganhos: [] as number[],
+    onda: '',
+  }
   class FakeAudio implements FakeEl {
     src = ''
     volume = 1
@@ -57,12 +68,63 @@ function load(sons: Record<string, string> | undefined, opts: { recusarPlay?: bo
       this.paused = true
     }
   }
+  class FakeAudioContext {
+    state = 'running'
+    currentTime = 10
+    sampleRate = 1000
+    destination = {}
+    createOscillator() {
+      sintese.osciladores += 1
+      return {
+        type: 'sine',
+        frequency: {
+          setValueAtTime: (value: number) => (sintese.frequencia = value),
+        },
+        connect() {},
+        start() {
+          sintese.starts += 1
+        },
+        stop() {
+          sintese.stops += 1
+        },
+      }
+    }
+    createGain() {
+      return {
+        gain: {
+          setValueAtTime(value: number) {
+            sintese.ganhos.push(value)
+          },
+          exponentialRampToValueAtTime() {},
+        },
+        connect() {},
+      }
+    }
+    createBuffer(_channels: number, frames: number) {
+      sintese.ruidos += 1
+      return { getChannelData: () => new Float32Array(frames) }
+    }
+    createBufferSource() {
+      return {
+        buffer: null,
+        connect() {},
+        start() {
+          sintese.starts += 1
+        },
+        stop() {
+          sintese.stops += 1
+        },
+      }
+    }
+    resume() {}
+  }
   const win = {
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
       listeners[name].push(fn)
     },
     Audio: FakeAudio,
+    AudioContext: FakeAudioContext,
     console: { warn: (msg: string) => avisos.push(msg) },
     __SZGAME_SOUNDS: sons,
     __szAudio: undefined,
@@ -72,13 +134,17 @@ function load(sons: Record<string, string> | undefined, opts: { recusarPlay?: bo
     audio: (win as { __szAudio: AudioApi }).__szAudio,
     criados,
     avisos,
+    sintese,
     gesto: () => {
       for (const fn of listeners.pointerdown ?? []) fn()
     },
   }
 }
 
-const SONS = { moeda: 'data:audio/mpeg;base64,AAA', musica: 'data:audio/mpeg;base64,BBB' }
+const SONS = {
+  moeda: 'data:audio/mpeg;base64,AAA',
+  musica: 'data:audio/mpeg;base64,BBB',
+}
 
 describe('__szAudio — o toca-sons do núcleo', () => {
   it('volume ZERO deixa mudo de verdade (não cai em nenhum fallback)', () => {
@@ -86,11 +152,14 @@ describe('__szAudio — o toca-sons do núcleo', () => {
     // só aceitava `> 0` mandava o zero para o fallback, e "pôr o volume em 0"
     // DEIXAVA O SOM EM 80% — o oposto do que o bloco promete, no valor que a
     // criança mais tenta (o rótulo diz "0 (mudo)").
-    const { audio, criados, gesto } = load(SONS)
+    const { audio, criados, gesto, sintese } = load(SONS)
     gesto()
     audio.carregar('moeda', 'moeda')
     audio.volume(0)
     expect(criados[0]?.volume).toBe(0)
+    audio.tom('sine', 440, 100, 10)
+    audio.ruido(100, 10)
+    expect(sintese.ganhos.filter((gain) => gain > 0)).toEqual([])
   })
 
   it('volume aceita a escala de criança (0 a 10) e apara o que passa', () => {
@@ -177,5 +246,19 @@ describe('__szAudio — o toca-sons do núcleo', () => {
     gesto()
     expect(() => audio.tocar('moeda')).not.toThrow()
     expect(avisos.length).toBe(1)
+  })
+
+  it('sintetiza tom e ruído sem asset externo e respeita o desbloqueio por gesto', () => {
+    const { audio, gesto, sintese } = load(undefined)
+    audio.tom('triangle', 523.25, 80, 5)
+    expect(sintese.osciladores).toBe(0)
+
+    gesto()
+    expect(sintese.osciladores).toBe(1)
+    expect(sintese.frequencia).toBe(523.25)
+    audio.ruido(120, 4)
+    expect(sintese.ruidos).toBe(1)
+    expect(sintese.starts).toBe(2)
+    expect(sintese.stops).toBe(2)
   })
 })

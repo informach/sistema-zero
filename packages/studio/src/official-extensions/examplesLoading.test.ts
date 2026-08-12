@@ -6,18 +6,20 @@ import { OFFICIAL_CATALOG } from './index'
 
 const goldenCatalogs = {
   'game-2d': {
-    count: 32,
+    count: 33,
     // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
-    // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados.
-    sha256: '3f7ebf8a502f75d1b057a361efa45d4d7523b29ecbef3d7f87c4c8b5161f8ee5',
+    // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados; Reino Zero
+    // agora documenta a seleção de jogadores e preserva o sobrevivente após uma morte.
+    sha256: '7702f0318f799e74776ecb6931ff357a9f5056ab880bb35a178c456f77832086',
   },
   'game-2d-advanced': {
-    count: 36,
-    sha256: '04e02db3e9b627b2b3f6bfb720d044f3911ced7b6e2a5c01164731839bad012e',
+    count: 37,
+    // Reino Zero Pro passou a carregar a campanha validada de 32 fases.
+    sha256: 'bdde1a5e1b190e9789bb0618ec2d90ec112bc538ae00565c2af9300b07da7356',
   },
   'game-3d': {
-    count: 18,
-    sha256: '7bf8721cc939d8726d8d6682fcb9cb1004b7920ab22bb21e34153aa32aa2ec21',
+    count: 19,
+    sha256: '0ecf89916c0b9bf9810e2ad2aee9bd96953dd15411882fbae99b179552f88e8d',
   },
   'game-3d-advanced': {
     count: 17,

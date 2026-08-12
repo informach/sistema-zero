@@ -35,6 +35,7 @@ import {
   Ungroup,
 } from '../../ui/icons'
 import { useVectorEditor } from './VectorEditorScope'
+import { VectorNodeActions } from './VectorNodeActions'
 
 const Divider = (): JSX.Element => (
   <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
@@ -42,6 +43,9 @@ const Divider = (): JSX.Element => (
 
 export function VectorSelectionBar(): JSX.Element | null {
   const {
+    tool,
+    nodeTarget,
+    nodePath,
     selected,
     single,
     alignSelected,
@@ -52,6 +56,23 @@ export function VectorSelectionBar(): JSX.Element | null {
     duplicateSelected,
     removeSelected,
   } = useVectorEditor()
+
+  // Com a ferramenta de PONTOS ligada a faixa troca de conteudo, no mesmo lugar
+  // e na mesma altura: as acoes de forma inteira (alinhar/ordem/agrupar) nao
+  // valem para um no, e mostrar as duas coisas juntas so confunde.
+  if (tool === 'reshape') {
+    if (!nodeTarget || !nodePath) return null
+    return (
+      <div
+        role="toolbar"
+        aria-label={COPY.vector.nodeBar}
+        className="flex shrink-0 items-center gap-1 overflow-x-auto border-b-2 border-pin-border bg-pin-surface px-3 py-1"
+      >
+        <VectorNodeActions showHint />
+      </div>
+    )
+  }
+
   if (selected.length === 0) return null
 
   return (

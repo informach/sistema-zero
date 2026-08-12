@@ -16,6 +16,7 @@ import {
   GAME_TWO_D_ENEMY_SMART_OPTIONS,
 } from '../blockCatalogShared'
 import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
+import { gameTwoDDocs } from '../docs'
 import { gameTwoDManifest } from '../manifest'
 import {
   GAME_TWO_D_AREAS,
@@ -125,15 +126,15 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       .map((block) => block.tooltip)
       .filter((tooltip): tooltip is string => typeof tooltip === 'string')
       .join('\n')
-    const semanticSurfaces = [gameTwoDManifest.docs, gameTwoDPromptContext, tooltips]
+    const semanticSurfaces = [gameTwoDDocs, gameTwoDPromptContext, tooltips]
 
     for (const text of semanticSurfaces) {
       expect(text).not.toMatch(
         /chão\s*=\s*base (?:da tela|do canvas)|o chão é a base da tela|pous[ao]\w* (?:o sprite )?na base da tela/i,
       )
     }
-    expect(gameTwoDManifest.docs).toContain('gravidade negativa')
-    expect(gameTwoDManifest.docs).toContain('teto')
+    expect(gameTwoDDocs).toContain('gravidade negativa')
+    expect(gameTwoDDocs).toContain('teto')
   })
 
   it('mantém a gravidade explícita e seletiva em blocos, manual e contexto da IA', () => {
@@ -156,8 +157,8 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       expect(text).toContain('applyGravityToGroup')
       expect(text).not.toContain('updateGroupNoGravity')
     }
-    expect(gameTwoDManifest.docs).not.toContain('Mover o grupo sem gravidade')
-    expect(gameTwoDManifest.docs).toContain('Só os sprites que recebem')
+    expect(gameTwoDDocs).not.toContain('Mover o grupo sem gravidade')
+    expect(gameTwoDDocs).toContain('Só os sprites que recebem')
     expect(gameTwoDPromptContext).toContain('Só sprites/grupos que recebem o apply respondem')
   })
 
@@ -166,7 +167,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'Quando apertar qualquer tecla ou tocar na tela',
       'Quando o sprite pular',
     ]) {
-      expect(gameTwoDManifest.docs).toContain(label)
+      expect(gameTwoDDocs).toContain(label)
       expect(gameTwoDPromptContext).toContain(label)
     }
   })
@@ -174,7 +175,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   const reais = new Set(nomesDeCategoria(gameTwoDToolboxCategory))
 
   it('toda citação de chip nas docs do aluno é uma sub-categoria real (ou uma do núcleo)', () => {
-    const citados = chipsCitadosNasDocs(gameTwoDManifest.docs ?? '')
+    const citados = chipsCitadosNasDocs(gameTwoDDocs)
     // Anti-vácuo: se a regex casasse zero, o teste passaria em silêncio.
     expect(citados.length).toBeGreaterThan(10)
     expect(citados.filter((c) => !reais.has(c) && !EXTERNAS_OK.has(c))).toEqual([])
@@ -187,7 +188,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('cada bloco que o manual localiza está realmente na categoria citada', () => {
-    const references = categoriasDeBlocosCitadasNasDocs(gameTwoDManifest.docs ?? '')
+    const references = categoriasDeBlocosCitadasNasDocs(gameTwoDDocs)
     expect(references.length).toBeGreaterThan(0)
 
     for (const { label, category } of references) {
@@ -214,7 +215,24 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(262)
+    expect(gameTwoDBlocks.length).toBe(277)
+  })
+
+  it('o bloco de virar oferece as quatro direções cardeais', () => {
+    const virar = gameTwoDBlocks.find((block) => block.type === 'sz_g2d_flip_sprite')
+    const direcao = (
+      (virar?.args0 ?? []) as Array<{
+        name?: string
+        options?: Array<[string, string]>
+      }>
+    ).find((arg) => arg.name === 'DIR')
+
+    expect(direcao?.options).toEqual([
+      ['esquerda', 'left'],
+      ['direita', 'right'],
+      ['cima', 'up'],
+      ['baixo', 'down'],
+    ])
   })
 
   /**
@@ -329,7 +347,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
    * teste foi escrito; ele existe para que continuem.
    */
   it('todo comportamento de inimigo é explicado no manual e conhecido pela IA', () => {
-    const docs = gameTwoDManifest.docs ?? ''
+    const docs = gameTwoDDocs
     const nomeCurto = new Map(
       GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS.map(([texto, valor]) => [valor, texto.split(' (')[0]]),
     )
@@ -379,7 +397,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
    * elas ficam de fora de propósito.
    */
   it('cada item da lista de blocos de inimigo abre com a cara real de um bloco', () => {
-    const docs = gameTwoDManifest.docs ?? ''
+    const docs = gameTwoDDocs
     const semMarcadores = (texto: string) =>
       texto
         .replace(/%\d+/g, ' ')
@@ -652,6 +670,10 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_on_jump',
       'sz_g2d_key_down',
       'sz_g2d_pointer_down',
+      'sz_g2d_enable_classic_controls',
+      'sz_g2d_action_down',
+      'sz_g2d_action_pressed',
+      'sz_g2d_on_action_pressed',
     ])
     expect(tiposDaCategoria('💥 Colisões')).toEqual([
       'sz_g2d_on_overlap',
@@ -665,6 +687,9 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_collide_platform_group',
       'sz_g2d_on_group_overlap',
       'sz_g2d_on_sprite_group_overlap',
+      'sz_g2d_for_each_tile_contact',
+      'sz_g2d_tile_contact_is',
+      'sz_g2d_set_tile_at_contact',
     ])
     expect(tiposDaCategoria('⏱️ Tempo e repetição')).toEqual([
       'sz_g2d_update_each_frame',
@@ -765,7 +790,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('não ensina mais a arquitetura legada de início e loops periódicos', () => {
-    const docs = gameTwoDManifest.docs ?? ''
+    const docs = gameTwoDDocs
     expect(docs).not.toContain('fica dentro de **Quando o jogo começar**')
     expect(docs).not.toContain('executa novamente o bloco de começo')
     expect(gameTwoDPromptContext).not.toContain(
@@ -782,7 +807,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
 
   it('usa a orientação canônica de ciclo de vida nas docs e nos dois prompts da IA', () => {
     for (const guidance of Object.values(GAME_TWO_D_LIFECYCLE_GUIDANCE)) {
-      expect(gameTwoDManifest.docs).toContain(guidance)
+      expect(gameTwoDDocs).toContain(guidance)
       expect(gameTwoDPromptSummary).toContain(guidance)
       expect(gameTwoDPromptContext).toContain(guidance)
     }
@@ -799,7 +824,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('organiza o guia por tarefas e documenta o fluxo automático de vidas', () => {
-    const docs = gameTwoDManifest.docs ?? ''
+    const docs = gameTwoDDocs
     expect(docs).not.toMatch(/^###.*(?:Tier|v0\.)/m)
     expect(docs).toContain('### Comece um projeto')
     expect(docs).toContain('### Faça o jogo reagir')
@@ -811,7 +836,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('separa mapa, Mundo, Fase, cena e onda sem ensinar os blocos ambíguos', () => {
-    const docs = gameTwoDManifest.docs ?? ''
+    const docs = gameTwoDDocs
     for (const text of [docs, gameTwoDPromptContext, gameTwoDPromptSummary]) {
       expect(text).toContain('Mundo')
       expect(text).toContain('Fase')

@@ -9,11 +9,15 @@ import type { RGBAImage } from './quantize'
 const MAX_SOURCE = 2048
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 
+/** Teto dos bytes comprimidos antes de entregar o arquivo ao decodificador. */
+export const MAX_IMAGE_FILE_BYTES = 20 * 1024 * 1024
+
 /** `accept` do `<input type=file>`. */
 export const IMPORT_ACCEPT = ACCEPTED_TYPES.join(',')
 
 export async function decodeImageFile(file: File): Promise<RGBAImage | null> {
   if (!ACCEPTED_TYPES.includes(file.type)) return null
+  if (file.size > MAX_IMAGE_FILE_BYTES) return null
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   // happy-dom: sem canvas 2D / sem createImageBitmap → aborta limpo.

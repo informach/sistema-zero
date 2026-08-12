@@ -7,7 +7,7 @@ export const gameKitRpgBattleRuntime = `
   // Especial (energia)/Item (poção)/Defender/Fugir; defesa reduz o dano; XP sobe
   // de nível; veneno tira vida por turno. Dano = força ± 20% − defesa/2.
   function rollDamage(strength, targetDef) {
-    var raw = Math.round(num(strength, 1) * (0.8 + Math.random() * 0.4));
+    var raw = Math.round(num(strength, 1) * (0.8 + gameRandom() * 0.4));
     return Math.max(1, raw - Math.floor(num(targetDef, 0) / 2));
   }
   // ---- ⚔️ Batalha em EQUIPE (canvas): combatentes clicáveis + painéis ----
@@ -297,7 +297,7 @@ export const gameKitRpgBattleRuntime = `
     if (!a || !tgt) return;
     if (mv) a.energy = Math.max(0, a.energy - mv.cost);
     var dmg = rollDamage(mv ? mv.dmg : a.str, tgt.def);
-    if (a.blind > 0) { a.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
+    if (a.blind > 0) { a.blind -= 1; if (gameRandom() < 0.33) dmg = 0; }
     tgt.hp -= dmg;
     if (dmg > 0) { floatText('-' + dmg, tgt.x + tgt.w / 2, tgt.y, '#ffd166', 26); b.message = a.name + (mv ? ' usou ' + mv.name + ' e causou ' : ' causou ') + dmg + ' em ' + tgt.name + '!'; }
     else b.message = a.name + ' se atrapalhou e errou!';
@@ -324,7 +324,7 @@ export const gameKitRpgBattleRuntime = `
     resolveNoTarget(a.name + ' usou ' + p.name + ' (+' + p.heal + ' de vida).');
   }
   function tryFlee() {
-    if (Math.random() < 0.5) { rpg.menu = null; endBattle(false); return; }
+    if (gameRandom() < 0.5) { rpg.menu = null; endBattle(false); return; }
     resolveNoTarget('Não deu para fugir!');
   }
   // Depois de um aliado agir (anima): próximo aliado, ou a vez dos inimigos.
@@ -346,9 +346,9 @@ export const gameKitRpgBattleRuntime = `
     var b = rpg.battle; if (!b) return;
     var allies = aliveList(b.allies);
     if (allies.length === 0) { loseBattle(); return; }
-    var victim = allies[Math.floor(Math.random() * allies.length)];
+    var victim = allies[Math.floor(gameRandom() * allies.length)];
     var dmg = rollDamage(mv ? mv.dmg : f.str, victim.def);
-    if (f.blind > 0) { f.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
+    if (f.blind > 0) { f.blind -= 1; if (gameRandom() < 0.33) dmg = 0; }
     if (victim.defending) dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2));
     victim.hp -= dmg;
     if (dmg > 0) floatText('-' + dmg, victim.x + victim.w / 2, victim.y, '#ff6b6b', 24);
@@ -387,7 +387,7 @@ export const gameKitRpgBattleRuntime = `
     } else {
       var available = [];
       for (var i = 0; f.moves && i < f.moves.length; i++) if (f.moves[i].cost <= f.energy) available.push(f.moves[i]);
-      var mv = available.length ? available[Math.floor(Math.random() * available.length)] : null;
+      var mv = available.length ? available[Math.floor(gameRandom() * available.length)] : null;
       if (mv) foeUseMove(f, mv); else foeHit(f, null);
     }
     b.t = 0;

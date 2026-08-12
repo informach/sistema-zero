@@ -1,5 +1,6 @@
 import type { ExampleExperience, ProjectAsset } from '#core'
 import { normalizeSZIR, type SZIR, type SZIRV2 } from '#ir'
+import { reinoZeroUltraExample } from './reinoZeroUltraExample'
 
 /**
  * Exemplo CLÁSSICO (sem extensão): um projeto pronto montado SÓ com blocos
@@ -983,6 +984,7 @@ export const safariDeMonstrosNaMaoExample: CoreExample = {
   ir: normalizeSZIR(safariDeMonstrosNaMaoIr),
 }
 export const CORE_EXAMPLES: readonly CoreExample[] = [
+  reinoZeroUltraExample,
   gorilasNaMaoExample,
   treinadorDeCriaturasNaMaoExample,
   invadersNaMaoExample,

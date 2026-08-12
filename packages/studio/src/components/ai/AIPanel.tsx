@@ -103,7 +103,9 @@ const ChatMessageItem = memo(function ChatMessageItem({ message }: { message: Ch
     >
       <strong className="mr-1 text-xs uppercase text-sz-fg-mute">{message.who}</strong>
       {message.text}
-      {message.streaming && <span className="ml-1 animate-pulse text-sz-accent">▌</span>}
+      {message.streaming && (
+        <span className="ml-1 animate-pulse text-sz-accent motion-reduce:animate-none">▌</span>
+      )}
     </div>
   )
 })

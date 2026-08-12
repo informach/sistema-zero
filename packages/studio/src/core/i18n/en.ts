@@ -46,6 +46,9 @@ export const en: Record<string, string> = {
   'extensions.permissions': 'What it can use',
   'extensions.docsShow': '📖 Learn more',
   'extensions.docsHide': 'Hide details',
+  'extensions.docsLoading': 'Loading the complete guide…',
+  'extensions.docsError': 'Could not load the complete guide.',
+  'extensions.docsRetry': 'Try again',
   'extensions.removeWarning':
     'There are {count} blocks from this extension in use. Removing it will delete those blocks.',
   'extensions.confirmRemove': 'Confirm removal',

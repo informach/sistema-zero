@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
 
 interface Sprite {
@@ -468,6 +468,17 @@ describe('Movimento com terreno não inventa chão na tela', () => {
     expect(upwardStarts).toBe(1)
   })
 
+  it('mantém na origem um sprite maior que um Mundo com todas as bordas sólidas', () => {
+    const api = load()
+    const world = api.createWorld(20, 20)
+    api.setWorldEdges(world, 'solid')
+    const sprite = api.createSprite({ x: 5, y: 5, w: 30, h: 30, vx: 4, vy: 6 })
+
+    api.collideWorld(sprite, world)
+
+    expect(sprite).toMatchObject({ x: 0, y: 0, vx: 0, vy: 0 })
+  })
+
   it('uma queda rápida não atravessa um tile sólido', () => {
     const api = load()
     const map = api.createTileMap({
@@ -697,6 +708,98 @@ describe('Fases são opcionais e independentes do gênero', () => {
     expect(entries).toBe(2)
   })
 
+  it('conclui a entrada atual e então executa uma transição A → B', () => {
+    const api = load()
+    const world = api.createWorld(800, 512)
+    const levelA = api.createLevel(world, 10, 20)
+    const levelB = api.createLevel(world, 30, 40)
+    const player = api.createSprite({ x: 0, y: 0, w: 24, h: 24 })
+    const order: string[] = []
+
+    api.onLevelEnter(
+      () => levelA,
+      () => {
+        order.push('A')
+        api.enterLevel(levelB, player)
+      },
+      'entrada-a',
+    )
+    api.onLevelEnter(
+      () => levelB,
+      () => {
+        order.push('B')
+      },
+      'entrada-b',
+    )
+
+    api.enterLevel(levelA, player)
+
+    expect(order).toEqual(['A', 'B'])
+    expect(api.levelIsActive(levelA)).toBe(false)
+    expect(api.levelIsActive(levelB)).toBe(true)
+    expect(player).toMatchObject({ x: 30, y: 40 })
+  })
+
+  it('bloqueia o ciclo A → B → A sem desfazer a entrada válida em B', () => {
+    const api = load()
+    const world = api.createWorld(800, 512)
+    const levelA = api.createLevel(world, 10, 20)
+    const levelB = api.createLevel(world, 30, 40)
+    const player = api.createSprite({ x: 0, y: 0, w: 24, h: 24 })
+    const order: string[] = []
+
+    api.onLevelEnter(
+      () => levelA,
+      () => {
+        order.push('A')
+        api.enterLevel(levelB, player)
+      },
+      'ciclo-a',
+    )
+    api.onLevelEnter(
+      () => levelB,
+      () => {
+        order.push('B')
+        api.enterLevel(levelA, player)
+      },
+      'ciclo-b',
+    )
+
+    api.enterLevel(levelA, player)
+
+    expect(order).toEqual(['A', 'B'])
+    expect(api.levelIsActive(levelB)).toBe(true)
+    expect(player).toMatchObject({ x: 30, y: 40 })
+  })
+
+  it('limita também tentativas duplicadas na mesma cadeia de transições', () => {
+    const api = load()
+    const world = api.createWorld(800, 512)
+    const levelA = api.createLevel(world, 10, 20)
+    const levelB = api.createLevel(world, 30, 40)
+    const player = api.createSprite({ x: 0, y: 0, w: 24, h: 24 })
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+
+    try {
+      api.onLevelEnter(
+        () => levelA,
+        () => {
+          for (let index = 0; index < 100; index += 1) api.enterLevel(levelB, player)
+        },
+        'tempestade-duplicada',
+      )
+
+      api.enterLevel(levelA, player)
+
+      expect(warning.mock.calls.some(([message]) => String(message).includes('muitas Fases'))).toBe(
+        true,
+      )
+      expect(api.levelIsActive(levelB)).toBe(true)
+    } finally {
+      warning.mockRestore()
+    }
+  })
+
   /**
    * "Quando entrar na Fase → Entrar na Fase" é um engano fácil de montar e era
    * recursivo de verdade: cada entrada abre uma geração nova, então a dedução
@@ -717,6 +820,7 @@ describe('Fases são opcionais e independentes do gênero', () => {
         () => {
           entradas += 1
           if (entradas > 50) return
+          player.x = 77
           if (acao === 'entrar') api.enterLevel(level, player)
           else api.restartLevel(level, player)
         },
@@ -726,9 +830,9 @@ describe('Fases são opcionais e independentes do gênero', () => {
 
       expect(entradas).toBe(1)
       expect(api.levelIsActive(level)).toBe(true)
-      // O reposicionamento aninhado acontece; o que não acontece é o corpo rodar
-      // de novo. A Fase continua utilizável depois do engano.
-      expect(player.x).toBe(10)
+      // A transição inválida inteira é recusada: nem o corpo recursa, nem a
+      // posição que o handler acabou de escolher é desfeita pela tentativa.
+      expect(player.x).toBe(77)
     }
   })
 

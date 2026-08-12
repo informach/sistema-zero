@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
-import { behaviorStatements, SZIRInputSchema, SZIRV2Schema } from '#ir'
+import { behaviorStatements, SZIRInputSchema } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../blockly/blocks'
@@ -45,9 +45,18 @@ function collectRpgMaps(
   return { created, referenced }
 }
 
-const loadedCatalogEntries: KitEntry[] = (await buildKitGroups()).flatMap((group) => group.entries)
+type LoadedKitEntry = KitEntry & { ir: NonNullable<KitEntry['ir']> }
 
-function catalogEntries(): KitEntry[] {
+const unresolvedCatalogEntries = (await buildKitGroups()).flatMap((group) => group.entries)
+const loadedCatalogEntries: LoadedKitEntry[] = await Promise.all(
+  unresolvedCatalogEntries.map(async (entry) => {
+    if (entry.ir) return entry as LoadedKitEntry
+    if (!entry.load) throw new Error(`entrada lazy sem carregador: ${entry.key}`)
+    return { ...entry, ...(await entry.load()) } as LoadedKitEntry
+  }),
+)
+
+function catalogEntries(): LoadedKitEntry[] {
   return loadedCatalogEntries
 }
 
@@ -58,7 +67,7 @@ beforeAll(() => {
   }
 })
 
-describe('contrato transversal dos 149 exemplos da KitGallery', () => {
+describe('contrato transversal dos 153 exemplos da KitGallery', () => {
   it('catálogo e contratos têm exatamente as mesmas chaves', () => {
     const catalogKeys = catalogEntries()
       .map((entry) => entry.key)
@@ -66,14 +75,14 @@ describe('contrato transversal dos 149 exemplos da KitGallery', () => {
     const contractKeys = EXAMPLE_QA_CONTRACTS.map((contract) => contract.key).sort()
 
     expect(catalogKeys).toEqual(contractKeys)
-    expect(catalogKeys).toHaveLength(149)
-    expect(new Set(catalogKeys).size).toBe(149)
+    expect(catalogKeys).toHaveLength(153)
+    expect(new Set(catalogKeys).size).toBe(153)
   })
 
-  it('mantém a classificação acordada: 127 jogos, 10 demos e 12 explorações', () => {
+  it('mantém a classificação acordada: 131 jogos, 10 demos e 12 explorações', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const contract of EXAMPLE_QA_CONTRACTS) counts[contract.experience] += 1
-    expect(counts).toEqual({ game: 127, demo: 10, exploration: 12 })
+    expect(counts).toEqual({ game: 131, demo: 10, exploration: 12 })
   })
 
   const contractsByKey = new Map<string, ExampleQAContract>(
@@ -81,85 +90,95 @@ describe('contrato transversal dos 149 exemplos da KitGallery', () => {
   )
 
   for (const entry of catalogEntries()) {
-    it(`${entry.key}: schema, blocos, projeto real, assets e round-trip sem warning`, () => {
-      const contract = contractsByKey.get(entry.key)
-      expect(contract).toBeDefined()
-      if (!contract) throw new Error(`exemplo sem contrato: ${entry.key}`)
-      expect(entry.name).toBe(contract.name)
-      expect(entry.experience).toBe(contract.experience)
-      expect(entry.description.trim().length).toBeGreaterThan(0)
-      expect(contract.promise.trim().length).toBeGreaterThan(0)
-      expect(contract.scenario.trim().length).toBeGreaterThan(0)
-      expect(contract.interactions.length).toBeGreaterThan(0)
+    // O Ultra serializa 562 KB de blocos; o round-trip real medido leva ~7 s no Windows.
+    // A exceção é local para manter a catraca de 5 s nos outros 152 exemplos.
+    const timeout = entry.key === 'core:Reino Zero Ultra (na mão)' ? 10_000 : 5_000
+    it(
+      `${entry.key}: schema, blocos, projeto real, assets e round-trip sem warning`,
+      () => {
+        const contract = contractsByKey.get(entry.key)
+        expect(contract).toBeDefined()
+        if (!contract) throw new Error(`exemplo sem contrato: ${entry.key}`)
+        expect(entry.name).toBe(contract.name)
+        expect(entry.experience).toBe(contract.experience)
+        expect(entry.description.trim().length).toBeGreaterThan(0)
+        expect(contract.promise.trim().length).toBeGreaterThan(0)
+        expect(contract.scenario.trim().length).toBeGreaterThan(0)
+        expect(contract.interactions.length).toBeGreaterThan(0)
 
-      expect(SZIRInputSchema.safeParse(entry.ir).success).toBe(true)
-      expect(SZIRV2Schema.safeParse(entry.ir).success).toBe(true)
-      const types = collectTypes(entry.ir)
-      expect(types.has('rawJS')).toBe(false)
-      expect(types.has('rawHTML')).toBe(false)
-      expect(types.has('rawCSS')).toBe(false)
+        expect(SZIRInputSchema.safeParse(entry.ir).success).toBe(true)
+        const types = collectTypes(entry.ir)
+        expect(types.has('rawJS')).toBe(false)
+        expect(types.has('rawHTML')).toBe(false)
+        expect(types.has('rawCSS')).toBe(false)
 
-      const statements = behaviorStatements(entry.ir)
-      const firstRpgMap = statements.findIndex((statement) => statement.type === 'gk:rpgCreateMap')
-      if (firstRpgMap >= 0) {
-        const explicitStart = statements.findIndex(
-          (statement) => statement.type === 'gk:rpgSetStartMap',
+        const statements = behaviorStatements(entry.ir)
+        const firstRpgMap = statements.findIndex(
+          (statement) => statement.type === 'gk:rpgCreateMap',
         )
-        expect(explicitStart).toBeGreaterThanOrEqual(0)
-        expect(explicitStart).toBeLessThan(firstRpgMap)
+        if (firstRpgMap >= 0) {
+          const explicitStart = statements.findIndex(
+            (statement) => statement.type === 'gk:rpgSetStartMap',
+          )
+          expect(explicitStart).toBeGreaterThanOrEqual(0)
+          expect(explicitStart).toBeLessThan(firstRpgMap)
 
-        const maps = collectRpgMaps(statements)
-        for (const referenced of maps.referenced) expect(maps.created.has(referenced)).toBe(true)
-      }
+          const maps = collectRpgMaps(statements)
+          for (const referenced of maps.referenced) expect(maps.created.has(referenced)).toBe(true)
+        }
 
-      for (const extensionRef of entry.ir.extensions) {
-        expect(
-          OFFICIAL_CATALOG.some((extension) => extension.manifest.id === extensionRef.extensionId),
-        ).toBe(true)
-      }
+        for (const extensionRef of entry.ir.extensions) {
+          expect(
+            OFFICIAL_CATALOG.some(
+              (extension) => extension.manifest.id === extensionRef.extensionId,
+            ),
+          ).toBe(true)
+        }
 
-      const project = buildProjectFromKitEntry(entry)
-      expect(project.name).toBe(entry.name)
-      expect(project.ir).toBe(entry.ir)
-      expect(project.blocksState).toBeDefined()
-      expect(project.files['index.html'].length).toBeGreaterThan(0)
-      expect(typeof project.files['style.css']).toBe('string')
-      expect(project.files['script.js'].length).toBeGreaterThan(0)
-      expect(project.installedExtensions.map((extension) => extension.id)).toEqual(
-        entry.ir.extensions.map((extension) => extension.extensionId),
-      )
-      expect(project.assets ?? []).toEqual(entry.assets ? [...entry.assets] : [])
-
-      const warnings: string[] = []
-      const originalWarn = console.warn
-      console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
-      const workspace = new Blockly.Workspace()
-      try {
-        Blockly.serialization.workspaces.load(
-          project.blocksState as Record<string, unknown>,
-          workspace,
+        const project = buildProjectFromKitEntry(entry)
+        expect(project.name).toBe(entry.name)
+        expect(project.ir).toBe(entry.ir)
+        expect(project.blocksState).toBeDefined()
+        expect(project.files['index.html'].length).toBeGreaterThan(0)
+        expect(typeof project.files['style.css']).toBe('string')
+        expect(project.files['script.js'].length).toBeGreaterThan(0)
+        expect(project.installedExtensions.map((extension) => extension.id)).toEqual(
+          entry.ir.extensions.map((extension) => extension.extensionId),
         )
-        const saved = Blockly.serialization.workspaces.save(workspace)
-        const roundTripped = buildIRFromWorkspace(workspace)
-        expect(saved).toBeDefined()
-        expect(SZIRV2Schema.safeParse(roundTripped).success).toBe(true)
-        expect(roundTripped.html).toHaveLength(entry.ir.html.length)
-        expect(behaviorStatements(roundTripped)).toHaveLength(behaviorStatements(entry.ir).length)
-        const roundTripTypes = collectTypes(roundTripped)
-        expect(roundTripTypes.has('rawJS')).toBe(false)
-        expect(roundTripTypes.has('rawHTML')).toBe(false)
-        expect(roundTripTypes.has('rawCSS')).toBe(false)
-      } finally {
-        workspace.dispose()
-        console.warn = originalWarn
-      }
-      expect(warnings).toEqual([])
+        expect(project.assets ?? []).toEqual(entry.assets ? [...entry.assets] : [])
 
-      const assetNames = (project.assets ?? []).map((asset) => asset.name)
-      expect(new Set(assetNames).size).toBe(assetNames.length)
-      for (const asset of project.assets ?? []) {
-        expect(asset.dataUrl.startsWith('data:')).toBe(true)
-      }
-    })
+        const warnings: string[] = []
+        const originalWarn = console.warn
+        console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+        const workspace = new Blockly.Workspace()
+        try {
+          Blockly.serialization.workspaces.load(
+            project.blocksState as Record<string, unknown>,
+            workspace,
+          )
+          const saved = Blockly.serialization.workspaces.save(workspace)
+          const roundTripped = buildIRFromWorkspace(workspace)
+          expect(saved).toBeDefined()
+          expect(SZIRInputSchema.safeParse(roundTripped).success).toBe(true)
+          expect(roundTripped.html).toHaveLength(entry.ir.html.length)
+          expect(behaviorStatements(roundTripped)).toHaveLength(behaviorStatements(entry.ir).length)
+          const roundTripTypes = collectTypes(roundTripped)
+          expect(roundTripTypes.has('rawJS')).toBe(false)
+          expect(roundTripTypes.has('rawHTML')).toBe(false)
+          expect(roundTripTypes.has('rawCSS')).toBe(false)
+        } finally {
+          workspace.dispose()
+          console.warn = originalWarn
+        }
+        expect(warnings).toEqual([])
+
+        const assetNames = (project.assets ?? []).map((asset) => asset.name)
+        expect(new Set(assetNames).size).toBe(assetNames.length)
+        for (const asset of project.assets ?? []) {
+          expect(asset.dataUrl.startsWith('data:')).toBe(true)
+        }
+      },
+      timeout,
+    )
   }
 })

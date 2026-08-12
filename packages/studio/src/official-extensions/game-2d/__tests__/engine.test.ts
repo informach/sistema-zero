@@ -12,6 +12,7 @@ interface Sprite {
   vx: number
   vy: number
   facing?: number
+  direction?: 'left' | 'right' | 'up' | 'down'
   hp?: number
   hpMax?: number
   blinkFrames?: number
@@ -208,6 +209,9 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(gen({ type: 'g2d:flipSprite', spriteVar: 'jogador', dir: 'left' })).toBe(
       'SZGame2D.flipSprite(jogador, "left");',
     )
+    expect(gen({ type: 'g2d:flipSprite', spriteVar: 'jogador', dir: 'up' })).toBe(
+      'SZGame2D.flipSprite(jogador, "up");',
+    )
     expect(gen({ type: 'g2d:setOpacity', spriteVar: 'jogador', percent: 50 })).toBe(
       'SZGame2D.setOpacity(jogador, 50);',
     )
@@ -251,6 +255,10 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(api.cooldownReady(a, 3)).toBe(true) // exatamente 3 chamadas depois
     api.flipSprite(a, 'left')
     expect(a.facing).toBe(-1)
+    expect(a.direction).toBe('left')
+    api.flipSprite(a, 'up')
+    expect(a.facing).toBe(1)
+    expect(a.direction).toBe('up')
     api.scaleSprite(b, 2)
     expect(b.w).toBe(20)
   })
@@ -353,6 +361,15 @@ describe('game-2d — gerador dos novos statements', () => {
         },
       },
     ])
+  })
+
+  it('o parser aceita só as quatro direções do bloco de virar', () => {
+    expect(parseJS('SZGame2D.flipSprite(jogador, "down");')).toMatchObject([
+      { type: 'g2d:flipSprite', spriteVar: 'jogador', dir: 'down' },
+    ])
+    expect(JSON.stringify(parseJS('SZGame2D.flipSprite(jogador, "diagonal");'))).not.toContain(
+      'g2d:flipSprite',
+    )
   })
 
   it('Tier 2: gerador de comandos (câmera, mapa, ordem, depuração)', () => {

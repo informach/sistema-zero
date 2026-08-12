@@ -81,6 +81,8 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:spawnEnemy': 'varName',
   'g2d:createTileMap': 'varName',
   'g2d:createTileMapFromAsset': 'varName',
+  'g2d:createVectorTileset': 'varName',
+  'g2d:createVectorTileMap': 'varName',
   'g2d:createWorld': 'varName',
   'g2d:createWorldFromTileMap': 'varName',
   'g2d:createLevel': 'varName',

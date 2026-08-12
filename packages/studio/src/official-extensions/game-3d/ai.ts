@@ -101,6 +101,22 @@ Física genérica (SEM lib; gravidade + colisão AABB de empurrar-para-fora):
 - fpsControls(obj, world, speed): preset 1ª pessoa (WASD na direção que o corpo olha — combine c/ fpsCamera).
 - resolveCollision(a, b): empurra A para fora de B (colisão manual de 2 objetos).
 
+Plataforma clássica de lado (jogo de correr e pular, tipo os antigos de console):
+- classicPlatformer(obj, world, speed, jump): anda SÓ no eixo X, com aceleração e derrapagem;
+  Shift corre no dobro da velocidade; o pulo fica mais alto quanto mais tempo o botão fica
+  apertado, e não repica sozinho com o botão preso. Chame dentro do animate. É diferente do
+  platformerControls, que anda em X e Z com velocidade fixa e pulo de altura fixa.
+- keyPressed("Space"): verdadeiro só no quadro em que a tecla desceu (keyDown é enquanto segura).
+- forEachHit(obj, lado, (batida) => {...}): percorre as batidas do último stepBody. Lados:
+  "qualquer", "pes" (pousou em cima de algo), "cabeca" (bateu por baixo), "esquerda", "direita",
+  "frente", "tras". É assim que se faz pisar num inimigo, dar cabeçada num bloco e fazer o
+  inimigo virar ao esbarrar na parede — cada um é um lado diferente do mesmo choque.
+- hitIs(batida, obj): a batida foi contra este objeto?
+- carryRiders(obj): quem está em pé nele anda junto (elevador, plataforma móvel).
+- passUnder(obj): dá para atravessar de baixo para cima, mas dá para pousar em cima.
+- setObjectValue(obj, "chave", valor) / objectValue(obj, "chave"): gaveta por objeto
+  (direção que o inimigo anda, tempo de espera, quantas vidas tem).
+
 Câmeras vivas (manuais, sem addon):
 - fpsCamera(world, obj): câmera em perspectiva nos olhos do objeto + olhar com o mouse (pointer-lock; clique trava), mesmo se a cena estava usando câmera ortográfica. Combine c/ fpsControls.
 - orbitCamera(world, target): gira ao redor do alvo arrastando o mouse (roda = zoom).
@@ -117,6 +133,11 @@ Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, 
 - setColor(obj, "#cor") / setOpacity(obj, 0..1) / setMaterial(obj, "normal"|"metal"|"glass"|"glow"|"wireframe"):
   mudam a aparência da superfície.
 - setTexture(obj, "nomeDoAsset"): veste o objeto com uma imagem embutida (asset adicionado ao projeto).
+- paintPattern(obj, estampa, "#corA", "#corB"): desenha a textura NA HORA, sem imagem nenhuma
+  ("tijolo", "pedra", "terra", "grama", "interrogacao", "cano", "nuvem", "agua", "lava",
+  "moeda", "xadrez", "listras"), repetindo conforme o tamanho do objeto. É o caminho para um
+  jogo inteiro sem depender de arquivo de imagem.
+- noShadow(obj): tira do passe de sombra (continua recebendo). Deixa cenário grande mais leve.
 - setVisible(obj, "show"|"hide"): mostra/esconde e também retira o objeto das consultas de mira enquanto estiver oculto. remove(world, obj): tira da cena e dos registros de física e seleção.
 - createModel(world) -> grupo vazio; addToModel(model, peca): junta peças da mesma cena num modelo (mover o modelo move tudo junto).
 

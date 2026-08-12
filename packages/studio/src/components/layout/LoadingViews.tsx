@@ -16,7 +16,7 @@ export function Spinner({ className }: { className?: string }): JSX.Element {
     <span
       aria-hidden="true"
       className={[
-        'inline-block animate-spin rounded-full border-2 border-sz-border border-t-sz-accent',
+        'inline-block animate-spin rounded-full border-2 border-sz-border border-t-sz-accent motion-reduce:animate-none',
         className ?? 'h-6 w-6',
       ].join(' ')}
     />
@@ -40,16 +40,16 @@ export function EditorSkeleton({ message }: { message: string }): JSX.Element {
     <div aria-busy="true" className="flex h-full w-full flex-col bg-sz-bg">
       {/* Barra de abas fantasma */}
       <div className="flex items-center gap-2 border-b border-sz-border bg-sz-panel px-3 py-2">
-        <div className="h-4 w-20 animate-pulse rounded bg-sz-border" />
-        <div className="h-4 w-16 animate-pulse rounded bg-sz-border/70" />
-        <div className="h-4 w-16 animate-pulse rounded bg-sz-border/50" />
+        <div className="h-4 w-20 animate-pulse rounded bg-sz-border motion-reduce:animate-none" />
+        <div className="h-4 w-16 animate-pulse rounded bg-sz-border/70 motion-reduce:animate-none" />
+        <div className="h-4 w-16 animate-pulse rounded bg-sz-border/50 motion-reduce:animate-none" />
       </div>
       {/* Linhas de código fantasma */}
       <div className="flex flex-1 flex-col gap-2.5 p-4">
         {SKELETON_LINES.map((line) => (
           <div
             key={line.w}
-            className={`h-3.5 ${line.w} animate-pulse rounded bg-sz-border/60`}
+            className={`h-3.5 ${line.w} animate-pulse rounded bg-sz-border/60 motion-reduce:animate-none`}
             style={{ animationDelay: `${line.delay}ms` }}
           />
         ))}

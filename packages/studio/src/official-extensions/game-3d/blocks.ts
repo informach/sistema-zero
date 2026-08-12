@@ -250,6 +250,70 @@ export const gameThreeDBlocks = [
 
   // ---- Perguntas (booleanos) — caem dentro de um "se" ----
   {
+    type: 'sz_g3d_stage_value',
+    message0: '%1 da fase da cena %2',
+    args0: [
+      { type: 'field_dropdown', name: 'FIELD', options: GAME3D_DROPDOWN_OPTIONS.stageField },
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+    ],
+    output: 'JSValue',
+    tooltip: 'Lê o placar da fase: pontos, moedas, vidas, tempo, mundo e fase.',
+  },
+  {
+    type: 'sz_g3d_stage_is',
+    message0: 'a fase da cena %1 %2?',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'field_dropdown', name: 'STATUS', options: GAME3D_DROPDOWN_OPTIONS.stageStatus },
+    ],
+    output: 'JSValue',
+    tooltip: 'Pergunta se a fase acabou, foi vencida, foi perdida ou se acabaram as vidas.',
+  },
+  {
+    type: 'sz_g3d_hero_is',
+    message0: 'o herói %1 está %2?',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'heroi', kind: 'g3d-object' },
+      { type: 'field_dropdown', name: 'WHAT', options: GAME3D_DROPDOWN_OPTIONS.heroStatus },
+    ],
+    output: 'JSValue',
+    tooltip: 'Pergunta o estado do herói: pequeno, grande, de fogo, invencível ou no chão.',
+  },
+  {
+    type: 'sz_g3d_key_pressed',
+    message0: 'a tecla %1 foi apertada agora?',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'KEY',
+        options: GAME3D_DROPDOWN_OPTIONS.key,
+      },
+    ],
+    output: 'JSValue',
+    tooltip:
+      'Verdadeiro só no quadro em que a tecla desceu. Segurar a tecla não conta de novo: é o que faz atirar uma vez por toque.',
+  },
+  {
+    type: 'sz_g3d_hit_is',
+    message0: 'a batida %1 foi contra %2?',
+    args0: [
+      { type: 'field_name_picker', name: 'HIT', text: 'batida', kind: 'g3d-object' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'bloco', kind: 'object3d' },
+    ],
+    output: 'JSValue',
+    tooltip: 'Diz se aquela batida foi contra este objeto.',
+  },
+  {
+    type: 'sz_g3d_object_value',
+    message0: '%1 do objeto %2',
+    args0: [
+      { type: 'field_input', name: 'KEY', text: 'direcao' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'item', kind: 'g3d-object' },
+    ],
+    output: 'JSValue',
+    tooltip: 'Lê o que foi guardado na gaveta desse objeto. Vale 0 se nunca guardaram nada.',
+  },
+  {
     type: 'sz_g3d_key_down',
     message0: 'a tecla %1 está apertada?',
     args0: [
@@ -1227,6 +1291,221 @@ export const gameThreeDBlocks = [
     tooltip:
       'Anda com WASD/setas + pula no espaço, com gravidade e colisão. Use dentro de "A cada quadro 3D".',
   },
+  // ---- 🍄 Kit Plataforma: correr e pular de lado ----
+  {
+    type: 'sz_g3d_create_platform_scene',
+    placement: 'start-only-command',
+    message0: 'Criar cena de plataforma 3D no canvas %1 e guardar em %2',
+    args0: [
+      { type: 'field_input', name: 'CANVAS', text: 'tela' },
+      { type: 'field_name_picker', name: 'VAR', text: 'jogo', kind: 'g3d-world' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Prepara tudo de uma vez para um jogo de correr e pular: céu, luz e a câmera de lado.',
+  },
+  {
+    type: 'sz_g3d_create_hero',
+    placement: 'start-only-command',
+    message0: 'Criar o herói %1 na cena %2 com a cor %3',
+    args0: [
+      { type: 'field_name_picker', name: 'VAR', text: 'heroi', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'field_colour', name: 'COLOR', colour: '#e03010' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Cria o personagem que você controla, já com peso e colisão.',
+  },
+  {
+    type: 'sz_g3d_stage_theme',
+    placement: 'command',
+    message0: 'Na cena %1 usar o cenário %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'field_dropdown', name: 'THEME', options: GAME3D_DROPDOWN_OPTIONS.stageTheme },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Troca o clima da fase: céu, cores do chão e neblina.',
+  },
+  {
+    type: 'sz_g3d_load_stage',
+    placement: 'command',
+    message0: 'Na cena %1 montar a fase %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'input_value', name: 'MAP', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Desenha a fase a partir do mapa escrito. Cada assunto vem separado por ponto e vírgula: chao, tijolo, surpresa, solido, cano, moeda, inimigo, mastro, castelo, checkpoint, tempo e tema.',
+  },
+  {
+    type: 'sz_g3d_clear_stage',
+    placement: 'command',
+    message0: 'Limpar a fase da cena %1',
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Tira todas as peças da fase da tela (use antes de montar outra).',
+  },
+  {
+    type: 'sz_g3d_stage_reset',
+    placement: 'command',
+    message0: 'Recomeçar a fase da cena %1',
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Devolve inimigos, moedas e blocos ao começo, e leva o herói para o início ou para o checkpoint.',
+  },
+  {
+    type: 'sz_g3d_stage_step',
+    placement: 'loop-command',
+    message0: 'Atualizar a fase da cena %1 com o herói %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'heroi', kind: 'g3d-object' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Um quadro do jogo: move os inimigos, confere as batidas, os itens, o relógio e vai montando a fase à frente. Use dentro de "A cada quadro 3D".',
+  },
+  {
+    type: 'sz_g3d_side_camera',
+    placement: 'loop-command',
+    message0: 'Câmera de lado na cena %1 seguindo %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'heroi', kind: 'g3d-object' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Acompanha o herói para a direita e nunca volta para trás, como nos jogos antigos de plataforma.',
+  },
+  {
+    type: 'sz_g3d_shoot_fire',
+    placement: 'loop-command',
+    message0: 'Soltar uma bola de fogo de %2 na cena %1',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'heroi', kind: 'g3d-object' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Só funciona depois da flor de fogo. A bola quica no chão, some longe e derrete o inimigo que encostar (no máximo três de cada vez).',
+  },
+  {
+    type: 'sz_g3d_stage_number',
+    placement: 'command',
+    message0: 'Na cena %1 é o mundo %2 fase %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'input_value', name: 'WORLDN', check: 'JSValue' },
+      { type: 'input_value', name: 'STAGEN', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Diz em que mundo e em que fase o jogador está (aparece no placar).',
+  },
+  {
+    type: 'sz_g3d_on_stage_event',
+    placement: 'start-only-command',
+    bodyExecution: 'deferred-callback',
+    message0: 'Quando na fase %1 acontecer %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
+      { type: 'field_dropdown', name: 'EVENT', options: GAME3D_DROPDOWN_OPTIONS.stageEvent },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Roda os blocos de dentro toda vez que aquilo acontecer na fase. Um aviso por acontecimento.',
+  },
+  {
+    type: 'sz_g3d_classic_platformer',
+    placement: 'loop-command',
+    message0: 'controle de plataforma clássica para %1 no mundo %2 (velocidade %3, pulo %4)',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'JUMP', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Anda só para os lados, mas com peso: acelera, derrapa ao virar, corre no dobro segurando Shift e pula mais alto quanto mais tempo você segura o botão. Use dentro de "A cada quadro 3D".',
+  },
+  {
+    type: 'sz_g3d_carry_riders',
+    placement: 'start-only-command',
+    message0: 'fazer %1 carregar quem está em cima',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'plataforma', kind: 'object3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Quem estiver em pé nessa plataforma anda junto com ela. Serve para elevadores e plataformas que se movem.',
+  },
+  {
+    type: 'sz_g3d_pass_under',
+    placement: 'start-only-command',
+    message0: 'fazer %1 ser atravessável por baixo',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'plataforma', kind: 'object3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Dá para pular por dentro dela de baixo para cima, mas dá para pousar em cima. É a plataforma dos jogos de pulo.',
+  },
+  {
+    type: 'sz_g3d_for_each_hit',
+    placement: 'command',
+    bodyExecution: 'sync-callback',
+    message0: 'Para cada batida de %1 com %2, chamando de %3',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
+      { type: 'field_dropdown', name: 'SIDE', options: GAME3D_DROPDOWN_OPTIONS.hitSide },
+      { type: 'field_input', name: 'ITEM', text: 'batida' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Repete os blocos de dentro para cada coisa em que o objeto encostou no último passo de física, do lado escolhido. Pisar em cima, bater a cabeça e esbarrar de lado são batidas diferentes.',
+  },
+  {
+    type: 'sz_g3d_set_object_value',
+    placement: 'command',
+    message0: 'guardar %1 em %2 do objeto %3',
+    args0: [
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+      { type: 'field_input', name: 'KEY', text: 'direcao' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'item', kind: 'g3d-object' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Cada objeto tem uma gaveta própria: guarde nela a direção que ele anda, quanto tempo falta, quantas vidas tem.',
+  },
   {
     type: 'sz_g3d_fps_controls',
     placement: 'loop-command',
@@ -1492,6 +1771,32 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip: 'Põe uma imagem (asset adicionado ao projeto) na superfície do objeto.',
+  },
+  {
+    type: 'sz_g3d_paint_pattern',
+    placement: 'start-only-command',
+    message0: 'Pintar %1 com a estampa %2 nas cores %3 e %4',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
+      { type: 'field_dropdown', name: 'PATTERN', options: GAME3D_DROPDOWN_OPTIONS.pattern },
+      { type: 'field_colour', name: 'COLOR_A', colour: '#b5651d' },
+      { type: 'field_colour', name: 'COLOR_B', colour: '#f2d0a4' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Desenha a estampa na hora, sem precisar de imagem nenhuma, e repete o desenho conforme o tamanho do objeto.',
+  },
+  {
+    type: 'sz_g3d_no_shadow',
+    placement: 'start-only-command',
+    message0: 'deixar %1 sem sombra',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'O objeto para de projetar sombra (continua recebendo). Deixa o jogo mais leve quando o cenário tem muitas peças.',
   },
 
   // ---- GENÉRICOS: luz & céu (Fase 7) ----
@@ -1817,11 +2122,14 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
     name: '❓ Perguntas',
     types: [
       'sz_g3d_key_down',
+      'sz_g3d_key_pressed',
       'sz_g3d_collides',
       'sz_g3d_hit_any',
+      'sz_g3d_hit_is',
       'sz_g3d_touches_box',
       'sz_g3d_distance_to',
       'sz_g3d_is_near',
+      'sz_g3d_object_value',
     ],
   },
   {
@@ -1866,8 +2174,13 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
       'sz_g3d_step_body',
       'sz_g3d_set_solid',
       'sz_g3d_platformer_controls',
+      'sz_g3d_classic_platformer',
       'sz_g3d_fps_controls',
       'sz_g3d_resolve_collision',
+      'sz_g3d_for_each_hit',
+      'sz_g3d_carry_riders',
+      'sz_g3d_pass_under',
+      'sz_g3d_set_object_value',
     ],
   },
   {
@@ -1895,7 +2208,14 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
   },
   {
     name: '🎨 Aparência',
-    types: ['sz_g3d_set_color', 'sz_g3d_set_opacity', 'sz_g3d_set_material', 'sz_g3d_set_texture'],
+    types: [
+      'sz_g3d_set_color',
+      'sz_g3d_set_opacity',
+      'sz_g3d_set_material',
+      'sz_g3d_set_texture',
+      'sz_g3d_paint_pattern',
+      'sz_g3d_no_shadow',
+    ],
   },
   {
     name: '💡 Luz & céu',
@@ -1985,6 +2305,25 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🍄 Kit Plataforma',
+    types: [
+      'sz_g3d_create_platform_scene',
+      'sz_g3d_create_hero',
+      'sz_g3d_stage_theme',
+      'sz_g3d_load_stage',
+      'sz_g3d_stage_step',
+      'sz_g3d_side_camera',
+      'sz_g3d_shoot_fire',
+      'sz_g3d_on_stage_event',
+      'sz_g3d_stage_number',
+      'sz_g3d_stage_reset',
+      'sz_g3d_clear_stage',
+      'sz_g3d_stage_value',
+      'sz_g3d_stage_is',
+      'sz_g3d_hero_is',
+    ],
+  },
+  {
     name: '📦 Kit Empilhar',
     types: [
       'sz_g3d_create_stack_scene',
@@ -2030,6 +2369,7 @@ const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
 const leftover = gameThreeDBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
+const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
 
 /**
  * Sombras dos soquetes de valor do Jogo 3D na paleta (espelho do `G2D_SOCKET_SHADOWS`):
@@ -2067,6 +2407,12 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3d_move_forward: { DIST: numShadow(0.05) },
   sz_g3d_body: { GRAVITY: numShadow(-0.01) },
   sz_g3d_platformer_controls: { SPEED: numShadow(0.08), JUMP: numShadow(0.18) },
+  sz_g3d_classic_platformer: { SPEED: numShadow(0.08), JUMP: numShadow(0.2) },
+  sz_g3d_set_object_value: { VALUE: numShadow(1) },
+  sz_g3d_stage_number: { WORLDN: numShadow(1), STAGEN: numShadow(1) },
+  // O mapa é SOQUETE, não campo: assim o programa guarda as 32 fases numa lista
+  // e escolhe pelo número da fase, em vez de empilhar 32 blocos iguais.
+  sz_g3d_load_stage: { MAP: txtShadow('chao=0-40;mastro=36;castelo=38') },
   sz_g3d_fps_controls: { SPEED: numShadow(0.08) },
   sz_g3d_third_person_camera: { DIST: numShadow(6), HEIGHT: numShadow(3) },
   sz_g3d_set_fov: { DEG: numShadow(60) },

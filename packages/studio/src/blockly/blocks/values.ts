@@ -181,6 +181,14 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
       'Verdadeiro se o aparelho/navegador está no tema escuro (prefers-color-scheme: dark). Use num "se" para escolher as cores.',
   },
   {
+    type: 'sz_val_system_reduced_motion',
+    message0: 'o sistema prefere movimento reduzido?',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro quando o aparelho pede menos animação (prefers-reduced-motion: reduce). Use para reduzir balanços, zooms e transições.',
+  },
+  {
     type: 'sz_val_date_part',
     message0: 'agora: %1',
     args0: [
@@ -302,6 +310,15 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip:
       'A tecla do evento de teclado. "a tecla" = a letra/seta (ex.: "w", "ArrowUp"); "o código da tecla" = a posição física, independente do idioma (ex.: "KeyW", "Space"). Só funciona dentro de um bloco de evento de teclado.',
+  },
+  {
+    type: 'sz_val_event_pointer_id',
+    placement: { root: [], nested: ['event-body'], role: 'value' },
+    message0: 'identificador do toque/ponteiro',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Identifica qual dedo, caneta ou mouse disparou o evento. Útil para controles multitoque.',
   },
   {
     type: 'sz_val_vector2d',
@@ -452,6 +469,62 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     tooltip: 'Lê um dado guardado num elemento.',
   },
   {
+    type: 'sz_val_json_data',
+    message0: 'dados %1',
+    args0: [{ type: 'field_json_data', name: 'JSON', text: '{}' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Cria um objeto, lista ou valor a partir de JSON validado.',
+  },
+  {
+    type: 'sz_val_json_parse',
+    message0: 'converter texto JSON %1 em dados',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Converte um texto JSON em objeto, lista ou valor.',
+  },
+  {
+    type: 'sz_val_json_stringify',
+    message0: 'converter dados %1 em texto JSON',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Converte dados em texto JSON para salvar ou transmitir.',
+  },
+  {
+    type: 'sz_val_gamepad_connected',
+    message0: 'controle %1 está conectado?',
+    args0: [{ type: 'input_value', name: 'INDEX', check: 'JSValue' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando o controle indicado está conectado.',
+  },
+  {
+    type: 'sz_val_gamepad_axis',
+    message0: 'eixo %2 do controle %1',
+    args0: [
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+      { type: 'input_value', name: 'AXIS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Lê um eixo do controle entre -1 e 1, com zona morta segura.',
+  },
+  {
+    type: 'sz_val_gamepad_button',
+    message0: 'botão %2 do controle %1',
+    args0: [
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+      { type: 'input_value', name: 'BUTTON', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Lê a pressão de um botão do controle entre 0 e 1.',
+  },
+  {
     type: 'sz_val_storage_get',
     message0: 'ler de %1 a chave %2',
     args0: [
@@ -468,6 +541,25 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip: 'Lê um valor salvo no navegador. Devolve texto ou nulo.',
+  },
+  {
+    type: 'sz_val_storage_get_dynamic',
+    message0: 'ler de %1 a chave calculada %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'STORE',
+        options: [
+          ['permanente (fica entre visitas)', 'local'],
+          ['só nesta sessão (zera ao fechar)', 'session'],
+        ],
+      },
+      { type: 'input_value', name: 'KEY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Lê uma informação usando uma chave vinda de outro bloco de valor.',
   },
   {
     type: 'sz_val_class_contains',

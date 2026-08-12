@@ -8,6 +8,7 @@
  *   - `window.__szAudio.tocar("moeda")` → toca uma vez.
  *   - `window.__szAudio.tocarSemParar("musica")` → em loop (UMA trilha por vez).
  *   - `window.__szAudio.parar("moeda")` / `.pararMusica()` / `.volume(0..10)`.
+ *   - `.tom(onda, hz, ms, volume)` / `.ruido(ms, volume)` → efeitos sintetizados.
  *
  * ⚠️ Existe porque o núcleo não tinha ÁUDIO NENHUM: nem bipe, nem arquivo. A
  * criança podia enviar um mp3 no painel "Imagens e sons" e não havia bloco para
@@ -117,6 +118,71 @@ export function buildAudioRuntime(): string {
     if (!el) return;
     try { el.pause(); el.currentTime = 0; el.loop = false; } catch (e) {}
   }
+  var audioCtx = null;
+  function contexto() {
+    if (audioCtx && audioCtx.state !== 'closed') return audioCtx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = AC ? new AC() : null;
+    } catch (e) { audioCtx = null; }
+    return audioCtx;
+  }
+  function nivelSintese(valor) {
+    var n = Number(valor);
+    if (!isFinite(n)) n = 6;
+    return volume * Math.max(0, Math.min(10, n)) / 10;
+  }
+  function tom(onda, frequencia, duracao, nivel) {
+    var wave = onda === 'square' || onda === 'sawtooth' || onda === 'triangle' ? onda : 'sine';
+    var hz = Math.max(20, Math.min(20000, Number(frequencia) || 440));
+    var ms = Math.max(8, Math.min(10000, Number(duracao) || 120));
+    if (!gesto) { esperando.__sintese = function () { tom(wave, hz, ms, nivel); }; return; }
+    var amplitude = nivelSintese(nivel);
+    if (amplitude <= 0) return;
+    var ctx = contexto();
+    if (!ctx) return;
+    try {
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      var now = ctx.currentTime;
+      var end = now + ms / 1000;
+      osc.type = wave;
+      osc.frequency.setValueAtTime(hz, now);
+      gain.gain.setValueAtTime(Math.max(0.0001, amplitude), now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, end);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(end);
+    } catch (e) {}
+  }
+  function ruido(duracao, nivel) {
+    var ms = Math.max(8, Math.min(5000, Number(duracao) || 100));
+    if (!gesto) { esperando.__sintese = function () { ruido(ms, nivel); }; return; }
+    var amplitude = nivelSintese(nivel);
+    if (amplitude <= 0) return;
+    var ctx = contexto();
+    if (!ctx) return;
+    try {
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      var frames = Math.max(1, Math.floor(ctx.sampleRate * ms / 1000));
+      var buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < frames; i += 1) data[i] = Math.random() * 2 - 1;
+      var source = ctx.createBufferSource();
+      var gain = ctx.createGain();
+      var now = ctx.currentTime;
+      var end = now + ms / 1000;
+      source.buffer = buffer;
+      gain.gain.setValueAtTime(Math.max(0.0001, amplitude), now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, end);
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.start(now);
+      source.stop(end);
+    } catch (e) {}
+  }
   window.__szAudio = {
     carregar: carregar,
     tocar: function (nome) { pedir(chave(nome), false); },
@@ -132,6 +198,8 @@ export function buildAudioRuntime(): string {
     },
     parar: parar,
     pararMusica: function () { if (trilha) parar(trilha); },
+    tom: tom,
+    ruido: ruido,
     volume: function (nivel) {
       var n = Number(nivel);
       if (!isFinite(n)) n = 8;

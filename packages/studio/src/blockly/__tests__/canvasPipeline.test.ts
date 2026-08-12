@@ -170,7 +170,7 @@ describe('Auditoria Canvas — pipeline completo dos 55 blocos', () => {
   }
 })
 
-describe('Auditoria Canvas — todas as 17 escolhas dos menus', () => {
+describe('Auditoria Canvas — todas as 11 escolhas dos menus', () => {
   const cases = CANVAS_BLOCKS.flatMap((definition) =>
     dropdowns(definition).flatMap((field) =>
       (field.options ?? []).map(([, value]) => ({ definition, field: field.name ?? '', value })),
@@ -178,7 +178,19 @@ describe('Auditoria Canvas — todas as 17 escolhas dos menus', () => {
   )
 
   it('inventário esperado', () => {
-    expect(cases).toHaveLength(17)
+    expect(cases).toHaveLength(11)
+  })
+
+  it('a tecla livre preserva letras, números e teclas especiais', () => {
+    const definition = CANVAS_BLOCKS.find((item) => item.type === 'sz_input_key_pressed')
+    if (!definition) throw new Error('bloco de tecla ausente')
+    for (const key of ['x', '2', 'Escape', 'Delete']) {
+      const { ir } = buildCase(definition, (block) => block.setFieldValue(key, 'KEY'))
+      expect(stripIds(throughBlocks(ir))).toEqual(stripIds(ir))
+      const statements = behaviorStatements(ir)
+      expect(JSON.stringify(statements)).toContain(`"key":"${key}"`)
+      expect(stripIds(parseJS(generateJS({ statements })))).toEqual(stripIds(statements))
+    }
   })
 
   for (const { definition, field, value } of cases) {

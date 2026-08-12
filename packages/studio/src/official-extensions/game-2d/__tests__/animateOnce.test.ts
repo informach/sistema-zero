@@ -40,26 +40,43 @@ interface Api {
     fps: number,
   ) => void
   autoAnimate: (s: Sprite) => void
+  gameLoop: (fn: () => void, id?: string) => () => void
 }
 
-function load(): { api: Api; clock: { t: number } } {
+function load(): { api: Api; clock: { t: number }; step: (timestamp: number) => void } {
   const clock = { t: 0 }
+  let nextFrame: ((timestamp: number) => void) | null = null
   const win = {
     addEventListener() {},
     SZGame2D: undefined,
     performance: { now: () => clock.t },
     devicePixelRatio: 1,
   } as unknown as Record<string, unknown>
-  new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
-  return { api: win.SZGame2D as Api, clock }
+  new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(
+    win,
+    (callback: (timestamp: number) => void) => {
+      nextFrame = callback
+      return 1
+    },
+  )
+  return {
+    api: win.SZGame2D as Api,
+    clock,
+    step(timestamp) {
+      clock.t = timestamp
+      const callback = nextFrame
+      nextFrame = null
+      callback?.(timestamp)
+    },
+  }
 }
 
 /** Sprite + folha prontos, com a animação de 4 quadros a 8 fps (500 ms no total). */
 function cena() {
-  const { api, clock } = load()
+  const { api, clock, step } = load()
   const sprite = api.createSprite({ x: 0, y: 0, w: 16, h: 16, color: '#fff' })
   const sheet = api.loadSpriteSheet('brilho', 16, 16)
-  return { api, clock, sprite, sheet }
+  return { api, clock, step, sprite, sheet }
 }
 
 describe('animação de uma vez', () => {
@@ -89,6 +106,24 @@ describe('animação de uma vez', () => {
     }
     clock.t = 500
     expect(api.animationEnded(sprite)).toBe(true)
+  })
+
+  it('a pilha “animar uma vez → acabou?” observa o fim sem reiniciar no mesmo loop', () => {
+    const { api, step, sprite, sheet } = cena()
+    let endedInsideLoop = false
+
+    api.gameLoop(() => {
+      api.playAnimationOnce(sprite, sheet, 0, 3, 8)
+      endedInsideLoop = api.animationEnded(sprite)
+    }, 'animar-e-perguntar')
+
+    step(0)
+    expect(endedInsideLoop).toBe(false)
+    expect(sprite.anim?.start).toBe(0)
+
+    step(500)
+    expect(endedInsideLoop).toBe(true)
+    expect(sprite.anim?.start).toBe(0)
   })
 
   it('⭐ depois de ACABAR, chamar de novo REINICIA (o "golpe" apertado 2 vezes)', () => {

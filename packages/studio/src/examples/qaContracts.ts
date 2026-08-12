@@ -37,6 +37,16 @@ export interface ExampleQAContract {
  */
 export const EXAMPLE_QA_CONTRACTS = [
   {
+    key: 'core:Reino Zero Ultra (na mão)',
+    name: 'Reino Zero Ultra (na mão)',
+    experience: 'game',
+    promise:
+      'Atravessar uma campanha profissional de plataforma feita só com blocos nativos, sem extensão.',
+    scenario:
+      'Começar com Enter, jogar em cooperação local, correr, pular, coletar moedas e gemas, ativar checkpoints, vencer guardiões, salvar o progresso e reproduzir o replay com R.',
+    interactions: ['start', 'arrows', 'wasd', 'space', 'escape'],
+  },
+  {
     key: 'game-2d:Pegue a moeda',
     name: 'Pegue a moeda',
     experience: 'game',
@@ -323,6 +333,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Apresentar a base mínima de personagem e movimento.',
     scenario: 'Abrir pelo botão Jogar e mover o personagem pelas setas.',
     interactions: ['click', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Reino Zero Pro',
+    name: 'Reino Zero Pro',
+    experience: 'game',
+    promise:
+      'Explorar uma campanha vetorial profissional com oito mundos, 32 fases, segredos, gemas e guardiões.',
+    scenario:
+      'Começar, correr e pular, usar checkpoints e poderes, descobrir rotas secretas, vencer os oito guardiões, salvar e repetir uma partida.',
+    interactions: ['start', 'arrows', 'space'],
   },
   {
     key: 'game-2d-advanced:Caça-moedas profissional',
@@ -683,6 +703,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Mover o cursor com as setas, colocar com espaço, trocar o tipo com 1 e quebrar com o clique.',
     interactions: ['arrows', 'space', 'digit-1', 'click'],
+  },
+  {
+    key: 'game-3d:Reino Cogumelo',
+    name: 'Reino Cogumelo',
+    experience: 'game',
+    promise:
+      'Um jogo de correr e pular com 32 fases: pisar nos inimigos, quebrar tijolos, achar blocos escondidos e chegar ao mastro antes do tempo acabar.',
+    scenario:
+      'Andar com as setas, correr com shift e pular no espaco; pisar num inimigo, dar cabecada num bloco de surpresa, pegar a moeda e seguir ate o mastro da fase.',
+    interactions: ['arrows', 'space'],
   },
   {
     key: 'game-3d:Cubo girando',
@@ -1198,6 +1228,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     experience: 'game',
     promise: 'Guiar o rei pelas plataformas e achar a porta de cada fase até vencer o castelo.',
     scenario: 'Começar, andar e pular com as setas, encostar na porta, trocar de fase e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d:Reino Zero',
+    name: 'Reino Zero',
+    experience: 'game',
+    promise:
+      'Atravessar uma campanha vetorial de 8 mundos e 32 fases, com segredos e segunda jornada.',
+    scenario:
+      'Escolher um ou dois jogadores, correr e pular, ativar blocos, usar atalhos, vencer chefes, continuar e concluir as duas jornadas.',
     interactions: ['start', 'arrows'],
   },
   {

@@ -24,6 +24,9 @@ describe('gk — limites arquiteturais dos catálogos e do runtime', () => {
     expect(runtimeModules).toContain('monsterBattle.ts')
     expect(runtimeModules).toContain('animation.ts')
     expect(runtimeModules).toContain('cards.ts')
+    expect(runtimeModules).toContain('campaignEvents.ts')
+    expect(runtimeModules).toContain('campaignInput.ts')
+    expect(runtimeModules).toContain('campaignPersistence.ts')
     expect(runtimeModules).toContain('platformer.ts')
     expect(runtimeModules).toContain('shell.ts')
     expect(runtimeModules).toContain('visualEffects.ts')
@@ -34,6 +37,7 @@ describe('gk — limites arquiteturais dos catálogos e do runtime', () => {
     for (const file of runtimeModules) {
       expect(lineCount(join(ROOT, 'runtime', file))).toBeLessThan(1_200)
     }
+    expect(lineCount(join(ROOT, 'runtime', 'campaign.ts'))).toBeLessThan(700)
     // Exemplos são DADOS (a IR completa de um jogo "Profissional" — Mundo Pirata,
     // Fazenda Feliz, Herói que Evolui, Safári — é longa por natureza); teto mais
     // generoso, mas ainda um jogo por arquivo.

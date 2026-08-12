@@ -117,9 +117,9 @@ const BoundedExampleIRSchema = z
 const MAX_NAME_CHARS = 80
 const MAX_DESCRIPTION_CHARS = 500
 const MAX_CATEGORY_CHARS = 60
-// A `docs` é o manual do ALUNO (markdown renderizado no "Saiba mais", um modal
-// com scroll) — o teto é só uma trava de sanidade, não um limite de UI, e não
-// entra no contexto da IA (esse é o `promptContext`, separado). Subiu de 20k
+// O teto cobre tanto `manifest.docs` quanto o manual lazy do ALUNO (markdown
+// renderizado no "Saiba mais") — é uma trava de sanidade, não um limite de UI,
+// e não entra no contexto da IA (esse é o `promptContext`, separado). Subiu de 20k
 // porque DUAS extensões oficiais já batiam nele (game-2d e game-2d-advanced), e
 // aí cada kit novo custava enxugar seção antiga em vez de explicar melhor.
 // Subiu de novo (32k → 40k) pelo MESMO motivo, no 4º kit do Jogo 2D Avançado: com
@@ -170,6 +170,9 @@ export const ExtensionExampleSchema = z.object({
 })
 
 export const ExtensionExamplesSchema = z.array(ExtensionExampleSchema).max(MAX_EXTENSION_EXAMPLES)
+
+/** Validação do manual completo carregado sob demanda. */
+export const ExtensionDocsSchema = z.string().min(1).max(MAX_DOCS_CHARS)
 
 export const ExtensionManifestSchema = z.object({
   id: z

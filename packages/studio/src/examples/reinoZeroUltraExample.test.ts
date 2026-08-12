@@ -1,0 +1,195 @@
+import { beforeAll, describe, expect, it } from 'bun:test'
+import * as Blockly from 'blockly/core'
+import { behaviorStatements, type JSStatement, SZIRV2Schema } from '#ir'
+import { buildIRFromWorkspace } from '../blockly/buildIR'
+import { ensureBlocklyInitialized } from '../blockly/setup'
+import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
+import { compileStatements } from '../generators/js'
+import { parseJS } from '../parsers/js'
+import { CORE_EXAMPLES } from './core'
+import { CORE_EXAMPLE_SUMMARIES, loadCoreExample } from './coreCatalog'
+import {
+  hasConservativeRoute,
+  REINO_ZERO_ULTRA_STAGES,
+  validateReinoZeroUltraCampaign,
+  validateReinoZeroUltraStage,
+} from './reinoZeroUltraData'
+import { reinoZeroUltraExample } from './reinoZeroUltraExample'
+
+function stripIds<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(stripIds) as T
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key]) => key !== '__id')
+        .map(([key, child]) => [key, stripIds(child)]),
+    ) as T
+  }
+  return value
+}
+
+function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
+  if (Array.isArray(value)) for (const child of value) collectTypes(child, out)
+  else if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    if (typeof record.type === 'string') out.add(record.type)
+    for (const child of Object.values(record)) collectTypes(child, out)
+  }
+  return out
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function findElementById(value: unknown, id: string): Record<string, unknown> | undefined {
+  if (Array.isArray(value)) {
+    for (const child of value) {
+      const found = findElementById(child, id)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (!isRecord(value)) return undefined
+  if (value.id === id) return value
+  for (const child of Object.values(value)) {
+    const found = findElementById(child, id)
+    if (found) return found
+  }
+  return undefined
+}
+
+beforeAll(() => ensureBlocklyInitialized())
+
+describe('Reino Zero Ultra — plataforma profissional sem extensão', () => {
+  it('está no catálogo core, é asset-free e sua IR é válida', async () => {
+    expect(CORE_EXAMPLES).toContain(reinoZeroUltraExample)
+    expect(reinoZeroUltraExample.ir.extensions).toEqual([])
+    expect(reinoZeroUltraExample.assets ?? []).toEqual([])
+    expect(SZIRV2Schema.safeParse(reinoZeroUltraExample.ir).success).toBe(true)
+    expect(await loadCoreExample(reinoZeroUltraExample.name)).toBe(reinoZeroUltraExample)
+  })
+
+  it('entrega 8 mundos × 4 fases estritas, encadeadas e tematicamente distintas', () => {
+    expect(REINO_ZERO_ULTRA_STAGES).toHaveLength(32)
+    expect(new Set(REINO_ZERO_ULTRA_STAGES.map((stage) => stage.id)).size).toBe(32)
+    expect(new Set(REINO_ZERO_ULTRA_STAGES.map((stage) => stage.theme)).size).toBe(8)
+    for (const stage of REINO_ZERO_ULTRA_STAGES)
+      expect(validateReinoZeroUltraStage(stage)).toBe(stage)
+    expect(validateReinoZeroUltraCampaign(REINO_ZERO_ULTRA_STAGES)).toEqual(REINO_ZERO_ULTRA_STAGES)
+    expect(REINO_ZERO_ULTRA_STAGES.every(hasConservativeRoute)).toBe(true)
+    expect(new Set(REINO_ZERO_ULTRA_STAGES.map((stage) => stage.tiles.join('\n'))).size).toBe(32)
+    for (let index = 0; index < REINO_ZERO_ULTRA_STAGES.length - 1; index += 1) {
+      expect(REINO_ZERO_ULTRA_STAGES[index]?.nextStage).toBe(REINO_ZERO_ULTRA_STAGES[index + 1]?.id)
+    }
+    expect(REINO_ZERO_ULTRA_STAGES.at(-1)?.nextStage).toBeUndefined()
+  })
+
+  it('rejeita dados de fase adulterados antes de chegarem ao motor', () => {
+    const base = structuredClone(REINO_ZERO_ULTRA_STAGES[0])
+    if (!base) throw new Error('fase inicial ausente')
+    expect(validateReinoZeroUltraStage({ ...base, surpresa: true })).toBeNull()
+    expect(
+      validateReinoZeroUltraStage({
+        ...base,
+        entities: [{ ...base.entities[0], health: Number.NaN }],
+      }),
+    ).toBeNull()
+    expect(
+      validateReinoZeroUltraStage({
+        ...base,
+        platforms: [{ id: 'quebrada', x: 1, y: 1, w: -2, range: 1, speed: 1, axis: 'x' }],
+      }),
+    ).toBeNull()
+    expect(validateReinoZeroUltraStage({ ...base, spawn: { x: 999, y: 2 } })).toBeNull()
+    const brokenCampaign = structuredClone(REINO_ZERO_ULTRA_STAGES)
+    if (!brokenCampaign[0]) throw new Error('campanha vazia')
+    brokenCampaign[0].nextStage = '8-4'
+    expect(validateReinoZeroUltraCampaign(brokenCampaign)).toBeNull()
+  })
+
+  it('cobre campanha, controles, persistência, replay e som apenas com IR nativa', () => {
+    const types = collectTypes(reinoZeroUltraExample.ir)
+    for (const forbidden of ['rawJS', 'rawHTML', 'rawCSS']) expect(types.has(forbidden)).toBe(false)
+    for (const required of [
+      'jsonLiteral',
+      'jsonParse',
+      'jsonStringify',
+      'storageGet',
+      'storageSet',
+      'storageRemove',
+      'gamepadAxis',
+      'gamepadButton',
+      'somTone',
+      'somNoise',
+      'requestFrame',
+      'while',
+    ]) {
+      expect(types.has(required), required).toBe(true)
+    }
+    const entities = REINO_ZERO_ULTRA_STAGES.flatMap((stage) => stage.entities)
+    expect(entities.filter((entity) => entity.kind === 'boss')).toHaveLength(8)
+    expect(entities.filter((entity) => entity.kind === 'gem')).toHaveLength(8)
+    expect(REINO_ZERO_ULTRA_STAGES.filter((stage) => stage.secretStage)).toHaveLength(8)
+  })
+
+  it('mantém ponto fixo IR → código → parser sem bloco bruto', () => {
+    const embedded = stripIds(behaviorStatements(reinoZeroUltraExample.ir)) as JSStatement[]
+    const code = compileStatements(embedded, 0)
+    const reparsed = stripIds(parseJS(code)) as JSStatement[]
+    expect(collectTypes(reparsed).has('rawJS')).toBe(false)
+    expect(reparsed).toEqual(embedded)
+    expect(compileStatements(reparsed, 0)).toBe(code)
+  })
+
+  it('preserva o motor inteiro no round-trip IR → blocos → IR', () => {
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(
+        buildWorkspaceStateFromIR(reinoZeroUltraExample.ir),
+        workspace,
+      )
+      const rebuilt = stripIds(behaviorStatements(buildIRFromWorkspace(workspace)))
+      expect(rebuilt).toEqual(stripIds(behaviorStatements(reinoZeroUltraExample.ir)))
+      expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
+    } finally {
+      workspace.dispose()
+    }
+  }, 15_000)
+
+  it('mantém catálogo leve em sincronia e resolve a IR só pelo carregador', () => {
+    expect(CORE_EXAMPLE_SUMMARIES).toEqual(
+      CORE_EXAMPLES.map(({ name, description, experience }) => ({ name, description, experience })),
+    )
+    const summary = CORE_EXAMPLE_SUMMARIES.find((item) => item.name === reinoZeroUltraExample.name)
+    expect(summary).toEqual({
+      name: reinoZeroUltraExample.name,
+      description: reinoZeroUltraExample.description,
+      experience: 'game',
+    })
+    expect(summary).not.toHaveProperty('ir')
+  })
+
+  it('mantém a campanha no chunk sob demanda dentro do orçamento comprimido', () => {
+    const serialized = new TextEncoder().encode(JSON.stringify(reinoZeroUltraExample.ir))
+    expect(serialized.byteLength).toBeLessThan(400_000)
+    expect(Bun.gzipSync(serialized).byteLength).toBeLessThan(45_000)
+  })
+
+  it('separa o estado de automação dos anúncios acessíveis', () => {
+    const status = findElementById(reinoZeroUltraExample.ir.html, 'reino-status')
+    const announcement = findElementById(reinoZeroUltraExample.ir.html, 'reino-announcement')
+    const canvas = findElementById(reinoZeroUltraExample.ir.html, 'reino-zero-ultra')
+    expect(status?.attrs).toEqual({ 'aria-hidden': 'true' })
+    expect(announcement?.attrs).toEqual({
+      role: 'status',
+      'aria-atomic': 'true',
+      'aria-live': 'polite',
+    })
+    expect(canvas?.attrs).toEqual(
+      expect.objectContaining({
+        'aria-describedby': 'reino-instructions reino-announcement',
+      }),
+    )
+  })
+})

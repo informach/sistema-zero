@@ -1,5 +1,8 @@
 import type { ExtensionExample } from '#extensions'
 
+// Os campos `ir` deste arquivo são gerados por scripts/gen-game-3d-examples.ts.
+// Edite os fontes de referência e rode `bun run gen:game-3d-examples`.
+
 /**
  * Exemplo da vitrine "Defesa da Torre Profissional" — torres com FSM própria (parado →
  * mirar → atirar → recarregar) caçam invasores que nascem na beirada e
@@ -7,7 +10,7 @@ import type { ExtensionExample } from '#extensions'
  * entidade, vizinhança (nearest/forEachNear), combate, faíscas, telas, HUD e
  * som sintetizado — 100% asset-free (peças procedurais + som do computador).
  *
- * ⚠️ A IR abaixo foi GERADA pelo parser real a partir do fonte achatado (o
+ * ! A IR abaixo foi GERADA pelo parser real a partir do fonte achatado (o
  * mesmo do drift test em __tests__/examples.test.ts). Se o parser mudar a
  * saída, o drift avisa: rode o fonte por parseJS e cole o resultado aqui.
  */
@@ -17,14 +20,9 @@ export const defesaDaTorreExample: ExtensionExample = {
   description:
     'Torres com cérebro próprio (máquina de estados: parado → mirar → atirar → recarregar) caçam os invasores que avançam contra o cristal. Tudo montado de peças: nenhuma imagem.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -43,9 +41,9 @@ export const defesaDaTorreExample: ExtensionExample = {
               type: 'g3k:part',
               shape: 'box',
               material: 'normal',
+              color: '#0e7490',
               texture: '',
               model: '',
-              color: '#0e7490',
               w: {
                 type: 'num',
                 value: 2.2,
@@ -75,9 +73,9 @@ export const defesaDaTorreExample: ExtensionExample = {
               type: 'g3k:part',
               shape: 'cone',
               material: 'normal',
+              color: '#22d3ee',
               texture: '',
               model: '',
-              color: '#22d3ee',
               w: {
                 type: 'num',
                 value: 1.6,
@@ -121,9 +119,9 @@ export const defesaDaTorreExample: ExtensionExample = {
               type: 'g3k:part',
               shape: 'cylinder',
               material: 'normal',
+              color: '#64748b',
               texture: '',
               model: '',
-              color: '#64748b',
               w: {
                 type: 'num',
                 value: 1.2,
@@ -153,9 +151,9 @@ export const defesaDaTorreExample: ExtensionExample = {
               type: 'g3k:part',
               shape: 'box',
               material: 'normal',
+              color: '#94a3b8',
               texture: '',
               model: '',
-              color: '#94a3b8',
               w: {
                 type: 'num',
                 value: 0.4,
@@ -199,9 +197,9 @@ export const defesaDaTorreExample: ExtensionExample = {
               type: 'g3k:part',
               shape: 'sphere',
               material: 'normal',
+              color: '#ef4444',
               texture: '',
               model: '',
-              color: '#ef4444',
               w: {
                 type: 'num',
                 value: 1.2,
@@ -231,9 +229,9 @@ export const defesaDaTorreExample: ExtensionExample = {
               type: 'g3k:part',
               shape: 'cone',
               material: 'normal',
+              color: '#7f1d1d',
               texture: '',
               model: '',
-              color: '#7f1d1d',
               w: {
                 type: 'num',
                 value: 0.7,
@@ -277,9 +275,9 @@ export const defesaDaTorreExample: ExtensionExample = {
               type: 'g3k:part',
               shape: 'sphere',
               material: 'normal',
+              color: '#fde047',
               texture: '',
               model: '',
-              color: '#fde047',
               w: {
                 type: 'num',
                 value: 0.35,
@@ -919,6 +917,11 @@ export const defesaDaTorreExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -930,7 +933,7 @@ export const defesaDaTorreExample: ExtensionExample = {
  * v0.2.0: física/plataforma, formas & material, luz de ambiente, emissor
  * contínuo, câmera seguidora — tudo 100% asset-free.
  *
- * ⚠️ IR GERADA pelo parser real (fonte em __tests__/platformerExample.test.ts).
+ * ! IR GERADA pelo parser real (fonte em __tests__/platformerExample.test.ts).
  */
 export const saltoNasNuvensExample: ExtensionExample = {
   name: 'Salto nas Nuvens',
@@ -938,10 +941,9 @@ export const saltoNasNuvensExample: ExtensionExample = {
   description:
     'Um mini-plataforma 3D com física de verdade: pule entre as plataformas sólidas, junte as moedas girantes e siga o herói com a câmera. Mostra a gravidade, o pulo, o mundo sólido e um rastro de partículas.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [{ extensionId: 'game-3d-advanced' }],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -1614,6 +1616,11 @@ export const saltoNasNuvensExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -1625,7 +1632,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
  * poeira NÃO-brilhante seguindo o herói (fumaça com curva assada) e semente
  * fixa (a partida é sempre igual). 100% asset-free.
  *
- * ⚠️ IR GERADA pelo parser real (fonte em __tests__/parkourExample.test.ts).
+ * ! IR GERADA pelo parser real (fonte em __tests__/parkourExample.test.ts).
  */
 export const parkourDoVulcaoExample: ExtensionExample = {
   name: 'Parkour do Vulcão',
@@ -1633,10 +1640,9 @@ export const parkourDoVulcaoExample: ExtensionExample = {
   description:
     'Um parkour 3D com física de verdade: suba a rampa, pegue carona no elevador, quique no trampolim e junte as 3 gemas. Mostra cápsula, rampa, plataforma móvel, quique, atrito e zonas.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [{ extensionId: 'game-3d-advanced' }],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -2590,6 +2596,11 @@ export const parkourDoVulcaoExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -2612,7 +2623,7 @@ export const parkourDoVulcaoExample: ExtensionExample = {
  * Exercita ainda: câmera olhando uma ENTIDADE (antes era cravada no meio do
  * mundo), tremor no impacto, zonas, faíscas, semente, HUD e som.
  *
- * ⚠️ A IR abaixo foi GERADA pelo parser real (ver __gen_quicaram.ts); o drift
+ * ! A IR abaixo foi GERADA pelo parser real (ver __gen_quicaram.ts); o drift
  * test em __tests__/quicaramExample.test.ts guarda o resultado.
  */
 export const quadraMalucaExample: ExtensionExample = {
@@ -2621,10 +2632,9 @@ export const quadraMalucaExample: ExtensionExample = {
   description:
     'Arraste o mouse para girar a câmera: o WASD anda sempre para onde você olha. Cinco bolas malucas quicam pelo chão, o rinque de gelo escorrega e os caixotes não saem do lugar: cada coisa com a física dela.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [{ extensionId: 'game-3d-advanced' }],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -3398,6 +3408,11 @@ export const quadraMalucaExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -3405,7 +3420,7 @@ export const quadraMalucaExample: ExtensionExample = {
  * Exemplo da vitrine "Guardião do Portal" (v0.5.0) — a vitrine do que este lote
  * abriu, num jogo que a criança joga:
  *
- * - ⏱️ CRONÔMETRO: segurar por 30 s e a condição de vitória (o "Quando o tempo
+ * - ⏱ CRONÔMETRO: segurar por 30 s e a condição de vitória (o "Quando o tempo
  *   acabar"). Antes não existia bloco de tempo NENHUM para ela.
  * - 💬 FALA: o guardião fala em cima da própria cabeça e o balão acompanha ele
  *   pela tela — o jogo passa a contar história, em vez de só ter placar nos
@@ -3416,7 +3431,7 @@ export const quadraMalucaExample: ExtensionExample = {
  * - 🏀 FÍSICA POR TIPO + tremor da câmera no impacto, e a FSM do curso
  *   (nearest + exists + seek) movendo o enxame.
  *
- * ⚠️ A animação de modelo .glb NÃO entra aqui de propósito: os modelos pesam MB e
+ * ! A animação de modelo .glb NÃO entra aqui de propósito: os modelos pesam MB e
  * estourariam a cota de assets. Ela é provada por TESTE (model.test.ts, com um
  * .glb mínimo montado na hora) — o mesmo veredito do V9/P6 no núcleo.
  *
@@ -3429,10 +3444,9 @@ export const guardiaoDoPortalExample: ExtensionExample = {
   description:
     'Segure os invasores por 30 segundos! O guardião fala, a câmera treme no impacto, as pedras quicam. E a semente faz a partida se repetir igualzinha.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [{ extensionId: 'game-3d-advanced' }],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -4303,6 +4317,11 @@ export const guardiaoDoPortalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -4324,14 +4343,9 @@ export const tiroAoAlvoExample: ExtensionExample = {
   description:
     'Point-and-click: alvos aparecem e fogem, e cada CLIQUE certeiro vale pontos (o dourado vale 3). Tela de dica própria, aviso de acerto e lente de mira: feche 12 pontos em 25 segundos.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -5079,6 +5093,11 @@ export const tiroAoAlvoExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -5088,14 +5107,9 @@ export const chefaoDasSombrasExample: ExtensionExample = {
   description:
     'Enfrente um chefão em três fases: clique nele para atacar e desvie do anel de tiros. A cada fase ele fica mais bravo e se cura um pouco.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -6087,6 +6101,11 @@ export const chefaoDasSombrasExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -6112,14 +6131,9 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
   description:
     'Corra sem fim numa pista de três faixas: troque de faixa, pule as barreiras e pegue moedas. O jogo acelera com o tempo e cada batida treme a câmera. Tudo de peças, no motor avançado.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -7845,6 +7859,11 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -7861,7 +7880,7 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
  * i-frames do motor são de 0,5 s, então clique mais rápido que isso gastaria
  * tiro sem dano. i-frames com onHurt + tremor + vinheta. 100% asset-free.
  *
- * ⚠️ IR GERADA pelo parser real (ver __gen_labirintoProfissional.ts); o drift
+ * ! IR GERADA pelo parser real (ver __gen_labirintoProfissional.ts); o drift
  * test em __tests__/labirintoProfissionalExample.test.ts guarda o resultado.
  */
 export const labirintoDosRobosProfissionalExample: ExtensionExample = {
@@ -7870,14 +7889,9 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
   description:
     'Um FPS de labirinto: trave a mira, ande com WASD e atire com o clique. Robôs de dois tipos patrulham, perseguem e atacam com cérebro de 3 estados. Desligue todos. Tudo de peças, sem imagem.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -9932,6 +9946,11 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -9949,7 +9968,7 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
  * Muralha + árvores compostas nascem por setSeed; vitória verificável:
  * colocar um bloco, subir nele e pousar acima de y 2.2 (o topo da muralha).
  *
- * ⚠️ IR GERADA pelo parser real (ver __gen_mundoProfissional.ts); o drift
+ * ! IR GERADA pelo parser real (ver __gen_mundoProfissional.ts); o drift
  * test em __tests__/mundoProfissionalExample.test.ts guarda o resultado.
  */
 export const mundoDeBlocosProfissionalExample: ExtensionExample = {
@@ -9958,14 +9977,9 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
   description:
     'Construtor 3D em 3ª pessoa: ande, pule e clique no chão perto de você para plantar blocos sólidos (1, 2 e 3 trocam o tipo). Coloque um bloco, suba nele e pule até o topo da muralha. X recicla.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -11450,6 +11464,11 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -11471,14 +11490,9 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
   description:
     'Pilote a nave vista de trás: ande para os lados, atire lasers e destrua 20 meteoros. O atingido brilha antes de explodir, a chuva acelera e cada batida treme a câmera. Tudo de peças, sem imagem.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -13062,6 +13076,11 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -13071,14 +13090,9 @@ export const atravesseProfissionalExample: ExtensionExample = {
   description:
     'O Crossy Road no motor avancado: pule em grade com as setas, atravesse as faixas e desvie dos carros que cruzam a pista. Chegue na faixa 20 sem ser atropelado. Tudo de pecas, sem imagem.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -14242,6 +14256,11 @@ export const atravesseProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -14251,14 +14270,9 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
   description:
     'Pastoreie no motor avançado: cada bichinho tem cérebro próprio (vagar e seguir). Chegue perto para o rebanho seguir você e leve o grupo ao curral. Reúna 8 antes do tempo. Tudo de peças, sem imagem.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -15787,6 +15801,11 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -15796,14 +15815,9 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
   description:
     'RPG de ação no motor avançado: herói em 3ª pessoa com espada. Cada monstro tem cérebro próprio que vaga e persegue. Ataque de perto e derrote 10 antes dos corações acabarem.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -16915,6 +16929,11 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -16924,14 +16943,9 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
   description:
     'Dogfight no motor avançado: pilote em voo livre e atire pra frente. As naves inimigas têm cérebro próprio: vagam, perseguem e fogem quando atingidas. Abata 10 antes dos escudos acabarem.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -18300,6 +18314,11 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -18309,14 +18328,9 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
   description:
     'FPS de defesa em 1ª pessoa no motor avançado: olhe com o mouse, ande com WASD e segure o espaço para carregar o tiro. A munição recarrega. Derrote 12 aliens em ondas antes que a vida acabe.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -19681,6 +19695,11 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }
 
@@ -19690,14 +19709,9 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
   description:
     'Minerador 3D em 3ª pessoa no motor avançado: ande com WASD e clique nos blocos para cavar. A pedra é entulho, mas os cristais valem ponto. Colete 10 cristais antes que o tempo da mina acabe.',
   ir: {
+    version: 2,
     html: [],
     css: [],
-    extensions: [
-      {
-        extensionId: 'game-3d-advanced',
-      },
-    ],
-    version: 2,
     behavior: {
       molds: [
         {
@@ -20915,5 +20929,10 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
         },
       ],
     },
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
   },
 }

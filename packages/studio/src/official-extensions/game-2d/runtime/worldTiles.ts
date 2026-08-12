@@ -352,7 +352,11 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       for (var c = firstCol; c <= rowLastCol; c++) {
         var idx = row[c];
         if (idx < 0) continue;
-        drawFrame(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
+        if (map.tileset && map.tileset._kind === 'g2d-vector-tileset') {
+          _drawVectorTile(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
+        } else {
+          drawFrame(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
+        }
       }
     }
   }
@@ -385,6 +389,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   }
   function collideTileMap(sprite, map) {
     if (!sprite || !map || !map.rows || !map.tile) return;
+    _beginTileContacts(sprite);
     // Projetos antigos podem colidir antes do primeiro desenho; preservamos a
     // origem (0,0) e o tamanho da arte, mas ensinamos o preparo explícito novo.
     if (map && !map.layout) warnOnce('colmapfirst', 'prepare o mapa antes da colisão com “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles”.');
@@ -484,6 +489,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
               (movesTowardPlatform || sprite._groundedLastFrame === true) &&
               (crossesPlatformFace || touchesPlatformFace)) {
             _restOnGravitySupport(sprite, pty, t, gravity);
+            _recordTileContact(sprite, map, r, c, platformPullsUp ? 'head' : 'feet');
           }
           continue;
         }
@@ -500,6 +506,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
           sprite.y = ty - sprite.h;
           sprite.vy = 0;
           _confirmGroundSupport(sprite, null);
+          _recordTileContact(sprite, map, r, c, 'feet');
           continue;
         }
         if (velocityY < 0 && sweptOverlapX > 0 &&
@@ -507,32 +514,43 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
           sprite.y = ty + t;
           sprite.vy = 0;
           if (_gravityPullsUp(gravity)) _confirmGroundSupport(sprite, null);
+          _recordTileContact(sprite, map, r, c, 'head');
           continue;
         }
         if (velocityX > 0 && sweptOverlapY > 0 &&
             previousX + sprite.w <= tx && sprite.x + sprite.w >= tx) {
           sprite.x = tx - sprite.w;
           sprite.vx = 0;
+          _recordTileContact(sprite, map, r, c, 'right');
           continue;
         }
         if (velocityX < 0 && sweptOverlapY > 0 &&
             previousX >= tx + t && sprite.x <= tx + t) {
           sprite.x = tx + t;
           sprite.vx = 0;
+          _recordTileContact(sprite, map, r, c, 'left');
           continue;
         }
         if (_touchesGravitySupport(sprite, tx, ty, t, t, gravity)) {
           _restOnGravitySupport(sprite, ty, t, gravity);
+          _recordTileContact(sprite, map, r, c, pullsUp ? 'head' : 'feet');
           continue;
         }
         if (overlapX <= 0 || overlapY <= 0) continue;
         if (overlapX < overlapY) {
-          if (sprite.x < tx) sprite.x -= overlapX; else sprite.x += overlapX;
+          if (sprite.x < tx) {
+            sprite.x -= overlapX;
+            _recordTileContact(sprite, map, r, c, 'right');
+          } else {
+            sprite.x += overlapX;
+            _recordTileContact(sprite, map, r, c, 'left');
+          }
           sprite.vx = 0;
         } else {
           var collisionGravity = gravity;
           if (sprite.y < ty) {
             sprite.y -= overlapY;
+            _recordTileContact(sprite, map, r, c, 'feet');
             // Pousou num tile (empurrado p/ CIMA enquanto caía): está no chão.
             // Nunca seta false — o helper de gravidade do quadro já fez isso.
             if (!_gravityPullsUp(collisionGravity) && (sprite.vy || 0) > 0) {
@@ -541,6 +559,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
           }
           else {
             sprite.y += overlapY;
+            _recordTileContact(sprite, map, r, c, 'head');
             if ((sprite.vy || 0) < 0) {
               sprite.vy = 0;
               if (_gravityPullsUp(collisionGravity)) _confirmGroundSupport(sprite, null);

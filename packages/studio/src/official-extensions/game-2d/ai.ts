@@ -33,6 +33,12 @@ API global injetada como window.SZGame2D:
   chamada nem ofereça o bloco legado. Use as Áreas do projeto.
 - gameLoop(fn): adiciona fn ao agendador do jogo, com passo fixo de 60 Hz. Vários loops coexistem.
 - keys: estado das setas { left, right, up, down }.
+- enableClassicControls('auto'|'always'|'off') liga ações semânticas e controles de toque
+  acessíveis. Use uma vez em Ao iniciar. actionDown/actionPressed aceitam
+  left/right/up/down/jump/action/select/start/pause. Backspace = select, Enter = start e Escape =
+  pause; o botão pause NÃO altera o jogo sozinho.
+- classicPlatformer(sprite, speed, jump) faz aceleração, corrida, derrapagem, agachamento,
+  gravidade e pulo variável; depois chame collideWorld.
 - setGravity(g): define somente a aceleração do mundo (padrão 0.6). Zero desliga e
   valores negativos puxam para cima; definir o valor sozinho não move nenhum sprite.
 - applyGravity(sprite): soma a gravidade do mundo ao vy neste quadro. Use antes do
@@ -55,6 +61,9 @@ API global injetada como window.SZGame2D:
 
 Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
 - onKey('ArrowRight', fn): roda fn a cada vez que a tecla é apertada (keydown).
+- onActionPressed('pause', fn): ação semântica vinda de teclado, toque, botão focado ou
+  tecnologia assistiva. Continua recebendo pause enquanto o jogo está pausado; alterne
+  pauseGame/resumeGame explicitamente no corpo.
 - onAnyInput(fn): roda ao apertar qualquer tecla ou tocar na tela; registra o palco
   automaticamente e serve para começar/recomeçar com teclado ou toque. Bloco
   "Quando apertar qualquer tecla ou tocar na tela".
@@ -84,11 +93,14 @@ Funções gerais — mira/contas, vida/tempo, aparência, mundo e pausa:
 - randomX(largura?)/randomY(altura?): posição x/y aleatória NA TELA. Passe a largura/altura do sprite para ele caber inteiro; sem argumento preserva 0..largura/altura. Evita Math.random()*largura na mão.
 - pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
 - setPosition(s, x, y): teleporta/respawna sem colidir com o caminho antigo. Nunca gere atribuições x/y pareadas para o bloco de posição.
-- flipSprite(s, 'left'|'right') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): espelhar/transparência/tamanho.
+- flipSprite(s, 'left'|'right'|'up'|'down') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): direção/transparência/tamanho.
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
 - pauseGame()/resumeGame()/isPaused(): pausa congela os loops e contatos; teclas/cliques continuam ativos para permitir retomar.
 
 Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o jogo precisa:
+- createVectorTileset/defineVectorTile/createVectorTileMap montam tiles com Figuras, sem assets.
+  forEachTileContact percorre colisões exatas; tileContactIs testa o índice original e
+  setTileAtContact troca só aquela célula (blocos de prêmio devem testar antes de trocar).
 - MAPA é a grade de tiles. Primeiro crie os dados; depois prepare a posição e o tamanho UMA vez em
   ⚙️ Ao iniciar com fitTileMapToStage(ctx, map) (encaixar na tela) OU
   placeTileMap(map, x, y, tileSize) (posição/tamanho exatos). Dentro do quadro, drawTileMap(ctx, map)
@@ -107,7 +119,7 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
   addEnemyTypeToWorld(world, type) põe os inimigos daquele tipo NO terreno: sem ele o inimigo que
   anda no chão pousa na borda visível, que rola com a câmera, e vai e volta nos limites da TELA.
   Num Mundo maior que o palco, gere sempre este bloco junto dos inimigos terrestres. Quem voa não
-  precisa dele.
+  precisa dele. Pode ser chamado novamente ao trocar o Mundo ativo numa campanha.
 - FASE é progressão OPCIONAL: um Mundo + posição inicial do jogador + evento de entrada.
   createLevel(world, x, y), enterLevel(level, player), restartLevel(level, player),
   resetGroupWithLevel(level, group), onLevelEnter(() => level, fn), levelIsActive(level).
@@ -225,9 +237,10 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   ⚠️ No raio os quadros de invencibilidade são OBRIGATÓRIOS (o callback roda a cada quadro enquanto
   o feixe está ligado, uns 180): changeHealth ali esvazia a vida de uma vez.
 - enemyDamage(inimigoOuTiro): o dano de contato (default 1).
-- stompEnemyType(sprite, tipo, quique): DENTRO do gameLoop; derrota o inimigo em que o sprite
-  PISAR (só caindo nele; encostar de lado não vale) e quica o sprite. O derrotado sai pelo
-  updateEnemyType (partículas + onDefeat) e já não machuca neste quadro.
+- stompEnemyType(sprite, tipo, quique): DENTRO do gameLoop; aplica o modo de pisada ao inimigo
+  em que o sprite PISAR (só caindo nele; encostar de lado não vale) e quica o sprite.
+  setEnemyStompMode escolhe derrotar, causar 1 de dano (chefes), achatar, virar casco ou recusar
+  a pisada por espinhos. Cascos móveis atingem inimigos de todos os tipos registrados.
 - setEnemyStateAnimation(tipo, 'estado', sheet, from, to, fps): animação por estado do TIPO.
 - setEnemyTypeParam(tipo, 'pulo'|'ritmo'|'alcance'|'cadencia'|'tiro'|'voltar'|'vida'|'duracao', valor): sintonia
   fina. pulo/ritmo = saltador; alcance = quem voa + medroso/arrancada/rondador/mergulhador/

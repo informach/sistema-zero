@@ -74,11 +74,15 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'setTimeout',
     'setTimeoutSeconds',
 
+    // Jogo 3D: o Kit Plataforma REGISTRA o aviso; o corpo roda depois.
+    'g3d:onStage',
+
     // Jogo 2D: eventos e raízes contínuas registram; varreduras chamam agora.
     'g2d:onStart',
     'g2d:updateEachFrame',
     'g2d:onPointer',
     'g2d:onKey',
+    'g2d:onActionPressed',
     'g2d:onAnyInput',
     'g2d:onOverlap',
     'g2d:onJump',
@@ -99,6 +103,8 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'gk:onGameStart',
     'gk:onEnterState',
     'gk:onUpdate',
+    'gk:onFixedUpdate',
+    'gk:onCampaignEvent',
     'gk:onDraw',
     'gk:onDrawHud',
     'gk:onGameClick',
@@ -157,6 +163,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'forEach',
     'traverseEach',
     'g2d:forEachInGroup',
+    'g2d:forEachTileContact',
     'g2d:pruneOffscreen',
     'g2d:onGroupOverlap',
     'g2d:onSpriteGroupOverlap',
@@ -164,6 +171,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g2d:onEnemyBeamHit',
     'g3d:forEachInSwarm',
     'g3d:forEachInGroup',
+    'g3d:forEachHit',
     'g3d:pruneOffscreen',
     'gk:forEachActive',
     'gk:overlapGroups',
@@ -294,6 +302,8 @@ function localVariablesForChild(
       return first === 'body' ? [statement.xName, statement.yName] : []
     case 'g2d:onGroupOverlap':
       return first === 'body' ? [statement.aName, statement.bName] : []
+    case 'g2d:forEachTileContact':
+      return first === 'body' ? [statement.contactName] : []
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':
     case 'g2d:onSpriteGroupOverlap':
@@ -304,12 +314,15 @@ function localVariablesForChild(
       return first === 'body' ? [statement.itemName] : []
     case 'g3d:forEachInSwarm':
     case 'g3d:forEachInGroup':
+    case 'g3d:forEachHit':
     case 'g3d:pruneOffscreen':
       return first === 'body' ? [statement.itemName] : []
     case 'gk:onUpdate':
     case 'g3k:onUpdate':
     case 'w3d:onUpdate':
       return first === 'body' ? [statement.dtName] : []
+    case 'gk:onFixedUpdate':
+      return first === 'body' ? [statement.dtName, statement.tickName] : []
     case 'gk:onDraw':
     case 'gk:onDrawHud':
       return first === 'body' ? [statement.ctxName] : []
@@ -349,6 +362,8 @@ const POINTER_BROWSER_EVENTS = new Set([
   'pointermove',
   'pointerdown',
   'pointerup',
+  'pointercancel',
+  'lostpointercapture',
   'contextmenu',
 ])
 

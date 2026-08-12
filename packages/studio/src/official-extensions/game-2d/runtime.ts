@@ -4,6 +4,7 @@ import { gameRuntimeDomains } from '../runtimeDomains'
 import { gameTwoDArcadeKitsRuntime } from './runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from './runtime/audio'
 import { gameTwoDCasualKitsRuntime } from './runtime/casualKits'
+import { gameTwoDClassicPlatformerRuntime } from './runtime/classicPlatformer'
 import { gameTwoDInputAndMotionRuntime } from './runtime/inputAndMotion'
 import { gameTwoDLifecycleRuntime } from './runtime/lifecycle'
 import { gameTwoDPhysicsRuntime } from './runtime/physics'
@@ -105,6 +106,7 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
     gameTwoDStageRuntime +
     gameTwoDCasualKitsRuntime +
     gameTwoDUtilitiesRuntime +
+    gameTwoDClassicPlatformerRuntime +
     buildGameTwoDRuntimeApiSource() +
     `
 })();`,

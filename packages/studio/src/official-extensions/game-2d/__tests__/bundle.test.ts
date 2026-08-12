@@ -30,6 +30,7 @@ describe('bundle inicial do Jogo 2D', () => {
             chunks: build.outputs.filter((output) => output.kind === 'chunk').length,
             containsRuntime: source.includes('Jogo 2D interativo'),
             containsExample: source.includes('Pegue a moeda'),
+            containsFullDocs: source.includes('Receitas que a gente monta com o que já existe'),
           }))
         `,
       ],
@@ -43,18 +44,15 @@ describe('bundle inicial do Jogo 2D', () => {
       chunks: number
       containsRuntime: boolean
       containsExample: boolean
+      containsFullDocs: boolean
     }
-    // Os contratos explícitos de Mapas, Mundos e Fases acrescentaram 24 blocos
-    // e tooltips pedagógicos ao catálogo inicial (≈ 9 KiB minificados). Runtime
-    // e exemplos continuam fora deste entrypoint; ambos os tamanhos ficam
-    // travados logo acima da medição atual para detectar nova regressão.
-    // 190_500 → 193_300: o full review de 10/08 somou o bloco que põe os
-    // inimigos no terreno do Mundo e a lista de blocos de Mundo e de Fase no
-    // manual do aluno (a família tinha 20 blocos e nenhuma lista).
-    expect(metrics.rawBytes).toBeLessThan(193_300)
-    expect(metrics.gzipBytes).toBeLessThan(51_700)
-    expect(metrics.chunks).toBeGreaterThanOrEqual(5)
+    // O teto histórico virou uma linha colada à medição. Exigimos 5% de margem
+    // real e mantemos os três conteúdos pesados em chunks sob demanda.
+    expect(metrics.rawBytes).toBeLessThan(Math.floor(193_300 * 0.95))
+    expect(metrics.gzipBytes).toBeLessThan(Math.floor(51_700 * 0.95))
+    expect(metrics.chunks).toBeGreaterThanOrEqual(6)
     expect(metrics.containsRuntime).toBe(false)
     expect(metrics.containsExample).toBe(false)
+    expect(metrics.containsFullDocs).toBe(false)
   })
 })

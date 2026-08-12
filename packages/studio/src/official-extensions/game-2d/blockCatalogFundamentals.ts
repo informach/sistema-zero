@@ -776,13 +776,16 @@ export const gameTwoDFundamentalBlocks = [
         options: [
           ['esquerda', 'left'],
           ['direita', 'right'],
+          ['cima', 'up'],
+          ['baixo', 'down'],
         ],
       },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Espelha o desenho do sprite na horizontal (para ele "olhar" para o outro lado).',
+    tooltip:
+      'Vira o desenho do sprite para esquerda, direita, cima ou baixo, sem mudar sua posição.',
   },
   {
     type: 'sz_g2d_set_opacity',

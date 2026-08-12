@@ -15,7 +15,21 @@ import { programmingRegistrationForBlockType } from '../codecs/programming/regis
 import { canvasExpressionBlockToIR, canvasStatementBlockToIR } from '../codecs/web/canvasBlockToIR'
 import { cssBlockToIR } from '../codecs/web/cssBlockToIR'
 import { htmlBlockToIR } from '../codecs/web/htmlBlockToIR'
+import { nativeSoundBlockToIR } from '../codecs/web/nativeSoundBlockCodec'
 import { webCodecForBlockType } from '../codecs/web/registry'
+import {
+  classicGameTwoDBlockExpression,
+  classicGameTwoDBlockToIR,
+} from '../official-extensions/game-2d/classicCodec'
+import {
+  CAMPAIGN_BLOCK_UNHANDLED,
+  campaignExpressionBlockToIR,
+  campaignStatementBlockToIR,
+} from '../official-extensions/game-2d-advanced/campaignBlockCodec'
+import {
+  platformGameThreeDBlockExpression,
+  platformGameThreeDBlockToIR,
+} from '../official-extensions/game-3d/platformCodec'
 import { resolveCanvas3DAddonImports } from '../three/canvas3dAddons'
 import {
   FRAME_APPEARANCE,
@@ -297,12 +311,16 @@ function fn(block: Blockly.Block, name: string, fallback = 0): number {
 }
 
 /**
- * Lê o campo TARGET_KIND ('id' | 'var') de um bloco que age sobre um elemento.
- * Só devolve `{ targetKind: 'var' }` quando é variável — caso id, omite o campo
+ * Lê o campo TARGET_KIND de um bloco que age sobre um elemento ou alvo global.
+ * Só omite o campo no caso histórico de id, mantendo a IR enxuta.
  * (mantém a IR enxuta e idêntica à forma só-id usada historicamente).
  */
-function targetKindField(block: Blockly.Block): { targetKind?: 'var' } {
-  return f(block, 'TARGET_KIND') === 'var' ? { targetKind: 'var' } : {}
+function targetKindField(block: Blockly.Block): {
+  targetKind?: 'var' | 'document' | 'window'
+} {
+  const kind = f(block, 'TARGET_KIND')
+  if (kind === 'var' || kind === 'document' || kind === 'window') return { targetKind: kind }
+  return {}
 }
 
 function eventTargetFields(
@@ -418,6 +436,10 @@ function blockToExpr(block: Blockly.Block | null): JSExpr | null {
 }
 
 function blockToExprInner(block: Blockly.Block): JSExpr | null {
+  const classicExpression = classicGameTwoDBlockExpression(block, f, exprInput)
+  if (classicExpression) return classicExpression
+  const platformExpression = platformGameThreeDBlockExpression(block, f)
+  if (platformExpression) return platformExpression
   const webCodec = webCodecForBlockType(block.type)
   if (webCodec?.category === 'canvas' && webCodec.irKind === 'expression') {
     return canvasExpressionBlockToIR(block, { field: f, expression: exprInput })
@@ -447,6 +469,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
     })
     if (programmingExpression !== PROGRAMMING_CODEC_UNHANDLED) return programmingExpression
   }
+  const campaignExpression = campaignExpressionBlockToIR(block, { field: f })
+  if (campaignExpression !== CAMPAIGN_BLOCK_UNHANDLED) return campaignExpression
   switch (block.type) {
     case 'sz_g2d_key_down':
       return { type: 'g2d:keyDown', key: f(block, 'KEY') || 'ArrowRight' }
@@ -1215,6 +1239,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   if (block.type.startsWith('sz_gk_')) return gameKitBlockToIR()
   if (block.type.startsWith('sz_g3k_')) return gameKitThreeDBlockToIR()
   if (block.type.startsWith('sz_w3d_')) return worldThreeDBlockToIR()
+  const nativeSound = nativeSoundBlockToIR(block, { field: f, expression: exprInput })
+  if (nativeSound) return { kind: 'js', value: nativeSound }
 
   switch (block.type) {
     case 'sz_legacy_nested_start':
@@ -1225,26 +1251,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     }
     case 'sz_adv_raw_html':
       return { kind: 'html', value: { type: 'rawHTML', html: f(block, 'CODE'), advanced: true } }
-
-    // ----- 🔊 Som do núcleo (sem `seen.add`: não é extensão) -----
-    case 'sz_som_load':
-      return {
-        kind: 'js',
-        value: { type: 'somLoad', name: f(block, 'NAME') || 'som', asset: f(block, 'ASSET') },
-      }
-    case 'sz_som_play':
-      return { kind: 'js', value: { type: 'somPlay', name: f(block, 'NAME') || 'som' } }
-    case 'sz_som_stop':
-      return { kind: 'js', value: { type: 'somStop', name: f(block, 'NAME') || 'som' } }
-    case 'sz_som_play_music':
-      return { kind: 'js', value: { type: 'somPlayMusic', name: f(block, 'NAME') || 'musica' } }
-    case 'sz_som_stop_music':
-      return { kind: 'js', value: { type: 'somStopMusic' } }
-    case 'sz_som_volume':
-      return {
-        kind: 'js',
-        value: { type: 'somVolume', level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }) },
-      }
 
     case 'sz_adv_raw_css':
       return { kind: 'css', value: { type: 'rawCSS', code: f(block, 'CODE'), advanced: true } }
@@ -2138,6 +2144,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   }
 
   function gameTwoDBlockToIR(): RoutedNode | null {
+    const classicStatement = classicGameTwoDBlockToIR(block, seen, {
+      field: f,
+      expression: exprInput,
+      statements: getStatementChildren,
+    })
+    if (classicStatement) return { kind: 'js', value: classicStatement }
     switch (block.type) {
       // ---- Game 2D (extension blocks) ----
       case 'sz_g2d_create_sprite':
@@ -2384,9 +2396,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         }
       case 'sz_g2d_flip_sprite':
         seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: { type: 'g2d:flipSprite', spriteVar: f(block, 'SPRITE'), dir: f(block, 'DIR') },
+        {
+          const selectedDirection = f(block, 'DIR')
+          const dir =
+            selectedDirection === 'left' ||
+            selectedDirection === 'up' ||
+            selectedDirection === 'down'
+              ? selectedDirection
+              : 'right'
+          return {
+            kind: 'js',
+            value: { type: 'g2d:flipSprite', spriteVar: f(block, 'SPRITE'), dir },
+          }
         }
       case 'sz_g2d_set_opacity':
         seen.add('game-2d')
@@ -4158,6 +4179,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   }
 
   function gameThreeDBlockToIR(): RoutedNode | null {
+    const platform = platformGameThreeDBlockToIR(block, {
+      field: f,
+      expression: exprInput,
+      statements: (candidate, name) => getStatementChildren(candidate, name, seen),
+    })
+    if (platform) {
+      seen.add('game-3d')
+      return { kind: 'js', value: platform }
+    }
     switch (block.type) {
       // ---- Game 3D (extension blocks) ----
       case 'sz_g3d_create_scene':
@@ -5105,6 +5135,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   }
 
   function gameKitBlockToIR(): RoutedNode | null {
+    const campaignStatement = campaignStatementBlockToIR(block, {
+      field: f,
+      expression: exprInput,
+      statements: (candidate, name) => getStatementChildren(candidate, name, seen),
+    })
+    if (campaignStatement !== CAMPAIGN_BLOCK_UNHANDLED) {
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: campaignStatement }
+    }
     switch (block.type) {
       // ----- game-2d-advanced (kit profissional) -----
       case 'sz_gk_setup':

@@ -1882,6 +1882,31 @@ describe('SZGameKit — R6: correções de bugs', () => {
     expect(h.api.rpgHasFlag('cena_terminou')).toBe(true)
   })
 
+  it('H3: caminho diagonal preserva o desempate horizontal da busca em largura', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 256, height: 256 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgCreateMap('sala', 4, 4, () => {})
+    h.api.rpgOnEnterMap('sala', () => {
+      h.api.rpgCreateNpc('bob', 0, 0, '', '')
+    })
+    h.api.rpgGoMap('sala')
+    h.api.rpgNpcWalkTo('bob', 2, 2)
+
+    h.clock.value = 16
+    h.nextFrame(16)
+
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 64 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 64, 64)
+    h.fire('keydown', { key: 'w' })
+    h.api.rpgMoveGrid(heroi, 64, 1)
+    h.fire('keyup', { key: 'w' })
+
+    // A BFS visita direita antes de baixo; o NPC reserva 1,0 e barra o herói.
+    expect(Math.round((heroi.y ?? 0) / 64)).toBe(1)
+  })
+
   it('H3: caminhada longa continua enquanto o NPC progride e a cena espera a chegada', async () => {
     const h = loadRuntime()
     await startGame(h)

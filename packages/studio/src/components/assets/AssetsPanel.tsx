@@ -1,7 +1,7 @@
 import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
-import { Button, Modal } from '#ui'
+import { Button, ConfirmDialog, Modal } from '#ui'
 import { ASSET_LIBRARY, type LibraryAsset } from '../../asset-library/catalog'
 import {
   getPersonalAssetsNamespace,
@@ -44,6 +44,10 @@ export interface AssetsPanelProps {
 
 const EMPTY_ASSETS: ProjectAsset[] = []
 
+type PendingDeletion =
+  | { scope: 'project'; id: string; name: string }
+  | { scope: 'personal'; id: string; name: string }
+
 export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelProps): JSX.Element {
   const t = useT()
   const { hasProject, assets, has3DExtension } = useProjectStore(
@@ -77,6 +81,8 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const modelRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
+  const [deleting, setDeleting] = useState(false)
   // Imagens (desenhos/sprites), sons (áudio importado) e binários 3D (modelo
   // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
   // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
@@ -164,10 +170,23 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     if (err) setError(err)
   }
 
-  const removeFromPersonal = (id: string) => {
-    // Otimista: a remoção no IDB é best-effort (fail-soft).
-    setPersonal((current) => current.filter((a) => a.id !== id))
-    void removePersonalAsset(id)
+  const confirmDeletion = async () => {
+    if (!pendingDeletion || deleting) return
+    if (pendingDeletion.scope === 'project') {
+      removeAsset(pendingDeletion.id)
+      setPendingDeletion(null)
+      return
+    }
+
+    setDeleting(true)
+    const result = await removePersonalAsset(pendingDeletion.id)
+    if (result.ok) {
+      setPersonal((current) => current.filter((asset) => asset.id !== pendingDeletion.id))
+    } else {
+      setError(result.error)
+    }
+    setDeleting(false)
+    setPendingDeletion(null)
   }
 
   const usedChars = assets.reduce((sum, a) => sum + a.dataUrl.length, 0)
@@ -389,7 +408,10 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
           ) : null}
 
           {error && (
-            <p className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            <p
+              role="alert"
+              className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400"
+            >
               {error}
             </p>
           )}
@@ -476,7 +498,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                           <button
                             type="button"
                             className="text-xs text-red-400 hover:underline"
-                            onClick={() => removeAsset(asset.id)}
+                            onClick={() =>
+                              setPendingDeletion({
+                                scope: 'project',
+                                id: asset.id,
+                                name: asset.name,
+                              })
+                            }
                           >
                             Excluir
                           </button>
@@ -525,7 +553,9 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                     <button
                       type="button"
                       className="text-xs text-red-400 hover:underline"
-                      onClick={() => removeAsset(asset.id)}
+                      onClick={() =>
+                        setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
+                      }
                     >
                       Excluir
                     </button>
@@ -577,7 +607,9 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                     <button
                       type="button"
                       className="text-xs text-red-400 hover:underline"
-                      onClick={() => removeAsset(asset.id)}
+                      onClick={() =>
+                        setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
+                      }
                     >
                       Excluir
                     </button>
@@ -653,7 +685,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                           <button
                             type="button"
                             className="text-xs text-red-400 hover:underline"
-                            onClick={() => removeFromPersonal(drawing.id)}
+                            onClick={() =>
+                              setPendingDeletion({
+                                scope: 'personal',
+                                id: drawing.id,
+                                name: drawing.name,
+                              })
+                            }
                           >
                             Excluir
                           </button>
@@ -711,6 +749,32 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
           onImported={() => setPersonalTick((tick) => tick + 1)}
         />
       ) : null}
+      <ConfirmDialog
+        open={pendingDeletion !== null}
+        title={
+          pendingDeletion?.scope === 'personal'
+            ? 'Excluir dos seus desenhos?'
+            : 'Excluir do projeto?'
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        danger
+        busy={deleting}
+        onCancel={() => setPendingDeletion(null)}
+        onConfirm={confirmDeletion}
+      >
+        {pendingDeletion?.scope === 'personal' ? (
+          <p>
+            O desenho <strong>{pendingDeletion.name}</strong> será apagado da sua biblioteca. Essa
+            ação não pode ser desfeita.
+          </p>
+        ) : (
+          <p>
+            O asset <strong>{pendingDeletion?.name}</strong> será removido deste projeto. Blocos ou
+            código que usam esse nome podem deixar de funcionar.
+          </p>
+        )}
+      </ConfirmDialog>
     </Modal>
   )
 }

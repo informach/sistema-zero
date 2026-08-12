@@ -14,6 +14,15 @@ Comandos contínuos ficam dentro dessas raízes ou em funções/métodos chamado
 elas, nunca diretamente em Ao iniciar ou eventos. Tween/fade, rastro, inclinação
 e o atirador automático da onda são configurados uma vez e nunca dentro de loop.
 
+CAMPANHA PROFISSIONAL: para aventuras com muitas fases, use fixedSetup,
+defineCampaign, um defineCampaignStage por fase e startCampaign. A fase é um
+documento estático validado pelo editor visual; não gere rawJS nem objetos
+dinâmicos para ela. O relógio é fixo em 60 Hz e as regras contínuas próprias vão
+em onFixedUpdate. Prefira actionDown/actionPressed/actionReleased às teclas
+físicas para teclado, toque e controle funcionarem juntos. Saves usam slots 1–3;
+replay grava ações determinísticas. O exemplo canônico é “Reino Zero Pro”, com
+8 mundos e 32 fases vetoriais.
+
 PARTIDA E ESTADOS: setState(nome) apenas troca o estado e nunca apaga progresso.
 restartGame() começa uma partida limpa e executa novamente as três áreas.
 onEnterState(nome, fn) reage a toda entrada naquele estado, inclusive ao voltar de

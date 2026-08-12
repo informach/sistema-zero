@@ -380,24 +380,29 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
 }
 
 async function expectLogicalCanvasAtDpr(page: Page, expectedDpr: number): Promise<void> {
-  const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas').first()
-  await expect(canvas).toBeVisible()
-  const dimensions = await canvas.evaluate((element) => {
-    const target = element as HTMLCanvasElement
-    const rect = target.getBoundingClientRect()
-    return {
-      dpr: window.devicePixelRatio,
-      backingWidth: target.width,
-      backingHeight: target.height,
-      displayWidth: rect.width,
-      displayHeight: rect.height,
-    }
-  })
-  expect(dimensions.dpr).toBe(expectedDpr)
-  expect(dimensions.displayWidth).toBeGreaterThan(0)
-  expect(dimensions.displayHeight).toBeGreaterThan(0)
-  expect(dimensions.backingWidth).toBe(Math.round(dimensions.displayWidth * expectedDpr))
-  expect(dimensions.backingHeight).toBe(Math.round(dimensions.displayHeight * expectedDpr))
+  // O editor pode substituir o srcdoc enquanto a Ponte estabiliza os arquivos.
+  // Cada tentativa readquire canvas e contexto; o teste termina somente quando
+  // um único documento apresenta toda a geometria lógica correta.
+  await expect(async () => {
+    const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas').first()
+    await expect(canvas).toBeVisible()
+    const dimensions = await canvas.evaluate((element) => {
+      const target = element as HTMLCanvasElement
+      const rect = target.getBoundingClientRect()
+      return {
+        dpr: window.devicePixelRatio,
+        backingWidth: target.width,
+        backingHeight: target.height,
+        displayWidth: rect.width,
+        displayHeight: rect.height,
+      }
+    })
+    expect(dimensions.dpr).toBe(expectedDpr)
+    expect(dimensions.displayWidth).toBeGreaterThan(0)
+    expect(dimensions.displayHeight).toBeGreaterThan(0)
+    expect(dimensions.backingWidth).toBe(Math.round(dimensions.displayWidth * expectedDpr))
+    expect(dimensions.backingHeight).toBe(Math.round(dimensions.displayHeight * expectedDpr))
+  }).toPass({ timeout: 15_000 })
 }
 
 test.describe(`KitGallery — os ${EXAMPLE_QA_CONTRACTS.length} cartões no Chromium`, () => {

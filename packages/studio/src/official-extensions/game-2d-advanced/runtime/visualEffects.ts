@@ -51,8 +51,8 @@ export const gameKitVisualEffectsRuntime = `
     for (var i = 0; i < e.count; i++) {
       if (particles.active.length >= MAX_PARTICLES) break;
       var p = particles.free.pop() || {};
-      var ang = Math.random() * Math.PI * 2;
-      var sp = e.speed * (0.4 + Math.random() * 0.6);
+      var ang = gameRandom() * Math.PI * 2;
+      var sp = e.speed * (0.4 + gameRandom() * 0.6);
       p.x = num(x, 0); p.y = num(y, 0);
       p.vx = Math.cos(ang) * sp; p.vy = Math.sin(ang) * sp;
       p.life = e.life; p.max = e.life; p.size = e.size; p.color = e.color; p.gravity = e.gravity;
@@ -188,9 +188,9 @@ export const gameKitVisualEffectsRuntime = `
         e._trailAcc -= 1;
         if (particles.active.length >= MAX_PARTICLES) { e._trailAcc = 0; break; }
         var p = particles.free.pop() || {};
-        p.x = centerX(e) + (Math.random() - 0.5) * e.w * 0.3;
-        p.y = centerY(e) + (Math.random() - 0.5) * e.h * 0.3;
-        p.vx = (Math.random() - 0.5) * 30; p.vy = (Math.random() - 0.5) * 30;
+        p.x = centerX(e) + (gameRandom() - 0.5) * e.w * 0.3;
+        p.y = centerY(e) + (gameRandom() - 0.5) * e.h * 0.3;
+        p.vx = (gameRandom() - 0.5) * 30; p.vy = (gameRandom() - 0.5) * 30;
         p.life = e._trailLife; p.max = e._trailLife; p.size = e._trailSize;
         p.color = e._trailColor; p.gravity = 0;
         particles.active.push(p);

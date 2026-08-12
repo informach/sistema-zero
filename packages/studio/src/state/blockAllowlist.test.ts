@@ -15,4 +15,20 @@ describe('CORE_BLOCKLY_BLOCK_TYPES', () => {
     )
     expect(faltando).toEqual([])
   })
+
+  it('persiste as primitives profissionais sem extensão', () => {
+    for (const type of [
+      'sz_val_json_data',
+      'sz_val_json_parse',
+      'sz_val_json_stringify',
+      'sz_val_gamepad_connected',
+      'sz_val_gamepad_axis',
+      'sz_val_gamepad_button',
+      'sz_js_storage_remove',
+      'sz_som_tone',
+      'sz_som_noise',
+    ]) {
+      expect(CORE_BLOCKLY_BLOCK_TYPES.has(type), type).toBe(true)
+    }
+  })
 })

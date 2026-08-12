@@ -12,6 +12,7 @@ import {
 } from '../codecs/programming/irToCode'
 import { canvasStatementToCode, isCanvasStatement } from '../codecs/web/canvasStatementToCode'
 import { programmingChildBodyEntries } from '../ir/programmingExecution'
+import { classicGameTwoDStatementToCode } from '../official-extensions/game-2d/classicCodec'
 import { canvas3DAddonImport } from '../three/canvas3dAddons'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
@@ -613,6 +614,7 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
       if (stmt.event === 'load') return stmt
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'g3d:forEachInSwarm':
+    case 'g3d:forEachHit':
     case 'g3d:forEachInGroup':
     case 'g3d:pruneOffscreen':
     case 'g3d:everyFrames':
@@ -625,6 +627,8 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
     case 'setIntervalSeconds':
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'animationLoop':
+      return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
+    case 'g3d:onStage':
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     default:
       return stmt
@@ -770,6 +774,7 @@ function compileStatementCode(
       base,
       childMapContext,
       classKey,
+      compileExpression: compileExpr,
       compileStatements,
       datasetAccess,
       elementExpr,
@@ -804,6 +809,10 @@ function compileStatementCode(
       return `${pad}__szAudio.pararMusica();`
     case 'somVolume':
       return `${pad}__szAudio.volume(${compileExpr(stmt.level, 0, identifiers, recAt(base))});`
+    case 'somTone':
+      return `${pad}__szAudio.tom(${JSON.stringify(stmt.wave)}, ${compileExpr(stmt.frequency, 0, identifiers, recAt(base))}, ${compileExpr(stmt.duration, 0, identifiers, recAt(base))}, ${compileExpr(stmt.level, 0, identifiers, recAt(base))});`
+    case 'somNoise':
+      return `${pad}__szAudio.ruido(${compileExpr(stmt.duration, 0, identifiers, recAt(base))}, ${compileExpr(stmt.level, 0, identifiers, recAt(base))});`
 
     case 'importStar':
       // Aspas simples (padrão do gerador). O nome entra pelo escopo para casar
@@ -1660,6 +1669,19 @@ function compileStatementCode(
   }
 
   function gameTwoDStatementToCode(): string {
+    const classicCode = classicGameTwoDStatementToCode(stmt, {
+      pad,
+      id: (name) => identifiers.get(name),
+      expression: (value) => compileExpr(valueToExpr(value), 0, identifiers, recAt(base)),
+      body: (statements) =>
+        compileStatements(
+          statements,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        ),
+    })
+    if (classicCode !== undefined) return classicCode
     switch (stmt.type) {
       // Tela cheia na PÁGINA inteira (document.documentElement). Só funciona a partir
       // de um gesto do aluno (clique/tecla) — daí ir dentro de um "Quando ...".
@@ -1789,6 +1811,16 @@ function compileStatementCode(
         )
         const id = stmt.__id ?? identifiers.reserveInternal('eventoDeTecla')
         return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      }
+      case 'g2d:onActionPressed': {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        )
+        const id = stmt.__id ?? identifiers.reserveInternal('eventoDeAcao')
+        return `${pad}SZGame2D.onActionPressed(${JSON.stringify(stmt.action)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
       }
       case 'g2d:onOverlap': {
         const body = compileStatements(
@@ -2474,6 +2506,64 @@ function compileStatementCode(
         return `${pad}SZGame3D.fpsControls(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.worldVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
       case 'g3d:resolveCollision':
         return `${pad}SZGame3D.resolveCollision(${identifiers.get(stmt.aVar)}, ${identifiers.get(stmt.bVar)});`
+      case 'g3d:classicPlatformer':
+        return `${pad}SZGame3D.classicPlatformer(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.worldVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
+      case 'g3d:forEachHit': {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        )
+        return `${pad}SZGame3D.forEachHit(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.side)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+      }
+      case 'g3d:objectFlag': {
+        const alvo = identifiers.get(stmt.objVar)
+        if (stmt.flag === 'carregar') return `${pad}SZGame3D.carryRiders(${alvo});`
+        if (stmt.flag === 'atravessavel') return `${pad}SZGame3D.passUnder(${alvo});`
+        if (stmt.flag === 'sem-sombra') return `${pad}SZGame3D.noShadow(${alvo});`
+        return `${pad}SZGame3D.paintPattern(${alvo}, ${JSON.stringify(stmt.pattern ?? 'xadrez')}, ${JSON.stringify(stmt.colorA ?? '#c8c8c8')}, ${JSON.stringify(stmt.colorB ?? '#585858')});`
+      }
+      case 'g3d:setObjectValue':
+        return `${pad}SZGame3D.setObjectValue(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.key)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))});`
+      case 'g3d:createPlatformScene':
+        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createPlatformScene(${JSON.stringify(stmt.canvasId)});`
+      case 'g3d:createHero':
+        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createHero(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)});`
+      case 'g3d:stage': {
+        const w = identifiers.get(stmt.worldVar)
+        if (stmt.op === 'tema')
+          return `${pad}SZGame3D.setStageTheme(${w}, ${JSON.stringify(stmt.text ?? 'dia')});`
+        if (stmt.op === 'montar')
+          return `${pad}SZGame3D.loadStage(${w}, ${JSON.stringify(stmt.text ?? '')});`
+        if (stmt.op === 'limpar') return `${pad}SZGame3D.clearStage(${w});`
+        if (stmt.op === 'recomecar') return `${pad}SZGame3D.stageReset(${w});`
+        if (stmt.op === 'passo')
+          return `${pad}SZGame3D.stageStep(${w}, ${identifiers.get(stmt.objVar ?? '')});`
+        if (stmt.op === 'camera')
+          return `${pad}SZGame3D.sideCamera(${w}, ${identifiers.get(stmt.objVar ?? '')});`
+        const a = compileExpr(valueToExpr(stmt.a ?? 1), 0, identifiers, recAt(base))
+        const b = compileExpr(valueToExpr(stmt.b ?? 1), 0, identifiers, recAt(base))
+        return `${pad}SZGame3D.setStageNumber(${w}, ${a}, ${b});`
+      }
+      case 'g3d:stageFrame': {
+        const alvo = identifiers.get(stmt.objVar)
+        const cena = identifiers.get(stmt.worldVar)
+        if (stmt.op === 'passo') return `${pad}SZGame3D.stageStep(${cena}, ${alvo});`
+        if (stmt.op === 'camera') return `${pad}SZGame3D.sideCamera(${cena}, ${alvo});`
+        return `${pad}SZGame3D.shootFire(${cena}, ${alvo});`
+      }
+      case 'g3d:onStage': {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        )
+        return `${pad}SZGame3D.onStageEvent(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.event)}, () => {
+${body}
+${pad}});`
+      }
       case 'g3d:fpsCamera':
         return `${pad}SZGame3D.fpsCamera(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
       case 'g3d:orbitCamera':
@@ -2664,6 +2754,46 @@ function compileStatementCode(
         return `${pad}SZGameKit.returnToMenu();`
       case 'gk:endGame':
         return `${pad}SZGameKit.endGame();`
+      case 'gk:fixedSetup':
+        return `${pad}SZGameKit.enableFixedSimulation({ hz: 60, seed: ${compileExpr(valueToExpr(stmt.seed), 0, identifiers, recAt(base))}, maxCatchUpSteps: 5 });`
+      case 'gk:onFixedUpdate': {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        )
+        return `${pad}SZGameKit.onFixedUpdate((${identifiers.get(stmt.dtName)}, ${identifiers.get(stmt.tickName)}) => {\n${body}\n${pad}});`
+      }
+      case 'gk:onCampaignEvent': {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        )
+        return `${pad}SZGameKit.onCampaignEvent(${JSON.stringify(stmt.event)}, () => {\n${body}\n${pad}});`
+      }
+      case 'gk:defineCampaign':
+        return `${pad}SZGameKit.defineCampaign({ id: ${JSON.stringify(stmt.id)}, version: ${compileExpr(valueToExpr(stmt.version), 0, identifiers, recAt(base))}, firstStage: ${JSON.stringify(stmt.firstStage)}, players: ${compileExpr(valueToExpr(stmt.players), 0, identifiers, recAt(base))}, seed: ${compileExpr(valueToExpr(stmt.seed), 0, identifiers, recAt(base))}, requiredGems: ${compileExpr(valueToExpr(stmt.requiredGems), 0, identifiers, recAt(base))} });`
+      case 'gk:defineCampaignStage':
+        return `${pad}SZGameKit.defineCampaignStage(${JSON.stringify(stmt.stage)});`
+      case 'gk:startCampaign':
+        return `${pad}SZGameKit.startCampaign(${JSON.stringify(stmt.stageId)});`
+      case 'gk:goToStage':
+        return `${pad}SZGameKit.goToStage(${JSON.stringify(stmt.stageId)});`
+      case 'gk:saveCampaign':
+        return `${pad}SZGameKit.saveCampaign(${stmt.slot});`
+      case 'gk:loadCampaign':
+        return `${pad}SZGameKit.loadCampaign(${stmt.slot});`
+      case 'gk:deleteCampaignSave':
+        return `${pad}SZGameKit.deleteCampaignSave(${stmt.slot});`
+      case 'gk:startReplayRecording':
+        return `${pad}SZGameKit.startReplayRecording();`
+      case 'gk:stopReplayRecording':
+        return `${pad}SZGameKit.stopReplayRecording();`
+      case 'gk:playLastReplay':
+        return `${pad}SZGameKit.playLastReplay();`
       case 'gk:onUpdate': {
         const body = compileStatements(
           stmt.body,
@@ -4138,11 +4268,13 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
       case 'g2d:onKey':
+      case 'g2d:onActionPressed':
       case 'g2d:onOverlap':
       case 'g2d:onJump':
       case 'g2d:onAnyInput':
       case 'g2d:onLevelEnter':
       case 'g2d:forEachInGroup':
+      case 'g2d:forEachTileContact':
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
       case 'g2d:onSpriteGroupOverlap':
@@ -4204,11 +4336,13 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
       case 'g2d:onKey':
+      case 'g2d:onActionPressed':
       case 'g2d:onOverlap':
       case 'g2d:onJump':
       case 'g2d:onAnyInput':
       case 'g2d:onLevelEnter':
       case 'g2d:forEachInGroup':
+      case 'g2d:forEachTileContact':
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
       case 'g2d:onSpriteGroupOverlap':
@@ -4359,6 +4493,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.key, names)
       collectExprIdentifiers(stmt.value, names)
       return
+    case 'storageRemove':
+      collectExprIdentifiers(stmt.key, names)
+      return
     case 'eventMethod':
       return
     case 'createElement':
@@ -4507,6 +4644,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'somStopMusic':
       return
     case 'somVolume':
+      collectExprIdentifiers(stmt.level, names)
+      return
+    case 'somTone':
+      collectExprIdentifiers(stmt.frequency, names)
+      collectExprIdentifiers(stmt.duration, names)
+      collectExprIdentifiers(stmt.level, names)
+      return
+    case 'somNoise':
+      collectExprIdentifiers(stmt.duration, names)
       collectExprIdentifiers(stmt.level, names)
       return
     case 'canvasSave':
@@ -5108,6 +5254,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
       case 'g2d:onKey':
+      case 'g2d:onActionPressed':
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
       case 'g2d:onOverlap':
@@ -5157,6 +5304,12 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       case 'g2d:forEachInGroup':
         names.add(stmt.groupVar)
         names.add(stmt.itemName)
+        for (const child of stmt.body) collectStatementIdentifiers(child, names)
+        return
+      case 'g2d:forEachTileContact':
+        names.add(stmt.spriteVar)
+        names.add(stmt.mapVar)
+        names.add(stmt.contactName)
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
       case 'g2d:pruneOffscreen':
@@ -6001,6 +6154,44 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.worldVar)
         collectExprIdentifiers(valueToExpr(stmt.speed), names)
         return
+      case 'g3d:classicPlatformer':
+        names.add(stmt.objVar)
+        names.add(stmt.worldVar)
+        collectExprIdentifiers(valueToExpr(stmt.speed), names)
+        collectExprIdentifiers(valueToExpr(stmt.jump), names)
+        return
+      case 'g3d:forEachHit':
+        names.add(stmt.objVar)
+        names.add(stmt.itemName)
+        for (const child of stmt.body) collectStatementIdentifiers(child, names)
+        return
+      case 'g3d:objectFlag':
+        names.add(stmt.objVar)
+        return
+      case 'g3d:setObjectValue':
+        names.add(stmt.objVar)
+        collectExprIdentifiers(valueToExpr(stmt.value), names)
+        return
+      case 'g3d:createPlatformScene':
+        names.add(stmt.varName)
+        return
+      case 'g3d:createHero':
+        names.add(stmt.varName)
+        names.add(stmt.worldVar)
+        return
+      case 'g3d:stageFrame':
+        names.add(stmt.worldVar)
+        names.add(stmt.objVar)
+        return
+      case 'g3d:stage':
+        names.add(stmt.worldVar)
+        if (stmt.a !== undefined) collectExprIdentifiers(valueToExpr(stmt.a), names)
+        if (stmt.b !== undefined) collectExprIdentifiers(valueToExpr(stmt.b), names)
+        return
+      case 'g3d:onStage':
+        names.add(stmt.worldVar)
+        for (const child of stmt.body) collectStatementIdentifiers(child, names)
+        return
       case 'g3d:resolveCollision':
         names.add(stmt.aVar)
         names.add(stmt.bVar)
@@ -6166,9 +6357,27 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       case 'gk:resume':
       case 'gk:returnToMenu':
       case 'gk:endGame':
+      case 'gk:defineCampaignStage':
+      case 'gk:startCampaign':
+      case 'gk:goToStage':
+      case 'gk:saveCampaign':
+      case 'gk:loadCampaign':
+      case 'gk:deleteCampaignSave':
+      case 'gk:startReplayRecording':
+      case 'gk:stopReplayRecording':
+      case 'gk:playLastReplay':
       case 'gk:drawBackground':
       case 'gk:setPauseKey':
       case 'gk:rpgHealHero':
+        return
+      case 'gk:fixedSetup':
+        collectExprIdentifiers(valueToExpr(stmt.seed), names)
+        return
+      case 'gk:defineCampaign':
+        collectExprIdentifiers(valueToExpr(stmt.version), names)
+        collectExprIdentifiers(valueToExpr(stmt.players), names)
+        collectExprIdentifiers(valueToExpr(stmt.seed), names)
+        collectExprIdentifiers(valueToExpr(stmt.requiredGems), names)
         return
       case 'gk:setScreenText':
         collectExprIdentifiers(valueToExpr(stmt.title), names)
@@ -6185,10 +6394,16 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         return
       case 'gk:onEnterState':
       case 'gk:onGameStart':
+      case 'gk:onCampaignEvent':
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
       case 'gk:onUpdate':
         names.add(stmt.dtName)
+        for (const child of stmt.body) collectStatementIdentifiers(child, names)
+        return
+      case 'gk:onFixedUpdate':
+        names.add(stmt.dtName)
+        names.add(stmt.tickName)
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
       case 'gk:onDraw':
@@ -7823,6 +8038,21 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       return
     case 'storageGet':
       collectExprIdentifiers(expr.key, names)
+      return
+    case 'jsonParse':
+    case 'jsonStringify':
+      collectExprIdentifiers(expr.value, names)
+      return
+    case 'gamepadConnected':
+      collectExprIdentifiers(expr.index, names)
+      return
+    case 'gamepadAxis':
+      collectExprIdentifiers(expr.index, names)
+      collectExprIdentifiers(expr.axis, names)
+      return
+    case 'gamepadButton':
+      collectExprIdentifiers(expr.index, names)
+      collectExprIdentifiers(expr.button, names)
       return
     case 'callMethodExpr':
       names.add(expr.objectVar)

@@ -94,6 +94,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_on_enemy_beam_hit',
       'sz_g2d_hurt_by_enemy',
       'sz_g2d_stomp_enemy',
+      'sz_g2d_set_enemy_stomp_mode',
+      'sz_g2d_update_enemy_shells',
       'sz_g2d_enemy_damage',
       // A VISTA fecha a gaveta: é o atalho de quem já tem VÁRIOS tipos.
       'sz_g2d_all_enemies_group',
@@ -105,6 +107,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_platformer',
       'sz_g2d_platformer_terrain',
+      'sz_g2d_classic_platformer',
       'sz_g2d_top_down',
       'sz_g2d_fly_free',
       'sz_g2d_flap',
@@ -139,6 +142,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_on_jump',
       'sz_g2d_key_down',
       'sz_g2d_pointer_down',
+      'sz_g2d_enable_classic_controls',
+      'sz_g2d_action_down',
+      'sz_g2d_action_pressed',
+      'sz_g2d_on_action_pressed',
     ],
   },
   {
@@ -156,6 +163,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_collide_platform_group',
       'sz_g2d_on_group_overlap',
       'sz_g2d_on_sprite_group_overlap',
+      'sz_g2d_for_each_tile_contact',
+      'sz_g2d_tile_contact_is',
+      'sz_g2d_set_tile_at_contact',
     ],
   },
   {
@@ -220,6 +230,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_show_fps',
       'sz_g2d_stage_border',
       'sz_g2d_set_backdrop',
+      'sz_g2d_draw_fade',
     ],
   },
   {
@@ -278,6 +289,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_score',
       'sz_g2d_draw_score',
       'sz_g2d_draw_label',
+      'sz_g2d_draw_pixel_text',
       'sz_g2d_draw_hearts',
       'sz_g2d_draw_bar',
     ],
@@ -303,6 +315,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_create_tilemap_from_asset',
       'sz_g2d_create_tilemap',
+      'sz_g2d_create_vector_tileset',
+      'sz_g2d_define_vector_tile',
+      'sz_g2d_create_vector_tilemap',
       'sz_g2d_fit_tilemap_to_stage',
       'sz_g2d_place_tilemap',
       'sz_g2d_draw_prepared_tilemap',
@@ -512,6 +527,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_move_toward: { SPEED: numShadow(2) },
   sz_g2d_platformer: { SPEED: numShadow(4), JUMP: numShadow(11) },
   sz_g2d_platformer_terrain: { SPEED: numShadow(4), JUMP: numShadow(11) },
+  sz_g2d_classic_platformer: { SPEED: numShadow(2.5), JUMP: numShadow(7) },
   sz_g2d_jump_on_ground: { JUMP: numShadow(14) },
   sz_g2d_jump_terrain: { JUMP: numShadow(14) },
   sz_g2d_control_dino: { JUMP: numShadow(15) },
@@ -535,6 +551,8 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     SIZE: numShadow(24),
   },
   sz_g2d_draw_label: { X: numShadow(12), Y: numShadow(30), SIZE: numShadow(20) },
+  sz_g2d_draw_pixel_text: { X: numShadow(8), Y: numShadow(8), SIZE: numShadow(2) },
+  sz_g2d_draw_fade: { PERCENT: numShadow(0) },
   sz_g2d_draw_hearts: {
     COUNT: numShadow(3),
     X: numShadow(12),
@@ -612,6 +630,9 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_enemy_type_param: { VALUE: numShadow(10) },
   sz_g2d_spawn_enemy: { X: numShadow(100), Y: numShadow(100) },
   sz_g2d_stomp_enemy: { BOUNCE: numShadow(8) },
+  sz_g2d_create_vector_tileset: { SIZE: numShadow(16) },
+  sz_g2d_define_vector_tile: { INDEX: numShadow(0) },
+  sz_g2d_set_tile_at_contact: { INDEX: numShadow(-1) },
   sz_g2d_draw_frame: {
     INDEX: numShadow(0),
     X: numShadow(100),

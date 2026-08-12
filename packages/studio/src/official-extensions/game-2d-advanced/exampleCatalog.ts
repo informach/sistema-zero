@@ -28,6 +28,7 @@ import {
   portasDoCasteloProfissionalExample,
   quebraBlocosExample,
   reinoAbertoExample,
+  reinoZeroProExample,
   safariDeMonstrosProfissionalExample,
   saltoNaFlorestaExample,
   sobreviventeProfissionalExample,
@@ -39,6 +40,7 @@ import {
 
 export const gameKitExamples = [
   meuPrimeiroJogoExample,
+  reinoZeroProExample,
   cacaMoedasExample,
   arenaGoblinsExample,
   vilaDoDragaoExample,

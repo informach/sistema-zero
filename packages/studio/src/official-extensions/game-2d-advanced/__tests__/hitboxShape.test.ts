@@ -166,11 +166,11 @@ describe('gk — molde redondo (é assim que tiro e inimigo ficam redondos)', ()
     h.api.defineMold('bolha', { w: 40, h: 40, shape: 'circulo' })
     const alvo = characterAt(h, 38, 38, 40, 40)
 
-    const primeira = h.api.spawnFromMold('bolha', 0, 0) as Record<string, unknown>
+    const primeira = h.api.spawnFromMold('bolha', 0, 0)
     expect(h.api.touching(primeira, alvo)).toBe(false) // redonda: o canto não pega
 
     h.api.recycle(primeira)
-    const reciclada = h.api.spawnFromMold('bolha', 0, 0) as Record<string, unknown>
+    const reciclada = h.api.spawnFromMold('bolha', 0, 0)
     expect(reciclada).toBe(primeira) // é o MESMO objeto do pool
     expect(h.api.touching(reciclada, alvo)).toBe(false)
   })
@@ -181,7 +181,7 @@ describe('gk — molde redondo (é assim que tiro e inimigo ficam redondos)', ()
 
     h.api.defineMold('caixote', { w: 40, h: 40 })
     const alvo = characterAt(h, 38, 38, 40, 40)
-    const caixote = h.api.spawnFromMold('caixote', 0, 0) as Record<string, unknown>
+    const caixote = h.api.spawnFromMold('caixote', 0, 0)
 
     expect(h.api.touching(caixote, alvo)).toBe(true)
   })

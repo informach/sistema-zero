@@ -25,6 +25,7 @@ import {
   platformerExample,
   pongExample,
   portasDoCasteloExample,
+  reinoZeroExample,
   safariDeMonstrosExample,
   sobreviventeExample,
   stickHeroExample,
@@ -168,6 +169,11 @@ export const gameTwoDExamples = [
   withMetadata(portasDoCasteloExample, {
     difficulty: 'advanced',
     concepts: ['plataformas', 'fases', 'transições'],
+    genre: 'plataforma',
+  }),
+  withMetadata(reinoZeroExample, {
+    difficulty: 'advanced',
+    concepts: ['plataformas', 'campanha', 'tilemap vetorial', 'dois jogadores', 'chefes'],
     genre: 'plataforma',
   }),
   withMetadata(valeEnsolaradoExample, {

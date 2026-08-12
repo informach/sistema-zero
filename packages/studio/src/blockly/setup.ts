@@ -10,6 +10,7 @@ import { registerAddonModuleVisibilityExtension } from './blocks/addonModuleExte
 import { registerAnimLoopMutator } from './blocks/animLoopMutator'
 import { registerArgsMutator } from './blocks/argsMutator'
 import { registerArrayMutator } from './blocks/arrayMutator'
+import { registerCampaignStageMutator } from './blocks/campaignStageMutator'
 import { registerEventTargetExtension } from './blocks/eventTargetExtension'
 import { registerExtendsMutator } from './blocks/extendsMutator'
 import { registerIfElseMutator } from './blocks/ifElseMutator'
@@ -21,8 +22,10 @@ import { patchDeleteContextMenus } from './deleteContextMenu'
 import { registerFieldAddonPicker } from './fields/FieldAddonPicker'
 import { registerFieldAnimationPicker } from './fields/FieldAnimationPicker'
 import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
+import { registerFieldCampaignStage } from './fields/FieldCampaignStage'
 import { registerFieldClassPicker } from './fields/FieldClassPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
+import { registerFieldJsonData } from './fields/FieldJsonData'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
@@ -287,6 +290,8 @@ export function ensureBlocklyInitialized(): void {
   // visual) dos blocos de Jogo 2D — mesma exigência de ordem (registrados antes da
   // definição dos blocos da extensão, que veem esses tipos de campo).
   registerFieldAnimationPicker()
+  registerFieldCampaignStage()
+  registerFieldJsonData()
   registerFieldSolidTilesPicker()
   registerFieldTileGrid()
   // Campos de seleção do Canvas 3D (three.js): addon (import → caminho auto) e classe
@@ -307,6 +312,7 @@ export function ensureBlocklyInitialized(): void {
   // Os mutators precisam estar registrados antes de qualquer instância dos
   // blocos que os usam ser criada (init aplica o mutator pelo nome).
   registerAnimLoopMutator()
+  registerCampaignStageMutator()
   registerArgsMutator()
   registerArrayMutator()
   registerObjectMutator()

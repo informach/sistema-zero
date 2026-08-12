@@ -1,5 +1,3 @@
-export type GameKitCallback = (...args: unknown[]) => unknown
-
 export interface GameKitSetupOptions {
   width?: number
   height?: number
@@ -17,6 +15,198 @@ export interface GameKitEntity {
   color?: string
   image?: string
   [property: string]: unknown
+}
+
+export const GAME_KIT_ACTIONS = [
+  'esquerda',
+  'direita',
+  'cima',
+  'baixo',
+  'pular',
+  'correr',
+  'agir',
+  'pausar',
+  'confirmar',
+  'voltar',
+] as const
+
+export type GameKitAction = (typeof GAME_KIT_ACTIONS)[number]
+
+const gameKitActionSet = new Set<string>(GAME_KIT_ACTIONS)
+
+export function isGameKitAction(value: unknown): value is GameKitAction {
+  return typeof value === 'string' && gameKitActionSet.has(value)
+}
+
+export const GAME_KIT_CAMPAIGN_ENTITY_KINDS = [
+  'hero',
+  'coin',
+  'gem',
+  'walker',
+  'flyer',
+  'spiky',
+  'shell',
+  'movingPlatform',
+  'checkpoint',
+  'exit',
+  'secretExit',
+  'boss',
+  'powerup',
+  'portal',
+  'sign',
+] as const
+
+export type GameKitCampaignEntityKind = (typeof GAME_KIT_CAMPAIGN_ENTITY_KINDS)[number]
+
+export type GameKitInputDevice = 'teclado' | 'toque' | 'controle-1' | 'controle-2'
+
+export const GAME_KIT_CAMPAIGN_EVENT_FIELDS = [
+  'event',
+  'id',
+  'kind',
+  'stageId',
+  'reason',
+  'target',
+  'value',
+  'complete',
+  'journey',
+  'column',
+  'row',
+] as const
+
+export type GameKitCampaignEventField = (typeof GAME_KIT_CAMPAIGN_EVENT_FIELDS)[number]
+
+const gameKitCampaignEventFieldSet = new Set<string>(GAME_KIT_CAMPAIGN_EVENT_FIELDS)
+
+export function isGameKitCampaignEventField(value: unknown): value is GameKitCampaignEventField {
+  return typeof value === 'string' && gameKitCampaignEventFieldSet.has(value)
+}
+
+export type GameKitCampaignEventValue = string | number | boolean
+export type GameKitCampaignEventPayload = Readonly<{
+  id?: string
+  kind?: string
+  stageId?: string
+  reason?: string
+  target?: string
+  value?: GameKitCampaignEventValue
+  complete?: boolean
+  journey?: 1 | 2
+  column?: number
+  row?: number
+  x?: number
+  y?: number
+  w?: number
+  h?: number
+  boss?: boolean
+}>
+
+export interface GameKitCampaignEntityProps {
+  speed?: number
+  direction?: -1 | 1
+  range?: number
+  health?: number
+  requiresBoss?: boolean
+}
+
+export interface GameKitStageEntity {
+  kind: GameKitCampaignEntityKind
+  id: string
+  x: number
+  y: number
+  variant?: string
+  props?: GameKitCampaignEntityProps
+}
+
+export interface GameKitStageTrigger {
+  kind: string
+  x: number
+  y: number
+  w: number
+  h: number
+  target?: string
+  value?: string | number | boolean
+}
+
+export interface GameKitCampaignStage {
+  schemaVersion: 1
+  id: string
+  world: number
+  order: number
+  theme: string
+  width: number
+  height: number
+  tiles: string[]
+  entities: GameKitStageEntity[]
+  triggers: GameKitStageTrigger[]
+  nextStage?: string
+  secretStage?: string
+  timeLimit?: number
+}
+
+export interface GameKitCampaignSave {
+  schemaVersion: 1
+  campaignVersion: number
+  stageId: string
+  checkpointId: string
+  checkpointX: number
+  checkpointY: number
+  activePlayer: number
+  players: Array<{ lives: number; score: number; form: GameKitHeroForm }>
+  coins: number
+  gems: string[]
+  secrets: string[]
+  journey: 1 | 2
+  settings: { volume: number; reducedMotion: boolean; highContrast: boolean }
+  checksum: string
+}
+
+export interface GameKitReplayInitialState {
+  progress: GameKitCampaignSave
+  hero: { x: number; y: number; vx: number; vy: number }
+  checkpoint: { id: string; x: number; y: number }
+  elapsed: number
+  randomState: number
+}
+
+export interface GameKitReplay {
+  schemaVersion: 1
+  campaignVersion: number
+  seed: number
+  hz: 60
+  ticks: number
+  initial: GameKitReplayInitialState | null
+  runs: Array<{ mask: number; ticks: number }>
+  checksums: Array<{ tick: number; hash: string }>
+}
+
+export type GameKitHeroForm = 'pequeno' | 'forte' | 'invencivel'
+
+export interface GameKitCampaignOptions {
+  id: string
+  version: number
+  firstStage: string
+  players?: number
+  seed?: number
+  requiredGems?: number
+}
+
+export interface GameKitSimulationStats {
+  enabled: boolean
+  hz: number
+  tick: number
+  alpha: number
+  droppedSeconds: number
+  lastFrameSteps: number
+}
+
+export interface GameKitCampaignSaveInfo {
+  slot: number
+  available: boolean
+  compatible: boolean
+  corrupted: boolean
+  stageId: string
+  journey: number
 }
 
 /**
@@ -370,6 +560,44 @@ export const GAME_KIT_ENUMERABLE_API_KEYS = [
   'drawBackdrop',
   'showHitboxes',
   'setHitboxShape',
+  'enableFixedSimulation',
+  'onFixedUpdate',
+  'fixedTick',
+  'renderAlpha',
+  'simulationStats',
+  'bindAction',
+  'actionDown',
+  'actionPressed',
+  'actionReleased',
+  'activeInputDevice',
+  'defineCampaign',
+  'defineCampaignStage',
+  'startCampaign',
+  'goToStage',
+  'nextStage',
+  'warpToStage',
+  'setCampaignCheckpoint',
+  'restartAtCheckpoint',
+  'currentStage',
+  'currentWorld',
+  'onCampaignEvent',
+  'campaignEventValue',
+  'configureSaveSlots',
+  'saveCampaign',
+  'loadCampaign',
+  'deleteCampaignSave',
+  'campaignSaveInfo',
+  'startReplayRecording',
+  'stopReplayRecording',
+  'playReplay',
+  'playLastReplay',
+  'replayActive',
+  'replayHash',
+  'setHeroForm',
+  'heroForm',
+  'hurtHeroForm',
+  'campaignHero',
+  'campaignProgress',
 ] as const
 
 export type GameKitEnumerableApiKey = (typeof GAME_KIT_ENUMERABLE_API_KEYS)[number]
@@ -402,8 +630,53 @@ export interface GameKitKnownApi {
   returnToMenu(): void
   endGame(): void
   onUpdate(fn: (deltaSeconds: number) => void): void
+  enableFixedSimulation(options?: { hz?: number; seed?: number; maxCatchUpSteps?: number }): void
+  onFixedUpdate(fn: (deltaSeconds: number, tick: number) => void): void
+  fixedTick(): number
+  renderAlpha(): number
+  simulationStats(): GameKitSimulationStats
+  bindAction(action: GameKitAction, keys: string, gamepadButton?: number): boolean
+  actionDown(action: GameKitAction): boolean
+  actionPressed(action: GameKitAction): boolean
+  actionReleased(action: GameKitAction): boolean
+  activeInputDevice(): GameKitInputDevice
+  defineCampaign(options: GameKitCampaignOptions): boolean
+  defineCampaignStage(stage: GameKitCampaignStage): boolean
+  startCampaign(stageId?: string): boolean
+  goToStage(stageId: string): boolean
+  nextStage(): boolean
+  warpToStage(stageId: string): boolean
+  setCampaignCheckpoint(id: string, x: number, y: number): void
+  restartAtCheckpoint(): boolean
+  currentStage(): string
+  currentWorld(): number
+  onCampaignEvent(name: string, fn: (payload: GameKitCampaignEventPayload) => void): void
+  campaignEventValue(field: GameKitCampaignEventField): GameKitCampaignEventValue
+  configureSaveSlots(count?: number): void
+  saveCampaign(slot: number): boolean
+  loadCampaign(slot: number): boolean
+  deleteCampaignSave(slot: number): boolean
+  campaignSaveInfo(slot: number): GameKitCampaignSaveInfo
+  startReplayRecording(): void
+  stopReplayRecording(): GameKitReplay | null
+  playReplay(replay: GameKitReplay): boolean
+  playLastReplay(): boolean
+  replayActive(): boolean
+  replayHash(): string
+  setHeroForm(form: GameKitHeroForm): void
+  heroForm(): GameKitHeroForm
+  hurtHeroForm(): boolean
+  campaignHero(): GameKitEntity | null
+  campaignProgress(): GameKitCampaignSave
   onDraw(fn: (context: CanvasRenderingContext2D) => void): void
   createCharacter(opts?: Partial<GameKitEntity> & { speed?: number }): GameKitEntity
+  placeCharacter(c: GameKitEntity, x: number, y: number): void
+  setHitbox(who: GameKitEntity, ox: number, oy: number, w: number, h: number): void
+  setHitboxShape(who: GameKitEntity, shape: string, radius?: number): void
+  setProperty(who: GameKitEntity, prop: string, value: unknown): void
+  defineMold(name: string, opts?: Record<string, unknown>): void
+  spawnFromMold(name: string, x: number, y: number): GameKitEntity
+  recycle(e: GameKitEntity): void
   moveWithKeys(c: GameKitEntity, dt: number): void
   keepOnScreen(c: GameKitEntity): void
   drawCharacter(c: GameKitEntity): void
@@ -455,5 +728,3 @@ export const GAME_KIT_API_KEYS = [
   'runProject',
   ...GAME_KIT_ENUMERABLE_API_KEYS,
 ] as const satisfies readonly (keyof GameKitRuntimeApi)[]
-
-export type GameKitApiKey = (typeof GAME_KIT_API_KEYS)[number]

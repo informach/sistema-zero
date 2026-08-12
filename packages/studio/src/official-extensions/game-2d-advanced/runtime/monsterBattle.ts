@@ -292,8 +292,8 @@ export const gameKitMonsterBattleRuntime = `
     }
     if (!inGrass) return;
     if (!chance(pkm.rate)) return;
-    var pick = pkm.wild[Math.floor(Math.random() * pkm.wild.length)];
-    var lv = pick.min + Math.floor(Math.random() * (Math.max(pick.min, pick.max) - pick.min + 1));
+    var pick = pkm.wild[Math.floor(gameRandom() * pkm.wild.length)];
+    var lv = pick.min + Math.floor(gameRandom() * (Math.max(pick.min, pick.max) - pick.min + 1));
     pkmBattleWild(pick.species, lv);
   }
 
@@ -434,7 +434,7 @@ export const gameKitMonsterBattleRuntime = `
     }
     var mult = pkmAdvantage(m.type, pkm.species[dfd.species].type);
     var base = m.dmg + pkmStat(atk, 'str') / 2;
-    var vary = 0.85 + Math.random() * 0.3;
+    var vary = 0.85 + gameRandom() * 0.3;
     // ⭐ "Não teve efeito!" tem que tirar ZERO. O piso de 1 vale para o golpe fraco
     // (senão a defesa alta trava a batalha para sempre), mas quando a vantagem é 0 a
     // fala promete imunidade — e tirar 1 mesmo assim é mentir para a criança.
@@ -501,7 +501,7 @@ export const gameKitMonsterBattleRuntime = `
   function pkmEnemyTurn() {
     var b = pkm.battle;
     var sp = pkm.species[b.foe.species];
-    var mv = sp.moves.length ? pkm.moves[sp.moves[Math.floor(Math.random() * sp.moves.length)]] : null;
+    var mv = sp.moves.length ? pkm.moves[sp.moves[Math.floor(gameRandom() * sp.moves.length)]] : null;
     // Espécie sem golpe ensinado (o esquecimento nº 1 previsível). 'menu' é fase de
     // REPOUSO: pôr a fase sem ABRIR o menu congelava a batalha para sempre.
     if (!mv) {

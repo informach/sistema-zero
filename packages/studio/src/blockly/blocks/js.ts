@@ -525,6 +525,70 @@ export const JS_BLOCKS: BlockDefinition[] = [
       'Salva um valor no navegador. O permanente fica salvo entre visitas; o da sessão só vale nesta aba.',
   },
   {
+    type: 'sz_js_storage_remove',
+    placement: 'command',
+    message0: 'apagar de %1 a chave %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'STORE',
+        options: [
+          ['permanente (fica entre visitas)', 'local'],
+          ['só nesta sessão (zera ao fechar)', 'session'],
+        ],
+      },
+      { type: 'field_input', name: 'KEY', text: 'nome' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Remove uma informação salva no navegador.',
+  },
+  {
+    type: 'sz_js_storage_set_dynamic',
+    placement: 'command',
+    message0: 'guardar em %1 na chave calculada %2 o valor %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'STORE',
+        options: [
+          ['permanente (fica entre visitas)', 'local'],
+          ['só nesta sessão (zera ao fechar)', 'session'],
+        ],
+      },
+      { type: 'input_value', name: 'KEY', check: 'JSValue' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Salva usando uma chave vinda de variável, conta, função ou outro bloco de valor.',
+  },
+  {
+    type: 'sz_js_storage_remove_dynamic',
+    placement: 'command',
+    message0: 'apagar de %1 a chave calculada %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'STORE',
+        options: [
+          ['permanente (fica entre visitas)', 'local'],
+          ['só nesta sessão (zera ao fechar)', 'session'],
+        ],
+      },
+      { type: 'input_value', name: 'KEY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Remove uma informação usando uma chave calculada.',
+  },
+  {
     type: 'sz_js_fetch_json',
     bodyExecution: 'deferred-callback',
     placement: 'command',
@@ -605,7 +669,11 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_js_alert_var',
     ],
   },
-  { name: '💾 Dados & Web', colour: '#b9820a', types: ['sz_js_storage_set', 'sz_js_fetch_json'] },
+  {
+    name: '💾 Dados & Web',
+    colour: '#b9820a',
+    types: ['sz_js_storage_set', 'sz_js_storage_remove', 'sz_js_fetch_json'],
+  },
   {
     name: '⏳ Assíncrono',
     colour: '#a67608',

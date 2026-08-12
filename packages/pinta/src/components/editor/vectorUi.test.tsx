@@ -272,6 +272,42 @@ describe('UI vetorial (F5)', () => {
     })
   })
 
+  it('duplicar um grupo cria outro grupo independente', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    drawRect(stage, [112, 16], [144, 48])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 20, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 20, clientX: 160, clientY: 64 })
+    fireEvent.pointerUp(stage, { pointerId: 20 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selGroup })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selGroup }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selDuplicate }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(4)
+    })
+
+    // Escolher um ORIGINAL deve pegar só o grupo original. Se a duplicação
+    // reutilizar o groupId, o botão Apagar levará também as duas cópias.
+    const original = stage.querySelector('rect[fill="#78dc52"]')
+    if (!original) throw new Error('retângulo original esperado')
+    fireEvent.pointerDown(original, {
+      isPrimary: true,
+      pointerId: 21,
+      clientX: 20,
+      clientY: 20,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 21, clientX: 20, clientY: 20 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selRemove }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+    })
+  })
+
   it('alinhar: uma forma sozinha centraliza na TELA', async () => {
     await openVectorEditor()
     const stage = measureStage()
@@ -483,5 +519,351 @@ describe('UI vetorial (F5)', () => {
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: `${COPY.vector.fill}: vermelho` })).toBeNull()
     })
+  })
+})
+
+/**
+ * Edicao de PONTOS. A ferramenta ja existia (arrastar um no), mas nao tinha
+ * nenhum teste de UI: escolher varios, acrescentar, apagar e fechar sao novos.
+ */
+describe('editar os pontos do vetor', () => {
+  /** Quatro pontos exatos pela CANETA: da coordenadas previsiveis aos nos. */
+  async function drawQuad(stage: HTMLElement): Promise<SVGPolygonElement> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.pen }))
+    for (const [x, y] of [
+      [100, 100],
+      [300, 100],
+      [300, 250],
+      [100, 250],
+    ]) {
+      fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: x, clientY: y })
+    }
+    fireEvent.keyDown(window, { key: 'Enter' })
+    return await waitFor(() => {
+      const polygon = stage.querySelector('polygon')
+      if (!polygon) throw new Error('o poligono da caneta nao apareceu')
+      return polygon as SVGPolygonElement
+    })
+  }
+
+  /**
+   * Liga a ferramenta de pontos. A caneta ja deixa a forma SELECIONADA, entao
+   * basta trocar de ferramenta. Tocar no miolo dela abriria um laco de nos.
+   */
+  function startNodeEditing(): void {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
+  }
+
+  /** Toque completo num no (sem o solto, o gesto fica aberto e trava o proximo). */
+  function tapNode(node: Element, pointerId: number, at: [number, number]): void {
+    fireEvent.pointerDown(node, { isPrimary: true, pointerId, clientX: at[0], clientY: at[1] })
+    fireEvent.pointerUp(node, { pointerId })
+  }
+
+  // ⚠️ Mirar `[data-node]`: as ALÇAS de bézier também são <circle> no palco.
+  const nodeCircles = (stage: HTMLElement): SVGCircleElement[] =>
+    [...stage.querySelectorAll('circle[data-node]')] as SVGCircleElement[]
+  const handleCircles = (stage: HTMLElement): SVGCircleElement[] =>
+    [...stage.querySelectorAll('circle[data-handle]')] as SVGCircleElement[]
+  const chosenNodes = (stage: HTMLElement): SVGCircleElement[] =>
+    nodeCircles(stage).filter((c) => c.getAttribute('fill') === '#00a0c8')
+
+  it('mostra um no por ponto e a caixa de selecao escolhe VARIOS', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+    expect(chosenNodes(stage).length).toBe(0)
+
+    // Caixa de (50,50) a (320,150): pega os dois nos de CIMA, nao os de baixo.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 2, clientX: 50, clientY: 50 })
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 320, clientY: 150 })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(2)
+    })
+  })
+
+  it('tocar no traco acrescenta um ponto sem mexer no resto', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    const quad = await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+
+    // (200,100) esta em cima do lado de cima, entre (100,100) e (300,100).
+    fireEvent.pointerDown(quad, { isPrimary: true, pointerId: 3, clientX: 200, clientY: 100 })
+
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(5)
+    })
+    // Continua sendo poligono: acrescentar ponto reto nao cria curva.
+    expect(stage.querySelector('polygon')).toBeTruthy()
+    // E o ponto novo ja nasce escolhido (quem criou quer arrastar).
+    expect(chosenNodes(stage).length).toBe(1)
+  })
+
+  it('desfazer a insercao limpa o indice do ponto que deixou de existir', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    const quad = await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+
+    fireEvent.pointerDown(quad, { isPrimary: true, pointerId: 30, clientX: 200, clientY: 100 })
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(5)
+      expect(chosenNodes(stage).length).toBe(1)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+      expect(chosenNodes(stage).length).toBe(0)
+    })
+
+    // Sem ponto escolhido, Delete volta a apagar a forma inteira.
+    fireEvent.keyDown(window, { key: 'Delete' })
+    await waitFor(() => {
+      expect(stage.querySelector('polygon')).toBeNull()
+    })
+  })
+
+  /**
+   * O caso que trava a colisao de teclado: o Delete ja estava ligado a "apagar a
+   * forma inteira" num listener de window. Com NOS escolhidos ele tem que apagar
+   * o PONTO; sem nenhum, a forma.
+   */
+  it('Delete apaga o PONTO escolhido, e sem ponto escolhido apaga a FORMA', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+
+    const first = nodeCircles(stage)[0]
+    if (!first) throw new Error('sem no para escolher')
+    tapNode(first, 4, [100, 100])
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(1)
+    })
+
+    fireEvent.keyDown(window, { key: 'Delete' })
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(3)
+    })
+    // A forma continua viva.
+    expect(stage.querySelector('polygon')).toBeTruthy()
+
+    // Agora SEM no escolhido: o Delete volta a valer para a forma inteira.
+    fireEvent.keyDown(window, { key: 'Delete' })
+    await waitFor(() => {
+      expect(stage.querySelector('polygon')).toBeNull()
+    })
+  })
+
+  it('nao deixa o poligono ficar com menos de 3 pontos', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+
+    // Caixa que pega os dois de cima e depois os dois de baixo = todos os 4.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 5, clientX: 40, clientY: 40 })
+    fireEvent.pointerMove(stage, { pointerId: 5, clientX: 400, clientY: 300 })
+    fireEvent.pointerUp(stage, { pointerId: 5 })
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(4)
+    })
+
+    fireEvent.keyDown(window, { key: 'Delete' })
+    // Recusado: os 4 nos continuam la e a forma nao sumiu.
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.nodeFloor(3))).toBeTruthy()
+    })
+    expect(nodeCircles(stage).length).toBe(4)
+  })
+
+  it('a faixa de cima troca para as acoes de PONTO e fecha o caminho', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+
+    // Com a Selecionar, a faixa e a de formas.
+    expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+
+    startNodeEditing()
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
+    })
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.selectionBar })).toBeNull()
+    // Poligono nasce FECHADO, entao o botao oferece ABRIR.
+    const abrir = screen.getByRole('button', { name: COPY.vector.nodeOpen })
+
+    fireEvent.click(abrir)
+    await waitFor(() => {
+      // Abrir converte em traco (poligono e sempre fechado) e o d nao tem Z.
+      const path = stage.querySelector('path')
+      expect(path?.getAttribute('d')?.includes('Z')).toBe(false)
+    })
+    expect(screen.getByRole('button', { name: COPY.vector.nodeClose })).toBeTruthy()
+  })
+
+  it('as ALCAS aparecem so no no escolhido, e so quando ha curva', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+    // Poligono e todo de quinas: nenhuma alca, mesmo escolhendo um no.
+    const first = nodeCircles(stage)[0]
+    if (!first) throw new Error('sem no')
+    tapNode(first, 10, [100, 100])
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(1)
+    })
+    expect(handleCircles(stage).length).toBe(0)
+
+    const nodeHits = [...stage.querySelectorAll('circle[data-node-hit]')]
+    expect(nodeHits).toHaveLength(4)
+    for (const hit of nodeHits) {
+      expect(Number(hit.getAttribute('r')) * 2).toBeGreaterThanOrEqual(44)
+    }
+
+    // "Ponto suave" arredonda a quina: as duas alcas do no aparecem.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeSmooth }))
+    await waitFor(() => {
+      expect(handleCircles(stage).length).toBe(2)
+    })
+    const handleHits = [...stage.querySelectorAll('circle[data-handle-hit]')]
+    expect(handleHits).toHaveLength(2)
+    for (const hit of handleHits) {
+      expect(Number(hit.getAttribute('r')) * 2).toBeGreaterThanOrEqual(44)
+    }
+    // Vira traco (poligono nao guarda curva) e continua com 4 pontos.
+    expect(stage.querySelector('path')).toBeTruthy()
+    expect(nodeCircles(stage).length).toBe(4)
+
+    // "Ponto de canto" desfaz a curvatura daquele no.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeCorner }))
+    await waitFor(() => {
+      expect(handleCircles(stage).length).toBe(0)
+    })
+  })
+
+  it('curva e reta trocam a curvatura do TRECHO entre os pontos', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+    // Escolhe os dois de cima: o trecho entre eles e o alvo.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 11, clientX: 40, clientY: 40 })
+    fireEvent.pointerMove(stage, { pointerId: 11, clientX: 320, clientY: 150 })
+    fireEvent.pointerUp(stage, { pointerId: 11 })
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(2)
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeToCurve }))
+    await waitFor(() => {
+      const path = stage.querySelector('path')
+      // Um C no d = o trecho virou curva; o resto segue reto (L).
+      expect(path?.getAttribute('d')?.includes('C')).toBe(true)
+    })
+    // A curva nasce em cima da reta, entao o desenho NAO se mexe: os controles
+    // ficam em 1/3 e 2/3 do trecho de (100,100) a (300,100).
+    expect(stage.querySelector('path')?.getAttribute('d')).toContain(
+      'C 166.67 100 233.33 100 300 100',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeToLine }))
+    await waitFor(() => {
+      // Some a curvatura. ⚠️ A forma NAO volta a ser poligono: a conversao e de
+      // mao unica (o caminho de volta e o Ctrl+Z), entao o que se confere e o
+      // `d` sem nenhum C.
+      expect(stage.querySelector('path')?.getAttribute('d')?.includes('C')).toBe(false)
+    })
+  })
+
+  it('suavizar o traco pode ser apertado de novo e vai tirando pontos', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+
+    // 1o toque: arredonda os 4 cantos sem tirar ponto.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeSimplify }))
+    await waitFor(() => {
+      expect(stage.querySelector('path')).toBeTruthy()
+    })
+    expect(nodeCircles(stage).length).toBe(4)
+
+    // 2o toque: agora aperta a regua e o traco perde ponto.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeSimplify }))
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBeLessThan(4)
+    })
+  })
+
+  it('na tela estreita oferece todas as acoes de pontos da faixa desktop', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      const stage = measureStage()
+      await drawQuad(stage)
+      startNodeEditing()
+      await waitFor(() => {
+        expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
+      })
+      for (const label of [
+        COPY.vector.nodeOpen,
+        COPY.vector.nodeRemove,
+        COPY.vector.nodeToCurve,
+        COPY.vector.nodeToLine,
+        COPY.vector.nodeSmooth,
+        COPY.vector.nodeCorner,
+        COPY.vector.nodeSimplify,
+      ]) {
+        expect(screen.getByRole('button', { name: label })).toBeTruthy()
+      }
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
   })
 })

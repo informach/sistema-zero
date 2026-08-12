@@ -859,23 +859,14 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_input_key_pressed',
     message0: 'a tecla %1 está apertada?',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'KEY',
-        options: [
-          ['→ seta direita', 'ArrowRight'],
-          ['← seta esquerda', 'ArrowLeft'],
-          ['↑ seta para cima', 'ArrowUp'],
-          ['↓ seta para baixo', 'ArrowDown'],
-          ['barra de espaço', 'Space'],
-          ['Enter', 'Enter'],
-        ],
-      },
-    ],
+    // Texto, e não dropdown fechado: jogos profissionais precisam preservar
+    // letras, números, Escape/Delete e qualquer KeyboardEvent.key válido.
+    // Projetos antigos continuam compatíveis porque o campo segue se chamando KEY.
+    args0: [{ type: 'field_input', name: 'KEY', text: 'ArrowRight' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Verdadeiro enquanto a tecla está sendo segurada. Use dentro de um "se".',
+    tooltip:
+      'Verdadeiro enquanto a tecla está sendo segurada. Exemplos: ArrowRight, Space, Enter, a, Escape ou Delete.',
   },
   {
     type: 'sz_input_pointer_x',

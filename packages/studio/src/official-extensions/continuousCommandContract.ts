@@ -36,6 +36,10 @@ export const CONTINUOUS_EXTENSION_COMMANDS = [
   { blockType: 'sz_g3d_move_forward', statementType: 'g3d:moveForward' },
   { blockType: 'sz_g3d_step_body', statementType: 'g3d:stepBody' },
   { blockType: 'sz_g3d_platformer_controls', statementType: 'g3d:platformerControls' },
+  { blockType: 'sz_g3d_classic_platformer', statementType: 'g3d:classicPlatformer' },
+  { blockType: 'sz_g3d_stage_step', statementType: 'g3d:stageFrame' },
+  { blockType: 'sz_g3d_side_camera', statementType: 'g3d:stageFrame' },
+  { blockType: 'sz_g3d_shoot_fire', statementType: 'g3d:stageFrame' },
   { blockType: 'sz_g3d_fps_controls', statementType: 'g3d:fpsControls' },
 ] as const
 

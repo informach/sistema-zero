@@ -167,8 +167,17 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
       if (t - s._born > max) _removeGroupItemAt(group, i);
     }
   }
-  // ---- Aparência do sprite (espelhar, transparência, tamanho) ----
-  function flipSprite(sprite, direction) { if (sprite) sprite.facing = (direction === 'left') ? -1 : 1; }
+  // ---- Aparência do sprite (direção, transparência, tamanho) ----
+  function flipSprite(sprite, direction) {
+    if (!sprite) return;
+    var dir = direction === 'left' || direction === 'up' || direction === 'down'
+      ? direction
+      : 'right';
+    sprite.direction = dir;
+    // facing continua sincronizado para jogos antigos e para os helpers que
+    // usam o lado horizontal ao escolher a direção de movimento ou disparo.
+    sprite.facing = dir === 'left' ? -1 : 1;
+  }
   function setOpacity(sprite, percent) {
     if (!sprite) return;
     var p = _finiteNumber(percent, 100);

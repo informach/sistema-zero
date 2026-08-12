@@ -36,16 +36,38 @@ import {
 } from '../../../vector/geometry'
 import {
   isVectorGradient,
+  MAX_POLYGON_POINTS,
   type VectorFill,
   type VectorGradient,
   type VectorShape,
   type VectorStroke,
 } from '../../../vector/model'
+import {
+  type EditablePath,
+  fromEditablePath,
+  insertNodeAt,
+  makeCorner,
+  makeSmooth,
+  minNodesFor,
+  moveNodes,
+  removeNodes,
+  segmentsForNodes,
+  setClosed,
+  setSegmentCurved,
+  smoothPath,
+  toEditablePath,
+} from '../../../vector/pathNodes'
 import { DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
 import { useToast } from '../../ui/Toast'
 import { useEditor, useEditorStores, useSession } from '../editorContext'
 import { useToolShortcuts } from '../useToolShortcuts'
-import { MAX_CUSTOM_COLORS, paletteSwatches, TOOL_SHORTCUTS, type VectorTool } from './vectorTools'
+import {
+  cloneShapesWithNewIds,
+  MAX_CUSTOM_COLORS,
+  paletteSwatches,
+  TOOL_SHORTCUTS,
+  type VectorTool,
+} from './vectorTools'
 
 /** Qual "canal" de cor recebe o próximo clique na paleta. */
 export type VectorColorChannel = 'fill' | 'stroke'
@@ -66,6 +88,25 @@ export interface VectorEditorContextValue {
   setSelectedIds: Dispatch<SetStateAction<string[]>>
   selected: VectorShape[]
   single: VectorShape | null
+  /** A forma em edição de PONTOS: a única selecionada, com a ferramenta ligada. */
+  nodeTarget: VectorShape | null
+  /** Os nós dessa forma, já na visão âncora+alças. `null` = não dá para editar. */
+  nodePath: EditablePath | null
+  /** Índices dos nós escolhidos (laço/toque). Nenhuma escolha atravessa uma
+   *  edição estrutural: acrescentar ou apagar ponto já refaz a escolha. */
+  selectedNodes: number[]
+  setSelectedNodes: Dispatch<SetStateAction<number[]>>
+  /** Grava uma edição de nós. `recordUndo=false` durante o arrasto. */
+  applyNodeEdit: (next: EditablePath, recordUndo?: boolean) => void
+  removeSelectedNodes: () => void
+  toggleNodePathClosed: () => void
+  insertNodeOnSegment: (segmentIndex: number, t: number) => void
+  /** Curva ou endireita os segmentos que os nós escolhidos alcançam. */
+  setSelectedSegmentsCurved: (curved: boolean) => void
+  /** Arredonda (suave) ou aquina (canto) os nós escolhidos. */
+  setSelectedNodesSmooth: (smooth: boolean) => void
+  /** Tira o tremido do traço inteiro. Repetir suaviza mais. */
+  simplifyNodePath: () => void
   polygonSides: number
   setPolygonSides: (value: number) => void
   starTips: number
@@ -121,6 +162,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // campo `paletteId` e criar um entraria no desfazer sem mudar o desenho.
   const [paletteId, setPaletteId] = useState<PaletteId>(DEFAULT_PALETTE_ID)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  // Seleção de NÓS (só vale com a ferramenta de pontos). Guardada por ÍNDICE,
+  // como o palco sempre desenhou os nós. ⭐ Índice velho nunca sobrevive a uma
+  // mudança de estrutura: acrescentar um ponto deixa SÓ ele escolhido e apagar
+  // limpa a escolha — por isso não existe reindexação para dar errado.
+  const [selectedNodes, setSelectedNodes] = useState<number[]>([])
   // Lados do polígono / pontas da estrela (configuráveis quando a ferramenta ativa).
   const [polygonSides, setPolygonSides] = useState(6)
   const [starTips, setStarTips] = useState(5)
@@ -133,6 +179,9 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const stageRef = useRef<HTMLDivElement>(null)
   // Área de transferência (copiar/colar) — shapes clonados, vive na sessão.
   const clipboardRef = useRef<VectorShape[]>([])
+  // Última estrutura de nós que nasceu de uma ação DESTE escopo. Se undo/redo
+  // troca a quantidade por fora, nenhum índice escolhido pode atravessar.
+  const expectedNodeStructureRef = useRef<string | null>(null)
 
   // Trocar de quadro/tile é trocar de documento: a seleção não migra. (A prévia
   // e o gesto em andamento são resetados pelo VectorStage, dono deles.)
@@ -141,11 +190,27 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setSelectedIds([])
   }, [animationId, frameIndex])
 
+  // Trocar de forma ou de ferramenta larga os nós escolhidos. ⚠️ A chave é o
+  // CONTEÚDO da seleção, não o array: o palco chama `setSelectedIds` a cada
+  // toque num nó, e comparar por identidade limparia a escolha na hora.
+  const selectionKey = selectedIds.join(',')
+  // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro/forma/ferramenta), não leituras
+  useEffect(() => {
+    setSelectedNodes([])
+  }, [animationId, frameIndex, tool, selectionKey])
+
   // Atalhos de teclado da seleção (Delete apaga; setas movem, Shift = 10) —
   // no window, sem exigir foco no palco; campos de texto são ignorados.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: o handler lê o estado vivo via stores; só a seleção re-registra
+  //
+  // ⚠️ Com NÓS escolhidos, Delete e setas valem para os PONTOS, não para a forma
+  // inteira. O ramo mora aqui, no mesmo handler, de propósito: o palco é filho e
+  // registra os listeners dele ANTES deste, então tentar cancelar daqui de baixo
+  // com `preventDefault` não funcionaria (só `stopImmediatePropagation`, que é a
+  // versão frágil disso).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o handler lê o estado vivo via stores; a seleção (de forma e de nó) e a ferramenta re-registram
   useEffect(() => {
     if (selectedIds.length === 0) return
+    const editingNodes = tool === 'reshape' && selectedNodes.length > 0
     function onKeyDown(event: globalThis.KeyboardEvent): void {
       if (isTextEntryTarget(event.target)) return
       const step = event.shiftKey ? 10 : 1
@@ -153,29 +218,34 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
         case 'Delete':
         case 'Backspace':
           event.preventDefault()
-          removeSelected()
+          if (editingNodes) removeSelectedNodes()
+          else removeSelected()
           return
         case 'ArrowLeft':
           event.preventDefault()
-          nudgeSelected(-step, 0)
+          if (editingNodes) nudgeNodes(-step, 0)
+          else nudgeSelected(-step, 0)
           return
         case 'ArrowRight':
           event.preventDefault()
-          nudgeSelected(step, 0)
+          if (editingNodes) nudgeNodes(step, 0)
+          else nudgeSelected(step, 0)
           return
         case 'ArrowUp':
           event.preventDefault()
-          nudgeSelected(0, -step)
+          if (editingNodes) nudgeNodes(0, -step)
+          else nudgeSelected(0, -step)
           return
         case 'ArrowDown':
           event.preventDefault()
-          nudgeSelected(0, step)
+          if (editingNodes) nudgeNodes(0, step)
+          else nudgeSelected(0, step)
           return
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [selectedIds])
+  }, [selectedIds, selectedNodes, tool])
 
   // Copiar/colar/selecionar-tudo (Ctrl/Cmd+C/V/A) — sempre ativo, ignora campos
   // de texto. Não colide com o desfazer/refazer do EditorScreen (Z/Y).
@@ -207,6 +277,16 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const doc = activeShapesOf(asset, ref)
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
   const single = selected.length === 1 ? (selected[0] ?? null) : null
+  // Editar pontos é sempre de UMA forma por vez (o palco desenha os nós dela).
+  const nodeTarget = tool === 'reshape' ? single : null
+  const nodePath = nodeTarget ? toEditablePath(nodeTarget) : null
+  const nodeStructure = nodeTarget && nodePath ? `${nodeTarget.id}:${nodePath.nodes.length}` : null
+
+  useEffect(() => {
+    const expected = expectedNodeStructureRef.current
+    if (expected !== null && expected !== nodeStructure) setSelectedNodes([])
+    expectedNodeStructureRef.current = nodeStructure
+  }, [nodeStructure])
 
   // O estilo também funciona como inspetor da seleção. Undo/redo troca o
   // objeto do shape sem trocar seu id; sem esta sincronização, o desenho era
@@ -352,7 +432,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       showToast(COPY.vector.shapeLimit)
       return
     }
-    const copies = selected.map((s) => ({ ...translateShape(s, 12, 12), id: newId() }))
+    const copies = cloneShapesWithNewIds(selected)
     commitShapes([...shapes, ...copies])
     setSelectedIds(copies.map((c) => c.id))
   }
@@ -396,14 +476,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       showToast(COPY.vector.shapeLimit)
       return
     }
-    const groupMap = new Map<string, string>()
-    const copies = clip.map((s) => {
-      const moved = translateShape({ ...structuredClone(s), id: newId() }, 12, 12)
-      if (!s.groupId) return moved
-      const gid = groupMap.get(s.groupId) ?? newId()
-      groupMap.set(s.groupId, gid)
-      return { ...moved, groupId: gid }
-    })
+    const copies = cloneShapesWithNewIds(clip)
     commitShapes([...shapes, ...copies])
     setSelectedIds(copies.map((c) => c.id))
   }
@@ -458,6 +531,95 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     session.getState().setZoom(Math.min(availWidth / doc.width, availHeight / doc.height))
   }
 
+  /**
+   * Grava uma edição de nós na forma alvo. Lê a forma VIVA (não a do render):
+   * durante o arrasto o palco manda o resultado do gesto inteiro a cada quadro.
+   */
+  function applyNodeEdit(next: EditablePath, recordUndo = true): void {
+    if (!nodeTarget) return
+    const shapes = currentShapes()
+    const before = shapes.find((s) => s.id === nodeTarget.id)
+    if (!before) return
+    const edited = fromEditablePath(before, next)
+    if (edited === before) return
+    expectedNodeStructureRef.current = `${nodeTarget.id}:${next.nodes.length}`
+    commitShapes(
+      shapes.map((s) => (s.id === nodeTarget.id ? edited : s)),
+      recordUndo,
+    )
+  }
+
+  function removeSelectedNodes(): void {
+    if (!nodeTarget || !nodePath || selectedNodes.length === 0) return
+    const min = minNodesFor(nodeTarget)
+    const next = removeNodes(nodePath, selectedNodes, min)
+    if (!next) {
+      showToast(COPY.vector.nodeFloor(min))
+      return
+    }
+    applyNodeEdit(next)
+    setSelectedNodes([])
+  }
+
+  function nudgeNodes(dx: number, dy: number): void {
+    if (!nodePath || selectedNodes.length === 0) return
+    applyNodeEdit(moveNodes(nodePath, selectedNodes, { x: dx, y: dy }))
+  }
+
+  function toggleNodePathClosed(): void {
+    if (!nodePath) return
+    // Fechar com 2 nós desenharia o traço de ida e volta: não é o que o botão
+    // promete, e o resultado parece "não aconteceu nada".
+    if (!nodePath.closed && nodePath.nodes.length < 3) {
+      showToast(COPY.vector.nodeCloseNeedsThree)
+      return
+    }
+    applyNodeEdit(setClosed(nodePath, !nodePath.closed))
+  }
+
+  function insertNodeOnSegment(segmentIndex: number, t: number): void {
+    if (!nodeTarget || !nodePath) return
+    if (nodeTarget.type === 'polygon' && nodePath.nodes.length >= MAX_POLYGON_POINTS) {
+      showToast(COPY.vector.nodeCeiling)
+      return
+    }
+    const next = insertNodeAt(nodePath, segmentIndex, t)
+    if (!next) return
+    applyNodeEdit(next)
+    // ⭐ O ponto novo vira a ÚNICA escolha (e não mais um somado aos anteriores):
+    // no QA, acrescentar um ponto com dois já escolhidos deixava TRÊS marcados, e
+    // o Delete seguinte levaria os três. Tocar escolhe o que foi tocado, como em
+    // todo o resto do editor — e, de quebra, nenhuma escolha atravessa uma edição
+    // estrutural, então não existe índice velho para reindexar.
+    setSelectedNodes([segmentIndex + 1])
+  }
+
+  function setSelectedSegmentsCurved(curved: boolean): void {
+    if (!nodePath || selectedNodes.length === 0) return
+    const segments = segmentsForNodes(nodePath, selectedNodes)
+    if (segments.length === 0) return
+    applyNodeEdit(setSegmentCurved(nodePath, segments, curved))
+  }
+
+  function setSelectedNodesSmooth(smooth: boolean): void {
+    if (!nodePath || selectedNodes.length === 0) return
+    applyNodeEdit(
+      smooth ? makeSmooth(nodePath, selectedNodes) : makeCorner(nodePath, selectedNodes),
+    )
+  }
+
+  function simplifyNodePath(): void {
+    if (!nodePath) return
+    const next = smoothPath(nodePath)
+    if (!next) {
+      showToast(COPY.vector.nodeSimplifyDone)
+      return
+    }
+    applyNodeEdit(next)
+    // Suavizar mexe na estrutura (some ponto): a escolha antiga não vale mais.
+    setSelectedNodes([])
+  }
+
   const value: VectorEditorContextValue = {
     doc,
     onionShapes,
@@ -473,6 +635,17 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setSelectedIds,
     selected,
     single,
+    nodeTarget,
+    nodePath,
+    selectedNodes,
+    setSelectedNodes,
+    applyNodeEdit,
+    removeSelectedNodes,
+    toggleNodePathClosed,
+    insertNodeOnSegment,
+    setSelectedSegmentsCurved,
+    setSelectedNodesSmooth,
+    simplifyNodePath,
     polygonSides,
     setPolygonSides,
     starTips,
