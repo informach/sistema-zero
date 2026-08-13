@@ -40,7 +40,12 @@ const goldenCatalogs = {
     // ⚠️ 8ª vez em 13/08: descritor único de fase, larguras autorais, água/atalhos
     // coerentes, power-ups móveis, 100 moedas, tijolos, fogo, barras de fogo, chefes
     // progressivos e uma segunda jornada com composição própria.
-    sha256: '859a34fab7afb83e14f18cdee6763d5bba4419d3a92c589df29e35b9725817ce',
+    // ⚠️ 9ª vez em 13/08 (full review do lote acima): morrer sem zerar a vida devolvia
+    // o herói GRANDE; a estrela passou a TIRAR DO GRUPO em vez de mudar a vida (o
+    // espinho é imortal e sobrevivia, pagando 200 pontos por quadro) e agora também
+    // cobre a barra de fogo e o tiro do chefe; o bloco `?` dá moeda OU prêmio, nunca
+    // os dois; e as partículas de derrota finalmente são desenhadas.
+    sha256: 'a1bd26b490f035d01d28cc4100f8f9b953ed247706d6fa5f42b09fbefd91403f',
   },
   'game-2d-advanced': {
     count: 37,

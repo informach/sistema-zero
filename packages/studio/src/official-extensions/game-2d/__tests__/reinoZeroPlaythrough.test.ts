@@ -353,6 +353,55 @@ describe('Reino Zero — a campanha JOGADA', () => {
     expect(game.errors).toEqual([])
   })
 
+  it('⭐ o casco recolhido NO AR cai até o chão, em vez de ficar pendurado', () => {
+    // ⚠️ Este caso é o par POSITIVO do de cima. A rede escrita para a BUG-004 provou
+    // que um casco parado NO CHÃO mantém `y` — o que é certo lá e virou contrato para
+    // todo lugar: `updateEnemyType` pula qualquer casco vivo e `updateEnemyShells`
+    // pulava os parados, então nada integrava a queda. Pisar num casco no ar (beirada
+    // de poço, tijolo que some por baixo) o deixava pendurado para sempre, contra o
+    // que o próprio comentário do runtime promete ("o casco CAI").
+    const game = exampleHarness(reinoZeroExample, () => 0.5)
+    comecarPartida(game)
+    const heroi = game.sprites[0]
+    const portal = game.sprites[3]
+    if (!heroi || !portal) throw new Error('cenário incompleto')
+
+    for (let salto = 0; salto < 4; salto += 1) {
+      for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
+      heroi.x = portal.x
+      heroi.y = portal.y
+      game.nextFrame()
+    }
+    expect(faseNoHud(game)).toBe('2-1')
+
+    const cascos = game.enemyTypes[TIPO.cascos]
+    const alvo = cascos?.items[0]
+    if (!cascos || !alvo) throw new Error('o casco não nasceu no mundo 2')
+
+    // Levanta o bicho e pisa nele lá em cima: é o gesto que o jogo permite e que
+    // nenhum teste exercitava.
+    const alturaDoAr = SURFACE_Y - 96
+    alvo.y = alturaDoAr
+    heroi.x = alvo.x
+    heroi.y = alvo.y - HERO_H + 2
+    heroi.vy = 4
+    game.nextFrame()
+    expect(alvo._shell).toBe(true)
+    expect(alvo._shellMoving).toBe(false)
+
+    // Longe do herói para ninguém chutar o casco sem querer.
+    heroi.x = 0
+    for (let frame = 0; frame < 90; frame += 1) game.nextFrame()
+
+    expect(alvo.y).toBeGreaterThan(alturaDoAr)
+    // Pousou: parou de acelerar com a base assentada no topo de uma peça (pode ser o
+    // chão ou uma plataforma no caminho — o que importa é que ele não ficou no ar).
+    expect(alvo.vy).toBe(0)
+    expect((alvo.y + alvo.h) % TILE).toBe(0)
+    expect(alvo.y + alvo.h).toBeLessThanOrEqual(SURFACE_Y)
+    expect(game.errors).toEqual([])
+  })
+
   it('nada somente nas fases aquáticas declaradas 2-2 e 7-2', () => {
     const medirSubida = (fase: number): { y: number; vy: number } => {
       const game = exampleHarness(reinoZeroExample, () => 0.5)
@@ -436,7 +485,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     expect(game.errors).toEqual([])
   })
 
-  it('cabecear o bloco ? dá moeda e GASTA o bloco — o segundo toque não paga de novo', () => {
+  it('cabecear o bloco ? dá o prêmio e GASTA o bloco — o segundo toque não paga de novo', () => {
     const game = exampleHarness(reinoZeroExample, () => 0.5)
     comecarPartida(game)
     const heroi = game.sprites[0]
@@ -461,10 +510,11 @@ describe('Reino Zero — a campanha JOGADA', () => {
     const vidaAntes = game.api.getHealth(heroi)
     expect(vidaAntes).toBe(1)
     cabecear()
-    expect(game.scores.MOEDAS).toBe(1)
-    // 200 do bloco + 1000 da ESTRELA, que o herói encosta no MESMO pulo (o primeiro
-    // bloco de prêmio da fase solta a estrela; o segundo solta o cogumelo).
-    expect(game.scores.PONTOS).toBe(1200)
+    // ⚠️ O bloco dá uma coisa OU a outra, como no original: o primeiro prêmio da fase
+    // é a ESTRELA, e por isso NÃO sai moeda nesta cabeçada. Antes ele pagava os dois,
+    // e a economia de "100 moedas = 1 vida" inflava sozinha.
+    expect(game.scores.MOEDAS).toBe(0)
+    expect(game.scores.PONTOS).toBe(1000) // só a estrela, encostada no mesmo pulo
 
     // O primeiro bloco solta a ESTRELA, não o cogumelo: a vida segue em 1 e o que
     // muda é a invencibilidade. O ciclo do poder tem teste próprio logo abaixo.
@@ -472,8 +522,8 @@ describe('Reino Zero — a campanha JOGADA', () => {
 
     // O bloco virou tijolo comum: bater de novo não pode pagar segunda vez.
     cabecear()
-    expect(game.scores.MOEDAS).toBe(1)
-    expect(game.scores.PONTOS).toBe(1200)
+    expect(game.scores.MOEDAS).toBe(0)
+    expect(game.scores.PONTOS).toBe(1000)
     expect(game.errors).toEqual([])
   })
 
@@ -541,6 +591,55 @@ describe('Reino Zero — a campanha JOGADA', () => {
     }
     expect(estrela.x).toBeGreaterThan(144)
     expect(maisAlta).toBeLessThan(HERO_STANDING_Y + 8)
+    expect(game.errors).toEqual([])
+  })
+
+  it('⭐ o quique da estrela nunca GANHA altura', () => {
+    // ⚠️ Rede contra um tripwire de ponto flutuante. O quique dispara com `vy == 0`,
+    // e hoje isso só acontece quando o chão para a estrela porque somar 0,42 a −4,8
+    // nunca cai exatamente em zero. Um par que divida exato (gravidade 0,5 com quique
+    // 6, por exemplo) devolveria um impulso novo NO ÁPICE e a estrela subiria para
+    // sempre — sem erro nenhum na tela. Quem retunar esses números tropeça aqui.
+    // ⚠️ A primeira versão desta rede acusou um ganho de 284px que NÃO existe: eu
+    // tinha estacionado o herói em x=1200, fora de uma fase de 1152px, e ele morreu.
+    // A morte recarrega a fase, que guarda a estrela em (−100, −100) — e o −100 virou
+    // "altura". Piloto fora do mundo mede o próprio piloto.
+    const game = exampleHarness(reinoZeroExample, () => 0.5)
+    comecarPartida(game)
+    const heroi = game.sprites[0]
+    const estrela = game.sprites[4]
+    if (!heroi || !estrela) throw new Error('cenário incompleto')
+    for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
+
+    // O herói fica onde nasceu (em pé, sem entrada); a estrela vai para uma coluna
+    // com chão firme longe dele, para nem ser coletada nem cair num poço.
+    const grade = levelGrid(1)
+    let coluna = -1
+    for (let col = 14; col < 40; col += 1) {
+      if (firmColumn(grade, col) && firmColumn(grade, col + 1)) coluna = col
+      if (coluna > 0) break
+    }
+    if (coluna < 0) throw new Error('sem chão firme para a sonda')
+    estrela.x = coluna * TILE
+    estrela.y = HERO_STANDING_Y
+    estrela.vx = 0
+    estrela.vy = 0
+
+    let maisAlto = estrela.y
+    let maisBaixo = estrela.y
+    for (let frame = 0; frame < 120; frame += 1) {
+      game.nextFrame()
+      // Guardada (coletada ou recarregada) ou fora do mundo: daí em diante o eixo Y
+      // não diz mais nada sobre o quique.
+      if (estrela.y < 0 || estrela.y > 260) break
+      maisAlto = Math.min(maisAlto, estrela.y)
+      maisBaixo = Math.max(maisBaixo, estrela.y)
+    }
+
+    // Anti-vácuo: ela QUICA mesmo (uma estrela inerte passaria só no teto de cima).
+    expect(maisBaixo - maisAlto).toBeGreaterThan(4)
+    // Altura de um quique de 4,8 sob gravidade 0,42 é ~25px; o dobro é folga larga.
+    expect(maisBaixo - maisAlto).toBeLessThan(56)
     expect(game.errors).toEqual([])
   })
 
@@ -778,6 +877,36 @@ describe('Reino Zero — a campanha JOGADA', () => {
     expect(game.errors).toEqual([])
   })
 
+  it('⭐ morrer SEM zerar a vida também devolve o herói pequeno', () => {
+    // ⚠️ O título do caso acima promete "e some ao renascer" e nunca chega a matar
+    // ninguém. E o renascimento tinha um buraco aritmético: ele soma +2 e tira 1
+    // contando começar do zero, mas `changeHealth` SATURA no teto (3). Só a morte
+    // por vida zerada passa pelo zero — o tempo acabando e a queda para fora do
+    // mundo entram no MESMO ramo com a vida ainda cheia, e o herói renascia GRANDE.
+    // Morrer pequeno de tempo chegava a devolvê-lo maior do que ele estava.
+    const game = exampleHarness(reinoZeroExample, () => 0.5)
+    comecarPartida(game)
+    const heroi = game.sprites[0]
+    const broto = game.sprites[2]
+    if (!heroi || !broto) throw new Error('cenário incompleto')
+    for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
+
+    broto.x = heroi.x
+    broto.y = heroi.y
+    game.nextFrame()
+    // Anti-vácuo: sem isto o caso passaria com o power-up quebrado.
+    expect(game.api.getHealth(heroi)).toBe(2)
+
+    // Queda para fora do mundo: é a única das três causas que dá para provocar num
+    // quadro, e as três compartilham exatamente o mesmo ramo.
+    heroi.y = 300
+    game.nextFrame()
+
+    expect(heroi.x).toBeLessThan(64) // renasceu no começo da fase
+    expect(game.api.getHealth(heroi)).toBe(1)
+    expect(game.errors).toEqual([])
+  })
+
   it('cair no buraco devolve o herói ao começo da fase COM a câmera', () => {
     const game = exampleHarness(reinoZeroExample, () => 0.5)
     comecarPartida(game)
@@ -992,6 +1121,112 @@ describe('Reino Zero — a campanha JOGADA', () => {
     const comEstrela = encostarNoInimigo(true)
     expect(comEstrela.vivos).toBe(1)
     expect(comEstrela.morreu).toBe(false)
+  })
+
+  it('⭐ com a estrela o ESPINHO também cai, e não vira fonte infinita de ponto', () => {
+    // ⚠️ O caso acima usa a brasa, que é mortal. O espinho é IMORTAL de propósito
+    // (`{ immortal: 1 }` na tabela do runtime: a vida volta ao teto antes da poda),
+    // então o "Mudar a vida em -99" da estrela era desfeito no update seguinte. E o
+    // bloco de contato não tem trava: parar em cima dele com a estrela pagava 200
+    // pontos POR QUADRO, para sempre, sem nunca derrotar ninguém.
+    const comEstrela = (ligarEstrela: boolean) => {
+      const game = exampleHarness(reinoZeroExample, () => 0.5)
+      comecarPartida(game)
+      avancarAte(game, 13) // 4-1: o espinho só nasce a partir do mundo 4
+      const heroi = game.sprites[0]
+      const estrela = game.sprites[4]
+      const espinhos = game.enemyTypes[TIPO.espinhos]
+      const bicho = espinhos?.items[0]
+      if (!heroi || !estrela || !espinhos || !bicho) {
+        throw new Error('o espinho não nasceu no mundo 4')
+      }
+
+      if (ligarEstrela) {
+        estrela.x = heroi.x
+        estrela.y = heroi.y
+        game.nextFrame()
+      }
+
+      heroi.x = 300
+      heroi.y = HERO_STANDING_Y
+      game.nextFrame()
+
+      const vivosAntes = game.api.countGroup(espinhos)
+      const pontosAntes = Number(game.scores.PONTOS ?? 0)
+      for (let frame = 0; frame < 30; frame += 1) {
+        bicho.x = heroi.x
+        bicho.y = heroi.y
+        game.nextFrame()
+      }
+      expect(game.errors).toEqual([])
+      return {
+        baixas: vivosAntes - game.api.countGroup(espinhos),
+        ganho: Number(game.scores.PONTOS ?? 0) - pontosAntes,
+      }
+    }
+
+    const ligada = comEstrela(true)
+    expect(ligada.baixas).toBe(1)
+    // Uma derrota paga uma vez. 30 quadros encostado não podem virar 6.000 pontos.
+    expect(ligada.ganho).toBeLessThanOrEqual(400)
+
+    // Anti-vácuo: sem estrela o espinho continua vivo (é o que o comportamento promete).
+    expect(comEstrela(false).baixas).toBe(0)
+  })
+
+  it('⭐ a estrela também protege da barra de fogo e do tiro do guardião', () => {
+    // No jogo de referência a estrela cobre TUDO menos poço, lava e tempo. Aqui a
+    // lava já ficava (corretamente) de fora, mas os dois caminhos de dano do castelo
+    // — a barra que gira e o disparo do chefe — passavam por cima da invencibilidade,
+    // que é justamente onde ela mais importa.
+    const noCastelo = (ligarEstrela: boolean, ataque: 'barra' | 'tiro'): number => {
+      const game = exampleHarness(reinoZeroExample, () => 0.5)
+      comecarPartida(game)
+      avancarAte(game, 4)
+      const heroi = game.sprites[0]
+      const broto = game.sprites[2]
+      const estrela = game.sprites[4]
+      const barra = game.sprites[7]
+      const chefes = game.enemyTypes[TIPO.guardioes]
+      if (!heroi || !broto || !estrela || !barra || !chefes) throw new Error('castelo incompleto')
+
+      // ⚠️ O herói tem que estar GRANDE para o dano ser legível: pequeno, um golpe o
+      // mata, o renascimento repõe a vida e a conta de "quanto ele perdeu" volta zero
+      // — foi assim que a primeira versão deste anti-vácuo se enganou sozinha.
+      broto.x = heroi.x
+      broto.y = heroi.y
+      game.nextFrame()
+      expect(game.api.getHealth(heroi)).toBe(2)
+
+      if (ligarEstrela) {
+        estrela.x = heroi.x
+        estrela.y = heroi.y
+        game.nextFrame()
+      }
+      const vidaAntes = game.api.getHealth(heroi)
+
+      if (ataque === 'barra') {
+        for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
+        heroi.x = barra.x
+        heroi.y = barra.y
+      } else {
+        // Um disparo do chefe posto na cara do herói: a mira dele é periódica, e
+        // esperar o ciclo mediria a cadência em vez da invencibilidade.
+        const tiros = (chefes as unknown as { bullets: { items: unknown[] } }).bullets
+        game.api.spawn(tiros as never, { x: heroi.x, y: heroi.y, w: 8, h: 8 })
+        barra.x = -100
+      }
+      game.nextFrame()
+      expect(game.errors).toEqual([])
+      return vidaAntes - game.api.getHealth(heroi)
+    }
+
+    // Anti-vácuo: sem estrela os dois ataques cobram vida.
+    expect(noCastelo(false, 'barra')).toBeGreaterThan(0)
+    expect(noCastelo(false, 'tiro')).toBeGreaterThan(0)
+
+    expect(noCastelo(true, 'barra')).toBe(0)
+    expect(noCastelo(true, 'tiro')).toBe(0)
   })
 
   it('⭐ a PLANTA do cano não aceita pisada', () => {

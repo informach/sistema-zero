@@ -1028,7 +1028,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.75.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.76.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -1399,6 +1399,76 @@ quando a suíte pendurar.
 de rotação em torno de um ponto, que não existe na tabela) e bola de fogo (o terceiro estado de
 poder). E o power-up muda a figura e o aguento, **não o TAMANHO** do herói: mexer na caixa
 exigiria revalidar a geometria das 32 fases.
+
+## Full review da REMEDIAÇÃO do Reino Zero (v0.76.0, 13/08)
+
+Rodada logo depois do lote de 13/08 (`15106f15` + os 4 commits do branch), que reescreveu ~1800 das
+2710 linhas de `reinoZero.ts` e mexeu em seis módulos de runtime para fechar o review de 12/08. O
+`verification-report` daquela remediação já estava em PASS — e é exatamente por isso que esta rodada
+existe: **correção de review é código novo e merece review**, lição que este arquivo já registrou
+duas vezes. Baseline 1524/0.
+
+### Os quatro defeitos
+
+1. ⭐⭐ **Morrer SEM zerar a vida devolvia o herói GRANDE.** O renascimento somava `+2` e tirava `1`
+   contando partir do zero, mas o `changeHealth` **satura no teto** (`runtime/utilities.ts:91`) e o
+   teto do herói é 3. Só uma das TRÊS causas de morte passa pelo zero: o tempo acabando e a queda
+   para fora do mundo entram no mesmo ramo com a vida ainda cheia, então `1 → 3 → 2`. Morrer de
+   tempo sendo pequeno chegava a devolvê-lo **maior** do que ele estava. Fix: zerar antes de repor
+   (`-99` e depois `+1`), correto nas três causas.
+   ⚠️ **Por que passou:** o teste que existia chama-se "o poder ENCOLHE ao levar dano em vez de
+   matar, **e some ao renascer**" e nunca mata ninguém — a segunda metade do título não era
+   verificada. E o teste de cair no buraco olhava posição e câmera, nunca a vida.
+2. ⭐⭐ **Com a estrela, encostar num ESPINHO rendia 200 pontos POR QUADRO e não matava.** O
+   comportamento `espinho` é imortal de propósito (`runtime/enemies.ts:1010`, curado em `:1396`
+   antes da poda), então o "Mudar a vida em -99" da estrela era desfeito no update seguinte; e o
+   `overlapSpriteGroup` **não tem trava** (`runtime/arcadeKitsSpace.ts:192`), então dispara todo
+   quadro. Parar em cima de um espinho valia até 120.000 pontos e o bicho seguia vivo — o oposto da
+   promessa da estrela justo no inimigo que ela existe para resolver. Fix: **tirar do grupo** em vez
+   de mudar a vida (a vista encaminha para o tipo que contém o sprite), que vale para quem morre e
+   para quem não morre.
+   ⚠️ O teste da estrela usava a BRASA, que é mortal. Comportamento imortal nunca foi exercido ali.
+3. ⭐ **A estrela não cobria a barra de fogo nem o tiro do guardião.** No original ela cobre tudo
+   menos poço, lava e tempo — e a lava aqui já ficava (corretamente) de fora. Os dois caminhos de
+   dano do castelo é que passavam por cima da invencibilidade, que é onde ela mais importa.
+4. ⭐ **O casco parado não caía, e a rede da BUG-004 PROTEGIA o defeito.** `updateEnemyType` pula
+   qualquer casco vivo (`enemies.ts:1342`) e o `updateEnemyShells` pulava os parados: nada integrava
+   a queda. O comentário do próprio runtime prometia "⭐ O casco CAI", e isso só valia enquanto ele
+   andava — pisar num casco no ar o deixava pendurado para sempre. ⚠️ A regressão escrita em 12/08
+   afirmava "casco parado por 60 quadros: `y` constante", com o casco **no chão**, onde `y` constante
+   é o certo. Virou contrato para todo lugar. Fix: o atualizador especializado ganhou a gravidade
+   dos dois casos e o teste ganhou o par POSITIVO (pisado no ar, tem que pousar).
+   ⚠️ Com gravidade 0 (o padrão do motor, que é top-down) nada disso move nada: jogo antigo intacto.
+
+### As duas lacunas de fidelidade
+
+5. **O bloco `?` pagava moeda E prêmio na mesma cabeçada.** O `collectCoin` estava uma linha acima
+   do ramo do prêmio, então as duas primeiras cabeçadas de cada fase davam moeda **mais** power-up.
+   No original o bloco dá uma coisa **ou** a outra — e a conta de "100 moedas = 1 vida" inflava
+   sozinha. A moeda virou o último ramo do `senão`.
+6. **As partículas de derrota nasciam invisíveis.** Toda derrota do motor já solta um estouro
+   (`emitParticles` no `updateEnemyType`), e o exemplo nunca chamava o "Atualizar e desenhar as
+   partículas". Uma linha no laço devolve o retorno visual de cada pisada, tiro e estrela.
+
+### ⭐ O quique por igualdade: rede, não código
+
+Estrela e bola de fogo quicam com `vy == 0`, o que dispara também no ápice se a gravidade dividir o
+impulso exato. **Medi antes de consertar e o defeito NÃO existe hoje**: 4,8 somando 0,42 vai de
+−0,18 direto para +0,24. Então em vez de código entrou uma rede que acompanha 120 quadros e cobra
+que o quique nunca GANHE altura — quem retunar gravidade ou impulso para um par exato tropeça nela.
+
+⚠️ **E a primeira versão dessa rede acusou um ganho de 284px que não existia.** Eu tinha estacionado
+o herói em `x = 1200` numa fase de 1152px: ele morreu, a morte recarregou a fase, a fase guarda a
+estrela em `(−100, −100)` e o `−100` virou "altura". **Piloto fora do mundo mede o próprio piloto** —
+é a mesma classe do "corredor bloqueado" que este arquivo já anotou no salto dos poços.
+
+### Verde
+
+game-2d **1529/0** (5 casos novos), studio completo, typecheck limpo, biome limpo, e o E2E
+`reino-zero-classic.spec.ts` 2/2 em Chromium com servidor e build novos. Contadores de bloco e de
+API **não mudaram** (nenhum bloco novo; o exemplo passou a usar três blocos que já existiam).
+Hashes travados que este lote moveu: o catálogo lazy do `game-2d` (`examplesLoading.test.ts`) e o
+`__gen_serverExamplesIndex.ts` (`bun run gen:server-examples`). **Pende QA dela jogando.**
 
 ## Jogo 2D — jogo de NAVE: inteligência, raio e chefão (v0.61.0, 07/08)
 

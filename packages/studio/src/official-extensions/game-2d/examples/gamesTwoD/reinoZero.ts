@@ -1934,7 +1934,12 @@ const playingBody: JSStatement[] = [
       },
       {
         type: 'if',
-        cond: { type: 'g2d:touches', aVar: 'lumi', bVar: 'barraFogo' },
+        // A estrela cobre TUDO menos poço, lava e o tempo — inclusive a barra que
+        // gira, que é o perigo mais característico do castelo.
+        cond: and(
+          { type: 'g2d:touches', aVar: 'lumi', bVar: 'barraFogo' },
+          binary('<=', variable('estrelaAte'), n(0)),
+        ),
         then: [
           {
             type: 'g2d:damageSprite',
@@ -1958,12 +1963,16 @@ const playingBody: JSStatement[] = [
         cond: { type: 'g2d:tileContactIs', contactVar: 'bloco', index: n(2) },
         then: [
           { type: 'g2d:setTileAtContact', contactVar: 'bloco', index: n(1) },
-          ...collectCoin(200),
           {
             type: 'if',
             // ⚠️ if/SENÃO, não dois ifs seguidos: o primeiro ramo baixa o contador e o
             // segundo passaria a valer no MESMO toque, soltando estrela e cogumelo
             // juntos (medido: 2200 pontos numa cabeçada só).
+            //
+            // ⚠️ E a MOEDA é o último ramo, não uma linha acima de todos: o bloco de
+            // prêmio dá uma coisa OU a outra, como no jogo de referência. Pagando
+            // moeda por fora, as duas primeiras cabeçadas de cada fase davam moeda
+            // MAIS power-up, e a conta de "100 moedas = 1 vida" inflava sozinha.
             cond: equals(variable('premioAtivo'), 2),
             then: [
               { type: 'assign', name: 'premioAtivo', value: n(1) },
@@ -2002,6 +2011,8 @@ const playingBody: JSStatement[] = [
                     ],
                   },
                 ],
+                // Os prêmios da fase acabaram: daí em diante o bloco dá moeda.
+                else: collectCoin(200),
               },
             ],
           },
@@ -2177,8 +2188,19 @@ const playingBody: JSStatement[] = [
       {
         type: 'if',
         cond: binary('>', variable('estrelaAte'), n(0)),
+        // ⚠️ TIRAR DO GRUPO, não "Mudar a vida em -99". O espinho é imortal de
+        // propósito (a vida dele volta ao teto antes da poda), então o -99 era
+        // desfeito no update seguinte: o espinho sobrevivia à estrela e, como o bloco
+        // de contato dispara TODO quadro, parar em cima dele rendia 200 pontos por
+        // quadro para sempre. Tirar do grupo vale para os dois: quem morre e quem não
+        // morre. A explosão põe de volta o estouro que a derrota normal já solta.
         then: [
-          { type: 'g2d:changeHealth', spriteVar: 'inimigoTocado', delta: n(-99) },
+          { type: 'g2d:explode', spriteVar: 'inimigoTocado', color: '#ffe66d' },
+          {
+            type: 'g2d:removeFromGroup',
+            spriteVar: 'inimigoTocado',
+            groupVar: 'todosInimigos',
+          },
           { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(200)) },
         ],
         else: [{ type: 'g2d:hurtByEnemy', spriteVar: 'lumi', enemyVar: 'inimigoTocado' }],
@@ -2190,7 +2212,15 @@ const playingBody: JSStatement[] = [
     spriteVar: 'lumi',
     typeVar: 'guardioes',
     itemName: 'disparoGuardiao',
-    body: [{ type: 'g2d:hurtByEnemy', spriteVar: 'lumi', enemyVar: 'disparoGuardiao' }],
+    // O tiro do chefe some de qualquer jeito (quem o remove é o motor); com a
+    // estrela ligada ele simplesmente não cobra vida.
+    body: [
+      {
+        type: 'if',
+        cond: binary('<=', variable('estrelaAte'), n(0)),
+        then: [{ type: 'g2d:hurtByEnemy', spriteVar: 'lumi', enemyVar: 'disparoGuardiao' }],
+      },
+    ],
   },
   { type: 'g2d:drawWorld', ctxVar: 'ctx', worldVar: 'areaAtual' },
   { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'gema' },
@@ -2206,6 +2236,10 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'asas' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'plantas' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'guardioes' },
+  // ⚠️ Toda derrota do motor já SOLTA um estouro de partículas — e ninguém as
+  // desenhava, então elas nasciam e morriam invisíveis. Uma linha põe de volta o
+  // retorno visual de cada pisada, tiro e estrela.
+  { type: 'g2d:drawParticles', ctxVar: 'ctx' },
   // Figura e caixa acompanham a VIDA: 1 pequeno, 2 grande, 3 fogo.
   {
     type: 'if',
@@ -2248,9 +2282,14 @@ const playingBody: JSStatement[] = [
         else: [{ type: 'assign', name: 'vidas2', value: binary('-', variable('vidas2'), n(1)) }],
       },
       alternateToLivingPlayer(),
-      // Renasce com a vida cheia e PEQUENO: perder o poder faz parte de morrer.
-      { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(2) },
-      { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(-1) },
+      // Renasce PEQUENO: perder o poder faz parte de morrer.
+      // ⚠️ Zera ANTES de repor. A versão anterior somava 2 e tirava 1 contando partir
+      // do zero, mas só uma das três causas de morte passa por lá: o tempo acabando e
+      // a queda para fora do mundo chegam aqui com a vida ainda cheia, e o
+      // `changeHealth` SATURA no teto (3). Morrer de tempo devolvia o herói grande —
+      // e morrer pequeno chegava a deixá-lo maior do que ele estava.
+      { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(-99) },
+      { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(1) },
       { type: 'g2d:playFx', fx: 'hurt' },
       { type: 'g2d:setVelocity', spriteVar: 'lumi', vx: n(0), vy: n(0) },
       loadActiveLevel(),

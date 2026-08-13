@@ -24,12 +24,17 @@ function kitCard(page: Page, contract: ExampleQAContract) {
     .first()
 }
 
-async function expectFirstFrame(page: Page): Promise<FrameLocator> {
+const DEFAULT_MOUNT_TIMEOUT_MS = 15_000
+
+async function expectFirstFrame(
+  page: Page,
+  mountTimeout = DEFAULT_MOUNT_TIMEOUT_MS,
+): Promise<FrameLocator> {
   const iframe = page.locator('iframe[title="Pré-visualização"]')
-  await expect(iframe).toHaveAttribute('srcdoc', /\S/, { timeout: 15_000 })
+  await expect(iframe).toHaveAttribute('srcdoc', /\S/, { timeout: mountTimeout })
   const preview = page.frameLocator('iframe[title="Pré-visualização"]')
   const body = preview.locator('body')
-  await expect(body).toBeAttached({ timeout: 15_000 })
+  await expect(body).toBeAttached({ timeout: mountTimeout })
   await expect
     .poll(
       async () => {
@@ -282,7 +287,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
 
   let preview: FrameLocator
   try {
-    preview = await expectFirstFrame(page)
+    preview = await expectFirstFrame(page, contract.slowMountMs)
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error)
     const frameDebug = await page
@@ -373,7 +378,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
     await applyInteraction(page, preview, interaction)
   }
   await page.waitForTimeout(300)
-  await expectFirstFrame(page)
+  await expectFirstFrame(page, contract.slowMountMs)
   const finalDiagnostics = currentDiagnostics()
   expect(finalDiagnostics, finalDiagnostics.join('\n')).toEqual([])
   return preview

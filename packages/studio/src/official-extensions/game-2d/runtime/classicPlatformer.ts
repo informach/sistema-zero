@@ -449,14 +449,23 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     if (!type || !type.items) return;
     for (var i = 0; i < type.items.length; i++) {
       var shell = type.items[i];
-      if (!shell || !shell._shell || !shell._shellMoving) continue;
+      if (!shell || !shell._shell) continue;
+      // ⚠️ Este atualizador é o ÚNICO dono da física do casco: o updateEnemyType pula
+      // qualquer casco vivo. Então quem não passar por aqui não é movido por ninguém.
+      var andando = !!shell._shellMoving;
       _recordPreviousPosition(shell);
       var shellSpeed = _finiteNumber(shell._shellSpeed, 5);
-      shell.vx = shellSpeed;
-      shell.x += shellSpeed;
-      // ⭐ O casco CAI. Antes só o eixo X era integrado: chutado de uma beirada ele
-      // seguia reto pelo ar para sempre e, por nunca encostar no chão do Mundo,
-      // também escapava do recolhimento de quem sai do mundo.
+      if (andando) {
+        shell.vx = shellSpeed;
+        shell.x += shellSpeed;
+      } else {
+        shell.vx = 0;
+      }
+      // ⭐ O casco CAI — andando OU parado. Antes só o eixo X era integrado, e depois
+      // só o casco EM MOVIMENTO caía: pisar num casco no ar (beirada de poço, tijolo
+      // que some por baixo) o deixava pendurado para sempre, porque nada integrava a
+      // queda dele. ⚠️ Com gravidade zero (o padrão do motor, que é top-down) isto
+      // continua sem mover nada, então nenhum jogo antigo muda.
       var shellGravity = _finiteNumber(world.gravity, 0.6);
       shell.vy = _finiteNumber(shell.vy, 0) + shellGravity;
       shell.y += shell.vy;
@@ -469,11 +478,13 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
           continue;
         }
         collideWorld(shell, worldValue);
-        if (shell.vx === 0) {
+        if (andando && shell.vx === 0) {
           shell._shellSpeed = -shellSpeed;
           shell.vx = shell._shellSpeed;
         }
       }
+      // Casco parado é inofensivo: não varre ninguém.
+      if (!andando) continue;
       // O tipo recebido é o DONO dos cascos, não o universo de alvos. Todos os
       // tipos registrados compartilham o mesmo mundo e podem ser atingidos.
       for (var typeIndex = 0; typeIndex < _enemyTypes.length; typeIndex++) {
