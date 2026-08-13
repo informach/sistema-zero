@@ -18,8 +18,9 @@ nomes são originais; a arte é desenhada vetorialmente no Canvas.
   guardiões com padrões próprios.
 - Solo, dois jogadores em turnos ou cooperativo simultâneo, com teclado, toque
   e gamepad físico.
-- Save v2 com checksum, backup válido, migração automática do v1 e quarentena
-  do payload corrompido. O replay determinístico roda em sessão isolada.
+- Save v2 com checksum, backup válido, checkpoint retomável, migração automática
+  do v1 e quarentena do payload corrompido. O replay determinístico roda em
+  sessão isolada e seu snapshot passa por validação estrutural antes de iniciar.
 - Sons sintetizados por Web Audio; nenhuma mídia externa é necessária.
 
 ## Controles
@@ -27,8 +28,9 @@ nomes são originais; a arte é desenhada vetorialmente no Canvas.
 No título, `1` escolhe solo, `2` turnos e `3` cooperativo; `Enter` começa. O
 jogador 1 usa setas, `X`/espaço para pular e `Z`/Shift para correr ou agir. O
 jogador 2 usa WASD, `G` e `F`. `P` ou Esc pausa, `R` reproduz o replay salvo e
-Delete duas vezes em três segundos apaga o progresso. Em telas de toque, os cinco botões abaixo do Canvas
-fornecem direção, pulo, ação e início.
+Delete duas vezes em três segundos apaga o progresso. Em telas de toque, há
+direção completa, pulo e ação independentes para P1 e P2, além de início e troca
+de modo. No gamepad, o ombro direito alterna o modo na tela de título.
 
 ## Arquitetura
 
@@ -55,6 +57,7 @@ bundle da galeria.
 
 ```sh
 bun run gen:reino-zero-ultra
+bun run check:reino-zero-ultra
 bun run gen:core-example-catalog
 bun test src/examples/reinoZeroUltraExample.test.ts
 bun run e2e -- e2e/reino-zero-ultra.spec.ts --project=chromium

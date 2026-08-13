@@ -133,6 +133,25 @@ export interface BuildWorkspaceStateOptions {
    * ressuscita áreas que a criança não criou e projetos novos nascem vazios.
    */
   omitEmptyAuxFrames?: boolean
+  /**
+   * Abre moldes/funções recolhidos. O conteúdo continua sendo blocos editáveis e
+   * pode ser expandido sob demanda, mas o Blockly evita medir milhares de filhos
+   * visíveis logo na primeira pintura de projetos grandes.
+   */
+  collapseFunctions?: boolean
+}
+
+function collapseFunctionBlocks(blocks: SerializedBlocklyBlock[]): void {
+  const visit = (candidate: SerializedBlocklyBlock | undefined): void => {
+    if (!candidate) return
+    if (candidate.type === 'sz_js_function') candidate.collapsed = true
+    for (const input of Object.values(candidate.inputs ?? {})) {
+      visit(input.block)
+      visit(input.shadow)
+    }
+    visit(candidate.next?.block)
+  }
+  for (const candidate of blocks) visit(candidate)
 }
 
 export function buildWorkspaceStateFromIR(
@@ -171,6 +190,7 @@ export function buildWorkspaceStateFromIR(
     canvas3dContextIndex = previousContextIndex
     activeCanvas3DContext = undefined
   }
+  if (options.collapseFunctions) collapseFunctionBlocks(startChildren)
 
   // Uma área por categoria, somente quando tem conteúdo. A disposição canônica
   // usa duas linhas: HTML/CSS acima e lifecycle abaixo. 🧩 Meus moldes abre a
@@ -3661,6 +3681,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           ? rawJSBlock(stmt)
           : block('sz_gk_stage_border', { COLOR: stmt.color }, {}, stmt.__id, { WIDTH: width })
       }
+      case 'gk:useFont':
+        return block('sz_gk_use_font', { FONT: stmt.font }, {}, stmt.__id)
       case 'gk:setBackdrop':
         return block('sz_gk_set_backdrop', { IMAGE: stmt.image }, {}, stmt.__id)
       case 'gk:drawBackdrop':

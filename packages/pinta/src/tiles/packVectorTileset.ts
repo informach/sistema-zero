@@ -6,6 +6,7 @@
  */
 import type { VectorTilesetAsset } from '../core/project'
 import { cellsToSheetSvg, type VectorSheetCell } from '../export/vectorSheet'
+import { embedVectorFonts } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
 import { tilesetGridGeometry } from './packGeometry'
 
@@ -38,6 +39,10 @@ export function vectorTilesetSvg(asset: VectorTilesetAsset): string {
   })
 }
 
+export async function vectorTilesetPortableSvg(asset: VectorTilesetAsset): Promise<string> {
+  return embedVectorFonts(vectorTilesetSvg(asset), asset.tiles.flat())
+}
+
 /** Rasteriza a folha de peças. `null` sem canvas/Image (happy-dom). */
 export async function vectorTilesetPngDataUrl(
   asset: VectorTilesetAsset,
@@ -45,7 +50,7 @@ export async function vectorTilesetPngDataUrl(
 ): Promise<string | null> {
   const pack = packVectorTileset(asset)
   return svgToPngDataUrl(
-    vectorTilesetSvg(asset),
+    await vectorTilesetPortableSvg(asset),
     pack.columns * pack.tileSize,
     pack.rows * pack.tileSize,
     scale,

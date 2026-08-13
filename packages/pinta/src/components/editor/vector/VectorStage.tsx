@@ -22,13 +22,19 @@ import {
   boundsCenter,
   boundsIntersect,
   boundsUnion,
-  rotateShapeTo,
+  rotateShapesAround,
   scaleShape,
   shapeBounds,
   translateShape,
 } from '../../../vector/geometry'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
-import { type Vec2, type VectorShape, visibleShapes } from '../../../vector/model'
+import {
+  MAX_TEXT_CHARS,
+  normalizeTextContent,
+  type Vec2,
+  type VectorShape,
+  visibleShapes,
+} from '../../../vector/model'
 import {
   type EditablePath,
   isSmoothNode,
@@ -53,6 +59,7 @@ import { Dialog } from '../../ui/Dialog'
 import { Copy, FlipHorizontal2, FlipVertical2, Group, Trash2, Ungroup } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
+import { stageCursor } from '../stageCursor'
 import { useMediaQuery } from '../useMediaQuery'
 import { useWheelZoom } from '../useWheelZoom'
 import { useVectorEditor } from './VectorEditorScope'
@@ -87,13 +94,16 @@ type Gesture =
       base: PintaAsset
       baseShapes: VectorShape[]
     }
+  // Girar vale para 1 OU várias formas: todas orbitam o MESMO pivô (o centro da
+  // caixa da seleção) e somam o mesmo ângulo. O `baseRotation` de cada uma
+  // viaja dentro do próprio shape da base, como no `resize`.
   | {
       kind: 'rotate'
       pointerId: number
       center: Vec2
       startAngle: number
-      baseRotation: number
       base: PintaAsset
+      baseShapes: VectorShape[]
     }
   // Arrastar NOS: guarda o caminho da BASE e os indices escolhidos, e cada move
   // aplica o delta TOTAL sobre essa base (mesma regra do mover forma).
@@ -170,6 +180,8 @@ export function VectorStage(): JSX.Element {
     polygonSides,
     starTips,
     rectRadius,
+    textAlign,
+    fontFamily,
     svgRef,
     stageRef,
     currentShapes,
@@ -201,7 +213,15 @@ export function VectorStage(): JSX.Element {
   const [penCursor, setPenCursor] = useState<Vec2 | null>(null)
   // Barra de espaço segurada = Mão temporária (qualquer ferramenta).
   const [spaceHeld, setSpaceHeld] = useState(false)
+  /**
+   * Só para o CURSOR (mão aberta → fechada). O gesto vive num ref de propósito
+   * (pointermove não re-renderiza), então o estado liga e desliga apenas nas
+   * BORDAS do pan: dois renders por arrasto, nenhum durante o movimento.
+   */
+  const [panning, setPanning] = useState(false)
   const gestureRef = useRef<Gesture | null>(null)
+  // Ctrl/Cmd+Enter salva o texto: o Enter cru pertence à quebra de linha.
+  const textFormRef = useRef<HTMLFormElement>(null)
 
   // Trocar de quadro/tile é trocar de documento: prévia e gesto não migram.
   // (A seleção é resetada pelo VectorEditorScope, dono dela.)
@@ -212,6 +232,9 @@ export function VectorStage(): JSX.Element {
     setPenPoints([])
     setPenCursor(null)
     gestureRef.current = null
+    // ⚠️ Este é o único lugar que zera o gesto SEM passar pelo `endGesture`:
+    // sem soltar o `panning` aqui, o cursor ficava preso na mão fechada.
+    setPanning(false)
   }, [animationId, frameIndex])
 
   // Trocar de ferramenta descarta os pontos pendentes da Caneta.
@@ -313,6 +336,7 @@ export function VectorStage(): JSX.Element {
       startClient: { x: event.clientX, y: event.clientY },
       startScroll: { x: stage.scrollLeft, y: stage.scrollTop },
     }
+    setPanning(true)
   }
 
   /** Fecha a forma da Caneta (Enter, duplo clique ou clique perto do início). */
@@ -487,7 +511,7 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleRotateDown(bounds: Bounds, event: PointerEvent<SVGElement>): void {
-    if (spaceHeld || !single || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const center = boundsCenter(bounds)
@@ -497,8 +521,9 @@ export function VectorStage(): JSX.Element {
       pointerId: event.pointerId,
       center,
       startAngle: Math.atan2(at.y - center.y, at.x - center.x),
-      baseRotation: single.rotation,
       base: editor.getState().asset,
+      // 1 forma OU várias: mesmo espelho do handleResizeDown.
+      baseShapes: selected,
     }
   }
 
@@ -644,12 +669,22 @@ export function VectorStage(): JSX.Element {
     }
     if (gesture.kind === 'rotate') {
       const angle = Math.atan2(at.y - gesture.center.y, at.x - gesture.center.x)
-      const degrees = gesture.baseRotation + ((angle - gesture.startAngle) * 180) / Math.PI
-      if (!single) return
+      // Delta TOTAL sobre a base (nunca acumulado): mesma régua do mover e do
+      // redimensionar, e é o que mantém o arredondamento honesto.
+      const degrees = ((angle - gesture.startAngle) * 180) / Math.PI
+      const rotated = new Map(
+        rotateShapesAround(
+          gesture.baseShapes,
+          gesture.baseShapes.map((s) => s.id),
+          gesture.center,
+          degrees,
+        ).map((s) => [s.id, s]),
+      )
       commitShapes(
-        currentShapes().map((s) => (s.id === single.id ? rotateShapeTo(s, degrees) : s)),
+        currentShapes().map((s) => rotated.get(s.id) ?? s),
         false,
       )
+      return
     }
     if (gesture.kind === 'nodeMarquee') {
       setMarquee({
@@ -691,7 +726,10 @@ export function VectorStage(): JSX.Element {
     if (!gesture) return
     if (event && event.pointerId !== gesture.pointerId) return
     gestureRef.current = null
-    if (gesture.kind === 'pan') return
+    if (gesture.kind === 'pan') {
+      setPanning(false)
+      return
+    }
     if (gesture.kind === 'marquee') {
       const box = marquee
       setMarquee(null)
@@ -806,7 +844,10 @@ export function VectorStage(): JSX.Element {
             height={stageHeight}
             viewBox={`0 0 ${doc.width} ${doc.height}`}
             className="block bg-white/60"
-            style={{ touchAction: 'none', cursor: spaceHeld ? 'grab' : undefined }}
+            style={{
+              touchAction: 'none',
+              cursor: stageCursor({ handTool: tool === 'pan', spaceHeld, panning }),
+            }}
             role="img"
             aria-label={COPY.a11y.drawArea}
             onPointerDown={handleCanvasPointerDown}
@@ -938,6 +979,7 @@ export function VectorStage(): JSX.Element {
                 ))}
                 {/* Alça de girar (acima do topo-centro) */}
                 <circle
+                  data-rotate="1"
                   cx={singleBounds.x + singleBounds.width / 2}
                   cy={singleBounds.y - 22 / zoom}
                   r={8 / zoom}
@@ -1055,7 +1097,13 @@ export function VectorStage(): JSX.Element {
               </g>
             ) : null}
             {/* Seleção múltipla: moldura fina POR forma + a caixa da UNIÃO com
-                as 8 alças (todas escalam juntas; girar segue só no individual). */}
+                as 8 alças e a de girar (todas escalam e giram juntas).
+                ⚠️ A caixa da união fica ALINHADA AOS EIXOS durante o giro, sem o
+                `<g rotate>` que a seleção única usa: os membros podem carregar
+                rotações diferentes, e mesmo com uma só a união de caixas não
+                giradas, girada como um bloco rígido, NÃO é a caixa da união
+                girada — a moldura sairia de cima do desenho. Ela é recalculada
+                a cada quadro, então "respira" enquanto as formas orbitam. */}
             {selected.length > 1 ? (
               <>
                 {selected.map((shape) => {
@@ -1104,6 +1152,18 @@ export function VectorStage(): JSX.Element {
                           onPointerDown={(event) => handleResizeDown(handle, union, event)}
                         />
                       ))}
+                      {/* Alça de girar a seleção INTEIRA (mesma da forma só). */}
+                      <circle
+                        data-rotate="1"
+                        cx={union.x + union.width / 2}
+                        cy={union.y - 22 / zoom}
+                        r={8 / zoom}
+                        fill="#ffffff"
+                        stroke="#00a0c8"
+                        strokeWidth={1.5 / zoom}
+                        style={{ cursor: 'grab' }}
+                        onPointerDown={(event) => handleRotateDown(union, event)}
+                      />
                     </g>
                   )
                 })()}
@@ -1136,11 +1196,12 @@ export function VectorStage(): JSX.Element {
         title={textDialog?.mode === 'edit' ? COPY.vector.editText : COPY.vector.textPrompt}
       >
         <form
+          ref={textFormRef}
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault()
             const dialog = textDialog
-            const text = textValue.trim().slice(0, 200)
+            const text = normalizeTextContent(textValue.trim())
             if (!dialog || !text) return
             if (dialog.mode === 'edit') {
               commitShapes(
@@ -1157,23 +1218,35 @@ export function VectorStage(): JSX.Element {
               setTextDialog(null)
               return
             }
-            const shape = makeText(dialog.at, text, style)
+            const shape = makeText(dialog.at, text, style, textAlign, fontFamily)
             commitShapes([...shapes, shape])
             setSelectedIds([shape.id])
             setTool('select')
             setTextDialog(null)
           }}
         >
-          <input
+          {/* Textarea, não input: Enter PULA DE LINHA. Um textarea dentro de
+              um form não dispara o submit implícito (só o input de uma linha),
+              então basta não amarrar nada ao Enter cru. */}
+          <textarea
             autoFocus
+            rows={3}
             name="vector-text"
             autoComplete="off"
+            maxLength={MAX_TEXT_CHARS}
             value={textValue}
             onChange={(event) => setTextValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault()
+                textFormRef.current?.requestSubmit()
+              }
+            }}
             placeholder={COPY.vector.textPlaceholder}
             aria-label={textDialog?.mode === 'edit' ? COPY.vector.editText : COPY.vector.textPrompt}
-            className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
+            className="min-h-11 resize-y rounded-xl border-2 border-pin-border bg-pin-bg px-4 py-2 text-base outline-none focus:border-pin-accent"
           />
+          <p className="text-sm text-pin-muted">{COPY.vector.textMultilineHint}</p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setTextDialog(null)}>
               {COPY.gallery.cancel}

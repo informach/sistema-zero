@@ -387,6 +387,44 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     sprite.vy = 0;
     _confirmGroundSupport(sprite, support);
   }
+  /**
+   * Contatos por SOBREPOSIÇÃO, para as peças que a criança ATRAVESSA.
+   *
+   * ⚠️ O contato de tile só nascia da RESOLUÇÃO de colisão, ou seja, só existia para
+   * peça sólida e plataforma. Moeda, lava e água são justamente as que se atravessa:
+   * elas nunca geravam evento nenhum. Sem isto não dá para coletar uma moeda do
+   * cenário nem morrer no fosso do castelo, e o único contorno era pintar o perigo
+   * como decoração e matar por "caiu abaixo da linha" — que serve ao buraco e não
+   * escala para castelo nem para fase de água.
+   *
+   * Usa a caixa EFETIVA (_hitboxOf), como todo caminho de DETECÇÃO desta extensão;
+   * a resolução de colisão é que continua na caixa crua.
+   */
+  function _recordTileOverlaps(sprite, map) {
+    var especiais = map && map._overlapIndex;
+    if (!especiais || !especiais.size || !map.rows) return;
+    var t = tileScreenSize(map);
+    if (!_isFiniteNumber(t) || t <= 0) return;
+    var ox = map.layout ? _finiteNumber(map.layout.x, 0) : _finiteNumber(map.ox, 0);
+    var oy = map.layout ? _finiteNumber(map.layout.y, 0) : _finiteNumber(map.oy, 0);
+    var box = _hitboxOf(sprite);
+    if (!box || !_isFiniteNumber(box.x) || !_isFiniteNumber(box.y)) return;
+    var rowsN = map.rows.length;
+    var colsN = tileMapCols(map);
+    if (!rowsN || !colsN) return;
+    var c0 = Math.max(0, Math.floor((box.x - ox) / t));
+    var c1 = Math.min(colsN - 1, Math.floor((box.x + box.w - 0.0001 - ox) / t));
+    var r0 = Math.max(0, Math.floor((box.y - oy) / t));
+    var r1 = Math.min(rowsN - 1, Math.floor((box.y + box.h - 0.0001 - oy) / t));
+    for (var r = r0; r <= r1; r++) {
+      var row = map.rows[r];
+      if (!row) continue;
+      for (var c = c0; c <= c1; c++) {
+        if (especiais.has(row[c])) _recordTileContact(sprite, map, r, c, 'inside');
+      }
+    }
+  }
+
   function collideTileMap(sprite, map) {
     if (!sprite || !map || !map.rows || !map.tile) return;
     _beginTileContacts(sprite);
@@ -568,6 +606,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
         }
       }
     }
+    // Depois da resolução: a posição já é a final do quadro, então "estou dentro da
+    // moeda" é medido onde o sprite de fato parou.
+    _recordTileOverlaps(sprite, map);
     } finally {
       _refreshRecordedMotionAfterCollision(sprite, previousPosition);
     }

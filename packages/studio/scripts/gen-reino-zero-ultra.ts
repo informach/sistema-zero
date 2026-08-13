@@ -12,6 +12,16 @@ function containsType(value: unknown, type: string): boolean {
   return record.type === type || Object.values(record).some((child) => containsType(child, type))
 }
 
+function stripGeneratedIds(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stripGeneratedIds)
+  if (!value || typeof value !== 'object') return value
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => key !== '__id')
+      .map(([key, child]) => [key, stripGeneratedIds(child)]),
+  )
+}
+
 const ir = normalizeSZIR({
   html: [
     {
@@ -46,21 +56,99 @@ const ir = normalizeSZIR({
         {
           type: 'element',
           tag: 'div',
+          id: 'touch-controls',
           attrs: { class: 'touch-controls', 'aria-label': 'Controles por toque' },
           children: [
             {
               type: 'element',
               tag: 'button',
               id: 'touch-left',
-              text: '◀',
-              attrs: { type: 'button', 'aria-label': 'Esquerda' },
+              text: 'P1 ◀',
+              attrs: { type: 'button', 'aria-label': 'Jogador 1 esquerda' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-up',
+              text: 'P1 ▲',
+              attrs: { type: 'button', 'aria-label': 'Jogador 1 cima' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-down',
+              text: 'P1 ▼',
+              attrs: { type: 'button', 'aria-label': 'Jogador 1 baixo' },
             },
             {
               type: 'element',
               tag: 'button',
               id: 'touch-right',
-              text: '▶',
-              attrs: { type: 'button', 'aria-label': 'Direita' },
+              text: 'P1 ▶',
+              attrs: { type: 'button', 'aria-label': 'Jogador 1 direita' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-action',
+              text: 'P1 AÇÃO',
+              attrs: { type: 'button', 'aria-label': 'Jogador 1 ação' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-jump',
+              text: 'P1 PULO',
+              attrs: { type: 'button', 'aria-label': 'Jogador 1 pular' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-mode',
+              text: 'MODO COOP',
+              attrs: { type: 'button', 'aria-label': 'Trocar modo de jogo' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-p2-left',
+              text: 'P2 ◀',
+              attrs: { type: 'button', 'aria-label': 'Jogador 2 esquerda' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-p2-up',
+              text: 'P2 ▲',
+              attrs: { type: 'button', 'aria-label': 'Jogador 2 cima' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-p2-down',
+              text: 'P2 ▼',
+              attrs: { type: 'button', 'aria-label': 'Jogador 2 baixo' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-p2-right',
+              text: 'P2 ▶',
+              attrs: { type: 'button', 'aria-label': 'Jogador 2 direita' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-p2-action',
+              text: 'P2 AÇÃO',
+              attrs: { type: 'button', 'aria-label': 'Jogador 2 ação' },
+            },
+            {
+              type: 'element',
+              tag: 'button',
+              id: 'touch-p2-jump',
+              text: 'P2 PULO',
+              attrs: { type: 'button', 'aria-label': 'Jogador 2 pular' },
             },
             {
               type: 'element',
@@ -69,20 +157,6 @@ const ir = normalizeSZIR({
               text: 'START',
               attrs: { type: 'button', 'aria-label': 'Começar' },
             },
-            {
-              type: 'element',
-              tag: 'button',
-              id: 'touch-action',
-              text: 'AÇÃO',
-              attrs: { type: 'button', 'aria-label': 'Ação' },
-            },
-            {
-              type: 'element',
-              tag: 'button',
-              id: 'touch-jump',
-              text: 'PULO',
-              attrs: { type: 'button', 'aria-label': 'Pular' },
-            },
           ],
         },
         {
@@ -90,7 +164,7 @@ const ir = normalizeSZIR({
           tag: 'p',
           id: 'reino-instructions',
           attrs: { class: 'instructions' },
-          text: 'Título: 1 solo, 2 turnos, 3 cooperativo · P1: setas + X/Z · P2: WASD + G/F · P/Esc pausa · controles USB/Bluetooth compatíveis',
+          text: 'Título: 1 solo, 2 turnos, 3 cooperativo · toque/MODO ou ombro direito do gamepad alterna o modo · P1: setas + X/Z · P2: WASD + G/F · P/Esc pausa',
         },
         {
           type: 'element',
@@ -176,8 +250,7 @@ const ir = normalizeSZIR({
       selector: '.touch-controls',
       declarations: {
         display: 'grid',
-        'grid-template-columns':
-          'repeat(2, minmax(44px, 64px)) minmax(48px, 1fr) repeat(2, minmax(52px, 72px))',
+        'grid-template-columns': 'repeat(7, minmax(36px, 1fr))',
         gap: '8px',
         'align-items': 'center',
       },
@@ -185,11 +258,12 @@ const ir = normalizeSZIR({
     {
       selector: '.touch-controls button',
       declarations: {
-        height: '42px',
+        height: '44px',
         border: '1px solid #8297c7',
         'border-radius': '10px',
         background: '#1b2745',
         color: '#ffffff',
+        'font-size': '11px',
         'font-weight': '800',
         'touch-action': 'none',
         'user-select': 'none',
@@ -226,20 +300,28 @@ if (!validated.success) throw new Error(JSON.stringify(validated.error.issues, n
 
 const target = join(import.meta.dir, '..', 'src', 'examples', '__gen_reinoZeroUltra.ts')
 const body = [
-  '// GERADO por scripts/gen-reino-zero-ultra.ts — NÃO EDITE À MÃO.',
-  '// Edite reinoZeroUltraSource.ts/reinoZeroUltraData.ts e rode `bun run gen:reino-zero-ultra`.',
+  '// Gerado por scripts/gen-reino-zero-ultra.ts. Não edite.',
   "import type { SZIRV2 } from '#ir'",
   '',
   `export const REINO_ZERO_ULTRA_IR = ${JSON.stringify(validated.data, null, 2)} as SZIRV2`,
   '',
 ].join('\n')
-writeFileSync(target, body)
-
-const formatted = Bun.spawnSync({
-  cmd: [process.execPath, 'x', 'biome', 'format', '--write', target],
-  cwd: join(import.meta.dir, '..'),
-  stdout: 'inherit',
-  stderr: 'inherit',
-})
-if (formatted.exitCode !== 0) throw new Error('Biome não conseguiu formatar a IR gerada.')
-console.log(`gerado: ${validated.data.behavior.start.length} blocos-raiz → ${target}`)
+if (process.argv.includes('--check')) {
+  const { REINO_ZERO_ULTRA_IR } = await import('../src/examples/__gen_reinoZeroUltra')
+  const current = JSON.stringify(stripGeneratedIds(validated.data))
+  const published = JSON.stringify(stripGeneratedIds(REINO_ZERO_ULTRA_IR))
+  if (current !== published) {
+    throw new Error('A IR publicada divergiu do fonte. Rode `bun run gen:reino-zero-ultra`.')
+  }
+  console.log(`sincronizado: ${validated.data.behavior.start.length} blocos-raiz`)
+} else {
+  writeFileSync(target, body)
+  const formatted = Bun.spawnSync({
+    cmd: [process.execPath, 'x', 'biome', 'format', '--write', target],
+    cwd: join(import.meta.dir, '..'),
+    stdout: 'inherit',
+    stderr: 'inherit',
+  })
+  if (formatted.exitCode !== 0) throw new Error('Biome não conseguiu formatar a IR gerada.')
+  console.log(`gerado: ${validated.data.behavior.start.length} blocos-raiz → ${target}`)
+}

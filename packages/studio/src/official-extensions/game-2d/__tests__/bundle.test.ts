@@ -2,14 +2,26 @@ import { describe, expect, it } from 'bun:test'
 import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 
+/**
+ * ⚠️ Prazo PRÓPRIO, e não o padrão de 5 s do `bun:test`: este caso empacota a
+ * extensão INTEIRA num processo filho. Sozinho ele fecha em ~5,1 s — ou seja,
+ * sempre esteve raspando o limite —, e dentro do `bun test src`, disputando CPU
+ * com os outros 480 arquivos, estourava. O sintoma era o pior possível: VERDE
+ * rodado sozinho (que é como a gente confere um teste) e vermelho na suíte
+ * inteira, com cara de regressão de orçamento quando era só relógio.
+ */
+const PRAZO_DO_BUILD_MS = 120_000
+
 describe('bundle inicial do Jogo 2D', () => {
-  it('mantém runtime e exemplos em chunks sob demanda', () => {
-    const entrypoint = resolve(import.meta.dir, '../index.ts')
-    const probe = spawnSync(
-      process.execPath,
-      [
-        '-e',
-        `
+  it(
+    'mantém runtime e exemplos em chunks sob demanda',
+    () => {
+      const entrypoint = resolve(import.meta.dir, '../index.ts')
+      const probe = spawnSync(
+        process.execPath,
+        [
+          '-e',
+          `
           const build = await Bun.build({
             entrypoints: [${JSON.stringify(entrypoint)}],
             target: 'browser',
@@ -33,26 +45,28 @@ describe('bundle inicial do Jogo 2D', () => {
             containsFullDocs: source.includes('Receitas que a gente monta com o que já existe'),
           }))
         `,
-      ],
-      { encoding: 'utf8' },
-    )
-    expect(probe.status, probe.stderr).toBe(0)
+        ],
+        { encoding: 'utf8' },
+      )
+      expect(probe.status, probe.stderr).toBe(0)
 
-    const metrics = JSON.parse(probe.stdout.trim()) as {
-      rawBytes: number
-      gzipBytes: number
-      chunks: number
-      containsRuntime: boolean
-      containsExample: boolean
-      containsFullDocs: boolean
-    }
-    // O teto histórico virou uma linha colada à medição. Exigimos 5% de margem
-    // real e mantemos os três conteúdos pesados em chunks sob demanda.
-    expect(metrics.rawBytes).toBeLessThan(Math.floor(193_300 * 0.95))
-    expect(metrics.gzipBytes).toBeLessThan(Math.floor(51_700 * 0.95))
-    expect(metrics.chunks).toBeGreaterThanOrEqual(6)
-    expect(metrics.containsRuntime).toBe(false)
-    expect(metrics.containsExample).toBe(false)
-    expect(metrics.containsFullDocs).toBe(false)
-  })
+      const metrics = JSON.parse(probe.stdout.trim()) as {
+        rawBytes: number
+        gzipBytes: number
+        chunks: number
+        containsRuntime: boolean
+        containsExample: boolean
+        containsFullDocs: boolean
+      }
+      // O teto histórico virou uma linha colada à medição. Exigimos 5% de margem
+      // real e mantemos os três conteúdos pesados em chunks sob demanda.
+      expect(metrics.rawBytes).toBeLessThan(Math.floor(193_300 * 0.95))
+      expect(metrics.gzipBytes).toBeLessThan(Math.floor(51_700 * 0.95))
+      expect(metrics.chunks).toBeGreaterThanOrEqual(6)
+      expect(metrics.containsRuntime).toBe(false)
+      expect(metrics.containsExample).toBe(false)
+      expect(metrics.containsFullDocs).toBe(false)
+    },
+    PRAZO_DO_BUILD_MS,
+  )
 })

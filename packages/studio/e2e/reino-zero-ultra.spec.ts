@@ -72,7 +72,22 @@ test('Reino Zero Ultra roda a campanha nativa com teclado, toque e Canvas vetori
     hasClassicExtension: false,
     hasAdvancedExtension: false,
     externalImages: 0,
-    touchLabels: ['Esquerda', 'Direita', 'Começar', 'Ação', 'Pular'],
+    touchLabels: [
+      'Jogador 1 esquerda',
+      'Jogador 1 cima',
+      'Jogador 1 baixo',
+      'Jogador 1 direita',
+      'Jogador 1 ação',
+      'Jogador 1 pular',
+      'Trocar modo de jogo',
+      'Jogador 2 esquerda',
+      'Jogador 2 cima',
+      'Jogador 2 baixo',
+      'Jogador 2 direita',
+      'Jogador 2 ação',
+      'Jogador 2 pular',
+      'Começar',
+    ],
   })
 
   const rendered = await canvas.evaluate((element) => {
@@ -85,8 +100,14 @@ test('Reino Zero Ultra roda a campanha nativa com teclado, toque e Canvas vetori
   expect(rendered).toBe(true)
 
   await focus(preview)
-  await tapKey(page, '1')
+  const modeButton = preview.locator('#touch-mode')
+  await modeButton.dispatchEvent('pointerdown', {
+    bubbles: true,
+    pointerId: 5,
+    pointerType: 'touch',
+  })
   await expect(preview.locator('#reino-status')).toHaveText(/^title\|1-1\|1\|0$/)
+  await modeButton.dispatchEvent('pointerup', { bubbles: true, pointerId: 5, pointerType: 'touch' })
   await tapKey(page, 'Enter')
   await expect(preview.locator('#reino-status')).toHaveText(/^playing\|1-1\|1\|\d+$/, {
     timeout: 10_000,

@@ -64,6 +64,7 @@ export function loadRuntime() {
     PCFSoftShadowMap: 1,
     Scene: class {
       background: unknown = null
+      fog: unknown = null
       children: unknown[] = []
       add(o: Any) {
         o.parent = this
@@ -77,6 +78,13 @@ export function loadRuntime() {
     },
     Color: class {
       constructor(public value: unknown) {}
+    },
+    Fog: class {
+      constructor(
+        public color: unknown,
+        public near: number,
+        public far: number,
+      ) {}
     },
     PerspectiveCamera: class {
       position = new V3(0, 0, 5)

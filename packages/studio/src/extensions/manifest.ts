@@ -41,8 +41,12 @@ function isPlainRecord(value: object): value is Record<string, unknown> {
  */
 function isIrExampleWithinLimits(value: unknown): boolean {
   const limits = IR_EXAMPLE_LIMITS
-  const stack: Array<{ value: unknown; depth: number }> = [{ value, depth: 0 }]
-  const seen = new WeakSet<object>()
+  const stack: Array<{ value: unknown; depth: number; leave?: boolean }> = [{ value, depth: 0 }]
+  // Só os objetos do caminho ATUAL contam como ciclo. Um IR montado por helpers
+  // pode reutilizar a mesma expressão em dois ramos e ainda ser perfeitamente
+  // serializável; um WeakSet global confundia esse DAG válido com uma referência
+  // circular e derrubava o catálogo inteiro de exemplos.
+  const ancestors = new WeakSet<object>()
   let chars = 0
   let containerNodes = 0
 
@@ -54,9 +58,14 @@ function isIrExampleWithinLimits(value: unknown): boolean {
   while (stack.length > 0) {
     const current = stack.pop()
     if (!current) continue
-    const { value: item, depth } = current
+    const { value: item, depth, leave } = current
     if (depth > limits.maxDepth) return false
     if (item == null) continue
+
+    if (leave) {
+      if (typeof item === 'object') ancestors.delete(item)
+      continue
+    }
 
     if (typeof item === 'string') {
       if (item.length > limits.maxStringChars) return false
@@ -73,8 +82,9 @@ function isIrExampleWithinLimits(value: unknown): boolean {
       continue
     }
     if (typeof item !== 'object') return false
-    if (seen.has(item)) return false
-    seen.add(item)
+    if (ancestors.has(item)) return false
+    ancestors.add(item)
+    stack.push({ value: item, depth, leave: true })
 
     containerNodes += 1
     if (containerNodes > limits.maxContainerNodes) return false

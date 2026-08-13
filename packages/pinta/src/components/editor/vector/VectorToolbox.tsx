@@ -7,12 +7,14 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
+import { useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { isVectorGradient } from '../../../vector/model'
 import { IconButton, ToolButton } from '../../ui/Button'
-import { Grid3x3, Maximize, Repeat } from '../../ui/icons'
-import { useEditorStores, useSession } from '../editorContext'
+import { Grid3x3, Image, Maximize, Repeat } from '../../ui/icons'
+import { useEditor, useEditorStores, useSession } from '../editorContext'
 import { useVectorEditor, type VectorColorChannel } from './VectorEditorScope'
+import { VectorInsertAssetDialog } from './VectorInsertAssetDialog'
 import { gradientCss, TOOLS } from './vectorTools'
 
 /** Mesmos degraus do slider de espessura do painel de aparência. */
@@ -27,6 +29,8 @@ export function VectorToolbox({
   const { session } = useEditorStores()
   const showGrid = useSession((state) => state.showGrid)
   const { tool, setTool, zoomToFit, style, applyStyle } = useVectorEditor()
+  const assetId = useEditor((state) => state.asset.id)
+  const [insertOpen, setInsertOpen] = useState(false)
 
   const divider = vertical ? (
     <hr className="col-span-2 my-1 w-8 border-pin-border" />
@@ -79,6 +83,19 @@ export function VectorToolbox({
         onClick={() => session.getState().toggleGrid()}
       />
       <ToolButton icon={Maximize} label={COPY.editor.zoomFit} onClick={zoomToFit} />
+      {/* Trazer um desenho da galeria. Mora AQUI porque este mesmo fragmento
+          serve o rail vertical do desktop e a barra horizontal da tela
+          estreita: um ponto só cobre os dois. */}
+      <ToolButton
+        icon={Image}
+        label={COPY.vector.insertAsset}
+        onClick={() => setInsertOpen(true)}
+      />
+      <VectorInsertAssetDialog
+        open={insertOpen}
+        onClose={() => setInsertOpen(false)}
+        currentId={assetId}
+      />
     </>
   )
 

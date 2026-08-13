@@ -11,6 +11,8 @@ import {
   uniqueExtensionIds,
 } from '#extensions'
 import { findExtension } from '#official-extensions'
+import { loadGameUiFont } from '../official-extensions/gameUiFont'
+import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
 import { buildPreviewDoc } from './bootstrap'
 import { withCoreImports } from './coreImports'
@@ -59,6 +61,11 @@ export async function renderProjectToPreviewDocAsync(
     return extension ? [extension] : []
   })
   const extensionScripts = await loadExtensionBootstrapScripts(extensions)
+  // A fonte do jogo: só a ESCOLHIDA é carregada e viaja no documento. Um projeto
+  // sem extensão de jogo não paga nada por isso.
+  const gameUiFont = extensions.length
+    ? await loadGameUiFont(resolveGameUiFontId({ ir: playableProject.ir, files }))
+    : undefined
   const extensionImports: Record<string, string> = {}
   const permissions = new Set<ExtensionPermission>()
   for (const id of ids) {
@@ -78,6 +85,7 @@ export async function renderProjectToPreviewDocAsync(
     assetsMeta: assetMetaManifest(assets),
     sounds: soundManifest(assets),
     models3d: asset3DManifest(assets),
+    gameUiFont,
     parentOrigin: opts.parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: opts.fetchAllowedOrigins,

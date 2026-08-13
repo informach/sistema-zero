@@ -33,14 +33,14 @@ import {
 import {
   packVectorSpritesheet,
   vectorSheetPngDataUrl,
-  vectorSheetSvg,
+  vectorSheetPortableSvg,
 } from '../../export/vectorSheet'
 import { tilesetPngDataUrl } from '../../tiles/packTileset'
-import { vectorTilesetPngDataUrl, vectorTilesetSvg } from '../../tiles/packVectorTileset'
+import { vectorTilesetPngDataUrl, vectorTilesetPortableSvg } from '../../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../../tiles/renderVectorTilemap'
+import { vectorToPortableSvg } from '../../vector/portableSvg'
 import { vectorPngDataUrl } from '../../vector/rasterize'
-import { vectorToSvg } from '../../vector/svg'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
@@ -88,6 +88,19 @@ export function ExportDialog({
     setBusy(true)
     void promise
       .then((dataUrl) => downloadDataUrl(dataUrl, filename))
+      .catch(() => showToast(COPY.toast.downloadError))
+      .finally(() => setBusy(false))
+  }
+
+  function downloadAsyncText(
+    promise: Promise<string>,
+    filename: string,
+    mime = 'application/json',
+  ): void {
+    if (busy) return
+    setBusy(true)
+    void promise
+      .then((content) => downloadText(content, filename, mime))
       .catch(() => showToast(COPY.toast.downloadError))
       .finally(() => setBusy(false))
   }
@@ -187,16 +200,17 @@ export function ExportDialog({
               {busy ? COPY.exportDialog.preparing : COPY.exportDialog.tilesetSheet}
             </Button>
             <Button
+              disabled={busy}
               onClick={() =>
-                downloadText(
-                  vectorTilesetSvg(vectorTileset),
+                downloadAsyncText(
+                  vectorTilesetPortableSvg(vectorTileset),
                   `${asset.name}.tileset.svg`,
                   'image/svg+xml',
                 )
               }
             >
               <PenTool aria-hidden="true" className="size-4" />
-              {COPY.exportDialog.tilesetSheetSvg}
+              {busy ? COPY.exportDialog.preparing : COPY.exportDialog.tilesetSheetSvg}
             </Button>
             <div className="mt-2 rounded-2xl border-2 border-pin-border bg-pin-bg p-3">
               <p className="mb-1 text-sm font-bold text-pin-muted">
@@ -338,16 +352,17 @@ export function ExportDialog({
               {busy ? COPY.exportDialog.preparing : COPY.exportDialog.spritesheet}
             </Button>
             <Button
+              disabled={busy}
               onClick={() =>
-                downloadText(
-                  vectorSheetSvg(vectorPack),
+                downloadAsyncText(
+                  vectorSheetPortableSvg(vectorPack),
                   `${asset.name}.spritesheet.svg`,
                   'image/svg+xml',
                 )
               }
             >
               <PenTool aria-hidden="true" className="size-4" />
-              {COPY.exportDialog.spritesheetSvg}
+              {busy ? COPY.exportDialog.preparing : COPY.exportDialog.spritesheetSvg}
             </Button>
             <Button
               onClick={() =>
@@ -369,12 +384,17 @@ export function ExportDialog({
                   {busy ? COPY.exportDialog.preparing : COPY.exportDialog.currentFrame}
                 </Button>
                 <Button
+                  disabled={busy}
                   onClick={() =>
-                    downloadText(vectorToSvg(activeDoc), `${asset.name}.svg`, 'image/svg+xml')
+                    downloadAsyncText(
+                      vectorToPortableSvg(activeDoc),
+                      `${asset.name}.svg`,
+                      'image/svg+xml',
+                    )
                   }
                 >
                   <PenTool aria-hidden="true" className="size-4" />
-                  {COPY.exportDialog.currentFrameSvg}
+                  {busy ? COPY.exportDialog.preparing : COPY.exportDialog.currentFrameSvg}
                 </Button>
               </>
             ) : null}
@@ -400,10 +420,13 @@ export function ExportDialog({
               {busy ? COPY.exportDialog.preparing : COPY.exportDialog.image}
             </Button>
             <Button
-              onClick={() => downloadText(vectorToSvg(asset), `${asset.name}.svg`, 'image/svg+xml')}
+              disabled={busy}
+              onClick={() =>
+                downloadAsyncText(vectorToPortableSvg(asset), `${asset.name}.svg`, 'image/svg+xml')
+              }
             >
               <PenTool aria-hidden="true" className="size-4" />
-              {COPY.vector.svg}
+              {busy ? COPY.exportDialog.preparing : COPY.vector.svg}
             </Button>
           </>
         ) : null}

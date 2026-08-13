@@ -5,10 +5,15 @@
  */
 export type { LucideIcon } from 'lucide-react'
 export {
+  // Estes três são o alinhamento do TEXTO (linhas). Os `Align*Horizontal/
+  // Vertical` abaixo são o alinhamento das FORMAS na faixa da seleção.
+  AlignCenter,
   AlignCenterHorizontal,
   AlignCenterVertical,
   AlignEndHorizontal,
   AlignEndVertical,
+  AlignLeft,
+  AlignRight,
   AlignStartHorizontal,
   AlignStartVertical,
   ArrowLeft,
@@ -67,6 +72,7 @@ export {
   Replace,
   Rocket,
   RotateCw,
+  Scissors,
   SendToBack,
   Settings,
   Slash,

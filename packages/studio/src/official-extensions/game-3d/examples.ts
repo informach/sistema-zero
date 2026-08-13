@@ -12899,7 +12899,7 @@ export const reinoCogumeloExample: ExtensionExample = {
     'Corra e pule por 32 fases: pise nos inimigos, quebre tijolos, ache blocos escondidos e chegue ao mastro antes do tempo acabar.',
   ir: {
     html: [
-      // ⚠️ O `g3d:createPlatformScene` abaixo resolve um canvas que PRECISA
+      // ! O `g3d:createPlatformScene` abaixo resolve um canvas que PRECISA
       // existir no HTML (`requireCanvas`), ao contrário do "criar cena em tela
       // cheia", que cria o seu. Sem esta tela o exemplo subia sem canvas nenhum
       // e o Console dizia "o canvas 'tela' não existe".

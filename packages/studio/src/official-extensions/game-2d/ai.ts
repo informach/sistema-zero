@@ -20,6 +20,10 @@ API global injetada como window.SZGame2D:
 - clear(): limpa a tela inteira (use no começo de cada quadro, antes de desenhar).
 - fitScreen(percent): faz o canvas PREENCHER ~percent% da janela mantendo a proporção. As COORDENADAS do jogo (mundo lógico) não mudam, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar) e se reajusta sozinho ao redimensionar. Chame uma vez no começo. Bloco "Fazer a tela preencher N% da janela".
 - showStageBorder(cor, espessura): põe uma moldura colorida em volta do canvas (CSS no elemento, não desenhada por dentro), para enxergar onde começa e termina a área do jogo. É de ensino/depuração, como o drawHitbox. Chame uma vez no começo; espessura capada em 40. Bloco "Mostrar a borda da tela".
+- useFont(id): escolhe a letra de TODO texto do jogo (placar, telas, mensagens). Os cinco ids são baloo2, nunito, pressStart2P, bungee e fredoka. Vale para o jogo INTEIRO e a escolha é resolvida ANTES de o jogo rodar (só a fonte escolhida é embutida no documento), então o bloco vai em "Ao iniciar" e UM SÓ: com dois blocos vale o último, e o primeiro avisa no Console. (O bloco é start-only, então o Blockly nem deixa pô-lo dentro de um "se"; escrevendo no modo Código, um nome fora da lista é recusado pela Ponte.) Bloco "Usar a fonte". ⚠️ Não alcança o drawPixelText/drawPixelScore, que são letras desenhadas ponto a ponto.
+- drawPixelScore(ctx, rótulo, valor, x, y, tamanho, cor): um CAMPO de placar na fonte de pixel — o rótulo em cima e o número embaixo, como no HUD dos jogos clássicos. É o irmão do drawPixelText que aceita VALOR (o drawPixelText só recebe texto literal, e placar é variável): sem ele o jogo fica com duas tipografias na mesma tela. Bloco "Escrever placar pixel".
+- drawFade(ctx, porcento, cor): um véu por cima de tudo, para escurecer numa pausa ou fechar a fase apagando aos poucos. Vai no fim do quadro, depois de tudo o que foi desenhado. Bloco "Cobrir a tela com fade de N por cento na cor".
+- showImageScreen(ctx, imagem): mostra uma TELA feita de um desenho do projeto (abertura, vitória, fim). Cobre o palco sem deformar, igual ao cenário, E ANUNCIA a tela para leitor de tela — é o que separa este bloco do "Desenhar o cenário", que pinta o mesmo e não fala. Vai no "a cada quadro", como as outras telas. Bloco "Mostrar a tela com a imagem".
 - setBackdrop(nome): põe um DESENHO do projeto (o que a criança fez no Pinta) como cenário de fundo. COBRE o palco inteiro sem deformar, centralizado, cortando o excedente (escala = max(larguraTela/larguraImagem, alturaTela/alturaImagem)). Repintado automaticamente a cada clear(), então basta chamar UMA vez no começo. Bloco "Pôr o cenário atrás de tudo".
 - drawBackdrop(ctx, nome): o mesmo desenho, mas AGORA, neste ponto do quadro — para quem quer mandar na ordem das camadas. Vai dentro do "a cada quadro", logo depois do clear(). Mesma geometria do setBackdrop. Bloco "Desenhar o cenário". Use um OU o outro, não os dois.
 - setupStageFull(bg): "ocupar a tela toda" — SEM dimensões e SEM proporção fixa: o canvas preenche 100% da viewport e a resolução LÓGICA do jogo acompanha o tamanho real da tela (a área do jogo É a tela; muda com a janela; nítido via devicePixelRatio). Diferente do setupStage/fitScreen (que mantêm a proporção e deixam barras). Centralize por "a largura/altura da tela", não por número fixo. Bloco "Preparar o jogo para ocupar a tela toda".
@@ -101,11 +105,20 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
 - createVectorTileset/defineVectorTile/createVectorTileMap montam tiles com Figuras, sem assets.
   forEachTileContact percorre colisões exatas; tileContactIs testa o índice original e
   setTileAtContact troca só aquela célula (blocos de prêmio devem testar antes de trocar).
+  ⭐ O papel "contact" é a peça que se ATRAVESSA e que mesmo assim avisa: é assim que se faz
+  moeda no cenário, lava, espinho de chão e água. Peça sólida barraria o caminho e decoração
+  não avisaria nada. Ela chega pelo lado "inside" do forEachTileContact, e esse lado só existe
+  no mapa VETORIAL (mapa de imagem e mapa do Pinta não têm esse papel).
 - MAPA é a grade de tiles. Primeiro crie os dados; depois prepare a posição e o tamanho UMA vez em
   ⚙️ Ao iniciar com fitTileMapToStage(ctx, map) (encaixar na tela) OU
   placeTileMap(map, x, y, tileSize) (posição/tamanho exatos). Dentro do quadro, drawTileMap(ctx, map)
   apenas desenha o layout preparado e nunca o reposiciona. Não gere a forma legada ambígua de
   drawTileMap com x/y/tamanho: ela existe somente para abrir projetos antigos.
+- Campanhas grandes podem usar loadVectorCampaignLevel(indice, receitaJson, tileSize, spawnX,
+  spawnY, callback, tilesets, tiposDeInimigo?, jornada?): o runtime valida a receita, cria somente
+  a fase escolhida e entrega mapa/mundo/fase ao callback. Cada fase pode trazer "enemies" e
+  "journey2Enemies" como triplas [índice do tipo, x, y]. campaignValue('chave', fallback) lê um
+  metadado numérico da fase ativa. Prefira esses blocos quando expandir tudo criaria centenas.
 - MUNDO é a área física jogável: limites + tilemaps + grupos de figuras que são terreno + câmera.
   createWorld(w, h) cria um mundo vazio; createWorldFromTileMap(map, tileSize) prepara o mapa em
   (0,0), dimensiona o mundo por ele e o adiciona. addTileMapToWorld exige mapa já posicionado.
@@ -167,6 +180,8 @@ Figuras: sprite desenhado por código (v0.23.0) — o visual do sprite feito com
   colide como qualquer sprite). setShape(sprite, 'figura'): troca a figura de um sprite.
 - paintRect/paintCircle/paintEllipse/paintTriangle/paintLine(ctx, ...coords..., 'cor'): formas
   simples dentro da figura (recebem o ctx da figura).
+- paintShapeRecipe(ctx, receitaJson): forma compacta para pixel art grande; aceita uma lista JSON
+  de ['r', x, y, largura, altura, cor] e ['c', x, y, raio, cor], limitada e validada pelo runtime.
 - shapeW()/shapeH(): tamanho do sprite que está sendo desenhado (para centralizar).
 - Gotcha: a figura desenha em coords locais e ganha giro/flip/piscar do sprite de graça.
 
@@ -240,7 +255,15 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - stompEnemyType(sprite, tipo, quique): DENTRO do gameLoop; aplica o modo de pisada ao inimigo
   em que o sprite PISAR (só caindo nele; encostar de lado não vale) e quica o sprite.
   setEnemyStompMode escolhe derrotar, causar 1 de dano (chefes), achatar, virar casco ou recusar
-  a pisada por espinhos. Cascos móveis atingem inimigos de todos os tipos registrados.
+  a pisada por espinhos.
+  ⭐ No modo casco o gesto é o do gênero: PISAR recolhe o bicho num casco PARADO (inofensivo) e
+  ENCOSTAR nele o CHUTA. O casco andando machuca quem tocar — menos quem acabou de chutá-lo,
+  enquanto os dois ainda estiverem encostados — e atinge inimigos de todos os tipos registrados.
+- updateEnemyShells(tipo, mundo): OBRIGATÓRIO junto do modo casco, dentro do gameLoop. É o único
+  dono da física do casco (o updateEnemyType pula qualquer casco vivo): faz andar, rebater nas
+  paredes do Mundo e varrer inimigos. Sem ele o casco fica parado para sempre. A queda vem do
+  "Aplicar a gravidade ao grupo" no tipo, como em todo inimigo. Bloco "Atualizar os cascos do
+  tipo ... no Mundo ...".
 - setEnemyStateAnimation(tipo, 'estado', sheet, from, to, fps): animação por estado do TIPO.
 - setEnemyTypeParam(tipo, 'pulo'|'ritmo'|'alcance'|'cadencia'|'tiro'|'voltar'|'vida'|'duracao', valor): sintonia
   fina. pulo/ritmo = saltador; alcance = quem voa + medroso/arrancada/rondador/mergulhador/
@@ -328,7 +351,7 @@ HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 Estado/telas (cenas) — início → jogando → ganhou → perdeu, ou qualquer nome livre
 inventado pela criança (ex.: ganhou1), com UM só gameLoop:
 - setStageDescription("objetivo e controles"): use em ⚙️ Ao iniciar para descrever o canvas a leitores de tela.
-- setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
+- setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / showGameOver(ctx, pontos) (a tela de fim pronta, com o placar) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
 - IMPORTANTE: variáveis, grupos e sprites ficam em “⚙️ Ao iniciar”; registros de
   evento ficam em “⚡ Quando acontecer”; raízes gameLoop ficam em “🔁 Enquanto estiver rodando”. As três
   áreas compartilham o mesmo escopo da partida sem recriar objetos a cada quadro.

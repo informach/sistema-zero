@@ -372,6 +372,27 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
    * cor lisa nas laterais e lê como defeito. Cobrir corta um pouco de céu e de
    * chão, e lê como "a câmera está mais perto" — ninguém percebe.
    */
+  /**
+   * ⭐⭐ NÃO é um setter — é uma VERIFICAÇÃO, e isto precisa estar escrito aqui.
+   *
+   * Os bytes da fonte não estão na página: quem monta o documento resolve a escolha
+   * ANTES do jogo rodar e manda SÓ a fonte escolhida (cinco fontes embutidas seriam
+   * ~170 KB em todo jogo exportado). Então aqui não há o que trocar — o que dá para
+   * fazer é conferir se o que o bloco pediu foi o que chegou, e avisar quando não.
+   *
+   * Diverge quando a escolha não é estática: um nome guardado numa variável, ou o
+   * bloco dentro de um "se". Aí o documento veio com a fonte padrão e a criança
+   * precisa saber por quê.
+   */
+  function useFont(font) {
+    var pedida = String(font || '');
+    var atual = window.SZGameUIFont && window.SZGameUIFont.id;
+    if (!pedida || !atual || pedida === atual) return;
+    warnOnce(
+      'fonte-divergente',
+      'o jogo carregou a fonte "' + atual + '" e este bloco pediu "' + pedida + '". Se você tem mais de um bloco “Usar a fonte”, vale só o último; deixe um só. Escrevendo no modo Código, use um nome da lista do bloco.'
+    );
+  }
   function _paintBackdrop(ctx, name) {
     if (!ctx || !name) return false;
     var handle = loadImage(name);
@@ -388,6 +409,19 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     return _crispDraw(ctx, sw, dw, function () {
       ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
     });
+  }
+  /**
+   * Uma TELA feita de imagem: cobre o palco com o desenho da criança.
+   *
+   * ⭐ O que separa este bloco do "Desenhar o cenário", que pinta a mesma coisa: o
+   * ANÚNCIO. A tela de texto avisa o leitor de tela; uma tela montada com o cenário
+   * seria invisível para quem usa leitor — o jogo mudaria de estado e ninguém
+   * saberia. Aqui a imagem também fala.
+   */
+  function showImageScreen(ctx, image) {
+    var nome = String(image || '');
+    _announceScreen(nome ? 'Tela ' + nome : 'Tela', '', '');
+    return _paintBackdrop(ctx, nome);
   }
   /** Fixa o cenário: repintado a cada clear(), sem a criança fazer nada. */
   function setBackdrop(name) {

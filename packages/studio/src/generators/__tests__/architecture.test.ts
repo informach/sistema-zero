@@ -39,7 +39,14 @@ test('a IR dos exemplos 3D tem gerador reproduzível em vez de manutenção manu
 
 test('fachadas históricas concentradas não podem crescer', () => {
   const budgets = new Map([
-    ['../../parsers/js.ts', 14_100],
+    // ⚠️ Catraca, não folga: cada número é o tamanho ATUAL do arquivo, então
+    // qualquer crescimento reprova. Subir um deles só se justifica quando a
+    // linha não tem para onde ir — foi o caso destas duas: `isSimpleValue` é um
+    // switch CENTRAL sem despachante (ao contrário de `buildIR`/`parsers`, que
+    // alcançam a extensão por codec), e um valor de extensão usável em "se"
+    // precisa constar ali ou o round-trip o rebaixa a "código avançado".
+    // 14_100 → 14_102 pelo `case 'g2d:campaignValue'`.
+    ['../../parsers/js.ts', 14_102],
     ['../../ir/schema.ts', 12_800],
     ['../../blockly/buildIR.ts', 9_400],
   ])

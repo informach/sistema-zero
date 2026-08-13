@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'bun:test'
 import { OFFICIAL_CATALOG } from '#official-extensions'
-import { ExtensionManifestSchema, MAX_PROMPT_CONTEXT_CHARS, validateManifest } from '../manifest'
+import {
+  ExtensionExamplesSchema,
+  ExtensionManifestSchema,
+  MAX_PROMPT_CONTEXT_CHARS,
+  validateManifest,
+} from '../manifest'
 
 const validManifest = {
   id: 'game-2d',
@@ -66,5 +71,40 @@ describe('promptContext das extensões oficiais — teto de sanidade (R24)', () 
       (extension) => (extension.ai?.promptSummary?.length ?? 0) > 6_000,
     ).map((extension) => `${extension.manifest.id}: ${extension.ai?.promptSummary?.length}`)
     expect(estourados).toEqual([])
+  })
+})
+
+describe('guarda estrutural dos IRs de exemplo', () => {
+  const exampleWith = (ir: unknown) => [{ name: 'exemplo', experience: 'game' as const, ir }]
+
+  it('aceita referências compartilhadas que continuam serializáveis', () => {
+    const sharedEmpty: unknown[] = []
+    const ir = {
+      version: 2,
+      html: sharedEmpty,
+      css: sharedEmpty,
+      behavior: { start: sharedEmpty, events: [], loops: [] },
+      extensions: [],
+    }
+
+    expect(() => ExtensionExamplesSchema.parse(exampleWith(ir))).not.toThrow()
+  })
+
+  it('continua rejeitando referências circulares reais', () => {
+    const cyclicStatement: Record<string, unknown> = { type: 'comment', text: 'ciclo' }
+    cyclicStatement.self = cyclicStatement
+    const ir = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [cyclicStatement], events: [], loops: [] },
+      extensions: [],
+    }
+
+    const result = ExtensionExamplesSchema.safeParse(exampleWith(ir))
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.message.includes('profundidade'))).toBe(true)
+    }
   })
 })

@@ -15,10 +15,24 @@
 import type { JSX } from 'react'
 import { useState } from 'react'
 import { COPY } from '../../core/copy'
-import { isVectorGradient } from '../../vector/model'
+import {
+  fontFamilyOf,
+  isVectorFontFamily,
+  isVectorGradient,
+  textAlignOf,
+  VECTOR_FONT_FAMILIES,
+  VECTOR_FONT_FAMILY_INFO,
+} from '../../vector/model'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { CircleDot, MoveHorizontal, MoveVertical } from '../ui/icons'
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  CircleDot,
+  MoveHorizontal,
+  MoveVertical,
+} from '../ui/icons'
 import { Panel, type PanelDisclosure } from '../ui/Panel'
 import { ColorButton } from './ColorPicker'
 import { useVectorEditor } from './vector/VectorEditorScope'
@@ -41,6 +55,10 @@ export function VectorPropertiesPanel({
     starTips,
     rectRadius,
     setRectRadius,
+    textAlign,
+    setTextAlign,
+    fontFamily,
+    setFontFamily,
     updateSelected,
     rememberColor,
     applyStyle,
@@ -254,6 +272,49 @@ export function VectorPropertiesPanel({
             }}
             className="w-full accent-pin-accent"
           />
+        </Panel>
+      ) : null}
+
+      {tool === 'text' || selectedText ? (
+        <Panel title={COPY.vector.fontFamily} ariaLabel={COPY.vector.fontFamily}>
+          <select
+            aria-label={COPY.vector.fontFamily}
+            value={selectedText ? fontFamilyOf(selectedText) : fontFamily}
+            onChange={(event) => {
+              if (isVectorFontFamily(event.target.value)) setFontFamily(event.target.value)
+            }}
+            className="min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-bg px-3 text-base text-pin-text outline-none focus:border-pin-accent"
+          >
+            {VECTOR_FONT_FAMILIES.map((family) => (
+              <option key={family} value={family}>
+                {VECTOR_FONT_FAMILY_INFO[family].label}
+              </option>
+            ))}
+          </select>
+        </Panel>
+      ) : null}
+
+      {/* Alinhamento das LINHAS. Aparece com a ferramenta Texto (arma o
+          próximo) ou com um texto selecionado (realinha o que já existe). */}
+      {tool === 'text' || selectedText ? (
+        <Panel title={COPY.vector.textAlignTitle} ariaLabel={COPY.vector.textAlignTitle}>
+          <div className="flex gap-1">
+            {(
+              [
+                ['left', AlignLeft, COPY.vector.textAlignLeft],
+                ['center', AlignCenter, COPY.vector.textAlignCenter],
+                ['right', AlignRight, COPY.vector.textAlignRight],
+              ] as const
+            ).map(([value, icon, label]) => (
+              <ToolButton
+                key={value}
+                icon={icon}
+                label={label}
+                active={(selectedText ? textAlignOf(selectedText) : textAlign) === value}
+                onClick={() => setTextAlign(value)}
+              />
+            ))}
+          </div>
         </Panel>
       ) : null}
     </div>

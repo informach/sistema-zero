@@ -17,7 +17,7 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 > (`src/export/studioLibrary.ts`) — a face de DADOS para o host ligar o "Trazer
 > do Pinta" do Estúdio (08/2026): `listGalleryForStudio()` (resumos + miniatura
 > leve: pixel/tilemap-pixel = PNG pequeno, vetor = SVG dataUrl sem canvas, cache
-> por `updatedAt`) e `exportAssetForStudio(id)` (payload da ponte já validado
+> por namespace + id + `updatedAt`) e `exportAssetForStudio(id)` (payload da ponte já validado
 > pelos tetos — `ExportForStudioResult` com `reason` tipada). Zero React lá
 > dentro (o import dinâmico do host não puxa o app); o host seta o namespace
 > pelo `setPintaStorageNamespace` RE-EXPORTADO no próprio subpath.
@@ -133,7 +133,9 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
 - **Folhas vetoriais**: um documento SVG com `<svg>` ANINHADO por célula (clipa por padrão =
   paridade com bitmap), rasterizado UMA vez via Blob URL (`svgToPngDataUrl` em
   `vector/rasterize.ts`); tilemap vetorial usa `<symbol>/<use>` (`tiles/renderVectorTilemap.ts`).
-  Upscale vetorial = re-render (sem perda).
+  Upscale vetorial = re-render (sem perda). No `TilemapEditor`, a URL temporária é revogada em
+  `load`, `error` E cleanup com guarda idempotente; troca rápida de tileset/unmount não pode deixar
+  a Blob URL viva.
 - **Ponte "Usar no Estúdio" é ASYNC** (`export/studioBridge.ts buildStudioPayload`): PNG achatado
   {id,name,dataUrl,width,height} **+ METADADOS (07/2026)**: sprites levam `sprite: {frameW,frameH,
   animations:{name,from,to,fps,loop}[]}` (de `packSpritesheet`/`packVectorSpritesheet` — helper puro
@@ -157,6 +159,11 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   continua presa àquele perfil mesmo se o host trocar o namespace global. A fila FIFO é por
   handle de IndexedDB, nunca por id/namespace global. `persistAssets` usa um único `setMany`,
   portanto commits que alteram tileset+mapas dependentes ficam atômicos e não atravessam perfil.
+  Desde o full review de 12/08/2026, toda mutação mede a galeria PROJETADA com
+  `galleryBackupByteLength` e recusa passar dos mesmos 32 MiB do restore. Galeria legada já acima
+  do teto só aceita mutação que reduza o backup (excluir continua sempre disponível). O erro é
+  `PintaStorageBudgetError`, traduzido pela galeria e pelo badge do editor; não trocar por uma
+  checagem aproximada, pois o JSON real é a fonte única da invariante “se gera, restaura”.
 - **Copy 100% PT** centralizada em `src/core/copy.ts` (sem travessão, sem jargão; nomes de cor
   amigáveis em `colorNames` p/ os swatches).
 - **Seleção do PIXEL com ações + atalhos + zoom pela rolagem (08/2026)** — ver a seção
@@ -212,11 +219,11 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
 - **a11y**: alvos ≥44px, Dialog com foco/Esc/trap, Toast aria-live, wizard com bolinhas de
   progresso + `role=status` no erro de nome. ⚠️ Live region tem que MONTAR VAZIA e receber o
   texto depois (região inserida no DOM já preenchida não é anunciada — receita do
-  `tooManyTiles` do import e do help do tamanho personalizado). O trap de Tab do Dialog foi
-  RE-VALIDADO em Chromium real (08/2026, foco no body + Tab volta ao modal — o `aria-modal`
-  confina a navegação); a leitura estática sugere que o ramo de foco-no-body do handler não
-  dispara via React, então em navegador NÃO-Chromium o cenário merece re-teste antes de
-  confiar só nele.
+  `tooManyTiles` do import e do help do tamanho personalizado). Desde o full review de 12/08/2026,
+  `Dialog` prende `keydown` e `focusin` no `document` enquanto aberto: recupera foco que escapou,
+  cicla Tab/Shift+Tab, trata Esc e remove os listeners ANTES de restaurar o acionador. `aria-modal`
+  sozinho não implementa o trap. A regressão DOM cobre esse contrato; manter QA cross-browser para
+  comportamento real de foco.
 
 ## Seleção do pixel, atalhos e zoom pela rolagem (08/2026)
 
@@ -454,14 +461,175 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   Ver "Ajustes do vetor (08/2026)" abaixo — os chips saíram e o painel virou espelho do
   `PaletteBar`.
 - **Fora de escopo (futuro)**: operações booleanas (pathfinder), degradê multi-stop/ângulo livre,
-  importar SVG, máscaras/filtros/blend, campos numéricos X/Y/W/H, girar multi-seleção, snap dos
-  nós do editar pontos. ⚠️ **Alças de bézier SAIU desta lista** (08/2026): a Fase 2 da edição de
-  pontos as implementa — ver a seção abaixo.
+  importar SVG, máscaras/filtros/blend, campos numéricos X/Y/W/H, snap dos nós do editar pontos,
+  negrito/itálico do texto. ⚠️ **Fonte SAIU desta lista** (12/08/2026): há cinco famílias
+  portáteis; ver abaixo. ⚠️ **Alças de bézier SAIU desta lista** (08/2026): a Fase 2 da
+  edição de pontos as implementa. ⚠️ **Girar multi-seleção SAIU desta lista** (08/2026): ver
+  "Girar a seleção inteira" abaixo.
+- **Backlog irmão do girar em grupo (ninguém pediu ainda)**: `flipSelected` espelha cada forma no
+  PRÓPRIO centro, não no da seleção (espelhar um rosto de dois olhos deveria TROCAR os olhos), e
+  `moveOrder` continua só individual (um grupo não sobe de camada inteiro). Os dois mudam o
+  resultado visual de desenhos que já existem, por isso ficaram de fora.
 - Testes: `vectorUi.test.tsx` (caixa/canais/grade/snap/laço/multi-resize/alinhar/caneta/texto/
   raio/espaço), `vectorLayersUi.test.tsx` (painel Camadas), `vector/grid.test.ts`,
   `geometry.test.ts` (union/intersect/align), `model.test.ts`+`svg.test.ts` (hidden). ⚠️ Gotchas
   de teste: escopar consultas de shapes NO PALCO (`stage.querySelector(...)` — miniaturas do
   painel e ícones lucide também têm rect/text) e fixar o `getBoundingClientRect` do svg.
+
+## Girar a seleção inteira, cursor da Mão e texto de várias linhas (08/2026)
+
+Lote de CINCO pedidos da dona: girar um objeto AGRUPADO, o cursor mudar ao arrastar a tela, abrir
+o caminho NO ponto escolhido, alinhar o texto e trazer um desenho da galeria para dentro do
+desenho aberto.
+
+### Girar em grupo (`rotateShapesAround`, `geometry.ts`)
+
+⭐ **É EXATO, inclusive com membros já girados.** O render desenha cada forma como
+`rotate(r, centro-da-caixa-SEM-rotação)` (`shapeCommonAttrs`), e transladar a geometria translada
+essa mesma caixa junto. Logo `R(r+δ, c^δ) ∘ T` e `R(δ, pivô) ∘ R(r, c)` são o mesmo movimento
+rígido: as duas têm parte rotacional `r+δ` e concordam no ponto `c`. Nada de aproximação.
+
+- ⚠️ **O early-out `dx === 0 && dy === 0` é LOAD-BEARING**, não otimização: `translateShape(s,0,0)`
+  devolveria um objeto NOVO (re-serializando o `d` de um traço a cada quadro), quebrando a
+  memoização por identidade do `VectorFrameSvg` — e é ele que faz o giro de UMA forma continuar
+  byte a byte o de antes (com uma forma só, o pivô É o centro dela).
+- O gesto guarda `baseShapes` (não mais `baseRotation`) e aplica o delta TOTAL sobre a base, o
+  mesmo idioma de mover e redimensionar.
+- ⚠️ **A caixa da união fica ALINHADA AOS EIXOS durante o giro**, sem o `<g rotate>` que a seleção
+  única usa: os membros podem ter rotações diferentes, e mesmo com uma só, a união de caixas não
+  giradas girada como bloco rígido NÃO é a caixa da união girada — a moldura sairia de cima do
+  desenho. Ela é recalculada a cada quadro, então "respira". Não "consertar" com o wrapper.
+- A alça de girar leva `data-rotate` nos DOIS blocos (os testes contam `data-node`/`data-handle`,
+  e `vectorUi.test.tsx` exige exatamente 8 `rect[width="14"]` no palco).
+
+### Cursor da Mão (`components/editor/stageCursor.ts`)
+
+Módulo puro compartilhado pelo vetor e pelo MAPA (o pixel não tem ferramenta Mão). `grabbing`
+vence; senão `grab` se a Mão está ativa ou o espaço está segurado. O gesto vive num `useRef` de
+propósito, então há um `useState` `panning` ligado só nas BORDAS do arrasto: dois renders por
+gesto, zero durante o movimento. ⚠️ O efeito de troca de quadro/tile zera o `gestureRef` SEM
+passar pelo `endGesture` — tem que soltar o `panning` lá também, senão o cursor trava fechado.
+
+### Texto de VÁRIAS linhas + alinhamento
+
+- `\n` dentro do próprio `text` (nada de campo novo: o `shapeBytes` já conta `text.length * 2` e
+  string é imutável, então o clone RASO de `animation/frames.ts` não morde como mordia no
+  `points`). `normalizeTextContent` é a regra ÚNICA (CRLF→LF, `MAX_TEXT_CHARS` 400,
+  `MAX_TEXT_LINES` 12) e é idempotente.
+- ⭐ **`align?: 'center' | 'right'` — `'left'` é INEXPRIMÍVEL**, não só "chave omitida": o tipo
+  impede escrever o padrão, então todo texto que já existe atravessa o sanitize byte a byte. Leia
+  sempre por `textAlignOf`.
+- ⭐ **`textLines()` (svg.ts) é a fonte ÚNICA dos números**: o funil string emite `<tspan>` e o
+  React emite `<tspan>` de verdade, com o mesmo `x`/`dy`. Verificado em navegador: o markup do
+  palco e o da miniatura das Camadas saem idênticos.
+- **Uma linha continua saindo como conteúdo CRU** (sem `tspan`, sem `text-anchor`): o markup de
+  todo desenho antigo fica igual ao de antes, e nenhum `getByText` de teste passa a casar duas vezes.
+- `x`/`y` são a ÂNCORA e o que ela significa depende do `align` — por isso o `shapeBounds` desloca
+  a caixa e o `flipShape` repõe o deslocamento da âncora (sem isso um texto centralizado saltava).
+  ⚠️ **A caixa é ESTIMADA** (0.6em por caractere, sem medir no DOM: happy-dom não faz layout e o
+  export não tem DOM). O `setTextAlign` preserva a caixa ESTIMADA, então trocar o alinhamento move
+  o texto real por alguns pixels (medido: ~9px num texto de 97px). É reversível e não acumula
+  (esquerda→meio→direita→esquerda devolve o `x` exato).
+- O diálogo virou `<textarea>`: Enter QUEBRA A LINHA (um textarea dentro de form não dispara o
+  submit implícito, então basta não amarrar nada ao Enter cru) e **Ctrl/Cmd+Enter salva**, junto
+  com o botão. `isTextEntryTarget` já casa `textarea`, então os atalhos de window continuam mudos.
+- Os 3 botões vivem num `Panel` da Aparência, visíveis com a ferramenta Texto OU com um texto
+  selecionado. Rótulos `textAlign*` DISTINTOS dos `align*` da faixa da seleção (que alinham
+  FORMAS), e ícones `AlignLeft/Center/Right` (os `Align*Horizontal/Vertical` são das formas).
+
+### Cinco fontes vetoriais PORTÁTEIS (12/08/2026)
+
+`Baloo 2`, `Nunito`, `Press Start 2P`, `Bungee` e `Fredoka One` são opções da ferramenta Texto e do
+texto selecionado.
+
+> ⭐⭐ **DUAS delas nunca funcionaram, e a causa era um par de aspas (13/08/2026).** O
+> `shapeGeometryAttrs` emitia `font-family="Press Start 2P"` CRU. Sem aspas o nome vira uma
+> sequência de identificadores CSS, e identificador **não pode começar com dígito**: o token `2P`
+> (e o `2` de `Baloo 2`) invalida a declaração INTEIRA, e o navegador a descarta em silêncio.
+> Nunito, Bungee e Fredoka escondiam o defeito por serem uma palavra só.
+> Medido em Chrome com `getComputedTextLength()` num `<text>` real, "Herói 123" a 30px:
+> Press Start 2P sem aspas **134,7** (idêntico a NENHUMA fonte) contra **270,0** com aspas; Baloo 2
+> **134,7** contra **117,6**. Fonte única do valor: **`fontFamilyCss`** (`vector/model.ts`), que
+> sempre cita — o `@font-face` de `vector/fonts.ts` já citava; quem faltava era o USO.
+> ⚠️ Os testes de `svg.test.ts` chegaram a assertar a saída QUEBRADA palavra por palavra
+> (`font-family="Press Start 2P"`); hoje há um caso que percorre as CINCO famílias e exige as
+> aspas, com anti-vácuo.
+
+> ⭐ **`fredoka` = Fredoka ONE, não a variável (13/08/2026).** A CHAVE continua `fredoka` (ela
+> viaja nos desenhos salvos), mas a face é a display redonda e gordinha. A variável nova é mais
+> fina e o peso 600 dela NÃO reproduz o traço — medido em Chrome: largura média por caractere
+> 0,524 (One) contra 0,502 (variável), e a variável até ESTREITA ao engordar. O `widthFactor` foi
+> de 0,57 para **0,60** (razão medida 1,044).
+> ⚠️ **Consequência aceita:** desenho que já usava Fredoka re-renderiza na One — mais gordo e ~4%
+> mais largo —, e como o `widthFactor` mudou, a caixa ESTIMADA de texto centralizado/à direita
+> desloca alguns pixels.
+> ⚠️ **Licença:** o Google DELISTOU `ofl/fredokaone/` (o OFL.txt de lá responde 404) ao absorver a
+> família, então o gerador mantém `slug: 'fredoka'` — e isso é correto, não um contorno: a primeira
+> linha do OFL vendorizado diz `Copyright 2016 The Fredoka Project Authors
+> (https://github.com/hafontia/Fredoka-One)`. É o mesmo projeto e a mesma licença. O modelo guarda a chave estável `fontFamily`; chave ausente ou inválida lê como
+`Nunito`, mas o sanitizer omite o default em documentos antigos para preservar o round-trip.
+
+- O catálogo leve fica em `vector/model.ts`; os WOFF2 Latin ficam em módulos separados em
+  `vector/fontData/` e entram por import dinâmico só quando usados. `bun run gen:vector-fonts`
+  regenera dados e licenças OFL em `licenses/fonts/`.
+- `vector/fonts.ts` é a fonte única do `@font-face`; o editor registra a família usada no
+  `document`, enquanto `vector/portableSvg.ts` incorpora como `data:font/woff2;base64` apenas as
+  famílias dos textos visíveis.
+- Todo funil final usa o SVG portátil: SVG avulso, PNG, spritesheet, tira, tileset, tilemap, ZIP,
+  miniatura da biblioteca do Studio e os botões do `ExportDialog`. Funções puras `*Svg` continuam
+  úteis para markup/testes internos, mas não podem alimentar download ou rasterização diretamente.
+- Bounds/hit testing seguem determinísticos e sem DOM: `shapeBounds` usa o `widthFactor` da
+  família. É aproximação deliberada; alterar as métricas exige regressões de geometria.
+
+### Trazer um desenho da galeria para dentro do vetor (08/2026)
+
+Decisão da dona: desenho de VETOR entra como as formas de verdade (agrupadas, ainda editáveis
+ponto a ponto) e desenho de PIXEL ART entra como uma FIGURA. `vector/insertAsset.ts` faz a
+triagem; `core/assetThumb.ts` (extraído do `AssetCard`) diz qual é a "cara" de cada asset.
+
+- ⭐ **Entra exatamente o que a MINIATURA da galeria mostra**, e o seletor reusa o próprio
+  `AssetThumb` do card. O seletor é WYSIWYG por construção, não por coincidência. Shapes ocultos
+  são filtrados ANTES de contagem, bounds, escala e clone; documento todo oculto é vazio.
+- ⭐ **Os dois caminhos ASSAM o conteúdo na hora.** Nada guarda referência viva ao asset de
+  origem: não existe ciclo A→B→A, apagar o original não fura o desenho, e o rasterizador do export
+  consegue ler (uma URL externa não passaria pelo modo estático do SVG-em-`<img>`).
+- **Variante `image`** no modelo: `{x, y, w, h, src, pixelated?}`. `src` é SEMPRE
+  `data:image/png;base64,` (o `startsWith` É a história de segurança: barra http(s), `svg+xml` e
+  `javascript:`), com teto `MAX_IMAGE_SRC_CHARS` (300k) no molde do `MAX_PATH_CHARS`. Quem insere
+  recusa ANTES do teto, senão a figura sumiria sozinha no próximo load.
+- ⚠️ **`sanitizeVectorShape` é o ÚNICO switch de shape que o TypeScript NÃO obriga a cobrir**
+  (tem `default: return null`). Variante nova esquecida lá some do desenho em silêncio no próximo
+  load. Os outros cinco (`shapeBounds`, `translateShape`, `scaleShape`, o `flip()` interno e
+  `shapeGeometryAttrs`) o compilador enumera sozinho — rode o typecheck e siga a lista.
+- ⚠️ **`shapeBytes` conta o `src`**: sem isso a figura pesaria 128 bytes no orçamento de 16 MB do
+  undo e a sessão comeria RAM em silêncio. Travado por teste no `editorStore.test.ts`.
+- `preserveAspectRatio="none"` para a figura PREENCHER a caixa — assim as 8 alças dizem a verdade
+  (o padrão `xMidYMid meet` deixaria tarja e a alça mentiria). `image-rendering: pixelated` sempre,
+  porque toda figura vem de pixel art. Só `href` (SVG2), nunca `xlink:href` duplicado: repetir um
+  data URL dobraria o arquivo.
+- **O MAPA fica fora do seletor**: a miniatura dele é um MINIMAPA (um pixel por célula), então
+  "entra o que a miniatura mostra" daria uma grade de cores sem sentido; desenhar o mapa de verdade
+  passaria do teto do `src`; e um mapa é uma cena, não um adesivo. O desenho ABERTO também sai da
+  lista (num cenário, inserir a si mesmo dobraria as formas a cada toque).
+- A busca usa `isInsertableAsset` (metadados), não `thumbnailBitmap`/`flattenCels`; a lista é
+  derivada uma vez por `useMemo`, e o `AssetThumb` compartilha cache por identidade do asset. O
+  comando retorna booleano e o modal fecha SOMENTE depois de um commit bem-sucedido.
+- A inserção de vetor recebe **um `groupId` único** (anda como uma peça). ⚠️ Os grupos internos do
+  original são ACHATADOS nele; desagrupar solta tudo.
+- ⭐ **O risco que precisava de navegador foi MEDIDO e passou**: o `<image href="data:…">`
+  sobrevive ao `svgToPngDataUrl` (SVG por Blob URL num `<img>`, modo estático), **não contamina o
+  canvas** (`toDataURL` não lança) e os pixels chegam ao PNG (1879 pixels opacos dentro da caixa,
+  Chrome). Se um dia falhar em outro navegador, o `catch` do `rasterize.ts` degrada para `null` —
+  o export sai sem a figura, em SILÊNCIO. Vale re-medir em Safari/iPadOS antes de confiar lá.
+- ⚠️ Efeito de segunda ordem a vigiar: `studioLibrary` manda a miniatura vetorial como SVG cru
+  abaixo de `SVG_THUMB_MAX_CHARS` (100k) e só acima disso rasteriza. Uma figura inserida empurra
+  quase qualquer documento para além dos 100k, então essas miniaturas passam a depender do canvas.
+- Testes: `vector/insertAsset.test.ts` (puros: triagem dos 7 kinds, grupo único, centralização,
+  proporção, busca sem acento), `model.test.ts` (aceita/recusa `src`, round-trip do `pixelated`),
+  `svg.test.ts` (markup), `editorStore.test.ts` (orçamento) e 4 casos de UI no `vectorUi.test.tsx`.
+  ⚠️ **No teste, semear a galeria com `importAssets`, nunca `absorb`**: só o primeiro PERSISTE, e o
+  `PintaApp` monta uma galeria própria que relê do disco. E o caminho do PIXEL não fecha em
+  happy-dom (sem canvas) — o que se afere lá é a RECUSA educada.
 
 ## Editar os PONTOS e as CURVAS (08/2026)
 
@@ -520,6 +688,33 @@ verbatim. **Fechar o caminho não exigiu uma linha de modelo.**
 - Testes: `vector/pathNodes.test.ts` (puros) e o bloco "editar os pontos do vetor" em
   `vectorUi.test.tsx` — o `reshape` não tinha **nenhum** teste de UI antes deste lote. ⚠️ As UI
   consultam `circle[data-node]`: as ALÇAS também são `<circle>` no palco.
+
+### A tesoura: abrir NO ponto e cortar em dois (08/2026)
+
+O mesmo botão faz três coisas conforme o estado, e os rótulos são load-bearing:
+
+| caminho | nós escolhidos | rótulo | o que faz |
+|---|---|---|---|
+| fechado | 0 | "Abrir o caminho" | `setClosed(false)` — TIRA o trecho que fechava (como sempre) |
+| fechado | 1 | "Abrir o caminho neste ponto" | `openClosedPathAt` — PRESERVA todos os trechos |
+| aberto | 0 | "Fechar o caminho" | como sempre |
+| aberto | 1 no miolo | "Cortar em dois neste ponto" | `splitOpenPathAt` → DUAS formas |
+| aberto | 1 na ponta | idem, mas toasta | não há o que cortar numa ponta |
+| qualquer | 2+ | desligado | a tesoura promete "aqui" e não existe um "aqui" |
+
+- ⭐ **A emenda duplica o nó** e cada cópia guarda UMA alça: o começo fica com o `out`, o fim com o
+  `in` (`asStart`/`asEnd`). É o que faz a curva não mudar — `editablePathToD` nunca lê o `in` do
+  primeiro nem o `out` do último quando o caminho é aberto.
+- ⭐ **A ida e volta fecha o círculo**: `parseEditablePath` funde um nó final repetido SÓ quando o
+  caminho está FECHADO, então a emenda sobrevive aberta, e fechar de novo devolve o laço original.
+  Isso está travado por teste — é a rede de segurança do desenho inteiro.
+- ⚠️ **A metade A guarda o id ORIGINAL.** Com dois ids novos, `selectedIds` ficaria órfão por um
+  render, `single` viraria null, `nodePath` também, e o `VectorNodeActions` inteiro sumiria da tela
+  (ele devolve `null` sem `nodePath`) — leria como "quebrou".
+- ⚠️ `applyNodeEdit` agora devolve `boolean`: `fromEditablePath` retorna a forma ORIGINAL quando o
+  `d` estoura `MAX_PATH_CHARS`, e sem esse retorno o "corte" duplicaria o traço inteiro em silêncio.
+  O corte também não passa por ele (troca UMA forma por DUAS) e chama `commitShapes` direto.
+- Recusa por `PINTA_LIMITS.maxShapes` reusa `COPY.vector.shapeLimit`.
 
 ### Fase 2: as curvas
 

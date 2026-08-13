@@ -85,9 +85,9 @@ describe('Reino Cogumelo — o Mundo 1 monta e é jogável', () => {
       const { maiorSolidos, maiorMalhas } = caminhar(api, world, heroi, largura)
       // O kit tem orçamento PRÓPRIO (260 malhas); estourá-lo faz a fase sumir aos
       // pedaços em silêncio.
-      expect(maiorMalhas, nome + ' malhas').toBeLessThan(260)
+      expect(maiorMalhas, `${nome} malhas`).toBeLessThan(260)
       // E o laço de colisão só é barato porque a janela é pequena.
-      expect(maiorSolidos, nome + ' sólidos').toBeLessThan(90)
+      expect(maiorSolidos, `${nome} sólidos`).toBeLessThan(90)
     })
   }
 

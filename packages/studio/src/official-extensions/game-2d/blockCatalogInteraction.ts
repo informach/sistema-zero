@@ -348,7 +348,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     colour: C,
     tooltip:
       'Você escolhe o jeito dele: um comportamento agora, e mais quantos quiser depois com o "O tipo de inimigo ... também é ...". Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha os atributos UMA vez e solte quantos quiser. Monte em "Meus moldes": ele descreve a receita sem soltar inimigo nenhum. O visual segue esta ordem: figura desenhada > imagem > cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).' +
-      'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+      ' Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
     // Irmão do de cima, com um campo SÓ no lugar do comportamento: cada
@@ -376,7 +376,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     colour: C,
     tooltip:
       'O ATALHO: escolha só o quanto ele é esperto e o resto vem pronto, inclusive os ajustes. Quer montar peça por peça? Use o "Criar tipo de inimigo" logo acima. Monte em "Meus moldes". Dá para somar mais coisa depois com o "O tipo de inimigo ... também é ..." (é assim que um inimigo burro ganha um raio). ⚠️ Se você somar um jeito de ANDAR, ele TROCA o andar que veio com a inteligência; somar uma AÇÃO (atirar, raio, espinho) acrescenta.' +
-      'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+      ' Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
     type: 'sz_g2d_enemy_add_behavior',
@@ -392,7 +392,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     colour: C,
     tooltip:
       'Junte quantos comportamentos quiser no mesmo inimigo. Os jeitos de se mexer não se somam: se você juntar dois, vale o último que somou. Já as ações se juntam todas, então patrulha mais atirador anda E atira. O lugar normal é em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, também dá para somar no meio do jogo e deixar a próxima onda ou etapa de dificuldade mais difícil.' +
-      'Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+      ' Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
   },
   {
     type: 'sz_g2d_enemy_state_anim',
@@ -463,7 +463,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ajuste fino do comportamento do tipo. Ajuste em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, o novo valor passa a valer no meio do jogo. Força e ritmo do pulo: saltador. Alcance: voador, sobe e desce, rondador, zigue-zague, mergulhador, teleporte, arrancada e medroso (para quem anda no chão, o alcance é a distância que faz o inimigo reagir). A cada tantos quadros ele age: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro, teleporte, chefão e raio. Velocidade do tiro: atirador, atirador alinhado, atirador de lado, atirador esperto, atirador em leque, bombardeiro e chefão. Voltar: renascer. Quanto tempo o raio fica ligado: raio. A vida vale para todos, e só para os que nascerem daqui para a frente.',
+      'Ajuste fino do comportamento do tipo. Ajuste em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, o novo valor passa a valer no meio do jogo. Cada valor serve a alguns comportamentos (a vida serve a todos, e só a quem nascer daqui para a frente): a lista de quem aproveita cada um está no manual.',
   },
   {
     type: 'sz_g2d_spawn_enemy',
@@ -598,7 +598,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo. Usa o dano do TIPO, igual nos três ataques dele; para um ataque doer mais, troque pelo "Machucar o sprite em ... e deixá-lo invencível por ... quadros".',
+      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo. Usa o dano do TIPO, igual nos três ataques dele; para um ataque doer mais, troque pelo "Machucar o sprite em ... e deixá-lo invencível por ... quadros". Se o inimigo virou casco e está PARADO, encostar nele o CHUTA em vez de machucar.',
   },
   {
     type: 'sz_g2d_stomp_enemy',

@@ -85,6 +85,7 @@ interface Api {
   loadSpriteSheet: (name: string, fw: number, fh: number) => unknown
   setHealth: (s: Sprite, n: number) => void
   setHitboxScale: (s: Sprite, percent: number) => void
+  setEnemyStompMode: (t: EnemyType, mode: string) => void
   changeHealth: (s: Sprite, d: number) => void
   countGroup: (g: unknown) => number
   forEachInGroup: (g: unknown, fn: (s: Sprite, i: number) => void) => void
@@ -3260,5 +3261,134 @@ describe('os três modos do perseguidor', () => {
     expect(naAltura.avancada).toBe(40)
     expect(naAltura.ultra).toBe(40)
     expect(naAltura.rei).toBeGreaterThan(40)
+  })
+})
+
+describe('a pisada tem que MATAR no quadro do contato, não quando o herói sai de cima', () => {
+  // ⚠️ Defeito real relatado jogando: "ao pisar em um inimigo ele só morre e faz a
+  // animação quando sai de cima dele". O modo `squash` marcava 20 quadros de espera e
+  // só então zerava a vida — com quique 5.5 e gravidade 0.42 o herói volta ao mesmo
+  // nível em ~26 quadros, então as partículas saíam depois de ele já ter saído.
+  // Pior: a contagem não era lida por desenhista nenhum, então o "achatado" que ela
+  // pagava com o atraso não existia na tela.
+  it('o achatado morre no MESMO quadro, sem espera', () => {
+    const api = load()
+    const ctx = fakeCtx(400, 300)
+    api.setGravity(0.42)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    api.setEnemyStompMode(t, 'squash')
+    const heroi = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.stompEnemyType(heroi, t, 5.5)
+    expect(inimigo.hp).toBe(0)
+    // Um único "Atualizar" colhe a morte. Antes eram 21.
+    api.updateEnemyType(t, ctx, null)
+    expect(t.items.length).toBe(0)
+  })
+
+  it('o achatado ACHATA de verdade, e pelos pés', () => {
+    const api = load()
+    api.setGravity(0.42)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    api.setEnemyStompMode(t, 'squash')
+    const base = inimigo.y + inimigo.h
+    const heroi = api.createSprite({ x: 100, y: 190, w: 20, h: 20, vy: 5 })
+    api.stompEnemyType(heroi, t, 5.5)
+    expect(inimigo.h).toBeLessThan(20)
+    // O pé fica onde estava: achatar a partir do topo faria o corpo flutuar.
+    expect(inimigo.y + inimigo.h).toBe(base)
+  })
+
+  it('a área de colisão reduzida não descarta a pisada certa', () => {
+    // ⚠️ Duas réguas: encostar usava a caixa EFETIVA e "veio de cima" usava a caixa
+    // CRUA. Com "usar área de colisão de N%" o herói encostava e a geometria
+    // recusava, e a pisada sumia sem nada na tela explicando.
+    const api = load()
+    api.setGravity(0.42)
+    const t = api.createEnemyType({ behavior: 'patrulha', hp: 3, w: 20, h: 20 })
+    const inimigo = api.spawnEnemy(t, 100, 200) as Sprite
+    const heroi = api.createSprite({ x: 100, y: 188, w: 20, h: 20, vy: 5 })
+    api.setHitboxScale(heroi, 85)
+    api.stompEnemyType(heroi, t, 5.5)
+    expect(inimigo.hp).toBe(0)
+    expect(heroi.vy).toBe(-5.5)
+  })
+
+  describe('o aviso de "criou o tipo e nunca soltou" e os jogos de ONDA', () => {
+    /** Roda quadros de atualizar + desenhar em todos os tipos, como o jogo faz. */
+    const jogar = (
+      api: ReturnType<typeof load>,
+      tipos: EnemyType[],
+      ctx: ReturnType<typeof fakeCtx>,
+      quadros: number,
+    ) => {
+      for (let frame = 0; frame < quadros; frame += 1) {
+        for (const tipo of tipos) {
+          api.updateEnemyType(tipo, ctx, null)
+          api.drawEnemyType(ctx, tipo)
+        }
+      }
+    }
+
+    it('⭐ tipo guardado para a onda seguinte NÃO é acusado enquanto há inimigo em campo', () => {
+      // ⚠️ O jogo de ondas é o caso que o próprio texto do aviso cita ("para ondas,
+      // use dentro de A cada N quadros"), e a janela de graça de ~6s não cobre a onda
+      // 3 chegando aos 40s: com 6 tipos e 2 soltos, o Console acusava os 4 que
+      // esperavam a vez. Aviso que acusa quem está certo é pior que aviso nenhum.
+      const warn = spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const api = load()
+        const ctx = fakeCtx(800, 480)
+        const tipos = Array.from({ length: 6 }, () =>
+          api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 }),
+        )
+        // Onda 1: só os dois primeiros entram em campo.
+        api.spawnEnemy(tipos[0] as EnemyType, 100, 60)
+        api.spawnEnemy(tipos[1] as EnemyType, 160, 60)
+
+        jogar(api, tipos, ctx, 500)
+        expect(warn).not.toHaveBeenCalled()
+      } finally {
+        warn.mockRestore()
+      }
+    })
+
+    it('anti-vácuo: sem NENHUM inimigo em campo, o aviso continua vindo', () => {
+      const warn = spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const api = load()
+        const ctx = fakeCtx(800, 480)
+        const tipo = api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 })
+
+        jogar(api, [tipo], ctx, 500)
+        expect(warn).toHaveBeenCalledTimes(1)
+        expect(String(warn.mock.calls[0]?.[0])).toContain('nenhum inimigo foi solto ainda')
+      } finally {
+        warn.mockRestore()
+      }
+    })
+
+    it('a tela esvaziando de vez volta a acusar o tipo esquecido', () => {
+      // A graça é para o jogo em ANDAMENTO. Se a última onda morreu e o tipo
+      // esquecido segue vazio, o aviso é legítimo de novo.
+      const warn = spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const api = load()
+        const ctx = fakeCtx(800, 480)
+        const emCampo = api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 })
+        const esquecido = api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 })
+        const bicho = api.spawnEnemy(emCampo, 100, 60) as Sprite
+
+        jogar(api, [emCampo, esquecido], ctx, 500)
+        expect(warn).not.toHaveBeenCalled()
+
+        api.changeHealth(bicho, -99)
+        jogar(api, [emCampo, esquecido], ctx, 500)
+        expect(warn).toHaveBeenCalled()
+      } finally {
+        warn.mockRestore()
+      }
+    })
   })
 })

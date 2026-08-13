@@ -29,6 +29,8 @@ import { Button } from '#ui'
 import { rememberProjectSnapshot } from '../../cover/latestSnapshot'
 import { useDebounced } from '../../hooks/useDebounced'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
+import { loadGameUiFont } from '../../official-extensions/gameUiFont'
+import { resolveGameUiFontId } from '../../official-extensions/gameUiFonts/resolve'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
@@ -299,6 +301,31 @@ export function PreviewIframe(): JSX.Element {
     }
   }, [debouncedIds, runtimeAttempt])
 
+  // ⚠️ A escolha sai do JS JÁ DEBOUNCED, não da IR: varrer a árvore do Reino Zero
+  // (32 grades) a cada tecla seria caro, e o script gerado é a mesma verdade — o
+  // resolvedor tem justamente esse caminho de leitura.
+  const gameUiFontId = resolveGameUiFontId({ files: { 'script.js': debouncedJs } })
+  const [gameUiFontState, setGameUiFontState] = useState<{
+    key: string
+    bundle: { id: string; family: string; css: string } | null
+  }>({ key: '', bundle: null })
+
+  useEffect(() => {
+    if (!debouncedIds) {
+      setGameUiFontState({ key: `${debouncedIds}|${gameUiFontId}`, bundle: null })
+      return
+    }
+    let active = true
+    void loadGameUiFont(gameUiFontId).then((bundle) => {
+      if (active) setGameUiFontState({ key: `${debouncedIds}|${gameUiFontId}`, bundle })
+    })
+    return () => {
+      active = false
+    }
+  }, [debouncedIds, gameUiFontId])
+
+  const gameUiFontReady = gameUiFontState.key === `${debouncedIds}|${gameUiFontId}`
+
   const extensionRuntimesReady =
     extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'ready'
   const extensionRuntimesLoading =
@@ -349,9 +376,17 @@ export function PreviewIframe(): JSX.Element {
       css: debouncedCss,
       js: debouncedJs,
       extensionScripts,
+      gameUiFont: gameUiFontState.bundle ?? undefined,
       extraFiles: debouncedExtraFiles,
     }),
-    [debouncedHtml, debouncedCss, debouncedJs, extensionScripts, debouncedExtraFiles],
+    [
+      debouncedHtml,
+      debouncedCss,
+      debouncedJs,
+      extensionScripts,
+      gameUiFontState.bundle,
+      debouncedExtraFiles,
+    ],
   )
   const previewInputChars = useMemo(
     () => estimatePreviewInputChars(previewBudgetInput),
@@ -419,6 +454,7 @@ export function PreviewIframe(): JSX.Element {
     if (previewPaused) return PAUSED_PREVIEW_DOC
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
     if (!extensionRuntimesReady) return PAUSED_PREVIEW_DOC
+    if (!gameUiFontReady) return PAUSED_PREVIEW_DOC
     // Aguarda hidratar o estado salvo antes do 1º build (ver storageReady acima).
     if (projectId && !storageReady) return PAUSED_PREVIEW_DOC
     const base = buildPreviewDoc({
@@ -427,6 +463,10 @@ export function PreviewIframe(): JSX.Element {
       js: debouncedJs,
       extensionScripts,
       extraFiles: debouncedExtraFiles,
+      // A fonte escolhida (só ela vem carregada). O gate acima garante que o bundle
+      // já chegou: sem ele o documento sairia com a família padrão e o jogo trocaria
+      // de letra no meio, ao próximo render.
+      gameUiFont: gameUiFontState.bundle ?? undefined,
       parentOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
       installedPermissions,
       fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
@@ -455,6 +495,8 @@ export function PreviewIframe(): JSX.Element {
     previewPaused,
     currentProjectHasRun,
     extensionRuntimesReady,
+    gameUiFontReady,
+    gameUiFontState.bundle,
     projectId,
     storageReady,
     debouncedHtml,

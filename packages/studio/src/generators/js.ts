@@ -2534,17 +2534,18 @@ function compileStatementCode(
         const w = identifiers.get(stmt.worldVar)
         if (stmt.op === 'tema')
           return `${pad}SZGame3D.setStageTheme(${w}, ${JSON.stringify(stmt.text ?? 'dia')});`
-        if (stmt.op === 'montar')
-          return `${pad}SZGame3D.loadStage(${w}, ${JSON.stringify(stmt.text ?? '')});`
+        if (stmt.op === 'montar') {
+          const mapa = compileExpr(valueToExpr(stmt.a ?? ''), 0, identifiers, recAt(base))
+          return `${pad}SZGame3D.loadStage(${w}, ${mapa});`
+        }
         if (stmt.op === 'limpar') return `${pad}SZGame3D.clearStage(${w});`
         if (stmt.op === 'recomecar') return `${pad}SZGame3D.stageReset(${w});`
-        if (stmt.op === 'passo')
-          return `${pad}SZGame3D.stageStep(${w}, ${identifiers.get(stmt.objVar ?? '')});`
-        if (stmt.op === 'camera')
-          return `${pad}SZGame3D.sideCamera(${w}, ${identifiers.get(stmt.objVar ?? '')});`
-        const a = compileExpr(valueToExpr(stmt.a ?? 1), 0, identifiers, recAt(base))
-        const b = compileExpr(valueToExpr(stmt.b ?? 1), 0, identifiers, recAt(base))
-        return `${pad}SZGame3D.setStageNumber(${w}, ${a}, ${b});`
+        if (stmt.op === 'numero') {
+          const a = compileExpr(valueToExpr(stmt.a ?? 1), 0, identifiers, recAt(base))
+          const b = compileExpr(valueToExpr(stmt.b ?? 1), 0, identifiers, recAt(base))
+          return `${pad}SZGame3D.setStageNumber(${w}, ${a}, ${b});`
+        }
+        throw new GeneratorError(`Operação de fase 3D desconhecida: ${String(stmt.op)}`)
       }
       case 'g3d:stageFrame': {
         const alvo = identifiers.get(stmt.objVar)
@@ -2695,6 +2696,8 @@ ${pad}});`
         return `${pad}SZGameKit.setStageDescription(${JSON.stringify(stmt.description)});`
       case 'gk:stageBorder':
         return `${pad}SZGameKit.showStageBorder(${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
+      case 'gk:useFont':
+        return `${pad}SZGameKit.useFont(${JSON.stringify(stmt.font)});`
       case 'gk:setBackdrop':
         return `${pad}SZGameKit.setBackdrop(${JSON.stringify(stmt.image)});`
       case 'gk:drawBackdrop':
@@ -6343,6 +6346,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         return
       case 'gk:setupFull':
       case 'gk:setStageDescription':
+      case 'gk:useFont':
       case 'gk:setBackdrop':
       case 'gk:drawBackdrop':
       case 'gk:showHitboxes':

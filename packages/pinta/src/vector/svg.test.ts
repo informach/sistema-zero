@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { createVectorBackgroundAsset } from '../core/project'
-import type { VectorShape } from './model'
-import { gradientDefsMarkup, shapeToMarkup, vectorToSvg } from './svg'
+import { fontFamilyLabel, VECTOR_FONT_FAMILIES, type VectorShape } from './model'
+import { vectorToPortableSvg } from './portableSvg'
+import { gradientDefsMarkup, shapeToMarkup, textLines, vectorToSvg } from './svg'
 
 const base = { fill: '#78dc52', stroke: null, opacity: 1, rotation: 0 }
 
@@ -190,5 +191,147 @@ describe('formas escondidas (olhinho) ficam FORA de todo export', () => {
 
   it('gradientDefsMarkup ignora degradê de forma escondida', () => {
     expect(gradientDefsMarkup([hiddenGrad])).toBe('')
+  })
+})
+
+describe('texto de VÁRIAS linhas e alinhamento', () => {
+  const textShape = (text: string, align?: 'center' | 'right'): VectorShape => ({
+    ...base,
+    id: 't9',
+    type: 'text',
+    x: 40,
+    y: 30,
+    text,
+    fontSize: 20,
+    ...(align ? { align } : {}),
+  })
+
+  it('uma linha à esquerda sai IGUAL a antes: sem tspan e sem text-anchor', () => {
+    const markup = shapeToMarkup(textShape('Olá'))
+    expect(markup).toBe(
+      `<text x="40" y="30" font-size="20" font-family="'Nunito'" fill="#78dc52">Olá</text>`,
+    )
+  })
+
+  it('usa a família escolhida no markup', () => {
+    const shape = { ...textShape('Jogar'), fontFamily: 'press-start-2p' as const }
+    expect(shapeToMarkup(shape)).toContain(`font-family="'Press Start 2P'"`)
+  })
+
+  /**
+   * ⭐ A rede que faltava, e ela mata a CLASSE inteira.
+   *
+   * Sem aspas, o nome da família vira uma sequência de identificadores CSS — e
+   * identificador não pode começar com dígito. "Press Start 2P" tem o token "2P" e
+   * "Baloo 2" tem o "2": o navegador DESCARTA a declaração e o texto cai na fonte
+   * herdada. Duas das cinco famílias NUNCA funcionaram por isso, e as outras três
+   * escondiam o defeito por serem uma palavra só. Medido em Chrome antes do
+   * conserto: as duas devolviam "Nunito, ui-sans-serif, system-ui, sans-serif".
+   *
+   * ⚠️ O teste acima chegou a assertar a saída QUEBRADA, palavra por palavra.
+   */
+  it('⭐ TODA família sai entre aspas no markup', () => {
+    for (const family of VECTOR_FONT_FAMILIES) {
+      // O helper devolve a UNIÃO, então acrescentar `fontFamily` por espalhamento
+      // faz o TS conferir a chave contra todos os membros (rect não a tem).
+      const shape: VectorShape = {
+        ...base,
+        id: 't9',
+        type: 'text',
+        x: 40,
+        y: 30,
+        text: 'Aa',
+        fontSize: 20,
+        fontFamily: family,
+      }
+      const markup = shapeToMarkup(shape)
+      expect(markup, family).toContain(`font-family="'${fontFamilyLabel(family)}'"`)
+    }
+  })
+
+  it('anti-vácuo: um nome cru NÃO passaria pelo detector do caso acima', () => {
+    // Se alguém trocar o emissor por um valor sem aspas, a asserção de cima falha.
+    expect(`font-family="Press Start 2P"`).not.toContain(`font-family="'Press Start 2P'"`)
+  })
+
+  it('SVG portátil incorpora somente a fonte usada', async () => {
+    const shape = { ...textShape('Pular'), fontFamily: 'bungee' as const }
+    const svg = await vectorToPortableSvg({ width: 100, height: 50, shapes: [shape] })
+
+    expect(svg).toContain('@font-face')
+    expect(svg).toContain('data:font/woff2;base64,')
+    expect(svg).toContain(`font-family="'Bungee'"`)
+    expect(svg).not.toContain("font-family:'Fredoka One'")
+  })
+
+  it('três linhas viram três tspan, o primeiro com dy 0', () => {
+    const markup = shapeToMarkup(textShape('um\ndois\ntrês'))
+    expect(markup).toContain('<tspan x="40" dy="0">um</tspan>')
+    expect(markup).toContain('<tspan x="40" dy="24">dois</tspan>')
+    expect(markup).toContain('<tspan x="40" dy="24">três</tspan>')
+    expect(markup.match(/<tspan/g)?.length).toBe(3)
+  })
+
+  it('o alinhamento vira text-anchor (e some no padrão)', () => {
+    expect(shapeToMarkup(textShape('oi'))).not.toContain('text-anchor')
+    expect(shapeToMarkup(textShape('oi', 'center'))).toContain('text-anchor="middle"')
+    expect(shapeToMarkup(textShape('oi', 'right'))).toContain('text-anchor="end"')
+  })
+
+  it('cada linha escapa XML por conta própria', () => {
+    const markup = shapeToMarkup(textShape('<a>\n&"b"'))
+    expect(markup).toContain('<tspan x="40" dy="0">&lt;a&gt;</tspan>')
+    expect(markup).toContain('&amp;&quot;b&quot;')
+    expect(markup).not.toContain('<a>')
+  })
+
+  it('textLines é a fonte ÚNICA: os números do funil string vêm dela', () => {
+    const shape = textShape('um\ndois')
+    if (shape.type !== 'text') throw new Error('tipo')
+    const lines = textLines(shape)
+    expect(lines).toEqual([
+      { x: 40, dy: 0, text: 'um' },
+      { x: 40, dy: 24, text: 'dois' },
+    ])
+    const markup = shapeToMarkup(shape)
+    for (const line of lines) {
+      expect(markup).toContain(`<tspan x="${line.x}" dy="${line.dy}">${line.text}</tspan>`)
+    }
+  })
+})
+
+describe('markup da FIGURA', () => {
+  const src = `data:image/png;base64,${'A'.repeat(20)}`
+  const figura: VectorShape = {
+    ...base,
+    id: 'f1',
+    type: 'image',
+    x: 10,
+    y: 20,
+    w: 64,
+    h: 32,
+    src,
+    pixelated: true,
+  }
+
+  it('vira <image> com href, preserveAspectRatio e pixelated', () => {
+    const markup = shapeToMarkup(figura)
+    expect(markup).toContain('<image ')
+    expect(markup).toContain(`href="${src}"`)
+    expect(markup).toContain('preserveAspectRatio="none"')
+    expect(markup).toContain('image-rendering="pixelated"')
+    expect(markup).toContain('width="64"')
+    // Só `href`: repetir o data URL em `xlink:href` dobraria o arquivo.
+    expect(markup).not.toContain('xlink:href')
+  })
+
+  it('sem pixelated, o atributo some', () => {
+    const { pixelated: _drop, ...liso } = figura as Extract<VectorShape, { type: 'image' }>
+    expect(shapeToMarkup(liso as VectorShape)).not.toContain('image-rendering')
+  })
+
+  it('a figura escondida não vai para o export', () => {
+    const doc = { width: 100, height: 100, shapes: [{ ...figura, hidden: true } as VectorShape] }
+    expect(vectorToSvg(doc)).not.toContain('<image')
   })
 })

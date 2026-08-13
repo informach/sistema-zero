@@ -12,7 +12,10 @@ beforeEach(() => {
   setPintaStorageNamespace('')
 })
 
-async function openVectorEditor(projectPalette?: readonly string[]): Promise<void> {
+async function openVectorEditor(
+  projectPalette?: readonly string[],
+  seedExtra?: (store: ReturnType<typeof createGalleryStore>) => Promise<void>,
+): Promise<void> {
   const seed = createGalleryStore()
   await seed.getState().create({
     kind: 'vector-background',
@@ -23,6 +26,7 @@ async function openVectorEditor(projectPalette?: readonly string[]): Promise<voi
       ? { projectRef: { id: 'jogo', name: 'Meu jogo', palette: [...projectPalette] } }
       : {}),
   })
+  if (seedExtra) await seedExtra(seed)
   render(<PintaApp />)
   await waitFor(() => {
     expect(screen.getByRole('button', { name: /Abrir livre/ })).toBeTruthy()
@@ -97,6 +101,201 @@ describe('UI vetorial (F5)', () => {
     })
     // Shape criado fica SELECIONADO: a faixa de ações aparece.
     expect(screen.getByRole('button', { name: COPY.vector.selRemove })).toBeTruthy()
+  })
+
+  /** Abre o diálogo de texto pela ferramenta e escreve o conteúdo. */
+  async function typeText(conteudo: string): Promise<HTMLTextAreaElement> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(screen.getByRole('img', { name: 'Área de desenho' }), {
+      isPrimary: true,
+      clientX: 40,
+      clientY: 40,
+    })
+    const campo = (await screen.findByPlaceholderText(
+      COPY.vector.textPlaceholder,
+    )) as HTMLTextAreaElement
+    fireEvent.change(campo, { target: { value: conteudo } })
+    return campo
+  }
+
+  it('texto de VÁRIAS linhas vira um tspan por linha', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await typeText('um\ndois\ntrês')
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('text tspan').length).toBe(3)
+    })
+    expect(stage.querySelector('text tspan')?.getAttribute('dy')).toBe('0')
+  })
+
+  it('Enter quebra a linha (não salva); Ctrl+Enter salva', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    const campo = await typeText('um\ndois')
+    // Enter cru: o diálogo CONTINUA aberto (happy-dom não insere o caractere,
+    // então o que se afere é o não-envio).
+    fireEvent.keyDown(campo, { key: 'Enter' })
+    expect(screen.getByText(COPY.vector.textPrompt)).toBeTruthy()
+    expect(stage.querySelectorAll('text').length).toBe(0)
+
+    fireEvent.keyDown(campo, { key: 'Enter', ctrlKey: true })
+    await waitFor(() => {
+      expect(stage.querySelectorAll('text').length).toBe(1)
+    })
+    expect(screen.queryByText(COPY.vector.textPrompt)).toBeNull()
+  })
+
+  it('os 3 botões alinham o texto selecionado sem tirá-lo do lugar', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await typeText('abcd')
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    const alvo = await waitFor(() => {
+      const found = stage.querySelector('text')
+      if (!found) throw new Error('sem texto')
+      return found
+    })
+    expect(alvo.getAttribute('text-anchor')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.textAlignCenter }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('text-anchor')).toBe('middle')
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.textAlignRight }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('text-anchor')).toBe('end')
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.textAlignLeft }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('text-anchor')).toBeNull()
+    })
+  })
+
+  it('oferece as cinco fontes e aplica a escolha na criação e na seleção', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    const fontSelect = screen.getByRole('combobox', { name: COPY.vector.fontFamily })
+    expect(
+      Array.from((fontSelect as HTMLSelectElement).options).map((option) => option.text),
+    ).toEqual(['Baloo 2', 'Nunito', 'Press Start 2P', 'Bungee', 'Fredoka One'])
+    fireEvent.change(fontSelect, { target: { value: 'bungee' } })
+    fireEvent.pointerDown(stage, { isPrimary: true, clientX: 40, clientY: 40 })
+    fireEvent.change(await screen.findByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: 'Jogar' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('font-family')).toBe("'Bungee'")
+    })
+    fireEvent.change(screen.getByRole('combobox', { name: COPY.vector.fontFamily }), {
+      target: { value: 'fredoka' },
+    })
+    await waitFor(() => {
+      // ⚠️ ENTRE ASPAS: sem elas o navegador descarta a declaração em nomes com um
+      // token que começa por dígito ("Press Start 2P", "Baloo 2"). Ver fontFamilyCss.
+      expect(stage.querySelector('text')?.getAttribute('font-family')).toBe("'Fredoka One'")
+    })
+  })
+
+  it('sem outro desenho, o seletor "Trazer um desenho" avisa que não há nada', async () => {
+    await openVectorEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.insertAsset }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.insertTitle)).toBeTruthy()
+    })
+    expect(screen.getByText(COPY.vector.insertNothing)).toBeTruthy()
+  })
+
+  it('trazer um desenho de VETOR insere as formas agrupadas', async () => {
+    await openVectorEditor(undefined, async (seed) => {
+      // `importAssets` (e não `absorb`) porque só ele PERSISTE: o PintaApp
+      // monta uma galeria própria e relê do disco.
+      const { createVectorBackgroundAsset } = await import('../../core/project')
+      const outro = createVectorBackgroundAsset({ name: 'castelo', width: 200, height: 200 })
+      await seed.getState().importAssets([
+        {
+          ...outro,
+          shapes: [
+            {
+              id: 'c1',
+              type: 'rect',
+              x: 0,
+              y: 0,
+              w: 50,
+              h: 50,
+              rx: 0,
+              fill: '#ff2121',
+              stroke: null,
+              opacity: 1,
+              rotation: 0,
+            },
+            {
+              id: 'c2',
+              type: 'rect',
+              x: 100,
+              y: 100,
+              w: 50,
+              h: 50,
+              rx: 0,
+              fill: '#ff2121',
+              stroke: null,
+              opacity: 1,
+              rotation: 0,
+            },
+          ],
+        },
+      ])
+    })
+    const stage = measureStage()
+    expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(0)
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.insertAsset }))
+    const card = await screen.findByRole('button', { name: /castelo/ })
+    fireEvent.click(card)
+
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(2)
+    })
+    // Entrou agrupado e já selecionado: a faixa oferece DESAGRUPAR.
+    expect(screen.getByRole('button', { name: COPY.vector.selUngroup })).toBeTruthy()
+    // Uma entrada de undo só.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(0)
+    })
+  })
+
+  it('o desenho ABERTO não aparece na lista (não se insere em si mesmo)', async () => {
+    await openVectorEditor(undefined, async (seed) => {
+      await seed.getState().create({
+        kind: 'vector-background',
+        name: 'castelo',
+        width: 200,
+        height: 200,
+      })
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.insertAsset }))
+    await screen.findByText(COPY.vector.insertTitle)
+    expect(screen.getByRole('button', { name: /castelo/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^livre/ })).toBeNull()
+  })
+
+  it('sem canvas (happy-dom) o desenho de PIXEL recusa em vez de entrar vazio', async () => {
+    await openVectorEditor(undefined, async (seed) => {
+      await seed.getState().create({ kind: 'pixel-sprite', name: 'nave', frameSize: 16 })
+    })
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.insertAsset }))
+    const card = await screen.findByRole('button', { name: /nave/ })
+    fireEvent.click(card)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.insertFailed)).toBeTruthy()
+    })
+    expect(stage.querySelectorAll('image').length).toBe(0)
+    expect(screen.getByText(COPY.vector.insertTitle)).toBeTruthy()
   })
 
   it('caixa de ferramentas: espessuras no topo, grade e os dois slots de cor no pé', async () => {
@@ -255,6 +454,62 @@ describe('UI vetorial (F5)', () => {
       expect(rects[0]?.getAttribute('width')).toBe('64')
       expect(rects[1]?.getAttribute('x')).toBe('208')
       expect(rects[1]?.getAttribute('width')).toBe('128')
+    })
+  })
+
+  it('a alça de girar da UNIÃO gira as DUAS formas juntas', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    // A em 0..32, B em 96..128 (mesma faixa vertical): união = 0..128 × 0..32,
+    // centro (64,16). Girar 180° troca as duas de lugar.
+    drawRect(stage, [0, 0], [32, 32])
+    drawRect(stage, [96, 0], [128, 32])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 200, clientY: 200 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 0, clientY: 0 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selGroup })).toBeTruthy()
+    })
+
+    const rotar = stage.querySelector('circle[data-rotate]') as SVGCircleElement | null
+    expect(rotar).toBeTruthy()
+    if (!rotar) return
+    // Começa na vertical acima do centro e termina embaixo: meia volta.
+    fireEvent.pointerDown(rotar, { isPrimary: true, pointerId: 2, clientX: 64, clientY: 0 })
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 64, clientY: 200 })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+
+    await waitFor(() => {
+      const rects = stage.querySelectorAll('rect[fill="#78dc52"]')
+      // Trocaram de lado e cada uma carrega o giro de meia volta.
+      expect(rects[0]?.getAttribute('x')).toBe('96')
+      expect(rects[1]?.getAttribute('x')).toBe('0')
+      expect(rects[0]?.getAttribute('transform')).toContain('rotate(180')
+      expect(rects[1]?.getAttribute('transform')).toContain('rotate(180')
+    })
+  })
+
+  it('girar UMA forma continua só girando (não sai do lugar)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    // Desenhar já deixa a forma selecionada.
+    drawRect(stage, [40, 40], [104, 104])
+    const rotar = await waitFor(() => {
+      const found = stage.querySelector('circle[data-rotate]')
+      if (!found) throw new Error('sem alça de girar')
+      return found as SVGCircleElement
+    })
+    fireEvent.pointerDown(rotar, { isPrimary: true, pointerId: 2, clientX: 72, clientY: 0 })
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 72, clientY: 200 })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+    await waitFor(() => {
+      const alvo = stage.querySelector('rect[fill="#78dc52"]')
+      expect(alvo?.getAttribute('transform')).toContain('rotate(180')
+      expect(alvo?.getAttribute('x')).toBe('40')
+      expect(alvo?.getAttribute('y')).toBe('40')
     })
   })
 
@@ -418,6 +673,45 @@ describe('UI vetorial (F5)', () => {
     await waitFor(() => {
       expect(stage.querySelectorAll('path').length).toBe(0)
     })
+  })
+
+  it('a Mão mostra a mãozinha ABERTA, e arrastando ela FECHA', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    // `cursor: grab` é prefixo de `grabbing` — casar com o `;` do fim da regra.
+    const cursorOf = (): string => stage.getAttribute('style') ?? ''
+    expect(cursorOf()).not.toContain('cursor')
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.pan }))
+    await waitFor(() => {
+      expect(cursorOf()).toMatch(/cursor:\s*grab\s*;/)
+    })
+
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 40, clientY: 40 })
+    await waitFor(() => {
+      expect(cursorOf()).toContain('grabbing')
+    })
+
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(cursorOf()).toMatch(/cursor:\s*grab\s*;/)
+    })
+  })
+
+  it('segurar ESPAÇO também fecha a mão no arrasto, com outra ferramenta', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
+    fireEvent.keyDown(window, { key: ' ' })
+    await waitFor(() => {
+      expect(stage.getAttribute('style') ?? '').toMatch(/cursor:\s*grab\s*;/)
+    })
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
+    await waitFor(() => {
+      expect(stage.getAttribute('style') ?? '').toContain('grabbing')
+    })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    fireEvent.keyUp(window, { key: ' ' })
   })
 
   it('apagar a seleção remove o shape', async () => {
@@ -719,6 +1013,109 @@ describe('editar os pontos do vetor', () => {
       expect(path?.getAttribute('d')?.includes('Z')).toBe(false)
     })
     expect(screen.getByRole('button', { name: COPY.vector.nodeClose })).toBeTruthy()
+  })
+
+  it('com um ponto escolhido, abre o caminho NAQUELE ponto', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+    // Escolhe o 3o no (300,250) e pede a tesoura.
+    const alvo = nodeCircles(stage)[2]
+    if (!alvo) throw new Error('sem no 2')
+    tapNode(alvo, 3, [300, 250])
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(1)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeOpenHere }))
+
+    await waitFor(() => {
+      const path = stage.querySelector('path')
+      expect(path).toBeTruthy()
+      // Virou traco aberto (sem Z) e comeca no ponto escolhido.
+      expect(path?.getAttribute('d')?.includes('Z')).toBe(false)
+      expect(path?.getAttribute('d')?.startsWith('M 300 250')).toBe(true)
+    })
+    // Ganhou o no da emenda e nenhuma escolha atravessou a edicao.
+    expect(nodeCircles(stage).length).toBe(5)
+    expect(chosenNodes(stage).length).toBe(0)
+  })
+
+  it('cortar um traco aberto no miolo vira DUAS formas', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    // Abre primeiro (sem no escolhido = o interruptor de sempre).
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.nodeOpen }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('path').length).toBe(1)
+    })
+    const meio = nodeCircles(stage)[1]
+    if (!meio) throw new Error('sem no do miolo')
+    tapNode(meio, 4, [300, 100])
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(1)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeCut }))
+
+    await waitFor(() => {
+      // ⚠️ Escopo no PALCO: as miniaturas do painel Camadas tambem tem <path>.
+      expect(stage.querySelectorAll('path').length).toBe(2)
+    })
+    // A metade que ficou selecionada guarda o id, entao a faixa de pontos vive.
+    expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
+    expect(screen.getByText(COPY.vector.nodeCutDone)).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('path').length).toBe(1)
+    })
+  })
+
+  it('cortar numa PONTA avisa e nao corta', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.nodeOpen }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('path').length).toBe(1)
+    })
+    const ponta = nodeCircles(stage)[0]
+    if (!ponta) throw new Error('sem ponta')
+    tapNode(ponta, 5, [100, 100])
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(1)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeCut }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.nodeCutEndpoint)).toBeTruthy()
+    })
+    expect(stage.querySelectorAll('path').length).toBe(1)
+  })
+
+  it('com DOIS pontos escolhidos a tesoura fica desligada', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 6, clientX: 50, clientY: 50 })
+    fireEvent.pointerMove(stage, { pointerId: 6, clientX: 320, clientY: 150 })
+    fireEvent.pointerUp(stage, { pointerId: 6 })
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(2)
+    })
+    const tesoura = screen.getByRole('button', {
+      name: COPY.vector.nodeOpenHere,
+    }) as HTMLButtonElement
+    expect(tesoura.disabled).toBe(true)
   })
 
   it('as ALCAS aparecem so no no escolhido, e so quando ha curva', async () => {

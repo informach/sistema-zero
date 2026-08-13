@@ -46,6 +46,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_setup',
       'sz_gk_setup_full',
       'sz_gk_stage_border',
+      'sz_gk_use_font',
       'sz_gk_set_backdrop',
       'sz_gk_start',
       'sz_gk_load_image',

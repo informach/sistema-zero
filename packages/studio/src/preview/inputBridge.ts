@@ -29,7 +29,10 @@ function buildInputRuntimeSource(includePreviewControls: boolean): string {
   window.addEventListener('keyup', function (e) { pressed[e.key] = false; pressed[e.code] = false; });
   // Ao perder o foco (alt-tab, clicar fora do iframe) o navegador pode NÃO mandar
   // o keyup, deixando a tecla "presa". Zeramos tudo no blur p/ não travar o jogo.
-  window.addEventListener('blur', function () { pressed = Object.create(null); });
+  window.addEventListener('blur', function () {
+    pressed = Object.create(null);
+    if (input) input.down = false;
+  });
   var input = {
     x: 0,
     y: 0,
@@ -117,6 +120,7 @@ function buildInputRuntimeSource(includePreviewControls: boolean): string {
   window.addEventListener('pointermove', at, { passive: true });
   window.addEventListener('pointerdown', function (e) { at(e); input.down = true; }, { passive: true });
   window.addEventListener('pointerup', function () { input.down = false; }, { passive: true });
+  window.addEventListener('pointercancel', function () { input.down = false; }, { passive: true });
 ${previewControls}
   window.__szInput = input;
 })();`

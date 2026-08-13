@@ -248,6 +248,33 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     ctx.lineTo(_finiteNumber(x2, 0), _finiteNumber(y2, 0));
     ctx.stroke();
   }
+  /**
+   * Receita compacta de figura: cada item é [tipo, coordenadas..., cor]. Ela
+   * representa exatamente os mesmos retângulos/círculos dos blocos individuais,
+   * mas sem criar quatro ou cinco sombras numéricas para cada traço fixo.
+   */
+  function paintShapeRecipe(ctx, recipeSource) {
+    if (!ctx) return;
+    var recipe;
+    try { recipe = JSON.parse(String(recipeSource || '[]')); }
+    catch (error) {
+      warnOnce('receita-vetorial-invalida', 'a receita da Figura precisa ser um JSON válido.');
+      return;
+    }
+    if (!Array.isArray(recipe) || recipe.length > 2000) {
+      warnOnce('receita-vetorial-grande', 'a receita da Figura precisa ser uma lista com até 2000 traços.');
+      return;
+    }
+    for (var i = 0; i < recipe.length; i++) {
+      var command = recipe[i];
+      if (!Array.isArray(command)) continue;
+      if (command[0] === 'r' && command.length === 6) {
+        paintRect(ctx, command[1], command[2], command[3], command[4], command[5]);
+      } else if (command[0] === 'c' && command.length === 5) {
+        paintCircle(ctx, command[1], command[2], command[3], command[4]);
+      }
+    }
+  }
 
   /**
    * Anexa uma animação de spritesheet ao sprite: percorre os quadros [from..to] a

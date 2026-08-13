@@ -25,7 +25,7 @@ import {
   sanitizeProjectRef,
 } from '../core/project'
 import { findTemplate } from '../templates/catalog'
-import { createPintaPersistence } from './persistence'
+import { createPintaPersistence, isPintaStorageBudgetError } from './persistence'
 
 export type NewAssetInput = (
   | { kind: 'pixel-sprite'; name: string; frameSize: number }
@@ -87,6 +87,10 @@ function upsertSorted(assets: PintaAsset[], asset: PintaAsset): PintaAsset[] {
   next.unshift(asset)
   next.sort((a, b) => b.updatedAt - a.updatedAt)
   return next
+}
+
+function persistenceErrorMessage(error: unknown): string {
+  return isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError
 }
 
 /** Nome único por sufixo numérico (`heroi` → `heroi-2`), respeitando o teto. */
@@ -214,8 +218,8 @@ export function createGalleryStore(): PintaGalleryStore {
           lastStyle: assetStyle(asset.kind) ?? state.lastStyle,
         }))
         return asset
-      } catch {
-        set({ mutateError: COPY.editor.saveError })
+      } catch (error) {
+        set({ mutateError: persistenceErrorMessage(error) })
         return null
       }
     },
@@ -271,8 +275,8 @@ export function createGalleryStore(): PintaGalleryStore {
           lastStyle: assetStyle(primary.kind) ?? state.lastStyle,
         }))
         return primary
-      } catch {
-        set({ mutateError: COPY.editor.saveError })
+      } catch (error) {
+        set({ mutateError: persistenceErrorMessage(error) })
         return null
       }
     },
@@ -296,8 +300,8 @@ export function createGalleryStore(): PintaGalleryStore {
         await persistence.persistAsset(renamed)
         set((state) => ({ assets: upsertSorted(state.assets, renamed), mutateError: null }))
         return true
-      } catch {
-        set({ mutateError: COPY.editor.saveError })
+      } catch (error) {
+        set({ mutateError: persistenceErrorMessage(error) })
         return false
       }
     },
@@ -321,8 +325,8 @@ export function createGalleryStore(): PintaGalleryStore {
         await persistence.persistAsset(copy)
         set((state) => ({ assets: upsertSorted(state.assets, copy), mutateError: null }))
         return copy
-      } catch {
-        set({ mutateError: COPY.editor.saveError })
+      } catch (error) {
+        set({ mutateError: persistenceErrorMessage(error) })
         return null
       }
     },
@@ -354,6 +358,8 @@ export function createGalleryStore(): PintaGalleryStore {
     async importAssets(incoming) {
       let added = 0
       let skipped = 0
+      let importError: string | null = null
+      set({ mutateError: null })
       // Tilesets ENTRAM PRIMEIRO: se a quota cortar no meio, é melhor perder um
       // mapa (degrada com "peças sumiram") do que importar o mapa sem as peças.
       const ordered = [...incoming].sort(
@@ -402,10 +408,12 @@ export function createGalleryStore(): PintaGalleryStore {
           persistedIds.add(restored.id)
           set((state) => ({ assets: upsertSorted(state.assets, restored) }))
           added += 1
-        } catch {
+        } catch (error) {
           skipped += 1
+          importError ??= persistenceErrorMessage(error)
         }
       }
+      set({ mutateError: importError })
       return { added, skipped }
     },
 

@@ -8,7 +8,12 @@ import { isCSSKeyframeSelector, isCSSKeyframesName } from '../css/keyframes'
 import { CSS_MEDIA_SIZE_FEATURES, type CSSMediaSizeFeature } from '../css/mediaQueries'
 import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
+import type {
+  GameTwoDTileContactFilter,
+  GameTwoDVectorTileRole,
+} from '../official-extensions/game-2d/classicContracts'
 import {
+  type ClassicGameTwoDStatement,
   classicGameTwoDExpressionSchemas,
   classicGameTwoDStatementSchemas,
 } from '../official-extensions/game-2d/classicIR'
@@ -19,6 +24,10 @@ import {
   gameKitCampaignExpressionSchemas,
   gameKitCampaignStatementSchemas,
 } from '../official-extensions/game-2d-advanced/campaignIR'
+import {
+  type GameKitUiFontStatement,
+  gameKitUiFontStatementSchema,
+} from '../official-extensions/game-2d-advanced/uiFontCodec'
 import {
   type PlatformGameThreeDExpr,
   type PlatformGameThreeDStatement,
@@ -205,6 +214,7 @@ export type JSExpr =
       contactVar: string
       index: JSExpr
     })
+  | (JSExprCommon & { type: 'g2d:campaignValue'; key: string; fallback: JSExpr })
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
   // Game 2D — quantidade de sprites num grupo (valor numérico).
   | (JSExprCommon & { type: 'g2d:countGroup'; groupVar: string })
@@ -1860,8 +1870,7 @@ export type JSStatement =
       event: EventKind
       body: JSStatement[]
     })
-  | (JSStatementCommon & { type: 'consoleLog'; value: JSExpr })
-  | (JSStatementCommon & { type: 'alert'; value: JSExpr })
+  | (JSStatementCommon & { type: 'consoleLog' | 'alert'; value: JSExpr })
   | (JSStatementCommon & { type: 'setText'; targetId: string; value: JSExpr })
   | (JSStatementCommon & {
       type: 'setProperty'
@@ -2100,9 +2109,7 @@ export type JSStatement =
   // Sem prefixo de namespace de propósito: `g2d:`/`g3d:` são de extensão; o
   // núcleo usa nome cru, como `canvasDrawImage` logo acima.
   | (JSStatementCommon & { type: 'somLoad'; name: string; asset: string })
-  | (JSStatementCommon & { type: 'somPlay'; name: string })
-  | (JSStatementCommon & { type: 'somStop'; name: string })
-  | (JSStatementCommon & { type: 'somPlayMusic'; name: string })
+  | (JSStatementCommon & { type: 'somPlay' | 'somStop' | 'somPlayMusic'; name: string })
   | (JSStatementCommon & { type: 'somStopMusic' })
   | (JSStatementCommon & { type: 'somVolume'; level: JSExpr })
   | (JSStatementCommon & {
@@ -2113,8 +2120,7 @@ export type JSStatement =
       level: JSExpr
     })
   | (JSStatementCommon & { type: 'somNoise'; duration: JSExpr; level: JSExpr })
-  | (JSStatementCommon & { type: 'canvasSave'; ctxVar: string })
-  | (JSStatementCommon & { type: 'canvasRestore'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasSave' | 'canvasRestore'; ctxVar: string })
   | (JSStatementCommon & {
       type: 'canvasTranslate'
       ctxVar: string
@@ -2139,12 +2145,16 @@ export type JSStatement =
       stops: Array<{ offset: number; color: string }>
     })
   // Canvas — traçado/contorno, fonte e transparência (caminho "na mão", v0.6.0).
-  | (JSStatementCommon & { type: 'canvasBeginPath'; ctxVar: string })
-  | (JSStatementCommon & { type: 'canvasClosePath'; ctxVar: string })
-  | (JSStatementCommon & { type: 'canvasStroke'; ctxVar: string })
-  | (JSStatementCommon & { type: 'canvasFill'; ctxVar: string })
-  | (JSStatementCommon & { type: 'canvasMoveTo'; ctxVar: string; x: JSExpr; y: JSExpr })
-  | (JSStatementCommon & { type: 'canvasLineTo'; ctxVar: string; x: JSExpr; y: JSExpr })
+  | (JSStatementCommon & {
+      type: 'canvasBeginPath' | 'canvasClosePath' | 'canvasStroke' | 'canvasFill'
+      ctxVar: string
+    })
+  | (JSStatementCommon & {
+      type: 'canvasMoveTo' | 'canvasLineTo'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+    })
   // Canvas — adicionar retângulo ao traçado e recortar o desenho pelo traçado.
   | (JSStatementCommon & {
       type: 'canvasRect'
@@ -2211,13 +2221,11 @@ export type JSStatement =
     })
   // "Quando o sprite pular" (o motor avisa) e "qualquer tecla ou toque".
   | (JSStatementCommon & { type: 'g2d:onJump'; spriteVar: string; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'g2d:onAnyInput'; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'g2d:updateEachFrame'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g2d:onAnyInput' | 'g2d:updateEachFrame'; body: JSStatement[] })
   // Física: gravidade do mundo, integração de velocidade, ricochete nas bordas,
   // colisão por círculo.
   | (JSStatementCommon & { type: 'g2d:setGravity'; value: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:applyVelocity'; spriteVar: string })
-  | (JSStatementCommon & { type: 'g2d:applyGravity'; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:applyVelocity' | 'g2d:applyGravity'; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:bounceOnEdges'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & {
       type: 'g2d:circleCollides'
@@ -2238,9 +2246,7 @@ export type JSStatement =
   // Áudio: para a música de fundo.
   | (JSStatementCommon & { type: 'g2d:stopMusic' })
   | (JSStatementCommon & { type: 'g2d:loadSound'; name: string; asset: string })
-  | (JSStatementCommon & { type: 'g2d:playClip'; name: string })
-  | (JSStatementCommon & { type: 'g2d:stopClip'; name: string })
-  | (JSStatementCommon & { type: 'g2d:playTrack'; name: string })
+  | (JSStatementCommon & { type: 'g2d:playClip' | 'g2d:stopClip' | 'g2d:playTrack'; name: string })
   | (JSStatementCommon & { type: 'g2d:stopTrack' })
   | (JSStatementCommon & { type: 'g2d:setVolume'; level: number | JSExpr })
   // Áudio: toca uma nota musical (dó ré mi…) por uma duração em ms.
@@ -2293,8 +2299,11 @@ export type JSStatement =
       index: number | JSExpr
       spriteVar: string
     })
-  | (JSStatementCommon & { type: 'g2d:bringToFront'; spriteVar: string; groupVar: string })
-  | (JSStatementCommon & { type: 'g2d:sendToBack'; spriteVar: string; groupVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:bringToFront' | 'g2d:sendToBack'
+      spriteVar: string
+      groupVar: string
+    })
   | (JSStatementCommon & { type: 'g2d:drawHitbox'; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:showFps'; x: number | JSExpr; y: number | JSExpr })
   // Entrada de mouse/toque: corpo recebe a posição do ponteiro em xName/yName.
@@ -2551,16 +2560,22 @@ export type JSStatement =
       spriteVar: string
       jump: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:topDown'; spriteVar: string; speed: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:flyFree'; spriteVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g2d:topDown' | 'g2d:flyFree'
+      spriteVar: string
+      speed: number | JSExpr
+    })
   | (JSStatementCommon & {
       type: 'g2d:flap'
       spriteVar: string
       ctxVar: string
       force: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:swim'; spriteVar: string; speed: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:followPointer'; spriteVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g2d:swim' | 'g2d:followPointer'
+      spriteVar: string
+      speed: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'g2d:clampToScreen'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:flash'; color: string; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:shake'; ctxVar: string; intensity: number | JSExpr })
@@ -2597,7 +2612,8 @@ export type JSStatement =
       tilesetVar: string
       index: number | JSExpr
       shape: string
-      role: 'decor' | 'solid' | 'platform'
+      // 'contact' = a criança ATRAVESSA a peça e o jogo avisa (moeda, lava, água).
+      role: GameTwoDVectorTileRole
     })
   | (JSStatementCommon & {
       type: 'g2d:createVectorTileMap'
@@ -2609,7 +2625,8 @@ export type JSStatement =
       type: 'g2d:forEachTileContact'
       spriteVar: string
       mapVar: string
-      side: 'any' | 'head' | 'feet' | 'left' | 'right'
+      // 'inside' = sobreposição pura, sem resolução de colisão (o par do papel 'contact').
+      side: GameTwoDTileContactFilter
       contactName: string
       body: JSStatement[]
     })
@@ -2699,8 +2716,10 @@ export type JSStatement =
       levelVar: string
       body: JSStatement[]
     })
-  | (JSStatementCommon & { type: 'g2d:collideCurrentLevel'; spriteVar: string })
-  | (JSStatementCommon & { type: 'g2d:followCurrentLevelCamera'; spriteVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:collideCurrentLevel' | 'g2d:followCurrentLevelCamera'
+      spriteVar: string
+    })
   | (JSStatementCommon & { type: 'g2d:drawCurrentLevel'; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:collideGroup'; spriteVar: string; groupVar: string })
   // Colisão sólida contra UM sprite só (chão e paredes).
@@ -2715,8 +2734,7 @@ export type JSStatement =
   // Grupos de sprites (v0.6.0): MUITOS sprites (tiros, inimigos, estrelas). Um
   // grupo é uma lista gerenciada de sprites. x/y/vx/vy são expressões (aceitam
   // aleatório/contas); w/h números; color/image strings (nomes de asset).
-  | (JSStatementCommon & { type: 'g2d:createGroup'; varName: string })
-  | (JSStatementCommon & { type: 'g2d:allEnemiesGroup'; varName: string })
+  | (JSStatementCommon & { type: 'g2d:createGroup' | 'g2d:allEnemiesGroup'; varName: string })
   // `varName` OPCIONAL: nomear o sprite criado dá uma alça para os statements
   // seguintes (animar, dar vida…) — o helper `spawn` do runtime já DEVOLVE o
   // sprite. Ausente = saída idêntica à de antes do campo existir.
@@ -2772,8 +2790,11 @@ export type JSStatement =
       bName: string
       body: JSStatement[]
     })
-  | (JSStatementCommon & { type: 'g2d:addToGroup'; spriteVar: string; groupVar: string })
-  | (JSStatementCommon & { type: 'g2d:removeFromGroup'; spriteVar: string; groupVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:addToGroup' | 'g2d:removeFromGroup'
+      spriteVar: string
+      groupVar: string
+    })
   // Temporizadores: "a cada N quadros/segundos" — vira if (SZGame2D.everyX(...)).
   | (JSStatementCommon & { type: 'g2d:everyFrames'; n: JSExpr; body: JSStatement[] })
   | (JSStatementCommon & {
@@ -2814,22 +2835,8 @@ export type JSStatement =
       size: number | JSExpr
       align: 'left' | 'center' | 'right'
     })
-  | (JSStatementCommon & {
-      type: 'g2d:drawPixelText'
-      ctxVar: string
-      text: string
-      x: number | JSExpr
-      y: number | JSExpr
-      size: number | JSExpr
-      color: string
-      align: 'left' | 'center' | 'right'
-    })
-  | (JSStatementCommon & {
-      type: 'g2d:drawFade'
-      ctxVar: string
-      percent: number | JSExpr
-      color: string
-    })
+  // Desenho de texto/placar em pixel e o esmaecer: os tipos moram na extensão.
+  | ClassicGameTwoDStatement
   | (JSStatementCommon & {
       type: 'g2d:drawHearts'
       ctxVar: string
@@ -2943,8 +2950,11 @@ export type JSStatement =
       speed: number | JSExpr
       turn: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:rotateSprite'; spriteVar: string; deg: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:pointSprite'; spriteVar: string; deg: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g2d:rotateSprite' | 'g2d:pointSprite'
+      spriteVar: string
+      deg: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'g2d:thrust'; spriteVar: string; force: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:applyFriction'; spriteVar: string; factor: number | JSExpr })
   | (JSStatementCommon & {
@@ -3002,8 +3012,11 @@ export type JSStatement =
       speed: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:stickPathDraw'; pathVar: string })
-  | (JSStatementCommon & { type: 'g2d:onStickPathCross'; pathVar: string; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'g2d:onStickPathPerfect'; pathVar: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g2d:onStickPathCross' | 'g2d:onStickPathPerfect'
+      pathVar: string
+      body: JSStatement[]
+    })
   | (JSStatementCommon & {
       type: 'g2d:createBalloon'
       varName: string
@@ -3183,8 +3196,11 @@ export type JSStatement =
       color: string
     })
   | (JSStatementCommon & { type: 'g3d:crosserMove'; objVar: string; direction: string })
-  | (JSStatementCommon & { type: 'g3d:crosserStep'; objVar: string; worldVar: string })
-  | (JSStatementCommon & { type: 'g3d:crosserReset'; objVar: string; worldVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:crosserStep' | 'g3d:crosserReset'
+      objVar: string
+      worldVar: string
+    })
   | (JSStatementCommon & { type: 'g3d:gridPosition'; objVar: string; row: JSExpr; col: JSExpr })
   | (JSStatementCommon & {
       type: 'g3d:addRow'
@@ -3239,10 +3255,10 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:spin'; objVar: string; axis: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:createStackScene'; canvasId: string; varName: string })
-  | (JSStatementCommon & { type: 'g3d:createStackTower'; worldVar: string })
-  | (JSStatementCommon & { type: 'g3d:stackDrop'; worldVar: string })
-  | (JSStatementCommon & { type: 'g3d:stackStep'; worldVar: string })
-  | (JSStatementCommon & { type: 'g3d:stackReset'; worldVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:createStackTower' | 'g3d:stackDrop' | 'g3d:stackStep' | 'g3d:stackReset'
+      worldVar: string
+    })
   // ---- Game 3D — genéricos: mover/girar relativo + suavizar (lerp) ----
   | (JSStatementCommon & { type: 'g3d:moveBy'; objVar: string; x: JSExpr; y: JSExpr; z: JSExpr })
   | (JSStatementCommon & { type: 'g3d:rotateBy'; objVar: string; axis: string; amount: JSExpr })
@@ -3288,8 +3304,11 @@ export type JSStatement =
   // zod e do codec do lote: é o que mantém esta fachada sob o teto de linhas.
   | PlatformGameThreeDStatement
   // ---- Game 3D — câmeras vivas (1ª pessoa, orbital, 3ª pessoa, olhar, FOV) ----
-  | (JSStatementCommon & { type: 'g3d:fpsCamera'; worldVar: string; objVar: string })
-  | (JSStatementCommon & { type: 'g3d:orbitCamera'; worldVar: string; objVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:fpsCamera' | 'g3d:orbitCamera'
+      worldVar: string
+      objVar: string
+    })
   | (JSStatementCommon & {
       type: 'g3d:thirdPersonCamera'
       worldVar: string
@@ -3398,9 +3417,10 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3d:playNote'; freq: number | JSExpr; ms: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:playEffect'; kind: string })
   | (JSStatementCommon & { type: 'g3d:loadSound'; name: string; asset: string })
-  | (JSStatementCommon & { type: 'g3d:playSound'; name: string })
-  | (JSStatementCommon & { type: 'g3d:stopSound'; name: string })
-  | (JSStatementCommon & { type: 'g3d:playMusic'; name: string })
+  | (JSStatementCommon & {
+      type: 'g3d:playSound' | 'g3d:stopSound' | 'g3d:playMusic'
+      name: string
+    })
   | (JSStatementCommon & { type: 'g3d:stopMusic' })
   | (JSStatementCommon & { type: 'g3d:setVolume'; level: number | JSExpr })
   // Jogo 2D Avançado (extensão game-2d-advanced): esqueleto de jogo profissional
@@ -3419,8 +3439,8 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:setStageDescription'; description: string })
   // Moldura da tela (enxergar a área do palco) e contorno das caixas que colidem.
   | (JSStatementCommon & { type: 'gk:stageBorder'; color: string; width: number | JSExpr })
-  | (JSStatementCommon & { type: 'gk:setBackdrop'; image: string })
-  | (JSStatementCommon & { type: 'gk:drawBackdrop'; image: string })
+  | GameKitUiFontStatement
+  | (JSStatementCommon & { type: 'gk:setBackdrop' | 'gk:drawBackdrop'; image: string })
   | (JSStatementCommon & { type: 'gk:showHitboxes' })
   | (JSStatementCommon & { type: 'gk:start' })
   // `name` = como o jogo chama a imagem; `asset` = nome do desenho no projeto.
@@ -3553,8 +3573,7 @@ export type JSStatement =
       x: number | JSExpr
       y: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'gk:rpgGoMap'; map: string })
-  | (JSStatementCommon & { type: 'gk:rpgSetStartMap'; map: string })
+  | (JSStatementCommon & { type: 'gk:rpgGoMap' | 'gk:rpgSetStartMap'; map: string })
   | (JSStatementCommon & {
       type: 'gk:rpgCreateMap'
       map: string
@@ -3659,8 +3678,7 @@ export type JSStatement =
       color: string
       boss: boolean
     })
-  | (JSStatementCommon & { type: 'gk:rpgBattleNamed'; name: string })
-  | (JSStatementCommon & { type: 'gk:rpgAddFoeNamed'; name: string })
+  | (JSStatementCommon & { type: 'gk:rpgBattleNamed' | 'gk:rpgAddFoeNamed'; name: string })
   // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
   // NPC que anda/vagueia + gatilho ao pisar numa célula.
   | (JSStatementCommon & {
@@ -3696,8 +3714,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:loadTilemap'; name: string; asset: string })
   | (JSStatementCommon & { type: 'gk:drawTilemap'; name: string; layer: string })
   | (JSStatementCommon & { type: 'gk:tilemapSolid'; name: string })
-  | (JSStatementCommon & { type: 'gk:drawShadow'; charVar: string })
-  | (JSStatementCommon & { type: 'gk:drawByDepth'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:drawShadow' | 'gk:drawByDepth'; charVar: string })
   | (JSStatementCommon & {
       type: 'gk:cameraShake'
       intensity: number | JSExpr
@@ -3723,8 +3740,7 @@ export type JSStatement =
       charVar: string
       max: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'gk:bounceOnEdges'; charVar: string })
-  | (JSStatementCommon & { type: 'gk:wrapEdges'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:bounceOnEdges' | 'gk:wrapEdges'; charVar: string })
   | (JSStatementCommon & { type: 'gk:paddleBounce'; ballVar: string; paddleVar: string })
   // 🧩 Tabuleiro/grade (geral): cria/lê/escreve células por (coluna, linha).
   | (JSStatementCommon & {
@@ -3769,14 +3785,14 @@ export type JSStatement =
       heroHp: number | JSExpr
       enemyHp: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'gk:cardsEnergyPerTurn'; n: number | JSExpr })
-  | (JSStatementCommon & { type: 'gk:cardsSpend'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsEnergyPerTurn' | 'gk:cardsSpend'; n: number | JSExpr })
   | (JSStatementCommon & { type: 'gk:cardsOnTurn'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:cardsEndTurn' })
   | (JSStatementCommon & { type: 'gk:cardsDrawHud' })
-  | (JSStatementCommon & { type: 'gk:cardsHurtEnemy'; n: number | JSExpr })
-  | (JSStatementCommon & { type: 'gk:cardsHurtMe'; n: number | JSExpr })
-  | (JSStatementCommon & { type: 'gk:cardsGainBlock'; n: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:cardsHurtEnemy' | 'gk:cardsHurtMe' | 'gk:cardsGainBlock'
+      n: number | JSExpr
+    })
   | (JSStatementCommon & {
       type: 'gk:cardsEnemyIntent'
       action: string
@@ -4052,8 +4068,7 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'gk:tdFreeSlot'; x: number | JSExpr; y: number | JSExpr })
   | (JSStatementCommon & { type: 'gk:tdDrawRange'; charVar: string; radius: number | JSExpr })
-  | (JSStatementCommon & { type: 'gk:tdSetCoins'; n: number | JSExpr })
-  | (JSStatementCommon & { type: 'gk:tdAddCoins'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:tdSetCoins' | 'gk:tdAddCoins'; n: number | JSExpr })
   | (JSStatementCommon & { type: 'gk:setOpacity'; charVar: string; percent: number | JSExpr })
   | (JSStatementCommon & {
       type: 'gk:fadeTo'
@@ -4170,8 +4185,7 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'gk:flashScreen'; color: string; times: number | JSExpr })
   | (JSStatementCommon & { type: 'gk:saveValue'; name: string; value: JSExpr })
-  | (JSStatementCommon & { type: 'gk:playMusic'; sound: string })
-  | (JSStatementCommon & { type: 'gk:stopSound'; sound: string })
+  | (JSStatementCommon & { type: 'gk:playMusic' | 'gk:stopSound'; sound: string })
   | (JSStatementCommon & { type: 'gk:setVolume'; sound: string; level: number | JSExpr })
   | (JSStatementCommon & {
       type: 'gk:createEmptyTilemap'
@@ -4287,8 +4301,7 @@ export type JSStatement =
     })
   // `dtVar` = nome da variável de delta-time em escopo (o binder do onUpdate).
   | (JSStatementCommon & { type: 'gk:moveWithKeys'; charVar: string; dtVar: string })
-  | (JSStatementCommon & { type: 'gk:keepOnScreen'; charVar: string })
-  | (JSStatementCommon & { type: 'gk:drawCharacter'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:keepOnScreen' | 'gk:drawCharacter'; charVar: string })
   | (JSStatementCommon & {
       type: 'gk:placeCharacter'
       charVar: string
@@ -4589,8 +4602,11 @@ export type JSStatement =
       whoName: string
       body: JSStatement[]
     })
-  | (JSStatementCommon & { type: 'g3k:setBounce'; mold: string; amount: number | JSExpr })
-  | (JSStatementCommon & { type: 'g3k:setFriction'; mold: string; amount: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:setBounce' | 'g3k:setFriction'
+      mold: string
+      amount: number | JSExpr
+    })
   // 💡 Luz & céu (atmosfera).
   | (JSStatementCommon & {
       type: 'g3k:addLight'
@@ -4815,8 +4831,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'w3d:carBoost'; force: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:engineSound'; on: boolean })
   | (JSStatementCommon & { type: 'w3d:loadSound'; name: string; asset: string })
-  | (JSStatementCommon & { type: 'w3d:playSound'; name: string })
-  | (JSStatementCommon & { type: 'w3d:playMusic'; name: string })
+  | (JSStatementCommon & { type: 'w3d:playSound' | 'w3d:playMusic'; name: string })
   | (JSStatementCommon & { type: 'w3d:stopMusic' })
   | (JSStatementCommon & { type: 'w3d:hud'; text: number | JSExpr; corner: string })
   | (JSStatementCommon & { type: 'w3d:say'; text: number | JSExpr; secs: number | JSExpr })
@@ -4869,9 +4884,10 @@ export type JSStatement =
       z: number | JSExpr
       deg: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'w3d:raceOnStart'; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'w3d:raceOnCheckpoint'; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'w3d:raceOnFinish'; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:raceOnStart' | 'w3d:raceOnCheckpoint' | 'w3d:raceOnFinish'
+      body: JSStatement[]
+    })
   | (JSStatementCommon & {
       type: 'w3d:bowlingCreate'
       x: number | JSExpr
@@ -5014,8 +5030,11 @@ export type JSStatement =
       style: string
     })
   | (JSStatementCommon & { type: 'w3d:quality'; mode: string })
-  | (JSStatementCommon & { type: 'w3d:inventoryGive'; item: string; n: number | JSExpr })
-  | (JSStatementCommon & { type: 'w3d:inventoryRemove'; item: string; n: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:inventoryGive' | 'w3d:inventoryRemove'
+      item: string
+      n: number | JSExpr
+    })
   | (JSStatementCommon & {
       type: 'w3d:door'
       x: number | JSExpr
@@ -5627,8 +5646,11 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'setInterval'; delay: JSExpr; body: JSStatement[] })
   // Versões em SEGUNDOS: geram `setTimeout/Interval(() => {…}, <delay> * 1000)`.
   // `delay` = segundos; o `* 1000` no código é o que distingue do ms no round-trip.
-  | (JSStatementCommon & { type: 'setTimeoutSeconds'; delay: JSExpr; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'setIntervalSeconds'; delay: JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'setTimeoutSeconds' | 'setIntervalSeconds'
+      delay: JSExpr
+      body: JSStatement[]
+    })
   // Escape hatch
   | (JSStatementCommon & { type: 'rawJS'; code: string; advanced: true })
 
@@ -8003,6 +8025,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       width: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    gameKitUiFontStatementSchema(idField),
     z.object({ type: z.literal('gk:setBackdrop'), image: irText(), ...idField }),
     z.object({ type: z.literal('gk:drawBackdrop'), image: irText(), ...idField }),
     z.object({ type: z.literal('gk:showHitboxes'), ...idField }),
@@ -11964,6 +11987,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:paintEllipse',
   'g2d:paintTriangle',
   'g2d:paintLine',
+  'g2d:paintShapeRecipe',
   'g2d:loadSpritesheet',
   'g2d:animateSprite',
   'g2d:animateOnce',
@@ -12009,6 +12033,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createVectorTileset',
   'g2d:defineVectorTile',
   'g2d:createVectorTileMap',
+  'g2d:loadVectorCampaignLevel',
   'g2d:forEachTileContact',
   'g2d:setTileAtContact',
   'g2d:fitTileMapToStage',
@@ -12060,6 +12085,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawScore',
   'g2d:drawLabel',
   'g2d:drawPixelText',
+  'g2d:drawPixelScore',
   'g2d:drawFade',
   'g2d:drawHearts',
   'g2d:drawSpriteHealth',
@@ -12072,6 +12098,8 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:dragX',
   'g2d:fitScreen',
   'g2d:stageBorder',
+  'g2d:useFont',
+  'g2d:showImageScreen',
   'g2d:setBackdrop',
   'g2d:drawBackdrop',
   'g2d:setupStage',
@@ -12255,6 +12283,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setupFull',
   'gk:setStageDescription',
   'gk:stageBorder',
+  'gk:useFont',
   'gk:setBackdrop',
   'gk:drawBackdrop',
   'gk:showHitboxes',

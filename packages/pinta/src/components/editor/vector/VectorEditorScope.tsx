@@ -24,23 +24,34 @@ import { COPY } from '../../../core/copy'
 import { isTextEntryTarget } from '../../../core/dom'
 import { newId } from '../../../core/id'
 import { DEFAULT_PALETTE_ID, type PaletteId } from '../../../core/palette'
-import { PINTA_LIMITS } from '../../../core/project'
+import { PINTA_LIMITS, type PintaAsset } from '../../../core/project'
+import { ensureVectorFontLoaded, ensureVectorFontsForShapes } from '../../../vector/fonts'
 import {
   type AlignEdge,
   alignShapes,
   boundsCenter,
   boundsUnion,
   flipShape,
+  setTextAlign as setTextAlignGeometry,
   shapeBounds,
   translateShape,
 } from '../../../vector/geometry'
 import {
+  imageShapeForInsert,
+  insertPlanFor,
+  resolveInsertSource,
+  shapesForInsert,
+} from '../../../vector/insertAsset'
+import {
+  DEFAULT_VECTOR_FONT_FAMILY,
   isVectorGradient,
   MAX_POLYGON_POINTS,
   type VectorFill,
+  type VectorFontFamily,
   type VectorGradient,
   type VectorShape,
   type VectorStroke,
+  type VectorTextAlign,
 } from '../../../vector/model'
 import {
   type EditablePath,
@@ -50,11 +61,13 @@ import {
   makeSmooth,
   minNodesFor,
   moveNodes,
+  openClosedPathAt,
   removeNodes,
   segmentsForNodes,
   setClosed,
   setSegmentCurved,
   smoothPath,
+  splitOpenPathAt,
   toEditablePath,
 } from '../../../vector/pathNodes'
 import { DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
@@ -96,10 +109,17 @@ export interface VectorEditorContextValue {
    *  edição estrutural: acrescentar ou apagar ponto já refaz a escolha. */
   selectedNodes: number[]
   setSelectedNodes: Dispatch<SetStateAction<number[]>>
-  /** Grava uma edição de nós. `recordUndo=false` durante o arrasto. */
-  applyNodeEdit: (next: EditablePath, recordUndo?: boolean) => void
+  /** Grava uma edição de nós. `recordUndo=false` durante o arrasto.
+   *  `false` = recusada (o `d` estourou o teto e a forma voltaria a ser a de
+   *  antes; sem esse retorno, "cortar" duplicaria o traço em silêncio). */
+  applyNodeEdit: (next: EditablePath, recordUndo?: boolean) => boolean
   removeSelectedNodes: () => void
   toggleNodePathClosed: () => void
+  /**
+   * A TESOURA, com UM ponto escolhido: caminho FECHADO abre exatamente ali (uma
+   * forma só, um nó a mais); caminho ABERTO vira DOIS traços com o mesmo estilo.
+   */
+  cutNodePath: () => void
   insertNodeOnSegment: (segmentIndex: number, t: number) => void
   /** Curva ou endireita os segmentos que os nós escolhidos alcançam. */
   setSelectedSegmentsCurved: (curved: boolean) => void
@@ -113,6 +133,14 @@ export interface VectorEditorContextValue {
   setStarTips: (value: number) => void
   rectRadius: number
   setRectRadius: (value: number) => void
+  /** Alinhamento do texto: arma o PRÓXIMO e reescreve o selecionado. */
+  textAlign: VectorTextAlign
+  setTextAlign: (value: VectorTextAlign) => void
+  /** Fonte do próximo texto; ao selecionar texto, edita a família existente. */
+  fontFamily: VectorFontFamily
+  setFontFamily: (value: VectorFontFamily) => void
+  /** Traz um desenho da galeria para dentro deste (formas ou figura). */
+  insertFromAsset: (asset: PintaAsset) => boolean
   svgRef: RefObject<SVGSVGElement | null>
   stageRef: RefObject<HTMLDivElement | null>
   currentRef: () => ActiveFrameRef
@@ -172,6 +200,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const [starTips, setStarTips] = useState(5)
   // Raio dos cantos do PRÓXIMO retângulo (o slider também edita o selecionado).
   const [rectRadius, setRectRadius] = useState(0)
+  const [textAlign, setTextAlignState] = useState<VectorTextAlign>('left')
+  const [fontFamily, setFontFamilyState] = useState<VectorFontFamily>(DEFAULT_VECTOR_FONT_FAMILY)
   // Canal de cor SELECIONADO (espelho do activeSlot do pixel): a próxima cor
   // tocada na paleta cai no preenchimento ou no contorno.
   const [activeChannel, setActiveChannel] = useState<VectorColorChannel>('fill')
@@ -275,6 +305,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
 
   const ref: ActiveFrameRef = { animationId, frameIndex }
   const doc = activeShapesOf(asset, ref)
+
+  useEffect(() => {
+    void ensureVectorFontLoaded(fontFamily)
+    if (doc) void ensureVectorFontsForShapes(doc.shapes)
+  }, [doc, fontFamily])
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
   const single = selected.length === 1 ? (selected[0] ?? null) : null
   // Editar pontos é sempre de UMA forma por vez (o palco desenha os nós dela).
@@ -338,6 +373,61 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   function updateSelected(update: (shape: VectorShape) => VectorShape): void {
     if (selected.length === 0) return
     commitShapes(currentShapes().map((s) => (selectedIds.includes(s.id) ? update(s) : s)))
+  }
+
+  /**
+   * Arma o alinhamento do PRÓXIMO texto e, se houver texto selecionado,
+   * realinha ele na hora — preservando a caixa (o bloco não pula de lugar).
+   */
+  function setTextAlign(value: VectorTextAlign): void {
+    setTextAlignState(value)
+    if (!selected.some((s) => s.type === 'text')) return
+    updateSelected((s) => (s.type === 'text' ? setTextAlignGeometry(s, value) : s))
+  }
+
+  function setFontFamily(value: VectorFontFamily): void {
+    setFontFamilyState(value)
+    void ensureVectorFontLoaded(value)
+    if (!selected.some((shape) => shape.type === 'text')) return
+    updateSelected((shape) => (shape.type === 'text' ? { ...shape, fontFamily: value } : shape))
+  }
+
+  /**
+   * Traz um desenho da galeria para dentro deste. Vetor entra como FORMAS
+   * (agrupadas, ainda editáveis); pixel art entra como FIGURA. Uma entrada de
+   * undo, e o que entrou já fica selecionado para a criança arrastar.
+   */
+  function insertFromAsset(asset: PintaAsset): boolean {
+    // O escopo devolve `null` sem documento ativo, mas esta função é declarada
+    // antes daquele portão — o narrowing do TS não atravessa.
+    if (!doc) return false
+    const plan = insertPlanFor(asset)
+    if (!plan) return false
+    const source = resolveInsertSource(plan)
+    // Sem canvas (ou PNG grande demais para o sanitize aceitar): recusa em vez
+    // de inserir uma figura vazia que sumiria no próximo load.
+    if (!source) {
+      showToast(COPY.vector.insertFailed)
+      return false
+    }
+    const shapes = currentShapes()
+    const target = { width: doc.width, height: doc.height }
+    const novas =
+      source.kind === 'shapes'
+        ? shapesForInsert(source, target)
+        : [imageShapeForInsert(source, target)]
+    if (novas.length === 0) {
+      showToast(COPY.vector.insertEmpty)
+      return false
+    }
+    if (shapes.length + novas.length > PINTA_LIMITS.maxShapes) {
+      showToast(COPY.vector.insertTooManyShapes)
+      return false
+    }
+    commitShapes([...shapes, ...novas])
+    setSelectedIds(novas.map((s) => s.id))
+    setTool('select')
+    return true
   }
 
   /** Guarda uma cor livre no topo das recentes (dedup, teto). */
@@ -535,18 +625,19 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * Grava uma edição de nós na forma alvo. Lê a forma VIVA (não a do render):
    * durante o arrasto o palco manda o resultado do gesto inteiro a cada quadro.
    */
-  function applyNodeEdit(next: EditablePath, recordUndo = true): void {
-    if (!nodeTarget) return
+  function applyNodeEdit(next: EditablePath, recordUndo = true): boolean {
+    if (!nodeTarget) return false
     const shapes = currentShapes()
     const before = shapes.find((s) => s.id === nodeTarget.id)
-    if (!before) return
+    if (!before) return false
     const edited = fromEditablePath(before, next)
-    if (edited === before) return
+    if (edited === before) return false
     expectedNodeStructureRef.current = `${nodeTarget.id}:${next.nodes.length}`
     commitShapes(
       shapes.map((s) => (s.id === nodeTarget.id ? edited : s)),
       recordUndo,
     )
+    return true
   }
 
   function removeSelectedNodes(): void {
@@ -575,6 +666,61 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       return
     }
     applyNodeEdit(setClosed(nodePath, !nodePath.closed))
+  }
+
+  /**
+   * A tesoura. Fechado + um ponto = abre NAQUELE ponto (o botão "abrir" sem
+   * ponto escolhido continua abrindo pelo começo, que é outra coisa: ele TIRA o
+   * trecho que fechava, este aqui preserva o desenho inteiro).
+   * Aberto + um ponto do miolo = dois traços.
+   */
+  function cutNodePath(): void {
+    if (!nodeTarget || !nodePath || selectedNodes.length !== 1) return
+    const index = selectedNodes[0]
+    if (index === undefined) return
+
+    if (nodePath.closed) {
+      const next = openClosedPathAt(nodePath, index)
+      if (!next) return
+      if (!applyNodeEdit(next)) {
+        showToast(COPY.vector.nodeCutTooBig)
+        return
+      }
+      setSelectedNodes([])
+      return
+    }
+
+    const halves = splitOpenPathAt(nodePath, index)
+    if (!halves) {
+      showToast(COPY.vector.nodeCutEndpoint)
+      return
+    }
+    const shapes = currentShapes()
+    // Lê a forma VIVA, não a do render (mesma regra do applyNodeEdit).
+    const before = shapes.find((s) => s.id === nodeTarget.id)
+    if (!before) return
+    if (shapes.length + 1 > PINTA_LIMITS.maxShapes) {
+      showToast(COPY.vector.shapeLimit)
+      return
+    }
+    // ⭐ A metade A guarda o id ORIGINAL. Com dois ids novos, `selectedIds`
+    // ficaria órfão por um render, `single` viraria null e a faixa de pontos
+    // inteira sumiria da tela — leria como "quebrou".
+    const first = fromEditablePath(before, halves[0])
+    const second = fromEditablePath({ ...before, id: newId() }, halves[1])
+    // ⚠️ `fromEditablePath` devolve a forma ORIGINAL quando o `d` estoura o
+    // teto: sem esta guarda o corte duplicaria o traço inteiro.
+    if (first === before || first.type !== 'path' || second.type !== 'path') {
+      showToast(COPY.vector.nodeCutTooBig)
+      return
+    }
+    const at = shapes.findIndex((s) => s.id === before.id)
+    const next = [...shapes]
+    next.splice(at, 1, first, second)
+    commitShapes(next)
+    setSelectedIds([first.id])
+    setSelectedNodes([])
+    showToast(COPY.vector.nodeCutDone)
   }
 
   function insertNodeOnSegment(segmentIndex: number, t: number): void {
@@ -642,6 +788,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     applyNodeEdit,
     removeSelectedNodes,
     toggleNodePathClosed,
+    cutNodePath,
     insertNodeOnSegment,
     setSelectedSegmentsCurved,
     setSelectedNodesSmooth,
@@ -651,6 +798,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     starTips,
     setStarTips,
     rectRadius,
+    textAlign,
+    setTextAlign,
+    fontFamily,
+    setFontFamily,
+    insertFromAsset,
     setRectRadius,
     svgRef,
     stageRef,

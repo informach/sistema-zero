@@ -249,9 +249,11 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     _recordPreviousPosition(sprite);
     var sp = _finiteNumber(speed, 5);
     // Grava a velocidade horizontal p/ os getters (parado → 0); só mexe no eixo X.
-    sprite.vx = (keys.right ? sp : 0) - (keys.left ? sp : 0);
-    if (keys.left) sprite.x -= sp;
-    if (keys.right) sprite.x += sp;
+    var paraDireita = _dirHeld('right');
+    var paraEsquerda = _dirHeld('left');
+    sprite.vx = (paraDireita ? sp : 0) - (paraEsquerda ? sp : 0);
+    if (paraEsquerda) sprite.x -= sp;
+    if (paraDireita) sprite.x += sp;
     _commitRecordedMotion(sprite);
   }
   // Faz o sprite PISCAR por N quadros (ex.: invencibilidade ao levar dano).

@@ -36,7 +36,7 @@ import {
   stampRegionAt,
 } from '../../tiles/mapSelection'
 import { packTileset } from '../../tiles/packTileset'
-import { packVectorTileset, vectorTilesetSvg } from '../../tiles/packVectorTileset'
+import { packVectorTileset, vectorTilesetPortableSvg } from '../../tiles/packVectorTileset'
 import { blockCells, stampCells, type TileStamp } from '../../tiles/stamp'
 import {
   addLayer,
@@ -55,6 +55,7 @@ import { Button } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { MapStatusBar } from './MapStatusBar'
+import { stageCursor } from './stageCursor'
 import { MAP_TOOLS, type MapTool, TilemapSidebar, TilemapToolbar } from './TilemapPanels'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 import { useWheelZoom } from './useWheelZoom'
@@ -99,6 +100,9 @@ export function TilemapEditor(): JSX.Element | null {
   const [selRect, setSelRect] = useState<CellRect | null>(null)
   // Overlay de colisão (vermelho sólido / âmbar plataforma) por cima do mapa.
   const [showCollision, setShowCollision] = useState(false)
+  // Só para o CURSOR (mão aberta → fechada): o pan mora num ref de propósito,
+  // então este estado liga e desliga apenas nas BORDAS do arrasto.
+  const [panning, setPanning] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLCanvasElement | null>(null)
@@ -167,28 +171,47 @@ export function TilemapEditor(): JSX.Element | null {
     }
     let cancelled = false
     const pack = packVectorTileset(tileset)
-    const svg = vectorTilesetSvg(tileset)
-    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
-    const img = new Image()
-    img.onload = () => {
+    let url: string | null = null
+    let img: HTMLImageElement | null = null
+    let revoked = false
+    const revoke = (): void => {
+      if (revoked || !url) return
+      revoked = true
       URL.revokeObjectURL(url)
-      if (cancelled) return
-      const sheet = document.createElement('canvas')
-      sheet.width = pack.columns * pack.tileSize
-      sheet.height = pack.rows * pack.tileSize
-      const ctx = sheet.getContext('2d')
-      if (!ctx) return
-      ctx.drawImage(img, 0, 0)
-      sheetRef.current = sheet
-      setSheetVersion((v) => v + 1)
     }
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
-      if (!cancelled) showToast(COPY.tiles.sheetError)
-    }
-    img.src = url
+    void vectorTilesetPortableSvg(tileset)
+      .then((svg) => {
+        if (cancelled) return
+        url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+        img = new Image()
+        img.onload = () => {
+          revoke()
+          if (cancelled || !img) return
+          const sheet = document.createElement('canvas')
+          sheet.width = pack.columns * pack.tileSize
+          sheet.height = pack.rows * pack.tileSize
+          const ctx = sheet.getContext('2d')
+          if (!ctx) return
+          ctx.drawImage(img, 0, 0)
+          sheetRef.current = sheet
+          setSheetVersion((v) => v + 1)
+        }
+        img.onerror = () => {
+          revoke()
+          if (!cancelled) showToast(COPY.tiles.sheetError)
+        }
+        img.src = url
+      })
+      .catch(() => {
+        if (!cancelled) showToast(COPY.tiles.sheetError)
+      })
     return () => {
       cancelled = true
+      if (img) {
+        img.onload = null
+        img.onerror = null
+      }
+      revoke()
     }
   }, [tileset, showToast])
 
@@ -709,6 +732,7 @@ export function TilemapEditor(): JSX.Element | null {
         startClient: { x: event.clientX, y: event.clientY },
         startScroll: { x: stage.scrollLeft, y: stage.scrollTop },
       }
+      setPanning(true)
       return
     }
     const raw = cellFromEvent(event)
@@ -769,6 +793,7 @@ export function TilemapEditor(): JSX.Element | null {
     const pan = panRef.current
     if (pan && (!event || event.pointerId === pan.pointerId)) {
       panRef.current = null
+      setPanning(false)
       return
     }
     const gesture = gestureRef.current
@@ -880,7 +905,11 @@ export function TilemapEditor(): JSX.Element | null {
               <canvas
                 ref={canvasRef}
                 className="pin-pixelated block"
-                style={{ touchAction: 'none', imageRendering: 'pixelated' }}
+                style={{
+                  touchAction: 'none',
+                  imageRendering: 'pixelated',
+                  cursor: stageCursor({ handTool: tool === 'pan', panning }),
+                }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={endGesture}

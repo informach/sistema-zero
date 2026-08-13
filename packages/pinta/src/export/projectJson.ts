@@ -113,6 +113,11 @@ export function galleryToPintaJson(assets: PintaAsset[]): string {
   )
 }
 
+/** Tamanho EXATO do backup que a galeria produziria, medido em bytes UTF-8. */
+export function galleryBackupByteLength(assets: PintaAsset[]): number {
+  return new TextEncoder().encode(galleryToPintaJson(assets)).byteLength
+}
+
 export interface PintaImportResult {
   assets: PintaAsset[]
   /** Descartes explicados (padrão studio: nada some em silêncio). */

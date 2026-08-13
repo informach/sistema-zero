@@ -7,7 +7,14 @@
  * ABSOLUTAS em pares x,y) — `translate`/`scale` reescrevem os números; um `d`
  * fora desse formato fica INTACTO (defensivo, não quebra).
  */
-import type { Vec2, VectorShape } from './model'
+import {
+  fontFamilyOf,
+  textAlignOf,
+  VECTOR_FONT_FAMILY_INFO,
+  type Vec2,
+  type VectorShape,
+  type VectorTextAlign,
+} from './model'
 
 export interface Bounds {
   x: number
@@ -86,6 +93,7 @@ export function round2(value: number): number {
 export function shapeBounds(shape: VectorShape): Bounds {
   switch (shape.type) {
     case 'rect':
+    case 'image':
       return normalize(shape.x, shape.y, shape.w, shape.h)
     case 'ellipse':
       return normalize(shape.cx - shape.rx, shape.cy - shape.ry, shape.rx * 2, shape.ry * 2)
@@ -99,9 +107,18 @@ export function shapeBounds(shape: VectorShape): Bounds {
     case 'path':
       return fromPoints(pathPoints(shape.d))
     case 'text': {
-      // Aproximação (sem medir texto no DOM): ~0.6em por caractere.
-      const width = Math.max(shape.text.length * shape.fontSize * 0.6, shape.fontSize)
-      return normalize(shape.x, shape.y - shape.fontSize, width, shape.fontSize * 1.2)
+      // Aproximação determinística (sem medir no DOM), específica por família;
+      // a linha MAIS LARGA manda na caixa.
+      const lines = shape.text.split('\n')
+      const columns = Math.max(...lines.map((line) => line.length), 1)
+      const factor = VECTOR_FONT_FAMILY_INFO[fontFamilyOf(shape)].widthFactor
+      const width = Math.max(columns * shape.fontSize * factor, shape.fontSize)
+      const height = lines.length * shape.fontSize * 1.2
+      // O `x` é a ÂNCORA: onde fica a borda esquerda depende do alinhamento.
+      const align = textAlignOf(shape)
+      const left =
+        align === 'center' ? shape.x - width / 2 : align === 'right' ? shape.x - width : shape.x
+      return normalize(left, shape.y - shape.fontSize, width, height)
     }
   }
 }
@@ -219,6 +236,7 @@ export function alignShapes(
 export function translateShape(shape: VectorShape, dx: number, dy: number): VectorShape {
   switch (shape.type) {
     case 'rect':
+    case 'image':
       return { ...shape, x: shape.x + dx, y: shape.y + dy }
     case 'ellipse':
       return { ...shape, cx: shape.cx + dx, cy: shape.cy + dy }
@@ -264,6 +282,10 @@ export function scaleShape(
         h: shape.h * fy,
         rx: shape.rx * Math.min(fx, fy),
       }
+    // A figura é um retângulo sem raio (o `preserveAspectRatio="none"` deixa
+    // ela preencher a caixa, então as 8 alças dizem a verdade).
+    case 'image':
+      return { ...shape, x: sx(shape.x), y: sy(shape.y), w: shape.w * fx, h: shape.h * fy }
     case 'ellipse':
       return {
         ...shape,
@@ -306,6 +328,65 @@ export function rotateShapeTo(shape: VectorShape, degrees: number): VectorShape 
   return { ...shape, rotation: Math.round(normalized * 10) / 10 }
 }
 
+/**
+ * Gira um CONJUNTO de shapes em torno de um pivô comum: o centro da caixa de
+ * cada um orbita o pivô e a forma recebe o giro SOMADO ao que já tinha.
+ *
+ * ⭐ É EXATO, inclusive com membros já girados. O render desenha
+ * `rotate(r, centro-da-caixa-SEM-rotação)` (`svg.ts shapeCommonAttrs`) e
+ * transladar a geometria translada essa mesma caixa junto, então
+ * `R(r+δ, c^δ) ∘ T` e `R(δ, pivô) ∘ R(r, c)` são o mesmo movimento rígido: as
+ * duas têm parte rotacional `r+δ` e concordam no ponto `c`.
+ *
+ * ⚠️ NÃO é ciente de grupos como o `alignShapes`: girar cada grupo em torno do
+ * PRÓPRIO centro os faria rodopiar no lugar em vez de orbitar o pivô, que não é
+ * o que "girar a seleção" quer dizer.
+ */
+export function rotateShapesAround(
+  shapes: readonly VectorShape[],
+  ids: readonly string[],
+  pivot: Vec2,
+  degrees: number,
+): VectorShape[] {
+  if (degrees === 0) return [...shapes]
+  const chosen = new Set(ids)
+  return shapes.map((shape) => {
+    if (!chosen.has(shape.id)) return shape
+    const center = boundsCenter(shapeBounds(shape))
+    const moved = rotatePoint(center, pivot, degrees)
+    const dx = round2(moved.x - center.x)
+    const dy = round2(moved.y - center.y)
+    // ⭐ Sem deslocamento, NÃO translada. Com UMA forma o pivô É o centro dela,
+    // e `translateShape(s, 0, 0)` devolveria um objeto novo (re-serializando o
+    // `d` de um traço a cada quadro): quebraria a memoização por identidade do
+    // `VectorFrameSvg` e o giro individual deixaria de ser byte a byte o de
+    // antes.
+    const shifted = dx === 0 && dy === 0 ? shape : translateShape(shape, dx, dy)
+    return rotateShapeTo(shifted, shape.rotation + degrees)
+  })
+}
+
+/**
+ * Troca o alinhamento PRESERVANDO a caixa: o bloco de texto não pula de lugar,
+ * só as linhas se realinham entre si. Move a âncora para o ponto novo.
+ */
+export function setTextAlign(shape: VectorShape, align: VectorTextAlign): VectorShape {
+  if (shape.type !== 'text' || textAlignOf(shape) === align) return shape
+  const bounds = shapeBounds(shape)
+  const x =
+    align === 'center'
+      ? bounds.x + bounds.width / 2
+      : align === 'right'
+        ? bounds.x + bounds.width
+        : bounds.x
+  const rest = { ...shape, x: round2(x) }
+  if (align === 'left') {
+    const { align: _dropped, ...withoutAlign } = rest
+    return withoutAlign as VectorShape
+  }
+  return { ...rest, align } as VectorShape
+}
+
 /** Gira um ponto em torno de um centro (graus). `0` devolve cópia sem conta. */
 export function rotatePoint(p: Vec2, center: Vec2, degrees: number): Vec2 {
   if (degrees === 0) return { x: p.x, y: p.y }
@@ -334,6 +415,7 @@ export function flipShape(shape: VectorShape, axis: 'h' | 'v', center: Vec2): Ve
   const flip = (): VectorShape => {
     switch (shape.type) {
       case 'rect':
+      case 'image':
         return {
           ...shape,
           x: axis === 'h' ? round2(2 * center.x - shape.x - shape.w) : shape.x,
@@ -349,10 +431,16 @@ export function flipShape(shape: VectorShape, axis: 'h' | 'v', center: Vec2): Ve
         return { ...shape, d: mapPathPoints(shape.d, (x, y) => ({ x: mx(x), y: my(y) })) }
       case 'text': {
         // Texto não espelha de verdade (ficaria ilegível): move o box espelhado.
+        // ⚠️ O `x` é a ÂNCORA, que nem sempre é a borda esquerda — sem repor o
+        // deslocamento dela, um texto centralizado ou à direita saltaria.
         const bounds = shapeBounds(shape)
+        const anchorOffset = shape.x - bounds.x
         return {
           ...shape,
-          x: axis === 'h' ? round2(2 * center.x - shape.x - bounds.width) : shape.x,
+          x:
+            axis === 'h'
+              ? round2(2 * center.x - (bounds.x + bounds.width) + anchorOffset)
+              : shape.x,
           y: my(shape.y),
         }
       }

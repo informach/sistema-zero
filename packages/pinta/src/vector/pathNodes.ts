@@ -255,6 +255,76 @@ export function setClosed(ep: EditablePath, closed: boolean): EditablePath {
 }
 
 /**
+ * Cópia do nó como INÍCIO de um caminho aberto: guarda a alça de SAÍDA e larga
+ * a de chegada (num caminho aberto o primeiro nó não tem segmento chegando, e o
+ * `editablePathToD` nunca lê o `in` dele).
+ */
+function asStart(node: PathNode): PathNode {
+  return node.out ? { p: copy(node.p), out: copy(node.out) } : { p: copy(node.p) }
+}
+
+/** Cópia do nó como FIM de um caminho aberto: guarda a alça de CHEGADA. */
+function asEnd(node: PathNode): PathNode {
+  return node.in ? { p: copy(node.p), in: copy(node.in) } : { p: copy(node.p) }
+}
+
+/**
+ * Abre um caminho FECHADO exatamente no nó `index`: ele vira o começo E o fim
+ * (duplicado na emenda). NENHUM segmento se perde — cada trecho `i → i+1` do
+ * laço aparece uma vez, inclusive o que o `Z` desenhava —, então o desenho é o
+ * MESMO, só deixou de ser um laço. `null` = recusado (já estava aberto, ou o
+ * índice não existe).
+ *
+ * ⚠️ O resultado tem o primeiro e o último nó no MESMO ponto, que é justo o
+ * caso que o `parseEditablePath` funde — mas ele só funde quando o caminho está
+ * FECHADO. Aberto, a emenda sobrevive à ida e volta pelo `d`; e se a criança
+ * fechar de novo depois, a fusão acontece e devolve o laço original.
+ */
+export function openClosedPathAt(ep: EditablePath, index: number): EditablePath | null {
+  const total = ep.nodes.length
+  if (!ep.closed || total < 2 || index < 0 || index >= total) return null
+  const seam = ep.nodes[index]
+  if (!seam) return null
+  const nodes: PathNode[] = [asStart(seam)]
+  for (let step = 1; step < total; step += 1) {
+    const node = ep.nodes[(index + step) % total]
+    if (node) nodes.push({ ...node, p: copy(node.p) })
+  }
+  nodes.push(asEnd(seam))
+  return { nodes, closed: false }
+}
+
+/**
+ * Corta um caminho ABERTO no nó `index` e devolve os DOIS pedaços — o nó do
+ * corte é duplicado, um em cada ponta, e nenhum segmento se perde.
+ *
+ * `null` = recusado: caminho FECHADO (aí a operação é `openClosedPathAt`) ou
+ * índice numa PONTA. Numa ponta não há o que cortar, e o pedaço resultante
+ * ficaria com um nó só — abaixo de `MIN_PATH_NODES`, o sanitize o DESCARTARIA
+ * no próximo load. Com `0 < index < n-1` os dois pedaços já nascem com 2+.
+ */
+export function splitOpenPathAt(
+  ep: EditablePath,
+  index: number,
+): [EditablePath, EditablePath] | null {
+  const total = ep.nodes.length
+  if (ep.closed || index <= 0 || index >= total - 1) return null
+  const seam = ep.nodes[index]
+  if (!seam) return null
+  const clone = (node: PathNode): PathNode => ({ ...node, p: copy(node.p) })
+  const first: EditablePath = {
+    nodes: [...ep.nodes.slice(0, index).map(clone), asEnd(seam)],
+    closed: false,
+  }
+  const second: EditablePath = {
+    nodes: [asStart(seam), ...ep.nodes.slice(index + 1).map(clone)],
+    closed: false,
+  }
+  if (first.nodes.length < MIN_PATH_NODES || second.nodes.length < MIN_PATH_NODES) return null
+  return [first, second]
+}
+
+/**
  * Tira os nós escolhidos. `null` = recusado (ficaria abaixo do piso e a forma
  * sumiria no próximo load). Os vizinhos ficam com as alças que já tinham: é o
  * que menos surpreende quem apagou um ponto do meio.

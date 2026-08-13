@@ -33,7 +33,9 @@ function irOf(over: Partial<TilemapGamePayload> = {}): SZIRInput {
 /** Corpo do loop `updateEachFrame` (statements desenhados por quadro). */
 function loopBody(ir: SZIRInput): JSStatement[] {
   const loop = behaviorStatements(ir).find((s) => s.type === 'g2d:updateEachFrame')
-  return loop && 'body' in loop ? loop.body : []
+  // ⚠️ Estreitar pelo TIPO, não por `'body' in loop`: existem statements cujo `body`
+  // é TEXTO (o totem e a porta do Mundo 3D), e o `in` os traz junto.
+  return loop?.type === 'g2d:updateEachFrame' ? loop.body : []
 }
 
 describe('assembleTilemapGameProject', () => {

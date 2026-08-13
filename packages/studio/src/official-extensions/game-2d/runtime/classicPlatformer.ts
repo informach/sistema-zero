@@ -2,8 +2,11 @@
  * Primitivas genéricas para jogos de plataforma clássicos. O código continua
  * sendo injetado no mesmo IIFE do runtime e não depende de imagens ou fontes.
  */
-export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica e arte vetorial (v0.73.0) ----
+export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica e arte vetorial (v0.74.0) ----
   var CLASSIC_ACTIONS = ['left', 'right', 'up', 'down', 'jump', 'action', 'select', 'start', 'pause'];
+  // Espelho de GAME_TWO_D_TILE_CONTACT_SIDES (classicContracts.ts). Um drift o cobra:
+  // lado novo no contrato e esquecido aqui volta a desligar o filtro em silêncio.
+  var TILE_CONTACT_SIDES = ['head', 'feet', 'left', 'right', 'inside'];
   var CLASSIC_KEY_ACTION = {
     ArrowLeft: 'left', a: 'left',
     ArrowRight: 'right', d: 'right',
@@ -83,6 +86,14 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     _classicKeyboardCount = Object.create(null);
   }
   window.addEventListener('blur', _releaseClassicKeyboard);
+  // ⚠️ O teclado do núcleo (worldEvents) solta as teclas no blur E ao esconder a aba;
+  // este aqui só tinha o blur. Uma aba escondida SEM perder o foco (trocar de aba com
+  // atalho, apagar a tela do celular) deixava a ação presa para sempre, e o herói
+  // voltava andando sozinho. São duas máquinas de estado paralelas: enquanto elas
+  // existirem, o que uma solta a outra também precisa soltar.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) _releaseClassicKeyboard();
+  });
 
   /** Verdadeiro enquanto qualquer teclado/dedo mantém a ação pressionada. */
   function actionDown(action) {
@@ -93,6 +104,24 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       !!(touches && touches.size) ||
       (_classicVirtualHeldStamp[name] || 0) > 0 &&
       _classicVirtualHeldStamp[name] >= _frameStamp;
+  }
+  /**
+   * A ação apertada SÓ pelo dedo (ou por um botão focado / leitor de tela) — sem o
+   * teclado.
+   *
+   * ⚠️ Existe porque os helpers ANTIGOS de movimento (plataforma, pular no terreno,
+   * bater as asas) passaram a ler a camada semântica para o pad de toque alcançá-los,
+   * e com isso herdaram o mapa de teclas dela: a tecla z e o ESPAÇO viraram PULO em todo jogo
+   * de plataforma que já existia. O exemplo oficial "Herói que anda" usa ESPAÇO para
+   * atirar — cada tiro lançava o herói no ar. Direção não tem esse problema (as setas
+   * e o WASD alimentam os dois caminhos), só o pulo.
+   */
+  function _actionDownByTouch(action) {
+    var name = String(action || '');
+    if (!_knownClassicAction(name)) return false;
+    var touches = _classicTouchPointers[name];
+    if (touches && touches.size) return true;
+    return (_classicVirtualHeldStamp[name] || 0) > 0 && _classicVirtualHeldStamp[name] >= _frameStamp;
   }
   /** Borda do aperto, compartilhada por todos os leitores do mesmo quadro. */
   function actionPressed(action) {
@@ -221,34 +250,71 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     _classicControlsRoot = root;
   }
 
+  // ---- Afinação da plataforma clássica ----
+  // Aceleração e atrito saem do TETO de velocidade, e não de números fixos: assim a
+  // mesma sensação vale para quem escolhe velocidade 2 e para quem escolhe 8. Os
+  // números fixos de antes (0.16 no chão, 0.34 derrapando) davam um herói DURO, que
+  // chegava ao topo em 15 quadros; a inércia longa é a assinatura do gênero.
+  var CLASSIC_FRAMES_TO_TOP = 42;
+  var CLASSIC_RUN_RATIO = 1.64;
+  var CLASSIC_SKID_FACTOR = 1.7;
+  var CLASSIC_FRICTION_FACTOR = 1.4;
+  // Soltar o botão de pulo faz a gravidade PESAR mais na subida. É o que separa o
+  // pulinho do pulo inteiro sem inventar contador de quadros.
+  var CLASSIC_RELEASED_FALL = 2.5;
+  // Correr e pular vai mais alto: o impulso cresce com a velocidade horizontal.
+  var CLASSIC_RUN_JUMP_BONUS = 0.12;
+
   /**
    * Movimento autocontido de plataforma: aceleração, corrida, derrapagem,
-   * agachamento, gravidade e pulo com corte ao soltar o botão.
+   * agachamento, gravidade e pulo de altura variável.
    */
   function classicPlatformer(sprite, speed, jump) {
     if (!sprite) return;
     _recordPreviousPosition(sprite);
     var maxWalk = _positiveFiniteNumber(speed, 2.5);
-    var maxRun = maxWalk * 1.35;
+    var maxRun = maxWalk * CLASSIC_RUN_RATIO;
     var max = actionDown('action') ? maxRun : maxWalk;
     var gravity = _finiteNumber(world.gravity, 0.6);
     var wasGrounded = _beginGroundFrame(sprite);
     var direction = (actionDown('right') ? 1 : 0) - (actionDown('left') ? 1 : 0);
     var vx = _finiteNumber(sprite.vx, 0);
+    // ⚠️ Correr acelera MAIS, além de ter teto maior. Derivar a aceleração só da
+    // caminhada deixava os dois indistinguíveis no começo do trecho — medido: 40
+    // quadros davam os MESMOS 45,9 px andando e correndo, porque nesse tempo o herói
+    // sequer chegava ao teto de caminhada. Quem corre chega ao próprio teto no mesmo
+    // tempo em que quem anda chega ao dele.
+    var accel = max / CLASSIC_FRAMES_TO_TOP;
+    // Derrapar e frear NÃO seguem o teto do momento: são a mesma travagem sempre,
+    // senão soltar o botão de correr mudaria também a força do freio.
+    var travagem = maxWalk / CLASSIC_FRAMES_TO_TOP;
     var acceleratingAgainstMotion = direction && vx && (vx < 0 ? -1 : 1) !== direction;
-    var acceleration = wasGrounded ? (acceleratingAgainstMotion ? 0.34 : 0.16) : 0.09;
+    var acceleration = acceleratingAgainstMotion ? travagem * CLASSIC_SKID_FACTOR : accel;
     if (direction) {
       vx += direction * acceleration;
-      if (Math.abs(vx) > max) vx = direction * max;
+      if (Math.abs(vx) > max) {
+        // Passar do teto não trava no ato: a velocidade DESCE até ele. É o que faz
+        // soltar o botão de correr devolver o passo de caminhada aos poucos, em vez
+        // de o herói frear como se batesse numa parede invisível.
+        var alvo = Math.max(max, Math.abs(vx) - travagem);
+        vx = (vx < 0 ? -1 : 1) * alvo;
+      }
       sprite.facing = direction;
       sprite.direction = direction < 0 ? 'left' : 'right';
-    } else {
-      var friction = wasGrounded ? 0.13 : 0.015;
+    } else if (wasGrounded) {
+      var friction = travagem * CLASSIC_FRICTION_FACTOR;
       if (Math.abs(vx) <= friction) vx = 0;
       else vx -= (vx < 0 ? -1 : 1) * friction;
     }
+    // ⚠️ Sem direção E NO AR o impulso é CONSERVADO: nada de atrito aéreo. O 0.015
+    // de antes comia o alcance do salto no meio do voo, e é exatamente o que impede
+    // um pulo longo de existir.
 
-    if (!sprite._classicStandingH) sprite._classicStandingH = sprite.h;
+    // ⚠️ A altura "em pé" é RELIDA sempre que o sprite não está agachado. Memorizá-la
+    // só na primeira chamada fazia o primeiro agachar depois de um power-up de tamanho
+    // devolver a altura ANTIGA: crescer para 80, agachar e levantar voltava para 44,
+    // apagando o power-up em silêncio.
+    if (!sprite._classicCrouching) sprite._classicStandingH = sprite.h;
     var standingH = _positiveFiniteNumber(sprite._classicStandingH, sprite.h);
     var crouching = actionDown('down') && wasGrounded;
     if (crouching && !sprite._classicCrouching) {
@@ -267,18 +333,21 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     var jumpHeld = actionDown('jump');
     var jumpStarts = actionPressed('jump') && wasGrounded && !crouching;
     if (jumpStarts) {
-      _jumpFromGround(sprite, gravity, _positiveFiniteNumber(jump, 7));
-      sprite._classicJumpFrames = 0;
+      // ⭐ O impulso CRESCE com a velocidade horizontal — correr e pular vai mais alto
+      // e mais longe. É a assinatura do pulo do gênero, e o motor simplesmente não
+      // tinha: o mesmo número saía parado ou em disparada.
+      var embalo = maxRun > 0 ? Math.min(1, Math.abs(vx) / maxRun) : 0;
+      var impulso = _positiveFiniteNumber(jump, 7) * (1 + CLASSIC_RUN_JUMP_BONUS * embalo);
+      _jumpFromGround(sprite, gravity, impulso);
     }
     var vy = _finiteNumber(sprite.vy, 0);
-    if (jumpHeld && _isJumpingForGravity(vy, gravity) && (sprite._classicJumpFrames || 0) < 10) {
-      vy += _gravityPullsUp(gravity) ? 0.18 : -0.18;
-      sprite._classicJumpFrames = (sprite._classicJumpFrames || 0) + 1;
-    } else if (!jumpHeld && _isJumpingForGravity(vy, gravity)) {
-      vy *= 0.55;
-      sprite._classicJumpFrames = 10;
-    }
-    vy += gravity;
+    // Segurar o botão não empurra para cima: ele apenas ADIA a queda. Soltar cedo faz
+    // a gravidade pesar mais NA SUBIDA, e é daí que sai o pulinho curto.
+    // ⚠️ A versão anterior somava impulso por 10 quadros e depois cortava a subida
+    // pela metade — dois números mágicos para um efeito que a gravidade sozinha
+    // entrega, e que deixavam a altura presa a uma contagem em vez de ao botão.
+    var subindo = _isJumpingForGravity(vy, gravity);
+    vy += subindo && !jumpHeld ? gravity * CLASSIC_RELEASED_FALL : gravity;
     sprite.vx = vx;
     sprite.vy = vy;
     sprite.x = _finiteNumber(sprite.x, 0) + vx;
@@ -296,7 +365,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
   function defineVectorTile(tileset, index, shape, role) {
     if (!tileset || tileset._kind !== 'g2d-vector-tileset') return;
     var tileIndex = Math.max(0, Math.floor(_finiteNumber(index, 0)));
-    var tileRole = role === 'solid' || role === 'platform' ? role : 'decor';
+    var tileRole = role === 'solid' || role === 'platform' || role === 'contact' ? role : 'decor';
     tileset.tiles[tileIndex] = { shape: String(shape || ''), role: tileRole };
   }
   function createVectorTileMap(tileset, grid) {
@@ -306,11 +375,13 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     }
     var solid = [];
     var platform = [];
+    var atravessaveis = [];
     for (var key in tileset.tiles) {
       if (!Object.prototype.hasOwnProperty.call(tileset.tiles, key)) continue;
       var tile = tileset.tiles[key];
       if (tile.role === 'solid') solid.push(key);
       else if (tile.role === 'platform') platform.push(key);
+      else if (tile.role === 'contact') atravessaveis.push(Math.floor(Number(key)));
     }
     var map = createTileMap({
       image: '',
@@ -320,6 +391,9 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       grid: String(grid || '')
     });
     map.tileset = tileset;
+    // Índice das peças que a criança ATRAVESSA e que mesmo assim precisam avisar.
+    // O varredor por sobreposição (worldTiles) lê daqui.
+    map._overlapIndex = atravessaveis.length ? new Set(atravessaveis) : null;
     return map;
   }
   function _drawVectorTile(ctx, tileset, index, x, y, width, height) {
@@ -364,7 +438,12 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
   function forEachTileContact(sprite, map, side, visit) {
     if (!sprite || !map || typeof visit !== 'function') return;
     if (_runningLoopId && sprite._tileContactsFrame !== _frameStamp) return;
-    var wanted = side === 'head' || side === 'feet' || side === 'left' || side === 'right' ? side : 'any';
+    // ⚠️ A régua sai da LISTA, não de uma cadeia de comparações escrita à mão. A
+    // versão anterior listava head/feet/left/right e caía em "qualquer" para
+    // "dentro" — o lado que nasceu com a peça "atravessa e avisa" e que ficou de
+    // fora quando ela entrou. Resultado: escolher "dentro" desligava o filtro, e o
+    // gesto que o manual ensina ("Trocar o tile do contato por -1") apagava o CHÃO.
+    var wanted = TILE_CONTACT_SIDES.indexOf(String(side)) >= 0 ? side : 'any';
     var contacts = sprite._tileContacts ? sprite._tileContacts.slice() : [];
     var generation = _driverGeneration;
     for (var i = 0; i < contacts.length; i++) {
@@ -396,19 +475,53 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     if (!type || !type.items) return;
     for (var i = 0; i < type.items.length; i++) {
       var shell = type.items[i];
-      if (!shell || !shell._shell || !shell._shellMoving) continue;
+      if (!shell || !shell._shell) continue;
+      // ⚠️ Este atualizador é o ÚNICO dono da física do casco: o updateEnemyType pula
+      // qualquer casco vivo. Então quem não passar por aqui não é movido por ninguém.
+      //
+      // ⭐ O casco que já se descolou de quem o chutou volta a machucar. Enquanto o
+      // contato do chute dura, ele NÃO cobra vida: o casco anda 5 px/quadro e o herói
+      // corre quase isso, então a sobreposição do próprio chute seguia por vários
+      // quadros e o gesto que este modo existe para criar virava castigo (medido na
+      // segunda jornada do Reino Zero: fuga de 0,08 px por quadro).
+      if (shell._kickedBy && !isColliding(shell, shell._kickedBy)) shell._kickedBy = null;
+      var andando = !!shell._shellMoving;
       _recordPreviousPosition(shell);
       var shellSpeed = _finiteNumber(shell._shellSpeed, 5);
-      shell.vx = shellSpeed;
-      shell.x += shellSpeed;
+      if (andando) {
+        shell.vx = shellSpeed;
+        shell.x += shellSpeed;
+      } else {
+        shell.vx = 0;
+      }
+      // ⭐ O casco CAI — andando OU parado. Antes só o eixo X era integrado, e depois
+      // só o casco EM MOVIMENTO caía: pisar num casco no ar (beirada de poço, tijolo
+      // que some por baixo) o deixava pendurado para sempre.
+      // ⚠️ Mas ele integra o vy que EXISTE, sem se acelerar: quem acelera é o bloco
+      // "Aplicar a gravidade ao grupo", como em todo inimigo. Somar gravidade aqui
+      // faria o casco ser o único que cai sem ninguém pedir — e a gravidade de
+      // fábrica é 0.6, não 0, então num jogo visto de cima ele escorregaria sozinho
+      // para o fundo do Mundo.
+      shell.vy = _finiteNumber(shell.vy, 0);
+      shell.y += shell.vy;
       _commitRecordedMotion(shell);
       if (worldValue && worldValue._kind === 'g2d-world') {
+        // Longe demais do Mundo: marca para o "Atualizar" recolher, como qualquer
+        // inimigo. Sem isto o casco perdido continuaria contando no grupo. A régua é
+        // a MESMA dos outros e vale nos DOIS sentidos — com gravidade invertida o
+        // casco sobe, e meia guarda o deixaria contando para sempre.
+        if (_enemyFarFromWorld(shell, { world: worldValue })) {
+          shell._foraDoMundo = true;
+          continue;
+        }
         collideWorld(shell, worldValue);
-        if (shell.vx === 0) {
+        if (andando && shell.vx === 0) {
           shell._shellSpeed = -shellSpeed;
           shell.vx = shell._shellSpeed;
         }
       }
+      // Casco parado é inofensivo: não varre ninguém.
+      if (!andando) continue;
       // O tipo recebido é o DONO dos cascos, não o universo de alvos. Todos os
       // tipos registrados compartilham o mesmo mundo e podem ser atingidos.
       for (var typeIndex = 0; typeIndex < _enemyTypes.length; typeIndex++) {
@@ -428,8 +541,16 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     ' ': ['000','000','000','000','000','000','000'],
     '-': ['000','000','000','111','000','000','000'],
     '.': ['000','000','000','000','000','110','110'],
+    ',': ['000','000','000','000','110','110','100'],
     ':': ['000','110','110','000','110','110','000'],
     '!': ['1','1','1','1','1','0','1'],
+    // ⚠️ A barra FALTAVA, e a tela de título escreve "BACKSPACE: 1/2": saía 1?2 na
+    // cara da criança. O parêntese e o sinal entram junto porque são o resto do que
+    // um texto de jogo pede.
+    '/': ['001','001','010','010','010','100','100'],
+    '(': ['01','10','10','10','10','10','01'],
+    ')': ['10','01','01','01','01','01','10'],
+    '+': ['000','000','010','111','010','000','000'],
     '?': ['111','001','001','011','010','000','010'],
     '0': ['111','101','101','101','101','101','111'],
     '1': ['010','110','010','010','010','010','111'],
@@ -453,8 +574,35 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     S: ['111','100','100','111','001','001','111'], T: ['111','010','010','010','010','010','010'],
     U: ['101','101','101','101','101','101','111'], V: ['101','101','101','101','101','101','010'],
     W: ['10001','10001','10001','10101','10101','11011','10001'], X: ['101','101','101','010','101','101','101'],
-    Y: ['101','101','101','010','010','010','010'], Z: ['111','001','001','010','100','100','111']
+    Y: ['101','101','101','010','010','010','010'], Z: ['111','001','001','010','100','100','111'],
+    // A cedilha é uma linha ABAIXO da base (não sobe, desce): cabe porque a
+    // entrelinha e de 9 linhas e a letra usa 7.
+    // ⚠️ O corpo tem que ser o C INTEIRO (7 linhas). Com 6, o Ç ficava uma linha
+    // acima da base das vizinhas — visível em "RECOMEÇA", na tela de continuar do
+    // Reino Zero.
+    'Ç': ['111','100','100','100','100','100','111','010']
   };
+  /**
+   * Vogais acentuadas: a fonte é 5x7 e não caberia um alfabeto acentuado inteiro,
+   * então o acento é UMA LINHA a mais colada acima da letra, e a letra desce uma
+   * linha para o corpo continuar na mesma base das vizinhas.
+   *
+   * ⚠️ Sem isto, TODO texto em português com acento saía com "?" no lugar da vogal —
+   * e é por isso que o exemplo escrevia "RECOMECA" sem a cedilha, contornando à mão
+   * uma falta que era da fonte.
+   */
+  var PIXEL_RISE = 'ÁÂÃÀÉÊÍÓÔÕÚ';
+  (function () {
+    var acentuadas = [
+      ['Á','A','001'], ['Â','A','010'], ['Ã','A','111'], ['À','A','100'],
+      ['É','E','001'], ['Ê','E','010'], ['Í','I','001'],
+      ['Ó','O','001'], ['Ô','O','010'], ['Õ','O','111'], ['Ú','U','001']
+    ];
+    for (var i = 0; i < acentuadas.length; i++) {
+      var base = PIXEL_GLYPHS[acentuadas[i][1]];
+      if (base) PIXEL_GLYPHS[acentuadas[i][0]] = [acentuadas[i][2]].concat(base);
+    }
+  })();
   function _pixelTextWidth(text, pixelSize) {
     var width = 0;
     var lineWidth = 0;
@@ -488,14 +636,33 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
         continue;
       }
       var glyph = PIXEL_GLYPHS[ch] || PIXEL_GLYPHS['?'];
+      // Vogal acentuada sobe uma linha para o acento caber sem empurrar a base.
+      var topo = PIXEL_RISE.indexOf(ch) >= 0 ? py - size : py;
       for (var row = 0; row < glyph.length; row++) {
         for (var col = 0; col < glyph[row].length; col++) {
-          if (glyph[row].charAt(col) === '1') ctx.fillRect(px + col * size, py + row * size, size, size);
+          if (glyph[row].charAt(col) === '1') ctx.fillRect(px + col * size, topo + row * size, size, size);
         }
       }
       px += (glyph[0].length + 1) * size;
     }
     ctx.restore();
+  }
+  /**
+   * Um campo do placar na fonte de PIXEL: o rótulo em cima e o valor embaixo, como
+   * no jogo de referência.
+   *
+   * ⚠️ Existe porque o "Escrever texto pixel" só aceita texto LITERAL, e os números do
+   * placar são variáveis. Sem ele o HUD tinha que usar a fonte proporcional, e o jogo
+   * ficava com DUAS tipografias: pixel nas telas de título e fim, e outra no placar.
+   */
+  function drawPixelScore(ctx, label, value, x, y, pixelSize, color) {
+    if (!ctx) return;
+    var size = Math.max(1, Math.floor(_positiveFiniteNumber(pixelSize, 2)));
+    var px = _finiteNumber(x, 0);
+    var py = _finiteNumber(y, 0);
+    drawPixelText(ctx, label, px, py, size, color, 'left');
+    // 9 linhas é a mesma entrelinha que o drawPixelText usa na quebra de linha.
+    drawPixelText(ctx, value, px, py + size * 9, size, color, 'left');
   }
   function drawFade(ctx, percent, color) {
     if (!ctx || !ctx.canvas) return;

@@ -16,6 +16,8 @@ interface TestActor {
   state?: string
   owner?: number
   variant?: string
+  phase?: number
+  slamReady?: boolean
 }
 
 interface TestPlayer {
@@ -63,6 +65,7 @@ interface EngineState {
   hint: string
   lives: number
   touch: Record<string, boolean>
+  touch2: Record<string, boolean>
   usedTiles: string[]
   brokenTiles: string[]
   unlocked: number
@@ -73,6 +76,11 @@ interface EngineState {
   turnProfiles: Array<{ lives: number; score: number; coins: number; power: string }>
   playback: number[][]
   playbackAt: number
+  playbackSnapshot: unknown
+  checkpointX: number
+  checkpointY: number
+  resumeStageId: string
+  fragileTiles: Array<{ key: string; timer: number }>
 }
 
 type EnginePatch = Partial<EngineState>
@@ -83,8 +91,10 @@ interface EngineHarness {
   drawActor(actor: TestActor): void
   getState(): EngineState
   hurtPlayer(player: TestPlayer): void
-  loadStage(id: string): void
+  loadStage(id: string, resumeCheckpoint?: boolean): void
   movePlayer(player: TestPlayer, dx: number, dy: number): void
+  nearestPlayer(actor: TestActor): TestPlayer
+  readInput(index: number): Record<string, boolean>
   setState(patch: EnginePatch): void
   selectPlayMode(mode: string): void
   updateActors(dt: number): void
@@ -129,6 +139,8 @@ function isEngineHarness(value: unknown): value is EngineHarness {
     'hurtPlayer',
     'loadStage',
     'movePlayer',
+    'nearestPlayer',
+    'readInput',
     'setState',
     'selectPlayMode',
     'updateActors',
@@ -149,7 +161,12 @@ function required<T>(value: T | undefined, message: string): T {
 
 function createRuntimeHarness(
   initialStorage: Record<string, string> = {},
-  options: { devicePixelRatio?: number; pointerCaptureThrows?: boolean } = {},
+  options: {
+    devicePixelRatio?: number
+    gamepadButton?: (index: number, button: number) => number
+    keys?: readonly string[]
+    pointerCaptureThrows?: boolean
+  } = {},
 ): RuntimeHarness {
   const drawCalls: DrawCall[] = []
   const transformCalls: number[][] = []
@@ -184,7 +201,7 @@ function createRuntimeHarness(
   const buttonListeners = new Map<string, Map<string, Listener[]>>()
   const buttons = new Map<
     string,
-    { addEventListener: (type: string, listener: Listener) => void }
+    { id: string; addEventListener: (type: string, listener: Listener) => void }
   >()
   const buttonFor = (id: string) => {
     const existing = buttons.get(id)
@@ -192,6 +209,7 @@ function createRuntimeHarness(
     const listeners = new Map<string, Listener[]>()
     buttonListeners.set(id, listeners)
     const button = {
+      id,
       addEventListener(type: string, listener: Listener) {
         const current = listeners.get(type) ?? []
         current.push(listener)
@@ -249,8 +267,8 @@ function createRuntimeHarness(
   }
   const input = {
     gamepadAxis: () => 0,
-    gamepadButton: () => 0,
-    key: () => false,
+    gamepadButton: options.gamepadButton ?? (() => 0),
+    key: (key: string) => options.keys?.includes(key) ?? false,
   }
   const audio = { ruido() {}, tom() {} }
   const windowListeners = new Map<string, Listener[]>()
@@ -286,6 +304,7 @@ return {
       hint: hint,
       lives: lives,
       touch: touch,
+      touch2: touch2,
       usedTiles: usedTiles,
       brokenTiles: brokenTiles,
       unlocked: unlocked,
@@ -295,12 +314,19 @@ return {
       activeTurn: activeTurn,
       turnProfiles: turnProfiles,
       playback: playback,
-      playbackAt: playbackAt
+      playbackAt: playbackAt,
+      playbackSnapshot: playbackSnapshot,
+      checkpointX: checkpointX,
+      checkpointY: checkpointY,
+      resumeStageId: resumeStageId,
+      fragileTiles: fragileTiles
     };
   },
   hurtPlayer: hurtPlayer,
   loadStage: loadStage,
   movePlayer: movePlayer,
+  nearestPlayer: nearestPlayer,
+  readInput: readInput,
   setState: function (patch) {
     if (Object.prototype.hasOwnProperty.call(patch, "mode")) mode = patch.mode;
     if (Object.prototype.hasOwnProperty.call(patch, "stage")) stage = patch.stage;
@@ -365,7 +391,11 @@ return {
     drawCalls,
     engine: candidate,
     fireButton(id, type, event) {
-      fire(buttonListeners.get(id) ?? new Map(), type, event)
+      const enriched = { ...event, target: buttonFor(id) }
+      fire(buttonListeners.get(id) ?? new Map(), type, enriched)
+      if (id !== 'touch-controls') {
+        fire(buttonListeners.get('touch-controls') ?? new Map(), type, enriched)
+      }
     },
     fireDocument(type, event) {
       fire(documentListeners, type, event)
@@ -379,6 +409,22 @@ return {
 }
 
 const NO_INPUT = { left: false, right: false, jump: false, action: false }
+
+function checksumText(content: string): number {
+  let checksum = 17
+  for (let index = 0; index < content.length; index += 1) {
+    checksum = (checksum * 31 + content.charCodeAt(index)) % 2_147_483_647
+  }
+  return checksum
+}
+
+function savedData(storage: Map<string, string>): Record<string, unknown> {
+  const raw = storage.get('reino-zero-ultra-save')
+  if (!raw) throw new Error('Save principal ausente.')
+  const envelope: unknown = JSON.parse(raw)
+  if (!isRecord(envelope) || !isRecord(envelope.data)) throw new Error('Envelope de save inválido.')
+  return envelope.data
+}
 
 describe('Reino Zero Ultra — regressões do motor', () => {
   it('deixa o jogador cair por uma lacuna até sofrer dano', () => {
@@ -538,6 +584,35 @@ describe('Reino Zero Ultra — regressões do motor', () => {
     expect(
       JSON.parse(required(storage.get('reino-zero-ultra-save'), 'Save migrado ausente')).version,
     ).toBe(2)
+  })
+
+  it('atualiza automaticamente snapshots de replay v2 anteriores ao schemaVersion', () => {
+    const seed = createRuntimeHarness()
+    seed.engine.loadStage('1-1')
+    seed.engine.updateGame(1 / 60)
+    seed.engine.completeStage('1-2')
+
+    const envelope: unknown = JSON.parse(
+      required(seed.storage.get('reino-zero-ultra-save'), 'Save com replay ausente.'),
+    )
+    if (!isRecord(envelope) || !isRecord(envelope.data)) throw new Error('Envelope inválido.')
+    const data = envelope.data
+    if (!isRecord(data.replaySnapshot)) throw new Error('Snapshot de replay ausente.')
+    delete data.replaySnapshot.schemaVersion
+    data.replayChecksum = checksumText(
+      JSON.stringify({ snapshot: data.replaySnapshot, frames: data.replay }),
+    )
+    envelope.checksum = checksumText(JSON.stringify(data))
+    const legacyV2 = JSON.stringify(envelope)
+
+    const migrated = createRuntimeHarness({ 'reino-zero-ultra-save': legacyV2 })
+    expect(migrated.engine.getState().recoveryNotice).toBe('')
+    expect(migrated.engine.getState().playbackSnapshot).toEqual(
+      expect.objectContaining({ schemaVersion: 1, stageId: '1-1' }),
+    )
+    expect(savedData(migrated.storage).replaySnapshot).toEqual(
+      expect.objectContaining({ schemaVersion: 1, stageId: '1-1' }),
+    )
   })
 
   it('repara campos corrompidos do save v1 sem propagar NaN', () => {
@@ -803,5 +878,168 @@ describe('Reino Zero Ultra — regressões do motor', () => {
       expect.objectContaining({ lives: 0, score: 321, coins: 7 }),
     )
     expect(state.score).toBe(0)
+  })
+
+  it('troca o jogador no timeout sem encerrar enquanto o outro perfil tem vidas', () => {
+    const { engine } = createRuntimeHarness()
+    engine.selectPlayMode('turns')
+    engine.loadStage('1-1')
+    engine.setState({ lives: 1, timeLeft: 0 })
+
+    engine.updateGame(1 / 60)
+
+    const state = engine.getState()
+    expect(state.mode).toBe('turnswitch')
+    expect(state.activeTurn).toBe(1)
+    expect(state.turnProfiles[0]?.lives).toBe(0)
+    expect(state.turnProfiles[1]?.lives).toBe(5)
+  })
+
+  it('sincroniza o perfil e retoma no checkpoint persistido', () => {
+    const firstSession = createRuntimeHarness()
+    firstSession.engine.selectPlayMode('turns')
+    firstSession.engine.loadStage('1-1')
+    firstSession.engine.setState({ score: 700, coins: 9 })
+    const state = firstSession.engine.getState()
+    const checkpoint = required(
+      state.actors.find((actor) => actor.kind === 'checkpoint'),
+      'Checkpoint da fase inicial ausente.',
+    )
+    const player = required(state.players[0], 'P1 ausente.')
+    player.x = checkpoint.x
+    player.y = checkpoint.y
+    firstSession.engine.updateActors(0)
+
+    const persisted = savedData(firstSession.storage)
+    expect(persisted.turnProfiles).toEqual([
+      expect.objectContaining({ score: 700, coins: 9 }),
+      expect.any(Object),
+    ])
+    expect(persisted.checkpointX).toBe(checkpoint.x)
+    expect(persisted.checkpointY).toBe(checkpoint.y - 20)
+
+    const raw = required(firstSession.storage.get('reino-zero-ultra-save'), 'Save ausente.')
+    const recovered = createRuntimeHarness({ 'reino-zero-ultra-save': raw })
+    const loaded = recovered.engine.getState()
+    recovered.engine.loadStage(loaded.resumeStageId, true)
+    expect(recovered.engine.getState().players[0]).toEqual(
+      expect.objectContaining({ x: checkpoint.x, y: checkpoint.y - 20 }),
+    )
+  })
+
+  it('rejeita snapshot de replay semanticamente corrompido mesmo com checksum coerente', () => {
+    const frames = [[0, 0]]
+    const snapshot = {}
+    const replayChecksum = checksumText(JSON.stringify({ snapshot, frames }))
+    const data = {
+      stageId: '1-1',
+      unlocked: 1,
+      score: 0,
+      coins: 0,
+      gems: [],
+      lives: 5,
+      playMode: 'solo',
+      activeTurn: 0,
+      turnProfiles: [
+        { lives: 5, score: 0, coins: 0, power: 'normal' },
+        { lives: 5, score: 0, coins: 0, power: 'normal' },
+      ],
+      replay: frames,
+      replaySnapshot: snapshot,
+      replayChecksum,
+    }
+    const envelope = JSON.stringify({
+      version: 2,
+      data,
+      checksum: checksumText(JSON.stringify(data)),
+    })
+
+    const runtime = createRuntimeHarness({ 'reino-zero-ultra-save': envelope })
+
+    expect(runtime.engine.getState().playback).toEqual([])
+    expect(runtime.engine.getState().recoveryNotice).toContain('corrompido')
+    expect(runtime.storage.get('reino-zero-ultra-save-corrupt')).toBe(envelope)
+  })
+
+  it('faz inimigos mirarem somente jogadores ativos', () => {
+    const { engine } = createRuntimeHarness()
+    engine.loadStage('1-1')
+    const state = engine.getState()
+    const first = required(state.players[0], 'P1 ausente.')
+    const second = required(state.players[1], 'P2 ausente.')
+    first.active = false
+    first.x = 90
+    second.active = true
+    second.x = 900
+
+    const target = engine.nearestPlayer({
+      id: 'alvo',
+      kind: 'thrower',
+      x: 100,
+      y: 0,
+      originX: 100,
+      originY: 0,
+      w: 26,
+      h: 28,
+      health: 1,
+      dead: false,
+    })
+
+    expect(target).toBe(second)
+  })
+
+  it('oferece seleção de modo e direção vertical por toque para os dois jogadores', () => {
+    const runtime = createRuntimeHarness()
+    runtime.fireButton('touch-mode', 'pointerdown', { pointerId: 1 })
+    runtime.engine.updateGame(0)
+    expect(runtime.engine.getState().playMode).toBe('solo')
+
+    runtime.fireButton('touch-up', 'pointerdown', { pointerId: 2 })
+    runtime.fireButton('touch-p2-down', 'pointerdown', { pointerId: 3 })
+    expect(runtime.engine.readInput(0).up).toBe(true)
+    expect(runtime.engine.readInput(1).down).toBe(true)
+  })
+
+  it('permite selecionar o modo no título usando gamepad', () => {
+    const { engine } = createRuntimeHarness(
+      {},
+      { gamepadButton: (_index, button) => (button === 5 ? 1 : 0) },
+    )
+    engine.updateGame(0)
+    expect(engine.getState().playMode).toBe('solo')
+  })
+
+  it('persiste o destino real de uma saída secreta', () => {
+    const firstSession = createRuntimeHarness()
+    firstSession.engine.loadStage('1-2')
+    firstSession.engine.completeStage('1-4')
+
+    const persisted = savedData(firstSession.storage)
+    expect(persisted.stageId).toBe('1-4')
+    expect(persisted.unlocked).toBe(4)
+
+    const raw = required(firstSession.storage.get('reino-zero-ultra-save'), 'Save ausente.')
+    const recovered = createRuntimeHarness({ 'reino-zero-ultra-save': raw }, { keys: ['Enter'] })
+    recovered.engine.updateGame(0)
+    expect(recovered.engine.getState()).toEqual(
+      expect.objectContaining({ mode: 'playing', stage: expect.objectContaining({ id: '1-4' }) }),
+    )
+  })
+
+  it('faz o Titã estilhaçar pisos frágeis ao aterrissar', () => {
+    const { engine } = createRuntimeHarness()
+    engine.loadStage('4-4')
+    const boss = required(
+      engine.getState().actors.find((actor) => actor.variant === 'tita'),
+      'Titã ausente.',
+    )
+    boss.x = 58 * 32
+    boss.originX = boss.x
+    boss.phase = Math.PI / 3.6
+    engine.updateActors(0)
+    boss.phase = Math.PI / 1.8
+    engine.updateActors(0)
+
+    expect(engine.getState().fragileTiles.length).toBeGreaterThan(0)
   })
 })

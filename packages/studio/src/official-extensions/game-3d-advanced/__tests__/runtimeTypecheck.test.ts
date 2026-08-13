@@ -12,7 +12,7 @@ interface SZGame3DAsset {
 
 interface Window {
   SZGameKit3D: unknown
-  SZGameUIFont: { family: string; install(): void }
+  SZGameUIFont: { id: string; family: string; install(): void }
   __SZGAME_ASSETS?: Record<string, SZGame3DAsset>
   __SZGAME_ASSETS_3D?: Record<string, SZGame3DAsset>
   __SZGAME_SOUNDS?: Record<string, string>

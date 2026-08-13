@@ -9,6 +9,8 @@ import {
 } from '#core'
 import { loadExtensionBootstrapScript } from '#extensions'
 import { findExtension } from '#official-extensions'
+import { gameUiFontBootstrapScript, loadGameUiFont } from '../official-extensions/gameUiFont'
+import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
 import { buildAudioRuntime } from '../preview/audioBridge'
 import { coreImportsForCode } from '../preview/coreImports'
@@ -82,6 +84,23 @@ export async function buildClassicFileMap(
   // exportado fica MUDO fora do Estúdio, mesmo com o sz-assets.js presente.
   const audioScriptSrc = 'sz-audio.js'
   files[`public/${audioScriptSrc}`] = await minifiers.js(buildAudioRuntime(), { module: false })
+
+  // A FONTE do jogo. Só a escolhida vira arquivo — cinco embutidas somariam ~170 KB
+  // em todo jogo que a criança baixa. Vira arquivo (e não `<style>` inline) porque o
+  // ZIP de FONTE existe para ser aberto no editor, e um `@font-face` de 40 KB no meio
+  // do index.html deixaria o HTML ilegível.
+  let fontCssHref: string | undefined
+  let fontScriptSrc: string | undefined
+  if (project.installedExtensions.length) {
+    const fonte = await loadGameUiFont(resolveGameUiFontId(project))
+    fontCssHref = 'sz-font.css'
+    fontScriptSrc = 'sz-font.js'
+    files[`public/${fontCssHref}`] = fonte.css
+    files[`public/${fontScriptSrc}`] = await minifiers.js(
+      gameUiFontBootstrapScript(fonte.family, fonte.id),
+      { module: false },
+    )
+  }
 
   // Extras → arquivos reais. CSS é linkado no <head>; HTML vira fragmento no
   // <body>; JS/TS é transpilado para `.js` real (import explícito com .js resolve).
@@ -243,6 +262,8 @@ export async function buildClassicFileMap(
     assetsScriptSrc,
     inputScriptSrc,
     audioScriptSrc,
+    fontCssHref,
+    fontScriptSrc,
   })
   files['public/index.html'] = minifiers.html(indexHtml)
   files['public/manifest.webmanifest'] = buildWebAppManifest(project.name)

@@ -556,6 +556,7 @@ export const GAME_KIT_ENUMERABLE_API_KEYS = [
   'lutaComboOf',
   'lutaSpecialOf',
   'showStageBorder',
+  'useFont',
   'setBackdrop',
   'drawBackdrop',
   'showHitboxes',
@@ -610,6 +611,8 @@ export interface GameKitKnownApi {
   setup(opts?: GameKitSetupOptions): void
   setupFull(opts?: Pick<GameKitSetupOptions, 'background' | 'accent'>): void
   setStageDescription(description: string): void
+  /** Confere se a fonte que o bloco pediu foi a que o documento recebeu (não troca nada). */
+  useFont(font: string): void
   start(): void
   width(): number
   height(): number

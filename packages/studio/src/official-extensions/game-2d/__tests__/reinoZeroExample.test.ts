@@ -5,7 +5,7 @@ import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { sanitizeImportedBlocksState } from '../../../state/projectStore'
 import { gameTwoDExamples } from '../exampleCatalog'
-import { reinoZeroExample, reinoZeroLevelNames } from '../examples'
+import { reinoZeroExample, reinoZeroLevelGrids, reinoZeroLevelNames } from '../examples'
 
 function collectTypes(value: unknown, out: string[] = []): string[] {
   if (Array.isArray(value)) {
@@ -66,16 +66,21 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
       '8-3',
       '8-4',
     ])
-    const maps = reinoZeroExample.ir.behavior.start.filter(
-      (statement) => statement.type === 'g2d:createVectorTileMap',
-    )
-    expect(maps).toHaveLength(32)
-    expect(new Set(maps.map((map) => map.grid)).size).toBe(32)
-    for (const map of maps) {
-      const rows = map.grid.split(';')
+    expect(reinoZeroLevelGrids).toHaveLength(32)
+    expect(new Set(reinoZeroLevelGrids).size).toBe(32)
+    const widths: number[] = []
+    for (const grid of reinoZeroLevelGrids) {
+      const rows = grid.split(';')
       expect(rows).toHaveLength(15)
-      expect(rows.every((row) => row.split(' ').length === 72)).toBe(true)
+      const width = rows[0]?.split(' ').length ?? 0
+      widths.push(width)
+      expect(rows.every((row) => row.split(' ').length === width)).toBe(true)
     }
+    expect(widths).toEqual([
+      72, 74, 76, 73, 74, 76, 78, 75, 76, 78, 74, 77, 73, 77, 75, 78, 75, 78, 76, 77, 76, 78, 75,
+      77, 77, 76, 78, 74, 78, 77, 76, 78,
+    ])
+    expect(new Set(widths).size).toBeGreaterThanOrEqual(6)
     expect(reinoZeroExample.ir.behavior.start[0]).toMatchObject({
       type: 'g2d:setupStage',
       width: 256,
@@ -98,6 +103,8 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
       '"mode":"spiky"',
       '"behavior":"voador-vertical"',
       '"behavior":"chefao"',
+      '"behavior":"saltador"',
+      '"behavior":"arrancada"',
       '"type":"g2d:countGroup","groupVar":"guardioes"',
       '"name":"jogadores"',
       '"name":"jornada"',
@@ -129,7 +136,12 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
     )
     if (death?.type !== 'if') throw new Error('regra de morte ausente')
 
-    const code = compileStatements(death.then.slice(0, 2), 0)
+    const alternate = death.then.find(
+      (statement) =>
+        statement.type === 'if' && JSON.stringify(statement.cond).includes('"name":"jogadores"'),
+    )
+    if (!alternate) throw new Error('alternância de jogadores ausente')
+    const code = compileStatements([death.then[0]!, alternate], 0)
     const applyDeath = new Function(
       'state',
       `let jogador = state.jogador, jogadores = state.jogadores, vidas1 = state.vidas1, vidas2 = state.vidas2;${code};return { jogador, jogadores, vidas1, vidas2 };`,
@@ -144,8 +156,21 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
   it('persiste o workspace completo sem ultrapassar o sanitizer de projetos', () => {
     const state = buildWorkspaceStateFromIR(reinoZeroExample.ir)
     expect(
-      sanitizeImportedBlocksState(state, [{ id: 'game-2d', version: '0.73.0', installedAt: 0 }]),
+      sanitizeImportedBlocksState(state, [{ id: 'game-2d', version: '0.74.0', installedAt: 0 }]),
     ).toBe(state)
+  })
+
+  it('mantém a campanha abaixo do orçamento de 1.600 blocos renderizados', () => {
+    const state = buildWorkspaceStateFromIR(reinoZeroExample.ir)
+    const blockTypes = collectTypes(state).filter((type) => type.startsWith('sz_'))
+    // O workspace anterior à compactação tinha 4.651 blocos. O teto mantém uma
+    // margem pequena para o estado independente dos dois jogadores sem permitir
+    // que mapas e desenhos voltem a ser expandidos em milhares de blocos SVG.
+    expect(blockTypes.length).toBeLessThanOrEqual(1600)
+    expect(blockTypes.filter((type) => type === 'sz_g2d_load_vector_campaign_level')).toHaveLength(
+      1,
+    )
+    expect(blockTypes.filter((type) => type === 'sz_g2d_paint_shape_recipe')).toHaveLength(93)
   })
 
   it('valida, gera e volta pelo parser sem código avançado nem memberCall', () => {
@@ -156,7 +181,7 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
     expect(sourceTypes).not.toContain('memberCall')
 
     const code = compileStatements(behaviorStatements(reinoZeroExample.ir), 0)
-    expect(code.match(/createVectorTileMap/g)).toHaveLength(32)
+    expect(code.match(/loadVectorCampaignLevel/g)).toHaveLength(1)
     expect(code).toContain('SZGame2D.tileContactIs(bloco, 2)')
     expect(code).toContain('SZGame2D.enableClassicControls("auto")')
     expect(collectTypes(parseJS(code))).not.toContain('rawJS')

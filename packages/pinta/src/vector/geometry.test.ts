@@ -6,8 +6,10 @@ import {
   boundsUnion,
   parsePathD,
   rotatePoint,
+  rotateShapesAround,
   rotateShapeTo,
   scaleShape,
+  setTextAlign,
   shapeBounds,
   translateShape,
 } from './geometry'
@@ -99,6 +101,74 @@ describe('rotatePoint', () => {
 
   it('0° devolve cópia igual', () => {
     expect(rotatePoint({ x: 3, y: 4 }, { x: 1, y: 1 }, 0)).toEqual({ x: 3, y: 4 })
+  })
+})
+
+describe('rotateShapesAround (girar a seleção inteira)', () => {
+  /** Dois quadrados lado a lado: A em (0..20), B em (40..60), mesma altura. */
+  const a: VectorShape = { ...base, id: 'a', type: 'rect', x: 0, y: 0, w: 20, h: 20, rx: 0 }
+  const b: VectorShape = { ...base, id: 'b', type: 'rect', x: 40, y: 0, w: 20, h: 20, rx: 0 }
+  const pair = [a, b]
+  const pivot = boundsCenter(boundsUnion(pair.map(shapeBounds)))
+
+  it('180° troca os dois de lugar e soma 180 na rotação de cada um', () => {
+    const [ra, rb] = rotateShapesAround(pair, ['a', 'b'], pivot, 180) as [VectorShape, VectorShape]
+    expect(boundsCenter(shapeBounds(ra))).toEqual(boundsCenter(shapeBounds(b)))
+    expect(boundsCenter(shapeBounds(rb))).toEqual(boundsCenter(shapeBounds(a)))
+    expect(ra.rotation).toBe(180)
+    expect(rb.rotation).toBe(180)
+  })
+
+  it('cada centro vai parar exatamente onde o rotatePoint manda', () => {
+    const out = rotateShapesAround(pair, ['a', 'b'], pivot, 90)
+    for (const [i, shape] of out.entries()) {
+      const original = pair[i]
+      if (!original) throw new Error('fixture')
+      const esperado = rotatePoint(boundsCenter(shapeBounds(original)), pivot, 90)
+      const obtido = boundsCenter(shapeBounds(shape))
+      expect(obtido.x).toBeCloseTo(esperado.x, 6)
+      expect(obtido.y).toBeCloseTo(esperado.y, 6)
+    }
+  })
+
+  it('COMPÕE com quem já estava girado (40 + 25 = 65)', () => {
+    const girado: VectorShape = { ...a, rotation: 40 }
+    const [out] = rotateShapesAround([girado, b], ['a'], pivot, 25) as [VectorShape]
+    expect(out.rotation).toBe(65)
+    // Folga de 0.01: o deslocamento é arredondado em 2 casas (round2), a mesma
+    // régua do translateShape — meio centésimo de pixel não existe no desenho.
+    const esperado = rotatePoint(boundsCenter(shapeBounds(girado)), pivot, 25)
+    expect(boundsCenter(shapeBounds(out)).x).toBeCloseTo(esperado.x, 2)
+  })
+
+  it('com UMA forma é o rotateShapeTo de sempre: a geometria não é tocada', () => {
+    // O pivô É o centro dela, então não há órbita — este é o caminho do giro
+    // individual, que não pode ter mudado.
+    const soA = boundsCenter(shapeBounds(a))
+    const [out] = rotateShapesAround([a], ['a'], soA, 30) as [VectorShape]
+    expect(out).toEqual(rotateShapeTo(a, 30))
+    // Identidade preservada nos campos de geometria (nada foi re-serializado).
+    if (out.type !== 'rect') throw new Error('tipo')
+    expect([out.x, out.y, out.w, out.h]).toEqual([0, 0, 20, 20])
+  })
+
+  it('quem está fora da lista sai IDÊNTICO (mesma referência)', () => {
+    const out = rotateShapesAround(pair, ['a'], pivot, 45)
+    expect(out[1]).toBe(b)
+  })
+
+  it('0° não mexe em nada', () => {
+    const out = rotateShapesAround(pair, ['a', 'b'], pivot, 0)
+    expect(out[0]).toBe(a)
+    expect(out[1]).toBe(b)
+  })
+
+  it('um traço continua no nosso dialeto depois de orbitar', () => {
+    const p: VectorShape = { ...path, id: 'p' }
+    const [out] = rotateShapesAround([p], ['p'], { x: 100, y: 100 }, 90) as [VectorShape]
+    if (out.type !== 'path') throw new Error('tipo')
+    expect(parsePathD(out.d)).not.toBeNull()
+    expect(out.rotation).toBe(90)
   })
 })
 
@@ -222,5 +292,66 @@ describe('alignShapes (alinhar seleção)', () => {
     const c: VectorShape = { ...base, id: 'c', type: 'rect', x: 70, y: 0, w: 10, h: 10, rx: 0 }
     const result = alignShapes([a, c], ['a'], 'left', target)
     expect(result[1]).toMatchObject({ x: 70 })
+  })
+})
+
+describe('caixa do texto: várias linhas e âncora', () => {
+  const t = (over: Partial<Extract<VectorShape, { type: 'text' }>> = {}): VectorShape => ({
+    ...base,
+    type: 'text',
+    x: 100,
+    y: 50,
+    text: 'oi',
+    fontSize: 20,
+    ...over,
+  })
+
+  it('uma linha em Nunito usa o fator determinístico da família', () => {
+    const b = shapeBounds(t({ text: 'abcd' }))
+    expect(b).toEqual({ x: 100, y: 30, width: 4 * 20 * 0.56, height: 20 * 1.2 })
+  })
+
+  it('a linha mais LARGA manda na largura e a altura conta as linhas', () => {
+    const b = shapeBounds(t({ text: 'ab\nabcdef\nabc' }))
+    expect(b.width).toBe(6 * 20 * 0.56)
+    expect(b.height).toBe(3 * 20 * 1.2)
+  })
+
+  it('a âncora desloca a caixa: esquerda, meio e direita', () => {
+    const largura = 4 * 20 * 0.56
+    expect(shapeBounds(t({ text: 'abcd' })).x).toBe(100)
+    expect(shapeBounds(t({ text: 'abcd', align: 'center' })).x).toBe(100 - largura / 2)
+    expect(shapeBounds(t({ text: 'abcd', align: 'right' })).x).toBe(100 - largura)
+  })
+
+  it('famílias largas e estreitas produzem bounds diferentes', () => {
+    const nunito = shapeBounds(t({ text: 'abcd', fontFamily: 'nunito' }))
+    const pixel = shapeBounds(t({ text: 'abcd', fontFamily: 'press-start-2p' }))
+    expect(pixel.width).toBeGreaterThan(nunito.width)
+  })
+
+  it('setTextAlign preserva a CAIXA: o bloco não pula de lugar', () => {
+    const esquerda = t({ text: 'abcd' })
+    const antes = shapeBounds(esquerda)
+    for (const align of ['center', 'right', 'left'] as const) {
+      const depois = shapeBounds(setTextAlign(esquerda, align))
+      expect(depois).toEqual(antes)
+    }
+  })
+
+  it("voltar para 'left' remove a chave (o padrão não se escreve)", () => {
+    const centro = setTextAlign(t({ text: 'abcd' }), 'center')
+    expect('align' in centro).toBe(true)
+    expect('align' in setTextAlign(centro, 'left')).toBe(false)
+  })
+
+  it('espelhar um texto à DIREITA espelha a caixa, não solta o texto', async () => {
+    const { flipShape } = await import('./geometry')
+    const direita = t({ text: 'abcd', align: 'right' })
+    const centro = { x: 200, y: 0 }
+    const b = shapeBounds(direita)
+    const espelhado = shapeBounds(flipShape(direita, 'h', centro))
+    expect(espelhado.x).toBeCloseTo(2 * centro.x - (b.x + b.width), 6)
+    expect(espelhado.width).toBe(b.width)
   })
 })

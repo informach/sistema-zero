@@ -40,6 +40,7 @@
     "gen:server-examples": "bun scripts/gen-server-examples.ts",
     "gen:core-example-catalog": "bun scripts/gen-core-example-catalog.ts",
     "gen:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts",
+    "check:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts --check",
     "gen:game-3d-examples": "bun scripts/gen-game-3d-examples.ts",
     "check:game-3d-examples": "bun scripts/gen-game-3d-examples.ts --check",
     "e2e": "playwright test",
@@ -49,7 +50,8 @@
     "e2e:a11y": "playwright test e2e/accessibility.spec.ts --project=chromium",
     "serve:e2e": "bun scripts/serve-e2e.ts",
     "check": "biome check .",
-    "check:fix": "biome check --write ."
+    "check:fix": "biome check --write .",
+    "gen:game-ui-fonts": "bun scripts/gen-game-ui-fonts.ts"
   },
   "dependencies": {
     "@babel/parser": "^7.29.7",

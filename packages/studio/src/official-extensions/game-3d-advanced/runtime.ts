@@ -1,5 +1,4 @@
 import { buildProjectRunContextRuntime } from '#extensions'
-import { withGameUIFontRuntime } from '../gameUiFont'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { gameKit3DCameraRuntimeSource } from './runtimeCamera'
 import { gameKit3DModelAssetsRuntimeSource } from './runtimeModelAssets'
@@ -3777,6 +3776,4 @@ const gameKit3DRuntimeSource = (
   .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', gameKit3DCameraRuntimeSource)
   .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', gameKit3DProjectRuntimeSource)
 
-export const gameKit3DRuntime = withGameUIFontRuntime(
-  withThreePostProcessingRuntime(gameKit3DRuntimeSource),
-)
+export const gameKit3DRuntime = withThreePostProcessingRuntime(gameKit3DRuntimeSource)

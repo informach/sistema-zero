@@ -8,6 +8,8 @@ import {
 import { type ExtensionPermission, loadExtensionBootstrapScripts } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, isCheckResultMessage, withCoreImports } from '#preview'
+import { loadGameUiFont } from '../official-extensions/gameUiFont'
+import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import type { CheckResult } from '../studio/activity'
 import { buildCheckHarness, type SandboxCheck } from './harness'
 
@@ -58,6 +60,11 @@ export async function runSandboxChecks(
 
   const parentOrigin = window.location.origin
   const harness = buildCheckHarness(checks, { parentOrigin })
+  // A auto-correção roda com a MESMA fonte: há verificação que mede texto, e
+  // métrica diferente daria nota diferente da que o aluno vê.
+  const gameUiFont = extensionScripts.length
+    ? await loadGameUiFont(resolveGameUiFontId(project))
+    : undefined
   const doc = buildPreviewDoc({
     html: project.files['index.html'] ?? '',
     css: project.files['style.css'] ?? '',
@@ -70,6 +77,7 @@ export async function runSandboxChecks(
     assetsMeta: assetMetaManifest(project.assets),
     sounds: soundManifest(project.assets),
     models3d: asset3DManifest(project.assets),
+    gameUiFont,
     parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: security.fetchAllowedOrigins,

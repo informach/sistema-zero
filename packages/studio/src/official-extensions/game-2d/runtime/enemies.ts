@@ -382,16 +382,29 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    * junto com a câmera: num Mundo mais alto que o palco ele ficava colado embaixo
    * da viewport, deslizando com ela, em vez de pisar no mapa.
    */
+  /**
+   * Saiu do Mundo por baixo (ou por cima) com folga larga.
+   *
+   * ⚠️ Com bordas abertas o inimigo cai no buraco e nunca para de cair (o jogador
+   * faz o mesmo). A diferença é que inimigo vem aos montes: sem esta saída cada um
+   * seguiria pedindo ao índice do terreno uma área que cresce com a queda, quadro
+   * após quadro. A folga é larga de propósito, porque nada obriga uma figura de
+   * terreno a caber dentro do Mundo.
+   */
+  function _enemyFarFromWorld(s, env) {
+    if (!s || !env || !env.world) return false;
+    return s.y > env.world.height + 2000 || s.y + _finiteNumber(s.h, 0) < -2000;
+  }
+
   function _enemyResolveGround(s, env) {
     if (env.world) {
-      // ⚠️ Com bordas abertas o inimigo cai no buraco e nunca para de cair (o
-      // jogador faz o mesmo). A diferença é que inimigo vem aos montes: sem esta
-      // saída cada um deles seguiria pedindo ao índice do terreno uma área que
-      // cresce com a queda, quadro após quadro. A folga é larga de propósito,
-      // porque nada obriga uma figura de terreno a caber dentro do Mundo.
-      var longeDoMundo = s.y > env.world.height + 2000 ||
-        s.y + _finiteNumber(s.h, 0) < -2000;
-      if (!longeDoMundo) collideWorld(s, env.world);
+      // ⚠️ Quem saiu do mundo é RECOLHIDO, não deixado caindo para sempre. Um
+      // inimigo em queda eterna continua contando no "quantos tem no grupo", e é
+      // comum a saída da fase ser "quando não sobrar nenhum": bastava um nascer
+      // sobre um buraco para o portão nunca abrir. Quem recolhe é o laço do
+      // "Atualizar", que já é o dono da remoção.
+      if (_enemyFarFromWorld(s, env)) { s._foraDoMundo = true; return; }
+      collideWorld(s, env.world);
       return;
     }
     // Sem Mundo é a borda VISÍVEL, e não env.bounds: aqui os dois são o mesmo
@@ -1080,9 +1093,34 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    * inimigo do tipo..." a lista fica vazia e nada aparece na tela). Avisa UMA
    * vez por tipo; depois do primeiro spawn o aviso não dispara mais.
    */
+  /**
+   * Tem inimigo de QUALQUER tipo em campo agora?
+   *
+   * Sem memória por quadro de propósito: é uma varredura de comprimentos de lista, e
+   * ela só roda para tipo ainda não solto e ainda não avisado. Guardar por
+   * _frameStamp quebraria quem chama os helpers fora do laço do jogo (os testes, e a
+   * criança no modo Código).
+   */
+  function _algumInimigoEmCampo() {
+    for (var i = 0; i < _enemyTypes.length; i++) {
+      var t = _enemyTypes[i];
+      if (t && t.items && t.items.length) return true;
+    }
+    return false;
+  }
   function warnEnemyTypeEmptyOnce(type) {
     if (!type || !type.config || type._spawned || type._warnedNoSpawn) return;
     if (!type.items || type.items.length !== 0) return;
+    // ⭐ Jogo de ONDAS: com algum inimigo EM CAMPO, a partida está em andamento e a
+    // criança evidentemente já sabe soltar — o tipo que espera a vez da onda 3 não é
+    // esquecimento. O contador ZERA (não congela): a graça dura enquanto a tela tem
+    // inimigo, e volta a correr quando ela fica vazia de verdade, que é o caso real
+    // de "criei e nunca soltei". A janela de 6s abaixo sozinha não cobria isso — ela
+    // foi feita para a PRIMEIRA onda, não para a terceira.
+    if (_algumInimigoEmCampo()) {
+      type._emptyUpdates = 0;
+      return;
+    }
     // GRAÇA: jogos de ONDA soltam o 1º inimigo via "A cada N quadros", alguns
     // segundos depois do início. Sem esta janela, o aviso dispararia já no 1º
     // quadro (antes da 1ª onda) — falso-positivo em Sobrevivente/Herói que Evolui
@@ -1308,6 +1346,14 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     for (var i = type.items.length - 1; i >= 0; i--) {
       var s = type.items[i];
       if (!s) { _removeGroupItemAt(type, i); continue; }
+      // ⭐ Cair fora do mundo vale para TODOS. Quem VOA — e quem tem o eixo Y tomado
+      // por outro comportamento — nunca passa pelo _enemyResolveGround, então o
+      // recolhimento não os alcançava: um voador empurrado para fora seguia contando
+      // no "quantos tem no grupo" para sempre, e a saída da fase nunca abria.
+      if (!s._foraDoMundo && _enemyFarFromWorld(s, env)) s._foraDoMundo = true;
+      // Caiu para fora do mundo: some sem partículas e SEM o "quando for
+      // derrotado" — ninguém o derrotou, e premiar por isso daria ponto de graça.
+      if (s._foraDoMundo) { _removeGroupItemAt(type, i); continue; }
       // Animações registradas DEPOIS do spawn ainda alcançam este inimigo.
       if (c.animStates && !s.animStates) s.animStates = c.animStates;
       // Sprite que entrou pelo "Pôr o sprite no grupo" não passou pelo spawn e
@@ -1315,17 +1361,14 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       // inimigo sumia da tela com x/y NaN, ocupando um slot para sempre.
       if (typeof s._homeX !== 'number') { s._homeX = s.x; s._homeY = s.y; }
       if (typeof s._dir !== 'number') s._dir = 1;
-      // Modos clássicos de pisada são opt-in. O achatado espera sua animação
-      // curta; o casco é dirigido por updateEnemyShells, sem o comportamento
-      // normal disputar o mesmo eixo no mesmo quadro.
-      if (s._stompSquashFrames > 0) {
-        s._stompSquashFrames -= 1;
-        s.vx = 0;
-        s.vy = 0;
-        if (s._stompSquashFrames > 0) { autoAnimate(s); continue; }
-        s.hp = 0;
-      }
+      // O casco é dirigido por updateEnemyShells, sem o comportamento normal
+      // disputar o mesmo eixo no mesmo quadro. (O achatado não tem contagem: ele
+      // achata e morre no quadro da pisada — ver stompEnemyType.)
       if (s._shell && s.hp > 0) { autoAnimate(s); continue; }
+      // O apoio é do quadro anterior e precisa ser confirmado depois do novo
+      // passo. Sem isto, quem saía andando de uma plataforma continuava com
+      // onGround = true enquanto caía pelo buraco.
+      if (!flying && typeof s.onGround === 'boolean') _beginGroundFrame(s);
       // Chefão: engorda a vida UMA vez por inimigo. É um buff de TETO, não uma
       // cura: a vida máxima cresce 5× e o inimigo ganha a diferença, então o
       // dano que ele já levou continua valendo (somar "chefão" no meio do jogo
@@ -1533,12 +1576,47 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   }
 
   /**
+   * Liga e desliga o casco.
+   *
+   * ⭐ Casco ANDANDO machuca quem encostar; casco parado é inofensivo. É isso que
+   * torna chutá-lo uma DECISÃO — antes ele nascia com o dano zerado para sempre e
+   * virava só um enfeite que rolava pela tela.
+   */
+  function _setShellMotion(shell, moving, kicker) {
+    if (!shell) return;
+    shell._shellMoving = !!moving;
+    if (!moving) {
+      shell.vx = 0;
+      shell.dmg = 0;
+      shell._kickedBy = null;
+      return;
+    }
+    // ⭐ Quem chutou não leva dano do próprio chute enquanto ainda estiver
+    // encostando. O updateEnemyShells solta a marca no quadro em que os dois se
+    // descolam — daí em diante o casco machuca ele também.
+    shell._kickedBy = kicker || null;
+    var paraLonge = kicker && centerX(kicker) < centerX(shell) ? 1 : -1;
+    shell._shellSpeed = Math.abs(_finiteNumber(shell._shellSpeed, 5)) * paraLonge;
+    shell.vx = shell._shellSpeed;
+    shell.dmg = _positiveFiniteNumber(shell._shellDamage, 1);
+  }
+
+  /**
    * Machuca o sprite com o dano do inimigo/tiro e faz piscar. Enquanto pisca,
    * e INVENCIVEL (nao leva dano de novo) — sem isso, o contato continuo
    * drenaria a vida a cada quadro.
    */
   function hurtByEnemy(sprite, enemy) {
     if (!sprite || !enemy) return;
+    // ⭐ Encostar num casco PARADO o CHUTA, não machuca. É o gesto do gênero, e é o
+    // que dá sentido ao casco: pisar recolhe, encostar lança. Casco em movimento cai
+    // no dano normal logo abaixo, com o dano que o inimigo tinha em vida.
+    if (enemy._shell && !enemy._shellMoving) {
+      _setShellMotion(enemy, true, sprite);
+      return;
+    }
+    // O casco que ESTE sprite acabou de chutar ainda está saindo de cima dele.
+    if (enemy._shell && enemy._kickedBy === sprite) return;
     damageSprite(sprite, enemyDamage(enemy), 45);
   }
 
@@ -1563,10 +1641,16 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       // (e o bloco promete o contrário). Ele também precisa ter VINDO de cima:
       // no começo do quadro o pé estava na altura do topo do inimigo, com a
       // folga de um quadro de queda para o pulo rápido não passar batido.
+      // ⚠️ A geometria usa a caixa EFETIVA, igual ao isColliding logo acima. Com
+      // as duas réguas (encostar pela hitbox, "veio de cima" pela caixa crua) um
+      // sprite com "área de colisão de N%" encostava sem passar na geometria, e a
+      // pisada certa era descartada em silêncio.
+      var hs = _hitboxOf(sprite);
+      var he = _hitboxOf(e);
       var folga = Math.max(4, Math.abs(svy));
       if (up) {
-        if (sprite.y - svy < e.y + e.h - folga) continue;
-      } else if (sprite.y + sprite.h - svy > e.y + folga) {
+        if (hs.y - svy < he.y + he.h - folga) continue;
+      } else if (hs.y + hs.h - svy > he.y + folga) {
         continue;
       }
       var stompMode = type._stompMode || 'defeat';
@@ -1575,35 +1659,51 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
         // a pisada e não reposicionam nem entregam um quique enganoso.
         continue;
       }
-      sprite.y = up ? e.y + e.h : e.y - sprite.h;
+      // ⭐ Reposiciona pela MESMA caixa que decidiu a pisada. A rodada anterior
+      // trocou a geometria do "veio de cima" para a caixa efetiva e deixou o pouso
+      // na caixa CRUA: com "área de colisão de N%" o herói era grudado num lugar em
+      // que ele nunca encostou, e o defeito ficava a um passo do que já se corrigiu.
+      // O recuo é a distância entre o topo do DESENHO e o topo da caixa efetiva.
+      var recuo = hs.y - _finiteNumber(sprite.y, 0);
+      sprite.y = (up ? he.y + he.h : he.y - hs.h) - recuo;
       sprite.vy = up ? b : -b;
       sprite.onGround = false;
       if (stompMode === 'shell') {
         if (e._shell) {
-          e._shellMoving = !e._shellMoving;
-          if (e._shellMoving && !_finiteNumber(e._shellSpeed, 0)) {
-            e._shellSpeed = centerX(sprite) < centerX(e) ? 5 : -5;
-          }
-          e.vx = e._shellMoving ? e._shellSpeed : 0;
+          // Pisar num casco que ANDA o para; pisar num parado o lança.
+          _setShellMotion(e, !e._shellMoving, sprite);
         } else {
           var enemyBottom = e.y + e.h;
           e._shell = true;
-          e._shellMoving = true;
-          e._shellSpeed = centerX(sprite) < centerX(e) ? 5 : -5;
           e.h = Math.max(8, Math.round(e.h * 0.65));
           e.y = enemyBottom - e.h;
-          e.vx = e._shellSpeed;
           e.vy = 0;
           e.hp = Math.max(1, _finiteNumber(e.hp, 1));
-          e.dmg = 0;
+          // Guarda o dano de contato do bicho para devolvê-lo quando o casco andar.
+          e._shellDamage = _positiveFiniteNumber(e.dmg, 1);
+          // ⭐ O casco nasce PARADO. Antes ele saía disparado já na PRIMEIRA pisada e
+          // era a segunda que o parava — o inverso do gênero, onde pisar recolhe o
+          // bicho no casco e ENCOSTAR nele é que chuta.
+          _setShellMotion(e, false, sprite);
         }
         continue;
       }
       if (stompMode === 'squash') {
-        e._stompSquashFrames = 20;
+        // ⚠️ O achatado ACHATA e morre no MESMO quadro. Antes ele ficava 20 quadros
+        // congelado, vivo e idêntico, e só então soltava as partículas e o "quando
+        // for derrotado" — com quique 5.5 e gravidade 0.42 o jogador volta ao mesmo
+        // nível em ~26 quadros, então a morte saía quando ele JÁ TINHA SAÍDO DE CIMA.
+        // Era o defeito que a criança relatava como "só morre quando eu saio dele".
+        // O achatamento nunca foi desenhado por ninguém (o campo de contagem não era
+        // lido por desenhista nenhum): agora ele é geometria de verdade, no quadro em
+        // que a pisada acontece.
+        var squashBottom = e.y + e.h;
+        e.h = Math.max(4, Math.round(e.h * 0.35));
+        e.y = squashBottom - e.h;
         e.vx = 0;
         e.vy = 0;
         e.dmg = 0;
+        e.hp = 0;
         continue;
       }
       if (stompMode === 'damage') {

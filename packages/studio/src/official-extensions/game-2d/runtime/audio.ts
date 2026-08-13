@@ -163,7 +163,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       case 'select': _fxBeep('triangle', 520, 720, 0.06, 'linear', 0.06); return;
       case 'blip': _fxBeep('square', 1000, 1000, 0.05, 'none', 0.05); return;
       default:
-        warnOnce('fx:' + name, 'não conheço o som "' + name + '" — toquei um bip. Escolha um som da lista do bloco.');
+        warnOnce('fx:' + name, 'não conheço o som "' + name + '": toquei um bip. Escolha um som da lista do bloco.');
         _fxBeep('square', 880, 1320, 0.18, 'exp', 0.08); return;
     }
   }
@@ -200,7 +200,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _scheduleMusic(_musicState.step);
   }
   function playMusic(name) {
-    if (!MUSIC_TUNES[name]) warnOnce('music:' + name, 'não conheço a música "' + name + '" — toquei "adventure". Escolha uma da lista do bloco.');
+    if (!MUSIC_TUNES[name]) warnOnce('music:' + name, 'não conheço a música "' + name + '": toquei "adventure". Escolha uma da lista do bloco.');
     var resolvedName = MUSIC_TUNES[name] ? name : 'adventure';
     if (!_musicStop && _musicState && _musicName === resolvedName) return;
     stopMusic();

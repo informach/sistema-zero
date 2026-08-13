@@ -24,6 +24,8 @@ interface Ctx {
 interface Api {
   setBackdrop: (name: string) => void
   drawBackdrop: (ctx: unknown, name: string) => void
+  showImageScreen: (ctx: unknown, image: string) => void
+  setStageDescription: (description: string) => void
   clear: () => void
 }
 
@@ -264,5 +266,34 @@ describe('cenário de fundo: o encaixe é a trava contra pegar o bloco errado', 
     expect(contract.placement?.root).toEqual([])
     expect(contract.placement?.nested).toContain('loop-body')
     expect(contract.placement?.nested).not.toContain('start')
+  })
+})
+
+describe('a tela feita de IMAGEM', () => {
+  it('⭐ cobre o palco sem deformar E anuncia a tela para leitor de tela', async () => {
+    // ⚠️ O anúncio é a razão de o bloco existir. "Desenhar o cenário" pinta a mesma
+    // coisa, mas não fala — uma tela de vitória montada com ele seria invisível para
+    // quem usa leitor: o jogo mudaria de estado e ninguém saberia.
+    const api = load()
+    const ctx = fakeCtx(800, 480)
+    api.showImageScreen(ctx, 'cenario')
+    await aImagemChegar()
+    api.showImageScreen(ctx, 'cenario')
+
+    // 128x96 num palco 800x480: escala = max(800/128, 480/96) = 6.25 -> 800x600,
+    // centralizado em y = (480 - 600) / 2 = -60. COBRIR (max), nunca esticar: o que
+    // sobra sai pela borda, e é isso que preserva o desenho da criança.
+    expect(ctx.calls).toContain('drawImage 0 -60 800 600')
+
+    const nota = document.getElementById('sz-game-2d-description')
+    expect(nota?.textContent ?? '').toContain('cenario')
+  })
+
+  it('imagem que não existe não quebra o jogo nem inventa desenho', async () => {
+    const api = load()
+    const ctx = fakeCtx()
+    api.showImageScreen(ctx, 'naoExiste')
+    await aImagemChegar()
+    expect(ctx.calls).toEqual([])
   })
 })

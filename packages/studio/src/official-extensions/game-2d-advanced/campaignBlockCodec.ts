@@ -7,6 +7,7 @@ import {
   isGameKitAction,
   isGameKitCampaignEventField,
 } from './runtimeContract'
+import { gameKitUiFontBlockToIR } from './uiFontCodec'
 
 export const CAMPAIGN_BLOCK_UNHANDLED = Symbol('campaign-block-unhandled')
 
@@ -52,6 +53,10 @@ export function campaignStatementBlockToIR(
   block: Blockly.Block,
   context: CampaignBlockCodecContext,
 ): JSStatement | typeof CAMPAIGN_BLOCK_UNHANDLED {
+  // Este é o único despachante da gk que o `buildIR` chama, e aquela fachada está
+  // no teto de linhas — então os codecs novos da extensão entram por aqui.
+  const font = gameKitUiFontBlockToIR(block, context.field)
+  if (font) return font
   const f = (name: string) => context.field(block, name)
   const number = (name: string, fallback: number) =>
     context.expression(block, name, { type: 'num', value: fallback })

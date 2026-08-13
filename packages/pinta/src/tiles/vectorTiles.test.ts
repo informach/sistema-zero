@@ -7,8 +7,17 @@ import {
 } from '../core/project'
 import { tilemapToStudioGrid, tilesetSolidList } from '../export/studioGrid'
 import type { VectorShape } from '../vector/model'
-import { packVectorTileset, vectorTilesetPngDataUrl, vectorTilesetSvg } from './packVectorTileset'
-import { vectorTilemapPngDataUrl, vectorTilemapSvg } from './renderVectorTilemap'
+import {
+  packVectorTileset,
+  vectorTilesetPngDataUrl,
+  vectorTilesetPortableSvg,
+  vectorTilesetSvg,
+} from './packVectorTileset'
+import {
+  vectorTilemapPngDataUrl,
+  vectorTilemapPortableSvg,
+  vectorTilemapSvg,
+} from './renderVectorTilemap'
 
 function rect(id: string): VectorShape {
   return {
@@ -60,6 +69,33 @@ describe('packVectorTileset — a MESMA fórmula do pixel', () => {
 
   it('a lista de sólidos sai da MESMA função do pixel', () => {
     expect(tilesetSolidList(makeTileset(3))).toBe('1')
+  })
+
+  it('folha e mapa portáteis compartilham a fonte incorporada', async () => {
+    const tileset = makeTileset(2)
+    tileset.tiles[0]?.push({
+      id: 'texto',
+      type: 'text',
+      x: 1,
+      y: 12,
+      text: 'A',
+      fontSize: 10,
+      fontFamily: 'fredoka',
+      fill: '#ffffff',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    })
+    const tilemap = makeTilemap(tileset.id)
+
+    for (const svg of [
+      await vectorTilesetPortableSvg(tileset),
+      await vectorTilemapPortableSvg(tilemap, tileset),
+    ]) {
+      expect(svg).toContain("font-family:'Fredoka One'")
+      expect(svg).toContain('data:font/woff2;base64,')
+      expect(svg).not.toContain("font-family:'Bungee'")
+    }
   })
 })
 

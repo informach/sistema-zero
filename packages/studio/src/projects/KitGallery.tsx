@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { ulid } from 'ulid'
-import { buildWorkspaceStateFromIR } from '#blockly'
+import { type BuildWorkspaceStateOptions, buildWorkspaceStateFromIR } from '#blockly'
 import { t as defaultT, type ExampleExperience, type Translator } from '#core'
 import {
   type ExtensionExample,
@@ -36,7 +36,11 @@ export interface KitEntry {
   description: string
   /** Presente nos catálogos já carregados; exemplos core resolvem isto sob demanda. */
   ir?: SZIRV2
-  load?: () => Promise<{ ir: SZIRV2; assets?: readonly ProjectAsset[] }>
+  load?: () => Promise<{
+    ir: SZIRV2
+    assets?: readonly ProjectAsset[]
+    workspaceOptions?: BuildWorkspaceStateOptions
+  }>
   emoji: string
   experience: ExampleExperience
   difficulty?: ExtensionExampleDifficulty
@@ -46,6 +50,7 @@ export interface KitEntry {
   featured?: boolean
   /** Assets que o exemplo embute (ex.: imagem de fundo por CSS). */
   assets?: readonly ProjectAsset[]
+  workspaceOptions?: BuildWorkspaceStateOptions
 }
 
 export interface KitGroup {
@@ -276,7 +281,11 @@ function toCoreEntry(summary: CoreExampleSummary): KitEntry {
     emoji: KIT_EMOJI[summary.name] ?? '🎮',
     load: async () => {
       const example = await loadCoreExample(summary.name)
-      return { ir: example.ir, assets: example.assets }
+      return {
+        ir: example.ir,
+        assets: example.assets,
+        workspaceOptions: example.workspaceOptions,
+      }
     },
   }
 }
@@ -340,7 +349,7 @@ export function buildProjectFromKitEntry(entry: KitEntry): Project {
   const project: Project = {
     ...createEmptyProject(ulid(), name),
     ir,
-    blocksState: buildWorkspaceStateFromIR(ir),
+    blocksState: buildWorkspaceStateFromIR(ir, entry.workspaceOptions),
     files: generateProjectFiles({ ir, projectName: name }),
     // Assets embutidos do exemplo (ex.: fundo por CSS) já nascem no projeto.
     ...(assets && assets.length > 0 ? { assets: [...assets] } : {}),

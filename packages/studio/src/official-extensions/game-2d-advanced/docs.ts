@@ -3,8 +3,8 @@ export const gameKitDocs = `## Jogo 2D Avançado
 Esta extensão traz uma base reutilizável: o motor cuida de telas, estados,
 tempo, entrada, carregamento e canvas; você cria as regras. O movimento usa
 velocidade × \`dt\`, por isso mantém o ritmo em computadores diferentes. Menu,
-pausa, carregando, fim e vitória já vêm prontos, e a UI usa Baloo 2 offline sem
-substituir fontes escolhidas.
+pausa, carregando, fim e vitória já vêm prontos, e a UI usa a letra do bloco
+**Usar a fonte** (padrão Baloo 2), offline, sem substituir fontes escolhidas.
 
 ### Começando (a receita)
 
@@ -100,6 +100,10 @@ Cada gênero tem seu próprio tipo de oponente:
   novas (loja, instruções) no mesmo estilo, com botões que rodam os seus blocos.
   Criar com o nome de uma tela pronta faz você ASSUMIR a tela: os botões dela
   saem e os textos passam a ser os seus.
+- **Usar a fonte** (em **🧰 O jogo**). Baloo 2, Nunito, Press Start 2P (de
+  pixel), Bungee ou Fredoka, valendo para **todo** texto do jogo. Vai em
+  **⚙️ Ao iniciar**, uma vez: a fonte é decidida **antes** de o jogo começar,
+  então dentro de um "se" ela não muda nada (o jogo avisa).
 - **Na tela…, pôr fundo cor… e imagem…**. Dá a SUA cara à tela (pronta ou sua):
   uma cor de fundo e, se quiser, uma imagem do Pinta cobrindo o painel. (Para uma
   tela toda DESENHADA no canvas, use um ESTADO inventado. Ele esconde os painéis

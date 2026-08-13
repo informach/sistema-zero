@@ -20,11 +20,11 @@ import {
 } from '../core/project'
 import { flattenCels } from '../pixel/layers'
 import { tilesetPngDataUrl } from '../tiles/packTileset'
-import { vectorTilesetPngDataUrl, vectorTilesetSvg } from '../tiles/packVectorTileset'
+import { vectorTilesetPngDataUrl, vectorTilesetPortableSvg } from '../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
+import { vectorToPortableSvg } from '../vector/portableSvg'
 import { vectorPngDataUrl } from '../vector/rasterize'
-import { vectorToSvg } from '../vector/svg'
 import { bitmapToPngDataUrl, composeSheetPngDataUrl, dataUrlToBlob } from './png'
 import { galleryToPintaJson } from './projectJson'
 import { packSpritesheet, spritesheetMetadata, spritesheetRecipe } from './spritesheet'
@@ -32,7 +32,7 @@ import { tilemapExportJson, tilemapRecipe, tilemapToStudioGrid } from './studioG
 import {
   packVectorSpritesheet,
   vectorSheetPngDataUrl,
-  vectorSheetSvg,
+  vectorSheetPortableSvg,
   vectorStripPngDataUrl,
 } from './vectorSheet'
 
@@ -151,7 +151,7 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
         const pack = packVectorSpritesheet(asset)
         const sheet = await dataUrlBytes(await vectorSheetPngDataUrl(pack))
         if (sheet) files[`personagens/${asset.name}/spritesheet.png`] = sheet
-        files[`personagens/${asset.name}/spritesheet.svg`] = vectorSheetSvg(pack)
+        files[`personagens/${asset.name}/spritesheet.svg`] = await vectorSheetPortableSvg(pack)
         files[`personagens/${asset.name}/spritesheet.json`] = spritesheetMetadata(pack)
         const takenNames = new Set<string>()
         for (const [animationIndex, animation] of asset.animations.entries()) {
@@ -165,13 +165,13 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
         break
       }
       case 'vector-background': {
-        files[`cenarios/${asset.name}.svg`] = vectorToSvg(asset)
+        files[`cenarios/${asset.name}.svg`] = await vectorToPortableSvg(asset)
         const png = await dataUrlBytes(await vectorPngDataUrl(asset))
         if (png) files[`cenarios/${asset.name}.png`] = png
         break
       }
       case 'vector-tileset': {
-        files[`tilesets/${asset.name}.svg`] = vectorTilesetSvg(asset)
+        files[`tilesets/${asset.name}.svg`] = await vectorTilesetPortableSvg(asset)
         const png = await dataUrlBytes(await vectorTilesetPngDataUrl(asset))
         if (png) files[`tilesets/${asset.name}.png`] = png
         break

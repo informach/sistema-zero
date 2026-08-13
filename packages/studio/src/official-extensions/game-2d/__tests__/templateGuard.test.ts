@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDDocs } from '../docs'
@@ -46,7 +46,8 @@ function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
 function composedTemplateHazards(
   src: string,
   openerNeedle: string,
-  expectedBoundaries: number,
+  /** `null` = não fixar a contagem (a varredura derivada só cobra PARIDADE). */
+  expectedBoundaries: number | null,
 ): { interpolations: number[]; boundaryCount: number } {
   const start = src.indexOf(openerNeedle)
   if (start < 0) throw new Error(`não achei a composição: ${openerNeedle}`)
@@ -70,40 +71,85 @@ function composedTemplateHazards(
       interpolations.push(line)
     }
   }
-  expect(boundaryCount).toBe(expectedBoundaries)
+  if (expectedBoundaries !== null) expect(boundaryCount).toBe(expectedBoundaries)
   return { interpolations, boundaryCount }
+}
+
+/**
+ * ⚠️ A lista destes arquivos era ESCRITA À MÃO, e por isso tinha um buraco exatamente
+ * onde o trabalho estava acontecendo: `enemies.ts`, `classicPlatformer.ts` e
+ * `worldSystems.ts` — os três mais editados pelo lote do Reino Zero, e dois dos
+ * maiores do runtime — nunca foram varridos. Agora a lista é DERIVADA do diretório:
+ * arquivo novo entra sozinho, e ninguém precisa lembrar de cadastrá-lo.
+ */
+function runtimeFragmentFiles(): string[] {
+  return readdirSync(join(DIR, 'runtime'))
+    .filter((name) => name.endsWith('.ts'))
+    .sort()
+    .map((name) => `runtime/${name}`)
+}
+
+/** O nome da constante exportada, para ancorar a varredura no ponto certo. */
+function firstExportedConst(src: string, file: string): string {
+  const match = src.match(/export const (\w+)\s*=/)
+  if (!match?.[1]) throw new Error(`${file}: nenhuma constante exportada`)
+  return `${match[1]} =`
 }
 
 describe('Guarda dos template literals do Jogo 2D', () => {
   it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
     expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 6).interpolations).toEqual([])
-    for (const [file, declaration, boundaries] of [
-      ['../runtimeDomains.ts', 'gameRuntimeDomains =', 2],
-      ['runtime/arcadeKits.ts', 'gameTwoDArcadeKitsRuntime =', 0],
-      ['runtime/arcadeKitsDino.ts', 'gameTwoDArcadeDinoRuntime =', 2],
-      ['runtime/arcadeKitsGorillas.ts', 'gameTwoDArcadeGorillasRuntime =', 2],
-      ['runtime/arcadeKitsHud.ts', 'gameTwoDArcadeHudRuntime =', 2],
-      ['runtime/arcadeKitsSpace.ts', 'gameTwoDArcadeSpaceRuntime =', 2],
-      ['runtime/audio.ts', 'gameTwoDAudioRuntime =', 2],
-      ['runtime/casualKits.ts', 'gameTwoDCasualKitsRuntime =', 0],
-      ['runtime/casualKitsBalloon.ts', 'gameTwoDCasualKitsBalloonRuntime =', 2],
-      ['runtime/casualKitsShared.ts', 'gameTwoDCasualKitsSharedRuntime =', 2],
-      ['runtime/casualKitsStick.ts', 'gameTwoDCasualKitsStickRuntime =', 2],
-      ['runtime/inputAndMotion.ts', 'gameTwoDInputAndMotionRuntime =', 2],
-      ['runtime/lifecycle.ts', 'gameTwoDLifecycleRuntime =', 2],
-      ['runtime/physics.ts', 'gameTwoDPhysicsRuntime =', 2],
-      ['runtime/sprites.ts', 'gameTwoDSpritesRuntime =', 2],
-      ['runtime/stage.ts', 'gameTwoDStageRuntime =', 2],
-      ['runtime/utilities.ts', 'gameTwoDUtilitiesRuntime =', 2],
-      ['runtime/world.ts', 'gameTwoDWorldRuntime =', 0],
-      ['runtime/worldEvents.ts', 'gameTwoDWorldEventsRuntime =', 2],
-      ['runtime/worldGroups.ts', 'gameTwoDWorldGroupsRuntime =', 2],
-      ['runtime/worldTiles.ts', 'gameTwoDWorldTilesRuntime =', 2],
-      ['runtime/worldTimers.ts', 'gameTwoDWorldTimersRuntime =', 2],
-    ] as const) {
+
+    const domains = readFileSync(join(DIR, '../runtimeDomains.ts'), 'utf8')
+    expect(composedTemplateHazards(domains, 'gameRuntimeDomains =', 2).interpolations).toEqual([])
+
+    const arquivos = runtimeFragmentFiles()
+    // Rede da rede: se alguém apagar a derivação e voltar a listar à mão, o número
+    // cai e este piso acusa. 24 hoje (21 fragmentos + os barris arcadeKits,
+    // casualKits e world), contra os 22 que a lista escrita à mão alcançava.
+    expect(arquivos.length).toBeGreaterThanOrEqual(24)
+
+    for (const file of arquivos) {
       const fragment = readFileSync(join(DIR, file), 'utf8')
-      expect(composedTemplateHazards(fragment, declaration, boundaries).interpolations).toEqual([])
+      const declaration = firstExportedConst(fragment, file)
+      const { interpolations, boundaryCount } = composedTemplateHazards(fragment, declaration, null)
+      // Barril (só concatena importados) tem 0 crases; fragmento tem o par que abre e
+      // fecha o literal. ÍMPAR = crase CRUA no meio, que é exatamente o defeito.
+      // O nome do arquivo vai na asserção porque a mensagem de falha do bun não diz
+      // em qual volta do laço quebrou.
+      expect(`${file}: ${boundaryCount % 2}`).toBe(`${file}: 0`)
+      expect(`${file}: ${interpolations.join(',')}`).toBe(`${file}: `)
+    }
+  })
+
+  it('a regra MORDE: crase crua vira paridade ímpar e ${ vira interpolação', () => {
+    // Anti-vácuo. Sem isto, uma varredura que simplesmente não olhasse nada passaria
+    // nos 24 arquivos e daria a impressão de estar protegendo. Os dois casos são
+    // montados à mão porque injetar o defeito num arquivo real quebraria o import.
+    const cru = ['export const x = `', '  // um comentário com ` crase crua', '`', ''].join('\n')
+    expect(composedTemplateHazards(cru, 'x =', null).boundaryCount % 2).toBe(1)
+
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: é o defeito sob teste.
+    const interpolado = ['export const y = `', '  var a = ${valor};', '`', ''].join('\n')
+    const achados = composedTemplateHazards(interpolado, 'y =', null)
+    expect(achados.boundaryCount % 2).toBe(0)
+    expect(achados.interpolations).not.toEqual([])
+
+    const saudavel = ['export const z = `', '  var a = 1;', '`', ''].join('\n')
+    const limpo = composedTemplateHazards(saudavel, 'z =', null)
+    expect(limpo.boundaryCount % 2).toBe(0)
+    expect(limpo.interpolations).toEqual([])
+  })
+
+  it('a derivação alcança os três que a lista à mão esquecia', () => {
+    const arquivos = runtimeFragmentFiles()
+    for (const esquecido of [
+      'runtime/enemies.ts',
+      'runtime/classicPlatformer.ts',
+      'runtime/worldSystems.ts',
+    ]) {
+      expect(arquivos).toContain(esquecido)
     }
   })
 

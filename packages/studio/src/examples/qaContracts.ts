@@ -28,6 +28,19 @@ export interface ExampleQAContract {
   /** Caminho de aceite que deve funcionar no harness e/ou Chromium. */
   scenario: string
   interactions: readonly ExampleQAInteraction[]
+  /**
+   * Teto EXCEPCIONAL, em ms, para o preview aparecer no e2e. O default de 15s
+   * serve aos 152 outros cartões com folga enorme — medido em Chrome nesta
+   * máquina: Pegue a moeda 1,3s · Reino Zero Pro 1,4s · Invasores 1,8s. Só
+   * declare aqui quem tem motivo ESTRUTURAL para demorar, e diga o motivo.
+   *
+   * ⚠️ Isto NÃO é licença para exemplo lento: é o reconhecimento de que o teste
+   * é de CORREÇÃO ("o exemplo funciona"), e usá-lo como orçamento de desempenho
+   * por acidente esconde o número em vez de mostrá-lo. Quem quiser tratar o
+   * tempo de montagem como requisito precisa de uma medição própria, não de um
+   * timeout.
+   */
+  slowMountMs?: number
 }
 
 /**
@@ -45,6 +58,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Começar com Enter, jogar em cooperação local, correr, pular, coletar moedas e gemas, ativar checkpoints, vencer guardiões, salvar o progresso e reproduzir o replay com R.',
     interactions: ['start', 'arrows', 'wasd', 'space', 'escape'],
+    // ⚠️ É o exemplo "na mão": a campanha inteira escrita com blocos do NÚCLEO,
+    // sem extensão. Medido nesta máquina: 7.279 nós de IR contra 450 do
+    // "Invasores do Espaço (na mão)" e 190 do "Cidade & Moinho" — 16× o próximo
+    // maior. Montar o Blockly com esses milhares de blocos leva ~8,5s e o
+    // preview fica pronto em ~18,2s, contra 1,3–1,8s de todos os outros. Não é
+    // defeito pontual: montar os blocos fora do navegador custa 102ms, então o
+    // tempo é do Blockly, proporcional ao tamanho. O exemplo já vinha passando
+    // por MARGEM (829 KB em main) e o lote de 13/08 o levou a 960 KB.
+    slowMountMs: 45_000,
   },
   {
     key: 'game-2d:Pegue a moeda',

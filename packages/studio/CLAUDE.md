@@ -39,7 +39,7 @@ mesma página não disputam singleton. A store recebe o mesmo tradutor na factor
 
 **Arquitetura de estado**: stores Zustand POR INSTÂNCIA (factories + `StudioStoresContext`); os hooks `useXStore(selector)` caem na store DEFAULT de módulo fora de um `<Studio>` (lista/testes), e as estáticas `useXStore.getState/setState` operam SEMPRE na default (contrato dos testes). `settingsStore` é singleton de propósito (preferência do usuário). Persistência = `PersistenceService` por instância (`src/persistence/service.ts`): qualquer adapter ganha autosave debounced + flush (pagehide/unmount/Salvar); `onChange` SEMPRE no debounce, inclusive com 'none'.
 
-**Paleta**: tokens `--color-sz-*` em `src/styles/studio.css` espelham a paleta oficial do sistema-zero (referência comunidade-sistema-zero) em oklch, dark E light, com identidade dual (accent = brand-lime no dark, cyan no light). Blockly tem temas `sz-dark`/`sz-light` em HEX equivalentes (`src/blockly/theme.ts` — manter em SINCRONIA com o CSS); Monaco segue o tema da instância. Toggle sol/lua na Topbar (some quando o host fixa `theme`). **Revamp visual estilo MakeCode (público kids):** o tema PADRÃO virou CLARO/creme (`#fef9ef`; era dark) — flip em `settingsStore` (init + fallback `?? 'light'`), `studio/theme.tsx` (context default) e `theme.ts`; toggle e host que fixa `theme` seguem. **COR = IDENTIDADE DA CATEGORIA em arco-íris** (`CATEGORY_COLORS`): cada categoria de topo tem 1 cor BEM distinta (Pesquisa cinza · HTML azul-escuro · CSS vermelho · SVG verde · Programação laranja · Canvas roxo · Avançado azul-céu · Jogo 2D rosa · Jogo 3D amarelo) e as SUB-categorias são TONS dela via `categoryShades(base, n)` (`blockly/colorShades.ts`, PURO/sem Blockly, viés-ESCURO — o texto do bloco é BRANCO em TODOS via `.blocklyText`, por isso os tons não podem clarear demais). Mudar a cor base RE-DERIVA os tons; cada `blocks/*.ts` e as extensões game-2d/3d aplicam `categoryShades` + um loop `COLOUR_BY_TYPE`. Fonte redonda `Baloo 2`/`Nunito` (`--font-family-sans` + `FONT_STYLE`, sem `@font-face`) na interface do Studio; os iframes e exports das extensões com HUD usam a Baloo 2 local incorporada por `official-extensions/gameUiFont.ts`, com licença em `official-extensions/fonts/`. Toolbox = chips arredondados coloridos (só CSS no `studio.css`, faixa colorida por categoria). ⚠️ renderer custom foi TENTADO e REVERTIDO (dobrar o raio distorcia as "bocas" em C dos blocos com statement-input) — usa `zelos` puro; QA de bloco DEVE incluir blocos com statement-input. Logo oficial: `BrandLogo` (`src/ui-internal/BrandLogo.tsx`) = o SÍMBOLO 160×160 usado na Topbar compacta, extraído do `logoszs.svg` oficial. O símbolo mantém o gradiente lime→cyan e a moldura branca; os ids dos gradientes vêm de `useId()` para preservar a multi-instância.
+**Paleta**: tokens `--color-sz-*` em `src/styles/studio.css` espelham a paleta oficial do sistema-zero (referência comunidade-sistema-zero) em oklch, dark E light, com identidade dual (accent = brand-lime no dark, cyan no light). Blockly tem temas `sz-dark`/`sz-light` em HEX equivalentes (`src/blockly/theme.ts` — manter em SINCRONIA com o CSS); Monaco segue o tema da instância. Toggle sol/lua na Topbar (some quando o host fixa `theme`). **Revamp visual estilo MakeCode (público kids):** o tema PADRÃO virou CLARO/creme (`#fef9ef`; era dark) — flip em `settingsStore` (init + fallback `?? 'light'`), `studio/theme.tsx` (context default) e `theme.ts`; toggle e host que fixa `theme` seguem. **COR = IDENTIDADE DA CATEGORIA em arco-íris** (`CATEGORY_COLORS`): cada categoria de topo tem 1 cor BEM distinta (Pesquisa cinza · HTML azul-escuro · CSS vermelho · SVG verde · Programação laranja · Canvas roxo · Avançado azul-céu · Jogo 2D rosa · Jogo 3D amarelo) e as SUB-categorias são TONS dela via `categoryShades(base, n)` (`blockly/colorShades.ts`, PURO/sem Blockly, viés-ESCURO — o texto do bloco é BRANCO em TODOS via `.blocklyText`, por isso os tons não podem clarear demais). Mudar a cor base RE-DERIVA os tons; cada `blocks/*.ts` e as extensões game-2d/3d aplicam `categoryShades` + um loop `COLOUR_BY_TYPE`. Fonte redonda `Baloo 2`/`Nunito` (`--font-family-sans` + `FONT_STYLE`, sem `@font-face`) na interface do Studio; os iframes e exports das extensões com HUD usam a fonte que a criança ESCOLHEU entre cinco (bloco "Usar a fonte"), local e incorporada por `official-extensions/gameUiFont.ts` + `gameUiFonts/`, com as licenças em `official-extensions/fonts/`. Toolbox = chips arredondados coloridos (só CSS no `studio.css`, faixa colorida por categoria). ⚠️ renderer custom foi TENTADO e REVERTIDO (dobrar o raio distorcia as "bocas" em C dos blocos com statement-input) — usa `zelos` puro; QA de bloco DEVE incluir blocos com statement-input. Logo oficial: `BrandLogo` (`src/ui-internal/BrandLogo.tsx`) = o SÍMBOLO 160×160 usado na Topbar compacta, extraído do `logoszs.svg` oficial. O símbolo mantém o gradiente lime→cyan e a moldura branca; os ids dos gradientes vêm de `useId()` para preservar a multi-instância.
 
 ## Modos: básico × profissional (regra D2)
 
@@ -1028,7 +1028,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.73.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.77.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -1280,6 +1280,305 @@ A revisão pela lente da criança pegou coisas que os testes nunca pegariam. Val
 - ⚠️ **O que o `blockContracts.test.ts` NÃO cobre**: os `console.warn` do runtime são copy de
   produto (aparecem no Console da IDE, em português, escritos para criança) e nada vigia travessão
   neles.
+
+## Full review do Reino Zero contra o jogo de referência (v0.74.0, 12/08)
+
+A dona do produto disse o alvo com todas as letras: *"a ideia era criar um Super Mario com
+as mesmas fases e mecânicas, porém com a aparência autoral"*. Isso muda a régua — "correto"
+deixa de ser "não quebra" e passa a ser FIDELIDADE, com arte 100% vetorial e autoral.
+
+### ⭐⭐ A raiz: a campanha carro-chefe não tinha UM teste que jogasse
+
+`reinoZeroExample` aparecia em dois arquivos, os dois estáticos (`JSON.stringify(ir)
+.toContain(...)` e uma auditoria de grade). **25 dos outros 32 exemplos do Jogo 2D já tinham
+playthrough; justo o maior não tinha.** Quatro rodadas de conserto passaram por cima disso, e
+os defeitos que ela achou JOGANDO eram todos invisíveis para a suíte. É a mesma lição já
+catalogada aqui: *os testes asseriam que a bala NASCEU, nunca que ACERTOU*.
+
+- `__tests__/examplePlaythroughHarness.ts` — o `exampleHarness` saiu de dentro do
+  `examplePlaythrough.test.ts` e virou módulo, com leitura de `drawPixelText`/`drawPixelScore`.
+- `__tests__/reinoZeroPlaythrough.test.ts` — 15 casos que JOGAM, todos aferindo resultado.
+  ⭐ Foi a simulação que achou um bloco de prêmio **flutuando sobre o poço da 6-2**, bem no
+  arco do pulo: o herói batia a cabeça e caía. Nenhuma auditoria via, porque nenhuma olhava
+  ONDE prêmio e perigo ficam.
+- ⚠️ **As duas guardas que existiam tinham buraco justo onde o trabalho acontecia.** O
+  `templateGuard` listava 22 de 24 arquivos à mão (faltavam `enemies.ts`,
+  `classicPlatformer.ts` e `worldSystems.ts`), e o `runtimeArchitecture` fixava 9 de 13
+  domínios. As duas passaram a DERIVAR: arquivo e domínio novos entram sozinhos.
+- `reinoZeroGeometry` parou de COPIAR a física e passou a lê-la da IR. Um teste que copia a
+  premissa que deveria checar mede a si mesmo.
+
+### Física: o pulo do gênero (`runtime/classicPlatformer.ts`)
+
+- ⭐ **Impulso do pulo cresce com a velocidade horizontal.** Correr e pular ia exatamente tão
+  longe quanto pular parado — a assinatura do gênero simplesmente não existia.
+- Corrida 1,35× → **1,64×**; aceleração derivada do TETO (42 quadros até o topo) em vez de
+  números fixos, que davam um herói duro; corrida acelera mais, além de ter teto maior.
+- **Zero atrito no ar** (era 0,015, e comia o alcance no meio do voo).
+- A altura variável saiu de "10 quadros de impulso extra + corte de 45%" para a **gravidade
+  pesar mais na subida quando o botão é solto**, que é como o original faz.
+
+### Casco: estava invertido
+
+- ⭐⭐ Pisar devolvia um casco **já disparado**, e era a segunda pisada que o parava. Agora
+  pisar recolhe, **encostar chuta** (no `hurtByEnemy`), casco andando **machuca** (o `dmg` era
+  zerado para sempre) e o casco **cai** (só o eixo X era integrado: chutado de uma beirada ele
+  flutuava e escapava até do recolhimento fora do mundo).
+- `stompEnemyType` reposiciona pela **mesma caixa** que decide (a efetiva) — o conserto de
+  d2b826eb trocou a régua da decisão e deixou o pouso na caixa crua.
+- O recolhimento fora do mundo passou a valer para TODOS no laço do Atualizar: quem VOA nunca
+  passava pelo `_enemyResolveGround` e ficava caindo para sempre, contando no grupo.
+
+### Peça que a criança ATRAVESSA (papel `contact`, lado `inside`)
+
+O contato de tile só nascia da RESOLUÇÃO de colisão, ou seja, só valia para sólido e
+plataforma — **exatamente o oposto de moeda, lava e água**. Nasceu `_recordTileOverlaps`
+(`worldTiles.ts`), varredura por sobreposição com a caixa efetiva, chamada no fim do
+`collideTileMap`. Um papel só, e quem decide o significado é a criança comparando o índice.
+
+### As 32 fases: de sorteio para planta escrita à mão
+
+- ⭐⭐ As grades saíam de `seeded(level, index)` com blocos em colunas fixas deslocadas por
+  resto de divisão. Agora são `LEVEL_PLANS`: 32 plantas em que alguém escolheu cada poço,
+  cano, bloco e fileira de moeda.
+- ⭐⭐ **O tema saiu do MUNDO e passou para o TIPO da fase** (superfície / subterrâneo /
+  água / castelo). Era isso que fazia 1-1, 1-2, 1-3 e 1-4 dividirem o mesmo céu azul. São os
+  MESMOS 8 temas de antes (4 tipos × duas metades), então a IR não cresceu.
+- A ordem do desenho é a defesa: chão primeiro, e nada depois ocupa coluna de poço nem célula
+  já escrita. A plataforma da etapa 3 APAGAVA prêmios (medido: 6 dos 9 nas etapas 3 dos mundos
+  1, 4 e 7 sumiam, deixando UM prêmio na fase inteira).
+
+### Power-up: era um no-op
+
+`setHealth(lumi, 2)` punha hp = hpMax = 2, e o `changeHealth(+1)` do broto não tinha para onde
+subir — pagava 1000 pontos, tocava o som e não fazia nada. Agora pequeno = 1, grande = 2,
+levar dano **encolhe** em vez de matar, e a figura acompanha a VIDA (sem variável de estado
+para dessincronizar).
+
+### HUD e controles
+
+- ⭐ **Uma tipografia só.** As telas usavam a fonte de pixel e o placar usava a proporcional.
+  Como o "Escrever texto pixel" só aceita texto LITERAL e os números são variáveis, nasceu o
+  irmão **`sz_g2d_draw_pixel_score`** (rótulo em cima, número embaixo). MUNDO e ETAPA viraram
+  um campo só (`1-1`), e **VIDAS finalmente aparece** — existia só na variável.
+- `PIXEL_GLYPHS` ganhou `/` `,` `(` `)` `+` e os **acentos** (vogais acentuadas sobem uma
+  linha; a cedilha desce). A tela de título mostrava literalmente `1?2`.
+- O pad de TOQUE alcança todos os helpers de movimento (`_dirHeld`/`_jumpHeld`): ele alimenta
+  só a camada semântica e apenas dois helpers a liam. Para teclado os caminhos são
+  equivalentes, então nada muda em jogo existente.
+- `visibilitychange` no teclado clássico: são DUAS máquinas de estado paralelas, e a do núcleo
+  já soltava as teclas ao esconder a aba. Esta só tinha o blur.
+
+⚠️⚠️ **Crase crua pela 6ª vez neste repositório, e desta vez escrevendo o comentário sobre o
+pad de toque.** O sintoma não foi erro claro: a suíte inteira PENDUROU (600s). Rodar o
+`templateGuard` sozinho aponta o arquivo e a linha em meio segundo — é o primeiro comando
+quando a suíte pendurar.
+
+### As mecânicas que faltavam (mesmo lote)
+
+- ⭐ **MASTRO de fim de fase.** Era um "portal" de 32px encostado no chão: chegar em cima ou
+  embaixo dava o mesmo. Agora é um mastro de 9 tiles e a ALTURA do toque paga (×20), que é o
+  gesto que fecha toda fase do jogo de referência.
+- ⭐ **ESTRELA de invencibilidade**, solta pelo PRIMEIRO bloco de prêmio da fase (o segundo
+  solta o cogumelo). Enquanto dura, o encostão DERROTA em vez de machucar — o único momento
+  do jogo em que esbarrar é arma.
+- ⭐ **PLANTA do cano**, em `voador-vertical` + modo de pisada `spiky`: sobe e desce na boca do
+  PRIMEIRO cano e não aceita pisada. Não é o cano do meio de propósito — aquele é o do atalho,
+  e uma planta ali transformaria a passagem secreta numa armadilha.
+- O voador deixou de ser a **única** posição de inimigo escrita na mão (`x: 520` fixo), furando
+  o `firmSpotNear` que existe para nada nascer sobre poço nem dentro de tijolo.
+- ⚠️ **Dois `if` seguidos não são if/senão.** O primeiro ramo baixava o contador do prêmio e o
+  segundo passava a valer no MESMO toque: uma cabeçada soltava estrela E cogumelo (medido:
+  2200 pontos de uma vez). Virou `else` aninhado.
+- ⚠️ **Armadilha de sonda:** um inimigo criado pelo "criar no grupo" nasce SEM vida, então o
+  "Mudar a vida" não tem o que zerar. Teste de derrota precisa do inimigo que a FASE solta.
+  E "voltou para perto do nascedouro" só distingue vivo de morto se o herói tiver SAÍDO de lá
+  antes — ele nasce em x=32.
+
+⚠️ **O que segue fora, registrado de propósito:** barra de fogo (precisaria de um comportamento
+de rotação em torno de um ponto, que não existe na tabela) e bola de fogo (o terceiro estado de
+poder). E o power-up muda a figura e o aguento, **não o TAMANHO** do herói: mexer na caixa
+exigiria revalidar a geometria das 32 fases.
+
+## Full review da REMEDIAÇÃO do Reino Zero (v0.76.0 → 0.77.0, 13/08)
+
+Rodada logo depois do lote de 13/08 (`15106f15` + os 4 commits do branch), que reescreveu ~1800 das
+2710 linhas de `reinoZero.ts` e mexeu em seis módulos de runtime para fechar o review de 12/08. O
+`verification-report` daquela remediação já estava em PASS — e é exatamente por isso que esta rodada
+existe: **correção de review é código novo e merece review**, lição que este arquivo já registrou
+duas vezes. Baseline 1524/0.
+
+Três lentes adversariais (runtime · cadeia bloco/IR · pedagogia) + leitura própria. A do runtime e a
+da cadeia **convergiram sozinhas** no mesmo defeito do filtro de contato, o que é o sinal mais forte
+que uma rodada pode dar.
+
+### Os defeitos de motor
+
+0. ⭐⭐ **O lado "dentro" do "Para cada tile" NÃO filtrava: era idêntico a "qualquer".** A régua do
+   runtime era uma cadeia à mão com head/feet/left/right, e `'inside'` — o lado que ESTE lote criou
+   junto da peça "atravessa e avisa" — caía no `else` que desliga o filtro. Medido: numa cena com
+   chão sólido e uma moeda, `inside` devolvia os dois contatos. O gesto que o próprio manual ensina
+   (trocar o tile do contato por −1 para coletar) **apagaria o chão sob os pés**. O Reino Zero
+   escapava por acidente, porque cada ramo dele confere o índice antes de agir.
+   ⚠️ O único teste do lado `inside` montava uma cena onde não existia contato de outro lado: um
+   vácuo, que passa idêntico com o filtro quebrado. Fix: a régua saiu da lista (`TILE_CONTACT_SIDES`,
+   espelho de `classicContracts.ts`) e ganhou drift; o teste ganhou o par que FALHA.
+1. ⭐⭐ **`z` e ESPAÇO viraram PULO em todo jogo de plataforma que já existia.** Para o pad de toque
+   alcançar os helpers antigos, o lote os fez ler a camada semântica — e eles herdaram junto o mapa
+   de TECLAS dela. O comentário do lote afirma o contrário ("para teclado os dois caminhos são
+   equivalentes"), e isso vale só para DIREÇÃO: setas e WASD alimentam os dois mapas, `z`/ESPAÇO só o
+   novo. O exemplo oficial "Herói que anda" usa ESPAÇO para atirar, então cada tiro lançava o herói
+   no ar. É a regra de 02/08 sendo violada em silêncio. Fix: `_actionDownByTouch` — o pad entra pelo
+   DEDO, nunca pelo teclado dele.
+2. ⭐⭐ **Chutar um casco parado COBRAVA VIDA no quadro seguinte.** O casco anda 5 px/quadro e o herói
+   corre quase isso (na 2ª jornada do Reino Zero, 4,92: fuga de 0,08 px por quadro), então a
+   sobreposição do PRÓPRIO chute durava vários quadros e caía no dano. O gesto que o modo existe para
+   criar virava castigo. ⚠️ O teste chamava `hurtByEnemy` **duas vezes seguidas**, sem um quadro no
+   meio: ele CONSAGRAVA o defeito. Fix: o casco não cobra de quem o chutou enquanto os dois ainda
+   estiverem encostados, e o teste passou a rodar quadro a quadro.
+
+### Os defeitos do exemplo
+
+1. ⭐⭐ **Morrer SEM zerar a vida devolvia o herói GRANDE.** O renascimento somava `+2` e tirava `1`
+   contando partir do zero, mas o `changeHealth` **satura no teto** (`runtime/utilities.ts:91`) e o
+   teto do herói é 3. Só uma das TRÊS causas de morte passa pelo zero: o tempo acabando e a queda
+   para fora do mundo entram no mesmo ramo com a vida ainda cheia, então `1 → 3 → 2`. Morrer de
+   tempo sendo pequeno chegava a devolvê-lo **maior** do que ele estava. Fix: zerar antes de repor
+   (`-99` e depois `+1`), correto nas três causas.
+   ⚠️ **Por que passou:** o teste que existia chama-se "o poder ENCOLHE ao levar dano em vez de
+   matar, **e some ao renascer**" e nunca mata ninguém — a segunda metade do título não era
+   verificada. E o teste de cair no buraco olhava posição e câmera, nunca a vida.
+2. ⭐⭐ **Com a estrela, encostar num ESPINHO rendia 200 pontos POR QUADRO e não matava.** O
+   comportamento `espinho` é imortal de propósito (`runtime/enemies.ts:1010`, curado em `:1396`
+   antes da poda), então o "Mudar a vida em -99" da estrela era desfeito no update seguinte; e o
+   `overlapSpriteGroup` **não tem trava** (`runtime/arcadeKitsSpace.ts:192`), então dispara todo
+   quadro. Parar em cima de um espinho valia até 120.000 pontos e o bicho seguia vivo — o oposto da
+   promessa da estrela justo no inimigo que ela existe para resolver. Fix: **tirar do grupo** em vez
+   de mudar a vida (a vista encaminha para o tipo que contém o sprite), que vale para quem morre e
+   para quem não morre.
+   ⚠️ O teste da estrela usava a BRASA, que é mortal. Comportamento imortal nunca foi exercido ali.
+3. ⭐ **A estrela não cobria a barra de fogo nem o tiro do guardião.** No original ela cobre tudo
+   menos poço, lava e tempo — e a lava aqui já ficava (corretamente) de fora. Os dois caminhos de
+   dano do castelo é que passavam por cima da invencibilidade, que é onde ela mais importa.
+4. ⭐ **O casco parado não caía, e a rede da BUG-004 PROTEGIA o defeito.** `updateEnemyType` pula
+   qualquer casco vivo (`enemies.ts:1342`) e o `updateEnemyShells` pulava os parados: nada integrava
+   a queda. O comentário do próprio runtime prometia "⭐ O casco CAI", e isso só valia enquanto ele
+   andava — pisar num casco no ar o deixava pendurado para sempre. ⚠️ A regressão escrita em 12/08
+   afirmava "casco parado por 60 quadros: `y` constante", com o casco **no chão**, onde `y` constante
+   é o certo. Virou contrato para todo lugar. Fix: o atualizador especializado passou a integrar o
+   `vy` do casco parado também, e o teste ganhou o par POSITIVO (pisado no ar, tem que pousar).
+   ⚠️⚠️ **E a primeira versão do meu conserto estava errada, com um comentário que provava o
+   contrário.** Eu somei gravidade dentro do `updateEnemyShells` e escrevi "com gravidade zero, o
+   padrão do motor, nada muda". O padrão é **0.6** (`physics.ts:5`) — o motor só não a APLICA sem o
+   bloco. O casco teria virado o único inimigo que cai sem ninguém pedir, escorregando sozinho num
+   jogo visto de cima. O contrato certo é o dos outros: **integrar o `vy` que existe**, e quem
+   acelera é o "Aplicar a gravidade ao grupo". Ao conferir isso apareceu o resto do defeito: o
+   Reino Zero **nunca aplicava gravidade aos `cascos`** (só a brasas, espinhos e guardiões), então
+   nem o casco nem o próprio bicho caíam de uma beirada. Uma linha no exemplo.
+5. **O `Ç` da fonte de pixel ficava uma linha acima da base das vizinhas** — 6 linhas de corpo em
+   vez das 7 do `C`, e o comentário dizia "a letra usa 7". Visível em "RECOMEÇA", na tela de
+   continuar do próprio Reino Zero.
+
+### As duas lacunas de fidelidade
+
+6. **O bloco `?` pagava moeda E prêmio na mesma cabeçada.** O `collectCoin` estava uma linha acima
+   do ramo do prêmio, então as duas primeiras cabeçadas de cada fase davam moeda **mais** power-up.
+   No original o bloco dá uma coisa **ou** a outra — e a conta de "100 moedas = 1 vida" inflava
+   sozinha. A moeda virou o último ramo do `senão`.
+7. **As partículas de derrota nasciam invisíveis.** Toda derrota do motor já solta um estouro
+   (`emitParticles` no `updateEnemyType`), e o exemplo nunca chamava o "Atualizar e desenhar as
+   partículas". Uma linha no laço devolve o retorno visual de cada pisada, tiro e estrela.
+
+### A lente de PEDAGOGIA foi a que mais rendeu, de novo
+
+O manual e o contexto da IA descreviam um produto que não existe mais. Nenhum destes é bug de
+código, e todos mudam o que a criança tenta fazer:
+
+- ⭐⭐ **O manual ensinava um soquete REVERTIDO em 02/08.** "um x aleatório **para largura …**" com a
+  instrução "encaixe a largura do sprite no primeiro" — e o bloco real não tem soquete nenhum
+  (`args0: []`). A dona mandou reverter aquele soquete porque ele estragava projetos salvos; o
+  manual não voltou. A criança procura um bloco que não existe e a instrução central é inexecutável.
+- ⭐ **O manual chamava um bloco por um nome inexistente e a afirmação estava invertida:** "o
+  **Escrever o placar** tem letra própria e não muda". Não existe "Escrever o placar"; o parecido é
+  o "Mostrar placar", que **segue** a fonte escolhida. Ela troca a letra, lê que o placar não muda,
+  vê o placar mudar. Mais seis nomes inventados no mesmo espírito ("Ricochetear nas bordas",
+  "Colisão por círculo", "Carregar spritesheet", "Pular no chão", "Para cada tile tocado", e dois
+  nomes diferentes para o MESMO bloco de 4 direções — um deles com o jargão "top-down").
+- ⭐ **A abertura dos DOIS manuais (g2d e gk) ainda descrevia a fonte embutida no runtime** — o
+  desenho que este mesmo lote desfez. O documento se contradizia 420 linhas adiante.
+- ⭐ **A regra do `useFont` era falsa nas duas metades:** o texto dizia "dentro de um se ela não muda
+  nada e o jogo avisa", e o bloco é `start-only` (o Blockly nem deixa aninhar), enquanto o
+  resolvedor varre a IR inteira e a fonte MUDA. O caso real — dois blocos, vale o último — não
+  estava em lugar nenhum. E o aviso do runtime mandava a criança fazer o que ela já tinha feito.
+- ⭐ **Nenhuma das três superfícies contava o gesto novo do casco** (pisar recolhe, encostar chuta),
+  e o rótulo do menu dizia o oposto do instante da pisada ("virar casco **móvel**"). Pior: o
+  **"Atualizar os cascos"** é OBRIGATÓRIO — sem ele o casco fica parado para sempre e não há aviso
+  nenhum — e o manual nunca o nomeava, nem o `ai.ts` o mencionava.
+- **"aba Assets"** em dois pontos de entrada do fluxo de imagens: no produto é o painel **Imagens e
+  sons**, e o próprio manual acerta 300 linhas depois.
+- **A dica do "Ajustar" tinha 787 caracteres** — sete vezes a mediana da extensão —, com uma tabela
+  de donos de parâmetro em prosa corrida dentro de um balão. Foi para o manual, e o drift que a
+  cobrava foi junto. Mais três dicas com duas frases COLADAS por falta de um espaço na concatenação.
+- **Travessão** no manual do aluno (2) e em três avisos do Console — as duas superfícies de texto
+  mais longas que a criança lê, e as únicas que a regra de voz não alcançava.
+
+### ⭐ O 13º achado veio de uma PERGUNTA dela, não da revisão
+
+Ela perguntou se dava para fazer um shoot-em-up de ONDAS — vários tipos, cada onda com um
+subconjunto, virando quando a onda esvazia. Dá, sem bloco novo: **o tipo é um grupo**, e como só os
+tipos da onda têm instâncias, o `quantos sprites tem no grupo ⟨todos⟩` da vista derivada É o que
+falta da onda (os tiros ficam de fora dela, então bala perdida não trava a virada).
+
+Mas ao medir a receita apareceu o defeito: com 6 tipos criados e 2 soltos, o Console acusava os
+**4 que esperavam a vez**. O `warnEnemyTypeEmptyOnce` tinha uma janela de graça de ~6 s pensada
+para a PRIMEIRA onda — e o texto do próprio aviso cita jogos de onda. A onda 3 chega aos 40 s.
+Fix: com **algum inimigo em campo** (qualquer tipo), a partida está em andamento e o contador
+ZERA; ele volta a correr quando a tela fica vazia de verdade, que é o caso real de "criei e nunca
+soltei". ⚠️ Sem memória por quadro de propósito — guardar por `_frameStamp` quebraria quem chama os
+helpers fora do laço.
+
+É a quinta vez nesta série que o achado é **aviso acusando quem está certo**, e a segunda vez que
+quem o encontrou foi ela usando o produto, não a suíte.
+
+### As redes, que são o entregável mais durável
+
+Cada uma existe porque um defeito desta rodada passou por ela:
+
+- **lados de contato e papéis de peça** do runtime e dos dropdowns contra `classicContracts.ts` (o
+  contrato tinha CINCO cópias literais; a do runtime foi a que divergiu), e as opções de fonte do
+  g2d contra o catálogo — o irmão da gk tinha essa rede, o g2d não tinha nenhuma.
+- ⭐ **zod não pode ENGOLIR campo**: dez tipos clássicos têm a forma TS em `ir/schema.ts` e a zod em
+  `classicIR.ts`. Os `z.object` não são `.strict()`, então uma chave que a TS declara e a zod
+  esquece passa no `safeParse` e é REMOVIDA pelo `parse` — e o `parsers/project.ts` grava o
+  resultado stripado. O campo sumiria do projeto ao passar pela Ponte, sem erro. O `success`
+  sozinho é cego; agora o `blockAudit` compara as chaves. **Provado que morde** (tirei o `worldVar`
+  do casco e ele apontou o bloco exato).
+- **todo helper da API é mencionado no `ai.ts`** — a inversa da rede que já existia. ⚠️ A primeira
+  versão casava por palavras da FACE e acusou 39 blocos corretos; teste que acusa quem está certo é
+  tão ruim quanto aviso que acusa quem está certo, e a régua virou o nome do helper.
+- **catraca de tamanho de dica** (580) e **travessão** no manual e nos avisos do Console.
+- **`ctx.font` com `var(--…)`** passou a varrer os TRÊS runtimes que leem a fonte, não só o da gk.
+  A falha é muda por definição: cobrir só o arquivo onde ela apareceu deixa os outros esperando.
+
+### ⭐ O quique por igualdade: rede, não código
+
+Estrela e bola de fogo quicam com `vy == 0`, o que dispara também no ápice se a gravidade dividir o
+impulso exato. **Medi antes de consertar e o defeito NÃO existe hoje**: 4,8 somando 0,42 vai de
+−0,18 direto para +0,24. Então em vez de código entrou uma rede que acompanha 120 quadros e cobra
+que o quique nunca GANHE altura — quem retunar gravidade ou impulso para um par exato tropeça nela.
+
+⚠️ **E a primeira versão dessa rede acusou um ganho de 284px que não existia.** Eu tinha estacionado
+o herói em `x = 1200` numa fase de 1152px: ele morreu, a morte recarregou a fase, a fase guarda a
+estrela em `(−100, −100)` e o `−100` virou "altura". **Piloto fora do mundo mede o próprio piloto** —
+é a mesma classe do "corredor bloqueado" que este arquivo já anotou no salto dos poços.
+
+### Verde
+
+game-2d **1529/0** (5 casos novos), studio completo, typecheck limpo, biome limpo, e o E2E
+`reino-zero-classic.spec.ts` 2/2 em Chromium com servidor e build novos. Contadores de bloco e de
+API **não mudaram** (nenhum bloco novo; o exemplo passou a usar três blocos que já existiam).
+Hashes travados que este lote moveu: o catálogo lazy do `game-2d` (`examplesLoading.test.ts`) e o
+`__gen_serverExamplesIndex.ts` (`bun run gen:server-examples`). **Pende QA dela jogando.**
 
 ## Jogo 2D — jogo de NAVE: inteligência, raio e chefão (v0.61.0, 07/08)
 
@@ -1924,6 +2223,128 @@ Dois blocos `start-only`, ambos sobre ENXERGAR o que o motor faz:
   ⟨b⟩ se encostam (círculo)?" → `touchCircle`) — um reporter que a criança põe num "se"; o motor nunca o
   chama. A v0.55.0 (abaixo) fechou a lacuna que sobrava: o overlay desenhava retângulo mesmo em quem
   perguntava pelo círculo.
+
+## Escolher a fonte do jogo + tela feita de imagem (g2d 0.75.0 / gk 0.59.0, 12/08)
+
+Dois pedidos dela, os dois sobre a cara do jogo que a criança monta: **poder mostrar uma tela
+cheia com um desenho dela** (abertura, vitória, fim) e **escolher a letra** entre cinco — Baloo 2,
+Nunito, Press Start 2P, Bungee e Fredoka. Alcance decidido por ela: a fonte nas **duas** extensões
+de jogo 2D; a tela de imagem **só na básica** (a avançada já tinha o `sz_gk_set_screen_bg`).
+
+### ⭐⭐ A fonte não é do runtime — é de quem MONTA o documento
+
+O desenho anterior embutia a Baloo 2 dentro do runtime de **quatro** extensões (~45 KB de base64
+em cada `sz-ext/*.js` exportado). Cinco fontes por esse caminho seriam ~170 KB em todo jogo.
+
+A primeira ideia era um **alias estável de família** (`"SZ Jogo", "Baloo 2", …`) trocando só o
+woff2 por trás, para não mexer nos 34 `ctx.font` nem nos 30 `var(--sz-game-ui-font)`. **Foi
+descartada por um motivo que só aparece pensando na cascata:** caractere fora do `unicode-range`
+cai na PRÓXIMA família da lista, então numa máquina com a Baloo instalada a criança que escolhesse
+Press Start 2P veria Baloo no meio da palavra.
+
+O desenho que ficou tira o carregamento do runtime: `preview/bootstrap.ts` injeta um
+`<style>` com a fonte ESCOLHIDA (um chunk por fonte, `import()` estático por id) e publica
+`window.SZGameUIFont = { id, family }`. Os quatro runtimes só LEEM a família, defensivamente
+(`(window.SZGameUIFont && window.SZGameUIFont.family) || 'sans-serif'`). No export, a mesma CSS
+vira `public/sz-font.css` + `public/sz-font.js`, antes dos scripts de extensão.
+
+⚠️ **Sem CDN, e isso é regra da casa:** o perfil `strict` da CSP (o do player público do Mural)
+bloqueia `font-src https:` E `style-src https:`. Fonte de CDN funcionaria no editor e falharia em
+SILÊNCIO na página de jogar.
+
+### O bloco é uma DECLARAÇÃO; o runtime só confere
+
+`sz_g2d_use_font` / `sz_gk_use_font` ("Usar a fonte ⟨X⟩", start-only). Quem lê a escolha é o
+`gameUiFonts/resolve.ts`, ANTES de o jogo existir: varre a IR atrás de `g2d:useFont`/`gk:useFont`
+(pilha explícita e `WeakSet` — a IR do Reino Zero passa de 30 mil nós) e cai no `script.js` por
+regex quando não há IR (snapshot do Mural, hidratação pendente). **O último vence.**
+
+- ⚠️ **A pilha é LIFO**, então empilhar os filhos na ordem natural fazia "o último vence" devolver
+  o PRIMEIRO bloco. Empilhar ao contrário; o teste pegou.
+- Por isso o `useFont` do runtime **não troca nada**: ele compara o que o bloco pediu com o que
+  chegou e AVISA quando diverge — que é o caso da escolha não-estática (bloco dentro de um "se",
+  nome vindo de variável). Sem o aviso, a criança troca a fonte e nada acontece.
+- ⚠️ O schema usa **`z.enum`**, não texto livre, e o parser recusa nome fora do catálogo: um id
+  desconhecido faria o `FieldDropdown` coagir para a PRIMEIRA opção, **trocando a fonte da criança
+  em silêncio**. Recusado, o trecho vira "código avançado" e ela vê o que escreveu.
+- **O que a fonte NÃO alcança:** `drawPixelText`/`drawPixelScore` são glifos bitmap desenhados
+  célula a célula (é o HUD do Reino Zero). Está dito no tooltip e no manual.
+
+### ⭐ O defeito mudo que o lint achou: a fonte não chegava ao preview do EDITOR
+
+O `PreviewIframe` **esperava** o pacote da fonte (`gameUiFontReady` segura o render) e depois
+montava o documento **sem passá-lo**. Nada quebrava: o jogo EXPORTADO saía com a letra certa (outro
+caminho) e o preview ficava na de sempre — ou seja, a criança escolhia e não via diferença. Quem
+apontou foi o `useExhaustiveDependencies` do biome, reclamando de uma dependência não declarada.
+Regressão em `PreviewIframe.test.tsx`, andando pelo caminho do editor.
+⚠️ O teste precisa de **extensão instalada**: projeto sem nenhuma não recebe fonte de propósito
+(ela é do HUD dos motores; mandá-la seria payload à toa numa página de HTML e CSS).
+
+### A tela feita de imagem (só na básica)
+
+`sz_g2d_show_image_screen` ("Mostrar a tela com a imagem ⟨X⟩", por-quadro como o
+`sz_g2d_draw_backdrop`). O runtime reusa o `_paintBackdrop` (cobrir sem deformar) e **acrescenta o
+`_announceScreen`** — ⭐ é isso que justifica o bloco existir em vez de "use o Desenhar o cenário":
+o cenário não FALA, então uma tela de vitória montada com ele é invisível para quem usa leitor de
+tela, e o jogo mudaria de estado sem ninguém saber.
+
+**Na avançada nada foi construído:** o `sz_gk_set_screen_bg` ("Na tela ⟨pausa⟩, pôr fundo cor ⟨⟩ e
+imagem ⟨⟩", em 🖼️ Telas) já faz isso, com `background-size: cover`.
+
+### ⭐⭐ A união da IR tem TETO, e este lote foi quem bateu nele
+
+O `bun test` fica verde e o **`tsc` estoura**: `TS2590 — Expression produces a union type that
+is too complex to represent`, espalhado por uma dúzia de arquivos que só ENCOSTAM na IR
+(`generators/js.ts`, `ir/behavior.ts`, `blockly/workspaceState.ts`, testes…). Os lugares
+acusados **mudam de uma rodada para outra**, que é a assinatura de um limite global.
+
+**Como foi atribuído, e vale como receita**: um `git worktree` do HEAD limpo (com
+`node_modules` por junção, sem reinstalar) typechecou **verde**; a mesma árvore com **quatro
+membros de mentira** somados à união reproduziu o erro IDÊNTICO, nos mesmos lugares. Ou seja:
+não era a forma do que este lote somou, era a CONTAGEM — qualquer bloco novo, de qualquer
+extensão, teria batido igual.
+
+**O mecanismo, lido do compilador e confirmado por trace** (`tsc --generateTrace`): o evento é
+`removeSubtypes_DepthLimit`. A redução de subtipos, que o TypeScript faz ao construir uma união
+(o supertipo comum de um literal de array, por exemplo), compara os membros **par a par** e
+desiste em **100.000 comparações** — custo quadrático no número de membros. `JSStatement`
+estava com **984 membros no HEAD** (passa) e foi para **988** (não passa). O limite é do
+compilador (TS 5.9), não configurável.
+
+⚠️ **A tentativa que NÃO funcionou, para ninguém repetir**: trocar `JSStatementCommon & {…}`
+por objeto puro com `__id?: string` inline nos 982 membros. Interseção não era o custo; com 20
+membros a mais o erro voltou igual.
+
+**O conserto: menos MEMBROS, fundindo os contíguos de forma idêntica** — idioma que o arquivo
+já usava (`gk:saveCampaign | gk:loadCampaign | gk:deleteCampaignSave` sempre foi um membro só).
+São 44 fusões, **988 → 944**, e a leitura por domínio fica intacta porque só se funde o que já
+era vizinho: `{ type: 'somPlay' | 'somStop' | 'somPlayMusic'; name: string }`.
+- ⚠️ **Não funda tipo usado em `Extract<JSStatement, { type: 'X' }>`**: com a união no
+  discriminante o `Extract` devolve `never` (hoje: `memberCall`, `memberSet`, `rawJS`, `if`,
+  `while`, `tryCatch`, `classDecl`, `animationLoop`, `forRange`, `doWhile`, `fetchJson`,
+  `g2d:afterSeconds`, `g2d:everySeconds`, `g2d:createTileMap`, `g2d:defineEnemyType`,
+  `gk:everySeconds` — conferidos um a um).
+- ⭐ Fundir **melhora o estreitamento** e isso desenterrou um defeito real: com a união menor o
+  TypeScript passou a estreitar `'body' in loop`, e ali existem statements cujo `body` é TEXTO
+  (o totem e a porta do Mundo 3D). O teste do "Jogar meu mapa" perguntava pela PROPRIEDADE;
+  agora pergunta pelo TIPO.
+- **Ainda cabem ~110 fusões** (famílias de mesma forma não-contíguas), se um dia precisar de
+  mais espaço. Cada bloco novo custa 1 membro; hoje há **40 de folga** sobre o HEAD.
+
+### ⚠️ Duas armadilhas de arquitetura que este lote pagou
+
+1. **As fachadas estão no teto de linhas** (`generators/__tests__/architecture.test.ts`:
+   `parsers/js.ts` ≤ 14 100, `ir/schema.ts` ≤ 12 800, `buildIR.ts` ≤ 9 400 — as duas primeiras com
+   UMA linha de folga). Os codecs novos moram na extensão (`game-2d/classicCodec.ts` e o novo
+   `game-2d-advanced/uiFontCodec.ts`); o `uiFontCodec` alcança `buildIR`/`parsers` pelo despachante
+   que a gk já tinha (`campaignBlockCodec`/`campaignParserCodec`), sem crescer uma linha.
+2. ⭐ **`ctx.font` NÃO resolve custom property.** `campaign.ts:452` e `:497` faziam
+   `ctx2d.font = 'bold 12px var(--sz-game-ui-font)'`: o setter DESCARTA e o texto sai na fonte
+   anterior — falha muda, sem erro e sem aviso. Quem tem o nome resolvido é o `_szGameUIFont`.
+   Virou drift em `uiFont.test.ts` (com a metade que tem que MORDER), e `.style.font` fica de fora
+   de propósito: ali a variável resolve, e o Mundo 3D usa esse caminho.
+
+Contadores: gk 363 → **364** blocos, manifests g2d `0.75.0` e gk `0.59.0`.
 
 ## Jogo 2D Avançado — a caixa pode ser REDONDA (v0.55.0, 01/08)
 

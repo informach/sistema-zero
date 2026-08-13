@@ -10,14 +10,17 @@ import {
   minNodesFor,
   moveNodes,
   nearestOnPath,
+  openClosedPathAt,
   pointOnSegment,
   removeNodes,
+  segmentCount,
   segmentEnds,
   segmentsForNodes,
   setClosed,
   setHandle,
   setSegmentCurved,
   smoothPath,
+  splitOpenPathAt,
   toEditablePath,
 } from './pathNodes'
 import { smoothStrokeToPath } from './smoothing'
@@ -82,6 +85,18 @@ describe('toEditablePath / fromEditablePath', () => {
     expect(toEditablePath({ ...base, type: 'rect', x: 0, y: 0, w: 4, h: 4, rx: 0 })).toBeNull()
     expect(
       toEditablePath({ ...base, type: 'text', x: 0, y: 0, text: 'oi', fontSize: 12 }),
+    ).toBeNull()
+    // A FIGURA também não se edita por pontos (o nodeTarget depende deste null).
+    expect(
+      toEditablePath({
+        ...base,
+        type: 'image',
+        x: 0,
+        y: 0,
+        w: 4,
+        h: 4,
+        src: 'data:image/png;base64,AAAA',
+      }),
     ).toBeNull()
     // relativo e quadrática ficam fora (parsePathD já recusa)
     expect(toEditablePath(pathOf('m 0 0 l 5 5'))).toBeNull()
@@ -651,5 +666,180 @@ describe('suavizar o traco (botao repetivel)', () => {
     const ep = toEditablePath(pathOf('M 0 0 L 10 0'))
     if (!ep) throw new Error('traço deveria abrir')
     expect(smoothPath(ep)).toBeNull()
+  })
+})
+
+describe('abrir no ponto e cortar em dois (a tesoura)', () => {
+  /** Amostra o traço inteiro, na ordem, para provar que o desenho não mudou. */
+  function samples(ep: EditablePathLike, perSegment = 20): Vec2[] {
+    const out: Vec2[] = []
+    for (let seg = 0; seg < segmentCount(ep); seg += 1) {
+      const ends = segmentEnds(ep, seg)
+      if (!ends) continue
+      for (let k = 0; k < perSegment; k += 1) {
+        out.push(pointOnSegment(ends[0], ends[1], k / perSegment))
+      }
+    }
+    return out
+  }
+
+  function closeTo(a: Vec2[], b: Vec2[]): void {
+    expect(a.length).toBe(b.length)
+    for (const [i, p] of a.entries()) {
+      const q = b[i]
+      if (!q) throw new Error('amostra faltando')
+      expect(p.x).toBeCloseTo(q.x, 9)
+      expect(p.y).toBeCloseTo(q.y, 9)
+    }
+  }
+
+  const quad = (): EditablePathLike => {
+    const ep = toEditablePath(
+      polygonOf([
+        { x: 0, y: 0 },
+        { x: 20, y: 0 },
+        { x: 20, y: 20 },
+        { x: 0, y: 20 },
+      ]),
+    )
+    if (!ep) throw new Error('polígono deveria abrir')
+    return ep
+  }
+
+  it('abrir no nó 2 põe ele no começo E no fim, e ganha um nó', () => {
+    const ep = quad()
+    const aberto = openClosedPathAt(ep, 2)
+    if (!aberto) throw new Error('deveria abrir')
+    expect(aberto.closed).toBe(false)
+    expect(aberto.nodes.length).toBe(ep.nodes.length + 1)
+    expect(aberto.nodes[0]?.p).toEqual({ x: 20, y: 20 })
+    expect(aberto.nodes[4]?.p).toEqual({ x: 20, y: 20 })
+    expect(aberto.nodes.map((n) => n.p)).toEqual([
+      { x: 20, y: 20 },
+      { x: 0, y: 20 },
+      { x: 0, y: 0 },
+      { x: 20, y: 0 },
+      { x: 20, y: 20 },
+    ])
+  })
+
+  it('o DESENHO não muda: as amostras do laço batem com as do traço aberto', () => {
+    // Um laço CURVO, que é onde as alças da emenda podem errar.
+    const ep = toEditablePath(pathOf('M 0 0 C 10 -10 30 -10 40 0 C 30 20 10 20 0 0 Z'))
+    if (!ep) throw new Error('traço deveria abrir')
+    const corte = 1
+    const aberto = openClosedPathAt(ep, corte)
+    if (!aberto) throw new Error('deveria abrir')
+    // ⚠️ Abrir no nó 1 faz o traço COMEÇAR pelo segmento 1: os mesmos pontos,
+    // em ordem girada. Comparar cru daria falso negativo.
+    const porSegmento = 20
+    const doLaco = samples(ep, porSegmento)
+    const girado = [...doLaco.slice(corte * porSegmento), ...doLaco.slice(0, corte * porSegmento)]
+    closeTo(girado, samples(aberto, porSegmento))
+  })
+
+  it('a emenda guarda a alça CERTA de cada lado', () => {
+    const ep = toEditablePath(pathOf('M 0 0 C 10 -10 30 -10 40 0 C 30 20 10 20 0 0 Z'))
+    if (!ep) throw new Error('traço deveria abrir')
+    const original = ep.nodes[0]
+    const aberto = openClosedPathAt(ep, 0)
+    if (!aberto || !original) throw new Error('deveria abrir')
+    const inicio = aberto.nodes[0]
+    const fim = aberto.nodes[aberto.nodes.length - 1]
+    expect(inicio?.in).toBeUndefined()
+    expect(inicio?.out).toEqual(original.out as Vec2)
+    expect(fim?.out).toBeUndefined()
+    expect(fim?.in).toEqual(original.in as Vec2)
+  })
+
+  it('abrir e FECHAR de novo devolve o laço original (a emenda funde)', () => {
+    const ep = quad()
+    const aberto = openClosedPathAt(ep, 2)
+    if (!aberto) throw new Error('deveria abrir')
+    // Passa pelo `d` de verdade: é a ida e volta que o editor faz.
+    const refechado = toEditablePath(pathOf(editablePathToD(setClosed(aberto, true))))
+    expect(refechado?.closed).toBe(true)
+    expect(refechado?.nodes.length).toBe(ep.nodes.length)
+  })
+
+  it('recusa em caminho já aberto e em índice que não existe', () => {
+    const aberto = toEditablePath(pathOf('M 0 0 L 10 0 L 20 10'))
+    if (!aberto) throw new Error('traço deveria abrir')
+    expect(openClosedPathAt(aberto, 1)).toBeNull()
+    expect(openClosedPathAt(quad(), 9)).toBeNull()
+    expect(openClosedPathAt(quad(), -1)).toBeNull()
+  })
+
+  it('o polígono aberto vira TRAÇO sem Z e sobrevive ao sanitize', () => {
+    const forma = polygonOf([
+      { x: 0, y: 0 },
+      { x: 20, y: 0 },
+      { x: 20, y: 20 },
+      { x: 0, y: 20 },
+    ])
+    const ep = toEditablePath(forma)
+    if (!ep) throw new Error('polígono deveria abrir')
+    const aberto = openClosedPathAt(ep, 1)
+    if (!aberto) throw new Error('deveria abrir')
+    const nova = fromEditablePath(forma, aberto)
+    expect(nova.type).toBe('path')
+    expect(nova.type === 'path' && nova.d.includes('Z')).toBe(false)
+    expect(sanitizeVectorShape(nova)).not.toBeNull()
+  })
+
+  it('cortar um traço aberto no miolo devolve dois pedaços que somam n+1', () => {
+    const ep = toEditablePath(pathOf('M 0 0 L 10 0 L 20 0 L 30 0 L 40 0'))
+    if (!ep) throw new Error('traço deveria abrir')
+    const pedacos = splitOpenPathAt(ep, 2)
+    if (!pedacos) throw new Error('deveria cortar')
+    const [a, b] = pedacos
+    expect(a.nodes.length).toBe(3)
+    expect(b.nodes.length).toBe(3)
+    expect(a.nodes.length + b.nodes.length).toBe(ep.nodes.length + 1)
+    expect(a.closed).toBe(false)
+    expect(b.closed).toBe(false)
+    // O ponto do corte está nas DUAS pontas.
+    expect(a.nodes[a.nodes.length - 1]?.p).toEqual({ x: 20, y: 0 })
+    expect(b.nodes[0]?.p).toEqual({ x: 20, y: 0 })
+  })
+
+  it('cortar não muda o desenho: A + B cobrem o traço inteiro', () => {
+    const ep = toEditablePath(pathOf('M 0 0 C 10 -10 30 -10 40 0 C 50 10 60 10 70 0'))
+    if (!ep) throw new Error('traço deveria abrir')
+    const pedacos = splitOpenPathAt(ep, 1)
+    if (!pedacos) throw new Error('deveria cortar')
+    closeTo(samples(ep), [...samples(pedacos[0]), ...samples(pedacos[1])])
+  })
+
+  it('recusa nas PONTAS, em caminho fechado e num traço de 2 nós', () => {
+    const ep = toEditablePath(pathOf('M 0 0 L 10 0 L 20 0'))
+    if (!ep) throw new Error('traço deveria abrir')
+    expect(splitOpenPathAt(ep, 0)).toBeNull()
+    expect(splitOpenPathAt(ep, 2)).toBeNull()
+    expect(splitOpenPathAt(quad(), 1)).toBeNull()
+    const reta = toEditablePath(pathOf('M 0 0 L 10 0'))
+    if (!reta) throw new Error('traço deveria abrir')
+    expect(splitOpenPathAt(reta, 0)).toBeNull()
+    expect(splitOpenPathAt(reta, 1)).toBeNull()
+  })
+
+  it('com 3 nós o único corte possível deixa os dois pedaços no PISO', () => {
+    const ep = toEditablePath(pathOf('M 0 0 L 10 0 L 20 0'))
+    if (!ep) throw new Error('traço deveria abrir')
+    const pedacos = splitOpenPathAt(ep, 1)
+    if (!pedacos) throw new Error('deveria cortar')
+    expect(pedacos[0].nodes.length).toBe(2)
+    expect(pedacos[1].nodes.length).toBe(2)
+  })
+
+  it('os dois pedaços passam pelo sanitize como formas de verdade', () => {
+    const forma = pathOf('M 0 0 C 10 -10 30 -10 40 0 C 50 10 60 10 70 0')
+    const ep = toEditablePath(forma)
+    if (!ep) throw new Error('traço deveria abrir')
+    const pedacos = splitOpenPathAt(ep, 1)
+    if (!pedacos) throw new Error('deveria cortar')
+    for (const pedaco of pedacos) {
+      expect(sanitizeVectorShape(fromEditablePath(forma, pedaco))).not.toBeNull()
+    }
   })
 })

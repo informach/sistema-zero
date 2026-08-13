@@ -1,5 +1,4 @@
 import { dataUrlToBufferRuntimeSource } from '../assetRuntime'
-import { withGameUIFontRuntime } from '../gameUiFont'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 
@@ -33,7 +32,11 @@ import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
  */
 const world3DRuntimeSource = `import * as THREE from 'three';
 (function () {
-  var _szGameUIFont = window.SZGameUIFont.family;
+  var _szGameUIFont = (window.SZGameUIFont && window.SZGameUIFont.family) || 'sans-serif';
+  // ⚠️ Defensivo de propósito: a família deixou de vir embutida no runtime e passou
+  // a ser publicada por quem MONTA o documento. Se algum caminho de montagem
+  // esquecer, o texto sai numa fonte do sistema — nunca com o jogo quebrado numa
+  // leitura de propriedade de undefined.
   // ---- Config (dos blocos "Criar o mundo 3D" / "Deixar o chão com morros") ----
   var config = {
     w: 1280,
@@ -9038,10 +9041,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 })();
 `
 
-export const world3DRuntime = withGameUIFontRuntime(
-  compactOfficialRuntimeSource(
-    withThreePostProcessingRuntime(
-      world3DRuntimeSource.replace('  /*__SZ_DATA_URL_RUNTIME__*/', dataUrlToBufferRuntimeSource),
-    ),
+export const world3DRuntime = compactOfficialRuntimeSource(
+  withThreePostProcessingRuntime(
+    world3DRuntimeSource.replace('  /*__SZ_DATA_URL_RUNTIME__*/', dataUrlToBufferRuntimeSource),
   ),
 )

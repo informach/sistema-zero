@@ -8,6 +8,8 @@ import {
 import { type ExtensionPermission, loadExtensionBootstrapScripts } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, withCoreImports } from '#preview'
+import { loadGameUiFont } from '../official-extensions/gameUiFont'
+import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildDomRasterizerRuntime } from '../preview/domRasterizerRuntime'
 
 /**
@@ -78,6 +80,10 @@ async function runCapture(
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
   const timeoutMs = opts.timeoutMs ?? warmupMs + 4_000
+  // A capa precisa da MESMA fonte do jogo, senão o print sai com outra letra.
+  const gameUiFont = ctx.extensionScripts.length
+    ? await loadGameUiFont(resolveGameUiFontId(project))
+    : undefined
   const doc = buildPreviewDoc({
     html: project.files['index.html'] ?? '',
     css: project.files['style.css'] ?? '',
@@ -91,6 +97,7 @@ async function runCapture(
     assetsMeta: assetMetaManifest(project.assets),
     sounds: soundManifest(project.assets),
     models3d: asset3DManifest(project.assets),
+    gameUiFont,
     parentOrigin,
     installedPermissions: ctx.permissions,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,

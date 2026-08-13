@@ -24,7 +24,7 @@ import {
   validateStudioPayloadSize,
 } from '../../export/studioBridge'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
-import { persistAssets } from '../../state/persistence'
+import { isPintaStorageBudgetError, persistAssets } from '../../state/persistence'
 import {
   createSessionStore,
   type PintaSessionState,
@@ -59,12 +59,13 @@ import { ZoomControls } from './ZoomControls'
 
 function SaveBadge(): JSX.Element {
   const saveState = useEditor((state) => state.saveState)
+  const saveError = useEditor((state) => state.saveError)
   const label =
     saveState === 'saved'
       ? COPY.editor.saved
       : saveState === 'saving'
         ? COPY.editor.saving
-        : COPY.editor.saveError
+        : (saveError ?? COPY.editor.saveError)
   const tone =
     saveState === 'saved'
       ? 'text-pin-ok'
@@ -494,6 +495,8 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
       editor: createEditorStore({
         asset,
         persist: (saved, linked) => persistAssets([saved, ...linked]),
+        persistErrorMessage: (error) =>
+          isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError,
         onSaved: (saved) => gallery.getState().absorb(saved),
         // Assets ligados (mapas remapeados ao editar peças do tileset) restaurados
         // por undo/redo: absorve na galeria; o editorStore persiste o conjunto

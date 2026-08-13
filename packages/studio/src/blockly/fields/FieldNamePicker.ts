@@ -534,6 +534,7 @@ const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_tilemap: ['NAME'],
   sz_g2d_create_tilemap_from_asset: ['NAME'],
   sz_g2d_create_vector_tilemap: ['NAME'],
+  sz_g2d_load_vector_campaign_level: ['MAP'],
   // Jogo 2D Avançado (Kit): "Carregar mapa … do meu desenho" também declara um nome de mapa.
   sz_gk_load_tilemap: ['NAME'],
   sz_gk_create_empty_tilemap: ['NAME'],
@@ -544,9 +545,11 @@ const G2D_VECTOR_TILESET_DECL_BLOCKS: Record<string, string[]> = {
 const G2D_WORLD_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_world: ['NAME'],
   sz_g2d_create_world_from_tilemap: ['NAME'],
+  sz_g2d_load_vector_campaign_level: ['WORLD'],
 }
 const G2D_LEVEL_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_level: ['NAME'],
+  sz_g2d_load_vector_campaign_level: ['LEVEL'],
 }
 
 /** Figuras (desenho por código) do Jogo 2D — fonte do seletor SHAPE. */

@@ -4,6 +4,8 @@ export interface SerializedBlocklyBlock {
   id?: string
   x?: number
   y?: number
+  /** Estado visual inicial; útil para projetos grandes abrirem sem renderizar árvores inteiras. */
+  collapsed?: boolean
   fields?: Record<string, string | number>
   /** Soquete com um bloco real e/ou a sombra substituível do Blockly. */
   inputs?: Record<string, { block?: SerializedBlocklyBlock; shadow?: SerializedBlocklyBlock }>

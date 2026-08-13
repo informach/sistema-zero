@@ -66,6 +66,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:setupFull',
   'g2d:fitScreen',
   'g2d:stageBorder',
+  'g2d:useFont',
   // O cenário FIXO é de preparação: só no 'ao iniciar' (o por-quadro NÃO entra).
   'g2d:setBackdrop',
   // Carregar o som prepara o arquivo e não toca nada: pertence ao "Ao iniciar".
@@ -118,6 +119,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'gk:startCampaign',
   'gk:setStageDescription',
   'gk:stageBorder',
+  'gk:useFont',
   'gk:setBackdrop',
   'gk:showHitboxes',
   'gk:loadImage',

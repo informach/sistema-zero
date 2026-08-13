@@ -1,7 +1,17 @@
 import type { JSX } from 'react'
 import { COPY } from '../../../core/copy'
 import { ToolButton } from '../../ui/Button'
-import { Circle, Link2, Minus, Spline, Square, Trash2, Unlink2, Waves } from '../../ui/icons'
+import {
+  Circle,
+  Link2,
+  Minus,
+  Scissors,
+  Spline,
+  Square,
+  Trash2,
+  Unlink2,
+  Waves,
+} from '../../ui/icons'
 import { useVectorEditor } from './VectorEditorScope'
 
 const Divider = (): JSX.Element => (
@@ -19,19 +29,37 @@ export function VectorNodeActions({
     selectedNodes,
     removeSelectedNodes,
     toggleNodePathClosed,
+    cutNodePath,
     setSelectedSegmentsCurved,
     setSelectedNodesSmooth,
     simplifyNodePath,
   } = useVectorEditor()
   if (!nodePath) return null
   const noNodes = selectedNodes.length === 0
+  /**
+   * Com ponto escolhido o botão vira TESOURA e age NAQUELE ponto. Com 2+ ele
+   * fica desligado: o ícone promete "cortar aqui" e não existe um "aqui" — e a
+   * criança escapa tocando num ponto só. Sem nenhum ponto, é o interruptor de
+   * fechar/abrir de sempre.
+   */
+  const cutting = !noNodes
+  const manyNodes = selectedNodes.length > 1
 
   return (
     <>
       <ToolButton
-        icon={nodePath.closed ? Unlink2 : Link2}
-        label={nodePath.closed ? COPY.vector.nodeOpen : COPY.vector.nodeClose}
-        onClick={toggleNodePathClosed}
+        icon={cutting ? Scissors : nodePath.closed ? Unlink2 : Link2}
+        label={
+          cutting
+            ? nodePath.closed
+              ? COPY.vector.nodeOpenHere
+              : COPY.vector.nodeCut
+            : nodePath.closed
+              ? COPY.vector.nodeOpen
+              : COPY.vector.nodeClose
+        }
+        disabled={manyNodes}
+        onClick={cutting ? cutNodePath : toggleNodePathClosed}
       />
       <ToolButton
         icon={Trash2}

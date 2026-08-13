@@ -2,7 +2,12 @@ export { dueloDeHeroisExample } from './dueloDeHerois'
 export { escaladaDoGuerreiroExample } from './escaladaDoGuerreiro'
 export { muralhaDoReinoExample } from './muralhaDoReino'
 export { portasDoCasteloExample } from './portasDoCastelo'
-export { reinoZeroExample, reinoZeroLevelNames } from './reinoZero'
+export {
+  reinoZeroCampaignManifest,
+  reinoZeroExample,
+  reinoZeroLevelGrids,
+  reinoZeroLevelNames,
+} from './reinoZero'
 export { treinadorDeCriaturasExample } from './treinadorDeCriaturas'
 export { valeEnsolaradoExample } from './valeEnsolarado'
 export { vilaNinjaExample } from './vilaNinja'

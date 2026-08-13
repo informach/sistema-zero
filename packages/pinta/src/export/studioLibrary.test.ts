@@ -109,6 +109,25 @@ describe('listGalleryForStudio', () => {
     setPintaStorageNamespace('perfil-b')
     expect(await listGalleryForStudio()).toEqual([])
   })
+
+  it('não reaproveita miniatura de outro perfil com o mesmo id e updatedAt', async () => {
+    const base = createVectorBackgroundAsset({ name: 'mesmo-id', width: 20, height: 10 })
+    const red = { ...base, id: 'compartilhado', updatedAt: 1000, shapes: [redRect()] }
+    setPintaStorageNamespace('perfil-a')
+    await persistAsset(red)
+    expect((await listGalleryForStudio())[0]?.thumbDataUrl).toContain(encodeURIComponent('#ff0000'))
+
+    const blue = {
+      ...red,
+      shapes: [
+        makeRect({ x: 1, y: 1 }, { x: 9, y: 9 }, { fill: '#0000ff', stroke: null, opacity: 1 }),
+      ],
+    }
+    setPintaStorageNamespace('perfil-b')
+    await persistAsset(blue)
+
+    expect((await listGalleryForStudio())[0]?.thumbDataUrl).toContain(encodeURIComponent('#0000ff'))
+  })
 })
 
 describe('exportAssetForStudio', () => {
