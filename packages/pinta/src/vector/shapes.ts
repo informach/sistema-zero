@@ -3,7 +3,14 @@
  * aqui e o sanitize do modelo valida o resto do caminho.
  */
 import { newId } from '../core/id'
-import type { Vec2, VectorFill, VectorShape, VectorStroke } from './model'
+import type {
+  Vec2,
+  VectorFill,
+  VectorFontFamily,
+  VectorShape,
+  VectorStroke,
+  VectorTextAlign,
+} from './model'
 
 export interface ShapeStyle {
   fill: VectorFill
@@ -104,7 +111,13 @@ export function makePath(d: string, style: ShapeStyle): VectorShape {
   return { ...base({ fill: 'none', stroke, opacity: style.opacity }), type: 'path', d }
 }
 
-export function makeText(at: Vec2, text: string, style: ShapeStyle): VectorShape {
+export function makeText(
+  at: Vec2,
+  text: string,
+  style: ShapeStyle,
+  align: VectorTextAlign = 'left',
+  fontFamily?: VectorFontFamily,
+): VectorShape {
   const fill = style.fill === 'none' ? '#000000' : style.fill
   return {
     ...base({ ...style, fill, stroke: null }),
@@ -113,5 +126,8 @@ export function makeText(at: Vec2, text: string, style: ShapeStyle): VectorShape
     y: at.y,
     text,
     fontSize: 24,
+    ...(fontFamily ? { fontFamily } : {}),
+    // `'left'` não se escreve: é a ausência da chave (ver o modelo).
+    ...(align === 'left' ? {} : { align }),
   }
 }

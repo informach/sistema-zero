@@ -203,6 +203,19 @@ describe('inputBridge — window.__szInput', () => {
     expect(input.key('ArrowLeft')).toBe(false)
   })
 
+  it('solta o ponteiro em cancelamento e blur', () => {
+    const { input, fire } = load()
+    fire('pointerdown', { clientX: 1, clientY: 1 })
+    expect(input.down).toBe(true)
+    fire('pointercancel', {})
+    expect(input.down).toBe(false)
+
+    fire('pointerdown', { clientX: 1, clientY: 1 })
+    expect(input.down).toBe(true)
+    fire('blur', {})
+    expect(input.down).toBe(false)
+  })
+
   it('cacheia o canvas: não re-consulta o DOM a cada pointermove', () => {
     let queries = 0
     const canvas = {

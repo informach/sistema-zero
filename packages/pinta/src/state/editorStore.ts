@@ -20,6 +20,10 @@ function shapeBytes(shape: VectorShape): number {
   if (shape.type === 'path') bytes += shape.d.length * 2
   else if (shape.type === 'text') bytes += shape.text.length * 2
   else if (shape.type === 'polygon') bytes += shape.points.length * 16
+  // A FIGURA carrega o PNG inteiro em base64: sem contá-lo, o orçamento de
+  // 16 MB do undo erraria por ordens de grandeza (uma figura vale ~128 bytes
+  // aqui e centenas de KB na memória) e a sessão comeria RAM em silêncio.
+  else if (shape.type === 'image') bytes += shape.src.length * 2
   return bytes
 }
 
@@ -32,6 +36,7 @@ export type PintaSaveState = 'saved' | 'saving' | 'error'
 export interface PintaEditorState {
   asset: PintaAsset
   saveState: PintaSaveState
+  saveError: string | null
   canUndo: boolean
   canRedo: boolean
 
@@ -126,6 +131,8 @@ export function createEditorStore(options: {
    * que nunca chamam `commitLinked` — sprite/mapa/vetor).
    */
   applyLinkedAssets?: (assets: PintaAsset[]) => void
+  /** Traduz erros de persistência para o badge sem acoplar o store à UI. */
+  persistErrorMessage?: (error: unknown) => string
 }): PintaEditorStore {
   const history = createHistory<EditorSnapshot>({ sizeOf: snapshotBytes })
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -147,17 +154,20 @@ export function createEditorStore(options: {
       dirty = false
       const snapshot = get().asset
       const linkedSnapshot = currentLinked ? [...currentLinked] : []
-      set({ saveState: 'saving' })
+      set({ saveState: 'saving', saveError: null })
       saving = options
         .persist(snapshot, linkedSnapshot)
         .then(() => {
           // Editou de novo enquanto salvava? Continua sujo, o timer re-salva.
-          set({ saveState: dirty ? 'saving' : 'saved' })
+          set({ saveState: dirty ? 'saving' : 'saved', saveError: null })
           options.onSaved?.(snapshot)
         })
-        .catch(() => {
+        .catch((error) => {
           dirty = true
-          set({ saveState: 'error' })
+          set({
+            saveState: 'error',
+            saveError: options.persistErrorMessage?.(error) ?? null,
+          })
         })
         .finally(() => {
           saving = null
@@ -198,6 +208,7 @@ export function createEditorStore(options: {
     return {
       asset: options.asset,
       saveState: 'saved',
+      saveError: null,
       canUndo: false,
       canRedo: false,
 

@@ -75,6 +75,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_draw_score: { VALUE: 'number', X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_label: { X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_pixel_text: { X: 'number', Y: 'number', SIZE: 'number' },
+  sz_g2d_draw_pixel_score: { VALUE: 'number', X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_fade: { PERCENT: 'number' },
   sz_g2d_draw_hearts: { COUNT: 'number', X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_sprite_health: { X: 'number', Y: 'number', SIZE: 'number' },

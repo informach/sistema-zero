@@ -123,11 +123,11 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:setObjectValue': [object()],
   'g3d:objectValue': [object()],
   'g3d:createHero': [world()],
-  // O nó único do kit: o mundo é obrigatório, o objeto só aparece no passo e na
-  // câmera — por isso `optional`, senão a validação cobraria um nome que não há.
+  // Comandos de fase só recebem o mundo. Passo/câmera/fogo vivem no stageFrame,
+  // cujo objeto é obrigatório e validado separadamente.
   'g3d:onStage': [world()],
   'g3d:stageFrame': [world(), gameObject()],
-  'g3d:stage': [world(), { field: 'objVar', kind: 'object', optional: true }],
+  'g3d:stage': [world()],
   'g3d:stageAsk': [
     { field: 'worldVar', kind: 'world', optional: true },
     { field: 'objVar', kind: 'object', optional: true },

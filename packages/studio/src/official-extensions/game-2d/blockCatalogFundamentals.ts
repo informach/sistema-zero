@@ -1019,6 +1019,30 @@ export const gameTwoDFundamentalBlocks = [
     // Moldura no ELEMENTO do canvas (não desenhada por dentro): não gasta pixel
     // do jogo, nada a apaga e não custa nada por quadro. Família do "mostrar a
     // caixa de colisão": serve para enxergar o que normalmente é invisível.
+    type: 'sz_g2d_use_font',
+    placement: 'start-only-command',
+    message0: 'Usar a fonte %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'FONT',
+        options: [
+          ['Baloo 2 (arredondada)', 'baloo2'],
+          ['Nunito (limpa)', 'nunito'],
+          ['Press Start 2P (de pixel)', 'pressStart2P'],
+          ['Bungee (grossa)', 'bungee'],
+          ['Fredoka (gordinha)', 'fredoka'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escolhe a letra de TODO texto do jogo: placar, telas e mensagens. Vale para o jogo inteiro, então use uma vez só, no começo. A de pixel combina com jogo de plataforma; a arredondada é a de sempre.',
+  },
+  {
     type: 'sz_g2d_stage_border',
     placement: 'start-only-command',
     message0: 'Mostrar a borda da tela, cor %1 espessura %2',

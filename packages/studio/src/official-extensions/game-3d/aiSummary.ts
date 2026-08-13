@@ -28,7 +28,9 @@ no quadro quando remove/prune também fizer parte do fluxo. A física é AABB le
 feita na plataforma, sem biblioteca externa pesada.
 
 RECURSOS: há primitivas, modelos compostos, materiais, luz/céu, controles, câmeras,
-mira, corpos/colisões, enxames/som e kits Desvie, Travessia, Corrida e Empilhar.
+mira, corpos/colisões, enxames/som e kits Desvie, Travessia, Corrida, Empilhar e
+Plataforma. O Kit Plataforma monta mapas de texto, temas, checkpoint, placar,
+eventos, inimigos e câmera lateral; use-o como no exemplo Reino Cogumelo.
 O último modo de câmera escolhido substitui o anterior. Travessia e Corrida
 congelam depois da derrota até o comando de recomeçar. Cópias de enxame podem
 ser selecionadas pelo ponteiro, e o comando de parar só cabe durante um loop,

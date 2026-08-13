@@ -74,6 +74,35 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   },
 
   {
+    // A escolha vale para o JOGO INTEIRO e é resolvida ANTES de ele rodar: quem
+    // monta o documento lê este bloco e embute só a fonte escolhida. Por isso é
+    // start-only e por isso o runtime só CONFERE (ver `useFont` no shell).
+    // Mesma frase e mesmas cinco opções do bloco da Jogo 2D básica.
+    type: 'sz_gk_use_font',
+    placement: 'start-only-command',
+    message0: 'Usar a fonte %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'FONT',
+        options: [
+          ['Baloo 2 (arredondada)', 'baloo2'],
+          ['Nunito (limpa)', 'nunito'],
+          ['Press Start 2P (de pixel)', 'pressStart2P'],
+          ['Bungee (grossa)', 'bungee'],
+          ['Fredoka (gordinha)', 'fredoka'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escolhe a letra de TODO texto do jogo: placar, telas, botões e mensagens. Vale para o jogo inteiro, então use uma vez só, no começo. A de pixel combina com jogo de plataforma; a arredondada é a de sempre.',
+  },
+
+  {
     // O cenário que a criança desenhou no Pinta virando o fundo do jogo. O MOTOR
     // repinta a cada quadro (antes do translate da câmera), então ele fica preso
     // à tela e nunca some por ordem errada de desenho. O irmão que se desenha

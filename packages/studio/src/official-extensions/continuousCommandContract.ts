@@ -7,6 +7,7 @@ export const CONTINUOUS_EXTENSION_COMMANDS = [
   // sobreviveria à primeira limpada da tela. O encaixe só no 🔁 é o que separa
   // este bloco do irmão fixo ("Pôr o cenário atrás de tudo"), que é start-only.
   { blockType: 'sz_g2d_draw_backdrop', statementType: 'g2d:drawBackdrop' },
+  { blockType: 'sz_g2d_show_image_screen', statementType: 'g2d:showImageScreen' },
   { blockType: 'sz_g2d_draw_prepared_tilemap', statementType: 'g2d:drawPreparedTileMap' },
   { blockType: 'sz_g2d_world_draw', statementType: 'g2d:drawWorld' },
   { blockType: 'sz_g2d_current_level_draw', statementType: 'g2d:drawCurrentLevel' },

@@ -754,6 +754,7 @@ const AUTHORED_STAGES: readonly StageBlueprint[] = [
       [31, 7, 5, '='],
       [40, 10, 5, 'F'],
       [51, 13, 25, '='],
+      [56, 12, 8, 'F'],
     ],
     entities: [
       { id: 'espinho-a', kind: 'spiky', x: 29, y: 14 },
@@ -1587,6 +1588,45 @@ function canStand(stage: ReinoZeroUltraStage, x: number, y: number): boolean {
   })
 }
 
+function routeCellIsClear(stage: ReinoZeroUltraStage, x: number, y: number): boolean {
+  const tile = tileAt(stage, Math.round(x), Math.round(y))
+  return !tileIsSolid(tile) && !tileIsHazard(tile)
+}
+
+function hasClearLinearRoute(
+  stage: ReinoZeroUltraStage,
+  from: readonly [number, number],
+  to: readonly [number, number],
+): boolean {
+  const distance = Math.max(Math.abs(to[0] - from[0]), Math.abs(to[1] - from[1]))
+  const samples = Math.max(1, Math.ceil(distance * 4))
+  for (let index = 0; index <= samples; index += 1) {
+    const progress = index / samples
+    const x = from[0] + (to[0] - from[0]) * progress
+    const y = from[1] + (to[1] - from[1]) * progress
+    if (!routeCellIsClear(stage, x, y)) return false
+  }
+  return true
+}
+
+function hasClearJumpRoute(
+  stage: ReinoZeroUltraStage,
+  from: readonly [number, number],
+  to: readonly [number, number],
+): boolean {
+  const horizontal = Math.abs(to[0] - from[0])
+  const vertical = to[1] - from[1]
+  const peak = Math.min(6, Math.max(2, Math.ceil(horizontal * 0.45) + Math.max(0, -vertical)))
+  const samples = Math.max(8, Math.ceil(Math.max(horizontal, Math.abs(vertical)) * 5))
+  for (let index = 0; index <= samples; index += 1) {
+    const progress = index / samples
+    const x = from[0] + (to[0] - from[0]) * progress
+    const y = from[1] + (to[1] - from[1]) * progress - Math.sin(Math.PI * progress) * peak
+    if (!routeCellIsClear(stage, x, y)) return false
+  }
+  return true
+}
+
 /** Busca conservadora de rota entre o spawn e a chegada usando as capacidades do motor. */
 export function hasConservativeRoute(stage: ReinoZeroUltraStage): boolean {
   const exit = stage.entities.find((entity) => entity.kind === 'exit')
@@ -1622,17 +1662,20 @@ export function hasConservativeRoute(stage: ReinoZeroUltraStage): boolean {
       if (!candidate) continue
       const dx = Math.abs(candidate[0] - current[0])
       const dy = candidate[1] - current[1]
-      const localStep = dx <= 1 && dy >= -1 && dy <= 2
-      const jump = dx <= 7 && dy >= -6 && dy <= 8
-      const safeDrop = dx <= 7 && dy > 8
+      const localStep =
+        dx <= 1 && dy >= -1 && dy <= 2 && hasClearLinearRoute(stage, current, candidate)
+      const jump = dx <= 7 && dy >= -6 && dy <= 8 && hasClearJumpRoute(stage, current, candidate)
+      const safeDrop = dx <= 7 && dy > 8 && hasClearJumpRoute(stage, current, candidate)
       const ladder =
         dx <= 1 &&
         Math.abs(dy) <= 7 &&
+        hasClearLinearRoute(stage, current, candidate) &&
         (tileAt(stage, current[0], current[1]) === 'H' ||
           tileAt(stage, candidate[0], candidate[1]) === 'H')
       const swimming =
         dx <= 6 &&
         Math.abs(dy) <= 6 &&
+        hasClearLinearRoute(stage, current, candidate) &&
         (tileAt(stage, current[0], current[1]) === '~' ||
           tileAt(stage, candidate[0], candidate[1]) === '~')
       const portalRoute = stage.entities.some(

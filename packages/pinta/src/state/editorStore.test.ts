@@ -261,4 +261,30 @@ describe('assetBytes', () => {
       assetBytes({ ...tileset, tiles: [[shape], [shape]], solid: [false, false] }),
     ).toBeGreaterThan(assetBytes(tileset))
   })
+
+  /**
+   * ⚠️ A FIGURA carrega o PNG inteiro em base64. Sem contá-lo, o orçamento de
+   * 16 MB do undo acharia que ela pesa ~128 bytes e a sessão comeria RAM em
+   * silêncio — exatamente o modo de falha que o CLAUDE.md documenta.
+   */
+  it('conta o PNG da figura (senão o orçamento do undo mente)', async () => {
+    const { createVectorBackgroundAsset } = await import('../core/project')
+    const vazio = createVectorBackgroundAsset({ name: 'c', width: 64, height: 64 })
+    const src = `data:image/png;base64,${'A'.repeat(50_000)}`
+    const figura = {
+      id: 'f1',
+      type: 'image' as const,
+      x: 0,
+      y: 0,
+      w: 32,
+      h: 32,
+      src,
+      fill: 'none',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    const comFigura = assetBytes({ ...vazio, shapes: [figura] })
+    expect(comFigura - assetBytes(vazio)).toBeGreaterThanOrEqual(src.length * 2)
+  })
 })

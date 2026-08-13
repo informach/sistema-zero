@@ -58,7 +58,8 @@ interface CreateHero extends Common {
   color: string
 }
 /**
- * ⚠️ TODO o resto do Kit Plataforma cabe NESTE nó, discriminado pelo campo `op`.
+ * O restante dos comandos de fase do Kit Plataforma cabe NESTE nó,
+ * discriminado pelo campo `op`.
  *
  * Não é preguiça de tipagem: a união `JSStatement` do núcleo já está no limite
  * estrutural do TypeScript ("union type too complex to represent" nos lugares
@@ -77,21 +78,20 @@ interface OnStage extends Common {
   body: JSStatement[]
 }
 /**
- * Os dois comandos POR QUADRO do kit. Tipo separado do StageNode porque
+ * Os três comandos POR QUADRO do kit. Tipo separado do StageNode porque
  * placement é por TIPO de IR: "atualizar a fase" e "câmera de lado" só valem
  * dentro do laço, enquanto montar/limpar/recomeçar valem em qualquer lugar.
  */
 interface StageFrame extends Common {
   type: 'g3d:stageFrame'
-  op: string
+  op: 'passo' | 'camera' | 'fogo'
   worldVar: string
   objVar: string
 }
 interface StageNode extends Common {
   type: 'g3d:stage'
-  op: string
+  op: 'tema' | 'montar' | 'limpar' | 'recomecar' | 'numero'
   worldVar: string
-  objVar?: string
   text?: string
   a?: number | JSExpr
   b?: number | JSExpr
@@ -131,7 +131,7 @@ interface ObjectValue extends Common {
 /** Mesma economia do StageNode, agora do lado das perguntas. */
 interface StageAsk extends Common {
   type: 'g3d:stageAsk'
-  op: string
+  op: 'fase' | 'estado' | 'heroi'
   worldVar: string
   objVar: string
   what: string
@@ -211,7 +211,7 @@ export function platformGameThreeDStatementSchemas(
     }),
     z.object({
       type: z.literal('g3d:stage'),
-      op: z.enum(['tema', 'montar', 'limpar', 'recomecar', 'passo', 'camera', 'numero', 'quando']),
+      op: z.enum(['tema', 'montar', 'limpar', 'recomecar', 'numero']),
       worldVar: irText(),
       text: irText().optional(),
       a: numeric.optional(),

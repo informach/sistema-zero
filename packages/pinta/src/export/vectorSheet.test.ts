@@ -6,6 +6,7 @@ import { spritesheetMetadata, spritesheetRecipe } from './spritesheet'
 import {
   packVectorSpritesheet,
   vectorSheetPngDataUrl,
+  vectorSheetPortableSvg,
   vectorSheetSvg,
   vectorStripSvg,
 } from './vectorSheet'
@@ -119,6 +120,30 @@ describe('vectorSheetSvg — documento puro', () => {
     const svg = vectorStripSvg(asset, andar)
     expect(svg).toContain('width="192" height="64"')
     expect(svg).not.toContain('y="64"')
+  })
+
+  it('a folha portátil incorpora a fonte usada nas células', async () => {
+    const asset = makeSprite()
+    const first = asset.animations[0]?.frames[0]
+    if (!first) throw new Error('quadro esperado')
+    first.push({
+      id: 'texto',
+      type: 'text',
+      x: 4,
+      y: 20,
+      text: 'Jogar',
+      fontSize: 12,
+      fontFamily: 'bungee',
+      fill: '#ffffff',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    })
+
+    const svg = await vectorSheetPortableSvg(packVectorSpritesheet(asset))
+    expect(svg).toContain("font-family:'Bungee'")
+    expect(svg).toContain('data:font/woff2;base64,')
+    expect(svg).not.toContain("font-family:'Fredoka'")
   })
 })
 

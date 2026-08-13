@@ -1,5 +1,6 @@
 import type { ExampleExperience, ProjectAsset } from '#core'
 import { normalizeSZIR, type SZIR, type SZIRV2 } from '#ir'
+import type { BuildWorkspaceStateOptions } from '../blockly/workspaceState'
 import { reinoZeroUltraExample } from './reinoZeroUltraExample'
 
 /**
@@ -14,6 +15,8 @@ export interface CoreExample {
   experience: ExampleExperience
   description: string
   ir: SZIRV2
+  /** Preferências de apresentação dos blocos ao criar o projeto pela galeria. */
+  workspaceOptions?: BuildWorkspaceStateOptions
   /** Assets embutidos que o exemplo precisa (ex.: imagem de fundo por CSS). */
   assets?: ProjectAsset[]
 }

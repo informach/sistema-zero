@@ -5,7 +5,8 @@
  * síncrono, sem canvas e sem CSP — renderiza igual em qualquer lugar.
  */
 import type { JSX, MouseEvent, PointerEvent } from 'react'
-import { memo } from 'react'
+import { memo, useEffect } from 'react'
+import { ensureVectorFontsForShapes } from './fonts'
 import {
   gradientId,
   isVectorGradient,
@@ -63,7 +64,7 @@ export function ShapeElement({
   /** Duplo clique (ex.: reeditar um texto no palco). Só render — o export string não muda. */
   onDoubleClick?: (event: MouseEvent<SVGElement>) => void
 }): JSX.Element {
-  const { tag, attrs, content } = shapeGeometryAttrs(shape)
+  const { tag, attrs, content, lines } = shapeGeometryAttrs(shape)
   const common = shapeCommonAttrs(shape)
   const props: Record<string, unknown> = { ...attrs, ...common, onPointerDown, onDoubleClick }
   // React usa camelCase p/ estes atributos.
@@ -87,8 +88,27 @@ export function ShapeElement({
     props.fontFamily = props['font-family']
     delete props['font-family']
   }
+  if ('text-anchor' in props) {
+    props.textAnchor = props['text-anchor']
+    delete props['text-anchor']
+  }
+  if ('image-rendering' in props) {
+    props.imageRendering = props['image-rendering']
+    delete props['image-rendering']
+  }
   const Tag = tag as 'rect'
-  return <Tag {...(props as JSX.IntrinsicElements['rect'])}>{content}</Tag>
+  return (
+    <Tag {...(props as JSX.IntrinsicElements['rect'])}>
+      {lines
+        ? lines.map((line, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a ordem É a identidade da linha
+            <tspan key={`linha-${index}`} x={line.x} dy={line.dy}>
+              {line.text}
+            </tspan>
+          ))
+        : content}
+    </Tag>
+  )
 }
 
 /**
@@ -109,6 +129,9 @@ export const VectorFrameSvg = memo(function VectorFrameSvg({
   shapes: VectorShape[]
   className?: string
 }): JSX.Element {
+  useEffect(() => {
+    void ensureVectorFontsForShapes(shapes)
+  }, [shapes])
   // O olhinho do painel Camadas vale em TODA prévia/miniatura (WYSIWYG).
   const visible = visibleShapes(shapes)
   return (

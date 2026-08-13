@@ -50,6 +50,10 @@ export interface BuildProductionHtmlInput {
    * tocar, e não no carregamento.
    */
   audioScriptSrc?: string
+  /** A folha com o `@font-face` da fonte ESCOLHIDA (`sz-font.css`). */
+  fontCssHref?: string
+  /** O script que publica a família para os runtimes de extensão lerem. */
+  fontScriptSrc?: string
 }
 
 /**
@@ -100,7 +104,19 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
     ? `<script src="${escapeAttr(input.audioScriptSrc)}"></script>`
     : ''
 
-  const earlyHeadBlock = [HARDENING_META, inputScriptTag, audioScriptTag].filter(Boolean).join('\n')
+  // A fonte vai CEDO: a folha antes de tudo (para não trocar de letra na primeira
+  // pintura) e o script antes dos scripts de extensão, que capturam a família na
+  // primeira linha deles.
+  const fontCssTag = input.fontCssHref
+    ? `<link rel="stylesheet" href="${escapeAttr(input.fontCssHref)}" />`
+    : ''
+  const fontScriptTag = input.fontScriptSrc
+    ? `<script src="${escapeAttr(input.fontScriptSrc)}"></script>`
+    : ''
+
+  const earlyHeadBlock = [HARDENING_META, fontCssTag, fontScriptTag, inputScriptTag, audioScriptTag]
+    .filter(Boolean)
+    .join('\n')
   const headBlock = [PWA_HEAD_TAGS, assetsScriptTag, importmapTag, extScriptsTag, extraCssTags]
     .filter(Boolean)
     .join('\n')

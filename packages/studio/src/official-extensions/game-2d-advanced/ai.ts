@@ -40,6 +40,12 @@ RECEITA CANÔNICA POR ÁREA DO PROJETO:
      (CSS no canvas, capada em 40) e SZGameKit.showHitboxes() contorna de verde a
      caixa que COLIDE de tudo que está vivo. Os dois são de ensino/depuração e vão
      em Ao iniciar; blocos "Mostrar a borda da tela" e "Mostrar as caixas de colisão".
+   · SZGameKit.useFont(id) escolhe a letra de TODO texto do jogo (placar, telas,
+     botões, mensagens). Ids: baloo2, nunito, pressStart2P, bungee, fredoka. A
+     escolha é resolvida ANTES de o jogo rodar (só a fonte escolhida é embutida no
+     documento), então vai em Ao iniciar, UMA vez, com o nome escrito à mão —
+     dentro de um "se" ou vindo de variável ela não muda nada e o runtime avisa.
+     Bloco "Usar a fonte".
    · SZGameKit.setBackdrop(nome) põe um DESENHO do projeto como cenário: cobre a
      tela inteira sem deformar, centralizado, e o MOTOR o repinta a cada quadro
      antes da câmera. Chame uma vez em Ao iniciar; bloco "Pôr o cenário atrás de

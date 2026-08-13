@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
-import { behaviorStatements, type JSStatement, SZIRV2Schema } from '#ir'
+import { behaviorStatements, type JSStatement, normalizeSZIR, SZIRV2Schema } from '#ir'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
@@ -15,6 +15,7 @@ import {
   validateReinoZeroUltraStage,
 } from './reinoZeroUltraData'
 import { reinoZeroUltraExample } from './reinoZeroUltraExample'
+import { REINO_ZERO_ULTRA_SOURCE } from './reinoZeroUltraSource'
 
 function stripIds<T>(value: T): T {
   if (Array.isArray(value)) return value.map(stripIds) as T
@@ -108,6 +109,28 @@ describe('Reino Zero Ultra — plataforma profissional sem extensão', () => {
     expect(validateReinoZeroUltraCampaign(brokenCampaign)).toBeNull()
   })
 
+  it('rejeita rota bloqueada por uma parede sólida do piso ao teto', () => {
+    const blocked = {
+      schemaVersion: 1,
+      id: '1-1',
+      world: 1,
+      stage: 1,
+      theme: 'campo',
+      width: 12,
+      height: 8,
+      timeLimit: 120,
+      seed: 123,
+      spawn: { x: 2, y: 6 },
+      tiles: Array.from({ length: 8 }, (_, row) => (row === 7 ? '############' : '......#.....')),
+      entities: [{ id: 'saida', kind: 'exit', x: 9, y: 6, variant: 'bandeira' }],
+      platforms: [],
+      triggers: [{ kind: 'hint', x: 1, y: 1, w: 2, h: 2, value: 'Parede intransponível.' }],
+    }
+    const validated = validateReinoZeroUltraStage(blocked)
+    if (!validated) throw new Error('A fixture precisa ser válida estruturalmente.')
+    expect(hasConservativeRoute(validated)).toBe(false)
+  })
+
   it('cobre campanha, controles, persistência, replay e som apenas com IR nativa', () => {
     const types = collectTypes(reinoZeroUltraExample.ir)
     for (const forbidden of ['rawJS', 'rawHTML', 'rawCSS']) expect(types.has(forbidden)).toBe(false)
@@ -142,16 +165,31 @@ describe('Reino Zero Ultra — plataforma profissional sem extensão', () => {
     expect(compileStatements(reparsed, 0)).toBe(code)
   })
 
+  it('mantém a IR publicada em sincronia com o fonte canônico', () => {
+    const rebuilt = normalizeSZIR({
+      html: reinoZeroUltraExample.ir.html,
+      css: reinoZeroUltraExample.ir.css,
+      js: parseJS(REINO_ZERO_ULTRA_SOURCE),
+      extensions: [],
+    })
+    expect(stripIds(rebuilt)).toEqual(stripIds(reinoZeroUltraExample.ir))
+  })
+
   it('preserva o motor inteiro no round-trip IR → blocos → IR', () => {
     const workspace = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(
-        buildWorkspaceStateFromIR(reinoZeroUltraExample.ir),
+        buildWorkspaceStateFromIR(reinoZeroUltraExample.ir, reinoZeroUltraExample.workspaceOptions),
         workspace,
       )
       const rebuilt = stripIds(behaviorStatements(buildIRFromWorkspace(workspace)))
       expect(rebuilt).toEqual(stripIds(behaviorStatements(reinoZeroUltraExample.ir)))
       expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
+      const functions = workspace
+        .getAllBlocks(false)
+        .filter((block) => block.type === 'sz_js_function')
+      expect(functions.length).toBeGreaterThan(80)
+      expect(functions.every((block) => block.isCollapsed())).toBe(true)
     } finally {
       workspace.dispose()
     }

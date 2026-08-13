@@ -71,11 +71,19 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
     )
     expect(maps).toHaveLength(32)
     expect(new Set(maps.map((map) => map.grid)).size).toBe(32)
+    const widths: number[] = []
     for (const map of maps) {
       const rows = map.grid.split(';')
       expect(rows).toHaveLength(15)
-      expect(rows.every((row) => row.split(' ').length === 72)).toBe(true)
+      const width = rows[0]?.split(' ').length ?? 0
+      widths.push(width)
+      expect(rows.every((row) => row.split(' ').length === width)).toBe(true)
     }
+    expect(widths).toEqual([
+      72, 74, 76, 73, 74, 76, 78, 75, 76, 78, 74, 77, 73, 77, 75, 78, 75, 78, 76, 77, 76, 78, 75,
+      77, 77, 76, 78, 74, 78, 77, 76, 78,
+    ])
+    expect(new Set(widths).size).toBeGreaterThanOrEqual(6)
     expect(reinoZeroExample.ir.behavior.start[0]).toMatchObject({
       type: 'g2d:setupStage',
       width: 256,
@@ -144,7 +152,7 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
   it('persiste o workspace completo sem ultrapassar o sanitizer de projetos', () => {
     const state = buildWorkspaceStateFromIR(reinoZeroExample.ir)
     expect(
-      sanitizeImportedBlocksState(state, [{ id: 'game-2d', version: '0.73.0', installedAt: 0 }]),
+      sanitizeImportedBlocksState(state, [{ id: 'game-2d', version: '0.74.0', installedAt: 0 }]),
     ).toBe(state)
   })
 

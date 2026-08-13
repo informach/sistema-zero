@@ -15,6 +15,7 @@
     "test": "bun test src",
     "check": "biome check .",
     "check:fix": "biome check --write .",
+    "gen:vector-fonts": "bun run scripts/gen-vector-fonts.ts",
     "dev": "vite --config playground/vite.config.ts"
   },
   "dependencies": {

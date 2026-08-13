@@ -11,7 +11,8 @@
  * para o card. Os diálogos de renomear/apagar seguem no GalleryScreen.
  */
 import type { JSX } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { thumbnailBitmap, thumbnailShapes } from '../../core/assetThumb'
 import { COPY } from '../../core/copy'
 import {
   assetStyle,
@@ -20,51 +21,14 @@ import {
   type PintaBitmap,
   resolveAssetPalette,
 } from '../../core/project'
-import { flattenCels } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
-import type { VectorShape } from '../../vector/model'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Copy, Pencil, Trash2 } from '../ui/icons'
 
-/** Bitmap "cara" do asset para a miniatura (null = sem prévia raster). */
-export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
-  switch (asset.kind) {
-    // Miniatura mostra o desenho VISÍVEL (camadas achatadas).
-    case 'pixel-sprite': {
-      const cels = asset.animations[0]?.frames[0]
-      return cels ? flattenCels(cels, asset.layers) : null
-    }
-    case 'pixel-background':
-      return flattenCels(asset.cels, asset.layers)
-    case 'tileset':
-      return asset.tiles[0] ?? null
-    default:
-      return null
-  }
-}
-
-/** Documento vetorial "cara" do asset para a miniatura SVG (null = não vetor). */
-export function thumbnailShapes(
-  asset: PintaAsset,
-): { width: number; height: number; shapes: VectorShape[] } | null {
-  switch (asset.kind) {
-    case 'vector-background':
-      return { width: asset.width, height: asset.height, shapes: asset.shapes }
-    case 'vector-sprite': {
-      const frame = asset.animations[0]?.frames[0]
-      if (!frame) return null
-      return { width: asset.frameWidth, height: asset.frameHeight, shapes: frame }
-    }
-    case 'vector-tileset': {
-      const tile = asset.tiles[0]
-      if (!tile) return null
-      return { width: asset.tileSize, height: asset.tileSize, shapes: tile }
-    }
-    default:
-      return null
-  }
-}
+// Os dois extratores da "cara" do asset mudaram de casa para `core/assetThumb`
+// (são puros e o seletor "Trazer um desenho" do vetor também precisa deles).
+export { thumbnailBitmap, thumbnailShapes }
 
 /** Cor do chip por PAPEL (a mesma nos dois estilos — é como a criança pensa). */
 const KIND_CHIP_CLASSES: Record<PintaAsset['kind'], string> = {
@@ -134,15 +98,20 @@ function TilemapThumb({
   )
 }
 
-function Thumb({
+/**
+ * A miniatura do desenho. Exportada porque o seletor "Trazer um desenho" do
+ * vetor usa a MESMA — é o que faz o seletor ser WYSIWYG com a galeria (entra
+ * exatamente o que o card mostra) e impede as duas de divergirem.
+ */
+export function AssetThumb({
   asset,
   findAsset,
 }: {
   asset: PintaAsset
   findAsset?: (id: string) => PintaAsset | null
 }): JSX.Element {
-  const bitmap = thumbnailBitmap(asset)
-  const shapesDoc = thumbnailShapes(asset)
+  const bitmap = useMemo(() => thumbnailBitmap(asset), [asset])
+  const shapesDoc = useMemo(() => thumbnailShapes(asset), [asset])
 
   return (
     <div className="pin-checkerboard relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border-2 border-pin-border">
@@ -216,7 +185,7 @@ export function AssetCard({
         )}
         className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
       >
-        <Thumb asset={asset} findAsset={findAsset} />
+        <AssetThumb asset={asset} findAsset={findAsset} />
       </button>
       <div className="flex items-center gap-1">
         <span

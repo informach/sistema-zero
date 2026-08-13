@@ -24,7 +24,7 @@ interface GameKitTilemapMetadata {
 
 interface Window {
   SZGameKit: GameKitRuntimeApi
-  SZGameUIFont: { family: string; install(): void }
+  SZGameUIFont: { id: string; family: string; install(): void }
   __SZProjectLifecycle?: {
     run(callback: (...args: never[]) => unknown, thisArg?: unknown, args?: unknown[]): unknown
     endCallback(): void

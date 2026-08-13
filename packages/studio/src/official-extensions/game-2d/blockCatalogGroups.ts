@@ -381,6 +381,18 @@ export const gameTwoDGroupAndHudBlocks = [
     tooltip: 'Verdadeiro se o jogo está naquela tela. Use dentro de um "se".',
   },
   {
+    type: 'sz_g2d_show_image_screen',
+    placement: 'loop-command',
+    message0: 'Mostrar a tela com a imagem %1',
+    args0: [{ type: 'field_asset_picker', name: 'IMAGE', text: '' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cobre a tela inteira com um desenho seu: ótimo para a tela de abertura, a de vitória e a de fim de jogo. A imagem cobre sem deformar (o que sobra fica de fora). Ponha dentro de um "se a tela atual é…" e desenhe por cima o que quiser.',
+  },
+  {
     type: 'sz_g2d_show_screen',
     placement: 'command',
     message0: 'Mostrar tela com título %1 subtítulo %2 dica %3 fundo %4',

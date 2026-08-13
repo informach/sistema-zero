@@ -68,8 +68,91 @@ export type VectorShape = VectorShapeBase &
     | { type: 'polygon'; points: Vec2[] }
     /** Pincel suavizado — o `d` já vem resolvido pelo smoothing. */
     | { type: 'path'; d: string }
-    | { type: 'text'; x: number; y: number; text: string; fontSize: number }
+    /**
+     * Texto de UMA OU VÁRIAS linhas (`\n` separa). `x`/`y` são a ÂNCORA, e o
+     * que ela significa depende do `align` (`text-anchor` start/middle/end) —
+     * é o que faz as linhas se alinharem entre si de graça, pelo próprio SVG.
+     *
+     * ⭐ `'left'` é INEXPRIMÍVEL de propósito (não é só "chave omitida"): assim
+     * o tipo impede escrever o padrão, e todo texto que já existe atravessa o
+     * sanitize byte a byte. Leia sempre por `textAlignOf`.
+     */
+    | {
+        type: 'text'
+        x: number
+        y: number
+        text: string
+        fontSize: number
+        /** Ausente em documentos antigos = Nunito. */
+        fontFamily?: VectorFontFamily
+        align?: 'center' | 'right'
+      }
+    /**
+     * FIGURA: um desenho de pixel art trazido da galeria. Move, gira e muda de
+     * tamanho como qualquer forma, mas não se edita por dentro.
+     *
+     * `src` é SEMPRE um PNG data URL — os bytes ficam ASSADOS aqui dentro. Nada
+     * de referência viva ao asset de origem: assim não existe ciclo A→B→A, o
+     * desenho continua inteiro se a criança apagar o original, e o rasterizador
+     * do export (que carrega o SVG por Blob URL, em modo estático) consegue ler,
+     * o que uma URL externa não permitiria.
+     */
+    | {
+        type: 'image'
+        x: number
+        y: number
+        w: number
+        h: number
+        src: string
+        /** Pixel art: sem borrar ao ampliar. Ausente = interpolação padrão. */
+        pixelated?: true
+      }
   )
+
+export type VectorTextAlign = 'left' | 'center' | 'right'
+
+export const VECTOR_FONT_FAMILIES = [
+  'baloo-2',
+  'nunito',
+  'press-start-2p',
+  'bungee',
+  'fredoka',
+] as const
+export type VectorFontFamily = (typeof VECTOR_FONT_FAMILIES)[number]
+export const DEFAULT_VECTOR_FONT_FAMILY: VectorFontFamily = 'nunito'
+
+export interface VectorFontFamilyInfo {
+  label: string
+  /** Aproximação de largura para bounds/hit testing sem depender do DOM. */
+  widthFactor: number
+}
+
+export const VECTOR_FONT_FAMILY_INFO: Record<VectorFontFamily, VectorFontFamilyInfo> = {
+  'baloo-2': { label: 'Baloo 2', widthFactor: 0.58 },
+  nunito: { label: 'Nunito', widthFactor: 0.56 },
+  'press-start-2p': { label: 'Press Start 2P', widthFactor: 0.8 },
+  bungee: { label: 'Bungee', widthFactor: 0.64 },
+  fredoka: { label: 'Fredoka', widthFactor: 0.57 },
+}
+
+export function isVectorFontFamily(value: unknown): value is VectorFontFamily {
+  return typeof value === 'string' && (VECTOR_FONT_FAMILIES as readonly string[]).includes(value)
+}
+
+export function fontFamilyOf(shape: VectorShape): VectorFontFamily {
+  return shape.type === 'text' && isVectorFontFamily(shape.fontFamily)
+    ? shape.fontFamily
+    : DEFAULT_VECTOR_FONT_FAMILY
+}
+
+export function fontFamilyLabel(family: VectorFontFamily): string {
+  return VECTOR_FONT_FAMILY_INFO[family].label
+}
+
+/** `'left'` quando a chave está ausente (ela só existe para center/right). */
+export function textAlignOf(shape: VectorShape): VectorTextAlign {
+  return shape.type === 'text' ? (shape.align ?? 'left') : 'left'
+}
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
 const SAFE_VECTOR_ID = /^[A-Za-z0-9_-]{1,128}$/
@@ -115,13 +198,36 @@ function isVec2(value: unknown): value is Vec2 {
   return isFiniteNumber(v.x) && isFiniteNumber(v.y)
 }
 
-const MAX_TEXT_CHARS = 200
+/** Teto de caracteres do texto, contando os `\n`. Exportado: o diálogo capa antes. */
+export const MAX_TEXT_CHARS = 400
+/** Teto de LINHAS: sem ele a caixa do texto cresceria sem fim. */
+export const MAX_TEXT_LINES = 12
+
+/**
+ * Regra ÚNICA do conteúdo de texto (o sanitize e o diálogo chamam esta):
+ * normaliza a quebra de linha, capa caracteres e capa linhas. Idempotente.
+ */
+export function normalizeTextContent(raw: string): string {
+  return raw
+    .replace(/\r\n?/g, '\n')
+    .slice(0, MAX_TEXT_CHARS)
+    .split('\n')
+    .slice(0, MAX_TEXT_LINES)
+    .join('\n')
+}
 /** Teto do `d` do pincel — o sanitize DESCARTA acima disso; a criação (smoothing) capa antes. */
 export const MAX_PATH_CHARS = 20_000
 /** Teto de pontos do polígono. Exportado: o editor de pontos recusa passar disso. */
 export const MAX_POLYGON_POINTS = 64
 /** Piso do polígono — abaixo disso o sanitize DESCARTA a forma no próximo load. */
 export const MIN_POLYGON_POINTS = 3
+/**
+ * Teto do `src` da FIGURA, no mesmo idioma do `MAX_PATH_CHARS`: acima disso o
+ * sanitize DESCARTA a forma no próximo load, então quem insere recusa ANTES.
+ */
+export const MAX_IMAGE_SRC_CHARS = 300_000
+/** Único esquema aceito na figura: bloqueia http(s), svg+xml e javascript:. */
+const IMAGE_SRC_PREFIX = 'data:image/png;base64,'
 
 /**
  * Valida um shape vindo de fonte não confiável (disco/import). Retorna o shape
@@ -173,10 +279,45 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
       return { ...base, type: 'path', d: s.d } as VectorShape
     case 'text': {
       if (![s.x, s.y].every(isFiniteNumber)) return null
-      if (typeof s.text !== 'string' || !s.text.trim()) return null
+      if (typeof s.text !== 'string') return null
+      // Normaliza ANTES do trim: '\n\n' não é texto nenhum.
+      const text = normalizeTextContent(s.text)
+      if (!text.trim()) return null
       const fontSize = isFiniteNumber(s.fontSize) ? Math.min(Math.max(s.fontSize, 6), 200) : 24
-      const text = s.text.slice(0, MAX_TEXT_CHARS)
-      return { ...base, type: 'text', x: s.x, y: s.y, text, fontSize } as VectorShape
+      const align = s.align === 'center' || s.align === 'right' ? s.align : undefined
+      const fontFamily = isVectorFontFamily(s.fontFamily) ? s.fontFamily : undefined
+      return {
+        ...base,
+        type: 'text',
+        x: s.x,
+        y: s.y,
+        text,
+        fontSize,
+        ...(fontFamily ? { fontFamily } : {}),
+        ...(align ? { align } : {}),
+      } as VectorShape
+    }
+    // ⚠️ O `default: return null` abaixo é o ÚNICO switch de shape que o
+    // TypeScript não obriga a cobrir: variante nova esquecida aqui some do
+    // desenho no próximo load, em silêncio.
+    case 'image': {
+      const w = s.w
+      const h = s.h
+      if (![s.x, s.y, w, h].every(isFiniteNumber)) return null
+      if (!isFiniteNumber(w) || !isFiniteNumber(h) || w <= 0 || h <= 0) return null
+      if (typeof s.src !== 'string') return null
+      if (!s.src.startsWith(IMAGE_SRC_PREFIX)) return null
+      if (s.src.length > MAX_IMAGE_SRC_CHARS) return null
+      return {
+        ...base,
+        type: 'image',
+        x: s.x,
+        y: s.y,
+        w,
+        h,
+        src: s.src,
+        ...(s.pixelated === true ? { pixelated: true } : {}),
+      } as VectorShape
     }
     default:
       return null

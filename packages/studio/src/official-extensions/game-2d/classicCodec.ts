@@ -3,6 +3,7 @@ import type * as Blockly from 'blockly/core'
 import type { JSExpr, JSStatement } from '#ir'
 import { valueToExpr } from '#ir'
 import type { SerializedBlocklyBlock } from '../../codecs/types'
+import { GAME_UI_FONT_IDS } from '../gameUiFonts/catalog'
 
 const ACTIONS = new Set([
   'left',
@@ -16,8 +17,8 @@ const ACTIONS = new Set([
   'pause',
 ])
 const CONTROL_MODES = new Set(['auto', 'always', 'off'])
-const VECTOR_ROLES = new Set(['decor', 'solid', 'platform'])
-const CONTACT_SIDES = new Set(['any', 'head', 'feet', 'left', 'right'])
+const VECTOR_ROLES = new Set(['decor', 'solid', 'platform', 'contact'])
+const CONTACT_SIDES = new Set(['any', 'head', 'feet', 'left', 'right', 'inside'])
 const STOMP_MODES = new Set(['defeat', 'damage', 'squash', 'shell', 'spiky'])
 const TEXT_ALIGNS = new Set(['left', 'center', 'right'])
 
@@ -161,6 +162,28 @@ export function classicGameTwoDBlockToIR(
       } as JSStatement
       break
     }
+    case 'sz_g2d_draw_pixel_score':
+      statement = {
+        type: 'g2d:drawPixelScore',
+        ctxVar: 'ctx',
+        label: f('LABEL'),
+        value: expr('VALUE', 0),
+        x: expr('X', 8),
+        y: expr('Y', 8),
+        size: expr('SIZE', 2),
+        color: f('COLOR'),
+      } as JSStatement
+      break
+    case 'sz_g2d_show_image_screen':
+      statement = {
+        type: 'g2d:showImageScreen',
+        ctxVar: 'ctx',
+        image: f('IMAGE'),
+      } as JSStatement
+      break
+    case 'sz_g2d_use_font':
+      statement = { type: 'g2d:useFont', font: f('FONT') } as JSStatement
+      break
     case 'sz_g2d_draw_fade':
       statement = {
         type: 'g2d:drawFade',
@@ -213,6 +236,12 @@ export function classicGameTwoDStatementToCode(
       return `${tools.pad}SZGame2D.updateEnemyShells(${id('typeVar')}, ${id('worldVar')});`
     case 'g2d:drawPixelText':
       return `${tools.pad}SZGame2D.drawPixelText(${id('ctxVar')}, ${JSON.stringify(s.text)}, ${expr('x')}, ${expr('y')}, ${expr('size')}, ${JSON.stringify(s.color)}, ${JSON.stringify(s.align)});`
+    case 'g2d:showImageScreen':
+      return `${tools.pad}SZGame2D.showImageScreen(${id('ctxVar')}, ${JSON.stringify(s.image)});`
+    case 'g2d:useFont':
+      return `${tools.pad}SZGame2D.useFont(${JSON.stringify(s.font)});`
+    case 'g2d:drawPixelScore':
+      return `${tools.pad}SZGame2D.drawPixelScore(${id('ctxVar')}, ${JSON.stringify(s.label)}, ${expr('value')}, ${expr('x')}, ${expr('y')}, ${expr('size')}, ${JSON.stringify(s.color)});`
     case 'g2d:drawFade':
       return `${tools.pad}SZGame2D.drawFade(${id('ctxVar')}, ${expr('percent')}, ${JSON.stringify(s.color)});`
     default:
@@ -404,6 +433,22 @@ export function classicGameTwoDStatementToBlock(
           )
         : tools.raw(statement)
     }
+    case 'g2d:showImageScreen':
+      return tools.block('sz_g2d_show_image_screen', { IMAGE: String(s.image) }, {}, statement.__id)
+    case 'g2d:useFont':
+      return tools.block('sz_g2d_use_font', { FONT: String(s.font) }, {}, statement.__id)
+    case 'g2d:drawPixelScore': {
+      const sockets = values('value', 'x', 'y', 'size')
+      return sockets
+        ? tools.block(
+            'sz_g2d_draw_pixel_score',
+            { LABEL: String(s.label), COLOR: String(s.color) },
+            {},
+            statement.__id,
+            sockets,
+          )
+        : tools.raw(statement)
+    }
     case 'g2d:drawFade': {
       const percent = value('percent')
       return percent
@@ -553,6 +598,40 @@ export function classicGameTwoDCallToIR(
         align &&
         TEXT_ALIGNS.has(align)
         ? ({ type: 'g2d:drawPixelText', ctxVar, text, x, y, size, color, align } as JSStatement)
+        : undefined
+    }
+    case 'showImageScreen': {
+      // generator: SZGame2D.showImageScreen(ctx, "vitoria")
+      const ctxVar = identifier(0)
+      const image = stringLiteral(args[1])
+      return ctxVar && image !== null
+        ? ({ type: 'g2d:showImageScreen', ctxVar, image } as JSStatement)
+        : undefined
+    }
+    case 'useFont': {
+      // generator: SZGame2D.useFont("bungee")
+      // Nome fora do catálogo NÃO vira bloco (o dropdown o trocaria pela 1ª opção).
+      const font = stringLiteral(args[0])
+      return font && (GAME_UI_FONT_IDS as readonly string[]).includes(font)
+        ? ({ type: 'g2d:useFont', font } as JSStatement)
+        : undefined
+    }
+    case 'drawPixelScore': {
+      const ctxVar = identifier(0)
+      const label = stringLiteral(args[1])
+      const value = expression(2)
+      const x = expression(3)
+      const y = expression(4)
+      const size = expression(5)
+      const color = stringLiteral(args[6])
+      return ctxVar &&
+        label !== null &&
+        tools.simple(value) &&
+        tools.simple(x) &&
+        tools.simple(y) &&
+        tools.simple(size) &&
+        color
+        ? ({ type: 'g2d:drawPixelScore', ctxVar, label, value, x, y, size, color } as JSStatement)
         : undefined
     }
     case 'drawFade': {

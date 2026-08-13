@@ -4,7 +4,8 @@
  * vira Blob URL (NUNCA `fetch('data:')` — CSP) e é desenhado num canvas.
  * `null` em ambiente sem canvas/Image (happy-dom) ou SVG irrenderizável.
  */
-import { type VectorDoc, vectorToSvg } from './svg'
+import { vectorToPortableSvg } from './portableSvg'
+import type { VectorDoc } from './svg'
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -50,5 +51,5 @@ export async function svgToPngDataUrl(
 }
 
 export async function vectorPngDataUrl(doc: VectorDoc, scale = 1): Promise<string | null> {
-  return svgToPngDataUrl(vectorToSvg(doc), doc.width, doc.height, scale)
+  return svgToPngDataUrl(await vectorToPortableSvg(doc), doc.width, doc.height, scale)
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { loadExtensionBootstrapScript } from '#extensions'
 import { compileStatements, generateCSS, generateHTML } from '#generators'
-import { G3D_STATEMENT_TYPES, type JSStatement, SZIRV2Schema } from '#ir'
+import { G3D_STATEMENT_TYPES, type JSStatement, JSStatementSchema, SZIRV2Schema } from '#ir'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import {
   crossingExample,
@@ -41,6 +41,50 @@ describe('game-3d — definição da extensão', () => {
 
 describe('game-3d — gerador', () => {
   const gen = (stmt: JSStatement) => compileStatements([stmt], 0)
+
+  it('Kit Plataforma preserva o mapa literal e por expressão ao gerar JavaScript', () => {
+    expect(
+      gen({
+        type: 'g3d:stage',
+        op: 'montar',
+        worldVar: 'jogo',
+        a: { type: 'str', value: 'chao=0-10' },
+      }),
+    ).toBe('SZGame3D.loadStage(jogo, "chao=0-10");')
+    const indexed = compileStatements(
+      [
+        { type: 'g3d:createPlatformScene', canvasId: 'tela', varName: 'jogo' },
+        {
+          type: 'var',
+          name: 'fases',
+          value: {
+            type: 'array',
+            items: [
+              { type: 'str', value: 'fase 1' },
+              { type: 'str', value: 'fase 2' },
+              { type: 'str', value: 'fase 3' },
+            ],
+          },
+        },
+        {
+          type: 'g3d:stage',
+          op: 'montar',
+          worldVar: 'jogo',
+          a: { type: 'index', arrayVar: 'fases', index: { type: 'num', value: 2 } },
+        },
+      ],
+      0,
+    )
+    expect(indexed).toContain('SZGame3D.loadStage(jogo, fases[2]);')
+  })
+
+  it('Kit Plataforma mantém comandos de fase e de quadro em nós distintos', () => {
+    for (const op of ['passo', 'camera', 'quando']) {
+      expect(JSStatementSchema.safeParse({ type: 'g3d:stage', op, worldVar: 'jogo' }).success).toBe(
+        false,
+      )
+    }
+  })
 
   it('cena, fundo, câmera, cubo e esfera', () => {
     expect(gen({ type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' })).toBe(

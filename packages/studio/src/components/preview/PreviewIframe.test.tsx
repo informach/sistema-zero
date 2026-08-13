@@ -219,6 +219,60 @@ function getPreviewSrcDoc(): string {
   return iframe.getAttribute('srcdoc') ?? ''
 }
 
+/**
+ * ⭐ Regressão de um defeito MUDO: o documento esperava a fonte chegar
+ * (`gameUiFontReady` segura o render) e depois montava o preview SEM ela. Nada
+ * quebrava — a criança escolhia "Press Start 2P", nada mudava na tela, e o
+ * jogo exportado (que passa pelo outro caminho) saía com a letra certa.
+ *
+ * Este teste anda pelo caminho do EDITOR, que era o único quebrado.
+ */
+describe('PreviewIframe — a fonte escolhida chega ao documento', () => {
+  beforeEach(() => {
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    useUIStore.setState({ previewRunning: true })
+  })
+
+  afterEach(() => {
+    cleanup()
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    useUIStore.setState({ previewRunning: true })
+  })
+
+  it('embute a fonte que o bloco pediu, e só ela', async () => {
+    const project = createPreviewProject()
+    useProjectStore.setState({
+      project: {
+        ...project,
+        files: {
+          ...project.files,
+          'script.js': 'SZGame2D.useFont("pressStart2P");',
+        },
+        // ⚠️ A extensão instalada é PRÉ-REQUISITO: um projeto sem nenhuma não
+        // recebe a fonte (é do HUD dos motores), e mandá-la seria 12 KB à toa
+        // numa página de HTML e CSS.
+        installedExtensions: [{ id: 'game-2d', version: '0.74.0', installedAt: 0 }],
+      },
+      isDirty: false,
+      saveError: null,
+    })
+
+    render(<PreviewIframe />)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+
+    await waitFor(() => {
+      const doc = getPreviewSrcDoc()
+      expect(doc).toContain('Preview automático')
+      // A família resolvida chega ao runtime pelo bootstrap...
+      expect(doc).toContain('Press Start 2P')
+      // ...e os bytes vêm embutidos, porque a CSP do preview não busca fonte na rede.
+      expect(doc).toContain('data:font/woff2;base64,')
+      // Uma fonte só: as outras quatro nem entram no grafo.
+      expect(doc.split('@font-face').length - 1).toBe(1)
+    })
+  })
+})
+
 function getRenderNonce(doc: string): number {
   const match = doc.match(/<!-- r:(\d+) -->/)
   expect(match).not.toBeNull()

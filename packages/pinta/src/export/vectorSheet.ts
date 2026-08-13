@@ -10,6 +10,7 @@
  */
 import type { PintaVectorAnimation, VectorSpriteAsset } from '../core/project'
 import type { VectorShape } from '../vector/model'
+import { embedVectorFonts } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
 import { gradientDefsMarkup, shapesToMarkup } from '../vector/svg'
 import { packAnimationsGeometry, type SheetGeometry } from './spritesheet'
@@ -84,13 +85,20 @@ export function vectorSheetSvg(pack: VectorSheetPack): string {
   })
 }
 
+export async function vectorSheetPortableSvg(pack: VectorSheetPack): Promise<string> {
+  return embedVectorFonts(
+    vectorSheetSvg(pack),
+    pack.cells.flatMap((cell) => cell.shapes),
+  )
+}
+
 /** Rasteriza a folha. `null` sem canvas/Image (happy-dom). */
 export async function vectorSheetPngDataUrl(
   pack: VectorSheetPack,
   scale = 1,
 ): Promise<string | null> {
   return svgToPngDataUrl(
-    vectorSheetSvg(pack),
+    await vectorSheetPortableSvg(pack),
     pack.columns * pack.frameWidth,
     pack.rows * pack.frameHeight,
     scale,
@@ -108,13 +116,20 @@ export function vectorStripSvg(asset: VectorSpriteAsset, animation: PintaVectorA
   })
 }
 
+export async function vectorStripPortableSvg(
+  asset: VectorSpriteAsset,
+  animation: PintaVectorAnimation,
+): Promise<string> {
+  return embedVectorFonts(vectorStripSvg(asset, animation), animation.frames.flat())
+}
+
 export async function vectorStripPngDataUrl(
   asset: VectorSpriteAsset,
   animation: PintaVectorAnimation,
   scale = 1,
 ): Promise<string | null> {
   return svgToPngDataUrl(
-    vectorStripSvg(asset, animation),
+    await vectorStripPortableSvg(asset, animation),
     Math.max(animation.frames.length, 1) * asset.frameWidth,
     asset.frameHeight,
     scale,

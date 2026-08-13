@@ -113,6 +113,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
           ['decoração', 'decor'],
           ['sólido', 'solid'],
           ['plataforma', 'platform'],
+          ['atravessa e avisa', 'contact'],
         ],
       },
     ],
@@ -120,7 +121,8 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Associa um índice a uma Figura e define se ela colide.',
+    tooltip:
+      'Associa um índice a uma Figura e diz o que ela faz: decoração não colide, sólido segura, plataforma só segura por cima. "Atravessa e avisa" deixa o herói passar e mesmo assim conta no "Para cada tile", que é como se faz moeda, lava e água.',
   },
   {
     type: 'sz_g2d_create_vector_tilemap',
@@ -152,6 +154,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
           ['pés', 'feet'],
           ['esquerda', 'left'],
           ['direita', 'right'],
+          ['dentro', 'inside'],
         ],
       },
       { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
@@ -251,6 +254,25 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Desenha letras em uma grade 5×7 no canvas, sem carregar fonte.',
+  },
+  {
+    type: 'sz_g2d_draw_pixel_score',
+    placement: 'command',
+    message0: 'Escrever placar pixel %1 com o valor %2 em x %3 y %4 pixel %5 cor %6',
+    args0: [
+      { type: 'field_input', name: 'LABEL', text: 'PONTOS' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escreve um campo do placar na mesma fonte de pixel das telas: o nome em cima e o número embaixo. Use este quando o valor for uma variável, porque o "Escrever texto pixel" só aceita texto fixo.',
   },
   {
     type: 'sz_g2d_draw_fade',

@@ -11,6 +11,7 @@
  */
 import { createStore, del, get, getMany, keys, setMany } from 'idb-keyval'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
+import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 
 const ASSET_KEY_PREFIX = 'pinta:asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
@@ -28,6 +29,11 @@ export function setPintaStorageNamespace(namespace: string): void {
   const next = namespace.trim()
   if (next === storageNamespace) return
   storageNamespace = next
+}
+
+/** Namespace normalizado que será capturado pela próxima operação. */
+export function getPintaStorageNamespace(): string {
+  return storageNamespace
 }
 
 function getStoreHandle(): StoreHandle {
@@ -86,6 +92,33 @@ function safeSanitize(raw: unknown): PintaAsset | null {
   }
 }
 
+async function listAssetsForStore(storeHandle: StoreHandle): Promise<PintaAsset[]> {
+  const allKeys = await keys(storeHandle)
+  const assetKeys = allKeys.filter(
+    (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
+  )
+  if (assetKeys.length === 0) return []
+  const values = await getMany<unknown>(assetKeys, storeHandle)
+  return values
+    .map((value) => safeSanitize(value))
+    .filter((asset): asset is PintaAsset => asset !== null)
+}
+
+/** Erro específico para a UI explicar por que a mutação não foi persistida. */
+export class PintaStorageBudgetError extends Error {
+  readonly projectedBytes: number
+
+  constructor(projectedBytes: number) {
+    super('A galeria ultrapassaria o limite portátil de 32 MiB.')
+    this.name = 'PintaStorageBudgetError'
+    this.projectedBytes = projectedBytes
+  }
+}
+
+export function isPintaStorageBudgetError(error: unknown): error is PintaStorageBudgetError {
+  return error instanceof PintaStorageBudgetError
+}
+
 /**
  * Cliente ligado ao banco do perfil ATUAL neste instante. Stores com fila
  * própria guardam este objeto, então uma troca global posterior não redireciona
@@ -99,7 +132,20 @@ export function createPintaPersistence(): PintaPersistence {
     const pairs = [...unique.values()].map(
       (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
     )
-    await runSerializedWrite(storeHandle, () => setMany(pairs, storeHandle))
+    await runSerializedWrite(storeHandle, async () => {
+      const current = await listAssetsForStore(storeHandle)
+      const projectedById = new Map(current.map((asset) => [asset.id, asset]))
+      for (const asset of unique.values()) projectedById.set(asset.id, asset)
+      const projected = [...projectedById.values()]
+      const projectedBytes = galleryBackupByteLength(projected)
+      if (projectedBytes > MAX_BACKUP_FILE_BYTES) {
+        // Legado acima do teto continua editável quando a mutação REDUZ o
+        // backup. Em galeria saudável, qualquer projeção acima é recusada.
+        const currentBytes = galleryBackupByteLength(current)
+        if (projectedBytes >= currentBytes) throw new PintaStorageBudgetError(projectedBytes)
+      }
+      await setMany(pairs, storeHandle)
+    })
   }
   return {
     persistAsset: (asset) => persistAssetsForStore([asset]),
@@ -110,15 +156,7 @@ export function createPintaPersistence(): PintaPersistence {
       return safeSanitize(raw)
     },
     async listAllAssets() {
-      const allKeys = await keys(storeHandle)
-      const assetKeys = allKeys.filter(
-        (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
-      )
-      if (assetKeys.length === 0) return []
-      const values = await getMany<unknown>(assetKeys, storeHandle)
-      const assets = values
-        .map((value) => safeSanitize(value))
-        .filter((asset): asset is PintaAsset => asset !== null)
+      const assets = await listAssetsForStore(storeHandle)
       assets.sort((a, b) => b.updatedAt - a.updatedAt)
       return assets
     },

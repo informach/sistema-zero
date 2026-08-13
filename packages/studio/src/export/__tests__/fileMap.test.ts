@@ -205,10 +205,46 @@ describe('buildClassicFileMap', () => {
       identityMinifiers,
     )
 
+    // ⚠️ A fonte SAIU de dentro do runtime da extensão e virou arquivo próprio. Ela
+    // viajava embutida em CADA `sz-ext/*.js` (são quatro extensões que a usam), e com
+    // cinco fontes para escolher isso somaria ~170 KB em todo jogo que a criança
+    // baixa. Agora só a ESCOLHIDA vira arquivo.
     const runtime = String(files['public/sz-ext/game-2d.js'])
-    expect(runtime).toContain('data:font/woff2;base64,')
-    expect(runtime).not.toMatch(/https?:\/\/fonts\.(googleapis|gstatic)\.com/)
-    expect(String(files['public/index.html'])).toContain('src="sz-ext/game-2d.js"')
+    expect(runtime).not.toContain('data:font/woff2;base64,')
+
+    const fonte = String(files['public/sz-font.css'])
+    expect(fonte).toContain('data:font/woff2;base64,')
+    expect(fonte).toContain('@font-face')
+    expect(fonte).not.toMatch(/https?:\/\/fonts\.(googleapis|gstatic)\.com/)
+
+    const html = String(files['public/index.html'])
+    expect(html).toContain('href="sz-font.css"')
+    expect(html).toContain('src="sz-font.js"')
+    expect(html).toContain('src="sz-ext/game-2d.js"')
+    // A família tem que ser publicada ANTES dos scripts de extensão: é na primeira
+    // linha deles que ela é capturada.
+    expect(html.indexOf('sz-font.js')).toBeLessThan(html.indexOf('sz-ext/game-2d.js'))
+  })
+
+  it('⭐ só a fonte ESCOLHIDA viaja — nenhuma das outras quatro entra no ZIP', async () => {
+    const { files } = await buildClassicFileMap(
+      classicProject({
+        installedExtensions: [{ id: 'game-2d', version: '0.74.0', installedAt: 0 }],
+        files: {
+          'index.html': '<canvas id="tela"></canvas>',
+          'style.css': '',
+          'script.js': 'SZGame2D.useFont("pressStart2P");',
+        },
+      }),
+      identityMinifiers,
+    )
+    const fonte = String(files['public/sz-font.css'])
+    expect(fonte).toContain('Press Start 2P')
+    for (const outra of ['Baloo 2', 'Nunito', 'Bungee', 'Fredoka']) {
+      expect(`${outra}: ${fonte.includes(`font-family:"${outra}"`)}`).toBe(`${outra}: false`)
+    }
+    // Um `@font-face` só, nunca cinco.
+    expect(fonte.split('@font-face').length - 1).toBe(1)
   })
 
   it('A1: reinjeta o link de style.css quando o aluno tirou a referencia do index', async () => {

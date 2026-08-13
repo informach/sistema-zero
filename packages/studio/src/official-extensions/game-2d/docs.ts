@@ -135,8 +135,12 @@ Tiles montam cenários (chão, paredes, plataformas) a partir de UMA imagem com 
 quadros (o **tileset**). Escolha um da aba **Assets** (ex.: \`tileset\`).
 
 - **Conjunto e mapa de tiles vetoriais** usam Figuras desenhadas no próprio projeto como
-  peças sólidas, plataformas ou decoração. Assim um jogo inteiro pode ser canvas puro,
-  offline e sem arquivos de imagem.
+  peças sólidas, plataformas, decoração ou **atravessa e avisa**. Assim um jogo inteiro
+  pode ser canvas puro, offline e sem arquivos de imagem.
+- **atravessa e avisa** é a peça que o herói ATRAVESSA e que mesmo assim aparece no
+  **Para cada tile tocado**, no lado **dentro**. É com ela que se faz moeda no cenário,
+  lava, espinho de chão e água: peça sólida barraria o caminho, e decoração não avisaria
+  nada. Quem decide o que a peça significa é você, comparando o índice.
 - **Para cada tile tocado** informa o lado e o índice original da peça. Use **o contato é
   com o tile…?** antes de **trocar o tile no contato** para prêmios que só valem uma vez,
   tijolos quebráveis e interruptores exatos.
@@ -424,6 +428,16 @@ Um Mundo pode ser maior que a tela, caber exatamente nela ou nem usar câmera:
   palco para todo mundo ver onde começa e onde termina a área do jogo. Ótimo para explicar o palco
   a alguém. Ponha em **⚙️ Ao iniciar**; para tirar, apague o bloco. A moldura fica na beirada da
   tela, então ela não atrapalha o desenho nem é apagada pelo jogo.
+- **✨ Aparência**: **Usar a fonte**, com cinco letras para escolher — Baloo 2 (arredondada),
+  Nunito (limpa), Press Start 2P (de pixel), Bungee (grossa) e Fredoka (gordinha). A escolha vale
+  para **todo** texto do jogo: placar, telas e mensagens. Ponha em **⚙️ Ao iniciar**, uma vez só e
+  com a letra escolhida direto no bloco: a fonte é decidida **antes** de o jogo começar, então
+  dentro de um "se" ela não muda nada (o jogo avisa quando isso acontece). ⚠️ O **Escrever texto
+  pixel** e o **Escrever o placar** têm letras próprias, desenhadas ponto a ponto, e não mudam.
+- **📺 Telas e cenas**: **Mostrar a tela com a imagem**. Cobre o palco inteiro com um desenho seu —
+  a tela de abertura, a de vitória, a de fim de jogo. Cobre sem deformar, como o cenário, e ainda
+  **anuncia** a tela para quem joga com leitor de tela.
+  Vai dentro do **🔁 Enquanto estiver rodando**, no lugar em que você mostraria a tela escrita.
 
 #### Os blocos de Mundo e de Fase
 

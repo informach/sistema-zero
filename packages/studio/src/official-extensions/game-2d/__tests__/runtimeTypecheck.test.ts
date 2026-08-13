@@ -7,8 +7,10 @@ import { gameTwoDRuntime } from '../runtime'
 const RUNTIME_FILE = 'game-2d-runtime.generated.js'
 const BROKEN_RUNTIME_FILE = 'game-2d-runtime.broken.generated.js'
 const RUNTIME_CONTRACT_FILE = 'runtimeContract.ts'
+const CLASSIC_CONTRACTS_FILE = 'classicContracts.ts'
 const HOST_CONTRACT_FILE = 'game-2d-runtime-host.d.ts'
 const RUNTIME_CONTRACT = readFileSync(join(import.meta.dir, '../runtimeContract.ts'), 'utf8')
+const CLASSIC_CONTRACTS = readFileSync(join(import.meta.dir, '../classicContracts.ts'), 'utf8')
 const HOST_CONTRACT = `
 type GameTwoDRuntimeApi = import('./runtimeContract').GameTwoDRuntimeApi
 
@@ -24,7 +26,7 @@ interface SZGameTileMapAssetMetadata {
 
 interface Window {
   SZGame2D: GameTwoDRuntimeApi
-  SZGameUIFont: { family: string; install(): void }
+  SZGameUIFont: { id: string; family: string; install(): void }
   __SZProjectLifecycle?: {
     run(
       callback: (...args: never[]) => unknown,
@@ -46,6 +48,7 @@ const COMPILER_OPTIONS: ts.CompilerOptions = {
   checkJs: true,
   lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
   module: ts.ModuleKind.ESNext,
+  moduleResolution: ts.ModuleResolutionKind.Bundler,
   noEmit: true,
   // O runtime histórico ainda não anota todos os parâmetros. As demais opções
   // de strict ficam ligadas, e uma catraca estrutural abaixo impede aumentar
@@ -148,6 +151,7 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
         [fileName, { source: `${source}\nexport {}`, kind: ts.ScriptKind.JS }] as const,
     ),
     [RUNTIME_CONTRACT_FILE, { source: RUNTIME_CONTRACT, kind: ts.ScriptKind.TS }],
+    [CLASSIC_CONTRACTS_FILE, { source: CLASSIC_CONTRACTS, kind: ts.ScriptKind.TS }],
     [HOST_CONTRACT_FILE, { source: HOST_CONTRACT, kind: ts.ScriptKind.TS }],
   ])
   const host: ts.CompilerHost = {
@@ -167,10 +171,22 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
             shouldCreateNewSourceFile,
           )
     },
+    resolveModuleNames: (moduleNames, containingFile) =>
+      moduleNames.map((moduleName) => {
+        if (moduleName === './classicContracts') {
+          return { resolvedFileName: CLASSIC_CONTRACTS_FILE, extension: ts.Extension.Ts }
+        }
+        return ts.resolveModuleName(
+          moduleName,
+          containingFile,
+          COMPILER_OPTIONS,
+          DEFAULT_COMPILER_HOST,
+        ).resolvedModule
+      }),
   }
   const variantFiles = [...variants.keys()]
   const program = ts.createProgram(
-    [HOST_CONTRACT_FILE, RUNTIME_CONTRACT_FILE, ...variantFiles],
+    [HOST_CONTRACT_FILE, CLASSIC_CONTRACTS_FILE, RUNTIME_CONTRACT_FILE, ...variantFiles],
     COMPILER_OPTIONS,
     host,
   )
@@ -260,7 +276,26 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // borda direita do palco (o x é escolhido no bloco, mas a largura depende do VALOR
   // e da fonte proporcional), e +1 do `_swimHeld`, que faz a natação ler o toque
   // além do teclado — sem ele uma fase de natação é injogável no celular.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1104)
+  // 1104 → 1109: +2 do `_enemyFarFromWorld`, que tira do `_enemyResolveGround` a
+  // conta de "saiu do mundo" para o laço do Atualizar poder aplicá-la a TODOS os
+  // inimigos (quem voa nunca passava por lá e ficava caindo para sempre, contando no
+  // grupo), e +3 do `_setShellMotion`, que passou a ser o único dono do casco: ele
+  // liga/desliga o movimento e devolve o dano de contato, e é o que faz o casco
+  // parado ser inofensivo e o casco chutado machucar.
+  // 1109 → 1111: +2 do `_recordTileOverlaps`, o varredor das peças que a criança
+  // ATRAVESSA. O contato de tile só nascia da resolução de colisão, então moeda,
+  // lava e água — justamente as que se atravessa — nunca geravam evento nenhum.
+  // 1119 → 1121: +2 do `showImageScreen`, a TELA feita de imagem — ela cobre o palco
+  // reusando a geometria do cenário e ANUNCIA a tela, que é o que o "Desenhar o
+  // cenário" não faz e o que a torna um bloco em vez de uma receita.
+  // 1118 → 1119: +1 do `useFont`, que NÃO troca a fonte (os bytes são escolhidos por
+  // quem monta o documento, antes de o jogo rodar) e sim CONFERE se o que o bloco
+  // pediu foi o que chegou, avisando a criança quando a escolha não pôde ser lida.
+  // 1111 → 1118: +7 do `drawPixelScore`, o campo de placar na fonte de PIXEL. O
+  // "Escrever texto pixel" só aceita texto LITERAL, e os números do placar são
+  // variáveis: sem um irmão que aceite valor, o HUD tinha que usar a fonte
+  // proporcional e o jogo ficava com DUAS tipografias na mesma tela.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1121)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

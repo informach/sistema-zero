@@ -1,3 +1,7 @@
+import type { GameTwoDTileContactSide, GameTwoDVectorTileRole } from './classicContracts'
+
+export type { GameTwoDTileContactSide, GameTwoDVectorTileRole } from './classicContracts'
+
 export type GameTwoDContext = CanvasRenderingContext2D
 
 export interface GameTwoDKeys {
@@ -38,8 +42,6 @@ export type GameTwoDAction =
   | 'pause'
 
 export type GameTwoDSpriteDirection = 'left' | 'right' | 'up' | 'down'
-
-export type GameTwoDVectorTileRole = 'decor' | 'solid' | 'platform'
 
 export interface GameTwoDVectorTileset {
   readonly _kind: 'g2d-vector-tileset'
@@ -138,8 +140,6 @@ export interface GameTwoDTileMap {
   ox: number
   oy: number
 }
-
-export type GameTwoDTileContactSide = 'head' | 'feet' | 'left' | 'right'
 
 export interface GameTwoDTileContact {
   map: GameTwoDTileMap
@@ -269,6 +269,12 @@ export interface GameTwoDStageApi {
   setupStageFull(background: string): void
   /** Moldura colorida em volta da tela do jogo (para enxergar a área do palco). */
   showStageBorder(color: string, width: number): void
+  /**
+   * ⚠️ NÃO é um setter: é uma VERIFICAÇÃO. Os bytes da fonte são escolhidos por quem
+   * monta o documento, ANTES do jogo rodar — só a escolhida viaja. Aqui a gente
+   * confere se o que o bloco pediu bate com o que chegou e avisa se não bater.
+   */
+  useFont(font: string): void
   /**
    * Fixa o desenho da criança como cenário: repintado a cada `clear()`, cobrindo
    * o palco sem deformar. ⚠️ NÃO entra nos overrides de câmera (`_camWrap`) de
@@ -644,6 +650,20 @@ export interface GameTwoDHudAndSceneApi {
     color: string,
     align?: 'left' | 'center' | 'right',
   ): void
+  drawPixelScore(
+    ctx: GameTwoDContext,
+    label: string,
+    value: number | string,
+    x: number,
+    y: number,
+    pixelSize: number,
+    color: string,
+  ): void
+  /**
+   * Uma TELA de imagem: cobre o palco com o desenho e ANUNCIA a tela para leitor de
+   * tela — é o anúncio que separa este bloco de simplesmente desenhar o cenário.
+   */
+  showImageScreen(ctx: GameTwoDContext, image: string): void
   drawFade(ctx: GameTwoDContext, percent: number, color: string): void
   drawHearts(
     ctx: GameTwoDContext,
@@ -823,6 +843,7 @@ export const GAME_TWO_D_API_KEYS = [
   'setupStage',
   'setupStageFull',
   'showStageBorder',
+  'useFont',
   'setBackdrop',
   'drawBackdrop',
   'spawnBullet',
@@ -1001,7 +1022,9 @@ export const GAME_TWO_D_API_KEYS = [
   'drawScore',
   'drawLabel',
   'drawPixelText',
+  'drawPixelScore',
   'drawFade',
+  'showImageScreen',
   'drawHearts',
   'drawBar',
   'drawSpriteHealth',

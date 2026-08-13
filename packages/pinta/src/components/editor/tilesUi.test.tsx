@@ -13,6 +13,71 @@ beforeEach(() => {
 })
 
 describe('UI de tiles (F4)', () => {
+  it('revoga a objectURL da folha vetorial se o editor desmonta antes do load', async () => {
+    const originalGetContext = HTMLCanvasElement.prototype.getContext
+    const originalImage = globalThis.Image
+    const originalCreateObjectURL = URL.createObjectURL
+    const originalRevokeObjectURL = URL.revokeObjectURL
+    const created: string[] = []
+    const revoked: string[] = []
+    const fakeContext = new Proxy(
+      {},
+      {
+        get: () => () => undefined,
+      },
+    ) as CanvasRenderingContext2D
+    class PendingImage {
+      onload: (() => void) | null = null
+      onerror: (() => void) | null = null
+      src = ''
+    }
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      configurable: true,
+      value: () => fakeContext,
+    })
+    Object.defineProperty(globalThis, 'Image', { configurable: true, value: PendingImage })
+    URL.createObjectURL = () => {
+      const url = `blob:folha-${created.length + 1}`
+      created.push(url)
+      return url
+    }
+    URL.revokeObjectURL = (url) => revoked.push(url)
+
+    let mounted: ReturnType<typeof render> | null = null
+    try {
+      const seed = createGalleryStore()
+      const tileset = await seed
+        .getState()
+        .create({ kind: 'vector-tileset', name: 'pecas-v', tileSize: 16 })
+      if (!tileset) throw new Error('tileset esperado')
+      await seed.getState().create({
+        kind: 'tilemap',
+        name: 'fase-v',
+        tilesetId: tileset.id,
+        cols: 2,
+        rows: 2,
+      })
+      mounted = render(<PintaApp />)
+      fireEvent.click(await screen.findByRole('button', { name: /Abrir fase-v/ }))
+      await waitFor(() => expect(created.length).toBeGreaterThan(0))
+
+      const sheetUrl = created.at(-1)
+      if (!sheetUrl) throw new Error('objectURL da folha esperado')
+      mounted.unmount()
+      mounted = null
+      expect(revoked).toContain(sheetUrl)
+    } finally {
+      mounted?.unmount()
+      Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+        configurable: true,
+        value: originalGetContext,
+      })
+      Object.defineProperty(globalThis, 'Image', { configurable: true, value: originalImage })
+      URL.createObjectURL = originalCreateObjectURL
+      URL.revokeObjectURL = originalRevokeObjectURL
+    }
+  })
+
   it('tileset abre com a tira de peças + badge de sólido', async () => {
     const seed = createGalleryStore()
     await seed.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })

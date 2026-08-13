@@ -1,5 +1,4 @@
 import { buildProjectRunContextRuntime } from '#extensions'
-import { withGameUIFontRuntime } from '../gameUiFont'
 import { gameRuntimeDomains } from '../runtimeDomains'
 import { gameKitAnimationRuntime } from './runtime/animation'
 import { gameKitAudioRuntime } from './runtime/audio'
@@ -33,11 +32,15 @@ import { gameKitVisualEffectsRuntime } from './runtime/visualEffects'
  * - Nunca quebrar o jogo do aluno: API pública embrulhada em try/catch com
  *   console.warn (padrão do SZGame2D).
  */
-export const gameKitRuntime = withGameUIFontRuntime(
+export const gameKitRuntime =
   buildProjectRunContextRuntime() +
-    '\n' +
-    `(function () {
-  var _szGameUIFont = window.SZGameUIFont.family;
+  '\n' +
+  `(function () {
+  var _szGameUIFont = (window.SZGameUIFont && window.SZGameUIFont.family) || 'sans-serif';
+  // ⚠️ Defensivo de propósito: a família deixou de vir embutida no runtime e passou
+  // a ser publicada por quem MONTA o documento. Se algum caminho de montagem
+  // esquecer, o texto sai numa fonte do sistema — nunca com o jogo quebrado numa
+  // leitura de propriedade de undefined.
 ${gameRuntimeDomains}
   // ---- Config (do bloco "Preparar o jogo profissional") ----
   var config = {
@@ -4697,6 +4700,7 @@ ${gameKitAudioRuntime}
     setStageDescription: guard('setStageDescription', setStageDescription),
     start: guard('start', start),
     showStageBorder: guard('showStageBorder', showStageBorder),
+    useFont: guard('useFont', useFont),
     setBackdrop: guard('setBackdrop', setBackdrop),
     drawBackdrop: guard('drawBackdrop', drawBackdrop),
     // Liga a MESMA chave que a tecla de crase alterna (agora exposta em bloco).
@@ -5293,5 +5297,4 @@ ${gameKitAudioRuntime}
   });
   window.SZGameKit = api;
 })();
-`,
-)
+`

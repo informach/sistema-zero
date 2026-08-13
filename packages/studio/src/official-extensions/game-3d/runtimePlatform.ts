@@ -46,13 +46,13 @@ export const gameThreeDPlatformRuntimeSource = `
     if (!world) return null;
     if (!world._stage) {
       world._stage = {
-        theme: 'dia', meshes: [], solids: [], enemies: [], items: [], coins: [],
+        theme: 'dia', meshes: [], enemies: [], coins: [],
         lifts: [], hazards: [], firebars: [], shots: [], boss: null, axe: null,
-        parts: null, hero: null, heroBody: null, clock: 0,
-        built: 0, width: 0, camX: 0, spawnX: 2, checkpoint: 0,
+        parts: null, hero: null, clock: 0,
+        built: 0, width: 0, camX: 0, spawnX: 2, checkpoint: 0, reachedCheckpoint: 0,
         score: 0, coinCount: 0, lives: 5, world: 1, stage: 1,
         time: 400, timeLeft: 400, power: 0, invincible: 0, dead: 0, won: 0,
-        events: {}, flagX: 0, warned: {}, seed: 1
+        events: {}, flagX: 0, warned: {}
       };
     }
     return world._stage;
@@ -85,7 +85,6 @@ export const gameThreeDPlatformRuntimeSource = `
   function stageSolid(world, st, mesh) {
     if (!mesh) return null;
     mesh.userData._solid = true;
-    st.solids.push(mesh);
     if (!world._solids) world._solids = [];
     world._solids.push(mesh);
     return mesh;
@@ -95,7 +94,6 @@ export const gameThreeDPlatformRuntimeSource = `
     if (!mesh) return;
     if (world.scene && world.scene.remove) world.scene.remove(mesh);
     removeFromArray(st.meshes, mesh);
-    removeFromArray(st.solids, mesh);
     if (world._solids) removeFromArray(world._solids, mesh);
     if (mesh.geometry && mesh.geometry.dispose) mesh.geometry.dispose();
     if (mesh.material && mesh.material.dispose) mesh.material.dispose();
@@ -114,7 +112,7 @@ export const gameThreeDPlatformRuntimeSource = `
   function parseStage(text) {
     var out = { chao: [], tijolo: [], surpresa: [], solido: [], cano: [], moeda: [],
       inimigo: [], escondido: [], plataforma: [], lava: [], fogo: [],
-      mastro: 0, castelo: 0, chefao: 0, checkpoint: 0, tempo: 400, tema: 'dia', largura: 0 };
+      mastro: 0, castelo: 0, chefao: 0, checkpoint: 0, tempo: 400, tema: '', largura: 0 };
     // Ponto-e-vírgula OU quebra de linha separam os assuntos: assim o mapa cabe
     // num campo de texto de bloco (uma linha só) sem deixar de ser legível.
     var lines = String(text || '').replace(/;/g, '\\n').split('\\n');
@@ -194,6 +192,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var wide = (run.to - run.from + 1) * TILE;
       var floor = stageMesh(world, st, wide, 2 * TILE, STAGE_DEPTH, t.ground);
       if (floor) {
+        floor.userData._stageThemeRole = 'ground';
         floor.position.set((run.from + (run.to - run.from) / 2) * TILE, -TILE, STAGE_Z);
         paintPattern(floor, st.theme === 'castelo' ? 'pedra' : 'terra', t.ground, t.groundB);
         stageSolid(world, st, floor);
@@ -207,6 +206,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var tall = (s.to - s.from + 1) * TILE;
       var pillar = stageMesh(world, st, TILE, tall, STAGE_DEPTH, t.hard);
       if (pillar) {
+        pillar.userData._stageThemeRole = 'hard';
         pillar.position.set(s.x * TILE, (s.from + (s.to - s.from) / 2) * TILE, STAGE_Z);
         paintPattern(pillar, 'pedra', t.hard, t.brickB);
         stageSolid(world, st, pillar);
@@ -218,6 +218,7 @@ export const gameThreeDPlatformRuntimeSource = `
       if (b.x !== col || b.broken) continue;
       var brick = stageMesh(world, st, TILE, TILE, STAGE_DEPTH, t.brick);
       if (brick) {
+        brick.userData._stageThemeRole = 'brick';
         brick.position.set(b.x * TILE, b.y * TILE, STAGE_Z);
         paintPattern(brick, 'tijolo', t.brick, t.brickB);
         stageSolid(world, st, brick);
@@ -408,6 +409,7 @@ export const gameThreeDPlatformRuntimeSource = `
   function buildCastle(world, st, col, t) {
     var keep = stageMesh(world, st, 5 * TILE, 5 * TILE, STAGE_DEPTH, t.brick);
     if (keep) {
+      keep.userData._stageThemeRole = 'brick';
       keep.position.set((col + 2) * TILE, 2 * TILE, STAGE_Z);
       paintPattern(keep, 'tijolo', t.brick, t.brickB);
       keep.userData._stageCol = col;
@@ -455,6 +457,22 @@ export const gameThreeDPlatformRuntimeSource = `
     st.theme = STAGE_THEMES[theme] ? theme : 'dia';
     setSky(world, t.sky, t.horizon);
     if (t.fog) setFog(world, t.sky, 12, t.fog);
+    else if (world && world.scene) world.scene.fog = null;
+    for (var i = 0; i < st.meshes.length; i++) {
+      var mesh = st.meshes[i];
+      var role = mesh && mesh.userData ? mesh.userData._stageThemeRole : '';
+      if (!role) continue;
+      var color = t[role];
+      if (!color) continue;
+      setColor(mesh, color);
+      if (role === 'ground') {
+        paintPattern(mesh, st.theme === 'castelo' ? 'pedra' : 'terra', t.ground, t.groundB);
+      } else if (role === 'hard') {
+        paintPattern(mesh, 'pedra', t.hard, t.brickB);
+      } else if (role === 'brick') {
+        paintPattern(mesh, 'tijolo', t.brick, t.brickB);
+      }
+    }
   }
 
   function setStageTheme(world, theme) {
@@ -485,11 +503,12 @@ export const gameThreeDPlatformRuntimeSource = `
     st.source = String(text || '');
     clearStage(world);
     st.parts = parseStage(text);
-    applyStageTheme(world, st, st.parts.tema);
+    applyStageTheme(world, st, st.parts.tema || st.theme);
     st.width = st.parts.largura;
     st.time = st.parts.tempo || 400;
     st.timeLeft = st.time;
     st.checkpoint = st.parts.checkpoint || 0;
+    st.reachedCheckpoint = 0;
     st.built = 0;
     st.dead = 0;
     st.won = 0;
@@ -518,7 +537,6 @@ export const gameThreeDPlatformRuntimeSource = `
     if (!st) return;
     for (var i = st.meshes.length - 1; i >= 0; i--) dropStageMesh(world, st, st.meshes[i]);
     st.meshes = [];
-    st.solids = [];
     st.enemies = [];
     st.coins = [];
     st.lifts = [];
@@ -535,7 +553,6 @@ export const gameThreeDPlatformRuntimeSource = `
   function stageReset(world) {
     var st = stageState(world);
     if (!st) return;
-    st.score = st.score;
     st.timeLeft = st.time;
     st.dead = 0;
     st.won = 0;
@@ -543,6 +560,7 @@ export const gameThreeDPlatformRuntimeSource = `
     st.invincible = 0;
     st.starred = 0;
     st.clock = 0;
+    setHeroSmall(st.hero);
     if (st.parts) {
       var p = st.parts;
       var i;
@@ -583,6 +601,7 @@ export const gameThreeDPlatformRuntimeSource = `
   function stageStep(world, hero) {
     var st = stageState(world);
     if (!st || !st.parts) return;
+    if (hero && !belongsToWorld(world, hero, 'stage-step-world', 'Atualizar a fase')) return;
     if (hero) st.hero = hero;
     var who = st.hero;
     if (!who) return;
@@ -695,8 +714,9 @@ export const gameThreeDPlatformRuntimeSource = `
 
   /** Solta uma bola de fogo (só como Fiery). Devolve false quando não pode. */
   function shootFire(world, hero) {
-    var st = stageState(worldOf(hero));
-    if (!st || st.power < 2 || !hero) return false;
+    if (!world || !hero || !belongsToWorld(world, hero, 'stage-fire-world', 'Soltar uma bola de fogo')) return false;
+    var st = stageState(world);
+    if (!st || st.power < 2) return false;
     if (st.shots.length >= 3) return false;
     var tiro = stageMesh(world, st, 0.4, 0.4, 0.4, '#f8b800');
     if (!tiro) return false;
@@ -997,8 +1017,7 @@ export const gameThreeDPlatformRuntimeSource = `
       // Piscada de proteção: NÃO é a estrela, então não mata quem encostar.
       st.invincible = 2;
       st.starred = 0;
-      who.scale.y = 1;
-      who.userData.sz.hh = 0.75;
+      setHeroSmall(who);
       playEffect('hit');
       fireStage(st, 'levar-dano', null);
       return;
@@ -1011,6 +1030,7 @@ export const gameThreeDPlatformRuntimeSource = `
     st.dead = 1;
     st.lives = st.lives - 1;
     st.power = 0;
+    setHeroSmall(st.hero);
     playEffect('explosion');
     fireStage(st, cause === 'tempo' ? 'acabar-o-tempo' : 'levar-dano', null);
   }
@@ -1020,14 +1040,21 @@ export const gameThreeDPlatformRuntimeSource = `
     if (!world || !world.camera) return;
     var st = stageState(world);
     if (!st) return;
-    activateCameraMode(world, 'manual');
     var target = obj || st.hero;
+    if (target && !belongsToWorld(world, target, 'stage-camera-world', 'Usar a câmera lateral')) return;
+    activateCameraMode(world, 'manual');
     if (target && target.position) {
       var wanted = target.position.x;
       if (wanted > st.camX) st.camX = wanted;
     }
     world.camera.position.set(st.camX, 4.2, 15);
     world.camera.lookAt(st.camX, 3.4, STAGE_Z);
+  }
+
+  function setHeroSmall(hero) {
+    if (!hero || !hero.scale || !hero.userData || !hero.userData.sz) return;
+    hero.scale.y = 1;
+    hero.userData.sz.hh = 0.75;
   }
 
   // ---- Perguntas ----------------------------------------------------------

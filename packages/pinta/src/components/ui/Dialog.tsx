@@ -4,13 +4,63 @@
  * aria-modal + aria-labelledby, trap simples de Tab. Renderiza INLINE (sem
  * portal), então permanece dentro do escopo [data-pinta-theme] do root.
  */
-import type { JSX, KeyboardEvent, ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { useEffect, useId, useRef } from 'react'
 import { COPY } from '../../core/copy'
 import { X } from './icons'
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+function focusableElements(root: HTMLElement): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>('*')).filter((element) => {
+    if (element.getAttribute('tabindex') === '-1') return false
+    if ('disabled' in element && element.disabled) return false
+    if (element.hasAttribute('tabindex')) return true
+    if (element.tagName === 'A') return element.hasAttribute('href')
+    return ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(element.tagName)
+  })
+}
+
+/** Trap do modal; separado para manter a regra testável sem simular o Tab nativo. */
+export function handleDialogDocumentKeyDown(
+  event: globalThis.KeyboardEvent,
+  card: HTMLElement,
+  onClose: () => void,
+): void {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopPropagation()
+    onClose()
+    return
+  }
+  if (event.key !== 'Tab') return
+  const items = focusableElements(card)
+  const first = items[0]
+  const last = items.at(-1)
+  const active = document.activeElement
+  if (!first || !last) {
+    event.preventDefault()
+    card.focus()
+  } else if (!active || !card.contains(active)) {
+    event.preventDefault()
+    ;(event.shiftKey ? last : first).focus()
+  } else if (event.shiftKey && (active === first || active === card)) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && active === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
+export function handleDialogDocumentFocusIn(event: globalThis.FocusEvent, card: HTMLElement): void {
+  // Não usa `instanceof Node`: em testes/iframes o alvo pode vir de outro
+  // realm. `nodeType` + `contains` preserva o mesmo contrato do DOM.
+  const target = event.target
+  if (target && typeof target === 'object' && 'nodeType' in target) {
+    if (card.contains(target as Node)) return
+  }
+  const first = focusableElements(card)[0]
+  ;(first ?? card).focus()
+}
 
 export function Dialog({
   open,
@@ -26,51 +76,45 @@ export function Dialog({
   wide?: boolean
 }): JSX.Element | null {
   const cardRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
   const titleId = useId()
 
-  // Foca o card ao abrir e devolve o foco ao acionador ao fechar/desmontar.
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
+  // Foca o card, captura o teclado no DOCUMENTO e devolve o foco ao acionador
+  // ao fechar. O listener global continua funcionando se o foco escapar do
+  // subtree inline do modal.
   useEffect(() => {
     if (!open) return
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    cardRef.current?.focus()
+    const card = cardRef.current
+    if (!card) return
+
+    function handleKeyDown(event: globalThis.KeyboardEvent): void {
+      const activeCard = cardRef.current
+      if (activeCard) {
+        handleDialogDocumentKeyDown(event, activeCard, () => onCloseRef.current())
+      }
+    }
+
+    function handleFocusIn(event: globalThis.FocusEvent): void {
+      const activeCard = cardRef.current
+      if (activeCard) handleDialogDocumentFocusIn(event, activeCard)
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('focusin', handleFocusIn)
+    card.focus()
     return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('focusin', handleFocusIn)
       previous?.focus()
     }
   }, [open])
 
   if (!open) return null
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-    if (event.key === 'Escape') {
-      event.stopPropagation()
-      onClose()
-      return
-    }
-    if (event.key !== 'Tab') return
-    const card = cardRef.current
-    if (!card) return
-    const focusables = Array.from(card.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
-    const first = focusables[0]
-    const last = focusables[focusables.length - 1]
-    if (!first || !last) return
-    const active = document.activeElement
-    // Foco FORA do card (ex.: um botão de passo do wizard desmontou ao avançar e
-    // o foco caiu no <body>): sem isto o Tab iria p/ um controle da tela de
-    // fundo — o Dialog renderiza INLINE, sem inert/portal. Traz o foco de volta
-    // p/ dentro do modal.
-    if (!(active instanceof Node) || !card.contains(active)) {
-      event.preventDefault()
-      ;(event.shiftKey ? last : first).focus()
-      return
-    }
-    if (event.shiftKey && (active === first || active === card)) {
-      event.preventDefault()
-      last.focus()
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault()
-      first.focus()
-    }
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-pin-scrim p-4">
@@ -80,7 +124,6 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        onKeyDown={handleKeyDown}
         className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-full overflow-y-auto overscroll-contain rounded-2xl border-2 border-pin-border bg-pin-surface p-6 shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent`}
       >
         <div className="flex items-start justify-between gap-3">

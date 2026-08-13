@@ -7,4 +7,5 @@ export const reinoZeroUltraExample: CoreExample = {
   description:
     'Plataforma autoral profissional feita só com HTML, CSS, Canvas, Programação e Som: 32 fases desenhadas individualmente, solo, turnos ou cooperativo, natação, escadas, portais, inimigos e guardiões distintos, save v2 recuperável e replay isolado. Todo visual e áudio são procedurais.',
   ir: REINO_ZERO_ULTRA_IR,
+  workspaceOptions: { collapseFunctions: true },
 }

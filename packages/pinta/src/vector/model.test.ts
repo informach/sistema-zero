@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'bun:test'
-import { isVectorGradient, sanitizeVectorShape, visibleShapes } from './model'
+import {
+  DEFAULT_VECTOR_FONT_FAMILY,
+  fontFamilyOf,
+  isVectorGradient,
+  MAX_IMAGE_SRC_CHARS,
+  MAX_TEXT_CHARS,
+  MAX_TEXT_LINES,
+  normalizeTextContent,
+  sanitizeVectorShape,
+  textAlignOf,
+  VECTOR_FONT_FAMILIES,
+  visibleShapes,
+} from './model'
 
 const base = { id: 's1', stroke: null, opacity: 1, rotation: 0 }
 
@@ -98,5 +110,141 @@ describe('sanitizeVectorShape — campo hidden (olhinho das Camadas)', () => {
     const b = sanitizeVectorShape({ ...rect, id: 'b', hidden: true })
     if (!a || !b) throw new Error('shapes esperados')
     expect(visibleShapes([a, b]).map((s) => s.id)).toEqual(['a'])
+  })
+})
+
+describe('texto: várias linhas e alinhamento', () => {
+  const raw = (over: Record<string, unknown> = {}) => ({
+    id: 't1',
+    type: 'text',
+    fill: '#000000',
+    stroke: null,
+    opacity: 1,
+    rotation: 0,
+    x: 10,
+    y: 20,
+    text: 'oi',
+    fontSize: 24,
+    ...over,
+  })
+
+  it('normalizeTextContent troca CRLF por LF e é IDEMPOTENTE', () => {
+    expect(normalizeTextContent('a\r\nb\rc')).toBe('a\nb\nc')
+    const once = normalizeTextContent('a\r\nb')
+    expect(normalizeTextContent(once)).toBe(once)
+  })
+
+  it('normalizeTextContent capa caracteres e LINHAS', () => {
+    expect(normalizeTextContent('x'.repeat(MAX_TEXT_CHARS + 50)).length).toBe(MAX_TEXT_CHARS)
+    const muitas = Array.from({ length: MAX_TEXT_LINES + 5 }, (_, i) => `l${i}`).join('\n')
+    expect(normalizeTextContent(muitas).split('\n').length).toBe(MAX_TEXT_LINES)
+  })
+
+  it('guarda as quebras de linha e o alinhamento', () => {
+    const shape = sanitizeVectorShape(raw({ text: 'um\r\ndois', align: 'center' }))
+    expect(shape?.type === 'text' && shape.text).toBe('um\ndois')
+    expect(shape?.type === 'text' && shape.align).toBe('center')
+  })
+
+  it("'left' e alinhamento inválido OMITEM a chave (desenho antigo intacto)", () => {
+    for (const align of ['left', 'meio', 42, null, undefined]) {
+      const shape = sanitizeVectorShape(raw({ align }))
+      expect(shape).not.toBeNull()
+      expect(shape && 'align' in shape).toBe(false)
+    }
+  })
+
+  it('texto só com quebras de linha não é texto nenhum', () => {
+    expect(sanitizeVectorShape(raw({ text: '\n\n\n' }))).toBeNull()
+    expect(sanitizeVectorShape(raw({ text: '   ' }))).toBeNull()
+  })
+
+  it('sanitizar duas vezes dá o MESMO objeto (round-trip)', () => {
+    const once = sanitizeVectorShape(raw({ text: 'um\ndois', align: 'right' }))
+    expect(sanitizeVectorShape(once)).toEqual(once)
+  })
+
+  it('textAlignOf lê o padrão de quem não tem a chave', () => {
+    const shape = sanitizeVectorShape(raw())
+    expect(shape && textAlignOf(shape)).toBe('left')
+    const right = sanitizeVectorShape(raw({ align: 'right' }))
+    expect(right && textAlignOf(right)).toBe('right')
+  })
+
+  it('aceita as cinco fontes e preserva cada família no round-trip', () => {
+    expect(VECTOR_FONT_FAMILIES).toEqual([
+      'baloo-2',
+      'nunito',
+      'press-start-2p',
+      'bungee',
+      'fredoka',
+    ])
+    for (const fontFamily of VECTOR_FONT_FAMILIES) {
+      const shape = sanitizeVectorShape(raw({ fontFamily }))
+      expect(shape && fontFamilyOf(shape)).toBe(fontFamily)
+      expect(sanitizeVectorShape(shape)).toEqual(shape)
+    }
+  })
+
+  it('documento antigo e valor inválido usam Nunito sem persistir lixo', () => {
+    for (const fontFamily of [undefined, 'comic-sans', 42]) {
+      const shape = sanitizeVectorShape(raw({ fontFamily }))
+      expect(shape && fontFamilyOf(shape)).toBe(DEFAULT_VECTOR_FONT_FAMILY)
+      expect(shape && 'fontFamily' in shape).toBe(false)
+    }
+  })
+})
+
+describe('a FIGURA (desenho de pixel trazido para o vetor)', () => {
+  const src = `data:image/png;base64,${'A'.repeat(40)}`
+  const raw = (over: Record<string, unknown> = {}) => ({
+    id: 'f1',
+    type: 'image',
+    fill: 'none',
+    stroke: null,
+    opacity: 1,
+    rotation: 0,
+    x: 10,
+    y: 20,
+    w: 64,
+    h: 32,
+    src,
+    ...over,
+  })
+
+  it('aceita um PNG data URL e guarda a geometria', () => {
+    const shape = sanitizeVectorShape(raw())
+    expect(shape?.type).toBe('image')
+    expect(shape?.type === 'image' && shape.src).toBe(src)
+    expect(shape?.type === 'image' && shape.w).toBe(64)
+  })
+
+  it('RECUSA qualquer coisa que não seja PNG data URL', () => {
+    for (const mau of [
+      'https://exemplo.com/a.png',
+      'data:image/svg+xml;base64,AAA',
+      'javascript:alert(1)',
+      'data:text/html;base64,AAA',
+      42,
+      null,
+    ]) {
+      expect(sanitizeVectorShape(raw({ src: mau }))).toBeNull()
+    }
+  })
+
+  it('recusa acima do teto e com tamanho degenerado', () => {
+    const gigante = `data:image/png;base64,${'A'.repeat(MAX_IMAGE_SRC_CHARS)}`
+    expect(sanitizeVectorShape(raw({ src: gigante }))).toBeNull()
+    expect(sanitizeVectorShape(raw({ w: 0 }))).toBeNull()
+    expect(sanitizeVectorShape(raw({ h: -5 }))).toBeNull()
+    expect(sanitizeVectorShape(raw({ w: Number.NaN }))).toBeNull()
+  })
+
+  it('pixelated só existe quando é true (round-trip byte a byte)', () => {
+    expect('pixelated' in (sanitizeVectorShape(raw()) as object)).toBe(false)
+    expect('pixelated' in (sanitizeVectorShape(raw({ pixelated: false })) as object)).toBe(false)
+    const pix = sanitizeVectorShape(raw({ pixelated: true }))
+    expect(pix?.type === 'image' && pix.pixelated).toBe(true)
+    expect(sanitizeVectorShape(pix)).toEqual(pix)
   })
 })

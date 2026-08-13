@@ -27,6 +27,7 @@ type KitApiKey = keyof Pick<
   | 'setHitbox'
   | 'setHitboxShape'
   | 'showStageBorder'
+  | 'useFont'
   | 'setBackdrop'
   | 'drawBackdrop'
   | 'runProject'

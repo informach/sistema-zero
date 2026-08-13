@@ -1,5 +1,4 @@
 import { buildProjectRunContextRuntime } from '#extensions'
-import { withGameUIFontRuntime } from '../gameUiFont'
 import { gameRuntimeDomains } from '../runtimeDomains'
 import { gameTwoDArcadeKitsRuntime } from './runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from './runtime/audio'
@@ -22,11 +21,15 @@ import { buildGameTwoDRuntimeApiSource } from './runtimeContract'
  * `SZGame2D.createSprite(...)` no script.js e seguir o link mental até esta
  * função.
  */
-export const gameTwoDRuntime = withGameUIFontRuntime(
+export const gameTwoDRuntime =
   buildProjectRunContextRuntime() +
-    '\n' +
-    `(function () {
-  var _szGameUIFont = window.SZGameUIFont.family;
+  '\n' +
+  `(function () {
+  var _szGameUIFont = (window.SZGameUIFont && window.SZGameUIFont.family) || 'sans-serif';
+  // ⚠️ Defensivo de propósito: a família deixou de vir embutida no runtime e passou
+  // a ser publicada por quem MONTA o documento. Se algum caminho de montagem
+  // esquecer, o texto sai numa fonte do sistema — nunca com o jogo quebrado numa
+  // leitura de propriedade de undefined.
   // Estado interno: lista de teclas pressionadas.
   var keys = { left: false, right: false, up: false, down: false };
   function _normalizeGameKey(value) {
@@ -60,8 +63,8 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
     return _isFiniteNumber(value) && value > 0 ? value : fallback;
   }
 ` +
-    gameRuntimeDomains +
-    `
+  gameRuntimeDomains +
+  `
   // O restart e a pausa apenas orquestram os domínios registrados; adicionar
   // um domínio novo não exige editar um reset central distante.
   function _resetRuntimeDomains() { _runRuntimeDomainHook('reset'); }
@@ -96,18 +99,17 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
   }
 
 ` +
-    gameTwoDSpritesRuntime +
-    gameTwoDLifecycleRuntime +
-    gameTwoDPhysicsRuntime +
-    gameTwoDAudioRuntime +
-    gameTwoDInputAndMotionRuntime +
-    gameTwoDWorldRuntime +
-    gameTwoDArcadeKitsRuntime +
-    gameTwoDStageRuntime +
-    gameTwoDCasualKitsRuntime +
-    gameTwoDUtilitiesRuntime +
-    gameTwoDClassicPlatformerRuntime +
-    buildGameTwoDRuntimeApiSource() +
-    `
-})();`,
-)
+  gameTwoDSpritesRuntime +
+  gameTwoDLifecycleRuntime +
+  gameTwoDPhysicsRuntime +
+  gameTwoDAudioRuntime +
+  gameTwoDInputAndMotionRuntime +
+  gameTwoDWorldRuntime +
+  gameTwoDArcadeKitsRuntime +
+  gameTwoDStageRuntime +
+  gameTwoDCasualKitsRuntime +
+  gameTwoDUtilitiesRuntime +
+  gameTwoDClassicPlatformerRuntime +
+  buildGameTwoDRuntimeApiSource() +
+  `
+})();`

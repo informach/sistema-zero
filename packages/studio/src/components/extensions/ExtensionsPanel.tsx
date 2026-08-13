@@ -224,7 +224,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
       const example = await loadCoreExample(summary.name)
       applyProjectState({
         ir: example.ir,
-        blocksState: buildWorkspaceStateFromIR(example.ir),
+        blocksState: buildWorkspaceStateFromIR(example.ir, example.workspaceOptions),
         installedExtensions: project.installedExtensions,
         files: generateProjectFiles({ ir: example.ir, projectName: project.name }),
       })

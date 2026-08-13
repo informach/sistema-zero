@@ -31,6 +31,8 @@ export const COPY = {
     tilesetInUse: 'Estas peças ainda são usadas por um ou mais mapas.',
     cancel: 'Cancelar',
     quotaFull: 'A sua galeria está cheia! Apague um desenho antigo para criar um novo.',
+    storageBudget:
+      'Sua galeria chegou ao limite de 32 MB. Apague um desenho ou uma figura grande para continuar salvando.',
     downloadAll: 'Baixar tudo',
     looseSection: 'Desenhos avulsos',
     restore: 'Trazer de volta',
@@ -409,6 +411,15 @@ export const COPY = {
     nodeRemove: 'Apagar os pontos escolhidos',
     nodeClose: 'Fechar o caminho',
     nodeOpen: 'Abrir o caminho',
+    /** Com UM ponto escolhido a tesoura age ALI. Rótulos separados de propósito:
+     *  "abrir o caminho" tira o trecho que fechava, "abrir neste ponto" preserva
+     *  o desenho inteiro e só corta a emenda. */
+    nodeOpenHere: 'Abrir o caminho neste ponto',
+    nodeCut: 'Cortar em dois neste ponto',
+    nodeCutOneOnly: 'Escolha um ponto só para cortar aqui.',
+    nodeCutEndpoint: 'Este ponto é uma ponta do traço. Escolha um ponto do meio para cortar.',
+    nodeCutDone: 'Virou dois traços.',
+    nodeCutTooBig: 'Este desenho está grande demais para cortar aqui.',
     nodeHint: 'Toque no traço para acrescentar um ponto',
     nodeToCurve: 'Transformar em curva',
     nodeToLine: 'Transformar em reta',
@@ -432,6 +443,14 @@ export const COPY = {
     pen: 'Caneta (clique para marcar os pontos)',
     cornerRadius: 'Cantos arredondados',
     fontSize: 'Tamanho da letra',
+    fontFamily: 'Fonte',
+    /** Alinhamento das LINHAS do texto. Rótulos distintos dos `align*` da faixa
+     *  da seleção, que alinham FORMAS (os testes casam por nome acessível). */
+    textAlignTitle: 'Alinhamento do texto',
+    textAlignLeft: 'Texto na esquerda',
+    textAlignCenter: 'Texto no meio',
+    textAlignRight: 'Texto na direita',
+    textMultilineHint: 'Enter pula de linha. Ctrl + Enter salva.',
     editText: 'Mudar o texto',
     saveText: 'Salvar',
     /** Rótulo por tipo de forma no painel Camadas (texto mostra o próprio conteúdo). */
@@ -442,6 +461,7 @@ export const COPY = {
       polygon: 'Forma',
       path: 'Traço',
       text: 'Texto',
+      image: 'Figura',
     } as Record<string, string>,
     opacity: 'Quanto aparece',
     none: 'Sem cor',
@@ -464,6 +484,17 @@ export const COPY = {
     add: 'Adicionar',
     rotate: 'Girar',
     shapeLimit: 'Este desenho já tem o máximo de formas.',
+    /** Trazer um desenho da galeria para dentro deste. */
+    insertAsset: 'Trazer um desenho',
+    insertTitle: 'Qual desenho você quer trazer?',
+    insertSearch: 'Procurar pelo nome',
+    insertAsShapes: 'vira formas',
+    insertAsImage: 'vira figura',
+    insertEmpty: 'Este desenho está em branco.',
+    insertNothing: 'Você ainda não tem outro desenho para trazer para cá.',
+    insertNoMatch: 'Nenhum desenho com esse nome.',
+    insertFailed: 'Não deu para trazer este desenho.',
+    insertTooManyShapes: 'Este desenho não cabe: passaria do máximo de formas.',
     svg: 'Desenho (SVG)',
   },
   /** Nomes amigáveis das cores livres do vetorial (aria/title dos swatches). */

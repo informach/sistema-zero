@@ -449,7 +449,10 @@ ${gameKitCampaignEventsRuntime}
     if (ch === '^') { ctx2d.beginPath(); ctx2d.moveTo(x, y + 16); ctx2d.lineTo(x + 8, y); ctx2d.lineTo(x + 16, y + 16); ctx2d.fill(); return; }
     ctx2d.fillRect(x, ch === '=' ? y + 10 : y, 16, ch === '=' ? 6 : 16);
     ctx2d.fillStyle = 'rgba(255,255,255,.18)'; ctx2d.fillRect(x + 1, ch === '=' ? y + 10 : y + 1, 14, 2);
-    if (ch === '?') { ctx2d.fillStyle = '#6b4d16'; ctx2d.font = 'bold 12px var(--sz-game-ui-font)'; ctx2d.fillText('?', x + 5, y + 13); }
+    // ⚠️ O setter de ctx.font NÃO resolve custom property: 'bold 12px var(--sz-game-ui-font)'
+    // é descartado em silêncio e o texto sai na fonte ANTERIOR. Quem tem o nome
+    // resolvido da família é o _szGameUIFont, como nos outros 20 sites do runtime.
+    if (ch === '?') { ctx2d.fillStyle = '#6b4d16'; ctx2d.font = 'bold 12px ' + _szGameUIFont; ctx2d.fillText('?', x + 5, y + 13); }
   }
   function proDrawEntity(entity) {
     if (!entity.active) return;
@@ -494,7 +497,7 @@ ${gameKitCampaignEventsRuntime}
     if (!ctx2d || !proCampaign.active || !proCampaign.progress) return;
     var player = proCurrentPlayer();
     ctx2d.save(); ctx2d.fillStyle = proCampaign.highContrast ? '#000000' : 'rgba(10,18,35,.72)'; ctx2d.fillRect(4, 4, 248, 18);
-    ctx2d.fillStyle = '#ffffff'; ctx2d.font = 'bold 9px var(--sz-game-ui-font)';
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = 'bold 9px ' + _szGameUIFont;
     ctx2d.fillText('MUNDO ' + proCampaign.stage.world + '  FASE ' + proCampaign.stage.order, 9, 16);
     ctx2d.fillText('P' + proCampaign.progress.activePlayer + ' ×' + (player ? player.lives : 0), 105, 16);
     ctx2d.fillText('MOEDAS ' + proCampaign.progress.coins, 154, 16); ctx2d.fillText('◆' + proCampaign.progress.gems.length, 222, 16); ctx2d.restore();

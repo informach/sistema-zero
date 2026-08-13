@@ -382,21 +382,28 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    * junto com a câmera: num Mundo mais alto que o palco ele ficava colado embaixo
    * da viewport, deslizando com ela, em vez de pisar no mapa.
    */
+  /**
+   * Saiu do Mundo por baixo (ou por cima) com folga larga.
+   *
+   * ⚠️ Com bordas abertas o inimigo cai no buraco e nunca para de cair (o jogador
+   * faz o mesmo). A diferença é que inimigo vem aos montes: sem esta saída cada um
+   * seguiria pedindo ao índice do terreno uma área que cresce com a queda, quadro
+   * após quadro. A folga é larga de propósito, porque nada obriga uma figura de
+   * terreno a caber dentro do Mundo.
+   */
+  function _enemyFarFromWorld(s, env) {
+    if (!s || !env || !env.world) return false;
+    return s.y > env.world.height + 2000 || s.y + _finiteNumber(s.h, 0) < -2000;
+  }
+
   function _enemyResolveGround(s, env) {
     if (env.world) {
-      // ⚠️ Com bordas abertas o inimigo cai no buraco e nunca para de cair (o
-      // jogador faz o mesmo). A diferença é que inimigo vem aos montes: sem esta
-      // saída cada um deles seguiria pedindo ao índice do terreno uma área que
-      // cresce com a queda, quadro após quadro. A folga é larga de propósito,
-      // porque nada obriga uma figura de terreno a caber dentro do Mundo.
-      var longeDoMundo = s.y > env.world.height + 2000 ||
-        s.y + _finiteNumber(s.h, 0) < -2000;
       // ⚠️ Quem saiu do mundo é RECOLHIDO, não deixado caindo para sempre. Um
       // inimigo em queda eterna continua contando no "quantos tem no grupo", e é
       // comum a saída da fase ser "quando não sobrar nenhum": bastava um nascer
       // sobre um buraco para o portão nunca abrir. Quem recolhe é o laço do
       // "Atualizar", que já é o dono da remoção.
-      if (longeDoMundo) { s._foraDoMundo = true; return; }
+      if (_enemyFarFromWorld(s, env)) { s._foraDoMundo = true; return; }
       collideWorld(s, env.world);
       return;
     }
@@ -1314,6 +1321,11 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     for (var i = type.items.length - 1; i >= 0; i--) {
       var s = type.items[i];
       if (!s) { _removeGroupItemAt(type, i); continue; }
+      // ⭐ Cair fora do mundo vale para TODOS. Quem VOA — e quem tem o eixo Y tomado
+      // por outro comportamento — nunca passa pelo _enemyResolveGround, então o
+      // recolhimento não os alcançava: um voador empurrado para fora seguia contando
+      // no "quantos tem no grupo" para sempre, e a saída da fase nunca abria.
+      if (!s._foraDoMundo && _enemyFarFromWorld(s, env)) s._foraDoMundo = true;
       // Caiu para fora do mundo: some sem partículas e SEM o "quando for
       // derrotado" — ninguém o derrotou, e premiar por isso daria ponto de graça.
       if (s._foraDoMundo) { _removeGroupItemAt(type, i); continue; }
@@ -1535,12 +1547,40 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   }
 
   /**
+   * Liga e desliga o casco.
+   *
+   * ⭐ Casco ANDANDO machuca quem encostar; casco parado é inofensivo. É isso que
+   * torna chutá-lo uma DECISÃO — antes ele nascia com o dano zerado para sempre e
+   * virava só um enfeite que rolava pela tela.
+   */
+  function _setShellMotion(shell, moving, kicker) {
+    if (!shell) return;
+    shell._shellMoving = !!moving;
+    if (!moving) {
+      shell.vx = 0;
+      shell.dmg = 0;
+      return;
+    }
+    var paraLonge = kicker && centerX(kicker) < centerX(shell) ? 1 : -1;
+    shell._shellSpeed = Math.abs(_finiteNumber(shell._shellSpeed, 5)) * paraLonge;
+    shell.vx = shell._shellSpeed;
+    shell.dmg = _positiveFiniteNumber(shell._shellDamage, 1);
+  }
+
+  /**
    * Machuca o sprite com o dano do inimigo/tiro e faz piscar. Enquanto pisca,
    * e INVENCIVEL (nao leva dano de novo) — sem isso, o contato continuo
    * drenaria a vida a cada quadro.
    */
   function hurtByEnemy(sprite, enemy) {
     if (!sprite || !enemy) return;
+    // ⭐ Encostar num casco PARADO o CHUTA, não machuca. É o gesto do gênero, e é o
+    // que dá sentido ao casco: pisar recolhe, encostar lança. Casco em movimento cai
+    // no dano normal logo abaixo, com o dano que o inimigo tinha em vida.
+    if (enemy._shell && !enemy._shellMoving) {
+      _setShellMotion(enemy, true, sprite);
+      return;
+    }
     damageSprite(sprite, enemyDamage(enemy), 45);
   }
 
@@ -1583,27 +1623,32 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
         // a pisada e não reposicionam nem entregam um quique enganoso.
         continue;
       }
-      sprite.y = up ? e.y + e.h : e.y - sprite.h;
+      // ⭐ Reposiciona pela MESMA caixa que decidiu a pisada. A rodada anterior
+      // trocou a geometria do "veio de cima" para a caixa efetiva e deixou o pouso
+      // na caixa CRUA: com "área de colisão de N%" o herói era grudado num lugar em
+      // que ele nunca encostou, e o defeito ficava a um passo do que já se corrigiu.
+      // O recuo é a distância entre o topo do DESENHO e o topo da caixa efetiva.
+      var recuo = hs.y - _finiteNumber(sprite.y, 0);
+      sprite.y = (up ? he.y + he.h : he.y - hs.h) - recuo;
       sprite.vy = up ? b : -b;
       sprite.onGround = false;
       if (stompMode === 'shell') {
         if (e._shell) {
-          e._shellMoving = !e._shellMoving;
-          if (e._shellMoving && !_finiteNumber(e._shellSpeed, 0)) {
-            e._shellSpeed = centerX(sprite) < centerX(e) ? 5 : -5;
-          }
-          e.vx = e._shellMoving ? e._shellSpeed : 0;
+          // Pisar num casco que ANDA o para; pisar num parado o lança.
+          _setShellMotion(e, !e._shellMoving, sprite);
         } else {
           var enemyBottom = e.y + e.h;
           e._shell = true;
-          e._shellMoving = true;
-          e._shellSpeed = centerX(sprite) < centerX(e) ? 5 : -5;
           e.h = Math.max(8, Math.round(e.h * 0.65));
           e.y = enemyBottom - e.h;
-          e.vx = e._shellSpeed;
           e.vy = 0;
           e.hp = Math.max(1, _finiteNumber(e.hp, 1));
-          e.dmg = 0;
+          // Guarda o dano de contato do bicho para devolvê-lo quando o casco andar.
+          e._shellDamage = _positiveFiniteNumber(e.dmg, 1);
+          // ⭐ O casco nasce PARADO. Antes ele saía disparado já na PRIMEIRA pisada e
+          // era a segunda que o parava — o inverso do gênero, onde pisar recolhe o
+          // bicho no casco e ENCOSTAR nele é que chuta.
+          _setShellMotion(e, false, sprite);
         }
         continue;
       }

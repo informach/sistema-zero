@@ -1,6 +1,7 @@
 import { isReservedProjectFileName, normalizeExtraFileName } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
+import { gameUiFontBootstrapScript, gameUiFontIdOrDefault } from '../official-extensions/gameUiFont'
 import { buildAssetsRuntime } from './assetsBridge'
 import { buildAudioRuntime } from './audioBridge'
 import { buildPreviewCSPMetaTag, type PreviewSecurityProfile } from './csp'
@@ -80,6 +81,15 @@ export interface BuildPreviewDocInput {
    *  e descartaria um  em silêncio.
    */
   models3d?: Record<string, import('#core').Asset3DManifestEntry>
+  /**
+   * A fonte da interface do JOGO, já resolvida por quem monta o documento.
+   *
+   * ⚠️ Vem pronta de fora porque os dados da fonte são carregados sob demanda (um
+   * chunk por fonte) e este montador é síncrono. Ausente = os runtimes de extensão
+   * caem na reserva de sistema; presente = só a fonte ESCOLHIDA viaja, e nenhuma
+   * das outras quatro entra no documento.
+   */
+  gameUiFont?: { id: string; family: string; css: string }
   /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
@@ -314,6 +324,18 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const hasAssets = input.assets && Object.keys(input.assets).length > 0
   const hasSounds = input.sounds && Object.keys(input.sounds).length > 0
   const has3D = input.models3d && Object.keys(input.models3d).length > 0
+  // A FONTE do jogo. O `<style>` é estático (existe no parse, sem a corrida de
+  // instalação que o bootstrap antigo tinha) e o script publica a família ANTES dos
+  // scripts de extensão — é na primeira linha deles que ela é capturada.
+  const gameUiFontTag = input.gameUiFont
+    ? `<style data-sz-game-ui-font>${escapeStyleContent(input.gameUiFont.css)}</style>` +
+      trustedScriptTag(
+        gameUiFontBootstrapScript(
+          input.gameUiFont.family,
+          gameUiFontIdOrDefault(input.gameUiFont.id),
+        ),
+      )
+    : ''
   const assetsBridgeTag =
     hasAssets || hasSounds || has3D
       ? trustedScriptTag(
@@ -355,6 +377,7 @@ ${audioBridgeTag}
 ${storageBridgeTag}
 ${snapshotBridgeTag}
 ${assetsBridgeTag}
+${gameUiFontTag}
 ${importmapTag}
 ${extScripts}
 ${styleTag}

@@ -117,6 +117,17 @@ Plataforma clássica de lado (jogo de correr e pular, tipo os antigos de console
 - setObjectValue(obj, "chave", valor) / objectValue(obj, "chave"): gaveta por objeto
   (direção que o inimigo anda, tempo de espera, quantas vidas tem).
 
+Kit Plataforma pronto (fase lateral completa, usado pelo exemplo Reino Cogumelo):
+- createPlatformScene(canvasId) -> world: prepara céu, luz e câmera lateral; o canvas precisa existir no HTML.
+- createHero(world, color) -> hero: cria o personagem com corpo e colisão. Crie cena e herói em Ao iniciar.
+- setStageTheme(world, "dia"|"noite"|"subterraneo"|"agua"|"castelo"): troca céu, neblina e cores da fase já montada. Se vier antes de loadStage, vale quando o mapa não tiver tema próprio.
+- loadStage(world, mapa): monta a fase. O mapa é texto com assuntos separados por ponto e vírgula ou linha; exemplos: chao=0-20, tijolo=6:4, surpresa=8:4:cogumelo, inimigo=12:goomba, checkpoint=15, tempo=300, tema=noite.
+- stageStep(world, hero) e sideCamera(world, hero): chame dentro de animate. classicPlatformer cuida do movimento do herói; keyPressed("KeyF") + shootFire(world, hero) dispara uma vez por toque quando ele tem a flor.
+- onStageEvent(world, nome, fn): reage a pegar-moeda, pegar-cogumelo, pegar-flor, pegar-estrela, ganhar-vida, quebrar-tijolo, pisar-inimigo, chutar-concha, levar-dano, tocar-a-bandeira, derrotar-o-chefe e acabar-o-tempo.
+- stageValue(world, "pontos"|"moedas"|"vidas"|"tempo"|"mundo"|"fase") lê o placar. setStageNumber(world, mundo, fase) define a identificação mostrada.
+- heroIs(hero, "pequeno"|"grande"|"de fogo"|"invencivel"|"no chao") e stageIs(world, "acabou"|"venceu"|"perdeu"|"sem vidas") são perguntas para usar em se.
+- stageReset(world) reinicia a fase e respeita apenas o checkpoint alcançado nela; clearStage(world) remove o cenário atual.
+
 Câmeras vivas (manuais, sem addon):
 - fpsCamera(world, obj): câmera em perspectiva nos olhos do objeto + olhar com o mouse (pointer-lock; clique trava), mesmo se a cena estava usando câmera ortográfica. Combine c/ fpsControls.
 - orbitCamera(world, target): gira ao redor do alvo arrastando o mouse (roda = zoom).
@@ -181,5 +192,8 @@ Quando ajudar o aluno com 3D:
   O HUD (pontuação, fim de jogo, setas) é feito com blocos de HTML/CSS e lido por crosserRow/crosserHit.
 - Para um jogo de empilhar (Empilhar): createStackScene + createStackTower; no animate: stackStep +
   mostrar stackScore + se stackGameOver -> "Game Over". Ligue um botão/tecla a stackDrop e Recomeçar a stackReset.
+- Para uma campanha lateral pronta: createPlatformScene + createHero + loadStage em Ao iniciar; no animate use
+  classicPlatformer + stageStep + sideCamera. Leia placar com stageValue, estados com stageIs/heroIs e use
+  onStageEvent para efeitos e HUD. Nunca combine o herói ou a câmera com outra cena.
 - Prefira pequenas iterações — não despeje a cena pronta.
 `

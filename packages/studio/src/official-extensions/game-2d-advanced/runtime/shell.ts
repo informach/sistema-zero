@@ -160,6 +160,28 @@ export const gameKitShellRuntime = `
     applyStageBorder();
   }
 
+  /**
+   * ⭐⭐ NÃO é um setter — é uma VERIFICAÇÃO, e isto precisa estar escrito aqui.
+   *
+   * Os bytes da fonte não estão na página: quem monta o documento resolve a escolha
+   * ANTES do jogo rodar e manda SÓ a fonte escolhida (cinco fontes embutidas seriam
+   * ~170 KB em todo jogo exportado). Então aqui não há o que trocar — o que dá para
+   * fazer é conferir se o que o bloco pediu foi o que chegou, e avisar quando não.
+   *
+   * Diverge quando a escolha não é estática: um nome guardado numa variável, ou o
+   * bloco dentro de um "se". Aí o documento veio com a fonte padrão e a criança
+   * precisa saber por quê.
+   */
+  function useFont(font) {
+    var pedida = text(font, '');
+    var atual = window.SZGameUIFont && window.SZGameUIFont.id;
+    if (!pedida || !atual || pedida === atual) return;
+    warnOnce(
+      'fonte-divergente',
+      'para trocar a fonte, use o bloco “Usar a fonte” no “Ao iniciar” — a fonte é escolhida antes de o jogo começar, então ela não muda no meio.'
+    );
+  }
+
   function focusWithoutScrolling(el) {
     if (!el || typeof el.focus !== 'function') return;
     try {

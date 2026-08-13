@@ -5,8 +5,11 @@
  */
 import { boundsCenter, shapeBounds } from './geometry'
 import {
+  fontFamilyLabel,
+  fontFamilyOf,
   gradientId,
   isVectorGradient,
+  textAlignOf,
   type VectorGradient,
   type VectorShape,
   visibleShapes,
@@ -90,11 +93,33 @@ export function shapeCommonAttrs(shape: VectorShape, idPrefix = ''): Record<stri
   return attrs
 }
 
+/** Entrelinha do texto: o MESMO 1.2 que o `shapeBounds` usa na altura. */
+export const TEXT_LINE_HEIGHT = 1.2
+
+/** Uma linha de texto já posicionada (um `<tspan>` em qualquer um dos funis). */
+export interface TextLineLayout {
+  x: number
+  dy: number
+  text: string
+}
+
+/**
+ * As linhas de um texto, com os números PRONTOS. Fonte única: o funil string e
+ * o React leem daqui, então não têm como divergir.
+ */
+export function textLines(shape: Extract<VectorShape, { type: 'text' }>): TextLineLayout[] {
+  const x = round2(shape.x)
+  const dy = round2(shape.fontSize * TEXT_LINE_HEIGHT)
+  return shape.text.split('\n').map((text, index) => ({ x, dy: index === 0 ? 0 : dy, text }))
+}
+
 /** Tag + atributos GEOMÉTRICOS do shape (sem os comuns). */
 export function shapeGeometryAttrs(shape: VectorShape): {
   tag: string
   attrs: Record<string, string>
   content?: string
+  /** Só no texto de VÁRIAS linhas: uma linha = um `<tspan>`. */
+  lines?: TextLineLayout[]
 } {
   switch (shape.type) {
     case 'rect':
@@ -137,26 +162,57 @@ export function shapeGeometryAttrs(shape: VectorShape): {
       }
     case 'path':
       return { tag: 'path', attrs: { d: shape.d } }
-    case 'text':
+    case 'image':
+      return {
+        tag: 'image',
+        attrs: {
+          x: String(round2(shape.x)),
+          y: String(round2(shape.y)),
+          width: String(round2(shape.w)),
+          height: String(round2(shape.h)),
+          // Só `href` (SVG2), sem `xlink:href` duplicado: repetir um data URL
+          // dobraria o tamanho do arquivo. Mesmo caminho do `<use href>` que o
+          // tilemap vetorial já rasteriza em produção.
+          href: shape.src,
+          // A figura PREENCHE a caixa, então as 8 alças dizem a verdade
+          // (o padrão `xMidYMid meet` deixaria tarja e a alça mentiria).
+          preserveAspectRatio: 'none',
+          ...(shape.pixelated ? { 'image-rendering': 'pixelated' } : {}),
+        },
+      }
+    case 'text': {
+      const align = textAlignOf(shape)
+      const lines = textLines(shape)
       return {
         tag: 'text',
         attrs: {
           x: String(round2(shape.x)),
           y: String(round2(shape.y)),
           'font-size': String(round2(shape.fontSize)),
-          'font-family': 'sans-serif',
+          'font-family': fontFamilyLabel(fontFamilyOf(shape)),
+          ...(align === 'center' ? { 'text-anchor': 'middle' } : {}),
+          ...(align === 'right' ? { 'text-anchor': 'end' } : {}),
         },
-        content: shape.text,
+        // Uma linha continua saindo como conteúdo CRU: o markup de todo desenho
+        // que já existe fica byte a byte igual ao de antes.
+        ...(lines.length > 1 ? { lines } : { content: shape.text }),
       }
+    }
   }
 }
 
 export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
-  const { tag, attrs, content } = shapeGeometryAttrs(shape)
+  const { tag, attrs, content, lines } = shapeGeometryAttrs(shape)
   const all = { ...attrs, ...shapeCommonAttrs(shape, idPrefix) }
   const attrText = Object.entries(all)
     .map(([key, value]) => `${key}="${escapeXml(value)}"`)
     .join(' ')
+  if (lines) {
+    const spans = lines
+      .map((line) => `<tspan x="${line.x}" dy="${line.dy}">${escapeXml(line.text)}</tspan>`)
+      .join('')
+    return `<${tag} ${attrText}>${spans}</${tag}>`
+  }
   if (content !== undefined) return `<${tag} ${attrText}>${escapeXml(content)}</${tag}>`
   return `<${tag} ${attrText}/>`
 }

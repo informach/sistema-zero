@@ -104,6 +104,25 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
 
   // ---- Movimento (v0.4.0) ----
+  /**
+   * Direcional apertado, pelo teclado OU pelo controle de TOQUE.
+   *
+   * ⚠️ O pad de toque (enableClassicControls) alimenta só a camada semântica, e por
+   * muito tempo apenas dois helpers a liam. Todo o resto do movimento lia apenas o
+   * mapa de teclas — ou seja, no celular o botão de direção não movia nada nos jogos
+   * que não usam a plataforma clássica. Para TECLADO os dois caminhos são
+   * equivalentes (as mesmas setas/WASD alimentam os dois), então isto não muda jogo
+   * nenhum que já exista: só acrescenta o dedo.
+   */
+  function _dirHeld(dir) {
+    if (keys[dir]) return true;
+    return typeof actionDown === 'function' && actionDown(dir);
+  }
+  /** O gesto de PULAR, por tecla, toque, ponteiro ou o botão A do pad. */
+  function _jumpHeld() {
+    if (keys.up || keyDown('Space') || pointer.down) return true;
+    return typeof actionDown === 'function' && (actionDown('jump') || actionDown('up'));
+  }
   function _platformerMove(sprite, speed, jump, ctx) {
     if (!sprite) return;
     _recordPreviousPosition(sprite);
@@ -113,11 +132,13 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     var wasGrounded = _beginGroundFrame(sprite);
     // Grava a velocidade horizontal p/ os getters (vx/velocidade/está se movendo) —
     // o vy já é real (gravidade explícita/pulo abaixo).
-    sprite.vx = (keys.right ? s : 0) - (keys.left ? s : 0);
-    if (keys.left) sprite.x -= s;
-    if (keys.right) sprite.x += s;
+    var indoDireita = _dirHeld('right');
+    var indoEsquerda = _dirHeld('left');
+    sprite.vx = (indoDireita ? s : 0) - (indoEsquerda ? s : 0);
+    if (indoEsquerda) sprite.x -= s;
+    if (indoDireita) sprite.x += s;
     sprite.vy = _finiteNumber(sprite.vy, 0);
-    var pressingJump = keys.up;
+    var pressingJump = _dirHeld('up') || (typeof actionDown === 'function' && actionDown('jump'));
     var wantsJump = pressingJump && sprite._platformJumpHeld !== true;
     sprite._platformJumpHeld = pressingJump;
     var jumped = false;
@@ -149,7 +170,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     _recordPreviousPosition(sprite);
     var g = world.gravity;
     var wasGrounded = _beginGroundFrame(sprite);
-    var pressing = keys.up || keyDown('Space') || pointer.down;
+    var pressing = _jumpHeld();
     var wantsJump = pressing && sprite._terrainJumpHeld !== true;
     sprite._terrainJumpHeld = pressing;
     if (wantsJump && wasGrounded) _jumpFromGround(sprite, g, jump);
@@ -163,8 +184,8 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (!sprite) return;
     _recordPreviousPosition(sprite);
     var s = _finiteNumber(speed, 3);
-    var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
-    var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    var dx = (_dirHeld('right') ? 1 : 0) - (_dirHeld('left') ? 1 : 0);
+    var dy = (_dirHeld('down') ? 1 : 0) - (_dirHeld('up') ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
     // Grava a velocidade (o passo real deste quadro) p/ os getters de velocidade;
     // parado → 0 → "está se movendo?" falso.
@@ -214,8 +235,8 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (!sprite) return;
     _recordPreviousPosition(sprite);
     var s = _positiveFiniteNumber(speed, 3);
-    var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
-    var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    var dx = (_dirHeld('right') ? 1 : 0) - (_dirHeld('left') ? 1 : 0);
+    var dy = (_dirHeld('down') ? 1 : 0) - (_dirHeld('up') ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
     var vx = _finiteNumber(sprite.vx, 0) + dx * s * 0.1;
     var vy = _finiteNumber(sprite.vy, 0) + dy * s * 0.1;
@@ -252,7 +273,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     // Pousa no chão (senão o bicho some para sempre fora da tela); quem quiser
     // "morreu ao encostar" pergunta a posição.
     _resolveGravityGround(sprite, visible.top, visible.bottom, g);
-    var pressing = keys.up || keyDown('Space') || pointer.down;
+    var pressing = _jumpHeld();
     if (pressing && !sprite._flapHeld) {
       sprite.vy = _jumpVelocityForGravity(g, f);
       sprite.onGround = false;
@@ -266,11 +287,6 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * gravidade o bicho boia; com applyGravity antes, afunda suavemente porque a
    * água amortece a velocidade vertical.
    */
-  /** Direcional apertado, pelo teclado OU pelo controle de toque. */
-  function _swimHeld(dir) {
-    if (keys[dir]) return true;
-    return typeof actionDown === 'function' && actionDown(dir);
-  }
   function swim(sprite, speed) {
     if (!sprite) return;
     _recordPreviousPosition(sprite);
@@ -278,8 +294,8 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     // ⚠️ Le o TOQUE junto do teclado. Lendo so as teclas, uma fase de natacao ficava
     // injogavel no celular: os controles de toque alimentam a acao semantica, entao a
     // crianca nao se movia e morria por tempo, em laco.
-    var dx = (_swimHeld('right') ? 1 : 0) - (_swimHeld('left') ? 1 : 0);
-    var dy = (_swimHeld('down') ? 1 : 0) - (_swimHeld('up') ? 1 : 0);
+    var dx = (_dirHeld('right') ? 1 : 0) - (_dirHeld('left') ? 1 : 0);
+    var dy = (_dirHeld('down') ? 1 : 0) - (_dirHeld('up') ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
     var vx = (_finiteNumber(sprite.vx, 0) + dx * s * 0.3) * 0.88;
     var vy = (_finiteNumber(sprite.vy, 0) + dy * s * 0.3) * 0.88;
@@ -370,10 +386,10 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     _ensureAngle(sprite);
     var sp = _finiteNumber(speed, 3);
     var turn = _finiteNumber(turnDegrees, 3);
-    if (keys.left) sprite.angle -= turn * DEG;
-    if (keys.right) sprite.angle += turn * DEG;
+    if (_dirHeld('left')) sprite.angle -= turn * DEG;
+    if (_dirHeld('right')) sprite.angle += turn * DEG;
     var d = _forward(sprite);
-    if (keys.up) { sprite.vx = d.x * sp; sprite.vy = d.y * sp; }
+    if (_dirHeld('up')) { sprite.vx = d.x * sp; sprite.vy = d.y * sp; }
     else { sprite.vx = _finiteNumber(sprite.vx, 0) * 0.97; sprite.vy = _finiteNumber(sprite.vy, 0) * 0.97; }
     sprite.x = _finiteNumber(sprite.x, 0) + _finiteNumber(sprite.vx, 0);
     sprite.y = _finiteNumber(sprite.y, 0) + _finiteNumber(sprite.vy, 0);

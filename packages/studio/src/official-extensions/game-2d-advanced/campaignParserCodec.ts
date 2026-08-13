@@ -2,6 +2,7 @@ import type * as Babel from '@babel/types'
 import type { JSExpr, JSStatement } from '#ir'
 import { type GameKitCampaignStage, normalizeCampaignStage } from './campaignSchema'
 import { isGameKitAction, isGameKitCampaignEventField } from './runtimeContract'
+import { gameKitUiFontCallToIR } from './uiFontCodec'
 
 export const CAMPAIGN_CALL_UNHANDLED = Symbol('campaign-call-unhandled')
 export const CAMPAIGN_EXPRESSION_CALL_UNHANDLED = Symbol('campaign-expression-call-unhandled')
@@ -127,6 +128,10 @@ export function gameKitCampaignCallToIR(
   args: readonly Babel.Node[],
   context: CampaignParserContext,
 ): JSStatement | null | typeof CAMPAIGN_CALL_UNHANDLED {
+  // Mesmo motivo do irmão em `campaignBlockCodec`: é por este despachante que a
+  // extensão alcança o `parsers/js.ts` sem fazer aquela fachada crescer.
+  const font = gameKitUiFontCallToIR(method, args)
+  if (font) return font
   switch (method) {
     case 'enableFixedSimulation': {
       if (args[0]?.type !== 'ObjectExpression') return null

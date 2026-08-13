@@ -1,11 +1,41 @@
 import type { ExtensionExample } from '#extensions'
 import type { JSExpr, JSStatement } from '#ir'
 import { beginnerGameExample } from '../shared'
+import {
+  REINO_ZERO_LEVEL_WIDTHS as LEVEL_WIDTHS,
+  type ReinoZeroLevelKind as LevelKind,
+  reinoZeroLevelKind as levelKind,
+} from './reinoZeroLevelModel'
+import {
+  reinoZeroCollectCoin as collectCoin,
+  reinoZeroMovePowerup as movePowerup,
+} from './reinoZeroMechanics'
 
 const TILE = 16
-const COLS = 72
+const DEFAULT_COLS = 72
 const ROWS = 15
 const LAST_LEVEL = 32
+
+/**
+ * ⭐ O tema é do TIPO da fase, não do mundo.
+ *
+ * Antes havia um tema por MUNDO, então 1-1, 1-2, 1-3 e 1-4 dividiam o mesmo céu azul
+ * — e o jogo inteiro parecia a mesma fase trinta e duas vezes. No jogo de referência
+ * quem manda na paleta é o tipo: superfície, subterrâneo, água e castelo. São 8
+ * temas (4 tipos × primeira/segunda metade da campanha), o MESMO número de antes,
+ * então nem o tamanho da IR nem a contagem de figuras mudam.
+ */
+const LEVEL_KINDS: readonly LevelKind[] = ['superficie', 'subterraneo', 'agua', 'castelo']
+
+/**
+ * O mapa de tipos do jogo de referência: a 1 é a superfície, a 2 é subterrânea
+ * (menos nos mundos 2 e 7, que são de água), a 3 volta para fora com plataformas
+ * altas e a 4 é sempre o castelo.
+ */
+/** Índice do tema: tipo × metade da campanha. */
+function themeIndex(world: number, stage: number): number {
+  return LEVEL_KINDS.indexOf(levelKind(world, stage)) * 2 + (world >= 5 ? 1 : 0)
+}
 
 interface Theme {
   sky: string
@@ -16,9 +46,12 @@ interface Theme {
   pipe: string
   platform: string
   hazard: string
+  coin: string
 }
 
+/** Na ordem de `themeIndex`: superfície, subterrâneo, água e castelo, em duas metades. */
 const THEMES: readonly Theme[] = [
+  // Superfície — a cara do jogo: céu aberto, chão de terra, cano verde.
   {
     sky: '#5c94fc',
     ground: '#c87932',
@@ -28,37 +61,9 @@ const THEMES: readonly Theme[] = [
     pipe: '#2fb34a',
     platform: '#f5df9b',
     hazard: '#1d67c1',
+    coin: '#fbd000',
   },
-  {
-    sky: '#14213d',
-    ground: '#72564a',
-    edge: '#bd9b72',
-    brick: '#82543d',
-    question: '#f2a900',
-    pipe: '#237d42',
-    platform: '#b9a17e',
-    hazard: '#183c78',
-  },
-  {
-    sky: '#2d9bd8',
-    ground: '#d6b36a',
-    edge: '#fff1ac',
-    brick: '#bc6b38',
-    question: '#ffd447',
-    pipe: '#38a66b',
-    platform: '#e7d9a0',
-    hazard: '#166ab1',
-  },
-  {
-    sky: '#abddff',
-    ground: '#8c704e',
-    edge: '#f7e6b5',
-    brick: '#b9613f',
-    question: '#ffc928',
-    pipe: '#329a55',
-    platform: '#fff4c8',
-    hazard: '#4e8ecd',
-  },
+  // Superfície, segunda metade: o mesmo lugar no fim da tarde.
   {
     sky: '#ffb35c',
     ground: '#9c4935',
@@ -68,36 +73,76 @@ const THEMES: readonly Theme[] = [
     pipe: '#477c3a',
     platform: '#eabf7b',
     hazard: '#dd382f',
+    coin: '#ffe066',
+  },
+  // Subterrâneo — fundo PRETO e teto fechado, que é o que faz a caverna se ler.
+  {
+    sky: '#000000',
+    ground: '#3f7cd8',
+    edge: '#9ad1ff',
+    brick: '#2a5aa8',
+    question: '#f8b800',
+    pipe: '#2fb34a',
+    platform: '#6f9fe0',
+    hazard: '#123064',
+    coin: '#fbd000',
   },
   {
-    sky: '#33425b',
-    ground: '#6c5b5b',
-    edge: '#c7b8a1',
-    brick: '#78443f',
-    question: '#e8ad25',
-    pipe: '#3b7650',
-    platform: '#b9b0a5',
-    hazard: '#972e3b',
-  },
-  {
-    sky: '#19162f',
-    ground: '#51416d',
-    edge: '#b394d6',
-    brick: '#693f65',
+    sky: '#080510',
+    ground: '#6b4bb0',
+    edge: '#c0a3ef',
+    brick: '#4a3080',
     question: '#e2a92c',
     pipe: '#316c51',
-    platform: '#a690c5',
-    hazard: '#d43c64',
+    platform: '#9c85cf',
+    hazard: '#2a1552',
+    coin: '#ffe066',
+  },
+  // Água — tudo azul, e o "perigo" aqui é a superfície funda.
+  {
+    sky: '#3f7cd8',
+    ground: '#2a8a6d',
+    edge: '#7fe3c4',
+    brick: '#1f6f7a',
+    question: '#f8d038',
+    pipe: '#1f8f5a',
+    platform: '#8fd8e8',
+    hazard: '#0b3e78',
+    coin: '#fdf0a0',
   },
   {
-    sky: '#090b18',
-    ground: '#3a3144',
-    edge: '#8e779a',
-    brick: '#553343',
+    sky: '#1b4f9c',
+    ground: '#1e6b58',
+    edge: '#5ec2a6',
+    brick: '#155863',
+    question: '#e8c02c',
+    pipe: '#177a4c',
+    platform: '#6ab8cc',
+    hazard: '#06265a',
+    coin: '#f7e28c',
+  },
+  // Castelo — pedra escura e LAVA. O chão de perigo é o que define a fase.
+  {
+    sky: '#0b0710',
+    ground: '#7a5a52',
+    edge: '#c9a898',
+    brick: '#5e3d38',
+    question: '#e8ad25',
+    pipe: '#3b7650',
+    platform: '#a08878',
+    hazard: '#f04b3e',
+    coin: '#ffcf5c',
+  },
+  {
+    sky: '#050308',
+    ground: '#4d3f4a',
+    edge: '#9b8496',
+    brick: '#3d2b38',
     question: '#d49b22',
     pipe: '#285445',
-    platform: '#9b89a8',
-    hazard: '#f04b3e',
+    platform: '#7c6a78',
+    hazard: '#ff6a2a',
+    coin: '#ffdf8a',
   },
 ] as const
 
@@ -174,11 +219,21 @@ function themeShapes(index: number, theme: Theme): JSStatement[] {
       paintRect(12, 0, 2, 16, '#174a2c'),
     ]),
     tileShape(`${prefix}Plataforma`, theme.platform, '#fff5cf', theme.ground),
+    // Perigo é o BLOCO inteiro (lava do castelo, fundo de poço, água funda), com a
+    // crista mais clara em cima. Antes ele desenhava céu com uma faixinha no pé, o
+    // que só servia para o fundo do buraco — e ele nem gerava contato, porque era
+    // decoração. Agora é uma peça "atravessa e avisa" de verdade.
     shape(`${prefix}Perigo`, [
-      paintRect(0, 0, 16, 16, theme.sky),
-      paintRect(0, 10, 16, 6, theme.hazard),
-      paintRect(2, 8, 4, 4, theme.hazard),
-      paintRect(10, 8, 4, 4, theme.hazard),
+      paintRect(0, 0, 16, 16, theme.hazard),
+      paintRect(0, 0, 16, 3, theme.edge),
+      paintRect(3, 3, 3, 3, theme.edge),
+      paintRect(10, 3, 4, 2, theme.edge),
+    ]),
+    // Moeda: a peça do cenário que se ATRAVESSA e vale ponto.
+    shape(`${prefix}Moeda`, [
+      paintCircle(8, 8, 5, theme.coin),
+      paintRect(7, 4, 2, 8, '#ffffff'),
+      paintCircle(8, 8, 2, theme.coin),
     ]),
   ]
 }
@@ -192,6 +247,30 @@ function campaignShapes(): JSStatement[] {
       paintRect(2, 17, 12, 5, '#2e55a3'),
       paintRect(2, 22, 5, 2, '#63341f'),
       paintRect(10, 22, 5, 2, '#63341f'),
+      paintRect(10, 6, 2, 2, '#17223b'),
+    ]),
+    // O herói GRANDE: oito pixels mais alto, mas com os pés na mesma referência.
+    shape('lumiForte', [
+      paintRect(3, 0, 8, 2, '#fff3b0'),
+      paintRect(3, 1, 8, 4, '#f4c542'),
+      paintRect(1, 5, 13, 4, '#f4c542'),
+      paintRect(3, 9, 10, 12, '#31a24c'),
+      paintRect(5, 12, 6, 4, '#eaf7d0'),
+      paintRect(2, 21, 12, 7, '#2e55a3'),
+      paintRect(1, 28, 6, 4, '#63341f'),
+      paintRect(10, 28, 6, 4, '#63341f'),
+      paintRect(10, 6, 2, 2, '#17223b'),
+    ]),
+    // A flor acrescenta o terceiro estado, visível pela roupa clara e capaz de atirar.
+    shape('lumiFogo', [
+      paintRect(3, 0, 8, 2, '#fff7de'),
+      paintRect(3, 1, 8, 4, '#f4c542'),
+      paintRect(1, 5, 13, 4, '#f4c542'),
+      paintRect(3, 9, 10, 12, '#fff7de'),
+      paintRect(5, 12, 6, 4, '#e84a3c'),
+      paintRect(2, 21, 12, 7, '#e84a3c'),
+      paintRect(1, 28, 6, 4, '#63341f'),
+      paintRect(10, 28, 6, 4, '#63341f'),
       paintRect(10, 6, 2, 2, '#17223b'),
     ]),
     shape('brasa', [
@@ -244,18 +323,51 @@ function campaignShapes(): JSStatement[] {
       paintRect(5, 10, 2, 2, '#25304a'),
       paintRect(9, 10, 2, 2, '#25304a'),
     ]),
-    shape('portal', [
-      paintRect(5, 0, 3, 30, '#e7e1c4'),
-      paintRect(8, 2, 12, 7, '#f0cb3d'),
-      paintRect(8, 9, 9, 5, '#df493b'),
-      paintRect(2, 28, 12, 2, '#e7e1c4'),
+    shape('flor', [
+      paintCircle(8, 6, 6, '#fff7de'),
+      paintCircle(8, 6, 3, '#e84a3c'),
+      paintRect(7, 11, 3, 5, '#31a24c'),
+      paintRect(3, 11, 5, 3, '#58bd62'),
+      paintRect(9, 12, 5, 3, '#58bd62'),
+    ]),
+    shape('barraFogo', [
+      paintCircle(4, 4, 4, '#fff3b0'),
+      paintCircle(16, 4, 4, '#ffb02e'),
+      paintCircle(28, 4, 4, '#ff7138'),
+      paintCircle(40, 4, 4, '#e83b30'),
+      paintCircle(52, 4, 4, '#ff7138'),
+      paintCircle(60, 4, 4, '#fff3b0'),
+    ]),
+    // ⭐ O MASTRO do fim de fase. Era um "portal" de 20x32 encostado no chao: o fim da
+    // fase nao se lia, e quanto mais alto voce encosta nao valia nada. Agora e um
+    // mastro alto (9 tiles) com a bandeira em cima, e a altura do toque PAGA.
+    shape('mastro', [
+      paintRect(6, 6, 3, 138, '#dfe7c8'),
+      paintCircle(7, 5, 4, '#f0cb3d'),
+      paintRect(9, 10, 7, 12, '#31a24c'),
+      paintRect(9, 22, 5, 8, '#2b8f43'),
+      paintRect(2, 140, 12, 4, '#8e8c6f'),
+    ]),
+    // A estrela que deixa invencivel por alguns segundos.
+    shape('estrela', [
+      paintRect(6, 0, 4, 5, '#fff3b0'),
+      paintRect(2, 5, 12, 5, '#ffd93d'),
+      paintRect(4, 10, 8, 4, '#ffc300'),
+      paintRect(3, 13, 3, 3, '#ffd93d'),
+      paintRect(10, 13, 3, 3, '#ffd93d'),
+      paintRect(6, 6, 2, 2, '#5b3b12'),
+      paintRect(9, 6, 2, 2, '#5b3b12'),
+    ]),
+    // A planta que sai do cano. Nao aceita pisada (o modo espinho cuida disso).
+    shape('planta', [
+      paintRect(6, 8, 4, 8, '#2f7d3a'),
+      paintRect(2, 0, 12, 8, '#e0453b'),
+      paintRect(4, 2, 3, 3, '#ffffff'),
+      paintRect(9, 2, 3, 3, '#ffffff'),
+      paintRect(5, 6, 6, 2, '#7d1f1a'),
     ]),
     shape('invisivel', []),
   ]
-}
-
-function seeded(seed: number, offset: number): number {
-  return Math.abs((seed * 37 + offset * 17 + seed * offset * 3) % 997)
 }
 
 /** Colunas de entrada e saída que nunca recebem poço. */
@@ -271,121 +383,805 @@ const T_PLATAFORMA = 4
 const T_CEU = 5
 const T_PERIGO = 6
 const T_CANO_CORPO = 7
+const T_MOEDA = 8
 
 /**
- * Sorteia os poços em SEGMENTOS separados, em vez de colunas soltas.
+ * ⭐ A PLANTA de cada fase, escrita à mão.
  *
- * Antes cada poço era jogado no mapa de forma independente, e dois sorteios vizinhos
- * se encostavam formando vãos de 4-5 tiles. Com gravidade 0.42, impulso 7.2 e
- * velocidade 2.35 o pulo alcança ~80px (5 tiles) partindo da borda exata — ou seja,
- * a 7-1 ficava intransponível na prática. Exigir 2 colunas firmes entre segmentos
- * garante vão máximo de 2 tiles e plataforma de pouso de 32px.
+ * ⚠️ Antes as 32 grades saíam de um SORTEIO: os poços vinham de uma função
+ * pseudoaleatória e os blocos de colunas fixas deslocadas por resto de divisão. O
+ * resultado é o que a dona do produto viu jogando — trinta e duas fases que parecem a
+ * mesma, sem nada reconhecível, e sem que ninguém pudesse dizer "aqui é a descida do
+ * cano" ou "aqui é a escada do fim".
+ *
+ * Agora cada fase é DADO: alguém escolheu cada poço, cada cano e cada bloco. O
+ * traçado é autoral, mas os MARCOS são os do jogo de referência — a etapa 1 abre com
+ * bloco de prêmio e canos, a 2 desce para o subterrâneo (ou mergulha, nos mundos 2 e
+ * 7), a 3 sobe para as plataformas altas e a 4 é sempre o castelo sobre a lava.
  */
-function levelPits(level: number, world: number, stage: number): Set<number> {
-  const segments: Array<{ start: number; width: number }> = []
-  const pitCount = stage === 3 ? 6 : 2 + Math.floor(world / 3)
-  const span = COLS - SAFE_MARGIN * 2
-  for (let index = 0; index < pitCount; index += 1) {
-    const width = stage >= 3 || index % 2 === 0 ? 2 : 1
-    const start = SAFE_MARGIN + (seeded(level, index) % (span - width))
-    const tooClose = segments.some(
-      (seg) => start < seg.start + seg.width + 2 && seg.start < start + width + 2,
-    )
-    if (tooClose) continue
-    segments.push({ start, width })
-  }
-  const pits = new Set<number>()
-  for (const seg of segments) {
-    for (let offset = 0; offset < seg.width; offset += 1) pits.add(seg.start + offset)
-  }
-  return pits
+interface LevelPlan {
+  /** [coluna inicial, largura em tiles] de cada vão sem chão. */
+  pocos: ReadonlyArray<readonly [number, number]>
+  /** [coluna, altura em tiles] de cada cano. O cano sempre ocupa 2 colunas. */
+  canos: ReadonlyArray<readonly [number, number]>
+  /** [coluna, linha, peça] dos blocos soltos (tijolo ou prêmio). */
+  blocos: ReadonlyArray<readonly [number, number, number]>
+  /** [coluna, linha, largura] das plataformas suspensas. */
+  plataformas: ReadonlyArray<readonly [number, number, number]>
+  /** [coluna, linha, quantidade] das fileiras de moeda. */
+  moedas: ReadonlyArray<readonly [number, number, number]>
+  /** [coluna, altura] das escadas, que sobem para a direita. */
+  escadas: ReadonlyArray<readonly [number, number]>
+}
+
+interface LevelDescriptor {
+  level: number
+  world: number
+  stage: number
+  kind: LevelKind
+  cols: number
+  plan: LevelPlan
+  rows: number[][]
+  firstPipe: { x: number; y: number } | null
+  shortcut: { x: number; y: number } | null
+}
+
+const PLANO_VAZIO: LevelPlan = {
+  pocos: [],
+  canos: [],
+  blocos: [],
+  plataformas: [],
+  moedas: [],
+  escadas: [],
+}
+
+function plano(partes: Partial<LevelPlan>): LevelPlan {
+  return { ...PLANO_VAZIO, ...partes }
+}
+
+/** Um grupo de peças na altura de cabecear, como o do começo do jogo. */
+function fileira(
+  col: number,
+  row: number,
+  pecas: readonly number[],
+): Array<readonly [number, number, number]> {
+  return pecas.map((peca, offset) => [col + offset, row, peca] as const)
 }
 
 /**
- * Acha o par de colunas firmes mais próximo do lugar desejado para um cano.
+ * As 32 plantas, na ordem 1-1 … 8-4.
  *
- * Canos têm 2 colunas (como no jogo de referência) e precisam de chão embaixo: antes
- * o cano era escrito por cima da linha 13 — que É chão — e por isso aparecia meio
- * enterrado, e em 10 das 32 fases ficava sólido pairando sobre um poço.
+ * A linha 9 é a altura de cabecear com um pulo curto e a 10 é a de cabecear andando;
+ * da 4 à 7 é o andar de cima, alcançável só de plataforma em plataforma.
  */
-function firmPipePair(desired: number, pits: Set<number>, taken: Set<number>): number | null {
-  for (let delta = 0; delta <= 8; delta += 1) {
-    const candidates = delta === 0 ? [desired] : [desired - delta, desired + delta]
-    for (const col of candidates) {
-      if (col < SAFE_MARGIN || col + 1 >= COLS - SAFE_MARGIN) continue
-      if (pits.has(col) || pits.has(col + 1)) continue
-      // Uma coluna de folga dos outros canos, senão dois canos vizinhos viram um só.
-      if (taken.has(col - 1) || taken.has(col) || taken.has(col + 1) || taken.has(col + 2)) {
-        continue
-      }
-      return col
+const LEVEL_PLANS: readonly LevelPlan[] = [
+  // ---- Mundo 1 ----
+  // 1-1: a fase que ensina. Um prêmio solitário, o grupo de quatro, dois canos que
+  // crescem e um poço só, com a escada do fim.
+  plano({
+    pocos: [[38, 2]],
+    canos: [
+      [22, 2],
+      [30, 3],
+    ],
+    blocos: [[12, 9, T_PREMIO], ...fileira(16, 9, [T_TIJOLO, T_PREMIO, T_TIJOLO, T_PREMIO])],
+    moedas: [[24, 6, 4]],
+    escadas: [[56, 4]],
+  }),
+  // 1-2: subterrânea. Teto fechado, fileiras de moeda e o cano de saída no fim.
+  plano({
+    pocos: [
+      [30, 2],
+      [46, 2],
+    ],
+    canos: [[58, 3]],
+    blocos: [...fileira(14, 10, [T_TIJOLO, T_TIJOLO, T_PREMIO]), [40, 9, T_PREMIO]],
+    moedas: [
+      [18, 8, 6],
+      [34, 7, 4],
+    ],
+    plataformas: [[24, 9, 3]],
+  }),
+  // 1-3: as plataformas altas. Quase não há chão no meio.
+  plano({
+    pocos: [
+      [20, 2],
+      [30, 2],
+      [42, 2],
+      [52, 2],
+    ],
+    plataformas: [
+      [18, 8, 4],
+      [28, 7, 3],
+      [38, 8, 4],
+      [50, 6, 3],
+    ],
+    blocos: [[34, 5, T_PREMIO]],
+    moedas: [
+      [19, 6, 3],
+      [39, 6, 3],
+    ],
+    escadas: [[60, 3]],
+  }),
+  // 1-4: o castelo. Lava no lugar do chão e plataformas por cima dela.
+  plano({
+    pocos: [
+      [18, 3],
+      [30, 3],
+      [44, 3],
+    ],
+    plataformas: [
+      [17, 10, 5],
+      [29, 9, 5],
+      [43, 10, 5],
+    ],
+    blocos: [
+      [24, 7, T_TIJOLO],
+      [36, 7, T_TIJOLO],
+    ],
+    moedas: [[25, 6, 3]],
+  }),
+
+  // ---- Mundo 2 ----
+  plano({
+    pocos: [
+      [26, 2],
+      [44, 2],
+    ],
+    canos: [
+      [16, 2],
+      [34, 4],
+      [54, 2],
+    ],
+    blocos: [[12, 9, T_PREMIO], ...fileira(20, 9, [T_TIJOLO, T_PREMIO, T_TIJOLO])],
+    moedas: [[36, 6, 5]],
+    escadas: [[60, 4]],
+  }),
+  // 2-2: AQUÁTICA. Sem poço — afundar não é morrer aqui —, tudo em plataforma.
+  plano({
+    plataformas: [
+      [16, 8, 4],
+      [28, 6, 4],
+      [42, 8, 5],
+      [56, 6, 3],
+    ],
+    blocos: [
+      [22, 4, T_PREMIO],
+      [48, 4, T_PREMIO],
+    ],
+    moedas: [
+      [18, 5, 4],
+      [30, 4, 5],
+      [44, 5, 4],
+    ],
+  }),
+  plano({
+    pocos: [
+      [18, 2],
+      [28, 2],
+      [38, 3],
+      [50, 2],
+    ],
+    plataformas: [
+      [16, 8, 4],
+      [26, 7, 3],
+      [36, 8, 5],
+      [48, 6, 4],
+    ],
+    blocos: [[32, 5, T_PREMIO]],
+    moedas: [
+      [27, 5, 3],
+      [49, 4, 3],
+    ],
+    escadas: [[60, 4]],
+  }),
+  plano({
+    pocos: [
+      [16, 3],
+      [28, 3],
+      [40, 3],
+      [52, 3],
+    ],
+    plataformas: [
+      [15, 10, 5],
+      [27, 9, 5],
+      [39, 10, 5],
+      [51, 9, 5],
+    ],
+    blocos: [
+      [22, 7, T_TIJOLO],
+      [34, 6, T_TIJOLO],
+      [46, 7, T_TIJOLO],
+    ],
+    moedas: [[28, 6, 3]],
+  }),
+
+  // ---- Mundo 3 ----
+  plano({
+    pocos: [
+      [24, 2],
+      [36, 2],
+      [50, 2],
+    ],
+    canos: [
+      [14, 3],
+      [42, 2],
+    ],
+    blocos: [...fileira(18, 9, [T_PREMIO, T_TIJOLO, T_PREMIO]), [30, 10, T_TIJOLO]],
+    moedas: [
+      [26, 6, 4],
+      [52, 6, 3],
+    ],
+    escadas: [[58, 5]],
+  }),
+  plano({
+    pocos: [
+      [22, 2],
+      [38, 2],
+      [54, 2],
+    ],
+    canos: [[60, 3]],
+    blocos: [...fileira(12, 10, [T_TIJOLO, T_PREMIO]), [44, 9, T_PREMIO]],
+    moedas: [
+      [16, 8, 6],
+      [30, 7, 5],
+    ],
+    plataformas: [
+      [26, 9, 4],
+      [46, 8, 3],
+    ],
+  }),
+  plano({
+    pocos: [
+      [16, 2],
+      [26, 2],
+      [36, 2],
+      [46, 2],
+      [56, 2],
+    ],
+    plataformas: [
+      [14, 8, 3],
+      [24, 7, 3],
+      [34, 8, 3],
+      [44, 6, 3],
+      [54, 8, 3],
+    ],
+    blocos: [
+      [30, 5, T_PREMIO],
+      [50, 5, T_PREMIO],
+    ],
+    moedas: [
+      [25, 5, 3],
+      [45, 4, 3],
+    ],
+  }),
+  plano({
+    pocos: [
+      [16, 3],
+      [26, 3],
+      [38, 4],
+      [50, 3],
+    ],
+    plataformas: [
+      [15, 10, 4],
+      [25, 9, 4],
+      [37, 10, 6],
+      [49, 9, 4],
+    ],
+    blocos: [
+      [21, 7, T_TIJOLO],
+      [33, 6, T_TIJOLO],
+      [45, 7, T_TIJOLO],
+    ],
+    moedas: [[39, 6, 4]],
+  }),
+
+  // ---- Mundo 4 ----
+  plano({
+    pocos: [
+      [20, 2],
+      [32, 3],
+      [48, 2],
+    ],
+    canos: [
+      [26, 4],
+      [40, 2],
+      [56, 3],
+    ],
+    blocos: [[14, 9, T_PREMIO], ...fileira(36, 9, [T_TIJOLO, T_PREMIO])],
+    moedas: [[28, 5, 4]],
+    escadas: [[62, 4]],
+  }),
+  plano({
+    pocos: [
+      [24, 2],
+      [40, 3],
+      [56, 2],
+    ],
+    canos: [[62, 3]],
+    blocos: [...fileira(14, 10, [T_PREMIO, T_TIJOLO, T_TIJOLO]), [46, 9, T_PREMIO]],
+    moedas: [
+      [18, 8, 5],
+      [32, 7, 6],
+    ],
+    plataformas: [
+      [28, 9, 4],
+      [48, 8, 4],
+    ],
+  }),
+  plano({
+    pocos: [
+      [18, 2],
+      [28, 3],
+      [40, 2],
+      [52, 3],
+    ],
+    plataformas: [
+      [16, 7, 3],
+      [26, 8, 4],
+      [38, 6, 3],
+      [50, 8, 4],
+    ],
+    blocos: [[34, 5, T_PREMIO]],
+    moedas: [
+      [27, 6, 4],
+      [51, 6, 3],
+    ],
+    escadas: [[62, 3]],
+  }),
+  plano({
+    pocos: [
+      [14, 4],
+      [26, 4],
+      [38, 4],
+      [50, 4],
+    ],
+    plataformas: [
+      [13, 10, 6],
+      [25, 9, 6],
+      [37, 10, 6],
+      [49, 9, 6],
+    ],
+    blocos: [
+      [20, 7, T_TIJOLO],
+      [32, 6, T_TIJOLO],
+      [44, 7, T_TIJOLO],
+    ],
+    moedas: [[26, 6, 4]],
+  }),
+
+  // ---- Mundo 5 ----
+  plano({
+    pocos: [
+      [18, 2],
+      [30, 3],
+      [44, 2],
+      [56, 2],
+    ],
+    canos: [
+      [24, 3],
+      [38, 4],
+    ],
+    blocos: [[12, 9, T_PREMIO], ...fileira(48, 9, [T_TIJOLO, T_PREMIO, T_TIJOLO])],
+    moedas: [[32, 6, 4]],
+    escadas: [[62, 5]],
+  }),
+  plano({
+    pocos: [
+      [20, 2],
+      [34, 3],
+      [50, 2],
+    ],
+    canos: [[60, 4]],
+    blocos: [...fileira(12, 10, [T_TIJOLO, T_PREMIO]), [42, 9, T_PREMIO]],
+    moedas: [
+      [16, 8, 6],
+      [26, 7, 5],
+      [44, 6, 4],
+    ],
+    plataformas: [
+      [30, 9, 3],
+      [46, 8, 4],
+    ],
+  }),
+  plano({
+    pocos: [
+      [16, 3],
+      [26, 2],
+      [36, 3],
+      [48, 2],
+      [58, 2],
+    ],
+    plataformas: [
+      [14, 8, 3],
+      [24, 6, 3],
+      [34, 8, 4],
+      [46, 6, 3],
+      [56, 8, 3],
+    ],
+    blocos: [
+      [30, 5, T_PREMIO],
+      [52, 4, T_PREMIO],
+    ],
+    moedas: [
+      [25, 4, 3],
+      [47, 4, 3],
+    ],
+  }),
+  plano({
+    pocos: [
+      [14, 4],
+      [26, 5],
+      [40, 4],
+      [52, 4],
+    ],
+    plataformas: [
+      [13, 10, 6],
+      [25, 9, 7],
+      [39, 10, 6],
+      [51, 9, 6],
+    ],
+    blocos: [
+      [21, 7, T_TIJOLO],
+      [34, 6, T_TIJOLO],
+      [47, 7, T_TIJOLO],
+    ],
+    moedas: [[27, 6, 5]],
+  }),
+
+  // ---- Mundo 6 ----
+  plano({
+    pocos: [
+      [20, 3],
+      [34, 2],
+      [46, 3],
+      [58, 2],
+    ],
+    canos: [
+      [14, 4],
+      [28, 2],
+      [40, 3],
+    ],
+    blocos: [...fileira(16, 9, [T_PREMIO, T_TIJOLO]), [52, 9, T_PREMIO]],
+    moedas: [[30, 6, 4]],
+    escadas: [[62, 4]],
+  }),
+  // 6-2: a fase que a simulação reprovou. O bloco de prêmio que ficava FLUTUANDO
+  // sobre o poço, bem no arco do pulo, agora está em terra firme.
+  plano({
+    pocos: [
+      [22, 2],
+      [36, 2],
+      [52, 3],
+    ],
+    canos: [[62, 4]],
+    blocos: [...fileira(12, 10, [T_TIJOLO, T_PREMIO, T_TIJOLO]), [44, 9, T_PREMIO]],
+    moedas: [
+      [16, 8, 5],
+      [28, 7, 6],
+      [46, 6, 4],
+    ],
+    plataformas: [
+      [32, 9, 3],
+      [48, 8, 3],
+    ],
+  }),
+  plano({
+    pocos: [
+      [16, 3],
+      [28, 3],
+      [40, 3],
+      [52, 3],
+    ],
+    plataformas: [
+      [14, 7, 3],
+      [26, 8, 3],
+      [38, 6, 3],
+      [50, 8, 3],
+    ],
+    blocos: [
+      [34, 5, T_PREMIO],
+      [56, 5, T_PREMIO],
+    ],
+    moedas: [
+      [27, 6, 3],
+      [51, 6, 3],
+    ],
+  }),
+  plano({
+    pocos: [
+      [14, 4],
+      [26, 5],
+      [40, 5],
+      [54, 4],
+    ],
+    plataformas: [
+      [13, 10, 6],
+      [25, 9, 7],
+      [39, 10, 7],
+      [53, 9, 6],
+    ],
+    blocos: [
+      [21, 6, T_TIJOLO],
+      [34, 6, T_TIJOLO],
+      [48, 6, T_TIJOLO],
+    ],
+    moedas: [[28, 6, 5]],
+  }),
+
+  // ---- Mundo 7 ----
+  plano({
+    pocos: [
+      [18, 3],
+      [32, 3],
+      [46, 3],
+      [58, 2],
+    ],
+    canos: [
+      [24, 4],
+      [40, 3],
+    ],
+    blocos: [[12, 9, T_PREMIO], ...fileira(50, 9, [T_TIJOLO, T_PREMIO])],
+    moedas: [[34, 6, 5]],
+    escadas: [[62, 5]],
+  }),
+  // 7-2: a segunda fase AQUÁTICA da campanha.
+  plano({
+    plataformas: [
+      [14, 8, 4],
+      [26, 5, 4],
+      [38, 8, 5],
+      [52, 5, 4],
+    ],
+    blocos: [
+      [20, 4, T_PREMIO],
+      [44, 3, T_PREMIO],
+    ],
+    moedas: [
+      [16, 5, 5],
+      [28, 3, 5],
+      [40, 5, 5],
+      [54, 3, 4],
+    ],
+  }),
+  plano({
+    pocos: [
+      [16, 3],
+      [26, 3],
+      [36, 3],
+      [46, 3],
+      [56, 3],
+    ],
+    plataformas: [
+      [14, 8, 3],
+      [24, 6, 3],
+      [34, 8, 3],
+      [44, 6, 3],
+      [54, 8, 3],
+    ],
+    blocos: [
+      [30, 4, T_PREMIO],
+      [50, 4, T_PREMIO],
+    ],
+    moedas: [
+      [25, 4, 3],
+      [45, 4, 3],
+    ],
+  }),
+  plano({
+    pocos: [
+      [13, 5],
+      [25, 5],
+      [38, 5],
+      [51, 5],
+    ],
+    plataformas: [
+      [12, 10, 7],
+      [24, 9, 7],
+      [37, 10, 7],
+      [50, 9, 7],
+    ],
+    blocos: [
+      [20, 6, T_TIJOLO],
+      [33, 6, T_TIJOLO],
+      [46, 6, T_TIJOLO],
+    ],
+    moedas: [[26, 6, 5]],
+  }),
+
+  // ---- Mundo 8 ----
+  plano({
+    pocos: [
+      [16, 3],
+      [28, 3],
+      [40, 3],
+      [52, 3],
+    ],
+    canos: [
+      [22, 4],
+      [34, 3],
+      [46, 4],
+    ],
+    blocos: [
+      [12, 9, T_PREMIO],
+      [58, 9, T_PREMIO],
+    ],
+    moedas: [[36, 6, 4]],
+    escadas: [[62, 5]],
+  }),
+  plano({
+    pocos: [
+      [20, 3],
+      [34, 3],
+      [50, 3],
+    ],
+    canos: [[62, 4]],
+    blocos: [...fileira(12, 10, [T_PREMIO, T_TIJOLO]), [44, 9, T_PREMIO]],
+    moedas: [
+      [16, 8, 6],
+      [28, 6, 6],
+      [46, 6, 4],
+    ],
+    plataformas: [
+      [30, 9, 3],
+      [46, 8, 3],
+    ],
+  }),
+  plano({
+    pocos: [
+      [15, 3],
+      [25, 3],
+      [35, 3],
+      [45, 3],
+      [55, 3],
+    ],
+    plataformas: [
+      [13, 7, 3],
+      [23, 5, 3],
+      [33, 7, 3],
+      [43, 5, 3],
+      [53, 7, 3],
+    ],
+    blocos: [
+      [29, 4, T_PREMIO],
+      [49, 4, T_PREMIO],
+    ],
+    moedas: [
+      [24, 3, 3],
+      [44, 3, 3],
+    ],
+  }),
+  // 8-4: o último castelo. Os vãos mais largos da campanha.
+  plano({
+    pocos: [
+      [13, 5],
+      [25, 6],
+      [39, 6],
+      [53, 5],
+    ],
+    plataformas: [
+      [12, 10, 7],
+      [24, 9, 8],
+      [38, 10, 8],
+      [52, 9, 7],
+    ],
+    blocos: [
+      [20, 6, T_TIJOLO],
+      [34, 5, T_TIJOLO],
+      [48, 6, T_TIJOLO],
+    ],
+    moedas: [[26, 6, 6]],
+  }),
+]
+
+/**
+ * Desenha a planta na grade.
+ *
+ * A ORDEM importa, e é a defesa contra a classe de defeito que a simulação achou: o
+ * chão nasce primeiro, e nada que venha depois pode ocupar coluna de poço nem célula
+ * já escrita. Era exatamente isso que faltava — a 6-2 tinha um bloco de prêmio
+ * FLUTUANDO sobre o vão, no meio do arco do pulo, e a plataforma da etapa 3 apagava
+ * prêmios já colocados (medido: 6 dos 9 nas etapas 3 dos mundos 1, 4 e 7 sumiam,
+ * deixando UM prêmio na fase inteira).
+ */
+function buildLevelRows(kind: LevelKind, plan: LevelPlan, cols: number): number[][] {
+  const rows = Array.from({ length: ROWS }, () => Array.from({ length: cols }, () => T_CEU))
+  const vazias = new Set<number>()
+  const ocupadas = new Set<string>()
+  const marcar = (col: number, row: number, peca: number): void => {
+    if (col < 0 || col >= cols || row < 0 || row >= ROWS) return
+    if (ocupadas.has(`${row}:${col}`)) return
+    rows[row]![col] = peca
+    ocupadas.add(`${row}:${col}`)
+  }
+
+  for (const [inicio, largura] of plan.pocos) {
+    for (let offset = 0; offset < largura; offset += 1) {
+      const col = inicio + offset
+      if (col < SAFE_MARGIN || col >= cols - SAFE_MARGIN) continue
+      vazias.add(col)
     }
   }
-  return null
-}
 
-function levelRows(world: number, stage: number): number[][] {
-  const level = (world - 1) * 4 + stage
-  const rows = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => T_CEU))
-  const pits = levelPits(level, world, stage)
-
-  // Chão: duas linhas maciças, interrompidas só pelos poços. O fundo do poço recebe
-  // a peça de perigo, que é decorativa — quem cai atravessa e morre pela regra da fase.
-  for (let col = 0; col < COLS; col += 1) {
-    if (pits.has(col)) {
-      rows[14]![col] = T_PERIGO
+  // Chão, e o que mora no fundo do vão. No castelo o vão é LAVA até a linha de cima;
+  // fora dele é o buraco de sempre. Nos dois casos a peça agora AVISA ao encostar,
+  // em vez de ser decoração muda.
+  for (let col = 0; col < cols; col += 1) {
+    if (vazias.has(col)) {
+      marcar(col, 14, T_PERIGO)
+      if (kind === 'castelo') marcar(col, GROUND_TOP_ROW, T_PERIGO)
       continue
     }
-    rows[GROUND_TOP_ROW]![col] = T_CHAO
-    rows[14]![col] = T_CHAO
+    marcar(col, GROUND_TOP_ROW, T_CHAO)
+    marcar(col, 14, T_CHAO)
+  }
+
+  // Teto do subterrâneo: é ele que faz a caverna se ler como caverna.
+  if (kind === 'subterraneo') {
+    for (let col = 0; col < cols; col += 1) {
+      marcar(col, 0, T_CHAO)
+      marcar(col, 1, T_TIJOLO)
+    }
   }
 
   // Canos: 2 colunas, assentados SOBRE o chão, com a boca só no tile de cima.
-  const pipeColumns = new Set<number>()
-  for (let index = 0; index < 3; index += 1) {
-    const desired = 21 + index * 16 + ((world + stage + index) % 4)
-    const col = firmPipePair(desired, pits, pipeColumns)
-    if (col === null) continue
-    const height = index === 1 && stage > 1 ? 3 : 2
-    for (const pipeCol of [col, col + 1]) {
-      pipeColumns.add(pipeCol)
-      for (let offset = 0; offset < height; offset += 1) {
+  const colunasDeCano = new Set<number>()
+  for (const [col, altura] of plan.canos) {
+    if (vazias.has(col) || vazias.has(col + 1)) continue
+    if (col < 1 || col + 1 >= cols - 1) continue
+    for (const canoCol of [col, col + 1]) {
+      colunasDeCano.add(canoCol)
+      for (let offset = 0; offset < altura; offset += 1) {
         const row = GROUND_TOP_ROW - 1 - offset
-        rows[row]![pipeCol] = offset === height - 1 ? T_CANO_TOPO : T_CANO_CORPO
+        marcar(canoCol, row, offset === altura - 1 ? T_CANO_TOPO : T_CANO_CORPO)
       }
     }
   }
 
-  const freeForScenery = (col: number): boolean => col >= 0 && col < COLS && !pipeColumns.has(col)
+  // Escada do fim: degraus que sobem para a direita.
+  for (const [col, altura] of plan.escadas) {
+    for (let degrau = 0; degrau < altura; degrau += 1) {
+      const coluna = col + degrau
+      if (vazias.has(coluna) || colunasDeCano.has(coluna)) continue
+      for (let bloco = 0; bloco <= degrau; bloco += 1) {
+        marcar(coluna, GROUND_TOP_ROW - 1 - bloco, T_CHAO)
+      }
+    }
+  }
 
-  const blocks = [10, 11, 18, 25, 33, 41, 52, 60]
-  for (let index = 0; index < blocks.length; index += 1) {
-    const col = blocks[index]! + ((level + index) % 3)
-    if (!freeForScenery(col)) continue
-    rows[9 + ((level + index) % 2)]![col] = index % 3 === 1 ? T_PREMIO : T_TIJOLO
-  }
-  if (stage === 2) {
-    for (let col = 13; col < COLS - 10; col += 1) {
-      if (col % 9 < 6 && freeForScenery(col)) rows[3 + ((col + world) % 2)]![col] = T_TIJOLO
+  for (const [col, row, largura] of plan.plataformas) {
+    for (let offset = 0; offset < largura; offset += 1) {
+      const coluna = col + offset
+      if (coluna < 1 || coluna >= cols - 1) continue
+      if (row >= GROUND_TOP_ROW || colunasDeCano.has(coluna)) continue
+      marcar(coluna, row, T_PLATAFORMA)
     }
   }
-  if (stage === 3) {
-    for (let col = 12; col < COLS - 8; col += 8) {
-      const row = rows[8 + ((col + world) % 3)]!
-      for (const platformCol of [col, col + 1, col + 2]) {
-        if (freeForScenery(platformCol)) row[platformCol] = T_PLATAFORMA
-      }
+
+  // ⚠️ Bloco NUNCA sobre poço: a 6-2 tinha um prêmio pairando sobre o vão, bem onde o
+  // arco do pulo passa, e o herói batia a cabeça nele e caía dentro. Nenhuma auditoria
+  // enxergava, porque nenhuma olhava ONDE prêmio e perigo ficam.
+  for (const [col, row, peca] of plan.blocos) {
+    if (vazias.has(col) || colunasDeCano.has(col)) continue
+    if (row >= GROUND_TOP_ROW) continue
+    marcar(col, row, peca)
+  }
+
+  for (const [col, row, quantidade] of plan.moedas) {
+    for (let offset = 0; offset < quantidade; offset += 1) {
+      const coluna = col + offset
+      if (coluna < 1 || coluna >= cols - 1) continue
+      if (vazias.has(coluna) || colunasDeCano.has(coluna)) continue
+      if (row >= GROUND_TOP_ROW) continue
+      marcar(coluna, row, T_MOEDA)
     }
   }
-  if (stage === 4) {
-    for (let col = 8; col < COLS - 8; col += 7) {
-      const row = rows[11 - ((col + world) % 4)]!
-      for (const platformCol of [col, col + 1]) {
-        if (freeForScenery(platformCol)) row[platformCol] = T_PLATAFORMA
-      }
-    }
-  }
+
   return rows
+}
+
+function levelRows(world: number, stage: number): number[][] {
+  return levelDescriptor(world, stage).rows
 }
 
 function levelGrid(world: number, stage: number): string {
@@ -398,7 +1194,8 @@ const SOLID_TILES = new Set([T_CHAO, T_TIJOLO, T_PREMIO, T_CANO_TOPO, T_CANO_COR
 
 /** A coluna tem chão firme nas duas linhas de piso? */
 function isFirmColumn(rows: number[][], col: number): boolean {
-  if (col < 0 || col >= COLS) return false
+  const cols = rows[0]?.length ?? 0
+  if (col < 0 || col >= cols) return false
   return SOLID_TILES.has(rows[GROUND_TOP_ROW]![col]!) && SOLID_TILES.has(rows[14]![col]!)
 }
 
@@ -422,6 +1219,7 @@ function hasHeadroom(rows: number[][], col: number, height: number): boolean {
  * aparecia dentro de um tijolo em 9 das 32 fases (incluindo a 1-1).
  */
 function firmSpotNear(rows: number[][], desiredX: number, width: number, height: number): number {
+  const cols = rows[0]?.length ?? 0
   const span = Math.max(1, Math.ceil(width / TILE))
   const desiredCol = Math.round(desiredX / TILE)
   const fits = (start: number): boolean => {
@@ -441,9 +1239,9 @@ function firmSpotNear(rows: number[][], desiredX: number, width: number, height:
     if (!isFirmColumn(rows, col) || !hasHeadroom(rows, col, height)) firmWhereItIs = false
   }
   if (firmWhereItIs) return desiredX
-  for (let delta = 0; delta <= COLS; delta += 1) {
+  for (let delta = 0; delta <= cols; delta += 1) {
     for (const col of delta === 0 ? [desiredCol] : [desiredCol - delta, desiredCol + delta]) {
-      if (col < 1 || col + span > COLS - 1) continue
+      if (col < 1 || col + span > cols - 1) continue
       if (fits(col)) return col * TILE
     }
   }
@@ -458,36 +1256,56 @@ function levelName(level: number): string {
 
 function mapDeclarations(): JSStatement[] {
   const statements: JSStatement[] = []
-  for (let world = 1; world <= 8; world += 1) {
-    statements.push({ type: 'g2d:createVectorTileset', varName: `pecas${world}`, size: n(TILE) })
-    // A ordem É o índice usado por `levelGrid`. 'CanoCorpo' entra no fim (7) para não
-    // deslocar os índices que as grades já usam.
-    const names = ['Chao', 'Tijolo', 'Premio', 'Cano', 'Plataforma', 'Ceu', 'Perigo', 'CanoCorpo']
-    const roles = [
-      'solid',
-      'solid',
-      'solid',
-      'solid',
-      'platform',
-      'decor',
-      'decor',
-      'solid',
-    ] as const
+  // A ordem É o índice usado por `levelGrid`. 'CanoCorpo' (7) e 'Moeda' (8) entram no
+  // FIM para não deslocar os índices que as grades já usam.
+  const names = [
+    'Chao',
+    'Tijolo',
+    'Premio',
+    'Cano',
+    'Plataforma',
+    'Ceu',
+    'Perigo',
+    'CanoCorpo',
+    'Moeda',
+  ]
+  // ⭐ Perigo deixou de ser DECORAÇÃO: agora ele atravessa e AVISA, que é o que
+  // permite morrer na lava do castelo e no fundo do poço por contato, em vez de só
+  // por "caiu abaixo da linha" — regra que serve ao buraco e não escala para o resto.
+  const roles = [
+    'solid',
+    'solid',
+    'solid',
+    'solid',
+    'platform',
+    'decor',
+    'contact',
+    'solid',
+    'contact',
+  ] as const
+
+  // Um conjunto de peças por TEMA (tipo da fase × metade da campanha), e não por
+  // mundo: são os mesmos 8 de antes, então a IR não cresce.
+  for (let tema = 0; tema < THEMES.length; tema += 1) {
+    statements.push({ type: 'g2d:createVectorTileset', varName: `pecas${tema + 1}`, size: n(TILE) })
     for (let tile = 0; tile < names.length; tile += 1) {
       statements.push({
         type: 'g2d:defineVectorTile',
-        tilesetVar: `pecas${world}`,
+        tilesetVar: `pecas${tema + 1}`,
         index: n(tile),
-        shape: `r${world}${names[tile]!}`,
+        shape: `r${tema + 1}${names[tile]!}`,
         role: roles[tile]!,
       })
     }
+  }
+
+  for (let world = 1; world <= 8; world += 1) {
     for (let stage = 1; stage <= 4; stage += 1) {
       const level = (world - 1) * 4 + stage
       statements.push({
         type: 'g2d:createVectorTileMap',
         varName: `mapa${level}`,
-        tilesetVar: `pecas${world}`,
+        tilesetVar: `pecas${themeIndex(world, stage) + 1}`,
         grid: levelGrid(world, stage),
       })
       statements.push({
@@ -522,12 +1340,14 @@ function mapDeclarations(): JSStatement[] {
 
 function prepareActiveLevel(): JSStatement[] {
   return [
+    { type: 'g2d:clearGroup', groupVar: 'bolasFogo' },
     { type: 'g2d:clearGroup', groupVar: 'brasas' },
     { type: 'g2d:clearGroup', groupVar: 'cascos' },
     { type: 'g2d:clearGroup', groupVar: 'espinhos' },
     { type: 'g2d:clearGroup', groupVar: 'asas' },
+    { type: 'g2d:clearGroup', groupVar: 'plantas' },
     { type: 'g2d:clearGroup', groupVar: 'guardioes' },
-    { type: 'assign', name: 'premioAtivo', value: n(1) },
+    { type: 'assign', name: 'premioAtivo', value: n(2) },
     // O herói NÃO é reposicionado aqui: quem faz isso é o "Reiniciar a Fase" do
     // `activateLevel`, que além da posição devolve a câmera e os blocos `?`.
     {
@@ -537,12 +1357,26 @@ function prepareActiveLevel(): JSStatement[] {
       y: n(GEMA_Y),
     },
     { type: 'g2d:setPosition', spriteVar: 'broto', x: n(-100), y: n(-100) },
+    { type: 'g2d:setVelocity', spriteVar: 'broto', vx: n(0), vy: n(0) },
+    { type: 'assign', name: 'direcaoBroto', value: n(1) },
+    { type: 'g2d:setPosition', spriteVar: 'flor', x: n(-100), y: n(-100) },
+    {
+      type: 'g2d:setPosition',
+      spriteVar: 'barraFogo',
+      x: variable('xBarraFogo'),
+      y: variable('yBarraFogo'),
+    },
     {
       type: 'g2d:setPosition',
       spriteVar: 'portal',
       x: variable('xPortal'),
-      y: n(standingY(32)),
+      y: n(standingY(MASTRO_H)),
     },
+    // A estrela dorme fora da tela até um bloco de prêmio soltá-la.
+    { type: 'g2d:setPosition', spriteVar: 'estrela', x: n(-100), y: n(-100) },
+    { type: 'g2d:setVelocity', spriteVar: 'estrela', vx: n(0), vy: n(0) },
+    { type: 'assign', name: 'direcaoEstrela', value: n(1) },
+    { type: 'assign', name: 'estrelaAte', value: n(0) },
     {
       type: 'g2d:setPosition',
       spriteVar: 'atalho',
@@ -553,6 +1387,7 @@ function prepareActiveLevel(): JSStatement[] {
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'cascos' },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'espinhos' },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'asas' },
+    { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'plantas' },
     { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'guardioes' },
     { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa1'), y: n(standingY(16)) },
     {
@@ -605,7 +1440,28 @@ function prepareActiveLevel(): JSStatement[] {
     {
       type: 'if',
       cond: equals(variable('etapa'), 3),
-      then: [{ type: 'g2d:spawnEnemy', typeVar: 'asas', x: n(520), y: n(96) }],
+      // ⚠️ Esta era a ÚNICA posição de inimigo escrita na mão, furando o firmSpotNear
+      // que existe justamente para nada nascer sobre poço nem dentro de tijolo.
+      then: [
+        {
+          type: 'g2d:spawnEnemy',
+          typeVar: 'asas',
+          x: variable('xBrasa4'),
+          y: n(96),
+        },
+      ],
+    },
+    {
+      type: 'if',
+      cond: binary('>=', variable('mundo'), n(3)),
+      then: [
+        {
+          type: 'g2d:spawnEnemy',
+          typeVar: 'plantas',
+          x: variable('xPlanta'),
+          y: variable('yPlanta'),
+        },
+      ],
     },
     {
       type: 'if',
@@ -621,6 +1477,18 @@ function prepareActiveLevel(): JSStatement[] {
     },
     {
       type: 'if',
+      cond: and(equals(variable('etapa'), 4), binary('>=', variable('mundo'), n(5))),
+      then: [
+        {
+          type: 'g2d:spawnEnemy',
+          typeVar: 'guardioes',
+          x: variable('xChefeExtra'),
+          y: n(standingY(24)),
+        },
+      ],
+    },
+    {
+      type: 'if',
       cond: equals(variable('jornada'), 2),
       then: [
         {
@@ -629,6 +1497,13 @@ function prepareActiveLevel(): JSStatement[] {
           x: variable('xEspinhoExtra'),
           y: n(standingY(16)),
         },
+        {
+          type: 'g2d:spawnEnemy',
+          typeVar: 'cascos',
+          x: variable('xBrasa2'),
+          y: n(standingY(16)),
+        },
+        { type: 'g2d:spawnEnemy', typeVar: 'asas', x: variable('xBrasa3'), y: n(84) },
       ],
     },
   ]
@@ -648,9 +1523,26 @@ const standingY = (height: number): number => SURFACE_Y - height
  * sobrepunha. O gatilho estava invertido — agachar no chão liso teleportava 4 fases e
  * agachar no cano não fazia nada.
  */
+/**
+ * A boca do PRIMEIRO cano da fase. A planta nasce ali.
+ *
+ * ⚠️ De propósito NÃO é o cano do meio: aquele é o do atalho, e uma planta em cima
+ * dele transformaria a passagem secreta numa armadilha.
+ */
+function firstPipeMouth(rows: number[][]): { x: number; y: number } | null {
+  const cols = rows[0]?.length ?? 0
+  for (let col = 0; col < cols; col += 1) {
+    for (let row = 0; row < ROWS; row += 1) {
+      if (rows[row]![col] === T_CANO_TOPO) return { x: col * TILE, y: row * TILE - 16 }
+    }
+  }
+  return null
+}
+
 function pipeShortcut(rows: number[][]): { x: number; y: number } | null {
   const tops: number[] = []
-  for (let col = 0; col < COLS; col += 1) {
+  const cols = rows[0]?.length ?? 0
+  for (let col = 0; col < cols; col += 1) {
     for (let row = 0; row < ROWS; row += 1) {
       if (rows[row]![col] === T_CANO_TOPO) {
         if (!tops.some((taken) => Math.abs(taken - col) <= 1)) tops.push(col)
@@ -673,6 +1565,32 @@ function pipeShortcut(rows: number[][]): { x: number; y: number } | null {
 const ATALHO_H = 16
 
 /**
+ * Fonte canônica de identidade, planta, grade e capacidades de uma fase.
+ * Construção do mapa, física e pontos especiais consomem este mesmo descritor.
+ */
+function levelDescriptor(world: number, stage: number): LevelDescriptor {
+  const level = (world - 1) * 4 + stage
+  const kind = levelKind(world, stage)
+  const cols = LEVEL_WIDTHS[level - 1] ?? DEFAULT_COLS
+  const plan = LEVEL_PLANS[level - 1] ?? PLANO_VAZIO
+  const rows = buildLevelRows(kind, plan, cols)
+  return {
+    level,
+    world,
+    stage,
+    kind,
+    cols,
+    plan,
+    rows,
+    firstPipe: firstPipeMouth(rows),
+    shortcut: pipeShortcut(rows),
+  }
+}
+
+/** Altura do mastro do fim de fase: 9 tiles, assentado no chão. */
+const MASTRO_H = 144
+
+/**
  * Altura da gema: linha 11, dois tiles acima da superfície. `firmSpotNear` exige 48px
  * de pé-direito livre naquela coluna, então ela nunca nasce dentro de tijolo.
  * O y=150 antigo era constante mágica: caía entre as linhas 9 e 10, que são exatamente
@@ -681,15 +1599,19 @@ const ATALHO_H = 16
 const GEMA_Y = SURFACE_Y - 32
 
 /** Coordenadas que mudam de fase para fase, derivadas da grade daquela fase. */
-function levelSpawnPoints(world: number, stage: number): Record<string, number> {
-  const rows = levelRows(world, stage)
-  const shortcut = pipeShortcut(rows)
+function levelSpawnPoints(descriptor: LevelDescriptor): Record<string, number> {
+  const { rows, shortcut, firstPipe: mouth, world, stage, cols } = descriptor
   return {
     xGema: firmSpotNear(rows, 382 + ((((world - 1) * 4 + stage) * 23) % 180), 16, 48),
-    xPortal: firmSpotNear(rows, (COLS - 4) * TILE, 20, 48),
-    xAtalho: shortcut ? shortcut.x : 23 * TILE,
-    yAtalho: shortcut ? shortcut.y : SURFACE_Y - ATALHO_H,
+    xPortal: firmSpotNear(rows, (cols - 4) * TILE, 16, 48),
+    xPlanta: mouth ? mouth.x : 22 * TILE,
+    yPlanta: mouth ? mouth.y : SURFACE_Y - 48,
+    xAtalho: shortcut ? shortcut.x : -100,
+    yAtalho: shortcut ? shortcut.y : -100,
     xChefe: firmSpotNear(rows, 930, 24, 32),
+    xChefeExtra: firmSpotNear(rows, 810, 24, 32),
+    xBarraFogo: descriptor.kind === 'castelo' ? (17 + ((world * 9) % 28)) * TILE : -100,
+    yBarraFogo: descriptor.kind === 'castelo' ? 116 + (world % 3) * 18 : -100,
     xBrasa1: firmSpotNear(rows, 190, 16, 32),
     xBrasa2: firmSpotNear(rows, 340, 16, 32),
     xBrasa3: firmSpotNear(rows, 490, 16, 32),
@@ -709,10 +1631,15 @@ function levelSpawnPoints(world: number, stage: number): Record<string, number> 
  */
 const SPAWN_POINT_DEFAULTS: Record<string, number> = {
   xGema: 390,
-  xPortal: (COLS - 4) * TILE,
-  xAtalho: 23 * TILE,
-  yAtalho: SURFACE_Y - ATALHO_H,
+  xPortal: (DEFAULT_COLS - 4) * TILE,
+  xPlanta: 22 * TILE,
+  yPlanta: SURFACE_Y - 48,
+  xAtalho: -100,
+  yAtalho: -100,
   xChefe: 930,
+  xChefeExtra: 810,
+  xBarraFogo: -100,
+  yBarraFogo: -100,
   xBrasa1: 190,
   xBrasa2: 340,
   xBrasa3: 490,
@@ -728,13 +1655,22 @@ const SPAWN_POINT_NAMES = Object.keys(SPAWN_POINT_DEFAULTS)
 function activateLevel(level: number): JSStatement[] {
   const world = Math.floor((level - 1) / 4) + 1
   const stage = ((level - 1) % 4) + 1
-  const points = levelSpawnPoints(world, stage)
+  const descriptor = levelDescriptor(world, stage)
+  const points = levelSpawnPoints(descriptor)
   return [
     { type: 'assign', name: 'mapaAtual', value: variable(`mapa${level}`) },
     { type: 'assign', name: 'areaAtual', value: variable(`area${level}`) },
     { type: 'assign', name: 'mundo', value: n(world) },
     { type: 'assign', name: 'etapa', value: n(stage) },
+    { type: 'assign', name: 'faseAquatica', value: n(descriptor.kind === 'agua' ? 1 : 0) },
+    { type: 'assign', name: 'temAtalho', value: n(descriptor.shortcut ? 1 : 0) },
+    { type: 'assign', name: 'larguraFase', value: n(descriptor.cols * TILE) },
     { type: 'assign', name: 'tempo', value: n(300 - world * 8) },
+    {
+      type: 'if',
+      cond: equals(variable('jornada'), 2),
+      then: [{ type: 'assign', name: 'tempo', value: n(230 - world * 6) }],
+    },
     ...SPAWN_POINT_NAMES.filter((name) => points[name] !== SPAWN_POINT_DEFAULTS[name]).map(
       (name): JSStatement => ({ type: 'assign', name, value: n(points[name]!) }),
     ),
@@ -822,77 +1758,59 @@ function enemyType(
   }
 }
 
+/** Um campo do placar: rótulo em cima, número embaixo, na fonte de pixel. */
+function hudField(label: string, value: JSExpr, x: number): JSStatement {
+  return {
+    type: 'g2d:drawPixelScore',
+    ctxVar: 'ctx',
+    label,
+    value,
+    x: n(x),
+    y: n(8),
+    size: n(1),
+    color: '#ffffff',
+  }
+}
+
 function drawHud(): JSStatement[] {
-  // O placar cabe em DUAS linhas dentro dos 256px do palco. Numa linha só, com a
-  // fonte proporcional, o TEMPO começava a 30px da borda precisando de ~50 e era
-  // cortado; PONTOS invadia MOEDAS assim que passava de 4 dígitos.
-  // Também não há mais escurecimento: o `drawFade` cobria a TELA INTEIRA a cada
-  // quadro, depois de todo o desenho, e deixava o jogo 22% mais escuro para sempre.
+  // ⭐ UMA tipografia só. O placar usava `drawScore`, que desenha com a fonte
+  // proporcional do HUD, enquanto as telas de título e de fim usavam a fonte de
+  // PIXEL: duas letras diferentes no mesmo jogo, e no palco de 256px o resultado
+  // ainda por cima cortava. Agora tudo passa pela mesma fonte, no layout do jogo de
+  // referência: quatro campos numa faixa, cada um com o nome em cima e o número
+  // embaixo.
+  //
+  // Não há mais escurecimento: o `drawFade` cobria a TELA INTEIRA a cada quadro,
+  // depois de todo o desenho, e deixava o jogo 22% mais escuro para sempre.
   return [
-    {
-      type: 'g2d:drawPixelText',
-      ctxVar: 'ctx',
-      text: 'REINO ZERO',
-      x: n(8),
-      y: n(6),
-      size: n(1),
-      color: '#ffffff',
-      align: 'left',
-    },
-    {
-      type: 'g2d:drawScore',
-      ctxVar: 'ctx',
-      label: 'PONTOS',
-      value: variable('pontos'),
-      x: n(8),
-      y: n(24),
-      color: '#ffffff',
-      size: n(10),
-    },
-    {
-      type: 'g2d:drawScore',
-      ctxVar: 'ctx',
-      label: 'MOEDAS',
-      value: variable('moedas'),
-      x: n(140),
-      y: n(24),
-      color: '#ffffff',
-      size: n(10),
-    },
-    {
-      type: 'g2d:drawScore',
-      ctxVar: 'ctx',
-      label: 'MUNDO',
-      value: variable('mundo'),
-      x: n(8),
-      y: n(38),
-      color: '#ffffff',
-      size: n(10),
-    },
-    {
-      type: 'g2d:drawScore',
-      ctxVar: 'ctx',
-      label: 'ETAPA',
-      value: variable('etapa'),
-      x: n(72),
-      y: n(38),
-      color: '#ffffff',
-      size: n(10),
-    },
-    {
-      type: 'g2d:drawScore',
-      ctxVar: 'ctx',
-      label: 'TEMPO',
-      value: variable('tempo'),
-      x: n(140),
-      y: n(38),
-      color: '#ffffff',
-      size: n(10),
-    },
+    hudField('PONTOS', variable('pontos'), 8),
+    hudField('MOEDAS', variable('moedas'), 62),
+    // ⚠️ MUNDO e ETAPA eram DOIS campos. No original é um só, e é assim que a criança
+    // fala ("estou na um-um"). O texto sai do próprio jogo: mundo, traço e etapa.
+    hudField(
+      'MUNDO',
+      binary('+', binary('+', variable('mundo'), { type: 'str', value: '-' }), variable('etapa')),
+      116,
+    ),
+    hudField('TEMPO', variable('tempo'), 170),
+    // ⚠️ Vidas e o jogador da vez NUNCA apareciam na tela. O jogo tem 3 vidas por
+    // jogador e alterna entre dois, e não havia como saber quantas restavam nem de
+    // quem era a vez — o estado existia só nas variáveis.
+    hudField('VIDAS', ternarioDeVidas(), 216),
   ]
 }
 
-const swimmingLevel = and(equals(variable('mundo'), 3), equals(variable('etapa'), 2))
+/** As vidas de QUEM está jogando agora. */
+function ternarioDeVidas(): JSExpr {
+  return {
+    type: 'ternary',
+    condition: equals(variable('jogador'), 1),
+    whenTrue: variable('vidas1'),
+    whenFalse: variable('vidas2'),
+  }
+}
+
+const swimmingLevel = equals(variable('faseAquatica'), 1)
 
 function alternateToLivingPlayer(): JSStatement {
   return {
@@ -938,7 +1856,6 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:collideWorld', spriteVar: 'lumi', worldVar: 'areaAtual' },
   { type: 'g2d:followCameraInWorld', spriteVar: 'lumi', worldVar: 'areaAtual' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'brasas' },
-  { type: 'g2d:applyGravityToGroup', groupVar: 'cascos' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'espinhos' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'guardioes' },
   // ⚠️ A pisada vem ANTES do "Atualizar": é o "Atualizar" que colhe quem morreu e
@@ -947,13 +1864,88 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'brasas', bounce: n(5.5) },
   { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'cascos', bounce: n(5.5) },
   { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'espinhos', bounce: n(5.5) },
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'asas', bounce: n(5.5) },
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'plantas', bounce: n(5.5) },
   { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'guardioes', bounce: n(6) },
   { type: 'g2d:updateEnemyType', typeVar: 'brasas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'cascos', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'espinhos', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'asas', ctxVar: 'ctx', targetVar: 'lumi' },
+  { type: 'g2d:updateEnemyType', typeVar: 'plantas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'guardioes', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyShells', typeVar: 'cascos', worldVar: 'areaAtual' },
+  movePowerup('broto', 'direcaoBroto', 1.25, 0),
+  movePowerup('estrela', 'direcaoEstrela', 1.45, 4.8),
+  {
+    type: 'g2d:forEachInGroup',
+    groupVar: 'bolasFogo',
+    itemName: 'bolaFogo',
+    body: [
+      { type: 'g2d:applyGravity', spriteVar: 'bolaFogo' },
+      { type: 'g2d:applyVelocity', spriteVar: 'bolaFogo' },
+      { type: 'g2d:collideWorld', spriteVar: 'bolaFogo', worldVar: 'areaAtual' },
+      {
+        type: 'if',
+        cond: equals({ type: 'g2d:spriteVy', spriteVar: 'bolaFogo' }, 0),
+        then: [
+          {
+            type: 'g2d:setVelocity',
+            spriteVar: 'bolaFogo',
+            vx: { type: 'g2d:spriteVx', spriteVar: 'bolaFogo' },
+            vy: n(-3.6),
+          },
+        ],
+      },
+      {
+        type: 'if',
+        cond: or(
+          binary('<', { type: 'g2d:spriteX', spriteVar: 'bolaFogo' }, n(-32)),
+          binary(
+            '>',
+            { type: 'g2d:spriteX', spriteVar: 'bolaFogo' },
+            binary('+', variable('larguraFase'), n(32)),
+          ),
+        ),
+        then: [{ type: 'g2d:removeFromGroup', spriteVar: 'bolaFogo', groupVar: 'bolasFogo' }],
+      },
+    ],
+  },
+  {
+    type: 'g2d:onGroupOverlap',
+    aGroup: 'bolasFogo',
+    aName: 'bolaFogo',
+    bGroup: 'todosInimigos',
+    bName: 'alvoFogo',
+    body: [
+      { type: 'g2d:changeHealth', spriteVar: 'alvoFogo', delta: n(-1) },
+      { type: 'g2d:removeFromGroup', spriteVar: 'bolaFogo', groupVar: 'bolasFogo' },
+      { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(200)) },
+      { type: 'g2d:playFx', fx: 'hit' },
+    ],
+  },
+  {
+    type: 'if',
+    cond: binary('>', { type: 'g2d:spriteX', spriteVar: 'barraFogo' }, n(-50)),
+    then: [
+      {
+        type: 'g2d:rotateSprite',
+        spriteVar: 'barraFogo',
+        deg: binary('+', n(2.2), binary('*', variable('mundo'), n(0.35))),
+      },
+      {
+        type: 'if',
+        cond: { type: 'g2d:touches', aVar: 'lumi', bVar: 'barraFogo' },
+        then: [
+          {
+            type: 'g2d:damageSprite',
+            spriteVar: 'lumi',
+            amount: n(1),
+            invincibilityFrames: n(45),
+          },
+        ],
+      },
+    ],
+  },
   {
     type: 'g2d:forEachTileContact',
     spriteVar: 'lumi',
@@ -966,23 +1958,96 @@ const playingBody: JSStatement[] = [
         cond: { type: 'g2d:tileContactIs', contactVar: 'bloco', index: n(2) },
         then: [
           { type: 'g2d:setTileAtContact', contactVar: 'bloco', index: n(1) },
-          { type: 'assign', name: 'moedas', value: binary('+', variable('moedas'), n(1)) },
-          { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(200)) },
-          { type: 'g2d:playFx', fx: 'coin' },
+          ...collectCoin(200),
           {
             type: 'if',
-            cond: equals(variable('premioAtivo'), 1),
+            // ⚠️ if/SENÃO, não dois ifs seguidos: o primeiro ramo baixa o contador e o
+            // segundo passaria a valer no MESMO toque, soltando estrela e cogumelo
+            // juntos (medido: 2200 pontos numa cabeçada só).
+            cond: equals(variable('premioAtivo'), 2),
             then: [
-              { type: 'assign', name: 'premioAtivo', value: n(0) },
+              { type: 'assign', name: 'premioAtivo', value: n(1) },
               {
                 type: 'g2d:setPosition',
-                spriteVar: 'broto',
+                spriteVar: 'estrela',
                 x: { type: 'g2d:spriteX', spriteVar: 'lumi' },
-                y: n(150),
+                y: n(GEMA_Y),
+              },
+            ],
+            else: [
+              {
+                type: 'if',
+                cond: equals(variable('premioAtivo'), 1),
+                then: [
+                  { type: 'assign', name: 'premioAtivo', value: n(0) },
+                  {
+                    type: 'if',
+                    cond: binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(2)),
+                    then: [
+                      {
+                        type: 'g2d:setPosition',
+                        spriteVar: 'flor',
+                        x: { type: 'g2d:spriteX', spriteVar: 'lumi' },
+                        y: n(GEMA_Y),
+                      },
+                    ],
+                    else: [
+                      {
+                        type: 'g2d:setPosition',
+                        spriteVar: 'broto',
+                        x: { type: 'g2d:spriteX', spriteVar: 'lumi' },
+                        // Nasce acima dos blocos, nunca dentro da fileira cabeceável.
+                        y: n(GEMA_Y),
+                      },
+                    ],
+                  },
+                ],
               },
             ],
           },
         ],
+      },
+      {
+        type: 'if',
+        cond: and(
+          { type: 'g2d:tileContactIs', contactVar: 'bloco', index: n(T_TIJOLO) },
+          binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(2)),
+        ),
+        then: [
+          { type: 'g2d:setTileAtContact', contactVar: 'bloco', index: n(-1) },
+          { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(100)) },
+          { type: 'g2d:playFx', fx: 'hit' },
+        ],
+      },
+    ],
+  },
+  // ⭐ As peças que o herói ATRAVESSA. Antes isto era impossível: o contato de tile só
+  // nascia da resolução de colisão, então só existia para sólido e plataforma — e
+  // moeda, lava e água são justamente as que se atravessa.
+  {
+    type: 'g2d:forEachTileContact',
+    spriteVar: 'lumi',
+    mapVar: 'mapaAtual',
+    side: 'inside',
+    contactName: 'dentro',
+    body: [
+      {
+        type: 'if',
+        cond: { type: 'g2d:tileContactIs', contactVar: 'dentro', index: n(T_MOEDA) },
+        then: [
+          { type: 'g2d:setTileAtContact', contactVar: 'dentro', index: n(-1) },
+          ...collectCoin(200),
+        ],
+      },
+      {
+        type: 'if',
+        // A lava do castelo e o fundo do poço. Matar POR CONTATO é mais preciso do que
+        // esperar o herói passar da linha de baixo da tela, e é o que faz o castelo
+        // ter fosso de verdade.
+        cond: { type: 'g2d:tileContactIs', contactVar: 'dentro', index: n(T_PERIGO) },
+        // Morte imediata: "Pôr a vida em" só vale no Ao iniciar, então quem serve
+        // aqui é o "Mudar a vida", com um número maior que qualquer vida possível.
+        then: [{ type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(-99) }],
       },
     ],
   },
@@ -990,9 +2055,7 @@ const playingBody: JSStatement[] = [
     type: 'if',
     cond: { type: 'g2d:touches', aVar: 'lumi', bVar: 'gema' },
     then: [
-      { type: 'assign', name: 'moedas', value: binary('+', variable('moedas'), n(1)) },
-      { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(100)) },
-      { type: 'g2d:playFx', fx: 'coin' },
+      ...collectCoin(100),
       { type: 'g2d:setPosition', spriteVar: 'gema', x: n(-100), y: n(-100) },
     ],
   },
@@ -1000,17 +2063,47 @@ const playingBody: JSStatement[] = [
     type: 'if',
     cond: { type: 'g2d:touches', aVar: 'lumi', bVar: 'broto' },
     then: [
-      { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(1) },
+      {
+        type: 'if',
+        cond: binary('<', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(2)),
+        then: [
+          { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(1) },
+          {
+            type: 'g2d:setPosition',
+            spriteVar: 'lumi',
+            x: { type: 'g2d:spriteX', spriteVar: 'lumi' },
+            y: binary('-', { type: 'g2d:spriteY', spriteVar: 'lumi' }, n(8)),
+          },
+        ],
+      },
       { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(1000)) },
       { type: 'g2d:playFx', fx: 'powerup' },
       { type: 'g2d:setPosition', spriteVar: 'broto', x: n(-100), y: n(-100) },
+      { type: 'g2d:setVelocity', spriteVar: 'broto', vx: n(0), vy: n(0) },
+    ],
+  },
+  {
+    type: 'if',
+    cond: { type: 'g2d:touches', aVar: 'lumi', bVar: 'flor' },
+    then: [
+      {
+        type: 'if',
+        cond: binary('<', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(3)),
+        then: [{ type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(1) }],
+      },
+      { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(1000)) },
+      { type: 'g2d:playFx', fx: 'powerup' },
+      { type: 'g2d:setPosition', spriteVar: 'flor', x: n(-100), y: n(-100) },
     ],
   },
   {
     type: 'if',
     cond: and(
-      { type: 'g2d:touches', aVar: 'lumi', bVar: 'atalho' },
-      { type: 'g2d:actionPressed', action: 'down' },
+      equals(variable('temAtalho'), 1),
+      and(
+        { type: 'g2d:touches', aVar: 'lumi', bVar: 'atalho' },
+        { type: 'g2d:actionPressed', action: 'down' },
+      ),
     ),
     then: [
       {
@@ -1035,8 +2128,44 @@ const playingBody: JSStatement[] = [
           binary('!=', variable('etapa'), n(4)),
           binary('<=', { type: 'g2d:countGroup', groupVar: 'guardioes' }, n(0)),
         ),
-        then: nextLevel(),
+        // ⭐ A ALTURA do toque paga. É o gesto que fecha toda fase do jogo de
+        // referência: quem chega correndo e pula no alto do mastro leva mais.
+        then: [
+          {
+            type: 'assign',
+            name: 'pontos',
+            value: binary(
+              '+',
+              variable('pontos'),
+              binary(
+                '*',
+                binary('-', n(SURFACE_Y), { type: 'g2d:spriteY', spriteVar: 'lumi' }),
+                n(20),
+              ),
+            ),
+          },
+          ...nextLevel(),
+        ],
       },
+    ],
+  },
+  // ⭐ A ESTRELA. Pegar deixa invencível por alguns segundos, e quem encostar em você
+  // é quem se dá mal — é o único momento do jogo em que o encontrão vira arma.
+  {
+    type: 'if',
+    cond: { type: 'g2d:touches', aVar: 'lumi', bVar: 'estrela' },
+    then: [
+      { type: 'assign', name: 'estrelaAte', value: n(600) },
+      { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(1000)) },
+      { type: 'g2d:playFx', fx: 'powerup' },
+      { type: 'g2d:setPosition', spriteVar: 'estrela', x: n(-100), y: n(-100) },
+    ],
+  },
+  {
+    type: 'if',
+    cond: binary('>', variable('estrelaAte'), n(0)),
+    then: [
+      { type: 'assign', name: 'estrelaAte', value: binary('-', variable('estrelaAte'), n(1)) },
     ],
   },
   {
@@ -1044,7 +2173,17 @@ const playingBody: JSStatement[] = [
     spriteVar: 'lumi',
     groupVar: 'todosInimigos',
     itemName: 'inimigoTocado',
-    body: [{ type: 'g2d:hurtByEnemy', spriteVar: 'lumi', enemyVar: 'inimigoTocado' }],
+    body: [
+      {
+        type: 'if',
+        cond: binary('>', variable('estrelaAte'), n(0)),
+        then: [
+          { type: 'g2d:changeHealth', spriteVar: 'inimigoTocado', delta: n(-99) },
+          { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(200)) },
+        ],
+        else: [{ type: 'g2d:hurtByEnemy', spriteVar: 'lumi', enemyVar: 'inimigoTocado' }],
+      },
+    ],
   },
   {
     type: 'g2d:onEnemyShotHit',
@@ -1056,12 +2195,40 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:drawWorld', ctxVar: 'ctx', worldVar: 'areaAtual' },
   { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'gema' },
   { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'broto' },
+  { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'flor' },
+  { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'estrela' },
+  { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'barraFogo' },
   { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'portal' },
+  { type: 'g2d:drawGroup', ctxVar: 'ctx', groupVar: 'bolasFogo' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'brasas' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'cascos' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'espinhos' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'asas' },
+  { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'plantas' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'guardioes' },
+  // Figura e caixa acompanham a VIDA: 1 pequeno, 2 grande, 3 fogo.
+  {
+    type: 'if',
+    cond: binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(3)),
+    then: [
+      { type: 'g2d:setShape', spriteVar: 'lumi', shapeName: 'lumiFogo' },
+      { type: 'g2d:setSize', spriteVar: 'lumi', w: n(16), h: n(32) },
+    ],
+    else: [
+      {
+        type: 'if',
+        cond: binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(2)),
+        then: [
+          { type: 'g2d:setShape', spriteVar: 'lumi', shapeName: 'lumiForte' },
+          { type: 'g2d:setSize', spriteVar: 'lumi', w: n(16), h: n(32) },
+        ],
+        else: [
+          { type: 'g2d:setShape', spriteVar: 'lumi', shapeName: 'lumi' },
+          { type: 'g2d:setSize', spriteVar: 'lumi', w: n(16), h: n(24) },
+        ],
+      },
+    ],
+  },
   { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'lumi' },
   ...drawHud(),
   {
@@ -1081,7 +2248,9 @@ const playingBody: JSStatement[] = [
         else: [{ type: 'assign', name: 'vidas2', value: binary('-', variable('vidas2'), n(1)) }],
       },
       alternateToLivingPlayer(),
+      // Renasce com a vida cheia e PEQUENO: perder o poder faz parte de morrer.
       { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(2) },
+      { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(-1) },
       { type: 'g2d:playFx', fx: 'hurt' },
       { type: 'g2d:setVelocity', spriteVar: 'lumi', vx: n(0), vy: n(0) },
       loadActiveLevel(),
@@ -1139,6 +2308,9 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         enemyType('cascos', 'patrulha', 'casco', 1, 0.75, 16, 16),
         enemyType('espinhos', 'espinho', 'espinho', 1, 0.55, 16, 16),
         enemyType('asas', 'voador-vertical', 'asa', 1, 0.8, 16, 16),
+        // ⭐ A PLANTA do cano: sobe e desce na boca dele, e NÃO aceita pisada (o modo
+        // espinho cuida disso) — pisar numa planta é o erro clássico de quem aprende.
+        enemyType('plantas', 'voador-vertical', 'planta', 1, 0.45, 16, 16),
         enemyType('guardioes', 'chefao', 'guardiao', 1, 0.75, 24, 24),
         { type: 'g2d:allEnemiesGroup', varName: 'todosInimigos' },
       ],
@@ -1156,7 +2328,12 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
           h: n(24),
         },
         { type: 'g2d:setHitboxScale', spriteVar: 'lumi', percent: n(85) },
-        { type: 'g2d:setHealth', spriteVar: 'lumi', amount: n(2) },
+        // ⭐ O herói começa PEQUENO, com teto de 3. Antes era `setHealth(2)` seco, e
+        // como o `changeHealth` limita ao teto, o "power-up" do broto era um NO-OP:
+        // pagava 1000 pontos, tocava o som e não fazia absolutamente nada. Agora
+        // pequeno = 1, grande = 2 e fogo = 3; cada golpe desce um estado.
+        { type: 'g2d:setHealth', spriteVar: 'lumi', amount: n(3) },
+        { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(-2) },
         {
           type: 'g2d:createShapeSprite',
           varName: 'gema',
@@ -1178,21 +2355,49 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         {
           type: 'g2d:createShapeSprite',
           varName: 'portal',
-          shapeName: 'portal',
-          x: n((COLS - 4) * TILE),
-          y: n(SURFACE_Y - 32),
-          w: n(20),
-          h: n(32),
+          shapeName: 'mastro',
+          x: n((DEFAULT_COLS - 4) * TILE),
+          y: n(SURFACE_Y - MASTRO_H),
+          w: n(16),
+          h: n(MASTRO_H),
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'estrela',
+          shapeName: 'estrela',
+          x: n(-100),
+          y: n(-100),
+          w: n(16),
+          h: n(16),
         },
         {
           type: 'g2d:createShapeSprite',
           varName: 'atalho',
           shapeName: 'invisivel',
-          x: n(23 * TILE),
-          y: n(SURFACE_Y - ATALHO_H),
+          x: n(-100),
+          y: n(-100),
           w: n(2 * TILE),
           h: n(ATALHO_H),
         },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'flor',
+          shapeName: 'flor',
+          x: n(-100),
+          y: n(-100),
+          w: n(16),
+          h: n(16),
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'barraFogo',
+          shapeName: 'barraFogo',
+          x: n(-100),
+          y: n(-100),
+          w: n(64),
+          h: n(8),
+        },
+        { type: 'g2d:createGroup', varName: 'bolasFogo' },
         // Coordenadas que cada fase preenche a partir da própria grade, para que gema,
         // portal, atalho e inimigos nunca caiam sobre poço nem dentro de tijolo.
         ...SPAWN_POINT_NAMES.map(
@@ -1205,6 +2410,9 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         { type: 'var', name: 'fase', value: n(1) },
         { type: 'var', name: 'mundo', value: n(1) },
         { type: 'var', name: 'etapa', value: n(1) },
+        { type: 'var', name: 'faseAquatica', value: n(0) },
+        { type: 'var', name: 'temAtalho', value: n(0) },
+        { type: 'var', name: 'larguraFase', value: n(DEFAULT_COLS * TILE) },
         { type: 'var', name: 'jornada', value: n(1) },
         { type: 'var', name: 'jogadores', value: n(1) },
         { type: 'var', name: 'jogador', value: n(1) },
@@ -1215,18 +2423,58 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         { type: 'var', name: 'tempo', value: n(300) },
         { type: 'var', name: 'velocidade', value: n(2.35) },
         { type: 'var', name: 'premioAtivo', value: n(1) },
+        { type: 'var', name: 'direcaoBroto', value: n(1) },
+        { type: 'var', name: 'direcaoEstrela', value: n(1) },
+        // Quantos quadros ainda restam de invencibilidade da estrela.
+        { type: 'var', name: 'estrelaAte', value: n(0) },
         { type: 'var', name: 'mapaAtual', value: variable('mapa1') },
         { type: 'var', name: 'areaAtual', value: variable('area1') },
         { type: 'funcDecl', name: 'carregarFase', params: [], body: selectActiveLevel() },
         { type: 'g2d:setEnemyStompMode', typeVar: 'brasas', mode: 'squash' },
         { type: 'g2d:setEnemyStompMode', typeVar: 'cascos', mode: 'shell' },
         { type: 'g2d:setEnemyStompMode', typeVar: 'espinhos', mode: 'spiky' },
+        // ⚠️ O voador ficava de FORA da lista e sem bloco de pisada: ele entrava em
+        // "todos os inimigos", machucava ao encostar e não havia como derrotá-lo.
+        // Toda etapa 3 tinha um perigo imortal no meio do caminho.
+        { type: 'g2d:setEnemyStompMode', typeVar: 'asas', mode: 'defeat' },
+        { type: 'g2d:setEnemyStompMode', typeVar: 'plantas', mode: 'spiky' },
         { type: 'g2d:setEnemyStompMode', typeVar: 'guardioes', mode: 'damage' },
         loadActiveLevel(),
         { type: 'g2d:setScene', name: 'titulo' },
         { type: 'g2d:playMusic', tune: 'happy' },
       ],
       events: [
+        {
+          type: 'g2d:onActionPressed',
+          action: 'action',
+          body: [
+            {
+              type: 'if',
+              cond: and(
+                { type: 'g2d:sceneIs', name: 'jogando' },
+                binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(3)),
+              ),
+              then: [
+                {
+                  type: 'g2d:spawnBullet',
+                  groupVar: 'bolasFogo',
+                  x: { type: 'g2d:centerX', spriteVar: 'lumi' },
+                  y: { type: 'g2d:centerY', spriteVar: 'lumi' },
+                  radius: n(4),
+                  color: '#ff7138',
+                  vx: {
+                    type: 'ternary',
+                    condition: binary('<', { type: 'g2d:spriteVx', spriteVar: 'lumi' }, n(0)),
+                    whenTrue: n(-5.2),
+                    whenFalse: n(5.2),
+                  },
+                  vy: n(-2.2),
+                },
+                { type: 'g2d:playFx', fx: 'laser' },
+              ],
+            },
+          ],
+        },
         {
           type: 'g2d:onActionPressed',
           action: 'pause',
@@ -1347,7 +2595,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'g2d:drawPixelText',
                   ctxVar: 'ctx',
-                  text: 'START RECOMECA O MUNDO',
+                  text: 'START RECOMEÇA O MUNDO',
                   x: n(128),
                   y: n(132),
                   size: n(1),
@@ -1402,7 +2650,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'g2d:drawPixelText',
                   ctxVar: 'ctx',
-                  text: '32 FASES X 2 JORNADAS',
+                  text: '32 FASES / 2 JORNADAS',
                   x: n(128),
                   y: n(116),
                   size: n(1),

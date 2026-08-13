@@ -5,6 +5,7 @@
  * width/height clipa o conteúdo (paridade com o bitmap).
  */
 import type { TilemapAsset, VectorTilesetAsset } from '../core/project'
+import { embedVectorFonts } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
 import { gradientDefsMarkup, shapesToMarkup } from '../vector/svg'
 import { flattenLayers } from './tilemapOps'
@@ -56,6 +57,21 @@ export function vectorTilemapSvg(tilemap: TilemapAsset, tileset: VectorTilesetAs
   ].join('\n')
 }
 
+function usedTileShapes(tilemap: TilemapAsset, tileset: VectorTilesetAsset) {
+  const used = new Set<number>()
+  for (const index of flattenLayers(tilemap)) {
+    if (index >= 0 && index < tileset.tiles.length) used.add(index)
+  }
+  return [...used].flatMap((index) => tileset.tiles[index] ?? [])
+}
+
+export async function vectorTilemapPortableSvg(
+  tilemap: TilemapAsset,
+  tileset: VectorTilesetAsset,
+): Promise<string> {
+  return embedVectorFonts(vectorTilemapSvg(tilemap, tileset), usedTileShapes(tilemap, tileset))
+}
+
 /** Rasteriza o mapa achatado. `null` sem canvas/Image (happy-dom). */
 export async function vectorTilemapPngDataUrl(
   tilemap: TilemapAsset,
@@ -63,7 +79,7 @@ export async function vectorTilemapPngDataUrl(
   scale = 1,
 ): Promise<string | null> {
   return svgToPngDataUrl(
-    vectorTilemapSvg(tilemap, tileset),
+    await vectorTilemapPortableSvg(tilemap, tileset),
     tilemap.cols * tileset.tileSize,
     tilemap.rows * tileset.tileSize,
     scale,

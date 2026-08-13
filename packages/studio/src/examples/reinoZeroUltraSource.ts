@@ -62,6 +62,9 @@ let lives = 5;
 let unlocked = 1;
 let checkpointX = 96;
 let checkpointY = 320;
+let resumeStageId = "1-1";
+let resumeCheckpointX = null;
+let resumeCheckpointY = null;
 let hint = "";
 let hintTimer = 0;
 let recoveryNotice = "";
@@ -80,8 +83,10 @@ let accumulator = 0;
 let musicTimer = 0;
 let musicStep = 0;
 let seed = 147480;
-let touch = { left: false, right: false, jump: false, action: false, start: false };
+let touch = { left: false, right: false, up: false, down: false, jump: false, action: false, start: false, mode: false };
+let touch2 = { left: false, right: false, up: false, down: false, jump: false, action: false };
 let previousMenuStart = false;
+let previousMenuMode = false;
 let previousPause = false;
 let previousDelete = false;
 let deleteConfirmTimer = 0;
@@ -194,8 +199,56 @@ function cloneData(value) {
   return copy;
 }
 
+function validNumber(value, min, max) {
+  return value === value + 0 && value >= min && value <= max;
+}
+
+function validInteger(value, min, max) {
+  return validNumber(value, min, max) && value === Math.floor(value);
+}
+
+function validList(value, maxLength) {
+  return value != null && value.constructor === players.constructor && value.length === Math.floor(value.length) && value.length <= maxLength;
+}
+
+function validNumericFields(value, fields, min, max) {
+  for (let i = 0; i < fields.length; i += 1) if (!validNumber(value[fields[i]], min, max)) return false;
+  return true;
+}
+
+function validSnapshotObjects(values, fields, maxLength) {
+  if (!validList(values, maxLength)) return false;
+  for (let i = 0; i < values.length; i += 1) {
+    if (values[i] == null || !validNumericFields(values[i], fields, -1000000, 1000000)) return false;
+  }
+  return true;
+}
+
+function validSimulationSnapshot(snapshot) {
+  if (snapshot == null || (snapshot.schemaVersion != null && snapshot.schemaVersion !== 1) || !stageExists(snapshot.stageId)) return false;
+  const snapshotStage = STAGES[findStage(snapshot.stageId)];
+  if (snapshot.playMode !== "solo" && snapshot.playMode !== "turns" && snapshot.playMode !== "coop") return false;
+  if (!validInteger(snapshot.playerCount, 1, 2) || snapshot.playerCount !== (snapshot.playMode === "solo" ? 1 : 2)) return false;
+  if (!validInteger(snapshot.activeTurn, 0, 1) || !validTurnProfiles(snapshot.turnProfiles)) return false;
+  if (!validSnapshotObjects(snapshot.players, ["index", "x", "y", "w", "h", "vx", "vy", "life"], 2) || snapshot.players.length !== 2) return false;
+  if (!validSnapshotObjects(snapshot.actors, ["x", "y", "w", "h", "originX", "originY", "speed", "range", "health", "maxHealth", "phase"], 512)) return false;
+  if (!validSnapshotObjects(snapshot.platforms, ["x", "y", "w", "h", "originX", "originY", "lastX", "lastY", "range", "speed", "phase"], 128)) return false;
+  if (!validSnapshotObjects(snapshot.shots, ["x", "y", "w", "h", "vx", "vy", "life", "owner"], 1024)) return false;
+  if (!validList(snapshot.usedTiles, snapshotStage.width * snapshotStage.height) || !validList(snapshot.brokenTiles, snapshotStage.width * snapshotStage.height) || !validList(snapshot.fragileTiles, snapshotStage.width * snapshotStage.height)) return false;
+  if (!validNumber(snapshot.cameraX, 0, snapshotStage.width * TILE)) return false;
+  if (!validNumber(snapshot.timeLeft, 0, 3600) || !validInteger(snapshot.score, 0, 999999999)) return false;
+  if (!validInteger(snapshot.coins, 0, 999999999) || !validInteger(snapshot.stageCoins, 0, 999999999)) return false;
+  if (!validList(snapshot.gems, 8)) return false;
+  for (let i = 0; i < snapshot.gems.length; i += 1) if (!gemKeyExists(snapshot.gems[i])) return false;
+  if (!validInteger(snapshot.lives, 0, 99) || !validInteger(snapshot.unlocked, 1, STAGES.length)) return false;
+  if (!validNumber(snapshot.checkpointX, 0, snapshotStage.width * TILE) || !validNumber(snapshot.checkpointY, 0, snapshotStage.height * TILE)) return false;
+  if (!validNumber(snapshot.hintTimer, 0, 120)) return false;
+  return validInteger(snapshot.seed, 1, 2147483646);
+}
+
 function simulationSnapshot() {
   return cloneData({
+    schemaVersion: 1,
     stageId: stage.id,
     playerCount: playerCount,
     playMode: playMode,
@@ -251,7 +304,6 @@ function restoreSimulationSnapshot(snapshot) {
   hint = snapshot.hint;
   hintTimer = snapshot.hintTimer;
   seed = snapshot.seed;
-  shots = [];
   playbackAt = 0;
   mode = "playing";
 }
@@ -291,6 +343,7 @@ function validReplayPayload(frames, snapshot, checksum, requireSnapshot) {
   if (frames.length === 0) return snapshot === null && checksum === 0;
   if (!validReplayFrames(frames)) return false;
   if (snapshot === null) return !requireSnapshot && checksum === 0;
+  if (!validSimulationSnapshot(snapshot)) return false;
   if (checksum !== Math.floor(checksum)) return false;
   return checksum === checksumReplay(snapshot, frames);
 }
@@ -433,6 +486,13 @@ function selectPlayMode(nextMode) {
   playMode = nextMode;
   playerCount = nextMode === "solo" ? 1 : 2;
   if (nextMode !== "turns") activeTurn = 0;
+  touchMode.textContent = "MODO " + nextMode.toUpperCase();
+}
+
+function selectNextPlayMode() {
+  if (playMode === "coop") selectPlayMode("solo");
+  else if (playMode === "solo") selectPlayMode("turns");
+  else selectPlayMode("coop");
 }
 
 function syncTurnProfile(player) {
@@ -473,13 +533,20 @@ function makeActor(entity) {
     phase: random() * 6.28,
     state: entity.kind === "shell" ? "walking" : "active",
     cooldown: 0.4 + random() * 1.2,
-    vy: 0
+    vy: 0,
+    slamReady: false
   };
 }
 
-function loadStage(id) {
+function loadStage(id, useSavedCheckpoint) {
   stageIndex = findStage(id);
   stage = STAGES[stageIndex];
+  const resumeHere = useSavedCheckpoint === true && resumeStageId === stage.id && resumeCheckpointX !== null && resumeCheckpointY !== null;
+  resumeStageId = stage.id;
+  if (!resumeHere) {
+    resumeCheckpointX = null;
+    resumeCheckpointY = null;
+  }
   seed = stage.seed;
   actors = [];
   platforms = [];
@@ -513,6 +580,10 @@ function loadStage(id) {
   }
   checkpointX = stage.spawn.x * TILE;
   checkpointY = stage.spawn.y * TILE;
+  if (resumeHere) {
+    checkpointX = resumeCheckpointX;
+    checkpointY = resumeCheckpointY;
+  }
   players = [makePlayer(0, checkpointX, checkpointY), makePlayer(1, checkpointX - 28, checkpointY)];
   if (playMode === "solo") players[1].active = false;
   else if (playMode === "coop") players[1].active = true;
@@ -536,7 +607,7 @@ function loadStage(id) {
 
 function currentSaveData() {
   return {
-    stageId: stage.id,
+    stageId: resumeStageId,
     unlocked: unlocked,
     score: score,
     coins: coins,
@@ -545,10 +616,19 @@ function currentSaveData() {
     playMode: playMode,
     activeTurn: activeTurn,
     turnProfiles: cloneData(turnProfiles),
+    checkpointX: resumeCheckpointX,
+    checkpointY: resumeCheckpointY,
     replay: cloneData(playback),
     replaySnapshot: playbackSnapshot === null ? null : cloneData(playbackSnapshot),
     replayChecksum: playbackChecksum
   };
+}
+
+function validSavedCheckpoint(data) {
+  if (data.checkpointX == null && data.checkpointY == null) return true;
+  if (data.checkpointX == null || data.checkpointY == null) return false;
+  const savedStage = STAGES[findStage(data.stageId)];
+  return validNumber(data.checkpointX, 0, savedStage.width * TILE) && validNumber(data.checkpointY, 0, savedStage.height * TILE);
 }
 
 function makeSaveEnvelope(data) {
@@ -575,6 +655,7 @@ function validSaveData(data) {
   if (data.playMode !== "solo" && data.playMode !== "turns" && data.playMode !== "coop") return false;
   if (data.activeTurn != null && (data.activeTurn !== Math.floor(data.activeTurn) || data.activeTurn < 0 || data.activeTurn > 1)) return false;
   if (data.turnProfiles != null && !validTurnProfiles(data.turnProfiles)) return false;
+  if (!validSavedCheckpoint(data)) return false;
   if (data.gems == null || data.gems.length !== Math.floor(data.gems.length) || data.gems.length > 8) return false;
   for (let i = 0; i < data.gems.length; i += 1) {
     if (!gemKeyExists(data.gems[i])) return false;
@@ -595,6 +676,11 @@ function readSaveEnvelope(raw) {
 function applySaveData(data) {
   stageIndex = findStage(data.stageId);
   stage = STAGES[stageIndex];
+  resumeStageId = stage.id;
+  resumeCheckpointX = data.checkpointX == null ? null : data.checkpointX;
+  resumeCheckpointY = data.checkpointY == null ? null : data.checkpointY;
+  checkpointX = resumeCheckpointX === null ? stage.spawn.x * TILE : resumeCheckpointX;
+  checkpointY = resumeCheckpointY === null ? stage.spawn.y * TILE : resumeCheckpointY;
   unlocked = data.unlocked;
   score = data.score;
   coins = data.coins;
@@ -614,6 +700,10 @@ function applySaveData(data) {
   playback = cloneData(data.replay);
   playbackSnapshot = data.replaySnapshot === null ? null : cloneData(data.replaySnapshot);
   playbackChecksum = data.replayChecksum;
+  if (playbackSnapshot !== null && playbackSnapshot.schemaVersion == null) {
+    playbackSnapshot.schemaVersion = 1;
+    playbackChecksum = checksumReplay(playbackSnapshot, playback);
+  }
   playbackAt = 0;
 }
 
@@ -646,6 +736,8 @@ function migrateLegacySave(value) {
       { lives: safeInteger(value.lives, 5, 0, 99), score: safeInteger(value.score, 0, 0, 999999999), coins: safeInteger(value.coins, 0, 0, 999999999), power: "normal" },
       { lives: 5, score: 0, coins: 0, power: "normal" }
     ],
+    checkpointX: null,
+    checkpointY: null,
     replay: legacyReplay,
     replaySnapshot: legacySnapshot,
     replayChecksum: legacyChecksum
@@ -667,7 +759,9 @@ function loadSave() {
   if (primaryRaw === null) return;
   const primary = readSaveEnvelope(primaryRaw);
   if (primary !== null) {
+    const upgradesReplaySnapshot = primary.data.replaySnapshot !== null && primary.data.replaySnapshot.schemaVersion == null;
     applySaveData(primary.data);
+    if (upgradesReplaySnapshot) writeSaveData(currentSaveData(), false);
     return;
   }
   const backupRaw = localStorage.getItem(SAVE_BACKUP_KEY);
@@ -721,17 +815,17 @@ function readInput(index) {
       right: __szInput.key("ArrowRight") || axis > 0.25 || touch.right,
       jump: __szInput.key("x") || __szInput.key("X") || __szInput.key("Space") || padJump || touch.jump,
       action: __szInput.key("z") || __szInput.key("Z") || __szInput.key("Shift") || padAction || touch.action
-      , up: __szInput.key("ArrowUp") || verticalAxis < -0.4
-      , down: __szInput.key("ArrowDown") || verticalAxis > 0.4
+      , up: __szInput.key("ArrowUp") || verticalAxis < -0.4 || touch.up
+      , down: __szInput.key("ArrowDown") || verticalAxis > 0.4 || touch.down
     };
   }
   return {
-    left: __szInput.key("a") || __szInput.key("A") || axis < -0.25,
-    right: __szInput.key("d") || __szInput.key("D") || axis > 0.25,
-    jump: __szInput.key("g") || __szInput.key("G") || padJump,
-    action: __szInput.key("f") || __szInput.key("F") || padAction
-    , up: __szInput.key("w") || __szInput.key("W") || verticalAxis < -0.4
-    , down: __szInput.key("s") || __szInput.key("S") || verticalAxis > 0.4
+    left: __szInput.key("a") || __szInput.key("A") || axis < -0.25 || touch2.left,
+    right: __szInput.key("d") || __szInput.key("D") || axis > 0.25 || touch2.right,
+    jump: __szInput.key("g") || __szInput.key("G") || padJump || touch2.jump,
+    action: __szInput.key("f") || __szInput.key("F") || padAction || touch2.action
+    , up: __szInput.key("w") || __szInput.key("W") || verticalAxis < -0.4 || touch2.up
+    , down: __szInput.key("s") || __szInput.key("S") || verticalAxis > 0.4 || touch2.down
   };
 }
 
@@ -802,6 +896,40 @@ function hitsWorld(body) {
     solidTile(tileAt(body.x + body.w - 2, body.y + body.h - 2));
 }
 
+function loseLife(player, gameOverMessage, restartStage) {
+  lives -= 1;
+  if (playMode === "turns") {
+    syncTurnProfile(player);
+    const otherTurn = activeTurn === 0 ? 1 : 0;
+    if (turnProfiles[otherTurn].lives > 0) activeTurn = otherTurn;
+    restoreTurnProfile();
+    if (turnProfiles[0].lives <= 0 && turnProfiles[1].lives <= 0) {
+      mode = "gameover";
+      announce(gameOverMessage);
+    } else {
+      mode = "turnswitch";
+      stageClearTimer = 0.8;
+      pendingStage = stage.id;
+      announce("Vez do jogador " + (activeTurn + 1) + ".");
+    }
+    saveGame();
+    return;
+  }
+  if (lives <= 0) {
+    mode = "gameover";
+    announce(gameOverMessage);
+    saveGame();
+  } else if (restartStage) loadStage(stage.id, true);
+  else {
+    player.life = 3;
+    player.power = "normal";
+    player.x = checkpointX;
+    player.y = checkpointY;
+    player.vx = 0;
+    player.vy = 0;
+  }
+}
+
 function hurtPlayer(player) {
   if (player.invulnerable > 0 || !player.active) return;
   player.life -= 1;
@@ -809,39 +937,7 @@ function hurtPlayer(player) {
   player.vy = -330;
   player.vx = -player.facing * 210;
   __szAudio.ruido(90, 4);
-  if (player.life <= 0) {
-    lives -= 1;
-    if (playMode === "turns") {
-      syncTurnProfile(player);
-      const otherTurn = activeTurn === 0 ? 1 : 0;
-      if (turnProfiles[otherTurn].lives > 0) activeTurn = otherTurn;
-      restoreTurnProfile();
-      if (turnProfiles[0].lives <= 0 && turnProfiles[1].lives <= 0) {
-        mode = "gameover";
-        announce("Fim de jogo para os dois exploradores.");
-        saveGame();
-      } else {
-        mode = "turnswitch";
-        stageClearTimer = 0.8;
-        pendingStage = stage.id;
-        announce("Vez do jogador " + (activeTurn + 1) + ".");
-        saveGame();
-      }
-      return;
-    }
-    if (lives <= 0) {
-      mode = "gameover";
-      announce("Fim de jogo.");
-      saveGame();
-    } else {
-      player.life = 3;
-      player.power = "normal";
-      player.x = checkpointX;
-      player.y = checkpointY;
-      player.vx = 0;
-      player.vy = 0;
-    }
-  }
+  if (player.life <= 0) loseLife(player, playMode === "turns" ? "Fim de jogo para os dois exploradores." : "Fim de jogo.", false);
 }
 
 function movePlayer(player, dx, dy) {
@@ -972,9 +1068,9 @@ function defeatActor(actor, points) {
 }
 
 function nearestPlayer(actor) {
-  let target = players[0];
-  let distance = Math.abs(target.x - actor.x);
-  for (let i = 1; i < players.length; i += 1) {
+  let target = null;
+  let distance = 999999999;
+  for (let i = 0; i < players.length; i += 1) {
     const candidate = players[i];
     const candidateDistance = Math.abs(candidate.x - actor.x);
     if (candidate.active && candidateDistance < distance) {
@@ -982,7 +1078,7 @@ function nearestPlayer(actor) {
       distance = candidateDistance;
     }
   }
-  return target;
+  return target === null ? players[0] : target;
 }
 
 function fireEnemyShot(actor, speed, verticalSpeed) {
@@ -1002,6 +1098,15 @@ function fireEnemyShot(actor, speed, verticalSpeed) {
   __szAudio.tom("sawtooth", 180, 55, 2);
 }
 
+function shatterTitaFloor(actor) {
+  const footY = actor.y + actor.h + 8;
+  const offsets = [-2, -1, 0, 1, 2];
+  for (let i = 0; i < offsets.length; i += 1) {
+    const footX = actor.x + actor.w * 0.5 + offsets[i] * TILE;
+    if (tileAt(footX, footY) === "F") startFragileTile(footX, footY);
+  }
+}
+
 function updateBoss(actor, dt) {
   actor.phase += dt;
   actor.cooldown -= dt;
@@ -1013,7 +1118,15 @@ function updateBoss(actor, dt) {
     actor.y = actor.originY + Math.cos(actor.phase * 1.7) * 70;
   } else if (actor.variant === "tita") {
     actor.x += actor.direction * actor.speed * dt;
-    actor.y = actor.originY - Math.abs(Math.sin(actor.phase * 1.8)) * 76;
+    if (Math.abs(actor.x - actor.originX) > actor.range) actor.direction *= -1;
+    const jumpHeight = Math.abs(Math.sin(actor.phase * 1.8)) * 76;
+    actor.y = actor.originY - jumpHeight;
+    if (jumpHeight > 24) actor.slamReady = true;
+    if (jumpHeight < 4 && actor.slamReady) {
+      shatterTitaFloor(actor);
+      actor.slamReady = false;
+      __szAudio.ruido(48, 6);
+    }
   } else {
     actor.x += actor.direction * actor.speed * dt;
     if (Math.abs(actor.x - actor.originX) > actor.range) actor.direction *= -1;
@@ -1103,10 +1216,14 @@ function updateActors(dt) {
       } else if (actor.kind === "checkpoint") {
         checkpointX = actor.x;
         checkpointY = actor.y - 20;
+        resumeStageId = stage.id;
+        resumeCheckpointX = checkpointX;
+        resumeCheckpointY = checkpointY;
         actor.dead = true;
         hint = "Checkpoint ativado";
         hintTimer = 2;
         announce("Checkpoint ativado.");
+        if (playMode === "turns") syncTurnProfile(player);
         saveGame();
       } else if (actor.kind === "secretExit") {
         if (stage.secretStage && player.prevAction) completeStage(stage.secretStage);
@@ -1189,7 +1306,11 @@ function completeStage(nextId) {
     __szAudio.tom("triangle", 784, 500, 6);
     return;
   }
-  unlocked = Math.max(unlocked, Math.min(STAGES.length, stageIndex + 2));
+  const destinationIndex = nextId && stageExists(nextId) ? findStage(nextId) : stageIndex;
+  unlocked = Math.max(unlocked, Math.min(STAGES.length, destinationIndex + 1));
+  resumeStageId = nextId && stageExists(nextId) ? nextId : stage.id;
+  resumeCheckpointX = null;
+  resumeCheckpointY = null;
   score += Math.floor(timeLeft) * 10 + stageCoins * 5;
   if (playMode === "turns") syncTurnProfile(players[activeTurn]);
   pendingStage = nextId;
@@ -1208,10 +1329,12 @@ function updateGame(dt) {
     if (__szInput.key("1")) selectPlayMode("solo");
     if (__szInput.key("2")) selectPlayMode("turns");
     if (__szInput.key("3")) selectPlayMode("coop");
+    const changeMode = touch.mode || __szInput.gamepadButton(0, 5) > 0.5;
+    if (changeMode && !previousMenuMode) selectNextPlayMode();
     const start = __szInput.key("Enter") || touch.start || __szInput.gamepadButton(0, 9) > 0.5;
     if (start && !previousMenuStart) {
       replayMode = false;
-      loadStage(STAGES[Math.min(unlocked - 1, STAGES.length - 1)].id);
+      loadStage(resumeStageId, true);
     }
     if (__szInput.key("r") || __szInput.key("R")) {
       beginReplay();
@@ -1228,9 +1351,13 @@ function updateGame(dt) {
         coins = 0;
         gems = [];
         lives = 5;
-        playMode = "coop";
-        playerCount = 2;
+        resumeStageId = "1-1";
+        resumeCheckpointX = null;
+        resumeCheckpointY = null;
+        stageIndex = 0;
+        stage = STAGES[0];
         resetTurnProfiles();
+        selectPlayMode("coop");
         recoveryNotice = "Progresso apagado.";
         announce(recoveryNotice);
         deleteConfirmTimer = 0;
@@ -1241,7 +1368,9 @@ function updateGame(dt) {
     }
     previousDelete = deletePressed;
     previousMenuStart = start;
+    previousMenuMode = changeMode;
     touch.start = false;
+    touch.mode = false;
     return;
   }
   if (mode === "paused") {
@@ -1254,8 +1383,9 @@ function updateGame(dt) {
     return;
   }
   if (mode === "stageclear" || mode === "turnswitch") {
+    const resumeTurnCheckpoint = mode === "turnswitch";
     stageClearTimer -= dt;
-    if (stageClearTimer <= 0) loadStage(pendingStage);
+    if (stageClearTimer <= 0) loadStage(pendingStage, resumeTurnCheckpoint);
     return;
   }
   if (mode === "gameover" || mode === "victory") {
@@ -1309,12 +1439,8 @@ function updateGame(dt) {
       finishReplay();
       return;
     }
-    lives -= 1;
-    if (lives <= 0) {
-      mode = "gameover";
-      announce("Fim de jogo por tempo esgotado.");
-    }
-    else loadStage(stage.id);
+    loseLife(players[activeTurn], "Fim de jogo por tempo esgotado.", true);
+    return;
   }
   if (playMode === "coop" && players[0].active && players[1].active && Math.abs(players[0].x - players[1].x) > VIEW_W * 0.82) {
     const leader = players[0].x > players[1].x ? players[0] : players[1];
@@ -1565,75 +1691,92 @@ function frame(time) {
   draw();
 }
 
-let touchPointers = { left: -1, right: -1, jump: -1, action: -1, start: -1 };
+let touchPointers = { left: -1, right: -1, up: -1, down: -1, jump: -1, action: -1, start: -1, mode: -1 };
+let touchPointers2 = { left: -1, right: -1, up: -1, down: -1, jump: -1, action: -1 };
 
-function setTouchDown(key, pointerId, button) {
-  if (touchPointers[key] !== -1) return;
-  touchPointers[key] = pointerId;
-  touch[key] = true;
+function setTouchDown(state, pointers, key, pointerId, button) {
+  if (pointers[key] !== -1) return;
+  pointers[key] = pointerId;
+  state[key] = true;
   try {
     button.setPointerCapture(pointerId);
   } catch (error) {
   }
 }
 
-function setTouchUp(key, pointerId) {
-  if (touchPointers[key] !== pointerId) return;
-  touchPointers[key] = -1;
-  touch[key] = false;
+function setTouchUp(state, pointers, key, pointerId) {
+  if (pointers[key] !== pointerId) return;
+  pointers[key] = -1;
+  state[key] = false;
 }
 
-function pressTouchLeft(event) { setTouchDown("left", event.pointerId, touchLeft); }
-function pressTouchRight(event) { setTouchDown("right", event.pointerId, touchRight); }
-function pressTouchJump(event) { setTouchDown("jump", event.pointerId, touchJump); }
-function pressTouchAction(event) { setTouchDown("action", event.pointerId, touchAction); }
-function pressTouchStart(event) { setTouchDown("start", event.pointerId, touchStart); }
-function releaseTouchLeft(event) { setTouchUp("left", event.pointerId); }
-function releaseTouchRight(event) { setTouchUp("right", event.pointerId); }
-function releaseTouchJump(event) { setTouchUp("jump", event.pointerId); }
-function releaseTouchAction(event) { setTouchUp("action", event.pointerId); }
-function releaseTouchStart(event) { setTouchUp("start", event.pointerId); }
+const TOUCH_BINDINGS = {
+  "touch-left": [touch, touchPointers, "left"],
+  "touch-right": [touch, touchPointers, "right"],
+  "touch-up": [touch, touchPointers, "up"],
+  "touch-down": [touch, touchPointers, "down"],
+  "touch-jump": [touch, touchPointers, "jump"],
+  "touch-action": [touch, touchPointers, "action"],
+  "touch-start": [touch, touchPointers, "start"],
+  "touch-mode": [touch, touchPointers, "mode"],
+  "touch-p2-left": [touch2, touchPointers2, "left"],
+  "touch-p2-right": [touch2, touchPointers2, "right"],
+  "touch-p2-up": [touch2, touchPointers2, "up"],
+  "touch-p2-down": [touch2, touchPointers2, "down"],
+  "touch-p2-jump": [touch2, touchPointers2, "jump"],
+  "touch-p2-action": [touch2, touchPointers2, "action"]
+};
+
+function pressTouchControl(e) {
+  const binding = TOUCH_BINDINGS[e.target.id];
+  if (binding != null) setTouchDown(binding[0], binding[1], binding[2], e.pointerId, e.target);
+}
+
+function releaseTouchControl(e) {
+  const binding = TOUCH_BINDINGS[e.target.id];
+  if (binding != null) setTouchUp(binding[0], binding[1], binding[2], e.pointerId);
+}
 
 function releaseAllTouch() {
   touch.left = false;
   touch.right = false;
+  touch.up = false;
+  touch.down = false;
   touch.jump = false;
   touch.action = false;
   touch.start = false;
+  touch.mode = false;
+  touch2.left = false;
+  touch2.right = false;
+  touch2.up = false;
+  touch2.down = false;
+  touch2.jump = false;
+  touch2.action = false;
   touchPointers.left = -1;
   touchPointers.right = -1;
+  touchPointers.up = -1;
+  touchPointers.down = -1;
   touchPointers.jump = -1;
   touchPointers.action = -1;
   touchPointers.start = -1;
+  touchPointers.mode = -1;
+  touchPointers2.left = -1;
+  touchPointers2.right = -1;
+  touchPointers2.up = -1;
+  touchPointers2.down = -1;
+  touchPointers2.jump = -1;
+  touchPointers2.action = -1;
 }
 
-const touchLeft = document.getElementById("touch-left");
-const touchRight = document.getElementById("touch-right");
-const touchJump = document.getElementById("touch-jump");
-const touchAction = document.getElementById("touch-action");
-const touchStart = document.getElementById("touch-start");
-touchLeft.addEventListener("pointerdown", pressTouchLeft);
-touchRight.addEventListener("pointerdown", pressTouchRight);
-touchJump.addEventListener("pointerdown", pressTouchJump);
-touchAction.addEventListener("pointerdown", pressTouchAction);
-touchStart.addEventListener("pointerdown", pressTouchStart);
-touchLeft.addEventListener("pointerup", releaseTouchLeft);
-touchRight.addEventListener("pointerup", releaseTouchRight);
-touchJump.addEventListener("pointerup", releaseTouchJump);
-touchAction.addEventListener("pointerup", releaseTouchAction);
-touchStart.addEventListener("pointerup", releaseTouchStart);
-touchLeft.addEventListener("pointercancel", releaseTouchLeft);
-touchRight.addEventListener("pointercancel", releaseTouchRight);
-touchJump.addEventListener("pointercancel", releaseTouchJump);
-touchAction.addEventListener("pointercancel", releaseTouchAction);
-touchStart.addEventListener("pointercancel", releaseTouchStart);
-touchLeft.addEventListener("lostpointercapture", releaseTouchLeft);
-touchRight.addEventListener("lostpointercapture", releaseTouchRight);
-touchJump.addEventListener("lostpointercapture", releaseTouchJump);
-touchAction.addEventListener("lostpointercapture", releaseTouchAction);
-touchStart.addEventListener("lostpointercapture", releaseTouchStart);
+const touchMode = document.getElementById("touch-mode");
+const touchControls = document.getElementById("touch-controls");
+touchControls.addEventListener("pointerdown", pressTouchControl);
+touchControls.addEventListener("pointerup", releaseTouchControl);
+touchControls.addEventListener("pointercancel", releaseTouchControl);
+touchControls.addEventListener("lostpointercapture", releaseTouchControl);
 window.addEventListener("blur", releaseAllTouch);
 loadSave();
+touchMode.textContent = "MODO " + playMode.toUpperCase();
 const queuedRecoveryNotice = localStorage.getItem(SAVE_NOTICE_KEY);
 if (queuedRecoveryNotice !== null) recoveryNotice = queuedRecoveryNotice;
 if (recoveryNotice !== "") {

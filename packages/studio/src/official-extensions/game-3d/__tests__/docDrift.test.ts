@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 import type { ExtensionToolboxCategory } from '#extensions'
 import { gameThreeDPromptContext } from '../ai'
+import { gameThreeDPromptSummary } from '../aiSummary'
 import { gameThreeDBlocks, gameThreeDToolboxCategory } from '../blocks'
 import { gameThreeDExamples } from '../exampleCatalog'
+import { gameThreeDManifest } from '../manifest'
 import { gameThreeDRuntime } from '../runtime'
 
 /**
@@ -54,6 +56,31 @@ describe('game-3d — a doc/IA não pode citar o que não existe', () => {
     // Anti-vácuo: o contexto cita dezenas de métodos; uma extração morta cairia p/ 0.
     expect(citados.size).toBeGreaterThanOrEqual(60)
     expect([...citados].filter((n) => !apiKeys.has(n))).toEqual([])
+  })
+
+  it('IA, resumo e manifest ensinam a API pública do Kit Plataforma', () => {
+    const platformMethods = [
+      'createPlatformScene',
+      'createHero',
+      'setStageTheme',
+      'loadStage',
+      'stageStep',
+      'shootFire',
+      'sideCamera',
+      'onStageEvent',
+      'stageValue',
+      'setStageNumber',
+      'heroIs',
+      'stageIs',
+      'stageReset',
+      'clearStage',
+    ]
+    for (const method of platformMethods) expect(gameThreeDPromptContext).toContain(`${method}(`)
+    expect(gameThreeDPromptSummary).toContain('Kit Plataforma')
+    expect(gameThreeDPromptSummary).toContain('Reino Cogumelo')
+    expect(gameThreeDManifest.description).toContain('"Plataforma"')
+    expect(gameThreeDManifest.docs).toContain('### Kit "Plataforma"')
+    expect(gameThreeDManifest.docs).toContain('Reino Cogumelo')
   })
 
   it('nenhum exemplo do manifest usa travessão em texto visível', () => {

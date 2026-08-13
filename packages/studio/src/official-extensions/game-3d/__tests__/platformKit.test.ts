@@ -65,6 +65,34 @@ describe('Kit Plataforma — montar a fase a partir do texto', () => {
     for (let f = 0; f < 30; f++) quadro(api, world, heroi)
     expect(call(api, 'stageValue', world, 'pontos')).toBe(0)
   })
+
+  it('o tema escolhido antes do mapa é preservado quando o mapa não declara outro', () => {
+    const bancada = loadRuntime()
+    const world = call(bancada.api, 'createPlatformScene', 'tela')
+    call(bancada.api, 'createHero', world, '#e03010')
+    call(bancada.api, 'setStageTheme', world, 'castelo')
+    call(bancada.api, 'loadStage', world, 'chao=0-10')
+
+    const floor = ((world._stage as Any).meshes as Any[])[0]
+    if (!floor) throw new Error('A fase deveria criar o piso antes de aplicar o tema')
+    const material = floor.material as { color: { value: unknown } }
+    expect(material.color.value).toBe('#6b6b6b')
+  })
+
+  it('trocar o tema recolore a fase e remove a neblina ao voltar para dia', () => {
+    const { api, world } = jogo('chao=0-10')
+    const floor = ((world._stage as Any).meshes as Any[])[0]
+    if (!floor) throw new Error('A fase deveria criar o piso antes de trocar o tema')
+    const material = floor.material as { color: { value: unknown } }
+
+    call(api, 'setStageTheme', world, 'castelo')
+    expect(material.color.value).toBe('#6b6b6b')
+    expect(world.scene.fog).not.toBeNull()
+
+    call(api, 'setStageTheme', world, 'dia')
+    expect(material.color.value).toBe('#c86400')
+    expect(world.scene.fog).toBeNull()
+  })
 })
 
 describe('Kit Plataforma — as regras do gênero', () => {
@@ -231,6 +259,17 @@ describe('Kit Plataforma — a fase não cresce sem fim', () => {
     // A moeda voltou: dá para pegar de novo.
     expect(call(api, 'stageValue', world, 'moedas')).toBe(2)
   })
+
+  it('carregar outra fase exige alcançar o checkpoint novo antes de renascer nele', () => {
+    const { api, world, heroi } = jogo(['chao=0-40', 'checkpoint=4'].join('\n'))
+    call(api, 'setPosition', heroi, 5, 2, 0)
+    call(api, 'stageStep', world, heroi)
+
+    call(api, 'loadStage', world, ['chao=0-40', 'checkpoint=10'].join('\n'))
+    call(api, 'stageReset', world)
+
+    expect(pos(heroi).x).toBe(2)
+  })
 })
 
 describe('Kit Plataforma — as mecânicas do original', () => {
@@ -314,6 +353,45 @@ describe('Kit Plataforma — as mecânicas do original', () => {
     expect(call(api, 'shootFire', world, heroi)).toBe(true)
     for (let f = 0; f < 120; f++) quadro(api, world, heroi)
     expect(call(api, 'stageValue', world, 'pontos')).toBeGreaterThan(pontosAntes)
+  })
+
+  it('uma morte fatal devolve tamanho e colisão do herói ao estado pequeno', () => {
+    const mapa = ['chao=0-20', 'surpresa=4:4:cogumelo'].join('\n')
+    const { api, world, heroi } = jogo(mapa)
+    call(api, 'setPosition', heroi, 4, 2.2, 0)
+    call(api, 'setVelocity', heroi, 0, 0.3, 0)
+    for (let f = 0; f < 30; f++) quadro(api, world, heroi)
+    expect(call(api, 'heroIs', heroi, 'grande')).toBe(true)
+
+    call(api, 'setPosition', heroi, 6, -9, 0)
+    call(api, 'stageStep', world, heroi)
+    call(api, 'stageReset', world)
+
+    expect(call(api, 'heroIs', heroi, 'pequeno')).toBe(true)
+    expect(heroi.scale.y).toBe(1)
+    expect((heroi.userData as { sz: { hh: number } }).sz.hh).toBe(0.75)
+  })
+
+  it('passo, câmera e disparo rejeitam heróis de outra cena', () => {
+    const primeira = jogo(['chao=0-20', 'surpresa=4:4:flor'].join('\n'))
+    call(primeira.api, 'setPosition', primeira.heroi, 4, 2.2, 0)
+    call(primeira.api, 'setVelocity', primeira.heroi, 0, 0.3, 0)
+    for (let f = 0; f < 30; f++) quadro(primeira.api, primeira.world, primeira.heroi)
+    expect(call(primeira.api, 'heroIs', primeira.heroi, 'de fogo')).toBe(true)
+
+    const segundaWorld = call(primeira.api, 'createPlatformScene', 'tela')
+    const segundoHeroi = call(primeira.api, 'createHero', segundaWorld, '#2244ff')
+    call(primeira.api, 'loadStage', segundaWorld, 'chao=0-20')
+    const cameraX = segundaWorld.camera.position.x
+
+    call(primeira.api, 'stageStep', segundaWorld, primeira.heroi)
+    call(primeira.api, 'sideCamera', segundaWorld, primeira.heroi)
+
+    expect((segundaWorld._stage as Any).hero).toBe(segundoHeroi)
+    expect(segundaWorld.camera.position.x).toBe(cameraX)
+    expect(call(primeira.api, 'shootFire', segundaWorld, primeira.heroi)).toBe(false)
+    expect(((primeira.world._stage as Any).shots as unknown[]).length).toBe(0)
+    expect(((segundaWorld._stage as Any).shots as unknown[]).length).toBe(0)
   })
 
   it('a estrela mata no toque; a piscada depois do dano só protege', () => {

@@ -106,6 +106,7 @@ describe('Exemplo Reino Cogumelo — drift contra o parser real', () => {
       stripIds(behaviorStatements(reinoCogumeloExample.ir)) as JSStatement[],
       0,
     )
+    expect(code1).toContain('SZGame3D.loadStage(jogo, fases[numeroDaFase - 1]);')
     const reparsed = stripIds(parseJS(code1)) as JSStatement[]
     const code2 = compileStatements(reparsed, 0)
     expect(code2).toBe(code1)

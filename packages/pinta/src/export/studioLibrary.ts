@@ -19,11 +19,11 @@ import {
 } from '../core/project'
 import type { PintaExportedAsset } from '../core/types'
 import { flattenCels } from '../pixel/layers'
-import { listAllAssets, loadAssetById } from '../state/persistence'
+import { getPintaStorageNamespace, listAllAssets, loadAssetById } from '../state/persistence'
 import { tilemapThumbnail } from '../tiles/renderTilemap'
-import { vectorTilemapSvg } from '../tiles/renderVectorTilemap'
+import { vectorTilemapPortableSvg } from '../tiles/renderVectorTilemap'
+import { vectorToPortableSvg } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
-import { vectorToSvg } from '../vector/svg'
 import { bitmapToPngDataUrl } from './png'
 import { buildStudioPayload, validateStudioPayloadSize } from './studioBridge'
 
@@ -88,15 +88,23 @@ async function thumbFor(
     }
     case 'vector-sprite': {
       const frame = asset.animations[0]?.frames[0] ?? []
-      const svg = vectorToSvg({ width: asset.frameWidth, height: asset.frameHeight, shapes: frame })
+      const svg = await vectorToPortableSvg({
+        width: asset.frameWidth,
+        height: asset.frameHeight,
+        shapes: frame,
+      })
       return svgThumb(svg, asset.frameWidth, asset.frameHeight)
     }
     case 'vector-background': {
-      const svg = vectorToSvg({ width: asset.width, height: asset.height, shapes: asset.shapes })
+      const svg = await vectorToPortableSvg({
+        width: asset.width,
+        height: asset.height,
+        shapes: asset.shapes,
+      })
       return svgThumb(svg, asset.width, asset.height)
     }
     case 'vector-tileset': {
-      const svg = vectorToSvg({
+      const svg = await vectorToPortableSvg({
         width: asset.tileSize,
         height: asset.tileSize,
         shapes: asset.tiles[0] ?? [],
@@ -109,7 +117,7 @@ async function thumbFor(
       if (tileset.kind === 'tileset') {
         return tilemapThumbnail(asset, tileset, THUMB_MAX_PX)?.dataUrl ?? null
       }
-      const svg = vectorTilemapSvg(asset, tileset)
+      const svg = await vectorTilemapPortableSvg(asset, tileset)
       return svgThumb(svg, asset.cols * tileset.tileSize, asset.rows * tileset.tileSize)
     }
   }
@@ -128,15 +136,17 @@ function thumbStamp(asset: PintaAsset, findAsset: (id: string) => PintaAsset | n
 }
 
 async function cachedThumb(
+  namespace: string,
   asset: PintaAsset,
   findAsset: (id: string) => PintaAsset | null,
 ): Promise<string | null> {
   const stamp = thumbStamp(asset, findAsset)
-  const hit = thumbCache.get(asset.id)
+  const cacheKey = JSON.stringify([namespace, asset.id])
+  const hit = thumbCache.get(cacheKey)
   if (hit && hit.stamp === stamp) return hit.thumb
   const thumb = await thumbFor(asset, findAsset).catch(() => null)
   if (thumbCache.size >= THUMB_CACHE_MAX) thumbCache.clear()
-  thumbCache.set(asset.id, { stamp, thumb })
+  thumbCache.set(cacheKey, { stamp, thumb })
   return thumb
 }
 
@@ -145,6 +155,7 @@ async function cachedThumb(
  * a lista do "Trazer do Pinta". O host seta o namespace antes de chamar.
  */
 export async function listGalleryForStudio(): Promise<PintaGallerySummary[]> {
+  const namespace = getPintaStorageNamespace()
   const assets = await listAllAssets()
   const byId = new Map(assets.map((asset) => [asset.id, asset]))
   const findAsset = (id: string) => byId.get(id) ?? null
@@ -157,7 +168,7 @@ export async function listGalleryForStudio(): Promise<PintaGallerySummary[]> {
       style: assetStyle(asset.kind),
       updatedAt: asset.updatedAt,
       ...(asset.projectRef?.name ? { projectName: asset.projectRef.name } : {}),
-      thumbDataUrl: await cachedThumb(asset, findAsset),
+      thumbDataUrl: await cachedThumb(namespace, asset, findAsset),
     })
   }
   return summaries

@@ -10,8 +10,9 @@ import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
 
 const { PintaApp } = await import('../PintaApp')
-const { setPintaStorageNamespace } = await import('../../state/persistence')
+const { persistAsset, setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
+const { makeText } = await import('../../vector/shapes')
 
 beforeEach(() => {
   clearIdbMock()
@@ -168,6 +169,55 @@ describe('personagem vetorial — paridade com o pixel', () => {
     expect(screen.getByText(COPY.exportDialog.recipeTitle)).toBeTruthy()
     expect(screen.getByText(COPY.exportDialog.scaleVectorHint)).toBeTruthy()
     expect(screen.getByText(/do quadro 0 ao 0/)).toBeTruthy()
+  })
+
+  it('download SVG do diálogo incorpora a fonte usada no personagem', async () => {
+    const seed = createGalleryStore()
+    const asset = await seed
+      .getState()
+      .create({ kind: 'vector-sprite', name: 'heroi-com-fonte', frameSize: 64 })
+    if (asset?.kind !== 'vector-sprite') throw new Error('personagem vetorial esperado')
+    asset.animations[0]?.frames[0]?.push(
+      makeText(
+        { x: 8, y: 32 },
+        'Jogar',
+        { fill: '#000000', stroke: null, opacity: 1 },
+        'left',
+        'bungee',
+      ),
+    )
+    await persistAsset(asset)
+
+    const createDescriptor = Object.getOwnPropertyDescriptor(URL, 'createObjectURL')
+    const revokeDescriptor = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL')
+    const downloads: Blob[] = []
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: (blob: Blob) => {
+        downloads.push(blob)
+        return 'blob:pinta-vector-svg-test'
+      },
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: () => undefined,
+    })
+
+    try {
+      await openAsset('heroi-com-fonte')
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.download }))
+      fireEvent.click(await screen.findByRole('button', { name: COPY.exportDialog.spritesheetSvg }))
+      await waitFor(() => expect(downloads.length).toBe(1))
+      const svg = await downloads[0]?.text()
+      expect(svg).toContain('@font-face')
+      expect(svg).toContain("font-family:'Bungee'")
+      expect(svg).toContain('data:font/woff2;base64,')
+    } finally {
+      if (createDescriptor) Object.defineProperty(URL, 'createObjectURL', createDescriptor)
+      else Reflect.deleteProperty(URL, 'createObjectURL')
+      if (revokeDescriptor) Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor)
+      else Reflect.deleteProperty(URL, 'revokeObjectURL')
+    }
   })
 })
 

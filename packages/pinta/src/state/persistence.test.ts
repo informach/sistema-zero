@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { createPixelSpriteAsset } from '../core/project'
+import { createPixelSpriteAsset, createVectorBackgroundAsset } from '../core/project'
 import { clearIdbMock, idbMockDb, setIdbWriteGuard } from '../testing/idbMock'
+import { MAX_IMAGE_SRC_CHARS, type VectorShape } from '../vector/model'
 
-const { persistAsset, setPintaStorageNamespace } = await import('./persistence')
+const { PintaStorageBudgetError, persistAsset, setPintaStorageNamespace } = await import(
+  './persistence'
+)
 
 beforeEach(() => {
   clearIdbMock()
@@ -38,5 +41,43 @@ describe('persistência por perfil', () => {
       'a-2',
     )
     expect(idbMockDb('sistema-zero-pinta-perfil-b').has(key)).toBe(false)
+  })
+
+  function galleryOverBudget(shapeCount: number) {
+    const asset = createVectorBackgroundAsset({ name: 'galeria-grande', width: 16, height: 16 })
+    const prefix = 'data:image/png;base64,'
+    const src = `${prefix}${'A'.repeat(MAX_IMAGE_SRC_CHARS - prefix.length)}`
+    const shapes: VectorShape[] = Array.from({ length: shapeCount }, (_, index) => ({
+      id: `figura-${index}`,
+      type: 'image',
+      x: 0,
+      y: 0,
+      w: 16,
+      h: 16,
+      src,
+      fill: 'none',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }))
+    return { ...asset, shapes }
+  }
+
+  it('recusa uma mutação que deixaria o backup da galeria acima de 32 MiB', async () => {
+    const asset = galleryOverBudget(112)
+
+    await expect(persistAsset(asset)).rejects.toBeInstanceOf(PintaStorageBudgetError)
+    expect(idbMockDb('sistema-zero-pinta').has(`pinta:asset:${asset.id}`)).toBe(false)
+  })
+
+  it('galeria legada acima do teto ainda aceita uma mutação que reduz seu backup', async () => {
+    const legacy = galleryOverBudget(113)
+    const key = `pinta:asset:${legacy.id}`
+    idbMockDb('sistema-zero-pinta').set(key, legacy)
+
+    await expect(persistAsset({ ...legacy, shapes: legacy.shapes.slice(0, 112) })).resolves.toBe(
+      undefined,
+    )
+    expect((idbMockDb('sistema-zero-pinta').get(key) as typeof legacy).shapes).toHaveLength(112)
   })
 })

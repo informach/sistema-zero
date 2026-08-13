@@ -1,48 +1,94 @@
-import { BALOO_2_LATIN_WOFF2_BASE64 } from './gameUiFontData'
+/**
+ * A fonte da interface dos jogos — agora ESCOLHÍVEL entre cinco.
+ *
+ * ⭐⭐ O fato que decide a arquitetura: a família NÃO está gravada nos 34 pontos de
+ * `ctx.font` dos runtimes. Está gravada no PREFIXO do runtime — o bootstrap antigo
+ * embutia `var family = "…"` e era colado na frente da string por
+ * `withGameUIFontRuntime`. Os 34 pontos só leem `window.SZGameUIFont.family` em
+ * tempo de execução, e os 30 pontos de CSS leem `var(--sz-game-ui-font)`.
+ *
+ * Logo: basta o bootstrap sair do runtime e passar a ser injetado por quem MONTA o
+ * documento, junto da fonte escolhida. Os 64 pontos ficam intocados, e vem de brinde:
+ * - **o peso sai dos runtimes.** Hoje ~44 KB de base64 viajam dentro de CADA
+ *   `sz-ext/*.js` exportado (são quatro) e dentro do srcdoc a cada recarga;
+ * - **o `game-3d-advanced` para de pagar por nada** — ele embarcava a fonte inteira
+ *   e usa só uma linha de CSS, sem nenhum `ctx.font`;
+ * - **some a corrida de instalação**: o `<style>` antigo nascia num `DOMContentLoaded`
+ *   ou `setTimeout(0)`; agora existe no parse do documento.
+ *
+ * ⚠️ Um apelido de família comum às cinco foi considerado e REJEITADO — ver o
+ * comentário do `GAME_UI_FONTS` no catálogo.
+ */
+import {
+  DEFAULT_GAME_UI_FONT,
+  GAME_UI_FONTS,
+  type GameUiFontId,
+  gameUiFontFaceCss,
+  gameUiFontIdOrDefault,
+} from './gameUiFonts/catalog'
+import type { GameUiFontFace } from './gameUiFonts/types'
 
-export const GAME_UI_FONT_FAMILY = '"Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif'
+export type { GameUiFontId, GameUiFontInfo } from './gameUiFonts/catalog'
+export {
+  DEFAULT_GAME_UI_FONT,
+  GAME_UI_FONT_IDS,
+  GAME_UI_FONTS,
+  gameUiFontIdOrDefault,
+  isGameUiFontId,
+} from './gameUiFonts/catalog'
+export type { GameUiFontFace } from './gameUiFonts/types'
 
-export const GAME_UI_FONT_CSS =
-  '@font-face{' +
-  'font-family:"Baloo 2";' +
-  'font-style:normal;' +
-  'font-weight:400 800;' +
-  'font-display:swap;' +
-  `src:url(data:font/woff2;base64,${BALOO_2_LATIN_WOFF2_BASE64}) format("woff2");` +
-  'unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;' +
-  '}' +
-  `:root{--sz-game-ui-font:${GAME_UI_FONT_FAMILY};}`
+/** A família da fonte padrão. Mantida para quem só precisa de um valor de reserva. */
+export const GAME_UI_FONT_FAMILY = GAME_UI_FONTS[DEFAULT_GAME_UI_FONT].family
 
 /**
- * Instala a fonte dentro do documento que executa a extensão. O acesso ao DOM
- * acontece só no callback de prontidão (ou no timeout), nunca ao avaliar o
- * bootstrap no head ou em um harness sem document.
+ * ⚠️ Especificadores ESTÁTICOS, um por fonte (regra 1 do pacote): um
+ * `import('./gameUiFonts/' + id)` não é analisável estaticamente, e todo bundler ou
+ * empacota as cinco ou não acha nenhuma. Assim cada fonte vira um chunk próprio e um
+ * projeto que escolheu Bungee nunca baixa a Fredoka.
  */
-export const gameUIFontBootstrapRuntime = `(function () {
-  var family = ${JSON.stringify(GAME_UI_FONT_FAMILY)};
-  var css = ${JSON.stringify(GAME_UI_FONT_CSS)};
-  function install() {
-    var doc = window.document;
-    if (!doc || !doc.head || doc.querySelector('[data-sz-game-ui-font]')) return;
-    var style = doc.createElement('style');
-    style.setAttribute('data-sz-game-ui-font', '');
-    style.textContent = css;
-    doc.head.appendChild(style);
+const CARREGADORES: Record<GameUiFontId, () => Promise<{ FONTE: GameUiFontFace }>> = {
+  baloo2: () => import('./gameUiFonts/baloo2'),
+  nunito: () => import('./gameUiFonts/nunito'),
+  pressStart2P: () => import('./gameUiFonts/pressStart2P'),
+  bungee: () => import('./gameUiFonts/bungee'),
+  fredoka: () => import('./gameUiFonts/fredoka'),
+}
+
+export interface GameUiFontBundle {
+  id: GameUiFontId
+  family: string
+  css: string
+}
+
+/** Carrega SÓ a fonte pedida. Id desconhecido cai no padrão; nunca lança. */
+export async function loadGameUiFont(
+  id: unknown = DEFAULT_GAME_UI_FONT,
+): Promise<GameUiFontBundle> {
+  const escolhida = gameUiFontIdOrDefault(id)
+  const modulo = await CARREGADORES[escolhida]()
+  return {
+    id: escolhida,
+    family: GAME_UI_FONTS[escolhida].family,
+    css: gameUiFontFaceCss(escolhida, modulo.FONTE),
   }
-  window.SZGameUIFont = { family: family, install: install };
-  if (typeof window.addEventListener === 'function') {
-    window.addEventListener('DOMContentLoaded', install, { once: true });
-  }
-  if (typeof window.setTimeout === 'function') window.setTimeout(install, 0);
-})();`
+}
 
 /**
- * Acrescenta o bootstrap sem deslocar o primeiro import de runtimes ESM. Essa
- * primeira linha é parte do contrato dos motores 3D e de seus harnesses.
+ * O pedacinho de JS que publica a família para os runtimes lerem.
+ *
+ * Precisa rodar ANTES dos scripts de extensão: é na primeira linha deles que a
+ * família é capturada. `install` fica como no-op só para não quebrar contrato de
+ * quem já tipava a global.
  */
-export function withGameUIFontRuntime(source: string): string {
-  if (!source.startsWith('import ')) return `${gameUIFontBootstrapRuntime}\n${source}`
-  const firstLineEnd = source.indexOf('\n')
-  if (firstLineEnd < 0) return `${source}\n${gameUIFontBootstrapRuntime}`
-  return `${source.slice(0, firstLineEnd + 1)}${gameUIFontBootstrapRuntime}\n${source.slice(firstLineEnd + 1)}`
+export function gameUiFontBootstrapScript(
+  family: string = GAME_UI_FONT_FAMILY,
+  id: GameUiFontId = DEFAULT_GAME_UI_FONT,
+): string {
+  return (
+    'window.SZGameUIFont = { ' +
+    `id: ${JSON.stringify(id)}, ` +
+    `family: ${JSON.stringify(family)}, ` +
+    'install: function () {} };'
+  )
 }
