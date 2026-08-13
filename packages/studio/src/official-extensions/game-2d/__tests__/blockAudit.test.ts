@@ -250,6 +250,20 @@ describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
       // "jogador" são deliberadamente resolvidas apenas no projeto completo.
       expect(ir.every((statement) => JSStatementSchema.safeParse(statement).success)).toBe(true)
 
+      // 1c. ⭐ E aceita SEM PERDER CAMPO. Dez tipos clássicos do g2d têm a forma TS
+      // em `ir/schema.ts` e a forma zod em `game-2d/classicIR.ts` — dois arquivos
+      // para o mesmo nó. Os `z.object` não são `.strict()`, então uma chave que a
+      // forma TS declara e a zod esquece PASSA no safeParse e é REMOVIDA pelo parse;
+      // e `parsers/project.ts` grava de volta o resultado stripado. O campo sumiria
+      // do projeto da criança ao passar pela Ponte, sem erro nenhum. O `success`
+      // sozinho é cego para isso.
+      for (const statement of ir) {
+        const validado = JSStatementSchema.parse(statement)
+        expect(Object.keys(validado as object).sort(), type).toEqual(
+          Object.keys(statement as object).sort(),
+        )
+      }
+
       // 2. IR → blocos → IR estável
       expect(irThroughBlocks(ir)).toEqual(ir)
 

@@ -376,7 +376,13 @@ describe('primitivas de plataforma clássica', () => {
     expect(enemy.x).not.toBe(paradoEm)
   })
 
-  it('⭐ o casco parado não machuca; o casco chutado machuca', () => {
+  it('⭐ o casco parado não machuca; o casco que já se afastou machuca', () => {
+    // ⚠️ A versão anterior deste caso chamava `hurtByEnemy` DUAS VEZES SEGUIDAS, sem
+    // um quadro no meio — e por isso consagrava um defeito em vez de pegá-lo. No jogo
+    // real o chute e o "encostão seguinte" acontecem em quadros diferentes, e o casco
+    // anda 5 px/quadro contra um herói que corre quase isso: a sobreposição do
+    // PRÓPRIO chute durava vários quadros e cobrava vida de quem chutou. Agora o
+    // casco só volta a machucar quem o chutou depois que os dois se descolam.
     const { api } = load()
     const type = api.createEnemyType({ hp: 1, dmg: 2, w: 16, h: 16 })
     const casco = api.spawnEnemy(type, 60, 16)
@@ -386,12 +392,23 @@ describe('primitivas de plataforma clássica', () => {
     api.setEnemyStompMode(type, 'shell')
     api.stompEnemyType(heroi, type, 5)
 
+    // A pisada reposiciona o herói em cima; para medir o CONTATO do chute ele
+    // precisa estar de fato sobreposto ao casco, como fica no jogo.
+    heroi.x = casco.x
+    heroi.y = casco.y
+
     // Encostar num casco parado CHUTA (e não tira vida nenhuma).
     api.hurtByEnemy(heroi, casco)
     expect(api.getHealth(heroi)).toBe(5)
     expect(casco._shellMoving).toBe(true)
 
-    // Agora ele anda: o mesmo encostão cobra o dano do bicho.
+    // Ainda em cima dele no quadro seguinte: o próprio chute não pode punir.
+    api.updateEnemyShells(type)
+    api.hurtByEnemy(heroi, casco)
+    expect(api.getHealth(heroi)).toBe(5)
+
+    // Descolou: agora o casco em movimento cobra o dano do bicho, como qualquer um.
+    for (let frame = 0; frame < 8; frame += 1) api.updateEnemyShells(type)
     api.hurtByEnemy(heroi, casco)
     expect(api.getHealth(heroi)).toBe(3)
   })
@@ -480,6 +497,34 @@ describe('primitivas de plataforma clássica', () => {
     expect(heroi.x).toBeGreaterThan(parado)
   })
 
+  it('⭐⭐ o pad NÃO empresta teclas de pulo aos blocos antigos de movimento', () => {
+    // ⚠️ Os helpers antigos passaram a ler a camada semântica para o DEDO alcançá-los,
+    // e herdaram junto o mapa de TECLAS dela: `z` e ESPAÇO viraram pulo em todo jogo
+    // de plataforma que já existia. O exemplo oficial "Herói que anda" usa ESPAÇO para
+    // atirar, então cada tiro lançava o herói no ar. O comentário do lote afirmava o
+    // contrário ("para teclado os dois caminhos são equivalentes"), e é verdade só
+    // para DIREÇÃO: setas e WASD alimentam os dois mapas, `z`/ESPAÇO só o novo.
+    const pulou = (tecla: { key: string; code: string } | null): boolean => {
+      const { api, listeners } = load()
+      const heroi = api.createSprite({ x: 0, y: 100, w: 16, h: 16 })
+      heroi.onGround = true
+      api.platformerWithTerrain(heroi, 4, 11)
+      heroi.vy = 0
+      heroi.onGround = true
+      if (tecla) fire(listeners, 'keydown', { ...tecla, repeat: false })
+      api.platformerWithTerrain(heroi, 4, 11)
+      return heroi.vy < 0
+    }
+
+    // Anti-vácuo: a tecla de pulo DE SEMPRE continua pulando.
+    expect(pulou({ key: 'ArrowUp', code: 'ArrowUp' })).toBe(true)
+    expect(pulou(null)).toBe(false)
+
+    // E as duas que a camada clássica trouxe NÃO pulam aqui.
+    expect(pulou({ key: ' ', code: 'Space' })).toBe(false)
+    expect(pulou({ key: 'z', code: 'KeyZ' })).toBe(false)
+  })
+
   it('⭐ esconder a aba SOLTA as ações do teclado clássico', () => {
     // O teclado do núcleo solta as teclas no blur E ao esconder a aba; este só tinha
     // o blur. Trocar de aba por atalho deixava a ação presa e o herói andando sozinho.
@@ -539,6 +584,38 @@ describe('primitivas de plataforma clássica', () => {
       avisos += 1
     })
     expect(avisos).toBe(0)
+  })
+
+  it('⭐ o lado "dentro" FILTRA: um contato de chão não entra no laço da moeda', () => {
+    // ⚠️ O caso acima monta uma cena onde NÃO existe contato de outro lado, então ele
+    // passa idêntico com o filtro quebrado — é um vácuo. E o filtro estava mesmo
+    // quebrado: a régua do runtime listava head/feet/left/right e caía em "qualquer"
+    // para "dentro", que é o lado que este lote criou. O gesto que o manual ensina
+    // ("Trocar o tile do contato por -1" dentro do laço) apagaria o CHÃO sob os pés.
+    const { api } = load()
+    api.defineShape('moeda', () => {})
+    api.defineShape('chao', () => {})
+    const tiles = api.createVectorTileset(16)
+    api.defineVectorTile(tiles, 0, 'chao', 'solid')
+    api.defineVectorTile(tiles, 1, 'moeda', 'contact')
+    // Moeda na linha de cima, chão na de baixo: o herói pisa no chão E atravessa a moeda.
+    const map = api.createVectorTileMap(tiles, '1 1;0 0')
+    api.placeTileMap(map, 0, 0, 16)
+
+    const heroi = api.createSprite({ x: 0, y: 4, w: 16, h: 16 })
+    heroi.vy = 4
+    api.collideTileMap(heroi, map)
+
+    const pes: number[] = []
+    api.forEachTileContact(heroi, map, 'feet', (contato) => pes.push(contato.index))
+    // Anti-vácuo: o contato de CHÃO existe mesmo nesta cena.
+    expect(pes).toContain(0)
+
+    const dentro: number[] = []
+    api.forEachTileContact(heroi, map, 'inside', (contato) => dentro.push(contato.index))
+    expect(dentro.length).toBeGreaterThan(0)
+    // E é SÓ a moeda: nenhum índice de chão pode entrar aqui.
+    expect(dentro.every((index) => index === 1)).toBe(true)
   })
 
   it('⭐ a fonte de pixel tem a BARRA e os acentos do português', () => {

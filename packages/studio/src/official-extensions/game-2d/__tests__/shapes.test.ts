@@ -46,6 +46,7 @@ interface Api {
   flipSprite: (sprite: Record<string, unknown>, direction: string) => void
   drawSprite: (ctx: unknown, sprite: unknown) => void
   paintRect: (ctx: unknown, x: number, y: number, w: number, h: number, c: string) => void
+  paintShapeRecipe: (ctx: unknown, recipe: string) => void
   paintCircle: (ctx: unknown, x: number, y: number, r: number, c: string) => void
   paintTriangle: (ctx: unknown, ...a: unknown[]) => void
   paintLine: (ctx: unknown, ...a: unknown[]) => void
@@ -211,6 +212,27 @@ describe('figura: sprite desenhado por código', () => {
     expect(ctx.calls).toContain('closePath')
     expect(ctx.calls).toContain('stroke')
     expect(ctx.calls).toContain('ellipse 10 5 10 5')
+  })
+
+  it('pinta uma receita compacta de retângulos e círculos sem expandir o projeto', () => {
+    const api = load()
+    const ctx = fakeCtx()
+
+    api.paintShapeRecipe(ctx, '[["r",1,2,3,4,"#123"],["c",8,9,5,"#456"]]')
+
+    expect(ctx.calls).toContain('fillRect 1 2 3 4')
+    expect(ctx.calls).toContain('arc 8 9 5')
+  })
+
+  it('recusa receita inválida sem interromper o desenho', () => {
+    const api = load()
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(() => api.paintShapeRecipe(fakeCtx(), '{quebrado')).not.toThrow()
+      expect(warn.mock.calls.some((call) => String(call[0]).includes('JSON válido'))).toBe(true)
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('a figura ainda ganha giro/flip do wrapper (skin custom passa por _drawSpriteRaw)', () => {

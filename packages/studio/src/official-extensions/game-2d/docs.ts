@@ -6,8 +6,9 @@ Esta extensão adiciona um pequeno runtime didático em \`window.SZGame2D\`
 que ajuda a montar jogos 2D simples sobre Canvas API. O código gerado é
   intencionalmente legível. Quando você abrir a Ponte vai ver
 chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(...)\`.
-Os HUDs, placares e telas dos kits usam a fonte arredondada Baloo 2, incorporada
-no próprio runtime para também funcionar offline. Fontes escolhidas por você nos
+Os HUDs, placares e telas dos kits usam a letra que você escolher no bloco
+**Usar a fonte**; sem ele, vem a arredondada Baloo 2. A letra escolhida viaja
+junto com o jogo, então funciona offline. Fontes escolhidas por você nos
 blocos de Canvas continuam sendo respeitadas.
 
 ### Comece um projeto
@@ -32,7 +33,8 @@ procura pelo assunto e usa as aulas para aprender em qual área colocar cada blo
 - **Descrever o jogo para leitor de tela**. Conte o objetivo e os controles em uma frase, por exemplo: “Pegue as moedas. Use as setas para andar.” Coloque em **⚙️ Ao iniciar**; pode vir antes ou depois do bloco de preparação.
 - **Criar sprite**. Define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
 - **Desenhar o sprite**. Desenha o sprite no contexto do canvas.
-- **Mover em 4 direções**. Move o sprite com as setas do teclado (ver "Movimento" abaixo).
+- **Mover sprite … em 4 direções com setas**. Move o sprite com as setas do teclado (ver
+  "Movimento" abaixo).
 - **Mudar a posição do sprite** / **Mudar a velocidade do sprite**. Atualiza x/y e vx/vy.
 - **Guardar em X se o sprite A colide com o sprite B**. Devolve sim/não por interseção retangular.
 - **Criar pontuação**. Declara a variável de pontos.
@@ -55,8 +57,9 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
 - **Mover usando vx e vy** / **Atualizar o grupo**. Move por \`vx\`/\`vy\` sem acrescentar
   gravidade escondida. A ordem física recomendada é: aplicar gravidade, mover e então
   resolver o chão ou as paredes.
-- **Ricochetear nas bordas**. Quica o sprite nas bordas do canvas.
-- **Colisão por círculo**. Colisão mais justa para objetos redondos.
+- **Quicar o sprite … nas bordas da tela**. O sprite bate na beirada e volta.
+- **Guardar em … se sprite … encosta no sprite … (em círculo)**. Colisão mais justa para
+  objetos redondos.
 - **Usar área de colisão de N% do tamanho**. O dial da colisão PERDOADORA: menor que
   100% = mais justo para DANO (os cantos vazios do desenho não punem); maior = mais
   fácil de PEGAR (moedas). Vale para todas as perguntas de encostar (retângulo e
@@ -71,19 +74,21 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
 
 ### Dê aparência aos personagens
 
-Use a aba **Assets** para enviar imagens do computador ou escolher da biblioteca;
+Use o painel **Imagens e sons** (no menu ⋯ da barra de cima) para enviar imagens do
+computador ou escolher da biblioteca;
 depois é só usar o **nome** da imagem nos blocos.
 
 - **Criar sprite com imagem**. Um sprite que mostra uma imagem (em vez de um retângulo colorido).
 - **Trocar imagem do sprite**. Troca a imagem fixa do sprite.
-- **Carregar spritesheet**. Prepara uma folha com vários quadros (informe o tamanho de cada quadro).
-- **Animar sprite**. Percorre os quadros da spritesheet a N fps. Fica repetindo para sempre.
+- **Carregar folha de quadros**. Prepara uma folha com vários quadros (informe o tamanho de
+  cada quadro).
+- **Animar sprite**. Percorre os quadros da folha de quadros a N fps. Fica repetindo para sempre.
 - **Animar sprite ... uma vez só**. O irmão que toca e PARA no último quadro, em vez de repetir. É o
   bloco da estrela cadente, do golpe, do baú que abre.
 - **a animação de ... acabou?**. Pergunta que responde sim quando a animação de "uma vez só" já
   tocou tudo (a que repete nunca acaba). Encaixe num **se** para sumir com o sprite, trocar a
   imagem ou dar ponto quando ela terminar.
-- **Desenhar quadro**. Desenha um quadro específico da spritesheet (controle manual).
+- **Desenhar quadro**. Desenha um quadro específico da folha de quadros (controle manual).
 
 Enquanto a imagem carrega, o cenário continua visível e ela aparece assim que fica
 pronta. Se o nome não existir ou a carga falhar, o sprite usa um retângulo da cor.
@@ -113,7 +118,8 @@ Use os demais blocos abaixo dentro do **"A cada quadro do jogo"**:
 - **Fazer o sprite pular sobre o terreno**. A mesma regra, mas sem andar para os lados;
   serve para corrida e outros gêneros que só precisam do salto. Segurar o botão não repete
   o pulo quando o personagem pousa.
-- **4 direções (top-down)**. Anda nas 4 direções; a diagonal não fica mais rápida.
+- **Mover sprite … em 4 direções com setas**. Anda nas 4 direções; a diagonal não fica mais
+  rápida.
 - **Voar livre**. Sem gravidade, mas com PESO: leva um tiquinho para engatar, plana um
   bom tanto quando você solta e demora para virar de lado (faça a curva antes!). É essa
   inércia que separa o voo do "4 direções". Passarinho, fadinha.
@@ -132,16 +138,22 @@ Use os demais blocos abaixo dentro do **"A cada quadro do jogo"**:
 ### Construa o cenário com mapas
 
 Tiles montam cenários (chão, paredes, plataformas) a partir de UMA imagem com vários
-quadros (o **tileset**). Escolha um da aba **Assets** (ex.: \`tileset\`).
+quadros (o **tileset**). Escolha um no painel **Imagens e sons** (ex.: \`tileset\`).
 
 - **Conjunto e mapa de tiles vetoriais** usam Figuras desenhadas no próprio projeto como
   peças sólidas, plataformas, decoração ou **atravessa e avisa**. Assim um jogo inteiro
   pode ser canvas puro, offline e sem arquivos de imagem.
-- **atravessa e avisa** é a peça que o herói ATRAVESSA e que mesmo assim aparece no
-  **Para cada tile tocado**, no lado **dentro**. É com ela que se faz moeda no cenário,
+- **Carregar fase de campanha vetorial** é a versão compacta para campanhas grandes. Ela
+  guarda as grades e os metadados em uma receita JSON, mas cria somente o Mapa, o Mundo e a
+  Fase escolhidos naquele momento. Também pode guardar um elenco autoral por fase e reforços
+  próprios da segunda jornada, usando a lista de tipos indicada no bloco. Use **valor da fase
+  atual** para ler mundo, etapa, pontos de nascimento e outras propriedades numéricas da
+  receita. Isso evita que dezenas de mapas e inimigos inativos virem milhares de blocos SVG.
+- **atravessa e avisa** (só no mapa VETORIAL) é a peça que o herói ATRAVESSA e que mesmo assim
+  aparece no **Para cada tile que … toca no lado …**, no lado **dentro**. É com ela que se faz moeda no cenário,
   lava, espinho de chão e água: peça sólida barraria o caminho, e decoração não avisaria
   nada. Quem decide o que a peça significa é você, comparando o índice.
-- **Para cada tile tocado** informa o lado e o índice original da peça. Use **o contato é
+- **Para cada tile que … toca no lado … do mapa …** informa o lado e o índice original da peça. Use **o contato é
   com o tile…?** antes de **trocar o tile no contato** para prêmios que só valem uma vez,
   tijolos quebráveis e interruptores exatos.
 - **Criar mapa de tiles**. Informe o tileset, o tamanho do tile (px) e a **grade**:
@@ -175,7 +187,7 @@ quadros (o **tileset**). Escolha um da aba **Assets** (ex.: \`tileset\`).
   figura, e some quando ele pula, cai no vazio ou a base sai do grupo.
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos. O jogo
-nunca quebra por falta de imagem.
+  nunca quebra por falta de imagem.
 
 ### Crie muitos objetos, HUD e telas
 
@@ -203,7 +215,10 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 - **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos) e
   \`Depois de N segundos fazer\` (roda UMA vez por partida: mensagem de abertura, chegada
   do chefe; reiniciar o jogo re-arma). Essas raízes rodam em todas as telas; coloque \`se a tela atual é jogando?\` dentro delas quando o comando só deve acontecer durante a partida.
-- **HUD no canvas**. \`Mostrar placar\`, \`Escrever\` e \`Barra de … / …\`. Esses textos também são anunciados por leitores de tela, e a troca de cena limpa os valores da tela anterior. Para vidas, prefira **Desenhar as vidas do sprite** em **❤️ Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
+- **HUD no canvas**. \`Mostrar placar\`, \`Escrever placar pixel\`, \`Escrever\` e \`Barra de … / …\`.
+  O **Escrever placar pixel** é o campo no estilo dos jogos clássicos (o nome em cima, o número
+  embaixo) e tem letra PRÓPRIA, desenhada ponto a ponto: ele não muda com o "Usar a fonte". Os
+  outros seguem a letra escolhida, então misturar os dois deixa o jogo com duas tipografias. Esses textos também são anunciados por leitores de tela, e a troca de cena limpa os valores da tela anterior. Para vidas, prefira **Desenhar as vidas do sprite** em **❤️ Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
 - **Telas/cenas**. \`Ir para a tela\` e \`a tela atual é … ?\` aceitam tanto os
   nomes prontos quanto nomes inventados (como \`ganhou1\`); \`Mostrar tela (título/subtítulo/dica)\`,
   \`Reiniciar o jogo\`. Prepare grupos, sprites, variáveis e a tela inicial em **⚙️ Ao iniciar**;
@@ -257,7 +272,7 @@ Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo ✨ A
 
 Para jogos de **corrida** (estilo "Dino Run"), em que o personagem não anda para os lados, só pula e abaixa:
 
-- **Fazer o sprite pular no chão** (genérico, em Movimento). Pouso na borda atraída +
+- **Fazer o sprite … pular na tela (a borda é chão)** (genérico, em Movimento). Pouso na borda +
   pulo com ↑/Espaço/W ou um toque. Aplique a gravidade ao sprite logo acima. Serve a
   qualquer jogo de pulo.
 - A categoria **🦕 Kit dino** reúne atalhos PRONTOS: **criar dinossauro** (desenhado, com perninhas que
@@ -428,13 +443,16 @@ Um Mundo pode ser maior que a tela, caber exatamente nela ou nem usar câmera:
   palco para todo mundo ver onde começa e onde termina a área do jogo. Ótimo para explicar o palco
   a alguém. Ponha em **⚙️ Ao iniciar**; para tirar, apague o bloco. A moldura fica na beirada da
   tela, então ela não atrapalha o desenho nem é apagada pelo jogo.
-- **✨ Aparência**: **Usar a fonte**, com cinco letras para escolher — Baloo 2 (arredondada),
+- **✨ Aparência**: **Usar a fonte**, com cinco letras para escolher: Baloo 2 (arredondada),
   Nunito (limpa), Press Start 2P (de pixel), Bungee (grossa) e Fredoka (gordinha). A escolha vale
-  para **todo** texto do jogo: placar, telas e mensagens. Ponha em **⚙️ Ao iniciar**, uma vez só e
-  com a letra escolhida direto no bloco: a fonte é decidida **antes** de o jogo começar, então
-  dentro de um "se" ela não muda nada (o jogo avisa quando isso acontece). ⚠️ O **Escrever texto
-  pixel** e o **Escrever o placar** têm letras próprias, desenhadas ponto a ponto, e não mudam.
-- **📺 Telas e cenas**: **Mostrar a tela com a imagem**. Cobre o palco inteiro com um desenho seu —
+  para **todo** texto do jogo: placar, telas e mensagens. Ponha em **⚙️ Ao iniciar** e use **um
+  bloco só**: a fonte é decidida **antes** de o jogo começar, então, se houver dois, vale o último
+  e o jogo avisa. ⚠️ O **Escrever texto pixel** e o **Escrever placar pixel** têm letras próprias,
+  desenhadas ponto a ponto, e não mudam. Os outros blocos de placar seguem a letra escolhida.
+- **✨ Aparência**: **Cobrir a tela com fade de N por cento na cor**. Um véu por cima de tudo, para escurecer
+  a cena numa pausa ou fechar a fase apagando aos poucos. Vai no **🔁 Enquanto estiver rodando**,
+  depois de tudo o que você desenhou.
+- **📺 Telas e cenas**: **Mostrar a tela com a imagem**. Cobre o palco inteiro com um desenho seu:
   a tela de abertura, a de vitória, a de fim de jogo. Cobre sem deformar, como o cenário, e ainda
   **anuncia** a tela para quem joga com leitor de tela.
   Vai dentro do **🔁 Enquanto estiver rodando**, no lugar em que você mostraria a tela escrita.
@@ -534,10 +552,9 @@ criança fazer as contas na mão:
 Na categoria **🎯 Mira e contas**, dois valores para um sprite nascer num lugar SORTEADO sem a criança
 montar a continha \`Math.random() * largura\` na mão:
 
-- **um x aleatório para largura …** / **um y aleatório para altura …**. Sorteia uma posição onde o
-  tamanho informado cabe inteiro na tela. Encaixe **a largura do sprite** no primeiro e **a altura do
-  sprite** no segundo para ele não nascer cortado. (Para um intervalo específico de números, continua
-  valendo **um número de … a …**.)
+- **um x aleatório na tela** / **um y aleatório na tela**. Sorteia uma posição em qualquer lugar da
+  largura (ou da altura) do palco. (Para um intervalo específico de números, continua valendo
+  **um número de … a …**.)
 
 ### Anime o personagem pelo estado
 
@@ -658,8 +675,13 @@ tempo acabar.
   anima, atira e REMOVE os derrotados (vida 0 → partículas + "Quando for derrotado").
 - **Desenhar os inimigos do tipo**. Todos, mais os tiros e o raio deles.
 - **Ao pisar no tipo usar modo…** escolhe derrotar, causar 1 de dano, achatar, virar casco
-  ou impedir a pisada por espinhos. O dano permite chefes com vários golpes. Cascos têm
-  atualização própria para rebater no terreno e atingir inimigos de qualquer tipo.
+  ou impedir a pisada por espinhos. O dano permite chefes com vários golpes.
+- Escolheu **virar casco**? O gesto é o dos jogos clássicos: **pisar recolhe** o bicho num casco
+  PARADO, que não machuca ninguém, e **encostar nele o CHUTA**. O casco andando derrota inimigos
+  de qualquer tipo e machuca quem tocar, menos você enquanto ainda estiver saindo de cima dele.
+  ⚠️ Ponha também o **Atualizar os cascos do tipo … no Mundo …** dentro do "a cada quadro": é ele
+  que faz o casco andar e rebater. Sem esse bloco o casco fica parado para sempre. E a queda vem
+  do **Aplicar a gravidade ao grupo**, como em todo inimigo.
 - **Animação dos inimigos do tipo no estado …**. Guarda a animação de um estado para TODOS os
   inimigos do tipo (o "Atualizar" troca sozinho).
 - **Para cada tiro do tipo … que acertar o sprite …** e **Para cada raio do tipo … que acertar o
@@ -679,7 +701,16 @@ tempo acabar.
   medroso e arrancada, para quem o alcance é a distância que faz o inimigo reagir); de quanto em
   quanto tempo ele age e a velocidade do tiro (quem atira, e o raio usa o mesmo relógio para
   recarregar); quantos quadros o raio fica ligado; voltar depois de tantos quadros (renascer); e a
-  vida dos próximos que nascerem.
+  vida dos próximos que nascerem. Quem aproveita cada valor:
+  - **força do pulo** e **ritmo do pulo**: saltador.
+  - **alcance**: voador, rondador, zigue-zague, mergulhador, teleporte, arrancada e medroso
+    (para quem anda no chão, o alcance é a distância que faz o inimigo reagir).
+  - **de quanto em quanto tempo ele age**: atirador, atirador alinhado, atirador de lado,
+    atirador esperto, atirador em leque, bombardeiro, teleporte, chefão e raio.
+  - **velocidade do tiro**: atirador, atirador alinhado, atirador de lado, atirador esperto,
+    atirador em leque, bombardeiro e chefão.
+  - **voltar depois de tantos quadros**: renascer. **Quanto tempo o raio fica ligado**: raio.
+  - **vida**: todos, e só os que nascerem daqui para a frente.
   ⚠️ O molde roda ANTES de tudo, então um ajuste que está lá vale para o jogo inteiro. Para endurecer
   só a onda seguinte, ponha o "Ajustar" dentro de um evento ou de um "A cada N segundos": aí ele
   acontece no meio da partida, e quem já nasceu fica como estava.
@@ -742,6 +773,9 @@ tem o seu jeito de se mexer e os seus tiros. É só a parte repetida que sai.
 Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem nenhuma:
 
 - **Desenhar a figura … assim**. Monte um desenho com **retângulo, círculo, oval, triângulo, linha** e dê um nome. Você desenha DENTRO do quadro do sprite: x/y começam no cantinho (0,0). Dá para usar os blocos de **Canvas** aqui dentro também (gradiente, curvas…).
+- **Pintar receita de formas** guarda muitos retângulos e círculos em um único campo JSON.
+  É a opção avançada para pixel art extensa: o desenho continua vetorial e editável, mas não
+  transforma cada pequeno detalhe em vários blocos SVG na área de programação.
 - **Criar sprite … com a figura**. Cria um sprite que usa esse desenho; ele anda, gira, vira, anima e colide como qualquer outro. **Trocar a figura** muda o desenho de um sprite.
 - **a largura / a altura da figura**. O tamanho do sprite que está sendo desenhado (para centralizar). Veja o exemplo **"Jogo desenhado por código"**.
 `)

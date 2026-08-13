@@ -9,6 +9,8 @@ type DraftBlock = Blockly.Block & {
   getSvgRoot?: () => SVGGElement
 }
 
+const previousDraftIds = new WeakMap<Blockly.Workspace, Set<string>>()
+
 /**
  * Pilhas executáveis soltas são rascunhos. Blocos de valor continuam livres na
  * bancada porque a criança pode estar montando uma expressão antes de encaixá-la.
@@ -25,12 +27,20 @@ export function findDraftStacks(workspace: Blockly.Workspace): Blockly.Block[] {
 export function applyDraftDiagnostics(workspace: Blockly.Workspace): string[] {
   const drafts = findDraftStacks(workspace)
   const draftIds = new Set(drafts.map((block) => block.id))
+  const changedIds = new Set([...(previousDraftIds.get(workspace) ?? []), ...draftIds])
 
-  for (const block of workspace.getAllBlocks(false) as DraftBlock[]) {
+  // Só raízes que eram ou viraram rascunho podem mudar de aparência. Varreduras
+  // de todos os milhares de blocos a cada gesto tornavam a bancada progressivamente
+  // mais lenta em projetos grandes.
+  for (const blockId of changedIds) {
+    const block = workspace.getBlockById(blockId) as DraftBlock | null
+    if (!block) continue
     const isDraft = draftIds.has(block.id)
     block.setWarningText(isDraft ? DRAFT_WARNING_TEXT : null, DRAFT_WARNING_ID)
     block.getSvgRoot?.().classList.toggle('sz-draft-block', isDraft)
   }
+
+  previousDraftIds.set(workspace, draftIds)
 
   return drafts.map((block) => block.id)
 }

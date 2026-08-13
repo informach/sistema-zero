@@ -171,7 +171,30 @@ function paintCircle(x: number, y: number, r: number, color: string): JSStatemen
 }
 
 function shape(shapeName: string, body: JSStatement[]): JSStatement {
-  return { type: 'g2d:defineShape', shapeName, body }
+  const fixedNumber = (value: number | JSExpr): number | undefined => {
+    if (typeof value === 'number') return value
+    return value.type === 'num' ? value.value : undefined
+  }
+  const recipe = body.map((statement) => {
+    if (statement.type === 'g2d:paintRect') {
+      const values = [statement.x, statement.y, statement.w, statement.h].map(fixedNumber)
+      if (!values.includes(undefined)) {
+        return ['r', ...(values as number[]), statement.color]
+      }
+    }
+    if (statement.type === 'g2d:paintCircle') {
+      const values = [statement.x, statement.y, statement.r].map(fixedNumber)
+      if (!values.includes(undefined)) {
+        return ['c', ...(values as number[]), statement.color]
+      }
+    }
+    throw new Error(`A figura ${shapeName} tem um traço que não cabe na receita vetorial`)
+  })
+  return {
+    type: 'g2d:defineShape',
+    shapeName,
+    body: [{ type: 'g2d:paintShapeRecipe', ctxVar: 'ctx', recipe: JSON.stringify(recipe) }],
+  }
 }
 
 function tileShape(name: string, fill: string, edge: string, detail = fill): JSStatement {
@@ -249,6 +272,15 @@ function campaignShapes(): JSStatement[] {
       paintRect(10, 22, 5, 2, '#63341f'),
       paintRect(10, 6, 2, 2, '#17223b'),
     ]),
+    shape('lumiPasso', [
+      paintRect(3, 1, 8, 4, '#f4c542'),
+      paintRect(1, 5, 13, 4, '#f4c542'),
+      paintRect(4, 9, 8, 8, '#e84a3c'),
+      paintRect(2, 17, 12, 5, '#2e55a3'),
+      paintRect(0, 21, 7, 3, '#63341f'),
+      paintRect(10, 19, 6, 3, '#63341f'),
+      paintRect(10, 6, 2, 2, '#17223b'),
+    ]),
     // O herói GRANDE: oito pixels mais alto, mas com os pés na mesma referência.
     shape('lumiForte', [
       paintRect(3, 0, 8, 2, '#fff3b0'),
@@ -261,6 +293,17 @@ function campaignShapes(): JSStatement[] {
       paintRect(10, 28, 6, 4, '#63341f'),
       paintRect(10, 6, 2, 2, '#17223b'),
     ]),
+    shape('lumiFortePasso', [
+      paintRect(3, 0, 8, 2, '#fff3b0'),
+      paintRect(3, 1, 8, 4, '#f4c542'),
+      paintRect(1, 5, 13, 4, '#f4c542'),
+      paintRect(3, 9, 10, 12, '#31a24c'),
+      paintRect(5, 12, 6, 4, '#eaf7d0'),
+      paintRect(2, 21, 12, 7, '#2e55a3'),
+      paintRect(0, 28, 7, 4, '#63341f'),
+      paintRect(10, 25, 6, 4, '#63341f'),
+      paintRect(10, 6, 2, 2, '#17223b'),
+    ]),
     // A flor acrescenta o terceiro estado, visível pela roupa clara e capaz de atirar.
     shape('lumiFogo', [
       paintRect(3, 0, 8, 2, '#fff7de'),
@@ -271,6 +314,17 @@ function campaignShapes(): JSStatement[] {
       paintRect(2, 21, 12, 7, '#e84a3c'),
       paintRect(1, 28, 6, 4, '#63341f'),
       paintRect(10, 28, 6, 4, '#63341f'),
+      paintRect(10, 6, 2, 2, '#17223b'),
+    ]),
+    shape('lumiFogoPasso', [
+      paintRect(3, 0, 8, 2, '#fff7de'),
+      paintRect(3, 1, 8, 4, '#f4c542'),
+      paintRect(1, 5, 13, 4, '#f4c542'),
+      paintRect(3, 9, 10, 12, '#fff7de'),
+      paintRect(5, 12, 6, 4, '#e84a3c'),
+      paintRect(2, 21, 12, 7, '#e84a3c'),
+      paintRect(0, 28, 7, 4, '#63341f'),
+      paintRect(10, 25, 6, 4, '#63341f'),
       paintRect(10, 6, 2, 2, '#17223b'),
     ]),
     shape('brasa', [
@@ -300,6 +354,21 @@ function campaignShapes(): JSStatement[] {
       paintRect(0, 2, 5, 7, '#f8f2df'),
       paintRect(11, 2, 5, 7, '#f8f2df'),
       paintRect(9, 7, 2, 2, '#1d2742'),
+    ]),
+    shape('saltador', [
+      paintRect(2, 5, 12, 9, '#e9a23b'),
+      paintRect(4, 1, 8, 5, '#ffe27a'),
+      paintRect(3, 14, 4, 2, '#5b3b22'),
+      paintRect(10, 14, 4, 2, '#5b3b22'),
+      paintRect(5, 7, 2, 2, '#17223b'),
+      paintRect(10, 7, 2, 2, '#17223b'),
+    ]),
+    shape('investida', [
+      paintRect(1, 6, 14, 9, '#298f8c'),
+      paintRect(3, 2, 10, 5, '#62d6bf'),
+      paintRect(0, 12, 5, 4, '#1f5d64'),
+      paintRect(11, 12, 5, 4, '#1f5d64'),
+      paintRect(9, 7, 3, 2, '#fff2bf'),
     ]),
     shape('guardiao', [
       paintRect(1, 5, 22, 17, '#56316f'),
@@ -1299,54 +1368,20 @@ function mapDeclarations(): JSStatement[] {
     }
   }
 
-  for (let world = 1; world <= 8; world += 1) {
-    for (let stage = 1; stage <= 4; stage += 1) {
-      const level = (world - 1) * 4 + stage
-      statements.push({
-        type: 'g2d:createVectorTileMap',
-        varName: `mapa${level}`,
-        tilesetVar: `pecas${themeIndex(world, stage) + 1}`,
-        grid: levelGrid(world, stage),
-      })
-      statements.push({
-        type: 'g2d:createWorldFromTileMap',
-        varName: `area${level}`,
-        mapVar: `mapa${level}`,
-        size: n(TILE),
-      })
-      statements.push({ type: 'g2d:setWorldEdges', worldVar: `area${level}`, edges: 'none' })
-      statements.push({
-        type: 'g2d:configureWorldCamera',
-        worldVar: `area${level}`,
-        horizontal: 'right',
-        vertical: 'off',
-        deadZoneX: n(48),
-        deadZoneY: n(0),
-      })
-      // "Criar a Fase" é start-only: os 32 têm que ficar aqui, planos no início, e não
-      // dentro de `carregarFase`. É o que dá ao motor o ponto de renascimento e o que
-      // habilita o "Reiniciar a Fase" a devolver posição, câmera e tiles quebrados.
-      statements.push({
-        type: 'g2d:createLevel',
-        varName: `fase${level}`,
-        worldVar: `area${level}`,
-        spawnX: n(32),
-        spawnY: n(SURFACE_Y - 24),
-      })
-    }
-  }
   return statements
+}
+
+function clearActiveLevelGroups(): JSStatement[] {
+  return [
+    { type: 'g2d:clearGroup', groupVar: 'bolasFogo' },
+    ...CAMPAIGN_ENEMY_TYPE_VARS.map(
+      (groupVar): JSStatement => ({ type: 'g2d:clearGroup', groupVar }),
+    ),
+  ]
 }
 
 function prepareActiveLevel(): JSStatement[] {
   return [
-    { type: 'g2d:clearGroup', groupVar: 'bolasFogo' },
-    { type: 'g2d:clearGroup', groupVar: 'brasas' },
-    { type: 'g2d:clearGroup', groupVar: 'cascos' },
-    { type: 'g2d:clearGroup', groupVar: 'espinhos' },
-    { type: 'g2d:clearGroup', groupVar: 'asas' },
-    { type: 'g2d:clearGroup', groupVar: 'plantas' },
-    { type: 'g2d:clearGroup', groupVar: 'guardioes' },
     { type: 'assign', name: 'premioAtivo', value: n(2) },
     // O herói NÃO é reposicionado aqui: quem faz isso é o "Reiniciar a Fase" do
     // `activateLevel`, que além da posição devolve a câmera e os blocos `?`.
@@ -1377,134 +1412,12 @@ function prepareActiveLevel(): JSStatement[] {
     { type: 'g2d:setVelocity', spriteVar: 'estrela', vx: n(0), vy: n(0) },
     { type: 'assign', name: 'direcaoEstrela', value: n(1) },
     { type: 'assign', name: 'estrelaAte', value: n(0) },
+    { type: 'assign', name: 'mastroAte', value: n(0) },
     {
       type: 'g2d:setPosition',
       spriteVar: 'atalho',
       x: variable('xAtalho'),
       y: variable('yAtalho'),
-    },
-    { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'brasas' },
-    { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'cascos' },
-    { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'espinhos' },
-    { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'asas' },
-    { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'plantas' },
-    { type: 'g2d:addEnemyTypeToWorld', worldVar: 'areaAtual', typeVar: 'guardioes' },
-    { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa1'), y: n(standingY(16)) },
-    {
-      type: 'if',
-      cond: binary('>=', variable('etapa'), n(2)),
-      then: [
-        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa2'), y: n(standingY(16)) },
-      ],
-    },
-    {
-      type: 'if',
-      cond: binary('>=', variable('etapa'), n(3)),
-      then: [
-        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa3'), y: n(standingY(16)) },
-      ],
-    },
-    {
-      type: 'if',
-      cond: binary('>=', variable('mundo'), n(3)),
-      then: [
-        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa4'), y: n(standingY(16)) },
-      ],
-    },
-    {
-      type: 'if',
-      cond: binary('>=', variable('mundo'), n(6)),
-      then: [
-        { type: 'g2d:spawnEnemy', typeVar: 'brasas', x: variable('xBrasa5'), y: n(standingY(16)) },
-      ],
-    },
-    {
-      type: 'if',
-      cond: binary('>=', variable('mundo'), n(2)),
-      then: [
-        { type: 'g2d:spawnEnemy', typeVar: 'cascos', x: variable('xCasco'), y: n(standingY(16)) },
-      ],
-    },
-    {
-      type: 'if',
-      cond: binary('>=', variable('mundo'), n(4)),
-      then: [
-        {
-          type: 'g2d:spawnEnemy',
-          typeVar: 'espinhos',
-          x: variable('xEspinho'),
-          y: n(standingY(16)),
-        },
-      ],
-    },
-    {
-      type: 'if',
-      cond: equals(variable('etapa'), 3),
-      // ⚠️ Esta era a ÚNICA posição de inimigo escrita na mão, furando o firmSpotNear
-      // que existe justamente para nada nascer sobre poço nem dentro de tijolo.
-      then: [
-        {
-          type: 'g2d:spawnEnemy',
-          typeVar: 'asas',
-          x: variable('xBrasa4'),
-          y: n(96),
-        },
-      ],
-    },
-    {
-      type: 'if',
-      cond: binary('>=', variable('mundo'), n(3)),
-      then: [
-        {
-          type: 'g2d:spawnEnemy',
-          typeVar: 'plantas',
-          x: variable('xPlanta'),
-          y: variable('yPlanta'),
-        },
-      ],
-    },
-    {
-      type: 'if',
-      cond: equals(variable('etapa'), 4),
-      then: [
-        {
-          type: 'g2d:spawnEnemy',
-          typeVar: 'guardioes',
-          x: variable('xChefe'),
-          y: n(standingY(24)),
-        },
-      ],
-    },
-    {
-      type: 'if',
-      cond: and(equals(variable('etapa'), 4), binary('>=', variable('mundo'), n(5))),
-      then: [
-        {
-          type: 'g2d:spawnEnemy',
-          typeVar: 'guardioes',
-          x: variable('xChefeExtra'),
-          y: n(standingY(24)),
-        },
-      ],
-    },
-    {
-      type: 'if',
-      cond: equals(variable('jornada'), 2),
-      then: [
-        {
-          type: 'g2d:spawnEnemy',
-          typeVar: 'espinhos',
-          x: variable('xEspinhoExtra'),
-          y: n(standingY(16)),
-        },
-        {
-          type: 'g2d:spawnEnemy',
-          typeVar: 'cascos',
-          x: variable('xBrasa2'),
-          y: n(standingY(16)),
-        },
-        { type: 'g2d:spawnEnemy', typeVar: 'asas', x: variable('xBrasa3'), y: n(84) },
-      ],
     },
   ]
 }
@@ -1623,6 +1536,95 @@ function levelSpawnPoints(descriptor: LevelDescriptor): Record<string, number> {
   }
 }
 
+const CAMPAIGN_ENEMY_TYPE_VARS = [
+  'brasas',
+  'cascos',
+  'espinhos',
+  'asas',
+  'plantas',
+  'guardioes',
+  'saltadores',
+  'investidas',
+] as const
+
+type CampaignEnemyName = (typeof CAMPAIGN_ENEMY_TYPE_VARS)[number]
+type CampaignEnemySpawn = [typeIndex: number, x: number, y: number]
+
+/** Elenco autoral das 32 fases; a composição não nasce mais de um limiar por mundo. */
+const LEVEL_ENEMY_CASTS: readonly (readonly CampaignEnemyName[])[] = [
+  ['brasas', 'brasas'],
+  ['brasas', 'brasas', 'saltadores'],
+  ['brasas', 'asas', 'saltadores'],
+  ['brasas', 'investidas', 'guardioes'],
+  ['brasas', 'cascos', 'saltadores'],
+  ['asas', 'asas', 'saltadores'],
+  ['brasas', 'asas', 'investidas'],
+  ['cascos', 'espinhos', 'guardioes'],
+  ['brasas', 'cascos', 'plantas'],
+  ['brasas', 'investidas', 'plantas'],
+  ['asas', 'saltadores', 'plantas'],
+  ['espinhos', 'investidas', 'guardioes'],
+  ['brasas', 'cascos', 'espinhos', 'saltadores', 'plantas'],
+  ['asas', 'investidas', 'plantas'],
+  ['brasas', 'asas', 'espinhos', 'saltadores'],
+  ['cascos', 'espinhos', 'guardioes'],
+  ['brasas', 'investidas', 'investidas', 'plantas'],
+  ['asas', 'cascos', 'saltadores'],
+  ['espinhos', 'asas', 'investidas', 'plantas'],
+  ['cascos', 'espinhos', 'guardioes', 'guardioes'],
+  ['brasas', 'saltadores', 'investidas', 'plantas'],
+  ['asas', 'asas', 'cascos', 'investidas'],
+  ['espinhos', 'saltadores', 'plantas', 'investidas'],
+  ['cascos', 'espinhos', 'guardioes', 'guardioes'],
+  ['brasas', 'cascos', 'saltadores', 'investidas'],
+  ['asas', 'asas', 'espinhos', 'plantas'],
+  ['cascos', 'saltadores', 'investidas', 'plantas'],
+  ['espinhos', 'investidas', 'guardioes', 'guardioes'],
+  ['brasas', 'cascos', 'espinhos', 'saltadores', 'plantas'],
+  ['asas', 'asas', 'investidas', 'saltadores'],
+  ['cascos', 'espinhos', 'plantas', 'investidas', 'saltadores'],
+  ['espinhos', 'investidas', 'guardioes', 'guardioes'],
+]
+
+function enemyLineup(
+  descriptor: LevelDescriptor,
+  points: Record<string, number>,
+): { enemies: CampaignEnemySpawn[]; journey2Enemies: CampaignEnemySpawn[] } {
+  const cast = LEVEL_ENEMY_CASTS[descriptor.level - 1] ?? ['brasas']
+  const groundX = [
+    points.xBrasa1!,
+    points.xBrasa2!,
+    points.xBrasa3!,
+    points.xBrasa4!,
+    points.xBrasa5!,
+  ]
+  let groundIndex = 0
+  let airIndex = 0
+  let bossIndex = 0
+  const spawn = (name: CampaignEnemyName): CampaignEnemySpawn => {
+    const typeIndex = CAMPAIGN_ENEMY_TYPE_VARS.indexOf(name)
+    if (name === 'guardioes') {
+      const x = bossIndex++ === 0 ? points.xChefe! : points.xChefeExtra!
+      return [typeIndex, x, standingY(24)]
+    }
+    if (name === 'plantas') return [typeIndex, points.xPlanta!, points.yPlanta!]
+    const x = groundX[groundIndex++ % groundX.length]!
+    if (name === 'asas') return [typeIndex, x, airIndex++ % 2 === 0 ? 84 : 112]
+    return [typeIndex, x, standingY(16)]
+  }
+  const journey2Cast: CampaignEnemyName[] = [
+    'cascos',
+    'espinhos',
+    descriptor.stage % 2 === 0 ? 'investidas' : 'asas',
+  ]
+  return {
+    enemies: cast.map(spawn),
+    // A segunda jornada muda o elenco, não só a velocidade. O primeiro nível já
+    // ganha casco e espinho, contrato aferido pelo playthrough.
+    journey2Enemies: journey2Cast.map(spawn),
+  }
+}
+
 /**
  * Posições pretendidas, antes de a grade opinar. Servem de PADRÃO compartilhado: cada
  * fase só reescreve as coordenadas que a própria grade obrigou a mover, em vez de
@@ -1636,48 +1638,106 @@ const SPAWN_POINT_DEFAULTS: Record<string, number> = {
   yPlanta: SURFACE_Y - 48,
   xAtalho: -100,
   yAtalho: -100,
+  atalhoDestino: 1,
   xChefe: 930,
   xChefeExtra: 810,
   xBarraFogo: -100,
   yBarraFogo: -100,
-  xBrasa1: 190,
-  xBrasa2: 340,
-  xBrasa3: 490,
-  xBrasa4: 640,
-  xBrasa5: 790,
-  xCasco: 350,
-  xEspinho: 610,
-  xEspinhoExtra: 760,
 }
 
 const SPAWN_POINT_NAMES = Object.keys(SPAWN_POINT_DEFAULTS)
 
-function activateLevel(level: number): JSStatement[] {
-  const world = Math.floor((level - 1) / 4) + 1
-  const stage = ((level - 1) % 4) + 1
-  const descriptor = levelDescriptor(world, stage)
-  const points = levelSpawnPoints(descriptor)
+export const reinoZeroCampaignManifest = JSON.stringify({
+  edges: 'none',
+  horizontal: 'right',
+  vertical: 'off',
+  deadZoneX: 48,
+  deadZoneY: 0,
+  levels: Array.from({ length: LAST_LEVEL }, (_, index) => {
+    const world = Math.floor(index / 4) + 1
+    const stage = (index % 4) + 1
+    const descriptor = levelDescriptor(world, stage)
+    const points = levelSpawnPoints(descriptor)
+    return {
+      grid: levelGrid(world, stage),
+      theme: themeIndex(world, stage),
+      mundo: world,
+      etapa: stage,
+      faseAquatica: descriptor.kind === 'agua' ? 1 : 0,
+      temAtalho: descriptor.shortcut ? 1 : 0,
+      larguraFase: descriptor.cols * TILE,
+      xGema: points.xGema,
+      xPortal: points.xPortal,
+      xPlanta: points.xPlanta,
+      yPlanta: points.yPlanta,
+      xAtalho: points.xAtalho,
+      yAtalho: points.yAtalho,
+      atalhoDestino: descriptor.shortcut ? Math.min(LAST_LEVEL, index + 5) : index + 1,
+      xBarraFogo: points.xBarraFogo,
+      yBarraFogo: points.yBarraFogo,
+      ...enemyLineup(descriptor, points),
+    }
+  }),
+})
+
+export const reinoZeroLevelGrids: readonly string[] = (
+  JSON.parse(reinoZeroCampaignManifest) as { levels: Array<{ grid: string }> }
+).levels.map((level) => level.grid)
+
+function activateLevel(): JSStatement[] {
   return [
-    { type: 'assign', name: 'mapaAtual', value: variable(`mapa${level}`) },
-    { type: 'assign', name: 'areaAtual', value: variable(`area${level}`) },
-    { type: 'assign', name: 'mundo', value: n(world) },
-    { type: 'assign', name: 'etapa', value: n(stage) },
-    { type: 'assign', name: 'faseAquatica', value: n(descriptor.kind === 'agua' ? 1 : 0) },
-    { type: 'assign', name: 'temAtalho', value: n(descriptor.shortcut ? 1 : 0) },
-    { type: 'assign', name: 'larguraFase', value: n(descriptor.cols * TILE) },
-    { type: 'assign', name: 'tempo', value: n(300 - world * 8) },
+    {
+      type: 'g2d:loadVectorCampaignLevel',
+      index: variable('fase'),
+      tilesetVars: THEMES.map((_, index) => `pecas${index + 1}`),
+      manifest: reinoZeroCampaignManifest,
+      size: n(TILE),
+      spawnX: n(32),
+      spawnY: n(SURFACE_Y - 24),
+      mapVar: 'mapaAtual',
+      worldVar: 'areaAtual',
+      levelVar: 'faseAtual',
+      enemyTypeVars: [...CAMPAIGN_ENEMY_TYPE_VARS],
+      journey: variable('jornada'),
+    },
+    ...['mundo', 'etapa', 'faseAquatica', 'temAtalho', 'larguraFase', 'atalhoDestino'].map(
+      (name): JSStatement => ({
+        type: 'assign',
+        name,
+        value: { type: 'g2d:campaignValue', key: name, fallback: variable(name) },
+      }),
+    ),
+    {
+      type: 'assign',
+      name: 'tempo',
+      value: binary('-', n(300), binary('*', variable('mundo'), n(8))),
+    },
     {
       type: 'if',
       cond: equals(variable('jornada'), 2),
-      then: [{ type: 'assign', name: 'tempo', value: n(230 - world * 6) }],
+      then: [
+        {
+          type: 'assign',
+          name: 'tempo',
+          value: binary('-', n(230), binary('*', variable('mundo'), n(6))),
+        },
+      ],
     },
-    ...SPAWN_POINT_NAMES.filter((name) => points[name] !== SPAWN_POINT_DEFAULTS[name]).map(
-      (name): JSStatement => ({ type: 'assign', name, value: n(points[name]!) }),
+    ...SPAWN_POINT_NAMES.map(
+      (name): JSStatement => ({
+        type: 'assign',
+        name,
+        value: {
+          type: 'g2d:campaignValue',
+          key: name,
+          fallback: n(SPAWN_POINT_DEFAULTS[name]!),
+        },
+      }),
     ),
     // Reiniciar a Fase é o que devolve o herói ao spawn, RESETA A CÂMERA e restaura os
     // blocos `?` quebrados. Sem isto a câmera de `horizontal:'right'` ficava travada no
     // lugar da morte e o jogador renascia fora da viewport, invisível.
-    { type: 'g2d:restartLevel', levelVar: `fase${level}`, spriteVar: 'lumi' },
+    { type: 'g2d:restartLevel', levelVar: 'faseAtual', spriteVar: 'lumi' },
   ]
 }
 
@@ -1692,14 +1752,8 @@ function selectActiveLevel(): JSStatement[] {
         value: n(SPAWN_POINT_DEFAULTS[name]!),
       }),
     ),
-    ...Array.from(
-      { length: LAST_LEVEL },
-      (_, index): JSStatement => ({
-        type: 'if',
-        cond: equals(variable('fase'), index + 1),
-        then: activateLevel(index + 1),
-      }),
-    ),
+    ...clearActiveLevelGroups(),
+    ...activateLevel(),
     ...prepareActiveLevel(),
   ]
 }
@@ -1783,20 +1837,21 @@ function drawHud(): JSStatement[] {
   // Não há mais escurecimento: o `drawFade` cobria a TELA INTEIRA a cada quadro,
   // depois de todo o desenho, e deixava o jogo 22% mais escuro para sempre.
   return [
-    hudField('PONTOS', variable('pontos'), 8),
-    hudField('MOEDAS', variable('moedas'), 62),
+    hudField('JOG.', variable('jogador'), 4),
+    hudField('PONTOS', variable('pontos'), 38),
+    hudField('MOEDAS', variable('moedas'), 82),
     // ⚠️ MUNDO e ETAPA eram DOIS campos. No original é um só, e é assim que a criança
     // fala ("estou na um-um"). O texto sai do próprio jogo: mundo, traço e etapa.
     hudField(
       'MUNDO',
       binary('+', binary('+', variable('mundo'), { type: 'str', value: '-' }), variable('etapa')),
-      116,
+      126,
     ),
-    hudField('TEMPO', variable('tempo'), 170),
+    hudField('TEMPO', variable('tempo'), 166),
     // ⚠️ Vidas e o jogador da vez NUNCA apareciam na tela. O jogo tem 3 vidas por
     // jogador e alterna entre dois, e não havia como saber quantas restavam nem de
     // quem era a vez — o estado existia só nas variáveis.
-    hudField('VIDAS', ternarioDeVidas(), 216),
+    hudField('VIDAS', ternarioDeVidas(), 210),
   ]
 }
 
@@ -1811,6 +1866,18 @@ function ternarioDeVidas(): JSExpr {
 }
 
 const swimmingLevel = equals(variable('faseAquatica'), 1)
+
+function animatedHeroShape(idle: string, walking: string): JSStatement {
+  return {
+    type: 'if',
+    cond: and(
+      { type: 'g2d:isMovingH', spriteVar: 'lumi' },
+      binary('<', variable('passoLumi'), n(6)),
+    ),
+    then: [{ type: 'g2d:setShape', spriteVar: 'lumi', shapeName: walking }],
+    else: [{ type: 'g2d:setShape', spriteVar: 'lumi', shapeName: idle }],
+  }
+}
 
 function alternateToLivingPlayer(): JSStatement {
   return {
@@ -1839,7 +1906,93 @@ function alternateToLivingPlayer(): JSStatement {
   }
 }
 
+const ACTIVE_PLAYER_STATE = [
+  ['pontos', 'pontosJ'],
+  ['moedas', 'moedasJ'],
+  ['fase', 'faseJ'],
+  ['jornada', 'jornadaJ'],
+] as const
+
+function savePlayerState(slot: 1 | 2): JSStatement[] {
+  return [
+    ...ACTIVE_PLAYER_STATE.map(
+      ([active, stored]): JSStatement => ({
+        type: 'assign',
+        name: `${stored}${slot}`,
+        value: variable(active),
+      }),
+    ),
+    {
+      type: 'assign',
+      name: `poderJ${slot}`,
+      value: { type: 'g2d:getHealth', spriteVar: 'lumi' },
+    },
+  ]
+}
+
+function loadPlayerState(slot: 1 | 2): JSStatement[] {
+  return [
+    ...ACTIVE_PLAYER_STATE.map(
+      ([active, stored]): JSStatement => ({
+        type: 'assign',
+        name: active,
+        value: variable(`${stored}${slot}`),
+      }),
+    ),
+    { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(-99) },
+    { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: variable(`poderJ${slot}`) },
+    {
+      type: 'assign',
+      name: 'velocidade',
+      value: {
+        type: 'ternary',
+        condition: equals(variable('jornada'), 2),
+        whenTrue: n(3),
+        whenFalse: n(2.35),
+      },
+    },
+  ]
+}
+
+function saveActivePlayer(): JSStatement {
+  return {
+    type: 'if',
+    cond: equals(variable('jogador'), 1),
+    then: savePlayerState(1),
+    else: savePlayerState(2),
+  }
+}
+
+function loadActivePlayer(): JSStatement {
+  return {
+    type: 'if',
+    cond: equals(variable('jogador'), 1),
+    then: loadPlayerState(1),
+    else: loadPlayerState(2),
+  }
+}
+
+/** Primeira fase do mundo (1, 5, 9...) em que o jogador parou. */
+function worldStartPhase(phase: JSExpr): JSExpr {
+  return binary('-', phase, binary('%', binary('-', phase, n(1)), n(4)))
+}
+
 const playingBody: JSStatement[] = [
+  {
+    type: 'assign',
+    name: 'passoLumi',
+    value: binary('%', binary('+', variable('passoLumi'), n(1)), n(12)),
+  },
+  {
+    type: 'if',
+    cond: { type: 'g2d:actionDown', action: 'left' },
+    then: [{ type: 'assign', name: 'direcaoLumi', value: n(-1) }],
+  },
+  {
+    type: 'if',
+    cond: { type: 'g2d:actionDown', action: 'right' },
+    then: [{ type: 'assign', name: 'direcaoLumi', value: n(1) }],
+  },
   {
     type: 'if',
     cond: swimmingLevel,
@@ -1856,8 +2009,14 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:collideWorld', spriteVar: 'lumi', worldVar: 'areaAtual' },
   { type: 'g2d:followCameraInWorld', spriteVar: 'lumi', worldVar: 'areaAtual' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'brasas' },
+  // ⚠️ Os cascos ficaram de fora desta lista, e é aqui que a gravidade nasce para
+  // todo inimigo: o casco (e o próprio bicho antes de virar casco) nunca caía de uma
+  // beirada. O atualizador dos cascos INTEGRA o vy; quem o acelera é este bloco.
+  { type: 'g2d:applyGravityToGroup', groupVar: 'cascos' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'espinhos' },
   { type: 'g2d:applyGravityToGroup', groupVar: 'guardioes' },
+  { type: 'g2d:applyGravityToGroup', groupVar: 'saltadores' },
+  { type: 'g2d:applyGravityToGroup', groupVar: 'investidas' },
   // ⚠️ A pisada vem ANTES do "Atualizar": é o "Atualizar" que colhe quem morreu e
   // solta as partículas. Na ordem invertida, a pisada do quadro N só era colhida no
   // quadro N+1 — um quadro de atraso somado ao resto.
@@ -1867,12 +2026,16 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'asas', bounce: n(5.5) },
   { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'plantas', bounce: n(5.5) },
   { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'guardioes', bounce: n(6) },
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'saltadores', bounce: n(5.5) },
+  { type: 'g2d:stompEnemy', spriteVar: 'lumi', typeVar: 'investidas', bounce: n(5.5) },
   { type: 'g2d:updateEnemyType', typeVar: 'brasas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'cascos', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'espinhos', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'asas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'plantas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyType', typeVar: 'guardioes', ctxVar: 'ctx', targetVar: 'lumi' },
+  { type: 'g2d:updateEnemyType', typeVar: 'saltadores', ctxVar: 'ctx', targetVar: 'lumi' },
+  { type: 'g2d:updateEnemyType', typeVar: 'investidas', ctxVar: 'ctx', targetVar: 'lumi' },
   { type: 'g2d:updateEnemyShells', typeVar: 'cascos', worldVar: 'areaAtual' },
   movePowerup('broto', 'direcaoBroto', 1.25, 0),
   movePowerup('estrela', 'direcaoEstrela', 1.45, 4.8),
@@ -1919,7 +2082,6 @@ const playingBody: JSStatement[] = [
     body: [
       { type: 'g2d:changeHealth', spriteVar: 'alvoFogo', delta: n(-1) },
       { type: 'g2d:removeFromGroup', spriteVar: 'bolaFogo', groupVar: 'bolasFogo' },
-      { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(200)) },
       { type: 'g2d:playFx', fx: 'hit' },
     ],
   },
@@ -2121,7 +2283,7 @@ const playingBody: JSStatement[] = [
         type: 'if',
         cond: binary('<=', variable('fase'), n(28)),
         then: [
-          { type: 'assign', name: 'fase', value: binary('+', variable('fase'), n(4)) },
+          { type: 'assign', name: 'fase', value: variable('atalhoDestino') },
           { type: 'assign', name: 'pontos', value: binary('+', variable('pontos'), n(500)) },
           { type: 'g2d:playFx', fx: 'whoosh' },
           loadActiveLevel(),
@@ -2131,7 +2293,10 @@ const playingBody: JSStatement[] = [
   },
   {
     type: 'if',
-    cond: { type: 'g2d:touches', aVar: 'lumi', bVar: 'portal' },
+    cond: and(
+      { type: 'g2d:touches', aVar: 'lumi', bVar: 'portal' },
+      equals(variable('mastroAte'), 0),
+    ),
     then: [
       {
         type: 'if',
@@ -2155,8 +2320,32 @@ const playingBody: JSStatement[] = [
               ),
             ),
           },
-          ...nextLevel(),
+          { type: 'assign', name: 'mastroAte', value: n(60) },
         ],
+      },
+    ],
+  },
+  {
+    type: 'if',
+    cond: binary('>', variable('mastroAte'), n(0)),
+    then: [
+      { type: 'g2d:setVelocity', spriteVar: 'lumi', vx: n(0), vy: n(0) },
+      {
+        type: 'g2d:setPosition',
+        spriteVar: 'lumi',
+        x: variable('xPortal'),
+        y: {
+          type: 'ternary',
+          condition: binary('<', { type: 'g2d:spriteY', spriteVar: 'lumi' }, n(standingY(24))),
+          whenTrue: binary('+', { type: 'g2d:spriteY', spriteVar: 'lumi' }, n(2)),
+          whenFalse: n(standingY(24)),
+        },
+      },
+      { type: 'assign', name: 'mastroAte', value: binary('-', variable('mastroAte'), n(1)) },
+      {
+        type: 'if',
+        cond: equals(variable('mastroAte'), 0),
+        then: nextLevel(),
       },
     ],
   },
@@ -2236,6 +2425,8 @@ const playingBody: JSStatement[] = [
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'asas' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'plantas' },
   { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'guardioes' },
+  { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'saltadores' },
+  { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: 'investidas' },
   // ⚠️ Toda derrota do motor já SOLTA um estouro de partículas — e ninguém as
   // desenhava, então elas nasciam e morriam invisíveis. Uma linha põe de volta o
   // retorno visual de cada pisada, tiro e estrela.
@@ -2245,7 +2436,7 @@ const playingBody: JSStatement[] = [
     type: 'if',
     cond: binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(3)),
     then: [
-      { type: 'g2d:setShape', spriteVar: 'lumi', shapeName: 'lumiFogo' },
+      animatedHeroShape('lumiFogo', 'lumiFogoPasso'),
       { type: 'g2d:setSize', spriteVar: 'lumi', w: n(16), h: n(32) },
     ],
     else: [
@@ -2253,11 +2444,11 @@ const playingBody: JSStatement[] = [
         type: 'if',
         cond: binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(2)),
         then: [
-          { type: 'g2d:setShape', spriteVar: 'lumi', shapeName: 'lumiForte' },
+          animatedHeroShape('lumiForte', 'lumiFortePasso'),
           { type: 'g2d:setSize', spriteVar: 'lumi', w: n(16), h: n(32) },
         ],
         else: [
-          { type: 'g2d:setShape', spriteVar: 'lumi', shapeName: 'lumi' },
+          animatedHeroShape('lumi', 'lumiPasso'),
           { type: 'g2d:setSize', spriteVar: 'lumi', w: n(16), h: n(24) },
         ],
       },
@@ -2281,7 +2472,6 @@ const playingBody: JSStatement[] = [
         then: [{ type: 'assign', name: 'vidas1', value: binary('-', variable('vidas1'), n(1)) }],
         else: [{ type: 'assign', name: 'vidas2', value: binary('-', variable('vidas2'), n(1)) }],
       },
-      alternateToLivingPlayer(),
       // Renasce PEQUENO: perder o poder faz parte de morrer.
       // ⚠️ Zera ANTES de repor. A versão anterior somava 2 e tirava 1 contando partir
       // do zero, mas só uma das três causas de morte passa por lá: o tempo acabando e
@@ -2290,6 +2480,9 @@ const playingBody: JSStatement[] = [
       // e morrer pequeno chegava a deixá-lo maior do que ele estava.
       { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(-99) },
       { type: 'g2d:changeHealth', spriteVar: 'lumi', delta: n(1) },
+      { type: 'callFunction', name: 'salvarJogador', args: [] },
+      alternateToLivingPlayer(),
+      { type: 'callFunction', name: 'carregarJogador', args: [] },
       { type: 'g2d:playFx', fx: 'hurt' },
       { type: 'g2d:setVelocity', spriteVar: 'lumi', vx: n(0), vy: n(0) },
       loadActiveLevel(),
@@ -2351,6 +2544,8 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         // espinho cuida disso) — pisar numa planta é o erro clássico de quem aprende.
         enemyType('plantas', 'voador-vertical', 'planta', 1, 0.45, 16, 16),
         enemyType('guardioes', 'chefao', 'guardiao', 1, 0.75, 24, 24),
+        enemyType('saltadores', 'saltador', 'saltador', 1, 0.7, 16, 16),
+        enemyType('investidas', 'arrancada', 'investida', 1, 0.8, 16, 16),
         { type: 'g2d:allEnemiesGroup', varName: 'todosInimigos' },
       ],
       start: [
@@ -2459,16 +2654,32 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         { type: 'var', name: 'vidas2', value: n(0) },
         { type: 'var', name: 'pontos', value: n(0) },
         { type: 'var', name: 'moedas', value: n(0) },
+        { type: 'var', name: 'pontosJ1', value: n(0) },
+        { type: 'var', name: 'pontosJ2', value: n(0) },
+        { type: 'var', name: 'moedasJ1', value: n(0) },
+        { type: 'var', name: 'moedasJ2', value: n(0) },
+        { type: 'var', name: 'faseJ1', value: n(1) },
+        { type: 'var', name: 'faseJ2', value: n(1) },
+        { type: 'var', name: 'jornadaJ1', value: n(1) },
+        { type: 'var', name: 'jornadaJ2', value: n(1) },
+        { type: 'var', name: 'poderJ1', value: n(1) },
+        { type: 'var', name: 'poderJ2', value: n(1) },
         { type: 'var', name: 'tempo', value: n(300) },
         { type: 'var', name: 'velocidade', value: n(2.35) },
         { type: 'var', name: 'premioAtivo', value: n(1) },
         { type: 'var', name: 'direcaoBroto', value: n(1) },
         { type: 'var', name: 'direcaoEstrela', value: n(1) },
+        { type: 'var', name: 'direcaoLumi', value: n(1) },
+        { type: 'var', name: 'passoLumi', value: n(0) },
         // Quantos quadros ainda restam de invencibilidade da estrela.
         { type: 'var', name: 'estrelaAte', value: n(0) },
-        { type: 'var', name: 'mapaAtual', value: variable('mapa1') },
-        { type: 'var', name: 'areaAtual', value: variable('area1') },
+        { type: 'var', name: 'mastroAte', value: n(0) },
+        { type: 'var', name: 'mapaAtual', value: { type: 'null' } },
+        { type: 'var', name: 'areaAtual', value: { type: 'null' } },
+        { type: 'var', name: 'faseAtual', value: { type: 'null' } },
         { type: 'funcDecl', name: 'carregarFase', params: [], body: selectActiveLevel() },
+        { type: 'funcDecl', name: 'salvarJogador', params: [], body: [saveActivePlayer()] },
+        { type: 'funcDecl', name: 'carregarJogador', params: [], body: [loadActivePlayer()] },
         { type: 'g2d:setEnemyStompMode', typeVar: 'brasas', mode: 'squash' },
         { type: 'g2d:setEnemyStompMode', typeVar: 'cascos', mode: 'shell' },
         { type: 'g2d:setEnemyStompMode', typeVar: 'espinhos', mode: 'spiky' },
@@ -2478,6 +2689,8 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         { type: 'g2d:setEnemyStompMode', typeVar: 'asas', mode: 'defeat' },
         { type: 'g2d:setEnemyStompMode', typeVar: 'plantas', mode: 'spiky' },
         { type: 'g2d:setEnemyStompMode', typeVar: 'guardioes', mode: 'damage' },
+        { type: 'g2d:setEnemyStompMode', typeVar: 'saltadores', mode: 'defeat' },
+        { type: 'g2d:setEnemyStompMode', typeVar: 'investidas', mode: 'defeat' },
         loadActiveLevel(),
         { type: 'g2d:setScene', name: 'titulo' },
         { type: 'g2d:playMusic', tune: 'happy' },
@@ -2490,8 +2703,11 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
             {
               type: 'if',
               cond: and(
-                { type: 'g2d:sceneIs', name: 'jogando' },
-                binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(3)),
+                and(
+                  { type: 'g2d:sceneIs', name: 'jogando' },
+                  binary('>=', { type: 'g2d:getHealth', spriteVar: 'lumi' }, n(3)),
+                ),
+                binary('<', { type: 'g2d:countGroup', groupVar: 'bolasFogo' }, n(2)),
               ),
               then: [
                 {
@@ -2503,7 +2719,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
                   color: '#ff7138',
                   vx: {
                     type: 'ternary',
-                    condition: binary('<', { type: 'g2d:spriteVx', spriteVar: 'lumi' }, n(0)),
+                    condition: binary('<', variable('direcaoLumi'), n(0)),
                     whenTrue: n(-5.2),
                     whenFalse: n(5.2),
                   },
@@ -2526,6 +2742,20 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
             },
           ],
         },
+        ...CAMPAIGN_ENEMY_TYPE_VARS.map(
+          (typeVar): JSStatement => ({
+            type: 'g2d:onEnemyDefeated',
+            typeVar,
+            itemName: 'inimigoDerrotado',
+            body: [
+              {
+                type: 'assign',
+                name: 'pontos',
+                value: binary('+', variable('pontos'), n(200)),
+              },
+            ],
+          }),
+        ),
       ],
       loops: [
         {
@@ -2645,15 +2875,6 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
                   type: 'if',
                   cond: { type: 'g2d:actionPressed', action: 'start' },
                   then: [
-                    {
-                      type: 'assign',
-                      name: 'fase',
-                      value: binary(
-                        '+',
-                        binary('*', binary('-', variable('mundo'), n(1)), n(4)),
-                        n(1),
-                      ),
-                    },
                     { type: 'assign', name: 'vidas1', value: n(3) },
                     {
                       type: 'assign',
@@ -2665,6 +2886,20 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
                         whenFalse: n(0),
                       },
                     },
+                    {
+                      type: 'assign',
+                      name: 'faseJ1',
+                      value: worldStartPhase(variable('faseJ1')),
+                    },
+                    {
+                      type: 'assign',
+                      name: 'faseJ2',
+                      value: worldStartPhase(variable('faseJ2')),
+                    },
+                    { type: 'assign', name: 'poderJ1', value: n(1) },
+                    { type: 'assign', name: 'poderJ2', value: n(1) },
+                    { type: 'assign', name: 'jogador', value: n(1) },
+                    { type: 'callFunction', name: 'carregarJogador', args: [] },
                     loadActiveLevel(),
                     { type: 'g2d:setScene', name: 'jogando' },
                   ],

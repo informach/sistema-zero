@@ -132,7 +132,7 @@ export const VECTOR_FONT_FAMILY_INFO: Record<VectorFontFamily, VectorFontFamilyI
   nunito: { label: 'Nunito', widthFactor: 0.56 },
   'press-start-2p': { label: 'Press Start 2P', widthFactor: 0.8 },
   bungee: { label: 'Bungee', widthFactor: 0.64 },
-  fredoka: { label: 'Fredoka', widthFactor: 0.57 },
+  fredoka: { label: 'Fredoka One', widthFactor: 0.6 },
 }
 
 export function isVectorFontFamily(value: unknown): value is VectorFontFamily {
@@ -147,6 +147,23 @@ export function fontFamilyOf(shape: VectorShape): VectorFontFamily {
 
 export function fontFamilyLabel(family: VectorFontFamily): string {
   return VECTOR_FONT_FAMILY_INFO[family].label
+}
+
+/**
+ * A família como valor de CSS — SEMPRE entre aspas.
+ *
+ * ⚠️ Sem as aspas, o nome vira uma sequência de identificadores CSS, e
+ * identificador não pode começar com dígito: "Press Start 2P" tem o token "2P" e
+ * "Baloo 2" tem o "2", então o navegador DESCARTA a declaração inteira e o texto
+ * cai na fonte herdada. Medido em Chrome: as duas voltavam "Nunito, ui-sans-serif,
+ * system-ui, sans-serif". Duas das cinco famílias nunca funcionaram por causa de um
+ * par de aspas — e Nunito, Bungee e Fredoka escondiam o defeito por serem uma
+ * palavra só.
+ *
+ * O `@font-face` (`vector/fonts.ts`) já cita entre aspas; quem faltava era o uso.
+ */
+export function fontFamilyCss(family: VectorFontFamily): string {
+  return `'${VECTOR_FONT_FAMILY_INFO[family].label}'`
 }
 
 /** `'left'` quando a chave está ausente (ela só existe para center/right). */

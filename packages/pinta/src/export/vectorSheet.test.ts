@@ -143,7 +143,7 @@ describe('vectorSheetSvg — documento puro', () => {
     const svg = await vectorSheetPortableSvg(packVectorSpritesheet(asset))
     expect(svg).toContain("font-family:'Bungee'")
     expect(svg).toContain('data:font/woff2;base64,')
-    expect(svg).not.toContain("font-family:'Fredoka'")
+    expect(svg).not.toContain("font-family:'Fredoka One'")
   })
 })
 

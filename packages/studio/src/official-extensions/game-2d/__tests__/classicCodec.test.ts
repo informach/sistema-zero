@@ -7,6 +7,11 @@ import { gameTwoDBlocks } from '../blockCatalog'
 describe('codec das primitivas clássicas', () => {
   it('mantém geração e parse em ponto fixo para toda a cadeia nova', () => {
     const statements: JSStatement[] = [
+      {
+        type: 'g2d:paintShapeRecipe',
+        ctxVar: 'ctx',
+        recipe: '[["r",0,0,16,16,"#fff"],["c",8,8,4,"#000"]]',
+      },
       { type: 'g2d:enableClassicControls', mode: 'auto' },
       {
         type: 'g2d:onActionPressed',
@@ -22,6 +27,20 @@ describe('codec das primitivas clássicas', () => {
         role: 'solid',
       },
       { type: 'g2d:createVectorTileMap', varName: 'mapa', tilesetVar: 'tiles', grid: '1 1' },
+      {
+        type: 'g2d:loadVectorCampaignLevel',
+        index: { type: 'num', value: 2 },
+        tilesetVars: ['tiles'],
+        manifest: '{"levels":[{"grid":"1"},{"grid":"1 1","mundo":2}]}',
+        size: { type: 'num', value: 16 },
+        spawnX: { type: 'num', value: 24 },
+        spawnY: { type: 'num', value: 32 },
+        mapVar: 'mapa',
+        worldVar: 'mundo',
+        levelVar: 'fase',
+        enemyTypeVars: ['brasas', 'saltadores'],
+        journey: { type: 'var', name: 'jornada' },
+      },
       {
         type: 'g2d:classicPlatformer',
         spriteVar: 'heroi',
@@ -74,6 +93,14 @@ describe('codec das primitivas clássicas', () => {
         cond: { type: 'g2d:actionPressed', action: 'jump' },
         then: [{ type: 'consoleLog', value: { type: 'str', value: 'pulo' } }],
       },
+      {
+        type: 'consoleLog',
+        value: {
+          type: 'g2d:campaignValue',
+          key: 'mundo',
+          fallback: { type: 'num', value: 1 },
+        },
+      },
     ]
 
     const code = compileStatements(statements, 0)
@@ -85,6 +112,9 @@ describe('codec das primitivas clássicas', () => {
     const types = new Set(gameTwoDBlocks.map((block) => block.type))
     for (const type of [
       'sz_g2d_enable_classic_controls',
+      'sz_g2d_paint_shape_recipe',
+      'sz_g2d_load_vector_campaign_level',
+      'sz_g2d_campaign_value',
       'sz_g2d_action_down',
       'sz_g2d_action_pressed',
       'sz_g2d_on_action_pressed',

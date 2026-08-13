@@ -1093,9 +1093,34 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    * inimigo do tipo..." a lista fica vazia e nada aparece na tela). Avisa UMA
    * vez por tipo; depois do primeiro spawn o aviso não dispara mais.
    */
+  /**
+   * Tem inimigo de QUALQUER tipo em campo agora?
+   *
+   * Sem memória por quadro de propósito: é uma varredura de comprimentos de lista, e
+   * ela só roda para tipo ainda não solto e ainda não avisado. Guardar por
+   * _frameStamp quebraria quem chama os helpers fora do laço do jogo (os testes, e a
+   * criança no modo Código).
+   */
+  function _algumInimigoEmCampo() {
+    for (var i = 0; i < _enemyTypes.length; i++) {
+      var t = _enemyTypes[i];
+      if (t && t.items && t.items.length) return true;
+    }
+    return false;
+  }
   function warnEnemyTypeEmptyOnce(type) {
     if (!type || !type.config || type._spawned || type._warnedNoSpawn) return;
     if (!type.items || type.items.length !== 0) return;
+    // ⭐ Jogo de ONDAS: com algum inimigo EM CAMPO, a partida está em andamento e a
+    // criança evidentemente já sabe soltar — o tipo que espera a vez da onda 3 não é
+    // esquecimento. O contador ZERA (não congela): a graça dura enquanto a tela tem
+    // inimigo, e volta a correr quando ela fica vazia de verdade, que é o caso real
+    // de "criei e nunca soltei". A janela de 6s abaixo sozinha não cobria isso — ela
+    // foi feita para a PRIMEIRA onda, não para a terceira.
+    if (_algumInimigoEmCampo()) {
+      type._emptyUpdates = 0;
+      return;
+    }
     // GRAÇA: jogos de ONDA soltam o 1º inimigo via "A cada N quadros", alguns
     // segundos depois do início. Sem esta janela, o aviso dispararia já no 1º
     // quadro (antes da 1ª onda) — falso-positivo em Sobrevivente/Herói que Evolui
@@ -1340,6 +1365,10 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       // disputar o mesmo eixo no mesmo quadro. (O achatado não tem contagem: ele
       // achata e morre no quadro da pisada — ver stompEnemyType.)
       if (s._shell && s.hp > 0) { autoAnimate(s); continue; }
+      // O apoio é do quadro anterior e precisa ser confirmado depois do novo
+      // passo. Sem isto, quem saía andando de uma plataforma continuava com
+      // onGround = true enquanto caía pelo buraco.
+      if (!flying && typeof s.onGround === 'boolean') _beginGroundFrame(s);
       // Chefão: engorda a vida UMA vez por inimigo. É um buff de TETO, não uma
       // cura: a vida máxima cresce 5× e o inimigo ganha a diferença, então o
       // dano que ele já levou continua valendo (somar "chefão" no meio do jogo
@@ -1559,8 +1588,13 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     if (!moving) {
       shell.vx = 0;
       shell.dmg = 0;
+      shell._kickedBy = null;
       return;
     }
+    // ⭐ Quem chutou não leva dano do próprio chute enquanto ainda estiver
+    // encostando. O updateEnemyShells solta a marca no quadro em que os dois se
+    // descolam — daí em diante o casco machuca ele também.
+    shell._kickedBy = kicker || null;
     var paraLonge = kicker && centerX(kicker) < centerX(shell) ? 1 : -1;
     shell._shellSpeed = Math.abs(_finiteNumber(shell._shellSpeed, 5)) * paraLonge;
     shell.vx = shell._shellSpeed;
@@ -1581,6 +1615,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
       _setShellMotion(enemy, true, sprite);
       return;
     }
+    // O casco que ESTE sprite acabou de chutar ainda está saindo de cima dele.
+    if (enemy._shell && enemy._kickedBy === sprite) return;
     damageSprite(sprite, enemyDamage(enemy), 45);
   }
 

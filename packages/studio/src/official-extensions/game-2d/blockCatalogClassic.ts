@@ -139,6 +139,51 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     tooltip: 'Monta um mapa com a mesma geometria e colisão dos mapas de imagem.',
   },
   {
+    type: 'sz_g2d_load_vector_campaign_level',
+    placement: 'resource-creator',
+    message0: 'Carregar fase %1 da campanha vetorial %2',
+    args0: [
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+      { type: 'field_json_data', name: 'MANIFEST', text: '{"levels":[]}' },
+    ],
+    message1: 'com conjuntos %1 e tiles de %2 px; nascer em x %3 y %4',
+    args1: [
+      { type: 'field_input', name: 'TILESETS', text: 'tiles' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    message2: 'guardar mapa %1 Mundo %2 Fase %3',
+    args2: [
+      { type: 'field_name_picker', name: 'MAP', text: 'mapaAtual', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundoAtual', kind: 'variable' },
+      { type: 'field_name_picker', name: 'LEVEL', text: 'faseAtual', kind: 'variable' },
+    ],
+    message3: 'soltar inimigos dos tipos %1 na jornada %2',
+    args3: [
+      { type: 'field_input', name: 'ENEMIES', text: '' },
+      { type: 'input_value', name: 'JOURNEY', check: 'JSValue' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria somente a fase escolhida. O JSON guarda grades, dados e elencos; assim campanhas grandes não enchem a bancada com milhares de blocos repetidos.',
+  },
+  {
+    type: 'sz_g2d_campaign_value',
+    message0: 'dado %1 da fase carregada (ou %2)',
+    args0: [
+      { type: 'field_input', name: 'KEY', text: 'mundo' },
+      { type: 'input_value', name: 'FALLBACK', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Lê um dado da fase atual no JSON da campanha. Usa o valor alternativo quando o campo não existe.',
+  },
+  {
     type: 'sz_g2d_for_each_tile_contact',
     placement: 'command',
     bodyExecution: 'sync-callback',
@@ -166,7 +211,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Depois da colisão, percorre cada tile exato atingido e informa o lado. Útil para blocos quebráveis e surpresas.',
+      'Depois da colisão, percorre cada tile exato atingido e informa o lado. Útil para blocos quebráveis e surpresas. O lado "dentro" é o das peças que se ATRAVESSA (moeda, lava, água) e só existe no mapa vetorial.',
   },
   {
     type: 'sz_g2d_tile_contact_is',
@@ -206,7 +251,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
           ['derrotar', 'defeat'],
           ['causar 1 de dano', 'damage'],
           ['achatar por um instante', 'squash'],
-          ['virar casco móvel', 'shell'],
+          ['virar casco (pisar recolhe, encostar chuta)', 'shell'],
           ['espinhoso (não aceita pisada)', 'spiky'],
         ],
       },
@@ -214,7 +259,8 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Escolhe o resultado da pisada sem alterar tipos de inimigo já existentes.',
+    tooltip:
+      'Escolhe o que acontece quando o sprite pisa neste tipo de inimigo. Precisa do bloco “Derrotar os inimigos do tipo … quando o sprite … pular em cima”; sem ele nada muda. Ponha em ⚙️ Ao iniciar.',
   },
   {
     type: 'sz_g2d_update_enemy_shells',
@@ -227,7 +273,8 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Move cascos, rebate nas paredes do Mundo e derrota inimigos atingidos.',
+    tooltip:
+      'Obrigatório no modo “virar casco”: é este bloco que faz o casco andar, cair, rebater nas paredes do Mundo e derrotar quem ele atingir. Sem ele o casco fica parado para sempre. Ponha no “A cada quadro do jogo”.',
   },
   {
     type: 'sz_g2d_draw_pixel_text',
@@ -256,6 +303,17 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     tooltip: 'Desenha letras em uma grade 5×7 no canvas, sem carregar fonte.',
   },
   {
+    type: 'sz_g2d_paint_shape_recipe',
+    placement: 'command',
+    message0: 'Desenhar receita vetorial %1',
+    args0: [{ type: 'field_json_data', name: 'RECIPE', text: '[]' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha várias formas fixas de uma só vez. Útil para figuras detalhadas sem criar centenas de blocos de coordenadas.',
+  },
+  {
     type: 'sz_g2d_draw_pixel_score',
     placement: 'command',
     message0: 'Escrever placar pixel %1 com o valor %2 em x %3 y %4 pixel %5 cor %6',
@@ -277,7 +335,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
   {
     type: 'sz_g2d_draw_fade',
     placement: 'command',
-    message0: 'Cobrir a tela com fade de %1 porcento na cor %2',
+    message0: 'Cobrir a tela com fade de %1 por cento na cor %2',
     args0: [
       { type: 'input_value', name: 'PERCENT', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#000000' },

@@ -4,6 +4,9 @@
  */
 export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica e arte vetorial (v0.74.0) ----
   var CLASSIC_ACTIONS = ['left', 'right', 'up', 'down', 'jump', 'action', 'select', 'start', 'pause'];
+  // Espelho de GAME_TWO_D_TILE_CONTACT_SIDES (classicContracts.ts). Um drift o cobra:
+  // lado novo no contrato e esquecido aqui volta a desligar o filtro em silêncio.
+  var TILE_CONTACT_SIDES = ['head', 'feet', 'left', 'right', 'inside'];
   var CLASSIC_KEY_ACTION = {
     ArrowLeft: 'left', a: 'left',
     ArrowRight: 'right', d: 'right',
@@ -101,6 +104,24 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       !!(touches && touches.size) ||
       (_classicVirtualHeldStamp[name] || 0) > 0 &&
       _classicVirtualHeldStamp[name] >= _frameStamp;
+  }
+  /**
+   * A ação apertada SÓ pelo dedo (ou por um botão focado / leitor de tela) — sem o
+   * teclado.
+   *
+   * ⚠️ Existe porque os helpers ANTIGOS de movimento (plataforma, pular no terreno,
+   * bater as asas) passaram a ler a camada semântica para o pad de toque alcançá-los,
+   * e com isso herdaram o mapa de teclas dela: a tecla z e o ESPAÇO viraram PULO em todo jogo
+   * de plataforma que já existia. O exemplo oficial "Herói que anda" usa ESPAÇO para
+   * atirar — cada tiro lançava o herói no ar. Direção não tem esse problema (as setas
+   * e o WASD alimentam os dois caminhos), só o pulo.
+   */
+  function _actionDownByTouch(action) {
+    var name = String(action || '');
+    if (!_knownClassicAction(name)) return false;
+    var touches = _classicTouchPointers[name];
+    if (touches && touches.size) return true;
+    return (_classicVirtualHeldStamp[name] || 0) > 0 && _classicVirtualHeldStamp[name] >= _frameStamp;
   }
   /** Borda do aperto, compartilhada por todos os leitores do mesmo quadro. */
   function actionPressed(action) {
@@ -417,7 +438,12 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
   function forEachTileContact(sprite, map, side, visit) {
     if (!sprite || !map || typeof visit !== 'function') return;
     if (_runningLoopId && sprite._tileContactsFrame !== _frameStamp) return;
-    var wanted = side === 'head' || side === 'feet' || side === 'left' || side === 'right' ? side : 'any';
+    // ⚠️ A régua sai da LISTA, não de uma cadeia de comparações escrita à mão. A
+    // versão anterior listava head/feet/left/right e caía em "qualquer" para
+    // "dentro" — o lado que nasceu com a peça "atravessa e avisa" e que ficou de
+    // fora quando ela entrou. Resultado: escolher "dentro" desligava o filtro, e o
+    // gesto que o manual ensina ("Trocar o tile do contato por -1") apagava o CHÃO.
+    var wanted = TILE_CONTACT_SIDES.indexOf(String(side)) >= 0 ? side : 'any';
     var contacts = sprite._tileContacts ? sprite._tileContacts.slice() : [];
     var generation = _driverGeneration;
     for (var i = 0; i < contacts.length; i++) {
@@ -452,6 +478,13 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       if (!shell || !shell._shell) continue;
       // ⚠️ Este atualizador é o ÚNICO dono da física do casco: o updateEnemyType pula
       // qualquer casco vivo. Então quem não passar por aqui não é movido por ninguém.
+      //
+      // ⭐ O casco que já se descolou de quem o chutou volta a machucar. Enquanto o
+      // contato do chute dura, ele NÃO cobra vida: o casco anda 5 px/quadro e o herói
+      // corre quase isso, então a sobreposição do próprio chute seguia por vários
+      // quadros e o gesto que este modo existe para criar virava castigo (medido na
+      // segunda jornada do Reino Zero: fuga de 0,08 px por quadro).
+      if (shell._kickedBy && !isColliding(shell, shell._kickedBy)) shell._kickedBy = null;
       var andando = !!shell._shellMoving;
       _recordPreviousPosition(shell);
       var shellSpeed = _finiteNumber(shell._shellSpeed, 5);
@@ -463,17 +496,21 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       }
       // ⭐ O casco CAI — andando OU parado. Antes só o eixo X era integrado, e depois
       // só o casco EM MOVIMENTO caía: pisar num casco no ar (beirada de poço, tijolo
-      // que some por baixo) o deixava pendurado para sempre, porque nada integrava a
-      // queda dele. ⚠️ Com gravidade zero (o padrão do motor, que é top-down) isto
-      // continua sem mover nada, então nenhum jogo antigo muda.
-      var shellGravity = _finiteNumber(world.gravity, 0.6);
-      shell.vy = _finiteNumber(shell.vy, 0) + shellGravity;
+      // que some por baixo) o deixava pendurado para sempre.
+      // ⚠️ Mas ele integra o vy que EXISTE, sem se acelerar: quem acelera é o bloco
+      // "Aplicar a gravidade ao grupo", como em todo inimigo. Somar gravidade aqui
+      // faria o casco ser o único que cai sem ninguém pedir — e a gravidade de
+      // fábrica é 0.6, não 0, então num jogo visto de cima ele escorregaria sozinho
+      // para o fundo do Mundo.
+      shell.vy = _finiteNumber(shell.vy, 0);
       shell.y += shell.vy;
       _commitRecordedMotion(shell);
       if (worldValue && worldValue._kind === 'g2d-world') {
         // Longe demais do Mundo: marca para o "Atualizar" recolher, como qualquer
-        // inimigo. Sem isto o casco perdido continuaria contando no grupo.
-        if (shell.y > _finiteNumber(worldValue.height, 0) + 2000) {
+        // inimigo. Sem isto o casco perdido continuaria contando no grupo. A régua é
+        // a MESMA dos outros e vale nos DOIS sentidos — com gravidade invertida o
+        // casco sobe, e meia guarda o deixaria contando para sempre.
+        if (_enemyFarFromWorld(shell, { world: worldValue })) {
           shell._foraDoMundo = true;
           continue;
         }
@@ -538,9 +575,12 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     U: ['101','101','101','101','101','101','111'], V: ['101','101','101','101','101','101','010'],
     W: ['10001','10001','10001','10101','10101','11011','10001'], X: ['101','101','101','010','101','101','101'],
     Y: ['101','101','101','010','010','010','010'], Z: ['111','001','001','010','100','100','111'],
-    // A cedilha é uma linha ABAIXO da base (não sobe, desce) — cabe porque a
-    // entrelinha é de 9 linhas e a letra usa 7.
-    'Ç': ['111','100','100','100','100','111','010','011']
+    // A cedilha é uma linha ABAIXO da base (não sobe, desce): cabe porque a
+    // entrelinha e de 9 linhas e a letra usa 7.
+    // ⚠️ O corpo tem que ser o C INTEIRO (7 linhas). Com 6, o Ç ficava uma linha
+    // acima da base das vizinhas — visível em "RECOMEÇA", na tela de continuar do
+    // Reino Zero.
+    'Ç': ['111','100','100','100','100','100','111','010']
   };
   /**
    * Vogais acentuadas: a fonte é 5x7 e não caberia um alfabeto acentuado inteiro,

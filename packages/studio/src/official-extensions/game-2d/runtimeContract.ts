@@ -375,6 +375,7 @@ export interface GameTwoDSpriteApi {
     color: string,
     width: number,
   ): void
+  paintShapeRecipe(ctx: GameTwoDContext, recipeSource: string): void
 }
 
 export interface GameTwoDPhysicsApi {
@@ -534,6 +535,18 @@ export interface GameTwoDWorldApi {
     role: GameTwoDVectorTileRole,
   ): void
   createVectorTileMap(tileset: GameTwoDVectorTileset, grid: string): GameTwoDTileMap
+  loadVectorCampaignLevel(
+    index: number,
+    source: string,
+    tileSize: number,
+    spawnX: number,
+    spawnY: number,
+    receive: (map: GameTwoDTileMap, world: GameTwoDWorld, level: GameTwoDLevel) => void,
+    tilesets: GameTwoDVectorTileset[],
+    enemyTypes?: GameTwoDEnemyType[],
+    journey?: number,
+  ): void
+  campaignValue(key: string, fallback: number): number
   fitTileMapToStage(ctx: GameTwoDContext, map: GameTwoDTileMap): void
   placeTileMap(map: GameTwoDTileMap, x: number, y: number, tileSize: number): void
   /**
@@ -949,6 +962,7 @@ export const GAME_TWO_D_API_KEYS = [
   'paintEllipse',
   'paintTriangle',
   'paintLine',
+  'paintShapeRecipe',
   'platformer',
   'platformerWithTerrain',
   'enableClassicControls',
@@ -971,6 +985,8 @@ export const GAME_TWO_D_API_KEYS = [
   'createVectorTileset',
   'defineVectorTile',
   'createVectorTileMap',
+  'loadVectorCampaignLevel',
+  'campaignValue',
   'fitTileMapToStage',
   'placeTileMap',
   'drawTileMap',

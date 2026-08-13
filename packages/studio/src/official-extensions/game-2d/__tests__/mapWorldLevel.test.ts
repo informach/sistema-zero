@@ -99,6 +99,19 @@ interface Api {
   collidePlatform(sprite: Sprite, platform: Sprite): void
   setGravity(gravity: number): void
   createLevel(world: World, spawnX: number, spawnY: number): Level
+  createVectorTileset(tileSize: number): unknown
+  loadVectorCampaignLevel(
+    index: number,
+    source: string,
+    tileSize: number,
+    spawnX: number,
+    spawnY: number,
+    receive: (map: TileMap, world: World, level: Level) => void,
+    tilesets: unknown[],
+    enemyTypes?: EnemyType[],
+    journey?: number,
+  ): void
+  campaignValue(key: string, fallback: number): number
   enterLevel(level: Level, player: Sprite): void
   resetGroupWithLevel(level: Level, group: Group): void
   restartLevel(level: Level, player: Sprite): void
@@ -663,6 +676,34 @@ describe('Movimento com terreno não inventa chão na tela', () => {
     expect(type.items.length).toBe(0)
   })
 
+  it('inimigo que sai andando do chão perde o apoio e cai no buraco', () => {
+    const api = load()
+    const ctx = stageContext()
+    api.setGravity(0.6)
+    const world = api.createWorld(400, 240)
+    const chao = api.createGroup()
+    chao.items.push(api.createSprite({ x: 0, y: 200, w: 120, h: 40, vx: 0, vy: 0 }))
+    api.addSolidGroupToWorld(world, chao)
+    const type = api.createEnemyType({ behavior: 'patrulha', speed: 4, w: 20, h: 20 })
+    api.addEnemyTypeToWorld(world, type)
+    const inimigo = api.spawnEnemy(type, 60, 180) as Sprite
+
+    let pisouNoChao = false
+    let caiuDepoisDaBorda = false
+    for (let frame = 0; frame < 80 && type.items.length > 0; frame++) {
+      api.applyGravityToGroup(type)
+      api.updateEnemyType(type, ctx, null)
+      if (inimigo.onGround) pisouNoChao = true
+      if (pisouNoChao && inimigo.x >= 120 && !inimigo.onGround && inimigo.y > 180) {
+        caiuDepoisDaBorda = true
+        break
+      }
+    }
+
+    expect(pisouNoChao).toBe(true)
+    expect(caiuDepoisDaBorda).toBe(true)
+  })
+
   it('quem cai fora não dispara o "quando for derrotado" (ninguém o derrotou)', () => {
     const api = load()
     const ctx = stageContext()
@@ -704,6 +745,67 @@ describe('Movimento com terreno não inventa chão na tela', () => {
 })
 
 describe('Fases são opcionais e independentes do gênero', () => {
+  it('carrega somente a fase vetorial escolhida e expõe seus metadados', () => {
+    const api = load()
+    const tilesetA = api.createVectorTileset(16)
+    const tilesetB = api.createVectorTileset(16)
+    const baseEnemies = api.createEnemyType({ behavior: 'patrulha' })
+    const journeyEnemies = api.createEnemyType({ behavior: 'saltador' })
+    let loaded: { map: TileMap; world: World; level: Level } | null = null
+    const manifest = JSON.stringify({
+      edges: 'floor',
+      horizontal: 'right',
+      vertical: 'off',
+      deadZoneX: 42,
+      deadZoneY: 0,
+      levels: [
+        { grid: '0', theme: 0, mundo: 1 },
+        {
+          grid: '1 1 1;0 0 0',
+          theme: 1,
+          mundo: 2,
+          etapa: 3,
+          enemies: [[0, 80, 16]],
+          journey2Enemies: [[1, 112, 16]],
+        },
+      ],
+    })
+
+    api.loadVectorCampaignLevel(
+      2,
+      manifest,
+      16,
+      24,
+      48,
+      (map, world, level) => {
+        loaded = { map, world, level }
+      },
+      [tilesetA, tilesetB],
+      [baseEnemies, journeyEnemies],
+      2,
+    )
+
+    expect(loaded).not.toBeNull()
+    expect(loaded!.map.rows).toEqual([
+      [1, 1, 1],
+      [0, 0, 0],
+    ])
+    expect(loaded!.world).toMatchObject({
+      width: 48,
+      height: 32,
+      edges: 'floor',
+      camera: { horizontal: 'right', vertical: 'off', deadZoneX: 42, deadZoneY: 0 },
+    })
+    expect(loaded!.level).toMatchObject({ spawnX: 24, spawnY: 48 })
+    expect(api.campaignValue('mundo', -1)).toBe(2)
+    expect(api.campaignValue('etapa', -1)).toBe(3)
+    expect(api.campaignValue('texto', 7)).toBe(7)
+    expect(baseEnemies.items).toHaveLength(1)
+    expect(baseEnemies.items[0]).toMatchObject({ x: 80, y: 16 })
+    expect(journeyEnemies.items).toHaveLength(1)
+    expect(journeyEnemies.items[0]).toMatchObject({ x: 112, y: 16 })
+  })
+
   it('o evento de entrada dispara uma vez por entrada, inclusive se registrado depois da inicial', () => {
     const api = load()
     const world = api.createWorld(800, 512)

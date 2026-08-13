@@ -24,6 +24,25 @@ const ACTIONS = [
  */
 export type ClassicGameTwoDStatement = { __id?: string } & (
   | {
+      type: 'g2d:paintShapeRecipe'
+      ctxVar: string
+      recipe: string
+    }
+  | {
+      type: 'g2d:loadVectorCampaignLevel'
+      index: number | JSExpr
+      tilesetVars: string[]
+      manifest: string
+      size: number | JSExpr
+      spawnX: number | JSExpr
+      spawnY: number | JSExpr
+      mapVar: string
+      worldVar: string
+      levelVar: string
+      enemyTypeVars?: string[]
+      journey?: number | JSExpr
+    }
+  | {
       type: 'g2d:drawPixelText'
       ctxVar: string
       text: string
@@ -63,6 +82,12 @@ export function classicGameTwoDExpressionSchemas(
     z.object({ type: z.literal('g2d:actionDown'), action: z.enum(ACTIONS), ...id }),
     z.object({ type: z.literal('g2d:actionPressed'), action: z.enum(ACTIONS), ...id }),
     z.object({ type: z.literal('g2d:tileContactIs'), contactVar: irText(), index: expr, ...id }),
+    z.object({
+      type: z.literal('g2d:campaignValue'),
+      key: irText(),
+      fallback: expr,
+      ...id,
+    }),
   ] as const
 }
 
@@ -74,6 +99,27 @@ export function classicGameTwoDStatementSchemas(
 ) {
   const numeric = z.union([expr, z.number()])
   return [
+    z.object({
+      type: z.literal('g2d:paintShapeRecipe'),
+      ctxVar: irText(),
+      recipe: irText(),
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g2d:loadVectorCampaignLevel'),
+      index: numeric,
+      tilesetVars: z.array(irText()).min(1).max(32),
+      manifest: irText(),
+      size: numeric,
+      spawnX: numeric,
+      spawnY: numeric,
+      mapVar: irText(),
+      worldVar: irText(),
+      levelVar: irText(),
+      enemyTypeVars: z.array(irText()).max(32).optional(),
+      journey: numeric.optional(),
+      ...id,
+    }),
     z.object({
       type: z.literal('g2d:onActionPressed'),
       action: z.enum(ACTIONS),

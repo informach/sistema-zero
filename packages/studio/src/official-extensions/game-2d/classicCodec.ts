@@ -4,6 +4,7 @@ import type { JSExpr, JSStatement } from '#ir'
 import { valueToExpr } from '#ir'
 import type { SerializedBlocklyBlock } from '../../codecs/types'
 import { GAME_UI_FONT_IDS } from '../gameUiFonts/catalog'
+import { GAME_TWO_D_TILE_CONTACT_FILTERS, GAME_TWO_D_VECTOR_TILE_ROLES } from './classicContracts'
 
 const ACTIONS = new Set([
   'left',
@@ -17,8 +18,10 @@ const ACTIONS = new Set([
   'pause',
 ])
 const CONTROL_MODES = new Set(['auto', 'always', 'off'])
-const VECTOR_ROLES = new Set(['decor', 'solid', 'platform', 'contact'])
-const CONTACT_SIDES = new Set(['any', 'head', 'feet', 'left', 'right', 'inside'])
+// ⚠️ Derivados do contrato, não copiados: o lado "dentro" entrou no contrato e
+// ficou de fora da régua do runtime, que era a QUINTA cópia literal desta lista.
+const VECTOR_ROLES: ReadonlySet<string> = new Set(GAME_TWO_D_VECTOR_TILE_ROLES)
+const CONTACT_SIDES: ReadonlySet<string> = new Set(GAME_TWO_D_TILE_CONTACT_FILTERS)
 const STOMP_MODES = new Set(['defeat', 'damage', 'squash', 'shell', 'spiky'])
 const TEXT_ALIGNS = new Set(['left', 'center', 'right'])
 
@@ -27,6 +30,13 @@ export function classicGameTwoDBlockExpression(
   field: (block: Blockly.Block, name: string) => string,
   expression: (block: Blockly.Block, name: string, fallback: JSExpr) => JSExpr,
 ): JSExpr | undefined {
+  if (block.type === 'sz_g2d_campaign_value') {
+    return {
+      type: 'g2d:campaignValue',
+      key: field(block, 'KEY'),
+      fallback: expression(block, 'FALLBACK', { type: 'num', value: 0 }),
+    } as JSExpr
+  }
   if (block.type === 'sz_g2d_tile_contact_is') {
     return {
       type: 'g2d:tileContactIs',
@@ -59,6 +69,36 @@ export function classicGameTwoDBlockToIR(
     tools.expression(block, name, { type: 'num', value })
   let statement: JSStatement | undefined
   switch (block.type) {
+    case 'sz_g2d_paint_shape_recipe':
+      statement = {
+        type: 'g2d:paintShapeRecipe',
+        ctxVar: 'ctx',
+        recipe: f('RECIPE'),
+      } as JSStatement
+      break
+    case 'sz_g2d_load_vector_campaign_level': {
+      const enemyTypeVars = f('ENEMIES')
+        .split(',')
+        .map((name) => name.trim())
+        .filter(Boolean)
+      statement = {
+        type: 'g2d:loadVectorCampaignLevel',
+        index: expr('INDEX', 1),
+        tilesetVars: f('TILESETS')
+          .split(',')
+          .map((name) => name.trim())
+          .filter(Boolean),
+        manifest: f('MANIFEST'),
+        size: expr('SIZE', 16),
+        spawnX: expr('X', 32),
+        spawnY: expr('Y', 32),
+        mapVar: f('MAP'),
+        worldVar: f('WORLD'),
+        levelVar: f('LEVEL'),
+        ...(enemyTypeVars.length > 0 ? { enemyTypeVars, journey: expr('JOURNEY', 1) } : {}),
+      } as JSStatement
+      break
+    }
     case 'sz_g2d_enable_classic_controls': {
       const mode = f('MODE') || 'auto'
       if (!CONTROL_MODES.has(mode)) return
@@ -214,6 +254,18 @@ export function classicGameTwoDStatementToCode(
   const id = (name: string) => tools.id(String(s[name] ?? ''))
   const expr = (name: string) => tools.expression(s[name] as JSExpr | number)
   switch (statement.type) {
+    case 'g2d:paintShapeRecipe':
+      return `${tools.pad}SZGame2D.paintShapeRecipe(${id('ctxVar')}, ${JSON.stringify(s.recipe)});`
+    case 'g2d:loadVectorCampaignLevel': {
+      const tilesets = (s.tilesetVars as string[]).map((name) => tools.id(name)).join(', ')
+      const enemyTypeVars = (s.enemyTypeVars as string[] | undefined) ?? []
+      const enemies = enemyTypeVars.map((name) => tools.id(name)).join(', ')
+      const campaignEnemies =
+        enemyTypeVars.length > 0
+          ? `, [${enemies}], ${tools.expression((s.journey as number | JSExpr | undefined) ?? 1)}`
+          : ''
+      return `${tools.pad}SZGame2D.loadVectorCampaignLevel(${expr('index')}, ${JSON.stringify(s.manifest)}, ${expr('size')}, ${expr('spawnX')}, ${expr('spawnY')}, function (mapaCarregado, mundoCarregado, faseCarregada) { ${id('mapVar')} = mapaCarregado; ${id('worldVar')} = mundoCarregado; ${id('levelVar')} = faseCarregada; }, [${tilesets}]${campaignEnemies});`
+    }
     case 'g2d:enableClassicControls':
       return `${tools.pad}SZGame2D.enableClassicControls(${JSON.stringify(s.mode)});`
     case 'g2d:classicPlatformer':
@@ -251,7 +303,7 @@ export function classicGameTwoDStatementToCode(
 
 type ClassicGameTwoDExpression = Extract<
   JSExpr,
-  { type: 'g2d:actionDown' | 'g2d:actionPressed' | 'g2d:tileContactIs' }
+  { type: 'g2d:actionDown' | 'g2d:actionPressed' | 'g2d:tileContactIs' | 'g2d:campaignValue' }
 >
 
 export function classicGameTwoDExpressionToCode(
@@ -259,6 +311,9 @@ export function classicGameTwoDExpressionToCode(
   compileExpression: (value: JSExpr) => string,
   resolveIdentifier: (name: string) => string,
 ): string {
+  if (expression.type === 'g2d:campaignValue') {
+    return `SZGame2D.campaignValue(${JSON.stringify(expression.key)}, ${compileExpression(expression.fallback)})`
+  }
   if (expression.type === 'g2d:tileContactIs') {
     return `SZGame2D.tileContactIs(${resolveIdentifier(expression.contactVar)}, ${compileExpression(expression.index)})`
   }
@@ -270,12 +325,13 @@ export function isClassicGameTwoDExpression(
   expression: JSExpr,
 ): expression is Extract<
   JSExpr,
-  { type: 'g2d:actionDown' | 'g2d:actionPressed' | 'g2d:tileContactIs' }
+  { type: 'g2d:actionDown' | 'g2d:actionPressed' | 'g2d:tileContactIs' | 'g2d:campaignValue' }
 > {
   return (
     expression.type === 'g2d:actionDown' ||
     expression.type === 'g2d:actionPressed' ||
-    expression.type === 'g2d:tileContactIs'
+    expression.type === 'g2d:tileContactIs' ||
+    expression.type === 'g2d:campaignValue'
   )
 }
 
@@ -308,6 +364,39 @@ export function classicGameTwoDStatementToBlock(
     return out
   }
   switch (statement.type) {
+    case 'g2d:paintShapeRecipe':
+      return tools.block(
+        'sz_g2d_paint_shape_recipe',
+        { RECIPE: String(s.recipe) },
+        {},
+        statement.__id,
+      )
+    case 'g2d:loadVectorCampaignLevel': {
+      const sockets = values('index', 'size', 'spawnX', 'spawnY')
+      const journey = tools.expression(valueToExpr((s.journey as number | JSExpr | undefined) ?? 1))
+      return sockets
+        ? tools.block(
+            'sz_g2d_load_vector_campaign_level',
+            {
+              TILESETS: (s.tilesetVars as string[]).join(', '),
+              MANIFEST: String(s.manifest),
+              MAP: String(s.mapVar),
+              WORLD: String(s.worldVar),
+              LEVEL: String(s.levelVar),
+              ENEMIES: ((s.enemyTypeVars as string[] | undefined) ?? []).join(', '),
+            },
+            {},
+            statement.__id,
+            {
+              INDEX: sockets.INDEX!,
+              SIZE: sockets.SIZE!,
+              X: sockets.SPAWNX!,
+              Y: sockets.SPAWNY!,
+              ...(journey ? { JOURNEY: journey } : {}),
+            },
+          )
+        : tools.raw(statement)
+    }
     case 'g2d:enableClassicControls':
       return tools.block(
         'sz_g2d_enable_classic_controls',
@@ -473,6 +562,14 @@ export function classicGameTwoDExpressionToBlock(
   ) => SerializedBlocklyBlock,
   expressionToBlock: (value: JSExpr) => SerializedBlocklyBlock | null,
 ): SerializedBlocklyBlock | undefined {
+  if (expression.type === 'g2d:campaignValue') {
+    const fallback = expressionToBlock(expression.fallback)
+    return fallback
+      ? block('sz_g2d_campaign_value', { KEY: expression.key }, {}, expression.__id, {
+          FALLBACK: fallback,
+        })
+      : undefined
+  }
   if (expression.type === 'g2d:actionDown') {
     return block('sz_g2d_action_down', { ACTION: expression.action })
   }
@@ -513,6 +610,62 @@ export function classicGameTwoDCallToIR(
   const identifier = (index: number) => tools.identifier(args[index])
   const expression = (index: number) => tools.expression(args[index])
   switch (method) {
+    case 'paintShapeRecipe': {
+      const ctxVar = identifier(0)
+      const recipe = stringLiteral(args[1])
+      return ctxVar && recipe !== null
+        ? ({ type: 'g2d:paintShapeRecipe', ctxVar, recipe } as JSStatement)
+        : undefined
+    }
+    case 'loadVectorCampaignLevel': {
+      const index = expression(0)
+      const manifest = stringLiteral(args[1])
+      const size = expression(2)
+      const spawnX = expression(3)
+      const spawnY = expression(4)
+      const callback = args[5]
+      const tilesets = args[6]
+      const enemyTypes = args[7]
+      const journey = expression(8)
+      if (
+        !tools.simple(index) ||
+        manifest === null ||
+        !tools.simple(size) ||
+        !tools.simple(spawnX) ||
+        !tools.simple(spawnY) ||
+        !tools.inlineFunction(callback) ||
+        tilesets?.type !== 'ArrayExpression'
+      )
+        return
+      const assignments = tools
+        .functionBody(callback)
+        .filter(
+          (statement): statement is Extract<JSStatement, { type: 'assign' }> =>
+            statement.type === 'assign',
+        )
+      const tilesetVars = tilesets.elements.map((arg) => tools.identifier(arg as Node))
+      if (assignments.length !== 3 || tilesetVars.some((name) => !name)) return
+      let enemyTypeVars: string[] | undefined
+      if (enemyTypes != null || args[8] != null) {
+        if (enemyTypes?.type !== 'ArrayExpression' || !tools.simple(journey)) return
+        const names = enemyTypes.elements.map((arg) => tools.identifier(arg as Node))
+        if (names.some((name) => !name)) return
+        enemyTypeVars = names as string[]
+      }
+      return {
+        type: 'g2d:loadVectorCampaignLevel',
+        index,
+        manifest,
+        size,
+        spawnX,
+        spawnY,
+        tilesetVars: tilesetVars as string[],
+        mapVar: assignments[0]!.name,
+        worldVar: assignments[1]!.name,
+        levelVar: assignments[2]!.name,
+        ...(enemyTypeVars ? { enemyTypeVars, journey: journey! } : {}),
+      } as JSStatement
+    }
     case 'enableClassicControls': {
       const mode = stringLiteral(args[0])
       return mode && CONTROL_MODES.has(mode)
@@ -673,6 +826,13 @@ export function classicGameTwoDCallExpressionToIR(
   args: Node[],
   tools?: Pick<ParserTools, 'identifier' | 'expression' | 'simple'>,
 ): JSExpr | undefined {
+  if (method === 'campaignValue' && tools) {
+    const key = stringLiteral(args[0])
+    const fallback = tools.expression(args[1])
+    return key !== null && tools.simple(fallback)
+      ? ({ type: 'g2d:campaignValue', key, fallback } as JSExpr)
+      : undefined
+  }
   if (method === 'tileContactIs' && tools) {
     const contactVar = tools.identifier(args[0])
     const index = tools.expression(args[1])

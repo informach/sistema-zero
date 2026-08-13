@@ -94,6 +94,61 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     addTileMapToWorld(worldValue, map);
     return worldValue;
   }
+  var _currentCampaignLevelData = null;
+  /** Cria somente a fase pedida, em vez de manter uma campanha inteira viva. */
+  function loadVectorCampaignLevel(index, source, tileSize, spawnX, spawnY, receive, tilesets, enemyTypes, journey) {
+    var manifest;
+    try { manifest = JSON.parse(String(source || '{}')); }
+    catch (error) {
+      warnOnce('campanha-vetorial-invalida', 'os dados da campanha vetorial precisam ser JSON válido.');
+      return;
+    }
+    var levels = manifest && Array.isArray(manifest.levels) ? manifest.levels : [];
+    var position = Math.max(0, Math.floor(_finiteNumber(index, 1)) - 1);
+    var data = levels[position];
+    if (!data || typeof data.grid !== 'string' || !Array.isArray(tilesets) || tilesets.length === 0) {
+      warnOnce('fase-vetorial-ausente', 'a fase escolhida não existe nos dados da campanha.');
+      return;
+    }
+    var theme = Math.max(0, Math.min(tilesets.length - 1, Math.floor(_finiteNumber(data.theme, 0))));
+    var map = createVectorTileMap(tilesets[theme], data.grid);
+    var worldValue = createWorldFromTileMap(map, tileSize);
+    setWorldEdges(worldValue, manifest.edges || 'none');
+    configureWorldCamera(
+      worldValue,
+      manifest.horizontal || 'off',
+      manifest.vertical || 'off',
+      manifest.deadZoneX,
+      manifest.deadZoneY
+    );
+    var level = createLevel(worldValue, spawnX, spawnY);
+    _currentCampaignLevelData = data;
+    if (Array.isArray(enemyTypes)) {
+      for (var enemyTypeIndex = 0; enemyTypeIndex < enemyTypes.length; enemyTypeIndex++) {
+        if (enemyTypes[enemyTypeIndex]) addEnemyTypeToWorld(worldValue, enemyTypes[enemyTypeIndex]);
+      }
+      var lineup = Array.isArray(data.enemies) ? data.enemies.slice(0, 256) : [];
+      if (_finiteNumber(journey, 1) >= 2 && Array.isArray(data.journey2Enemies)) {
+        lineup = lineup.concat(data.journey2Enemies.slice(0, 256 - lineup.length));
+      }
+      for (var enemyIndex = 0; enemyIndex < lineup.length; enemyIndex++) {
+        var enemy = lineup[enemyIndex];
+        if (!Array.isArray(enemy) || enemy.length < 3) continue;
+        var typeIndex = Math.floor(_finiteNumber(enemy[0], -1));
+        var enemyType = enemyTypes[typeIndex];
+        if (!enemyType) continue;
+        spawnEnemy(enemyType, _finiteNumber(enemy[1], 0), _finiteNumber(enemy[2], 0));
+      }
+    }
+    if (typeof receive === 'function') _invokeProjectCallback(receive, undefined, [map, worldValue, level]);
+  }
+  function campaignValue(key, fallback) {
+    if (!_currentCampaignLevelData || !Object.prototype.hasOwnProperty.call(_currentCampaignLevelData, key)) {
+      return fallback;
+    }
+    var value = _currentCampaignLevelData[key];
+    return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  }
   function _removeTerrainRegistration(worldValue, group, kind) {
     for (var i = worldValue.terrain.length - 1; i >= 0; i--) {
       var entry = worldValue.terrain[i];
@@ -682,6 +737,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     _levelEnterHandlers = Object.create(null);
     _levelEnterOrder = [];
     _levelEntryGeneration = 0;
+    _currentCampaignLevelData = null;
   }
 
 `

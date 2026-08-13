@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { createVectorBackgroundAsset } from '../core/project'
-import type { VectorShape } from './model'
+import { fontFamilyLabel, VECTOR_FONT_FAMILIES, type VectorShape } from './model'
 import { vectorToPortableSvg } from './portableSvg'
 import { gradientDefsMarkup, shapeToMarkup, textLines, vectorToSvg } from './svg'
 
@@ -209,13 +209,49 @@ describe('texto de VÁRIAS linhas e alinhamento', () => {
   it('uma linha à esquerda sai IGUAL a antes: sem tspan e sem text-anchor', () => {
     const markup = shapeToMarkup(textShape('Olá'))
     expect(markup).toBe(
-      '<text x="40" y="30" font-size="20" font-family="Nunito" fill="#78dc52">Olá</text>',
+      `<text x="40" y="30" font-size="20" font-family="'Nunito'" fill="#78dc52">Olá</text>`,
     )
   })
 
   it('usa a família escolhida no markup', () => {
     const shape = { ...textShape('Jogar'), fontFamily: 'press-start-2p' as const }
-    expect(shapeToMarkup(shape)).toContain('font-family="Press Start 2P"')
+    expect(shapeToMarkup(shape)).toContain(`font-family="'Press Start 2P'"`)
+  })
+
+  /**
+   * ⭐ A rede que faltava, e ela mata a CLASSE inteira.
+   *
+   * Sem aspas, o nome da família vira uma sequência de identificadores CSS — e
+   * identificador não pode começar com dígito. "Press Start 2P" tem o token "2P" e
+   * "Baloo 2" tem o "2": o navegador DESCARTA a declaração e o texto cai na fonte
+   * herdada. Duas das cinco famílias NUNCA funcionaram por isso, e as outras três
+   * escondiam o defeito por serem uma palavra só. Medido em Chrome antes do
+   * conserto: as duas devolviam "Nunito, ui-sans-serif, system-ui, sans-serif".
+   *
+   * ⚠️ O teste acima chegou a assertar a saída QUEBRADA, palavra por palavra.
+   */
+  it('⭐ TODA família sai entre aspas no markup', () => {
+    for (const family of VECTOR_FONT_FAMILIES) {
+      // O helper devolve a UNIÃO, então acrescentar `fontFamily` por espalhamento
+      // faz o TS conferir a chave contra todos os membros (rect não a tem).
+      const shape: VectorShape = {
+        ...base,
+        id: 't9',
+        type: 'text',
+        x: 40,
+        y: 30,
+        text: 'Aa',
+        fontSize: 20,
+        fontFamily: family,
+      }
+      const markup = shapeToMarkup(shape)
+      expect(markup, family).toContain(`font-family="'${fontFamilyLabel(family)}'"`)
+    }
+  })
+
+  it('anti-vácuo: um nome cru NÃO passaria pelo detector do caso acima', () => {
+    // Se alguém trocar o emissor por um valor sem aspas, a asserção de cima falha.
+    expect(`font-family="Press Start 2P"`).not.toContain(`font-family="'Press Start 2P'"`)
   })
 
   it('SVG portátil incorpora somente a fonte usada', async () => {
@@ -224,8 +260,8 @@ describe('texto de VÁRIAS linhas e alinhamento', () => {
 
     expect(svg).toContain('@font-face')
     expect(svg).toContain('data:font/woff2;base64,')
-    expect(svg).toContain('font-family="Bungee"')
-    expect(svg).not.toContain("font-family:'Fredoka'")
+    expect(svg).toContain(`font-family="'Bungee'"`)
+    expect(svg).not.toContain("font-family:'Fredoka One'")
   })
 
   it('três linhas viram três tspan, o primeiro com dy 0', () => {

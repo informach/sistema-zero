@@ -33,10 +33,20 @@ const FONTS = [
   },
   { family: 'bungee', label: 'Bungee', slug: 'bungee', query: 'Bungee', file: 'bungee' },
   {
+    // ⚠️ A CHAVE continua 'fredoka' (ela viaja nos desenhos salvos), mas a face é a
+    // Fredoka ONE — a display redonda e gordinha, que é o que a dona pediu. A
+    // variável nova é mais fina e o peso 600 dela NÃO reproduz o traço (medido em
+    // Chrome: 0,524 de largura média por caractere contra 0,502; a variável até
+    // ESTREITA ao engordar).
+    //
+    // ⚠️ O slug da licença fica em 'fredoka' de propósito: o Google DELISTOU
+    // `ofl/fredokaone/` (o OFL.txt de lá responde 404) ao absorver a família, e o
+    // OFL do `ofl/fredoka/` é do MESMO projeto — a primeira linha dele diz
+    // "Copyright 2016 The Fredoka Project Authors (github.com/hafontia/Fredoka-One)".
     family: 'fredoka',
-    label: 'Fredoka',
+    label: 'Fredoka One',
     slug: 'fredoka',
-    query: 'Fredoka:wght@400..600',
+    query: 'Fredoka+One',
     file: 'fredoka',
   },
 ] as const

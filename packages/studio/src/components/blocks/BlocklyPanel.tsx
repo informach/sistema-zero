@@ -28,6 +28,7 @@ import { extensionMinLevel } from '#extensions'
 import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
+import { isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import {
   attachAnimationNameWatcher,
   refreshAnimationNames,
@@ -202,7 +203,6 @@ function rerenderBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
 
 function scheduleBlocklyRerender(workspace: Blockly.WorkspaceSvg): void {
   const render = () => rerenderBlocklyWorkspace(workspace)
-  render()
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(render)
     return
@@ -273,11 +273,9 @@ function scrollWorkspaceIntoViewIfHidden(workspace: Blockly.WorkspaceSvg): void 
 }
 
 /**
- * Repaint pós-load ROBUSTO: resize + re-render + recentro-se-invisível, agora e
- * de novo num double-rAF (depois do layout/fonte assentarem). Substitui o par
- * resize/rerender que era insuficiente quando o container já estava estável
- * (o ResizeObserver só re-dispara em MUDANÇA de tamanho — nunca após um load
- * num painel já dimensionado).
+ * Repaint pós-load: um único layout depois que fonte e container assentaram.
+ * Fazer o mesmo render imediatamente e de novo num double-rAF custava duas
+ * travessias completas do SVG — dezenas de milhares de nós nos projetos grandes.
  */
 function schedulePostLoadRepaint(workspace: Blockly.WorkspaceSvg): void {
   const repaint = () => {
@@ -285,9 +283,8 @@ function schedulePostLoadRepaint(workspace: Blockly.WorkspaceSvg): void {
     rerenderBlocklyWorkspace(workspace)
     scrollWorkspaceIntoViewIfHidden(workspace)
   }
-  repaint()
   if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(() => requestAnimationFrame(repaint))
+    requestAnimationFrame(repaint)
     return
   }
   setTimeout(repaint, 0)
@@ -338,6 +335,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const isApplyingStateRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
   const shouldRegenerateAfterDragRef = useRef(false)
+  const shouldPersistLayoutAfterDragRef = useRef(false)
   const regenerationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingRegenerationWorkspaceRef = useRef<Blockly.Workspace | null>(null)
   const appliedToolboxRef = useRef<ReturnType<typeof buildCoreToolbox> | null>(null)
@@ -528,6 +526,17 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     [regenerateFromBlocks],
   )
 
+  const persistWorkspaceLayout = useCallback(
+    (targetWorkspace: Blockly.Workspace) => {
+      const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(targetWorkspace))
+      const serialized = JSON.stringify(state)
+      if (serialized === lastSerializedRef.current) return
+      lastSerializedRef.current = serialized
+      applyProjectState({ blocksState: state })
+    },
+    [applyProjectState],
+  )
+
   // O primeiro resize precisa acontecer depois que o SVG foi injetado e o
   // painel já recebeu tamanho real. Sem isso, o Blockly pode montar com
   // viewport 0 e só pintar depois de uma troca de modo ou resize global.
@@ -572,8 +581,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         event.type === Blockly.Events.FINISHED_LOADING ||
         event.type === Blockly.Events.BLOCK_CREATE ||
         event.type === Blockly.Events.BLOCK_DELETE ||
-        event.type === Blockly.Events.BLOCK_MOVE ||
-        event.type === Blockly.Events.BLOCK_CHANGE
+        (event.type === Blockly.Events.BLOCK_MOVE &&
+          !isPureWorkspaceLayoutMove(event as Blockly.Events.BlockMove))
       ) {
         scheduleRefresh()
       }
@@ -634,9 +643,14 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         const dragEvent = event as Blockly.Events.BlockDrag
         if (dragEvent.isStart) {
           shouldRegenerateAfterDragRef.current = false
+          shouldPersistLayoutAfterDragRef.current = false
         } else if (shouldRegenerateAfterDragRef.current) {
           shouldRegenerateAfterDragRef.current = false
+          shouldPersistLayoutAfterDragRef.current = false
           scheduleRegenerateFromBlocks(workspace)
+        } else if (shouldPersistLayoutAfterDragRef.current) {
+          shouldPersistLayoutAfterDragRef.current = false
+          persistWorkspaceLayout(workspace)
         }
         return
       }
@@ -649,9 +663,17 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       ) {
         return
       }
+      const layoutOnly =
+        event.type === Blockly.Events.BLOCK_MOVE &&
+        isPureWorkspaceLayoutMove(event as Blockly.Events.BlockMove)
       const svgWorkspace = workspace as Blockly.WorkspaceSvg
       if (typeof svgWorkspace.isDragging === 'function' && svgWorkspace.isDragging()) {
-        shouldRegenerateAfterDragRef.current = true
+        if (layoutOnly) shouldPersistLayoutAfterDragRef.current = true
+        else shouldRegenerateAfterDragRef.current = true
+        return
+      }
+      if (layoutOnly) {
+        persistWorkspaceLayout(workspace)
         return
       }
       scheduleRegenerateFromBlocks(workspace)
@@ -666,6 +688,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     projectMode,
     regenerateFromBlocks,
     scheduleRegenerateFromBlocks,
+    persistWorkspaceLayout,
     flushScheduledRegeneration,
   ])
 

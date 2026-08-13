@@ -3,8 +3,8 @@ export const gameKitDocs = `## Jogo 2D Avançado
 Esta extensão traz uma base reutilizável: o motor cuida de telas, estados,
 tempo, entrada, carregamento e canvas; você cria as regras. O movimento usa
 velocidade × \`dt\`, por isso mantém o ritmo em computadores diferentes. Menu,
-pausa, carregando, fim e vitória já vêm prontos, e a UI usa Baloo 2 offline sem
-substituir fontes escolhidas.
+pausa, carregando, fim e vitória já vêm prontos, e a UI usa a letra do bloco
+**Usar a fonte** (padrão Baloo 2), offline, sem substituir fontes escolhidas.
 
 ### Começando (a receita)
 

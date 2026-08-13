@@ -45,7 +45,9 @@ const goldenCatalogs = {
     // espinho é imortal e sobrevivia, pagando 200 pontos por quadro) e agora também
     // cobre a barra de fogo e o tiro do chefe; o bloco `?` dá moeda OU prêmio, nunca
     // os dois; e as partículas de derrota finalmente são desenhadas.
-    sha256: 'a1bd26b490f035d01d28cc4100f8f9b953ed247706d6fa5f42b09fbefd91403f',
+    // ⚠️ 10ª vez em 13/08: campanha compacta/lazy, elencos próprios por fase e
+    // jornada, animação do herói, dois jogadores independentes e novos inimigos.
+    sha256: 'e279026135b1edd32c0a30b223175ca8af8e070ac416375127ce1604c8a50d70',
   },
   'game-2d-advanced': {
     count: 37,

@@ -9,6 +9,7 @@ import {
   MOLD_ONLY_STATEMENT_TYPES,
   START_ONLY_STATEMENT_TYPES,
 } from '#ir'
+import { GAME_UI_FONT_IDS } from '../../gameUiFonts/catalog'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDPromptSummary } from '../aiSummary'
 import {
@@ -16,6 +17,11 @@ import {
   GAME_TWO_D_ENEMY_SMART_OPTIONS,
 } from '../blockCatalogShared'
 import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
+import {
+  GAME_TWO_D_TILE_CONTACT_FILTERS,
+  GAME_TWO_D_TILE_CONTACT_SIDES,
+  GAME_TWO_D_VECTOR_TILE_ROLES,
+} from '../classicContracts'
 import { gameTwoDDocs } from '../docs'
 import { gameTwoDManifest } from '../manifest'
 import {
@@ -215,7 +221,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(280)
+    expect(gameTwoDBlocks.length).toBe(283)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {
@@ -262,6 +268,49 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(tabela.length).toBeGreaterThan(200)
     const naTabela = [...tabela.matchAll(/^\s{4}'([a-z-]+)':/gm)].map((m) => m[1])
     expect(naTabela.sort()).toEqual([...G2D_ENEMY_BEHAVIORS].sort())
+  })
+
+  /**
+   * ⭐ A MESMA classe do dropdown de comportamentos, num contrato mais novo e por
+   * isso mais frágil. `classicContracts.ts` nasceu para ser a fonte única dos papéis
+   * de peça e dos lados de contato — e o lado "dentro" entrou nele e ficou de fora da
+   * régua do runtime, que era a QUINTA cópia literal da lista. O filtro do "Para cada
+   * tile" caía em "qualquer" e o gesto que o manual ensina (trocar o tile do contato)
+   * apagava o chão sob os pés. Aqui as três superfícies são cobradas contra a fonte.
+   */
+  it('os lados de contato do runtime, do dropdown e do contrato são a mesma lista', () => {
+    const espelho = gameTwoDRuntime.match(/var TILE_CONTACT_SIDES = \[([^\]]+)\]/)
+    expect(espelho).not.toBeNull()
+    const noRuntime = [...(espelho?.[1] ?? '').matchAll(/'([a-z]+)'/g)].map((m) => m[1])
+    expect(noRuntime).toEqual([...GAME_TWO_D_TILE_CONTACT_SIDES])
+
+    const bloco = gameTwoDBlocks.find((def) => def.type === 'sz_g2d_for_each_tile_contact')
+    const lados = (bloco?.args0 ?? []).find((arg) => (arg as { name?: string }).name === 'SIDE') as
+      | { options?: [string, string][] }
+      | undefined
+    expect(lados?.options?.map(([, valor]) => valor)).toEqual([...GAME_TWO_D_TILE_CONTACT_FILTERS])
+  })
+
+  it('os papéis de peça do dropdown são exatamente o contrato, na mesma ordem', () => {
+    const bloco = gameTwoDBlocks.find((def) => def.type === 'sz_g2d_define_vector_tile')
+    const papeis = (bloco?.args0 ?? []).find((arg) => (arg as { name?: string }).name === 'ROLE') as
+      | { options?: [string, string][] }
+      | undefined
+    expect(papeis?.options?.map(([, valor]) => valor)).toEqual([...GAME_TWO_D_VECTOR_TILE_ROLES])
+  })
+
+  /**
+   * ⚠️ O irmão da gk (`uiFont.test.ts`) trava as opções contra `GAME_UI_FONT_IDS`; o
+   * bloco do g2d nasceu sem nenhuma rede. A direção perigosa é a de sempre: id novo no
+   * catálogo esquecido no dropdown faz o FieldDropdown coagir para a PRIMEIRA opção, e
+   * a fonte da criança troca sozinha ao reabrir o projeto.
+   */
+  it('as opções de fonte do dropdown são exatamente o catálogo, na mesma ordem', () => {
+    const bloco = gameTwoDBlocks.find((def) => def.type === 'sz_g2d_use_font')
+    const fontes = (bloco?.args0 ?? []).find((arg) => (arg as { name?: string }).name === 'FONT') as
+      | { options?: [string, string][] }
+      | undefined
+    expect(fontes?.options?.map(([, valor]) => valor)).toEqual([...GAME_UI_FONT_IDS])
   })
 
   it('as opções de inteligência são exatamente o enum da IR, na mesma ordem', () => {
@@ -580,13 +629,16 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   /**
-   * O tooltip do "Ajustar" LISTA quem aproveita cada valor, e essa prosa já ficou
-   * para trás duas vezes seguidas. A criança lê o menu e o tooltip, não o mapa:
-   * um dono que não aparece ali é um botão que ela não vai apertar.
+   * A LISTA de quem aproveita cada valor já ficou para trás duas vezes seguidas, e a
+   * criança lê o menu e o texto, não o mapa do runtime: um dono que não aparece é um
+   * botão que ela não vai apertar.
+   *
+   * ⚠️ A lista mora no MANUAL, não mais no tooltip. Ela tinha crescido para 787
+   * caracteres — sete vezes a mediana da extensão —, e uma tabela em prosa corrida
+   * dentro de um balão não é documentação, é ruído. Mesma decisão do 5º full review.
    */
-  it('o tooltip do Ajustar cita todo comportamento que aproveita algum valor', () => {
-    const ajustar = gameTwoDBlocks.find((b) => b.type === 'sz_g2d_enemy_type_param')
-    const tooltip = String(ajustar?.tooltip ?? '')
+  it('o manual cita todo comportamento que aproveita algum valor do Ajustar', () => {
+    const tooltip = gameTwoDDocs
     const mapa = gameTwoDRuntime.slice(
       gameTwoDRuntime.indexOf('var ENEMY_PARAM_OWNERS = {'),
       gameTwoDRuntime.indexOf('var ENEMY_BEHAVIOR_LABELS = {'),
@@ -861,5 +913,65 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
         .filter((block) => !block.hidden && !String(block.tooltip ?? '').trim())
         .map((block) => block.type),
     ).toEqual([])
+  })
+
+  /**
+   * ⭐ A rede que faltava, e é a INVERSA da que existe logo acima. Aquela cobra que
+   * todo helper citado no contexto da IA exista na API; ninguém cobrava o contrário —
+   * helper REAL que o contexto nunca menciona. O Zappy só sugere o que conhece, então
+   * o que falta aqui é invisível para a criança que pergunta. Foi assim que o
+   * "Cobrir a tela com fade" e o "Atualizar os cascos" (este OBRIGATÓRIO junto do
+   * modo casco: sem ele o casco fica parado para sempre) ficaram fora do alcance dela.
+   *
+   * ⚠️ A régua é o nome do HELPER, não a cara do bloco: o contexto é escrito em
+   * assinaturas, e casar por palavras da face produzia dezenas de falsos positivos —
+   * teste que acusa quem está certo é pior que teste nenhum, igual a aviso.
+   */
+  it('todo helper da API é mencionado no contexto da IA', () => {
+    // Exceções deliberadas: helpers que o tutor não deve sugerir porque existem para
+    // o MOTOR (ciclo de vida interno) ou têm um irmão que é o caminho ensinado.
+    const FORA = new Set<string>(['onStart', 'getScene'])
+    // ⚠️ Aqui a busca é por MENÇÃO, não por chamada: o contexto lista boa parte dos
+    // helpers em prosa e separados por barra ("createVectorTileset/defineVectorTile/…").
+    // Exigir o parêntese, como faz o teste da direção contrária, acusaria 20 que estão
+    // escritos ali na frente.
+    const mencionado = (key: string) =>
+      new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(gameTwoDPromptContext)
+    expect(GAME_TWO_D_API_KEYS.filter(mencionado).length, 'anti-vácuo').toBeGreaterThan(150)
+    const ausentes = GAME_TWO_D_API_KEYS.filter((key) => !FORA.has(key) && !mencionado(key))
+    expect(ausentes.sort()).toEqual([])
+  })
+
+  /**
+   * ⚠️ Dica que ninguém lê não ensina. O 5º full review encolheu duas que estavam em
+   * 645 e 530 caracteres, e outras quatro ficaram: uma delas com 787, SETE vezes a
+   * mediana da extensão, com uma tabela de donos de parâmetro em prosa corrida dentro
+   * de um balão. Explicação longa é conteúdo de MANUAL.
+   *
+   * O teto é uma CATRACA, não um ideal: 580 congela as duas maiores que sobraram (os
+   * dois criadores de tipo, que têm nove soquetes cada) e fecha a porta para a próxima
+   * crescer. Quem precisar de mais texto escreve no manual e encolhe a dica.
+   */
+  it('nenhuma dica de bloco passa do teto de tamanho', () => {
+    const compridas = gameTwoDBlocks
+      .filter((block) => !block.hidden)
+      .map((block) => ({ type: block.type, tamanho: String(block.tooltip ?? '').length }))
+      .filter((item) => item.tamanho > 580)
+    expect(compridas).toEqual([])
+  })
+
+  /**
+   * A regra de voz da casa (sem travessão) já é cobrada nos blocos e no
+   * `manifest.docs` pelo `blockContracts.test.ts` — e passava LONGE das duas
+   * superfícies de texto mais longas que a criança de fato lê: o manual do aluno e os
+   * avisos do Console. Os dois ganharam travessão no lote de 12/08.
+   */
+  it('nem o manual nem os avisos do Console usam travessão', () => {
+    expect(gameTwoDDocs).not.toContain('—')
+
+    const avisos = [...gameTwoDRuntime.matchAll(/warnOnce\(\s*[^,]+,\s*([\s\S]*?)\);/g)]
+      .map((match) => match[1] ?? '')
+      .filter((texto) => texto.includes('—'))
+    expect(avisos).toEqual([])
   })
 })

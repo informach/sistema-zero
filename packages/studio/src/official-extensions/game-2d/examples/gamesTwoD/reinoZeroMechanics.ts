@@ -39,8 +39,8 @@ export function reinoZeroMovePowerup(
   speed: number,
   bounce: number,
 ): JSStatement {
-  // Cada ocorrência precisa ser um nó novo: a IR é árvore JSON, não um grafo com
-  // referências compartilhadas (a pré-guarda do catálogo rejeita alias/ciclo).
+  // Nós independentes mantêm cada ocorrência simples de transformar e inspecionar,
+  // embora a guarda do catálogo aceite referências compartilhadas serializáveis.
   const vx = (): JSExpr => ({ type: 'g2d:spriteVx', spriteVar })
   const vy = (): JSExpr => ({ type: 'g2d:spriteVy', spriteVar })
   return {

@@ -539,8 +539,34 @@ passar pelo `endGesture` — tem que soltar o `panning` lá também, senão o cu
 
 ### Cinco fontes vetoriais PORTÁTEIS (12/08/2026)
 
-`Baloo 2`, `Nunito`, `Press Start 2P`, `Bungee` e `Fredoka` são opções da ferramenta Texto e do
-texto selecionado. O modelo guarda a chave estável `fontFamily`; chave ausente ou inválida lê como
+`Baloo 2`, `Nunito`, `Press Start 2P`, `Bungee` e `Fredoka One` são opções da ferramenta Texto e do
+texto selecionado.
+
+> ⭐⭐ **DUAS delas nunca funcionaram, e a causa era um par de aspas (13/08/2026).** O
+> `shapeGeometryAttrs` emitia `font-family="Press Start 2P"` CRU. Sem aspas o nome vira uma
+> sequência de identificadores CSS, e identificador **não pode começar com dígito**: o token `2P`
+> (e o `2` de `Baloo 2`) invalida a declaração INTEIRA, e o navegador a descarta em silêncio.
+> Nunito, Bungee e Fredoka escondiam o defeito por serem uma palavra só.
+> Medido em Chrome com `getComputedTextLength()` num `<text>` real, "Herói 123" a 30px:
+> Press Start 2P sem aspas **134,7** (idêntico a NENHUMA fonte) contra **270,0** com aspas; Baloo 2
+> **134,7** contra **117,6**. Fonte única do valor: **`fontFamilyCss`** (`vector/model.ts`), que
+> sempre cita — o `@font-face` de `vector/fonts.ts` já citava; quem faltava era o USO.
+> ⚠️ Os testes de `svg.test.ts` chegaram a assertar a saída QUEBRADA palavra por palavra
+> (`font-family="Press Start 2P"`); hoje há um caso que percorre as CINCO famílias e exige as
+> aspas, com anti-vácuo.
+
+> ⭐ **`fredoka` = Fredoka ONE, não a variável (13/08/2026).** A CHAVE continua `fredoka` (ela
+> viaja nos desenhos salvos), mas a face é a display redonda e gordinha. A variável nova é mais
+> fina e o peso 600 dela NÃO reproduz o traço — medido em Chrome: largura média por caractere
+> 0,524 (One) contra 0,502 (variável), e a variável até ESTREITA ao engordar. O `widthFactor` foi
+> de 0,57 para **0,60** (razão medida 1,044).
+> ⚠️ **Consequência aceita:** desenho que já usava Fredoka re-renderiza na One — mais gordo e ~4%
+> mais largo —, e como o `widthFactor` mudou, a caixa ESTIMADA de texto centralizado/à direita
+> desloca alguns pixels.
+> ⚠️ **Licença:** o Google DELISTOU `ofl/fredokaone/` (o OFL.txt de lá responde 404) ao absorver a
+> família, então o gerador mantém `slug: 'fredoka'` — e isso é correto, não um contorno: a primeira
+> linha do OFL vendorizado diz `Copyright 2016 The Fredoka Project Authors
+> (https://github.com/hafontia/Fredoka-One)`. É o mesmo projeto e a mesma licença. O modelo guarda a chave estável `fontFamily`; chave ausente ou inválida lê como
 `Nunito`, mas o sanitizer omite o default em documentos antigos para preservar o round-trip.
 
 - O catálogo leve fica em `vector/model.ts`; os WOFF2 Latin ficam em módulos separados em

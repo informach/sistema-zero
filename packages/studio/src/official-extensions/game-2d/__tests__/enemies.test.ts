@@ -3314,4 +3314,81 @@ describe('a pisada tem que MATAR no quadro do contato, não quando o herói sai 
     expect(inimigo.hp).toBe(0)
     expect(heroi.vy).toBe(-5.5)
   })
+
+  describe('o aviso de "criou o tipo e nunca soltou" e os jogos de ONDA', () => {
+    /** Roda quadros de atualizar + desenhar em todos os tipos, como o jogo faz. */
+    const jogar = (
+      api: ReturnType<typeof load>,
+      tipos: EnemyType[],
+      ctx: ReturnType<typeof fakeCtx>,
+      quadros: number,
+    ) => {
+      for (let frame = 0; frame < quadros; frame += 1) {
+        for (const tipo of tipos) {
+          api.updateEnemyType(tipo, ctx, null)
+          api.drawEnemyType(ctx, tipo)
+        }
+      }
+    }
+
+    it('⭐ tipo guardado para a onda seguinte NÃO é acusado enquanto há inimigo em campo', () => {
+      // ⚠️ O jogo de ondas é o caso que o próprio texto do aviso cita ("para ondas,
+      // use dentro de A cada N quadros"), e a janela de graça de ~6s não cobre a onda
+      // 3 chegando aos 40s: com 6 tipos e 2 soltos, o Console acusava os 4 que
+      // esperavam a vez. Aviso que acusa quem está certo é pior que aviso nenhum.
+      const warn = spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const api = load()
+        const ctx = fakeCtx(800, 480)
+        const tipos = Array.from({ length: 6 }, () =>
+          api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 }),
+        )
+        // Onda 1: só os dois primeiros entram em campo.
+        api.spawnEnemy(tipos[0] as EnemyType, 100, 60)
+        api.spawnEnemy(tipos[1] as EnemyType, 160, 60)
+
+        jogar(api, tipos, ctx, 500)
+        expect(warn).not.toHaveBeenCalled()
+      } finally {
+        warn.mockRestore()
+      }
+    })
+
+    it('anti-vácuo: sem NENHUM inimigo em campo, o aviso continua vindo', () => {
+      const warn = spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const api = load()
+        const ctx = fakeCtx(800, 480)
+        const tipo = api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 })
+
+        jogar(api, [tipo], ctx, 500)
+        expect(warn).toHaveBeenCalledTimes(1)
+        expect(String(warn.mock.calls[0]?.[0])).toContain('nenhum inimigo foi solto ainda')
+      } finally {
+        warn.mockRestore()
+      }
+    })
+
+    it('a tela esvaziando de vez volta a acusar o tipo esquecido', () => {
+      // A graça é para o jogo em ANDAMENTO. Se a última onda morreu e o tipo
+      // esquecido segue vazio, o aviso é legítimo de novo.
+      const warn = spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const api = load()
+        const ctx = fakeCtx(800, 480)
+        const emCampo = api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 })
+        const esquecido = api.createEnemyType({ behavior: 'patrulha', hp: 1, w: 16, h: 16 })
+        const bicho = api.spawnEnemy(emCampo, 100, 60) as Sprite
+
+        jogar(api, [emCampo, esquecido], ctx, 500)
+        expect(warn).not.toHaveBeenCalled()
+
+        api.changeHealth(bicho, -99)
+        jogar(api, [emCampo, esquecido], ctx, 500)
+        expect(warn).toHaveBeenCalled()
+      } finally {
+        warn.mockRestore()
+      }
+    })
+  })
 })

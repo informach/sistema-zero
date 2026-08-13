@@ -92,7 +92,7 @@ describe('packVectorTileset — a MESMA fórmula do pixel', () => {
       await vectorTilesetPortableSvg(tileset),
       await vectorTilemapPortableSvg(tilemap, tileset),
     ]) {
-      expect(svg).toContain("font-family:'Fredoka'")
+      expect(svg).toContain("font-family:'Fredoka One'")
       expect(svg).toContain('data:font/woff2;base64,')
       expect(svg).not.toContain("font-family:'Bungee'")
     }

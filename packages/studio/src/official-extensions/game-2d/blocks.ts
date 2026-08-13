@@ -259,6 +259,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_paint_ellipse',
       'sz_g2d_paint_triangle',
       'sz_g2d_paint_line',
+      'sz_g2d_paint_shape_recipe',
       'sz_g2d_shape_w',
       'sz_g2d_shape_h',
     ],
@@ -358,6 +359,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: '#0f9f82',
     types: [
       'sz_g2d_create_level',
+      'sz_g2d_load_vector_campaign_level',
+      'sz_g2d_campaign_value',
       'sz_g2d_enter_level',
       'sz_g2d_level_reset_group',
       'sz_g2d_restart_level',
@@ -640,6 +643,14 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_spawn_enemy: { X: numShadow(100), Y: numShadow(100) },
   sz_g2d_stomp_enemy: { BOUNCE: numShadow(8) },
   sz_g2d_create_vector_tileset: { SIZE: numShadow(16) },
+  sz_g2d_load_vector_campaign_level: {
+    INDEX: numShadow(1),
+    SIZE: numShadow(16),
+    X: numShadow(32),
+    Y: numShadow(32),
+    JOURNEY: numShadow(1),
+  },
+  sz_g2d_campaign_value: { FALLBACK: numShadow(0) },
   sz_g2d_define_vector_tile: { INDEX: numShadow(0) },
   sz_g2d_set_tile_at_contact: { INDEX: numShadow(-1) },
   sz_g2d_draw_frame: {

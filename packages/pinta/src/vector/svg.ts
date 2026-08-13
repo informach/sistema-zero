@@ -5,7 +5,7 @@
  */
 import { boundsCenter, shapeBounds } from './geometry'
 import {
-  fontFamilyLabel,
+  fontFamilyCss,
   fontFamilyOf,
   gradientId,
   isVectorGradient,
@@ -189,7 +189,7 @@ export function shapeGeometryAttrs(shape: VectorShape): {
           x: String(round2(shape.x)),
           y: String(round2(shape.y)),
           'font-size': String(round2(shape.fontSize)),
-          'font-family': fontFamilyLabel(fontFamilyOf(shape)),
+          'font-family': fontFamilyCss(fontFamilyOf(shape)),
           ...(align === 'center' ? { 'text-anchor': 'middle' } : {}),
           ...(align === 'right' ? { 'text-anchor': 'end' } : {}),
         },

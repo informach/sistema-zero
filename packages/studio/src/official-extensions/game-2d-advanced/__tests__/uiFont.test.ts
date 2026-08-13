@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { parseJS } from '../../../parsers/js'
+import { gameTwoDRuntime } from '../../game-2d/runtime'
 import { GAME_UI_FONT_IDS } from '../../gameUiFonts/catalog'
+import { world3DRuntime } from '../../world-3d/runtime'
 import { gameKitBlocks } from '../blocks'
 import { gameKitRuntime } from '../runtime'
 import { loadRuntime } from './kitHarness'
@@ -118,8 +120,17 @@ describe('nenhum texto de canvas pede a fonte por variável CSS', () => {
           /\.font\s*=/.test(linha) && !/\.style\.font\s*=/.test(linha) && linha.includes('var(--'),
       )
 
-  it('todo ctx.font do runtime usa a família resolvida', () => {
-    expect(porVariavelCss(gameKitRuntime)).toEqual([])
+  /**
+   * ⚠️ Eram QUATRO os runtimes que leem `window.SZGameUIFont`, e a rede varria um.
+   * A falha é muda por definição, então cobrir só o arquivo onde ela apareceu deixa
+   * as outras três esperando a vez.
+   */
+  it.each([
+    ['Jogo 2D Avançado', gameKitRuntime],
+    ['Jogo 2D', gameTwoDRuntime],
+    ['Mundo 3D', world3DRuntime],
+  ])('todo ctx.font do runtime do %s usa a família resolvida', (_nome, fonte) => {
+    expect(porVariavelCss(fonte)).toEqual([])
   })
 
   it('e o detector MORDE — a linha que existia é encontrada', () => {

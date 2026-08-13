@@ -295,7 +295,14 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // "Escrever texto pixel" só aceita texto LITERAL, e os números do placar são
   // variáveis: sem um irmão que aceite valor, o HUD tinha que usar a fonte
   // proporcional e o jogo ficava com DUAS tipografias na mesma tela.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1121)
+  // 1121 → 1122: +1 do `_actionDownByTouch`, a leitura da ação SÓ pelo dedo. Os
+  // helpers antigos de movimento passaram a ler a camada semântica para o pad de
+  // toque alcançá-los e herdaram junto o mapa de TECLAS dela: a tecla z e o ESPAÇO
+  // viraram pulo em todo jogo de plataforma que já existia.
+  // 1122 → 1135: +2 da receita vetorial compacta, +9 do carregador preguiçoso
+  // de campanha (inclui elenco e jornada) e +2 da leitura de dados da fase. Eles substituem
+  // milhares de blocos/objetos vivos no editor e no preview.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1135)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

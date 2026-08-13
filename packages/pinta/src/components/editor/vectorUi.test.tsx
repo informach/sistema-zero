@@ -179,7 +179,7 @@ describe('UI vetorial (F5)', () => {
     const fontSelect = screen.getByRole('combobox', { name: COPY.vector.fontFamily })
     expect(
       Array.from((fontSelect as HTMLSelectElement).options).map((option) => option.text),
-    ).toEqual(['Baloo 2', 'Nunito', 'Press Start 2P', 'Bungee', 'Fredoka'])
+    ).toEqual(['Baloo 2', 'Nunito', 'Press Start 2P', 'Bungee', 'Fredoka One'])
     fireEvent.change(fontSelect, { target: { value: 'bungee' } })
     fireEvent.pointerDown(stage, { isPrimary: true, clientX: 40, clientY: 40 })
     fireEvent.change(await screen.findByPlaceholderText(COPY.vector.textPlaceholder), {
@@ -188,13 +188,15 @@ describe('UI vetorial (F5)', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
 
     await waitFor(() => {
-      expect(stage.querySelector('text')?.getAttribute('font-family')).toBe('Bungee')
+      expect(stage.querySelector('text')?.getAttribute('font-family')).toBe("'Bungee'")
     })
     fireEvent.change(screen.getByRole('combobox', { name: COPY.vector.fontFamily }), {
       target: { value: 'fredoka' },
     })
     await waitFor(() => {
-      expect(stage.querySelector('text')?.getAttribute('font-family')).toBe('Fredoka')
+      // ⚠️ ENTRE ASPAS: sem elas o navegador descarta a declaração em nomes com um
+      // token que começa por dígito ("Press Start 2P", "Baloo 2"). Ver fontFamilyCss.
+      expect(stage.querySelector('text')?.getAttribute('font-family')).toBe("'Fredoka One'")
     })
   })
 

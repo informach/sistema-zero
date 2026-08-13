@@ -39,6 +39,9 @@ export const GAME_KIT_3D_PERSISTENT_COMMANDS = [
 export const GAME_2D_PERSISTENT_COMMANDS = [
   { blockType: 'sz_g2d_play_music', statementType: 'g2d:playMusic' },
   { blockType: 'sz_g2d_play_track', statementType: 'g2d:playTrack' },
+  // Carregar uma fase da campanha CRIA mapa, mundo e fase (o callback devolve os
+  // três), então rodar isso dentro de um laço remontaria o cenário a cada quadro.
+  { blockType: 'sz_g2d_load_vector_campaign_level', statementType: 'g2d:loadVectorCampaignLevel' },
 ] as const
 
 export const GAME_3D_PERSISTENT_COMMANDS = [

@@ -390,7 +390,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     if (!pedida || !atual || pedida === atual) return;
     warnOnce(
       'fonte-divergente',
-      'para trocar a fonte, use o bloco “Usar a fonte” no “Ao iniciar” — a fonte é escolhida antes de o jogo começar, então ela não muda no meio.'
+      'o jogo carregou a fonte "' + atual + '" e este bloco pediu "' + pedida + '". Se você tem mais de um bloco “Usar a fonte”, vale só o último; deixe um só. Escrevendo no modo Código, use um nome da lista do bloco.'
     );
   }
   function _paintBackdrop(ctx, name) {

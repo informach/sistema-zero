@@ -13301,6 +13301,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return true
     case 'g2d:tileContactIs':
       return isSimpleValue(expr.index)
+    case 'g2d:campaignValue':
+      return isSimpleValue(expr.fallback)
     case 'datasetGet':
     case 'classContains':
     case 'shuffle':

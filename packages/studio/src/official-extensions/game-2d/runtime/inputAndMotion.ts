@@ -118,10 +118,19 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (keys[dir]) return true;
     return typeof actionDown === 'function' && actionDown(dir);
   }
-  /** O gesto de PULAR, por tecla, toque, ponteiro ou o botão A do pad. */
+  /**
+   * O gesto de PULAR, por tecla, toque, ponteiro ou o botão A do pad.
+   *
+   * ⚠️ Do pad vem só o DEDO (_actionDownByTouch), nunca o teclado dele: o mapa de
+   * teclas da camada semântica manda a tecla z e o ESPAÇO para "jump", e ler isso aqui daria
+   * teclas de pulo NOVAS a blocos que a criança já usa.
+   */
   function _jumpHeld() {
     if (keys.up || keyDown('Space') || pointer.down) return true;
-    return typeof actionDown === 'function' && (actionDown('jump') || actionDown('up'));
+    return (
+      typeof _actionDownByTouch === 'function' &&
+      (_actionDownByTouch('jump') || _actionDownByTouch('up'))
+    );
   }
   function _platformerMove(sprite, speed, jump, ctx) {
     if (!sprite) return;
@@ -138,7 +147,11 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (indoEsquerda) sprite.x -= s;
     if (indoDireita) sprite.x += s;
     sprite.vy = _finiteNumber(sprite.vy, 0);
-    var pressingJump = _dirHeld('up') || (typeof actionDown === 'function' && actionDown('jump'));
+    // ⚠️ O botão A do pad entra pelo DEDO, não pelo teclado da camada semântica:
+    // ler actionDown de "jump" aqui fazia a tecla z e o ESPAÇO pularem em todo jogo de
+    // plataforma que já existia (ver _actionDownByTouch).
+    var pressingJump =
+      _dirHeld('up') || (typeof _actionDownByTouch === 'function' && _actionDownByTouch('jump'));
     var wantsJump = pressingJump && sprite._platformJumpHeld !== true;
     sprite._platformJumpHeld = pressingJump;
     var jumped = false;

@@ -214,6 +214,7 @@ export type JSExpr =
       contactVar: string
       index: JSExpr
     })
+  | (JSExprCommon & { type: 'g2d:campaignValue'; key: string; fallback: JSExpr })
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
   // Game 2D — quantidade de sprites num grupo (valor numérico).
   | (JSExprCommon & { type: 'g2d:countGroup'; groupVar: string })
@@ -11986,6 +11987,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:paintEllipse',
   'g2d:paintTriangle',
   'g2d:paintLine',
+  'g2d:paintShapeRecipe',
   'g2d:loadSpritesheet',
   'g2d:animateSprite',
   'g2d:animateOnce',
@@ -12031,6 +12033,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createVectorTileset',
   'g2d:defineVectorTile',
   'g2d:createVectorTileMap',
+  'g2d:loadVectorCampaignLevel',
   'g2d:forEachTileContact',
   'g2d:setTileAtContact',
   'g2d:fitTileMapToStage',

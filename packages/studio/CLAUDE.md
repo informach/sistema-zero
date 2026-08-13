@@ -1028,7 +1028,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.76.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.77.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -1400,7 +1400,7 @@ de rotação em torno de um ponto, que não existe na tabela) e bola de fogo (o 
 poder). E o power-up muda a figura e o aguento, **não o TAMANHO** do herói: mexer na caixa
 exigiria revalidar a geometria das 32 fases.
 
-## Full review da REMEDIAÇÃO do Reino Zero (v0.76.0, 13/08)
+## Full review da REMEDIAÇÃO do Reino Zero (v0.76.0 → 0.77.0, 13/08)
 
 Rodada logo depois do lote de 13/08 (`15106f15` + os 4 commits do branch), que reescreveu ~1800 das
 2710 linhas de `reinoZero.ts` e mexeu em seis módulos de runtime para fechar o review de 12/08. O
@@ -1408,7 +1408,36 @@ Rodada logo depois do lote de 13/08 (`15106f15` + os 4 commits do branch), que r
 existe: **correção de review é código novo e merece review**, lição que este arquivo já registrou
 duas vezes. Baseline 1524/0.
 
-### Os quatro defeitos
+Três lentes adversariais (runtime · cadeia bloco/IR · pedagogia) + leitura própria. A do runtime e a
+da cadeia **convergiram sozinhas** no mesmo defeito do filtro de contato, o que é o sinal mais forte
+que uma rodada pode dar.
+
+### Os defeitos de motor
+
+0. ⭐⭐ **O lado "dentro" do "Para cada tile" NÃO filtrava: era idêntico a "qualquer".** A régua do
+   runtime era uma cadeia à mão com head/feet/left/right, e `'inside'` — o lado que ESTE lote criou
+   junto da peça "atravessa e avisa" — caía no `else` que desliga o filtro. Medido: numa cena com
+   chão sólido e uma moeda, `inside` devolvia os dois contatos. O gesto que o próprio manual ensina
+   (trocar o tile do contato por −1 para coletar) **apagaria o chão sob os pés**. O Reino Zero
+   escapava por acidente, porque cada ramo dele confere o índice antes de agir.
+   ⚠️ O único teste do lado `inside` montava uma cena onde não existia contato de outro lado: um
+   vácuo, que passa idêntico com o filtro quebrado. Fix: a régua saiu da lista (`TILE_CONTACT_SIDES`,
+   espelho de `classicContracts.ts`) e ganhou drift; o teste ganhou o par que FALHA.
+1. ⭐⭐ **`z` e ESPAÇO viraram PULO em todo jogo de plataforma que já existia.** Para o pad de toque
+   alcançar os helpers antigos, o lote os fez ler a camada semântica — e eles herdaram junto o mapa
+   de TECLAS dela. O comentário do lote afirma o contrário ("para teclado os dois caminhos são
+   equivalentes"), e isso vale só para DIREÇÃO: setas e WASD alimentam os dois mapas, `z`/ESPAÇO só o
+   novo. O exemplo oficial "Herói que anda" usa ESPAÇO para atirar, então cada tiro lançava o herói
+   no ar. É a regra de 02/08 sendo violada em silêncio. Fix: `_actionDownByTouch` — o pad entra pelo
+   DEDO, nunca pelo teclado dele.
+2. ⭐⭐ **Chutar um casco parado COBRAVA VIDA no quadro seguinte.** O casco anda 5 px/quadro e o herói
+   corre quase isso (na 2ª jornada do Reino Zero, 4,92: fuga de 0,08 px por quadro), então a
+   sobreposição do PRÓPRIO chute durava vários quadros e caía no dano. O gesto que o modo existe para
+   criar virava castigo. ⚠️ O teste chamava `hurtByEnemy` **duas vezes seguidas**, sem um quadro no
+   meio: ele CONSAGRAVA o defeito. Fix: o casco não cobra de quem o chutou enquanto os dois ainda
+   estiverem encostados, e o teste passou a rodar quadro a quadro.
+
+### Os defeitos do exemplo
 
 1. ⭐⭐ **Morrer SEM zerar a vida devolvia o herói GRANDE.** O renascimento somava `+2` e tirava `1`
    contando partir do zero, mas o `changeHealth` **satura no teto** (`runtime/utilities.ts:91`) e o
@@ -1436,19 +1465,100 @@ duas vezes. Baseline 1524/0.
    a queda. O comentário do próprio runtime prometia "⭐ O casco CAI", e isso só valia enquanto ele
    andava — pisar num casco no ar o deixava pendurado para sempre. ⚠️ A regressão escrita em 12/08
    afirmava "casco parado por 60 quadros: `y` constante", com o casco **no chão**, onde `y` constante
-   é o certo. Virou contrato para todo lugar. Fix: o atualizador especializado ganhou a gravidade
-   dos dois casos e o teste ganhou o par POSITIVO (pisado no ar, tem que pousar).
-   ⚠️ Com gravidade 0 (o padrão do motor, que é top-down) nada disso move nada: jogo antigo intacto.
+   é o certo. Virou contrato para todo lugar. Fix: o atualizador especializado passou a integrar o
+   `vy` do casco parado também, e o teste ganhou o par POSITIVO (pisado no ar, tem que pousar).
+   ⚠️⚠️ **E a primeira versão do meu conserto estava errada, com um comentário que provava o
+   contrário.** Eu somei gravidade dentro do `updateEnemyShells` e escrevi "com gravidade zero, o
+   padrão do motor, nada muda". O padrão é **0.6** (`physics.ts:5`) — o motor só não a APLICA sem o
+   bloco. O casco teria virado o único inimigo que cai sem ninguém pedir, escorregando sozinho num
+   jogo visto de cima. O contrato certo é o dos outros: **integrar o `vy` que existe**, e quem
+   acelera é o "Aplicar a gravidade ao grupo". Ao conferir isso apareceu o resto do defeito: o
+   Reino Zero **nunca aplicava gravidade aos `cascos`** (só a brasas, espinhos e guardiões), então
+   nem o casco nem o próprio bicho caíam de uma beirada. Uma linha no exemplo.
+5. **O `Ç` da fonte de pixel ficava uma linha acima da base das vizinhas** — 6 linhas de corpo em
+   vez das 7 do `C`, e o comentário dizia "a letra usa 7". Visível em "RECOMEÇA", na tela de
+   continuar do próprio Reino Zero.
 
 ### As duas lacunas de fidelidade
 
-5. **O bloco `?` pagava moeda E prêmio na mesma cabeçada.** O `collectCoin` estava uma linha acima
+6. **O bloco `?` pagava moeda E prêmio na mesma cabeçada.** O `collectCoin` estava uma linha acima
    do ramo do prêmio, então as duas primeiras cabeçadas de cada fase davam moeda **mais** power-up.
    No original o bloco dá uma coisa **ou** a outra — e a conta de "100 moedas = 1 vida" inflava
    sozinha. A moeda virou o último ramo do `senão`.
-6. **As partículas de derrota nasciam invisíveis.** Toda derrota do motor já solta um estouro
+7. **As partículas de derrota nasciam invisíveis.** Toda derrota do motor já solta um estouro
    (`emitParticles` no `updateEnemyType`), e o exemplo nunca chamava o "Atualizar e desenhar as
    partículas". Uma linha no laço devolve o retorno visual de cada pisada, tiro e estrela.
+
+### A lente de PEDAGOGIA foi a que mais rendeu, de novo
+
+O manual e o contexto da IA descreviam um produto que não existe mais. Nenhum destes é bug de
+código, e todos mudam o que a criança tenta fazer:
+
+- ⭐⭐ **O manual ensinava um soquete REVERTIDO em 02/08.** "um x aleatório **para largura …**" com a
+  instrução "encaixe a largura do sprite no primeiro" — e o bloco real não tem soquete nenhum
+  (`args0: []`). A dona mandou reverter aquele soquete porque ele estragava projetos salvos; o
+  manual não voltou. A criança procura um bloco que não existe e a instrução central é inexecutável.
+- ⭐ **O manual chamava um bloco por um nome inexistente e a afirmação estava invertida:** "o
+  **Escrever o placar** tem letra própria e não muda". Não existe "Escrever o placar"; o parecido é
+  o "Mostrar placar", que **segue** a fonte escolhida. Ela troca a letra, lê que o placar não muda,
+  vê o placar mudar. Mais seis nomes inventados no mesmo espírito ("Ricochetear nas bordas",
+  "Colisão por círculo", "Carregar spritesheet", "Pular no chão", "Para cada tile tocado", e dois
+  nomes diferentes para o MESMO bloco de 4 direções — um deles com o jargão "top-down").
+- ⭐ **A abertura dos DOIS manuais (g2d e gk) ainda descrevia a fonte embutida no runtime** — o
+  desenho que este mesmo lote desfez. O documento se contradizia 420 linhas adiante.
+- ⭐ **A regra do `useFont` era falsa nas duas metades:** o texto dizia "dentro de um se ela não muda
+  nada e o jogo avisa", e o bloco é `start-only` (o Blockly nem deixa aninhar), enquanto o
+  resolvedor varre a IR inteira e a fonte MUDA. O caso real — dois blocos, vale o último — não
+  estava em lugar nenhum. E o aviso do runtime mandava a criança fazer o que ela já tinha feito.
+- ⭐ **Nenhuma das três superfícies contava o gesto novo do casco** (pisar recolhe, encostar chuta),
+  e o rótulo do menu dizia o oposto do instante da pisada ("virar casco **móvel**"). Pior: o
+  **"Atualizar os cascos"** é OBRIGATÓRIO — sem ele o casco fica parado para sempre e não há aviso
+  nenhum — e o manual nunca o nomeava, nem o `ai.ts` o mencionava.
+- **"aba Assets"** em dois pontos de entrada do fluxo de imagens: no produto é o painel **Imagens e
+  sons**, e o próprio manual acerta 300 linhas depois.
+- **A dica do "Ajustar" tinha 787 caracteres** — sete vezes a mediana da extensão —, com uma tabela
+  de donos de parâmetro em prosa corrida dentro de um balão. Foi para o manual, e o drift que a
+  cobrava foi junto. Mais três dicas com duas frases COLADAS por falta de um espaço na concatenação.
+- **Travessão** no manual do aluno (2) e em três avisos do Console — as duas superfícies de texto
+  mais longas que a criança lê, e as únicas que a regra de voz não alcançava.
+
+### ⭐ O 13º achado veio de uma PERGUNTA dela, não da revisão
+
+Ela perguntou se dava para fazer um shoot-em-up de ONDAS — vários tipos, cada onda com um
+subconjunto, virando quando a onda esvazia. Dá, sem bloco novo: **o tipo é um grupo**, e como só os
+tipos da onda têm instâncias, o `quantos sprites tem no grupo ⟨todos⟩` da vista derivada É o que
+falta da onda (os tiros ficam de fora dela, então bala perdida não trava a virada).
+
+Mas ao medir a receita apareceu o defeito: com 6 tipos criados e 2 soltos, o Console acusava os
+**4 que esperavam a vez**. O `warnEnemyTypeEmptyOnce` tinha uma janela de graça de ~6 s pensada
+para a PRIMEIRA onda — e o texto do próprio aviso cita jogos de onda. A onda 3 chega aos 40 s.
+Fix: com **algum inimigo em campo** (qualquer tipo), a partida está em andamento e o contador
+ZERA; ele volta a correr quando a tela fica vazia de verdade, que é o caso real de "criei e nunca
+soltei". ⚠️ Sem memória por quadro de propósito — guardar por `_frameStamp` quebraria quem chama os
+helpers fora do laço.
+
+É a quinta vez nesta série que o achado é **aviso acusando quem está certo**, e a segunda vez que
+quem o encontrou foi ela usando o produto, não a suíte.
+
+### As redes, que são o entregável mais durável
+
+Cada uma existe porque um defeito desta rodada passou por ela:
+
+- **lados de contato e papéis de peça** do runtime e dos dropdowns contra `classicContracts.ts` (o
+  contrato tinha CINCO cópias literais; a do runtime foi a que divergiu), e as opções de fonte do
+  g2d contra o catálogo — o irmão da gk tinha essa rede, o g2d não tinha nenhuma.
+- ⭐ **zod não pode ENGOLIR campo**: dez tipos clássicos têm a forma TS em `ir/schema.ts` e a zod em
+  `classicIR.ts`. Os `z.object` não são `.strict()`, então uma chave que a TS declara e a zod
+  esquece passa no `safeParse` e é REMOVIDA pelo `parse` — e o `parsers/project.ts` grava o
+  resultado stripado. O campo sumiria do projeto ao passar pela Ponte, sem erro. O `success`
+  sozinho é cego; agora o `blockAudit` compara as chaves. **Provado que morde** (tirei o `worldVar`
+  do casco e ele apontou o bloco exato).
+- **todo helper da API é mencionado no `ai.ts`** — a inversa da rede que já existia. ⚠️ A primeira
+  versão casava por palavras da FACE e acusou 39 blocos corretos; teste que acusa quem está certo é
+  tão ruim quanto aviso que acusa quem está certo, e a régua virou o nome do helper.
+- **catraca de tamanho de dica** (580) e **travessão** no manual e nos avisos do Console.
+- **`ctx.font` com `var(--…)`** passou a varrer os TRÊS runtimes que leem a fonte, não só o da gk.
+  A falha é muda por definição: cobrir só o arquivo onde ela apareceu deixa os outros esperando.
 
 ### ⭐ O quique por igualdade: rede, não código
 

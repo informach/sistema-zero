@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { reinoZeroExample, reinoZeroLevelNames } from '../examples'
+import { reinoZeroExample, reinoZeroLevelGrids, reinoZeroLevelNames } from '../examples'
 
 /**
  * ⭐ A REDE QUE FALTAVA — geometria. O `reinoZeroExample.test.ts` conta linhas,
@@ -100,12 +100,9 @@ const MAX_PIT_TILES = 3
 type Grid = number[][]
 
 function parseGrids(): Grid[] {
-  const maps = reinoZeroExample.ir.behavior.start.filter(
-    (statement) => statement.type === 'g2d:createVectorTileMap',
-  )
-  expect(maps).toHaveLength(reinoZeroLevelNames.length)
-  return maps.map((map) =>
-    map.grid.split(';').map((row) => row.split(' ').map((cell) => Number(cell))),
+  expect(reinoZeroLevelGrids).toHaveLength(reinoZeroLevelNames.length)
+  return reinoZeroLevelGrids.map((grid) =>
+    grid.split(';').map((row) => row.split(' ').map((cell) => Number(cell))),
   )
 }
 

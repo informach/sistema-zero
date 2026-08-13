@@ -13,7 +13,7 @@
  * que ACERTOU*. Todo caso deste arquivo afere RESULTADO.
  */
 import { describe, expect, it } from 'bun:test'
-import { reinoZeroExample } from '../examples'
+import { reinoZeroExample, reinoZeroLevelGrids } from '../examples'
 import { type ExampleHarness, exampleHarness } from './examplePlaythroughHarness'
 
 const TILE = 16
@@ -33,16 +33,22 @@ const SOLID = new Set([0, 1, 2, 3, 7])
  * teste confere a contagem antes de indexar, para não medir o tipo errado em
  * silêncio se alguém inserir um no meio.
  */
-const TIPO = { brasas: 0, cascos: 1, espinhos: 2, asas: 3, plantas: 4, guardioes: 5 } as const
+const TIPO = {
+  brasas: 0,
+  cascos: 1,
+  espinhos: 2,
+  asas: 3,
+  plantas: 4,
+  guardioes: 5,
+  saltadores: 6,
+  investidas: 7,
+} as const
 
 /** As grades como elas de fato saem na IR — a mesma fonte da auditoria de geometria. */
 function levelGrid(level: number): number[][] {
-  const maps = reinoZeroExample.ir.behavior.start.filter(
-    (statement) => statement.type === 'g2d:createVectorTileMap',
-  )
-  const map = maps[level - 1]
-  if (map?.type !== 'g2d:createVectorTileMap') throw new Error(`fase ${level} sem mapa`)
-  return map.grid.split(';').map((row) => row.split(' ').map(Number))
+  const grid = reinoZeroLevelGrids[level - 1]
+  if (!grid) throw new Error(`fase ${level} sem mapa`)
+  return grid.split(';').map((row) => row.split(' ').map(Number))
 }
 
 /** Coluna com as duas linhas de piso firmes. */
@@ -149,6 +155,18 @@ function segurar(game: ExampleHarness, tecla: string, quadros: number): void {
   game.fireKey(tecla, 'keyup')
 }
 
+/** Toca o mastro e deixa a descida de encerramento terminar. */
+function concluirFase(game: ExampleHarness): void {
+  const heroi = game.sprites[0]
+  const portal = game.sprites[3]
+  if (!heroi || !portal) throw new Error('cenário incompleto')
+  const anterior = faseNoHud(game)
+  heroi.x = portal.x
+  heroi.y = portal.y
+  game.nextFrame()
+  for (let frame = 0; frame < 65 && faseNoHud(game) === anterior; frame += 1) game.nextFrame()
+}
+
 /** Avança pela saída real, neutralizando só os inimigos que não são o assunto do caso. */
 function avancarAte(game: ExampleHarness, faseAlvo: number): void {
   const heroi = game.sprites[0]
@@ -157,9 +175,7 @@ function avancarAte(game: ExampleHarness, faseAlvo: number): void {
 
   for (let fase = 1; fase < faseAlvo; fase += 1) {
     for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
-    heroi.x = portal.x
-    heroi.y = portal.y
-    game.nextFrame()
+    concluirFase(game)
   }
   expect(faseNoHud(game)).toBe(nomeDaFase(faseAlvo))
 }
@@ -212,6 +228,102 @@ describe('Reino Zero — a campanha JOGADA', () => {
     expect(game.errors).toEqual([])
   })
 
+  it('mantém fase, pontos e moedas separados ao alternar os dois jogadores', () => {
+    const game = exampleHarness(reinoZeroExample, () => 0.5)
+    game.nextFrame()
+    game.fireKey('Backspace')
+    game.nextFrame()
+    game.fireKey('Backspace', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+
+    const heroi = game.sprites[0]
+    const portal = game.sprites[3]
+    if (!heroi || !portal) throw new Error('cenário incompleto')
+    for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
+
+    const grid = levelGrid(1)
+    let moeda: { row: number; col: number } | null = null
+    for (let row = 0; row < grid.length && !moeda; row += 1) {
+      for (let col = 0; col < (grid[row]?.length ?? 0); col += 1) {
+        if (grid[row]?.[col] === T_MOEDA) {
+          moeda = { row, col }
+          break
+        }
+      }
+    }
+    if (!moeda) throw new Error('a fase 1-1 não tem moeda no cenário')
+    heroi.x = moeda.col * TILE
+    heroi.y = moeda.row * TILE
+    game.nextFrame()
+    expect(game.scores.MOEDAS).toBe(1)
+
+    concluirFase(game)
+    const pontosJ1 = Number(game.scores.PONTOS ?? 0)
+    expect(faseNoHud(game)).toBe('1-2')
+    expect(pontosJ1).toBeGreaterThanOrEqual(1000)
+
+    heroi.y = 300
+    game.nextFrame()
+    game.nextFrame()
+    expect(game.scores['JOG.']).toBe(2)
+    expect(faseNoHud(game)).toBe('1-1')
+    expect(game.scores.PONTOS).toBe(0)
+    expect(game.scores.MOEDAS).toBe(0)
+    expect(game.scores.VIDAS).toBe(3)
+
+    heroi.y = 300
+    game.nextFrame()
+    game.nextFrame()
+    expect(game.scores['JOG.']).toBe(1)
+    expect(faseNoHud(game)).toBe('1-2')
+    expect(game.scores.PONTOS).toBe(pontosJ1)
+    expect(game.scores.MOEDAS).toBe(1)
+    expect(game.scores.VIDAS).toBe(2)
+    expect(game.errors).toEqual([])
+  })
+
+  it('continuar reinicia o mundo dos dois jogadores sem ressuscitar estado antigo', () => {
+    const game = exampleHarness(reinoZeroExample, () => 0.5)
+    game.nextFrame()
+    game.fireKey('Backspace')
+    game.nextFrame()
+    game.fireKey('Backspace', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    game.fireKey('Enter', 'keyup')
+
+    const heroi = game.sprites[0]
+    const portal = game.sprites[3]
+    if (!heroi || !portal) throw new Error('cenário incompleto')
+    for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
+    concluirFase(game)
+    expect(faseNoHud(game)).toBe('1-2')
+
+    for (let morte = 0; morte < 6; morte += 1) {
+      heroi.y = 300
+      game.nextFrame()
+    }
+    expect(game.api.sceneIs('continua')).toBe(true)
+
+    game.fireKey('Enter')
+    game.nextFrame()
+    game.fireKey('Enter', 'keyup')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    expect(game.scores['JOG.']).toBe(1)
+    expect(faseNoHud(game)).toBe('1-1')
+    expect(game.scores.VIDAS).toBe(3)
+
+    heroi.y = 300
+    game.nextFrame()
+    game.nextFrame()
+    expect(game.scores['JOG.']).toBe(2)
+    expect(faseNoHud(game)).toBe('1-1')
+    expect(game.scores.VIDAS).toBe(3)
+    expect(game.errors).toEqual([])
+  })
+
   it('anda para a direita, e CORRER cobre mais chão que andar no mesmo tempo', () => {
     const medir = (correndo: boolean): number => {
       const game = exampleHarness(reinoZeroExample, () => 0.5)
@@ -261,7 +373,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     const game = exampleHarness(reinoZeroExample, () => 0.5)
     comecarPartida(game)
     const heroi = game.sprites[0]
-    expect(game.enemyTypes).toHaveLength(6)
+    expect(game.enemyTypes).toHaveLength(8)
     const brasas = game.enemyTypes[TIPO.brasas]
     const alvo = brasas?.items[0]
     if (!heroi || !brasas || !alvo) throw new Error('cenário da pisada incompleto')
@@ -291,9 +403,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     if (!heroi || !portal) throw new Error('cenário incompleto')
 
     for (let salto = 0; salto < 2; salto += 1) {
-      heroi.x = portal.x
-      heroi.y = portal.y
-      game.nextFrame()
+      concluirFase(game)
     }
     expect(faseNoHud(game)).toBe('1-3')
 
@@ -323,9 +433,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     // então ele é recolhido antes do salto — a luta não é o assunto deste caso.
     for (let salto = 0; salto < 4; salto += 1) {
       for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
-      heroi.x = portal.x
-      heroi.y = portal.y
-      game.nextFrame()
+      concluirFase(game)
     }
     expect(faseNoHud(game)).toBe('2-1')
 
@@ -368,9 +476,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
 
     for (let salto = 0; salto < 4; salto += 1) {
       for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
-      heroi.x = portal.x
-      heroi.y = portal.y
-      game.nextFrame()
+      concluirFase(game)
     }
     expect(faseNoHud(game)).toBe('2-1')
 
@@ -456,9 +562,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
 
       if (fase < 32) {
         for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
-        heroi.x = portal.x
-        heroi.y = portal.y
-        game.nextFrame()
+        concluirFase(game)
       }
     }
 
@@ -711,6 +815,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     alvo.x = heroi.x + 72
     alvo.y = SURFACE_Y - alvo.h
     const antes = game.api.countGroup(brasas)
+    const pontosAntes = Number(game.scores.PONTOS)
     game.fireKey('x')
     game.nextFrame()
     game.fireKey('x', 'keyup')
@@ -719,7 +824,69 @@ describe('Reino Zero — a campanha JOGADA', () => {
 
     expect(game.api.countGroup(brasas)).toBe(antes - 1)
     expect(game.api.countGroup(bolas)).toBe(0)
+    expect(game.scores.PONTOS).toBe(pontosAntes + 200)
     expect(game.errors).toEqual([])
+  })
+
+  it('atira para o último lado encarado, mesmo depois de parar, e limita duas bolas', () => {
+    const game = exampleHarness(reinoZeroExample, () => 0.5)
+    comecarPartida(game)
+    const heroi = game.sprites[0]
+    const broto = game.sprites[2]
+    const flor = game.sprites[6]
+    const bolas = game.groups[0]
+    if (!heroi || !broto || !flor || !bolas) throw new Error('estado de fogo incompleto')
+    for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
+
+    broto.x = heroi.x
+    broto.y = heroi.y
+    game.nextFrame()
+    flor.x = heroi.x
+    flor.y = heroi.y
+    game.nextFrame()
+    segurar(game, 'ArrowLeft', 3)
+    for (let frame = 0; frame < 30; frame += 1) game.nextFrame()
+    expect(Math.abs(heroi.vx ?? 0)).toBeLessThan(0.01)
+
+    for (let tiro = 0; tiro < 3; tiro += 1) {
+      game.fireKey('x')
+      game.nextFrame()
+      game.fireKey('x', 'keyup')
+      game.nextFrame()
+    }
+
+    expect(game.api.countGroup(bolas)).toBe(2)
+    expect(bolas.items.every((bola) => (bola.vx ?? 0) < 0)).toBe(true)
+  })
+
+  it('não dá pontos por acertar um inimigo imortal que não foi derrotado', () => {
+    const game = exampleHarness(reinoZeroExample, () => 0.5)
+    comecarPartida(game)
+    avancarAte(game, 13)
+    const heroi = game.sprites[0]
+    const broto = game.sprites[2]
+    const flor = game.sprites[6]
+    const espinhos = game.enemyTypes[TIPO.espinhos]
+    const alvo = espinhos?.items[0]
+    if (!heroi || !broto || !flor || !espinhos || !alvo) throw new Error('espinho ausente')
+    for (const tipo of game.enemyTypes) if (tipo !== espinhos) game.api.clearGroup(tipo)
+    broto.x = heroi.x
+    broto.y = heroi.y
+    game.nextFrame()
+    flor.x = heroi.x
+    flor.y = heroi.y
+    game.nextFrame()
+
+    alvo.x = heroi.x + 32
+    alvo.y = SURFACE_Y - alvo.h
+    const pontosAntes = Number(game.scores.PONTOS)
+    game.fireKey('x')
+    game.nextFrame()
+    game.fireKey('x', 'keyup')
+    for (let frame = 0; frame < 12; frame += 1) game.nextFrame()
+
+    expect(game.api.countGroup(espinhos)).toBe(1)
+    expect(game.scores.PONTOS).toBe(pontosAntes)
   })
 
   it('cada castelo posiciona sua barra de fogo e os castelos tardios reforçam o chefe', () => {
@@ -770,9 +937,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
 
     for (let fase = 1; fase <= 32; fase += 1) {
       for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
-      heroi.x = portal.x
-      heroi.y = portal.y
-      game.nextFrame()
+      concluirFase(game)
     }
 
     expect(faseNoHud(game)).toBe('1-1')
@@ -821,9 +986,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
 
     for (let salto = 0; salto < 3; salto += 1) {
       for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
-      heroi.x = portal.x
-      heroi.y = portal.y
-      game.nextFrame()
+      concluirFase(game)
     }
     expect(faseNoHud(game)).toBe('1-4')
 
@@ -928,7 +1091,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     expect(game.errors).toEqual([])
   })
 
-  it('encostar no portal troca de fase e recarrega o cenário', () => {
+  it('encostar no mastro faz a descida antes de trocar e recarregar a fase', () => {
     const game = exampleHarness(reinoZeroExample, () => 0.5)
     comecarPartida(game)
     const heroi = game.sprites[0]
@@ -939,6 +1102,12 @@ describe('Reino Zero — a campanha JOGADA', () => {
     heroi.x = portal.x
     heroi.y = portal.y
     game.nextFrame()
+    const yNoToque = heroi.y
+    expect(faseNoHud(game)).toBe('1-1')
+    for (let frame = 0; frame < 20; frame += 1) game.nextFrame()
+    expect(faseNoHud(game)).toBe('1-1')
+    expect(heroi.y).toBeGreaterThan(yNoToque)
+    for (let frame = 0; frame < 45; frame += 1) game.nextFrame()
 
     expect(faseNoHud(game)).toBe('1-2')
     expect(game.scores.PONTOS).toBeGreaterThanOrEqual(1000)
@@ -1036,9 +1205,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
       if (level < 32) {
         // O portal da etapa 4 só abre com o chefe derrotado — e ele já foi recolhido
         // pelo `clearGroup` acima, então a passagem fica livre.
-        heroi.x = portal.x
-        heroi.y = portal.y
-        game.nextFrame()
+        concluirFase(game)
       }
     }
 
@@ -1239,9 +1406,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     // A planta aparece a partir do mundo 3.
     for (let salto = 0; salto < 8; salto += 1) {
       for (const tipo of game.enemyTypes) game.api.clearGroup(tipo)
-      heroi.x = portal.x
-      heroi.y = portal.y
-      game.nextFrame()
+      concluirFase(game)
     }
     expect(faseNoHud(game)).toBe('3-1')
 
