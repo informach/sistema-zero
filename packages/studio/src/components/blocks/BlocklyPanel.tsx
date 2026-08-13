@@ -528,6 +528,19 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
 
   const persistWorkspaceLayout = useCallback(
     (targetWorkspace: Blockly.Workspace) => {
+      // ⚠️⚠️ Uma regeneração JÁ agendada é superconjunto disto: ela grava
+      // blocksState, IR, arquivos e diagnósticos. Persistir o layout aqui
+      // carimbaria `lastSerializedRef` com o estado ATUAL, e a regeneração
+      // pendente desistiria no dedupe da linha ~438 por "nada mudou".
+      //
+      // Foi exatamente assim que colar blocos parou de reconstruir a IR quando
+      // o movimento só-de-layout passou a pular a regeneração: o BLOCK_CREATE
+      // do "Colar blocos" AGENDA, e o `moveBy` que posiciona o bloco colado
+      // dispara um BLOCK_MOVE sem pai e com as duas coordenadas — ou seja,
+      // "só layout" — que rodava ANTES do timer e engolia o agendamento. O
+      // sintoma era mudo: os blocos apareciam e ficavam salvos, mas preview,
+      // arquivos e avisos do bloco continuavam no estado anterior.
+      if (regenerationTimerRef.current || pendingRegenerationWorkspaceRef.current) return
       const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(targetWorkspace))
       const serialized = JSON.stringify(state)
       if (serialized === lastSerializedRef.current) return
