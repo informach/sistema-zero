@@ -35,7 +35,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   // Sem capa dedicada: o checkout usa a arte clássica do produto (a mesma de antes).
   checkoutImage: 'hero-desafio.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: 'Desafio do Primeiro Jogo · Seu filho cria o primeiro jogo em 5 dias',
+  seoTitle: 'Desafio do Primeiro Jogo | Seu filho cria o primeiro jogo em 5 dias',
   seoDescription:
     'Trilha guiada de 5 dias para crianças a partir de 9 anos criarem o primeiro jogo jogável, dentro do Sistema Zero Studio. Comunicação dirigida aos pais.',
   theme: 'kids',

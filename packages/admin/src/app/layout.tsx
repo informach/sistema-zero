@@ -5,7 +5,7 @@ import { Providers } from '@/components/providers'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Sistema Zero — Admin',
+  title: 'Admin | Sistema Zero',
   description: 'Painel administrativo da plataforma Sistema Zero',
   // Favicons portados do projeto de referência (comunidade-sistema-zero); o
   // favicon.ico em src/app/ é servido automaticamente pelo App Router.

@@ -50,7 +50,7 @@ export const NO_COMANDO_DA_IA: FunnelDef = {
   productSku: 'no-comando-da-ia',
   imagesBase: '/img/no-comando-da-ia',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: 'No Comando da IA · Pare de pedir código no escuro',
+  seoTitle: 'No Comando da IA | Pare de pedir código no escuro',
   seoDescription:
     'Um guia direto para tirar sua ideia do papel com IA sem virar refém dela. Aprenda a comandar a IA com o método Z.E.R.O.',
   lifetimeAccess: true,

@@ -7,16 +7,27 @@
  * converte o nonzero para MultiPolygon, remove o ponto de fechamento da saída,
  * orienta furos e serializa no dialeto M/L/Z aceito pelo projeto.
  */
-import {
-  type MultiPolygon as ClippingMultiPolygon,
-  type Ring as ClippingRing,
-  difference,
-  intersection,
-  union,
-  xor,
-} from 'polygon-clipping'
+// ⚠️⚠️ IMPORT DEFAULT, NUNCA NOMEADO — e o motivo é uma mentira do pacote.
+//
+// O `polygon-clipping.d.ts` DECLARA `export function union/intersection/xor/difference`,
+// então o `tsc` aceita o import nomeado numa boa. Só que o bundle real exporta UMA coisa:
+// `var index = { union, intersection, xor, difference }; export { index as default }`.
+// O CJS faz o mesmo (`module.exports = index`).
+//
+// Resultado: `bun test` e `tsc` passam (o bun resolve pela interop de CJS), e o BUILD do
+// Next/Turbopack do community-kids FALHA com "Export union doesn't exist in target module".
+// Nem o portão local nem o CI enxergam isso — só o build do app, no Railway. Trocar de volta
+// para nomeado derruba o deploy do kids inteiro, e a página que morre é a do Pinta.
+//
+// O default import é honesto nos dois lados: o `tsc` o aceita por `allowSyntheticDefaultImports`
+// (ligado no tsconfig do pinta) e o bundler entrega o objeto de verdade.
+
+import type { MultiPolygon as ClippingMultiPolygon, Ring as ClippingRing } from 'polygon-clipping'
+import polygonClipping from 'polygon-clipping'
 import { round2 } from './geometry'
 import type { Vec2 } from './model'
+
+const { difference, intersection, union, xor } = polygonClipping
 
 /** Anel FECHADO: o último ponto liga no primeiro e NÃO se repete. */
 export type Ring = Vec2[]

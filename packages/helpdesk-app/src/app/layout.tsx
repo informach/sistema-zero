@@ -5,7 +5,7 @@ import { Providers } from '@/components/providers'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Sistema Zero — Helpdesk',
+  title: 'Helpdesk | Sistema Zero',
   description: 'Ferramenta interna de atendimento (help desk) do Sistema Zero',
   // Favicons portados do admin (mesmos assets do community); o favicon.ico em
   // src/app/ é servido automaticamente pelo App Router.
