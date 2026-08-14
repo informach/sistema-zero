@@ -818,6 +818,7 @@ const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Lit
 // Nível (dificuldade) do curso — espelha o enum `course_level` do schema.
 // `lenda` = categoria fora da carreira (bônus da formatura, sempre careerSlot null).
 const COURSE_LEVEL = t.Union([
+  t.Literal('primeiros-passos'),
   t.Literal('iniciante'),
   t.Literal('intermediario'),
   t.Literal('avancado'),

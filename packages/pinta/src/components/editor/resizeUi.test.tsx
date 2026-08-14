@@ -8,7 +8,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
-import { clearIdbMock } from '../../testing/idbMock'
+import { clearIdbMock, setIdbWriteGuard } from '../../testing/idbMock'
 
 const { PintaApp } = await import('../PintaApp')
 const { setPintaStorageNamespace } = await import('../../state/persistence')
@@ -160,5 +160,28 @@ describe('mudar o tamanho no editor', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: COPY.editor.resize.button(8, 6) })).toBeTruthy()
     })
+  })
+
+  it('não fecha o editor quando o flush do Voltar falha', async () => {
+    await abrir((loja) =>
+      loja.getState().create({ kind: 'pixel-background', name: 'ceu', width: 32, height: 32 }),
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) })).toBeTruthy()
+    })
+
+    abrirDialogo(32, 32)
+    preencher('64', '32')
+    setIdbWriteGuard(() => {
+      throw new Error('disco cheio')
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.apply }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
+
+    await waitFor(() => {
+      expect(screen.getByText(COPY.editor.saveError)).toBeTruthy()
+    })
+    expect(screen.getByRole('button', { name: COPY.editor.resize.button(64, 32) })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Abrir ceu/ })).toBeNull()
   })
 })

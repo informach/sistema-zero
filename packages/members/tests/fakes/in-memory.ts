@@ -2272,8 +2272,9 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       const track = sc.sourceTrack ?? ce.sourceTrack ?? course?.track ?? '2d'
       const careerSlot = sc.sourceCareerSlot ?? ce.sourceCareerSlot ?? course?.careerSlot
       // `lenda` é fora da carreira → nunca conta (também teria careerSlot null).
-      if (level && level !== 'lenda' && careerSlot != null) {
-        const slots = result[courseTier(level, track)]
+      const tier = level && level !== 'lenda' ? courseTier(level, track) : null
+      if (tier && careerSlot != null) {
+        const slots = result[tier]
         if (!slots.includes(careerSlot)) slots.push(careerSlot)
       }
     }

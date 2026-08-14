@@ -12,8 +12,8 @@ export function KidsCareerLockedStudio() {
       </span>
       <h1 className="mt-3 sz-display text-2xl">Acenda sua Faísca primeiro!</h1>
       <p className="mt-3 max-w-md text-muted-foreground">
-        Faça o primeiro curso Iniciante 2D e publique o projeto no Mural. Depois disso, o Estúdio
-        livre abre com as ferramentas que você já aprendeu a usar.
+        Termine o seu primeiro curso e publique o projeto no Mural. Depois disso, o Estúdio livre
+        abre com as ferramentas que você já aprendeu a usar.
       </p>
       <Link
         href="/cursos"

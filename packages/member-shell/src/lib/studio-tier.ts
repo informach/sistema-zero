@@ -25,8 +25,24 @@ export interface StudioTier {
   canPromoteToPro: boolean
 }
 
-/** Inventor(a), o 3º degrau da carreira. */
-export const CREATIVE_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
+/**
+ * Apps que CHAMAM a IA — Pensa e Zappy — abrem no **Inventor(a)**, o 3º degrau.
+ *
+ * O motivo é custo por uso: cada pergunta é uma chamada paga, e a criança precisa de um
+ * mínimo de repertório antes de perguntar qualquer coisa. Não confundir com o portão de
+ * criação livre abaixo.
+ */
+export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
+
+/**
+ * Ferramentas de criação livre — Estúdio Completo e Pinta — abrem no **Construtor(a)**,
+ * o 2º degrau (decisão da usuária, 14/08: o Pinta desceu do Inventor).
+ *
+ * Não custam por uso, então a régua é só pedagógica: a criança já publicou o primeiro
+ * projeto e pode criar sozinha. ⚠️ Casa com o `reward.freeStudio` do core — o Estúdio
+ * continua sendo gateado por ele; esta constante existe para o Pinta e para a copy.
+ */
+export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
 
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 

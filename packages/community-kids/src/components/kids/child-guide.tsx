@@ -19,6 +19,7 @@ import {
   childWelcomeSteps,
   clearGuideFlag,
   clearSessionGuideFlag,
+  hasActionableWelcomeStep,
   readGuideFlag,
   readSessionGuideFlag,
   resolveChildGuideStep,
@@ -79,10 +80,16 @@ export function ChildGuide({
   useEffect(() => {
     setAvatarDismissed(readSessionGuideFlag(childGuideAvatarDismissedKey(profileKey)))
     setStartDismissed(readGuideFlag(childGuideStartDismissedKey(profileKey)))
-    // Boas-vindas 1× por perfil neste navegador — e só se houver o que guiar.
-    // Falha na API do avatar é "desconhecido", não evidência de que ele falta.
-    const somethingToGuide = welcomeSteps.some((welcomeStep) => welcomeStep.id !== 'xp')
-    if (somethingToGuide && !readGuideFlag(childGuideWelcomeSeenKey(profileKey))) {
+    // Boas-vindas 1× por perfil neste navegador — e só se houver AÇÃO a guiar.
+    // ⚠️ A explicação fixa do app (aulas/XP/Estúdio/Mural/carreira) NÃO conta aqui: ela
+    // existe sempre, e abrir a modal por causa dela poria o tutorial na cara de quem já
+    // sabe tudo, a cada perfil novo. Quem já fez tudo vê a explicação quando PEDIR, pelo
+    // "Como funciona?". Falha na API do avatar é "desconhecido", não evidência de que
+    // ele falta.
+    if (
+      hasActionableWelcomeStep(welcomeSteps) &&
+      !readGuideFlag(childGuideWelcomeSeenKey(profileKey))
+    ) {
       setWelcomeOpen(true)
       trackOnboardingEvent({ audience: 'child', action: 'welcome_opened', step: 'welcome' })
     }
@@ -189,6 +196,9 @@ export function ChildGuide({
         title={childName ? `Oi, ${childName}! Eu sou o Zappy! 👋` : 'Oi! Eu sou o Zappy! 👋'}
         description="Vem ver como tudo funciona por aqui:"
         steps={welcomeSteps}
+        // Sem balão a revelar, fechar a modal não faz nada acontecer — então o botão não
+        // pode dizer "Vamos lá!".
+        continueLabel={hasActionableWelcomeStep(welcomeSteps) ? undefined : 'Entendi!'}
       />
       <div className="flex justify-end">
         <GuideReopenButton buttonRef={reopenRef} onClick={reopenGuide} />

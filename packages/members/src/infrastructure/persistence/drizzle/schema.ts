@@ -45,6 +45,10 @@ export const courseAudienceEnum = members.enum('course_audience', ['adult', 'kid
 // (domain/gamification/levels.ts): um curso "qualificado" (concluído + publicado no
 // Mural) conta para o nível conforme a sua dificuldade.
 export const courseLevelEnum = members.enum('course_level', [
+  // Degrau de ENTRADA da carreira (14/08, migration `0063`): 1 posição só, o curso que a
+  // Faísca faz. Antes o curso-base morava no `iniciante` e a divisão Faísca × Construtor(a)
+  // era só apresentação — por isso a Faísca não podia ter curso bônus próprio.
+  'primeiros-passos',
   'iniciante',
   'intermediario',
   'avancado',
@@ -113,7 +117,7 @@ export const courses = members.table(
     track: courseTrackEnum('track').notNull().default('2d'),
     // Posição do curso na etapa da Carreira do Criador. NULL = curso bônus;
     // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a carreira
-    // e aplicam o teto da etapa: 6 no Iniciante 2D e 5 nas demais.
+    // e aplicam o teto específico de cada etapa.
     careerSlot: smallint('career_slot'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
@@ -129,9 +133,11 @@ export const courses = members.table(
       .on(t.audience, t.level, t.track, t.careerSlot)
       .where(sql`${t.careerSlot} is not null`),
     check(
-      // 8 posições por degrau (reforma 07/2026; migration `0053` alarga o CHECK de 6/5→8).
+      // Espelha `assertCareerSlot`: Primeiros Passos existe só em 2D; Lenda nunca ocupa
+      // posição; os tetos são 1 em Primeiros Passos, 7 no Iniciante 2D e 8 nos demais.
+      // ⚠️ Compara `level::text`, não o literal novo do enum: a própria `0063` o adiciona.
       'courses_career_slot_check',
-      sql`${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.careerSlot} between 1 and 8)`,
+      sql`(${t.level}::text <> 'primeiros-passos' or ${t.track}::text = '2d') and (${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.level}::text <> 'lenda' and ${t.careerSlot} between 1 and (case when ${t.level}::text = 'primeiros-passos' then 1 when ${t.level}::text = 'iniciante' and ${t.track}::text = '2d' then 7 else 8 end)))`,
     ),
   ],
 )

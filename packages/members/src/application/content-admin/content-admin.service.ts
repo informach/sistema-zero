@@ -1,4 +1,4 @@
-import { CAREER_SLOT_MAX } from '@sistemazero/core/career'
+import { careerSlotsForTier } from '@sistemazero/core/career'
 import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import {
   ContentNotFoundError,
@@ -188,6 +188,14 @@ function assertCareerSlot(course: {
   track: string
   careerSlot: number | null
 }): void {
+  // O degrau de ENTRADA só existe no eixo 2D. Vale ANTES do desvio do bônus: um curso
+  // `primeiros-passos` + `3d` não gera degrau nenhum (`courseTier` devolve `null`), então
+  // ficaria SEMPRE aberto e não apareceria em trilha alguma — invisível no mapa e fora da
+  // carreira, sem ninguém notar. O select do admin nunca oferece esse par; isto barra o
+  // PATCH feito à mão.
+  if (course.level === 'primeiros-passos' && course.track !== '2d') {
+    throw new InvalidContentCommandError('Primeiros Passos existe somente no eixo 2D')
+  }
   if (course.careerSlot === null) return
   if (course.level === 'lenda') {
     throw new InvalidContentCommandError(
@@ -197,16 +205,26 @@ function assertCareerSlot(course: {
   if (course.audience !== 'kids') {
     throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
   }
-  // 8 posições por degrau (reforma 07/2026; era 6 no iniciante-2d e 5 nas demais).
-  // O teto vem do catálogo CANÔNICO do core — o CHECK da migration 0053 e o
-  // admin (via conformance) espelham o mesmo valor.
-  const maximum = CAREER_SLOT_MAX
+  // O teto é POR DEGRAU e vem do catálogo CANÔNICO do core (1 em Primeiros Passos, 7 no
+  // Iniciante 2D, 8 nos demais); o CHECK da migration `0063` e o admin (via conformance)
+  // espelham a mesma fonte. O `CAREER_SLOT_MAX` continua como limite externo do DTO.
+  const tier = `${course.level}-${course.track}`
+  const maximum = careerSlotsForTier(tier)
+  if (maximum === 0) {
+    throw new InvalidContentCommandError(
+      'Esta combinação de nível e eixo não é um degrau da carreira',
+    )
+  }
   if (
     !Number.isInteger(course.careerSlot) ||
     course.careerSlot < 1 ||
     course.careerSlot > maximum
   ) {
-    throw new InvalidContentCommandError(`Esta etapa aceita posições de 1 a ${maximum} na carreira`)
+    throw new InvalidContentCommandError(
+      maximum === 1
+        ? 'Esta etapa aceita somente a posição 1 na carreira'
+        : `Esta etapa aceita posições de 1 a ${maximum} na carreira`,
+    )
   }
 }
 

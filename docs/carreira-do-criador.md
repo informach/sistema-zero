@@ -15,18 +15,21 @@ XP, quantidade total de cursos e cursos bônus não substituem esses marcos. Alt
 
 ## Organização dos cursos
 
-A carreira possui seis etapas:
+A carreira possui sete etapas:
 
-| Etapa | Posições obrigatórias |
-|---|---:|
-| Iniciante 2D | 1 a 8 |
-| Iniciante 3D | 1 a 8 |
-| Intermediário 2D | 1 a 8 |
-| Intermediário 3D | 1 a 8 |
-| Avançado 2D | 1 a 8 |
-| Avançado 3D | 1 a 8 |
+| Etapa | Posições obrigatórias | Quem estuda |
+|---|---:|---|
+| **Primeiros Passos** | 1 | Faísca |
+| Iniciante 2D | 1 a 7 | Construtor(a) |
+| Iniciante 3D | 1 a 8 | Inventor(a) |
+| Intermediário 2D | 1 a 8 | Explorador(a) |
+| Intermediário 3D | 1 a 8 | Mestre dos Jogos |
+| Avançado 2D | 1 a 8 | Arquiteto(a) |
+| Avançado 3D | 1 a 8 | Gênio da Criação |
 
-São 48 posições obrigatórias (**8 por degrau** — reforma de 07/2026; antes eram 6 no Iniciante 2D e 5 nas demais, totalizando 31). `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
+São **48 posições obrigatórias**, o mesmo total de antes. `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
+
+**Primeiros Passos (14/08/2026) é a trilha da Faísca.** Até então o curso base morava no Iniciante 2D e a divisão entre Faísca e Construtor(a) existia só na tela do mapa — por isso a Faísca **não podia ter curso bônus**: todo bônus do Iniciante 2D caía na trilha do Construtor(a). Agora ela tem etapa própria, com uma posição obrigatória (o curso de entrada) mais os bônus dela, que abrem quando esse curso é concluído e publicado. O Iniciante 2D ficou com 7 posições, então continuam sendo 8 cursos para virar Inventor(a) — nada mudou de tamanho para a criança.
 
 A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança abre primeiro esse curso. Os demais cursos da mesma etapa só abrem depois que o curso base for concluído e publicado. Cursos de etapas futuras mostram uma mensagem de continuação da carreira e não criam um link para um curso que ainda está bloqueado.
 
@@ -48,14 +51,14 @@ O Admin agora **avisa sozinho** (full review 24/07): a listagem admin do members
 
 ## Mapa da Carreira na página de cursos (kids, 24/07)
 
-No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma fita curva SVG com os 8 níveis ilustrados pelos personagens Dedé e Debinha (`public/carreira/<slug>.webp`; sem a arte, cai no ícone do nível). Nível não atingido fica **preto-e-branco com cadeado e não navega** (balança + recado); nível atingido abre **`/cursos/trilha/<slug do nível>`** (v2 24/07 — rota por NÍVEL, ex.: `/cursos/trilha/coder`, não mais por degrau de curso). A listagem divide o degrau por `careerSlot`: a **Faísca (noob) vê só o curso-base** (slot 1) e o **Construtor (coder) vê o resto do degrau + os bônus**; dos Inventores em diante cada nível mostra o seu degrau inteiro (`coursesForLevel` em `lib/career-map.ts`). O nó do nível atual mostra "Você está aqui" + quantos cursos faltam. A Lenda é o nó final de celebração (sem trilha — `/cursos/trilha/god` é 404). Deep-link numa trilha bloqueada mostra recado gentil; a equipe nunca é murada (o escape é medido sobre os cursos QUE AQUELA trilha mostra: algum liberado → abre). Sem gamificação disponível, a página cai na grade clássica. A régua REAL de acesso continua no members — o mapa é apresentação.
+No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma fita curva SVG com os 8 níveis ilustrados pelos personagens Dedé e Debinha (`public/carreira/<slug>.webp`; sem a arte, cai no ícone do nível). Nível não atingido fica **preto-e-branco com cadeado e não navega** (balança + recado); nível atingido abre **`/cursos/trilha/<slug do nível>`** (rota por NÍVEL, ex.: `/cursos/trilha/coder`). Cada posto é dono de uma etapa inteira: Faísca mostra Primeiros Passos, Construtor mostra Iniciante 2D e assim por diante. A Lenda mostra somente os cursos de nível `lenda`, que são bônus de formatura e ficam fora da contagem da carreira. O nó atual mostra "Você está aqui" e o progresso honesto sobre os cursos já publicados. Deep-link numa trilha bloqueada mostra recado gentil; a equipe nunca é murada. Sem gamificação disponível, a página cai na grade clássica. A régua REAL de acesso continua no members — o mapa é apresentação.
 
 ### O mapa acompanha o catálogo (horizonte, 08/2026)
 
-A carreira exige **48 cursos** (8 posições × 6 degraus). Enquanto eles não existem, o mapa **não
+A carreira exige **48 cursos** (1 nos Primeiros Passos + 7 no Iniciante 2D + 8 em cada um dos outros cinco degraus). Enquanto eles não existem, o mapa **não
 mostra a escada inteira**: ele desenha até o **horizonte do catálogo**, que é o nível mais alto que
 os cursos publicados hoje conseguem entregar de fato, e fecha com um nó **"E tem muito mais pela
-frente"** (toque abre a lista dos postos que faltam e o que cada um traz). Sem isso a criança lê
+frente"** (toque balança o nó e mostra um recado de que essa parte está em construção). Sem isso a criança lê
 "faltam 7 cursos" de cursos que ninguém gravou e encara uma fileira de cadeados, que ela entende
 como culpa dela.
 
@@ -64,7 +67,7 @@ Duas consequências para quem opera:
 - **Publicar um curso move o mapa na hora.** O contador do nível atual conta só os cursos que
   existem ("1 de 3"), então cada curso novo aparece como um passo a mais no nó. Quando a criança faz
   tudo que existe, a tela diz **"Você está em dia!"** e oferece o Estúdio, em vez de prometer curso.
-- **Completar um degrau inteiro (as 8 posições) abre o próximo posto no mapa.** É o horizonte
+- **Completar um degrau inteiro (1, 7 ou 8 posições, conforme a etapa) abre o próximo posto no mapa.** É o horizonte
   avançando. Quando os 48 estiverem publicados, o horizonte chega na Lenda e a tela volta sozinha à
   escada completa de 8 medalhões — não há nada para desligar.
 
@@ -110,30 +113,65 @@ traga ao menos um bloco inédito.
 o Construtor já tem hoje (o conjunto "Jogo 2D Essencial", 47 blocos com o 🚀 Kit espaço inteiro).
 Sem isso, quem virar Construtor depois desse lote abre o Estúdio com menos ferramentas do que antes.
 
+### Runbook do degrau Primeiros Passos (uma única vez)
+
+O valor `primeiros-passos` nasce na migration `0063`. O PostgreSQL não permite escrever um valor de
+enum novo antes do commit da transação que o criou, então o curso-base não pode ser movido pela
+própria migration. O rollout deve ocorrer com o Community Kids em manutenção:
+
+1. aplicar o deploy do members e confirmar que a `0063_deep_psylocke` foi registrada;
+2. no ambiente do members, com a `DATABASE_URL` de produção, executar:
+
+   ```sh
+   bun run career:finalize-first-steps --course-slug <slug-do-curso-base> --confirm
+   ```
+
+3. conferir no resultado o `courseId`, a quantidade de eventos e de perfis afetados;
+4. validar um comprador que ainda não concluiu e uma criança que já concluiu: o curso abre para os
+   dois; a primeira continua Faísca e a segunda continua Construtor(a);
+5. encerrar a manutenção.
+
+O comando é idempotente e transacional: valida que encontrou exatamente o curso Kids esperado,
+move-o para `primeiros-passos / 2d / posição 1` e recongela os eventos `course_complete` e
+`course_showcased` no novo degrau. Se encontrar um estado inesperado, aborta tudo. Não faça a
+reetiquetagem separadamente pelo admin durante esse rollout.
+
 A criança vê o que conquistou em **"Minhas ferramentas"** no perfil, agrupado nas **gavetas** da
 caixa de ferramentas (🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…).
 
 ## Matriz dos níveis
 
-| Nível | Requisito acumulado | Etapa estudada | Liberação no Estúdio livre |
+⚠️ **O nível NÃO libera mais blocos.** Desde a reforma do currículo (08/2026) quem entrega
+ferramenta é o CURSO (ver "A paleta do Estúdio vem do CURRÍCULO" acima). O nível decide o **modo**
+do editor e quais **produtos** abrem. Os perfis de bloco por nível continuam existindo, mas só como
+**fail-open**, para quem ainda não tem nenhum curso qualificado.
+
+| Nível | Requisito acumulado | Etapa estudada | O que o posto abre |
 |---|---|---|---|
-| Faísca (`noob`) | Nenhum | Iniciante 2D | Usa o Estúdio apenas dentro das aulas |
-| Construtor(a) (`coder`) | Posição 1 do Iniciante 2D | Iniciante 2D | Estúdio livre, blocos e Jogo 2D Essencial |
-| Inventor(a) (`hacker`) | 8 posições do Iniciante 2D | Iniciante 3D | Jogo 2D Iniciante completo |
-| Explorador(a) de Mundos (`explorer`) | mais 8 posições do Iniciante 3D | Intermediário 2D | Jogo 3D Iniciante |
-| Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | Jogo 2D Intermediário (só Blocos) |
-| Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | Mundo 3D Intermediário **e Jogo 3D Avançado** (só Blocos) |
-| Gênio da Criação (`champion`) | mais 8 posições do Avançado 2D | Avançado 3D | Jogo 2D Avançado e **modo Ponte** |
-| Lenda (`god`) | mais 8 posições do Avançado 3D | Carreira concluída | Jogo 3D Avançado, modo Ponte e **modo Pro** |
+| Faísca (`noob`) | Nenhum | Primeiros Passos | Usa o Estúdio apenas dentro das aulas |
+| Construtor(a) (`coder`) | Posição 1 de Primeiros Passos | Iniciante 2D | **Estúdio livre** (modo Blocos) e **Pinta** |
+| Inventor(a) (`hacker`) | Primeiros Passos + 7 posições do Iniciante 2D | Iniciante 3D | **Pensa** e **Zappy** (os que chamam IA) |
+| Explorador(a) de Mundos (`explorer`) | mais 8 posições do Iniciante 3D | Intermediário 2D | O posto e a trilha nova (nenhuma ferramenta nova) |
+| Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | O posto e a trilha nova (nenhuma ferramenta nova) |
+| Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | O posto e a trilha nova (nenhuma ferramenta nova) |
+| Gênio da Criação (`champion`) | mais 8 posições do Avançado 2D | Avançado 3D | **modo Ponte** |
+| Lenda (`god`) | mais 8 posições do Avançado 3D | Carreira concluída | **modo Pro** |
+
+As duas barras dos produtos vendidos à parte vivem em `packages/member-shell/src/lib/studio-tier.ts`
+e são **distintas de propósito** (14/08/2026): `FREE_CREATION_MIN_LEVEL = 'coder'` para o que é
+criação livre (Estúdio Completo e Pinta, sem custo por uso) e `AI_APPS_MIN_LEVEL = 'hacker'` para o
+que chama IA (Pensa e Zappy, custo por pergunta — a criança precisa de repertório antes de
+perguntar). Até 14/08 era uma constante só e o Pinta ficava preso junto com a IA.
 
 O perfil **Jogo 2D Essencial** do Construtor (fonte:
 `packages/studio/src/career/blockProfiles.ts`) traz os blocos da referência do Desafio
 do Primeiro Jogo mais o **🚀 Kit espaço completo** — inclusive "soltar um asteroide de
 uma borda" e "atirar do sprite para a frente", que não aparecem no jogo-base (decisão
 de 26/07/2026): com o kit inteiro a criança cria variações do jogo de nave ensinado no
-Faísca, não só a réplica.
+Faísca, não só a réplica. Hoje ele vale como o fail-open descrito acima.
 
-As extensões acumuladas por nível são:
+As extensões acumuladas por nível (também fail-open — com currículo, elas são DERIVADAS dos blocos
+conquistados por `extensionsForBlocks`) são:
 
 | Nível | Extensões permitidas |
 |---|---|
@@ -172,7 +210,7 @@ No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao
 * **1 — Curso-base da etapa:** o curso que destrava as demais posições.
 * **2 em diante:** os demais cursos da etapa, liberados após o curso base.
 
-O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). Toda etapa aceita posições 1 a 8.
+O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). O número de posições é **por etapa**: Primeiros Passos aceita só a posição 1, o Iniciante 2D aceita de 1 a 7 e as demais, de 1 a 8.
 
 O painel **Carreira do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1. A posição 1 publicada sem aula publicada com bloco de Estúdio de vitrine aparece como ⚠️ **"Sem vitrine"** (ver a Armadilha do Mural) — resolva antes do lançamento da etapa.
 
@@ -196,10 +234,19 @@ O painel de cursos carrega todas as páginas de cursos Kids antes de calcular a 
 O banco aplica a mesma regra do domínio:
 
 * somente cursos Kids podem ter `career_slot`;
-* toda etapa aceita posições 1 a 8;
+* Primeiros Passos existe somente no eixo 2D e Lenda nunca ocupa posição;
+* o número de posições é por etapa: 1 nos Primeiros Passos, 1 a 7 no Iniciante 2D e 1 a 8 nas demais;
 * uma posição não pode se repetir na mesma etapa.
 
-As migrações `0048_normalize_creator_career_slots` e `0049_needy_iron_man` precisam ser aplicadas nessa ordem. A primeira remove posições legadas inválidas colocando `career_slot = null`. A segunda reforça a restrição (versão 6/5). A migração `0053_career_slot_max_8` alarga a restrição para 1 a 8 em toda etapa (reforma de 07/2026, 8 por degrau) — como só amplia a faixa, não conflita com dados existentes. Antes do deploy, confira o backup e a quantidade de linhas que a normalização atingirá. Em caso de necessidade, prefira uma nova migração de correção em vez de editar o histórico aplicado.
+As migrações `0048_normalize_creator_career_slots` e `0049_needy_iron_man` precisam ser aplicadas nessa ordem. A primeira remove posições legadas inválidas colocando `career_slot = null`. A segunda reforça a restrição (versão 6/5). A migração `0053_career_slot_max_8` alargou a restrição para 1 a 8 em toda etapa (reforma de 07/2026).
+A migração **`0063_deep_psylocke`** (14/08/2026) cria o degrau Primeiros Passos e volta a APERTAR a
+restrição no Iniciante 2D (8 → 7). ⚠️ Como `ADD CONSTRAINT ... CHECK` **valida as linhas que já
+existem**, ela normaliza antes: todo curso Kids fora da faixa nova (na prática, o que estivesse na
+posição 8 do Iniciante 2D ou uma posição em Lenda) recebe `career_slot = null` e vira bônus — sem isso a migração abortaria e
+derrubaria o deploy inteiro. Se algum curso seu estava nessa posição, ele aparece como bônus no admin
+e basta escolher a posição nova. A finalização do curso-base e dos snapshots segue obrigatoriamente o
+runbook acima. Antes do deploy, confira o backup e a quantidade de linhas que a normalização atingirá.
+Em caso de necessidade, prefira uma nova migração de correção em vez de editar o histórico aplicado.
 
 ## Pontos principais no código
 

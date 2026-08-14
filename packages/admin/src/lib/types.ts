@@ -304,9 +304,16 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
  * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
  * entra em `COURSE_TIER_OPTIONS` (travado por conformance com o core).
  */
-export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado', 'lenda'] as const
+export const COURSE_LEVELS = [
+  'primeiros-passos',
+  'iniciante',
+  'intermediario',
+  'avancado',
+  'lenda',
+] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 export const LEVEL_LABELS: Record<CourseLevel, string> = {
+  'primeiros-passos': 'Primeiros Passos',
   iniciante: 'Iniciante',
   intermediario: 'Intermediário',
   avancado: 'Avançado',
@@ -318,16 +325,22 @@ export const COURSE_TRACKS = ['2d', '3d'] as const
 export type CourseTrack = (typeof COURSE_TRACKS)[number]
 
 /**
- * Os 6 degraus (dificuldade × eixo) do select "Nível do curso" — a ordem é a
- * escada da carreira do aluno (2D antes de 3D em cada dificuldade). Duplicação
- * INTENCIONAL do member-shell/members (o admin não importa dos apps de aluno) —
- * manter em lockstep com `COURSE_TIERS` de lá.
+ * Os 7 degraus do select "Nível do curso" — a ordem é a escada da carreira do aluno
+ * (entrada primeiro; 2D antes de 3D em cada dificuldade). Duplicação INTENCIONAL do
+ * member-shell/members (o admin não importa dos apps de aluno) — manter em lockstep com
+ * `COURSE_TIERS` de lá, o que o `career-tier-conformance.test.ts` trava.
+ *
+ * ⚠️ **Primeiros Passos** (14/08) é o degrau de ENTRADA: uma posição só, o curso que a
+ * Faísca faz, mais os bônus dela. Ele existe porque antes o curso-base morava no Iniciante
+ * 2D e a divisão Faísca × Construtor(a) era só apresentação — então não havia como dar um
+ * curso bônus à Faísca. Só existe no eixo 2D.
  */
 export const COURSE_TIER_OPTIONS: readonly {
   level: CourseLevel
   track: CourseTrack
   label: string
 }[] = [
+  { level: 'primeiros-passos', track: '2d', label: 'Primeiros Passos' },
   { level: 'iniciante', track: '2d', label: 'Iniciante 2D' },
   { level: 'iniciante', track: '3d', label: 'Iniciante 3D' },
   { level: 'intermediario', track: '2d', label: 'Intermediário 2D' },

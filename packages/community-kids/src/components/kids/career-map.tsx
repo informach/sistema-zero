@@ -3,7 +3,7 @@
 import { buttonVariants } from '@sistemazero/ui/button'
 import { Check, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import {
   type CareerCatalogEntry,
@@ -20,6 +20,7 @@ import { cn } from '@/lib/cn'
 import { LEVEL_INFO, levelInfo } from '@/lib/level-info'
 import type { StudentLevelSlug, StudentLevelView } from '@/lib/types'
 import { CareerHorizonNode } from './career-horizon-node'
+import { useWiggle } from './use-wiggle'
 
 /**
  * Mapa da Carreira (/cursos): uma FITA curva contínua serpenteia ligando os níveis; a parte já
@@ -220,8 +221,7 @@ function CareerNode({
   const info = LEVEL_INFO[slug]
   const tier = LEVEL_TIER[slug]
   const [artBroken, setArtBroken] = useState(false)
-  const [wiggling, setWiggling] = useState(false)
-  const wiggleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { wiggling, wiggle } = useWiggle()
   const locked = state === 'locked'
   const Icon = info.icon
 
@@ -330,9 +330,7 @@ function CareerNode({
           aria-label={`${info.label}, ainda bloqueado`}
           className="relative block cursor-not-allowed"
           onClick={() => {
-            setWiggling(true)
-            if (wiggleTimer.current) clearTimeout(wiggleTimer.current)
-            wiggleTimer.current = setTimeout(() => setWiggling(false), 700)
+            wiggle()
             toast('Continue sua carreira para abrir esta parte do mapa! 🔒')
           }}
         >

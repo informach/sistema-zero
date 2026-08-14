@@ -11,7 +11,10 @@ import type { CatalogCourseView, StudentLevelSlug, StudentLevelView } from '@/li
 
 /** Etapa que cada nível ESTUDA (espelha o `learningTier` do core). `null` = topo. */
 export const LEVEL_TIER: Record<StudentLevelSlug, CourseTierSlug | null> = {
-  noob: 'iniciante-2d',
+  // ⚠️ Desde 14/08 a Faísca tem degrau PRÓPRIO: o curso-base saiu do Iniciante 2D e virou
+  // `primeiros-passos-2d`. Antes os dois primeiros postos dividiam o mesmo degrau e a
+  // divisão era só apresentação — por isso a Faísca não podia ter curso bônus.
+  noob: 'primeiros-passos-2d',
   coder: 'iniciante-2d',
   hacker: 'iniciante-3d',
   explorer: 'intermediario-2d',
@@ -32,14 +35,15 @@ export interface LevelStudy {
  * Slots que cada nível ESTUDA dentro do seu degrau + se a trilha dele inclui os
  * cursos bônus. Espelha a escada do core (`CREATOR_CAREER_LEVELS`): os slots são
  * `próximoNível.requiredSlots[tier] \ esteNível.requiredSlots[tier]` e o bônus entra
- * no ÚLTIMO nível que estuda o tier. Só o Iniciante 2D é DIVIDIDO — Faísca vê só o
- * curso-base (slot 1) e Construtor vê o resto (2–8) + o bônus; os demais degraus têm
- * um único nível e mostram tudo. **8 posições por degrau** (reforma 07/2026). A
- * conformidade com o core é travada em `tests/career-conformance.test.ts`.
+ * no ÚLTIMO nível que estuda o tier. Desde 14/08 **cada nível é dono de um degrau
+ * INTEIRO** (a Faísca ganhou o `primeiros-passos-2d`, com 1 posição; o Iniciante 2D
+ * ficou com 7), então toda trilha inclui os bônus do seu degrau — inclusive a da
+ * Faísca, que era justamente o que faltava. A conformidade com o core é travada em
+ * `tests/career-conformance.test.ts`.
  */
 export const LEVEL_STUDY: Record<StudentLevelSlug, LevelStudy | null> = {
-  noob: { slots: [1], includeBonus: false },
-  coder: { slots: [2, 3, 4, 5, 6, 7, 8], includeBonus: true },
+  noob: { slots: [1], includeBonus: true },
+  coder: { slots: [1, 2, 3, 4, 5, 6, 7], includeBonus: true },
   hacker: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
   explorer: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
   elite: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
@@ -72,14 +76,6 @@ export function levelForTier(tier: CourseTierSlug): StudentLevelSlug {
 }
 
 /**
- * Cursos que a trilha de um NÍVEL mostra. O degrau (`level`+`track`) define o
- * conjunto; o `careerSlot` divide DENTRO dele: Faísca vê só o curso-base (slot 1),
- * Construtor vê os demais (2–6) + o bônus. Fail-open de rollout: se a etapa ainda
- * não tem curso-base marcado (nenhum `careerSlot === 1`), NÃO divide — mostra o
- * degrau inteiro (espelha `foundationAvailable` do core), então a Faísca nunca fica
- * vazia enquanto o catálogo não está etiquetado. `god` (topo) não tem trilha.
- */
-/**
  * Cursos da trilha da LENDA (`god`): os cursos de NÍVEL `lenda` — bônus "de formatura"
  * FORA da carreira (não são degrau, não contam, não travam). Aparecem só ao clicar na
  * Lenda no mapa (nó liberado só p/ quem chegou à Lenda).
@@ -101,8 +97,10 @@ export function coursesForLevel(
   const inTier = courses.filter((course) => courseTierOf(course.level, course.track) === tier)
   const study = LEVEL_STUDY[slug]
   if (!study) return inTier
-  const hasFoundation = inTier.some((course) => course.careerSlot === 1)
-  if (!hasFoundation) return inTier
+  // ⚠️ O desvio "sem curso-base marcado, mostra o degrau inteiro" MORREU em 14/08: ele
+  // existia porque Faísca e Construtor(a) dividiam o `iniciante-2d` por slot e, com o
+  // catálogo não etiquetado, a Faísca ficava vazia. Agora cada nível é dono de um degrau
+  // inteiro e o bônus entra em todas as trilhas, então o curso sem posição aparece igual.
   const slots = new Set(study.slots)
   return inTier.filter(
     (course) =>

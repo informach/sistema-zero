@@ -1264,3 +1264,188 @@ describe('editar os pontos do vetor', () => {
     }
   })
 })
+
+describe('Misturar formas (pathfinder)', () => {
+  /** Duas formas SOBREPOSTAS e o laço que pega as duas. */
+  async function duasSobrepostas(stage: HTMLElement): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    drawRect(stage, [48, 48], [112, 112])
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 140, clientY: 140 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selGroup })).toBeTruthy()
+    })
+  }
+
+  const QUATRO = [
+    COPY.vector.selUnite,
+    COPY.vector.selMinusFront,
+    COPY.vector.selIntersect,
+    COPY.vector.selExclude,
+  ]
+
+  it('o bloco só existe com DUAS formas escolhidas', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    // Com UMA selecionada (o desenho já deixa a nova escolhida) não há mistura.
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    })
+    expect(screen.queryByRole('button', { name: COPY.vector.selUnite })).toBeNull()
+
+    drawRect(stage, [48, 48], [112, 112])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 140, clientY: 140 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      for (const nome of QUATRO) {
+        expect(screen.getByRole('button', { name: nome })).toBeTruthy()
+      }
+    })
+  })
+
+  it('⭐⭐ unir troca duas por uma, a faixa SOBREVIVE, e UM desfazer devolve as duas', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await duasSobrepostas(stage)
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selUnite }))
+    await waitFor(() => {
+      // ⚠️ Escopo no PALCO: as miniaturas do painel Camadas também têm path.
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(0)
+      expect(stage.querySelectorAll('path[fill="#78dc52"]').length).toBe(1)
+    })
+    // ⭐ A faixa NÃO desmontou: o resultado herdou o id do de trás, então a
+    // seleção não ficou órfã. Ela voltou a ser a de UMA forma selecionada.
+    expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.vector.selRemove })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: COPY.vector.selUnite })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      // ⚠️ ANTI-VÁCUO do "um commit só": com DOIS commits (tirar, depois pôr)
+      // um desfazer devolveria uma forma, não duas.
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+    })
+  })
+
+  it('⭐ "tirar a da frente" abre um FURO (o traço fica com dois sub-caminhos)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [128, 128])
+    drawRect(stage, [48, 48], [96, 96])
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 160, clientY: 160 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selMinusFront })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selMinusFront }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('path[fill="#78dc52"]').length).toBe(1)
+    })
+    const d = stage.querySelector('path[fill="#78dc52"]')?.getAttribute('d') ?? ''
+    // Dois M = contorno de fora + a parede do buraco.
+    expect(d.match(/M /g)).toHaveLength(2)
+  })
+
+  it('recusa com LINHA na seleção, e o desenho fica intacto', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    drawRect(stage, [24, 24], [72, 72])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 140, clientY: 140 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selUnite })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selUnite }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.pathfinderSkips)).toBeTruthy()
+    })
+    expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+    expect(stage.querySelectorAll('line').length).toBe(1)
+  })
+
+  it('recusa quando as formas NÃO se encostam', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    drawRect(stage, [200, 200], [240, 240])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 300, clientY: 300 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selUnite })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selUnite }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.pathfinderApart)).toBeTruthy()
+    })
+    expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+  })
+
+  it('⭐ a faixa dos pontos EXPLICA em vez de sumir', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    // Um retângulo já não se edita por pontos: antes deste lote a faixa inteira
+    // sumia em silêncio, o que lia como "quebrou".
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
+    })
+    expect(screen.getByText(COPY.vector.nodeUneditable)).toBeTruthy()
+  })
+
+  it('no TOQUE só o Unir aparece na barra flutuante', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      const stage = measureStage()
+      await duasSobrepostas(stage)
+      expect(screen.getByRole('button', { name: COPY.vector.selUnite })).toBeTruthy()
+      expect(screen.queryByRole('button', { name: COPY.vector.selIntersect })).toBeNull()
+      expect(screen.queryByRole('button', { name: COPY.vector.selMinusFront })).toBeNull()
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
+  })
+})

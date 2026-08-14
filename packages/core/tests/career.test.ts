@@ -1,11 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  CAREER_COURSE_TIERS,
   CAREER_LEVEL_SLUGS,
   CAREER_SLOT_MAX,
   CREATOR_CAREER_LEVELS,
   careerLevelAtLeast,
+  careerSlotsForTier,
   computeCareerLevelSlug,
   creatorCareerLevel,
+  isCareerCourseTier,
   meetsCareerLevel,
   missingCareerSlots,
   resolveCareerCourseLock,
@@ -30,32 +33,65 @@ describe('careerLevelAtLeast', () => {
 })
 
 describe('catálogo da Carreira do Criador', () => {
-  test('CAREER_SLOT_MAX é a fonte única do teto de posições por degrau', () => {
-    // Toda etapa exige exatamente as posições 1..CAREER_SLOT_MAX na Lenda — o
-    // members (validação + CHECK da migration 0053) e o admin (conformance)
-    // espelham este valor; divergir aqui é quebrar o elo canônico.
+  test('cada degrau tem o seu número de posições, derivado da Lenda', () => {
+    // Não existe mais um "8" uniforme: o degrau de ENTRADA tem 1 e o Iniciante 2D tem 7
+    // (o curso-base saiu dele em 14/08). O members (validação + CHECK) e o admin
+    // (conformance) derivam daqui; divergir é quebrar o elo canônico.
     const god = CREATOR_CAREER_LEVELS.at(-1)
     expect(god?.slug).toBe('god')
-    const tiers = Object.values(god?.requiredSlots ?? {})
-    expect(tiers.length).toBeGreaterThan(0)
-    for (const slots of tiers) {
-      expect(slots.length).toBe(CAREER_SLOT_MAX)
-      expect(Math.max(...slots)).toBe(CAREER_SLOT_MAX)
+    expect(careerSlotsForTier('primeiros-passos-2d')).toBe(1)
+    expect(careerSlotsForTier('iniciante-2d')).toBe(7)
+    for (const tier of CAREER_COURSE_TIERS.slice(2)) {
+      expect(careerSlotsForTier(tier)).toBe(8)
     }
+    // A Lenda é a fonte: o helper e o catálogo não podem divergir.
+    for (const tier of CAREER_COURSE_TIERS) {
+      const slots = god?.requiredSlots[tier] ?? []
+      expect(slots.length).toBe(careerSlotsForTier(tier))
+      expect(Math.max(...slots)).toBe(careerSlotsForTier(tier))
+      expect(careerSlotsForTier(tier)).toBeLessThanOrEqual(CAREER_SLOT_MAX)
+    }
+    // O total continua 48 (decisao da usuaria: 1 + 7 + 8x5).
+    const total = CAREER_COURSE_TIERS.reduce((sum, tier) => sum + careerSlotsForTier(tier), 0)
+    expect(total).toBe(48)
   })
-  test('exige o curso-base específico para virar Construtor', () => {
-    expect(computeCareerLevelSlug({ 'iniciante-2d': [2, 3, 4, 5, 6] })).toBe('noob')
-    expect(computeCareerLevelSlug({ 'iniciante-2d': [1] })).toBe('coder')
+
+  test('degrau desconhecido não tem posição e não passa por degrau de carreira', () => {
+    for (const tier of ['lenda-2d', 'iniciante-4d', '']) {
+      expect(careerSlotsForTier(tier)).toBe(0)
+      expect(isCareerCourseTier(tier)).toBe(false)
+    }
+    expect(isCareerCourseTier('primeiros-passos-2d')).toBe(true)
+  })
+
+  test('exige o curso de ENTRADA (Primeiros Passos) para virar Construtor', () => {
+    // Mudou em 14/08: o curso-base saiu do Iniciante 2D e virou o degrau de entrada.
+    // Fechar cursos do Iniciante 2D sem ter feito a entrada nao promove ninguem.
+    expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7] })).toBe('noob')
+    expect(computeCareerLevelSlug({ 'primeiros-passos-2d': [1] })).toBe('coder')
   })
 
   test('curso bônus ou slot repetido não substitui slot obrigatório', () => {
-    expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 1, 2, 3, 4, 99] })).toBe('coder')
-    expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] })).toBe('hacker')
+    expect(computeCareerLevelSlug({ 'primeiros-passos-2d': [1, 1, 99] })).toBe('coder')
+    expect(
+      computeCareerLevelSlug({
+        'primeiros-passos-2d': [1],
+        'iniciante-2d': [1, 2, 3, 4, 5, 6, 7],
+      }),
+    ).toBe('hacker')
+    // A 8a posicao nao existe mais no Iniciante 2D: conta-la nao promove.
+    expect(
+      computeCareerLevelSlug({
+        'primeiros-passos-2d': [1],
+        'iniciante-2d': [1, 2, 3, 4, 5, 6, 8],
+      }),
+    ).toBe('coder')
   })
 
   test('a escada completa termina na Lenda', () => {
     const all = {
-      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'primeiros-passos-2d': [1],
+      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7],
       'iniciante-3d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-2d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-3d': [1, 2, 3, 4, 5, 6, 7, 8],
@@ -68,7 +104,10 @@ describe('catálogo da Carreira do Criador', () => {
 
   test('informa exatamente quais slots faltam', () => {
     expect(missingCareerSlots({ 'iniciante-2d': [1, 3, 6] }, creatorCareerLevel('hacker'))).toEqual(
-      { 'iniciante-2d': [2, 4, 5, 7, 8] },
+      {
+        'primeiros-passos-2d': [1],
+        'iniciante-2d': [2, 4, 5, 7],
+      },
     )
   })
 
@@ -88,23 +127,40 @@ describe('catálogo da Carreira do Criador', () => {
     }
   })
 
-  test('curso-base abre primeiro e depois libera os pares da etapa', () => {
+  /** Só o curso de entrada concluído e publicado: a criança é Construtor(a). */
+  const ENTRADA = { 'primeiros-passos-2d': [1] } as const
+
+  test('a Faísca estuda o degrau de ENTRADA, e o Iniciante 2D ainda é futuro para ela', () => {
     const none = {}
-    expect(resolveCareerCourseLock(none, 'iniciante-2d', 1)).toEqual({ locked: false })
+    expect(resolveCareerCourseLock(none, 'primeiros-passos-2d', 1)).toEqual({ locked: false })
+    // Consequencia de 14/08: para quem ainda nao fez a entrada, os cursos do Construtor(a)
+    // sao degrau FUTURO (antes eram `foundation-first` no mesmo degrau).
+    expect(resolveCareerCourseLock(none, 'iniciante-2d', 1)).toMatchObject({
+      locked: true,
+      reason: 'future-tier',
+      requiredLevel: 'coder',
+    })
+  })
+
+  test('curso-base abre primeiro e depois libera os pares da etapa', () => {
+    expect(resolveCareerCourseLock(ENTRADA, 'iniciante-2d', 1)).toEqual({ locked: false })
     // foundation-first NÃO carrega requiredLevel: a chave é o curso-base, não um
     // nível (o 1º nível com este learningTier seria `noob` — dado sem sentido).
-    expect(resolveCareerCourseLock(none, 'iniciante-2d', 2)).toEqual({
+    expect(resolveCareerCourseLock(ENTRADA, 'iniciante-2d', 2)).toEqual({
       locked: true,
       reason: 'foundation-first',
       requiredTier: 'iniciante-2d',
     })
-    expect(resolveCareerCourseLock({ 'iniciante-2d': [1] }, 'iniciante-2d', 2)).toEqual({
-      locked: false,
-    })
+    expect(resolveCareerCourseLock({ ...ENTRADA, 'iniciante-2d': [1] }, 'iniciante-2d', 2)).toEqual(
+      {
+        locked: false,
+      },
+    )
   })
 
   test('etapas futuras ficam bloqueadas e etapas anteriores são revisáveis', () => {
-    const qualified = { 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] }
+    const qualified = { ...ENTRADA, 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7] }
+    expect(resolveCareerCourseLock(qualified, 'primeiros-passos-2d', 1)).toEqual({ locked: false })
     expect(resolveCareerCourseLock(qualified, 'iniciante-2d', 4)).toEqual({ locked: false })
     expect(resolveCareerCourseLock(qualified, 'iniciante-3d', 1)).toEqual({ locked: false })
     expect(resolveCareerCourseLock(qualified, 'intermediario-2d', 1)).toMatchObject({
@@ -123,9 +179,22 @@ describe('catálogo da Carreira do Criador', () => {
       requiredLevel: 'hacker',
       requiredTier: 'iniciante-2d',
     })
+    // O bonus da FAISCA agora existe: e a recompensa do degrau de entrada, e abre no
+    // Construtor(a) - que e exatamente "depois que o curso base foi concluido".
+    expect(resolveCareerCourseLock({}, 'primeiros-passos-2d', null)).toEqual({
+      locked: true,
+      reason: 'tier-reward',
+      requiredLevel: 'coder',
+      requiredTier: 'primeiros-passos-2d',
+    })
+    expect(resolveCareerCourseLock(ENTRADA, 'primeiros-passos-2d', null)).toEqual({ locked: false })
     // Etapa completa (learningTier passou dela) → recompensa GANHA.
     expect(
-      resolveCareerCourseLock({ 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] }, 'iniciante-2d', null),
+      resolveCareerCourseLock(
+        { ...ENTRADA, 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7] },
+        'iniciante-2d',
+        null,
+      ),
     ).toEqual({ locked: false })
     // Bônus de etapa FUTURA é recompensa DELA (não `future-tier`).
     expect(resolveCareerCourseLock({}, 'avancado-3d', null)).toMatchObject({
@@ -138,7 +207,8 @@ describe('catálogo da Carreira do Criador', () => {
     expect(resolveCareerCourseLock({}, 'iniciante-2d', null, false)).toEqual({ locked: false })
     // Lenda: tudo aberto.
     const all = {
-      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'primeiros-passos-2d': [1],
+      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7],
       'iniciante-3d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-2d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-3d': [1, 2, 3, 4, 5, 6, 7, 8],
@@ -150,14 +220,14 @@ describe('catálogo da Carreira do Criador', () => {
 
   test('sem curso-base publicado na etapa, foundation-first falha ABERTA', () => {
     // A posição 2 travaria (foundation-first) por padrão…
-    expect(resolveCareerCourseLock({}, 'iniciante-2d', 2)).toMatchObject({
+    expect(resolveCareerCourseLock(ENTRADA, 'iniciante-2d', 2)).toMatchObject({
       locked: true,
       reason: 'foundation-first',
     })
     // …mas sem base alcançável (foundationAvailable=false) não pode prender o aluno.
-    expect(resolveCareerCourseLock({}, 'iniciante-2d', 2, false)).toEqual({ locked: false })
+    expect(resolveCareerCourseLock(ENTRADA, 'iniciante-2d', 2, false)).toEqual({ locked: false })
     // future-tier NÃO é afetado pelo fail-open (a base da etapa futura é irrelevante).
-    expect(resolveCareerCourseLock({}, 'intermediario-2d', 2, false)).toMatchObject({
+    expect(resolveCareerCourseLock(ENTRADA, 'intermediario-2d', 2, false)).toMatchObject({
       locked: true,
       reason: 'future-tier',
     })

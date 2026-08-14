@@ -9,6 +9,28 @@ import { useEffect, useId, useRef } from 'react'
 import { COPY } from '../../core/copy'
 import { X } from './icons'
 
+/** Ordem modal real; só o card do topo pode capturar teclado/foco. */
+const dialogStack: HTMLElement[] = []
+
+function registerDialog(card: HTMLElement): void {
+  const existingIndex = dialogStack.indexOf(card)
+  if (existingIndex >= 0) dialogStack.splice(existingIndex, 1)
+  // Efeitos de filhos podem rodar antes dos pais. A contenção do DOM corrige
+  // essa ordem: um diálogo aninhado sempre fica depois do seu ancestral.
+  const firstDescendant = dialogStack.findIndex((candidate) => card.contains(candidate))
+  if (firstDescendant >= 0) dialogStack.splice(firstDescendant, 0, card)
+  else dialogStack.push(card)
+}
+
+function unregisterDialog(card: HTMLElement): void {
+  const index = dialogStack.indexOf(card)
+  if (index >= 0) dialogStack.splice(index, 1)
+}
+
+function isTopDialog(card: HTMLElement): boolean {
+  return dialogStack.at(-1) === card
+}
+
 function focusableElements(root: HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>('*')).filter((element) => {
     if (element.getAttribute('tabindex') === '-1') return false
@@ -91,17 +113,18 @@ export function Dialog({
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
     const card = cardRef.current
     if (!card) return
+    registerDialog(card)
 
     function handleKeyDown(event: globalThis.KeyboardEvent): void {
       const activeCard = cardRef.current
-      if (activeCard) {
+      if (activeCard && isTopDialog(activeCard)) {
         handleDialogDocumentKeyDown(event, activeCard, () => onCloseRef.current())
       }
     }
 
     function handleFocusIn(event: globalThis.FocusEvent): void {
       const activeCard = cardRef.current
-      if (activeCard) handleDialogDocumentFocusIn(event, activeCard)
+      if (activeCard && isTopDialog(activeCard)) handleDialogDocumentFocusIn(event, activeCard)
     }
 
     document.addEventListener('keydown', handleKeyDown)
@@ -110,6 +133,7 @@ export function Dialog({
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
       document.removeEventListener('focusin', handleFocusIn)
+      unregisterDialog(card)
       previous?.focus()
     }
   }, [open])

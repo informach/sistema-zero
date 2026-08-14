@@ -16,7 +16,17 @@ export const CAREER_LEVEL_SLUGS = [
 ] as const
 export type CareerLevelSlug = (typeof CAREER_LEVEL_SLUGS)[number]
 
+/**
+ * Degraus da carreira, EM ORDEM (a ordem é load-bearing: `courseIndex < learningIndex` decide
+ * o que é degrau passado).
+ *
+ * ⚠️ `primeiros-passos-2d` é o degrau de ENTRADA, criado em 14/08 a pedido da usuária. Antes o
+ * curso-base morava no `iniciante-2d` e a divisão Faísca × Construtor(a) era só apresentação no
+ * kids — por isso a Faísca não podia ter curso BÔNUS (todo bônus do degrau caía na trilha do
+ * Construtor). Agora ela tem degrau próprio, com 1 posição obrigatória e bônus dela.
+ */
 export const CAREER_COURSE_TIERS = [
+  'primeiros-passos-2d',
   'iniciante-2d',
   'iniciante-3d',
   'intermediario-2d',
@@ -50,7 +60,13 @@ export const CAREER_STUDIO_BLOCK_PROFILE_IDS = [
 ] as const
 export type CareerStudioBlockProfileId = (typeof CAREER_STUDIO_BLOCK_PROFILE_IDS)[number]
 
-export type CareerStudioBlockLevel = CareerCourseTier
+/**
+ * Degrau de BLOCOS do Estúdio — espelha o `BlockLevel` do studio, que continua com SEIS
+ * degraus. O `primeiros-passos-2d` é degrau de CURSO, não de bloco: quem estuda o curso de
+ * entrada cura blocos no `iniciante-2d`, e criar um nível de bloco só para ele não teria o
+ * que separar (a paleta do Estúdio livre vem do CURRÍCULO desde 08/2026).
+ */
+export type CareerStudioBlockLevel = Exclude<CareerCourseTier, 'primeiros-passos-2d'>
 export type CareerStudioMode = 'blocks' | 'bridge'
 
 export interface CareerStudioReward {
@@ -75,17 +91,20 @@ export interface CreatorCareerLevelDefinition {
 const SLOTS_1 = [1] as const
 // 8 posições OBRIGATÓRIAS por degrau (decisão da usuária 07/2026: 5/6 era pouco p/
 // fixar a habilidade; assinatura mensal quer jornada mais longa, conteúdo pré-carregado
-// no lançamento). O Iniciante 2D é dividido pelo curso-base (Faísca=entrada → Construtor
-// pega o slot 1 → Inventor completa 1–8); os demais degraus são um nível cada.
+// no lançamento). ⚠️ Duas EXCEÇÕES desde 14/08: `primeiros-passos-2d` tem 1 (o curso de
+// entrada) e `iniciante-2d` tem 7 (o curso-base saiu dele p/ o degrau novo). A soma
+// Faísca→Inventor(a) continua 8 e o total da carreira continua 48 — a usuária escolheu
+// exatamente isso para nada mudar de tamanho para a criança.
 /**
- * Teto CANÔNICO de posições por degrau da carreira. É a fonte única do "8":
- * o CHECK da migration `0053` do members, a validação do content-admin e o
- * `slotsForTier` do admin (via conformance) espelham este valor.
+ * Teto CANÔNICO de posições, o MAIOR de qualquer degrau. Sobrevive como limite externo
+ * (DTO, CHECK do banco); a faixa fina POR DEGRAU vem de `careerSlotsForTier`.
  */
 export const CAREER_SLOT_MAX = 8
+const SLOTS_1_TO_7 = [1, 2, 3, 4, 5, 6, 7] as const
 const SLOTS_1_TO_8 = [1, 2, 3, 4, 5, 6, 7, 8] as const
 
-const ini2d = { 'iniciante-2d': SLOTS_1_TO_8 } as const
+const passos = { 'primeiros-passos-2d': SLOTS_1 } as const
+const ini2d = { ...passos, 'iniciante-2d': SLOTS_1_TO_7 } as const
 const ini3d = { ...ini2d, 'iniciante-3d': SLOTS_1_TO_8 } as const
 const inter2d = { ...ini3d, 'intermediario-2d': SLOTS_1_TO_8 } as const
 const inter3d = { ...inter2d, 'intermediario-3d': SLOTS_1_TO_8 } as const
@@ -96,7 +115,7 @@ export const CREATOR_CAREER_LEVELS: readonly CreatorCareerLevelDefinition[] = [
   {
     slug: 'noob',
     requiredSlots: {},
-    learningTier: 'iniciante-2d',
+    learningTier: 'primeiros-passos-2d',
     reward: {
       id: 'studio.lesson-only',
       freeStudio: false,
@@ -109,7 +128,7 @@ export const CREATOR_CAREER_LEVELS: readonly CreatorCareerLevelDefinition[] = [
   },
   {
     slug: 'coder',
-    requiredSlots: { 'iniciante-2d': SLOTS_1 },
+    requiredSlots: passos,
     learningTier: 'iniciante-2d',
     reward: {
       id: 'studio.blocks.2d-essential',
@@ -221,6 +240,27 @@ export function careerLevelAtLeast(slug: string | null | undefined, min: CareerL
   const current = CAREER_LEVEL_SLUGS.indexOf(slug as CareerLevelSlug)
   if (current < 0) return false
   return current >= CAREER_LEVEL_SLUGS.indexOf(min)
+}
+
+const SLOTS_BY_TIER = new Map<CareerCourseTier, number>(
+  CAREER_COURSE_TIERS.map((tier) => [
+    tier,
+    CREATOR_CAREER_LEVELS.at(-1)?.requiredSlots[tier]?.length ?? 0,
+  ]),
+)
+
+/**
+ * Quantas posições OBRIGATÓRIAS um degrau tem. Derivado do último nível da escada (que
+ * acumula tudo), então não existe número solto para drifar: 1 em Primeiros Passos, 7 no
+ * Iniciante 2D, 8 nos demais. Degrau desconhecido → 0, e quem valida recusa.
+ */
+export function careerSlotsForTier(tier: string): number {
+  return SLOTS_BY_TIER.get(tier as CareerCourseTier) ?? 0
+}
+
+/** O degrau é um degrau de carreira conhecido? (`lenda` e lixo caem fora.) */
+export function isCareerCourseTier(tier: string): tier is CareerCourseTier {
+  return SLOTS_BY_TIER.has(tier as CareerCourseTier)
 }
 
 export type QualifiedCareerSlots = Readonly<Partial<Record<CareerCourseTier, readonly number[]>>>

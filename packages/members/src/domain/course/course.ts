@@ -28,12 +28,25 @@ export type CourseAudience = (typeof COURSE_AUDIENCES)[number]
  * conta para o nível, NÃO recebe trava de curso-base — cursos `lenda` têm sempre
  * `careerSlot = null`. Por isso não entra em `CareerCourseLevel`/`courseTier`.
  */
-export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado', 'lenda'] as const
+export const COURSE_LEVELS = [
+  // Degrau de ENTRADA da carreira (14/08): 1 posicao so, o curso que a Faisca faz.
+  // Sempre com track `2d` (o unico degrau valido e `primeiros-passos-2d`).
+  'primeiros-passos',
+  'iniciante',
+  'intermediario',
+  'avancado',
+  'lenda',
+] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 
 /** Níveis que MAPEIAM para um degrau da carreira (as 3 dificuldades; exclui `lenda`). */
 export type CareerCourseLevel = Exclude<CourseLevel, 'lenda'>
-export const CAREER_COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
+export const CAREER_COURSE_LEVELS = [
+  'primeiros-passos',
+  'iniciante',
+  'intermediario',
+  'avancado',
+] as const
 
 /**
  * Eixo 2D/3D do curso (ortogonal à dificuldade). O par (level, track) é o DEGRAU

@@ -1,21 +1,29 @@
 'use client'
 
-import { Dialog } from '@sistemazero/ui/dialog'
 import { Hammer } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import type { CareerPoint } from '@/lib/career-path'
-import { CAREER_REWARD_INFO } from '@/lib/career-rewards'
+import { cn } from '@/lib/cn'
 import { LEVEL_INFO } from '@/lib/level-info'
 import type { StudentLevelSlug } from '@/lib/types'
+import { useWiggle } from './use-wiggle'
 
 /**
  * O nó que FECHA o mapa da carreira enquanto o catálogo não tem os 48 cursos.
  *
  * No lugar da fileira de medalhões cinzas com cadeado (que para a criança lê como "você não
  * fez o suficiente"), um nó só, com a arte da Lenda e um martelinho: os postos daqui para
- * cima estão sendo CONSTRUÍDOS, e a espera não é culpa dela. Tocar abre o painel com os
- * postos que faltam e o que cada um traz, então o sonho grande continua visível numa tela
- * em vez de seis.
+ * cima estão sendo CONSTRUÍDOS, e a espera não é culpa dela.
+ *
+ * ⚠️ **Este nó é um AVISO, não uma trilha, então NÃO navega e NÃO abre nada** (decisão da
+ * usuária, 14/08): ele recebe o mesmo bloqueio dos postos ainda não conquistados — sacode e
+ * mostra um recado. Antes ele abria um `Dialog` listando os postos que faltam, e o painel
+ * renderizava DENTRO da bolinha: o `<li>` usa `-translate-x-1/2 -translate-y-1/2`, o Tailwind
+ * v4 compila isso na propriedade `translate:`, e um elemento com `translate` vira containing
+ * block de `position: fixed` — o `fixed inset-0` do overlay se resolvia contra o medalhão de
+ * 11rem, não contra a viewport. O `toast` do sonner não sofre disso porque sai por portal no
+ * `document.body`.
  *
  * Some sozinho quando o catálogo enche (`hasHorizonNode` → false).
  */
@@ -29,10 +37,10 @@ export function CareerHorizonNode({
   /** Postos que ficaram além do horizonte, na ordem da escada. */
   levels: readonly StudentLevelSlug[]
 }) {
-  const [open, setOpen] = useState(false)
   // Arte ausente cai no ÍCONE do nível, como os demais nós. Antes o `onError` só
   // escondia a imagem e sobrava um círculo VAZIO — o único nó do mapa sem desenho.
   const [artBroken, setArtBroken] = useState(false)
+  const { wiggling, wiggle } = useWiggle()
   const last = levels.at(-1) ?? 'god'
   const art = LEVEL_INFO[last]
   const Icon = art.icon
@@ -44,11 +52,14 @@ export function CareerHorizonNode({
     >
       <button
         type="button"
-        aria-label="Ver os próximos postos da carreira"
-        className="relative block"
-        onClick={() => setOpen(true)}
+        aria-label="Mais postos da carreira, ainda sendo construídos"
+        className="relative block cursor-not-allowed"
+        onClick={() => {
+          wiggle()
+          toast('Estamos construindo esta parte do mapa. Volte daqui a pouquinho! 🔨')
+        }}
       >
-        <span className="kid-pop block">
+        <span className={cn('block', wiggling && 'kid-wiggle')}>
           {/* Mesmo wrapper dos demais nós: o badge fica FORA do círculo que recorta. */}
           <span className="career-medal relative z-10 block shrink-0">
             <span className="grid h-full w-full place-items-center overflow-hidden rounded-full border-4 border-dashed bg-card opacity-90 shadow-lg">
@@ -84,41 +95,6 @@ export function CareerHorizonNode({
           </span>
         </span>
       </button>
-
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        title="O que vem por aí"
-        description="Estes postos estão sendo construídos. Quando os cursos ficarem prontos, eles aparecem no seu mapa!"
-      >
-        <ul className="flex flex-col gap-3">
-          {levels.map((slug) => {
-            const info = LEVEL_INFO[slug]
-            const reward = CAREER_REWARD_INFO[slug]
-            const LevelIcon = info.icon
-            return (
-              <li key={slug} className="flex items-start gap-3">
-                <span
-                  className="grid size-10 shrink-0 place-items-center rounded-full border-2"
-                  style={{ borderColor: info.colorVar }}
-                >
-                  <LevelIcon className="size-5" style={{ color: info.colorVar }} aria-hidden />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-sm [font-family:var(--font-display)]">
-                    {info.label}
-                  </p>
-                  <p className="text-muted-foreground text-xs leading-snug">{reward.title}</p>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-        <p className="mt-4 flex items-center gap-2 rounded-2xl bg-primary/5 px-3 py-2 text-muted-foreground text-xs">
-          <Icon className="size-4 shrink-0" style={{ color: art.colorVar }} aria-hidden />
-          Continue criando! Cada curso novo abre mais um pedaço do mapa.
-        </p>
-      </Dialog>
     </li>
   )
 }

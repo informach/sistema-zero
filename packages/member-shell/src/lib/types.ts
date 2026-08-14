@@ -93,7 +93,12 @@ export interface AccessView {
  * categoria FORA da carreira (bônus da formatura, só na trilha da Lenda no kids) —
  * NÃO é degrau: `courseTierOf` devolve `undefined` p/ ela.
  */
-export type CourseLevelSlug = 'iniciante' | 'intermediario' | 'avancado' | 'lenda'
+export type CourseLevelSlug =
+  | 'primeiros-passos'
+  | 'iniciante'
+  | 'intermediario'
+  | 'avancado'
+  | 'lenda'
 
 /** Eixo 2D/3D do curso (espelha o enum `course_track` do members). Par com `level` = degrau. */
 export type CourseTrack = '2d' | '3d'
@@ -566,6 +571,8 @@ export type StudentLevelSlug =
  */
 export interface StudentLevelRemaining {
   any: number
+  /** Degrau de ENTRADA (14/08). Members e apps de aluno sobem no MESMO trem. */
+  'primeiros-passos-2d': number
   'iniciante-2d': number
   'iniciante-3d': number
   'intermediario-2d': number

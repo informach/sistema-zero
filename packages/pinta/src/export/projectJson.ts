@@ -9,6 +9,17 @@ import { PINTA_LIMITS, type PintaAsset, sanitizePintaAsset } from '../core/proje
 
 const FORMAT = 'pinta-gallery'
 const VERSION = 1
+const UTF8 = new TextEncoder()
+const JSON_HEADER = [
+  '{',
+  `  "format": ${JSON.stringify(FORMAT)},`,
+  `  "version": ${VERSION},`,
+  '  "assets": [',
+].join('\n')
+const EMPTY_JSON = `${JSON_HEADER}]\n}`
+const NON_EMPTY_PREFIX = `${JSON_HEADER}\n`
+const NON_EMPTY_SUFFIX = '\n  ]\n}'
+const ASSET_SEPARATOR = ',\n'
 
 interface EncodedAssetBase {
   id: string
@@ -47,6 +58,56 @@ function encodeAsset(asset: PintaAsset): EncodedAsset {
     case 'vector-background':
     case 'vector-tileset':
       return { ...asset }
+  }
+}
+
+function utf8ByteLength(value: string): number {
+  return UTF8.encode(value).byteLength
+}
+
+/** Um asset com a indentação exata que ocupa dentro de `assets: [...]`. */
+function assetJsonFragment(asset: PintaAsset): string {
+  return JSON.stringify(encodeAsset(asset), null, 2)
+    .split('\n')
+    .map((line) => `    ${line}`)
+    .join('\n')
+}
+
+const EMPTY_JSON_BYTES = utf8ByteLength(EMPTY_JSON)
+const NON_EMPTY_FIXED_BYTES = utf8ByteLength(NON_EMPTY_PREFIX) + utf8ByteLength(NON_EMPTY_SUFFIX)
+const ASSET_SEPARATOR_BYTES = utf8ByteLength(ASSET_SEPARATOR)
+
+interface CachedAssetBytes {
+  updatedAt: number
+  bytes: number
+}
+
+/**
+ * Medidor incremental do backup. A chave `{id, updatedAt}` cobre leituras do
+ * IndexedDB; `refreshIds` força os assets recebidos numa mutação, inclusive se
+ * um chamador externo reutilizar o mesmo timestamp com conteúdo diferente.
+ */
+export class GalleryBackupSizeCache {
+  readonly #assets = new Map<string, CachedAssetBytes>()
+
+  byteLength(assets: readonly PintaAsset[], refreshIds: ReadonlySet<string> = new Set()): number {
+    if (assets.length === 0) return EMPTY_JSON_BYTES
+    let bytes = NON_EMPTY_FIXED_BYTES + ASSET_SEPARATOR_BYTES * (assets.length - 1)
+    for (const asset of assets) {
+      const cached = this.#assets.get(asset.id)
+      if (!refreshIds.has(asset.id) && cached?.updatedAt === asset.updatedAt) {
+        bytes += cached.bytes
+        continue
+      }
+      const fragmentBytes = utf8ByteLength(assetJsonFragment(asset))
+      this.#assets.set(asset.id, { updatedAt: asset.updatedAt, bytes: fragmentBytes })
+      bytes += fragmentBytes
+    }
+    return bytes
+  }
+
+  invalidate(ids: Iterable<string>): void {
+    for (const id of ids) this.#assets.delete(id)
   }
 }
 
@@ -106,16 +167,13 @@ export const MAX_BACKUP_FILE_BYTES = 32 * 1024 * 1024
 
 /** A galeria inteira → texto do `.pinta.json`. */
 export function galleryToPintaJson(assets: PintaAsset[]): string {
-  return JSON.stringify(
-    { format: FORMAT, version: VERSION, assets: assets.map((a) => encodeAsset(a)) },
-    null,
-    2,
-  )
+  if (assets.length === 0) return EMPTY_JSON
+  return `${NON_EMPTY_PREFIX}${assets.map(assetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
 }
 
 /** Tamanho EXATO do backup que a galeria produziria, medido em bytes UTF-8. */
 export function galleryBackupByteLength(assets: PintaAsset[]): number {
-  return new TextEncoder().encode(galleryToPintaJson(assets)).byteLength
+  return new GalleryBackupSizeCache().byteLength(assets)
 }
 
 export interface PintaImportResult {

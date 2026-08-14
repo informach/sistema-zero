@@ -151,9 +151,21 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
     before: PintaAsset[]
     after: PintaAsset[]
   } {
-    const affected = gallery
-      .getState()
-      .assets.filter((a): a is TilemapAsset => a.kind === 'tilemap' && a.tilesetId === asset.id)
+    // A galeria contém apenas revisões CONFIRMADAS. Sobrepomos os mapas vivos
+    // do editor para que duas inserções dentro do debounce remapeiem a segunda
+    // a partir do resultado da primeira, sem publicar nada antes do IndexedDB.
+    const affectedById = new Map(
+      gallery
+        .getState()
+        .assets.filter((a): a is TilemapAsset => a.kind === 'tilemap' && a.tilesetId === asset.id)
+        .map((tilemap) => [tilemap.id, tilemap]),
+    )
+    for (const linked of editor.getState().linkedAssets ?? []) {
+      if (linked.kind === 'tilemap' && linked.tilesetId === asset.id) {
+        affectedById.set(linked.id, linked)
+      }
+    }
+    const affected = [...affectedById.values()]
     const before: PintaAsset[] = []
     const after: PintaAsset[] = []
     for (const tilemap of affected) {

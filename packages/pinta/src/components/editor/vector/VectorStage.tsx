@@ -56,7 +56,15 @@ import { smoothStrokeToPathCapped } from '../../../vector/smoothing'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { Button, ToolButton } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
-import { Copy, FlipHorizontal2, FlipVertical2, Group, Trash2, Ungroup } from '../../ui/icons'
+import {
+  Copy,
+  FlipHorizontal2,
+  FlipVertical2,
+  Group,
+  SquaresUnite,
+  Trash2,
+  Ungroup,
+} from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
 import { stageCursor } from '../stageCursor'
@@ -193,6 +201,7 @@ export function VectorStage(): JSX.Element {
     flipSelected,
     groupSelected,
     ungroupSelected,
+    pathfinderSelected,
   } = useVectorEditor()
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
@@ -795,7 +804,7 @@ export function VectorStage(): JSX.Element {
         <div
           role="toolbar"
           aria-label={COPY.vector.nodeBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1 shadow-lg"
+          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 pin-scroll-x overflow-x-auto p-1 shadow-lg"
         >
           <VectorNodeActions />
         </div>
@@ -804,7 +813,7 @@ export function VectorStage(): JSX.Element {
         <div
           role="toolbar"
           aria-label={COPY.vector.selectionBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 p-1 shadow-lg"
+          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 pin-scroll-x overflow-x-auto p-1 shadow-lg"
         >
           <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
           <ToolButton
@@ -818,7 +827,18 @@ export function VectorStage(): JSX.Element {
             onClick={() => flipSelected('v')}
           />
           {selected.length >= 2 ? (
-            <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
+            <>
+              <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
+              {/* Só UNIR no toque (decisão dela). As outras três pedem enxergar
+                  quem está na frente e um alvo por operação, e em 375px a barra
+                  já chega a 6 alvos. O caminho de crescimento, se ela pedir, é o
+                  disclosure "Cores e camadas", não esta barra. */}
+              <ToolButton
+                icon={SquaresUnite}
+                label={COPY.vector.selUnite}
+                onClick={() => pathfinderSelected('unir')}
+              />
+            </>
           ) : null}
           {selected.some((s) => s.groupId) ? (
             <ToolButton icon={Ungroup} label={COPY.vector.selUngroup} onClick={ungroupSelected} />

@@ -249,3 +249,24 @@
     animation: none;
   }
 }
+
+/**
+ * Faixa que rola de LADO sem crescer em ALTURA.
+ *
+ * ⚠️ `overflow-x-auto` sozinho NÃO cumpre isso no desktop: a barra de rolagem
+ * do Chrome é CLÁSSICA e ocupa layout, então a faixa da seleção do vetor ia de
+ * 52 para 69px assim que o conteúdo passava da largura da janela, empurrando o
+ * palco para baixo. Medido em 800px: conteúdo 1107, sobra 17px de barra.
+ * É o mesmo defeito de "os botões piscam e a grade sobe e desce" que este
+ * pacote já tratou uma vez.
+ *
+ * A rolagem continua funcionando (roda, arrasto, toque); só o desenho da barra
+ * some. Em toque ela já era sobreposta e não custava altura nenhuma.
+ */
+[data-pinta-theme] .pin-scroll-x {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+[data-pinta-theme] .pin-scroll-x::-webkit-scrollbar {
+  display: none;
+}

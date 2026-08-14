@@ -143,6 +143,15 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > futuro. Enquanto a marca d'água estiver adiantada (hoje 03/08 23:40), TODA migration nova gerada
 > antes desse instante nasce abaixo dela e será pulada: confira o `_journal.json` e suba o `when`
 > à mão. Sintoma a reconhecer: `db:migrate` verde + `column ... does not exist` no runtime.
+>
+> 🚨 **SEGUNDA regra, aprendida na `0063` (14/08):** `ALTER TABLE … ADD CONSTRAINT … CHECK`
+> **VALIDA as linhas que já existem**. Apertar um CHECK (a `0063` baixou o Iniciante 2D de 8 para 7
+> posições) ABORTA a migração se uma única linha violar — e, como o drizzle roda **todas as
+> migrações pendentes numa transação só** (`dialect.migrate` → `session.transaction` envolvendo o
+> laço), o lote inteiro volta atrás e o preDeploy falha. **Aperto de CHECK exige NORMALIZAR antes**,
+> com a negação exata do CHECK novo (precedente: a `0048`). Medido contra Postgres. ⚠️ Na mesma
+> família: o Postgres proíbe **ESCREVER** um valor de enum adicionado na mesma transação — literal,
+> cast explícito e subquery do `pg_enum`, os três recusados; só a **COMPARAÇÃO `::text`** passa.
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -383,7 +392,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    o nó/linha travado (cadeado, não clicável) + página de "aula bloqueada" no 423.
 11. **DEGRAU do CURSO + carreira do ALUNO (rank; posições na migration `0047`, normalização
    `0048` e restrição final `0049`):** o curso tem `courses.level`
-   (`iniciante`|`intermediario`|`avancado`, default
+   (`primeiros-passos`|`iniciante`|`intermediario`|`avancado`|`lenda`, default
    `iniciante`) **+ `courses.track`** (`2d`|`3d`, default `2d`) — o PAR é o DEGRAU pedagógico
    ("Iniciante 2D" … "Avançado 3D"). Colunas dedicadas, autoradas no admin (régua do
    `audience`/`sequentialLock`: ausentes no CREATE → defaults, no UPDATE **PRESERVAM** as atuais).
@@ -392,9 +401,29 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    = Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de
    Mundos→Gênio da Criação→Lenda) **DERIVADA na leitura** (sem coluna/backfill, como o
    ranking/missões): catálogo central em `@sistemazero/core/career`, espelhado por
-   `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de Iniciante 2D →
-   slots 1..8 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
-   +1..8 av-3d (**8 por degrau, reforma 07/2026** — era 6 no ini-2d e 5 nas demais; 48 obrigatórios).
+   `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de **Primeiros Passos** →
+   + slots 1..7 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
+   +1..8 av-3d (**48 obrigatórios**, o mesmo total de sempre).
+   ⚠️ **`primeiros-passos-2d` é o degrau de ENTRADA (14/08, migration `0063`)** — 1 posição só, o
+   curso que a Faísca faz, mais os bônus dela. Antes o curso-base morava no `iniciante-2d` e a
+   divisão Faísca × Construtor(a) era só APRESENTAÇÃO no kids, então a Faísca não podia ter bônus.
+   O número de posições deixou de ser uniforme: use `careerSlotsForTier(tier)` do core (1 / 7 / 8),
+   nunca um 8 solto. `courseTier(level, track)` passou a devolver `CourseTier | null` — nem todo par
+   é degrau (só existe `primeiros-passos-2d`, nunca o `-3d`), e quem chama trata `null` como fora da
+   carreira, igual ao `lenda`.
+   🚨 **O rollout exige MANUTENÇÃO.** Os marcos guardam um retrato congelado do degrau, e o
+   retrato de quem já concluiu o curso-base aponta `iniciante-2d` slot 1 — a régua nova exige
+   `primeiros-passos-2d`, então a criança CAIRIA para Faísca. A `0063` solta esse retrato (os três
+   campos viram NULL) para o marco voltar a seguir a etiqueta ATUAL do curso, mesmo remédio da
+   `0044`. ⚠️ Mas o Postgres proíbe ESCREVER um valor de enum adicionado na mesma transação
+   (medido: literal, cast explícito e subquery do `pg_enum`, os três recusados; só a COMPARAÇÃO
+   `::text` passa) e o drizzle roda TODAS as migrações pendentes numa transação só — logo a
+   migration não consegue re-etiquetar o curso sozinha. **Passo obrigatório do deploy:** com o kids
+   em manutenção e depois do commit da `0063`, executar `career:finalize-first-steps --course-slug
+   <slug> --confirm`. O comando move o curso e RECONGELA os dois marcos na mesma transação; não use o
+   admin para separar as duas operações. Sem a finalização, o curso-base vira etapa futura e pode dar
+   423, portanto a janela não é cosmética. Provado contra Postgres em
+   `tests/db/career-snapshot-release.test.ts`; runbook completo em `docs/carreira-do-criador.md`.
    Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
    Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
@@ -438,7 +467,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    no gate em profundidade (`CheckAccessService`, que lança `CourseCareerLockedError` → **423
    `COURSE_CAREER_LOCKED`**). LISTA e gate usam a MESMA política (mesmo `qualified` do PERFIL). Flag
    liga só p/ `audience==='kids' && !privileged` (equipe ignora). Autoria admin valida o slot em
-   `assertCareerSlot` (kids-only, máx 8 por degrau — migration `0053`; conflito → 409 `CAREER_SLOT_CONFLICT`).
+   `assertCareerSlot` (kids-only, máximo POR DEGRAU via `careerSlotsForTier` — CHECK da migration
+   `0063`; conflito → 409 `CAREER_SLOT_CONFLICT`).
    ⚠️ **Armadilha:** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas
    nunca publica → slot 1 nunca qualifica → demais da etapa presos. **Aviso automático (24/07):** a
    listagem admin (`CourseAdminService.list`) anexa `hasShowcaseBlock` aos cursos-base kids
@@ -483,6 +513,7 @@ scripts/seed-course.ts   # curso publicado (aula composta + quiz + anexo); --gra
 | `bun test` | testes (rode com **sandbox off** — gotcha do monorepo) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle) |
 | `bun run db:seed [--slug <s>] [--grant-user <userId>]` | popula curso (idempotente) + matrícula de teste |
+| `bun run career:finalize-first-steps --course-slug <s> --confirm` | rollout único: move o curso-base e recongela os marcos |
 | `bun run check` / `check:fix` | Biome |
 
 **Sempre** rode `typecheck` + `bun test` + `check` antes de concluir.

@@ -75,7 +75,13 @@ const EMPTY: FormState = {
  * demais). Espelha o CHECK da migration `0053` e o catálogo do core. Exportada SÓ p/
  * a trava de conformance admin×core (`career-tier-conformance`).
  */
-export function slotsForTier(_level: string, _track: string): number {
+export function slotsForTier(level: string, track: string): number {
+  // ⚠️ Não é mais um 8 uniforme (14/08): o degrau de ENTRADA tem 1 posição (o curso que a
+  // Faísca faz) e o Iniciante 2D ficou com 7, porque o curso-base saiu dele. A soma da
+  // carreira segue 48. O número vem do core, e o `career-tier-conformance.test.ts` compara
+  // esta função com ele.
+  if (level === 'primeiros-passos') return 1
+  if (level === 'iniciante' && track === '2d') return 7
   return 8
 }
 

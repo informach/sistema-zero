@@ -33,7 +33,7 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { loadAllPages } from '@/lib/load-all-pages'
 import { COURSE_STATUSES, COURSE_TIER_OPTIONS, type CourseView, type Paginated } from '@/lib/types'
-import { CourseFormDialog, type CoursePrefill } from './course-form-dialog'
+import { CourseFormDialog, type CoursePrefill, slotsForTier } from './course-form-dialog'
 
 const LIMIT = 20
 
@@ -310,8 +310,10 @@ function CareerReadiness({
   onPickSlot: (level: string, track: string, slot: number, course: CourseView | undefined) => void
 }) {
   const tiers = COURSE_TIER_OPTIONS.map((tier) => {
-    // 8 posições por degrau (reforma 07/2026; era 6 no Iniciante 2D e 5 nas demais).
-    const required = 8
+    // ⚠️ POR DEGRAU, não um 8 fixo: a entrada tem 1 e o Iniciante 2D tem 7 (14/08). Este
+    // número ficava solto aqui e não era coberto pela conformance — com o 8 fixo, o painel
+    // pediria 8 cursos numa trilha de 1 e nunca marcaria a carreira como pronta.
+    const required = slotsForTier(tier.level, tier.track)
     const slots = Array.from({ length: required }, (_, slotIndex) => {
       const slot = slotIndex + 1
       const course = courses.find(

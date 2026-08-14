@@ -54,6 +54,11 @@ import {
   type VectorTextAlign,
 } from '../../../vector/model'
 import {
+  type PathfinderOp,
+  type PathfinderRefusal,
+  pathfinderShapes,
+} from '../../../vector/pathfinder'
+import {
   type EditablePath,
   fromEditablePath,
   insertNodeAt,
@@ -161,9 +166,27 @@ export interface VectorEditorContextValue {
   removeSelected: () => void
   groupSelected: () => void
   ungroupSelected: () => void
+  pathfinderSelected: (op: PathfinderOp) => void
   flipSelected: (axis: 'h' | 'v') => void
   alignSelected: (edge: AlignEdge) => void
   zoomToFit: () => void
+}
+
+/**
+ * ⭐ Um `Record`, não um `switch`: recusa NOVA no núcleo quebra o typecheck aqui
+ * em vez de virar um toast vazio. É o oposto do `default: return null` do
+ * `sanitizeVectorShape`, que é justamente o buraco silencioso que este arquivo
+ * manda vigiar.
+ */
+const PATHFINDER_REFUSALS: Record<PathfinderRefusal, string> = {
+  'open-path': COPY.vector.pathfinderOpenPath,
+  'bad-path': COPY.vector.pathfinderBadPath,
+  'not-shapes': COPY.vector.pathfinderSkips,
+  'needs-two': COPY.vector.pathfinderNeedsTwo,
+  apart: COPY.vector.pathfinderApart,
+  empty: COPY.vector.pathfinderEmpty,
+  'too-big': COPY.vector.pathfinderTooBig,
+  'geometry-failed': COPY.vector.pathfinderFailed,
 }
 
 const VectorEditorContext = createContext<VectorEditorContextValue | null>(null)
@@ -542,6 +565,28 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     )
   }
 
+  /**
+   * MISTURAR a seleção numa forma só. Um commit, um desfazer.
+   *
+   * ⭐ O resultado guarda o id, o lugar, o estilo e o grupo do participante de
+   * TRÁS. O id é a parte OBRIGATÓRIA: com um id novo, `selectedIds` fica órfão
+   * por um render, `selected` vira `[]` e a `VectorSelectionBar` INTEIRA
+   * devolve null. Ela está no FLUXO (irmã do corpo), então o palco pularia uns
+   * 54px e voltaria. É a lição do corte com a tesoura, um degrau pior.
+   *
+   * Quem quer avisar é o TOAST, nunca um botão morto: dizer o que fazer a
+   * seguir ensina, e um botão apagado não ensina nada.
+   */
+  function pathfinderSelected(op: PathfinderOp): void {
+    const result = pathfinderShapes(currentShapes(), selectedIds, op)
+    if (!result.ok) {
+      showToast(PATHFINDER_REFUSALS[result.reason])
+      return
+    }
+    commitShapes(result.shapes)
+    setSelectedIds([result.resultId])
+  }
+
   /** Desagrupa a seleção (tira o vínculo de grupo). */
   function ungroupSelected(): void {
     if (!selected.some((s) => s.groupId)) return
@@ -824,6 +869,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     removeSelected,
     groupSelected,
     ungroupSelected,
+    pathfinderSelected,
     flipSelected,
     alignSelected,
     zoomToFit,

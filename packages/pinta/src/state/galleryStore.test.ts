@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { COPY } from '../core/copy'
-import { PINTA_LIMITS } from '../core/project'
+import { createPixelBackgroundAsset, createTilemapAsset, PINTA_LIMITS } from '../core/project'
 import { clearIdbMock, setIdbWriteGuard } from '../testing/idbMock'
 
 const { createGalleryStore } = await import('./galleryStore')
@@ -9,6 +9,26 @@ const { setPintaStorageNamespace, listAllAssets } = await import('./persistence'
 beforeEach(() => {
   clearIdbMock()
   setPintaStorageNamespace('')
+})
+
+describe('galleryStore — publicação confirmada do editor', () => {
+  it('absorve o asset principal e os ligados em uma única atualização observável', () => {
+    const store = createGalleryStore()
+    const main = createPixelBackgroundAsset({ name: 'ceu', width: 4, height: 4 })
+    const linked = createTilemapAsset({ name: 'fase', tilesetId: 'pecas', cols: 1, rows: 1 })
+    let notifications = 0
+    const unsubscribe = store.subscribe(() => {
+      notifications += 1
+    })
+
+    store.getState().absorbMany([main, linked])
+
+    unsubscribe()
+    expect(notifications).toBe(1)
+    expect(new Set(store.getState().assets.map((asset) => asset.id))).toEqual(
+      new Set([main.id, linked.id]),
+    )
+  })
 })
 
 describe('galleryStore — modelos prontos', () => {

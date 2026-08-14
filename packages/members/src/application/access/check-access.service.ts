@@ -94,12 +94,11 @@ export class CheckAccessService {
           course.level,
           course.track,
         ))
-      const lock = resolveCareerCourseLock(
-        qualified,
-        courseTier(course.level, course.track),
-        course.careerSlot,
-        foundationAvailable,
-      )
+      // Par que não é degrau da carreira (ex.: `primeiros-passos` + `3d`) não trava.
+      const tier = courseTier(course.level, course.track)
+      const lock = tier
+        ? resolveCareerCourseLock(qualified, tier, course.careerSlot, foundationAvailable)
+        : { locked: false as const }
       if (lock.locked && lock.reason) {
         throw new CourseCareerLockedError(lock.reason, lock.requiredLevel)
       }

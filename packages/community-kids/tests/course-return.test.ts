@@ -2,23 +2,33 @@ import { describe, expect, it } from 'bun:test'
 import { resolveCourseBack, trilhaHrefForCourse } from '../src/lib/course-return'
 
 /**
- * A setinha da página do curso. O caso que mais dói se errar é o Iniciante 2D:
- * ele é DIVIDIDO entre Faísca (curso-base) e Construtor (o resto), então mandar
- * para o nível errado joga a criança numa lista que não tem o curso dela.
+ * A setinha da página do curso: ela volta para a trilha que LISTA o curso, senão a criança
+ * cai numa lista que não tem o curso dela.
+ *
+ * ⭐ O desempate morreu em 14/08. Até então o Iniciante 2D era dividido entre Faísca
+ * (curso-base) e Construtor(a) (o resto), e era preciso escolher o dono pelo `careerSlot`,
+ * cobrir o fail-open do catálogo não etiquetado e ainda blindar slug desconhecido. Com o
+ * degrau de entrada próprio, **cada degrau tem um único dono** e a função é a composição
+ * `degrau → dono`.
  */
 
 describe('trilha dona do curso', () => {
-  it('divide o Iniciante 2D: curso-base vai p/ a Faísca, o resto p/ o Construtor', () => {
-    expect(trilhaHrefForCourse({ level: 'iniciante', track: '2d', careerSlot: 1 })).toBe(
+  it('o curso de ENTRADA vai para a trilha da Faísca', () => {
+    expect(trilhaHrefForCourse({ level: 'primeiros-passos', track: '2d', careerSlot: 1 })).toBe(
       '/cursos/trilha/noob',
     )
-    expect(trilhaHrefForCourse({ level: 'iniciante', track: '2d', careerSlot: 3 })).toBe(
-      '/cursos/trilha/coder',
+    // O bônus do degrau de entrada mora na MESMA trilha — é o que a Faísca não tinha antes.
+    expect(trilhaHrefForCourse({ level: 'primeiros-passos', track: '2d', careerSlot: null })).toBe(
+      '/cursos/trilha/noob',
     )
-    // Bônus da etapa (`careerSlot` nulo) vive na trilha do Construtor, com o resto.
-    expect(trilhaHrefForCourse({ level: 'iniciante', track: '2d', careerSlot: null })).toBe(
-      '/cursos/trilha/coder',
-    )
+  })
+
+  it('o Iniciante 2D inteiro é do Construtor(a), com posição ou sem', () => {
+    for (const careerSlot of [1, 3, null]) {
+      expect(trilhaHrefForCourse({ level: 'iniciante', track: '2d', careerSlot })).toBe(
+        '/cursos/trilha/coder',
+      )
+    }
   })
 
   it('degraus de nível único vão direto ao dono do degrau', () => {
@@ -41,40 +51,15 @@ describe('trilha dona do curso', () => {
     expect(trilhaHrefForCourse({})).toBeNull()
   })
 
-  it('rollout sem curso-base: a Faísca vai p/ a trilha DELA, não p/ a do Construtor', () => {
-    // Enquanto a etapa não tem `careerSlot === 1`, o `coursesForLevel` não divide e
-    // os dois níveis listam o degrau inteiro — mas o mapa só deixa a Faísca abrir a
-    // trilha dela. Dividir pelo slot mandaria a criança p/ um nível com cadeado.
-    const bonus = { level: 'iniciante', track: '2d', careerSlot: null } as const
-    expect(trilhaHrefForCourse(bonus, 'noob')).toBe('/cursos/trilha/noob')
-    expect(trilhaHrefForCourse(bonus, 'coder')).toBe('/cursos/trilha/coder')
-  })
-
-  it('o nível do aluno nunca REBAIXA a trilha do curso-base', () => {
-    // Construtor revisitando o curso-base: ele vive na trilha da Faísca (slot 1), e
-    // é p/ lá que a volta tem de ir — o desempate só sobe, nunca desce.
-    const base = { level: 'iniciante', track: '2d', careerSlot: 1 } as const
-    expect(trilhaHrefForCourse(base, 'coder')).toBe('/cursos/trilha/noob')
-    expect(trilhaHrefForCourse(base, 'noob')).toBe('/cursos/trilha/noob')
-  })
-
-  it('aluno de outro degrau não desempata (nível ausente também não)', () => {
-    const slot3 = { level: 'iniciante', track: '2d', careerSlot: 3 } as const
-    expect(trilhaHrefForCourse(slot3, 'hacker')).toBe('/cursos/trilha/coder')
-    expect(trilhaHrefForCourse(slot3, null)).toBe('/cursos/trilha/coder')
-    expect(trilhaHrefForCourse(slot3)).toBe('/cursos/trilha/coder')
-  })
-
-  it('nível DESCONHECIDO (members à frente do deploy) não vira URL', () => {
-    // `LEVEL_ORDER.indexOf` devolve -1 p/ slug novo, e `0 > -1` é verdadeiro — sem o
-    // guard de degrau isso mandaria a criança p/ `/cursos/trilha/<slug>` → notFound().
-    const bonus = { level: 'iniciante', track: '2d', careerSlot: null } as const
-    expect(trilhaHrefForCourse(bonus, 'nivel-do-futuro' as never)).toBe('/cursos/trilha/coder')
+  it('par que não é degrau da carreira não vira URL de trilha', () => {
+    // Só existe `primeiros-passos-2d`. Sem o guard do `courseTierOf`, isto produziria
+    // `/cursos/trilha/noob` para um curso que a trilha da Faísca não lista.
+    expect(trilhaHrefForCourse({ level: 'primeiros-passos', track: '3d' })).toBeNull()
   })
 })
 
 describe('destino da volta na página do curso', () => {
-  const curso = { level: 'iniciante', track: '2d', careerSlot: 1 } as const
+  const curso = { level: 'primeiros-passos', track: '2d', careerSlot: 1 } as const
 
   it('vindo da home, volta pra home', () => {
     expect(resolveCourseBack('inicio', curso)).toEqual({ href: '/', label: 'Voltar ao início' })
@@ -88,15 +73,13 @@ describe('destino da volta na página do curso', () => {
   })
 
   it('origem desconhecida é ignorada — `?de=` vem da URL e é allowlist', () => {
-    expect(resolveCourseBack('https://example.com', curso).href).toBe('/cursos/trilha/noob')
-    expect(resolveCourseBack('//example.com', curso).href).toBe('/cursos/trilha/noob')
-    expect(resolveCourseBack('/quarto', curso).href).toBe('/cursos/trilha/noob')
+    expect(resolveCourseBack('https://evil.example', curso)).toEqual({
+      href: '/cursos/trilha/noob',
+      label: 'Voltar à trilha',
+    })
   })
 
-  it('curso sem dificuldade cai no mapa — nunca fica sem saída', () => {
-    expect(resolveCourseBack(undefined, {})).toEqual({
-      href: '/cursos',
-      label: 'Voltar ao mapa',
-    })
+  it('curso sem degrau cai no mapa', () => {
+    expect(resolveCourseBack(undefined, {})).toEqual({ href: '/cursos', label: 'Voltar ao mapa' })
   })
 })

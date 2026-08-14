@@ -11,7 +11,7 @@
  */
 import { createStore, del, get, getMany, keys, setMany } from 'idb-keyval'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
-import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
+import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 
 const ASSET_KEY_PREFIX = 'pinta:asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
@@ -51,6 +51,15 @@ function getStoreHandle(): StoreHandle {
 // Uma cadeia FIFO por BANCO. Além de impedir interleaving entre save/rename/
 // delete, permite gravar asset + mapas ligados numa única transação setMany.
 const writeChains = new WeakMap<StoreHandle, Promise<void>>()
+const backupSizeCaches = new WeakMap<StoreHandle, GalleryBackupSizeCache>()
+
+function backupSizeCacheFor(storeHandle: StoreHandle): GalleryBackupSizeCache {
+  const cached = backupSizeCaches.get(storeHandle)
+  if (cached) return cached
+  const created = new GalleryBackupSizeCache()
+  backupSizeCaches.set(storeHandle, created)
+  return created
+}
 
 export function runSerializedWrite(
   storeHandle: StoreHandle,
@@ -126,6 +135,7 @@ export function isPintaStorageBudgetError(error: unknown): error is PintaStorage
  */
 export function createPintaPersistence(): PintaPersistence {
   const storeHandle = getStoreHandle()
+  const backupSizeCache = backupSizeCacheFor(storeHandle)
   const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
     if (assets.length === 0) return
     const unique = new Map(assets.map((asset) => [asset.id, asset]))
@@ -137,20 +147,37 @@ export function createPintaPersistence(): PintaPersistence {
       const projectedById = new Map(current.map((asset) => [asset.id, asset]))
       for (const asset of unique.values()) projectedById.set(asset.id, asset)
       const projected = [...projectedById.values()]
-      const projectedBytes = galleryBackupByteLength(projected)
+      const changedIds = new Set(unique.keys())
+      // A primeira leitura aquece o legado; depois só percorre ids/timestamps.
+      // A projeção força exclusivamente os assets desta mutação.
+      const currentBytes = backupSizeCache.byteLength(current)
+      const projectedBytes = backupSizeCache.byteLength(projected, changedIds)
       if (projectedBytes > MAX_BACKUP_FILE_BYTES) {
         // Legado acima do teto continua editável quando a mutação REDUZ o
         // backup. Em galeria saudável, qualquer projeção acima é recusada.
-        const currentBytes = galleryBackupByteLength(current)
-        if (projectedBytes >= currentBytes) throw new PintaStorageBudgetError(projectedBytes)
+        if (projectedBytes >= currentBytes) {
+          backupSizeCache.invalidate(changedIds)
+          throw new PintaStorageBudgetError(projectedBytes)
+        }
       }
-      await setMany(pairs, storeHandle)
+      try {
+        await setMany(pairs, storeHandle)
+      } catch (error) {
+        // O cache já descreve a projeção; uma transação recusada continua com
+        // o estado anterior no disco, então a contribuição tocada é inválida.
+        backupSizeCache.invalidate(changedIds)
+        throw error
+      }
     })
   }
   return {
     persistAsset: (asset) => persistAssetsForStore([asset]),
     persistAssets: persistAssetsForStore,
-    deleteAsset: (id) => runSerializedWrite(storeHandle, () => del(assetKey(id), storeHandle)),
+    deleteAsset: (id) =>
+      runSerializedWrite(storeHandle, async () => {
+        await del(assetKey(id), storeHandle)
+        backupSizeCache.invalidate([id])
+      }),
     async loadAssetById(id) {
       const raw = await get<unknown>(assetKey(id), storeHandle)
       return safeSanitize(raw)

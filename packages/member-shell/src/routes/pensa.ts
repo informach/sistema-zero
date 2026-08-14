@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { resolveStudioTier } from '../lib/studio-tier'
 import type { PensaArtifactView, PensaStageView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
-import { hasCreativeAppsLevel } from '../server/creative-apps-access'
+import { hasAiAppsLevel } from '../server/creative-apps-access'
 import { auditPlan } from '../server/pensa-agents/plan-audit'
 import {
   availablePlannerCatalog,
@@ -159,7 +159,7 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
     }
     // Sem sessão, o members preserva o 401 autoritativo em vez de um 403 enganoso.
     if (!user) return null
-    if (!(await hasCreativeAppsLevel(members, user.role))) {
+    if (!(await hasAiAppsLevel(members, user.role))) {
       return NextResponse.json(
         {
           error: {

@@ -1,4 +1,4 @@
-import { meetsCreativeAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
+import { meetsAiAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
 import { KidsCareerLockedPensa } from '@/components/kids/kids-career-locked-pensa'
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'
 import { KidsPensaUnavailable } from '@/components/kids/kids-pensa-unavailable'
@@ -37,7 +37,7 @@ export default async function PensaPage() {
   const hasAccess = res.body?.access?.pensa === true
   if (!hasAccess) return <KidsLockedPensa />
   if (gam?.status !== 200) return <KidsPensaUnavailable />
-  if (!meetsCreativeAppsLevel(gam.body?.level?.slug, session?.role)) {
+  if (!meetsAiAppsLevel(gam.body?.level?.slug, session?.role)) {
     return <KidsCareerLockedPensa />
   }
   const pintaOwned = toolsRes?.status === 200 && toolsRes.body?.access?.pinta === true

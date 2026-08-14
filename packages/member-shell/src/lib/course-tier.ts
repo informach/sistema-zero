@@ -8,6 +8,8 @@ import type { CourseLevelSlug, CourseTrack } from './types'
  * NÃO importa daqui (duplicação intencional, como os rank labels).
  */
 export const COURSE_TIERS = [
+  // Degrau de ENTRADA (14/08): 1 posição só, o curso que a Faísca faz. Sempre `2d`.
+  'primeiros-passos-2d',
   'iniciante-2d',
   'iniciante-3d',
   'intermediario-2d',
@@ -19,6 +21,7 @@ export type CourseTierSlug = (typeof COURSE_TIERS)[number]
 
 /** Rótulos de exibição dos degraus (chips, filtros). */
 export const COURSE_TIER_LABELS: Record<CourseTierSlug, string> = {
+  'primeiros-passos-2d': 'Primeiros Passos',
   'iniciante-2d': 'Iniciante 2D',
   'iniciante-3d': 'Iniciante 3D',
   'intermediario-2d': 'Intermediário 2D',
@@ -39,5 +42,8 @@ export function courseTierOf(
   // `lenda` é FORA da carreira → não é degrau (sem chip/filtro de degrau; o kids
   // renderiza o rótulo "Lenda" à parte).
   if (!level || level === 'lenda') return undefined
-  return `${level}-${track ?? '2d'}`
+  const tier = `${level}-${track ?? '2d'}`
+  // ⚠️ Nem todo par é degrau: só existe `primeiros-passos-2d`, nunca o `-3d`. Sem esta
+  // conferência o chip/filtro mostraria uma etapa que não existe.
+  return (COURSE_TIERS as readonly string[]).includes(tier) ? (tier as CourseTierSlug) : undefined
 }

@@ -38,14 +38,28 @@ function course(level: Level, track: Track, careerSlot: number | null): CatalogC
   }
 }
 
-/** Os 8 cursos de um degrau (posições 1..8). */
-function fullTier(level: Level, track: Track): CatalogCourseView[] {
-  return [1, 2, 3, 4, 5, 6, 7, 8].map((slot) => course(level, track, slot))
+/**
+ * Posições obrigatórias por degrau. Desde 14/08 não é um 8 uniforme: a ENTRADA tem 1 (o
+ * curso que a Faísca faz) e o Iniciante 2D tem 7 (o curso-base saiu dele). Soma: 48.
+ */
+const SLOTS_POR_DEGRAU: Record<string, number> = {
+  'primeiros-passos-2d': 1,
+  'iniciante-2d': 7,
 }
 
-/** O catálogo COMPLETO da carreira: 6 degraus × 8 posições = 48. */
+/** O degrau inteiro, com o número de posições que ELE tem. */
+function fullTier(level: Level, track: Track): CatalogCourseView[] {
+  const total = SLOTS_POR_DEGRAU[`${level}-${track}`] ?? 8
+  return Array.from({ length: total }, (_, index) => course(level, track, index + 1))
+}
+
+/** O curso de ENTRADA sozinho: a régua do Construtor(a). */
+const entrada = () => course('primeiros-passos', '2d', 1)
+
+/** O catálogo COMPLETO da carreira: 1 + 7 + 8×5 = 48 posições. */
 function fullCatalog(): CatalogCourseView[] {
   return [
+    ...fullTier('primeiros-passos', '2d'),
     ...fullTier('iniciante', '2d'),
     ...fullTier('iniciante', '3d'),
     ...fullTier('intermediario', '2d'),
@@ -67,6 +81,7 @@ function studentLevel(
     next,
     remaining: {
       any: 0,
+      'primeiros-passos-2d': 0,
       'iniciante-2d': 0,
       'iniciante-3d': 0,
       'intermediario-2d': 0,
@@ -83,33 +98,42 @@ describe('careerHorizon', () => {
     expect(careerHorizon([])).toBe('noob')
   })
 
-  test('só o curso-base do Iniciante 2D alcança o Construtor', () => {
-    expect(careerHorizon([course('iniciante', '2d', 1)])).toBe('coder')
+  test('só o curso de ENTRADA alcança o Construtor', () => {
+    expect(careerHorizon([entrada()])).toBe('coder')
+  })
+
+  test('cursos do Iniciante 2D sem o de entrada não movem nada', () => {
+    // A régua do Construtor(a) é o degrau de entrada; gravar o Iniciante 2D primeiro não
+    // adianta o horizonte.
+    expect(careerHorizon(fullTier('iniciante', '2d'))).toBe('noob')
   })
 
   test('degrau incompleto não passa do Construtor', () => {
-    const courses = [1, 2, 3].map((slot) => course('iniciante', '2d', slot))
+    const courses = [entrada(), ...[1, 2, 3].map((slot) => course('iniciante', '2d', slot))]
     expect(careerHorizon(courses)).toBe('coder')
   })
 
   test('Iniciante 2D inteiro alcança o Inventor', () => {
-    expect(careerHorizon(fullTier('iniciante', '2d'))).toBe('hacker')
+    expect(careerHorizon([entrada(), ...fullTier('iniciante', '2d')])).toBe('hacker')
   })
 
   test('curso bônus (sem posição) NÃO move o horizonte', () => {
-    const courses = [...fullTier('iniciante', '2d'), course('iniciante', '2d', null)]
+    const courses = [
+      entrada(),
+      ...fullTier('iniciante', '2d'),
+      course('iniciante', '2d', null),
+      course('primeiros-passos', '2d', null),
+    ]
     expect(careerHorizon(courses)).toBe('hacker')
   })
 
   test('curso de nível Lenda NÃO move o horizonte', () => {
-    const courses = [course('iniciante', '2d', 1), course('lenda', '2d', null)]
-    expect(careerHorizon(courses)).toBe('coder')
+    expect(careerHorizon([entrada(), course('lenda', '2d', null)])).toBe('coder')
   })
 
   test('degrau posterior completo não pula o buraco do anterior', () => {
-    // Iniciante 3D inteiro, mas o Iniciante 2D só tem a base: para no Construtor.
-    const courses = [course('iniciante', '2d', 1), ...fullTier('iniciante', '3d')]
-    expect(careerHorizon(courses)).toBe('coder')
+    // Iniciante 3D inteiro, mas o Iniciante 2D está vazio: para no Construtor.
+    expect(careerHorizon([entrada(), ...fullTier('iniciante', '3d')])).toBe('coder')
   })
 
   test('⭐ catálogo DESCONHECIDO (busca falhou) não encolhe nada', () => {
@@ -121,8 +145,8 @@ describe('careerHorizon', () => {
     expect(careerProgress(level, null)).toMatchObject({
       kind: 'pending',
       remaining: 7,
-      done: 1,
-      ready: 8,
+      done: 0,
+      ready: 7,
     })
   })
 
@@ -182,20 +206,30 @@ describe('readySlotsByTier', () => {
 })
 
 describe('careerProgress', () => {
-  test('Faísca com o curso-base publicado: falta 1 (e ele existe)', () => {
-    const level = studentLevel('noob', 'coder', { 'iniciante-2d': 1 })
-    const progress = careerProgress(level, [course('iniciante', '2d', 1)])
+  test('Faísca com o curso de entrada publicado: falta 1 (e ele existe)', () => {
+    const level = studentLevel('noob', 'coder', { 'primeiros-passos-2d': 1 })
+    const progress = careerProgress(level, [entrada()])
     expect(progress).toMatchObject({ kind: 'pending', remaining: 1, done: 0, ready: 1 })
+  })
+
+  test('⭐ o degrau de ENTRADA cabe no catálogo de hoje, então a frase honesta VOLTA', () => {
+    // Com 1 posição só, o degrau da Faísca fica CHEIO com o curso que já existe — e a
+    // regra "não diga quanto falta com o degrau pela metade" deixa de silenciar aqui.
+    const level = studentLevel('noob', 'coder', { 'primeiros-passos-2d': 1 })
+    expect(nextLevelHintWithin(level, [entrada()])).toBe(
+      'Falta 1 curso para você virar Construtor(a). Termine e publique o seu jogo no Mural!',
+    )
   })
 
   test('⭐ Construtor com só o curso-base no catálogo fica EM DIA, não "faltam 7"', () => {
     // O members diz que faltam 7 posições para o Inventor; nenhuma delas foi gravada.
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
-    expect(careerProgress(level, [course('iniciante', '2d', 1)])).toEqual({ kind: 'up-to-date' })
+    expect(careerProgress(level, [entrada()])).toEqual({ kind: 'up-to-date' })
   })
 
-  test('Construtor com 3 cursos gravados e 1 feito: faltam 2, não 7', () => {
-    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
+  test('Construtor com 3 cursos gravados e 1 feito: faltam 2, não 6', () => {
+    // O degrau tem 7 posições: o members dizendo "faltam 6" significa 1 já qualificada.
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 6 })
     const courses = [1, 2, 3].map((slot) => course('iniciante', '2d', slot))
     expect(careerProgress(level, courses)).toMatchObject({
       kind: 'pending',
@@ -214,7 +248,7 @@ describe('careerProgress', () => {
 
   test('pega o PRIMEIRO degrau pendente na ordem da carreira', () => {
     const level = studentLevel('hacker', 'explorer', { 'iniciante-3d': 8 })
-    const courses = [...fullTier('iniciante', '2d'), ...fullTier('iniciante', '3d')]
+    const courses = [entrada(), ...fullTier('iniciante', '2d'), ...fullTier('iniciante', '3d')]
     expect(careerProgress(level, courses)).toMatchObject({
       kind: 'pending',
       tier: 'iniciante-3d',
@@ -224,7 +258,7 @@ describe('careerProgress', () => {
 
   test('degrau pendente sem curso gravado é "em dia" mesmo com degrau posterior cheio', () => {
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
-    const courses = [course('iniciante', '2d', 1), ...fullTier('iniciante', '3d')]
+    const courses = [entrada(), ...fullTier('iniciante', '3d')]
     expect(careerProgress(level, courses)).toEqual({ kind: 'up-to-date' })
   })
 
@@ -239,7 +273,7 @@ describe('nextLevelHintWithin', () => {
     // A criança precisa dos 8 para virar Inventor(a). Com 3 gravados, dizer "faltam 2" é
     // mentira: ela fecha os 2 e não sobe. Falsa esperança é pior que silêncio.
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
-    for (const publicados of [1, 2, 3, 7]) {
+    for (const publicados of [1, 2, 3, 6]) {
       const catalogo = Array.from({ length: publicados }, (_, i) =>
         course('iniciante', '2d', i + 1),
       )
@@ -269,14 +303,15 @@ describe('nextLevelHintWithin', () => {
 
   test('em dia e topo não têm frase (a UI mostra a própria)', () => {
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
-    expect(nextLevelHintWithin(level, [course('iniciante', '2d', 1)])).toBeNull()
+    expect(nextLevelHintWithin(level, [entrada()])).toBeNull()
     expect(nextLevelHintWithin(studentLevel('god', null), fullCatalog())).toBeNull()
   })
 })
 
 describe('TIER_ORDER', () => {
-  test('são os 6 degraus na ordem da carreira, sem repetir', () => {
+  test('são os 7 degraus na ordem da carreira, sem repetir', () => {
     expect(TIER_ORDER).toEqual([
+      'primeiros-passos-2d',
       'iniciante-2d',
       'iniciante-3d',
       'intermediario-2d',

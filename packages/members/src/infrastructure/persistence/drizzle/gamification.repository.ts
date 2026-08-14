@@ -819,7 +819,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     for (const row of rows) {
       // `lenda` é FORA da carreira (também teria careerSlot null) → nunca conta.
       if (!row.level || row.level === 'lenda' || !row.track || row.careerSlot === null) continue
-      const slots = result[courseTier(row.level, row.track)]
+      const tier = courseTier(row.level, row.track)
+      // Par que não é degrau da carreira (só existe `primeiros-passos-2d`) não conta.
+      if (!tier) continue
+      const slots = result[tier]
       const slot = Number(row.careerSlot)
       if (!slots.includes(slot)) slots.push(slot)
     }
@@ -952,7 +955,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         q = emptyQualifyingByTier()
         result.set(row.userId, q)
       }
-      const slots = q[courseTier(row.level, row.track)]
+      const tier = courseTier(row.level, row.track)
+      // Par que não é degrau da carreira (só existe `primeiros-passos-2d`) não conta.
+      if (!tier) continue
+      const slots = q[tier]
       const slot = Number(row.careerSlot)
       if (!slots.includes(slot)) slots.push(slot)
     }

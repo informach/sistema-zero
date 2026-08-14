@@ -17,7 +17,8 @@ export function careerLocksForCourses(
   const foundationByTier = new Map<string, string>()
   for (const course of courses) {
     if (course.level !== 'lenda' && course.audience === 'kids' && course.careerSlot === 1) {
-      foundationByTier.set(courseTier(course.level, course.track), course.slug)
+      const tier = courseTier(course.level, course.track)
+      if (tier) foundationByTier.set(tier, course.slug)
     }
   }
 
@@ -29,7 +30,13 @@ export function careerLocksForCourses(
       locks.set(course.id, { locked: false })
       continue
     }
+    // Par (level, track) que não é degrau da carreira (ex.: `primeiros-passos` + `3d`)
+    // fica FORA dela, como o `lenda`: não trava nada.
     const tier = courseTier(course.level, course.track)
+    if (!tier) {
+      locks.set(course.id, { locked: false })
+      continue
+    }
     // Sem um curso-base publicado na etapa, a trava falha aberta — vale p/ as
     // posições 2+ (foundation-first) E p/ o bônus-recompensa (tier-reward):
     // sem base não há nada a concluir para liberar.

@@ -17,41 +17,55 @@ const q = (
   return result
 }
 
+/** O curso de ENTRADA concluído e publicado — a régua do Construtor(a) desde 14/08. */
+const ENTRADA = { 'primeiros-passos-2d': [1] } as const
+
 describe('courseTier', () => {
   test('compõe dificuldade e eixo', () => {
     expect(courseTier('iniciante', '2d')).toBe('iniciante-2d')
     expect(courseTier('avancado', '3d')).toBe('avancado-3d')
+    expect(courseTier('primeiros-passos', '2d')).toBe('primeiros-passos-2d')
+  })
+
+  test('par que não é degrau da carreira devolve null, não uma etapa inventada', () => {
+    // Só existe `primeiros-passos-2d`. Sem o guard, `primeiros-passos-3d` viraria chave
+    // fantasma no mapa de slots e o marco sumiria em silêncio.
+    expect(courseTier('primeiros-passos', '3d')).toBeNull()
   })
 })
 
 describe('computeStudentLevel por slots obrigatórios', () => {
-  test('sem curso-base permanece Faísca, mesmo com outros cursos', () => {
-    const result = computeStudentLevel(q({ 'iniciante-2d': [2, 3, 4, 5, 6] }))
+  test('sem o curso de ENTRADA permanece Faísca, mesmo com outros cursos', () => {
+    const result = computeStudentLevel(q({ 'iniciante-2d': slots(7) }))
     expect(result.slug).toBe('noob')
     expect(result.next).toBe('coder')
-    expect(result.remaining?.['iniciante-2d']).toBe(1)
+    expect(result.remaining?.['primeiros-passos-2d']).toBe(1)
   })
 
-  test('slot 1 do Iniciante 2D libera Construtor', () => {
-    const result = computeStudentLevel(q({ 'iniciante-2d': [1] }))
+  test('o curso de ENTRADA libera Construtor', () => {
+    const result = computeStudentLevel(q(ENTRADA))
     expect(result.slug).toBe('coder')
-    // Faltam 7 posições (2–8) do Iniciante 2D p/ virar Inventor.
+    // Faltam as 7 posições do Iniciante 2D p/ virar Inventor(a) — o mesmo total de antes,
+    // que agora vive num degrau próprio.
     expect(result.remaining?.['iniciante-2d']).toBe(7)
+    expect(result.remaining?.['primeiros-passos-2d']).toBe(0)
   })
 
   test('slot repetido e bônus não substituem slots faltantes', () => {
-    expect(computeStudentLevel(q({ 'iniciante-2d': [1, 1, 2, 3, 4, 99] })).slug).toBe('coder')
+    expect(computeStudentLevel(q({ 'primeiros-passos-2d': [1, 1, 99] })).slug).toBe('coder')
   })
 
   test('cada etapa completa libera o nível seguinte', () => {
-    expect(computeStudentLevel(q({ 'iniciante-2d': slots(8) })).slug).toBe('hacker')
+    expect(computeStudentLevel(q({ ...ENTRADA, 'iniciante-2d': slots(7) })).slug).toBe('hacker')
     expect(
-      computeStudentLevel(q({ 'iniciante-2d': slots(8), 'iniciante-3d': slots(8) })).slug,
+      computeStudentLevel(q({ ...ENTRADA, 'iniciante-2d': slots(7), 'iniciante-3d': slots(8) }))
+        .slug,
     ).toBe('explorer')
     expect(
       computeStudentLevel(
         q({
-          'iniciante-2d': slots(8),
+          ...ENTRADA,
+          'iniciante-2d': slots(7),
           'iniciante-3d': slots(8),
           'intermediario-2d': slots(8),
         }),
@@ -62,7 +76,8 @@ describe('computeStudentLevel por slots obrigatórios', () => {
   test('escada completa chega à Lenda', () => {
     const result = computeStudentLevel(
       q({
-        'iniciante-2d': slots(8),
+        ...ENTRADA,
+        'iniciante-2d': slots(7),
         'iniciante-3d': slots(8),
         'intermediario-2d': slots(8),
         'intermediario-3d': slots(8),
@@ -79,6 +94,15 @@ describe('computeStudentLevel por slots obrigatórios', () => {
     for (const level of STUDENT_LEVELS.slice(1)) {
       expect(computeStudentLevel(q(level.tiers)).slug).toBe(level.slug)
     }
-    expect(COURSE_TIERS).toHaveLength(6)
+    expect(COURSE_TIERS).toHaveLength(7)
+  })
+
+  test('o `remaining` traz TODOS os degraus, inclusive o de entrada', () => {
+    // A forma do `remaining` mudou de 6 para 7 chaves: members e kids sobem no MESMO trem.
+    const result = computeStudentLevel(emptyQualifyingByTier())
+    for (const tier of COURSE_TIERS) {
+      expect(result.remaining?.[tier]).toBeDefined()
+    }
+    expect(Object.keys(result.remaining ?? {})).toHaveLength(COURSE_TIERS.length + 1)
   })
 })

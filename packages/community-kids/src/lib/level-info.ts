@@ -43,9 +43,10 @@ export const LEVEL_INFO: Record<StudentLevelSlug, LevelInfo> = {
   },
   hacker: {
     label: 'Inventor(a)',
-    // Sem número de propósito: a régua já foi 5, virou 6 e hoje é 8 por degrau, e a frase
-    // ficou para trás em todas as vezes. O que não muda é o feito.
-    blurb: 'Você dominou o Iniciante 2D. Mandou bem!',
+    // Sem número E sem nome de degrau, de propósito: a régua já foi 5, virou 6 e hoje é 8 por
+    // degrau, e a frase ficou para trás em todas as vezes; "Iniciante 2D" é vocabulário de quem
+    // MONTA o curso. O que não muda é o feito.
+    blurb: 'Você já domina os jogos em 2D. Mandou bem!',
     colorVar: 'var(--level-hacker)',
     icon: Lightbulb,
   },

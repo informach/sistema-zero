@@ -83,6 +83,8 @@ export interface PintaGalleryState {
   remove(id: string): Promise<boolean>
   /** Absorve um asset atualizado pelo editor (autosave) sem reler o disco. */
   absorb(asset: PintaAsset): void
+  /** Publica uma transação confirmada do editor em uma única atualização. */
+  absorbMany(assets: readonly PintaAsset[]): void
   /**
    * Restaura assets de um backup `.pinta.json`: ids NOVOS + nome com sufixo em
    * colisão (import nunca sobrescreve o que existe); respeita a quota — devolve
@@ -375,6 +377,10 @@ export function createGalleryStore(): PintaGalleryStore {
 
     absorb(asset) {
       set((state) => ({ assets: upsertSorted(state.assets, asset) }))
+    },
+
+    absorbMany(assets) {
+      set((state) => ({ assets: assets.reduce(upsertSorted, state.assets) }))
     },
 
     async importAssets(incoming) {

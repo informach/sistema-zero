@@ -36,7 +36,9 @@ export function CatalogCourseCard({
   const tierReward = careerLocked && course.careerLock?.reason === 'tier-reward'
   // ⚠️ Sem "etapa" e sem nome de degrau: é vocabulário de quem MONTA o curso. Para a
   // criança basta saber que é prêmio e o que destrava.
-  const rewardLabel = 'Prêmio! Abre quando você terminar os outros cursos'
+  // ⚠️ E sem QUANTIDADE, nem implícita: "os outros cursos" ficou errado quando a trilha da
+  // Faísca virou um degrau de UM curso só (14/08). "A trilha" vale para 1, 7 ou 8.
+  const rewardLabel = 'Prêmio! Abre quando você terminar a trilha'
   const body = (
     <Card
       className={cn(

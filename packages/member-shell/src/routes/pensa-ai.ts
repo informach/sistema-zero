@@ -11,7 +11,7 @@ import type {
 } from '../lib/types'
 import { aiQuotaMessage, consumeAiQuota } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
-import { hasCreativeAppsLevel } from '../server/creative-apps-access'
+import { hasAiAppsLevel } from '../server/creative-apps-access'
 import { auditPlan } from '../server/pensa-agents/plan-audit'
 import {
   availablePlannerCatalog,
@@ -166,7 +166,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       const user = await session.getSession()
       if (!user) return error('UNAUTHENTICATED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
-      if (!(await hasCreativeAppsLevel(members, user.role))) {
+      if (!(await hasAiAppsLevel(members, user.role))) {
         return error(
           'CAREER_LEVEL_REQUIRED',
           403,
@@ -294,7 +294,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       const user = await session.getSession()
       if (!user) return error('UNAUTHENTICATED', 401)
       if (user.act) return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
-      if (!(await hasCreativeAppsLevel(members, user.role))) {
+      if (!(await hasAiAppsLevel(members, user.role))) {
         return error(
           'CAREER_LEVEL_REQUIRED',
           403,

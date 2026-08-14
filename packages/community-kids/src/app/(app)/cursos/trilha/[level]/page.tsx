@@ -18,8 +18,8 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Listagem da trilha de um NÍVEL do Mapa da Carreira (`/cursos/trilha/coder`): os
- * cursos daquele nível — Faísca vê só o curso-base, Construtor o resto + bônus, os
- * demais o degrau inteiro (`coursesForLevel`). Destino do clique num nível liberado
+ * cursos daquele nível — cada posto é dono de um degrau inteiro, bônus incluso
+ * (`coursesForLevel`). Destino do clique num nível liberado
  * do mapa. Deep-link numa trilha ainda bloqueada mostra o recado gentil (a régua REAL
  * de acesso segue no members; aqui é apresentação). O segmento estático `trilha` não
  * colide com o detalhe `/cursos/[slug]`.
