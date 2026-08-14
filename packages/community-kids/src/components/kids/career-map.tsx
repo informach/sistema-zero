@@ -1,6 +1,5 @@
 'use client'
 
-import { COURSE_TIER_LABELS } from '@sistemazero/member-shell/lib/course-tier'
 import { buttonVariants } from '@sistemazero/ui/button'
 import { Check, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
@@ -289,11 +288,9 @@ function CareerNode({
         >
           {info.label}
         </span>
-        {tier ? (
-          <span className="text-[11px] text-muted-foreground">
-            Trilha {COURSE_TIER_LABELS[tier]}
-          </span>
-        ) : state !== 'locked' ? (
+        {/* ⚠️ NADA de nome de degrau ("Iniciante 2D") aqui: é vocabulário de quem MONTA o
+            curso, não de quem faz. Para a criança o nó já se chama Faísca, Construtor(a)… */}
+        {!tier && state !== 'locked' ? (
           <span className="text-[11px] text-muted-foreground">O topo da carreira!</span>
         ) : null}
         {/* Marcos do degrau: a criança vê o passo a passo se mexer a cada curso publicado,
@@ -304,7 +301,8 @@ function CareerNode({
             style={{ color: info.colorVar }}
           >
             <ProgressDots done={progress.done} total={progress.ready} />
-            {progress.done} de {progress.ready} {progress.ready === 1 ? 'curso' : 'cursos'}
+            {progress.done} de {progress.ready}{' '}
+            {progress.ready === 1 ? 'aventura pronta' : 'aventuras prontas'}
           </span>
         ) : state === 'current' && progress.kind === 'up-to-date' ? (
           <span className="font-semibold text-[11px]" style={{ color: info.colorVar }}>
@@ -329,7 +327,7 @@ function CareerNode({
       <li className={rowClass} style={positionStyle}>
         <button
           type="button"
-          aria-label={`${info.label} — ainda bloqueado`}
+          aria-label={`${info.label}, ainda bloqueado`}
           className="relative block cursor-not-allowed"
           onClick={() => {
             setWiggling(true)
@@ -352,7 +350,7 @@ function CareerNode({
         <li className={rowClass} style={positionStyle}>
           <Link
             href="/cursos/trilha/god"
-            aria-label={`${info.label} — abrir os cursos bônus da Lenda`}
+            aria-label={`Abrir os cursos bônus da ${info.label}`}
             className="relative block"
           >
             {inner}
@@ -371,7 +369,7 @@ function CareerNode({
     <li className={rowClass} style={positionStyle}>
       <Link
         href={`/cursos/trilha/${slug}`}
-        aria-label={`${info.label} — abrir a trilha ${COURSE_TIER_LABELS[tier]}`}
+        aria-label={`Abrir a trilha ${info.label}`}
         className="relative block"
       >
         {inner}

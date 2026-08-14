@@ -251,12 +251,13 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   /** Colisão por círculo: distância dos centros < soma dos raios (≈ metade do lado). */
   function circleCollides(a, b) {
     if (!a || !b) return false;
-    // O raio respeita o dial "usar área de colisão de N%"; os centros não mudam.
-    var aScale = _positiveFiniteNumber(a._hitboxScale, 1);
-    var bScale = _positiveFiniteNumber(b._hitboxScale, 1);
-    var ar = (Math.min(a.w, a.h) / 2) * aScale, br = (Math.min(b.w, b.h) / 2) * bScale;
-    var dx = (a.x + a.w / 2) - (b.x + b.w / 2);
-    var dy = (a.y + a.h / 2) - (b.y + b.h / 2);
+    // ⭐ Le a caixa EFETIVA (_hitboxOf), a mesma do retangulo: assim o dial "usar
+    // area de colisao de N%" E a caixa medida no desenho valem aqui tambem. Antes
+    // isto lia o fator na mao e teria ficado cego para a medicao do Pinta.
+    var ea = _hitboxOf(a), eb = _hitboxOf(b);
+    var ar = Math.min(ea.w, ea.h) / 2, br = Math.min(eb.w, eb.h) / 2;
+    var dx = (ea.x + ea.w / 2) - (eb.x + eb.w / 2);
+    var dy = (ea.y + ea.h / 2) - (eb.y + eb.h / 2);
     return Math.sqrt(dx * dx + dy * dy) < ar + br;
   }
 

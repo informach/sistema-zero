@@ -82,6 +82,13 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
   // Aqui `undefined` e `null` são diferentes: ausente preserva no PATCH;
   // null explícito remove o curso da carreira.
   careerSlot: Object.hasOwn(b, 'careerSlot') ? b.careerSlot : undefined,
+  // Currículo do Estúdio — MESMA distinção do `careerSlot`: ausente PRESERVA (build antigo
+  // do admin não apaga o que a professora liberou), `null`/`[]` limpam de propósito.
+  // ⚠️ Estar no DTO NÃO basta: este mapeador é a fronteira real, e um campo que não é
+  // copiado aqui é validado e DESCARTADO em silêncio — o currículo nunca chegaria ao banco.
+  studioUnlockBlocks: Object.hasOwn(b, 'studioUnlockBlocks')
+    ? (b.studioUnlockBlocks ?? null)
+    : undefined,
 })
 const moduleFields = (b: ModuleInput): ModuleFields => ({
   title: b.title,

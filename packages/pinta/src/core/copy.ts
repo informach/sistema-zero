@@ -204,6 +204,17 @@ export const COPY = {
     zoomIn: 'Aproximar',
     zoomOut: 'Afastar',
     zoomFit: 'Ajustar',
+    resize: {
+      /** O botão mostra o tamanho de agora: "Tamanho: 128 x 32". */
+      button: (width: number, height: number) => `Tamanho: ${width} x ${height}`,
+      title: 'Mudar o tamanho do desenho',
+      helpPixels: 'O desenho continua igual e fica no meio do novo tamanho.',
+      helpCells: 'O mapa continua igual e fica no meio do novo tamanho.',
+      willCut: 'Diminuir corta o que ficar de fora. Dá para desfazer com Ctrl+Z.',
+      apply: 'Mudar o tamanho',
+      cancel: 'Agora não',
+      done: 'Pronto, o tamanho mudou',
+    },
   },
   tools: {
     pencil: 'Lápis',

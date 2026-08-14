@@ -126,7 +126,7 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
         <h2 className="sz-display mb-3 text-lg">Conquistas</h2>
         {badges.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            Ainda não tem conquistas — logo logo aparecem aqui! 😄
+            Ainda não tem conquistas. Logo logo aparecem aqui! 😄
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

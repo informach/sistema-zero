@@ -72,6 +72,7 @@ export {
   Replace,
   Rocket,
   RotateCw,
+  Scaling,
   Scissors,
   SendToBack,
   Settings,

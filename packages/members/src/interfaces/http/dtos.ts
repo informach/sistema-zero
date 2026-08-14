@@ -866,11 +866,12 @@ const CourseBodyProperties = {
   // (mesmo formato do `allowBlocks` da aula, só que no CURSO). Vira
   // `metadata.studioUnlockBlocks`. AUSENTE **PRESERVA** a lista atual (régua do
   // audience/level, não a do salesPageUrl): build antigo do admin não apaga currículo.
-  // `null`/`[]` limpa. ⚠️ O teto precisa ficar ACIMA do catálogo INTEIRO do studio (1467
-  // blocos hoje): o JSON é um RETRATO cumulativo ("os que já estavam liberados mais os
-  // deste curso"), então um curso do fim da escada legitimamente chega perto do total —
-  // um teto justo viraria erro de validação no curso mais avançado. A existência de cada
-  // id é conferida pelo ADMIN contra o catálogo (o members não o importa).
+  // `null`/`[]` limpa. A lista é a dos blocos que o curso USA, então repetir fundamentos de
+  // cursos anteriores é esperado: quem acumula é o ALUNO (a paleta é a união deduplicada dos
+  // cursos conquistados) e ele recebe só o que ainda não tinha. O teto é folgado de propósito
+  // (o catálogo do studio tem ~1467 blocos): um teto justo viraria erro de validação num
+  // curso grande. A existência de cada id é conferida pelo ADMIN contra o catálogo (o
+  // members não o importa).
   studioUnlockBlocks: t.Optional(
     t.Union([
       t.Array(t.String({ minLength: 1, maxLength: 80, pattern: '^[A-Za-z0-9_]+$' }), {

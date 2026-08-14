@@ -113,6 +113,22 @@ describe('GetStudioUnlocksService', () => {
     expect(blocks.sort()).toEqual(['sz_g2d_create_ship', 'sz_g2d_on_key', 'sz_val_number'])
   })
 
+  test('⭐⭐ ROLLOUT: curso já no ar e concluído ANTES de existir currículo — cadastrar libera sozinho', async () => {
+    // O caso real da virada: o curso-base está publicado há tempo, crianças já o
+    // concluíram e publicaram, e só AGORA a professora cadastra as ferramentas. Elas
+    // recebem na próxima tela que carregar, sem backfill e sem refazer o curso — é a
+    // metade "ao vivo" da união que garante isso.
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse() // sem currículo nenhum no metadata
+    courses.courses.push(course)
+    mark(course.id, {})
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+
+    course.metadata = { studioUnlockBlocks: ['sz_g2d_create_ship', 'sz_g2d_on_key'] }
+    const depois = await service.execute(userId, 'kids')
+    expect(depois.blocks.sort()).toEqual(['sz_g2d_create_ship', 'sz_g2d_on_key'])
+  })
+
   test('⭐ bloco ACRESCENTADO ao JSON chega em quem já concluiu o curso', async () => {
     const { courses, service, userId, mark } = setup()
     const course = makeCourse(['sz_g2d_create_ship'])

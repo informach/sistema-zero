@@ -15,6 +15,7 @@
  */
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
+import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { assetStyle, type PintaAsset } from '../../core/project'
@@ -36,7 +37,16 @@ import { updateTaskProgress } from '../../state/taskProgress'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { Button, IconButton, ToolButton } from '../ui/Button'
-import { ArrowLeft, ChevronDown, Download, Gamepad2, Redo2, Rocket, Undo2 } from '../ui/icons'
+import {
+  ArrowLeft,
+  ChevronDown,
+  Download,
+  Gamepad2,
+  Redo2,
+  Rocket,
+  Scaling,
+  Undo2,
+} from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession } from './editorContext'
@@ -44,6 +54,7 @@ import { LayerPanel } from './LayerPanel'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
+import { ResizeAssetDialog } from './ResizeAssetDialog'
 import { SpriteSheetPanel } from './SpriteSheetPanel'
 import { TilemapEditor } from './TilemapEditor'
 import { TileStrip } from './TileStrip'
@@ -275,6 +286,9 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   const editorState = useEditor((state) => state)
   const [sending, setSending] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [resizeOpen, setResizeOpen] = useState(false)
+  // `null` = kind que não muda de tamanho (peças: o tile é whitelist do motor).
+  const resizeTarget = resizeTargetOf(asset)
   const resynced = useStudioResync({
     asset,
     animationId,
@@ -410,6 +424,12 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       <span className="pin-display mr-2 truncate text-lg" title={asset.name}>
         {asset.name}
       </span>
+      {resizeTarget ? (
+        <Button onClick={() => setResizeOpen(true)}>
+          <Scaling aria-hidden="true" className="size-4" />
+          {COPY.editor.resize.button(resizeTarget.width, resizeTarget.height)}
+        </Button>
+      ) : null}
       <IconButton
         aria-label={COPY.editor.undo}
         title={`${COPY.editor.undo} (Ctrl+Z)`}
@@ -453,6 +473,19 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
           </Button>
         ) : null}
       </div>
+      {resizeTarget ? (
+        <ResizeAssetDialog
+          open={resizeOpen}
+          onClose={() => setResizeOpen(false)}
+          asset={asset}
+          target={resizeTarget}
+          onResize={(next) => {
+            // UM commit: o tamanho é uma edição comum e o Ctrl+Z devolve tudo.
+            editorState.commit(next)
+            showToast(COPY.editor.resize.done)
+          }}
+        />
+      ) : null}
       <ExportDialog
         open={exportOpen}
         asset={asset}

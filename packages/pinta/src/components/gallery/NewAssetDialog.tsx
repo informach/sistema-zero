@@ -169,6 +169,15 @@ function sizeChoicesFor(kind: PintaAssetKind): SizeChoice[] {
   }
 }
 
+/**
+ * Quadro do personagem: "64" (preset quadrado) ou "128x32" (personalizado).
+ * O `frameSize` continua indo junto por compatibilidade das fábricas.
+ */
+function quadro(sizeKey: string): [number, number] {
+  const [w = 32, h] = sizeKey.split('x').map(Number)
+  return [w, Number.isFinite(h) && h ? h : w]
+}
+
 function buildInput(
   kind: PintaAssetKind,
   sizeKey: string,
@@ -176,8 +185,10 @@ function buildInput(
   tilesetId: string,
 ): NewAssetInput {
   switch (kind) {
-    case 'pixel-sprite':
-      return { kind, name, frameSize: Number(sizeKey) }
+    case 'pixel-sprite': {
+      const [w, h] = quadro(sizeKey)
+      return { kind, name, frameSize: w, frameWidth: w, frameHeight: h }
+    }
     case 'pixel-background': {
       const [w = 160, h = 120] = sizeKey.split('x').map(Number)
       return { kind, name, width: w, height: h }
@@ -188,8 +199,10 @@ function buildInput(
       const [cols = 12, rows = 9] = sizeKey.split('x').map(Number)
       return { kind, name, tilesetId, cols, rows }
     }
-    case 'vector-sprite':
-      return { kind, name, frameSize: Number(sizeKey) }
+    case 'vector-sprite': {
+      const [w, h] = quadro(sizeKey)
+      return { kind, name, frameSize: w, frameWidth: w, frameHeight: h }
+    }
     case 'vector-background': {
       const [w = 480, h = 360] = sizeKey.split('x').map(Number)
       return { kind, name, width: w, height: h }

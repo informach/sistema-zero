@@ -23,21 +23,23 @@ export function KidsLockedCourse({ reason }: { reason?: CareerLockReason }) {
       <KidsMascot expression="thinking" className="size-24" />
       <h1 className="mt-4 sz-display text-2xl">
         {tierReward
-          ? 'Este curso é uma recompensa!'
+          ? 'Este curso é um prêmio!'
           : foundationFirst
-            ? 'Primeiro o curso-base!'
-            : 'Esta etapa ainda está bloqueada'}
+            ? 'Tem um curso antes deste'
+            : 'Este curso abre mais pra frente'}
       </h1>
       <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-1.5 font-bold text-muted-foreground text-sm">
         {tierReward ? <Gift className="size-4" /> : <Lock className="size-4" />} Continue sua
         carreira
       </div>
       <p className="mt-4 text-muted-foreground">
+        {/* ⚠️ Sem "curso-base" nem "etapa": são termos de quem monta o curso. A criança
+            precisa saber o que fazer, não como a gente organiza o catálogo. */}
         {tierReward
-          ? 'Complete os cursos da etapa e publique os projetos no Mural. Quando a etapa terminar, este curso abre sozinho — é o seu prêmio!'
+          ? 'Termine os outros cursos e publique os seus jogos no Mural. Quando você fechar todos, este abre sozinho. É o seu prêmio!'
           : foundationFirst
-            ? 'Este curso abre quando você concluir o curso-base da etapa e publicar o projeto dele no Mural. Ele é o primeiro passo — na lista de cursos, o cartão mostra qual é.'
-            : 'Conclua os cursos da etapa atual e publique seus projetos. A próxima etapa vai abrir assim que você estiver preparado para ela.'}
+            ? 'Tem um curso que vem antes deste. Termine ele e publique o seu jogo no Mural, e aí este aqui abre. Na lista de cursos, o cartão mostra qual é.'
+            : 'Continue a sua jornada! Este curso abre quando você chegar nesta parte do mapa.'}
       </p>
       <Link
         href="/cursos"

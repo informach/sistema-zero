@@ -37,6 +37,12 @@ export interface StudioDrawer {
   count: number
 }
 
+/** Snapshot para detectar ganhos por identidade estável, sem usar o nome mutável da gaveta. */
+export interface StudioDrawerSnapshot {
+  name: string
+  blockIds: string[]
+}
+
 /**
  * O nome que a criança REALMENTE lê na paleta: a folha do `palettePath` (ex.:
  * `Programação › 🏷️ Variáveis` → `🏷️ Variáveis`). `subcategory`/`category` são o
@@ -65,4 +71,22 @@ export function drawersForBlocks(blocks: readonly string[]): StudioDrawer[] {
   return [...byDrawer]
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'pt-BR'))
+}
+
+/**
+ * Agrupa ids por gaveta para a revalidação eventual do watcher. Diferente de
+ * `drawersForBlocks`, este payload não deve ir no perfil nem no chrome global.
+ */
+export function drawerSnapshotsForBlocks(blocks: readonly string[]): StudioDrawerSnapshot[] {
+  const byDrawer = new Map<string, string[]>()
+  for (const type of new Set(blocks)) {
+    const drawer = DRAWER_BY_BLOCK.get(type)
+    if (!drawer) continue
+    const current = byDrawer.get(drawer) ?? []
+    current.push(type)
+    byDrawer.set(drawer, current)
+  }
+  return [...byDrawer]
+    .map(([name, blockIds]) => ({ name, blockIds: blockIds.sort() }))
+    .sort((a, b) => b.blockIds.length - a.blockIds.length || a.name.localeCompare(b.name, 'pt-BR'))
 }

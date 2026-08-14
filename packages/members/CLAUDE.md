@@ -1115,6 +1115,11 @@ declara `metadata.studioUnlockBlocks` (jsonb, **sem migração** — mesma régu
 aluno recebe a UNIÃO dos cursos que **concluiu E publicou no Mural** (a mesma interseção
 `course_complete` ∩ `course_showcased` da carreira). O NÍVEL segue decidindo o MODO (livre/Ponte/Pro).
 
+- **A lista é dos blocos que o curso USA** (fluxo da autora), então repetir fundamentos de cursos
+  anteriores é o NORMAL, não erro. Quem acumula é o ALUNO: a paleta é a união deduplicada dos cursos
+  conquistados, e o diff da comemoração compara com o que o ALUNO tem — não com a lista do curso.
+  Logo ele recebe/festeja só o pedaço inédito. ⚠️ Corolário: curso cujos blocos o aluno já tem por
+  INTEIRO não rende ferramenta nem festa de gaveta (a do Mural segue).
 - **Rota** `GET /members/studio/unlocks?audience=` → `{blocks: string[]}` (`GetStudioUnlocksService`).
   À PARTE do `/gamification/me` de propósito: a lista pode ter centenas de ids e o `me` é buscado em
   toda página do kids. Gateway: `members-studio-unlocks`.

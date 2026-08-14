@@ -47,6 +47,7 @@ import {
   type QualifyingByTier,
 } from '../../../domain/gamification/levels'
 import type { MissionGoalType } from '../../../domain/gamification/missions'
+import { studioUnlockRevision } from '../../../domain/gamification/studio-unlock-revision'
 import {
   type AwardInput,
   type AwardResult,
@@ -868,6 +869,37 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       if (blocks.length > 0) byCourse.set(row.courseId, [...new Set(blocks)])
     }
     return [...byCourse].map(([courseId, blocks]) => ({ courseId, blocks }))
+  }
+
+  async getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string> {
+    const showcased = alias(xpEvents, 'studio_revision_sc')
+    const rows = await this.db
+      .select({
+        courseId: xpEvents.sourceId,
+        completedAt: xpEvents.createdAt,
+        showcasedAt: showcased.createdAt,
+        courseUpdatedAt: courses.updatedAt,
+      })
+      .from(xpEvents)
+      .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
+      .innerJoin(
+        showcased,
+        and(
+          eq(showcased.userId, xpEvents.userId),
+          eq(showcased.audience, xpEvents.audience),
+          eq(showcased.sourceType, 'course_showcased'),
+          eq(showcased.sourceId, xpEvents.sourceId),
+        ),
+      )
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          eq(xpEvents.sourceType, 'course_complete'),
+        ),
+      )
+
+    return studioUnlockRevision(rows)
   }
 
   async listQualifyingCareerSlotsForProfiles(

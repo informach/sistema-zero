@@ -88,7 +88,7 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   via `galleryStore.lastStyle`) → TIPO (mesmos papéis nos 2 estilos) → tamanho → nome. Mapa
   habilita com QUALQUER tileset (badge de estilo no seletor). **Tamanho PERSONALIZADO
   (08/2026)**: card "Personalizado" no passo de tamanho — cenários (16..512 pixel / 16..2048
-  vetor, largura × altura), personagens (quadro 8..128) e mapa (1..128 colunas × linhas); PEÇAS
+  vetor, largura × altura), personagens (largura × altura 8..128) e mapa (1..128 colunas × linhas); PEÇAS
   ficam FORA (whitelist dura 16/32/48 do motor). Também no "Trazer uma foto" (só o alvo cenário).
   Helpers PUROS em `gallery/customSize.ts`: a `sizeKey` fica na sentinela `'custom'` e a chave
   REAL ("300x200"/"96"/"50x40") é derivada dos campos a cada render — `buildInput`, o
@@ -96,6 +96,44 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   `CustomSizeFields` (`inputMode="numeric"`, faixa/erro num `role=status`, padrão do nameError).
   ⚠️ O card Personalizado NÃO auto-avança (selecionar só revela o formulário; os presets
   continuam avançando ao toque) — não copiar o `setStep` dos presets para ele.
+## Tamanho do desenho: deitado na criação e mutável no editor (13/08/2026)
+
+Dois pedidos dela, no mesmo assunto: **"lá no Pinta só dá para criar quadrado"** e **"percebi no
+meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar outro"**.
+
+- ⭐ **Personagem deixou de ser QUADRADO.** O MODELO sempre teve `frameWidth`/`frameHeight`
+  separados (o sanitize já os validava um a um) — quem impunha o quadrado eram o assistente
+  (`customSizeSpecFor` devolvia `fields: ['frame']`) e as duas fábricas. Agora são **largura ×
+  altura**, e uma nave é 128x32 de verdade. Motivação: no Estúdio a caixa de colisão do sprite é o
+  RETÂNGULO do quadro, então 96px de vazio transparente viravam área que encosta sem encostar.
+  ⚠️ O preset quadrado ("32") semeia os DOIS campos — sem isso, escolher preset e depois
+  "Personalizado" abria a altura vazia com o Avançar desligado.
+- ⭐⭐ **O defeito que isso revelou, e que vale para qualquer mexida em tamanho:** a fábrica passou a
+  declarar `frameWidth: 128, frameHeight: 32` e continuou criando `createBitmap(size, size)`. O
+  `sanitizePintaAsset` **DESCARTA** um asset cujo bitmap não casa com o quadro — e o desenho some da
+  galeria **sem uma linha de erro**. Dimensão declarada e bitmaps têm que andar juntos, sempre.
+- ⭐ **Mudar o tamanho DENTRO do editor** (`core/assetResize.ts` + `components/editor/
+  ResizeAssetDialog.tsx`): botão na barra de cima mostrando o tamanho de agora ("Tamanho: 128 x 32")
+  → o MESMO `CustomSizeFields` do assistente → **um commit** (desfazível com Ctrl+Z).
+  - `resizeAsset` é uma op PURA e ÚNICA justamente por causa do defeito acima: no personagem ela
+    alcança TODAS as animações × TODOS os quadros × TODAS as camadas. Precedente do
+    `removeExtraColor`, que já remapeia o asset inteiro num commit.
+  - `resizeTargetOf` devolve tamanho + limites, ou **`null` para PEÇAS** — o tamanho do tile é
+    whitelist dura do motor (16/32/48) e mexer nele quebraria os mapas que apontam para elas. O
+    botão nem aparece.
+  - Mapa muda em **células** (a copy troca sozinha); no VETOR basta o quadro (as formas guardam
+    coordenadas próprias e o `<svg>` aninhado já clipa).
+  - Âncora **centro**, uma regra só: "o desenho fica no meio do novo tamanho". Encolher CORTA, e
+    a modal avisa antes (o desfazer cobre).
+  - ⚠️ **No teste, esperar o selo "Salvo" NÃO prova nada** — ele já está na tela desde a criação. O
+    autosave é debounced: quem diz a verdade é o disco, relido num `waitFor` até refletir a edição.
+  - ⚠️ **Round-trip pelo sanitize com `structuredClone`, NUNCA JSON**: o JSON transforma
+    `Uint8Array` em objeto e o sanitize recusaria por outro motivo — o teste passaria pela razão
+    errada (aconteceu ao escrever a rede). O IndexedDB usa structured clone.
+  - Testes: `core/assetResize.test.ts` (puros + o **anti-vácuo** que prova que esquecer um quadro
+    realmente apaga o desenho) e `components/editor/resizeUi.test.tsx` (fluxo, aviso de corte,
+    botão desligado, peças sem botão, mapa em células).
+
 - **Motor pixel (`src/pixel/`)**: `ops.ts` operações PURAS; `tools.ts` máquina PURA de gesto;
   `selection.ts`; `render.ts` única camada canvas.
 - **Editor vetorial (pasta `components/editor/vector/`, 08/2026)**: shapes = elementos SVG REAIS;
@@ -960,6 +998,47 @@ nos desenhos vindos daqui e o desenho salvo **se atualiza sozinho nos jogos**.
 
 O outro lado (sincronia para dentro dos projetos, o botão, o marcador cross-aba) vive no studio —
 ver `packages/studio/CLAUDE.md` §"Editar o desenho".
+
+## A CAIXA DE COLISÃO sai do desenho (08/2026)
+
+O relato dela: no Pinta o personagem só podia ser um QUADRADO, então uma nave de 128x32 vinha num
+quadro 128x128 com 96px de vazio, e no Estúdio esse vazio **encostava sem encostar**. O pedido tinha
+três partes; as duas primeiras estão feitas (a terceira, um bloco explícito de hitbox, ficou de fora
+de propósito — ver §"Fora de escopo" no studio).
+
+1. **Quadro NÃO-quadrado** (a raiz): largura e altura separadas na fábrica, no assistente e no
+   redimensionar. ⚠️⚠️ A fábrica declarava `frameWidth: 128, frameHeight: 32` mas chamava
+   `createBitmap(size, size)` — o `sanitizePintaAsset` DESCARTAVA o asset inteiro, sem uma linha de
+   erro, e o desenho sumia da galeria. Bitmap e quadro andam juntos, sempre.
+2. **`export/spriteHitbox.ts`**: mede onde de fato tem pixel (ou forma visível) e manda a caixa no
+   `sprite` da ponte. O Estúdio aplica sozinho, sem bloco nenhum.
+
+⭐ Três decisões que fazem isso funcionar, e cada uma tem uma rede:
+
+- **UNIÃO de todos os quadros**, nunca por quadro. Caixa por quadro pulsaria com a animação: o braço
+  estica no golpe e a colisão muda sozinha. ⚠️ O teste usa um par ASSIMÉTRICO (o golpe vai para a
+  esquerda num quadro e para a direita no outro) porque um par que cresce só para um lado passaria
+  também com "o último quadro vence".
+- **FRAÇÃO do quadro (0..1)**, nunca pixels: o mesmo desenho entra no jogo em qualquer tamanho.
+- **Arte que preenche o quadro OMITE a chave** — quem já usava o quadro inteiro continua com payload
+  byte-idêntico e comportamento idêntico. A caixa só aparece quando de fato aperta.
+
+⚠️ **Camada escondida não conta** (achata pelo `flattenCels`, igual ao export): a colisão segue o
+que se vê.
+
+⚠️⚠️ **`shapeBounds` IGNORA a rotação, e o `svg.ts:89` a RENDERIZA** (`rotate()` ao redor do
+centro). Para o editor a aproximação serve — a alça fica perto da forma —, e todos os consumidores
+dela são de UI. Colisão é outra coisa: uma espada girada 45 graus ficava com caixa ~30% menor que o
+desenho e o golpe passava por dentro do inimigo. Por isso o `giradaAoRedorDoCentro` mora AQUI e não
+no `shapeBounds`: mexer lá moveria as alças de seleção do editor inteiro.
+
+⚠️ **Redimensionar tem que mover as FORMAS junto**, não só o quadro. O `<svg>` aninhado já clipa,
+então mudar `frameWidth`/`frameHeight` bastava para a correção — mas o pixel, no MESMO diálogo,
+centraliza a arte. Medido no full review: 32→128 deixava a forma em x=8 com o quadro novo centrado
+em 64, ou seja, o desenho pulava para o canto. Vale para o sprite E para o fundo vetorial.
+
+O outro lado (sanitize, cano do preview, runtime e a regra de quem vence) vive no studio — ver
+`packages/studio/CLAUDE.md` §"A caixa de colisão vem do desenho".
 
 ## Regras não-negociáveis
 

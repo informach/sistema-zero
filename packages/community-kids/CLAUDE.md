@@ -103,6 +103,43 @@ recap, pois o `<button>` só aceita conteúdo inline; imagens limitadas por `[&_
 **Gamificação REAL implementada
 (11/06/2026)** — ver §"Gamificação estilo Duolingo" abaixo; nada fake, estado no members.
 
+## ⚠️ Classe de componente no `globals.css` vai em `@layer components`
+
+CSS **sem camada vence QUALQUER camada** — inclusive `@layer utilities`, onde moram as
+utilitárias do Tailwind. Enquanto `.sz-btn-gradient` ficou solta no arquivo, ela ganhava de
+tudo: `sz-btn-gradient h-11 px-6 text-base` renderizava **40px / 18px / 14px**, ou seja, as três
+utilitárias eram LETRA MORTA em ~20 CTAs (e os botões ficavam abaixo do alvo de toque de 44px que
+o app segue nos demais controles). Não era specificity: as duas são `(0,1,0)` — era a camada.
+
+Agora ela vive em **`@layer components`** e o default virou **44px** (call site sem `h-*` já nasce
+acessível). **Regra para este arquivo:** classe que existe para ser ajustada no call site (tamanho,
+espaçamento, tipografia) pertence a `@layer components`; deixá-la solta transforma todo `className`
+do consumidor em mentira silenciosa. ⚠️ O mesmo defeito segue no `.sz-btn-gradient` do
+**community adulto** (`packages/community/src/app/globals.css`) — lá só 1 dos 4 usos passa altura,
+então o estrago é pequeno, mas a armadilha é a mesma.
+
+## Vocabulário do ALUNO × vocabulário da EQUIPE (08/2026)
+
+O aluno nunca lê a linguagem com que a gente MONTA o curso. Três termos são internos e não podem
+aparecer na área da criança: **"curso-base"**, **"etapa"** e os nomes de degrau (**"Iniciante 2D"**,
+"Avançado 3D"…). Para a criança, trilha se chama pelo POSTO dela: **"Trilha Faísca"**, **"Trilha
+Construtor(a)"**. `courseTierOf`/`COURSE_TIER_LABELS` seguem vivos como LÓGICA (horizonte, trava,
+admin) — o que saiu foi a exibição. O `course-level-chip.tsx` (selo "Iniciante 2D" na capa do card)
+foi APAGADO por isso.
+
+⚠️ **Nunca dizer quanto falta para o próximo posto enquanto o degrau não tem os 8 cursos
+publicados.** A régua da carreira NÃO mudou (continuam sendo 8) — mudou o que a tela mostra. Com o
+degrau pela metade, "faltam 2 para virar Inventor(a)" é mentira: a criança fecha os 2 e não sobe.
+`careerProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
+`remaining` do members vira verdade e a frase volta sozinha. O retorno por curso nesse meio-tempo é
+a GAVETA nova no Estúdio. As bolinhas do nó ficam, mas falam do que EXISTE ("1 de 3 aventuras
+prontas"), nunca do que falta para subir.
+
+⚠️ **Copy sem travessão (—)**: é marca de texto de IA e a voz da casa é humana. Travado por
+`tests/copy-sem-travessao.test.ts`, que lê o `src/`, descarta comentários (esses são nossos) e falha
+com arquivo:linha se sobrar travessão em texto visível, `aria-label` ou `<title>`. O teste também
+assere que LEU arquivos — guarda que não lê nada aprova tudo, em silêncio.
+
 ## A regra de ouro: quase tudo vem do member-shell
 
 TODO o BFF (sessão/gateway/refresh/mídia/marca d'água/clients), a LÓGICA dos route handlers, o
@@ -340,9 +377,23 @@ criança tem a UNIÃO dos que **concluiu E publicou no Mural**. O nível segue d
 - **`/perfil` → `my-tools.tsx` (`MyTools`)**: "Minhas ferramentas", as GAVETAS conquistadas
   (`drawersForBlocks` — 🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…). Gaveta é o que torna a recompensa
   legível p/ criança; lista de ids não é. Sem nenhuma, a seção some.
-⚠️ A comemoração da gaveta NO MOMENTO da publicação ainda não existe: ela exigiria a lista de
-desbloqueios no LAYOUT (para o watcher diffar, como o `level-up-watcher`), e é justamente o payload
-que a rota enxuta evita. Follow-up consciente.
+- **Comemoração no MOMENTO em que ganha** — `celebration-watcher.tsx` (ex-`level-up-watcher`, export
+  `CelebrationWatcher`) montado no layout pelo `CelebrationChrome`. ⚠️ **Watcher ÚNICO de propósito:**
+  nível e ferramenta chegam no MESMO refresh (o curso que fecha um degrau faz as duas), e dois
+  watchers independentes abririam dois overlays sem saber um do outro — em cima da `MuralCelebration`
+  viraria fila de TRÊS. A decisão da usuária foi FUNDIR: subiu de nível → `LevelUpCelebration` com o
+  ganho embutido (prop `tools`); só ganhou gaveta → `tools-celebration.tsx` (o caso comum, 7 de cada 8
+  cursos). Detecção PURA em `lib/tools-gain.ts` (`diffDrawers`/`toolsGainHeadline`), comemorando gaveta
+  NOVA **e** gaveta que CRESCEU (sem a 2ª, curso que só aprofunda passaria em silêncio).
+  ⚠️ Duas chaves de localStorage por PERFIL — `sz:kids:level:<id>` (a de sempre) e `sz:kids:tools:<id>`
+  (mapa gaveta→contagem) — **gravadas mesmo sem comemorar**, senão a diferença se repete a cada
+  navegação e a festa vira loop; 1ª carga registra e NÃO comemora (nada de festa retroativa); queda de
+  contagem é ignorada. ⚠️ O payload é barato porque as GAVETAS são derivadas no SERVIDOR
+  (`drawersForBlocks` no `CelebrationChrome`, dentro do `<Suspense>` que transmite): ~25 nomes curtos
+  atravessam, não a lista de blocos. ⚠️ Confete SEM som no overlay da gaveta (vem logo depois da
+  `MuralCelebration`, que já tocou; o som fica onde é raro). Sem o produto Estúdio → `drawers: []`
+  (não se comemora ferramenta que a criança não pode abrir; a conquista fica guardada).
+  Testes: `tests/tools-gain.test.ts` + `tests/celebration-watcher.test.tsx` (a regra da fusão).
 
 ## Ranking/foguinho ao vivo (sem deslogar) — 07/2026
 

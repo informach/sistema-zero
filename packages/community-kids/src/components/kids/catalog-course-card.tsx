@@ -1,10 +1,8 @@
-import { COURSE_TIER_LABELS, courseTierOf } from '@sistemazero/member-shell/lib/course-tier'
 import { Card } from '@sistemazero/ui/card'
 import { ArrowRight, BookOpen, Gift, Lock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CatalogCourseView } from '@/lib/types'
-import { CourseLevelChip } from './course-level-chip'
 import { UNIT_THEME_CLASS, type UnitTheme } from './unit-theme'
 
 interface CatalogCourseCardProps {
@@ -36,10 +34,9 @@ export function CatalogCourseCard({
   const foundationFirst = careerLocked && course.careerLock?.reason === 'foundation-first'
   // Bônus = recompensa da etapa: abre sozinho quando os obrigatórios completam.
   const tierReward = careerLocked && course.careerLock?.reason === 'tier-reward'
-  const rewardTier = courseTierOf(course.level, course.track)
-  const rewardLabel = rewardTier
-    ? `Recompensa: complete a etapa ${COURSE_TIER_LABELS[rewardTier]}`
-    : 'Recompensa: complete os cursos da etapa'
+  // ⚠️ Sem "etapa" e sem nome de degrau: é vocabulário de quem MONTA o curso. Para a
+  // criança basta saber que é prêmio e o que destrava.
+  const rewardLabel = 'Prêmio! Abre quando você terminar os outros cursos'
   const body = (
     <Card
       className={cn(
@@ -82,11 +79,6 @@ export function CatalogCourseCard({
             </span>
           </div>
         ) : null}
-        <CourseLevelChip
-          level={course.level}
-          track={course.track}
-          className="absolute top-2 left-2"
-        />
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
@@ -103,10 +95,10 @@ export function CatalogCourseCard({
           <div className="mt-auto border-t border-border pt-3">
             {foundationFirst ? (
               <span className="sz-btn-gradient-block">
-                <span className="font-normal text-[11px] opacity-90">Ir para o curso-base:</span>
+                <span className="font-normal text-[11px] opacity-90">Comece por este:</span>
                 <span className="flex items-center gap-1.5">
                   <span className="line-clamp-1 flex-1 font-semibold text-sm">
-                    {foundationTitle ?? 'Curso-base da etapa'}
+                    {foundationTitle ?? 'O primeiro curso'}
                   </span>
                   <ArrowRight className="size-4 shrink-0" />
                 </span>

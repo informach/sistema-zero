@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { drawersForBlocks, extensionsForBlocks } from '../src/server/studio-unlocks'
+import {
+  drawerSnapshotsForBlocks,
+  drawersForBlocks,
+  extensionsForBlocks,
+} from '../src/server/studio-unlocks'
 
 /**
  * "Se tiver blocos daquela extensão que eu tô liberando, automaticamente vai estar
@@ -66,5 +70,24 @@ describe('drawersForBlocks', () => {
 
   test('sem blocos, sem gavetas (a seção some no perfil)', () => {
     expect(drawersForBlocks([])).toEqual([])
+  })
+})
+
+describe('drawerSnapshotsForBlocks', () => {
+  test('preserva ids estáveis por gaveta e deduplica repetições', () => {
+    const snapshots = drawerSnapshotsForBlocks([
+      'sz_g2d_create_ship',
+      'sz_g2d_create_ship',
+      'sz_g2d_draw_sprite',
+    ])
+    expect(snapshots.flatMap((drawer) => drawer.blockIds).sort()).toEqual([
+      'sz_g2d_create_ship',
+      'sz_g2d_draw_sprite',
+    ])
+    for (const drawer of snapshots) expect(drawer.name.length).toBeGreaterThan(0)
+  })
+
+  test('id fora do catálogo não entra no snapshot', () => {
+    expect(drawerSnapshotsForBlocks(['sz_bloco_que_nao_existe'])).toEqual([])
   })
 })

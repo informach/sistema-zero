@@ -149,7 +149,7 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
 
       {gamification.coinsCapped ? (
         <p className="text-muted-foreground text-xs">
-          Você já pegou o máximo de moedas de hoje — amanhã tem mais! 😄
+          Você já pegou o máximo de moedas de hoje. Amanhã tem mais! 😄
         </p>
       ) : null}
 

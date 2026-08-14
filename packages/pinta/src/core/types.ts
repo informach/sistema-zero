@@ -15,10 +15,25 @@ export interface PintaSpriteAnimMeta {
 }
 
 /** Metadados de SPRITESHEET que atravessam a ponte (quadro + animações nomeadas). */
+/**
+ * Caixa de colisão tirada do DESENHO, em FRAÇÃO do quadro (0..1).
+ *
+ * Fração e não pixel porque o mesmo desenho entra no jogo em qualquer tamanho.
+ * União de TODOS os quadros: por quadro, a caixa pulsaria com a animação.
+ */
+export interface PintaSpriteHitbox {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
 export interface PintaSpriteMeta {
   frameW: number
   frameH: number
   animations: PintaSpriteAnimMeta[]
+  /** OMITIDA quando o desenho preenche o quadro inteiro (payload byte-idêntico). */
+  hitbox?: PintaSpriteHitbox
 }
 
 /** Metadados de TILESET que atravessam a ponte (tamanho + índices sólidos). */

@@ -16,8 +16,8 @@ export function KidsLockedSpace({ space }: { space: HubSpaceView }) {
         <Lock className="size-4" /> Ainda não liberado
       </div>
       <p className="mt-4 text-muted-foreground">
-        Este espaço ainda não está disponível para você. 😊 Peça pra um responsável dar uma olhada —
-        quando liberar, ele aparece aqui pra você!
+        Este espaço ainda não está disponível para você. 😊 Peça pra um responsável dar uma olhada.
+        Quando liberar, ele aparece aqui pra você!
       </p>
     </div>
   )

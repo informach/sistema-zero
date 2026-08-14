@@ -21,7 +21,7 @@ export function StreakWidget({
   // Equipe (passe livre) = moedas ilimitadas: mostra ∞ no lugar do número.
   const coinsUnlimited = gamification.coins?.unlimited === true
   const coinsDisplay = coinsUnlimited ? '∞' : coins
-  const streakLabel = `Sequência de ${streak.current} ${streak.current === 1 ? 'dia' : 'dias'}${streak.activeToday ? ' — atividade de hoje feita' : ''}`
+  const streakLabel = `Sequência de ${streak.current} ${streak.current === 1 ? 'dia' : 'dias'}${streak.activeToday ? ', com a atividade de hoje feita' : ''}`
   const coinsLabel =
     coins === undefined
       ? ''

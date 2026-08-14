@@ -156,7 +156,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                 <li className="relative" style={{ height: 'var(--trail-row)' }}>
                   <div
                     role="img"
-                    aria-label={`Baú da unidade ${unitIndex + 1} (${unit.chest.opened ? 'aberto — você completou a unidade' : 'fechado — complete a unidade para abrir'})`}
+                    aria-label={`Baú da unidade ${unitIndex + 1} (${unit.chest.opened ? 'aberto, você completou a unidade' : 'fechado, abre quando você completar a unidade'})`}
                     className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
                     style={{ left: `calc(50% + ${unit.chest.offset} * var(--trail-step))` }}
                   >

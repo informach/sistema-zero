@@ -34,11 +34,26 @@ export interface ProjectSpriteAnim {
   loop: boolean
 }
 
+/**
+ * Caixa de colisão MEDIDA no desenho, em FRAÇÃO do quadro (0..1).
+ *
+ * Quem mede é o Pinta (só ele sabe onde tem pixel); aqui ela só viaja. Fração e
+ * não pixel porque o mesmo desenho entra no jogo em qualquer tamanho.
+ */
+export interface ProjectSpriteHitbox {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
 /** Metadados de SPRITESHEET de um asset: geometria do quadro + animações nomeadas. */
 export interface ProjectSpriteMeta {
   frameW: number
   frameH: number
   animations: ProjectSpriteAnim[]
+  /** OMITIDA quando o desenho preenche o quadro (payload antigo byte-idêntico). */
+  hitbox?: ProjectSpriteHitbox
 }
 
 /** Metadados de TILESET de um asset: tamanho do tile + tiles sólidos (colisão). */
@@ -301,7 +316,30 @@ export function sanitizeSpriteMeta(raw: unknown): ProjectSpriteMeta | undefined 
     animations.push({ name, from, to, fps, loop: a.loop === true })
   }
   if (animations.length === 0) return undefined
-  return { frameW, frameH, animations }
+  const hitbox = sanitizeSpriteHitbox(r.hitbox)
+  return { frameW, frameH, animations, ...(hitbox ? { hitbox } : {}) }
+}
+
+/**
+ * A caixa tem que CABER no quadro e ter área. Fora disso ela vira `undefined` e
+ * o sprite volta a colidir pelo retângulo inteiro — degradar é sempre melhor que
+ * uma caixa torta que ninguém consegue explicar para a criança.
+ */
+function sanitizeSpriteHitbox(raw: unknown): ProjectSpriteHitbox | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const r = raw as Record<string, unknown>
+  const num = (value: unknown): number | null =>
+    typeof value === 'number' && Number.isFinite(value) ? value : null
+  const x = num(r.x)
+  const y = num(r.y)
+  const w = num(r.w)
+  const h = num(r.h)
+  if (x === null || y === null || w === null || h === null) return undefined
+  if (x < 0 || y < 0 || w <= 0 || h <= 0) return undefined
+  if (x + w > 1 || y + h > 1) return undefined
+  // Quadro inteiro não é caixa: some para o payload ficar igual ao de antes.
+  if (x === 0 && y === 0 && w === 1 && h === 1) return undefined
+  return { x, y, w, h }
 }
 
 /**
@@ -564,15 +602,28 @@ export function asset3DManifest(
  */
 export function assetMetaManifest(
   assets: readonly ProjectAsset[] | undefined | null,
-): Record<string, { tilemap: ProjectTilemapMeta }> {
-  const out: Record<string, { tilemap: ProjectTilemapMeta }> = {}
+): Record<string, ProjectAssetPreviewMeta> {
+  const out: Record<string, ProjectAssetPreviewMeta> = {}
   if (!assets) return out
   for (const a of assets) {
-    if (a && a.kind === 'image' && typeof a.name === 'string' && a.tilemap) {
-      out[a.name] = { tilemap: a.tilemap }
+    if (a?.kind !== 'image' || typeof a.name !== 'string') continue
+    // ⭐ A caixa de colisão anda pelo MESMO cano do mapa. Só ela do `sprite` vem:
+    // quadro e animações o runtime já lê da própria imagem, e o orçamento de
+    // caracteres do srcdoc é compartilhado com as folhas de peças.
+    const hitbox = a.sprite?.hitbox
+    if (!a.tilemap && !hitbox) continue
+    out[a.name] = {
+      ...(a.tilemap ? { tilemap: a.tilemap } : {}),
+      ...(hitbox ? { hitbox } : {}),
     }
   }
   return out
+}
+
+/** O que de fato viaja no `window.__SZGAME_ASSET_META` (mapa e/ou caixa). */
+export interface ProjectAssetPreviewMeta {
+  tilemap?: ProjectTilemapMeta
+  hitbox?: ProjectSpriteHitbox
 }
 
 /** Limites públicos dos assets — a UI lê para validar upload e mostrar avisos. */

@@ -172,6 +172,8 @@ export interface LessonCompleteView extends CourseProgressView {
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
   xp: number
+  /** Revisão curta das ferramentas do Estúdio; presente na vitrine kids. */
+  studioUnlockRevision?: string
   /**
    * Carteira Zappy Coins (saldo gastável). Segregada por vitrine, como o XP.
    * `unlimited` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞.

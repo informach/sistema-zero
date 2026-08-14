@@ -60,11 +60,21 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
 - **Quicar o sprite … nas bordas da tela**. O sprite bate na beirada e volta.
 - **Guardar em … se sprite … encosta no sprite … (em círculo)**. Colisão mais justa para
   objetos redondos.
+- **A caixa de colisão vem PRONTA do desenho.** Quando a imagem veio do Pinta, o
+  Estúdio já mede onde de fato tem pixel e aperta a colisão sozinho: uma nave de
+  128 por 32 desenhada num quadro de 128 por 128 não encosta mais pelos 96px de
+  vazio. Não há bloco para isso, acontece ao pôr a imagem, a animação ou o
+  \`image:\` do sprite. A medição é a UNIÃO de todos os quadros da animação, porque
+  a caixa não pode pulsar no meio de um golpe, e vira fração, então vale em
+  qualquer tamanho. Se o personagem vira para o outro lado, a caixa vira junto.
+  Confira com **Mostrar a caixa de colisão**.
 - **Usar área de colisão de N% do tamanho**. O dial da colisão PERDOADORA: menor que
   100% = mais justo para DANO (os cantos vazios do desenho não punem); maior = mais
   fácil de PEGAR (moedas). Vale para todas as perguntas de encostar (retângulo e
   círculo); \`Impedir de atravessar\` continua usando o tamanho cheio (senão o sprite
-  afundaria em chão e paredes). Veja a área real com **Mostrar a caixa de colisão**.
+  afundaria em chão e paredes). ⭐ Este bloco SUBSTITUI a caixa que veio do desenho,
+  e é a saída de quem discorda dela: pôr **100%** volta ao quadro inteiro. Veja a
+  área real com **Mostrar a caixa de colisão**.
 - **Tocar som**. Bip sintetizado via Web Audio (sem arquivos). Permissão \`audio\`.
 - **Quando clicar/tocar**. Roda um bloco com a posição do ponteiro. Permissão \`mouse\`.
 - **Quando apertar qualquer tecla ou tocar na tela**. Útil para começar uma partida e

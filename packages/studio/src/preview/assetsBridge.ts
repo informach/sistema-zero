@@ -17,7 +17,12 @@
  * bootstrap (este runtime é emitido via `scriptTag`, igual ao storageBridge).
  */
 
-import { type Asset3DManifestEntry, PROJECT_ASSET_LIMITS, type ProjectTilemapMeta } from '#core'
+import {
+  type Asset3DManifestEntry,
+  PROJECT_ASSET_LIMITS,
+  type ProjectSpriteHitbox,
+  type ProjectTilemapMeta,
+} from '#core'
 
 const ASSET_DATA_URL_PREFIX = 'data:image/'
 const AUDIO_DATA_URL_PREFIX = 'data:audio/'
@@ -81,9 +86,11 @@ function clampManifest(entries: Record<string, string>, prefix: string): Record<
   return safe
 }
 
-/** Entrada de metadado de preview de UM asset (hoje só `tilemap`). */
+/** Entrada de metadado de preview de UM asset: mapa e/ou caixa de colisão. */
 export interface AssetPreviewMeta {
   tilemap?: ProjectTilemapMeta
+  /** Caixa MEDIDA no desenho (fração do quadro) — o runtime aplica sozinho. */
+  hitbox?: ProjectSpriteHitbox
 }
 
 /**
@@ -102,28 +109,51 @@ function safeMetaManifest(
   let totalChars = 0
   for (const [name, entry] of Object.entries(meta)) {
     if (!Object.hasOwn(safeAssets, name)) continue
-    const tilemap = entry?.tilemap
-    if (!tilemap || typeof tilemap !== 'object') continue
-    const sheet = tilemap.tileset?.dataUrl
-    if (
-      typeof sheet !== 'string' ||
-      !sheet.startsWith(ASSET_DATA_URL_PREFIX) ||
-      sheet.length > PROJECT_ASSET_LIMITS.maxTilemapSheetChars
-    ) {
-      continue
-    }
-    if (
-      typeof tilemap.grid !== 'string' ||
-      tilemap.grid.length > PROJECT_ASSET_LIMITS.maxTilemapGridChars
-    ) {
-      continue
-    }
-    const size = sheet.length + tilemap.grid.length + name.length
+    const tilemap = safeTilemapEntry(entry?.tilemap)
+    const hitbox = safeHitboxEntry(entry?.hitbox)
+    // Entrada vazia não entra: meta sem conteúdo só inflaria o srcdoc.
+    if (!tilemap && !hitbox) continue
+    // A caixa são 4 números; quem pesa é a folha de peças, e o orçamento é dela.
+    const size = tilemap ? tilemap.tileset.dataUrl.length + tilemap.grid.length + name.length : 0
     if (totalChars + size > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) continue
     totalChars += size
-    out[name] = { tilemap }
+    out[name] = { ...(tilemap ? { tilemap } : {}), ...(hitbox ? { hitbox } : {}) }
   }
   return out
+}
+
+/** Mapa dentro dos tetos, ou `null` (a entrada pode seguir só com a caixa). */
+function safeTilemapEntry(tilemap: ProjectTilemapMeta | undefined): ProjectTilemapMeta | null {
+  if (!tilemap || typeof tilemap !== 'object') return null
+  const sheet = tilemap.tileset?.dataUrl
+  if (
+    typeof sheet !== 'string' ||
+    !sheet.startsWith(ASSET_DATA_URL_PREFIX) ||
+    sheet.length > PROJECT_ASSET_LIMITS.maxTilemapSheetChars
+  ) {
+    return null
+  }
+  if (
+    typeof tilemap.grid !== 'string' ||
+    tilemap.grid.length > PROJECT_ASSET_LIMITS.maxTilemapGridChars
+  ) {
+    return null
+  }
+  return tilemap
+}
+
+/**
+ * Espelho do `sanitizeSpriteHitbox` do core (defesa em profundidade): a caixa
+ * tem que caber no quadro e ter área, senão o sprite colide pelo retângulo
+ * inteiro como sempre colidiu.
+ */
+function safeHitboxEntry(hitbox: ProjectSpriteHitbox | undefined): ProjectSpriteHitbox | null {
+  if (!hitbox || typeof hitbox !== 'object') return null
+  const { x, y, w, h } = hitbox
+  const ok = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+  if (!ok(x) || !ok(y) || !ok(w) || !ok(h)) return null
+  if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > 1 || y + h > 1) return null
+  return { x, y, w, h }
 }
 
 /**

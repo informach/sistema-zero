@@ -80,9 +80,19 @@ Mural** (a mesma régua do posto). A separação que fica:
 > **O posto da carreira decide o MODO** (Estúdio livre, Ponte, Pro). **O currículo decide a PALETA.**
 
 **Como cadastrar:** na modal de criar/editar curso (Kids), o campo **"Ferramentas que este curso
-libera no Estúdio"** usa o MESMO picker da lista de blocos da aula — com busca, grupos e
+libera no Estúdio"** usa o MESMO picker da lista de blocos da aula, com busca, grupos e
 **importação por JSON** (`{"blocks": ["sz_g2d_..."]}`), que recusa id inexistente ou repetido. As
 **extensões saem sozinhas dos blocos**: não há campo de extensão.
+
+**Liste os blocos que o curso USA**, inclusive os fundamentos que já apareceram em cursos
+anteriores. Repetir é o normal: todo jogo reusa criar sprite, mover, colidir. Quem acumula é a
+criança, e a caixa de ferramentas dela é a união de tudo que conquistou, **sem repetir** — ela
+recebe só o que ainda não tinha, e a comemoração festeja só esse pedaço novo.
+
+⚠️ O único caso a ter em mente: um curso cujos blocos a criança **já tem por inteiro** (uma
+prática que não introduz mecânica nova) não rende ferramenta nem comemoração de gaveta. A festa de
+publicar no Mural continua acontecendo. Se quiser que todo curso entregue algo, garanta que cada um
+traga ao menos um bloco inédito.
 
 **Três garantias que valem a pena conhecer:**
 

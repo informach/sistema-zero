@@ -270,8 +270,96 @@ describe('assetMetaManifest (manifesto de metadados p/ o preview)', () => {
     )
     const meta = assetMetaManifest(assets)
     expect(Object.keys(meta)).toEqual(['meu-mapa'])
-    expect(meta['meu-mapa']?.tilemap.tileSize).toBe(16)
+    expect(meta['meu-mapa']?.tilemap?.tileSize).toBe(16)
     expect(assetMetaManifest(null)).toEqual({})
     expect(assetMetaManifest(undefined)).toEqual({})
+  })
+
+  it('⭐ o sprite entra pela CAIXA, sem mapa nenhum', () => {
+    const assets = sanitizeProjectAssets(
+      JSON.parse(
+        JSON.stringify([
+          {
+            id: 'a',
+            name: 'nave',
+            kind: 'image',
+            dataUrl: DATA,
+            source: 'library',
+            sprite: {
+              frameW: 128,
+              frameH: 128,
+              animations: [{ name: 'parado', from: 0, to: 0, fps: 8, loop: true }],
+              hitbox: { x: 0, y: 0.375, w: 1, h: 0.25 },
+            },
+          },
+        ]),
+      ),
+    )
+    const meta = assetMetaManifest(assets)
+    // Só a CAIXA viaja: quadro e animações o runtime lê da própria imagem, e o
+    // orçamento de caracteres do srcdoc é compartilhado com as folhas de peças.
+    expect(meta.nave).toEqual({ hitbox: { x: 0, y: 0.375, w: 1, h: 0.25 } })
+  })
+
+  it('sprite SEM caixa não cria entrada (payload igual ao de antes)', () => {
+    const assets = sanitizeProjectAssets(
+      JSON.parse(
+        JSON.stringify([
+          {
+            id: 'a',
+            name: 'heroi',
+            kind: 'image',
+            dataUrl: DATA,
+            source: 'library',
+            sprite: {
+              frameW: 16,
+              frameH: 16,
+              animations: [{ name: 'parado', from: 0, to: 0, fps: 8, loop: true }],
+            },
+          },
+        ]),
+      ),
+    )
+    expect(assetMetaManifest(assets)).toEqual({})
+  })
+})
+
+describe('sanitizeSpriteMeta — a CAIXA medida no desenho', () => {
+  const base = {
+    frameW: 128,
+    frameH: 128,
+    animations: [{ name: 'parado', from: 0, to: 0, fps: 8, loop: true }],
+  }
+
+  it('guarda a caixa quando ela cabe no quadro', () => {
+    expect(
+      sanitizeSpriteMeta({ ...base, hitbox: { x: 0, y: 0.375, w: 1, h: 0.25 } })?.hitbox,
+    ).toEqual({ x: 0, y: 0.375, w: 1, h: 0.25 })
+  })
+
+  it('⚠️ caixa torta é DESCARTADA e o sprite volta a colidir pelo quadro', () => {
+    // Degradar é melhor que uma caixa que ninguém consegue explicar. Cada linha é
+    // um jeito diferente de estar errado.
+    const tortas: unknown[] = [
+      { x: 0.5, y: 0, w: 0.9, h: 1 },
+      { x: 0, y: 0, w: 0, h: 1 },
+      { x: -0.1, y: 0, w: 0.5, h: 1 },
+      { x: 'meio', y: 0, w: 0.5, h: 1 },
+      { x: 0, y: 0, w: Number.NaN, h: 1 },
+      null,
+      [0, 0, 1, 1],
+    ]
+    for (const hitbox of tortas) {
+      const meta = sanitizeSpriteMeta({ ...base, hitbox })
+      // O sprite SOBREVIVE (animações intactas); só a caixa some.
+      expect(meta?.animations).toHaveLength(1)
+      expect(meta?.hitbox).toBeUndefined()
+    }
+  })
+
+  it('quadro inteiro não é caixa: some do payload', () => {
+    expect(
+      sanitizeSpriteMeta({ ...base, hitbox: { x: 0, y: 0, w: 1, h: 1 } })?.hitbox,
+    ).toBeUndefined()
   })
 })

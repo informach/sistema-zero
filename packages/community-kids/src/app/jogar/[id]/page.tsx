@@ -5,7 +5,7 @@ import { PublicPlayer } from '@/components/kids/public-player'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Jogar — Sistema Zero',
+  title: 'Jogar no Sistema Zero',
   description: 'Um projeto criado por uma criança no Sistema Zero. Jogue direto no navegador!',
   // É a ÚNICA rota anonimamente alcançável (link compartilhado). NÃO indexar: o
   // jogo de uma criança não deve aparecer em buscadores (descoberta/privacidade —

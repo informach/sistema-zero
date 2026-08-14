@@ -101,8 +101,45 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     return {
       image: loadImage(name),
       frameW: _positiveFiniteNumber(frameWidth, 32),
-      frameH: _positiveFiniteNumber(frameHeight, 32)
+      frameH: _positiveFiniteNumber(frameHeight, 32),
+      // O NOME viaja junto para a animacao poder herdar a caixa do desenho.
+      assetName: (typeof name === 'string') ? name : ''
     };
+  }
+
+  // ---- Caixa de colisao MEDIDA no desenho (v0.78.0) ----
+  // O problema: uma nave de 128x32 desenhada num quadro 128x128 leva 96px de vazio
+  // para o jogo, e o vazio encostava sem encostar. O Pinta mede onde de fato tem
+  // pixel e manda a caixa em FRACAO do quadro; aqui ela so e aplicada.
+  /** A caixa do desenho, se o Pinta mandou uma que caiba no quadro. */
+  function _artHitboxOf(name) {
+    if (!name || typeof name !== 'string') return null;
+    var entry = ASSET_META[name];
+    var box = entry && entry.hitbox;
+    if (!box || typeof box !== 'object') return null;
+    var x = _finiteNumber(box.x, -1), y = _finiteNumber(box.y, -1);
+    var w = _finiteNumber(box.w, 0), h = _finiteNumber(box.h, 0);
+    if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > 1 || y + h > 1) return null;
+    return { x: x, y: y, w: w, h: h };
+  }
+  /** Liga (ou desliga) a caixa do desenho no sprite. */
+  function _applyArtHitbox(sprite, name) {
+    if (!sprite) return;
+    sprite._hitboxArt = _artHitboxOf(name);
+  }
+  /**
+   * O desenho esta ESPELHADO? DONO UNICO da regra: o desenho (_drawSpriteRaw) e a
+   * caixa de colisao (_artBoxOf) leem daqui.
+   *
+   * ⚠️ Nao e "facing === -1". Os inimigos que miram o heroi escrevem o facing
+   * SOZINHO (enemies.ts), e quem ja andou para a direita carrega direction
+   * "right": nesse caso o desenho NAO vira. Duplicar a regra deixava a caixa
+   * espelhada por cima de um desenho parado.
+   */
+  function _spriteFlipped(s) {
+    if (!s) return false;
+    var direction = s.direction;
+    return direction === 'left' || (!direction && s.facing === -1);
   }
 
   /**
@@ -120,7 +157,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       vx: _finiteNumber(options.vx, 0),
       vy: _finiteNumber(options.vy, 0),
       image: options.image ? loadImage(options.image) : null,
-      anim: null
+      anim: null,
+      _hitboxArt: options.image ? _artHitboxOf(options.image) : null
     };
   }
 
@@ -147,6 +185,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     sprite.anim = null;
     sprite._animState = null;
     sprite._imgHooked = false;
+    _applyArtHitbox(sprite, name);
   }
 
   // ---- Figuras: sprite desenhado por codigo (v0.23.0) ----
@@ -170,6 +209,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     sprite.image = null;
     sprite.anim = null;
     sprite._animState = null;
+    // Figura desenhada por codigo nao tem arte medida: volta ao quadro inteiro.
+    sprite._hitboxArt = null;
   }
 
   /** Cria um sprite ja com uma figura (mesmo modelo fisico do createSprite). */
@@ -292,6 +333,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
   function _startAnimation(sprite, sheet, from, to, fps, once) {
     if (!sprite || !sheet) return;
+    _applyArtHitbox(sprite, sheet.assetName);
     var f = Math.max(0, Math.floor(_finiteNumber(from, 0)));
     var t = Math.max(0, Math.floor(_finiteNumber(to, f)));
     var r = _positiveFiniteNumber(fps, 8);
@@ -506,7 +548,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var direction = sprite.direction;
     var directionAngle = direction === 'up' ? -Math.PI / 2 : direction === 'down' ? Math.PI / 2 : 0;
     var ang = _finiteNumber(sprite.angle, 0) + directionAngle;
-    var flip = direction === 'left' || (!direction && sprite.facing === -1);
+    var flip = _spriteFlipped(sprite);
     if (!ang && !flip) { _drawSpriteBody(ctx, sprite); return; }
     // Gira/espelha o desenho em torno do CENTRO do sprite (o corpo segue em
     // coordenadas absolutas — mesmo truque translate/rotate/translate da referência).
@@ -611,10 +653,44 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (!sprite) return;
     var p = _finiteNumber(percent, 100);
     sprite._hitboxScale = Math.min(3, Math.max(0.1, p / 100));
+    // ⚠️ A MARCA, e nao o numero, e o que diz "a crianca escolheu". Com 100% o
+    // fator vale 1, igualzinho a quem nunca pos o bloco — sem esta marca, "100%"
+    // nao teria como desligar a caixa automatica, e ela e a UNICA saida de quem
+    // discorda da medicao do Pinta.
+    sprite._hitboxManual = true;
   }
-  /** Caixa EFETIVA de colisão do sprite: o retângulo escalado pelo fator, centrado. */
+  /**
+   * A fracao do desenho virada em retangulo de tela.
+   *
+   * ⚠️ ESPELHA quando o sprite olha para a esquerda: o desenho inteiro e espelhado
+   * na hora de pintar (drawSprite faz scale(-1,1)), entao uma caixa torta para um
+   * lado tem que virar junto — senao a espada do heroi vira de lado e a colisao
+   * fica para tras.
+   */
+  function _artBoxOf(s, box) {
+    var w = _finiteNumber(s.w, 0), h = _finiteNumber(s.h, 0);
+    var fx = _spriteFlipped(s) ? (1 - box.x - box.w) : box.x;
+    return {
+      x: _finiteNumber(s.x, 0) + fx * w,
+      y: _finiteNumber(s.y, 0) + box.y * h,
+      w: box.w * w,
+      h: box.h * h
+    };
+  }
+  /**
+   * Caixa EFETIVA de colisão do sprite.
+   *
+   * Duas fontes, e a ORDEM importa:
+   * 1. a caixa MEDIDA no desenho pelo Pinta (automatica, so aperta o vazio);
+   * 2. o dial "usar area de colisao de N%", posto pela crianca.
+   *
+   * ⭐ O dial VENCE: quem escreveu o bloco quis aquele numero, e "100%" e a unica
+   * saida para quem discordar da caixa automatica (compor os dois deixaria a
+   * crianca sem jeito de voltar ao quadro inteiro).
+   */
   function _hitboxOf(s) {
     var scale = _positiveFiniteNumber(s._hitboxScale, 1);
+    if (!s._hitboxManual && s._hitboxArt) return _artBoxOf(s, s._hitboxArt);
     if (scale === 1) return s;
     var w = _finiteNumber(s.w, 0) * scale;
     var h = _finiteNumber(s.h, 0) * scale;

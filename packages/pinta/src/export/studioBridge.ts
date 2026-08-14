@@ -5,6 +5,7 @@
  * "Animar sprite"), tilesets a folha de peças, tilemap o mapa achatado,
  * cenários a imagem. `null` = não deu para rasterizar (o chamador mostra toast).
  */
+
 import type { ActiveFrameRef } from '../core/assetEdit'
 import { flattenActiveOf } from '../core/assetEdit'
 import {
@@ -23,6 +24,7 @@ import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
 import { hasFrontLayer } from '../tiles/tilemapOps'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
+import { pixelSpriteHitbox, vectorSpriteHitbox } from './spriteHitbox'
 import { packSpritesheet, spritesheetPngDataUrl } from './spritesheet'
 import { tilemapToStudioGrid } from './studioGrid'
 import { packVectorSpritesheet, vectorSheetPngDataUrl } from './vectorSheet'
@@ -160,11 +162,19 @@ export async function buildStudioPayload(
       const pack = packSpritesheet(asset)
       const dataUrl = spritesheetPngDataUrl(asset, pack)
       if (!dataUrl) return null
+      // ⭐ A caixa de colisão sai do DESENHO: um quadro 128x128 com uma nave de
+      // 128x32 tem 96px de vazio, e no Estúdio o vazio encostava sem encostar.
+      const hitbox = pixelSpriteHitbox(
+        asset.animations.flatMap((a) => a.frames),
+        asset.layers,
+        asset.frameWidth,
+        asset.frameHeight,
+      )
       return {
         dataUrl,
         width: pack.columns * pack.frameWidth,
         height: pack.rows * pack.frameHeight,
-        sprite: spriteMetaFromPack(pack),
+        sprite: { ...spriteMetaFromPack(pack), ...(hitbox ? { hitbox } : {}) },
       }
     }
     case 'tileset': {
@@ -249,11 +259,16 @@ export async function buildStudioPayload(
       const pack = packVectorSpritesheet(asset)
       const dataUrl = await vectorSheetPngDataUrl(pack)
       if (!dataUrl) return null
+      const hitbox = vectorSpriteHitbox(
+        asset.animations.flatMap((a) => a.frames),
+        asset.frameWidth,
+        asset.frameHeight,
+      )
       return {
         dataUrl,
         width: pack.columns * pack.frameWidth,
         height: pack.rows * pack.frameHeight,
-        sprite: spriteMetaFromPack(pack),
+        sprite: { ...spriteMetaFromPack(pack), ...(hitbox ? { hitbox } : {}) },
       }
     }
     case 'vector-tileset': {

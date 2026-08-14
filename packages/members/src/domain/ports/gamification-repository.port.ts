@@ -234,6 +234,11 @@ export interface GamificationRepository {
     audience: CourseAudience,
   ): Promise<{ courseId: string; blocks: string[] }[]>
   /**
+   * Revisão curta da união de ferramentas. Muda quando um curso passa a qualificar,
+   * some, ou seu registro vivo é editado; não lê nem devolve o JSON pesado de blocos.
+   */
+  getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string>
+  /**
    * Versão em LOTE do `listQualifyingCareerSlots` — slots qualificados por
    * degrau de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
    * cada autor do fórum kids sem N+1). Mapa id→qualificados; perfil sem marco algum

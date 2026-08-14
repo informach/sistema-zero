@@ -235,14 +235,36 @@ describe('careerProgress', () => {
 })
 
 describe('nextLevelHintWithin', () => {
-  test('singular e plural saem com o número do CATÁLOGO', () => {
+  test('⭐⭐ degrau INCOMPLETO não diz quanto falta (a régua do posto não mudou)', () => {
+    // A criança precisa dos 8 para virar Inventor(a). Com 3 gravados, dizer "faltam 2" é
+    // mentira: ela fecha os 2 e não sobe. Falsa esperança é pior que silêncio.
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
-    const um = [1, 2].map((slot) => course('iniciante', '2d', slot))
-    expect(nextLevelHintWithin(level, um)).toBe(
-      'Falta 1 curso Iniciante 2D da carreira concluído e o projeto publicado no Mural para virar Inventor(a)',
+    for (const publicados of [1, 2, 3, 7]) {
+      const catalogo = Array.from({ length: publicados }, (_, i) =>
+        course('iniciante', '2d', i + 1),
+      )
+      expect(nextLevelHintWithin(level, catalogo)).toBeNull()
+    }
+  })
+
+  test('⭐ degrau CHEIO volta a dizer, com o número VERDADEIRO do members', () => {
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
+    expect(nextLevelHintWithin(level, fullTier('iniciante', '2d'))).toBe(
+      'Faltam 7 cursos para você virar Inventor(a). Termine e publique os seus jogos no Mural!',
     )
-    const dois = [1, 2, 3].map((slot) => course('iniciante', '2d', slot))
-    expect(nextLevelHintWithin(level, dois)).toContain('Faltam 2 cursos Iniciante 2D')
+    const quaseLa = studentLevel('coder', 'hacker', { 'iniciante-2d': 1 })
+    expect(nextLevelHintWithin(quaseLa, fullTier('iniciante', '2d'))).toBe(
+      'Falta 1 curso para você virar Inventor(a). Termine e publique o seu jogo no Mural!',
+    )
+  })
+
+  test('a frase não usa vocabulário interno (degrau, etapa, curso-base)', () => {
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 3 })
+    const frase = nextLevelHintWithin(level, fullTier('iniciante', '2d')) ?? ''
+    expect(frase).not.toContain('Iniciante 2D')
+    expect(frase).not.toContain('etapa')
+    expect(frase).not.toContain('curso-base')
+    expect(frase).not.toContain('—')
   })
 
   test('em dia e topo não têm frase (a UI mostra a própria)', () => {

@@ -508,7 +508,7 @@ export function CourseFormDialog({
         {form.audience === 'kids' && (
           <Field
             label="Ferramentas que este curso libera no Estúdio"
-            tooltip="Ao concluir este curso E publicar o jogo no Mural, a criança ganha estes blocos no Estúdio livre, para sempre. A paleta dela é a soma dos cursos que já conquistou. Deixe vazio se este curso não libera nada."
+            tooltip="Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. A criança recebe só os que ainda não tinha, ao concluir o curso E publicar o jogo no Mural. A caixa de ferramentas dela é a soma de tudo que já conquistou, sem repetir."
           >
             <StudioBlocksPicker
               value={form.studioUnlockBlocks}
@@ -519,8 +519,16 @@ export function CourseFormDialog({
                 ? 'Nenhum bloco: concluir este curso não muda a caixa de ferramentas da criança.'
                 : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
             </p>
-            {/* A garantia que a usuária pediu, dita ao operador: tirar um bloco daqui
-                muda o que os PRÓXIMOS alunos ganham, nunca o que os anteriores já têm. */}
+            {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
+                repetição dos fundamentos é o normal, não um erro. A paleta deduplica e a
+                comemoração compara com o que a CRIANÇA tem: ela só festeja o que é novo
+                para ela. */}
+            <p className="mt-1 text-muted-foreground text-xs">
+              Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda
+              não tem.
+            </p>
+            {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
+                que os PRÓXIMOS alunos ganham, nunca o que os anteriores já têm. */}
             <p className="mt-1 text-muted-foreground text-xs">
               Tirar um bloco daqui vale para quem ainda não concluiu o curso. Quem já conquistou não
               perde.

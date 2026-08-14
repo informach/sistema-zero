@@ -966,6 +966,25 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
    * superfícies de texto mais longas que a criança de fato lê: o manual do aluno e os
    * avisos do Console. Os dois ganharam travessão no lote de 12/08.
    */
+  /**
+   * A regra de ESPELHO tem que ter UM dono. Ela nasceu duplicada (o desenho num
+   * lugar, a caixa de colisão vinda do Pinta noutro) e as duas versões já
+   * discordavam: a caixa lia só `facing`, e os inimigos que miram o herói
+   * escrevem `facing` sozinho, então a colisão virava por cima de um desenho
+   * parado. Duplicar de novo é fácil e o sintoma é mudo.
+   */
+  it('⭐ a regra de ESPELHO do sprite tem um dono só', () => {
+    // ⚠️ A régua é `facing === -1`, e NÃO a comparação com 'left': esta aparece
+    // legitimamente noutros domínios (o lado do gorila, a câmera do Mundo, a
+    // normalização do "Virar o sprite"). O `facing === -1` é o tell exclusivo —
+    // fora do dono, ele é sempre uma segunda régua de espelho.
+    const codigo = gameTwoDRuntime.replace(/^\s*\*.*$/gm, '')
+    expect(codigo.match(/facing === -1/g) ?? []).toHaveLength(1)
+    expect(codigo).toContain('function _spriteFlipped(s)')
+    // E quem precisa dela CHAMA, em vez de reescrever: o desenho e a caixa.
+    expect(codigo.match(/_spriteFlipped\(/g)?.length ?? 0).toBeGreaterThanOrEqual(3)
+  })
+
   it('nem o manual nem os avisos do Console usam travessão', () => {
     expect(gameTwoDDocs).not.toContain('—')
 

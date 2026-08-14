@@ -1,8 +1,4 @@
-import {
-  COURSE_TIER_LABELS,
-  type CourseTierSlug,
-  courseTierOf,
-} from '@sistemazero/member-shell/lib/course-tier'
+import { type CourseTierSlug, courseTierOf } from '@sistemazero/member-shell/lib/course-tier'
 import { LEVEL_STUDY, LEVEL_TIER } from '@/lib/career-map'
 import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import type { CourseLevelSlug, CourseTrack, StudentLevelSlug, StudentLevelView } from '@/lib/types'
@@ -158,7 +154,12 @@ export type CareerProgress =
       done: number
       /** Cursos deste degrau que EXISTEM no catálogo (o denominador honesto). */
       ready: number
-      hint: string
+      /**
+       * Frase de "quanto falta para o próximo posto". **`null` enquanto o degrau não tem
+       * todos os cursos publicados** — dizer um número que não leva ao posto é falsa
+       * esperança. Ver o comentário no `careerProgress`.
+       */
+      hint: string | null
     }
   /** Há próximo nível, mas a criança já fez tudo que existe. Não é derrota, é espera. */
   | { kind: 'up-to-date' }
@@ -202,13 +203,19 @@ export function careerProgress(
     const pending = Math.max(0, readyCount - done)
     const remaining = Math.min(missing, pending)
     if (remaining <= 0) return { kind: 'up-to-date' }
-    const label = COURSE_TIER_LABELS[tier]
+    // ⚠️ SÓ diz quanto falta quando o degrau tem TODOS os cursos publicados. A régua para
+    // subir de nível não mudou (continuam sendo os 8) — mudou o que a tela mostra. Com o
+    // degrau pela metade, "faltam 2 para virar Inventor(a)" é MENTIRA: a criança fecha os 2
+    // e não sobe. Falsa esperança é pior que silêncio, então aqui a tela não fala do
+    // assunto. Quando o degrau enche, o `remaining` do members vira verdade e a frase volta
+    // sozinha. O retorno por curso, nesse meio-tempo, é a GAVETA nova no Estúdio.
     const nextLabel = levelInfo(level.next).label
-    // "da carreira" = só os cursos com posição contam (bônus não movem o número).
     const hint =
-      remaining === 1
-        ? `Falta 1 curso ${label} da carreira concluído e o projeto publicado no Mural para virar ${nextLabel}`
-        : `Faltam ${remaining} cursos ${label} da carreira concluídos e com os projetos no Mural para virar ${nextLabel}`
+      readyCount < requiredSlots.size
+        ? null
+        : remaining === 1
+          ? `Falta 1 curso para você virar ${nextLabel}. Termine e publique o seu jogo no Mural!`
+          : `Faltam ${remaining} cursos para você virar ${nextLabel}. Termine e publique os seus jogos no Mural!`
     return { kind: 'pending', tier, remaining, done, ready: readyCount, hint }
   }
   return { kind: 'up-to-date' }

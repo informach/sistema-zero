@@ -28,11 +28,23 @@ import { findTemplate } from '../templates/catalog'
 import { createPintaPersistence, isPintaStorageBudgetError } from './persistence'
 
 export type NewAssetInput = (
-  | { kind: 'pixel-sprite'; name: string; frameSize: number }
+  | {
+      kind: 'pixel-sprite'
+      name: string
+      frameSize: number
+      frameWidth?: number
+      frameHeight?: number
+    }
   | { kind: 'pixel-background'; name: string; width: number; height: number }
   | { kind: 'tileset'; name: string; tileSize: number }
   | { kind: 'tilemap'; name: string; tilesetId: string; cols: number; rows: number }
-  | { kind: 'vector-sprite'; name: string; frameSize: number }
+  | {
+      kind: 'vector-sprite'
+      name: string
+      frameSize: number
+      frameWidth?: number
+      frameHeight?: number
+    }
   | { kind: 'vector-background'; name: string; width: number; height: number }
   | { kind: 'vector-tileset'; name: string; tileSize: number }
 ) & {
@@ -116,7 +128,12 @@ function buildAsset(input: NewAssetInput, name: string): PintaAsset {
 function buildAssetByKind(input: NewAssetInput, name: string): PintaAsset {
   switch (input.kind) {
     case 'pixel-sprite':
-      return createPixelSpriteAsset({ name, frameSize: input.frameSize })
+      return createPixelSpriteAsset({
+        name,
+        frameSize: input.frameSize,
+        frameWidth: input.frameWidth,
+        frameHeight: input.frameHeight,
+      })
     case 'pixel-background':
       return createPixelBackgroundAsset({ name, width: input.width, height: input.height })
     case 'tileset':
@@ -129,7 +146,12 @@ function buildAssetByKind(input: NewAssetInput, name: string): PintaAsset {
         rows: input.rows,
       })
     case 'vector-sprite':
-      return createVectorSpriteAsset({ name, frameSize: input.frameSize })
+      return createVectorSpriteAsset({
+        name,
+        frameSize: input.frameSize,
+        frameWidth: input.frameWidth,
+        frameHeight: input.frameHeight,
+      })
     case 'vector-background':
       return createVectorBackgroundAsset({ name, width: input.width, height: input.height })
     case 'vector-tileset':

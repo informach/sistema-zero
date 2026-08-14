@@ -54,6 +54,7 @@ import {
   type QualifyingByTier,
 } from '../../src/domain/gamification/levels'
 import type { MissionGoalType } from '../../src/domain/gamification/missions'
+import { studioUnlockRevision } from '../../src/domain/gamification/studio-unlock-revision'
 import type {
   AnalyticsRepository,
   CourseLessonCount,
@@ -584,6 +585,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const {
       version: _version,
       salesPageUrl,
+      studioUnlockBlocks,
       audience,
       sequentialLock,
       level,
@@ -591,6 +593,17 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       careerSlot,
       ...rest
     } = fields
+    // Mirror do `buildCourseMetadata` do repo Drizzle: as DUAS chaves geridas pelo form
+    // moram no jsonb, e o campo fica `null` quando nenhuma veio.
+    // ⚠️ `studioUnlockBlocks` PRECISA ser desestruturado: sem isso ele vazava pelo `...rest`
+    // como propriedade SOLTA do curso e nunca chegava ao metadata — o fake dizia que o
+    // currículo do Estúdio se perdia no create, quando em produção (Drizzle) ele grava.
+    const metadata: Record<string, unknown> = {}
+    if (salesPageUrl) metadata.salesPageUrl = salesPageUrl
+    const blocks = (studioUnlockBlocks ?? [])
+      .map((type) => type.trim())
+      .filter((type) => type.length > 0)
+    if (blocks.length > 0) metadata.studioUnlockBlocks = [...new Set(blocks)]
     const course: Course = {
       id: randomUUID(),
       version: 0,
@@ -600,7 +613,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       level: level ?? 'iniciante',
       track: track ?? '2d',
       careerSlot: careerSlot ?? null,
-      metadata: salesPageUrl ? { salesPageUrl } : null,
+      metadata: Object.keys(metadata).length > 0 ? metadata : null,
       createdAt: now,
       updatedAt: now,
     }
@@ -2294,6 +2307,36 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       if (blocks.length > 0) out.push({ courseId: ce.sourceId, blocks })
     }
     return out
+  }
+
+  async getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string> {
+    const mine = this.events.filter(
+      (event) => event.userId === userId && event.audience === audience,
+    )
+    const showcased = new Map(
+      mine
+        .filter((event) => event.sourceType === 'course_showcased')
+        .map((event) => [event.sourceId, event]),
+    )
+    return studioUnlockRevision(
+      mine
+        .filter((event) => event.sourceType === 'course_complete')
+        .flatMap((completed) => {
+          const showcase = showcased.get(completed.sourceId)
+          if (!showcase) return []
+          const course = this.sources?.courses.courses.find(
+            (item) => item.id === completed.sourceId,
+          )
+          return [
+            {
+              courseId: completed.sourceId,
+              completedAt: completed.createdAt,
+              showcasedAt: showcase.createdAt,
+              courseUpdatedAt: course?.updatedAt ?? null,
+            },
+          ]
+        }),
+    )
   }
 
   async listQualifyingCareerSlotsForProfiles(

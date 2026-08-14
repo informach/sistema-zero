@@ -316,6 +316,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     (): Promise<GatewayResponse<StudioUnlocksView>> =>
       gw.gatewayFetchReadonly('/members/studio/unlocks', { query: { audience } }),
   )
+  const studioAccessReadonlyCached = cache(
+    (): Promise<GatewayResponse<ProductAccessView>> =>
+      gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: STUDIO_ACCESS_REF, audience },
+      }),
+  )
   const challengeReadonlyCached = cache(
     (): Promise<GatewayResponse<ChallengeMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/challenge', { query: { audience } }),
@@ -360,9 +366,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      * cookie), p/ gatear a página /estudio antes de carregar o editor pesado.
      */
     checkStudioAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
-      return gw.gatewayFetchReadonly('/members/access', {
-        query: { refs: STUDIO_ACCESS_REF, audience },
-      })
+      return studioAccessReadonlyCached()
     },
     checkStudioAccess(): Promise<GatewayResponse<ProductAccessView>> {
       return gw.gatewayFetch('/members/access', {

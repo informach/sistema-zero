@@ -1,4 +1,3 @@
-import { COURSE_TIER_LABELS } from '@sistemazero/member-shell/lib/course-tier'
 import { buttonVariants } from '@sistemazero/ui/button'
 import { Map as MapIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -12,19 +11,10 @@ import { coursesForLevel, LEVEL_TIER, trilhaLocked } from '@/lib/career-map'
 import { cn } from '@/lib/cn'
 import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
-import type { StudentLevelSlug } from '@/lib/types'
 import { checkStudioAccessReadonly, getGamificationReadonly, listCatalog } from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
-
-/** Subtítulo por NÍVEL: Faísca abre a etapa (curso-base), Construtor continua (resto + bônus). */
-function trilhaSubtitle(slug: StudentLevelSlug, tierLabel: string, ownerLabel: string): string {
-  if (slug === 'noob') return `Comece por aqui: o curso-base de ${tierLabel}.`
-  if (slug === 'coder')
-    return `Continue a trilha de ${tierLabel} — os próximos cursos e a recompensa.`
-  return `A trilha de ${ownerLabel}.`
-}
 
 /**
  * Listagem da trilha de um NÍVEL do Mapa da Carreira (`/cursos/trilha/coder`): os
@@ -42,7 +32,6 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   // A Lenda (god) não estuda um degrau, mas TEM trilha: os cursos bônus da formatura
   // (nível `lenda`). Os demais slugs sem tier não existem — 404.
   if (!tier && levelSlug !== 'god') notFound()
-  const tierLabel = tier ? COURSE_TIER_LABELS[tier] : 'da Lenda'
 
   const [{ status, body }, gamification, studioRes, session] = await Promise.all([
     listCatalog(),
@@ -111,14 +100,16 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
             <OwnerIcon className="size-6" style={{ color: owner.colorVar }} aria-hidden />
           </span>
           <div>
+            {/* ⚠️ A trilha se chama pelo POSTO do aluno ("Trilha Faísca"), nunca pelo degrau
+                interno ("Iniciante 2D"), que é vocabulário de quem monta o curso. */}
             <h1 className="sz-display text-2xl md:text-3xl">
-              {tier ? `Trilha ${tierLabel}` : 'Cursos da Lenda 👑'}
+              {tier ? `Trilha ${owner.label}` : 'Cursos da Lenda 👑'}
             </h1>
-            <p className="text-muted-foreground text-sm">
-              {tier
-                ? trilhaSubtitle(levelSlug, tierLabel, owner.label)
-                : 'A formatura! Cursos extras que abriram por você ter chegado ao topo da carreira.'}
-            </p>
+            {tier ? null : (
+              <p className="text-muted-foreground text-sm">
+                A formatura! Cursos extras que abriram por você ter chegado ao topo da carreira.
+              </p>
+            )}
           </div>
         </div>
         {hint ? <p className="text-muted-foreground text-sm">{hint}</p> : null}

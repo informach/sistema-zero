@@ -614,6 +614,8 @@ export interface HubMyThreadView {
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
 export interface GamificationMeView {
   xp: number
+  /** Revisão curta das ferramentas conquistadas; presente na vitrine kids. */
+  studioUnlockRevision?: string
   /**
    * Carteira Zappy Coins (saldo gastável). Opcional p/ tolerar members antigo.
    * `unlimited` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞.
