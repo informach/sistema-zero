@@ -1,4 +1,5 @@
 import { isPrivilegedRole, resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { extensionsForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
 import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
 import { KidsCareerLockedStudio } from '@/components/kids/kids-career-locked-studio'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
@@ -10,6 +11,7 @@ import {
   getAiCreditsReadonly,
   getChallengeReadonly,
   getGamificationReadonly,
+  getStudioUnlocksReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -44,7 +46,7 @@ export default async function EstudioPage({
   // está aqui, então largar a promessa pendente não vira rejeição solta.
   const desafioPendente = getChallengeReadonly().catch(() => null)
   const creditosPendentes = getAiCreditsReadonly().catch(() => null)
-  const [res, session, challengeAccess, gam] = await Promise.all([
+  const [res, session, challengeAccess, gam, unlocksRes] = await Promise.all([
     // ⚠️ Pede refs `pinta,estudio-completo` numa ida SÓ: o gate segue sendo o
     // `estudio-completo`; a posse do PINTA liga o "Trazer do Pinta" no editor
     // (produtos vendidos à parte — cross-app só com posse dos dois lados).
@@ -54,6 +56,10 @@ export default async function EstudioPage({
     // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
+    // Paleta pelo CURRÍCULO: os blocos dos cursos que esta criança concluiu E publicou.
+    // Best-effort — falhar aqui NÃO pode esvaziar a caixa de ferramentas: o
+    // `resolveStudioTier` cai no perfil do NÍVEL quando a lista vem vazia.
+    getStudioUnlocksReadonly().catch(() => null),
   ])
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
@@ -63,7 +69,13 @@ export default async function EstudioPage({
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
   if (gam?.status !== 200) return <KidsStudioUnavailable />
   const levelSlug = gam.body?.level?.slug ?? 'noob'
-  const tier = resolveStudioTier(levelSlug, session?.role)
+  // A paleta vem do CURRÍCULO (08/2026): o nível decide o MODO (livre/Ponte/Pro) e os
+  // cursos conquistados decidem os BLOCOS. As extensões saem dos próprios blocos.
+  const unlockedBlocks = unlocksRes?.status === 200 ? (unlocksRes.body?.blocks ?? []) : []
+  const tier = resolveStudioTier(levelSlug, session?.role, {
+    blocks: unlockedBlocks,
+    extensions: extensionsForBlocks(unlockedBlocks),
+  })
   // O produto pode estar comprado pela conta, mas a criação livre só começa após
   // concluir+publicar o primeiro curso. Dentro das aulas, o Estúdio segue disponível.
   if (!tier.freeStudio) return <KidsCareerLockedStudio />

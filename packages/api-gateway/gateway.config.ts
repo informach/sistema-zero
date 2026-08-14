@@ -1331,6 +1331,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Paleta do Estúdio livre montada pelo CURRÍCULO (08/2026): a união dos blocos dos
+    // cursos que o perfil concluiu E publicou no Mural. Rota à parte do `/gamification/me`
+    // porque a lista é grande e só quem vai montar a paleta (o /estudio) precisa dela.
+    {
+      id: 'members-studio-unlocks',
+      methods: ['GET'],
+      pathPattern: '/members/studio/unlocks',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Missões (diárias/semanais) + proteção de sequência — recurso do PRÓPRIO perfil
     // (kids). `/missions/me` (3 seg), `/missions/:slug/claim` (4 seg), `/streak-freeze/buy`
     // (3 seg) e `/vacation` (2 seg) NÃO colidem entre si nem com `/gamification/me`.

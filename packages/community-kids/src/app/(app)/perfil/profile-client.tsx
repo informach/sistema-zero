@@ -14,7 +14,6 @@ import { z } from 'zod'
 import { AvatarWithAura } from '@/components/kids/avatar-with-aura'
 import { LevelBadge } from '@/components/kids/level-badge'
 import { apiSend } from '@/lib/api'
-import { nextLevelHint } from '@/lib/level-info'
 import type { ProfileView, StudentLevelView } from '@/lib/types'
 
 /** Colocação no ranking kids (XP) — `null` = gamificação indisponível (esconde a linha). */
@@ -40,11 +39,15 @@ export function ProfileClient({
   profile,
   ranking,
   level,
+  levelHint,
   avatarPhotoUrl,
 }: {
   profile: ProfileView
   ranking: RankingInfo | null
   level: StudentLevelView | null
+  /** Frase do próximo marco, JÁ limitada ao catálogo (montada no servidor com
+   *  `nextLevelHintWithin` — a mesma do mapa, para os dois números nunca divergirem). */
+  levelHint: string | null
   avatarPhotoUrl: string | null
 }) {
   const router = useRouter()
@@ -56,6 +59,7 @@ export function ProfileClient({
         profile={profile}
         ranking={ranking}
         level={level}
+        levelHint={levelHint}
         avatarPhotoUrl={avatarPhotoUrl}
         onEdit={() => setEditing(true)}
         // Personalizar = abrir o configurador 3D em tela cheia (não há mais modal).
@@ -72,6 +76,7 @@ function IdentityCard({
   profile,
   ranking,
   level,
+  levelHint,
   avatarPhotoUrl,
   onEdit,
   onCustomize,
@@ -79,11 +84,12 @@ function IdentityCard({
   profile: ProfileView
   ranking: RankingInfo | null
   level: StudentLevelView | null
+  levelHint: string | null
   avatarPhotoUrl: string | null
   onEdit: () => void
   onCustomize: () => void
 }) {
-  const hint = nextLevelHint(level ?? undefined)
+  const hint = levelHint
   return (
     <Card>
       {/* Sem CardHeader: o pt-0 default do CardContent deixaria o card sem topo. */}

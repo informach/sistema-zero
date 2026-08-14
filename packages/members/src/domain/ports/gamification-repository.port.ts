@@ -221,6 +221,19 @@ export interface GamificationRepository {
    */
   listQualifyingCareerSlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
   /**
+   * Blocos do Estúdio que os cursos QUALIFICADOS do aluno liberam AGORA, POR CURSO —
+   * a MESMA interseção `course_complete` ∩ `course_showcased`, lendo
+   * `metadata.studioUnlockBlocks` de cada curso vivo. É a parte "ao vivo" da paleta:
+   * acrescentar um bloco ao JSON de um curso chega sozinho em quem já o concluiu.
+   * Vem POR CURSO (não achatado) porque é essa a chave do snapshot que impede a
+   * revogação. ⚠️ Curso APAGADO não aparece aqui (join interno, sem metadata para
+   * ler) — quem garante que nada se perde é o snapshot (`StudioUnlockRepository`).
+   */
+  listStudioUnlocksByCourse(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<{ courseId: string; blocks: string[] }[]>
+  /**
    * Versão em LOTE do `listQualifyingCareerSlots` — slots qualificados por
    * degrau de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
    * cada autor do fórum kids sem N+1). Mapa id→qualificados; perfil sem marco algum

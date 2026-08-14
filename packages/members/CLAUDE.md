@@ -1107,6 +1107,29 @@ A **avaliação de avatar+aura dos autores** do fórum é servida pela rota em l
   `xp_source_type` — `clube_thread` + `clube_comment` (espelha a `0032` do Pensa; `XpSourceType`
   port + enum do schema atualizados). SEM tabela/coluna nova.
 
+## Paleta do Estúdio pelo CURRÍCULO (08/2026, migration `0062`)
+
+O Estúdio livre deixou de liberar blocos **por NÍVEL** e passou a liberar **por CURSO**: cada curso
+declara `metadata.studioUnlockBlocks` (jsonb, **sem migração** — mesma régua do `salesPageUrl`, mas
+**AUSENTE PRESERVA** como `audience`/`level`, para um PATCH de build antigo não apagar currículo) e o
+aluno recebe a UNIÃO dos cursos que **concluiu E publicou no Mural** (a mesma interseção
+`course_complete` ∩ `course_showcased` da carreira). O NÍVEL segue decidindo o MODO (livre/Ponte/Pro).
+
+- **Rota** `GET /members/studio/unlocks?audience=` → `{blocks: string[]}` (`GetStudioUnlocksService`).
+  À PARTE do `/gamification/me` de propósito: a lista pode ter centenas de ids e o `me` é buscado em
+  toda página do kids. Gateway: `members-studio-unlocks`.
+- **Ao vivo** = `GamificationRepository.listStudioUnlocksByCourse` (interseção + `courses.metadata`,
+  INNER join — ≠ do `listQualifyingCareerSlots`, que usa LEFT). Bônus e `lenda` CONTAM aqui (todo
+  curso pode ensinar ferramenta; só a CARREIRA os ignora).
+- ⭐⭐ **`studio_block_grants` (migration `0062`) = o "não revoga".** Regra da usuária: bloco liberado
+  nunca é retirado. A união ao vivo sozinha NÃO garante isso (editar o JSON, despublicar ou apagar o
+  curso tiraria a ferramenta de quem já a tinha, inclusive de projetos que a usam). O snapshot é
+  gravado **NA LEITURA, como UNIÃO** com o que já estava lá — então "não perde" significa
+  exatamente "não perde o que já lhe foi servido", que é a promessa cumprível, e não há hook nos dois
+  caminhos de marco. Mesmo remédio do `xp_events.source_level` (que existe p/ o rank não regredir).
+  A escrita só ocorre quando a união CRESCE (abrir o Estúdio não vira UPDATE por visita) e é
+  **best-effort**: falhar em congelar não nega a paleta de agora. Testes: `tests/unit/studio-unlocks.test.ts`.
+
 ## Perfis kids (allowance — fatia 06/2026, PR1)
 
 Os perfis "estilo Netflix" vivem no **auth** (`auth.profiles`); o members é só a

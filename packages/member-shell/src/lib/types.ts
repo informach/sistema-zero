@@ -663,6 +663,16 @@ export interface MissionsMeView {
   weekly: MissionView[]
   monthly: MissionView[]
 }
+/**
+ * Paleta do Estúdio livre conquistada pelo CURRÍCULO (08/2026) — mirror do
+ * `StudioUnlocksView` do members. É a UNIÃO dos blocos declarados pelos cursos que a
+ * criança concluiu E publicou no Mural. Vazio = nenhum curso liberou nada ainda; nesse
+ * caso o `resolveStudioTier` cai no perfil do NÍVEL (fail-open do rollout).
+ */
+export interface StudioUnlocksView {
+  blocks: string[]
+}
+
 /** Desafio do MÊS (game jam kids) — mirror do `ChallengeMeView` do members. */
 export interface ChallengeMeView {
   challenge: {

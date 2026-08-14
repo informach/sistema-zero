@@ -50,6 +50,59 @@ O Admin agora **avisa sozinho** (full review 24/07): a listagem admin do members
 
 No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma fita curva SVG com os 8 níveis ilustrados pelos personagens Dedé e Debinha (`public/carreira/<slug>.webp`; sem a arte, cai no ícone do nível). Nível não atingido fica **preto-e-branco com cadeado e não navega** (balança + recado); nível atingido abre **`/cursos/trilha/<slug do nível>`** (v2 24/07 — rota por NÍVEL, ex.: `/cursos/trilha/coder`, não mais por degrau de curso). A listagem divide o degrau por `careerSlot`: a **Faísca (noob) vê só o curso-base** (slot 1) e o **Construtor (coder) vê o resto do degrau + os bônus**; dos Inventores em diante cada nível mostra o seu degrau inteiro (`coursesForLevel` em `lib/career-map.ts`). O nó do nível atual mostra "Você está aqui" + quantos cursos faltam. A Lenda é o nó final de celebração (sem trilha — `/cursos/trilha/god` é 404). Deep-link numa trilha bloqueada mostra recado gentil; a equipe nunca é murada (o escape é medido sobre os cursos QUE AQUELA trilha mostra: algum liberado → abre). Sem gamificação disponível, a página cai na grade clássica. A régua REAL de acesso continua no members — o mapa é apresentação.
 
+### O mapa acompanha o catálogo (horizonte, 08/2026)
+
+A carreira exige **48 cursos** (8 posições × 6 degraus). Enquanto eles não existem, o mapa **não
+mostra a escada inteira**: ele desenha até o **horizonte do catálogo**, que é o nível mais alto que
+os cursos publicados hoje conseguem entregar de fato, e fecha com um nó **"E tem muito mais pela
+frente"** (toque abre a lista dos postos que faltam e o que cada um traz). Sem isso a criança lê
+"faltam 7 cursos" de cursos que ninguém gravou e encara uma fileira de cadeados, que ela entende
+como culpa dela.
+
+Duas consequências para quem opera:
+
+- **Publicar um curso move o mapa na hora.** O contador do nível atual conta só os cursos que
+  existem ("1 de 3"), então cada curso novo aparece como um passo a mais no nó. Quando a criança faz
+  tudo que existe, a tela diz **"Você está em dia!"** e oferece o Estúdio, em vez de prometer curso.
+- **Completar um degrau inteiro (as 8 posições) abre o próximo posto no mapa.** É o horizonte
+  avançando. Quando os 48 estiverem publicados, o horizonte chega na Lenda e a tela volta sozinha à
+  escada completa de 8 medalhões — não há nada para desligar.
+
+A régua da carreira **não muda nada disso**: nível, travas e o que o Estúdio libera continuam sendo
+calculados pelo members exatamente como antes. O horizonte é só o que a tela DESENHA.
+
+## A paleta do Estúdio vem do CURRÍCULO (08/2026)
+
+Até aqui o conjunto de blocos do **Estúdio livre** era fixo por NÍVEL da carreira. Agora **cada
+curso declara o que libera** e a criança tem a **união** dos cursos que **concluiu E publicou no
+Mural** (a mesma régua do posto). A separação que fica:
+
+> **O posto da carreira decide o MODO** (Estúdio livre, Ponte, Pro). **O currículo decide a PALETA.**
+
+**Como cadastrar:** na modal de criar/editar curso (Kids), o campo **"Ferramentas que este curso
+libera no Estúdio"** usa o MESMO picker da lista de blocos da aula — com busca, grupos e
+**importação por JSON** (`{"blocks": ["sz_g2d_..."]}`), que recusa id inexistente ou repetido. As
+**extensões saem sozinhas dos blocos**: não há campo de extensão.
+
+**Três garantias que valem a pena conhecer:**
+
+1. **Cumulativo, e o que se ganha não se perde.** Tirar um bloco do JSON vale para quem ainda não
+   concluiu o curso. Quem já conquistou continua com ele, mesmo se o curso for despublicado ou
+   apagado. (O que já foi servido fica congelado por aluno; a leitura é a união do JSON atual com
+   esse congelado.)
+2. **Acrescentar chega sozinho.** Um bloco novo no JSON de um curso aparece para quem já o concluiu,
+   sem refazer nada.
+3. **Curso sem JSON não deixa ninguém sem nada.** Enquanto um degrau não estiver etiquetado, a
+   criança segue com a paleta do NÍVEL, como antes (fail-open do rollout). A EQUIPE ignora o
+   currículo e continua vendo o Estúdio inteiro.
+
+⚠️ **Primeira coisa a fazer no rollout:** etiquetar o curso-base do Iniciante 2D com os blocos que
+o Construtor já tem hoje (o conjunto "Jogo 2D Essencial", 47 blocos com o 🚀 Kit espaço inteiro).
+Sem isso, quem virar Construtor depois desse lote abre o Estúdio com menos ferramentas do que antes.
+
+A criança vê o que conquistou em **"Minhas ferramentas"** no perfil, agrupado nas **gavetas** da
+caixa de ferramentas (🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…).
+
 ## Matriz dos níveis
 
 | Nível | Requisito acumulado | Etapa estudada | Liberação no Estúdio livre |

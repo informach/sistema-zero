@@ -23,17 +23,20 @@ export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
     title: 'Jogo 3D Iniciante',
     description: 'Leve suas criações para a terceira dimensão.',
   },
+  // ⚠️ A Ponte saiu do Mestre e foi para o Gênio (core, 26/07) e o kit Jogo 3D Avançado
+  // entrou já no Arquiteto. A copy ficou para trás e prometia o que o Estúdio não entrega.
+  // `tests/career-rewards-conformance.test.ts` trava os dois contra o core.
   elite: {
-    title: 'Jogo 2D Intermediário + modo Ponte',
-    description: 'Veja blocos e código trabalhando juntos e crie jogos 2D mais completos.',
+    title: 'Jogo 2D Intermediário',
+    description: 'Crie jogos 2D mais completos com as ferramentas intermediárias.',
   },
   architect: {
-    title: 'Mundo 3D Intermediário',
+    title: 'Mundo 3D + Jogo 3D Avançado',
     description: 'Construa cenários e experiências 3D com ferramentas intermediárias.',
   },
   champion: {
-    title: 'Jogo 2D Avançado',
-    description: 'Use sistemas avançados para ampliar seus jogos 2D.',
+    title: 'Jogo 2D Avançado + modo Ponte',
+    description: 'Use sistemas avançados e veja blocos e código trabalhando juntos.',
   },
   god: {
     title: 'Jogo 3D Avançado + Pro',

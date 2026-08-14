@@ -122,6 +122,10 @@ import type {
   StudioSubmissionSummary,
 } from '../../src/domain/ports/studio-submission-repository.port'
 import type {
+  StudioBlockGrant,
+  StudioUnlockRepository,
+} from '../../src/domain/ports/studio-unlock-repository.port'
+import type {
   AdminThreadsFilter,
   AppendMessageInput,
   EnsureThreadInput,
@@ -2263,6 +2267,35 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     return result
   }
 
+  /**
+   * Mirror do SQL: MESMA interseção `course_complete` ∩ `course_showcased`, lendo
+   * `metadata.studioUnlockBlocks` do curso VIVO (por isso curso ausente do catálogo
+   * não contribui — o snapshot é quem preserva). Bônus e `lenda` CONTAM: todo curso
+   * pode ensinar ferramenta; só a CARREIRA os ignora.
+   */
+  async listStudioUnlocksByCourse(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<{ courseId: string; blocks: string[] }[]> {
+    const mine = this.events.filter((e) => e.userId === userId && e.audience === audience)
+    const showcased = new Set(
+      mine.filter((e) => e.sourceType === 'course_showcased').map((e) => e.sourceId),
+    )
+    const out: { courseId: string; blocks: string[] }[] = []
+    for (const ce of mine.filter((e) => e.sourceType === 'course_complete')) {
+      if (!showcased.has(ce.sourceId)) continue
+      const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
+      const raw = (course?.metadata as Record<string, unknown> | null | undefined)
+        ?.studioUnlockBlocks
+      if (!Array.isArray(raw)) continue
+      const blocks = [
+        ...new Set(raw.filter((t): t is string => typeof t === 'string' && t.length > 0)),
+      ]
+      if (blocks.length > 0) out.push({ courseId: ce.sourceId, blocks })
+    }
+    return out
+  }
+
   async listQualifyingCareerSlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
@@ -2719,6 +2752,38 @@ export class InMemoryAvatarRepository implements AvatarRepository {
       this.configs.set(k, defaultAvatarConfig())
     }
     this.photoUrls.set(k, photoUrl)
+  }
+}
+
+/**
+ * Snapshot dos blocos já servidos ao aluno (o piso que impede a revogação).
+ * `saveGrants` sobrescreve a linha porque o SERVICE já resolveu a união — o mesmo
+ * contrato do `excluded.blocks` do SQL.
+ */
+export class InMemoryStudioUnlockRepository implements StudioUnlockRepository {
+  readonly grants: { userId: string; audience: CourseAudience; grant: StudioBlockGrant }[] = []
+
+  async listGrants(userId: string, audience: CourseAudience): Promise<StudioBlockGrant[]> {
+    return this.grants
+      .filter((row) => row.userId === userId && row.audience === audience)
+      .map((row) => ({ courseId: row.grant.courseId, blocks: [...row.grant.blocks] }))
+  }
+
+  async saveGrants(
+    userId: string,
+    audience: CourseAudience,
+    grants: readonly StudioBlockGrant[],
+  ): Promise<void> {
+    for (const grant of grants) {
+      const existing = this.grants.find(
+        (row) =>
+          row.userId === userId &&
+          row.audience === audience &&
+          row.grant.courseId === grant.courseId,
+      )
+      if (existing) existing.grant = { courseId: grant.courseId, blocks: [...grant.blocks] }
+      else this.grants.push({ userId, audience, grant: { ...grant, blocks: [...grant.blocks] } })
+    }
   }
 }
 

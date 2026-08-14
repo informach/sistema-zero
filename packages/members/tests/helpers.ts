@@ -79,6 +79,7 @@ import { SaveRoomService } from '../src/application/room/save-room.service'
 import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
 import { StudioSubmissionsAdminService } from '../src/application/studio-submissions-admin/studio-submissions-admin.service'
+import { GetStudioUnlocksService } from '../src/application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from '../src/application/submit-studio-project/submit-studio-project.service'
 import { TeacherThreadsService } from '../src/application/teacher-threads/teacher-threads.service'
@@ -116,6 +117,7 @@ import {
   InMemoryQuizAttemptRepository,
   InMemoryRoomRepository,
   InMemoryStudioSubmissionRepository,
+  InMemoryStudioUnlockRepository,
   InMemoryTeacherThreadRepository,
   InMemoryVideoPositionRepository,
   silentLogger,
@@ -154,6 +156,7 @@ export function buildApp(
   const certificates = new InMemoryCertificateRepository()
   const avatar = new InMemoryAvatarRepository()
   const room = new InMemoryRoomRepository()
+  const studioUnlocks = new InMemoryStudioUnlockRepository()
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
   const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
   const parentReports = new InMemoryParentReportRepository()
@@ -348,6 +351,7 @@ export function buildApp(
       ),
       getGamification: new GetGamificationService(gamification, clock),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
+      getStudioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
       getMissions: new GetMissionsService(gamification, accessCheck, clock),
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
       recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),

@@ -39,6 +39,7 @@ import type { GetRoomService } from '../../../application/room/get-room.service'
 import type { SaveRoomService } from '../../../application/room/save-room.service'
 import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
+import type { GetStudioUnlocksService } from '../../../application/studio-unlocks/get-studio-unlocks.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
@@ -132,6 +133,7 @@ export interface MembersRoutesDeps {
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
   getChallenge: GetChallengeService
+  getStudioUnlocks: GetStudioUnlocksService
   getMissions: GetMissionsService
   claimMission: ClaimMissionService
   recordRemix: RecordStudioRemixService
@@ -411,6 +413,16 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           })
         },
         { query: GamificationQuery },
+      )
+      // Paleta do Estúdio livre montada pelo CURRÍCULO (08/2026): a UNIÃO dos blocos
+      // dos cursos que este PERFIL concluiu E publicou no Mural. Rota ENXUTA e à parte
+      // do `/gamification/me` de propósito — a lista pode ter centenas de ids e o `me`
+      // é buscado em TODA página do kids; aqui só quem vai montar a paleta paga.
+      .get(
+        '/studio/unlocks',
+        async ({ headers, query }) =>
+          deps.getStudioUnlocks.execute(resolveUserId(headers), query.audience ?? 'kids'),
+        { query: AudienceQuery },
       )
       // Desafio do MÊS (game jam): tema determinístico global + `entered` do perfil.
       // A posse (Clube+Estúdio) gateia só a UI (via /members/access); o gate REAL do

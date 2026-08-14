@@ -9,7 +9,7 @@ import {
   Sparkles,
   Wand2,
 } from 'lucide-react'
-import type { StudentLevelSlug, StudentLevelView } from '@/lib/types'
+import type { StudentLevelSlug } from '@/lib/types'
 
 /**
  * Apresentação do NÍVEL do aluno (rótulo kids + cor + ícone). O catálogo/regra
@@ -43,7 +43,9 @@ export const LEVEL_INFO: Record<StudentLevelSlug, LevelInfo> = {
   },
   hacker: {
     label: 'Inventor(a)',
-    blurb: 'Seis projetos Iniciante 2D no Mural. Mandou bem!',
+    // Sem número de propósito: a régua já foi 5, virou 6 e hoje é 8 por degrau, e a frase
+    // ficou para trás em todas as vezes. O que não muda é o feito.
+    blurb: 'Você dominou o Iniciante 2D. Mandou bem!',
     colorVar: 'var(--level-hacker)',
     icon: Lightbulb,
   },
@@ -103,39 +105,11 @@ export function isLevelUp(prev: string | null | undefined, next: string | undefi
   return ni > -1 && pi > -1 && ni > pi
 }
 
-/** Nome kid-friendly de cada DEGRAU de curso (dificuldade × eixo), no singular/plural. */
-const TIER_HINTS: readonly {
-  key: keyof NonNullable<StudentLevelView['remaining']>
-  one: string
-  many: string
-}[] = [
-  { key: 'iniciante-2d', one: 'curso Iniciante 2D', many: 'cursos Iniciante 2D' },
-  { key: 'iniciante-3d', one: 'curso Iniciante 3D', many: 'cursos Iniciante 3D' },
-  { key: 'intermediario-2d', one: 'curso Intermediário 2D', many: 'cursos Intermediário 2D' },
-  { key: 'intermediario-3d', one: 'curso Intermediário 3D', many: 'cursos Intermediário 3D' },
-  { key: 'avancado-2d', one: 'curso Avançado 2D', many: 'cursos Avançado 2D' },
-  { key: 'avancado-3d', one: 'curso Avançado 3D', many: 'cursos Avançado 3D' },
-]
-
 /**
- * Frase kid-friendly do que falta p/ o PRÓXIMO nível (`null` no topo). Pega o 1º
- * DEGRAU pendente na ordem da escada — "concluído E publicado no Mural" conta
- * como um projeto.
+ * ⚠️ A frase "falta N curso…" vive em **`lib/career-horizon.ts`** (`nextLevelHintWithin`),
+ * porque ela precisa do CATÁLOGO para não prometer curso que ninguém gravou. O
+ * `nextLevelHint` que morava aqui era a mesma frase sem esse limite e virou duplicata
+ * assim que todas as telas migraram — `nextLevelHintWithin(level, null)` devolve
+ * exatamente o texto antigo. Duas cópias da mesma frase já drifaram neste arquivo antes;
+ * uma só, não.
  */
-export function nextLevelHint(level: StudentLevelView | undefined): string | null {
-  if (!level?.next || !level.remaining) return null
-  const next = levelInfo(level.next).label
-  const r = level.remaining
-  for (const tier of TIER_HINTS) {
-    const n = r[tier.key]
-    if (typeof n === 'number' && n > 0) {
-      // "da carreira" = só os cursos com posição contam (bônus não movem o número).
-      return n === 1
-        ? `Falta 1 ${tier.one} da carreira concluído e o projeto publicado no Mural para virar ${next}`
-        : `Faltam ${n} ${tier.many} da carreira concluídos e com os projetos no Mural para virar ${next}`
-    }
-  }
-  if (r.any > 0)
-    return `Conclua e publique ${r.any} ${r.any === 1 ? 'projeto' : 'projetos'} no Mural para virar ${next}`
-  return null
-}

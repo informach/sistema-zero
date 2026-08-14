@@ -66,6 +66,7 @@ import type {
   ShowcasePayloadView,
   StreakFreezeResult,
   StudioSubmissionResultView,
+  StudioUnlocksView,
   TeacherThreadSummaryView,
   TeacherThreadView,
   UserView,
@@ -308,6 +309,13 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
   const aiCreditsReadonlyCached = cache(
     (): Promise<GatewayResponse<AiCreditsView>> => gw.gatewayFetchReadonly('/members/ai-usage/me'),
   )
+  // Paleta do Estúdio livre montada pelo CURRÍCULO (união dos cursos concluídos +
+  // publicados). Rota à parte do `/gamification/me` de propósito: a lista pode ter
+  // centenas de ids e o `me` é buscado em TODA página — aqui só o /estudio paga.
+  const studioUnlocksReadonlyCached = cache(
+    (): Promise<GatewayResponse<StudioUnlocksView>> =>
+      gw.gatewayFetchReadonly('/members/studio/unlocks', { query: { audience } }),
+  )
   const challengeReadonlyCached = cache(
     (): Promise<GatewayResponse<ChallengeMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/challenge', { query: { audience } }),
@@ -449,6 +457,15 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       withRanking?: boolean
     }): Promise<GatewayResponse<GamificationMeView>> {
       return gamificationReadonlyCached(opts?.withRanking ?? false)
+    },
+
+    /**
+     * Blocos que a criança conquistou nos cursos (paleta do Estúdio livre) —
+     * Server Component. Vazio = nenhum curso liberou nada ainda, e o
+     * `resolveStudioTier` cai no perfil do NÍVEL (fail-open do rollout).
+     */
+    getStudioUnlocksReadonly(): Promise<GatewayResponse<StudioUnlocksView>> {
+      return studioUnlocksReadonlyCached()
     },
 
     /** Desafio do MÊS (game jam): tema global + `entered` — Server Component. */

@@ -327,6 +327,23 @@ sem corpo) → o members dá **10 XP/dia** que MOVE o streak (gated por posse do
 sucesso, `router.refresh()` acende o foguinho/XP/ranking na hora. É a âncora de quem já terminou os cursos
 e só cria (sem publicar). Ver members §Missões "Retenção pós-cursos" (migration `0045`).
 
+## Ferramentas do Estúdio vêm dos CURSOS (currículo, 08/2026)
+
+A paleta do Estúdio livre deixou de ser fixa por NÍVEL: cada curso declara os blocos que libera e a
+criança tem a UNIÃO dos que **concluiu E publicou no Mural**. O nível segue decidindo o MODO
+(livre/Ponte/Pro). No kids isso aparece em três lugares:
+- **`/estudio`**: a página soma `getStudioUnlocksReadonly()` ao `Promise.all` e passa
+  `{blocks, extensions: extensionsForBlocks(blocks)}` ao `resolveStudioTier`. Best-effort — falhar
+  NÃO esvazia a caixa (o tier cai no perfil do nível).
+- **`/mural-dos-criadores`**: o mesmo, p/ o remix perguntar "o que você conquistou cobre este jogo?"
+  em vez de "seu nível cobre?".
+- **`/perfil` → `my-tools.tsx` (`MyTools`)**: "Minhas ferramentas", as GAVETAS conquistadas
+  (`drawersForBlocks` — 🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…). Gaveta é o que torna a recompensa
+  legível p/ criança; lista de ids não é. Sem nenhuma, a seção some.
+⚠️ A comemoração da gaveta NO MOMENTO da publicação ainda não existe: ela exigiria a lista de
+desbloqueios no LAYOUT (para o watcher diffar, como o `level-up-watcher`), e é justamente o payload
+que a rota enxuta evita. Follow-up consciente.
+
 ## Ranking/foguinho ao vivo (sem deslogar) — 07/2026
 
 As ações que rendem XP re-sincronizam o chrome (foguinho/XP/ranking/nível) na hora: aula/quiz/publicar/
@@ -767,6 +784,27 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   (`CREATOR_CAREER_LEVELS`), travado por `tests/career-conformance.test.ts`. Deep-link em trilha
   bloqueada → recado gentil (`trilhaLocked` por nível, escape p/ EQUIPE: algum curso liberado →
   nunca mura). Gamificação fora → grade clássica.
+  ⭐ **HORIZONTE DO CATÁLOGO (08/2026) — `lib/career-horizon.ts` (puro) + `tests/career-horizon.test.ts`:**
+  a carreira exige 48 cursos (8 × 6 degraus) e o catálogo real tem punhados, então o mapa dizia
+  "faltam 7 cursos" de cursos que ninguém gravou e mostrava 6 medalhões com CADEADO — que para
+  criança significa "você não fez o suficiente". Agora o mapa desenha **só até onde o catálogo
+  consegue levar** (`careerHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
+  fecha com o **nó "E tem muito mais pela frente"** (`career-horizon-node.tsx`: arte da Lenda,
+  martelinho no lugar do cadeado, abre um `Dialog` com os postos que faltam e a recompensa de cada
+  um). O contador do nó atual conta **só o que existe** (`careerProgress` → bolinhas + "1 de 3
+  cursos"); nada pronto a fazer → "Você está em dia!" + atalho p/ `/estudio` (só com posse — produto
+  à parte). ⚠️ **Nenhum espelho novo do core:** `requiredSlots[nível_i] = ∪ LEVEL_STUDY[j].slots
+  p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `career-conformance` é herdada.
+  ⚠️ **Catálogo `null` (a busca FALHOU) ≠ catálogo vazio:** `null` não restringe nada (cai na visão
+  definitiva), senão um soluço de rede tiraria postos conquistados da tela; vazio é informação real
+  e encolhe. **A visão provisória se dissolve SOZINHA:** catálogo completo → horizonte `god` → os 8
+  medalhões de sempre e o nó de fechamento some (travado no teste "catálogo COMPLETO"). Consomem o
+  horizonte: `/cursos`, `/cursos/trilha/[level]`, `/perfil` (`career-timeline`, que colapsa os postos
+  além do horizonte em UMA linha) e a home (`creator-career-card`). ⚠️ A frase "falta N curso…" tem
+  UMA fonte só — `nextLevelHintWithin` no `career-horizon.ts`; o antigo `nextLevelHint` do
+  `level-info.ts` foi REMOVIDO (era a mesma frase sem o limite do catálogo, e duplicata de frase já
+  drifou 2× neste arquivo). ⚠️ O `<ol>` do mapa leva `mb-10`: a legenda do ÚLTIMO nó é absoluta e cai
+  ~42px ABAIXO da caixa, e sem a margem o bloco "em dia" entra por cima dela (medido, 10px).
   ⚠️ O catálogo com filtros MORREU no kids: `course-catalog-client.tsx`/`catalog-filter-bar.tsx`/
   `lib/use-catalog-filters.ts` REMOVIDOS (o hook segue no member-shell p/ o community adulto). **COMEMORAÇÃO de SUBIDA de nível:**
   `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,

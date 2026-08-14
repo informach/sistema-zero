@@ -862,6 +862,23 @@ const CourseBodyProperties = {
   // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
   // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
   careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
+  // Blocos que este curso LIBERA no Estúdio livre ao ser concluído + publicado no Mural
+  // (mesmo formato do `allowBlocks` da aula, só que no CURSO). Vira
+  // `metadata.studioUnlockBlocks`. AUSENTE **PRESERVA** a lista atual (régua do
+  // audience/level, não a do salesPageUrl): build antigo do admin não apaga currículo.
+  // `null`/`[]` limpa. ⚠️ O teto precisa ficar ACIMA do catálogo INTEIRO do studio (1467
+  // blocos hoje): o JSON é um RETRATO cumulativo ("os que já estavam liberados mais os
+  // deste curso"), então um curso do fim da escada legitimamente chega perto do total —
+  // um teto justo viraria erro de validação no curso mais avançado. A existência de cada
+  // id é conferida pelo ADMIN contra o catálogo (o members não o importa).
+  studioUnlockBlocks: t.Optional(
+    t.Union([
+      t.Array(t.String({ minLength: 1, maxLength: 80, pattern: '^[A-Za-z0-9_]+$' }), {
+        maxItems: 3000,
+      }),
+      t.Null(),
+    ]),
+  ),
 }
 export const CourseBody = t.Object(CourseBodyProperties)
 /** PATCH exige a versão lida para impedir que uma aba antiga sobrescreva outra edição. */

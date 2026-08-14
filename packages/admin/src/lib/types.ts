@@ -364,6 +364,12 @@ export interface CourseView {
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
+   * Blocos que ESTE curso libera no Estúdio livre quando o aluno o conclui E publica
+   * no Mural (08/2026). A paleta do aluno é a UNIÃO dos cursos conquistados, no lugar
+   * do conjunto fixo por nível. Opcional p/ tolerar members antigo.
+   */
+  studioUnlockBlocks?: string[]
+  /**
    * SÓ na listagem e SÓ no curso-base kids (posição 1): tem aula publicada com
    * bloco de Estúdio de vitrine? `false` = o aluno nunca publica no Mural → o
    * slot 1 nunca qualifica e a etapa não destrava (aviso "Sem vitrine").

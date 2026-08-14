@@ -639,6 +639,37 @@ export const avatarInventory = members.table(
   (t) => [uniqueIndex('avatar_inventory_user_part_uq').on(t.userId, t.audience, t.partId)],
 )
 
+// ── Blocos do Estúdio liberados por CURSO (currículo, 08/2026) ──────────────
+// A paleta do Estúdio livre deixou de ser fixa por NÍVEL e passou a ser a UNIÃO dos
+// blocos dos cursos que o aluno concluiu E publicou no Mural (`metadata.studioUnlockBlocks`
+// de cada curso). Esta tabela é o **SNAPSHOT congelado** do que cada curso deu a cada
+// aluno no momento em que ele qualificou.
+//
+// ⚠️ Ela existe por UMA razão: **bloco liberado não é revogado**. A união calculada ao
+// vivo sobre o `metadata` atual tiraria a ferramenta da mão de quem já a tinha assim que
+// a professora editasse o JSON, despublicasse ou apagasse o curso — inclusive de projetos
+// que já a usam. É o mesmo remédio do `xp_events.source_level`, que existe para o rank
+// nunca regredir num re-nivelamento. A LEITURA é `ao vivo ∪ snapshot`: acréscimo no JSON
+// chega sozinho em quem já concluiu, remoção não tira de ninguém.
+//
+// `course_id` é SNAPSHOT sem FK (o curso pode ser apagado e a conquista permanece), e
+// `blocks` guarda a lista literal daquele momento.
+export const studioBlockGrants = members.table(
+  'studio_block_grants',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    courseId: uuid('course_id').notNull(),
+    blocks: jsonb('blocks').$type<string[]>().notNull(),
+    grantedAt: timestamp('granted_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('studio_block_grants_user_course_uq').on(t.userId, t.audience, t.courseId),
+    index('studio_block_grants_user_idx').on(t.userId, t.audience),
+  ],
+)
+
 // ── Missões (diárias/semanais — claim idempotente, fatia 06/2026) ───────────
 // O PROGRESSO é DERIVADO do `xp_events` na leitura (sem hook no award); esta tabela
 // só registra o RESGATE (1 linha por missão+período resgatado = idempotência do prêmio).

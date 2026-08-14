@@ -1,0 +1,189 @@
+import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
+import { GetStudioUnlocksService } from '../../src/application/studio-unlocks/get-studio-unlocks.service'
+import type { Course } from '../../src/domain/course/course'
+import {
+  InMemoryCourseRepository,
+  InMemoryEntitlementRepository,
+  InMemoryGamificationRepository,
+  InMemoryStudioUnlockRepository,
+  silentLogger,
+} from '../fakes/in-memory'
+
+/**
+ * A paleta do Estúdio livre passou a vir do CURRÍCULO: cada curso declara o que libera
+ * e o aluno tem a união dos cursos que concluiu E publicou no Mural.
+ *
+ * O teste que mais importa é o da REGRA DA USUÁRIA: **bloco liberado não é revogado**.
+ * A união ao vivo sozinha não garante isso — editar o JSON, despublicar ou apagar o curso
+ * tiraria a ferramenta da mão de quem já a tinha. Quem segura é o snapshot, e é ele que
+ * os casos "removeu"/"apagou" abaixo cobrem.
+ */
+
+function makeCourse(unlockBlocks?: string[]): Course {
+  const now = new Date('2026-08-13T12:00:00.000Z')
+  return {
+    id: randomUUID(),
+    version: 0,
+    slug: `curso-${randomUUID().slice(0, 8)}`,
+    title: 'Curso',
+    subtitle: null,
+    description: null,
+    coverImageUrl: null,
+    status: 'published',
+    audience: 'kids',
+    level: 'iniciante',
+    track: '2d',
+    careerSlot: 1,
+    sequentialLock: true,
+    metadata: unlockBlocks ? { studioUnlockBlocks: unlockBlocks } : null,
+    createdAt: now,
+    updatedAt: now,
+  } as Course
+}
+
+function setup() {
+  const courses = new InMemoryCourseRepository()
+  const entitlements = new InMemoryEntitlementRepository()
+  const gamification = new InMemoryGamificationRepository({ entitlements, courses })
+  const unlocks = new InMemoryStudioUnlockRepository()
+  const service = new GetStudioUnlocksService(gamification, unlocks, silentLogger)
+  const userId = randomUUID()
+
+  /** Marca o curso como CONCLUÍDO e/ou PUBLICADO no ledger (a régua da qualificação). */
+  const mark = (courseId: string, opts: { completed?: boolean; showcased?: boolean }) => {
+    const base = { userId, audience: 'kids' as const, amount: 0, createdAt: new Date() }
+    if (opts.completed !== false)
+      gamification.events.push({
+        ...base,
+        sourceType: 'course_complete',
+        sourceId: courseId,
+      } as never)
+    if (opts.showcased !== false)
+      gamification.events.push({
+        ...base,
+        sourceType: 'course_showcased',
+        sourceId: courseId,
+      } as never)
+  }
+
+  return { courses, gamification, unlocks, service, userId, mark }
+}
+
+describe('GetStudioUnlocksService', () => {
+  test('sem curso qualificado, a paleta vem vazia (o tier cai no perfil do nível)', async () => {
+    const { service, userId } = setup()
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+  })
+
+  test('concluir SEM publicar no Mural não libera nada', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, { showcased: false })
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+  })
+
+  test('publicar SEM concluir também não libera', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, { completed: false })
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+  })
+
+  test('concluir + publicar libera os blocos do curso', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship', 'sz_g2d_arrows_x'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    const { blocks } = await service.execute(userId, 'kids')
+    expect(blocks.sort()).toEqual(['sz_g2d_arrows_x', 'sz_g2d_create_ship'])
+  })
+
+  test('dois cursos somam (sem repetir o bloco em comum)', async () => {
+    const { courses, service, userId, mark } = setup()
+    const a = makeCourse(['sz_g2d_create_ship', 'sz_val_number'])
+    const b = makeCourse(['sz_g2d_on_key', 'sz_val_number'])
+    courses.courses.push(a, b)
+    mark(a.id, {})
+    mark(b.id, {})
+    const { blocks } = await service.execute(userId, 'kids')
+    // `sz_val_number` está nos DOIS cursos e aparece uma vez só.
+    expect(blocks.sort()).toEqual(['sz_g2d_create_ship', 'sz_g2d_on_key', 'sz_val_number'])
+  })
+
+  test('⭐ bloco ACRESCENTADO ao JSON chega em quem já concluiu o curso', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    await service.execute(userId, 'kids')
+    course.metadata = { studioUnlockBlocks: ['sz_g2d_create_ship', 'sz_g2d_explode'] }
+    const { blocks } = await service.execute(userId, 'kids')
+    expect(blocks.sort()).toEqual(['sz_g2d_create_ship', 'sz_g2d_explode'])
+  })
+
+  test('⭐⭐ bloco REMOVIDO do JSON NÃO é revogado de quem já o tinha', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship', 'sz_g2d_explode'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    // 1ª visita ao Estúdio: congela o que foi servido.
+    expect((await service.execute(userId, 'kids')).blocks.sort()).toEqual([
+      'sz_g2d_create_ship',
+      'sz_g2d_explode',
+    ])
+    // A professora tira um bloco do currículo do curso.
+    course.metadata = { studioUnlockBlocks: ['sz_g2d_create_ship'] }
+    const { blocks } = await service.execute(userId, 'kids')
+    expect(blocks.sort()).toEqual(['sz_g2d_create_ship', 'sz_g2d_explode'])
+  })
+
+  test('⭐⭐ curso APAGADO não tira a ferramenta de quem já o concluiu', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    await service.execute(userId, 'kids')
+    courses.courses.length = 0
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
+  })
+
+  test('só congela quando a união CRESCE (abrir o Estúdio não vira UPDATE por visita)', async () => {
+    const { courses, unlocks, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    await service.execute(userId, 'kids')
+    const snapshot = JSON.stringify(unlocks.grants)
+    let writes = 0
+    const original = unlocks.saveGrants.bind(unlocks)
+    unlocks.saveGrants = async (...args) => {
+      writes += 1
+      return original(...args)
+    }
+    await service.execute(userId, 'kids')
+    expect(writes).toBe(0)
+    expect(JSON.stringify(unlocks.grants)).toBe(snapshot)
+  })
+
+  test('falhar ao congelar NÃO nega a paleta de agora', async () => {
+    const { courses, unlocks, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    unlocks.saveGrants = async () => {
+      throw new Error('banco fora')
+    }
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
+  })
+
+  test('a vitrine segrega: curso kids não vaza para a paleta do adulto', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, {})
+    expect(await service.execute(userId, 'adult')).toEqual({ blocks: [] })
+  })
+})

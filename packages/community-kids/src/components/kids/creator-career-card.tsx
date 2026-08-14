@@ -2,7 +2,7 @@ import { Flame, Gamepad2, Sparkles, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { careerRewardInfo } from '@/lib/career-rewards'
 import { cn } from '@/lib/cn'
-import { levelInfo, nextLevelHint } from '@/lib/level-info'
+import { levelInfo } from '@/lib/level-info'
 import type { GamificationMeView } from '@/lib/types'
 import { AvatarWithAura } from './avatar-with-aura'
 import { LevelBadge } from './level-badge'
@@ -10,17 +10,21 @@ import { LevelBadge } from './level-badge'
 /**
  * Card "Carreira de Criador" da home (07/2026): UMA narrativa de progressão em
  * vez de números soltos — aura + insígnia do rank (o marco central: publicar
- * jogos no Mural), a frase do PRÓXIMO marco (`nextLevelHint`) e, como
+ * jogos no Mural), a frase do PRÓXIMO marco (`nextLevelHintWithin`, montada na página) e, como
  * secundários, o fogo do streak e o XP. Substituiu o StreakCard (a mensagem do
  * fogo do dia vive aqui agora). `gamification` nulo → placeholder gentil (a
  * home não "encolhe" em silêncio).
  */
 export function CreatorCareerCard({
   gamification,
+  levelHint = null,
   avatarPhotoUrl = null,
   showcaseStats = null,
 }: {
   gamification: GamificationMeView | null
+  /** Frase do próximo marco, JÁ limitada ao catálogo (`nextLevelHintWithin`, montada no
+   *  servidor). `null` = topo da carreira OU em dia; nos dois casos cai no `blurb`. */
+  levelHint?: string | null
   avatarPhotoUrl?: string | null
   /** Jogos publicados no Mural + soma das jogadas (best-effort; null = linha some). */
   showcaseStats?: { published: number; plays: number } | null
@@ -45,7 +49,7 @@ export function CreatorCareerCard({
   const { streak, xp, level, ranking } = gamification
   const info = levelInfo(level?.slug)
   const reward = careerRewardInfo(level?.slug)
-  const hint = level ? nextLevelHint(level) : null
+  const hint = levelHint
   const days = streak.current === 1 ? 'dia' : 'dias'
   const streakMessage = streak.activeToday
     ? 'Fogo de hoje garantido. Continue assim!'

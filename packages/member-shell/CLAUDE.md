@@ -367,6 +367,18 @@ estão em `docs/carreira-do-criador.md`. Tudo
 passthrough (os clients não mapeiam) — a APRESENTAÇÃO (aura/insígnia/chip) vive no community-kids;
 aqui é só o tipo.
 
+**Paleta do Estúdio pelo CURRÍCULO (08/2026):** `resolveStudioTier(levelSlug, role, unlocks?)` ganhou
+um 3º argumento — os blocos que a criança conquistou nos cursos (+ extensões derivadas). Quando NÃO
+vazio ele MANDA na paleta (`allowBlocks` já é soberano sobre o `level` dentro do editor);
+⚠️ **fail-open deliberado**: vazio/ausente cai no perfil do NÍVEL, senão o dia do deploy (com nenhum
+curso etiquetado) a criança abriria o Estúdio com a caixa VAZIA. ⚠️ A **EQUIPE ignora o currículo**
+(passe livre p/ conferir o Estúdio inteiro). Client novo `getStudioUnlocksReadonly()` (`GET
+/members/studio/unlocks`) + tipo `StudioUnlocksView`. ⚠️ A derivação bloco→extensão e bloco→gaveta
+vive em **`server/studio-unlocks.ts`** (`extensionsForBlocks`/`drawersForBlocks`), NÃO no
+`lib/studio-tier.ts`: ela importa o `SERVER_BLOCK_CATALOG` inteiro e o studio-tier é consumido por
+componentes de CLIENTE (checagem de remix no Mural) — arrastar o catálogo p/ o bundle do navegador
+seria caro. Quem resolve é a página (Server Component), que passa o resultado pronto.
+
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
 client `members.getGamification()` + variante **`getGamificationReadonly()`** (Server Components —

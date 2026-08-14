@@ -7,7 +7,7 @@ import type {
   Module,
   ModuleWithLessons,
 } from '../../domain/course/course'
-import { resolveSalesPageUrl } from './views'
+import { resolveSalesPageUrl, resolveStudioUnlockBlocks } from './views'
 
 /** Views ADMIN de AUTORIA (CRUD de conteúdo). Datas → ISO. */
 
@@ -34,6 +34,11 @@ export interface CourseView {
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
+   * Blocos que este curso LIBERA no Estúdio livre quando o aluno o conclui E publica
+   * no Mural (de `metadata.studioUnlockBlocks`). Vazio = não libera nada.
+   */
+  studioUnlockBlocks: string[]
+  /**
    * SÓ na listagem e SÓ p/ curso-base kids (careerSlot 1): tem ≥1 aula publicada
    * com bloco de Estúdio de vitrine (`showcase.enabled`)? `false` = o slot 1
    * nunca qualifica e a etapa não destrava — o painel avisa o operador.
@@ -59,6 +64,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     track: c.track,
     careerSlot: c.careerSlot,
     sequentialLock: c.sequentialLock,
+    studioUnlockBlocks: resolveStudioUnlockBlocks(c),
     ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),

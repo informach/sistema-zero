@@ -7,11 +7,14 @@ import { KidsBackButton } from '@/components/kids/back-button'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsMascot } from '@/components/kids/mascot'
 import { unitThemeAt } from '@/components/kids/unit-theme'
+import { careerHorizon, nextLevelHintWithin } from '@/lib/career-horizon'
 import { coursesForLevel, LEVEL_TIER, trilhaLocked } from '@/lib/career-map'
 import { cn } from '@/lib/cn'
-import { LEVEL_ORDER, levelInfo, nextLevelHint } from '@/lib/level-info'
+import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
+import { canOpenFreeStudio } from '@/lib/studio-cta'
 import type { StudentLevelSlug } from '@/lib/types'
-import { getGamificationReadonly, listCatalog } from '@/server/members'
+import { checkStudioAccessReadonly, getGamificationReadonly, listCatalog } from '@/server/members'
+import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,25 +44,42 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   if (!tier && levelSlug !== 'god') notFound()
   const tierLabel = tier ? COURSE_TIER_LABELS[tier] : 'da Lenda'
 
-  const [{ status, body }, gamification] = await Promise.all([
+  const [{ status, body }, gamification, studioRes, session] = await Promise.all([
     listCatalog(),
     getGamificationReadonly(),
+    checkStudioAccessReadonly().catch(() => null),
+    getSession(),
   ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const all = body?.courses ?? []
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
+  // ⚠️ Posse + `freeStudio`: o Estúdio livre só abre no Construtor, então uma Faísca com o
+  // produto veria um atalho que cai na tela de bloqueio da carreira (clique morto).
+  const studioOwned = canOpenFreeStudio(
+    studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
+    level?.slug,
+    session?.role,
+  )
+  // Posto acima do HORIZONTE do catálogo = os cursos dele ainda não foram gravados.
+  // Não é a criança que está devendo, e a copy tem que dizer isso.
+  const beyondHorizon = LEVEL_ORDER.indexOf(levelSlug) > LEVEL_ORDER.indexOf(careerHorizon(all))
 
   if (trilhaLocked(level, levelSlug, all)) {
     return (
       <section className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center">
         <KidsMascot expression="thinking" className="size-24" />
-        <h1 className="mt-4 sz-display text-2xl">Esta parte do mapa ainda está bloqueada</h1>
+        <h1 className="mt-4 sz-display text-2xl">
+          {beyondHorizon
+            ? 'Esta parte do mapa está sendo construída'
+            : 'Esta parte do mapa ainda está bloqueada'}
+        </h1>
         {/* Nomeia o NÍVEL (não o degrau de curso): em `/trilha/coder` o degrau é o MESMO
             Iniciante 2D que a Faísca já estuda — dizer "complete e Iniciante 2D abre"
             soaria errado; "a trilha de Construtor(a)" é o que abre de fato. */}
         <p className="mt-4 text-muted-foreground">
-          Complete as trilhas anteriores da sua carreira e a trilha de {levelInfo(levelSlug).label}{' '}
-          vai abrir sozinha — com direito a recompensas!
+          {beyondHorizon
+            ? `Os cursos da trilha de ${levelInfo(levelSlug).label} ainda estão sendo criados. Volte daqui a pouquinho!`
+            : `Complete as trilhas anteriores da sua carreira e a trilha de ${levelInfo(levelSlug).label} vai abrir sozinha, com direito a recompensas!`}
         </p>
         <Link
           href="/cursos"
@@ -76,7 +96,8 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   const owner = levelInfo(levelSlug)
   const OwnerIcon = owner.icon
   // O hint do próximo nível só aparece quando ESTA é a trilha que o aluno estuda agora.
-  const hint = level && level.slug === levelSlug ? nextLevelHint(level) : null
+  // Conta só os cursos que EXISTEM (horizonte do catálogo) — a mesma frase do mapa.
+  const hint = level && level.slug === levelSlug ? nextLevelHintWithin(level, all) : null
 
   return (
     <div className="flex flex-col gap-8">
@@ -109,6 +130,16 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           <p className="text-muted-foreground text-sm">
             Os cursos desta trilha estão a caminho! Volte daqui a pouquinho. 🚀
           </p>
+          {/* Trilha vazia não pode virar beco: quem tem o Estúdio já pode criar o
+              que quiser enquanto os cursos não chegam. */}
+          {studioOwned ? (
+            <Link
+              href="/estudio"
+              className={cn(buttonVariants({ variant: 'default' }), 'h-11 rounded-full px-6')}
+            >
+              Criar um jogo meu
+            </Link>
+          ) : null}
         </section>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
