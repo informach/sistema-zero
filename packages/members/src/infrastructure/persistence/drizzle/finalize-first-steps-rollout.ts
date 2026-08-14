@@ -48,23 +48,26 @@ export async function finalizeFirstStepsRollout(
       )
     }
 
+    // ⚠️ A checagem é CAMPO A CAMPO, e não por trio completo, porque os três campos do retrato
+    // nasceram em migrations DIFERENTES: `source_level` na `0030`, `source_track` na `0044` (que
+    // deliberadamente NÃO fez backfill) e `source_career_slot` na `0047`. Um marco premiado entre
+    // elas é legitimamente PARCIAL — em staging os do curso-base são `('iniciante', null, null)`.
+    // Exigir o trio inteiro reprovava esse formato legado e abortava o rollout justamente nos
+    // marcos que ele existe para consertar.
+    //
+    // O que precisa ser verdade é só isto: nenhum campo PREENCHIDO pode apontar para outro degrau.
+    // Campo nulo já segue o curso ao vivo (o `coalesce` da contagem), então é compatível por
+    // construção; e o UPDATE abaixo grava os três de qualquer jeito. Um retrato de verdade
+    // divergente (outro nível, outra trilha, outra posição) continua barrando para revisão manual.
     const [unexpected] = await tx`
       select count(*)::integer as count
         from members.xp_events
        where source_id = ${course.id}
          and source_type in ('course_complete', 'course_showcased')
          and not (
-           (source_level is null and source_track is null and source_career_slot is null)
-           or (
-             source_level::text is not distinct from 'iniciante'
-             and source_track::text is not distinct from '2d'
-             and source_career_slot is not distinct from 1
-           )
-           or (
-             source_level::text is not distinct from 'primeiros-passos'
-             and source_track::text is not distinct from '2d'
-             and source_career_slot is not distinct from 1
-           )
+           (source_level is null or source_level::text in ('iniciante', 'primeiros-passos'))
+           and (source_track is null or source_track::text = '2d')
+           and (source_career_slot is null or source_career_slot = 1)
          )`
     if (Number(unexpected?.count ?? 0) > 0) {
       throw new Error(

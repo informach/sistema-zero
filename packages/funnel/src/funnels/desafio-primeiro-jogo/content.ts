@@ -1,8 +1,10 @@
-// Conteúdo do funil "Desafio do Primeiro Jogo" (kids, /kids). Copy VERBATIM do
-// briefing da usuária (quiz-desafio-primeiro-jogo.md): 10 perguntas SPIN, tela de
-// resultado por perfil (nomeado pela P1), landing e /obrigado. A comunicação é
-// SEMPRE dirigida aos pais (CONANDA/ECA). A página de vendas NÃO vive aqui (tem
-// layout próprio em DesafioOfertaBody.astro) — só o intro por perfil, via `hero`.
+// Conteúdo do funil "Desafio do Primeiro Jogo" (kids, /kids): 10 perguntas SPIN,
+// tela de resultado por perfil (nomeado pela P1), landing e /obrigado. Copy na
+// decisão de 2026-08-14: o filtro fala de COMPORTAMENTO observável (vive em jogo,
+// computador e tecnologia); o termo clínico e as variações de intensidade só
+// existem na história do André, nos bodies de oferta (guarda:
+// tests/unit/copy-vocabulario.test.ts). A comunicação é SEMPRE dirigida aos pais
+// (CONANDA/ECA). A página de vendas NÃO vive aqui (DesafioOfertaBody.astro).
 
 import type { HeroVariacao } from '../../content/hero-perfil'
 import type { QuizStep } from '../../content/quiz-config'
@@ -15,9 +17,9 @@ export const DESAFIO_PRODUTO: FunnelCopy = {
 }
 
 export const DESAFIO_LANDING: FunnelLanding = {
-  h1: 'Ele vive em jogo, computador e tecnologia. Descubra o perfil criador do seu filho',
+  h1: 'Seu filho vive em jogo, computador e tecnologia. Descubra o perfil de criador dele',
   subtitulo:
-    'Cada criança mergulha nisso do seu jeito. Responda algumas perguntas rápidas e descubra qual é o perfil do seu filho, e o que esse interesse pode virar.',
+    'Cada criança mergulha nesse mundo do jeito dela. Responda 10 perguntas rápidas e veja o que esse interesse revela, e o que ele pode virar.',
   tempo: 'Menos de 3 minutos, e no final o perfil que é só dele.',
 }
 
@@ -56,7 +58,7 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
         badge: '🔥',
         image: '/img/desafio-primeiro-jogo/p1-foguete.webp',
         label:
-          'Ele começa com uma energia enorme, mas se demora para ver resultado, o foco esfria antes de terminar',
+          'Ele começa com uma energia enorme, mas se demora para ver resultado, a empolgação esfria antes de terminar',
       },
       {
         value: 'investigador',
@@ -296,7 +298,7 @@ export const DESAFIO_TOTAL = DESAFIO_QUIZ_STEPS.length
 // {resposta_p3}/{resposta_p5}/{resposta_p8}/{resposta_p10}/{resultado} são resolvidos
 // por `desafioRenderCorpo`.
 export const DESAFIO_FECHO =
-  'Esse interesse pela tela é o combustível. Em 5 dias, ele pode virar o primeiro jogo criado pelo seu filho, do começo ao fim.'
+  'Esse interesse pela tela é o combustível. Em 5 dias, vira o primeiro jogo criado pelo seu filho, do começo ao fim.'
 
 // Bloco em realce acima do fecho: espelha o que o pai declarou na P8 (o que sonha ver)
 // e na P10 (o que sonha que ele se torne). Resolvido por `desafioRenderCorpo`.
@@ -388,9 +390,9 @@ export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
   },
 }
 
-// Hero da /oferta por perfil. O DesafioOfertaBody só usa a `abertura` (linha de
-// intro acima do H1, que retoma a segmentação do quiz). `titulo`/`botao` existem
-// por causa do tipo; o body bespoke não os lê. Sem perfil → `padrao` (sem intro).
+// Hero da /oferta por perfil. HOJE o DesafioOfertaBody NÃO lê `content.hero`
+// (nem a `abertura`) — quem consome hero é o NoComandoOfertaBody. O bloco fica
+// pelo tipo FunnelContent e como reserva; é copy morta na página do Desafio.
 const HERO_H1 = 'Use o interesse do seu filho a favor dele: em 5 dias, ele monta o primeiro jogo'
 const HERO_BOTAO = 'Quero o primeiro jogo do meu filho em 5 dias'
 

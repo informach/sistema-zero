@@ -193,6 +193,63 @@ describe.skipIf(!testDatabaseUrl)('retrato do marco × etiqueta viva do curso (S
     expect(computeStudentLevel(afterDelete).slug).toBe('coder')
   })
 
+  test('🚨 retrato LEGADO e parcial (o que staging realmente tinha) é recongelado, não reprovado', async () => {
+    // O estado REAL de staging em 14/08 — e o furo que quase derrubou o rollout.
+    //
+    // Os três campos do retrato nasceram em migrations DIFERENTES: `source_level` na `0030`,
+    // `source_track` na `0044` (que deliberadamente NÃO fez backfill) e `source_career_slot` na
+    // `0047`. Um marco premiado ENTRE elas é legitimamente parcial. Em staging os do curso-base
+    // eram `('iniciante', null, null)` — e por isso o UPDATE da `0063`, que exige o trio inteiro,
+    // não soltou NENHUMA linha, e o guarda do finalizador, que também exigia o trio, abortava.
+    //
+    // O efeito de deixar passar seria o pior possível: `level` congelado em `iniciante` +
+    // `track`/`slot` seguindo o curso ao vivo faria o marco contar num `iniciante-2d` slot 1 que,
+    // depois da re-etiquetagem, não existe mais — a criança perderia o degrau de entrada e
+    // cairia para Faísca. Exatamente a regressão que todo este mecanismo existe para impedir.
+    await conn.sql`
+      update members.xp_events
+         set source_level = 'iniciante', source_track = null, source_career_slot = null
+       where source_id = ${courseId}`
+
+    const result = await finalizeFirstStepsRollout(conn.sql, 'curso-base')
+    expect(result).toEqual({ courseId, updatedEvents: 2, affectedProfiles: 1 })
+
+    const qualified = await repo.listQualifyingCareerSlots(userId, 'kids')
+    expect(qualified['primeiros-passos-2d']).toEqual([1])
+    expect(qualified['iniciante-2d']).toEqual([])
+    expect(computeStudentLevel(qualified).slug).toBe('coder')
+  })
+
+  test('retrato só com o NÍVEL nulo (parcial pelo outro lado) também é recongelado', async () => {
+    await conn.sql`
+      update members.xp_events
+         set source_level = null, source_track = '2d', source_career_slot = 1
+       where source_id = ${courseId}`
+
+    expect(await finalizeFirstStepsRollout(conn.sql, 'curso-base')).toEqual({
+      courseId,
+      updatedEvents: 2,
+      affectedProfiles: 1,
+    })
+    const qualified = await repo.listQualifyingCareerSlots(userId, 'kids')
+    expect(qualified['primeiros-passos-2d']).toEqual([1])
+  })
+
+  test('parcial com POSIÇÃO de outro slot segue barrando (o guarda continua cirúrgico)', async () => {
+    await conn.sql`
+      update members.xp_events
+         set source_level = null, source_track = null, source_career_slot = 5
+       where source_id = ${courseId} and source_type = 'course_complete'`
+
+    let message = ''
+    try {
+      await finalizeFirstStepsRollout(conn.sql, 'curso-base')
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error)
+    }
+    expect(message).toContain('snapshot inesperado')
+  })
+
   test('o finalizador aborta inteiro diante de snapshot parcial inesperado', async () => {
     await conn.sql`
       update members.xp_events

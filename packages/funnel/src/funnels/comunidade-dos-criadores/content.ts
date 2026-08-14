@@ -16,9 +16,9 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 
 // Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: 'As horas que o seu filho passa dentro do jogo são o maior talento dele esperando um lugar pra ir',
+  h1: 'As horas que o seu filho passa dentro do jogo escondem o maior talento dele, esperando um lugar pra ir',
   subtitulo:
-    'Na Comunidade dos Criadores, as mesmas horas que hoje só consomem jogo passam a criar: cursos com professor acompanhando, jogos publicados com link de verdade e uma carreira de criador que sobe nível a nível.',
+    'Na Comunidade dos Criadores, o mesmo tempo que hoje só consome jogo passa a criar: cursos com professor acompanhando, jogos publicados com link de verdade e uma carreira de criador que sobe nível a nível.',
   tempo: '',
 }
 

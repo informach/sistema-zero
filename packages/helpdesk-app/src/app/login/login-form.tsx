@@ -94,7 +94,7 @@ export function LoginForm() {
             priority
           />
         </div>
-        <CardTitle className="sr-only">Sistema Zero — Helpdesk</CardTitle>
+        <CardTitle className="sr-only">Helpdesk | Sistema Zero</CardTitle>
         <CardDescription className="text-center">
           Helpdesk. Entre com sua conta da equipe.
         </CardDescription>

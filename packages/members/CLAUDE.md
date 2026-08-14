@@ -425,6 +425,19 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    423, portanto a janela não é cosmética. Provado contra Postgres em
    `tests/db/career-snapshot-release.test.ts`; runbook completo em `docs/carreira-do-criador.md`.
    Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
+   🚨 **RETRATO LEGADO É PARCIAL — não teste o trio, teste campo a campo (14/08, achado no banco
+   de staging).** Os três campos nasceram em migrations diferentes (`source_level` na `0030`,
+   `source_track` na `0044` — que deliberadamente NÃO fez backfill — e `source_career_slot` na
+   `0047`), então marco premiado ENTRE elas é legitimamente parcial. Em staging os do curso-base
+   eram `('iniciante', null, null)`: o `UPDATE` da `0063` exige o trio completo e por isso soltou
+   **ZERO** linhas, e o guarda do finalizador, que exigia o mesmo trio, ABORTAVA o rollout justo
+   nos marcos que ele existe para consertar. Pior: passar batido faria `level` congelado em
+   `iniciante` + `track`/`slot` do curso vivo contarem num `iniciante-2d` slot 1 que, após a
+   re-etiquetagem, não existe mais — a criança perde a entrada e cai para Faísca. O guarda agora
+   verifica CADA campo isolado (nulo, ou o valor esperado); um retrato de OUTRO degrau
+   (nível/trilha/posição divergente) continua barrando para revisão manual. ⚠️ Regra geral: ao
+   escrever SQL contra colunas de snapshot adicionadas em épocas distintas, assuma a combinação
+   parcial — o `is not distinct from` sobre um trio é um filtro bem mais estreito do que parece.
    Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
    abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingCareerSlots`, INTERSEÇÃO via
