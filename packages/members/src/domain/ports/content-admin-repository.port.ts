@@ -23,6 +23,14 @@ export interface CourseFields {
   coverImageUrl: string | null
   /** Página de vendas (funil) — persiste em `metadata.salesPageUrl` (jsonb). */
   salesPageUrl: string | null
+  /**
+   * Blocos que este curso LIBERA no Estúdio livre ao ser concluído + publicado no
+   * Mural — persiste em `metadata.studioUnlockBlocks` (jsonb, sem migração).
+   * ⚠️ AUSENTE (`undefined`) **PRESERVA** a lista atual (régua do `audience`/`level`,
+   * não a do `salesPageUrl`): um PATCH de build antigo do admin não pode apagar o
+   * currículo do Estúdio em silêncio. `null`/`[]` LIMPA de propósito.
+   */
+  studioUnlockBlocks?: string[] | null
   status: CourseStatus
   /**
    * Audiência da plataforma. `null` = "não informado": no CREATE vira `adult`;

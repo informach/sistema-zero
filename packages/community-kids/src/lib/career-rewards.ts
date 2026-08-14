@@ -5,39 +5,54 @@ export interface CareerRewardInfo {
   description: string
 }
 
-/** Textos de apresentação; a matriz técnica continua centralizada no core. */
+/**
+ * O que cada POSTO da carreira abre, do jeito que a criança lê.
+ *
+ * ⚠️ **Desde a reforma do currículo (08/2026), o posto NÃO libera mais blocos.** Quem põe
+ * ferramenta na caixa é o CURSO (`studioUnlockBlocks`, a união do que ela concluiu e publicou);
+ * o posto decide só o MODO do editor (livre → Ponte → Pro) e quais PRODUTOS abrem. Anunciar
+ * kit por nível aqui ("Jogo 2D Essencial", "Jogo 3D Iniciante") virou promessa falsa: a criança
+ * sobe de posto e a caixa não muda.
+ *
+ * Por isso três postos do meio (Explorador(a), Mestre, Arquiteto(a)) não anunciam ferramenta
+ * nenhuma — porque não abrem nenhuma. O que eles dão de verdade é o posto e a trilha nova, e é
+ * isso que a copy diz. `tests/career-rewards-conformance.test.ts` trava as promessas contra o
+ * core e contra as constantes dos portões.
+ */
 export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
   noob: {
-    title: 'Estúdio dentro das aulas',
-    description: 'Aprenda com ferramentas escolhidas para cada missão.',
+    title: 'O Estúdio nas aulas',
+    description: 'Você já cria dentro das aulas, com as peças que o curso ensina.',
   },
   coder: {
-    title: 'Estúdio livre + Jogo 2D Essencial',
-    description: 'Crie seus primeiros jogos por conta própria com um conjunto simples de peças.',
+    title: 'Estúdio livre + Pinta',
+    description:
+      'Você cria os seus jogos quando quiser, com as ferramentas dos cursos que terminou, e desenha os seus personagens no Pinta.',
   },
   hacker: {
-    title: 'Jogo 2D Iniciante completo',
-    description: 'Use livremente todas as ferramentas aprendidas nos cursos Iniciante 2D.',
+    title: 'Pensa + Zappy',
+    description:
+      'O Pensa te ajuda a planejar a ideia do jogo, e o Zappy fica do seu lado dentro do Estúdio.',
   },
   explorer: {
-    title: 'Jogo 3D Iniciante',
-    description: 'Leve suas criações para a terceira dimensão.',
+    title: 'Um posto novo no mapa',
+    description: 'Uma trilha nova se abre, com jogos que levam você para mundos maiores.',
   },
   elite: {
-    title: 'Jogo 2D Intermediário + modo Ponte',
-    description: 'Veja blocos e código trabalhando juntos e crie jogos 2D mais completos.',
+    title: 'Um posto novo no mapa',
+    description: 'Uma trilha nova, com jogos bem mais caprichados.',
   },
   architect: {
-    title: 'Mundo 3D Intermediário',
-    description: 'Construa cenários e experiências 3D com ferramentas intermediárias.',
+    title: 'Um posto novo no mapa',
+    description: 'Uma trilha nova, para construir cenários inteiros.',
   },
   champion: {
-    title: 'Jogo 2D Avançado',
-    description: 'Use sistemas avançados para ampliar seus jogos 2D.',
+    title: 'Modo Ponte',
+    description: 'Veja os blocos e o código lado a lado, trabalhando juntos.',
   },
   god: {
-    title: 'Jogo 3D Avançado + Pro',
-    description: 'Crie projetos Pro e promova um jogo de blocos para continuar pelo código.',
+    title: 'Modo Pro',
+    description: 'Escreva o jogo direto no código, como os criadores profissionais fazem.',
   },
 }
 

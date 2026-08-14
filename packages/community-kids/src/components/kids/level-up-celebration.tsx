@@ -3,21 +3,30 @@
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { type CSSProperties, useEffect, useRef } from 'react'
 import { levelInfo } from '@/lib/level-info'
+import { type ToolsGain, toolsGainHeadline } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
 import { KidsConfetti } from './kids-confetti'
 import { KidsMascot } from './mascot'
 
 /**
  * Comemoração de SUBIU DE NÍVEL (Faísca até Lenda) — overlay com o Zappy, confete e a
- * insígnia GRANDE do novo nível na sua cor (aura). Disparada pelo `LevelUpWatcher`
+ * insígnia GRANDE do novo nível na sua cor (aura). Disparada pelo `CelebrationWatcher`
  * quando o nível avança (concluir + publicar no Mural). Reusa o `useModalA11y`
  * (foco-preso/Esc/restore) e o `KidsConfetti` (som de comemoração + reduced-motion).
+ *
+ * ⚠️ Quando o MESMO curso também entrega ferramenta nova (o curso que fecha um degrau), o
+ * ganho vem EMBUTIDO aqui (`tools`) em vez de abrir um segundo overlay: esta já é a festa
+ * grande, e a criança nunca encara três em fila (Mural → nível → gaveta). Decisão da
+ * usuária; o `ToolsCelebration` cuida do caso comum, em que só a gaveta muda.
  */
 export function LevelUpCelebration({
   level,
+  tools = null,
   onClose,
 }: {
   level: StudentLevelSlug
+  /** Ferramenta ganha no MESMO momento; `null` = só subiu de nível. */
+  tools?: ToolsGain | null
   onClose: () => void
 }) {
   const info = levelInfo(level)
@@ -32,7 +41,10 @@ export function LevelUpCelebration({
 
   return (
     <div
-      className="sz-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      /* Espelha o `Dialog` do ui: conteúdo alto ROLA em vez de sangrar para fora da
+         tela. Estas festas têm altura variável (as gavetas ganhas entram como chips) e,
+         numa janela baixa, o "Continuar" ficava fora de alcance. */
+      className="sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
       onClick={onClose}
       role="presentation"
     >
@@ -66,6 +78,12 @@ export function LevelUpCelebration({
           Agora você é {info.label}!
         </h2>
         <p className="mt-2 text-muted-foreground text-sm">{info.blurb}</p>
+
+        {tools ? (
+          <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">
+            🛠️ E tem mais: {toolsGainHeadline(tools)}
+          </p>
+        ) : null}
 
         <button
           type="button"

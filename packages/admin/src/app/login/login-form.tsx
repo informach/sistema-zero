@@ -94,7 +94,7 @@ export function LoginForm() {
             priority
           />
         </div>
-        <CardTitle className="sr-only">Sistema Zero — Admin</CardTitle>
+        <CardTitle className="sr-only">Admin | Sistema Zero</CardTitle>
         <CardDescription className="text-center">
           Entre com sua conta de administrador.
         </CardDescription>

@@ -317,6 +317,14 @@ export function exampleHarness(example: ExtensionExample, random: () => number =
       window.__capturedEnemyTypes.push(type);
       return type;
     };
+    // ⚠️ O atalho "com inteligência" também cria TIPO, e ficou de fora quando ele
+    // nasceu: um exemplo montado com ele deixava o harness cego para os inimigos.
+    var originalCreateSmartEnemyType = window.SZGame2D.createSmartEnemyType;
+    window.SZGame2D.createSmartEnemyType = function (options) {
+      var type = originalCreateSmartEnemyType(options);
+      window.__capturedEnemyTypes.push(type);
+      return type;
+    };
     var originalCreateStickPath = window.SZGame2D.createStickPath;
     window.SZGame2D.createStickPath = function () {
       var path = originalCreateStickPath.apply(window.SZGame2D, arguments);

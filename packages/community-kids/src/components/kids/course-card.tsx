@@ -4,7 +4,6 @@ import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { MyCourseView } from '@/lib/types'
-import { CourseLevelChip } from './course-level-chip'
 import { UNIT_THEME_CLASS, type UnitTheme } from './unit-theme'
 
 interface CourseCardProps {
@@ -56,11 +55,6 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
               <BookOpen className="size-10 text-muted-foreground" />
             </div>
           )}
-          <CourseLevelChip
-            level={course.level}
-            track={course.track}
-            className="absolute top-2 left-2"
-          />
         </div>
         <div className="flex flex-col gap-3 p-4">
           <div>

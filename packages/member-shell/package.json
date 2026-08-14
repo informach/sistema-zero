@@ -36,7 +36,7 @@
     "clsx": "^2.1.1",
     "jose": "^6.1.0",
     "lucide-react": "^0.546.0",
-    "pdfjs-dist": "^6.0.227",
+    "pdfjs-dist": "^6.2.108",
     "qrcode": "^1.5.4",
     "server-only": "^0.0.1",
     "sharp": "^0.35.3",

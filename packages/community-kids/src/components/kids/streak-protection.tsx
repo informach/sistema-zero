@@ -68,7 +68,7 @@ export function StreakProtection({
         body: JSON.stringify(clear ? { from: null, to: null } : { from, to }),
       })
       if (!res.ok) {
-        toast.error(clear ? 'Não consegui cancelar.' : 'Datas inválidas — confira o período.')
+        toast.error(clear ? 'Não consegui cancelar.' : 'Datas inválidas. Confira o período.')
         return
       }
       toast.success(clear ? 'Férias canceladas.' : 'Modo férias ativado! Bom descanso 🌴')
@@ -87,7 +87,7 @@ export function StreakProtection({
         <ShieldCheck className="size-5 text-primary" /> Proteja sua sequência
       </h2>
       <p className="text-muted-foreground text-sm">
-        Faltar um dia acontece! Protetores seguram a sua sequência — e o modo férias pausa tudo, sem
+        Faltar um dia acontece! Protetores seguram a sua sequência, e o modo férias pausa tudo, sem
         perder nada.
       </p>
 
@@ -154,8 +154,11 @@ export function StreakProtection({
                 type="button"
                 onClick={() => saveVacation(false)}
                 disabled={busy || !from || !to || invalidRange}
+                // `h-11` (44px) e não `h-9`: com o `.sz-btn-gradient` em `@layer components`
+                // a altura do call site finalmente VALE, e 36px ficaria abaixo do alvo de
+                // toque de mão pequena que o app segue nos demais controles.
                 className={cn(
-                  'sz-btn-gradient h-9 px-4 text-sm',
+                  'sz-btn-gradient h-11 px-4 text-sm',
                   (busy || !from || !to || invalidRange) && 'opacity-60',
                 )}
               >
@@ -176,7 +179,7 @@ export function StreakProtection({
             onClick={() => setPlanning(true)}
             className="inline-flex items-center gap-1.5 font-bold text-primary text-sm hover:underline"
           >
-            <Palmtree className="size-4" /> Vou viajar — ativar modo férias
+            <Palmtree className="size-4" /> Vou viajar, ativar o modo férias
           </button>
         )}
       </div>

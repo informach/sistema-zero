@@ -6,8 +6,10 @@ import {
   childGuideWelcomeSeenKey,
   childWelcomeSteps,
   clearGuideFlag,
+  type GuideWelcomeStepId,
   guideDismissedKey,
   guideWelcomeSeenKey,
+  hasActionableWelcomeStep,
   type ParentGuideInput,
   parentWelcomeSteps,
   readGuideFlag,
@@ -166,13 +168,16 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
     ).toBeNull()
   })
 
+  /** A explicação FIXA do app, na ordem em que a criança a lê. */
+  const EXPLICACAO: GuideWelcomeStepId[] = ['aulas', 'xp', 'criar', 'mural', 'carreira']
+
   it('boas-vindas de quem já estudou não promete uma primeira aula', () => {
     const steps = childWelcomeSteps({
       hasAvatar: false,
       hasCourseActivity: true,
       startAvailable: true,
     })
-    expect(steps.map((step) => step.id)).toEqual(['avatar', 'xp'])
+    expect(steps.map((step) => step.id)).toEqual(['avatar', ...EXPLICACAO])
     expect(steps.map((step) => step.text).join(' ')).not.toContain('primeira aula')
   })
 
@@ -182,19 +187,74 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
       hasCourseActivity: false,
       startAvailable: false,
     })
-    expect(steps.map((step) => step.id)).toEqual(['avatar', 'xp'])
+    expect(steps.map((step) => step.id)).toEqual(['avatar', ...EXPLICACAO])
   })
 
-  it('numera somente as ações que realmente faltam', () => {
+  it('mostra só as ações que faltam, na frente da explicação', () => {
     const steps = childWelcomeSteps({
       hasAvatar: true,
       hasCourseActivity: false,
       startAvailable: true,
     })
-    expect(steps).toEqual([
-      { id: 'start', emoji: '1️⃣', text: 'Toque em "Começar" e a sua primeira aula abre na hora.' },
-      { id: 'xp', emoji: '2️⃣', text: 'Cada aula e cada jogo que você cria valem XP e conquistas!' },
-    ])
+    expect(steps.map((step) => step.id)).toEqual(['start', ...EXPLICACAO])
+    expect(steps[0]).toEqual({
+      id: 'start',
+      emoji: '▶️',
+      text: 'Toque em "Começar" e a sua primeira aula abre na hora.',
+    })
+  })
+
+  /**
+   * ⚠️ O defeito de 14/08: quem já tinha avatar e já tinha estudado abria o "Como funciona"
+   * e recebia UMA linha sobre XP; o "Vamos lá" fechava e nada acontecia. A explicação do app
+   * agora existe sempre, e é ela que o botão entrega.
+   */
+  it('quem já fez tudo continua recebendo a explicação inteira do app', () => {
+    const steps = childWelcomeSteps({
+      hasAvatar: true,
+      hasCourseActivity: true,
+      startAvailable: true,
+    })
+    expect(steps.map((step) => step.id)).toEqual(EXPLICACAO)
+    expect(steps.length).toBeGreaterThan(3)
+  })
+
+  it('a modal só abre sozinha quando há AÇÃO a guiar, nunca por causa da explicação', () => {
+    const semAcao = childWelcomeSteps({
+      hasAvatar: true,
+      hasCourseActivity: true,
+      startAvailable: true,
+    })
+    expect(hasActionableWelcomeStep(semAcao)).toBe(false)
+
+    for (const comAcao of [
+      childWelcomeSteps({ hasAvatar: false, hasCourseActivity: true, startAvailable: true }),
+      childWelcomeSteps({ hasAvatar: true, hasCourseActivity: false, startAvailable: true }),
+    ]) {
+      expect(hasActionableWelcomeStep(comAcao)).toBe(true)
+    }
+  })
+
+  it('cada passo tem emoji próprio e nenhum é o ⭐ de sobra da numeração antiga', () => {
+    const steps = childWelcomeSteps({
+      hasAvatar: false,
+      hasCourseActivity: false,
+      startAvailable: true,
+    })
+    const emojis = steps.map((step) => step.emoji)
+    expect(new Set(emojis).size).toBe(steps.length)
+    expect(emojis).not.toContain('⭐')
+  })
+
+  it('a carreira fala de progresso sem prometer um posto por curso', () => {
+    const carreira = childWelcomeSteps({
+      hasAvatar: true,
+      hasCourseActivity: true,
+      startAvailable: true,
+    }).find((step) => step.id === 'carreira')
+
+    expect(carreira?.text).toContain('progresso')
+    expect(carreira?.text).not.toContain('um posto')
   })
 
   it('as chaves da criança são por PERFIL e independentes entre si', () => {

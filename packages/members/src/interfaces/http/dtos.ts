@@ -818,6 +818,7 @@ const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Lit
 // Nível (dificuldade) do curso — espelha o enum `course_level` do schema.
 // `lenda` = categoria fora da carreira (bônus da formatura, sempre careerSlot null).
 const COURSE_LEVEL = t.Union([
+  t.Literal('primeiros-passos'),
   t.Literal('iniciante'),
   t.Literal('intermediario'),
   t.Literal('avancado'),
@@ -862,6 +863,24 @@ const CourseBodyProperties = {
   // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
   // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
   careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
+  // Blocos que este curso LIBERA no Estúdio livre ao ser concluído + publicado no Mural
+  // (mesmo formato do `allowBlocks` da aula, só que no CURSO). Vira
+  // `metadata.studioUnlockBlocks`. AUSENTE **PRESERVA** a lista atual (régua do
+  // audience/level, não a do salesPageUrl): build antigo do admin não apaga currículo.
+  // `null`/`[]` limpa. A lista é a dos blocos que o curso USA, então repetir fundamentos de
+  // cursos anteriores é esperado: quem acumula é o ALUNO (a paleta é a união deduplicada dos
+  // cursos conquistados) e ele recebe só o que ainda não tinha. O teto é folgado de propósito
+  // (o catálogo do studio tem ~1467 blocos): um teto justo viraria erro de validação num
+  // curso grande. A existência de cada id é conferida pelo ADMIN contra o catálogo (o
+  // members não o importa).
+  studioUnlockBlocks: t.Optional(
+    t.Union([
+      t.Array(t.String({ minLength: 1, maxLength: 80, pattern: '^[A-Za-z0-9_]+$' }), {
+        maxItems: 3000,
+      }),
+      t.Null(),
+    ]),
+  ),
 }
 export const CourseBody = t.Object(CourseBodyProperties)
 /** PATCH exige a versão lida para impedir que uma aba antiga sobrescreva outra edição. */

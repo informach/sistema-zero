@@ -69,8 +69,8 @@ recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckou
 `/api/checkout/boleto`, sem ilha). `[audience]/index.astro`
 = landing de área (redireciona ao produto, ou "em breve" se vazia). **`/` (raiz,
 `src/pages/index.astro`) = página "bio" da marca kids** (destino do link da bio do Instagram
-@criecomhelenaejulio): tema kids, Zappy e dois botões 3D — "Descubra o perfil do seu filho" → quiz
-kids e "Desafio do Primeiro Jogo" → oferta kids (não redireciona mais). URLs planas antigas → 301
+@criecomhelenaejulio): tema kids, Zappy e três botões 3D — quiz kids, oferta do Desafio e oferta
+da Comunidade (não redireciona mais). URLs planas antigas → 301
 (config `redirects`).
 
 **Funil no lead + respostas (`leads.funnel` migration 0010; `leads.quiz_answers` jsonb migrations
@@ -169,7 +169,7 @@ por `billingIntervalMonths`, sem assumir qual é a principal da env). ⚠️ O f
 fallback (`COMUNIDADE_PRECO_FALLBACK`).
 
 **Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 37):** criança 9+ monta um
-jogo de nave em 3 dias; **comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
+jogo de nave em 5 dias; **comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
 Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a resposta da P1
 (`perfil_p1`, sem motor de scoring), `derive` = `horas_ano_calculadas = horas/dia × dias/semana × 52`,
 `renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. A oferta no catálogo
@@ -206,6 +206,20 @@ funil + coluna Funil; Perfis/Performance rotulam por funil (perguntas viram "Per
 - **Upsell/downsell:** rotas + flags + cadeia de `successPath` prontas (scaffolding; **404 até** um
   funil definir `upsell`/`downsell` no `FunnelDef`). A 2ª cobrança de um lead JÁ PAGO (guard
   `409 ALREADY_PAID` no checkout) será finalizada quando existir uma oferta de upsell real.
+
+## Copy do funil kids (guarda de vocabulário — decisão 14/08/2026)
+
+O filtro de público fala de COMPORTAMENTO observável (vive em jogo, computador e tecnologia; já
+cria no computador). **"hiperfoco"/"foco intenso"/"interesse intenso"/"concentração fora do comum"
+só podem existir na HISTÓRIA DO ANDRÉ**, delimitada por `<!-- historia-andre:inicio -->`/
+`<!-- historia-andre:fim -->` nos dois bodies de oferta (Desafio e Comunidade). O teste
+`tests/unit/copy-vocabulario.test.ts` varre `src/**` inteiro e reprova termo fora dos marcadores
+(regex tolerante a markup/plural/palavra no meio); todo bloco marcado precisa conter o André + o
+hiperfoco e ter <2k chars (marcador não é isenção genérica). Ao editar a história, mantenha os
+marcadores abraçando SÓ ela; um novo body que conte a história = marcar igual (a descoberta é
+automática). Os marcadores são comentários HTML e SAEM no HTML servido (inofensivo, consciente).
+Títulos de página usam **`Página | Sistema Zero`** (barra vertical; nada de travessão nem `·` em
+`<title>`/`seoTitle` — o byline visual "Helena e Júlio · Sistema Zero" mantém o `·`).
 
 ## Arquitetura (o padrão central — preserve-o)
 

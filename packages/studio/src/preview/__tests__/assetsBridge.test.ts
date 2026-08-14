@@ -297,6 +297,57 @@ describe('buildAssetsRuntime — __SZGAME_ASSET_META (mapa de tiles)', () => {
     expect(buildAssetsRuntime({ heroi: PNG })).not.toContain('__SZGAME_ASSET_META')
   })
 
+  it('⭐ a CAIXA de colisão viaja pelo mesmo cano, sem mapa nenhum', () => {
+    // Este cano só carregava `tilemap`; a caixa medida no Pinta entra por aqui e
+    // o runtime a aplica sozinho, sem a criança pôr um bloco.
+    const hitbox = { x: 0, y: 0.375, w: 1, h: 0.25 }
+    const runtime = buildAssetsRuntime({ nave: PNG }, { nave: { hitbox } })
+    expect(seededMeta(runtime)).toEqual({ nave: { hitbox } })
+  })
+
+  it('mapa E caixa no mesmo asset chegam juntos', () => {
+    const hitbox = { x: 0.1, y: 0.1, w: 0.8, h: 0.8 }
+    const runtime = buildAssetsRuntime({ x: PNG }, { x: { ...TILEMAP_META, hitbox } })
+    const meta = seededMeta(runtime) as Record<string, { tilemap?: unknown; hitbox?: unknown }>
+    expect(meta.x?.hitbox).toEqual(hitbox)
+    expect(meta.x?.tilemap).toBeTruthy()
+  })
+
+  it('⚠️ caixa torta é descartada e a entrada some se era só ela', () => {
+    // Espelho do sanitize do core (defesa em profundidade): fora do quadro, sem
+    // área, e não-número.
+    for (const hitbox of [
+      { x: 0.5, y: 0, w: 0.9, h: 1 },
+      { x: 0, y: 0, w: 0, h: 1 },
+      { x: -0.1, y: 0, w: 0.5, h: 1 },
+      { x: 'meio', y: 0, w: 0.5, h: 1 },
+    ]) {
+      const runtime = buildAssetsRuntime(
+        { nave: PNG },
+        {
+          nave: { hitbox } as unknown as { hitbox: { x: number; y: number; w: number; h: number } },
+        },
+      )
+      expect(runtime).not.toContain('__SZGAME_ASSET_META')
+    }
+  })
+
+  it('⚠️ mapa torto NÃO leva a caixa junto', () => {
+    // Antes o mapa inválido matava a entrada inteira por `continue`. Agora são
+    // dois filtros independentes, e a caixa sobrevive sozinha.
+    const hitbox = { x: 0.1, y: 0.1, w: 0.8, h: 0.8 }
+    const mau = {
+      tilemap: {
+        ...TILEMAP_META.tilemap,
+        tileset: { dataUrl: 'http://evil/x', width: 8, height: 8 },
+      },
+      hitbox,
+    }
+    const runtime = buildAssetsRuntime({ x: PNG }, { x: mau })
+    expect(runtime).not.toContain('evil')
+    expect(seededMeta(runtime)).toEqual({ x: { hitbox } })
+  })
+
   it('nome literal __proto__ no meta vira chave PRÓPRIA (doubly-encoded)', () => {
     // JSON.parse cria chave PRÓPRIA "__proto__" (um literal JS setaria o protótipo).
     const assets = JSON.parse(`{"__proto__": ${JSON.stringify(PNG)}}`)

@@ -7,7 +7,7 @@ import { CourseTrail } from '@/components/kids/course-trail'
 import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { resolveCourseBack } from '@/lib/course-return'
 import type { CourseDetailView, LessonOutlineView } from '@/lib/types'
-import { getGamificationReadonly, getMyCourse } from '@/server/members'
+import { getMyCourse } from '@/server/members'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,21 +35,17 @@ export default async function CoursePage({
   searchParams: Promise<{ de?: string }>
 }) {
   const [{ slug }, { de }] = await Promise.all([params, searchParams])
-  // `withRanking: true` casa a chave do `React.cache` com a do layout — 1 ida ao
-  // gateway por render, não 2. O nível só desempata a trilha do Iniciante 2D durante
-  // o rollout; gamificação fora → `null` e a volta segue pelo `careerSlot`.
-  const [{ status, body }, gam] = await Promise.all([
-    getMyCourse(slug),
-    getGamificationReadonly({ withRanking: true }),
-  ])
+  // A gamificação saiu daqui em 14/08: ela só existia para desempatar a trilha do
+  // Iniciante 2D, que era dividido entre Faísca e Construtor(a). Agora cada degrau tem
+  // um dono e o destino sai só do curso. (O layout segue buscando o que precisa.)
+  const { status, body } = await getMyCourse(slug)
   if (status === 404 || status === 403) notFound()
   if (status === 423) return <KidsLockedCourse reason={careerLockReason(body)} />
   if (status !== 200 || !body) throw new Error('Falha ao carregar o curso')
   const course = body
 
   const next = nextLesson(course)
-  const viewerLevel = gam.status === 200 ? (gam.body?.level?.slug ?? null) : null
-  const back = resolveCourseBack(de, course, viewerLevel)
+  const back = resolveCourseBack(de, course)
   const lessonHref = (l: LessonOutlineView) =>
     `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(l.id)}`
 

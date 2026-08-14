@@ -68,7 +68,7 @@ export interface BuildPreviewDocInput {
    * hoje só `tilemap`), semeado em `window.__SZGAME_ASSET_META` no MESMO script
    * do assetsBridge. Ausente/vazio = saída idêntica à de antes.
    */
-  assetsMeta?: Record<string, { tilemap: import('#core').ProjectTilemapMeta }>
+  assetsMeta?: Record<string, import('#core').ProjectAssetPreviewMeta>
   /**
    * Manifesto `nome → dataUrl` dos assets de ÁUDIO (`soundManifest` do core),
    * semeado em `window.__SZGAME_SOUNDS` no MESMO script do assetsBridge. O runtime

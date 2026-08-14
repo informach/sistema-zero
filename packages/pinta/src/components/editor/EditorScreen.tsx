@@ -15,6 +15,7 @@
  */
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
+import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { assetStyle, type PintaAsset } from '../../core/project'
@@ -36,7 +37,16 @@ import { updateTaskProgress } from '../../state/taskProgress'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { Button, IconButton, ToolButton } from '../ui/Button'
-import { ArrowLeft, ChevronDown, Download, Gamepad2, Redo2, Rocket, Undo2 } from '../ui/icons'
+import {
+  ArrowLeft,
+  ChevronDown,
+  Download,
+  Gamepad2,
+  Redo2,
+  Rocket,
+  Scaling,
+  Undo2,
+} from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession } from './editorContext'
@@ -44,6 +54,7 @@ import { LayerPanel } from './LayerPanel'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
+import { ResizeAssetDialog } from './ResizeAssetDialog'
 import { SpriteSheetPanel } from './SpriteSheetPanel'
 import { TilemapEditor } from './TilemapEditor'
 import { TileStrip } from './TileStrip'
@@ -63,13 +74,13 @@ function SaveBadge(): JSX.Element {
   const label =
     saveState === 'saved'
       ? COPY.editor.saved
-      : saveState === 'saving'
+      : saveState !== 'error'
         ? COPY.editor.saving
         : (saveError ?? COPY.editor.saveError)
   const tone =
     saveState === 'saved'
       ? 'text-pin-ok'
-      : saveState === 'saving'
+      : saveState !== 'error'
         ? 'text-pin-muted'
         : 'text-pin-danger'
   return (
@@ -264,10 +275,11 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   )
 }
 
-function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
+function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolean }): JSX.Element {
   const { adapter, gallery } = usePintaApp()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
+  const savedAsset = useEditor((state) => state.savedAsset)
   const canUndo = useEditor((state) => state.canUndo)
   const canRedo = useEditor((state) => state.canRedo)
   const animationId = useSession((state) => state.animationId)
@@ -275,8 +287,11 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   const editorState = useEditor((state) => state)
   const [sending, setSending] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [resizeOpen, setResizeOpen] = useState(false)
+  // `null` = kind que não muda de tamanho (peças: o tile é whitelist do motor).
+  const resizeTarget = resizeTargetOf(asset)
   const resynced = useStudioResync({
-    asset,
+    asset: savedAsset,
     animationId,
     frameIndex,
     gallery,
@@ -403,13 +418,25 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
 
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
-      <ToolButton icon={ArrowLeft} label={COPY.editor.back} onClick={onBack} />
+      <ToolButton
+        icon={ArrowLeft}
+        label={COPY.editor.back}
+        disabled={closing}
+        aria-busy={closing}
+        onClick={onBack}
+      />
       <span aria-hidden="true" className="text-xl">
         {kind.emoji}
       </span>
       <span className="pin-display mr-2 truncate text-lg" title={asset.name}>
         {asset.name}
       </span>
+      {resizeTarget ? (
+        <Button onClick={() => setResizeOpen(true)}>
+          <Scaling aria-hidden="true" className="size-4" />
+          {COPY.editor.resize.button(resizeTarget.width, resizeTarget.height)}
+        </Button>
+      ) : null}
       <IconButton
         aria-label={COPY.editor.undo}
         title={`${COPY.editor.undo} (Ctrl+Z)`}
@@ -453,6 +480,19 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
           </Button>
         ) : null}
       </div>
+      {resizeTarget ? (
+        <ResizeAssetDialog
+          open={resizeOpen}
+          onClose={() => setResizeOpen(false)}
+          asset={asset}
+          target={resizeTarget}
+          onResize={(next) => {
+            // UM commit: o tamanho é uma edição comum e o Ctrl+Z devolve tudo.
+            editorState.commit(next)
+            showToast(COPY.editor.resize.done)
+          }}
+        />
+      ) : null}
       <ExportDialog
         open={exportOpen}
         asset={asset}
@@ -497,20 +537,12 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
         persist: (saved, linked) => persistAssets([saved, ...linked]),
         persistErrorMessage: (error) =>
           isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError,
-        onSaved: (saved) => gallery.getState().absorb(saved),
-        // Assets ligados (mapas remapeados ao editar peças do tileset) restaurados
-        // por undo/redo: absorve na galeria; o editorStore persiste o conjunto
-        // atomicamente junto do tileset no mesmo ciclo do badge/flush.
-        applyLinkedAssets: (assets) => {
-          const g = gallery.getState()
-          for (const linked of assets) {
-            g.absorb(linked)
-          }
-        },
+        onSaved: (saved, linked) => gallery.getState().absorbMany([saved, ...linked]),
       }),
       session: createSessionStore(sessionDefaultsFor(asset)),
     }
   })
+  const [closing, setClosing] = useState(false)
 
   // Asset sumiu (apagado em outra aba / id inválido)? Volta pra galeria.
   useEffect(() => {
@@ -583,9 +615,21 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     <PintaEditorProvider value={stores}>
       <div className="flex min-h-0 flex-1 flex-col">
         <EditorTopbar
+          closing={closing}
           onBack={() => {
-            void stores.editor.getState().flush()
-            closeEditor()
+            if (closing) return
+            setClosing(true)
+            void stores.editor
+              .getState()
+              .flush()
+              .then((result) => {
+                if (result.ok) {
+                  closeEditor()
+                  return
+                }
+                setClosing(false)
+                showToast(result.error)
+              })
           }}
         />
         <EditorBodyBound />

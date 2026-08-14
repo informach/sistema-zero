@@ -19,6 +19,7 @@ export const {
   submitQuizAttempt,
   getGamification,
   getGamificationReadonly,
+  getStudioUnlocksReadonly,
   getChallengeReadonly,
   getAiCreditsReadonly,
   getAvatarReadonly,

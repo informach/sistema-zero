@@ -2,7 +2,7 @@ import 'server-only'
 import { getEnv } from '../lib/env'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { MembersClient } from './clients'
-import { hasCreativeAppsLevel, meetsCreativeAppsLevel } from './creative-apps-access'
+import { hasAiAppsLevel, meetsAiAppsLevel } from './creative-apps-access'
 
 interface ZappySession {
   role: string
@@ -25,7 +25,7 @@ export function isStudioZappyAllowed(
   if (!session) return false
   if (isPrivilegedRole(session.role)) return true
   if (!(policy ?? policyFromEnv()).enabled) return false
-  return meetsCreativeAppsLevel(levelSlug, session.role)
+  return meetsAiAppsLevel(levelSlug, session.role)
 }
 
 /** Mesma política para handlers que ainda precisam consultar o nível no members. */
@@ -37,5 +37,5 @@ export async function isStudioZappyAllowedForRequest(
   if (!session) return false
   if (isPrivilegedRole(session.role)) return true
   if (!(policy ?? policyFromEnv()).enabled) return false
-  return hasCreativeAppsLevel(members, session.role)
+  return hasAiAppsLevel(members, session.role)
 }

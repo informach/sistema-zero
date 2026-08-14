@@ -126,3 +126,48 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
     expect(remixRequirementFromSnapshot('lixo')).toEqual({ pro: false, extensions: [] })
   })
 })
+
+/**
+ * A paleta do Estúdio livre passou a vir do CURRÍCULO (08/2026): cada curso declara os
+ * blocos que libera e o aluno tem a união dos que concluiu + publicou. O NÍVEL continua
+ * decidindo o MODO (Estúdio livre, Ponte, Pro) e é o fail-open enquanto o catálogo não
+ * está etiquetado.
+ */
+describe('resolveStudioTier — paleta pelo currículo', () => {
+  const unlocks = {
+    blocks: ['sz_g2d_create_ship', 'sz_g2d_on_key'],
+    extensions: ['game-2d'],
+  }
+
+  test('currículo MANDA na paleta quando existe', () => {
+    const tier = resolveStudioTier('coder', undefined, unlocks)
+    expect(tier.allowBlocks).toEqual(unlocks.blocks)
+    expect(tier.allowedExtensions).toEqual(unlocks.extensions)
+  })
+
+  test('⭐ fail-open: currículo vazio cai no perfil do NÍVEL (paleta nunca fica vazia)', () => {
+    const semNada = resolveStudioTier('coder', undefined, { blocks: [], extensions: [] })
+    expect(semNada.allowBlocks).toEqual(ESSENTIAL_2D_ALLOW_BLOCKS)
+    expect(semNada.allowedExtensions).toEqual(['game-2d'])
+    // Sem o argumento é o mesmo caminho (build antigo / página que não busca).
+    expect(resolveStudioTier('coder', undefined).allowBlocks).toEqual(ESSENTIAL_2D_ALLOW_BLOCKS)
+  })
+
+  test('o NÍVEL segue decidindo o MODO, não a paleta', () => {
+    // Currículo pequeno num nível alto não tira a Ponte nem o Pro.
+    const lenda = resolveStudioTier('god', undefined, unlocks)
+    expect(lenda.allowBlocks).toEqual(unlocks.blocks)
+    expect(lenda.bridge).toBe(true)
+    expect(lenda.pro).toBe(true)
+    const construtor = resolveStudioTier('coder', undefined, unlocks)
+    expect(construtor.bridge).toBe(false)
+    expect(construtor.pro).toBe(false)
+  })
+
+  test('⚠️ a EQUIPE ignora o currículo (passe livre para conferir o Estúdio inteiro)', () => {
+    const staff = resolveStudioTier('noob', 'staff', unlocks)
+    expect(staff.pro).toBe(true)
+    expect(staff.allowBlocks).toBeUndefined()
+    expect(staff.allowedExtensions).toContain('game-3d-advanced')
+  })
+})

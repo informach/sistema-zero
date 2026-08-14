@@ -22,6 +22,8 @@ interface SZGameTileMapAssetMetadata {
     tileSize?: number
     tileset?: { dataUrl?: string }
   }
+  /** Caixa de colisão medida no desenho pelo Pinta, em fração do quadro. */
+  hitbox?: { x?: unknown; y?: unknown; w?: unknown; h?: unknown }
 }
 
 interface Window {
@@ -302,7 +304,11 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 1122 → 1135: +2 da receita vetorial compacta, +9 do carregador preguiçoso
   // de campanha (inclui elenco e jornada) e +2 da leitura de dados da fase. Eles substituem
   // milhares de blocos/objetos vivos no editor e no preview.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1135)
+  // 1135 → 1141: +5 da caixa de colisão medida no desenho (_artHitboxOf,
+  // _applyArtHitbox, _artBoxOf) e +1 do `_spriteFlipped`, que virou o DONO ÚNICO
+  // da regra de espelho (o desenho e a caixa liam duas réguas diferentes).
+  // Nenhum bloco novo: a caixa vem pela ponte.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1141)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

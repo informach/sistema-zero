@@ -169,7 +169,7 @@ describe('PintaApp — galeria', () => {
     }
   })
 
-  it('personagem com quadro PERSONALIZADO (campo único) nasce no tamanho digitado', async () => {
+  it('personagem com quadro PERSONALIZADO nasce DEITADO (largura ≠ altura)', async () => {
     render(<PintaApp />)
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
@@ -183,9 +183,14 @@ describe('PintaApp — galeria', () => {
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.newAsset.customSize.card) }))
     // Semeado da 1ª opção (o card de tipo pré-seleciona choices[0] = 16; o 32
     // do preferredSizeKeyFor é só do caminho da missão do Pensa).
-    const frame = screen.getByLabelText(COPY.newAsset.customSize.frame) as HTMLInputElement
-    expect(frame.value).toBe('16')
-    fireEvent.change(frame, { target: { value: '96' } })
+    // ⭐ Personagem deixou de ser QUADRADO. O preset semeia os DOIS campos com o
+    // mesmo número; aqui a criança faz uma NAVE: 128 de largura por 32 de altura.
+    const largura = screen.getByLabelText(COPY.newAsset.customSize.width) as HTMLInputElement
+    const altura = screen.getByLabelText(COPY.newAsset.customSize.height) as HTMLInputElement
+    expect(largura.value).toBe('16')
+    expect(altura.value).toBe('16')
+    fireEvent.change(largura, { target: { value: '128' } })
+    fireEvent.change(altura, { target: { value: '32' } })
     fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.next }))
     fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
       target: { value: 'gigante' },
@@ -200,8 +205,8 @@ describe('PintaApp — galeria', () => {
     const asset = check.getState().assets.find((a) => a.name === 'gigante')
     expect(asset?.kind).toBe('pixel-sprite')
     if (asset?.kind === 'pixel-sprite') {
-      expect(asset.frameWidth).toBe(96)
-      expect(asset.frameHeight).toBe(96)
+      expect(asset.frameWidth).toBe(128)
+      expect(asset.frameHeight).toBe(32)
     }
   })
 

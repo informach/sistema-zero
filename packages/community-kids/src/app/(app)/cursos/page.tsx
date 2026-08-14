@@ -2,25 +2,40 @@ import { CareerMap } from '@/components/kids/career-map'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsMascot } from '@/components/kids/mascot'
 import { unitThemeAt } from '@/components/kids/unit-theme'
-import { getGamificationReadonly, listCatalog } from '@/server/members'
+import { canOpenFreeStudio } from '@/lib/studio-cta'
+import { checkStudioAccessReadonly, getGamificationReadonly, listCatalog } from '@/server/members'
+import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * Mapa da Carreira (24/07): a página de cursos É o mapa — serpentina com os 8
+ * Mapa da Carreira (24/07): a página de cursos É o mapa — serpentina com os
  * níveis (Faísca→Lenda); clicar num nível liberado abre `/cursos/trilha/[level]`
  * com a listagem daquela trilha. Sem busca/filtros aqui (decisão da usuária).
  * Gamificação fora (`level` nulo) → cai na grade clássica simples (o mapa
- * precisa do nível p/ pintar os nós).
+ * precisa do nível p/ pintar os nós). O mapa desenha até o HORIZONTE do catálogo
+ * (ver `lib/career-horizon.ts`), por isso o `courses` vai junto.
  */
 export default async function CatalogPage() {
-  const [{ status, body }, gamification] = await Promise.all([
+  const [{ status, body }, gamification, studioRes, session] = await Promise.all([
     listCatalog(),
     getGamificationReadonly(),
+    // Posse do Estúdio Completo (produto vendido à parte): só com ela o estado
+    // "em dia" oferece criar um jogo. Best-effort — soluço só esconde o atalho.
+    checkStudioAccessReadonly().catch(() => null),
+    getSession(),
   ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const courses = body?.courses ?? []
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
+  // ⚠️ POSSE não basta: o Estúdio LIVRE só abre no Construtor (`freeStudio`). Uma Faísca
+  // com o produto comprado e o catálogo vazio cairia em "em dia" → "Criar um jogo meu" →
+  // tela de Estúdio bloqueado pela carreira. Clique morto — por isso o atalho exige as duas.
+  const studioOwned = canOpenFreeStudio(
+    studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
+    level?.slug,
+    session?.role,
+  )
 
   if (level) {
     return (
@@ -31,7 +46,17 @@ export default async function CatalogPage() {
             Sua jornada de Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
           </p>
         </div>
-        <CareerMap level={level} />
+        {/* Recorte de 3 campos: o mapa é CLIENTE e a view inteira mandaria título,
+            capa e URL de vendas de todos os cursos no payload para calcular o horizonte. */}
+        <CareerMap
+          level={level}
+          courses={courses.map((c) => ({
+            level: c.level,
+            track: c.track,
+            careerSlot: c.careerSlot,
+          }))}
+          studioOwned={studioOwned}
+        />
       </div>
     )
   }

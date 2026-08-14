@@ -33,11 +33,14 @@ export class GetGamificationService {
     // um membro da equipe que TAMBÉM comprou um curso se via ranqueado entre os clientes.
     const now = this.clock()
     const wantsRanking = opts.withRanking && !opts.privileged
-    const [profile, badges, ranking, qualifying] = await Promise.all([
+    const [profile, badges, ranking, qualifying, studioUnlockRevision] = await Promise.all([
       this.repo.getProfile(userId, opts.audience),
       this.repo.listBadges(userId, opts.audience),
       wantsRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
       this.repo.listQualifyingCareerSlots(userId, opts.audience),
+      opts.audience === 'kids'
+        ? this.repo.getStudioUnlockRevision(userId, opts.audience).catch(() => null)
+        : Promise.resolve(null),
     ])
     const today = localDateSaoPaulo(now)
     const unlockedBySlug = new Map(badges.map((b) => [b.badgeSlug, b.unlockedAt]))
@@ -88,6 +91,7 @@ export class GetGamificationService {
       })),
       // Nível do aluno (rank): derivado dos cursos qualificados (concluído + Mural).
       level: computeStudentLevel(qualifying),
+      ...(studioUnlockRevision ? { studioUnlockRevision } : {}),
       ...(ranking ? { ranking } : {}),
     }
   }

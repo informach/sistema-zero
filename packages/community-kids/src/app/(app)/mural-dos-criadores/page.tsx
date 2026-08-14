@@ -3,12 +3,14 @@ import {
   resolveStudioTier,
   type StudioTier,
 } from '@sistemazero/member-shell/lib/studio-tier'
+import { extensionsForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
 import { KidsLockedMural } from '@/components/kids/kids-locked-mural'
 import { KidsSpaceViewClient, type RemixTier } from '@/components/kids/kids-space-view-client'
 import {
   checkStudioAccessReadonly,
   getChallengeReadonly,
   getGamificationReadonly,
+  getStudioUnlocksReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -25,11 +27,14 @@ export default async function MuralPage() {
   // cards. Best-effort: soluço na checagem só esconde o botão (produto vendido à
   // parte). O tema do DESAFIO do mês alimenta a prateleira do topo — visível a quem
   // vê o Mural (participar é que exige Clube+Estúdio; ver não).
-  const [session, studioRes, challengeRes, gamRes] = await Promise.all([
+  const [session, studioRes, challengeRes, gamRes, unlocksRes] = await Promise.all([
     getSession(),
     checkStudioAccessReadonly().catch(() => null),
     getChallengeReadonly().catch(() => null),
     getGamificationReadonly({ withRanking: true }).catch(() => null),
+    // Paleta do CURRÍCULO: com ela o remix pergunta "o que você conquistou cobre este
+    // jogo?" em vez de "seu nível cobre?" — mais exato agora que a paleta não vem do nível.
+    getStudioUnlocksReadonly().catch(() => null),
   ])
   const ownsStudio =
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true
@@ -40,7 +45,11 @@ export default async function MuralPage() {
   if (ownsStudio) {
     const privileged = isPrivilegedRole(session?.role)
     if (gamRes?.status === 200 || privileged) {
-      tier = resolveStudioTier(gamRes?.body?.level?.slug ?? 'noob', session?.role)
+      const unlockedBlocks = unlocksRes?.status === 200 ? (unlocksRes.body?.blocks ?? []) : []
+      tier = resolveStudioTier(gamRes?.body?.level?.slug ?? 'noob', session?.role, {
+        blocks: unlockedBlocks,
+        extensions: extensionsForBlocks(unlockedBlocks),
+      })
     }
   }
   const remixTier: RemixTier | null =

@@ -81,6 +81,7 @@ import { SaveRoomService } from './application/room/save-room.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
 import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
+import { GetStudioUnlocksService } from './application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
 import { TeacherThreadsService } from './application/teacher-threads/teacher-threads.service'
@@ -115,6 +116,7 @@ import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizz
 import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/drizzle/renewal-reminder.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
+import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
 import { DrizzleTeacherThreadRepository } from './infrastructure/persistence/drizzle/teacher-thread.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
@@ -339,6 +341,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
   const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock, env.AVATAR_PHOTO_URL_PREFIXES)
   const roomRepo = new DrizzleRoomRepository(db)
+  const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
   const saveRoom = new SaveRoomService(roomRepo, clock, logger)
   const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, awardGamification, clock)
@@ -350,6 +353,8 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const getChallenge = new GetChallengeService(gamificationRepo, challengeConfigRepo, clock)
+  // Paleta do Estúdio livre pelo CURRÍCULO (união dos cursos concluídos+publicados).
+  const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
   const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
   const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock)
   const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
@@ -539,6 +544,7 @@ export async function createApplication(env: Env): Promise<Application> {
       saveCourseRating,
       getGamification,
       getChallenge,
+      getStudioUnlocks,
       getMissions,
       claimMission,
       recordRemix,

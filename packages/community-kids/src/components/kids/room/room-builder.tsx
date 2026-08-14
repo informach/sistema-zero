@@ -637,7 +637,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       {draft.placedItems.length > 0 ? (
         <div
           role="group"
-          aria-label="Peças no quarto — escolha uma e mova com as setas do teclado (R gira, Delete tira)"
+          aria-label="Peças no quarto. Escolha uma e mova com as setas do teclado (R gira, Delete tira)"
           className="flex flex-wrap gap-1.5"
         >
           {draft.placedItems.map((p, i) => {

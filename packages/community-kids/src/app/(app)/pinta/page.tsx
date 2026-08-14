@@ -1,4 +1,4 @@
-import { meetsCreativeAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
+import { meetsFreeCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
 import { KidsCareerLockedPinta } from '@/components/kids/kids-career-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
@@ -16,7 +16,10 @@ export const dynamic = 'force-dynamic'
  * locais ao navegador (IndexedDB por perfil) — zero backend próprio.
  *
  * São 4 estados: indisponível, sem o produto, produto comprado mas carreira abaixo
- * de Inventor(a), e acesso completo. A mesma ida também resolve o Estúdio.
+ * de Construtor(a), e acesso completo. A mesma ida também resolve o Estúdio.
+ *
+ * ⚠️ O Pinta abre junto com o Estúdio livre (Construtor(a)), NÃO com o Pensa/Zappy
+ * (Inventor(a)): desenhar não chama IA, então não há custo por uso a adiar.
  */
 export default async function PintaPage() {
   // `session.id` = o PERFIL ativo (kids) → a galeria do Pinta e a biblioteca
@@ -30,7 +33,7 @@ export default async function PintaPage() {
   const hasAccess = res.body?.access?.pinta === true
   if (!hasAccess) return <KidsLockedPinta />
   if (gam?.status !== 200) return <KidsPintaUnavailable />
-  if (!meetsCreativeAppsLevel(gam.body?.level?.slug, session?.role)) {
+  if (!meetsFreeCreationLevel(gam.body?.level?.slug, session?.role)) {
     return <KidsCareerLockedPinta />
   }
   const studioAvailable = canOpenPensaStudioTask({

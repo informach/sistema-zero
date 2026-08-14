@@ -31,6 +31,10 @@ import {
   FlipVertical2,
   Group,
   SendToBack,
+  SquaresExclude,
+  SquaresIntersect,
+  SquaresSubtract,
+  SquaresUnite,
   Trash2,
   Ungroup,
 } from '../../ui/icons'
@@ -53,6 +57,7 @@ export function VectorSelectionBar(): JSX.Element | null {
     moveOrder,
     groupSelected,
     ungroupSelected,
+    pathfinderSelected,
     duplicateSelected,
     removeSelected,
   } = useVectorEditor()
@@ -61,14 +66,25 @@ export function VectorSelectionBar(): JSX.Element | null {
   // e na mesma altura: as acoes de forma inteira (alinhar/ordem/agrupar) nao
   // valem para um no, e mostrar as duas coisas juntas so confunde.
   if (tool === 'reshape') {
-    if (!nodeTarget || !nodePath) return null
+    if (!nodeTarget) return null
     return (
       <div
         role="toolbar"
         aria-label={COPY.vector.nodeBar}
-        className="flex shrink-0 items-center gap-1 overflow-x-auto border-b-2 border-pin-border bg-pin-surface px-3 py-1"
+        className="flex min-h-11 shrink-0 items-center gap-1 pin-scroll-x overflow-x-auto border-b-2 border-pin-border bg-pin-surface px-3 py-1"
       >
-        <VectorNodeActions showHint />
+        {/* ⚠️ Sem pontos editáveis (retângulo, círculo, texto, figura, ou uma
+            mistura que virou mais de um pedaço) a faixa DIZ isso. Sumir sem
+            explicação lia como "quebrou", e depois do Misturar isso deixou de
+            ser raro: um resultado com furo tem dois sub-caminhos, e o
+            `toEditablePath` recusa vários `M` de propósito.
+            O `min-h-11` é load-bearing: sem ele o ramo da frase mede ~30px, a
+            faixa encolhe e o palco pula. */}
+        {nodePath ? (
+          <VectorNodeActions showHint />
+        ) : (
+          <span className="shrink-0 text-pin-muted text-sm">{COPY.vector.nodeUneditable}</span>
+        )}
       </div>
     )
   }
@@ -79,7 +95,7 @@ export function VectorSelectionBar(): JSX.Element | null {
     <div
       role="toolbar"
       aria-label={COPY.vector.selectionBar}
-      className="flex shrink-0 items-center gap-1 overflow-x-auto border-b-2 border-pin-border bg-pin-surface px-3 py-1"
+      className="flex shrink-0 items-center gap-1 pin-scroll-x overflow-x-auto border-b-2 border-pin-border bg-pin-surface px-3 py-1"
     >
       {/* Alinhar: 2+ formas alinham entre si; 1 forma alinha na TELA. */}
       <span className="mr-1 shrink-0 text-sm font-bold text-pin-muted">
@@ -156,6 +172,43 @@ export function VectorSelectionBar(): JSX.Element | null {
         disabled={!single}
         onClick={() => moveOrder('back')}
       />
+
+      {/* MISTURAR (o pathfinder). O bloco INTEIRO é gated pelo mesmo gatilho do
+          Agrupar logo abaixo, e não cada botão: um gatilho só significa UMA
+          mudança de layout, então a lixeira desliza uma vez em vez de duas, e
+          com uma forma selecionada a faixa fica exatamente a de hoje.
+          Os quatro ficam sempre HABILITADOS: quem avisa é o toast, porque botão
+          morto não ensina o que fazer a seguir.
+          Nunca `flex-wrap`: a faixa não pode crescer em altura; quem não couber
+          vai para o `overflow-x-auto` que ela já tem. */}
+      {selected.length >= 2 ? (
+        <>
+          <Divider />
+          <span className="mr-1 shrink-0 font-bold text-pin-muted text-sm">
+            {COPY.vector.pathfinderTitle}
+          </span>
+          <ToolButton
+            icon={SquaresUnite}
+            label={COPY.vector.selUnite}
+            onClick={() => pathfinderSelected('unir')}
+          />
+          <ToolButton
+            icon={SquaresSubtract}
+            label={COPY.vector.selMinusFront}
+            onClick={() => pathfinderSelected('menos-frente')}
+          />
+          <ToolButton
+            icon={SquaresIntersect}
+            label={COPY.vector.selIntersect}
+            onClick={() => pathfinderSelected('intersecao')}
+          />
+          <ToolButton
+            icon={SquaresExclude}
+            label={COPY.vector.selExclude}
+            onClick={() => pathfinderSelected('excluir')}
+          />
+        </>
+      ) : null}
 
       <Divider />
 

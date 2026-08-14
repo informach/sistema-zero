@@ -1,7 +1,50 @@
 import { describe, expect, it } from 'bun:test'
-import { handleDialogDocumentFocusIn, handleDialogDocumentKeyDown } from './Dialog'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { useState } from 'react'
+import { Dialog, handleDialogDocumentFocusIn, handleDialogDocumentKeyDown } from './Dialog'
 
 describe('Dialog', () => {
+  it('Escape fecha só o modal do topo e devolve o foco em duas etapas', () => {
+    function NestedDialogs() {
+      const [parentOpen, setParentOpen] = useState(false)
+      const [childOpen, setChildOpen] = useState(false)
+      return (
+        <>
+          <button type="button" onClick={() => setParentOpen(true)}>
+            abrir pai
+          </button>
+          <Dialog open={parentOpen} onClose={() => setParentOpen(false)} title="modal pai">
+            <button type="button" onClick={() => setChildOpen(true)}>
+              abrir filho
+            </button>
+            <Dialog open={childOpen} onClose={() => setChildOpen(false)} title="modal filho">
+              conteúdo filho
+            </Dialog>
+          </Dialog>
+        </>
+      )
+    }
+
+    render(<NestedDialogs />)
+    const outerTrigger = screen.getByRole('button', { name: 'abrir pai' })
+    outerTrigger.focus()
+    fireEvent.click(outerTrigger)
+    const childTrigger = screen.getByRole('button', { name: 'abrir filho' })
+    childTrigger.focus()
+    fireEvent.click(childTrigger)
+    expect(screen.getByRole('dialog', { name: 'modal filho' })).toBeTruthy()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(screen.queryByRole('dialog', { name: 'modal filho' })).toBeNull()
+    expect(screen.getByRole('dialog', { name: 'modal pai' })).toBeTruthy()
+    expect(document.activeElement).toBe(childTrigger)
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: 'modal pai' })).toBeNull()
+    expect(document.activeElement).toBe(outerTrigger)
+  })
+
   it('listeners do documento recuperam foco e mantêm Tab/Shift+Tab dentro do modal', () => {
     const background = document.createElement('button')
     const card = document.createElement('div')

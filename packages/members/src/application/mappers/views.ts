@@ -172,6 +172,8 @@ export interface LessonCompleteView extends CourseProgressView {
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
   xp: number
+  /** Revisão curta das ferramentas do Estúdio; presente na vitrine kids. */
+  studioUnlockRevision?: string
   /**
    * Carteira Zappy Coins (saldo gastável). Segregada por vitrine, como o XP.
    * `unlimited` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞.
@@ -470,6 +472,25 @@ export interface CareerCourseLockView {
 export function resolveSalesPageUrl(course: Course): string | null {
   const raw = course.metadata?.salesPageUrl
   return typeof raw === 'string' && raw.length > 0 ? raw : null
+}
+
+/**
+ * Blocos que ESTE curso libera no Estúdio livre quando o aluno o conclui E publica
+ * no Mural — `metadata.studioUnlockBlocks` (jsonb, SEM migração; mesmo padrão do
+ * `salesPageUrl`). É o mesmo formato da lista `allowBlocks` da aula, só que no CURSO:
+ * a paleta do aluno passa a ser a UNIÃO dos cursos que ele já conquistou, em vez de
+ * um conjunto fixo por nível. Lista vazia/ausente = este curso não libera nada (e o
+ * aluno segue com o perfil do nível — ver `resolveStudioTier` no member-shell).
+ * Tolerante a lixo: só strings não-vazias entram, e a ordem é preservada sem repetir.
+ */
+export function resolveStudioUnlockBlocks(course: Course): string[] {
+  const raw = course.metadata?.studioUnlockBlocks
+  if (!Array.isArray(raw)) return []
+  const seen = new Set<string>()
+  for (const item of raw) {
+    if (typeof item === 'string' && item.length > 0) seen.add(item)
+  }
+  return [...seen]
 }
 
 /** Classificação do curso feita pelo aluno (nota 1–5 em passos de 0.5). */

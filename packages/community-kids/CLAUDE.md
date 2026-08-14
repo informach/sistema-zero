@@ -39,7 +39,8 @@ CSP-safe): botão QrCode no `PlayLinkActions` dos cards do Mural → cartão imp
 título + QR do `/jogar/<id>`; imprimir usa `body[data-print='game-card']` + regra `@media print`
 no globals.css). **`/estudio` gated pelo RANK:** `studio-full-client` passa
 `level`/`allowedModes` derivados da carreira via `resolveStudioTier` (member-shell) ao
-`StudioEditor` — cada nível libera o degrau de blocos que vai estudar (escada 2D/3D de 6).
+`StudioEditor` — o nível decide o MODO do editor; os BLOCOS vêm do currículo (ver a seção
+abaixo).
 Home com mascote + card-herói "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
 (`course-trail.tsx` + `trail-layout.ts` puro/testado: módulo = unidade temática
 cyan→lime→rosa→verde→gradiente via `unit-theme.ts` (nomes históricos; hoje azul→laranja→rosa→
@@ -103,6 +104,70 @@ recap, pois o `<button>` só aceita conteúdo inline; imagens limitadas por `[&_
 **Gamificação REAL implementada
 (11/06/2026)** — ver §"Gamificação estilo Duolingo" abaixo; nada fake, estado no members.
 
+## ⚠️ Classe de componente no `globals.css` vai em `@layer components`
+
+CSS **sem camada vence QUALQUER camada** — inclusive `@layer utilities`, onde moram as
+utilitárias do Tailwind. Enquanto `.sz-btn-gradient` ficou solta no arquivo, ela ganhava de
+tudo: `sz-btn-gradient h-11 px-6 text-base` renderizava **40px / 18px / 14px**, ou seja, as três
+utilitárias eram LETRA MORTA em ~20 CTAs (e os botões ficavam abaixo do alvo de toque de 44px que
+o app segue nos demais controles). Não era specificity: as duas são `(0,1,0)` — era a camada.
+
+Agora ela vive em **`@layer components`** e o default virou **44px** (call site sem `h-*` já nasce
+acessível). **Regra para este arquivo:** classe que existe para ser ajustada no call site (tamanho,
+espaçamento, tipografia) pertence a `@layer components`; deixá-la solta transforma todo `className`
+do consumidor em mentira silenciosa. ⚠️ O mesmo defeito segue no `.sz-btn-gradient` do
+**community adulto** (`packages/community/src/app/globals.css`) — lá só 1 dos 4 usos passa altura,
+então o estrago é pequeno, mas a armadilha é a mesma.
+
+## A trilha da Faísca é um degrau de verdade (14/08)
+
+O curso-base saiu do Iniciante 2D e virou o degrau **`primeiros-passos-2d`** (1 posição + bônus).
+Antes a divisão Faísca × Construtor(a) era só APRESENTAÇÃO — o `LEVEL_STUDY` fatiava o mesmo degrau
+por `careerSlot` —, e por isso a Faísca **não podia ter curso bônus**: todo bônus do Iniciante 2D
+caía na trilha do Construtor(a). Agora **cada nível é dono de um degrau inteiro**, o que apagou três
+remendos de uma vez:
+- `coursesForLevel` perdeu o desvio "sem curso-base marcado, mostra o degrau inteiro" (ele existia
+  para a Faísca não ficar vazia com o catálogo não etiquetado);
+- `trilhaHrefForCourse` (`lib/course-return.ts`) perdeu o desempate por `careerSlot` + nível do
+  aluno e virou `degrau → dono`;
+- a página do curso parou de buscar a gamificação só para esse desempate.
+
+⭐ **Efeito colateral bom:** com 1 posição só, o degrau da Faísca fica CHEIO com o curso que já
+existe — então a regra "não diga quanto falta enquanto o degrau não tem todos os cursos" para de
+silenciar ali, e a criança volta a ler *"Falta 1 curso para você virar Construtor(a)"*, que é verdade.
+
+## Vocabulário do ALUNO × vocabulário da EQUIPE (08/2026)
+
+O aluno nunca lê a linguagem com que a gente MONTA o curso. Três termos são internos e não podem
+aparecer na área da criança: **"curso-base"**, **"etapa"** e os nomes de degrau (**"Iniciante 2D"**,
+"Avançado 3D"…). Para a criança, trilha se chama pelo POSTO dela: **"Trilha Faísca"**, **"Trilha
+Construtor(a)"**. `courseTierOf`/`COURSE_TIER_LABELS` seguem vivos como LÓGICA (horizonte, trava,
+admin) — o que saiu foi a exibição. O `course-level-chip.tsx` (selo "Iniciante 2D" na capa do card)
+foi APAGADO por isso.
+
+⚠️ **Nunca dizer quanto falta para o próximo posto enquanto o degrau não tem todos os cursos
+publicados** (1 em Primeiros Passos, 7 no Iniciante 2D, 8 nos demais). Com o
+degrau pela metade, "faltam 2 para virar Inventor(a)" é mentira: a criança fecha os 2 e não sobe.
+`careerProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
+`remaining` do members vira verdade e a frase volta sozinha. O retorno por curso nesse meio-tempo é
+a GAVETA nova no Estúdio. As bolinhas do nó ficam, mas falam do que EXISTE ("1 de 3 aventuras
+prontas"), nunca do que falta para subir.
+
+⚠️ **O POSTO não anuncia mais kit de blocos.** Desde a reforma do currículo (08/2026) quem entrega
+ferramenta é o CURSO; o posto entrega MODO (livre → Ponte → Pro) e PRODUTO (Estúdio+Pinta no
+Construtor(a), Pensa+Zappy no Inventor(a)). Por isso três postos do meio (Explorador(a), Mestre,
+Arquiteto(a)) anunciam só "um posto novo no mapa" — porque é o que eles dão de verdade.
+`CAREER_REWARD_INFO` (`lib/career-rewards.ts`) é a copy e `tests/career-rewards-conformance.test.ts`
+trava as promessas contra o core E contra as constantes dos portões (inclusive proibindo nome de kit).
+
+⚠️ **Copy sem travessão (—)**: é marca de texto de IA e a voz da casa é humana. Travado por
+`tests/copy-sem-travessao.test.ts`, que lê o `src/`, descarta comentários (esses são nossos) e falha
+com arquivo:linha se sobrar travessão em texto visível, `aria-label` ou `<title>`. O teste também
+assere que LEU arquivos — guarda que não lê nada aprova tudo, em silêncio. O irmão
+**`tests/copy-vocabulario.test.ts`** faz o mesmo com o JARGÃO ("curso-base", "etapa", "Iniciante 2D"),
+que já tinha voltado duas vezes por componente novo; os dois dividem a máquina de estados em
+`tests/helpers/copy-scan.ts`.
+
 ## A regra de ouro: quase tudo vem do member-shell
 
 TODO o BFF (sessão/gateway/refresh/mídia/marca d'água/clients), a LÓGICA dos route handlers, o
@@ -165,8 +230,17 @@ volta numa nova sessão) + passo `start` (nenhuma aula aberta/concluída E
 `pickContinueCourse` ≠ null → balão arrow-down apontando o "Começar" do herói + "Entendi").
 Resolver puro `resolveChildGuideStep` em `lib/guide.ts` (avatar PRIMEIRO — ordem da usuária; os
 passos somem SOZINHOS quando a coisa acontece: montou avatar/abriu aula). O modal usa
-`childWelcomeSteps`: lista e renumera somente o que ainda falta (não promete "primeira aula" para
-quem já estudou nem aponta "Começar" sem curso liberado). Sinais 100% derivados
+`childWelcomeSteps`: as AÇÕES que ainda faltam (não promete "primeira aula" para quem já estudou
+nem aponta "Começar" sem curso liberado) **seguidas da explicação FIXA do app** (aulas, XP/foguinho,
+Estúdio, Mural, carreira).
+⚠️ **A explicação fixa é o conserto de 14/08:** antes só existiam os passos condicionais, então quem
+já tinha avatar e já tinha estudado abria "Como funciona?", lia UMA linha sobre XP e o "Vamos lá"
+fechava sem nada acontecer — o botão prometia o que o app não tinha. Duas regras nasceram daí:
+(a) `hasActionableWelcomeStep(steps)` decide o **auto-abrir** (a explicação sozinha NUNCA abre a
+modal na cara de quem já sabe tudo) e (b) decide o **rótulo do CTA** (`GuideWelcomeDialog` ganhou
+`continueLabel`): "Vamos lá! 🚀" só quando há balão a revelar, senão "Entendi!". A numeração
+1️⃣2️⃣3️⃣ SAIU (com 5 a 7 itens ela acabava e virava ⭐ no meio da lista); cada passo tem emoji
+temático. Sinais 100% derivados
 do que a home JÁ busca (`avatarPhotoUrl`, `courses[].progress`) — zero fetch novo; falha ao buscar
 avatar vira estado `null` (desconhecido) e não dispara convite falso. O
 `GuideWelcomeDialog` virou GENÉRICO (`title`/`description`/`steps`/`onSkip?`; os pais injetam
@@ -287,9 +361,12 @@ a rota `GET /members/access` curto-circuita `estudio-completo` p/ `true` quando 
 estúdio". `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
 effect — Monaco/Blockly/IndexedDB não rodam no SSR) hospeda a navegação **lista ⇄ editor** (estado
 local; o package não tem router) com `<ProjectList>` + `<StudioEditor persistence="local">` — recursos
-controlados por `resolveStudioTier(levelSlug, role)`. O produto comprado não basta: Faísca usa apenas
-as aulas; Construtor abre o Estúdio livre; cada rank recebe allowlist acumulada de extensões e blocos;
-Ponte abre no Mestre; Pro e "Promover para Pro" abrem somente na Lenda/equipe. Projeto importado com
+controlados por `resolveStudioTier(levelSlug, role, unlocks?)`. O produto comprado não basta: Faísca usa
+apenas as aulas; **Construtor(a) abre o Estúdio livre e o Pinta**; **Inventor(a) abre o Pensa e o Zappy**
+(são os que CHAMAM IA, e o custo por uso é o motivo de adiar); a **Ponte abre no Gênio** (saiu do Mestre
+em 26/07) e o Pro e "Promover para Pro" abrem somente na Lenda/equipe. As duas barras vivem em
+`AI_APPS_MIN_LEVEL` e `FREE_CREATION_MIN_LEVEL` (member-shell `lib/studio-tier.ts`) — eram uma só até
+14/08, e por isso o Pinta ficava preso junto com a IA. Os BLOCOS não dependem mais do rank. Projeto importado com
 extensão futura é preservado, mas não abre antes da conquista. A matriz exata está em
 `docs/carreira-do-criador.md`. O modo Pro livre usa WebContainer local na rota dedicada; atividades Pro
 de aula usam `proRuntime` remoto via `/api/studio/pro-runtime/build`, com autorização do curso e template
@@ -326,6 +403,37 @@ best-effort `POST /api/studio/activity` (shim `shell.routes.studioActivityDay`, 
 sem corpo) → o members dá **10 XP/dia** que MOVE o streak (gated por posse do Estúdio, dedupe 1×/dia). No
 sucesso, `router.refresh()` acende o foguinho/XP/ranking na hora. É a âncora de quem já terminou os cursos
 e só cria (sem publicar). Ver members §Missões "Retenção pós-cursos" (migration `0045`).
+
+## Ferramentas do Estúdio vêm dos CURSOS (currículo, 08/2026)
+
+A paleta do Estúdio livre deixou de ser fixa por NÍVEL: cada curso declara os blocos que libera e a
+criança tem a UNIÃO dos que **concluiu E publicou no Mural**. O nível segue decidindo o MODO
+(livre/Ponte/Pro). No kids isso aparece em três lugares:
+- **`/estudio`**: a página soma `getStudioUnlocksReadonly()` ao `Promise.all` e passa
+  `{blocks, extensions: extensionsForBlocks(blocks)}` ao `resolveStudioTier`. Best-effort — falhar
+  NÃO esvazia a caixa (o tier cai no perfil do nível).
+- **`/mural-dos-criadores`**: o mesmo, p/ o remix perguntar "o que você conquistou cobre este jogo?"
+  em vez de "seu nível cobre?".
+- **`/perfil` → `my-tools.tsx` (`MyTools`)**: "Minhas ferramentas", as GAVETAS conquistadas
+  (`drawersForBlocks` — 🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…). Gaveta é o que torna a recompensa
+  legível p/ criança; lista de ids não é. Sem nenhuma, a seção some.
+- **Comemoração no MOMENTO em que ganha** — `celebration-watcher.tsx` (ex-`level-up-watcher`, export
+  `CelebrationWatcher`) montado no layout pelo `CelebrationChrome`. ⚠️ **Watcher ÚNICO de propósito:**
+  nível e ferramenta chegam no MESMO refresh (o curso que fecha um degrau faz as duas), e dois
+  watchers independentes abririam dois overlays sem saber um do outro — em cima da `MuralCelebration`
+  viraria fila de TRÊS. A decisão da usuária foi FUNDIR: subiu de nível → `LevelUpCelebration` com o
+  ganho embutido (prop `tools`); só ganhou gaveta → `tools-celebration.tsx` (o caso comum, 7 de cada 8
+  cursos). Detecção PURA em `lib/tools-gain.ts` (`diffDrawers`/`toolsGainHeadline`), comemorando gaveta
+  NOVA **e** gaveta que CRESCEU (sem a 2ª, curso que só aprofunda passaria em silêncio).
+  ⚠️ Duas chaves de localStorage por PERFIL — `sz:kids:level:<id>` (a de sempre) e `sz:kids:tools:<id>`
+  (mapa gaveta→contagem) — **gravadas mesmo sem comemorar**, senão a diferença se repete a cada
+  navegação e a festa vira loop; 1ª carga registra e NÃO comemora (nada de festa retroativa); queda de
+  contagem é ignorada. ⚠️ O payload é barato porque as GAVETAS são derivadas no SERVIDOR
+  (`drawersForBlocks` no `CelebrationChrome`, dentro do `<Suspense>` que transmite): ~25 nomes curtos
+  atravessam, não a lista de blocos. ⚠️ Confete SEM som no overlay da gaveta (vem logo depois da
+  `MuralCelebration`, que já tocou; o som fica onde é raro). Sem o produto Estúdio → `drawers: []`
+  (não se comemora ferramenta que a criança não pode abrir; a conquista fica guardada).
+  Testes: `tests/tools-gain.test.ts` + `tests/celebration-watcher.test.tsx` (a regra da fusão).
 
 ## Ranking/foguinho ao vivo (sem deslogar) — 07/2026
 
@@ -523,16 +631,10 @@ não tinha saída nenhuma. A origem viaja em **`?de=`** (allowlist, mesma régua
 `resolveAvatarReturnPath` — `?de=` vem da URL, então valor desconhecido cai no default em silêncio),
 emitida SÓ pelas duas saídas da home (`course-card.tsx` e o `courseHref` do `continue-hero.tsx`).
 Sem ela — link direto, favorito, volta da aula, card da trilha — o destino é a **trilha DONA do
-curso**, resolvida por `lib/course-return.ts` (`trilhaHrefForCourse`/`resolveCourseBack`, puros):
-⚠️ não basta o degrau, porque o **Iniciante 2D é DIVIDIDO** (`LEVEL_STUDY`) — `careerSlot === 1` →
-Faísca, o resto e os bônus → Construtor; mandar para o nível errado joga a criança numa lista que
-não tem o curso dela. `lenda` → trilha da Lenda; curso sem `level` (members antigo) → o mapa
-(`/cursos`), nunca uma tela sem saída. ⚠️ **O `careerSlot` sozinho não basta durante o ROLLOUT**:
-enquanto a etapa não tem curso-base etiquetado, o `coursesForLevel` NÃO divide (fail-open) e os dois
-níveis listam o degrau inteiro — dividir pelo slot ali manda uma Faísca para a trilha do Construtor,
-que o mapa mostra com cadeado. Por isso a página passa o **nível do aluno** (de
-`getGamificationReadonly({withRanking:true})`, que casa a chave do `React.cache` com a do layout —
-zero ida extra ao gateway) e o desempate só SOBE, nunca rebaixa a trilha do curso-base. Testes:
+curso**, resolvida por `lib/course-return.ts` (`trilhaHrefForCourse`/`resolveCourseBack`, puros).
+Desde 14/08 cada degrau tem um único dono: Primeiros Passos → Faísca, Iniciante 2D → Construtor(a)
+e assim por diante. `lenda` → trilha da Lenda; curso sem `level` válido → mapa (`/cursos`), nunca uma
+tela sem saída. A página não precisa mais buscar gamificação para desempatar a volta. Testes:
 `tests/course-return.test.ts`.
 
 ## Bloco "Em breve" na aula (`coming_soon`, 08/2026)
@@ -740,7 +842,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `future-tier` ("Em breve na sua carreira"); deep-link em curso travado cai no 423 →
   `KidsLockedCourse` com copy por motivo (`careerLockReason`, testado em
   `tests/career-lock-reason.test.ts`).
-  **MAPA DA CARREIRA em /cursos (24/07; FITA + divisão por slot + medalhões grandes 24/07):** a
+  **MAPA DA CARREIRA em /cursos (24/07; FITA + medalhões grandes):** a
   página de cursos é o MAPA — os 8 níveis ligados por uma **FITA curva CONTÍNUA** (SVG) que
   serpenteia entre eles; a parte conquistada acende no **degradê das cores dos níveis**
   (`--level-<slug>`) e a parte à frente fica apagada com cadeado (≠ a antiga linha reta tracejada,
@@ -757,16 +859,33 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   casos especiais do 1º lote: fundo em DEGRADÊ no `god` [corte por cor de fundo POR LINHA] e brilhos
   VERDES pintados pela IA em `god`/`elite`/`noob` [hue girado p/ o acento do nível]); nível não
   atingido = `grayscale` + cadeado e NÃO navega (wiggle + toast); liberado → **rota
-  `/cursos/trilha/[level]`** (por SLUG DO NÍVEL, não mais por degrau — resolve a colisão noob/coder;
-  o segmento estático `trilha` NÃO colide com `/cursos/[slug]`). **A trilha DIVIDE o degrau por
-  `careerSlot` (`coursesForLevel`):** Faísca (noob) mostra SÓ o curso-base (slot 1), Construtor
-  (coder) o resto (2–8) + o bônus, e os níveis de degrau único (hacker→champion) o degrau inteiro.
-  **Fail-open de rollout:** etapa sem curso-base marcado (nenhum `careerSlot === 1`) → NÃO divide,
-  mostra o degrau inteiro (espelha `foundationAvailable` do core → Faísca nunca fica vazia até
-  etiquetar base=1/resto=2–8 no admin). O `LEVEL_STUDY` do kids é ESPELHO da escada do core
+  `/cursos/trilha/[level]`** (por SLUG DO NÍVEL, não por degrau; o segmento estático `trilha` NÃO
+  colide com `/cursos/[slug]`). **Cada trilha mostra o degrau inteiro do seu posto**, bônus incluso:
+  Faísca → Primeiros Passos, Construtor(a) → Iniciante 2D e assim por diante. O `LEVEL_STUDY` do kids é ESPELHO da escada do core
   (`CREATOR_CAREER_LEVELS`), travado por `tests/career-conformance.test.ts`. Deep-link em trilha
   bloqueada → recado gentil (`trilhaLocked` por nível, escape p/ EQUIPE: algum curso liberado →
   nunca mura). Gamificação fora → grade clássica.
+  ⭐ **HORIZONTE DO CATÁLOGO (08/2026) — `lib/career-horizon.ts` (puro) + `tests/career-horizon.test.ts`:**
+  a carreira exige 48 cursos (1 + 7 + 8×5, em 7 degraus) e o catálogo real tem punhados, então o mapa dizia
+  "faltam 7 cursos" de cursos que ninguém gravou e mostrava 6 medalhões com CADEADO — que para
+  criança significa "você não fez o suficiente". Agora o mapa desenha **só até onde o catálogo
+  consegue levar** (`careerHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
+  fecha com o **nó "E tem muito mais pela frente"** (`career-horizon-node.tsx`: arte da Lenda,
+  martelinho no lugar do cadeado; tocar balança o nó e mostra um toast dizendo que essa parte está
+  em construção). O contador do nó atual conta **só o que existe** (`careerProgress` → bolinhas + "1 de 3
+  cursos"); nada pronto a fazer → "Você está em dia!" + atalho p/ `/estudio` (só com posse — produto
+  à parte). ⚠️ **Nenhum espelho novo do core:** `requiredSlots[nível_i] = ∪ LEVEL_STUDY[j].slots
+  p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `career-conformance` é herdada.
+  ⚠️ **Catálogo `null` (a busca FALHOU) ≠ catálogo vazio:** `null` não restringe nada (cai na visão
+  definitiva), senão um soluço de rede tiraria postos conquistados da tela; vazio é informação real
+  e encolhe. **A visão provisória se dissolve SOZINHA:** catálogo completo → horizonte `god` → os 8
+  medalhões de sempre e o nó de fechamento some (travado no teste "catálogo COMPLETO"). Consomem o
+  horizonte: `/cursos`, `/cursos/trilha/[level]`, `/perfil` (`career-timeline`, que colapsa os postos
+  além do horizonte em UMA linha) e a home (`creator-career-card`). ⚠️ A frase "falta N curso…" tem
+  UMA fonte só — `nextLevelHintWithin` no `career-horizon.ts`; o antigo `nextLevelHint` do
+  `level-info.ts` foi REMOVIDO (era a mesma frase sem o limite do catálogo, e duplicata de frase já
+  drifou 2× neste arquivo). ⚠️ O `<ol>` do mapa leva `mb-10`: a legenda do ÚLTIMO nó é absoluta e cai
+  ~42px ABAIXO da caixa, e sem a margem o bloco "em dia" entra por cima dela (medido, 10px).
   ⚠️ O catálogo com filtros MORREU no kids: `course-catalog-client.tsx`/`catalog-filter-bar.tsx`/
   `lib/use-catalog-filters.ts` REMOVIDOS (o hook segue no member-shell p/ o community adulto). **COMEMORAÇÃO de SUBIDA de nível:**
   `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,

@@ -30,7 +30,9 @@ const levelView = (slug: StudentLevelView['slug']): StudentLevelView =>
 describe('career-map (regras puras do Mapa da Carreira)', () => {
   test('LEVEL_TIER espelha o learningTier do core (todos os níveis mapeados)', () => {
     expect(Object.keys(LEVEL_TIER)).toEqual([...LEVEL_ORDER])
-    expect(LEVEL_TIER.noob).toBe('iniciante-2d')
+    // Desde 14/08 a Faísca tem degrau PRÓPRIO; antes ela dividia o Iniciante 2D com o
+    // Construtor(a) e a divisão era só apresentação.
+    expect(LEVEL_TIER.noob).toBe('primeiros-passos-2d')
     expect(LEVEL_TIER.coder).toBe('iniciante-2d')
     expect(LEVEL_TIER.god).toBeNull()
   })
@@ -45,13 +47,18 @@ describe('career-map (regras puras do Mapa da Carreira)', () => {
   })
 
   test('levelForTier devolve o 1º nível que estuda a trilha', () => {
-    expect(levelForTier('iniciante-2d')).toBe('noob')
+    expect(levelForTier('primeiros-passos-2d')).toBe('noob')
+    expect(levelForTier('iniciante-2d')).toBe('coder')
     expect(levelForTier('iniciante-3d')).toBe('hacker')
     expect(levelForTier('avancado-3d')).toBe('champion')
   })
 })
 
-describe('coursesForLevel (divisão do degrau por careerSlot)', () => {
+describe('coursesForLevel (cada nível é dono de um degrau inteiro)', () => {
+  const entrada = [
+    course({ courseSlug: 'entrada', level: 'primeiros-passos', careerSlot: 1 }),
+    course({ courseSlug: 'entrada-bonus', level: 'primeiros-passos', careerSlot: null }),
+  ]
   const ini2d = [
     course({ courseSlug: 'base', careerSlot: 1 }),
     course({ courseSlug: 'c2', careerSlot: 2 }),
@@ -59,16 +66,22 @@ describe('coursesForLevel (divisão do degrau por careerSlot)', () => {
     course({ courseSlug: 'bonus', careerSlot: null }),
   ]
 
-  test('Faísca (noob) mostra SÓ o curso-base (slot 1)', () => {
-    expect(coursesForLevel('noob', ini2d).map((c) => c.courseSlug)).toEqual(['base'])
-  })
-
-  test('Construtor (coder) mostra o resto (2–8) + o bônus, sem o curso-base', () => {
+  test('Faísca (noob) mostra o degrau de ENTRADA inteiro, bônus incluso', () => {
+    // ⭐ O bônus da Faísca é justamente o que não existia antes de 14/08: com o degrau
+    // compartilhado, todo bônus do Iniciante 2D caía na trilha do Construtor(a).
     expect(
-      coursesForLevel('coder', ini2d)
+      coursesForLevel('noob', [...entrada, ...ini2d])
         .map((c) => c.courseSlug)
         .sort(),
-    ).toEqual(['bonus', 'c2', 'c3'])
+    ).toEqual(['entrada', 'entrada-bonus'])
+  })
+
+  test('Construtor (coder) mostra o Iniciante 2D inteiro, base inclusa', () => {
+    expect(
+      coursesForLevel('coder', [...entrada, ...ini2d])
+        .map((c) => c.courseSlug)
+        .sort(),
+    ).toEqual(['base', 'bonus', 'c2', 'c3'])
   })
 
   test('nível de degrau único (hacker) mostra o degrau inteiro (base + resto + bônus)', () => {
@@ -84,10 +97,13 @@ describe('coursesForLevel (divisão do degrau por careerSlot)', () => {
     ).toEqual(['b3', 'bn3', 'x3'])
   })
 
-  test('fail-open: SEM curso-base marcado, noob mostra o degrau inteiro (nunca vazio)', () => {
+  test('catálogo não etiquetado ainda aparece: curso sem posição é bônus do degrau', () => {
+    // Substitui o antigo fail-open "sem curso-base, mostra o degrau inteiro": ele existia
+    // porque a divisão por slot podia esvaziar a trilha da Faísca. Sem divisão, o curso
+    // sem posição entra pela porta do bônus, que toda trilha abre.
     const untagged = [
-      course({ courseSlug: 'u1', careerSlot: null }),
-      course({ courseSlug: 'u2', careerSlot: null }),
+      course({ courseSlug: 'u1', level: 'primeiros-passos', careerSlot: null }),
+      course({ courseSlug: 'u2', level: 'primeiros-passos', careerSlot: null }),
     ]
     expect(
       coursesForLevel('noob', untagged)
@@ -98,10 +114,10 @@ describe('coursesForLevel (divisão do degrau por careerSlot)', () => {
 
   test('só considera cursos do degrau do próprio nível', () => {
     const mixed = [
-      course({ courseSlug: 'base', careerSlot: 1 }),
+      course({ courseSlug: 'entrada', level: 'primeiros-passos', careerSlot: 1 }),
       course({ courseSlug: 'other', level: 'avancado', track: '3d', careerSlot: 1 }),
     ]
-    expect(coursesForLevel('noob', mixed).map((c) => c.courseSlug)).toEqual(['base'])
+    expect(coursesForLevel('noob', mixed).map((c) => c.courseSlug)).toEqual(['entrada'])
   })
 
   test('Lenda (god) mostra só os cursos de NÍVEL lenda (bônus da formatura, fora da carreira)', () => {

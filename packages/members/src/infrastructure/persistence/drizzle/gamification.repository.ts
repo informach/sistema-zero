@@ -47,6 +47,7 @@ import {
   type QualifyingByTier,
 } from '../../../domain/gamification/levels'
 import type { MissionGoalType } from '../../../domain/gamification/missions'
+import { studioUnlockRevision } from '../../../domain/gamification/studio-unlock-revision'
 import {
   type AwardInput,
   type AwardResult,
@@ -818,11 +819,90 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     for (const row of rows) {
       // `lenda` é FORA da carreira (também teria careerSlot null) → nunca conta.
       if (!row.level || row.level === 'lenda' || !row.track || row.careerSlot === null) continue
-      const slots = result[courseTier(row.level, row.track)]
+      const tier = courseTier(row.level, row.track)
+      // Par que não é degrau da carreira (só existe `primeiros-passos-2d`) não conta.
+      if (!tier) continue
+      const slots = result[tier]
       const slot = Number(row.careerSlot)
       if (!slots.includes(slot)) slots.push(slot)
     }
     return result
+  }
+
+  /**
+   * Blocos liberados pelos cursos QUALIFICADOS (mesma interseção `course_complete` ∩
+   * `course_showcased`), lidos de `courses.metadata.studioUnlockBlocks`.
+   * ⚠️ `courses` entra por INNER join (≠ do `listQualifyingCareerSlots`, que usa LEFT):
+   * aqui o dado vem do curso VIVO, então curso apagado simplesmente não contribui —
+   * quem impede a perda é o snapshot em `studio_block_grants`. Bônus e `lenda` CONTAM
+   * (todo curso pode ensinar ferramenta; só a CARREIRA os ignora).
+   */
+  async listStudioUnlocksByCourse(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<{ courseId: string; blocks: string[] }[]> {
+    const showcased = alias(xpEvents, 'sc')
+    const rows = await this.db
+      .select({ courseId: courses.id, metadata: courses.metadata })
+      .from(xpEvents)
+      .innerJoin(courses, eq(courses.id, xpEvents.sourceId))
+      .innerJoin(
+        showcased,
+        and(
+          eq(showcased.userId, xpEvents.userId),
+          eq(showcased.audience, xpEvents.audience),
+          eq(showcased.sourceType, 'course_showcased'),
+          eq(showcased.sourceId, xpEvents.sourceId),
+        ),
+      )
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          eq(xpEvents.sourceType, 'course_complete'),
+        ),
+      )
+    const byCourse = new Map<string, string[]>()
+    for (const row of rows) {
+      const raw = (row.metadata as Record<string, unknown> | null)?.studioUnlockBlocks
+      if (!Array.isArray(raw)) continue
+      const blocks = raw.filter(
+        (type): type is string => typeof type === 'string' && type.length > 0,
+      )
+      if (blocks.length > 0) byCourse.set(row.courseId, [...new Set(blocks)])
+    }
+    return [...byCourse].map(([courseId, blocks]) => ({ courseId, blocks }))
+  }
+
+  async getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string> {
+    const showcased = alias(xpEvents, 'studio_revision_sc')
+    const rows = await this.db
+      .select({
+        courseId: xpEvents.sourceId,
+        completedAt: xpEvents.createdAt,
+        showcasedAt: showcased.createdAt,
+        courseUpdatedAt: courses.updatedAt,
+      })
+      .from(xpEvents)
+      .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
+      .innerJoin(
+        showcased,
+        and(
+          eq(showcased.userId, xpEvents.userId),
+          eq(showcased.audience, xpEvents.audience),
+          eq(showcased.sourceType, 'course_showcased'),
+          eq(showcased.sourceId, xpEvents.sourceId),
+        ),
+      )
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          eq(xpEvents.sourceType, 'course_complete'),
+        ),
+      )
+
+    return studioUnlockRevision(rows)
   }
 
   async listQualifyingCareerSlotsForProfiles(
@@ -875,7 +955,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         q = emptyQualifyingByTier()
         result.set(row.userId, q)
       }
-      const slots = q[courseTier(row.level, row.track)]
+      const tier = courseTier(row.level, row.track)
+      // Par que não é degrau da carreira (só existe `primeiros-passos-2d`) não conta.
+      if (!tier) continue
+      const slots = q[tier]
       const slot = Number(row.careerSlot)
       if (!slots.includes(slot)) slots.push(slot)
     }

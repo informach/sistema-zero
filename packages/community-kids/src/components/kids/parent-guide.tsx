@@ -173,6 +173,7 @@ export function GuideWelcomeDialog({
   title,
   description,
   steps,
+  continueLabel = 'Vamos lá! 🚀',
 }: {
   open: boolean
   onClose: () => void
@@ -183,6 +184,12 @@ export function GuideWelcomeDialog({
   title: string
   description: string
   steps: readonly GuideWelcomeStep[]
+  /**
+   * Texto do CTA. "Vamos lá!" promete que algo acontece ao fechar, e isso só é verdade
+   * quando há um balão a revelar; quando a modal é só explicação, o chamador manda
+   * "Entendi!". Foi a queixa da usuária: apertar "Vamos lá" e não acontecer nada.
+   */
+  continueLabel?: string
 }) {
   if (!open) return null
   return (
@@ -209,7 +216,7 @@ export function GuideWelcomeDialog({
             </button>
           ) : null}
           <Button onClick={onContinue ?? onClose} className="min-h-11">
-            Vamos lá! 🚀
+            {continueLabel}
           </Button>
         </div>
       }

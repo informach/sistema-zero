@@ -204,6 +204,17 @@ export const COPY = {
     zoomIn: 'Aproximar',
     zoomOut: 'Afastar',
     zoomFit: 'Ajustar',
+    resize: {
+      /** O botão mostra o tamanho de agora: "Tamanho: 128 x 32". */
+      button: (width: number, height: number) => `Tamanho: ${width} x ${height}`,
+      title: 'Mudar o tamanho do desenho',
+      helpPixels: 'O desenho continua igual e fica no meio do novo tamanho.',
+      helpCells: 'O mapa continua igual e fica no meio do novo tamanho.',
+      willCut: 'Diminuir corta o que ficar de fora. Dá para desfazer com Ctrl+Z.',
+      apply: 'Mudar o tamanho',
+      cancel: 'Agora não',
+      done: 'Pronto, o tamanho mudou',
+    },
   },
   tools: {
     pencil: 'Lápis',
@@ -403,6 +414,33 @@ export const COPY = {
     selUngroup: 'Desagrupar a seleção',
     selRemove: 'Apagar a seleção',
     /**
+     * MISTURAR formas (o pathfinder do Illustrator). Ficam no bloco `sel*`
+     * porque são ações da faixa da seleção.
+     *
+     * ⭐ Os rótulos são de CRIANÇA, não os termos do ramo (decisão dela): o
+     * ícone já é a linguagem universal de quem conhece, e quem não conhece
+     * aprende pela frase. O par "ficar só com" / "tirar" o MESMO pedaço é lido
+     * junto de propósito.
+     *
+     * "Virar uma forma só" também vai para a barra flutuante do TOQUE; as
+     * outras três não cabem em 375px e pedem enxergar quem está na frente.
+     */
+    pathfinderTitle: 'Misturar',
+    selUnite: 'Virar uma forma só',
+    selMinusFront: 'Tirar a forma da frente',
+    selIntersect: 'Ficar só com o pedaço em comum',
+    selExclude: 'Tirar o pedaço em comum',
+    /** Recusas da mistura: cada uma diz o que houve E o que fazer a seguir. */
+    pathfinderNeedsTwo: 'Escolha duas formas fechadas, como um quadrado ou um círculo.',
+    pathfinderSkips: 'Linhas, textos e figuras não entram na mistura. Escolha só formas fechadas.',
+    pathfinderOpenPath: 'Este traço está aberto. Feche ele antes de misturar.',
+    pathfinderBadPath:
+      'Este traço veio num formato que eu não sei ler, então não dá para misturar.',
+    pathfinderApart: 'Estas formas não se encostam. Ponha uma em cima da outra para misturar.',
+    pathfinderEmpty: 'Assim não sobra nada. Tente com as formas mais em cima uma da outra.',
+    pathfinderTooBig: 'Este desenho ficou grande demais para misturar.',
+    pathfinderFailed: 'Não consegui misturar essas formas. Tente mexer um pouquinho nelas.',
+    /**
      * Ações do modo "Editar os pontos". Moram no MESMO lugar das de cima (a
      * faixa troca de conteúdo com a ferramenta), então valem a mesma regra: um
      * rótulo só, servindo desktop e toque.
@@ -421,6 +459,11 @@ export const COPY = {
     nodeCutDone: 'Virou dois traços.',
     nodeCutTooBig: 'Este desenho está grande demais para cortar aqui.',
     nodeHint: 'Toque no traço para acrescentar um ponto',
+    /**
+     * Forma sem pontos editáveis: retângulo, círculo, texto, figura, ou uma
+     * mistura que virou mais de um pedaço. A faixa DIZ isso em vez de sumir.
+     */
+    nodeUneditable: 'Esta forma não se edita por pontos. Dá para mudar a cor, o tamanho e o lugar.',
     nodeToCurve: 'Transformar em curva',
     nodeToLine: 'Transformar em reta',
     nodeSmooth: 'Ponto suave',

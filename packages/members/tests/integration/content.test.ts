@@ -229,8 +229,8 @@ describe('Members HTTP — autoria: cursos', () => {
     })
     expect((await readJson(preserved)).careerSlot).toBe(1)
 
-    // Teto UNIFORME 8 (reforma 07/2026): a posição 8 vale em qualquer etapa —
-    // antes só o Iniciante 2D ia até 6 e as demais até 5.
+    // A posição 8 vale nos degraus de 8 (o Iniciante 2D caiu para 7 em 14/08 — coberto
+    // no teste seguinte).
     const acceptsEight = await patchCourse(app, created.id, {
       ...COURSE,
       slug: 'base-kids',
@@ -248,6 +248,51 @@ describe('Members HTTP — autoria: cursos', () => {
       careerSlot: null,
     })
     expect((await readJson(removed)).careerSlot).toBeNull()
+  })
+
+  test('⭐ o teto de posições é POR DEGRAU: 1 na entrada, 7 no Iniciante 2D, 8 nos demais', async () => {
+    const { app } = buildApp()
+    const base = { ...COURSE, audience: 'kids' as const }
+
+    const casos: [string, string, string, number, number][] = [
+      // slug, level, track, slot, status esperado (201 = criado)
+      ['entrada-ok', 'primeiros-passos', '2d', 1, 201],
+      ['entrada-demais', 'primeiros-passos', '2d', 2, 400],
+      ['ini2d-ok', 'iniciante', '2d', 7, 201],
+      // ⚠️ A posição 8 do Iniciante 2D DEIXOU de existir: o curso-base saiu para o degrau
+      // de entrada e o degrau ficou com 7. Aceitar aqui furaria o CHECK do banco.
+      ['ini2d-demais', 'iniciante', '2d', 8, 400],
+      ['ini3d-ok', 'iniciante', '3d', 8, 201],
+      ['av3d-ok', 'avancado', '3d', 8, 201],
+    ]
+    for (const [slug, level, track, careerSlot, esperado] of casos) {
+      const res = await send(app, '/members/admin/courses', 'POST', {
+        ...base,
+        slug,
+        title: slug,
+        level,
+        track,
+        careerSlot,
+      })
+      expect(res.status, `${level}-${track} posição ${careerSlot}`).toBe(esperado)
+    }
+  })
+
+  test('⭐ Primeiros Passos só existe no eixo 2D, com ou sem posição', async () => {
+    // O par `primeiros-passos` + `3d` não gera degrau nenhum: o curso ficaria sempre aberto
+    // e fora de toda trilha. O select do admin nunca o oferece; isto barra o PATCH à mão.
+    const { app } = buildApp()
+    for (const careerSlot of [1, null]) {
+      const res = await send(app, '/members/admin/courses', 'POST', {
+        ...COURSE,
+        slug: `entrada-3d-${careerSlot ?? 'bonus'}`,
+        audience: 'kids',
+        level: 'primeiros-passos',
+        track: '3d',
+        careerSlot,
+      })
+      expect(res.status, `posição ${careerSlot}`).toBe(400)
+    }
   })
 
   test('careerSlot duplicado na mesma etapa → 409 amigável', async () => {

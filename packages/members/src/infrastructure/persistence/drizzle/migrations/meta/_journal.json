@@ -435,6 +435,20 @@
       "when": 1786184793918,
       "tag": "0061_clammy_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1786665239422,
+      "tag": "0062_tiresome_gladiator",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1786711379073,
+      "tag": "0063_deep_psylocke",
+      "breakpoints": true
     }
   ]
 }

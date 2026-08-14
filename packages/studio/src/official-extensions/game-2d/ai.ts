@@ -51,11 +51,16 @@ API global injetada como window.SZGame2D:
   updateGroup(grupo) somente move. Só sprites/grupos que recebem o apply respondem.
 - bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
 - circleCollides(a, b): colisão por círculo.
+- CAIXA AUTOMÁTICA (sem bloco): imagem vinda do Pinta traz junto a caixa medida no
+  desenho (fração do quadro, união de todos os quadros) e o runtime a aplica ao pôr a
+  imagem/animação/image: — o vazio do quadro deixa de encostar. Espelha ao virar
+  (facing -1). NÃO existe bloco para ligar/desligar; setHitboxScale a substitui.
 - setHitboxScale(sprite, percent): dial da colisão PERDOADORA — a área usada nas perguntas de
   encostar vira percent% do tamanho, centrada (menor = mais justo p/ DANO; maior = mais fácil
   de PEGAR). Vale p/ touches/onOverlap/overlapGroups/circleCollides; a física de EMPURRAR
   (collideGroup/collideSprite/collidePlatform/collidePlatformGroup/collideTileMap) usa o tamanho cheio de propósito. drawHitbox
-  mostra a área efetiva. Bloco "Usar área de colisão de N% do tamanho".
+  mostra a área efetiva. ⭐ VENCE a caixa automática vinda do desenho: 100% é a saída
+  para voltar ao quadro inteiro. Bloco "Usar área de colisão de N% do tamanho".
 - playSound(freq, ms): bip sintetizado (Web Audio).
 - playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
 - playNote("C"|"D"|"E"|"F"|"G"|"A"|"B"|"C5", ms): toca uma nota musical (dó ré mi…); junte várias para uma melodia.

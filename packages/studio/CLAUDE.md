@@ -1028,7 +1028,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.77.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.78.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -2722,6 +2722,71 @@ dona do produto: *"tenho uma estrela cadente e quero que ela anime apenas 1 vez"
 - Comportamento provado em `__tests__/animateOnce.test.ts` (runtime avaliado de verdade, relógio
   injetado). ⚠️ A ordem importa no teste do `autoAnimate`: o sprite precisa JÁ estar andando quando o
   golpe começa, senão o `_animState` nunca fica sujo e o teste passa mesmo com o defeito.
+
+## A caixa de colisão vem do desenho (08/2026, g2d 0.78.0)
+
+O relato dela: uma nave de 128x32 desenhada num quadro 128x128 leva 96px de vazio para o jogo, e o
+vazio **encostava sem encostar**. Quem mede é o Pinta (só ele sabe onde tem pixel); aqui a caixa só
+viaja e é aplicada. **Nenhum bloco novo** — a união da IR não pagou nada por isto.
+
+O cano, ponta a ponta: `pinta/export/spriteHitbox.ts` → `sprite.hitbox` do payload →
+`sanitizeSpriteMeta` (`core/project.ts`) → `assetMetaManifest` → `safeMetaManifest`
+(`preview/assetsBridge.ts`) → `window.__SZGAME_ASSET_META[nome].hitbox` → `_artHitboxOf`/`_hitboxOf`
+(`game-2d/runtime/sprites.ts`).
+
+- ⭐ **`__SZGAME_ASSET_META` deixou de ser só do mapa.** Era `{ tilemap }` e o filtro dava `continue`
+  em qualquer entrada sem mapa. Agora são DOIS filtros independentes: mapa torto não leva a caixa
+  junto, e a caixa entra sozinha em asset que não é mapa nenhum. O orçamento de caracteres continua
+  sendo cobrado só da folha de peças (a caixa são 4 números).
+- ⭐⭐ **O dial "usar área de colisão de N%" VENCE a caixa automática**, e a marca é `_hitboxManual`,
+  **não o número**. ⚠️ Escrevi primeiro `if (scale === 1 && _hitboxArt)` e o teste reprovou na hora:
+  `setHitboxScale(s, 100)` grava `scale = 1`, indistinguível de "nunca pus o bloco" — a saída de
+  emergência que eu tinha acabado de prometer na doc não existia. Sem a marca, e sem o bloco
+  explícito de hitbox (que ficou fora de escopo), a criança que discordasse da medição ficaria
+  **sem jeito nenhum** de voltar ao quadro inteiro.
+- ⚠️ **`circleCollides` lia `_hitboxScale` na mão** e teria ficado cega para a medição. Passou a ler
+  `_hitboxOf`, como todo o resto. Lição da casa outra vez: derivar mata a classe, duplicar deixa
+  caminho esquecido.
+- ⭐ **A caixa ESPELHA no `facing === -1`**: `drawSprite` faz `scale(-1,1)` no desenho inteiro, então
+  uma caixa torta para um lado (a espada só na direita) tem que virar junto.
+- **Figura desenhada por código zera a caixa** (`setShape`): não há arte medida ali.
+- A medição também vale para `collideTileMap` e `drawHitbox`, que já liam `_hitboxOf` — o raio-X que
+  a criança usa para conferir mostra a caixa de verdade.
+
+Redes: `game-2d/__tests__/artHitbox.test.ts` (9, com o anti-vácuo que prova que sem o metadado o
+mesmo tiro ACERTA), `core/assetMeta.test.ts` (caixa torta descartada sem derrubar o sprite),
+`preview/__tests__/assetsBridge.test.ts` (mapa torto não leva a caixa junto).
+
+### Full review do lote da caixa (14/08) — o espelho tinha DUAS réguas
+
+⭐⭐ **O achado que o lote deixou:** o renderizador vira o desenho por
+`direction === 'left' || (!direction && facing === -1)`, e eu escrevi a caixa lendo **só o
+`facing`**. Os inimigos que miram o herói (`enemies.ts:487,670,724,803,825`) escrevem `facing`
+SOZINHO, e quem já andou para a direita carrega `direction: 'right'` — nesse caso o desenho **não
+vira** e a caixa virava. Um inimigo mirando a nave passaria a colidir pelo lado errado do corpo.
+Fix: **`_spriteFlipped(s)` é o DONO ÚNICO** da regra, e o desenho e a caixa leem dele. Mesma lição
+de sempre: derivar mata a classe, duplicar deixa caminho esquecido.
+
+⚠️ O drift que fecha a porta usa **`facing === -1`** como régua, e **não** a comparação com
+`'left'`: esta aparece legitimamente noutros domínios (o lado do gorila, a câmera do Mundo, a
+normalização do "Virar o sprite"), e a primeira versão do teste acusou os cinco. Provado que morde
+nas duas pontas (o drift e o teste de comportamento reprovam juntos ao reintroduzir a duplicata).
+
+**Medido e descartado como não-achado:** o custo da medição (256×256 × 12 quadros = 16,5 ms, e o
+teto de quadro do Pinta é 128 mesmo); a seleção flutuante perdida ao redimensionar (o `pointerdown`
+fora do canvas já a carimba, e o botão de tamanho está fora); e os caminhos que poderiam ficar
+cegos para a caixa — `spawnEnemy` passa por `createSprite`, `animStates` passa por `setAnimation`,
+e os dois caminhos de sincronia Pinta→jogo (store e disco) carregam o `sprite` sanitizado.
+
+⭐ **Jogo pronto não muda sozinho, e isso é de propósito.** A caixa é medida na EXPORTAÇÃO, e o
+detector de mudança da sincronia compara BYTES do PNG: um desenho já mandado ao jogo antes desta
+feature só ganha caixa quando for reeditado ou trazido de novo. É o mesmo compromisso do "payload
+byte-idêntico" — nenhuma colisão de jogo que já funciona muda de comportamento sem ela pedir.
+
+**Fora de escopo, registrado:** o **bloco explícito de hitbox** (offset + w/h, espelhando o gk).
+Decisão dela, com minha recomendação: segurar até o uso real mostrar que a caixa automática erra com
+frequência que justifique gastar 1 membro da união da IR e 14 pontos da cadeia de blocos. Enquanto
+isso, `setHitboxScale` é a válvula.
 
 ## Comandos
 

@@ -188,13 +188,15 @@ describe('Pensa planejador — HTTP', () => {
       blockedReason: 'O Estúdio ainda não foi liberado pelo seu nível na carreira.',
     })
 
+    // O curso de ENTRADA (degrau `primeiros-passos-2d`) é o que promove a Construtor(a),
+    // que é o posto em que o Estúdio livre abre.
     const foundation = seedSampleCourse(
       ctx.courses,
       'base-pensa',
       'published',
       'kids',
       false,
-      'iniciante',
+      'primeiros-passos',
       '2d',
       1,
     )

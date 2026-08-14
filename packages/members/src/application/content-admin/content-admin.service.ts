@@ -1,4 +1,4 @@
-import { CAREER_SLOT_MAX } from '@sistemazero/core/career'
+import { careerSlotsForTier } from '@sistemazero/core/career'
 import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import {
   ContentNotFoundError,
@@ -136,6 +136,7 @@ export class CourseAdminService {
     // `track` AUSENTE idem (build antigo sem o eixo 2D/3D não re-tagueia o curso).
     const {
       salesPageUrl,
+      studioUnlockBlocks,
       audience,
       sequentialLock,
       level,
@@ -152,7 +153,7 @@ export class CourseAdminService {
       level: level ?? existing.level,
       track: track ?? existing.track,
       careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,
-      metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
+      metadata: withCourseMetadata(existing.metadata, { salesPageUrl, studioUnlockBlocks }),
     }
     assertCareerSlot(merged)
     // Curso-base kids (slot 1) publicado exige uma aula PUBLICADA com bloco de Estúdio
@@ -187,6 +188,14 @@ function assertCareerSlot(course: {
   track: string
   careerSlot: number | null
 }): void {
+  // O degrau de ENTRADA só existe no eixo 2D. Vale ANTES do desvio do bônus: um curso
+  // `primeiros-passos` + `3d` não gera degrau nenhum (`courseTier` devolve `null`), então
+  // ficaria SEMPRE aberto e não apareceria em trilha alguma — invisível no mapa e fora da
+  // carreira, sem ninguém notar. O select do admin nunca oferece esse par; isto barra o
+  // PATCH feito à mão.
+  if (course.level === 'primeiros-passos' && course.track !== '2d') {
+    throw new InvalidContentCommandError('Primeiros Passos existe somente no eixo 2D')
+  }
   if (course.careerSlot === null) return
   if (course.level === 'lenda') {
     throw new InvalidContentCommandError(
@@ -196,32 +205,64 @@ function assertCareerSlot(course: {
   if (course.audience !== 'kids') {
     throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
   }
-  // 8 posições por degrau (reforma 07/2026; era 6 no iniciante-2d e 5 nas demais).
-  // O teto vem do catálogo CANÔNICO do core — o CHECK da migration 0053 e o
-  // admin (via conformance) espelham o mesmo valor.
-  const maximum = CAREER_SLOT_MAX
+  // O teto é POR DEGRAU e vem do catálogo CANÔNICO do core (1 em Primeiros Passos, 7 no
+  // Iniciante 2D, 8 nos demais); o CHECK da migration `0063` e o admin (via conformance)
+  // espelham a mesma fonte. O `CAREER_SLOT_MAX` continua como limite externo do DTO.
+  const tier = `${course.level}-${course.track}`
+  const maximum = careerSlotsForTier(tier)
+  if (maximum === 0) {
+    throw new InvalidContentCommandError(
+      'Esta combinação de nível e eixo não é um degrau da carreira',
+    )
+  }
   if (
     !Number.isInteger(course.careerSlot) ||
     course.careerSlot < 1 ||
     course.careerSlot > maximum
   ) {
-    throw new InvalidContentCommandError(`Esta etapa aceita posições de 1 a ${maximum} na carreira`)
+    throw new InvalidContentCommandError(
+      maximum === 1
+        ? 'Esta etapa aceita somente a posição 1 na carreira'
+        : `Esta etapa aceita posições de 1 a ${maximum} na carreira`,
+    )
   }
 }
 
 /**
- * Substitui só a chave `salesPageUrl` do `metadata` do curso, preservando as
- * demais (o metadata é um saco de extras livres — não pode ser sobrescrito
- * inteiro pelo form). `null`/vazio remove a chave; objeto vazio → `null`.
+ * Substitui só as chaves conhecidas do `metadata` do curso, preservando as demais
+ * (o metadata é um saco de extras livres — não pode ser sobrescrito inteiro pelo
+ * form). Objeto que ficou vazio → `null`.
+ *
+ * ⚠️ As duas chaves têm réguas DIFERENTES de propósito:
+ * - `salesPageUrl`: ausente/vazio LIMPA (comportamento histórico do form).
+ * - `studioUnlockBlocks`: ausente (`undefined`) **PRESERVA** — é currículo do
+ *   Estúdio, e um PATCH de build antigo do admin (que nem conhece o campo) não pode
+ *   tirar da criança blocos que o professor liberou. `null`/`[]` limpa de propósito.
  */
-function withSalesPageUrl(
+function withCourseMetadata(
   metadata: Record<string, unknown> | null,
-  salesPageUrl: string | null,
+  patch: { salesPageUrl: string | null; studioUnlockBlocks?: string[] | null },
 ): Record<string, unknown> | null {
   const next: Record<string, unknown> = { ...(metadata ?? {}) }
-  if (salesPageUrl) next.salesPageUrl = salesPageUrl
+  if (patch.salesPageUrl) next.salesPageUrl = patch.salesPageUrl
   else delete next.salesPageUrl
+  if (patch.studioUnlockBlocks !== undefined) {
+    const blocks = normalizeUnlockBlocks(patch.studioUnlockBlocks)
+    if (blocks.length > 0) next.studioUnlockBlocks = blocks
+    else delete next.studioUnlockBlocks
+  }
   return Object.keys(next).length > 0 ? next : null
+}
+
+/** Tira repetido e vazio, preservando a ordem em que o professor montou a lista. */
+function normalizeUnlockBlocks(blocks: string[] | null): string[] {
+  if (!blocks) return []
+  const seen = new Set<string>()
+  for (const type of blocks) {
+    const trimmed = type.trim()
+    if (trimmed.length > 0) seen.add(trimmed)
+  }
+  return [...seen]
 }
 
 // ── Módulos ─────────────────────────────────────────────────────────────────

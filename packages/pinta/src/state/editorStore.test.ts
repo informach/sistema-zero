@@ -50,17 +50,13 @@ describe('editorStore — commit/undo/redo', () => {
 })
 
 describe('editorStore — commitLinked (transação cross-asset: tileset + mapas)', () => {
-  const last = (calls: PintaAsset[][]): PintaAsset[] | undefined => calls[calls.length - 1]
-
   it('undo restaura os mapas ANTES; redo reaplica os mapas DEPOIS', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const mapBefore = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
     const mapAfter = { ...mapBefore, updatedAt: mapBefore.updatedAt + 1 }
-    const applied: PintaAsset[][] = []
     const store = createEditorStore({
       asset: tileset,
       persist: async () => {},
-      applyLinkedAssets: (maps) => applied.push(maps),
     })
 
     store.getState().commitLinked(
@@ -70,26 +66,24 @@ describe('editorStore — commitLinked (transação cross-asset: tileset + mapas
         after: [mapAfter],
       },
     )
-    expect(last(applied)?.[0]).toBe(mapAfter) // aplicou o DEPOIS ao commitar
+    expect(store.getState().linkedAssets?.[0]).toBe(mapAfter)
     expect(store.getState().canUndo).toBe(true)
 
     store.getState().undo()
-    expect(last(applied)?.[0]).toBe(mapBefore) // undo → mapas voltam junto do tileset
+    expect(store.getState().linkedAssets?.[0]).toBe(mapBefore)
     expect(store.getState().asset.id).toBe(tileset.id)
 
     store.getState().redo()
-    expect(last(applied)?.[0]).toBe(mapAfter) // redo → mapas reaplicados
+    expect(store.getState().linkedAssets?.[0]).toBe(mapAfter)
   })
 
   it('undo ATRAVÉS de uma edição comum (pincel) ainda restaura os mapas do remap anterior', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const mapBefore = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
     const mapAfter = { ...mapBefore, updatedAt: mapBefore.updatedAt + 1 }
-    const applied: PintaAsset[][] = []
     const store = createEditorStore({
       asset: tileset,
       persist: async () => {},
-      applyLinkedAssets: (maps) => applied.push(maps),
     })
 
     // 1) add peça (remap): mapas A→B. 2) editar a peça (comum): mapas não mudam.
@@ -106,10 +100,10 @@ describe('editorStore — commitLinked (transação cross-asset: tileset + mapas
 
     store.getState().undo() // desfaz o pincel
     store.getState().undo() // desfaz o add → mapas VOLTAM p/ o antes
-    expect(last(applied)?.[0]).toBe(mapBefore)
+    expect(store.getState().linkedAssets?.[0]).toBe(mapBefore)
   })
 
-  it('editor sem applyLinkedAssets (sprite/mapa) segue igual — undo comum, sem mapas', () => {
+  it('editor sem assets ligados (sprite/mapa) segue igual — undo comum', () => {
     const asset = makeAsset()
     const store = createEditorStore({ asset, persist: async () => {} })
     store.getState().commit(edited(asset))
@@ -139,6 +133,41 @@ describe('editorStore — commitLinked (transação cross-asset: tileset + mapas
     expect(calls).toHaveLength(1)
     expect(calls[0]?.linked).toEqual([mapAfter])
     expect(store.getState().saveState).toBe('saved')
+  })
+
+  it('só publica asset principal e mapas ligados depois da persistência confirmar', async () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const mapBefore = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const mapAfter = { ...mapBefore, updatedAt: mapBefore.updatedAt + 1 }
+    const published: PintaAsset[][] = []
+    let confirmSave: (() => void) | undefined
+    const store = createEditorStore({
+      asset: tileset,
+      persist: () =>
+        new Promise<void>((resolve) => {
+          confirmSave = resolve
+        }),
+      onSaved: (asset, linked) => published.push([asset, ...linked]),
+    })
+
+    store
+      .getState()
+      .commitLinked(
+        { ...tileset, updatedAt: tileset.updatedAt + 1 },
+        { before: [mapBefore], after: [mapAfter] },
+      )
+    expect(store.getState().saveState).toBe('pending')
+    expect(store.getState().dirty).toBe(true)
+    expect(store.getState().linkedAssets).toEqual([mapAfter])
+
+    const flushing = store.getState().flush()
+    await Bun.sleep(0)
+    expect(published).toHaveLength(0)
+    confirmSave?.()
+    expect(await flushing).toEqual({ ok: true })
+    expect(published).toEqual([[expect.objectContaining({ id: tileset.id }), mapAfter]])
+    expect(store.getState().dirty).toBe(false)
+    expect(store.getState().savedAsset).toBe(published[0]![0]!)
   })
 
   it('falha ao persistir mapas ligados mantém o editor sujo e mostra erro', async () => {
@@ -200,14 +229,19 @@ describe('editorStore — autosave debounced + flush', () => {
         saves += 1
       },
     })
+    const confirmedBeforeFailure = store.getState().savedAsset
     store.getState().commit(edited(asset))
-    await store.getState().flush()
+    const failed = await store.getState().flush()
+    expect(failed).toEqual({ ok: false, error: 'quota cheia' })
     expect(store.getState().saveState).toBe('error')
+    expect(store.getState().dirty).toBe(true)
+    expect(store.getState().savedAsset).toBe(confirmedBeforeFailure)
 
     fail = false
-    await store.getState().flush()
+    expect(await store.getState().flush()).toEqual({ ok: true })
     expect(saves).toBe(1)
     expect(store.getState().saveState).toBe('saved')
+    expect(store.getState().savedAsset).toBe(store.getState().asset)
   })
 
   it('sem edição não persiste nada', async () => {

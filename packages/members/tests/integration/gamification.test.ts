@@ -11,10 +11,21 @@ const authHeaders = { 'x-auth-user-id': USER, 'content-type': 'application/json'
 type App = ReturnType<typeof buildApp>['app']
 const readJson = (res: Response): Promise<any> => res.json()
 
+/**
+ * O curso de ENTRADA da carreira: degrau `primeiros-passos-2d`, posição 1. Concluí-lo e
+ * publicá-lo é a régua do Construtor(a) desde 14/08 (antes era o slot 1 do Iniciante 2D).
+ */
 function seedCareerCourse(courses: InMemoryCourseRepository) {
-  const sample = seedSampleCourse(courses)
-  const row = courses.courses.find((course) => course.id === sample.courseId)
-  if (row) row.careerSlot = 1
+  const sample = seedSampleCourse(
+    courses,
+    'curso-demo',
+    'published',
+    'adult',
+    false,
+    'primeiros-passos',
+    '2d',
+    1,
+  )
   return sample
 }
 
@@ -345,13 +356,15 @@ describe('Gamificação — GET /members/gamification/me', () => {
       },
       // Catálogo completo do domain, todo bloqueado (derivado — robusto a novos slugs).
       badges: BADGE_SLUGS.map((slug) => ({ slug, unlockedAt: null })),
-      // Sem cursos qualificados → Noob; falta 1 curso (concluído + publicado) p/ Coder.
+      // Sem cursos qualificados → Noob; falta 1 curso (concluído + publicado) p/ Coder,
+      // e ele mora no degrau de ENTRADA desde 14/08.
       level: {
         slug: 'noob',
         next: 'coder',
         remaining: {
           any: 0,
-          'iniciante-2d': 1,
+          'primeiros-passos-2d': 1,
+          'iniciante-2d': 0,
           'iniciante-3d': 0,
           'intermediario-2d': 0,
           'intermediario-3d': 0,
@@ -392,6 +405,23 @@ describe('Gamificação — GET /members/gamification/me', () => {
     const broken = await readJson(await getMe(app))
     expect(broken.streak.current).toBe(0)
     expect(broken.streak.best).toBe(1)
+  })
+
+  test('falha só na revisão do Estúdio degrada para desconhecido sem derrubar o perfil', async () => {
+    const { app, gamification } = buildApp()
+    gamification.getStudioUnlockRevision = async () => {
+      throw new Error('revisão indisponível')
+    }
+
+    const res = await app.handle(
+      new Request('http://localhost/members/gamification/me?audience=kids', {
+        headers: authHeaders,
+      }),
+    )
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    expect(body.level.slug).toBe('noob')
+    expect(body.studioUnlockRevision).toBeUndefined()
   })
 
   test('sem identidade → 401', async () => {
@@ -1121,6 +1151,51 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(me.level.slug).toBe('coder')
   })
 
+  test('kids expõe revisão curta que muda ao qualificar ou editar o curso', async () => {
+    const { app, courses, entitlements } = buildApp()
+    // Curso de ENTRADA: é o único que uma Faísca kids consegue abrir (o Iniciante 2D é
+    // degrau futuro para ela desde 14/08, e a trava responderia 423 no complete).
+    const course = seedSampleCourse(
+      courses,
+      'curso-kids-revisao',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    const row = courses.courses.find((item) => item.id === course.courseId)
+    if (!row) throw new Error('curso de teste ausente')
+    row.metadata = { studioUnlockBlocks: ['sz_g2d_create_ship'] }
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    const kidsMe = () =>
+      app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids', {
+          headers: authHeaders,
+        }),
+      )
+
+    const initial = await readJson(await kidsMe())
+    expect(initial.studioUnlockRevision).toHaveLength(64)
+
+    await completeCourse(app, course.lessonIds)
+    await postShowcase(app, {
+      userId: USER,
+      accountId: USER,
+      courseId: course.courseId,
+      audience: 'kids',
+    })
+    const qualified = await readJson(await kidsMe())
+    expect(qualified.studioUnlockRevision).toHaveLength(64)
+    expect(qualified.studioUnlockRevision).not.toBe(initial.studioUnlockRevision)
+
+    row.updatedAt = new Date(row.updatedAt.getTime() + 1_000)
+    const edited = await readJson(await kidsMe())
+    expect(edited.studioUnlockRevision).not.toBe(qualified.studioUnlockRevision)
+  })
+
   test('rank NÃO regride quando o curso é re-nivelado depois de qualificado', async () => {
     const { app, courses, entitlements } = buildApp()
     const course = seedCareerCourse(courses) // curso-base Iniciante 2D
@@ -1190,16 +1265,15 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     for (const e of gamification.events) {
       if (e.sourceId === course.courseId) e.sourceTrack = null
     }
-    // Sem snapshot, o coalesce cai no curso ao vivo: re-taggear p/ 3D MOVE o balde
-    // (é exatamente o mecanismo de correção retroativa da reforma). O curso sai do
-    // balde 2d (remaining volta ao piso cheio 8). Como a carreira agora exige o
-    // curso-base exatamente no Iniciante 2D, o marco legado acompanha o 3D e o
-    // perfil volta a Faísca neste cenário histórico sem snapshot.
+    // Sem snapshot, o coalesce cai no curso ao vivo: re-taggear p/ 3D MOVE o balde (é
+    // exatamente o mecanismo de correção retroativa da reforma). Aqui o par vira
+    // `primeiros-passos` + `3d`, que NÃO é degrau da carreira, então o marco simplesmente
+    // sai da contagem e o perfil volta a Faísca neste cenário histórico sem snapshot.
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.track = '3d'
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('noob')
-    expect(after.level.remaining['iniciante-2d']).toBe(1)
+    expect(after.level.remaining['primeiros-passos-2d']).toBe(1)
   })
 
   test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {

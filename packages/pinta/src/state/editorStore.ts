@@ -2,8 +2,8 @@
  * Store do EDITOR por asset aberto (factory): o asset vivo + undo/redo por
  * snapshots (`core/history.ts`) + autosave debounced (~1s) com flush explícito
  * (pagehide/unmount/voltar). O `persist` é injetado (testes passam um fake; a
- * produção usa `persistAssets`), e `onSaved` deixa a galeria absorver o asset
- * atualizado sem reler o disco.
+ * produção usa `persistAssets`), e `onSaved` deixa a galeria absorver o snapshot
+ * confirmado sem reler o disco.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { bitmapBytes, createHistory } from '../core/history'
@@ -31,10 +31,18 @@ function shapesBytes(shapes: VectorShape[]): number {
   return shapes.reduce((sum, shape) => sum + shapeBytes(shape), 0)
 }
 
-export type PintaSaveState = 'saved' | 'saving' | 'error'
+export type PintaSaveState = 'saved' | 'pending' | 'saving' | 'error'
+
+export type PintaSaveResult = { ok: true } | { ok: false; error: string }
 
 export interface PintaEditorState {
   asset: PintaAsset
+  /** Último snapshot efetivamente confirmado pela persistência. */
+  savedAsset: PintaAsset
+  /** Assets ligados ao estado vivo do editor; `null` até o primeiro remapeamento. */
+  linkedAssets: readonly PintaAsset[] | null
+  /** Há uma revisão local que ainda não foi confirmada pela persistência. */
+  dirty: boolean
   saveState: PintaSaveState
   saveError: string | null
   canUndo: boolean
@@ -46,8 +54,8 @@ export interface PintaEditorState {
    * Como `commit`, mas a edição TAMBÉM remapeia ASSETS LIGADOS (ex.: editar uma
    * peça do tileset remapeia as células dos mapas dependentes). Os mapas entram
    * na MESMA entrada de undo: desfazer/refazer restaura o tileset E os mapas
-   * juntos (via o callback `applyLinkedAssets`). `before` = mapas antes; `after`
-   * = mapas remapeados (já com updatedAt).
+   * juntos. `before` = mapas antes; `after` = mapas remapeados (já com
+   * updatedAt). A galeria só recebe o conjunto depois da persistência confirmar.
    */
   commitLinked(next: PintaAsset, linked: { before: PintaAsset[]; after: PintaAsset[] }): void
   /** Substitui SEM entrada de undo (ex.: rename vindo da galeria). */
@@ -60,8 +68,8 @@ export interface PintaEditorState {
   commitGesture(base: PintaAsset): void
   undo(): void
   redo(): void
-  /** Salva imediatamente o que estiver pendente. Resolve mesmo em erro. */
-  flush(): Promise<void>
+  /** Salva imediatamente tudo que estiver pendente e informa se confirmou. */
+  flush(): Promise<PintaSaveResult>
 }
 
 export type PintaEditorStore = StoreApi<PintaEditorState>
@@ -75,6 +83,16 @@ export type PintaEditorStore = StoreApi<PintaEditorState>
 interface EditorSnapshot {
   asset: PintaAsset
   linkedMaps: PintaAsset[] | null
+}
+
+/** Mescla revisões ligadas por id, preservando assets tocados em commits anteriores. */
+function mergeLinkedAssets(
+  current: readonly PintaAsset[] | null,
+  changed: readonly PintaAsset[],
+): PintaAsset[] {
+  const merged = new Map((current ?? []).map((asset) => [asset.id, asset]))
+  for (const asset of changed) merged.set(asset.id, asset)
+  return [...merged.values()]
 }
 
 /** Bytes aproximados de um asset (payload dominante = bitmaps). */
@@ -122,61 +140,70 @@ function snapshotBytes(snapshot: EditorSnapshot): number {
 export function createEditorStore(options: {
   asset: PintaAsset
   persist: (asset: PintaAsset, linkedAssets: readonly PintaAsset[]) => Promise<void>
-  onSaved?: (asset: PintaAsset) => void
+  onSaved?: (asset: PintaAsset, linkedAssets: readonly PintaAsset[]) => void
   /** Delay por instância; produção usa 1s, testes podem injetar um valor curto. */
   autosaveDelayMs?: number
-  /**
-   * Aplica os assets LIGADOS restaurados por undo/redo (ou por `commitLinked`):
-   * o host absorve na galeria + persiste. Ausente = sem assets ligados (editores
-   * que nunca chamam `commitLinked` — sprite/mapa/vetor).
-   */
-  applyLinkedAssets?: (assets: PintaAsset[]) => void
   /** Traduz erros de persistência para o badge sem acoplar o store à UI. */
   persistErrorMessage?: (error: unknown) => string
 }): PintaEditorStore {
   const history = createHistory<EditorSnapshot>({ sizeOf: snapshotBytes })
   let timer: ReturnType<typeof setTimeout> | null = null
-  let saving: Promise<void> | null = null
+  let saving: Promise<PintaSaveResult> | null = null
   let dirty = false
   // Mapas ligados ao ESTADO CORRENTE do asset (null até o 1º commitLinked).
   let currentLinked: PintaAsset[] | null = null
 
   const store = createStore<PintaEditorState>((set, get) => {
-    async function saveNow(): Promise<void> {
-      if (!dirty) return
-      // Uma gravação por vez. `while` (não `if`): dois chamadores (timer + flush)
-      // podem passar o 1º await juntos; o 2º re-observa o `saving` NOVO e espera —
-      // depois vê `dirty=false` e sai, sem disparar um 2º persist do mesmo estado.
-      while (saving) {
-        await saving
+    async function saveNow(): Promise<PintaSaveResult> {
+      // Drena revisões criadas durante uma gravação antes de confirmar o flush.
+      // Em erro, para imediatamente e conserva `dirty=true` para o retry.
+      while (true) {
+        if (saving) {
+          const result = await saving
+          if (!result.ok) return result
+          continue
+        }
+        if (!dirty) return { ok: true }
+
+        dirty = false
+        const snapshot = get().asset
+        const linkedSnapshot = currentLinked ? [...currentLinked] : []
+        set({ dirty: false, saveState: 'saving', saveError: null })
+
+        const request = (async (): Promise<PintaSaveResult> => {
+          try {
+            await options.persist(snapshot, linkedSnapshot)
+            options.onSaved?.(snapshot, linkedSnapshot)
+            set(
+              dirty
+                ? { savedAsset: snapshot }
+                : {
+                    savedAsset: snapshot,
+                    dirty: false,
+                    saveState: 'saved',
+                    saveError: null,
+                  },
+            )
+            return { ok: true }
+          } catch (error) {
+            dirty = true
+            const message =
+              options.persistErrorMessage?.(error) ??
+              (error instanceof Error ? error.message : String(error))
+            set({ dirty: true, saveState: 'error', saveError: message })
+            return { ok: false, error: message }
+          }
+        })()
+        saving = request
+        const result = await request
+        if (saving === request) saving = null
+        if (!result.ok) return result
       }
-      if (!dirty) return
-      dirty = false
-      const snapshot = get().asset
-      const linkedSnapshot = currentLinked ? [...currentLinked] : []
-      set({ saveState: 'saving', saveError: null })
-      saving = options
-        .persist(snapshot, linkedSnapshot)
-        .then(() => {
-          // Editou de novo enquanto salvava? Continua sujo, o timer re-salva.
-          set({ saveState: dirty ? 'saving' : 'saved', saveError: null })
-          options.onSaved?.(snapshot)
-        })
-        .catch((error) => {
-          dirty = true
-          set({
-            saveState: 'error',
-            saveError: options.persistErrorMessage?.(error) ?? null,
-          })
-        })
-        .finally(() => {
-          saving = null
-        })
-      await saving
     }
 
     function scheduleAutosave(): void {
       dirty = true
+      set({ dirty: true, saveState: 'pending', saveError: null })
       if (timer) clearTimeout(timer)
       timer = setTimeout(() => {
         timer = null
@@ -190,23 +217,29 @@ export function createEditorStore(options: {
       linked?: { before: PintaAsset[]; after: PintaAsset[] },
     ): void {
       const current = get().asset
+      const previousLinked = linked
+        ? mergeLinkedAssets(currentLinked, linked.before)
+        : currentLinked
       if (recordHistory) {
         // O snapshot restaurado por undo carrega o ESTADO ANTERIOR: para uma
         // edição com remap, os mapas ANTES; senão, o `currentLinked` corrente.
-        history.record({ asset: current, linkedMaps: linked ? linked.before : currentLinked })
+        history.record({ asset: current, linkedMaps: previousLinked })
       }
-      if (linked) currentLinked = linked.after
+      if (linked) currentLinked = mergeLinkedAssets(previousLinked, linked.after)
       set({
         asset: { ...next, updatedAt: Date.now() } as PintaAsset,
+        linkedAssets: currentLinked,
         canUndo: history.canUndo(),
         canRedo: history.canRedo(),
       })
-      if (linked) options.applyLinkedAssets?.(linked.after)
       scheduleAutosave()
     }
 
     return {
       asset: options.asset,
+      savedAsset: options.asset,
+      linkedAssets: null,
+      dirty: false,
       saveState: 'saved',
       saveError: null,
       canUndo: false,
@@ -235,8 +268,12 @@ export function createEditorStore(options: {
         const prev = history.undo({ asset: get().asset, linkedMaps: currentLinked })
         if (!prev) return
         currentLinked = prev.linkedMaps
-        set({ asset: prev.asset, canUndo: history.canUndo(), canRedo: history.canRedo() })
-        if (prev.linkedMaps) options.applyLinkedAssets?.(prev.linkedMaps)
+        set({
+          asset: prev.asset,
+          linkedAssets: currentLinked,
+          canUndo: history.canUndo(),
+          canRedo: history.canRedo(),
+        })
         scheduleAutosave()
       },
 
@@ -244,8 +281,12 @@ export function createEditorStore(options: {
         const next = history.redo({ asset: get().asset, linkedMaps: currentLinked })
         if (!next) return
         currentLinked = next.linkedMaps
-        set({ asset: next.asset, canUndo: history.canUndo(), canRedo: history.canRedo() })
-        if (next.linkedMaps) options.applyLinkedAssets?.(next.linkedMaps)
+        set({
+          asset: next.asset,
+          linkedAssets: currentLinked,
+          canUndo: history.canUndo(),
+          canRedo: history.canRedo(),
+        })
         scheduleAutosave()
       },
 
@@ -254,7 +295,7 @@ export function createEditorStore(options: {
           clearTimeout(timer)
           timer = null
         }
-        await saveNow()
+        return saveNow()
       },
     }
   })

@@ -8,7 +8,7 @@ import {
 } from './customSize'
 
 describe('customSizeSpecFor', () => {
-  test('cenários têm largura+altura; personagem um campo; mapa colunas+linhas', () => {
+  test('cenários, personagem e mapa têm largura+altura; peças ficam de fora', () => {
     expect(customSizeSpecFor('pixel-background')).toEqual({
       fields: ['width', 'height'],
       min: 16,
@@ -19,8 +19,11 @@ describe('customSizeSpecFor', () => {
       min: 16,
       max: 2048,
     })
-    expect(customSizeSpecFor('pixel-sprite')).toEqual({ fields: ['frame'], min: 8, max: 128 })
-    expect(customSizeSpecFor('vector-sprite')).toEqual({ fields: ['frame'], min: 8, max: 128 })
+    // ⭐ Personagem deixou de ser QUADRADO: uma nave é 128x32, e o vazio de um
+    // quadro quadrado virava caixa de colisão no Estúdio.
+    const quadro = { fields: ['width', 'height'] as const, min: 8, max: 128 }
+    expect(customSizeSpecFor('pixel-sprite')).toEqual(quadro)
+    expect(customSizeSpecFor('vector-sprite')).toEqual(quadro)
     expect(customSizeSpecFor('tilemap')).toEqual({ fields: ['cols', 'rows'], min: 1, max: 128 })
   })
 
@@ -64,7 +67,9 @@ describe('buildCustomSizeKey', () => {
         height: '200',
       }),
     ).toBe('300x200')
-    expect(buildCustomSizeKey('pixel-sprite', { ...EMPTY_CUSTOM_VALUES, frame: '96' })).toBe('96')
+    expect(
+      buildCustomSizeKey('pixel-sprite', { ...EMPTY_CUSTOM_VALUES, width: '128', height: '32' }),
+    ).toBe('128x32')
     expect(buildCustomSizeKey('tilemap', { ...EMPTY_CUSTOM_VALUES, cols: '50', rows: '40' })).toBe(
       '50x40',
     )
@@ -92,9 +97,11 @@ describe('seedCustomValues', () => {
       width: '160',
       height: '120',
     })
+    // Preset quadrado semeia os DOIS campos (senão a altura abriria vazia).
     expect(seedCustomValues('pixel-sprite', '32')).toEqual({
       ...EMPTY_CUSTOM_VALUES,
-      frame: '32',
+      width: '32',
+      height: '32',
     })
     expect(seedCustomValues('tilemap', '20x15')).toEqual({
       ...EMPTY_CUSTOM_VALUES,

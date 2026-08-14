@@ -76,8 +76,18 @@ export interface ChildGuideInput {
   startDismissed: boolean
 }
 
+export type GuideWelcomeStepId =
+  | 'avatar'
+  | 'start'
+  | 'aulas'
+  | 'xp'
+  | 'carreira'
+  | 'criar'
+  | 'mural'
+  | `parent-${number}`
+
 export interface GuideWelcomeStep {
-  id: 'avatar' | 'start' | 'xp' | `parent-${number}`
+  id: GuideWelcomeStepId
   emoji: string
   text: string
 }
@@ -85,21 +95,72 @@ export interface GuideWelcomeStep {
 type ChildWelcomeInput = Pick<ChildGuideInput, 'hasAvatar' | 'hasCourseActivity' | 'startAvailable'>
 
 /**
- * O modal infantil descreve somente ações que ainda existem. A numeração também
- * é derivada, evitando um "passo 2" órfão quando avatar ou primeira aula já foram feitos.
+ * Passos que viram BALÃO na tela depois que a modal fecha. O resto é explicação: fica só
+ * dentro da modal e não aponta para lugar nenhum.
+ */
+const ACTION_STEP_IDS = new Set<GuideWelcomeStepId>(['avatar', 'start'])
+
+/** Há alguma AÇÃO a guiar (≠ só explicação)? Decide o auto-abrir e o texto do botão. */
+export function hasActionableWelcomeStep(steps: readonly GuideWelcomeStep[]): boolean {
+  return steps.some((step) => ACTION_STEP_IDS.has(step.id))
+}
+
+/**
+ * O que a criança lê no "Como funciona": as AÇÕES que ainda faltam (avatar, primeira aula)
+ * seguidas da explicação FIXA do app.
+ *
+ * ⚠️ O miolo fixo é o conserto de 14/08. Antes só existiam os passos condicionais, então a
+ * criança que já tinha avatar e já tinha estudado abria o "Como funciona", lia uma linha
+ * sobre XP, apertava "Vamos lá" e não acontecia nada — o botão prometia uma explicação que
+ * o app não tinha. Agora a explicação existe sempre, e os passos condicionais só entram na
+ * frente quando fazem sentido.
+ *
+ * Sem numeração de propósito: com 5 a 7 itens, "1️⃣2️⃣3️⃣" acaba e vira ⭐ no meio da lista.
  */
 export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelcomeStep[] {
-  const steps: Array<Omit<GuideWelcomeStep, 'emoji'>> = []
+  const steps: GuideWelcomeStep[] = []
   if (input.hasAvatar === false) {
-    steps.push({ id: 'avatar', text: 'Monte o seu avatar do seu jeito: cabelo, roupa, tudo!' })
+    steps.push({
+      id: 'avatar',
+      emoji: '😎',
+      text: 'Monte o seu avatar do seu jeito: cabelo, roupa, tudo!',
+    })
   }
   if (input.startAvailable && !input.hasCourseActivity) {
-    steps.push({ id: 'start', text: 'Toque em "Começar" e a sua primeira aula abre na hora.' })
+    steps.push({
+      id: 'start',
+      emoji: '▶️',
+      text: 'Toque em "Começar" e a sua primeira aula abre na hora.',
+    })
   }
-  steps.push({ id: 'xp', text: 'Cada aula e cada jogo que você cria valem XP e conquistas!' })
-
-  const numbers = ['1️⃣', '2️⃣', '3️⃣'] as const
-  return steps.map((step, index) => ({ ...step, emoji: numbers[index] ?? '⭐' }))
+  steps.push(
+    {
+      id: 'aulas',
+      emoji: '📚',
+      text: 'As suas aulas ficam em Cursos. Assista, faça a atividade e conclua.',
+    },
+    {
+      id: 'xp',
+      emoji: '⚡',
+      text: 'Cada aula te dá XP e mantém o seu foguinho aceso mais um dia.',
+    },
+    {
+      id: 'criar',
+      emoji: '🎮',
+      text: 'No Estúdio você monta os seus próprios jogos, do seu jeito.',
+    },
+    {
+      id: 'mural',
+      emoji: '🌟',
+      text: 'Publique o seu jogo no Mural e a turma inteira pode jogar.',
+    },
+    {
+      id: 'carreira',
+      emoji: '🗺️',
+      text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na carreira.',
+    },
+  )
+  return steps
 }
 
 /**

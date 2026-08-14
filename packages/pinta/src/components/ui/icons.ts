@@ -72,6 +72,7 @@ export {
   Replace,
   Rocket,
   RotateCw,
+  Scaling,
   Scissors,
   SendToBack,
   Settings,
@@ -81,6 +82,13 @@ export {
   Square,
   SquareDashed,
   SquarePen,
+  // Os quatro glifos do pathfinder (dois quadrados sobrepostos), na MESMA
+  // linguagem visual do Illustrator. Existem no lucide, então nada de desenhar
+  // à mão nem de afrouxar o tipo do ToolButton.
+  SquaresExclude,
+  SquaresIntersect,
+  SquaresSubtract,
+  SquaresUnite,
   Star,
   Trash2,
   Type,

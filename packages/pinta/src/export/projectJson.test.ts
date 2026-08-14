@@ -10,7 +10,12 @@ import {
   type PintaAsset,
 } from '../core/project'
 import { setCell } from '../tiles/tilemapOps'
-import { galleryToPintaJson, importPintaJson } from './projectJson'
+import {
+  GalleryBackupSizeCache,
+  galleryBackupByteLength,
+  galleryToPintaJson,
+  importPintaJson,
+} from './projectJson'
 
 function makeGallery(): PintaAsset[] {
   const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
@@ -30,6 +35,25 @@ function makeGallery(): PintaAsset[] {
 }
 
 describe('galleryToPintaJson / importPintaJson', () => {
+  it('medição incremental continua byte a byte igual ao JSON canônico', () => {
+    const gallery = makeGallery()
+    gallery[0] = { ...gallery[0], name: 'herói 🎨' } as PintaAsset
+    const canonical = galleryToPintaJson(gallery)
+    const expectedBytes = new TextEncoder().encode(canonical).byteLength
+    const cache = new GalleryBackupSizeCache()
+
+    expect(JSON.stringify(JSON.parse(canonical), null, 2)).toBe(canonical)
+    expect(galleryBackupByteLength(gallery)).toBe(expectedBytes)
+    expect(cache.byteLength(gallery)).toBe(expectedBytes)
+    expect(cache.byteLength(gallery)).toBe(expectedBytes)
+
+    const changed = { ...gallery[0], name: 'herói azul 🎨' } as PintaAsset
+    const nextGallery = [changed, ...gallery.slice(1)]
+    expect(cache.byteLength(nextGallery, new Set([changed.id]))).toBe(
+      new TextEncoder().encode(galleryToPintaJson(nextGallery)).byteLength,
+    )
+  })
+
   it('round-trip da galeria inteira (5 tipos)', () => {
     const gallery = makeGallery()
     const { assets, warnings } = importPintaJson(galleryToPintaJson(gallery))

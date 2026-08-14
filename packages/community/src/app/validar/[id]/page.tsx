@@ -7,7 +7,7 @@ import { shell } from '@/server/shell'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Validar certificado — Sistema Zero',
+  title: 'Validar certificado | Sistema Zero',
   description: 'Confirme a autenticidade de um certificado emitido pelo Sistema Zero.',
   robots: { index: false, follow: false },
 }

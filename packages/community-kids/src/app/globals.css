@@ -344,40 +344,53 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
 }
 
-/* CTA gradiente standalone — mesmo visual do Button default, fora do Button */
-.sz-btn-gradient {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 0.875rem;
-  padding: 0 1.125rem;
-  height: 2.5rem;
-  border-radius: 9999px;
-  border: 0;
-  background-image: var(--sz-gradient);
-  color: var(--sz-primary-fg);
-  cursor: pointer;
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    filter 0.12s ease;
-}
-.sz-btn-gradient:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-.sz-btn-gradient svg {
-  stroke: currentColor;
+/* CTA gradiente standalone — mesmo visual do Button default, fora do Button.
+ *
+ * ⚠️ **Vive em `@layer components` de propósito.** CSS SEM camada vence QUALQUER camada,
+ * então enquanto esta classe ficou solta ela ganhava de toda utilitária do Tailwind (que
+ * moram em `@layer utilities`): `sz-btn-gradient h-11 px-6 text-base` renderizava 40px,
+ * 1.125rem e 14px — as três utilitárias eram LETRA MORTA, em ~20 CTAs do app. Dentro de
+ * `components` a ordem canônica do Tailwind (theme → base → components → utilities) faz a
+ * utilitária vencer, que é o que quem escreve o `className` espera.
+ * Regra para as classes DESTE arquivo: se ela existe para ser ajustada no call site
+ * (tamanho, espaçamento, tipografia), ela pertence a `@layer components`. */
+@layer components {
+  .sz-btn-gradient {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0 1.125rem;
+    /* Default de 44px = alvo de toque mínimo para mão de criança (a mesma régua do
+       `size-11` dos botões do avatar/quarto). Call site sem `h-*` já nasce acessível. */
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 0;
+    background-image: var(--sz-gradient);
+    color: var(--sz-primary-fg);
+    cursor: pointer;
+    box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease,
+      filter 0.12s ease;
+  }
+  .sz-btn-gradient:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
+  .sz-btn-gradient svg {
+    stroke: currentColor;
+  }
 }
 
 /* Variante em BLOCO do CTA gradiente: largura total, altura AUTOMÁTICA e duas
    linhas (legenda + destino). O `.sz-btn-gradient` é pílula de linha única e
    altura fixa (2.5rem, sem padding vertical) — enfiar duas linhas nela deixa um
-   vão no meio e o texto colado nas bordas. Usada no CTA "Ir para o curso-base:
+   vão no meio e o texto colado nas bordas. Usada no CTA "Comece por este:
    <nome>" dos cards bloqueados pela carreira. */
 .sz-btn-gradient-block {
   display: flex;

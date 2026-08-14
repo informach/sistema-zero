@@ -9,6 +9,7 @@ import {
   CREATOR_CAREER_LEVELS,
   computeCareerLevelSlug,
   creatorCareerLevel,
+  isCareerCourseTier,
   missingCareerSlots,
 } from '@sistemazero/core/career'
 import type { CareerCourseLevel, CourseTrack } from '../course/course'
@@ -19,23 +20,27 @@ export type StudentLevelSlug = CareerLevelSlug
 export const COURSE_TIERS = CAREER_COURSE_TIERS
 export type CourseTier = CareerCourseTier
 
-/** SÓ para níveis de CARREIRA (as 3 dificuldades) — `lenda` não é degrau. */
-export function courseTier(level: CareerCourseLevel, track: CourseTrack): CourseTier {
-  return `${level}-${track}`
+/**
+ * O DEGRAU de um curso, ou `null` quando o par não é um degrau da carreira.
+ *
+ * ⚠️ Passou a devolver `null` em 14/08, com a chegada do `primeiros-passos`: nem toda
+ * combinação (level, track) é degrau — só existe `primeiros-passos-2d`, nunca o `-3d`. O
+ * `lenda` já ficava de fora por tipo. Quem chama trata `null` do mesmo jeito que trata
+ * `lenda`: fora da carreira, sem trava.
+ */
+export function courseTier(level: CareerCourseLevel, track: CourseTrack): CourseTier | null {
+  const tier = `${level}-${track}`
+  return isCareerCourseTier(tier) ? tier : null
 }
 
 /** Slots qualificados por etapa. Arrays são tratados como conjuntos. */
 export type QualifyingByTier = Record<CourseTier, number[]>
 
 export function emptyQualifyingByTier(): QualifyingByTier {
-  return {
-    'iniciante-2d': [],
-    'iniciante-3d': [],
-    'intermediario-2d': [],
-    'intermediario-3d': [],
-    'avancado-2d': [],
-    'avancado-3d': [],
-  }
+  // Derivado do core: degrau novo entra sozinho, sem lista paralela para esquecer.
+  return Object.fromEntries(
+    COURSE_TIERS.map((tier) => [tier, [] as number[]]),
+  ) as unknown as QualifyingByTier
 }
 
 /** Alias de compatibilidade para testes e auditorias do catálogo. */
@@ -54,15 +59,10 @@ export interface StudentLevel {
 
 function remainingFor(q: QualifyingByTier, nextSlug: StudentLevelSlug): LevelRemaining {
   const missing = missingCareerSlots(q, creatorCareerLevel(nextSlug))
-  return {
-    any: 0,
-    'iniciante-2d': missing['iniciante-2d']?.length ?? 0,
-    'iniciante-3d': missing['iniciante-3d']?.length ?? 0,
-    'intermediario-2d': missing['intermediario-2d']?.length ?? 0,
-    'intermediario-3d': missing['intermediario-3d']?.length ?? 0,
-    'avancado-2d': missing['avancado-2d']?.length ?? 0,
-    'avancado-3d': missing['avancado-3d']?.length ?? 0,
-  }
+  const byTier = Object.fromEntries(
+    COURSE_TIERS.map((tier) => [tier, missing[tier]?.length ?? 0]),
+  ) as unknown as Record<CourseTier, number>
+  return { any: 0, ...byTier }
 }
 
 export function computeStudentLevel(q: QualifyingByTier): StudentLevel {

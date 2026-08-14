@@ -2,13 +2,17 @@ import { ImpersonationBanner } from '@sistemazero/member-shell/components/impers
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
+import { CelebrationWatcher } from '@/components/kids/celebration-watcher'
 import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode'
-import { LevelUpWatcher } from '@/components/kids/level-up-watcher'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
 import { getMeReadonly } from '@/server/auth'
-import { getAvatarReadonly, getGamificationReadonly } from '@/server/members'
+import {
+  checkStudioAccessReadonly,
+  getAvatarReadonly,
+  getGamificationReadonly,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -57,16 +61,39 @@ async function TopbarChrome({ session }: { session: Session }) {
 }
 
 /**
- * Vigia a SUBIDA DE NÍVEL (rank): só em sessão de PERFIL (kids). Lê a gamificação
- * deduplicada (mesma chave `{withRanking:true}` da chrome → 1 ida ao gateway) e
- * entrega o slug ao watcher CLIENTE, que compara com o último visto (localStorage)
- * e comemora. Não renderiza nada visível até o nível avançar.
+ * Vigia as duas conquistas que chegam pelo servidor: **subir de nível** (rank) e **ganhar
+ * ferramenta** no Estúdio (as gavetas que os cursos liberam). Só em sessão de PERFIL (kids).
+ * A gamificação vem deduplicada (mesma chave `{withRanking:true}` da chrome → 1 ida ao
+ * gateway) e o watcher CLIENTE compara com o último visto (localStorage) e comemora.
+ *
+ * O chrome recebe só uma REVISÃO curta das ferramentas. A lista de ids pode ter centenas
+ * de itens e é buscada por uma rota BFF somente quando essa revisão muda.
+ *
+ * ⚠️ Sem o produto Estúdio — ou com qualquer das duas buscas fora do ar — as gavetas vão
+ * `null`, que significa DESCONHECIDO e é diferente de lista vazia: o watcher então não
+ * encosta na chave do localStorage. Mandar `[]` num soluço de rede zeraria o que estava
+ * guardado e faria a visita seguinte comemorar gaveta que a criança já tinha.
+ * Não comemorar ≠ não ganhar — a conquista fica guardada e aparece quando ela tiver o produto.
  */
-async function LevelUpChrome({ session }: { session: Session }) {
+async function CelebrationChrome({ session }: { session: Session }) {
   if (!session.activeProfile) return null
-  const gam = await getGamificationReadonly({ withRanking: true })
+  const [gam, studioRes] = await Promise.all([
+    getGamificationReadonly({ withRanking: true }),
+    checkStudioAccessReadonly().catch(() => null),
+  ])
   const levelSlug = gam.status === 200 ? gam.body?.level?.slug : undefined
-  return <LevelUpWatcher levelSlug={levelSlug} profileKey={session.id} />
+  const toolsRevision = gam.status === 200 ? (gam.body?.studioUnlockRevision ?? null) : null
+  const studioAccess = studioRes?.body?.access?.['estudio-completo']
+  const ownsStudio =
+    studioRes?.status === 200 && typeof studioAccess === 'boolean' ? studioAccess : null
+  return (
+    <CelebrationWatcher
+      levelSlug={levelSlug}
+      toolsRevision={toolsRevision}
+      ownsStudio={ownsStudio}
+      profileKey={session.id}
+    />
+  )
 }
 
 /**
@@ -118,7 +145,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </FocusModeProvider>
       {/* Comemoração de subida de nível (rank) — fora da chrome, sem fallback visível. */}
       <Suspense fallback={null}>
-        <LevelUpChrome session={session} />
+        <CelebrationChrome session={session} />
       </Suspense>
     </div>
   )

@@ -24,9 +24,9 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Capa dedicada (card do checkout + og:image + JSON-LD): a arte "Corre, Dino!".
   checkoutImage: 'checkout-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: 'Comunidade dos Criadores · O foco do seu filho vira jogos que ficam',
+  seoTitle: 'Comunidade dos Criadores | De jogar a criar: jogos que ficam',
   seoDescription:
-    'A assinatura que transforma o foco do seu filho (9 a 14 anos) em jogos criados por ele: cursos com professor acompanhando, jogos publicados com link de verdade e uma comunidade segura e moderada. Comunicação dirigida aos pais.',
+    'A assinatura pra criança de 9 a 14 anos que vive em jogo, computador e tecnologia: aqui ela cria os próprios jogos, com professor acompanhando e publicação com link de verdade. Comunicação dirigida aos pais.',
   theme: 'kids',
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,

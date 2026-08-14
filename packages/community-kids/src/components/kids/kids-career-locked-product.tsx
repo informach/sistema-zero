@@ -31,7 +31,7 @@ export function KidsCareerLockedProduct({
       <p className="mt-3 max-w-md text-muted-foreground">{intro}</p>
       <p className="mt-3 max-w-md text-muted-foreground">
         Ele abre quando você chegar no nível <strong>{level.label}</strong>. Continue nos cursos e
-        publicando os seus projetos — falta pouco!
+        publicando os seus projetos. Falta pouco!
       </p>
       <Link
         href="/cursos"

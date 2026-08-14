@@ -43,7 +43,14 @@ export function customSizeSpecFor(kind: PintaAssetKind): CustomSizeSpec | null {
       return { fields: ['width', 'height'], min: 16, max: 2048 }
     case 'pixel-sprite':
     case 'vector-sprite':
-      return { fields: ['frame'], min: PINTA_LIMITS.minFrameSize, max: PINTA_LIMITS.maxFrameSize }
+      // ⭐ Largura E altura: uma nave é 128x32. Com um número só, a criança
+      // desenhava num quadro quadrado e sobrava vazio que a caixa de colisão do
+      // Estúdio herdava — o desenho encostava sem encostar.
+      return {
+        fields: ['width', 'height'],
+        min: PINTA_LIMITS.minFrameSize,
+        max: PINTA_LIMITS.maxFrameSize,
+      }
     case 'tilemap':
       // A spec tem UMA faixa para os dois campos (uma frase de ajuda só):
       // maxTilemapCols === maxTilemapRows (128) hoje; se algum dia divergirem,
@@ -87,7 +94,10 @@ export function seedCustomValues(kind: PintaAssetKind, presetKey: string): Custo
   const parts = presetKey.split('x')
   const seeded: Record<CustomFieldId, string> = { ...EMPTY_CUSTOM_VALUES }
   spec.fields.forEach((field, index) => {
-    const part = parts[index] ?? ''
+    // ⚠️ Os presets de PERSONAGEM são um número só ("32"), e a spec dele agora tem
+    // dois campos: sem cair no primeiro, escolher um preset e depois "Personalizado"
+    // abria o formulário com a altura VAZIA e o Avançar desligado.
+    const part = parts[index] ?? (parts.length === 1 ? (parts[0] ?? '') : '')
     seeded[field] = /^\d+$/.test(part) ? part : ''
   })
   return seeded

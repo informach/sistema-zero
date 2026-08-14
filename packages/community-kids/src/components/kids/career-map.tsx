@@ -1,31 +1,62 @@
 'use client'
 
-import { COURSE_TIER_LABELS } from '@sistemazero/member-shell/lib/course-tier'
-import { Check, Lock } from 'lucide-react'
+import { buttonVariants } from '@sistemazero/ui/button'
+import { Check, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
+import {
+  type CareerCatalogEntry,
+  type CareerProgress,
+  careerHorizon,
+  careerProgress,
+  hasHorizonNode,
+  levelsBeyondHorizon,
+  visibleCareerLevels,
+} from '@/lib/career-horizon'
 import { careerNodeState, LEVEL_TIER } from '@/lib/career-map'
 import { buildCareerGeometry, type CareerGeometry, type CareerPoint } from '@/lib/career-path'
 import { cn } from '@/lib/cn'
-import { LEVEL_INFO, LEVEL_ORDER, levelInfo, nextLevelHint } from '@/lib/level-info'
+import { LEVEL_INFO, levelInfo } from '@/lib/level-info'
 import type { StudentLevelSlug, StudentLevelView } from '@/lib/types'
+import { CareerHorizonNode } from './career-horizon-node'
+import { useWiggle } from './use-wiggle'
 
 /**
- * Mapa da Carreira (/cursos): uma FITA curva contínua serpenteia ligando os 8 níveis;
- * a parte já conquistada acende no degradê das cores dos níveis, a parte à frente fica
- * apagada. Cada nó é um MEDALHÃO grande com a ilustração do nível (Dedé/Debinha em
- * `/carreira/<slug>.webp`; sem arquivo → fallback no ícone do LEVEL_INFO), fica
- * preto-e-branco com cadeado quando ainda não foi atingido e, liberado, navega p/ a
- * trilha do nível (`/cursos/trilha/[level]`). Nó travado NÃO navega: balança + recado
- * gentil (decisão da usuária 24/07). Fita e medalhões dividem o espaço normalizado da
- * geometria pura (`lib/career-path.ts`) → alinham em qualquer largura.
+ * Mapa da Carreira (/cursos): uma FITA curva contínua serpenteia ligando os níveis; a parte já
+ * conquistada acende no degradê das cores dos níveis, a parte à frente fica apagada. Cada nó é um
+ * MEDALHÃO grande com a ilustração do nível (Dedé/Debinha em `/carreira/<slug>.webp`; sem arquivo →
+ * fallback no ícone do LEVEL_INFO) e, liberado, navega p/ a trilha do nível
+ * (`/cursos/trilha/[level]`). Nó travado NÃO navega: balança + recado gentil (decisão da usuária
+ * 24/07). Fita e medalhões dividem o espaço normalizado da geometria pura (`lib/career-path.ts`) →
+ * alinham em qualquer largura.
+ *
+ * ⭐ **HORIZONTE DO CATÁLOGO:** o mapa desenha só até onde o catálogo de hoje consegue levar
+ * (`careerHorizon`) e fecha com o nó "E tem muito mais pela frente". Enquanto os 48 cursos não
+ * existem, a alternativa seria uma fileira de cadeados prometendo cursos que ninguém gravou. Quando
+ * o catálogo enche, o horizonte vira a Lenda, o nó de fechamento some e este componente volta a
+ * desenhar os 8 medalhões de sempre, sem ninguém desligar nada.
  */
-export function CareerMap({ level }: { level: StudentLevelView }) {
-  const hint = nextLevelHint(level)
+export function CareerMap({
+  level,
+  courses,
+  studioOwned = false,
+}: {
+  level: StudentLevelView
+  /** Recorte do catálogo publicado (3 campos) — define o horizonte e o contador honesto.
+   *  ⚠️ Recorte, não a view inteira: isto atravessa a fronteira servidor→cliente. */
+  courses: readonly CareerCatalogEntry[]
+  /** Estúdio Completo comprado? Só com posse o estado "em dia" oferece o atalho de criar. */
+  studioOwned?: boolean
+}) {
   const current = levelInfo(level.slug)
-  const currentIndex = Math.max(0, LEVEL_ORDER.indexOf(level.slug as StudentLevelSlug))
-  const geo = buildCareerGeometry(LEVEL_ORDER.length, currentIndex)
+  const progress = careerProgress(level, courses)
+  const visible = visibleCareerLevels(level.slug, careerHorizon(courses))
+  const showHorizon = hasHorizonNode(visible)
+  const beyond = levelsBeyondHorizon(visible)
+  const currentIndex = Math.max(0, visible.indexOf(level.slug as StudentLevelSlug))
+  const nodeCount = visible.length + (showHorizon ? 1 : 0)
+  const geo = buildCareerGeometry(nodeCount, currentIndex)
 
   return (
     <section className="flex flex-col gap-8">
@@ -37,31 +68,78 @@ export function CareerMap({ level }: { level: StudentLevelView }) {
           <current.icon className="size-4" style={{ color: current.colorVar }} aria-hidden />
           Você é {current.label}
         </span>
-        {hint ? <p className="max-w-md text-muted-foreground text-sm">{hint}</p> : null}
+        {progress.kind === 'pending' ? (
+          <p className="max-w-md text-muted-foreground text-sm">{progress.hint}</p>
+        ) : null}
       </div>
 
+      {/* `mb-10` reserva o espaço da legenda do ÚLTIMO nó, que é absoluta e cai ~42px
+          ABAIXO da caixa da lista. Sem isso o bloco "Você está em dia" (irmão seguinte)
+          entra por cima dela — medido em 10px de sobreposição. Margem, não padding: os
+          nós são posicionados em % da caixa, e padding recalcularia todas as posições. */}
       <ol
-        className="relative mx-auto w-full max-w-xl"
-        style={{ height: `calc(var(--career-row) * ${LEVEL_ORDER.length})` }}
+        className="relative mx-auto mb-10 w-full max-w-xl"
+        style={{ height: `calc(var(--career-row) * ${nodeCount})` }}
       >
-        <CareerRibbon geo={geo} />
-        {LEVEL_ORDER.map((slug, index) => (
+        <CareerRibbon geo={geo} levels={visible} />
+        {visible.map((slug, index) => (
           <CareerNode
             key={slug}
             slug={slug}
             point={geo.points[index] ?? { x: 50, y: 0 }}
             viewHeight={geo.viewHeight}
             state={careerNodeState(level.slug, slug)}
-            level={level}
+            progress={progress}
           />
         ))}
+        {showHorizon ? (
+          <CareerHorizonNode
+            point={geo.points[visible.length] ?? { x: 50, y: 0 }}
+            viewHeight={geo.viewHeight}
+            levels={beyond}
+          />
+        ) : null}
       </ol>
+
+      {progress.kind === 'up-to-date' ? <UpToDate studioOwned={studioOwned} /> : null}
     </section>
   )
 }
 
+/**
+ * A criança fez tudo que existe. Não é fim de linha nem culpa dela: é hora de criar o que
+ * quiser. Com o Estúdio comprado (produto vendido à parte), o recado vira atalho.
+ */
+function UpToDate({ studioOwned }: { studioOwned: boolean }) {
+  return (
+    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3 rounded-3xl border-2 border-border border-dashed bg-card p-5 text-center">
+      <Sparkles className="size-7 text-primary" aria-hidden />
+      <p className="sz-display text-lg">Você está em dia!</p>
+      <p className="text-muted-foreground text-sm">
+        Você já fez tudo que está pronto por aqui. Novas aventuras estão sendo criadas!
+      </p>
+      {studioOwned ? (
+        <Link
+          href="/estudio"
+          className={cn(buttonVariants({ variant: 'default' }), 'h-11 rounded-full px-6')}
+        >
+          Criar um jogo meu
+        </Link>
+      ) : null}
+    </div>
+  )
+}
+
 /** A fita: trilha completa apagada + trecho percorrido no degradê das cores dos níveis. */
-function CareerRibbon({ geo }: { geo: CareerGeometry }) {
+function CareerRibbon({
+  geo,
+  levels,
+}: {
+  geo: CareerGeometry
+  /** Níveis DESENHADOS, na ordem dos pontos — o degradê lê a cor daqui, não do LEVEL_ORDER
+   *  global (o mapa pode ser mais curto que a escada). */
+  levels: readonly StudentLevelSlug[]
+}) {
   const lastTraveled = geo.gradientStops.at(-1)
   const startY = geo.points[0]?.y ?? 0
   const endY = lastTraveled ? (geo.points[lastTraveled.index]?.y ?? geo.viewHeight) : geo.viewHeight
@@ -87,7 +165,7 @@ function CareerRibbon({ geo }: { geo: CareerGeometry }) {
               <stop
                 key={stop.index}
                 offset={stop.offset}
-                stopColor={`var(--level-${LEVEL_ORDER[stop.index]})`}
+                stopColor={`var(--level-${levels[stop.index] ?? 'noob'})`}
               />
             ))}
           </linearGradient>
@@ -106,29 +184,46 @@ function CareerRibbon({ geo }: { geo: CareerGeometry }) {
   )
 }
 
+/** Bolinhas do degrau atual: uma por curso que EXISTE, cheia quando já foi concluído. */
+function ProgressDots({ done, total }: { done: number; total: number }) {
+  return (
+    <span className="flex items-center gap-1" aria-hidden>
+      {Array.from({ length: total }, (_, index) => (
+        <span
+          key={
+            // Bolinha não tem identidade própria — a posição é a identidade.
+            // biome-ignore lint/suspicious/noArrayIndexKey: lista puramente posicional
+            index
+          }
+          className={cn(
+            'size-2 rounded-full',
+            index < done ? 'bg-current' : 'bg-current opacity-25',
+          )}
+        />
+      ))}
+    </span>
+  )
+}
+
 function CareerNode({
   slug,
   point,
   viewHeight,
   state,
-  level,
+  progress,
 }: {
   slug: StudentLevelSlug
   point: CareerPoint
   viewHeight: number
   state: ReturnType<typeof careerNodeState>
-  level: StudentLevelView
+  progress: CareerProgress
 }) {
   const info = LEVEL_INFO[slug]
   const tier = LEVEL_TIER[slug]
   const [artBroken, setArtBroken] = useState(false)
-  const [wiggling, setWiggling] = useState(false)
-  const wiggleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { wiggling, wiggle } = useWiggle()
   const locked = state === 'locked'
   const Icon = info.icon
-
-  const remaining =
-    state === 'current' && tier && level.remaining ? (level.remaining[tier] ?? 0) : 0
 
   const medal = (
     // Wrapper posicionado, SEM recorte: o badge (cadeado/check) fica FORA do círculo
@@ -193,16 +288,25 @@ function CareerNode({
         >
           {info.label}
         </span>
-        {tier ? (
-          <span className="text-[11px] text-muted-foreground">
-            Trilha {COURSE_TIER_LABELS[tier]}
-          </span>
-        ) : state !== 'locked' ? (
+        {/* ⚠️ NADA de nome de degrau ("Iniciante 2D") aqui: é vocabulário de quem MONTA o
+            curso, não de quem faz. Para a criança o nó já se chama Faísca, Construtor(a)… */}
+        {!tier && state !== 'locked' ? (
           <span className="text-[11px] text-muted-foreground">O topo da carreira!</span>
         ) : null}
-        {state === 'current' && remaining > 0 ? (
+        {/* Marcos do degrau: a criança vê o passo a passo se mexer a cada curso publicado,
+            em vez de esperar 8 cursos pelo próximo posto. O contador conta só o que EXISTE. */}
+        {state === 'current' && progress.kind === 'pending' ? (
+          <span
+            className="mt-0.5 flex flex-col items-center gap-1 font-semibold text-[11px]"
+            style={{ color: info.colorVar }}
+          >
+            <ProgressDots done={progress.done} total={progress.ready} />
+            {progress.done} de {progress.ready}{' '}
+            {progress.ready === 1 ? 'aventura pronta' : 'aventuras prontas'}
+          </span>
+        ) : state === 'current' && progress.kind === 'up-to-date' ? (
           <span className="font-semibold text-[11px]" style={{ color: info.colorVar }}>
-            {remaining === 1 ? 'Falta 1 curso' : `Faltam ${remaining} cursos`}
+            Você está em dia! 🎉
           </span>
         ) : null}
       </span>
@@ -223,12 +327,10 @@ function CareerNode({
       <li className={rowClass} style={positionStyle}>
         <button
           type="button"
-          aria-label={`${info.label} — ainda bloqueado`}
+          aria-label={`${info.label}, ainda bloqueado`}
           className="relative block cursor-not-allowed"
           onClick={() => {
-            setWiggling(true)
-            if (wiggleTimer.current) clearTimeout(wiggleTimer.current)
-            wiggleTimer.current = setTimeout(() => setWiggling(false), 700)
+            wiggle()
             toast('Continue sua carreira para abrir esta parte do mapa! 🔒')
           }}
         >
@@ -246,7 +348,7 @@ function CareerNode({
         <li className={rowClass} style={positionStyle}>
           <Link
             href="/cursos/trilha/god"
-            aria-label={`${info.label} — abrir os cursos bônus da Lenda`}
+            aria-label={`Abrir os cursos bônus da ${info.label}`}
             className="relative block"
           >
             {inner}
@@ -265,7 +367,7 @@ function CareerNode({
     <li className={rowClass} style={positionStyle}>
       <Link
         href={`/cursos/trilha/${slug}`}
-        aria-label={`${info.label} — abrir a trilha ${COURSE_TIER_LABELS[tier]}`}
+        aria-label={`Abrir a trilha ${info.label}`}
         className="relative block"
       >
         {inner}

@@ -27,7 +27,7 @@ const BY_SLUG: Record<string, ChannelPresentation> = {
   geral: {
     emoji: '💬',
     colorVar: 'var(--kids-cyan-tint)',
-    emptyState: 'Nenhuma conversa ainda. Puxa o papo — a turma quer te conhecer! ✨',
+    emptyState: 'Nenhuma conversa ainda. Puxa o papo, que a turma quer te conhecer! ✨',
   },
   'recados-da-equipe': {
     emoji: '📣',

@@ -30,9 +30,38 @@ async function qualify(
   })
 }
 
+/**
+ * Semeia o curso de ENTRADA (degrau `primeiros-passos-2d`) e o qualifica para o perfil.
+ *
+ * ⚠️ Desde 14/08 a Faísca estuda o degrau de entrada, não o Iniciante 2D: sem esse passo,
+ * TODO curso do Iniciante 2D é `future-tier` e nunca se chega ao `foundation-first`, que é
+ * o que estes testes existem para exercitar.
+ */
+async function comEntradaConcluida(
+  courses: ReturnType<typeof buildApp>['courses'],
+  gamification: ReturnType<typeof buildApp>['gamification'],
+  ...profiles: string[]
+) {
+  const entrada = seedSampleCourse(
+    courses,
+    'primeiros-passos',
+    'published',
+    'kids',
+    false,
+    'primeiros-passos',
+    '2d',
+    1,
+  )
+  for (const profile of profiles.length > 0 ? profiles : [USER]) {
+    await qualify(gamification, entrada.courseId, profile)
+  }
+  return entrada
+}
+
 describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
   test('curso-base abre; demais aguardam concluir e publicar o curso-base', async () => {
-    const { app, courses, entitlements } = buildApp()
+    const { app, courses, entitlements, gamification } = buildApp()
+    await comEntradaConcluida(courses, gamification)
     seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
     seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
@@ -56,7 +85,8 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
   })
 
   test('sem curso-base PUBLICADO na etapa, os demais NÃO ficam presos (fail-open)', async () => {
-    const { app, courses, entitlements } = buildApp()
+    const { app, courses, entitlements, gamification } = buildApp()
+    await comEntradaConcluida(courses, gamification)
     // Só a posição 2 existe; nenhum curso-base publicado para destravá-la.
     seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
@@ -69,7 +99,8 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
   })
 
   test('curso-base em RASCUNHO não conta como base publicada (fail-open)', async () => {
-    const { app, courses, entitlements } = buildApp()
+    const { app, courses, entitlements, gamification } = buildApp()
+    await comEntradaConcluida(courses, gamification)
     seedSampleCourse(courses, 'base-2d', 'draft', 'kids', false, 'iniciante', '2d', 1)
     seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
@@ -81,7 +112,8 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
   })
 
   test('catálogo: sem curso-base publicado, a posição 2 não trava', async () => {
-    const { app, courses, entitlements } = buildApp()
+    const { app, courses, entitlements, gamification } = buildApp()
+    await comEntradaConcluida(courses, gamification)
     seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
 
@@ -98,6 +130,7 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
 
   test('os dois marcos do curso-base liberam os demais da mesma etapa', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
+    await comEntradaConcluida(courses, gamification)
     const base = seedSampleCourse(
       courses,
       'base-2d',
@@ -119,7 +152,8 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
   })
 
   test('catálogo separa matrícula da trava e aponta o curso-base', async () => {
-    const { app, courses, entitlements } = buildApp()
+    const { app, courses, entitlements, gamification } = buildApp()
+    await comEntradaConcluida(courses, gamification)
     seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
     seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
     seedSampleCourse(courses, 'base-3d', 'published', 'kids', false, 'iniciante', '3d', 1)
@@ -171,6 +205,8 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
   test('família: a qualificação é POR PERFIL — o irmão não herda o destravamento', async () => {
     const PROFILE_B = '99999999-9999-4999-8999-999999999999'
     const { app, courses, entitlements, gamification } = buildApp()
+    // Os DOIS irmãos fizeram o curso de entrada, então os dois estudam o Iniciante 2D.
+    await comEntradaConcluida(courses, gamification, USER, PROFILE_B)
     const base = seedSampleCourse(
       courses,
       'base-2d',
@@ -226,9 +262,10 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
 
   test('bônus é RECOMPENSA da etapa: trava até completar todos os obrigatórios', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
-    // 8 posições obrigatórias por degrau (reforma 07/2026): a etapa só COMPLETA
-    // (e libera o bônus-recompensa) com as 8 qualificadas.
-    const slots = Array.from({ length: 8 }, (_, index) =>
+    // O Iniciante 2D tem 7 posições desde 14/08 (o curso-base virou o degrau de entrada):
+    // a etapa só COMPLETA — e libera o bônus-recompensa — com as 7 qualificadas E a entrada.
+    await comEntradaConcluida(courses, gamification)
+    const slots = Array.from({ length: 7 }, (_, index) =>
       seedSampleCourse(
         courses,
         `slot-${index + 1}`,
@@ -289,6 +326,7 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
     seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
     seedSampleCourse(courses, 'bonus-2d', 'published', 'kids')
     seedSampleCourse(courses, 'futuro', 'published', 'kids', false, 'avancado', '3d', 1)
+    // (o degrau de entrada não é necessário aqui: a equipe ignora a trava por completo)
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
 
     const staffHeaders = {

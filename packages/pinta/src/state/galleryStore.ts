@@ -28,11 +28,23 @@ import { findTemplate } from '../templates/catalog'
 import { createPintaPersistence, isPintaStorageBudgetError } from './persistence'
 
 export type NewAssetInput = (
-  | { kind: 'pixel-sprite'; name: string; frameSize: number }
+  | {
+      kind: 'pixel-sprite'
+      name: string
+      frameSize: number
+      frameWidth?: number
+      frameHeight?: number
+    }
   | { kind: 'pixel-background'; name: string; width: number; height: number }
   | { kind: 'tileset'; name: string; tileSize: number }
   | { kind: 'tilemap'; name: string; tilesetId: string; cols: number; rows: number }
-  | { kind: 'vector-sprite'; name: string; frameSize: number }
+  | {
+      kind: 'vector-sprite'
+      name: string
+      frameSize: number
+      frameWidth?: number
+      frameHeight?: number
+    }
   | { kind: 'vector-background'; name: string; width: number; height: number }
   | { kind: 'vector-tileset'; name: string; tileSize: number }
 ) & {
@@ -71,6 +83,8 @@ export interface PintaGalleryState {
   remove(id: string): Promise<boolean>
   /** Absorve um asset atualizado pelo editor (autosave) sem reler o disco. */
   absorb(asset: PintaAsset): void
+  /** Publica uma transação confirmada do editor em uma única atualização. */
+  absorbMany(assets: readonly PintaAsset[]): void
   /**
    * Restaura assets de um backup `.pinta.json`: ids NOVOS + nome com sufixo em
    * colisão (import nunca sobrescreve o que existe); respeita a quota — devolve
@@ -116,7 +130,12 @@ function buildAsset(input: NewAssetInput, name: string): PintaAsset {
 function buildAssetByKind(input: NewAssetInput, name: string): PintaAsset {
   switch (input.kind) {
     case 'pixel-sprite':
-      return createPixelSpriteAsset({ name, frameSize: input.frameSize })
+      return createPixelSpriteAsset({
+        name,
+        frameSize: input.frameSize,
+        frameWidth: input.frameWidth,
+        frameHeight: input.frameHeight,
+      })
     case 'pixel-background':
       return createPixelBackgroundAsset({ name, width: input.width, height: input.height })
     case 'tileset':
@@ -129,7 +148,12 @@ function buildAssetByKind(input: NewAssetInput, name: string): PintaAsset {
         rows: input.rows,
       })
     case 'vector-sprite':
-      return createVectorSpriteAsset({ name, frameSize: input.frameSize })
+      return createVectorSpriteAsset({
+        name,
+        frameSize: input.frameSize,
+        frameWidth: input.frameWidth,
+        frameHeight: input.frameHeight,
+      })
     case 'vector-background':
       return createVectorBackgroundAsset({ name, width: input.width, height: input.height })
     case 'vector-tileset':
@@ -353,6 +377,10 @@ export function createGalleryStore(): PintaGalleryStore {
 
     absorb(asset) {
       set((state) => ({ assets: upsertSorted(state.assets, asset) }))
+    },
+
+    absorbMany(assets) {
+      set((state) => ({ assets: assets.reduce(upsertSorted, state.assets) }))
     },
 
     async importAssets(incoming) {

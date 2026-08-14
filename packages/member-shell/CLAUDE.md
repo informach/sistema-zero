@@ -248,7 +248,8 @@ desenhos vivem no IndexedDB do navegador (por perfil) e a ponte "Usar no Estúdi
 biblioteca pessoal do `@sistemazero/studio` (client-side). O shell só carrega o GATE da página:
 **`PINTA_ACCESS_REF = 'pinta'`** + `checkPintaAccessReadonly()` (`server/clients.ts`), que pede
 **DUAS refs numa ida** (`refs: 'pinta,estudio-completo'`) — a segunda alimenta o `studioOwned` do
-adapter do Pinta (só muda a copy do sucesso da ponte). Sem rotas `/api/pinta`.
+adapter do Pinta (só muda a copy do sucesso da ponte). Sem rotas `/api/pinta` — logo o gate da
+PÁGINA é o único, e ele é `meetsFreeCreationLevel` (`coder`/Construtor(a)) desde 14/08.
 
 **Bloco "Em breve" (`coming_soon`, 08/2026):** `ComingSoonBlock {kind, message?}` em `lib/types.ts`
 (+ o union `LessonBlockContent` ganhou também o `CertificateBlock`, que faltava) e o `case` no
@@ -357,7 +358,7 @@ chaves `iniciante-2d`…`avancado-3d` + `any`, mirror do members) — `Gamificat
 bônus `careerSlot=null` é RECOMPENSA da etapa; regra no core/members, apresentação no kids). **`lib/course-tier.ts`**
 é o helper compartilhado dos apps de aluno (`COURSE_TIERS`/`COURSE_TIER_LABELS`/`courseTierOf` —
 track ausente → `2d`; o admin NÃO importa daqui, duplicação intencional); o filtro `nivel` do
-`use-catalog-filters` usa os 6 degraus. **`lib/studio-tier.ts`**: `resolveStudioTier` mapeia os 8
+`use-catalog-filters` usa os degraus de `COURSE_TIERS` (7 desde 14/08, com o `primeiros-passos-2d` na frente; só o KIDS usa a divisão — o filtro `nivel` do adulto não tem UI hoje). **`lib/studio-tier.ts`**: `resolveStudioTier` mapeia os 8
 ranks → degrau de blocos do Estúdio Completo (cada nível libera somente ferramentas já aprendidas;
 **Ponte abre no `champion`/Gênio** e o Pro abre somente no `god`/Lenda + equipe; desconhecido→noob;
 remodelo 26/07 — Mestre/Arquiteto ficaram só-Blocos). `resolveStudioTier` também devolve a allowlist
@@ -366,6 +367,18 @@ acumulada de extensões (o kit `game-3d-advanced` entra já no `architect`/Arqui
 estão em `docs/carreira-do-criador.md`. Tudo
 passthrough (os clients não mapeiam) — a APRESENTAÇÃO (aura/insígnia/chip) vive no community-kids;
 aqui é só o tipo.
+
+**Paleta do Estúdio pelo CURRÍCULO (08/2026):** `resolveStudioTier(levelSlug, role, unlocks?)` ganhou
+um 3º argumento — os blocos que a criança conquistou nos cursos (+ extensões derivadas). Quando NÃO
+vazio ele MANDA na paleta (`allowBlocks` já é soberano sobre o `level` dentro do editor);
+⚠️ **fail-open deliberado**: vazio/ausente cai no perfil do NÍVEL, senão o dia do deploy (com nenhum
+curso etiquetado) a criança abriria o Estúdio com a caixa VAZIA. ⚠️ A **EQUIPE ignora o currículo**
+(passe livre p/ conferir o Estúdio inteiro). Client novo `getStudioUnlocksReadonly()` (`GET
+/members/studio/unlocks`) + tipo `StudioUnlocksView`. ⚠️ A derivação bloco→extensão e bloco→gaveta
+vive em **`server/studio-unlocks.ts`** (`extensionsForBlocks`/`drawersForBlocks`), NÃO no
+`lib/studio-tier.ts`: ela importa o `SERVER_BLOCK_CATALOG` inteiro e o studio-tier é consumido por
+componentes de CLIENTE (checagem de remix no Mural) — arrastar o catálogo p/ o bundle do navegador
+seria caro. Quem resolve é a página (Server Component), que passa o resultado pronto.
 
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
@@ -586,8 +599,11 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
   reais ao modelo consomem o crédito `studio-zappy`.
 - **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
   carreira **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
-  para QA. Não existe allowlist de contas nem degrau configurável: a barra compartilhada vive em
-  `CREATIVE_APPS_MIN_LEVEL`, usada também por Pensa/Pinta. `isStudioZappyAllowed` decide quando
+  para QA. Não existe allowlist de contas nem degrau configurável: a barra vive em
+  **`AI_APPS_MIN_LEVEL`**, compartilhada com o Pensa — os dois CHAMAM a IA, e o custo por uso é o
+  motivo de adiar. ⚠️ **O Pinta NÃO usa mais essa barra** (14/08): desenhar não custa por uso,
+  então ele abre junto com o Estúdio livre em `FREE_CREATION_MIN_LEVEL` (`coder`/Construtor(a)),
+  via `meetsFreeCreationLevel`. `isStudioZappyAllowed` decide quando
   o rank já foi carregado; `isStudioZappyAllowedForRequest` consulta o members nos handlers.
   Slug ausente/desconhecido reprova (fail-closed via `careerLevelAtLeast` do core). A rota da
   pergunta reutiliza a gamificação que já precisa para montar o tier, sem uma segunda consulta.

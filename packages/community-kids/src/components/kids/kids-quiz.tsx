@@ -167,7 +167,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
           <div>
             <p className="sz-display text-xl">Quase lá!</p>
             <p className="mt-0.5 text-sm">
-              Você fez <span className="sz-display-grad">{result.score}%</span> — precisa de{' '}
+              Você fez <span className="sz-display-grad">{result.score}%</span> e precisa de{' '}
               {passingScore}% para passar.
             </p>
           </div>
@@ -176,7 +176,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         {cooldownLeft !== null ? (
           <div className="flex flex-col gap-1">
             <p className="text-sm">
-              Enquanto o relógio corre, olhe a correção aqui em cima — assim a próxima tentativa
+              Enquanto o relógio corre, olhe a correção aqui em cima, que assim a próxima tentativa
               fica ainda melhor!
             </p>
             <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">
@@ -202,11 +202,11 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
           <p className="sz-display text-lg">Pausa rápida!</p>
           {lastScore !== null ? (
             <p className="text-sm">
-              Você fez <span className="sz-display-grad">{lastScore}%</span> — precisa de{' '}
+              Você fez <span className="sz-display-grad">{lastScore}%</span> e precisa de{' '}
               {passingScore}% para passar.
             </p>
           ) : null}
-          <p className="text-sm">Respire fundo e pense nas perguntas — já já dá para tentar!</p>
+          <p className="text-sm">Respire fundo e pense nas perguntas. Já já dá para tentar!</p>
           <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">
             <Timer className="size-4" />
             Você pode tentar de novo em {cooldownLeft}.

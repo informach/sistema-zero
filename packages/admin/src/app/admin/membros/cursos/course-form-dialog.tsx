@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
+import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { courseSaveError } from '@/lib/course-errors'
 import { loadAllPages } from '@/lib/load-all-pages'
@@ -47,6 +48,8 @@ interface FormState {
   track: string
   careerSlot: string
   sequentialLock: boolean
+  /** Blocos que este curso libera no Estúdio livre (currículo, 08/2026). */
+  studioUnlockBlocks: string[]
 }
 
 const EMPTY: FormState = {
@@ -64,6 +67,7 @@ const EMPTY: FormState = {
   careerSlot: '',
   // Padrão LIGADO (decisão da usuária): curso novo já trava as aulas em sequência.
   sequentialLock: true,
+  studioUnlockBlocks: [],
 }
 
 /**
@@ -71,7 +75,13 @@ const EMPTY: FormState = {
  * demais). Espelha o CHECK da migration `0053` e o catálogo do core. Exportada SÓ p/
  * a trava de conformance admin×core (`career-tier-conformance`).
  */
-export function slotsForTier(_level: string, _track: string): number {
+export function slotsForTier(level: string, track: string): number {
+  // ⚠️ Não é mais um 8 uniforme (14/08): o degrau de ENTRADA tem 1 posição (o curso que a
+  // Faísca faz) e o Iniciante 2D ficou com 7, porque o curso-base saiu dele. A soma da
+  // carreira segue 48. O número vem do core, e o `career-tier-conformance.test.ts` compara
+  // esta função com ele.
+  if (level === 'primeiros-passos') return 1
+  if (level === 'iniciante' && track === '2d') return 7
   return 8
 }
 
@@ -89,6 +99,7 @@ function formFromCourse(c: CourseView): FormState {
     track: c.track ?? '2d',
     careerSlot: c.careerSlot == null ? '' : String(c.careerSlot),
     sequentialLock: c.sequentialLock ?? true,
+    studioUnlockBlocks: c.studioUnlockBlocks ?? [],
   }
 }
 
@@ -277,6 +288,9 @@ export function CourseFormDialog({
         track: form.track,
         careerSlot: form.audience === 'kids' && form.careerSlot ? Number(form.careerSlot) : null,
         sequentialLock: form.sequentialLock,
+        // SEMPRE enviado (como os demais): o members PRESERVA quando ausente, então
+        // omitir aqui esconderia uma limpeza intencional do professor.
+        studioUnlockBlocks: form.studioUnlockBlocks,
       }
       if (editing) {
         // O PATCH do members EXIGE `version` (concorrência otimista → 409 se
@@ -491,6 +505,40 @@ export function CourseFormDialog({
                 destrava.
               </p>
             ) : null}
+          </Field>
+        )}
+        {/* Currículo do Estúdio livre (08/2026): a paleta do aluno é a UNIÃO dos blocos
+            dos cursos que ele concluiu E publicou no Mural — não mais um conjunto fixo
+            por nível. É o MESMO formato de lista da aula (`allowBlocks`), então o picker
+            é o mesmo e a importação por JSON já recusa id inexistente e repetido. */}
+        {form.audience === 'kids' && (
+          <Field
+            label="Ferramentas que este curso libera no Estúdio"
+            tooltip="Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. A criança recebe só os que ainda não tinha, ao concluir o curso E publicar o jogo no Mural. A caixa de ferramentas dela é a soma de tudo que já conquistou, sem repetir."
+          >
+            <StudioBlocksPicker
+              value={form.studioUnlockBlocks}
+              onChange={(next) => setForm((f) => ({ ...f, studioUnlockBlocks: next }))}
+            />
+            <p className="mt-1.5 text-muted-foreground text-xs">
+              {form.studioUnlockBlocks.length === 0
+                ? 'Nenhum bloco: concluir este curso não muda a caixa de ferramentas da criança.'
+                : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
+            </p>
+            {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
+                repetição dos fundamentos é o normal, não um erro. A paleta deduplica e a
+                comemoração compara com o que a CRIANÇA tem: ela só festeja o que é novo
+                para ela. */}
+            <p className="mt-1 text-muted-foreground text-xs">
+              Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda
+              não tem.
+            </p>
+            {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
+                que os PRÓXIMOS alunos ganham, nunca o que os anteriores já têm. */}
+            <p className="mt-1 text-muted-foreground text-xs">
+              Tirar um bloco daqui vale para quem ainda não concluiu o curso. Quem já conquistou não
+              perde.
+            </p>
           </Field>
         )}
         <Field

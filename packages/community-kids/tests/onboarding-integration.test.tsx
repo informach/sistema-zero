@@ -110,6 +110,40 @@ describe('tour guiado da criança — fluxo real', () => {
     fireEvent.click(screen.getByRole('button', { name: /Vamos lá/ }))
     expect(await screen.findByRole('link', { name: 'Criar meu avatar' })).toBeTruthy()
   })
+
+  /**
+   * ⚠️ A queixa da usuária (14/08): quem já montou o avatar e já estudou apertava
+   * "Como funciona", lia uma linha e o "Vamos lá" fechava sem nada acontecer. Agora a modal
+   * carrega a explicação do app, e o botão não promete mais movimento nenhum.
+   */
+  it('quem já fez tudo recebe a explicação do app, e o botão não promete o que não vem', async () => {
+    installFetch(async () => new Response(null, { status: 204 }))
+
+    render(
+      <ChildGuide
+        profileKey="perfil-1"
+        childName="Ana"
+        hasAvatar
+        hasCourseActivity
+        startAvailable
+      />,
+    )
+
+    // Nada a guiar → a modal NÃO abre sozinha.
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Como funciona?' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getAllByRole('listitem').length).toBeGreaterThan(3)
+    expect(dialog.textContent).toContain('Estúdio')
+    expect(dialog.textContent).toContain('Mural')
+    expect(screen.queryByRole('button', { name: /Vamos lá/ })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Entendi!' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    // Sem balão para revelar: fechar não deixa a criança olhando para o nada.
+    expect(screen.queryByRole('link', { name: 'Criar meu avatar' })).toBeNull()
+  })
 })
 
 describe('tour guiado dos pais — transições reais', () => {

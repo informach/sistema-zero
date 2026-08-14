@@ -122,6 +122,23 @@ function uniqueViolationConstraint(error: unknown): string | null {
   return null
 }
 
+/**
+ * Metadata do curso no CREATE: só as chaves geridas pelo form. Sem nenhuma delas o
+ * campo fica `null` (o jsonb é um saco de extras livres — nunca um objeto vazio).
+ */
+function buildCourseMetadata(fields: CourseFields): Record<string, unknown> | null {
+  const metadata: Record<string, unknown> = {}
+  if (fields.salesPageUrl) metadata.salesPageUrl = fields.salesPageUrl
+  // ⚠️ TRIM antes de guardar (e não só p/ filtrar): um id com espaço sobreviveria aqui e
+  // nunca casaria com o catálogo do studio — bloco que a criança ganhou e nunca aparece.
+  // Espelha o `normalizeUnlockBlocks` do caminho de UPDATE.
+  const blocks = (fields.studioUnlockBlocks ?? [])
+    .map((type) => type.trim())
+    .filter((type) => type.length > 0)
+  if (blocks.length > 0) metadata.studioUnlockBlocks = [...new Set(blocks)]
+  return Object.keys(metadata).length > 0 ? metadata : null
+}
+
 function isSlugUniqueViolation(error: unknown): boolean {
   const constraint = uniqueViolationConstraint(error)
   return constraint === '' || (constraint !== null && SLUG_UNIQUE_CONSTRAINTS.has(constraint))
@@ -240,8 +257,9 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       // Idem: `?? '2d'` cobre chamada direta.
       track: fields.track ?? ('2d' as const),
       careerSlot: fields.careerSlot ?? null,
-      // `salesPageUrl` mora no metadata (jsonb) — única chave gerida pelo form.
-      metadata: fields.salesPageUrl ? { salesPageUrl: fields.salesPageUrl } : null,
+      // `salesPageUrl` e `studioUnlockBlocks` moram no metadata (jsonb) — as duas
+      // chaves geridas pelo form do curso (a 2ª é o currículo do Estúdio livre).
+      metadata: buildCourseMetadata(fields),
       createdAt: now,
       updatedAt: now,
     }

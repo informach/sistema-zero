@@ -25,8 +25,24 @@ export interface StudioTier {
   canPromoteToPro: boolean
 }
 
-/** Inventor(a), o 3º degrau da carreira. */
-export const CREATIVE_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
+/**
+ * Apps que CHAMAM a IA — Pensa e Zappy — abrem no **Inventor(a)**, o 3º degrau.
+ *
+ * O motivo é custo por uso: cada pergunta é uma chamada paga, e a criança precisa de um
+ * mínimo de repertório antes de perguntar qualquer coisa. Não confundir com o portão de
+ * criação livre abaixo.
+ */
+export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
+
+/**
+ * Ferramentas de criação livre — Estúdio Completo e Pinta — abrem no **Construtor(a)**,
+ * o 2º degrau (decisão da usuária, 14/08: o Pinta desceu do Inventor).
+ *
+ * Não custam por uso, então a régua é só pedagógica: a criança já publicou o primeiro
+ * projeto e pode criar sozinha. ⚠️ Casa com o `reward.freeStudio` do core — o Estúdio
+ * continua sendo gateado por ele; esta constante existe para o Pinta e para a copy.
+ */
+export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
 
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
@@ -116,22 +132,49 @@ export function minCareerLevelForRemix(req: StudioRemixRequirement): CareerLevel
   return null
 }
 
+/**
+ * O que o CURRÍCULO já entregou: os blocos dos cursos que a criança concluiu E publicou
+ * no Mural, com as extensões derivadas deles (`server/studio-unlocks.ts` — a derivação
+ * mora lá porque importa o catálogo inteiro e este módulo roda no cliente).
+ */
+export interface StudioCurriculumUnlocks {
+  blocks: readonly string[]
+  extensions: readonly string[]
+}
+
 export function resolveStudioTier(
   levelSlug: string | undefined,
   role: string | undefined,
+  /**
+   * Paleta conquistada nos cursos. Quando presente e NÃO vazia, ela MANDA: a paleta do
+   * Estúdio livre passa a ser o currículo (`allowBlocks` já é soberano sobre o `level`
+   * dentro do editor), e não mais o conjunto fixo do degrau.
+   * ⚠️ **Fail-open deliberado:** vazia/ausente → cai no perfil do NÍVEL, o comportamento
+   * histórico. Sem isso, o dia em que este código sobe (com nenhum curso etiquetado
+   * ainda) a criança abriria o Estúdio com a caixa de blocos VAZIA.
+   */
+  unlocks?: StudioCurriculumUnlocks,
 ): StudioTier {
-  const effectiveSlug: CareerLevelSlug = isPrivilegedRole(role)
-    ? 'god'
-    : creatorCareerLevel(levelSlug).slug
+  const privileged = isPrivilegedRole(role)
+  const effectiveSlug: CareerLevelSlug = privileged ? 'god' : creatorCareerLevel(levelSlug).slug
   const reward = creatorCareerLevel(effectiveSlug).reward
   const pro = reward.pro
+  // ⚠️ A EQUIPE ignora o currículo: o passe livre existe p/ testar o Estúdio inteiro, e
+  // restringir staff ao que ela "concluiu" esconderia justamente o que ela vai conferir.
+  const curriculum = !privileged && unlocks && unlocks.blocks.length > 0 ? unlocks : null
   return {
     freeStudio: reward.freeStudio,
     rewardId: reward.id,
     blockProfileId: reward.blockProfileId,
     level: reward.blockLevel,
-    ...(reward.blockProfileId === '2d-essential' ? { allowBlocks: ESSENTIAL_2D_ALLOW_BLOCKS } : {}),
-    allowedExtensions: EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? [],
+    ...(curriculum
+      ? { allowBlocks: curriculum.blocks }
+      : reward.blockProfileId === '2d-essential'
+        ? { allowBlocks: ESSENTIAL_2D_ALLOW_BLOCKS }
+        : {}),
+    allowedExtensions: curriculum
+      ? curriculum.extensions
+      : (EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? []),
     // ⚠️ NENHUMA extensão vem instalada. A criança abre o painel de Extensões e
     // instala a que quiser, entre as que a carreira dela já liberou
     // (`allowedExtensions`); os blocos continuam filtrados pelo `level`, então

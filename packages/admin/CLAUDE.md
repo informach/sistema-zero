@@ -645,7 +645,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   BLOCOS; aula legada normaliza no load via `normalizeBlockLevel`, e o clipboard de config normaliza
   no paste — localStorage guarda legado p/ sempre).
   **Posição na carreira (curso-base):** `careerSlot` é opcional. Só curso Kids pode ocupá-la;
-  Toda etapa aceita 1..8 (reforma 07/2026 — 8 por degrau, era 6/5); **posição 1 = curso-base** (destrava as demais
+  O número de posições é POR ETAPA (14/08: **Primeiros Passos** = 1, Iniciante 2D = 7, demais = 8 — `slotsForTier`); **posição 1 = curso-base** (destrava as demais
   da etapa); **sem posição = bônus-RECOMPENSA da etapa (24/07)** — abre quando o aluno completa os
   cursos com posição da etapa do bônus (a listagem rotula "Bônus — recompensa da etapa X"; etapa
   sem base publicada não trava o bônus, fail-open). O dialog de curso virou o COMPONENTE

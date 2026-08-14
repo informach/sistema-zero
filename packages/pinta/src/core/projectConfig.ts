@@ -80,18 +80,26 @@ export function createPixelLayer(index: number): PintaPixelLayer {
   return { id: newId(), name: `${COPY.layers.namePrefix} ${index + 1}`, visible: true }
 }
 
+/** Um lado do quadro, dentro dos limites do modelo. */
+function clampFrame(valor: number): number {
+  return clampProjectInt(valor, PINTA_LIMITS.minFrameSize, PINTA_LIMITS.maxFrameSize)
+}
+
 export function createPixelSpriteAsset(input: {
   name: string
+  /** Lado do quadro. Use `frameWidth`/`frameHeight` para um quadro deitado. */
   frameSize: number
+  frameWidth?: number
+  frameHeight?: number
   paletteId?: PaletteId
   now?: number
 }): PixelSpriteAsset {
   const now = input.now ?? Date.now()
-  const size = clampProjectInt(
-    input.frameSize,
-    PINTA_LIMITS.minFrameSize,
-    PINTA_LIMITS.maxFrameSize,
-  )
+  // ⭐ O modelo SEMPRE teve `frameWidth` e `frameHeight` separados; quem forçava o
+  // quadrado eram a fábrica e o assistente. Uma nave é 128x32, e num quadro
+  // quadrado ela viria com 96px de vazio que a caixa de colisão herdaria.
+  const size = clampFrame(input.frameWidth ?? input.frameSize)
+  const alto = clampFrame(input.frameHeight ?? input.frameSize)
   return {
     id: newId(),
     kind: 'pixel-sprite',
@@ -99,11 +107,14 @@ export function createPixelSpriteAsset(input: {
     createdAt: now,
     updatedAt: now,
     frameWidth: size,
-    frameHeight: size,
+    frameHeight: alto,
     paletteId: input.paletteId ?? DEFAULT_PALETTE_ID,
     layers: [createPixelLayer(0)],
     animations: [
-      { id: newId(), name: 'parado', fps: 8, loop: true, frames: [[createBitmap(size, size)]] },
+      // ⚠️ O bitmap tem que casar com frameWidth × frameHeight: um quadro 128x32 com
+      // bitmap 128x128 é DESCARTADO pelo sanitize, e o desenho some da galeria sem
+      // uma linha de erro (foi o que aconteceu ao destravar o quadro deitado).
+      { id: newId(), name: 'parado', fps: 8, loop: true, frames: [[createBitmap(size, alto)]] },
     ],
   }
 }
@@ -181,15 +192,15 @@ export function createTilemapAsset(input: {
 
 export function createVectorSpriteAsset(input: {
   name: string
+  /** Lado do quadro. Use `frameWidth`/`frameHeight` para um quadro deitado. */
   frameSize: number
+  frameWidth?: number
+  frameHeight?: number
   now?: number
 }): VectorSpriteAsset {
   const now = input.now ?? Date.now()
-  const size = clampProjectInt(
-    input.frameSize,
-    PINTA_LIMITS.minFrameSize,
-    PINTA_LIMITS.maxFrameSize,
-  )
+  const size = clampFrame(input.frameWidth ?? input.frameSize)
+  const alto = clampFrame(input.frameHeight ?? input.frameSize)
   return {
     id: newId(),
     kind: 'vector-sprite',
@@ -197,7 +208,7 @@ export function createVectorSpriteAsset(input: {
     createdAt: now,
     updatedAt: now,
     frameWidth: size,
-    frameHeight: size,
+    frameHeight: alto,
     animations: [{ id: newId(), name: 'parado', fps: 8, loop: true, frames: [[]] }],
   }
 }

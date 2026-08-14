@@ -88,7 +88,7 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   via `galleryStore.lastStyle`) → TIPO (mesmos papéis nos 2 estilos) → tamanho → nome. Mapa
   habilita com QUALQUER tileset (badge de estilo no seletor). **Tamanho PERSONALIZADO
   (08/2026)**: card "Personalizado" no passo de tamanho — cenários (16..512 pixel / 16..2048
-  vetor, largura × altura), personagens (quadro 8..128) e mapa (1..128 colunas × linhas); PEÇAS
+  vetor, largura × altura), personagens (largura × altura 8..128) e mapa (1..128 colunas × linhas); PEÇAS
   ficam FORA (whitelist dura 16/32/48 do motor). Também no "Trazer uma foto" (só o alvo cenário).
   Helpers PUROS em `gallery/customSize.ts`: a `sizeKey` fica na sentinela `'custom'` e a chave
   REAL ("300x200"/"96"/"50x40") é derivada dos campos a cada render — `buildInput`, o
@@ -96,6 +96,44 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   `CustomSizeFields` (`inputMode="numeric"`, faixa/erro num `role=status`, padrão do nameError).
   ⚠️ O card Personalizado NÃO auto-avança (selecionar só revela o formulário; os presets
   continuam avançando ao toque) — não copiar o `setStep` dos presets para ele.
+## Tamanho do desenho: deitado na criação e mutável no editor (13/08/2026)
+
+Dois pedidos dela, no mesmo assunto: **"lá no Pinta só dá para criar quadrado"** e **"percebi no
+meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar outro"**.
+
+- ⭐ **Personagem deixou de ser QUADRADO.** O MODELO sempre teve `frameWidth`/`frameHeight`
+  separados (o sanitize já os validava um a um) — quem impunha o quadrado eram o assistente
+  (`customSizeSpecFor` devolvia `fields: ['frame']`) e as duas fábricas. Agora são **largura ×
+  altura**, e uma nave é 128x32 de verdade. Motivação: no Estúdio a caixa de colisão do sprite é o
+  RETÂNGULO do quadro, então 96px de vazio transparente viravam área que encosta sem encostar.
+  ⚠️ O preset quadrado ("32") semeia os DOIS campos — sem isso, escolher preset e depois
+  "Personalizado" abria a altura vazia com o Avançar desligado.
+- ⭐⭐ **O defeito que isso revelou, e que vale para qualquer mexida em tamanho:** a fábrica passou a
+  declarar `frameWidth: 128, frameHeight: 32` e continuou criando `createBitmap(size, size)`. O
+  `sanitizePintaAsset` **DESCARTA** um asset cujo bitmap não casa com o quadro — e o desenho some da
+  galeria **sem uma linha de erro**. Dimensão declarada e bitmaps têm que andar juntos, sempre.
+- ⭐ **Mudar o tamanho DENTRO do editor** (`core/assetResize.ts` + `components/editor/
+  ResizeAssetDialog.tsx`): botão na barra de cima mostrando o tamanho de agora ("Tamanho: 128 x 32")
+  → o MESMO `CustomSizeFields` do assistente → **um commit** (desfazível com Ctrl+Z).
+  - `resizeAsset` é uma op PURA e ÚNICA justamente por causa do defeito acima: no personagem ela
+    alcança TODAS as animações × TODOS os quadros × TODAS as camadas. Precedente do
+    `removeExtraColor`, que já remapeia o asset inteiro num commit.
+  - `resizeTargetOf` devolve tamanho + limites, ou **`null` para PEÇAS** — o tamanho do tile é
+    whitelist dura do motor (16/32/48) e mexer nele quebraria os mapas que apontam para elas. O
+    botão nem aparece.
+  - Mapa muda em **células** (a copy troca sozinha); no VETOR basta o quadro (as formas guardam
+    coordenadas próprias e o `<svg>` aninhado já clipa).
+  - Âncora **centro**, uma regra só: "o desenho fica no meio do novo tamanho". Encolher CORTA, e
+    a modal avisa antes (o desfazer cobre).
+  - ⚠️ **No teste, esperar o selo "Salvo" NÃO prova nada** — ele já está na tela desde a criação. O
+    autosave é debounced: quem diz a verdade é o disco, relido num `waitFor` até refletir a edição.
+  - ⚠️ **Round-trip pelo sanitize com `structuredClone`, NUNCA JSON**: o JSON transforma
+    `Uint8Array` em objeto e o sanitize recusaria por outro motivo — o teste passaria pela razão
+    errada (aconteceu ao escrever a rede). O IndexedDB usa structured clone.
+  - Testes: `core/assetResize.test.ts` (puros + o **anti-vácuo** que prova que esquecer um quadro
+    realmente apaga o desenho) e `components/editor/resizeUi.test.tsx` (fluxo, aviso de corte,
+    botão desligado, peças sem botão, mapa em células).
+
 - **Motor pixel (`src/pixel/`)**: `ops.ts` operações PURAS; `tools.ts` máquina PURA de gesto;
   `selection.ts`; `render.ts` única camada canvas.
 - **Editor vetorial (pasta `components/editor/vector/`, 08/2026)**: shapes = elementos SVG REAIS;
@@ -152,16 +190,19 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
 - **Stores zustand POR INSTÂNCIA** (factories, nunca singleton): `galleryStore` (CRUD + `lastStyle`;
   import religa tilemap→tileset via idMap, tilesets entram PRIMEIRO na quota), `editorStore`
   (history por snapshots com orçamento em bytes — `assetBytes` conta o payload real dos shapes —
-  + autosave debounced ~1s com flush; `persist` injetável), `sessionStore`
+  + autosave debounced ~1s; `dirty`/`pending` explícitos; `flush` devolve sucesso/erro e drena
+  edições feitas durante um save; `savedAsset` é a revisão confirmada; `persist` injetável), `sessionStore`
   (ferramenta/cor/zoom/`zoomLevels`/onion — a Mão 'pan' é da sessão, não do motor pixel).
 - **Persistência (`src/state/persistence.ts`)**: `createPintaPersistence()` captura o store do
   namespace ao criar a `galleryStore`; a instância inteira (inclusive mutações ainda na fila)
   continua presa àquele perfil mesmo se o host trocar o namespace global. A fila FIFO é por
   handle de IndexedDB, nunca por id/namespace global. `persistAssets` usa um único `setMany`,
   portanto commits que alteram tileset+mapas dependentes ficam atômicos e não atravessam perfil.
-  Desde o full review de 12/08/2026, toda mutação mede a galeria PROJETADA com
-  `galleryBackupByteLength` e recusa passar dos mesmos 32 MiB do restore. Galeria legada já acima
-  do teto só aceita mutação que reduza o backup (excluir continua sempre disponível). O erro é
+  Desde o full review de 12/08/2026, toda mutação mede a galeria PROJETADA e recusa passar dos
+  mesmos 32 MiB do restore. `GalleryBackupSizeCache` mantém a contribuição UTF-8 exata por
+  `{id, updatedAt}` e força os ids tocados: a galeria inteira não é reserializada em cada autosave.
+  Galeria legada já acima do teto só aceita mutação que reduza o backup (excluir continua sempre
+  disponível). O erro é
   `PintaStorageBudgetError`, traduzido pela galeria e pelo badge do editor; não trocar por uma
   checagem aproximada, pois o JSON real é a fonte única da invariante “se gera, restaura”.
 - **Copy 100% PT** centralizada em `src/core/copy.ts` (sem travessão, sem jargão; nomes de cor
@@ -221,9 +262,10 @@ progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../
   texto depois (região inserida no DOM já preenchida não é anunciada — receita do
   `tooManyTiles` do import e do help do tamanho personalizado). Desde o full review de 12/08/2026,
   `Dialog` prende `keydown` e `focusin` no `document` enquanto aberto: recupera foco que escapou,
-  cicla Tab/Shift+Tab, trata Esc e remove os listeners ANTES de restaurar o acionador. `aria-modal`
-  sozinho não implementa o trap. A regressão DOM cobre esse contrato; manter QA cross-browser para
-  comportamento real de foco.
+  cicla Tab/Shift+Tab, trata Esc e remove os listeners ANTES de restaurar o acionador. Uma pilha
+  global por card deixa só o modal do topo capturar foco/Escape; em modal aninhada o foco volta em
+  duas etapas. `aria-modal` sozinho não implementa o trap. A regressão DOM cobre esse contrato;
+  manter QA cross-browser para comportamento real de foco.
 
 ## Seleção do pixel, atalhos e zoom pela rolagem (08/2026)
 
@@ -460,9 +502,10 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   ativo. O conta-gotas usa `adoptStyle` (muda SÓ o estilo vigente, sem re-estilizar a seleção).
   Ver "Ajustes do vetor (08/2026)" abaixo — os chips saíram e o painel virou espelho do
   `PaletteBar`.
-- **Fora de escopo (futuro)**: operações booleanas (pathfinder), degradê multi-stop/ângulo livre,
+- **Fora de escopo (futuro)**: degradê multi-stop/ângulo livre,
   importar SVG, máscaras/filtros/blend, campos numéricos X/Y/W/H, snap dos nós do editar pontos,
-  negrito/itálico do texto. ⚠️ **Fonte SAIU desta lista** (12/08/2026): há cinco famílias
+  negrito/itálico do texto. ⚠️ **Operações booleanas (pathfinder) SAIU desta lista** (14/08/2026):
+  ver "Misturar formas" abaixo. ⚠️ **Fonte SAIU desta lista** (12/08/2026): há cinco famílias
   portáteis; ver abaixo. ⚠️ **Alças de bézier SAIU desta lista** (08/2026): a Fase 2 da
   edição de pontos as implementa. ⚠️ **Girar multi-seleção SAIU desta lista** (08/2026): ver
   "Girar a seleção inteira" abaixo.
@@ -749,6 +792,225 @@ O mesmo botão faz três coisas conforme o estado, e os rótulos são load-beari
 Dê uma folga entre os eventos. E o rect do palco tem que ser lido A CADA evento: a faixa contextual
 aparecendo/sumindo move o palco, e um rect cacheado joga o clique fora do alvo.
 
+## Misturar formas: unir, tirar a da frente, o pedaço em comum e o resto (14/08/2026)
+
+Pedido dela com a captura do Pathfinder do Illustrator: as quatro "Shape Modes" numa barra que
+aparece ao escolher duas formas. O Pinta já sabia **agrupar** (andam juntas, continuam separadas) e
+**cortar um traço em dois**; o que faltava era **fundir geometria**. Sem isso, uma lua crescente ou
+uma estrela vazada numa placa só saíam desenhando o contorno inteiro ponto a ponto.
+
+Três módulos PUROS, em camadas, e oito linhas de cola:
+
+| arquivo | sabe o quê |
+|---|---|
+| `vector/flatten.ts` | forma → anéis de pontos, rotação já assada |
+| `vector/polygonClip.ts` | só anéis; **não conhece `VectorShape`** |
+| `vector/pathfinder.ts` | dobra N-ária, teto de caracteres, IDENTIDADE do resultado |
+
+A separação não é enfeite: o clipper ser cego à forma é o que deixa os casos difíceis serem
+testados como número entra, número sai, sem fixture de forma no meio.
+
+### ⭐⭐ O algoritmo robusto e o orçamento
+
+As quatro booleanas usam o sweep de Martinez de `polygon-clipping` (MIT). O clipper próprio por
+noding/encadeamento foi removido depois que fuzz determinístico encontrou cadeias abertas em
+interseções quase paralelas: a rede de segurança recusava corretamente, mas uma forma suportada não
+pode falhar de modo probabilístico. `vector/polygonClip.ts` continua sendo a fronteira do Pinta:
+
+- converte o array plano de anéis nonzero para `MultiPolygon` sem inventar furo em anéis aninhados
+  com a mesma winding;
+- converte a saída de volta para anéis sem ponto repetido, externo positivo e furo negativo;
+- mantém `polyArea`, `pointInPoly` e o serializer M/L/Z como API pura do pacote.
+
+`pathfinder.ts` separa componentes pelas caixas antes da conta. União/xor concatenam componentes
+desconectados e só clipam o grupo que realmente se toca; interseção entre componentes é vazia;
+diferença ignora cortadores desconectados da base. A dobra conectada tem orçamento determinístico de
+pares de arestas e recusa com `too-big` antes de congelar a thread. Regressão: 500 elipses válidas,
+com só as duas primeiras sobrepostas, precisam terminar em menos de 500 ms (31–47 ms local), não em
+9–15 s.
+
+Rasterizar e vetorizar de volta continua proibido: dá escadinha que a criança amplia depois.
+
+### A régua do achatamento (`CHORD_TOLERANCE = 0.1`)
+
+Não é chute, e duas contas independentes batem no mesmo número: o export re-renderiza em ×4 (meio
+pixel ⇒ ≤ 0.125) e o editor chega a ×16 (dois pixels ⇒ ≤ 0.125). **Círculo de 100px = 50 segmentos,
+~700 chars de `d`.** Sagita por arco `Δθ ≤ √(8·tol/r)`; cúbica por `n ≥ √(3L/(4·tol))`.
+
+⚠️ O anel é INSCRITO no arco, então sai um tiquinho MENOR que a conta exata (cada gomo perde
+`(r²/2)(θ − sen θ)`). Cobrar igualdade exata num teste é cobrar que o achatamento não achate.
+
+### ⭐ NONZERO, não par-ímpar
+
+O modelo não tem `fill-rule` e o SVG usa nonzero por padrão, então é **o que a criança já vê na
+tela**. Par-ímpar furaria o meio de um traço fechado que se cruza sozinho, que lê como "o computador
+estragou meu desenho". O furo aparece pela **winding invertida**: externo `signedArea > 0`, furo
+`< 0`, e o aninhamento sai da PROFUNDIDADE (par pintado, ímpar furo) — "o maior é o de fora"
+deixaria uma ilha dentro de um furo vazada.
+
+### ⭐⭐ A identidade do resultado
+
+**O resultado guarda o id, o lugar na pilha, o estilo e o grupo do participante de TRÁS**, com
+`rotation: 0`.
+
+O id é **obrigação, não gosto**: com um id novo, `selectedIds` fica órfão por um render, `selected`
+vira `[]` e a `VectorSelectionBar` INTEIRA devolve `null`. Ela está no FLUXO, então o palco pularia
+uns 54px e voltaria. É a lição do corte com a tesoura, um degrau pior.
+
+A frase para a criança: *a forma de trás é quem manda; ela cresce, encolhe ou ganha um buraco, e
+continua com a cor dela.* Uma regra só para os quatro botões — "a da frente manda" seria impossível
+no "tirar a da frente", onde ela é justamente a que some.
+
+⚠️ **Z-order é o contrato**: o array entra fundo → frente, que é a ordem natural de
+`currentShapes()`. NUNCA reordenar por `ids` — a ordem em que ela TOCOU não é a do desenho. Travado
+por um anti-vácuo que passa os ids invertidos.
+
+⚠️ Forma **escondida** não participa **e não some**: filtrar pelos ids dos PARTICIPANTES, não pela
+seleção crua.
+
+### A UI
+
+- Bloco na `VectorSelectionBar` gated por `selected.length >= 2`, o mesmo gatilho do Agrupar. **O
+  bloco inteiro é gated, não cada botão**: um gatilho só significa UMA mudança de layout, e a
+  lixeira desliza uma vez em vez de duas. Medido no playground: faixa continua com **54px**, uma
+  linha só, alvos de 44px.
+- Os quatro ficam **sempre habilitados**; quem avisa é o TOAST. Botão morto não ensina o que fazer.
+- ⭐ **Os quatro ícones existem no lucide 0.546** (`SquaresUnite/Subtract/Intersect/Exclude`), já
+  tipados como `LucideIcon`: nada de desenhar à mão nem de afrouxar o tipo do `ToolButton`. Medido a
+  20px: 120–154 pixels de tinta cada, os quatro perfis distintos (menor diferença 29).
+- **No TOQUE só o "Virar uma forma só"** (decisão dela): as outras três pedem enxergar quem está na
+  frente, e em 375px a barra já chega a 6 alvos. No mesmo lote a barra flutuante ganhou o
+  `max-w`/`overflow-x-auto` que a irmã do reshape já tinha.
+- O mapa de recusas é um **`Record<PathfinderRefusal, string>`**, não um `switch`: recusa nova no
+  núcleo quebra o typecheck em vez de virar toast vazio.
+
+⭐ **A recusa `apart` merece existir**: unir duas formas separadas produz um resultado que PARECE
+idêntico ao que estava lá, e as outras três viram no-op ou apagam tudo. Botão que parece não fazer
+nada é o pior desfecho possível para uma criança, e um diagnóstico cobre os quatro. (No QA em
+navegador foi uma recusa que me disse o que eu tinha feito de errado: o desenho de teste já tinha um
+traço aberto e o meu laço o pegou junto.)
+
+### ⭐ A faixa dos pontos passa a DIZER em vez de sumir
+
+Resultado com furo tem dois `M`, e `toEditablePath` recusa vários sub-caminhos de propósito
+(`pathNodes.ts:102`). Antes a `VectorSelectionBar` inteira devolvia `null` no modo reshape, o que lê
+como "quebrou". Agora mostra `COPY.vector.nodeUneditable`, com `min-h-11` nos dois ramos para o
+palco não pular. Conserta de quebra um buraco que já existia: retângulo/círculo/texto/figura também
+apagavam a faixa em silêncio.
+
+**Fora deste lote, nomeadamente:** ensinar sub-caminhos ao `toEditablePath`.
+
+### Quem entra e quem não entra
+
+`rect`, `ellipse`, `polygon` e `path` **fechado** (tantos `Z` quantos `M`). Traço de pincel nunca
+fecha (`catmullRomToPath` não emite `Z`), então cai em `open-path` com uma frase que diz o que fazer.
+
+**Recusados, com o porquê:** linha (não tem miolo), texto (pediria decodificar WOFF2 e ler os
+glifos — o Illustrator também exige "Criar contornos" antes) e figura (é imagem, não tem contorno).
+
+### Testes
+
+`vector/polygonClip.test.ts`, `vector/flatten.test.ts`, `vector/pathfinder.test.ts` e o bloco de
+integração no `vectorUi.test.tsx`. As regressões incluem a combinação rotacionada que quebrava o
+clipper antigo e o SLA de 500 elipses.
+
+Os que valem mais que os outros:
+- **A identidade inclusão-exclusão**, table-driven: `área(união) + área(interseção) = área(A) +
+  área(B)` e as duas irmãs. Cruza as quatro operações entre si sem uma constante calculada à mão.
+- **`o d de saída sobrevive ao parsePathD e ao sanitize`**, para todo caso `ok`. Pega "emiti um `A`",
+  "emiti minúscula", "emiti `M0 0` colado" e "emiti 25k chars" — todos produzem forma que DESENHA
+  bem no editor e **some da galeria no próximo load, em silêncio**. Mesma família do bitmap que não
+  casava com o quadro no lote do redimensionar.
+- **Formas giradas**: o anti-vácuo é `área(união) > 10000`, porque quem ignora a rotação devolve
+  10000 nas duas e **ainda assim satisfaz a identidade da soma**.
+- **UM desfazer devolve as duas formas** (a prova de "um commit só"; com dois commits voltaria uma).
+
+⚠️ Casos que existem porque criança produz exatamente eles: dois quadrados IDÊNTICOS (o anti-vácuo é
+`ring.length === 4`, não a área), aresta inteira compartilhada, sobreposição colinear parcial
+(anti-vácuo: a lista exata de 8 vértices), encostar num ponto só, tocar só no canto (um oito tem a
+mesma área).
+
+### QA em navegador, feito
+
+O playground é Vite, então dá para `import('/@fs/…/pathfinder.ts')` e rodar o **módulo de verdade no
+Chrome**. Medido lendo PIXEL do SVG rasterizado (Blob URL → `<img>` → canvas → `getImageData`):
+
+| conta | só-quadrado | só-círculo | em comum |
+|---|---|---|---|
+| tirar a da frente | pintado | vazio | vazio |
+| interseção | vazio | vazio | pintado |
+| excluir | pintado | pintado | vazio |
+| **furo** (círculo dentro) | anel pintado | — | **miolo VAZIO** |
+
+⭐ O furo é a única parte que teste de unidade nenhum prova: é a winding invertida virando buraco de
+verdade no rasterizador. E no app real, ponta a ponta: 2 retângulos → 1 traço com o `d` sendo o L de
+8 pontos exato; quadrado + círculo dentro → 1 traço com 2 sub-caminhos; **um** Desfazer devolve as
+duas formas.
+
+⚠️ **O painel do navegador desta sessão fica OCULTO**: `visibilityState: 'hidden'`, então print não
+sai e o rAF é estrangulado — mas o LAYOUT funciona (`getBoundingClientRect` devolve valores reais),
+diferente do que acontece no studio. Medir por pixel e por rect dá; fotografar não.
+
+⚠️ Gotcha de QA que custou uma rodada: disparar `pointerdown/move/up` no mesmo turno de JS faz o
+gesto ser lido como toque, e o rect do palco tem que ser relido A CADA evento (a faixa contextual
+aparecendo move o palco).
+
+**Pende o QA dela desenhando.**
+
+### Full review do lote do pathfinder (14/08/2026) — 3 achados
+
+Rodada inicial logo depois de escrever a feature, porque **código novo escrito de uma sentada é
+código que ninguém revisou**. Ela encontrou três defeitos na borda entre o núcleo e a criança; o
+full review posterior de 14/08 encontrou também as falhas raras de geometria e o custo no limite,
+hoje cobertos pelas regressões descritas acima.
+
+1. ⭐⭐ **"Tirar a da frente" que não tira nada apagava as formas da frente e devolvia a base
+   intacta.** O `apart` pergunta "NENHUM par se encosta?", e com TRÊS formas as duas da frente podem
+   se encostar ENTRE SI enquanto nenhuma toca a base: a guarda não disparava, a conta devolvia a
+   base igualzinha, e o efeito era o pior possível — as da frente SUMIAM do desenho e nada foi
+   recortado. **Não é clique morto, é perda de desenho.** Fix: a régua passou a ser a ÁREA (o
+   resultado tem que diferir da base), o que também pega o caso das caixas que se cruzam sem as
+   formas se cruzarem. Medido antes do conserto: base de 1600 entrava e saía 1600, com `ok: true`.
+   ⚠️ Só o `menos-frente` precisa disso: unir formas soltas de fato as junta numa forma só (é a
+   promessa do botão) e interseção vazia já caía no `empty`.
+
+2. ⭐ **Um `d` ILEGÍVEL dizia à criança que o traço "está aberto".** São coisas diferentes: aberto
+   ela fecha, ilegível ela não tem como consertar. Nasceu a recusa `bad-path`, com frase própria.
+   ⭐ O `Record<PathfinderRefusal, string>` fez exatamente o trabalho para o qual foi escolhido:
+   somar a recusa nova na união **quebrou o typecheck** até a copy existir. Um `switch` teria virado
+   toast vazio.
+
+3. ⭐⭐ **A faixa da seleção CRESCIA 17px em altura, e o comentário do arquivo jurava que não.**
+   Ele promete "*rola de LADO (`overflow-x-auto`) … nunca cresce em altura, nunca rouba altura do
+   palco*". A promessa nunca foi verdadeira: a barra de rolagem do Chrome é CLÁSSICA e ocupa layout.
+   Medido numa janela de 800px: conteúdo 1107px, faixa de **52 → 69px**, empurrando o palco. É o
+   mesmo defeito de "os botões piscam e a grade sobe e desce" que este pacote já tratou uma vez.
+   ⚠️ **Pré-existente, e o meu bloco alargou muito a faixa de larguras onde aparece** (de 768–843
+   para 768–1107). Fix: `.pin-scroll-x` (`styles/pinta.css`) esconde o desenho da barra sem tirar a
+   rolagem, aplicado nas quatro faixas roláveis do vetor. Medido depois: **54px**, sem barra
+   ocupando altura, e `scrollWidth 1107 > clientWidth 800` provando que ainda rola.
+   ⚠️ **Contrapartida honesta:** abaixo de ~1107px de largura os últimos botões pedem rolagem
+   lateral SEM aviso visual. É limite antigo desta faixa; o palco pulando é o mal maior, e foi o que
+   este pacote já decidiu uma vez.
+
+**Não-achados, todos MEDIDOS** (valem porque poupam a próxima rodada):
+
+- **Custo pequeno**: 700 + 700 pontos numa união e seis círculos continuam rápidos, mas isso não
+  substitui o orçamento: o caso desconectado de 500 formas provou que a dobra binária crescia por
+  segundos antes de recusar pelo tamanho final.
+- ⭐⭐ **A ESTRELA que se cruza sozinha sai EXATA** pela interpretação nonzero do clipper:
+  área visível 2806 (a com sinal é 3674, porque o miolo conta duas vezes), e unir um quadradinho
+  DENTRO do miolo já pintado acrescenta **0,0**. Nonzero é o que o SVG já fazia, então o resultado
+  bate com o que ela via.
+- **Ilha dentro do FURO**: as quatro contas certas (união 7900 = 7500 + 400, interseção vazia,
+  diferença 7500, xor 7900). A profundidade par/ímpar funciona.
+- **Rosca como a da FRENTE**: quadrado de 100 menos um anel devolve exatamente **2500** (o miolo).
+- **Caixas que se cruzam sem as formas se cruzarem**: união 2 anéis, interseção vazia, diferença
+  intacta. Todas certas.
+- **Degradê** no de trás sobrevive (o id é preservado, então o `<linearGradient>` regenera).
+- **Frente cobrindo a base por inteiro** → `empty`. **Largura zero** → recusa. **Id repetido na
+  lista** → dedup.
+
 ## Ajustes do VETOR: faixa da seleção, caixa que encolhe, degradê em modal, paleta (08/2026)
 
 Pedido dela sobre a captura anotada: "os recursos de alinhamento quando o objeto está selecionado
@@ -906,8 +1168,9 @@ typecheck+test(344)+biome do pinta e no studio (`tilemapGame` 6/0). QA browser r
   remapeia as células dos MAPAS dependentes; antes isso ia direto p/ a galeria+disco FORA do undo do
   tileset → desfazer dessincronizava os mapas. Agora o `editorStore` guarda snapshot COMPOSTO
   `{asset, linkedMaps}`: **`commitLinked(next, {before, after})`** grava o tileset E os mapas na MESMA
-  entrada; `undo`/`redo` restauram/reaplicam os mapas via o callback injetado **`applyLinkedAssets`**
-  (o `EditorScreen` liga = `gallery.absorb` + `persistAsset`). `commit`/`replace`/`commitGesture`
+  entrada; `undo`/`redo` restauram/reaplicam os mapas em `linkedAssets`. A galeria NÃO recebe a
+  revisão viva: depois do `setMany` confirmar, `onSaved` publica principal+ligados num único
+  `absorbMany`. `commit`/`replace`/`commitGesture`
   carregam o `linkedMaps` corrente adiante (edição comum não toca mapas) → ZERO regressão nos editores
   sprite/mapa/vetor (nunca chamam commitLinked). ⚠️ a história é POR SESSÃO de editor (fechar perde o
   undo — o remap fica persistido). QA browser: remover peça → grade do mapa remapeia; remover+desfazer
@@ -944,8 +1207,9 @@ nos desenhos vindos daqui e o desenho salvo **se atualiza sozinho nos jogos**.
   quebrado. Id inexistente → galeria + toast `COPY.gallery.drawingGone`.
 - **`resyncToStudio?(asset) → {updated}`** — reenvia ao PARAR de desenhar (debounce
   de 1,5s em `useStudioResync`, + flush no `visibilitychange`→hidden e no `pagehide`,
-  p/ a biblioteca já estar em dia quando ela troca de aba). Gatilho = **identidade de `asset`**, não
-  o autosave. Devolvendo `updated`, o cabeçalho mostra "Atualizado no Estúdio" — a ÚNICA confirmação
+  p/ a biblioteca já estar em dia quando ela troca de aba). Gatilho = identidade de **`savedAsset`**,
+  atualizada somente depois da persistência confirmar; revisão em `dirty/error` nunca atravessa a
+  ponte. Devolvendo `updated`, o cabeçalho mostra "Atualizado no Estúdio" — a ÚNICA confirmação
   visível (do lado do Estúdio a troca é silenciosa, decisão da usuária).
 - ⚠️ **Abrir NÃO reenvia, só editar** — a trava compara a IDENTIDADE do asset com a do 1º render.
   Um booleano "já montei" NÃO serve: em StrictMode o React monta → limpa → monta, a 2ª montagem
@@ -960,6 +1224,47 @@ nos desenhos vindos daqui e o desenho salvo **se atualiza sozinho nos jogos**.
 
 O outro lado (sincronia para dentro dos projetos, o botão, o marcador cross-aba) vive no studio —
 ver `packages/studio/CLAUDE.md` §"Editar o desenho".
+
+## A CAIXA DE COLISÃO sai do desenho (08/2026)
+
+O relato dela: no Pinta o personagem só podia ser um QUADRADO, então uma nave de 128x32 vinha num
+quadro 128x128 com 96px de vazio, e no Estúdio esse vazio **encostava sem encostar**. O pedido tinha
+três partes; as duas primeiras estão feitas (a terceira, um bloco explícito de hitbox, ficou de fora
+de propósito — ver §"Fora de escopo" no studio).
+
+1. **Quadro NÃO-quadrado** (a raiz): largura e altura separadas na fábrica, no assistente e no
+   redimensionar. ⚠️⚠️ A fábrica declarava `frameWidth: 128, frameHeight: 32` mas chamava
+   `createBitmap(size, size)` — o `sanitizePintaAsset` DESCARTAVA o asset inteiro, sem uma linha de
+   erro, e o desenho sumia da galeria. Bitmap e quadro andam juntos, sempre.
+2. **`export/spriteHitbox.ts`**: mede onde de fato tem pixel (ou forma visível) e manda a caixa no
+   `sprite` da ponte. O Estúdio aplica sozinho, sem bloco nenhum.
+
+⭐ Três decisões que fazem isso funcionar, e cada uma tem uma rede:
+
+- **UNIÃO de todos os quadros**, nunca por quadro. Caixa por quadro pulsaria com a animação: o braço
+  estica no golpe e a colisão muda sozinha. ⚠️ O teste usa um par ASSIMÉTRICO (o golpe vai para a
+  esquerda num quadro e para a direita no outro) porque um par que cresce só para um lado passaria
+  também com "o último quadro vence".
+- **FRAÇÃO do quadro (0..1)**, nunca pixels: o mesmo desenho entra no jogo em qualquer tamanho.
+- **Arte que preenche o quadro OMITE a chave** — quem já usava o quadro inteiro continua com payload
+  byte-idêntico e comportamento idêntico. A caixa só aparece quando de fato aperta.
+
+⚠️ **Camada escondida não conta** (achata pelo `flattenCels`, igual ao export): a colisão segue o
+que se vê.
+
+⚠️⚠️ **`shapeBounds` IGNORA a rotação, e o `svg.ts:89` a RENDERIZA** (`rotate()` ao redor do
+centro). Para o editor a aproximação serve — a alça fica perto da forma —, e todos os consumidores
+dela são de UI. Colisão é outra coisa: uma espada girada 45 graus ficava com caixa ~30% menor que o
+desenho e o golpe passava por dentro do inimigo. Por isso o `giradaAoRedorDoCentro` mora AQUI e não
+no `shapeBounds`: mexer lá moveria as alças de seleção do editor inteiro.
+
+⚠️ **Redimensionar tem que mover as FORMAS junto**, não só o quadro. O `<svg>` aninhado já clipa,
+então mudar `frameWidth`/`frameHeight` bastava para a correção — mas o pixel, no MESMO diálogo,
+centraliza a arte. Medido no full review: 32→128 deixava a forma em x=8 com o quadro novo centrado
+em 64, ou seja, o desenho pulava para o canto. Vale para o sprite E para o fundo vetorial.
+
+O outro lado (sanitize, cano do preview, runtime e a regra de quem vence) vive no studio — ver
+`packages/studio/CLAUDE.md` §"A caixa de colisão vem do desenho".
 
 ## Regras não-negociáveis
 
@@ -1021,6 +1326,13 @@ por px reais.
   Aparência, slots de cor na caixa, faixa em largura total), palco de canto reto + papel branco,
   grade+snap, laço, multi-resize, barra flutuante, alinhar, painel Camadas + `hidden`, Caneta,
   texto reeditável, raio do retângulo, espaço-pan. Suíte 482 verde; QA de browser real pendente.
+- **Misturar formas / pathfinder (08/2026, não commitado)**: unir, tirar a da frente, o pedaço em
+  comum e o resto. Três módulos puros (`vector/flatten.ts`, `vector/polygonClip.ts`,
+  `vector/pathfinder.ts`), zero dependência nova. QA em navegador FEITO (as quatro contas medidas em
+  PIXEL de Chrome, inclusive o furo; e o fio inteiro no app: 2 formas → 1 traço, um desfazer devolve
+  as duas). **Full review feito no mesmo lote: 3 achados**, sendo um de perda de desenho e um de
+  altura da faixa que era PRÉ-EXISTENTE. Ver as duas seções dedicadas. **Pende o QA dela
+  desenhando** e a legibilidade dos glifos no olho.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
   Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio; o lote novo do

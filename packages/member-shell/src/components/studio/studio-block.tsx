@@ -527,7 +527,7 @@ export function StudioBlockView({
       ) : (
         <p className="text-xs text-muted-foreground">
           {passingScore !== undefined
-            ? 'Use "Verificar" no editor e envie ao professor — atinja a nota mínima para concluir a aula.'
+            ? 'Use "Verificar" no editor e envie ao professor. Atinja a nota mínima para concluir a aula.'
             : 'Envie seu projeto ao professor para poder concluir a aula.'}
         </p>
       )}
