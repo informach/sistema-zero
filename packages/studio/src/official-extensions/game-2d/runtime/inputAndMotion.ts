@@ -544,20 +544,26 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     }
   }
   /** Move E desenha as partículas (uma chamada por frame); elas somem sozinhas. */
+  // ⭐ UM save/restore para o laço inteiro, não um por partícula. Eram 800
+  // travessias de contexto por quadro no teto de 400 partículas, para proteger
+  // exatamente dois campos que a iteração seguinte reescreve de qualquer jeito.
+  // Nenhuma partícula lê estado deixada pela anterior, então o par externo
+  // preserva o contrato inteiro (quem chama continua recebendo o ctx como deixou).
   function drawParticles(ctx) {
     if (!ctx) return;
     _particlesDrawnThisFrame = true;
+    if (!particles.length) return;
+    ctx.save();
     for (var i = particles.length - 1; i >= 0; i--) {
       var p = particles[i];
       p.x += p.vx; p.y += p.vy; p.vy += 0.06;
       p.life -= 0.02;
       if (p.life <= 0) { particles.splice(i, 1); continue; }
-      ctx.save();
       ctx.globalAlpha = p.life;
       ctx.fillStyle = p.color;
       ctx.fillRect(p.x, p.y, p.size, p.size);
-      ctx.restore();
     }
+    ctx.restore();
   }
 
   _registerRuntimeDomain('input-and-motion', {

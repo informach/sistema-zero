@@ -431,6 +431,13 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         body: [{ type: 'g2d:shake', ctxVar: 'ctx', intensity: { type: 'num', value: 4 } }],
       },
     ])
+    expect(parseJS('SZGame2D.pruneOffscreen(ctx, asteroides, 60, function (a) {});')).toEqual([
+      {
+        type: 'rawJS',
+        code: 'SZGame2D.pruneOffscreen(ctx, asteroides, 60, function (a) {});',
+        advanced: true,
+      },
+    ])
   })
 
   it('reconhece "a cada N quadros/segundos" (if SZGame2D.everyX) e quantidade do grupo', () => {

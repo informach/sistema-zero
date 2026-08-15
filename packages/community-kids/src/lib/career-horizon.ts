@@ -4,10 +4,11 @@ import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import type { CourseLevelSlug, CourseTrack, StudentLevelSlug, StudentLevelView } from '@/lib/types'
 
 /**
- * HORIZONTE DO CATÁLOGO — a régua PROVISÓRIA da carreira enquanto os 48 cursos não existem.
+ * HORIZONTE DO CATÁLOGO — a régua PROVISÓRIA da carreira enquanto os 49 cursos não existem.
  *
- * A carreira exige 8 posições por degrau (48 no total), mas o catálogo real tem punhados.
- * Sem isto a criança lê "faltam 7 cursos" de cursos que ninguém gravou e vê medalhões com
+ * A carreira exige 8 posições por degrau, com uma exceção: o degrau de ENTRADA tem 1. São 49 no
+ * total, e o catálogo real tem punhados.
+ * Sem isto a criança lê "faltam 8 cursos" de cursos que ninguém gravou e vê medalhões com
  * CADEADO, que para ela significa "você não fez o suficiente". Aqui derivamos duas coisas
  * do catálogo que as páginas JÁ buscam:
  *
@@ -29,7 +30,7 @@ import type { CourseLevelSlug, CourseTrack, StudentLevelSlug, StudentLevelView }
 /**
  * O que o horizonte precisa saber de um curso — só isso. É deliberadamente MENOR que o
  * `CatalogCourseView`: o mapa é um componente de CLIENTE, e receber a view inteira
- * mandaria título, subtítulo, capa e URL de vendas de 48 cursos no payload do RSC para
+ * mandaria título, subtítulo, capa e URL de vendas de 49 cursos no payload do RSC para
  * calcular três campos. `CatalogCourseView` satisfaz esta forma, então o servidor pode
  * passar a lista inteira OU só o recorte.
  */
@@ -169,7 +170,7 @@ export type CareerProgress =
 /**
  * Quanto falta para o próximo nível contando **só os cursos que existem**.
  *
- * `remaining` do members conta contra a régua final (8 por degrau). Aqui a contagem é
+ * `remaining` do members conta contra a régua final (8 por degrau; 1 na entrada). Aqui a contagem é
  * limitada ao catálogo: `done` sai da própria régua (exigidos − faltantes) e o teto é quantos
  * cursos daquele degrau estão publicados. Curso despublicado depois de qualificado só derruba
  * o número para 0 (clamp), nunca para negativo.
@@ -204,7 +205,7 @@ export function careerProgress(
     const remaining = Math.min(missing, pending)
     if (remaining <= 0) return { kind: 'up-to-date' }
     // ⚠️ SÓ diz quanto falta quando o degrau tem TODOS os cursos publicados. A régua para
-    // subir de nível não mudou (continuam sendo os 8) — mudou o que a tela mostra. Com o
+    // subir de nível é do members, não daqui — mudou só o que a tela mostra. Com o
     // degrau pela metade, "faltam 2 para virar Inventor(a)" é MENTIRA: a criança fecha os 2
     // e não sobe. Falsa esperança é pior que silêncio, então aqui a tela não fala do
     // assunto. Quando o degrau enche, o `remaining` do members vira verdade e a frase volta

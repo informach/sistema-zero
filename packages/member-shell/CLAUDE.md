@@ -380,6 +380,18 @@ vive em **`server/studio-unlocks.ts`** (`extensionsForBlocks`/`drawersForBlocks`
 componentes de CLIENTE (checagem de remix no Mural) — arrastar o catálogo p/ o bundle do navegador
 seria caro. Quem resolve é a página (Server Component), que passa o resultado pronto.
 
+⚠️⚠️ **A gaveta é chaveada pelo `palettePath` INTEIRO, NUNCA pela folha (14/08).** `StudioDrawer`/
+`StudioDrawerSnapshot` são `{key, family, label, …}`: `key` = caminho inteiro (identidade), `family`
+= `palettePath[0]` (a categoria de topo que a criança lê na paleta) e `label` = o resto. Medido no
+catálogo real (1467 blocos): **12 nomes de folha se repetem em famílias diferentes**, cobrindo 176
+blocos — `🔊 Som` existe em QUATRO (Jogo 2D, 2D Avançado, Jogo 3D, 3D Avançado), `🎨 Aparência` e
+`🔤 Texto` em três. Com `at(-1)` as quatro viravam UMA gaveta com a contagem somada, e a criança que
+abrisse o Jogo 3D veria a gaveta do Jogo 2D "crescer" em vez de ganhar uma caixa nova. O caminho
+inteiro também preserva o segmento do meio dos kits (`Jogo 2D Avançado › 🧙 Kit RPG › 💬 NPCs`).
+`groupDrawersByFamily` é o agrupamento que o perfil do kids consome. ⚠️ `extensionsForBlocks` NÃO
+mudou: ele usa `entry.extension` (prefixo do tipo), ortogonal ao `palettePath`. Regressão travada em
+`tests/studio-unlocks.test.ts` com um par REAL de blocos homônimos.
+
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
 client `members.getGamification()` + variante **`getGamificationReadonly()`** (Server Components —

@@ -262,10 +262,10 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
 
   test('bônus é RECOMPENSA da etapa: trava até completar todos os obrigatórios', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
-    // O Iniciante 2D tem 7 posições desde 14/08 (o curso-base virou o degrau de entrada):
-    // a etapa só COMPLETA — e libera o bônus-recompensa — com as 7 qualificadas E a entrada.
+    // O Iniciante 2D tem 8 posições: a etapa só COMPLETA — e libera o bônus-recompensa —
+    // com as 8 qualificadas E o degrau de entrada concluído.
     await comEntradaConcluida(courses, gamification)
-    const slots = Array.from({ length: 7 }, (_, index) =>
+    const slots = Array.from({ length: 8 }, (_, index) =>
       seedSampleCourse(
         courses,
         `slot-${index + 1}`,

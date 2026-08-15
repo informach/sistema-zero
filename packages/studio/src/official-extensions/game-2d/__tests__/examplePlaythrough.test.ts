@@ -154,6 +154,149 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     expect(game.errors).toEqual([])
   })
 
+  /**
+   * ⭐⭐ O caso acima percorre o Pong SEM JOGAR O PONG: ele teleporta a bola para
+   * fora (450 / −20) para marcar ponto, então o rebote na raquete, o quique no
+   * teto e no chão, a IA do computador e as setas NUNCA rodam com condição
+   * verdadeira. É a classe que este repositório já catalogou cinco vezes — os
+   * testes asseriam que a bala NASCEU, nunca que ela ACERTOU.
+   *
+   * Os casos abaixo jogam de verdade. Todos usam `random` fixo, então o saque é
+   * determinístico: `randomBetween(-2, 2)` com 0,5 devolve 0 (bola reta).
+   */
+  const iniciarPong = () => {
+    const game = exampleHarness(pongExample, () => 0.5)
+    game.fireKey('Enter')
+    const [jogador, computador, bola] = game.sprites
+    if (!jogador || !computador || !bola) throw new Error('o Pong precisa dos três sprites')
+    return { game, jogador, computador, bola }
+  }
+
+  it('⭐ a bola rebatida na raquete VOLTA e atravessa o campo até a outra raquete', () => {
+    // O caso que não existia. Sem ele, apagar o rebote não quebraria teste nenhum.
+    const { game, jogador, computador, bola } = iniciarPong()
+    bola.x = jogador.x + jogador.w + 1
+    bola.y = jogador.y + 16
+    bola.vx = -3
+    bola.vy = 0
+    game.nextFrame()
+
+    expect(bola.vx ?? 0).toBeGreaterThan(0)
+
+    // ...e ela chega inteira ao outro lado, sem ninguém marcar ponto no caminho.
+    for (let quadro = 0; quadro < 400 && bola.x + bola.w < computador.x; quadro += 1) {
+      game.nextFrame()
+      expect(game.scores['PC:'] ?? 0).toBe(0)
+    }
+    expect(bola.x + bola.w).toBeGreaterThanOrEqual(computador.x)
+    expect(game.errors).toEqual([])
+  })
+
+  it('⭐ o ângulo da rebatida muda conforme o PONTO do impacto', () => {
+    // É a alma do Pong: bater na beirada manda a bola mais de lado. Sem este caso,
+    // um rebote que só inverte o sinal passaria como se fosse o jogo original.
+    const impacto = (deslocamento: number) => {
+      const { game, jogador, bola } = iniciarPong()
+      bola.x = jogador.x + jogador.w + 1
+      bola.y = jogador.y + deslocamento
+      bola.vx = -3
+      bola.vy = 0
+      game.nextFrame()
+      return bola.vy ?? 0
+    }
+
+    const noTopo = impacto(-4)
+    const noMeio = impacto(16)
+    const naBase = impacto(36)
+
+    expect(noTopo).toBeLessThan(noMeio)
+    expect(naBase).toBeGreaterThan(noMeio)
+    expect(Math.abs(noTopo)).toBeGreaterThan(Math.abs(noMeio))
+    expect(Math.abs(naBase)).toBeGreaterThan(Math.abs(noMeio))
+  })
+
+  it('⭐ a bola quica no teto e no chão e NUNCA sai do palco', () => {
+    const { game, bola } = iniciarPong()
+    bola.x = 200
+    bola.y = 2
+    bola.vx = 0
+    bola.vy = -5
+    game.nextFrame()
+    expect(bola.vy ?? 0).toBeGreaterThan(0)
+
+    let vazamento = 0
+    for (let quadro = 0; quadro < 200; quadro += 1) {
+      game.nextFrame()
+      vazamento = Math.max(vazamento, -bola.y, bola.y + bola.h - 300)
+    }
+
+    // ⭐ DÍVIDA PAGA. Esta linha era `toBe(4)`: o quique feito à mão do exemplo
+    // (`se bola.y <= 0 → vy = |vy|`) invertia a velocidade e NÃO corrigia a
+    // posição, então a bola atravessava a borda e só voltava no quadro seguinte.
+    // Vazava `|vy| − 1` px, e PIORAVA conforme ela acelerava. Com o bloco
+    // "Quicar só no teto e no chão" (que corrige a posição, como o irmão de 4
+    // bordas sempre fez) o vazamento é zero em qualquer velocidade.
+    expect(vazamento).toBe(0)
+    expect(game.errors).toEqual([])
+  })
+
+  it('a raquete do jogador sobe e desce com as setas e PARA na borda', () => {
+    const { game, jogador } = iniciarPong()
+    const inicio = jogador.y
+
+    game.fireKey('ArrowUp')
+    for (let quadro = 0; quadro < 40; quadro += 1) game.nextFrame()
+    game.fireKey('ArrowUp', 'keyup')
+    expect(jogador.y).toBeLessThan(inicio)
+    expect(jogador.y).toBe(0)
+
+    game.fireKey('ArrowDown')
+    for (let quadro = 0; quadro < 80; quadro += 1) game.nextFrame()
+    game.fireKey('ArrowDown', 'keyup')
+    expect(jogador.y + jogador.h).toBe(300)
+  })
+
+  it('a IA do computador persegue a bola nos DOIS sentidos, sem sair do palco', () => {
+    const { game, computador, bola } = iniciarPong()
+    const centro = (sprite: { y: number; h: number }) => sprite.y + sprite.h / 2
+
+    bola.x = 200
+    bola.vx = 0
+    bola.vy = 0
+    bola.y = 270
+    const antesDeDescer = Math.abs(centro(computador) - centro(bola))
+    for (let quadro = 0; quadro < 20; quadro += 1) game.nextFrame()
+    expect(Math.abs(centro(computador) - centro(bola))).toBeLessThan(antesDeDescer)
+
+    bola.y = 10
+    const antesDeSubir = Math.abs(centro(computador) - centro(bola))
+    for (let quadro = 0; quadro < 40; quadro += 1) game.nextFrame()
+    expect(Math.abs(centro(computador) - centro(bola))).toBeLessThan(antesDeSubir)
+
+    expect(computador.y).toBeGreaterThanOrEqual(0)
+    expect(computador.y + computador.h).toBeLessThanOrEqual(300)
+  })
+
+  it('o placar do PC também conta, e o saque é determinístico', () => {
+    // O caso existente só afere `Você:`; a derrota era inferida pela cena.
+    const { game, bola } = iniciarPong()
+    for (let ponto = 1; ponto <= 5; ponto += 1) {
+      bola.x = -30
+      game.nextFrame()
+      expect(game.scores['PC:']).toBe(ponto)
+      if (ponto < 5) {
+        // Saque: volta ao centro, vai para a direita e, com random 0,5, reto.
+        expect(bola.x).toBe(214)
+        expect(bola.y).toBe(144)
+        expect(bola.vx).toBe(3)
+        expect(bola.vy).toBe(0)
+      }
+    }
+    expect(game.api.sceneIs('derrota')).toBe(true)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
   it('Plataforma com inimigos conclui pelos três tipos, perde vida e reinicia', () => {
     const game = exampleHarness(enemyPlatformerExample)
     expect(game.api.sceneIs('inicio')).toBe(true)
@@ -1043,6 +1186,45 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     game.nextFrame()
     expect(heroi2?.hp ?? 0).toBe(vidaVermelho)
 
+    // A recarga conta quadros da partida, não quantas vezes a pergunta foi
+    // consultada. Esperar 30 quadros deve liberar um novo golpe sem obrigar a
+    // criança a apertar F repetidamente durante a recarga.
+    game.fireKey('f', 'keyup')
+    for (let frame = 0; frame < 30; frame += 1) game.nextFrame()
+    if (heroi1 && heroi2) {
+      heroi1.x = 200
+      heroi1.y = 200
+      heroi1.vy = 0
+      heroi2.x = 224
+      heroi2.y = 200
+      heroi2.vy = 0
+    }
+    game.fireKey('f')
+    game.nextFrame()
+    expect(heroi2?.hp ?? 0).toBeLessThan(vidaVermelho)
+
+    // A caixa continua visível por 12 quadros. Entrar nela durante essa janela
+    // também precisa acertar, ainda uma única vez por golpe.
+    const vidaAntesDoGolpeAtrasado = heroi2?.hp ?? 0
+    game.fireKey('f', 'keyup')
+    for (let frame = 0; frame < 30; frame += 1) game.nextFrame()
+    if (heroi1 && heroi2) {
+      heroi1.x = 200
+      heroi1.y = 200
+      heroi1.vy = 0
+      heroi2.x = 270
+      heroi2.y = 200
+      heroi2.vy = 0
+    }
+    game.fireKey('f')
+    game.nextFrame()
+    expect(heroi2?.hp ?? 0).toBe(vidaAntesDoGolpeAtrasado)
+    if (heroi2) heroi2.x = 250
+    game.nextFrame()
+    expect(heroi2?.hp ?? 0).toBeLessThan(vidaAntesDoGolpeAtrasado)
+    game.nextFrame()
+    expect(heroi2?.hp ?? 0).toBe(vidaAntesDoGolpeAtrasado - 8)
+
     // Nocaute: zerar a vida do vermelho leva à tela "ganhou1".
     if (heroi2) heroi2.hp = 0
     game.nextFrame()
@@ -1060,6 +1242,36 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     const restartedAzul = game.sprites.at(-4)
     expect(restartedAzul).not.toBe(heroi1)
     expect(restartedAzul?.hp).toBe(100)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Duelo de Heróis: golpes simultâneos que zeram as duas vidas terminam em empate', () => {
+    const game = exampleHarness(dueloDeHeroisExample, () => 0.5)
+    const [heroi1, heroi2] = game.sprites
+    expect(heroi1).toBeDefined()
+    expect(heroi2).toBeDefined()
+
+    game.fireKey('Enter')
+    for (let frame = 0; frame < 8; frame += 1) game.nextFrame()
+    if (heroi1 && heroi2) {
+      heroi1.x = 200
+      heroi1.y = 200
+      heroi1.vy = 0
+      heroi1.hp = 8
+      heroi2.x = 224
+      heroi2.y = 200
+      heroi2.vy = 0
+      heroi2.hp = 8
+    }
+
+    game.fireKey('f')
+    game.fireKey('ArrowDown')
+    game.nextFrame()
+
+    expect(heroi1?.hp).toBe(0)
+    expect(heroi2?.hp).toBe(0)
+    expect(game.api.sceneIs('empate')).toBe(true)
     expect(game.errors).toEqual([])
     expect(game.warnings).toEqual([])
   })

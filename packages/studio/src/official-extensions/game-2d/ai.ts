@@ -29,6 +29,8 @@ API global injetada como window.SZGame2D:
 - setupStageFull(bg): "ocupar a tela toda" — SEM dimensões e SEM proporção fixa: o canvas preenche 100% da viewport e a resolução LÓGICA do jogo acompanha o tamanho real da tela (a área do jogo É a tela; muda com a janela; nítido via devicePixelRatio). Diferente do setupStage/fitScreen (que mantêm a proporção e deixam barras). Centralize por "a largura/altura da tela", não por número fixo. Bloco "Preparar o jogo para ocupar a tela toda".
 - spawnBullet(grupo, { x, y, radius, color, vx, vy }): cria um TIRO (bolinha com brilho/glow) no grupo; x/y = centro. Bloco "Criar tiro no grupo".
 - arrowsX(sprite, speed): move o sprite SÓ na horizontal com as setas (combine com clampToScreen). Bloco "Mover o sprite com as setas".
+- arrowsY(sprite, speed): o par VERTICAL do arrowsX — sobe e desce com ↑ ↓ (é a raquete do Pong). Lê a camada semântica, então vale também para W/S e para o pad de toque. Combine com clampToScreen. Bloco "Mover o sprite com as setas ↑ ↓".
+- stageWidth() / stageHeight(): a largura e a altura LÓGICAS da tela (o tamanho em que a criança desenha, não o buffer — com "ocupar a tela toda" ou numa tela de alta densidade eles diferem). É o jeito certo de escrever "saiu pela direita" e "o meio da tela" sem cravar número. ⚠️ Com câmera ligada a borda direita do MUNDO é \`cameraX() + a largura da tela\`. Blocos "a largura da tela" e "a altura da tela".
 - blink(sprite, frames): faz o sprite PISCAR por N quadros (invencibilidade ao levar dano). Bloco "Fazer o sprite piscar".
 - everyFrames agora aceita NÚMERO ou VARIÁVEL no intervalo (ex.: a cada [intervalo] quadros) — dá para acelerar o spawn por onda.
 - spawnAsteroid varia o tamanho de cada asteroide sozinho; showScreen escurece de leve (o jogo aparece atrás) e quebra o subtítulo em linhas.
@@ -50,6 +52,8 @@ API global injetada como window.SZGame2D:
 - applyGravityToGroup(grupo): aplica a gravidade a cada sprite atual do grupo;
   updateGroup(grupo) somente move. Só sprites/grupos que recebem o apply respondem.
 - bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
+- bounceOnEdgePair(sprite, ctx, bordas): quica só num PAR de bordas — "top-bottom" (teto e chão) ou "left-right" (laterais). O par aberto é a passagem: no Pong é por ele que a bola sai e vira ponto, e por isso o bounceOnEdges (que fecha os quatro lados) não serve ali. Corrige a posição, então a bola nunca aparece fora do palco. Bloco "Quicar o sprite só ...".
+- paddleBounce(bola, raquete, acelerarPorcento): rebate a bola na raquete — Pong, Breakout, Arkanoid. O EIXO sai da geometria da raquete (a bola volta pelo lado comprido: raquete em pé devolve na horizontal, deitada na vertical), o ÂNGULO sai do ponto do impacto (bater na beirada manda mais de lado) e a velocidade sobe N% por rebatida. Já traz guarda de aproximação (não gruda), correção de posição e teto de velocidade (não atravessa). Ponha dentro de um "se ⟨encosta⟩" só se quiser tocar som junto. Bloco "Rebater a bola ... na raquete ...".
 - circleCollides(a, b): colisão por círculo.
 - CAIXA AUTOMÁTICA (sem bloco): imagem vinda do Pinta traz junto a caixa medida no
   desenho (fração do quadro, união de todos os quadros) e o runtime a aplica ao pôr a

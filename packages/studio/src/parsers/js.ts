@@ -4211,7 +4211,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.pruneOffscreen(ctx, g, 40, function (item) {…})
       const ctxVar = identifierName(args[0])
       const groupVar = identifierName(args[1])
-      if (!ctxVar || !groupVar || !isFn(args[3])) return null
+      // O bloco não possui entrada de margem e o gerador sempre emite 40.
+      // Não converta outro valor para IR, pois isso mudaria silenciosamente o
+      // programa quando a criança alternasse do modo Código para Blocos.
+      if (!ctxVar || !groupVar || numericLiteralValue(args[2]) !== 40 || !isFn(args[3])) {
+        return null
+      }
       const itemName = identifierName(args[3].params?.[0]) ?? 'sprite'
       ctx.spriteVars.add(itemName)
       return {
@@ -13298,6 +13303,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'systemReducedMotion':
     case 'perfNow':
     case 'dateGet':
+    case 'g2d:stageWidth':
+    case 'g2d:stageHeight':
       return true
     case 'g2d:tileContactIs':
       return isSimpleValue(expr.index)

@@ -134,10 +134,13 @@ export const courses = members.table(
       .where(sql`${t.careerSlot} is not null`),
     check(
       // Espelha `assertCareerSlot`: Primeiros Passos existe só em 2D; Lenda nunca ocupa
-      // posição; os tetos são 1 em Primeiros Passos, 7 no Iniciante 2D e 8 nos demais.
-      // ⚠️ Compara `level::text`, não o literal novo do enum: a própria `0063` o adiciona.
+      // posição; o teto é 1 no degrau de ENTRADA e 8 em todos os demais.
+      // ⚠️ Compara `level::text`, não o literal do enum: a `0063` é quem o adiciona.
+      // ⚠️ O Iniciante 2D teve teto 7 entre 14/08 e 15/08 (a `0063` apertou, a `0064`
+      // alargou de volta a pedido da usuária). Alargar é seguro; apertar exige normalizar
+      // antes, porque `ADD CONSTRAINT ... CHECK` valida as linhas existentes.
       'courses_career_slot_check',
-      sql`(${t.level}::text <> 'primeiros-passos' or ${t.track}::text = '2d') and (${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.level}::text <> 'lenda' and ${t.careerSlot} between 1 and (case when ${t.level}::text = 'primeiros-passos' then 1 when ${t.level}::text = 'iniciante' and ${t.track}::text = '2d' then 7 else 8 end)))`,
+      sql`(${t.level}::text <> 'primeiros-passos' or ${t.track}::text = '2d') and (${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.level}::text <> 'lenda' and ${t.careerSlot} between 1 and (case when ${t.level}::text = 'primeiros-passos' then 1 else 8 end)))`,
     ),
   ],
 )

@@ -363,7 +363,7 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise:
       'Explorar uma campanha vetorial profissional com oito mundos, 32 fases, segredos, gemas e guardiões.',
     scenario:
-      'Começar, correr e pular, usar checkpoints e poderes, descobrir rotas secretas, vencer os oito guardiões, salvar e repetir uma partida.',
+      'Começar, atravessar a 1-1 andando e pulando, pisar num bicho, recolher um casco, desviar do espinho, usar checkpoint e poder, e vencer um guardião.',
     interactions: ['start', 'arrows', 'space'],
   },
   {

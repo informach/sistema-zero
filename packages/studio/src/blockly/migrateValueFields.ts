@@ -43,6 +43,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_swim: { SPEED: 'number' },
   sz_g2d_follow_pointer: { SPEED: 'number' },
   sz_g2d_arrows_x: { SPEED: 'number' },
+  sz_g2d_arrows_y: { SPEED: 'number' },
+  sz_g2d_paddle_bounce: { BOOST: 'number' },
   sz_g2d_rotate_sprite: { DEG: 'number' },
   sz_g2d_point_sprite: { DEG: 'number' },
   sz_g2d_thrust: { FORCE: 'number' },

@@ -71,17 +71,19 @@ const EMPTY: FormState = {
 }
 
 /**
- * Nº de posições da etapa: 8 por degrau (reforma 07/2026; era 6 no ini-2d e 5 nas
- * demais). Espelha o CHECK da migration `0053` e o catálogo do core. Exportada SÓ p/
- * a trava de conformance admin×core (`career-tier-conformance`).
+ * Nº de posições da etapa: **8 em todo degrau, exceto o de ENTRADA**, que tem 1 (o curso
+ * que a Faísca faz). Espelha o CHECK do banco e o catálogo do core. Exportada SÓ p/ a
+ * trava de conformance admin×core (`career-tier-conformance`).
  */
-export function slotsForTier(level: string, track: string): number {
-  // ⚠️ Não é mais um 8 uniforme (14/08): o degrau de ENTRADA tem 1 posição (o curso que a
-  // Faísca faz) e o Iniciante 2D ficou com 7, porque o curso-base saiu dele. A soma da
-  // carreira segue 48. O número vem do core, e o `career-tier-conformance.test.ts` compara
-  // esta função com ele.
+// ⚠️ `_track` fica na assinatura de propósito: o degrau do core é o PAR (nível, trilha), e a
+// conformance chama esta função com os dois. Hoje só o nível decide; se um degrau 3D voltar a
+// ter regra própria, o parâmetro já está aqui.
+export function slotsForTier(level: string, _track: string): number {
+  // ⚠️ O Iniciante 2D teve 7 por um dia (14/08 a 15/08): quando o curso-base saiu dele para
+  // o degrau de entrada, encolheram o degrau para o total da carreira continuar 48. A
+  // usuária desfez — o total é 49 e todo degrau que não é a entrada tem 8. O número vem do
+  // core, e o `career-tier-conformance.test.ts` compara esta função com ele.
   if (level === 'primeiros-passos') return 1
-  if (level === 'iniciante' && track === '2d') return 7
   return 8
 }
 

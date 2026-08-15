@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { spawnSync } from 'node:child_process'
+import { readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 /**
@@ -69,4 +70,62 @@ describe('bundle inicial do Jogo 2D', () => {
     },
     PRAZO_DO_BUILD_MS,
   )
+})
+
+/**
+ * ⭐⭐ O PAYLOAD do runtime, que é coisa diferente do bundle acima.
+ *
+ * O bundle mede o MÓDULO (o que o editor carrega). Isto mede a STRING que é
+ * injetada no `<head>` de todo preview e escrita em todo jogo exportado — o que a
+ * criança de fato baixa. Ele não tinha teto: o único assert era um PISO
+ * (`templateGuard`, > 1000 chars), e por isso passou de ~309 KB (registrado no
+ * design doc de 02/08) para 459 KB sem nada acusar. São 150 KB que ninguém viu.
+ *
+ * ⚠️ A margem é de 2%, não os 5% do vizinho, e o motivo é a FORMA do crescimento:
+ * o bundle cresce por dependência (salto grande e raro), o runtime cresce por
+ * BLOCO NOVO (salto pequeno e frequente). Com 5% caberia um lote inteiro de
+ * blocos em silêncio.
+ */
+// Medido em 14/08, no fim do lote: 464.034 B crus / 137.437 B gzip.
+// ⚠️ O lote de desempenho SUBIU o payload em ~4,5 KB e mesmo assim é um ganho:
+// ele troca bytes (uma vez, no download) por trabalho por quadro (60× por
+// segundo, para sempre). O ajuste de nitidez de um mapa de 375 células saiu de
+// 1.125 travessias de contexto para 2, e as 400 partículas de 800 para 2.
+const RUNTIME_TETO_CRU = 473_000
+const RUNTIME_TETO_GZIP = 140_000
+
+/**
+ * Os maiores fragmentos de `runtime/`, por tamanho de FONTE. Não é o tamanho do
+ * que cada um contribui ao payload (o template tem aspas e indentação), mas
+ * responde a pergunta que importa quando o teto estoura: QUAL arquivo cresceu.
+ */
+function maioresFragmentos(): string {
+  const pasta = resolve(import.meta.dir, '../runtime')
+  return readdirSync(pasta)
+    .filter((nome) => nome.endsWith('.ts'))
+    .map((nome) => ({ nome, bytes: statSync(resolve(pasta, nome)).size }))
+    .sort((a, b) => b.bytes - a.bytes)
+    .slice(0, 8)
+    .map(({ nome, bytes }) => `  ${nome.padEnd(24)} ${String(bytes).padStart(7)} B`)
+    .join('\n')
+}
+
+describe('payload do runtime do Jogo 2D', () => {
+  it('não cresce sem alguém decidir', async () => {
+    const { gameTwoDRuntime } = await import('../runtime')
+    const { gzipSync } = await import('node:zlib')
+    const cru = Buffer.byteLength(gameTwoDRuntime)
+    const gzip = gzipSync(gameTwoDRuntime).byteLength
+
+    // A mensagem de falha ATRIBUI: quem estourar vê QUAL fragmento cresceu, em vez
+    // de só um número maior. Bumpar informado é decisão; bumpar cego é acidente.
+    const culpados = `\nmaiores fragmentos de runtime/:\n${maioresFragmentos()}`
+    expect(cru, culpados).toBeLessThanOrEqual(RUNTIME_TETO_CRU)
+    expect(gzip, culpados).toBeLessThanOrEqual(RUNTIME_TETO_GZIP)
+
+    // ⭐ PISO junto do teto. Sem ele a catraca só sobe, para sempre, e um lote de
+    // desempenho bem-sucedido vira folga grátis para o próximo bloco — que é
+    // exatamente como 309 KB viraram 459 KB. Encolheu mais de 10%? BAIXE o teto.
+    expect(gzip).toBeGreaterThan(Math.floor(RUNTIME_TETO_GZIP * 0.9))
+  })
 })

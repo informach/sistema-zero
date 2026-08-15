@@ -102,7 +102,7 @@ SZGame2D.gameLoop(function update() {
         SZGame2D.playFx("hurt");
       });
     }
-    SZGame2D.pruneOffscreen(ctx, tiros, 60, function (tiro) {});
+    SZGame2D.pruneOffscreen(ctx, tiros, 40, function (tiro) {});
     SZGame2D.drawGroup(ctx, tiros);
     SZGame2D.drawEnemyType(ctx, inimigos);
     SZGame2D.drawSprite(ctx, heroi);

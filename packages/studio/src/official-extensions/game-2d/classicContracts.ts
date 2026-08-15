@@ -10,3 +10,11 @@ export type GameTwoDTileContactSide = (typeof GAME_TWO_D_TILE_CONTACT_SIDES)[num
 export const GAME_TWO_D_TILE_CONTACT_FILTERS = ['any', ...GAME_TWO_D_TILE_CONTACT_SIDES] as const
 
 export type GameTwoDTileContactFilter = (typeof GAME_TWO_D_TILE_CONTACT_FILTERS)[number]
+
+/**
+ * O par de bordas em que o sprite quica. O par NÃO listado fica aberto — e é
+ * justamente por ele que a bola do Pong sai e vira ponto.
+ */
+export const GAME_TWO_D_EDGE_PAIRS = ['top-bottom', 'left-right'] as const
+
+export type GameTwoDEdgePair = (typeof GAME_TWO_D_EDGE_PAIRS)[number]

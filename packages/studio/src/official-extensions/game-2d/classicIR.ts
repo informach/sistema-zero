@@ -1,7 +1,12 @@
 import { z } from 'zod'
 import type { JSExpr, JSStatement } from '../../ir/schema'
 import { GAME_UI_FONT_IDS } from '../gameUiFonts/catalog'
-import { GAME_TWO_D_TILE_CONTACT_FILTERS, GAME_TWO_D_VECTOR_TILE_ROLES } from './classicContracts'
+import {
+  GAME_TWO_D_EDGE_PAIRS,
+  GAME_TWO_D_TILE_CONTACT_FILTERS,
+  GAME_TWO_D_VECTOR_TILE_ROLES,
+  type GameTwoDEdgePair,
+} from './classicContracts'
 
 type IdField = { __id: z.ZodOptional<z.ZodString> }
 const ACTIONS = [
@@ -70,7 +75,27 @@ export type ClassicGameTwoDStatement = { __id?: string } & (
   | { type: 'g2d:useFont'; font: string }
   // Uma TELA feita de imagem. Cobre igual ao cenário e, ao contrário dele, ANUNCIA.
   | { type: 'g2d:showImageScreen'; ctxVar: string; image: string }
+  // Rebater na raquete: o gênero inteiro do Pong/Breakout num bloco.
+  | {
+      type: 'g2d:paddleBounce'
+      ballVar: string
+      paddleVar: string
+      boost: number | JSExpr
+    }
+  // Quicar só num par de bordas — o outro par é a passagem que vira ponto.
+  | { type: 'g2d:bounceOnEdgePair'; spriteVar: string; ctxVar: string; edges: GameTwoDEdgePair }
+  // O par vertical do "mover com as setas".
+  | { type: 'g2d:arrowsY'; spriteVar: string; speed: number | JSExpr }
 )
+
+/**
+ * Os dois VALORES de tela. Ficam à parte dos statements porque entram na união de
+ * EXPRESSÕES da fachada; o nome leva "Value" para não colidir com o tipo do codec,
+ * que cobre a família inteira de expressões da extensão.
+ */
+export type ClassicGameTwoDStageValue = { __id?: string } & {
+  type: 'g2d:stageWidth' | 'g2d:stageHeight'
+}
 
 /** Schemas do lote clássico ficam na extensão, não na fachada central da IR. */
 export function classicGameTwoDExpressionSchemas(
@@ -88,6 +113,8 @@ export function classicGameTwoDExpressionSchemas(
       fallback: expr,
       ...id,
     }),
+    z.object({ type: z.literal('g2d:stageWidth'), ...id }),
+    z.object({ type: z.literal('g2d:stageHeight'), ...id }),
   ] as const
 }
 
@@ -235,6 +262,26 @@ export function classicGameTwoDStatementSchemas(
       ctxVar: irText(),
       percent: numeric,
       color: irText(),
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g2d:paddleBounce'),
+      ballVar: irText(),
+      paddleVar: irText(),
+      boost: numeric,
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g2d:bounceOnEdgePair'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      edges: z.enum(GAME_TWO_D_EDGE_PAIRS),
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g2d:arrowsY'),
+      spriteVar: irText(),
+      speed: numeric,
       ...id,
     }),
   ] as const

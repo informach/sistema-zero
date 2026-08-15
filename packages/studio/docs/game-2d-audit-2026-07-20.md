@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 283 definições de bloco
-(276 visíveis e 7 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 288 definições de bloco
+(281 visíveis e 7 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.78.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.79.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -159,9 +159,9 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 
 ## Escopo revisado
 
-- 149 arquivos próprios da extensão;
-- 283 definições de blocos e 25 subcategorias;
-- 280 métodos e valores públicos em `window.SZGame2D`;
+- 151 arquivos próprios da extensão;
+- 288 definições de blocos e 25 subcategorias;
+- 285 métodos e valores públicos em `window.SZGame2D`;
 - 24 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
@@ -544,6 +544,19 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
 - as 262 definições atravessam catálogo, Blockly, IR, schema, gerador,
   importador JavaScript, allowlist, toolbox e contrato tipado. O exemplo Mundo
   Pirata comprova a receita de Mundo com câmera e terreno feito por figuras.
+
+### Duelo de Heróis e recarga por quadros — 0.78.1
+
+- `cooldownReady` passou a guardar um prazo absoluto no relógio de quadros da
+  partida. A espera agora libera a ação mesmo quando a pergunta de recarga fica
+  dentro de um evento de tecla; pausa congela o prazo e reinício o zera;
+- a caixa de ataque do exemplo **Duelo de Heróis** causa dano ao encostar em
+  qualquer momento dos 12 quadros em que permanece visível e é consumida no
+  primeiro acerto, impedindo dano repetido pelo mesmo golpe;
+- golpes simultâneos que zeram as duas vidas terminam em empate, sem favorecer o
+  jogador cuja condição aparecia por último nos blocos;
+- o playthrough cobre recarga sem apertos repetidos, contato tardio, dano único,
+  nocaute, duplo nocaute e reinício, além do drift e round-trip já existentes.
 
 ## Conclusão
 

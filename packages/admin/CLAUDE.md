@@ -645,7 +645,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   BLOCOS; aula legada normaliza no load via `normalizeBlockLevel`, e o clipboard de config normaliza
   no paste — localStorage guarda legado p/ sempre).
   **Posição na carreira (curso-base):** `careerSlot` é opcional. Só curso Kids pode ocupá-la;
-  O número de posições é POR ETAPA (14/08: **Primeiros Passos** = 1, Iniciante 2D = 7, demais = 8 — `slotsForTier`); **posição 1 = curso-base** (destrava as demais
+  O número de posições é POR ETAPA (**Primeiros Passos** = 1, todas as demais = 8 — `slotsForTier`; o Iniciante 2D teve 7 entre 14/08 e 15/08 e a usuária desfez); **posição 1 = curso-base** (destrava as demais
   da etapa); **sem posição = bônus-RECOMPENSA da etapa (24/07)** — abre quando o aluno completa os
   cursos com posição da etapa do bônus (a listagem rotula "Bônus — recompensa da etapa X"; etapa
   sem base publicada não trava o bônus, fail-open). O dialog de curso virou o COMPONENTE
@@ -659,7 +659,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   **envia o payload COMPLETO sempre** (o members preserva ausentes no PATCH, mas `salesPageUrl`
   ausente LIMPA a chave — mandar tudo é o contrato seguro). O card de prontidão `CareerReadiness`
   é **CLICÁVEL** (`canWrite`): posição vazia → cria já mirando etapa+posição (`prefill`); ocupada →
-  edita o curso. Ele carrega TODAS as páginas Kids com `loadAllPages` (as 48 posições, sem cortar
+  edita o curso. Ele carrega TODAS as páginas Kids com `loadAllPages` (as 49 posições, sem cortar
   nos primeiros 100). **Aviso "Sem vitrine" (24/07):** curso-base PUBLICADO sem aula publicada com
   bloco de Estúdio de vitrine (`CourseView.hasShowcaseBlock === false`, campo da listagem do
   members) aparece ⚠️ "Sem vitrine" no painel (NÃO conta como pronto) e o `CourseFormDialog` mostra
@@ -693,8 +693,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
     avisa que travas/gamificação de aluno real não são simuladas. O editor busca a árvore do
     curso no load (slug/audience/status + isPublished da aula).
   - **Conformance admin×core**: `tests/career-tier-conformance.test.ts` trava
-    `COURSE_TIER_OPTIONS` ≡ `CAREER_COURSE_TIERS` (conjunto E ORDEM — o CareerReadiness deriva
-    8 slots por degrau) e `slotsForTier` (exportada do course-form-dialog) ≡
+    `COURSE_TIER_OPTIONS` ≡ `CAREER_COURSE_TIERS` (conjunto E ORDEM) e `slotsForTier`
+    (exportada do course-form-dialog, que deriva o nº de posições POR degrau) ≡
     `CREATOR_CAREER_LEVELS.at(-1).requiredSlots` — import RELATIVO do core (precedente
     badge-conformance do kids; sem dependência nova).
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita

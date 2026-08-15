@@ -196,11 +196,26 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     });
   }
   /** Nº de colunas do mapa (maior linha). */
+  /**
+   * ⭐ Memoizado: era O(linhas) e roda CINCO vezes por sprite por quadro
+   * (colisão, varredura de sobreposição e desenho). Num mapa de 200 linhas eram
+   * 1.000 iterações por sprite só para descobrir um número que só muda quando a
+   * grade muda.
+   *
+   * ⚠️ O selo é a REFERÊNCIA do array de linhas, não o comprimento: "Pôr a peça"
+   * (setTileAtContact/setTileAt) muda o VALOR de uma célula e nunca o tamanho, e
+   * quem troca a grade inteira no modo Código troca o array. É a mesma régua do
+   * snapshot de sólidos logo abaixo.
+   */
   function tileMapCols(map) {
+    if (!map || !map.rows) return 0;
+    if (map._colsRows === map.rows && typeof map._colsCache === 'number') return map._colsCache;
     var cols = 0;
-    if (map && map.rows) for (var i = 0; i < map.rows.length; i++) {
+    for (var i = 0; i < map.rows.length; i++) {
       if (map.rows[i].length > cols) cols = map.rows[i].length;
     }
+    map._colsRows = map.rows;
+    map._colsCache = cols;
     return cols;
   }
   function _setTileMapLayout(map, x, y, tileSize, mode) {
@@ -346,19 +361,27 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       firstRow = Math.max(0, Math.floor((visible.top - oy) / cell));
       lastRow = Math.min(rowsN - 1, Math.ceil((visible.bottom - oy) / cell) - 1);
     }
+    // ⭐ Um LOTE só de nitidez para o mapa inteiro. Todas as células têm o mesmo
+    // tamanho de origem e o mesmo tamanho na tela, então a decisão "ampliando ou
+    // reduzindo" é a MESMA para todas — e antes ela era relida e reescrita no
+    // contexto célula a célula. Num mapa de 375 células eram 1.125 travessias de
+    // contexto para 375 desenhos úteis; agora são duas para o mapa inteiro.
+    var comFolha = !(map.tileset && map.tileset._kind === 'g2d-vector-tileset');
+    if (comFolha) _crispBatch(ctx, map.tileset ? map.tileset.frameW : 0, cell);
     for (var r = firstRow; r <= lastRow; r++) {
       var row = map.rows[r];
       var rowLastCol = Math.min(lastCol, row.length - 1);
       for (var c = firstCol; c <= rowLastCol; c++) {
         var idx = row[c];
         if (idx < 0) continue;
-        if (map.tileset && map.tileset._kind === 'g2d-vector-tileset') {
-          _drawVectorTile(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
-        } else {
+        if (comFolha) {
           drawFrame(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
+        } else {
+          _drawVectorTile(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
         }
       }
     }
+    if (comFolha) _crispBatchEnd(ctx);
   }
   /**
    * Impede o sprite de atravessar os tiles sólidos do mapa: empurra o sprite para

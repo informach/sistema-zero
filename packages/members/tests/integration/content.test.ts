@@ -229,8 +229,7 @@ describe('Members HTTP — autoria: cursos', () => {
     })
     expect((await readJson(preserved)).careerSlot).toBe(1)
 
-    // A posição 8 vale nos degraus de 8 (o Iniciante 2D caiu para 7 em 14/08 — coberto
-    // no teste seguinte).
+    // A posição 8 vale em todo degrau que não é o de ENTRADA (coberto no teste seguinte).
     const acceptsEight = await patchCourse(app, created.id, {
       ...COURSE,
       slug: 'base-kids',
@@ -250,7 +249,7 @@ describe('Members HTTP — autoria: cursos', () => {
     expect((await readJson(removed)).careerSlot).toBeNull()
   })
 
-  test('⭐ o teto de posições é POR DEGRAU: 1 na entrada, 7 no Iniciante 2D, 8 nos demais', async () => {
+  test('⭐ o teto de posições é POR DEGRAU: 1 na ENTRADA, 8 em todos os demais', async () => {
     const { app } = buildApp()
     const base = { ...COURSE, audience: 'kids' as const }
 
@@ -259,9 +258,10 @@ describe('Members HTTP — autoria: cursos', () => {
       ['entrada-ok', 'primeiros-passos', '2d', 1, 201],
       ['entrada-demais', 'primeiros-passos', '2d', 2, 400],
       ['ini2d-ok', 'iniciante', '2d', 7, 201],
-      // ⚠️ A posição 8 do Iniciante 2D DEIXOU de existir: o curso-base saiu para o degrau
-      // de entrada e o degrau ficou com 7. Aceitar aqui furaria o CHECK do banco.
-      ['ini2d-demais', 'iniciante', '2d', 8, 400],
+      // ⭐ A posição 8 do Iniciante 2D VOLTOU (15/08): ela existiu, sumiu na `0063` quando o
+      // curso-base saiu para o degrau de entrada, e a usuária desfez o encolhimento.
+      ['ini2d-oitava', 'iniciante', '2d', 8, 201],
+      ['ini2d-demais', 'iniciante', '2d', 9, 400],
       ['ini3d-ok', 'iniciante', '3d', 8, 201],
       ['av3d-ok', 'avancado', '3d', 8, 201],
     ]

@@ -4,7 +4,14 @@ import type { JSExpr, JSStatement } from '#ir'
 import { valueToExpr } from '#ir'
 import type { SerializedBlocklyBlock } from '../../codecs/types'
 import { GAME_UI_FONT_IDS } from '../gameUiFonts/catalog'
-import { GAME_TWO_D_TILE_CONTACT_FILTERS, GAME_TWO_D_VECTOR_TILE_ROLES } from './classicContracts'
+import {
+  GAME_TWO_D_EDGE_PAIRS,
+  GAME_TWO_D_TILE_CONTACT_FILTERS,
+  GAME_TWO_D_VECTOR_TILE_ROLES,
+} from './classicContracts'
+
+/** Um par desconhecido só vem de código escrito à mão; ali o trecho vira rawJS. */
+const EDGE_PAIRS = new Set<string>(GAME_TWO_D_EDGE_PAIRS)
 
 const ACTIONS = new Set([
   'left',
@@ -44,6 +51,8 @@ export function classicGameTwoDBlockExpression(
       index: expression(block, 'INDEX', { type: 'num', value: 0 }),
     } as JSExpr
   }
+  if (block.type === 'sz_g2d_stage_width') return { type: 'g2d:stageWidth' } as JSExpr
+  if (block.type === 'sz_g2d_stage_height') return { type: 'g2d:stageHeight' } as JSExpr
   if (block.type !== 'sz_g2d_action_down' && block.type !== 'sz_g2d_action_pressed') return
   const action = field(block, 'ACTION')
   if (!ACTIONS.has(action)) return
@@ -224,6 +233,32 @@ export function classicGameTwoDBlockToIR(
     case 'sz_g2d_use_font':
       statement = { type: 'g2d:useFont', font: f('FONT') } as JSStatement
       break
+    case 'sz_g2d_paddle_bounce':
+      statement = {
+        type: 'g2d:paddleBounce',
+        ballVar: f('BALL'),
+        paddleVar: f('PADDLE'),
+        boost: expr('BOOST', 5),
+      } as JSStatement
+      break
+    case 'sz_g2d_bounce_edge_pair': {
+      const edges = f('EDGES')
+      if (!EDGE_PAIRS.has(edges)) return
+      statement = {
+        type: 'g2d:bounceOnEdgePair',
+        spriteVar: f('SPRITE'),
+        ctxVar: 'ctx',
+        edges,
+      } as JSStatement
+      break
+    }
+    case 'sz_g2d_arrows_y':
+      statement = {
+        type: 'g2d:arrowsY',
+        spriteVar: f('SPRITE'),
+        speed: expr('SPEED', 5),
+      } as JSStatement
+      break
     case 'sz_g2d_draw_fade':
       statement = {
         type: 'g2d:drawFade',
@@ -292,6 +327,12 @@ export function classicGameTwoDStatementToCode(
       return `${tools.pad}SZGame2D.showImageScreen(${id('ctxVar')}, ${JSON.stringify(s.image)});`
     case 'g2d:useFont':
       return `${tools.pad}SZGame2D.useFont(${JSON.stringify(s.font)});`
+    case 'g2d:paddleBounce':
+      return `${tools.pad}SZGame2D.paddleBounce(${id('ballVar')}, ${id('paddleVar')}, ${expr('boost')});`
+    case 'g2d:bounceOnEdgePair':
+      return `${tools.pad}SZGame2D.bounceOnEdgePair(${id('spriteVar')}, ${id('ctxVar')}, ${JSON.stringify(s.edges)});`
+    case 'g2d:arrowsY':
+      return `${tools.pad}SZGame2D.arrowsY(${id('spriteVar')}, ${expr('speed')});`
     case 'g2d:drawPixelScore':
       return `${tools.pad}SZGame2D.drawPixelScore(${id('ctxVar')}, ${JSON.stringify(s.label)}, ${expr('value')}, ${expr('x')}, ${expr('y')}, ${expr('size')}, ${JSON.stringify(s.color)});`
     case 'g2d:drawFade':
@@ -301,10 +342,20 @@ export function classicGameTwoDStatementToCode(
   }
 }
 
-type ClassicGameTwoDExpression = Extract<
-  JSExpr,
-  { type: 'g2d:actionDown' | 'g2d:actionPressed' | 'g2d:tileContactIs' | 'g2d:campaignValue' }
->
+/**
+ * ⚠️ Fonte ÚNICA da lista: o tipo do parâmetro e o guard liam duas listas
+ * separadas, e acrescentar um valor a só uma delas deixava o `tsc` acusando
+ * "comparação sem sobreposição" num `case` que estava certo.
+ */
+type ClassicGameTwoDExpressionType =
+  | 'g2d:actionDown'
+  | 'g2d:actionPressed'
+  | 'g2d:tileContactIs'
+  | 'g2d:campaignValue'
+  | 'g2d:stageWidth'
+  | 'g2d:stageHeight'
+
+type ClassicGameTwoDExpression = Extract<JSExpr, { type: ClassicGameTwoDExpressionType }>
 
 export function classicGameTwoDExpressionToCode(
   expression: ClassicGameTwoDExpression,
@@ -317,21 +368,27 @@ export function classicGameTwoDExpressionToCode(
   if (expression.type === 'g2d:tileContactIs') {
     return `SZGame2D.tileContactIs(${resolveIdentifier(expression.contactVar)}, ${compileExpression(expression.index)})`
   }
-  const method = expression.type === 'g2d:actionDown' ? 'actionDown' : 'actionPressed'
-  return `SZGame2D.${method}(${JSON.stringify(expression.action)})`
+  // ⚠️ Ramo EXPLÍCITO em vez de fall-through: os dois valores de tela vêm de um
+  // tipo com discriminante em UNIÃO (`'g2d:stageWidth' | 'g2d:stageHeight'`), e o
+  // TypeScript não o parte em dois com o `===`. Sem isto, o `action` do último
+  // ramo deixa de existir para o compilador.
+  if (expression.type === 'g2d:actionDown' || expression.type === 'g2d:actionPressed') {
+    const method = expression.type === 'g2d:actionDown' ? 'actionDown' : 'actionPressed'
+    return `SZGame2D.${method}(${JSON.stringify(expression.action)})`
+  }
+  return expression.type === 'g2d:stageHeight' ? 'SZGame2D.stageHeight()' : 'SZGame2D.stageWidth()'
 }
 
 export function isClassicGameTwoDExpression(
   expression: JSExpr,
-): expression is Extract<
-  JSExpr,
-  { type: 'g2d:actionDown' | 'g2d:actionPressed' | 'g2d:tileContactIs' | 'g2d:campaignValue' }
-> {
+): expression is ClassicGameTwoDExpression {
   return (
     expression.type === 'g2d:actionDown' ||
     expression.type === 'g2d:actionPressed' ||
     expression.type === 'g2d:tileContactIs' ||
-    expression.type === 'g2d:campaignValue'
+    expression.type === 'g2d:campaignValue' ||
+    expression.type === 'g2d:stageWidth' ||
+    expression.type === 'g2d:stageHeight'
   )
 }
 
@@ -526,6 +583,33 @@ export function classicGameTwoDStatementToBlock(
       return tools.block('sz_g2d_show_image_screen', { IMAGE: String(s.image) }, {}, statement.__id)
     case 'g2d:useFont':
       return tools.block('sz_g2d_use_font', { FONT: String(s.font) }, {}, statement.__id)
+    case 'g2d:paddleBounce': {
+      const boost = value('boost')
+      return boost
+        ? tools.block(
+            'sz_g2d_paddle_bounce',
+            { BALL: String(s.ballVar), PADDLE: String(s.paddleVar) },
+            {},
+            statement.__id,
+            { BOOST: boost },
+          )
+        : tools.raw(statement)
+    }
+    case 'g2d:bounceOnEdgePair':
+      return tools.block(
+        'sz_g2d_bounce_edge_pair',
+        { SPRITE: String(s.spriteVar), EDGES: String(s.edges) },
+        {},
+        statement.__id,
+      )
+    case 'g2d:arrowsY': {
+      const speed = value('speed')
+      return speed
+        ? tools.block('sz_g2d_arrows_y', { SPRITE: String(s.spriteVar) }, {}, statement.__id, {
+            SPEED: speed,
+          })
+        : tools.raw(statement)
+    }
     case 'g2d:drawPixelScore': {
       const sockets = values('value', 'x', 'y', 'size')
       return sockets
@@ -569,6 +653,12 @@ export function classicGameTwoDExpressionToBlock(
           FALLBACK: fallback,
         })
       : undefined
+  }
+  if (expression.type === 'g2d:stageWidth') {
+    return block('sz_g2d_stage_width', {}, {}, expression.__id)
+  }
+  if (expression.type === 'g2d:stageHeight') {
+    return block('sz_g2d_stage_height', {}, {}, expression.__id)
   }
   if (expression.type === 'g2d:actionDown') {
     return block('sz_g2d_action_down', { ACTION: expression.action })
@@ -761,6 +851,32 @@ export function classicGameTwoDCallToIR(
         ? ({ type: 'g2d:showImageScreen', ctxVar, image } as JSStatement)
         : undefined
     }
+    case 'paddleBounce': {
+      // generator: SZGame2D.paddleBounce(bola, jogador, 10)
+      const ballVar = identifier(0)
+      const paddleVar = identifier(1)
+      const boost = expression(2)
+      return ballVar && paddleVar && tools.simple(boost)
+        ? ({ type: 'g2d:paddleBounce', ballVar, paddleVar, boost } as JSStatement)
+        : undefined
+    }
+    case 'bounceOnEdgePair': {
+      // generator: SZGame2D.bounceOnEdgePair(bola, ctx, "top-bottom")
+      const spriteVar = identifier(0)
+      const ctxVar = identifier(1)
+      const edges = stringLiteral(args[2])
+      return spriteVar && ctxVar && edges && EDGE_PAIRS.has(edges)
+        ? ({ type: 'g2d:bounceOnEdgePair', spriteVar, ctxVar, edges } as JSStatement)
+        : undefined
+    }
+    case 'arrowsY': {
+      // generator: SZGame2D.arrowsY(jogador, 5)
+      const spriteVar = identifier(0)
+      const speed = expression(1)
+      return spriteVar && tools.simple(speed)
+        ? ({ type: 'g2d:arrowsY', spriteVar, speed } as JSStatement)
+        : undefined
+    }
     case 'useFont': {
       // generator: SZGame2D.useFont("bungee")
       // Nome fora do catálogo NÃO vira bloco (o dropdown o trocaria pela 1ª opção).
@@ -840,6 +956,8 @@ export function classicGameTwoDCallExpressionToIR(
       ? ({ type: 'g2d:tileContactIs', contactVar, index } as JSExpr)
       : undefined
   }
+  if (method === 'stageWidth' && args.length === 0) return { type: 'g2d:stageWidth' } as JSExpr
+  if (method === 'stageHeight' && args.length === 0) return { type: 'g2d:stageHeight' } as JSExpr
   if (method !== 'actionDown' && method !== 'actionPressed') return
   const action = stringLiteral(args[0])
   if (!action || !ACTIONS.has(action)) return

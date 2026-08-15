@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from 'bun:test'
 import postgres from 'postgres'
-import snapshot from '../../src/infrastructure/persistence/drizzle/migrations/meta/0063_snapshot.json'
+import { latestCheckConstraint } from '../helpers/drizzle-migrations'
 
 const TEST_DB_NAME = 'sistemazero_test'
 const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
@@ -38,9 +38,13 @@ type Probe = {
   careerSlot: number | null
 }
 
-const checkExpression = snapshot.tables[
-  'members.courses'
-].checkConstraints.courses_career_slot_check.value.replaceAll('"members"."courses".', '')
+// ⚠️ O snapshot ATUAL, resolvido pelo journal — nunca um número fixo. Fixado na `0063`, este
+// teste continuaria provando a restrição ANTIGA depois da `0064` e passaria, porque a regra
+// velha é coerente consigo mesma. Ver `tests/helpers/drizzle-migrations.ts`.
+const checkExpression = latestCheckConstraint(
+  'members.courses',
+  'courses_career_slot_check',
+).replaceAll('"members"."courses".', '')
 
 const testDatabaseUrl = await prepareTestDatabase()
 if (!testDatabaseUrl) {
@@ -86,6 +90,18 @@ describe.skipIf(!testDatabaseUrl)('CHECK real das posições da carreira', () =>
     expect(
       await accepts({ audience: 'kids', level: 'iniciante', track: '2d', careerSlot: 7 }),
     ).toBe(true)
+    // ⭐ A posição 8 do Iniciante 2D VOLTOU (15/08). Ela existiu, sumiu na `0063` e a `0064` a
+    // trouxe de volta — é o teste que prova o alargamento contra o Postgres de verdade.
+    expect(
+      await accepts({ audience: 'kids', level: 'iniciante', track: '2d', careerSlot: 8 }),
+    ).toBe(true)
+    expect(
+      await accepts({ audience: 'kids', level: 'iniciante', track: '2d', careerSlot: 9 }),
+    ).toBe(false)
+    // O degrau de ENTRADA continua com uma posição só.
+    expect(
+      await accepts({ audience: 'kids', level: 'primeiros-passos', track: '2d', careerSlot: 2 }),
+    ).toBe(false)
     expect(await accepts({ audience: 'kids', level: 'lenda', track: '2d', careerSlot: null })).toBe(
       true,
     )

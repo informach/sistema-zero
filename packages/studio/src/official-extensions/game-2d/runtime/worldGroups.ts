@@ -256,6 +256,21 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     if (paraDireita) sprite.x += sp;
     _commitRecordedMotion(sprite);
   }
+  // Move o sprite SÓ na vertical com as setas ↑ ↓ — o par do "com as setas ← →",
+  // e o que faltava para a raquete do Pong ser um bloco em vez de dois "se tecla".
+  // ⭐ Lê a camada SEMÂNTICA (_dirHeld), então funciona com W/S e com o pad de
+  // toque; ler a tecla crua, como o exemplo fazia, deixava o celular de fora.
+  function arrowsY(sprite, speed) {
+    if (!sprite) return;
+    _recordPreviousPosition(sprite);
+    var sp = _finiteNumber(speed, 5);
+    var paraBaixo = _dirHeld('down');
+    var paraCima = _dirHeld('up');
+    sprite.vy = (paraBaixo ? sp : 0) - (paraCima ? sp : 0);
+    if (paraCima) sprite.y -= sp;
+    if (paraBaixo) sprite.y += sp;
+    _commitRecordedMotion(sprite);
+  }
   // Faz o sprite PISCAR por N quadros (ex.: invencibilidade ao levar dano).
   function blink(sprite, frames) {
     if (!sprite) return;
@@ -314,13 +329,23 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     if (!ctx || !group || !group.items) return;
     group._drawn = true;
     if (_isEnemyMirror(group)) _marcarTiposDesenhados();
-    var snapshot = group.items.slice();
-    snapshot.sort(function (a, b) {
-      var aBase = (a ? _finiteNumber(a.y, 0) + _finiteNumber(a.h, 0) : 0);
-      var bBase = (b ? _finiteNumber(b.y, 0) + _finiteNumber(b.h, 0) : 0);
-      return aBase - bBase;
-    });
-    for (var i = 0; i < snapshot.length; i++) drawSprite(ctx, snapshot[i]);
+    // ⭐ A base (y+h) é calculada UMA vez por sprite, não a cada comparação. Com
+    // 200 sprites o comparador rodava ~1.529 vezes e chamava _finiteNumber quatro
+    // vezes em cada uma: ~6.100 chamadas por quadro para 200 números.
+    // ⚠️ A ordem tem de ficar IDÊNTICA: o sort é estável e comparar só a base
+    // preserva a ordem de inserção nos empates, que é o que os jogos vistos de
+    // cima já dependem (dois sprites na mesma linha do chão).
+    var itens = group.items;
+    var snapshot = new Array(itens.length);
+    for (var i = 0; i < itens.length; i++) {
+      var item = itens[i];
+      snapshot[i] = {
+        sprite: item,
+        base: item ? _finiteNumber(item.y, 0) + _finiteNumber(item.h, 0) : 0
+      };
+    }
+    snapshot.sort(function (a, b) { return a.base - b.base; });
+    for (var d = 0; d < snapshot.length; d++) drawSprite(ctx, snapshot[d].sprite);
     _drawEnemyBeamsIfAny(ctx, group);
   }
   /**
@@ -435,7 +460,9 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       if (!second) continue;
       var secondBounds = _hitboxOf(second);
       var sx = secondBounds.x, sy = secondBounds.y, sw = secondBounds.w, sh = secondBounds.h;
-      if (![sx, sy, sw, sh].every(Number.isFinite)) return null;
+      // Comparação inline: o array de 4 + a closure eram alocados POR SPRITE,
+      // duas vezes por chamada (240 arrays num par 200×40).
+      if (!_isFiniteNumber(sx) || !_isFiniteNumber(sy) || !_isFiniteNumber(sw) || !_isFiniteNumber(sh)) return null;
       sortedSecond.push({ index: j, left: sx, right: sx + sw, top: sy, bottom: sy + sh });
     }
     sortedSecond.sort(function (left, right) {
@@ -447,7 +474,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       if (!first) { candidates[i] = []; continue; }
       var firstBounds = _hitboxOf(first);
       var ax = firstBounds.x, ay = firstBounds.y, aw = firstBounds.w, ah = firstBounds.h;
-      if (![ax, ay, aw, ah].every(Number.isFinite)) return null;
+      if (!_isFiniteNumber(ax) || !_isFiniteNumber(ay) || !_isFiniteNumber(aw) || !_isFiniteNumber(ah)) return null;
       var rightEdge = ax + aw;
       var lo = 0, hi = sortedSecond.length;
       while (lo < hi) {

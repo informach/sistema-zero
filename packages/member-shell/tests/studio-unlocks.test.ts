@@ -3,7 +3,18 @@ import {
   drawerSnapshotsForBlocks,
   drawersForBlocks,
   extensionsForBlocks,
+  groupDrawersByFamily,
 } from '../src/server/studio-unlocks'
+
+/**
+ * Blocos REAIS do catálogo cujo nome de gaveta COLIDE entre famílias: os dois moram numa
+ * `📋 Listas`, mas um é do HTML e o outro da Programação. É o par que prova a correção — antes
+ * eles viravam uma gaveta só, com a contagem somada.
+ */
+const LISTAS_DO_HTML = 'sz_html_ul'
+const LISTAS_DA_PROGRAMACAO = 'sz_js_array_push'
+/** Bloco de KIT: caminho de TRÊS segmentos (`Jogo 2D Avançado › 🧙 Kit RPG › 🧙 mundo`). */
+const BLOCO_DE_KIT = 'sz_gk_rpg_move_grid'
 
 /**
  * "Se tiver blocos daquela extensão que eu tô liberando, automaticamente vai estar
@@ -50,7 +61,37 @@ describe('drawersForBlocks', () => {
     expect(drawers.length).toBeGreaterThan(0)
     const total = drawers.reduce((sum, d) => sum + d.count, 0)
     expect(total).toBe(2)
-    for (const drawer of drawers) expect(drawer.name.length).toBeGreaterThan(0)
+    for (const drawer of drawers) {
+      expect(drawer.key.length).toBeGreaterThan(0)
+      expect(drawer.family.length).toBeGreaterThan(0)
+      expect(drawer.label.length).toBeGreaterThan(0)
+    }
+  })
+
+  /**
+   * 🚨 A REGRESSÃO que motivou a mudança de chave.
+   *
+   * Chaveando pela FOLHA do caminho, estes dois blocos viravam UMA gaveta `📋 Listas` com
+   * `count: 2` — e a criança que abrisse o HTML veria a gaveta da Programação "crescer".
+   * Doze nomes de folha colidem no catálogo real, cobrindo 176 blocos; `🔊 Som` chega a
+   * existir em quatro famílias.
+   */
+  test('🚨 gavetas HOMÔNIMAS de famílias diferentes NÃO se fundem', () => {
+    const drawers = drawersForBlocks([LISTAS_DO_HTML, LISTAS_DA_PROGRAMACAO])
+    expect(drawers).toHaveLength(2)
+    expect(drawers.every((drawer) => drawer.count === 1)).toBe(true)
+    // Mesmo rótulo visível, famílias e chaves distintas.
+    expect(new Set(drawers.map((drawer) => drawer.label)).size).toBe(1)
+    expect(new Set(drawers.map((drawer) => drawer.family)).size).toBe(2)
+    expect(new Set(drawers.map((drawer) => drawer.key)).size).toBe(2)
+  })
+
+  test('bloco de KIT preserva o segmento do meio no rótulo', () => {
+    const [drawer] = drawersForBlocks([BLOCO_DE_KIT])
+    expect(drawer?.family).toBe('Jogo 2D Avançado')
+    // `at(-1)` sozinho jogava fora o nome do kit, que é o que dá sentido à gaveta.
+    expect(drawer?.label).toContain('Kit RPG')
+    expect(drawer?.key).toContain(drawer?.family ?? '')
   })
 
   test('a gaveta mais cheia vem primeiro', () => {
@@ -84,10 +125,43 @@ describe('drawerSnapshotsForBlocks', () => {
       'sz_g2d_create_ship',
       'sz_g2d_draw_sprite',
     ])
-    for (const drawer of snapshots) expect(drawer.name.length).toBeGreaterThan(0)
+    for (const drawer of snapshots) expect(drawer.key.length).toBeGreaterThan(0)
   })
 
   test('id fora do catálogo não entra no snapshot', () => {
     expect(drawerSnapshotsForBlocks(['sz_bloco_que_nao_existe'])).toEqual([])
+  })
+
+  test('separa as gavetas homônimas, como o `drawersForBlocks`', () => {
+    const snapshots = drawerSnapshotsForBlocks([LISTAS_DO_HTML, LISTAS_DA_PROGRAMACAO])
+    expect(snapshots).toHaveLength(2)
+    expect(new Set(snapshots.map((drawer) => drawer.family)).size).toBe(2)
+  })
+})
+
+/**
+ * O agrupamento que o perfil usa. Sem ele "Minhas ferramentas" é uma fileira só de pílulas
+ * que cresce para sempre (16 gavetas com UMA extensão; passa de 40 com três).
+ */
+describe('groupDrawersByFamily', () => {
+  test('junta as gavetas por família e soma os blocos', () => {
+    const groups = groupDrawersByFamily(
+      drawersForBlocks([LISTAS_DO_HTML, LISTAS_DA_PROGRAMACAO, 'sz_js_array_remove']),
+    )
+    expect(groups).toHaveLength(2)
+    expect(groups.find((group) => group.family === 'Programação')?.blockCount).toBe(2)
+    expect(groups.find((group) => group.family === 'HTML')?.blockCount).toBe(1)
+  })
+
+  test('a família mais cheia vem primeiro (é a que abre por padrão no perfil)', () => {
+    const groups = groupDrawersByFamily(
+      drawersForBlocks([LISTAS_DO_HTML, LISTAS_DA_PROGRAMACAO, 'sz_js_array_remove']),
+    )
+    const counts = groups.map((group) => group.blockCount)
+    expect([...counts].sort((a, b) => b - a)).toEqual(counts)
+  })
+
+  test('sem gavetas, sem famílias', () => {
+    expect(groupDrawersByFamily([])).toEqual([])
   })
 })

@@ -221,7 +221,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(283)
+    expect(gameTwoDBlocks.length).toBe(288)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {

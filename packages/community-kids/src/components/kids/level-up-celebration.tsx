@@ -1,9 +1,9 @@
 'use client'
 
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
-import { type CSSProperties, useEffect, useRef } from 'react'
+import type { CSSProperties } from 'react'
 import { levelInfo } from '@/lib/level-info'
-import { type ToolsGain, toolsGainHeadline } from '@/lib/tools-gain'
+import { type ToolsGain, toolsGainInline } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
 import { KidsConfetti } from './kids-confetti'
 import { KidsMascot } from './mascot'
@@ -31,19 +31,17 @@ export function LevelUpCelebration({
 }) {
   const info = levelInfo(level)
   const Icon = info.icon
+  // ⚠️ SEM auto-close, de propósito. As duas festas do watcher fechavam sozinhas em 7s e a
+  // usuária não conseguia terminar de ler — esta é a pior das duas, porque acumula o texto do
+  // nível E o da ferramenta ganha junto. As irmãs (`mural-celebration`, `lesson-celebration`)
+  // nunca tiveram timer: sai por "Continuar", Esc ou toque fora, e a criança decide quando.
   const cardRef = useModalA11y<HTMLDivElement>({ open: true, onClose })
-  // Fecha sozinho depois de um tempo (criança nem sempre clica) — limpo no unmount.
-  const autoCloseTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  useEffect(() => {
-    autoCloseTimer.current = setTimeout(onClose, 7000)
-    return () => clearTimeout(autoCloseTimer.current)
-  }, [onClose])
 
   return (
     <div
-      /* Espelha o `Dialog` do ui: conteúdo alto ROLA em vez de sangrar para fora da
-         tela. Estas festas têm altura variável (as gavetas ganhas entram como chips) e,
-         numa janela baixa, o "Continuar" ficava fora de alcance. */
+      /* Espelha o `Dialog` do ui: conteúdo alto ROLA em vez de sangrar para fora da tela. O
+         ganho de ferramenta entra aqui como UMA linha curta (`toolsGainInline`), então a altura
+         é estável; a rede de segurança fica para fonte grande do sistema ou janela muito baixa. */
       className="sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
       onClick={onClose}
       role="presentation"
@@ -81,7 +79,7 @@ export function LevelUpCelebration({
 
         {tools ? (
           <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">
-            🛠️ E tem mais: {toolsGainHeadline(tools)}
+            🛠️ E tem mais: {toolsGainInline(tools)}
           </p>
         ) : null}
 

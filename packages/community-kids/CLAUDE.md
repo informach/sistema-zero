@@ -146,7 +146,7 @@ admin) — o que saiu foi a exibição. O `course-level-chip.tsx` (selo "Inician
 foi APAGADO por isso.
 
 ⚠️ **Nunca dizer quanto falta para o próximo posto enquanto o degrau não tem todos os cursos
-publicados** (1 em Primeiros Passos, 7 no Iniciante 2D, 8 nos demais). Com o
+publicados** (1 em Primeiros Passos e 8 em todos os demais). Com o
 degrau pela metade, "faltam 2 para virar Inventor(a)" é mentira: a criança fecha os 2 e não sobe.
 `careerProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
 `remaining` do members vira verdade e a frase volta sozinha. O retorno por curso nesse meio-tempo é
@@ -417,18 +417,39 @@ criança tem a UNIÃO dos que **concluiu E publicou no Mural**. O nível segue d
 - **`/perfil` → `my-tools.tsx` (`MyTools`)**: "Minhas ferramentas", as GAVETAS conquistadas
   (`drawersForBlocks` — 🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…). Gaveta é o que torna a recompensa
   legível p/ criança; lista de ids não é. Sem nenhuma, a seção some.
+  ⭐⭐ **AGRUPADO POR FAMÍLIA (14/08)**, e não é só arrumação: (a) a fileira única de pílulas crescia
+  sem teto (16 gavetas com UMA extensão; passa de 40 com três) e (b) **nome de gaveta se REPETE
+  entre extensões** — no catálogo real 12 folhas colidem, cobrindo 176 blocos, e `🔊 Som` existe em
+  QUATRO famílias. Sem o topo do caminho as homônimas ficavam lado a lado, indistinguíveis. Uma
+  `<details>`/`<summary>` por família (a mais cheia já aberta), emoji em `lib/studio-family.ts` com
+  **fallback para o nome puro** — família desconhecida aparece, nunca some. ⚠️ O `<details>` é
+  NATIVO de propósito: dá teclado e leitor sem JS, então a seção continua Server Component. Medido
+  no navegador: `<summary>` com 44px de alvo de toque; ir de 2 para 5 famílias custa 168px.
 - **Comemoração no MOMENTO em que ganha** — `celebration-watcher.tsx` (ex-`level-up-watcher`, export
   `CelebrationWatcher`) montado no layout pelo `CelebrationChrome`. ⚠️ **Watcher ÚNICO de propósito:**
   nível e ferramenta chegam no MESMO refresh (o curso que fecha um degrau faz as duas), e dois
   watchers independentes abririam dois overlays sem saber um do outro — em cima da `MuralCelebration`
   viraria fila de TRÊS. A decisão da usuária foi FUNDIR: subiu de nível → `LevelUpCelebration` com o
   ganho embutido (prop `tools`); só ganhou gaveta → `tools-celebration.tsx` (o caso comum, 7 de cada 8
-  cursos). Detecção PURA em `lib/tools-gain.ts` (`diffDrawers`/`toolsGainHeadline`), comemorando gaveta
-  NOVA **e** gaveta que CRESCEU (sem a 2ª, curso que só aprofunda passaria em silêncio).
+  cursos). Detecção PURA em `lib/tools-gain.ts` (`diffDrawerSnapshots`/`toolsGainHeadline`), comemorando
+  gaveta NOVA **e** gaveta que CRESCEU (sem a 2ª, curso que só aprofunda passaria em silêncio).
   ⚠️ Duas chaves de localStorage por PERFIL — `sz:kids:level:<id>` (a de sempre) e `sz:kids:tools:<id>`
-  (mapa gaveta→contagem) — **gravadas mesmo sem comemorar**, senão a diferença se repete a cada
+  (`{version:2, revision, blockIds}` — **ids de bloco, NUNCA nomes de gaveta**) — **gravadas mesmo sem
+  comemorar**, senão a diferença se repete a cada
   navegação e a festa vira loop; 1ª carga registra e NÃO comemora (nada de festa retroativa); queda de
-  contagem é ignorada. ⚠️ O payload é barato porque as GAVETAS são derivadas no SERVIDOR
+  contagem é ignorada. ⭐ Guardar ID e não NOME foi o que deixou a re-chaveagem das gavetas pelo caminho
+  inteiro (14/08) passar **sem migração**: uma gaveta que se PARTE em duas leva ids que já estão no
+  snapshot, então as duas saem com `added === 0` e ninguém ganha festa por mudança de agrupamento.
+  ⭐⭐ **ALTURA DA MODAL É CONTRATO (14/08).** Ela estourava a tela porque enumerava as gavetas DUAS
+  vezes: o título montava uma frase com TODOS os nomes (em `text-2xl`, Baloo 2) e os chips repetiam os
+  mesmos nomes, nenhum dos dois com limite. Agora o título **CONTA** (só nomeia quando há UMA), os chips
+  param em `MAX_CHIPS` (4) com um "+N", e a família entra numa linha à parte quando o ganho é todo dela
+  (`toolsGainFamily`; com mistura a linha SOME em vez de eleger uma e mentir). Medido no navegador:
+  ganho de 7+3 dá 444px num celular de 667px, com o "Continuar" visível sem rolar.
+  ⚠️⚠️ **NENHUMA das duas fecha sozinha.** As duas tinham `setTimeout(onClose, 7000)` e a usuária não
+  conseguia terminar de ler; a de NÍVEL era a pior, porque acumula o texto do posto E o da ferramenta.
+  Agora seguem as irmãs (`mural-celebration`/`lesson-celebration`), que nunca tiveram timer: sai por
+  botão, Esc ou toque fora. Não reintroduzir. ⚠️ O payload é barato porque as GAVETAS são derivadas no SERVIDOR
   (`drawersForBlocks` no `CelebrationChrome`, dentro do `<Suspense>` que transmite): ~25 nomes curtos
   atravessam, não a lista de blocos. ⚠️ Confete SEM som no overlay da gaveta (vem logo depois da
   `MuralCelebration`, que já tocou; o som fica onde é raro). Sem o produto Estúdio → `drawers: []`
@@ -866,7 +887,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   bloqueada → recado gentil (`trilhaLocked` por nível, escape p/ EQUIPE: algum curso liberado →
   nunca mura). Gamificação fora → grade clássica.
   ⭐ **HORIZONTE DO CATÁLOGO (08/2026) — `lib/career-horizon.ts` (puro) + `tests/career-horizon.test.ts`:**
-  a carreira exige 48 cursos (1 + 7 + 8×5, em 7 degraus) e o catálogo real tem punhados, então o mapa dizia
+  a carreira exige 49 cursos (1 + 8×6, em 7 degraus) e o catálogo real tem punhados, então o mapa dizia
   "faltam 7 cursos" de cursos que ninguém gravou e mostrava 6 medalhões com CADEADO — que para
   criança significa "você não fez o suficiente". Agora o mapa desenha **só até onde o catálogo
   consegue levar** (`careerHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
@@ -889,7 +910,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   ⚠️ O catálogo com filtros MORREU no kids: `course-catalog-client.tsx`/`catalog-filter-bar.tsx`/
   `lib/use-catalog-filters.ts` REMOVIDOS (o hook segue no member-shell p/ o community adulto). **COMEMORAÇÃO de SUBIDA de nível:**
   `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,
-  `useModalA11y`, auto-fecha em 7s) disparada pelo `level-up-watcher.tsx` (cliente) — compara o
+  `useModalA11y`, SEM auto-close desde 14/08) disparada pelo `level-up-watcher.tsx` (cliente) — compara o
   `level.slug` do servidor com o ÚLTIMO visto em `localStorage` (`sz:kids:level:<profileId>`) e
   comemora UMA vez quando SOBE, seja por publicar no Mural OU por concluir um curso já publicado
   (não amarrado a uma ação). NÃO comemora na 1ª carga (sem valor salvo) nem em queda. Montado no

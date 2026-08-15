@@ -47,12 +47,24 @@ const goldenCatalogs = {
     // os dois; e as partículas de derrota finalmente são desenhadas.
     // ⚠️ 10ª vez em 13/08: campanha compacta/lazy, elencos próprios por fase e
     // jornada, animação do herói, dois jogadores independentes e novos inimigos.
-    sha256: 'e279026135b1edd32c0a30b223175ca8af8e070ac416375127ce1604c8a50d70',
+    // ⚠️ 11ª vez em 14/08: Duelo de Heróis passou a acertar durante toda a
+    // janela visível do golpe e a tratar duplo nocaute como empate.
+    // ⚠️ 12ª vez em 14/08: o Pong foi reescrito sobre os facilitadores novos —
+    // o rebote nas raquetes (eram ~110 linhas de IR), o quique no teto e no chão
+    // e as setas viraram um bloco cada, e o tamanho do campo saiu das contas
+    // (440/300 cravados → "a largura/altura da tela"). A IR do exemplo encolheu
+    // de 1036 para 733 linhas.
+    sha256: 'c6d1801e6ec6645ef227a41c24180f6a64986c86bfe0f16df2783344b7bcdc7c',
   },
   'game-2d-advanced': {
     count: 37,
     // Reino Zero Pro passou a carregar a campanha validada de 32 fases.
-    sha256: 'bdde1a5e1b190e9789bb0618ec2d90ec112bc538ae00565c2af9300b07da7356',
+    // 14/08: as 32 grades deixaram de ser geradas por resto de divisão e viraram
+    // plantas escritas à mão (`examples/reinoZeroProLevels.ts`), com o tema
+    // saindo do TIPO da fase, e a aventura subiu para a versão 2 (save v1 guarda
+    // checkpoint em PIXELS e cairia dentro da rocha nova). Muda a geometria
+    // inteira, logo muda o hash.
+    sha256: '8dcef3f8f365248524d9fe2e3c2d67ec746a3377b296c032d1148a5c5ce69442',
   },
   'game-3d': {
     count: 19,

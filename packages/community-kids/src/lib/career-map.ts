@@ -36,14 +36,17 @@ export interface LevelStudy {
  * cursos bônus. Espelha a escada do core (`CREATOR_CAREER_LEVELS`): os slots são
  * `próximoNível.requiredSlots[tier] \ esteNível.requiredSlots[tier]` e o bônus entra
  * no ÚLTIMO nível que estuda o tier. Desde 14/08 **cada nível é dono de um degrau
- * INTEIRO** (a Faísca ganhou o `primeiros-passos-2d`, com 1 posição; o Iniciante 2D
- * ficou com 7), então toda trilha inclui os bônus do seu degrau — inclusive a da
- * Faísca, que era justamente o que faltava. A conformidade com o core é travada em
- * `tests/career-conformance.test.ts`.
+ * INTEIRO** (a Faísca ganhou o `primeiros-passos-2d`, com 1 posição), então toda trilha
+ * inclui os bônus do seu degrau — inclusive a da Faísca, que era justamente o que
+ * faltava. A conformidade com o core é travada em `tests/career-conformance.test.ts`.
+ *
+ * ⚠️ O Construtor(a) estudou 7 posições por um dia (14/08 a 15/08), quando o Iniciante 2D
+ * foi encolhido para o total da carreira continuar 48. A usuária desfez: todo degrau que
+ * não é a entrada tem 8.
  */
 export const LEVEL_STUDY: Record<StudentLevelSlug, LevelStudy | null> = {
   noob: { slots: [1], includeBonus: true },
-  coder: { slots: [1, 2, 3, 4, 5, 6, 7], includeBonus: true },
+  coder: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
   hacker: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
   explorer: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
   elite: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },

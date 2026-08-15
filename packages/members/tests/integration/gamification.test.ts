@@ -1208,10 +1208,10 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
       audience: 'adult',
     })
 
-    // Qualificado como INICIANTE 2D → Coder; faltam 7 iniciante-2d p/ Hacker (piso 8).
+    // Qualificado o degrau de ENTRADA → Construtor(a); faltam as 8 do Iniciante 2D p/ Inventor(a).
     const before = await readJson(await getMe(app))
     expect(before.level.slug).toBe('coder')
-    expect(before.level.remaining['iniciante-2d']).toBe(7)
+    expect(before.level.remaining['iniciante-2d']).toBe(8)
 
     // O admin re-nivela o curso p/ avançado DEPOIS da qualificação.
     const row = courses.courses.find((c) => c.id === course.courseId)
@@ -1221,10 +1221,10 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     }
 
     // O rank usa os SNAPSHOTS congelados no marco: continua no nível e slot originais.
-    // Se seguisse o `courses.level` AO VIVO, remaining['iniciante-2d'] viraria 8 (0 qualificados).
+    // Se seguisse o `courses.level` AO VIVO, o marco mudaria de balde e o posto cairia.
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining['iniciante-2d']).toBe(7)
+    expect(after.level.remaining['iniciante-2d']).toBe(8)
   })
 
   test('re-taggear o TRACK depois de qualificado também não move o balde (snapshot)', async () => {
@@ -1241,12 +1241,12 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
     // O admin re-tagueia o curso p/ 3D DEPOIS da qualificação: o marco tem
     // snapshot de track ('2d'), então o balde NÃO muda — o curso segue contando
-    // como iniciante-2d (faltam 7 p/ o piso 8 do Hacker).
+    // no eixo original.
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.track = '3d'
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining['iniciante-2d']).toBe(7)
+    expect(after.level.remaining['iniciante-2d']).toBe(8)
   })
 
   test('marco LEGADO sem snapshot de track segue o courses.track VIVO (re-tag corrige)', async () => {

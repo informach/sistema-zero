@@ -308,7 +308,13 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // _applyArtHitbox, _artBoxOf) e +1 do `_spriteFlipped`, que virou o DONO ÚNICO
   // da regra de espelho (o desenho e a caixa liam duas réguas diferentes).
   // Nenhum bloco novo: a caixa vem pela ponte.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1141)
+  // 1141 → 1151: +10 dos cinco facilitadores do Pong/Breakout — `paddleBounce` (3),
+  // `_paddleReflectAxis` (2), `bounceOnEdgePair` (3) e `arrowsY` (2). Os dois
+  // valores de tela (`stageWidth`/`stageHeight`) não têm parâmetro.
+  // 1151 → 1157: +6 do lote de desempenho — `_applySmoothing` (2), `_crispBatch` (3)
+  // e `_crispBatchEnd` (1). Eles REMOVEM trabalho: o ajuste de nitidez saiu de uma
+  // leitura e duas escritas de contexto POR CÉLULA de mapa para um par por mapa.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1157)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

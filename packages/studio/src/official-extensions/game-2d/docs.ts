@@ -58,6 +58,20 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
   gravidade escondida. A ordem física recomendada é: aplicar gravidade, mover e então
   resolver o chão ou as paredes.
 - **Quicar o sprite … nas bordas da tela**. O sprite bate na beirada e volta.
+- **Quicar o sprite … só ⟨no teto e no chão / nas laterais⟩**. Quica num par de bordas e
+  deixa o outro par **aberto**, e é por ele que a bola sai e vira ponto. É o que o Pong
+  precisa: com o bloco de cima a bola nunca sairia, então ninguém marcaria.
+- **Rebater a bola … na raquete … acelerando … por cento**. O Pong, o Breakout e o
+  Arkanoid num bloco. A bola volta pelo **lado comprido** da raquete: em pé devolve para
+  os lados, deitada devolve para cima. Bater na **beirada** manda a bola mais de lado, e é
+  assim que se controla a jogada. A cada rebatida ela fica um tiquinho mais rápida (0
+  desliga). O bloco cuida sozinho de a bola não grudar nem atravessar a raquete.
+- **Mover o sprite … com as setas ↑ ↓**. O par vertical do "com as setas": é a raquete do
+  Pong. Vale também para as teclas W e S e para os botões de toque no celular. Combine com
+  **Manter o sprite dentro da tela**.
+- **a largura da tela** / **a altura da tela**. Os dois números da área do jogo. Use no
+  lugar de digitar 440 ou 300: assim o jogo continua certo quando você muda o tamanho da
+  tela. O meio da tela é **a largura da tela ÷ 2**.
 - **Guardar em … se sprite … encosta no sprite … (em círculo)**. Colisão mais justa para
   objetos redondos.
 - **A caixa de colisão vem PRONTA do desenho.** Quando a imagem veio do Pinta, o

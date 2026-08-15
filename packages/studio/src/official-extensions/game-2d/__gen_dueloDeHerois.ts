@@ -25,7 +25,7 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * - O GOLPE é a caixa de ataque do original (attackBox à frente do lutador): uma
  *   caixinha que aparece por alguns quadros VIRADA PARA O OPONENTE (comparando os
  *   centros), e se ela encostar (touches) no adversário tira vida uma vez por
- *   golpe (o takeHit com health -= 20). Cada lutador tem recarga própria.
+ *   golpe. Cada lutador tem recarga própria.
  * - Barras de vida no topo (drawBar lendo getHealth), como as #playerHealth /
  *   #enemyHealth do original, e um CRONÔMETRO regressivo (o decreaseTimer): uma
  *   raiz "A cada 1 segundo" tira 1 de 60. Zerar a vida do rival é KO; se o tempo
@@ -152,12 +152,11 @@ SZGame2D.gameLoop(function update() {
       }
       SZGame2D.drawSprite(ctx, golpe1);
       if (SZGame2D.touches(golpe1, heroi2)) {
-        if (atacando1 == 12) {
-          SZGame2D.changeHealth(heroi2, -8);
-          SZGame2D.explodeSprite(heroi2, "#ffb347");
-          SZGame2D.shake(ctx, 5);
-          SZGame2D.playFx("hurt");
-        }
+        SZGame2D.changeHealth(heroi2, -8);
+        SZGame2D.explodeSprite(heroi2, "#ffb347");
+        SZGame2D.shake(ctx, 5);
+        SZGame2D.playFx("hurt");
+        atacando1 = 1;
       }
       atacando1 = atacando1 - 1;
     }
@@ -171,23 +170,26 @@ SZGame2D.gameLoop(function update() {
       }
       SZGame2D.drawSprite(ctx, golpe2);
       if (SZGame2D.touches(golpe2, heroi1)) {
-        if (atacando2 == 12) {
-          SZGame2D.changeHealth(heroi1, -8);
-          SZGame2D.explodeSprite(heroi1, "#ffb347");
-          SZGame2D.shake(ctx, 5);
-          SZGame2D.playFx("hurt");
-        }
+        SZGame2D.changeHealth(heroi1, -8);
+        SZGame2D.explodeSprite(heroi1, "#ffb347");
+        SZGame2D.shake(ctx, 5);
+        SZGame2D.playFx("hurt");
+        atacando2 = 1;
       }
       atacando2 = atacando2 - 1;
     }
     SZGame2D.drawBar(ctx, SZGame2D.getHealth(heroi1), 100, 12, 14, 190, 16, "#4f8fea");
     SZGame2D.drawBar(ctx, SZGame2D.getHealth(heroi2), 100, 278, 14, 190, 16, "#e05a5a");
     SZGame2D.drawScore(ctx, "Tempo:", tempo, 210, 26, "#ffffff", 18);
-    if (SZGame2D.getHealth(heroi2) <= 0) {
+    if (SZGame2D.getHealth(heroi1) <= 0 && SZGame2D.getHealth(heroi2) <= 0) {
+      SZGame2D.playFx("win");
+      SZGame2D.setScene("empate");
+    }
+    if (SZGame2D.getHealth(heroi2) <= 0 && SZGame2D.getHealth(heroi1) > 0) {
       SZGame2D.playFx("win");
       SZGame2D.setScene("ganhou1");
     }
-    if (SZGame2D.getHealth(heroi1) <= 0) {
+    if (SZGame2D.getHealth(heroi1) <= 0 && SZGame2D.getHealth(heroi2) > 0) {
       SZGame2D.playFx("win");
       SZGame2D.setScene("ganhou2");
     }
@@ -210,7 +212,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "O herói Vermelho venceu!", "O lutador vermelho derrubou o adversário. Que duelo!", "Aperte Enter para lutar de novo", "#5a2020");
   }
   if (SZGame2D.sceneIs("empate")) {
-    SZGame2D.showScreen(ctx, "Empate!", "O tempo acabou com os dois heróis igualmente fortes. Ninguém caiu!", "Aperte Enter para o desempate", "#3a3352");
+    SZGame2D.showScreen(ctx, "Empate!", "A luta terminou sem vencedor. Os dois heróis deram tudo de si!", "Aperte Enter para o desempate", "#3a3352");
   }
 });
 if (SZGame2D.everySeconds("relogio", 1)) {

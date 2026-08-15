@@ -89,6 +89,19 @@ export function registerExampleContractTests({
     expect(code2).toBe(code1)
   })
 
+  it('fonte canônico usa a margem de remoção representada pelo bloco', () => {
+    const readPruneMargins = (code: string): number[] =>
+      [...code.matchAll(/SZGame2D\.pruneOffscreen\(\s*[^,]+,\s*[^,]+,\s*(\d+)\s*,/g)].map((match) =>
+        Number(match[1]),
+      )
+    const generated = compileStatements(
+      stripIds(behaviorStatements(example.ir)) as JSStatement[],
+      0,
+    )
+
+    expect(readPruneMargins(source)).toEqual(readPruneMargins(generated))
+  })
+
   it('round-trip por blocos: IR → workspace → IR preserva o jogo inteiro', () => {
     const state = buildWorkspaceStateFromIR(
       example.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
