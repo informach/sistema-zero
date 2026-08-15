@@ -169,6 +169,37 @@ describe('o contador de operações MORDE', () => {
  * contadores acima provam que ficou mais barato; estes provam que continua certo.
  */
 describe('as otimizações não mudaram o que aparece na tela', () => {
+  it('⚠️ o lote de nitidez NÃO vaza quando o desenho lança', () => {
+    // Defeito que o lote introduziu e o try/finally consertou: o lote deixa o modo
+    // pixel LIGADO enquanto dura. Sem fechá-lo numa exceção, toda imagem que a
+    // criança desenhasse depois (blocos de Canvas do núcleo) sairia serrilhada,
+    // em silêncio, pelo resto da partida — e nenhum teste de desenho veria.
+    const api = carregarRuntime()
+    const { ctx, ops } = contextoContado()
+    api.setupStage(400, 240, '#000')
+    ;(ctx as unknown as { imageSmoothingEnabled: boolean }).imageSmoothingEnabled = false
+    const mapa = api.createTileMap({
+      image: 'peças',
+      tile: 16,
+      grid: ['0 0 0', '0 0 0'].join(';'),
+      solid: '',
+    })
+    api.placeTileMap(mapa, 0, 0, 16)
+
+    // ⚠️ Não adianta fazer o `drawImage` explodir: o `_crispDraw` engole a
+    // exceção do desenho de propósito (o chamador cai no retângulo de reserva).
+    // O caminho que ESCAPA é uma linha malformada, que o modo Código alcança.
+    const cru = mapa as unknown as { rows: unknown[] }
+    cru.rows[1] = null
+    expect(() => api.drawTileMap(ctx, mapa)).toThrow()
+    void ops
+
+    // ⭐ A asserção é AQUI, no instante seguinte à exceção: é a janela em que o
+    // dano existe. Sem o `finally`, o modo pixel fica ligado e a próxima imagem
+    // que a criança desenhar com os blocos de Canvas sai serrilhada.
+    expect((ctx as unknown as { imageSmoothingEnabled: boolean }).imageSmoothingEnabled).toBe(false)
+  })
+
   it('⭐ desenhar pela base mantém a ordem de inserção nos EMPATES', () => {
     // O risco do lote: trocar o comparador poderia reordenar quem empata. Dois
     // sprites na mesma linha do chão é o caso comum num jogo visto de cima.

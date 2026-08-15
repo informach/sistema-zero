@@ -165,6 +165,65 @@ export function paintPixelGrid(
   ctx.stroke()
 }
 
+export interface MirrorGuideSegment {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
+/**
+ * Geometria das guias do espelho em coordenadas do canvas escalado.
+ * `mirrorX` reflete esquerda/direita, portanto ganha uma guia vertical;
+ * `mirrorY` reflete cima/baixo e ganha uma guia horizontal.
+ */
+export function mirrorGuideSegments(
+  bitmap: PintaBitmap,
+  scale: number,
+  mirrorX: boolean,
+  mirrorY: boolean,
+): MirrorGuideSegment[] {
+  const width = bitmap.width * scale
+  const height = bitmap.height * scale
+  const segments: MirrorGuideSegment[] = []
+  if (mirrorX) segments.push({ x1: width / 2, y1: 0, x2: width / 2, y2: height })
+  if (mirrorY) segments.push({ x1: 0, y1: height / 2, x2: width, y2: height / 2 })
+  return segments
+}
+
+/**
+ * Guias puramente visuais do espelho. Duas passadas tracejadas mantêm a linha
+ * azul legível sobre cores claras e escuras sem alterar o bitmap exportado.
+ */
+export function paintMirrorGuides(
+  canvas: HTMLCanvasElement,
+  bitmap: PintaBitmap,
+  scale: number,
+  mirrorX: boolean,
+  mirrorY: boolean,
+): void {
+  const segments = mirrorGuideSegments(bitmap, scale, mirrorX, mirrorY)
+  if (segments.length === 0) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  ctx.save()
+  ctx.beginPath()
+  for (const segment of segments) {
+    ctx.moveTo(segment.x1, segment.y1)
+    ctx.lineTo(segment.x2, segment.y2)
+  }
+  ctx.lineCap = 'butt'
+  ctx.setLineDash([6, 4])
+  ctx.lineWidth = 4
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+  ctx.stroke()
+  ctx.lineWidth = 2
+  ctx.strokeStyle = 'rgba(37,99,235,0.98)'
+  ctx.stroke()
+  ctx.restore()
+}
+
 /**
  * Contorno tracejado da SELEÇÃO retangular (marquee/recorte flutuante). Em px de
  * pixel × escala; visível em qualquer zoom (ao contrário da grade).

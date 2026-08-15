@@ -342,6 +342,9 @@ publish,play/[id],cleanup}` são shims sobre `shell.routes.studio*`; o `proxy.ts
 R2 na moderação: apagar post do Mural → apaga snapshot jogável + capa) do matcher (`api/studio/describe`
 FICA no matcher — ganha o anti-CSRF same-origin). **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
 pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em sessão de perfil).
+O `max` e o cálculo usam o **dia civil de São Paulo** (`@sistemazero/core/time`), igual ao Auth,
+sem adiantar a data na virada UTC. Novo perfil exige menos de 18 anos (`PROFILE_AGE_RESTRICTED`); quem completa 18 depois preserva
+o perfil. O campo explica a regra e direciona adultos ao Instagram `@criecomhelenaejulio`.
 
 ## Estúdio Completo (produto vendável — 06/2026)
 
@@ -792,7 +795,13 @@ botão editar) → devolve o asset com o NOME salvo (upsert pode sufixar). No Es
 "🎨 Trazer do Pinta" abre a modal com a galeria INTEIRA + busca e a seção "Meus desenhos" some.
 No Pinta, o foguete "Usar no Estúdio" passou a aparecer SÓ em desenho de jogo do Pensa
 (`projectRef`) — desenho avulso chega ao Estúdio puxando de lá. `MainContainer` dá largura
-total a `/pinta`. Requisitos de build: `transpilePackages` + `@import` do `pinta.css` +
+total a `/pinta`. **Bloco de aula do Pinta (15/08/2026):** a criança também desenha DENTRO da
+aula — `case 'pinta'` no `parseLessonBlock` (⚠️ sem ele o bloco SOME e a aula fica em branco) +
+chip **"Desenhe"** (`Palette`, `kids-unit-grad`) no `kids-lesson-blocks`, envolvendo o
+`PintaBlockView` do member-shell; shims `…/blocks/[blockId]/pinta-submission` e
+`…/pinta-carryover`; o `lesson-player-client` trata o `PINTA_GATE_NOT_SUBMITTED` no toast (a
+entrega TRAVA a conclusão, como o Estúdio). A aula NÃO usa a galeria pessoal (banco próprio por
+bloco+perfil) — a ponte para o Pinta completo é "Baixar o desenho" + importar. Requisitos de build: `transpilePackages` + `@import` do `pinta.css` +
 `@source "../../../pinta/src"` no globals.css (MESMO gotcha das utilitárias `sz-*`/`pz-*` — sem
 isso as `pin-*` são no-op e os modais saem washed-out). Deploy: `packages/pinta/**` (e
 `packages/studio/**`) nos watchPatterns do railway.json + case `packages/pinta/*` no ci.yml.

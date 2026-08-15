@@ -72,7 +72,8 @@ export const gameTwoDRuntime =
   function _resumeRuntimeDomains() { _runRuntimeDomainHook('resume'); }
 
   // Relógio monotônico da PARTIDA: o tempo de parede continua andando, mas todo
-  // período pausado é descontado. Animações, cooldowns e temporizadores usam now().
+  // período pausado é descontado. Animações e temporizadores em segundos usam
+  // now(); cadências em quadros, como cooldownReady, usam _frameStamp.
   var _gameClockPausedAt = null;
   var _gameClockPausedDuration = 0;
   function _wallNow() {

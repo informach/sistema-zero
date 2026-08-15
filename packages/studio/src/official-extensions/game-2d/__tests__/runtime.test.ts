@@ -3291,8 +3291,8 @@ interface CrispApi {
   ) => void
 }
 
-function makeRecordingCtx() {
-  let smoothing = true
+function makeRecordingCtx(initialSmoothing = true) {
+  let smoothing = initialSmoothing
   const calls: Array<{ smoothing: boolean }> = []
   const ctx = {
     get imageSmoothingEnabled() {
@@ -3366,6 +3366,19 @@ describe('gameTwoDRuntime — nitidez de pixel art', () => {
     api.drawFrame(ctx, sheet, 0, 0, 0, 8, 8)
     expect(calls.length).toBe(1)
     expect(calls[0]?.smoothing).toBe(true)
+  })
+
+  it('restaura smoothing OFF que o chamador já tinha escolhido', () => {
+    const { ctx, calls, current } = makeRecordingCtx(false)
+    const sheet = {
+      image: { loaded: true, img: { naturalWidth: 32 } },
+      frameW: 16,
+      frameH: 16,
+    }
+    api.drawFrame(ctx, sheet, 0, 0, 0, 8, 8)
+
+    expect(calls[0]?.smoothing).toBe(true)
+    expect(current()).toBe(false)
   })
 
   it('drawImage que LANÇA cai no placeholder (retângulo da cor)', () => {

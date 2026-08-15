@@ -62,15 +62,19 @@ export interface CourseRepository {
   /** Ids das aulas PUBLICADAS do módulo (detecção do baú de fim de unidade). */
   listPublishedLessonIds(moduleId: string): Promise<string[]>
   /**
-   * Bloco de estúdio da aula PUBLICADA imediatamente anterior (ordem do curso:
+   * Bloco do `kind` pedido na aula PUBLICADA imediatamente anterior (ordem do curso:
    * `module.sortOrder`, depois `lesson.sortOrder`) que esteja na MESMA cadeia
    * `chain`. Pula aulas avulsas/de outra cadeia/teoria. `null` se é a 1ª da cadeia.
-   * Usado pelo carryover do Estúdio (continuar o projeto de onde parou).
+   * Usado pelo carryover do Estúdio e do Pinta (continuar de onde parou).
+   *
+   * O `kind` faz parte da busca: cadeias de Estúdio e de Pinta são INDEPENDENTES mesmo com o
+   * mesmo nome — um bloco de desenho jamais semeia um bloco de código, e vice-versa.
    */
-  findPrecedingStudioBlockInChain(
+  findPrecedingChainBlock(
     courseId: string,
     lessonId: string,
     chain: string,
+    kind: 'studio' | 'pinta',
   ): Promise<{ blockId: string; lessonId: string } | null>
   /** Total de aulas por curso, em lote (admin). courseId → total. */
   countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>>

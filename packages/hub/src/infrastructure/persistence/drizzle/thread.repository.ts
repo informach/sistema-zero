@@ -387,17 +387,24 @@ export class DrizzleThreadRepository implements ThreadRepository {
   async setThreadStatus(
     id: string,
     status: Thread['status'],
+    fromStatuses: readonly Thread['status'][],
     now: Date,
     bumpActivity = false,
-  ): Promise<boolean> {
+  ): Promise<'updated' | 'not_found' | 'invalid_state'> {
     const set: Partial<typeof threads.$inferInsert> = { status }
     if (bumpActivity) set.lastActivityAt = now
     const rows = await this.db
       .update(threads)
       .set(set)
-      .where(eq(threads.id, id))
+      .where(and(eq(threads.id, id), inArray(threads.status, [...fromStatuses])))
       .returning({ id: threads.id })
-    return rows.length > 0
+    if (rows.length > 0) return 'updated'
+    const [existing] = await this.db
+      .select({ id: threads.id })
+      .from(threads)
+      .where(eq(threads.id, id))
+      .limit(1)
+    return existing ? 'invalid_state' : 'not_found'
   }
 
   async setThreadPinned(id: string, pinned: boolean): Promise<boolean> {
@@ -418,12 +425,18 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return rows.length > 0
   }
 
-  async setCommentStatus(id: string, status: Comment['status'], now: Date): Promise<boolean> {
+  async setCommentStatus(
+    id: string,
+    status: Comment['status'],
+    fromStatuses: readonly Comment['status'][],
+    now: Date,
+  ): Promise<'updated' | 'not_found' | 'invalid_state'> {
     return this.db.transaction(async (tx) => {
       // `FOR UPDATE` serializa aprovações concorrentes do MESMO comentário — sem o
       // lock, dois `approve` simultâneos leriam `pending` e somariam commentCount 2×.
       const [c] = await tx.select().from(comments).where(eq(comments.id, id)).limit(1).for('update')
-      if (!c) return false
+      if (!c) return 'not_found'
+      if (!fromStatuses.includes(c.status)) return 'invalid_state'
       await tx.update(comments).set({ status }).where(eq(comments.id, id))
       // Aprovar (→ visible) conta o comentário; ocultar/apagar um visível descontigura.
       if (status === 'visible' && c.status !== 'visible') {
@@ -437,7 +450,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
           .set({ commentCount: sql`greatest(${threads.commentCount} - 1, 0)` })
           .where(eq(threads.id, c.threadId))
       }
-      return true
+      return 'updated'
     })
   }
 

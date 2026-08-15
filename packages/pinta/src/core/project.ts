@@ -52,14 +52,28 @@ export interface PintaBitmap {
   data: Uint8Array
 }
 
-export type PintaAssetKind =
-  | 'pixel-sprite'
-  | 'pixel-background'
-  | 'tileset'
-  | 'tilemap'
-  | 'vector-sprite'
-  | 'vector-background'
-  | 'vector-tileset'
+/**
+ * Os 7 tipos, em RUNTIME. Existe como valor (e não só como união de tipo) porque quem está fora
+ * do pacote precisa PERGUNTAR se um payload é um desenho — o bloco de aula do admin distingue a
+ * entrega do Pinta da do Estúdio por aqui, já que as duas moram na mesma tabela.
+ */
+export const PINTA_ASSET_KINDS = [
+  'pixel-sprite',
+  'pixel-background',
+  'tileset',
+  'tilemap',
+  'vector-sprite',
+  'vector-background',
+  'vector-tileset',
+] as const
+
+export type PintaAssetKind = (typeof PINTA_ASSET_KINDS)[number]
+
+/** O payload é um desenho do Pinta? Checa só a identidade — o formato interno é do sanitize. */
+export function isPintaAssetLike(value: unknown): boolean {
+  const kind = (value as { kind?: unknown } | null | undefined)?.kind
+  return typeof kind === 'string' && (PINTA_ASSET_KINDS as readonly string[]).includes(kind)
+}
 
 /** Estilo de desenho (a PRIMEIRA escolha da criança ao criar um asset). */
 export type PintaAssetStyle = 'pixel' | 'vector'

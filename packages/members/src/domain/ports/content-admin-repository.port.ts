@@ -24,8 +24,9 @@ export interface CourseFields {
   /** Página de vendas (funil) — persiste em `metadata.salesPageUrl` (jsonb). */
   salesPageUrl: string | null
   /**
-   * Blocos que este curso LIBERA no Estúdio livre ao ser concluído + publicado no
-   * Mural — persiste em `metadata.studioUnlockBlocks` (jsonb, sem migração).
+   * Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual
+   * (bônus Kids: conclusão; demais: conclusão + Mural). Persiste em
+   * `metadata.studioUnlockBlocks` (jsonb, sem migração).
    * ⚠️ AUSENTE (`undefined`) **PRESERVA** a lista atual (régua do `audience`/`level`,
    * não a do `salesPageUrl`): um PATCH de build antigo do admin não pode apagar o
    * currículo do Estúdio em silêncio. `null`/`[]` LIMPA de propósito.
@@ -154,6 +155,19 @@ export interface ContentAdminRepository {
   lessonHasCertificateBlock(lessonId: string): Promise<boolean>
   /** A aula contém algum bloco que TRAVA a conclusão (estúdio, ou quiz com nota de corte)? */
   lessonHasGatingBlock(lessonId: string, opts?: { excludeBlockId?: string }): Promise<boolean>
+  /**
+   * Blocos de Pinta do curso que já usam a cadeia `chain` — em ordem de curso (módulo, aula),
+   * com o TIPO do desenho inicial lido do snapshot. Usado pela autoria para recusar a cadeia
+   * com tipos misturados (ver `PintaChainTypeMismatchError`).
+   *
+   * `assetKind` é `null` quando o snapshot é ilegível — a autoria trata como "não conflita",
+   * porque um bloco quebrado não deve impedir o autor de consertar a cadeia.
+   */
+  listPintaChainBlocks(
+    courseId: string,
+    chain: string,
+    opts?: { excludeBlockId?: string },
+  ): Promise<{ blockId: string; lessonTitle: string; assetKind: string | null }[]>
 
   // ── Anexos ──
   createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment>

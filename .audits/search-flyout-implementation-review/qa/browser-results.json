@@ -1,0 +1,55 @@
+{
+  "executedAt": "2026-08-15T07:40:36.5201768-03:00",
+  "browser": "Playwright Chromium headless",
+  "queryWithResults": "criar",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 720,
+      "toolboxLayout": "vertical",
+      "verdict": "PASS",
+      "inputFocused": true,
+      "initialGapPx": 10.100006103515625,
+      "emptyGapPx": 10.100006103515625,
+      "resultsTopGapPx": 10.100006103515625,
+      "returnedTopGapPx": 10.100006103515625,
+      "resultCount": 91,
+      "lastBlockOverflowPx": -5.399658203125
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "toolboxLayout": "vertical",
+      "verdict": "PASS",
+      "inputFocused": true,
+      "initialGapPx": 10.100006103515625,
+      "emptyGapPx": 10.100006103515625,
+      "resultsTopGapPx": 10.100006103515625,
+      "returnedTopGapPx": 10.100006103515625,
+      "resultCount": 91,
+      "lastBlockOverflowPx": -5.399658203125
+    },
+    {
+      "name": "mobile",
+      "width": 375,
+      "height": 812,
+      "toolboxLayout": "horizontal",
+      "verdict": "FAIL",
+      "inputFocused": true,
+      "initialGapPx": -41.19999694824219,
+      "emptyGapPx": -41.19999694824219,
+      "resultsTopGapPx": -41.19999694824219,
+      "resultCount": 91,
+      "lastBlockRightOverflowPx": -5.399566650390625,
+      "note": "A rolagem horizontal alcança o último bloco, mas o input cobre os rótulos e o topo de todos os blocos."
+    }
+  ],
+  "breakpointProbe": [
+    { "width": 375, "layout": "horizontal", "gapPx": -41.19999694824219 },
+    { "width": 439, "layout": "horizontal", "gapPx": -41.19999694824219 },
+    { "width": 440, "layout": "vertical", "gapPx": 10.100006103515625 },
+    { "width": 441, "layout": "vertical", "gapPx": 10.100006103515625 }
+  ]
+}

@@ -1,10 +1,11 @@
 import { Elysia } from 'elysia'
 import type { AttachmentService } from '../../../application/attachments/attachment.service'
-import { assertInternalCaller, resolveActor } from '../auth'
+import { assertInternalCaller, requireAdmin, resolveActor } from '../auth'
 import { IdParams, RegisterAttachmentBody } from '../dtos'
 
 export interface AttachmentsRoutesDeps {
   attachments: AttachmentService
+  requireAdminEnabled: boolean
   internalToken?: string
 }
 
@@ -30,6 +31,14 @@ export function attachmentsRoutes(deps: AttachmentsRoutesDeps) {
     .get(
       '/hub/attachments/:id/resolve',
       ({ headers, params }) => deps.attachments.resolve(resolveActor(headers), params.id),
+      { params: IdParams },
+    )
+    .get(
+      '/hub/admin/attachments/:id/resolve',
+      ({ headers, params }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.attachments.resolveForModeration(resolveActor(headers), params.id)
+      },
       { params: IdParams },
     )
 }

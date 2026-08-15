@@ -1,4 +1,6 @@
 import { ValidationError } from '@sistemazero/core/errors'
+import { saoPauloDayKey } from '@sistemazero/core/time'
+import { ProfileAgeRestrictedError } from './profile.errors'
 
 export type ProfileStatus = 'active' | 'archived'
 
@@ -134,6 +136,9 @@ export class ProfileAggregate {
    */
   setBirthDate(value: string | null, now: Date = new Date()): void {
     const next = normalizeOptional(value)
+    // Um perfil válido não perde acesso ao completar 18 anos. O formulário dos pais
+    // reenvia a data atual em toda edição; data idêntica é preservação, não cadastro novo.
+    if (next === this.props.birthDate) return
     assertBirthDate(next, now)
     this.props.birthDate = next
     this.props.updatedAt = now
@@ -173,9 +178,9 @@ function normalizeOptional(value: string | null | undefined): string | null {
 }
 
 /**
- * Data de nascimento: `YYYY-MM-DD` real, não-futura e numa faixa de idade plausível
- * (3–18 anos — a plataforma Kids é 8–13, com folga). `null` é permitido (campo
- * opcional). A autorização "só os pais" é da rota; aqui é só a sanidade do valor.
+ * Data de nascimento: `YYYY-MM-DD` real, não-futura e com menos de 18 anos.
+ * `null` é permitido (campo opcional). A autorização "só os pais" é da rota;
+ * aqui é só a sanidade do valor.
  */
 function assertBirthDate(value: string | null, now: Date): void {
   if (value === null) return
@@ -187,17 +192,21 @@ function assertBirthDate(value: string | null, now: Date): void {
   if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
     throw new ValidationError('Data de nascimento inválida')
   }
-  if (parsed.getTime() > now.getTime()) {
+  const today = saoPauloDayKey(now)
+  if (value > today) {
     throw new ValidationError('Data de nascimento não pode estar no futuro')
   }
-  const ageMs = now.getTime() - parsed.getTime()
-  const years = ageMs / (365.25 * 24 * 60 * 60 * 1000)
-  // Só o TETO (≤18): barra conta de adulto (a plataforma é infantil). Sem piso — um
-  // piso rígido (antes 3) rejeitava o cadastro legítimo de um filho mais novo; a data
-  // não-futura já é garantida acima e a idade é informativa (controle, não gate).
-  if (years > 18) {
-    throw new ValidationError('Data de nascimento fora da faixa de idade da plataforma')
-  }
+  const currentYear = Number(today.slice(0, 4))
+  const currentMonth = Number(today.slice(5, 7))
+  const currentDay = Number(today.slice(8, 10))
+  const birthYear = parsed.getUTCFullYear()
+  const birthMonth = parsed.getUTCMonth() + 1
+  const birthDay = parsed.getUTCDate()
+  const hadBirthday =
+    currentMonth > birthMonth || (currentMonth === birthMonth && currentDay >= birthDay)
+  const age = currentYear - birthYear - (hadBirthday ? 0 : 1)
+  // Sem piso: um filho mais novo também pode ter o perfil preparado pelos pais.
+  if (age >= 18) throw new ProfileAgeRestrictedError()
 }
 
 /** A foto é renderizada como `src` pelos apps — só http(s) (sem `javascript:`/`data:`). */

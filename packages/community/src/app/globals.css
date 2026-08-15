@@ -4,12 +4,19 @@
    ficam NO-OP e os modais e menus do editor de aula saem sem fundo nem cor (washed-out).
    O JS-import via member-shell sozinho NÃO basta (só traz os tokens). */
 @import "../../../studio/src/styles/studio.css";
+/* Bloco `pinta` (ateliê de desenho embarcado). Mesmo par do Estúdio: sem o @import os tokens
+   `--color-pin-*` não existem e sem o @source as utilitárias `pin-*` são no-op — o editor sairia
+   sem cor. É KIDS na prática, mas o renderizador de blocos é compartilhado.
+   ⚠️ O @import fica JUNTO dos outros, ANTES de qualquer @source: `@import` depois de outra
+   regra é inválido (o CSS o descarta em silêncio e o editor sai sem cor). */
+@import "../../../pinta/src/styles/pinta.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 @source "../../../member-shell/src";
 /* Editor embarcável (bloco `studio`): o scanner precisa gerar as classes utilitárias
    do @sistemazero/studio; os tokens --color-sz-* vêm do CSS importado pelo componente. */
 @source "../../../studio/src";
+@source "../../../pinta/src";
 
 @custom-variant dark (&:is(.dark *));
 

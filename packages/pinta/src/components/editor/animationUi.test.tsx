@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
+import { importPintaJson } from '../../export/projectJson'
 import { clearIdbMock } from '../../testing/idbMock'
 
 const { PintaApp } = await import('../PintaApp')
@@ -75,7 +76,42 @@ describe('UI de animação (F2)', () => {
     await waitFor(() => {
       expect(screen.getByText(COPY.exportDialog.spritesheet, { exact: false })).toBeTruthy()
     })
+    expect(screen.getByRole('button', { name: COPY.exportDialog.editableFile })).toBeTruthy()
     expect(screen.getByText(COPY.exportDialog.recipeTitle)).toBeTruthy()
     expect(screen.getByText(/do quadro 0 ao 0/)).toBeTruthy()
+  })
+
+  it('baixa o desenho aberto como .pinta.json restaurável', async () => {
+    const createDescriptor = Object.getOwnPropertyDescriptor(URL, 'createObjectURL')
+    const revokeDescriptor = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL')
+    const downloads: Blob[] = []
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: (blob: Blob) => {
+        downloads.push(blob)
+        return 'blob:pinta-editable-test'
+      },
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: () => undefined,
+    })
+
+    try {
+      await openSpriteEditor()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.download }))
+      fireEvent.click(await screen.findByRole('button', { name: COPY.exportDialog.editableFile }))
+      await waitFor(() => expect(downloads).toHaveLength(1))
+      const result = importPintaJson((await downloads[0]?.text()) ?? '')
+      expect(result.warnings).toEqual([])
+      expect(result.assets.map((asset) => [asset.kind, asset.name])).toEqual([
+        ['pixel-sprite', 'heroi'],
+      ])
+    } finally {
+      if (createDescriptor) Object.defineProperty(URL, 'createObjectURL', createDescriptor)
+      else Reflect.deleteProperty(URL, 'createObjectURL')
+      if (revokeDescriptor) Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor)
+      else Reflect.deleteProperty(URL, 'revokeObjectURL')
+    }
   })
 })

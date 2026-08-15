@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { BatchGetProfilesService } from './application/admin/batch-get-profiles/batch-get-profiles.service'
 import { BatchGetUsersService } from './application/admin/batch-get-users/batch-get-users.service'
 import { CreateUserService } from './application/admin/create-user/create-user.service'
 import { DeleteUserService } from './application/admin/delete-user/delete-user.service'
@@ -251,6 +252,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // Exclusão física (limpeza de contas de teste): superadmin-only, guards no serviço.
   const deleteUser = new DeleteUserService(users, logger)
   const batchGetUsers = new BatchGetUsersService(users)
+  const batchGetProfiles = new BatchGetProfilesService(profilesRepo)
   // Auditoria: o gateway emite (S2S) e o painel lê.
   const writeAuditLog = new WriteAuditLogService(auditLogs)
   const readAuditLog = new ReadAuditLogService(auditLogs)
@@ -318,6 +320,7 @@ export async function createApplication(env: Env): Promise<Application> {
     updateUser,
     deleteUser,
     batchGetUsers,
+    batchGetProfiles,
     resendInvite,
     setUserPassword,
     writeAuditLog,

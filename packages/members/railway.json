@@ -6,6 +6,7 @@
     "watchPatterns": [
       "/packages/members/**",
       "/packages/core/**",
+      "/packages/pinta/**",
       "/bun.lock",
       "/package.json",
       "/.dockerignore"

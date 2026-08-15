@@ -96,6 +96,11 @@ describe.skipIf(!testDatabaseUrl)('lessonHasGatingBlock: espelho SQL × domínio
       kind: 'studio',
       content: { kind: 'studio', initialProject: {} },
     },
+    {
+      nome: 'Pinta SEMPRE trava (a entrega do desenho é gate, como a do Estúdio)',
+      kind: 'pinta',
+      content: { kind: 'pinta', initialAsset: { id: 'a', name: 'n', kind: 'pixel-sprite' } },
+    },
     { nome: '"em breve" SEMPRE trava', kind: 'coming_soon', content: { kind: 'coming_soon' } },
     {
       nome: 'quiz COM nota de corte trava',

@@ -450,6 +450,13 @@ export class InMemoryProfileRepository implements ProfileRepository {
     return p ? ProfileAggregate.restore({ ...p }) : null
   }
 
+  async listByIds(ids: string[]): Promise<ProfileAggregate[]> {
+    return ids
+      .map((id) => this.byId.get(id))
+      .filter((p): p is ProfileSnapshot => p !== undefined)
+      .map((p) => ProfileAggregate.restore({ ...p }))
+  }
+
   async listActiveByIds(ids: string[]): Promise<ProfileAggregate[]> {
     return ids
       .map((id) => this.byId.get(id))

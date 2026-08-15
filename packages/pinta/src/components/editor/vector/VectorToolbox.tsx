@@ -7,12 +7,13 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { COPY } from '../../../core/copy'
+import { filterTools, toolFallback } from '../../../core/toolCuration'
 import { isVectorGradient } from '../../../vector/model'
 import { IconButton, ToolButton } from '../../ui/Button'
 import { Grid3x3, Image, Maximize, Repeat } from '../../ui/icons'
-import { useEditor, useEditorStores, useSession } from '../editorContext'
+import { useEditor, useEditorStores, useSession, useToolCuration } from '../editorContext'
 import { useVectorEditor, type VectorColorChannel } from './VectorEditorScope'
 import { VectorInsertAssetDialog } from './VectorInsertAssetDialog'
 import { gradientCss, TOOLS } from './vectorTools'
@@ -30,7 +31,14 @@ export function VectorToolbox({
   const showGrid = useSession((state) => state.showGrid)
   const { tool, setTool, zoomToFit, style, applyStyle } = useVectorEditor()
   const assetId = useEditor((state) => state.asset.id)
+  const allowTools = useToolCuration()
   const [insertOpen, setInsertOpen] = useState(false)
+
+  // A ativa cortada viraria estado impossível: selecionada e fora da tela. Mesma régua do pixel.
+  useEffect(() => {
+    const next = toolFallback(tool, TOOLS, allowTools)
+    if (next) setTool(next as typeof tool)
+  }, [tool, allowTools, setTool])
 
   const divider = vertical ? (
     <hr className="col-span-2 my-1 w-8 border-pin-border" />
@@ -56,41 +64,68 @@ export function VectorToolbox({
     </IconButton>
   ))
 
+  const drawNodes = filterTools(TOOLS, allowTools).map((entry) => (
+    <ToolButton
+      key={entry.id}
+      icon={entry.icon}
+      label={entry.label}
+      shortcut={entry.shortcut}
+      active={tool === entry.id}
+      onClick={() => setTool(entry.id)}
+    />
+  ))
+
+  const extraNodes = filterTools(
+    [
+      {
+        id: 'grid',
+        node: (
+          <ToolButton
+            icon={Grid3x3}
+            label={COPY.tools.grid}
+            active={showGrid}
+            onClick={() => session.getState().toggleGrid()}
+          />
+        ),
+      },
+      {
+        // ⚠️ Está nos DOIS presets porque é o único controle daqui que só mexe na VISTA: quem
+        // aproximou demais pela rolagem precisa do caminho de volta. Só some numa lista fina que
+        // o professor montou à mão, onde a escolha é dele.
+        id: 'fit',
+        node: <ToolButton icon={Maximize} label={COPY.editor.zoomFit} onClick={zoomToFit} />,
+      },
+      {
+        // Fora dos dois presets de propósito: numa aula o desenho é isolado da galeria pessoal.
+        id: 'insertAsset',
+        node: (
+          <ToolButton
+            icon={Image}
+            label={COPY.vector.insertAsset}
+            onClick={() => setInsertOpen(true)}
+          />
+        ),
+      },
+    ],
+    allowTools,
+  ).map((entry) => <Fragment key={entry.id}>{entry.node}</Fragment>)
+
+  // Grupo vazio SOME junto com o divisor dele — senão a caixa curada fica com traços separando nada.
+  const groups: Array<{ name: string; nodes: JSX.Element[] }> = [
+    { name: 'draw', nodes: drawNodes },
+    ...(vertical ? [] : [{ name: 'stroke', nodes: strokeWidths }]),
+    { name: 'extra', nodes: extraNodes },
+  ].filter((group) => group.nodes.length > 0)
+
   const tools = (
     <>
-      {TOOLS.map((entry) => (
-        <ToolButton
-          key={entry.id}
-          icon={entry.icon}
-          label={entry.label}
-          shortcut={entry.shortcut}
-          active={tool === entry.id}
-          onClick={() => setTool(entry.id)}
-        />
+      {groups.map((group, index) => (
+        <Fragment key={group.name}>
+          {index > 0 ? divider : null}
+          {group.nodes}
+        </Fragment>
       ))}
-
-      {divider}
-
-      {/* Na barra HORIZONTAL (tela estreita) as espessuras seguem no meio. */}
-      {vertical ? null : strokeWidths}
-      {vertical ? null : divider}
-
-      {/* Grade de apoio por cima do desenho (espelho do toggle do pixel). */}
-      <ToolButton
-        icon={Grid3x3}
-        label={COPY.tools.grid}
-        active={showGrid}
-        onClick={() => session.getState().toggleGrid()}
-      />
-      <ToolButton icon={Maximize} label={COPY.editor.zoomFit} onClick={zoomToFit} />
-      {/* Trazer um desenho da galeria. Mora AQUI porque este mesmo fragmento
-          serve o rail vertical do desktop e a barra horizontal da tela
-          estreita: um ponto só cobre os dois. */}
-      <ToolButton
-        icon={Image}
-        label={COPY.vector.insertAsset}
-        onClick={() => setInsertOpen(true)}
-      />
+      {/* O diálogo não é botão: fica fora dos grupos para nenhuma curadoria o desmontar. */}
       <VectorInsertAssetDialog
         open={insertOpen}
         onClose={() => setInsertOpen(false)}
@@ -167,6 +202,11 @@ function VectorColorSlots(): JSX.Element {
         : hex
           ? (COPY.colorNames[hex] ?? hex)
           : COPY.vector.none
+    const colorStyle = gradient
+      ? { background: gradientCss(gradient) }
+      : hex
+        ? { backgroundColor: hex }
+        : undefined
     return (
       <button
         type="button"
@@ -175,19 +215,32 @@ function VectorColorSlots(): JSX.Element {
         title={label}
         onClick={() => setActiveChannel(channel)}
         className={clsx(
-          'size-11 rounded-lg border-2 transition',
-          isNone && 'pin-checkerboard',
-          active ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border',
-          channel === 'stroke' && 'absolute right-0 bottom-0',
+          'group absolute flex size-11 items-center justify-center rounded-lg border-0 bg-transparent p-0 transition focus-visible:z-30 focus-visible:outline-none',
+          active ? 'z-20' : channel === 'fill' ? 'z-10' : 'z-0',
+          channel === 'fill' ? 'top-0 left-0' : 'right-0 bottom-0',
         )}
-        style={
-          gradient
-            ? { background: gradientCss(gradient) }
-            : hex
-              ? { backgroundColor: hex }
-              : undefined
-        }
-      />
+      >
+        <span
+          aria-hidden="true"
+          data-vector-color-shape={channel}
+          className={clsx(
+            'pointer-events-none relative size-10 rounded-md border-2 shadow-sm transition group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-pin-accent',
+            active
+              ? 'border-pin-accent ring-2 ring-pin-accent'
+              : 'border-pin-border group-hover:border-pin-accent/70',
+            isNone && 'pin-checkerboard',
+            channel === 'fill' ? 'translate-x-3' : '-translate-x-3',
+          )}
+          style={colorStyle}
+        >
+          {channel === 'stroke' ? (
+            <span
+              data-vector-color-hole=""
+              className="absolute inset-[7px] rounded-[3px] border border-pin-border bg-pin-surface"
+            />
+          ) : null}
+        </span>
+      </button>
     )
   }
 
@@ -201,10 +254,10 @@ function VectorColorSlots(): JSX.Element {
       >
         <Repeat aria-hidden="true" className="size-4" />
       </IconButton>
-      {/* O contorno fica ATRÁS e deslocado, como a 2ª cor do pixel. */}
-      <div className="relative size-16 shrink-0">
+      {/* Os ALVOS não se cruzam; só as placas internas, sem pointer events, ficam sobrepostas. */}
+      <div className="relative h-16 w-[88px] shrink-0">
         {swatch('stroke')}
-        <span className="absolute top-0 left-0">{swatch('fill')}</span>
+        {swatch('fill')}
       </div>
     </div>
   )

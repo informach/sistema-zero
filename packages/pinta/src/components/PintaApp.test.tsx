@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { strToU8, zipSync } from 'fflate'
 import { COPY } from '../core/copy'
+import { createPixelBackgroundAsset } from '../core/project'
+import { galleryToPintaJson } from '../export/projectJson'
 import { clearIdbMock } from '../testing/idbMock'
 
 const { PintaApp } = await import('./PintaApp')
@@ -33,9 +36,7 @@ describe('PintaApp — galeria', () => {
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
-    const input = container.querySelector<HTMLInputElement>(
-      'input[accept=".json,application/json"]',
-    )
+    const input = container.querySelector<HTMLInputElement>('input[accept*=".pinta.json"]')
     if (!input) throw new Error('input de backup esperado')
     const file = new File(['{}'], 'grande.pinta.json', { type: 'application/json' })
     let reads = 0
@@ -55,6 +56,60 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText(COPY.gallery.restoreTooLarge)).toBeTruthy()
     })
     expect(reads).toBe(0)
+  })
+
+  it('expõe o estado ocupado enquanto traz o arquivo de volta', async () => {
+    const { container } = render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
+    })
+    const input = container.querySelector<HTMLInputElement>('input[accept*=".pinta.json"]')
+    if (!input) throw new Error('input de backup esperado')
+    const json = galleryToPintaJson([
+      createPixelBackgroundAsset({ name: 'ceu-lento', width: 16, height: 12 }),
+    ])
+    let finishRead: ((value: string) => void) | null = null
+    const file = new File([json], 'ceu.pinta.json', { type: 'application/json' })
+    Object.defineProperty(file, 'text', {
+      configurable: true,
+      value: () =>
+        new Promise<string>((resolve) => {
+          finishRead = resolve
+        }),
+    })
+
+    fireEvent.change(input, { target: { files: [file] } })
+    const busy = await screen.findByRole('button', { name: COPY.gallery.restoring })
+    expect(busy.getAttribute('aria-busy')).toBe('true')
+    expect((busy as HTMLButtonElement).disabled).toBe(true)
+
+    await act(async () => finishRead?.(json))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.gallery.restore })).toBeTruthy()
+    })
+  })
+
+  it('traz a galeria diretamente do ZIP criado pelo Pinta', async () => {
+    const { container } = render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
+    })
+    const input = container.querySelector<HTMLInputElement>('input[accept*=".zip"]')
+    if (!input) throw new Error('input inteligente de backup esperado')
+    const json = galleryToPintaJson([
+      createPixelBackgroundAsset({ name: 'ceu-restaurado', width: 16, height: 12 }),
+    ])
+    const zip = zipSync({ 'galeria.pinta.json': strToU8(json), 'LEIA-ME.txt': strToU8('olá') })
+    const file = new File([zip.slice().buffer as ArrayBuffer], 'meus-desenhos-pinta.zip', {
+      type: 'application/zip',
+    })
+
+    fireEvent.change(input, { target: { files: [file] } })
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir ceu-restaurado/ })).toBeTruthy()
+    })
+    expect(screen.getByText(COPY.gallery.restoredOne)).toBeTruthy()
   })
 
   it('explica quando a foto passa do limite de 20 MB', async () => {

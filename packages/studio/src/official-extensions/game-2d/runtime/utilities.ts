@@ -147,7 +147,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
   function cooldownReady(sprite, frames, key) {
     if (!sprite) return false;
-    var n = (_isFiniteNumber(frames) && frames > 0) ? Math.round(frames) : 1;
+    var n = (_isFiniteNumber(frames) && frames > 0) ? Math.max(1, Math.round(frames)) : 1;
     var id = (typeof key === 'string' && key) ? key : 'default';
     if (!sprite._cooldowns || typeof sprite._cooldowns !== 'object') sprite._cooldowns = Object.create(null);
     // Prazo absoluto no relógio de quadros da partida. Descontar por chamada

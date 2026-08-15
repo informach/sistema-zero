@@ -3,6 +3,7 @@
 import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
+import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
 import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
@@ -19,6 +20,7 @@ import {
   Headphones,
   ListChecks,
   type LucideIcon,
+  Palette,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -203,6 +205,17 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       )
     case 'studio':
       return <StudioBlockKids block={block} content={content} />
+    case 'pinta':
+      return (
+        <div className="kids-unit-grad flex flex-col gap-3">
+          <BlockChip icon={Palette} label="Desenhe" themeClass="kids-unit-grad" />
+          <PintaBlockView
+            blockId={block.id}
+            content={content}
+            pintaState={block.pintaState ?? null}
+          />
+        </div>
+      )
     case 'coming_soon':
       return <ComingSoon content={content} />
     default:

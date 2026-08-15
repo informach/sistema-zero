@@ -5148,8 +5148,18 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.spriteVar)
         return
       case 'g2d:bounceOnEdges':
+      case 'g2d:bounceOnEdgePair':
         names.add(stmt.spriteVar)
         names.add(stmt.ctxVar)
+        return
+      case 'g2d:arrowsY':
+        names.add(stmt.spriteVar)
+        collectExprIdentifiers(valueToExpr(stmt.speed), names)
+        return
+      case 'g2d:paddleBounce':
+        names.add(stmt.ballVar)
+        names.add(stmt.paddleVar)
+        collectExprIdentifiers(valueToExpr(stmt.boost), names)
         return
       case 'g2d:circleCollides':
         names.add(stmt.aVar)

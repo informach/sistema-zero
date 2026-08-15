@@ -34,8 +34,9 @@ export interface CourseView {
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
-   * Blocos que este curso LIBERA no Estúdio livre quando o aluno o conclui E publica
-   * no Mural (de `metadata.studioUnlockBlocks`). Vazio = não libera nada.
+   * Blocos que este curso LIBERA no Estúdio livre quando o aluno satisfaz o critério
+   * atual (bônus Kids: conclusão; demais: conclusão + Mural). Vem de
+   * `metadata.studioUnlockBlocks`; vazio = não libera nada.
    */
   studioUnlockBlocks: string[]
   /**

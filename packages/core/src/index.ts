@@ -1,5 +1,5 @@
 // Barrel raiz do @sistemazero/core. Prefira importar pelos subpaths
-// (`@sistemazero/core/security`, `/logging`, `/errors`, `/result`, `/http`)
+// (`@sistemazero/core/security`, `/logging`, `/errors`, `/result`, `/http`, `/time`)
 // para deixar a intenção explícita; este barrel existe por conveniência.
 
 export * from './ai-credits/index'
@@ -10,4 +10,5 @@ export * from './logging/index'
 export * from './result/index'
 export * from './security/index'
 export * from './studio/index'
+export * from './time/index'
 export * from './zappy/index'

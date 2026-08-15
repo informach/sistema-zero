@@ -116,6 +116,7 @@ export function buildApp(
         clock,
         () => randomUUID(),
       ),
+      requireAdminEnabled: opts.requireAdmin ?? false,
       internalToken,
     },
     reactions: {
@@ -152,6 +153,7 @@ export function buildApp(
       moderation: new ModerationService(
         threadRepo,
         moderationRepo,
+        attachmentRepo,
         clock,
         opts.studioArtifacts,
         repo,

@@ -1,7 +1,7 @@
 {
   "name": "@sistemazero/core",
   "version": "0.1.0",
-  "description": "Utilidades compartilhadas do monorepo sistema-zero (security, logging, errors, result, http) — sem dependência de framework.",
+  "description": "Utilidades compartilhadas do monorepo sistema-zero (security, logging, errors, result, http, time) — sem dependência de framework.",
   "type": "module",
   "private": true,
   "module": "src/index.ts",
@@ -15,6 +15,7 @@
     "./result": "./src/result/index.ts",
     "./http": "./src/http/index.ts",
     "./studio": "./src/studio/index.ts",
+    "./time": "./src/time/index.ts",
     "./zappy": "./src/zappy/index.ts"
   },
   "scripts": {

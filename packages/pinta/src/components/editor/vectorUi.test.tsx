@@ -313,6 +313,42 @@ describe('UI vetorial (F5)', () => {
     expect(screen.getByRole('button', { name: COPY.vector.swapFillStroke })).toBeTruthy()
   })
 
+  it('slots de cor distinguem ÁREA preenchida de MOLDURA de contorno', async () => {
+    await openVectorEditor()
+    const fill = screen
+      .getAllByRole('button', { name: `${COPY.vector.fill}: verde` })
+      .find((button) => button.getAttribute('title') === COPY.vector.fill)
+    const stroke = screen.getByRole('button', { name: `${COPY.vector.stroke}: preto` })
+    if (!fill) throw new Error('slot de preenchimento esperado')
+
+    const fillShape = fill.querySelector<HTMLElement>('[data-vector-color-shape="fill"]')
+    const strokeShape = stroke.querySelector<HTMLElement>('[data-vector-color-shape="stroke"]')
+    expect(fillShape).toBeTruthy()
+    expect(fillShape?.children).toHaveLength(0)
+    expect(strokeShape).toBeTruthy()
+    expect(strokeShape?.querySelector('[data-vector-color-hole]')).toBeTruthy()
+    expect(fill.parentElement?.className).toContain('w-[88px]')
+    expect(fill.className).toContain('size-11')
+    expect(stroke.className).toContain('size-11')
+    expect(fillShape?.className).toContain('size-10')
+    expect(strokeShape?.className).toContain('size-10')
+    expect(fill.className).toContain('focus-visible:z-30')
+    expect(stroke.className).toContain('focus-visible:z-30')
+    expect(fill.getAttribute('aria-pressed')).toBe('true')
+    expect(fill.className).not.toContain('ring-2')
+    expect(fillShape?.className).toContain('ring-2')
+    expect(fillShape?.className).toContain('ring-pin-accent')
+    expect(strokeShape?.className).not.toContain('ring-2')
+
+    fireEvent.click(stroke)
+    await waitFor(() => {
+      expect(stroke.getAttribute('aria-pressed')).toBe('true')
+      expect(strokeShape?.className).toContain('ring-2')
+      expect(strokeShape?.className).toContain('ring-pin-accent')
+      expect(fillShape?.className).not.toContain('ring-2')
+    })
+  })
+
   it('trocar preenchimento e contorno inverte os slots', async () => {
     await openVectorEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.swapFillStroke }))

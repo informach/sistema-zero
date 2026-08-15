@@ -101,6 +101,21 @@ export class AttachmentService {
     } else {
       await this.assertCanSeeParent(actor, a)
     }
+    return this.toResolved(a)
+  }
+
+  /**
+   * Leitura privada para investigação da moderação. Não reutiliza a política do
+   * aluno: conteúdo oculto/rejeitado precisa continuar inspecionável pela equipe.
+   */
+  async resolveForModeration(actor: Actor, attachmentId: string): Promise<ResolvedAttachment> {
+    if (!actor.privileged) throw new AccessDeniedError('Apenas a equipe pode moderar anexos')
+    const attachment = await this.attachments.findById(attachmentId)
+    if (!attachment) throw new AttachmentNotFoundError()
+    return this.toResolved(attachment)
+  }
+
+  private toResolved(a: Attachment): ResolvedAttachment {
     return {
       id: a.id,
       storageRef: a.storageRef,

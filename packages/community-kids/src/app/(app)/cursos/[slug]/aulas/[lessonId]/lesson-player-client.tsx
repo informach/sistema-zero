@@ -271,6 +271,11 @@ export function LessonPlayer({
           if (!opts.silent) {
             toast.error('Envie o projeto do Estúdio para poder concluir a aula.')
           }
+        } else if (apiErr?.code === 'PINTA_GATE_NOT_SUBMITTED') {
+          // A aula só conclui depois de enviar o desenho ao professor.
+          if (!opts.silent) {
+            toast.error('Envie o seu desenho para o professor para poder concluir a aula.')
+          }
         } else if (apiErr?.code === 'STUDIO_GATE_NOT_PASSED') {
           // A aula só conclui depois de atingir a nota mínima do Estúdio.
           if (!opts.silent) {

@@ -36,6 +36,7 @@ import { flattenCelsRange, layerIndexOf, visibleComposite } from '../../pixel/la
 import { flipHorizontal, flipVertical } from '../../pixel/ops'
 import {
   createScaledPainter,
+  paintMirrorGuides,
   paintPixelGrid,
   paintSelectionOverlay,
   type ScaledPainter,
@@ -89,6 +90,8 @@ export function PixelCanvas(): JSX.Element {
   const zoom = useSession((state) => state.zoom)
   const onion = useSession((state) => state.onion)
   const showGrid = useSession((state) => state.showGrid)
+  const mirrorX = useSession((state) => state.mirrorX)
+  const mirrorY = useSession((state) => state.mirrorY)
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
   const layerId = useSession((state) => state.layerId)
@@ -196,6 +199,7 @@ export function PixelCanvas(): JSX.Element {
       hideActive: activeHidden,
     })
     paintPixelGrid(canvas, current, zoom, showGrid)
+    paintMirrorGuides(canvas, current, zoom, mirrorX, mirrorY)
   }
 
   /** Pinta o bitmap (compondo o recorte flutuante) + o contorno da seleção. */
@@ -214,7 +218,7 @@ export function PixelCanvas(): JSX.Element {
     }
   }
 
-  // Repinta quando bitmap/zoom/onion mudam (fora de gesto; o gesto pinta direto).
+  // Repinta quando bitmap/zoom/camadas/guias mudam (fora de gesto; o gesto pinta direto).
   // biome-ignore lint/correctness/useExhaustiveDependencies: `renderCanvas` lê os mesmos valores das deps
   useEffect(() => {
     if (!bitmap) return
@@ -227,7 +231,7 @@ export function PixelCanvas(): JSX.Element {
     }
     lastBitmapRef.current = bitmap
     if (!gestureRef.current) renderCanvas()
-  }, [bitmap, zoom, onion, ghost, surrounding, activeHidden, showGrid, colors])
+  }, [bitmap, zoom, onion, ghost, surrounding, activeHidden, showGrid, mirrorX, mirrorY, colors])
 
   // Sair da ferramenta seleção CARIMBA o recorte pendente (some sem sumir).
   // biome-ignore lint/correctness/useExhaustiveDependencies: stampPending lê refs; o gatilho é `tool`

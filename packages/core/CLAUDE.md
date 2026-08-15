@@ -32,6 +32,7 @@ import { createLogger, serializeError } from '@sistemazero/core/logging'
 import { DomainError, ValidationError } from '@sistemazero/core/errors'
 import { type Result, ok, err } from '@sistemazero/core/result'
 import { toErrorEnvelope, EdgeError } from '@sistemazero/core/http'
+import { saoPauloDayKey } from '@sistemazero/core/time'
 ```
 
 Use `import type` para tipos (`verbatimModuleSyntax`). O barrel raiz (`@sistemazero/core`) existe
@@ -47,6 +48,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 | `/errors` | hierarquia de erros de domínio compartilhada (base do `shared/errors` dos serviços) | `domain-errors` |
 | `/result` | `Result<T,E>` (ok/err) — fluxo de erro sem exceção | `result` |
 | `/http` | envelope de erro `{error:{code,message}}` + erros de borda (edge) | `error-envelope` · `edge-errors` |
+| `/time` | calendário civil compartilhado, sem converter data de negócio em instante UTC | `sao-paulo` |
 
 ## Comandos (de dentro de `packages/core`)
 

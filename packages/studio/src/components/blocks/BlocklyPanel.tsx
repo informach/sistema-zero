@@ -37,6 +37,7 @@ import {
   attachSpriteThumbWatcher,
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
+import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
@@ -78,7 +79,10 @@ function blocklyWorkspaceConfiguration(
     toolboxPosition: 'start',
     // Habilita "Recolher/Expandir blocos" no menu de contexto nativo.
     collapse: true,
-    plugins: { connectionChecker: HTMLConnectionChecker },
+    plugins: {
+      connectionChecker: HTMLConnectionChecker,
+      flyoutsHorizontalToolbox: SearchAwareHorizontalFlyout,
+    },
     // `sounds:false` DESLIGA o preload automático do Blockly, que — sem `media`
     // configurado — baixaria click/disconnect/delete .mp3 do servidor demo
     // (blockly-demo.appspot.com) → bloqueado pela CSP do host, sujando o console.

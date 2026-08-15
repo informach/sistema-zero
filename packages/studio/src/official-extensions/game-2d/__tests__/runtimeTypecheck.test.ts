@@ -314,7 +314,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 1151 → 1157: +6 do lote de desempenho — `_applySmoothing` (2), `_crispBatch` (3)
   // e `_crispBatchEnd` (1). Eles REMOVEM trabalho: o ajuste de nitidez saiu de uma
   // leitura e duas escritas de contexto POR CÉLULA de mapa para um par por mapa.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1157)
+  // 1157 → 1158: `_readSmoothing(ctx)` preserva a escolha real do Canvas livre;
+  // a leitura continua uma vez por MAPA dentro do lote, não uma vez por célula.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1158)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

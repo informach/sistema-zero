@@ -1,9 +1,14 @@
-import { LessonNotFoundError, StudioBlockNotFoundError } from '../../domain/course/course.errors'
+import {
+  LessonNotFoundError,
+  PintaBlockNotFoundError,
+  StudioBlockNotFoundError,
+} from '../../domain/course/course.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
+import type { SubmissionBlockKind } from '../submit-studio-project/submit-studio-project.service'
 
 /** Projeto carregado da aula contínua anterior (mesma cadeia). `null` se não há. */
 export interface StudioCarryoverView {
@@ -21,6 +26,10 @@ export interface StudioCarryoverView {
  * o projeto do aluno, e a aula seguinte o recupera. Sem entrega na anterior → `null`
  * (cai no `initialProject` do bloco). Carrega a última entrega MESMO sem ter batido a
  * nota de corte (decisão de produto: continuar o WIP).
+ *
+ * ⭐ Serve os DOIS blocos (`kind`): o do Estúdio devolve o projeto, o do Pinta devolve o desenho
+ * — o snapshot é opaco aqui, então a única diferença é qual bloco procurar. Cadeias de kinds
+ * diferentes NUNCA se cruzam, mesmo com o mesmo nome.
  */
 export class GetStudioCarryoverService {
   constructor(
@@ -36,6 +45,7 @@ export class GetStudioCarryoverService {
     blockId: string,
     privileged = false,
     accountId?: string,
+    kind: SubmissionBlockKind = 'studio',
   ): Promise<StudioCarryoverView> {
     // Só usa os blocos (estúdio) — pula a query de anexos.
     const lesson = await this.courses.findLessonWithContent(lessonId, { includeAttachments: false })
@@ -51,17 +61,15 @@ export class GetStudioCarryoverService {
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
-    if (block?.content.kind !== 'studio') throw new StudioBlockNotFoundError()
+    if (block?.content.kind !== kind) {
+      throw kind === 'pinta' ? new PintaBlockNotFoundError() : new StudioBlockNotFoundError()
+    }
 
     // Sem nome de cadeia = aula independente: não há projeto anterior a carregar.
     const chain = block.content.chain?.trim()
     if (!chain) return { project: null }
 
-    const prev = await this.courses.findPrecedingStudioBlockInChain(
-      lesson.courseId,
-      lessonId,
-      chain,
-    )
+    const prev = await this.courses.findPrecedingChainBlock(lesson.courseId, lessonId, chain, kind)
     // 1ª aula da cadeia (sem antecessora na mesma cadeia) → começa do template.
     if (!prev) return { project: null }
 

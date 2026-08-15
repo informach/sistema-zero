@@ -42,6 +42,14 @@ gema coletada naquela fase desaparecer.
 checkpoint, bloco, guardião, saída e fim. **O … do acontecimento da aventura** lê
 seus dados. O valor só existe enquanto o acontecimento está sendo tratado.
 
+As peças da fase têm cada uma o seu jeito. O **andarilho** e o **casco** andam no
+chão, caem de beiradas e viram quando encontram parede; o **voador** sobe e desce
+sozinho. Pisar no andarilho e no voador derrota; **pisar no casco RECOLHE**, e aí
+encostar nele o CHUTA para o lado — quem chutou tem um instante de folga antes de
+ele voltar a machucar. No **espinho não se pisa**: encostar por cima ou por baixo
+custa vida do mesmo jeito, e a única forma de derrubá-lo é com o poder
+invencível, que também derruba o guardião e avisa "guardião" igual à pisada.
+
 Guardar, continuar e apagar usam três slots validados. Replays guardam ações,
 não teclas. Teclado, controle e toque compartilham ações; no toque, todos os dez
 botões ficam ancorados na área visível do palco.

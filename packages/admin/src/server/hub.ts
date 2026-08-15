@@ -3,6 +3,7 @@ import type {
   HubMuteBanView,
   HubPendingItemView,
   HubReportView,
+  HubResolvedAttachment,
   HubSpaceTreeView,
   HubSpaceView,
 } from '@/lib/hub-types'
@@ -102,6 +103,10 @@ export function listReports(p: {
   return gatewayFetch('/hub/admin/reports', {
     query: { spaceId: p.spaceId, status: p.status, limit: p.limit, offset: p.offset },
   })
+}
+/** Autoriza o anexo no Hub e resolve a referência privada somente dentro do BFF. */
+export function resolveAttachment(id: string): Promise<GatewayResponse<HubResolvedAttachment>> {
+  return gatewayFetch(`/hub/admin/attachments/${enc(id)}/resolve`)
 }
 export function resolveReport(id: string, body: unknown): Promise<GatewayResponse<unknown>> {
   return gatewayFetch(`/hub/admin/reports/${enc(id)}/resolve`, { method: 'POST', body })

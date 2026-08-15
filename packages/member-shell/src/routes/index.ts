@@ -1221,6 +1221,41 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** Entrega do DESENHO do bloco de Pinta ao members (destrava a conclusão da aula). */
+  const pintaSubmit = {
+    POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { lessonId, blockId } = await ctx.params
+      const raw = await req.json().catch(() => null)
+      const asset = (raw as { asset?: unknown })?.asset
+      // Só a FORMA mínima aqui; quem valida o desenho é o members (DTO) e o Pinta (sanitize).
+      if (!asset || typeof asset !== 'object') return invalidInput()
+      const rawMessage = (raw as { message?: unknown })?.message
+      const message = typeof rawMessage === 'string' ? rawMessage.slice(0, 1000) : undefined
+      const { status, body } = await members.submitPintaAsset(lessonId, blockId, asset, message)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** GET do MESMO path: o desenho já enviado (retomar num navegador novo). */
+  const pintaSubmissionGet = {
+    GET: async (_req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const { status, body } = await members.getOwnPintaSubmission(lessonId, blockId)
+      return NextResponse.json(body ?? { asset: null }, { status })
+    },
+  }
+
+  /** Desenho da aula contínua anterior (cadeia do Pinta) — 3ª prioridade de seed. */
+  const pintaCarryover = {
+    GET: async (_req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const { status, body } = await members.getPintaCarryover(lessonId, blockId)
+      return NextResponse.json(body ?? { asset: null }, { status })
+    },
+  }
+
   // ── Recados (conversas com o professor — canal de retorno) ────────────────
   /** Caixa de entrada do aluno (suas conversas com o professor). */
   const teacherThreadsList = {
@@ -1495,6 +1530,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     studioSubmit,
     studioCarryover,
     studioSubmissionGet,
+    pintaSubmit,
+    pintaSubmissionGet,
+    pintaCarryover,
     teacherThreadsList,
     teacherThreadsUnread,
     teacherThreadGet,

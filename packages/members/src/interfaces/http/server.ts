@@ -33,6 +33,14 @@ const STUDIO_SUBMISSION_PATH = /\/studio-submission$/
 const ADMIN_BLOCK_CREATE_PATH = /\/members\/admin\/lessons\/[^/]+\/blocks$/
 const ADMIN_BLOCK_UPDATE_PATH = /\/members\/admin\/blocks\/[^/]+$/
 
+/**
+ * A entrega do PINTA carrega o desenho inteiro, como a do Estúdio, e usa o MESMO teto — que é o
+ * do gateway (2 MB): a borda não deixa passar mais, então aceitar mais aqui só trocaria um 413
+ * na frente por um 413 atrás. O teto de NEGÓCIO (`MAX_PINTA_ASSET_CHARS`) mora no service e é
+ * mais apertado de propósito, para a recusa vir com mensagem em vez de código de transporte.
+ */
+const PINTA_SUBMISSION_PATH = /\/pinta-submission$/
+
 // Rotas do Pensa com corpo GRANDE (conversa de turno, artefato jsonb, replace de
 // tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
@@ -44,6 +52,7 @@ const MAX_PENSA_BODY_BYTES = 1024 * 1024
 
 function bodyLimitForPath(pathname: string, env: Env): number {
   if (
+    PINTA_SUBMISSION_PATH.test(pathname) ||
     STUDIO_SUBMISSION_PATH.test(pathname) ||
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
     ADMIN_BLOCK_UPDATE_PATH.test(pathname)

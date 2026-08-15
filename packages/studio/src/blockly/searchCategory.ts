@@ -3,6 +3,7 @@ import type { LearningProfile } from '#core'
 import { palettePathOf } from './paletteMap'
 import { blockedDynamicSearchTypes, dynamicCategoryBlockTypes } from './paramsFlyout'
 import { installSearchFlyoutMetrics } from './searchFlyoutMetrics'
+import { searchHeaderInfo } from './searchHorizontalFlyout'
 
 // Perfil de aprendizado POR WORKSPACE para a busca respeitar o nível. A categoria
 // de busca é um registro GLOBAL (singleton por origin) e indexa os tipos
@@ -40,8 +41,19 @@ const MIN_SEARCH_FLYOUT_WIDTH = 300
 
 /** Altura presumida do campo quando ele ainda não tem layout (px). */
 const DEFAULT_SEARCH_FIELD_HEIGHT = 34
-/** Respiro entre o campo e o primeiro bloco do resultado (px). */
-const SEARCH_FIELD_MARGIN = 14
+/** Recuo do campo em relação às bordas do flyout (px). */
+const SEARCH_FIELD_INSET = 8
+/** Área externa pintada pelo foco: outline de 3px + offset de 2px (studio.css). */
+const SEARCH_FIELD_FOCUS_OUTSET = 5
+/** Respiro visual mínimo depois do halo de foco (px). */
+const SEARCH_CONTENT_GAP = 8
+/**
+ * Espaço além da altura do campo que o primeiro item precisa reservar. O input
+ * começa abaixo do topo do flyout e seu halo também ocupa espaço; ignorar essas
+ * duas parcelas deixa a instrução visualmente colada/atrás do campo focado.
+ */
+const SEARCH_FIELD_RESERVED_MARGIN =
+  SEARCH_FIELD_INSET + SEARCH_FIELD_FOCUS_OUTSET + SEARCH_CONTENT_GAP
 
 // COMPATIBILIDADE: este arquivo depende de internos PRIVADOS do Blockly e do
 // plugin de busca — campos com sufixo `_` (`flyoutItems_`, `rowContents_`,
@@ -97,6 +109,8 @@ interface SearchCategoryInstance {
   parentToolbox_?: {
     refreshSelection?(): void
     getFlyout(): {
+      /** Define qual eixo o flyout usa para dispor os itens. */
+      horizontalLayout?: boolean
       svgGroup_?: SVGGraphicsElement
       /** Recalcula a largura do flyout a partir do conteúdo (público no Blockly). */
       reflow?(): void
@@ -360,16 +374,19 @@ export function registerPtSearchCategory(): void {
       }
       // Cabeçalhos "categoria › subcategoria" entre os resultados (ver a função).
       this.flyoutItems_ = groupSearchResultsByPalette(this.flyoutItems_)
-      // ⚠️ Reserva o espaço do CAMPO como um separador de verdade, e não mais
-      // deslocando o canvas por `transform`: aquele atributo é do Blockly, que o
-      // reescreve ao rolar/re-renderizar — o deslocamento sumia e o primeiro
-      // bloco ficava embaixo do input, sem como voltar. Sendo um item do flyout,
-      // o Blockly conta esse espaço no layout E na rolagem.
+      // Reserva o espaço do CAMPO como parte do layout, e não deslocando o canvas
+      // por `transform` (o Blockly o reescreve ao rolar/re-renderizar). No flyout
+      // vertical, `sep` empurra Y. No horizontal ele empurraria X, então usamos o
+      // marcador entendido por `SearchAwareHorizontalFlyout`, que soma a faixa em Y.
       const fieldHeight = Math.round(this.searchField?.getBoundingClientRect().height ?? 0)
-      this.flyoutItems_.unshift({
-        kind: 'sep',
-        gap: (fieldHeight || DEFAULT_SEARCH_FIELD_HEIGHT) + SEARCH_FIELD_MARGIN,
-      })
+      const reservedHeight =
+        (fieldHeight || DEFAULT_SEARCH_FIELD_HEIGHT) + SEARCH_FIELD_RESERVED_MARGIN
+      const flyout = this.parentToolbox_?.getFlyout()
+      this.flyoutItems_.unshift(
+        flyout?.horizontalLayout
+          ? searchHeaderInfo(reservedHeight)
+          : { kind: 'sep', gap: reservedHeight },
+      )
       if (this.flyoutItems_.length === 1) {
         // Rótulos CURTOS de propósito: quando a busca não achou nada, este texto
         // é o ÚNICO conteúdo do flyout e portanto quem define a largura dele —
@@ -473,12 +490,12 @@ export function registerPtSearchCategory(): void {
       // Flyout ainda não renderizado/visível.
       if (fr.width === 0 || fr.height === 0) return false
       const ir = inj.getBoundingClientRect()
-      field.style.left = `${fr.left - ir.left + 8}px`
-      field.style.top = `${fr.top - ir.top + 8}px`
-      field.style.width = `${Math.max(fr.width - 16, 100)}px`
+      field.style.left = `${fr.left - ir.left + SEARCH_FIELD_INSET}px`
+      field.style.top = `${fr.top - ir.top + SEARCH_FIELD_INSET}px`
+      field.style.width = `${Math.max(fr.width - SEARCH_FIELD_INSET * 2, 100)}px`
       field.style.visibility = 'visible'
-      // O espaço para o campo é reservado por um separador nos itens do flyout
-      // (ver matchBlocks) — NÃO deslocar o canvas por `transform` aqui: aquele
+      // O espaço para o campo é reservado por um item do layout do flyout (ver
+      // matchBlocks) — NÃO deslocar o canvas por `transform` aqui: aquele
       // atributo é do Blockly e some na primeira rolagem.
       return true
     }

@@ -1,9 +1,14 @@
-import { LessonNotFoundError, StudioBlockNotFoundError } from '../../domain/course/course.errors'
+import {
+  LessonNotFoundError,
+  PintaBlockNotFoundError,
+  StudioBlockNotFoundError,
+} from '../../domain/course/course.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
+import type { SubmissionBlockKind } from '../submit-studio-project/submit-studio-project.service'
 
 /** Projeto que o PRÓPRIO aluno/perfil ENVIOU neste bloco. `null` se nunca enviou. */
 export interface OwnStudioSubmissionView {
@@ -32,6 +37,8 @@ export class GetOwnStudioSubmissionService {
     blockId: string,
     privileged = false,
     accountId?: string,
+    /** Bloco a carregar. Default `studio` — o Pinta reusa este caminho (ver o submit). */
+    kind: SubmissionBlockKind = 'studio',
   ): Promise<OwnStudioSubmissionView> {
     // Só usa os blocos (estúdio) — pula a query de anexos.
     const lesson = await this.courses.findLessonWithContent(lessonId, { includeAttachments: false })
@@ -46,7 +53,9 @@ export class GetOwnStudioSubmissionService {
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
-    if (block?.content.kind !== 'studio') throw new StudioBlockNotFoundError()
+    if (block?.content.kind !== kind) {
+      throw kind === 'pinta' ? new PintaBlockNotFoundError() : new StudioBlockNotFoundError()
+    }
 
     // Última entrega do PRÓPRIO aluno/perfil neste bloco. Nunca enviou → null.
     const sub = await this.submissions.getOne(userId, blockId)

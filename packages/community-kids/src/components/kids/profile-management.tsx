@@ -1,5 +1,6 @@
 'use client'
 
+import { saoPauloDayKey } from '@sistemazero/core/time'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -11,6 +12,12 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { GuideBalloon } from '@/components/kids/parent-guide'
+import {
+  ADULT_COMMUNITY_INSTAGRAM,
+  ADULT_COMMUNITY_INSTAGRAM_URL,
+  isProfileAgeRestricted,
+  PROFILE_AGE_ERROR_MESSAGE,
+} from '@/lib/profile-age'
 import type { ProfileView } from '@/lib/types'
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
@@ -98,11 +105,14 @@ export function ProfileForm({
     profile?.publicProfileEnabled ?? false,
   )
   // `max` do seletor = hoje (nascimento não pode ser no futuro).
-  const today = new Date().toISOString().slice(0, 10)
+  const today = saoPauloDayKey()
   // O auth exige nome com ≥3 caracteres — validar AQUI dá a mensagem amigável em
   // vez do toast genérico ("Bê" e "Jô" caíam num "Não foi possível salvar").
   const trimmedName = name.trim()
   const nameTooShort = trimmedName.length > 0 && trimmedName.length < 3
+  const birthDateChanged = birthDate !== (profile?.birthDate ?? '')
+  const ageRestricted =
+    birthDate.length > 0 && birthDateChanged && isProfileAgeRestricted(birthDate, today)
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-12">
@@ -119,7 +129,7 @@ export function ProfileForm({
         className="flex flex-col gap-6"
         onSubmit={(event) => {
           event.preventDefault()
-          if (busy || trimmedName.length < 3) return
+          if (busy || trimmedName.length < 3 || ageRestricted) return
           onSave(trimmedName, birthDate || null, publicProfileEnabled, profile ?? undefined)
         }}
       >
@@ -139,7 +149,11 @@ export function ProfileForm({
           />
         </Field>
 
-        <Field label="Data de nascimento da criança (opcional)" htmlFor="profileBirthDate">
+        <Field
+          label="Data de nascimento da criança (opcional)"
+          htmlFor="profileBirthDate"
+          error={ageRestricted ? PROFILE_AGE_ERROR_MESSAGE : undefined}
+        >
           <Input
             id="profileBirthDate"
             name="birthDate"
@@ -150,7 +164,17 @@ export function ProfileForm({
             onChange={(e) => setBirthDate(e.target.value)}
           />
           <p className="mt-1 text-muted-foreground text-xs">
-            Só os responsáveis editam. Ajuda a gente a cuidar da idade certa. 💙
+            Só os responsáveis editam. Para conhecer a comunidade de adultos, fale com a gente no
+            Instagram{' '}
+            <a
+              href={ADULT_COMMUNITY_INSTAGRAM_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-primary underline underline-offset-2"
+            >
+              {ADULT_COMMUNITY_INSTAGRAM}
+            </a>
+            .
           </p>
         </Field>
 
@@ -193,7 +217,7 @@ export function ProfileForm({
             <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={busy || trimmedName.length < 3}>
+            <Button type="submit" disabled={busy || trimmedName.length < 3 || ageRestricted}>
               {busy ? <Spinner className="size-4" /> : 'Salvar'}
             </Button>
           </div>

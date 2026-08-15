@@ -288,6 +288,9 @@ export const reports = hub.table(
     targetId: uuid('target_id').notNull(),
     spaceId: uuid('space_id').notNull(),
     reporterId: uuid('reporter_id').notNull(),
+    // Snapshots do denunciante: preservam o contexto mesmo se o perfil mudar/sumir.
+    reporterAccountId: text('reporter_account_id'),
+    reporterDisplayName: text('reporter_display_name'),
     reason: text('reason').notNull(),
     status: reportStatusEnum('status').notNull().default('open'),
     resolvedBy: uuid('resolved_by'),

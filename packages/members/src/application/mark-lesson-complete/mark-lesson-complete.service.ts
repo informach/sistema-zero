@@ -2,6 +2,7 @@ import {
   CertificateGateNotIssuedError,
   LessonComingSoonError,
   LessonNotFoundError,
+  PintaGateNotSubmittedError,
   QuizGateNotPassedError,
   StudioGateNotPassedError,
   StudioGateNotSubmittedError,
@@ -107,6 +108,15 @@ export class MarkLessonCompleteService {
             b.content.kind === 'studio' && b.content.activity?.passingScore !== undefined
           if (gated && !state.passed) throw new StudioGateNotPassedError()
         }
+      }
+
+      // Gate do bloco PINTA: exige o ENVIO do desenho, e só isso — não há auto-correção de
+      // desenho (fora de escopo). Laço à parte do Estúdio de propósito: o código do erro nomeia
+      // a ferramenta, e uma aula pode ter os dois blocos.
+      const pintaBlockIds = lesson.blocks.filter((b) => b.content.kind === 'pinta').map((b) => b.id)
+      if (pintaBlockIds.length > 0) {
+        const states = await this.studioSubmissions.summarizeByBlockIds(userId, pintaBlockIds)
+        if (pintaBlockIds.some((id) => !states.get(id))) throw new PintaGateNotSubmittedError()
       }
 
       if (lesson.blocks.some((b) => b.content.kind === 'certificate')) {

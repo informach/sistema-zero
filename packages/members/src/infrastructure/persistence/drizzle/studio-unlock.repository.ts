@@ -29,9 +29,22 @@ export class DrizzleStudioUnlockRepository implements StudioUnlockRepository {
   ): Promise<void> {
     if (grants.length === 0) return
     const now = new Date()
-    // O service já resolveu a UNIÃO com o que estava congelado, então `excluded.blocks`
-    // (o valor que ESTA linha tentou inserir) nunca ENCOLHE a lista guardada.
-    // `granted_at` marca a última ampliação.
+    // O service resolve a união para evitar escritas inúteis, mas duas leituras concorrentes
+    // podem partir de snapshots diferentes. O UPSERT faz a união FINAL no banco para que um
+    // escritor atrasado nunca remova o bloco salvo por outra requisição.
+    const unionedBlocks = sql<string[]>`(
+      select coalesce(
+        jsonb_agg(deduplicated.value order by deduplicated.first_ordinality),
+        '[]'::jsonb
+      )
+      from (
+        select expanded.value, min(expanded.ordinality) as first_ordinality
+        from jsonb_array_elements_text(
+          ${studioBlockGrants.blocks} || excluded.blocks
+        ) with ordinality as expanded(value, ordinality)
+        group by expanded.value
+      ) as deduplicated
+    )`
     await this.db
       .insert(studioBlockGrants)
       .values(
@@ -46,7 +59,7 @@ export class DrizzleStudioUnlockRepository implements StudioUnlockRepository {
       )
       .onConflictDoUpdate({
         target: [studioBlockGrants.userId, studioBlockGrants.audience, studioBlockGrants.courseId],
-        set: { blocks: sql`excluded.blocks`, grantedAt: now },
+        set: { blocks: unionedBlocks, grantedAt: now },
       })
   }
 }

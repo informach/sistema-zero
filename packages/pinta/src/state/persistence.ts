@@ -36,8 +36,8 @@ export function getPintaStorageNamespace(): string {
   return storageNamespace
 }
 
-function getStoreHandle(): StoreHandle {
-  const namespace = storageNamespace
+function getStoreHandle(explicit?: string): StoreHandle {
+  const namespace = explicit ?? storageNamespace
   const cached = stores.get(namespace)
   if (cached) return cached
   const created = createStore(
@@ -132,9 +132,15 @@ export function isPintaStorageBudgetError(error: unknown): error is PintaStorage
  * Cliente ligado ao banco do perfil ATUAL neste instante. Stores com fila
  * própria guardam este objeto, então uma troca global posterior não redireciona
  * mutações que ainda aguardam sua vez.
+ *
+ * ⭐ `namespace` EXPLÍCITO ignora o global e abre um banco próprio. É o que o bloco de aula usa
+ * para guardar o rascunho por BLOCO + PERFIL: sem isso, o desenho da aula cairia na galeria
+ * pessoal da criança, e o `setPintaStorageNamespace` global seria uma variável compartilhada
+ * entre a página do Pinta solto e a aula — o tipo de acoplamento que só aparece quando as duas
+ * abrem juntas.
  */
-export function createPintaPersistence(): PintaPersistence {
-  const storeHandle = getStoreHandle()
+export function createPintaPersistence(options: { namespace?: string } = {}): PintaPersistence {
+  const storeHandle = getStoreHandle(options.namespace)
   const backupSizeCache = backupSizeCacheFor(storeHandle)
   const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
     if (assets.length === 0) return

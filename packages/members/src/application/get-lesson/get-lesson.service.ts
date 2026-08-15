@@ -46,7 +46,11 @@ export class GetLessonService {
     }
 
     const quizBlockIds = lesson.blocks.filter((b) => b.content.kind === 'quiz').map((b) => b.id)
-    const studioBlockIds = lesson.blocks.filter((b) => b.content.kind === 'studio').map((b) => b.id)
+    // Estúdio e Pinta entregam na MESMA tabela, então uma consulta só cobre os dois; o mapper
+    // separa em `studioState`/`pintaState` pelo kind do bloco.
+    const studioBlockIds = lesson.blocks
+      .filter((b) => b.content.kind === 'studio' || b.content.kind === 'pinta')
+      .map((b) => b.id)
     // O outline só alimenta o gate da trava sequencial; equipe (privileged) e curso
     // com a trava desligada ignoram o estado (early-return em assertLessonUnlockedFromState).
     // Carregar a árvore do curso à toa no caminho MAIS quente (toda abertura de aula)

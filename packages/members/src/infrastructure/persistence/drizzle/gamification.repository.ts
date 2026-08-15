@@ -101,6 +101,14 @@ function entitlementInAudience(audience: CourseAudience) {
   return and(eq(courses.slug, entitlements.courseRef), eq(courses.audience, audience))
 }
 
+function publishedCourseSourceInAudience(audience: CourseAudience) {
+  return and(
+    eq(courses.id, xpEvents.sourceId),
+    eq(courses.audience, audience),
+    eq(courses.status, 'published'),
+  )
+}
+
 function activeAudienceAccessPredicate(audience: CourseAudience, now: Date) {
   return and(
     eq(entitlements.status, 'active'),
@@ -830,8 +838,9 @@ export class DrizzleGamificationRepository implements GamificationRepository {
   }
 
   /**
-   * Blocos liberados pelos cursos QUALIFICADOS (mesma interseção `course_complete` ∩
-   * `course_showcased`), lidos de `courses.metadata.studioUnlockBlocks`.
+   * Blocos liberados pelos cursos ELEGÍVEIS: bônus Kids precisa só de
+   * `course_complete`; curso Kids com posição e curso Adult precisam também de
+   * `course_showcased`. Lê `courses.metadata.studioUnlockBlocks`.
    * ⚠️ `courses` entra por INNER join (≠ do `listQualifyingCareerSlots`, que usa LEFT):
    * aqui o dado vem do curso VIVO, então curso apagado simplesmente não contribui —
    * quem impede a perda é o snapshot em `studio_block_grants`. Bônus e `lenda` CONTAM
@@ -842,11 +851,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     audience: CourseAudience,
   ): Promise<{ courseId: string; blocks: string[] }[]> {
     const showcased = alias(xpEvents, 'sc')
+    const eligible =
+      audience === 'kids'
+        ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
+        : and(isNotNull(courses.id), isNotNull(showcased.id))
     const rows = await this.db
       .select({ courseId: courses.id, metadata: courses.metadata })
       .from(xpEvents)
-      .innerJoin(courses, eq(courses.id, xpEvents.sourceId))
-      .innerJoin(
+      .innerJoin(courses, publishedCourseSourceInAudience(audience))
+      .leftJoin(
         showcased,
         and(
           eq(showcased.userId, xpEvents.userId),
@@ -860,6 +873,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(xpEvents.userId, userId),
           eq(xpEvents.audience, audience),
           eq(xpEvents.sourceType, 'course_complete'),
+          eligible,
         ),
       )
     const byCourse = new Map<string, string[]>()
@@ -876,16 +890,22 @@ export class DrizzleGamificationRepository implements GamificationRepository {
 
   async getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string> {
     const showcased = alias(xpEvents, 'studio_revision_sc')
+    const eligible =
+      audience === 'kids'
+        ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
+        : and(isNotNull(courses.id), isNotNull(showcased.id))
     const rows = await this.db
       .select({
         courseId: xpEvents.sourceId,
         completedAt: xpEvents.createdAt,
         showcasedAt: showcased.createdAt,
         courseUpdatedAt: courses.updatedAt,
+        liveCourseId: courses.id,
+        careerSlot: courses.careerSlot,
       })
       .from(xpEvents)
-      .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
-      .innerJoin(
+      .leftJoin(courses, publishedCourseSourceInAudience(audience))
+      .leftJoin(
         showcased,
         and(
           eq(showcased.userId, xpEvents.userId),
@@ -899,10 +919,21 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(xpEvents.userId, userId),
           eq(xpEvents.audience, audience),
           eq(xpEvents.sourceType, 'course_complete'),
+          eligible,
         ),
       )
 
-    return studioUnlockRevision(rows)
+    return studioUnlockRevision(
+      rows.map((row) => ({
+        courseId: row.courseId,
+        completedAt: row.completedAt,
+        showcasedAt:
+          audience === 'kids' && row.liveCourseId !== null && row.careerSlot === null
+            ? null
+            : row.showcasedAt,
+        courseUpdatedAt: row.courseUpdatedAt,
+      })),
+    )
   }
 
   async listQualifyingCareerSlotsForProfiles(

@@ -475,9 +475,10 @@ export function resolveSalesPageUrl(course: Course): string | null {
 }
 
 /**
- * Blocos que ESTE curso libera no Estúdio livre quando o aluno o conclui E publica
- * no Mural — `metadata.studioUnlockBlocks` (jsonb, SEM migração; mesmo padrão do
- * `salesPageUrl`). É o mesmo formato da lista `allowBlocks` da aula, só que no CURSO:
+ * Blocos que ESTE curso libera no Estúdio livre quando o aluno satisfaz o critério
+ * atual (bônus Kids: conclusão; demais: conclusão + Mural) —
+ * `metadata.studioUnlockBlocks` (jsonb, SEM migração; mesmo padrão do `salesPageUrl`).
+ * É o mesmo formato da lista `allowBlocks` da aula, só que no CURSO:
  * a paleta do aluno passa a ser a UNIÃO dos cursos que ele já conquistou, em vez de
  * um conjunto fixo por nível. Lista vazia/ausente = este curso não libera nada (e o
  * aluno segue com o perfil do nível — ver `resolveStudioTier` no member-shell).
@@ -639,6 +640,12 @@ export interface LessonBlockView {
   quizState?: QuizStateView | null
   /** Presente só em blocos de estúdio. */
   studioState?: StudioStateView | null
+  /**
+   * Presente só em blocos de Pinta. MESMA forma do `studioState` (a entrega mora na mesma
+   * tabela), em campo separado para o front não precisar adivinhar de qual bloco o estado é.
+   * `lastScore`/`passed` chegam nulos/false: não há auto-correção de desenho.
+   */
+  pintaState?: StudioStateView | null
 }
 
 /**
@@ -744,6 +751,19 @@ export function toLessonDetailView(
           sortOrder: b.sortOrder,
           content: b.content,
           studioState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
+        }
+      }
+      // Pinta: mesma régua do Estúdio — a config (desenho inicial + ferramentas liberadas) vai
+      // inteira ao aluno, porque é o que monta o editor. O estado vem no campo PRÓPRIO
+      // `pintaState`: os dois blocos podem coexistir na mesma aula, e o front escolhe o
+      // renderizador pelo `kind`, não por qual estado veio preenchido.
+      if (b.content.kind === 'pinta') {
+        return {
+          id: b.id,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          content: b.content,
+          pintaState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
         }
       }
       return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: b.content }

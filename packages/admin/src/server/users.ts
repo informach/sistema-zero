@@ -77,6 +77,20 @@ export function batchGetUsers(ids: string[]): Promise<GatewayResponse<{ users: U
   return gatewayFetch('/auth/admin/users/batch', { method: 'POST', body: { ids } })
 }
 
+export interface AdminBatchProfile {
+  id: string
+  accountUserId: string
+  name: string
+  publicProfileEnabled: boolean
+}
+
+/** Identidade mínima de perfis kids, inclusive arquivados, em lote (≤100 ids por chamada). */
+export function batchGetProfiles(
+  ids: string[],
+): Promise<GatewayResponse<{ profiles: AdminBatchProfile[] }>> {
+  return gatewayFetch('/auth/admin/profiles/batch', { method: 'POST', body: { ids } })
+}
+
 /**
  * Exclui um usuário EM CASCATA (limpeza de contas de teste/lixo). Orquestra, via
  * gateway, a purga dos dados do aprendiz ANTES de apagar a identidade — a ordem

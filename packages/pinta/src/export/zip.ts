@@ -25,6 +25,7 @@ import { tilemapPngDataUrl } from '../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
 import { vectorToPortableSvg } from '../vector/portableSvg'
 import { vectorPngDataUrl } from '../vector/rasterize'
+import { PINTA_GALLERY_ZIP_ENTRY } from './backupFormat'
 import { bitmapToPngDataUrl, composeSheetPngDataUrl, dataUrlToBlob } from './png'
 import { galleryToPintaJson } from './projectJson'
 import { packSpritesheet, spritesheetMetadata, spritesheetRecipe } from './spritesheet'
@@ -179,7 +180,7 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
     }
   }
 
-  files['galeria.pinta.json'] = galleryToPintaJson(assets)
+  files[PINTA_GALLERY_ZIP_ENTRY] = galleryToPintaJson(assets)
   return { files, readme }
 }
 

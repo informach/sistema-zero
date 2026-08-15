@@ -79,8 +79,15 @@ calculados pelo members exatamente como antes. O horizonte é só o que a tela D
 ## A paleta do Estúdio vem do CURRÍCULO (08/2026)
 
 Até aqui o conjunto de blocos do **Estúdio livre** era fixo por NÍVEL da carreira. Agora **cada
-curso declara o que libera** e a criança tem a **união** dos cursos que **concluiu E publicou no
-Mural** (a mesma régua do posto). A separação que fica:
+curso declara o que libera** e a criança recebe a união dos cursos elegíveis. O critério depende
+do papel do curso:
+
+- **curso Kids com posição:** concluído **e** publicado no Mural, a mesma régua da carreira;
+- **curso Kids bônus (`careerSlot = null`):** concluído, mesmo sem projeto ou vitrine;
+- **curso Adult:** mantém a exigência de conclusão e publicação.
+
+O bônus entrega ferramentas, mas continua fora da contagem de nível. Se ele tiver uma vitrine, a
+publicação no Mural permanece disponível; ela apenas não condiciona a ferramenta.
 
 > **O posto da carreira decide o MODO** (Estúdio livre, Ponte, Pro). **O currículo decide a PALETA.**
 
@@ -95,18 +102,18 @@ criança, e a caixa de ferramentas dela é a união de tudo que conquistou, **se
 recebe só o que ainda não tinha, e a comemoração festeja só esse pedaço novo.
 
 ⚠️ O único caso a ter em mente: um curso cujos blocos a criança **já tem por inteiro** (uma
-prática que não introduz mecânica nova) não rende ferramenta nem comemoração de gaveta. A festa de
-publicar no Mural continua acontecendo. Se quiser que todo curso entregue algo, garanta que cada um
-traga ao menos um bloco inédito.
+prática que não introduz mecânica nova) não rende ferramenta nem comemoração de gaveta. Se o curso
+tiver vitrine, a festa de publicar no Mural continua acontecendo. Se quiser que todo curso entregue
+algo, garanta que cada um traga ao menos um bloco inédito.
 
 **Três garantias que valem a pena conhecer:**
 
 1. **Cumulativo, e o que se ganha não se perde.** Tirar um bloco do JSON vale para quem ainda não
-   concluiu o curso. Quem já conquistou continua com ele, mesmo se o curso for despublicado ou
+   recebeu a ferramenta. Quem já conquistou continua com ela, mesmo se o curso for despublicado ou
    apagado. (O que já foi servido fica congelado por aluno; a leitura é a união do JSON atual com
    esse congelado.)
-2. **Acrescentar chega sozinho.** Um bloco novo no JSON de um curso aparece para quem já o concluiu,
-   sem refazer nada.
+2. **Acrescentar chega sozinho.** Um bloco novo no JSON aparece para quem já atende ao critério do
+   curso, sem refazer nada.
 3. **Curso sem JSON não deixa ninguém sem nada.** Enquanto um degrau não estiver etiquetado, a
    criança segue com a paleta do NÍVEL, como antes (fail-open do rollout). A EQUIPE ignora o
    currículo e continua vendo o Estúdio inteiro.

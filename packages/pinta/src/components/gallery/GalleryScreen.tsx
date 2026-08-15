@@ -8,8 +8,9 @@ import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { isTilesetKind, type PintaAsset } from '../../core/project'
 import type { PintaInitialIntent } from '../../core/types'
+import { type PintaBackupReadFailure, readPintaBackupFile } from '../../export/backupFile'
 import { triggerDownload } from '../../export/download'
-import { importPintaJson, MAX_BACKUP_FILE_BYTES } from '../../export/projectJson'
+import { importPintaJson } from '../../export/projectJson'
 import { zipGallery } from '../../export/zip'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
@@ -77,6 +78,7 @@ export function GalleryScreen(): JSX.Element {
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null)
   const [zipping, setZipping] = useState(false)
+  const [restoring, setRestoring] = useState(false)
   const photoRef = useRef<HTMLInputElement>(null)
   const [importImage, setImportImage] = useState<RGBAImage | null>(null)
   const restoreRef = useRef<HTMLInputElement>(null)
@@ -166,23 +168,54 @@ export function GalleryScreen(): JSX.Element {
   }
 
   async function handleRestore(file: File): Promise<void> {
-    if (file.size > MAX_BACKUP_FILE_BYTES) {
-      showToast(COPY.gallery.restoreTooLarge)
-      return
-    }
+    if (restoring) return
+    setRestoring(true)
     try {
-      const { assets: restored, warnings } = importPintaJson(await file.text())
+      const read = await readPintaBackupFile(file)
+      if (!read.ok) {
+        const messages: Record<PintaBackupReadFailure, string> = {
+          'too-large': COPY.gallery.restoreTooLarge,
+          'invalid-zip': COPY.gallery.restoreError,
+          'missing-backup': COPY.gallery.restoreZipMissing,
+          'duplicate-backup': COPY.gallery.restoreZipDuplicate,
+          'read-error': COPY.gallery.restoreError,
+        }
+        showToast(messages[read.reason])
+        return
+      }
+      const { assets: restored, warnings } = importPintaJson(read.text)
       if (restored.length === 0) {
         showToast(warnings[0] ?? COPY.gallery.restoreError)
         return
       }
-      const { added, skipped } = await gallery.getState().importAssets(restored)
+      const bundledMap =
+        restored.length === 2 &&
+        restored.some(
+          (asset) =>
+            asset.kind === 'tilemap' &&
+            restored.some(
+              (candidate) => isTilesetKind(candidate) && candidate.id === asset.tilesetId,
+            ),
+        )
+      const { added, skipped } = await gallery
+        .getState()
+        .importAssets(restored, { atomic: bundledMap })
+      if (added === 0) {
+        showToast(gallery.getState().mutateError ?? COPY.gallery.restoreError)
+        return
+      }
       const suffix = skipped > 0 || warnings.length > 0 ? COPY.gallery.restorePartial : ''
       showToast(
-        (added === 1 ? COPY.gallery.restoredOne : COPY.gallery.restoredMany(added)) + suffix,
+        (bundledMap && added === 2
+          ? COPY.gallery.restoredMapBundle
+          : added === 1
+            ? COPY.gallery.restoredOne
+            : COPY.gallery.restoredMany(added)) + suffix,
       )
     } catch {
       showToast(COPY.gallery.restoreError)
+    } finally {
+      setRestoring(false)
     }
   }
 
@@ -200,7 +233,7 @@ export function GalleryScreen(): JSX.Element {
           <input
             ref={restoreRef}
             type="file"
-            accept=".json,application/json"
+            accept=".pinta.json,.json,.zip,application/json,application/zip,application/x-zip-compressed"
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0]
@@ -208,9 +241,14 @@ export function GalleryScreen(): JSX.Element {
               event.target.value = ''
             }}
           />
-          <Button variant="ghost" onClick={() => restoreRef.current?.click()}>
+          <Button
+            variant="ghost"
+            disabled={restoring}
+            aria-busy={restoring}
+            onClick={() => restoreRef.current?.click()}
+          >
             <Upload aria-hidden="true" className="size-4" />
-            {COPY.gallery.restore}
+            {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
           </Button>
           <input
             ref={photoRef}

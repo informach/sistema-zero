@@ -60,7 +60,8 @@ const EMPTY: FormState = {
   coverImageUrl: '',
   salesPageUrl: '',
   status: 'draft',
-  audience: 'adult',
+  // A operação hoje é Kids-first; Adult continua disponível no seletor.
+  audience: 'kids',
   // Padrão: todo curso nasce Iniciante 2D (espelha os defaults das colunas no members).
   level: 'iniciante',
   track: '2d',
@@ -189,6 +190,10 @@ export function CourseFormDialog({
   }, [open, careerCourses, refreshOccupancy])
 
   const isKids = form.audience === 'kids'
+  const studioUnlockRule =
+    form.careerSlot === ''
+      ? 'Curso bônus: a criança recebe as ferramentas quando conclui todas as aulas.'
+      : 'Curso da carreira: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
   const maxSlot = slotsForTier(form.level, form.track)
   const occupantBySlot = new Map<number, CourseView>()
   for (const c of kidsCourses) {
@@ -509,22 +514,23 @@ export function CourseFormDialog({
             ) : null}
           </Field>
         )}
-        {/* Currículo do Estúdio livre (08/2026): a paleta do aluno é a UNIÃO dos blocos
-            dos cursos que ele concluiu E publicou no Mural — não mais um conjunto fixo
-            por nível. É o MESMO formato de lista da aula (`allowBlocks`), então o picker
-            é o mesmo e a importação por JSON já recusa id inexistente e repetido. */}
+        {/* Currículo do Estúdio livre (08/2026): a paleta é a UNIÃO dos blocos dos
+            cursos elegíveis. Bônus Kids exige conclusão; curso com posição exige também
+            o Mural. É o MESMO formato da aula (`allowBlocks`), então o picker e a
+            importação por JSON já recusam id inexistente ou repetido. */}
         {form.audience === 'kids' && (
           <Field
             label="Ferramentas que este curso libera no Estúdio"
-            tooltip="Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. A criança recebe só os que ainda não tinha, ao concluir o curso E publicar o jogo no Mural. A caixa de ferramentas dela é a soma de tudo que já conquistou, sem repetir."
+            tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ela já conquistou, sem repetir.`}
           >
             <StudioBlocksPicker
               value={form.studioUnlockBlocks}
               onChange={(next) => setForm((f) => ({ ...f, studioUnlockBlocks: next }))}
             />
-            <p className="mt-1.5 text-muted-foreground text-xs">
+            <p className="mt-1.5 text-muted-foreground text-xs">{studioUnlockRule}</p>
+            <p className="mt-1 text-muted-foreground text-xs">
               {form.studioUnlockBlocks.length === 0
-                ? 'Nenhum bloco: concluir este curso não muda a caixa de ferramentas da criança.'
+                ? 'Nenhum bloco: este curso não muda a caixa de ferramentas da criança.'
                 : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
             </p>
             {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
@@ -536,10 +542,10 @@ export function CourseFormDialog({
               não tem.
             </p>
             {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
-                que os PRÓXIMOS alunos ganham, nunca o que os anteriores já têm. */}
+                que recebe quem ainda não ganhou a ferramenta, nunca revoga um grant existente. */}
             <p className="mt-1 text-muted-foreground text-xs">
-              Tirar um bloco daqui vale para quem ainda não concluiu o curso. Quem já conquistou não
-              perde.
+              Tirar um bloco daqui vale para quem ainda não recebeu a ferramenta. Quem já recebeu
+              não perde.
             </p>
           </Field>
         )}

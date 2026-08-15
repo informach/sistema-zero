@@ -170,6 +170,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const moderationService = new ModerationService(
     threadRepo,
     moderationRepo,
+    attachmentRepo,
     () => new Date(),
     studioArtifacts,
     // Recompensa a criança quando o staff APROVA conteúdo do Clube kids (XP + badge).
@@ -204,6 +205,7 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     attachments: {
       attachments: attachmentService,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     reactions: {

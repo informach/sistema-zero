@@ -32,6 +32,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   // Perfis (estilo Netflix).
   PROFILE_NOT_FOUND: 404,
   PROFILE_LIMIT_REACHED: 409,
+  PROFILE_AGE_RESTRICTED: 400,
 }
 
 /**

@@ -74,6 +74,7 @@ import {
   LessonIdParams,
   MissionSlugParams,
   ParentReportPrefsBody,
+  PintaSubmissionBody,
   PublicProfileParams,
   parseAccessRefs,
   parseProfileIds,
@@ -415,8 +416,9 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         { query: GamificationQuery },
       )
       // Paleta do Estúdio livre montada pelo CURRÍCULO (08/2026): a UNIÃO dos blocos
-      // dos cursos que este PERFIL concluiu E publicou no Mural. Rota ENXUTA e à parte
-      // do `/gamification/me` de propósito — a lista pode ter centenas de ids e o `me`
+      // dos cursos elegíveis deste PERFIL: bônus Kids concluído ou curso qualificado.
+      // Rota ENXUTA e à parte do `/gamification/me` de propósito — a lista pode ter
+      // centenas de ids e o `me`
       // é buscado em TODA página do kids; aqui só quem vai montar a paleta paga.
       .get(
         '/studio/unlocks',
@@ -875,6 +877,47 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         },
         { params: StudioSubmissionParams },
       )
+      // Entrega do DESENHO do Pinta. Reusa o mesmo service e a mesma tabela do Estúdio (só o
+      // kind exigido e o teto mudam) — ver `SubmissionBlockKind`. Path próprio porque o front
+      // pede um ou outro, nunca "o que estiver lá".
+      .post(
+        '/lessons/:lessonId/blocks/:blockId/pinta-submission',
+        async ({ headers, params, body }) => {
+          const userId = resolveUserId(headers)
+          return deps.submitStudio.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            body.asset,
+            [],
+            body.message ?? null,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+            resolveStudentName(headers) || null,
+            'pinta',
+          )
+        },
+        { body: PintaSubmissionBody, params: StudioSubmissionParams },
+      )
+      // GET do MESMO bloco: o desenho que a criança já enviou (retomar num navegador novo).
+      .get(
+        '/lessons/:lessonId/blocks/:blockId/pinta-submission',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          const { project } = await deps.getOwnStudioSubmission.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+            'pinta',
+          )
+          // O campo se chama `asset` aqui: quem consome é o bloco de DESENHO, e chamar de
+          // "project" obrigaria o front a traduzir o nome de ida e de volta.
+          return { asset: project }
+        },
+        { params: StudioSubmissionParams },
+      )
       // Carrega o projeto da aula contínua anterior (mesma cadeia) p/ semear o editor
       // na 1ª abertura. Lazy: o front só chama quando o bloco tem `chain` e não há
       // rascunho local. `{ project: null }` = 1ª da cadeia / não enviou / independente.
@@ -889,6 +932,24 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
             resolveAccountId(headers),
           )
+        },
+        { params: StudioCarryoverParams },
+      )
+      // O mesmo carryover, para o bloco de DESENHO. Cadeia de Pinta e cadeia de Estúdio são
+      // independentes mesmo com o mesmo nome — o kind entra na busca.
+      .get(
+        '/lessons/:lessonId/blocks/:blockId/pinta-carryover',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          const { project } = await deps.getStudioCarryover.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+            'pinta',
+          )
+          return { asset: project }
         },
         { params: StudioCarryoverParams },
       )

@@ -1,8 +1,8 @@
 # CI do monorepo: roda em TODO PR para a main (check obrigatório no ruleset
 # `protege-main`) e em push na staging (canário — quebra aparece antes do PR).
 # O passo global roda sem Postgres na porta local padrão, então os tests/db dos
-# pacotes continuam auto-pulando. O fiscal tem um passo explícito com Postgres
-# real em porta dedicada para provar as invariantes de concorrência críticas.
+# pacotes continuam auto-pulando. Fiscal e a elegibilidade de ferramentas do
+# Members têm passos explícitos no Postgres dedicado para provar invariantes críticas.
 # O Studio executa a suíte Chromium completa em três shards contra build de
 # produção e prova CSP/SRI também no Firefox.
 # Sem `.env` aqui — testes não podem depender de env local (handlers recebem tudo por deps).
@@ -82,6 +82,11 @@ jobs:
 
       - name: Testes DB fiscal (Postgres real)
         run: cd packages/fiscal && bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
+      - name: Testes DB members (Postgres real)
+        run: cd packages/members && bun test tests/db/studio-unlock-eligibility.test.ts
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
@@ -249,7 +254,11 @@ jobs:
                   # packages/helpdesk-app/*) add helpdesk-app ;; # front do help desk — descomentar c/ SVC_ID
                   packages/studio/*) add community; add community-kids; add admin ;; # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas, transpilePackages)
                   packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
-                  packages/pinta/*) add community-kids ;; # editor de assets embarcado (kids v1)
+                  # Bloco de aula do Pinta: o renderizador de blocos é COMPARTILHADO (o adulto
+                  # compila o pacote mesmo sem usar o bloco) e o admin embute o editor na autoria
+                  # e no viewer da entrega; o Members valida o mesmo wire no servidor — todos
+                  # precisam acompanhar o pacote para não servir contratos de versões diferentes.
+                  packages/pinta/*) add community-kids; add community; add admin; add members ;;
                 esac
               done <<< "$CHANGED"
             fi

@@ -138,6 +138,51 @@ describe('rebater na raquete', () => {
     expect(bola.y).toBe(raquete.y - bola.h)
   })
 
+  /**
+   * ⚠️ O que a criança faz e nenhum teste "normal" cobre. Todos passaram na
+   * primeira medição; ficam travados porque a próxima mexida no rebate pode
+   * quebrá-los sem quebrar mais nada.
+   */
+  it('⭐ casos degenerados não produzem NaN nem prendem a bola', () => {
+    const api = carregar()
+
+    // Bola PARADA encostando: sai a 1 de velocidade, empurrada para fora.
+    const raquete = api.createSprite({ x: 20, y: 100, w: 12, h: 44 })
+    const parada = api.createSprite({ x: 26, y: 118, w: 12, h: 12 })
+    parada.vx = 0
+    parada.vy = 0
+    api.paddleBounce(parada, raquete, 4)
+    expect(Number.isFinite(parada.vx ?? Number.NaN)).toBe(true)
+    expect(velocidade(parada)).toBeGreaterThan(0)
+    expect(parada.x).toBe(raquete.x + raquete.w)
+
+    // Raquete QUADRADA: o empate manda pelo eixo em que a bola vinha mais rápido.
+    const quadrada = api.createSprite({ x: 100, y: 100, w: 20, h: 20 })
+    const rasante = api.createSprite({ x: 92, y: 105, w: 12, h: 12 })
+    rasante.vx = 5
+    rasante.vy = 1
+    api.paddleBounce(rasante, quadrada, 0)
+    expect(rasante.vx ?? 0).toBeLessThan(0)
+
+    // Bola MAIOR que a raquete (acontece quando ela mexe nos tamanhos).
+    const pequena = api.createSprite({ x: 100, y: 100, w: 8, h: 8 })
+    const gigante = api.createSprite({ x: 96, y: 96, w: 40, h: 40 })
+    gigante.vx = -3
+    gigante.vy = 0
+    api.paddleBounce(gigante, pequena, 4)
+    expect(gigante.vx ?? 0).toBeGreaterThan(0)
+    expect(Number.isFinite(gigante.x)).toBe(true)
+
+    // Velocidade absurda digitada no soquete: o teto anti-túnel segura.
+    const foguete = api.createSprite({ x: 26, y: 118, w: 12, h: 12 })
+    foguete.vx = -9999
+    foguete.vy = 0
+    api.paddleBounce(foguete, raquete, 50)
+    // O teto é "espessura da raquete + lado da bola": o deslocamento máximo em que
+    // ela ainda não consegue pular por cima da raquete entre dois quadros.
+    expect(velocidade(foguete)).toBeCloseTo(raquete.w + foguete.w, 6)
+  })
+
   it('sem encostar, não faz nada', () => {
     const api = carregar()
     const raquete = api.createSprite({ x: 20, y: 100, w: 12, h: 44 })

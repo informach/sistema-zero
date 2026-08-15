@@ -7,15 +7,9 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
+import { createAsset, type NewAssetInput } from '../core/newAsset'
 import {
   assetStyle,
-  createPixelBackgroundAsset,
-  createPixelSpriteAsset,
-  createTilemapAsset,
-  createTilesetAsset,
-  createVectorBackgroundAsset,
-  createVectorSpriteAsset,
-  createVectorTilesetAsset,
   isTilesetKind,
   normalizeAssetName,
   PINTA_LIMITS,
@@ -25,32 +19,14 @@ import {
   sanitizeProjectRef,
 } from '../core/project'
 import { findTemplate } from '../templates/catalog'
-import { createPintaPersistence, isPintaStorageBudgetError } from './persistence'
+import {
+  createPintaPersistence,
+  isPintaStorageBudgetError,
+  type PintaPersistence,
+} from './persistence'
 
-export type NewAssetInput = (
-  | {
-      kind: 'pixel-sprite'
-      name: string
-      frameSize: number
-      frameWidth?: number
-      frameHeight?: number
-    }
-  | { kind: 'pixel-background'; name: string; width: number; height: number }
-  | { kind: 'tileset'; name: string; tileSize: number }
-  | { kind: 'tilemap'; name: string; tilesetId: string; cols: number; rows: number }
-  | {
-      kind: 'vector-sprite'
-      name: string
-      frameSize: number
-      frameWidth?: number
-      frameHeight?: number
-    }
-  | { kind: 'vector-background'; name: string; width: number; height: number }
-  | { kind: 'vector-tileset'; name: string; tileSize: number }
-) & {
-  /** Vínculo com o projeto do Pensa (agrupa a galeria; paleta nos swatches do vetor). */
-  projectRef?: PintaProjectRef
-}
+/** A fábrica e o input moram em `core/newAsset.ts` (puros); aqui só o que tem EFEITO. */
+export type { NewAssetInput }
 
 export interface PintaGalleryState {
   assets: PintaAsset[]
@@ -90,7 +66,10 @@ export interface PintaGalleryState {
    * colisão (import nunca sobrescreve o que existe); respeita a quota — devolve
    * quantos entraram e quantos ficaram de fora.
    */
-  importAssets(assets: PintaAsset[]): Promise<{ added: number; skipped: number }>
+  importAssets(
+    assets: PintaAsset[],
+    options?: { atomic?: boolean },
+  ): Promise<{ added: number; skipped: number }>
   clearMutateError(): void
 }
 
@@ -119,48 +98,6 @@ function uniqueName(base: string, taken: Set<string>): string | null {
   return null
 }
 
-function buildAsset(input: NewAssetInput, name: string): PintaAsset {
-  const built = buildAssetByKind(input, name)
-  // Vínculo com o projeto do Pensa (07/2026): passa pelo MESMO portão do load
-  // (hex minúsculo, teto de nome/cores) p/ o asset nascer igual ao round-trip.
-  const projectRef = sanitizeProjectRef(input.projectRef)
-  return projectRef ? { ...built, projectRef } : built
-}
-
-function buildAssetByKind(input: NewAssetInput, name: string): PintaAsset {
-  switch (input.kind) {
-    case 'pixel-sprite':
-      return createPixelSpriteAsset({
-        name,
-        frameSize: input.frameSize,
-        frameWidth: input.frameWidth,
-        frameHeight: input.frameHeight,
-      })
-    case 'pixel-background':
-      return createPixelBackgroundAsset({ name, width: input.width, height: input.height })
-    case 'tileset':
-      return createTilesetAsset({ name, tileSize: input.tileSize })
-    case 'tilemap':
-      return createTilemapAsset({
-        name,
-        tilesetId: input.tilesetId,
-        cols: input.cols,
-        rows: input.rows,
-      })
-    case 'vector-sprite':
-      return createVectorSpriteAsset({
-        name,
-        frameSize: input.frameSize,
-        frameWidth: input.frameWidth,
-        frameHeight: input.frameHeight,
-      })
-    case 'vector-background':
-      return createVectorBackgroundAsset({ name, width: input.width, height: input.height })
-    case 'vector-tileset':
-      return createVectorTilesetAsset({ name, tileSize: input.tileSize })
-  }
-}
-
 /** Clona um asset com ids NOVOS (asset + animações + camadas) p/ o Duplicar. */
 function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
   const now = Date.now()
@@ -179,8 +116,14 @@ function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
   return copy
 }
 
-export function createGalleryStore(): PintaGalleryStore {
-  const persistence = createPintaPersistence()
+/**
+ * `persistence` injetável: o Pinta solto usa o IndexedDB do perfil, e o bloco de aula passa o
+ * armazenamento dele (ver `state/memoryPersistence.ts`). A store não sabe a diferença — toda
+ * gravação já passava por este único objeto.
+ */
+export function createGalleryStore(
+  persistence: PintaPersistence = createPintaPersistence(),
+): PintaGalleryStore {
   let mutationTail = Promise.resolve()
   function enqueueMutation<T>(task: () => Promise<T>): Promise<T> {
     const result = mutationTail.then(task, task)
@@ -233,7 +176,7 @@ export function createGalleryStore(): PintaGalleryStore {
         set({ mutateError: COPY.newAsset.nameTaken })
         return null
       }
-      const asset = buildAsset(input, name)
+      const asset = createAsset(input, name)
       try {
         await persistence.persistAsset(asset)
         set((state) => ({
@@ -383,58 +326,119 @@ export function createGalleryStore(): PintaGalleryStore {
       set((state) => ({ assets: assets.reduce(upsertSorted, state.assets) }))
     },
 
-    async importAssets(incoming) {
+    async importAssets(incoming, options = {}) {
       let added = 0
       let skipped = 0
       let importError: string | null = null
       set({ mutateError: null })
+      const current = get().assets
+      const currentTilesetIds = new Set(current.filter(isTilesetKind).map((asset) => asset.id))
+      const incomingTilesetIds = new Set(incoming.filter(isTilesetKind).map((asset) => asset.id))
       // Tilesets ENTRAM PRIMEIRO: se a quota cortar no meio, é melhor perder um
       // mapa (degrada com "peças sumiram") do que importar o mapa sem as peças.
       const ordered = [...incoming].sort(
         (a, b) => (a.kind === 'tilemap' ? 1 : 0) - (b.kind === 'tilemap' ? 1 : 0),
       )
+      const eligible: PintaAsset[] = []
+      for (const asset of ordered) {
+        if (
+          asset.kind === 'tilemap' &&
+          !currentTilesetIds.has(asset.tilesetId) &&
+          !incomingTilesetIds.has(asset.tilesetId)
+        ) {
+          skipped += 1
+          importError ??= COPY.gallery.restoreMissingTileset
+          continue
+        }
+        eligible.push(asset)
+      }
+      if (options.atomic && skipped > 0) {
+        set({ mutateError: importError })
+        return { added: 0, skipped: incoming.length }
+      }
+      if (options.atomic && current.length + eligible.length > PINTA_LIMITS.maxAssets) {
+        set({ mutateError: COPY.gallery.quotaFull })
+        return { added: 0, skipped: incoming.length }
+      }
+
       // Mapa id-antigo → id-novo p/ religar tilemaps aos SEUS tilesets do backup.
       const idMap = new Map<string, string>()
       const prepared: PintaAsset[] = []
-      for (const asset of ordered) {
-        const taken = new Set([...get().assets, ...prepared].map((a) => a.name))
-        if (get().assets.length + prepared.length >= PINTA_LIMITS.maxAssets) {
+      const preparedTilesetIds = new Set<string>()
+      const taken = new Set(current.map((asset) => asset.name))
+      for (const asset of eligible) {
+        if (!options.atomic && current.length + prepared.length >= PINTA_LIMITS.maxAssets) {
           skipped += 1
+          continue
+        }
+        if (
+          asset.kind === 'tilemap' &&
+          incomingTilesetIds.has(asset.tilesetId) &&
+          !preparedTilesetIds.has(asset.tilesetId)
+        ) {
+          skipped += 1
+          importError ??= COPY.gallery.restoreMissingTileset
           continue
         }
         const name = uniqueName(asset.name, taken)
         if (!name) {
           skipped += 1
+          importError ??= COPY.newAsset.nameTaken
           continue
         }
         const clone = cloneWithNewIds(asset, name)
         idMap.set(asset.id, clone.id)
+        if (isTilesetKind(asset)) preparedTilesetIds.add(asset.id)
         prepared.push(clone)
+        taken.add(name)
       }
+      if (options.atomic && prepared.length !== incoming.length) {
+        set({ mutateError: importError ?? COPY.editor.saveError })
+        return { added: 0, skipped: incoming.length }
+      }
+
+      const restoredPairs = prepared.map((source) => ({
+        source,
+        restored:
+          source.kind === 'tilemap'
+            ? { ...source, tilesetId: idMap.get(source.tilesetId) ?? source.tilesetId }
+            : source,
+      }))
+      const restored = restoredPairs.map(({ restored: asset }) => asset)
+      if (options.atomic) {
+        try {
+          await persistence.persistAssets(restored)
+          set((state) => ({
+            assets: restored.reduce(upsertSorted, state.assets),
+            mutateError: null,
+          }))
+          return { added: restored.length, skipped: 0 }
+        } catch (error) {
+          set({ mutateError: persistenceErrorMessage(error) })
+          return { added: 0, skipped: incoming.length }
+        }
+      }
+
       // Ids que REALMENTE gravaram (tilesets vêm antes) — um mapa cujo tileset
       // deste import falhou no disco NÃO pode ser importado apontando p/ o vazio.
       const persistedIds = new Set<string>()
-      for (const asset of prepared) {
-        const oldTilesetId = asset.kind === 'tilemap' ? asset.tilesetId : null
-        const restored =
-          asset.kind === 'tilemap'
-            ? { ...asset, tilesetId: idMap.get(asset.tilesetId) ?? asset.tilesetId }
-            : asset
+      for (const { source, restored: restoredAsset } of restoredPairs) {
+        const oldTilesetId = source.kind === 'tilemap' ? source.tilesetId : null
         // Tileset veio NESTE import (idMap tem o id ANTIGO) mas não persistiu →
         // pular o mapa (senão fica órfão). Referência externa segue igual.
         if (
-          restored.kind === 'tilemap' &&
+          restoredAsset.kind === 'tilemap' &&
           oldTilesetId !== null &&
           idMap.has(oldTilesetId) &&
-          !persistedIds.has(restored.tilesetId)
+          !persistedIds.has(restoredAsset.tilesetId)
         ) {
           skipped += 1
           continue
         }
         try {
-          await persistence.persistAsset(restored)
-          persistedIds.add(restored.id)
-          set((state) => ({ assets: upsertSorted(state.assets, restored) }))
+          await persistence.persistAsset(restoredAsset)
+          persistedIds.add(restoredAsset.id)
+          set((state) => ({ assets: upsertSorted(state.assets, restoredAsset) }))
           added += 1
         } catch (error) {
           skipped += 1
@@ -457,7 +461,7 @@ export function createGalleryStore(): PintaGalleryStore {
     rename: (id, name) => enqueueMutation(() => actions.rename(id, name)),
     duplicate: (id) => enqueueMutation(() => actions.duplicate(id)),
     remove: (id) => enqueueMutation(() => actions.remove(id)),
-    importAssets: (assets) => enqueueMutation(() => actions.importAssets(assets)),
+    importAssets: (assets, options) => enqueueMutation(() => actions.importAssets(assets, options)),
   })
   return store
 }

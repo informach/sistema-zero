@@ -97,7 +97,12 @@ const nextConfig: NextConfig = {
   // standalone). O que funciona é a aresta de import ESTÁTICA no código, como já
   // é feito com o @napi-rs/canvas — ver `extractPdfText` em server/zappy-knowledge.ts.
   // Pacotes workspace com TS cru (componentes compartilhados + editor embarcável) — transpilar junto.
-  transpilePackages: ['@sistemazero/ui', '@sistemazero/studio', '@sistemazero/member-shell'],
+  transpilePackages: [
+    '@sistemazero/ui',
+    '@sistemazero/studio',
+    '@sistemazero/pinta',
+    '@sistemazero/member-shell',
+  ],
   // Security headers em TODAS as respostas (inclui `/api/media/*`, que fica fora
   // do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {

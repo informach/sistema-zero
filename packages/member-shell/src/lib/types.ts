@@ -421,6 +421,23 @@ export interface StudioBlock {
   }
 }
 /**
+ * Bloco PINTA: o ateliê de desenho embarcado na aula, com o desenho JÁ criado pelo professor
+ * (tipo e tamanho decididos por ele). Como no Estúdio, a config NÃO é segredo — é o que monta o
+ * editor —, e a entrega bloqueia a conclusão da aula até ser enviada (`pintaState` reflete).
+ *
+ * ⚠️ `initialAsset` é o snapshot `PintaAsset` da lib, tratado aqui como JSON opaco: tipar o
+ * formato interno (bitmaps RLE, formas vetoriais, camadas) puxaria o pacote inteiro para o bundle
+ * do tipo. Quem sanea é o `<PintaLesson>`, na borda.
+ */
+export interface PintaBlock {
+  kind: 'pinta'
+  initialAsset: unknown
+  /** Ferramentas liberadas pelo professor. Vazia/ausente = a caixa inteira. */
+  allowTools?: string[]
+  /** Nome do desenho contínuo (cadeia entre aulas). */
+  chain?: string
+}
+/**
  * "Em breve": a aula está EM PRODUÇÃO. Quando este bloco existe, o members devolve
  * SÓ ele (os demais blocos e os anexos nem saem do servidor) e recusa a conclusão
  * com `LESSON_COMING_SOON`. A equipe recebe a aula inteira. `message` sobrescreve o
@@ -439,6 +456,7 @@ export type LessonBlockContent =
   | EmbedBlock
   | EbookBlock
   | StudioBlock
+  | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
 
@@ -466,6 +484,23 @@ export interface StudioStateView {
    * dizendo que viu.
    */
   reviewed?: boolean
+}
+
+/**
+ * Entrega do bloco de PINTA. MESMA forma do `StudioStateView` (as duas moram na mesma tabela),
+ * em campo próprio na view do bloco — o front escolhe o renderizador pelo `kind`, não por qual
+ * estado veio preenchido. `lastScore`/`passed` não se aplicam: não há correção de desenho.
+ */
+export type PintaStateView = StudioStateView
+
+/** `POST /members/lessons/:lessonId/blocks/:blockId/pinta-submission`. */
+export interface PintaSubmissionResultView {
+  submittedAt: string
+}
+
+/** `GET` do mesmo path: o desenho que a criança já enviou. `null` = nunca enviou. */
+export interface OwnPintaSubmissionView {
+  asset: unknown | null
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
@@ -1071,6 +1106,8 @@ export interface LessonBlockView {
   quizState?: QuizStateView | null
   /** Presente só em blocos de estúdio. */
   studioState?: StudioStateView | null
+  /** Presente só em blocos de Pinta (mesma forma; campo separado — ver `PintaStateView`). */
+  pintaState?: PintaStateView | null
 }
 
 /**

@@ -633,12 +633,13 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     lessonId: string,
     opts: { excludeBlockId?: string } = {},
   ): Promise<boolean> {
-    // Espelha `isCompletionGatingBlock` (domain) em SQL: estúdio e "em breve" SEMPRE
+    // Espelha `isCompletionGatingBlock` (domain) em SQL: estúdio, Pinta e "em breve" SEMPRE
     // travam; quiz só com `passingScore` (extração JSONB `->>` devolve NULL quando a
     // chave falta/é null). Mexeu num, mexa no outro — o fake in-memory usa a função do
     // domínio, então uma divergência aqui passaria batida nos testes.
     const gating = or(
       eq(lessonBlocks.kind, 'studio'),
+      eq(lessonBlocks.kind, 'pinta'),
       eq(lessonBlocks.kind, 'coming_soon'),
       and(
         eq(lessonBlocks.kind, 'quiz'),
@@ -653,6 +654,36 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       .where(and(...clauses))
       .limit(1)
     return row !== undefined
+  }
+
+  async listPintaChainBlocks(
+    courseId: string,
+    chain: string,
+    opts: { excludeBlockId?: string } = {},
+  ): Promise<{ blockId: string; lessonTitle: string; assetKind: string | null }[]> {
+    // `trim` nos DOIS lados, mesma régua do carryover: o `chain` do serviço já vem trimado, e
+    // sem o trim no valor armazenado uma cadeia autorada com espaço sobrando não casaria — a
+    // guarda passaria batida e o estado quebrado nasceria mesmo assim.
+    const clauses: SQL[] = [
+      eq(lessons.courseId, courseId),
+      eq(lessonBlocks.kind, 'pinta'),
+      sql`trim(${lessonBlocks.content}->>'chain') = ${chain}`,
+    ]
+    if (opts.excludeBlockId) clauses.push(ne(lessonBlocks.id, opts.excludeBlockId))
+    // ⚠️ Espelha `pintaAssetKindOf` (domínio) em SQL: o tipo é LIDO do snapshot, não de um campo
+    // próprio. Mexeu num, mexa no outro. Aulas RASCUNHO entram de propósito — a cadeia é da
+    // autoria, e deixar nascer o conflito para ele aparecer só na publicação seria pior.
+    return await this.db
+      .select({
+        blockId: lessonBlocks.id,
+        lessonTitle: lessons.title,
+        assetKind: sql<string | null>`${lessonBlocks.content}->'initialAsset'->>'kind'`,
+      })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(and(...clauses))
+      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
   }
 
   async countCertificateBlocks(

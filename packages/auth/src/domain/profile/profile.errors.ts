@@ -15,3 +15,11 @@ export class ProfileLimitReachedError extends DomainError {
     super('Limite de perfis do plano atingido')
   }
 }
+
+/** Novo perfil com 18 anos completos ou mais não pertence à plataforma Kids. → 400 */
+export class ProfileAgeRestrictedError extends DomainError {
+  readonly code = 'PROFILE_AGE_RESTRICTED'
+  constructor() {
+    super('Esta comunidade é para crianças menores de 18 anos')
+  }
+}

@@ -1,6 +1,7 @@
 import { swagger } from '@elysiajs/swagger'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
+import type { BatchGetProfilesService } from '../../application/admin/batch-get-profiles/batch-get-profiles.service'
 import type { BatchGetUsersService } from '../../application/admin/batch-get-users/batch-get-users.service'
 import type { CreateUserService } from '../../application/admin/create-user/create-user.service'
 import type { DeleteUserService } from '../../application/admin/delete-user/delete-user.service'
@@ -67,6 +68,7 @@ export interface HttpDeps {
   updateUser: UpdateUserService
   deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
+  batchGetProfiles: BatchGetProfilesService
   resendInvite: ResendInviteService
   setUserPassword: SetUserPasswordService
   writeAuditLog: WriteAuditLogService
@@ -180,6 +182,7 @@ export function createServer(deps: HttpDeps) {
         updateUser: deps.updateUser,
         deleteUser: deps.deleteUser,
         batchGetUsers: deps.batchGetUsers,
+        batchGetProfiles: deps.batchGetProfiles,
         resendInvite: deps.resendInvite,
         setUserPassword: deps.setUserPassword,
         readAuditLog: deps.readAuditLog,

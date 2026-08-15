@@ -221,10 +221,11 @@ export interface GamificationRepository {
    */
   listQualifyingCareerSlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
   /**
-   * Blocos do Estúdio que os cursos QUALIFICADOS do aluno liberam AGORA, POR CURSO —
-   * a MESMA interseção `course_complete` ∩ `course_showcased`, lendo
-   * `metadata.studioUnlockBlocks` de cada curso vivo. É a parte "ao vivo" da paleta:
-   * acrescentar um bloco ao JSON de um curso chega sozinho em quem já o concluiu.
+   * Blocos do Estúdio que os cursos ELEGÍVEIS do aluno liberam AGORA, POR CURSO.
+   * Curso Kids bônus exige `course_complete`; curso Kids com posição e curso Adult
+   * exigem também `course_showcased`. Lê `metadata.studioUnlockBlocks` de cada curso
+   * vivo. É a parte "ao vivo" da paleta: acrescentar um bloco ao JSON de um curso
+   * chega sozinho em quem já atende ao critério atual.
    * Vem POR CURSO (não achatado) porque é essa a chave do snapshot que impede a
    * revogação. ⚠️ Curso APAGADO não aparece aqui (join interno, sem metadata para
    * ler) — quem garante que nada se perde é o snapshot (`StudioUnlockRepository`).
@@ -234,7 +235,7 @@ export interface GamificationRepository {
     audience: CourseAudience,
   ): Promise<{ courseId: string; blocks: string[] }[]>
   /**
-   * Revisão curta da união de ferramentas. Muda quando um curso passa a qualificar,
+   * Revisão curta da união de ferramentas. Muda quando um curso passa a ficar elegível,
    * some, ou seu registro vivo é editado; não lê nem devolve o JSON pesado de blocos.
    */
   getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string>

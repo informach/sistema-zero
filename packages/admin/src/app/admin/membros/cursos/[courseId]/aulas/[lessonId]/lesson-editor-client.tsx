@@ -10,6 +10,16 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
+  createLessonAsset,
+  PINTA_LESSON_ASSET_OPTIONS,
+  PINTA_TOOL_PRESETS,
+  type PintaAsset,
+  type PintaLessonAssetKind,
+  pintaAssetToWire,
+  sanitizePintaAsset,
+} from '@sistemazero/pinta/assets'
+import type { PintaHandle } from '@sistemazero/pinta/lesson'
+import {
   BLOCK_LEVEL_OPTIONS,
   type BlockLevel,
   CORE_CATEGORY_OPTIONS,
@@ -30,7 +40,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, ChevronDown, ExternalLink, GripVertical, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
@@ -42,6 +52,7 @@ import { FileUploader, type UploadedFile } from '@/components/media/file-uploade
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
 import { VideoUploader } from '@/components/media/video-uploader'
+import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
@@ -71,6 +82,7 @@ const KIND_LABELS: Record<LessonBlockKind, string> = {
   embed: 'Interativo',
   ebook: 'E-book (livro 3D)',
   studio: 'Estúdio',
+  pinta: 'Pinta (desenho)',
   certificate: 'Certificado',
   coming_soon: 'Em breve (aula em produção)',
 }
@@ -82,6 +94,7 @@ const kindLabel = (kind: string): string => (KIND_LABELS as Record<string, strin
 // (o Estúdio = IDE blocos/código/preview; o quiz = editores de texto rico por pergunta/opção).
 const BLOCK_DIALOG_WIDTH: Record<string, string> = {
   studio: 'max-w-7xl',
+  pinta: 'max-w-7xl',
   quiz: 'max-w-4xl',
 }
 
@@ -154,6 +167,17 @@ interface BlockForm {
   certSig2Name: string
   /** Em breve: recado que substitui o padrão do app. Vazio = usa o padrão. */
   comingSoonMessage: string
+  /**
+   * Pinta: tipo + tamanho do desenho INICIAL. Só valem na CRIAÇÃO do bloco — depois quem manda no
+   * tamanho é o próprio editor embutido (a autora usa o botão "Tamanho" lá dentro), senão trocar o
+   * select apagaria o desenho que ela acabou de fazer.
+   */
+  pintaAssetKind: PintaLessonAssetKind
+  pintaSize: number
+  /** Pinta: preset de ferramentas liberadas. `tudo` = a caixa inteira (nenhuma curadoria). */
+  pintaToolPreset: 'essencial' | 'livre' | 'tudo'
+  /** Pinta: nome do desenho contínuo (cadeia). Vazio = aula independente. */
+  pintaChain: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -198,6 +222,31 @@ const EMPTY_BLOCK: BlockForm = {
   certSig2Url: '',
   certSig2Name: '',
   comingSoonMessage: '',
+  pintaAssetKind: 'pixel-sprite',
+  pintaSize: 32,
+  // Default "essencial": a tela da criança não pode nascer cheia (foi o pedido que originou a
+  // curadoria). Quem quiser a caixa inteira escolhe "Tudo" de propósito.
+  pintaToolPreset: 'essencial',
+  pintaChain: '',
+}
+
+/**
+ * Qual preset gerou esta lista? Compara por CONJUNTO (a ordem do preset não é contrato).
+ * Lista que não bate com nenhum é tratada como "tudo" — o único caso hoje é um bloco salvo por
+ * um deploy mais novo, e mostrar um preset errado seria pior do que mostrar o mais permissivo.
+ */
+function presetOfAllowTools(allow?: string[]): 'essencial' | 'livre' | 'tudo' {
+  if (!allow || allow.length === 0) return 'tudo'
+  // ⚠️ Compara CONJUNTOS (a ordem do preset não é contrato) e deduplica os dois lados: uma lista
+  // com repetição vinda de jsonb editado à mão passaria por igual só pelo tamanho.
+  const atual = new Set(allow)
+  const same = (a: readonly string[]) => {
+    const preset = new Set(a)
+    return preset.size === atual.size && [...preset].every((id) => atual.has(id))
+  }
+  if (same(PINTA_TOOL_PRESETS.essencial)) return 'essencial'
+  if (same(PINTA_TOOL_PRESETS.livre)) return 'livre'
+  return 'tudo'
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -208,6 +257,7 @@ function buildContent(
   f: BlockForm,
   studioProject?: Project,
   previousContent?: LessonBlockContent,
+  pintaAsset?: unknown,
 ): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
@@ -322,6 +372,19 @@ function buildContent(
         ...(signatures.length > 0 ? { signatures } : {}),
       }
     }
+    case 'pinta':
+      return {
+        kind: 'pinta',
+        // O desenho vem do editor embutido (o `saveBlock` já barrou o caso sem handle).
+        initialAsset: pintaAsset,
+        // "tudo" = SEM curadoria; o campo some do payload em vez de virar lista vazia (o
+        // members trata ausente e vazia igual, mas gravar `[]` sugeriria uma escolha que
+        // não foi feita).
+        ...(f.pintaToolPreset === 'tudo'
+          ? {}
+          : { allowTools: [...PINTA_TOOL_PRESETS[f.pintaToolPreset]] }),
+        ...(opt(f.pintaChain) ? { chain: f.pintaChain.trim() } : {}),
+      }
     default:
       return {
         kind: 'quiz',
@@ -389,6 +452,11 @@ function blockSummary(b: BlockView): string {
       return `${c.questions.length} pergunta(s)`
     case 'studio':
       return (c.initialProject as { name?: string })?.name ?? 'Atividade do Estúdio'
+    case 'pinta': {
+      const asset = c.initialAsset as { kind?: string } | undefined
+      const label = PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === asset?.kind)?.label
+      return label ?? 'Desenho no Pinta'
+    }
     case 'certificate':
       return c.coursePhrase?.trim() || 'Certificado de conclusão'
     case 'coming_soon':
@@ -435,6 +503,21 @@ export function LessonEditorClient({
   const [advancedOpen, setAdvancedOpen] = useState(false)
   // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
   const studioHandleRef = useRef<StudioHandle | null>(null)
+  // Handle do Pinta embutido — lido no saveBlock (snapshot do desenho inicial).
+  const pintaHandleRef = useRef<PintaHandle | null>(null)
+  /**
+   * O desenho que o embed do Pinta abre. Fixado por `useMemo` na CRIAÇÃO (tipo+tamanho) e vindo do
+   * bloco na edição. ⚠️ Trocar o tipo/tamanho recria o desenho — por isso os selects só aparecem
+   * em bloco NOVO, antes de haver traço para perder.
+   */
+  const pintaSeed = useMemo<PintaAsset | null>(() => {
+    if (editingBlock?.content.kind === 'pinta') {
+      // Vem do jsonb: sanea na borda. Malformado → o embed não monta e o save avisa, em vez de
+      // abrir um editor com um desenho que sumiria no próximo load.
+      return sanitizePintaAsset(editingBlock.content.initialAsset)
+    }
+    return createLessonAsset(blockForm.pintaAssetKind, blockForm.pintaSize)
+  }, [editingBlock, blockForm.pintaAssetKind, blockForm.pintaSize])
   // Bloco cujas ENTREGAS o professor está acompanhando (dialog separado).
 
   const [attOpen, setAttOpen] = useState(false)
@@ -545,6 +628,12 @@ export function LessonEditorClient({
       certSig2Url: c.kind === 'certificate' ? (c.signatures?.[1]?.imageUrl ?? '') : '',
       certSig2Name: c.kind === 'certificate' ? (c.signatures?.[1]?.name ?? '') : '',
       comingSoonMessage: c.kind === 'coming_soon' ? (c.message ?? '') : '',
+      // Tipo/tamanho não são re-hidratados: na EDIÇÃO quem manda é o desenho salvo (o editor
+      // abre com ele e o botão "Tamanho" dele resolve o resto). Os selects ficam escondidos.
+      pintaAssetKind: EMPTY_BLOCK.pintaAssetKind,
+      pintaSize: EMPTY_BLOCK.pintaSize,
+      pintaToolPreset: c.kind === 'pinta' ? presetOfAllowTools(c.allowTools) : 'essencial',
+      pintaChain: c.kind === 'pinta' ? (c.chain ?? '') : '',
     })
     if (c.kind === 'studio') {
       const projectKind = (c.initialProject as { kind?: string } | undefined)?.kind
@@ -591,6 +680,21 @@ export function LessonEditorClient({
       }
       studioProject = p
     }
+    // Pinta: captura o desenho do editor embutido. `save()` ANTES de ler — o autosave do Pinta é
+    // debounced e sem isso os últimos traços dela ficariam de fora.
+    let pintaAsset: unknown
+    if (blockForm.kind === 'pinta') {
+      const handle = pintaHandleRef.current
+      if (!handle) {
+        toast.error('Espere o Pinta abrir antes de salvar.')
+        return
+      }
+      if (!(await handle.save())) {
+        toast.error('Não foi possível salvar os últimos traços do Pinta. Tente novamente.')
+        return
+      }
+      pintaAsset = pintaAssetToWire(handle.getAsset())
+    }
     const missing = validateBlock(blockForm)
     if (missing) {
       toast.error(missing)
@@ -600,6 +704,7 @@ export function LessonEditorClient({
       blockForm,
       studioProject,
       editingBlock?.content as LessonBlockContent | undefined,
+      pintaAsset,
     )
     await run(async () => {
       let result: { zappyKnowledgeStatus?: 'ready' | 'pending' }
@@ -1118,6 +1223,109 @@ export function LessonEditorClient({
               value={blockForm.quiz}
               onChange={(quiz) => setBlockForm((f) => ({ ...f, quiz }))}
             />
+          ) : null}
+
+          {blockForm.kind === 'pinta' ? (
+            <div className="flex flex-col gap-4">
+              {/* Tipo e tamanho só na CRIAÇÃO: trocá-los recria o desenho, e na edição isso
+                  apagaria o que a professora já fez. Depois de criado, o botão "Tamanho" DENTRO
+                  do editor é quem muda a tela (sem perder o traço). */}
+              {editingBlock ? null : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="O que a criança vai desenhar">
+                    <Select
+                      value={blockForm.pintaAssetKind}
+                      onChange={(e) => {
+                        const kind = e.target.value as PintaLessonAssetKind
+                        const sizes: readonly number[] =
+                          PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === kind)?.sizes ?? []
+                        setBlockForm((f) => ({
+                          ...f,
+                          pintaAssetKind: kind,
+                          // O tamanho atual pode não existir no tipo novo → cai no 1º dele.
+                          pintaSize: sizes.includes(f.pintaSize) ? f.pintaSize : (sizes[0] ?? 32),
+                        }))
+                      }}
+                    >
+                      {PINTA_LESSON_ASSET_OPTIONS.map((o) => (
+                        <option key={o.kind} value={o.kind}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <Field
+                    label="Tamanho da tela"
+                    hint="Telas maiores viram desenhos mais pesados de enviar — por isso a lista para em 256."
+                  >
+                    <Select
+                      value={String(blockForm.pintaSize)}
+                      onChange={(e) =>
+                        setBlockForm((f) => ({ ...f, pintaSize: Number(e.target.value) }))
+                      }
+                    >
+                      {(
+                        PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === blockForm.pintaAssetKind)
+                          ?.sizes ?? []
+                      ).map((s) => (
+                        <option key={s} value={s}>
+                          {s} x {s}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                </div>
+              )}
+              <Field
+                label="Desenho inicial"
+                hint="Desenhe o ponto de partida da criança. Pode deixar em branco — ela começa do zero na tela que você escolheu."
+              >
+                {pintaSeed ? (
+                  <PintaEmbed
+                    key={
+                      editingBlock?.id ??
+                      `new-pinta-${blockForm.pintaAssetKind}-${blockForm.pintaSize}`
+                    }
+                    initialAsset={pintaSeed}
+                    handleRef={pintaHandleRef}
+                  />
+                ) : (
+                  <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                    Este bloco guardou um desenho que não consigo abrir. Crie um bloco novo — o
+                    conteúdo antigo não é recuperável por aqui.
+                  </p>
+                )}
+              </Field>
+              <Field
+                label="Ferramentas liberadas"
+                hint="A tela da criança não precisa vir cheia. Comece pelo essencial e libere mais quando a aula pedir."
+              >
+                <Select
+                  value={blockForm.pintaToolPreset}
+                  onChange={(e) =>
+                    setBlockForm((f) => ({
+                      ...f,
+                      pintaToolPreset: e.target.value as BlockForm['pintaToolPreset'],
+                    }))
+                  }
+                >
+                  <option value="essencial">Só o essencial (desenhar, apagar, pintar, cor)</option>
+                  <option value="livre">Desenho livre (formas, seleção e ajustes)</option>
+                  <option value="tudo">Tudo (a caixa inteira)</option>
+                </Select>
+              </Field>
+              <Field
+                label="Desenho contínuo (nome)"
+                hint="Dê o MESMO nome nas aulas que constroem um único desenho — a criança abre cada aula com o que enviou na anterior. Vazio = aula independente. ⚠️ Todas as aulas da cadeia precisam ser do MESMO tipo de desenho (o salvamento recusa e diz qual aula já usa o nome): quando a criança traz o desenho da aula anterior, é ele que abre, e o tipo e o tamanho vêm dele, não daqui."
+              >
+                <Input
+                  value={blockForm.pintaChain}
+                  maxLength={80}
+                  onChange={(e) => setBlockForm((f) => ({ ...f, pintaChain: e.target.value }))}
+                  placeholder="ex.: heroi-do-jogo"
+                />
+              </Field>
+            </div>
           ) : null}
 
           {blockForm.kind === 'studio' ? (

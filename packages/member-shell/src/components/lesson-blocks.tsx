@@ -9,6 +9,8 @@ import type {
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
+  PintaBlock,
+  PintaStateView,
   QuizBlock,
   QuizStateView,
   RichTextBlock,
@@ -19,6 +21,7 @@ import type {
 import { CertificateBlockView } from './certificate-block'
 import { EbookBlockView } from './ebook/ebook-block'
 import { useLessonPlayer } from './lesson-player-context'
+import { PintaBlockView } from './pinta/pinta-block'
 import { QuizBlockView } from './quiz-block'
 import { StudioBlockView } from './studio/studio-block'
 import { VimeoPlayer } from './vimeo-player'
@@ -76,6 +79,14 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
           blockId={block.id}
           content={content as unknown as StudioBlock}
           studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
+        />
+      )
+    case 'pinta':
+      return (
+        <PintaBlockView
+          blockId={block.id}
+          content={content as unknown as PintaBlock}
+          pintaState={(block.pintaState as PintaStateView | null | undefined) ?? null}
         />
       )
     case 'coming_soon':

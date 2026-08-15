@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
-import type { GameTwoDRuntimeApi } from '../runtimeContract'
+import type { GameTwoDRuntimeApi, GameTwoDSprite } from '../runtimeContract'
 
 type Listener = (event: Record<string, unknown>) => void
 
@@ -373,6 +373,71 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     flushFrame(0)
 
     expect(pendingFrameCount()).toBe(1)
+  })
+
+  it('libera a recarga exatamente no N-ésimo quadro', () => {
+    const { api, flushFrame } = runtimeHarness()
+    const sprite = api.createSprite({})
+    api.gameLoop(() => {}, 'relogio-da-recarga')
+
+    expect(api.cooldownReady(sprite, 3, 'golpe')).toBe(true)
+    flushFrame(0)
+    expect(api.cooldownReady(sprite, 3, 'golpe')).toBe(false)
+    flushFrame(1000 / 60)
+    expect(api.cooldownReady(sprite, 3, 'golpe')).toBe(false)
+    flushFrame(2000 / 60)
+    expect(api.cooldownReady(sprite, 3, 'golpe')).toBe(true)
+  })
+
+  it('normaliza recarga fracionária para ao menos um quadro', () => {
+    const { api, flushFrame } = runtimeHarness()
+    const sprite = api.createSprite({})
+    api.gameLoop(() => {}, 'relogio-da-recarga')
+
+    expect(api.cooldownReady(sprite, 0.4, 'golpe')).toBe(true)
+    expect(api.cooldownReady(sprite, 0.4, 'golpe')).toBe(false)
+    flushFrame(0)
+    expect(api.cooldownReady(sprite, 0.4, 'golpe')).toBe(true)
+  })
+
+  it('a pausa não consome a recarga mesmo depois de muito tempo de parede', () => {
+    const { api, flushFrame, setTime } = runtimeHarness()
+    const sprite = api.createSprite({})
+    api.gameLoop(() => {}, 'relogio-da-recarga')
+
+    expect(api.cooldownReady(sprite, 3, 'golpe')).toBe(true)
+    flushFrame(0)
+    api.pauseGame()
+    setTime(60_000)
+    api.resumeGame()
+
+    flushFrame(60_000)
+    expect(api.cooldownReady(sprite, 3, 'golpe')).toBe(false)
+    flushFrame(60_000 + 1000 / 60)
+    expect(api.cooldownReady(sprite, 3, 'golpe')).toBe(true)
+  })
+
+  it('reiniciar cria um sprite com a recarga pronta novamente', () => {
+    const { api, flushFrame } = runtimeHarness()
+    let sprite: GameTwoDSprite | undefined
+
+    api.onStart(() => {
+      sprite = api.createSprite({})
+      api.gameLoop(() => {}, 'relogio-da-recarga')
+    }, 'inicio-da-recarga')
+
+    const firstSprite = sprite
+    if (!firstSprite) throw new Error('o início deve criar o primeiro sprite')
+    expect(api.cooldownReady(firstSprite, 30, 'golpe')).toBe(true)
+    flushFrame(0)
+    expect(api.cooldownReady(firstSprite, 30, 'golpe')).toBe(false)
+
+    api.restart()
+
+    const restartedSprite = sprite
+    if (!restartedSprite) throw new Error('o reinício deve criar outro sprite')
+    expect(restartedSprite).not.toBe(firstSprite)
+    expect(api.cooldownReady(restartedSprite, 30, 'golpe')).toBe(true)
   })
 
   it('desativa somente o quadro defeituoso e registra o erro uma vez', () => {

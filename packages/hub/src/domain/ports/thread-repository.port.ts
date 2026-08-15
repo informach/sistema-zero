@@ -1,6 +1,8 @@
 import type { CursorPos } from '../../application/cursor'
 import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../thread/thread'
 
+export type ContentTransitionOutcome = 'updated' | 'not_found' | 'invalid_state'
+
 export interface CreateThreadInput {
   id: string
   channelId: string
@@ -163,13 +165,14 @@ export interface ThreadRepository {
   updateThread(thread: Thread): Promise<boolean>
 
   // ── Moderação (status/flags) ──
-  /** Muda o status do tópico. `bumpActivity` (aprovação) atualiza `lastActivityAt`. */
+  /** Muda o status do tópico somente a partir de `fromStatuses` (guard atômico). */
   setThreadStatus(
     id: string,
     status: ContentStatus,
+    fromStatuses: readonly ContentStatus[],
     now: Date,
     bumpActivity?: boolean,
-  ): Promise<boolean>
+  ): Promise<ContentTransitionOutcome>
   /** Fixar/desafixar tópico. */
   setThreadPinned(id: string, pinned: boolean): Promise<boolean>
   /** Trancar/destrancar comentários do tópico. */
@@ -178,7 +181,12 @@ export interface ThreadRepository {
    * Muda o status do comentário. Ao APROVAR (→ visible) incrementa commentCount +
    * lastActivityAt do tópico-pai na MESMA transação (espelha o createComment).
    */
-  setCommentStatus(id: string, status: ContentStatus, now: Date): Promise<boolean>
+  setCommentStatus(
+    id: string,
+    status: ContentStatus,
+    fromStatuses: readonly ContentStatus[],
+    now: Date,
+  ): Promise<ContentTransitionOutcome>
 
   /** Cria o comentário E (mesma transação) incrementa commentCount + lastActivityAt do tópico. */
   createComment(input: CreateCommentInput): Promise<Comment>

@@ -790,7 +790,7 @@ APARECE se a extensão estiver INSTALADA no projeto inicial). Catálogo + restri
 fecha com `pruneEmptyCategories` (rede de segurança) — categoria/sub-categoria que fica SEM nenhum
 bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); vale p/ nível E lista.
 
-### 🔎 A busca de blocos (`searchCategory.ts` + `searchFlyoutMetrics.ts`)
+### 🔎 A busca de blocos (`searchCategory.ts` + `searchHorizontalFlyout.ts` + `searchFlyoutMetrics.ts`)
 
 - **Resultados AGRUPADOS** por `groupSearchResultsByPalette` (pura, exportada): um cabeçalho
   `kind: 'label'` com `Jogo 2D › 🎬 Animação` antes de cada grupo, para a criança ir aprendendo onde
@@ -798,18 +798,23 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
   o `category` do catálogo, que é curadoria do admin. ⭐ Os grupos saem na ordem do MELHOR resultado
   (o `Map` preserva inserção), nunca em ordem alfabética. Bloco sem caminho vai para "Outros
   blocos", no FIM.
-- ⚠️ **A rolagem do flyout ignora o espaço do campo de busca.** O espaço é um separador
-  (`kind: 'sep'`) — e o `FlyoutSeparator` do Blockly **não tem DOM**. Como a faixa rolável sai do
-  `getBBox()` do canvas e o `getScrollMetrics` DESCARTA o `top` do conteúdo, sobram `gap − MARGIN`
-  px inalcançáveis e **o último bloco fica cortado** (medido: 21px no playground). O
-  `SearchAwareFlyoutMetrics` devolve essa altura somando `max(0, contentTop − MARGIN)` — parcela que
-  é ZERO nas categorias normais, o que importa porque **o flyout é um só para toda a toolbox**.
+- ⚠️ **A reserva do campo depende da orientação.** No flyout vertical, `kind: 'sep'` empurra Y; no
+  horizontal ele empurra apenas X e deixaria instrução/blocos atrás do input. Nesse caso a config do
+  workspace usa `SearchAwareHorizontalFlyout`: o marcador sem DOM `sz_search_header` desloca os itens
+  em Y e entra na altura do painel. A classe estende os pontos oficiais protegidos do Blockly
+  (`getInflaterForType`, `layout_`, `reflowInternal_`); sem o marcador, preserva o cálculo nativo.
+- ⚠️ **A rolagem vertical ignora o espaço sem DOM.** Como a faixa rolável sai do `getBBox()` do canvas
+  e o `getScrollMetrics` DESCARTA o `top` do conteúdo, sobram `gap − MARGIN` px inalcançáveis e **o
+  último bloco fica cortado**. O `SearchAwareFlyoutMetrics` devolve essa altura somando
+  `max(0, contentTop − MARGIN)` — parcela ZERO nas categorias normais, importante porque o flyout é
+  compartilhado por toda a toolbox.
 - ⚠️ **Os dois defeitos são simétricos.** Antes, o espaço era feito deslocando o canvas por
   `transform` (atributo que o Blockly reescreve ao rolar) e sumia o PRIMEIRO bloco; o `sep`
   consertou o topo e criou o corte embaixo. Ao mexer aqui, verifique **os dois extremos**: primeiro
   bloco abaixo do campo depois de rolar e voltar, e último bloco inteiro no fim.
 - ⚠️ `bun test` não faz layout: os testes provam a ARITMÉTICA (`searchFlyoutMetrics.test.ts`) e o
-  agrupamento puro (`searchGrouping.test.ts`). O pixel é QA de navegador, no playground.
+  agrupamento puro (`searchGrouping.test.ts`). O E2E de `smoke.spec.ts` mede o pixel no desktop e em
+  375×812 (flyout horizontal), incluindo halo de foco, instrução, primeiro resultado e autofoco.
 - ⚠️ **Armadilha de QA: metade desta tela vive numa `requestAnimationFrame`.** O `matchBlocks`
   fecha agendando `fitFlyoutToContents()` + `positionField()` numa rAF, e **rAF não dispara em aba
   oculta** (`document.visibilityState === 'hidden'` — foi o que derrubou a captura de capa também).
@@ -1028,7 +1033,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.79.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.79.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -2324,6 +2329,67 @@ preview e cada jogo exportado. Ele estava em **459 KB** e o design doc de 02/08 
   FÍSICA e o retorno é menor que o dos itens acima.
 - **Memoizar a fonte do HUD**: medido, **1 escrita de `ctx.font` por quadro**. Não paga o diff.
 
+### Full review do lote acima (14/08) — dois defeitos meus, os dois mudos
+
+Rodada adversarial sobre o que eu tinha acabado de escrever. Os dois achados de verdade são
+**meus, deste lote**, e nenhum dos dois quebrava um teste.
+
+1. ⭐⭐ **O aumento de velocidade era COMPOSTO, e transformava o Pong em outro jogo.** Eu pus
+   `paddleBounce(bola, jogador, 8)` lendo "8" como "um tiquinho mais rápido"; ele é 8% **sobre
+   a velocidade atual**, então cada rebatida multiplica. Simulado: a bola sai de 3,9 e chega a
+   **16,8 em 20 trocas** — quatro vezes mais rápida, muito além do teto de tolerância humana, e
+   o Pong ANTIGO acelerava de forma quase linear (~9 no mesmo ponto). Ou seja, o facilitador
+   que existia para preservar a mecânica a REESCREVEU. Em 4%: 3,7 / 5,3 / 7,9 / 11,7 ao longo
+   de 30 trocas, que é a curva do jogo original. ⚠️ Nenhum teste pegaria — todos aferiam que a
+   bola VOLTOU, e ela voltava.
+2. ⭐⭐ **Uma exceção no meio do mapa de peças deixava o modo pixel LIGADO para sempre.** O lote
+   de desempenho trocou "ligar e desligar a nitidez por célula" por "ligar uma vez, desligar no
+   fim" — e o desligar ficou fora de `finally`. Uma linha malformada no mapa (o `rows[1] = null`
+   do teste) escapa pelo meio e **toda imagem desenhada depois, no jogo inteiro, sai
+   serrilhada**, sem erro e sem volta. É a troca clássica de otimizar por lote: o estado passa a
+   ter uma janela em que alguém pode sair no meio. ⚠️ A primeira versão do teste NÃO mordia (o
+   `_crispDraw` engole a exceção do desenho e eu asseria no lugar errado); a que vale afirma o
+   estado no instante seguinte à exceção, e está provada — sem o `finally` dá 6 passa / 1 falha.
+
+**Corrigido também, achado lendo o próprio diff:**
+- ⭐ **A minha otimização do `drawGroupByY` trocou 6.100 chamadas por 200 alocações POR QUADRO**
+  (um par `{ sprite, base }` por item), e lixo de GC é o custo que este runtime menos pode
+  pagar. A base foi para um campo do sprite (`_depthKey`), como o resto do runtime já faz:
+  zero objeto novo e a ordem intacta.
+- **Três `case` faltando no coletor de identificadores** (`generators/js.ts`) para os helpers
+  novos. Não era defeito ATIVO — provei gerando código com um nome que precisa de normalização
+  (`a bola da vovó` → `a_bola_da_vov_`, usado certo nas três chamadas) —, mas a ausência é a
+  bomba-relógio da cadeia: o dia em que um deles receber uma variável NOVA, o gerador renomeia
+  errado. Somados.
+
+**Redes novas** (as duas provadas com a metade que FALHA):
+- **Casos degenerados do rebate**, que nenhum teste "normal" cobre e que a criança faz: bola
+  PARADA encostando (sai a 1, empurrada para fora, sem NaN), raquete QUADRADA (o empate manda
+  pelo eixo em que a bola vinha mais rápido), bola MAIOR que a raquete, e `9999` digitado no
+  soquete — o teto anti-túnel segura em **24** exatos (espessura + lado).
+- ⭐ **O dropdown do par de bordas contra o contrato**, nas duas direções. A auditoria genérica
+  só cobre "opção que não existe no enum"; a perigosa é a inversa, e este repositório já a
+  pagou nos inimigos. Provado: com um terceiro par no contrato, 48 passa / 2 falha.
+  ⚠️ O runtime é a TERCEIRA cópia e a dele é **implícita** — `bounceOnEdgePair` desvia em
+  `'left-right'` e deixa todo o resto cair no ramo do teto e chão. Correto para dois valores,
+  defeito mudo no terceiro. Como o ramo que falta não existe no código, o que trava é a
+  CONTAGEM.
+
+**Conferido e limpo** (registrado para não reabrir): `arrowsY` é espelho fiel do `arrowsX`,
+inclusive por não mexer no estado de chão; `bounceOnEdgePair` usa o MESMO `_visibleWorldRect` do
+irmão de 4 bordas, então a câmera se comporta igual; `stageWidth()` só cai para `canvas.width`
+quando não há tamanho lógico, e nesse caso os dois coincidem; e o cache de `tileMapCols` é selado
+pela referência de `rows`, que nada no runtime muta no lugar. E a Ponte: valor válido volta como
+bloco, `"topo"` e `""` viram `memberCall` — a criança vê o código que escreveu, sem coerção.
+
+⚠️ **Achado ADJACENTE, não é deste lote e não foi mexido:** `reinoZeroPlaythrough.test.ts`
+(commitado em `d1f0f051`) tem testes colados no **timeout padrão de 5 s** do bun — `nada somente
+nas fases aquáticas` mede 3,9 s sozinho e passa de 5 s quando roda junto de outros arquivos. O
+sintoma é uma falha que **muda de teste a cada execução** e some ao rodar o arquivo isolado
+(37/37 em 30 s). Não é lógica: é `medirSubida` montando três harnesses e jogando até a fase 26.
+Conserto barato = timeout explícito nos dois mais pesados; conserto melhor = reaproveitar
+harness. Fica para ela decidir, por ser teste de outro lote.
+
 ## Escolher a fonte do jogo + tela feita de imagem (g2d 0.75.0 / gk 0.59.0, 12/08)
 
 Dois pedidos dela, os dois sobre a cara do jogo que a criança monta: **poder mostrar uma tela
@@ -2610,6 +2676,59 @@ desempenho tem que deixá-los iguais.
   enumeráveis: o teste de assinatura cobre 29% da API, e ler o verde dele como "a API
   está guardada" é o erro que a catraca dificulta.
 - **`bundle.test.ts`** e a doc como provider PREGUIÇOSO (−21% no bundle, −31% gzip).
+
+### Full review do lote acima (15/08) — 5 achados, um deles grave
+
+Rodada logo depois de fechar os seis lotes. Correção de review é código novo e
+merece review, e desta vez isso pagou o achado mais caro da série.
+
+1. ⭐⭐⭐ **A camada vertical inteira das 32 fases era decoração, e três fases eram
+   INTRANSPONÍVEIS.** O pulo sobe 40 px (2,5 células) e eu usei UMA constante em 3
+   para tudo. Medido no motor, com o pulo segurado até o topo: plataforma a **2
+   células → pousa**; a 3 e a 4 → **nunca pousa**. Como a plataforma móvel também
+   nascia a 3 (numa linha FIXA, ainda por cima), os poços de 8 a 10 células da
+   3-2, 6-2 e 8-3 viravam parede: o piloto automático morria com **0 vidas dentro
+   do buraco**. A/B com o mesmo piloto: a 3-2 parava na coluna **26,8** e passou a
+   chegar na **46,7**.
+   ⚠️⚠️ **E as invariantes aprovavam.** A I11 media o alcance do CORPO (que serve
+   à moeda, colhida de passagem) e nunca o do PÉ (que serve à plataforma, em que
+   se POUSA); a I4 e a I5 aceitavam poço largo só porque uma móvel tinha sido
+   **declarada** perto dele, sem conferir se dava para subir nela. Fix: duas
+   constantes (`ALTURA_DA_PLATAFORMA = 2` do pé, `ALTURA_DO_PREMIO = 3` da
+   cabeçada), a móvel derivada do chão da BEIRADA, e a **I12** nova cobrando as
+   duas coisas.
+2. ⭐⭐ **Regressão que a gravidade dos inimigos criou**: casco chutado de uma
+   beirada caía **para sempre** — medido, y = 8652 e vy = 2973 depois de dez
+   segundos, ainda "ativo", pagando passo todo quadro. Antes da gravidade nada
+   caía, então isto não podia acontecer. É a mesma classe que o irmão g2d
+   catalogou em 12/08 com o inimigo que voa. Fix: quem passa do piso do palco vai
+   pelo `proDefeatEnemy`, o dono único da morte.
+3. ⭐ **`perf.comparacoes` virou contador MORTO** e ninguém viu: depois do carimbo
+   de passada ele ficou com ZERO sites de escrita, e `expect(...).toBe(0)` passava
+   por vácuo em dois testes — exatamente o "número decorativo" contra o qual o
+   comentário ao lado avisava. Virou `visitas`, que conta quem chegou ao
+   contorno; a diferença entre `visitas` e `caixas` É a de-duplicação acontecendo.
+4. **Duas réguas para "a móvel cruza o poço"**: a I4 comparava `x ± range` com o
+   intervalo e a I5 usava `|x − col| <= vão + 4`. Mesma pergunta, duas respostas —
+   é assim que uma passa a aprovar o que a outra reprovaria. Virou `movelCobre`,
+   consumida pelas duas.
+5. ⚠️ **O piloto automático media a si mesmo.** Ele soltava o pulo em 5 passos, e
+   o corte de altura variável deixava o salto em ~25 px em vez de 40. Um piloto
+   fraco reprova fase boa e — pior — foi ele que **aprovou** as três fases
+   quebradas, porque morria antes de chegar nelas. Agora ele segura o pulo até o
+   topo.
+
+**Conferido e NÃO é defeito:** o `_hbShape` redondo no índice espacial (tem
+anti-vácuo próprio e a geometria bate); a reentrância do índice (o rascunho vive
+dentro do objeto, então "para cada par" aninhado não se atropela); prêmio a 3
+células continua levando cabeçada (a cabeça varre os 40 px inteiros, medido); e
+o `entity.vx = 0` do casco recolhido é cosmético — quem move o casco é
+`entity.x +=`, não a velocidade.
+
+**Declarado, com a diferença medida:** o índice congela as CÉLULAS no começo da
+varredura, então um B que o corpo da criança TELEPORTE para perto de um A ainda
+não visitado não é encontrado naquela passada (o laço duplo lia posição viva). O
+caso é raro de propósito e o índice só entra acima de 1600 pares.
 
 ### O que fica de fora, declarado
 

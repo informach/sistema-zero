@@ -863,8 +863,9 @@ const CourseBodyProperties = {
   // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
   // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
   careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
-  // Blocos que este curso LIBERA no Estúdio livre ao ser concluído + publicado no Mural
-  // (mesmo formato do `allowBlocks` da aula, só que no CURSO). Vira
+  // Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual:
+  // bônus Kids exige conclusão; curso Kids com posição e Adult exigem também Mural.
+  // Mesmo formato do `allowBlocks` da aula, só que no CURSO. Vira
   // `metadata.studioUnlockBlocks`. AUSENTE **PRESERVA** a lista atual (régua do
   // audience/level, não a do salesPageUrl): build antigo do admin não apaga currículo.
   // `null`/`[]` limpa. A lista é a dos blocos que o curso USA, então repetir fundamentos de
@@ -1123,6 +1124,42 @@ const StudioBlockSchema = t.Object({
 })
 
 /**
+ * Snapshot `PintaAsset` (autoria do admin = `initialAsset`; entrega do aluno = corpo do submit).
+ * A borda exige só a IDENTIDADE do desenho — `id`, `name` e um `kind` conhecido — e tolera o
+ * resto: o formato interno (bitmaps RLE, formas vetoriais, camadas) é do Pinta, que sanea nas
+ * duas pontas, e replicá-lo aqui viraria dois esquemas para manter em dia.
+ *
+ * ⚠️ O `kind` é validado porque o resto do sistema o LÊ (`pintaAssetKindOf`): um valor
+ * desconhecido aqui viraria bloco sem tipo lá na frente.
+ */
+const PintaAssetSchema = t.Object(
+  {
+    id: t.String({ minLength: 1, maxLength: 100 }),
+    name: t.String({ maxLength: 100 }),
+    kind: t.Union([
+      t.Literal('pixel-sprite'),
+      t.Literal('pixel-background'),
+      t.Literal('tileset'),
+      t.Literal('tilemap'),
+      t.Literal('vector-sprite'),
+      t.Literal('vector-background'),
+      t.Literal('vector-tileset'),
+    ]),
+  },
+  { additionalProperties: true },
+)
+
+/** Bloco Pinta: ateliê de desenho embarcado na aula (ver domain/course/lesson-block.ts). */
+const PintaBlockSchema = t.Object({
+  kind: t.Literal('pinta'),
+  initialAsset: PintaAssetSchema,
+  /** Curadoria da caixa de ferramentas (restritiva; vazia = a caixa inteira). */
+  allowTools: t.Optional(t.Array(t.String({ maxLength: 40 }), { maxItems: 60 })),
+  /** Nome do desenho contínuo (cadeia) — ver PintaBlock em domain/course/lesson-block.ts. */
+  chain: t.Optional(t.String({ maxLength: 80 })),
+})
+
+/**
  * Bloco certificado (ver domain/course/lesson-block.ts): só metadado de autoria do PDF
  * (não-secreto). Imagens (assinatura/logo) SÓ http(s); cor de destaque hex.
  */
@@ -1165,6 +1202,7 @@ export const LessonBlockContentSchema = t.Union([
   EmbedBlockSchema,
   EbookBlockSchema,
   StudioBlockSchema,
+  PintaBlockSchema,
   CertificateBlockSchema,
   ComingSoonBlockSchema,
 ])
@@ -1194,6 +1232,16 @@ export const StudioSubmissionBody = t.Object({
   /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
   results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
   /** Recado OPCIONAL do aluno ao professor (modal de envio). Vazio → sem recado. */
+  message: t.Optional(t.String({ maxLength: 1000 })),
+})
+
+/**
+ * Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/pinta-submission` (aluno).
+ * Sem `results`: não há auto-correção de desenho.
+ */
+export const PintaSubmissionBody = t.Object({
+  asset: PintaAssetSchema,
+  /** Recado OPCIONAL da criança ao professor. Vazio → sem recado. */
   message: t.Optional(t.String({ maxLength: 1000 })),
 })
 

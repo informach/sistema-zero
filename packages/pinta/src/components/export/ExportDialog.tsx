@@ -16,6 +16,7 @@ import {
   type PintaAsset,
   resolveAssetPalette,
 } from '../../core/project'
+import { assetBundleToJson } from '../../export/assetJson'
 import { triggerDownload } from '../../export/download'
 import { bitmapToPngDataUrl, dataUrlToBlob, PNG_SCALES } from '../../export/png'
 import {
@@ -130,9 +131,22 @@ export function ExportDialog({
     }
   }
 
+  function downloadEditable(): void {
+    const json = assetBundleToJson(asset, gallery.getState().assets)
+    if (!json) {
+      showToast(COPY.exportDialog.editableMissingTileset)
+      return
+    }
+    downloadText(json, `${asset.name}.pinta.json`)
+  }
+
   return (
     <Dialog open onClose={onClose} title={COPY.exportDialog.title}>
       <div className="flex flex-col gap-2">
+        <Button onClick={downloadEditable}>
+          <FileJson aria-hidden="true" className="size-4" />
+          {COPY.exportDialog.editableFile}
+        </Button>
         <div className="mb-1 flex flex-wrap items-center gap-2">
           <span className="text-sm font-bold text-pin-muted">{COPY.exportDialog.scale}</span>
           {PNG_SCALES.map((option) => (

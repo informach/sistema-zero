@@ -42,7 +42,7 @@ Dois environments, **Postgres separado em cada um** (1 schema por serviço em am
 | Efí Pay | **produção** (`EFI_SANDBOX=false`) | **homologação** (`EFI_SANDBOX=true`; payments roda `NODE_ENV=development` — o fail-fast dele recusa sandbox em production) |
 | Webhook Pix Efí | registrado p/ `payments-production-…` | registrado p/ `payments-staging-…` (conta sandbox) |
 | JWT (auth) | chave RS256 de prod | **chave RS256 própria** (`auth-key-staging-1`) — token de staging NÃO vale em prod |
-| R2/Vimeo (admin/community) | buckets `comunidade-sistema-zero[-privado]`, pasta Vimeo de prod | buckets `testes`/`testes-privado`, pasta Vimeo "Testes" |
+| R2/Vimeo (admin/community) | buckets `comunidade-sistema-zero[-privado|-ugc]`, pasta Vimeo de prod | buckets `testes`/`testes-privado`/`testes-ugc`, pasta Vimeo "Testes" |
 | SendGrid | chave de prod | chave de dev |
 | WhatsApp (Evolution) | instância `principal` pareada | instância `principal` própria, pareada |
 | Sentry | ligado (1 projeto por serviço) | **desligado** (`SENTRY_DSN` removido — staging não polui as issues) |
@@ -58,6 +58,20 @@ URLs públicas:
 
 > Login no admin/community de **staging**: superadmin próprio (mesmo e-mail de
 > prod, senha separada — gerada no setup e entregue fora do repo).
+
+### Anexos UGC na moderação
+
+O Admin precisa de `R2_UGC_BUCKET` com o mesmo bucket usado pelos apps de comunidade
+(`testes-ugc` em dev/staging; `comunidade-sistema-zero-ugc` em produção). A tela de
+moderação pede autorização ao Hub e só então gera um GET pré-assinado de curta duração;
+`storageRef` nunca chega ao navegador.
+
+No CORS desses dois buckets, mantenha `GET`/`HEAD` liberados para
+`http://localhost:3005`, `https://admin-staging-f8fe.up.railway.app`,
+`https://admin-production-aeb0.up.railway.app` e `https://admin.sistemazero.com.br`,
+além das origens já usadas pelos apps de comunidade. A ordem segura de rollout é:
+Hub + migration `0008_moderation_reporter_snapshot`; depois Admin com
+`R2_UGC_BUCKET` e o CORS já atualizado.
 
 ## Deploys
 

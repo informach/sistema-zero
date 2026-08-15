@@ -54,7 +54,7 @@ const goldenCatalogs = {
     // e as setas viraram um bloco cada, e o tamanho do campo saiu das contas
     // (440/300 cravados → "a largura/altura da tela"). A IR do exemplo encolheu
     // de 1036 para 733 linhas.
-    sha256: 'c6d1801e6ec6645ef227a41c24180f6a64986c86bfe0f16df2783344b7bcdc7c',
+    sha256: '72a65546c047b9c400585c04eb406ac786945cd8a5e2101095b3a673af1fad94',
   },
   'game-2d-advanced': {
     count: 37,
@@ -64,7 +64,13 @@ const goldenCatalogs = {
     // saindo do TIPO da fase, e a aventura subiu para a versão 2 (save v1 guarda
     // checkpoint em PIXELS e cairia dentro da rocha nova). Muda a geometria
     // inteira, logo muda o hash.
-    sha256: '8dcef3f8f365248524d9fe2e3c2d67ec746a3377b296c032d1148a5c5ce69442',
+    // ⚠️ 15/08, full review do lote acima: a altura das plataformas caiu de 3
+    // para 2 células. O pé do herói sobe 40 px (2,5 células), então NADA a 3 era
+    // alcançável — a camada vertical inteira era decoração e as três fases de
+    // poço largo eram intransponíveis. Mexe em toda fase, logo mexe no hash.
+    // ⚠️ Ainda em 15/08: as fases aquáticas ganharam piscinas de quatro células,
+    // alinhadas ao piso das margens, em vez de uma película no fundo do palco.
+    sha256: '82699b017326f980b02ddf6b27e2e4c0689498022cc646cadd4445594068def0',
   },
   'game-3d': {
     count: 19,

@@ -1,5 +1,6 @@
 import { careerSlotsForTier } from '@sistemazero/core/career'
 import { isStudioProTemplateId } from '@sistemazero/core/studio'
+import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import {
   ContentNotFoundError,
   CourseConflictError,
@@ -8,11 +9,17 @@ import {
   LessonNotFoundError,
   NoPublishedLessonError,
   NoShowcaseBlockError,
+  PintaChainTypeMismatchError,
 } from '../../domain/course/course.errors'
 import {
   isCompletionGatingBlock,
   type LessonBlockContent,
+  MAX_PINTA_ASSET_CHARS,
   MAX_STUDIO_PROJECT_CHARS,
+  PINTA_ASSET_KIND_LABELS,
+  type PintaAssetKindName,
+  type PintaBlock,
+  pintaAssetKindOf,
 } from '../../domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../domain/course/quiz'
 import { validateStudioActivityAuthoring } from '../../domain/course/studio-activity'
@@ -418,6 +425,18 @@ function assertBlockCoherent(content: LessonBlockContent): void {
   }
 }
 
+/** Valida e estabiliza o desenho inicial antes de qualquer regra ou escrita no repositório. */
+function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockContent {
+  if (content.kind !== 'pinta') return content
+  const asset = pintaAssetFromWire(content.initialAsset)
+  if (!asset) throw new InvalidContentCommandError('O desenho inicial do Pinta é inválido')
+  const initialAsset = pintaAssetToWire(asset)
+  if (JSON.stringify(initialAsset).length > MAX_PINTA_ASSET_CHARS) {
+    throw new InvalidContentCommandError('Desenho inicial excede o tamanho máximo permitido')
+  }
+  return { ...content, initialAsset }
+}
+
 async function assertSingleCertificateBlock(
   content: ContentAdminRepository,
   courseId: string,
@@ -436,31 +455,75 @@ async function assertSingleCertificateBlock(
 const CERTIFICATE_LESSON_NO_GATES =
   'A aula do certificado não pode ter blocos que travam a conclusão (quiz com nota de corte, estúdio ou "em breve").'
 
+/**
+ * A cadeia do Pinta só aceita UM tipo de desenho. Recusa nomeando a aula que já a usa e o tipo
+ * dela — o autor troca o tipo (ou o nome da cadeia) e salva de novo.
+ *
+ * ⚠️ Bloco com snapshot ilegível (`assetKind: null`) NÃO conflita, dos dois lados: recusar por
+ * causa de um bloco quebrado prenderia o autor justamente quando ele está consertando.
+ */
+async function assertPintaChainTypeMatches(
+  content: ContentAdminRepository,
+  courseId: string,
+  block: PintaBlock,
+  excludeBlockId?: string,
+): Promise<void> {
+  const chain = block.chain?.trim()
+  if (!chain) return
+  const kind = pintaAssetKindOf(block)
+  if (!kind) return
+  const siblings = await content.listPintaChainBlocks(courseId, chain, { excludeBlockId })
+  const conflict = siblings.find((s) => s.assetKind !== null && s.assetKind !== kind)
+  if (!conflict) return
+  const theirs =
+    PINTA_ASSET_KIND_LABELS[conflict.assetKind as PintaAssetKindName] ?? conflict.assetKind
+  // ⚠️ A frase não manda "troque o tipo no select": na EDIÇÃO o tipo não tem select (o desenho
+  // já existe e pixel↔vetor não converte). Nomear o estado e as duas saídas serve aos dois fluxos.
+  throw new PintaChainTypeMismatchError(
+    `A aula "${conflict.lessonTitle}" já usa a cadeia "${chain}" com ${theirs}, e todos os ` +
+      'desenhos de uma cadeia precisam ser do mesmo tipo. Deixe os dois com o mesmo tipo de ' +
+      'desenho, ou dê outro nome para esta cadeia.',
+  )
+}
+
 export class BlockAdminService {
   constructor(private readonly content: ContentAdminRepository) {}
 
   async create(lessonId: string, content: LessonBlockContent): Promise<BlockView> {
-    assertBlockCoherent(content)
+    const canonicalContent = canonicalizeBlockContent(content)
+    assertBlockCoherent(canonicalContent)
     const lesson = await this.content.findLessonById(lessonId)
     if (!lesson) throw new LessonNotFoundError()
-    if (content.kind === 'certificate') {
+    if (canonicalContent.kind === 'pinta') {
+      await assertPintaChainTypeMatches(this.content, lesson.courseId, canonicalContent)
+    }
+    if (canonicalContent.kind === 'certificate') {
       await assertSingleCertificateBlock(this.content, lesson.courseId)
       // Conteúdo livre convive com o certificado; bloco travante (quiz-com-nota/estúdio) não.
       if (await this.content.lessonHasGatingBlock(lessonId)) {
         throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
       }
     } else if (
-      isCompletionGatingBlock(content) &&
+      isCompletionGatingBlock(canonicalContent) &&
       (await this.content.lessonHasCertificateBlock(lessonId))
     ) {
       throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
     }
-    return toBlockView(await this.content.createBlock(lessonId, content.kind, content))
+    return toBlockView(
+      await this.content.createBlock(lessonId, canonicalContent.kind, canonicalContent),
+    )
   }
 
   async update(id: string, content: LessonBlockContent): Promise<BlockView> {
-    assertBlockCoherent(content)
-    if (content.kind === 'certificate') {
+    const canonicalContent = canonicalizeBlockContent(content)
+    assertBlockCoherent(canonicalContent)
+    if (canonicalContent.kind === 'pinta') {
+      const courseId = await this.content.findBlockCourseId(id)
+      if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
+      // Exclui a SI MESMO: reeditar o bloco não pode conflitar com a versão anterior dele.
+      await assertPintaChainTypeMatches(this.content, courseId, canonicalContent, id)
+    }
+    if (canonicalContent.kind === 'certificate') {
       const courseId = await this.content.findBlockCourseId(id)
       if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
       await assertSingleCertificateBlock(this.content, courseId, id)
@@ -469,14 +532,14 @@ export class BlockAdminService {
       if (lessonId && (await this.content.lessonHasGatingBlock(lessonId, { excludeBlockId: id }))) {
         throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
       }
-    } else if (isCompletionGatingBlock(content)) {
+    } else if (isCompletionGatingBlock(canonicalContent)) {
       // Virar um bloco em gate (quiz-com-nota/estúdio) numa aula que TEM certificado → barra.
       const lessonId = await this.content.findBlockLessonId(id)
       if (lessonId && (await this.content.lessonHasCertificateBlock(lessonId))) {
         throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
       }
     }
-    const updated = await this.content.updateBlock(id, content.kind, content)
+    const updated = await this.content.updateBlock(id, canonicalContent.kind, canonicalContent)
     if (!updated) throw new ContentNotFoundError('Bloco não encontrado')
     return toBlockView(updated)
   }
