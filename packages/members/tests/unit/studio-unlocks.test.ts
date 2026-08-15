@@ -284,6 +284,20 @@ describe('GetStudioUnlocksService', () => {
     )
   })
 
+  test('curso arquivado antes da primeira leitura não funciona como fonte viva', async () => {
+    const { courses, gamification, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, {})
+
+    course.status = 'archived'
+
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+    expect(await gamification.getStudioUnlockRevision(userId, 'kids')).toBe(
+      studioUnlockRevision([]),
+    )
+  })
+
   test('curso Adult sem posição preserva a exigência de conclusão E Mural', async () => {
     const { courses, service, userId, mark } = setup()
     const course = makeCourse(['sz_g2d_create_ship'], { audience: 'adult', careerSlot: null })

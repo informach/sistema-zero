@@ -26,10 +26,10 @@ import { resolvePintaSeed } from '../../lib/pinta-seed'
 import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
+import { loadPintaLessonModule, type PintaLessonModule } from './pinta-loader'
 
 /** O módulo do Pinta é carregado só no client (IndexedDB/canvas não existem no SSR). */
-type PintaModule = typeof import('@sistemazero/pinta/lesson')
-type PintaComponent = PintaModule['PintaLesson']
+type PintaComponent = PintaLessonModule['PintaLesson']
 type PintaHandle = import('@sistemazero/pinta/lesson').PintaHandle
 type PintaPersistence = import('@sistemazero/pinta/lesson').PintaPersistence
 
@@ -62,9 +62,11 @@ export function PintaBlockView({
   const player = useLessonPlayer()
   const lessonId = player?.lessonId ?? ''
 
-  const [mod, setMod] = useState<PintaModule | null>(null)
+  const [mod, setMod] = useState<PintaLessonModule | null>(null)
   const [persistence, setPersistence] = useState<PintaPersistence | null>(null)
   const [initialAsset, setInitialAsset] = useState<unknown>(null)
+  const [loadError, setLoadError] = useState(false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(pintaState?.submitted ?? false)
   const [submittedAt, setSubmittedAt] = useState<string | null>(pintaState?.submittedAt ?? null)
@@ -82,7 +84,15 @@ export function PintaBlockView({
   useEffect(() => {
     let active = true
     void (async () => {
-      const loaded = await import('@sistemazero/pinta/lesson')
+      setLoadError(false)
+      const result = await loadPintaLessonModule()
+      if (!active) return
+      if (!result.module) {
+        console.error('Não foi possível carregar o Pinta na aula.', result.error)
+        setLoadError(true)
+        return
+      }
+      const loaded = result.module
       if (!active) return
       const store = loaded.createPintaPersistence({
         namespace: draftNamespace(blockId, player?.viewerId ?? undefined),
@@ -111,7 +121,7 @@ export function PintaBlockView({
     return () => {
       active = false
     }
-  }, [blockId])
+  }, [blockId, loadAttempt])
 
   useEffect(() => {
     if (!expanded) return
@@ -217,7 +227,19 @@ export function PintaBlockView({
           expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[40rem] lg:h-[52rem]',
         )}
       >
-        {ready && PintaLesson && persistence ? (
+        {loadError ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground">
+            <p>Não consegui abrir o seu desenho.</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+            >
+              Tentar novamente
+            </Button>
+          </div>
+        ) : ready && PintaLesson && persistence ? (
           <PintaLesson
             handleRef={handleRef}
             initialAsset={initialAsset as Parameters<PintaComponent>[0]['initialAsset']}

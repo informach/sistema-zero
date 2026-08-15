@@ -1,11 +1,12 @@
 'use client'
 
 import '@sistemazero/pinta/styles.css'
+import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { type RefObject, useEffect, useState } from 'react'
+import { loadPintaEmbedModule, type PintaEmbedModule } from './pinta-embed-loader'
 
-type PintaModule = typeof import('@sistemazero/pinta/lesson')
-type PintaComponent = PintaModule['PintaLesson']
+type PintaComponent = PintaEmbedModule['PintaLesson']
 type PintaHandle = import('@sistemazero/pinta/lesson').PintaHandle
 /** O desenho já vem SANEADO de quem monta o embed (`sanitizePintaAsset` na borda). */
 type PintaAsset = import('@sistemazero/pinta/lesson').PintaAsset
@@ -29,23 +30,46 @@ interface Props {
  * desenho em outra aula. Na criança as duas ficam desligadas.
  */
 export function PintaEmbed({ initialAsset, handleRef, className = 'h-[36rem]' }: Props) {
-  const [mod, setMod] = useState<PintaModule | null>(null)
+  const [mod, setMod] = useState<PintaEmbedModule | null>(null)
+  const [loadError, setLoadError] = useState(false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
 
   useEffect(() => {
     let active = true
-    void import('@sistemazero/pinta/lesson').then((loaded) => {
-      if (active) setMod(loaded)
-    })
+    if (loadAttempt > 0) setMod(null)
+    void (async () => {
+      setLoadError(false)
+      const result = await loadPintaEmbedModule()
+      if (!active) return
+      if (!result.module) {
+        console.error('Não foi possível carregar o Pinta na autoria.', result.error)
+        setLoadError(true)
+        return
+      }
+      setMod(result.module)
+    })()
     return () => {
       active = false
     }
-  }, [])
+  }, [loadAttempt])
 
   const PintaLesson = mod?.PintaLesson as PintaComponent | undefined
 
   return (
     <div className={`overflow-hidden rounded-lg border border-border bg-muted ${className}`}>
-      {PintaLesson ? (
+      {loadError ? (
+        <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground text-sm">
+          <p>Não foi possível carregar o Pinta.</p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      ) : PintaLesson ? (
         <PintaLesson
           handleRef={handleRef}
           initialAsset={initialAsset}

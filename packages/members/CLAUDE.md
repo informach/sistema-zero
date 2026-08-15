@@ -399,10 +399,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    AUTORIA oferece no máximo **256x256** de cenário (`PINTA_LESSON_ASSET_OPTIONS`, no pacote): o
    pior caso ali cai a ~650 k e nenhuma tela configurável produz um desenho que a criança não
    consegue enviar. Telas maiores = Pinta solto, onde o desenho não trafega.
-   ⚠️ Os 7 tipos de desenho estão COPIADOS aqui (`PINTA_ASSET_KINDS`) porque o members não pode
-   depender do pacote (serviço Bun; a dep arrastaria lucide-react e o peer de React). A guarda é
-   `packages/pinta/src/assets/members-conformance.test.ts`, que mora no PINTA e lê este arquivo
-   por caminho relativo (precedente do `badge-conformance` do kids). Testes:
+   Os 7 tipos de desenho continuam ESPELHADOS aqui (`PINTA_ASSET_KINDS`) para o domínio manter seu
+   contrato próprio, enquanto as bordas HTTP usam apenas o subpath puro `@sistemazero/pinta/assets`
+   (sem React/lucide no grafo). A guarda é `packages/pinta/src/assets/members-conformance.test.ts`,
+   que trava tanto os tipos quanto os gatilhos de deploy do consumidor. Testes:
    `tests/integration/pinta.test.ts` + `tests/unit/pinta-block.test.ts`.
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
@@ -1528,7 +1528,7 @@ na org `informach-nucleo-de-aprendizag`, us.sentry.io). Espelha o padrão do pay
 ## Deploy (Railway)
 
 Serviço próprio no projeto `sistema-zero` via **`packages/members/railway.json`** (config-as-code:
-Dockerfile `oven/bun:1` com build context = RAIZ do repo, watchPatterns members/core/lockfile,
+Dockerfile `oven/bun:1` com build context = RAIZ do repo, watchPatterns members/core/pinta/lockfile,
 healthcheck **`/readyz`**). `preDeployCommand` roda **`db:migrate` APENAS** — diferente do catalog
 (`db:deploy` = migrate+seed): o seed do members (`scripts/seed-course.ts`) é **conteúdo de exemplo
 de DEV** (curso demo com vídeo/anexos placeholder) e **NÃO pode rodar em produção**; o curso real é

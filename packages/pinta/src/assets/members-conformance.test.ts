@@ -9,6 +9,7 @@
  * autoria com 400; tipo removido = bloco salvo cujo tipo o resto do sistema não consegue ler.
  */
 import { describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import { PINTA_ASSET_KINDS as MEMBERS_KINDS } from '../../../members/src/domain/course/lesson-block'
 import { PINTA_ASSET_KINDS } from '../core/project'
 
@@ -20,5 +21,30 @@ describe('conformidade pinta × members', () => {
   it('a leitura é de verdade (anti-vácuo: os 7 chegaram dos dois lados)', () => {
     expect(PINTA_ASSET_KINDS).toHaveLength(7)
     expect(MEMBERS_KINDS).toHaveLength(7)
+  })
+
+  it('🚨 mudança no Pinta também dispara deploy do consumidor Members', () => {
+    const railway = JSON.parse(
+      readFileSync(new URL('../../../members/railway.json', import.meta.url), 'utf8'),
+    ) as { build: { watchPatterns: string[] } }
+    const workflow = readFileSync(
+      new URL('../../../../.github/workflows/ci.yml', import.meta.url),
+      'utf8',
+    )
+
+    expect(railway.build.watchPatterns).toContain('/packages/pinta/**')
+    expect(workflow).toMatch(/packages\/pinta\/\*\).*add members/)
+  })
+
+  it('🚨 CI exercita o contrato wire/desbloqueio do Members em PostgreSQL real', () => {
+    const workflow = readFileSync(
+      new URL('../../../../.github/workflows/ci.yml', import.meta.url),
+      'utf8',
+    )
+
+    expect(workflow).toContain('Testes DB members (Postgres real)')
+    expect(workflow).toMatch(
+      /packages\/members.*studio-unlock-eligibility\.test\.ts[\s\S]*TEST_DATABASE_URL/,
+    )
   })
 })

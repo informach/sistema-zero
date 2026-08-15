@@ -215,12 +215,8 @@ function VectorColorSlots(): JSX.Element {
         title={label}
         onClick={() => setActiveChannel(channel)}
         className={clsx(
-          'absolute flex size-11 items-center justify-center rounded-lg border-2 bg-pin-surface transition focus-visible:z-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent',
-          active
-            ? 'z-20 border-pin-accent ring-2 ring-pin-accent'
-            : channel === 'fill'
-              ? 'z-10 border-transparent hover:border-pin-border hover:bg-pin-border/20'
-              : 'z-0 border-transparent hover:border-pin-border hover:bg-pin-border/20',
+          'group absolute flex size-11 items-center justify-center rounded-lg border-0 bg-transparent p-0 transition focus-visible:z-30 focus-visible:outline-none',
+          active ? 'z-20' : channel === 'fill' ? 'z-10' : 'z-0',
           channel === 'fill' ? 'top-0 left-0' : 'right-0 bottom-0',
         )}
       >
@@ -228,7 +224,10 @@ function VectorColorSlots(): JSX.Element {
           aria-hidden="true"
           data-vector-color-shape={channel}
           className={clsx(
-            'pointer-events-none relative size-8 rounded-sm border-2 border-pin-border shadow-sm',
+            'pointer-events-none relative size-10 rounded-md border-2 shadow-sm transition group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-pin-accent',
+            active
+              ? 'border-pin-accent ring-2 ring-pin-accent'
+              : 'border-pin-border group-hover:border-pin-accent/70',
             isNone && 'pin-checkerboard',
             channel === 'fill' ? 'translate-x-3' : '-translate-x-3',
           )}
@@ -237,7 +236,7 @@ function VectorColorSlots(): JSX.Element {
           {channel === 'stroke' ? (
             <span
               data-vector-color-hole=""
-              className="absolute inset-[6px] rounded-[2px] border border-pin-border bg-pin-surface"
+              className="absolute inset-[7px] rounded-[3px] border border-pin-border bg-pin-surface"
             />
           ) : null}
         </span>

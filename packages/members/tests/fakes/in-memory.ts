@@ -2333,7 +2333,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     const out: { courseId: string; blocks: string[] }[] = []
     for (const ce of mine.filter((e) => e.sourceType === 'course_complete')) {
       const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
-      if (!course || course.audience !== audience) continue
+      if (course?.status !== 'published' || course.audience !== audience) continue
       const bonusKids = audience === 'kids' && course.careerSlot === null
       if (!bonusKids && !showcased.has(ce.sourceId)) continue
       const raw = (course.metadata as Record<string, unknown> | null | undefined)
@@ -2364,8 +2364,12 @@ export class InMemoryGamificationRepository implements GamificationRepository {
           const foundCourse = this.sources?.courses.courses.find(
             (item) => item.id === completed.sourceId,
           )
-          const course = foundCourse?.audience === audience ? foundCourse : undefined
-          const bonusKids = audience === 'kids' && course?.careerSlot === null
+          const course =
+            foundCourse?.status === 'published' && foundCourse.audience === audience
+              ? foundCourse
+              : undefined
+          if (!course) return []
+          const bonusKids = audience === 'kids' && course.careerSlot === null
           if (!bonusKids && !showcase) return []
           return [
             {
